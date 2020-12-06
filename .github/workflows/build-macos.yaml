@@ -85,17 +85,18 @@ jobs:
       - name: Build git-annex
         run: make osxapp
 
-      - name: Add version to DMG name
+      - name: Add version to DMG name and move it
         run: |
-          mv git-annex.dmg \
+          mv /tmp/git-annex.dmg \
              git-annex_"${{ steps.build-version.outputs.version }}".dmg
-        working-directory: tmp
 
       - name: Upload packages
         uses: actions/upload-artifact@v2
         with:
           name: git-annex-macos-dmg_${{ steps.build-version.outputs.version }}
-          path: tmp/git-annex_*.dmg
+          path: |
+            git-annex[-_]*.*
+            dist/build-version
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
