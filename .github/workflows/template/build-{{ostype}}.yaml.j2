@@ -147,11 +147,10 @@ jobs:
       - name: Build git-annex
         run: make osxapp
 
-      - name: Add version to DMG name
+      - name: Add version to DMG name and move it
         run: |
-          mv git-annex.dmg \
+          mv /tmp/git-annex.dmg \
              git-annex_"${{ steps.build-version.outputs.version }}".dmg
-        working-directory: tmp
 
     {% elif ostype == "windows" %}
       - name: Download and "install" libmagic for windows
