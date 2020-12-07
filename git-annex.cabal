@@ -479,7 +479,6 @@ Executable git-annex
       Assistant.Threads.Watcher
       Assistant.TransferQueue
       Assistant.TransferSlots
-      Assistant.TransferrerPool
       Assistant.Types.Alert
       Assistant.Types.BranchChange
       Assistant.Types.Changes
@@ -666,6 +665,7 @@ Executable git-annex
     Annex.TaggedPush
     Annex.Tmp
     Annex.Transfer
+    Annex.TransferrerPool
     Annex.UntrustedFilePath
     Annex.UpdateInstead
     Annex.UUID
@@ -1027,6 +1027,7 @@ Executable git-annex
     Types.StoreRetrieve
     Types.Test
     Types.Transfer
+    Types.TransferrerPool
     Types.TrustLevel
     Types.UUID
     Types.UrlContents

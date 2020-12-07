@@ -5,57 +5,16 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Assistant.Types.TransferrerPool where
+module Assistant.Types.TransferrerPool (
+	module Types.TransferrerPool,
+	checkNetworkConnections,
+) where
 
-import Annex.Common
+import Types.TransferrerPool
 import Utility.NotificationBroadcaster
 import Assistant.Types.DaemonStatus
 
-import Control.Concurrent.STM hiding (check)
-
-type TransferrerPool = TVar (MkCheckTransferrer, [TransferrerPoolItem])
-
-type CheckTransferrer = IO Bool
-type MkCheckTransferrer = IO (IO Bool)
-
-{- Each item in the pool may have a transferrer running, and has an
- - IO action that can be used to check if it's still ok to use the
- - transferrer. -}
-data TransferrerPoolItem = TransferrerPoolItem (Maybe Transferrer) CheckTransferrer
-
-data Transferrer = Transferrer
-	{ transferrerRead :: Handle
-	, transferrerWrite :: Handle
-	, transferrerHandle :: ProcessHandle
-	}
-
-newTransferrerPool :: MkCheckTransferrer -> IO TransferrerPool
-newTransferrerPool c = newTVarIO (c, [])
-
-popTransferrerPool :: TransferrerPool -> STM (Maybe TransferrerPoolItem, Int)
-popTransferrerPool p = do
-	(c, l) <- readTVar p
-	case l of
-		[] -> return (Nothing, 0)
-		(i:is) -> do
-			writeTVar p (c, is)
-			return $ (Just i, length is)
-
-pushTransferrerPool :: TransferrerPool -> TransferrerPoolItem -> STM ()
-pushTransferrerPool p i = do
-	(c, l) <- readTVar p
-	let l' = i:l
-	writeTVar p (c, l')
-
-{- Note that making a CheckTransferrer may allocate resources,
- - such as a NotificationHandle, so it's important that the returned
- - TransferrerPoolItem is pushed into the pool, and not left to be
- - garbage collected. -}
-mkTransferrerPoolItem :: TransferrerPool -> Transferrer -> IO TransferrerPoolItem
-mkTransferrerPoolItem p t = do
-	mkcheck <- atomically $ fst <$> readTVar p
-	check <- mkcheck
-	return $ TransferrerPoolItem (Just t) check
+import Control.Concurrent.STM
 
 checkNetworkConnections :: DaemonStatusHandle -> MkCheckTransferrer
 checkNetworkConnections dstatushandle = do

@@ -10,6 +10,7 @@
 module Utility.Batch (
 	batch,
 	BatchCommandMaker,
+	nonBatchCommandMaker,
 	getBatchCommandMaker,
 	toBatchCommand,
 	batchCommand,
@@ -49,6 +50,9 @@ batch a = a
 {- Makes a command be run by whichever of nice, ionice, and nocache
  - are available in the path. -}
 type BatchCommandMaker = (String, [CommandParam]) -> (String, [CommandParam])
+
+nonBatchCommandMaker :: BatchCommandMaker
+nonBatchCommandMaker = id
 
 getBatchCommandMaker :: IO BatchCommandMaker
 getBatchCommandMaker = do

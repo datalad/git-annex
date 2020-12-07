@@ -1,42 +1,46 @@
 {- A pool of "git-annex transferkeys" processes
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Assistant.TransferrerPool where
+{-# LANGUAGE RankNTypes #-}
 
-import Assistant.Common
-import Assistant.Types.TransferrerPool
+module Annex.TransferrerPool where
+
+import Annex.Common
+import Types.TransferrerPool
 import Types.Transfer
 import Utility.Batch
 import Messages.Serialized
-
 import qualified Command.TransferKeys as T
 
 import Control.Concurrent.STM hiding (check)
-import Control.Exception (throw)
 import Control.Concurrent
+import Control.Monad.IO.Class (MonadIO)
 
 {- Runs an action with a Transferrer from the pool.
  -
- - Only one Transferrer is left running in the pool at a time.
- - So if this needed to start a new Transferrer, it's stopped when done.
+ - When minimizeprocesses is True, only one Transferrer is left running
+ - in the pool at a time. So if this needed to start a new Transferrer,
+ - it's stopped when done. Otherwise, idle processes are left in the pool
+ - for use later.
  -}
-withTransferrer :: FilePath -> BatchCommandMaker -> TransferrerPool -> (Transferrer -> IO a) -> IO a
-withTransferrer program batchmaker pool a = do
+withTransferrer :: Bool -> FilePath -> BatchCommandMaker -> TransferrerPool -> (Transferrer -> IO a) -> IO a
+withTransferrer minimizeprocesses program batchmaker pool a = do
 	(mi, leftinpool) <- atomically (popTransferrerPool pool)
 	i@(TransferrerPoolItem (Just t) check) <- case mi of
 		Nothing -> mkTransferrerPoolItem pool =<< mkTransferrer program batchmaker
 		Just i -> checkTransferrerPoolItem program batchmaker i
-	v <- tryNonAsync $ a t
-	if leftinpool == 0
-		then atomically $ pushTransferrerPool pool i
-		else do
+	a t `finally` returntopool leftinpool check t i
+  where
+	returntopool leftinpool check t i
+		| not minimizeprocesses || leftinpool == 0 =
+			atomically $ pushTransferrerPool pool i
+		| otherwise = do
 			void $ forkIO $ stopTransferrer t
 			atomically $ pushTransferrerPool pool $ TransferrerPoolItem Nothing check
-	either throw return v
 
 {- Check if a Transferrer from the pool is still ok to be used.
  - If not, stop it and start a new one. -}
@@ -56,13 +60,21 @@ checkTransferrerPoolItem program batchmaker i = case i of
 
 {- Requests that a Transferrer perform a Transfer, and waits for it to
  - finish. -}
-performTransfer :: Transferrer -> Transfer -> TransferInfo -> Assistant Bool
-performTransfer transferrer t info = catchBoolIO $ do
+performTransfer
+	:: (Monad m, MonadIO m, MonadMask m)
+	=> Transferrer
+	-> Transfer
+	-> TransferInfo
+	-> (forall a. Annex a -> m a)
+	-- ^ Run an annex action in the monad. Will not be used with
+	-- actions that block for a long time.
+	-> m Bool
+performTransfer transferrer t info runannex = catchBoolIO $ do
 	(liftIO $ T.sendRequest t info (transferrerWrite transferrer))
 	relaySerializedOutput
 		(liftIO $ T.readResponse (transferrerRead transferrer))
 		(liftIO . T.sendSerializedOutputResponse (transferrerWrite transferrer))
-		liftAnnex
+		runannex
 
 {- Starts a new git-annex transferkeys process, setting up handles
  - that will be used to communicate with it. -}
@@ -84,13 +96,8 @@ mkTransferrer program batchmaker = do
 		, transferrerHandle = pid
 		}
 
-{- Checks if a Transferrer is still running. If not, makes a new one. -}
-checkTransferrer :: FilePath -> BatchCommandMaker -> Transferrer -> IO Transferrer
-checkTransferrer program batchmaker t =
-	maybe (return t) (const $ mkTransferrer program batchmaker)
-		=<< getProcessExitCode (transferrerHandle t)
-
-{- Closing the fds will stop the transferrer. -}
+{- Closing the fds will stop the transferrer, but only when it's in between
+ - transfers. -}
 stopTransferrer :: Transferrer -> IO ()
 stopTransferrer t = do
 	hClose $ transferrerRead t

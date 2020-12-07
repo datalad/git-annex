@@ -13,7 +13,7 @@ import Assistant.Common
 import Utility.ThreadScheduler
 import Assistant.Types.TransferSlots
 import Assistant.DaemonStatus
-import Assistant.TransferrerPool
+import Annex.TransferrerPool
 import Assistant.Types.TransferrerPool
 import Assistant.Types.TransferQueue
 import Assistant.TransferQueue
@@ -83,7 +83,7 @@ runTransferThread' :: FilePath -> BatchCommandMaker -> AssistantData -> (Transfe
 runTransferThread' program batchmaker d run = go
   where
 	go = catchPauseResume $
-		withTransferrer program batchmaker (transferrerPool d)
+		withTransferrer True program batchmaker (transferrerPool d)
 			run
 	pause = catchPauseResume $
 		runEvery (Seconds 86400) noop
@@ -155,7 +155,7 @@ genTransfer t info = case transferRemote info of
 	 - usual cleanup. However, first check if something else is
 	 - running the transfer, to avoid removing active transfers.
 	 -}
-	go remote transferrer = ifM (performTransfer transferrer t info)
+	go remote transferrer = ifM (performTransfer transferrer t info liftAnnex)
 		( do
 			case associatedFile info of
 				AssociatedFile Nothing -> noop
