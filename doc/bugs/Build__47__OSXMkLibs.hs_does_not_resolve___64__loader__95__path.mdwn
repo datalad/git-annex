@@ -1,0 +1,13 @@
+As of December 3, the GitHub Actions version of one of the programs (not sure which one) that git-annex bundles in its DMG installer for macOS uses `@loader_path` in the path for one of its dynamic libraries.  (The value of the `@loader_path` variable is the directory containing the binary file in which the path appears.)  `Build/OSXMkLibs.hs` does not resolve the `@loader_path` syntax, and so this leads to `./Build/Standalone` failing with:
+
+```
+cp: ./@loader_path/libbrotlicommon.1.dylib: No such file or directory
+Standalone: library install failed
+CallStack (from HasCallStack):
+  error, called at ./Build/OSXMkLibs.hs:72:41 in main:Build.OSXMkLibs
+```
+
+I attempted to patch `Build/OSXMkLibs.hs` to handle this myself, but the file containing this syntax is another dynamic lib, and the code doesn't seem to record the original paths that dynamic libraries are copied from, and so the patch would be nontrivial.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
