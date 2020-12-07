@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Set up system
         shell: bash
-        run: brew install libmagic pkg-config
+        run: brew install brotli libmagic pkg-config
 
       - name: Checkout this repository
         uses: actions/checkout@v2
