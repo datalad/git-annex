@@ -51,7 +51,7 @@ start o (_, key) = startingCustomOutput key $ case fromToOptions o of
 
 toPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 toPerform key file remote = go Upload file $
-	upload (uuid remote) key file stdRetry $ \p -> do
+	upload' (uuid remote) key file stdRetry $ \p -> do
 		tryNonAsync (Remote.storeKey remote key file p) >>= \case
 			Right () -> do
 				Remote.logStatus remote key InfoPresent
@@ -62,7 +62,7 @@ toPerform key file remote = go Upload file $
 
 fromPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
 fromPerform key file remote = go Upload file $
-	download (uuid remote) key file stdRetry $ \p ->
+	download' (uuid remote) key file stdRetry $ \p ->
 		getViaTmp (retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t ->
 			tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p) >>= \case
 				Right v -> return (True, v)	

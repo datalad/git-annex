@@ -10,8 +10,10 @@
 module Annex.Transfer (
 	module X,
 	upload,
+	upload',
 	alwaysUpload,
 	download,
+	download',
 	runTransfer,
 	alwaysRunTransfer,
 	noRetry,
@@ -24,7 +26,9 @@ import qualified Annex
 import Logs.Transfer as X
 import Types.Transfer as X
 import Annex.Notification as X
+import Annex.Content
 import Annex.Perms
+import Annex.Action
 import Utility.Metered
 import Utility.ThreadScheduler
 import Annex.LockPool
@@ -42,16 +46,28 @@ import qualified Data.Map.Strict as M
 import qualified System.FilePath.ByteString as P
 import Data.Ord
 
-upload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
-upload u key f d a _witness = guardHaveUUID u $ 
+upload :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
+upload r key f d = upload' (Remote.uuid r) key f d $
+	action . Remote.storeKey r key f
+
+upload' :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
+upload' u key f d a _witness = guardHaveUUID u $ 
 	runTransfer (Transfer Upload u (fromKey id key)) f d a
 
 alwaysUpload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 alwaysUpload u key f d a _witness = guardHaveUUID u $ 
 	alwaysRunTransfer (Transfer Upload u (fromKey id key)) f d a
 
-download :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
-download u key f d a _witness = guardHaveUUID u $
+download :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
+download r key f d witness =
+	getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key f $ \dest ->
+		download' (Remote.uuid r) key f d (go dest) witness
+  where
+	go dest p = verifiedAction $
+		Remote.retrieveKeyFile r key f (fromRawFilePath dest) p
+
+download' :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
+download' u key f d a _witness = guardHaveUUID u $
 	runTransfer (Transfer Download u (fromKey id key)) f d a
 
 guardHaveUUID :: Observable v => UUID -> Annex v -> Annex v
@@ -81,7 +97,7 @@ alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider 
 alwaysRunTransfer = runTransfer' True
 
 runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t afile retrydecider transferaction = enteringStage TransferStage $ debugLocks $ checkSecureHashes t $ do
+runTransfer' ignorelock t afile retrydecider transferaction = enteringStage TransferStage $ debugLocks $ preCheckSecureHashes t $ do
 	info <- liftIO $ startTransferInfo afile
 	(meter, tfile, createtfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
@@ -180,8 +196,8 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
  - still contains content using an insecure hash, remotes will likewise
  - tend to be configured to reject it, so Upload is also prevented.
  -}
-checkSecureHashes :: Observable v => Transfer -> Annex v -> Annex v
-checkSecureHashes t a = ifM (isCryptographicallySecure (transferKey t))
+preCheckSecureHashes :: Observable v => Transfer -> Annex v -> Annex v
+preCheckSecureHashes t a = ifM (isCryptographicallySecure (transferKey t))
 	( a
 	, ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
 		( do

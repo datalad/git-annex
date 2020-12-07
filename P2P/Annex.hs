@@ -75,7 +75,7 @@ runLocal runst runner a = case a of
 		let rsp = RetrievalAllKeysSecure
 		v <- tryNonAsync $ do
 			let runtransfer ti = 
-				Right <$> transfer download k af (\p ->
+				Right <$> transfer download' k af (\p ->
 					getViaTmp rsp DefaultVerify k af $ \tmp ->
 						storefile (fromRawFilePath tmp) o l getb validitycheck p ti)
 			let fallback = return $ Left $

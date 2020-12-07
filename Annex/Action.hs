@@ -6,6 +6,8 @@
  -}
 
 module Annex.Action (
+	action,
+	verifiedAction,
 	startup,
 	shutdown,
 	stopCoProcesses,
@@ -20,6 +22,22 @@ import Annex.CatFile
 import Annex.CheckAttr
 import Annex.HashObject
 import Annex.CheckIgnore
+
+{- Runs an action that may throw exceptions, catching and displaying them. -}
+action :: Annex () -> Annex Bool
+action a = tryNonAsync a >>= \case
+	Right () -> return True
+	Left e -> do
+		warning (show e)
+		return False
+
+verifiedAction :: Annex Verification -> Annex (Bool, Verification)
+verifiedAction a = tryNonAsync a >>= \case
+	Right v -> return (True, v)
+	Left e -> do
+		warning (show e)
+		return (False, UnVerified)
+
 
 {- Actions to perform each time ran. -}
 startup :: Annex ()
