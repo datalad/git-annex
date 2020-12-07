@@ -1,0 +1,19 @@
+Finally have all the groundwork done for canceling stalled transfers. This
+involved taking some code that was in the assistant, and had not been
+touched for probably 7 years beyond basic maintenance, dusting it off,
+and making it suitable to be used in git-annex more generally. Now I have
+git-annex using transferkeys child processes, and all that seems to work
+well.
+
+I'm finishing up today by designing the new git config that will enable stall
+detection and canceling. annex.stalldetection will be configurable to a
+value like "1MB/30s", which means it's stalled unless every 30 seconds
+a megabyte of data has been tranferred. Or "0KiB/2m" will let things stall
+for up to 2 minutes with no data transfer. There will also be a per-remote
+config, so minimum transfer rates can be set for each. This can be combined
+with annex.retry to make it retry after detecting a stall.
+
+----
+
+Today's work was sponsored by Jake Vosloo
+[on Patreon](https://patreon.com/joeyh).
