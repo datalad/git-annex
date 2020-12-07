@@ -1,5 +1,5 @@
 diff --git a/Build/OSXMkLibs.hs b/Build/OSXMkLibs.hs
-index b79cfa84d..b60899388 100644
+index b79cfa84d..98755ba3e 100644
 --- a/Build/OSXMkLibs.hs
 +++ b/Build/OSXMkLibs.hs
 @@ -105,9 +105,10 @@ otool appbase installedbins replacement_libs libmap = do
@@ -9,23 +9,27 @@ index b79cfa84d..b60899388 100644
 -		let rls' = nub $ rls ++ (zip libs expanded_libs)
 -		m' <- install_name_tool file libs expanded_libs m
 -		process (expanded_libs:c) rest rls' m'
-+		let expanded_libs' = expand_loader_path expanded_libs file
++		let expanded_libs' = expand_loader_path installedbins expanded_libs file
 +		let rls' = nub $ rls ++ (zip libs expanded_libs')
 +		m' <- install_name_tool file libs expanded_libs' m
 +		process (expanded_libs':c) rest rls' m'
  
  findLibPath :: FilePath -> IO FilePath
  findLibPath l = go =<< getEnv "DYLD_LIBRARY_PATH"
-@@ -143,6 +144,13 @@ expand_rpath installedbins libs replacement_libs cmd
+@@ -143,6 +144,17 @@ expand_rpath installedbins libs replacement_libs cmd
  		_ -> Nothing
  	replacem m l = fromMaybe l $ M.lookup l m
  
-+expand_loader_path :: [String] -> FilePath -> [FilePath]
-+expand_loader_path libs file = do
++expand_loader_path :: M.Map FilePath FilePath -> [String] -> FilePath -> [FilePath]
++expand_loader_path installedbins libs cmd = do
 +	libpath <- libs
 +	return $ case stripPrefix "@loader_path/" libpath of
-+		Just relpath -> takeDirectory file </> relpath
++		Just relpath -> takeDirectory origcmd </> relpath
 +		Nothing -> libpath
++  where
++	origcmd = case M.lookup cmd installedbins of
++		Nothing -> error $ "Cannot find original path of " ++ cmd
++		Just cmd' -> cmd'
 +
  parseOtool :: String -> [FilePath]
  parseOtool = catMaybes . map parse . lines
