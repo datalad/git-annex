@@ -8,3 +8,6 @@ CallStack (from HasCallStack):
 ```
 
 I attempted to patch `Build/OSXMkLibs.hs` to handle this myself, but the file containing this syntax is another dynamic lib, and the code doesn't seem to record the original paths that dynamic libraries are copied from, and so the patch would be nontrivial.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
