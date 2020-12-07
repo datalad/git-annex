@@ -1,0 +1,59 @@
+Update on 3 new features. Appropriate to the season, there's a past,
+a present, and a future one.
+
+---
+
+Past: The last release added `git annex adjust --unlock-present`
+which might be just what you were looking for, if you used to use direct
+mode. It unlocks files whose content is present, but files whose content is
+missing are dangling symlinks. Currently, the branch is only refresh after
+git-annex finishes all requested transfers. There is a 
+annex.adjustedbranchrefresh config that can make it refresh more
+frequently, but doing it after every file may be too slow in a large repo.
+I hope to speed it up enough eventually to perhaps make this the default
+later in places where `--unlock` is currently used.
+
+(That work was sponsored by Gioele Barabucci ENK)
+
+----
+
+Present: This week, I've been working on an internal protocol to
+comminicate about all console IO
+that git-annex does, so it can start some child processes to perform
+long-running tasks, like downloads. The goal is to 
+[[detect stalled transfers and cancel or retry them|todo/more_extensive_retries_to_mask_transient_failures]].
+This is after previous attempts, at doing it using threads failed.
+I finished the IO serialization part today, but may put off the rest until
+a bit later.
+
+(This work was sponsored by Jake Vosloo, Mark Reidenbach, and Graham Spencer
+[on Patreon](https://patreon.com/joeyh/))
+
+----
+
+Future: We've been thinking about a [[todo/borg_special_remote]] for a
+while, and last night I realized that something I implemented this summer
+for [[todo/importing_from_special_remote_without_downloading]] might be
+just what's needed for this new kind of remote. That was surprising!
+At the time, I had been doubtful about the new feature, since it seemed
+only the directory special remote would benefit from it at all.
+
+The idea is the user runs a backup program, like borg, to store a copy of
+your git-annex repo, and then points git-annex at it, to learn what annexed
+content is stored in it. This is particularly exciting to me, because it's
+a whole new kind of special remote, and could be used for lots of backup
+programs beyond borg, and probably other stuff.
+
+Imagine something like this:
+
+	borg init user@host:/annex.borg
+	borg create user@host:/annex.borg::{now} .git
+	git annex initremote borg type=borg repolocation=user@host:/annex.borg
+	git annex import --known --from borg
+	git annex drop --unused
+
+And now all your old unused annex objects have been moved into the borg
+repo, where they're efficiently stored with its data deduplication.
+And of course, you can use `git-annex get` to get them from there.
+
+I have a feeling I'll be haunted by this idea until I implement it..

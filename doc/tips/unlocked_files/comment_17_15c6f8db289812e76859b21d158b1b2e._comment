@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="rshalaev@3e2130a1e3cb0aaff7dd80aba7548ad9be0ea2d4"
+ nickname="rshalaev"
+ avatar="http://cdn.libravatar.org/avatar/d7f181d338cbcef7418faa01f0441e86"
+ subject="Windows 10 NTFS hardlinks not working"
+ date="2020-12-03T11:43:07Z"
+ content="""
+Lukey - I tried git config annex.thin true and then git annex fix
+
+Doing it on Windows NTFS drive did not create hard-links. I've followed the instructions. Could not get it to work. Always got copies of files instead of hardlinks. 
+
+From: -- Joey Hess <id@joeyh.name>  Mon, 18 Apr 2016 18:33:52 -0400
+git-annex (6.20160412) Changelog
+  * annex.thin and annex.hardlink are now supported on Windows.
+
+Based on Joey change log - hard links should work on NTFS. According to my obesrvation and a report from colin.brosseau above (titles \"NTFS Make it clear that it'll not work with annex.thin\") it does not work.
+
+Can anyone confirm if git annex can creates NTFS hardlinks? I can file a bug report if needed.
+
+Thanks!
+"""]]

@@ -35,15 +35,20 @@ contributed good bug reports and great ideas.
 
 <img alt="McGill logo" src="https://mcgill.ca/hbhl/sites/all/themes/moriarty/images/logo-red.svg" width=100>
 <img alt="Neurohub" src="https://joeyh.name/blog/pics/neurohub.png" width=100>
-
-git-annex development is supported in large part by 
-[NeuroHub](https://www.mcgill.ca/hbhl/research/platforms), funded
-by the Canada First Research Excellence Fund, awarded to McGill
-University for the Healthy Brains for Healthy Lives initiative.
-
+<img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
 <img alt="Powderhouse logo" src="https://d33wubrfki0l68.cloudfront.net/e9285c9a8db37874efdadd61f2231774ce1d86cb/5de87/assets/phs-leftaligned-logo.svg" width=100>
 
-With additional support by [Powderhouse Studios](https://powderhouse.org/).
+git-annex development was supported in large part by:
+
+* [NeuroHub](https://www.mcgill.ca/hbhl/research/platforms), funded
+  by the Canada First Research Excellence Fund, awarded to McGill
+  University for the Healthy Brains for Healthy Lives initiative.
+* [Datalad](http://datalad.org/), funded by the NSF, awarded to Dartmouth
+  College.
+* [DANDI](https://www.dandiarchive.org/), funded by the NIH, awarded to
+  Dartmouth College.
+* [Powderhouse Studios](https://powderhouse.org/)
+* Gioele Barabucci ENK
 
 Thanks also to these folks for their support: 
 [[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
@@ -53,8 +58,8 @@ Thanks also to these folks for their support:
 <img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
 
 git-annex development was partially supported by the
-[NSF](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999) as a part of the
-[DataLad project](http://datalad.org/) and NICEMAN (ReproNim TR&D3).
+NSF funded [Datalad project](http://datalad.org/) and niceman
+(repronim tr&d3).
 
 Thanks also to these folks for their support: 
 [[!inline raw=yes pages="thanks/list.2018"]] and anonymous supporters.

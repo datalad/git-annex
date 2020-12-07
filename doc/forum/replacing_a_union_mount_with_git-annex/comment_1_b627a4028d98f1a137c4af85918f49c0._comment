@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2020-12-05T13:07:31Z"
+ content="""
+I recommend you to first init each repo on each drive separately and add it's files with `git annex add .; git annex sync`, then add each other as a remote and run `git annex sync`, which will merge the file-trees together. <br>
+I guess you don't want each drive to contain the content of each file, so you should add all drives to a group and set a [[preferred-content|git-annex-preferred-content]] expression such as  `git annex groupwanted drives \"(not copies=drives:1) or present\"` and then set that on all drives by running `git annex group here drives; git annex wanted here groupwanted` on all drives. This way, `git annex sync --content` won't copy the content of each file to each drive. <br>
+You might also want to run `git annex config --set annex.dotfiles true` before adding any files or else dotfiles will be added to git directly. <br>
+"""]]
