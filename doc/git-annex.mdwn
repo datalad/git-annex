@@ -1392,6 +1392,31 @@ Remotes are configured using these settings in `.git/config`.
   When making multiple retries of the same transfer, the delay 
   doubles after each retry. (default 1)
 
+* `remote.<name>.annex-stalldetecton`, `annex.stalldetection`
+
+  This lets stalled or too-slow transfers be detected, and dealt with, so
+  rather than getting stuck, git-annex will cancel the stalled operation.
+  When this happens, the transfer will be considered to have failed, so
+  settings like annex.retry will control what it does next.
+
+  This is not enabled by default, because it can make git-annex use
+  more resources. In order to cancel stalls, git-annex has to run
+  transfers in separate processes (one per concurrent job). So it
+  may need to open more connections to a remote than usual, or
+  the communication with those processes may make it a bit slower.
+
+  The value specifies how much data git-annex should expect to see
+  flowing, minimum, when it's not stalled, over a given period of time.
+  The format is "$amount/$timeperiod". 
+
+  For example, to detect outright stalls where no data has been transferred
+  after 30 seconds: `git config annex.stalldetection "0KiB/60s"`
+
+  Or, if you have a remote on a USB drive that is normally capable of
+  several megabytes per second, but has bad sectors where it gets
+  stuck for a long time, you could use:
+  `git config remote.usbdrive.annex-stalldetection "1MB/1m"`
+
 * `remote.<name>.annex-checkuuid`
 
   This only affects remotes that have their url pointing to a directory on
