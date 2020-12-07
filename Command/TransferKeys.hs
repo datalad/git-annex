@@ -14,21 +14,12 @@ import Logs.Location
 import Annex.Transfer
 import qualified Remote
 import Utility.SimpleProtocol (dupIoHandles)
-import Git.Types (RemoteName)
 import qualified Database.Keys
 import Annex.BranchState
 import Types.Messages
-import Types.Key
+import Annex.TransferrerPool
 
 import Text.Read (readMaybe)
-
-data TransferRequest = TransferRequest Direction (Either UUID RemoteName) KeyData AssociatedFile
-	deriving (Show, Read)
-
-data TransferResponse
-	= TransferOutput SerializedOutput
-	| TransferResult Bool
-	deriving (Show, Read)
 
 cmd :: Command
 cmd = command "transferkeys" SectionPlumbing "transfers keys"
@@ -42,12 +33,30 @@ start = do
 	enableInteractiveBranchAccess
 	(readh, writeh) <- liftIO dupIoHandles
 	Annex.setOutput $ SerializedOutput
-		(hPutStrLn writeh . show . TransferOutput)
+		(\v -> hPutStrLn writeh (show (TransferOutput v)) >> hFlush writeh)
 		(readMaybe <$> hGetLine readh)
 	runRequests readh writeh runner
 	stop
   where
-	runner (TransferRequest direction _ keydata file) remote
+	runner (TransferRequest AnnexLevel direction _ keydata file) remote
+		| direction == Upload =
+			-- This is called by eg, Annex.Transfer.upload,
+			-- so caller is responsible for doing notification,
+			-- and for retrying.
+			upload' (Remote.uuid remote) key file noRetry
+				(Remote.action . Remote.storeKey remote key file)
+				noNotification
+		| otherwise =
+			-- This is called by eg, Annex.Transfer.download
+			-- so caller is responsible for doing notification
+			-- and for retrying.
+			let go p = getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t -> do
+				Remote.verifiedAction (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p)
+			in download' (Remote.uuid remote) key file noRetry go 
+				noNotification
+	  where
+		key = mkKey (const keydata)
+	runner (TransferRequest AssistantLevel direction _ keydata file) remote
 		| direction == Upload = notifyTransfer direction file $
 			upload' (Remote.uuid remote) key file stdRetry $ \p -> do
 				tryNonAsync (Remote.storeKey remote key file p) >>= \case
@@ -83,7 +92,7 @@ runRequests readh writeh a = go Nothing Nothing
 	go lastremoteoruuid lastremote = unlessM (liftIO $ hIsEOF readh) $ do
 		l <- liftIO $ hGetLine readh
 		case readMaybe l of
-			Just tr@(TransferRequest _ remoteoruuid _ _) -> do
+			Just tr@(TransferRequest _ _ remoteoruuid _ _) -> do
 				-- Often the same remote will be used
 				-- repeatedly, so cache the last one to
 				-- avoid looking up repeatedly.
@@ -95,35 +104,9 @@ runRequests readh writeh a = go Nothing Nothing
 					Just remote -> do
 						sendresult =<< a tr remote
 						go (Just remoteoruuid) mremote
-					Nothing -> protocolError l
-			Nothing -> protocolError l
+					Nothing -> transferKeysProtocolError l
+			Nothing -> transferKeysProtocolError l
 
 	sendresult b = liftIO $ do
 		hPutStrLn writeh $ show $ TransferResult b
 		hFlush writeh
-
--- | Send a request to this command to perform a transfer.
-sendRequest :: Transfer -> TransferInfo -> Handle -> IO ()
-sendRequest t tinfo h = hPutStrLn h $ show $ TransferRequest
-	(transferDirection t)
-	(maybe (Left (transferUUID t)) (Right . Remote.name) (transferRemote tinfo))
-	(keyData (transferKey t))
-	(associatedFile tinfo)
-
-sendSerializedOutputResponse :: Handle -> SerializedOutputResponse -> IO ()
-sendSerializedOutputResponse h sor = hPutStrLn h $ show sor
-
--- | Read a response from this command.
---
--- Before the final response, this will return whatever SerializedOutput
--- should be displayed as the transfer is performed.
-readResponse :: Handle -> IO (Either SerializedOutput Bool)
-readResponse h = do
-	l <- liftIO $ hGetLine h
-	case readMaybe l of
-		Just (TransferOutput so) -> return (Left so)
-		Just (TransferResult r) -> return (Right r)
-		Nothing -> protocolError l
-
-protocolError :: String -> a
-protocolError l = error $ "transferkeys protocol error: " ++ show l

@@ -38,6 +38,7 @@ import Types.Concurrency
 import Annex.Concurrent.Utility
 import Types.WorkerPool
 import Annex.WorkerPool
+import Annex.TransferrerPool
 import Backend (isCryptographicallySecure)
 import qualified Utility.RawFilePath as R
 
@@ -47,8 +48,17 @@ import qualified System.FilePath.ByteString as P
 import Data.Ord
 
 upload :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
-upload r key f d = upload' (Remote.uuid r) key f d $
-	action . Remote.storeKey r key f
+upload r key f d _witness = 
+	-- TODO: use this when not handling timeouts
+	--upload' (Remote.uuid r) key f d $
+	--	action . Remote.storeKey r key f
+	
+	-- TODO: RetryDecider
+	-- TODO: Handle timeouts
+	withTransferrer $ \transferrer ->
+		performTransfer transferrer AnnexLevel
+			(Transfer Upload (Remote.uuid r) (fromKey id key))
+			(Just r) f id
 
 upload' :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 upload' u key f d a _witness = guardHaveUUID u $ 
@@ -60,8 +70,16 @@ alwaysUpload u key f d a _witness = guardHaveUUID u $
 
 download :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
 download r key f d witness =
-	getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key f $ \dest ->
-		download' (Remote.uuid r) key f d (go dest) witness
+	-- TODO: use this when not handling timeouts
+	--getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key f $ \dest ->
+	--	download' (Remote.uuid r) key f d (go dest) witness
+	
+	-- TODO: RetryDecider
+	-- TODO: Handle timeouts
+	withTransferrer $ \transferrer ->
+		performTransfer transferrer AnnexLevel
+			(Transfer Download (Remote.uuid r) (fromKey id key))
+			(Just r) f id
   where
 	go dest p = verifiedAction $
 		Remote.retrieveKeyFile r key f (fromRawFilePath dest) p

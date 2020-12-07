@@ -91,8 +91,7 @@ runTransferThread' mkcheck program batchmaker d run = go
 	go = catchPauseResume $ do
 		p <- runAssistant d $ liftAnnex $ 
 			Annex.getState Annex.transferrerpool
-		withTransferrer True mkcheck program batchmaker p
-			run
+		withTransferrer' True mkcheck program batchmaker p run
 	pause = catchPauseResume $
 		runEvery (Seconds 86400) noop
 	{- Note: This must use E.try, rather than E.catch.
@@ -163,7 +162,7 @@ genTransfer t info = case transferRemote info of
 	 - usual cleanup. However, first check if something else is
 	 - running the transfer, to avoid removing active transfers.
 	 -}
-	go remote transferrer = ifM (performTransfer transferrer t info liftAnnex)
+	go remote transferrer = ifM (performTransfer transferrer AssistantLevel t (transferRemote info) (associatedFile info) liftAnnex)
 		( do
 			case associatedFile info of
 				AssociatedFile Nothing -> noop

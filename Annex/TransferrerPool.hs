@@ -10,35 +10,66 @@
 module Annex.TransferrerPool where
 
 import Annex.Common
+import qualified Annex
 import Types.TransferrerPool
 import Types.Transfer
-import Utility.Batch
+import Types.Key
+import qualified Types.Remote as Remote
+import Git.Types (RemoteName)
+import Types.Messages
 import Messages.Serialized
-import qualified Command.TransferKeys as T
+import Annex.Path
+import Utility.Batch
 
 import Control.Concurrent.STM hiding (check)
 import Control.Concurrent
 import Control.Monad.IO.Class (MonadIO)
+import Text.Read (readMaybe)
+import System.Log.Logger (debugM)
 
-{- Runs an action with a Transferrer from the pool.
- -
- - When minimizeprocesses is True, only one Transferrer is left running
- - in the pool at a time. So if this needed to start a new Transferrer,
- - it's stopped when done. Otherwise, idle processes are left in the pool
- - for use later.
- -}
-withTransferrer :: Bool -> MkCheckTransferrer -> FilePath -> BatchCommandMaker -> TransferrerPool -> (Transferrer -> IO a) -> IO a
-withTransferrer minimizeprocesses mkcheck program batchmaker pool a = do
-	(mi, leftinpool) <- atomically (popTransferrerPool pool)
-	i@(TransferrerPoolItem (Just t) check) <- case mi of
+data TransferRequest = TransferRequest TransferRequestLevel Direction (Either UUID RemoteName) KeyData AssociatedFile
+	deriving (Show, Read)
+
+data TransferRequestLevel = AnnexLevel | AssistantLevel
+	deriving (Show, Read)
+
+data TransferResponse
+	= TransferOutput SerializedOutput
+	| TransferResult Bool
+	deriving (Show, Read)
+
+{- Runs an action with a Transferrer from the pool. -}
+withTransferrer :: (Transferrer -> Annex a) -> Annex a
+withTransferrer a = do
+	program <- liftIO programPath
+	pool <- Annex.getState Annex.transferrerpool
+	let nocheck = pure (pure True)
+	withTransferrer' False nocheck program nonBatchCommandMaker pool a
+
+withTransferrer'
+	:: (MonadIO m, MonadFail m, MonadMask m)
+	=> Bool
+	-- ^ When minimizeprocesses is True, only one Transferrer is left
+	-- running in the pool at a time. So if this needed to start a
+	-- new Transferrer, it's stopped when done. Otherwise, idle
+	-- processes are left in the pool for use later.
+	-> MkCheckTransferrer
+	-> FilePath
+	-> BatchCommandMaker
+	-> TransferrerPool
+	-> (Transferrer -> m a)
+	-> m a
+withTransferrer' minimizeprocesses mkcheck program batchmaker pool a = do
+	(mi, leftinpool) <- liftIO $ atomically (popTransferrerPool pool)
+	i@(TransferrerPoolItem (Just t) check) <- liftIO $ case mi of
 		Nothing -> mkTransferrerPoolItem mkcheck =<< mkTransferrer program batchmaker
 		Just i -> checkTransferrerPoolItem program batchmaker i
 	a t `finally` returntopool leftinpool check t i
   where
 	returntopool leftinpool check t i
 		| not minimizeprocesses || leftinpool == 0 =
-			atomically $ pushTransferrerPool pool i
-		| otherwise = do
+			liftIO $ atomically $ pushTransferrerPool pool i
+		| otherwise = liftIO $ do
 			void $ forkIO $ stopTransferrer t
 			atomically $ pushTransferrerPool pool $ TransferrerPoolItem Nothing check
 
@@ -63,17 +94,19 @@ checkTransferrerPoolItem program batchmaker i = case i of
 performTransfer
 	:: (Monad m, MonadIO m, MonadMask m)
 	=> Transferrer
+	-> TransferRequestLevel
 	-> Transfer
-	-> TransferInfo
+	-> Maybe Remote
+	-> AssociatedFile
 	-> (forall a. Annex a -> m a)
 	-- ^ Run an annex action in the monad. Will not be used with
 	-- actions that block for a long time.
 	-> m Bool
-performTransfer transferrer t info runannex = catchBoolIO $ do
-	(liftIO $ T.sendRequest t info (transferrerWrite transferrer))
+performTransfer transferrer level t mremote afile runannex = catchBoolIO $ do
+	(liftIO $ sendRequest level t mremote afile (transferrerWrite transferrer))
 	relaySerializedOutput
-		(liftIO $ T.readResponse (transferrerRead transferrer))
-		(liftIO . T.sendSerializedOutputResponse (transferrerWrite transferrer))
+		(liftIO $ readResponse (transferrerRead transferrer))
+		(liftIO . sendSerializedOutputResponse (transferrerWrite transferrer))
 		runannex
 
 {- Starts a new git-annex transferkeys process, setting up handles
@@ -103,3 +136,34 @@ stopTransferrer t = do
 	hClose $ transferrerRead t
 	hClose $ transferrerWrite t
 	void $ waitForProcess $ transferrerHandle t
+
+-- | Send a request to perform a transfer.
+sendRequest :: TransferRequestLevel -> Transfer -> Maybe Remote -> AssociatedFile -> Handle -> IO ()
+sendRequest level t mremote afile h = do
+	let l = show $ TransferRequest level
+		(transferDirection t)
+		(maybe (Left (transferUUID t)) (Right . Remote.name) mremote)
+		(keyData (transferKey t))
+		afile
+	debugM "transfer" ("> " ++ l)
+	hPutStrLn h l
+	hFlush h
+
+sendSerializedOutputResponse :: Handle -> SerializedOutputResponse -> IO ()
+sendSerializedOutputResponse h sor = hPutStrLn h $ show sor
+
+-- | Read a response to a transfer requests.
+--
+-- Before the final response, this will return whatever SerializedOutput
+-- should be displayed as the transfer is performed.
+readResponse :: Handle -> IO (Either SerializedOutput Bool)
+readResponse h = do
+	l <- liftIO $ hGetLine h
+	debugM "transfer" ("< " ++ l)
+	case readMaybe l of
+		Just (TransferOutput so) -> return (Left so)
+		Just (TransferResult r) -> return (Right r)
+		Nothing -> transferKeysProtocolError l
+
+transferKeysProtocolError :: String -> a
+transferKeysProtocolError l = error $ "transferkeys protocol error: " ++ show l
