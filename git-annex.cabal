@@ -494,7 +494,6 @@ Executable git-annex
       Assistant.Types.ThreadedMonad
       Assistant.Types.TransferQueue
       Assistant.Types.TransferSlots
-      Assistant.Types.TransferrerPool
       Assistant.Types.UrlRenderer
       Assistant.Unused
       Assistant.Upgrade

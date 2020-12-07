@@ -70,6 +70,7 @@ import Types.WorkerPool
 import Types.IndexFiles
 import Types.CatFileHandles
 import Types.RemoteConfig
+import Types.TransferrerPool
 import qualified Database.Keys.Handle as Keys
 import Utility.InodeCache
 import Utility.Url
@@ -156,6 +157,7 @@ data AnnexState = AnnexState
 	, cachedgitenv :: Maybe (AltIndexFile, FilePath, [(String, String)])
 	, urloptions :: Maybe UrlOptions
 	, insmudgecleanfilter :: Bool
+	, transferrerpool :: TransferrerPool
 	}
 
 newState :: GitConfig -> Git.Repo -> IO AnnexState
@@ -165,6 +167,7 @@ newState c r = do
 	o <- newMessageState
 	sc <- newTMVarIO False
 	kh <- Keys.newDbHandle
+	tp <- newTransferrerPool
 	return $ AnnexState
 		{ repo = r
 		, repoadjustment = return
@@ -217,6 +220,7 @@ newState c r = do
 		, cachedgitenv = Nothing
 		, urloptions = Nothing
 		, insmudgecleanfilter = False
+		, transferrerpool = tp
 		}
 
 {- Makes an Annex state object for the specified git repo.

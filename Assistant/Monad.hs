@@ -35,7 +35,6 @@ import Assistant.Types.DaemonStatus
 import Assistant.Types.ScanRemotes
 import Assistant.Types.TransferQueue
 import Assistant.Types.TransferSlots
-import Assistant.Types.TransferrerPool
 import Assistant.Types.Pushes
 import Assistant.Types.BranchChange
 import Assistant.Types.Commits
@@ -65,7 +64,6 @@ data AssistantData = AssistantData
 	, scanRemoteMap :: ScanRemoteMap
 	, transferQueue :: TransferQueue
 	, transferSlots :: TransferSlots
-	, transferrerPool :: TransferrerPool
 	, failedPushMap :: FailedPushMap
 	, failedExportMap :: FailedPushMap
 	, commitChan :: CommitChan
@@ -85,7 +83,6 @@ newAssistantData st dstatus = AssistantData
 	<*> newScanRemoteMap
 	<*> newTransferQueue
 	<*> newTransferSlots
-	<*> newTransferrerPool (checkNetworkConnections dstatus)
 	<*> newFailedPushMap
 	<*> newFailedPushMap
 	<*> newCommitChan

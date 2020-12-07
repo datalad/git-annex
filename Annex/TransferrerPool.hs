@@ -27,11 +27,11 @@ import Control.Monad.IO.Class (MonadIO)
  - it's stopped when done. Otherwise, idle processes are left in the pool
  - for use later.
  -}
-withTransferrer :: Bool -> FilePath -> BatchCommandMaker -> TransferrerPool -> (Transferrer -> IO a) -> IO a
-withTransferrer minimizeprocesses program batchmaker pool a = do
+withTransferrer :: Bool -> MkCheckTransferrer -> FilePath -> BatchCommandMaker -> TransferrerPool -> (Transferrer -> IO a) -> IO a
+withTransferrer minimizeprocesses mkcheck program batchmaker pool a = do
 	(mi, leftinpool) <- atomically (popTransferrerPool pool)
 	i@(TransferrerPoolItem (Just t) check) <- case mi of
-		Nothing -> mkTransferrerPoolItem pool =<< mkTransferrer program batchmaker
+		Nothing -> mkTransferrerPoolItem mkcheck =<< mkTransferrer program batchmaker
 		Just i -> checkTransferrerPoolItem program batchmaker i
 	a t `finally` returntopool leftinpool check t i
   where
