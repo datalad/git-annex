@@ -64,8 +64,9 @@ Thanks also to these folks for their support:
 <img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
 
 git-annex development was partially supported by the
-[NSF funded](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999)
-[Datalad project](http://datalad.org/) and niceman (repronim tr&d3).
+[Datalad project](http://datalad.org/), funded by a
+[NSF grant](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999),
+and niceman (repronim tr&d3).
 
 Thanks also to these folks for their support: 
 [[!inline raw=yes pages="thanks/list.2018"]] and anonymous supporters.
