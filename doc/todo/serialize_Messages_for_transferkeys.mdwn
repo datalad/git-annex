@@ -25,8 +25,15 @@ A few notes on implementing that:
   outputs to stderr directly no matter the output type currently.
   It would need to be changed to support the new output type.
   (And probably should for concurrent output mode too actually!)
+
+  > It's true, this is not concurrent output safe. However, that's already
+  > the case, and output to stderr doesn't affect the piping of serialized
+  > messages on stdout. So, punted on this.
+
 * So does warningIO, though it's only used in a couple of remotes
   and rarely. It would be good to find a way to eliminate it.
+
+  > Eliminated except for one call in a non-relevant code path.
 
 * Messages.prompt. Which is used by remotes, and would need to 
   communicate over the pipe to the parent git-annex bidirectionally.
@@ -35,18 +42,6 @@ A few notes on implementing that:
   prompting is done. (Note that the parent would need to detect if the child
   process crashed to avoid being locked waiting for the prompt.)
 
-* Messages.Internal.outputMessage is used by several things, and 
-  includes some special parameters used in json mode. Since the parent
-  git-annex might itself have json mode enabled, those parameters will need
-  to be included in the serialization. But those parameters are currently
-  actually functions that manipulate the json object that will be outputted
-  later. So cannot be serialized. Uuuuh.
+  > Done.
 
-  Maybe the thing to do is, pass along the --json options to transferkeys,
-  and have a message type for json objects, which it uses to send them
-  to git-annex, which can then output them. outputMessage can handle the
-  new output type by sending the message through the pipe, and also
-  building any json object, and sending it through the pipe once it's done.
-
-> This is implemented in the message-serialization branch. Not merged
-> pending actually using it. --[[Joey]]
+[[done]]

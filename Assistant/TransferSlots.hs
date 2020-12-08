@@ -1,6 +1,6 @@
 {- git-annex assistant transfer slots
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,22 +9,27 @@
 
 module Assistant.TransferSlots where
 
+import Control.Concurrent.STM
+
 import Assistant.Common
 import Utility.ThreadScheduler
+import Utility.NotificationBroadcaster
 import Assistant.Types.TransferSlots
 import Assistant.DaemonStatus
-import Assistant.TransferrerPool
-import Assistant.Types.TransferrerPool
+import Annex.TransferrerPool
+import Types.TransferrerPool
 import Assistant.Types.TransferQueue
 import Assistant.TransferQueue
 import Assistant.Alert
 import Assistant.Alert.Utility
 import Assistant.Commits
 import Assistant.Drop
+import Annex.Transfer (stallDetection)
 import Types.Transfer
 import Logs.Transfer
 import Logs.Location
 import qualified Git
+import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.Content
@@ -33,6 +38,7 @@ import Annex.Path
 import Utility.Batch
 import Types.NumCopies
 
+import Data.Either
 import qualified Data.Map as M 
 import qualified Control.Exception as E
 import Control.Concurrent
@@ -75,16 +81,19 @@ runTransferThread :: FilePath -> BatchCommandMaker -> Maybe (Transfer, TransferI
 runTransferThread _ _ Nothing = flip MSemN.signal 1 <<~ transferSlots
 runTransferThread program batchmaker (Just (t, info, a)) = do
 	d <- getAssistant id
+	mkcheck <- checkNetworkConnections 
+		<$> getAssistant daemonStatusHandle
 	aio <- asIO1 a
-	tid <- liftIO $ forkIO $ runTransferThread' program batchmaker d aio
+	tid <- liftIO $ forkIO $ runTransferThread' mkcheck program batchmaker d aio
 	updateTransferInfo t $ info { transferTid = Just tid }
 
-runTransferThread' :: FilePath -> BatchCommandMaker -> AssistantData -> (Transferrer -> IO ()) -> IO ()
-runTransferThread' program batchmaker d run = go
+runTransferThread' :: MkCheckTransferrer -> FilePath -> BatchCommandMaker -> AssistantData -> (Transferrer -> IO ()) -> IO ()
+runTransferThread' mkcheck program batchmaker d run = go
   where
-	go = catchPauseResume $
-		withTransferrer program batchmaker (transferrerPool d)
-			run
+	go = catchPauseResume $ do
+		p <- runAssistant d $ liftAnnex $ 
+			Annex.getState Annex.transferrerpool
+		withTransferrer' True mkcheck program batchmaker p run
 	pause = catchPauseResume $
 		runEvery (Seconds 86400) noop
 	{- Note: This must use E.try, rather than E.catch.
@@ -116,7 +125,8 @@ genTransfer t info = case transferRemote info of
 			( do
 				debug [ "Transferring:" , describeTransfer t info ]
 				notifyTransfer
-				return $ Just (t, info, go remote)
+				sd <- liftAnnex $ stallDetection remote
+				return $ Just (t, info, go remote sd)
 			, do
 				debug [ "Skipping unnecessary transfer:",
 					describeTransfer t info ]
@@ -155,7 +165,7 @@ genTransfer t info = case transferRemote info of
 	 - usual cleanup. However, first check if something else is
 	 - running the transfer, to avoid removing active transfers.
 	 -}
-	go remote transferrer = ifM (liftIO $ performTransfer transferrer t info)
+	go remote sd transferrer = ifM (isRight <$> performTransfer sd AssistantLevel liftAnnex (transferRemote info) t info transferrer)
 		( do
 			case associatedFile info of
 				AssociatedFile Nothing -> noop
@@ -298,3 +308,9 @@ startTransfer t = do
 
 getCurrentTransfers :: Assistant TransferMap
 getCurrentTransfers = currentTransfers <$> getDaemonStatus
+
+checkNetworkConnections :: DaemonStatusHandle -> MkCheckTransferrer
+checkNetworkConnections dstatushandle = do
+	dstatus <- atomically $ readTVar dstatushandle
+	h <- newNotificationHandle False (networkConnectedNotifier dstatus)
+	return $ not <$> checkNotification h

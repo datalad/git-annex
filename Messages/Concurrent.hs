@@ -98,10 +98,14 @@ inOwnConsoleRegion s a
 			Regions.closeConsoleRegion r
 
 {- The progress region is displayed inline with the current console region. -}
-withProgressRegion :: (Regions.ConsoleRegion -> Annex a) -> Annex a
-withProgressRegion a = do
-	parent <- consoleRegion <$> Annex.getState Annex.output
+withProgressRegion
+	:: (MonadIO m, MonadMask m)
+	=> MessageState 
+	-> (Regions.ConsoleRegion -> m a) -> m a
+withProgressRegion st a =
 	Regions.withConsoleRegion (maybe Regions.Linear Regions.InLine parent) a
+  where
+	parent = consoleRegion st
 
 instance Regions.LiftRegion Annex where
 	liftRegion = liftIO . atomically

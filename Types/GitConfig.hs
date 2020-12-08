@@ -41,6 +41,7 @@ import Types.NumCopies
 import Types.Difference
 import Types.RefSpec
 import Types.RepoVersion
+import Types.StallDetection
 import Config.DynamicConfig
 import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
@@ -116,6 +117,7 @@ data GitConfig = GitConfig
 	, annexRetry :: Maybe Integer
 	, annexForwardRetry :: Maybe Integer
 	, annexRetryDelay :: Maybe Seconds
+	, annexStallDetection :: Maybe StallDetection
 	, annexAllowedUrlSchemes :: S.Set Scheme
 	, annexAllowedIPAddresses :: String
 	, annexAllowUnverifiedDownloads :: Bool
@@ -202,6 +204,9 @@ extractGitConfig configsource r = GitConfig
 	, annexForwardRetry = getmayberead (annexConfig "forward-retry")
 	, annexRetryDelay = Seconds
 		<$> getmayberead (annexConfig "retrydelay")
+	, annexStallDetection =
+		either (const Nothing) Just . parseStallDetection
+			=<< getmaybe (annexConfig "stalldetection")
 	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
 		maybe ["http", "https", "ftp"] words $
 			getmaybe (annexConfig "security.allowed-url-schemes")
@@ -306,6 +311,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexRetry :: Maybe Integer
 	, remoteAnnexForwardRetry :: Maybe Integer
 	, remoteAnnexRetryDelay :: Maybe Seconds
+	, remoteAnnexStallDetection :: Maybe StallDetection
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
 	, remoteAnnexConfigUUID :: Maybe UUID
 
@@ -369,6 +375,9 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexForwardRetry = getmayberead "forward-retry"
 		, remoteAnnexRetryDelay = Seconds
 			<$> getmayberead "retrydelay"
+		, remoteAnnexStallDetection =
+			either (const Nothing) Just . parseStallDetection
+				=<< getmaybe "stalldetection"
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe ("security-allow-unverified-downloads")
 		, remoteAnnexConfigUUID = toUUID <$> getmaybe "config-uuid"

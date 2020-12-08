@@ -1,6 +1,6 @@
 {- git-annex progress output
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,9 +20,11 @@ import Types.KeySource
 import Utility.InodeCache
 import qualified Messages.JSON as JSON
 import Messages.Concurrent
+import Messages.Internal
 
 import qualified System.Console.Regions as Regions
 import qualified System.Console.Concurrent as Console
+import Control.Monad.IO.Class (MonadIO)
 
 {- Class of things from which a size can be gotten to display a progress
  - meter. -}
@@ -63,38 +65,63 @@ instance MeterSize KeySizer where
 {- Shows a progress meter while performing an action.
  - The action is passed the meter and a callback to use to update the meter.
  --}
-metered :: MeterSize sizer => Maybe MeterUpdate -> sizer -> (Meter -> MeterUpdate -> Annex a) -> Annex a
-metered othermeter sizer a = withMessageState $ \st ->
-	flip go st =<< getMeterSize sizer
+metered
+	:: MeterSize sizer
+	=> Maybe MeterUpdate
+	-> sizer
+	-> (Meter -> MeterUpdate -> Annex a)
+	-> Annex a
+metered othermeter sizer a = withMessageState $ \st -> do
+	sz <- getMeterSize sizer
+	metered' st othermeter sz showOutput a
+
+metered'
+	:: (Monad m, MonadIO m, MonadMask m)
+	=> MessageState
+	-> Maybe MeterUpdate
+	-> Maybe FileSize
+	-> m ()
+	-- ^ this should run showOutput
+	-> (Meter -> MeterUpdate -> m a)
+	-> m a
+metered' st othermeter msize showoutput a = go st
   where
-	go _ (MessageState { outputType = QuietOutput }) = nometer
-	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
-		showOutput
+	go (MessageState { outputType = QuietOutput }) = nometer
+	go (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
+		showoutput
 		meter <- liftIO $ mkMeter msize $ 
 			displayMeterHandle stdout bandwidthMeter
-		m <- liftIO $ rateLimitMeterUpdate 0.2 meter $
+		m <- liftIO $ rateLimitMeterUpdate consoleratelimit meter $
 			updateMeter meter
 		r <- a meter (combinemeter m)
 		liftIO $ clearMeterHandle meter stdout
 		return r
-	go msize (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
-		withProgressRegion $ \r -> do
+	go (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
+		withProgressRegion st $ \r -> do
 			meter <- liftIO $ mkMeter msize $ \_ msize' old new ->
 				let s = bandwidthMeter msize' old new
 				in Regions.setConsoleRegion r ('\n' : s)
-			m <- liftIO $ rateLimitMeterUpdate 0.2 meter $
+			m <- liftIO $ rateLimitMeterUpdate consoleratelimit meter $
 				updateMeter meter
 			a meter (combinemeter m)
-	go msize (MessageState { outputType = JSONOutput jsonoptions })
+	go (MessageState { outputType = JSONOutput jsonoptions })
 		| jsonProgress jsonoptions = do
-			buf <- withMessageState $ return . jsonBuffer
-			meter <- liftIO $ mkMeter msize $ \_ msize' _old (new, _now) ->
-				JSON.progress buf msize' new
-			m <- liftIO $ rateLimitMeterUpdate 0.1 meter $
+			let buf = jsonBuffer st
+			meter <- liftIO $ mkMeter msize $ \_ msize' _old new ->
+				JSON.progress buf msize' (meterBytesProcessed new)
+			m <- liftIO $ rateLimitMeterUpdate jsonratelimit meter $
 				updateMeter meter
 			a meter (combinemeter m)
 		| otherwise = nometer
-
+	go (MessageState { outputType = SerializedOutput h _ }) = do
+		liftIO $ outputSerialized h $ StartProgressMeter msize
+		meter <- liftIO $ mkMeter msize $ \_ _ _old new ->
+			outputSerialized h $ UpdateProgressMeter $
+				meterBytesProcessed new
+		m <- liftIO $ rateLimitMeterUpdate minratelimit meter $
+			updateMeter meter
+		a meter (combinemeter m)
+			`finally` (liftIO $ outputSerialized h EndProgressMeter)
 	nometer = do
 		dummymeter <- liftIO $ mkMeter Nothing $
 			\_ _ _ _ -> return ()
@@ -103,6 +130,12 @@ metered othermeter sizer a = withMessageState $ \st ->
 	combinemeter m = case othermeter of
 		Nothing -> m
 		Just om -> combineMeterUpdate m om
+
+	consoleratelimit = 0.2
+
+	jsonratelimit = 0.1
+
+	minratelimit = min consoleratelimit jsonratelimit
 
 {- Poll file size to display meter. -}
 meteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a

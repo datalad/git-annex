@@ -479,7 +479,6 @@ Executable git-annex
       Assistant.Threads.Watcher
       Assistant.TransferQueue
       Assistant.TransferSlots
-      Assistant.TransferrerPool
       Assistant.Types.Alert
       Assistant.Types.BranchChange
       Assistant.Types.Changes
@@ -495,7 +494,6 @@ Executable git-annex
       Assistant.Types.ThreadedMonad
       Assistant.Types.TransferQueue
       Assistant.Types.TransferSlots
-      Assistant.Types.TransferrerPool
       Assistant.Types.UrlRenderer
       Assistant.Unused
       Assistant.Upgrade
@@ -666,6 +664,7 @@ Executable git-annex
     Annex.TaggedPush
     Annex.Tmp
     Annex.Transfer
+    Annex.TransferrerPool
     Annex.UntrustedFilePath
     Annex.UpdateInstead
     Annex.UUID
@@ -931,6 +930,7 @@ Executable git-annex
     Messages.Internal
     Messages.JSON
     Messages.Progress
+    Messages.Serialized
     P2P.Address
     P2P.Annex
     P2P.Auth
@@ -1023,9 +1023,11 @@ Executable git-annex
     Types.RepoVersion
     Types.ScheduledActivity
     Types.StandardGroups
+    Types.StallDetection
     Types.StoreRetrieve
     Types.Test
     Types.Transfer
+    Types.TransferrerPool
     Types.TrustLevel
     Types.UUID
     Types.UrlContents

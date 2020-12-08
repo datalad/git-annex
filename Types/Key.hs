@@ -11,6 +11,7 @@ module Types.Key (
 	KeyData(..),
 	Key,
 	fromKey,
+	keyData,
 	mkKey,
 	alterKey,
 	isKeyPrefix,
@@ -201,7 +202,7 @@ splitKeyNameExtension' keyname = S8.span (/= '.') keyname
 
 {- A filename may be associated with a Key. -}
 newtype AssociatedFile = AssociatedFile (Maybe RawFilePath)
-	deriving (Show, Eq, Ord)
+	deriving (Show, Read, Eq, Ord)
 
 {- There are several different varieties of keys. -}
 data KeyVariety

@@ -1,19 +1,17 @@
 {- A pool of "git-annex transferkeys" processes available for use
  -
- - Copyright 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Assistant.Types.TransferrerPool where
+module Types.TransferrerPool where
 
-import Annex.Common
-import Utility.NotificationBroadcaster
-import Assistant.Types.DaemonStatus
+import Common
 
 import Control.Concurrent.STM hiding (check)
 
-type TransferrerPool = TVar (MkCheckTransferrer, [TransferrerPoolItem])
+type TransferrerPool = TVar [TransferrerPoolItem]
 
 type CheckTransferrer = IO Bool
 type MkCheckTransferrer = IO (IO Bool)
@@ -29,36 +27,29 @@ data Transferrer = Transferrer
 	, transferrerHandle :: ProcessHandle
 	}
 
-newTransferrerPool :: MkCheckTransferrer -> IO TransferrerPool
-newTransferrerPool c = newTVarIO (c, [])
+newTransferrerPool :: IO TransferrerPool
+newTransferrerPool = newTVarIO []
 
 popTransferrerPool :: TransferrerPool -> STM (Maybe TransferrerPoolItem, Int)
 popTransferrerPool p = do
-	(c, l) <- readTVar p
+	l <- readTVar p
 	case l of
 		[] -> return (Nothing, 0)
 		(i:is) -> do
-			writeTVar p (c, is)
+			writeTVar p is
 			return $ (Just i, length is)
 
 pushTransferrerPool :: TransferrerPool -> TransferrerPoolItem -> STM ()
 pushTransferrerPool p i = do
-	(c, l) <- readTVar p
+	l <- readTVar p
 	let l' = i:l
-	writeTVar p (c, l')
+	writeTVar p l'
 
 {- Note that making a CheckTransferrer may allocate resources,
  - such as a NotificationHandle, so it's important that the returned
  - TransferrerPoolItem is pushed into the pool, and not left to be
  - garbage collected. -}
-mkTransferrerPoolItem :: TransferrerPool -> Transferrer -> IO TransferrerPoolItem
-mkTransferrerPoolItem p t = do
-	mkcheck <- atomically $ fst <$> readTVar p
+mkTransferrerPoolItem :: MkCheckTransferrer -> Transferrer -> IO TransferrerPoolItem
+mkTransferrerPoolItem mkcheck t = do
 	check <- mkcheck
 	return $ TransferrerPoolItem (Just t) check
-
-checkNetworkConnections :: DaemonStatusHandle -> MkCheckTransferrer
-checkNetworkConnections dstatushandle = do
-	dstatus <- atomically $ readTVar dstatushandle
-	h <- newNotificationHandle False (networkConnectedNotifier dstatus)
-	return $ not <$> checkNotification h

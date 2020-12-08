@@ -45,7 +45,9 @@ daysToDuration i = Duration $ i * dsecs
 
 {- Parses a human-input time duration, of the form "5h", "1m", "5h1m", etc -}
 parseDuration :: String -> Either String Duration
-parseDuration d = maybe parsefail (Right . Duration) $ go 0 d
+parseDuration d
+	| null d = parsefail
+	| otherwise = maybe parsefail (Right . Duration) $ go 0 d
   where
 	go n [] = return n
 	go n s = do

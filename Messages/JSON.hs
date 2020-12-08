@@ -11,6 +11,8 @@ module Messages.JSON (
 	JSONBuilder,
 	JSONChunk(..),
 	emit,
+	emit',
+	encode,
 	none,
 	start,
 	end,
@@ -38,7 +40,6 @@ import Data.Maybe
 import Data.Monoid
 import Prelude
 
-import Types.Messages
 import Types.Command (SeekInput(..))
 import Key
 import Utility.Metered
@@ -52,9 +53,12 @@ emitLock :: MVar ()
 emitLock = unsafePerformIO $ newMVar ()
 
 emit :: Object -> IO ()
-emit o = do
+emit = emit' . encode
+
+emit' :: L.ByteString -> IO ()
+emit' b = do
 	takeMVar emitLock
-	L.hPut stdout (encode o)
+	L.hPut stdout b
 	putStr "\n"
 	putMVar emitLock ()
 
@@ -82,12 +86,10 @@ end :: Bool -> JSONBuilder
 end b (Just (o, _)) = Just (HM.insert "success" (toJSON' b) o, True)
 end _ Nothing = Nothing
 
-finalize :: JSONOptions -> Object -> Object
-finalize jsonoptions o
-	-- Always include error-messages field, even if empty,
-	-- to make the json be self-documenting.
-	| jsonErrorMessages jsonoptions = addErrorMessage [] o
-	| otherwise = o
+-- Always include error-messages field, even if empty,
+-- to make the json be self-documenting.
+finalize :: Object -> Object
+finalize o = addErrorMessage [] o
 
 addErrorMessage :: [String] -> Object -> Object
 addErrorMessage msg o =

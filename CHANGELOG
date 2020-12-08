@@ -1,5 +1,8 @@
 git-annex (8.20201128) UNRELEASED; urgency=medium
 
+  * New config annex.stalldetection, remote.name.annex-stalldetection,
+    which can be used to deal with remotes that stall during transfers,
+    or are sometimes too slow to want to use.
   * Fix hang on shutdown of external special remote using ASYNC protocol
     extension. (Reversion introduced in version 8.20201007.)
   * Fix bug that made the next download after an empty file from a ssh

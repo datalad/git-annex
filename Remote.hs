@@ -70,6 +70,7 @@ import Annex.Common
 import Types.Remote
 import qualified Annex
 import Annex.UUID
+import Annex.Action
 import Logs.UUID
 import Logs.Trust
 import Logs.Location hiding (logStatus)
@@ -81,21 +82,6 @@ import Config
 import Config.DynamicConfig
 import Git.Types (RemoteName, ConfigKey(..), fromConfigValue)
 import Utility.Aeson
-
-{- Runs an action that may throw exceptions, catching and displaying them. -}
-action :: Annex () -> Annex Bool
-action a = tryNonAsync a >>= \case
-	Right () -> return True
-	Left e -> do
-		warning (show e)
-		return False
-
-verifiedAction :: Annex Verification -> Annex (Bool, Verification)
-verifiedAction a = tryNonAsync a >>= \case
-	Right v -> return (True, v)
-	Left e -> do
-		warning (show e)
-		return (False, UnVerified)
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> v) -> Annex (M.Map UUID v)

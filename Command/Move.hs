@@ -142,8 +142,7 @@ toPerform dest removewhen key afile fastcheck isthere = do
 		Right False -> logMove srcuuid destuuid False key $ \deststartedwithcopy -> do
 			showAction $ "to " ++ Remote.name dest
 			ok <- notifyTransfer Upload afile $
-				upload (Remote.uuid dest) key afile stdRetry $
-					Remote.action . Remote.storeKey dest key afile
+				upload dest key afile stdRetry
 			if ok
 				then finish deststartedwithcopy $
 					Remote.logStatus dest key InfoPresent
@@ -223,10 +222,8 @@ fromPerform src removewhen key afile = do
 			then dispatch removewhen deststartedwithcopy True
 			else dispatch removewhen deststartedwithcopy =<< get
   where
-	get = notifyTransfer Download afile $ 
-		download (Remote.uuid src) key afile stdRetry $ \p ->
-			getViaTmp (Remote.retrievalSecurityPolicy src) (RemoteVerify src) key afile $ \t ->
-				Remote.verifiedAction $ Remote.retrieveKeyFile src key afile (fromRawFilePath t) p
+	get = notifyTransfer Download afile $
+		download src key afile stdRetry
 	
 	dispatch _ _ False = stop -- failed
 	dispatch RemoveNever _ True = next $ return True -- copy complete

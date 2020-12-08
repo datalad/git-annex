@@ -9,6 +9,7 @@
 
 module Utility.Metered (
 	MeterUpdate,
+	MeterState(..),
 	nullMeterUpdate,
 	combineMeterUpdate,
 	TotalSize(..),
@@ -77,7 +78,7 @@ combineMeterUpdate a b = \n -> a n >> b n
 
 {- Total number of bytes processed so far. -}
 newtype BytesProcessed = BytesProcessed Integer
-	deriving (Eq, Ord, Show)
+	deriving (Eq, Ord, Show, Read)
 
 class AsBytesProcessed a where
 	toBytesProcessed :: a -> BytesProcessed
@@ -379,19 +380,24 @@ rateLimitMeterUpdate delta (Meter totalsizev _ _ _) meterupdate = do
 
 data Meter = Meter (MVar (Maybe Integer)) (MVar MeterState) (MVar String) DisplayMeter
 
-type MeterState = (BytesProcessed, POSIXTime)
+data MeterState = MeterState
+	{ meterBytesProcessed :: BytesProcessed
+	, meterTimeStamp :: POSIXTime
+	} deriving (Show)
 
-type DisplayMeter = MVar String -> Maybe Integer -> (BytesProcessed, POSIXTime) -> (BytesProcessed, POSIXTime) -> IO ()
+type DisplayMeter = MVar String -> Maybe Integer -> MeterState -> MeterState -> IO ()
 
-type RenderMeter = Maybe Integer -> (BytesProcessed, POSIXTime) -> (BytesProcessed, POSIXTime) -> String
+type RenderMeter = Maybe Integer -> MeterState -> MeterState -> String
 
 -- | Make a meter. Pass the total size, if it's known.
 mkMeter :: Maybe Integer -> DisplayMeter -> IO Meter
-mkMeter totalsize displaymeter = Meter
-	<$> newMVar totalsize
-	<*> ((\t -> newMVar (zeroBytesProcessed, t)) =<< getPOSIXTime)
-	<*> newMVar ""
-	<*> pure displaymeter
+mkMeter totalsize displaymeter = do
+	ts <- getPOSIXTime
+	Meter
+		<$> newMVar totalsize
+		<*> newMVar (MeterState zeroBytesProcessed ts)
+		<*> newMVar ""
+		<*> pure displaymeter
 
 setMeterTotalSize :: Meter -> Integer -> IO ()
 setMeterTotalSize (Meter totalsizev _ _ _) = void . swapMVar totalsizev . Just
@@ -400,10 +406,11 @@ setMeterTotalSize (Meter totalsizev _ _ _) = void . swapMVar totalsizev . Just
 updateMeter :: Meter -> MeterUpdate
 updateMeter (Meter totalsizev sv bv displaymeter) new = do
 	now <- getPOSIXTime
-	(old, before) <- swapMVar sv (new, now)
-	when (old /= new) $ do
+	let curms = MeterState new now
+	oldms <- swapMVar sv curms
+	when (meterBytesProcessed oldms /= new) $ do
 		totalsize <- readMVar totalsizev
-		displaymeter bv totalsize (old, before) (new, now)
+		displaymeter bv totalsize oldms curms
 
 -- | Display meter to a Handle.
 displayMeterHandle :: Handle -> RenderMeter -> DisplayMeter
@@ -428,7 +435,7 @@ clearMeterHandle (Meter _ _ v _) h = do
 -- or when total size is not known:
 --   1.3 MiB      300 KiB/s
 bandwidthMeter :: RenderMeter
-bandwidthMeter mtotalsize (BytesProcessed old, before) (BytesProcessed new, now) =
+bandwidthMeter mtotalsize (MeterState (BytesProcessed old) before) (MeterState (BytesProcessed new) now) =
 	unwords $ catMaybes
 		[ Just percentamount
 		-- Pad enough for max width: "100%  xxxx.xx KiB  xxxx KiB/s"
