@@ -34,7 +34,7 @@ module Utility.Process (
 ) where
 
 import qualified Utility.Process.Shim
-import Utility.Process.Shim as X (CreateProcess(..), ProcessHandle, StdStream(..), CmdSpec(..), proc, getPid, getProcessExitCode, shell, terminateProcess)
+import Utility.Process.Shim as X (CreateProcess(..), ProcessHandle, StdStream(..), CmdSpec(..), proc, getPid, getProcessExitCode, shell, terminateProcess, interruptProcessGroupOf)
 import Utility.Misc
 import Utility.Exception
 import Utility.Monad

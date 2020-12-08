@@ -1023,6 +1023,7 @@ Executable git-annex
     Types.RepoVersion
     Types.ScheduledActivity
     Types.StandardGroups
+    Types.StallDetection
     Types.StoreRetrieve
     Types.Test
     Types.Transfer

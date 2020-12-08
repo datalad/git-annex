@@ -19,6 +19,7 @@ module Annex.Transfer (
 	noRetry,
 	stdRetry,
 	pickRemote,
+	stallDetection,
 ) where
 
 import Annex.Common
@@ -40,6 +41,7 @@ import Types.WorkerPool
 import Annex.WorkerPool
 import Annex.TransferrerPool
 import Backend (isCryptographicallySecure)
+import Types.StallDetection
 import qualified Utility.RawFilePath as R
 
 import Control.Concurrent
@@ -47,19 +49,15 @@ import qualified Data.Map.Strict as M
 import qualified System.FilePath.ByteString as P
 import Data.Ord
 
+-- Upload, supporting stall detection.
 upload :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
-upload r key f d _witness = 
-	-- TODO: use this when not handling timeouts
-	--upload' (Remote.uuid r) key f d $
-	--	action . Remote.storeKey r key f
-	
-	-- TODO: RetryDecider
-	-- TODO: Handle timeouts
-	withTransferrer $ \transferrer ->
-		performTransfer transferrer AnnexLevel
-			(Transfer Upload (Remote.uuid r) (fromKey id key))
-			(Just r) f id
+upload r key f d witness = stallDetection r >>= \case
+	Nothing -> upload' (Remote.uuid r) key f d go witness
+	Just sd -> runTransferrer sd r key f d Upload witness
+  where
+	go = action . Remote.storeKey r key f
 
+-- Upload, not supporting stall detection.
 upload' :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 upload' u key f d a _witness = guardHaveUUID u $ 
 	runTransfer (Transfer Upload u (fromKey id key)) f d a
@@ -68,22 +66,17 @@ alwaysUpload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider ->
 alwaysUpload u key f d a _witness = guardHaveUUID u $ 
 	alwaysRunTransfer (Transfer Upload u (fromKey id key)) f d a
 
+-- Download, supporting stall detection.
 download :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
-download r key f d witness =
-	-- TODO: use this when not handling timeouts
-	--getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key f $ \dest ->
-	--	download' (Remote.uuid r) key f d (go dest) witness
-	
-	-- TODO: RetryDecider
-	-- TODO: Handle timeouts
-	withTransferrer $ \transferrer ->
-		performTransfer transferrer AnnexLevel
-			(Transfer Download (Remote.uuid r) (fromKey id key))
-			(Just r) f id
+download r key f d witness = stallDetection r >>= \case
+	Nothing -> getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key f $ \dest ->
+		download' (Remote.uuid r) key f d (go dest) witness
+	Just sd -> runTransferrer sd r key f d Download witness
   where
 	go dest p = verifiedAction $
 		Remote.retrieveKeyFile r key f (fromRawFilePath dest) p
 
+-- Download, not supporting stall detection.
 download' :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 download' u key f d a _witness = guardHaveUUID u $
 	runTransfer (Transfer Download u (fromKey id key)) f d a
@@ -115,7 +108,7 @@ alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider 
 alwaysRunTransfer = runTransfer' True
 
 runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t afile retrydecider transferaction = enteringStage TransferStage $ debugLocks $ preCheckSecureHashes t $ do
+runTransfer' ignorelock t afile retrydecider transferaction = enteringStage TransferStage $ debugLocks $ preCheckSecureHashes (transferKey t) $ do
 	info <- liftIO $ startTransferInfo afile
 	(meter, tfile, createtfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
@@ -202,6 +195,31 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
 			f <- fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
 			liftIO $ catchDefaultIO 0 $ getFileSize f
 
+runTransferrer
+	:: StallDetection
+	-> Remote
+	-> Key
+	-> AssociatedFile
+	-> RetryDecider
+	-> Direction
+	-> NotifyWitness
+	-> Annex Bool
+runTransferrer sd r k afile retrydecider direction _witness =
+	enteringStage TransferStage $ preCheckSecureHashes k $ do
+		info <- liftIO $ startTransferInfo afile
+		go 0 info
+  where
+	go numretries info = 
+		withTransferrer (performTransfer (Just sd) AnnexLevel id (Just r) t info) >>= \case
+			Right () -> return True
+			Left newinfo -> do
+				let !numretries' = succ numretries
+				ifM (retrydecider numretries' info newinfo)
+					( go numretries' newinfo
+					, return False
+					)
+	t = Transfer direction (Remote.uuid r) (fromKey id k)
+
 {- Avoid download and upload of keys with insecure content when
  - annex.securehashesonly is configured.
  -
@@ -214,8 +232,8 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
  - still contains content using an insecure hash, remotes will likewise
  - tend to be configured to reject it, so Upload is also prevented.
  -}
-preCheckSecureHashes :: Observable v => Transfer -> Annex v -> Annex v
-preCheckSecureHashes t a = ifM (isCryptographicallySecure (transferKey t))
+preCheckSecureHashes :: Observable v => Key -> Annex v -> Annex v
+preCheckSecureHashes k a = ifM (isCryptographicallySecure k)
 	( a
 	, ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
 		( do
@@ -225,7 +243,7 @@ preCheckSecureHashes t a = ifM (isCryptographicallySecure (transferKey t))
 		)
 	)
   where
-	variety = fromKey keyVariety (transferKey t)
+	variety = fromKey keyVariety k
 
 type NumRetries = Integer
 
@@ -348,3 +366,9 @@ lessActiveFirst :: M.Map Remote Integer -> Remote -> Remote -> Ordering
 lessActiveFirst active a b
 	| Remote.cost a == Remote.cost b = comparing (`M.lookup` active) a b
 	| otherwise = comparing Remote.cost a b
+
+stallDetection :: Remote -> Annex (Maybe StallDetection)
+stallDetection r = maybe globalcfg (pure . Just) remotecfg
+  where
+	globalcfg = annexStallDetection <$> Annex.getGitConfig
+	remotecfg = remoteAnnexStallDetection $ Remote.gitconfig r

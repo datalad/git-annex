@@ -24,6 +24,7 @@ import Assistant.Alert
 import Assistant.Alert.Utility
 import Assistant.Commits
 import Assistant.Drop
+import Annex.Transfer (stallDetection)
 import Types.Transfer
 import Logs.Transfer
 import Logs.Location
@@ -37,6 +38,7 @@ import Annex.Path
 import Utility.Batch
 import Types.NumCopies
 
+import Data.Either
 import qualified Data.Map as M 
 import qualified Control.Exception as E
 import Control.Concurrent
@@ -123,7 +125,8 @@ genTransfer t info = case transferRemote info of
 			( do
 				debug [ "Transferring:" , describeTransfer t info ]
 				notifyTransfer
-				return $ Just (t, info, go remote)
+				sd <- liftAnnex $ stallDetection remote
+				return $ Just (t, info, go remote sd)
 			, do
 				debug [ "Skipping unnecessary transfer:",
 					describeTransfer t info ]
@@ -162,7 +165,7 @@ genTransfer t info = case transferRemote info of
 	 - usual cleanup. However, first check if something else is
 	 - running the transfer, to avoid removing active transfers.
 	 -}
-	go remote transferrer = ifM (performTransfer transferrer AssistantLevel t (transferRemote info) (associatedFile info) liftAnnex)
+	go remote sd transferrer = ifM (isRight <$> performTransfer sd AssistantLevel liftAnnex (transferRemote info) t info transferrer)
 		( do
 			case associatedFile info of
 				AssociatedFile Nothing -> noop

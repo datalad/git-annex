@@ -20,6 +20,7 @@ import Messages
 import Messages.Internal
 import Messages.Progress
 import qualified Messages.JSON as JSON
+import Utility.Metered (BytesProcessed)
 
 import Control.Monad.IO.Class (MonadIO)
 
@@ -29,11 +30,16 @@ relaySerializedOutput
 	=> m (Either SerializedOutput r)
 	-- ^ Get next serialized output, or final value to return.
 	-> (SerializedOutputResponse -> m ())
+	-- ^ Send response to child process.
+	-> (Maybe BytesProcessed -> m ())
+	-- ^ When a progress meter is running, is updated with
+	-- progress meter values sent by the process.
+	-- When a progress meter is stopped, Nothing is sent.
 	-> (forall a. Annex a -> m a)
 	-- ^ Run an annex action in the monad. Will not be used with
 	-- actions that block for a long time.
 	-> m r
-relaySerializedOutput getso sendsor runannex = go Nothing
+relaySerializedOutput getso sendsor meterreport runannex = go Nothing
   where
 	go st = loop st >>= \case
 		Right r -> return r
@@ -69,10 +75,14 @@ relaySerializedOutput getso sendsor runannex = go Nothing
 					-- output after the progress meter
 					-- is done.
 					Left _st' -> loop Nothing
-		Left EndProgressMeter -> return (Left st)
+		Left EndProgressMeter -> do
+			meterreport Nothing
+			return (Left st)
 		Left (UpdateProgressMeter n) -> do
 			case st of
-				Just meterupdate -> liftIO $ meterupdate n
+				Just meterupdate -> do
+					meterreport (Just n)
+					liftIO $ meterupdate n
 				Nothing -> noop
 			loop st
 		Left StartPrompt -> do

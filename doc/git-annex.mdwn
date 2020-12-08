@@ -1410,7 +1410,7 @@ Remotes are configured using these settings in `.git/config`.
   The format is "$amount/$timeperiod". 
 
   For example, to detect outright stalls where no data has been transferred
-  after 30 seconds: `git config annex.stalldetection "0KiB/60s"`
+  after 30 seconds: `git config annex.stalldetection "0/30s"`
 
   Or, if you have a remote on a USB drive that is normally capable of
   several megabytes per second, but has bad sectors where it gets
