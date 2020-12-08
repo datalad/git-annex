@@ -70,7 +70,7 @@ withTransferrer' minimizeprocesses mkcheck program batchmaker pool a = do
 		| not minimizeprocesses || leftinpool == 0 =
 			liftIO $ atomically $ pushTransferrerPool pool i
 		| otherwise = liftIO $ do
-			void $ forkIO $ stopTransferrer t
+			void $ forkIO $ shutdownTransferrer t
 			atomically $ pushTransferrerPool pool $ TransferrerPoolItem Nothing check
 
 {- Check if a Transferrer from the pool is still ok to be used.
@@ -80,7 +80,7 @@ checkTransferrerPoolItem program batchmaker i = case i of
 	TransferrerPoolItem (Just t) check -> ifM check
 		( return i
 		, do
-			stopTransferrer t
+			shutdownTransferrer t
 			new check
 		)
 	TransferrerPoolItem Nothing check -> new check
@@ -129,10 +129,10 @@ mkTransferrer program batchmaker = do
 		, transferrerHandle = pid
 		}
 
-{- Closing the fds will stop the transferrer, but only when it's in between
- - transfers. -}
-stopTransferrer :: Transferrer -> IO ()
-stopTransferrer t = do
+{- Closing the fds will shut down the transferrer, but only when it's
+ - in between transfers. -}
+shutdownTransferrer :: Transferrer -> IO ()
+shutdownTransferrer t = do
 	hClose $ transferrerRead t
 	hClose $ transferrerWrite t
 	void $ waitForProcess $ transferrerHandle t
