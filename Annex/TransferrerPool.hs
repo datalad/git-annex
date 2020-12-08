@@ -129,14 +129,6 @@ mkTransferrer program batchmaker = do
 		, transferrerHandle = pid
 		}
 
-{- Closing the fds will shut down the transferrer, but only when it's
- - in between transfers. -}
-shutdownTransferrer :: Transferrer -> IO ()
-shutdownTransferrer t = do
-	hClose $ transferrerRead t
-	hClose $ transferrerWrite t
-	void $ waitForProcess $ transferrerHandle t
-
 -- | Send a request to perform a transfer.
 sendRequest :: TransferRequestLevel -> Transfer -> Maybe Remote -> AssociatedFile -> Handle -> IO ()
 sendRequest level t mremote afile h = do
@@ -167,3 +159,20 @@ readResponse h = do
 
 transferKeysProtocolError :: String -> a
 transferKeysProtocolError l = error $ "transferkeys protocol error: " ++ show l
+
+{- Closing the fds will shut down the transferrer, but only when it's
+ - in between transfers. -}
+shutdownTransferrer :: Transferrer -> IO ()
+shutdownTransferrer t = do
+	hClose $ transferrerRead t
+	hClose $ transferrerWrite t
+	void $ waitForProcess $ transferrerHandle t
+
+{- Kill the transferrer, and all its child processes. -}
+killTransferrer :: Transferrer -> IO ()
+killTransferrer t = do
+	hClose $ transferrerRead t
+	hClose $ transferrerWrite t
+	interruptProcessGroupOf $ transferrerHandle t
+	threadDelay 50000 -- 0.05 second grace period
+	terminateProcess $ transferrerHandle t
