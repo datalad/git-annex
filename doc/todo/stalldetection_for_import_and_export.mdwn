@@ -1,0 +1,5 @@
+The new annex.stalldetection is used for transfers from remotes, but not
+import and export from remotes.
+
+This should be doable, but it will need the transferkeys protocol to be
+extended to cover the additional actions. --[[Joey]] 
