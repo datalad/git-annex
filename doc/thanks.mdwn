@@ -43,10 +43,16 @@ git-annex development was supported in large part by:
 * [NeuroHub](https://www.mcgill.ca/hbhl/research/platforms), funded
   by the Canada First Research Excellence Fund, awarded to McGill
   University for the Healthy Brains for Healthy Lives initiative.
-* [Datalad](http://datalad.org/), funded by the NSF, awarded to Dartmouth
-  College.
-* [DANDI](https://www.dandiarchive.org/), funded by the NIH, awarded to
-  Dartmouth College.
+* [Datalad](http://datalad.org/), funded by
+  [a NSF grant](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1912266),
+  awarded to Dartmouth College in cooperation with
+  University Magdeburg and Research Center Jülich.
+* [DANDI](https://www.dandiarchive.org/), funded by
+  [a NIH grant](https://projectreporter.nih.gov/project_info_description.cfm?aid=9981835)
+  awarded to MIT, Dartmouth College, and Kitware.
+* [ReproNim](https://repronim.org/), funded by
+  [a NIH grant](https://projectreporter.nih.gov/project_info_details.cfm?aid=8999833)
+  awarded to UMass Medical School Worcester, Dartmouth College, MIT, et al.
 * [Powderhouse Studios](https://powderhouse.org/)
 * Gioele Barabucci ENK
 
@@ -58,8 +64,8 @@ Thanks also to these folks for their support:
 <img alt="NSF logo" src="https://www.nsf.gov/images/logos/nsf1.gif">
 
 git-annex development was partially supported by the
-NSF funded [Datalad project](http://datalad.org/) and niceman
-(repronim tr&d3).
+[NSF funded](https://www.nsf.gov/awardsearch/showAward?AWD_ID=1429999)
+[Datalad project](http://datalad.org/) and niceman (repronim tr&d3).
 
 Thanks also to these folks for their support: 
 [[!inline raw=yes pages="thanks/list.2018"]] and anonymous supporters.
