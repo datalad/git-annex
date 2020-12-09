@@ -27,3 +27,5 @@ index 973f75629..0de145461 100644
 
 [[!meta author=jwodder]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

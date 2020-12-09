@@ -53,7 +53,7 @@ withTransferrer a = do
 	withTransferrer' False nocheck program nonBatchCommandMaker pool a
 
 withTransferrer'
-	:: (MonadIO m, MonadFail m, MonadMask m)
+	:: (MonadIO m, MonadMask m)
 	=> Bool
 	-- ^ When minimizeprocesses is True, only one Transferrer is left
 	-- running in the pool at a time. So if this needed to start a
@@ -67,8 +67,11 @@ withTransferrer'
 	-> m a
 withTransferrer' minimizeprocesses mkcheck program batchmaker pool a = do
 	(mi, leftinpool) <- liftIO $ atomically (popTransferrerPool pool)
-	i@(TransferrerPoolItem (Just t) check) <- liftIO $ case mi of
-		Nothing -> mkTransferrerPoolItem mkcheck =<< mkTransferrer program batchmaker
+	(i@(TransferrerPoolItem _ check), t) <- liftIO $ case mi of
+		Nothing -> do
+			t <- mkTransferrer program batchmaker
+			i <- mkTransferrerPoolItem mkcheck t
+			return (i, t)
 		Just i -> checkTransferrerPoolItem program batchmaker i
 	a t `finally` returntopool leftinpool check t i
   where
@@ -85,10 +88,10 @@ withTransferrer' minimizeprocesses mkcheck program batchmaker pool a = do
 
 {- Check if a Transferrer from the pool is still ok to be used.
  - If not, stop it and start a new one. -}
-checkTransferrerPoolItem :: FilePath -> BatchCommandMaker -> TransferrerPoolItem -> IO TransferrerPoolItem
+checkTransferrerPoolItem :: FilePath -> BatchCommandMaker -> TransferrerPoolItem -> IO (TransferrerPoolItem, Transferrer)
 checkTransferrerPoolItem program batchmaker i = case i of
 	TransferrerPoolItem (Just t) check -> ifM check
-		( return i
+		( return (i, t)
 		, do
 			shutdownTransferrer t
 			new check
@@ -97,7 +100,7 @@ checkTransferrerPoolItem program batchmaker i = case i of
   where
 	new check = do
 		t <- mkTransferrer program batchmaker
-		return $ TransferrerPoolItem (Just t) check
+		return (TransferrerPoolItem (Just t) check, t)
 
 {- Requests that a Transferrer perform a Transfer, and waits for it to
  - finish.

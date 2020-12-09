@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-12-09T16:40:24Z"
+ content="""
+Indeed, and thank you for the patch.
+
+However, MonadFail often suggests a code smell, here it's the `Just ... <-`
+pattern match which could potentially fail. In fact, it's not possible for
+it to, so I have instead made that clear in a way that the type checker
+can understand.
+"""]]
