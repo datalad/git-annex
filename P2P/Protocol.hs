@@ -2,7 +2,7 @@
  -
  - See doc/design/p2p_protocol.mdwn
  -
- - Copyright 2016-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -53,6 +53,9 @@ defaultProtocolVersion = ProtocolVersion 0
 maxProtocolVersion :: ProtocolVersion
 maxProtocolVersion = ProtocolVersion 1
 
+newtype ProtoAssociatedFile = ProtoAssociatedFile AssociatedFile
+	deriving (Show)
+
 -- | Service as used by the connect message in gitremote-helpers(1)
 data Service = UploadPack | ReceivePack
 	deriving (Show)
@@ -75,8 +78,8 @@ data Message
 	| LOCKCONTENT Key
 	| UNLOCKCONTENT
 	| REMOVE Key
-	| GET Offset AssociatedFile Key
-	| PUT AssociatedFile Key
+	| GET Offset ProtoAssociatedFile Key
+	| PUT ProtoAssociatedFile Key
 	| PUT_FROM Offset
 	| ALREADY_HAVE
 	| SUCCESS
@@ -154,7 +157,7 @@ instance Proto.Serializable Service where
 	deserialize "git-receive-pack" = Just ReceivePack
 	deserialize _ = Nothing
 
--- | Since AssociatedFile is not the last thing in a protocol line,
+-- | Since ProtoAssociatedFile is not the last thing in a protocol line,
 -- its serialization cannot contain any whitespace. This is handled
 -- by replacing whitespace with '%' (and '%' with '%%')
 --
@@ -162,11 +165,11 @@ instance Proto.Serializable Service where
 -- to avoid any unusual characters that might cause problems when it's
 -- displayed to the user.
 --
--- These mungings are ok, because an AssociatedFile is only ever displayed
+-- These mungings are ok, because a ProtoAssociatedFile is only ever displayed
 -- to the user and does not need to match a file on disk.
-instance Proto.Serializable AssociatedFile where
-	serialize (AssociatedFile Nothing) = ""
-	serialize (AssociatedFile (Just af)) = 
+instance Proto.Serializable ProtoAssociatedFile where
+	serialize (ProtoAssociatedFile (AssociatedFile Nothing)) = ""
+	serialize (ProtoAssociatedFile (AssociatedFile (Just af))) = 
 		decodeBS' $ toInternalGitPath $ encodeBS' $ concatMap esc $ fromRawFilePath af
 	  where
 		esc '%' = "%%"
@@ -175,9 +178,10 @@ instance Proto.Serializable AssociatedFile where
 			| otherwise = [c]
 	
 	deserialize s = case fromRawFilePath $ fromInternalGitPath $ toRawFilePath $ deesc [] s of
-		[] -> Just (AssociatedFile Nothing)
+		[] -> Just $ ProtoAssociatedFile $ AssociatedFile Nothing
 		f
-			| isRelative f -> Just $ AssociatedFile $ Just $ toRawFilePath f
+			| isRelative f -> Just $ ProtoAssociatedFile $ 
+				AssociatedFile $ Just $ toRawFilePath f
 			| otherwise -> Nothing
 	  where
 	  	deesc b [] = reverse b
@@ -349,14 +353,15 @@ remove key = do
 
 get :: FilePath -> Key -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
 get dest key af m p = 
-	receiveContent (Just m) p sizer storer (\offset -> GET offset af key)
+	receiveContent (Just m) p sizer storer $ \offset ->
+		GET offset (ProtoAssociatedFile af) key
   where
 	sizer = fileSize dest
 	storer = storeContentTo dest
 
 put :: Key -> AssociatedFile -> MeterUpdate -> Proto Bool
 put key af p = do
-	net $ sendMessage (PUT af key)
+	net $ sendMessage (PUT (ProtoAssociatedFile af) key)
 	r <- net receiveMessage
 	case r of
 		Just (PUT_FROM offset) -> sendContent key af offset p
@@ -461,14 +466,14 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 		ServeReadOnly -> do
 			readonlyerror
 			return ServerContinue
-	handler (PUT af key) = case servermode of
+	handler (PUT (ProtoAssociatedFile af) key) = case servermode of
 		ServeReadWrite -> handleput af key
 		ServeAppendOnly -> handleput af key
 		ServeReadOnly -> do
 			readonlyerror
 			return ServerContinue
-	handler (GET offset key af) = do
-		void $ sendContent af key offset nullMeterUpdate
+	handler (GET offset (ProtoAssociatedFile af) key) = do
+		void $ sendContent key af offset nullMeterUpdate
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanently stored it.
 		return ServerContinue
