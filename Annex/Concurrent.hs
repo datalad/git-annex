@@ -99,7 +99,7 @@ dupState = do
  - Also closes various handles in it. -}
 mergeState :: AnnexState -> Annex ()
 mergeState st = do
-	st' <- liftIO $ snd <$> run st stopCoProcesses
+	st' <- liftIO $ snd <$> run st stopNonConcurrentSafeCoProcesses
 	forM_ (M.toList $ Annex.cleanup st') $
 		uncurry addCleanup
 	Annex.Queue.mergeFrom st'

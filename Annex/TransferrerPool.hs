@@ -265,3 +265,12 @@ killTransferrer t = do
 	interruptProcessGroupOf $ transferrerHandle t
 	threadDelay 50000 -- 0.05 second grace period
 	terminateProcess $ transferrerHandle t
+
+{- Stop all transferrers in the pool. -}
+emptyTransferrerPool :: Annex ()
+emptyTransferrerPool = do
+	poolvar <- Annex.getState Annex.transferrerpool
+	pool <- liftIO $ atomically $ swapTVar poolvar []
+	liftIO $ forM_ pool $ \case
+		TransferrerPoolItem (Just t) _ -> shutdownTransferrer t
+		TransferrerPoolItem Nothing _ -> noop

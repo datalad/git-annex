@@ -1,6 +1,6 @@
 {- git-annex actions
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ module Annex.Action (
 	startup,
 	shutdown,
 	stopCoProcesses,
+	stopNonConcurrentSafeCoProcesses,
 ) where
 
 import qualified Data.Map as M
@@ -22,6 +23,7 @@ import Annex.CatFile
 import Annex.CheckAttr
 import Annex.HashObject
 import Annex.CheckIgnore
+import Annex.TransferrerPool
 
 {- Runs an action that may throw exceptions, catching and displaying them. -}
 action :: Annex () -> Annex Bool
@@ -50,9 +52,16 @@ shutdown nocommit = do
 	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
 	stopCoProcesses
 
-{- Stops all long-running git query processes. -}
+{- Stops all long-running child processes, including git query processes. -}
 stopCoProcesses :: Annex ()
 stopCoProcesses = do
+	stopNonConcurrentSafeCoProcesses
+	emptyTransferrerPool
+
+{- Stops long-running child processes that use handles that are not safe
+ - for multiple threads to access at the same time. -}
+stopNonConcurrentSafeCoProcesses :: Annex ()
+stopNonConcurrentSafeCoProcesses = do
 	catFileStop
 	checkAttrStop
 	hashObjectStop
