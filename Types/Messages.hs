@@ -77,8 +77,8 @@ data SerializedOutput
 	| JSONObject L.ByteString
 	-- ^ This is always sent, it's up to the consumer to decide if it
 	-- wants to display JSON, or human-readable messages.
-	deriving (Show, Read)
+	deriving (Show)
 
 data SerializedOutputResponse
 	= ReadyPrompt
-	deriving (Eq, Show, Read)
+	deriving (Eq, Show)

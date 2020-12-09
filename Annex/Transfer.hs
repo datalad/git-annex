@@ -34,7 +34,6 @@ import Utility.Metered
 import Utility.ThreadScheduler
 import Annex.LockPool
 import Types.Key
-import Types.Transferrer
 import qualified Types.Remote as Remote
 import Types.Concurrency
 import Annex.Concurrent.Utility

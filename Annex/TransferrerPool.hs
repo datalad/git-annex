@@ -14,7 +14,6 @@ import qualified Annex
 import Types.TransferrerPool
 import Types.Transferrer
 import Types.Transfer
-import Types.Key
 import qualified Types.Remote as Remote
 import Types.StallDetection
 import Types.Messages
@@ -24,12 +23,12 @@ import Utility.Batch
 import Utility.Metered
 import Utility.HumanTime
 import Utility.ThreadScheduler
+import qualified Utility.SimpleProtocol as Proto
 
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM hiding (check)
 import Control.Monad.IO.Class (MonadIO)
-import Text.Read (readMaybe)
 import Data.Time.Clock.POSIX
 import System.Log.Logger (debugM)
 
@@ -90,6 +89,9 @@ checkTransferrerPoolItem program batchmaker i = case i of
 	new check = do
 		t <- mkTransferrer program batchmaker
 		return (TransferrerPoolItem (Just t) check, t)
+
+data TransferRequestLevel = AnnexLevel | AssistantLevel
+	deriving (Show)
 
 {- Requests that a Transferrer perform a Transfer, and waits for it to
  - finish.
@@ -212,17 +214,28 @@ mkTransferrer program batchmaker = do
 -- | Send a request to perform a transfer.
 sendRequest :: TransferRequestLevel -> Transfer -> Maybe Remote -> AssociatedFile -> Handle -> IO ()
 sendRequest level t mremote afile h = do
-	let l = show $ TransferRequest level
-		(transferDirection t)
-		(maybe (Left (transferUUID t)) (Right . Remote.name) mremote)
-		(keyData (transferKey t))
-		afile
+	let tr = maybe
+		(TransferRemoteUUID (transferUUID t))
+		(TransferRemoteName . Remote.name)
+		mremote
+	let f = case (level, transferDirection t) of
+		(AnnexLevel, Upload) -> UploadRequest
+		(AnnexLevel, Download) -> DownloadRequest
+		(AssistantLevel, Upload) -> AssistantUploadRequest
+		(AssistantLevel, Download) -> AssistantDownloadRequest
+	let r = f tr (transferKey t) (TransferAssociatedFile afile)
+	let l = unwords $ Proto.formatMessage r
 	debugM "transfer" ("> " ++ l)
 	hPutStrLn h l
 	hFlush h
 
 sendSerializedOutputResponse :: Handle -> SerializedOutputResponse -> IO ()
-sendSerializedOutputResponse h sor = hPutStrLn h $ show sor
+sendSerializedOutputResponse h sor = do
+	let l = unwords $ Proto.formatMessage $
+		TransferSerializedOutputResponse sor
+	debugM "transfer" ("> " ++ show l)
+	hPutStrLn h l
+	hFlush h
 
 -- | Read a response to a transfer requests.
 --
@@ -232,13 +245,13 @@ readResponse :: Handle -> IO (Either SerializedOutput Bool)
 readResponse h = do
 	l <- liftIO $ hGetLine h
 	debugM "transfer" ("< " ++ l)
-	case readMaybe l of
+	case Proto.parseMessage l of
 		Just (TransferOutput so) -> return (Left so)
 		Just (TransferResult r) -> return (Right r)
 		Nothing -> transferrerProtocolError l
 
 transferrerProtocolError :: String -> a
-transferrerProtocolError l = error $ "transferrer protocol error: " ++ show l
+transferrerProtocolError l = giveup $ "transferrer protocol error: " ++ show l
 
 {- Closing the fds will shut down the transferrer, but only when it's
  - in between transfers. -}
