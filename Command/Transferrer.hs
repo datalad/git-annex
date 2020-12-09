@@ -18,6 +18,7 @@ import qualified Database.Keys
 import Annex.BranchState
 import Types.Messages
 import Annex.TransferrerPool
+import Types.Transferrer
 
 import Text.Read (readMaybe)
 

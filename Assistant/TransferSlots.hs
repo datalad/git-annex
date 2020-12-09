@@ -26,6 +26,7 @@ import Assistant.Commits
 import Assistant.Drop
 import Annex.Transfer (stallDetection)
 import Types.Transfer
+import Types.Transferrer
 import Logs.Transfer
 import Logs.Location
 import qualified Git

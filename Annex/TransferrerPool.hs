@@ -12,10 +12,10 @@ module Annex.TransferrerPool where
 import Annex.Common
 import qualified Annex
 import Types.TransferrerPool
+import Types.Transferrer
 import Types.Transfer
 import Types.Key
 import qualified Types.Remote as Remote
-import Git.Types (RemoteName)
 import Types.StallDetection
 import Types.Messages
 import Messages.Serialized
@@ -32,17 +32,6 @@ import Control.Monad.IO.Class (MonadIO)
 import Text.Read (readMaybe)
 import Data.Time.Clock.POSIX
 import System.Log.Logger (debugM)
-
-data TransferRequest = TransferRequest TransferRequestLevel Direction (Either UUID RemoteName) KeyData AssociatedFile
-	deriving (Show, Read)
-
-data TransferRequestLevel = AnnexLevel | AssistantLevel
-	deriving (Show, Read)
-
-data TransferResponse
-	= TransferOutput SerializedOutput
-	| TransferResult Bool
-	deriving (Show, Read)
 
 {- Runs an action with a Transferrer from the pool. -}
 withTransferrer :: (Transferrer -> Annex a) -> Annex a
