@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Command.Transfer where
+module Command.Transferrer where
 
 import Command
 import qualified Annex
@@ -22,7 +22,7 @@ import Annex.TransferrerPool
 import Text.Read (readMaybe)
 
 cmd :: Command
-cmd = command "transfer" SectionPlumbing "transfers content"
+cmd = command "transferrer" SectionPlumbing "transfers content"
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
@@ -104,8 +104,8 @@ runRequests readh writeh a = go Nothing Nothing
 					Just remote -> do
 						sendresult =<< a tr remote
 						go (Just remoteoruuid) mremote
-					Nothing -> transferProtocolError l
-			Nothing -> transferProtocolError l
+					Nothing -> transferrerProtocolError l
+			Nothing -> transferrerProtocolError l
 
 	sendresult b = liftIO $ do
 		hPutStrLn writeh $ show $ TransferResult b

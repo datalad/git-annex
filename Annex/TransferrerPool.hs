@@ -1,4 +1,4 @@
-{- A pool of "git-annex transfer" processes
+{- A pool of "git-annex transferrer" processes
  -
  - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
@@ -205,7 +205,7 @@ detectStalls (Just (StallDetection minsz duration)) metervar onstall = go Nothin
 mkTransferrer :: FilePath -> BatchCommandMaker -> IO Transferrer
 mkTransferrer program batchmaker = do
 	{- It runs as a batch job. -}
-	let (program', params') = batchmaker (program, [Param "transfer"])
+	let (program', params') = batchmaker (program, [Param "transferrer"])
 	{- It's put into its own group so that the whole group can be
 	 - killed to stop a transfer. -}
 	(Just writeh, Just readh, _, pid) <- createProcess
@@ -246,10 +246,10 @@ readResponse h = do
 	case readMaybe l of
 		Just (TransferOutput so) -> return (Left so)
 		Just (TransferResult r) -> return (Right r)
-		Nothing -> transferProtocolError l
+		Nothing -> transferrerProtocolError l
 
-transferProtocolError :: String -> a
-transferProtocolError l = error $ "transfer protocol error: " ++ show l
+transferrerProtocolError :: String -> a
+transferrerProtocolError l = error $ "transferrer protocol error: " ++ show l
 
 {- Closing the fds will shut down the transferrer, but only when it's
  - in between transfers. -}

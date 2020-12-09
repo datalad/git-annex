@@ -631,11 +631,11 @@ content from the key-value store.
   
   See [[git-annex-transferkey]](1) for details.
 
-* `transfer`
+* `transferrer`
   
   Used internally by git-annex to transfer content.
 
-  See [[git-annex-transfer]](1) for details.
+  See [[git-annex-transferrer]](1) for details.
 
 * `transferkeys`
   

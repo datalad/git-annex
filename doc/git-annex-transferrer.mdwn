@@ -1,10 +1,10 @@
 # NAME
 
-git-annex transfer - transfers content
+git-annex transferrer - transfers content
 
 # SYNOPSIS
 
-git annex transfer
+git annex transferrer
 
 # DESCRIPTION
 
