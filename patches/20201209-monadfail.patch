@@ -1,0 +1,12 @@
+diff --git a/Annex/TransferrerPool.hs b/Annex/TransferrerPool.hs
+index 973f75629..0de145461 100644
+--- a/Annex/TransferrerPool.hs
++++ b/Annex/TransferrerPool.hs
+@@ -28,6 +28,7 @@ import Utility.ThreadScheduler
+ import Control.Concurrent
+ import Control.Concurrent.Async
+ import Control.Concurrent.STM hiding (check)
++import Control.Monad.Fail (MonadFail)
+ import Control.Monad.IO.Class (MonadIO)
+ import Text.Read (readMaybe)
+ import Data.Time.Clock.POSIX
