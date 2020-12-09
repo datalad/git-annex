@@ -12,6 +12,7 @@ module Utility.Format (
 	formatContainsVar,
 	decode_c,
 	encode_c,
+	encode_c',
 	prop_encode_c_decode_c_roundtrip
 ) where
 
@@ -52,7 +53,7 @@ format f vars = concatMap expand f
   where
 	expand (Const s) = s
 	expand (Var name j esc)
-		| esc = justify j $ encode_c_strict $ getvar name
+		| esc = justify j $ encode_c' isSpace $ getvar name
 		| otherwise = justify j $ getvar name
 	getvar name = fromMaybe "" $ M.lookup name vars
 	justify UnJustified s        = s
@@ -162,10 +163,7 @@ decode_c s = unescape ("", s)
 encode_c :: String -> FormatString
 encode_c = encode_c' (const False)
 
-{- Encodes more strictly, including whitespace. -}
-encode_c_strict :: String -> FormatString
-encode_c_strict = encode_c' isSpace
-
+{- Encodes special characters, as well as any matching the predicate. -}
 encode_c' :: (Char -> Bool) -> String -> FormatString
 encode_c' p = concatMap echar
   where
@@ -183,8 +181,8 @@ encode_c' p = concatMap echar
 		| ord c < 0x20 = e_asc c -- low ascii
 		| ord c >= 256 = e_utf c -- unicode
 		| ord c > 0x7E = e_asc c -- high ascii
-		| p c          = e_asc c -- unprintable ascii
-		| otherwise    = [c]     -- printable ascii
+		| p c          = e_asc c
+		| otherwise    = [c]
 	-- unicode character is decomposed to individual Word8s,
 	-- and each is shown in octal
 	e_utf c = showoctal =<< (Codec.Binary.UTF8.String.encode [c] :: [Word8])
