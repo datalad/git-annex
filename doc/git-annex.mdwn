@@ -631,9 +631,15 @@ content from the key-value store.
   
   See [[git-annex-transferkey]](1) for details.
 
+* `transfer`
+  
+  Used internally by git-annex to transfer content.
+
+  See [[git-annex-transfer]](1) for details.
+
 * `transferkeys`
   
-  Used internally by the assistant.
+  Used internally by old versions of the assistant.
 
   See [[git-annex-transferkey]](1) for details.
 

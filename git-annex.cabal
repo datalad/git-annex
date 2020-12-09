@@ -794,6 +794,7 @@ Executable git-annex
     Command.Test
     Command.TestRemote
     Command.TransferInfo
+    Command.Transfer
     Command.TransferKey
     Command.TransferKeys
     Command.Trust

@@ -1,6 +1,6 @@
 # NAME
 
-git-annex transferkeys - transfers keys
+git-annex transferkeys - transfers keys (deprecated)
 
 # SYNOPSIS
 
@@ -8,7 +8,10 @@ git annex transferkeys
 
 # DESCRIPTION
 
-This plumbing-level command is used to transfer data.
+This plumbing-level command is used to transfer data, by the assistant
+in git-annex version 8.20201127 and older. It is still included only
+to prevent breakage during upgrades.
+
 It is a long-running process, which is fed instructions about the keys
 to transfer using an internal stdio protocol, which is
 intentionally not documented (as it may change at any time).

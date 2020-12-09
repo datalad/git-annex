@@ -35,6 +35,7 @@ import qualified Command.FromKey
 import qualified Command.RegisterUrl
 import qualified Command.SetKey
 import qualified Command.DropKey
+import qualified Command.Transfer
 import qualified Command.TransferKey
 import qualified Command.TransferKeys
 import qualified Command.SetPresentKey
@@ -177,6 +178,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.RegisterUrl.cmd
 	, Command.SetKey.cmd
 	, Command.DropKey.cmd
+	, Command.Transfer.cmd
 	, Command.TransferKey.cmd
 	, Command.TransferKeys.cmd
 	, Command.SetPresentKey.cmd

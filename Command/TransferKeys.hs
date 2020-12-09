@@ -1,28 +1,31 @@
-{- git-annex command
+{- git-annex command, used internally by assistant in version
+ - 8.20201127 and older and provided only to avoid upgrade breakage.
+ - Remove at some point when such old versions of git-annex are unlikely
+ - to be running any longer.
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 module Command.TransferKeys where
 
 import Command
-import qualified Annex
 import Annex.Content
 import Logs.Location
 import Annex.Transfer
 import qualified Remote
 import Utility.SimpleProtocol (dupIoHandles)
+import Git.Types (RemoteName)
 import qualified Database.Keys
 import Annex.BranchState
-import Types.Messages
-import Annex.TransferrerPool
 
-import Text.Read (readMaybe)
+data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
 cmd :: Command
-cmd = command "transferkeys" SectionPlumbing "transfers keys"
+cmd = command "transferkeys" SectionPlumbing "transfers keys (deprecated)"
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
@@ -32,31 +35,10 @@ start :: CommandStart
 start = do
 	enableInteractiveBranchAccess
 	(readh, writeh) <- liftIO dupIoHandles
-	Annex.setOutput $ SerializedOutput
-		(\v -> hPutStrLn writeh (show (TransferOutput v)) >> hFlush writeh)
-		(readMaybe <$> hGetLine readh)
 	runRequests readh writeh runner
 	stop
   where
-	runner (TransferRequest AnnexLevel direction _ keydata file) remote
-		| direction == Upload =
-			-- This is called by eg, Annex.Transfer.upload,
-			-- so caller is responsible for doing notification,
-			-- and for retrying.
-			upload' (Remote.uuid remote) key file noRetry
-				(Remote.action . Remote.storeKey remote key file)
-				noNotification
-		| otherwise =
-			-- This is called by eg, Annex.Transfer.download
-			-- so caller is responsible for doing notification
-			-- and for retrying.
-			let go p = getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t -> do
-				Remote.verifiedAction (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p)
-			in download' (Remote.uuid remote) key file noRetry go 
-				noNotification
-	  where
-		key = mkKey (const keydata)
-	runner (TransferRequest AssistantLevel direction _ keydata file) remote
+	runner (TransferRequest direction remote key file)
 		| direction == Upload = notifyTransfer direction file $
 			upload' (Remote.uuid remote) key file stdRetry $ \p -> do
 				tryNonAsync (Remote.storeKey remote key file p) >>= \case
@@ -79,34 +61,82 @@ start = do
 					-- not old cached data.
 					Database.Keys.closeDb			
 					return r
-	  where
-		key = mkKey (const keydata)
 
 runRequests
 	:: Handle
 	-> Handle
-	-> (TransferRequest -> Remote -> Annex Bool)
+	-> (TransferRequest -> Annex Bool)
 	-> Annex ()
-runRequests readh writeh a = go Nothing Nothing
+runRequests readh writeh a = do
+	liftIO $ hSetBuffering readh NoBuffering
+	go =<< readrequests
   where
-	go lastremoteoruuid lastremote = unlessM (liftIO $ hIsEOF readh) $ do
-		l <- liftIO $ hGetLine readh
-		case readMaybe l of
-			Just tr@(TransferRequest _ _ remoteoruuid _ _) -> do
-				-- Often the same remote will be used
-				-- repeatedly, so cache the last one to
-				-- avoid looking up repeatedly.
-				mremote <- if lastremoteoruuid == Just remoteoruuid
-					then pure lastremote
-					else eitherToMaybe <$> Remote.byName'
-						(either fromUUID id remoteoruuid)
+	go (d:rn:k:f:rest) = do
+		case (deserialize d, deserialize rn, deserialize k, deserialize f) of
+			(Just direction, Just remotename, Just key, Just file) -> do
+				mremote <- Remote.byName' remotename
 				case mremote of
-					Just remote -> do
-						sendresult =<< a tr remote
-						go (Just remoteoruuid) mremote
-					Nothing -> transferKeysProtocolError l
-			Nothing -> transferKeysProtocolError l
+					Left _ -> sendresult False
+					Right remote -> sendresult =<< a
+						(TransferRequest direction remote key file)
+			_ -> sendresult False
+		go rest
+	go [] = noop
+	go [""] = noop
+	go v = error $ "transferkeys protocol error: " ++ show v
 
+	readrequests = liftIO $ split fieldSep <$> hGetContents readh
 	sendresult b = liftIO $ do
-		hPutStrLn writeh $ show $ TransferResult b
+		hPutStrLn writeh $ serialize b
 		hFlush writeh
+
+sendRequest :: Transfer -> TransferInfo -> Handle -> IO ()
+sendRequest t tinfo h = do
+	hPutStr h $ intercalate fieldSep
+		[ serialize (transferDirection t)
+		, maybe (serialize ((fromUUID (transferUUID t)) :: String))
+			(serialize . Remote.name)
+			(transferRemote tinfo)
+		, serialize (transferKey t)
+		, serialize (associatedFile tinfo)
+		, "" -- adds a trailing null
+		]
+	hFlush h
+
+readResponse :: Handle -> IO Bool
+readResponse h = fromMaybe False . deserialize <$> hGetLine h
+
+fieldSep :: String
+fieldSep = "\0"
+
+class TCSerialized a where
+	serialize :: a -> String
+	deserialize :: String -> Maybe a
+
+instance TCSerialized Bool where
+	serialize True = "1"
+	serialize False = "0"
+	deserialize "1" = Just True
+	deserialize "0" = Just False
+	deserialize _ = Nothing
+
+instance TCSerialized Direction where
+	serialize Upload = "u"
+	serialize Download = "d"
+	deserialize "u" = Just Upload
+	deserialize "d" = Just Download
+	deserialize _ = Nothing
+
+instance TCSerialized AssociatedFile where
+	serialize (AssociatedFile (Just f)) = fromRawFilePath f
+	serialize (AssociatedFile Nothing) = ""
+	deserialize "" = Just (AssociatedFile Nothing)
+	deserialize f = Just (AssociatedFile (Just (toRawFilePath f)))
+
+instance TCSerialized RemoteName where
+	serialize n = n
+	deserialize n = Just n
+
+instance TCSerialized Key where
+	serialize = serializeKey
+	deserialize = deserializeKey

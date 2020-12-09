@@ -1,4 +1,4 @@
-{- A pool of "git-annex transferkeys" processes available for use
+{- A pool of "git-annex transfer" processes available for use
  -
  - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -

@@ -1,4 +1,4 @@
-{- A pool of "git-annex transferkeys" processes
+{- A pool of "git-annex transfer" processes
  -
  - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
@@ -197,12 +197,12 @@ detectStalls (Just (StallDetection minsz duration)) metervar onstall = go Nothin
 						then onstall
 						else go (Just sofar)
 
-{- Starts a new git-annex transferkeys process, setting up handles
+{- Starts a new git-annex transfer process, setting up handles
  - that will be used to communicate with it. -}
 mkTransferrer :: FilePath -> BatchCommandMaker -> IO Transferrer
 mkTransferrer program batchmaker = do
 	{- It runs as a batch job. -}
-	let (program', params') = batchmaker (program, [Param "transferkeys"])
+	let (program', params') = batchmaker (program, [Param "transfer"])
 	{- It's put into its own group so that the whole group can be
 	 - killed to stop a transfer. -}
 	(Just writeh, Just readh, _, pid) <- createProcess
@@ -243,10 +243,10 @@ readResponse h = do
 	case readMaybe l of
 		Just (TransferOutput so) -> return (Left so)
 		Just (TransferResult r) -> return (Right r)
-		Nothing -> transferKeysProtocolError l
+		Nothing -> transferProtocolError l
 
-transferKeysProtocolError :: String -> a
-transferKeysProtocolError l = error $ "transferkeys protocol error: " ++ show l
+transferProtocolError :: String -> a
+transferProtocolError l = error $ "transfer protocol error: " ++ show l
 
 {- Closing the fds will shut down the transferrer, but only when it's
  - in between transfers. -}

@@ -1,0 +1,24 @@
+# NAME
+
+git-annex transfer - transfers content
+
+# SYNOPSIS
+
+git annex transfer
+
+# DESCRIPTION
+
+This plumbing-level command is used to transfer data.
+It is a long-running process, which is fed instructions about
+what to transfer using an internal stdio protocol, which is
+intentionally not documented (as it may change at any time).
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
