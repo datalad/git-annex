@@ -1,6 +1,6 @@
 {- Simple line-based protocols.
  -
- - Copyright 2013-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2020 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -19,12 +19,15 @@ module Utility.SimpleProtocol (
 	parse1,
 	parse2,
 	parse3,
+	parse4,
+	parse5,
 	dupIoHandles,
 	getProtocolLine,
 ) where
 
 import Data.Char
 import GHC.IO.Handle
+import Text.Read
 
 import Common
 
@@ -52,11 +55,15 @@ instance Serializable [Char] where
 	serialize = id
 	deserialize = Just
 
+instance Serializable Integer where
+	serialize = show
+	deserialize = readMaybe
+
 instance Serializable ExitCode where
 	serialize ExitSuccess = "0"
 	serialize (ExitFailure n) = show n
 	deserialize "0" = Just ExitSuccess
-	deserialize s = ExitFailure <$> readish s
+	deserialize s = ExitFailure <$> readMaybe s
 
 {- Parsing the parameters of messages. Using the right parseN ensures
  - that the string is split into exactly the requested number of words,
@@ -85,6 +92,21 @@ parse3 mk s = mk <$> deserialize p1 <*> deserialize p2 <*> deserialize p3
   where
 	(p1, rest) = splitWord s
 	(p2, p3) = splitWord rest
+
+parse4 :: (Serializable p1, Serializable p2, Serializable p3, Serializable p4) => (p1 -> p2 -> p3 -> p4 -> a) -> Parser a
+parse4 mk s = mk <$> deserialize p1 <*> deserialize p2 <*> deserialize p3 <*> deserialize p4
+  where
+	(p1, rest) = splitWord s
+	(p2, rest') = splitWord rest
+	(p3, p4) = splitWord rest'
+
+parse5 :: (Serializable p1, Serializable p2, Serializable p3, Serializable p4, Serializable p5) => (p1 -> p2 -> p3 -> p4 -> p5 -> a) -> Parser a
+parse5 mk s = mk <$> deserialize p1 <*> deserialize p2 <*> deserialize p3 <*> deserialize p4 <*> deserialize p5
+  where
+	(p1, rest) = splitWord s
+	(p2, rest') = splitWord rest
+	(p3, rest'') = splitWord rest'
+	(p4, p5) = splitWord rest''
 
 splitWord :: String -> (String, String)
 splitWord = separate isSpace
