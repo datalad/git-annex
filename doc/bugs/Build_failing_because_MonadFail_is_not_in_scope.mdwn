@@ -1,0 +1,29 @@
+As of commit b9c1aa925, trying to build git-annex on either Ubuntu or macOS fails with:
+
+```
+Annex/TransferrerPool.hs:56:24: error:
+    Not in scope: type constructor or class `MonadFail'
+   |
+   |         :: (MonadIO m, MonadFail m, MonadMask m)
+   |                        ^^^^^^^^^
+```
+
+This can be fixed with the following patch:
+
+```
+diff --git a/Annex/TransferrerPool.hs b/Annex/TransferrerPool.hs
+index 973f75629..0de145461 100644
+--- a/Annex/TransferrerPool.hs
++++ b/Annex/TransferrerPool.hs
+@@ -28,6 +28,7 @@ import Utility.ThreadScheduler
+ import Control.Concurrent
+ import Control.Concurrent.Async
+ import Control.Concurrent.STM hiding (check)
++import Control.Monad.Fail (MonadFail)
+ import Control.Monad.IO.Class (MonadIO)
+ import Text.Read (readMaybe)
+ import Data.Time.Clock.POSIX
+```
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]
