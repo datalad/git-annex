@@ -1,0 +1,6 @@
+This should be rejected, but currently succeeds:
+
+	git annex initremote d type=directory directory=../d exporttree=yes importtree=yes encryption=shared
+
+There is code in adjustExportImportRemoteType, and I remember it used to
+work. --[[Joey]]
