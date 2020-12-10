@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-12-10T21:49:03Z"
+ content="""
+Answer first: Re-running export will skip over things that it knows
+it already exported before, so should be efficient.
+
+Yes, it seems this is the same as the old issue where 2 files with the same
+key being sent to a remote concurrently failed like this. Fixed back then by
+skipping the second, redundant transfer. But in this case, since there are
+2 files on the remote, the data needs to be sent twice. So it probably just
+shouldn't guard against redundant transfers when exporting. Or if it does,
+it should use the ExportLocation, not the Key as what coulds as redundant..
+I will have to look at this later though.
+"""]]
