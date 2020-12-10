@@ -1,0 +1,96 @@
+<details>
+<summary>git annex version</summary> 
+
+```shell
+git-annex version: 8.20201127-ga19b48c
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+</details>
+
+<details>
+<summary>git annex info  on the repo</summary> 
+
+```shell
+trusted repositories: 0
+semitrusted repositories: 5
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        4d79a724-9e8c-4cce-b030-f712eed3e131 -- snastase@scotty.pni.Princeton.EDU:/mnt/bucket/labs/hasson/snastase/smaug/narratives/derivatives/fmriprep
+        5f96664f-23ba-4c25-8e75-9ca24fcd46f5 -- nastase@smaug:/mnt/datasets/incoming/nastase/narratives/derivatives/fmriprep [here]
+        bf6f56f3-f6b7-4df8-9898-a4226dc71400 -- [fcp-indi]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 34.8 terabytes (+1 megabyte reserved)
+local annex keys: 40135
+local annex size: 1.83 terabytes
+annexed files in working tree: 50622
+size of annexed files in working tree: 1.81 terabytes
+bloom filter size: 32 mebibytes (8% full)
+backend usage: 
+        MD5E: 50622
+```
+</details>
+
+```
+$ git show git-annex:remote.log | grep indi
+bf6f56f3-f6b7-4df8-9898-a4226dc71400 autoenable=true bucket=fcp-indi datacenter=US encryption=none exporttree=yes fileprefix=data/Projects/narratives/derivatives/fmriprep/ host=s3.amazonaws.com name=fcp-indi partsize=1GiB port=80 public=yes publicurl=https://s3.amazonaws.com/fcp-indi storageclass=STANDARD type=S3 versioning=yes timestamp=1607616182.971041s
+```
+
+the invocation `git annex export --to "$srname" --jobs 6 master` within our [script](https://github.com/datalad/datalad/issues/5227) ended with `git-annex: export: 360 failed`.  Scrolling back through the terminal (in screen) session  I saw
+
+```
+export fcp-indi sub-345/func/sub-345_task-notthefallintact_space-MNI152NLin2009cAsym_res-native_desc-aseg_dseg.nii.gz ok
+export fcp-indi sub-345/func/sub-345_task-notthefallintact_space-MNI152NLin2009cAsym_res-native_desc-preproc_bold.json (transfer already in progress, or unable to take transfer lock) failed
+export fcp-indi sub-345/anat/sub-345_hemi-L_pial.surf.gii ok
+```
+
+and alike for a few other files (until ran out of history, output was not `tee`-ed into a file).
+
+looking at that specific file
+
+```
+/mnt/datasets/incoming/nastase/narratives/derivatives/fmriprep$ ls -l sub-345/func/sub-345_task-notthefallintact_space-MNI152NLin2009cAsym_res-native_desc-preproc_bold.json
+lrwxrwxrwx 1 nastase nastase 126 Jul 16 16:33 sub-345/func/sub-345_task-notthefallintact_space-MNI152NLin2009cAsym_res-native_desc-preproc_bold.json -> ../../.git/annex/objects/45/xZ/MD5E-s87--c4e21e8310450e816749d8bd7541292f.json/MD5E-s87--c4e21e8310450e816749d8bd7541292f.json
+
+```
+
+and the content (key) is not unique: there is a good number of files for that key:
+
+
+```
+$ find -lname *MD5E-s87--c4e21e8310450e816749d8bd7541292f.json | nl | tail
+   215  ./sub-343/func/sub-343_task-notthefallintact_space-MNI152NLin6Asym_res-native_desc-preproc_bold.json
+   216  ./sub-343/func/sub-343_task-notthefallintact_space-T1w_desc-preproc_bold.json
+   217  ./sub-344/func/sub-344_task-notthefallintact_desc-preproc_bold.json
+   218  ./sub-344/func/sub-344_task-notthefallintact_space-MNI152NLin2009cAsym_res-native_desc-preproc_bold.json
+   219  ./sub-344/func/sub-344_task-notthefallintact_space-MNI152NLin6Asym_res-native_desc-preproc_bold.json
+   220  ./sub-344/func/sub-344_task-notthefallintact_space-T1w_desc-preproc_bold.json
+   221  ./sub-345/func/sub-345_task-notthefallintact_desc-preproc_bold.json
+   222  ./sub-345/func/sub-345_task-notthefallintact_space-MNI152NLin2009cAsym_res-native_desc-preproc_bold.json
+   223  ./sub-345/func/sub-345_task-notthefallintact_space-MNI152NLin6Asym_res-native_desc-preproc_bold.json
+   224  ./sub-345/func/sub-345_task-notthefallintact_space-T1w_desc-preproc_bold.json
+```
+
+so I guess it is the reason for the "issue".
+
+Note: some of those "duplicate"s were successfully exported, but not the one for which error was reported:
+
+```
+nastase@smaug:/mnt/datasets/incoming/nastase/narratives/derivatives/fmriprep$ s3cmd ls s3://fcp-indi/data/Projects/narratives/derivatives/fmriprep/sub-343/func/sub-343_task-notthefallintact_space-MNI152NLin6Asym_res-native_desc-preproc_bold.json
+2020-12-10 18:24        87   s3://fcp-indi/data/Projects/narratives/derivatives/fmriprep/sub-343/func/sub-343_task-notthefallintact_space-MNI152NLin6Asym_res-native_desc-preproc_bold.json
+
+nastase@smaug:/mnt/datasets/incoming/nastase/narratives/derivatives/fmriprep$ s3cmd ls s3://fcp-indi/data/Projects/narratives/derivatives/fmriprep/sub-345/func/sub-345_task-notthefallintact_space-MNI152NLin2009cAsym_res-native_desc-preproc_bold.json
+<no output was produced>
+```
+
+Besides reporting the issue, I also have a question:  could I just rerun `export` and it should be "safe/efficient" (not reupload what was already uploaded, thus producing DeleteMarkers, new versionIds etc)?  or I would need to manually fixup somehow to avoid heavy/lengthy re-upload?
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
