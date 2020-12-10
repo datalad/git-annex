@@ -32,10 +32,7 @@ start :: CommandStart
 start = do
 	enableInteractiveBranchAccess
 	(readh, writeh) <- liftIO dupIoHandles
-	let outputwriter v = do
-		hPutStrLn writeh $
-			unwords $ Proto.formatMessage $ TransferOutput v
-		hFlush writeh
+	let outputwriter = sendTransferResponse writeh . TransferOutput
 	let outputresponsereader = do
 		l <- hGetLine readh
 		return $ case Proto.parseMessage l of
@@ -114,7 +111,9 @@ runRequests readh writeh a = go Nothing Nothing
 					Nothing -> transferrerProtocolError l
 			Nothing -> transferrerProtocolError l
 
-	sendresult b = liftIO $ do
-		hPutStrLn writeh $
-			unwords $ Proto.formatMessage $ TransferResult b
-		hFlush writeh
+	sendresult = liftIO . sendTransferResponse writeh . TransferResult
+
+sendTransferResponse :: Handle -> TransferResponse -> IO ()
+sendTransferResponse h r = do
+	hPutStrLn h $ unwords $ Proto.formatMessage r
+	hFlush h
