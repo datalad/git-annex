@@ -97,42 +97,33 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 				)
 		checkconfig exportSupported exportTree exportTreeField $
 			checkconfig importSupported importTree importTreeField $
-				if importTree pc && not (exportTree pc)
-					then giveup "cannot enable importtree=yes without also enabling exporttree=yes"
-					else setup rt st mu cp c gc
+				setup rt st mu cp c gc
 
--- | Adjust a remote to support exporttree=yes and importree=yes.
---
--- Note that all remotes with importree=yes also have exporttree=yes.
+-- | Adjust a remote to support exporttree=yes and/or importree=yes.
 adjustExportImport :: Remote -> RemoteStateHandle -> Annex Remote
-adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) of
-	Nothing -> return $ notexport r
-	Just True -> ifM (isExportSupported r)
-		( do
-			exportdbv <- prepexportdb
-			r' <- isexport exportdbv
-			if importTree (config r)
-				then isimport r' exportdbv
-				else return r'
-		, return $ notexport r
-		)
-	Just False -> return $ notexport r
+adjustExportImport rmt rs = do
+	dbv <- prepdbv
+	case (exportTree (config rmt), importTree (config rmt)) of
+		(True, True) -> isimport dbv =<< isexport dbv rmt
+		(True, False) -> notimport =<< isexport dbv rmt
+		(False, True) -> notexport =<< isimport dbv rmt
+		(False, False) -> notimport =<< notexport rmt
   where
-	notexport r' = notimport r'
+	notexport r = return $ r
 		{ exportActions = exportUnsupported
-		, remotetype = (remotetype r')
+		, remotetype = (remotetype r)
 			{ exportSupported = exportUnsupported
 			}
 		}
 	
-	notimport r' = r'
+	notimport r = return $ r
 		{ importActions = importUnsupported
-		, remotetype = (remotetype r')
+		, remotetype = (remotetype r)
 			{ importSupported = importUnsupported
 			}
 		}
 	
-	isimport r' exportdbv = do
+	isimport dbv r = do
 		ciddbv <- prepciddb
 
 		let keycids k = do
@@ -141,27 +132,27 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 
 		let checkpresent k loc = 
 			checkPresentExportWithContentIdentifier
-				(importActions r')
+				(importActions r)
 				k loc 
 				=<< keycids k
 
-		return $ r'
-			{ exportActions = (exportActions r')
+		return $ r
+			{ exportActions = (exportActions r)
 				{ storeExport = \f k loc p -> do
 					db <- getciddb ciddbv
-					exportdb <- getexportdb exportdbv
+					exportdb <- getexportdb r dbv
 					oldks <- liftIO $ Export.getExportTreeKey exportdb loc
 					oldcids <- liftIO $ concat
 						<$> mapM (ContentIdentifier.getContentIdentifiers db rs) oldks
-					newcid <- storeExportWithContentIdentifier (importActions r') f k loc oldcids p
+					newcid <- storeExportWithContentIdentifier (importActions r) f k loc oldcids p
 					withExclusiveLock gitAnnexContentIdentifierLock $ do
 						liftIO $ ContentIdentifier.recordContentIdentifier db rs newcid k
 						liftIO $ ContentIdentifier.flushDbQueue db
 					recordContentIdentifier rs newcid k
 				, removeExport = \k loc ->
-					removeExportWithContentIdentifier (importActions r') k loc
+					removeExportWithContentIdentifier (importActions r) k loc
 						=<< keycids k
-				, removeExportDirectory = removeExportDirectoryWhenEmpty (importActions r')
+				, removeExportDirectory = removeExportDirectoryWhenEmpty (importActions r)
 				-- renameExport is optional, and the
 				-- remote's implementation may
 				-- lose modifications to the file
@@ -170,16 +161,21 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 				, renameExport = \_ _ _ -> return Nothing
 				, checkPresentExport = checkpresent
 				}
-			, checkPresent = if appendonly r'
-				then checkPresent r'
+			, checkPresent = if appendonly r
+				then checkPresent r
 				else \k -> anyM (checkpresent k)
-					=<< getexportlocs exportdbv k
+					=<< getexportlocs r dbv k
 			, getInfo = do
-				is <- getInfo r'
+				is <- getInfo r
 				return (is++[("import", "yes")])
 			}
+	
+	isexport dbv r = ifM (isExportSupported r)
+		( isexport' dbv r
+		, notexport r
+		)
 
-	isexport dbv = return $ r
+	isexport' dbv r = return $ r
 		-- Storing a key on an export could be implemented,
 		-- but it would perform unncessary work
 		-- when another repository has already stored the
@@ -197,7 +193,7 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 		-- so don't need to use retrieveExport. However,
 		-- fall back to it if retrieveKeyFile fails.
 		, retrieveKeyFile = \k af dest p ->
-			let retrieveexport = retrieveKeyFileFromExport dbv k af dest p
+			let retrieveexport = retrieveKeyFileFromExport r dbv k af dest p
 			in if appendonly r
 				then retrieveKeyFile r k af dest p
 					`catchNonAsync` const retrieveexport
@@ -230,7 +226,7 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 		, checkPresent = if appendonly r
 			then checkPresent r
 			else \k -> anyM (checkPresentExport (exportActions r) k)
-				=<< getexportlocs dbv k
+				=<< getexportlocs r dbv k
 		-- checkPresent from an export is more expensive
 		-- than otherwise, so not cheap. Also, this
 		-- avoids things that look at checkPresentCheap and
@@ -251,7 +247,7 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 		dbtv <- liftIO newEmptyTMVarIO
 		return (dbtv, lcklckv)
 	
-	prepexportdb = do
+	prepdbv = do
 		lcklckv <- liftIO newEmptyTMVarIO
 		dbv <- liftIO newEmptyTMVarIO
 		exportinconflict <- liftIO $ newTVarIO False
@@ -281,14 +277,14 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 	-- After opening the database, check if the export log is
 	-- different than the database, and update the database, to notice
 	-- when an export has been updated from another repository.
-	getexportdb (dbv, lcklckv, exportinconflict) = 
+	getexportdb r (dbv, lcklckv, exportinconflict) = 
 		liftIO (atomically (tryReadTMVar dbv)) >>= \case
 			Just db -> return db
 			-- let only one thread take the lock
 			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
 				( do
 					db <- Export.openDb (uuid r)
-					updateexportdb db exportinconflict
+					updateexportdb db exportinconflict r
 					liftIO $ atomically $ putTMVar dbv db
 					return db
 				-- loser waits for winner to open the db and
@@ -298,7 +294,7 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 
 	getexportinconflict (_, _, v) = v
 
-	updateexportdb db exportinconflict =
+	updateexportdb db exportinconflict r =
 		Export.updateExportTreeFromLog db >>= \case
 			Export.ExportUpdateSuccess -> return ()
 			Export.ExportUpdateConflict -> do
@@ -306,13 +302,13 @@ adjustExportImport r rs = case getRemoteConfigValue exportTreeField (config r) o
 				liftIO $ atomically $
 					writeTVar exportinconflict True
 		
-	getexportlocs dbv k = do
-		db <- getexportdb dbv
+	getexportlocs r dbv k = do
+		db <- getexportdb r dbv
 		liftIO $ Export.getExportTree db k
 
-	retrieveKeyFileFromExport dbv k _af dest p = ifM (isVerifiable k)
+	retrieveKeyFileFromExport r dbv k _af dest p = ifM (isVerifiable k)
 		( do
-			locs <- getexportlocs dbv k
+			locs <- getexportlocs r dbv k
 			case locs of
 				[] -> ifM (liftIO $ atomically $ readTVar $ getexportinconflict dbv)
 					( giveup "unknown export location, likely due to the export conflict"
