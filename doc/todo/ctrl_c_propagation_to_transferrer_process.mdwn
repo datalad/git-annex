@@ -1,0 +1,23 @@
+When annex.stalldetection is set, and git-annex transferrer is used,
+a ctrl-c does not propagate to the transferrer process.
+
+The result is that, the next time the process sends a message to its output
+handle (eg a progress update), it gets a SIGINT, and so an ugly message is
+output to the console, after the user was returned to the prompt.
+
+The SIGINT is not propagated because a child process group is used for
+git-annex transferrer, in order to let child processes of it be killed
+along with it when a stall is detected.
+
+Maybe what's needed is a SIGINT handler in the main git-annex that
+signals all the transferrer processes with SIGINT and waits on them
+exiting. Unsure if that can be implemented in haskell?
+
+Or, note that it would suffice to remove the child process group stuff,
+if we assume that all child processes started by git-annex transferrer are
+talking to a pipe, and will output something, eg a progress update,
+and so receive a SIGPIPE once the transferrer process has caught the
+SIGINT and exited.
+[[todo/stalldetection_does_not_work_for_rsync_and_gcrypt]] would be a
+prereq for this approach. But, might there be long-running child processes
+that are not on a pipe, and that need to be shutdown on a stall, too?
