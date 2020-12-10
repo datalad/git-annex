@@ -33,7 +33,7 @@ we produce the manifest file:
 Then this can be used to verify an external fileset with the following
 command:
 
-    hashdeep -k manifest.txt -a -vv -e /mnt/ > result
+    hashdeep -k manifest.txt -a -vv -e -r /mnt/ > result
 
 This will create a listing of every file that was moved, that is
 missing and so on. I have used this to audit corrupted files on my
