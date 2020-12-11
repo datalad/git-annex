@@ -1,0 +1,17 @@
+[[!comment format=sh
+ username="muks@6bded6d879d80c43cdf4893fabb785876eea0a7b"
+ nickname="muks"
+ avatar="http://cdn.libravatar.org/avatar/2bb3204407446ec2adfe5c41be26cc1e"
+ subject="comment 1"
+ date="2020-12-11T02:18:29Z"
+ content="""
+# What I want is achieved by this longer command:
+
+ln -s $(realpath --relative-to=. $(readlink -m $FILE_SRC)) $FILE_DEST && \
+     git add $FILE_DEST
+
+# Instead, a git annex command to perform the above with
+# the following syntax would be useful:
+
+git annex ln $FILE_SRC $FILE_DEST
+"""]]
