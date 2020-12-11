@@ -1,0 +1,5 @@
+Unsure why, but when annex.stalldetection is set, the progress info it
+communicates results in a progress display w/o ETA sometimes.
+In particular, it seems to happen downloading from ssh, when the key does
+not have a size. Normally, the size is learned during download and used in
+the progress bar, but somehow this does not happen. --[[Joey]]
