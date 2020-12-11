@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 2"
+ date="2020-12-11T15:29:26Z"
+ content="""
+> I want a command that creates B: git annex ln A B
+
+> Apologies if there is already such a git annex command. There
+> doesn't seem to be a direct equivalent in cp's arguments or rsync's
+> arguments to fixup the relative link path while copying it, and it
+> needs a longer series of piped commands.
+
+I'm not aware of a git-annex command that does this, but you can just
+copy the link and `git annex add` it.  git-annex will fix up the
+levels if needed.
+
+```
+$ cp -d d/foo.txt bar.txt
+$ git annex add bar.txt
+
+$ git show :d/foo.txt
+../.git/annex/objects/8Z/1J/SHA256-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c/SHA256-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c
+$ git show :bar.txt
+.git/annex/objects/8Z/1J/SHA256-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c/SHA256-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c
+```
+
+"""]]
