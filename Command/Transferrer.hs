@@ -22,7 +22,7 @@ import Types.Transferrer
 import qualified Utility.SimpleProtocol as Proto
 
 cmd :: Command
-cmd = command "transferrer" SectionPlumbing "transfers content"
+cmd = noCommit $ command "transferrer" SectionPlumbing "transfers content"
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
