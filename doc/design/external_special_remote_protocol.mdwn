@@ -272,7 +272,10 @@ handling a request.
 * `PROGRESS Int`  
   Indicates the current progress of the transfer (in bytes). May be repeated
   any number of times during the transfer process, but it's wasteful to
-  update the progress until at least another 1% of the file has been sent.
+  update the progress too frequently. Bear in mind that this is used both
+  to display a progress meter for the user, and for annex.stalldetection.
+  So, sending an update on each 1% of the file may not be frequent enough,
+  as it could appear to be a stall when transferring a large file.  
   This is highly recommended for STORE. (It is optional but good for RETRIEVE.)  
   (git-annex does not send a reply to this message.)
 * `DIRHASH Key`  
