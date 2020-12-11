@@ -68,9 +68,9 @@ newMessageState = do
 data SerializedOutput
 	= OutputMessage S.ByteString
 	| OutputError String
-	| BeginProgressMeter (Maybe TotalSize)
-	| UpdateProgressMeter BytesProcessed
+	| BeginProgressMeter
 	| UpdateProgressMeterTotalSize TotalSize
+	| UpdateProgressMeter BytesProcessed
 	| EndProgressMeter
 	| BeginPrompt
 	| EndPrompt

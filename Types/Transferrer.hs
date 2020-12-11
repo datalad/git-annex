@@ -85,14 +85,12 @@ instance Proto.Sendable TransferResponse where
 		["om", Proto.serialize (encode_c (decodeBS m))]
 	formatMessage (TransferOutput (OutputError e)) =
 		["oe", Proto.serialize (encode_c e)]
-	formatMessage (TransferOutput (BeginProgressMeter (Just (TotalSize n)))) =
-		["opb", Proto.serialize n]
-	formatMessage (TransferOutput (BeginProgressMeter Nothing)) =
-		["opbx"]
-	formatMessage (TransferOutput (UpdateProgressMeter n)) =
-		["op", Proto.serialize n]
+	formatMessage (TransferOutput BeginProgressMeter) =
+		["opb"]
 	formatMessage (TransferOutput (UpdateProgressMeterTotalSize (TotalSize sz))) =
 		["ops", Proto.serialize sz]
+	formatMessage (TransferOutput (UpdateProgressMeter n)) =
+		["op", Proto.serialize n]
 	formatMessage (TransferOutput EndProgressMeter) =
 		["ope"]
 	formatMessage (TransferOutput BeginPrompt) =
@@ -111,14 +109,12 @@ instance Proto.Receivable TransferResponse where
 		TransferOutput . OutputMessage . encodeBS . decode_c
 	parseCommand "oe" = Proto.parse1 $
 		TransferOutput . OutputError . decode_c
-	parseCommand "opb" = Proto.parse1 $
-		TransferOutput . BeginProgressMeter . Just . TotalSize
-	parseCommand "opbx" = Proto.parse0 $
-		TransferOutput (BeginProgressMeter Nothing)
-	parseCommand "op" = Proto.parse1 $
-		TransferOutput . UpdateProgressMeter
+	parseCommand "opb" = Proto.parse0 $
+		TransferOutput BeginProgressMeter
 	parseCommand "ops" = Proto.parse1 $
 		TransferOutput . UpdateProgressMeterTotalSize . TotalSize
+	parseCommand "op" = Proto.parse1 $
+		TransferOutput . UpdateProgressMeter
 	parseCommand "ope" = Proto.parse0 $
 		TransferOutput EndProgressMeter
 	parseCommand "oprb" = Proto.parse0 $

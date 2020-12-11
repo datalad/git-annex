@@ -116,7 +116,10 @@ metered' st othermeter msize showoutput a = go st
 			a meter (combinemeter m)
 		| otherwise = nometer
 	go (MessageState { outputType = SerializedOutput h _ }) = do
-		liftIO $ outputSerialized h $ BeginProgressMeter msize
+		liftIO $ outputSerialized h BeginProgressMeter
+		case msize of
+			Just sz -> liftIO $ outputSerialized h $ UpdateProgressMeterTotalSize sz
+			Nothing -> noop
 		szv <- liftIO $ newIORef msize
 		meter <- liftIO $ mkMeter msize $ \_ msize' _old new -> do
 			case msize' of

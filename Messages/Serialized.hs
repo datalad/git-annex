@@ -63,11 +63,11 @@ relaySerializedOutput getso sendsor meterreport runannex = go Nothing
 					outputSerialized h $ JSONObject b
 				_ -> q
 			loop st
-		Left (BeginProgressMeter sz) -> do
+		Left BeginProgressMeter -> do
 			ost <- runannex (Annex.getState Annex.output)
 			-- Display a progress meter while running, until
 			-- the meter ends or a final value is returned.
-			metered' ost Nothing sz (runannex showOutput) 
+			metered' ost Nothing Nothing (runannex showOutput) 
 				(\meter meterupdate -> loop (Just (meter, meterupdate)))
 				>>= \case
 					Right r -> return (Right r)
