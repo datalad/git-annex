@@ -4,6 +4,11 @@ when -J has many of them running.
 In particular, it writes location logs when downloading (but not
 uploading), and so it flushes the journal etc.
 
+> [[done]] --[[Joey]] 
+
 It may also do some queries of data from git that could be avoided with
 some refactoring of what code runs in it, which could avoid it needing to
 start up git helper processes like catkey. --[[Joey]]
+
+> Still starts some git catkey processes, but I guess it's for good reason.
+> --[[Joey]]
