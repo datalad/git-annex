@@ -16,6 +16,7 @@
 module Logs.Location (
 	LogStatus(..),
 	logStatus,
+	logStatusAfter,
 	logChange,
 	loggedLocations,
 	loggedLocationsHistorical,
@@ -47,6 +48,16 @@ logStatus :: Key -> LogStatus -> Annex ()
 logStatus key s = do
 	u <- getUUID
 	logChange key u s
+
+{- Run an action that gets the content of a key, and update the log
+ - when it succeeds. -}
+logStatusAfter :: Key -> Annex Bool -> Annex Bool
+logStatusAfter key a = ifM a 
+	( do
+		logStatus key InfoPresent
+		return True
+	, return False
+	)
 
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Key -> UUID -> LogStatus -> Annex ()

@@ -76,7 +76,7 @@ runLocal runst runner a = case a of
 		v <- tryNonAsync $ do
 			let runtransfer ti = 
 				Right <$> transfer download' k af (\p ->
-					getViaTmp rsp DefaultVerify k af $ \tmp ->
+					logStatusAfter k $ getViaTmp rsp DefaultVerify k af $ \tmp ->
 						storefile (fromRawFilePath tmp) o l getb validitycheck p ti)
 			let fallback = return $ Left $
 				ProtoFailureMessage "transfer already in progress, or unable to take transfer lock"

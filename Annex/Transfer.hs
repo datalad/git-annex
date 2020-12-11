@@ -30,6 +30,7 @@ import Annex.Notification as X
 import Annex.Content
 import Annex.Perms
 import Annex.Action
+import Logs.Location
 import Utility.Metered
 import Utility.ThreadScheduler
 import Annex.LockPool
@@ -68,7 +69,7 @@ alwaysUpload u key f d a _witness = guardHaveUUID u $
 
 -- Download, supporting stall detection.
 download :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
-download r key f d witness = stallDetection r >>= \case
+download r key f d witness = logStatusAfter key $ stallDetection r >>= \case
 	Nothing -> getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key f $ \dest ->
 		download' (Remote.uuid r) key f d (go dest) witness
 	Just sd -> runTransferrer sd r key f d Download witness

@@ -16,6 +16,7 @@ import Annex.WorkTree
 import Annex.Content
 import Annex.UUID
 import Annex.Perms
+import Logs.Location
 import Utility.FileMode
 #ifndef mingw32_HOST_OS
 import Creds
@@ -212,7 +213,7 @@ storeReceived f = do
 		Nothing -> do
 			warning $ "Received a file " ++ f ++ " that is not a git-annex key. Deleting this file."
 			liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
-		Just k -> void $
+		Just k -> void $ logStatusAfter k $
 			getViaTmpFromDisk RetrievalVerifiableKeysSecure AlwaysVerify k (AssociatedFile Nothing) $ \dest -> unVerified $
 				liftIO $ catchBoolIO $ do
 					rename f (fromRawFilePath dest)

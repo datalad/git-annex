@@ -50,7 +50,7 @@ start = do
 						return True
 		| otherwise = notifyTransfer direction file $
 			download' (Remote.uuid remote) key file stdRetry $ \p ->
-				getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t -> do
+				logStatusAfter key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t -> do
 					r <- tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p) >>= \case
 						Left e -> do
 							warning (show e)

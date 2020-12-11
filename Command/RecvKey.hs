@@ -13,6 +13,7 @@ import Annex.Action
 import Annex
 import Utility.Rsync
 import Types.Transfer
+import Logs.Location
 import Command.SendKey (fieldTransfer)
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 
@@ -35,6 +36,7 @@ start (_, key) = fieldTransfer Download key $ \_p -> do
 	let rsp = RetrievalAllKeysSecure
 	ifM (getViaTmp rsp verify key (AssociatedFile Nothing) go)
 		( do
+			logStatus key InfoPresent
 			-- forcibly quit after receiving one key,
 			-- and shutdown cleanly
 			_ <- shutdown True

@@ -690,7 +690,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 				copier <- mkCopier hardlink st params
 				let verify = Annex.Content.RemoteVerify r
 				let rsp = RetrievalAllKeysSecure
-				res <- Annex.Content.getViaTmp rsp verify key file $ \dest ->
+				res <- logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key $ \_ p' -> 
 						copier object (fromRawFilePath dest) p' (liftIO checksuccessio)
 				Annex.Content.saveState True

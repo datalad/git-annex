@@ -1,6 +1,9 @@
-Setting annex.stalldetection can break move, which complains it cannot find
-enough copies to drop.
+Setting annex.stalldetection can break sync when it does a move,
+which complains it cannot find enough copies to drop.
+(Seems that git-annex move does work ok.)
 
 The problem is that the transferrer process updates the location log, but
 the parent process doesn't see the update in time. So, the location log
 update needs to move to the parent process. --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]

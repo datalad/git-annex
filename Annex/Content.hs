@@ -227,12 +227,7 @@ getViaTmpFromDisk rsp v key af action = checkallowed $ do
 		else verification
 	if ok
 		then ifM (verifyKeyContent rsp v verification' key tmpfile)
-			( ifM (pruneTmpWorkDirBefore tmpfile (moveAnnex key af))
-				( do
-					logStatus key InfoPresent
-					return True
-				, return False
-				)
+			( pruneTmpWorkDirBefore tmpfile (moveAnnex key af)
 			, do
 				warning "verification of content failed"
 				-- The bad content is not retained, because

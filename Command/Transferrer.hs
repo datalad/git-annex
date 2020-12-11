@@ -45,14 +45,14 @@ start = do
 	runner (UploadRequest _ key (TransferAssociatedFile file)) remote =
 		-- This is called by eg, Annex.Transfer.upload,
 		-- so caller is responsible for doing notification,
-		-- and for retrying.
+		-- and for retrying, and updating location log.
 		upload' (Remote.uuid remote) key file noRetry
 			(Remote.action . Remote.storeKey remote key file)
 			noNotification
 	runner (DownloadRequest _ key (TransferAssociatedFile file)) remote =
 		-- This is called by eg, Annex.Transfer.download
 		-- so caller is responsible for doing notification
-		-- and for retrying.
+		-- and for retrying, and updating location log.
 		let go p = getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t -> do
 			Remote.verifiedAction (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p)
 		in download' (Remote.uuid remote) key file noRetry go 
@@ -70,7 +70,7 @@ start = do
 	runner (AssistantDownloadRequest _ key (TransferAssociatedFile file)) remote =
 		notifyTransfer Download file $
 			download' (Remote.uuid remote) key file stdRetry $ \p ->
-				getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t -> do
+				logStatusAfter key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t -> do
 					r <- tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p) >>= \case
 						Left e -> do
 							warning (show e)
