@@ -25,6 +25,7 @@ import Messages.Internal
 import qualified System.Console.Regions as Regions
 import qualified System.Console.Concurrent as Console
 import Control.Monad.IO.Class (MonadIO)
+import Data.IORef
 
 {- Class of things from which a size can be gotten to display a progress
  - meter. -}
@@ -115,8 +116,16 @@ metered' st othermeter msize showoutput a = go st
 			a meter (combinemeter m)
 		| otherwise = nometer
 	go (MessageState { outputType = SerializedOutput h _ }) = do
-		liftIO $ outputSerialized h $ StartProgressMeter msize
-		meter <- liftIO $ mkMeter msize $ \_ _ _old new ->
+		liftIO $ outputSerialized h $ BeginProgressMeter msize
+		szv <- liftIO $ newIORef msize
+		meter <- liftIO $ mkMeter msize $ \_ msize' _old new -> do
+			case msize' of
+				Just sz | msize' /= msize -> do
+					psz <- readIORef szv
+					when (msize' /= psz) $ do
+						writeIORef szv msize'
+						outputSerialized h $ UpdateProgressMeterTotalSize sz
+				_ -> noop
 			outputSerialized h $ UpdateProgressMeter $
 				meterBytesProcessed new
 		m <- liftIO $ rateLimitMeterUpdate minratelimit meter $

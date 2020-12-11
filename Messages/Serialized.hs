@@ -20,7 +20,7 @@ import Messages
 import Messages.Internal
 import Messages.Progress
 import qualified Messages.JSON as JSON
-import Utility.Metered (BytesProcessed)
+import Utility.Metered (BytesProcessed, setMeterTotalSize)
 
 import Control.Monad.IO.Class (MonadIO)
 
@@ -63,12 +63,12 @@ relaySerializedOutput getso sendsor meterreport runannex = go Nothing
 					outputSerialized h $ JSONObject b
 				_ -> q
 			loop st
-		Left (StartProgressMeter sz) -> do
+		Left (BeginProgressMeter sz) -> do
 			ost <- runannex (Annex.getState Annex.output)
 			-- Display a progress meter while running, until
 			-- the meter ends or a final value is returned.
 			metered' ost Nothing sz (runannex showOutput) 
-				(\_meter meterupdate -> loop (Just meterupdate))
+				(\meter meterupdate -> loop (Just (meter, meterupdate)))
 				>>= \case
 					Right r -> return (Right r)
 					-- Continue processing serialized
@@ -80,12 +80,18 @@ relaySerializedOutput getso sendsor meterreport runannex = go Nothing
 			return (Left st)
 		Left (UpdateProgressMeter n) -> do
 			case st of
-				Just meterupdate -> do
+				Just (_, meterupdate) -> do
 					meterreport (Just n)
 					liftIO $ meterupdate n
 				Nothing -> noop
 			loop st
-		Left StartPrompt -> do
+		Left (UpdateProgressMeterTotalSize sz) -> do
+			case st of
+				Just (meter, _) -> liftIO $
+					setMeterTotalSize meter sz
+				Nothing -> noop
+			loop st
+		Left BeginPrompt -> do
 			prompter <- runannex mkPrompter
 			v <- prompter $ do
 				sendsor ReadyPrompt

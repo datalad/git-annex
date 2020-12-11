@@ -317,7 +317,7 @@ mkPrompter = getConcurrency >>= \case
 		let (run, cleanup) = case outputType s of
 			SerializedOutput h hr ->
 				( \a -> do
-					liftIO $ outputSerialized h StartPrompt
+					liftIO $ outputSerialized h BeginPrompt
 					liftIO $ waitOutputSerializedResponse hr ReadyPrompt
 					a
 				, liftIO $ outputSerialized h EndPrompt

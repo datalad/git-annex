@@ -68,10 +68,11 @@ newMessageState = do
 data SerializedOutput
 	= OutputMessage S.ByteString
 	| OutputError String
-	| StartProgressMeter (Maybe TotalSize)
+	| BeginProgressMeter (Maybe TotalSize)
 	| UpdateProgressMeter BytesProcessed
+	| UpdateProgressMeterTotalSize TotalSize
 	| EndProgressMeter
-	| StartPrompt
+	| BeginPrompt
 	| EndPrompt
 	| JSONObject L.ByteString
 	-- ^ This is always sent, it's up to the consumer to decide if it

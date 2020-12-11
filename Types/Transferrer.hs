@@ -85,16 +85,18 @@ instance Proto.Sendable TransferResponse where
 		["om", Proto.serialize (encode_c (decodeBS m))]
 	formatMessage (TransferOutput (OutputError e)) =
 		["oe", Proto.serialize (encode_c e)]
-	formatMessage (TransferOutput (StartProgressMeter (Just (TotalSize n)))) =
-		["ops", Proto.serialize n]
-	formatMessage (TransferOutput (StartProgressMeter Nothing)) =
-		["opsx"]
+	formatMessage (TransferOutput (BeginProgressMeter (Just (TotalSize n)))) =
+		["opb", Proto.serialize n]
+	formatMessage (TransferOutput (BeginProgressMeter Nothing)) =
+		["opbx"]
 	formatMessage (TransferOutput (UpdateProgressMeter n)) =
 		["op", Proto.serialize n]
+	formatMessage (TransferOutput (UpdateProgressMeterTotalSize (TotalSize sz))) =
+		["ops", Proto.serialize sz]
 	formatMessage (TransferOutput EndProgressMeter) =
 		["ope"]
-	formatMessage (TransferOutput StartPrompt) =
-		["oprs"]
+	formatMessage (TransferOutput BeginPrompt) =
+		["oprb"]
 	formatMessage (TransferOutput EndPrompt) =
 		["opre"]
 	formatMessage (TransferOutput (JSONObject b)) =
@@ -109,16 +111,18 @@ instance Proto.Receivable TransferResponse where
 		TransferOutput . OutputMessage . encodeBS . decode_c
 	parseCommand "oe" = Proto.parse1 $
 		TransferOutput . OutputError . decode_c
-	parseCommand "ops" = Proto.parse1 $
-		TransferOutput . StartProgressMeter . Just . TotalSize
-	parseCommand "opsx" = Proto.parse0 $
-		TransferOutput (StartProgressMeter Nothing)
+	parseCommand "opb" = Proto.parse1 $
+		TransferOutput . BeginProgressMeter . Just . TotalSize
+	parseCommand "opbx" = Proto.parse0 $
+		TransferOutput (BeginProgressMeter Nothing)
 	parseCommand "op" = Proto.parse1 $
 		TransferOutput . UpdateProgressMeter
+	parseCommand "ops" = Proto.parse1 $
+		TransferOutput . UpdateProgressMeterTotalSize . TotalSize
 	parseCommand "ope" = Proto.parse0 $
 		TransferOutput EndProgressMeter
-	parseCommand "oprs" = Proto.parse0 $
-		TransferOutput StartPrompt
+	parseCommand "oprb" = Proto.parse0 $
+		TransferOutput BeginPrompt
 	parseCommand "opre" = Proto.parse0 $
 		TransferOutput EndPrompt
 	parseCommand "oj" = Proto.parse1 $
