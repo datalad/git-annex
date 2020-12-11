@@ -1,0 +1,6 @@
+Setting annex.stalldetection can break move, which complains it cannot find
+enough copies to drop.
+
+The problem is that the transferrer process updates the location log, but
+the parent process doesn't see the update in time. So, the location log
+update needs to move to the parent process. --[[Joey]]
