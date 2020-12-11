@@ -6,4 +6,4 @@ Wish: When I press ctrl+c in the terminal, git-annex will catch that and finish 
 
 > I'm going to close this, because 6 years later, I just don't think it's a
 > good idea. I think that blocking ctrl-c from interrupting the program
-> violates least surprise. --[[Joey]]
+> violates least surprise. [[done]] --[[Joey]]
