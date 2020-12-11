@@ -1,0 +1,12 @@
+I'm using git-annex with the SHA256 backend. When I git annex add a file, it becomes a symbolic link and the real content goes in a file whose name includes the SHA256 hash.
+
+Suppose the original filename (which is a symbolic link now) is named A. I want to have another filename B point to A. In a non-annex directory I'd create a symbolic link B -> A or a hardlink B that is the same file as A.
+
+Within the git annex directory, I don't want to use another symbolic link B -> A -> keyfile. Instead, I want two symbolic links straight to the content:
+
+* B -> keyfile
+* A -> keyfile
+
+This appears to be more elegant, and A or B can be independently unlinked without the other becoming a dangling link. It is also what git annex would do if A and B are added with the same content separately. I want a command that creates B: git annex ln A B
+
+Apologies if there is already such a git annex command. There doesn't seem to be a direct equivalent in cp's arguments or rsync's arguments to fixup the relative link path while copying it, and it needs a longer series of piped commands. As the link would be created within the annex directory, having git annex provide a single command to do it would be most useful.
