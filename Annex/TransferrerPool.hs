@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE CPP #-}
 
 module Annex.TransferrerPool where
 
@@ -17,6 +18,7 @@ import Types.Transfer
 import qualified Types.Remote as Remote
 import Types.StallDetection
 import Types.Messages
+import Types.CleanupActions
 import Messages.Serialized
 import Annex.Path
 import Utility.Batch
@@ -31,6 +33,13 @@ import Control.Concurrent.STM hiding (check)
 import Control.Monad.IO.Class (MonadIO)
 import Data.Time.Clock.POSIX
 import System.Log.Logger (debugM)
+import qualified Data.Map as M
+#ifndef mingw32_HOST_OS
+import System.Posix.Signals
+import System.Posix.Process (getProcessGroupIDOf)
+#endif
+
+type SignalActionsVar = TVar (M.Map SignalAction (Int -> IO ()))
 
 {- Runs an action with a Transferrer from the pool. -}
 withTransferrer :: (Transferrer -> Annex a) -> Annex a
@@ -38,7 +47,8 @@ withTransferrer a = do
 	program <- liftIO programPath
 	pool <- Annex.getState Annex.transferrerpool
 	let nocheck = pure (pure True)
-	withTransferrer' False nocheck program nonBatchCommandMaker pool a
+	signalactonsvar <- Annex.getState Annex.signalactions
+	withTransferrer' False signalactonsvar nocheck program nonBatchCommandMaker pool a
 
 withTransferrer'
 	:: (MonadIO m, MonadMask m)
@@ -47,20 +57,21 @@ withTransferrer'
 	-- running in the pool at a time. So if this needed to start a
 	-- new Transferrer, it's stopped when done. Otherwise, idle
 	-- processes are left in the pool for use later.
+	-> SignalActionsVar
 	-> MkCheckTransferrer
 	-> FilePath
 	-> BatchCommandMaker
 	-> TransferrerPool
 	-> (Transferrer -> m a)
 	-> m a
-withTransferrer' minimizeprocesses mkcheck program batchmaker pool a = do
+withTransferrer' minimizeprocesses signalactonsvar mkcheck program batchmaker pool a = do
 	(mi, leftinpool) <- liftIO $ atomically (popTransferrerPool pool)
 	(i@(TransferrerPoolItem _ check), t) <- liftIO $ case mi of
 		Nothing -> do
-			t <- mkTransferrer program batchmaker
+			t <- mkTransferrer signalactonsvar program batchmaker
 			i <- mkTransferrerPoolItem mkcheck t
 			return (i, t)
-		Just i -> checkTransferrerPoolItem program batchmaker i
+		Just i -> checkTransferrerPoolItem signalactonsvar program batchmaker i
 	a t `finally` returntopool leftinpool check t i
   where
 	returntopool leftinpool check t i
@@ -71,23 +82,23 @@ withTransferrer' minimizeprocesses mkcheck program batchmaker pool a = do
 			liftIO $ whenM (hIsOpen (transferrerWrite t)) $
 				liftIO $ atomically $ pushTransferrerPool pool i
 		| otherwise = liftIO $ do
-			void $ forkIO $ shutdownTransferrer t
+			void $ forkIO $ transferrerShutdown t
 			atomically $ pushTransferrerPool pool $ TransferrerPoolItem Nothing check
 
 {- Check if a Transferrer from the pool is still ok to be used.
  - If not, stop it and start a new one. -}
-checkTransferrerPoolItem :: FilePath -> BatchCommandMaker -> TransferrerPoolItem -> IO (TransferrerPoolItem, Transferrer)
-checkTransferrerPoolItem program batchmaker i = case i of
+checkTransferrerPoolItem :: SignalActionsVar -> FilePath -> BatchCommandMaker -> TransferrerPoolItem -> IO (TransferrerPoolItem, Transferrer)
+checkTransferrerPoolItem signalactonsvar program batchmaker i = case i of
 	TransferrerPoolItem (Just t) check -> ifM check
 		( return (i, t)
 		, do
-			shutdownTransferrer t
+			transferrerShutdown t
 			new check
 		)
 	TransferrerPoolItem Nothing check -> new check
   where
 	new check = do
-		t <- mkTransferrer program batchmaker
+		t <- mkTransferrer signalactonsvar program batchmaker
 		return (TransferrerPoolItem (Just t) check, t)
 
 data TransferRequestLevel = AnnexLevel | AssistantLevel
@@ -193,22 +204,54 @@ detectStalls (Just (StallDetection minsz duration)) metervar onstall = go Nothin
 
 {- Starts a new git-annex transfer process, setting up handles
  - that will be used to communicate with it. -}
-mkTransferrer :: FilePath -> BatchCommandMaker -> IO Transferrer
-mkTransferrer program batchmaker = do
+mkTransferrer :: SignalActionsVar -> FilePath -> BatchCommandMaker -> IO Transferrer
+mkTransferrer signalactonsvar program batchmaker = do
 	{- It runs as a batch job. -}
 	let (program', params') = batchmaker (program, [Param "transferrer"])
 	{- It's put into its own group so that the whole group can be
 	 - killed to stop a transfer. -}
-	(Just writeh, Just readh, _, pid) <- createProcess
+	(Just writeh, Just readh, _, ph) <- createProcess
 		(proc program' $ toCommand params')
 		{ create_group = True
 		, std_in = CreatePipe
 		, std_out = CreatePipe
 		}
+
+	{- Set up signal propagation, so eg ctrl-c will also interrupt
+	 - the processes in the transferrer's process group. 
+	 -
+	 - There is a race between the process being created and this point.
+	 - If a signal is received before this can run, it is not sent to
+	 - the transferrer. This leaves the transferrer waiting for the
+	 - first message on stdin to tell what to do. If the signal kills
+	 - this parent process, the transferrer will then get a sigpipe
+	 - and die too. If the signal suspends this parent process,
+	 - it's ok to leave the transferrer running, as it's waiting on
+	 - the pipe until this process wakes back up.
+	 -}
+#ifndef mingw32_HOST_OS
+	pid <- getPid ph
+	unregistersignalprop <- case pid of
+		Just p -> getProcessGroupIDOf p >>= \pgrp -> do
+			atomically $ modifyTVar' signalactonsvar $ 
+				M.insert (PropagateSignalProcessGroup p) $ \sig ->
+					signalProcessGroup (fromIntegral sig) pgrp
+			return $ atomically $ modifyTVar' signalactonsvar $
+				M.delete (PropagateSignalProcessGroup p)
+		Nothing -> return noop
+#else
+	let unregistersignalprop = noop
+#endif
+
 	return $ Transferrer
 		{ transferrerRead = readh
 		, transferrerWrite = writeh
-		, transferrerHandle = pid
+		, transferrerHandle = ph
+		, transferrerShutdown = do
+			hClose readh
+			hClose writeh
+			void $ waitForProcess ph
+			unregistersignalprop
 		}
 
 -- | Send a request to perform a transfer.
@@ -237,7 +280,7 @@ sendSerializedOutputResponse h sor = do
 	hPutStrLn h l
 	hFlush h
 
--- | Read a response to a transfer requests.
+-- | Read a response to a transfer request.
 --
 -- Before the final response, this will return whatever SerializedOutput
 -- should be displayed as the transfer is performed.
@@ -253,14 +296,6 @@ readResponse h = do
 transferrerProtocolError :: String -> a
 transferrerProtocolError l = giveup $ "transferrer protocol error: " ++ show l
 
-{- Closing the fds will shut down the transferrer, but only when it's
- - in between transfers. -}
-shutdownTransferrer :: Transferrer -> IO ()
-shutdownTransferrer t = do
-	hClose $ transferrerRead t
-	hClose $ transferrerWrite t
-	void $ waitForProcess $ transferrerHandle t
-
 {- Kill the transferrer, and all its child processes. -}
 killTransferrer :: Transferrer -> IO ()
 killTransferrer t = do
@@ -274,5 +309,5 @@ emptyTransferrerPool = do
 	poolvar <- Annex.getState Annex.transferrerpool
 	pool <- liftIO $ atomically $ swapTVar poolvar []
 	liftIO $ forM_ pool $ \case
-		TransferrerPoolItem (Just t) _ -> shutdownTransferrer t
+		TransferrerPoolItem (Just t) _ -> transferrerShutdown t
 		TransferrerPoolItem Nothing _ -> noop

@@ -832,7 +832,7 @@ rsyncOrCopyFile st rsyncparams src dest p =
 commitOnCleanup :: Git.Repo -> Remote -> State -> Annex a -> Annex a
 commitOnCleanup repo r st a = go `after` a
   where
-	go = Annex.addCleanup (RemoteCleanup $ uuid r) cleanup
+	go = Annex.addCleanupAction (RemoteCleanup $ uuid r) cleanup
 	cleanup
 		| not $ Git.repoIsUrl repo = onLocalFast st $
 			doQuietSideAction $

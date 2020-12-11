@@ -34,7 +34,7 @@ start = do
 	(readh, writeh) <- liftIO dupIoHandles
 	let outputwriter = sendTransferResponse writeh . TransferOutput
 	let outputresponsereader = do
-		l <- hGetLine readh
+		l <- getNextLine readh
 		return $ case Proto.parseMessage l of
 			Just (TransferSerializedOutputResponse r) -> Just r
 			Nothing -> Nothing
@@ -90,7 +90,7 @@ runRequests
 runRequests readh writeh a = go Nothing Nothing
   where
 	go lastremoteoruuid lastremote = unlessM (liftIO $ hIsEOF readh) $ do
-		l <- liftIO $ hGetLine readh
+		l <- liftIO $ getNextLine readh
 		case Proto.parseMessage l of
 			Just tr -> do
 				let remoteoruuid = transferRequestRemote tr
@@ -114,6 +114,24 @@ runRequests readh writeh a = go Nothing Nothing
 	sendresult = liftIO . sendTransferResponse writeh . TransferResult
 
 sendTransferResponse :: Handle -> TransferResponse -> IO ()
-sendTransferResponse h r = do
+sendTransferResponse h r = silenceIOErrors $ do
 	hPutStrLn h $ unwords $ Proto.formatMessage r
 	hFlush h
+
+getNextLine :: Handle -> IO String
+getNextLine = silenceIOErrors . hGetLine
+
+{- If the pipe we're talking to gets closed due to the parent git-annex
+ - having exited, read/write would throw an exception due to sigpipe,
+ - which gets displayed on the console in an ugly way. This silences that
+ - display, and exits on exception instead.
+ -
+ - Normally signals like SIGINT get propagated to this process
+ - from the parent process. However, since this process is run in its own
+ - process group, that propagation requires the parent to actively
+ - propagate the signal. One way that could not happen is if the parent
+ - gets a signal it cannot catch. Another way is if the parent is hit by
+ - the signal before it can set up the signal propagation.
+ -}
+silenceIOErrors :: IO a -> IO a
+silenceIOErrors a = catchIO a (const exitFailure)

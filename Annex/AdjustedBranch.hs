@@ -296,7 +296,7 @@ adjustedBranchRefresh _af a = do
 			unless (adjustmentIsStable adj) $
 				ifM (checkcounter n)
 					( update adj origbranch
-					, Annex.addCleanup AdjustedBranchUpdate $
+					, Annex.addCleanupAction AdjustedBranchUpdate $
 						adjustedBranchRefreshFull adj origbranch
 					)
 		_ -> return ()

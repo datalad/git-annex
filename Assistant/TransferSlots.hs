@@ -93,7 +93,9 @@ runTransferThread' mkcheck program batchmaker d run = go
 	go = catchPauseResume $ do
 		p <- runAssistant d $ liftAnnex $ 
 			Annex.getState Annex.transferrerpool
-		withTransferrer' True mkcheck program batchmaker p run
+		signalactonsvar <- runAssistant d $ liftAnnex $
+			Annex.getState Annex.signalactions
+		withTransferrer' True signalactonsvar mkcheck program batchmaker p run
 	pause = catchPauseResume $
 		runEvery (Seconds 86400) noop
 	{- Note: This must use E.try, rather than E.catch.

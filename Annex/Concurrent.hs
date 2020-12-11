@@ -100,8 +100,8 @@ dupState = do
 mergeState :: AnnexState -> Annex ()
 mergeState st = do
 	st' <- liftIO $ snd <$> run st stopNonConcurrentSafeCoProcesses
-	forM_ (M.toList $ Annex.cleanup st') $
-		uncurry addCleanup
+	forM_ (M.toList $ Annex.cleanupactions st') $
+		uncurry addCleanupAction
 	Annex.Queue.mergeFrom st'
 	changeState $ \s -> s { errcounter = errcounter s + errcounter st' }
 

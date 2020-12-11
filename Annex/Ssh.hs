@@ -230,7 +230,7 @@ prepSocket socketfile sshhost sshparams = do
 				sshCleanup
 				liftIO $ atomically $ putTMVar tv True
 	-- Cleanup at shutdown.
-	Annex.addCleanup SshCachingCleanup sshCleanup
+	Annex.addCleanupAction SshCachingCleanup sshCleanup
 	
 	let socketlock = socket2lock socketfile
 

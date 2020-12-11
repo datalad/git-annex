@@ -11,7 +11,12 @@ along with it when a stall is detected.
 
 Maybe what's needed is a SIGINT handler in the main git-annex that
 signals all the transferrer processes with SIGINT and waits on them
-exiting. Unsure if that can be implemented in haskell?
+exiting. And other signals, eg SIGTSTP for ctrl-z.
+
+> Implemented this, but not for windows (yet). But not gonna leave open
+> for something that on windows in my experience does not work very
+> reliably in general. (I've many times hit ctrl-c in a windows terminal and
+> had the whole terminal lock up.) So, [[done]] --[[Joey]]
 
 Or, note that it would suffice to remove the child process group stuff,
 if we assume that all child processes started by git-annex transferrer are

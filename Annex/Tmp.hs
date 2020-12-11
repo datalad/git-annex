@@ -24,7 +24,7 @@ import Data.Time.Clock.POSIX
 -- any time.
 withOtherTmp :: (RawFilePath -> Annex a) -> Annex a
 withOtherTmp a = do
-	Annex.addCleanup OtherTmpCleanup cleanupOtherTmp
+	Annex.addCleanupAction OtherTmpCleanup cleanupOtherTmp
 	tmpdir <- fromRepo gitAnnexTmpOtherDir
 	tmplck <- fromRepo gitAnnexTmpOtherLock
 	withSharedLock (const tmplck) $ do

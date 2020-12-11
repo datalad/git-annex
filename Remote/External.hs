@@ -81,7 +81,7 @@ gen r u rc gc rs
 	| otherwise = do
 		c <- parsedRemoteConfig remote rc
 		external <- newExternal externaltype (Just u) c (Just gc) (Just rs)
-		Annex.addCleanup (RemoteCleanup u) $ stopExternal external
+		Annex.addCleanupAction (RemoteCleanup u) $ stopExternal external
 		cst <- getCost external r gc
 		avail <- getAvailability external r gc
 		exportsupported <- if exportTree c

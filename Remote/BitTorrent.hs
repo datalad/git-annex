@@ -181,7 +181,7 @@ tmpTorrentFile u = fromRepo . gitAnnexTmpObjectLocation =<< torrentUrlKey u
  - torrent file once.
  -}
 registerTorrentCleanup :: URLString -> Annex ()
-registerTorrentCleanup u = Annex.addCleanup (TorrentCleanup u) $
+registerTorrentCleanup u = Annex.addCleanupAction (TorrentCleanup u) $
 	liftIO . removeWhenExistsWith R.removeLink =<< tmpTorrentFile u
 
 {- Downloads the torrent file. (Not its contents.) -}

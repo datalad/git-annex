@@ -76,7 +76,7 @@ runHooks r starthook stophook a = do
 		-- So, requiring idempotency is the right approach.
 		run starthook
 
-		Annex.addCleanup (StopHook $ uuid r) $ runstop lck
+		Annex.addCleanupAction (StopHook $ uuid r) $ runstop lck
 	runstop lck = do
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock

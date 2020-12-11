@@ -662,7 +662,7 @@ cleanupIncremental _ = return ()
 openFsckDb :: UUID -> Annex FsckDb.FsckHandle
 openFsckDb u = do
 	h <- FsckDb.openDb u
-	Annex.addCleanup FsckCleanup $
+	Annex.addCleanupAction FsckCleanup $
 		FsckDb.closeDb h
 	return h
 

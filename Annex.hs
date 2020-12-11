@@ -22,7 +22,7 @@ module Annex (
 	setOutput,
 	getFlag,
 	getField,
-	addCleanup,
+	addCleanupAction,
 	gitRepo,
 	inRepo,
 	fromRepo,
@@ -140,7 +140,8 @@ data AnnexState = AnnexState
 	, sshstalecleaned :: TMVar Bool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
-	, cleanup :: M.Map CleanupAction (Annex ())
+	, cleanupactions :: M.Map CleanupAction (Annex ())
+	, signalactions :: TVar (M.Map SignalAction (Int -> IO ()))
 	, sentinalstatus :: Maybe SentinalStatus
 	, useragent :: Maybe String
 	, errcounter :: Integer
@@ -164,6 +165,7 @@ newState :: GitConfig -> Git.Repo -> IO AnnexState
 newState c r = do
 	emptyactiveremotes <- newMVar M.empty
 	emptyactivekeys <- newTVarIO M.empty
+	si <- newTVarIO M.empty
 	o <- newMessageState
 	sc <- newTMVarIO False
 	kh <- Keys.newDbHandle
@@ -203,7 +205,8 @@ newState c r = do
 		, sshstalecleaned = sc
 		, flags = M.empty
 		, fields = M.empty
-		, cleanup = M.empty
+		, cleanupactions = M.empty
+		, signalactions = si
 		, sentinalstatus = Nothing
 		, useragent = Nothing
 		, errcounter = 0
@@ -289,9 +292,9 @@ setField field value = changeState $ \s ->
 	s { fields = M.insert field value $ fields s }
 
 {- Adds a cleanup action to perform. -}
-addCleanup :: CleanupAction -> Annex () -> Annex ()
-addCleanup k a = changeState $ \s ->
-	s { cleanup = M.insert k a $ cleanup s }
+addCleanupAction :: CleanupAction -> Annex () -> Annex ()
+addCleanupAction k a = changeState $ \s ->
+	s { cleanupactions = M.insert k a $ cleanupactions s }
 
 {- Sets the type of output to emit. -}
 setOutput :: OutputType -> Annex ()

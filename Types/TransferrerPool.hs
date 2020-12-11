@@ -25,6 +25,10 @@ data Transferrer = Transferrer
 	{ transferrerRead :: Handle
 	, transferrerWrite :: Handle
 	, transferrerHandle :: ProcessHandle
+	, transferrerShutdown :: IO ()
+	-- ^ Closes the FDs and waits for the process to exit. 
+	-- Should be used when the transferrer is in between transfers,
+	-- as otherwise it may not shutdown promptly.
 	}
 
 newTransferrerPool :: IO TransferrerPool
