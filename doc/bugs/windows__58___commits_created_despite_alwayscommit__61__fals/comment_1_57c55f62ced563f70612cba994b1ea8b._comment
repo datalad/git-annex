@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-12-11T19:52:36Z"
+ content="""
+My guess would be there could be some place where git-annex runs git-annex
+as a child process, itself, but does not pass along the git config set with -c.
+
+So you might try setting annex.alwayscommit=false in .git/config
+and overriding it true when you do want to commit and see if that avoids
+the problem.
+
+Just thinking about it, I noticed that new code in Annex.TransferrerPool to
+run [[todo/git-annex_transferrer_does_not_propigate_-c]]. That's certainly
+not what you ran into, but there are probably others, and maybe one of them
+is somehow windows specific. git-annex smudge which gets run indirectly
+by git would be the obvious guess, although it does avoid committing on
+shutdown at least.
+
+However, the other thing is that "alwayscommit=false" does not really imply
+"never commit in any circumstances". It just means, don't commit every time
+some new data has been logged. In particular, Annex.Branch.updateTo' may
+need to update the index due to the git-annex branch having gotten ahead of
+the index. If there are uncommitted journalled changes, it unconditionally
+commits in that situation. I don't know if I would consider that a bug.
+Since you have a new repo, it's not that either. There might be other cases
+like that, although I don't know why you'd only see it happening on windows.
+"""]]
