@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 2"
+ date="2020-12-11T20:56:04Z"
+ content="""
+Thanks for response.
+
+> However, the other thing is that \"alwayscommit=false\" does not
+> really imply \"never commit in any circumstances\". [...] I don't know
+> if I would consider that a bug.
+
+Fair point.  At least for the spots I'm aware of, DataLad's use of
+alwayscommit=false aligns fine with that.  We're performing operations
+where we'd _like_ to reduce the number of commits, but that being
+effective is in no way relied on.
+"""]]
