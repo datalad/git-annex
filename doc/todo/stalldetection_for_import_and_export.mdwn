@@ -3,3 +3,8 @@ import and export from remotes.
 
 This should be doable, but it will need the transferkeys protocol to be
 extended to cover the additional actions. --[[Joey]] 
+
+> Note that, the protocol is designed so new requests can be added.
+> The old transferkeys will exit with an error if the new git-annex
+> happens to run it somehow. So it should be fine to add this stuff later
+> on. --[[Joey]]
