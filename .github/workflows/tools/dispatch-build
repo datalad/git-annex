@@ -99,11 +99,11 @@ def main(ostypes, pr, ref, workflow_ref):
             int(ref)
         except ValueError:
             raise click.UsageError("--pr requires a PR number")
-        dispatcher.build_pr(pr, ostypes)
+        dispatcher.build_pr(pr, ostypes, workflow_ref=workflow_ref)
     elif ref:
-        dispatcher.build_commitish(ref, ostypes)
+        dispatcher.build_commitish(ref, ostypes, workflow_ref=workflow_ref)
     else:
-        dispatcher.build_latest(ostypes)
+        dispatcher.build_latest(ostypes, workflow_ref=workflow_ref)
 
 
 if __name__ == "__main__":
