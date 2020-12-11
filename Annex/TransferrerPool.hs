@@ -142,7 +142,7 @@ performTransfer stalldetection level runannex r t info transferrer = do
 		liftIO $ sendRequest level t r
 			(associatedFile info)
 			(transferrerWrite transferrer)
-		metervar <- liftIO $ newEmptyTMVarIO
+		metervar <- liftIO $ newTVarIO Nothing
 		stalledvar <- liftIO $ newTVarIO False
 		tid <- liftIO $ async $ 
 			detectStalls stalldetection metervar $ do
@@ -166,32 +166,31 @@ performTransfer stalldetection level runannex r t info transferrer = do
 		runannex
 	
 	updatemeter bpv metervar (Just n) = liftIO $ do
-		atomically $ do
-			void $ tryTakeTMVar metervar
-			putTMVar metervar n
+		atomically $ writeTVar metervar (Just n)
 		atomically $ writeTVar bpv n
 	updatemeter _bpv metervar Nothing = liftIO $
-		atomically $ void $ tryTakeTMVar metervar
+		atomically $ writeTVar metervar Nothing
 
-detectStalls :: Maybe StallDetection -> TMVar BytesProcessed -> IO () -> IO ()
+detectStalls :: Maybe StallDetection -> TVar (Maybe BytesProcessed) -> IO () -> IO ()
 detectStalls Nothing _ _ = noop
 detectStalls (Just (StallDetection minsz duration)) metervar onstall = go Nothing
   where
 	go st = do
 		starttm <- getPOSIXTime
 		threadDelaySeconds (Seconds (fromIntegral (durationSeconds duration)))
-		-- Get whatever progress value was reported most recently, or
-		-- if none were reported since last time, wait until one is
-		-- reported.
-		sofar <- atomically $ fromBytesProcessed <$> takeTMVar metervar
-		case st of
-			Nothing -> go (Just sofar)
-			Just prev
+		-- Get whatever progress value was reported last, if any.
+		v <- atomically $ fmap fromBytesProcessed
+			<$> readTVar metervar
+		let cont = go v
+		case (st, v) of
+			(Nothing, _) -> cont
+			(_, Nothing) -> cont
+			(Just prev, Just sofar)
 				-- Just in case a progress meter somehow runs
 				-- backwards, or a second progress meter was
 				-- started and is at a smaller value than
 				-- the previous one.
-				| prev > sofar -> go (Just sofar)
+				| prev > sofar -> cont
 				| otherwise -> do
 					endtm <- getPOSIXTime
 					let actualduration = endtm - starttm
@@ -200,7 +199,7 @@ detectStalls (Just (StallDetection minsz duration)) metervar onstall = go Nothin
 						`div` max 1 (ceiling actualduration)
 					if sz < expectedsz
 						then onstall
-						else go (Just sofar)
+						else cont
 
 {- Starts a new git-annex transfer process, setting up handles
  - that will be used to communicate with it. -}
