@@ -281,7 +281,7 @@ data LocalF c
 	-- present, runs the protocol action with False.
 	| WaitRefChange (ChangedRefs -> c)
 	-- ^ Waits for one or more git refs to change and returns them.a
-	| UpdateMeterTotalSize Meter Integer c
+	| UpdateMeterTotalSize Meter TotalSize c
 	-- ^ Updates the total size of a Meter, for cases where the size is
 	-- not known until the data is being received.
 	| RunValidityCheck (Annex Validity) (Validity -> c)
@@ -548,7 +548,7 @@ receiveContent mm p sizer storer mkmsg = do
 		Just (DATA len@(Len l)) -> do
 			local $ case mm of
 				Nothing -> return ()
-				Just m -> updateMeterTotalSize m (n+l)
+				Just m -> updateMeterTotalSize m (TotalSize (n+l))
 			ver <- net getProtocolVersion
 			let validitycheck = if ver >= ProtocolVersion 1
 				then net receiveMessage >>= \case

@@ -242,6 +242,7 @@ data OutputHandler = OutputHandler
 type ProgressParser = String -> (Maybe BytesProcessed, Maybe TotalSize, String)
 
 newtype TotalSize = TotalSize Integer
+	deriving (Show, Eq)
 
 {- Runs a command and runs a ProgressParser on its output, in order
  - to update a meter.
@@ -281,8 +282,8 @@ commandMeterExitCode' progressparser oh mmeter meterupdate cmd params mkprocess 
 				let s = decodeBS b
 				let (mbytes, mtotalsize, buf') = progressparser (buf++s)
 				sendtotalsize' <- case (sendtotalsize, mtotalsize) of
-					(Just meter, Just (TotalSize n)) -> do
-						setMeterTotalSize meter n
+					(Just meter, Just t) -> do
+						setMeterTotalSize meter t
 						return Nothing
 					_ -> return sendtotalsize
 				case mbytes of
@@ -368,7 +369,7 @@ rateLimitMeterUpdate delta (Meter totalsizev _ _ _) meterupdate = do
 	return $ mu lastupdate
   where
 	mu lastupdate n@(BytesProcessed i) = readMVar totalsizev >>= \case
-		Just t | i >= t -> meterupdate n
+		Just (TotalSize t) | i >= t -> meterupdate n
 		_ -> do
 			now <- getPOSIXTime
 			prev <- takeMVar lastupdate
@@ -378,19 +379,19 @@ rateLimitMeterUpdate delta (Meter totalsizev _ _ _) meterupdate = do
 					meterupdate n
 				else putMVar lastupdate prev
 
-data Meter = Meter (MVar (Maybe Integer)) (MVar MeterState) (MVar String) DisplayMeter
+data Meter = Meter (MVar (Maybe TotalSize)) (MVar MeterState) (MVar String) DisplayMeter
 
 data MeterState = MeterState
 	{ meterBytesProcessed :: BytesProcessed
 	, meterTimeStamp :: POSIXTime
 	} deriving (Show)
 
-type DisplayMeter = MVar String -> Maybe Integer -> MeterState -> MeterState -> IO ()
+type DisplayMeter = MVar String -> Maybe TotalSize -> MeterState -> MeterState -> IO ()
 
-type RenderMeter = Maybe Integer -> MeterState -> MeterState -> String
+type RenderMeter = Maybe TotalSize -> MeterState -> MeterState -> String
 
 -- | Make a meter. Pass the total size, if it's known.
-mkMeter :: Maybe Integer -> DisplayMeter -> IO Meter
+mkMeter :: Maybe TotalSize -> DisplayMeter -> IO Meter
 mkMeter totalsize displaymeter = do
 	ts <- getPOSIXTime
 	Meter
@@ -399,7 +400,7 @@ mkMeter totalsize displaymeter = do
 		<*> newMVar ""
 		<*> pure displaymeter
 
-setMeterTotalSize :: Meter -> Integer -> IO ()
+setMeterTotalSize :: Meter -> TotalSize -> IO ()
 setMeterTotalSize (Meter totalsizev _ _ _) = void . swapMVar totalsizev . Just
 
 -- | Updates the meter, displaying it if necessary.
@@ -446,7 +447,7 @@ bandwidthMeter mtotalsize (MeterState (BytesProcessed old) before) (MeterState (
   where
 	amount = roughSize' memoryUnits True 2 new
 	percentamount = case mtotalsize of
-		Just totalsize ->
+		Just (TotalSize totalsize) ->
 			let p = showPercentage 0 $
 				percentage totalsize (min new totalsize)
 			in p ++ replicate (6 - length p) ' ' ++ amount
@@ -458,7 +459,7 @@ bandwidthMeter mtotalsize (MeterState (BytesProcessed old) before) (MeterState (
 	transferred = max 0 (new - old)
 	duration = max 0 (now - before)
 	estimatedcompletion = case mtotalsize of
-		Just totalsize
+		Just (TotalSize totalsize)
 			| bytespersecond > 0 -> 
 				Just $ fromDuration $ Duration $
 					(totalsize - new) `div` bytespersecond

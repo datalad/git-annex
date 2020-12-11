@@ -29,20 +29,20 @@ import Control.Monad.IO.Class (MonadIO)
 {- Class of things from which a size can be gotten to display a progress
  - meter. -}
 class MeterSize t where
-	getMeterSize :: t -> Annex (Maybe FileSize)
+	getMeterSize :: t -> Annex (Maybe TotalSize)
 
 instance MeterSize t => MeterSize (Maybe t) where
 	getMeterSize Nothing = pure Nothing
 	getMeterSize (Just t) = getMeterSize t
 
 instance MeterSize FileSize where
-	getMeterSize = pure . Just
+	getMeterSize = pure . Just . TotalSize
 
 instance MeterSize Key where
-	getMeterSize = pure . fromKey keySize
+	getMeterSize = pure . fmap TotalSize . fromKey keySize
 
 instance MeterSize InodeCache where
-	getMeterSize = pure . Just . inodeCacheFileSize
+	getMeterSize = pure . Just . TotalSize . inodeCacheFileSize
 
 instance MeterSize KeySource where
 	getMeterSize = maybe (pure Nothing) getMeterSize . inodeCache
@@ -55,12 +55,13 @@ data KeySizer = KeySizer Key (Annex (Maybe RawFilePath))
 
 instance MeterSize KeySizer where
 	getMeterSize (KeySizer k getsrcfile) = case fromKey keySize k of
-		Just sz -> return (Just sz)
+		Just sz -> return (Just (TotalSize sz))
 		Nothing -> do
 			srcfile <- getsrcfile
 			case srcfile of
 				Nothing -> return Nothing
-				Just f -> catchMaybeIO $ liftIO $ getFileSize f
+				Just f -> catchMaybeIO $ liftIO $
+					TotalSize <$> getFileSize f
 
 {- Shows a progress meter while performing an action.
  - The action is passed the meter and a callback to use to update the meter.
@@ -79,7 +80,7 @@ metered'
 	:: (Monad m, MonadIO m, MonadMask m)
 	=> MessageState
 	-> Maybe MeterUpdate
-	-> Maybe FileSize
+	-> Maybe TotalSize
 	-> m ()
 	-- ^ this should run showOutput
 	-> (Meter -> MeterUpdate -> m a)

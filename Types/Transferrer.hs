@@ -12,6 +12,7 @@ import Types.Messages
 import Git.Types (RemoteName)
 import qualified Utility.SimpleProtocol as Proto
 import Utility.Format
+import Utility.Metered (TotalSize(..))
 
 import Data.Char
 
@@ -84,7 +85,7 @@ instance Proto.Sendable TransferResponse where
 		["om", Proto.serialize (encode_c (decodeBS m))]
 	formatMessage (TransferOutput (OutputError e)) =
 		["oe", Proto.serialize (encode_c e)]
-	formatMessage (TransferOutput (StartProgressMeter (Just n))) =
+	formatMessage (TransferOutput (StartProgressMeter (Just (TotalSize n)))) =
 		["ops", Proto.serialize n]
 	formatMessage (TransferOutput (StartProgressMeter Nothing)) =
 		["opsx"]
@@ -104,17 +105,28 @@ instance Proto.Sendable TransferResponse where
 		["f"]
 
 instance Proto.Receivable TransferResponse where
-	parseCommand "om" = Proto.parse1 (TransferOutput . OutputMessage . encodeBS . decode_c)
-	parseCommand "oe" = Proto.parse1 (TransferOutput . OutputError . decode_c)
-	parseCommand "ops" = Proto.parse1 (TransferOutput . StartProgressMeter . Just)
-	parseCommand "opsx" = Proto.parse0 (TransferOutput (StartProgressMeter Nothing))
-	parseCommand "op" = Proto.parse1 (TransferOutput . UpdateProgressMeter)
-	parseCommand "ope" = Proto.parse0 (TransferOutput EndProgressMeter)
-	parseCommand "oprs" = Proto.parse0 (TransferOutput StartPrompt)
-	parseCommand "opre" = Proto.parse0 (TransferOutput EndPrompt)
-	parseCommand "oj" = Proto.parse1 (TransferOutput . JSONObject . encodeBL . decode_c)
-	parseCommand "t" = Proto.parse0 (TransferResult True)
-	parseCommand "f" = Proto.parse0 (TransferResult False)
+	parseCommand "om" = Proto.parse1 $
+		TransferOutput . OutputMessage . encodeBS . decode_c
+	parseCommand "oe" = Proto.parse1 $
+		TransferOutput . OutputError . decode_c
+	parseCommand "ops" = Proto.parse1 $
+		TransferOutput . StartProgressMeter . Just . TotalSize
+	parseCommand "opsx" = Proto.parse0 $
+		TransferOutput (StartProgressMeter Nothing)
+	parseCommand "op" = Proto.parse1 $
+		TransferOutput . UpdateProgressMeter
+	parseCommand "ope" = Proto.parse0 $
+		TransferOutput EndProgressMeter
+	parseCommand "oprs" = Proto.parse0 $
+		TransferOutput StartPrompt
+	parseCommand "opre" = Proto.parse0 $
+		TransferOutput EndPrompt
+	parseCommand "oj" = Proto.parse1 $
+		TransferOutput . JSONObject . encodeBL . decode_c
+	parseCommand "t" = Proto.parse0 $
+		TransferResult True
+	parseCommand "f" = Proto.parse0 $
+		TransferResult False
 	parseCommand _ = Proto.parseFail
 
 instance Proto.Sendable TransferSerializedOutputResponse where

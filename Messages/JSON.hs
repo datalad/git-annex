@@ -134,7 +134,7 @@ complete v _ = add v (Just (HM.empty, True))
 
 -- Show JSON formatted progress, including the current state of the JSON 
 -- object for the action being performed.
-progress :: Maybe Object -> Maybe Integer -> BytesProcessed -> IO ()
+progress :: Maybe Object -> Maybe TotalSize -> BytesProcessed -> IO ()
 progress maction msize bytesprocessed = 
 	case j of
 		Object o -> emit $ case maction of
@@ -144,7 +144,7 @@ progress maction msize bytesprocessed =
   where
 	n = fromBytesProcessed bytesprocessed :: Integer
 	j = case msize of
-		Just size -> object
+		Just (TotalSize size) -> object
 			[ "byte-progress" .= n
 			, "percent-progress" .= showPercentage 2 (percentage size n)
 			, "total-size" .= size

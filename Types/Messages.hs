@@ -9,7 +9,6 @@ module Types.Messages where
 
 import qualified Utility.Aeson as Aeson
 import Utility.Metered
-import Utility.FileSize
 
 import Control.Concurrent
 import System.Console.Regions (ConsoleRegion)
@@ -69,7 +68,7 @@ newMessageState = do
 data SerializedOutput
 	= OutputMessage S.ByteString
 	| OutputError String
-	| StartProgressMeter (Maybe FileSize)
+	| StartProgressMeter (Maybe TotalSize)
 	| UpdateProgressMeter BytesProcessed
 	| EndProgressMeter
 	| StartPrompt
