@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="adina.wagner@2a4cac6443aada2bd2a329b8a33f4a7b87cc8eff"
+ nickname="adina.wagner"
+ avatar="http://cdn.libravatar.org/avatar/80b124ad61d6008fa0f6f0b4b0f7c2ef"
+ subject="comment 3"
+ date="2020-12-12T20:32:05Z"
+ content="""
+Thanks a lot for the issue and the response!
+
+> So you might try setting annex.alwayscommit=false in .git/config and overriding it true when you do want to commit and see if that avoids the problem.
+
+I have tried this, in a couple of flavors, just to be sure (running from bash, sh, cmd, Anaconda prompt; with local, global configuration scopes of annex.alwayscommit=false) and I couldn't yet convince the computer to create only one instead of two commits with the [test script from Kyle](https://github.com/datalad/datalad/pull/5202#discussion_r536178860). But as both you and Kyle said its not a bug or problematic behavior, I also personally do not care much about it. :) If I ever stumble across any possible explanation or workaround for this, I'll comment here.
+
+> However, the other thing is that \"alwayscommit=false\" does not really imply \"never commit in any circumstances\". It just means, don't commit every time some new data has been logged. In particular, Annex.Branch.updateTo' may need to update the index due to the git-annex branch having gotten ahead of the index. If there are uncommitted journalled changes, it unconditionally commits in that situation. I don't know if I would consider that a bug. Since you have a new repo, it's not that either. There might be other cases like that, although I don't know why you'd only see it happening on windows.
+
+That makes sense, thanks for the discussion! I also don't know why I am seeing it on Windows only. Just as an FYI on the machines I have used: I have observed the behavior described in this issue on two different Windows machines, and all machines I have tried annex.alwayscommit=false and observed the expected behavior ran Debian (including in WSL2 on Windows 10).
+
+PS: thanks for git-annex! :)
+
+
+
+"""]]
