@@ -1,0 +1,26 @@
+Somehow one of my usb removable drives got a new annex uuid assigned to a
+repo in it than the one it had before. Since the drive is now frequently
+falling off the USB bus with lots of IO errors, I hypothesize what might
+have happened is that when git-annex read the git config, it somehow got
+a corrupted version where annex.uuid was not set. So, it autoinitialized with
+a new uuid.
+
+(Arguing against this theory is that when git config then wrote to the
+file, it would normally use the same cached value so would have written the
+corrupted version. Which did not happen.)
+
+I have checked, and if git config exits nonzero, git-annex does not
+continue with autoinitialization. So it seems it was not as simple as a
+read failure.
+
+To avoid any kind of problem like this leading the a new uuid being
+generated, which can be pretty annoying to recover from especially if you
+don't notice it for a long time, maybe git-annex should avoid autoinit when
+there's a git-annex branch already, or if .git/annex/index already exists.
+After all, that implies the repo should have already been initialized, and
+now it isn't, so something unusual is going on.
+
+A bare repo that was just cloned will have a git-annex branch
+before it gets initialized. So for bare repos, would need to not consider
+that, but looking if annex/index exists would still do. Or may be better
+not to special case it, and only look for the annex/index file? --[[Joey]]
