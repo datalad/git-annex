@@ -17,6 +17,9 @@ git-annex (8.20201128) UNRELEASED; urgency=medium
   * Avoid autoinit when a repo does not have annex.version or annex.uuid
     set, but has a git-annex objects directory, suggesting it was used
     by git-annex before.
+  * Fix reversion in 8.20201116 that made include= and exclude= in
+    preferred/required content expressions match a path relative to the
+    current directory, rather than the path from the top of the repository.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Nov 2020 12:55:49 -0400
 

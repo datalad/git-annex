@@ -241,6 +241,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		let mi = MatchingFile $ FileInfo
 			{ contentFile = Just srcfile
 			, matchFile = destfile
+			, matchKey = Nothing
 			}
 		lockingfile <- not <$> addUnlocked addunlockedmatcher mi
 		-- Minimal lock down with no hard linking so nothing

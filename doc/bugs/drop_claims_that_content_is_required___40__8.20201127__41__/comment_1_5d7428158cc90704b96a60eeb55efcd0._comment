@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-12-14T19:36:20Z"
+ content="""
+Looks like it was caused by [[!commit d032b0885d80d12c00fa8813e88deab1631eef8a]] which made MatchingKey be used
+rather than MatchingFile. Which oops, mean the filename is left relative rather
+than being made into a path from the top of the repo.
+
+Fixed that and your test case works. I do think this would be a better
+expression for you to use though:
+
+	(include=*.mrimg and exclude=*/arkistoidut/* and exclude=arkistoidut/*)
+
+Or maybe just exclude=arkistoidut/* rather than both, depending on if you
+want to support subdirectories of subdirectories with that name, or only
+the single subdirectory in the top of your repo.
+"""]]

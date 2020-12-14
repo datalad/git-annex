@@ -115,6 +115,7 @@ withPathContents a params = do
 	checkmatch matcher (f, relf) = matcher $ MatchingFile $ FileInfo
 		{ contentFile = Just f
 		, matchFile = relf
+		, matchKey = Nothing
 		}
 
 withWords :: ([String] -> CommandSeek) -> CmdParams -> CommandSeek
@@ -287,7 +288,7 @@ seekFiltered prefilter a listfs = do
   where
 	process matcher v@(_si, f) =
 		whenM (prefilter v) $
-			whenM (matcher $ MatchingFile $ FileInfo (Just f) f) $
+			whenM (matcher $ MatchingFile $ FileInfo (Just f) f Nothing) $
 				a v
 
 data MatcherInfo = MatcherInfo
@@ -365,7 +366,7 @@ seekFilteredKeys seeker listfs = do
 		-- checked later, to avoid a slow lookup here.
 		(not ((matcherNeedsKey mi || matcherNeedsLocationLog mi) 
 			&& not (matcherNeedsFileName mi)))
-		(MatchingFile $ FileInfo (Just f) f)
+		(MatchingFile $ FileInfo (Just f) f Nothing)
 		(liftIO $ ofeeder ((si, f), sha))
 
 	keyaction f mi content a = 

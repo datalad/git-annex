@@ -194,3 +194,5 @@ Yes, so far it has worked nicely archiving (and describing via git-annex metadat
 orderly fashion.
 
 [[!meta author=jkniiv]]
+
+> [[fixed|done]] --[[Joey]]

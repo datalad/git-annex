@@ -135,7 +135,7 @@ send ups fs = do
 			(fs', cleanup) <- seekHelper id ww LsFiles.inRepo
 				=<< workTreeItems ww fs
 			matcher <- Limit.getMatcher
-			let addlist f o = whenM (matcher $ MatchingFile $ FileInfo (Just f) f) $
+			let addlist f o = whenM (matcher $ MatchingFile $ FileInfo (Just f) f Nothing) $
 				liftIO $ hPutStrLn h o
 			forM_ fs' $ \(_, f) -> do
 				mk <- lookupKey f

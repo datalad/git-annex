@@ -18,10 +18,13 @@ import Control.Monad.IO.Class
 import qualified Data.Map as M
 import qualified Data.Set as S
 
--- Information about a file or a key that can be matched on.
+-- Information about a file and/or a key that can be matched on.
 data MatchInfo
 	= MatchingFile FileInfo
 	| MatchingKey Key AssociatedFile
+	-- ^ This is used when operating on a file that may be in another
+	-- branch. The AssociatedFile is the filename, but it should not be
+	-- accessed from disk when matching.
 	| MatchingInfo ProvidedInfo
 	| MatchingUserInfo UserProvidedInfo
 
@@ -33,6 +36,8 @@ data FileInfo = FileInfo
 	-- ^ filepath to match on; may be relative to top of repo or cwd,
 	-- depending on how globs in preferred content expressions
 	-- are intended to be matched
+	, matchKey :: Maybe Key
+	-- ^ provided if a key is already known
 	}
 
 data ProvidedInfo = ProvidedInfo
