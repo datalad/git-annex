@@ -346,7 +346,7 @@ seekFilteredKeys seeker listfs = do
 			maybe noop (Annex.BranchState.setCache logf) logcontent
 			checkMatcherWhen mi
 				(matcherNeedsLocationLog mi && not (matcherNeedsFileName mi))
-				(MatchingKey k (AssociatedFile (Just f)))
+				(MatchingFile $ FileInfo (Just f) f (Just k))
 				(commandAction $ startAction seeker si f k)
 			precachefinisher mi lreader
 		Nothing -> return ()
@@ -373,7 +373,7 @@ seekFilteredKeys seeker listfs = do
 		case parseLinkTargetOrPointerLazy =<< content of
 			Just k -> checkMatcherWhen mi
 				(matcherNeedsKey mi && not (matcherNeedsFileName mi || matcherNeedsLocationLog mi))
-				(MatchingKey k (AssociatedFile (Just f)))
+				(MatchingFile $ FileInfo (Just f) f (Just k))
 				(checkpresence k (a k))
 			Nothing -> noop
 	

@@ -22,7 +22,7 @@ import qualified Data.Set as S
 data MatchInfo
 	= MatchingFile FileInfo
 	| MatchingKey Key AssociatedFile
-	-- ^ This is used when operating on a file that may be in another
+	-- ^ This is used when matching a file that may be in another
 	-- branch. The AssociatedFile is the filename, but it should not be
 	-- accessed from disk when matching.
 	| MatchingInfo ProvidedInfo
