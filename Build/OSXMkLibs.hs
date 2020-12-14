@@ -9,6 +9,7 @@ module Build.OSXMkLibs (mklibs) where
 
 import Data.Maybe
 import System.FilePath
+import System.IO
 import Control.Monad
 import Control.Monad.IfElse
 import Data.List
@@ -33,7 +34,10 @@ type LibMap = M.Map FilePath String
 
 mklibs :: FilePath -> M.Map FilePath FilePath -> IO Bool
 mklibs appbase installedbins = do
-	mklibs' appbase installedbins [] [] M.empty
+	usl <- getEnv "USE_SYSTEM_LIBS"
+	case usl of
+		Nothing -> mklibs' appbase installedbins [] [] M.empty
+		Just _ -> hPutStrLn stderr "dmg will use system libraries (USE_SYSTEM_LIBS)"
 	return True
 
 {- Recursively find and install libs, until nothing new to install is found. -}

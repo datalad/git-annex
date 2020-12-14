@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2020-12-14T19:08:40Z"
+ content="""
+install_name_tool: warning: changes being made to the file will invalidate the code signature in: tmp/build-dmg/git-annex.app/Contents/MacOS/bundle/R
+
+This makes me doubtful that, even if the `@loader_path` problem gets resolved
+and it builds, it will actually work. It seems likely that if a library is
+signed, modifying it to have an invalid signature would make the OS refuse to
+use it.
+
+The OSX build used for releases is still using an older OSX and does not have
+either problem. I do notice there is a similar workaround in Build/OSXMkLibs.h
+for `@executable_path`; it skips such libraries. So skipping `@loader_path`
+in the same place would probably build, but would it work?
+
+Since git-annex can be installed from homebrew, I don't know if it's worth
+trying to keep the standalone app working in the face of such problems.
+Is there a use case for the .dmg file that this failing build is producing?
+
+One approach would be to stop bundling system libraries, so the .dmg
+perhaps is tied to a specific version of OSX. I've added a way to build
+the dmg that way, make osxapp USE_SYSTEM_LIBS=1
+"""]]
