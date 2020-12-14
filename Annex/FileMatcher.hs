@@ -72,10 +72,11 @@ checkMatcher :: FileMatcher Annex -> Maybe Key -> AssociatedFile -> AssumeNotPre
 checkMatcher matcher mkey afile notpresent notconfigured d
 	| isEmpty matcher = notconfigured
 	| otherwise = case (mkey, afile) of
-		(mkey, AssociatedFile (Just file)) ->
+		(_, AssociatedFile (Just file)) ->
 			go =<< fileMatchInfo file mkey
-		(Just key, _) -> go (MatchingKey key afile)
-		_ -> d
+		(Just key, AssociatedFile Nothing) ->
+			go (MatchingKey key afile)
+		(Nothing, _) -> d
   where
 	go mi = checkMatcher' matcher mi notpresent
 
