@@ -159,6 +159,29 @@ uninitialize = do
 	removeRepoUUID
 	removeVersion
 
+{- Gets the version that the repo is initialized with.
+ -
+ - To make sure the repo is fully initialized, also checks that it has a
+ - uuid configured. In the unusual case where one is set and the other is
+ - not, errors out to avoid running in an inconsistent state.
+ -}
+getInitializedVersion :: Annex (Maybe RepoVersion)
+getInitializedVersion = do
+	um <- (\u -> if u == NoUUID then Nothing else Just u) <$> getUUID
+	vm <- getVersion
+	case (um, vm) of
+		(Just _, Just v) -> return (Just v)
+		(Nothing, Nothing) -> return Nothing
+		(Just _, Nothing) -> onemissing "annex.version" "annex.uuid"
+		(Nothing, Just _) -> onemissing "annex.uuid" "annex.version"
+  where
+	onemissing missing have = giveup $ unwords
+		[ "This repository has " ++ have ++ " set,"
+		, "but " ++ missing ++ " is not set. Perhaps that"
+		, "git config was lost. Cannot use the repository"
+		, "in this state; set back " ++ missing ++ " to fix this."
+		]
+
 {- Will automatically initialize if there is already a git-annex
  - branch from somewhere. Otherwise, require a manual init
  - to avoid git-annex accidentally being run in git
@@ -167,7 +190,7 @@ uninitialize = do
  - Checks repository version and handles upgrades too.
  -}
 ensureInitialized :: Annex ()
-ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
+ensureInitialized = getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM autoInitializeAllowed
 		( do
@@ -178,14 +201,30 @@ ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
 
 {- Check if auto-initialize is allowed. -}
 autoInitializeAllowed :: Annex Bool
-autoInitializeAllowed = Annex.Branch.hasSibling
+autoInitializeAllowed = Annex.Branch.hasSibling <&&> objectDirNotPresent
+
+objectDirNotPresent :: Annex Bool
+objectDirNotPresent = do
+	d <- fromRawFilePath <$> fromRepo gitAnnexObjectDir
+	exists <- liftIO $ doesDirectoryExist d
+	when exists $
+		giveup $ unwords $ 
+			[ "This repository is not initialized for use"
+			, "by git-annex, but " ++ d ++ " exists,"
+			, "which indicates this repository was used by"
+			, "git-annex before, and may have lost its"
+			, "annex.uuid and annex.version configs. Either"
+			, "set back missing configs, or run git-annex init"
+			, "to initialize with a new uuid."
+			]
+	return (not exists)
 
 {- Initialize if it can do so automatically. Avoids failing if it cannot.
  -
  - Checks repository version and handles upgrades too.
  -}
 autoInitialize :: Annex ()
-autoInitialize = getVersion >>= maybe needsinit checkUpgrade
+autoInitialize = getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit =
 		whenM (initializeAllowed <&&> autoInitializeAllowed) $ do

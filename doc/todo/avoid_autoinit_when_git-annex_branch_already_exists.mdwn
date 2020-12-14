@@ -24,3 +24,5 @@ A bare repo that was just cloned will have a git-annex branch
 before it gets initialized. So for bare repos, would need to not consider
 that, but looking if annex/index exists would still do. Or may be better
 not to special case it, and only look for the annex/index file? --[[Joey]]
+
+> [[done]] --[[Joey]]
