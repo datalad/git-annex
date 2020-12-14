@@ -1,0 +1,196 @@
+### Please describe the problem.
+
+This new release of git-annex claims that content is required when I'm trying to drop it despite the fact that I'm using an `exclude=`
+sub-expression *that matches* the exclusion in the required content expression. This works fine in my "gold" version aka.
+8.20201103-g0cf77eb41 so somewhere in between there was a change that broke this.
+
+### What steps will reproduce the problem?
+
+The following transcript describes the problem well. I'm in an archive folder (in a hidemissing-unlocked branch) where I should be able
+to drop annexed files as long as the archival remote (in this case "k-levyn-annex2") is connected and reachable by git-annex:
+
+[[!format sh """
+PS> git annex version | head -n 1
+git-annex version: 8.20201127-g1a1d671dd
+PS> pwd
+
+Path
+----
+G:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A\arkistoidut
+
+PS> ls
+
+    Directory: G:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A\arkistoidut
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---           13.8.2020    13:27            103 .ankkuri
+-a---          25.11.2020    12:11    20190345809 5D3DB6C10EAF0911-07-07.mrimg
+
+PS> git annex whereis .\5D3DB6C10EAF0911-07-07.mrimg
+whereis 5D3DB6C10EAF0911-07-07.mrimg (2 copies)
+        3362df51-1789-4471-96a0-d2267ada6aa4 -- Reflect-varmistukset [here]
+        46a41e47-45c8-4a86-b348-db0c4cfb18f3 -- Reflect-varmistukset [k-levyn-annex2]
+ok
+PS> fsutil hardlink list .\5D3DB6C10EAF0911-07-07.mrimg
+\Reflect-varmistukset\.git\annex\objects\692\4bf\MD5E-s20190345809--37ade0ff04b63b042f87d7fbc4f7b0a4.mrimg\MD5E-s20190345809--37ade0ff04b63b042f87d7fbc4f7b0a4.mrimg
+\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A\arkistoidut\5D3DB6C10EAF0911-07-07.mrimg
+PS> git annex drop .\5D3DB6C10EAF0911-07-07.mrimg
+drop 5D3DB6C10EAF0911-07-07.mrimg
+  That file is required content, it cannot be dropped!
+
+  (Use --force to override this check, or adjust required content configuration.)
+failed
+git-annex: drop: 1 failed
+PS> git annex required .
+(include=*.mrimg and exclude=*arkistoidut*)
+PS> git annex find --want-drop --in .
+5D3DB6C10EAF0911-07-07.mrimg
+PS> git annex required . '(include=*.mrimg and exclude=*/arkistoidut/*)'
+required . ok
+(recording state in git...)
+PS> git annex required .
+(include=*.mrimg and exclude=*/arkistoidut/*)
+PS> git annex find --want-drop --in .
+[empty]
+PS> git annex required . '(include=*.mrimg and exclude=*\arkistoidut\*)'
+required . ok
+(recording state in git...)
+PS> git annex required .
+(include=*.mrimg and exclude=*\arkistoidut\*)
+PS> git annex find --want-drop --in .
+5D3DB6C10EAF0911-07-07.mrimg
+PS> git annex drop .\5D3DB6C10EAF0911-07-07.mrimg
+drop 5D3DB6C10EAF0911-07-07.mrimg
+  That file is required content, it cannot be dropped!
+
+  (Use --force to override this check, or adjust required content configuration.)
+failed
+git-annex: drop: 1 failed
+# end of transcript
+"""]]
+
+(I've edited the transcript above by removing the long paths in the PowerShell prompt (now just "PS> ") and adding the text "[empty]" where
+responses have been just that, empty lines. The words "varmistukset", "arkistoidut" and "ankkuri" are in Finnish and mean "backups",
+"archives" and "anchor" (ie. placeholder) respectively.)
+
+This is the contents of the `.git/config` file of the repo:
+
+```
+[core]
+        repositoryformatversion = 0
+        filemode = false
+        bare = false
+        logallrefupdates = true
+        symlinks = false
+        ignorecase = true
+        pager = delta --theme='Monokai Extended'
+[interactive]
+        diffFilter = delta --color-only
+[annex]
+        thin = true
+        backend = MD5E
+        uuid = 3362df51-1789-4471-96a0-d2267ada6aa4
+        sshcaching = false
+        crippledfilesystem = true
+        version = 8
+        maxextensionlength = 8
+[filter "annex"]
+        smudge = git-annex smudge -- %f
+        clean = git-annex smudge --clean -- %f
+[remote "k-levyn-annex2"]
+        url = k:\\Reflect-varmistukset
+        fetch = +refs/heads/*:refs/remotes/k-levyn-annex2/*
+        annex-uuid = 46a41e47-45c8-4a86-b348-db0c4cfb18f3
+[receive]
+        denyCurrentBranch = warn
+[merge]
+        renames = true
+        directoryRenames = false
+```
+
+### What version of git-annex are you using? On what operating system?
+
+Version 8.20201127, two commits ahead (1a1d671dd "fix build") of the release tag, so built from source. This is on Windows 10 version 20H2
+(build 19042.630), 64 bit.
+
+[[!format sh """
+git-annex version: 8.20201127-g1a1d671dd
+build flags: Assistant Webapp Pairing TorrentParser Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso hook external
+operating system: mingw32 x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 2 3 4 5 6 7
+"""]]
+
+### Please provide any additional information below.
+
+I'm going to show you when this works ok (well, I have another curious problem in that in many cases git-annex doesn't want to remove
+the target file even when it has dropped the key / annexed blob already but that's beside the point for now). This transcript follows
+the one above:
+
+<details>
+<summary>a mostly working example (or: the works for me case)</summary>
+
+[[!format sh """
+PS> C:\git-annex-testsuite-results\last-working\git-annex.exe version | head -n 1
+git-annex version: 8.20201103-g0cf77eb41
+PS> C:\git-annex-testsuite-results\last-working\git-annex.exe required .
+(include=*.mrimg and exclude=*\arkistoidut\*)
+PS> C:\git-annex-testsuite-results\last-working\git-annex.exe find --want-drop --in .
+5D3DB6C10EAF0911-07-07.mrimg
+PS> C:\git-annex-testsuite-results\last-working\git-annex.exe drop .\5D3DB6C10EAF0911-07-07.mrimg
+drop 5D3DB6C10EAF0911-07-07.mrimg ok
+(recording state in git...)
+PS> ls
+
+    Directory: G:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A\arkistoidut
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---           13.8.2020    13:27            103 .ankkuri
+-a---          25.11.2020    12:11    20190345809 5D3DB6C10EAF0911-07-07.mrimg
+
+PS> C:\git-annex-testsuite-results\last-working\git-annex.exe info .\5D3DB6C10EAF0911-07-07.mrimg
+file: 5D3DB6C10EAF0911-07-07.mrimg
+size: 20.19 gigabytes
+key: MD5E-s20190345809--37ade0ff04b63b042f87d7fbc4f7b0a4.mrimg
+present: false
+PS> C:\git-annex-testsuite-results\last-working\git-annex.exe contentlocation MD5E-s20190345809--37ade0ff04b63b042f87d7fbc4f7b0a4.mrimg
+[empty]
+PS> fsutil hardlink list .\5D3DB6C10EAF0911-07-07.mrimg
+\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A\arkistoidut\5D3DB6C10EAF0911-07-07.mrimg
+PS> rm .\5D3DB6C10EAF0911-07-07.mrimg
+PS> git status
+On branch adjusted/master(hidemissing-unlocked)
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    5D3DB6C10EAF0911-07-07.mrimg
+
+no changes added to commit (use "git add" and/or "git commit -a")
+PS> git restore 5D3DB6C10EAF0911-07-07.mrimg
+PS> ls
+
+    Directory: G:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A\arkistoidut
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---           13.8.2020    13:27            103 .ankkuri
+-a---          29.11.2020    11:33             74 5D3DB6C10EAF0911-07-07.mrimg
+
+PS> cat .\5D3DB6C10EAF0911-07-07.mrimg
+/annex/objects/MD5E-s20190345809--37ade0ff04b63b042f87d7fbc4f7b0a4.mrimg
+# end of transcript
+"""]]
+
+</details>
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, so far it has worked nicely archiving (and describing via git-annex metadata) my multi-gigabyte Macrium Reflect backup files in an
+orderly fashion.
+
+[[!meta author=jkniiv]]
