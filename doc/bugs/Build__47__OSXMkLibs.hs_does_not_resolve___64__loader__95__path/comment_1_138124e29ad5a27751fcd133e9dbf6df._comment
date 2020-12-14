@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2020-12-14T14:07:47Z"
+ content="""
+For your convenience Joey here is a sample fresh (since still keeps failing) log: [http://www.onerussian.com/tmp/git-annex-osx-20201214-1.txt](http://www.onerussian.com/tmp/git-annex-osx-20201214-1.txt) .  Link to workflow all results: [https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+macOS%22](https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+macOS%22)
+"""]]
