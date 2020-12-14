@@ -29,7 +29,7 @@ programFile :: IO FilePath
 programFile = userConfigFile "program"
 
 {- A .noannex file in a git repository prevents git-annex from
- - initializing that repository.. The content of the file is returned. -}
+ - initializing that repository. The content of the file is returned. -}
 noAnnexFileContent :: Maybe FilePath -> IO (Maybe String)
 noAnnexFileContent repoworktree = case repoworktree of
 	Nothing -> return Nothing

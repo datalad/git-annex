@@ -65,8 +65,8 @@ import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
 #endif
 
-checkCanInitialize :: Annex a -> Annex a
-checkCanInitialize a = canInitialize' >>= \case
+checkInitializeAllowed :: Annex a -> Annex a
+checkInitializeAllowed a = noAnnexFileContent' >>= \case
 	Nothing -> a
 	Just noannexmsg -> do
 		warning "Initialization prevented by .noannex file (remove the file to override)"
@@ -74,11 +74,12 @@ checkCanInitialize a = canInitialize' >>= \case
 			warning noannexmsg
 		giveup "Not initialized."
 
-canInitialize :: Annex Bool
-canInitialize = isNothing <$> canInitialize'
+initializeAllowed :: Annex Bool
+initializeAllowed = isNothing <$> noAnnexFileContent'
 
-canInitialize' :: Annex (Maybe String)
-canInitialize' = inRepo (noAnnexFileContent . fmap fromRawFilePath . Git.repoWorkTree)
+noAnnexFileContent' :: Annex (Maybe String)
+noAnnexFileContent' = inRepo $
+	noAnnexFileContent . fmap fromRawFilePath . Git.repoWorkTree
 
 genDescription :: Maybe String -> Annex UUIDDesc
 genDescription (Just d) = return $ UUIDDesc $ encodeBS d
@@ -94,7 +95,7 @@ genDescription Nothing = do
 		Left _ -> [hostname, ":", reldir]
 
 initialize :: Maybe String -> Maybe RepoVersion -> Annex ()
-initialize mdescription mversion = checkCanInitialize $ do
+initialize mdescription mversion = checkInitializeAllowed $ do
 	{- Has to come before any commits are made as the shared
 	 - clone heuristic expects no local objects. -}
 	sharedclone <- checkSharedClone
@@ -117,7 +118,7 @@ initialize mdescription mversion = checkCanInitialize $ do
 -- Everything except for uuid setup, shared clone setup, and initial
 -- description.
 initialize' :: Maybe RepoVersion -> Annex ()
-initialize' mversion = checkCanInitialize  $ do
+initialize' mversion = checkInitializeAllowed $ do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
@@ -168,21 +169,26 @@ uninitialize = do
 ensureInitialized :: Annex ()
 ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
   where
-	needsinit = ifM Annex.Branch.hasSibling
+	needsinit = ifM autoInitializeAllowed
 		( do
 			initialize Nothing Nothing
 			autoEnableSpecialRemotes
 		, giveup "First run: git-annex init"
 		)
 
-{- Initialize if it can do so automatically.
+{- Check if auto-initialize is allowed. -}
+autoInitializeAllowed :: Annex Bool
+autoInitializeAllowed = Annex.Branch.hasSibling
+
+{- Initialize if it can do so automatically. Avoids failing if it cannot.
  -
  - Checks repository version and handles upgrades too.
  -}
 autoInitialize :: Annex ()
 autoInitialize = getVersion >>= maybe needsinit checkUpgrade
   where
-	needsinit = whenM (canInitialize <&&> Annex.Branch.hasSibling) $ do
+	needsinit =
+		whenM (initializeAllowed <&&> autoInitializeAllowed) $ do
 			initialize Nothing Nothing
 			autoEnableSpecialRemotes
 
