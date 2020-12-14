@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2020-12-14T20:59:06Z"
+ content="""
+> Is there a use case for the .dmg file that this failing build is producing?
+
+In our case we build .dmg to have it possibly (re)distributed later on as a build of git-annex to use.  But primary use case is just to have it installed and run git-annex and then datalad tests to ensure correct operation.
+"""]]
