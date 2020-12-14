@@ -30,7 +30,9 @@ data FileInfo = FileInfo
 	-- ^ path to a file containing the content, for operations
 	-- that examine it
 	, matchFile :: RawFilePath
-	-- ^ filepath to match on; may be relative to top of repo or cwd
+	-- ^ filepath to match on; may be relative to top of repo or cwd,
+	-- depending on how globs in preferred content expressions
+	-- are intended to be matched
 	}
 
 data ProvidedInfo = ProvidedInfo
