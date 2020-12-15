@@ -13,7 +13,7 @@ git-annex (8.20201128) UNRELEASED; urgency=medium
   * Support special remotes that are configured with importtree=yes but
     without exporttree=yes.
   * Guard against running in a repo where annex.uuid is set but
-    annex.version is set, or vice-versa.
+    annex.version is not set, or vice-versa.
   * Avoid autoinit when a repo does not have annex.version or annex.uuid
     set, but has a git-annex objects directory, suggesting it was used
     by git-annex before.
