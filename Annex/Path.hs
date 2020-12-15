@@ -11,6 +11,7 @@ import Annex.Common
 import Config.Files
 import Utility.Env
 import Annex.PidLock
+import qualified Annex
 
 import System.Environment (getExecutablePath)
 
@@ -55,10 +56,14 @@ cannotFindProgram = do
  - to avoid it deadlocking.
  -}
 gitAnnexChildProcess
-	:: [String]
+	:: String
+	-> [String]
 	-> (CreateProcess -> CreateProcess)
 	-> (Maybe Handle -> Maybe Handle -> Maybe Handle -> ProcessHandle -> IO a)
 	-> Annex a
-gitAnnexChildProcess ps f a = do
+gitAnnexChildProcess subcmd ps f a = do
 	cmd <- liftIO programPath
-	pidLockChildProcess cmd ps f a
+	-- Pass along git config values that were set on command line
+	-- to the child process.
+	cps <- concatMap (\c -> ["-c", c]) <$> Annex.getGitConfigOverrides
+	pidLockChildProcess cmd (subcmd:cps++ps) f a

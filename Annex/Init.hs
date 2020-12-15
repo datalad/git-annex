@@ -383,10 +383,8 @@ fixupUnusualReposAfterInit = do
 autoEnableSpecialRemotes :: Annex ()
 autoEnableSpecialRemotes = do
 	rp <- fromRawFilePath <$> fromRepo Git.repoPath
-	withNullHandle $ \nullh -> gitAnnexChildProcess
-		[ "init"
-		, "--autoenable"
-		]
+	withNullHandle $ \nullh -> gitAnnexChildProcess "init"
+		[ "--autoenable" ]
 		(\p -> p
 			{ std_out = UseHandle nullh
 			, std_err = UseHandle nullh

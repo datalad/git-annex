@@ -75,7 +75,7 @@ pidLockChildProcess cmd ps f a = do
  -
  - This is like pidLockChildProcess, but rather than running a process
  - itself, it runs the action with a modified Annex state that passes the
- - necessary env var.
+ - necessary env var when running git.
  -}
 runsGitAnnexChildProcessViaGit :: Annex a -> Annex a
 #ifndef mingw32_HOST_OS

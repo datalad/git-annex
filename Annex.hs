@@ -32,6 +32,7 @@ module Annex (
 	changeGitRepo,
 	adjustGitRepo,
 	addGitConfigOverride,
+	getGitConfigOverrides,
 	getRemoteGitConfig,
 	withCurrentState,
 	changeDirectory,
@@ -110,6 +111,7 @@ data AnnexState = AnnexState
 	, repoadjustment :: (Git.Repo -> IO Git.Repo)
 	, gitconfig :: GitConfig
 	, gitconfigadjustment :: (GitConfig -> GitConfig)
+	, gitconfigoverride :: [String]
 	, gitremotes :: Maybe [Git.Repo]
 	, backend :: Maybe (BackendA Annex)
 	, remotes :: [Types.Remote.RemoteA Annex]
@@ -175,6 +177,7 @@ newState c r = do
 		, repoadjustment = return
 		, gitconfig = c
 		, gitconfigadjustment = id
+		, gitconfigoverride = []
 		, gitremotes = Nothing
 		, backend = Nothing
 		, remotes = []
@@ -352,12 +355,14 @@ adjustGitRepo a = do
 	changeGitRepo =<< gitRepo
 
 {- Adds git config setting, like "foo=bar". It will be passed with -c
- - to git processes. The config setting is also recorded in the repo,
+ - to git processes. The config setting is also recorded in the Repo,
  - and the GitConfig is updated. -}
 addGitConfigOverride :: String -> Annex ()
-addGitConfigOverride v = adjustGitRepo $ \r ->
-	Git.Config.store (encodeBS' v) Git.Config.ConfigList $
-		r { Git.gitGlobalOpts = go (Git.gitGlobalOpts r) }
+addGitConfigOverride v = do
+	adjustGitRepo $ \r ->
+		Git.Config.store (encodeBS' v) Git.Config.ConfigList $
+			r { Git.gitGlobalOpts = go (Git.gitGlobalOpts r) }
+	changeState $ \s -> s { gitconfigoverride = v : gitconfigoverride s }
   where
 	-- Remove any prior occurrance of the setting to avoid
 	-- building up many of them when the adjustment is run repeatedly,
@@ -365,6 +370,10 @@ addGitConfigOverride v = adjustGitRepo $ \r ->
 	go [] = [Param "-c", Param v]
 	go (Param "-c": Param v':rest) | v' == v = go rest
 	go (c:rest) = c : go rest
+
+{- Values that were passed to addGitConfigOverride. -}
+getGitConfigOverrides :: Annex [String]
+getGitConfigOverrides = reverse <$> getState gitconfigoverride
 
 {- Changing the git Repo data also involves re-extracting its GitConfig. -}
 changeGitRepo :: Git.Repo -> Annex ()

@@ -103,9 +103,8 @@ upgrade automatic destversion = do
 	-- upgrading a git repo other than the current repo.
 	upgraderemote = do
 		rp <- fromRawFilePath <$> fromRepo Git.repoPath
-		gitAnnexChildProcess
-			[ "upgrade"
-			, "--quiet"
+		gitAnnexChildProcess "upgrade"
+			[ "--quiet"
 			, "--autoonly"
 			]
 			(\p -> p { cwd = Just rp })

@@ -535,7 +535,7 @@ pushRemote o remote (Just branch, _) = do
 	postpushupdate repo = case Git.repoWorkTree repo of
 		Nothing -> return True
 		Just wt -> ifM needemulation
-			( gitAnnexChildProcess ["post-receive"]
+			( gitAnnexChildProcess "post-receive" []
 				(\cp -> cp { cwd = Just (fromRawFilePath wt) })
 				(\_ _ _ pid -> waitForProcess pid >>= return . \case
 					ExitSuccess -> True
