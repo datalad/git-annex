@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2020-12-15T16:18:39Z"
+ content="""
+FTR: unfortunately not a complete workaround for us since the 'test' step is done in a clean environment (not build one), where we just install .dmg.  That results in git-annex not being able to find those dynamic libraries it had in build environment
+
+```
+Run git annex version
+dyld: Library not loaded: /usr/local/opt/libmagic/lib/libmagic.1.dylib
+  Referenced from: /Applications/git-annex.app/Contents/MacOS/bundle/git-annex
+  Reason: image not found
+error: git-annex died of signal 6
+Error: Process completed with exit code 134.
+```
+
+ref: [https://github.com/datalad/git-annex/pull/31](https://github.com/datalad/git-annex/pull/31)
+"""]]
