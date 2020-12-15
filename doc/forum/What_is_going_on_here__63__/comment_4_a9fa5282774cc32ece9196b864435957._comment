@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2020-12-15T17:08:21Z"
+ content="""
+git-annex initremote creates a *new* special remote. 
+(Back in version 4.20130501, initremote was also used
+to enable an existing special remote so maybe you're remembering that, but
+that was well before v5 anyway.)
+
+So, when you clone your gitlab repo, which you have not pushed the
+git-annex branch to, and then initremote shared-storage, you are making a
+brand new remote, not enabling the one you created earlier. 
+(If you had pushed the git-annex branch, the second initremote would
+have complained that there was already a special remote by that name.) 
+
+It's not possible that this brand new remote contains the content of
+test.bin, at least as far as git-annex knows. Because it's brand new, and
+so, presumably empty.
+
+I'm not sure what specific thing in the older version of git-annex
+might have made that appear to work. But it certianly seems that
+what you're doing does not make any sense, and I would not have expected
+it to work with any version of git-annex.
+
+Nothing to do with v5 or v8 repository mode has anything to do with
+this, certianly.
+"""]]
