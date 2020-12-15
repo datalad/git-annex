@@ -4,3 +4,5 @@ This should be rejected, but currently succeeds:
 
 There is code in adjustExportImportRemoteType, and I remember it used to
 work. --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]

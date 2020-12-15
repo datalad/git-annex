@@ -14,7 +14,7 @@ import Types.Remote
 import Types.Key
 import Types.ProposedAccepted
 import Backend
-import Remote.Helper.Encryptable (isEncrypted)
+import Remote.Helper.Encryptable (encryptionIsEnabled)
 import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as ContentIdentifier
 import Annex.Export
@@ -83,7 +83,7 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 			ifM (supported rt pc gc)
 				( case st of
 					Init
-						| configured pc && isEncrypted pc ->
+						| configured pc && encryptionIsEnabled pc ->
 							giveup $ "cannot enable both encryption and " ++ fromProposedAccepted configfield
 						| otherwise -> cont
 					Enable oldc -> do

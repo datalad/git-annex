@@ -22,6 +22,7 @@ git-annex (8.20201128) UNRELEASED; urgency=medium
     current directory, rather than the path from the top of the repository.
   * importfeed: Avoid using youtube-dl when a feed does not contain an
     enclosure, but only a link to an url which youtube-dl does not support.
+  * initremote: Prevent enabling encryption with exporttree=yes/importtree=yes.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Nov 2020 12:55:49 -0400
 

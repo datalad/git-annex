@@ -20,6 +20,7 @@ module Remote.Helper.Encryptable (
 	cipherKey,
 	extractCipher,
 	isEncrypted,
+	encryptionIsEnabled,
 	describeEncryption,
 	encryptionField,
 	highRandomQualityField
@@ -281,6 +282,14 @@ extractCipher c = case (getRemoteConfigValue cipherField c,
 
 isEncrypted :: ParsedRemoteConfig -> Bool
 isEncrypted = isJust . extractCipher
+
+-- Check if encryption is enabled. This can be done before encryption
+-- is fully set up yet, so the cipher might not be present yet.
+encryptionIsEnabled :: ParsedRemoteConfig -> Bool
+encryptionIsEnabled c = case getRemoteConfigValue encryptionField c of
+	Nothing -> False
+	Just NoneEncryption -> False
+	Just _ -> True
 
 describeEncryption :: ParsedRemoteConfig -> String
 describeEncryption c = case extractCipher c of
