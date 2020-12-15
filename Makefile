@@ -205,7 +205,6 @@ dpkg-buildpackage%: prep-standalone
 	umask 022; dpkg-buildpackage -rfakeroot $*
 	$(MAKE) undo-standalone
 
-# Run this with USE_SYSTEM_LIBS=1 to build without bundling system libraries.
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
 OSXAPP_TOP=$(OSXAPP_DEST)/Contents/MacOS/bundle
 osxapp:

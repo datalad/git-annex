@@ -34,10 +34,7 @@ type LibMap = M.Map FilePath String
 
 mklibs :: FilePath -> M.Map FilePath FilePath -> IO Bool
 mklibs appbase installedbins = do
-	usl <- getEnv "USE_SYSTEM_LIBS"
-	case usl of
-		Nothing -> mklibs' appbase installedbins [] [] M.empty
-		Just _ -> hPutStrLn stderr "dmg will use system libraries (USE_SYSTEM_LIBS)"
+	mklibs' appbase installedbins [] [] M.empty
 	return True
 
 {- Recursively find and install libs, until nothing new to install is found. -}
@@ -92,7 +89,12 @@ otool appbase installedbins replacement_libs libmap = do
 	files <- filterM doesFileExist =<< dirContentsRecursive appbase
 	process [] files replacement_libs libmap
   where
-	want s = not ("@executable_path" `isInfixOf` s)
+	want s = 
+		-- This seems to be about finding libraries next
+		-- to executables or something. May need further resolving
+		-- to find real path to library, but for now, skip it.
+		not ("@executable_path" `isInfixOf` s)
+		&& not ("@loader_path" `isInfixOf` s)
 		-- OSX framekworks such as Cocoa are too tightly tied to
 		-- a specific OSX version, so don't bundle.
 		&& not (".framework" `isInfixOf` s)
