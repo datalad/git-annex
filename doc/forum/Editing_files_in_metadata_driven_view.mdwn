@@ -1,0 +1,3 @@
+I was testing metadata driven view and it seems that it is not meant for
+editing files. Am I correct? Although in this [tip and comments](https://git-annex.branchable.com/tips/metadata_driven_views/) I get impression
+that editing might be ok same way it is in GIT-branches normally. [Documentation does not say anything about editing](https://git-annex.branchable.com/git-annex-view/)
