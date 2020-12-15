@@ -378,6 +378,7 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
 		Just tmp -> MatchingFile $ FileInfo
 			{ contentFile = Just tmp
 			, matchFile = file
+			, matchKey = Just key
 			}
 		-- Provide as much info as we can without access to the
 		-- file's content.
