@@ -79,7 +79,7 @@ jobs:
             cache-stack-macos-
 
       - name: Build git-annex
-        run: make osxapp
+        run: make osxapp USE_SYSTEM_LIBS=1
 
       - name: Add version to DMG name
         run: |
