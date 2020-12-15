@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2020-12-15T17:53:40Z"
+ content="""
+Seems that 5.20151208 (I tried it) attempts to get content from the remote
+specified with --from even though the git-annex branch's location log 
+doesn't say the remote contains that content. It stats the expected
+location on the remote, notices there's a file there, and ignores the
+location log.
+
+That was changed in [[!commit cd1676d6048ff7307518df94ea22a23e711be29d]],
+and the change had a good reason motivating it. It would be possible to add
+back a check of Remote.hasKeyCheap when the location log doesn't think it
+has a copy, but that would make every copy from a directory remote slower
+to handle this edge case and I don't think that's warranted.
+
+As noted, annex-speculate-present does work if you really need that for
+some reason.
+" ""]]
