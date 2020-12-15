@@ -384,7 +384,7 @@ autoEnableSpecialRemotes :: Annex ()
 autoEnableSpecialRemotes = do
 	rp <- fromRawFilePath <$> fromRepo Git.repoPath
 	withNullHandle $ \nullh -> gitAnnexChildProcess "init"
-		[ "--autoenable" ]
+		[ Param "--autoenable" ]
 		(\p -> p
 			{ std_out = UseHandle nullh
 			, std_err = UseHandle nullh

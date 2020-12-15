@@ -34,7 +34,6 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.Content
 import Annex.Wanted
-import Annex.Path
 import Utility.Batch
 import Types.NumCopies
 
@@ -55,17 +54,17 @@ type TransferGenerator = Assistant (Maybe (Transfer, TransferInfo, Transferrer -
 {- Waits until a transfer slot becomes available, then runs a
  - TransferGenerator, and then runs the transfer action in its own thread. 
  -}
-inTransferSlot :: FilePath -> BatchCommandMaker -> TransferGenerator -> Assistant ()
-inTransferSlot program batchmaker gen = do
+inTransferSlot :: RunTransferrer -> TransferGenerator -> Assistant ()
+inTransferSlot rt gen = do
 	flip MSemN.wait 1 <<~ transferSlots
-	runTransferThread program batchmaker =<< gen
+	runTransferThread rt =<< gen
 
 {- Runs a TransferGenerator, and its transfer action,
  - without waiting for a slot to become available. -}
-inImmediateTransferSlot :: FilePath -> BatchCommandMaker -> TransferGenerator -> Assistant ()
-inImmediateTransferSlot program batchmaker gen = do
+inImmediateTransferSlot :: RunTransferrer -> TransferGenerator -> Assistant ()
+inImmediateTransferSlot rt gen = do
 	flip MSemN.signal (-1) <<~ transferSlots
-	runTransferThread program batchmaker =<< gen
+	runTransferThread rt =<< gen
 
 {- Runs a transfer action, in an already allocated transfer slot.
  - Once it finishes, frees the transfer slot.
@@ -77,25 +76,25 @@ inImmediateTransferSlot program batchmaker gen = do
  - then pausing the thread until a ResumeTransfer exception is raised,
  - then rerunning the action.
  -}
-runTransferThread :: FilePath -> BatchCommandMaker -> Maybe (Transfer, TransferInfo, Transferrer -> Assistant ()) -> Assistant ()
-runTransferThread _ _ Nothing = flip MSemN.signal 1 <<~ transferSlots
-runTransferThread program batchmaker (Just (t, info, a)) = do
+runTransferThread :: RunTransferrer -> Maybe (Transfer, TransferInfo, Transferrer -> Assistant ()) -> Assistant ()
+runTransferThread _ Nothing = flip MSemN.signal 1 <<~ transferSlots
+runTransferThread rt (Just (t, info, a)) = do
 	d <- getAssistant id
 	mkcheck <- checkNetworkConnections 
 		<$> getAssistant daemonStatusHandle
 	aio <- asIO1 a
-	tid <- liftIO $ forkIO $ runTransferThread' mkcheck program batchmaker d aio
+	tid <- liftIO $ forkIO $ runTransferThread' mkcheck rt d aio
 	updateTransferInfo t $ info { transferTid = Just tid }
 
-runTransferThread' :: MkCheckTransferrer -> FilePath -> BatchCommandMaker -> AssistantData -> (Transferrer -> IO ()) -> IO ()
-runTransferThread' mkcheck program batchmaker d run = go
+runTransferThread' :: MkCheckTransferrer -> RunTransferrer -> AssistantData -> (Transferrer -> IO ()) -> IO ()
+runTransferThread' mkcheck rt d run = go
   where
 	go = catchPauseResume $ do
 		p <- runAssistant d $ liftAnnex $ 
 			Annex.getState Annex.transferrerpool
 		signalactonsvar <- runAssistant d $ liftAnnex $
 			Annex.getState Annex.signalactions
-		withTransferrer' True signalactonsvar mkcheck program batchmaker p run
+		withTransferrer' True signalactonsvar mkcheck rt p run
 	pause = catchPauseResume $
 		runEvery (Seconds 86400) noop
 	{- Note: This must use E.try, rather than E.catch.
@@ -303,9 +302,9 @@ startTransfer t = do
 		alterTransferInfo t $ \i -> i { transferPaused = False }
 		liftIO $ throwTo tid ResumeTransfer
 	start info = do
-		program <- liftIO programPath
-		batchmaker <- liftIO getBatchCommandMaker
-		inImmediateTransferSlot program batchmaker $
+		rt <- liftAnnex . mkRunTransferrer
+			=<< liftIO getBatchCommandMaker
+		inImmediateTransferSlot rt $
 			genTransfer t info
 
 getCurrentTransfers :: Assistant TransferMap

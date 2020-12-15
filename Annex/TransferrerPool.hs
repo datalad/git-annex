@@ -41,14 +41,22 @@ import System.Posix.Process (getProcessGroupIDOf)
 
 type SignalActionsVar = TVar (M.Map SignalAction (Int -> IO ()))
 
+data RunTransferrer = RunTransferrer String [CommandParam] BatchCommandMaker
+
+mkRunTransferrer :: BatchCommandMaker -> Annex RunTransferrer
+mkRunTransferrer batchmaker = RunTransferrer
+	<$> liftIO programPath
+	<*> gitAnnexChildProcessParams "transferrer" []
+	<*> pure batchmaker
+
 {- Runs an action with a Transferrer from the pool. -}
 withTransferrer :: (Transferrer -> Annex a) -> Annex a
 withTransferrer a = do
-	program <- liftIO programPath
+	rt <- mkRunTransferrer nonBatchCommandMaker
 	pool <- Annex.getState Annex.transferrerpool
 	let nocheck = pure (pure True)
 	signalactonsvar <- Annex.getState Annex.signalactions
-	withTransferrer' False signalactonsvar nocheck program nonBatchCommandMaker pool a
+	withTransferrer' False signalactonsvar nocheck rt pool a
 
 withTransferrer'
 	:: (MonadIO m, MonadMask m)
@@ -59,19 +67,18 @@ withTransferrer'
 	-- processes are left in the pool for use later.
 	-> SignalActionsVar
 	-> MkCheckTransferrer
-	-> FilePath
-	-> BatchCommandMaker
+	-> RunTransferrer
 	-> TransferrerPool
 	-> (Transferrer -> m a)
 	-> m a
-withTransferrer' minimizeprocesses signalactonsvar mkcheck program batchmaker pool a = do
+withTransferrer' minimizeprocesses signalactonsvar mkcheck rt pool a = do
 	(mi, leftinpool) <- liftIO $ atomically (popTransferrerPool pool)
 	(i@(TransferrerPoolItem _ check), t) <- liftIO $ case mi of
 		Nothing -> do
-			t <- mkTransferrer signalactonsvar program batchmaker
+			t <- mkTransferrer signalactonsvar rt
 			i <- mkTransferrerPoolItem mkcheck t
 			return (i, t)
-		Just i -> checkTransferrerPoolItem signalactonsvar program batchmaker i
+		Just i -> checkTransferrerPoolItem signalactonsvar rt i
 	a t `finally` returntopool leftinpool check t i
   where
 	returntopool leftinpool check t i
@@ -87,8 +94,8 @@ withTransferrer' minimizeprocesses signalactonsvar mkcheck program batchmaker po
 
 {- Check if a Transferrer from the pool is still ok to be used.
  - If not, stop it and start a new one. -}
-checkTransferrerPoolItem :: SignalActionsVar -> FilePath -> BatchCommandMaker -> TransferrerPoolItem -> IO (TransferrerPoolItem, Transferrer)
-checkTransferrerPoolItem signalactonsvar program batchmaker i = case i of
+checkTransferrerPoolItem :: SignalActionsVar -> RunTransferrer -> TransferrerPoolItem -> IO (TransferrerPoolItem, Transferrer)
+checkTransferrerPoolItem signalactonsvar rt i = case i of
 	TransferrerPoolItem (Just t) check -> ifM check
 		( return (i, t)
 		, do
@@ -98,7 +105,7 @@ checkTransferrerPoolItem signalactonsvar program batchmaker i = case i of
 	TransferrerPoolItem Nothing check -> new check
   where
 	new check = do
-		t <- mkTransferrer signalactonsvar program batchmaker
+		t <- mkTransferrer signalactonsvar rt
 		return (TransferrerPoolItem (Just t) check, t)
 
 data TransferRequestLevel = AnnexLevel | AssistantLevel
@@ -203,10 +210,10 @@ detectStalls (Just (StallDetection minsz duration)) metervar onstall = go Nothin
 
 {- Starts a new git-annex transfer process, setting up handles
  - that will be used to communicate with it. -}
-mkTransferrer :: SignalActionsVar -> FilePath -> BatchCommandMaker -> IO Transferrer
-mkTransferrer signalactonsvar program batchmaker = do
+mkTransferrer :: SignalActionsVar -> RunTransferrer -> IO Transferrer
+mkTransferrer signalactonsvar (RunTransferrer program params batchmaker) = do
 	{- It runs as a batch job. -}
-	let (program', params') = batchmaker (program, [Param "transferrer"])
+	let (program', params') = batchmaker (program, params)
 	{- It's put into its own group so that the whole group can be
 	 - killed to stop a transfer. -}
 	(Just writeh, Just readh, _, ph) <- createProcess

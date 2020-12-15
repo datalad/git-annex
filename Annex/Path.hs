@@ -57,13 +57,21 @@ cannotFindProgram = do
  -}
 gitAnnexChildProcess
 	:: String
-	-> [String]
+	-> [CommandParam]
 	-> (CreateProcess -> CreateProcess)
 	-> (Maybe Handle -> Maybe Handle -> Maybe Handle -> ProcessHandle -> IO a)
 	-> Annex a
 gitAnnexChildProcess subcmd ps f a = do
 	cmd <- liftIO programPath
-	-- Pass along git config values that were set on command line
-	-- to the child process.
-	cps <- concatMap (\c -> ["-c", c]) <$> Annex.getGitConfigOverrides
-	pidLockChildProcess cmd (subcmd:cps++ps) f a
+	ps' <- gitAnnexChildProcessParams subcmd ps
+	pidLockChildProcess cmd ps' f a
+
+{- Parameters to pass to a git-annex child process to run a subcommand
+ - with some parameters.
+ -
+ - Includes -c values that were passed on the git-annex command line.
+ -}
+gitAnnexChildProcessParams :: String -> [CommandParam] -> Annex [CommandParam]
+gitAnnexChildProcessParams subcmd ps = do
+	cps <- concatMap (\c -> [Param "-c", Param c]) <$> Annex.getGitConfigOverrides
+	return (Param subcmd : cps ++ ps)

@@ -38,12 +38,12 @@ import Config
  -}
 pidLockChildProcess
 	:: FilePath
-	-> [String]
+	-> [CommandParam]
 	-> (CreateProcess -> CreateProcess)
 	-> (Maybe Handle -> Maybe Handle -> Maybe Handle -> ProcessHandle -> IO a)
 	-> Annex a
 pidLockChildProcess cmd ps f a = do
-	let p = f (proc cmd ps)
+	let p = f (proc cmd (toCommand ps))
 	let gonopidlock = withCreateProcess p a
 #ifndef mingw32_HOST_OS
 	pidLockFile >>= liftIO . \case

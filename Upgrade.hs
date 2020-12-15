@@ -104,8 +104,8 @@ upgrade automatic destversion = do
 	upgraderemote = do
 		rp <- fromRawFilePath <$> fromRepo Git.repoPath
 		gitAnnexChildProcess "upgrade"
-			[ "--quiet"
-			, "--autoonly"
+			[ Param "--quiet"
+			, Param "--autoonly"
 			]
 			(\p -> p { cwd = Just rp })
 			(\_ _ _ pid -> waitForProcess pid >>= return . \case

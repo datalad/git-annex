@@ -1,6 +1,12 @@
-When `git -c foo.bar annex` runs git-annex transferrer,
+When `git annex -c foo.bar` runs git-annex transferrer,
 it does not pass along the settings from -c.
+
+(Note that, `git -c foo.bar annex` does propagate the -c. Git does it by
+setting an environment variable, which causes git config to reflect the
+override. The environment variable propagates to child processes.)
 
 There are a lot of config settings that impact transfers,
 and some of them might be commonly used at the command line, so something
 needs to be done about this. --[[Joey]]
+
+> [[done]]

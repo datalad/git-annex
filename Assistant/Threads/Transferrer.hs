@@ -11,15 +11,15 @@ import Assistant.Common
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Types.Transfer
-import Annex.Path
+import Annex.TransferrerPool
 import Utility.Batch
 
 {- Dispatches transfers from the queue. -}
 transfererThread :: NamedThread
 transfererThread = namedThread "Transferrer" $ do
-	program <- liftIO programPath
-	batchmaker <- liftIO getBatchCommandMaker
-	forever $ inTransferSlot program batchmaker $
+	rt <- liftAnnex . mkRunTransferrer
+		=<< liftIO getBatchCommandMaker
+	forever $ inTransferSlot rt $
 		maybe (return Nothing) (uncurry genTransfer)
 			=<< getNextTransfer notrunning
   where
