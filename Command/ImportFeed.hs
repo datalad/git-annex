@@ -308,27 +308,30 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 	
 	downloadmedia linkurl mediaurl mediakey
 		| rawOption (downloadOptions opts) = downloadlink
-		| otherwise = do
-			r <- withTmpWorkDir mediakey $ \workdir -> do
-				dl <- youtubeDl linkurl (fromRawFilePath workdir) nullMeterUpdate
-				case dl of
-					Right (Just mediafile) -> do
-						let ext = case takeExtension mediafile of
-							[] -> ".m"
-							s -> s
-						ok <- rundownload linkurl ext $ \f ->
-							checkCanAdd (downloadOptions opts) f $ \canadd -> do
-								addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey (Just (toRawFilePath mediafile))
-								return (Just [mediakey])
-						return (Just ok)
-					-- youtude-dl didn't support it, so
-					-- download it as if the link were
-					-- an enclosure.
-					Right Nothing -> Just <$> downloadlink
-					Left msg -> do
-						warning msg
-						return Nothing
-			return (fromMaybe False r)
+		| otherwise = ifM (youtubeDlSupported linkurl)
+			( do
+				r <- withTmpWorkDir mediakey $ \workdir -> do
+					dl <- youtubeDl linkurl (fromRawFilePath workdir) nullMeterUpdate
+					case dl of
+						Right (Just mediafile) -> do
+							let ext = case takeExtension mediafile of
+								[] -> ".m"
+								s -> s
+							ok <- rundownload linkurl ext $ \f ->
+								checkCanAdd (downloadOptions opts) f $ \canadd -> do
+									addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey (Just (toRawFilePath mediafile))
+									return (Just [mediakey])
+							return (Just ok)
+						-- youtube-dl didn't support it, so
+						-- download it as if the link were
+						-- an enclosure.
+						Right Nothing -> Just <$> downloadlink
+						Left msg -> do
+							warning $ linkurl ++ ": " ++ msg
+							return Nothing
+				return (fromMaybe False r)
+			, downloadlink
+			)
 	  where
 		downloadlink = performDownload addunlockedmatcher opts cache todownload
 			{ location = Enclosure linkurl }
