@@ -1,0 +1,163 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="yay, it's working now! :)"
+ date="2020-12-15T04:46:38Z"
+ content="""
+Excellent! Now it seems to work, indeed (passes the testsuite[^1] and this particular use case). And thanks for your quick response. :)
+As for the specifics of the required content expression, it's true that my archive directories have so far been located in a subdirectory
+of the backup set[^2] specific subdirectories of the repo but I guess I could use an archive directory situated at the top of the repo for truly old
+backups or for a similar use case. Because my old required expression didn't use any path separators at all (and somehow it still worked!),
+I'm now using your version, however slightly modified (see the transcript, it's a path separator issue).
+
+[^1]: The parts I'm interested in as I'm not yet doing the special remote tests (\"Tests.Remote Tests\").
+[^2]: In my usage a backup set comprises those disk image-based backups that I have taken from the same major Windows version (or \"feature update\") of my Windows installation.
+
+<details>
+<summary>a transcript of a working session archiving one of my backups using version 8.20201128-g5e094d02d (lacks the git-annex sync part but you get the idea)</summary>
+
+[[!format sh \"\"\"
+PS> df -h .
+C:\scoop\apps\gow\current\bin\df.exe: Warning: cannot read table of mounted file systems: Invalid argument
+Filesystem            Size  Used Avail Use% Mounted on
+-                     466G  402G   65G  87% G:\
+PS> git annex version | head -n 1
+git-annex version: 8.20201128-g5e094d02d
+PS> pwd
+
+Path
+----
+G:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A
+
+PS> git annex required .
+(include=*.mrimg and exclude=*\arkistoidut\*)
+PS> git annex required . '(include=*.mrimg and exclude=*/arkistoidut/* and exclude=arkistoidut/*)'
+required . ok
+(recording state in git...)
+PS> git annex required .
+(include=*.mrimg and exclude=*/arkistoidut/* and exclude=arkistoidut/*)
+PS> ls
+
+    Directory: G:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----          14.12.2020     2:12                arkistoidut
+-a---           9.11.2020     1:15   172453484741 5D3DB6C10EAF0911-00-00.mrimg
+-a---          20.11.2020    21:56    17538095697 5D3DB6C10EAF0911-05-05.mrimg
+-a---          30.11.2020    20:21    25282746961 5D3DB6C10EAF0911-11-11.mrimg
+-a---           4.12.2020     0:33     5793369649 5D3DB6C10EAF0911-12-12.mrimg
+-a---           7.12.2020    15:25   165950159045 AF13B339E6F3BC85-00-00.mrimg
+-a---           9.12.2020     1:38     6567823953 AF13B339E6F3BC85-01-01.mrimg
+-a---          11.12.2020     1:27     3972721183 AF13B339E6F3BC85-02-02.mrimg
+-a---          14.12.2020     1:54    11383011921 AF13B339E6F3BC85-03-03.mrimg
+-a---          14.11.2020    17:17            339 Justfile
+
+PS> git log
+[redacted]
+PS> git annex metadata (get-item 5d3*-1[12]-*.mrimg)
+metadata 5D3DB6C10EAF0911-11-11.mrimg
+
+ok
+metadata 5D3DB6C10EAF0911-12-12.mrimg
+  lastchanged=2020-12-03@22-36-50
+  tag=inkrementaali
+  tag-lastchanged=2020-12-03@22-36-50
+ok
+PS> # let's archive the incremental
+PS> git mv 5D3DB6C10EAF0911-12-12.mrimg .\arkistoidut\
+PS> git status
+On branch adjusted/master(hidemissing-unlocked)
+Changes to be committed:
+  (use \"git restore --staged <file>...\" to unstage)
+        renamed:    5D3DB6C10EAF0911-12-12.mrimg -> arkistoidut/5D3DB6C10EAF0911-12-12.mrimg
+
+PS> git commit -m 'Arkistoitu: 5D3DB6C10EAF0911-12-12.mrimg'
+[adjusted/master(hidemissing-unlocked) 18aa23e] Arkistoitu: 5D3DB6C10EAF0911-12-12.mrimg
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ rename Jarkon ThinkPad T450s (Win10 v2004) . A/{ => arkistoidut}/5D3DB6C10EAF0911-12-12.mrimg (100%)
+PS> cd .\arkistoidut\
+PS> pwd
+
+Path
+----
+G:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A\arkistoidut
+
+PS> ls
+
+    Directory: G:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A\arkistoidut
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---           13.8.2020    13:27            103 .ankkuri
+-a---           4.12.2020     0:33     5793369649 5D3DB6C10EAF0911-12-12.mrimg
+
+PS> # let's try to drop the archived file; 1st connecting the remote
+PS> df -h k:
+C:\scoop\apps\gow\current\bin\df.exe: Warning: cannot read table of mounted file systems: Invalid argument
+Filesystem            Size  Used Avail Use% Mounted on
+-                     1,9T  1,8T  118G  94% K:\
+PS> git annex find --want-drop --in .
+PS> # ouch, git-annex doesn't want to drop the file; for real now:
+PS> git annex drop 5D3DB6C10EAF0911-12-12.mrimg
+drop 5D3DB6C10EAF0911-12-12.mrimg
+  That file is required content, it cannot be dropped!
+
+  (Use --force to override this check, or adjust required content configuration.)
+failed
+git-annex: drop: 1 failed
+PS> # same result, maybe it's those forward slashes in the expr
+PS> git annex required .
+(include=*.mrimg and exclude=*/arkistoidut/* and exclude=arkistoidut/*)
+PS> git annex required . '(include=*.mrimg and exclude=*\arkistoidut\* and exclude=arkistoidut\*)'
+required . ok
+(recording state in git...)
+PS> git annex required .
+(include=*.mrimg and exclude=*\arkistoidut\* and exclude=arkistoidut\*)
+PS> git annex find --want-drop --in .
+5D3DB6C10EAF0911-12-12.mrimg
+PS> # that's better! and for real now:
+PS> git annex drop 5D3DB6C10EAF0911-12-12.mrimg
+drop 5D3DB6C10EAF0911-12-12.mrimg ok
+(recording state in git...)
+PS> git annex info 5D3DB6C10EAF0911-12-12.mrimg
+file: 5D3DB6C10EAF0911-12-12.mrimg
+size: 5.79 gigabytes
+key: MD5E-s5793369649--14bf4083cd9c4859705d74ce86b3a354.mrimg
+present: false
+PS> # it seems to work! let's check the link count:
+PS> fsutil hardlink list 5D3DB6C10EAF0911-12-12.mrimg
+\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A\arkistoidut\5D3DB6C10EAF0911-12-12.mrimg
+PS> # as it should be; how about the file size?
+PS> ls
+
+    Directory: G:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v2004) . A\arkistoidut
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---           13.8.2020    13:27            103 .ankkuri
+-a---           4.12.2020     0:33     5793369649 5D3DB6C10EAF0911-12-12.mrimg
+
+PS> # for some reason the content file is still there;
+PS> # no worries, I can work around that
+PS> rm 5D3DB6C10EAF0911-12-12.mrimg
+PS> git status
+On branch adjusted/master(hidemissing-unlocked)
+Changes not staged for commit:
+  (use \"git add/rm <file>...\" to update what will be committed)
+  (use \"git restore <file>...\" to discard changes in working directory)
+        deleted:    5D3DB6C10EAF0911-12-12.mrimg
+
+no changes added to commit (use \"git add\" and/or \"git commit -a\")
+PS> git restore 5D3DB6C10EAF0911-12-12.mrimg
+PS> cat 5D3DB6C10EAF0911-12-12.mrimg
+/annex/objects/MD5E-s5793369649--14bf4083cd9c4859705d74ce86b3a354.mrimg
+PS> # excellent! all is well :)
+PS> df -h .
+C:\scoop\apps\gow\current\bin\df.exe: Warning: cannot read table of mounted file systems: Invalid argument
+Filesystem            Size  Used Avail Use% Mounted on
+-                     466G  397G   70G  86% G:\
+# end of transcript
+\"\"\"]]
+</details>
+"""]]
