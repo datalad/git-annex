@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2020-12-15T16:50:43Z"
+ content="""
+Well, you can edit files and make changes, but a view branch is not
+your master branch. If you add a new file, or edit an existing file in
+a view branch, nothing will update the master branch to add that new file
+to it.
+
+When you switch back to the master branch, or check out a new view
+branch, your changes remain in the view branch. They're not lost,
+because each view branch has its own name, and you can check out the branch
+again. 
+
+Although re-running `git annex view` will regenerate the view
+branch, so losing your changes. (The old version of the branch will still
+be preserved in git's reflog for a while.)
+
+I'd say they're mostly for viewing, not editing, but there might be ways
+to use them for editing given these constraints.
+"""]]
