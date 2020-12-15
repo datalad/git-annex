@@ -107,7 +107,7 @@ parseMetaDataMatcher p = (,)
 		('>':v) -> checkcmp (>) v
 		_ -> checkglob ""
 	checkglob v =
-		let cglob = compileGlob v CaseInsensative
+		let cglob = compileGlob v CaseInsensative (GlobFilePath False)
 		in matchGlob cglob . decodeBS . fromMetaValue
 	checkcmp cmp v v' = case (doubleval v, doubleval (decodeBS (fromMetaValue v'))) of
 		(Just d, Just d') -> d' `cmp` d

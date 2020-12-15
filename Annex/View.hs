@@ -163,11 +163,11 @@ combineViewFilter old@(ExcludeValues olds) (ExcludeValues news)
 combineViewFilter (FilterValues _) newglob@(FilterGlob _) =
 	(newglob, Widening)
 combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
-	| all (matchGlob (compileGlob oldglob CaseInsensative) . decodeBS . fromMetaValue) (S.toList s) = (new, Narrowing)
+	| all (matchGlob (compileGlob oldglob CaseInsensative (GlobFilePath False)) . decodeBS . fromMetaValue) (S.toList s) = (new, Narrowing)
 	| otherwise = (new, Widening)
 combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
 	| old == new = (newglob, Unchanged)
-	| matchGlob (compileGlob old CaseInsensative) new = (newglob, Narrowing)
+	| matchGlob (compileGlob old CaseInsensative (GlobFilePath False)) new = (newglob, Narrowing)
 	| otherwise = (newglob, Widening)
 combineViewFilter (FilterGlob _) new@(ExcludeValues _) = (new, Narrowing)
 combineViewFilter (ExcludeValues _) new@(FilterGlob _) = (new, Widening)
@@ -216,7 +216,7 @@ viewComponentMatcher viewcomponent = \metadata ->
 		FilterValues s -> \values -> setmatches $
 			S.intersection s values
 		FilterGlob glob ->
-			let cglob = compileGlob glob CaseInsensative
+			let cglob = compileGlob glob CaseInsensative (GlobFilePath False)
 			in \values -> setmatches $
 				S.filter (matchGlob cglob . decodeBS . fromMetaValue) values
 		ExcludeValues excludes -> \values -> 

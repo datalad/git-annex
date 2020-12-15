@@ -115,7 +115,7 @@ limitExclude glob = Right $ MatchFiles
 matchGlobFile :: String -> MatchInfo -> Annex Bool
 matchGlobFile glob = go
   where
-	cglob = compileGlob glob CaseSensative -- memoized
+	cglob = compileGlob glob CaseSensative (GlobFilePath True) -- memoized
 	go (MatchingFile fi) = pure $ matchGlob cglob (fromRawFilePath (matchFile fi))
 	go (MatchingInfo p) = pure $ matchGlob cglob (fromRawFilePath (providedFilePath p))
 	go (MatchingUserInfo p) = matchGlob cglob <$> getUserInfo (userProvidedFilePath p)
@@ -166,7 +166,7 @@ matchMagic _limitname querymagic selectprovidedinfo selectuserprovidedinfo (Just
 		, matchNeedsLocationLog = False
 		}
   where
- 	cglob = compileGlob glob CaseSensative -- memoized
+ 	cglob = compileGlob glob CaseSensative (GlobFilePath False) -- memoized
 	go (MatchingKey _ _) = pure False
 	go (MatchingFile fi) = case contentFile fi of
 		Just f -> catchBoolIO $

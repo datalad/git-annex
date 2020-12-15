@@ -26,6 +26,9 @@ git-annex (8.20201128) UNRELEASED; urgency=medium
     enclosure, but only a link to an url which youtube-dl does not support.
   * initremote: Prevent enabling encryption with exporttree=yes or 
     importtree=yes.
+  * Windows: include= and exclude= containing '/' will also match filenames
+    that are written using '\'. (And vice-versa, but it's better to use '/'
+    for portability.)
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Nov 2020 12:55:49 -0400
 
