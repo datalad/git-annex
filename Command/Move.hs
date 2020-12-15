@@ -207,10 +207,22 @@ fromStart removewhen afile key ai si src =
 			fromPerform src removewhen key afile
 
 fromOk :: Remote -> Key -> Annex Bool
-fromOk src key = do
-	u <- getUUID
-	remotes <- Remote.keyPossibilities key
-	return $ u /= Remote.uuid src && elem src remotes
+fromOk src key
+	-- check if the remote contains the key, when it can be done cheaply
+	| Remote.hasKeyCheap src = 
+		Remote.hasKey src key >>= 
+			Right True -> return True
+			-- Don't skip getting the key just because the
+			-- remote no longer contains it if the log
+			-- says the remote is supposed to contain it;
+			-- that would be surprising behavior.
+			_ -> checklog
+	| otherwise = checklog
+  where
+	checklog = do
+		u <- getUUID
+		remotes <- Remote.keyPossibilities key
+		return $ u /= Remote.uuid src && elem src remotes
 
 fromPerform :: Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
 fromPerform src removewhen key afile = do

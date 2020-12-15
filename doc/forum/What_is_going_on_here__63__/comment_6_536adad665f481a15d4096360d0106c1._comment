@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-12-15T18:42:30Z"
+ content="""
+On second thought, it can check as before and only
+if the remote doesn't have the key, fall back to using information from the
+log. That will be faster, and will avoid changing the behavior you were
+relying on. Implemented that.
+"""]]
