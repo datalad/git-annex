@@ -210,7 +210,7 @@ fromOk :: Remote -> Key -> Annex Bool
 fromOk src key
 	-- check if the remote contains the key, when it can be done cheaply
 	| Remote.hasKeyCheap src = 
-		Remote.hasKey src key >>= 
+		Remote.hasKey src key >>= \case
 			Right True -> return True
 			-- Don't skip getting the key just because the
 			-- remote no longer contains it if the log
