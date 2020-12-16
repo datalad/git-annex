@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -eux -o pipefail
+
+function api_call {
+    curl -fsSL \
+        -H "Authorization: bearer $GITHUB_TOKEN" \
+        -H "Accept: application/vnd.github.v3+json" \
+        "$@"
+}
+
+INPUT_PR="$1"
+OSNAME="$2"
+STATE="$3"
+DESCRIPTION="$4"
+
+STATUSES_URL="$(api_call "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$INPUT_PR" | jq -r .statuses_url)"
+
+jq -n \
+    --arg osname "$OSNAME" \
+    --arg state "$STATE" \
+    --arg description "$DESCRIPTION" \
+    --arg target_url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+    '{
+        "state": $state,
+        "context": ("Build git-annex on " + $osname),
+        "description": $description,
+        "target_url": $target_url
+    }' \
+| api_call -X POST -H "Content-Type: application/json" -d @- "$STATUSES_URL"

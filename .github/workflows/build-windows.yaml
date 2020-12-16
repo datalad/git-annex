@@ -28,6 +28,13 @@ jobs:
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" Windows pending "git-annex building ..."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup Haskell
         uses: actions/setup-haskell@v1.1.3
         with:
@@ -130,6 +137,27 @@ jobs:
           path: |
             git-annex[-_]*.*
             dist/build-version
+
+      - name: Set PR success status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" Windows success "git-annex built successfully"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set PR failure status
+        if: failure() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" Windows failure "git-annex build failed!"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set PR error status
+        if: cancelled() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" Windows error "git-annex build cancelled"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
