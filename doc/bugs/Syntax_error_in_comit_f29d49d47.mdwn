@@ -24,3 +24,6 @@ index 584565648..d8c4bc4c9 100644
  			-- Don't skip getting the key just because the
  			-- remote no longer contains it if the log
 ```
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]
