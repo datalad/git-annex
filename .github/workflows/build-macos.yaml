@@ -1,10 +1,11 @@
 name: Build git-annex on macOS
 
 on:
-  # Trigger the workflow on pull request,
+  # Trigger the workflow on pull requests
   pull_request:
     paths:
       - '.github/workflows/build-macos.yaml'
+      - 'patches/*.patch'
   schedule:
     - cron: '30 01 * * *'
   workflow_dispatch:
@@ -13,6 +14,10 @@ on:
         description: The upstream commitish to build
       pr:
         description: The number of the PR to build
+
+defaults:
+  run:
+    shell: bash
 
 env:
   LANG: C
@@ -24,7 +29,6 @@ jobs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
       - name: Set up system
-        shell: bash
         run: brew install libmagic pkg-config
 
       - name: Checkout this repository
@@ -48,8 +52,9 @@ jobs:
         id: build-version
         run: |
           version="$(git describe "$BUILD_COMMIT" | sed -e 's/-/+git/')"
+          arch=x64
           echo "Building $version"
-          echo "::set-output name=version::${version}_x64"
+          echo "::set-output name=version::${version}_$arch"
 
       - name: Apply local patches
         run: .github/workflows/tools/apply-patches patches
@@ -58,7 +63,6 @@ jobs:
 
       - name: Configure build
         run: |
-          #echo BUILDEROPTIONS="--extra-include-dirs=$HOME/homebrew/include --extra-lib-dirs=$HOME/homebrew/lib" >> "$GITHUB_ENV"
           echo OSX_MAGIC_FILE="$(brew list --verbose libmagic| grep magic.mgc | head -n 1)" >> "$GITHUB_ENV"
           echo BUILDERCOMMONOPTIONS="--stack-yaml stack.yaml.autobuild" >> "$GITHUB_ENV"
           echo BUILDER=stack >> "$GITHUB_ENV"
@@ -81,17 +85,18 @@ jobs:
       - name: Build git-annex
         run: make osxapp
 
-      - name: Add version to DMG name
+      - name: Add version to DMG name and move it
         run: |
-          mv git-annex.dmg \
+          mv /tmp/git-annex.dmg \
              git-annex_"${{ steps.build-version.outputs.version }}".dmg
-        working-directory: tmp
 
       - name: Upload packages
         uses: actions/upload-artifact@v2
         with:
           name: git-annex-macos-dmg_${{ steps.build-version.outputs.version }}
-          path: tmp/git-annex_*.dmg
+          path: |
+            git-annex[-_]*.*
+            dist/build-version
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
@@ -114,10 +119,7 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        flavor: [normal, crippled-tmp]
-        # TODO: Add "crippled-home" back in once
-        # <https://git-annex.branchable.com/bugs/gets_stuck_in_Remote_Tests___40____63____41___while_running_on_OSX_with_HOME_on_crippled_FS/?updated>
-        # is fixed
+        flavor: ["normal", "crippled-tmp"]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -135,6 +137,9 @@ jobs:
           hdiutil detach /Volumes/git-annex/
           echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
 
+      - name: Install coreutils (for timeout)
+        run: brew install coreutils
+
       - name: Print git-annex version
         run: git annex version
 
@@ -144,6 +149,14 @@ jobs:
             # source so that CRIPPLEDFS_PATH will be set:
             . .github/workflows/tools/setup_crippledfs crippledfs 500
           fi
+          if echo "${{ matrix.flavor }}" | grep -q "nfs" ; then
+            mkdir /tmp/nfsmount_ /tmp/nfsmount
+            echo "/tmp/nfsmount_ localhost(rw)" | sudo bash -c 'cat - > /etc/exports'
+            sudo apt-get install -y nfs-kernel-server
+            sudo exportfs -a
+            sudo mount -t nfs localhost:/tmp/nfsmount_ /tmp/nfsmount
+          fi
+
           case "${{ matrix.flavor }}" in
             crippled-tmp)
               # forces all test repos/paths into the VFAT FS
@@ -151,6 +164,12 @@ jobs:
               ;;
             crippled-home)
               export HOME="$CRIPPLEDFS_PATH"
+              ;;
+            nfs-tmp)
+              export TMPDIR=/tmp/nfsmount
+              ;;
+            nfs-home)
+              export HOME=/tmp/nfsmount
               ;;
             normal)
               ;;
@@ -166,7 +185,7 @@ jobs:
           cd $HOME
           export | grep -e crippledfs || :
 
-          git annex test
+          timeout 1800 git annex test
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
@@ -180,9 +199,7 @@ jobs:
           to: ${{ secrets.NOTIFY_RECIPIENT }}
           subject: '[${{ github.repository }}] Scheduled tests of macOS build failed!'
           body: |
-            The tests for a scheduled build of git-annex for macOS failed for the following matrix:
-
-            ${{ toJSON(matrix) }}
+            The tests for a scheduled build of git-annex for macOS (flavor: ${{ matrix.flavor }}) failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
@@ -215,9 +232,6 @@ jobs:
           test $(nfailed init "libpcre.*so") -lt 130
 
   test-datalad:
-    # TODO: Re-enable macOS testing once it passes reliably
-    # <https://github.com/datalad/datalad-extensions/pull/33#issuecomment-696368877>
-    if: false
     runs-on: macos-latest
     needs: build-package
     strategy:
@@ -249,7 +263,7 @@ jobs:
             export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
             curl -fSsL \
               https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
-              | bash;
+              | bash
             echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
           fi
 
@@ -264,7 +278,7 @@ jobs:
         with:
           python-version: 3.7
 
-      - name: install ${{ matrix.version }} datalad
+      - name: Install ${{ matrix.version }} Datalad
         run: |
           if [ "${{ matrix.version }}" = "release" ]; then
             # Authorize so that we don't run up against low API rate limits
@@ -287,4 +301,4 @@ jobs:
           cd __testhome__
           python -m nose -s -v datalad
 
-# vim:set sts=2:
+# vim:set et sts=2:

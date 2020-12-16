@@ -1,13 +1,13 @@
-name: Build git-annex on Windows
+name: Build git-annex on {{osname}}
 
 on:
   # Trigger the workflow on pull requests
   pull_request:
     paths:
-      - '.github/workflows/build-windows.yaml'
+      - '.github/workflows/build-{{ostype}}.yaml'
       - 'patches/*.patch'
   schedule:
-    - cron: '30 03 * * *'
+    - cron: '30 {{cron_hour}} * * *'
   workflow_dispatch:
     inputs:
       commitish:
@@ -19,15 +19,30 @@ defaults:
   run:
     shell: bash
 
+{% if env %}
 env:
-  LANG: C.utf-8
+  {% for k,v in env.items() %}
+  {{k}}: {{v}}
+  {% endfor %}
 
+{% endif %}
 jobs:
   build-package:
-    runs-on: windows-2016
+    runs-on: {{runs_on}}
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
+    {% if ostype == "ubuntu" %}
+      - name: Set up system
+        run: |
+          bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
+          sudo apt-get update -qq
+          sudo apt-get install eatmydata
+          sudo eatmydata apt-get install singularity-container gnupg moreutils strace
+    {% elif ostype == "macos" %}
+      - name: Set up system
+        run: brew install libmagic pkg-config
+    {% elif ostype == "windows" %}
       - name: Setup Haskell
         uses: actions/setup-haskell@v1.1.3
         with:
@@ -36,6 +51,7 @@ jobs:
 
       - name: Handle long filenames
         run: git config --system core.longpaths true
+    {% endif %}
 
       - name: Checkout this repository
         uses: actions/checkout@v2
@@ -58,7 +74,11 @@ jobs:
         id: build-version
         run: |
           version="$(git describe "$BUILD_COMMIT" | sed -e 's/-/+git/')"
+          {% if ostype == "ubuntu" %}
+          arch="$(dpkg --print-architecture)"
+          {% else %}
           arch=x64
+          {% endif %}
           echo "Building $version"
           echo "::set-output name=version::${version}_$arch"
 
@@ -67,6 +87,72 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    {% if ostype == "ubuntu" %}
+      - name: Adjust changelog generation script to use original branch
+        run: sed -i -e "s,HEAD,$BUILD_COMMIT,g" debian/create-standalone-changelog
+
+      - name: Import GPG keys
+        run: |
+          # private key for signing - comes from secrets
+          echo '${{ secrets.datalad_builder_gpgkey }}' | gpg --import
+          # public key for verification
+          gpg --import .github/workflows/tools/datalad-builder-key.asc
+
+      - name: Get the git-annex build environment container
+        run: chronic singularity pull --name buildenv.sif shub://datalad/datalad-extensions:buildenv-git-annex-buster
+
+      - name: Build source packages
+        run: |
+          chronic singularity exec ./buildenv.sif make debianstandalone-dsc
+          mv ../git-annex_*.* .
+
+      - name: Build binary package from the source package
+        run: |
+          if ! singularity exec ./buildenv.sif \
+               bash -c 'set -x; export LANG=C; dpkg-source -x *.dsc git-annex-source && cd git-annex-source && dpkg-buildpackage -b' >| "${bbuild_log}" 2>&1; then
+                 echo "E: build failed"
+                 echo "I: the tail of the log"
+                 tail -n 50 "${bbuild_log}"
+                 echo "I: FAIL line matches with some context"
+                 grep -B10 '^FAIL$' "${bbuild_log}"
+                 exit 1
+          fi
+
+      - name: Check that all tests were run and passed
+        run: grep -E '^All [[:digit:]]{3} tests passed' "${bbuild_log}"
+        if: "!contains(env.DEB_BUILD_OPTIONS, 'nocheck')"
+
+    {% elif ostype == "macos" %}
+      - name: Configure build
+        run: |
+          echo OSX_MAGIC_FILE="$(brew list --verbose libmagic| grep magic.mgc | head -n 1)" >> "$GITHUB_ENV"
+          echo BUILDERCOMMONOPTIONS="--stack-yaml stack.yaml.autobuild" >> "$GITHUB_ENV"
+          echo BUILDER=stack >> "$GITHUB_ENV"
+          echo GHC="stack --stack-yaml stack.yaml.autobuild ghc --" >> "$GITHUB_ENV"
+
+      - name: Set stack.yaml.autobuild
+        run: cat standalone/osx/stack.yaml > stack.yaml.autobuild
+
+      - name: stack setup
+        run: stack setup --stack-yaml stack.yaml.autobuild
+
+      - name: Enable Stack cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.stack
+          key: cache-stack-macos-${{ hashFiles('stack.yaml.autobuild.lock') }}-${{ hashFiles('git-annex.cabal') }}
+          restore-keys: |
+            cache-stack-macos-
+
+      - name: Build git-annex
+        run: make osxapp
+
+      - name: Add version to DMG name and move it
+        run: |
+          mv /tmp/git-annex.dmg \
+             git-annex_"${{ steps.build-version.outputs.version }}".dmg
+
+    {% elif ostype == "windows" %}
       - name: Download and "install" libmagic for windows
         run: |
           export TARGET_REPO=datalad/file-windows
@@ -123,10 +209,11 @@ jobs:
           mv git-annex-installer.exe \
              git-annex-installer_"${{ steps.build-version.outputs.version }}".exe
 
+    {% endif %}
       - name: Upload packages
         uses: actions/upload-artifact@v2
         with:
-          name: git-annex-windows-installer_${{ steps.build-version.outputs.version }}
+          name: {{artifact_basename}}_${{ steps.build-version.outputs.version }}
           path: |
             git-annex[-_]*.*
             dist/build-version
@@ -141,15 +228,21 @@ jobs:
           password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
           from: GitHub Actions Notifications
           to: ${{ secrets.NOTIFY_RECIPIENT }}
-          subject: '[${{ github.repository }}] Scheduled build on Windows failed!'
+          subject: '[${{ github.repository }}] Scheduled build on {{osname}} failed!'
           body: |
-            A scheduled build of git-annex for Windows failed!
+            A scheduled build of git-annex for {{osname}} failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex:
-    runs-on: windows-2016
+    runs-on: {{runs_on}}
     needs: build-package
+  {% if test_annex_flavors %}
+    strategy:
+      matrix:
+        flavor: {{test_annex_flavors|tojson}}
+      fail-fast: false
+  {% endif %}
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v2
@@ -157,13 +250,22 @@ jobs:
       - name: Download git-annex package
         uses: actions/download-artifact@v2
         with:
-          name: git-annex-windows-installer_${{ needs.build-package.outputs.build-version }}
+          name: {{artifact_basename}}_${{ needs.build-package.outputs.build-version }}
 
       - name: Install git-annex package
+        {% if ostype == "windows" %}
         shell: powershell
+        {% endif %}
         run: |
-          ./git-annex-installer_*.exe /S
+          {% for step in artifact_install_steps %}
+          {{step}}
+          {% endfor %}
 
+    {% if ostype == "macos" %}
+      - name: Install coreutils (for timeout)
+        run: brew install coreutils
+
+    {% elif ostype == "windows" %}
       - name: Check that magic files are installed
         run: |
           GIT_ANNEX_PATH="$(type -p git-annex)"
@@ -176,11 +278,47 @@ jobs:
         run: |
           git annex version | grep 'build flags:.*MagicMime'
 
+    {% endif %}
       - name: Print git-annex version
         run: git annex version
 
       - name: Run tests
         run: |
+        {% if (ostype == "ubuntu" or ostype == "macos") and test_annex_flavors %}
+          if echo "${{ matrix.flavor }}" | grep -q "crippled" ; then
+            # source so that CRIPPLEDFS_PATH will be set:
+            . .github/workflows/tools/setup_crippledfs crippledfs 500
+          fi
+          if echo "${{ matrix.flavor }}" | grep -q "nfs" ; then
+            mkdir /tmp/nfsmount_ /tmp/nfsmount
+            echo "/tmp/nfsmount_ localhost(rw)" | sudo bash -c 'cat - > /etc/exports'
+            sudo apt-get install -y nfs-kernel-server
+            sudo exportfs -a
+            sudo mount -t nfs localhost:/tmp/nfsmount_ /tmp/nfsmount
+          fi
+
+          case "${{ matrix.flavor }}" in
+            crippled-tmp)
+              # forces all test repos/paths into the VFAT FS
+              export TMPDIR="$CRIPPLEDFS_PATH"
+              ;;
+            crippled-home)
+              export HOME="$CRIPPLEDFS_PATH"
+              ;;
+            nfs-tmp)
+              export TMPDIR=/tmp/nfsmount
+              ;;
+            nfs-home)
+              export HOME=/tmp/nfsmount
+              ;;
+            normal)
+              ;;
+            *)
+              echo "Unknown flavor ${{ matrix.flavor }}"
+              exit 1
+          esac
+
+        {% endif %}
           # Do it after we possibly setup HOME
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
@@ -200,14 +338,51 @@ jobs:
           password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
           from: GitHub Actions Notifications
           to: ${{ secrets.NOTIFY_RECIPIENT }}
-          subject: '[${{ github.repository }}] Scheduled tests of Windows build failed!'
+          subject: '[${{ github.repository }}] Scheduled tests of {{osname}} build failed!'
           body: |
-            The tests for a scheduled build of git-annex for Windows failed!
+          {% if test_annex_flavors %}
+            The tests for a scheduled build of git-annex for {{osname}} (flavor: ${{ matrix.flavor }}) failed!
+          {% else %}
+            The tests for a scheduled build of git-annex for {{osname}} failed!
+          {% endif %}
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
+{% if ostype == "ubuntu" or ostype == "macos" %}
+  test-annex-more:
+    runs-on: {{runs_on}}
+    needs: build-package
+    steps:
+      - name: Download git-annex package
+        uses: actions/download-artifact@v2
+        with:
+          name: {{artifact_basename}}_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        {% if ostype == "windows" %}
+        shell: powershell
+        {% endif %}
+        run: |
+          {% for step in artifact_install_steps %}
+          {{step}}
+          {% endfor %}
+
+      - name: Seek of dynlibs
+        run: |
+          mkdir /tmp/testrepo; cd /tmp/testrepo; git init
+          function nfailed() {
+            strace -f git-annex "$1" 2>&1 | awk "/$2.*ENOENT/{print}" | tee /dev/fd/2 | wc -l
+          }
+          # We should get some reasonable number (not 40) of directories look up for dynamic libraries
+          liblookups=
+          PS4='> '; set -x
+          test $(nfailed version "libpcre.*so") -lt 5
+          test $(nfailed init "libpcre.*so") -lt 130
+
+{% endif %}
+{% if test_datalad %}
   test-datalad:
-    runs-on: windows-2016
+    runs-on: {{runs_on}}
     needs: build-package
     strategy:
       matrix:
@@ -217,13 +392,36 @@ jobs:
       - name: Download git-annex package
         uses: actions/download-artifact@v2
         with:
-          name: git-annex-windows-installer_${{ needs.build-package.outputs.build-version }}
+          name: {{artifact_basename}}_${{ needs.build-package.outputs.build-version }}
 
       - name: Install git-annex package
+        {% if ostype == "windows" %}
         shell: powershell
+        {% endif %}
         run: |
-          ./git-annex-installer_*.exe /S
+          {% for step in artifact_install_steps %}
+          {{step}}
+          {% endfor %}
 
+    {% if ostype == "ubuntu" or ostype == "macos" %}
+      - name: Set up SSH target
+        shell: bash
+        # TODO: Drop the release condition once 0.13.2 is released.
+        run: |
+          if [ "${{ matrix.version }}" != "release" ]; then
+            {% if ostype == "macos" %}
+            # coreutils provides a readlink that supports `-f`
+            brew install coreutils docker docker-machine
+            docker-machine --github-api-token="${{ secrets.GITHUB_TOKEN }}" create --driver virtualbox default
+            eval "$(docker-machine env default)"
+            export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+            {% endif %}
+            curl -fSsL \
+              https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
+              | bash
+            echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
+          fi
+    {% elif ostype == "windows" %}
       - name: Define test host alias
         shell: cmd
         run: |
@@ -276,9 +474,13 @@ jobs:
 
       - name: Enable SSH tests
         run: echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
+    {% endif %}
 
       - name: Set up environment
         run: |
+          {% if ostype == "macos" %}
+          brew install exempi  # Needed by python-xmp-toolkit
+          {% endif %}
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
 
@@ -310,4 +512,5 @@ jobs:
           cd __testhome__
           python -m nose -s -v datalad
 
+{% endif %}
 # vim:set et sts=2:
