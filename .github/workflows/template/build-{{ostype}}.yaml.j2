@@ -32,6 +32,11 @@ jobs:
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
         run: |
@@ -62,11 +67,6 @@ jobs:
         run: git config --system core.longpaths true
 
     {% endif %}
-      - name: Checkout this repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
       - name: Determine git-annex ref to build
         run: |
           . .github/workflows/tools/set-build-commit

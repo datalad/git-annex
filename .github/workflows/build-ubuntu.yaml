@@ -31,6 +31,11 @@ jobs:
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
         run: |
@@ -44,11 +49,6 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install eatmydata
           sudo eatmydata apt-get install singularity-container gnupg moreutils strace
-
-      - name: Checkout this repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: Determine git-annex ref to build
         run: |
