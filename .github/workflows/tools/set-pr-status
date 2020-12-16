@@ -11,7 +11,19 @@ function api_call {
 INPUT_PR="$1"
 OSNAME="$2"
 STATE="$3"
-DESCRIPTION="$4"
+
+if [ "$STATE" = pending ]
+then DESCRIPTION="git-annex building ..."
+elif [ "$STATE" = success ]
+then DESCRIPTION="git-annex built successfully"
+elif [ "$STATE" = failure ]
+then DESCRIPTION="git-annex build failed!"
+elif [ "$STATE" = cancelled ]
+then STATE=error
+     DESCRIPTION="git-annex build cancelled"
+else STATE=error
+     DESCRIPTION="git-annex build errored"
+fi
 
 STATUSES_URL="$(api_call "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$INPUT_PR" | jq -r .statuses_url)"
 

@@ -40,7 +40,7 @@ jobs:
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
         run: |
-          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" {{osname}} pending "git-annex building ..."
+          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" {{osname}} pending
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -227,24 +227,10 @@ jobs:
             git-annex[-_]*.*
             dist/build-version
 
-      - name: Set PR success status
-        if: github.event.inputs.pr != ''
+      - name: Set PR final build status
+        if: always() && github.event.inputs.pr != ''
         run: |
-          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" {{osname}} success "git-annex built successfully"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set PR failure status
-        if: failure() && github.event.inputs.pr != ''
-        run: |
-          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" {{osname}} failure "git-annex build failed!"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set PR error status
-        if: cancelled() && github.event.inputs.pr != ''
-        run: |
-          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" {{osname}} error "git-annex build cancelled"
+          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" {{osname}} "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
