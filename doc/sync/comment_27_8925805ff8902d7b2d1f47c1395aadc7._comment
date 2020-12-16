@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="dscheffy@c203b7661ec8c1ebd53e52627c84536c5f0c9026"
+ nickname="dscheffy"
+ avatar="http://cdn.libravatar.org/avatar/62a3a0bf0e203e3746eedbe48fd13f6d"
+ subject="Duplicate content creates frustrating cycles"
+ date="2020-12-16T17:10:52Z"
+ content="""
+I'm currently cleaning up 3 machines (with the goal of eventually upgrading my OS's) and 2 large external drives filled with 10 plus years of backups, so my current situation is somewhat temporary and may not apply to others. 
+
+I've started using preferred content to manage which repos hang onto which content. My main cleanup workflow involves moving files into a staging repository and then adding them to the annex -- then letting the preferred content settings figure out where to send the content. If I know exactly where I want the content to go, I'll move it directly into the appropriate folder, but if I haven't figured that out yet, sometimes I'll just put it in a `stage` folder. I've simplified my preferred content settings to assume that I only have one `big` external drive where everything except the contents of the `stage` directory should go, but in reality it's split up a bit across the two drives I already mentioned...
+
+```
+$ git annex wanted big
+include=* and exclude=stage/*
+$ git annex wanted stage
+include=stage/*
+```
+
+I noticed the other day that I had some missing content in `big/photo/raw`, so I went into that folder and ran `git annex get .` to rehydrate the missing files. 
+
+Today I staged some new files and ran the following from my staging annex:
+
+```
+git annex add stage
+git commit -m 'stage some new photos'
+git annex sync --content
+```
+
+This when I noticed some weirdness:
+
+```
+pull big
+...
+ok
+(merging big into stage...)
+(recording state in git...)
+copy photos/raw/pict0001.jpg (to big...) 
+SHA256E-abc--xyz.jpg
+(checksum...) ok
+drop photos/raw/pict0001.jpg ok
+...
+get stage/cats.jpg (from big...) 
+SHA256E-abc--xyz.jpg
+(checksum...) ok
+drop big stage/cats.jpg ok
+pull big 
+```
+
+Basically, if two copies of the same content live in two different files that have an affinity to two or more mutually exclusive annexes, it seems like the rule that applies to the last file in the directory tree is arbitrarily going to be the one that wins out in the end. It also means if you have such a situation, you're going to see a strange dance like this everytime you run `git annex sync --content` as the content moves across annexes only to make it's way back to where it started. 
+
+I'm currently running v6.2, so maybe this has been fixed in the interim. Has anybody else seen this? Do standard groups address this problem? I started out tryint to use standard groups, but fell back on my own custom folder definitions when I couldn't figure out how to keep my standard groups from grabbing more content than I wanted them to. 
+
+Thanks!
+"""]]
