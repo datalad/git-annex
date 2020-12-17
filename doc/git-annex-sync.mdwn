@@ -113,7 +113,7 @@ received.
   import changes from the remote, merge them into the branch, and export
   any changes that have been committed to the branch back to the remote.
   With --no-content, imports will only be made from special remotes that
-  support importing without transferting files, and no exports will be done.
+  support importing without transferring files, and no exports will be done.
   See [[git-annex-import]](1) and [[git-annex-export]](1) for details
   about how importing and exporting work.
 
