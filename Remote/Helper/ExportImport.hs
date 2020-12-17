@@ -106,7 +106,7 @@ adjustExportImport rmt rs = do
 	case (exportTree (config rmt), importTree (config rmt)) of
 		(True, True) -> isimport dbv =<< isexport dbv rmt
 		(True, False) -> notimport =<< isexport dbv rmt
-		(False, True) -> notexport =<< isimport dbv rmt
+		(False, True) -> notexport =<< isimportonly dbv rmt
 		(False, False) -> notimport =<< notexport rmt
   where
 	notexport r = return $ r
@@ -122,54 +122,7 @@ adjustExportImport rmt rs = do
 			{ importSupported = importUnsupported
 			}
 		}
-	
-	isimport dbv r = do
-		ciddbv <- prepciddb
 
-		let keycids k = do
-			db <- getciddb ciddbv
-			liftIO $ ContentIdentifier.getContentIdentifiers db rs k
-
-		let checkpresent k loc = 
-			checkPresentExportWithContentIdentifier
-				(importActions r)
-				k loc 
-				=<< keycids k
-
-		return $ r
-			{ exportActions = (exportActions r)
-				{ storeExport = \f k loc p -> do
-					db <- getciddb ciddbv
-					exportdb <- getexportdb r dbv
-					oldks <- liftIO $ Export.getExportTreeKey exportdb loc
-					oldcids <- liftIO $ concat
-						<$> mapM (ContentIdentifier.getContentIdentifiers db rs) oldks
-					newcid <- storeExportWithContentIdentifier (importActions r) f k loc oldcids p
-					withExclusiveLock gitAnnexContentIdentifierLock $ do
-						liftIO $ ContentIdentifier.recordContentIdentifier db rs newcid k
-						liftIO $ ContentIdentifier.flushDbQueue db
-					recordContentIdentifier rs newcid k
-				, removeExport = \k loc ->
-					removeExportWithContentIdentifier (importActions r) k loc
-						=<< keycids k
-				, removeExportDirectory = removeExportDirectoryWhenEmpty (importActions r)
-				-- renameExport is optional, and the
-				-- remote's implementation may
-				-- lose modifications to the file
-				-- (by eg copying and then deleting)
-				-- so don't use it
-				, renameExport = \_ _ _ -> return Nothing
-				, checkPresentExport = checkpresent
-				}
-			, checkPresent = if appendonly r
-				then checkPresent r
-				else \k -> anyM (checkpresent k)
-					=<< getexportlocs r dbv k
-			, getInfo = do
-				is <- getInfo r
-				return (is++[("import", "yes")])
-			}
-	
 	isexport dbv r = ifM (isExportSupported r)
 		( isexport' dbv r
 		, notexport r
@@ -240,6 +193,77 @@ adjustExportImport rmt rs = do
 				<$> getExport (uuid r)
 			is <- getInfo r
 			return (is++[("export", "yes"), ("exportedtree", unwords ts)])
+		}
+	
+	isimport dbv r = do
+		ciddbv <- prepciddb
+
+		let keycids k = do
+			db <- getciddb ciddbv
+			liftIO $ ContentIdentifier.getContentIdentifiers db rs k
+
+		let checkpresent k loc = 
+			checkPresentExportWithContentIdentifier
+				(importActions r)
+				k loc 
+				=<< keycids k
+
+		return $ r
+			{ exportActions = (exportActions r)
+				{ storeExport = \f k loc p -> do
+					db <- getciddb ciddbv
+					exportdb <- getexportdb r dbv
+					oldks <- liftIO $ Export.getExportTreeKey exportdb loc
+					oldcids <- liftIO $ concat
+						<$> mapM (ContentIdentifier.getContentIdentifiers db rs) oldks
+					newcid <- storeExportWithContentIdentifier (importActions r) f k loc oldcids p
+					withExclusiveLock gitAnnexContentIdentifierLock $ do
+						liftIO $ ContentIdentifier.recordContentIdentifier db rs newcid k
+						liftIO $ ContentIdentifier.flushDbQueue db
+					recordContentIdentifier rs newcid k
+				, removeExport = \k loc ->
+					removeExportWithContentIdentifier (importActions r) k loc
+						=<< keycids k
+				, removeExportDirectory = removeExportDirectoryWhenEmpty (importActions r)
+				-- renameExport is optional, and the
+				-- remote's implementation may
+				-- lose modifications to the file
+				-- (by eg copying and then deleting)
+				-- so don't use it
+				, renameExport = \_ _ _ -> return Nothing
+				, checkPresentExport = checkpresent
+				}
+			, checkPresent = if appendonly r
+				then checkPresent r
+				else \k -> anyM (checkpresent k)
+					=<< getexportlocs r dbv k
+			, getInfo = do
+				is <- getInfo r
+				return (is++[("import", "yes")])
+			}
+	
+	isimportonly dbv r' = isimport dbv r' >>= \r -> return $ r
+		{ storeKey = \_ _ _ ->
+			giveup "remote is configured with importtree=yes and without exporttree=yes; cannot modify content stored on it"
+		, retrieveKeyFile = \k af dest p ->
+			let retrieveexport = retrieveKeyFileFromExport r dbv k af dest p
+			in if appendonly r
+				then retrieveKeyFile r k af dest p
+					`catchNonAsync` const retrieveexport
+				else retrieveexport
+		, retrieveKeyFileCheap = if appendonly r
+			then retrieveKeyFileCheap r
+			else Nothing
+		, removeKey = \_k -> giveup "dropping content from this remote is not supported because it is configured with importtree=yes and without exporttree=yes"
+		, lockContent = if appendonly r
+			then lockContent r
+			else Nothing
+		, checkPresent = if appendonly r
+			then checkPresent r
+			else \k -> anyM (checkPresentExport (exportActions r) k)
+				=<< getexportlocs r dbv k
+		, checkPresentCheap = False
+		, mkUnavailable = return Nothing
 		}
 
 	prepciddb = do
