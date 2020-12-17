@@ -31,7 +31,14 @@ fromImportLocation = fromExportLocation
 
 {- An identifier for content stored on a remote that has been imported into
  - the repository. It should be reasonably short since it is stored in the
- - git-annex branch. -}
+ - git-annex branch.
+ -
+ - Since other things than git-annex can modify files on import remotes,
+ - and git-annex then be used to import those modifications, the
+ - ContentIdentifier needs to change when a file gets changed in such a
+ - way. Device, inode, and size is one example of a good content
+ - identifier. Or a hash if the remote's interface exposes hashes.
+ -}
 newtype ContentIdentifier = ContentIdentifier S.ByteString
 	deriving (Eq, Ord, Show, Generic)
 

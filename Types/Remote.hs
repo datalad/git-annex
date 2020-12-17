@@ -113,9 +113,9 @@ data RemoteA a = Remote
 	-- Some remotes can checkPresent without an expensive network
 	-- operation.
 	, checkPresentCheap :: Bool
-	-- Some remotes support export of trees.
+	-- Some remotes support export of trees of files.
 	, exportActions :: ExportActions a
-	-- Some remotes support import of trees.
+	-- Some remotes support import of trees of files.
 	, importActions :: ImportActions a
 	-- Some remotes can provide additional details for whereis.
 	, whereisKey :: Maybe (Key -> a [String])
@@ -277,8 +277,9 @@ data ImportActions a = ImportActions
 	-- May also find old versions of files that are still stored in the
 	-- remote.
 	{ listImportableContents :: a (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
-	-- Imports a file from the remote, without downloading it,
-	-- by generating a Key (of any type).
+	-- Generates a Key (of any type) for the file stored on the
+	-- remote at the ImportLocation. Does not download the file
+	-- from the remote.
 	--
 	-- May update the progress meter if it needs to perform an
 	-- expensive operation, such as hashing a local file.
@@ -288,7 +289,7 @@ data ImportActions a = ImportActions
 	-- since the ContentIdentifier was generated.
 	--
 	-- Throws exception on failure.
-	, importKey :: Maybe (ExportLocation -> ContentIdentifier -> MeterUpdate -> a Key)
+	, importKey :: Maybe (ImportLocation -> ContentIdentifier -> MeterUpdate -> a Key)
 	-- Retrieves a file from the remote. Ensures that the file
 	-- it retrieves has the requested ContentIdentifier.
 	--
