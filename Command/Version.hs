@@ -56,7 +56,7 @@ showVersion = do
 showPackageVersion :: IO ()
 showPackageVersion = do
 	vinfo "git-annex version" BuildInfo.packageversion
-        vinfo "Custom patch level" "4"
+        vinfo "Custom patch level" "4a"
 	vinfo "build flags" $ unwords buildFlags
 	vinfo "dependency versions" $ unwords dependencyVersions
 	vinfo "key/value backends" $ unwords $
