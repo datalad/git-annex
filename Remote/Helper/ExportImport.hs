@@ -333,6 +333,6 @@ adjustExportImport rmt rs = do
 					)
 				(l:_) -> do
 					retrieveExport (exportActions r) k l dest p
-					return UnVerified
+					return MustVerify
 		, giveup $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"
 		)
