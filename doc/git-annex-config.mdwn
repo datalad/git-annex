@@ -18,20 +18,22 @@ Unlike `git config` settings, these settings can be seen
 in all clones of the repository, once they have gotten their
 git-annex branches in sync.
 
-# SUPPORTED SETTINGS
-
-git-annex does not check the git-annex branch for all settings.
-Only a few make sense to be able to set such that all clones of a
-repository see the setting, and so git-annex only looks for these:
-
 These settings can be overridden on a per-repository basis using
 `git config`.
+
+git-annex does not check the git-annex branch for all the `git config`
+settings that affect it (which are listed on the git-annex man page
+CONFIGURATION section). Only a few make sense to be able to set such
+that all clones of a repository see the setting, and so git-annex only
+looks for these.
+
+# SUPPORTED SETTINGS
 
 * `annex.largefiles`
 
    Used to configure which files are large enough to be added to the annex.
    It is an expression that matches the large files, eg
-   "include=*.mp3 or largerthan(500kb)".
+   "`include=*.mp3 or largerthan(500kb)`".
    See [[git-annex-matching-expression]](1) for details on the syntax.
 
    This sets a default, which can be overridden by annex.largefiles
