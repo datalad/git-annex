@@ -1,0 +1,24 @@
+This special remote type accesses files stored in a
+[borg](https://www.borgbackup.org/) repository.
+
+This allows retrieving annexed files from borg repositories, and since
+git-annex knows which files are stored in a borg repository, it can be
+configured to treat the repository as one copy of the file.
+
+Unlike most special remotes, this is read-only; it cannot change what
+is stored in a borg repository. You do that by using borg as usual,
+and then `git-annex sync` will learn about the files that are stored
+in the borg repository.
+
+## configuration
+
+These parameters can be passed to `git annex initremote` to configure the
+remote:
+
+* `repository` - The location of a borg repository, eg a path, or
+  `user@host:path` for ssh access.
+
+Setup example:
+
+	# borg init --encryption=keyfile /path/to/repo
+	# git annex initremote borg type=borg repository=/path/to/repo
