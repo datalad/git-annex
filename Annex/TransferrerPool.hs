@@ -31,7 +31,6 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM hiding (check)
 import Control.Monad.IO.Class (MonadIO)
-import Data.Time.Clock.POSIX
 import System.Log.Logger (debugM)
 import qualified Data.Map as M
 #ifndef mingw32_HOST_OS
@@ -183,7 +182,6 @@ detectStalls Nothing _ _ = noop
 detectStalls (Just (StallDetection minsz duration)) metervar onstall = go Nothing
   where
 	go st = do
-		starttm <- getPOSIXTime
 		threadDelaySeconds (Seconds (fromIntegral (durationSeconds duration)))
 		-- Get whatever progress value was reported last, if any.
 		v <- atomically $ fmap fromBytesProcessed
@@ -198,15 +196,8 @@ detectStalls (Just (StallDetection minsz duration)) metervar onstall = go Nothin
 				-- started and is at a smaller value than
 				-- the previous one.
 				| prev > sofar -> cont
-				| otherwise -> do
-					endtm <- getPOSIXTime
-					let actualduration = endtm - starttm
-					let sz = sofar - prev
-					let expectedsz = (minsz * durationSeconds duration)
-						`div` max 1 (ceiling actualduration)
-					if sz < expectedsz
-						then onstall
-						else cont
+				| sofar - prev < minsz -> onstall
+				| otherwise -> cont
 
 {- Starts a new git-annex transfer process, setting up handles
  - that will be used to communicate with it. -}
