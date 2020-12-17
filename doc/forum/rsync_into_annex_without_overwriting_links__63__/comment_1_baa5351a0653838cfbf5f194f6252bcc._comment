@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="dscheffy@c203b7661ec8c1ebd53e52627c84536c5f0c9026"
+ nickname="dscheffy"
+ avatar="http://cdn.libravatar.org/avatar/62a3a0bf0e203e3746eedbe48fd13f6d"
+ subject="How do I `man` annex config options?"
+ date="2020-12-17T10:39:40Z"
+ content="""
+Right after posting this last night I came across [this](https://git-annex.branchable.com/forum/How_to_prevent_copies_on_a_single_device_and_use_only_hardlinks/) forum entry, which led me to the tip on how to create a cache annex, which eventually led me to a little more detail on the `annex.hardlink` and `annex.thin` options. 
+
+It sounds like they may kind of be what I'm looking for, but I'm not sure how to find more details (doc) on how to use them or specifically what they do. They aren't listed in supported options when I run (on v6.2):
+
+```
+git annex help config
+```
+
+I google `git annex.hardlink` and `git annex.thin`, but those just point me to bugs or forums or tips that refer to the settings. 
+
+Are these annex wide settings? (that seems to be the case). Is it possible to apply them at a folder level? Am I maybe just missing the point of lock/unlock?
+
+I'll keep looking and run some experiments on my own.
+
+Thanks again!
+"""]]

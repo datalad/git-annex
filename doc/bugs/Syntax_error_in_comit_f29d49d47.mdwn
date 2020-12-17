@@ -1,0 +1,29 @@
+There is a syntax error in commit f29d49d47 that is preventing git-annex from building:
+
+```
+Command/Move.hs:214:36: error: parse error on input `->'
+    |
+214 |                         Right True -> return True
+    |                                    ^^
+```
+
+The following patch fixes it:
+
+```
+diff --git a/Command/Move.hs b/Command/Move.hs
+index 584565648..d8c4bc4c9 100644
+--- a/Command/Move.hs
++++ b/Command/Move.hs
+@@ -210,7 +210,7 @@ fromOk :: Remote -> Key -> Annex Bool
+ fromOk src key
+ 	-- check if the remote contains the key, when it can be done cheaply
+ 	| Remote.hasKeyCheap src = 
+-		Remote.hasKey src key >>= 
++		Remote.hasKey src key >>= \x -> case x of
+ 			Right True -> return True
+ 			-- Don't skip getting the key just because the
+ 			-- remote no longer contains it if the log
+```
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]

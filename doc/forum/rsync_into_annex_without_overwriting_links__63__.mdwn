@@ -1,0 +1,13 @@
+Does anybody know if it's possible to rsync files into an annex folder without constantly overwriting already annexed files?  I know that the `-L` option will de-reference links on the source side, but I don't see any option for doing the same on the target side. 
+
+I have two machines -- alpha and beta. Alpha doesn't know anything about git annex, but knows how to rsync. I have a folder on alpha that I regularly sync over to beta with: 
+
+```
+rsync -av folder/ beta:/.../annex/folder
+``` 
+
+That way I know that I can eventually safely delete any material in the folder on alpha because it's been backed up/archived to my annex. The problem is, every time I add the files into the annex on beta, they get replaced with symlinks, which wouldn't be a problem except for the fact that now the next time I run the rsync command all of the files get retransmitted because they don't match the symlinks over on beta. This doesn't cause a problem on the git annex side, but it significantly slows down the rsync process. 
+
+Is this a case for an rsync remote? (I haven't really figured out special remotes yet.) Or is there a typical workflow on the git annex side that I could be using to fix this (like `import` rather than `add`)?
+
+Thanks! 

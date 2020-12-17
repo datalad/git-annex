@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 2"
+ date="2020-12-17T16:06:44Z"
+ content="""
+> How do I `man` annex config options?
+
+The options are listed in the `man git-annex` output (which is also
+available at <https://git-annex.branchable.com/git-annex/>).
+"""]]
