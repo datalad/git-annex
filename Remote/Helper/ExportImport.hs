@@ -101,164 +101,134 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 
 -- | Adjust a remote to support exporttree=yes and/or importree=yes.
 adjustExportImport :: Remote -> RemoteStateHandle -> Annex Remote
-adjustExportImport rmt rs = do
+adjustExportImport r rs = do
+	isexport <- pure (exportTree (config r)) <&&> isExportSupported r
+	isimport <- pure (importTree (config r)) <&&> isImportSupported r
+	let normal = not isexport && not isimport
+	let iskeyvaluestore = normal || appendonly r
 	dbv <- prepdbv
-	case (exportTree (config rmt), importTree (config rmt)) of
-		(True, True) -> isimport dbv =<< isexport dbv rmt
-		(True, False) -> notimport =<< isexport dbv rmt
-		(False, True) -> notexport =<< isimportonly dbv rmt
-		(False, False) -> notimport =<< notexport rmt
-  where
-	notexport r = return $ r
-		{ exportActions = exportUnsupported
-		, remotetype = (remotetype r)
-			{ exportSupported = exportUnsupported
+	ciddbv <- prepciddb
+	return $ r
+		{ remotetype = (remotetype r)
+			{ exportSupported = if isexport
+				then exportSupported (remotetype r)
+				else exportUnsupported
+			, importSupported = if isimport
+				then importSupported (remotetype r)
+				else importUnsupported
 			}
-		}
-	
-	notimport r = return $ r
-		{ importActions = importUnsupported
-		, remotetype = (remotetype r)
-			{ importSupported = importUnsupported
-			}
-		}
-
-	isexport dbv r = ifM (isExportSupported r)
-		( isexport' dbv r
-		, notexport r
-		)
-
-	isexport' dbv r = return $ isimportorexport $ r
-		-- Storing a key on an export could be implemented,
-		-- but it would perform unncessary work
-		-- when another repository has already stored the
-		-- key, and the local repository does not know
-		-- about it. To avoid unnecessary costs, don't do it.
-		{ storeKey = \_ _ _ ->
-			giveup "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
-		-- Keys can be retrieved using retrieveExport, 
-		-- but since that retrieves from a path in the
-		-- remote that another writer could have replaced
-		-- with content not of the requested key,
-		-- the content has to be strongly verified.
-		--
-		-- appendonly remotes have a key/value store,
-		-- so don't need to use retrieveExport. However,
-		-- fall back to it if retrieveKeyFile fails.
-		, retrieveKeyFile = \k af dest p ->
-			let retrieveexport = retrieveKeyFileFromExport r dbv k af dest p
-			in if appendonly r
-				then retrieveKeyFile r k af dest p
-					`catchNonAsync` const retrieveexport
-				else retrieveexport
-		-- Removing a key from an export would need to
-		-- change the tree in the export log to not include
-		-- the file. Otherwise, conflicts when removing
-		-- files would not be dealt with correctly.
-		-- There does not seem to be a good use case for
-		-- removing a key from an export in any case.
-		, removeKey = \_k -> giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
-		-- Check if any of the files a key was exported to
-		-- are present. This doesn't guarantee the export
-		-- contains the right content, which is why export
-		-- remotes are untrusted.
-		--
-		-- (but appendonly remotes work the same as any
-		-- non-export remote)
-		, checkPresent = if appendonly r
-			then checkPresent r
-			else \k -> anyM (checkPresentExport (exportActions r) k)
-				=<< getexportlocs r dbv k
-		, getInfo = do
-			ts <- map fromRef . exportedTreeishes
-				<$> getExport (uuid r)
-			is <- getInfo r
-			return (is++[("export", "yes"), ("exportedtree", unwords ts)])
-		}
-
-	isimport dbv r = do
-		ciddbv <- prepciddb
-
-		let keycids k = do
-			db <- getciddb ciddbv
-			liftIO $ ContentIdentifier.getContentIdentifiers db rs k
-
-		let checkpresent k loc = 
-			checkPresentExportWithContentIdentifier
-				(importActions r)
-				k loc 
-				=<< keycids k
-
-		return $ isimportorexport $ r
-			{ exportActions = (exportActions r)
-				{ storeExport = \f k loc p -> do
-					db <- getciddb ciddbv
-					exportdb <- getexportdb r dbv
-					oldks <- liftIO $ Export.getExportTreeKey exportdb loc
-					oldcids <- liftIO $ concat
-						<$> mapM (ContentIdentifier.getContentIdentifiers db rs) oldks
-					newcid <- storeExportWithContentIdentifier (importActions r) f k loc oldcids p
-					withExclusiveLock gitAnnexContentIdentifierLock $ do
-						liftIO $ ContentIdentifier.recordContentIdentifier db rs newcid k
-						liftIO $ ContentIdentifier.flushDbQueue db
-					recordContentIdentifier rs newcid k
-				, removeExport = \k loc ->
-					removeExportWithContentIdentifier (importActions r) k loc
-						=<< keycids k
-				, removeExportDirectory = removeExportDirectoryWhenEmpty (importActions r)
-				-- renameExport is optional, and the
-				-- remote's implementation may
-				-- lose modifications to the file
-				-- (by eg copying and then deleting)
-				-- so don't use it
-				, renameExport = \_ _ _ -> return Nothing
-				, checkPresentExport = checkpresent
-				}
-			, checkPresent = if appendonly r
-				then checkPresent r
-				else \k -> anyM (checkpresent k)
-					=<< getexportlocs r dbv k
-			, getInfo = do
-				is <- getInfo r
-				return (is++[("import", "yes")])
-			}
-	
-	isimportonly dbv r' = isimport dbv r' >>= \r -> return $ r
-		{ storeKey = \_ _ _ ->
-			giveup "remote is configured with importtree=yes and without exporttree=yes; cannot modify content stored on it"
-		, retrieveKeyFile = \k af dest p ->
-			let retrieveexport = retrieveKeyFileFromExport r dbv k af dest p
-			in if appendonly r
-				then retrieveKeyFile r k af dest p
-					`catchNonAsync` const retrieveexport
-				else retrieveexport
-		, removeKey = \_k -> giveup "dropping content from this remote is not supported because it is configured with importtree=yes and without exporttree=yes"
-		}
-
-	isimportorexport r = r
-		-- Can't lock content on import/export, since they're
-		-- not key/value stores, and someone else could
-		-- change what's exported to a file at any time.
-		--
-		-- (except for appendonly remotes)
-		{ lockContent = if appendonly r
+		, exportActions = if isexport
+			then if isimport
+				then exportActionsForImport dbv ciddbv (exportActions r)
+				else exportActions r
+			else exportUnsupported
+		, importActions = if isimport
+			then importActions r
+			else importUnsupported
+		, storeKey = \k af p ->
+			-- Storing a key on an export could be implemented,
+			-- but it would perform unncessary work
+			-- when another repository has already stored the
+			-- key, and the local repository does not know
+			-- about it. To avoid unnecessary costs, don't do it.
+			if isexport
+				then giveup "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
+				else if isimport
+					then giveup "remote is configured with importtree=yes and without exporttree=yes; cannot modify content stored on it"
+					else storeKey r k af p
+		, removeKey = \k -> 
+			-- Removing a key from an export would need to
+			-- change the tree in the export log to not include
+			-- the file. Otherwise, conflicts when removing
+			-- files would not be dealt with correctly.
+			-- There does not seem to be a good use case for
+			-- removing a key from an export in any case.
+			if isexport
+				then giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
+				else if isimport
+					then giveup "dropping content from this remote is not supported because it is configured with importtree=yes"
+					else removeKey r k
+		, lockContent = if iskeyvaluestore
 			then lockContent r
 			else Nothing
-		, retrieveKeyFileCheap = if appendonly r
+		, retrieveKeyFile = \k af dest p ->
+			if isimport
+				then supportappendonlyretrieve k af dest p $
+					retrieveKeyFileFromImport dbv ciddbv k af dest p
+				else if isexport
+					then supportappendonlyretrieve k af dest p $
+						retrieveKeyFileFromExport dbv k af dest p
+					else retrieveKeyFile r k af dest p
+		, retrieveKeyFileCheap = if iskeyvaluestore
 			then retrieveKeyFileCheap r
 			else Nothing
+		, checkPresent = \k -> if appendonly r
+			then checkPresent r k
+			else if isimport
+				then anyM (checkPresentImport ciddbv k)
+					=<< getexportlocs dbv k
+				else if isexport
+					-- Check if any of the files a key
+					-- was exported to are present. This 
+					-- doesn't guarantee the export
+					-- contains the right content,
+					-- which is why export remotes
+					-- are untrusted.
+					then anyM (checkPresentExport (exportActions r) k)
+						=<< getexportlocs dbv k
+					else checkPresent r k
 		-- checkPresent from an export is more expensive
 		-- than otherwise, so not cheap. Also, this
 		-- avoids things that look at checkPresentCheap and
 		-- silently skip non-present files from behaving
 		-- in confusing ways when there's an export
 		-- conflict (or an import conflict).
-		, checkPresentCheap = False
+		, checkPresentCheap = if normal
+			then checkPresentCheap r
+			else False
 		-- git-annex testremote cannot be used to test
 		-- import/export since it stores keys.
-		, mkUnavailable = return Nothing
+		, mkUnavailable = if normal
+			then mkUnavailable r
+			else return Nothing
+		, getInfo = do
+			is <- getInfo r
+			is' <- if isexport
+				then do
+					ts <- map fromRef . exportedTreeishes
+						<$> getExport (uuid r)
+					return (is++[("export", "yes"), ("exportedtree", unwords ts)])
+				else return is
+			return $ if isimport
+				then (is'++[("import", "yes")])
+				else is'
 		}
-
+  where
+	-- exportActions adjusted to use the equivilant import actions,
+	-- which take ContentIdentifiers into account.
+	exportActionsForImport dbv ciddbv ea = ea
+  		{ storeExport = \f k loc p -> do
+			db <- getciddb ciddbv
+			exportdb <- getexportdb dbv
+			oldks <- liftIO $ Export.getExportTreeKey exportdb loc
+			oldcids <- liftIO $ concat
+				<$> mapM (ContentIdentifier.getContentIdentifiers db rs) oldks
+			newcid <- storeExportWithContentIdentifier (importActions r) f k loc oldcids p
+			withExclusiveLock gitAnnexContentIdentifierLock $ do
+				liftIO $ ContentIdentifier.recordContentIdentifier db rs newcid k
+				liftIO $ ContentIdentifier.flushDbQueue db
+			recordContentIdentifier rs newcid k
+		, removeExport = \k loc ->
+			removeExportWithContentIdentifier (importActions r) k loc
+				=<< getkeycids ciddbv k
+		, removeExportDirectory = removeExportDirectoryWhenEmpty (importActions r)
+		-- renameExport is optional, and the remote's
+		-- implementation may lose modifications to the file
+		-- (by eg copying and then deleting) so don't use it
+		, renameExport = \_ _ _ -> return Nothing
+		, checkPresentExport = checkPresentImport ciddbv
+		}
+	
 	prepciddb = do
 		lcklckv <- liftIO newEmptyTMVarIO
 		dbtv <- liftIO newEmptyTMVarIO
@@ -294,14 +264,14 @@ adjustExportImport rmt rs = do
 	-- After opening the database, check if the export log is
 	-- different than the database, and update the database, to notice
 	-- when an export has been updated from another repository.
-	getexportdb r (dbv, lcklckv, exportinconflict) = 
+	getexportdb (dbv, lcklckv, exportinconflict) = 
 		liftIO (atomically (tryReadTMVar dbv)) >>= \case
 			Just db -> return db
 			-- let only one thread take the lock
 			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
 				( do
 					db <- Export.openDb (uuid r)
-					updateexportdb db exportinconflict r
+					updateexportdb db exportinconflict
 					liftIO $ atomically $ putTMVar dbv db
 					return db
 				-- loser waits for winner to open the db and
@@ -311,7 +281,7 @@ adjustExportImport rmt rs = do
 
 	getexportinconflict (_, _, v) = v
 
-	updateexportdb db exportinconflict r =
+	updateexportdb db exportinconflict =
 		Export.updateExportTreeFromLog db >>= \case
 			Export.ExportUpdateSuccess -> return ()
 			Export.ExportUpdateConflict -> do
@@ -319,20 +289,56 @@ adjustExportImport rmt rs = do
 				liftIO $ atomically $
 					writeTVar exportinconflict True
 		
-	getexportlocs r dbv k = do
-		db <- getexportdb r dbv
+	getexportlocs dbv k = do
+		db <- getexportdb dbv
 		liftIO $ Export.getExportTree db k
+	
+	getfirstexportloc dbv k = do
+		db <- getexportdb dbv
+		liftIO $ Export.getExportTree db k >>= \case
+			[] -> ifM (atomically $ readTVar $ getexportinconflict dbv)
+				( giveup "unknown export location, likely due to the export conflict"
+				, giveup "unknown export location"
+				)
+			(l:_) -> return l
+		
+	getkeycids ciddbv k = do
+		db <- getciddb ciddbv
+		liftIO $ ContentIdentifier.getContentIdentifiers db rs k
 
-	retrieveKeyFileFromExport r dbv k _af dest p = ifM (isVerifiable k)
+	-- Keys can be retrieved using retrieveExport, but since that
+	-- retrieves from a path in the remote that another writer could
+	-- have replaced with content not of the requested key, the content
+	-- has to be strongly verified.
+	retrieveKeyFileFromExport dbv k _af dest p = ifM (isVerifiable k)
 		( do
-			locs <- getexportlocs r dbv k
-			case locs of
-				[] -> ifM (liftIO $ atomically $ readTVar $ getexportinconflict dbv)
-					( giveup "unknown export location, likely due to the export conflict"
-					, giveup "unknown export location"
-					)
-				(l:_) -> do
-					retrieveExport (exportActions r) k l dest p
-					return MustVerify
+			l <- getfirstexportloc dbv k
+			retrieveExport (exportActions r) k l dest p
+			return MustVerify
 		, giveup $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"
 		)
+	
+	retrieveKeyFileFromImport dbv ciddbv k af dest p =
+		getkeycids ciddbv k >>= \case
+			(cid:_) -> do
+				l <- getfirstexportloc dbv k
+				void $ retrieveExportWithContentIdentifier (importActions r) l cid dest (pure k) p
+				return UnVerified
+			-- In case a content identifier is somehow missing,
+			-- try this instead.
+			[] -> retrieveKeyFileFromExport dbv k af dest p
+	
+	-- appendonly remotes have a key/value store, so can use
+	-- the usual retrieveKeyFile, rather than an import/export
+	-- variant. However, fall back to that if retrieveKeyFile fails.
+	supportappendonlyretrieve k af dest p a
+		| appendonly r =
+			retrieveKeyFile r k af dest p
+				`catchNonAsync` const a
+		| otherwise = a
+
+	checkPresentImport ciddbv k loc =
+		checkPresentExportWithContentIdentifier
+			(importActions r)
+			k loc 
+			=<< getkeycids ciddbv k
