@@ -656,7 +656,10 @@ retrieveExportWithContentIdentifierS3 hv r rs info loc cid dest mkkey p = withS3
 				S3.getObject (bucket info) o
 		k <- mkkey
 		case extractContentIdentifier cid o of
-			Right vid -> setS3VersionID info rs k vid
+			Right vid -> do
+				vids <- getS3VersionID rs k
+				unless (vid `elem` map Just vids) $
+					setS3VersionID info rs k vid
 			Left _ -> noop
 		return k
 	Nothing -> giveup $ needS3Creds (uuid r)
@@ -1132,7 +1135,7 @@ getPublicUrlMaker info = case publicurl info of
 -- version id involves a request for an object, so this keeps track of what
 -- the object is.
 data S3VersionID = S3VersionID S3.Object T.Text
-	deriving (Show)
+	deriving (Show, Eq)
 
 -- smart constructor
 mkS3VersionID :: S3.Object -> Maybe T.Text -> Maybe S3VersionID
