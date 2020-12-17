@@ -46,7 +46,7 @@ import Control.Concurrent
 cmd :: Command
 cmd = withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption] $
 	command "export" SectionCommon
-		"export content to a remote"
+		"export a tree of files to a special remote"
 		paramTreeish (seek <$$> optParser)
 
 data ExportOptions = ExportOptions

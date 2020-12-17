@@ -16,7 +16,7 @@ usageMessage s = "Usage: " ++ s
 usage :: String -> [Command] -> String
 usage header cmds = unlines $ usageMessage header : commandList cmds
 
-{- Commands listed by section, with breif usage and description. -}
+{- Commands listed by section, with brief usage and description. -}
 commandList :: [Command] -> [String]
 commandList cmds = concatMap go [minBound..]
   where
