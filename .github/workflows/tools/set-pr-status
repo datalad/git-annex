@@ -10,32 +10,33 @@ function api_call {
 
 INPUT_PR="$1"
 OSNAME="$2"
-STATE="$3"
+JOBNAME="$3"
+STATE="$4"
 
-if [ "$STATE" = pending ]
-then DESCRIPTION="git-annex building ..."
-elif [ "$STATE" = success ]
-then DESCRIPTION="git-annex built successfully"
-elif [ "$STATE" = failure ]
-then DESCRIPTION="git-annex build failed!"
-elif [ "$STATE" = cancelled ]
+if [ "$STATE" = cancelled ]
 then STATE=error
-     DESCRIPTION="git-annex build cancelled"
-else STATE=error
-     DESCRIPTION="git-annex build errored"
+fi
+
+JOBS="$(api_call "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs")"
+
+JOB_URL="$(jq -r --arg job "$JOBNAME" '.jobs[] | select(.name == $job) | .html_url' <<<"$JOBS")"
+
+if [ -z "$JOB_URL" ]
+then echo "[WARNING] Could not determine job URL"
+     echo "[INFO] Expected job with name: '$JOBNAME'"
+     echo "[INFO] Found jobs with names:"
+     jq '.jobs | [.[].name]' <<<"$JOBS"
 fi
 
 STATUSES_URL="$(api_call "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$INPUT_PR" | jq -r .statuses_url)"
 
 jq -n \
-    --arg osname "$OSNAME" \
+    --arg context "Build git-annex on $OSNAME / $JOBNAME" \
     --arg state "$STATE" \
-    --arg description "$DESCRIPTION" \
-    --arg target_url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+    --arg target_url "$JOB_URL" \
     '{
         "state": $state,
-        "context": ("Build git-annex on " + $osname),
-        "description": $description,
+        "context": $context,
         "target_url": $target_url
     }' \
 | api_call -X POST -H "Content-Type: application/json" -d @- "$STATUSES_URL"
