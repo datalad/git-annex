@@ -63,9 +63,9 @@ data RemoteTypeA a = RemoteType
 	, configParser :: RemoteConfig -> a RemoteConfigParser
 	-- initializes or enables a remote
 	, setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
-	-- check if a remote of this type is able to support export
+	-- check if a remote of this type is able to support export of trees
 	, exportSupported :: ParsedRemoteConfig -> RemoteGitConfig -> a Bool
-	-- check if a remote of this type is able to support import
+	-- check if a remote of this type is able to support import of trees
 	, importSupported :: ParsedRemoteConfig -> RemoteGitConfig -> a Bool
 	}
 

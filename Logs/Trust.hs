@@ -66,11 +66,12 @@ trustMapLoad :: Annex TrustMap
 trustMapLoad = do
 	overrides <- Annex.getState Annex.forcetrust
 	l <- remoteList
-	-- Exports are not trusted, since they are not key/value stores.
-	-- This does not apply to appendonly exports, which are key/value
-	-- stores.
+	-- Export/import remotes are not trusted, since they are not
+	-- key/value stores. (Unless they are appendonly remotes.)
+	let isexportimport r = Types.Remote.isExportSupported r
+		<||> Types.Remote.isImportSupported r
 	let untrustworthy r = pure (not (Types.Remote.appendonly r)) 
-		<&&> Types.Remote.isExportSupported r 
+		<&&> isexportimport r
 	exports <- filterM untrustworthy l
 	let exportoverrides = M.fromList $
 		map (\r -> (Types.Remote.uuid r, UnTrusted)) exports

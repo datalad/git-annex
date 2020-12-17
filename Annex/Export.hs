@@ -43,10 +43,15 @@ exportKey sha = mk <$> catKey sha
 
 warnExportImportConflict :: Remote -> Annex ()
 warnExportImportConflict r = do
-	ops <- Remote.isImportSupported r >>= return . \case
-		True -> "exported to and/or imported from"
-		False -> "exported to"
-	toplevelWarning True $
-		"Conflict detected. Different trees have been " ++ ops ++
-		Remote.name r ++ 
-		". Use git-annex export to resolve this conflict."
+	isimport <- Remote.isImportSupported r
+	isexport <- Remote.isExportSupported r
+	let (ops, resolvcmd) = case (isexport, isimport) of
+		(False, True) -> ("imported from", "git-annex import")
+		(True, False) -> ("exported to", "git-annex export")
+		_ -> ("exported to and/or imported from", "git-annex export")
+	toplevelWarning True $ unwords
+		[ "Conflict detected. Different trees have been"
+		, ops, Remote.name r ++ ". Use"
+		, resolvcmd
+		, "to resolve this conflict."
+		]
