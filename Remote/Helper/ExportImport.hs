@@ -128,7 +128,7 @@ adjustExportImport rmt rs = do
 		, notexport r
 		)
 
-	isexport' dbv r = return $ r
+	isexport' dbv r = return $ isimportorexport $ r
 		-- Storing a key on an export could be implemented,
 		-- but it would perform unncessary work
 		-- when another repository has already stored the
@@ -151,9 +151,6 @@ adjustExportImport rmt rs = do
 				then retrieveKeyFile r k af dest p
 					`catchNonAsync` const retrieveexport
 				else retrieveexport
-		, retrieveKeyFileCheap = if appendonly r
-			then retrieveKeyFileCheap r
-			else Nothing
 		-- Removing a key from an export would need to
 		-- change the tree in the export log to not include
 		-- the file. Otherwise, conflicts when removing
@@ -161,14 +158,6 @@ adjustExportImport rmt rs = do
 		-- There does not seem to be a good use case for
 		-- removing a key from an export in any case.
 		, removeKey = \_k -> giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
-		-- Can't lock content on exports, since they're
-		-- not key/value stores, and someone else could
-		-- change what's exported to a file at any time.
-		--
-		-- (except for appendonly remotes)
-		, lockContent = if appendonly r
-			then lockContent r
-			else Nothing
 		-- Check if any of the files a key was exported to
 		-- are present. This doesn't guarantee the export
 		-- contains the right content, which is why export
@@ -180,21 +169,13 @@ adjustExportImport rmt rs = do
 			then checkPresent r
 			else \k -> anyM (checkPresentExport (exportActions r) k)
 				=<< getexportlocs r dbv k
-		-- checkPresent from an export is more expensive
-		-- than otherwise, so not cheap. Also, this
-		-- avoids things that look at checkPresentCheap and
-		-- silently skip non-present files from behaving
-		-- in confusing ways when there's an export
-		-- conflict.
-		, checkPresentCheap = False
-		, mkUnavailable = return Nothing
 		, getInfo = do
 			ts <- map fromRef . exportedTreeishes
 				<$> getExport (uuid r)
 			is <- getInfo r
 			return (is++[("export", "yes"), ("exportedtree", unwords ts)])
 		}
-	
+
 	isimport dbv r = do
 		ciddbv <- prepciddb
 
@@ -208,7 +189,7 @@ adjustExportImport rmt rs = do
 				k loc 
 				=<< keycids k
 
-		return $ r
+		return $ isimportorexport $ r
 			{ exportActions = (exportActions r)
 				{ storeExport = \f k loc p -> do
 					db <- getciddb ciddbv
@@ -251,18 +232,30 @@ adjustExportImport rmt rs = do
 				then retrieveKeyFile r k af dest p
 					`catchNonAsync` const retrieveexport
 				else retrieveexport
+		, removeKey = \_k -> giveup "dropping content from this remote is not supported because it is configured with importtree=yes and without exporttree=yes"
+		}
+
+	isimportorexport r = r
+		-- Can't lock content on import/export, since they're
+		-- not key/value stores, and someone else could
+		-- change what's exported to a file at any time.
+		--
+		-- (except for appendonly remotes)
+		{ lockContent = if appendonly r
+			then lockContent r
+			else Nothing
 		, retrieveKeyFileCheap = if appendonly r
 			then retrieveKeyFileCheap r
 			else Nothing
-		, removeKey = \_k -> giveup "dropping content from this remote is not supported because it is configured with importtree=yes and without exporttree=yes"
-		, lockContent = if appendonly r
-			then lockContent r
-			else Nothing
-		, checkPresent = if appendonly r
-			then checkPresent r
-			else \k -> anyM (checkPresentExport (exportActions r) k)
-				=<< getexportlocs r dbv k
+		-- checkPresent from an export is more expensive
+		-- than otherwise, so not cheap. Also, this
+		-- avoids things that look at checkPresentCheap and
+		-- silently skip non-present files from behaving
+		-- in confusing ways when there's an export
+		-- conflict (or an import conflict).
 		, checkPresentCheap = False
+		-- git-annex testremote cannot be used to test
+		-- import/export since it stores keys.
 		, mkUnavailable = return Nothing
 		}
 
