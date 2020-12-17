@@ -102,35 +102,35 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 -- | Adjust a remote to support exporttree=yes and/or importree=yes.
 adjustExportImport :: Remote -> RemoteStateHandle -> Annex Remote
 adjustExportImport r rs = do
-	isexport <- pure (exportTree (config r)) <&&> isExportSupported r
-	isimport <- pure (importTree (config r)) <&&> isImportSupported r
+	isexporttree <- pure (exportTree (config r)) <&&> isexporttreeSupported r
+	isimporttree <- pure (importTree (config r)) <&&> isimporttreeSupported r
 	let r' = r
 		{ remotetype = (remotetype r)
-			{ exportSupported = if isexport
+			{ exportSupported = if isexporttree
 				then exportSupported (remotetype r)
 				else exportUnsupported
-			, importSupported = if isimport
+			, importSupported = if isimporttree
 				then importSupported (remotetype r)
 				else importUnsupported
 			}
 		}
-	if not isexport && not isimport
+	if not isexporttree && not isimporttree
 		then return r'
-		else adjustExportImport' isexport isimport r' rs
+		else adjustExportImport' isexporttree isimporttree r' rs
 
 adjustExportImport' :: Bool -> Bool -> Remote -> RemoteStateHandle -> Annex Remote
-adjustExportImport' isexport isimport r rs = do
+adjustExportImport' isexporttree isimporttree r rs = do
 	dbv <- prepdbv
 	ciddbv <- prepciddb
-	let normal = not isexport && not isimport
+	let normal = not isexporttree && not isimporttree
 	let iskeyvaluestore = normal || appendonly r
 	return $ r
-		{ exportActions = if isexport
-			then if isimport
+		{ exportActions = if isexporttree
+			then if isimporttree
 				then exportActionsForImport dbv ciddbv (exportActions r)
 				else exportActions r
 			else exportUnsupported
-		, importActions = if isimport
+		, importActions = if isimporttree
 			then importActions r
 			else importUnsupported
 		, storeKey = \k af p ->
@@ -139,9 +139,9 @@ adjustExportImport' isexport isimport r rs = do
 			-- when another repository has already stored the
 			-- key, and the local repository does not know
 			-- about it. To avoid unnecessary costs, don't do it.
-			if isexport
+			if isexporttree
 				then giveup "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
-				else if isimport
+				else if isimporttree
 					then giveup "remote is configured with importtree=yes and without exporttree=yes; cannot modify content stored on it"
 					else storeKey r k af p
 		, removeKey = \k -> 
@@ -151,19 +151,19 @@ adjustExportImport' isexport isimport r rs = do
 			-- files would not be dealt with correctly.
 			-- There does not seem to be a good use case for
 			-- removing a key from an export in any case.
-			if isexport
+			if isexporttree
 				then giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
-				else if isimport
+				else if isimporttree
 					then giveup "dropping content from this remote is not supported because it is configured with importtree=yes"
 					else removeKey r k
 		, lockContent = if iskeyvaluestore
 			then lockContent r
 			else Nothing
 		, retrieveKeyFile = \k af dest p ->
-			if isimport
+			if isimporttree
 				then supportappendonlyretrieve k af dest p $
 					retrieveKeyFileFromImport dbv ciddbv k af dest p
-				else if isexport
+				else if isexporttree
 					then supportappendonlyretrieve k af dest p $
 						retrieveKeyFileFromExport dbv k af dest p
 					else retrieveKeyFile r k af dest p
@@ -172,10 +172,10 @@ adjustExportImport' isexport isimport r rs = do
 			else Nothing
 		, checkPresent = \k -> if appendonly r
 			then checkPresent r k
-			else if isimport
+			else if isimporttree
 				then anyM (checkPresentImport ciddbv k)
 					=<< getexportlocs dbv k
-				else if isexport
+				else if isexporttree
 					-- Check if any of the files a key
 					-- was exported to are present. This 
 					-- doesn't guarantee the export
@@ -201,14 +201,14 @@ adjustExportImport' isexport isimport r rs = do
 			else return Nothing
 		, getInfo = do
 			is <- getInfo r
-			is' <- if isexport
+			is' <- if isexporttree
 				then do
 					ts <- map fromRef . exportedTreeishes
 						<$> getExport (uuid r)
-					return (is++[("export", "yes"), ("exportedtree", unwords ts)])
+					return (is++[("exporttree", "yes"), ("exportedtree", unwords ts)])
 				else return is
-			return $ if isimport
-				then (is'++[("import", "yes")])
+			return $ if isimporttree
+				then (is'++[("importtree", "yes")])
 				else is'
 		}
   where
