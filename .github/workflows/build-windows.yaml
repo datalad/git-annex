@@ -36,7 +36,11 @@ jobs:
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
         run: |
-          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" Windows pending
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            Windows \
+            build-package \
+            pending
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -138,10 +142,14 @@ jobs:
             git-annex[-_]*.*
             dist/build-version
 
-      - name: Set PR final build status
+      - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
         run: |
-          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" Windows "${{ job.status }}"
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            Windows \
+            build-package \
+            "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -167,6 +175,17 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v2
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            Windows \
+            test-annex \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
         uses: actions/download-artifact@v2
@@ -204,6 +223,17 @@ jobs:
 
           timeout 1800 git annex test
 
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            Windows \
+            test-annex \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
         uses: dawidd6/action-send-mail@v2
@@ -228,6 +258,20 @@ jobs:
         version: [master, maint, release]
       fail-fast: false
     steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            Windows \
+            "test-datalad (${{ matrix.version }})" \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Download git-annex package
         uses: actions/download-artifact@v2
         with:
@@ -323,5 +367,16 @@ jobs:
           mkdir -p __testhome__
           cd __testhome__
           python -m nose -s -v datalad
+
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            Windows \
+            "test-datalad (${{ matrix.version }})" \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 # vim:set et sts=2:

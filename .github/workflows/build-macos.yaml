@@ -36,7 +36,11 @@ jobs:
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
         run: |
-          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" macOS pending
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS \
+            build-package \
+            pending
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -105,10 +109,14 @@ jobs:
             git-annex[-_]*.*
             dist/build-version
 
-      - name: Set PR final build status
+      - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
         run: |
-          .github/workflows/tools/set-pr-status "${{ github.event.inputs.pr }}" macOS "${{ job.status }}"
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS \
+            build-package \
+            "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -138,6 +146,17 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v2
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS \
+            "test-annex (${{ matrix.flavor }})" \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
         uses: actions/download-artifact@v2
@@ -201,6 +220,17 @@ jobs:
 
           timeout 1800 git annex test
 
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS \
+            "test-annex (${{ matrix.flavor }})" \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
         uses: dawidd6/action-send-mail@v2
@@ -221,6 +251,20 @@ jobs:
     runs-on: macos-latest
     needs: build-package
     steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS \
+            test-annex-more \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Download git-annex package
         uses: actions/download-artifact@v2
         with:
@@ -245,6 +289,17 @@ jobs:
           test $(nfailed version "libpcre.*so") -lt 5
           test $(nfailed init "libpcre.*so") -lt 130
 
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS \
+            test-annex-more \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   test-datalad:
     runs-on: macos-latest
     needs: build-package
@@ -253,6 +308,20 @@ jobs:
         version: [master, maint, release]
       fail-fast: false
     steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS \
+            "test-datalad (${{ matrix.version }})" \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Download git-annex package
         uses: actions/download-artifact@v2
         with:
@@ -314,5 +383,16 @@ jobs:
           mkdir -p __testhome__
           cd __testhome__
           python -m nose -s -v datalad
+
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            macOS \
+            "test-datalad (${{ matrix.version }})" \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 # vim:set et sts=2:
