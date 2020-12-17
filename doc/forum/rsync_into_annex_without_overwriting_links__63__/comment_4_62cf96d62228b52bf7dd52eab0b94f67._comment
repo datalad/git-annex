@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="dscheffy@c203b7661ec8c1ebd53e52627c84536c5f0c9026"
+ nickname="dscheffy"
+ avatar="http://cdn.libravatar.org/avatar/62a3a0bf0e203e3746eedbe48fd13f6d"
+ subject="comment 4"
+ date="2020-12-17T18:14:16Z"
+ content="""
+Oh boy -- or should I say, oh \"`man`\"... Now I feel like a bit of an idiot for not checking the actual high level man pages... Thanks for that tip. 
+
+I did some experimenting and noticed another thing that I hadn't noticed -- although my binary version is v6.20180227 my annexes were all using the v5 index. That came as a bit of a surprise. Once I upgraded my annex to v6 the annex.thin settings started working. 
+
+As for rsync, I had tried the `-c` (`--checksum`) option, but it wasn't dereferencing the links on the target side, so the files still registered as different (at least I think I tried this, but I may go back and check again, because I was doing a lot of different things...) Nevermind, I just checked my history and I never actually tried it -- I had been using 
+
+```
+rsync -n -v -r -c --delete ai2/ beta:/media/winston/library/lectures/coursera2/ai2/
+```
+
+to try to confirm that the contents of the two folders matched so that I'd know I could safely delete my local copy, but that didn't work because of the links. I didn't add the `-L` option until I reversed the direction and ran the command from the server side with `alpha` as the target.
+
+Thanks for all the help -- this should work well enough for my stage folder issue, but it also solves a separate problem that I'd been struggling with for making my photos available to a self hosted photo webserver tool that I was trying out (photoprism). It can't currently handle symlinks and my local drive was getting filled up with all the extra copies of my photos directory tree!
+
+"""]]

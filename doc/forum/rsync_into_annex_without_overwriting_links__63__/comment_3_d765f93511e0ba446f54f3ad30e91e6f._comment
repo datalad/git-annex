@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 3"
+ date="2020-12-17T17:41:35Z"
+ content="""
+> Is this a case for an rsync remote? (I haven't really figured out
+> special remotes yet.)  Or is there a typical workflow on the git annex
+> side that I could be using to fix this (like `import` rather than
+> `add`)?
+
+I think conceptually that's a good fit.  You could set
+`importtree=yes` with the special remote and ingest changes with `git
+annex import` on beta's side.  However, the rsync special remote
+doesn't support `importtree` yet.
+
+https://git-annex.branchable.com/todo/import_tree_from_rsync_special_remote/
+
+In your followup comment, you mention unlocked files.  That would get
+you around the link problem.  You could call `rsync` with `--checksum`
+to limit what is transferred, though that might be expensive depending
+on how big your files are.
+
+> Are [the annex.hardlink and annex.thin options] annex wide settings?
+> (that seems to be the case). Is it possible to apply them at a
+> folder level?
+
+You can set then at the repository level in the repo's .git/config.
+
+"""]]

@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 5"
+ date="2020-12-17T19:05:12Z"
+ content="""
+> As for rsync, I had tried the -c (--checksum) option, but it wasn't
+> dereferencing the links on the target side
+
+Just to clarify: My comment was in the context of unlocked files (in
+v6+ repos).  In that case, symlinks aren't used: the content is kept
+in the working tree (and a pointer file is tracked by git).
+
+Also, since it sounds like you may want all files to be unlocked, you
+might want to look into `git annex adjust --unlock` to enter an
+adjusted with all files in an unlocked state.
+
+> it also solves a separate problem that I'd been struggling with for
+> making my photos available to a self hosted photo webserver tool
+> that I was trying out (photoprism). It can't currently handle
+> symlinks [...]
+
+FWIW, if you don't need importing for this use case, I think using
+`git annex export` with an rsync special remote configured with
+`exporttree=yes` would work well.
+"""]]
