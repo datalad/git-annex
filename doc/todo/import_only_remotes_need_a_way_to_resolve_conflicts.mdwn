@@ -1,0 +1,9 @@
+If two conflicting trees get imported from an import-only remote, it can
+end up in conflict, the same as an export conflict. Except, git-annex
+export cannot be used to resolve it, as it's import-only.
+
+Seems that git-annex import should be able to resolve the conflict in this
+case. What ever tree it imports is, after all, the tree that's on the
+remote now, so just resolve the conflict to say it's the current one
+in the export log. But I've not thought through it in detail yet.
+--[[Joey]]
