@@ -104,11 +104,7 @@ adjustExportImport :: Remote -> RemoteStateHandle -> Annex Remote
 adjustExportImport r rs = do
 	isexport <- pure (exportTree (config r)) <&&> isExportSupported r
 	isimport <- pure (importTree (config r)) <&&> isImportSupported r
-	let normal = not isexport && not isimport
-	let iskeyvaluestore = normal || appendonly r
-	dbv <- prepdbv
-	ciddbv <- prepciddb
-	return $ r
+	let r' = r
 		{ remotetype = (remotetype r)
 			{ exportSupported = if isexport
 				then exportSupported (remotetype r)
@@ -117,7 +113,19 @@ adjustExportImport r rs = do
 				then importSupported (remotetype r)
 				else importUnsupported
 			}
-		, exportActions = if isexport
+		}
+	if not isexport && not isimport
+		then return r'
+		else adjustExportImport' isexport isimport r' rs
+
+adjustExportImport' :: Bool -> Bool -> Remote -> RemoteStateHandle -> Annex Remote
+adjustExportImport' isexport isimport r rs = do
+	dbv <- prepdbv
+	ciddbv <- prepciddb
+	let normal = not isexport && not isimport
+	let iskeyvaluestore = normal || appendonly r
+	return $ r
+		{ exportActions = if isexport
 			then if isimport
 				then exportActionsForImport dbv ciddbv (exportActions r)
 				else exportActions r
