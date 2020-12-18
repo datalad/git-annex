@@ -1,14 +1,10 @@
-This special remote type accesses files stored in a
+This special remote type accesses annexed files stored in a
 [borg](https://www.borgbackup.org/) repository.
 
-This allows retrieving annexed files from borg repositories, and since
-git-annex knows which files are stored in a borg repository, it can be
-configured to treat the repository as one copy of the file.
-
-Unlike most special remotes, this is read-only; it cannot change what
-is stored in a borg repository. You do that by using borg as usual,
-and then `git-annex sync` will learn about the files that are stored
-in the borg repository.
+Unlike most special remotes, git-annex cannot be used to store annexed
+files in this special remote. You store files by using borg as usual, to
+back up the git-annex repository. Then `git-annex sync` will learn about
+the annexed files that are stored in the borg repository.
 
 ## configuration
 
@@ -18,7 +14,51 @@ remote:
 * `repository` - The location of a borg repository, eg a path, or
   `user@host:path` for ssh access.
 
-Setup example:
+* `scan` - The path, within the borg repository, to scan for
+  annex object files. This can be the path to a git-annex repository,
+  or perhaps a non-encrypted special remote, or a path that contains
+  several repositories.
 
-	# borg init --encryption=keyfile /path/to/repo
-	# git annex initremote borg type=borg repository=/path/to/repo
+  Information about all annex objects in the path will be
+  added to the git-annex branch when syncing with the borg repository.
+  So, it's best to avoid a path that contains object files for unrelated
+  git-annex repositories.
+
+## setup example
+
+	# borg init --encryption=keyfile /path/to/borgrepo
+	# git annex initremote borg type=borg repository=/path/to/borgrepo scan=`pwd`
+	# borg create /path/to/borgrepo `pwd`::{now}
+	# git annex sync borg
+
+## trust levels, borg delete and borg prune
+
+git-annex will by default treat the borg special remote as untrusted, so
+will not trust it to continue to contain a [[copy|copies]] of any annexed
+file. This is necessary because you could run `borg delete` or `borg prune`
+and remove the copy from the borg repository. If you choose to set the
+trust level of the borg repository to a higher level, you need to avoid
+using such commands with that borg repository.
+
+Consider this example:
+
+	git-annex add annexedfile
+	borg create /path/to/borgrepo `pwd`::foo
+	git-annex sync borg
+	git-annex semitrust borg
+	git-annex drop annexedfile
+
+Now the only copy of annexedfile is in the borg repository.
+
+	borg create /path/to/borgrepo `pwd`::bar
+	borg delete /path/to/borgrepo::foo
+	git-annex sync borg
+	git-annex whereis annexedfile
+
+Now no copies of annexfile remain, because the "foo" archive
+in the borg repository was the only one to contain it, and it was deleted.
+
+So either keep the borg special remote as untrusted, and use such borg
+commands to delete old archives as needed, or avoid using `borg delete`
+and `borg prune`, and then the remote can safely be made semitrusted or
+trusted.
