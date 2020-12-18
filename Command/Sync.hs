@@ -213,7 +213,7 @@ seek' o = do
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
 	let (exportremotes, nonexportremotes) = partition (exportTree . Remote.config) dataremotes
 	let importremotes = filter (importTree . Remote.config) dataremotes
-	let keyvalueremotes = partition (not . importTree . Remote.config) nonexportremotes
+	let keyvalueremotes = filter (not . importTree . Remote.config) nonexportremotes
 
 	if cleanupOption o
 		then do
