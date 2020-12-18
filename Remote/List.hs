@@ -36,6 +36,7 @@ import qualified Remote.Glacier
 import qualified Remote.Ddar
 import qualified Remote.GitLFS
 import qualified Remote.HttpAlso
+import qualified Remote.Borg
 import qualified Remote.Hook
 import qualified Remote.External
 
@@ -57,6 +58,7 @@ remoteTypes = map adjustExportImportRemoteType
 	, Remote.Ddar.remote
 	, Remote.GitLFS.remote
 	, Remote.HttpAlso.remote
+	, Remote.Borg.remote
 	, Remote.Hook.remote
 	, Remote.External.remote
 	]

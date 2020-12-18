@@ -940,6 +940,7 @@ Executable git-annex
     Remote
     Remote.Adb
     Remote.BitTorrent
+    Remote.Borg
     Remote.Bup
     Remote.Ddar
     Remote.Directory

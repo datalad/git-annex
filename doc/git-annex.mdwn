@@ -1541,6 +1541,12 @@ Remotes are configured using these settings in `.git/config`.
   the location of the bup repository to use. Normally this is automatically
   set up by `git annex initremote`, but you can change it if needed.
 
+* `remote.<name>.annex-borgrepo`
+
+  Used by borg special remotes, this configures
+  the location of the borg repository to use. Normally this is automatically
+  set up by `git annex initremote`, but you can change it if needed.
+
 * `remote.<name>.annex-ddarrepo`
 
   Used by ddar special remotes, this configures

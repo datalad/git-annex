@@ -327,6 +327,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexGnupgDecryptOptions :: [String]
 	, remoteAnnexRsyncUrl :: Maybe String
 	, remoteAnnexBupRepo :: Maybe String
+	, remoteAnnexBorgRepo :: Maybe String
 	, remoteAnnexTahoe :: Maybe FilePath
 	, remoteAnnexBupSplitOptions :: [String]
 	, remoteAnnexDirectory :: Maybe FilePath
@@ -391,6 +392,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexGnupgDecryptOptions = getoptions "gnupg-decrypt-options"
 		, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"
 		, remoteAnnexBupRepo = getmaybe "buprepo"
+		, remoteAnnexBorgRepo = getmaybe "borgrepo"
 		, remoteAnnexTahoe = getmaybe "tahoe"
 		, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
 		, remoteAnnexDirectory = notempty $ getmaybe "directory"

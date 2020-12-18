@@ -1,0 +1,17 @@
+Finally gotten started on the borg special remote idea. A prerequisite of
+that is remotes that can be imported from, but not exported to. So I
+actually started by allowing setting importtree=yes without
+exporttree=yes. A lot of code had assumptions about that not being allowed,
+so it took a while to chase down everything. Finished most of that yesterday.
+
+What I've done today is added a `thirdPartyPopulated` type of remote,
+which `git-annex sync` can "pull" from by using the existing import
+interface to list files on it, and determine which of them are annex object
+files. I have not started on the actual borg remote at all, but this should
+be all the groundwork for it done.
+
+(I also finished up annex.stalldetection earlier this week.)
+
+---
+
+This work was sponsored by Jake Vosloo [on Patreon](https://patreon.com/joeyh).
