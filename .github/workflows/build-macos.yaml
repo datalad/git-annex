@@ -98,7 +98,7 @@ jobs:
 
       - name: Add version to DMG name and move it
         run: |
-          mv /tmp/git-annex.dmg \
+          mv tmp/git-annex.dmg \
              git-annex_"${{ steps.build-version.outputs.version }}".dmg
 
       - name: Upload packages
