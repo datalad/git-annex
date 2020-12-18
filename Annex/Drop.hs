@@ -30,7 +30,7 @@ type Reason = String
  - and numcopies settings.
  -
  - Skips trying to drop from remotes that are appendonly, since those drops
- - would presumably fail. Also skips dropping from exporttree remotes,
+ - would presumably fail. Also skips dropping from exporttree/importtree remotes,
  - which don't allow dropping individual keys.
  -
  - The UUIDs are ones where the content is believed to be present.
@@ -87,6 +87,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 		| uuid r `S.notMember` slocs = go fs rest n
 		| appendonly r = go fs rest n
 		| exportTree (config r) = go fs rest n
+		| importTree (config r) = go fs rest n
 		| checkcopies n (Just $ Remote.uuid r) =
 			dropr fs r n >>= go fs rest
 		| otherwise = pure n

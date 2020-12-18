@@ -1,0 +1,2 @@
+The assistant currently will export to exporttree=yes remotes, but it will
+not import from importtree=yes remotes.
