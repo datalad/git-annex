@@ -56,6 +56,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = directorySetup
 	, exportSupported = exportIsSupported
 	, importSupported = importIsSupported
+	, thirdPartyPopulated = False
 	}
 
 directoryField :: RemoteConfigField
@@ -369,13 +370,13 @@ guardSameContentIdentifiers cont old new
 	| new == Just old = cont
 	| otherwise = giveup "file content has changed"
 
-importKeyM :: RawFilePath -> ExportLocation -> ContentIdentifier -> MeterUpdate -> Annex Key
+importKeyM :: RawFilePath -> ExportLocation -> ContentIdentifier -> MeterUpdate -> Annex (Maybe Key)
 importKeyM dir loc cid p = do
 	backend <- chooseBackend f
 	k <- fst <$> genKey ks p backend
 	currcid <- liftIO $ mkContentIdentifier absf
 		=<< R.getFileStatus absf
-	guardSameContentIdentifiers (return k) cid currcid
+	guardSameContentIdentifiers (return (Just k)) cid currcid
   where
 	f = fromExportLocation loc
 	absf = dir P.</> f

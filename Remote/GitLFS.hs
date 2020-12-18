@@ -74,6 +74,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = mySetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 urlField :: RemoteConfigField

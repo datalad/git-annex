@@ -72,7 +72,7 @@ importIsSupported :: ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool
 importIsSupported = \_ _ -> return True
 
 -- | Prevent or allow exporttree=yes and importtree=yes when
--- setting up a new remote, depending on exportSupported and importSupported.
+-- setting up a new remote, depending on the remote's capabilities.
 adjustExportImportRemoteType :: RemoteType -> RemoteType
 adjustExportImportRemoteType rt = rt { setup = setup' }
   where
@@ -80,7 +80,7 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 		pc <- either giveup return . parseRemoteConfig c
 			=<< configParser rt c
 		let checkconfig supported configured configfield cont =
-			ifM (supported rt pc gc)
+			ifM (supported rt pc gc <&&> pure (not (thirdPartyPopulated rt)))
 				( case st of
 					Init
 						| configured pc && encryptionIsEnabled pc ->
@@ -102,35 +102,40 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 -- | Adjust a remote to support exporttree=yes and/or importree=yes.
 adjustExportImport :: Remote -> RemoteStateHandle -> Annex Remote
 adjustExportImport r rs = do
-	isexporttree <- pure (exportTree (config r)) <&&> isexporttreeSupported r
-	isimporttree <- pure (importTree (config r)) <&&> isimporttreeSupported r
+	isexport <- pure (exportTree (config r))
+		<&&> isExportSupported r
+	-- When thirdPartyPopulated is True, the remote
+	-- does not need to be configured with importTree to support
+	-- imports.
+	isimport <- pure (importTree (config r) || not (thirdPartyPopulated (remotetype r)))
+		<&&> isImportSupported r
 	let r' = r
 		{ remotetype = (remotetype r)
-			{ exportSupported = if isexporttree
+			{ exportSupported = if isexport
 				then exportSupported (remotetype r)
 				else exportUnsupported
-			, importSupported = if isimporttree
+			, importSupported = if isimport
 				then importSupported (remotetype r)
 				else importUnsupported
 			}
 		}
-	if not isexporttree && not isimporttree
+	if not isexport && not isimport
 		then return r'
-		else adjustExportImport' isexporttree isimporttree r' rs
+		else adjustExportImport' isexport isimport r' rs
 
 adjustExportImport' :: Bool -> Bool -> Remote -> RemoteStateHandle -> Annex Remote
-adjustExportImport' isexporttree isimporttree r rs = do
+adjustExportImport' isexport isimport r rs = do
 	dbv <- prepdbv
 	ciddbv <- prepciddb
-	let normal = not isexporttree && not isimporttree
+	let normal = not isexport && not isimport
 	let iskeyvaluestore = normal || appendonly r
 	return $ r
-		{ exportActions = if isexporttree
-			then if isimporttree
+		{ exportActions = if isexport
+			then if isimport
 				then exportActionsForImport dbv ciddbv (exportActions r)
 				else exportActions r
 			else exportUnsupported
-		, importActions = if isimporttree
+		, importActions = if isimport
 			then importActions r
 			else importUnsupported
 		, storeKey = \k af p ->
@@ -139,11 +144,13 @@ adjustExportImport' isexporttree isimporttree r rs = do
 			-- when another repository has already stored the
 			-- key, and the local repository does not know
 			-- about it. To avoid unnecessary costs, don't do it.
-			if isexporttree
-				then giveup "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
-				else if isimporttree
-					then giveup "remote is configured with importtree=yes and without exporttree=yes; cannot modify content stored on it"
-					else storeKey r k af p
+			if mergeable
+				then if isexport
+					then giveup "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
+					else if isimport
+						then giveup "remote is configured with importtree=yes and without exporttree=yes; cannot modify content stored on it"
+						else storeKey r k af p
+			else storeKey r k af p
 		, removeKey = \k -> 
 			-- Removing a key from an export would need to
 			-- change the tree in the export log to not include
@@ -151,19 +158,21 @@ adjustExportImport' isexporttree isimporttree r rs = do
 			-- files would not be dealt with correctly.
 			-- There does not seem to be a good use case for
 			-- removing a key from an export in any case.
-			if isexporttree
-				then giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
-				else if isimporttree
-					then giveup "dropping content from this remote is not supported because it is configured with importtree=yes"
-					else removeKey r k
-		, lockContent = if iskeyvaluestore
+			if mergeable
+				then if isexport
+					then giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
+					else if isimport
+						then giveup "dropping content from this remote is not supported because it is configured with importtree=yes"
+						else removeKey r k
+				else removeKey r k
+		, lockContent = if iskeyvaluestore || not mergeable
 			then lockContent r
 			else Nothing
 		, retrieveKeyFile = \k af dest p ->
-			if isimporttree
+			if isimport
 				then supportappendonlyretrieve k af dest p $
 					retrieveKeyFileFromImport dbv ciddbv k af dest p
-				else if isexporttree
+				else if isexport
 					then supportappendonlyretrieve k af dest p $
 						retrieveKeyFileFromExport dbv k af dest p
 					else retrieveKeyFile r k af dest p
@@ -172,16 +181,19 @@ adjustExportImport' isexporttree isimporttree r rs = do
 			else Nothing
 		, checkPresent = \k -> if appendonly r
 			then checkPresent r k
-			else if isimporttree
+			else if isimport
 				then anyM (checkPresentImport ciddbv k)
 					=<< getexportlocs dbv k
-				else if isexporttree
+				else if isexport
 					-- Check if any of the files a key
 					-- was exported to are present. This 
 					-- doesn't guarantee the export
 					-- contains the right content,
-					-- which is why export remotes
-					-- are untrusted.
+					-- if the remote is an export,
+					-- or if something else can write
+					-- to it. Remotes that have such 
+					-- problems are made untrusted,
+					-- so it's not worried about here.
 					then anyM (checkPresentExport (exportActions r) k)
 						=<< getexportlocs dbv k
 					else checkPresent r k
@@ -201,17 +213,23 @@ adjustExportImport' isexporttree isimporttree r rs = do
 			else return Nothing
 		, getInfo = do
 			is <- getInfo r
-			is' <- if isexporttree
+			is' <- if isexport && not mergeable
 				then do
 					ts <- map fromRef . exportedTreeishes
 						<$> getExport (uuid r)
 					return (is++[("exporttree", "yes"), ("exportedtree", unwords ts)])
 				else return is
-			return $ if isimporttree
+			return $ if isimport && not mergeable
 				then (is'++[("importtree", "yes")])
 				else is'
 		}
   where
+	-- When a remote is populated by a third party, a tree can be
+	-- imported from it, but that tree is not mergeable into the
+	-- user's own git branch. But annex objects found in the tree
+	-- (identified by importKey) can still be retrieved from the remote.
+	mergeable = thirdPartyPopulated (remotetype r)
+
 	-- exportActions adjusted to use the equivilant import actions,
 	-- which take ContentIdentifiers into account.
 	exportActionsForImport dbv ciddbv ea = ea

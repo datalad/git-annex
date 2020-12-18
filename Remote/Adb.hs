@@ -46,6 +46,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = adbSetup
 	, exportSupported = exportIsSupported
 	, importSupported = importIsSupported
+	, thirdPartyPopulated = False
 	}
 
 androiddirectoryField :: RemoteConfigField

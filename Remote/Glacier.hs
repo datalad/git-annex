@@ -48,6 +48,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = glacierSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 datacenterField :: RemoteConfigField

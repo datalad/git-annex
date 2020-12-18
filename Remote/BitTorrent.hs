@@ -49,6 +49,7 @@ remote = RemoteType
 	, setup = error "not supported"
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 -- There is only one bittorrent remote, and it always exists.

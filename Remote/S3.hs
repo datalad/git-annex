@@ -118,6 +118,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = s3Setup
 	, exportSupported = exportIsSupported
 	, importSupported = importIsSupported
+	, thirdPartyPopulated = False
 	}
 
 bucketField :: RemoteConfigField

@@ -41,6 +41,7 @@ remote = RemoteType
 	, setup = error "P2P remotes are set up using git-annex p2p"
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 chainGen :: P2PAddress -> Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)

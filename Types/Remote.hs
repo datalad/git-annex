@@ -63,10 +63,15 @@ data RemoteTypeA a = RemoteType
 	, configParser :: RemoteConfig -> a RemoteConfigParser
 	-- initializes or enables a remote
 	, setup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> a (RemoteConfig, UUID)
-	-- check if a remote of this type is able to support export of trees
+	-- check if a remote of this type is able to support export
 	, exportSupported :: ParsedRemoteConfig -> RemoteGitConfig -> a Bool
-	-- check if a remote of this type is able to support import of trees
+	-- check if a remote of this type is able to support import
 	, importSupported :: ParsedRemoteConfig -> RemoteGitConfig -> a Bool
+	-- is a remote of this type not a usual key/value store,
+	-- or export/import of a tree of files, but instead a collection
+	-- of files, populated by something outside git-annex, some of
+	-- which may be annex objects?
+	, thirdPartyPopulated :: Bool
 	}
 
 instance Eq (RemoteTypeA a) where
@@ -113,9 +118,9 @@ data RemoteA a = Remote
 	-- Some remotes can checkPresent without an expensive network
 	-- operation.
 	, checkPresentCheap :: Bool
-	-- Some remotes support export of trees of files.
+	-- Some remotes support export.
 	, exportActions :: ExportActions a
-	-- Some remotes support import of trees of files.
+	-- Some remotes support import.
 	, importActions :: ImportActions a
 	-- Some remotes can provide additional details for whereis.
 	, whereisKey :: Maybe (Key -> a [String])
@@ -288,8 +293,13 @@ data ImportActions a = ImportActions
 	-- bearing in mind that the file on the remote may have changed
 	-- since the ContentIdentifier was generated.
 	--
-	-- Throws exception on failure.
-	, importKey :: Maybe (ImportLocation -> ContentIdentifier -> MeterUpdate -> a Key)
+	-- When the remote is thirdPartyPopulated, this should check if the
+	-- file stored on the remote is the content of an annex object,
+	-- and return its Key, or Nothing if it is not. Should not
+	-- otherwise return Nothing.
+	--
+	-- Throws exception on failure to access the remote.
+	, importKey :: Maybe (ImportLocation -> ContentIdentifier -> MeterUpdate -> a (Maybe Key))
 	-- Retrieves a file from the remote. Ensures that the file
 	-- it retrieves has the requested ContentIdentifier.
 	--

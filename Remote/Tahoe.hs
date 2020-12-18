@@ -67,6 +67,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = tahoeSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 scsField :: RemoteConfigField

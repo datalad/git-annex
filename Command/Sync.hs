@@ -67,7 +67,7 @@ import Annex.UpdateInstead
 import Annex.Export
 import Annex.TaggedPush
 import Annex.CurrentBranch
-import Annex.Import (canImportKeys)
+import Annex.Import
 import Annex.CheckIgnore
 import Types.FileMatcher
 import qualified Database.Export as Export
@@ -77,6 +77,7 @@ import Utility.Process.Transcript
 import Utility.Tuple
 
 import Control.Concurrent.MVar
+import Control.Concurrent.STM
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 import Data.Char
@@ -463,6 +464,9 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 importRemote :: Bool -> SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandSeek
 importRemote importcontent o mergeconfig remote currbranch
 	| not (pullOption o) || not wantpull = noop
+	| Remote.thirdPartyPopulated (Remote.remotetype remote) =
+		when (canImportKeys remote importcontent) $
+			importThirdPartyPopulated remote
 	| otherwise = case remoteAnnexTrackingBranch (Remote.gitconfig remote) of
 		Nothing -> noop
 		Just tb -> do
@@ -478,6 +482,34 @@ importRemote importcontent o mergeconfig remote currbranch
 				else warning $ "Cannot import from " ++ Remote.name remote ++ " when not syncing content."
   where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
+
+{- Import from a remote that is populated by a third party, by listing
+ - the contents of the remote, and then adding only the files on it that
+ - importKey identifies to a tree. The tree is only used to keep track
+ - of where keys are located on the remote, no remote tracking branch is
+ - updated, because the filenames are the names of annex object files,
+ - not suitable for a tracking branch. Does not transfer any content. -}
+importThirdPartyPopulated :: Remote -> CommandSeek
+importThirdPartyPopulated remote = do
+	importabletvar <- liftIO $ newTVarIO Nothing
+	void $ includeCommandAction (Command.Import.listContents remote ImportTree (CheckGitIgnore False) importabletvar)
+	liftIO (atomically (readTVar importabletvar)) >>= \case
+		Nothing -> return ()
+		Just importable -> 
+			importKeys remote ImportTree False False importable >>= \case
+				Just importablekeys -> go importablekeys
+				Nothing -> warning $ concat
+					[ "Failed to import from"
+					, Remote.name remote
+					]
+  where
+	go importablekeys = void $ includeCommandAction $ starting "pull" ai si $ do
+		(_imported, updatestate) <- recordImportTree remote ImportTree importablekeys
+		next $ do
+			updatestate
+			return True
+	ai = ActionItemOther (Just (Remote.name remote))
+	si = SeekInput []
 
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes

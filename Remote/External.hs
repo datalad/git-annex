@@ -53,6 +53,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = externalSetup
 	, exportSupported = checkExportSupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 externaltypeField :: RemoteConfigField

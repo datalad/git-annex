@@ -306,7 +306,7 @@ seekRemote remote branch msubdir importcontent ci = do
 	void $ includeCommandAction (listContents remote importtreeconfig ci importabletvar)
 	liftIO (atomically (readTVar importabletvar)) >>= \case
 		Nothing -> return ()
-		Just importable -> importKeys remote importtreeconfig importcontent importable >>= \case
+		Just importable -> importKeys remote importtreeconfig importcontent False importable >>= \case
 			Nothing -> warning $ concat
 				[ "Failed to import some files from "
 				, Remote.name remote

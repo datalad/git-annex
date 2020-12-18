@@ -78,6 +78,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = gCryptSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 gitRepoField :: RemoteConfigField

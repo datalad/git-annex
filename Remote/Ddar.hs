@@ -45,6 +45,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = ddarSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 ddarrepoField :: RemoteConfigField

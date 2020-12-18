@@ -57,6 +57,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = webdavSetup
 	, exportSupported = exportIsSupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 urlField :: RemoteConfigField

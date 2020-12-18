@@ -87,6 +87,7 @@ remote = RemoteType
 	, setup = gitSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 locationField :: RemoteConfigField

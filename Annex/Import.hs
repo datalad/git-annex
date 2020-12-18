@@ -12,6 +12,7 @@ module Annex.Import (
 	ImportCommitConfig(..),
 	buildImportCommit,
 	buildImportTrees,
+	recordImportTree,
 	canImportKeys,
 	importKeys,
 	makeImportMatcher,
@@ -105,6 +106,28 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Nothing -> go Nothing
 			Just _ -> go (Just trackingcommit)
   where
+	go trackingcommit = do
+		(imported, updatestate) <- recordImportTree remote importtreeconfig importable
+		buildImportCommit' remote importcommitconfig trackingcommit imported >>= \case
+			Just finalcommit -> do
+				updatestate
+				return (Just finalcommit)
+			Nothing -> return Nothing
+
+{- Builds a tree for an import from a special remote.
+ -
+ - Also returns an action that can be used to update 
+ - all the other state to record the import.
+ -}
+recordImportTree
+	:: Remote
+	-> ImportTreeConfig
+	-> ImportableContents (Either Sha Key)
+	-> Annex (History Sha, Annex ())
+recordImportTree remote importtreeconfig importable = do
+	imported@(History finaltree _) <- buildImportTrees basetree subdir importable
+	return (imported, updatestate finaltree)
+  where
 	basetree = case importtreeconfig of
 		ImportTree -> emptyTree
 		ImportSubTree _ sha -> sha
@@ -112,21 +135,12 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 		ImportTree -> Nothing
 		ImportSubTree dir _ -> Just dir
 	
-	go trackingcommit = do
-		imported@(History finaltree _) <-
-			buildImportTrees basetree subdir importable
-		buildImportCommit' remote importcommitconfig trackingcommit imported >>= \case
-			Just finalcommit -> do
-				updatestate finaltree
-				return (Just finalcommit)
-			Nothing -> return Nothing
-	
-	updatestate committedtree = do
+	updatestate finaltree = do
 		importedtree <- case subdir of
-			Nothing -> pure committedtree
+			Nothing -> pure finaltree
 			Just dir -> 
 				let subtreeref = Ref $
-					fromRef' committedtree 
+					fromRef' finaltree
 						<> ":"
 						<> getTopFilePath dir
 				in fromMaybe emptyTree
@@ -308,9 +322,10 @@ importKeys
 	:: Remote
 	-> ImportTreeConfig
 	-> Bool
+	-> Bool
 	-> ImportableContents (ContentIdentifier, ByteSize)
 	-> Annex (Maybe (ImportableContents (Either Sha Key)))
-importKeys remote importtreeconfig importcontent importablecontents = do
+importKeys remote importtreeconfig importcontent ignorelargefilesconfig importablecontents = do
 	unless (canImportKeys remote importcontent) $
 		giveup "This remote does not support importing without downloading content."
 	-- This map is used to remember content identifiers that
@@ -400,7 +415,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 		let act = if importcontent
 			then case Remote.importKey ia of
 				Nothing -> dodownload
-				Just _ -> if Utility.Matcher.introspect matchNeedsFileContent matcher
+				Just _ -> if not ignorelargefilesconfig && Utility.Matcher.introspect matchNeedsFileContent matcher
 					then dodownload
 					else doimport
 			else doimport
@@ -410,7 +425,7 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 		case Remote.importKey ia of
 			Nothing -> error "internal" -- checked earlier
 			Just importkey -> do
-				when (Utility.Matcher.introspect matchNeedsFileContent matcher) $
+				when (not ignorelargefilesconfig && Utility.Matcher.introspect matchNeedsFileContent matcher) $
 					giveup "annex.largefiles configuration examines file contents, so cannot import without content."
  				let mi = MatchingInfo ProvidedInfo
 					{ providedFilePath = f
@@ -419,7 +434,9 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 					, providedMimeType = Nothing
 					, providedMimeEncoding = Nothing
 					}
-				islargefile <- checkMatcher' matcher mi mempty
+				islargefile <- if ignorelargefilesconfig
+					then pure True
+					else checkMatcher' matcher mi mempty
 				metered Nothing sz $ const $ if islargefile
 					then doimportlarge importkey cidmap db loc cid sz f
 					else doimportsmall cidmap db loc cid sz
@@ -433,24 +450,26 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 				return Nothing
 	  where
 		importer = do
-			unsizedk <- importkey loc cid
-				-- Don't display progress when generating
-				-- key, if the content will later be
-				-- downloaded, which is a more expensive
-				-- operation generally.
-				(if importcontent then nullMeterUpdate else p)
-			-- This avoids every remote needing
-			-- to add the size.
-			let k = alterKey unsizedk $ \kd -> kd
-				{ keySize = keySize kd <|> Just sz }
-			checkSecureHashes k >>= \case
-				Nothing -> do
-					recordcidkey cidmap db cid k
-					logChange k (Remote.uuid remote) InfoPresent
-					if importcontent
-						then getcontent k
-						else return (Just (k, True))
-				Just msg -> giveup (msg ++ " to import")
+			-- Don't display progress when generating
+			-- key, if the content will later be
+			-- downloaded, which is a more expensive
+			-- operation generally.
+			let p' = if importcontent then nullMeterUpdate else p
+			importkey loc cid p' >>= \case
+				Nothing -> return Nothing
+				Just unsizedk -> do
+					-- This avoids every remote needing
+					-- to add the size.
+					let k = alterKey unsizedk $ \kd -> kd
+						{ keySize = keySize kd <|> Just sz }
+					checkSecureHashes k >>= \case
+						Nothing -> do
+							recordcidkey cidmap db cid k
+							logChange k (Remote.uuid remote) InfoPresent
+							if importcontent
+								then getcontent k
+								else return (Just (k, True))
+						Just msg -> giveup (msg ++ " to import")
 		
 		getcontent :: Key -> Annex (Maybe (Key, Bool))
 		getcontent k = do
@@ -533,7 +552,9 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 				, contentFile = Just tmpfile
 				, matchKey = Nothing
 				}
-			islargefile <- checkMatcher' matcher mi mempty
+			islargefile <- if ignorelargefilesconfig
+				then pure True
+				else checkMatcher' matcher mi mempty
 			if islargefile
 				then do
 					backend <- chooseBackend f

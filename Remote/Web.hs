@@ -32,6 +32,7 @@ remote = RemoteType
 	, setup = error "not supported"
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 -- There is only one web remote, and it always exists.

@@ -50,6 +50,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = bupSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 buprepoField :: RemoteConfigField
