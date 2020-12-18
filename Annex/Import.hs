@@ -455,7 +455,7 @@ importKeys remote importtreeconfig importcontent ignorelargefilesconfig importab
 			-- downloaded, which is a more expensive
 			-- operation generally.
 			let p' = if importcontent then nullMeterUpdate else p
-			importkey loc cid p' >>= \case
+			importkey loc cid sz p' >>= \case
 				Nothing -> return Nothing
 				Just unsizedk -> do
 					-- This avoids every remote needing
