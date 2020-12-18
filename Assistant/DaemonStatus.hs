@@ -56,7 +56,8 @@ calcSyncRemotes = do
 	let syncable = filter good rs
 	contentremotes <- filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) $
 		filter (\r -> Remote.uuid r /= NoUUID) syncable
-	let (exportremotes, dataremotes) = partition (exportTree . Remote.config) contentremotes
+	let (exportremotes, nonexportremotes) = partition (exportTree . Remote.config) contentremotes
+	let dataremotes = filter (not . importTree . Remote.config) nonexportremotes
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable

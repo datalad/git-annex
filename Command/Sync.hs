@@ -210,8 +210,9 @@ seek' o = do
 	let gitremotes = filter (Remote.gitSyncableRemoteType . Remote.remotetype) remotes
 	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
-	let (exportremotes, keyvalueremotes) = partition (exportTree . Remote.config) dataremotes
+	let (exportremotes, nonexportremotes) = partition (exportTree . Remote.config) dataremotes
 	let importremotes = filter (importTree . Remote.config) dataremotes
+	let keyvalueremotes = partition (not . importTree . Remote.config) nonexportremotes
 
 	if cleanupOption o
 		then do
