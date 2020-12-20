@@ -1,0 +1,26 @@
+I am copying files to a remote with -J3 and keep seeing this pattern:
+
+	copy x (to remote..) ok
+	copy foo (to remote...)
+	47%   1.03 GiB         31 MiB/s 37s
+	copy bar (to remote...)
+	copy baz (to remote...)
+
+Ie, there are 3 active jobs, but only one of them, typically the first of
+them, is actually copying. The other 2 are blocked on something which must
+be a resource the 1 is keeping busy.
+
+That was with the remote having a path as an url. Changed it to
+localhost:path and 3 transfers ran concurrently with progress meters.
+
+copy --from/get also runs concurrently, only --to has the problem.
+
+Also, a copy --to a directory special remote runs concurrently. So
+only local path git remotes have the problem.
+
+(Of course, there's often no benefit to parellizing writes to a disk as it
+will cause seeking, but -J requests it, and if the disk was a SSD, it
+would make sense to.)
+
+git-annex version: 8.20201103 --[[Joey]]
+
