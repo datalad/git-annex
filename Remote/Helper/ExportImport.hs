@@ -107,7 +107,7 @@ adjustExportImport r rs = do
 	-- When thirdPartyPopulated is True, the remote
 	-- does not need to be configured with importTree to support
 	-- imports.
-	isimport <- pure (importTree (config r) || not (thirdPartyPopulated (remotetype r)))
+	isimport <- pure (importTree (config r) || thirdPartyPopulated (remotetype r))
 		<&&> isImportSupported r
 	let r' = r
 		{ remotetype = (remotetype r)
