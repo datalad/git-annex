@@ -11,7 +11,7 @@ import Annex.Common
 import qualified Annex
 import Logs.Trust
 import Annex.NumCopies
-import Types.Remote (uuid, appendonly, config)
+import Types.Remote (uuid, appendonly, config, remotetype, thirdPartyPopulated)
 import qualified Remote
 import qualified Command.Drop
 import Command
@@ -88,6 +88,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 		| appendonly r = go fs rest n
 		| exportTree (config r) = go fs rest n
 		| importTree (config r) = go fs rest n
+		| thirdPartyPopulated (remotetype r) = go fs rest n
 		| checkcopies n (Just $ Remote.uuid r) =
 			dropr fs r n >>= go fs rest
 		| otherwise = pure n

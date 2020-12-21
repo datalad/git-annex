@@ -212,8 +212,9 @@ seek' o = do
 	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
 	let (exportremotes, nonexportremotes) = partition (exportTree . Remote.config) dataremotes
-	let importremotes = filter (importTree . Remote.config) dataremotes
-	let keyvalueremotes = filter (not . importTree . Remote.config) nonexportremotes
+	let isimport r = importTree (Remote.config r) || Remote.thirdPartyPopulated (Remote.remotetype r)
+	let importremotes = filter isimport dataremotes
+	let keyvalueremotes = filter (not . isimport) nonexportremotes
 
 	if cleanupOption o
 		then do
