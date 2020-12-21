@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="amerlyq+annex@12121d70a602f094228689a0a24d348d478a8af1"
+ nickname="amerlyq+annex"
+ avatar="http://cdn.libravatar.org/avatar/3d63c9f436b45570d45bd003e468cbd3"
+ subject="&quot;mirror&quot; workflow: usage of &quot;wanted&quot; expression is inconsistent with regular annex remote"
+ date="2020-12-21T07:34:27Z"
+ content="""
+Desired workflow with \"adb\":
+
+* my repo of books is large :: dld/ new/ old/ read/ ... (so can't sync whole repo 1:1 to phone and *must exclude old/ directory*)
+* usually I download books on phone, rarely on PC, and place them into dld/, then promising ones are moved into new/ and then read/ and each month lukewarm remainings in dld/ are moved into old/$date
+* so files are never edited but moved extensively between folders -- and books added from both phone and PC are expected to have the same backend (currently PC uses SHA256 but why phone is unconditionally prefers SHA1 ???)
+* this repo also contains textual journal with recorded progress (so I set largefiles to *not mimefile=text/* and failed [Mixed_content_repos_with_import_and_export](https://git-annex.branchable.com/forum/Mixed_content_repos_with_import_and_export/#comment-764ac971faf756140055333649ffb94c))
+* expecting to fully mirror _hierarchy_ of files and its changes on both phone and PC (therefore I *use \"master\"* instead of \"master:android\" to prevent manually syncing duplicate hierarchy from subdir)
+* expecting to NOT copy unwanted old/ files from PC to phone when exporting (works OK)
+* expecting to auto-move all old/ files from phone to PC when importing (like usual \"wanted\" expression for \"group=source\" -- but they are ignored instead)
+* expecting \"delete\" on phone will delete file only in \"android/master\" BUT not in \"master\" -- e.g. add symlinks back in merge commit when doing \"git annex sync --content --not-only-annex\" like described in \"import after limited export\"
+
+Concerns:
+
+* FAIL:(special-remote): using  \"git annex wanted android 'exclude=old/\*'\" **ignores** present files in old/ directory on phone and **deletes** all old/ symlinks on PC after sync.
+* BUT:(git-annex): proper remote with same \"wanted\" expression behaves differently -- it tranfers old/ files content to other remotes and then drops them in current one (but keeps symlink untouched, not deleted like above)
+* Why \"import after limited export\" is marked \"done\" if unwanted files are deleted? Or is it my misconception? <https://git-annex.branchable.com/todo/export_preferred_content/>
+
+So, maybe expressions for \"wanted content on remote\" and \"completely ignored in ALL remotes\" must be two different options?
+However the current behavior of this \"ignored\" thing is too much counter-intuitive, making its existence questionable.
+Otherwise how can I accomplish abovementioned workflow i.e. make \"adb special remote\" to visibly behave during sync as regular annex repo w/o listed quirks?
+"""]]
