@@ -325,7 +325,7 @@ importKeys
 	-> Bool
 	-> ImportableContents (ContentIdentifier, ByteSize)
 	-> Annex (Maybe (ImportableContents (Either Sha Key)))
-importKeys remote importtreeconfig importcontent ignorelargefilesconfig importablecontents = do
+importKeys remote importtreeconfig importcontent thirdpartypopulated importablecontents = do
 	unless (canImportKeys remote importcontent) $
 		giveup "This remote does not support importing without downloading content."
 	-- This map is used to remember content identifiers that
@@ -347,7 +347,9 @@ importKeys remote importtreeconfig importcontent ignorelargefilesconfig importab
 	go oldversion cidmap importing (ImportableContents l h) db = do
 		largematcher <- largeFilesMatcher
 		jobs <- forM l $ \i ->
-			startimport cidmap importing db i oldversion largematcher
+			if thirdpartypopulated
+				then thirdpartypopulatedimport cidmap db i
+				else startimport cidmap importing db i oldversion largematcher
 		l' <- liftIO $ forM jobs $
 			either pure (atomically . takeTMVar)
 		if any isNothing l'
@@ -406,6 +408,20 @@ importKeys remote importtreeconfig importcontent ignorelargefilesconfig importab
 				importaction
 			return (Right job)
 	
+	thirdpartypopulatedimport cidmap db (loc, (cid, sz)) = 
+		case Remote.importKey ia of
+			Nothing -> return $ Left Nothing
+			Just importkey ->
+				tryNonAsync (importkey loc cid sz nullMeterUpdate) >>= \case
+					Right (Just k) -> do
+						recordcidkey cidmap db cid k
+						logChange k (Remote.uuid remote) InfoPresent				
+						return $ Left $ Just (loc, Right k)
+					Right Nothing -> return $ Left Nothing
+					Left e -> do
+						warning (show e)
+						return $ Left Nothing
+	
 	importordownload cidmap db (loc, (cid, sz)) largematcher= do
 		f <- locworktreefile loc
 		matcher <- largematcher f
@@ -415,7 +431,7 @@ importKeys remote importtreeconfig importcontent ignorelargefilesconfig importab
 		let act = if importcontent
 			then case Remote.importKey ia of
 				Nothing -> dodownload
-				Just _ -> if not ignorelargefilesconfig && Utility.Matcher.introspect matchNeedsFileContent matcher
+				Just _ -> if Utility.Matcher.introspect matchNeedsFileContent matcher
 					then dodownload
 					else doimport
 			else doimport
@@ -425,7 +441,7 @@ importKeys remote importtreeconfig importcontent ignorelargefilesconfig importab
 		case Remote.importKey ia of
 			Nothing -> error "internal" -- checked earlier
 			Just importkey -> do
-				when (not ignorelargefilesconfig && Utility.Matcher.introspect matchNeedsFileContent matcher) $
+				when (Utility.Matcher.introspect matchNeedsFileContent matcher) $
 					giveup "annex.largefiles configuration examines file contents, so cannot import without content."
  				let mi = MatchingInfo ProvidedInfo
 					{ providedFilePath = f
@@ -434,9 +450,7 @@ importKeys remote importtreeconfig importcontent ignorelargefilesconfig importab
 					, providedMimeType = Nothing
 					, providedMimeEncoding = Nothing
 					}
-				islargefile <- if ignorelargefilesconfig
-					then pure True
-					else checkMatcher' matcher mi mempty
+				islargefile <- checkMatcher' matcher mi mempty
 				metered Nothing sz $ const $ if islargefile
 					then doimportlarge importkey cidmap db loc cid sz f
 					else doimportsmall cidmap db loc cid sz
@@ -457,20 +471,15 @@ importKeys remote importtreeconfig importcontent ignorelargefilesconfig importab
 			let p' = if importcontent then nullMeterUpdate else p
 			importkey loc cid sz p' >>= \case
 				Nothing -> return Nothing
-				Just unsizedk -> do
-					-- This avoids every remote needing
-					-- to add the size.
-					let k = alterKey unsizedk $ \kd -> kd
-						{ keySize = keySize kd <|> Just sz }
-					checkSecureHashes k >>= \case
-						Nothing -> do
-							recordcidkey cidmap db cid k
-							logChange k (Remote.uuid remote) InfoPresent
-							if importcontent
-								then getcontent k
-								else return (Just (k, True))
-						Just msg -> giveup (msg ++ " to import")
-		
+				Just k -> checkSecureHashes k >>= \case
+					Nothing -> do
+						recordcidkey cidmap db cid k
+						logChange k (Remote.uuid remote) InfoPresent
+						if importcontent
+							then getcontent k
+							else return (Just (k, True))
+					Just msg -> giveup (msg ++ " to import")
+
 		getcontent :: Key -> Annex (Maybe (Key, Bool))
 		getcontent k = do
 			let af = AssociatedFile (Just f)
@@ -552,9 +561,7 @@ importKeys remote importtreeconfig importcontent ignorelargefilesconfig importab
 				, contentFile = Just tmpfile
 				, matchKey = Nothing
 				}
-			islargefile <- if ignorelargefilesconfig
-				then pure True
-				else checkMatcher' matcher mi mempty
+			islargefile <- checkMatcher' matcher mi mempty
 			if islargefile
 				then do
 					backend <- chooseBackend f

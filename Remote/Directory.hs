@@ -371,9 +371,11 @@ guardSameContentIdentifiers cont old new
 	| otherwise = giveup "file content has changed"
 
 importKeyM :: RawFilePath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
-importKeyM dir loc cid _sz p = do
+importKeyM dir loc cid sz p = do
 	backend <- chooseBackend f
-	k <- fst <$> genKey ks p backend
+	unsizedk <- fst <$> genKey ks p backend
+	let k = alterKey unsizedk $ \kd -> kd
+		{ keySize = keySize kd <|> Just sz }
 	currcid <- liftIO $ mkContentIdentifier absf
 		=<< R.getFileStatus absf
 	guardSameContentIdentifiers (return (Just k)) cid currcid

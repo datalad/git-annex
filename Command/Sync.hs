@@ -77,7 +77,6 @@ import Utility.Process.Transcript
 import Utility.Tuple
 
 import Control.Concurrent.MVar
-import Control.Concurrent.STM
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 import Data.Char
@@ -492,24 +491,18 @@ importRemote importcontent o mergeconfig remote currbranch
  - updated, because the filenames are the names of annex object files,
  - not suitable for a tracking branch. Does not transfer any content. -}
 importThirdPartyPopulated :: Remote -> CommandSeek
-importThirdPartyPopulated remote = do
-	importabletvar <- liftIO $ newTVarIO Nothing
-	void $ includeCommandAction (Command.Import.listContents remote ImportTree (CheckGitIgnore False) importabletvar)
-	liftIO (atomically (readTVar importabletvar)) >>= \case
-		Nothing -> return ()
-		Just importable -> 
-			importKeys remote ImportTree False False importable >>= \case
-				Just importablekeys -> go importablekeys
-				Nothing -> warning $ concat
-					[ "Failed to import from"
-					, Remote.name remote
-					]
+importThirdPartyPopulated remote = 
+	void $ includeCommandAction $ starting "list" ai si $
+		Command.Import.listContents' remote ImportTree (CheckGitIgnore False) go
   where
-	go importablekeys = void $ includeCommandAction $ starting "pull" ai si $ do
-		(_imported, updatestate) <- recordImportTree remote ImportTree importablekeys
-		next $ do
-			updatestate
-			return True
+	go importable = importKeys remote ImportTree False True importable >>= \case
+		Just importablekeys -> do
+			(_imported, updatestate) <- recordImportTree remote ImportTree importablekeys
+			next $ do
+				updatestate
+				return True
+		Nothing -> next $ return False
+
 	ai = ActionItemOther (Just (Remote.name remote))
 	si = SeekInput []
 
