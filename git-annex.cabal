@@ -963,7 +963,7 @@ Executable git-annex
     Remote.Helper.Messages
     Remote.Helper.P2P
     Remote.Helper.ReadOnly
-    Remote.Helper.ThirdParty
+    Remote.Helper.ThirdPartyPopulated
     Remote.Helper.Special
     Remote.Helper.Ssh
     Remote.HttpAlso

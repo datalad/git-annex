@@ -5,7 +5,9 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Remote.Helper.ThirdParty where
+{-# LANGUAGE OverloadedStrings #-}
+
+module Remote.Helper.ThirdPartyPopulated where
 
 import Annex.Common
 import Types.Remote
@@ -14,13 +16,41 @@ import Crypto (isEncKey)
 import Utility.Metered
 
 import qualified System.FilePath.ByteString as P
+import qualified Data.ByteString as S
+
+-- When a remote is thirdPartyPopulated, the files we want are probably
+-- in the .git directory. But, git does not really support .git in paths
+-- in a git tree. (Such a tree can be built, but it will lead to problems.)
+-- And so anything in .git is prevented from being imported.
+-- To work around that, this renames that directory when generating an
+-- ImportLocation.
+mkThirdPartyImportLocation :: RawFilePath -> ImportLocation
+mkThirdPartyImportLocation =
+	mkImportLocation . P.joinPath . map esc . P.splitDirectories
+  where
+	esc ".git" = "dotgit"
+	esc x
+		| "dotgit" `S.isSuffixOf` x = "dot" <> x
+		| otherwise = x
+
+fromThirdPartyImportLocation :: ImportLocation -> RawFilePath
+fromThirdPartyImportLocation =
+	P.joinPath . map unesc . P.splitDirectories . fromImportLocation
+  where
+	unesc "dotgit" = ".git"
+	unesc x
+		| "dotgit" `S.isSuffixOf` x = S.drop 3 x
+		| otherwise = x
 
 -- When a remote is thirdPartyPopulated, and contains a backup of a
 -- git-annex repository or some special remotes, this can be used to
 -- find only those ImportLocations that are annex object files.
 -- All other ImportLocations are ignored.
 importKey :: ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
-importKey loc _cid sz _ = return $ case deserializeKey' f of
+importKey loc _cid sz _ = return $ importKey' loc sz
+
+importKey' :: ImportLocation -> ByteSize -> Maybe Key
+importKey' loc sz = case deserializeKey' f of
 	Just k
 		-- Annex objects always are in a subdirectory with the same
 		-- name as the filename. If this is not the case for the file
