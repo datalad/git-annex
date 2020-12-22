@@ -30,39 +30,3 @@ remote:
 	# git annex initremote borg type=borg borgrepo=/path/to/borgrepo scan=`pwd`
 	# borg create /path/to/borgrepo `pwd`::{now}
 	# git annex sync borg
-
-## trust levels, borg delete and borg prune
-
-git-annex will by default treat the borg special remote as untrusted, so
-will not trust it to continue to contain a [[copy|copies]] of any annexed
-file. This is necessary because you could run `borg delete` or `borg prune`
-and remove the copy from the borg repository. If you choose to set the
-trust level of the borg repository to a higher level, you need to avoid
-using such commands with that borg repository.
-
-Consider this example:
-
-	git-annex add annexedfile
-	borg create /path/to/borgrepo `pwd`::foo
-	git-annex sync borg
-	git-annex semitrust borg
-	git-annex drop annexedfile
-
-Now the only copy of annexedfile is in the borg repository.
-
-	borg create /path/to/borgrepo `pwd`::bar
-	borg delete /path/to/borgrepo::foo
-	git-annex sync borg
-	git-annex whereis annexedfile
-
-Now no copies of annexfile remain, because the "foo" archive
-in the borg repository was the only one to contain it, and it was deleted.
-
-So either keep the borg special remote as untrusted, and use such borg
-commands to delete old archives as needed, or avoid using `borg delete`
-and `borg prune`, and then the remote can safely be made semitrusted or
-trusted.
-
-Also, if you do choose to delete old archives, make sure to never reuse
-that archive name for a new archive. git-annex may think it's the same
-archive it saw before, and not notice the change.
