@@ -56,6 +56,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = directorySetup
 	, exportSupported = exportIsSupported
 	, importSupported = importIsSupported
+	, thirdPartyPopulated = False
 	}
 
 directoryField :: RemoteConfigField
@@ -337,10 +338,10 @@ removeExportLocation topdir loc =
 		in go (upFrom loc') =<< tryIO (removeDirectory p)
 
 listImportableContentsM :: RawFilePath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
-listImportableContentsM dir = catchMaybeIO $ liftIO $ do
+listImportableContentsM dir = liftIO $ do
 	l <- dirContentsRecursive (fromRawFilePath dir)
 	l' <- mapM (go . toRawFilePath) l
-	return $ ImportableContents (catMaybes l') []
+	return $ Just $ ImportableContents (catMaybes l') []
   where
 	go f = do
 		st <- R.getFileStatus f
@@ -369,13 +370,15 @@ guardSameContentIdentifiers cont old new
 	| new == Just old = cont
 	| otherwise = giveup "file content has changed"
 
-importKeyM :: RawFilePath -> ExportLocation -> ContentIdentifier -> MeterUpdate -> Annex Key
-importKeyM dir loc cid p = do
+importKeyM :: RawFilePath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
+importKeyM dir loc cid sz p = do
 	backend <- chooseBackend f
-	k <- fst <$> genKey ks p backend
+	unsizedk <- fst <$> genKey ks p backend
+	let k = alterKey unsizedk $ \kd -> kd
+		{ keySize = keySize kd <|> Just sz }
 	currcid <- liftIO $ mkContentIdentifier absf
 		=<< R.getFileStatus absf
-	guardSameContentIdentifiers (return k) cid currcid
+	guardSameContentIdentifiers (return (Just k)) cid currcid
   where
 	f = fromExportLocation loc
 	absf = dir P.</> f

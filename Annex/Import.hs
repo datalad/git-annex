@@ -12,6 +12,7 @@ module Annex.Import (
 	ImportCommitConfig(..),
 	buildImportCommit,
 	buildImportTrees,
+	recordImportTree,
 	canImportKeys,
 	importKeys,
 	makeImportMatcher,
@@ -105,6 +106,28 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Nothing -> go Nothing
 			Just _ -> go (Just trackingcommit)
   where
+	go trackingcommit = do
+		(imported, updatestate) <- recordImportTree remote importtreeconfig importable
+		buildImportCommit' remote importcommitconfig trackingcommit imported >>= \case
+			Just finalcommit -> do
+				updatestate
+				return (Just finalcommit)
+			Nothing -> return Nothing
+
+{- Builds a tree for an import from a special remote.
+ -
+ - Also returns an action that can be used to update 
+ - all the other state to record the import.
+ -}
+recordImportTree
+	:: Remote
+	-> ImportTreeConfig
+	-> ImportableContents (Either Sha Key)
+	-> Annex (History Sha, Annex ())
+recordImportTree remote importtreeconfig importable = do
+	imported@(History finaltree _) <- buildImportTrees basetree subdir importable
+	return (imported, updatestate finaltree)
+  where
 	basetree = case importtreeconfig of
 		ImportTree -> emptyTree
 		ImportSubTree _ sha -> sha
@@ -112,21 +135,12 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 		ImportTree -> Nothing
 		ImportSubTree dir _ -> Just dir
 	
-	go trackingcommit = do
-		imported@(History finaltree _) <-
-			buildImportTrees basetree subdir importable
-		buildImportCommit' remote importcommitconfig trackingcommit imported >>= \case
-			Just finalcommit -> do
-				updatestate finaltree
-				return (Just finalcommit)
-			Nothing -> return Nothing
-	
-	updatestate committedtree = do
+	updatestate finaltree = do
 		importedtree <- case subdir of
-			Nothing -> pure committedtree
+			Nothing -> pure finaltree
 			Just dir -> 
 				let subtreeref = Ref $
-					fromRef' committedtree 
+					fromRef' finaltree
 						<> ":"
 						<> getTopFilePath dir
 				in fromMaybe emptyTree
@@ -308,9 +322,10 @@ importKeys
 	:: Remote
 	-> ImportTreeConfig
 	-> Bool
+	-> Bool
 	-> ImportableContents (ContentIdentifier, ByteSize)
 	-> Annex (Maybe (ImportableContents (Either Sha Key)))
-importKeys remote importtreeconfig importcontent importablecontents = do
+importKeys remote importtreeconfig importcontent thirdpartypopulated importablecontents = do
 	unless (canImportKeys remote importcontent) $
 		giveup "This remote does not support importing without downloading content."
 	-- This map is used to remember content identifiers that
@@ -332,7 +347,9 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 	go oldversion cidmap importing (ImportableContents l h) db = do
 		largematcher <- largeFilesMatcher
 		jobs <- forM l $ \i ->
-			startimport cidmap importing db i oldversion largematcher
+			if thirdpartypopulated
+				then thirdpartypopulatedimport cidmap db i
+				else startimport cidmap importing db i oldversion largematcher
 		l' <- liftIO $ forM jobs $
 			either pure (atomically . takeTMVar)
 		if any isNothing l'
@@ -391,6 +408,20 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 				importaction
 			return (Right job)
 	
+	thirdpartypopulatedimport cidmap db (loc, (cid, sz)) = 
+		case Remote.importKey ia of
+			Nothing -> return $ Left Nothing
+			Just importkey ->
+				tryNonAsync (importkey loc cid sz nullMeterUpdate) >>= \case
+					Right (Just k) -> do
+						recordcidkey cidmap db cid k
+						logChange k (Remote.uuid remote) InfoPresent				
+						return $ Left $ Just (loc, Right k)
+					Right Nothing -> return $ Left Nothing
+					Left e -> do
+						warning (show e)
+						return $ Left Nothing
+	
 	importordownload cidmap db (loc, (cid, sz)) largematcher= do
 		f <- locworktreefile loc
 		matcher <- largematcher f
@@ -433,25 +464,22 @@ importKeys remote importtreeconfig importcontent importablecontents = do
 				return Nothing
 	  where
 		importer = do
-			unsizedk <- importkey loc cid
-				-- Don't display progress when generating
-				-- key, if the content will later be
-				-- downloaded, which is a more expensive
-				-- operation generally.
-				(if importcontent then nullMeterUpdate else p)
-			-- This avoids every remote needing
-			-- to add the size.
-			let k = alterKey unsizedk $ \kd -> kd
-				{ keySize = keySize kd <|> Just sz }
-			checkSecureHashes k >>= \case
-				Nothing -> do
-					recordcidkey cidmap db cid k
-					logChange k (Remote.uuid remote) InfoPresent
-					if importcontent
-						then getcontent k
-						else return (Just (k, True))
-				Just msg -> giveup (msg ++ " to import")
-		
+			-- Don't display progress when generating
+			-- key, if the content will later be
+			-- downloaded, which is a more expensive
+			-- operation generally.
+			let p' = if importcontent then nullMeterUpdate else p
+			importkey loc cid sz p' >>= \case
+				Nothing -> return Nothing
+				Just k -> checkSecureHashes k >>= \case
+					Nothing -> do
+						recordcidkey cidmap db cid k
+						logChange k (Remote.uuid remote) InfoPresent
+						if importcontent
+							then getcontent k
+							else return (Just (k, True))
+					Just msg -> giveup (msg ++ " to import")
+
 		getcontent :: Key -> Annex (Maybe (Key, Bool))
 		getcontent k = do
 			let af = AssociatedFile (Just f)
@@ -630,14 +658,17 @@ makeImportMatcher r = load preferredContentKeylessTokens >>= \case
  - regardless. (Similar to how git add behaves on gitignored files.)
  - This avoids creating a remote tracking branch that, when merged,
  - would delete the files.
+ -
+ - Throws exception if unable to contact the remote.
+ - Returns Nothing when there is no change since last time.
  -}
 getImportableContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> FileMatcher Annex -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
-getImportableContents r importtreeconfig ci matcher = 
+getImportableContents r importtreeconfig ci matcher = do
 	Remote.listImportableContents (Remote.importActions r) >>= \case
-		Nothing -> return Nothing
 		Just importable -> do
 			dbhandle <- Export.openDb (Remote.uuid r)
 			Just <$> filterunwanted dbhandle importable
+		Nothing -> return Nothing
   where
 	filterunwanted dbhandle ic = ImportableContents
 		<$> filterM (wanted dbhandle) (importableContents ic)

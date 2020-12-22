@@ -306,7 +306,7 @@ seekRemote remote branch msubdir importcontent ci = do
 	void $ includeCommandAction (listContents remote importtreeconfig ci importabletvar)
 	liftIO (atomically (readTVar importabletvar)) >>= \case
 		Nothing -> return ()
-		Just importable -> importKeys remote importtreeconfig importcontent importable >>= \case
+		Just importable -> importKeys remote importtreeconfig importcontent False importable >>= \case
 			Nothing -> warning $ concat
 				[ "Failed to import some files from "
 				, Remote.name remote
@@ -324,21 +324,25 @@ seekRemote remote branch msubdir importcontent ci = do
 
 listContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> TVar (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize))) -> CommandStart
 listContents remote importtreeconfig ci tvar = starting "list" ai si $
+	listContents' remote importtreeconfig ci $ \importable -> do
+		liftIO $ atomically $ writeTVar tvar importable
+		next $ return True
+  where
+	ai = ActionItemOther (Just (Remote.name remote))
+	si = SeekInput []
+
+listContents' :: Remote -> ImportTreeConfig -> CheckGitIgnore -> (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize)) -> Annex a) -> Annex a
+listContents' remote importtreeconfig ci a = 
 	makeImportMatcher remote >>= \case
-		Right matcher -> getImportableContents remote importtreeconfig ci matcher >>= \case
-			Just importable -> next $ do
-				liftIO $ atomically $ writeTVar tvar (Just importable)
-				return True
-			Nothing -> giveup $ "Unable to list contents of " ++ Remote.name remote
+		Right matcher -> tryNonAsync (getImportableContents remote importtreeconfig ci matcher) >>= \case
+			Right importable -> a importable
+			Left e -> giveup $ "Unable to list contents of " ++ Remote.name remote ++ ": " ++ show e
 		Left err -> giveup $ unwords 
 			[ "Cannot import from"
 			, Remote.name remote
 			, "because of a problem with its configuration:"
 			, err
 			]
-  where
-	ai = ActionItemOther (Just (Remote.name remote))
-	si = SeekInput []
 
 commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents (Either Sha Key) -> CommandStart
 commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig importable =

@@ -1,0 +1,2 @@
+Subject says it all really, sync does not try to get content
+from remotes that are thirdPartyPopulated yet.

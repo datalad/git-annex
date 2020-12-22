@@ -118,6 +118,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = s3Setup
 	, exportSupported = exportIsSupported
 	, importSupported = importIsSupported
+	, thirdPartyPopulated = False
 	}
 
 bucketField :: RemoteConfigField
@@ -552,12 +553,11 @@ renameExportS3 hv r rs info k src dest = Just <$> go
 listImportableContentsS3 :: S3HandleVar -> Remote -> S3Info -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
 listImportableContentsS3 hv r info =
 	withS3Handle hv $ \case
-		Nothing -> do
-			warning $ needS3Creds (uuid r)
-			return Nothing
-		Just h -> catchMaybeIO $ liftIO $ runResourceT $
-			extractFromResourceT =<< startlist h
+		Nothing -> giveup $ needS3Creds (uuid r)
+		Just h -> Just <$> go h
   where
+	go h = liftIO $ runResourceT $ extractFromResourceT =<< startlist h
+
 	startlist h
 		| versioning info = do
 			rsp <- sendS3Handle h $ 

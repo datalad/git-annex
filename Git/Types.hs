@@ -135,7 +135,12 @@ fmtObjectType CommitObject = "commit"
 fmtObjectType TreeObject = "tree"
 
 {- Types of items in a tree. -}
-data TreeItemType = TreeFile | TreeExecutable | TreeSymlink | TreeSubmodule
+data TreeItemType
+	= TreeFile
+	| TreeExecutable
+	| TreeSymlink
+	| TreeSubmodule
+	| TreeSubtree
 	deriving (Eq, Show)
 
 {- Git uses magic numbers to denote the type of a tree item. -}
@@ -144,6 +149,7 @@ readTreeItemType "100644" = Just TreeFile
 readTreeItemType "100755" = Just TreeExecutable
 readTreeItemType "120000" = Just TreeSymlink
 readTreeItemType "160000" = Just TreeSubmodule
+readTreeItemType "040000" = Just TreeSubtree
 readTreeItemType _ = Nothing
 
 fmtTreeItemType :: TreeItemType -> S.ByteString
@@ -151,12 +157,14 @@ fmtTreeItemType TreeFile = "100644"
 fmtTreeItemType TreeExecutable = "100755"
 fmtTreeItemType TreeSymlink = "120000"
 fmtTreeItemType TreeSubmodule = "160000"
+fmtTreeItemType TreeSubtree = "040000"
 
 toTreeItemType :: FileMode -> Maybe TreeItemType
 toTreeItemType 0o100644 = Just TreeFile
 toTreeItemType 0o100755 = Just TreeExecutable
 toTreeItemType 0o120000 = Just TreeSymlink
 toTreeItemType 0o160000 = Just TreeSubmodule
+toTreeItemType 0o040000 = Just TreeSubtree
 toTreeItemType _ = Nothing
 
 fromTreeItemType :: TreeItemType -> FileMode
@@ -164,6 +172,7 @@ fromTreeItemType TreeFile = 0o100644
 fromTreeItemType TreeExecutable = 0o100755
 fromTreeItemType TreeSymlink = 0o120000
 fromTreeItemType TreeSubmodule = 0o160000
+fromTreeItemType TreeSubtree = 0o040000
 
 data Commit = Commit
 	{ commitTree :: Sha

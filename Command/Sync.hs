@@ -67,7 +67,7 @@ import Annex.UpdateInstead
 import Annex.Export
 import Annex.TaggedPush
 import Annex.CurrentBranch
-import Annex.Import (canImportKeys)
+import Annex.Import
 import Annex.CheckIgnore
 import Types.FileMatcher
 import qualified Database.Export as Export
@@ -211,8 +211,9 @@ seek' o = do
 	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
 	let (exportremotes, nonexportremotes) = partition (exportTree . Remote.config) dataremotes
-	let importremotes = filter (importTree . Remote.config) dataremotes
-	let keyvalueremotes = filter (not . importTree . Remote.config) nonexportremotes
+	let isimport r = importTree (Remote.config r) || Remote.thirdPartyPopulated (Remote.remotetype r)
+	let importremotes = filter isimport dataremotes
+	let keyvalueremotes = filter (not . isimport) nonexportremotes
 
 	if cleanupOption o
 		then do
@@ -464,6 +465,9 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 importRemote :: Bool -> SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandSeek
 importRemote importcontent o mergeconfig remote currbranch
 	| not (pullOption o) || not wantpull = noop
+	| Remote.thirdPartyPopulated (Remote.remotetype remote) =
+		when (canImportKeys remote importcontent) $
+			importThirdPartyPopulated remote
 	| otherwise = case remoteAnnexTrackingBranch (Remote.gitconfig remote) of
 		Nothing -> noop
 		Just tb -> do
@@ -479,6 +483,29 @@ importRemote importcontent o mergeconfig remote currbranch
 				else warning $ "Cannot import from " ++ Remote.name remote ++ " when not syncing content."
   where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
+
+{- Import from a remote that is populated by a third party, by listing
+ - the contents of the remote, and then adding only the files on it that
+ - importKey identifies to a tree. The tree is only used to keep track
+ - of where keys are located on the remote, no remote tracking branch is
+ - updated, because the filenames are the names of annex object files,
+ - not suitable for a tracking branch. Does not transfer any content. -}
+importThirdPartyPopulated :: Remote -> CommandSeek
+importThirdPartyPopulated remote = 
+	void $ includeCommandAction $ starting "list" ai si $
+		Command.Import.listContents' remote ImportTree (CheckGitIgnore False) go
+  where
+	go (Just importable) = importKeys remote ImportTree False True importable >>= \case
+		Just importablekeys -> do
+			(_imported, updatestate) <- recordImportTree remote ImportTree importablekeys
+			next $ do
+				updatestate
+				return True
+		Nothing -> next $ return False
+	go Nothing = next $ return True -- unchanged from before
+
+	ai = ActionItemOther (Just (Remote.name remote))
+	si = SeekInput []
 
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes

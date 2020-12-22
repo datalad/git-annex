@@ -41,6 +41,7 @@ remote = RemoteType
 	, setup = httpAlsoSetup
 	, exportSupported = exportIsSupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 urlField :: RemoteConfigField

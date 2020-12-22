@@ -1,0 +1,55 @@
+importtree=yes remotes are untrusted, because something is modifying that
+remote other than git-annex, and it could change a file at any time, so
+git-annex can't rely on the file being there. However, it's possible the user
+has a policy of not letting files on the remote be modified. It may even be
+that some remotes use storage that avoids such problems. So, there should be
+some way to override the default trust level for such remotes.
+
+Currently:
+
+	joey@darkstar:/tmp/y8>git annex semitrust borg
+	semitrust borg 
+	  This remote's trust level is overridden to untrusted.
+
+The borg special remote is one example of one where it's easy for the user to
+decide they're going to not delete old archives from it, and so want git-annex
+to trust it.
+
+Below is some docs I wrote for the borg special remote page, should be
+moved there when this gets fixed. --[[Joey]]
+
+## trust levels, borg delete and borg prune
+
+git-annex will by default treat the borg special remote as untrusted, so
+will not trust it to continue to contain a [[copy|copies]] of any annexed
+file. This is necessary because you could run `borg delete` or `borg prune`
+and remove the copy from the borg repository. If you choose to set the
+trust level of the borg repository to a higher level, you need to avoid
+using such commands with that borg repository.
+
+Consider this example:
+
+	git-annex add annexedfile
+	borg create /path/to/borgrepo `pwd`::foo
+	git-annex sync borg
+	git-annex semitrust borg
+	git-annex drop annexedfile
+
+Now the only copy of annexedfile is in the borg repository.
+
+	borg create /path/to/borgrepo `pwd`::bar
+	borg delete /path/to/borgrepo::foo
+	git-annex sync borg
+	git-annex whereis annexedfile
+
+Now no copies of annexfile remain, because the "foo" archive
+in the borg repository was the only one to contain it, and it was deleted.
+
+So either keep the borg special remote as untrusted, and use such borg
+commands to delete old archives as needed, or avoid using `borg delete`
+and `borg prune`, and then the remote can safely be made semitrusted or
+trusted.
+
+Also, if you do choose to delete old archives, make sure to never reuse
+that archive name for a new archive. git-annex may think it's the same
+archive it saw before, and not notice the change.

@@ -940,6 +940,7 @@ Executable git-annex
     Remote
     Remote.Adb
     Remote.BitTorrent
+    Remote.Borg
     Remote.Bup
     Remote.Ddar
     Remote.Directory
@@ -962,6 +963,7 @@ Executable git-annex
     Remote.Helper.Messages
     Remote.Helper.P2P
     Remote.Helper.ReadOnly
+    Remote.Helper.ThirdPartyPopulated
     Remote.Helper.Special
     Remote.Helper.Ssh
     Remote.HttpAlso

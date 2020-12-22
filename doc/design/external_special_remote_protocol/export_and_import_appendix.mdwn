@@ -167,7 +167,9 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
     this can be used to list those versions. It opens a new
     block of responses. This can be repeated any number of times
     (indicating a branching history), and histories can also
-    be nested multiple levels deep.
+    be nested multiple levels deep.  
+    This should only be used when the remote supports using
+    "TRANSFER RECEIVE Key" to retrieve historical versions of files.
   * `END`  
     Indicates the end of a block of responses.
 * `LOCATION Name`  

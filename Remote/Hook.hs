@@ -40,6 +40,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = hookSetup
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 hooktypeField :: RemoteConfigField

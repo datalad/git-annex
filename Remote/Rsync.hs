@@ -60,6 +60,7 @@ remote = specialRemoteType $ RemoteType
 	, setup = rsyncSetup
 	, exportSupported = exportIsSupported
 	, importSupported = importUnsupported
+	, thirdPartyPopulated = False
 	}
 
 shellEscapeField :: RemoteConfigField

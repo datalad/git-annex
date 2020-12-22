@@ -32,12 +32,16 @@ recordContentIdentifier :: RemoteStateHandle -> ContentIdentifier -> Key -> Anne
 recordContentIdentifier (RemoteStateHandle u) cid k = do
 	c <- liftIO currentVectorClock
 	config <- Annex.getGitConfig
-	Annex.Branch.change (remoteContentIdentifierLogFile config k) $
-		buildLog . addcid c . parseLog
+	Annex.Branch.maybeChange (remoteContentIdentifierLogFile config k) $
+		addcid c . parseLog
   where
-	addcid c l = changeMapLog c u (cid :| contentIdentifierList (M.lookup u m)) l
+	addcid c v
+		| cid `elem` l = Nothing -- no change needed
+		| otherwise = Just $ buildLog $
+			changeMapLog c u (cid :| l) v
 	  where
-		m = simpleMap l
+		m = simpleMap v
+		l = contentIdentifierList (M.lookup u m)
 
 -- | Get all known content identifiers for a key.
 getContentIdentifiers :: Key -> Annex [(RemoteStateHandle, [ContentIdentifier])]
