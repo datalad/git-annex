@@ -1,4 +1,4 @@
-{- git-annex export log
+{- git-annex export log (also used to log imports)
  -
  - Copyright 2017-2019 Joey Hess <id@joeyh.name>
  -
@@ -63,7 +63,6 @@ exportedTreeishes = nub . map exportedTreeish
 -- | Treeishes that started to be exported, but were not finished.
 incompleteExportedTreeishes :: [Exported] -> [Git.Ref]
 incompleteExportedTreeishes = concatMap incompleteExportedTreeish
-
 
 data ExportParticipants = ExportParticipants
 	{ exportFrom :: UUID

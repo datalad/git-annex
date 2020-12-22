@@ -1,17 +1,17 @@
 {- git ls-tree interface
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
-
-{-# LANGUAGE BangPatterns #-}
 
 module Git.LsTree (
 	TreeItem(..),
 	LsTreeMode(..),
 	lsTree,
 	lsTree',
+	lsTreeStrict,
+	lsTreeStrict',
 	lsTreeParams,
 	lsTreeFiles,
 	parseLsTree,
@@ -30,6 +30,7 @@ import Data.Either
 import System.Posix.Types
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Attoparsec.ByteString as AS
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 
@@ -38,7 +39,7 @@ data TreeItem = TreeItem
 	, typeobj :: S.ByteString
 	, sha :: Ref
 	, file :: TopFilePath
-	} deriving Show
+	} deriving (Show)
 
 data LsTreeMode = LsTreeRecursive | LsTreeNonRecursive
 
@@ -50,6 +51,13 @@ lsTree' :: [CommandParam] -> LsTreeMode -> Ref -> Repo -> IO ([TreeItem], IO Boo
 lsTree' ps lsmode t repo = do
 	(l, cleanup) <- pipeNullSplit (lsTreeParams lsmode t ps) repo
 	return (rights (map parseLsTree l), cleanup)
+
+lsTreeStrict :: LsTreeMode -> Ref -> Repo -> IO [TreeItem]
+lsTreeStrict = lsTreeStrict' []
+
+lsTreeStrict' :: [CommandParam] -> LsTreeMode -> Ref -> Repo -> IO [TreeItem]
+lsTreeStrict' ps lsmode t repo = rights . map parseLsTreeStrict
+	<$> pipeNullSplitStrict (lsTreeParams lsmode t ps) repo
 
 lsTreeParams :: LsTreeMode -> Ref -> [CommandParam] -> [CommandParam]
 lsTreeParams lsmode r ps =
@@ -82,6 +90,13 @@ parseLsTree :: L.ByteString -> Either String TreeItem
 parseLsTree b = case A.parse parserLsTree b of
 	A.Done _ r  -> Right r
 	A.Fail _ _ err -> Left err
+
+parseLsTreeStrict :: S.ByteString -> Either String TreeItem
+parseLsTreeStrict b = go (AS.parse parserLsTree b)
+  where
+	go (AS.Done _ r) = Right r
+	go (AS.Fail _ _ err) = Left err
+	go (AS.Partial c) = go (c mempty)
 
 {- Parses a line of ls-tree output, in format:
  - mode SP type SP sha TAB file
