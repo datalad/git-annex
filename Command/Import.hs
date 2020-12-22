@@ -334,9 +334,9 @@ listContents remote importtreeconfig ci tvar = starting "list" ai si $
 listContents' :: Remote -> ImportTreeConfig -> CheckGitIgnore -> (ImportableContents (ContentIdentifier, Remote.ByteSize) -> Annex a) -> Annex a
 listContents' remote importtreeconfig ci a = 
 	makeImportMatcher remote >>= \case
-		Right matcher -> getImportableContents remote importtreeconfig ci matcher >>= \case
-			Just importable -> a importable
-			Nothing -> giveup $ "Unable to list contents of " ++ Remote.name remote
+		Right matcher -> tryNonAsync (getImportableContents remote importtreeconfig ci matcher) >>= \case
+			Right importable -> a importable
+			Left e -> giveup $ "Unable to list contents of " ++ Remote.name remote ++ ": " ++ show e
 		Left err -> giveup $ unwords 
 			[ "Cannot import from"
 			, Remote.name remote

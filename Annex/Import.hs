@@ -658,14 +658,14 @@ makeImportMatcher r = load preferredContentKeylessTokens >>= \case
  - regardless. (Similar to how git add behaves on gitignored files.)
  - This avoids creating a remote tracking branch that, when merged,
  - would delete the files.
+ -
+ - Throws exception if unable to contact the remote.
  -}
-getImportableContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> FileMatcher Annex -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
-getImportableContents r importtreeconfig ci matcher = 
-	Remote.listImportableContents (Remote.importActions r) >>= \case
-		Nothing -> return Nothing
-		Just importable -> do
-			dbhandle <- Export.openDb (Remote.uuid r)
-			Just <$> filterunwanted dbhandle importable
+getImportableContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> FileMatcher Annex -> Annex (ImportableContents (ContentIdentifier, ByteSize))
+getImportableContents r importtreeconfig ci matcher = do
+	importable <- Remote.listImportableContents (Remote.importActions r)
+	dbhandle <- Export.openDb (Remote.uuid r)
+	filterunwanted dbhandle importable
   where
 	filterunwanted dbhandle ic = ImportableContents
 		<$> filterM (wanted dbhandle) (importableContents ic)

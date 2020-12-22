@@ -550,13 +550,11 @@ renameExportS3 hv r rs info k src dest = Just <$> go
 	srcobject = T.pack $ bucketExportLocation info src
 	dstobject = T.pack $ bucketExportLocation info dest
 
-listImportableContentsS3 :: S3HandleVar -> Remote -> S3Info -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+listImportableContentsS3 :: S3HandleVar -> Remote -> S3Info -> Annex (ImportableContents (ContentIdentifier, ByteSize))
 listImportableContentsS3 hv r info =
 	withS3Handle hv $ \case
-		Nothing -> do
-			warning $ needS3Creds (uuid r)
-			return Nothing
-		Just h -> catchMaybeIO $ liftIO $ runResourceT $
+		Nothing -> giveup $ needS3Creds (uuid r)
+		Just h -> liftIO $ runResourceT $
 			extractFromResourceT =<< startlist h
   where
 	startlist h

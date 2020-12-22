@@ -286,9 +286,12 @@ renameExportM serial adir _k old new = do
 		, File newloc
 		]
 
-listImportableContentsM :: AndroidSerial -> AndroidPath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
-listImportableContentsM serial adir =
-	process <$> adbShell serial
+listImportableContentsM :: AndroidSerial -> AndroidPath -> Annex (ImportableContents (ContentIdentifier, ByteSize))
+listImportableContentsM serial adir = adbfind >>= \case
+	Just ls -> return $ ImportableContents (mapMaybe mk ls) []
+	Nothing -> giveup "adb find failed"
+  where
+	adbfind = adbShell serial
 		[ Param "find"
 		-- trailing slash is needed, or android's find command
 		-- won't recurse into the directory
@@ -298,9 +301,6 @@ listImportableContentsM serial adir =
 		, Param "-c", Param statformat
 		, Param "{}", Param "+"
 		]
-  where
-	process Nothing = Nothing
-	process (Just ls) = Just $ ImportableContents (mapMaybe mk ls) []
 
 	statformat = adbStatFormat ++ "\t%n"
 
