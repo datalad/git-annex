@@ -1,0 +1,16 @@
+importtree=yes remotes are untrusted, because something is modifying that
+remote other than git-annex, and it could change a file at any time, so
+git-annex can't rely on the file being there. However, it's possible the user
+has a policy of not letting files on the remote be modified. It may even be
+that some remotes use storage that avoids such problems. So, there should be
+some way to override the default trust level for such remotes.
+
+Currently:
+
+	joey@darkstar:/tmp/y8>git annex semitrust borg
+	semitrust borg 
+	  This remote's trust level is overridden to untrusted.
+
+The borg special remote is one example of one where it's easy for the user to
+decide they're going to not delete old archives from it, and so want git-annex
+to trust it.
