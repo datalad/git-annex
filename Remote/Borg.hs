@@ -257,7 +257,7 @@ retrieveExportWithContentIdentifierM borgrepo loc cid dest k p = error "TODO"
 -- the content of files in borg archives does not change, which is normally
 -- the case. But archives may be deleted, and files may be deleted.
 checkPresentExportWithContentIdentifierM :: BorgRepo -> Key -> ImportLocation -> [ContentIdentifier] -> Annex Bool
-checkPresentExportWithContentIdentifierM borgrepo k loc cids = liftIO $ do
+checkPresentExportWithContentIdentifierM borgrepo k loc cids = prompt $ liftIO $ do
 	let p = proc "borg"
 		[ "list"
 		, "--format"
