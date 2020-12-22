@@ -1,0 +1,13 @@
+When importing a tree from a special remote, often content identifiers need
+to be written for all files that it finds. Currently, the timestamp varies
+a little bit while writing these. If the same timestamp were used for all
+the logs, they would delta-compress better.
+
+This probably extends well past content identifiers, but they would be a
+probably relatively easy place to do it since they're all written in the
+same place.
+
+As a bonus, since borg uses the same content identifiers for all keys
+(""), implementing this would make the content of the logs all identical,
+and so avoid any overhead entirely. Well.. perhaps that's my actual
+motivation. ;-) --[[Joey]]
