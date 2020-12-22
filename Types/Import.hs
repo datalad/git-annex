@@ -59,6 +59,12 @@ data ImportableContents info = ImportableContents
 	-- ^ Used by remotes that support importing historical versions of
 	-- files that are stored in them. This is equivilant to a git
 	-- commit history.
+	--
+	-- When retrieving a historical version of a file,
+	-- old ImportLocations from importableHistory are not used;
+	-- the content is no longer expected to be present at those
+	-- locations. So, if a remote does not support Key/Value access,
+	-- it should not populate the importableHistory.
 	}
 	deriving (Show, Generic)
 
