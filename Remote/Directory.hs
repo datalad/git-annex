@@ -337,11 +337,11 @@ removeExportLocation topdir loc =
 			mkExportLocation loc'
 		in go (upFrom loc') =<< tryIO (removeDirectory p)
 
-listImportableContentsM :: RawFilePath -> Annex (ImportableContents (ContentIdentifier, ByteSize))
+listImportableContentsM :: RawFilePath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
 listImportableContentsM dir = liftIO $ do
 	l <- dirContentsRecursive (fromRawFilePath dir)
 	l' <- mapM (go . toRawFilePath) l
-	return $ ImportableContents (catMaybes l') []
+	return $ Just $ ImportableContents (catMaybes l') []
   where
 	go f = do
 		st <- R.getFileStatus f

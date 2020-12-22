@@ -62,3 +62,7 @@ So either keep the borg special remote as untrusted, and use such borg
 commands to delete old archives as needed, or avoid using `borg delete`
 and `borg prune`, and then the remote can safely be made semitrusted or
 trusted.
+
+Also, if you do choose to delete old archives, make sure to never reuse
+that archive name for a new archive. git-annex may think it's the same
+archive it saw before, and not notice the change.

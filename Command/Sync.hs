@@ -495,13 +495,14 @@ importThirdPartyPopulated remote =
 	void $ includeCommandAction $ starting "list" ai si $
 		Command.Import.listContents' remote ImportTree (CheckGitIgnore False) go
   where
-	go importable = importKeys remote ImportTree False True importable >>= \case
+	go (Just importable) = importKeys remote ImportTree False True importable >>= \case
 		Just importablekeys -> do
 			(_imported, updatestate) <- recordImportTree remote ImportTree importablekeys
 			next $ do
 				updatestate
 				return True
 		Nothing -> next $ return False
+	go Nothing = next $ return True -- unchanged from before
 
 	ai = ActionItemOther (Just (Remote.name remote))
 	si = SeekInput []

@@ -325,13 +325,13 @@ seekRemote remote branch msubdir importcontent ci = do
 listContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> TVar (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize))) -> CommandStart
 listContents remote importtreeconfig ci tvar = starting "list" ai si $
 	listContents' remote importtreeconfig ci $ \importable -> do
-		liftIO $ atomically $ writeTVar tvar (Just importable)
+		liftIO $ atomically $ writeTVar tvar importable
 		next $ return True
   where
 	ai = ActionItemOther (Just (Remote.name remote))
 	si = SeekInput []
 
-listContents' :: Remote -> ImportTreeConfig -> CheckGitIgnore -> (ImportableContents (ContentIdentifier, Remote.ByteSize) -> Annex a) -> Annex a
+listContents' :: Remote -> ImportTreeConfig -> CheckGitIgnore -> (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize)) -> Annex a) -> Annex a
 listContents' remote importtreeconfig ci a = 
 	makeImportMatcher remote >>= \case
 		Right matcher -> tryNonAsync (getImportableContents remote importtreeconfig ci matcher) >>= \case

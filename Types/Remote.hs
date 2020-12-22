@@ -283,7 +283,8 @@ data ImportActions a = ImportActions
 	-- remote.
 	--
 	-- Throws exception on failure to access the remote.
-	{ listImportableContents :: a (ImportableContents (ContentIdentifier, ByteSize))
+	-- May return Nothing when the remote is unchanged since last time.
+	{ listImportableContents :: a (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
 	-- Generates a Key (of any type) for the file stored on the
 	-- remote at the ImportLocation. Does not download the file
 	-- from the remote.

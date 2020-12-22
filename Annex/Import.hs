@@ -660,12 +660,15 @@ makeImportMatcher r = load preferredContentKeylessTokens >>= \case
  - would delete the files.
  -
  - Throws exception if unable to contact the remote.
+ - Returns Nothing when there is no change since last time.
  -}
-getImportableContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> FileMatcher Annex -> Annex (ImportableContents (ContentIdentifier, ByteSize))
+getImportableContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> FileMatcher Annex -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
 getImportableContents r importtreeconfig ci matcher = do
-	importable <- Remote.listImportableContents (Remote.importActions r)
-	dbhandle <- Export.openDb (Remote.uuid r)
-	filterunwanted dbhandle importable
+	Remote.listImportableContents (Remote.importActions r) >>= \case
+		Just importable -> do
+			dbhandle <- Export.openDb (Remote.uuid r)
+			Just <$> filterunwanted dbhandle importable
+		Nothing -> return Nothing
   where
 	filterunwanted dbhandle ic = ImportableContents
 		<$> filterM (wanted dbhandle) (importableContents ic)
