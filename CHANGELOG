@@ -1,5 +1,10 @@
 git-annex (8.20201128) UNRELEASED; urgency=medium
 
+  * New borg special remote. This is a new kind of remote, that examines
+    borg backups of git-annex repositories, learns what files have been
+    backed up, and can restore files from the backup and so on. As well
+    as backups, it can be useful for archival storage, since borg can
+    efficiently store many related versions of files.
   * New config annex.stalldetection, remote.name.annex-stalldetection,
     which can be used to deal with remotes that stall during transfers,
     or are sometimes too slow to want to use.
