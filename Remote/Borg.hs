@@ -140,14 +140,14 @@ listImportableContentsM u borgrepo = prompt $ do
 	ls <- withborglist borgrepo "{barchive}{NUL}" $ \as ->
 		forM as $ \archivename ->
 			case M.lookup archivename imported of
-				Just getfast -> return $ Left getfast
+				Just getfast -> return $ Left (archivename, getfast)
 				Nothing -> Right <$>
 					let archive = borgArchive borgrepo archivename
 					in withborglist archive "{size}{NUL}{path}{NUL}" $
 						liftIO . evaluate . force . parsefilelist archivename
-	if all isLeft ls
+	if all isLeft ls && M.null (M.difference imported (M.fromList (lefts ls)))
 		then return Nothing -- unchanged since last time, avoid work
-		else Just . mkimportablecontents <$> mapM (either id pure) ls
+		else Just . mkimportablecontents <$> mapM (either snd pure) ls
   where
 	withborglist what format a = do
 		let p = (proc "borg" ["list", what, "--format", format])
