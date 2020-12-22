@@ -1,0 +1,26 @@
+Just barely managed to get the borg special remote fully working by end of
+day today. I'm still a bit shocked it was possible to do this at all, let
+alone as neatly as it turned out, with so few changes to git-annex to
+support such an entirely different thing.
+
+I put in a fair amount of effort to making it fast to keep up-to-date with
+changes to the borg repo; `git-annex sync` does need to run `borg list` to
+check what archives are in it, but it avoids rescanning archives it already
+knows the contents of.
+
+There are a slew of new todo items related to this special remote:
+[[todo/allow_overriding_untrust_of_import_remotes]],
+[[todo/borg_special_remote_add_subdir_config]],
+[[todo/sync_--content_with_borg_does_not_get_content]],
+[[todo/borg_sync_tree_not_grafted]],
+[[todo/use_same_vector_clock_for_content_identifier_updates_in_import]]
+
+And, if this backup-as-a-remote idea does turn out to be useful,
+there are lots of other backup programs. It would be good to be able to
+write external special remotes for them, but that would need
+[[a_protocol_extension|design/external_special_remote_protocol/export_and_import_appendix]].
+
+---
+
+This work was sponsored by Mark Reidenbaach 
+[on Patreon](https://patreon.com/joeyh).
