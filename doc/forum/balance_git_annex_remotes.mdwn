@@ -1,0 +1,9 @@
+What is the best way to balance files among your remotes? 
+
+use case:
+I have git annex remotes on N external drives, I would like to git annex move --auto --from=$most_used_repo --to= $least_used_repo
+
+expected result: 
+the free space on all my remotes should be more or less equal.
+
+is there a way to do this currently? 

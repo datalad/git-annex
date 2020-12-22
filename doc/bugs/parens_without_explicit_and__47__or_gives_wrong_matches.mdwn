@@ -1,0 +1,84 @@
+### Please describe the problem.
+
+Matching queries containing `-(`/`-)` without an explicit `--and`/`--or` next to them are interpreted strangely.
+
+(I'm not sure of the full space of queries that have an issue, but that describes what I've seen so far.)
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+cd $(mktemp -d)
+git init
+git annex init
+touch a.1 a.2 b.1 b.2
+git annex add
+
+PS4='================ '
+set -x
+git annex find --include=a.* --include=*.1                                     # 'a.1' -- good (implicit --and)
+git annex find --include=a.* --and '-(' --include=*.1 --or --include=*.2 '-)'  # 'a.1 a.2' -- good
+git annex find --include=a.* --or '-(' --include=*.1 --or --include=*.2 '-)'   # 'a.1 a.2 b.1 b.2' -- good
+git annex find --include=a.* '-(' --include=*.1 --or --include=*.2 '-)'        # 'a.1 a.2 b.2' -- ???
+"""]]
+
+Leaving out the `--and`/`--or` yields a result that is not the same as providing either one explicitly. The output is the same as `--include=a.* --or --include=*.2`, or perhaps `-( --include=a.* --include=*.1 -) --or --include=*.2`.
+
+`git annex find --want-get` with the equivalent preferred content expressions gives the same results.
+
+[[!format sh """
+git annex wanted . 'include=a.* include=*.1'; git annex find --want-get
+git annex wanted . 'include=a.* and (include=*.1 or include=*.2)'; git annex find --want-get
+git annex wanted . 'include=a.* or (include=*.1 or include=*.2)'; git annex find --want-get
+git annex wanted . 'include=a.* (include=*.1 or include=*.2)'; git annex find --want-get
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+Freshly built from source on Arch Linux:
+[[!format text """
+git-annex version: 8.20201128-ge0062c4f9
+build flags: Assistant Webapp Pairing Inotify TorrentParser Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+"""]]
+
+### Please provide any additional information below.
+Output of the first script above:
+[[!format text """
+Initialized empty Git repository in /tmp/tmp.ZdtfLaDkA8/.git/
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+add a.1 
+ok
+add a.2 
+ok
+add b.1 
+ok
+add b.2 
+ok
+(recording state in git...)
+================ git annex find '--include=a.*' '--include=*.1'
+a.1
+================ git annex find '--include=a.*' --and '-(' '--include=*.1' --or '--include=*.2' '-)'
+a.1
+a.2
+================ git annex find '--include=a.*' --or '-(' '--include=*.1' --or '--include=*.2' '-)'
+a.1
+a.2
+b.1
+b.2
+================ git annex find '--include=a.*' '-(' '--include=*.1' --or '--include=*.2' '-)'
+a.1
+a.2
+b.2
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! [My description from before](https://git-annex.branchable.com/bugs/async_external_special_remote__39__s_stdin_not_closed/) still applies. And I've continued growing my annex and expanded onto a new drive since then.
