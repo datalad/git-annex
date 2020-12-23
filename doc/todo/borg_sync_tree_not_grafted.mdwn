@@ -3,3 +3,8 @@ does not seem to get grafted into the git-annex branch, so
 would be subject to being lost to GC. 
 
 Is this a general problem affecting importtree too?
+
+> Yes, it was. It would have only caused a problem if the user
+> kept doing imports from a remote, but never exporting to it.
+> Then, in a clone of the repo that was importing, they would not be able
+> to get files. [[fixed|done]] --[[Joey]]

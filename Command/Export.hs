@@ -192,7 +192,7 @@ changeExport r db (PreferredFiltered new) = do
 	-- from a previous export, that are not part of this export.
 	c <- Annex.getState Annex.errcounter
 	when (c == 0) $ do
-		recordExport (uuid r) $ ExportChange
+		recordExportUnderway (uuid r) $ ExportChange
 			{ oldTreeish = exportedTreeishes old
 			, newTreeish = new
 			}

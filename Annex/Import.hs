@@ -161,7 +161,7 @@ recordImportTree remote importtreeconfig importable = do
 	
 	updateexportlog importedtree = do
 		oldexport <- getExport (Remote.uuid remote)
-		recordExport (Remote.uuid remote) $ ExportChange
+		recordExport (Remote.uuid remote) importedtree $ ExportChange
 			{ oldTreeish = exportedTreeishes oldexport
 			, newTreeish = importedtree
 			}

@@ -1,6 +1,6 @@
 {- git-annex export log (also used to log imports)
  -
- - Copyright 2017-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,8 +15,9 @@ module Logs.Export (
 	getExport,
 	exportedTreeishes,
 	incompleteExportedTreeishes,
-	recordExport,
 	recordExportBeginning,
+	recordExportUnderway,
+	recordExport,
 	logExportExcluded,
 	getExportExcluded,
 ) where
@@ -85,35 +86,6 @@ getExport remoteuuid = nub . mapMaybe get . M.toList . simpleMap
 		| exportTo ep == remoteuuid = Just exported
 		| otherwise = Nothing
 
--- | Record a change in what's exported to a special remote.
---
--- This is called before an export begins uploading new files to the
--- remote, but after it's cleaned up any files that need to be deleted
--- from the old treeish.
---
--- Any entries in the log for the oldTreeish will be updated to the
--- newTreeish. This way, when multiple repositories are exporting to
--- the same special remote, there's no conflict as long as they move
--- forward in lock-step.
---
--- Also, the newTreeish is grafted into the git-annex branch. This is done
--- to ensure that it's available later.
-recordExport :: UUID -> ExportChange -> Annex ()
-recordExport remoteuuid ec = do
-	c <- liftIO currentVectorClock
-	u <- getUUID
-	let ep = ExportParticipants { exportFrom = u, exportTo = remoteuuid }
-	let exported = Exported (newTreeish ec) []
-	Annex.Branch.change exportLog $
-		buildExportLog
-			. changeMapLog c ep exported 
-			. M.mapWithKey (updateothers c u)
-			. parseExportLog
-  where
-	updateothers c u ep le@(LogEntry _ exported@(Exported { exportedTreeish = t }))
-		| u == exportFrom ep || remoteuuid /= exportTo ep || t `notElem` oldTreeish ec = le
-		| otherwise = LogEntry c (exported { exportedTreeish = newTreeish ec })
-
 -- | Record the beginning of an export, to allow cleaning up from
 -- interrupted exports.
 --
@@ -132,7 +104,52 @@ recordExportBeginning remoteuuid newtree = do
 		buildExportLog 
 			. changeMapLog c ep new
 			. parseExportLog
-	Annex.Branch.rememberTreeish newtree (asTopFilePath "export.tree")
+	recordExportTreeish newtree
+
+-- Grade a tree ref into the git-annex branch. This is done
+-- to ensure that it's available later, when getting exported files
+-- from the remote. Since that could happen in another clone of the
+-- repository, the tree has to be kept available, even if it
+-- doesn't end up being merged into the master branch.
+recordExportTreeish :: Git.Ref -> Annex ()
+recordExportTreeish t = 
+	Annex.Branch.rememberTreeish t (asTopFilePath "export.tree")
+
+-- | Record that an export to a special remote is under way.
+--
+-- This is called before an export begins uploading new files to the
+-- remote, but after it's cleaned up any files that need to be deleted
+-- from the old treeish.
+--
+-- Any entries in the log for the oldTreeish will be updated to the
+-- newTreeish. This way, when multiple repositories are exporting to
+-- the same special remote, there's no conflict as long as they move
+-- forward in lock-step.
+recordExportUnderway :: UUID -> ExportChange -> Annex ()
+recordExportUnderway remoteuuid ec = do
+	c <- liftIO currentVectorClock
+	u <- getUUID
+	let ep = ExportParticipants { exportFrom = u, exportTo = remoteuuid }
+	let exported = Exported (newTreeish ec) []
+	Annex.Branch.change exportLog $
+		buildExportLog
+			. changeMapLog c ep exported 
+			. M.mapWithKey (updateothers c u)
+			. parseExportLog
+  where
+	updateothers c u ep le@(LogEntry _ exported@(Exported { exportedTreeish = t }))
+		| u == exportFrom ep || remoteuuid /= exportTo ep || t `notElem` oldTreeish ec = le
+		| otherwise = LogEntry c (exported { exportedTreeish = newTreeish ec })
+
+-- Record information about the export to the git-annex branch.
+--
+-- This is equivilant to recordExportBeginning followed by
+-- recordExportUnderway, but without the ability to clean up from
+-- interrupted exports.
+recordExport :: UUID -> Git.Ref -> ExportChange -> Annex ()
+recordExport remoteuuid tree ec = do
+	recordExportTreeish tree
+	recordExportUnderway remoteuuid ec
 
 parseExportLog :: L.ByteString -> MapLog ExportParticipants Exported
 parseExportLog = parseMapLog exportParticipantsParser exportedParser

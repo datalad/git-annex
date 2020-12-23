@@ -34,6 +34,8 @@ git-annex (8.20201128) UNRELEASED; urgency=medium
   * Windows: include= and exclude= containing '/' will also match filenames
     that are written using '\'. (And vice-versa, but it's better to use '/'
     for portability.)
+  * Fix a bug that could prevent getting files from an importtree=yes
+    remote, because the imported tree was allowed to be garbage collected.
 
  -- Joey Hess <id@joeyh.name>  Mon, 30 Nov 2020 12:55:49 -0400
 
