@@ -207,13 +207,11 @@ seek' o = do
 	let withbranch a = a =<< getCurrentBranch
 
 	remotes <- syncRemotes (syncWith o)
+	-- Remotes that are git repositories, not special remotes.
 	let gitremotes = filter (Remote.gitSyncableRemoteType . Remote.remotetype) remotes
-	dataremotes <- filter (\r -> Remote.uuid r /= NoUUID)
+	-- Remotes that contain annex object content.
+	contentremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
-	let (exportremotes, nonexportremotes) = partition (exportTree . Remote.config) dataremotes
-	let isimport r = importTree (Remote.config r) || Remote.thirdPartyPopulated (Remote.remotetype r)
-	let importremotes = filter isimport dataremotes
-	let keyvalueremotes = filter (not . isimport) nonexportremotes
 
 	if cleanupOption o
 		then do
@@ -233,17 +231,27 @@ seek' o = do
 			
 			content <- shouldSyncContent o
 
-			forM_ importremotes $
+			forM_ (filter isImport contentremotes) $
 				withbranch . importRemote content o mergeConfig
+			forM_ (filter isThirdPartyPopulated contentremotes) $
+				pullThirdPartyPopulated o
 			
 			when content $ do
 				-- Send content to any exports before other
 				-- repositories, in case that lets content
 				-- be dropped from other repositories.
 				exportedcontent <- withbranch $
-					seekExportContent (Just o) exportremotes
+					seekExportContent (Just o)
+						(filter isExport contentremotes)
+
+				-- Sync content with remotes, but not with
+				-- export or import remotes, which handle content
+				-- syncing as part of export and import.
 				syncedcontent <- withbranch $
-					seekSyncContent o keyvalueremotes
+					seekSyncContent o $ filter
+						(\r -> not (isExport r || isImport r))
+						contentremotes
+
 				-- Transferring content can take a while,
 				-- and other changes can be pushed to the
 				-- git-annex branch on the remotes in the
@@ -465,9 +473,6 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 importRemote :: Bool -> SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandSeek
 importRemote importcontent o mergeconfig remote currbranch
 	| not (pullOption o) || not wantpull = noop
-	| Remote.thirdPartyPopulated (Remote.remotetype remote) =
-		when (canImportKeys remote importcontent) $
-			importThirdPartyPopulated remote
 	| otherwise = case remoteAnnexTrackingBranch (Remote.gitconfig remote) of
 		Nothing -> noop
 		Just tb -> do
@@ -484,15 +489,17 @@ importRemote importcontent o mergeconfig remote currbranch
   where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 
-{- Import from a remote that is populated by a third party, by listing
+{- Handle a remote that is populated by a third party, by listing
  - the contents of the remote, and then adding only the files on it that
  - importKey identifies to a tree. The tree is only used to keep track
  - of where keys are located on the remote, no remote tracking branch is
  - updated, because the filenames are the names of annex object files,
  - not suitable for a tracking branch. Does not transfer any content. -}
-importThirdPartyPopulated :: Remote -> CommandSeek
-importThirdPartyPopulated remote = 
-	void $ includeCommandAction $ starting "list" ai si $
+pullThirdPartyPopulated :: SyncOptions -> Remote -> CommandSeek
+pullThirdPartyPopulated o remote
+	| not (pullOption o) || not wantpull = noop
+	| not (canImportKeys remote False) = noop
+	| otherwise = void $ includeCommandAction $ starting "list" ai si $
 		Command.Import.listContents' remote ImportTree (CheckGitIgnore False) go
   where
 	go (Just importable) = importKeys remote ImportTree False True importable >>= \case
@@ -506,6 +513,8 @@ importThirdPartyPopulated remote =
 
 	ai = ActionItemOther (Just (Remote.name remote))
 	si = SeekInput []
+	
+	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 
 {- The remote probably has both a master and a synced/master branch.
  - Which to merge from? Well, the master has whatever latest changes
@@ -806,6 +815,7 @@ syncFile ebloom rs af k = do
 
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
+		| isThirdPartyPopulated r = return False
 		| otherwise = wantSend True (Just k) af (Remote.uuid r)
 	handleput lack = catMaybes <$> ifM (inAnnex k)
 		( forM lack $ \r ->
@@ -918,3 +928,12 @@ onlyAnnex o
 	| notOnlyAnnexOption o = pure False
 	| onlyAnnexOption o = pure True
 	| otherwise = getGitConfigVal annexSyncOnlyAnnex
+	
+isExport :: Remote -> Bool
+isExport = exportTree . Remote.config
+
+isImport :: Remote -> Bool
+isImport = importTree . Remote.config
+
+isThirdPartyPopulated :: Remote -> Bool
+isThirdPartyPopulated = Remote.thirdPartyPopulated . Remote.remotetype
