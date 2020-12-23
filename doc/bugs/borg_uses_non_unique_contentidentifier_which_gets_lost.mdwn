@@ -1,6 +1,6 @@
 borg uses a non-unique ContentIdentifier ("") for everything.
-I think this is why, it eventually gets lost from the sqlite database,
-preventing retrieval of content from the remote.
+I think this is why, it eventually gets lost from the sqlite database for
+some keys, preventing retrieval of content from the remote.
 
 Repositories affected by this problem can be fixed up by just:
 `rm -rf .git/annex/cidsdb`
@@ -24,4 +24,5 @@ And if a remote uses a hash for generating ContentIdentifiers, two different
 Key can have the same content in edge cases.
 
 So, need to upgrade the database, removing this constraint from it.
---[[Joey]]
+
+>> [[done]] --[[Joey]]

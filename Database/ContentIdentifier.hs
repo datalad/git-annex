@@ -52,7 +52,9 @@ import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
+import Database.Persist.Sqlite (runSqlite)
 import qualified System.FilePath.ByteString as P
+import qualified Data.Text as T
 
 data ContentIdentifierHandle = ContentIdentifierHandle H.DbQueue
 
@@ -62,7 +64,6 @@ ContentIdentifiers
   cid ContentIdentifier
   key Key
   ContentIndentifiersKeyRemoteCidIndex key remote cid
-  ContentIndentifiersCidRemoteIndex cid remote
 -- The last git-annex branch tree sha that was used to update
 -- ContentIdentifiers
 AnnexBranch
@@ -79,9 +80,15 @@ openDb :: Annex ContentIdentifierHandle
 openDb = do
 	dbdir <- fromRepo gitAnnexContentIdentifierDbDir
 	let db = dbdir P.</> "db"
-	unlessM (liftIO $ R.doesPathExist db) $ do
-		initDb db $ void $
+	ifM (liftIO $ not <$> R.doesPathExist db)
+		( initDb db $ void $ 
 			runMigrationSilent migrateContentIdentifier
+		-- Migrate from old version of database, which had
+		-- an incorrect uniqueness constraint on the
+		-- ContentIdentifiers table.
+		, liftIO $ runSqlite (T.pack (fromRawFilePath db)) $ void $
+			runMigrationSilent migrateContentIdentifier
+		)
 	h <- liftIO $ H.openDbQueue H.SingleWriter db "content_identifiers"
 	return $ ContentIdentifierHandle h
 
