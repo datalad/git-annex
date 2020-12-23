@@ -148,7 +148,8 @@ recordExportUnderway remoteuuid ec = do
 -- interrupted exports.
 recordExport :: UUID -> Git.Ref -> ExportChange -> Annex ()
 recordExport remoteuuid tree ec = do
-	recordExportTreeish tree
+	when (oldTreeish ec /= [tree]) $
+		recordExportTreeish tree
 	recordExportUnderway remoteuuid ec
 
 parseExportLog :: L.ByteString -> MapLog ExportParticipants Exported
