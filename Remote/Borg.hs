@@ -24,8 +24,8 @@ import Remote.Helper.ExportImport
 import Annex.UUID
 import Types.ProposedAccepted
 import Utility.Metered
-import qualified Remote.Helper.ThirdPartyPopulated as ThirdPartyPopulated
 import Logs.Export
+import qualified Remote.Helper.ThirdPartyPopulated as ThirdPartyPopulated
 
 import Data.Either
 import Text.Read
@@ -48,6 +48,8 @@ remote = RemoteType
 	, configParser = mkRemoteConfigParser
 		[ optionalStringParser borgrepoField
 			(FieldDesc "(required) borg repository to use")
+		, optionalStringParser subdirField
+			(FieldDesc "limit to a subdirectory of the borg repository")
 		]
 	, setup = borgSetup
 	, exportSupported = exportUnsupported
@@ -57,6 +59,9 @@ remote = RemoteType
 
 borgrepoField :: RemoteConfigField
 borgrepoField = Accepted "borgrepo"
+
+subdirField :: RemoteConfigField
+subdirField = Accepted "subdir"
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
@@ -80,7 +85,7 @@ gen r u rc gc rs = do
 		, checkPresentCheap = borgLocal borgrepo
 		, exportActions = exportUnsupported
 		, importActions = ImportActions
-			{ listImportableContents = listImportableContentsM u borgrepo
+			{ listImportableContents = listImportableContentsM u borgrepo c
 			, importKey = Just ThirdPartyPopulated.importKey
 			, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM borgrepo
 			, checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierM borgrepo
@@ -132,25 +137,31 @@ borgLocal = notElem ':'
 borgArchive :: BorgRepo -> BorgArchiveName -> String
 borgArchive r n = r ++ "::" ++ decodeBS' n
 
-listImportableContentsM :: UUID -> BorgRepo -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
-listImportableContentsM u borgrepo = prompt $ do
+listImportableContentsM :: UUID -> BorgRepo -> ParsedRemoteConfig -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+listImportableContentsM u borgrepo c = prompt $ do
 	imported <- getImported u
-	ls <- withborglist borgrepo "{barchive}{NUL}" $ \as ->
+	ls <- withborglist borgrepo Nothing formatarchivelist $ \as ->
 		forM as $ \archivename ->
 			case M.lookup archivename imported of
 				Just getfast -> return $ Left (archivename, getfast)
 				Nothing -> Right <$>
 					let archive = borgArchive borgrepo archivename
-					in withborglist archive "{size}{NUL}{path}{NUL}" $
+					in withborglist archive subdir formatfilelist $
 						liftIO . evaluate . force . parsefilelist archivename
 	if all isLeft ls && M.null (M.difference imported (M.fromList (lefts ls)))
 		then return Nothing -- unchanged since last time, avoid work
 		else Just . mkimportablecontents <$> mapM (either snd pure) ls
   where
-	withborglist what format a = do
-		let p = (proc "borg" ["list", what, "--format", format])
+	withborglist what addparam format a = do
+		let p = proc "borg" $ toCommand $ catMaybes
+			[ Just (Param "list")
+			, Just (Param "--format")
+			, Just (Param format)
+			, Just (Param what)
+			, addparam
+			]
+		(Nothing, Just h, Nothing, pid) <- liftIO $ createProcess $ p
 			{ std_out = CreatePipe }
-		(Nothing, Just h, Nothing, pid) <- liftIO $ createProcess p
 		l <- liftIO $ map L.toStrict 
 			. filter (not . L.null) 
 			. L.split 0 
@@ -159,6 +170,12 @@ listImportableContentsM u borgrepo = prompt $ do
 			hClose h
 			forceSuccessProcess p pid
 		a l `finally` cleanup
+
+	formatarchivelist = "{barchive}{NUL}"
+
+	formatfilelist = "{size}{NUL}{path}{NUL}"
+
+	subdir = File <$> getRemoteConfigValue subdirField c
 
 	parsefilelist archivename (bsz:f:rest) = case readMaybe (fromRawFilePath bsz) of
 		Nothing -> parsefilelist archivename rest
@@ -253,12 +270,12 @@ getImported u = M.unions <$> (mapM go . exportedTreeishes =<< getExport u)
 -- the case. But archives may be deleted, and files may be deleted.
 checkPresentExportWithContentIdentifierM :: BorgRepo -> Key -> ImportLocation -> [ContentIdentifier] -> Annex Bool
 checkPresentExportWithContentIdentifierM borgrepo _ loc _ = prompt $ liftIO $ do
-	let p = proc "borg"
-		[ "list"
-		, "--format"
-		, "1"
-		, borgArchive borgrepo archivename
-		, fromRawFilePath archivefile
+	let p = proc "borg" $ toCommand
+		[ Param "list"
+		, Param "--format"
+		, Param "1"
+		, Param (borgArchive borgrepo archivename)
+		, File (fromRawFilePath archivefile)
 		]
 	-- borg list exits nonzero with an error message if an archive
 	-- no longer exists. But, the user can delete archives at any
@@ -280,11 +297,11 @@ checkPresentExportWithContentIdentifierM borgrepo _ loc _ = prompt $ liftIO $ do
 	(archivename, archivefile) = extractImportLocation loc
 	
 	checkrepoexists = do
-		let p = proc "borg"
-			[ "list"
-			, "--format"
-			, "1"
-			, borgrepo
+		let p = proc "borg" $ toCommand
+			[ Param "list"
+			, Param "--format"
+			, Param "1"
+			, Param borgrepo
 			]
 		(Nothing, Nothing, Nothing, pid) <- withNullHandle $ \nullh ->
 			createProcess $ p
@@ -301,10 +318,10 @@ retrieveExportWithContentIdentifierM borgrepo loc _ dest mkk _ = do
 		-- borgrepo could be relative, and borg has to be run
 		-- in the temp directory to get it to write there
 		absborgrepo <- fromRawFilePath <$> absPath (toRawFilePath borgrepo)
-		let p = proc "borg"
-			[ "extract"
-			, borgArchive absborgrepo archivename
-			, fromRawFilePath archivefile
+		let p = proc "borg" $ toCommand
+			[ Param "extract"
+			, Param (borgArchive absborgrepo archivename)
+			, File (fromRawFilePath archivefile)
 			]
 		(Nothing, Nothing, Nothing, pid) <- createProcess $ p
 			{ cwd = Just (fromRawFilePath othertmp) }

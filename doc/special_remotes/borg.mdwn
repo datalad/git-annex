@@ -14,6 +14,14 @@ remote:
 * `borgrepo` - The location of a borg repository, eg a path, or
   `user@host:path` for ssh access.
 
+* `subdir` - The subdirectory within the borg repository where git-annex
+  should look for annex object files. The default is to look through the
+  whole borg repository.
+
+  This is useful to avoid learning about annex objects in the borg
+  repository that belong to unrelated git-annex repositories. It can also
+  make syncing faster.
+
 ## setup example
 
 	# borg init --encryption=keyfile /path/to/borgrepo

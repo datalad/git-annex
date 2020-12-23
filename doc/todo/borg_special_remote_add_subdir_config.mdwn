@@ -1,12 +1,5 @@
 Sometimes a borg backup contains several git-annex repos. Then pointing
 git-annex at the whole thing will find objects not belonging to the current
-repo. To avoid this, add this option:
+repo. To avoid this, add subdir= config.
 
-* `subdir` - A subdirectory within the borg repository where git-annex
-  should look for annex object files. This can be the path to a git-annex
-  repository or perhaps a non-encrypted special remote, or a path that
-  contains several repositories. The default is to look through the
-  whole repository.
-
-  This is useful to avoid finding object files in the borg repository
-  that belong to unrelated git-annex repositories.
+[[done]] --[[Joey]]
