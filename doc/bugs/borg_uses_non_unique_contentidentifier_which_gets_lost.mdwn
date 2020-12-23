@@ -1,0 +1,27 @@
+borg uses a non-unique ContentIdentifier ("") for everything.
+I think this is why, it eventually gets lost from the sqlite database,
+preventing retrieval of content from the remote.
+
+Repositories affected by this problem can be fixed up by just:
+`rm -rf .git/annex/cidsdb`
+
+The ContentIdentifiers table has a
+"ContentIndentifiersCidRemoteIndex cid remote", and that's not just an
+index, it's a uniqueness constraint.
+
+And that makes sense generally, the point of a ContentIdentifier is that
+wherever a remote uses it, it identifies the same content.
+
+I think sqlite probably lets things be added
+that violate the constraint at first, but then later writes it removes
+the "non-unique" row. Which in this case associates the same cid with
+a different key.
+
+I'm thinking this was a mistaken optimisation. getContentIdentifierKeys
+is supposed to return a [Key] for a ContentIdentifier; there can be more
+than one and it contains code that assumes it will get back all of them.
+And if a remote uses a hash for generating ContentIdentifiers, two different
+Key can have the same content in edge cases.
+
+So, need to upgrade the database, removing this constraint from it.
+--[[Joey]]
