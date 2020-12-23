@@ -352,7 +352,9 @@ adjustExportImport' isexport isimport r rs = do
 				return UnVerified
 			-- In case a content identifier is somehow missing,
 			-- try this instead.
-			[] -> retrieveKeyFileFromExport dbv k af dest p
+			[] -> if isexport
+				then retrieveKeyFileFromExport dbv k af dest p
+				else giveup "no content identifier is recorded, unable to retrieve"
 	
 	-- appendonly remotes have a key/value store, so can use
 	-- the usual retrieveKeyFile, rather than an import/export
