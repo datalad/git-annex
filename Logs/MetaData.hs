@@ -103,7 +103,7 @@ addMetaData = addMetaData' metaDataLogFile
 
 addMetaData' :: (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> Annex ()
 addMetaData' getlogfile k metadata = 
-	addMetaDataClocked' getlogfile k metadata =<< liftIO currentVectorClock
+	addMetaDataClocked' getlogfile k metadata =<< currentVectorClock
 
 {- Reusing the same VectorClock when making changes to the metadata
  - of multiple keys is a nice optimisation. The same metadata lines

@@ -32,7 +32,7 @@ import Logs.File
 
 scheduleSet :: UUID -> [ScheduledActivity] -> Annex ()
 scheduleSet uuid@(UUID _) activities = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	Annex.Branch.change scheduleLog $
 		buildLogOld byteString 
 			. changeLog c uuid (encodeBS val)

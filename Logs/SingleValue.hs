@@ -33,6 +33,6 @@ getLog = newestValue <$$> readLog
 
 setLog :: (SingleValueSerializable v) => RawFilePath -> v -> Annex ()
 setLog f v = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	let ent = LogEntry c v
 	Annex.Branch.change f $ \_old -> buildLog (S.singleton ent)

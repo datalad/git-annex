@@ -25,7 +25,7 @@ newtype Fingerprint = Fingerprint String
 
 recordFingerprint :: Fingerprint -> UUID -> Annex ()
 recordFingerprint fp uuid = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	Annex.Branch.change multicastLog $
 		buildLogOld buildFindgerPrint
 			. changeLog c uuid fp

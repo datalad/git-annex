@@ -30,7 +30,7 @@ import qualified Data.List.NonEmpty as NonEmpty
 -- so ones that were recorded before are preserved.
 recordContentIdentifier :: RemoteStateHandle -> ContentIdentifier -> Key -> Annex ()
 recordContentIdentifier (RemoteStateHandle u) cid k = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.maybeChange (remoteContentIdentifierLogFile config k) $
 		addcid c . parseLog

@@ -92,7 +92,7 @@ getExport remoteuuid = nub . mapMaybe get . M.toList . simpleMap
 -- This is called before any changes are made to the remote.
 recordExportBeginning :: UUID -> Git.Ref -> Annex ()
 recordExportBeginning remoteuuid newtree = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	u <- getUUID
 	let ep = ExportParticipants { exportFrom = u, exportTo = remoteuuid }
 	old <- fromMaybe (Exported emptyTree [])
@@ -127,7 +127,7 @@ recordExportTreeish t =
 -- forward in lock-step.
 recordExportUnderway :: UUID -> ExportChange -> Annex ()
 recordExportUnderway remoteuuid ec = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	u <- getUUID
 	let ep = ExportParticipants { exportFrom = u, exportTo = remoteuuid }
 	let exported = Exported (newTreeish ec) []

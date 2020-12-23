@@ -670,6 +670,7 @@ Executable git-annex
     Annex.UUID
     Annex.Url
     Annex.VectorClock
+    Annex.VectorClock.Utility
     Annex.VariantFile
     Annex.Version
     Annex.View
@@ -1035,6 +1036,7 @@ Executable git-annex
     Types.TrustLevel
     Types.UUID
     Types.UrlContents
+    Types.VectorClock
     Types.View
     Types.WorkerPool
     Upgrade

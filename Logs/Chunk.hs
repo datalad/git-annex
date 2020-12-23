@@ -35,7 +35,7 @@ import qualified Data.Map as M
 
 chunksStored :: UUID -> Key -> ChunkMethod -> ChunkCount -> Annex ()
 chunksStored u k chunkmethod chunkcount = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.change (chunkLogFile config k) $
 		buildLog . changeMapLog c (u, chunkmethod) chunkcount . parseLog

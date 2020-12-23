@@ -38,7 +38,7 @@ lookupGroups u = (fromMaybe S.empty . M.lookup u) . groupsByUUID <$> groupMap
 groupChange :: UUID -> (S.Set Group -> S.Set Group) -> Annex ()
 groupChange uuid@(UUID _) modifier = do
 	curr <- lookupGroups uuid
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	Annex.Branch.change groupLog $
 		buildLogOld buildGroup . changeLog c uuid (modifier curr) . parseLogOld parseGroup
 	

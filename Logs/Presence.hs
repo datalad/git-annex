@@ -51,7 +51,7 @@ readLog = parseLog <$$> Annex.Branch.get
 {- Generates a new LogLine with the current time. -}
 logNow :: LogStatus -> LogInfo -> Annex LogLine
 logNow s i = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	return $ LogLine c s i
 
 {- Reads a log and returns only the info that is still in effect. -}

@@ -22,7 +22,7 @@ import Logs.Trust.Pure as X
 {- Changes the trust level for a uuid in the trustLog. -}
 trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid@(UUID _) level = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	Annex.Branch.change trustLog $
 		buildLogOld buildTrustLevel .
 			changeLog c uuid level .

@@ -26,7 +26,7 @@ type RemoteState = String
 
 setRemoteState :: RemoteStateHandle -> Key -> RemoteState -> Annex ()
 setRemoteState (RemoteStateHandle u) k s = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	config <- Annex.getGitConfig
 	Annex.Branch.change (remoteStateLogFile config k) $
 		buildRemoteState . changeLog c u s . parseRemoteState

@@ -27,7 +27,7 @@ data Activity
 
 recordActivity :: Activity -> UUID -> Annex ()
 recordActivity act uuid = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	Annex.Branch.change activityLog $
 		buildLogOld buildActivity
 			. changeLog c uuid (Right act)

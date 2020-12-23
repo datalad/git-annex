@@ -25,7 +25,7 @@ import Logs.Difference.Pure
 
 recordDifferences :: Differences -> UUID -> Annex ()
 recordDifferences ds@(Differences {}) uuid = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	Annex.Branch.change differenceLog $
 		buildLogOld byteString 
 			. changeLog c uuid (encodeBS $ showDifferences ds) 

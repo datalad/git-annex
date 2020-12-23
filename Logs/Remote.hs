@@ -32,7 +32,7 @@ import qualified Data.Map as M
 {- Adds or updates a remote's config in the log. -}
 configSet :: UUID -> RemoteConfig -> Annex ()
 configSet u cfg = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	Annex.Branch.change remoteLog $
 		buildRemoteConfigLog
 			. changeLog c u (removeSameasInherited cfg)

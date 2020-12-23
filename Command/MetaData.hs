@@ -74,7 +74,7 @@ optParser desc = MetaDataOptions
 seek :: MetaDataOptions -> CommandSeek
 seek o = case batchOption o of
 	NoBatch -> do
-		c <- liftIO currentVectorClock
+		c <- currentVectorClock
 		let ww = WarnUnmatchLsFiles
 		let seeker = AnnexedFileSeeker
 			{ startAction = start c o
@@ -188,7 +188,7 @@ startBatch (si, (i, (MetaData m))) = case i of
 			, keyOptions = Nothing
 			, batchOption = NoBatch
 			}
-		t <- liftIO currentVectorClock
+		t <- currentVectorClock
 		-- It would be bad if two batch mode changes used exactly
 		-- the same timestamp, since the order of adds and removals
 		-- of the same metadata value would then be indeterminate.

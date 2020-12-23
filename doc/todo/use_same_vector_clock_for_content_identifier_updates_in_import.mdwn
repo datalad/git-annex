@@ -11,3 +11,6 @@ As a bonus, since borg uses the same content identifiers for all keys
 (""), implementing this would make the content of the logs all identical,
 and so avoid any overhead entirely. Well.. perhaps that's my actual
 motivation. ;-) --[[Joey]]
+
+> [[done]], though reuseVectorClockWhile could be used in other places
+> perhaps. --[[Joey]]

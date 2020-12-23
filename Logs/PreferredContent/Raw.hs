@@ -30,7 +30,7 @@ requiredContentSet = setLog requiredContentLog
 
 setLog :: RawFilePath -> UUID -> PreferredContentExpression -> Annex ()
 setLog logfile uuid@(UUID _) val = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	Annex.Branch.change logfile $
 		buildLogOld buildPreferredContentExpression
 		. changeLog c uuid val
@@ -44,7 +44,7 @@ setLog _ NoUUID _ = error "unknown UUID; cannot modify"
 {- Changes the preferred content configuration of a group. -}
 groupPreferredContentSet :: Group -> PreferredContentExpression -> Annex ()
 groupPreferredContentSet g val = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	Annex.Branch.change groupPreferredContentLog $
 		buildGroupPreferredContent
 		. changeMapLog c g val 

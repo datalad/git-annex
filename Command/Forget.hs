@@ -35,7 +35,7 @@ seek = commandAction . start
 
 start :: ForgetOptions -> CommandStart
 start o = starting "forget" ai si $ do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	let basets = addTransition c ForgetGitHistory noTransitions
 	let ts = if dropDead o
 		then addTransition c ForgetDeadRemotes basets

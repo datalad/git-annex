@@ -31,7 +31,7 @@ import qualified Data.Attoparsec.ByteString.Lazy as A
 {- Records a description for a uuid in the log. -}
 describeUUID :: UUID -> UUIDDesc -> Annex ()
 describeUUID uuid desc = do
-	c <- liftIO currentVectorClock
+	c <- currentVectorClock
 	Annex.Branch.change uuidLog $
 		buildLogOld buildUUIDDesc . changeLog c uuid desc . parseUUIDLog
 

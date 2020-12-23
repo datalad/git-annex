@@ -72,6 +72,8 @@ import Types.IndexFiles
 import Types.CatFileHandles
 import Types.RemoteConfig
 import Types.TransferrerPool
+import Types.VectorClock
+import Annex.VectorClock.Utility
 import qualified Database.Keys.Handle as Keys
 import Utility.InodeCache
 import Utility.Url
@@ -121,6 +123,7 @@ data AnnexState = AnnexState
 	, fast :: Bool
 	, daemon :: Bool
 	, branchstate :: BranchState
+	, getvectorclock :: IO VectorClock
 	, repoqueue :: Maybe (Git.Queue.Queue Annex)
 	, catfilehandles :: CatFileHandles
 	, hashobjecthandle :: Maybe HashObjectHandle
@@ -172,6 +175,7 @@ newState c r = do
 	sc <- newTMVarIO False
 	kh <- Keys.newDbHandle
 	tp <- newTransferrerPool
+	vc <- startVectorClock
 	return $ AnnexState
 		{ repo = r
 		, repoadjustment = return
@@ -187,6 +191,7 @@ newState c r = do
 		, fast = False
 		, daemon = False
 		, branchstate = startBranchState
+		, getvectorclock = vc
 		, repoqueue = Nothing
 		, catfilehandles = catFileHandlesNonConcurrent
 		, hashobjecthandle = Nothing

@@ -38,6 +38,7 @@ import Annex.RemoteTrackingBranch
 import Annex.HashObject
 import Annex.Transfer
 import Annex.CheckIgnore
+import Annex.VectorClock
 import Command
 import Backend
 import Types.Key
@@ -342,8 +343,17 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		bracket CIDDb.openDb CIDDb.closeDb $ \db -> do
 			CIDDb.needsUpdateFromLog db
 				>>= maybe noop (CIDDb.updateFromLog db)
-			go False cidmap importing importablecontents db
+			(run (go False cidmap importing importablecontents db))
   where
+	-- When not importing content, reuse the same vector
+	-- clock for all state that's recorded. This can save
+	-- a little bit of disk space. Individual file downloads
+	-- while downloading take too long for this optimisation
+	-- to be safe to do.
+	run a
+		| importcontent = a
+		| otherwise = reuseVectorClockWhile a
+
 	go oldversion cidmap importing (ImportableContents l h) db = do
 		largematcher <- largeFilesMatcher
 		jobs <- forM l $ \i ->
