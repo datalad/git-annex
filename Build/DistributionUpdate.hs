@@ -6,7 +6,7 @@
  - from the autobuild).
  -
  - Builds standalone rpms from the standalone tarballs, and populates
- - a rpm package repository with them using the createrepo program.
+ - a rpm package repository with them using the createrepo_c program.
  -
  - Also gpg signs the files.
  -}
@@ -238,7 +238,7 @@ buildrpms topdir l = do
 				, File rpmrepo
 				]
 	void $ inRepo $ runBool [Param "annex", Param "get", File rpmrepo]
-	void $ liftIO $ boolSystem "createrepo" [File rpmrepo]
+	void $ liftIO $ boolSystem "createrepo_c" [File rpmrepo]
 	void $ inRepo $ runBool [Param "annex", Param "add", File rpmrepo]
   where
 	isstandalonetarball tararch f =
