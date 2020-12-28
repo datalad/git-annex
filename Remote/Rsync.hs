@@ -118,6 +118,7 @@ gen r u rc gc rs = do
 				else Nothing
 			, readonly = False
 			, appendonly = False
+			, untrustworthy = False
 			, availability = if islocal then LocallyAvailable else GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = return Nothing

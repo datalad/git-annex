@@ -133,6 +133,7 @@ gen r u rc gc rs = do
 		, readonly = False
 		-- content cannot be removed from a git-lfs repo
 		, appendonly = True
+		, untrustworthy = False
 		, mkUnavailable = return Nothing
 		, getInfo = gitRepoInfo (this c cst h)
 		, claimUrl = Nothing

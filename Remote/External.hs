@@ -144,6 +144,7 @@ gen r u rc gc rs
 			, gitconfig = gc
 			, readonly = False
 			, appendonly = False
+			, untrustworthy = False
 			, availability = avail
 			, remotetype = remote 
 				{ exportSupported = cheapexportsupported }

@@ -205,6 +205,7 @@ gen r u rc gc rs
 			, gitconfig = gc
 			, readonly = Git.repoIsHttp r
 			, appendonly = False
+			, untrustworthy = False
 			, availability = availabilityCalc r
 			, remotetype = remote
 			, mkUnavailable = unavailable r u rc gc rs

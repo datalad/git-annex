@@ -107,6 +107,7 @@ gen r u rc gc rs = do
 		, localpath = Nothing
 		, readonly = False
 		, appendonly = False
+		, untrustworthy = False
 		, availability = GloballyAvailable
 		, remotetype = remote
 		, mkUnavailable = return Nothing

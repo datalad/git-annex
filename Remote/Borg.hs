@@ -108,6 +108,7 @@ gen r u rc gc rs = do
 		, availability = if borgLocal borgrepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
 		, appendonly = False
+		, untrustworthy = True
 		, mkUnavailable = return Nothing
 		, getInfo = return [("repo", borgrepo)]
 		, claimUrl = Nothing

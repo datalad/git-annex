@@ -143,6 +143,13 @@ data RemoteA a = Remote
 	-- a Remote can allow writes but not have a way to delete content
 	-- from it.
 	, appendonly :: Bool
+	-- Set if a remote cannot be trusted to continue to contain the
+	-- contents of files stored there. Notably, most export/import
+	-- remotes are untrustworthy because they are not key/value stores.
+	-- Since this prevents the user from adjusting a remote's trust
+	-- level, it's often better not not set it and instead let the user
+	-- decide.
+	, untrustworthy :: Bool
 	-- a Remote can be globally available. (Ie, "in the cloud".)
 	, availability :: Availability
 	-- the type of the remote

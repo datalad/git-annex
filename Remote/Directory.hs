@@ -115,6 +115,7 @@ gen r u rc gc rs = do
 			, localpath = Just dir'
 			, readonly = False
 			, appendonly = False
+			, untrustworthy = False
 			, availability = LocallyAvailable
 			, remotetype = remote
 			, mkUnavailable = gen r u rc

@@ -88,6 +88,7 @@ gen r u rc gc rs = do
 		, getRepo = return r
 		, readonly = True
 		, appendonly = False
+		, untrustworthy = False
 		, availability = GloballyAvailable
 		, remotetype = remote
 		, mkUnavailable = return Nothing

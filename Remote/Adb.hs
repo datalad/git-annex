@@ -101,6 +101,7 @@ gen r u rc gc rs = do
 		, availability = LocallyAvailable
 		, readonly = False
 		, appendonly = False
+		, untrustworthy = False
 		, mkUnavailable = return Nothing
 		, getInfo = return
 			[ ("androidserial", fromAndroidSerial serial)

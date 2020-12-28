@@ -204,6 +204,16 @@ adjustExportImport' isexport isimport r rs = do
 		-- in confusing ways when there's an export
 		-- conflict (or an import conflict).
 		, checkPresentCheap = False
+		-- Export/import remotes can lose content stored on them in
+		-- many ways. This is not a problem with versioned
+		-- ones though, since they still allow accessing by Key.
+		-- And for thirdPartyPopulated, it depends on how the
+		-- content gets actually stored in the remote, so
+		-- is not overriddden here.
+		, untrustworthy =
+			if versioned || thirdPartyPopulated (remotetype r)
+				then untrustworthy r
+				else False
 		-- git-annex testremote cannot be used to test
 		-- import/export since it stores keys.
 		, mkUnavailable = return Nothing

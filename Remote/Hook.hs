@@ -80,6 +80,7 @@ gen r u rc gc rs = do
 			, gitconfig = gc
 			, readonly = False
 			, appendonly = False
+			, untrustworthy = False
 			, availability = GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = gen r u rc

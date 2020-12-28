@@ -153,6 +153,7 @@ gen' r u c gc rs = do
 		, gitconfig = gc
 		, readonly = Git.repoIsHttp r
 		, appendonly = False
+		, untrustworthy = False
 		, availability = availabilityCalc r
 		, remotetype = remote
 		, mkUnavailable = return Nothing

@@ -95,6 +95,7 @@ gen r u rc gc rs = do
 		, availability = if bupLocal buprepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
 		, appendonly = False
+		, untrustworthy = False
 		, mkUnavailable = return Nothing
 		, getInfo = return [("repo", buprepo)]
 		, claimUrl = Nothing

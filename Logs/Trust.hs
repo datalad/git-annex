@@ -64,22 +64,15 @@ trustMap = maybe trustMapLoad return =<< Annex.getState Annex.trustmap
 {- Loads the map, updating the cache, -}
 trustMapLoad :: Annex TrustMap
 trustMapLoad = do
-	overrides <- Annex.getState Annex.forcetrust
+	forceoverrides <- Annex.getState Annex.forcetrust
 	l <- remoteList
-	-- Export/import remotes are normally untrusted, because they are
-	-- not key/value stores and there are many ways that content stored
-	-- on them can be lost. An exception is ones with versionedExport set.
-	let isexportimport r = Types.Remote.isExportSupported r
-		<||> Types.Remote.isImportSupported r
-	let isuntrustworthy r = isexportimport r
-		<&&> pure (not (Types.Remote.versionedExport (Types.Remote.exportActions r)))
-	untrustworthy <- filterM isuntrustworthy l
-	let trustoverrides = M.fromList $
-		map (\r -> (Types.Remote.uuid r, UnTrusted)) untrustworthy
+	let untrustoverrides = M.fromList $
+		map (\r -> (Types.Remote.uuid r, UnTrusted))
+		(filter Types.Remote.untrustworthy l)
 	logged <- trustMapRaw
 	let configured = M.fromList $ mapMaybe configuredtrust l
-	let m = M.unionWith min trustoverrides $
-		M.union overrides $
+	let m = M.unionWith min untrustoverrides $
+		M.union forceoverrides $
 		M.union configured logged
 	Annex.changeState $ \s -> s { Annex.trustmap = Just m }
 	return m
