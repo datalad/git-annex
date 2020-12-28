@@ -165,7 +165,7 @@ adjustExportImport' isexport isimport r rs = do
 						then giveup "dropping content from this remote is not supported because it is configured with importtree=yes"
 						else removeKey r k
 				else removeKey r k
-		, lockContent = if versioned || not mergeable
+		, lockContent = if versioned
 			then lockContent r
 			else Nothing
 		, retrieveKeyFile = \k af dest p ->
