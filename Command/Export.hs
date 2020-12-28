@@ -362,10 +362,10 @@ cleanupUnexport r db eks loc = do
 			removeExportedLocation db (asKey ek) loc
 		flushDbQueue db
 
-	-- An appendonly remote can support removeExportLocation to remove
-	-- the file from the exported tree, but still retain the content
-	-- and allow retrieving it.
-	unless (appendonly r) $ do
+	-- An versionedExport remote supports removeExportLocation to remove
+	-- the file from the exported tree, but still retains the content
+	-- and allows retrieving it.
+	unless (versionedExport (exportActions r)) $ do
 		remaininglocs <- liftIO $ 
 			concat <$> forM eks (\ek -> getExportedLocation db (asKey ek))
 		when (null remaininglocs) $

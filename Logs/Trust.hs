@@ -1,6 +1,6 @@
 {- git-annex trust log
  -
- - Copyright 2010-2012 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2020 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -66,18 +66,19 @@ trustMapLoad :: Annex TrustMap
 trustMapLoad = do
 	overrides <- Annex.getState Annex.forcetrust
 	l <- remoteList
-	-- Export/import remotes are not trusted, since they are not
-	-- key/value stores. (Unless they are appendonly remotes.)
+	-- Export/import remotes are normally untrusted, because they are
+	-- not key/value stores and there are many ways that content stored
+	-- on them can be lost. An exception is ones with versionedExport set.
 	let isexportimport r = Types.Remote.isExportSupported r
 		<||> Types.Remote.isImportSupported r
-	let untrustworthy r = pure (not (Types.Remote.appendonly r)) 
-		<&&> isexportimport r
-	exports <- filterM untrustworthy l
-	let exportoverrides = M.fromList $
-		map (\r -> (Types.Remote.uuid r, UnTrusted)) exports
+	let isuntrustworthy r = isexportimport r
+		<&&> pure (not (Types.Remote.versionedExport (Types.Remote.exportActions r)))
+	untrustworthy <- filterM isuntrustworthy l
+	let trustoverrides = M.fromList $
+		map (\r -> (Types.Remote.uuid r, UnTrusted)) untrustworthy
 	logged <- trustMapRaw
 	let configured = M.fromList $ mapMaybe configuredtrust l
-	let m = M.unionWith min exportoverrides $
+	let m = M.unionWith min trustoverrides $
 		M.union overrides $
 		M.union configured logged
 	Annex.changeState $ \s -> s { Annex.trustmap = Just m }

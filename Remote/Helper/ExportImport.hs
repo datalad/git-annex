@@ -39,6 +39,7 @@ instance HasExportUnsupported (ExportActions Annex) where
 		, retrieveExport = nope
 		, checkPresentExport = \_ _ -> return False
 		, removeExport = nope
+		, versionedExport = False
 		, removeExportDirectory = nope
 		, renameExport = \_ _ _ -> return Nothing
 		}
@@ -128,7 +129,8 @@ adjustExportImport' isexport isimport r rs = do
 	dbv <- prepdbv
 	ciddbv <- prepciddb
 	let normal = not isexport && not isimport
-	let iskeyvaluestore = normal || appendonly r
+	let versioned = versionedExport (exportActions r)
+	let iskeyvaluestore = normal || versioned
 	return $ r
 		{ exportActions = if isexport
 			then if isimport
@@ -170,16 +172,16 @@ adjustExportImport' isexport isimport r rs = do
 			else Nothing
 		, retrieveKeyFile = \k af dest p ->
 			if isimport
-				then supportappendonlyretrieve k af dest p $
+				then supportversionedretrieve k af dest p $
 					retrieveKeyFileFromImport dbv ciddbv k af dest p
 				else if isexport
-					then supportappendonlyretrieve k af dest p $
+					then supportversionedretrieve k af dest p $
 						retrieveKeyFileFromExport dbv k af dest p
 					else retrieveKeyFile r k af dest p
 		, retrieveKeyFileCheap = if iskeyvaluestore
 			then retrieveKeyFileCheap r
 			else Nothing
-		, checkPresent = \k -> if appendonly r
+		, checkPresent = \k -> if versioned
 			then checkPresent r k
 			else if isimport
 				then anyM (checkPresentImport ciddbv k)
@@ -356,11 +358,11 @@ adjustExportImport' isexport isimport r rs = do
 				then retrieveKeyFileFromExport dbv k af dest p
 				else giveup "no content identifier is recorded, unable to retrieve"
 	
-	-- appendonly remotes have a key/value store, so can use
+	-- versionedExport remotes have a key/value store, so can use
 	-- the usual retrieveKeyFile, rather than an import/export
 	-- variant. However, fall back to that if retrieveKeyFile fails.
-	supportappendonlyretrieve k af dest p a
-		| appendonly r =
+	supportversionedretrieve k af dest p a
+		| versionedExport (exportActions r) =
 			retrieveKeyFile r k af dest p
 				`catchNonAsync` const a
 		| otherwise = a

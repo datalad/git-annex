@@ -76,6 +76,7 @@ gen r u rc gc rs = do
 			{ storeExport = storeExportM serial adir
 			, retrieveExport = retrieveExportM serial adir
 			, removeExport = removeExportM serial adir
+			, versionedExport = False
 			, checkPresentExport = checkPresentExportM this serial adir
 			, removeExportDirectory = Just $ removeExportDirectoryM serial adir
 			, renameExport = renameExportM serial adir

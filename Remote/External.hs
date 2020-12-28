@@ -93,6 +93,7 @@ gen r u rc gc rs
 				{ storeExport = storeExportM external
 				, retrieveExport = retrieveExportM external
 				, removeExport = removeExportM external
+				, versionedExport = False
 				, checkPresentExport = checkPresentExportM external
 				, removeExportDirectory = Just $ removeExportDirectoryM external
 				, renameExport = renameExportM external

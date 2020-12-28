@@ -141,9 +141,7 @@ data RemoteA a = Remote
 	-- a Remote can be known to be readonly
 	, readonly :: Bool
 	-- a Remote can allow writes but not have a way to delete content
-	-- from it. Note that an export remote that supports removeExport
-	-- to remove a file from the exported tree, but still retains the
-	-- content in accessible form should set this to True.
+	-- from it.
 	, appendonly :: Bool
 	-- a Remote can be globally available. (Ie, "in the cloud".)
 	, availability :: Availability
@@ -251,6 +249,10 @@ data ExportActions a = ExportActions
 	-- Can throw exception if unable to access remote, or if remote
 	-- refuses to remove the content.
 	, removeExport :: Key -> ExportLocation -> a ()
+	-- Set when the content of a Key stored in the remote to an
+	-- ExportLocation and then removed with removeExport remains
+	-- accessible to retrieveKeyFile and checkPresent.
+	, versionedExport :: Bool
 	-- Removes an exported directory. Typically the directory will be
 	-- empty, but it could possibly contain files or other directories,
 	-- and it's ok to delete those (but not required to). 
@@ -263,7 +265,9 @@ data ExportActions a = ExportActions
 	-- the remote refuses to let the directory be removed.
 	, removeExportDirectory :: Maybe (ExportDirectory -> a ())
 	-- Checks if anything is exported to the remote at the specified
-	-- ExportLocation.
+	-- ExportLocation. It may check the size or other characteristics
+	-- of the Key, but does not need to guarantee that the content on
+	-- the remote is the same as the Key's content.
 	-- Throws an exception if the remote cannot be accessed.
 	, checkPresentExport :: Key -> ExportLocation -> a Bool
 	-- Renames an already exported file.

@@ -210,6 +210,7 @@ gen r u rc gc rs = do
 				{ storeExport = storeExportS3 hdl this rs info magic
 				, retrieveExport = retrieveExportS3 hdl this info
 				, removeExport = removeExportS3 hdl this rs info
+				, versionedExport = versioning info
 				, checkPresentExport = checkPresentExportS3 hdl this info
 				-- S3 does not have directories.
 				, removeExportDirectory = Nothing
@@ -232,7 +233,7 @@ gen r u rc gc rs = do
 			, gitconfig = gc
 			, localpath = Nothing
 			, readonly = False
-			, appendonly = versioning info
+			, appendonly = False
 			, availability = GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = gen r u (M.insert hostField (Proposed "!dne!") rc) gc rs

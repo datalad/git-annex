@@ -88,6 +88,7 @@ gen r u rc gc rs = do
 				{ storeExport = storeExportM dir
 				, retrieveExport = retrieveExportM dir
 				, removeExport = removeExportM dir
+				, versionedExport = False
 				, checkPresentExport = checkPresentExportM dir
 				-- Not needed because removeExportLocation
 				-- auto-removes empty directories.

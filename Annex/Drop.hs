@@ -31,7 +31,8 @@ type Reason = String
  -
  - Skips trying to drop from remotes that are appendonly, since those drops
  - would presumably fail. Also skips dropping from exporttree/importtree remotes,
- - which don't allow dropping individual keys.
+ - which don't allow dropping individual keys, and from thirdPartyPopulated
+ - remotes.
  -
  - The UUIDs are ones where the content is believed to be present.
  - The Remote list can include other remotes that do not have the content;
