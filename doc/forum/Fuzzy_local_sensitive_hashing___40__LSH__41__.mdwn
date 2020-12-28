@@ -2,6 +2,8 @@ For some file types, e.g. images and sound, I would like to also add some local 
 
 Ideally, I would want to add such meta data to Git-Annex. I'm not sure if this should be a backend ([[backends]]) or kept separate from it (as there will be collisions, by design).
 
+I also want fast lookups for some specific hash. I'm not sure if the Git-Annex metadata allow for that? A Git-Annex backend naturally has this feature, but then how would it handle collisions? I would want that this LSH backend just links to a list of matching files, i.e. symlinks to the real files (via SHA backend or so).
+
 Is anything like that already supported?
 
 If not, would it be possible to add such support to Git-Annex? How?
