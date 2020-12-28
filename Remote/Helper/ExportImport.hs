@@ -144,13 +144,13 @@ adjustExportImport' isexport isimport r rs = do
 			-- when another repository has already stored the
 			-- key, and the local repository does not know
 			-- about it. To avoid unnecessary costs, don't do it.
-			if mergeable
-				then if isexport
+			if thirdpartypopulated
+				then giveup "remote is not populated by git-annex"
+				else if isexport
 					then giveup "remote is configured with exporttree=yes; use `git-annex export` to store content on it"
 					else if isimport
 						then giveup "remote is configured with importtree=yes and without exporttree=yes; cannot modify content stored on it"
 						else storeKey r k af p
-			else storeKey r k af p
 		, removeKey = \k -> 
 			-- Removing a key from an export would need to
 			-- change the tree in the export log to not include
@@ -158,13 +158,13 @@ adjustExportImport' isexport isimport r rs = do
 			-- files would not be dealt with correctly.
 			-- There does not seem to be a good use case for
 			-- removing a key from an export in any case.
-			if mergeable
-				then if isexport
+			if thirdpartypopulated
+				then removeThirdPartyPopulated k dbv ciddbv
+				else if isexport
 					then giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
 					else if isimport
 						then giveup "dropping content from this remote is not supported because it is configured with importtree=yes"
 						else removeKey r k
-				else removeKey r k
 		, lockContent = if versioned
 			then lockContent r
 			else Nothing
@@ -183,7 +183,7 @@ adjustExportImport' isexport isimport r rs = do
 			then checkPresent r k
 			else if isimport
 				then anyM (checkPresentImport ciddbv k)
-					=<< getexportlocs dbv k
+					=<< getanyexportlocs dbv k
 				else if isexport
 					-- Check if any of the files a key
 					-- was exported to are present. This 
@@ -195,7 +195,7 @@ adjustExportImport' isexport isimport r rs = do
 					-- problems are made untrusted,
 					-- so it's not worried about here.
 					then anyM (checkPresentExport (exportActions r) k)
-						=<< getexportlocs dbv k
+						=<< getanyexportlocs dbv k
 					else checkPresent r k
 		-- checkPresent from an export is more expensive
 		-- than otherwise, so not cheap. Also, this
@@ -219,22 +219,18 @@ adjustExportImport' isexport isimport r rs = do
 		, mkUnavailable = return Nothing
 		, getInfo = do
 			is <- getInfo r
-			is' <- if isexport && not mergeable
+			is' <- if isexport && not thirdpartypopulated
 				then do
 					ts <- map fromRef . exportedTreeishes
 						<$> getExport (uuid r)
 					return (is++[("exporttree", "yes"), ("exportedtree", unwords ts)])
 				else return is
-			return $ if isimport && not mergeable
+			return $ if isimport && not thirdpartypopulated
 				then (is'++[("importtree", "yes")])
 				else is'
 		}
   where
-	-- When a remote is populated by a third party, a tree can be
-	-- imported from it, but that tree is not mergeable into the
-	-- user's own git branch. But annex objects found in the tree
-	-- (identified by importKey) can still be retrieved from the remote.
-	mergeable = thirdPartyPopulated (remotetype r)
+	thirdpartypopulated = thirdPartyPopulated (remotetype r)
 
 	-- exportActions adjusted to use the equivilant import actions,
 	-- which take ContentIdentifiers into account.
@@ -321,18 +317,23 @@ adjustExportImport' isexport isimport r rs = do
 				liftIO $ atomically $
 					writeTVar exportinconflict True
 		
-	getexportlocs dbv k = do
+	getanyexportlocs dbv k = do
 		db <- getexportdb dbv
 		liftIO $ Export.getExportTree db k
 	
 	getfirstexportloc dbv k = do
+		getexportlocs dbv k >>= \case
+			[] -> giveup "unknown export location"
+			(l:_) -> return l
+	
+	getexportlocs dbv k = do
 		db <- getexportdb dbv
 		liftIO $ Export.getExportTree db k >>= \case
 			[] -> ifM (atomically $ readTVar $ getexportinconflict dbv)
 				( giveup "unknown export location, likely due to the export conflict"
-				, giveup "unknown export location"
+				, return []
 				)
-			(l:_) -> return l
+			ls -> return ls
 		
 	getkeycids ciddbv k = do
 		db <- getciddb ciddbv
@@ -376,3 +377,9 @@ adjustExportImport' isexport isimport r rs = do
 			(importActions r)
 			k loc 
 			=<< getkeycids ciddbv k
+	
+	removeThirdPartyPopulated k dbv ciddbv = do
+		locs <- getexportlocs dbv k
+		cids <- getkeycids ciddbv k
+		forM_ locs $ \loc ->
+			removeExportWithContentIdentifier (importActions r) k loc cids
