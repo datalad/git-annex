@@ -1,0 +1,7 @@
+For some file types, e.g. images and sound, I would like to also add some local sensitive hash (LSH), and be able to find duplicates that way. E.g. that would allow me to find duplicate images where the image metadata was changed, or maybe the quality was changed, etc.
+
+Ideally, I would want to add such meta data to Git-Annex. I'm not sure if this should be a backend ([[backends]]) or kept separate from it (as there will be collisions, by design).
+
+Is anything like that already supported?
+
+If not, would it be possible to add such support to Git-Annex? How?
