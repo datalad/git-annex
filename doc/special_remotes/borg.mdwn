@@ -2,9 +2,9 @@ This special remote type accesses annexed files stored in a
 [borg](https://www.borgbackup.org/) repository.
 
 Unlike most special remotes, git-annex cannot be used to store annexed
-files in this special remote. You store files by using borg as usual, to
-back up the git-annex repository. Then `git-annex sync` will learn about
-the annexed files that are stored in the borg repository.
+files in this special remote. You store files by using `borg create` to
+store the git-annex repository in borg. Then `git-annex sync` will learn
+about the annexed files that are stored in the borg repository.
 
 ## setup example
 
@@ -32,7 +32,7 @@ remote:
 * `appendonly` - You could use borg to delete content from the
   repository at any time, so this defaults to "no", which 
   makes the remote be untrusted. If you set to "yes", you must
-  take care to avoid using commands like `borg delete` and
+  take care to avoid using commands like `borg delete`,
   `borg prune` with the borg repository.
 
 ## avoid archive name reuse
@@ -40,4 +40,5 @@ remote:
 Borg repositories contain archives, and git-annex assumes that, once
 created, the content of an archive does not change. So if you delete an
 archive and then create a new archive with the same name, it will confuse
-git-annex about what is contained in the borg repository.
+git-annex about what is contained in the borg repository. So will using
+`borg recreate` to remove files from an archive.
