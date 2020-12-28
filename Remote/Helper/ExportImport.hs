@@ -159,7 +159,7 @@ adjustExportImport' isexport isimport r rs = do
 			-- There does not seem to be a good use case for
 			-- removing a key from an export in any case.
 			if thirdpartypopulated
-				then removeThirdPartyPopulated k dbv ciddbv
+				then giveup "dropping content from this remote is not supported"
 				else if isexport
 					then giveup "dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove"
 					else if isimport
@@ -377,9 +377,3 @@ adjustExportImport' isexport isimport r rs = do
 			(importActions r)
 			k loc 
 			=<< getkeycids ciddbv k
-	
-	removeThirdPartyPopulated k dbv ciddbv = do
-		locs <- getexportlocs dbv k
-		cids <- getkeycids ciddbv k
-		forM_ locs $ \loc ->
-			removeExportWithContentIdentifier (importActions r) k loc cids

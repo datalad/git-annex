@@ -98,7 +98,7 @@ gen r u rc gc rs = do
 			-- actions will never be used.
 			, storeExportWithContentIdentifier = storeExportWithContentIdentifier importUnsupported
 			, removeExportDirectoryWhenEmpty = removeExportDirectoryWhenEmpty importUnsupported
-			, removeExportWithContentIdentifier = removeExportWithContentIdentifierM borgrepo
+			, removeExportWithContentIdentifier = removeExportWithContentIdentifier importUnsupported
 			}
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
@@ -343,16 +343,3 @@ retrieveExportWithContentIdentifierM borgrepo loc _ dest mkk _ = do
 	mkk
   where
 	(archivename, archivefile) = extractImportLocation loc
-
-removeExportWithContentIdentifierM :: BorgRepo -> Key -> ImportLocation -> [ContentIdentifier] -> Annex ()
-removeExportWithContentIdentifierM borgrepo _ loc _ = do
-	ok <- liftIO $ boolSystem "borg"
-		[ Param "recreate"
-		, Param (borgArchive borgrepo archivename)
-		, Param "--exclude"
-		, File (fromRawFilePath archivefile)
-		]
-	unless ok $
-		giveup "borg failed to remove the file"
-  where
-	(archivename, archivefile) = extractImportLocation loc	
