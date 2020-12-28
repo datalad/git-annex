@@ -1,0 +1,52 @@
+[Borg](https://www.borgbackup.org/) is a deduplicating archiver
+with compression and encryption. It can be used with git-annex, as an
+unusual kind of special remote. Since borg can efficiently store old
+versions of files, storing them in borg, rather than the git-annex
+repository can free up disk space.
+
+git-annex is not able to store files in borg itself. Instead the way this
+works is you use borg to store your git-annex repository, and then
+`git-annex sync` scans the borg repository to find out what annexed files are
+stored in it. And when needed, git-annex can retrieve annexed files from
+the borg repository.
+
+Let's set that up. Run this from the top directory of your git-annex repository:
+
+	# borg init --encryption=keyfile ../borgrepo
+	# git annex initremote borg type=borg borgrepo=../borgrepo
+	# borg create ../borgrepo `pwd`::{now}
+	# git annex sync borg
+
+Now git-annex knows that all the files in the repository have been stored
+in borg. But when you try to drop a file, you'll find that
+git-annex does not trust the borg repository.
+
+	drop file (unsafe) 
+	  Could only verify the existence of 0 out of 1 necessary copies
+	
+	  Also these untrusted repositories may contain the file:
+	  	ca863c47-9ded-4dd0-bd7d-9b65e5624171 -- [borg]
+
+Why is this? Well, you could use `borg delete` or `borg prune` to delete
+the content of the file from the borg repository at any time, so git-annex
+defaults to not trusting it. This is fine when you're using borg to take
+backups, and need to delete old borg archives to free up space on the
+backup drive. And it can be useful to use git-annex with such borg backups.
+But our goal is instead to move old versions of files to borg. So, we need
+to decide not to delete things from the borg repository ourselves, and tell
+git-annex that we will only use borg to append to the borg repository.
+
+	# git annex enableremote borg appendonly=yes
+
+Now when you use git-annex to drop files, git-annex will treat the borg
+repository as [[a copy|copies]]. Finally, we can move all the old versions
+of files to the borg repository.
+
+	# git annex unused
+	# git annex drop --unused
+
+You can continue running `borg create` and `git-annex sync` as your files
+changes to store them in borg and let git-annex know what's stored there.
+
+See [[special_remotes/borg]] for more details about using borg as a special
+remote.
