@@ -50,6 +50,8 @@ remote = RemoteType
 			(FieldDesc "(required) borg repository to use")
 		, optionalStringParser subdirField
 			(FieldDesc "limit to a subdirectory of the borg repository")
+		, yesNoParser appendonlyField (Just False)
+			(FieldDesc "you will not use borg to delete from the repository")
 		]
 	, setup = borgSetup
 	, exportSupported = exportUnsupported
@@ -62,6 +64,9 @@ borgrepoField = Accepted "borgrepo"
 
 subdirField :: RemoteConfigField
 subdirField = Accepted "subdir"
+
+appendonlyField :: RemoteConfigField
+appendonlyField = Accepted "appendonly"
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
@@ -108,7 +113,11 @@ gen r u rc gc rs = do
 		, availability = if borgLocal borgrepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
 		, appendonly = False
-		, untrustworthy = True
+		-- When the user sets the appendonly field, they are
+		-- promising not to delete content out from under git-annex
+		-- using borg, so the remote is not untrustworthy.
+		, untrustworthy = maybe True not $
+			getRemoteConfigValue appendonlyField c
 		, mkUnavailable = return Nothing
 		, getInfo = return [("repo", borgrepo)]
 		, claimUrl = Nothing
