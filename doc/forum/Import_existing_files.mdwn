@@ -1,0 +1,13 @@
+I have not used git-annex before but I wonder whether this is for me.
+
+I have some big existing directories, e.g. with family pictures (several 100 GBs), e.g. in `~/Pictures`. I already have multiple copies of this pictures directory on multiple medias (other (remote) servers, hard drives, some DVDs, etc).
+
+I wonder about the recommended workflow now. In the documentation, it is explained how to create a new Git Annex Repo, where I would copy over the data. But I don't want to copy over the data. I want to keep them in `~/Pictures`, and also make use of other existing copies (I cannot even modify some of them anymore, such as my readonly DVDs).
+
+I thought that Git-Annex would just help me keep track of multiple copies. How would I import such a directory?
+
+I read briefly about Git Worktree, and I wonder whether that is supposed to be for this use case?
+
+Or should I create the new Git Annex Repo directly in `~/Pictures`? I.e. I would do `cd ~/Pictures; git init; git annex init`? How would I now add the other copies of `Pictures`? How would I deal with readonly copies of `Pictures` like DVDs?
+
+I read [[how it works]] and [[workflow]] but this does not really answers my questions.
