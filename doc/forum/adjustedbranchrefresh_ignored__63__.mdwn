@@ -1,0 +1,50 @@
+In some occasions `annex.adjustedbranchrefresh` is ignored when `git annex sync` is run in a branch created with `adjust --unlock-present`.
+
+If `annex.adjustedbranchrefresh` is set to 1, one would expect git-annex to automatically adjust the branch once a file has been `git annex add`-ed or the repository is `git annex sync`-ed. However this does not happen and a manual `git annex adjust --unlock-present` is required.
+
+Is this a bug or am I misunderstanding how `annex.adjustedbranchrefresh` is supposed to work?
+
+The following script reproduces this bug.
+
+```
+#!/bin/bash
+
+set -eux
+
+rm -Rvf /tmp/an-repo.git && mkdir /tmp/an-repo.git && cd /tmp/an-repo.git
+git init --bare
+n=$(date +%s) ; mkdir /tmp/ga-$n && cd /tmp/ga-$n
+git clone --no-local --no-hardlinks /tmp/an-repo.git
+cd an-repo/
+
+git config user.email "email@example.com" ; git config user.name "Name Name"
+git config annex.thin true
+git config annex.adjustedbranchrefresh 1
+git config remote.origin.annex-ignore true
+
+# 8.20201117 is the version in the standalone tarball of 8.20201127
+~/Applications/git-annex/8.20201117-ga314537cd/runshell bash -c '
+git annex init foobar
+
+echo "aaaa" > a && echo "bbbb" > b
+git annex add a b
+git annex sync
+
+git annex adjust --unlock-present
+git annex sync
+
+echo "cccc" > c && echo "dddd" > d
+git annex add c d
+
+echo "## before sync"
+stat -c "%n: %F" a b c d
+
+git annex sync
+echo "## after sync"
+stat -c "%n: %F" a b c d # should show four regular files, but shows two files and two symlinks
+
+git annex sync --content;
+echo "## after sync --content"
+stat -c "%n: %F" a b c d # ibid
+'
+```
