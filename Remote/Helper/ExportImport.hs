@@ -128,9 +128,7 @@ adjustExportImport' :: Bool -> Bool -> Remote -> RemoteStateHandle -> Annex Remo
 adjustExportImport' isexport isimport r rs = do
 	dbv <- prepdbv
 	ciddbv <- prepciddb
-	let normal = not isexport && not isimport
 	let versioned = versionedExport (exportActions r)
-	let iskeyvaluestore = normal || versioned
 	return $ r
 		{ exportActions = if isexport
 			then if isimport
@@ -167,7 +165,7 @@ adjustExportImport' isexport isimport r rs = do
 						then giveup "dropping content from this remote is not supported because it is configured with importtree=yes"
 						else removeKey r k
 				else removeKey r k
-		, lockContent = if iskeyvaluestore || not mergeable
+		, lockContent = if versioned || not mergeable
 			then lockContent r
 			else Nothing
 		, retrieveKeyFile = \k af dest p ->
@@ -178,7 +176,7 @@ adjustExportImport' isexport isimport r rs = do
 					then supportversionedretrieve k af dest p $
 						retrieveKeyFileFromExport dbv k af dest p
 					else retrieveKeyFile r k af dest p
-		, retrieveKeyFileCheap = if iskeyvaluestore
+		, retrieveKeyFileCheap = if versioned
 			then retrieveKeyFileCheap r
 			else Nothing
 		, checkPresent = \k -> if versioned
@@ -205,14 +203,10 @@ adjustExportImport' isexport isimport r rs = do
 		-- silently skip non-present files from behaving
 		-- in confusing ways when there's an export
 		-- conflict (or an import conflict).
-		, checkPresentCheap = if normal
-			then checkPresentCheap r
-			else False
+		, checkPresentCheap = False
 		-- git-annex testremote cannot be used to test
 		-- import/export since it stores keys.
-		, mkUnavailable = if normal
-			then mkUnavailable r
-			else return Nothing
+		, mkUnavailable = return Nothing
 		, getInfo = do
 			is <- getInfo r
 			is' <- if isexport && not mergeable
