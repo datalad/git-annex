@@ -10,4 +10,6 @@ I read briefly about Git Worktree, and I wonder whether that is supposed to be f
 
 Or should I create the new Git Annex Repo directly in `~/Pictures`? I.e. I would do `cd ~/Pictures; git init; git annex init`? How would I now add the other copies of `Pictures`? How would I deal with readonly copies of `Pictures` like DVDs?
 
+Also, I don't just want to store the pictures but also other stuff (e.g. `~/Music`). I'm not sure if I should create separate repos for that, or whether it makes more sense to keep them all in one big repo?
+
 I read [[how it works]] and [[workflow]] but this does not really answers my questions.
