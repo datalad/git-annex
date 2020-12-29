@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2020-12-29T16:49:52Z"
+ content="""
+I later removed `USE_SYSTEM_LIBS` and made it skip
+`@loader_path` as it was already skipping `@executable_path`.
+
+Looks like the OSX build is succeeding with building and using the
+app. I suppose this can probably be closed, although we don't know how
+portable that app might be to systems where the libraries this causes it to
+skip are at other versions than it needs.
+"""]]
