@@ -27,3 +27,5 @@ index 584565648..d8c4bc4c9 100644
 
 [[!meta author=jwodder]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] before this was filed, but only pushed later. --[[Joey]]
