@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2020-12-29T23:30:46Z"
+ content="""
+Hi, <br>
+I recommend you to move `~/Pictures` inside a new directory, so that it's at `~/annex/pictures/Pictures`, then initialize the annex `~/annex/pictures` (e.g. `cd ~/annex/pictures; git init; git annex init; git annex add .; git annex sync`). <br>
+For copies that are writable (e.g. external hdd), you should clone that annex onto it, beside the existing data. Then you can use `git annex reinject --known ../existing-Pictures/*.jpg` (unfortunately `git annex reinject` doesn't work recursively) to move them inside the annex. If `git annex reinject` leaves any files in `../existing-Pictures/`, these files where/are not part of the original `~/Pictures` and (because they are unknown) are not copied into the annex.<br>
+You can abuse directory special remotes to track copies on read-only media. E.g. `git annex initremote DVD-01 type=directory encryption=none importtree=yes directory=/mnt/DVD-26/`. Then you can import the DVD to a dummy branch, without copying the content: `git annex import --no-content --from=DVD-01 dummy-DVD-01` This will still update the location log of files in the annex that also are on the DVD so git annex now knows that there are copies of whatever files on the DVD.<br>
+IMHO it's a good idea to create separate repos as adding to many files to a single repo can slow down git-annex.<br>
+You might also want to run `git annex config --set annex.dotfiles true` before adding any files or else dotfiles will be added to git directly.
+
+"""]]
