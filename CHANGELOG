@@ -1,4 +1,4 @@
-git-annex (8.20201128) UNRELEASED; urgency=medium
+git-annex (8.20201129) upstream; urgency=medium
 
   * New borg special remote. This is a new kind of remote, that examines
     borg backups of git-annex repositories, learns what files have been
@@ -36,8 +36,9 @@ git-annex (8.20201128) UNRELEASED; urgency=medium
     for portability.)
   * Fix a bug that could prevent getting files from an importtree=yes
     remote, because the imported tree was allowed to be garbage collected.
+  * stack.yaml: Updated to lts-16.27.
 
- -- Joey Hess <id@joeyh.name>  Mon, 30 Nov 2020 12:55:49 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 29 Dec 2020 12:52:58 -0400
 
 git-annex (8.20201127) upstream; urgency=medium
 
