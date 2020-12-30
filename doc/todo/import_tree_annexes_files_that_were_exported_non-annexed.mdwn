@@ -1,0 +1,13 @@
+If a tree containing a non-annexed file (checked directly into git) is exported,
+and then an import is done from the remote, the new tree will have that
+file annexed, and so merging it converts to annexed (there is no merge
+conflict). 
+
+If the user is using annex.largefiles to configure or list
+the non-annexed files, they'll be ok, but otherwise they'll be in for some
+pain.
+ 
+The importer could check for each file, if there's a corresponding file in
+the branch it's generating the import for, if that file is annexed.
+This corresponds to how git-annex add (and the smudge filter) handles these
+files. But this might be slow when importing a large tree of files.

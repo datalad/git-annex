@@ -1,69 +1,7 @@
-When `git annex export treeish --to remote` is used to export to a remote,
-and the remote allows files to somehow be edited on it, then there ought
-to be a way to import the changes back from the remote into the git repository.
-The command could be `git annex import --from remote`
+This todo is about `git-annex import branch --from remote`, which is
+implemented now.
 
-There also ought to be a way to make `git annex sync` automatically import.
-
-See [[design/importing_trees_from_special_remotes]] for the design for
-this.
-
-Status: Basic git annex export treeish --to remote` is working,
-and `git annex sync --content` can be configured to use it.
-
-## remaining todo
-
-* S3 buckets can be set up to allow reads and listing by an anonymous user.
-  That should allow importing from such a bucket, but the S3 remote
-  will need changes, since it currently avoids using the S3 API when
-  it does not have creds.
-
-* Allow configuring importtree=yes w/o exporttree=yes, for eg anonymous S3
-  bucket import.
-  
-  Note that in S3, this should let unversioned buckets be used  w/o --force.
-
-* Write a tip or tips to document using this new feature.
-  (Have one for adb now, but not for S3.)
-
-* Add to external special remote protocol.
-
-* Support importing from webdav, etc?
-  Problem is that these may have no way to avoid an export
-  overwriting changed content that would have been imported otherwise.
-  So if they're supported the docs need to reflect the problem so the user
-  avoids situations that cause data loss, or decides to accept the
-  possibility of data loss.
-
-* When on an adjusted unlocked branch, need to import the files unlocked.
-  Also, the tracking branch code needs to know about such branches,
-  currently it will generate the wrong tracking branch.
-
-  The test case for `export_import` currently has a line commented out
-  that fails on adjusted unlocked branches.
-
-  Alternatively, could not do anything special for adjusted branches,
-  so generating a non-adjusted branch, and require the user use `git annex
-  sync` to merge in that branch. Rationalle: After fetching from a normal
-  git repo in an adjusted branch, merging does the same thing, and the docs
-  say to use `git annex sync` instead. Any improvments to that workflow
-  (like eg a way to merge a specified branch and update the adjustment)
-  would thus benefit both uses cases.
-
-* Need to support annex.largefiles when importing.
-  [[todo/import_tree_should_honor_annex.largefiles]]
-
-* If a tree containing a non-annexed file is exported,
-  and then an import is done from the remote, the new tree will have that
-  file annexed, and so merging it converts to annexed (there is no merge
-  conflict). This problem seems hard to avoid, other than relaying on
-  annex.largefiles to tell git-annex if a file should be imported
-  non-annexed. 
-  
-  Although.. The importer could check for each file,
-  if there's a corresponding file in the branch it's generating the 
-  import for, if that file is annexed. But this might be slow and seems a
-  lot of bother for an edge case?
+> [[done]] --[[Joey]]
 
 ## race conditions
 

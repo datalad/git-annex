@@ -1,0 +1,7 @@
+The external special remote protocol supports export tree, but not yet
+import tree. There is a draft protocol extension.
+
+My main concern about this is, will external special remotes pick good
+ContentIdentifiers and will they manage the race conditions documented in
+[[import_tree]]? Mistakes in these things can result in data loss, and it's
+rather subtle stuff. --[[Joey]]
