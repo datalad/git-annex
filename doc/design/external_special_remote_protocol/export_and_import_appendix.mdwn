@@ -203,6 +203,8 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
   ContentIdentifier specified by `EXPECTED`, or otherwise fail.  
   Replies:
   * `IMPORTKEY-SUCCESS Key`
+  * `IMPORTKEY-SKIP`  
+    This causes nothing to be imported for this file.
   * `IMPORTKEY-FAILURE ErrorMsg`
 * `RETRIEVEEXPORTEXPECTED File`  
   Retrieves the content of a file from the special remote

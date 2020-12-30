@@ -307,10 +307,12 @@ data ImportActions a = ImportActions
 	-- bearing in mind that the file on the remote may have changed
 	-- since the ContentIdentifier was generated.
 	--
+	-- When it returns nothing, the file at the ImportLocation 
+	-- not by included in the imported tree.
+	--
 	-- When the remote is thirdPartyPopulated, this should check if the
 	-- file stored on the remote is the content of an annex object,
-	-- and return its Key, or Nothing if it is not. Should not
-	-- otherwise return Nothing.
+	-- and return its Key, or Nothing if it is not.
 	--
 	-- Throws exception on failure to access the remote.
 	, importKey :: Maybe (ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> a (Maybe Key))
