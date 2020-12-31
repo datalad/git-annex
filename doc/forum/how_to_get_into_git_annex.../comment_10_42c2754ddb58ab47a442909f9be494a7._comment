@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
+ nickname="eric.w"
+ avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
+ subject="comment 10"
+ date="2020-12-31T22:45:03Z"
+ content="""
+You will be unsurprised to hear that what you suggested worked. not sure what helped other than me cleaning up my working tree and doing a solid git annex add .; git annex sync. I also removed annex.thin since its evidently not helping me. 
+thanks a ton. what got me here was me basically running through the \"splitting a repo\" process of making a new git repo, doing a cp -rl ./.git/annex/objects to the new repo and then running various tests on it. I just want to make sure I don't step on my own feet here. 
+
+thanks a ton. 
+"""]]
