@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
+ nickname="eric.w"
+ avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
+ subject="comment 3"
+ date="2020-12-31T19:34:56Z"
+ content="""
+right now I am driving myself crazy trying to understand why I have objects that *nothing is pointing to*, yet git annex unused fails to report them. these objects report 1 hardlink and they are from a migrated backend. I'll try git annex forget, but I really don't understand what is keeping these objects from being reported as unused. 
+"""]]
