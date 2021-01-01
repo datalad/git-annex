@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="comment 2"
+ date="2021-01-01T22:30:34Z"
+ content="""
+Hi, thanks for the answer.
+
+What if I would want to leave `~/Pictures` as-is, and not move it, nor change it? I would prefer that. I just want to add its content to a Git Annex repo, and easily sync future changes as well to the repo (e.g. after I added more files, or renamed some files, or updated some files).
+
+Why `git annex sync` and not `git commit`? I always did only `git commit` so far.
+
+Why `git annex reinject` and not `git annex import` or `cp|mv` & `git annex add`?
+Also, why would I not add files which were/are not part of the original `~/Pictures`? The original `~/Pictures` would not have contained all of the pictures, as they are somewhat distributed. So I want to add unknown files as well.
+
+Why would I import the DVD to a dummy branch? I would want it all in my master/main branch, or not? (I also don't quite understand why I would want branches at all?)
+I also potentially want to `git annex get` such a file at some point.
+
+What are \"too many files\" for a single repo? And why is that a problem?
+I am just adding a Google Takeout archive to Git Annex ([via](https://github.com/albertz/chrome-ext-google-takeout-downloader/)), and it will contain also many of the files of `~/Pictures` (although not all; and sometimes, but not always, in smaller quality, but often also in original quality), but also many other files. So it's already pretty mixed up.
+Or does it make sense to just share the Annex object storage (`.git/annex/objects`) in multiple repos?
+Or do you mean that as the intended use case for branches actually?
+
+What dotfiles does `annex.dotfiles` include? Just all `.*`?
+Why would I not want to add dotfiles? I think I would want to just archive the whole directory as-is.
+
+Also, after reading a bit further, and trying it out a bit, I don't quite understand:
+
+Given some file path (e.g. `Picture/BestPics2020/a.jpg`), how can I find other paths of the same file? (E.g. I would also have the file stored under `Picture/2020/01/a.jpg` or so.) Is that with `git annex list`? I'm not sure this lists all paths. So far I only see a single path always.
+
+I'm not really sure how to use `git annex import` properly, in case the file is already annexed under a different path. In any case, I also want to add the new path (new name).
+
+Sorry for the many follow-up questions, but this is still all somewhat unclear to me.
+
+"""]]
