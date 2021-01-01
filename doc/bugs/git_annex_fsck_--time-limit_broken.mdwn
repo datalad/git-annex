@@ -1,0 +1,13 @@
+### Please describe the problem.
+`git annex fsck --time-limit=` is broken. <br>
+For one, there is a large delay between the specified time limit until something actually happens. With 20 seconds, `git annex fsck` always runs more than 5 minutes. And then something of the following happens: <br>
+Sometimes it works as intended. <br>
+Sometimes it prints "Time limit (20s) reached!" but hangs without exiting. <br>
+Sometimes it prints "Time limit (20s) reached!" but continues fscking. <br>
+
+### What steps will reproduce the problem?
+In a sufficiently large repo run `git annex fsck --time-limit=20s`.
+
+### What version of git-annex are you using? On what operating system?
+8.20201127
+
