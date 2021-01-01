@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="annex.largefiles"
+ date="2021-01-01T21:25:43Z"
+ content="""
+Does annex.largefiles has some documentation? It would be nice to link to that on the doc of git-annex-add.
+
+Esp, after reading this, I wonder about the default value of annex.largefiles. (I assume/hope it is disabled?)
+
+"""]]
