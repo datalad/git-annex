@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="Adding external files"
+ date="2021-01-01T21:30:38Z"
+ content="""
+Let's assume I have some external files in my `~/Pictures` and I want to import them.
+
+Should I use `git annex import ~/Pictures/BestPics2020` or `cp -r ~/Pictures/BestPics2020 .; git annex add BestPics2020`? Is there a difference? Which way would be recommended or preferred?
+
+"""]]
