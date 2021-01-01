@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="Difference to import/add?"
+ date="2021-01-01T21:49:29Z"
+ content="""
+Considering `git annex reinject /tmp/foo.iso foo.iso`, what is the difference to `git import `/tmp/foo.iso` or `cp /tmp/foo.iso; git annex add foo.iso`?
+"""]]
