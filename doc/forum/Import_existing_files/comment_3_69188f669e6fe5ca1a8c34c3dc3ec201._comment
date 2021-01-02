@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 3"
+ date="2021-01-02T15:05:01Z"
+ content="""
+You can of course just use `~/Pictures` directly as a repository. So `cd ~/Pictures; git init; git annex init`.
+
+`git annex sync` does a little more things than just `git commit`. For example, it also automatically commits deletion of files.
+
+Sorry, I thought the existing copies of your Photos where just backups of your `~/Pictures`. In that case I suggest you to `mv` the files into the annex and then just `git annex add` them. For DVD's import to a sub-directory of your master branch instead of a dummy branch and without the `--no-content` option.
+
+\"Too many files\" depends on you liking. The more files the slower some operations get, like `git annex sync`. I suggest you to set something like `git annex config --set annex.largefiles 'largerthan=32kb'`. This way, small files get added to git itself instead of git-annex, which speeds up git-annex operations if there are a lot of small files. Note that these small files will be in every clone of the repo and can't be `git annex drop`ed.
+
+The various configuration options are documented in the main [[git-annex]] manpage, at the bottom. Without the `annex.dotfiles` option, dotfiles (any file starting with \".\" and anything inside directories starting with \".\") will still be added, but to git itself with the disadvantages mentioned above.
+
+You can get the key/hash for that file with `git annex info <file>`, and then search for other files with the same content with `find . -lname '*<key>'`.
+
+You can just `cp/mv` the files in the annex and `git annex add` them. Note that for duplicate files in the annex, only one copy of the data/file content will be stored.
+"""]]
