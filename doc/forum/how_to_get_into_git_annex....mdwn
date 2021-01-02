@@ -1,9 +1,9 @@
 So... I've been flirting with using git annex for literal years now, and if for some reason you are wanting to use it too here are some tips:
 
-1) keep backups. seriously. just do it. it's possible to lose data, even though git annex is designed to avoid eating your data it will do it under certain circumstances. you aren't lucky enough to avoid it. trust me. 
-2) make a big fat git annex with too many files in it, and kick the tires, hard. run all the commands and try to break it, see what it does under certain circumstances before you run those same commands on your beloved data. (the documentation isn't always up to date, sometimes the options (which are complex) operate differently than the website says and differently than you expect, this is most likely due to code changes that haven't propagated to the website.
-3) git annex bogs down fast when you are dealing with a large number of objects, there are ways to get that under control, but nothing is going to make managing an annex with millions of files "fast" for many operations.
-4) now that you are a pro at git annex, STILL *keep* backups. git annex isn't a backup. it just isn't. nothing beats a simple usb hard drive stuffed in your safe with all your files on it and without the complexity that is git annex in the way.
+* keep backups. seriously. just do it. it's possible to lose data, even though git annex is designed to avoid eating your data it will do it under certain circumstances. you aren't lucky enough to avoid it. trust me. 
+* make a big fat git annex with too many files in it, and kick the tires, hard. run all the commands and try to break it, see what it does under certain circumstances before you run those same commands on your beloved data. (the documentation isn't always up to date, sometimes the options (which are complex) operate differently than the website says and differently than you expect, this is most likely due to code changes that haven't propagated to the website.
+* git annex bogs down fast when you are dealing with a large number of objects, there are ways to get that under control, but nothing is going to make managing an annex with millions of files "fast" for many operations.
+* now that you are a pro at git annex, STILL *keep* backups. git annex isn't a backup. it just isn't. nothing beats a simple usb hard drive stuffed in your safe with all your files on it and without the complexity that is git annex in the way.
 
 
 

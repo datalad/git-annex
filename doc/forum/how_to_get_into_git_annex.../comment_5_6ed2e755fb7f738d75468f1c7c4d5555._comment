@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
+ nickname="eric.w"
+ avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
+ subject="comment 5"
+ date="2020-12-31T19:40:22Z"
+ content="""
+https://git-annex.branchable.com/bugs/migrated_files_not_showing_up_in_unused_list/
+
+according to the link above it should be hardlinked to the new key for the new backend, but this isn't the case. this is on btrfs btw. 
+this is a test repo with no remotes as another data point. 
+also I migrated from SHA256E to SHA256. 
+
+I tried git annex forget --force; git annex sync; git annex unused, still it isn't showing the objects as unused.
+"""]]

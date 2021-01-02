@@ -1,0 +1,17 @@
+### Please describe the problem.
+`git annex fix` doesn't fix up broken symlinks afer moving a file.
+
+### What steps will reproduce the problem?
+
+    git init
+    git annex init
+    mkdir dir
+    touch dir/a
+    git annex add .
+    git annex sync
+    mv dir/a .
+    git annex fix a
+    ls -alh
+
+### What version of git-annex are you using? On what operating system?
+8.20201127 (I know I know... One year old version :)

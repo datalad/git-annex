@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="rename or move files"
+ date="2021-01-01T21:33:41Z"
+ content="""
+Is this command also for renaming or moving files, like `git mv`?
+
+If not, I think this should be explained more clearly in the documentation.
+
+If not, how would I move/rename files then? As I understand, annexed files are just symlinks. So if I would move the file to another directory (e.g. via `git mv` or just `mv`), the symlink might break.
+
+"""]]

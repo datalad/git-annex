@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="comment 4"
+ date="2021-01-02T16:23:05Z"
+ content="""
+But is there a difference to `git annex import`? What is the difference? Why would you use `git annex add` instead of `git annex import`?
+
+"""]]

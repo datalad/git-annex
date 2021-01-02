@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
+ nickname="eric.w"
+ avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
+ subject="comment 11"
+ date="2021-01-01T04:08:43Z"
+ content="""
+couple of final notes:
+
+* ```--reflog=always``` isn't a cp option, its reflink, and I am a moron. 
+* that same options on btrfs is the bomb. all of the advantages of hardlinks without the disadvantages. 
+"""]]
