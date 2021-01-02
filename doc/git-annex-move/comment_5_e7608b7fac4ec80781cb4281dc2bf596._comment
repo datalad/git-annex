@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 5"
+ date="2021-01-02T15:22:18Z"
+ content="""
+`git annex move` belongs so the same class of commands as `git annex get`, `git annex drop` and `git annex copy` in that it manages file content. Git annex automatically registers a pre-commit hook to fixup symlinks. `git annex fix` can also be used to fixup symlinks, but it currently is broken.
+"""]]
