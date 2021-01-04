@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-04T17:43:31Z"
+ content="""
+git-annex silently skips files that are not checked into git, and after you
+run "mv", the file is not checked into git.
+
+So add the file (or just use `git mv` to move it) and then it will work.
+
+Note that, annex.skipunknown can be set to false to make git-annex not
+silently skip files and instead complain. That is scheduled to become the
+default in 1 year, because I know the current behavior can be confusing.
+"""]]

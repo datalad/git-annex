@@ -15,3 +15,5 @@
 
 ### What version of git-annex are you using? On what operating system?
 8.20201127 (I know I know... One year old version :)
+
+> not a bug [[done]] --[[Joey]]
