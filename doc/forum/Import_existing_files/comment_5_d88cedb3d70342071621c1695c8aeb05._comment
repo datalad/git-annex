@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-01-04T17:17:08Z"
+ content="""
+I think you're really overcomplicating things. Some really basic use of
+git-annex as described in the [[walkthrough]] will work fine in the
+situation you describe. Ie, initialize a git-annex repository in
+~/Pictures. If you have some other servers or hard drives that also have
+pictures, initialize git-annex repositories on those as well. Connect these
+repositories that all hold pictures together, by adding git remotes
+pointing to the other pictures repositories.
+
+Then when you `git push` (or `git-annex sync`), git-annex will automatically
+learn if some picture is stored in multiple of the repositories. You'll be
+able to run commands like `git-annex find --copies 2` or `git-annex drop`
+to operate on that information. Similarly, if Picture/BestPics2020/a.jpg
+and Picture/2020/01/a.jpg were the same content, git-annex will notice that
+when you add them to the annex, and will automatically deduplicate.
+
+If you have readonly DVDs or whatever, yes those can be handled in ways
+like Lukey describes, but why bother trying to deal with all those edge
+cases before you're using git-annex at all?
+
+As far as too many files, git has issues with the index file becoming
+slower with more files, but you need huge numbers of files for this to be a
+significant problem -- think millions. git-annex commands that need to
+operate on all files necessarily take longer when there are more files,
+but git-annex always lets you only operate on a subset of files, such as
+the ones in the current directory, so this is not a significant scalability
+problem. Worrying about speed before something is slow is a kind of
+premature optimisation; git-annex has actually been optimised in cases where
+it was slow.
+"""]]
