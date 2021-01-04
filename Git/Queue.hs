@@ -55,12 +55,15 @@ instance Eq (InternalActionRunner m) where
 	InternalActionRunner s1 _ == InternalActionRunner s2 _ = s1 == s2
 
 {- A key that can uniquely represent an action in a Map. -}
-data ActionKey = UpdateIndexActionKey | CommandActionKey String | InternalActionKey String
+data ActionKey
+	= UpdateIndexActionKey
+	| CommandActionKey String [CommandParam]
+	| InternalActionKey String
 	deriving (Eq, Ord)
 
 actionKey :: Action m -> ActionKey
 actionKey (UpdateIndexAction _) = UpdateIndexActionKey
-actionKey CommandAction { getSubcommand = s } = CommandActionKey s
+actionKey CommandAction { getSubcommand = s, getParams = p } = CommandActionKey s p
 actionKey InternalAction { getRunner = InternalActionRunner s _ } = InternalActionKey s
 
 {- A queue of actions to perform (in any order) on a git repository,
