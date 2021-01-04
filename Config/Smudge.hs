@@ -60,3 +60,11 @@ deconfigureSmudgeFilter = do
 		filter (\l -> l `notElem` stdattr && not (null l)) ls
 	unsetConfig (ConfigKey "filter.annex.smudge")
 	unsetConfig (ConfigKey "filter.annex.clean")
+
+-- Params to pass to git to temporarily avoid using the smudge/clean
+-- filters.
+bypassSmudgeConfig :: [CommandParam]
+bypassSmudgeConfig = map Param
+	[ "-c", "filter.annex.smudge="
+	, "-c", "filter.annex.clean="
+	]

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,13 +17,10 @@ import qualified Database.Keys
 import Annex.FileMatcher
 import Annex.Link
 import Annex.Tmp
-import Annex.HashObject
 import Messages.Progress
-import Git.Types
 import Git.FilePath
 import Config.GitConfig
-import qualified Git.UpdateIndex
-import Utility.FileMode
+import Config.Smudge
 import Utility.OptParse
 import qualified Utility.RawFilePath as R
 
@@ -119,37 +116,26 @@ startSmall o si file =
 addSmall :: CheckGitIgnore -> RawFilePath -> Annex Bool
 addSmall ci file = do
 	showNote "non-large file; adding content to git repository"
-	addFile ci file
+	addFile Small ci file
 
 startSmallOverridden :: AddOptions -> SeekInput -> RawFilePath -> CommandStart
 startSmallOverridden o si file = 
-	starting "add" (ActionItemWorkTreeFile file) si $
-		next $ addSmallOverridden o file
+	starting "add" (ActionItemWorkTreeFile file) si $ next $ do
+		showNote "adding content to git repository"
+		addFile Small (checkGitIgnoreOption o) file
 
-addSmallOverridden :: AddOptions -> RawFilePath -> Annex Bool
-addSmallOverridden o file = do
-	showNote "adding content to git repository"
-	s <- liftIO $ R.getSymbolicLinkStatus file
-	if not (isRegularFile s)
-		then addFile (checkGitIgnoreOption o) file
-		else do
-			-- Can't use addFile because the clean filter will
-			-- honor annex.largefiles and it has been overridden.
-			-- Instead, hash the file and add to the index.
-			sha <- hashFile file
-			let ty = if isExecutable (fileMode s)
-				then TreeExecutable
-				else TreeFile
-			Annex.Queue.addUpdateIndex =<<
-				inRepo (Git.UpdateIndex.stageFile sha ty (fromRawFilePath file))
-			return True
+data SmallOrLarge = Small | Large
 
-addFile :: CheckGitIgnore -> RawFilePath -> Annex Bool
-addFile ci file = do
+addFile :: SmallOrLarge -> CheckGitIgnore -> RawFilePath -> Annex Bool
+addFile smallorlarge ci file = do
 	ps <- gitAddParams ci
-	Annex.Queue.addCommand [] "add" (ps++[Param "--"])
+	Annex.Queue.addCommand cps "add" (ps++[Param "--"])
 		[fromRawFilePath file]
 	return True
+  where
+	cps = case smallorlarge of
+		Large -> []
+		Small -> bypassSmudgeConfig
 
 start :: AddOptions -> SeekInput -> RawFilePath -> AddUnlockedMatcher -> CommandStart
 start o si file addunlockedmatcher = do
@@ -164,7 +150,7 @@ start o si file addunlockedmatcher = do
 			| otherwise -> 
 				starting "add" (ActionItemWorkTreeFile file) si $
 					if isSymbolicLink s
-						then next $ addFile (checkGitIgnoreOption o) file
+						then next $ addFile Small (checkGitIgnoreOption o) file
 						else perform o file addunlockedmatcher
 	addpresent key = 
 		liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
@@ -180,7 +166,7 @@ start o si file addunlockedmatcher = do
 		starting "add" (ActionItemWorkTreeFile file) si $
 			addingExistingLink file key $ do
 				Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
-				next $ addFile (checkGitIgnoreOption o) file
+				next $ addFile Large (checkGitIgnoreOption o) file
 
 perform :: AddOptions -> RawFilePath -> AddUnlockedMatcher -> CommandPerform
 perform o file addunlockedmatcher = withOtherTmp $ \tmpdir -> do

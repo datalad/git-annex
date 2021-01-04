@@ -1,3 +1,13 @@
+git-annex (8.20201130) UNRELEASED; urgency=medium
+
+  * add: Significantly speed up adding lots of non-large files to git,
+    by disabling the annex smudge filter when running git add.
+  * add --force-small: Run git add rather than updating the index itself,
+    so any other smudge filters than the annex one that may be enabled will
+    be used.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 04 Jan 2021 12:52:41 -0400
+
 git-annex (8.20201129) upstream; urgency=medium
 
   * New borg special remote. This is a new kind of remote, that examines

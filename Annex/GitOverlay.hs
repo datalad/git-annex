@@ -20,6 +20,7 @@ import Git.Index
 import Git.Env
 import qualified Annex
 import qualified Annex.Queue
+import Config.Smudge
 
 {- Runs an action using a different git index file. -}
 withIndexFile :: AltIndexFile -> (FilePath -> Annex a) -> Annex a
@@ -67,16 +68,12 @@ withIndexFile i = withAltRepo usecachedgitenv restoregitenv
  - Smudge and clean filters are disabled in this work tree. -}
 withWorkTree :: FilePath -> Annex a -> Annex a
 withWorkTree d a = withAltRepo
-	(\g -> return $ (g { location = modlocation (location g), gitGlobalOpts = gitGlobalOpts g ++ disableSmudgeConfig }, ()))
+	(\g -> return $ (g { location = modlocation (location g), gitGlobalOpts = gitGlobalOpts g ++ bypassSmudgeConfig }, ()))
 	(\g g' -> g' { location = location g, gitGlobalOpts = gitGlobalOpts g })
 	(const a)
   where
 	modlocation l@(Local {}) = l { worktree = Just (toRawFilePath d) }
 	modlocation _ = error "withWorkTree of non-local git repo"
-	disableSmudgeConfig = map Param
-		[ "-c", "filter.annex.smudge="
-		, "-c", "filter.annex.clean="
-		]
 
 {- Runs an action with the git index file and HEAD, and a few other
  - files that are related to the work tree coming from an overlay

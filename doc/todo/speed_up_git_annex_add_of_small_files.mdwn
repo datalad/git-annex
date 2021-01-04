@@ -14,3 +14,5 @@ with the existing `--force-small` too, but at least that's not the default.
 
 Possible alternate approach: Unsetting filter.annex.smudge and
 filter.annex.clean when running `git add`?
+
+> This approach is a winner! [[done]] --[[Joey]]
