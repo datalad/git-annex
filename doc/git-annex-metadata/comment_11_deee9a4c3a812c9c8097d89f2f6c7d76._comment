@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2021-01-04T16:06:02Z"
+ content="""
+@AlbertZeyer, this man page says it is "stored in the git-annex branch."
+
+That branch is synced whenever you push it, which git-annex sync does do,
+but git push can also be set up to do. The branch is automatically merged.
+"""]]
