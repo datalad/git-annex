@@ -919,7 +919,7 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
   Used to configure which files are large enough to be added to the annex.
   It is an expression that matches the large files, eg
-  "`include=*.mp3 or largerthan(500kb)`"
+  "`include=*.mp3 or largerthan=500kb`"
   See [[git-annex-matching-expression]](1) for details on the syntax.
 
   Overrides any annex.largefiles attributes in `.gitattributes` files.
