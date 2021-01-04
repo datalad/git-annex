@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="comment 4"
+ date="2021-01-04T12:04:04Z"
+ content="""
+That is the best solution with `find`? There is no reverse index? I made a separate forum entry for this question [here](https://git-annex.branchable.com/forum/Reverse_index_key_to_list_of_file_paths/), to discuss that a bit more separately.
+
+Why exactly does `git annex sync` (or other ops) get slower on bigger repos? In principle it could be implemented in a way that it should not get slower (basically always avoiding any need to iterate through all objects, which should always be possible to avoid by having some indices for any operations which needs that).
+
+Does it make sense to split up the repo, but share the Git Annex object files (shared `.git/annex/objects`)?
+
+"""]]
