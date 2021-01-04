@@ -1,0 +1,16 @@
+When adding a lot of small files to git with `git annex add`,
+it is slow because git runs the smudge filter on all files
+and [[that_is_slow|todo/git_smudge_clean_interface_suboptiomal]].
+
+But `git-annex add --force-small` is much much faster, because that
+bypasses git add entirely, hashing the content and staging it in the index
+from git-annex. So could that same method be used to speed up the slow case?
+
+My concern with doing this is that there may be things that `git add`
+does that are not done when bypassing it. The only one I can think of is,
+if the user has other smudge/clean filters than the git-annex one
+installed, they would not be run either. It could be argued that's a bug
+with the existing `--force-small` too, but at least that's not the default.
+
+Possible alternate approach: Unsetting filter.annex.smudge and
+filter.annex.clean when running `git add`?

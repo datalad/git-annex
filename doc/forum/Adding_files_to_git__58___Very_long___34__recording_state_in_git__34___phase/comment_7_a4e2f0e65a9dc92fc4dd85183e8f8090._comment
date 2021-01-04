@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-01-04T16:13:36Z"
+ content="""
+This will avoid the overhead of the smudge filter, when all the files
+you're adding are ones you want stored in git, *not* in git-annex.
+
+	git-annex add --force-small
+
+I do think it would be possible for `git-annex add` to use the same method
+whenever it adds non-large files. But it might have unwanted other effects,
+since the way that manages to be fast is by avoding using `git add` and
+having git-annex hash the file and add it to git itself. Opened
+[[todo/speed_up_git_annex_add_of_small_files]] to consider this.
+
+The only way to speed up `git add` is to disable the smudge filter, but then
+all files you `git add` will be stored in git, not in git-annex. And
+disabling the smudge filter also will prevent using unlocked annexed files.
+(See [[todo/git_smudge_clean_interface_suboptiomal]] for background.)
+"""]]
