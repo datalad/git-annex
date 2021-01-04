@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""parent post is rife with incorrect and misleading statements"""
+ date="2021-01-04T20:03:19Z"
+ content="""
+AFAIK there are no circumstances where git-annex will lose data unless you
+use the --force flag, which is clearly documented as allowing data loss.
+If you have a case where it does, *file a bug report**.
+
+git-annex uninit does *not* delete .git/annex/objects if there are
+any objects in there that are not used by files in the repo, so it can't
+have behaved as you claim it did, at least as far as I can tell. Here is an
+example of it not deleting data, in a situation like the one you claimed 
+caused data loss:
+
+	joey@darkstar:/tmp/demo>git annex add foo
+	joey@darkstar:/tmp/demo>git commit -m add
+	joey@darkstar:/tmp/demo>git rm foo
+	joey@darkstar:/tmp/demo>git annex uninit
+	git-annex: Not fully uninitialized
+	Some annexed data is still left in .git/annex/objects/
+	This may include deleted files, or old versions of modified files.
+	
+	If you don't care about preserving the data, just delete the
+	directory.
+	
+	Or, you can move it to another location, in case it turns out
+	something in there is important.
+	
+	Or, you can run `git annex unused` followed by `git annex dropunused`
+	to remove data that is not used by any tag or branch, which might
+	take care of all the data.
+	
+	Then run `git annex uninit` again to finish.
+	joey@darkstar:/tmp/demo>find .git/annex/objects/ -type f
+	.git/annex/objects/Zj/zZ/SHA256E-s30--9d9f1f02932124b06e803a4899068dbc1df00d126447d226bb312861e0b7de83/SHA256E-s30--9d9f1f02932124b06e803a4899068dbc1df00d126447d226bb312861e0b7de83
+
+I document changes before I implement them, and this website is updated
+on every push of changes to git-annex. While some tip somewhere may be
+out of date, the one you mentioned does not appear to be. It looks
+like you misunderstood something about it.
+
+A drive in a safe full of files with and without git-annex has identical
+durability. Using git-annex does *not* cause file to be less accessible or
+add significant roadblocks to accessing them no matter what problems might
+befall that drive. Worst case, fsck of a corrupted filesystem on that drive
+will rescue files to lost+found with the git-annex key name and not the
+original filename. This is easy to recover from though, using `git-annex
+reinject --known`. Which also, conventiently, works if fsck on a badly
+damaged drive restores the file to lost+found using a bare inode number.
+Which, if you're not using git-annex, puts you in a world of hurt to
+determine what file that originally was.
+"""]]
