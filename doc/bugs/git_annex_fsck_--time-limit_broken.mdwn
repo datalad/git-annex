@@ -11,3 +11,4 @@ In a sufficiently large repo run `git annex fsck --time-limit=20s`.
 ### What version of git-annex are you using? On what operating system?
 8.20201127
 
+> [[fixed|done]] --[[Joey]]

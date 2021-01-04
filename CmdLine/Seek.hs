@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -40,15 +40,18 @@ import Annex.Link
 import Annex.InodeSentinal
 import Annex.Concurrent
 import Annex.CheckIgnore
+import Annex.Action
 import qualified Annex.Branch
 import qualified Annex.BranchState
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 import Utility.Tuple
+import Utility.HumanTime
 
 import Control.Concurrent.Async
 import System.Posix.Types
 import Data.IORef
+import Data.Time.Clock.POSIX
 import qualified System.FilePath.ByteString as P
 
 data AnnexedFileSeeker = AnnexedFileSeeker
@@ -96,12 +99,17 @@ withFilesNotInGit (CheckGitIgnore ci) ww a l = do
 withPathContents :: ((RawFilePath, RawFilePath) -> CommandSeek) -> CmdParams -> CommandSeek
 withPathContents a params = do
 	matcher <- Limit.getMatcher
-	forM_ params $ \p -> do
-		fs <- liftIO $ get p
-		forM fs $ \f ->
-			whenM (checkmatch matcher f) $
-				a f
+	checktimelimit <- mkCheckTimeLimit
+	go matcher checktimelimit params []
   where
+	go _ _ [] [] = return ()
+	go matcher checktimelimit (p:ps) [] =
+		go matcher checktimelimit ps =<< liftIO (get p)
+	go matcher checktimelimit ps (f:fs) = checktimelimit noop $ do
+		whenM (checkmatch matcher f) $
+			a f
+		go matcher checktimelimit ps fs		
+	
 	get p = ifM (isDirectory <$> getFileStatus p)
 		( map (\f -> 
 			let f' = toRawFilePath f
@@ -237,6 +245,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 	-- those. This significantly speeds up typical operations
 	-- that need to look at the location log for each key.
 	runallkeys = do
+		checktimelimit <- mkCheckTimeLimit
 		keyaction <- mkkeyaction
 		config <- Annex.getGitConfig
 		g <- Annex.gitRepo
@@ -246,9 +255,12 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 			LsTree.LsTreeRecursive
 			Annex.Branch.fullname
 		let getk f = fmap (,f) (locationLogFileKey config f)
+		let discard reader = reader >>= \case
+			Nothing -> noop
+			Just _ -> discard reader
 		let go reader = liftIO reader >>= \case
 			Nothing -> return ()
-			Just ((k, f), content) -> do
+			Just ((k, f), content) -> checktimelimit (discard reader) $ do
 				maybe noop (Annex.BranchState.setCache f) content
 				keyaction (SeekInput [], k, mkActionItem k)
 				go reader
@@ -282,14 +294,17 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 seekFiltered :: ((SeekInput, RawFilePath) -> Annex Bool) -> ((SeekInput, RawFilePath) -> CommandSeek) -> Annex ([(SeekInput, RawFilePath)], IO Bool) -> Annex ()
 seekFiltered prefilter a listfs = do
 	matcher <- Limit.getMatcher
+	checktimelimit <- mkCheckTimeLimit
 	(fs, cleanup) <- listfs
-	sequence_ (map (process matcher) fs)
+	go matcher checktimelimit fs
 	liftIO $ void cleanup
   where
-	process matcher v@(_si, f) =
+	go _ _ [] = return ()
+	go matcher checktimelimit (v@(_si, f):rest) = checktimelimit noop $ do
 		whenM (prefilter v) $
 			whenM (matcher $ MatchingFile $ FileInfo (Just f) f Nothing) $
 				a v
+		go matcher checktimelimit rest
 
 data MatcherInfo = MatcherInfo
 	{ matcherAction :: MatchInfo -> Annex Bool
@@ -317,6 +332,7 @@ seekFilteredKeys seeker listfs = do
 		<*> Limit.introspect matchNeedsLocationLog
 	config <- Annex.getGitConfig
 	(l, cleanup) <- listfs
+	checktimelimit <- mkCheckTimeLimit
 	catObjectMetaDataStream g $ \mdfeeder mdcloser mdreader ->
 		catObjectStream g $ \ofeeder ocloser oreader -> do
 			processertid <- liftIO . async =<< forkState
@@ -327,29 +343,37 @@ seekFilteredKeys seeker listfs = do
 				then catObjectStream g $ \lfeeder lcloser lreader -> do
 					precachertid <- liftIO . async =<< forkState
 						(precacher mi config oreader lfeeder lcloser)
-					precachefinisher mi lreader
+					precachefinisher mi lreader checktimelimit
 					join (liftIO (wait precachertid))
-				else finisher mi oreader
+				else finisher mi oreader checktimelimit
 			join (liftIO (wait mdprocessertid))
 			join (liftIO (wait processertid))
 	liftIO $ void cleanup
   where
-	finisher mi oreader = liftIO oreader >>= \case
-		Just ((si, f), content) -> do
+	finisher mi oreader checktimelimit = liftIO oreader >>= \case
+		Just ((si, f), content) -> checktimelimit discard $ do
 			keyaction f mi content $ 
 				commandAction . startAction seeker si f
-			finisher mi oreader
+			finisher mi oreader checktimelimit
 		Nothing -> return ()
+	  where
+		discard = oreader >>= \case
+			Nothing -> return ()
+			Just _ -> discard
 
-	precachefinisher mi lreader = liftIO lreader >>= \case
-		Just ((logf, (si, f), k), logcontent) -> do
+	precachefinisher mi lreader checktimelimit = liftIO lreader >>= \case
+		Just ((logf, (si, f), k), logcontent) -> checktimelimit discard $ do
 			maybe noop (Annex.BranchState.setCache logf) logcontent
 			checkMatcherWhen mi
 				(matcherNeedsLocationLog mi && not (matcherNeedsFileName mi))
 				(MatchingFile $ FileInfo (Just f) f (Just k))
 				(commandAction $ startAction seeker si f k)
-			precachefinisher mi lreader
+			precachefinisher mi lreader checktimelimit
 		Nothing -> return ()
+	  where
+		discard = lreader >>= \case
+			Nothing -> return ()
+			Just _ -> discard
 	
 	precacher mi config oreader lfeeder lcloser = liftIO oreader >>= \case
 		Just ((si, f), content) -> do
@@ -543,3 +567,19 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 	
 notSymlink :: RawFilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> R.getSymbolicLinkStatus f
+
+{- Returns an action that, when there's a time limit, can be used
+ - to check it before processing a file. The IO action is run when over the
+ - time limit. -}
+mkCheckTimeLimit :: Annex (IO () -> Annex () -> Annex ())
+mkCheckTimeLimit = Annex.getState Annex.timelimit >>= \case
+	Nothing -> return $ \_ a -> a
+	Just (duration, cutoff) -> return $ \cleanup a -> do
+		now <- liftIO getPOSIXTime
+		if now > cutoff
+			then do
+				warning $ "Time limit (" ++ fromDuration duration ++ ") reached! Shutting down..."
+				shutdown True
+				liftIO cleanup
+				liftIO $ exitWith $ ExitFailure 101
+			else a

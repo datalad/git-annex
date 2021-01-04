@@ -1,6 +1,6 @@
 {- git-annex command-line option parsing
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ module CmdLine.GitAnnex.Options where
 
 import Control.Monad.Fail as Fail (MonadFail(..))
 import Options.Applicative
+import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
 import Annex.Common
@@ -403,12 +404,17 @@ jobsOption =
 
 timeLimitOption :: [GlobalOption]
 timeLimitOption = 
-	[ globalSetter Limit.addTimeLimit $ option (eitherReader parseDuration)
+	[ globalSetter settimelimit $ option (eitherReader parseDuration)
 		( long "time-limit" <> short 'T' <> metavar paramTime
 		<> help "stop after the specified amount of time"
 		<> hidden
 		)
 	]
+  where
+	settimelimit duration = do
+		start <- liftIO getPOSIXTime
+		let cutoff = start + durationToPOSIXTime duration
+		Annex.changeState $ \s -> s { Annex.timelimit = Just (duration, cutoff) }
 
 data DaemonOptions = DaemonOptions
 	{ foregroundDaemonOption :: Bool

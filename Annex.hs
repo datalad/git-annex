@@ -1,6 +1,6 @@
 {- git-annex monad
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -78,6 +78,7 @@ import qualified Database.Keys.Handle as Keys
 import Utility.InodeCache
 import Utility.Url
 import Utility.ResourcePool
+import Utility.HumanTime
 
 import "mtl" Control.Monad.Reader
 import Control.Concurrent
@@ -85,6 +86,7 @@ import Control.Concurrent.STM
 import qualified Control.Monad.Fail as Fail
 import qualified Data.Map.Strict as M
 import qualified Data.Set as S
+import Data.Time.Clock.POSIX
 
 {- git-annex's monad is a ReaderT around an AnnexState stored in a MVar.
  - The MVar is not exposed outside this module.
@@ -133,6 +135,7 @@ data AnnexState = AnnexState
 	, globalnumcopies :: Maybe NumCopies
 	, forcenumcopies :: Maybe NumCopies
 	, limit :: ExpandableMatcher Annex
+	, timelimit :: Maybe (Duration, POSIXTime)
 	, uuiddescmap :: Maybe UUIDDescMap
 	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
 	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
@@ -201,6 +204,7 @@ newState c r = do
 		, globalnumcopies = Nothing
 		, forcenumcopies = Nothing
 		, limit = BuildingMatcher []
+		, timelimit = Nothing
 		, uuiddescmap = Nothing
 		, preferredcontentmap = Nothing
 		, requiredcontentmap = Nothing

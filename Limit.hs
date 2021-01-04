@@ -13,7 +13,6 @@ import qualified Utility.Matcher
 import qualified Remote
 import Annex.Content
 import Annex.WorkTree
-import Annex.Action
 import Annex.UUID
 import Annex.Magic
 import Annex.Link
@@ -495,25 +494,6 @@ limitMetaData s = case parseMetaDataMatcher s of
 	check f matching k = not . S.null 
 		. S.filter matching
 		. metaDataValues f <$> getCurrentMetaData k
-
-addTimeLimit :: Duration -> Annex ()
-addTimeLimit duration = do
-	start <- liftIO getPOSIXTime
-	let cutoff = start + durationToPOSIXTime duration
-	addLimit $ Right $ MatchFiles
-		{ matchAction = const $ const $ do
-			now <- liftIO getPOSIXTime
-			if now > cutoff
-				then do
-					warning $ "Time limit (" ++ fromDuration duration ++ ") reached!"
-					shutdown True
-					liftIO $ exitWith $ ExitFailure 101
-				else return True
-		, matchNeedsFileName = False
-		, matchNeedsFileContent = False
-		, matchNeedsKey = False
-		, matchNeedsLocationLog = False
-		}
 
 addAccessedWithin :: Duration -> Annex ()
 addAccessedWithin duration = do

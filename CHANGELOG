@@ -5,6 +5,8 @@ git-annex (8.20201130) UNRELEASED; urgency=medium
   * add --force-small: Run git add rather than updating the index itself,
     so any other smudge filters than the annex one that may be enabled will
     be used.
+  * Fix --time-limit, which got broken in several ways by some optimisations
+    in version 8.20201007.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 Jan 2021 12:52:41 -0400
 
