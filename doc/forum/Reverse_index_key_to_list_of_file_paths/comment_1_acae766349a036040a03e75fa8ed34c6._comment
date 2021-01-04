@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-04T15:58:24Z"
+ content="""
+> How would I make sure that potential moves/renames will update the index?
+
+If I had a good answer to that question I would have built it already.
+
+I mean, a post-commit hook can notice changed after the fact, but noticing
+them when they've just been staged is harder.
+
+It does not make sense to store such an index in the git-annex branch,
+because it's redundant information to what's already stored in git trees.
+
+This is discussed in [[todo/cache_key_info]].
+"""]]
