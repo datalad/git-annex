@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-04T20:49:40Z"
+ content="""
+I agree, this is a bug. Copied to
+[[bugs/adjustedbranchrefresh_ignored_by_git_annex_add]].
+"""]]

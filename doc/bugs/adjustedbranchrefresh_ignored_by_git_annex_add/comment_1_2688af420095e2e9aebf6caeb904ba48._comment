@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-04T20:57:22Z"
+ content="""
+So I think the whole problem is that, git-annex add (and import, addurl,
+etc) should add the files unlocked when in an unlockpresent branch.
+
+I don't think git-annex sync needs to deal with this, problably.
+
+Don't think this really has anything to do with adjustedbranchrefresh.
+That's about updates after getting/dropping files, and that's not been done
+in this case.
+"""]]
