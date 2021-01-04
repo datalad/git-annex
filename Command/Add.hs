@@ -147,7 +147,8 @@ addSmallOverridden o file = do
 addFile :: CheckGitIgnore -> RawFilePath -> Annex Bool
 addFile ci file = do
 	ps <- gitAddParams ci
-	Annex.Queue.addCommand "add" (ps++[Param "--"]) [fromRawFilePath file]
+	Annex.Queue.addCommand [] "add" (ps++[Param "--"])
+		[fromRawFilePath file]
 	return True
 
 start :: AddOptions -> SeekInput -> RawFilePath -> AddUnlockedMatcher -> CommandStart

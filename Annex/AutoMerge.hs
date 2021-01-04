@@ -147,7 +147,7 @@ resolveMerge us them inoverlay = do
 	unless inoverlay $ do
 		(deleted, cleanup2) <- inRepo (LsFiles.deleted [] [top])
 		unless (null deleted) $
-			Annex.Queue.addCommand "rm"
+			Annex.Queue.addCommand [] "rm"
 				[Param "--quiet", Param "-f", Param "--"]
 				(map fromRawFilePath deleted)
 		void $ liftIO cleanup2
@@ -288,8 +288,13 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 	
 	resolveby ks a = do
 		{- Remove conflicted file from index so merge can be resolved. -}
-		Annex.Queue.addCommand "rm"
-			[Param "--quiet", Param "-f", Param "--cached", Param "--"] [file]
+		Annex.Queue.addCommand [] "rm"
+			[ Param "--quiet"
+			, Param "-f"
+			, Param "--cached"
+			, Param "--"
+			]
+			[file]
 		void a
 		return (ks, Just file)
 

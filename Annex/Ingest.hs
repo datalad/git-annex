@@ -308,7 +308,8 @@ addLink ci file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( do
 		_ <- makeLink file key mcache
 		ps <- gitAddParams ci
-		Annex.Queue.addCommand "add" (ps++[Param "--"]) [fromRawFilePath file]
+		Annex.Queue.addCommand [] "add" (ps++[Param "--"])
+			[fromRawFilePath file]
 	, do
 		l <- makeLink file key mcache
 		addAnnexLink l file

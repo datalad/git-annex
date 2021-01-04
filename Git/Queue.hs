@@ -1,6 +1,6 @@
 {- git repository command queue
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -37,8 +37,12 @@ data Action m
 	{- A git command to run, on a list of files that can be added to
 	 - as the queue grows. -}
 	| CommandAction 
-		{ getSubcommand :: String
+		{ getCommonParams :: [CommandParam]
+		-- ^ parameters that come before the git subcommand
+		-- (in addition to the Repo's gitGlobalOpts.
+		, getSubcommand :: String
 		, getParams :: [CommandParam]
+		-- ^ parameters that come after the git subcommand
 		, getFiles :: [CommandParam]
 		} 
 	{- An internal action to run, on a list of files that can be added
@@ -57,13 +61,13 @@ instance Eq (InternalActionRunner m) where
 {- A key that can uniquely represent an action in a Map. -}
 data ActionKey
 	= UpdateIndexActionKey
-	| CommandActionKey String [CommandParam]
+	| CommandActionKey [CommandParam] String [CommandParam]
 	| InternalActionKey String
 	deriving (Eq, Ord)
 
 actionKey :: Action m -> ActionKey
 actionKey (UpdateIndexAction _) = UpdateIndexActionKey
-actionKey CommandAction { getSubcommand = s, getParams = p } = CommandActionKey s p
+actionKey CommandAction { getCommonParams = c, getSubcommand = s, getParams = p } = CommandActionKey c s p
 actionKey InternalAction { getRunner = InternalActionRunner s _ } = InternalActionKey s
 
 {- A queue of actions to perform (in any order) on a git repository,
@@ -95,14 +99,15 @@ new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
  -
  - Git commands with the same subcommand but different parameters are
  - assumed to be equivilant enough to perform in any order with the same
- - result.
+ - end result.
  -}
-addCommand :: MonadIO m => String -> [CommandParam] -> [FilePath] -> Queue m -> Repo -> m (Queue m)
-addCommand subcommand params files q repo =
+addCommand :: MonadIO m => [CommandParam] -> String -> [CommandParam] -> [FilePath] -> Queue m -> Repo -> m (Queue m)
+addCommand commonparams subcommand params files q repo =
 	updateQueue action different (length files) q repo
   where
 	action = CommandAction
-		{ getSubcommand = subcommand
+		{ getCommonParams = commonparams
+		, getSubcommand = subcommand
 		, getParams = params
 		, getFiles = map File files
 		}
@@ -155,8 +160,8 @@ updateQueue !action different sizeincrease q repo
  - the old value. So, the list append of the new value first is more
  - efficient. -}
 combineNewOld :: Action m -> Action m -> Action m
-combineNewOld (CommandAction _sc1 _ps1 fs1) (CommandAction sc2 ps2 fs2) =
-	CommandAction sc2 ps2 (fs1++fs2)
+combineNewOld (CommandAction _cps1 _sc1 _ps1 fs1) (CommandAction cps2 sc2 ps2 fs2) =
+	CommandAction cps2 sc2 ps2 (fs1++fs2)
 combineNewOld (UpdateIndexAction s1) (UpdateIndexAction s2) =
 	UpdateIndexAction (s1++s2)
 combineNewOld (InternalAction _r1 fs1) (InternalAction r2 fs2) =
@@ -209,7 +214,8 @@ runAction repo action@(CommandAction {}) = liftIO $ do
 #endif
   where
 	gitparams = gitCommandLine
-		(Param (getSubcommand action):getParams action) repo
+		(getCommonParams action++Param (getSubcommand action):getParams action) 
+		repo
 #ifndef mingw32_HOST_OS
 	go p (Just h) _ _ pid = do
 		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action

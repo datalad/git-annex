@@ -97,7 +97,8 @@ perform key file = lookupKeyNotHidden file >>= \case
 			link <- calcRepo $ gitAnnexLink file key
 			createWorkTreeDirectory (parentDir file)
 			liftIO $ R.createSymbolicLink link file
-			Annex.Queue.addCommand "add" [Param "--"] [fromRawFilePath file]
+			Annex.Queue.addCommand [] "add" [Param "--"]
+				[fromRawFilePath file]
 			next $ return True
 		)
 	Just k

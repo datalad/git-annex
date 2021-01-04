@@ -107,5 +107,5 @@ fixSymlink file link = do
 
 cleanupSymlink :: FilePath -> CommandCleanup
 cleanupSymlink file = do
-	Annex.Queue.addCommand "add" [Param "--force", Param "--"] [file]
+	Annex.Queue.addCommand [] "add" [Param "--force", Param "--"] [file]
 	return True

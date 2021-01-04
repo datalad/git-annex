@@ -198,7 +198,7 @@ add :: GetFileMatcher -> FilePath -> Assistant (Maybe Change)
 add largefilematcher file = ifM (liftAnnex $ checkFileMatcher largefilematcher (toRawFilePath file))
 	( pendingAddChange file
 	, do
-		liftAnnex $ Annex.Queue.addCommand "add"
+		liftAnnex $ Annex.Queue.addCommand [] "add"
 			[Param "--force", Param "--"] [file]
 		madeChange file AddFileChange
 	)

@@ -1,6 +1,6 @@
 {- git-annex command queue
  -
- - Copyright 2011, 2012, 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -25,11 +25,11 @@ import qualified Git.Queue
 import qualified Git.UpdateIndex
 
 {- Adds a git command to the queue. -}
-addCommand :: String -> [CommandParam] -> [FilePath] -> Annex ()
-addCommand command params files = do
+addCommand :: [CommandParam] -> String -> [CommandParam] -> [FilePath] -> Annex ()
+addCommand commonparams command params files = do
 	q <- get
 	store =<< flushWhenFull =<<
-		(Git.Queue.addCommand command params files q =<< gitRepo)
+		(Git.Queue.addCommand commonparams command params files q =<< gitRepo)
 
 addInternalAction :: Git.Queue.InternalActionRunner Annex -> [(RawFilePath, IO Bool)] -> Annex ()
 addInternalAction runner files = do
