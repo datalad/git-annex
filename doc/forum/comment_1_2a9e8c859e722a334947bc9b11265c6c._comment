@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-04T20:31:58Z"
+ content="""
+There's not currently anything to automate this. I sometimes do it
+manually, eg noticing that drive A is nearly full and `git-annex move --to
+B` of some of its files to free up space. 
+
+That's generally when I need space on drive A for some other purpose
+than that git-annex repo. If drive A is only being used for the one
+git-annex repo, then it doesn't much matter if it fills up before drive B?
+So maybe setting annex.diskreserve to some sufficiently large size in that
+repo on the drive would be better, so there's always space reserved for the
+other things the drive is being used for.
+
+[[design/balanced_preferred_content]] is an old attempt at designing
+a way to automate balancing between drives. Never quite got implemented,
+because of the limitations documented in it.
+It might be that it would work well enough for some use cases?
+
+I'd welcome thoughts on this topic.
+"""]]
