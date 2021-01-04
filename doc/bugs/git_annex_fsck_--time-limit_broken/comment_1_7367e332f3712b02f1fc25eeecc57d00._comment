@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-04T17:50:55Z"
+ content="""
+All of this is explained by --time-limit being implemented as a
+hack that throws an exception. Problem being that, the new streaming seeker
+checks matchers in a separate thread and having that thread die of an
+exception probably causes the hang. Also, since it checks the matcher
+before streaming through git, there's a buffer of perhaps many files
+that builds up before the time limit is reached, so those can go on to be
+processed, even after it's said the time limit is reached. Aaad, since it
+runs cleanup actions, this might leave fsck with its database closed
+but trying to use it.
+
+--time-limit could be removed from git-annex entirely. The `timeout`
+command can be used with git-annex. But fsck db flush and close doesn't
+happen when git-annex gets SIGINT and do with --time-limit. So this would
+need maybe a SIGINT handler that runs cleanup actions? And then git-annex
+would run some perhaps expensive cleanup actions whenever ctrl-c'd, which
+might not be desirable since normally that's not necessary.
+
+Or, it needs to not be implemented in this hackish way, but as another
+check that's done before starting processing a seeked file.
+"""]]
