@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-01-04T16:04:45Z"
+ content="""
+Use `git mv` if you want to rename an annexed file. That does not change
+the key, the old key will work fine despite the extension having changed.
+"""]]
