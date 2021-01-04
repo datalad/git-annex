@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-01-04T17:34:56Z"
+ content="""
+You use `git-annex add` when you have a file located
+inside your git-annex repository, which you want to check in.
+
+You use `git-annex import` when you have some other thing
+storing files and you want git-annex to learn about the files stored there.
+Using git-annex import to move individual files to the repository and add
+them is not significantly different than mv+add and will eventually be
+deprecated.
+"""]]
