@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="comment 10"
+ date="2021-01-03T22:07:02Z"
+ content="""
+From this man page, it's not totally clear how/where the metadata is stored. Is it inside the Git repo (i.e. as regular file), or inside the Annex, or somewhere else? Is this information synced when you do `git push` (as part of Git), or via `git annex sync`? 
+
+How does it resolve any conflicts?
+
+Is the metadata itself under version control? (If it is in Git itself, then clearly yes, but that's not clear to me.)
+
+"""]]

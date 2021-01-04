@@ -1,0 +1,8 @@
+I understand from [here](https://git-annex.branchable.com/forum/Import_existing_files/#comment-29ece0290fa1314ca48caf8f435570d2) that there is no reverse index from a key to list of file paths pointing to that key (i.e. pointing to the value).
+
+`find . -lname '*<key>'` would be an extremely slow operation on a big repo as it would go through the whole repo. And this is probably a common operation I frequently want to do.
+
+What if I would want to build one? How would I make sure that potential moves/renames will update the index?
+
+I understand from [here](https://git-annex.branchable.com/git-annex-metadata/) that you can attach meta information to a key (via `git annex metadata`). This sounds as it would be useful to contain such reverse information, right?
+

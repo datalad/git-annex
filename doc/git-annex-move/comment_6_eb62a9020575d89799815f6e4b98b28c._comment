@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="comment 6"
+ date="2021-01-03T21:48:50Z"
+ content="""
+Renaming files is still somewhat unclear then. So I should just use `git mv` to rename files?
+What if the file extension changes? E.g. I have lots of pictures with uppercase `.JPG` and I might want to change them to `.jpg`. I might also have some files as `.jpeg` and to unify them, I might change them as well to `.jpg`. But as far as I understand, that would also change the default hash, as the default hash contains the extension? But doing `git mv` will take care about all of that via pre-commit hooks?
+
+"""]]

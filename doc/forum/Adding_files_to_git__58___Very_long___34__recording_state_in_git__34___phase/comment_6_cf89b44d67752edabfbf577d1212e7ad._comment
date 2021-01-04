@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="comment 6"
+ date="2021-01-02T23:49:14Z"
+ content="""
+I'm having a very similar issue. Adding files is quite slow, and it hangs for several minutes in `(recording state in git...)` now (that started after adding quite a few files already), and the time seems to increase (I fear that it will soon be hours, not minutes, making it basically unusable...).
+
+I have not really configured anything (i.e. it should use all the defaults). I just did `git init` and `git annex init`, and then started to import files using `git annex import`. That's all.
+
+I don't really know about this smudge thing. Is that enabled by default? If that is causing problems, should I maybe disable it?
+
+"""]]
