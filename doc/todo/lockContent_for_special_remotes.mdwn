@@ -60,3 +60,5 @@ by adding a requirednumcopies. (Analagous to required content configs.)
 Defaulting to 1 as now, but if the user wants to they can set it higher,
 perhaps as high as their numcopies (or even just set it to 1000 and make
 it be treated the same value as numcopies when it's >= numcopies.)
+
+> Started on requirednumcopies branch --[[Joey]]
