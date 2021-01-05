@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
- nickname="eric.w"
- avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
- subject="comment 5"
- date="2020-12-31T20:34:55Z"
- content="""
-I am digging into this further, and it looks like git annex uses cp --reflog=auto, confirmed with filefrag -v, but even if the object from the old backend isn't taking up space, its still frustrating that I can't figure out why git annex is keeping old files around and not reporting them via git annex unused. 
-"""]]
