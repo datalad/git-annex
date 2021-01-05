@@ -1,0 +1,43 @@
+# NAME
+
+git-annex requirednumcopies - configure required number of copies
+
+# SYNOPSIS
+
+git annex requirednumcopies `N`
+
+# DESCRIPTION
+
+Tells git-annex how many copies it is required to preserve of files, over all
+repositories. The default is 1.
+
+Run without a number to get the current value.
+
+This configuration is stored in the git-annex branch, so it will be seen
+by all clones of the repository. It can be overridden on a per-file basis
+by the annex.requirednumcopies setting in .gitattributes files, or can be
+overridden temporarily with the --requirednumcopies option.
+
+When git-annex is asked to drop a file, it makes sure that
+that the required number of copies will still exist in other
+repositories, by locking the content in them, preventing it from
+being dropped.
+
+This supplements the [[git-annex-numcopies]](1) setting. git-annex
+checks that numcopies is met before dropping. But in situations
+involving trusted repositories or special remotes that
+cannot lock content in place, the numcopies setting may be violated
+when the same file is being dropped at the same time from multiple
+repositories. In these unusual situations, git-annex ensures that
+the requirednumcopies setting is not violated.
+
+# SEE ALSO
+
+[[git-annex]](1)
+[[git-annex-numcopies]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -14,18 +14,25 @@ repositories. The default is 1.
 Run without a number to get the current value.
 
 This configuration is stored in the git-annex branch, so it will be seen
-by all clones of the repository.
+by all clones of the repository. It can be overridden on a per-file basis
+by the annex.numcopies setting in .gitattributes files, or can be
+overridden temporarily with the --numcopies option.
 
 When git-annex is asked to drop a file, it first verifies that the
-required number of copies can be satisfied among all the other
+number of copies can be satisfied among all the other
 repositories that have a copy of the file.
-  
-This can be overridden on a per-file basis by the annex.numcopies setting
-in .gitattributes files.
+
+In situations involving trusted repositories or special remotes that
+cannot lock content in place, the numcopies setting may be violated
+when the same file is being dropped at the same time from multiple
+repositories. In these unusual situations, git-annex ensures that
+the requirednumcopies setting (default 1) is not violated. See
+[[git-annex-requirednumcopies]](1) for more about this setting.
 
 # SEE ALSO
 
 [[git-annex]](1)
+[[git-annex-requirednumcopies]](1)
 
 # AUTHOR
 
