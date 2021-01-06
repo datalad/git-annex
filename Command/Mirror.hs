@@ -68,8 +68,8 @@ startKey o afile (si, key, ai) = case fromToOptions o of
 	ToRemote r -> checkFailedTransferDirection ai Upload $ ifM (inAnnex key)
 		( Command.Move.toStart Command.Move.RemoveNever afile key ai si =<< getParsed r
 		, do
-			numcopies <- getnumcopies
-			Command.Drop.startRemote afile ai si numcopies key =<< getParsed r
+			(numcopies, mincopies) <- getnummincopies
+			Command.Drop.startRemote afile ai si numcopies mincopies key =<< getParsed r
 		)
 	FromRemote r -> checkFailedTransferDirection ai Download $ do
 		haskey <- flip Remote.hasKey key =<< getParsed r
@@ -81,11 +81,11 @@ startKey o afile (si, key, ai) = case fromToOptions o of
 				)
 			Right False -> ifM (inAnnex key)
 				( do
-					numcopies <- getnumcopies
-					Command.Drop.startLocal afile ai si numcopies key []
+					(numcopies, mincopies) <- getnummincopies
+					Command.Drop.startLocal afile ai si numcopies mincopies key []
 				, stop
 				)
   where
-	getnumcopies = case afile of
-		AssociatedFile Nothing -> getNumCopies
-		AssociatedFile (Just af) -> getFileNumCopies af
+	getnummincopies = case afile of
+		AssociatedFile Nothing -> (,) <$> getNumCopies <*> getMinCopies
+		AssociatedFile (Just af) -> getFileNumMinCopies af

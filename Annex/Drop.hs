@@ -1,6 +1,6 @@
 {- dropping of unwanted content
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -63,23 +63,30 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
   where
 	getcopies fs = do
 		(untrusted, have) <- trustPartition UnTrusted locs
-		numcopies <- if null fs
-			then getNumCopies
-			else maximum <$> mapM getFileNumCopies fs
-		return (NumCopies (length have), numcopies, S.fromList untrusted)
+		(numcopies, mincopies) <- if null fs
+			then (,) <$> getNumCopies <*> getMinCopies
+			else do
+				l <- mapM getFileNumMinCopies fs
+				return (maximum $ map fst l, maximum $ map snd l)
+		return (NumCopies (length have), numcopies, mincopies, S.fromList untrusted)
 
 	{- Check that we have enough copies still to drop the content.
 	 - When the remote being dropped from is untrusted, it was not
 	 - counted as a copy, so having only numcopies suffices. Otherwise,
-	 - we need more than numcopies to safely drop. -}
-	checkcopies (have, numcopies, _untrusted) Nothing = have > numcopies
-	checkcopies (have, numcopies, untrusted) (Just u)
+	 - we need more than numcopies to safely drop.
+	 -
+	 - This is not the final check that it's safe to drop, but it
+	 - avoids doing extra work to do that check later in cases where it
+	 - will surely fail.
+	 -}
+	checkcopies (have, numcopies, _mincopies, _untrusted) Nothing = have > numcopies
+	checkcopies (have, numcopies, _mincopies, untrusted) (Just u)
 		| S.member u untrusted = have >= numcopies
 		| otherwise = have > numcopies
 	
-	decrcopies (have, numcopies, untrusted) Nothing =
-		(NumCopies (fromNumCopies have - 1), numcopies, untrusted)
-	decrcopies v@(_have, _numcopies, untrusted) (Just u)
+	decrcopies (have, numcopies, mincopies, untrusted) Nothing =
+		(NumCopies (fromNumCopies have - 1), numcopies, mincopies, untrusted)
+	decrcopies v@(_have, _numcopies, _mincopies, untrusted) (Just u)
 		| S.member u untrusted = v
 		| otherwise = decrcopies v Nothing
 
@@ -105,8 +112,8 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 				, return n
 				)
 
-	dodrop n@(have, numcopies, _untrusted) u a = 
-		ifM (safely $ runner $ a numcopies)
+	dodrop n@(have, numcopies, mincopies, _untrusted) u a = 
+		ifM (safely $ runner $ a numcopies mincopies)
 			( do
 				liftIO $ debugM "drop" $ unwords
 					[ "dropped"
@@ -121,12 +128,12 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 			, return n
 			)
 
-	dropl fs n = checkdrop fs n Nothing $ \numcopies ->
+	dropl fs n = checkdrop fs n Nothing $ \numcopies mincopies ->
 		stopUnless (inAnnex key) $
-			Command.Drop.startLocal afile ai si numcopies key preverified
+			Command.Drop.startLocal afile ai si numcopies mincopies key preverified
 
-	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies ->
-		Command.Drop.startRemote afile ai si numcopies key r
+	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies mincopies ->
+		Command.Drop.startRemote afile ai si numcopies mincopies key r
 
 	ai = mkActionItem (key, afile)
 

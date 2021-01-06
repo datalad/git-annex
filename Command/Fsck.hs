@@ -117,7 +117,7 @@ start :: Maybe Remote -> Incremental -> SeekInput -> RawFilePath -> Key -> Comma
 start from inc si file key = Backend.getBackend (fromRawFilePath file) key >>= \case
 	Nothing -> stop
 	Just backend -> do
-		numcopies <- getFileNumCopies file
+		(numcopies, _mincopies) <- getFileNumMinCopies file
 		case from of
 			Nothing -> go $ perform key file backend numcopies
 			Just r -> go $ performRemote key afile backend numcopies r

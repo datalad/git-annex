@@ -64,6 +64,7 @@ configFilesActions =
 	, (trustLog, void $ liftAnnex trustMapLoad)
 	, (groupLog, void $ liftAnnex groupMapLoad)
 	, (numcopiesLog, void $ liftAnnex globalNumCopiesLoad)
+	, (mincopiesLog, void $ liftAnnex globalMinCopiesLoad)
 	, (scheduleLog, void updateScheduleLog)
 	-- Preferred and required content settings depend on most of the
 	-- other configs, so will be reloaded whenever any configs change.

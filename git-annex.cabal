@@ -767,6 +767,7 @@ Executable git-annex
     Command.Multicast
     Command.NotifyChanges
     Command.NumCopies
+    Command.MinCopies
     Command.P2P
     Command.P2PStdIO
     Command.PostReceive

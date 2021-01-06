@@ -10,23 +10,22 @@ numcopies N`, or can be overridden on a per-file-type basis by the
 annex.numcopies setting in `.gitattributes` files. The --numcopies switch
 allows temporarily using a different value.
 
-When dropping content, git-annex checks with remotes to make sure
-If enough repositories cannot be verified to have it, it will retain
-the file content to avoid data loss.
+When dropping content, git-annex checks with remotes to make sure If enough
+other repositories cannot be verified to have copies, it will refuse to
+drop it, avoid data loss.
 
-When it can, git-annex locks enough copies on other repositories, to allow
-it to safely drop a copy without any possibility that numcopies will be
-violated. There are some exceptions, including special remotes not
-supporting locking, and [[trusted repositories|trust]] that are not
-accessible, where locking is not done. 
+In unusual situations, involving special remotes that do not support
+locking, and concurrent drops of the same content from multiple
+repositories, git-annex may violate the numcopies setting. It still
+guarantees at least 1 copy is preserved. This can be configured by
+running `git-annex mincopies N` or can be overridden on a per-file-type
+basis by the annex.mincopies setting in `.gitattributes` files. 
+The --mincopies switch allows temporarily using a different value.
 
-If such a repository is being relied on to contain a copy and drops it at
-the wrong time, the configured numcopies setting can be violated. To avoid
-losing the last copy in such an unusual situation, git-annex requires that
-at least 1 copy is locked in place when dropping content. If 1 does not
-seem like enough, you can override this default by running `git-annex
-requirednumcopies or setting annex.requirednumcopies in `.gitattributes`
-files.
+Note that [trusted repositories|trust]] are assumed to
+continue to contain content, so checking them is skipped. So dropping
+content from trusted repositories does risk numcopies and mincopies 
+later being violated.
 
 To express more detailed requirements about which repositories contain which
 content, see [[required_content]].

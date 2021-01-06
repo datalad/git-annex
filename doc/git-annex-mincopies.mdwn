@@ -1,37 +1,38 @@
 # NAME
 
-git-annex numcopies - configure desired number of copies
+git-annex mincopies - configure minimum number of copies
 
 # SYNOPSIS
 
-git annex numcopies `N`
+git annex mincopies `N`
 
 # DESCRIPTION
 
-Tells git-annex how many copies it should preserve of files, over all
-repositories. The default is 1. 
+Tells git-annex how many copies it is required to preserve of files, over all
+repositories. The default is 1.
 
 Run without a number to get the current value.
 
 This configuration is stored in the git-annex branch, so it will be seen
 by all clones of the repository. It can be overridden on a per-file basis
-by the annex.numcopies setting in .gitattributes files, or can be
-overridden temporarily with the --numcopies option.
+by the annex.mincopies setting in .gitattributes files, or can be
+overridden temporarily with the --mincopies option.
 
 When git-annex is asked to drop a file, it first verifies that the
 number of copies can be satisfied among all the other
 repositories that have a copy of the file.
 
+This supplements the [[git-annex-numcopies]](1) setting. 
 In unusual situations, involving special remotes that do not support
 locking, and concurrent drops of the same content from multiple
-repositories, git-annex may violate the numcopies setting. It still
-guarantees at least 1 copy is preserved. This can be configured by
-using [[git-annex-mincopies]](1)
+repositories, git-annex may violate the numcopies setting.
+In these unusual situations, git-annex ensures that
+the mincopies setting is not violated.
 
 # SEE ALSO
 
 [[git-annex]](1)
-[[git-annex-mincopies]](1)
+[[git-annex-numcopies]](1)
 
 # AUTHOR
 

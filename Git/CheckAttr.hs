@@ -1,6 +1,6 @@
 {- git check-attr interface
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,8 +20,8 @@ type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], RawFilePath)
 
 type Attr = String
 
-{- Starts git check-attr running to look up the specified gitattributes
- - values and returns a handle.  -}
+{- Starts git check-attr running to look up the specified attributes
+ - and returns a handle.  -}
 checkAttrStart :: [Attr] -> Repo -> IO CheckAttrHandle
 checkAttrStart attrs repo = do
 	currdir <- R.getCurrentDirectory
@@ -38,17 +38,24 @@ checkAttrStart attrs repo = do
 checkAttrStop :: CheckAttrHandle -> IO ()
 checkAttrStop (h, _, _) = CoProcess.stop h
 
-{- Gets an attribute of a file. When the attribute is not specified,
- - returns "" -}
 checkAttr :: CheckAttrHandle -> Attr -> RawFilePath -> IO String
-checkAttr (h, attrs, currdir) want file = do
-	pairs <- CoProcess.query h send (receive "")
-	let vals = map snd $ filter (\(attr, _) -> attr == want) pairs
-	case vals of
-		["unspecified"] -> return ""
-		[v] -> return v
-		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ fromRawFilePath file
+checkAttr h want file = checkAttrs h [want] file >>= return . \case
+	(v:_) -> v
+	[] -> ""
+
+{- Gets attributes of a file. When an attribute is not specified,
+ - returns "" for it. -}
+checkAttrs :: CheckAttrHandle -> [Attr] -> RawFilePath -> IO [String]
+checkAttrs (h, attrs, currdir) want file = do
+	l <- CoProcess.query h send (receive "")
+	return (getvals l want)
   where
+	getvals _ [] = []
+	getvals l (x:xs) = case map snd $ filter (\(attr, _) -> attr == x) l of
+			["unspecified"] -> "" : getvals l xs
+			[v] -> v : getvals l xs
+			_ -> error $ "unable to determine " ++ x ++ " attribute of " ++ fromRawFilePath file
+
 	send to = B.hPutStr to $ file' `B.snoc` 0
 	receive c from = do
 		s <- hGetSomeString from 1024

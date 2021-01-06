@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -84,11 +84,11 @@ start o from si file key = start' o from key afile ai si
 
 start' :: DropOptions -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> SeekInput -> CommandStart
 start' o from key afile ai si = 
-	checkDropAuto (autoMode o) from afile key $ \numcopies ->
+	checkDropAuto (autoMode o) from afile key $ \numcopies mincopies ->
 		stopUnless want $
 			case from of
-				Nothing -> startLocal afile ai si numcopies key []
-				Just remote -> startRemote afile ai si numcopies key remote
+				Nothing -> startLocal afile ai si numcopies mincopies key []
+				Just remote -> startRemote afile ai si numcopies mincopies key remote
   where
 	want
 		| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile
@@ -97,21 +97,21 @@ start' o from key afile ai si =
 startKeys :: DropOptions -> Maybe Remote -> (SeekInput, Key, ActionItem) -> CommandStart
 startKeys o from (si, key, ai) = start' o from key (AssociatedFile Nothing) ai si
 
-startLocal :: AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> Key -> [VerifiedCopy] -> CommandStart
-startLocal afile ai si numcopies key preverified =
+startLocal :: AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> [VerifiedCopy] -> CommandStart
+startLocal afile ai si numcopies mincopies key preverified =
 	starting "drop" (OnlyActionOn key ai) si $
-		performLocal key afile numcopies preverified
+		performLocal key afile numcopies mincopies preverified
 
-startRemote :: AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> Key -> Remote -> CommandStart
-startRemote afile ai si numcopies key remote = 
+startRemote :: AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> Remote -> CommandStart
+startRemote afile ai si numcopies mincopies key remote = 
 	starting ("drop " ++ Remote.name remote) (OnlyActionOn key ai) si $
-		performRemote key afile numcopies remote
+		performRemote key afile numcopies mincopies remote
 
-performLocal :: Key -> AssociatedFile -> NumCopies -> [VerifiedCopy] -> CommandPerform
-performLocal key afile numcopies preverified = lockContentForRemoval key fallback $ \contentlock -> do
+performLocal :: Key -> AssociatedFile -> NumCopies -> MinCopies -> [VerifiedCopy] -> CommandPerform
+performLocal key afile numcopies mincopies preverified = lockContentForRemoval key fallback $ \contentlock -> do
 	u <- getUUID
 	(tocheck, verified) <- verifiableCopies key [u]
-	doDrop u (Just contentlock) key afile numcopies [] (preverified ++ verified) tocheck
+	doDrop u (Just contentlock) key afile numcopies mincopies [] (preverified ++ verified) tocheck
 		( \proof -> do
 			liftIO $ debugM "drop" $ unwords
 				[ "Dropping from here"
@@ -133,12 +133,12 @@ performLocal key afile numcopies preverified = lockContentForRemoval key fallbac
 	-- to be done except for cleaning up.
 	fallback = next $ cleanupLocal key
 
-performRemote :: Key -> AssociatedFile -> NumCopies -> Remote -> CommandPerform
-performRemote key afile numcopies remote = do
+performRemote :: Key -> AssociatedFile -> NumCopies -> MinCopies -> Remote -> CommandPerform
+performRemote key afile numcopies mincopies remote = do
 	-- Filter the uuid it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
 	(tocheck, verified) <- verifiableCopies key [uuid]
-	doDrop uuid Nothing key afile numcopies [uuid] verified tocheck
+	doDrop uuid Nothing key afile numcopies mincopies [uuid] verified tocheck
 		( \proof -> do 
 			liftIO $ debugM "drop" $ unwords
 				[ "Dropping from remote"
@@ -178,17 +178,18 @@ doDrop
 	-> Key
 	-> AssociatedFile
 	-> NumCopies
+	-> MinCopies
 	-> [UUID]
 	-> [VerifiedCopy]
 	-> [UnVerifiedCopy]
 	-> (Maybe SafeDropProof -> CommandPerform, CommandPerform)
 	-> CommandPerform
-doDrop dropfrom contentlock key afile numcopies skip preverified check (dropaction, nodropaction) = 
+doDrop dropfrom contentlock key afile numcopies mincopies skip preverified check (dropaction, nodropaction) = 
 	ifM (Annex.getState Annex.force)
 		( dropaction Nothing
 		, ifM (checkRequiredContent dropfrom key afile)
 			( verifyEnoughCopiesToDrop nolocmsg key 
-				contentlock numcopies
+				contentlock numcopies mincopies
 				skip preverified check
 					(dropaction . Just)
 					(forcehint nodropaction)
@@ -216,17 +217,17 @@ requiredContent = do
 
 {- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories. -}
-checkDropAuto :: Bool -> Maybe Remote -> AssociatedFile -> Key -> (NumCopies -> CommandStart) -> CommandStart
+checkDropAuto :: Bool -> Maybe Remote -> AssociatedFile -> Key -> (NumCopies -> MinCopies -> CommandStart) -> CommandStart
 checkDropAuto automode mremote afile key a =
-	go =<< getAssociatedFileNumCopies afile
+	go =<< getAssociatedFileNumMinCopies afile
   where
-	go numcopies
+	go (numcopies, mincopies)
 		| automode = do
 			locs <- Remote.keyLocations key
 			uuid <- getUUID
 			let remoteuuid = fromMaybe uuid $ Remote.uuid <$> mremote
 			locs' <- trustExclude UnTrusted $ filter (/= remoteuuid) locs
 			if NumCopies (length locs') >= numcopies
-				then a numcopies
+				then a numcopies mincopies
 				else stop
-		| otherwise = a numcopies
+		| otherwise = a numcopies mincopies

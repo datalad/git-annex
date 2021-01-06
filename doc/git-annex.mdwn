@@ -241,6 +241,12 @@ content from the key-value store.
   
   See [[git-annex-numcopies]](1) for details.
 
+* `mincopies [N]`
+
+  Configure minimum number of copies.
+  
+  See [[git-annex-mincopies]](1) for details.
+
 * `trust [repository ...]`
 
   Records that a repository is trusted to not unexpectedly lose
@@ -770,8 +776,13 @@ may not be explicitly listed on their individual man pages.
 
 * `--numcopies=n`
 
-  Overrides the numcopies setting, forcing git-annex to ensure the
-  specified number of copies exist.
+  Overrides the numcopies setting.
+
+  Note that setting numcopies to 0 is very unsafe.
+
+* `--mincopies=n`
+
+  Overrides the mincopies setting.
 
   Note that setting numcopies to 0 is very unsafe.
 
@@ -1842,22 +1853,23 @@ settings. Setting annex.largefiles in [[git-annex-config]](1) is an easier
 way to configure it across all clones of the repository.
 See [[git-annex-matching-expression]](1) for details on the syntax.
 
-The numcopies setting can also be configured on a per-file-type basis via
-the `annex.numcopies` attribute in `.gitattributes` files. This overrides
-other numcopies settings.
+The numcopies and mincopies settings can also be configured on a 
+per-file-type basis via the `annex.numcopies` and `annex.mincopies` 
+attributes in `.gitattributes` files. This overrides other settings.
 For example, this makes two copies be needed for wav files and 3 copies
 for flac files:
 
 	*.wav annex.numcopies=2
 	*.flac annex.numcopies=3
 
-Note that setting numcopies to 0 is very unsafe.
+Note that setting numcopies and mincopies to 0 is very unsafe.
 
 These settings are honored by git-annex whenever it's operating on a
 matching file. However, when using --all, --unused, or --key to specify
 keys to operate on, git-annex is operating on keys and not files, so will
 not honor the settings from .gitattributes. For this reason, the `git annex
-numcopies` command is useful to configure a global default for numcopies.
+numcopies` and `git annex mincopies` commands are useful to configure a
+global default.
 
 Also note that when using views, only the toplevel .gitattributes file is
 preserved in the view, so other settings in other files won't have any

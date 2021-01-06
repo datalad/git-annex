@@ -1,6 +1,6 @@
 {- git-annex numcopies configuration and checking
  -
- - Copyright 2014-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,10 +10,11 @@
 module Annex.NumCopies (
 	module Types.NumCopies,
 	module Logs.NumCopies,
-	getFileNumCopies,
-	getAssociatedFileNumCopies,
+	getFileNumMinCopies,
+	getAssociatedFileNumMinCopies,
 	getGlobalFileNumCopies,
 	getNumCopies,
+	getMinCopies,
 	deprecatedNumCopies,
 	defaultNumCopies,
 	numCopiesCheck,
@@ -41,8 +42,11 @@ import Data.Typeable
 defaultNumCopies :: NumCopies
 defaultNumCopies = NumCopies 1
 
-fromSources :: [Annex (Maybe NumCopies)] -> Annex NumCopies
-fromSources = fromMaybe defaultNumCopies <$$> getM id
+defaultMinCopies :: MinCopies
+defaultMinCopies = MinCopies 1
+
+fromSourcesOr :: v -> [Annex (Maybe v)] -> Annex v
+fromSourcesOr v = fromMaybe v <$$> getM id
 
 {- The git config annex.numcopies is deprecated. -}
 deprecatedNumCopies :: Annex (Maybe NumCopies)
@@ -52,41 +56,93 @@ deprecatedNumCopies = annexNumCopies <$> Annex.getGitConfig
 getForcedNumCopies :: Annex (Maybe NumCopies)
 getForcedNumCopies = Annex.getState Annex.forcenumcopies
 
-{- Numcopies value from any of the non-.gitattributes configuration
+{- Value forced on the command line by --mincopies. -}
+getForcedMinCopies :: Annex (Maybe MinCopies)
+getForcedMinCopies = Annex.getState Annex.forcemincopies
+
+{- NumCopies value from any of the non-.gitattributes configuration
  - sources. -}
 getNumCopies :: Annex NumCopies
-getNumCopies = fromSources
+getNumCopies = fromSourcesOr defaultNumCopies
 	[ getForcedNumCopies
 	, getGlobalNumCopies
 	, deprecatedNumCopies
 	]
 
-{- Numcopies value for a file, from any configuration source, including the
- - deprecated git config. -}
-getFileNumCopies :: RawFilePath -> Annex NumCopies
-getFileNumCopies f = fromSources
-	[ getForcedNumCopies
-	, getFileNumCopies' f
-	, deprecatedNumCopies
+{- MinCopies value from any of the non-.gitattributes configuration
+ - sources. -}
+getMinCopies :: Annex MinCopies
+getMinCopies = fromSourcesOr defaultMinCopies
+	[ getForcedMinCopies
+	, getGlobalMinCopies
 	]
 
-getAssociatedFileNumCopies :: AssociatedFile -> Annex NumCopies
-getAssociatedFileNumCopies (AssociatedFile afile) =
-	maybe getNumCopies getFileNumCopies afile
+{- NumCopies and MinCopies value for a file, from any configuration source,
+ - including .gitattributes. -}
+getFileNumMinCopies :: RawFilePath -> Annex (NumCopies, MinCopies)
+getFileNumMinCopies f = do
+	fnumc <- getForcedNumCopies
+	fminc <- getForcedMinCopies
+	case (fnumc, fminc) of
+		(Just numc, Just minc) -> return (numc, minc)
+		(Just numc, Nothing) -> do
+			minc <- fromSourcesOr defaultMinCopies
+				[ snd <$> getNumMinCopiesAttr f
+				, getGlobalMinCopies
+				]
+			return (numc, minc)
+		(Nothing, Just minc) -> do
+			numc <- fromSourcesOr defaultNumCopies
+				[ fst <$> getNumMinCopiesAttr f
+				, getGlobalNumCopies
+				, deprecatedNumCopies
+				]
+			return (numc, minc)
+		(Nothing, Nothing) -> do
+			let fallbacknum = fromSourcesOr defaultNumCopies
+				[ getGlobalNumCopies
+				, deprecatedNumCopies
+				]
+			let fallbackmin = fromSourcesOr defaultMinCopies
+				[ getGlobalMinCopies
+				]
+			getNumMinCopiesAttr f >>= \case
+				(Just numc, Just minc) -> 
+					return (numc, minc)
+				(Just numc, Nothing) -> (,)
+					<$> pure numc
+					<*> fallbackmin
+				(Nothing, Just minc) -> (,)
+					<$> fallbacknum
+					<*> pure minc
+				(Nothing, Nothing) -> (,)
+					<$> fallbacknum
+					<*> fallbackmin
+
+getAssociatedFileNumMinCopies :: AssociatedFile -> Annex (NumCopies, MinCopies)
+getAssociatedFileNumMinCopies (AssociatedFile (Just file)) =
+	getFileNumMinCopies file
+getAssociatedFileNumMinCopies (AssociatedFile Nothing) = (,)
+	<$> getNumCopies
+	<*> getMinCopies
 
 {- This is the globally visible numcopies value for a file. So it does
  - not include local configuration in the git config or command line
  - options. -}
 getGlobalFileNumCopies :: RawFilePath  -> Annex NumCopies
-getGlobalFileNumCopies f = fromSources
-	[ getFileNumCopies' f
+getGlobalFileNumCopies f = fromSourcesOr defaultNumCopies
+	[ fst <$> getNumMinCopiesAttr f
+	, getGlobalNumCopies
 	]
 
-getFileNumCopies' :: RawFilePath  -> Annex (Maybe NumCopies)
-getFileNumCopies' file = maybe getGlobalNumCopies (return . Just) =<< getattr
-  where
-	getattr = (NumCopies <$$> readish)
-		<$> checkAttr "annex.numcopies" file
+getNumMinCopiesAttr :: RawFilePath  -> Annex (Maybe NumCopies, Maybe MinCopies)
+getNumMinCopiesAttr file =
+	checkAttrs ["annex.numcopies", "annex.mincopies"] file >>= \case
+		(n:m:[]) -> return
+			( NumCopies <$> readish n
+			, MinCopies <$> readish m
+			)
+		_ -> error "internal"
 
 {- Checks if numcopies are satisfied for a file by running a comparison
  - between the number of (not untrusted) copies that are
@@ -102,7 +158,7 @@ numCopiesCheck file key vs = do
 
 numCopiesCheck' :: RawFilePath -> (Int -> Int -> v) -> [UUID] -> Annex v
 numCopiesCheck' file vs have = do
-	NumCopies needed <- getFileNumCopies file
+	NumCopies needed <- fst <$> getFileNumMinCopies file
 	return $ length have `vs` needed
 
 data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
@@ -117,24 +173,25 @@ verifyEnoughCopiesToDrop
 	-> Key
 	-> Maybe ContentRemovalLock
 	-> NumCopies
+	-> MinCopies
 	-> [UUID] -- repos to skip considering (generally untrusted remotes)
 	-> [VerifiedCopy] -- copies already verified to exist
 	-> [UnVerifiedCopy] -- places to check to see if they have copies
 	-> (SafeDropProof -> Annex a) -- action to perform the drop
 	-> Annex a -- action to perform when unable to drop
 	-> Annex a
-verifyEnoughCopiesToDrop nolocmsg key removallock need skip preverified tocheck dropaction nodropaction = 
+verifyEnoughCopiesToDrop nolocmsg key removallock neednum needmin skip preverified tocheck dropaction nodropaction = 
 	helper [] [] preverified (nub tocheck) []
   where
 	helper bad missing have [] lockunsupported =
-		liftIO (mkSafeDropProof need have removallock) >>= \case
+		liftIO (mkSafeDropProof neednum needmin have removallock) >>= \case
 			Right proof -> dropaction proof
 			Left stillhave -> do
-				notEnoughCopies key need stillhave (skip++missing) bad nolocmsg lockunsupported
+				notEnoughCopies key neednum needmin stillhave (skip++missing) bad nolocmsg lockunsupported
 				nodropaction
 	helper bad missing have (c:cs) lockunsupported
-		| isSafeDrop need have removallock =
-			liftIO (mkSafeDropProof need have removallock) >>= \case
+		| isSafeDrop neednum needmin have removallock =
+			liftIO (mkSafeDropProof neednum needmin have removallock) >>= \case
 				Right proof -> dropaction proof
 				Left stillhave -> helper bad missing stillhave (c:cs) lockunsupported
 		| otherwise = case c of
@@ -177,16 +234,16 @@ data DropException = DropException SomeException
 
 instance Exception DropException
 
-notEnoughCopies :: Key -> NumCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> [Remote] -> Annex ()
-notEnoughCopies key need have skip bad nolocmsg lockunsupported = do
+notEnoughCopies :: Key -> NumCopies -> MinCopies -> [VerifiedCopy] -> [UUID] -> [Remote] -> String -> [Remote] -> Annex ()
+notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
 	showNote "unsafe"
-	if length have < fromNumCopies need
+	if length have < fromNumCopies neednum
 		then showLongNote $
 			"Could only verify the existence of " ++
-			show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
+			show (length have) ++ " out of " ++ show (fromNumCopies neednum) ++ 
 			" necessary copies"
 		else do
-			showLongNote $ "Unable to lock down 1 copy of file that is required to safely drop it."
+			showLongNote $ "Unable to lock down " ++ show (fromMinCopies needmin) ++ " copy of file that is required to safely drop it."
 			if null lockunsupported
 				then showLongNote "(This could have happened because of a concurrent drop, or because a remote has too old a version of git-annex-shell installed.)"
 				else showLongNote $ "These remotes do not support locking: "

@@ -92,6 +92,12 @@ Records the global numcopies setting.
 
 The file format is simply a timestamp followed by a number.
 
+## `mincopies.log`
+
+Records the global mincopies setting.
+
+The file format is simply a timestamp followed by a number.
+
 ## `config.log`
 
 Records global configuration settings, which can be overridden by values

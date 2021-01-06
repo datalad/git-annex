@@ -133,7 +133,9 @@ data AnnexState = AnnexState
 	, checkignorehandle :: Maybe (ResourcePool CheckIgnoreHandle)
 	, forcebackend :: Maybe String
 	, globalnumcopies :: Maybe NumCopies
+	, globalmincopies :: Maybe MinCopies
 	, forcenumcopies :: Maybe NumCopies
+	, forcemincopies :: Maybe MinCopies
 	, limit :: ExpandableMatcher Annex
 	, timelimit :: Maybe (Duration, POSIXTime)
 	, uuiddescmap :: Maybe UUIDDescMap
@@ -202,7 +204,9 @@ newState c r = do
 		, checkignorehandle = Nothing
 		, forcebackend = Nothing
 		, globalnumcopies = Nothing
+		, globalmincopies = Nothing
 		, forcenumcopies = Nothing
+		, forcemincopies = Nothing
 		, limit = BuildingMatcher []
 		, timelimit = Nothing
 		, uuiddescmap = Nothing

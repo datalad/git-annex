@@ -45,7 +45,12 @@ gitAnnexGlobalOptions :: [GlobalOption]
 gitAnnexGlobalOptions = commonGlobalOptions ++
 	[ globalSetter setnumcopies $ option auto
 		( long "numcopies" <> short 'N' <> metavar paramNumber
-		<> help "override default number of copies"
+		<> help "override desired number of copies"
+		<> hidden
+		)
+	, globalSetter setmincopies $ option auto
+		( long "mincopies" <> short 'N' <> metavar paramNumber
+		<> help "override minimum number of copies"
 		<> hidden
 		)
 	, globalSetter (Remote.forceTrust Trusted) $ strOption
@@ -94,6 +99,7 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 	]
   where
 	setnumcopies n = Annex.changeState $ \s -> s { Annex.forcenumcopies = Just $ NumCopies n }
+	setmincopies n = Annex.changeState $ \s -> s { Annex.forcemincopies = Just $ MinCopies n }
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
 	setgitconfig v = Annex.addGitConfigOverride v
 	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }

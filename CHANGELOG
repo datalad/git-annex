@@ -1,11 +1,13 @@
 git-annex (8.20201130) UNRELEASED; urgency=medium
 
-  * Added requirednumcopies configuration. This is like numcopies, but is
+  * Added mincopies configuration. This is like numcopies, but is
     enforced even more strictly. While numcopies can be violated in
     concurrent drop situations involving special remotes that do not
-    support locking, requirednumcopies cannot be. The default value is 1,
-    which is not a behavior change, but now it can be set to higher
-    values if desired.
+    support locking, mincopies cannot be. The default value has always
+    been is 1, but now it can be set to higher values if desired.
+  * Behavior change: When numcopies is set to 0, git-annex used to drop
+    content without requiring any copies. Now to get that (highly unsafe)
+    behavior, mincopies also needs to be set to 0.
   * add: Significantly speed up adding lots of non-large files to git,
     by disabling the annex smudge filter when running git add.
   * add --force-small: Run git add rather than updating the index itself,

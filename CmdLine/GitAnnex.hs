@@ -81,6 +81,7 @@ import qualified Command.Migrate
 import qualified Command.Uninit
 import qualified Command.Reinit
 import qualified Command.NumCopies
+import qualified Command.MinCopies
 import qualified Command.Trust
 import qualified Command.Untrust
 import qualified Command.Semitrust
@@ -157,6 +158,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 	, Command.PreCommit.cmd
 	, Command.PostReceive.cmd
 	, Command.NumCopies.cmd
+	, Command.MinCopies.cmd
 	, Command.Trust.cmd
 	, Command.Untrust.cmd
 	, Command.Semitrust.cmd

@@ -165,10 +165,10 @@ toPerform dest removewhen key afile fastcheck isthere = do
 			willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile >>= \case
 				DropAllowed -> drophere setpresentremote contentlock "moved"
 				DropCheckNumCopies -> do
-					numcopies <- getAssociatedFileNumCopies afile
+					(numcopies, mincopies) <- getAssociatedFileNumMinCopies afile
 					(tocheck, verified) <- verifiableCopies key [srcuuid]
 					verifyEnoughCopiesToDrop "" key (Just contentlock)
-						 numcopies [srcuuid] verified
+						 numcopies mincopies [srcuuid] verified
 						 (UnVerifiedRemote dest : tocheck)
 						 (drophere setpresentremote contentlock . showproof)
 						 (faileddrophere setpresentremote)
@@ -244,9 +244,9 @@ fromPerform src removewhen key afile = do
 		willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile >>= \case
 			DropAllowed -> dropremote "moved"
 			DropCheckNumCopies -> do
-				numcopies <- getAssociatedFileNumCopies afile
+				(numcopies, mincopies) <- getAssociatedFileNumMinCopies afile
 				(tocheck, verified) <- verifiableCopies key [Remote.uuid src]
-				verifyEnoughCopiesToDrop "" key Nothing numcopies [Remote.uuid src] verified
+				verifyEnoughCopiesToDrop "" key Nothing numcopies mincopies [Remote.uuid src] verified
 					tocheck (dropremote . showproof) faileddropremote
 			DropWorse -> faileddropremote		
 	

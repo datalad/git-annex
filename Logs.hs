@@ -90,6 +90,7 @@ presenceLogs config f =
 otherLogs :: [RawFilePath]
 otherLogs =
 	[ numcopiesLog
+	, mincopiesLog
 	, groupPreferredContentLog
 	]
 
@@ -98,6 +99,9 @@ uuidLog = "uuid.log"
 
 numcopiesLog :: RawFilePath
 numcopiesLog = "numcopies.log"
+
+mincopiesLog :: RawFilePath
+mincopiesLog = "mincopies.log"
 
 configLog :: RawFilePath
 configLog = "config.log"

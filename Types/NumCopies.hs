@@ -1,6 +1,6 @@
 {- git-annex numcopies types
  -
- - Copyright 2014-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,6 +8,8 @@
 module Types.NumCopies (
 	NumCopies(..),
 	fromNumCopies,
+	MinCopies(..),
+	fromMinCopies,
 	VerifiedCopy(..),
 	checkVerifiedCopy,
 	invalidateVerifiedCopy,
@@ -38,6 +40,12 @@ newtype NumCopies = NumCopies Int
 
 fromNumCopies :: NumCopies -> Int
 fromNumCopies (NumCopies n) = n
+
+newtype MinCopies = MinCopies Int
+	deriving (Ord, Eq, Show)
+
+fromMinCopies :: MinCopies -> Int
+fromMinCopies (MinCopies n) = n
 
 -- Indicates that a key's content is exclusively
 -- locked locally, pending removal.
@@ -130,33 +138,33 @@ withVerifiedCopy mk u check = bracketIO setup cleanup
  - without requiring impractical amounts of locking.
  -
  - In particular, concurrent drop races may cause the number of copies
- - to fall below NumCopies, but it will never fall below 1.
+ - to fall below NumCopies, but it will never fall below MinCopies.
  -}
-isSafeDrop :: NumCopies -> [VerifiedCopy] -> Maybe ContentRemovalLock -> Bool
+isSafeDrop :: NumCopies -> MinCopies -> [VerifiedCopy] -> Maybe ContentRemovalLock -> Bool
 {- When a ContentRemovalLock is provided, the content is being
  - dropped from the local repo. That lock will prevent other git repos
  - that are concurrently dropping from using the local copy as a VerifiedCopy.
  - So, no additional locking is needed; all we need is verifications
  - of any kind of N other copies of the content. -}
-isSafeDrop (NumCopies n) l (Just (ContentRemovalLock _)) = 
+isSafeDrop (NumCopies n) _ l (Just (ContentRemovalLock _)) = 
 	length (deDupVerifiedCopies l) >= n
 {- Dropping from a remote repo.
  -
- - Unless numcopies is 0, at least one LockedCopy or TrustedCopy is required.
- - A LockedCopy prevents races between concurrent drops from
- - dropping the last copy, no matter what.
+ - To guarantee MinCopies is never violated, at least that many LockedCopy
+ - or TrustedCopy are required. A LockedCopy prevents races between
+ - concurrent drops from dropping the last copy, no matter what.
  -
- - The other N-1 copies can be less strong verifications, like
- - RecentlyVerifiedCopy. While those are subject to concurrent drop races,
- - and so could be dropped all at once, causing numcopies to be violated,
- - this is the best that can be done without requiring that 
+ - The other copies required by NumCopies can be less strong verifications,
+ - like RecentlyVerifiedCopy. While those are subject to concurrent drop
+ - races, and so could be dropped all at once, causing NumCopies to be
+ - violated, this is the best that can be done without requiring that 
  - all special remotes support locking.
  -}
-isSafeDrop (NumCopies n) l Nothing
-	| n == 0 = True
+isSafeDrop (NumCopies n) (MinCopies m) l Nothing
+	| n == 0 && m == 0 = True
 	| otherwise = and
 		[ length (deDupVerifiedCopies l) >= n
-		, any fullVerification l
+		, length (filter fullVerification l) >= m
 		]
 
 fullVerification :: VerifiedCopy -> Bool
@@ -165,14 +173,14 @@ fullVerification (TrustedCopy _) = True
 fullVerification (RecentlyVerifiedCopy _) = False
 
 -- A proof that it's currently safe to drop an object.
-data SafeDropProof = SafeDropProof NumCopies [VerifiedCopy] (Maybe ContentRemovalLock)
+data SafeDropProof = SafeDropProof NumCopies MinCopies [VerifiedCopy] (Maybe ContentRemovalLock)
 	deriving (Show)
 
--- Make sure that none of the VerifiedCopies have become invalidated
+-- Makes sure that none of the VerifiedCopies have become invalidated
 -- before constructing proof.
-mkSafeDropProof :: NumCopies -> [VerifiedCopy] -> Maybe ContentRemovalLock -> IO (Either [VerifiedCopy] SafeDropProof)
-mkSafeDropProof need have removallock = do
+mkSafeDropProof :: NumCopies -> MinCopies -> [VerifiedCopy] -> Maybe ContentRemovalLock -> IO (Either [VerifiedCopy] SafeDropProof)
+mkSafeDropProof need mincopies have removallock = do
 	stillhave <- filterM checkVerifiedCopy have
-	return $ if isSafeDrop need stillhave removallock
-		then Right (SafeDropProof need stillhave removallock)
+	return $ if isSafeDrop need mincopies stillhave removallock
+		then Right (SafeDropProof need mincopies stillhave removallock)
 		else Left stillhave

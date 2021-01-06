@@ -279,10 +279,10 @@ verifyExisting :: Key -> RawFilePath -> (CommandPerform, CommandPerform) -> Comm
 verifyExisting key destfile (yes, no) = do
 	-- Look up the numcopies setting for the file that it would be
 	-- imported to, if it were imported.
-	need <- getFileNumCopies destfile
+	(needcopies, mincopies) <- getFileNumMinCopies destfile
 
 	(tocheck, preverified) <- verifiableCopies key []
-	verifyEnoughCopiesToDrop [] key Nothing need [] preverified tocheck
+	verifyEnoughCopiesToDrop [] key Nothing needcopies mincopies [] preverified tocheck
 		(const yes) no
 
 seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CheckGitIgnore -> CommandSeek

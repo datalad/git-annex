@@ -35,20 +35,21 @@ optParser desc = DropUnusedOptions
 seek :: DropUnusedOptions -> CommandSeek
 seek o = do
 	numcopies <- getNumCopies
+	mincopies <- getMinCopies
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (dropFrom o)
-	withUnusedMaps (start from numcopies) (rangesToDrop o)
+	withUnusedMaps (start from numcopies mincopies) (rangesToDrop o)
 
-start :: Maybe Remote -> NumCopies -> UnusedMaps -> Int -> CommandStart
-start from numcopies = startUnused "dropunused"
-	(perform from numcopies)
+start :: Maybe Remote -> NumCopies -> MinCopies -> UnusedMaps -> Int -> CommandStart
+start from numcopies mincopies = startUnused "dropunused"
+	(perform from numcopies mincopies)
 	(performOther gitAnnexBadLocation)
 	(performOther gitAnnexTmpObjectLocation)
 
-perform :: Maybe Remote -> NumCopies -> Key -> CommandPerform
-perform from numcopies key = case from of
+perform :: Maybe Remote -> NumCopies -> MinCopies -> Key -> CommandPerform
+perform from numcopies mincopies key = case from of
 	Just r -> do
 		showAction $ "from " ++ Remote.name r
-		Command.Drop.performRemote key (AssociatedFile Nothing) numcopies r
+		Command.Drop.performRemote key (AssociatedFile Nothing) numcopies mincopies r
 	Nothing -> ifM (inAnnex key)
 		( droplocal
 		, ifM (objectFileExists key)
@@ -62,7 +63,7 @@ perform from numcopies key = case from of
 			)
 		)
   where
-	droplocal = Command.Drop.performLocal key (AssociatedFile Nothing) numcopies []
+	droplocal = Command.Drop.performLocal key (AssociatedFile Nothing) numcopies mincopies []
 
 performOther :: (Key -> Git.Repo -> RawFilePath) -> Key -> CommandPerform
 performOther filespec key = do

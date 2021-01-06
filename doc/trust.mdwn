@@ -51,6 +51,13 @@ trust temporarily.
 To configure a repository as fully and permanently trusted,
 use the [[git-annex-trust]] command.
 
+Note that after dropping content from a trusted repo, other repos
+that are out of sync and trust it to still contain the content
+can drop copies, even though that will violate [[numcopies]]. So
+using trusted repositories can lead to data loss. It is best to take
+extreme care when dropping content from trusted repositories,
+the same as if you were using `--force`.
+
 ## dead
 
 This is used to indicate that you have no trust that the repository

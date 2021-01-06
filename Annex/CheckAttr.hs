@@ -1,4 +1,4 @@
-{- git check-attr interface, with handle automatically stored in the Annex monad
+{- git check-attr interface
  -
  - Copyright 2012-2020 Joey Hess <id@joeyh.name>
  -
@@ -7,6 +7,7 @@
 
 module Annex.CheckAttr (
 	checkAttr,
+	checkAttrs,
 	checkAttrStop,
 	mkConcurrentCheckAttrHandle,
 ) where
@@ -22,13 +23,18 @@ import Annex.Concurrent.Utility
 annexAttrs :: [Git.Attr]
 annexAttrs =
 	[ "annex.backend"
-	, "annex.numcopies"
 	, "annex.largefiles"
+	, "annex.numcopies"
+	, "annex.mincopies"
 	]
 
 checkAttr :: Git.Attr -> RawFilePath -> Annex String
 checkAttr attr file = withCheckAttrHandle $ \h -> 
 	liftIO $ Git.checkAttr h attr file
+
+checkAttrs :: [Git.Attr] -> RawFilePath -> Annex [String]
+checkAttrs attrs file = withCheckAttrHandle $ \h -> 
+	liftIO $ Git.checkAttrs h attrs file
 
 withCheckAttrHandle :: (Git.CheckAttrHandle -> Annex a) -> Annex a
 withCheckAttrHandle a = 

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,17 +20,20 @@ seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
-start [] = startGet
-start [s] = case readish s of
+start = start' "numcopies" startGet startSet
+
+start' :: String -> CommandStart -> (Int -> CommandStart) -> [String] -> CommandStart
+start' _ startget _ [] = startget
+start' setting _ startset [s] = case readish s of
 	Nothing -> giveup $ "Bad number: " ++ s
 	Just n
-		| n > 0 -> startSet n
+		| n > 0 -> startset n
 		| n == 0 -> ifM (Annex.getState Annex.force)
-			( startSet n
-			, giveup "Setting numcopies to 0 is very unsafe. You will lose data! If you really want to do that, specify --force."
+			( startset n
+			, giveup $ "Setting " ++ setting ++ " to 0 is very unsafe. You will lose data! If you really want to do that, specify --force."
 			)
 		| otherwise -> giveup "Number cannot be negative!"
-start _ = giveup "Specify a single number."
+start' _ _ _ _ = giveup "Specify a single number."
 
 startGet :: CommandStart
 startGet = startingCustomOutput (ActionItemOther Nothing) $ next $ do
