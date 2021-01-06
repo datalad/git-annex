@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="comment 2"
+ date="2021-01-06T11:15:42Z"
+ content="""
+Thanks for the answer.
+
+How does `git status` checks for changes? I feel it is quite fast at that.
+
+So you could update the persistent database by post-commit hook, and have a temporary virtual overlay when used which takes current staged changes also into account. And maybe you can also add a `--fast` option, which would skip this part, because the user probably knows when to expect staged changes.
+
+I think this would be pretty useful. This would also change somewhat the whole way how I would use the Annex. I expect that I have this case quite often, that some file content is referenced from multiple file paths.
+
+"""]]
