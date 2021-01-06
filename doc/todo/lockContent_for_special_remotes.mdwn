@@ -1,6 +1,6 @@
 Support lockContent in more special remotes. This allows dropping
 content from a special remote when the only copies are in other special
-remotes.
+remotes, without needing to set mincopies to 0 and risk losing content.
 
 (All the easy ones, eg read-only special remotes, are implemented already.)
 
@@ -12,7 +12,7 @@ remotes.
   If this were implemented in git-annex, and some special remote program
   didn't used to support it, and implemented REMOVE w/o checking a lock,
   then making that program support lockContent would run the risk
-  of a misture of the old and new version being in use for the same remote,
+  of a mixture of the old and new version being in use for the same remote,
   which could result in data loss.
 
   To avoid that, the author of the special remote would need to either
@@ -46,16 +46,3 @@ remotes.
 * adb could use some shell trick perhaps.. But it would depend on doing
   locking in /sdcard, which seems likely to be a massive ball of POSIX
   incompliance and pain.
-
-----
-
-I was thinking about something related to this recently. Dropping currently
-guaranteeds numcopies will be maintained for remotes that support
-lockContent. But when some of the copies are on special remotes, this
-is not guaranteed. It only makes sure lockContent is keeping one copy
-locked, and can verify the existence of the other copies less stringently.
-
-So perhaps it would be good to make this explicit in the configuration,
-by adding a mincopies. (Analagous to required content configs.)
-Defaulting to 1 as now, but if the user wants to they can set it higher,
-perhaps as high as their numcopies, or higher.
