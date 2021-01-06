@@ -4,7 +4,7 @@ git-annex (8.20201130) UNRELEASED; urgency=medium
     enforced even more strictly. While numcopies can be violated in
     concurrent drop situations involving special remotes that do not
     support locking, mincopies cannot be. The default value has always
-    been is 1, but now it can be set to higher values if desired.
+    been 1, but now it can be set to higher values if desired.
   * Behavior change: When numcopies is set to 0, git-annex used to drop
     content without requiring any copies. Now to get that (highly unsafe)
     behavior, mincopies also needs to be set to 0.
