@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="comment 6"
+ date="2021-01-06T14:59:00Z"
+ content="""
+Thanks for the answer.
+
+Maybe the forum post title here was chosen badly. It's not just about how to import existing files, but also/mainly I was trying to figure out whether Git Annex fits my needs (for a quite big archive of data). That's why I had all these questions. Also because this was not exactly clear to me after reading the docs.
+
+What's still not exactly clear to me is whether it is not a better idea to keep the Annex repo separate from the checked out files. I don't like all the symlinks too much, and a couple of applications behave strange (because they follow the symlinks). I would prefer a solution where the (maybe bare) repo is separate from the checked out tree.
+
+That is why I asked about Git Worktree. But this is still not clear to me.
+
+I also read about [Git Annex Direct mode](https://git-annex.branchable.com/git-annex-direct/), which sounds like it is exactly that? But apparently this is not supported anymore? Why?
+
+I also read about the [Git Annex Assistant](https://git-annex.branchable.com/assistant/), which also sounds like this? But the docs are somewhat sparse, and its not totally clear how this is done, and why the main Git Annex cannot do that, while Git Annex Assistant can do that. But discussions like [this](https://git-annex.branchable.com/design/assistant/desymlink/) sound very relevant (that describes many of the issues I have with symlinks). But I would not specifically want to do it all automatically (I think that's the purpose of the assistant) but do it explicitly (like adding files to the annex, i.e. using the commands `git annex add` etc).
+
+I think this should be possible without having to watch live for changes (via inotify or so) (where it anyway would be easy to miss changes). E.g. `git status` seems to be very fast at such checks. I'm not exactly sure how it does it but I assume it does some fast checks for changed mtime or maybe other things. Some filesystems might also provide other means. E.g. if the file was copied with a reflink (`cp --reflink`) (which anyway makes sense to not store the data twice, and which is much more efficient), it could check whether the reflink has changed. Or otherwise using hardlinks and locking the files (readonly), and unlocking them would make them writeable (that's ok if unlocked files are less efficient to handle, as this would be a rare action).
+
+"""]]
