@@ -1,0 +1,16 @@
+If I would want to backup my whole Linux system, what's unclear or maybe missing from Git Annex:
+
+I'm not exactly sure about the best way to import the files. Should I just copy over all the files (e.g. using `cp -ax /* .`, or maybe `rsync -a /* .` or so) to the repo, and then use `git annex add`? (Let's skip `/dev` and maybe other special files for now.)
+
+Let's say I added now all files to the annex.
+
+I would also want to store the owning user, group, and access attributes, and maybe other extended attributes (ACL, xattr).
+This is not yet covered by Git Annex (by default), right?
+This could be stored as annex metadata. Or maybe better in some other way, because this would be per file path, and not per file content.
+Has anyone already done sth like this? It should not be too hard to do this, right?
+
+I'm also not exactly sure how Git Annex handles symlinks. Would it store the original symlink? Or would it not handle them at all, and just add them to Git itself?
+
+There will be some overlap of the files with other Git Annex repos (e.g. this could contain a subset of pictures I have elsewhere).
+I would want that the annexed data files are shared with my much bigger Annex repo which contains all my main data (pictures and lots of other stuff).
+This is actually the main reason why I consider using Git Annex as well for this purpose, and not some other solution, so that I don't need to store data separately, and get other benefits (to simplify my backups).
