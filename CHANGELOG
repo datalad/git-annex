@@ -8,6 +8,8 @@ git-annex (8.20201130) UNRELEASED; urgency=medium
   * Behavior change: When numcopies is set to 0, git-annex used to drop
     content without requiring any copies. Now to get that (highly unsafe)
     behavior, mincopies also needs to be set to 0.
+  * Behavior change: git-annex trust now needs --force, since unconsidered
+    use of trusted repositories can lead to data loss.
   * add: Significantly speed up adding lots of non-large files to git,
     by disabling the annex smudge filter when running git add.
   * add --force-small: Run git add rather than updating the index itself,

@@ -14,6 +14,13 @@ content. Use with care.
 Repositories can be specified using their remote name, their
 description, or their UUID. To trust the current repository, use "here".
 
+Before trusting a repository, consider this scenario. Repository A
+is trusted and B is not; both contain the same content. `git-annex drop`
+is run on repository A, which checks that B still contains the content,
+and so the drop proceeds. Then `git-annex drop` is run on repository B,
+which trusts A to still contain the content, so the drop succeeds. Now
+the content has been lost.
+
 # SEE ALSO
 
 [[git-annex]](1)

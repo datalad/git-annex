@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010, 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,6 +9,7 @@ module Command.Trust where
 
 import Command
 import qualified Remote
+import qualified Annex
 import Types.TrustLevel
 import Logs.Trust
 import Logs.Group
@@ -29,8 +30,11 @@ trustCommand c level = withWords (commandAction . start)
 		let name = unwords ws
 		u <- Remote.nameToUUID name
 		let si = SeekInput ws
-		starting c (ActionItemOther (Just name)) si (perform u)
-	perform uuid = do
+		starting c (ActionItemOther (Just name)) si (perform name u)
+	perform name uuid = do
+		when (level >= Trusted) $
+			unlessM (Annex.getState Annex.force) $
+				giveup $ trustedNeedsForce name
 		trustSet uuid level
 		when (level == DeadTrusted) $
 			groupSet uuid S.empty
@@ -38,3 +42,14 @@ trustCommand c level = withWords (commandAction . start)
 		when (l /= level) $
 			warning $ "This remote's trust level is overridden to " ++ showTrustLevel l ++ "."
 		next $ return True
+
+trustedNeedsForce :: String -> String
+trustedNeedsForce name = unlines
+	[ "Trusting a repository can lead to data loss."
+	, ""
+	, "If you're sure you know what you're doing, use --force to"
+	, "make this take effect."
+	, ""
+	, "If you choose to do so, bear in mind that any time you drop"
+	, "content from " ++ name ++ ", you will risk losing data."
+	]
