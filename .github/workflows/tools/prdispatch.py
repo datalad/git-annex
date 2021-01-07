@@ -186,9 +186,15 @@ class PRDispatcher:
                 # workflow step data, so we have to do it ourselves.
                 r = self.s.get(wfrun.jobs_url)
                 r.raise_for_status()
-                for step in r.json()["jobs"][0]["steps"]:
-                    if step["name"] == THIS_STEP:
-                        return isoparse(step["started_at"])
+                try:
+                    for step in r.json()["jobs"][0]["steps"]:
+                        if step["name"] == THIS_STEP:
+                            return isoparse(step["started_at"])
+                except LookupError:
+                    # This script once encountered a successful workflow run
+                    # without any steps.  I don't know how that happened, but
+                    # now we need to handle it.
+                    continue
                 raise RuntimeError(
                     "Could not find this step in previous successful run"
                 )
