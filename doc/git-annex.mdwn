@@ -813,14 +813,9 @@ may not be explicitly listed on their individual man pages.
 
 * `--trust-glacier`
 
-  Amazon Glacier inventories take hours to retrieve, and may not represent
-  the current state of a repository. So git-annex does not trust that
-  files that the inventory claims are in Glacier are really there.
-  This switch can be used to allow it to trust the inventory.
-
-  Be careful using this, especially if you or someone else might have recently
-  removed a file from Glacier. If you try to drop the only other copy of the
-  file, and this switch is enabled, you could lose data!
+  This used to override trust settings for Glacier special remotes,
+  but now will not do so, because it could lead to data loss,
+  and data loss is now only enabled when using the `--force` option.
 
 * `--backend=name`
 

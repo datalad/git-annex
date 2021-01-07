@@ -1,6 +1,6 @@
 {- Amazon Glacier remotes.
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,7 +23,6 @@ import Remote.Helper.ExportImport
 import qualified Remote.Helper.AWS as AWS
 import Creds
 import Utility.Metered
-import qualified Annex
 import Annex.UUID
 import Utility.Env
 import Types.ProposedAccepted
@@ -233,8 +232,7 @@ checkKey r k = do
 		s <- liftIO $ readProcessEnv "glacier" (toCommand params) (Just e)
 		let probablypresent = serializeKey k `elem` lines s
 		if probablypresent
-			then ifM (Annex.getFlag "trustglacier")
-				( return True, giveup untrusted )
+			then giveup untrusted
 			else return False
 
 	params = glacierParams (config r)
@@ -248,8 +246,6 @@ checkKey r k = do
 	untrusted = unlines
 			[ "Glacier's inventory says it has a copy."
 			, "However, the inventory could be out of date, if it was recently removed."
-			, "(Use --trust-glacier if you're sure it's still in Glacier.)"
-			, ""
 			]
 
 glacierAction :: Remote -> [CommandParam] -> Annex Bool

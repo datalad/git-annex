@@ -81,9 +81,9 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 		<> help "override default User-Agent"
 		<> hidden
 		)
-	, globalFlag (Annex.setFlag "trustglacier")
+	, globalFlag (toplevelWarning False "--trust-glacier no longer has any effect")
 		( long "trust-glacier"
-		<> help "Trust Amazon Glacier inventory"
+		<> help "deprecated, does not trust Amazon Glacier inventory"
 		<> hidden
 		)
 	, globalFlag (setdesktopnotify mkNotifyFinish)
