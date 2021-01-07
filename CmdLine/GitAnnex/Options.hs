@@ -55,7 +55,7 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 		)
 	, globalSetter (Remote.forceTrust Trusted) $ strOption
 		( long "trust" <> metavar paramRemote
-		<> help "override trust setting"
+		<> help "deprecated, does not override trust setting"
 		<> hidden
 		<> completeRemotes
 		)

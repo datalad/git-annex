@@ -44,10 +44,6 @@ information for a repository. For example, it may be an offline
 archival drive, from which you rarely or never remove content. Deciding
 when it makes sense to trust the tracking info is up to you.
 
-One way to handle this is just to use `--force` when a command cannot
-access a remote you trust. Or to use `--trust` to specify a repository to
-trust temporarily.
-
 To configure a repository as fully and permanently trusted,
 use the [[git-annex-trust]] command.
 

@@ -797,7 +797,6 @@ may not be explicitly listed on their individual man pages.
   Also, note that if the time limit prevents git-annex from doing all it
   was asked to, it will exit with a special code, 101.
 
-* `--trust=repository`
 * `--semitrust=repository`
 * `--untrust=repository`
 
@@ -805,6 +804,12 @@ may not be explicitly listed on their individual man pages.
 
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository.
+
+* `--trust=repository`
+
+  This used to override trust settings for a repository, but now will
+  not do so, because trusting a repository can lead to data loss,
+  and data loss is now only enabled when using the `--force` option.
 
 * `--trust-glacier`
 

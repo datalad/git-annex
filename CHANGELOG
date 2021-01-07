@@ -10,6 +10,9 @@ git-annex (8.20201130) UNRELEASED; urgency=medium
     behavior, mincopies also needs to be set to 0.
   * Behavior change: git-annex trust now needs --force, since unconsidered
     use of trusted repositories can lead to data loss.
+  * Behavior change: --trust option no longer overrides trust, since
+    that can lead to data loss, which should never be enabled by an option
+    other than --force.
   * add: Significantly speed up adding lots of non-large files to git,
     by disabling the annex smudge filter when running git add.
   * add --force-small: Run git add rather than updating the index itself,

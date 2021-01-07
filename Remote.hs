@@ -384,8 +384,10 @@ listRemoteNames remotes = intercalate ", " (map name remotes)
 forceTrust :: TrustLevel -> String -> Annex ()
 forceTrust level remotename = do
 	u <- nameToUUID remotename
-	Annex.changeState $ \s ->
-		s { Annex.forcetrust = M.insert u level (Annex.forcetrust s) }
+	if level >= Trusted
+		then toplevelWarning False "Ignoring request to trust repository, because that can lead to data loss."
+		else Annex.changeState $ \s ->
+			s { Annex.forcetrust = M.insert u level (Annex.forcetrust s) }
 
 {- Used to log a change in a remote's having a key. The change is logged
  - in the local repo, not on the remote. The process of transferring the
