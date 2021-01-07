@@ -20,6 +20,9 @@ git-annex (8.20201130) UNRELEASED; urgency=medium
     be used.
   * Fix --time-limit, which got broken in several ways by some optimisations
     in version 8.20201007.
+  * When syncing changes back from an adjusted branch to the basis branch,
+    include deletions of submodules.
+    Thanks, Kyle Meyer for the patch.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 Jan 2021 12:52:41 -0400
 
