@@ -1,0 +1,123 @@
+This is conceptually a continuation of a previous issue:
+https://git-annex.branchable.com/bugs/Sync_of_adjusted_branch_does_not_propagate_changed_submodule_commit/
+
+That was about `git annex sync` propagating submodule modifications
+back to the main branch.  When looking into debugging a DataLad test
+failure involving adjusted branches, I realized that there is still an
+issue with submodule *deletions* not being propagated back.
+
+Here's a demo:
+
+[[!format sh """
+set -eu
+
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/ga-sync-sub-del-XXXX)"
+
+git init
+git commit -mc0 --allow-empty
+git init sub
+git -C sub commit -m'c0 sub' --allow-empty
+git submodule add --name sub ./sub
+git commit -m'add sub'
+
+git annex init
+git annex adjust --unlock
+
+git rm sub
+git commit -m'remove sub'
+git annex sync
+
+git log --format="* %s %d" -p -2
+"""]]
+
+With a git-annex built from 8.20201129-72-gf35469764, the submodule
+deletion remains on the adjusted branch:
+
+```
+[...]
+* git-annex adjusted branch  (HEAD -> adjusted/master(unlocked))
+
+diff --git a/sub b/sub
+deleted file mode 160000
+index 95031de..0000000
+--- a/sub
++++ /dev/null
+@@ -1 +0,0 @@
+-Subproject commit 95031de9306714e09dc535246ef77b9e155999be
+* remove sub  (synced/master, master, refs/basis/adjusted/master(unlocked))
+
+diff --git a/.gitmodules b/.gitmodules
+index c489803..e69de29 100644
+--- a/.gitmodules
++++ b/.gitmodules
+@@ -1,3 +0,0 @@
+-[submodule "sub"]
+-	path = sub
+-	url = ./sub
+```
+
+I tried my hand at fixing this with the attached patch.  I'm not
+confident that it's the right fix, but with it the output of the above
+demo looks as I'd expect (and the git-annex tests still pass):
+
+```
+[...]
+* git-annex adjusted branch  (HEAD -> adjusted/master(unlocked))
+* remove sub  (synced/master, master, refs/basis/adjusted/master(unlocked))
+
+diff --git a/.gitmodules b/.gitmodules
+index c489803..e69de29 100644
+--- a/.gitmodules
++++ b/.gitmodules
+@@ -1,3 +0,0 @@
+-[submodule "sub"]
+-	path = sub
+-	url = ./sub
+diff --git a/sub b/sub
+deleted file mode 160000
+index 102197a..0000000
+--- a/sub
++++ /dev/null
+@@ -1 +0,0 @@
+-Subproject commit 102197a8b5692dc07dde7c1f6dd2f51c7ec6834e
+```
+
+Thanks for taking a look.
+
+[[!format patch """
+From e7abf01499fbd5593044889da529834e1b2999bc Mon Sep 17 00:00:00 2001
+From: Kyle Meyer <kyle@kyleam.com>
+Date: Wed, 6 Jan 2021 19:16:30 -0500
+Subject: [PATCH] adjustTree: Consider submodule deletions
+
+In addition to regular file deletions, the removefiles argument passed
+to adjustTree may contain removed submodules.  When making the new
+tree, filter these out in the same way that is done for regular files
+so that the deletion is propagated.
+---
+ Git/Tree.hs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Git/Tree.hs b/Git/Tree.hs
+index 491314fff..d5ac59ea7 100644
+--- a/Git/Tree.hs
++++ b/Git/Tree.hs
+@@ -259,6 +259,7 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
+ 
+ 	removeset = S.fromList $ map (normalise . gitPath) removefiles
+ 	removed (TreeBlob f _ _) = S.member (normalise (gitPath f)) removeset
++	removed (TreeCommit f _ _) = S.member (normalise (gitPath f)) removeset
+ 	removed _ = False
+ 
+ 	addoldnew [] new = new
+
+base-commit: f3546976483aa4c29e1050081af6d5a03290e25b
+-- 
+2.30.0.284.gd98b1dd5ea
+
+"""]]
+
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
+
