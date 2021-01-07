@@ -260,7 +260,8 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 	removeset = S.fromList $ map (normalise . gitPath) removefiles
 	removed (TreeBlob f _ _) = S.member (normalise (gitPath f)) removeset
 	removed (TreeCommit f _ _) = S.member (normalise (gitPath f)) removeset
-	removed _ = False
+	removed (RecordedSubTree _ _ _) = False
+	removed (NewSubTree _ _) = False
 
 	addoldnew [] new = new
 	addoldnew old [] = old
