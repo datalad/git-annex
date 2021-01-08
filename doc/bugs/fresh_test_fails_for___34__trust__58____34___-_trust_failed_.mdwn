@@ -1,0 +1,15 @@
+### Please describe the problem.
+
+Started to happen with today's build of annex for  8.20201129+git80-g1e65d1b9a-1~ndall+1 and was ok for  8.20201129+git73-g0e10402ef-1~ndall+1
+
+```
+    trust:                                                FAIL (0.28s)
+      ./Test/Framework.hs:57:
+      trust failed (transcript follows)
+      trust origin git-annex: Trusting a repository can lead to data loss.If you're sure you know what you're doing, use --force tomake this take effect.If you choose to do so, bear in mind that any time you dropcontent from origin, you will risk losing data.failedgit-annex: trust: 1 failed
+```
+
+with 6 of similar fails. See e.g. [https://github.com/datalad/git-annex/runs/1666536034?check_suite_focus=true](https://github.com/datalad/git-annex/runs/1666536034?check_suite_focus=true) for more detail
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
