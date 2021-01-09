@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="comment 2"
+ date="2021-01-09T20:14:21Z"
+ content="""
+Yes, I know, but I was basically asking whether anyone has developed an extension already to store such meta data (per path, not content), or done sth similar. Or maybe you could also interpret it as a feature request. Or basically I was just curious whether it makes sense to add some feature like that. I guess this would not be too complicated. So I'm mainly curious whether there are other problems which I don't see right now, or if this is a good or bad idea in general.
+
+Using the Borg special remote sounds like an interesting workaround.
+
+"""]]
