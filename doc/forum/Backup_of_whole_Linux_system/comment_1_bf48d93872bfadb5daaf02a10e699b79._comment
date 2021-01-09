@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="andrew"
+ avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
+ subject="checkout borg remote"
+ date="2021-01-09T15:25:05Z"
+ content="""
+git and git-annex do not store a lot of filesystem metadata. [git-annex metadata](https://git-annex.branchable.com/metadata/) actually stores metadata attached to the file key, which means the metadata is attached to the file content not the file path. Filesystems attach metadata to the file location (within a file tree), so if you have two files with the same content but different permissions in different folders you couldn't represent that information using git-annex metadata.
+
+You might checkout using the `git-annex` [borg special remote](https://git-annex.branchable.com/special_remotes/borg/). You could backup your whole linux system to a borg repository (using standard borg commands). Then you can add that borg repo as a git-annex borg special remote so you could access the files from a git-annex perspective.
+"""]]
