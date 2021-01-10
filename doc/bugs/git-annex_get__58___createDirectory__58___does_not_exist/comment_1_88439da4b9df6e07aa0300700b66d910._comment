@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="michael.hanke@c60e12358aa3fc6060531bdead1f530ac4d582ec"
+ nickname="michael.hanke"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Specific to repository location in /private"
+ date="2021-01-10T16:10:42Z"
+ content="""
+The issue goes away, when I place the directory in which repositories are created into the user's HOME directory (instead of `/tmp`, which maps to some place under `/private`).
+"""]]
