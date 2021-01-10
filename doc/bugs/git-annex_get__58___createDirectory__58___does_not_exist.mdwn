@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+A `git-annex get` fails with `createDirectory: does not exist (No such file or directory)` on MacOSX.
+
+### What steps will reproduce the problem?
+
+I can trigger the condition as part of a CI run of the DataLad test suite. Here is an example
+run that shows the failure: https://ci.appveyor.com/project/mih/datalad/build/job/k5u263619e6erk8t
+However, the exact conditions required to trigger the issue are not yet known (c.f. https://github.com/datalad/datalad/issues/5291).
+
+A protocol of an exploration of this issue with debug output is here: https://github.com/datalad/datalad/issues/5301#issuecomment-757467813
+
+In this end I can trigger the error with a `mkdir` performed manually in the shell using the path reported by git-annex (e.g. `../../../../../../../var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_basic_scenariodi3ady04/.git/annex/`). But a `mkdir` is successful using a "normalized variant of the path
+pointing to the same physical directory (e.g. `/var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_basic_scenariodi3ady04/.git/annex`).
+
+I do not understand enough of this platform to understand what is happening, but it seems that some of these folders actually live in `/private/var`, despite being accessible via `/var`, but I do not see how `mkdir` would error on a relative path and succeed on an absolute one.
+
+
+### What version of git-annex are you using? On what operating system?
+
+8.20201129 on darwin/19.6.0 10.15.7/x86_64
+
+More system details are here https://ci.appveyor.com/project/mih/datalad/build/job/k5u263619e6erk8t#L422
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex is critical infrastructure for me. There is no day without it. Thx much!
