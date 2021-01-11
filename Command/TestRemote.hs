@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, DeriveFunctor #-}
 
 module Command.TestRemote where
 
@@ -194,7 +194,7 @@ adjustRemoteConfig getcache r adjustconfig = do
 data Described t = Described
 	{ getDesc :: String
 	, getVal :: t
-	}
+	} deriving Functor
 
 type RunAnnex = forall a. Annex a -> IO a
 

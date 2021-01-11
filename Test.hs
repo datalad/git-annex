@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -229,12 +229,12 @@ testRemotes = testGroup "Remote Tests"
 	]
 
 testGitRemote :: TestTree
-testGitRemote = testRemote "git" $ \remotename -> do
+testGitRemote = testRemote False "git" $ \remotename -> do
 	git "clone" [".", "remotedir"] "git clone"
 	git "remote" ["add", remotename, "remotedir"] "git remote add"
 
 testDirectoryRemote :: TestTree
-testDirectoryRemote = testRemote "directory" $ \remotename -> do
+testDirectoryRemote = testRemote True "directory" $ \remotename -> do
 	createDirectory "remotedir"
 	git_annex "initremote"
 		[ remotename
@@ -244,8 +244,8 @@ testDirectoryRemote = testRemote "directory" $ \remotename -> do
 		, "encryption=none"
 		] "init"
 			
-testRemote :: String -> (String -> IO ()) -> TestTree
-testRemote remotetype setupremote = 
+testRemote :: Bool -> String -> (String -> IO ()) -> TestTree
+testRemote testvariants remotetype setupremote = 
 	withResource newEmptyTMVarIO (const noop) $ \getv -> 
 		testGroup ("testremote type " ++ remotetype) $ concat
 			[ [testCase "init" (prep getv)]
@@ -275,7 +275,9 @@ testRemote remotetype setupremote =
 	go getv = Command.TestRemote.mkTestTrees runannex mkrs mkunavailr mkexportr mkks
 	  where
 		runannex = inmainrepo . annexeval
-		mkrs = Command.TestRemote.remoteVariants cache mkr basesz False
+		mkrs = if testvariants
+			then Command.TestRemote.remoteVariants cache mkr basesz False
+			else [fmap (fmap Just) mkr]
 		mkr = descas (remotetype ++ " remote") (fst <$> v)
 		mkunavailr = fst . snd <$> v
 		mkexportr = fst . snd . snd <$> v
