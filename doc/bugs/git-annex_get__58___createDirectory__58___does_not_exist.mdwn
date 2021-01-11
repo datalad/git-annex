@@ -26,3 +26,7 @@ More system details are here https://ci.appveyor.com/project/mih/datalad/build/j
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex is critical infrastructure for me. There is no day without it. Thx much!
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
