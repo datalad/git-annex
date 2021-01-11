@@ -85,7 +85,6 @@ data RemoteA a = Remote
 	, name :: RemoteName
 	-- Remotes have a use cost; higher is more expensive
 	, cost :: Cost
-
 	-- Transfers a key's contents from disk to the remote.
 	-- The key should not appear to be present on the remote until
 	-- all of its contents have been transferred.
