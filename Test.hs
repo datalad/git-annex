@@ -845,9 +845,9 @@ test_fix = intmpclonerepo $ unlessM (hasUnlockedFiles <$> getTestMode) $ do
 
 test_trust :: Assertion
 test_trust = intmpclonerepo $ do
-	git_annex "trust" [repo] "trust"
+	git_annex "trust" ["--force", repo] "trust"
 	trustcheck Logs.Trust.Trusted "trusted 1"
-	git_annex "trust" [repo] "trust of trusted"
+	git_annex "trust" ["--force", repo] "trust of trusted"
 	trustcheck Logs.Trust.Trusted "trusted 2"
 	git_annex "untrust" [repo] "untrust"
 	trustcheck Logs.Trust.UnTrusted "untrusted 1"
@@ -899,7 +899,7 @@ test_fsck_localuntrusted = intmpclonerepo $ do
 	git_annex "untrust" ["origin"] "untrust of origin repo"
 	git_annex "untrust" ["."] "untrust of current repo"
 	fsck_should_fail "content only available in untrusted (current) repository"
-	git_annex "trust" ["."] "trust of current repo"
+	git_annex "trust" ["--force", "."] "trust of current repo"
 	git_annex "fsck" [annexedfile] "fsck on file present in trusted repo"
 
 test_fsck_remoteuntrusted :: Assertion
