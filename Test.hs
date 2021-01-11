@@ -224,17 +224,30 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 
 testRemotes :: TestTree
 testRemotes = testGroup "Remote Tests"
-	[ testRemote "directory"
-		[ "directory=remotedir"
-		, "encryption=none"
-		]
-		(createDirectory "remotedir")
+	[ testGitRemote
+	, testDirectoryRemote
 	]
 
-testRemote :: String -> [String] -> IO () -> TestTree
-testRemote remotetype config preinitremote = 
+testGitRemote :: TestTree
+testGitRemote = testRemote "git" $ \remotename -> do
+	git "clone" [".", "remotedir"] "git clone"
+	git "remote" ["add", remotename, "remotedir"] "git remote add"
+
+testDirectoryRemote :: TestTree
+testDirectoryRemote = testRemote "directory" $ \remotename -> do
+	createDirectory "remotedir"
+	git_annex "initremote"
+		[ remotename
+		, "type=directory"
+		, "--quiet"
+		, "directory=remotedir"
+		, "encryption=none"
+		] "init"
+			
+testRemote :: String -> (String -> IO ()) -> TestTree
+testRemote remotetype setupremote = 
 	withResource newEmptyTMVarIO (const noop) $ \getv -> 
-		testGroup ("remote type " ++ remotetype) $ concat
+		testGroup ("testremote type " ++ remotetype) $ concat
 			[ [testCase "init" (prep getv)]
 			, go getv
 			]
@@ -248,13 +261,7 @@ testRemote remotetype config preinitremote =
 		setmainrepodir d
 		innewrepo $ do
 			git_annex "init" [reponame, "--quiet"] "init"
-			preinitremote
-			git_annex "initremote"
-				([ remotename
-				, "type=" ++ remotetype
-				, "--quiet"
-				] ++ config)
-				"init"
+			setupremote remotename
 			r <- annexeval $ either error return 
 				=<< Remote.byName' remotename
 			cache <- Command.TestRemote.newRemoteVariantCache
