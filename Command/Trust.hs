@@ -44,12 +44,10 @@ trustCommand c level = withWords (commandAction . start)
 		next $ return True
 
 trustedNeedsForce :: String -> String
-trustedNeedsForce name = unlines
+trustedNeedsForce name = unwords
 	[ "Trusting a repository can lead to data loss."
-	, ""
 	, "If you're sure you know what you're doing, use --force to"
 	, "make this take effect."
-	, ""
 	, "If you choose to do so, bear in mind that any time you drop"
 	, "content from " ++ name ++ ", you will risk losing data."
 	]
