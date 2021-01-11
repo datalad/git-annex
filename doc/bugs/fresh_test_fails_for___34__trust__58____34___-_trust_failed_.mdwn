@@ -13,3 +13,5 @@ with 6 of similar fails. See e.g. [https://github.com/datalad/git-annex/runs/166
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] earlier today --[[Joey]]
