@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-01-11T18:47:54Z"
+ content="""
+The script only makes one commit of the metadata when I run it on linux.
+(Including in an adjusted unlocked branch like windows uses.)
+
+Since you're using `git -c`, git uses an env var to propagate that setting
+on to child processes. So it's possible something on windows prevents that
+working.
+"""]]
