@@ -464,14 +464,19 @@ runRepair removablebranch forced g = do
 	putStrLn "Running git fsck ..."
 	fsckresult <- findBroken False g
 	if foundBroken fsckresult
-		then runRepair' removablebranch fsckresult forced Nothing g
+		then do
+			putStrLn "Fsck found problems, attempting repair."
+			runRepair' removablebranch fsckresult forced Nothing g
 		else do
+			putStrLn "Fsck found no problems. Checking for broken branches."
 			bad <- badBranches S.empty g
 			if null bad
 				then do
 					putStrLn "No problems found."
 					return (True, [])
-				else runRepair' removablebranch fsckresult forced Nothing g
+				else do
+					putStrLn "Found problems, attempting repair."
+					runRepair' removablebranch fsckresult forced Nothing g
 
 runRepairOf :: FsckResults -> (Ref -> Bool) -> Bool -> Maybe FilePath -> Repo -> IO (Bool, [Branch])
 runRepairOf fsckresult removablebranch forced referencerepo g = do
