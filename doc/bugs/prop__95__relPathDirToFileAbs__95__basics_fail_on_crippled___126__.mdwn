@@ -1,0 +1,16 @@
+### Please describe the problem.
+
+Fresh build of 8.20201129+git100-g2d84bf992-1~ndall+1 when having HOME (base system is Ubuntu) on a crippled FS leads to
+
+```
+2021-01-13T03:46:45.0619292Z     prop_relPathDirToFileAbs_basics:                      FAIL (0.01s)
+2021-01-13T03:46:45.0620328Z       *** Failed! Falsifiable (after 702 tests):
+2021-01-13T03:46:45.0621015Z       TestableFilePath {fromTestableFilePath = "A"}
+2021-01-13T03:46:45.0621819Z       TestableFilePath {fromTestableFilePath = "A/"}
+2021-01-13T03:46:45.0623170Z       Use --quickcheck-replay=895840 to reproduce.
+```
+
+[https://github.com/datalad/git-annex/runs/1692622842?check_suite_focus=true](https://github.com/datalad/git-annex/runs/1692622842?check_suite_focus=true)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
