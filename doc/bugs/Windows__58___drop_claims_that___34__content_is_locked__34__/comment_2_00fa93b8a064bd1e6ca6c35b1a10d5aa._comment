@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-01-13T17:25:08Z"
+ content="""
+It seems that Utility.LockFile.Windows.openLock
+must be returning Nothing for this message
+to be displayed.
+
+Which it does when CreateFile returns `INVALID_HANDLE_VALUE`. Which
+it makes sense it would do for a filename that's too long. Except
+that's taken to mean the locking failed due to it being locked.
+
+(So it seems createfile with the too-long filename is creating the file but
+then failing that way. Which is weird.)
+
+It might be possible to use windows's `GetLastError` to find out that it
+failed due to length, but the API docs don't seem
+to say what the error value is in that case.
+
+Normally ghc modifies filenames on windows to not use the
+compatability layer that has this filename length limit. But since
+this is using the low-level CreateFile, that does not happen here.
+
+The code that does that is not exposed (`create_device_name` in base's
+cbits/fs.c)
+It's basically a matter of prepending `\\?\` to the path, but it also
+has to be made absolute and cannot contain '/'. 
+
+I've implemented something similar in git-annex, which I hope will solve
+this. I have not tried it on windows yet so leaving the bug open for
+confirmation.
+"""]]

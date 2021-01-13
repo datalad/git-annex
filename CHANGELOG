@@ -23,6 +23,7 @@ git-annex (8.20201130) UNRELEASED; urgency=medium
   * When syncing changes back from an adjusted branch to the basis branch,
     include deletions of submodules.
     Thanks, Kyle Meyer for the patch.
+  * Windows: Work around win32 length limits when dealing with lock files.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 Jan 2021 12:52:41 -0400
 
