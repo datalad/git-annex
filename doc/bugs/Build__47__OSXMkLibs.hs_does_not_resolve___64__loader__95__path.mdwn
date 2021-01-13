@@ -11,3 +11,5 @@ I attempted to patch `Build/OSXMkLibs.hs` to handle this myself, but the file co
 
 [[!meta author=jwodder]]
 [[!tag projects/datalad]]
+
+> [[done]] per commeents --[[Joey]]
