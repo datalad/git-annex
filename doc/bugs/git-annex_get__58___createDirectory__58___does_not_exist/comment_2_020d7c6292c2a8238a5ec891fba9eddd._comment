@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-01-13T16:32:06Z"
+ content="""
+Is the relative path actually valid? There may be some case involving
+symlinks in the parent directories where the relative path could be wrong.
+
+I am not familiar with /private on OSX. Is the problem something like,
+the user can access /private/foo/bar but not /private/foo, and so a
+relative path traversing that can't find the ".." in that directory?
+
+If so, then a relative path from /private/foo/bar to /private/foo/baz would
+also fail and that case would not be helped by using an absolute
+path to a different top level directory.
+
+Of course, it's a bit surprising that a relative path is used when the path
+is into an entirely different top-level directory. But without
+understanding the problem I don't know if switching to using an absolute
+path in that case would only happen to fix this case of the problem and not
+the general case, whatever that is.
+
+It's worth noting that git fails if a parent directory does not have
+the x bit set:
+
+	joey@darkstar:/tmp/foo/bar/baz>git init
+	fatal: Invalid path '/tmp/foo/bar': Permission denied
+"""]]
