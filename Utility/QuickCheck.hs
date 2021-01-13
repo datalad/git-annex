@@ -12,7 +12,7 @@ module Utility.QuickCheck
 	( module X
 	, TestableString
 	, fromTestableString
-	, TestableFilePath
+	, TestableFilePath(..)
 	, fromTestableFilePath
 	, nonNegative
 	, positive
