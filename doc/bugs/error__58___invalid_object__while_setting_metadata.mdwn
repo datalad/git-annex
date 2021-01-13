@@ -24,3 +24,5 @@ I think nothing odd was done besides trying to make this file saved unlocked for
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[notabug|done]] --[[Joey]]
