@@ -13,7 +13,6 @@ module Utility.QuickCheck
 	, TestableString
 	, fromTestableString
 	, TestableFilePath(..)
-	, fromTestableFilePath
 	, nonNegative
 	, positive
 	) where
