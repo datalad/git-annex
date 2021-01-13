@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
+ nickname="eric.w"
+ avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
+ subject="comment 4"
+ date="2021-01-11T22:42:27Z"
+ content="""
+actually --fast seems to have no affect on the speed. (each file seems to be getting hashed)
+"""]]
