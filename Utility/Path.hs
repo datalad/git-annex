@@ -189,8 +189,7 @@ splitShortExtensions' maxextension = go []
 		(base, ext) = splitExtension f
 		len = B.length ext
 
-{- This requires the first path to be absolute, and the
- - second path cannot contain ../ or ./
+{- This requires both paths to be absolute and normalized.
  -
  - On Windows, if the paths are on different drives,
  - a relative path is not possible and the path is simply

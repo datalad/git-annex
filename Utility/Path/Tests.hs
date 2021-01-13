@@ -35,16 +35,14 @@ prop_upFrom_basics tdir
 	p = fromRawFilePath <$> upFrom (toRawFilePath dir)
 	dir = fromTestableFilePath tdir
 
-prop_relPathDirToFileAbs_basics :: TestableFilePath -> TestableFilePath -> Bool
-prop_relPathDirToFileAbs_basics fromt tot
-	| from == to = null r
-	| otherwise = not (null r)
+prop_relPathDirToFileAbs_basics :: TestableFilePath -> Bool
+prop_relPathDirToFileAbs_basics pt = and
+	[ relPathDirToFileAbs p (p </> "bar") == "bar"
+	, relPathDirToFileAbs (p </> "bar") p == ".."
+	, relPathDirToFileAbs p p == ""
+	]
   where
-	from = fromTestableFilePath fromt
-	to = fromTestableFilePath tot
-	r = fromRawFilePath $ relPathDirToFileAbs
-		(toRawFilePath from)
-		(toRawFilePath to)
+	p = pathSeparator `B.cons` toRawFilePath (fromTestableFilePath pt)
 
 prop_relPathDirToFileAbs_regressionTest :: Bool
 prop_relPathDirToFileAbs_regressionTest = same_dir_shortcurcuits_at_difference

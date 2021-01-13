@@ -14,3 +14,5 @@ Fresh build of 8.20201129+git100-g2d84bf992-1~ndall+1 when having HOME (base sys
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

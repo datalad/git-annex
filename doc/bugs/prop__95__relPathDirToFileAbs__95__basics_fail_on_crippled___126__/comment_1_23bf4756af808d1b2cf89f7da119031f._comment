@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-13T17:01:07Z"
+ content="""
+This is a pure test, and the filesystem does not affect it in any way.
+
+The test is slightly broken, in that when two paths
+are the same except slightly differently normalized (eg, "A" vs "A/"),
+it fails. Really not a great test overall, rewriting.
+"""]]
