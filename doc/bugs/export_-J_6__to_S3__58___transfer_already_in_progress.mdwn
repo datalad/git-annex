@@ -94,3 +94,5 @@ Besides reporting the issue, I also have a question:  could I just rerun `export
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] bypassed this unncessary locking for exports. --[[Joey]]
