@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="eric.w@eee65cd362d995ced72640c7cfae388ae93a4234"
+ nickname="eric.w"
+ avatar="http://cdn.libravatar.org/avatar/8d9808c12db3a3f93ff7f9e74c0870fc"
+ subject="comment 5"
+ date="2021-01-14T22:15:12Z"
+ content="""
+A faster way of doing uninit is the following:
+
+```cp --no-clobber --dereference --recursive --preserve=all --reflink=auto --verbose ./git_annex_repo/your_symlinks/ ./target_dir/```
+
+This will simply copy (thin COW copy) symlinks (dereferenced) as normal files preserving the mtime, etc. the resulting ./target_dir/ will have your files if they existed in this annex or broken symlinks if the files were not here.
+
+
+
+
+"""]]
