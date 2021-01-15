@@ -65,7 +65,7 @@ git-annex: get: 1 failed
 ```
 
 Fixing the problem is simple enough.
-All that needs to be done is to add a case for `expandt` to handle the case where `~` appears at the end of a string.
+All that needs to be done is to add an equation for `expandt` to handle the case where `~` appears at the end of a string.
 See the following patch:
 
 ```
@@ -100,13 +100,14 @@ index 8b63ac480..b7f018944 100644
 
 1. Create `testfile` in a git-annex repo of your home directory on host `A`
 2. Run `git annex add testfile` in the repo on `A`
-3. Clone your home directory on `A` onto host `B` using `git clone ssh://me@A/~ homedir_A`
-4. `cd` into `homedir_A`
-5. Run `git annex get testfile`
-6. Watch git-annex fail to fetch the file
-7. Run `git remote set-url origin ssh://me@A/~/` to set the remote URL to be something git-annex can deal with
-8. Run `git annex get testfile` again
-9. Watch git-annex suddenly succeed
+3. Run `git commit`
+4. Clone your home directory on `A` onto host `B` using `git clone ssh://me@A/~ homedir_A`
+5. `cd` into `homedir_A`
+6. Run `git annex get testfile`
+7. Watch git-annex fail to fetch the file
+8. Run `git remote set-url origin ssh://me@A/~/` to set the remote URL to be something git-annex can deal with
+9. Run `git annex get testfile` again
+10. Watch git-annex suddenly succeed
 
 ### What version of git-annex are you using? On what operating system?
 
