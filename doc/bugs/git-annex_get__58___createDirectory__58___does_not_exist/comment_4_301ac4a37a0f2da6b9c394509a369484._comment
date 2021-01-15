@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="comment 4"
+ date="2021-01-15T08:32:58Z"
+ content="""
+> Is the relative path actually valid?
+
+As far as I can tell, it is.
+
+```
+(venv3.8.6) worker-629-003:datalad_temp_test_basic_scenariocm66i4fm appveyor$ ls -id ../../../../../../../var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_basic_scenariodi3ady04/.git/annex /var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_basic_scenariodi3ady04/.git/annex
+12889649026 ../../../../../../../var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_basic_scenariodi3ady04/.git/annex
+12889649026 /var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_basic_scenariodi3ady04/.git/annex
+```
+
+I cannot come up with an explanation, for the consistent behavior of `ls`, but not `mkdir` for a relative path vs. an absolute path.
+
+```
+(venv3.8.6) worker-629-003:datalad_temp_test_basic_scenariocm66i4fm appveyor$ mkdir ../../../../../../../var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_basic_scenariodi3ady04/.git/annex/testdummy
+mkdir: ../../../../../../../var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_basic_scenariodi3ady04/.git/annex: No such file or directory
+
+(venv3.8.6) worker-629-003:datalad_temp_test_basic_scenariocm66i4fm appveyor$ mkdir /var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_basic_scenariodi3ady04/.git/annex/testdummy
+-> exit 0
+```
+"""]]
