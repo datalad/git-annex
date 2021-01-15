@@ -1,0 +1,141 @@
+### Please describe the problem.
+
+git-annex has issues when trying to deal with SSH (and possibly other kinds) of URLs which have the form:
+
+```
+ssh://user@host/~
+```
+
+When git-annex tries to perform tilde-expansion the path part of the URL on the remote side,
+it runs into problems because the function responsible for doing this (`expandTilde` in `Git/Construct.hs`)
+does not correctly handle the expansion of home directory paths which do not end in a slash,
+such as `~` or `/~`. It will correctly handle strings like `/~/` or `~/`, which is why SSH
+URLs of the form `ssh://user@host/~/` *will* work.
+
+Examining the definition of `expandTilde` makes it clear why this is true:
+
+```haskell
+expandTilde :: FilePath -> IO FilePath
+#ifdef mingw32_HOST_OS
+expandTilde = return
+#else
+expandTilde = expandt True
+  where
+        expandt _ [] = return ""
+        expandt _ ('/':cs) = do
+                v <- expandt True cs
+                return ('/':v)
+        expandt True ('~':'/':cs) = do
+                h <- myHomeDir
+                return $ h </> cs
+        expandt True ('~':cs) = do
+                let (name, rest) = findname "" cs
+                u <- getUserEntryForName name
+                return $ homeDirectory u </> rest
+        expandt _ (c:cs) = do
+                v <- expandt False cs
+                return (c:v)
+        findname n [] = (n, "") 
+        findname n (c:cs)
+                | c == '/' = (n, cs) 
+                | otherwise = findname (n++[c]) cs
+```
+
+The expression `expandTilde "~"` will eventually match the fourth pattern for `expandt`.
+Since `cs == ""` in this context, `name` will also evaluate to `""`.
+This means that `getUserEntryForName` will be called with the null string as an argument.
+Since there is no user on the system with the null string as a username,
+`getUserEntryForName` will throw an exception.
+This will cause git-annex to spit out an error message:
+
+```
+get testfile (from origin...) 
+git-annex-shell: getUserEntryForName: does not exist (no such user)
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: error in rsync protocol data stream (code 12) at io.c(235) [Receiver=3.1.3]
+
+  rsync failed -- run git annex again to resume file transfer
+
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+  	1f5118ff-a50e-4bf1-a372-960774bce0ab -- user@A:~/ [origin]
+failed
+git-annex: get: 1 failed
+```
+
+Fixing the problem is simple enough.
+All that needs to be done is to add a case for `expandt` to handle the case where `~` appears at the end of a string.
+See the following patch:
+
+```
+From 4d8febfd5ec64516d3f77577a498f96b87ec9c9c Mon Sep 17 00:00:00 2001
+From: Grond <grond66@riseup.net>
+Date: Thu, 14 Jan 2021 18:16:31 -0800
+Subject: [PATCH] Fix expandTilde so that it can handle tildes at the end of
+ it's input
+
+---
+ Git/Construct.hs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Git/Construct.hs b/Git/Construct.hs
+index 8b63ac480..b7f018944 100644
+--- a/Git/Construct.hs
++++ b/Git/Construct.hs
+@@ -187,6 +187,7 @@ expandTilde = expandt True
+ 	expandt True ('~':'/':cs) = do
+ 		h <- myHomeDir
+ 		return $ h </> cs
++        expandt True "~" = myHomeDir
+ 	expandt True ('~':cs) = do
+ 		let (name, rest) = findname "" cs
+ 		u <- getUserEntryForName name
+-- 
+2.20.1
+
+```
+
+### What steps will reproduce the problem?
+
+1. Create `testfile` in a git-annex repo of your home directory on host `A`
+2. Run `git annex add testfile` in the repo on `A`
+3. Clone your home directory on `A` onto host `B` using `git clone ssh://me@A/~ homedir_A`
+4. `cd` into `homedir_A`
+5. Run `git annex get testfile`
+6. Watch git-annex fail to fetch the file
+7. Run `git remote set-url origin ssh://me@A/~/` to set the remote URL to be something git-annex can deal with
+8. Run `git annex get testfile` again
+9. Watch git-annex suddenly succeed
+
+### What version of git-annex are you using? On what operating system?
+
+I'm running Debian 10.7.
+
+The output of `git annex version` is:
+
+```
+git-annex version: 7.20190129
+build flags: Assistant Webapp Pairing S3(multipartupload)(storageclasses) WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar hook external
+operating system: linux x86_64
+supported repository versions: 5 7
+upgrade supported from repository versions: 0 1 2 3 4 5 6
+local repository version: 5
+```
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Definitely! I'm currently writing some personal file synchronization software that uses git-annex for myself, which is how I noticed this bug.
