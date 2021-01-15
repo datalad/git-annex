@@ -8,8 +8,8 @@ different ways you can use git-annex.
 ----
 
 Still reading? Ok. Git's man page calls it "a stupid content
-tracker". With git-annex, git is instead "a stupid filename and metadata"
-tracker. The contents of annexed files are not stored in git, only the
+tracker". With git-annex, git is instead "a stupid filename and metadata
+tracker". The contents of annexed files are not stored in git, only the
 names of the files and some other metadata remain there.
 
 The contents of the files are kept by git-annex in a distributed key/value
