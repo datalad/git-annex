@@ -69,7 +69,7 @@ All that needs to be done is to add an equation for `expandt` to handle the case
 See the following patch:
 
 ```
-From 4d8febfd5ec64516d3f77577a498f96b87ec9c9c Mon Sep 17 00:00:00 2001
+From 680873923197f5eec15365b3e47e3fa05b9573be Mon Sep 17 00:00:00 2001
 From: Grond <grond66@riseup.net>
 Date: Thu, 14 Jan 2021 18:16:31 -0800
 Subject: [PATCH] Fix expandTilde so that it can handle tildes at the end of
@@ -80,14 +80,14 @@ Subject: [PATCH] Fix expandTilde so that it can handle tildes at the end of
  1 file changed, 1 insertion(+)
 
 diff --git a/Git/Construct.hs b/Git/Construct.hs
-index 8b63ac480..b7f018944 100644
+index 8b63ac480..a369bc4a6 100644
 --- a/Git/Construct.hs
 +++ b/Git/Construct.hs
 @@ -187,6 +187,7 @@ expandTilde = expandt True
  	expandt True ('~':'/':cs) = do
  		h <- myHomeDir
  		return $ h </> cs
-+        expandt True "~" = myHomeDir
++	expandt True "~" = myHomeDir
  	expandt True ('~':cs) = do
  		let (name, rest) = findname "" cs
  		u <- getUserEntryForName name
