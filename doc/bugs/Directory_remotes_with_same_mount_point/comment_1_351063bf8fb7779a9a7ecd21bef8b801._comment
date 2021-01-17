@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="seanl@fe5df935169a5440a52bdbfc5fece85cdd002d68"
+ nickname="seanl"
+ avatar="http://cdn.libravatar.org/avatar/082ffc523e71e18c45395e6115b3b373"
+ subject="Works fine after changing mount point"
+ date="2021-01-17T07:24:38Z"
+ content="""
+I uninstalled udevil in favor of udiskie, which uses a mount point name based on the label instead of the device, updated the directory to point at the new mount point with `git annex enableremote pi1541 <new mount point>/1541`, and the problem went away. But it doesn't seem like having different mount points for removable devices should be a requirement.
+"""]]
