@@ -1,0 +1,49 @@
+### Please describe the problem.
+
+I have a repository with two directory special remotes that use the same mount point (it's a USB SD card reader using udevil). I use "git-annex-command" with lsblk and grep using the UUID to prevent git-annex from attempting to sync with the remote if it's not mounted. When trying to import from the second remote, I get "file content has changed" for every file, which seems to be related to inode-based caching.
+
+Each of the remotes uses a subdirectory of the mount, though I did change the directory for the first one (it originally used the mount point directly). 
+
+### What steps will reproduce the problem?
+
+1. Create a directory special remote on a removable device and import from it
+2. Create a second directory special remote on a second removable device at the same mount point and import from it
+
+
+### What version of git-annex are you using? On what operating system?
+
+8.20201130-g75988a790, Debian Buster
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ git annex import --from=pi1541 master:c64
+list pi1541 ok                                    
+import pi1541 nav96.d64                           
+                                                                
+  file content has changed                                  
+ok                                                    
+import pi1541 fb64                                    
+                                                                  
+  file content has changed                                        
+ok                                                  
+import pi1541 cbmcmd22.d64                     
+                                          
+  file content has changed                               
+ok                                                         
+import pi1541 cbmcmd22.d80                 
+                                                  
+  file content has changed                             
+ok                                                      
+...
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I've used it successfully on Linux and Android. My attempts on Windows have been less successful, though I never tried with core.ignoreStat=true. Now I'm trying to use it to manage the SD cards for various devices: my Pi1541, Odroid Go, and Sansa Clip Zip.
