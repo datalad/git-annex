@@ -21,3 +21,8 @@ CallStack (from HasCallStack):
 """]]
 
 -- Lykos
+
+> Closing as
+> <https://git-annex.branchable.com/bugs/gcrypt_remote__58___every_sync_uploads_huge_manifest/>
+> is a later discussion of this with more detail about why it should be
+> supported. [[done]] --[[Joey]]

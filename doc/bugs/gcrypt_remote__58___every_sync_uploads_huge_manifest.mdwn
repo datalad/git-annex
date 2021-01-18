@@ -27,4 +27,4 @@ is running. The upload of the actual changeset starts after this, the processes 
 
 git-annex is great and revolutionized my file organization and backup structure (if they were even existing before)
 
-[[!meta tite="gcrypt special remotes should support rsync:// and perhaps also sftp://"]]
+[[!meta title="gcrypt special remotes should support rsync:// and perhaps also sftp://"]]

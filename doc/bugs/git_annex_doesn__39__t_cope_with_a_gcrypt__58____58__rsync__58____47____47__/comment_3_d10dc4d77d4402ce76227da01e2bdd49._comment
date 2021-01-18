@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-01-18T16:45:35Z"
+ content="""
+Also discussed in these:
+<https://git-annex.branchable.com/bugs/gcrypt_rsync_remotes_don__39__t_work/>
+<https://git-annex.branchable.com/bugs/gcrypt_remote__58___every_sync_uploads_huge_manifest/>
+
+Some users there report that git-annex sync does work, as far as running
+git push and pull. I think the form of your url is the problem,
+gcrypt::rsync://192.168.178.241:test seems like it's trying to mix url
+and rsync location syntax. Urls don't normally end with ":test",
+that's not a valid url, and so the parse fails.
+(Verified using Network.URI.parseURI same as git-annex does.)
+
+Something like
+gcrypt::rsync://192.168.178.241/home/you/test will work, or at least not
+crash at that point.
+"""]]
