@@ -1,0 +1,17 @@
+### Please describe the problem.
+
+Recently, with 8.20201129+git100-g2d84bf992 version of git-annex and whatever states of datalad, we have celebrated a Windows Green Day -- our CI was totally green for Windows.
+
+But then Windows started to fail again.  Currently (8.20201129+git125-g7f72314bf) due to
+
+```
+2021-01-18T14:42:32.7075079Z     prop_relPathDirToFileAbs_basics:                      FAIL
+2021-01-18T14:42:32.7078493Z       *** Failed! Falsified (after 54 tests):
+2021-01-18T14:42:32.7082732Z       TestableFilePath {fromTestableFilePath = "/*LFy?\ETBoj(96"}
+2021-01-18T14:42:32.7084569Z       Use --quickcheck-replay=725893 to reproduce.
+```
+
+full list of recent runs with logs etc: [datalad/git-annex github actions](https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+Windows%22).  Note that `git annex version` reported is "off": [just filed an issue](https://github.com/datalad/git-annex/issues/44)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
