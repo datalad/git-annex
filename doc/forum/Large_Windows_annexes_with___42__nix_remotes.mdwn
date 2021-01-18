@@ -1,0 +1,33 @@
+# Scenario
+
+On multiple Windows systems, I have several directories with related, but somewhat different content.
+
+<pre>E:\Dir\V1\...
+      \V2\...
+      ...
+      \Untracked
+E:\V1-Related
+E:\V2-Related
+  ...</pre>
+
+V1 and V2 each contain dozens of directories with hundreds of files totaling 10s of gigabytes.  The content is very similar, but may have a few differences.  Some, but not all of the directories in E:\Dir should be tracked.
+
+V1- and V2-related directories each contain 10-20 thousand subdirectories with 100K-200K files totaling from 50-200GB per base directory.  Again, there is a lot of overlap between the V*-related directories.
+
+Also, the *-related directory content is related to the V# directories, but cannot be stored in the same place.  There may be 5-10GB of overlap between them.
+
+Then there is my main storage system which is running FreeNAS.  I'd like it to retain copies of all content for protection, backup, and redundancy.  That way I can drop stuff locally from various computers with much smaller drives and still have it.  This system can either be accessed by SMB or via SSH or rsync. It should be possible for me to build git-annex for FreeBSD or to run a Linux VM on it.
+
+# Questions
+
+Is direct mode supported at all on NTFS?  I'd like to avoid the file duplication and copying.  I see it gets flagged as a broken file system. (No need to explain, I worked in the guts of Cygwin.)
+
+Is using git-annex and the available tools even realistic with so many files?  I've read a lot of the forum and tip posts, but my head is still swimming.
+
+How might I best track V# and V#-related together?  Or should I could keep them in separate annexes and just script them together.
+
+What is the best way to keep V#-related in the root directory?  I've considered adding an E:\annex because .git in the root directory can be problematic.  If I do, how would I associate those directories with the annex?  GIT_DIR?
+
+I've noticed using git-annex over a locally mounted drive letter or using a UNC path is *slow*.  I assume it's being treated as local and running multiple passes across the network while reading, writing, checksumming and verifying them.  I base this on seeing uplink and downlink saturation while syncing.  What would be the best, most performant solution for accessing it?
+
+Finally, is there anyway to tip, donate or contribute to you?
