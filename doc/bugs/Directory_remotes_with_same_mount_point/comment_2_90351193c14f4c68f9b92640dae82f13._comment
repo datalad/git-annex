@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-01-18T16:23:42Z"
+ content="""
+I don't think this has anything to do with mount points being in common.
+Consider that, a single disk with a git-annex repository, and 2 directory
+special remotes all on it has everything under a common mount point. And
+I'm pretty sure works. Also there's just nothing in the relevant code that
+cares what the mount point is.
+
+It looks to me like the inode was somehow not the same in the "list" stage
+of the command as it was in the "import" stage, or the file that was seen
+in the first stage was no longer present in the second stage. I don't see
+how that could be a git-annex bug. It could, for example, happen if one SD
+card was mounted there at the "list" stage, and then a different card got
+mounted there at the "import" stage, or even if the SD card just got
+unmounted in between the two stages.
+
+I have not been able to replicate the problem either, using 2 removable
+devices on the same mount point, 2 special remotes, etc. So you will have
+to show me how to reproduce this if it's actually a bug.
+"""]]
