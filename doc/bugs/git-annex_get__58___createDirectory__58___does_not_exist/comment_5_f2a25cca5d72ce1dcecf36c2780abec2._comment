@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-01-18T17:29:12Z"
+ content="""
+I can't see how git-annex can work around this, unless someone finds an
+explanation for the OS's behavior.
+
+I think you've clearly shown it's not a git-annex bug, since other mkdir()
+calls behave the same way. And that seems to point squarely at an OS bug.
+
+(Unless .git/annex was itself a dangling symlink, then ls would be able to
+list it, but mkdir would fail like that.)
+"""]]
