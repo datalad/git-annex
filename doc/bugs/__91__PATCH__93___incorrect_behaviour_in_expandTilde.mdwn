@@ -140,3 +140,5 @@ local repository version: 5
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Definitely! I'm currently writing some personal file synchronization software that uses git-annex for myself, which is how I noticed this bug.
+
+> Thanks for a perfect bug report and patch. [[done]] --[[Joey]]

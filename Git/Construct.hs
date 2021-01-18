@@ -187,6 +187,7 @@ expandTilde = expandt True
 	expandt True ('~':'/':cs) = do
 		h <- myHomeDir
 		return $ h </> cs
+	expandt True "~" = myHomeDir
 	expandt True ('~':cs) = do
 		let (name, rest) = findname "" cs
 		u <- getUserEntryForName name
