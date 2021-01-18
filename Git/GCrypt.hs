@@ -28,6 +28,7 @@ urlPrefix = urlScheme ++ ":"
 
 isEncrypted :: Repo -> Bool
 isEncrypted Repo { location = Url url } = urlPrefix `isPrefixOf` show url
+isEncrypted Repo { location = UnparseableUrl url } = urlPrefix `isPrefixOf` url
 isEncrypted _ = False
 
 {- The first Repo is the git repository that has the second Repo
@@ -36,21 +37,23 @@ isEncrypted _ = False
  - When the remote Repo uses gcrypt, returns the actual underlying
  - git repository that gcrypt is using to store its data. 
  -
- - Throws an exception if an url is invalid or the repo does not use
- - gcrypt.
+ - Throws an exception if the repo does not use gcrypt.
  -}
 encryptedRemote :: Repo -> Repo -> IO Repo
 encryptedRemote baserepo = go
   where
-	go Repo { location = Url url }
+	go Repo { location = Url url } = go' (show url)
+	go Repo { location = UnparseableUrl url } = go' url
+	go _ = notencrypted
+
+	go' u
 		| urlPrefix `isPrefixOf` u =
 			fromRemoteLocation (drop plen u) baserepo
 		| otherwise = notencrypted
-	  where
-		u = show url
-		plen = length urlPrefix
-	go _ = notencrypted
+
 	notencrypted = giveup "not a gcrypt encrypted repository"
+
+	plen = length urlPrefix
 
 data ProbeResult = Decryptable | NotDecryptable | NotEncrypted
 

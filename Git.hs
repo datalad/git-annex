@@ -3,7 +3,7 @@
  - This is written to be completely independant of git-annex and should be
  - suitable for other uses.
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -55,6 +55,7 @@ import Utility.FileMode
 repoDescribe :: Repo -> String
 repoDescribe Repo { remoteName = Just name } = name
 repoDescribe Repo { location = Url url } = show url
+repoDescribe Repo { location = UnparseableUrl url } = url
 repoDescribe Repo { location = Local { worktree = Just dir } } = fromRawFilePath dir
 repoDescribe Repo { location = Local { gitdir = dir } } = fromRawFilePath dir
 repoDescribe Repo { location = LocalUnknown dir } = fromRawFilePath dir
@@ -63,13 +64,14 @@ repoDescribe Repo { location = Unknown } = "UNKNOWN"
 {- Location of the repo, either as a path or url. -}
 repoLocation :: Repo -> String
 repoLocation Repo { location = Url url } = show url
+repoLocation Repo { location = UnparseableUrl url } = url
 repoLocation Repo { location = Local { worktree = Just dir } } = fromRawFilePath dir
 repoLocation Repo { location = Local { gitdir = dir } } = fromRawFilePath dir
 repoLocation Repo { location = LocalUnknown dir } = fromRawFilePath dir
 repoLocation Repo { location = Unknown } = error "unknown repoLocation"
 
 {- Path to a repository. For non-bare, this is the worktree, for bare, 
- - it's the gitdir, and for URL repositories, is the path on the remote
+ - it's the gitdit, and for URL repositories, is the path on the remote
  - host. -}
 repoPath :: Repo -> RawFilePath
 repoPath Repo { location = Url u } = toRawFilePath $ unEscapeString $ uriPath u
@@ -77,6 +79,7 @@ repoPath Repo { location = Local { worktree = Just d } } = d
 repoPath Repo { location = Local { gitdir = d } } = d
 repoPath Repo { location = LocalUnknown dir } = dir
 repoPath Repo { location = Unknown } = error "unknown repoPath"
+repoPath Repo { location = UnparseableUrl _u } = error "unknwon repoPath"
 
 repoWorkTree :: Repo -> Maybe RawFilePath
 repoWorkTree Repo { location = Local { worktree = Just d } } = Just d
@@ -91,6 +94,7 @@ localGitDir _ = error "unknown localGitDir"
  - or bare and non-bare, these functions help with that. -}
 repoIsUrl :: Repo -> Bool
 repoIsUrl Repo { location = Url _ } = True
+repoIsUrl Repo { location = UnparseableUrl _ } = True
 repoIsUrl _ = False
 
 repoIsSsh :: Repo -> Bool

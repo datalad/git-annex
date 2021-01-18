@@ -1,6 +1,6 @@
 {- Construction of Git Repo objects
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -87,24 +87,29 @@ fromAbsPath dir
 				else ret dir
 			)
 
-{- Remote Repo constructor. Throws exception on invalid url.
+{- Construct a Repo for a remote's url.
  -
  - Git is somewhat forgiving about urls to repositories, allowing
- - eg spaces that are not normally allowed unescaped in urls.
+ - eg spaces that are not normally allowed unescaped in urls. Such
+ - characters get escaped.
+ -
+ - This will always succeed, even if the url cannot be parsed
+ - or is invalid, because git can also function despite remotes having
+ - such urls, only failing if such a remote is used.
  -}
 fromUrl :: String -> IO Repo
 fromUrl url
-	| not (isURI url) = fromUrlStrict $ escapeURIString isUnescapedInURI url
-	| otherwise = fromUrlStrict url
+	| not (isURI url) = fromUrl' $ escapeURIString isUnescapedInURI url
+	| otherwise = fromUrl' url
 
-fromUrlStrict :: String -> IO Repo
-fromUrlStrict url
-	| "file://" `isPrefixOf` url = fromAbsPath $ toRawFilePath $
-		unEscapeString $ uriPath u
-	| otherwise = pure $ newFrom $ Url u
-  where
-	u = fromMaybe bad $ parseURI url
-	bad = error $ "bad url " ++ url
+fromUrl' :: String -> IO Repo
+fromUrl' url
+	| "file://" `isPrefixOf` url = case parseURI url of
+		Just u -> fromAbsPath $ toRawFilePath $ unEscapeString $ uriPath u
+		Nothing -> pure $ newFrom $ UnparseableUrl url
+	| otherwise = case parseURI url of
+		Just u -> pure $ newFrom $ Url u
+		Nothing -> pure $ newFrom $ UnparseableUrl url
 
 {- Creates a repo that has an unknown location. -}
 fromUnknown :: Repo

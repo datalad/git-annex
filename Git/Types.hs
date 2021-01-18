@@ -34,6 +34,7 @@ data RepoLocation
 	= Local { gitdir :: RawFilePath, worktree :: Maybe RawFilePath }
 	| LocalUnknown RawFilePath
 	| Url URI
+	| UnparseableUrl String
 	| Unknown
 	deriving (Show, Eq, Ord)
 

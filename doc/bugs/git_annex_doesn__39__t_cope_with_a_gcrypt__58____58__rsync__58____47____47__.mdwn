@@ -13,3 +13,6 @@ After adding a `gcrypt::rsync://` remote, `git-annex-sync` and `git-annex-info` 
 
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 8.20201127
+
+> [[done]], it will no longer crash, and git-annex sync will work
+> --[[Joey]]

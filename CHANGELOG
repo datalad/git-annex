@@ -28,6 +28,8 @@ git-annex (8.20201130) UNRELEASED; urgency=medium
   * Bug fix: Fix tilde expansion in ssh urls when the tilde is the last
     character in the url.
     Thanks, Grond for the patch.
+  * Avoid crashing when there are remotes using unparseable urls.
+    Including the non-standard URI form that git-remote-gcrypt uses for rsync.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 Jan 2021 12:52:41 -0400
 

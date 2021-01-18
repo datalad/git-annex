@@ -67,7 +67,7 @@ remote :: RemoteType
 remote = specialRemoteType $ RemoteType
 	{ typename = "gcrypt"
 	-- Remote.Git takes care of enumerating gcrypt remotes too,
-	-- and will call our gen on them.
+	-- and will call our chainGen on them.
 	, enumerate = const (return [])
 	, generate = gen
 	, configParser = mkRemoteConfigParser $
