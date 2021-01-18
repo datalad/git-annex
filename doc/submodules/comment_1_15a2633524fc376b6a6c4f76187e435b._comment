@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="aschoise@2386473665998adccbe71286036e57d7f3ad3a58"
+ nickname="aschoise"
+ avatar="http://cdn.libravatar.org/avatar/4e92ae64165f51610395247226b6bfad"
+ subject="Issue when using flag --recurse-submodules with git-checkout and git-switch"
+ date="2021-01-18T23:04:16Z"
+ content="""
+After setting up git-annex in one of my submodules, I noticed that executing `git checkout mybranch --recurse-submodules` will cause a fatal error (see error message below) and my working copy will be left in a state somewhere in between the origin and the destination branch.  
+As a workaround, this two-step alternative seems to work fine though: `git checkout mybranch && git submodule update`.  
+Everything above applies to command `git switch` as well.  
+I use git version 2.27.0 and git-annex version 8.20200618  
+
+Error Message: **fatal: could not open 'path/to/my/submodule/.git' for writing: Is a directory**
+"""]]
