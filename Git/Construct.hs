@@ -121,16 +121,16 @@ localToUrl :: Repo -> Repo -> Repo
 localToUrl reference r
 	| not $ repoIsUrl reference = error "internal error; reference repo not url"
 	| repoIsUrl r = r
-	| otherwise = case Url.authority reference of
-		Nothing -> r
-		Just auth -> 
+	| otherwise = case (Url.authority reference, Url.scheme reference) of
+		(Just auth, Just s) -> 
 			let absurl = concat
-				[ Url.scheme reference
+				[ s
 				, "//"
 				, auth
 				, fromRawFilePath (repoPath r)
 				]
 			in r { location = Url $ fromJust $ parseURI absurl }
+		_ -> r
 
 {- Calculates a list of a repo's configured remotes, by parsing its config. -}
 fromRemotes :: Repo -> IO [Repo]

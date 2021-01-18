@@ -255,14 +255,16 @@ discoverLFSEndpoint tro h
 			return Nothing
 		Just (Right hostuser) -> do
 			let port = Git.Url.port r
+			let p = fromMaybe (error "unknown path")
+				(Git.Url.path r)
 			-- Remove leading /~/ from path. That is added when
 			-- converting a scp-style repository location with
 			-- a relative path into an url, and is legal
 			-- according to git-clone(1), but github does not
 			-- support it.
-			let remotepath = if "/~/" `isPrefixOf` Git.Url.path r
-				then drop 3 (Git.Url.path r)
-				else Git.Url.path r
+			let remotepath = if "/~/" `isPrefixOf` p
+				then drop 3 p
+				else p
 			let ps = LFS.sshDiscoverEndpointCommand remotepath tro
 			-- Note that no shellEscape is done here, because
 			-- at least github's git-lfs implementation does
