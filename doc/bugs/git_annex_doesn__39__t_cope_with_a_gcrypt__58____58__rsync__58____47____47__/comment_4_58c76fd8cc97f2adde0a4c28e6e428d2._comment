@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 4"
+ date="2021-01-18T17:05:55Z"
+ content="""
+The `gcrypt::rsync://host:path` syntax is documented in the git-remote-gcrypt manpage and manual push/pull works find.
+"""]]
