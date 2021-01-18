@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-01-18T14:11:44Z"
+ content="""
+I want to use such a remote just for storing the git repo, no need to support it as a (special-)remote for storing annexed files. But full support would be cool too.
+"""]]

@@ -1,0 +1,15 @@
+### Please describe the problem.
+After adding a `gcrypt::rsync://` remote, `git-annex-sync` and `git-annex-info` crash with:
+
+    git-annex: bad url rsync://192.168.178.241:test
+    CallStack (from HasCallStack):
+      error, called at ./Git/Construct.hs:107:15 in main:Git.Construct
+
+### What steps will reproduce the problem?
+    git init
+    git annex init test
+    git remote add test gcrypt::rsync://192.168.178.241:test
+    git annex sync
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 8.20201127
