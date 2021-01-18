@@ -42,7 +42,10 @@ prop_relPathDirToFileAbs_basics pt = and
 	, relPathDirToFileAbs p p == ""
 	]
   where
-	p = pathSeparator `B.cons` toRawFilePath (fromTestableFilePath pt)
+	-- Make the input an absolute path, since relPathDirToFileAbs
+	-- needs absolute paths.
+	p = pathSeparator `B.cons` dropDrive
+		(toRawFilePath (fromTestableFilePath pt))
 
 prop_relPathDirToFileAbs_regressionTest :: Bool
 prop_relPathDirToFileAbs_regressionTest = same_dir_shortcurcuits_at_difference
