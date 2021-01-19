@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="mike@2d6d71f56ce2a992244350475251df87c26fe351"
+ nickname="mike"
+ avatar="http://cdn.libravatar.org/avatar/183fa439752e2f0c6f39ede658d81050"
+ subject="comment 1"
+ date="2021-01-19T12:19:45Z"
+ content="""
+In the submodule:
+~~~
+% git rev-parse --git-dir
+.git
+~~~
+
+If I understand needsSubmoduleFixup correctly, this should not need fixing anymore, is that correct? 
+"""]]
