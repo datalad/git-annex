@@ -26,3 +26,5 @@ an inode sentinal file and checking it to tell when inodes have changed
 would need importing to write to the drive. That seems strange, and the
 drive could even be read-only. May be the directory special remote should
 just not use inode numbers at all?
+
+> [[done]] --[[Joey]]

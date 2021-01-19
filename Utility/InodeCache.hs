@@ -24,6 +24,7 @@ module Utility.InodeCache (
 	showInodeCache,
 	genInodeCache,
 	toInodeCache,
+	toInodeCache',
 
 	InodeCacheKey,
 	inodeCacheToKey,
@@ -189,7 +190,10 @@ genInodeCache f delta = catchDefaultIO Nothing $
 	toInodeCache delta f =<< R.getFileStatus f
 
 toInodeCache :: TSDelta -> RawFilePath -> FileStatus -> IO (Maybe InodeCache)
-toInodeCache (TSDelta getdelta) f s
+toInodeCache d f s = toInodeCache' d f s (fileID s)
+
+toInodeCache' :: TSDelta -> RawFilePath -> FileStatus -> FileID -> IO (Maybe InodeCache)
+toInodeCache' (TSDelta getdelta) f s inode
 	| isRegularFile s = do
 		delta <- getdelta
 		sz <- getFileSize' f s
@@ -198,7 +202,7 @@ toInodeCache (TSDelta getdelta) f s
 #else
 		let mtime = modificationTimeHiRes s
 #endif
-		return $ Just $ InodeCache $ InodeCachePrim (fileID s) sz (MTimeHighRes (mtime + highResTime delta))
+		return $ Just $ InodeCache $ InodeCachePrim inode sz (MTimeHighRes (mtime + highResTime delta))
 	| otherwise = pure Nothing
 
 {- Some filesystem get new random inodes each time they are mounted.

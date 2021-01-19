@@ -1,6 +1,6 @@
 {- A "remote" that is just a filesystem directory.
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -354,18 +354,21 @@ listImportableContentsM dir = liftIO $ do
 				sz <- getFileSize' f st
 				return $ Just (mkImportLocation relf, (cid, sz))
 
--- Make a ContentIdentifier that contains an InodeCache.
---
--- The InodeCache is generated without checking a sentinal file.
--- So in a case when a remount etc causes all the inodes to change,
--- files may appear to be modified when they are not, which will only
--- result in extra work to re-import them.
---
+-- Make a ContentIdentifier that contains the size and mtime of the file.
 -- If the file is not a regular file, this will return Nothing.
+--
+-- The inode is zeroed because often this is used for import from a
+-- FAT filesystem, whose inodes change each time it's mounted, and
+-- including inodes would cause repeated re-hashing of files, and
+-- bloat the git-annex branch with changes to content identifier logs.
+--
+-- This does mean that swaps of two files with the same size and
+-- mtime won't be noticed, nor will modifications to files that
+-- preserve the size and mtime. Both very unlikely so acceptable.
 mkContentIdentifier :: RawFilePath -> FileStatus -> IO (Maybe ContentIdentifier)
 mkContentIdentifier f st =
 	fmap (ContentIdentifier . encodeBS . showInodeCache)
-		<$> toInodeCache noTSDelta f st
+		<$> toInodeCache' noTSDelta f st 0
 
 guardSameContentIdentifiers :: a -> ContentIdentifier -> Maybe ContentIdentifier -> a
 guardSameContentIdentifiers cont old new

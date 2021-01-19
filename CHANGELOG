@@ -30,6 +30,9 @@ git-annex (8.20201130) UNRELEASED; urgency=medium
     Thanks, Grond for the patch.
   * Avoid crashing when there are remotes using unparseable urls.
     Including the non-standard URI form that git-remote-gcrypt uses for rsync.
+  * Directory special remotes with importtree=yes now avoid unncessary
+    overhead when inodes of files have changed, as happens whenever a FAT
+    filesystem gets remounted.
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 Jan 2021 12:52:41 -0400
 
