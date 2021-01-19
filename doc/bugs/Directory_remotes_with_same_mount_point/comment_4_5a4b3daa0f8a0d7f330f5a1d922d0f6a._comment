@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-01-19T15:40:49Z"
+ content="""
+I don't think linux would change inode numbers while the filesystem was
+mounted. But each mount of FAT gets new inode numbers, since FAT doesn't
+actually have them and linux makes them up. So the filesystem being
+unmounted and remounted for some reason in between the two steps of the
+import would explain the behavior.
+
+Note that I've opened 
+[[todo/import_tree_from_FAT_does_unncessary_work_due_to_inode_instability]]
+after thinking of some other consequences of this.
+"""]]

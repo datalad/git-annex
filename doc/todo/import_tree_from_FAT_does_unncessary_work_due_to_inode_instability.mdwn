@@ -1,0 +1,28 @@
+When a FAT filesystem is unmounted and remounted, the inode numbers all
+change. This makes import tree from a directory special remote on FAT
+think the files have changed, and so it re-imports them. Since the content
+is the unchanged, the unnecessary work that is done is limited to hashing
+the file on the FAT filesystem. But that can be a lot of work when the tree
+being imported has a lot of large files in it. 
+
+This makes import tree potentially much slower than the legacy import
+interface (although that interface also re-hashes when used with
+--duplicate/--skip-duplicates).
+
+Also, the content identifier log gets another entry, with a content
+identifier with the new inode number. So over time this can bloat the log.
+
+May be better to omit the inode number from the content
+identifier for such a filesystem, instead relying on size and mtime?
+Although that would risk missing swaps of files with the same size and
+mtime, that seems like an unlikely thing, and in any case git-annex would
+import the data, and only miss the renaming of the files. It would also
+miss modifications that don't change size and preserve the mtime; such
+modifications are theoretically possible, but unlikely.
+
+But how to detect when it's a FAT filesystem with this problem?
+The method git-annex uses when running on a FAT filesystem, of maintaining
+an inode sentinal file and checking it to tell when inodes have changed
+would need importing to write to the drive. That seems strange, and the
+drive could even be read-only. May be the directory special remote should
+just not use inode numbers at all?
