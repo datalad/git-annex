@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="mike@2d6d71f56ce2a992244350475251df87c26fe351"
+ nickname="mike"
+ avatar="http://cdn.libravatar.org/avatar/183fa439752e2f0c6f39ede658d81050"
+ subject="comment 3"
+ date="2021-01-19T18:16:27Z"
+ content="""
+> I've modified the code so it now will display the exception as part of that message.
+
+I'll try to compile from source and get the exact exception then! I'll also check if I can come up with a minimal repo that reproduces the problem.
+
+> If by \"get for every file\" you mean the same run of git-annex is displaying it repeatedly, that would be weird -- it's run in early startup not later.
+
+I do get thousands of those error messages and on the occasion that I noticed this problem I was checking in thousands of files, and I also get the message once(!) when I `git annex add` a single test file, so this only my suspicion.
+
+> One way I can see this failing is if core.worktree is not actually set. Then unsetting it would fail and it would display this message. But it would not even try to unset core.worktree unless something tells git-annex that the git directory is located under the parent repo's .git/modules/ Despite the git rev-parse you show, something is making git-annex still think that is the case. Likely because .git is not a symlink.
+
+See above, it's a symlink to the directory under the parent repo's ./git/modules. Is this how it is intended?
+"""]]
