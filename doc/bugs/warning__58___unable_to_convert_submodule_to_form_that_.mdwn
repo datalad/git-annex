@@ -1,0 +1,38 @@
+### Please describe the problem.
+I have a git-annex repo as a submodule. When adding a file using git-annex, I get the error message:
+
+warning: unable to convert submodule to form that will work with git-annex
+
+This I seem to get for every file, i.e. thousands of error messages sometimes. But the repo in the submodule seems to work fine,
+the .git symlink is there.
+
+I am not able to spot the problem in Annex/Fixup.hs, maybe you have an idea what could go wrong?
+
+### What steps will reproduce the problem?
+
+mike@leguin experiments % date > test2     
+mike@leguin experiments % git annex add test2             
+add test2 (non-large file; adding content to git repository) ok
+(recording state in git...)
+warning: unable to convert submodule to form that will work with git-annex
+mike@leguin experiments % ls -l ../.git                                   
+lrwxrwxrwx. 1 mike mike 53 Nov 16 17:31 ../.git -> ../../../.git/modules/experiments/ocr-evaluation/data
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 8.20201127
+Fedora 32
+
+Also the same on CentOS 7, I was just able to reproduce it on my F32 workstation. ext4 filesystem.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Besides this problem, I am super happy with git-annex and use it at work and at home daily :-)
