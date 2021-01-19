@@ -603,7 +603,7 @@ jobs:
         run: |
           mkdir -p __testhome__
           cd __testhome__
-          python -m nose -s -v datalad
+          python -m nose -s -v --traverse-namespace datalad
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
