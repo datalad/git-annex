@@ -93,8 +93,8 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 	| needsSubmoduleFixup r = do
 		when (coreSymlinks c) $
 			(replacedotgit >> unsetcoreworktree)
-				`catchNonAsync` \_e -> hPutStrLn stderr
-					"warning: unable to convert submodule to form that will work with git-annex"
+				`catchNonAsync` \e -> hPutStrLn stderr $
+					"warning: unable to convert submodule to form that will work with git-annex: " ++ show e
 		return $ r'
 			{ config = M.delete "core.worktree" (config r)
 			}
@@ -102,8 +102,8 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		( do
 			when (coreSymlinks c) $
 				(replacedotgit >> worktreefixup)
-					`catchNonAsync` \_e -> hPutStrLn stderr
-						"warning: unable to convert .git file to symlink that will work with git-annex"
+					`catchNonAsync` \e -> hPutStrLn stderr $
+						"warning: unable to convert .git file to symlink that will work with git-annex: " ++ show e
 			return r'
 		, return r
 		)

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-01-19T16:14:38Z"
+ content="""
+Hmm, that happens if it somehow gets an exception while fixing up the .git
+file and unsetting core.worktree in the git config. I've modified the code
+so it now will display the exception as part of that message.
+
+If by "get for every file" you mean the same run of git-annex is displaying
+it repeatedly, that would be weird -- it's run in early startup not later.
+
+One way I can see this failing is if core.worktree is not actually set.
+Then unsetting it would fail and it would display this message. But it
+would not even try to unset core.worktree unless something tells
+git-annex that the git directory is located under the parent repo's
+.git/modules/ Despite the `git rev-parse` you show, something is
+making git-annex still think that is the case. Likely because .git
+is not a symlink.
+"""]]
