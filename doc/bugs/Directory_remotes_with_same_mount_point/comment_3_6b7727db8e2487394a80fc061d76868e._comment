@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="seanl@fe5df935169a5440a52bdbfc5fece85cdd002d68"
+ nickname="seanl"
+ avatar="http://cdn.libravatar.org/avatar/082ffc523e71e18c45395e6115b3b373"
+ subject="Went away with fsck?"
+ date="2021-01-19T01:15:51Z"
+ content="""
+I tried unmounting the sd card, fscking, and remounting, and then I was able to import without issue. I haven't tried a sync or a second import, though. All of my SD cards use VFAT, and this one has 160k+ files on it. I'm wondering if there are cases where Linux's VFAT implementation will give different inode numbers for the same file during the same session? The only mention of inode numbers in the Linux VFAT documentation is in the NFS section, though. I'll let you know if I run into it again.
+"""]]
