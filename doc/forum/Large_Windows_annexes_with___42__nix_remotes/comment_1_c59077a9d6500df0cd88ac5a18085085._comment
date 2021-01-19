@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-19T15:58:37Z"
+ content="""
+Direct mode was only supported by old versions of git-annex. It did work on
+windows. The replacement (adusted unlocked branches + annex.thin) is better
+in every way except one: On windows (and some filesystems like FAT), it is
+not able to avoid storing 2 copies of files, because git-annex isn't able
+to hard link files there. If there was a reasonable way to do that on
+windows, that could be a big improvement, but I have not dug into whether
+windows has anything similar enough to hard link for git-annex to use it.
+
+git-annex scales to hundreds of thousands of files.
+
+If I had two directories like your V# and V#-related, I might make them
+each into their own repository, and set them each as a git remote of the
+other. That would let git-annex know that identical files have two copies.
+(Or, the parent directory could be made into a git-annex repository, which
+would let git-annex deduplicate identical files, but since that needs
+symlink support, it won't happen on windows.)
+
+You can certianly use GIT_DIR with git-annex.
+
+Generally the best thing to do with storage on the other side of a network
+connection is to run git-annex on it locally, or use it as some kind of
+special remote.
+"""]]
