@@ -1,0 +1,1 @@
+I'm reaching out about an estimated ETA for Apple M1 support. I hear that there isn't yet a Haskell compiler for Apple Silicon. Any rough ideas about when this might be expected? 
