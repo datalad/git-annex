@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="mike@2d6d71f56ce2a992244350475251df87c26fe351"
+ nickname="mike"
+ avatar="http://cdn.libravatar.org/avatar/183fa439752e2f0c6f39ede658d81050"
+ subject="comment 4"
+ date="2021-01-20T15:41:50Z"
+ content="""
+For some reason, I couldn't reproduce it easily using `git annex add` on my F32 workstation, but I got it on a `git annex get`:
+
+```
+% git annex get model_strukturerkennung.h5
+get model_strukturerkennung.h5 (from qurator-box...)
+(checksum...) ok
+(recording state in git...)
+warning: unable to convert submodule to form that will work with git-annex: unset core.worktree failed
+CallStack (from HasCallStack):
+  error, called at ./Annex/Fixup.hs:119:24 in main:Annex.Fixup
+% ls -ld ../.git
+lrwxrwxrwx. 1 mike mike 53 Nov 16 17:31 ../.git -> ../../../.git/modules/experiments/ocr-evaluation/data
+
+
+% git config --unset core.worktree; echo $?
+5
+% git config --get core.worktree; echo $?
+1
+```
+"""]]
