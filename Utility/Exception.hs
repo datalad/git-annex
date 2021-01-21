@@ -39,7 +39,7 @@ import Utility.Data
 
 {- Like error, this throws an exception. Unlike error, if this exception
  - is not caught, it won't generate a backtrace. So use this for situations
- - where there's a problem that the user is expeected to see in some
+ - where there's a problem that the user is expected to see in some
  - circumstances. -}
 giveup :: [Char] -> a
 giveup = errorWithoutStackTrace
