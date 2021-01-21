@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-01-21T19:20:00Z"
+ content="""
+It still seems easy to demonstrate that git does not ask for creds on 404:
+
+	joey@darkstar:~> git clone http://google.com/this-url-does-not-exist
+	Cloning into 'this-url-does-not-exist'...
+	fatal: repository 'http://google.com/this-url-does-not-exist/' not found
+
+So I need you to show me what makes you think that git does such a strange
+thing, before I can take seriously a request to replicate that behavior in
+git-annex. Because the only possible reason I would implement such an
+insane thing is if git has lost its collective mind and so I needed to
+follow into the abyss.
+
+If the actual issue is that gogs has implemented support for git-annex,
+but that it sends 404 when git-annex requests config from a
+private repo, rather than 401, it seems to me the place to fix that is in
+gogs.
+"""]]
