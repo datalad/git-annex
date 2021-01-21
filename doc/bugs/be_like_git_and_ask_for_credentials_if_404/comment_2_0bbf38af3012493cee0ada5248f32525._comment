@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2021-01-21T18:36:50Z"
+ content="""
+a quick one: https://gin.g-node.org/ does expose `foo.git/annex/` -- that is what gin has extended original borg with.  Example repo to try on https://gin.g-node.org/ljchang/Sherlock  . The problem/difficulty is only in access to \"private\" repositories -- access to config and annexed files is working fine through http 
+"""]]
