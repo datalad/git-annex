@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-21T16:57:06Z"
+ content="""
+The git source code does not appear to behave
+like that, see http.c `normalize_curl_result`, which reauths on 401, but 
+not on 404. If you think git behaves like this, you need to show an example
+where it clearly accesses an url that is 404 and goes on to authenticate.
+
+Seems to me that these hosting sites may simply not be exposing foo.git/config
+to http. Git does not request that file over http. Such a hosting site would
+probably also not expose foo.git/annex/ over http, so git-annex would not be
+able to use it anyway. To support git-annex, it would need to
+expose both, and then git-annex's handling of 401 should work fine for
+authentication.
+"""]]
