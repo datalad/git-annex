@@ -116,7 +116,7 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		R.createSymbolicLink linktarget dotgit
 	
 	unsetcoreworktree =
-		maybe (error "unset core.worktree failed") (\_ -> return ())
+		maybe (giveup "unset core.worktree failed") (\_ -> return ())
 			=<< Git.Config.unset "core.worktree" r
 	
 	worktreefixup =
