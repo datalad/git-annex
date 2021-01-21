@@ -115,9 +115,8 @@ fixupUnusualRepos r@(Repo { location = l@(Local { worktree = Just w, gitdir = d 
 		removeWhenExistsWith R.removeLink dotgit
 		R.createSymbolicLink linktarget dotgit
 	
-	unsetcoreworktree =
-		maybe (giveup "unset core.worktree failed") (\_ -> return ())
-			=<< Git.Config.unset "core.worktree" r
+	-- Unsetting a config fails if it's not set, so ignore failure.
+	unsetcoreworktree = void $ Git.Config.unset "core.worktree" r
 	
 	worktreefixup =
 		-- git-worktree sets up a "commondir" file that contains

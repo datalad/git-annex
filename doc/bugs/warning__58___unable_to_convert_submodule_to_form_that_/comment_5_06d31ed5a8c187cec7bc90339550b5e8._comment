@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-01-21T18:14:09Z"
+ content="""
+Thanks Mike, that confirms it's failing to unset the config that's not set.
+
+The .git symlink is what git-annex is supposed to set up, so it should not
+need to do anything else and the question is, why does it still think it 
+needs to change something?
+
+I was able to reproduce the warning, just run `git submodule add foo
+/path/to/annexrepo` and then in foo, `git-annex init` and then it
+happens part-way through. Due to two different git-annex processes both
+trying to do the same conversion, with the second one failing.
+I've fixed that. 
+
+My fix will also fix your problem. But, I don't actually
+understand how to reproduce your problem. I was only able to make it happen
+when running `git-annex init` (or letting it auto-init), 
+not running other git-annex commands in a repo it's already initialized.
+
+Maybe you have `GIT_DIR` set to "../../../.git/modules/..."?
+"""]]

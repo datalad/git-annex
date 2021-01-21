@@ -36,3 +36,6 @@ Also the same on CentOS 7, I was just able to reproduce it on my F32 workstation
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Besides this problem, I am super happy with git-annex and use it at work and at home daily :-)
+
+> [[fixed|done]] although w/o a way to reproduce it I can't be 100% sure
+> --[[Joey]]
