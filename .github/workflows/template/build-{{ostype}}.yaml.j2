@@ -465,7 +465,12 @@ jobs:
     needs: build-package
     strategy:
       matrix:
+    {% if ostype == "macos" %}
+        # at least until https://github.com/datalad/git-annex/issues/42 is resolved
+        version: [master]
+    {% else %}
         version: [master, maint, release]
+    {% endif %}
       fail-fast: false
     steps:
       - name: Checkout this repository
