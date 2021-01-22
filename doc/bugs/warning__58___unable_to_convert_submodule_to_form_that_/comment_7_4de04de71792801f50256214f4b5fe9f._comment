@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-01-22T18:33:01Z"
+ content="""
+Makes sense that `git-annex smudge` being called repeatedly would output
+the message like that. And unfortunately, yes, when a file is unlocked and
+gets modified, git ls-files --modified does need to smudge it. Thanks
+for clearing that part up.
+"""]]
