@@ -305,7 +305,8 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        version: [master, maint, release]
+        # at least until https://github.com/datalad/git-annex/issues/42 is resolved
+        version: [master]
       fail-fast: false
     steps:
       - name: Checkout this repository
