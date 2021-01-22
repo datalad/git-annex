@@ -253,7 +253,8 @@ toViewPath = escapepseudo [] . decodeBS . fromMetaValue
 		| [c1,c2,c3] == pseudoBackslash = escapepseudo ("%":pseudoBackslash:s) cs
 		| [c1,c2,c3] == pseudoColon = escapepseudo ("%":pseudoColon:s) cs
 		| otherwise = escapepseudo ([c1]:s) (c2:c3:cs)
-	escapepseudo s cs = concat (reverse (cs:s))
+	escapepseudo s (c:cs) = escapepseudo ([c]:s) cs
+	escapepseudo s [] = concat (reverse s)
 
 fromViewPath :: FilePath -> MetaValue
 fromViewPath = toMetaValue . encodeBS . deescapepseudo []

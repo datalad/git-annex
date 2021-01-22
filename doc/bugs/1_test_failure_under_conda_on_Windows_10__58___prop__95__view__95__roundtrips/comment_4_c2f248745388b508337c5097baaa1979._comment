@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-01-22T16:59:55Z"
+ content="""
+Not sure if this is really the same bug, though certainly related. These
+quickcheck tests are fuzz tests, they can find numerous bugs, that's kind of
+the point of them. In any case, posting to a closed bug report risks your
+followup being lost and deprioritises it.
+
+The problem this new failure shows is that toViewPath is failing to escape the
+final character in the path in some cases. Which is not a windows-specific
+bug at all really, it could also happen with a metadata value such as "foo/"
+being set on linux. Fixed that bug.
+
+Which shows the point of these quickcheck fuzz tests: To be able to catch
+lots of different bugs with a single test case.
+"""]]

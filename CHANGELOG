@@ -34,6 +34,8 @@ git-annex (8.20201130) UNRELEASED; urgency=medium
     overhead when inodes of files have changed, as happens whenever a FAT
     filesystem gets remounted.
   * Fix a bug that prevented git-annex init from working in a submodule.
+  * Fix a bug in view filename generation when a metadata value ended with
+    "/" (or ":" or "\" on Windows)
 
  -- Joey Hess <id@joeyh.name>  Mon, 04 Jan 2021 12:52:41 -0400
 
