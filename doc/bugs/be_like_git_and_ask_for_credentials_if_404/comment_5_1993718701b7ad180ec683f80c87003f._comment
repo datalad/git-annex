@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-01-22T18:36:50Z"
+ content="""
+These possibilities seem about equally likely to me:
+
+1. gogs has not implemented authed access to the files git-annex needs
+   for private repositories
+2. gogs has a bug where it returns 404 rather than 401 when not authed,
+   but serves the files up when authed.
+
+So why try to work around it in git-annex when it's a coin flip whether
+git-annex can at all, when in either case there's clearly a bug in gogs,
+and is specifically in code in gogs that is intended to support git-annex?
+
+github has a bad habit of using user-agent to make urls do different
+things when git accesses them than when other http clients do. That is the
+case in your example; use wget -U git/1 and it will 401. But I don't
+see how that's relevant, since git-annex does not talk to github except for
+a) via git and b) via its git-lfs implementation (which supports http basic
+auth although I can't remember if I tested it against github's server or only
+other servers like gitlab). 
+
+If github's lfs endpoint did do user-agent sniffing, IMHO that would
+violate their spec, but also yeah, I'd probably put in some appropiately
+snarky fake user-agent in git-annex there. But not in general, and none of
+this says git-annex should be treating 404 like 401.
+"""]]
