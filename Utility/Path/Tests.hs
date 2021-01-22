@@ -1,7 +1,7 @@
 {- Tests for Utility.Path. Split into a separate module to avoid it needing
  - QuickCheck.
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -20,6 +20,7 @@ import System.FilePath.ByteString
 import qualified Data.ByteString as B
 import Data.List
 import Data.Maybe
+import Data.Char
 import Control.Applicative
 import Prelude
 
@@ -42,10 +43,14 @@ prop_relPathDirToFileAbs_basics pt = and
 	, relPathDirToFileAbs p p == ""
 	]
   where
-	-- Make the input an absolute path, since relPathDirToFileAbs
-	-- needs absolute paths.
-	p = pathSeparator `B.cons` dropDrive
-		(toRawFilePath (fromTestableFilePath pt))
+	-- relPathDirToFileAbs needs absolute paths, so make the path
+	-- absolute by adding a path separator to the front.
+	p = pathSeparator `B.cons` relf
+	-- Make the input a relative path. On windows, make sure it does
+	-- not contain anything that looks like a drive letter.
+	relf = B.filter (not . skipchar) $ B.dropWhile isPathSeparator $
+		toRawFilePath (fromTestableFilePath pt)
+	skipchar b = b == (fromIntegral (ord ':'))
 
 prop_relPathDirToFileAbs_regressionTest :: Bool
 prop_relPathDirToFileAbs_regressionTest = same_dir_shortcurcuits_at_difference
