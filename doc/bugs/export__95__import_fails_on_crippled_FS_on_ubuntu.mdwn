@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+actually it fails whenever HOME is crippled (not /tmp)
+
+```
+2021-01-22T03:59:51.9212395Z   Unit Tests v8 adjusted unlocked branch
+2021-01-22T03:59:51.9218586Z     add dup:                                              Init Tests
+2021-01-22T03:59:52.1497485Z   init: OK (0.23s)
+2021-01-22T03:59:53.3199842Z   add:  OK (1.17s)
+2021-01-22T03:59:53.3200475Z 
+2021-01-22T03:59:53.3200888Z All 2 tests passed (1.40s)
+2021-01-22T03:59:53.9335540Z OK (0.61s)
+2021-01-22T03:59:54.2385075Z     add extras:                                           OK (0.30s)
+2021-01-22T03:59:54.8735634Z     ignore deleted files:                                 OK (0.63s)
+2021-01-22T03:59:55.7703551Z     metadata:                                             OK (0.90s)
+2021-01-22T03:59:58.5056762Z     export_import:                                        FAIL (2.74s)
+2021-01-22T03:59:58.5061241Z       Test.hs:1884:
+2021-01-22T03:59:58.5061997Z       did not find expected content of dir/import
+2021-01-22T04:00:00.8296862Z     export_import_subdir:                                 OK (2.32s)
+2021-01-22T04:00:01.1359269Z     shared clone:                                         OK (0.31s)
+2021-01-22T04:00:01.4846753Z     log:                                                  OK (0.35s)
+```
+
+from  https://github.com/datalad/git-annex/runs/1746481387?check_suite_focus=true
+on 8.20201129+git169-gaa07e68ed-1~ndall+1 (presumably... identified 3 regressions today, may be we have a problem with our CI setup and building some old annex?)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
