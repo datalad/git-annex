@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2021-01-22T16:44:58Z"
+ content="""
+did it come back,  I see 
+
+```
+2021-01-22T04:32:25.5012547Z     prop_view_roundtrips:                                 FAIL (0.09s)
+2021-01-22T04:32:25.5015902Z       *** Failed! Falsified (after 218 tests):
+2021-01-22T04:32:25.5016251Z       AssociatedFile (Just \"rdmBBP\")
+2021-01-22T04:32:25.5018130Z       MetaData (fromList [(MetaField \"CkL\",fromList [MetaValue (CurrentlySet False) \"\",MetaValue (CurrentlySet True) \"\SOH5:R9\EM\DC4\",MetaValue (CurrentlySet True) \"\STX\US\fL2\ACK|\\\r[$\",MetaValue (CurrentlySet False) \"\ETBRi\",MetaValue (CurrentlySet False) \"/\FS}\",MetaValue (CurrentlySet True) \"W\",MetaValue (CurrentlySet False) \"X=sQh\NAK^\",MetaValue (CurrentlySet False) \"l\SUB\a\"]),(MetaField \"jM\",fromList [MetaValue (CurrentlySet False) \"\",MetaValue (CurrentlySet False) \"\FSSivk\",MetaValue (CurrentlySet True) \"J'<\SYN\STXGJP\"]),(MetaField \"V\",fromList [MetaValue (CurrentlySet False) \"\",MetaValue (CurrentlySet True) \"\n\NUL\",MetaValue (CurrentlySet True) \"\r\",MetaValue (CurrentlySet False) \"+X\",MetaValue (CurrentlySet True) \"@aN\t~c\SIy\",MetaValue (CurrentlySet False) \"K>xq\",MetaValue (CurrentlySet True) \"a:\"]),(MetaField \"W\",fromList [MetaValue (CurrentlySet True) \"0\DC4qL\",MetaValue (CurrentlySet False) \"K\",MetaValue (CurrentlySet False) \"LD\DC3<M\",MetaValue (CurrentlySet False) \"a\v\",MetaValue (CurrentlySet True) \"dO\",MetaValue (CurrentlySet True) \"w\EOT\"])])
+2021-01-22T04:32:25.5020545Z       True
+2021-01-22T04:32:25.5020894Z       Use --quickcheck-replay=455629 to reproduce.
+```
+
+on https://github.com/datalad/git-annex/runs/1746587663?check_suite_focus=true with `8.20201129+git169-gaa07e68ed_x64`
+"""]]

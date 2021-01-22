@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="mike@2d6d71f56ce2a992244350475251df87c26fe351"
+ nickname="mike"
+ avatar="http://cdn.libravatar.org/avatar/183fa439752e2f0c6f39ede658d81050"
+ subject="comment 6"
+ date="2021-01-22T11:08:38Z"
+ content="""
+First a side note about the thousands of error messages: This seems to be happening when I change thousands of files and a subsequent `git annex add` runs a `git ls-files` which in turn runs `git-annex smudge` for every file, which probably each outputs the error message. 
+"""]]

@@ -1,0 +1,112 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2021-01-22T01:47:46Z"
+ content="""
+yeap, it is not about 404 ... 
+
+<details>
+<summary>with gogs/gin situation is obscure but \"easyish\" - 401 is returned upon access to `/info/refs` but not above:</summary> 
+
+```shell
+$> wget -S \"https://gin.g-node.org/SakshamSharda/ophys_testing1.git/info/refs\"
+--2021-01-21 20:37:22--  https://gin.g-node.org/SakshamSharda/ophys_testing1.git/info/refs
+Resolving gin.g-node.org (gin.g-node.org)... 141.84.41.219
+Connecting to gin.g-node.org (gin.g-node.org)|141.84.41.219|:443... connected.
+HTTP request sent, awaiting response... 
+  HTTP/1.1 401 Unauthorized
+  Date: Fri, 22 Jan 2021 01:37:23 GMT
+  Server: Apache/2.4.38 (Debian)
+  content-type: text/plain
+  www-authenticate: Basic realm=\".\"
+  content-length: 0
+  set-cookie: lang=en-US; Path=/; Max-Age=2147483647
+  set-cookie: gnode_gin=823b677f19feb8ef; Path=/; HttpOnly
+  set-cookie: _csrf=GrekbiqDJleLLNcVyax5z77buGY6MTYxMTI3OTQ0MzYwMTMyMzE4NQ; Path=/; Expires=Sat, 23 Jan 2021 01:37:23 GMT
+  Keep-Alive: timeout=5, max=100
+  Connection: Keep-Alive
+
+Username/Password Authentication Failed.
+1 51975 ->6 [2].....................................:Thu 21 Jan 2021 08:37:23 PM EST:.
+(git)lena:~/proj/misc/git[master]git
+$> wget -S \"https://gin.g-node.org/SakshamSharda/ophys_testing1.git/info\"     
+--2021-01-21 20:37:52--  https://gin.g-node.org/SakshamSharda/ophys_testing1.git/info
+Resolving gin.g-node.org (gin.g-node.org)... 141.84.41.219
+Connecting to gin.g-node.org (gin.g-node.org)|141.84.41.219|:443... connected.
+HTTP request sent, awaiting response... 
+  HTTP/1.1 404 Not Found
+  Date: Fri, 22 Jan 2021 01:37:53 GMT
+  Server: Apache/2.4.38 (Debian)
+  content-type: text/html; charset=UTF-8
+  set-cookie: lang=en-US; Path=/; Max-Age=2147483647
+  set-cookie: gnode_gin=26d42c5108c8715d; Path=/; HttpOnly
+  set-cookie: _csrf=SAKUL4rdspufTb_lxEWIijnzYBU6MTYxMTI3OTQ3Mjk5MDczODgzMA; Path=/; Expires=Sat, 23 Jan 2021 01:37:52 GMT
+  Keep-Alive: timeout=5, max=100
+  Connection: Keep-Alive
+  Transfer-Encoding: chunked
+2021-01-21 20:37:53 ERROR 404: Not Found.
+
+
+```
+</details>
+
+
+github is ... trickier, or to say -- my C/gdb/whatever foo is not good enough, since
+
+<details>
+<summary>it is still 404 with simple wget but git remote-https seems to get 401:</summary> 
+
+```shell
+(gdb) p results
+$15 = {curl_result = CURLE_HTTP_RETURNED_ERROR, http_code = 401, auth_avail = 1, http_connectcode = 0}
+(gdb) p rl
+No symbol \"rl\" in current context.
+(gdb) p url
+$16 = 0x5555557a4450 \"https://github.com/yarikoptic/abcd-testds2/info/refs?service=git-upload-pack\"
+(gdb) bt
+#0  http_request (url=0x5555557a4450 \"https://github.com/yarikoptic/abcd-testds2/info/refs?service=git-upload-pack\", 
+    result=<optimized out>, target=<optimized out>, options=0x7fffffffd920) at http.c:1981
+#1  0x00005555555665bf in http_request_reauth (
+    url=0x5555557a4450 \"https://github.com/yarikoptic/abcd-testds2/info/refs?service=git-upload-pack\", result=0x7fffffffd880, 
+    target=0, options=0x7fffffffd920) at http.c:2040
+#2  0x000055555555f7f3 in discover_refs (service=<optimized out>, service@entry=0x5555556b622c \"git-upload-pack\", 
+    for_push=for_push@entry=0) at remote-curl.c:493
+#3  0x000055555556137e in get_refs (for_push=<optimized out>) at remote-curl.c:548
+#4  cmd_main (argc=argc@entry=3, argv=argv@entry=0x7fffffffdcd8) at remote-curl.c:1523
+#5  0x000055555555ee94 in main (argc=3, argv=0x7fffffffdcd8) at common-main.c:52
+
+```
+
+```
+$> wget --header \"Git-Protocol: version=2\" --header \"Pragma: no-cache\" -S 'https://github.com/yarikoptic/abcd-testds2/info/refs?service=git-upload-pack' 
+--2021-01-21 20:41:21--  https://github.com/yarikoptic/abcd-testds2/info/refs?service=git-upload-pack
+Resolving github.com (github.com)... 140.82.114.3
+Connecting to github.com (github.com)|140.82.114.3|:443... connected.
+HTTP request sent, awaiting response... 
+  HTTP/1.1 404 Not Found
+  Server: GitHub.com
+  Date: Fri, 22 Jan 2021 01:41:21 GMT
+  Content-Type: text/plain; charset=utf-8
+  Status: 404 Not Found
+  Vary: X-PJAX, Accept-Encoding, Accept, X-Requested-With
+  Cache-Control: no-cache
+  Strict-Transport-Security: max-age=31536000; includeSubdomains; preload
+  X-Frame-Options: deny
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: origin-when-cross-origin, strict-origin-when-cross-origin
+  Expect-CT: max-age=2592000, report-uri=\"https://api.github.com/_private/browser/errors\"
+  Content-Security-Policy: default-src 'none'; base-uri 'self'; connect-src 'self'; form-action 'self'; img-src 'self' data:; script-src 'self'; style-src 'unsafe-inline'
+  Set-Cookie: _gh_sess=UoF3mYOvfYf5mFbK1tr7aWOuYpQbNoJVhajA5nr2ANUvg%2FekQjtgh0h3xLva0EcwHnLNNsl7VMEdVLXNGi9Yn4AbjrBxX0sdo51DL1XQYR%2Bm3ZeS71I7keexEnrZspp%2FQxaT7cJpceXr7ZrKg2HwJu8dMo%2Bcz13Vr%2F9p7MtZ6cIjUMMF3ql8GX%2BYO949RdgS31KNBb1Ln917v7GlLaZhbejgGAYJOFI2YMuWhs3WkZxOZCMy1JnW%2Bbp3OcdyffBt0ToaKaLcUx1mt6kzzOb4Ow%3D%3D--FD5dTEIs8HUBjIdH--P%2B86pTRJ%2FwWUndICVXAaNA%3D%3D; Path=/; HttpOnly; Secure; SameSite=Lax
+  Set-Cookie: _octo=GH1.1.1513753117.1611279681; Path=/; Domain=github.com; Expires=Sat, 22 Jan 2022 01:41:21 GMT; Secure; SameSite=Lax
+  Set-Cookie: logged_in=no; Path=/; Domain=github.com; Expires=Sat, 22 Jan 2022 01:41:21 GMT; HttpOnly; Secure; SameSite=Lax
+  Content-Length: 9
+  X-GitHub-Request-Id: 8F40:2881:CD3AD3:1222997:600A2D41
+2021-01-21 20:41:21 ERROR 404: Not Found.
+```
+
+</details>
+
+but overall the point is that git does seems to get 401 with auth availability (although I failed to dig out how exactly it gets it).  So I will leave it to the experts to figure out how
+"""]]
