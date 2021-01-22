@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2021-01-22T16:42:32Z"
+ content="""
+announced fixed in [8.20201129-109-g99ba47120](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=99ba4712098f2f4339bd22927a79d1b3e6ab8eaa) but I still see failures on Windows as of 8.20201129+git169-gaa07e68ed_x64
+
+```
+2021-01-22T04:32:19.9129496Z     prop_relPathDirToFileAbs_basics:                      FAIL
+2021-01-22T04:32:19.9130236Z       *** Failed! Falsified (after 44 tests):
+2021-01-22T04:32:19.9130819Z       TestableFilePath {fromTestableFilePath = \"/LF2U\DC4b\EMiFT\SYNQn\ENQnY)\ACK\\"\DC4\"}
+2021-01-22T04:32:19.9132039Z       Use --quickcheck-replay=62958 to reproduce.
+```
+on [https://github.com/datalad/git-annex/runs/1746587663?check_suite_focus=true](https://github.com/datalad/git-annex/runs/1746587663?check_suite_focus=true)
+"""]]
