@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2015-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -28,6 +28,7 @@ import Utility.Metered
 import Annex.InodeSentinal
 import Utility.InodeCache
 import Config.GitConfig
+import qualified Types.Backend
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -120,28 +121,31 @@ clean file = do
 			-- Optimization for the case when the file is already
 			-- annexed and is unmodified.
 			case oldkey of
-				Nothing -> doingest oldkey
+				Nothing -> doingest Nothing
 				Just ko -> ifM (isUnmodifiedCheap ko file)
 					( liftIO $ emitPointer ko
-					, doingest oldkey
+					, updateingest ko
 					)
 		, liftIO $ L.hPut stdout b
 		)
 	
-	doingest oldkey = do
-		-- Look up the backend that was used for this file
-		-- before, so that when git re-cleans a file its
-		-- backend does not change.
-		oldbackend <- maybe
-			(pure Nothing)
-			(maybeLookupBackendVariety . fromKey keyVariety)
-			oldkey
+	-- Use the same backend that was used before, when possible.
+	-- If the old key's backend does not support generating keys,
+	-- use the default backend.
+	updateingest oldkey =
+		maybeLookupBackendVariety (fromKey keyVariety oldkey) >>= \case
+			Nothing -> doingest Nothing
+			Just oldbackend -> case Types.Backend.genKey oldbackend of
+				Just _ -> doingest (Just oldbackend)
+				Nothing -> doingest Nothing
+	
+	doingest preferredbackend = do
 		-- Can't restage associated files because git add
 		-- runs this and has the index locked.
 		let norestage = Restage False
 		liftIO . emitPointer
 			=<< postingest
-			=<< (\ld -> ingest' oldbackend nullMeterUpdate ld Nothing norestage)
+			=<< (\ld -> ingest' preferredbackend nullMeterUpdate ld Nothing norestage)
 			=<< lockDown cfg (fromRawFilePath file)
 
 	postingest (Just k, _) = do
