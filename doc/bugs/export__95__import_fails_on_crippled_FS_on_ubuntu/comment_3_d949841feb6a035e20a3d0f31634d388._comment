@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-01-25T16:54:58Z"
+ content="""
+Oh this is interesting:
+
+	unexport foo import
+	  unsafe to remove modified file
+	failed
+	export foo import ok
+
+So despite seeing the file is modified when it is asked to remove it, it
+somehow does not notice that when writing to it, so overwrites it
+with the content anyway. That's how it ends up with
+unexpected content, despite the overall `git-annex export`
+failing as expected.
+
+And the root cause is, the test suite writes to the file on the remote,
+and then Remote.Directory writes to a temp file, and then gets its content
+identifier (mtime), and for some reason accepts that content identifier as
+one it can overwrite. Due to the timestamp resolution, that's the same
+content identifier as the newly written file on the remote. So it
+overwrites it.
+
+I can't find any good reason for it to accept the temp file's content
+identifier as a known content identifier, which it's always done. Other remotes
+don't do that. So I think this is a real bug in Remote.Directory and will
+fix it there.
+"""]]

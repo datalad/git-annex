@@ -471,7 +471,7 @@ storeExportWithContentIdentifierM dir src _k loc overwritablecids p = do
 			Nothing -> giveup "unable to generate content identifier"
 			Just newcid -> do
 				checkExportContent dir loc
-					(newcid:overwritablecids)
+					overwritablecids
 					(giveup "unsafe to overwrite file")
 					(const $ liftIO $ rename tmpf dest)
 				return newcid

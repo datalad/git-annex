@@ -26,3 +26,5 @@ on 8.20201129+git169-gaa07e68ed-1~ndall+1 (presumably... identified 3 regression
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
