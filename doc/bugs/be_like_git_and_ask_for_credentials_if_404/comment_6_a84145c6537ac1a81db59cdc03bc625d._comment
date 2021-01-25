@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2021-01-25T15:18:39Z"
+ content="""
+THANK YOU Joey.  That is indeed quite odd (\"security through obscurity\") behavior from github (note: github returns 401 even if that repo does not exist, so it is at least consistent in not revealing presence/absence of private repos at a url). Feel welcome to close this issue since I guess nothing should indeed be done on git-annex side, and ideally `gin` portal just returns 401 in such cases
+"""]]
