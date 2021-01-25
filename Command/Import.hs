@@ -243,7 +243,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 			, matchFile = destfile
 			, matchKey = Nothing
 			}
-		lockingfile <- not <$> addUnlocked addunlockedmatcher mi
+		lockingfile <- not <$> addUnlocked addunlockedmatcher mi True
 		-- Minimal lock down with no hard linking so nothing
 		-- has to be done to clean up from it.
 		let cfg = LockDownConfig

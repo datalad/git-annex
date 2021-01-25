@@ -329,18 +329,24 @@ gitAddParams (CheckGitIgnore False) = return [Param "-f"]
 
 {- Whether a file should be added unlocked or not. Default is to not,
  - unless symlinks are not supported. annex.addunlocked can override that.
- - Also, when in an adjusted unlocked branch, always add files unlocked.
+ - Also, when in an adjusted branch that unlocked files, always add files
+ - unlocked.
  -}
-addUnlocked :: AddUnlockedMatcher -> MatchInfo -> Annex Bool
-addUnlocked matcher mi =
+addUnlocked :: AddUnlockedMatcher -> MatchInfo -> Bool -> Annex Bool
+addUnlocked matcher mi contentpresent =
 	((not . coreSymlinks <$> Annex.getGitConfig) <||>
 	 (checkAddUnlockedMatcher matcher mi) <||>
-	 (maybe False isadjustedunlocked . snd <$> getCurrentBranch)
+	 (maybe False go . snd <$> getCurrentBranch)
 	)
   where
-	isadjustedunlocked (LinkAdjustment UnlockAdjustment) = True
-	isadjustedunlocked (PresenceAdjustment _ (Just UnlockAdjustment)) = True
-	isadjustedunlocked _ = False
+	go (LinkAdjustment UnlockAdjustment) = True
+	go (LinkAdjustment LockAdjustment) = False
+	go (LinkAdjustment FixAdjustment) = False
+	go (LinkAdjustment UnFixAdjustment) = False
+	go (PresenceAdjustment _ (Just la)) = go (LinkAdjustment la)
+	go (PresenceAdjustment _ Nothing) = False
+	go (LinkPresentAdjustment UnlockPresentAdjustment) = contentpresent
+	go (LinkPresentAdjustment LockPresentAdjustment) = False
 
 {- Adds a file to the work tree for the key, and stages it in the index.
  - The content of the key may be provided in a temp file, which will be
@@ -350,7 +356,7 @@ addUnlocked matcher mi =
  - When the content of the key is not accepted into the annex, returns False.
  -}
 addAnnexedFile :: CheckGitIgnore -> AddUnlockedMatcher -> RawFilePath -> Key -> Maybe RawFilePath -> Annex Bool
-addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi)
+addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi (isJust mtmp))
 	( do
 		mode <- maybe
 			(pure Nothing)

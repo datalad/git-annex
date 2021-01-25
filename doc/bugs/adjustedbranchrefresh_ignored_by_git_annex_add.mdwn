@@ -50,3 +50,5 @@ echo "## after sync --content"
 stat -c "%n: %F" a b c d # ibid
 '
 ```
+
+> [[fixed|done]] --[[Joey]]

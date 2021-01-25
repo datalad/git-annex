@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-01-25T17:46:03Z"
+ content="""
+Oh, git-annex add already adds it unlocked in an adjusted unlocked branch,
+so that just needs to be done for this new type of branch too.
+"""]]

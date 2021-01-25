@@ -3,6 +3,8 @@ git-annex (8.20210128) UNRELEASED; urgency=medium
   * Fix a reversion that made import of a tree from a special remote
     result in a merge that deleted files that were not preferred content
     of that special remote.
+  * When adding files to an adjusted branch set up by --unlock-present,
+    add them unlocked, not locked.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2021 12:34:32 -0400
 
