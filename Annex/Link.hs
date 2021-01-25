@@ -35,6 +35,7 @@ import Utility.FileMode
 import Utility.InodeCache
 import Utility.Tmp.Dir
 import Utility.CopyFile
+import qualified Database.Keys.Handle
 import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
@@ -202,6 +203,8 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 	-- updated index file.
 	runner :: Git.Queue.InternalActionRunner Annex
 	runner = Git.Queue.InternalActionRunner "restagePointerFile" $ \r l -> do
+		liftIO . Database.Keys.Handle.flushDbQueue
+			=<< Annex.getState Annex.keysdbhandle
 		realindex <- liftIO $ Git.Index.currentIndexFile r
 		let lock = fromRawFilePath (Git.Index.indexFileLock realindex)
 		    lockindex = liftIO $ catchMaybeIO $ Git.LockFile.openLock' lock
