@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2021-01-25T14:52:54Z"
+ content="""
+> `git annex config --set <option> <value>` interprets a value with a
+> leading dash as if it were an option. Adding `--` doesn't help.
+
+I can get by the \"Invalid option\" error using `--`:
+
+```
+$ git annex config --set annex.youtube-dl-options -x
+Invalid option `-x' [...]
+
+$ git annex config --set annex.youtube-dl-options -- -x
+git-annex: annex.youtube-dl-options is not a configuration setting that can be stored in the git-annex branch
+
+$ git annex version --raw
+8.20201129
+```
+
+`annex.youtube-dl-options` isn't one of the limited set of options that `git annex config` supports though:
+
+```
+globalConfigs =
+    [ annexConfig \"autocommit\"
+    , annexConfig \"synccontent\"
+    , annexConfig \"synconlyannex\"
+    , annexConfig \"resolvemerge\"
+    , annexConfig \"largefiles\"
+    , annexConfig \"dotfiles\"
+    , annexConfig \"addunlocked\"
+    ]
+```
+
+"""]]
