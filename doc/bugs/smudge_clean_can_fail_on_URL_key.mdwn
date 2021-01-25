@@ -1,0 +1,53 @@
+The smudge --clean filter can fail on a file that uses an URL key:
+
+	git-annex: Cannot generate a key for backend URL
+	error: external filter 'git-annex smudge --clean -- %f' failed 1
+
+One way to make this happen is:
+
+	git annex addurl --fast http://google.com/
+	git annex sync
+	git annex get
+	git annex adjust --unlock
+
+When git-annex adjust runs git checkout of the new branch, git runs
+the clean filter on the unlocked files.
+
+Another way is to have an unlocked URL key file,
+modify it, and run `git add`.
+
+Since the smudge filter fails, git stages the file content into git.
+
+I investigated fixes for this, but nothing seemed to handle both cases
+well.
+
+One approach is for Command.Smudge to check if genKey is supported
+for the old backend, and if not, use the default backend. This handles the
+git add case, but in the adjust case, the adjusted branch has a file using
+the default backend, which is a change the user didn't intend, and which
+will propagate back to the master branch. 
+
+Or, Command.Smudge could check isUnmodified, and if not, emit the old
+key. But the URL backend can't verify content, so then a modification to
+the file that keeps the size the same, when `git add` is used, will
+generate the same old URL key, which invites data loss.
+
+Maybe have smudge use the default backend, and when adjusting a branch,
+don't unlock files that don't support genKey?
+
+> This seems least bad, although maybe it will be a problem for
+> some users particularly on crippled filesystems. I think anyone who
+> sees a behavior change due to this would have been doing something
+> that would put them at risk for experiencing the bug above, which
+> is worse because it can stage large files into git.. I have an
+> implementation of this in the noadjustURL branch.
+
+Or is there some way to make git-annex adjust checkout the branch
+w/o smudging the files? I don't understand why it does. git-annex
+unlock of an URL key file does not have the problem, so it seems it
+should be possible for checking out the adjusted branch to also avoid the
+problem.
+
+(Or well, could just remove addurl --fast and so remove URL keys...
+Keys that don't support genKey and also don't support verification
+being the root of the problem.)
