@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-01-25T16:28:17Z"
+ content="""
+Confirmed that a sleep at the right place in the test suite avoids the
+failure. Unsure yet why the test suite's existing mtime managing didn't manage
+to. 
+
+I do think this should be fixed in the test suite; it's acceptable
+that, if using a FS like FAT that doesn't support high-rest mtimes,
+git-annex not deal with high-frequency modifications. The same behavior
+could already have happened on FAT when it was including the inode,
+if the modifications were done w/o overwriting changing the inode.
+"""]]
