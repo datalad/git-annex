@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-25T15:34:39Z"
+ content="""
+Reproduced on fat with the current version. (You didn't say what your
+filesystem was however.)
+
+Seems quite possibly related to the recent change in
+[[!commit 73df633a6215faa093e4a7524c6d328aa988aed1]]. Since that 
+made the inode not be considered when importing, and since FAT has very
+low resolution timestamps (1s), repeated modifications of a file that don't
+change its size could not be noticed when repeatedly importing.
+
+But hmm, the test suite already guards against such a thing by making sure,
+when writing a new value to a file, that the modification time is different
+than before.
+"""]]
