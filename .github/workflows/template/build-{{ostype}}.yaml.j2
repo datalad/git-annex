@@ -86,7 +86,15 @@ jobs:
           # git-annex's version detection to use the correct git commit) with
           # the contents of master — or whatever ref is being used as the
           # workflow source — also available.
+          {% if ostype == "windows" %}
+          git reset --soft "$BUILD_COMMIT"
+          # Avoid checking out unnecessary files with paths that are invalid on
+          # Windows.
+          git ls-tree --name-only HEAD | grep -v '^doc$' | xargs git checkout HEAD
+          git checkout HEAD doc/license ':(glob)doc/*.mdwn' ':(glob)doc/logo*'
+          {% else %}
           git checkout "$BUILD_COMMIT"
+          {% endif %}
           git checkout "$GITHUB_SHA" -- .
 
       - name: Get build version
