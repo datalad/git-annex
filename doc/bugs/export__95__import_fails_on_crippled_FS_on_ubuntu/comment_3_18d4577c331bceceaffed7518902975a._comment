@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2021-01-25T16:49:36Z"
+ content="""
+FWIW, we actually only recently did the opposite -- [added inode](https://github.com/datalad/datalad/pull/5276) into consideration on our (datalad end) while monitoring for changes to `.git/config` files: `git` seems to rewrite those files (so inode changes)  which provided us a nice consistent indication and avoided crippled systems workarounds. Otherwise we were hitting all kinds of weird/hard to debug corner cases.
+"""]]
