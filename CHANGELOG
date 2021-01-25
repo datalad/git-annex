@@ -31,7 +31,7 @@ git-annex (8.20201130) UNRELEASED; urgency=medium
   * Avoid crashing when there are remotes using unparseable urls.
     Including the non-standard URI form that git-remote-gcrypt uses for rsync.
   * Directory special remotes with importtree=yes now avoid unncessary
-    overhead when inodes of files have changed, as happens whenever a FAT
+    hashing when inodes of files have changed, as happens whenever a FAT
     filesystem gets remounted.
   * Fix a bug that prevented git-annex init from working in a submodule.
   * Fix a bug in view filename generation when a metadata value ended with
