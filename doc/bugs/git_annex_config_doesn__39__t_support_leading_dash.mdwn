@@ -36,3 +36,5 @@ Debian Buster
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I'm using git-annex to manage all my media files, photos, and archives. My largest repository is 2.8 terabytes. One of my repositories has over a million files in it. Performance is great when dealing exclusively with locked files.
+
+> [[notabug|done]] per kyle's comment --[[Joey]]
