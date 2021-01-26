@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="seanl@fe5df935169a5440a52bdbfc5fece85cdd002d68"
+ nickname="seanl"
+ avatar="http://cdn.libravatar.org/avatar/082ffc523e71e18c45395e6115b3b373"
+ subject="-- works between the value and the option"
+ date="2021-01-26T16:10:22Z"
+ content="""
+I had been putting the `--` between `--set` and the value rather than between the value and the option. As I understand it, the traditional meaning of `--` is \"all arguments after this point are positional\", which would mean it should work anywhere as long as it's after the last option argument. So I guess the title of this bug should be \"-- only works just in front of the value\"?
+"""]]
