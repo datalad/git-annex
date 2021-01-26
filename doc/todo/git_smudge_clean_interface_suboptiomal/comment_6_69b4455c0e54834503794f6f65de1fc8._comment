@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="hello@6d9a437cebceb2fc657f93c4f30a7ba859e9309c"
+ nickname="hello"
+ avatar="http://cdn.libravatar.org/avatar/9b5d33d2215b906588426e1cac41bc0d"
+ subject="Other benefits of proposed improvements to the smudge/clean API"
+ date="2021-01-26T14:25:59Z"
+ content="""
+You forgot to mention that direct work-tree access would enable GA-like systems to use filesystem copy-on-write support to make smudge/clean filters nearly instant, and such tools much more usable.
+"""]]
