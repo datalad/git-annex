@@ -45,7 +45,7 @@ Recent versions of git-annex respond with a message indicating
 protocol extensions that it supports. Older versions of
 git-annex do not send this message.
 
-	EXTENSIONS INFO ASYNC
+	EXTENSIONS INFO ASYNC GETGITREMOTENAME
 
 The special remote can respond to that with its own EXTENSIONS message, listing
 any extensions it wants to use. 
@@ -182,7 +182,7 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
   a list of settings with descriptions. Note that the user is not required
   to provided all the settings listed here. A block of responses
   can be made to this, which must always end with `CONFIGEND`.  
-  (Do not include settings like "name" that are common to all external
+  (Do not include settings like "encryption" that are common to all external
   special remotes.)
   * `CONFIG Name Description`  
     Indicates the name and description of a config setting. The description
@@ -298,6 +298,8 @@ handling a request.
   to be stored in the git-annex branch, so will be available if the same
   special remote is used elsewhere. (If sent after INITREMOTE, the changed
   configuration will only be available while the remote is running.)  
+  See also `GETGITREMOTENAME` for a way to access git configuration of the
+  remote.  
   (git-annex does not send a reply to this message.)
 * `GETCONFIG Setting`  
   Gets one of the special remote's configuration settings, which can have
@@ -332,6 +334,16 @@ handling a request.
   Queries for the path to the git directory of the repository that
   is using the external special remote.
   (git-annex replies with VALUE followed by the path.)
+* `GETGITREMOTENAME`  
+  Gets the name of the git remote that represents this special remote.
+  This can be used, for example, to look up git configuration belonging
+  to that git remote. This name will often be the same as what is
+  passed to `git-annex initremote` and `enableremote`, but it is possible
+  for git remotes to be renamed, and this will provide the remote's current
+  name.  
+  (git-annex replies with VALUE followed by the name.)  
+  This message is a protocol extension; it's only safe to send it to
+  git-annex after it sent an EXTENSIONS that included GETGITREMOTENAME.
 * `SETWANTED PreferredContentExpression`  
   Can be used to set the preferred content of a repository. Normally
   this is not configured by a special remote, but it may make sense
@@ -415,6 +427,8 @@ These protocol extensions are currently supported.
   This lets multiple actions be performed at the same time by
   a single external special remote program, rather than starting multiple
   programs. See the [[async_appendix]] for details.
+* `GETGITREMOTENAME`  
+  This makes the `GETGITREMOTENAME` message available to use.
 
 ## signals
 

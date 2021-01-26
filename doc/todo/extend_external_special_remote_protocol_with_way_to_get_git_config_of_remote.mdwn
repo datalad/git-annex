@@ -27,3 +27,6 @@ the same is a perhaps not something people want to learn about.
 The former seems conceptually simpler, but there might be things that
 `git config` could do, that providing an interface on top of it would not
 allow. The --type option is one thing that comes to mind. --[[Joey]]
+
+> [[done]] as the GETGITREMOTENAME protocol extension and message.
+> --[[Joey]]

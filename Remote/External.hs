@@ -81,7 +81,8 @@ gen r u rc gc rs
 			exportUnsupported
 	| otherwise = do
 		c <- parsedRemoteConfig remote rc
-		external <- newExternal externaltype (Just u) c (Just gc) (Just rs)
+		external <- newExternal externaltype (Just u) c (Just gc)
+			(Git.remoteName r) (Just rs)
 		Annex.addCleanupAction (RemoteCleanup u) $ stopExternal external
 		cst <- getCost external r gc
 		avail <- getAvailability external r gc
@@ -184,7 +185,7 @@ externalSetup _ mu _ c gc = do
 			return c'
 		else do
 			pc' <- either giveup return $ parseRemoteConfig c' lenientRemoteConfigParser
-			external <- newExternal externaltype (Just u) pc' (Just gc) Nothing
+			external <- newExternal externaltype (Just u) pc' (Just gc) Nothing Nothing
 			-- Now that we have an external, ask it to LISTCONFIGS, 
 			-- and re-parse the RemoteConfig strictly, so we can
 			-- error out if the user provided an unexpected config.
@@ -212,7 +213,7 @@ checkExportSupported c gc = do
 	if externaltype == "readonly"
 		then return False
 		else checkExportSupported' 
-			=<< newExternal externaltype Nothing c (Just gc) Nothing
+			=<< newExternal externaltype Nothing c (Just gc) Nothing Nothing
 
 checkExportSupported' :: External -> Annex Bool
 checkExportSupported' external = go `catchNonAsync` (const (return False))
@@ -458,6 +459,10 @@ handleRequest' st external req mp responsehandler
 		Nothing -> senderror "cannot send GETUUID here"
 	handleRemoteRequest GETGITDIR = 
 		send . VALUE . fromRawFilePath =<< fromRepo Git.localGitDir
+	handleRemoteRequest GETGITREMOTENAME =
+		case externalRemoteName external of
+			Just n -> send $ VALUE n
+			Nothing -> senderror "git remote name not known"
 	handleRemoteRequest (SETWANTED expr) = case externalUUID external of
 		Just u -> preferredContentSet u expr
 		Nothing -> senderror "cannot send SETWANTED here"
@@ -896,7 +901,7 @@ remoteConfigParser c
 			(Nothing, _) -> return lenientRemoteConfigParser
 			(_, Just True) -> return lenientRemoteConfigParser
 			(Just externaltype, _) -> do
-				external <- newExternal externaltype Nothing pc Nothing Nothing
+				external <- newExternal externaltype Nothing pc Nothing Nothing Nothing
 				strictRemoteConfigParser external
   where
 	isproposed (Accepted _) = False

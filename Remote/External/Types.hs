@@ -52,6 +52,7 @@ import Types.RemoteConfig
 import Types.Export
 import Types.Availability (Availability(..))
 import Types.Key
+import Git.Types
 import Utility.Url (URLString)
 import qualified Utility.SimpleProtocol as Proto
 
@@ -69,18 +70,20 @@ data External = External
 	, externalLastPid :: TVar PID
 	, externalDefaultConfig :: ParsedRemoteConfig
 	, externalGitConfig :: Maybe RemoteGitConfig
+	, externalRemoteName :: Maybe RemoteName 
 	, externalRemoteStateHandle :: Maybe RemoteStateHandle
 	, externalAsync :: TMVar ExternalAsync
 	}
 
-newExternal :: ExternalType -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteStateHandle -> Annex External
-newExternal externaltype u c gc rs = liftIO $ External
+newExternal :: ExternalType -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteName -> Maybe RemoteStateHandle -> Annex External
+newExternal externaltype u c gc rn rs = liftIO $ External
 	<$> pure externaltype
 	<*> pure u
 	<*> atomically (newTVar [])
 	<*> atomically (newTVar 0)
 	<*> pure c
 	<*> pure gc
+	<*> pure rn
 	<*> pure rs
 	<*> atomically (newTMVar UncheckedExternalAsync)
 
@@ -102,7 +105,11 @@ newtype ExtensionList = ExtensionList { fromExtensionList :: [String] }
 	deriving (Show, Monoid, Semigroup)
 
 supportedExtensionList :: ExtensionList
-supportedExtensionList = ExtensionList ["INFO", asyncExtension]
+supportedExtensionList = ExtensionList
+	[ "INFO"
+	, "GETGITREMOTENAME"
+	, asyncExtension
+	]
 
 asyncExtension :: String
 asyncExtension = "ASYNC"
@@ -304,6 +311,7 @@ data RemoteRequest
 	| GETCREDS Setting
 	| GETUUID
 	| GETGITDIR
+	| GETGITREMOTENAME
 	| SETWANTED PreferredContentExpression
 	| GETWANTED
 	| SETSTATE Key String
@@ -328,6 +336,7 @@ instance Proto.Receivable RemoteRequest where
 	parseCommand "GETCREDS" = Proto.parse1 GETCREDS
 	parseCommand "GETUUID" = Proto.parse0 GETUUID
 	parseCommand "GETGITDIR" = Proto.parse0 GETGITDIR
+	parseCommand "GETGITREMOTENAME" = Proto.parse0 GETGITREMOTENAME
 	parseCommand "SETWANTED" = Proto.parse1 SETWANTED
 	parseCommand "GETWANTED" = Proto.parse0 GETWANTED
 	parseCommand "SETSTATE" = Proto.parse2 SETSTATE
