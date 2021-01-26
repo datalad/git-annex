@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-I am trying to use git-annex to keep files in sync between a server and my music player. I don't want everything on the server to go to the music player, so I have a "wanted" expression defined: `exclude=*/archive/* and (include=ASMR/* or include=Music/* or include=Mods/* or include=Playlists/*). My expectation was that `git annex sync` would ignore any files that didn't match wanted on the remote, and indeed the first time I run it it does. However, the second time I run it, it deletes any local files that aren't on the remote. Presumably git-annex thinks those files were deleted on the remote because its tracking branch is descended from the branch in which the files were created.
+I am trying to use git-annex to keep files in sync between a server and my music player. I don't want everything on the server to go to the music player, so I have a "wanted" expression defined: `exclude=*/archive/* and (include=ASMR/* or include=Music/* or include=Mods/* or include=Playlists/*)`. My expectation was that `git annex sync` would ignore any files that didn't match wanted on the remote, and indeed the first time I run it it does. However, the second time I run it, it deletes any local files that aren't on the remote. Presumably git-annex thinks those files were deleted on the remote because its tracking branch is descended from the branch in which the files were created.
 
 ### What steps will reproduce the problem?
 
