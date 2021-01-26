@@ -11,3 +11,5 @@ Previous bug report on the same basic issue: <https://git-annex.branchable.com/b
 
 [[!meta author=jwodder]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
