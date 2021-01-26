@@ -1,0 +1,22 @@
+The protocol has `GETCONFIG`, which gives access to the configuration
+stored in remote.log, but it does not provide a good way to access git
+configs set on the remote.
+
+Datalad uses `GETCONFIG name` to get the remote name, and
+then using git config to get its configs. That is suboptimal
+because sameas remotes use sameas-name instead, and also because
+the two names are not necessarily the same, eg `git remote rename` can
+rename the git remote while the git-annex config still uses the other name.
+<https://github.com/datalad/datalad/issues/4259>
+
+So, the protocol should be extended. Either with a way to get/set a single git
+config (like `GETCONFIG`/`SETCONFIG` do with the remote.log config), or
+with a way to get the git remote name.
+
+The latter has the problem that this business of there being multiple
+names for different related things that might be different but are probably
+the same is a perhaps not something people want to learn about.
+
+The former seems conceptually simpler, but there might be things that
+`git config` could do, that providing an interface on top of it would not
+allow. --[[Joey]]
