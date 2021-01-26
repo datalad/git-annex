@@ -9,9 +9,16 @@ the two names are not necessarily the same, eg `git remote rename` can
 rename the git remote while the git-annex config still uses the other name.
 <https://github.com/datalad/datalad/issues/4259>
 
+One way to do that is `GETUUID` and then look for the git remote with
+annex-uuid set to that, in order to learn its name and then find its other git
+configs. But, it's also possible for there to be multiple git remotes with the
+same annex-uuid. (This does not happen with sameas remotes, but like a git repo
+can have multiple remotes pointing to it by different paths, the same can be
+set up for a special remote, at least in theory.)
+
 So, the protocol should be extended. Either with a way to get/set a single git
-config (like `GETCONFIG`/`SETCONFIG` do with the remote.log config), or
-with a way to get the git remote name.
+config (like `GETCONFIG`/`SETCONFIG` do with the remote.log config), or with a
+way to get the git remote name.
 
 The latter has the problem that this business of there being multiple
 names for different related things that might be different but are probably
@@ -19,4 +26,4 @@ the same is a perhaps not something people want to learn about.
 
 The former seems conceptually simpler, but there might be things that
 `git config` could do, that providing an interface on top of it would not
-allow. --[[Joey]]
+allow. The --type option is one thing that comes to mind. --[[Joey]]
