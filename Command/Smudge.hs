@@ -259,8 +259,13 @@ updateSmudged restage = streamSmudged $ \k topf -> do
 	f <- fromRepo (fromTopFilePath topf)
 	whenM (inAnnex k) $ do
 		obj <- calcRepo (gitAnnexLocation k)
+		objic <- withTSDelta (liftIO . genInodeCache obj)
 		populatePointerFile restage k obj f >>= \case
-			Just ic -> Database.Keys.addInodeCaches k [ic]
+			Just ic -> do
+				cs <- Database.Keys.getInodeCaches k
+				if null cs
+					then Database.Keys.addInodeCaches k (catMaybes [Just ic, objic])
+					else Database.Keys.addInodeCaches k [ic]
 			Nothing -> liftIO (isPointerFile f) >>= \case
 				Just k' | k' == k -> toplevelWarning False $
 					"unable to populate worktree file " ++ fromRawFilePath f
