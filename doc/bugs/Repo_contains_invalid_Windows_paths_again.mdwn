@@ -1,0 +1,13 @@
+As of commit f3ff2b83ca7357e16c6f0cb06962434b8afe1e89, the git-annex repository once again contains files with names that are invalid on Windows, thus creating problems when trying to clone the repo on Windows:
+
+```
+error: invalid path 'doc/forum/Is_Annex_for_me__63___Questions_about_the_long_term./comment_1_9984f65d6e89f0f88b33cbd499e859eb._comment'
+error: invalid path 'doc/forum/Is_Annex_for_me__63___Questions_about_the_long_term./comment_2_d7bdfeb33bac7f139b0bdc1c6fb53237._comment'
+error: invalid path 'doc/forum/Is_Annex_for_me__63___Questions_about_the_long_term./comment_3_7dc224cb0b88bf07879e03717efffa17._comment'
+error: invalid path 'doc/forum/Is_Annex_for_me__63___Questions_about_the_long_term./comment_4_a538f8a4272b5ce134607dc7201e3f04._comment'
+```
+
+Previous bug report on the same basic issue: <https://git-annex.branchable.com/bugs/Error_cloning_repository_on_Windows/>
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]
