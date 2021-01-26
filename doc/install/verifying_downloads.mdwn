@@ -26,7 +26,7 @@ But, how do you know that the gpg-pubkey.asc you downloaded
 is the right key? The answer is the GPG web of trust. 
 
 * Joey Hess generates these git-annex packages,
-  and has a GPG key, [C910D9222512E3C7 Joey Hess <id@joeyh.name>](http://pgp.cs.uu.nl/stats/2512E3C7.html), which has
+  and has a GPG key, C910D9222512E3C7 Joey Hess &lt;id@joeyh.name&gt;, which has
   been verified and signed by many people.
 * Joey's GPG key has signed the git-annex distribution signing key.
 
