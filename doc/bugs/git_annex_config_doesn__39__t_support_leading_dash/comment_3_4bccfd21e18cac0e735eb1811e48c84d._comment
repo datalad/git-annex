@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="seanl@fe5df935169a5440a52bdbfc5fece85cdd002d68"
+ nickname="seanl"
+ avatar="http://cdn.libravatar.org/avatar/082ffc523e71e18c45395e6115b3b373"
+ subject="Unless the key is the argument to set"
+ date="2021-01-26T16:12:31Z"
+ content="""
+I guess if the key is actually an argument to --set and not a positional argument, then `--` shouldn't be expected to work there. In which case maybe it would be good to add `[--]` between the key and value in the man page?
+"""]]
