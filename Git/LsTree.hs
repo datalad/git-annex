@@ -101,6 +101,10 @@ parseLsTreeStrict b = go (AS.parse parserLsTree b)
 {- Parses a line of ls-tree output, in format:
  - mode SP type SP sha TAB file
  -
+ - The TAB can also be a space. Git does not use that, but an earlier
+ - version of formatLsTree did, and this keeps parsing what it output
+ - working.
+ -
  - (The --long format is not currently supported.) -}
 parserLsTree :: A.Parser TreeItem
 parserLsTree = TreeItem
@@ -111,8 +115,8 @@ parserLsTree = TreeItem
 	<*> A8.takeTill (== ' ')
 	<* A8.char ' '
 	-- sha
-	<*> (Ref <$> A8.takeTill (== '\t'))
-	<* A8.char '\t'
+	<*> (Ref <$> A8.takeTill A8.isSpace)
+	<* A8.space
 	-- file
 	<*> (asTopFilePath . Git.Filename.decode <$> A.takeByteString)
 
@@ -122,5 +126,4 @@ formatLsTree ti = unwords
 	[ showOct (mode ti) ""
 	, decodeBS (typeobj ti)
 	, fromRef (sha ti)
-	, fromRawFilePath (getTopFilePath (file ti))
-	]
+	] ++ ('\t' : fromRawFilePath (getTopFilePath (file ti)))

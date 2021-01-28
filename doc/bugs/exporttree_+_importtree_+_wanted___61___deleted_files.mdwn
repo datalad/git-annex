@@ -41,3 +41,5 @@ Debian Buster
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I use git-annex for all kinds of stuff. I love it!
+
+> [[fixed|done]] --[[Joey]]

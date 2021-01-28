@@ -197,10 +197,12 @@ logExportExcluded u a = do
 getExportExcluded :: UUID -> Annex [Git.Tree.TreeItem]
 getExportExcluded u = do
 	logf <- fromRepo $ gitAnnexExportExcludeLog u
-	liftIO $ catchDefaultIO [] $ parser
+	liftIO $ catchDefaultIO [] $ exportExcludedParser
 		<$> L.readFile (fromRawFilePath logf)
   where
-	parser = map Git.Tree.lsTreeItemToTreeItem
-		. rights
-		. map Git.LsTree.parseLsTree
-		. L.split (fromIntegral $ ord '\n')
+
+exportExcludedParser :: L.ByteString -> [Git.Tree.TreeItem]
+exportExcludedParser = map Git.Tree.lsTreeItemToTreeItem
+	. rights
+	. map Git.LsTree.parseLsTree
+	. L.split (fromIntegral $ ord '\n')
