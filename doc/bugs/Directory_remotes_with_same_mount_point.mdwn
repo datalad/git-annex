@@ -47,3 +47,9 @@ ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I've used it successfully on Linux and Android. My attempts on Windows have been less successful, though I never tried with core.ignoreStat=true. Now I'm trying to use it to manage the SD cards for various devices: my Pi1541, Odroid Go, and Sansa Clip Zip.
+
+> Calling this [[done]] because I'm fairly sure if it was some kind of
+> inode related bug, it would be fixed now by changes to the directory
+> special remote. Please do followup if you still see the bug with the most
+> recent git-annex release, or have other information about how to
+> reproduce the alleged behavior. --[[Joey]]
