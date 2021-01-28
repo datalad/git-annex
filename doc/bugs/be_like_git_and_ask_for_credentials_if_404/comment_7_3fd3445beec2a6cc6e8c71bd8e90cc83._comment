@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-01-28T16:37:59Z"
+ content="""
+github's rationalle for the sniffing, such as it is, is that an url to a
+git repository lets you view it in the web ui, and the same url can be
+cloned by git.
+
+Agreed, I'll close this in git-annex, and they can fix it in gin.
+"""]]
