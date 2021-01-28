@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-28T16:54:29Z"
+ content="""
+Let's see, here's the equivilant after parsing:
+
+	# ghci Utility/Matcher.hs
+	-- foo and (bar or baz)
+	ghci> generate [Operation "foo", And, Open, Operation "bar", Or, Operation "baz", Close]
+	MAnd (MOp "foo") (MOr (MOp "bar") (MOp "baz"))
+	-- foo (bar or baz)
+	ghci> generate [Operation "foo", Open, Operation "bar", Or, Operation "baz", Close]
+	MOr (MAnd (MOp "foo") (MOp "bar")) (MOp "baz")
+
+So it's interpreting "foo (bar or baz) like "(foo and bar) or baz"
+which is surely a bug.
+
+Fixed.
+"""]]

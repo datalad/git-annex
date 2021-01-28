@@ -82,3 +82,5 @@ b.2
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes! [My description from before](https://git-annex.branchable.com/bugs/async_external_special_remote__39__s_stdin_not_closed/) still applies. And I've continued growing my annex and expanded onto a new drive since then.
+
+> [[fixed|done]] --[[Joey]] 

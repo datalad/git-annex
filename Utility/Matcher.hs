@@ -10,7 +10,7 @@
  - Is forgiving about misplaced closing parens, so "foo and (bar or baz"
  - will be handled, as will "foo and ( bar or baz ) )"
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -57,7 +57,7 @@ syntaxToken t = Left $ "unknown token " ++ t
 
 {- Converts a list of Tokens into a Matcher. -}
 generate :: [Token op] -> Matcher op
-generate = simplify . process MAny . tokenGroups
+generate = simplify . process MAny . implicitAnd . tokenGroups
   where
 	process m [] = m
 	process m ts = uncurry process $ consume m ts
@@ -108,6 +108,16 @@ findClose l =
 			in go (Group (reverse c') : c) ts'
 		dispatch _ = go (One t:c) ts
 
+implicitAnd :: [TokenGroup op] -> [TokenGroup op]
+implicitAnd [] = []
+implicitAnd [v] = [v]
+implicitAnd (a:b:rest) | need a && need b = a : One And : implicitAnd (b:rest)
+  where
+	need (One (Operation _)) = True
+	need (Group _) = True
+	need _ = False
+implicitAnd (a:rest) = a : implicitAnd rest
+
 {- Checks if a Matcher matches, using a supplied function to check
  - the value of Operations. -}
 match :: (op -> v -> Bool) -> Matcher op -> v -> Bool
@@ -153,27 +163,56 @@ introspect :: (a -> Bool) -> Matcher a -> Bool
 introspect = any
 
 prop_matcher_sane :: Bool
-prop_matcher_sane = all (\m -> match dummy m ()) $ map generate
-	[ [Operation True]
-	, []
-	, [Operation False, Or, Operation True, Or, Operation False]
-	, [Operation True, Or, Operation True]
-	, [Operation True, And, Operation True]
-	, [Not, Open, Operation True, And, Operation False, Close]
-	, [Not, Open, Not, Open, Not, Operation False, Close, Close]
-	, [Not, Open, Not, Open, Not, Open, Not, Operation True, Close, Close]
-	, [Operation True, And, Not, Operation False]
-	, [Operation True, Not, Operation False]
-	, [Operation True, Not, Not, Not, Operation False]
-	, [Operation True, Not, Not, Not, Operation False, And, Operation True]
-	, [Operation True, Not, Not, Not, Operation False, Operation True]
-	, [Not, Open, Operation True, And, Operation False, Close, 
-		And, Open, 
-			Open, Operation True, And, Operation False, Close,
-			Or,
-			Open, Operation True, And, Open, Not, Operation False, Close, Close,
-		Close, And,
-			Open, Not, Operation False, Close]
+prop_matcher_sane = and
+	[ all (\m -> match (\b _ -> b) m ()) (map generate evaltrue)
+	, all (\(x,y) -> generate x == generate y) evalsame
 	]
   where
-	dummy b _ = b
+	evaltrue =
+		[ [Operation True]
+		, []
+		, [Operation False, Or, Operation True, Or, Operation False]
+		, [Operation True, Or, Operation True]
+		, [Operation True, And, Operation True]
+		, [Not, Open, Operation True, And, Operation False, Close]
+		, [Not, Open, Not, Open, Not, Operation False, Close, Close]
+		, [Not, Open, Not, Open, Not, Open, Not, Operation True, Close, Close]
+		, [Operation True, And, Not, Operation False]
+		, [Operation True, Not, Operation False]
+		, [Operation True, Not, Not, Not, Operation False]
+		, [Operation True, Not, Not, Not, Operation False, And, Operation True]
+		, [Operation True, Not, Not, Not, Operation False, Operation True]
+		, [Not, Open, Operation True, And, Operation False, Close, 
+			And, Open, 
+				Open, Operation True, And, Operation False, Close,
+				Or,
+				Open, Operation True, And, Open, Not, Operation False, Close, Close,
+			Close, And,
+				Open, Not, Operation False, Close]
+		]
+	evalsame =
+		[
+			( [Operation "foo", Open, Operation "bar", Or, Operation "baz", Close]
+			, [Operation "foo", And, Open, Operation "bar", Or, Operation "baz", Close]
+			)
+		,
+			( [Operation "foo", Not, Open, Operation "bar", Or, Operation "baz", Close]
+			, [Operation "foo", And, Not, Open, Operation "bar", Or, Operation "baz", Close]
+			)
+		,
+			( [Open, Operation "bar", Or, Operation "baz", Close, Operation "foo"]
+			, [Open, Operation "bar", Or, Operation "baz", Close, And, Operation "foo"]
+			)
+		,
+			( [Open, Operation "bar", Or, Operation "baz", Close, Not, Operation "foo"]
+			, [Open, Operation "bar", Or, Operation "baz", Close, And, Not, Operation "foo"]
+			)
+		,
+			( [Operation "foo", Operation "bar"]
+			, [Operation "foo", And, Operation "bar"]
+			)
+		,
+			( [Operation "foo", Not, Operation "bar"]
+			, [Operation "foo", And, Not, Operation "bar"]
+			)
+		]

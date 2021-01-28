@@ -5,6 +5,10 @@ git-annex (8.20210128) UNRELEASED; urgency=medium
     of that special remote.
   * When adding files to an adjusted branch set up by --unlock-present,
     add them unlocked, not locked.
+  * Fix an oddity in matching options and preferred content expressions
+    such as "foo (bar or baz)", which was incorrectly handled as if
+    it were "(foo or bar) and baz)" rather than the intended
+    "foo and (bar or baz)"
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2021 12:34:32 -0400
 
