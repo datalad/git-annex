@@ -9,6 +9,7 @@ git-annex (8.20210128) UNRELEASED; urgency=medium
     such as "foo (bar or baz)", which was incorrectly handled as if
     it were "(foo or bar) and baz)" rather than the intended
     "foo and (bar or baz)"
+  * get: Improve output when failing to get a file fails.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2021 12:34:32 -0400
 

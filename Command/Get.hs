@@ -92,7 +92,7 @@ getKey' key afile = dispatch
   where
 	dispatch [] = do
 		showNote "not available"
-		showlocs
+		showlocs []
 		return False
 	dispatch remotes = notifyTransfer Download afile $ \witness -> do
 		ok <- pickRemote remotes $ \r -> ifM (probablyPresent r)
@@ -103,9 +103,9 @@ getKey' key afile = dispatch
 			then return ok
 			else do
 				Remote.showTriedRemotes remotes
-				showlocs
+				showlocs (map Remote.uuid remotes)
 				return False
-	showlocs = Remote.showLocations False key []
+	showlocs exclude = Remote.showLocations False key exclude
 		"No other repository is known to contain the file."
 	-- This check is to avoid an ugly message if a remote is a
 	-- drive that is not mounted.
