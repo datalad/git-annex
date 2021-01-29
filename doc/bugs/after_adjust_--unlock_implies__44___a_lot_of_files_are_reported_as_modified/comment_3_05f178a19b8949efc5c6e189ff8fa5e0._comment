@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-01-29T16:52:47Z"
+ content="""
+I've never seen this behavior, but it seems that if git thinks the files
+are modified, either `git diff` or `git diff --cached` must show some kind
+of change, and seeing what that change might be would be a useful clue to
+what happened.
+"""]]
