@@ -41,3 +41,7 @@ Disk is about 20% full.
 
 
 [[!tag moreinfo]]
+
+> [[closing|done]], the bug reporter did not seem to show that this was a
+> bug and not just an unfortunate case of too many versions of files.
+> --[[Joey]]
