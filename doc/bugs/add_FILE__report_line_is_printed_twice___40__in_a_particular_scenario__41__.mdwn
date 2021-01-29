@@ -47,3 +47,6 @@ add TEST.txt (non-large file; adding content to git repository) ok
 """]]
 
 annex 7.20190219+git191-g2d6a364d4-1~ndall+1
+
+> [[fixed|done]] this affected v5 repos but was fixed in v6 and above.
+> --[[Joey]]
