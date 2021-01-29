@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-01-29T18:38:41Z"
+ content="""
+To the extent that this is a bug in git-annex import, it's solved
+by using the new feature of importing a tree from a directory special
+remote. When used that way, there's no --deduplicate or --clean-duplicates
+option that causes this problem. Instead it makes git commits tracking the
+content of the remote directory, and as long as you merge that remote into
+your master branch, the original filename will be preserved in git.
+
+So once [[todo/remove_legacy_import_directory_interface]] happens, I
+guess this could be considered fixed, to the extent it's a bug in git-annex
+at all and not with using `git reset --hard` as I showed could lead to the
+same thing in vanilla git.
+"""]]
