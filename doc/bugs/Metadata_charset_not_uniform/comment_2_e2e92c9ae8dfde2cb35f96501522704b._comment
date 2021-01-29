@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-01-29T19:32:25Z"
+ content="""
+	joey@darkstar:~>echo lätin1 | iconv -tlatin1 | iconv -tutf8 
+	liconv: illegal input sequence at position 1
+
+This is identical to what you did, except I have replaced git-annex
+with a pipe.
+
+So, not a bug.
+"""]]
