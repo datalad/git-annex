@@ -23,3 +23,8 @@ B -> readds the file instead of deleting it
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I've been using git-annex for years with 4 different repositories, 3 of them pretty big (> 50 GB) and I'm really happy! :)
+
+> This sounds like the git-annex assistant, and probably direct mode,
+> which was pretty buggy. Its replacement avoids those problems,
+> so I'm guessing the bug got fixed. If you still see it, please comment.
+> [[done]] --[[Joey]]
