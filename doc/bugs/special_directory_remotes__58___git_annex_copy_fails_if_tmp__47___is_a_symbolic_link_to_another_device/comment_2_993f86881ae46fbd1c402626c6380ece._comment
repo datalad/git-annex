@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-01-29T18:28:30Z"
+ content="""
+The directory special remote writes to a directory under the "tmp"
+directory, and then it renames that into place. Amoung other things that
+makes the update happen atomically. If "tmp" is on another filesystem than
+the final destination, a rename won't work.
+
+I just don't see any point in making this be supported, because if it were,
+git-annex would have to first write to the "tmp" directory, and then
+re-write the same files all over again to the final destination. So making
+the tmp directory be on a faster device can't actually speed anything up.
+It would just make it slower.
+"""]]

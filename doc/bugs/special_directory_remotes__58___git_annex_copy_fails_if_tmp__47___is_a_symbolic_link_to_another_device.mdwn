@@ -21,3 +21,4 @@ MacOS High Sierra 10.13.6
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Of course! git-annex is totally amazing in order to manage big collections of files. I'm using it for my videos, and for my photos as well (thousands of files), on Linux and MacOS. Thank you very much for this awesome tool!
 
+> [[closing|done]] per my comment --[[Joey]]
