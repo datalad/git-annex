@@ -21,3 +21,7 @@ Please provide support (or better still enable as default) the following behavio
 
 
 
+> I don't think this is a bug, if you don't like unlocked files you do not
+> need to use them, or if you're using someone else's repo you can `git
+> annex adjust --lock` to convert from unlocked to locked. So [[done]]
+> --[[Joey]]
