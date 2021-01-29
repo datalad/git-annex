@@ -18,7 +18,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip pip-run wheel
+          python -m pip install --upgrade pip 'pip-run!=8.4' wheel
           # No quotes around substitution:
           python -m pip install $(python -m pip_run.read-deps .github/workflows/tools/prdispatch.py)
           # Install the script's dependencies beforehand in order to reduce
