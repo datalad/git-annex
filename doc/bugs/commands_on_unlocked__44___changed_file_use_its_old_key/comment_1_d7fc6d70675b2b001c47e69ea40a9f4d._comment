@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-01-29T17:12:50Z"
+ content="""
+I don't think this has anything to do with unlocked files really, 
+and I think a v5 repo would have behaved the same way. A repo with the
+smudge filter disabled certainly seems to:
+
+	joey@darkstar:/tmp/bbb>rm .git/info/attributes
+	joey@darkstar:/tmp/bbb>date > bar
+	joey@darkstar:/tmp/bbb>git annex add bar
+	add bar
+	ok
+	(recording state in git...)
+	ijoey@darkstar:/tmp/bbb>git commit -m add
+	[master 342b357] add
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 bar
+	joey@darkstar:/tmp/bbb>git annex copy bar --to origin
+	copy bar (to origin...)
+	(checksum...) iok
+	(recording state in git...)
+	joey@darkstar:/tmp/bbb>git annex whereis bar
+	whereis bar (2 copies)
+	  	4f1d49f8-aeea-47fc-8982-b17b6b2f136f -- joey@darkstar:/tmp/aaa [origin]
+	   	5861485c-0e5f-4eec-91b5-166dbb999c81 -- joey@darkstar:/tmp/bbb [here]
+	ok
+	joey@darkstar:/tmp/bbb>rm bar
+	joey@darkstar:/tmp/bbb>date > bar
+	joey@darkstar:/tmp/bbb>git annex whereis bar
+	whereis bar (2 copies) 
+	  	4f1d49f8-aeea-47fc-8982-b17b6b2f136f -- joey@darkstar:/tmp/aaa [origin]
+	   	5861485c-0e5f-4eec-91b5-166dbb999c81 -- joey@darkstar:/tmp/bbb [here]
+	ok
+
+And this is consistent with git-annex working on information that is staged
+in git, not on unstaged changes in the working tree.
+
+	joey@darkstar:/tmp/bbb>mv bar bar2
+	joey@darkstar:/tmp/bbb>git annex whereis bar2
+	joey@darkstar:/tmp/bbb>
+
+So, I don't think this is a bug.
+"""]]
