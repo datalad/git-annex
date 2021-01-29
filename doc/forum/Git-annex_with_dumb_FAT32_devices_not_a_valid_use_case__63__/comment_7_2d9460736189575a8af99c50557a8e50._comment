@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-01-29T19:39:24Z"
+ content="""
+It's not a repo version, it's a kind of special remote that just accesses a
+tree of files on the device as if it were a git repo but without all the
+baggage.
+
+	git annex initremote myusbkey type=directory directory=/media/me/foo encryption=none importtree=yes exporttree=yes 
+	git annex import master --from myusbkey
+	git merge myusbkey/master
+	git annex export master --to myusbkey
+"""]]
