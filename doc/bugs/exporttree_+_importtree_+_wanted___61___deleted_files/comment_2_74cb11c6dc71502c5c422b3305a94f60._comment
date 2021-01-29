@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="seanl@fe5df935169a5440a52bdbfc5fece85cdd002d68"
+ nickname="seanl"
+ avatar="http://cdn.libravatar.org/avatar/082ffc523e71e18c45395e6115b3b373"
+ subject="Thanks! And yes, no data loss."
+ date="2021-01-29T06:55:42Z"
+ content="""
+I should have realized it wasn't a fundamental issue, because I was using it this way a couple years back without problems. Indeed there was no data loss; I just checked the files out from the commit before the merge.
+
+Thanks for fixing it so quickly!
+"""]]

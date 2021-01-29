@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="chocolate.camera@ec2ecab153906be21ac5f36652c33786ad0e0b60"
+ nickname="chocolate.camera"
+ avatar="http://cdn.libravatar.org/avatar/4f00dfc3ad590ef7492788b854ceba78"
+ subject="comment 6"
+ date="2021-01-29T18:23:04Z"
+ content="""
+@seanl What repo version are those? What about “if I understood correctly, v7 repos are required for being able to hiding missing files, but at the same time, on v7 and FAT32 filesystems, files that are present take up double their file size”?
+"""]]

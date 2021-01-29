@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="seanl@fe5df935169a5440a52bdbfc5fece85cdd002d68"
+ nickname="seanl"
+ avatar="http://cdn.libravatar.org/avatar/082ffc523e71e18c45395e6115b3b373"
+ subject="I use git-annex with FAT32"
+ date="2021-01-29T17:10:01Z"
+ content="""
+I'm using git-annex for precisely this use case. I manage files on my Sansa Clip Zip, Odroid Go, and Pi1541 with it. I use a directory special remote for each device pointing at its mount point, with remote.<name>.annex-ignore-command set to `lsblk -no uuid,mountpoint | egrep -qx '<uuid>\s+<mountpoint>'` to make sure git-annex only tries to touch the remote when it's mounted. I just rename any files in the repo that have invalid names.
+"""]]

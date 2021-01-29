@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="seanl@fe5df935169a5440a52bdbfc5fece85cdd002d68"
+ nickname="seanl"
+ avatar="http://cdn.libravatar.org/avatar/082ffc523e71e18c45395e6115b3b373"
+ subject="Different use case from backend"
+ date="2021-01-29T17:35:43Z"
+ content="""
+One of the requirements of the backend is that a collision means the content is identical, so it's trivial to handle them because it doesn't matter which one you keep. For dealing with \"near duplicates\", I'd suggest adding a field with `git annex metadata -s lsh=$(lsh $filename)` or something like that. The metadata is attached to the file's content rather than the name, which will ensure that the LSH gets recomputed if the content changes and will never get computed more than once for identical content.
+
+I think the main drawback of this method is that it's a little more complicated to print metadata en masse than it is to print the key because `git annex find` doesn't support metadata. It's certainly possible to construct a command to do it, it's just a little more involved than the commands for finding duplicates.
+"""]]
