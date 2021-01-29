@@ -7,3 +7,5 @@ Configure the special remote (e.g. webdav), and then forget what settings you sp
 ### What version of git-annex are you using? On what operating system?
 7.20190129-3 (Debian)
 
+> [[done]] seems the reporter found a way to get what they wanted.
+> --[[Joey]]
