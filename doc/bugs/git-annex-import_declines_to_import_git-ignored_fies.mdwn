@@ -1,1 +1,4 @@
 git-annex-import currently refuses to import any files under the repo dir, saying to use git-add instead.  I think it should treat git-ignored files as if they were outside the repo.  I often have a dir under the repo that is gitignored, and acts as a temp work area; git-annex-import should treat the files there as if they were outside the repo.
+
+> git-annex import --no-check-gitignore option implemented [[done]]
+> --[[Joey]]
