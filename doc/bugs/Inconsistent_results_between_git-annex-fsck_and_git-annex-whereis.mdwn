@@ -51,3 +51,5 @@ ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I trust Git Annex to keep hundreds of GB of data safe, and it has never failed me - despite my best efforts
+
+> [[closing|done]] per my comment --[[Joey]]
