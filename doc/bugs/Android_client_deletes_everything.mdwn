@@ -43,3 +43,5 @@ The PC has 6.20160903-g1c0b2b4 and Android has 6.20160714.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> Direct mode was known to have some bugs that could probably have led
+> to this kind of behavior. It has been replaced, so [[done]] --[[Joey]]
