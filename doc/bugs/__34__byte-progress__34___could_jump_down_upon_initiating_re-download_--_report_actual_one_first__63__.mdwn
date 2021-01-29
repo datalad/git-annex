@@ -26,3 +26,6 @@ total 3796
 """]]
 
 
+> [[Closing|done]] since it seems I fixed the most egrarious case where
+> this could happen, and since it does seem that, in general, it's ok for
+> git-annex to report progress that is not strictly increasing. --[[Joey]]
