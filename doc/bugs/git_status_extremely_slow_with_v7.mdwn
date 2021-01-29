@@ -26,3 +26,5 @@ local repository version: 7
 
 """]]
 
+> [[closing|done]] as the bug report lacks information to reproduce the
+> problem and similar problems are known to have been fixed --[[Joey]]
