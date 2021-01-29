@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-01-29T17:31:02Z"
+ content="""
+Backend.URL has isStableKey = False, and that does prevent
+chunking URL keys on special remotes. So looking at that is the thing to
+do, and will not affect WORM but only URL. (And any external backends that
+are not stable.)
+
+While some remotes can handle it, eg rsync, this does not seem like
+something every remote should need to worry about getting right.
+
+While retrieveKeyFile can be wrapped and made to delete the destination
+file before the transfer if the key is not stable, what to do about
+storeKey? If it chooses to resume, it's based on data on the remote.
+removeKey does not necessarily remove a partially recieved key; it doesn't
+for P2P where the temp file holds the content until it's fully received.
+
+Could refuse to storeKey URL keys, which would be nearly the same as 
+deprecating/removing support for URL keys entirely. (Which is not
+unappealing, but I know people are using them and dropping support would be
+painful.)
+
+Or ugh, special case isStableKey checks in P2P and any other remotes 
+that support resuming storeKey w/o using chunking and resume based on file
+offsent and not content. But there could be external remotes that I don't
+know about that would still be affected.
+"""]]
