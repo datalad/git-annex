@@ -60,3 +60,6 @@ ok
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 [[!tag moreinfo]]
+
+> [[done]], I'm going to assume it was fixed since there was no followup
+> --[[Joey]]
