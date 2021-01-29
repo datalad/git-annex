@@ -38,3 +38,6 @@ Any consecutive `git annex get` commands don’t notice that the file is not com
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, it (kind of) works for keeping my music library in sync.
+
+> [[closing|done]] as it's not clear there's really a bug here. Please
+> followup to my comment with more information if you disagree.
