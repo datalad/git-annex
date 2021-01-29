@@ -20,3 +20,4 @@ debian sid
     upgrade supported from repository versions: 0 1 2 3 4 5 6
     local repository version: 7
 
+> [[done]], this is a general git behavior, not a git-annex bug --[[Joey]]
