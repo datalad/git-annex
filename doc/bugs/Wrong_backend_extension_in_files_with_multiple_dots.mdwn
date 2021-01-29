@@ -37,3 +37,5 @@ NeuroDebian's `git-annex-standalone` package on Xubuntu 16.04. (Also with a Debi
 I'm trying to analyze and organize my huge `Photos` folder into a neat git-annex repository (with yet another [project of mine](https://www.github.com/alpernebbi/albumin)). It's a huge mess.
 
 Keep up the great work! Also thanks for fixing [my UTF-8 problem](https://git-annex.branchable.com/bugs/Linux_standalone__39__s_metadata_--batch_can__39__t_parse_UTF-8/) as well. 
+
+> [[Closing|done]] per my comment --[[Joey]]
