@@ -15,3 +15,6 @@ I'm not sure. The files lost appear to be more recently added files, so this bug
 I've used git-annex to maintain large file sets for years now and there is no better tool I know of.
 
 [[!tag moreinfo]]
+
+> Closing as requested information has not been provided. If you followup
+> we can reopen it. [[done]] --[[Joey]] 
