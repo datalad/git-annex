@@ -67,3 +67,7 @@ Synology NAS
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Unlocking files (with thin set to true) seems to be the perfect solution for me - I just have to understand what's going on under the hood ;)
+
+> [[closing|done]] because this appears to be a git problem if anything,
+> there does not seem to be anything in git-annex that could be changed
+> to avoid it --[[Joey]]
