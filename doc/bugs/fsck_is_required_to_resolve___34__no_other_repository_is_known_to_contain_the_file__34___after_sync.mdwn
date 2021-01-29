@@ -17,3 +17,6 @@ Does this seem like a bug with git annex? Is there a possible gap in the way tha
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Git annex works for us the majority of the time and solves a lot of space issues for us in a unique way. We do get confused by it sometimes, but that's probably our implementation of it and not knowing enough about it across our team (seems to be a set and forget approach).
+
+> Closing as it's not clear this was a bug rather than user error as
+> explained in my comment. [[done]] --[[Joey]]
