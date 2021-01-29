@@ -86,3 +86,6 @@ LANGUAGE='en_GB:en'
 $ set | grep LC
 # nothing
 """]]
+
+[[!meta title="metadata --batch --json cannot parse utf8 when not in utf8 locale"]]
+[[!tag confirmed]]
