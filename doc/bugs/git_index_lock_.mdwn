@@ -50,3 +50,5 @@ T
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 It's become an indispensable tool.   E.g. I just used it to moved data from more-expensive to less-expensive storage, without needing to worry about getting it back when needed; this frees up not just disk space but mental space :)
+
+> [[closing|done]] for reasons explained in my comment --[[Joey]]
