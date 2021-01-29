@@ -42,3 +42,8 @@ I upgraded my annexes to v6 because the concept of locked and unlocked looks goo
 
 The idea is great.  Preliminary tests were quite positive.   That's why I tried it on my big repositories.
 
+
+> git-annex sync does not do anything to a working tree that git commit 
+> and git pull doesn't do. I sync repos all the time and have never seen
+> anything like this. Without a way to reproduce such a bug, I have to
+> assume it was some kind of user error. [[done]] --[[Joey]]
