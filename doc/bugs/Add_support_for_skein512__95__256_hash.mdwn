@@ -8,3 +8,6 @@ Rationale: I've just done a benchmark of the different hash implementations in c
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I'm just trying git-annex for the first time, but it definitly looks great.
+
+> Ok, going to reject this since the speedup is minimal, and there are
+> other faster hashes anyway, like blake2. [[done]] --[[Joey]]
