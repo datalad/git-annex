@@ -59,3 +59,7 @@ Unpacking objects: 100% (334784/334784), done.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I use it for everything, around 3TB of data at the moment. It is awesome.
+
+> [[fixed|done]], although the root cause of the problem is
+> [[git_fsck_duplicateEntries_errors_when_using_adjusted_branch]]
+> --[[Joey]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-01-29T19:23:19Z"
+ content="""
+An older bug [[git-annex_wants_to_repair_because_of_duplicateEntries_in_git_fsck]]
+also had duplicate directory entries. I'm not clear if adjusted branches
+were involved there.
+
+I can't reproduce it using that script that was working to reproduce it for
+a while for me.
+"""]]

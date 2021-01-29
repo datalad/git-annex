@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-01-29T19:14:53Z"
+ content="""
+hmm, so tree 3818a8ea201197ed355aa87133a718afca7c4a49 has 2 Dokument
+entries. Interesting.
+
+If you still have that repo, it would be interesting to compare trees
+cd854aba649cee8855ec72579f4c98100471f7cf and 1ae499997746c8e976cf02edc2276532978dafc5
+
+[[git_fsck_duplicateEntries_errors_when_using_adjusted_branch]] dates
+from 2018, so I think I was right about my guess that it was something
+about adjusted branches that led to this. I'll merge this bug into that
+one.
+"""]]
