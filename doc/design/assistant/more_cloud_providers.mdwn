@@ -11,8 +11,6 @@ More should be added, such as:
 * Dropbox? That would be ironic.. Via its API, presumably.
 * [[Amazon Glacier|todo/special_remote_for_amazon_glacier]] **done**
 * Internet Archive **done**
-* [nimbus.io](https://nimbus.io/) Fairly low prices ($0.06/GB);
-  REST API; free software
 * Mediafire provides 50gb free and has a REST API.
 * Flickr provides 1 tb (!!!!) to free accounts, and can store at least
   photos and videos. <https://github.com/ricardobeat/filr> is a hack
