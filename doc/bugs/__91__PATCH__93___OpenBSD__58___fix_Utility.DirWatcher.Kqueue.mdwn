@@ -2,6 +2,7 @@ Without this patch, building on OpenBSD fails with a type error in `Utility/DirW
 
 I'm running OpenBSD current. This patch is against master (commit 7d18153955).
 
+```
 diff --git a/Utility/DirWatcher/Kqueue.hs b/Utility/DirWatcher/Kqueue.hs
 index 4a1c55ae9..0c84f67c1 100644
 --- a/Utility/DirWatcher/Kqueue.hs
@@ -15,3 +16,4 @@ index 4a1c55ae9..0c84f67c1 100644
  
  findDirContents :: DirMap -> FilePath -> [FilePath]
  findDirContents dirmap dir = concatMap absolutecontents $ search
+```
