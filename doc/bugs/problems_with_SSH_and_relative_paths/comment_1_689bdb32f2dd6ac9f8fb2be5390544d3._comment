@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jrollins"
+ avatar="http://cdn.libravatar.org/avatar/129f3c58226661d01c5bfc18f0048d81"
+ subject="comment 1"
+ date="2021-01-31T20:28:23Z"
+ content="""
+I'm confused, because now I'm seeing the same problem even with absolute paths.  What am I doing wrong?  The server has git-annex installed system-wide, and seems to otherwise work ok.
+"""]]
