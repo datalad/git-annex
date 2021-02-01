@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="gueux"
+ avatar="http://cdn.libravatar.org/avatar/47e44a21505727b2d6bb5d88f0468f34"
+ subject="comment 4"
+ date="2021-02-01T18:11:40Z"
+ content="""
+I'd say around 50% of the files are reported as modified by \"git status\".
+
+`git --no-pager diff --cached --output git-annex-cached-diff.diff` returns
+instantly, with no output and nothing in `git-annex-cached-diff.diff`.
+`git --no-pager diff --output git-annex-diff.diff` ran for around 5 hours, with no output and nothing in `git-annex-diff.diff`.
+"""]]
