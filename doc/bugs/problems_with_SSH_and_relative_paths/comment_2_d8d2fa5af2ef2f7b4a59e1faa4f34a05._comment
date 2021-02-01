@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-02-01T16:34:33Z"
+ content="""
+I was going to say, I have repos with relative ssh paths that I use with
+git-annex every day.
+
+This seems likely to be a problem with how git-annex
+is installed on the server, that is preventing running git-annex-shell
+there. Ie, it should work to run `ssh remote.example.com git-annex-shell`.
+
+Sometimees there can be tricky problems with PATH not getting set as usual
+when sshing, see  [[tips/get_git-annex-shell_into_PATH]].
+
+I don't know how the absolute path could have seemed to work, and then
+seemed to fail when you tried it again later. My guess would be, something
+must have changed on the server in the meantime.
+"""]]
