@@ -133,7 +133,7 @@ removeSubDir dirmap dir = do
 	mapM_ Posix.closeFd $ M.keys toremove
 	return rest
   where
-	(toremove, rest) = M.partition (dirContains dir . dirName) dirmap
+	(toremove, rest) = M.partition (dirContains (toRawFilePath dir) . toRawFilePath . dirName) dirmap
 
 findDirContents :: DirMap -> FilePath -> [FilePath]
 findDirContents dirmap dir = concatMap absolutecontents $ search
