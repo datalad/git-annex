@@ -510,25 +510,25 @@ jobs:
           {{step}}
           {% endfor %}
 
-    {% if ostype == "ubuntu" or ostype == "macos" %}
+    {% if ostype == "ubuntu" %}
+    {# TODO: return for macos! https://github.com/datalad/git-annex/issues/42
+      {% if ostype == "ubuntu"  or ostype == "macos" %} #}
       - name: Set up SSH target
         shell: bash
-        # TODO: Drop the release condition once 0.13.2 is released.
         run: |
-          if [ "${{ matrix.version }}" != "release" ]; then
-            {% if ostype == "macos" %}
-            # coreutils provides a readlink that supports `-f`
-            brew install coreutils docker docker-machine
-            docker-machine --github-api-token="${{ secrets.GITHUB_TOKEN }}" create --driver virtualbox default
-            eval "$(docker-machine env default)"
-            export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-            {% endif %}
-            curl -fSsL \
-              https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
-              | bash
-            echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
-          fi
-    {% elif ostype == "windows" %}
+          {% if ostype == "macos" %}
+          # coreutils provides a readlink that supports `-f`
+          brew install coreutils docker docker-machine
+          docker-machine --github-api-token="${{ secrets.GITHUB_TOKEN }}" create --driver virtualbox default
+          eval "$(docker-machine env default)"
+          export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+          {% endif %}
+          curl -fSsL \
+            https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
+            | bash
+          echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
+
+   {% elif ostype == "windows" %}
       - name: Define test host alias
         shell: cmd
         run: |

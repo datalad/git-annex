@@ -340,21 +340,6 @@ jobs:
           hdiutil detach /Volumes/git-annex/
           echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
 
-      - name: Set up SSH target
-        shell: bash
-        # TODO: Drop the release condition once 0.13.2 is released.
-        run: |
-          if [ "${{ matrix.version }}" != "release" ]; then
-            # coreutils provides a readlink that supports `-f`
-            brew install coreutils docker docker-machine
-            docker-machine --github-api-token="${{ secrets.GITHUB_TOKEN }}" create --driver virtualbox default
-            eval "$(docker-machine env default)"
-            export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-            curl -fSsL \
-              https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
-              | bash
-            echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
-          fi
 
       - name: Set up environment
         run: |
