@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-02-01T16:26:02Z"
+ content="""
+Last I saw, someone had gotten ghc built for the platform in December.
+I suppose there will be other toolchain changes needed but that seems
+fairly promising.
+"""]]
