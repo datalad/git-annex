@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="gueux"
+ avatar="http://cdn.libravatar.org/avatar/47e44a21505727b2d6bb5d88f0468f34"
+ subject="comment 5"
+ date="2021-02-01T18:33:48Z"
+ content="""
+The repo is in a dir mounted with sshfs.
+"""]]
