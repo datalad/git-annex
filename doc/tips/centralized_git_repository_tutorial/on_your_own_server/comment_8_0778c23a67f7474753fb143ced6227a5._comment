@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: problems with init after clone"""
+ date="2021-02-01T16:03:04Z"
+ content="""
+@jrollins Well, it looks like you have maybe not installed git-annex on
+your server. If it is installed and you still have this problem, you may
+need to consult [[get_git-annex-shell_into_PATH]].
+"""]]
