@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-02-01T16:10:02Z"
+ content="""
+Hmm, other git-annex man pages don't show use of -- before eg,
+filenames, which seem more likely to need it than any value a config could
+be set to. Highly unlikely something like annex.youtube-dl-options would
+ever be supported here, as it would invite security holes. So I'm inclined
+to feel mentioning the -- on the man page is clutter, the same way
+it's eg not mentioned on the man page for `ls`. Although I suppose that
+does raise the question of how anyone ever learns about -- .. I forget how
+I did.
+
+Anyway, yes, the current implementation is really --set=value, and due to
+that implementation detail, -- can't come before the the value.
+"""]]
