@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jrollins"
+ avatar="http://cdn.libravatar.org/avatar/129f3c58226661d01c5bfc18f0048d81"
+ subject="comment 3"
+ date="2021-02-01T17:45:14Z"
+ content="""
+@joey, thank you for the response.  I can confirm that I can run `ssh remote.example.com git-annex-shell` no problem from my local machine.  Can you offer any other suggestions for things I could try to test the remote?  Could it be some kind of version incompatibility?  Is there some missing configuration I need to do on the server side?  Right now it's just a bare git repo, nothing else.
+
+As for the absolute/local thing, I still there is some kind of issue there given the `/~/path/to/git` in the ssh command line in the process tree.  That's obviously not a real directory, so it seems like something's wrong there.  But it may well be what I'm experiencing is a separate issue.
+
+Any other help you could provide would be very much appreciated.
+
+
+"""]]
