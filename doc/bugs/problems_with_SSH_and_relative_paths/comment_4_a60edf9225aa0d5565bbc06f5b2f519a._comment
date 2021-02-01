@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="jrollins"
+ avatar="http://cdn.libravatar.org/avatar/129f3c58226661d01c5bfc18f0048d81"
+ subject="comment 4"
+ date="2021-02-01T18:25:08Z"
+ content="""
+fwiw, if I continue and ignore the error I encounter when I try to `git annex init` on the local checkout, add a file, commit, push the `master` and `git-annex` branches to the remote, and then try to clone/get in another location, this is what happens:
+
+```
+0$ git clone ssh://remote.example.com/~/path/to/git
+Cloning into 'git'...
+remote: Enumerating objects: 19, done.
+remote: Counting objects: 100% (19/19), done.
+remote: Compressing objects: 100% (13/13), done.
+remote: Total 19 (delta 2), reused 0 (delta 0)
+Receiving objects: 100% (19/19), done.
+Resolving deltas: 100% (2/2), done.
+0$ cd git/
+0$ git annex get test.dat 
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+get test.dat (not available) 
+  Maybe add some of these git remotes (git remote add ...):
+        bac9e484-9534-464f-8aee-45670d5967ed -- servo
+failed
+git-annex: get: 1 failed
+1$ 
+```
+"""]]
