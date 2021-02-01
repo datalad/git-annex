@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jrollins"
+ avatar="http://cdn.libravatar.org/avatar/129f3c58226661d01c5bfc18f0048d81"
+ subject="comment 7"
+ date="2021-02-01T19:07:27Z"
+ content="""
+crap I copied that last ssh command wrong.  it should have been:
+
+```
+0$ ssh remote.example.com git-annex-shell 'configlist' /home/cal/archive/git
+git-annex-shell: Not a git-annex or gcrypt repository.
+1$ 
+```
+"""]]
