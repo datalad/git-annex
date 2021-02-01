@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="jrollins"
+ avatar="http://cdn.libravatar.org/avatar/129f3c58226661d01c5bfc18f0048d81"
+ subject="comment 8"
+ date="2021-02-01T19:30:52Z"
+ content="""
+Ok progress!  I think we have resolved the issue.  The [instructions](https://git-annex.branchable.com/tips/centralized_git_repository_tutorial/on_your_own_server/) are missing a key command.  From the \"set up the server\" section, you need to `git annex init` in the newly created bare git repo, e.g.:
+
+```
+server# cd
+server# git init annex.git --bare --shared
+server# cd annex.git
+server# git annex init server
+```
+
+Once the newly-created bare git repo is git-annex initialized, things seem to work properly.  yay!
+
+It also seems to work for both absolute and relatively specified directories on the remote.  I have tested with both.  So I guess the odd path in the ssh command is a red herring, and git-annex-shell known how to resolve the path correctly.  Very good.
+
+Thank you @joey and @lukey for the help.  I guess we can close this issue once the instructions are properly updated.  Thanks!
+"""]]
