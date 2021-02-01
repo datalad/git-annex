@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-02-01T16:41:34Z"
+ content="""
+Note that I also got git-remote-gcrypt patched, so it supports a 
+more standard uri form, eg rsync://192.168.178.241/test
+"""]]
