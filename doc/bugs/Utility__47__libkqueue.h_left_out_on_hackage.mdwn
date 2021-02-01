@@ -54,3 +54,4 @@ setup: Missing dependency on a foreign library:
 Nope, but hopefully packaging up the file will make it a little easier for me to try the next time :)
 
 
+> [[fixed|done]] in git for next release --[[Joey]]

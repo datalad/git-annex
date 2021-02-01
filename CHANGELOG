@@ -12,6 +12,7 @@ git-annex (8.20210128) UNRELEASED; urgency=medium
   * get: Improve output when failing to get a file fails.
   * Fix build on openbsd.
     Thanks, James Cook for the patch.
+  * Include libkqueue.h file needed to build the assistant on BSDs.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2021 12:34:32 -0400
 

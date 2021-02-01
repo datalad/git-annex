@@ -249,6 +249,7 @@ Extra-Source-Files:
   templates/repolist.hamlet
   templates/controlmenu.hamlet
   templates/notifications/longpolling.julius
+  Utility/libkqueue.h
 
 Flag Assistant
   Description: Enable git-annex assistant and watch command
