@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="jrollins"
+ avatar="http://cdn.libravatar.org/avatar/129f3c58226661d01c5bfc18f0048d81"
+ subject="comment 6"
+ date="2021-02-01T19:04:39Z"
+ content="""
+Using the --debug option (thanks to suggestion fro @lukey) I was able to get a little deeper:
+
+```
+0$ git clone cal@ldas-pcdev1.ligo-wa.caltech.edu:archive/git
+Cloning into 'git'...
+warning: You appear to have cloned an empty repository.
+0$ cd git
+0$ git annex init --verbose --debug servo
+[...]
+
+[2021-02-01 10:50:13.141613956] process [1006769] read: ssh [\"remote.example.com\",\"-S\",\".git/annex/ssh/95ea79d833b87277ea620851140b81ec\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"git-annex-shell 'configlist' '/~/archive/git' '--debug'\"]
+[2021-02-01 10:50:17.66427318] process [1006769] done ExitFailure 1'
+
+  Unable to parse git config from origin
+[...]
+```
+
+Note the path `/~/archive/git`.  That's obviously not going to work, so there really is an issue with relative paths and ssh.
+
+*However*, that's not the full problem.  Something else is going on:
+
+```
+0$ git clone cal@ldas-pcdev1.ligo-wa.caltech.edu:/home/cal/archive/git
+Cloning into 'git'...
+warning: You appear to have cloned an empty repository.
+0$ cd git
+0$ git annex init --verbose --debug servo
+[...]
+[2021-02-01 10:53:36.256163655] process [1007229] read: ssh [\"remote.example.com\",\"-S\",\".git/annex/ssh/95ea79d833b87277ea620851140b81ec\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-n\",\"-T\",\"git-annex-shell 'configlist' '/home/cal/archive/git' '--debug'\"]
+[2021-02-01 10:53:40.632608448] process [1007229] done ExitFailure 1
+
+  Unable to parse git config from origin
+[...]
+0$ ssh remote.example.com 'configlist' /home/cal/archive/git
+git-annex-shell: Not a git-annex or gcrypt repository.
+1$ 
+```
+
+This really makes it seem like there's some more configuration needed on the remote side.  The instructions don't mention anything other than just initializing the bare git repo.  Are you sure there's no other action that needs to be taken?
+"""]]
