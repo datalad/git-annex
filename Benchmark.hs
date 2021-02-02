@@ -12,7 +12,6 @@ import Types.Benchmark
 import Types.Command
 import CmdLine.Action
 import CmdLine
-import CmdLine.GitAnnex.Options
 import qualified Annex
 import qualified Annex.Branch
 
@@ -39,7 +38,7 @@ mkGenerator cmds userinput = do
 	-- matching or out-of-repo commands.
 	parsesubcommand ps = do
 		(cmd, seek, globalconfig) <- liftIO $ O.handleParseResult $
-			parseCmd "git-annex" "benchmarking" gitAnnexGlobalOptions ps cmds cmdparser
+			parseCmd "git-annex" "benchmarking" ps cmds cmdparser
 		-- Make an entirely separate Annex state for each subcommand,
 		-- and prepare it to run the cmd.
 		st <- liftIO . Annex.new =<< Annex.getState Annex.repo

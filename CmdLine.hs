@@ -27,8 +27,8 @@ import Command
 import Types.Messages
 
 {- Runs the passed command line. -}
-dispatch :: Bool -> CmdParams -> [Command] -> [GlobalOption] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
-dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progdesc = do
+dispatch :: Bool -> CmdParams -> [Command] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
+dispatch fuzzyok allargs allcmds fields getgitrepo progname progdesc = do
 	setupConsole
 	go =<< tryNonAsync getgitrepo
   where
@@ -61,13 +61,13 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 				a
 
 	parsewith secondrun getparser ingitrepo handleresult =
-		case parseCmd progname progdesc globaloptions allargs allcmds getparser of
+		case parseCmd progname progdesc allargs allcmds getparser of
 			O.Failure _ -> do
 				-- parse failed, so fall back to
 				-- fuzzy matching, or to showing usage
 				when (fuzzy && not secondrun) $
 					ingitrepo autocorrect
-				handleresult (parseCmd progname progdesc globaloptions correctedargs allcmds getparser)
+				handleresult (parseCmd progname progdesc correctedargs allcmds getparser)
 			res -> handleresult res
 	  where
 		autocorrect = Git.AutoCorrect.prepare (fromJust inputcmdname) cmdname cmds
@@ -84,8 +84,8 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 	(fuzzy, cmds) = findCmd fuzzyok allcmds inputcmdname
 
 {- Parses command line, selecting one of the commands from the list. -}
-parseCmd :: String -> String -> [GlobalOption] -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v, GlobalSetter)
-parseCmd progname progdesc globaloptions allargs allcmds getparser = 
+parseCmd :: String -> String -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v, GlobalSetter)
+parseCmd progname progdesc allargs allcmds getparser = 
 	O.execParserPure (O.prefs O.idm) pinfo allargs
   where
 	pinfo = O.info (O.helper <*> subcmds) (O.progDescDoc (Just intro))
@@ -96,7 +96,7 @@ parseCmd progname progdesc globaloptions allargs allcmds getparser =
 	mkparser c = (,,) 
 		<$> pure c
 		<*> getparser c
-		<*> combineGlobalOptions (globaloptions ++ cmdglobaloptions c)
+		<*> combineGlobalOptions (cmdglobaloptions c)
 	synopsis n d = n ++ " - " ++ d
 	intro = mconcat $ concatMap (\l -> [H.text l, H.line])
 		(synopsis progname progdesc : commandList allcmds)

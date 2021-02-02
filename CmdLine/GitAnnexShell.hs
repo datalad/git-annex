@@ -40,7 +40,7 @@ cmdsMap = M.fromList $ map mk
 	, (ServeReadWrite, allcmds)
 	]
   where
-	readonlycmds = 
+	readonlycmds = map addGlobalOptions
 		[ Command.ConfigList.cmd
 		, gitAnnexShellCheck Command.InAnnex.cmd
 		, gitAnnexShellCheck Command.LockContent.cmd
@@ -51,11 +51,11 @@ cmdsMap = M.fromList $ map mk
 		-- determine the security policy to use
 		, gitAnnexShellCheck Command.P2PStdIO.cmd
 		]
-	appendcmds = readonlycmds ++
+	appendcmds = readonlycmds ++ map addGlobalOptions
 		[ gitAnnexShellCheck Command.RecvKey.cmd
 		, gitAnnexShellCheck Command.Commit.cmd
 		]
-	allcmds =
+	allcmds = map addGlobalOptions
 		[ gitAnnexShellCheck Command.DropKey.cmd
 		, Command.GCryptSetup.cmd
 		]
@@ -68,6 +68,9 @@ cmdsFor = fromMaybe [] . flip M.lookup cmdsMap
 
 cmdsList :: [Command]
 cmdsList = concat $ M.elems cmdsMap
+
+addGlobalOptions :: Command -> Command
+addGlobalOptions c = c { cmdglobaloptions = globalOptions ++ cmdglobaloptions c }
 
 globalOptions :: [GlobalOption]
 globalOptions = 
@@ -119,7 +122,7 @@ builtin cmd dir params = do
 	let (params', fieldparams, opts) = partitionParams params
 	    rsyncopts = ("RsyncOptions", unwords opts)
 	    fields = rsyncopts : filter checkField (parseFields fieldparams)
-	dispatch False (cmd : params') cmdsList globalOptions fields mkrepo
+	dispatch False (cmd : params') cmdsList fields mkrepo
 		"git-annex-shell"
 		"Restricted login shell for git-annex only SSH access"
   where

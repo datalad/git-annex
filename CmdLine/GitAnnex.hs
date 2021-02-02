@@ -126,7 +126,7 @@ import qualified Command.TestRemote
 import qualified Command.Benchmark
 
 cmds :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [Command]
-cmds testoptparser testrunner mkbenchmarkgenerator = 
+cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexGlobalOptions $
 	[ Command.Help.cmd
 	, Command.Add.cmd
 	, Command.Get.cmd
@@ -237,12 +237,15 @@ cmds testoptparser testrunner mkbenchmarkgenerator =
 		mkbenchmarkgenerator $ cmds testoptparser testrunner (\_ _ -> return noop)
 	]
 
+addGitAnnexGlobalOptions :: Command -> Command
+addGitAnnexGlobalOptions c = c { cmdglobaloptions = gitAnnexGlobalOptions ++ cmdglobaloptions c }
+
 run :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [String] -> IO ()
 run testoptparser testrunner mkbenchmarkgenerator args = go envmodes
   where
 	go [] = dispatch True args 
 		(cmds testoptparser testrunner mkbenchmarkgenerator)
-		gitAnnexGlobalOptions [] Git.CurrentRepo.get
+		[] Git.CurrentRepo.get
 		"git-annex"
 		"manage files with git, without checking their contents in"
 	go ((v, a):rest) = maybe (go rest) a =<< getEnv v
