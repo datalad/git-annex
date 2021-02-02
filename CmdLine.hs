@@ -33,8 +33,8 @@ dispatch :: Bool -> Bool -> CmdParams -> [Command] -> [(String, String)] -> IO G
 dispatch addonok fuzzyok allargs allcmds fields getgitrepo progname progdesc =
 	go addonok allcmds $
 		findAddonCommand subcommandname >>= \case
-			Nothing -> go False allcmds noop
-			Just c -> go addonok (c:allcmds) $
+			Just c -> go addonok (c:allcmds) noop
+			Nothing -> go addonok allcmds $
 				findAllAddonCommands >>= \cs ->
 					go False (cs++allcmds) noop
   where
@@ -158,7 +158,20 @@ findAddonCommand (Just subcommandname) =
 	c = "git-annex-" ++ subcommandname
 
 findAllAddonCommands :: IO [Command]
-findAllAddonCommands = return [] -- TODO
+findAllAddonCommands = 
+	filter isaddoncommand
+		. map (\p -> mkAddonCommand p (deprefix p))
+		<$> searchPathContents ("git-annex-" `isPrefixOf`)
+  where
+	deprefix = replace "git-annex-" "" . takeFileName
+	isaddoncommand c
+		-- git-annex-shell
+		| cmdname c == "shell" = False
+		-- external special remotes
+		| "remote-" `isPrefixOf` cmdname c = False
+		-- external backends
+		| "backend-" `isPrefixOf` cmdname c = False
+		| otherwise = True
 
 mkAddonCommand :: FilePath -> String -> Command
 mkAddonCommand p subcommandname = Command

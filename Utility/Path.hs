@@ -31,6 +31,7 @@ import qualified System.FilePath as P
 import qualified Data.ByteString as B
 import Data.List
 import Data.Maybe
+import Control.Monad
 import Control.Applicative
 import Prelude
 
@@ -218,9 +219,14 @@ searchPath command
 
 {- Finds commands in PATH that match a predicate. Note that the predicate
  - matches on the basename of the command, but the full path to it is
- - returned. -}
+ - returned.
+ -
+ - Note that this will find commands in PATH that are not executable.
+ -}
 searchPathContents :: (FilePath -> Bool) -> IO [FilePath]
-searchPathContents p = concat <$> (P.getSearchPath >>= mapM go)
+searchPathContents p =
+	filterM doesFileExist 
+		=<< (concat <$> (P.getSearchPath >>= mapM go))
   where
 	go d = map (d P.</>) . filter p
 		<$> catchDefaultIO [] (getDirectoryContents d)
