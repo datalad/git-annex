@@ -8,7 +8,7 @@ operate on hidden files. Some of the infrastructure is there; it may be as
 simple as using LsFiles.inRepoOrBranch instead of LsFiles.inRepo to seek
 the files.
 
-Two open questions:
+Open questions:
 
 * Would it make more sense for this to be the default behavior when in the
   adjusted branch, or for it to be an option, like "--branch=master"?
@@ -22,15 +22,5 @@ Two open questions:
   display.
 
   Of course, both things could be supported too.
-
-* After getting the files, they'll still be hidden until the branch is
-  updated to include them. When should that happen?
-
-  The current method of re-running `git annex adjust --hide-missing` will
-  expose them, but the way that works is probably too slow to run after
-  every command. Even if it were fast, it would generate a lot of dangling
-  objects over time. So leave the update up to the user to run the command
-  when they want it? But then the user may get confused, why did it
-  download files and they didn't appear?
 
 [[!tag needsthought]]
