@@ -71,7 +71,6 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 			res -> handleresult res
 	  where
 		autocorrect = Git.AutoCorrect.prepare (fromJust inputcmdname) cmdname cmds
-		(fuzzy, cmds, inputcmdname, args) = findCmd fuzzyok allargs allcmds
 		name
 			| fuzzy = case cmds of
 				(c:_) -> Just (cmdname c)
@@ -80,6 +79,9 @@ dispatch fuzzyok allargs allcmds globaloptions fields getgitrepo progname progde
 		correctedargs = case name of
 			Nothing -> allargs
 			Just n -> n:args
+	
+	(inputcmdname, args) = findCmdName allargs
+	(fuzzy, cmds) = findCmd fuzzyok allcmds inputcmdname
 
 {- Parses command line, selecting one of the commands from the list. -}
 parseCmd :: String -> String -> [GlobalOption] -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v, GlobalSetter)
@@ -99,25 +101,27 @@ parseCmd progname progdesc globaloptions allargs allcmds getparser =
 	intro = mconcat $ concatMap (\l -> [H.text l, H.line])
 		(synopsis progname progdesc : commandList allcmds)
 
-{- Parses command line params far enough to find the Command to run, and
- - returns the remaining params.
+{- Finds the Command that matches the subcommand name.
  - Does fuzzy matching if necessary, which may result in multiple Commands. -}
-findCmd :: Bool -> CmdParams -> [Command] -> (Bool, [Command], Maybe String, CmdParams)
-findCmd fuzzyok argv cmds
-	| not (null exactcmds) = ret (False, exactcmds)
-	| fuzzyok && not (null inexactcmds) = ret (True, inexactcmds)
-	| otherwise = ret (False, [])
+findCmd :: Bool -> [Command] -> Maybe String -> (Bool, [Command])
+findCmd fuzzyok cmds (Just n)
+	| not (null exactcmds) = (False, exactcmds)
+	| fuzzyok && not (null inexactcmds) = (True, inexactcmds)
+	| otherwise = (False, [])
   where
-	ret (fuzzy, matches) = (fuzzy, matches, name, args)
+	exactcmds = filter (\c -> cmdname c == n) cmds
+	inexactcmds = Git.AutoCorrect.fuzzymatches n cmdname cmds
+findCmd _ _ Nothing = (False, [])
+
+{- Parses command line params far enough to find the subcommand name. -}
+findCmdName :: CmdParams -> (Maybe String, CmdParams)
+findCmdName argv = (name, args)
+  where
 	(name, args) = findname argv []
 	findname [] c = (Nothing, reverse c)
 	findname (a:as) c
 		| "-" `isPrefixOf` a = findname as (a:c)
 		| otherwise = (Just a, reverse c ++ as)
-	exactcmds = filter (\c -> name == Just (cmdname c)) cmds
-	inexactcmds = case name of
-		Nothing -> []
-		Just n -> Git.AutoCorrect.fuzzymatches n cmdname cmds
 
 prepRunCommand :: Command -> GlobalSetter -> Annex ()
 prepRunCommand cmd globalconfig = do
