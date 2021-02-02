@@ -7,3 +7,6 @@ are still some things that could be improved, tracked here:
 * Maybe extend --jobs/annex.jobs for more control. `--jobs=cpus` is already
   supported; it might be good to have `--jobs=cpus-1` to leave a spare
   cpu to avoid contention, or `--jobs=remotes*2` to run 2 jobs per remote.
+
+> Ok, those are maybe good ideas, but this needs to be closed at some
+> point, so [[done]] --[[Joey]]
