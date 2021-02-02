@@ -10,3 +10,5 @@ search the path for all "git-annex-" commands and then
 either dispatch the one matching the inputcmdname,
 or do autocorrect with the list of those commands 
 included along with the builtins. --[[Joey]] 
+
+> [[done]] --[[Joey]]

@@ -122,7 +122,7 @@ builtin cmd dir params = do
 	let (params', fieldparams, opts) = partitionParams params
 	    rsyncopts = ("RsyncOptions", unwords opts)
 	    fields = rsyncopts : filter checkField (parseFields fieldparams)
-	dispatch False (cmd : params') cmdsList fields mkrepo
+	dispatch False False (cmd : params') cmdsList fields mkrepo
 		"git-annex-shell"
 		"Restricted login shell for git-annex only SSH access"
   where

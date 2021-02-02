@@ -741,6 +741,12 @@ content from the key-value store.
   
   See [[git-annex-benchmark]](1) for details.
 
+# ADDON COMMANDS
+
+In addition to all the commands listed above, more commands can be added to
+git-annex by dropping commands named like "git-annex-foo" into a directory
+in the PATH.
+
 # COMMON OPTIONS
 
 These common options are accepted by all git-annex commands, and

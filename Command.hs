@@ -33,7 +33,7 @@ import Types.WorkerPool as ReExported
 command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command
 command name section desc paramdesc mkparser =
 	Command commonChecks False False name paramdesc 
-		section desc (mkparser paramdesc) [] Nothing
+		section desc (mkparser paramdesc) mempty [] Nothing
 
 {- Simple option parser that takes all non-option params as-is. -}
 withParams :: (CmdParams -> v) -> CmdParamsDesc -> Parser v

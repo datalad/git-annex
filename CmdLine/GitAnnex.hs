@@ -243,7 +243,7 @@ addGitAnnexGlobalOptions c = c { cmdglobaloptions = gitAnnexGlobalOptions ++ cmd
 run :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [String] -> IO ()
 run testoptparser testrunner mkbenchmarkgenerator args = go envmodes
   where
-	go [] = dispatch True args 
+	go [] = dispatch True True args 
 		(cmds testoptparser testrunner mkbenchmarkgenerator)
 		[] Git.CurrentRepo.get
 		"git-annex"

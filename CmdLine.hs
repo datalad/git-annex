@@ -1,6 +1,6 @@
 {- git-annex command line parsing and dispatch
  -
- - Copyright 2010-2015 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,6 +15,8 @@ module CmdLine (
 import qualified Options.Applicative as O
 import qualified Options.Applicative.Help as H
 import Control.Exception (throw)
+import Control.Monad.IO.Class (MonadIO)
+import System.Exit
 
 import Annex.Common
 import qualified Annex
@@ -26,9 +28,26 @@ import Annex.Environment
 import Command
 import Types.Messages
 
-{- Runs the passed command line. -}
-dispatch :: Bool -> CmdParams -> [Command] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
-dispatch fuzzyok allargs allcmds fields getgitrepo progname progdesc = do
+{- Parses input arguments, finds a matching Command, and runs it. -}
+dispatch :: Bool -> Bool -> CmdParams -> [Command] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
+dispatch addonok fuzzyok allargs allcmds fields getgitrepo progname progdesc =
+	go addonok allcmds $
+		findAddonCommand subcommandname >>= \case
+			Nothing -> go False allcmds noop
+			Just c -> go addonok (c:allcmds) $
+				findAllAddonCommands >>= \cs ->
+					go False (cs++allcmds) noop
+  where
+	go p allcmds' cont =
+		let (fuzzy, cmds) = selectCmd fuzzyok allcmds' subcommandname
+		in if not p || (not fuzzy && not (null cmds))
+			then dispatch' subcommandname args fuzzy cmds allargs allcmds' fields getgitrepo progname progdesc
+			else cont
+	
+	(subcommandname, args) = subCmdName allargs
+
+dispatch' :: (Maybe String) -> CmdParams -> Bool -> [Command] -> CmdParams -> [Command] -> [(String, String)] -> IO Git.Repo -> String -> String -> IO ()
+dispatch' subcommandname args fuzzy cmds allargs allcmds fields getgitrepo progname progdesc = do
 	setupConsole
 	go =<< tryNonAsync getgitrepo
   where
@@ -70,18 +89,15 @@ dispatch fuzzyok allargs allcmds fields getgitrepo progname progdesc = do
 				handleresult (parseCmd progname progdesc correctedargs allcmds getparser)
 			res -> handleresult res
 	  where
-		autocorrect = Git.AutoCorrect.prepare (fromJust inputcmdname) cmdname cmds
+		autocorrect = Git.AutoCorrect.prepare (fromJust subcommandname) cmdname cmds
 		name
 			| fuzzy = case cmds of
 				(c:_) -> Just (cmdname c)
-				_ -> inputcmdname
-			| otherwise = inputcmdname
+				_ -> subcommandname
+			| otherwise = subcommandname
 		correctedargs = case name of
 			Nothing -> allargs
 			Just n -> n:args
-	
-	(inputcmdname, args) = findCmdName allargs
-	(fuzzy, cmds) = findCmd fuzzyok allcmds inputcmdname
 
 {- Parses command line, selecting one of the commands from the list. -}
 parseCmd :: String -> String -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v, GlobalSetter)
@@ -93,29 +109,30 @@ parseCmd progname progdesc allargs allcmds getparser =
 	mkcommand c = O.command (cmdname c) $ O.info (mkparser c) $ O.fullDesc 
 		<> O.header (synopsis (progname ++ " " ++ cmdname c) (cmddesc c))
 		<> O.footer ("For details, run: " ++ progname ++ " help " ++ cmdname c)
+		<> cmdinfomod c
 	mkparser c = (,,) 
 		<$> pure c
 		<*> getparser c
-		<*> combineGlobalOptions (cmdglobaloptions c)
+		<*> parserGlobalOptions (cmdglobaloptions c)
 	synopsis n d = n ++ " - " ++ d
 	intro = mconcat $ concatMap (\l -> [H.text l, H.line])
 		(synopsis progname progdesc : commandList allcmds)
 
-{- Finds the Command that matches the subcommand name.
+{- Selects the Command that matches the subcommand name.
  - Does fuzzy matching if necessary, which may result in multiple Commands. -}
-findCmd :: Bool -> [Command] -> Maybe String -> (Bool, [Command])
-findCmd fuzzyok cmds (Just n)
+selectCmd :: Bool -> [Command] -> Maybe String -> (Bool, [Command])
+selectCmd fuzzyok cmds (Just n)
 	| not (null exactcmds) = (False, exactcmds)
 	| fuzzyok && not (null inexactcmds) = (True, inexactcmds)
 	| otherwise = (False, [])
   where
 	exactcmds = filter (\c -> cmdname c == n) cmds
 	inexactcmds = Git.AutoCorrect.fuzzymatches n cmdname cmds
-findCmd _ _ Nothing = (False, [])
+selectCmd _ _ Nothing = (False, [])
 
 {- Parses command line params far enough to find the subcommand name. -}
-findCmdName :: CmdParams -> (Maybe String, CmdParams)
-findCmdName argv = (name, args)
+subCmdName :: CmdParams -> (Maybe String, CmdParams)
+subCmdName argv = (name, args)
   where
 	(name, args) = findname argv []
 	findname [] c = (Nothing, reverse c)
@@ -130,3 +147,36 @@ prepRunCommand cmd globalconfig = do
 	getParsed globalconfig
 	whenM (annexDebug <$> Annex.getGitConfig) $
 		liftIO enableDebugOutput
+
+findAddonCommand :: Maybe String -> IO (Maybe Command)
+findAddonCommand Nothing = return Nothing
+findAddonCommand (Just subcommandname) =
+	searchPath c >>= \case
+		Nothing -> return Nothing
+		Just p -> return (Just (mkAddonCommand p subcommandname))
+  where
+	c = "git-annex-" ++ subcommandname
+
+findAllAddonCommands :: IO [Command]
+findAllAddonCommands = return [] -- TODO
+
+mkAddonCommand :: FilePath -> String -> Command
+mkAddonCommand p subcommandname = Command
+	{ cmdcheck = []
+	, cmdnocommit = True
+	, cmdnomessages = True
+	, cmdname = subcommandname
+	, cmdparamdesc = "[PARAMS]"
+	, cmdsection = SectionAddOn
+	, cmddesc = "addon command"
+	, cmdglobaloptions = []
+	, cmdinfomod = O.forwardOptions
+	, cmdparser = parse
+	, cmdnorepo = Just parse
+	}
+  where
+	parse :: (Monad m, MonadIO m) => Parser (m ())
+	parse = (liftIO . run) <$> cmdParams "PARAMS"
+
+	run ps = withCreateProcess (proc p ps) $ \_ _ _ pid ->
+		exitWith =<< waitForProcess pid

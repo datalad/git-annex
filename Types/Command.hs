@@ -1,14 +1,17 @@
 {- git-annex command data types
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE RankNTypes #-}
 
 module Types.Command where
 
 import Data.Ord
 import Options.Applicative.Types (Parser)
+import Options.Applicative.Builder (InfoMod)
 
 import Types
 import Types.DeferredParse
@@ -82,6 +85,8 @@ data Command = Command
 	-- ^ description of command for usage
 	, cmdparser :: CommandParser
 	-- ^ command line parser
+	, cmdinfomod :: forall a. InfoMod a
+	-- ^ command-specific modifier for ParserInfo
 	, cmdglobaloptions :: [GlobalOption]
 	-- ^ additional global options
 	, cmdnorepo :: Maybe (Parser (IO ()))
@@ -115,6 +120,7 @@ data CommandSection
 	| SectionUtility
 	| SectionPlumbing
 	| SectionTesting
+	| SectionAddOn
 	deriving (Eq, Ord, Enum, Bounded)
 
 descSection :: CommandSection -> String
@@ -126,3 +132,4 @@ descSection SectionMetaData = "Metadata commands"
 descSection SectionUtility = "Utility commands"
 descSection SectionPlumbing = "Plumbing commands"
 descSection SectionTesting = "Testing commands"
+descSection SectionAddOn = "Addon commands"
