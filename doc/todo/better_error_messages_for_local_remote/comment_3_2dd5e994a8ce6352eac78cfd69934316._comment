@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-02-02T17:06:36Z"
+ content="""
+Neither of the above 2 comments are what this todo item is about, which is
+specfically local git remotes.
+
+However, the exception handling code was recently reworked, to make it
+display exceptions when things fail like described in those comments.
+"""]]
