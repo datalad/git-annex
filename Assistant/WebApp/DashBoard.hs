@@ -134,7 +134,7 @@ openFileBrowser = do
 	let p = proc cmd [path]
 #endif
 #endif
-	ifM (liftIO $ inPath cmd)
+	ifM (liftIO $ inSearchPath cmd)
 		( do
 			let run = void $ liftIO $ forkIO $ do
 				withCreateProcess p $ \_ _ _ pid -> void $

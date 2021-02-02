@@ -18,11 +18,12 @@ module Utility.Path (
 	segmentPaths',
 	runSegmentPaths,
 	runSegmentPaths',
-	inPath,
-	searchPath,
 	dotfile,
 	splitShortExtensions,
 	relPathDirToFileAbs,
+	inSearchPath,
+	searchPath,
+	searchPathContents,
 ) where
 
 import System.FilePath.ByteString
@@ -35,6 +36,7 @@ import Prelude
 
 import Utility.Monad
 import Utility.SystemDirectory
+import Utility.Exception
 
 #ifdef mingw32_HOST_OS
 import Data.Char
@@ -136,33 +138,6 @@ runSegmentPaths c a paths = segmentPaths c paths <$> a paths
 runSegmentPaths' :: (Maybe RawFilePath -> a -> r) -> (a -> RawFilePath) -> ([RawFilePath] -> IO [a]) -> [RawFilePath] -> IO [[r]]
 runSegmentPaths' si c a paths = segmentPaths' si c paths <$> a paths
 
-{- Checks if a command is available in PATH.
- -
- - The command may be fully-qualified, in which case, this succeeds as
- - long as it exists. -}
-inPath :: String -> IO Bool
-inPath command = isJust <$> searchPath command
-
-{- Finds a command in PATH and returns the full path to it.
- -
- - The command may be fully qualified already, in which case it will
- - be returned if it exists.
- -
- - Note that this will find commands in PATH that are not executable.
- -}
-searchPath :: String -> IO (Maybe FilePath)
-searchPath command
-	| P.isAbsolute command = check command
-	| otherwise = P.getSearchPath >>= getM indir
-  where
-	indir d = check $ d P.</> command
-	check f = firstM doesFileExist
-#ifdef mingw32_HOST_OS
-		[f, f ++ ".exe"]
-#else
-		[f]
-#endif
-
 {- Checks if a filename is a unix dotfile. All files inside dotdirs
  - count as dotfiles. -}
 dotfile :: RawFilePath -> Bool
@@ -213,3 +188,39 @@ relPathDirToFileAbs from to
 #ifdef mingw32_HOST_OS
 	normdrive = map toLower . takeWhile (/= ':') . fromRawFilePath . takeDrive
 #endif
+
+{- Checks if a command is available in PATH.
+ -
+ - The command may be fully-qualified, in which case, this succeeds as
+ - long as it exists. -}
+inSearchPath :: String -> IO Bool
+inSearchPath command = isJust <$> searchPath command
+
+{- Finds a command in PATH and returns the full path to it.
+ -
+ - The command may be fully qualified already, in which case it will
+ - be returned if it exists.
+ -
+ - Note that this will find commands in PATH that are not executable.
+ -}
+searchPath :: String -> IO (Maybe FilePath)
+searchPath command
+	| P.isAbsolute command = check command
+	| otherwise = P.getSearchPath >>= getM indir
+  where
+	indir d = check $ d P.</> command
+	check f = firstM doesFileExist
+#ifdef mingw32_HOST_OS
+		[f, f ++ ".exe"]
+#else
+		[f]
+#endif
+
+{- Finds commands in PATH that match a predicate. Note that the predicate
+ - matches on the basename of the command, but the full path to it is
+ - returned. -}
+searchPathContents :: (FilePath -> Bool) -> IO [FilePath]
+searchPathContents p = concat <$> (P.getSearchPath >>= mapM go)
+  where
+	go d = map (d P.</>) . filter p
+		<$> catchDefaultIO [] (getDirectoryContents d)

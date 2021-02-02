@@ -169,4 +169,4 @@ runWormHoleProcess p consumer =
 			ExitFailure _ -> False
 
 isInstalled :: IO Bool
-isInstalled = inPath "wormhole"
+isInstalled = inSearchPath "wormhole"

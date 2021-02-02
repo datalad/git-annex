@@ -291,7 +291,7 @@ downloadTorrentContent k u dest filenum p = do
 
 checkDependencies :: Annex ()
 checkDependencies = do
-	missing <- liftIO $ filterM (not <$$> inPath) deps
+	missing <- liftIO $ filterM (not <$$> inSearchPath) deps
 	unless (null missing) $
 		giveup $ "need to install additional software in order to download from bittorrent: " ++ unwords missing
   where

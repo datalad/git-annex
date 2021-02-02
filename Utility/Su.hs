@@ -71,7 +71,7 @@ mkSuCommand :: String -> [CommandParam] -> IO (Maybe SuCommand)
 #ifndef mingw32_HOST_OS
 mkSuCommand cmd ps = do
 	pwd <- getCurrentDirectory
-	firstM (\(SuCommand _ p _) -> inPath p) =<< selectcmds pwd
+	firstM (\(SuCommand _ p _) -> inSearchPath p) =<< selectcmds pwd
   where
 	selectcmds pwd = ifM (inx <||> (not <$> atconsole))
 		( return (graphicalcmds pwd ++ consolecmds pwd)

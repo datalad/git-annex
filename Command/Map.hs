@@ -64,7 +64,7 @@ runViewer :: FilePath -> [(String, [CommandParam])] -> Annex Bool
 runViewer file [] = do
 	showLongNote $ "left map in " ++ file
 	return True
-runViewer file ((c, ps):rest) = ifM (liftIO $ inPath c)
+runViewer file ((c, ps):rest) = ifM (liftIO $ inSearchPath c)
 	( do
 		showLongNote $ "running: " ++ c ++ unwords (toCommand ps)
 		showOutput

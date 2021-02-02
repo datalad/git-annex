@@ -41,7 +41,7 @@ genKeyModal :: Widget
 genKeyModal = $(widgetFile "configurators/genkeymodal")
 
 isGcryptInstalled :: IO Bool
-isGcryptInstalled = inPath "git-remote-gcrypt"
+isGcryptInstalled = inSearchPath "git-remote-gcrypt"
 
 whenGcryptInstalled :: Handler Html -> Handler Html
 whenGcryptInstalled a = ifM (liftIO isGcryptInstalled)

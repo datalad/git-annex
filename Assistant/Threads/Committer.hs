@@ -49,7 +49,7 @@ import Control.Concurrent
 {- This thread makes git commits at appropriate times. -}
 commitThread :: NamedThread
 commitThread = namedThread "Committer" $ do
-	havelsof <- liftIO $ inPath "lsof"
+	havelsof <- liftIO $ inSearchPath "lsof"
 	delayadd <- liftAnnex $
 		fmap Seconds . annexDelayAdd <$> Annex.getGitConfig
 	msg <- liftAnnex Command.Sync.commitMsg

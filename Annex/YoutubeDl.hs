@@ -68,7 +68,7 @@ youtubeDl url workdir p = ifM ipAddressesUnlimited
 
 youtubeDl' :: URLString -> FilePath -> MeterUpdate -> UrlOptions -> Annex (Either String (Maybe FilePath))
 youtubeDl' url workdir p uo
-	| supportedScheme uo url = ifM (liftIO $ inPath "youtube-dl")
+	| supportedScheme uo url = ifM (liftIO $ inSearchPath "youtube-dl")
 		( runcmd >>= \case
 			Right True -> workdirfiles >>= \case
 				(f:[]) -> return (Right (Just f))

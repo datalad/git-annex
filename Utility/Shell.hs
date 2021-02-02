@@ -46,11 +46,11 @@ findShellCommand f = do
 			[] -> defcmd
 			(c:ps) -> do
 				let ps' = map Param ps ++ [File f]
-				-- If the command is not inPath,
+				-- If the command is not inSearchPath,
 				-- take the base of it, and run eg "sh"
 				-- which in some cases on windows will work
-				-- despite it not being inPath.
-				ok <- inPath c
+				-- despite it not being inSearchPath.
+				ok <- inSearchPath c
 				return (if ok then c else takeFileName c, ps')
 		_ -> defcmd
 #endif

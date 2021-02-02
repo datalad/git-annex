@@ -164,7 +164,7 @@ getFirstRepositoryR :: Handler Html
 getFirstRepositoryR = postFirstRepositoryR
 postFirstRepositoryR :: Handler Html
 postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
-	unlessM (liftIO $ inPath "git") $
+	unlessM (liftIO $ inSearchPath "git") $
 		giveup "You need to install git in order to use git-annex!"
 	androidspecial <- liftIO osAndroid
 	path <- liftIO . defaultRepositoryPath =<< liftH inFirstRun

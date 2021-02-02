@@ -34,7 +34,7 @@ awsConfigurator = page "Add an Amazon repository" (Just Configuration)
 
 glacierConfigurator :: Widget -> Handler Html
 glacierConfigurator a = do
-	ifM (liftIO $ inPath "glacier")
+	ifM (liftIO $ inSearchPath "glacier")
 		( awsConfigurator a
 		, awsConfigurator needglaciercli
 		)

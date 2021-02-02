@@ -411,7 +411,7 @@ keyBlock public ls = unlines
  - is returned.
  -}
 testHarness :: FilePath -> GpgCmd -> IO a -> IO (Maybe a)
-testHarness tmpdir cmd a = ifM (inPath (unGpgCmd cmd))
+testHarness tmpdir cmd a = ifM (inSearchPath (unGpgCmd cmd))
 	( bracket (eitherToMaybe <$> tryNonAsync setup) cleanup go
 	, return Nothing
 	)
@@ -439,7 +439,7 @@ testHarness tmpdir cmd a = ifM (inPath (unGpgCmd cmd))
 	-- other daemons. Stop them when done. This only affects
 	-- daemons started for the GNUPGHOME that was used.
 	-- Older gpg may not support this, so ignore failure.
-	stopgpgagent = whenM (inPath "gpgconf") $
+	stopgpgagent = whenM (inSearchPath "gpgconf") $
 		void $ boolSystem "gpgconf" [Param "--kill", Param "all"]
 
 	go (Just _) = Just <$> a

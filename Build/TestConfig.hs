@@ -97,7 +97,7 @@ searchCmd success failure cmdsparams = search cmdsparams
  - the command. -}
 findCmdPath :: ConfigKey -> String -> Test
 findCmdPath k command = do
-	ifM (inPath command)
+	ifM (inSearchPath command)
 		( return $ Config k $ MaybeStringConfig $ Just command
 		, do
 			r <- getM find ["/usr/sbin", "/sbin", "/usr/local/sbin"]

@@ -191,4 +191,4 @@ varLibDir :: FilePath
 varLibDir = "/var/lib"
 
 torIsInstalled :: IO Bool
-torIsInstalled = inPath "tor"
+torIsInstalled = inSearchPath "tor"

@@ -79,7 +79,7 @@ autoStart o = do
 		f <- autoStartFile
 		giveup $ "Nothing listed in " ++ f
 	program <- programPath
-	haveionice <- pure BuildInfo.ionice <&&> inPath "ionice"
+	haveionice <- pure BuildInfo.ionice <&&> inSearchPath "ionice"
 	pids <- forM dirs $ \d -> do
 		putStrLn $ "git-annex autostart in " ++ d
 		mpid <- catchMaybeIO $ go haveionice program d

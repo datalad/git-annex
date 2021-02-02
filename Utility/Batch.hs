@@ -57,7 +57,7 @@ nonBatchCommandMaker = id
 getBatchCommandMaker :: IO BatchCommandMaker
 getBatchCommandMaker = do
 #ifndef mingw32_HOST_OS
-	nicers <- filterM (inPath . fst)
+	nicers <- filterM (inSearchPath . fst)
 		[ ("nice", [])
 		, ("ionice", ["-c3"])
 		, ("nocache", [])
