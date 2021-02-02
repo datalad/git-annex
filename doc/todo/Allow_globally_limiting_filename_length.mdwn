@@ -7,3 +7,5 @@ I am looking for a solution for this inside Git Annex. The simplest thing, I thi
 The next simplest thing would be for Git Annex to look at the filesystem it is running on and do something smarter than exploding and leaving my repo in a weird out-of-sync state if some of the filenames it wants to create can't be created. Maybe it should fail the sync earlier, in Git Annex itself rather than in git checkout. Maybe it should just leave those files out of the checkout, or force/allow me to rename them right then.
 
 The most complex thing would be to somehow make it work anyway and check out the symlinks under different, valid names. Perhaps it could just truncate those path components in the symlink view? There's already support for different metadata views; this would be sort of like that. You get a special view of the repo subject to the constraints of your filesystem.
+
+> [[rejected|done]] --[[Joey]]
