@@ -4,3 +4,6 @@ Based on an irc conversation earlier today:
 
 20:43 < joeyh> warp: re your other question, probably the best thing would be to make the whereis command print out locations for each remote, as it always does for the web special remotes
 
+> Several remotes do now populate whereis with urls, but an rsync remote
+> does not in general have http urls to content in it. So I don't think 
+> it makes sense to do anything for rsync remotes. [[closeing|done]] --[[Joey]]
