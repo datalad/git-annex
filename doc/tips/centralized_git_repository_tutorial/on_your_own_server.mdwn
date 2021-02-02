@@ -23,6 +23,9 @@ there. In your home directory is a simple choice:
 
 	server# cd
 	server# git init annex.git --bare --shared
+	server# cd annex.git
+	server# git annex init
+	init ok
 
 That's the server setup done!
 
@@ -35,14 +38,11 @@ Now on your laptop, clone the git repository from the server:
 	warning: You appear to have cloned an empty repository.
 	Checking connectivity... done.
 
-	
-Tell git-annex to use the repository, and describe where this clone is
-located:
-
+Tell git-annex to use the repository:
 
 	laptop# cd annex
-	laptop# git annex init 'my laptop'
-	init my laptop ok
+	laptop# git annex init
+	init ok
 
 ## add files to the repository
 
@@ -72,7 +72,7 @@ That push went fast, because it didn't upload large videos to the server.
 So, to finish up, tell git-annex to sync all the data in the repository
 to your server:
 
-	# git annex sync --content
+	# git annex sync origin --content
 	...
 
 ## make more checkouts

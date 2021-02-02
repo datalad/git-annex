@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-02-02T16:14:38Z"
+ content="""
+The instructions work with the current version of git-annex
+installed on the server.
+
+It's true that the original version of the tip suggested running git-annex
+init in the repo on the server. I don't remember quite why; I thought
+git-annex always supported remote auto-init.
+
+I've changed this particular tutorial to work, but do note that 6 year old
+versions of git-annex will have numerous bugs that have been fixed since
+then, will be missing numerous features, are significantly slower, and that
+in general this website does not and will not go out of its way to keep
+documentation working for them.
+"""]]
