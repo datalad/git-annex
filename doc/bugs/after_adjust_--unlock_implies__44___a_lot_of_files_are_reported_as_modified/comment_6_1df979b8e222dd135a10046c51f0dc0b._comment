@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-02-02T16:28:29Z"
+ content="""
+Being on sshfs makes me wonder if perhaps something synthesized by that
+filesystem is confusing git, so eg it thinks the inode or mtime of a file has
+changed and so it's modified.
+
+However, normally git status does the same work to verify if there's really
+a modification as git diff does (running the smudge filter in this case).
+So I'm not clear what's going on here, but it's currently looking more like
+a problem at the git level, or a filesystem that is too wonky for git to
+work well, rather than anything git-annex can do.
+
+I have to wonder why you'd even use git-annex on sshfs. The more usual way
+would be to have a local repository with a remote using ssh to access the
+server.
+"""]]
