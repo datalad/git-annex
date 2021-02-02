@@ -18,3 +18,10 @@ An option to select number of transfer threads to use(possibly per host) would b
 And maybe also an option to limit how long a queue the browser should show, it can become quite resource intensive with a long queue.
 
 > The queue is limited to 20 items for this reason. --[[Joey]]
+
+
+---
+
+> There has been a lot of improvement in both parallization support
+> and per-file overhead on speed since this todo was filed. This todo does
+> not look relevent enough to leave open, so [[done]] --[[Joey]]
