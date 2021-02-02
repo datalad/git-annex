@@ -1,0 +1,5 @@
+# As is
+At the FAT disks annex uses ajusted unlocked branch. Files use double space: in the file tree and in the .git folder.
+
+# As I wonder
+At such disks, with option annex.thin, annex uses only file tree for keeping content. Content of the files in the .git folder is wiped.
