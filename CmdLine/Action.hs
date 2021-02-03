@@ -12,6 +12,7 @@ module CmdLine.Action where
 import Annex.Common
 import qualified Annex
 import Annex.Concurrent
+import Annex.WorkerPool
 import Types.Command
 import Types.Concurrency
 import Messages.Concurrent
