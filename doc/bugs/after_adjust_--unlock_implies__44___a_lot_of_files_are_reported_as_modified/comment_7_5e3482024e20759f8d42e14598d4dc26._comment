@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="gueux"
+ avatar="http://cdn.libravatar.org/avatar/47e44a21505727b2d6bb5d88f0468f34"
+ subject="comment 7"
+ date="2021-02-03T17:06:24Z"
+ content="""
+I have a local repo (without most of the files) with Debian sid and a remote using ssh, on a server with Debian stable. The files are big, so it is easier to access them with sshfs, to avoid copying them. I wanted to use adjusted branches for users who access the files with gnome/nautilus (via sshfs integration) which is not clever with copying symlinks. So, I upgraded the repo from my laptop (repo mounted with sshfs).
+
+Note that this problem only occurs with adjusted branched, I also have other repos accessed and upgraded via sshfs (sometimes because I just ran \"git status\" on a repo mounted with sshfs, which resulted in an upgrade (I think)), and there is no file reported as modified (git status is also slow, though).
+"""]]
