@@ -15,9 +15,13 @@ import Utility.DataUnits
 import Utility.ThreadScheduler
 
 import Control.Concurrent.STM
+import Control.Monad.IO.Class (MonadIO)
 
-detectStalls :: Maybe StallDetection -> TVar (Maybe BytesProcessed) -> IO () -> IO ()
+{- This may be safely canceled (with eg uninterruptibleCancel),
+ - as long as the passed action can be safely canceled. -}
+detectStalls :: (Monad m, MonadIO m) => Maybe StallDetection -> TVar (Maybe BytesProcessed) -> m () -> m ()
 detectStalls Nothing _ _ = noop
+detectStalls (Just StallDetectionDisabled) _ _ = noop
 detectStalls (Just (StallDetection minsz duration)) metervar onstall =
 	detectStalls' minsz duration metervar onstall Nothing
 detectStalls (Just ProbeStallDetection) metervar onstall = do
@@ -30,7 +34,7 @@ detectStalls (Just ProbeStallDetection) metervar onstall = do
 	ontimelyadvance v $ \v' -> ontimelyadvance v' $
 		detectStalls' 1 duration metervar onstall
   where
-	getval = atomically $ fmap fromBytesProcessed
+	getval = liftIO $ atomically $ fmap fromBytesProcessed
 		<$> readTVar metervar
 	
 	duration = Duration 60
@@ -38,29 +42,30 @@ detectStalls (Just ProbeStallDetection) metervar onstall = do
 	delay = Seconds (fromIntegral (durationSeconds duration) `div` 2)
 	
 	waitforfirstupdate startval = do
-		threadDelaySeconds delay
+		liftIO $ threadDelaySeconds delay
 		v <- getval
 		if v > startval
 			then return v
 			else waitforfirstupdate startval
 
 	ontimelyadvance v cont = do
-		threadDelaySeconds delay
+		liftIO $ threadDelaySeconds delay
 		v' <- getval
 		when (v' > v) $
 			cont v'
 
 detectStalls'
-	:: ByteSize
+	:: (Monad m, MonadIO m)
+	=> ByteSize
 	-> Duration
 	-> TVar (Maybe BytesProcessed)
-	-> IO ()
+	-> m ()
 	-> Maybe ByteSize
-	-> IO ()
+	-> m ()
 detectStalls' minsz duration metervar onstall st = do
-	threadDelaySeconds delay
+	liftIO $ threadDelaySeconds delay
 	-- Get whatever progress value was reported most recently, if any.
-	v <- atomically $ fmap fromBytesProcessed
+	v <- liftIO $ atomically $ fmap fromBytesProcessed
 		<$> readTVar metervar
 	let cont = detectStalls' minsz duration metervar onstall v
 	case (st, v) of

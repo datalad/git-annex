@@ -1,6 +1,6 @@
 {- git-annex transfers
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -37,50 +37,56 @@ import Annex.LockPool
 import Types.Key
 import qualified Types.Remote as Remote
 import Types.Concurrency
-import Annex.Concurrent.Utility
+import Annex.Concurrent
 import Types.WorkerPool
 import Annex.WorkerPool
 import Annex.TransferrerPool
+import Annex.StallDetection
 import Backend (isCryptographicallySecure)
 import Types.StallDetection
 import qualified Utility.RawFilePath as R
 
 import Control.Concurrent
+import Control.Concurrent.Async
+import Control.Concurrent.STM hiding (retry)
 import qualified Data.Map.Strict as M
 import qualified System.FilePath.ByteString as P
 import Data.Ord
 
--- Upload, supporting stall detection.
+-- Upload, supporting canceling detected stalls.
 upload :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
 upload r key f d witness = stallDetection r >>= \case
-	Nothing -> upload' (Remote.uuid r) key f d go witness
+	Nothing -> go (Just ProbeStallDetection)
+	Just StallDetectionDisabled -> go Nothing
 	Just sd -> runTransferrer sd r key f d Upload witness
   where
-	go = action . Remote.storeKey r key f
+ 	go sd = upload' (Remote.uuid r) key f sd d (action . Remote.storeKey r key f) witness
 
--- Upload, not supporting stall detection.
-upload' :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
-upload' u key f d a _witness = guardHaveUUID u $ 
-	runTransfer (Transfer Upload u (fromKey id key)) f d a
+-- Upload, not supporting canceling detected stalls
+upload' :: Observable v => UUID -> Key -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
+upload' u key f sd d a _witness = guardHaveUUID u $ 
+	runTransfer (Transfer Upload u (fromKey id key)) f sd d a
 
-alwaysUpload :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
-alwaysUpload u key f d a _witness = guardHaveUUID u $ 
-	alwaysRunTransfer (Transfer Upload u (fromKey id key)) f d a
+alwaysUpload :: Observable v => UUID -> Key -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
+alwaysUpload u key f sd d a _witness = guardHaveUUID u $ 
+	alwaysRunTransfer (Transfer Upload u (fromKey id key)) f sd d a
 
--- Download, supporting stall detection.
+-- Download, supporting canceling detected stalls.
 download :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
 download r key f d witness = logStatusAfter key $ stallDetection r >>= \case
-	Nothing -> getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key f $ \dest ->
-		download' (Remote.uuid r) key f d (go dest) witness
+	Nothing -> go (Just ProbeStallDetection)
+	Just StallDetectionDisabled -> go Nothing
 	Just sd -> runTransferrer sd r key f d Download witness
   where
-	go dest p = verifiedAction $
+	go sd = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key f $ \dest ->
+		download' (Remote.uuid r) key f sd d (go' dest) witness
+	go' dest p = verifiedAction $
 		Remote.retrieveKeyFile r key f (fromRawFilePath dest) p
 
--- Download, not supporting stall detection.
-download' :: Observable v => UUID -> Key -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
-download' u key f d a _witness = guardHaveUUID u $
-	runTransfer (Transfer Download u (fromKey id key)) f d a
+-- Download, not supporting canceling detected stalls.
+download' :: Observable v => UUID -> Key -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
+download' u key f sd d a _witness = guardHaveUUID u $
+	runTransfer (Transfer Download u (fromKey id key)) f sd d a
 
 guardHaveUUID :: Observable v => UUID -> Annex v -> Annex v
 guardHaveUUID u a
@@ -98,34 +104,44 @@ guardHaveUUID u a
  -
  - An upload can be run from a read-only filesystem, and in this case
  - no transfer information or lock file is used.
+ -
+ - Cannot cancel stalls, but when a likely stall is detected, 
+ - suggests to the user that they enable stall detection handling.
  -}
-runTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+runTransfer :: Observable v => Transfer -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 runTransfer = runTransfer' False
 
 {- Like runTransfer, but ignores any existing transfer lock file for the
  - transfer, allowing re-running a transfer that is already in progress.
  -}
-alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 alwaysRunTransfer = runTransfer' True
 
-runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t afile retrydecider transferaction = enteringStage TransferStage $ debugLocks $ preCheckSecureHashes (transferKey t) $ do
-	info <- liftIO $ startTransferInfo afile
-	(meter, tfile, createtfile, metervar) <- mkProgressUpdater t info
-	mode <- annexFileMode
-	(lck, inprogress) <- prep tfile createtfile mode
-	if inprogress && not ignorelock
-		then do
-			showNote "transfer already in progress, or unable to take transfer lock"
-			return observeFailure
-		else do
-			v <- retry 0 info metervar (transferaction meter)
-			liftIO $ cleanup tfile lck
-			if observeBool v
-				then removeFailedTransfer t
-				else recordFailedTransfer t info
-			return v
+runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+runTransfer' ignorelock t afile stalldetection retrydecider transferaction =
+	enteringStage TransferStage $
+		debugLocks $
+			preCheckSecureHashes (transferKey t) go
   where
+	go = do
+		info <- liftIO $ startTransferInfo afile
+		(meter, tfile, createtfile, metervar) <- mkProgressUpdater t info
+		mode <- annexFileMode
+		(lck, inprogress) <- prep tfile createtfile mode
+		if inprogress && not ignorelock
+			then do
+				showNote "transfer already in progress, or unable to take transfer lock"
+				return observeFailure
+			else do
+				v <- retry 0 info metervar $
+					detectStallsAndSuggestConfig stalldetection metervar $
+						transferaction meter
+				liftIO $ cleanup tfile lck
+				if observeBool v
+					then removeFailedTransfer t
+					else recordFailedTransfer t info
+				return v
+	
 	prep :: RawFilePath -> Annex () -> FileMode -> Annex (Maybe LockHandle, Bool)
 #ifndef mingw32_HOST_OS
 	prep tfile createtfile mode = catchPermissionDenied (const prepfailed) $ do
@@ -191,11 +207,32 @@ runTransfer' ignorelock t afile retrydecider transferaction = enteringStage Tran
 
 	getbytescomplete metervar
 		| transferDirection t == Upload =
-			liftIO $ readMVar metervar
+			liftIO $ maybe 0 fromBytesProcessed 
+				<$> readTVarIO metervar
 		| otherwise = do
 			f <- fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
 			liftIO $ catchDefaultIO 0 $ getFileSize f
 
+detectStallsAndSuggestConfig :: Maybe StallDetection -> TVar (Maybe BytesProcessed) -> Annex a -> Annex a
+detectStallsAndSuggestConfig Nothing _ a = a
+detectStallsAndSuggestConfig sd@(Just _) metervar a = 
+	bracket setup cleanup (const a)
+  where
+	setup = do
+		v <- liftIO newEmptyTMVarIO
+		sdt <- liftIO $ async $ detectStalls sd metervar $
+			void $ atomically $ tryPutTMVar v True
+		wt <- liftIO . async =<< forkState (warnonstall v)
+		return (v, sdt, wt)
+	cleanup (v, sdt, wt) = do
+		liftIO $ uninterruptibleCancel sdt
+		void $ liftIO $ atomically $ tryPutTMVar v False
+		join (liftIO (wait wt))
+	warnonstall v = whenM (liftIO (atomically (takeTMVar v))) $
+		warning "Transfer seems to have stalled. To restart stalled transfers, configure annex.stalldetection"
+
+{- Runs a transfer using a separate process, which lets detected stalls be
+ - canceled. -}
 runTransferrer
 	:: StallDetection
 	-> Remote

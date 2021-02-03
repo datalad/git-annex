@@ -504,7 +504,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				return (Just (k', ok))
 			checkDiskSpaceToGet k Nothing $
 				notifyTransfer Download af $
-					download' (Remote.uuid remote) k af stdRetry $ \p' ->
+					download' (Remote.uuid remote) k af Nothing stdRetry $ \p' ->
 						withTmp k $ downloader p'
 			
 	-- The file is small, so is added to git, so while importing
@@ -558,7 +558,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				return Nothing
 		checkDiskSpaceToGet tmpkey Nothing $
 			notifyTransfer Download af $
-				download' (Remote.uuid remote) tmpkey af stdRetry $ \p ->
+				download' (Remote.uuid remote) tmpkey af Nothing stdRetry $ \p ->
 					withTmp tmpkey $ \tmpfile ->
 						metered (Just p) tmpkey $
 							const (rundownload tmpfile)

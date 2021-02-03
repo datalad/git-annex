@@ -543,7 +543,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 			Just (object, checksuccess) -> do
 				copier <- mkCopier hardlink st params
 				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
-					file stdRetry $ \p ->
+					file Nothing stdRetry $ \p ->
 						metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
 							copier object dest p' checksuccess
 				if ok
@@ -688,7 +688,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		-- run copy from perspective of remote
 		res <- onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True
-			, runTransfer (Transfer Download u (fromKey id key)) file stdRetry $ \p -> do
+			, runTransfer (Transfer Download u (fromKey id key)) file Nothing stdRetry $ \p -> do
 				copier <- mkCopier hardlink st params
 				let verify = Annex.Content.RemoteVerify r
 				let rsp = RetrievalAllKeysSecure

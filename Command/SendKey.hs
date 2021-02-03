@@ -50,7 +50,7 @@ fieldTransfer direction key a = do
 		<$> Fields.getField Fields.associatedFile
 	ok <- maybe (a $ const noop)
 		-- Using noRetry here because we're the sender.
-		(\u -> runner (Transfer direction (toUUID u) (fromKey id key)) afile noRetry a)
+		(\u -> runner (Transfer direction (toUUID u) (fromKey id key)) afile Nothing noRetry a)
 		=<< Fields.getField Fields.remoteUUID
 	liftIO $ debugM "fieldTransfer" "transfer done"
 	liftIO $ exitBool ok

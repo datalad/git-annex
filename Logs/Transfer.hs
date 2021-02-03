@@ -1,6 +1,6 @@
 {- git-annex transfer information files and lock files
  -
- - Copyright 2012-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -27,7 +27,7 @@ import Annex.Perms
 
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
-import Control.Concurrent
+import Control.Concurrent.STM
 import qualified Data.ByteString.Char8 as B8
 import qualified System.FilePath.ByteString as P
 
@@ -58,23 +58,25 @@ percentComplete t info =
  - the transfer info file. Also returns the file it'll be updating, 
  - an action that sets up the file with appropriate permissions,
  - which should be run after locking the transfer lock file, but
- - before using the callback, and a MVar that can be used to read
- - the number of bytesComplete. -}
-mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, RawFilePath, Annex (), MVar Integer)
+ - before using the callback, and a TVar that can be used to read
+ - the number of bytes processed so far. -}
+mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, RawFilePath, Annex (), TVar (Maybe BytesProcessed))
 mkProgressUpdater t info = do
 	tfile <- fromRepo $ transferFile t
 	let createtfile = void $ tryNonAsync $ writeTransferInfoFile info tfile
-	mvar <- liftIO $ newMVar 0
-	return (liftIO . updater (fromRawFilePath tfile) mvar, tfile, createtfile, mvar)
+	tvar <- liftIO $ newTVarIO Nothing
+	loggedtvar <- liftIO $ newTVarIO 0
+	return (liftIO . updater (fromRawFilePath tfile) tvar loggedtvar, tfile, createtfile, tvar)
   where
-	updater tfile mvar b = modifyMVar_ mvar $ \oldbytes -> do
-		let newbytes = fromBytesProcessed b
-		if newbytes - oldbytes >= mindelta
-			then do
-				let info' = info { bytesComplete = Just newbytes }
-				_ <- tryIO $ updateTransferInfoFile info' tfile
-				return newbytes
-			else return oldbytes
+	updater tfile tvar loggedtvar new = do
+		old <- atomically $ swapTVar tvar (Just new)
+		let oldbytes = maybe 0 fromBytesProcessed old
+		let newbytes = fromBytesProcessed new
+		when (newbytes - oldbytes >= mindelta) $ do
+			let info' = info { bytesComplete = Just newbytes }
+			_ <- tryIO $ updateTransferInfoFile info' tfile
+			atomically $ writeTVar loggedtvar newbytes
+
 	{- The minimum change in bytesComplete that is worth
 	 - updating a transfer info file for is 1% of the total
 	 - keySize, rounded down. -}

@@ -18,6 +18,7 @@ import Types.Concurrency
 import Messages.Concurrent
 import Types.Messages
 import Types.WorkerPool
+import Remote.List
 
 import Control.Concurrent
 import Control.Concurrent.Async
@@ -251,9 +252,18 @@ startConcurrency usedstages a = do
 	initworkerpool n = do
 		tv <- liftIO newEmptyTMVarIO
 		Annex.changeState $ \s -> s { Annex.workers = Just tv }
+		prepDupState
 		st <- dupState
 		liftIO $ atomically $ putTMVar tv $
 			allocateWorkerPool st (max n 1) usedstages
+
+-- Make sure that some expensive actions have been done before
+-- starting threads. This way the state has them already run,
+-- and each thread won't try to do them.
+prepDupState :: Annex ()
+prepDupState = do
+	_ <- remoteList
+	return ()
 
 {- Ensures that only one thread processes a key at a time.
  - Other threads will block until it's done.

@@ -64,7 +64,7 @@ runLocal runst runner a = case a of
 		case v of
 			Right (Just (f, checkchanged)) -> proceed $ do
 				-- alwaysUpload to allow multiple uploads of the same key.
-				let runtransfer ti = transfer alwaysUpload k af $ \p ->
+				let runtransfer ti = transfer alwaysUpload k af Nothing $ \p ->
 					sinkfile f o checkchanged sender p ti
 				checktransfer runtransfer fallback
  			Right Nothing -> proceed fallback
@@ -75,7 +75,7 @@ runLocal runst runner a = case a of
 		let rsp = RetrievalAllKeysSecure
 		v <- tryNonAsync $ do
 			let runtransfer ti = 
-				Right <$> transfer download' k af (\p ->
+				Right <$> transfer download' k af Nothing (\p ->
 					logStatusAfter k $ getViaTmp rsp DefaultVerify k af $ \tmp ->
 						storefile (fromRawFilePath tmp) o l getb validitycheck p ti)
 			let fallback = return $ Left $
@@ -145,11 +145,11 @@ runLocal runst runner a = case a of
 		runner next
 	RunValidityCheck checkaction next -> runner . next =<< checkaction
   where
-	transfer mk k af ta = case runst of
+	transfer mk k af sd ta = case runst of
 		-- Update transfer logs when serving.
 		-- Using noRetry because we're the sender.
 		Serving theiruuid _ _ -> 
-			mk theiruuid k af noRetry ta noNotification
+			mk theiruuid k af sd noRetry ta noNotification
 		-- Transfer logs are updated higher in the stack when
 		-- a client.
 		Client _ -> ta nullMeterUpdate

@@ -19,6 +19,7 @@ data StallDetection
 	| ProbeStallDetection
 	-- ^ Used when unsure how frequently transfer progress is updated,
 	-- or how fast data can be sent.
+	| StallDetectionDisabled
 	deriving (Show)
 
 -- Parse eg, "0KiB/60s"
@@ -38,4 +39,4 @@ parseStallDetection s = case isTrueFalse s of
 		d <- parseDuration ds
 		return (Just (StallDetection b d))
 	Just True -> Right (Just ProbeStallDetection)
-	Just False -> Right Nothing
+	Just False -> Right (Just StallDetectionDisabled)

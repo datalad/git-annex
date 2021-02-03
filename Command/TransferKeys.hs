@@ -40,7 +40,7 @@ start = do
   where
 	runner (TransferRequest direction remote key file)
 		| direction == Upload = notifyTransfer direction file $
-			upload' (Remote.uuid remote) key file stdRetry $ \p -> do
+			upload' (Remote.uuid remote) key file Nothing stdRetry $ \p -> do
 				tryNonAsync (Remote.storeKey remote key file p) >>= \case
 					Left e -> do
 						warning (show e)
@@ -49,7 +49,7 @@ start = do
 						Remote.logStatus remote key InfoPresent
 						return True
 		| otherwise = notifyTransfer direction file $
-			download' (Remote.uuid remote) key file stdRetry $ \p ->
+			download' (Remote.uuid remote) key file Nothing stdRetry $ \p ->
 				logStatusAfter key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t -> do
 					r <- tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p) >>= \case
 						Left e -> do

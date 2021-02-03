@@ -287,7 +287,7 @@ performExport r db ek af contentsha loc allfilledvar = do
 				-- could be used for more than one export
 				-- location, and concurrently uploading
 				-- of the content should still be allowed.
-				alwaysUpload (uuid r) k af stdRetry $ \pm -> do
+				alwaysUpload (uuid r) k af Nothing stdRetry $ \pm -> do
 					let rollback = void $
 						performUnexport r db [ek] loc
 					sendAnnex k rollback $ \f ->

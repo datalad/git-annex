@@ -20,3 +20,5 @@ gets it wrong and the remote does not support resuming transfers,
 defaulting to on could lead to bad waste of resources. It could
 detect stalls even when not turned on, but only display a message
 suggesting enabling the config. --[[Joey]]
+
+> [[done]] --[[Joey]]

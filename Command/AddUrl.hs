@@ -332,7 +332,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith R.removeLink)
 			showNote "using youtube-dl"
 			Transfer.notifyTransfer Transfer.Download url $
-				Transfer.download' webUUID mediakey (AssociatedFile Nothing) Transfer.noRetry $ \p ->
+				Transfer.download' webUUID mediakey (AssociatedFile Nothing) Nothing Transfer.noRetry $ \p ->
 					youtubeDl url (fromRawFilePath workdir) p >>= \case
 						Right (Just mediafile) -> do
 							cleanuptmp
@@ -396,7 +396,7 @@ downloadWith' downloader dummykey u url afile =
 	checkDiskSpaceToGet dummykey Nothing $ do
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
 		ok <- Transfer.notifyTransfer Transfer.Download url $
-			Transfer.download' u dummykey afile Transfer.stdRetry $ \p -> do
+			Transfer.download' u dummykey afile Nothing Transfer.stdRetry $ \p -> do
 				createAnnexDirectory (parentDir tmp)
 				downloader (fromRawFilePath tmp) p
 		if ok

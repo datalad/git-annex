@@ -19,7 +19,6 @@ import Types.Concurrency
 import Types.CatFileHandles
 import Annex.CheckAttr
 import Annex.CheckIgnore
-import Remote.List
 
 import qualified Data.Map as M
 
@@ -72,11 +71,6 @@ forkState a = do
  -}
 dupState :: Annex AnnexState
 dupState = do
-	-- Make sure that some expensive actions have been done before
-	-- starting threads. This way the state has them already run,
-	-- and each thread won't try to do them.
-	_ <- remoteList
-
 	st <- Annex.getState id
 	-- Make sure that concurrency is enabled, if it was not already,
 	-- so the concurrency-safe resource pools are set up.

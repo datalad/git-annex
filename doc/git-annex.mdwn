@@ -1422,16 +1422,20 @@ Remotes are configured using these settings in `.git/config`.
 
 * `remote.<name>.annex-stalldetecton`, `annex.stalldetection`
 
-  This lets stalled or too-slow transfers be detected, and dealt with, so
-  rather than getting stuck, git-annex will cancel the stalled operation.
-  When this happens, the transfer will be considered to have failed, so
+  Configuring this lets stalled or too-slow transfers be detected, and
+  dealt with, so rather than getting stuck, git-annex will cancel the
+  stalled operation. The transfer will be considered to have failed, so
   settings like annex.retry will control what it does next.
 
-  Set to "true" to enable automatic stall detection. With this setting,
-  if a remote does not update its progress consistently, no stall detection
-  will be done. And it may take a while for git-annex to decide a remote
-  is really stalled when using automatic stall detection, since it needs
-  to be conservative about what looks like a stall.
+  By default, git-annex detects transfers that have probably stalled,
+  and suggests configuring this. If it is incorrectly detecting
+  stalls, setting this to "false" will avoid that.
+
+  Set to "true" to enable automatic stall detection. If a remote does not
+  update its progress consistently, no automatic stall detection will be
+  done. And it may take a while for git-annex to decide a remote is really
+  stalled when using automatic stall detection, since it needs to be
+  conservative about what looks like a stall.
 
   For more fine control over what constitutes a stall, set to a value in
   the form "$amount/$timeperiod" to specify how much data git-annex should
