@@ -1,6 +1,6 @@
 {- A pool of "git-annex transferrer" processes
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,15 +16,13 @@ import Types.TransferrerPool
 import Types.Transferrer
 import Types.Transfer
 import qualified Types.Remote as Remote
-import Types.StallDetection
 import Types.Messages
 import Types.CleanupActions
 import Messages.Serialized
 import Annex.Path
+import Annex.StallDetection
 import Utility.Batch
 import Utility.Metered
-import Utility.HumanTime
-import Utility.ThreadScheduler
 import qualified Utility.SimpleProtocol as Proto
 
 import Control.Concurrent
@@ -176,28 +174,6 @@ performTransfer stalldetection level runannex r t info transferrer = do
 		atomically $ writeTVar bpv n
 	updatemeter _bpv metervar Nothing = liftIO $
 		atomically $ writeTVar metervar Nothing
-
-detectStalls :: Maybe StallDetection -> TVar (Maybe BytesProcessed) -> IO () -> IO ()
-detectStalls Nothing _ _ = noop
-detectStalls (Just (StallDetection minsz duration)) metervar onstall = go Nothing
-  where
-	go st = do
-		threadDelaySeconds (Seconds (fromIntegral (durationSeconds duration)))
-		-- Get whatever progress value was reported last, if any.
-		v <- atomically $ fmap fromBytesProcessed
-			<$> readTVar metervar
-		let cont = go v
-		case (st, v) of
-			(Nothing, _) -> cont
-			(_, Nothing) -> cont
-			(Just prev, Just sofar)
-				-- Just in case a progress meter somehow runs
-				-- backwards, or a second progress meter was
-				-- started and is at a smaller value than
-				-- the previous one.
-				| prev > sofar -> cont
-				| sofar - prev < minsz -> onstall
-				| otherwise -> cont
 
 {- Starts a new git-annex transfer process, setting up handles
  - that will be used to communicate with it. -}

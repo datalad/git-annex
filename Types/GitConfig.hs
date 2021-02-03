@@ -205,7 +205,7 @@ extractGitConfig configsource r = GitConfig
 	, annexRetryDelay = Seconds
 		<$> getmayberead (annexConfig "retrydelay")
 	, annexStallDetection =
-		either (const Nothing) Just . parseStallDetection
+		either (const Nothing) id . parseStallDetection
 			=<< getmaybe (annexConfig "stalldetection")
 	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
 		maybe ["http", "https", "ftp"] words $
@@ -377,7 +377,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexRetryDelay = Seconds
 			<$> getmayberead "retrydelay"
 		, remoteAnnexStallDetection =
-			either (const Nothing) Just . parseStallDetection
+			either (const Nothing) id . parseStallDetection
 				=<< getmaybe "stalldetection"
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe ("security-allow-unverified-downloads")

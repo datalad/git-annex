@@ -15,6 +15,9 @@ git-annex (8.20210128) UNRELEASED; urgency=medium
   * Fix build on openbsd.
     Thanks, James Cook for the patch.
   * Include libkqueue.h file needed to build the assistant on BSDs.
+  * annex.stalldetection can now be set to "true" to make git-annex
+    do automatic stall detection when it detects a remote is updating its
+    transfer progress consistently enough.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2021 12:34:32 -0400
 

@@ -1427,12 +1427,18 @@ Remotes are configured using these settings in `.git/config`.
   When this happens, the transfer will be considered to have failed, so
   settings like annex.retry will control what it does next.
 
-  The value specifies how much data git-annex should expect to see
-  flowing, minimum, when it's not stalled, over a given period of time.
-  The format is "$amount/$timeperiod". 
+  Set to "true" to enable automatic stall detection. With this setting,
+  if a remote does not update its progress consistently, no stall detection
+  will be done. And it may take a while for git-annex to decide a remote
+  is really stalled when using automatic stall detection, since it needs
+  to be conservative about what looks like a stall.
+
+  For more fine control over what constitutes a stall, set to a value in
+  the form "$amount/$timeperiod" to specify how much data git-annex should
+  expect to see flowing, minimum, over a given period of time.
 
   For example, to detect outright stalls where no data has been transferred
-  after 30 seconds: `git config annex.stalldetection "0/30s"`
+  after 30 seconds: `git config annex.stalldetection "1KB/30s"`
 
   Or, if you have a remote on a USB drive that is normally capable of
   several megabytes per second, but has bad sectors where it gets

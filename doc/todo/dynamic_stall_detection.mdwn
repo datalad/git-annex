@@ -3,14 +3,15 @@ to detect and retry stalls. But most users are not going to configure this.
 Could something be done to dynamically detect a stall, without configuration?
 
 Eg, wait until data starts to flow, and then check if there's at least some
-data being sent each minute. If so, the progress display is being updated
-at least every minute. So then if 2 minutes go by without more data
+data being sent each half minute. If so, the progress display is being updated
+at least every minute. So then if 1 minute goes by without more data
 flowing, it's almost certainly stalled. And if the progress display is
 updated less frequently, see if it's updated every 2 minutes, etc. Although
 realistically, progress displays are updated every chunk, and there's
 typically more than 1 chunk per minute. So longer durations than 1 minute
-may be an unncessary complication. And a couple of minutes to detect a
-stall is fine.
+may be an unncessary complication. And a minute to detect a stall is fine.
+
+> Implemented this, annex.stalldetection = true enables automatic.
 
 It may still need a config to turn it on, because running
 transfers in separate processes can lead to more resource use, or even

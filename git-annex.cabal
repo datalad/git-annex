@@ -662,6 +662,7 @@ Executable git-annex
     Annex.SpecialRemote
     Annex.SpecialRemote.Config
     Annex.Ssh
+    Annex.StallDetection
     Annex.TaggedPush
     Annex.Tmp
     Annex.Transfer
