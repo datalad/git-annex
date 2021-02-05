@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+`cabal v2-install` produces many lines like this in the build log:
+
+    /bin/sh: ./Build/mdwn2man: cannot execute - Permission denied
+
+and the man pages don't get copied to `~/.cabal/store/...`.
+
+My guess is that Cabal is losing the file mode during some tarring/untarring.
+
+Here's a patch that fixes it. (It makes the `#/usr/bin/env perl` at the start of the file redundant; not sure if you want to delete it.)
+
+```
+diff --git a/Build/Mans.hs b/Build/Mans.hs
+index 9fb29d4a3..672dcd71c 100644
+--- a/Build/Mans.hs
++++ b/Build/Mans.hs
+@@ -38,7 +38,8 @@ buildMans = do
+ 		if (Just srcm > destm)
+ 			then do
+ 				r <- system $ unwords
+-					[ "./Build/mdwn2man"
++					[ "perl"
++                                        , "Build/mdwn2man"
+ 					, progName src
+ 					, "1"
+ 					, src
+```
+
+(Related question: is the installation supposed to put the man pages anywhere other than `~/.cabal/store/ghc-XXX/git-annex-XXX`? I.e. is it up to the user to either add that directory to `MANPATH` or copy them somewhere from there?)
+
+### What version of git-annex are you using? On what operating system?
+
+OpenBSD current
+
+Cabal 3.4.0.0
+
+git-annex master (commit `4e5a27841`)
