@@ -127,15 +127,16 @@ jobs:
 
       - name: Get the git-annex build environment container
         run: chronic singularity pull --name buildenv.sif shub://datalad/datalad-extensions:buildenv-git-annex-buster
+        working-directory: /tmp
 
       - name: Build source packages
         run: |
-          chronic singularity exec ./buildenv.sif make debianstandalone-dsc
+          chronic singularity exec /tmp/buildenv.sif make debianstandalone-dsc
           mv ../git-annex_*.* .
 
       - name: Build binary package from the source package
         run: |
-          if ! singularity exec ./buildenv.sif \
+          if ! singularity exec /tmp/buildenv.sif \
                bash -c 'set -x; export LANG=C; dpkg-source -x *.dsc git-annex-source && cd git-annex-source && dpkg-buildpackage -b' >| "${bbuild_log}" 2>&1; then
                  echo "E: build failed"
                  echo "I: the tail of the log"
