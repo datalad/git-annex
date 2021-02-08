@@ -14,4 +14,30 @@ Also some parts of git-annex's code, including `withObjectLoc`, assume
 that the .annex/objects is present, and so it would need to be changed
 to look at the work tree file. --[[Joey]]
 
-[[!tag needsthought]]
+> Git hook is not sufficient. Consider the case of "rm file; git checkout file"
+> Without hard links, if the only copy of the annex object was in that
+> deleted file, it can't be restored. Now, direct mode did have the same
+> problem, but it didn't support `git checkout`, so the user didn't have
+> reason to expect such a workflow to work.
+> 
+> So, I think this is not possible to implement in a way that won't
+> lead to users experiencing data loss when using it and doing 
+> perfectly normal git things like this.
+> 
+> (Although to be fair, annex.thin has its own data loss scenarios,
+> involving modifying a file potentially losing the only copy of
+> the old version. The difference, I think, is that with it,
+> you modify the file yourself and so lose the old version; the data
+> loss does not happen when you run git checkout or git pull!)
+> 
+> In the meantime,
+> git-annex has gotten support for directory special remotes with
+> import/export tree. This can be used instead, for use cases such as a
+> device with a FAT filesystem. The git-annex repo can live on another
+> filesystem that does support hard links or symlinks, or where using
+> double disk space is not as much of a problem, or can even be a bare
+> git repo. That syncs up with the FAT device through tree import and
+> export. Once content has been imported to the git-annex repo,
+> the user can delete files from the FAT device without losing data.
+> 
+> So this seems about as good as it can get. [[done]] --[[Joey]]
