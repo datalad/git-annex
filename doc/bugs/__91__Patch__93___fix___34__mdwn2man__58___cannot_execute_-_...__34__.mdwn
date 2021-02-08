@@ -36,3 +36,5 @@ OpenBSD current
 Cabal 3.4.0.0
 
 git-annex master (commit `4e5a27841`)
+
+> [[done]] --[[Joey]]

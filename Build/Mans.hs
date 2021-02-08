@@ -38,7 +38,9 @@ buildMans = do
 		if (Just srcm > destm)
 			then do
 				r <- system $ unwords
-					[ "./Build/mdwn2man"
+					-- Run with per because in some
+					-- cases it may not be executable.
+					[ "perl", "./Build/mdwn2man"
 					, progName src
 					, "1"
 					, src

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-02-08T18:20:31Z"
+ content="""
+Reproduced by running `cabal unpack git-annex`. While the tarball on
+hackage does have execute bits, somehow cabal is not preserving them.
+Applied your patch, thanks.
+
+Cabal's ability to install anything more than a command into PATH is very
+limited, and also there's not really a good way to install man pages
+in a user's home directory in a way that will make man find them (ie,
+there's probably one way or less per OS, and all different). 
+So it's best to use the Makefile (from a git clone of the repo)
+if you want to install git-annex in a more complete manner, 
+ie system wide or generating a package of its files.
+"""]]
