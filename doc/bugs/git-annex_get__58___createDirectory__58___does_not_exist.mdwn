@@ -29,3 +29,7 @@ git-annex is critical infrastructure for me. There is no day without it. Thx muc
 
 
 [[!tag projects/datalad]]
+
+> So there's an OSX bug here, and git-annex has been made to use
+> an absolute path to a remote when it has one, which can be used to work
+> around the OSX bug. [[done]] --[[Joey]]

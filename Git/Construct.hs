@@ -57,35 +57,34 @@ fromCwd = getCurrentDirectory >>= seekUp
 
 {- Local Repo constructor, accepts a relative or absolute path. -}
 fromPath :: RawFilePath -> IO Repo
-fromPath dir = fromAbsPath =<< absPath dir
+fromPath dir
+	-- When dir == "foo/.git", git looks for "foo/.git/.git",
+	-- and failing that, uses "foo" as the repository.
+	| (P.pathSeparator `B.cons` ".git") `B.isSuffixOf` canondir =
+		ifM (doesDirectoryExist $ fromRawFilePath dir </> ".git")
+			( ret dir
+			, ret (P.takeDirectory canondir)
+			)
+	| otherwise = ifM (doesDirectoryExist (fromRawFilePath dir))
+		( checkGitDirFile dir >>= maybe (ret dir) (pure . newFrom)
+		-- git falls back to dir.git when dir doesn't
+		-- exist, as long as dir didn't end with a
+		-- path separator
+		, if dir == canondir
+			then ret (dir <> ".git")
+			else ret dir
+		)
+  where
+	ret = pure . newFrom . LocalUnknown
+	canondir = P.dropTrailingPathSeparator dir
 
 {- Local Repo constructor, requires an absolute path to the repo be
  - specified. -}
 fromAbsPath :: RawFilePath -> IO Repo
 fromAbsPath dir
-	| absoluteGitPath dir = hunt
+	| absoluteGitPath dir = fromPath dir
 	| otherwise =
 		error $ "internal error, " ++ show dir ++ " is not absolute"
-  where
-	ret = pure . newFrom . LocalUnknown
-	canondir = P.dropTrailingPathSeparator dir
-	{- When dir == "foo/.git", git looks for "foo/.git/.git",
-	 - and failing that, uses "foo" as the repository. -}
-	hunt
-		| (P.pathSeparator `B.cons` ".git") `B.isSuffixOf` canondir =
-			ifM (doesDirectoryExist $ fromRawFilePath dir </> ".git")
-				( ret dir
-				, ret (P.takeDirectory canondir)
-				)
-		| otherwise = ifM (doesDirectoryExist (fromRawFilePath dir))
-			( checkGitDirFile dir >>= maybe (ret dir) (pure . newFrom)
-			-- git falls back to dir.git when dir doesn't
-			-- exist, as long as dir didn't end with a
-			-- path separator
-			, if dir == canondir
-				then ret (dir <> ".git")
-				else ret dir
-			)
 
 {- Construct a Repo for a remote's url.
  -

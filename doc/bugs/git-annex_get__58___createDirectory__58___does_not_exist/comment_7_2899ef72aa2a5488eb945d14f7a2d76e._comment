@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-02-08T15:54:58Z"
+ content="""
+Agreed, what you show in the stackoverflow post can only be an OSX bug.
+
+Using a relative path for the current repository does avoid using long
+absolute paths, and also has a minor benefit of letting the repository be
+moved while git-annex is running and it still accessing the right files.
+
+Neither benefit applies to the paths to remotes. I think the only
+reason relative paths are being used for them is that the same code
+is used to operate on them as on the local repository.
+
+I've made some changes that will make it use absolute paths when the
+remote has an absolute path.
+"""]]

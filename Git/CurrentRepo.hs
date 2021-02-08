@@ -10,6 +10,7 @@
 module Git.CurrentRepo where
 
 import Common
+import Git
 import Git.Types
 import Git.Construct
 import qualified Git.Config
@@ -46,12 +47,12 @@ get = do
 	wt <- maybe (worktree (location r)) Just
 		<$> getpathenvprefix "GIT_WORK_TREE" prefix
 	case wt of
-		Nothing -> return r
+		Nothing -> relPath r
 		Just d -> do
 			curr <- R.getCurrentDirectory
 			unless (d `dirContains` curr) $
 				setCurrentDirectory (fromRawFilePath d)
-			return $ addworktree wt r
+			relPath $ addworktree wt r
   where
 	getpathenv s = do
 		v <- getEnv s

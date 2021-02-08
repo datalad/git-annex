@@ -247,7 +247,7 @@ newState c r = do
  - any necessary git repo fixups. -}
 new :: Git.Repo -> IO AnnexState
 new r = do
-	r' <- Git.Config.read =<< Git.relPath r
+	r' <- Git.Config.read r
 	let c = extractGitConfig FromGitConfig r'
 	newState c =<< fixupRepo r' c
 

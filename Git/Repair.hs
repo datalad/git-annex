@@ -105,7 +105,7 @@ retrieveMissingObjects missing referencerepo r
 	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
 		unlessM (boolSystem "git" [Param "init", File tmpdir]) $
 			error $ "failed to create temp repository in " ++ tmpdir
-		tmpr <- Config.read =<< Construct.fromAbsPath (toRawFilePath tmpdir)
+		tmpr <- Config.read =<< Construct.fromPath (toRawFilePath tmpdir)
 		rs <- Construct.fromRemotes r
 		stillmissing <- pullremotes tmpr rs fetchrefstags missing
 		if S.null (knownMissing stillmissing)

@@ -287,11 +287,11 @@ bup2GitRemote :: BupRepo -> IO Git.Repo
 bup2GitRemote "" = do
 	-- bup -r "" operates on ~/.bup
 	h <- myHomeDir
-	Git.Construct.fromAbsPath $ toRawFilePath $ h </> ".bup"
+	Git.Construct.fromPath $ toRawFilePath $ h </> ".bup"
 bup2GitRemote r
 	| bupLocal r = 
 		if "/" `isPrefixOf` r
-			then Git.Construct.fromAbsPath (toRawFilePath r)
+			then Git.Construct.fromPath (toRawFilePath r)
 			else giveup "please specify an absolute path"
 	| otherwise = Git.Construct.fromUrl $ "ssh://" ++ host ++ slash dir
   where
