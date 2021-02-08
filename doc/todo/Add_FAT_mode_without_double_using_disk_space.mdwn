@@ -3,3 +3,6 @@ At the FAT disks annex uses ajusted unlocked branch. Files use double space: in 
 
 # As I wonder
 At such disks, with option annex.thin, annex uses only file tree for keeping content. Content of the files in the .git folder is wiped.
+
+> [[done]], dup of other todo, and I don't know how to avoid the problem
+> with git deleting the file. --[[Joey]]
