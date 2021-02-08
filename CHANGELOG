@@ -1,5 +1,10 @@
 git-annex (8.20210128) UNRELEASED; urgency=medium
 
+  * annex.stalldetection can now be set to "true" to make git-annex
+    do automatic stall detection when it detects a remote is updating its
+    transfer progress consistently enough.
+  * When annex.stalldetection is not enabled and a likely stall is
+    detected, display a suggestion to enable it.
   * Commands can be added to git-annex, by installing a program in PATH
     with a name starting with "git-annex-"
   * Fix a reversion that made import of a tree from a special remote
@@ -11,17 +16,12 @@ git-annex (8.20210128) UNRELEASED; urgency=medium
     such as "foo (bar or baz)", which was incorrectly handled as if
     it were "(foo or bar) and baz)" rather than the intended
     "foo and (bar or baz)"
+  * When a git remote is configured with an absolute path, use that
+    path, rather than making it relative.
   * get: Improve output when failing to get a file fails.
   * Fix build on openbsd.
     Thanks, James Cook for the patch.
   * Include libkqueue.h file needed to build the assistant on BSDs.
-  * annex.stalldetection can now be set to "true" to make git-annex
-    do automatic stall detection when it detects a remote is updating its
-    transfer progress consistently enough.
-  * When annex.stalldetection is not enabled and a likely stall is
-    detected, display a suggestion to enable it.
-  * When a git remote is configured with an absolute path, use that
-    path, rather than making it relative.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2021 12:34:32 -0400
 
