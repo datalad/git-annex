@@ -1,0 +1,113 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2021-02-08T14:44:35Z"
+ content="""
+I feel it is OS (OSX bug), does not reproduce on newer 11.1 (appveyor has 10.15.7), [asked on SO](https://stackoverflow.com/questions/66103552/osx-mkdir-tmp-dir-no-such-file-or-directory-under-private-while-ls-can-l) anyways with minimalistic example.  I believe it is the `tmp -> private/tmp` somehow throws it off.
+
+<details>
+<summary>But I also wonder why git-annex uses relative path for get whenever remote is specified via an absolute one?</summary> 
+
+```shell
+bash-3.2$ cd /private/var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_test_get_recurse_dirs7eiohcer
+bash-3.2$ cat .git/config
+[core]  
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+        ignorecase = true
+        precomposeunicode = true
+[remote \"origin\"]
+        url = /var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_get_recurse_dirsfciy781u
+        fetch = +refs/heads/*:refs/remotes/origin/*
+        annex-uuid = 52043a4d-fab3-4661-a8aa-904cd780c804
+[branch \"dl-test-branch\"]
+        remote = origin
+        merge = refs/heads/dl-test-branch
+[annex \"security\"]
+        allowed-url-schemes = http https file
+        allowed-http-addresses = all
+[annex] 
+        uuid = f40f35d9-cd79-4258-9f25-bdeb56303f94
+        version = 8
+[filter \"annex\"]
+        smudge = git-annex smudge -- %f
+        clean = git-annex smudge --clean -- %f
+bash-3.2$ git annex get --debug --from origin subdir/file2.txt
+[2021-02-08 08:37:39.159007] process [10170] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2021-02-08 08:37:39.164531] process [10170] done ExitSuccess
+[2021-02-08 08:37:39.165453] process [10171] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2021-02-08 08:37:39.169315] process [10171] done ExitSuccess
+[2021-02-08 08:37:39.170596] process [10172] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..250f87f912fab3d2081ef0ccd02ffc35fd7a97a7\",\"--pretty=%H\",\"-n1\"]
+[2021-02-08 08:37:39.177178] process [10172] done ExitSuccess
+[2021-02-08 08:37:39.178303] process [10173] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2021-02-08 08:37:39.179112] process [10174] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2021-02-08 08:37:39.183428] process [10175] read: git [\"config\",\"--null\",\"--list\"]
+[2021-02-08 08:37:39.188091] process [10175] done ExitSuccess
+[2021-02-08 08:37:39.195372] process [10176] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2021-02-08 08:37:39.198517] process [10176] done ExitSuccess
+[2021-02-08 08:37:39.199328] process [10177] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/dl-test-branch\"]
+[2021-02-08 08:37:39.202993] process [10177] done ExitSuccess
+[2021-02-08 08:37:39.20432] process [10178] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--stage\",\"-z\",\"--\",\"subdir/file2.txt\"]
+[2021-02-08 08:37:39.205302] process [10179] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2021-02-08 08:37:39.208369] process [10180] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2021-02-08 08:37:39.209513] process [10181] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+get subdir/file2.txt (from origin...)
+  ../../../../../../../var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_get_recurse_dirsfciy781u/.git/annex: createDirectory: does not exist (No such file or directory)
+failed
+[2021-02-08 08:37:39.218675] process [10181] done ExitSuccess
+[2021-02-08 08:37:39.218748] process [10180] done ExitSuccess
+[2021-02-08 08:37:39.218781] process [10179] done ExitSuccess
+[2021-02-08 08:37:39.218806] process [10178] done ExitSuccess
+git-annex: get: 1 failed
+
+```
+</details>
+
+IIRC it might have been done to minimize the path length so we have a better chance to not hit limits.  But in this case, if anything - it makes it only longer, and if was actually to create a relative path, it should have not had that middle `../../../var/folders/5s/` since it is common to both:
+
+```
+bash-3.2$ pwd
+/private/var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_test_get_recurse_dirs7eiohcer
+bash-3.2$ git config remote.origin.url
+/var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_get_recurse_dirsfciy781u
+bash-3.2$ git annex whereis subdir/file2.txt 
+whereis subdir/file2.txt (1 copy) 
+        52043a4d-fab3-4661-a8aa-904cd780c804 -- appveyor@worker-628-003.shared:/private/var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_get_recurse_dirsfciy781u [origin]
+ok
+bash-3.2$ git annex get subdir/file2.txt
+get subdir/file2.txt (from origin...) 
+  ../../../../../../../var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_get_recurse_dirsfciy781u/.git/annex: createDirectory: does not exist (No such file or directory)
+
+  Unable to access these remotes: origin
+
+  Try making some of these remotes available:
+        52043a4d-fab3-4661-a8aa-904cd780c804 -- appveyor@worker-628-003.shared:/private/var/folders/5s/g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_tree_test_get_recurse_dirsfciy781u [origin]
+failed
+git-annex: get: 1 failed
+bash-3.2$ ls -l ../../../g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_test_get_recurse_dirs7eiohcer/.git/annex/
+total 32
+-rw-r--r--  1 appveyor  staff  681 Feb  8 08:09 index
+-rw-r--r--  1 appveyor  staff   41 Feb  8 08:09 index.lck
+drwxr-xr-x  2 appveyor  staff   64 Feb  8 08:09 journal
+-rw-r--r--  1 appveyor  staff    0 Feb  8 08:09 journal.lck
+-rw-r--r--  1 appveyor  staff   71 Feb  8 08:09 mergedrefs
+-rw-r--r--  1 appveyor  staff    0 Feb  8 08:37 move.lck
+-rw-r--r--  1 appveyor  staff    0 Feb  8 08:37 move.log
+-rw-r--r--  1 appveyor  staff    0 Feb  8 08:09 othertmp.lck
+-rw-r--r--  1 appveyor  staff    0 Feb  8 08:09 sentinal
+-rw-r--r--  1 appveyor  staff   34 Feb  8 08:09 sentinal.cache
+-rw-r--r--  1 appveyor  staff    0 Feb  8 08:09 smudge.lck
+drwxr-xr-x  2 appveyor  staff   64 Feb  8 08:09 tmp
+drwxr-xr-x  4 appveyor  staff  128 Feb  8 08:09 transfer
+```
+
+and if it didn't escape all the way to the `/`, mkdir would have even worked:
+```
+bash-3.2$ mkdir ../../../g225f6nd6jl4g8tshbh1ltk40000gn/T/datalad_temp_test_get_recurse_dirs7eiohcer/.git/annex/123
+bash-3.2$ 
+```
+```
+"""]]
