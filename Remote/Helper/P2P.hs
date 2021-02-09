@@ -1,6 +1,6 @@
 {- Helpers for remotes using the git-annex P2P protocol.
  -
- - Copyright 2016-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,6 +17,7 @@ import Annex.Content
 import Messages.Progress
 import Utility.Metered
 import Types.NumCopies
+import Backend
 
 import Control.Concurrent
 
@@ -39,10 +40,11 @@ store runner k af p = do
 			Just False -> giveup "transfer failed"
 			Nothing -> remoteUnavail
 
-retrieve :: (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
-retrieve runner k af dest p =
+retrieve :: VerifyConfig -> (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
+retrieve verifyconfig runner k af dest p = do
+	iv <- startVerifyKeyContentIncrementally verifyconfig k
 	metered (Just p) k $ \m p' -> 
-		runner p' (P2P.get dest k af m p') >>= \case
+		runner p' (P2P.get dest k iv af m p') >>= \case
 			Just (True, v) -> return v
 			Just (False, _) -> giveup "transfer failed"
 			Nothing -> remoteUnavail

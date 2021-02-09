@@ -145,8 +145,7 @@ sameCheckSum key s
 	expected = decodeBS (keyHash key)
 
 checkKeyChecksumIncremental :: Hash -> Key -> Annex IncrementalVerifier
-checkKeyChecksumIncremental hash key = liftIO $
-	(\h -> snd h key) (hasher hash)
+checkKeyChecksumIncremental hash key = liftIO $ (snd $ hasher hash) key
 
 keyHash :: Key -> S.ByteString
 keyHash = fst . splitKeyNameExtension

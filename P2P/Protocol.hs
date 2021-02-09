@@ -2,7 +2,7 @@
  -
  - See doc/design/p2p_protocol.mdwn
  -
- - Copyright 2016-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ import Types (Annex)
 import Types.Key
 import Types.UUID
 import Types.Remote (Verification(..), unVerified)
+import Types.Backend (IncrementalVerifier(..))
 import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
@@ -266,7 +267,7 @@ data LocalF c
 	-- Note: The ByteString may not contain the entire remaining content
 	-- of the key. Only once the temp file size == Len has the whole
 	-- content been transferred.
-	| StoreContentTo FilePath Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
+	| StoreContentTo FilePath (Maybe IncrementalVerifier) Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
 	-- ^ Like StoreContent, but stores the content to a temp file.
 	| SetPresent Key UUID c
 	| CheckContentPresent Key (Bool -> c)
@@ -351,13 +352,13 @@ remove key = do
 	net $ sendMessage (REMOVE key)
 	checkSuccess
 
-get :: FilePath -> Key -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
-get dest key af m p = 
+get :: FilePath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
+get dest key iv af m p = 
 	receiveContent (Just m) p sizer storer $ \offset ->
 		GET offset (ProtoAssociatedFile af) key
   where
 	sizer = fileSize dest
-	storer = storeContentTo dest
+	storer = storeContentTo dest iv
 
 put :: Key -> AssociatedFile -> MeterUpdate -> Proto Bool
 put key af p = do

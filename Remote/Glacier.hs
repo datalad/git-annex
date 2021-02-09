@@ -9,6 +9,7 @@ module Remote.Glacier (remote, jobList, checkSaneGlacierCommand) where
 
 import qualified Data.Map as M
 import qualified Data.Text as T
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 
 import Annex.Common
@@ -168,7 +169,7 @@ store' r k b p = go =<< glacierEnv c gc u
 			{ std_in = CreatePipe }
 		in liftIO $ withCreateProcess cmd (go' cmd)
 	go' cmd (Just hin) _ _ pid = do
-		meteredWrite p hin b
+		meteredWrite p (S.hPut hin) b
 		hClose hin
 		forceSuccessProcess cmd pid
 	go' _ _ _ _ _ = error "internal"

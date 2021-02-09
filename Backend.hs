@@ -1,6 +1,6 @@
 {- git-annex key/value backends
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,11 +17,13 @@ module Backend (
 	isStableKey,
 	isCryptographicallySecure,
 	isVerifiable,
+	startVerifyKeyContentIncrementally,
 ) where
 
 import Annex.Common
 import qualified Annex
 import Annex.CheckAttr
+import Annex.Verify
 import Types.Key
 import Types.KeySource
 import qualified Types.Backend as B
@@ -127,3 +129,14 @@ isCryptographicallySecure k = maybe False (`B.isCryptographicallySecure` k)
 isVerifiable :: Key -> Annex Bool
 isVerifiable k = maybe False (isJust . B.verifyKeyContent) 
 	<$> maybeLookupBackendVariety (fromKey keyVariety k)
+
+startVerifyKeyContentIncrementally :: VerifyConfig -> Key -> Annex (Maybe B.IncrementalVerifier)
+startVerifyKeyContentIncrementally verifyconfig k = 
+	ifM (shouldVerify verifyconfig)
+		( maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
+			Just b -> case B.verifyKeyContentIncrementally b of
+				Just v -> Just <$> v k
+				Nothing -> return Nothing
+			Nothing -> return Nothing
+		, return Nothing
+		)

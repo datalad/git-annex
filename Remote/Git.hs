@@ -557,6 +557,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 				then return v
 				else giveup "failed to retrieve content from remote"
 		else P2PHelper.retrieve
+			(Annex.Content.RemoteVerify r)
 			(\p -> Ssh.runProto r connpool (return (False, UnVerified)) (fallback p))
 			key file dest meterupdate
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
