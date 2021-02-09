@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 9"
+ date="2021-02-09T22:48:04Z"
+ content="""
+Thank you Joey!  In my particular/initial use case having it done only for \"native\" git annex downloads would already be great.  
+
+In the long term I do see us implementing it for `datalad` special remote.  Having it somehow just \"streaming\" into git annex would probably be the \"easiest on custom remotes\" and would provide most flexibility since it would be up to annex to use corresponding to backend checksum.  
+
+But I wonder if \"streaming\" is really needed -- through `TRANSFER STORE somekey tmpfile` annex already knows where the file downloaded so far is, most recently written blocks are likely to be in the FS cache, so may be it would suffice for a special remote to, in addition to PROGRESS, announce how many sequential bytes from the beginning have been downloaded already, and so if git-annex incrementally reads from the \"growing\" file it would just work? (I am not sure if Windows would allow for such \"collaborative\" use of the file where one process writes and another one reads)   Although I guess it would mean that `git-annex` would still need to trust external remote to not later change some earlier bytes in the file, so might be not sufficiently secure.  Thus probably true streaming/named pipe Ilya suggested would be needed.
+"""]]
