@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="nguenthe@0f416ab0ba07a395eb8a0c85732e0105e4970e10"
+ nickname="nguenthe"
+ avatar="http://cdn.libravatar.org/avatar/0e245fd49594e98b19d4c57efcb134ad"
+ subject="comment 3"
+ date="2021-02-09T17:06:24Z"
+ content="""
+I just figured this out today!
+
+In v8 repos, every annexed file gets replaced by a text string like this:
+
+```
++/annex/objects/SHA256E-s320029--488e29f5584ba4e474db95aa42fbb58ddb92f2a59bc0b24a91171acb4d8f4828.png
+```
+
+((
+
+you can see them with `git log -p` or
+
+```
+$ git show HEAD:vlcsnap-2019-03-22-03h42m47s659.png
+/annex/objects/SHA256E-s320029--488e29f5584ba4e474db95aa42fbb58ddb92f2a59bc0b24a91171acb4d8f4828.png
+```
+
+))
+
+So to get the reverse pointer, you can use `git grep`:
+
+```
+$ git grep SHA256E-s320029--488e29f5584ba4e474db95aa42fbb58ddb92f2a59bc0b24a91171acb4d8f4828.png HEAD
+HEAD:vlcsnap-2019-03-22-03h42m47s659.png:/annex/objects/SHA256E-s320029--488e29f5584ba4e474db95aa42fbb58ddb92f2a59bc0b24a91171acb4d8f4828.png
+```
+"""]]
