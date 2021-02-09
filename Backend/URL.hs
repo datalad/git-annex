@@ -23,6 +23,7 @@ backend = Backend
 	{ backendVariety = URLKey
 	, genKey = Nothing
 	, verifyKeyContent = Nothing
+	, verifyKeyContentIncrementally = Nothing
 	, canUpgradeKey = Nothing
 	, fastMigrate = Nothing
 	-- The content of an url can change at any time, so URL keys are

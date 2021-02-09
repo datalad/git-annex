@@ -26,6 +26,7 @@ backend = Backend
 	{ backendVariety = WORMKey
 	, genKey = Just keyValue
 	, verifyKeyContent = Nothing
+	, verifyKeyContentIncrementally = Nothing
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just removeProblemChars
 	, isStableKey = const True
