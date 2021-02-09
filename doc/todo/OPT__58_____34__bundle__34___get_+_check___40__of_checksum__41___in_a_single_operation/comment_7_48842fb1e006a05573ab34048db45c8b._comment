@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-02-09T16:31:47Z"
+ content="""
+I investigated feasability of a protocol extension that when 
+an external special remote enables it, means it always verifies a checksum
+itself before sending `TRANSFER-SUCCESS RETRIEVE`.
+
+Which checksum would be up to the special remote. Question is, would
+it need to be cryptographically secure, or would a CRC, sha1, or md5 suffice?
+
+annex.security.allow-unverified-downloads prevents download from special
+remotes when the content can't be verified, and that is to avoid a class of
+security holes (CVE-2018-10859). For the purposes of fixing that hole, sha1
+and md5 were considered good enough. The attacker does not control the
+original content, so a preimage attack won't work. The attacker has a
+gpg encrypted file they want to get decrypted, and they might be able to
+modify the file (eg appending junk, or messing with the gpg data in some
+way?) and cause a collision. I think sha1 and md5 are secure enough to
+avoid this attack. CRC is certianly not good enough. I'd be wary of md4
+since its preimage resistance is broken.
+
+So, doing this as a protocol extension would need to document that
+the hash needs to have preimage resistance, or be generally
+cryptographically secure. And then if a external special remote was using
+sha1 or whatever and it got sufficiently broken, it would be up to the
+maintainer of it to update it to stop using the protocol extension.
+
+I also looked at special remotes built into git-annex. Tahoe certianly
+does enough verification of downloads. Bittorrent doesn't because the
+torrent file is downloaded often w/o verification (magnet links could be
+verified enough maybe). Rsync usually uses a good enough checksum, but 
+can fall back to md4 or perhaps no checksum at all, and the attacker might
+control the rsync server, so the rsync special remote and also ssh
+remotes still need their own verification. Bup uses sha1 so does
+enough verification. All the rest don't.
+
+I think the question is, would this protocol extension really get used
+by any external special remotes? Anyone have an example of one? The
+alternative is to change the protocol so the downloaded content gets
+streamed to git-annex in some way, and have git-annex incrementally
+checksum as content comes in. Which really seems better all around, except
+probably a lot harder to implement, and using a small amount more CPU in
+cases where the external special remote is really doing its own
+checksumming.
+"""]]
