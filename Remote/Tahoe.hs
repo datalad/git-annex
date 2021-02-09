@@ -147,7 +147,9 @@ store rs hdl k _f _p = sendAnnex k noop $ \src ->
 retrieve :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
 retrieve rs hdl k _f d _p = do
 	go =<< getCapability rs k
-	return UnVerified
+	-- Tahoe verifies the content it retrieves using cryptographically
+	-- secure methods.
+	return Verified
   where
 	go Nothing = giveup "tahoe capability is not known"
 	go (Just cap) = unlessM (liftIO $ requestTahoe hdl "get" [Param cap, File d]) $

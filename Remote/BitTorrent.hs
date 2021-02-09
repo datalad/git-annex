@@ -99,6 +99,9 @@ gen r _ rc gc rs = do
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
 downloadKey key _file dest p = do
 	get . map (torrentUrlNum . fst . getDownloader) =<< getBitTorrentUrls key
+	-- While bittorrent verifies the hash in the torrent file,
+	-- the torrent file itself is downloaded without verification,
+	-- so the overall download is not verified.
 	return UnVerified
   where
 	get [] = giveup "could not download torrent"

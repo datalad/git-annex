@@ -197,7 +197,9 @@ data Verification
 	-- ok, so if verification is disabled, don't verify it
 	| Verified
 	-- ^ Content was verified during transfer, so don't verify it
-	-- again.
+	-- again. The verification does not need to use a
+	-- cryptographically secure hash, but the hash does need to
+	-- have preimage resistance.
 	| MustVerify
 	-- ^ Content likely to have been altered during transfer,
 	-- verify even if verification is normally disabled
