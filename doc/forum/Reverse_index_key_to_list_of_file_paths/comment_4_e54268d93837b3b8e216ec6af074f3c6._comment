@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="nguenthe@0f416ab0ba07a395eb8a0c85732e0105e4970e10"
+ nickname="nguenthe"
+ avatar="http://cdn.libravatar.org/avatar/0e245fd49594e98b19d4c57efcb134ad"
+ subject="comment 4"
+ date="2021-02-09T17:09:15Z"
+ content="""
+`git grep` might be just as slow as `find` in the end, but so far it has always been very fast for me. Maybe I just don't have a hyper-huge number of files.
+"""]]
