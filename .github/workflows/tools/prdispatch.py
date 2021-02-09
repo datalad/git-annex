@@ -177,7 +177,7 @@ class PRDispatcher:
                 " is this not GitHub Actions?"
             )
         for wfrun in self.repo.get_workflow(THIS_WORKFLOW).get_runs():
-            if wfrun.run_number == myself:
+            if wfrun.run_number >= myself:
                 pass
             elif wfrun.status != "completed":
                 sys.exit("Previous run has not completed; aborting")
