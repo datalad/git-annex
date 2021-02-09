@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2021-02-09T21:04:12Z"
+ content="""
+The incrementalhash branch has a mostly complete implementation of
+incremental hashing on download, for retrieiving from git-annex
+remotes. And the Backend interface added for that should be easy to use in
+some special remotes as well. Let's start with that, worry about external
+special remotes only after the low-hanging fruit is picked.
+"""]]
