@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -48,6 +48,7 @@ import Utility.CopyFile
 import Utility.Env
 import Utility.Batch
 import Utility.SimpleProtocol
+import Utility.Touch
 import Remote.Helper.Git
 import Remote.Helper.Messages
 import Remote.Helper.ExportImport
@@ -73,6 +74,7 @@ import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import qualified Data.Map as M
 import qualified Data.ByteString as S
+import Data.Time.Clock.POSIX
 import Network.URI
 
 remote :: RemoteType
@@ -535,13 +537,12 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 			giveup "failed to download content"
 		return UnVerified
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $ do
-		params <- Ssh.rsyncParams r Download
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
 		onLocalFast st $ Annex.Content.prepSendAnnex key >>= \case
 			Just (object, checksuccess) -> do
-				copier <- mkCopier hardlink st params
+				copier <- mkCopier hardlink st
 				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
 					file Nothing stdRetry $ \p ->
 						metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
@@ -678,14 +679,13 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		-- the remote's Annex, but it needs access to the local
 		-- Annex monad's state.
 		checksuccessio <- Annex.withCurrentState checksuccess
-		params <- Ssh.rsyncParams r Upload
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
 		res <- onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True
 			, runTransfer (Transfer Download u (fromKey id key)) file Nothing stdRetry $ \p -> do
-				copier <- mkCopier hardlink st params
+				copier <- mkCopier hardlink st
 				let verify = Annex.Content.RemoteVerify r
 				let rsp = RetrievalAllKeysSecure
 				res <- logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file $ \dest ->
@@ -827,9 +827,9 @@ wantHardLink = (annexHardLink <$> Annex.getGitConfig)
 -- copying it.
 type Copier = FilePath -> FilePath -> Key -> MeterUpdate -> Annex Bool -> Annex (Bool, Verification)
 
-mkCopier :: Bool -> State -> [CommandParam] -> Annex Copier
-mkCopier remotewanthardlink st rsyncparams = do
-	let copier = fileCopier st rsyncparams
+mkCopier :: Bool -> State -> Annex Copier
+mkCopier remotewanthardlink st = do
+	let copier = fileCopier st
 	localwanthardlink <- wantHardLink
 	let linker = \src dest -> createLink src dest >> return True
 	if remotewanthardlink || localwanthardlink
@@ -906,16 +906,25 @@ newCopyCoWTried :: IO CopyCoWTried
 newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
 
 {- Copys a file. Uses copy-on-write if it is supported. Otherwise,
- - uses rsync, so that interrupted copies can be resumed. -}
-fileCopier :: State -> [CommandParam] -> Copier
+ - copies the file itself. If the destination already exists,
+ - an interruped copy will resume where it left off.
+ -
+ - When copy-on-write is used, returns UnVerified, because the content of
+ - the file has not been verified to be correct. When the file has to be
+ - read to copy it, a hash is calulated at the same time.
+ -
+ - Note that, when the destination file already exists, it's read both
+ - to start calculating the hash, and also to verify that its content is
+ - the same as the start of the source file. It's possible that the
+ - destination file was created from some other source file,
+ - (eg when isStableKey is false), and doing this avoids getting a
+ - corrupted file in such cases.
+ -}
+fileCopier :: State -> Copier
 #ifdef mingw32_HOST_OS
-rsyncOrCopyFile _st _rsyncparams src dest k p check =
-	-- rsync is only available on Windows in some installation methods,
-	-- and is not strictly needed here, so don't use it.
-	unVerified $ docopywith copyFileExternal <&&> check
-  where
+fileCopier _st src dest k meterupdate check = docopy
 #else
-fileCopier st rsyncparams src dest _k p check =
+fileCopier st src dest k meterupdate check =
 	-- If multiple threads reach this at the same time, they
 	-- will both try CoW, which is acceptable.
 	ifM (liftIO $ isEmptyMVar copycowtried)
@@ -924,26 +933,83 @@ fileCopier st rsyncparams src dest _k p check =
 			void $ liftIO $ tryPutMVar copycowtried ok
 			if ok
 				then unVerified check
-				else unVerified $ dorsync <&&> check
+				else docopy
 		, ifM (liftIO $ readMVar copycowtried)
 			( do
 				ok <- docopycow
 				if ok
 					then unVerified check
-					else unVerified $ dorsync <&&> check
-			, unVerified dorsync
+					else docopy
+			, docopy
 			)
 		)
   where
 	copycowtried = case st of
 		State _ _ (CopyCoWTried v) _ _ -> v
-	dorsync = do
-		-- dest may already exist, so make sure rsync can write to it
-		void $ liftIO $ tryIO $ allowWrite (toRawFilePath dest)
-		oh <- mkOutputHandlerQuiet
-		Ssh.rsyncHelper oh (Just p) $
-			rsyncparams ++ [File src, File dest]
-	docopycow = docopywith copyCoW
+	docopycow = liftIO $ watchFileSize dest meterupdate $
+		copyCoW CopyTimeStamps src dest
 #endif
-	docopywith a = liftIO $ watchFileSize dest p $
-		a CopyTimeStamps src dest
+
+	dest' = toRawFilePath dest
+
+	docopy = do
+		-- The file might have had the write bit removed,
+		-- so make sure we can write to it.
+		void $ liftIO $ tryIO $ allowWrite dest'
+
+		liftIO $ withBinaryFile dest ReadWriteMode $ \hdest ->
+			withBinaryFile src ReadMode $ \hsrc -> do
+				sofar <- compareexisting hdest hsrc zeroBytesProcessed
+				docopy' hdest hsrc sofar
+
+		-- Copy src mode and mtime.
+		mode <- liftIO $ fileMode <$> getFileStatus src
+		mtime <- liftIO $ utcTimeToPOSIXSeconds <$> getModificationTime src
+		liftIO $ setFileMode dest mode
+		liftIO $ touch dest' mtime False
+
+		ifM check
+			( return (True, UnVerified)
+			, return (False, UnVerified)
+			)
+	
+	docopy' hdest hsrc sofar = do
+		s <- S.hGet hsrc defaultChunkSize
+		if s == S.empty
+			then return ()
+			else do
+				let sofar' = addBytesProcessed sofar (S.length s)
+				S.hPut hdest s
+				meterupdate sofar'
+				docopy' hdest hsrc sofar'
+
+	-- Leaves hdest and hsrc seeked to wherever the two diverge,
+	-- so typically hdest will be seeked to end, and hsrc to the same
+	-- position.
+	compareexisting hdest hsrc sofar = do
+		s <- S.hGet hdest defaultChunkSize
+		if s == S.empty
+			then return sofar
+			else do
+				s' <- getnoshort (S.length s) hsrc
+				if s == s'
+					then do
+						let sofar' = addBytesProcessed sofar (S.length s)
+						meterupdate sofar'
+						compareexisting hdest hsrc sofar'
+					else do
+						seekbefore hdest s
+						seekbefore hsrc s'
+						return sofar
+	
+	seekbefore h s = hSeek h RelativeSeek (fromIntegral (-1*S.length s))
+	
+	-- Like hGet, but never returns less than the requested number of
+	-- bytes, unless it reaches EOF.
+	getnoshort n h = do
+		s <- S.hGet h n
+		if S.length s == n || S.empty == s
+			then return s
+			else do
+				s' <- getnoshort (n - S.length s) h
+				return (s <> s')
