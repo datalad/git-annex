@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-02-10T16:42:46Z"
+ content="""
+Incremental hashing implemented for transfers over ssh and tor.
+
+A good next step would be transfers to/from local git remotes.
+Currently those use rsync, or cp for CoW. It does not make sense to trust
+rsync's checksum verification here, because garbage in, garbage out --
+rsync doesn't know what the hash should be and will happily transfer a
+corrupted file. So instead, this would need to stop using rsync, and
+instead implement our own file to file copying with resuming and incremental
+hashing. Which would not be hard, and gets rid of the dependency on
+rsync besides (except for talking with really old git-annex-ssh).
+
+As for cp, CoW also suffers from GIGO, so I think the file will still
+need to be read, after its copied, to make sure it has the expected
+checksum.
+
+Urk: Using rsync currently protects against
+[[bugs/URL_key_potential_data_loss]], so the replacement would also need to
+deal with that. Probably by refusing to resume a partial transfer of an
+affected key. (Or it could just fall back to rsync for such keys.)
+"""]]
