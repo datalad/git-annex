@@ -184,7 +184,7 @@ gen r u rc gc rs
 			, name = Git.repoDescribe r
 			, storeKey = copyToRemote new st
 			, retrieveKeyFile = copyFromRemote new st
-			, retrieveKeyFileCheap = copyFromRemoteCheap new st r
+			, retrieveKeyFileCheap = copyFromRemoteCheap st r
 			, retrievalSecurityPolicy = RetrievalAllKeysSecure
 			, removeKey = dropKey new st
 			, lockContent = Just (lockKey new st)
@@ -635,9 +635,9 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 		bracketIO noop (const cleanup) (const $ a feeder)
 			`onException` liftIO forcestop
 
-copyFromRemoteCheap :: Remote -> State -> Git.Repo -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
+copyFromRemoteCheap :: State -> Git.Repo -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
 #ifndef mingw32_HOST_OS
-copyFromRemoteCheap r st repo
+copyFromRemoteCheap st repo
 	| not $ Git.repoIsUrl repo = Just $ \key _af file -> guardUsable repo (giveup "cannot access remote") $ do
 		gc <- getGitConfigFromState st
 		loc <- liftIO $ gitAnnexLocation key repo gc
@@ -646,11 +646,6 @@ copyFromRemoteCheap r st repo
 				absloc <- absPath loc
 				R.createSymbolicLink absloc (toRawFilePath file)
 			, giveup "remote does not contain key"
-			)
-	| Git.repoIsSsh repo = Just $ \key af file ->
-		ifM (Annex.Content.preseedTmp key file)
-			( void $ copyFromRemote' True r st key af file nullMeterUpdate
-			, giveup "cannot preseed rsync with existing content"
 			)
 	| otherwise = Nothing
 #else
