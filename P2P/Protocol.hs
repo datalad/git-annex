@@ -2,7 +2,7 @@
  -
  - See doc/design/p2p_protocol.mdwn
  -
- - Copyright 2016-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,7 +17,9 @@ import qualified Utility.SimpleProtocol as Proto
 import Types (Annex)
 import Types.Key
 import Types.UUID
-import Types.Remote (Verification(..), unVerified)
+import Types.Remote (Verification(..))
+import Types.Backend (IncrementalVerifier(..))
+import Types.Transfer
 import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
@@ -266,7 +268,7 @@ data LocalF c
 	-- Note: The ByteString may not contain the entire remaining content
 	-- of the key. Only once the temp file size == Len has the whole
 	-- content been transferred.
-	| StoreContentTo FilePath Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
+	| StoreContentTo FilePath (Maybe IncrementalVerifier) Offset Len (Proto L.ByteString) (Proto (Maybe Validity)) ((Bool, Verification) -> c)
 	-- ^ Like StoreContent, but stores the content to a temp file.
 	| SetPresent Key UUID c
 	| CheckContentPresent Key (Bool -> c)
@@ -351,13 +353,13 @@ remove key = do
 	net $ sendMessage (REMOVE key)
 	checkSuccess
 
-get :: FilePath -> Key -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
-get dest key af m p = 
+get :: FilePath -> Key -> Maybe IncrementalVerifier -> AssociatedFile -> Meter -> MeterUpdate -> Proto (Bool, Verification)
+get dest key iv af m p = 
 	receiveContent (Just m) p sizer storer $ \offset ->
 		GET offset (ProtoAssociatedFile af) key
   where
 	sizer = fileSize dest
-	storer = storeContentTo dest
+	storer = storeContentTo dest iv
 
 put :: Key -> AssociatedFile -> MeterUpdate -> Proto Bool
 put key af p = do
@@ -503,10 +505,9 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 			then net $ sendMessage ALREADY_HAVE
 			else do
 				let sizer = tmpContentSize key
-				let storer = \o l b v -> unVerified $
-					storeContent key af o l b v
-				(ok, _v) <- receiveContent Nothing nullMeterUpdate sizer storer PUT_FROM
-				when ok $
+				let storer = storeContent key af
+				v <- receiveContent Nothing nullMeterUpdate sizer storer PUT_FROM
+				when (observeBool v) $
 					local $ setPresent key myuuid
 		return ServerContinue
 
@@ -532,12 +533,13 @@ sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
 		checkSuccess
 
 receiveContent
-	:: Maybe Meter
+	:: Observable t
+	=> Maybe Meter
 	-> MeterUpdate
 	-> Local Len
-	-> (Offset -> Len -> Proto L.ByteString -> Proto (Maybe Validity) -> Local (Bool, Verification))
+	-> (Offset -> Len -> Proto L.ByteString -> Proto (Maybe Validity) -> Local t)
 	-> (Offset -> Message)
-	-> Proto (Bool, Verification)
+	-> Proto t
 receiveContent mm p sizer storer mkmsg = do
 	Len n <- local sizer
 	let p' = offsetMeterUpdate p (toBytesProcessed n)
@@ -557,14 +559,14 @@ receiveContent mm p sizer storer mkmsg = do
 						net $ sendMessage (ERROR "expected VALID or INVALID")
 						return Nothing
 				else return Nothing
-			(ok, v) <- local $ storer offset len
+			v <- local $ storer offset len
 				(net (receiveBytes len p'))
 				validitycheck
-			sendSuccess ok
-			return (ok, v)
+			sendSuccess (observeBool v)
+			return v
 		_ -> do
 			net $ sendMessage (ERROR "expected DATA")
-			return (False, UnVerified)
+			return observeFailure
 
 checkSuccess :: Proto Bool
 checkSuccess = do

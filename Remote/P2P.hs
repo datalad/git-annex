@@ -13,6 +13,7 @@ module Remote.P2P (
 import Annex.Common
 import qualified Annex
 import qualified P2P.Protocol as P2P
+import qualified Annex.Content
 import P2P.Address
 import P2P.Annex
 import P2P.IO
@@ -56,7 +57,7 @@ chainGen addr r u rc gc rs = do
 		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = store (const protorunner)
-		, retrieveKeyFile = retrieve (const protorunner)
+		, retrieveKeyFile = retrieve (Annex.Content.RemoteVerify this) (const protorunner)
 		, retrieveKeyFileCheap = Nothing
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = remove protorunner

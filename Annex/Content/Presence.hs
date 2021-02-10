@@ -26,10 +26,10 @@ module Annex.Content.Presence (
 
 import Annex.Common
 import qualified Annex
+import Annex.Verify
 import Annex.LockPool
 import Annex.WorkerPool
 import Types.Remote (unVerified, Verification(..), RetrievalSecurityPolicy(..))
-import qualified Types.Remote
 import qualified Types.Backend
 import qualified Backend
 import qualified Database.Keys
@@ -231,16 +231,3 @@ warnUnverifiableInsecure k = warning $ unwords
 	]
   where
 	kv = decodeBS (formatKeyVariety (fromKey keyVariety k))
-
-data VerifyConfig = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
-
-shouldVerify :: VerifyConfig -> Annex Bool
-shouldVerify AlwaysVerify = return True
-shouldVerify NoVerify = return False
-shouldVerify DefaultVerify = annexVerify <$> Annex.getGitConfig
-shouldVerify (RemoteVerify r) = 
-	(shouldVerify DefaultVerify
-			<&&> pure (remoteAnnexVerify (Types.Remote.gitconfig r)))
-	-- Export remotes are not key/value stores, so always verify
-	-- content from them even when verification is disabled.
-	<||> Types.Remote.isExportSupported r

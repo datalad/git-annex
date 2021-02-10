@@ -167,7 +167,7 @@ store r buprepo = byteStorer $ \k b p -> do
 				}
 			else cmd
 		    feeder = \h -> do
-			meteredWrite p h b
+			meteredWrite p (S.hPut h) b
 			hClose h
 		in withCreateProcess cmd' (go feeder cmd')
   where

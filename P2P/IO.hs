@@ -259,7 +259,7 @@ debugMessage conn prefix m = do
 -- connection. False is returned to indicate this problem.
 sendExactly :: Len -> L.ByteString -> Handle -> MeterUpdate -> IO Bool
 sendExactly (Len n) b h p = do
-	sent <- meteredWrite' p h (L.take (fromIntegral n) b)
+	sent <- meteredWrite' p (B.hPut h) (L.take (fromIntegral n) b)
 	return (fromBytesProcessed sent == n)
 
 receiveExactly :: Len -> Handle -> MeterUpdate -> IO L.ByteString

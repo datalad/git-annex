@@ -295,7 +295,7 @@ sink dest enc c mh mp content = case (enc, mh, content) of
 		Just h -> liftIO $ b `streamto` h
 		Nothing -> liftIO $ bracket opendest hClose (b `streamto`)
 	streamto b h = case mp of
-		Just p -> meteredWrite p h b
+		Just p -> meteredWrite p (S.hPut h) b
 		Nothing -> L.hPut h b
 	opendest = openBinaryFile dest WriteMode
 

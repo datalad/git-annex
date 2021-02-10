@@ -1,6 +1,6 @@
 {- Metered IO and actions
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -118,23 +118,24 @@ withMeteredFile :: FilePath -> MeterUpdate -> (L.ByteString -> IO a) -> IO a
 withMeteredFile f meterupdate a = withBinaryFile f ReadMode $ \h ->
 	hGetContentsMetered h meterupdate >>= a
 
-{- Writes a ByteString to a Handle, updating a meter as it's written. -}
-meteredWrite :: MeterUpdate -> Handle -> L.ByteString -> IO ()
-meteredWrite meterupdate h = void . meteredWrite' meterupdate h
+{- Calls the action repeatedly with chunks from the lazy ByteString.
+ - Updates the meter after each chunk is processed. -}
+meteredWrite :: MeterUpdate -> (S.ByteString -> IO ()) -> L.ByteString -> IO ()
+meteredWrite meterupdate a = void . meteredWrite' meterupdate a
 
-meteredWrite' :: MeterUpdate -> Handle -> L.ByteString -> IO BytesProcessed
-meteredWrite' meterupdate h = go zeroBytesProcessed . L.toChunks 
+meteredWrite' :: MeterUpdate -> (S.ByteString -> IO ()) -> L.ByteString -> IO BytesProcessed
+meteredWrite' meterupdate a = go zeroBytesProcessed . L.toChunks 
   where
 	go sofar [] = return sofar
 	go sofar (c:cs) = do
-		S.hPut h c
+		a c
 		let !sofar' = addBytesProcessed sofar $ S.length c
 		meterupdate sofar'
 		go sofar' cs
 
 meteredWriteFile :: MeterUpdate -> FilePath -> L.ByteString -> IO ()
 meteredWriteFile meterupdate f b = withBinaryFile f WriteMode $ \h ->
-	meteredWrite meterupdate h b
+	meteredWrite meterupdate (S.hPut h) b
 
 {- Applies an offset to a MeterUpdate. This can be useful when
  - performing a sequence of actions, such as multiple meteredWriteFiles,

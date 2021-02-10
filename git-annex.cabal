@@ -671,9 +671,10 @@ Executable git-annex
     Annex.UpdateInstead
     Annex.UUID
     Annex.Url
+    Annex.VariantFile
     Annex.VectorClock
     Annex.VectorClock.Utility
-    Annex.VariantFile
+    Annex.Verify
     Annex.Version
     Annex.View
     Annex.View.ViewedFile

@@ -67,6 +67,7 @@ makeBackend' ebname@(ExternalBackendName bname) hasext (Right p) = do
 				-- bump if progress handling is later added.
 				nullMeterUpdate
 			else Nothing
+		, verifyKeyContentIncrementally = Nothing
 		, canUpgradeKey = Nothing
 		, fastMigrate = Nothing
 		, isStableKey = const isstable
@@ -80,6 +81,7 @@ unavailBackend (ExternalBackendName bname) hasext =
 		{ backendVariety = ExternalKey bname hasext
 		, genKey = Nothing
 		, verifyKeyContent = Nothing
+		, verifyKeyContentIncrementally = Nothing
 		, canUpgradeKey = Nothing
 		, fastMigrate = Nothing
 		, isStableKey = const False

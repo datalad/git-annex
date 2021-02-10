@@ -1,6 +1,6 @@
 {- git-annex hashing backends
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -28,6 +28,7 @@ import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import Control.DeepSeq
 import Control.Exception (evaluate)
+import Control.Concurrent.MVar
 
 data Hash
 	= MD5Hash
@@ -75,6 +76,7 @@ genBackend hash = Backend
 	{ backendVariety = hashKeyVariety hash (HasExt False)
 	, genKey = Just (keyValue hash)
 	, verifyKeyContent = Just $ checkKeyChecksum hash
+	, verifyKeyContentIncrementally = Just $ checkKeyChecksumIncremental hash
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
 	, isStableKey = const True
@@ -116,8 +118,6 @@ keyValueE hash source meterupdate =
 	keyValue hash source meterupdate
 		>>= addE source (const $ hashKeyVariety hash (HasExt True))
 
-{- A key's checksum is checked during fsck when it's content is present
- - except for in fast mode. -}
 checkKeyChecksum :: Hash -> Key -> RawFilePath -> Annex Bool
 checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 	fast <- Annex.getState Annex.fast
@@ -125,21 +125,27 @@ checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 	case (exists, fast) of
 		(True, False) -> do
 			showAction "checksum"
-			check <$> hashFile hash file nullMeterUpdate
+			sameCheckSum key 
+				<$> hashFile hash file nullMeterUpdate
 		_ -> return True
   where
-	expected = decodeBS (keyHash key)
-	check s
-		| s == expected = True
-		{- A bug caused checksums to be prefixed with \ in some
-		 - cases; still accept these as legal now that the bug has been
-		 - fixed. -}
-		| '\\' : s == expected = True
-		| otherwise = False
-
 	hwfault e = do
 		warning $ "hardware fault: " ++ show e
 		return False
+
+sameCheckSum :: Key -> String -> Bool
+sameCheckSum key s
+	| s == expected = True
+	{- A bug caused checksums to be prefixed with \ in some
+	 - cases; still accept these as legal now that the bug
+	 - has been fixed. -}
+	| '\\' : s == expected = True
+	| otherwise = False
+  where
+	expected = decodeBS (keyHash key)
+
+checkKeyChecksumIncremental :: Hash -> Key -> Annex IncrementalVerifier
+checkKeyChecksumIncremental hash key = liftIO $ (snd $ hasher hash) key
 
 keyHash :: Key -> S.ByteString
 keyHash = fst . splitKeyNameExtension
@@ -195,79 +201,97 @@ trivialMigrate' oldkey newbackend afile maxextlen
 hashFile :: Hash -> RawFilePath -> MeterUpdate -> Annex String
 hashFile hash file meterupdate = 
 	liftIO $ withMeteredFile (fromRawFilePath file) meterupdate $ \b -> do
-		let h = hasher b
+		let h = (fst $ hasher hash) b
 		-- Force full evaluation of hash so whole file is read
 		-- before returning.
 		evaluate (rnf h)
 		return h
-  where
-	hasher = case hash of
-		MD5Hash -> md5Hasher
-		SHA1Hash -> sha1Hasher
-		SHA2Hash hashsize -> sha2Hasher hashsize
-		SHA3Hash hashsize -> sha3Hasher hashsize
-		SkeinHash hashsize -> skeinHasher hashsize
-		Blake2bHash hashsize -> blake2bHasher hashsize
-		Blake2bpHash hashsize -> blake2bpHasher hashsize
-		Blake2sHash hashsize -> blake2sHasher hashsize
-		Blake2spHash hashsize -> blake2spHasher hashsize
 
-sha2Hasher :: HashSize -> (L.ByteString -> String)
+type Hasher = (L.ByteString -> String, Key -> IO IncrementalVerifier)
+
+hasher :: Hash -> Hasher
+hasher MD5Hash = md5Hasher
+hasher SHA1Hash = sha1Hasher
+hasher (SHA2Hash hashsize) = sha2Hasher hashsize
+hasher (SHA3Hash hashsize) = sha3Hasher hashsize
+hasher (SkeinHash hashsize) = skeinHasher hashsize
+hasher (Blake2bHash hashsize) = blake2bHasher hashsize
+hasher (Blake2bpHash hashsize) = blake2bpHasher hashsize
+hasher (Blake2sHash hashsize) = blake2sHasher hashsize
+hasher (Blake2spHash hashsize) = blake2spHasher hashsize
+
+mkHasher :: HashAlgorithm h => (L.ByteString -> Digest h) -> Context h -> Hasher
+mkHasher h c = (show . h, mkIncrementalVerifier c)
+
+sha2Hasher :: HashSize -> Hasher
 sha2Hasher (HashSize hashsize)
-	| hashsize == 256 = use sha2_256
-	| hashsize == 224 = use sha2_224
-	| hashsize == 384 = use sha2_384
-	| hashsize == 512 = use sha2_512
-	| otherwise = error $ "unsupported SHA size " ++ show hashsize
-  where
-	use hasher = show . hasher
+	| hashsize == 256 = mkHasher sha2_256 sha2_256_context
+	| hashsize == 224 = mkHasher sha2_224 sha2_224_context
+	| hashsize == 384 = mkHasher sha2_384 sha2_384_context
+	| hashsize == 512 = mkHasher sha2_512 sha2_512_context
+	| otherwise = error $ "unsupported SHA2 size " ++ show hashsize
 
-sha3Hasher :: HashSize -> (L.ByteString -> String)
+sha3Hasher :: HashSize -> Hasher
 sha3Hasher (HashSize hashsize)
-	| hashsize == 256 = show . sha3_256
-	| hashsize == 224 = show . sha3_224
-	| hashsize == 384 = show . sha3_384
-	| hashsize == 512 = show . sha3_512
+	| hashsize == 256 = mkHasher sha3_256 sha3_256_context
+	| hashsize == 224 = mkHasher sha3_224 sha3_224_context
+	| hashsize == 384 = mkHasher sha3_384 sha3_384_context
+	| hashsize == 512 = mkHasher sha3_512 sha3_512_context
 	| otherwise = error $ "unsupported SHA3 size " ++ show hashsize
 
-skeinHasher :: HashSize -> (L.ByteString -> String)
+skeinHasher :: HashSize -> Hasher
 skeinHasher (HashSize hashsize)
-	| hashsize == 256 = show . skein256
-	| hashsize == 512 = show . skein512
+	| hashsize == 256 = mkHasher skein256 skein256_context
+	| hashsize == 512 = mkHasher skein512 skein512_context
 	| otherwise = error $ "unsupported SKEIN size " ++ show hashsize
 
-blake2bHasher :: HashSize -> (L.ByteString -> String)
+blake2bHasher :: HashSize -> Hasher
 blake2bHasher (HashSize hashsize)
-	| hashsize == 256 = show . blake2b_256
-	| hashsize == 512 = show . blake2b_512
-	| hashsize == 160 = show . blake2b_160
-	| hashsize == 224 = show . blake2b_224
-	| hashsize == 384 = show . blake2b_384
+	| hashsize == 256 = mkHasher blake2b_256 blake2b_256_context
+	| hashsize == 512 = mkHasher blake2b_512 blake2b_512_context
+	| hashsize == 160 = mkHasher blake2b_160 blake2b_160_context
+	| hashsize == 224 = mkHasher blake2b_224 blake2b_224_context
+	| hashsize == 384 = mkHasher blake2b_384 blake2b_384_context
 	| otherwise = error $ "unsupported BLAKE2B size " ++ show hashsize
 
-blake2bpHasher :: HashSize -> (L.ByteString -> String)
+blake2bpHasher :: HashSize -> Hasher
 blake2bpHasher (HashSize hashsize)
-	| hashsize == 512 = show . blake2bp_512
+	| hashsize == 512 = mkHasher blake2bp_512 blake2bp_512_context
 	| otherwise = error $ "unsupported BLAKE2BP size " ++ show hashsize
 
-blake2sHasher :: HashSize -> (L.ByteString -> String)
+blake2sHasher :: HashSize -> Hasher
 blake2sHasher (HashSize hashsize)
-	| hashsize == 256 = show . blake2s_256
-	| hashsize == 160 = show . blake2s_160
-	| hashsize == 224 = show . blake2s_224
+	| hashsize == 256 = mkHasher blake2s_256 blake2s_256_context
+	| hashsize == 160 = mkHasher blake2s_160 blake2s_160_context
+	| hashsize == 224 = mkHasher blake2s_224 blake2s_224_context
 	| otherwise = error $ "unsupported BLAKE2S size " ++ show hashsize
 
-blake2spHasher :: HashSize -> (L.ByteString -> String)
+blake2spHasher :: HashSize -> Hasher
 blake2spHasher (HashSize hashsize)
-	| hashsize == 256 = show . blake2sp_256
-	| hashsize == 224 = show . blake2sp_224
+	| hashsize == 256 = mkHasher blake2sp_256 blake2sp_256_context
+	| hashsize == 224 = mkHasher blake2sp_224 blake2sp_224_context
 	| otherwise = error $ "unsupported BLAKE2SP size " ++ show hashsize
 
-sha1Hasher :: L.ByteString -> String
-sha1Hasher = show . sha1
+sha1Hasher :: Hasher
+sha1Hasher = mkHasher sha1 sha1_context
 
-md5Hasher :: L.ByteString -> String
-md5Hasher = show . md5
+md5Hasher :: Hasher
+md5Hasher = mkHasher md5 md5_context
+
+mkIncrementalVerifier :: HashAlgorithm h => Context h -> Key -> IO IncrementalVerifier
+mkIncrementalVerifier ctx key = do
+	v <- newMVar ctx
+	return $ IncrementalVerifier
+		{ updateIncremental = \b -> do
+			ctx' <- takeMVar v
+			let ctx'' = hashUpdate ctx' b
+			evaluate $ rnf ctx''
+			putMVar v ctx''
+		, finalizeIncremental = do
+			ctx' <- takeMVar v
+			let digest = hashFinalize ctx'
+			return $ sameCheckSum key (show digest)
+		}
 
 {- A varient of the SHA256E backend, for testing that needs special keys
  - that cannot collide with legitimate keys in the repository.

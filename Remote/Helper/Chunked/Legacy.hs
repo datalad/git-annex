@@ -11,6 +11,7 @@ import Annex.Common
 import Remote.Helper.Chunked
 import Utility.Metered
 
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 
 {- This is an extension that's added to the usual file (or whatever)
@@ -117,4 +118,4 @@ meteredWriteFileChunks :: MeterUpdate -> FilePath -> [v] -> (v -> IO L.ByteStrin
 meteredWriteFileChunks meterupdate dest chunks feeder =
 	withBinaryFile dest WriteMode $ \h ->
 		forM_ chunks $
-			meteredWrite meterupdate h <=< feeder
+			meteredWrite meterupdate (S.hPut h) <=< feeder

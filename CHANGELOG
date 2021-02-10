@@ -24,6 +24,8 @@ git-annex (8.20210128) UNRELEASED; urgency=medium
   * Include libkqueue.h file needed to build the assistant on BSDs.
   * Tahoe: Avoid verifying hash after download, since tahoe does sufficient
     verification itself.
+  * Checksum as content is received from a remote git-annex repository
+    over ssh/p2p protocols, rather than doing it in a second pass.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2021 12:34:32 -0400
 

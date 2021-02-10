@@ -1,6 +1,6 @@
 {- P2P protocol, Annex implementation
  -
- - Copyright 2016-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,9 +23,12 @@ import P2P.IO
 import Logs.Location
 import Types.NumCopies
 import Utility.Metered
+import Types.Backend (IncrementalVerifier(..))
+import Backend
 
 import Control.Monad.Free
 import Control.Concurrent.STM
+import qualified Data.ByteString as S
 
 -- Full interpreter for Proto, that can receive and send objects.
 runFullProto :: RunState -> P2PConnection -> Proto a -> Annex (Either ProtoFailure a)
@@ -74,10 +77,11 @@ runLocal runst runner a = case a of
 		-- Remote.P2P and Remote.Git.
 		let rsp = RetrievalAllKeysSecure
 		v <- tryNonAsync $ do
+			iv <- startVerifyKeyContentIncrementally DefaultVerify k
 			let runtransfer ti = 
 				Right <$> transfer download' k af Nothing (\p ->
 					logStatusAfter k $ getViaTmp rsp DefaultVerify k af $ \tmp ->
-						storefile (fromRawFilePath tmp) o l getb validitycheck p ti)
+						storefile (fromRawFilePath tmp) o l getb iv validitycheck p ti)
 			let fallback = return $ Left $
 				ProtoFailureMessage "transfer already in progress, or unable to take transfer lock"
 			checktransfer runtransfer fallback
@@ -85,10 +89,10 @@ runLocal runst runner a = case a of
 			Left e -> return $ Left $ ProtoFailureException e
 			Right (Left e) -> return $ Left e
 			Right (Right ok) -> runner (next ok)
-	StoreContentTo dest o l getb validitycheck next -> do
+	StoreContentTo dest iv o l getb validitycheck next -> do
 		v <- tryNonAsync $ do
 			let runtransfer ti = Right
-				<$> storefile dest o l getb validitycheck nullMeterUpdate ti
+				<$> storefile dest o l getb iv validitycheck nullMeterUpdate ti
 			let fallback = return $ Left $
 				ProtoFailureMessage "transfer failed"
 			checktransfer runtransfer fallback
@@ -153,16 +157,44 @@ runLocal runst runner a = case a of
 		-- Transfer logs are updated higher in the stack when
 		-- a client.
 		Client _ -> ta nullMeterUpdate
+	
+	resumefromoffset o incrementalverifier p h
+		| o /= 0 = do
+			p' <- case incrementalverifier of
+				Just iv -> do
+					go iv o
+					return p
+				_ -> return $ offsetMeterUpdate p (toBytesProcessed o)
+			-- Make sure the handle is seeked to the offset.
+			-- (Reading the file probably left it there
+			-- when that was done, but let's be sure.)
+			hSeek h AbsoluteSeek o
+			return p'
+		| otherwise = return p
+	  where
+		go iv n
+			| n == 0 = return ()
+			| otherwise = do
+				let c = if n > fromIntegral defaultChunkSize
+					then defaultChunkSize
+					else fromIntegral n
+				b <- S.hGet h c
+				updateIncremental iv b
+				unless (b == S.empty) $
+					go iv (n - fromIntegral (S.length b))
 
-	storefile dest (Offset o) (Len l) getb validitycheck p ti = do
-		let p' = offsetMeterUpdate p (toBytesProcessed o)
+	storefile dest (Offset o) (Len l) getb incrementalverifier validitycheck p ti = do
 		v <- runner getb
 		case v of
 			Right b -> do
 				liftIO $ withBinaryFile dest ReadWriteMode $ \h -> do
-					when (o /= 0) $
-						hSeek h AbsoluteSeek o
-					meteredWrite p' h b
+					p' <- resumefromoffset o incrementalverifier p h
+					let writechunk = case incrementalverifier of
+						Nothing -> \c -> S.hPut h c
+						Just iv -> \c -> do
+							S.hPut h c
+							updateIncremental iv c
+					meteredWrite p' writechunk b
 				indicatetransferred ti
 
 				rightsize <- do
@@ -170,8 +202,12 @@ runLocal runst runner a = case a of
 					return (toInteger sz == l + o)
 					
 				runner validitycheck >>= \case
-					Right (Just Valid) ->
-						return (rightsize, UnVerified)
+					Right (Just Valid) -> case incrementalverifier of
+						Just iv -> ifM (liftIO (finalizeIncremental iv) <&&> pure rightsize)
+							( return (True, Verified)
+							, return (False, UnVerified)
+							)
+						Nothing -> return (rightsize, UnVerified)
 					Right (Just Invalid) | l == 0 ->
 						-- Special case, for when
 						-- content was not
