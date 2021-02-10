@@ -17,8 +17,9 @@ import qualified Utility.SimpleProtocol as Proto
 import Types (Annex)
 import Types.Key
 import Types.UUID
-import Types.Remote (Verification(..), unVerified)
+import Types.Remote (Verification(..))
 import Types.Backend (IncrementalVerifier(..))
+import Types.Transfer
 import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
@@ -504,10 +505,9 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 			then net $ sendMessage ALREADY_HAVE
 			else do
 				let sizer = tmpContentSize key
-				let storer = \o l b v -> unVerified $
-					storeContent key af o l b v
-				(ok, _v) <- receiveContent Nothing nullMeterUpdate sizer storer PUT_FROM
-				when ok $
+				let storer = storeContent key af
+				v <- receiveContent Nothing nullMeterUpdate sizer storer PUT_FROM
+				when (observeBool v) $
 					local $ setPresent key myuuid
 		return ServerContinue
 
@@ -533,12 +533,13 @@ sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
 		checkSuccess
 
 receiveContent
-	:: Maybe Meter
+	:: Observable t
+	=> Maybe Meter
 	-> MeterUpdate
 	-> Local Len
-	-> (Offset -> Len -> Proto L.ByteString -> Proto (Maybe Validity) -> Local (Bool, Verification))
+	-> (Offset -> Len -> Proto L.ByteString -> Proto (Maybe Validity) -> Local t)
 	-> (Offset -> Message)
-	-> Proto (Bool, Verification)
+	-> Proto t
 receiveContent mm p sizer storer mkmsg = do
 	Len n <- local sizer
 	let p' = offsetMeterUpdate p (toBytesProcessed n)
@@ -558,14 +559,14 @@ receiveContent mm p sizer storer mkmsg = do
 						net $ sendMessage (ERROR "expected VALID or INVALID")
 						return Nothing
 				else return Nothing
-			(ok, v) <- local $ storer offset len
+			v <- local $ storer offset len
 				(net (receiveBytes len p'))
 				validitycheck
-			sendSuccess ok
-			return (ok, v)
+			sendSuccess (observeBool v)
+			return v
 		_ -> do
 			net $ sendMessage (ERROR "expected DATA")
-			return (False, UnVerified)
+			return observeFailure
 
 checkSuccess :: Proto Bool
 checkSuccess = do

@@ -24,6 +24,7 @@ import Logs.Location
 import Types.NumCopies
 import Utility.Metered
 import Types.Backend (IncrementalVerifier(..))
+import Backend
 
 import Control.Monad.Free
 import Control.Concurrent.STM
@@ -76,10 +77,11 @@ runLocal runst runner a = case a of
 		-- Remote.P2P and Remote.Git.
 		let rsp = RetrievalAllKeysSecure
 		v <- tryNonAsync $ do
+			iv <- startVerifyKeyContentIncrementally DefaultVerify k
 			let runtransfer ti = 
 				Right <$> transfer download' k af Nothing (\p ->
 					logStatusAfter k $ getViaTmp rsp DefaultVerify k af $ \tmp ->
-						storefile (fromRawFilePath tmp) o l getb Nothing validitycheck p ti)
+						storefile (fromRawFilePath tmp) o l getb iv validitycheck p ti)
 			let fallback = return $ Left $
 				ProtoFailureMessage "transfer already in progress, or unable to take transfer lock"
 			checktransfer runtransfer fallback
@@ -87,10 +89,10 @@ runLocal runst runner a = case a of
 			Left e -> return $ Left $ ProtoFailureException e
 			Right (Left e) -> return $ Left e
 			Right (Right ok) -> runner (next ok)
-	StoreContentTo dest incrementalverifier o l getb validitycheck next -> do
+	StoreContentTo dest iv o l getb validitycheck next -> do
 		v <- tryNonAsync $ do
 			let runtransfer ti = Right
-				<$> storefile dest o l getb incrementalverifier validitycheck nullMeterUpdate ti
+				<$> storefile dest o l getb iv validitycheck nullMeterUpdate ti
 			let fallback = return $ Left $
 				ProtoFailureMessage "transfer failed"
 			checktransfer runtransfer fallback
