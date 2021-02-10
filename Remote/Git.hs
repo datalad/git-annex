@@ -545,7 +545,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
 					file Nothing stdRetry $ \p ->
 						metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
-							copier object dest p' checksuccess
+							copier object dest key p' checksuccess
 				if ok
 					then return v
 					else giveup "failed to retrieve content from remote"
@@ -690,7 +690,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 				let rsp = RetrievalAllKeysSecure
 				res <- logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key $ \_ p' -> 
-						copier object (fromRawFilePath dest) p' (liftIO checksuccessio)
+						copier object (fromRawFilePath dest) key p' (liftIO checksuccessio)
 				Annex.Content.saveState True
 				return res
 			)
@@ -783,50 +783,6 @@ onLocal' (LocalRemoteAnnex repo v) a = liftIO (takeMVar v) >>= \case
 onLocalFast :: State -> Annex a -> Annex a
 onLocalFast st a = onLocal st $ Annex.BranchState.disableUpdate >> a
 
--- To avoid the overhead of trying copy-on-write every time, it's tried
--- once and if it fails, is not tried again.
-newtype CopyCoWTried = CopyCoWTried (MVar Bool)
-
-newCopyCoWTried :: IO CopyCoWTried
-newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
-
-{- Copys a file. Uses copy-on-write if it is supported. Otherwise,
- - uses rsync, so that interrupted copies can be resumed. -}
-rsyncOrCopyFile :: State -> [CommandParam] -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
-#ifdef mingw32_HOST_OS
-rsyncOrCopyFile _st _rsyncparams src dest p =
-	-- rsync is only available on Windows in some installation methods,
-	-- and is not strictly needed here, so don't use it.
-	docopywith copyFileExternal
-  where
-#else
-rsyncOrCopyFile st rsyncparams src dest p =
-	-- If multiple threads reach this at the same time, they
-	-- will both try CoW, which is acceptable.
-	ifM (liftIO $ isEmptyMVar copycowtried)
-		( do
-			ok <- docopycow
-			void $ liftIO $ tryPutMVar copycowtried ok
-			pure ok <||> dorsync
-		, ifM (liftIO $ readMVar copycowtried)
-			( docopycow <||> dorsync
-			, dorsync
-			)
-		)
-  where
-	copycowtried = case st of
-		State _ _ (CopyCoWTried v) _ _ -> v
-	dorsync = do
-		-- dest may already exist, so make sure rsync can write to it
-		void $ liftIO $ tryIO $ allowWrite (toRawFilePath dest)
-		oh <- mkOutputHandlerQuiet
-		Ssh.rsyncHelper oh (Just p) $
-			rsyncparams ++ [File src, File dest]
-	docopycow = docopywith copyCoW
-#endif
-	docopywith a = liftIO $ watchFileSize dest p $
-		a CopyTimeStamps src dest
-
 commitOnCleanup :: Git.Repo -> Remote -> State -> Annex a -> Annex a
 commitOnCleanup repo r st a = go `after` a
   where
@@ -867,23 +823,23 @@ wantHardLink = (annexHardLink <$> Annex.getGitConfig)
 --
 -- When a hard link is created, returns Verified; the repo being linked
 -- from is implicitly trusted, so no expensive verification needs to be
--- done.
-type Copier = FilePath -> FilePath -> MeterUpdate -> Annex Bool -> Annex (Bool, Verification)
+-- done. Also returns Verified if the key's content is verified while
+-- copying it.
+type Copier = FilePath -> FilePath -> Key -> MeterUpdate -> Annex Bool -> Annex (Bool, Verification)
 
 mkCopier :: Bool -> State -> [CommandParam] -> Annex Copier
 mkCopier remotewanthardlink st rsyncparams = do
-	let copier = \src dest p check -> unVerified $
-		rsyncOrCopyFile st rsyncparams src dest p <&&> check
+	let copier = fileCopier st rsyncparams
 	localwanthardlink <- wantHardLink
 	let linker = \src dest -> createLink src dest >> return True
 	if remotewanthardlink || localwanthardlink
-		then return $ \src dest p check ->
+		then return $ \src dest k p check ->
 			ifM (liftIO (catchBoolIO (linker src dest)))
 				( ifM check
 					( return (True, Verified)
 					, return (False, UnVerified)
 					)
-				, copier src dest p check
+				, copier src dest k p check
 				)
 		else return copier
 
@@ -941,3 +897,53 @@ mkState r u gc = do
 				)
 
 			return (duc, getrepo)
+
+-- To avoid the overhead of trying copy-on-write every time, it's tried
+-- once and if it fails, is not tried again.
+newtype CopyCoWTried = CopyCoWTried (MVar Bool)
+
+newCopyCoWTried :: IO CopyCoWTried
+newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
+
+{- Copys a file. Uses copy-on-write if it is supported. Otherwise,
+ - uses rsync, so that interrupted copies can be resumed. -}
+fileCopier :: State -> [CommandParam] -> Copier
+#ifdef mingw32_HOST_OS
+rsyncOrCopyFile _st _rsyncparams src dest k p check =
+	-- rsync is only available on Windows in some installation methods,
+	-- and is not strictly needed here, so don't use it.
+	unVerified $ docopywith copyFileExternal <&&> check
+  where
+#else
+fileCopier st rsyncparams src dest _k p check =
+	-- If multiple threads reach this at the same time, they
+	-- will both try CoW, which is acceptable.
+	ifM (liftIO $ isEmptyMVar copycowtried)
+		( do
+			ok <- docopycow
+			void $ liftIO $ tryPutMVar copycowtried ok
+			if ok
+				then unVerified check
+				else unVerified $ dorsync <&&> check
+		, ifM (liftIO $ readMVar copycowtried)
+			( do
+				ok <- docopycow
+				if ok
+					then unVerified check
+					else unVerified $ dorsync <&&> check
+			, unVerified dorsync
+			)
+		)
+  where
+	copycowtried = case st of
+		State _ _ (CopyCoWTried v) _ _ -> v
+	dorsync = do
+		-- dest may already exist, so make sure rsync can write to it
+		void $ liftIO $ tryIO $ allowWrite (toRawFilePath dest)
+		oh <- mkOutputHandlerQuiet
+		Ssh.rsyncHelper oh (Just p) $
+			rsyncparams ++ [File src, File dest]
+	docopycow = docopywith copyCoW
+#endif
+	docopywith a = liftIO $ watchFileSize dest p $
+		a CopyTimeStamps src dest
