@@ -20,6 +20,6 @@ checksum.
 
 Urk: Using rsync currently protects against
 [[bugs/URL_key_potential_data_loss]], so the replacement would also need to
-deal with that. Probably by refusing to resume a partial transfer of an
-affected key. (Or it could just fall back to rsync for such keys.)
+deal with that. Eg, by comparing the temp file content with the start of
+the object when resuming.
 """]]

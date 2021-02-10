@@ -62,7 +62,10 @@ import Annex.Path
 import Creds
 import Types.NumCopies
 import Types.ProposedAccepted
+import Types.Backend
+import Backend
 import Annex.Action
+import Annex.Verify
 import Messages.Progress
 
 #ifndef mingw32_HOST_OS
@@ -542,11 +545,12 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 		-- run copy from perspective of remote
 		onLocalFast st $ Annex.Content.prepSendAnnex key >>= \case
 			Just (object, checksuccess) -> do
+				let verify = Annex.Content.RemoteVerify r
 				copier <- mkCopier hardlink st
 				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
 					file Nothing stdRetry $ \p ->
 						metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
-							copier object dest key p' checksuccess
+							copier object dest key p' checksuccess verify
 				if ok
 					then return v
 					else giveup "failed to retrieve content from remote"
@@ -685,12 +689,12 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		res <- onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True
 			, runTransfer (Transfer Download u (fromKey id key)) file Nothing stdRetry $ \p -> do
-				copier <- mkCopier hardlink st
 				let verify = Annex.Content.RemoteVerify r
+				copier <- mkCopier hardlink st
 				let rsp = RetrievalAllKeysSecure
 				res <- logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key $ \_ p' -> 
-						copier object (fromRawFilePath dest) key p' (liftIO checksuccessio)
+						copier object (fromRawFilePath dest) key p' (liftIO checksuccessio) verify
 				Annex.Content.saveState True
 				return res
 			)
@@ -825,7 +829,7 @@ wantHardLink = (annexHardLink <$> Annex.getGitConfig)
 -- from is implicitly trusted, so no expensive verification needs to be
 -- done. Also returns Verified if the key's content is verified while
 -- copying it.
-type Copier = FilePath -> FilePath -> Key -> MeterUpdate -> Annex Bool -> Annex (Bool, Verification)
+type Copier = FilePath -> FilePath -> Key -> MeterUpdate -> Annex Bool -> VerifyConfig -> Annex (Bool, Verification)
 
 mkCopier :: Bool -> State -> Annex Copier
 mkCopier remotewanthardlink st = do
@@ -833,13 +837,13 @@ mkCopier remotewanthardlink st = do
 	localwanthardlink <- wantHardLink
 	let linker = \src dest -> createLink src dest >> return True
 	if remotewanthardlink || localwanthardlink
-		then return $ \src dest k p check ->
+		then return $ \src dest k p check verifyconfig ->
 			ifM (liftIO (catchBoolIO (linker src dest)))
 				( ifM check
 					( return (True, Verified)
 					, return (False, UnVerified)
 					)
-				, copier src dest k p check
+				, copier src dest k p check verifyconfig
 				)
 		else return copier
 
@@ -922,9 +926,9 @@ newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
  -}
 fileCopier :: State -> Copier
 #ifdef mingw32_HOST_OS
-fileCopier _st src dest k meterupdate check = docopy
+fileCopier _st src dest k meterupdate check verifyconfig = docopy
 #else
-fileCopier st src dest k meterupdate check =
+fileCopier st src dest k meterupdate check verifyconfig =
 	-- If multiple threads reach this at the same time, they
 	-- will both try CoW, which is acceptable.
 	ifM (liftIO $ isEmptyMVar copycowtried)
@@ -953,14 +957,16 @@ fileCopier st src dest k meterupdate check =
 	dest' = toRawFilePath dest
 
 	docopy = do
+		iv <- startVerifyKeyContentIncrementally verifyconfig k
+
 		-- The file might have had the write bit removed,
 		-- so make sure we can write to it.
 		void $ liftIO $ tryIO $ allowWrite dest'
 
 		liftIO $ withBinaryFile dest ReadWriteMode $ \hdest ->
 			withBinaryFile src ReadMode $ \hsrc -> do
-				sofar <- compareexisting hdest hsrc zeroBytesProcessed
-				docopy' hdest hsrc sofar
+				sofar <- compareexisting iv hdest hsrc zeroBytesProcessed
+				docopy' iv hdest hsrc sofar
 
 		-- Copy src mode and mtime.
 		mode <- liftIO $ fileMode <$> getFileStatus src
@@ -969,24 +975,30 @@ fileCopier st src dest k meterupdate check =
 		liftIO $ touch dest' mtime False
 
 		ifM check
-			( return (True, UnVerified)
+			( case iv of
+				Just x -> ifM (liftIO $ finalizeIncremental x)
+					( return (True, Verified)
+					, return (False, UnVerified)
+					)
+				Nothing -> return (True, UnVerified)
 			, return (False, UnVerified)
 			)
 	
-	docopy' hdest hsrc sofar = do
+	docopy' iv hdest hsrc sofar = do
 		s <- S.hGet hsrc defaultChunkSize
 		if s == S.empty
 			then return ()
 			else do
 				let sofar' = addBytesProcessed sofar (S.length s)
 				S.hPut hdest s
+				maybe noop (flip updateIncremental s) iv
 				meterupdate sofar'
-				docopy' hdest hsrc sofar'
+				docopy' iv hdest hsrc sofar'
 
 	-- Leaves hdest and hsrc seeked to wherever the two diverge,
 	-- so typically hdest will be seeked to end, and hsrc to the same
 	-- position.
-	compareexisting hdest hsrc sofar = do
+	compareexisting iv hdest hsrc sofar = do
 		s <- S.hGet hdest defaultChunkSize
 		if s == S.empty
 			then return sofar
@@ -994,9 +1006,10 @@ fileCopier st src dest k meterupdate check =
 				s' <- getnoshort (S.length s) hsrc
 				if s == s'
 					then do
+						maybe noop (flip updateIncremental s) iv
 						let sofar' = addBytesProcessed sofar (S.length s)
 						meterupdate sofar'
-						compareexisting hdest hsrc sofar'
+						compareexisting iv hdest hsrc sofar'
 					else do
 						seekbefore hdest s
 						seekbefore hsrc s'
