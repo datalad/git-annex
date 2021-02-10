@@ -172,11 +172,14 @@ runLocal runst runner a = case a of
 	  where
 		go iv n
 			| n == 0 = return ()
-			| n > fromIntegral defaultChunkSize = do
-				updateIncremental iv =<< S.hGet h defaultChunkSize
-				go iv (n - fromIntegral defaultChunkSize)
-			| otherwise = 
-				updateIncremental iv =<< S.hGet h (fromIntegral n)
+			| otherwise = do
+				let c = if n > fromIntegral defaultChunkSize
+					then defaultChunkSize
+					else fromIntegral n
+				b <- S.hGet h c
+				updateIncremental iv b
+				unless (b == S.empty) $
+					go iv (n - fromIntegral (S.length b))
 
 	storefile dest (Offset o) (Len l) getb incrementalverifier validitycheck p ti = do
 		v <- runner getb
