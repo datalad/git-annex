@@ -884,7 +884,10 @@ mkCopier remotewanthardlink st rsyncparams = do
 	if remotewanthardlink || localwanthardlink
 		then return $ \src dest p check ->
 			ifM (liftIO (catchBoolIO (linker src dest)))
-				( return (True, Verified)
+				( ifM check
+					( return (True, Verified)
+					, return (False, UnVerified)
+					)
 				, copier src dest p check
 				)
 		else return copier
