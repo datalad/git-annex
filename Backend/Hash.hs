@@ -28,7 +28,7 @@ import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import Control.DeepSeq
 import Control.Exception (evaluate)
-import Control.Concurrent.MVar
+import Data.IORef
 
 data Hash
 	= MD5Hash
@@ -280,15 +280,11 @@ md5Hasher = mkHasher md5 md5_context
 
 mkIncrementalVerifier :: HashAlgorithm h => Context h -> Key -> IO IncrementalVerifier
 mkIncrementalVerifier ctx key = do
-	v <- newMVar ctx
+	v <- newIORef ctx
 	return $ IncrementalVerifier
-		{ updateIncremental = \b -> do
-			ctx' <- takeMVar v
-			let ctx'' = hashUpdate ctx' b
-			evaluate $ rnf ctx''
-			putMVar v ctx''
+		{ updateIncremental = modifyIORef' v . flip hashUpdate
 		, finalizeIncremental = do
-			ctx' <- takeMVar v
+			ctx' <- readIORef v
 			let digest = hashFinalize ctx'
 			return $ sameCheckSum key (show digest)
 		}
