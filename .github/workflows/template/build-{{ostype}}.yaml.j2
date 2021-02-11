@@ -511,9 +511,7 @@ jobs:
           {{step}}
           {% endfor %}
 
-    {% if ostype == "ubuntu" %}
-    {# TODO: return for macos! https://github.com/datalad/git-annex/issues/42
-      {% if ostype == "ubuntu"  or ostype == "macos" %} #}
+    {% if ostype == "ubuntu"  or ostype == "macos" %}
       - name: Set up SSH target
         shell: bash
         run: |
@@ -529,7 +527,7 @@ jobs:
             | bash
           echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
 
-   {% elif ostype == "windows" %}
+    {% elif ostype == "windows" %}
       - name: Define test host alias
         shell: cmd
         run: |
