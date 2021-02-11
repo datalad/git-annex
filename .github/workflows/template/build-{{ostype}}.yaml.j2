@@ -518,7 +518,9 @@ jobs:
           {% if ostype == "macos" %}
           # coreutils provides a readlink that supports `-f`
           brew install coreutils docker docker-machine
-          docker-machine --github-api-token="${{ secrets.DATALAD_GITHUB_TOKEN }}" create --driver virtualbox default
+          mkdir -p ~/.docker/machine/cache
+          wget -O ~/.docker/machine/cache/boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso
+          docker-machine create --driver virtualbox default
           eval "$(docker-machine env default)"
           export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
           {% endif %}
