@@ -40,6 +40,13 @@ do
     ((n++))
     if [ "$n" -lt "$tries" ]
     then sleep 1
+         docker ps -a
+         echo 'BEGIN datalad-tests-ssh LOGS --------'
+         docker logs datalad-tests-ssh
+         echo 'END datalad-tests-ssh LOGS --------'
+         echo 'BEGIN datalad-tests-ssh2 LOGS --------'
+         docker logs datalad-tests-ssh2
+         echo 'END datalad-tests-ssh2 LOGS --------'
     else exit 1
     fi
 done
