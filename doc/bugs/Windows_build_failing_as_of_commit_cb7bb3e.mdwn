@@ -1,0 +1,1 @@
+As of commit cb7bb3e, trying to build git-annex on Windows fails with a syntax error, which (once fixed) is replaced by a type error and an undefined name error.  All of these can be fixed with this patch: https://raw.githubusercontent.com/datalad/git-annex/32c2244753ae217a081109e1694bc83fe7a2da21/patches/20210211-cb7bb3e4b-windows-fix.patch
