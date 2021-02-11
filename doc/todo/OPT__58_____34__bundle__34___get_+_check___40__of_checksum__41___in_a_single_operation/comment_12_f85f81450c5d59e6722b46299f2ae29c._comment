@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: comment 9"""
+ date="2021-02-11T01:33:47Z"
+ content="""
+Not a bad idea, yoh!
+
+It could be taken further: Keep reading from the file as it grows and hash
+incrementally. Use inotify to know when more has been written, or poll
+periodically or when PROGRESS is received. If the hash is wrong at the end,
+rehash the file. Only remotes that write chunks out of order would pay a
+time penalty for that extra hashing.
+
+That could be enabled by a protocol extension. Or disabled by a protocol
+extension for that matter, since remotes that write out of order are
+probably rare.
+"""]]
