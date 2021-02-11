@@ -340,6 +340,17 @@ jobs:
           hdiutil detach /Volumes/git-annex/
           echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
 
+      - name: Set up SSH target
+        shell: bash
+        run: |
+          # coreutils provides a readlink that supports `-f`
+          brew install coreutils docker docker-machine
+          docker-machine --github-api-token="${{ secrets.DATALAD_GITHUB_TOKEN }}" create --driver virtualbox default
+          eval "$(docker-machine env default)"
+          export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+          bash .github/workflows/tools/prep-travis-forssh.sh
+          echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
+
 
       - name: Set up environment
         run: |

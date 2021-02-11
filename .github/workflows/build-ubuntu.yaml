@@ -344,9 +344,7 @@ jobs:
       - name: Set up SSH target
         shell: bash
         run: |
-          curl -fSsL \
-            https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
-            | bash
+          bash .github/workflows/tools/prep-travis-forssh.sh
           echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
 
 
