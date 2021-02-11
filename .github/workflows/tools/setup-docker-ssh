@@ -1,0 +1,153 @@
+#!/bin/sh
+
+set -eu
+
+usage() {
+    cat <<'EOF'
+Usage: ./setup [--key=<file>] [--from=<image>] [-2]
+
+Start a container (or two) to use as an SSH target for DataLad's
+tests.
+
+*Options*
+  --key=<file>
+    Add this public SSH key instead of ~/.ssh/id_rsa.pub to the
+    container's .ssh/authorized_keys.
+  --from=<image>
+    Use <image> in the "FROM " line of the generated Dockerfile
+    instead of an exported tarball of dataladtester/docker-ssh-target:latest.
+    When set to '.', an image is built from the Dockerfile in the same directory
+    as this script.
+  -2
+    Start a second container.  This is needed for a few DataLad tests
+    that require two SSH targets.
+
+*Required configuration*
+
+  Add a section like the one below to ~/.ssh/config:
+
+    Host datalad-test
+    HostName localhost
+    User dl
+    ControlMaster no
+    StrictHostKeyChecking no
+    Port 42241
+
+  If a second instance is needed, add another entry, appending "2" to
+  the Host value and incrementing the port by 1.
+
+  Finally, set DATALAD_TESTS_SSH=1 when running the DataLad tests.
+EOF
+}
+
+key="$HOME/.ssh/id_rsa.pub"
+from_tarball=http://datasets.datalad.org/datalad/docker-ssh-target/docker-ssh-target.tar.gz
+from=$from_tarball
+two=
+while test $# != 0
+do
+    case "$1" in
+        --key)
+            shift
+            key="${1?--key requires an argument}"
+            ;;
+        --key=*)
+            key="${1#--key=}"
+            ;;
+        --from)
+            shift
+            from="${1?--from requires an argument}"
+            ;;
+        --from=*)
+            from="${1#--from=}"
+            ;;
+        -2)
+            two=1
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+running="$(docker ps -a --quiet --filter='name=^datalad-tests-ssh')"
+if test -n "$running"
+then
+    echo >&2 "datalad-tests-ssh* container(s) already running:"
+    echo >&2 "$running"
+    exit 1
+fi
+
+if ! test -f "$key"
+then
+    echo >&2 "Specified public key file doesn't exist: $key"
+    exit 1
+fi
+
+if test "$from" = "."
+then
+    if test "$(dirname "$0")" != "."
+    then
+        echo >&2 "Without --from, call should be from script's directory"
+        exit 1
+    fi
+    docker build -t datalad-tests-ssh-base .
+    from="datalad-tests-ssh-base"
+elif test "$from" = "$from_tarball"
+then
+   curl -s "$from" | gunzip | docker load
+   # overload with hardcoded knowledge of the name of imported image
+   from=dataladtester/docker-ssh-target:latest
+fi
+
+# Note: Resolve the path for mounting.  None of DataLad's SSH tests
+# seem to depend on the unresolved path being on the target, so don't
+# bother setting that up.
+tmpdir="$(readlink -f "${DATALAD_TESTS_TEMP_DIR:-${TMPDIR:-/tmp}}")"
+mkdir -p "$tmpdir"
+(
+    cd "$(mktemp -d "$tmpdir/datalad-tests-ssh-XXXXXXX")"
+    cat >Dockerfile <<-EOF
+	FROM $from
+	RUN groupadd -og $(id -g) dl && \\
+	    useradd -ms /bin/bash -ou $(id -u) -g dl dl && \\
+	    mkdir -p /home/dl/.ssh && \\
+	    chown -R dl:dl /home/dl/ && \\
+	    echo 'dl:dl' | chpasswd
+	CMD ["/usr/sbin/sshd", "-D"]
+	RUN mkdir -p "$tmpdir"
+	EOF
+    docker build -t datalad-tests-ssh .
+)
+
+start() {
+    name="$1"
+    port="$2"
+    authkeys_file=/home/dl/.ssh/authorized_keys
+    docker run --name "$name" -v "$tmpdir":"$tmpdir" -dit -p "$port":22 \
+           datalad-tests-ssh
+    docker exec -i "$name" \
+           sh -c "cat >>$authkeys_file && chown dl:dl $authkeys_file" \
+           <"$key"
+}
+
+start datalad-tests-ssh 42241
+# Set up another instance for the few tests that use two remotes.
+# Ideally the same source directory wouldn't be used for the mounts,
+# but DataLad tests rely on it.
+test -n "$two" && start datalad-tests-ssh2 42242
+
+docker ps -a
+echo 'BEGIN datalad-tests-ssh LOGS --------'
+docker logs datalad-tests-ssh
+echo 'END datalad-tests-ssh LOGS --------'
+if test -n "$two"
+then
+    echo 'BEGIN datalad-tests-ssh2 LOGS --------'
+    docker logs datalad-tests-ssh2
+    echo 'END datalad-tests-ssh2 LOGS --------'
+fi
+
+exit 0
