@@ -416,7 +416,6 @@ jobs:
             | bash
           echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
 
-
       - name: Set up environment
         run: |
           git config --global user.email "test@github.land"
