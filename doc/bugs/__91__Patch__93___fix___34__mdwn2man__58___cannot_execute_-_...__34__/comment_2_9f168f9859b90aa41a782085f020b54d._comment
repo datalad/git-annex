@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="falsifian"
+ avatar="http://cdn.libravatar.org/avatar/59c3c23c500d20d83ecb9d1f149be9ae"
+ subject="comment 2"
+ date="2021-02-12T03:52:37Z"
+ content="""
+Thanks for the tip. (FYI: I'm working on packaging it for OpenBSD. Currently we just have a hack in place that manually runs the mdwn2man script after the cabal build. The Cabal packaging module it's built on probably isn't designed to call a Makefile but there may be some way to do it. In any case, it seems to work, so we might just leave it as is.)
+"""]]
