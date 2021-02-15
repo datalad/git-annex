@@ -2,3 +2,5 @@ As of commit cb7bb3e, trying to build git-annex on Windows fails with a syntax e
 
 [[!meta author=jwodder]]
 [[!tag projects/datalad]]
+
+> applied, thanks [[done]] --[[Joey]]

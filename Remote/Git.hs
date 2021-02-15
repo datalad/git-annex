@@ -46,6 +46,7 @@ import Logs.Location
 import Utility.Metered
 import Utility.CopyFile
 import Utility.Env
+import Utility.FileMode
 import Utility.Batch
 import Utility.SimpleProtocol
 import Utility.Touch
@@ -70,7 +71,6 @@ import Messages.Progress
 
 #ifndef mingw32_HOST_OS
 import qualified Utility.RawFilePath as R
-import Utility.FileMode
 #endif
 
 import Control.Concurrent
@@ -654,7 +654,7 @@ copyFromRemoteCheap st repo
 			)
 	| otherwise = Nothing
 #else
-copyFromRemoteCheap _ _ _ = Nothing
+copyFromRemoteCheap _ _ = Nothing
 #endif
 
 {- Tries to copy a key's content to a remote's annex. -}
@@ -927,6 +927,7 @@ newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
 fileCopier :: State -> Copier
 #ifdef mingw32_HOST_OS
 fileCopier _st src dest k meterupdate check verifyconfig = docopy
+  where
 #else
 fileCopier st src dest k meterupdate check verifyconfig =
 	-- If multiple threads reach this at the same time, they
