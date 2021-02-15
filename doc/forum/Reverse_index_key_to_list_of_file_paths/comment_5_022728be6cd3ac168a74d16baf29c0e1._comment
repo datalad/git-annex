@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-02-15T17:25:05Z"
+ content="""
+git grep doesn't use an index per se, but is probably faster
+than `find` at least sometimes. And probably somewhat faster than things
+involving `git-annex find` too.
+
+It's unfortunate that `git grep` doesn't search on the content of symlink
+texts, so that can't be used to find locked files.
+
+The equivilant using git-annex find, which will find both types:
+
+	git annex find --format '${key}\n' | grep SHA256E-s320029--488e29f5584ba4e474db95aa42fbb58ddb92f2a59bc0b24a91171acb4d8f4828.png
+"""]]
