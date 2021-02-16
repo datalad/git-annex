@@ -35,13 +35,15 @@ do
             echo "[INFO] Branch $branch_name already exists; assuming PR already exists"
         else
             tmpdir="$(mktemp -d)"
-            git clone --depth 1 "$(git remote get-url origin | sed "s,https://,https://x-access-token:$GITHUB_TOKEN@,")" "$tmpdir"
+            # --no-single-branch is needed so that `git push -u` will create a
+            # remote tracking branch, which is needed for `gh pr create`.
+            git clone --depth 1 --no-single-branch "$(git remote get-url origin | sed "s,https://,https://x-access-token:$GITHUB_TOKEN@,")" "$tmpdir"
             cd "$tmpdir"
             git checkout -b "$branch_name"
             git rm "$patchfile"
             git commit -m "Delete patch $(basename "$patchfile")"
             git push -u origin "$branch_name"
-            gh pr create --title "Delete patch $(basename "$patchfile")" --body "The patch \`$patchfile\` has been applied upstream.  This PR removes it from the local patch directory." --head "$branch_name"
+            gh pr create --title "Delete patch $(basename "$patchfile")" --body "The patch \`$patchfile\` has been applied upstream.  This PR removes it from the local patch directory."
             cd -
         fi
     elif git apply "$patchfile"
