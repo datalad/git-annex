@@ -35,7 +35,7 @@ do
             echo "[INFO] Branch $branch_name already exists; assuming PR already exists"
         else
             tmpdir="$(mktemp -d)"
-            git clone --depth 1 "$(git remote get-url origin)" "$tmpdir"
+            git clone --depth 1 "$(git remote get-url origin | sed "s,https://,https://x-access-token:$GITHUB_TOKEN@,")" "$tmpdir"
             cd "$tmpdir"
             git checkout -b "$branch_name"
             git rm "$patchfile"
