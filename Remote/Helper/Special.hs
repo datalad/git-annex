@@ -35,11 +35,9 @@ module Remote.Helper.Special (
 ) where
 
 import Annex.Common
-import qualified Annex
 import Annex.SpecialRemote.Config
 import Types.StoreRetrieve
 import Types.Remote
-import Crypto
 import Annex.UUID
 import Config
 import Config.Cost
@@ -51,7 +49,6 @@ import Messages.Progress
 import qualified Git
 import qualified Git.Construct
 import Git.Types
-import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -213,25 +210,16 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 	storeKeyGen k p enc = sendAnnex k rollback $ \src ->
 		displayprogress p k (Just src) $ \p' ->
 			storeChunks (uuid baser) chunkconfig enck k src p'
-				(storechunk enc)
-				checkpresent
+				enc encr storer checkpresent
 	  where
 		rollback = void $ removeKey encr k
 		enck = maybe id snd enc
-
-	storechunk Nothing k content p = storer k content p
-	storechunk (Just (cipher, enck)) k content p = do
-		cmd <- gpgCmd <$> Annex.getGitConfig
-		withBytes content $ \b ->
-			encrypt cmd encr cipher (feedBytes b) $
-				readBytes $ \encb ->
-					storer (enck k) (ByteContent encb) p
 
 	-- call retriever to get chunks; decrypt them; stream to dest file
 	retrieveKeyFileGen k dest p enc = do
 		displayprogress p k Nothing $ \p' ->
 			retrieveChunks retriever (uuid baser) chunkconfig
-				enck k dest p' (sink dest enc encr)
+				enck k dest p' enc encr
 		return UnVerified
 	  where
 		enck = maybe id snd enc
@@ -252,52 +240,6 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 		| displayProgress cfg =
 			metered (Just p) (KeySizer k (pure (fmap toRawFilePath srcfile))) (const a)
 		| otherwise = a p
-
-{- Sink callback for retrieveChunks. Stores the file content into the
- - provided Handle, decrypting it first if necessary.
- - 
- - If the remote did not store the content using chunks, no Handle
- - will be provided, and it's up to us to open the destination file.
- -
- - Note that when neither chunking nor encryption is used, and the remote
- - provides FileContent, that file only needs to be renamed
- - into place. (And it may even already be in the right place..)
- -}
-sink
-	:: LensGpgEncParams c
-	=> FilePath
-	-> Maybe (Cipher, EncKey)
-	-> c
-	-> Maybe Handle
-	-> Maybe MeterUpdate
-	-> ContentSource
-	-> Annex ()
-sink dest enc c mh mp content = case (enc, mh, content) of
-	(Nothing, Nothing, FileContent f)
-		| f == dest -> noop
-		| otherwise -> liftIO $ moveFile f dest
-	(Just (cipher, _), _, ByteContent b) -> do
-		cmd <- gpgCmd <$> Annex.getGitConfig
-		decrypt cmd c cipher (feedBytes b) $
-			readBytes write
-	(Just (cipher, _), _, FileContent f) -> do
-		cmd <- gpgCmd <$> Annex.getGitConfig
-		withBytes content $ \b ->
-			decrypt cmd c cipher (feedBytes b) $
-				readBytes write
-		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
-	(Nothing, _, FileContent f) -> do
-		withBytes content write
-		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
-	(Nothing, _, ByteContent b) -> write b
-  where
-	write b = case mh of
-		Just h -> liftIO $ b `streamto` h
-		Nothing -> liftIO $ bracket opendest hClose (b `streamto`)
-	streamto b h = case mp of
-		Just p -> meteredWrite p (S.hPut h) b
-		Nothing -> L.hPut h b
-	opendest = openBinaryFile dest WriteMode
 
 withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a
 withBytes (ByteContent b) a = a b
