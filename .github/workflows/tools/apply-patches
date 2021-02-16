@@ -40,8 +40,8 @@ do
             git checkout -b "$branch_name"
             git rm "$patchfile"
             git commit -m "Delete patch $(basename "$patchfile")"
-            git push origin "$branch_name"
-            gh pr create --title "Delete patch $(basename "$patchfile")" --body "The patch \`$patchfile\` has been applied upstream.  This PR removes it from the local patch directory."
+            git push -u origin "$branch_name"
+            gh pr create --title "Delete patch $(basename "$patchfile")" --body "The patch \`$patchfile\` has been applied upstream.  This PR removes it from the local patch directory." --head "$branch_name"
             cd -
         fi
     elif git apply "$patchfile"
