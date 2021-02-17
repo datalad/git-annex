@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="georg.schnabel@bd6be2144f897f5caa0028e0dd1e0a65634add81"
+ nickname="georg.schnabel"
+ avatar="http://cdn.libravatar.org/avatar/b58e4e0101a95b57d55da575ca21f510"
+ subject="import from special directory remote fails due to running out of memory "
+ date="2021-02-17T14:29:49Z"
+ content="""
+First of all, git annex is an awesome tool, I like it very much!
+
+When trying to `git annex import` from a special directory remote with a large number of files (~4 millions) with a cumulative size of about 1TB, git annex takes up all main memory during the final update remote/ref step on a machine with 16G of main memory and is then killed by the system. This also happens when supplying the `--no-content` option. Is there a way to make git annex less memory demanding when importing from a special directory remote with a large number of files?
+"""]]
