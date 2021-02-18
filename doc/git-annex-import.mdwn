@@ -105,15 +105,17 @@ the tree of files on the remote, even when importing into a subdirectory.
 
 # IMPORTING FROM A DIRECTORY
 
-When run with a path, `git annex import` moves files from somewhere outside
-the git working copy, and adds them to the annex.
+When run with a path, `git annex import` **moves** files from somewhere outside
+the git working copy, and adds them to the annex. In contrast to importing 
+from a special directory remote, imported files are **deleted from the given path**.
 
 This is a legacy interface. It is still supported, but please consider
 switching to importing from a directory special remote instead, using the
 interface documented above.
 
 Individual files to import can be specified. If a directory is specified,
-the entire directory is imported.
+the entire directory is imported. Please note that the following instruction
+will **delete all files from the source directory**.   
   
         	git annex import /media/camera/DCIM/*
 
