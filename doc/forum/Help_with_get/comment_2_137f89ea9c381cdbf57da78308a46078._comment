@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jwrauch"
+ avatar="http://cdn.libravatar.org/avatar/0e83010187ef0c8c587e0c99e2ca5474"
+ subject="comment 2"
+ date="2021-02-19T16:10:00Z"
+ content="""
+I'm using git annex version: 8.20200815-g335aae266.  And I followed the instructions the link provided.  I looked into wls but decided to try this first.  Is that a better approach?
+"""]]

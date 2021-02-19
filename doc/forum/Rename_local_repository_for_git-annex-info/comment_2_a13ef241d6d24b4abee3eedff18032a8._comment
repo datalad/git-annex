@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="jodumont"
+ avatar="http://cdn.libravatar.org/avatar/343b334cbc4b2bff019ab6b525a2c9ed"
+ subject="how to rename/remove the [here] ??"
+ date="2021-02-19T04:56:46Z"
+ content="""
+I'm able to change the description of my repo but not the name, which is by default and in that case **[here]**
+
+> user@machine:/srv/data$ git-annex info  
+trusted repositories: 0  
+semitrusted repositories: 3  
+00000000-0000-0000-0000-000000000001 -- web  
+00000000-0000-0000-0000-000000000002 -- bittorrent  
+xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxxx -- sub.domain.tld:/srv/data **[here]**  
+untrusted repositories: xxx  
+transfers in progress: xxxx  
+available local disk space: 2.03 petabytes (+1 gigabyte reserved)  
+
+## How I could edit the name and/or name it properly when I init it ?
+
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="jodumont"
+ avatar="http://cdn.libravatar.org/avatar/343b334cbc4b2bff019ab6b525a2c9ed"
+ subject="Explanation for a noGUI usage"
+ date="2021-02-19T04:39:34Z"
+ content="""
+I had that issue, git-annex is installed on a noGUI remote machine so the directory and the file **~/.config/git-annex/autostart** didn't exist.
+I think it worth to mention than you could create by hand **~/.config/git-annex/autostart**
+
+> mkdir ~/.config/git-annex/; touch ~/.config/git-annex/autostart
+
+and in simply add the path of your git-annex you want to start such as **/srv/data** for this example (*which contain a .git/annex/ directory*) then you are ready to go
+
+> cd /srv/data; git annex assistant --autostart
+"""]]

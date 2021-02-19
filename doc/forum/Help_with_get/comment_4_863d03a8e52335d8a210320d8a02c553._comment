@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="jwrauch"
+ avatar="http://cdn.libravatar.org/avatar/0e83010187ef0c8c587e0c99e2ca5474"
+ subject="comment 4"
+ date="2021-02-19T16:19:52Z"
+ content="""
+Sorry, formatting:
+
+    $ git annex get . --debug
+    ok
+    get recorder/2020-philippines/20200906_165152.mp4 (from avi...)
+    [2021-02-19 11:11:22.1489056] call: cp [\"--reflink=auto\",\"--preserve=timestamps\",\"E:\\video\\.git\\annex\\objects\\d88\\080\\SHA256E-s493726419--95dd6a377dce064935ab2e8c0dda2f3c4d9d2b33e0efaca34fceda200cbee249.mp4\\SHA256E-       s493726419--95dd6a377dce064935ab2e8c0dda2f3c4d9d2b33e0efaca34fceda200cbee249.mp4\",\".git\\annex\\tmp\\SHA256E-s493726419--95dd6a377dce064935ab2e8c0dda2f3c4d9d2b33e0efaca34fceda200cbee249.mp4\"]
+    10%   46.12 MiB        87 MiB/s 4scp: error writing '.git\annex\tmp\SHA256E-s493726419--95dd6a377dce064935ab2e8c0dda2f3c4d9d2b33e0efaca34fceda200cbee249.mp4': Permission denied
+
+"""]]

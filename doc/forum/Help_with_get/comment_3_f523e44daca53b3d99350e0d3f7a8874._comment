@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="jwrauch"
+ avatar="http://cdn.libravatar.org/avatar/0e83010187ef0c8c587e0c99e2ca5474"
+ subject="comment 3"
+ date="2021-02-19T16:17:33Z"
+ content="""
+I ran the get command with the debug flag and the output is pretty extensive.  It successfully transferred two files before it failed, so I'm posting from the 'ok' of the last success.  Here is the command and output:
+
+$ git annex get . --debug
+...
+ok
+get recorder/2020-philippines/20200906_165152.mp4 (from avi...)
+[2021-02-19 11:11:22.1489056] call: cp [\"--reflink=auto\",\"--preserve=timestamps\",\"E:\\video\\.git\\annex\\objects\\d88\\080\\SHA256E-s493726419--95dd6a377dce064935ab2e8c0dda2f3c4d9d2b33e0efaca34fceda200cbee249.mp4\\SHA256E-s493726419--95dd6a377dce064935ab2e8c0dda2f3c4d9d2b33e0efaca34fceda200cbee249.mp4\",\".git\\annex\\tmp\\SHA256E-s493726419--95dd6a377dce064935ab2e8c0dda2f3c4d9d2b33e0efaca34fceda200cbee249.mp4\"]
+10%   46.12 MiB        87 MiB/s 4scp: error writing '.git\annex\tmp\SHA256E-s493726419--95dd6a377dce064935ab2e8c0dda2f3c4d9d2b33e0efaca34fceda200cbee249.mp4': Permission denied
+
+"""]]

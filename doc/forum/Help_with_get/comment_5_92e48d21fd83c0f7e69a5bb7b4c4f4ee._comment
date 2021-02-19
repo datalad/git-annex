@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jwrauch"
+ avatar="http://cdn.libravatar.org/avatar/0e83010187ef0c8c587e0c99e2ca5474"
+ subject="comment 5"
+ date="2021-02-19T18:58:14Z"
+ content="""
+Okay, so it seems like it was my usb port.  I tried plugging the drive into a different port and the whole repository copied over.  I'd love to know more if anyone has more information about what was happening, but I think the issue is resolved for now.  
+"""]]
