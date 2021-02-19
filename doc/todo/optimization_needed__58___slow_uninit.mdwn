@@ -1,0 +1,22 @@
+I am running `git annex uninit` on  a quite heavy in number of annexed (text) files repository (can share a tarball if needed -- the product of https://github.com/con/tinuous/ to please those hating CI log navigation UIs ;-) ).
+
+the box on which it runs is very IO busy ATM, but the fact that I saw no progress from `uninit` for almost 10 minutes made me look into:
+
+```
+$> px | grep -A7 git-anne[x]
+yoh      30339  0.2  0.0 1074123060 38060 pts/4 Sl+ 11:49   0:01  |       \_ /home/yoh/miniconda3/envs/tinuous/bin/git-annex uninit
+yoh      30396  0.0  0.0  13892  5492 pts/4    S+   11:49   0:00  |           \_ git --git-dir=.git --work-tree=. --literal-pathspecs ls-files --stage -z --
+yoh      30398  0.0  0.0  14720  2988 pts/4    S+   11:49   0:00  |           \_ git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch-check=%(objectname) %(objecttype) %(objectsize) --buffer
+yoh      30399  0.0  0.0  14848  4108 pts/4    S+   11:49   0:00  |           \_ git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch=%(objectname) %(objecttype) %(objectsize) --buffer
+yoh      30417  0.0  0.0      0     0 pts/4    Z+   11:49   0:00  |           \_ [git] <defunct>
+yoh      30421  0.0  0.0      0     0 pts/4    Z+   11:49   0:00  |           \_ [git] <defunct>
+yoh      27761  0.0  0.0 112028  6892 pts/4    D+   11:51   0:00  |           \_ git --git-dir=.git --work-tree=. --literal-pathspecs rm --cached --force --quiet -- 01/21/github/pr/UNK/5f6fe634a863281742c0eb7d238c111da6e2e52e/Test on macOS/758/test (brew)/5_Set up Python 3.6.txt
+
+```
+
+so `git annex` invokes separate `git rm` on each file.  Having thousands of those is doomed to make it slow.  Unfortunately I have not spotted a `--batch` mode in `git rm --help` but I wondered if may be at least multiple files could be requested to be removed in a single call instead of running that rm per each file?
+
+git annex 8.20210127-g42239bc
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
