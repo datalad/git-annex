@@ -46,6 +46,10 @@ local repository version: 8
 
 This is macOS 11.2.1 (Big Sur), installed via `brew install git-annex`. I've tried the same behaviour on 2 separate macs, same error both times. It seems like the switching in the web UI is a bit tricky. I've also tried a few browsers (Safari, Chrome) and my dev browser without any ad blocking. It seems like there's an HTTP request to `/config/repository/switchto/...` which returns a 500.
 
+## Workaround
+
+It seems that if I stop the webapp, and start it again, it has actually switched repos. So it's a bit inconvenient, but usable nonetheless.
+
 ## Thanks
 
 I've just started the missing of moving from nextcloud to git-annex after the second random deletion of data by nextcloud. I'm deeply grateful to the authors for giving me the confidence of git to manage my files. Wonderful.
