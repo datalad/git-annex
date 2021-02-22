@@ -1,0 +1,6 @@
+git-annex unannex (or uninit) with an annexed file that is modified loses
+the modified version, replacing it with the last annexed version.
+This is a data loss bug.
+
+Command.Unannex.cleanup just overwrites whatever's there without checking.
+Happens with both locked and unlocked files. --[[Joey]]
