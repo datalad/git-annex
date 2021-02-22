@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-02-22T16:35:40Z"
+ content="""
+Yeah, that command you say you ran makes no sense.
+
+Now, running that command *does* upgrade the repo, if
+upgrading has not already been disabled in the git config.
+Because git-annex auto-upgrades on the first command run,
+and the fact that the command just errors out due to being
+used incorrectly doesn't prevent that from happening.
+
+But I get the feeling that command is not what you actually did?
+
+You can run `git config --global annex.autoupgraderepository false`
+and you only have to set it that one time for that machine and it will
+avoid all upgrades.
+"""]]
