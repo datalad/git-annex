@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-02-22T16:30:37Z"
+ content="""
+Yes, "here" is hardcoded. It could be made configurable in the git config,
+if there's actually a good reason to want to.
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: import from special directory remote fails due to running out of memory"""
+ date="2021-02-22T16:13:32Z"
+ content="""
+Importing from special remotes necessarily needs to hold the list of files
+in memory, or at least it seems like it would be hard to get it to stream
+over them. So there may be some way to decrease the memory use per file
+(currently 4.2 kb per file according to your numbers), possibly by around
+50%, but it would still scale with the number of files. The whole import
+interface would need to change to use trees to avoid that.
+It would be ok to file a bug report about this.
+
+The legacy directory import interface avoids such problems.
+"""]]
