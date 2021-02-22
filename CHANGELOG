@@ -28,7 +28,9 @@ git-annex (8.20210128) UNRELEASED; urgency=medium
     rather than doing it in a second pass.
   * Bugfix: fsck --from a ssh remote did not actually check that the
     content on the remote is not corrupted.
-  * unannex, uninit: Avoid running git rm once per annexed file,
+  * unannex, uninit: When an annexed file is modified, don't overwrite
+    the modified version with an older version from the annex.
+  * unannex, uninit: Don't run git rm once per annexed file, 
     for a large speedup.
 
  -- Joey Hess <id@joeyh.name>  Thu, 28 Jan 2021 12:34:32 -0400

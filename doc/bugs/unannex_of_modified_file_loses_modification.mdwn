@@ -4,3 +4,5 @@ This is a data loss bug.
 
 Command.Unannex.cleanup just overwrites whatever's there without checking.
 Happens with both locked and unlocked files. --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]

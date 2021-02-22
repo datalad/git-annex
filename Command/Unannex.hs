@@ -10,6 +10,7 @@ module Command.Unannex where
 import Command
 import qualified Annex
 import Annex.Perms
+import Annex.Link
 import qualified Annex.Queue
 import Utility.CopyFile
 import qualified Database.Keys
@@ -41,7 +42,6 @@ start si file key =
 
 perform :: RawFilePath -> Key -> CommandPerform
 perform file key = do
-	liftIO $ removeFile (fromRawFilePath file)
 	Annex.Queue.addCommand [] "rm"
 		[ Param "--cached"
 		, Param "--force"
@@ -49,19 +49,34 @@ perform file key = do
 		, Param "--"
 		]
 		[fromRawFilePath file]
-	next $ cleanup file key
+	isAnnexLink file >>= \case
+		-- If the file is locked, it needs to be replaced with
+		-- the content from the annex. Note that it's possible
+		-- for key' (read from the symlink) to differ from key
+		-- (cached in git).
+		Just key' -> do
+			removeassociated
+			next $ cleanup file key'
+		-- If the file is unlocked, it can be unmodified or not and
+		-- does not need to be replaced either way.
+		Nothing -> do
+			removeassociated
+			next $ return True
+  where
+	removeassociated = 
+		Database.Keys.removeAssociatedFile key
+			=<< inRepo (toTopFilePath file)
 
 cleanup :: RawFilePath -> Key -> CommandCleanup
 cleanup file key = do
-	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
+	liftIO $ removeFile (fromRawFilePath file)
 	src <- calcRepo (gitAnnexLocation key)
 	ifM (Annex.getState Annex.fast)
 		( do
 			-- Only make a hard link if the annexed file does not
-			-- already have other hard links pointing at it.
-			-- This avoids unannexing (and uninit) ending up
-			-- hard linking files together, which would be
-			-- surprising.
+			-- already have other hard links pointing at it. This
+			-- avoids unannexing (and uninit) ending up hard
+			-- linking files together, which would be surprising.
 			s <- liftIO $ R.getFileStatus src
 			if linkCount s > 1
 				then copyfrom src
