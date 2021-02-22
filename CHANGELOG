@@ -2,7 +2,7 @@ git-annex (8.20210128) UNRELEASED; urgency=medium
 
   * annex.stalldetection can now be set to "true" to make git-annex
     do automatic stall detection when it detects a remote is updating its
-    transfer progress consistently enough.
+    transfer progress consistently enough for stall detection to work.
   * When annex.stalldetection is not enabled and a likely stall is
     detected, display a suggestion to enable it.
   * Commands can be added to git-annex, by installing a program in PATH
