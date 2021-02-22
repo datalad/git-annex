@@ -20,3 +20,5 @@ git annex 8.20210127-g42239bc
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

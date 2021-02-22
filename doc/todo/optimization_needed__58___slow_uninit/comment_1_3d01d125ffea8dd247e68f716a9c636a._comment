@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-02-22T16:45:46Z"
+ content="""
+Also unannex is slow the same way. Looks like it can easily be fixed using
+git command queueing; I see no reason the rm needs to happen before
+changes to the working tree, as --cached makes the rm only operate on the
+index.
+
+Rest seem fast enough.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,7 +10,7 @@ module Command.Unannex where
 import Command
 import qualified Annex
 import Annex.Perms
-import qualified Git.Command
+import qualified Annex.Queue
 import Utility.CopyFile
 import qualified Database.Keys
 import Git.FilePath
@@ -42,14 +42,13 @@ start si file key =
 perform :: RawFilePath -> Key -> CommandPerform
 perform file key = do
 	liftIO $ removeFile (fromRawFilePath file)
-	inRepo $ Git.Command.run
-		[ Param "rm"
-		, Param "--cached"
+	Annex.Queue.addCommand [] "rm"
+		[ Param "--cached"
 		, Param "--force"
 		, Param "--quiet"
 		, Param "--"
-		, File (fromRawFilePath file)
 		]
+		[fromRawFilePath file]
 	next $ cleanup file key
 
 cleanup :: RawFilePath -> Key -> CommandCleanup
