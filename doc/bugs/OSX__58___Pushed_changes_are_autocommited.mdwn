@@ -1,0 +1,88 @@
+### Please describe the problem.
+
+When changes committed in external repos are automatically pushed to a repo residing on OSX via the assistant, the chanes are applied to the repo without the knowledge of the assistant running on the OSX machine or something like that, I can't really explain it.
+
+Example:
+
+If I save a change in a file on Linux, it gets auto-committed and pushed to the OSX machine by the assistant as expected. However, the OSX machine then commits a deletion and re-addition of the file in two separate commits.
+So whenever I save a change, I get a pattern like this:
+
+```
+150ec0dfc * git-annex in MB-<REDACTED>
+29fbe8c12 * git-annex in MB-<REDACTED>
+909a6f30b * git-annex in atemu@HEPHAISTOS:~/Documents
+```
+
+90 are my changes, 29 deletes the file I changed and 15 adds the same file back.  
+As I said, this happens to every change pushed to the OSX machine.
+
+This is especially problematic when merge conflicts arise as it *commits the addition of merge conflict markers*. If that wasn't enough, this is even more problematic when handling unlocked files as those are just plain text files containing paths.
+
+This has often left me with files like these before I gave up and turned off auto-sync:
+
+```
+<<<<<<< HEAD
+/annex/objects/SHA256E-s24532--ce9e93b9ee9f639c916edf5ae07ceb93100718ca039ee9cd2dc6d466074a1c79.org
+=======
+/annex/objects/SHA256E-s24569--f033d710717df25a0082a89266352b95acd6b0b6b170699d5895b335e5f8fcaa.org
+>>>>>>> refs/remotes/10.10.10.18_annex/master
+```
+
+Not fun.
+
+### What steps will reproduce the problem?
+
+1. Assistants running on Linux and OSX machines, syncing with each other
+2. Make a change on the Linux machine
+3. Observe OSX assistant commiting repo changes due to pushed sync
+
+### What version of git-annex are you using? On what operating system?
+
+NixOS Unstable:
+
+https://github.com/Atemu/nixpkgs/tree/637664ff05140d360077c109d9a5bdaf059a47fd
+
+```
+git-annex version: 8.20210127
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.27 DAV-1.3.4 feed-1.3.0.1 ghc-8.10.3 http-client-0.6.4.1 persistent-sqlite-2.11.0.0 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+OSX 10.15.7:
+
+https://github.com/NixOS/nixpkgs/tree/a58a0b5098f0c2a389ee70eb69422a052982d990
+
+```
+git-annex version: 8.20210127
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.27 DAV-1.3.4 feed-1.3.0.1 ghc-8.10.3 http-client-0.6.4.1 persistent-sqlite-2.11.0.0 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: darwin x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+### Please provide any additional information below.
+
+I use `annex.largefiles=mimeencoding=binary` and text file changes make up the bulk of my commits but the same happens with annexed files as I mentioned.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Annex yes, it's amazing; Assistant see frustration above.
+
