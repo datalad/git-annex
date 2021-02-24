@@ -190,8 +190,8 @@ makeInstaller gitannex gitannexcmd license htmlhelp extrabins sharefiles launche
 		addfile gitannexcmd
 	section "meta" [] $ do
 		-- git opens this file when git annex --help is run.
-		-- (Program Files/Git/mingw32/share/doc/git-doc/git-annex.html)
-		setOutPath "$INSTDIR\\mingw32\\share\\doc\\git-doc"
+		-- (Program Files/Git/mingw64/share/doc/git-doc/git-annex.html)
+		setOutPath "$INSTDIR\\mingw64\\share\\doc\\git-doc"
 		addfile htmlhelp
 		setOutPath "$INSTDIR"
 		addfile license
@@ -203,7 +203,7 @@ makeInstaller gitannex gitannexcmd license htmlhelp extrabins sharefiles launche
 		delete [RebootOK] $ autoStartItem
 		removefilesFrom "$INSTDIR/usr/bin" (gitannex:extrabins)
 		removefilesFrom "$INSTDIR/cmd" (gitannexcmd:launchers)
-		removefilesFrom "$INSTDIR\\mingw32\\share\\doc\\git-doc" [htmlhelp]
+		removefilesFrom "$INSTDIR\\mingw64\\share\\doc\\git-doc" [htmlhelp]
 		removefilesFrom "$INSTDIR" [license, uninstaller]
   where
 	addfile f = file [] (str f)

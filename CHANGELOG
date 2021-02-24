@@ -1,3 +1,9 @@
+git-annex (8.20210224) UNRELEASED; urgency=medium
+
+  * Windows: Correct the path to the html help file for 64 bit build.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 24 Feb 2021 13:18:38 -0400
+
 git-annex (8.20210223) upstream; urgency=medium
 
   * annex.stalldetection can now be set to "true" to make git-annex
