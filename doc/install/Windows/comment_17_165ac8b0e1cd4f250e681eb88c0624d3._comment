@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="arelius@a7e47ae13cb3452464261e3a99bfe6d2c25895fd"
+ nickname="arelius"
+ avatar="http://cdn.libravatar.org/avatar/f89b3d8d61a90fed8f52ac7ea9dd4456"
+ subject="comment 17"
+ date="2021-02-24T04:49:33Z"
+ content="""
+I'm using the git-annex from the CI build... Even though it appears to be an x64 build, it appears to put the docs in /mingw32 instead of /mingw64 preventing the docs from being located.
+"""]]
