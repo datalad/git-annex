@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-02-24T17:13:43Z"
+ content="""
+Does this only happen when the directory is on the network share, or also
+on a local disk?
+
+Does the .git/hooks directory exist? What happens if you mkdir that
+directory and then re-run git-annex init?
+
+This does not seem to happen on windows generally, and git-annex creates
+the directory if it does not exist, so failing this way is surprising.
+"""]]
