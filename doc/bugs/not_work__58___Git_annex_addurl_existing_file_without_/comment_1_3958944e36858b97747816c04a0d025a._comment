@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-02-24T17:20:12Z"
+ content="""
+Well, it makes sense for addurl run on a file that is not an annexed file to
+fail. There is nothing else it could do in that case that makes sense.
+It can't record that the youtube url is a location for the annexed file,
+because there is no annexed file.
+
+What you can do is git-annex addurl --relaxed with the youtube url,
+which does not download it, and then make git-annex treat the mp4 file
+as the content, by running git-annex reinject with the first parameter
+being the git-annex filename, and the second being the f.mp4, which will
+get moved into the annex.
+
+	git-annex addurl --file youtube.vid https://www.youtube.com/watch?v=U33dsEcKge  --relaxed
+	git-annex reinject f.mp4 youtube.vid
+
+Note that this command will work no matter what the content of the first file
+is, it will accept anything due to the use of --relaxed. So it's up to you
+to make sure you use it with a file that's the same content as the youtube
+video.
+"""]]

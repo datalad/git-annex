@@ -47,3 +47,4 @@ command line taken from https://git-annex.branchable.com/tips/using_the_web_as_a
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 oh, yes, git-annex is great for managing binary files, thanks for the work!
 
+> [[done]], see my comment --[[Joey]]
