@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="arelius@a7e47ae13cb3452464261e3a99bfe6d2c25895fd"
+ nickname="arelius"
+ avatar="http://cdn.libravatar.org/avatar/f89b3d8d61a90fed8f52ac7ea9dd4456"
+ subject="comment 3"
+ date="2021-02-25T21:46:20Z"
+ content="""
+Yeah, this is only happening on the network share.
+
+The Network share does have a .git/hooks/ already.
+
+To add more info, I also tried to create a specialremote on the same network share:
+
+git annex initremote pudelvault type=directory directory=//pudelvault/project/annextestspecialremote/ encryption=none
+
+and when I try to sync content with it with:
+git annex sync --content
+
+I get a long list of somewhat similar errors:
+//pudelvault/project/annextestspecialremote\tmp\SHA256E-s5930--76c659680c2488528a0efbf315f52781df2fe3082e2cd87db87ebe487c3d85e5.hx\SHA256E-s5930--76c659680c2488528a0efbf315f52781df2fe3082e2cd87db87ebe487c3d85e5.hx: openBinaryFile: does not exist (No such file or directory)
+failed
+"""]]
