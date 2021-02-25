@@ -11,5 +11,7 @@ git-annex version: 8.20210223-1~ndall+1
 
 So ATM there is addurl/rmurl when operating on a FILE, and there is `registerurl` when operating on a KEY, but there seems to be no way to `unregisterurl` as to `rmurl` from a KEY.  I have not found how could it be possibly done ATM without direct editing of .web files in the git-annex branch.
 
+edit 1: well, instead of adding `unregisterurl` could be done by adding `--key` flag to `rmurl` I think.
+
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
