@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 2"
+ date="2021-02-25T21:25:51Z"
+ content="""
+I said:
+
+> I think you could use setpresentkey.
+
+Never mind, I don't think that's a good idea, since it's not operating
+on a particular URL and adjusting the log.web file.
+"""]]
