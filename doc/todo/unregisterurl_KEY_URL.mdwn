@@ -1,0 +1,15 @@
+```
+$> git annex --mumba 2>&1 | grep -e url 
+  addurl          URL ...                   add urls to annex
+  rmurl           FILE URL ...              record file is not available at url
+  registerurl     KEY URL                   registers an url for a key
+
+$> git annex version | head -n 1
+git-annex version: 8.20210223-1~ndall+1
+
+```
+
+So ATM there is addurl/rmurl when operating on a FILE, and there is `registerurl` when operating on a KEY, but there seems to be no way to `unregisterurl` as to `rmurl` from a KEY.  I have not found how could it be possibly done ATM without direct editing of .web files in the git-annex branch.
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
