@@ -1,0 +1,7 @@
+I have a git-annex importfeed of a bunch of podcasts that sometimes seems to
+get stalled and hang forever on one of them.
+
+It should be possible to time out the http requests in importfeed. Or even
+move the work into git-annex transferrer like has been done for transfers.
+Configurable by annex.stalldetection..
+--[[Joey]]
