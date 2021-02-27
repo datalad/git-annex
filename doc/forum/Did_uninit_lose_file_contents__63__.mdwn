@@ -14,7 +14,7 @@ Here is what I think I did, in order:
 
 - Cloned the repo to a couple of other locations (one bare git repo, and one NTFS hard drive), and added them as remotes of one another.
 
-- Created an adjusted branch (hidemissing).
+- Created adjusted branches (hidemissing and unlocked).
 
 - Did git-annexy things between the repos, ie. `sync`, `get`, `move`, `drop`, `whereis` (these all worked fine).
 
