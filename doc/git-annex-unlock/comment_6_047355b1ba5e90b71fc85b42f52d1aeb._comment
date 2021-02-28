@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="issue with example"
+ date="2021-02-28T23:18:26Z"
+ content="""
+In the example, wouldn't `git-annex-unlock` erase any edits made in gimp? Was this meant to use `git-annex-add` instead?
+
+# EXAMPLES
+
+	# git annex unlock photo.jpg
+	# gimp photo.jpg
+	# git annex lock photo.jpg
+	# git commit -m \"redeye removal\"
+
+"""]]
