@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="setpresentkey 0"
+ date="2021-02-25T21:18:48Z"
+ content="""
+Fwiw adding `--key` to `rmurl` sounds nice to me, and, since it looks
+like RmUrl.hs already maps from file to key, I'd guess that be a
+natural addition.
+
+> I have not found how could it be possibly done ATM without direct
+> editing of .web files in the git-annex branch.
+
+I think you could use `setpresentkey`.  So for a plain web URL:
+
+```
+git annex setpresentkey $key 00000000-0000-0000-0000-000000000001 0
+```
+
+"""]]

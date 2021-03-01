@@ -1,0 +1,82 @@
+If I'm not mistaken, the `--locked` and `--unlocked` limiting options
+are intended to work with `find --branch`, but that leads to empty
+output in all the cases I've tried.
+
+[[!format sh """
+set -eu
+
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/gx-XXXXXXX)"
+git init
+git annex init
+
+git commit --allow-empty -mc0
+echo a >on-master-locked
+echo b >on-master-unlocked
+git annex add on-master-locked on-master-unlocked
+git annex unlock on-master-unlocked
+git commit -mc1
+
+git checkout -b other HEAD~
+echo c >on-other-locked
+echo d >on-other-unlocked
+git annex add on-other-locked on-other-unlocked
+git annex unlock on-other-unlocked
+git commit -mc2
+
+export PS4='$ '
+set -x
+
+git symbolic-ref --short HEAD
+git annex find
+git annex find --locked
+git annex find --unlocked
+
+git checkout -
+
+git annex find
+git annex find --locked
+git annex find --unlocked
+
+git annex find --branch=other
+git annex find --branch=other --locked
+git annex find --branch=other --unlocked
+"""]]
+
+```
+[...]
+29	$ git symbolic-ref --short HEAD
+30	other
+31	$ git annex find
+32	on-other-locked
+33	on-other-unlocked
+34	$ git annex find --locked
+35	on-other-locked
+36	$ git annex find --unlocked
+37	on-other-unlocked
+38	$ git checkout -
+39	Switched to branch 'master'
+40	$ git annex find
+41	on-master-locked
+42	on-master-unlocked
+43	$ git annex find --locked
+44	on-master-locked
+45	$ git annex find --unlocked
+46	on-master-unlocked
+47	$ git annex find --branch=other
+48	on-other-locked
+49	on-other-unlocked
+50	$ git annex find --branch=other --locked
+51	$ git annex find --branch=other --unlocked
+```
+
+Lines 29-49 show the output I expected.  On the other hand, I thought
+the last two lines, which combine --branch with --locked and
+--unlocked, would show the same output as lines 35 and 37.
+
+I dug a bit hoping I could figure out what was going on, but I haven't
+had any luck so far.
+
+Thanks in advance.
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
