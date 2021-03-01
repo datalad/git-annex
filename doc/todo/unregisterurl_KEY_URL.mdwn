@@ -15,3 +15,5 @@ edit 1: well, instead of adding `unregisterurl` could be done by adding `--key` 
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> unregisterurl [[done]] --[[Joey]]

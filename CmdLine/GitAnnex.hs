@@ -1,6 +1,6 @@
 {- git-annex main program
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -33,6 +33,7 @@ import qualified Command.ExamineKey
 import qualified Command.MatchExpression
 import qualified Command.FromKey
 import qualified Command.RegisterUrl
+import qualified Command.UnregisterUrl
 import qualified Command.SetKey
 import qualified Command.DropKey
 import qualified Command.Transferrer
@@ -178,6 +179,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexGlobalOption
 	, Command.MatchExpression.cmd
 	, Command.FromKey.cmd
 	, Command.RegisterUrl.cmd
+	, Command.UnregisterUrl.cmd
 	, Command.SetKey.cmd
 	, Command.DropKey.cmd
 	, Command.Transferrer.cmd

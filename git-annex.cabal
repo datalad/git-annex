@@ -808,6 +808,7 @@ Executable git-annex
     Command.Ungroup
     Command.Uninit
     Command.Unlock
+    Command.UnregisterUrl
     Command.Untrust
     Command.Unused
     Command.Upgrade

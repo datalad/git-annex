@@ -13,10 +13,6 @@ key can be downloaded from.
 
 No verification is performed of the url's contents.
 
-If no key and url pair are specified on the command line,
-batch input is used, the same as if the --batch option were
-specified.
-
 Normally the key is a git-annex formatted key. However, to make it easier
 to use this to add urls, if the key cannot be parsed as a key, and is a
 valid url, an URL key is constructed from the url.
@@ -27,6 +23,11 @@ valid url, an URL key is constructed from the url.
 
   In batch input mode, lines are read from stdin, and each line
   should contain a key and url, separated by a single space.
+
+  For backwards compatability with old git-annex before this option
+  was added, when no key and url pair are specified on the command line,
+  batch input is used, the same as if the --batch option were
+  specified. It is however recommended to use --batch.
 
 * `-z`
 
@@ -41,6 +42,8 @@ valid url, an URL key is constructed from the url.
 [[git-annex]](1)
 
 [[git-annex-addurl]](1)
+
+[[git-annex-unregisterurl]](1)
 
 # AUTHOR
 

@@ -1,0 +1,41 @@
+# NAME
+
+git-annex unregisterurl - unregisters an url for a key
+
+# SYNOPSIS
+
+git annex unregisterurl `[key url]`
+
+# DESCRIPTION
+
+This plumbing-level command can be used to unregister urls when keys can
+no longer be downloaded from them.
+
+Unregistering a key's last url will make git-annex no longer treat content
+as being present in the web special remote.
+
+# OPTIONS
+
+* `--batch`
+
+  In batch input mode, lines are read from stdin, and each line
+  should contain a key and url, separated by a single space.
+
+* `-z`
+
+   When in batch mode, the input is delimited by nulls instead of the usual
+   newlines.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-registerurl]](1)
+
+[[git-annex-rmurl]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

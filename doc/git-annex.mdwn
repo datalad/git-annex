@@ -618,6 +618,12 @@ content from the key-value store.
   Registers an url for a key.
   
   See [[git-annex-registerurl]](1) for details.
+  
+* `unregisterurl [key url]`
+
+  Unregisters an url for a key.
+  
+  See [[git-annex-unregisterurl]](1) for details.
 
 * `setkey key file`
 
