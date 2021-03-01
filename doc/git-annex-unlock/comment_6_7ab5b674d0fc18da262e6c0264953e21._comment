@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: issue with example"""
+ date="2021-03-01T17:07:06Z"
+ content="""
+`git-annex lock` wouldn't erase any modifications, but it would fail
+due to the file being modified. Fixed the example to use `git-annex add`
+before locking.
+"""]]

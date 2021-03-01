@@ -39,6 +39,7 @@ repository. So, enable annex.thin with care.
 
 	# git annex unlock photo.jpg
 	# gimp photo.jpg
+	# git annex add photo.jpg
 	# git annex lock photo.jpg
 	# git commit -m "redeye removal"
 
