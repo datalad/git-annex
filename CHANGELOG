@@ -4,6 +4,12 @@ git-annex (8.20210224) UNRELEASED; urgency=medium
   * registerurl: Allow it to be used in a bare repository.
   * Windows: Correct the path to the html help file for 64 bit build.
   * uninit: Fix a small bug that left a lock file in .git/annex
+  * Prevent combinations of options such as --all with --include.
+  * Fixed handling of --mimetype or --mimeencoding combined with
+    options like --all or --unused.
+
+Also, made --mimetype combined with eg --all work, by looking at the
+object file when operating on keys.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Feb 2021 13:18:38 -0400
 

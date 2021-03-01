@@ -159,14 +159,16 @@ matchMagic
 matchMagic _limitname querymagic selectprovidedinfo selectuserprovidedinfo (Just magic) glob = 
 	Right $ MatchFiles
 		{ matchAction = const go
-		, matchNeedsFileName = True
+		, matchNeedsFileName = False
 		, matchNeedsFileContent = True
 		, matchNeedsKey = False
 		, matchNeedsLocationLog = False
 		}
   where
  	cglob = compileGlob glob CaseSensative (GlobFilePath False) -- memoized
-	go (MatchingKey _ _) = pure False
+	go (MatchingKey k _) = withObjectLoc k $ \obj -> 
+		maybe False (matchGlob cglob)
+			<$> querymagic magic (fromRawFilePath obj)
 	go (MatchingFile fi) = case contentFile fi of
 		Just f -> catchBoolIO $
 			maybe False (matchGlob cglob)

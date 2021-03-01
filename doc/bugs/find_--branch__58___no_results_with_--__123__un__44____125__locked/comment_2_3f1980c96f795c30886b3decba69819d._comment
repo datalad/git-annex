@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-03-01T19:50:36Z"
+ content="""
+I've guarded against all the other bad combos mentioned. 
+
+find --branch --unlocked/--locked will be rejected now due to that change,
+but can be implemented later the way I discussed above.
+"""]]

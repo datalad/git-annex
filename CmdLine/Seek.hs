@@ -217,21 +217,30 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		giveup "Cannot use --auto in a bare repository"
 	case (noworktreeitems, ko) of
 		(True, Nothing)
-			| bare -> noauto runallkeys
+			| bare -> nofilename $ noauto runallkeys
 			| otherwise -> fallbackaction worktreeitems
 		(False, Nothing) -> fallbackaction worktreeitems
-		(True, Just WantAllKeys) -> noauto runallkeys
-		(True, Just WantUnusedKeys) -> noauto $ runkeyaction unusedKeys'
-		(True, Just WantFailedTransfers) -> noauto runfailedtransfers
-		(True, Just (WantSpecificKey k)) -> noauto $ runkeyaction (return [k])
-		(True, Just WantIncompleteKeys) -> noauto $ runkeyaction incompletekeys
-		(True, Just (WantBranchKeys bs)) -> noauto $ runbranchkeys bs
+		(True, Just WantAllKeys) -> nofilename $ noauto runallkeys
+		(True, Just WantUnusedKeys) -> nofilename $ noauto $ runkeyaction unusedKeys'
+		(True, Just WantFailedTransfers) -> nofilename $ noauto runfailedtransfers
+		(True, Just (WantSpecificKey k)) -> nofilename $ noauto $ runkeyaction (return [k])
+		(True, Just WantIncompleteKeys) -> nofilename $ noauto $ runkeyaction incompletekeys
+		(True, Just (WantBranchKeys bs)) -> nofilename $ noauto $ runbranchkeys bs
 		(False, Just _) -> giveup "Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete"
   where
 	noauto a
 		| auto = giveup "Cannot use --auto with --all or --branch or --unused or --key or --incomplete"
 		| otherwise = a
-	
+			
+	nofilename a = ifM (Limit.introspect matchNeedsFileName)
+		( do
+			bare <- fromRepo Git.repoIsLocalBare
+			if bare
+				then giveup "Cannot use options that match on file names in a bare repository."
+				else giveup "Cannot use --all or --unused or --key or --incomplete with options that match on file names."
+		, a
+		)
+
 	noworktreeitems = case worktreeitems of
 		WorkTreeItems [] -> True
 		WorkTreeItems _ -> False
