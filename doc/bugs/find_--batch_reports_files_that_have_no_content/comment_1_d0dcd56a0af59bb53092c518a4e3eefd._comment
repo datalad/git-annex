@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-01T17:10:45Z"
+ content="""
+The problem is that withKeyOptions' runbranchkeys finds keys,
+and matchLockStatus with a MatchingKey is always False. The former would
+need to check if the file in the branch is unlocked or not and add that to
+the data for use by the latter.
+
+Looks like it can be done without adding any additional overhead,
+but currently catKey reads the git ref and uses parseLinkTargetOrPointer
+which handles both indiscriminitely, so that would also need to be changed.
+
+This goes beyond find, the same basic problem is that
+`git-annex whereis --unlocked --all` does not display anything,
+while without the --unlocked it does. Probably it should not be allowed
+to combine --unlocked and --locked with --all or --key, because that does
+not actually make any sense. Also --all with
+--include/--exclude/--want-get/--want-drop/--mimetype/--mimeencoding.
+"""]]
