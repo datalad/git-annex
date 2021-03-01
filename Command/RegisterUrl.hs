@@ -15,11 +15,10 @@ import Command.FromKey (keyOpt)
 import qualified Remote
 
 cmd :: Command
-cmd = notBareRepo $
-	command "registerurl"
-		SectionPlumbing "registers an url for a key"
-		(paramPair paramKey paramUrl)
-		(seek <$$> optParser)
+cmd = command "registerurl"
+	SectionPlumbing "registers an url for a key"
+	(paramPair paramKey paramUrl)
+	(seek <$$> optParser)
 
 data RegisterUrlOptions = RegisterUrlOptions
 	{ keyUrlPairs :: CmdParams
