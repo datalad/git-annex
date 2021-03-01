@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="issue of pushing refs to annexed files but not info on how to fetch them"
+ date="2021-03-01T16:46:56Z"
+ content="""
+Just got burned by a (variation of) this issue, after coming back to git-annex after a break. This time, I did `git-annex-copy` the files to a remote, but forgot to `git-annex-sync` the new location information, so a new clone could not access the files.   Maybe, a [pre-push hook](https://git-scm.com/docs/githooks#_pre_push) could be installed to print a warning (that can be turned off by a config setting), whenever you push refs to annexed files to a remote that has no (semi-)trusted location information for them?  Basically, as a git user you get used to thinking that `git push` saves your work, and forgetting that it doesn't with `git-annex` can lead to data loss/inaccessibility.
+"""]]
