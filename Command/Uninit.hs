@@ -13,6 +13,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Command.Unannex
 import qualified Annex.Branch
+import qualified Annex.Queue
 import qualified Database.Keys
 import Annex.Content
 import Annex.Init
@@ -65,6 +66,7 @@ startCheckIncomplete file _ = giveup $ unlines
 
 finish :: Annex ()
 finish = do
+	Annex.Queue.flush
 	annexdir <- fromRawFilePath <$> fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
 	leftovers <- removeUnannexed =<< listKeys InAnnex
