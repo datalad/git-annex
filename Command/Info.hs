@@ -569,7 +569,7 @@ getDirStatInfo o dir = do
   where
 	initial = (emptyKeyInfo, emptyKeyInfo, emptyNumCopiesStats, M.empty)
 	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats, repodata) =
-		ifM (matcher $ MatchingFile $ FileInfo (Just file) file (Just key))
+		ifM (matcher $ MatchingFile $ FileInfo file file (Just key))
 			( do
 				!presentdata' <- ifM (inAnnex key)
 					( return $ addKey key presentdata

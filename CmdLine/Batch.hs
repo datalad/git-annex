@@ -131,7 +131,7 @@ batchFilesMatching fmt a = do
 	matcher <- getMatcher
 	go $ \si f ->
 		let f' = toRawFilePath f
-		in ifM (matcher $ MatchingFile $ FileInfo (Just f') f' Nothing)
+		in ifM (matcher $ MatchingFile $ FileInfo f' f' Nothing)
 			( a (si, f')
 			, return Nothing
 			)

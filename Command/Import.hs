@@ -239,7 +239,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		stop
 	lockdown a = do
 		let mi = MatchingFile $ FileInfo
-			{ contentFile = Just srcfile
+			{ contentFile = srcfile
 			, matchFile = destfile
 			, matchKey = Nothing
 			}

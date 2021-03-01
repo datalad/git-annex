@@ -383,7 +383,7 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi (isJust mt
 	af = AssociatedFile (Just file)
 	mi = case mtmp of
 		Just tmp -> MatchingFile $ FileInfo
-			{ contentFile = Just tmp
+			{ contentFile = tmp
 			, matchFile = file
 			, matchKey = Just key
 			}

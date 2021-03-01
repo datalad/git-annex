@@ -121,7 +121,7 @@ withPathContents a params = do
 		p' = toRawFilePath p
 
 	checkmatch matcher (f, relf) = matcher $ MatchingFile $ FileInfo
-		{ contentFile = Just f
+		{ contentFile = f
 		, matchFile = relf
 		, matchKey = Nothing
 		}
@@ -311,7 +311,7 @@ seekFiltered prefilter a listfs = do
 	go _ _ [] = return ()
 	go matcher checktimelimit (v@(_si, f):rest) = checktimelimit noop $ do
 		whenM (prefilter v) $
-			whenM (matcher $ MatchingFile $ FileInfo (Just f) f Nothing) $
+			whenM (matcher $ MatchingFile $ FileInfo f f Nothing) $
 				a v
 		go matcher checktimelimit rest
 
@@ -375,7 +375,7 @@ seekFilteredKeys seeker listfs = do
 			maybe noop (Annex.BranchState.setCache logf) logcontent
 			checkMatcherWhen mi
 				(matcherNeedsLocationLog mi && not (matcherNeedsFileName mi))
-				(MatchingFile $ FileInfo (Just f) f (Just k))
+				(MatchingFile $ FileInfo f f (Just k))
 				(commandAction $ startAction seeker si f k)
 			precachefinisher mi lreader checktimelimit
 		Nothing -> return ()
@@ -399,14 +399,14 @@ seekFilteredKeys seeker listfs = do
 		-- checked later, to avoid a slow lookup here.
 		(not ((matcherNeedsKey mi || matcherNeedsLocationLog mi) 
 			&& not (matcherNeedsFileName mi)))
-		(MatchingFile $ FileInfo (Just f) f Nothing)
+		(MatchingFile $ FileInfo f f Nothing)
 		(liftIO $ ofeeder ((si, f), sha))
 
 	keyaction f mi content a = 
 		case parseLinkTargetOrPointerLazy =<< content of
 			Just k -> checkMatcherWhen mi
 				(matcherNeedsKey mi && not (matcherNeedsFileName mi || matcherNeedsLocationLog mi))
-				(MatchingFile $ FileInfo (Just f) f (Just k))
+				(MatchingFile $ FileInfo f f (Just k))
 				(checkpresence k (a k))
 			Nothing -> noop
 	

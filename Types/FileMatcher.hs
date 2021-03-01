@@ -29,7 +29,7 @@ data MatchInfo
 	| MatchingUserInfo UserProvidedInfo
 
 data FileInfo = FileInfo
-	{ contentFile :: Maybe RawFilePath
+	{ contentFile :: RawFilePath
 	-- ^ path to a file containing the content, for operations
 	-- that examine it
 	, matchFile :: RawFilePath

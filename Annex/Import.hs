@@ -568,7 +568,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		mkkey tmpfile = do
 			let mi = MatchingFile FileInfo
 				{ matchFile = f
-				, contentFile = Just tmpfile
+				, contentFile = tmpfile
 				, matchKey = Nothing
 				}
 			islargefile <- checkMatcher' matcher mi mempty

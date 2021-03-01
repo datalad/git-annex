@@ -171,7 +171,7 @@ start o si file addunlockedmatcher = do
 perform :: AddOptions -> RawFilePath -> AddUnlockedMatcher -> CommandPerform
 perform o file addunlockedmatcher = withOtherTmp $ \tmpdir -> do
 	lockingfile <- not <$> addUnlocked addunlockedmatcher
-		(MatchingFile (FileInfo (Just file) file Nothing))
+		(MatchingFile (FileInfo file file Nothing))
 		True
 	let cfg = LockDownConfig
 		{ lockingFile = lockingfile
