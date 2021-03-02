@@ -1,0 +1,76 @@
+I'm a bit confused by the behaviour of `git annex import` from directory special-remotes. It seems to move a file from git to the annex, and loses the file contents. Is this the expected behaviour?
+
+```
+$ mkdir export-directory
+
+$ mkdir repo
+
+$ cd repo/
+
+$ git init
+
+$ git annex init
+
+$ git annex initremote test type=directory directory=../export-directory encryption=none importtree=yes exporttree=yes
+
+$ git config remote.test.annex-tracking-branch master
+
+$ touch file.txt
+
+$ git annex add --force-small file.txt 
+
+$ git commit -m 'Add file to git'
+
+$ git annex sync --content (OR git annex export master --to test)
+
+$ ls -l
+total 0
+-rw-r--r-- 1 user user 0 Mar  2 18:56 file.txt
+
+$ git annex sync --content (OR git annex import master --from test && git annex merge test/master)
+
+$ ls -l
+total 4
+lrwxrwxrwx 1 user user 118 Mar  2 18:57 file.txt -> .git/annex/objects/25/F0/SHA1--e69de29bb2d1d6434b8b29ae775ad8c2e48c5391/SHA1--e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+```
+
+file.txt is now a broken symlink to the annex - this is not what I expected.
+
+- I expected it to be a normal file.
+
+- If it is supposed to be moved to the annex, I would expect the file contents to be in the annex.
+
+```
+$ git annex whereis file.txt 
+whereis file.txt (0 copies) 
+  The following untrusted locations may also have copies:
+  	ce81dda1-e6cc-453a-9156-e067b8f70063 -- [test]
+failed
+git-annex: whereis: 1 failed
+
+$ git annex get file.txt --from test
+get file.txt (from test...) 
+(checksum...) 
+  verification of content failed
+failed
+git-annex: get: 1 failed
+```
+
+file.txt can not be retreived from the remote - this is not what I expected.
+
+- I expected to be able to retreive the file contents from the remote.
+
+--
+
+```
+$ git annex version
+git-annex version: 8.20200810
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.27 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
