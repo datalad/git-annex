@@ -1019,6 +1019,7 @@ Executable git-annex
     Types.IndexFiles
     Types.Key
     Types.KeySource
+    Types.Link
     Types.LockCache
     Types.Messages
     Types.MetaData

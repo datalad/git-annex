@@ -16,6 +16,7 @@ import Annex.WorkTree
 import Annex.UUID
 import Annex.Magic
 import Annex.Link
+import Types.Link
 import Logs.Trust
 import Annex.NumCopies
 import Types.Key
@@ -116,10 +117,10 @@ matchGlobFile glob = go
   where
 	cglob = compileGlob glob CaseSensative (GlobFilePath True) -- memoized
 	go (MatchingFile fi) = pure $ matchGlob cglob (fromRawFilePath (matchFile fi))
-	go (MatchingInfo p) = pure $ matchGlob cglob (fromRawFilePath (providedFilePath p))
+	go (MatchingInfo p) = pure $ case providedFilePath p of
+		Just f -> matchGlob cglob (fromRawFilePath f)
+		Nothing -> False
 	go (MatchingUserInfo p) = matchGlob cglob <$> getUserInfo (userProvidedFilePath p)
-	go (MatchingKey _ (AssociatedFile Nothing)) = pure False
-	go (MatchingKey _ (AssociatedFile (Just af))) = pure $ matchGlob cglob (fromRawFilePath af)
 
 addMimeType :: String -> Annex ()
 addMimeType = addMagicLimit "mimetype" getMagicMimeType providedMimeType userProvidedMimeType
@@ -166,16 +167,19 @@ matchMagic _limitname querymagic selectprovidedinfo selectuserprovidedinfo (Just
 		}
   where
  	cglob = compileGlob glob CaseSensative (GlobFilePath False) -- memoized
-	go (MatchingKey k _) = withObjectLoc k $ \obj -> catchBoolIO $
-		maybe False (matchGlob cglob)
-			<$> querymagic magic (fromRawFilePath obj)
 	go (MatchingFile fi) = catchBoolIO $
 		maybe False (matchGlob cglob)
 			<$> querymagic magic (fromRawFilePath (contentFile fi))
-	go (MatchingInfo p) = pure $
-		maybe False (matchGlob cglob) (selectprovidedinfo p)
+	go (MatchingInfo p) = maybe
+		(usecontent (providedKey p))
+		(pure . matchGlob cglob)
+		(selectprovidedinfo p)
 	go (MatchingUserInfo p) =
 		matchGlob cglob <$> getUserInfo (selectuserprovidedinfo p)
+	usecontent (Just k) = withObjectLoc k $ \obj -> catchBoolIO $
+		maybe False (matchGlob cglob)
+			<$> querymagic magic (fromRawFilePath obj)
+	usecontent Nothing = pure False
 matchMagic limitname _ _ _ Nothing _ = 
 	Left $ "unable to load magic database; \""++limitname++"\" cannot be used"
 
@@ -198,9 +202,6 @@ addLocked = addLimit $ Right $ MatchFiles
 	}
 
 matchLockStatus :: Bool -> MatchInfo -> Annex Bool
-matchLockStatus _ (MatchingKey _ _) = pure False
-matchLockStatus _ (MatchingInfo _) = pure False
-matchLockStatus _ (MatchingUserInfo _) = pure False
 matchLockStatus wantlocked (MatchingFile fi) = liftIO $ do
 	let f = contentFile fi
 	islocked <- isPointerFile f >>= \case
@@ -208,6 +209,12 @@ matchLockStatus wantlocked (MatchingFile fi) = liftIO $ do
 		Nothing -> isSymbolicLink
 			<$> getSymbolicLinkStatus (fromRawFilePath f)
 	return (islocked == wantlocked)
+matchLockStatus wantlocked (MatchingInfo p) = 
+	pure $ case providedLinkType p of
+		Nothing -> False
+		Just LockedLink -> wantlocked
+		Just UnlockedLink -> not wantlocked
+matchLockStatus _ (MatchingUserInfo _) = pure False
 
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. Optionally on a prior date. -}
@@ -269,9 +276,7 @@ limitInDir dir = MatchFiles
 	}
   where
 	go (MatchingFile fi) = checkf $ fromRawFilePath $ matchFile fi
-	go (MatchingKey _ (AssociatedFile Nothing)) = return False
-	go (MatchingKey _ (AssociatedFile (Just af))) = checkf $ fromRawFilePath af
-	go (MatchingInfo p) = checkf $ fromRawFilePath $ providedFilePath p
+	go (MatchingInfo p) = maybe (pure False) (checkf . fromRawFilePath) (providedFilePath p)
 	go (MatchingUserInfo p) = checkf =<< getUserInfo (userProvidedFilePath p)
 	checkf = return . elem dir . splitPath . takeDirectory
 
@@ -332,7 +337,6 @@ limitLackingCopies approx want = case readish want of
 			else case mi of
 				MatchingFile fi -> getGlobalFileNumCopies $
 					matchFile fi
-				MatchingKey _ _ -> approxNumCopies
 				MatchingInfo {} -> approxNumCopies
 				MatchingUserInfo {} -> approxNumCopies
 		us <- filter (`S.notMember` notpresent)
@@ -355,7 +359,6 @@ limitUnused = MatchFiles
 	}
   where
  	go _ (MatchingFile _) = return False
-	go _ (MatchingKey k _) = isunused k
 	go _ (MatchingInfo p) = maybe (pure False) isunused (providedKey p)
 	go _ (MatchingUserInfo p) = do
 		k <- getUserInfo (userProvidedKey p)
@@ -465,9 +468,9 @@ limitSize lb vs s = case readSize dataUnits s of
 		LimitDiskFiles -> do
 			filesize <- liftIO $ catchMaybeIO $ getFileSize (contentFile fi)
 			return $ filesize `vs` Just sz
-	go sz _ (MatchingKey key _) = checkkey sz key
-	go sz _ (MatchingInfo p) = return $
-		Just (providedFileSize p) `vs` Just sz
+	go sz _ (MatchingInfo p) = case providedFileSize p of
+		Just sz' -> pure (Just sz' `vs` Just sz)
+		Nothing -> maybe (pure False) (checkkey sz) (providedKey p)
 	go sz _ (MatchingUserInfo p) =
 		getUserInfo (userProvidedFileSize p) 
 			>>= \sz' -> return (Just sz' `vs` Just sz)
@@ -517,6 +520,5 @@ lookupFileKey fi = case matchKey fi of
 
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a
-checkKey a (MatchingKey k _) = a k
 checkKey a (MatchingInfo p) = maybe (return False) a (providedKey p)
 checkKey a (MatchingUserInfo p) = a =<< getUserInfo (userProvidedKey p)

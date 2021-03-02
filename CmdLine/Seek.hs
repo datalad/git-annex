@@ -194,9 +194,24 @@ withKeyOptions ko auto seeker keyaction = withKeyOptions' ko auto mkkeyaction
 		return $ \v@(_si, k, ai) -> checkseeker k $
 			let i = case ai of
 				ActionItemBranchFilePath (BranchFilePath _ topf) _ ->
-					MatchingKey k (AssociatedFile $ Just $ getTopFilePath topf)
-				_ -> MatchingKey k (AssociatedFile Nothing)
-			in whenM (matcher i) $
+					ProvidedInfo
+						{ providedFilePath = Just $
+							getTopFilePath topf
+						, providedKey = Just k
+						, providedFileSize = Nothing
+						, providedMimeType = Nothing
+						, providedMimeEncoding = Nothing
+						, providedLinkType = Nothing
+						}
+				_ -> ProvidedInfo
+					{ providedFilePath = Nothing
+					, providedKey = Just k
+					, providedFileSize = Nothing
+					, providedMimeType = Nothing
+					, providedMimeEncoding = Nothing
+					, providedLinkType = Nothing
+					}
+			in whenM (matcher (MatchingInfo i)) $
 				keyaction v
 	checkseeker k a = case checkContentPresent seeker of
 		Nothing -> a

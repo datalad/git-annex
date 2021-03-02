@@ -491,11 +491,17 @@ filterPreferredContent r tree = logExportExcluded (uuid r) $ \logwriter -> do
 	checkmatcher matcher logwriter ti@(Git.Tree.TreeItem topf _ sha) =
 		catKey sha >>= \case
 			Just k -> do
-				-- Match filename relative to the
-				-- top of the tree.
-				let af = AssociatedFile $ Just $
-					getTopFilePath topf
-				let mi = MatchingKey k af
+				let mi = MatchingInfo $ ProvidedInfo
+					{ providedFilePath = Just $
+						-- Match filename relative
+						-- to the top of the tree.
+						getTopFilePath topf
+					, providedKey = Just k
+					, providedFileSize = Nothing
+					, providedMimeType = Nothing
+					, providedMimeEncoding = Nothing
+					, providedLinkType = Nothing
+					}
 				ifM (checkMatcher' matcher mi mempty)
 					( return (Just ti)
 					, do

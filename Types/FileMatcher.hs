@@ -1,6 +1,6 @@
 {- git-annex file matcher types
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,7 +8,8 @@
 module Types.FileMatcher where
 
 import Types.UUID (UUID)
-import Types.Key (Key, AssociatedFile)
+import Types.Key (Key)
+import Types.Link (LinkType)
 import Types.Mime
 import Utility.Matcher (Matcher, Token)
 import Utility.FileSize
@@ -21,10 +22,6 @@ import qualified Data.Set as S
 -- Information about a file and/or a key that can be matched on.
 data MatchInfo
 	= MatchingFile FileInfo
-	| MatchingKey Key AssociatedFile
-	-- ^ This is used when matching a file that may be in another
-	-- branch. The AssociatedFile is the filename, but it should not be
-	-- accessed from disk when matching.
 	| MatchingInfo ProvidedInfo
 	| MatchingUserInfo UserProvidedInfo
 
@@ -41,11 +38,13 @@ data FileInfo = FileInfo
 	}
 
 data ProvidedInfo = ProvidedInfo
-	{ providedFilePath :: RawFilePath
+	{ providedFilePath :: Maybe RawFilePath
+	-- ^ filepath to match on, should not be accessed from disk.
 	, providedKey :: Maybe Key
-	, providedFileSize :: FileSize
+	, providedFileSize :: Maybe FileSize
 	, providedMimeType :: Maybe MimeType
 	, providedMimeEncoding :: Maybe MimeEncoding
+	, providedLinkType :: Maybe LinkType
 	}
 
 -- This is used when testing a matcher, with values to match against

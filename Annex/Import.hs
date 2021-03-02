@@ -454,11 +454,12 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				when (Utility.Matcher.introspect matchNeedsFileContent matcher) $
 					giveup "annex.largefiles configuration examines file contents, so cannot import without content."
  				let mi = MatchingInfo ProvidedInfo
-					{ providedFilePath = f
+					{ providedFilePath = Just f
 					, providedKey = Nothing
-					, providedFileSize = sz
+					, providedFileSize = Just sz
 					, providedMimeType = Nothing
 					, providedMimeEncoding = Nothing
+					, providedLinkType = Nothing
 					}
 				islargefile <- checkMatcher' matcher mi mempty
 				metered Nothing sz $ const $ if islargefile
@@ -703,11 +704,12 @@ matchesImportLocation :: FileMatcher Annex -> ImportLocation -> Integer -> Annex
 matchesImportLocation matcher loc sz = checkMatcher' matcher mi mempty
   where
 	mi = MatchingInfo $ ProvidedInfo
-		{ providedFilePath = fromImportLocation loc
+		{ providedFilePath = Just (fromImportLocation loc)
 		, providedKey = Nothing
-		, providedFileSize = sz
+		, providedFileSize = Just sz
 		, providedMimeType = Nothing
 		, providedMimeEncoding = Nothing
+		, providedLinkType = Nothing
 		}
 
 notIgnoredImportLocation :: ImportTreeConfig -> CheckGitIgnore -> ImportLocation -> Annex Bool

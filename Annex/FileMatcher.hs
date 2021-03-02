@@ -75,7 +75,15 @@ checkMatcher matcher mkey afile notpresent notconfigured d
 		(_, AssociatedFile (Just file)) ->
 			go =<< fileMatchInfo file mkey
 		(Just key, AssociatedFile Nothing) ->
-			go (MatchingKey key afile)
+			let i = ProvidedInfo
+				{ providedFilePath = Nothing
+				, providedKey = Just key
+				, providedFileSize = Nothing
+				, providedMimeType = Nothing
+				, providedMimeEncoding = Nothing
+				, providedLinkType = Nothing
+				}
+			in go (MatchingInfo i)
 		(Nothing, _) -> d
   where
 	go mi = checkMatcher' matcher mi notpresent
