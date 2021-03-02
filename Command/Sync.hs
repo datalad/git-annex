@@ -711,7 +711,7 @@ seekSyncContent o rs currbranch = do
 				pure Nothing
 	waitForAllRunningCommandActions
 	withKeyOptions' (keyOptions o) False
-		(return (commandAction . gokey mvar bloom))
+		(return (const (commandAction . gokey mvar bloom)))
 		(const noop)
 		(WorkTreeItems [])
 	waitForAllRunningCommandActions

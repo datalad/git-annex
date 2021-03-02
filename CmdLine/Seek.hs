@@ -22,6 +22,7 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git.LsTree as LsTree
 import qualified Git.Types as Git
 import qualified Git.Ref
+import Git.Types (toTreeItemType, TreeItemType(..))
 import Git.FilePath
 import qualified Limit
 import CmdLine.GitAnnex.Options
@@ -30,6 +31,7 @@ import Logs
 import Logs.Unused
 import Types.Transfer
 import Logs.Transfer
+import Types.Link
 import Remote.List
 import qualified Remote
 import Annex.CatFile
@@ -191,7 +193,7 @@ withKeyOptions ko auto seeker keyaction = withKeyOptions' ko auto mkkeyaction
   where
 	mkkeyaction = do
 		matcher <- Limit.getMatcher
-		return $ \v@(_si, k, ai) -> checkseeker k $
+		return $ \lt v@(_si, k, ai) -> checkseeker k $
 			let i = case ai of
 				ActionItemBranchFilePath (BranchFilePath _ topf) _ ->
 					ProvidedInfo
@@ -201,7 +203,7 @@ withKeyOptions ko auto seeker keyaction = withKeyOptions' ko auto mkkeyaction
 						, providedFileSize = Nothing
 						, providedMimeType = Nothing
 						, providedMimeEncoding = Nothing
-						, providedLinkType = Nothing
+						, providedLinkType = lt
 						}
 				_ -> ProvidedInfo
 					{ providedFilePath = Nothing
@@ -209,7 +211,7 @@ withKeyOptions ko auto seeker keyaction = withKeyOptions' ko auto mkkeyaction
 					, providedFileSize = Nothing
 					, providedMimeType = Nothing
 					, providedMimeEncoding = Nothing
-					, providedLinkType = Nothing
+					, providedLinkType = lt
 					}
 			in whenM (matcher (MatchingInfo i)) $
 				keyaction v
@@ -222,7 +224,7 @@ withKeyOptions ko auto seeker keyaction = withKeyOptions' ko auto mkkeyaction
 withKeyOptions' 
 	:: Maybe KeyOptions
 	-> Bool
-	-> Annex ((SeekInput, Key, ActionItem) -> Annex ())
+	-> Annex (Maybe LinkType -> (SeekInput, Key, ActionItem) -> Annex ())
 	-> (WorkTreeItems -> CommandSeek)
 	-> WorkTreeItems
 	-> CommandSeek
@@ -240,7 +242,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		(True, Just WantFailedTransfers) -> nofilename $ noauto runfailedtransfers
 		(True, Just (WantSpecificKey k)) -> nofilename $ noauto $ runkeyaction (return [k])
 		(True, Just WantIncompleteKeys) -> nofilename $ noauto $ runkeyaction incompletekeys
-		(True, Just (WantBranchKeys bs)) -> nofilename $ noauto $ runbranchkeys bs
+		(True, Just (WantBranchKeys bs)) -> noauto $ runbranchkeys bs
 		(False, Just _) -> giveup "Can only specify one of file names, --all, --branch, --unused, --failed, --key, or --incomplete"
   where
 	noauto a
@@ -286,7 +288,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 			Nothing -> return ()
 			Just ((k, f), content) -> checktimelimit (discard reader) $ do
 				maybe noop (Annex.BranchState.setCache f) content
-				keyaction (SeekInput [], k, mkActionItem k)
+				keyaction Nothing (SeekInput [], k, mkActionItem k)
 				go reader
 		catObjectStreamLsTree l (getk . getTopFilePath . LsTree.file) g go
 		liftIO $ void cleanup
@@ -294,17 +296,22 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 	runkeyaction getks = do
 		keyaction <- mkkeyaction
 		ks <- getks
-		forM_ ks $ \k -> keyaction (SeekInput [], k, mkActionItem k)
+		forM_ ks $ \k -> keyaction Nothing (SeekInput [], k, mkActionItem k)
 	
 	runbranchkeys bs = do
 		keyaction <- mkkeyaction
 		forM_ bs $ \b -> do
 			(l, cleanup) <- inRepo $ LsTree.lsTree LsTree.LsTreeRecursive b
 			forM_ l $ \i -> catKey (LsTree.sha i) >>= \case
-				Nothing -> noop
 				Just k -> 
 					let bfp = mkActionItem (BranchFilePath b (LsTree.file i), k)
-					in keyaction (SeekInput [], k, bfp)
+					    lt = case toTreeItemType (LsTree.mode i) of
+						Just TreeSymlink -> Just LockedLink
+						Just TreeFile -> Just UnlockedLink
+						Just TreeExecutable -> Just UnlockedLink
+						_ -> Nothing
+					in keyaction lt (SeekInput [], k, bfp)
+				Nothing -> noop
 			unlessM (liftIO cleanup) $
 				error ("git ls-tree " ++ Git.fromRef b ++ " failed")
 	
@@ -313,7 +320,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		rs <- remoteList
 		ts <- concat <$> mapM (getFailedTransfers . Remote.uuid) rs
 		forM_ ts $ \(t, i) ->
-			keyaction (SeekInput [], transferKey t, mkActionItem (t, i))
+			keyaction Nothing (SeekInput [], transferKey t, mkActionItem (t, i))
 
 seekFiltered :: ((SeekInput, RawFilePath) -> Annex Bool) -> ((SeekInput, RawFilePath) -> CommandSeek) -> Annex ([(SeekInput, RawFilePath)], IO Bool) -> Annex ()
 seekFiltered prefilter a listfs = do
