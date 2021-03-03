@@ -56,9 +56,9 @@ failed
 git-annex: get: 1 failed
 ```
 
-file.txt can not be retreived from the remote - this is not what I expected.
+file.txt can not be retrieved from the remote - this is not what I expected.
 
-- I expected to be able to retreive the file contents from the remote.
+- I expected to be able to retrieve the file contents from the remote.
 
 --
 
