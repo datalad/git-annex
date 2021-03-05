@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-03-02T17:40:57Z"
+ content="""
+Ah yes, it's using git ls-tree so it can just check if the mode is that of
+a symlink or a file to tell if it's unlocked, so no need to mess with
+catKey.
+
+Ok, got --branch combined --unlocked/--locked working! Also in whereis and
+whatever other commands support --branch.
+"""]]
