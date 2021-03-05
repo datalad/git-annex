@@ -1,0 +1,52 @@
+Using [the precompiled git-annex distribution](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz), I have encountered a problem which looks like this:
+
+    git -c foo.bar=baz annex sync
+    error: bogus format in GIT_CONFIG_PARAMETERS
+    fatal: unable to parse command-line config
+    git-annex: user error (git ["config","--null","--list"] exited 128)
+
+I believe I understand what is causing this, and it's not a bug with git-annex.  But I thought it would be worth reporting here in case anyone else encounters similar issues in the future.
+
+On my system I have three different git installations:
+
+- The one in `/usr/bin/git` etc. provided by the distribution package (version 2.28.0)
+- One I've compiled myself in my home directory from a recent upstream `master`, accessible via `~/bin/git` (version 2.30.1.490.ge54fde04c8.dirty)
+- The one embedded in the git-annex bundle obtained from the above link, which I've put under `~/software/scm/git-annex.static/` (`~/software/scm/git-annex.static/shimmed/git/git --version` reports version 2.30.1)
+
+Normally `~/bin` is near the front of my `$PATH`, so my hand-compiled git is used whenever I run `git some-command`.  If I place the following executable script at `~/bin/git-show-config-params`:
+
+    #!/bin/sh
+    echo "$GIT_CONFIG_PARAMETERS"
+
+then it can be seen there's a difference between the versions in how `GIT_CONFIG_PARAMETERS` is constructed:
+
+    % ~/bin/git -c foo.bar=baz show-config-params
+    'foo.bar'='baz'
+    % /usr/bin/git -c foo.bar=baz show-config-params
+    'foo.bar=baz'
+    % ~/software/scm/git-annex.static/shimmed/git/git -c foo.bar=baz show-config-params
+    'foo.bar=baz'
+
+This appears to be due to [commit 294e949fa from 2021-01-25](https://git.kernel.org/pub/scm/git/git.git/commit/?id=294e949fa2dfd43097b2b5614470a3e43604663d) which first appeared in the tag `v2.31.0-rc0`.
+
+This commit is also required in order to successfully parse the new format:
+
+    % GIT_CONFIG_PARAMETERS="'foo.bar'='baz'" ~/software/scm/git-annex.static/shimmed/git/git branch
+    error: bogus format in GIT_CONFIG_PARAMETERS
+    fatal: unable to parse command-line config
+    % GIT_CONFIG_PARAMETERS="'foo.bar'='baz'" /usr/bin/git branch
+    error: bogus format in GIT_CONFIG_PARAMETERS
+    fatal: unable to parse command-line config
+    % GIT_CONFIG_PARAMETERS="'foo.bar'='baz'" ~/bin/git branch
+      git-annex
+    * master
+      synced/git-annex
+      synced/master
+
+So now we can fully understand the cause: when I run
+
+    git -c foo.bar=baz annex sync
+
+it first invokes the newer hand-compiled git with this patch, resulting in `GIT_CONFIG_PARAMETERS` being set to `'foo.bar'='baz'`.  That environment variable is then passed through various wrappers to `~/software/scm/git-annex.static/shimmed/git/git`, which does not know how to parse the new format, hence the `bogus format` error.
+
+The solution is to avoid using the newer development version of git as the "outer" git, since it's not backwards compatible in this respect.  If the two versions were switched around, i.e. the older one setting `GIT_CONFIG_PARAMETERS` and the newer parsing it, that would have worked fine, but of course that's not how the `git annex` wrapper system works.
