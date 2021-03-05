@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-03-05T17:44:54Z"
+ content="""
+In fact, a very simple patch that just makes a GitKey generate a
+"GIT" key seems to have solved this problem! Files that were non-annexed
+on export remain so on import, until they're changed, and then
+annex.largefiles controls what happens.
+
+Once non-annexed files have been exported using the new version, they'll
+stay non-annexed on import. Even when an old version of git-annex is doing
+the importing!
+
+When an old annex had exported, and a new one imports, what happens is
+the file gets imported as an annexed file. Exporting first with the new
+version avoids that unwanted conversion. 
+
+Interestingly though, the annexed file when that conversion happens does
+not use the SHA1 key from git, so its content can be retrieved. I'm not
+quite sure how that problem was avoided in this case but something avoided
+the worst behavior.
+
+It would be possible to special case the handling of SHA1 keys without a
+size to make importing from an old export not do the conversion. But that
+risks breakage for some user who is generating their own SHA1 keys and not
+including a size in them. Or for some external special remote that supports
+IMPORTKEY and generates SHA1 keys without a size. It seems better to avoid
+that potential breakage of unrelated things, and keep the upgrade process
+somewhat complicated when non-annexed files were exported before, than it
+does to streamline the upgrade.
+"""]]

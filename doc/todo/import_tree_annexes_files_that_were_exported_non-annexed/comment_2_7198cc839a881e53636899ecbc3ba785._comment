@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-03-05T16:42:03Z"
+ content="""
+> The importer could check for each file, if there's a corresponding file in the branch it's generating the import for, if that file is annexed. 
+
+Should it check the branch it's generating the import for though?
+If the non-annexed file is "foo" and master is exported, then in master
+that file is renamed to "bar", the import should not look at the new master
+to see if the "foo" from the remote should be annexed. The correct tree
+to consult would be the tree that was exported to the remote last.
+
+It seems reasonable to look at the file in that exported tree to see it was
+non-annexed before, and if the ContentIdentifier is the same as what
+was exported before, keep it non-annexed on import. If the ContentIdentifier
+has changed, apply annex.largefiles to decide whether or not to annex it.
+
+The export database stores information about that tree already,
+but it does not keep track of whether a file was exported annexed or not.
+So changing the database to include an indication of that, and using it
+when importing, seems like a way to solve this problem, and without slowing
+things down much.
+
+*Alternatively* the GitKey that git-annex uses for these files when
+exporting is represented as a SHA1 key with no size field. That's unusual;
+nothing else creates such a key usually. (Although some advanced users may
+for some reason.) Just treating such keys as non-annexed files when
+importing would be at least a bandaid if not a real fix.
+"""]]

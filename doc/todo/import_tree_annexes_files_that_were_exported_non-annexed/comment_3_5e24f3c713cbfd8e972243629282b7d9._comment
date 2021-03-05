@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-03-05T17:31:32Z"
+ content="""
+Wait... The import code has a separate "GIT" key type that it uses
+internally once it's decided a file should be non-annexed. Currently
+that never hits disk. Using that rather than a SHA1 key for the export
+database could be a solution. 
+
+(Using that rather than "SHA1" for the keys would also avoid
+the problem that the current GitKey hardcods an assumption 
+that git uses sha1..)
+"""]]

@@ -11,3 +11,5 @@ The importer could check for each file, if there's a corresponding file in
 the branch it's generating the import for, if that file is annexed.
 This corresponds to how git-annex add (and the smudge filter) handles these
 files. But this might be slow when importing a large tree of files.
+
+> [[fixed|done]] --[[Joey]]

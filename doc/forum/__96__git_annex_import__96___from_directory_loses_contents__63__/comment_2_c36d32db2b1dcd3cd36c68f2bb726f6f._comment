@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-03-05T18:35:54Z"
+ content="""
+This bug has been fixed.
+
+And next time you have a problem so blatent with a test case and
+everything, it's certianly a bug, so don't be afraid to file a bug report
+rather than using the forum. It's harder to close forum posts than
+bug reports!
+"""]]

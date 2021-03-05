@@ -8,6 +8,13 @@ git-annex (8.20210224) UNRELEASED; urgency=medium
   * Fixed handling of --mimetype or --mimeencoding combined with
     options like --all or --unused.
   * Fix handling of --branch combined with --unlocked or --locked.
+  * When non-annexed files in a tree are exported to a special remote,
+    importing from the special remote keeps the files non-annexed,
+    as long as their content has not changed, rather than converting
+    them to annexed files. 
+    (Such a conversion will still happen when importing from a remote
+    an old git-annex exported such a tree to before; export the tree
+    with the new git-annex before importing to avoid that.)
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Feb 2021 13:18:38 -0400
 
