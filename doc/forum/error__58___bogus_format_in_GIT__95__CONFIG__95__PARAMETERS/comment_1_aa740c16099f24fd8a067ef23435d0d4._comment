@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-05T16:16:16Z"
+ content="""
+The git-annex.linux directory from the bundle does include a git, so if you
+put that directory in PATH first, it will avoid the problem.
+
+This should be a fairly transient problem, since the git-annex bundle is
+built with the version of git from debian unstable. Once the new git
+version gets released, it should fairly quickly get in there and the
+incompatability will stop being a problem.
+"""]]
