@@ -319,7 +319,9 @@ cleanupExport :: Remote -> ExportHandle -> Key -> ExportLocation -> Bool -> Comm
 cleanupExport r db ek loc sent = do
 	liftIO $ addExportedLocation db ek loc
 	when sent $
-		logChange ek (uuid r) InfoPresent
+		case keyGitSha ek of
+			Nothing -> logChange ek (uuid r) InfoPresent
+			Just _ -> noop
 	return True
 
 startUnexport :: Remote -> ExportHandle -> TopFilePath -> [Git.Sha] -> CommandStart
