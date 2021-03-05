@@ -1,9 +1,11 @@
 {- git-annex exports
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Export where
 
@@ -15,31 +17,36 @@ import qualified Git
 import qualified Types.Remote as Remote
 import Messages
 
-import Control.Applicative
-import Data.Maybe
-import Prelude
-
--- An export includes both annexed files and files stored in git.
--- For the latter, a SHA1 key is synthesized.
-data ExportKey = AnnexKey Key | GitKey Key
-	deriving (Show, Eq, Ord)
-
-asKey :: ExportKey -> Key
-asKey (AnnexKey k) = k
-asKey (GitKey k) = k
-
-exportKey :: Git.Sha -> Annex ExportKey
+-- From a sha pointing to the content of a file to the key
+-- to use to export it. When the file is annexed, it's the annexed key.
+-- When the file is stored in git, it's a special type of key to indicate
+-- that.
+exportKey :: Git.Sha -> Annex Key
 exportKey sha = mk <$> catKey sha
   where
-	mk (Just k) = AnnexKey k
-	mk Nothing = GitKey $ mkKey $ \k -> k
-		{ keyName = Git.fromRef' sha
-		, keyVariety = SHA1Key (HasExt False)
-		, keySize = Nothing
-		, keyMtime = Nothing
-		, keyChunkSize = Nothing
-		, keyChunkNum = Nothing
-		}
+	mk (Just k) = k
+	mk Nothing = gitShaKey sha
+
+-- Encodes a git sha as a key. This is used to represent a non-annexed
+-- file that is stored on a special remote, which necessarily needs a
+-- key.
+--
+-- This is not the same as a SHA1 key, because the mapping needs to be
+-- bijective, also because git may not always use SHA1, and because git
+-- takes a SHA1 of the file size + content, while git-annex SHA1 keys
+-- only checksum the content.
+gitShaKey :: Git.Sha -> Key
+gitShaKey (Git.Ref s) = mkKey $ \kd -> kd
+	{ keyName = s
+	, keyVariety = OtherKey "GIT"
+	}
+
+-- Reverse of gitShaKey
+keyGitSha :: Key -> Maybe Git.Sha
+keyGitSha k
+	| fromKey keyVariety k == OtherKey "GIT" =
+		Just (Git.Ref (fromKey keyName k))
+	| otherwise = Nothing
 
 warnExportImportConflict :: Remote -> Annex ()
 warnExportImportConflict r = do

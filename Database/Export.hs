@@ -200,9 +200,9 @@ removeExportTree h k loc = queueDb h $
 -- and updates state.
 type ExportDiffUpdater
 	= ExportHandle
-	-> Maybe ExportKey
+	-> Maybe Key
 	-- ^ old exported key
-	-> Maybe ExportKey
+	-> Maybe Key
 	-- ^ new exported key
 	-> Git.DiffTree.DiffTreeItem
 	-> Annex ()
@@ -214,10 +214,10 @@ mkExportDiffUpdater
 mkExportDiffUpdater removeold addnew h srcek dstek i = do
 	case srcek of
 		Nothing -> return ()
-		Just k -> liftIO $ removeold h (asKey k) loc
+		Just k -> liftIO $ removeold h k loc
 	case dstek of
 		Nothing -> return ()
-		Just k -> liftIO $ addnew h (asKey k) loc
+		Just k -> liftIO $ addnew h k loc
   where
 	loc = mkExportLocation $ getTopFilePath $ Git.DiffTree.file i
 

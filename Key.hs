@@ -23,8 +23,6 @@ module Key (
 	nonChunkKey,
 	chunkKeyOffset,
 	isChunkKey,
-	gitShaKey,
-	keyGitSha,
 	isKeyPrefix,
 	splitKeyNameExtension,
 
@@ -37,7 +35,6 @@ import qualified Data.Attoparsec.ByteString as A
 
 import Common
 import Types.Key
-import Git.Types
 import Utility.QuickCheck
 import Utility.Bloom
 import Utility.Aeson
@@ -60,23 +57,6 @@ chunkKeyOffset k = (*)
 
 isChunkKey :: Key -> Bool
 isChunkKey k = isJust (fromKey keyChunkSize k) && isJust (fromKey keyChunkNum k)
-
--- Encodes a git sha as a key.
---
--- This is not the same as a SHA1 key, because the mapping needs to be
--- bijective, also because git may not always use SHA1.
-gitShaKey :: Sha -> Key
-gitShaKey (Ref s) = mkKey $ \kd -> kd
-	{ keyName = s
-	, keyVariety = OtherKey "GIT"
-	}
-
--- Reverse of gitShaKey
-keyGitSha :: Key -> Maybe Sha
-keyGitSha k
-	| fromKey keyVariety k == OtherKey "GIT" =
-		Just (Ref (fromKey keyName k))
-	| otherwise = Nothing
 
 serializeKey :: Key -> String
 serializeKey = decodeBS' . serializeKey'

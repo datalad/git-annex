@@ -72,9 +72,9 @@ optParser _ = ExportOptions
 
 -- To handle renames which swap files, the exported file is first renamed
 -- to a stable temporary name based on the key.
-exportTempName :: ExportKey -> ExportLocation
+exportTempName :: Key -> ExportLocation
 exportTempName ek = mkExportLocation $ toRawFilePath $
-	".git-annex-tmp-content-" ++ serializeKey (asKey (ek))
+	".git-annex-tmp-content-" ++ serializeKey ek
 
 seek :: ExportOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
@@ -203,8 +203,8 @@ changeExport r db (PreferredFiltered new) = do
 		sequence_ $ map a diff
 		void $ liftIO cleanup
 
--- Map of old and new filenames for each changed ExportKey in a diff.
-type DiffMap = M.Map ExportKey (Maybe TopFilePath, Maybe TopFilePath)
+-- Map of old and new filenames for each changed Key in a diff.
+type DiffMap = M.Map Key (Maybe TopFilePath, Maybe TopFilePath)
 
 mkDiffMap :: Git.Ref -> Git.Ref -> ExportHandle -> Annex DiffMap
 mkDiffMap old new db = do
@@ -259,7 +259,7 @@ startExport r db cvar allfilledvar ti = do
 	ek <- exportKey (Git.LsTree.sha ti)
 	stopUnless (notrecordedpresent ek) $
 		starting ("export " ++ name r) ai si $
-			ifM (either (const False) id <$> tryNonAsync (checkPresentExport (exportActions r) (asKey ek) loc))
+			ifM (either (const False) id <$> tryNonAsync (checkPresentExport (exportActions r) ek loc))
 				( next $ cleanupExport r db ek loc False
 				, do
 					liftIO $ modifyMVar_ cvar (pure . const (FileUploaded True))
@@ -272,39 +272,39 @@ startExport r db cvar allfilledvar ti = do
 	ai = ActionItemOther (Just (fromRawFilePath f))
 	si = SeekInput []
 	notrecordedpresent ek = (||)
-		<$> liftIO (notElem loc <$> getExportedLocation db (asKey ek))
+		<$> liftIO (notElem loc <$> getExportedLocation db ek)
 		-- If content was removed from the remote, the export db
 		-- will still list it, so also check location tracking.
-		<*> (notElem (uuid r) <$> loggedLocations (asKey ek))
+		<*> (notElem (uuid r) <$> loggedLocations ek)
 
-performExport :: Remote -> ExportHandle -> ExportKey -> AssociatedFile -> Sha -> ExportLocation -> MVar AllFilled -> CommandPerform
+performExport :: Remote -> ExportHandle -> Key -> AssociatedFile -> Sha -> ExportLocation -> MVar AllFilled -> CommandPerform
 performExport r db ek af contentsha loc allfilledvar = do
 	let storer = storeExport (exportActions r)
-	sent <- tryNonAsync $ case ek of
-		AnnexKey k -> ifM (inAnnex k)
+	sent <- tryNonAsync $ case keyGitSha ek of
+		Nothing -> ifM (inAnnex ek)
 			( notifyTransfer Upload af $
 				-- alwaysUpload because the same key
 				-- could be used for more than one export
 				-- location, and concurrently uploading
 				-- of the content should still be allowed.
-				alwaysUpload (uuid r) k af Nothing stdRetry $ \pm -> do
+				alwaysUpload (uuid r) ek af Nothing stdRetry $ \pm -> do
 					let rollback = void $
 						performUnexport r db [ek] loc
-					sendAnnex k rollback $ \f ->
+					sendAnnex ek rollback $ \f ->
 						Remote.action $
-							storer f k loc pm
+							storer f ek loc pm
 			, do
 				showNote "not available"
 				return False
 			)
 		-- Sending a non-annexed file.
-		GitKey sha1k ->
+		Just _ ->
 			withTmpFile "export" $ \tmp h -> do
 				b <- catObject contentsha
 				liftIO $ L.hPut h b
 				liftIO $ hClose h
 				Remote.action $
-					storer tmp sha1k loc nullMeterUpdate
+					storer tmp ek loc nullMeterUpdate
 	let failedsend = liftIO $ modifyMVar_ allfilledvar (pure . const (AllFilled False))
 	case sent of
 		Right True -> next $ cleanupExport r db ek loc True
@@ -315,11 +315,11 @@ performExport r db ek af contentsha loc allfilledvar = do
 			failedsend
 			throwM err
 
-cleanupExport :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> Bool -> CommandCleanup
+cleanupExport :: Remote -> ExportHandle -> Key -> ExportLocation -> Bool -> CommandCleanup
 cleanupExport r db ek loc sent = do
-	liftIO $ addExportedLocation db (asKey ek) loc
+	liftIO $ addExportedLocation db ek loc
 	when sent $
-		logChange (asKey ek) (uuid r) InfoPresent
+		logChange ek (uuid r) InfoPresent
 	return True
 
 startUnexport :: Remote -> ExportHandle -> TopFilePath -> [Git.Sha] -> CommandStart
@@ -335,7 +335,7 @@ startUnexport r db f shas = do
 	ai = ActionItemOther (Just (fromRawFilePath f'))
 	si = SeekInput []
 
-startUnexport' :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
+startUnexport' :: Remote -> ExportHandle -> TopFilePath -> Key -> CommandStart
 startUnexport' r db f ek =
 	starting ("unexport " ++ name r) ai si $
 		performUnexport r db [ek] loc
@@ -350,20 +350,20 @@ startUnexport' r db f ek =
 -- remote is untrusted, so would not count as a copy anyway.
 -- Or, an export may be appendonly, and removing a file from it does
 -- not really remove the content, which must be accessible later on.
-performUnexport :: Remote -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandPerform
+performUnexport :: Remote -> ExportHandle -> [Key] -> ExportLocation -> CommandPerform
 performUnexport r db eks loc = do
 	ifM (allM rm eks)
 		( next $ cleanupUnexport r db eks loc
 		, stop
 		)
   where
-	rm ek = Remote.action $ removeExport (exportActions r) (asKey ek) loc
+	rm ek = Remote.action $ removeExport (exportActions r) ek loc
 
-cleanupUnexport :: Remote -> ExportHandle -> [ExportKey] -> ExportLocation -> CommandCleanup
+cleanupUnexport :: Remote -> ExportHandle -> [Key] -> ExportLocation -> CommandCleanup
 cleanupUnexport r db eks loc = do
 	liftIO $ do
 		forM_ eks $ \ek ->
-			removeExportedLocation db (asKey ek) loc
+			removeExportedLocation db ek loc
 		flushDbQueue db
 
 	-- An versionedExport remote supports removeExportLocation to remove
@@ -371,12 +371,12 @@ cleanupUnexport r db eks loc = do
 	-- and allows retrieving it.
 	unless (versionedExport (exportActions r)) $ do
 		remaininglocs <- liftIO $ 
-			concat <$> forM eks (\ek -> getExportedLocation db (asKey ek))
+			concat <$> forM eks (getExportedLocation db)
 		when (null remaininglocs) $
 			forM_ eks $ \ek ->
-				logChange (asKey ek) (uuid r) InfoMissing
+				logChange ek (uuid r) InfoMissing
 	
-	removeEmptyDirectories r db loc (map asKey eks)
+	removeEmptyDirectories r db loc eks
 
 startRecoverIncomplete :: Remote -> ExportHandle -> Git.Sha -> TopFilePath -> CommandStart
 startRecoverIncomplete r db sha oldf
@@ -387,12 +387,12 @@ startRecoverIncomplete r db sha oldf
 		let ai = ActionItemOther (Just (fromRawFilePath (fromExportLocation loc)))
 		let si = SeekInput []
 		starting ("unexport " ++ name r) ai si $ do
-			liftIO $ removeExportedLocation db (asKey ek) oldloc
+			liftIO $ removeExportedLocation db ek oldloc
 			performUnexport r db [ek] loc
   where
 	oldloc = mkExportLocation $ getTopFilePath oldf
 
-startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> ExportKey -> CommandStart
+startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> Key -> CommandStart
 startMoveToTempName r db f ek = 
 	starting ("rename " ++ name r) ai si $
 		performRename r db ek loc tmploc
@@ -403,11 +403,11 @@ startMoveToTempName r db f ek =
 	ai = ActionItemOther $ Just $ fromRawFilePath f' ++ " -> " ++ fromRawFilePath (fromExportLocation tmploc)
 	si = SeekInput []
 
-startMoveFromTempName :: Remote -> ExportHandle -> ExportKey -> TopFilePath -> CommandStart
+startMoveFromTempName :: Remote -> ExportHandle -> Key -> TopFilePath -> CommandStart
 startMoveFromTempName r db ek f = do
 	let tmploc = exportTempName ek
 	let ai = ActionItemOther (Just (fromRawFilePath (fromExportLocation tmploc) ++ " -> " ++ fromRawFilePath f'))
-	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db (asKey ek)) $
+	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db ek) $
 		starting ("rename " ++ name r) ai si $
 			performRename r db ek tmploc loc
   where
@@ -415,9 +415,9 @@ startMoveFromTempName r db ek f = do
 	f' = getTopFilePath f
 	si = SeekInput []
 
-performRename :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandPerform
+performRename :: Remote -> ExportHandle -> Key -> ExportLocation -> ExportLocation -> CommandPerform
 performRename r db ek src dest =
-	tryNonAsync (renameExport (exportActions r) (asKey ek) src dest) >>= \case
+	tryNonAsync (renameExport (exportActions r) ek src dest) >>= \case
 		Right (Just ()) -> next $ cleanupRename r db ek src dest
 		Left err -> do
 			warning $ "rename failed (" ++ show err ++ "); deleting instead"
@@ -427,14 +427,14 @@ performRename r db ek src dest =
   where
 	fallbackdelete = performUnexport r db [ek] src
 
-cleanupRename :: Remote -> ExportHandle -> ExportKey -> ExportLocation -> ExportLocation -> CommandCleanup
+cleanupRename :: Remote -> ExportHandle -> Key -> ExportLocation -> ExportLocation -> CommandCleanup
 cleanupRename r db ek src dest = do
 	liftIO $ do
-		removeExportedLocation db (asKey ek) src
-		addExportedLocation db (asKey ek) dest
+		removeExportedLocation db ek src
+		addExportedLocation db ek dest
 		flushDbQueue db
 	if exportDirectories src /= exportDirectories dest
-		then removeEmptyDirectories r db src [asKey ek]
+		then removeEmptyDirectories r db src [ek]
 		else return True
 
 -- | Remove empty directories from the export. Call after removing an

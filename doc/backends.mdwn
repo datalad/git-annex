@@ -76,6 +76,10 @@ content of an annexed file remains unchanged.
   passing it to a shell script.  The URL-backend key is distinct from URLs/URIs
   that may be attached to a key (from any backend) indicating the key's location
   on the web or in one of [[special_remotes]].
+* `GIT` -- This is used internally by git-annex when exporting trees
+  containing files stored in git, rather than git-annex. It represents a
+  git sha. This is never used for git-annex links, but information about
+  keys of this type is stored in the git-annex branch.
 
 ## external backends
 
