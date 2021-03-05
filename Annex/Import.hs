@@ -180,11 +180,10 @@ recordImportTree remote importtreeconfig importable = do
 		let stillpresent db k = liftIO $ not . null
 			<$> Export.getExportedLocation db k
 		let updater db moldkey _newkey _ = case moldkey of
-			Just oldkey -> case keyGitSha oldkey of
-				Nothing -> unlessM (stillpresent db oldkey) $
+			Just oldkey | not (isGitShaKey oldkey) ->
+				unlessM (stillpresent db oldkey) $
 					logChange oldkey (Remote.uuid remote) InfoMissing
-				Just _ -> noop
-			Nothing -> noop
+			_ -> noop
 		db <- Export.openDb (Remote.uuid remote)
 		forM_ (exportedTreeishes oldexport) $ \oldtree ->
 			Export.runExportDiffUpdater updater db oldtree finaltree

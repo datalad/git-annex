@@ -280,8 +280,8 @@ startExport r db cvar allfilledvar ti = do
 performExport :: Remote -> ExportHandle -> Key -> AssociatedFile -> Sha -> ExportLocation -> MVar AllFilled -> CommandPerform
 performExport r db ek af contentsha loc allfilledvar = do
 	let storer = storeExport (exportActions r)
-	sent <- tryNonAsync $ case keyGitSha ek of
-		Nothing -> ifM (inAnnex ek)
+	sent <- tryNonAsync $ if not (isGitShaKey ek)
+		then ifM (inAnnex ek)
 			( notifyTransfer Upload af $
 				-- alwaysUpload because the same key
 				-- could be used for more than one export
@@ -298,13 +298,12 @@ performExport r db ek af contentsha loc allfilledvar = do
 				return False
 			)
 		-- Sending a non-annexed file.
-		Just _ ->
-			withTmpFile "export" $ \tmp h -> do
-				b <- catObject contentsha
-				liftIO $ L.hPut h b
-				liftIO $ hClose h
-				Remote.action $
-					storer tmp ek loc nullMeterUpdate
+		else withTmpFile "export" $ \tmp h -> do
+			b <- catObject contentsha
+			liftIO $ L.hPut h b
+			liftIO $ hClose h
+			Remote.action $
+				storer tmp ek loc nullMeterUpdate
 	let failedsend = liftIO $ modifyMVar_ allfilledvar (pure . const (AllFilled False))
 	case sent of
 		Right True -> next $ cleanupExport r db ek loc True
@@ -318,10 +317,8 @@ performExport r db ek af contentsha loc allfilledvar = do
 cleanupExport :: Remote -> ExportHandle -> Key -> ExportLocation -> Bool -> CommandCleanup
 cleanupExport r db ek loc sent = do
 	liftIO $ addExportedLocation db ek loc
-	when sent $
-		case keyGitSha ek of
-			Nothing -> logChange ek (uuid r) InfoPresent
-			Just _ -> noop
+	when (sent && not (isGitShaKey ek)) $
+		logChange ek (uuid r) InfoPresent
 	return True
 
 startUnexport :: Remote -> ExportHandle -> TopFilePath -> [Git.Sha] -> CommandStart

@@ -17,6 +17,8 @@ import qualified Git
 import qualified Types.Remote as Remote
 import Messages
 
+import Data.Maybe
+
 -- From a sha pointing to the content of a file to the key
 -- to use to export it. When the file is annexed, it's the annexed key.
 -- When the file is stored in git, it's a special type of key to indicate
@@ -47,6 +49,10 @@ keyGitSha k
 	| fromKey keyVariety k == OtherKey "GIT" =
 		Just (Git.Ref (fromKey keyName k))
 	| otherwise = Nothing
+
+-- Is a key storing a git sha, and not used for an annexed file?
+isGitShaKey :: Key -> Bool
+isGitShaKey = isJust . keyGitSha
 
 warnExportImportConflict :: Remote -> Annex ()
 warnExportImportConflict r = do
