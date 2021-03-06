@@ -94,7 +94,7 @@ runLocal runst runner a = case a of
 			let runtransfer ti = Right
 				<$> storefile dest o l getb iv validitycheck nullMeterUpdate ti
 			let fallback = return $ Left $
-				ProtoFailureMessage "transfer failed"
+				ProtoFailureMessage "Transfer failed"
 			checktransfer runtransfer fallback
 		case v of
 			Left e -> return $ Left $ ProtoFailureException e

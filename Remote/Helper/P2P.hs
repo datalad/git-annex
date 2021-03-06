@@ -37,7 +37,7 @@ store runner k af p = do
 	metered (Just p) sizer $ \_ p' ->
 		runner p' (P2P.put k af p') >>= \case
 			Just True -> return ()
-			Just False -> giveup "transfer failed"
+			Just False -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
 
 retrieve :: VerifyConfig -> (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
@@ -46,7 +46,7 @@ retrieve verifyconfig runner k af dest p = do
 	metered (Just p) k $ \m p' -> 
 		runner p' (P2P.get dest k iv af m p') >>= \case
 			Just (True, v) -> return v
-			Just (False, _) -> giveup "transfer failed"
+			Just (False, _) -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
 
 remove :: ProtoRunner Bool -> Key -> Annex ()
