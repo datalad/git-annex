@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="Any way to delete a remote?"
+ date="2021-03-07T01:53:21Z"
+ content="""
+I can't find any way to delete a special remote. I created one that was explicitly temporary (to transfer between some other systems), and now I can't get rid of it. I've already run \"git remote rm\" on it, but it seems git-annex didn't pick this up.
+"""]]
