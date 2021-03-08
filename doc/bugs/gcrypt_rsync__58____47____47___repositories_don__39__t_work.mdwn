@@ -1,0 +1,104 @@
+### Please describe the problem.
+git-remote-gcrypt supports repositories using the rsync:// protocol, but translates these into accessing rsync over SSH. When git-annex sees such a repository, it retains the rsync:// URL, which the rsync program interprets as contacting an rsync daemon. Usually the destination host is not running an rsync daemon and shouldn't be; SSH is the correct way to access rsync for this use case. For rsync to use rsync-over-SSH, the URL passed to rsync should be of the form user@host:path, rather than rsync://user@host/path. However, specifying rsync://user@host/path is necessary for git-remote-gcrypt to use the rsync transport, which is also basically necessary for decent performance on large repositories.
+
+### What steps will reproduce the problem?
+1. Create a new gcrypt repository using the rsync:// transport: `git annex initremote encryptedrepo type=gcrypt gitrepo=rsync://my.server/home/me/encryptedrepo keyid=$mykey`
+2. watch as it spews dumb errors rather than doing the right thing
+
+### What version of git-annex are you using? On what operating system?
+```
+$ git annex version
+git-annex version: 8.20210223-gd670346b2
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.28 DAV-1.3.4 feed-1.3.0.1 ghc-8.10.4 http-client-0.7.6 persistent-sqlite-2.11.1.0 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+tom@breitenfeld:~/bigdata$ git annex --verbose --debug initremote gnubee type=gcrypt gitrepo=rsync://archive@gnubee/data2/bigdata keyid='bigdata annex'
+[2021-03-08 11:20:28.43570846] process [1836653] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]                    
+[2021-03-08 11:20:28.437076646] process [1836653] done ExitSuccess
+[2021-03-08 11:20:28.437336263] process [1836654] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2021-03-08 11:20:28.438352774] process [1836654] done ExitSuccess
+[2021-03-08 11:20:28.485166314] process [1836655] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..c672ed2317b98c1032999289ec4e1b183929c456","--pretty=%H","-n1"]                              
+[2021-03-08 11:20:28.486558553] process [1836655] done ExitSuccess
+[2021-03-08 11:20:28.486818678] process [1836656] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..ebf2e73c12961f885263f6c8db6c1f8441c867f1","--pretty=%H","-n1"]
+[2021-03-08 11:20:28.488292936] process [1836656] done ExitSuccess
+[2021-03-08 11:20:28.488737925] process [1836657] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2021-03-08 11:20:28.48889119] process [1836658] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+initremote gnubee (encryption setup) [2021-03-08 11:20:28.494908908] process [1836659] read: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--with-colons","--list-public-keys","bigdata annex"]
+[2021-03-08 11:20:28.502271475] process [1836659] done ExitSuccess
+[2021-03-08 11:20:28.502611678] process [1836660] read: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--gen-random","--armor","2","512"]
+[2021-03-08 11:20:28.532237247] process [1836660] done ExitSuccess                                                                                                                                                                           
+[2021-03-08 11:20:28.532645683] process [1836661] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--recipient","BDF1CB2C01162329","--encrypt","--no-encrypt-to","--no-default-recipient","--force-mdc","--n
+o-textmode"]                                                                                                          
+[2021-03-08 11:20:28.538503457] process [1836661] done ExitSuccess
+(to gpg keys: BDF1CB2C01162329) [2021-03-08 11:20:28.538836053] process [1836662] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","remote","add","gnubee","gcrypt::rsync://archive@gnubee/data2/bigdata"]
+[2021-03-08 11:20:28.541052772] process [1836662] done ExitSuccess
+[2021-03-08 11:20:28.541416821] process [1836663] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","remote.gnubee.gcrypt-participants","BDF1CB2C01162329"]
+[2021-03-08 11:20:28.542184041] process [1836663] done ExitSuccess
+[2021-03-08 11:20:28.542323969] process [1836664] read: git ["config","--null","--list"]
+[2021-03-08 11:20:28.542984011] process [1836664] done ExitSuccess
+[2021-03-08 11:20:28.543292096] process [1836665] read: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--with-colons","--list-secret-keys","--fixed-list-mode"]
+[2021-03-08 11:20:28.594671548] process [1836665] done ExitSuccess                                                
+[2021-03-08 11:20:28.594934831] process [1836667] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","remote.gnubee.gcrypt-signingkey","BDF1CB2C01162329"]          
+[2021-03-08 11:20:28.595815576] process [1836667] done ExitSuccess                                                                                                                                                                           
+[2021-03-08 11:20:28.596017072] process [1836668] read: git ["config","--null","--list"]                                                                                                                                                     
+[2021-03-08 11:20:28.59666746] process [1836668] done ExitSuccess
+[2021-03-08 11:20:28.597098155] process [1836669] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","config","remote.gnubee.gcrypt-publish-participants","true"]
+[2021-03-08 11:20:28.597876696] process [1836669] done ExitSuccess
+[2021-03-08 11:20:28.598024485] process [1836670] read: git ["config","--null","--list"]
+[2021-03-08 11:20:28.598652173] process [1836670] done ExitSuccess
+[2021-03-08 11:20:28.598794394] process [1836671] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","fetch","gnubee"]
+gcrypt: Decrypting manifest
+gpg: Signature made Mon 08 Mar 2021 11:18:04 AM MST
+gpg:                using RSA key 06EA8DF161EE4445B95E4560BDF1CB2C01162329
+gpg: Good signature from "bigdata annex <tom@tomhunt.email>" [ultimate]
+gcrypt: Remote ID is :id:wAwSE2kqUs9HLuq1usaP
+From gcrypt::rsync://archive@gnubee/data2/bigdata
+ * [new branch]              synced/git-annex -> gnubee/synced/git-annex
+ * [new branch]              synced/master    -> gnubee/synced/master
+ * [new branch]              master           -> gnubee/master
+ * [new branch]              git-annex        -> gnubee/git-annex
+[2021-03-08 11:20:35.683175088] process [1836671] done ExitSuccess
+[2021-03-08 11:20:35.683408275] process [1836914] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","gnubee","refs/heads/git-annex"]
+gcrypt: Decrypting manifest
+gpg: Signature made Mon 08 Mar 2021 11:18:04 AM MST
+gpg:                using RSA key 06EA8DF161EE4445B95E4560BDF1CB2C01162329
+gpg: Good signature from "bigdata annex <tom@tomhunt.email>" [ultimate]
+Everything up-to-date
+[2021-03-08 11:20:39.0774672] process [1836914] done ExitSuccess
+[2021-03-08 11:20:39.077675135] process [1837131] read: git ["config","--null","--list"]
+[2021-03-08 11:20:39.078358634] process [1837131] done ExitSuccess
+[2021-03-08 11:20:39.079257145] process [1837132] call: rsync ["-e","'ssh' '-S' '.git/annex/ssh/rsync' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T'","rsync://archive@gnubee/data2/bigdata/config",".git/annex/tmp/rsynctmp.0/con
+fig"]
+rsync error: syntax or usage error (code 1) at clientserver.c(1223) [Receiver=3.2.3]
+rsync: did not see server greeting
+rsync error: error starting client-server protocol (code 5) at main.c(1814) [Receiver=v3.2.3]
+[2021-03-08 11:20:40.410745083] process [1837132] done ExitFailure 5
+
+git-annex: Failed to connect to remote to set it up.
+failed
+[2021-03-08 11:20:40.999149788] process [1837170] read: ssh ["-O","stop","-S","rsync","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"]
+[2021-03-08 11:20:41.001923533] process [1837170] done ExitSuccess
+[2021-03-08 11:20:41.002479963] process [1836657] done ExitSuccess
+[2021-03-08 11:20:41.002660104] process [1836658] done ExitSuccess
+git-annex: initremote: 1 failed
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex is a wonderful thing that works wonderfully, so long as you're using normal SSH or directory remotes
