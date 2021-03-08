@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="comment 48"
+ date="2021-03-08T03:28:45Z"
+ content="""
+I've tried git-annex-dead, it removes the remotes from command outputs but the name is still taken. This isn't great if I want to delete and reconfigure the same remote.
+
+I can always just call it remote2, but that's unaesthetic.
+"""]]
