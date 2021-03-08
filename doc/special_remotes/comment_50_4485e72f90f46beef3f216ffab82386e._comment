@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 50"""
+ date="2021-03-08T16:46:57Z"
+ content="""
+It would be possible for initremote to allow reusing a name that is used
+for an old remote that has been marked as dead. The reason that is not
+allowed, I think, is that there is some footgun potential: If the old
+remote somehow was lost and then was found, it would either be hard to unmark
+it as dead, or if that was done, there would be 2 remotes with the same
+name, which would complicate using enableremote.
+
+So it seems best to rename the old one before creating the new one.
+That way it's got a unique name still.
+"""]]
