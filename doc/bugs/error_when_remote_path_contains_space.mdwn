@@ -1,0 +1,25 @@
+### Please describe the problem.
+If a repository path contains a space, git-annex can't copy to it
+
+### What steps will reproduce the problem?
+1. Create a new remote in a directory with a space in the path: `git annex initremote encryptedbackup type=gcrypt gitrepo='/run/media/volume name with a space/repo' keyid=$mykey`
+2. Try to copy data: `git annex copy --to=encryptedbackup file.mkv`
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ git annex copy --to=encryptedbackup file.mkv
+copy file.mkv (unable to check encryptedbackup) failed
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
