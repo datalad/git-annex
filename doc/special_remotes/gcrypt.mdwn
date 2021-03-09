@@ -26,9 +26,20 @@ gcrypt:
   repository itself. May be repeated when multiple participants
   should have access to the repository.
 
-* `gitrepo` - Required. The path or url to the git repository
+* `gitrepo` - Required. The location of the git repository
   for gcrypt to use. This repository should be either an unpopulated
   bare git repo, or an existing gcrypt repository.
+
+  To use a local git repository, use: `gitrepo=/path/to/repo`
+
+  For a git repository accessed using rsync over ssh, use:
+  `gitrepo=rsync://user@host/path/to/repo`
+
+  For a git repository accessed over ssh, and using git-annex-shell
+  to transfer data, use:
+  `gitrepo=ssh://user@host/path/to/repo` or `host:path`  
+  Note that each `git push` has to re-send the whole content of the git
+  repository when using this option.
 
 * `chunk` - Enables [[chunking]] when storing large files.
 
@@ -37,9 +48,7 @@ gcrypt:
 ## notes
 
 For git-annex to store files in a repository on a remote server, you need
-shell access, and `rsync` must be installed. Those are the minimum
-requirements, but it's also recommended to install git-annex on the remote
-server, so that [[git-annex-shell]] can be used.
+shell access, and it needs to be able to run `rsync` or `git-annex-shell`.
 
 If you can't run `rsync` or `git-annex-shell` on the remote server,
 you can't use this special remote. Other options are the [[git-lfs]]

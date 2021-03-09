@@ -66,9 +66,9 @@ the gpg key used to encrypt it, and then:
 
 ## encrypted git-annex repository on a ssh server
 
-If you have a ssh server that has git-annex or rsync installed on it, you
-can set up an encrypted repository there. Works just like the encrypted
-drive except without the cable.
+If you have a server that has ssh and rsync installed on it, you can set up an
+encrypted repository there. Works just like the encrypted drive except
+without the cable.
 
 First, on the server, run:
 
@@ -76,14 +76,14 @@ First, on the server, run:
 
 Now, in your existing git-annex repository, set up the encrypted remote:
 
-	git annex initremote encryptedrepo type=gcrypt gitrepo=ssh://my.server/home/me/encryptedrepo keyid=$mykey
+	git annex initremote encryptedrepo type=gcrypt gitrepo=rsync://my.server/home/me/encryptedrepo keyid=$mykey
 	git annex sync encryptedrepo
 
 (Remember to replace "$mykey" with the keyid of your gpg key.)
 
 This uses the [[gcrypt special remote|special_remotes/gcrypt]] to encrypt
 pushes to the git remote, and git-annex will also encrypt the files it
-stores there.
+stores there. Data is transferred using rsync over ssh.
 
 If you're going to be sharing this repository with others, be sure to also
 include their keyids, by specifying keyid= repeatedly.
@@ -98,9 +98,9 @@ the git repository changes to it as well.
 Anyone who has access to the repo it and has one of the keys
 used to encrypt it can check it out:
 
-	git clone gcrypt::ssh://my.server/home/me/encryptedrepo myrepo
+	git clone gcrypt::rsync://my.server/home/me/encryptedrepo myrepo
 	cd myrepo
-	git annex enableremote encryptedrepo gitrepo=ssh://my.server/home/me/encryptedrepo
+	git annex enableremote encryptedrepo gitrepo=rsync://my.server/home/me/encryptedrepo
 	git annex get --from encryptedrepo
 
 ## private encrypted git remote on a git-lfs hosting site

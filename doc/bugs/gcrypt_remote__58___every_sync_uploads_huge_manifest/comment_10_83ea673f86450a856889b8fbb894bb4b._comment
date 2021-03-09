@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2021-03-09T18:10:38Z"
+ content="""
+Actually, it supports rsync urls already. But git-annex treats the url as
+literally the rsync protocol, so it will run rsync with an url like
+rsync://localhost/foo. Which will mostly fail unless there's actually a
+rsync server running.
+git-remote-gcrypt treats the same url as rsync over ssh.
+
+See [[!commit 3e079cdcd1ac4f52ceb1c3ad483917d7c6133d0b]] for when that was
+added in 2013. Although I'm doubtful if it actually worked; it seems like
+initremote supported it, but it was never implemented the rest of
+the way.
+
+If anyone has been using that, it seems git-annex and git-remote-gcrypt
+would be accessing the server in different ways, so the same server must
+support rsync over ssh too, or git pushes to the remote would fail. So, it
+seems all that's needed is for git-annex to treat that url as rsync over
+ssh, and finish the incomplete implementation of rsync urls.
+
+Ok, done!
+"""]]

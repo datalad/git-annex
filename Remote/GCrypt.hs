@@ -128,7 +128,7 @@ gen' :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteState
 gen' r u c gc rs = do
 	cst <- remoteCost gc $
 		if repoCheap r then nearlyCheapRemoteCost else expensiveRemoteCost
-	(rsynctransport, rsyncurl) <- rsyncTransportToObjects r gc
+	let (rsynctransport, rsyncurl, accessmethod) = rsyncTransportToObjects r gc
 	let rsyncopts = Remote.Rsync.genRsyncOpts c gc rsynctransport rsyncurl
 	let this = Remote 
 		{ uuid = u
@@ -163,10 +163,10 @@ gen' r u c gc rs = do
 		, remoteStateHandle = rs
 	}
 	return $ Just $ specialRemote' specialcfg c
-		(store this rsyncopts)
-		(retrieve this rsyncopts)
-		(remove this rsyncopts)
-		(checkKey this rsyncopts)
+		(store this rsyncopts accessmethod)
+		(retrieve this rsyncopts accessmethod)
+		(remove this rsyncopts accessmethod)
+		(checkKey this rsyncopts accessmethod)
 		this
   where
 	specialcfg
@@ -175,35 +175,47 @@ gen' r u c gc rs = do
 			{ displayProgress = False }
 		| otherwise = specialRemoteCfg c
 
-rsyncTransportToObjects :: Git.Repo -> RemoteGitConfig -> Annex (Annex [CommandParam], String)
-rsyncTransportToObjects r gc = do
-	(rsynctransport, rsyncurl, _) <- rsyncTransport r gc
-	return (rsynctransport, rsyncurl ++ "/annex/objects")
+rsyncTransportToObjects :: Git.Repo -> RemoteGitConfig -> (Annex [CommandParam], String, AccessMethod)
+rsyncTransportToObjects r gc =
+	let (rsynctransport, rsyncurl, m) = rsyncTransport r gc
+	in (rsynctransport, rsyncurl ++ "/annex/objects", m)
 
-rsyncTransport :: Git.Repo -> RemoteGitConfig -> Annex (Annex [CommandParam], String, AccessMethod)
+rsyncTransport :: Git.Repo -> RemoteGitConfig -> (Annex [CommandParam], String, AccessMethod)
 rsyncTransport r gc
 	| sshprefix `isPrefixOf` loc = sshtransport $ break (== '/') $ drop (length sshprefix) loc
-	| "//:" `isInfixOf` loc = othertransport
+	| "rsync://" `isPrefixOf` loc = rsyncoversshtransport
 	| ":" `isInfixOf` loc = sshtransport $ separate (== ':') loc
-	| otherwise = othertransport
+	| otherwise = rsyncoversshtransport
   where
 	sshprefix = "ssh://" :: String
 	loc = Git.repoLocation r
-	sshtransport (host, path) = do
+	sshtransport (host, path) =
 		let rsyncpath = if "/~/" `isPrefixOf` path
 			then drop 3 path
 			else path
-		let sshhost = either error id (mkSshHost host)
-		let mkopts = rsyncShell . (Param "ssh" :) 
+		    sshhost = either error id (mkSshHost host)
+		    mkopts = rsyncShell . (Param "ssh" :) 
 			<$> sshOptions ConsumeStdin (sshhost, Nothing) gc []
-		return (mkopts, fromSshHost sshhost ++ ":" ++ rsyncpath, AccessShell)
-	othertransport = return (pure [], loc, AccessDirect)
+		in (mkopts, fromSshHost sshhost ++ ":" ++ rsyncpath, AccessGitAnnexShell)
+	rsyncoversshtransport =
+		-- git-remote-gcrypt uses a rsync:// url to mean
+		-- rsync over ssh. But to rsync, that's rsync protocol,
+		-- so it must be converted to a form that rsync will treat
+		-- as rsync over ssh.
+		-- There are two url forms that git-remote-gcrypt
+		-- supports:  rsync://userhost/path and rsync://userhost:path
+		-- change to: userhost:/path            userhost:path
+		let loc' = replace "rsync://" "" loc
+		    loc'' = if ':' `elem` loc'
+		    	then loc'
+		    	else let (a, b) = break (== '/') loc' in a ++ ":" ++ b
+		in (pure [], loc'', AccessRsyncOverSsh)
 
 noCrypto :: Annex a
 noCrypto = giveup "cannot use gcrypt remote without encryption enabled"
 
 unsupportedUrl :: a
-unsupportedUrl = giveup "using non-ssh remote repo url with gcrypt is not supported"
+unsupportedUrl = giveup "unsupported repo url for gcrypt"
 
 gCryptSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
@@ -256,8 +268,9 @@ gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
 					else giveup $ "uuid mismatch; expected " ++ show mu ++ " but remote gitrepo has " ++ show u ++ " (" ++ show gcryptid ++ ")"
 
 {- Sets up the gcrypt repository. The repository is either a local
- - repo, or it is accessed via rsync directly, or it is accessed over ssh
- - and git-annex-shell is available to manage it.
+ - repo, or it is accessed via rsync over ssh (without using
+ - git-annex-shell), or it is accessed over ssh and git-annex-shell
+ - is available to manage it.
  -
  - The GCryptID is recorded in the repository's git config for later use.
  - Also, if the git config has receive.denyNonFastForwards set, disable
@@ -267,11 +280,11 @@ setupRepo :: Git.GCrypt.GCryptId -> Git.Repo -> Annex AccessMethod
 setupRepo gcryptid r
 	| Git.repoIsUrl r = do
 		dummycfg <- liftIO dummyRemoteGitConfig
-		(_, _, accessmethod) <- rsyncTransport r dummycfg
+		let (_, _, accessmethod) = rsyncTransport r dummycfg
 		case accessmethod of
-			AccessDirect -> rsyncsetup
-			AccessShell -> ifM gitannexshellsetup
-				( return AccessShell
+			AccessRsyncOverSsh -> rsyncsetup
+			AccessGitAnnexShell -> ifM gitannexshellsetup
+				( return AccessGitAnnexShell
 				, rsyncsetup
 				)
 	| Git.repoIsLocalUnknown r = localsetup =<< liftIO (Git.Config.read r)
@@ -281,16 +294,16 @@ setupRepo gcryptid r
 		let setconfig k v = liftIO $ Git.Command.run [Param "config", Param (fromConfigKey k), Param v] r'
 		setconfig coreGCryptId gcryptid
 		setconfig denyNonFastForwards (Git.Config.boolConfig False)
-		return AccessDirect
+		return AccessRsyncOverSsh
 
 	{- As well as modifying the remote's git config, 
 	 - create the objectDir on the remote,
-	 - which is needed for direct rsync of objects to work.
+	 - which is needed for rsync of objects to it to work.
 	 -}
 	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
 		createAnnexDirectory (toRawFilePath (tmp </> objectDir))
 		dummycfg <- liftIO dummyRemoteGitConfig
-		(rsynctransport, rsyncurl, _) <- rsyncTransport r dummycfg
+		let (rsynctransport, rsyncurl, _) = rsyncTransport r dummycfg
 		let tmpconfig = tmp </> "config"
 		opts <- rsynctransport
 		void $ liftIO $ rsync $ opts ++
@@ -307,7 +320,7 @@ setupRepo gcryptid r
 			]
 		unless ok $
 			giveup "Failed to connect to remote to set it up."
-		return AccessDirect
+		return AccessRsyncOverSsh
 
 	{-  Ask git-annex-shell to configure the repository as a gcrypt
 	 -  repository. May fail if it is too old. -}
@@ -322,7 +335,7 @@ accessShell = accessShellConfig . gitconfig
 
 accessShellConfig :: RemoteGitConfig -> Bool
 accessShellConfig c = case method of
-	AccessShell -> True
+	AccessGitAnnexShell -> True
 	_ -> False
   where
 	method = toAccessMethod $ fromMaybe "" $ remoteAnnexGCrypt c
@@ -363,13 +376,13 @@ setGcryptEncryption c remotename = do
   where
 	remoteconfig n = n remotename
 
-store :: Remote -> Remote.Rsync.RsyncOpts -> Storer
-store r rsyncopts k s p = do
+store :: Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Storer
+store r rsyncopts accessmethod k s p = do
 	repo <- getRepo r
-	store' repo r rsyncopts k s p
+	store' repo r rsyncopts accessmethod k s p
 
-store' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Storer
-store' repo r rsyncopts
+store' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Storer
+store' repo r rsyncopts accessmethod
 	| not $ Git.repoIsUrl repo = 
 		byteStorer $ \k b p -> guardUsable repo (giveup "cannot access remote") $ liftIO $ do
 			let tmpdir = Git.repoPath repo P.</> "tmp" P.</> keyFile k
@@ -386,16 +399,19 @@ store' repo r rsyncopts
 					(AssociatedFile Nothing)
 			unless ok $
 				giveup "rsync failed"
-		else fileStorer $ Remote.Rsync.store rsyncopts
+		else storersync
+	| accessmethod == AccessRsyncOverSsh = storersync
 	| otherwise = unsupportedUrl
+  where
+	storersync = fileStorer $ Remote.Rsync.store rsyncopts
 
-retrieve :: Remote -> Remote.Rsync.RsyncOpts -> Retriever
-retrieve r rsyncopts k p sink = do
+retrieve :: Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Retriever
+retrieve r rsyncopts accessmethod k p sink = do
 	repo <- getRepo r
-	retrieve' repo r rsyncopts k p sink
+	retrieve' repo r rsyncopts accessmethod k p sink
 
-retrieve' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Retriever
-retrieve' repo r rsyncopts
+retrieve' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Retriever
+retrieve' repo r rsyncopts accessmethod
 	| not $ Git.repoIsUrl repo = byteRetriever $ \k sink ->
 		guardUsable repo (giveup "cannot access remote") $
 			sink =<< liftIO (L.readFile $ gCryptLocation repo k)
@@ -406,38 +422,42 @@ retrieve' repo r rsyncopts
 			oh <- mkOutputHandler
 			unlessM (Ssh.rsyncHelper oh (Just p) ps) $
 				giveup "rsync failed"
-		else fileRetriever $ Remote.Rsync.retrieve rsyncopts
+		else retrieversync
+	| accessmethod == AccessRsyncOverSsh = retrieversync
 	| otherwise = unsupportedUrl
   where
+	retrieversync = fileRetriever $ Remote.Rsync.retrieve rsyncopts
 
-remove :: Remote -> Remote.Rsync.RsyncOpts -> Remover
-remove r rsyncopts k = do
+remove :: Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Remover
+remove r rsyncopts accessmethod k = do
 	repo <- getRepo r
-	remove' repo r rsyncopts k
+	remove' repo r rsyncopts accessmethod k
 
-remove' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> Remover
-remove' repo r rsyncopts k
+remove' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Remover
+remove' repo r rsyncopts accessmethod k
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $
 		liftIO $ Remote.Directory.removeDirGeneric
 			(fromRawFilePath (Git.repoPath repo))
 			(fromRawFilePath (parentDir (toRawFilePath (gCryptLocation repo k))))
 	| Git.repoIsSsh repo = shellOrRsync r removeshell removersync
+	| accessmethod == AccessRsyncOverSsh = removersync
 	| otherwise = unsupportedUrl
   where
 	removersync = Remote.Rsync.remove rsyncopts k
 	removeshell = Ssh.dropKey repo k
 
-checkKey :: Remote -> Remote.Rsync.RsyncOpts -> CheckPresent
-checkKey r rsyncopts k = do
+checkKey :: Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> CheckPresent
+checkKey r rsyncopts accessmethod k = do
 	repo <- getRepo r
-	checkKey' repo r rsyncopts k
+	checkKey' repo r rsyncopts accessmethod k
 
-checkKey' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> CheckPresent
-checkKey' repo r rsyncopts k
+checkKey' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> CheckPresent
+checkKey' repo r rsyncopts accessmethod k
 	| not $ Git.repoIsUrl repo =
 		guardUsable repo (cantCheck repo) $
 			liftIO $ doesFileExist (gCryptLocation repo k)
 	| Git.repoIsSsh repo = shellOrRsync r checkshell checkrsync
+	| accessmethod == AccessRsyncOverSsh = checkrsync
 	| otherwise = unsupportedUrl
   where
 	checkrsync = Remote.Rsync.checkKey repo rsyncopts k
@@ -449,15 +469,16 @@ gCryptLocation :: Git.Repo -> Key -> FilePath
 gCryptLocation repo key = Git.repoLocation repo </> objectDir
 	</> fromRawFilePath (keyPath key (hashDirLower def))
 
-data AccessMethod = AccessDirect | AccessShell
+data AccessMethod = AccessRsyncOverSsh | AccessGitAnnexShell
+	deriving (Eq)
 
 fromAccessMethod :: AccessMethod -> String
-fromAccessMethod AccessShell = "shell"
-fromAccessMethod AccessDirect = "true"
+fromAccessMethod AccessGitAnnexShell = "shell"
+fromAccessMethod AccessRsyncOverSsh = "true"
 
 toAccessMethod :: String -> AccessMethod
-toAccessMethod "shell" = AccessShell
-toAccessMethod _ = AccessDirect
+toAccessMethod "shell" = AccessGitAnnexShell
+toAccessMethod _ = AccessRsyncOverSsh
 
 getGCryptUUID :: Bool -> Git.Repo -> Annex (Maybe UUID)
 getGCryptUUID fast r = do
@@ -491,7 +512,7 @@ getGCryptId fast r gc
 
 getConfigViaRsync :: Git.Repo -> RemoteGitConfig -> Annex (Either SomeException (Git.Repo, S.ByteString, String))
 getConfigViaRsync r gc = do
-	(rsynctransport, rsyncurl, _) <- rsyncTransport r gc
+	let (rsynctransport, rsyncurl, _) = rsyncTransport r gc
 	opts <- rsynctransport
 	liftIO $ do
 		withTmpFile "tmpconfig" $ \tmpconfig _ -> do
