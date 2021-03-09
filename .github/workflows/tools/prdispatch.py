@@ -130,7 +130,7 @@ class PRDispatcher:
             "page_size": PAGE_SIZE,
         }
         for pr in self.gql_paginate(
-            q, variables, ("data", "repository", "pullRequests"),
+            q, variables, ("data", "repository", "pullRequests")
         ):
             log.info("Found open PR #%s: %s", pr["number"], pr["title"])
             created = isoparse(pr["createdAt"])
@@ -187,9 +187,15 @@ class PRDispatcher:
                 r = self.s.get(wfrun.jobs_url)
                 r.raise_for_status()
                 try:
-                    for step in r.json()["jobs"][0]["steps"]:
-                        if step["name"] == THIS_STEP:
-                            return isoparse(step["started_at"])
+                    for job in r.json()["jobs"]:
+                        # Sometimes, the workflow can fail to start, and then
+                        # GitHub Actions starts the job again, leading to
+                        # several jobs in a single run, all but the last of
+                        # which failed.
+                        if job["conclusion"] == "success":
+                            for step in job["steps"]:
+                                if step["name"] == THIS_STEP:
+                                    return isoparse(step["started_at"])
                 except LookupError:
                     # This script once encountered a successful workflow run
                     # without any steps.  I don't know how that happened, but
