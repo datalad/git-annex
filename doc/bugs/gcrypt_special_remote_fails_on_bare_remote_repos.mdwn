@@ -37,3 +37,7 @@ i  git                 1:2.5.1-1    amd64
 ii  git-annex           5.20150812-2 amd64
 ii  git-remote-gcrypt   0.20130908-7 all
 ```
+
+> I've improved the docs to mention that the git repo for the remote needs
+> to already exist before initremote. I don't think it's necessary or
+> really a good idea for initremote to create it. So, [[done]] --[[Joey]]
