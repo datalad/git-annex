@@ -99,7 +99,9 @@ parseRemoteLocation s repo = ret $ calcloc s
 			concatMap splitconfigs $ M.toList $ fullconfig repo
 		splitconfigs (k, vs) = map (\v -> (k, v)) vs
 		(prefix, suffix) = ("url." , ".insteadof")
-	urlstyle v = isURI v || ":" `isInfixOf` v && "//" `isInfixOf` v
+	-- git supports URIs that contain unescaped characters such as
+	-- spaces. So to test if it's a (git) URI, escape those.
+	urlstyle v = isURI (escapeURIString isUnescapedInURI v)
 	-- git remotes can be written scp style -- [user@]host:dir
 	-- but foo::bar is a git-remote-helper location instead
 	scpstyle v = ":" `isInfixOf` v 

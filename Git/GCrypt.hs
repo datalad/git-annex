@@ -19,6 +19,7 @@ import qualified Git.Command as Command
 import Utility.Gpg
 
 import qualified Data.ByteString as S
+import qualified Network.URI
 
 urlScheme :: String
 urlScheme = "gcrypt:"
@@ -48,7 +49,13 @@ encryptedRemote baserepo = go
 
 	go' u
 		| urlPrefix `isPrefixOf` u =
-			fromRemoteLocation (drop plen u) baserepo
+			let l = drop plen u
+			    -- Git.Construct.fromUrl escapes characters
+			    -- that are not allowed in URIs (though git
+			    -- allows them); need to de-escape any such
+			    -- to get back the path to the repository.
+			    l' = Network.URI.unEscapeString l
+			in fromRemoteLocation l' baserepo
 		| otherwise = notencrypted
 
 	notencrypted = giveup "not a gcrypt encrypted repository"
