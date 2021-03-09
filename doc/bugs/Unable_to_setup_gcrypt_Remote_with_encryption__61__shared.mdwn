@@ -75,3 +75,5 @@ xxx@xxx:~/Documents/annex-test$
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I think git-annex is awesome. It already helps me managing the limited diskspace on my laptop and its possibilities seem endless.
 
+> This was fixed over a year ago in 
+> [[!commit 8401b09e32b9378fa4c02515255a743d8f0ad4b1]] [[done]] --[[Joey]]
