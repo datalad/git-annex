@@ -27,8 +27,8 @@ gcrypt:
   should have access to the repository.
 
 * `gitrepo` - Required. The path or url to the git repository
-  for gcrypt to use. This repository should be either empty, or an existing
-  gcrypt repositry.
+  for gcrypt to use. This repository should be either an unpopulated
+  bare git repo, or an existing gcrypt repository.
 
 * `chunk` - Enables [[chunking]] when storing large files.
 
