@@ -37,7 +37,7 @@ gcrypt:
 
   For a git repository accessed over ssh, and using git-annex-shell
   to transfer data, use:
-  `gitrepo=ssh://user@host/path/to/repo` or `host:path`  
+  `gitrepo=ssh://user@host/path/to/repo` or `gitrepo=host:path`  
   Note that each `git push` has to re-send the whole content of the git
   repository when using this option.
 
