@@ -102,3 +102,8 @@ git-annex: initremote: 1 failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex is a wonderful thing that works wonderfully, so long as you're using normal SSH or directory remotes
+
+> There is already a bug about this,
+> [here](https://git-annex.branchable.com/bugs/gcrypt_remote__58___every_sync_uploads_huge_manifest/)
+> [[done]] --[[Joey]]
+>
