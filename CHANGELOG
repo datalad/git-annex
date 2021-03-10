@@ -1,4 +1,4 @@
-git-annex (8.20210224) UNRELEASED; urgency=medium
+git-annex (8.20210310) upstream; urgency=medium
 
   * When non-annexed files in a tree are exported to a special remote,
     importing from the special remote keeps the files non-annexed,
@@ -21,7 +21,7 @@ git-annex (8.20210224) UNRELEASED; urgency=medium
   * Windows: Correct the path to the html help file for 64 bit build.
   * OSX dmg: Updated bundled git to 2.30.2 which fixes CVE-2021-21300.
 
- -- Joey Hess <id@joeyh.name>  Wed, 24 Feb 2021 13:18:38 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 10 Mar 2021 13:58:15 -0400
 
 git-annex (8.20210223) upstream; urgency=medium
 
