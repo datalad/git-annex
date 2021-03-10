@@ -1,0 +1,21 @@
+git-annex 8.20210310 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * When non-annexed files in a tree are exported to a special remote,
+    importing from the special remote keeps the files non-annexed,
+    as long as their content has not changed, rather than converting
+    them to annexed files.
+    (Such a conversion will still happen when importing from a remote
+    an old git-annex exported such a tree to before; export the tree
+    with the new git-annex before importing to avoid that.)
+  * Added support for git-remote-gcrypt's rsync URIs, which access a remote
+    using rsync over ssh, and which git pushes to much more efficiently
+    than ssh urls.
+  * unregisterurl: New command.
+  * registerurl: Allow it to be used in a bare repository.
+  * Prevent combinations of options such as --all with --include.
+  * Fixed handling of --mimetype or --mimeencoding combined with
+    options like --all or --unused.
+  * Fix handling of --branch combined with --unlocked or --locked.
+  * Fix support for local gcrypt repositories with a space in their URI.
+  * uninit: Fix a small bug that left a lock file in .git/annex
+  * Windows: Correct the path to the html help file for 64 bit build.
+  * OSX dmg: Updated bundled git to 2.30.2 which fixes CVE-2021-21300."""]]
