@@ -1,13 +1,5 @@
 git-annex (8.20210224) UNRELEASED; urgency=medium
 
-  * unregisterurl: New command.
-  * registerurl: Allow it to be used in a bare repository.
-  * Windows: Correct the path to the html help file for 64 bit build.
-  * uninit: Fix a small bug that left a lock file in .git/annex
-  * Prevent combinations of options such as --all with --include.
-  * Fixed handling of --mimetype or --mimeencoding combined with
-    options like --all or --unused.
-  * Fix handling of --branch combined with --unlocked or --locked.
   * When non-annexed files in a tree are exported to a special remote,
     importing from the special remote keeps the files non-annexed,
     as long as their content has not changed, rather than converting
@@ -18,7 +10,15 @@ git-annex (8.20210224) UNRELEASED; urgency=medium
   * Added support for git-remote-gcrypt's rsync URIs, which access a remote
     using rsync over ssh, and which git pushes to much more efficiently
     than ssh urls.
+  * unregisterurl: New command.
+  * registerurl: Allow it to be used in a bare repository.
+  * Prevent combinations of options such as --all with --include.
+  * Fixed handling of --mimetype or --mimeencoding combined with
+    options like --all or --unused.
+  * Fix handling of --branch combined with --unlocked or --locked.
   * Fix support for local gcrypt repositories with a space in their URI.
+  * uninit: Fix a small bug that left a lock file in .git/annex
+  * Windows: Correct the path to the html help file for 64 bit build.
 
  -- Joey Hess <id@joeyh.name>  Wed, 24 Feb 2021 13:18:38 -0400
 
