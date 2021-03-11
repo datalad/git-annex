@@ -10,6 +10,8 @@ git annex log `[path ...]`
 
 Displays the location log for the specified file or files,
 showing each repository they were added to ("+") and removed from ("-").
+Note that the location log is for the particular file contents currently at these paths,
+not for any different content that was there in earlier commits.
 
 # OPTIONS
 
