@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="meribold"
+ avatar="http://cdn.libravatar.org/avatar/8cfdfc37c8459a7320aa6bb9f2689112"
+ subject="comment 12"
+ date="2021-03-11T02:52:32Z"
+ content="""
+Is it possible to only list files that are not present in any branch/tag/ref and are *also* not present in any ancestor commit of any branch/tag/ref?
+"""]]
