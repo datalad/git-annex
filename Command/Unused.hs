@@ -164,7 +164,7 @@ dropMsg' s = "\nTo remove unwanted data: git-annex dropunused" ++ s ++ " NUMBER\
  -    This is the fastest one to build and will filter out most keys.
  - 2. Bloom filter containing all keys in the diff from the work tree to
  -    the index.
- - 3. Associated files filter. A v6 unlocked file may have had its content
+ - 3. Associated files filter. An unlocked file may have had its content
  -    added to the annex (by eg, git diff running the smudge filter),
  -    but the new key is not yet staged in the index. But if so, it will 
  -    have an associated file.
