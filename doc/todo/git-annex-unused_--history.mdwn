@@ -1,0 +1,13 @@
+Add to git-annex unused a --history or similar switch, that makes it look at
+the full history of all specified refs, and only consider files unused if
+they never appeared in a git commit at all.
+
+This would, like `git gc`, find files that were added, but then
+deleted/changed before being committed. Which git-annex unused already
+does, but it also finds files in past versions. If the user wants to keep
+past versions, but gc any dangling objects, this would be useful.
+
+To traverse the whole history and get the list of changes, could use `git
+log --raw`. That is reasonably performant but then it needs to feed every
+sha into cat-file to find the annex objects, which would probably take a
+while. Alternatively perhaps git log --diff and parsing might be faster.
