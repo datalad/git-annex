@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="finding archive.org URL"
+ date="2021-03-11T19:32:14Z"
+ content="""
+Hmm, I'm not seeing an archive.org URL:
+
+[[!format sh \"\"\"
+git clone https://downloads.kitenet.net/.git/
+cd downloads.kitenet.net/git-annex/linux/current/
+git annex init
+git annex sync --no-push
+ls -l git-annex-standalone-amd64.tar.gz
+lrwxrwxrwx 1 ilya ilya 215 Mar 11 14:25 git-annex-standalone-amd64.tar.gz -> ../../../.git/annex/objects/pM/mF/SHA256E-s51232145--1e57d2e334\
+cffdb3c3874785cfba4f6d5fc521808d0b1deef4fb68160dd88d48.tar.gz/SHA256E-s51232145--1e57d2e334cffdb3c3874785cfba4f6d5fc521808d0b1deef4fb68160dd\
+88d48.tar.gz
+git annex whereis git-annex-standalone-amd64.tar.gz
+
+whereis git-annex-standalone-amd64.tar.gz (1 copy)
+        840760dc-08f0-11e2-8c61-576b7e66acfd -- main repo [origin]
+ok
+
+
+\"\"\"]]
+
+
+"""]]
