@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-11T16:27:22Z"
+ content="""
+That looks like [[this bug|bugs/view]] which was fixed in version 8.20201103
+"""]]
