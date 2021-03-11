@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-11T16:59:59Z"
+ content="""
+Alternate name, `git-annex gc` since this would be very analagous to `git
+gc`.
+
+I wonder if someone might want to keep all versions of files from one branch,
+but only the current version of another branch? For such a person it would
+be better if the interface was all in `git-annex unused`
+as part of the `--used-refspec` with a way to indicate if past versions
+of a ref should be examined.
+"""]]
