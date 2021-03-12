@@ -83,7 +83,7 @@ showStartKey :: String -> Key -> ActionItem -> SeekInput -> Annex ()
 showStartKey command key ai si = outputMessage json $
 	encodeBS' command <> " " <> actionItemDesc ai <> " "
   where
-	json = JSON.start command (actionItemWorkTreeFile ai) (Just key) si
+	json = JSON.start command (actionItemFile ai) (Just key) si
 
 showStartOther :: String -> Maybe String -> SeekInput -> Annex ()
 showStartOther command mdesc si = outputMessage json $ encodeBS' $
@@ -97,7 +97,7 @@ showStartMessage (StartMessage command ai si) = case ai of
 	ActionItemKey k -> showStartKey command k ai si
 	ActionItemBranchFilePath _ k -> showStartKey command k ai si
 	ActionItemFailedTransfer t _ -> showStartKey command (transferKey t) ai si
-	ActionItemWorkTreeFile file -> showStart command file si
+	ActionItemTreeFile file -> showStart command file si
 	ActionItemOther msg -> showStartOther command msg si
 	OnlyActionOn _ ai' -> showStartMessage (StartMessage command ai' si)
 showStartMessage (StartUsualMessages command ai si) = do

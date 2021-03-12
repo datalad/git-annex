@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-12T18:09:48Z"
+ content="""
+I've fixed this.
+
+However, there is still a case where the file field is null, which is when
+an already exported file is renamed. Since nothing is transferred in that
+case, and 2 files are involved which doesn't fit the one file in the json,
+I left it as-is.
+"""]]

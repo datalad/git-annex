@@ -145,7 +145,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		, stop
 		)
   where
- 	ai = ActionItemWorkTreeFile destfile
+ 	ai = ActionItemTreeFile destfile
 	si = SeekInput []
 
 	deletedup k = do

@@ -110,7 +110,7 @@ seek o = startConcurrency commandStages $ do
 {- Pass file off to git-add. -}
 startSmall :: AddOptions -> SeekInput -> RawFilePath -> CommandStart
 startSmall o si file =
-	starting "add" (ActionItemWorkTreeFile file) si $
+	starting "add" (ActionItemTreeFile file) si $
 		next $ addSmall (checkGitIgnoreOption o) file
 
 addSmall :: CheckGitIgnore -> RawFilePath -> Annex Bool
@@ -120,7 +120,7 @@ addSmall ci file = do
 
 startSmallOverridden :: AddOptions -> SeekInput -> RawFilePath -> CommandStart
 startSmallOverridden o si file = 
-	starting "add" (ActionItemWorkTreeFile file) si $ next $ do
+	starting "add" (ActionItemTreeFile file) si $ next $ do
 		showNote "adding content to git repository"
 		addFile Small (checkGitIgnoreOption o) file
 
@@ -148,7 +148,7 @@ start o si file addunlockedmatcher = do
 		Just s 
 			| not (isRegularFile s) && not (isSymbolicLink s) -> stop
 			| otherwise -> 
-				starting "add" (ActionItemWorkTreeFile file) si $
+				starting "add" (ActionItemTreeFile file) si $
 					if isSymbolicLink s
 						then next $ addFile Small (checkGitIgnoreOption o) file
 						else perform o file addunlockedmatcher
@@ -157,13 +157,13 @@ start o si file addunlockedmatcher = do
 			Just s | isSymbolicLink s -> fixuplink key
 			_ -> add
 	fixuplink key = 
-		starting "add" (ActionItemWorkTreeFile file) si $
+		starting "add" (ActionItemTreeFile file) si $
 			addingExistingLink file key $ do
 				liftIO $ removeFile (fromRawFilePath file)
 				addLink (checkGitIgnoreOption o) file key Nothing
 				next $ cleanup key =<< inAnnex key
 	fixuppointer key =
-		starting "add" (ActionItemWorkTreeFile file) si $
+		starting "add" (ActionItemTreeFile file) si $
 			addingExistingLink file key $ do
 				Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 				next $ addFile Large (checkGitIgnoreOption o) file

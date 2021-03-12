@@ -22,3 +22,5 @@ This behavior was observed using the 4shared service, but I believe git-annex kn
 Thx!
 
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

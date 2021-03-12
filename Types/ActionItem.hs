@@ -22,7 +22,7 @@ data ActionItem
 	| ActionItemKey Key
 	| ActionItemBranchFilePath BranchFilePath Key
 	| ActionItemFailedTransfer Transfer TransferInfo
-	| ActionItemWorkTreeFile RawFilePath
+	| ActionItemTreeFile RawFilePath
 	| ActionItemOther (Maybe String)
 	-- Use to avoid more than one thread concurrently processing the
 	-- same Key.
@@ -64,7 +64,7 @@ actionItemDesc (ActionItemKey k) = serializeKey' k
 actionItemDesc (ActionItemBranchFilePath bfp _) = descBranchFilePath bfp
 actionItemDesc (ActionItemFailedTransfer t i) = actionItemDesc $
 	ActionItemAssociatedFile (associatedFile i) (transferKey t)
-actionItemDesc (ActionItemWorkTreeFile f) = f
+actionItemDesc (ActionItemTreeFile f) = f
 actionItemDesc (ActionItemOther s) = encodeBS' (fromMaybe "" s)
 actionItemDesc (OnlyActionOn _ ai) = actionItemDesc ai
 
@@ -73,15 +73,15 @@ actionItemKey (ActionItemAssociatedFile _ k) = Just k
 actionItemKey (ActionItemKey k) = Just k
 actionItemKey (ActionItemBranchFilePath _ k) = Just k
 actionItemKey (ActionItemFailedTransfer t _) = Just (transferKey t)
-actionItemKey (ActionItemWorkTreeFile _) = Nothing
+actionItemKey (ActionItemTreeFile _) = Nothing
 actionItemKey (ActionItemOther _) = Nothing
 actionItemKey (OnlyActionOn _ ai) = actionItemKey ai
 
-actionItemWorkTreeFile :: ActionItem -> Maybe RawFilePath
-actionItemWorkTreeFile (ActionItemAssociatedFile (AssociatedFile af) _) = af
-actionItemWorkTreeFile (ActionItemWorkTreeFile f) = Just f
-actionItemWorkTreeFile (OnlyActionOn _ ai) = actionItemWorkTreeFile ai
-actionItemWorkTreeFile _ = Nothing
+actionItemFile :: ActionItem -> Maybe RawFilePath
+actionItemFile (ActionItemAssociatedFile (AssociatedFile af) _) = af
+actionItemFile (ActionItemTreeFile f) = Just f
+actionItemFile (OnlyActionOn _ ai) = actionItemFile ai
+actionItemFile _ = Nothing
 
 actionItemTransferDirection :: ActionItem -> Maybe Direction
 actionItemTransferDirection (ActionItemFailedTransfer t _) = Just $

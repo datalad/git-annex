@@ -270,7 +270,7 @@ startExport r db cvar allfilledvar ti = do
 	loc = mkExportLocation f
 	f = getTopFilePath (Git.LsTree.file ti)
 	af = AssociatedFile (Just f)
-	ai = ActionItemOther (Just (fromRawFilePath f))
+	ai = ActionItemTreeFile f
 	si = SeekInput []
 	notrecordedpresent ek = (||)
 		<$> liftIO (notElem loc <$> getExportedLocation db ek)
@@ -332,7 +332,7 @@ startUnexport r db f shas = do
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
-	ai = ActionItemOther (Just (fromRawFilePath f'))
+	ai = ActionItemTreeFile f'
 	si = SeekInput []
 
 startUnexport' :: Remote -> ExportHandle -> TopFilePath -> Key -> CommandStart
@@ -342,7 +342,7 @@ startUnexport' r db f ek =
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
-	ai = ActionItemOther (Just (fromRawFilePath f'))
+	ai = ActionItemTreeFile f'
 	si = SeekInput []
 
 -- Unlike a usual drop from a repository, this does not check that
@@ -384,7 +384,7 @@ startRecoverIncomplete r db sha oldf
 	| otherwise = do
 		ek <- exportKey sha
 		let loc = exportTempName ek
-		let ai = ActionItemOther (Just (fromRawFilePath (fromExportLocation loc)))
+		let ai = ActionItemTreeFile (fromExportLocation loc)
 		let si = SeekInput []
 		starting ("unexport " ++ name r) ai si $ do
 			liftIO $ removeExportedLocation db ek oldloc

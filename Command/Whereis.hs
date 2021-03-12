@@ -96,7 +96,7 @@ perform o remotemap key ai = do
 			mapM_ (showRemoteUrls remotemap) urls
 		Just formatter -> liftIO $ do
 			let vs = Command.Find.formatVars key
-				(AssociatedFile (actionItemWorkTreeFile ai))
+				(AssociatedFile (actionItemFile ai))
 			let showformatted muuid murl = putStr $
 				Utility.Format.format formatter $
 					M.fromList $ vs ++ catMaybes

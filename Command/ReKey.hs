@@ -69,7 +69,7 @@ start si (file, newkey) = ifAnnexed file go stop
 		| otherwise = starting "rekey" ai si $
 			perform file oldkey newkey
 
-	ai = ActionItemWorkTreeFile file
+	ai = ActionItemTreeFile file
 
 perform :: RawFilePath -> Key -> Key -> CommandPerform
 perform file oldkey newkey = do
