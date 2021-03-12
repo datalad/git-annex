@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-03-12T15:43:16Z"
+ content="""
+Since dropunused, --unused, etc refer to what git-annex unused finds,
+it probably makes sense to keep it in there.
+
+`git-annex unused --ever` is another name idea.
+"""]]
