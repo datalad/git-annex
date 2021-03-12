@@ -135,7 +135,10 @@ treeItemToTreeContent (TreeItem f m s) = case toTreeItemType m of
 treeItemToLsTreeItem :: TreeItem -> LsTree.TreeItem
 treeItemToLsTreeItem (TreeItem f mode sha) = LsTree.TreeItem
 	{ LsTree.mode = mode
-	, LsTree.typeobj = fmtObjectType BlobObject
+	, LsTree.typeobj = fmtObjectType $ case toTreeItemType mode of
+		Just TreeSubmodule -> CommitObject
+		Just TreeSubtree -> TreeObject
+		_ -> BlobObject
 	, LsTree.sha = sha
 	, LsTree.file = f
 	}
