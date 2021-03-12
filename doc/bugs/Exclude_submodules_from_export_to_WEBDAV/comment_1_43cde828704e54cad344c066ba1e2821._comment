@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-12T15:46:04Z"
+ content="""
+I think it's simply a bug that it exports submodules at all. Very easy to
+forget about the special case of those wacky submodule directories in git.
+"""]]
