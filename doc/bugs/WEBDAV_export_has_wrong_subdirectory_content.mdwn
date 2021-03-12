@@ -1,0 +1,57 @@
+I am using a free 4shared account to test the webdav special remote export.
+
+My repository looks like this:
+
+```
+% tree
+.
+├── ingit.txt
+└── subdir
+    └── inannex.txt -> ../.git/annex/objects/Kp/FZ/MD5E-s7--3b158c5b0a18c247ebad28c09fc3e180.txt/MD5E-s7--3b158c5b0a18c247ebad28c09fc3e180.txt
+
+1 directory, 2 files
+```
+
+My webdav setup:
+
+```
+% git cat-file -p git-annex:remote.log                                                                                 
+93522a6c-8e9f-47a1-a578-b6a18f82d429 encryption=none exporttree=yes name=4shared type=webdav url=https://webdav.4shared.com/datalad-tester/6350cc6b-2af7-41db-89cf-96c3d41f29cc timestamp=1615568357.193179854s
+```
+
+I can export without error, but the resulting layout on the server does not match the local worktree.
+
+```
+.
+├── ingit.txt
+├── inannex.txt
+└── subdir
+```
+
+The annexed file is in the root, and the subdirectory exists, but is empty.
+
+Git annex itself isn't happy with the result either:
+
+```
+% git annex fsck -f 4shared
+fsck subdir/inannex.txt (fixing location log) 
+  ** Based on the location log, subdir/inannex.txt
+  ** was expected to be present, but its content is missing.
+failed
+(recording state in git...)
+git-annex: fsck: 1 failed
+```
+
+On repeated upload attempts to situation remains identical: the annexed files is misplaced into the root.
+
+```
+% git annex export HEAD --to 4shared --json --json-error-messages
+{"command":"export 4shared","success":true,"input":[],"error-messages":[],"file":null}
+```
+
+I have no attempted a replication with another webdav service yet.
+
+Thx!
+
+[[!tag projects/datalad]]
+
