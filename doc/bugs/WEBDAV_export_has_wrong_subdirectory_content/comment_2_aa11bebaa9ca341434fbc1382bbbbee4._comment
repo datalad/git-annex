@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-03-12T18:27:26Z"
+ content="""
+Well, I tried with the box.com webdav server, and did not reproduce the
+problem there; exported files went into the proper subdirectories.
+
+I think there's some chance that the webdav server you're trying to use is
+just broken in its handling of moving from one collection to another. 
+Or perhaps the webdav spec can be interpreted multiple ways and this is
+falling into an edge case.
+
+Here's --debug of it working:
+
+	export box.com sub/t
+	[2021-03-12 14:29:33.044254918] getProps sub/t
+	[2021-03-12 14:29:35.56315446] putContent git-annex-webdav-tmp-SHA256E-s3--98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4
+	[2021-03-12 14:29:37.751164566] delContent sub/t
+	[2021-03-12 14:29:38.695664147] getProps sub
+	[2021-03-12 14:29:40.638445948] moveContent git-annex-webdav-tmp-SHA256E-s3--98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4 https://dav.box.com/dav/git-annex/sub/t
+
+Does it look significantly different in your case?
+
+We unfortunately haven't an easy way to get a HTTP trace, but this shows
+effectively the api calls for the DAV libary, and the moveContent looks
+like it would generate a http request like this:
+
+	MOVE /git-annex-webdav-tmp-SHA256E-s3...
+	Destination: https://dav.box.com/dav/git-annex/sub/t
+
+Which seems fine, there are similar examples in the webdav spec
+of moving from one directory to another.
+"""]]

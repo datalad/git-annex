@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-03-12T18:48:38Z"
+ content="""
+If the problem does involve moving between collections, it could
+avoid the problem by storing the temp file into the subdirectory in the first
+place, and only renaming it to its final name once transferred. 
+
+I've implemented that and committed it along with this comment,
+and it works tested against box.com again, can you try it with
+the 4shared server?
+"""]]

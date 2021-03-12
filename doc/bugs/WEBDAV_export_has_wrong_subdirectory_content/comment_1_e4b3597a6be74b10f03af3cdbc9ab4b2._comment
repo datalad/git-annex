@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-12T18:14:59Z"
+ content="""
+Unless this only happens on the one webdav server, my guess is
+it involves the kind of weird way DAV handles collections.
+
+In particular, the content is being written to a temp file,
+which is in the webdav root, and then it runs:
+
+	inLocation src $ moveContentM (B8.fromString newurl)
+
+where src = the webdav root. It may be that ignores the path in newurl and
+just puts it into the same collection.
+"""]]

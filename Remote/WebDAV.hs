@@ -212,7 +212,7 @@ storeExportDav :: DavHandleVar -> FilePath -> Key -> ExportLocation -> MeterUpda
 storeExportDav hdl f k loc p = case exportLocation loc of
 	Right dest -> withDavHandle hdl $ \h -> runExport h $ \dav -> do
 		reqbody <- liftIO $ httpBodyStorer f p
-		storeHelper dav (keyTmpLocation k) dest reqbody
+		storeHelper dav (takeDirectory dest </> keyTmpLocation k) dest reqbody
 	Left err -> giveup err
 
 retrieveExportDav :: DavHandleVar -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
