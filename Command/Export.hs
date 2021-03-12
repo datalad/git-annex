@@ -87,7 +87,7 @@ seek o = startConcurrency commandStages $ do
 		setConfig (remoteAnnexConfig r "tracking-branch")
 			(fromRef $ exportTreeish o)
 	
-	tree <- filterPreferredContent r =<<
+	tree <- filterExport r =<<
 		fromMaybe (giveup "unknown tree") <$>
 		inRepo (Git.Ref.tree (exportTreeish o))
 	
@@ -121,8 +121,8 @@ getExportCommit r treeish
 
 -- | Changes what's exported to the remote. Does not upload any new
 -- files, but does delete and rename files already exported to the remote.
-changeExport :: Remote -> ExportHandle -> PreferredFiltered Git.Ref -> CommandSeek
-changeExport r db (PreferredFiltered new) = do
+changeExport :: Remote -> ExportHandle -> ExportFiltered Git.Ref -> CommandSeek
+changeExport r db (ExportFiltered new) = do
 	old <- getExport (uuid r)
 	recordExportBeginning (uuid r) new
 	
@@ -236,14 +236,13 @@ newtype AllFilled = AllFilled { fromAllFilled :: Bool }
 --
 -- Once all exported files have reached the remote, updates the
 -- remote tracking branch.
-fillExport :: Remote -> ExportHandle -> PreferredFiltered Git.Ref -> Maybe (RemoteTrackingBranch, Sha) -> Annex Bool
-fillExport r db (PreferredFiltered newtree) mtbcommitsha = do
+fillExport :: Remote -> ExportHandle -> ExportFiltered Git.Ref -> Maybe (RemoteTrackingBranch, Sha) -> Annex Bool
+fillExport r db (ExportFiltered newtree) mtbcommitsha = do
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive newtree
 	cvar <- liftIO $ newMVar (FileUploaded False)
 	allfilledvar <- liftIO $ newMVar (AllFilled True)
 	commandActions $
-		map (startExport r db cvar allfilledvar)
-			(filter shouldexport l)
+		map (startExport r db cvar allfilledvar) l
 	void $ liftIO $ cleanup
 	waitForAllRunningCommandActions
 
@@ -255,14 +254,6 @@ fillExport r db (PreferredFiltered newtree) mtbcommitsha = do
 					>>= setRemoteTrackingBranch tb
 	
 	liftIO $ fromFileUploaded <$> takeMVar cvar
-  where
-	shouldexport ti = case readObjectType (Git.LsTree.typeobj ti) of
-		Just BlobObject -> True
-		Just CommitObject -> False
-		-- ^ submodule is not exported
-		Just TreeObject -> False
-		-- ^ should never happen, lstree is recursing into subtrees
-		Nothing -> False
 
 startExport :: Remote -> ExportHandle -> MVar FileUploaded -> MVar AllFilled -> Git.LsTree.TreeItem -> CommandStart
 startExport r db cvar allfilledvar ti = do
@@ -473,50 +464,59 @@ removeEmptyDirectories r db loc ks
 
 -- | A value that has been filtered through the remote's preferred content
 -- expression.
-newtype PreferredFiltered t = PreferredFiltered t
+newtype ExportFiltered t = ExportFiltered t
 
--- | Filters the tree to files that are preferred content of the remote.
+-- | Filters the tree to annexed files that are preferred content of the
+-- remote, and also including non-annexed files, but not submodules.
 --
--- A log is written with files that were filtered out, so they can be added
--- back in when importing from the remote.
-filterPreferredContent :: Remote -> Git.Ref -> Annex (PreferredFiltered Git.Ref)
-filterPreferredContent r tree = logExportExcluded (uuid r) $ \logwriter -> do
+-- A log is written with tree items that were filtered out, so they can
+-- be added back in when importing from the remote.
+filterExport :: Remote -> Git.Ref -> Annex (ExportFiltered Git.Ref)
+filterExport r tree = logExportExcluded (uuid r) $ \logwriter -> do
 	m <- preferredContentMap
 	case M.lookup (uuid r) m of
-		Just matcher | not (isEmpty matcher) -> do
-			PreferredFiltered <$> go matcher logwriter
-		_ -> return (PreferredFiltered tree)
+		Just matcher | not (isEmpty matcher) ->
+			ExportFiltered <$> go (Just matcher) logwriter
+		_ -> ExportFiltered <$> go Nothing logwriter
   where
-	go matcher logwriter = do
+	go mmatcher logwriter = do
 		g <- Annex.gitRepo
 		Git.Tree.adjustTree
-			(checkmatcher matcher logwriter)
+			(check mmatcher logwriter)
 			[]
 			(\_old new -> new)
 			[]
 			tree
 			g
-	
-	checkmatcher matcher logwriter ti@(Git.Tree.TreeItem topf _ sha) =
-		catKey sha >>= \case
-			Just k -> do
-				let mi = MatchingInfo $ ProvidedInfo
-					{ providedFilePath = Just $
-						-- Match filename relative
-						-- to the top of the tree.
-						getTopFilePath topf
-					, providedKey = Just k
-					, providedFileSize = Nothing
-					, providedMimeType = Nothing
-					, providedMimeEncoding = Nothing
-					, providedLinkType = Nothing
-					}
-				ifM (checkMatcher' matcher mi mempty)
-					( return (Just ti)
-					, do
-						() <- liftIO $ logwriter ti
-						return Nothing
-					)
-			-- Always export non-annexed files.
-			Nothing -> return (Just ti)
 
+	check mmatcher logwriter ti@(Git.Tree.TreeItem topf mode sha) =
+		case toTreeItemType mode of
+			-- Don't export submodule entries.
+			Just TreeSubmodule -> excluded
+			_ -> case mmatcher of
+				Nothing -> return (Just ti)
+				Just matcher -> catKey sha >>= \case
+					Just k -> checkmatcher matcher k
+					-- Always export non-annexed files.
+					Nothing -> return (Just ti)
+	  where
+		excluded = do
+			() <- liftIO $ logwriter ti
+			return Nothing
+
+		checkmatcher matcher k = do
+			let mi = MatchingInfo $ ProvidedInfo
+				{ providedFilePath = Just $
+					-- Match filename relative
+					-- to the top of the tree.
+					getTopFilePath topf
+				, providedKey = Just k
+				, providedFileSize = Nothing
+				, providedMimeType = Nothing
+				, providedMimeEncoding = Nothing
+				, providedLinkType = Nothing
+				}
+			ifM (checkMatcher' matcher mi mempty)
+				( return (Just ti)
+				, excluded
+				)

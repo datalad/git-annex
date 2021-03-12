@@ -854,7 +854,7 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 			mtbcommitsha <- Command.Export.getExportCommit r b
 			case (mtree, mtbcommitsha) of
 				(Just tree, Just _) -> do
-					filteredtree <- Command.Export.filterPreferredContent r tree
+					filteredtree <- Command.Export.filterExport r tree
 					Command.Export.changeExport r db filteredtree
 					Command.Export.fillExport r db filteredtree mtbcommitsha
 				_ -> nontracking r db
@@ -862,7 +862,7 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 	nontracking r db = do
 		exported <- getExport (Remote.uuid r)
 		maybe noop (warnnontracking r exported) currbranch
-		fillexport r db (exportedTreeishes exported) Nothing
+		nontrackingfillexport r db (exportedTreeishes exported) Nothing
 	
 	warnnontracking r exported currb = inRepo (Git.Ref.tree currb) >>= \case
 		Just currt | not (any (== currt) (exportedTreeishes exported)) ->
@@ -876,11 +876,14 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 	  where
 		gitconfig = show (remoteAnnexConfig r "tracking-branch")
 
-	fillexport _ _ [] _ = return False
-	fillexport r db (tree:[]) mtbcommitsha = do
-		let filteredtree = Command.Export.PreferredFiltered tree
+	nontrackingfillexport _ _ [] _ = return False
+	nontrackingfillexport r db (tree:[]) mtbcommitsha = do
+		-- The tree was already filtered when it was exported, so
+		-- does not need be be filtered again now, when we're only
+		-- filling in any files that did not get transferred.
+		let filteredtree = Command.Export.ExportFiltered tree
 		Command.Export.fillExport r db filteredtree mtbcommitsha
-	fillexport r _ _ _ = do
+	nontrackingfillexport r _ _ _ = do
 		warnExportImportConflict r
 		return False
 
