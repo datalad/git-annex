@@ -1,0 +1,35 @@
+Some statistics of `git-annex sync --content` (but where there is no new content to sync):
+
+    $ time git-annex sync --content
+    commit 
+    On branch master
+    Your branch is ahead of 'origin/master' by 3 commits.
+    (use "git push" to publish your local commits)
+
+
+    It took 2.15 seconds to enumerate untracked files. 'status -uno'
+    may speed it up, but you have to be careful not to forget to add
+    new files yourself (see 'git help status').
+    nothing to commit, working tree clean
+    ok
+    pull origin 
+    ok
+
+    ________________________________________________________
+    Executed in   26.74 mins   fish           external 
+    usr time  510.99 secs  325.00 micros  510.99 secs 
+    sys time  129.53 secs  134.00 micros  129.53 secs 
+
+
+So >26mins. But I even had cases where this took several hours (also without content).
+(See also the comments [here](https://git-annex.branchable.com/forum/Is_Annex_for_me__63___Questions_about_the_long_term/), although they are much less extreme, just a couple of minutes.)
+
+Why is that so slow? Why does it take so long?
+
+Is this expected? This is a reasonable fast hard disk, using ZFS, on Linux. While the repo is indeed quite big with many files, I definitely would not have expected this. I would have expected sth in the order of a couple of seconds (I think similar as `rsync` or `git status`).
+
+As you see in this output, `git status` was much faster (2 secs), so just going through the files doesn't seem to be the bottleneck. Maybe `git status` does some clever caching. But then I would expect that `git-annex` also does so.
+
+How can I fix it such that this is fast (in the order of seconds, i.e. by at least 2 orders of magnitude faster)?
+
+Side question: I wonder about that "Your branch is ahead ..." message. Shouldn't `git-annex sync` exactly solve that? I called it already multiple times.
