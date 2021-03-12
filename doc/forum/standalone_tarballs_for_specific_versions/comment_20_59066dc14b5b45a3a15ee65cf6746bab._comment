@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 20"""
+ date="2021-03-12T16:00:20Z"
+ content="""
+That's strange, the repo's git-annex branch was somehow behind, but its
+info/refs had the branch up-to-date with the information. I don't know how
+that can happen as git update-server-info updates the latter based on the
+former, but git-annex sync in the repo does look to have fixed the problem.
+"""]]
