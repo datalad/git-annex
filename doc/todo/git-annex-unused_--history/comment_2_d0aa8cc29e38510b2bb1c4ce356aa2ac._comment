@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="meribold"
+ avatar="http://cdn.libravatar.org/avatar/8cfdfc37c8459a7320aa6bb9f2689112"
+ subject="comment 2"
+ date="2021-03-12T03:58:03Z"
+ content="""
+Another name for a `git-annex unused` switch could be `--unreachable`. I suppose `git-annex gc` would drop unreachable files without a separate `git-annex dropunused` invocation? That would work for me as well.
+
+> I wonder if someone might want to keep all versions of files from one branch, but only the current version of another branch?
+
+Personally I don't have the use case of `git-annex unused` only looking at the history of some refs and treating other refs normally.
+"""]]
