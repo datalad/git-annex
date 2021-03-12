@@ -1,0 +1,22 @@
+Neither successful nor failing exports via a WEBDAV special remote have appropriate `file` properties in the produced JSON records.
+
+```
+% git annex export master --to 4shared --json --json-error-messages
+{"command":"export 4shared","success":true,"input":[],"error-messages":[],"file":null}
+{"command":"export 4shared","success":true,"input":[],"error-messages":[],"file":null}
+{"command":"export 4shared","success":true,"input":[],"error-messages":[],"file":null}
+{"command":"export 4shared","success":true,"input":[],"error-messages":[],"file":null}
+{"command":"export 4shared","success":false,"input":[],"error-messages":["  DAV failure: Status {statusCode = 500, statusMessage = \"Internal Server Error\"} \"<html><body><h1>Server Error</h1></body></html>\" HTTP request: \"MOVE\" \"/dummy/git-annex-webdav-tmp-MD5E-s143466--368857ff4d0e4b14c745d94db7f7d3ff.pdf\"","  DAV failure: Status {statusCode = 500, statusMessage = \"Internal Server Error\"} \"<html><body><h1>Server Error</h1></body></html>\" HTTP request: \"MOVE\" \"/dummy/git-annex-webdav-tmp-MD5E-s143466--368857ff4d0e4b14c745d94db7f7d3ff.pdf\""],"file":null}
+{"command":"export 4shared","success":true,"input":[],"error-messages":[],"file":null}
+{"command":"export 4shared","success":true,"input":[],"error-messages":[],"file":null}
+git-annex: export: 1 failed
+```
+
+```
+git-annex version: 8.20210223
+```
+
+This behavior was observed using the 4shared service, but I believe git-annex knows which file a success or failure belongs to and could report it regardless of service oddities.
+
+
+Thx!
