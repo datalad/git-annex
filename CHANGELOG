@@ -1,3 +1,9 @@
+git-annex (8.20210311) UNRELEASED; urgency=medium
+
+  * export: When a submodule is in the tree to be exported, skip it.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 12 Mar 2021 12:06:37 -0400
+
 git-annex (8.20210310) upstream; urgency=medium
 
   * When non-annexed files in a tree are exported to a special remote,

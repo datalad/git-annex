@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-03-12T16:16:44Z"
+ content="""
+Easy enough to exclude them from export, that's done.
+
+But the other side of the coin is, importing back from there will generate
+a remote-tracking branch without the submodule, and merging it will result
+in a tree that does not include the submodule, as if it were deleted.
+
+So, importing needs to somehow add back submodules, 
+unless the submodule location has been overwritten with a file on the remote.
+"""]]

@@ -241,7 +241,9 @@ fillExport r db (PreferredFiltered newtree) mtbcommitsha = do
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive newtree
 	cvar <- liftIO $ newMVar (FileUploaded False)
 	allfilledvar <- liftIO $ newMVar (AllFilled True)
-	commandActions $ map (startExport r db cvar allfilledvar) l
+	commandActions $
+		map (startExport r db cvar allfilledvar)
+			(filter shouldexport l)
 	void $ liftIO $ cleanup
 	waitForAllRunningCommandActions
 
@@ -253,6 +255,14 @@ fillExport r db (PreferredFiltered newtree) mtbcommitsha = do
 					>>= setRemoteTrackingBranch tb
 	
 	liftIO $ fromFileUploaded <$> takeMVar cvar
+  where
+	shouldexport ti = case readObjectType (Git.LsTree.typeobj ti) of
+		Just BlobObject -> True
+		Just CommitObject -> False
+		-- ^ submodule is not exported
+		Just TreeObject -> False
+		-- ^ should never happen, lstree is recursing into subtrees
+		Nothing -> False
 
 startExport :: Remote -> ExportHandle -> MVar FileUploaded -> MVar AllFilled -> Git.LsTree.TreeItem -> CommandStart
 startExport r db cvar allfilledvar ti = do
