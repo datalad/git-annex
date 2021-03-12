@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="standalone builds on archive"
+ date="2021-03-12T01:38:35Z"
+ content="""
+Two other current standalone builds do exist in archive.org, but not `git-annex-standalone-amd64.tar.gz`:
+[[!format sh \"\"\"
+(master_env_v178_py36) 20:34  [current] $ git annex find --in=web
+git-annex-standalone-arm64.tar.gz
+git-annex-standalone-armel.tar.gz
+\"\"\"]]
+"""]]
