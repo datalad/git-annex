@@ -1,0 +1,37 @@
+I am using `git annex export` to export to a WEBDAV special remote configured with `exporttree=yes`. Works beautifully!
+
+However, now I have a repository with a submodule, and I want to export them both, such that they look like a single worktree on the WEBDAV service. I can, in-principle, achieve this by using an appropriately adjusted WEBDAV URL. But git-annex exports an empty file with the name of the submodule in the location where I would need a directory to place the submodule export -- which the WEBDAV services rightfully acknowledges with a 409 (conflict) response, when I attempt running `initremote` on the submodule nevertheless.
+
+I found no way to use an `wanted` expression to automatically exclude all submodules.
+
+The options I am left with are:
+
+1. Remove the empty submodule placeholders after an export.
+
+2. Maintain a dedicated wanted expression with a continuously updated exclusion list covering all submodule mounts.
+
+(2) Might allow me to not have to fiddle with WEBDAV requests myself, but it doesn't seem "right", given that the submodule layout and number can change with any state of the repository.
+
+I wonder, though, what benefit the export of these placeholder files provides? Maybe they should not be exported at all. Or, alternatively, it might make sense to actually export them as directories right away. I might be biased, but that might be a more appropriate representation than an empty file.
+
+
+I have used a Nextcloud instance for me attempts, and a repository with a single submodule (both created with datalad in my case, but that should not be relevant here). Followed by
+
+```
+git annex initremote wd type=webdav url=https://.../files/user/datalad/dummy encryption=none exporttree=yes
+git annex initremote wd type=webdav url=https://.../files/user/datalad/dummy/submod encryption=none exporttree=yes
+```
+
+in both repositories respectively.
+
+I have been using `git-annex version: 8.20201127`
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+It is the rock that I stand on.
+
+[[!tag projects/datalad]]
+
+
+
