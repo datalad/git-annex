@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-03-12T14:06:08Z"
+ content="""
+Hi, <br>
+Are you using the latest version? There have been large performance improvements in version 8.20200720.
+
+How many files do you have in the repository?
+
+The problem is that git-annex-sync has to check the location log for each key/file from the git-annex branch every time. Because whether a file needs to be copied and where might change depending on a lot of factors (See [[git-annex-preferred-content]]).
+
+But there is a solution: [[todo/Incremental_git_annex_sync\_--content_--all]]. This is not yet implemented in git-annex itself, so I wrote a [bash script](https://gist.github.com/Lukey3332/203ea6f30d48323e7bd1d05c16b5da9c) to do this. To get the speedup, you have to run `incremental-sync.sh --fast`. Beware that in the `--fast` mode `include=` and `exclude=` in your preferred-content expression won't work correctly. And, while the scripts works fine for me so far, it still is experimental.
+
+Also, [ZFS doesn't seem to perform too well with git-annex.](https://www.datalad.org/test_fs_analysis.html)
+
+The \"Your branch is ahead ...\" is normal if you didn't run git-annex-sync on the remote in the meantime. git-annex-sync doesn't push to `master` directly, but to `synced/master` and when you run sync on the remote it will pick up the changes.
+"""]]
