@@ -62,6 +62,11 @@ exportLocation l =
 keyTmpLocation :: Key -> DavLocation
 keyTmpLocation = tmpLocation . fromRawFilePath . keyFile
 
+exportTmpLocation :: ExportLocation -> Key -> DavLocation
+exportTmpLocation l k = d </> keyTmpLocation k
+  where
+	d = takeDirectory (fromRawFilePath (fromExportLocation l))
+
 tmpLocation :: FilePath -> DavLocation
 tmpLocation f = "git-annex-webdav-tmp-" ++ f
 
