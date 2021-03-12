@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="AlbertZeyer"
+ avatar="http://cdn.libravatar.org/avatar/b37d71961a6a5abf9b7184ed77b5a941"
+ subject="comment 2"
+ date="2021-03-12T15:44:12Z"
+ content="""
+I'm on Ubuntu 20.04, and just have the default git-annex installed:
+
+git-annex version: 8.20200226
+
+"""]]
