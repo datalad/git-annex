@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="gioele@678b7c03f524f2669b179b603f65352fcc16774e"
+ nickname="gioele"
+ avatar="http://cdn.libravatar.org/avatar/366dbda84e78aff8a8a070622aeb63ce"
+ subject="comment 4"
+ date="2021-03-13T13:26:44Z"
+ content="""
+> Also, [ZFS doesn't seem to perform too well with git-annex](https://www.datalad.org/test_fs_analysis.html).
+
+The results of that test should be taken with a grain of salt. That test used ZFS version 0.6.4 from 2015. In the following 6 years ZFS went through three major releases (0.7, 0.8, 2.0) with many improvements.
+
+My personal experience is that ZFS RAID-Z2 on spinning disks with L2ARC is only marginally slower than LVM-based RAID6 (but plenty safer and more versatile).
+"""]]
