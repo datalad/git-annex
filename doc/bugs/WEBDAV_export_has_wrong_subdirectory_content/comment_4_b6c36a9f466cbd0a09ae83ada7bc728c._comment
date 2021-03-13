@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Progress report"
+ date="2021-03-13T16:19:17Z"
+ content="""
+Thx for the fixes! This seems to be working nicely, but only for subdirectories. All files that are not in the root of a repository are placed in their respective subdirectories, whether or not they are annexed.
+
+However, the export errors for all files in the root. Using `git-annex version: 8.20210311-gecee702b3` I see:
+
+```
+% git annex export HEAD --to 4shared --json --json-error-messages
+{\"command\":\"export 4shared\",\"success\":true,\"input\":[],\"error-messages\":[],\"file\":\".datalad/.gitattributes\"}
+{\"command\":\"export 4shared\",\"success\":true,\"input\":[],\"error-messages\":[],\"file\":\".datalad/config\"}
+{\"command\":\"export 4shared\",\"success\":false,\"input\":[],\"error-messages\":[\"  DAV failure: Status {statusCode = 409, statusMessage = \\"Conflict\\"} \\"<html><body><h1>Conflict</h1></body></html>\\" HTTP request: \\"PUT\\" \\"/dummy/./git-annex-webdav-tmp-GIT--c3aaefef9a2470b31ba9213350046ff7cde75737\\"\"],\"file\":\".gitattributes\"}
+{\"command\":\"export 4shared\",\"success\":false,\"input\":[],\"error-messages\":[\"  DAV failure: Status {statusCode = 409, statusMessage = \\"Conflict\\"} \\"<html><body><h1>Conflict</h1></body></html>\\" HTTP request: \\"PUT\\" \\"/dummy/./git-annex-webdav-tmp-MD5E-s4--971658bc2f5bdee5660844a83b5bf0a2.txt\\"\",\"  DAV failure: Status {statusCode = 409, statusMessage = \\"Conflict\\"} \\"<html><body><h1>Conflict</h1></body></html>\\" HTTP request: \\"PUT\\" \\"/dummy/./git-annex-webdav-tmp-MD5E-s4--971658bc2f5bdee5660844a83b5bf0a2.txt\\"\"],\"file\":\"inannexroot.txt\"}
+{\"command\":\"export 4shared\",\"success\":false,\"input\":[],\"error-messages\":[\"  DAV failure: Status {statusCode = 409, statusMessage = \\"Conflict\\"} \\"<html><body><h1>Conflict</h1></body></html>\\" HTTP request: \\"PUT\\" \\"/dummy/./git-annex-webdav-tmp-GIT--ec28779b36c1a65a3fb8ca1b1cad32c8b1f0fd45\\"\"],\"file\":\"ingit.txt\"}
+git-annex: export: 3 failed
+```
+
+and with `--debug` on a subsequent attempt:
+
+```
+...
+[2021-03-13 17:10:40.082377685] getProps .datalad/.gitattributes
+{\"command\":\"export 4shared\",\"success\":true,\"input\":[],\"error-messages\":[],\"file\":\".datalad/.gitattributes\"}
+[2021-03-13 17:10:41.109311219] getProps .datalad/config
+{\"command\":\"export 4shared\",\"success\":true,\"input\":[],\"error-messages\":[],\"file\":\".datalad/config\"}
+[2021-03-13 17:10:41.274971242] getProps .gitattributes
+[2021-03-13 17:10:41.477825807] putContent ./git-annex-webdav-tmp-GIT--c3aaefef9a2470b31ba9213350046ff7cde75737
+{\"command\":\"export 4shared\",\"success\":false,\"input\":[],\"error-messages\":[\"  DAV failure: Status {statusCode = 409, statusMessage = \\"Conflict\\"} \\"<html><body><h1>Conflict</h1></body></html>\\" HTTP request: \\"PUT\\" \\"/dummy/./git-annex-webdav-tmp-GIT--c3aaefef9a2470b31ba9213350046ff7cde75737\\"\"],\"file\":\".gitattributes\"}
+[2021-03-13 17:10:41.684686094] getProps inannexroot.txt
+[2021-03-13 17:10:42.125435547] putContent ./git-annex-webdav-tmp-MD5E-s4--971658bc2f5bdee5660844a83b5bf0a2.txt
+[2021-03-13 17:10:42.299969611] putContent ./git-annex-webdav-tmp-MD5E-s4--971658bc2f5bdee5660844a83b5bf0a2.txt
+{\"command\":\"export 4shared\",\"success\":false,\"input\":[],\"error-messages\":[\"  DAV failure: Status {statusCode = 409, statusMessage = \\"Conflict\\"} \\"<html><body><h1>Conflict</h1></body></html>\\" HTTP request: \\"PUT\\" \\"/dummy/./git-annex-webdav-tmp-MD5E-s4--971658bc2f5bdee5660844a83b5bf0a2.txt\\"\",\"  DAV failure: Status {statusCode = 409, statusMessage = \\"Conflict\\"} \\"<html><body><h1>Conflict</h1></body></html>\\" HTTP request: \\"PUT\\" \\"/dummy/./git-annex-webdav-tmp-MD5E-s4--971658bc2f5bdee5660844a83b5bf0a2.txt\\"\"],\"file\":\"inannexroot.txt\"}
+[2021-03-13 17:10:42.64284096] getProps ingit.txt
+[2021-03-13 17:10:42.808582229] putContent ./git-annex-webdav-tmp-GIT--ec28779b36c1a65a3fb8ca1b1cad32c8b1f0fd45
+{\"command\":\"export 4shared\",\"success\":false,\"input\":[],\"error-messages\":[\"  DAV failure: Status {statusCode = 409, statusMessage = \\"Conflict\\"} \\"<html><body><h1>Conflict</h1></body></html>\\" HTTP request: \\"PUT\\" \\"/dummy/./git-annex-webdav-tmp-GIT--ec28779b36c1a65a3fb8ca1b1cad32c8b1f0fd45\\"\"],\"file\":\"ingit.txt\"}
+...
+```
+"""]]
