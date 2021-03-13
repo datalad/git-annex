@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="albert.lash+git-annex@db81cb2b56cce42192ed75e0be6ce4e73f5af364"
+ nickname="albert.lash+git-annex"
+ avatar="http://cdn.libravatar.org/avatar/f2147841ee06a111e95daa897260d53f"
+ subject="This worked for me too"
+ date="2021-03-13T22:56:57Z"
+ content="""
+Thanks for the explanation about the S3 keys and signature. I was able to set up a backblaze b2 special remote with an eu endpoint. The cost information on [this page on the go version of the b2 remote](https://github.com/encryptio/git-annex-remote-b2#improving-the-financial-cost-of-this-remote) is interesting - is it accurate?
+"""]]
