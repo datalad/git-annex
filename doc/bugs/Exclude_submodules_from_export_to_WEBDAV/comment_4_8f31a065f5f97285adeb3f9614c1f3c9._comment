@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Confirm fix"
+ date="2021-03-13T16:23:34Z"
+ content="""
+This is working now. `git-annex version: 8.20210311-gecee702b3`
+
+Thx!
+"""]]
