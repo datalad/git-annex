@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="falsifian"
+ avatar="http://cdn.libravatar.org/avatar/59c3c23c500d20d83ecb9d1f149be9ae"
+ subject="comment 5"
+ date="2021-03-14T05:12:12Z"
+ content="""
+git-annex is now in OpenBSD ports. If you're running current, you can just run `pkg_add git-annex`.
+"""]]
