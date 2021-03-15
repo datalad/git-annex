@@ -1,0 +1,26 @@
+### Please describe the problem.
+When stall detection is enabled, debug output for transfers with external special remotes appears to be hidden.
+
+### What steps will reproduce the problem?
+
+    git config annex.stalldetection true
+    git annex copy file --to=externalspecialremote --debug 2>&1 | grep PROGRESS
+    # no lines output
+
+### What version of git-annex are you using? On what operating system?
+
+I'm on RHEL7 and this problem is present in git master for me ever since the introduction of stall detection: 135757d64 through 4d6f74477
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I've written ESRPs and recovered many lost files =)
