@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="post@fe1e2f98b8a3e74db4acafa380bba9a4454f335d"
+ nickname="post"
+ avatar="http://cdn.libravatar.org/avatar/6faa6cc783a165b25fc1c8f3154ba449"
+ subject="Import fails with"
+ date="2021-03-15T23:58:59Z"
+ content="""
+I am getting the following error on recent imports using the adb remote:
+
+    list android find: exec stat: Argument list too long
+    
+    git-annex: Unable to list contents of android: adb find failed
+    failed
+    git-annex: import: 1 failed
+
+I dont know if this is due to a recent update of git-annex or simply the growth of the files on my phone.
+
+Cheers,
+Steffen
+"""]]
