@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="re: individually hash chunks"
+ date="2021-03-15T15:23:08Z"
+ content="""
+If [[todo/alternate_keys_for_same_content]] were implemented, git-annex could store chunk content using regular keys (providing deduplication) and mark the chunk keys as alternate keys for the same content.
+
+I've also wanted this option, for a separate reason: to be able to quickly import files from a special remote that stores files in separate parts, and lets you read the checksums of the parts without downloading the files.
+
+I had thought of implementing a custom special remote that would store, for a given key A, the key B of a manifest file that listed the keys C1, ..., Cn of chunks of the content of key A.
+
+"""]]
