@@ -1,0 +1,6 @@
+For a heavy tree it takes indeed quite a while.  And it is just wasteful if not just tree, but the entire repository does not have any unlocked files which is majority of the cases.  So I wondered if this operation could be avoided.
+
+E.g. following idea came to mind: git-annex could add some flag/beacon file (e.g. `has-no-unlocked`) within its `git-annex` branch which it would set upon initializing the `git-annex` branch, and which it would remove as soon as any path gets unlocked.  Then upon initial initialization of the clone'd worktree it could avoid this "Scanning" entirely if according to `git-annex` branch repository is still known to now carry any unlocked file.  It would not provide an ultimate solution which would be "tree specific" but at least it would provide remedy for majority of the cases (in our case) where there is no unlocked files.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
