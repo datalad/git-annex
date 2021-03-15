@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+even if url is associated with `web` remote, if some other remote can claim it, `git annex rmurl` would announce it not available for a "custom remote" (with `:` prefix) thus not `web`, thus keeping it "available" in subsequent calls to `git annex info`
+
+<details>
+<summary>complete example reproducer but needs datalad</summary> 
+
+```shell
+#!/bin/bash
+
+export PS4='> '
+
+set -eu
+set -x
+
+cd "$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)"
+git clone http://github.com/ReproNim/containers
+cd containers
+
+git annex initremote datalad externaltype=datalad type=external encryption=none autoenable=true
+git annex enableremote datalad
+
+git annex info
+
+git annex whereis images/bids/bids-rshrf--1.4.4.sing
+git annex rmurl images/bids/bids-rshrf--1.4.4.sing 'https://storage.googleapis.com/singularityhub/singularityhub%2Fgithub.com%2FReproNim%2Fcontainers%2Feb098949b1061510767ef444c57a4f74e592f9fc%2F61b8e91176d796614444515a484f2a2d%2F61b8e91176d796614444515a484f2a2d.sif?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=153500186594-compute%40developer.gserviceaccount.com%2F20210223%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20210223T213231Z&X-Goog-Expires=3&X-Goog-SignedHeaders=host&X-Goog-Signature=433fa7ffb52a59c5c36f95c2cba2eeb94cd42178a6afea27744cc61bc10a526cfc13ab2670186dc42b1a3d88c017cd544c018e3d5a198927814d748afd98cd66aaae0e154c93a610c9e71b93c9fb21cc4a0d86bbdfb0e803373253a1f6abd487a4400124313e80575dc38a17ba2dc7db137f1c50f5722f46f9be6682a6cb1a6550cb97107cdd1f6611e7e308998ef18223cebf39caaa283d5955dc20460028eb3f9973761282cf02416e8e8fdb66b90566f7b08c3a41e6e76d1a55274b6cfc7e0ff1cc415f34f81bd8650f2c49f889936053044e88d0bd486e371ee7b78f0326f1a4ffd4a634f4489920c323d5f5202a8544ad23abf34b3e9b9e8644685fd882'
+
+git annex whereis images/bids/bids-rshrf--1.4.4.sing
+git show -p git-annex
+git show git-annex:fe1/c89/MD5E-s116695071--61b8e91176d796614444515a484f2a2d.4.sing.log.web
+
+```
+</details>
+
+
+which ends with following output where you can see URL being listed associated with `web` (not datalad), `rmurl` "succeeding" but announcing it `0` on a custom remote (prefix `:`) and then subsequent `annex info` still shows that it is still available from `web`.  I would have expected that .log to be adjusted reflecting prior information (i.e. without `:`) and thus be removed from `web`:
+
+[[!format sh """
+> git annex whereis images/bids/bids-rshrf--1.4.4.sing
+whereis images/bids/bids-rshrf--1.4.4.sing (3 copies) 
+  	00000000-0000-0000-0000-000000000001 -- web
+   	23456fab-05d4-441e-8952-b8c6d90ad785 -- yoh@smaug:~/proj/repronim/containers
+   	71c620b5-997f-4849-bb30-c42dbb48a51e -- [datasets.datalad.org]
+
+  web: https://storage.googleapis.com/singularityhub/singularityhub%2Fgithub.com%2FReproNim%2Fcontainers%2Feb098949b1061510767ef444c57a4f74e592f9fc%2F61b8e91176d796614444515a484f2a2d%2F61b8e91176d796614444515a484f2a2d.sif?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=153500186594-compute%40developer.gserviceaccount.com%2F20210223%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20210223T213231Z&X-Goog-Expires=3&X-Goog-SignedHeaders=host&X-Goog-Signature=433fa7ffb52a59c5c36f95c2cba2eeb94cd42178a6afea27744cc61bc10a526cfc13ab2670186dc42b1a3d88c017cd544c018e3d5a198927814d748afd98cd66aaae0e154c93a610c9e71b93c9fb21cc4a0d86bbdfb0e803373253a1f6abd487a4400124313e80575dc38a17ba2dc7db137f1c50f5722f46f9be6682a6cb1a6550cb97107cdd1f6611e7e308998ef18223cebf39caaa283d5955dc20460028eb3f9973761282cf02416e8e8fdb66b90566f7b08c3a41e6e76d1a55274b6cfc7e0ff1cc415f34f81bd8650f2c49f889936053044e88d0bd486e371ee7b78f0326f1a4ffd4a634f4489920c323d5f5202a8544ad23abf34b3e9b9e8644685fd882
+ok
+> git annex rmurl images/bids/bids-rshrf--1.4.4.sing 'https://storage.googleapis.com/singularityhub/singularityhub%2Fgithub.com%2FReproNim%2Fcontainers%2Feb098949b1061510767ef444c57a4f74e592f9fc%2F61b8e91176d796614444515a484f2a2d%2F61b8e91176d796614444515a484f2a2d.sif?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=153500186594-compute%40developer.gserviceaccount.com%2F20210223%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20210223T213231Z&X-Goog-Expires=3&X-Goog-SignedHeaders=host&X-Goog-Signature=433fa7ffb52a59c5c36f95c2cba2eeb94cd42178a6afea27744cc61bc10a526cfc13ab2670186dc42b1a3d88c017cd544c018e3d5a198927814d748afd98cd66aaae0e154c93a610c9e71b93c9fb21cc4a0d86bbdfb0e803373253a1f6abd487a4400124313e80575dc38a17ba2dc7db137f1c50f5722f46f9be6682a6cb1a6550cb97107cdd1f6611e7e308998ef18223cebf39caaa283d5955dc20460028eb3f9973761282cf02416e8e8fdb66b90566f7b08c3a41e6e76d1a55274b6cfc7e0ff1cc415f34f81bd8650f2c49f889936053044e88d0bd486e371ee7b78f0326f1a4ffd4a634f4489920c323d5f5202a8544ad23abf34b3e9b9e8644685fd882'
+rmurl images/bids/bids-rshrf--1.4.4.sing ok
+(recording state in git...)
+> git annex whereis images/bids/bids-rshrf--1.4.4.sing
+whereis images/bids/bids-rshrf--1.4.4.sing (3 copies) 
+  	00000000-0000-0000-0000-000000000001 -- web
+   	23456fab-05d4-441e-8952-b8c6d90ad785 -- yoh@smaug:~/proj/repronim/containers
+   	71c620b5-997f-4849-bb30-c42dbb48a51e -- [datasets.datalad.org]
+
+  web: https://storage.googleapis.com/singularityhub/singularityhub%2Fgithub.com%2FReproNim%2Fcontainers%2Feb098949b1061510767ef444c57a4f74e592f9fc%2F61b8e91176d796614444515a484f2a2d%2F61b8e91176d796614444515a484f2a2d.sif?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=153500186594-compute%40developer.gserviceaccount.com%2F20210223%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20210223T213231Z&X-Goog-Expires=3&X-Goog-SignedHeaders=host&X-Goog-Signature=433fa7ffb52a59c5c36f95c2cba2eeb94cd42178a6afea27744cc61bc10a526cfc13ab2670186dc42b1a3d88c017cd544c018e3d5a198927814d748afd98cd66aaae0e154c93a610c9e71b93c9fb21cc4a0d86bbdfb0e803373253a1f6abd487a4400124313e80575dc38a17ba2dc7db137f1c50f5722f46f9be6682a6cb1a6550cb97107cdd1f6611e7e308998ef18223cebf39caaa283d5955dc20460028eb3f9973761282cf02416e8e8fdb66b90566f7b08c3a41e6e76d1a55274b6cfc7e0ff1cc415f34f81bd8650f2c49f889936053044e88d0bd486e371ee7b78f0326f1a4ffd4a634f4489920c323d5f5202a8544ad23abf34b3e9b9e8644685fd882
+ok
+> git show -p git-annex
+commit 0738371567c5f925070e7da4c01ffa44c97bf830 (git-annex)
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Mon Mar 15 18:46:06 2021 -0400
+
+    update
+
+diff --git a/fe1/c89/MD5E-s116695071--61b8e91176d796614444515a484f2a2d.4.sing.log.web b/fe1/c89/MD5E-s116695071--61b8e91176d796614444515a484f2a2d.4.sing.log.web
+index b3f20a7..5d25928 100644
+--- a/fe1/c89/MD5E-s116695071--61b8e91176d796614444515a484f2a2d.4.sing.log.web
++++ b/fe1/c89/MD5E-s116695071--61b8e91176d796614444515a484f2a2d.4.sing.log.web
+@@ -1 +1,2 @@
++1615848366.629329639s 0 :https://storage.googleapis.com/singularityhub/singularityhub%2Fgithub.com%2FReproNim%2Fcontainers%2Feb098949b1061510767ef444c57a4f74e592f9fc%2F61b8e91176d796614444515a484f2a2d%2F61b8e91176d796614444515a484f2a2d.sif?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=153500186594-compute%40developer.gserviceaccount.com%2F20210223%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20210223T213231Z&X-Goog-Expires=3&X-Goog-SignedHeaders=host&X-Goog-Signature=433fa7ffb52a59c5c36f95c2cba2eeb94cd42178a6afea27744cc61bc10a526cfc13ab2670186dc42b1a3d88c017cd544c018e3d5a198927814d748afd98cd66aaae0e154c93a610c9e71b93c9fb21cc4a0d86bbdfb0e803373253a1f6abd487a4400124313e80575dc38a17ba2dc7db137f1c50f5722f46f9be6682a6cb1a6550cb97107cdd1f6611e7e308998ef18223cebf39caaa283d5955dc20460028eb3f9973761282cf02416e8e8fdb66b90566f7b08c3a41e6e76d1a55274b6cfc7e0ff1cc415f34f81bd8650f2c49f889936053044e88d0bd486e371ee7b78f0326f1a4ffd4a634f4489920c323d5f5202a8544ad23abf34b3e9b9e8644685fd882
+ 1614115961.926618255s 1 https://storage.googleapis.com/singularityhub/singularityhub%2Fgithub.com%2FReproNim%2Fcontainers%2Feb098949b1061510767ef444c57a4f74e592f9fc%2F61b8e91176d796614444515a484f2a2d%2F61b8e91176d796614444515a484f2a2d.sif?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=153500186594-compute%40developer.gserviceaccount.com%2F20210223%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20210223T213231Z&X-Goog-Expires=3&X-Goog-SignedHeaders=host&X-Goog-Signature=433fa7ffb52a59c5c36f95c2cba2eeb94cd42178a6afea27744cc61bc10a526cfc13ab2670186dc42b1a3d88c017cd544c018e3d5a198927814d748afd98cd66aaae0e154c93a610c9e71b93c9fb21cc4a0d86bbdfb0e803373253a1f6abd487a4400124313e80575dc38a17ba2dc7db137f1c50f5722f46f9be6682a6cb1a6550cb97107cdd1f6611e7e308998ef18223cebf39caaa283d5955dc20460028eb3f9973761282cf02416e8e8fdb66b90566f7b08c3a41e6e76d1a55274b6cfc7e0ff1cc415f34f81bd8650f2c49f889936053044e88d0bd486e371ee7b78f0326f1a4ffd4a634f4489920c323d5f5202a8544ad23abf34b3e9b9e8644685fd882
+> git show git-annex:fe1/c89/MD5E-s116695071--61b8e91176d796614444515a484f2a2d.4.sing.log.web
+1615848366.629329639s 0 :https://storage.googleapis.com/singularityhub/singularityhub%2Fgithub.com%2FReproNim%2Fcontainers%2Feb098949b1061510767ef444c57a4f74e592f9fc%2F61b8e91176d796614444515a484f2a2d%2F61b8e91176d796614444515a484f2a2d.sif?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=153500186594-compute%40developer.gserviceaccount.com%2F20210223%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20210223T213231Z&X-Goog-Expires=3&X-Goog-SignedHeaders=host&X-Goog-Signature=433fa7ffb52a59c5c36f95c2cba2eeb94cd42178a6afea27744cc61bc10a526cfc13ab2670186dc42b1a3d88c017cd544c018e3d5a198927814d748afd98cd66aaae0e154c93a610c9e71b93c9fb21cc4a0d86bbdfb0e803373253a1f6abd487a4400124313e80575dc38a17ba2dc7db137f1c50f5722f46f9be6682a6cb1a6550cb97107cdd1f6611e7e308998ef18223cebf39caaa283d5955dc20460028eb3f9973761282cf02416e8e8fdb66b90566f7b08c3a41e6e76d1a55274b6cfc7e0ff1cc415f34f81bd8650f2c49f889936053044e88d0bd486e371ee7b78f0326f1a4ffd4a634f4489920c323d5f5202a8544ad23abf34b3e9b9e8644685fd882
+1614115961.926618255s 1 https://storage.googleapis.com/singularityhub/singularityhub%2Fgithub.com%2FReproNim%2Fcontainers%2Feb098949b1061510767ef444c57a4f74e592f9fc%2F61b8e91176d796614444515a484f2a2d%2F61b8e91176d796614444515a484f2a2d.sif?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=153500186594-compute%40developer.gserviceaccount.com%2F20210223%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20210223T213231Z&X-Goog-Expires=3&X-Goog-SignedHeaders=host&X-Goog-Signature=433fa7ffb52a59c5c36f95c2cba2eeb94cd42178a6afea27744cc61bc10a526cfc13ab2670186dc42b1a3d88c017cd544c018e3d5a198927814d748afd98cd66aaae0e154c93a610c9e71b93c9fb21cc4a0d86bbdfb0e803373253a1f6abd487a4400124313e80575dc38a17ba2dc7db137f1c50f5722f46f9be6682a6cb1a6550cb97107cdd1f6611e7e308998ef18223cebf39caaa283d5955dc20460028eb3f9973761282cf02416e8e8fdb66b90566f7b08c3a41e6e76d1a55274b6cfc7e0ff1cc415f34f81bd8650f2c49f889936053044e88d0bd486e371ee7b78f0326f1a4ffd4a634f4489920c323d5f5202a8544ad23abf34b3e9b9e8644685fd882
+"""]]
+
+git annex `8.20210310+git49-g4d6f74477-1~ndall+1`
+
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
