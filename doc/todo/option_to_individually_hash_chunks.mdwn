@@ -1,0 +1,5 @@
+Hey, I'm not sure whether todo is the right place for feature requests.
+
+When breaking files into chunks, it would be nice to have an option to hash the chunks based on their own content, rather than the content they are a part of.  This would provide for deduplicating data.
+
+I'm using git-annex with an append-only log where adding this would avoid the need to break logs into separate files to not reupload content.  Separate files eventually taxes git's tree size.
