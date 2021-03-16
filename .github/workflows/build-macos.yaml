@@ -380,15 +380,14 @@ jobs:
           hdiutil detach /Volumes/git-annex/
           echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
 
+      - name: Set up Docker
+        uses: docker-practice/actions-setup-docker@v1
+
       - name: Set up SSH target
         shell: bash
         run: |
           # coreutils provides a readlink that supports `-f`
-          brew install coreutils docker docker-machine
-          mkdir -p ~/.docker/machine/cache
-          wget -O ~/.docker/machine/cache/boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso
-          docker-machine --native-ssh create --driver virtualbox default
-          eval "$(docker-machine env default)"
+          brew install coreutils
           export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
           curl -fSsL \
             https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
