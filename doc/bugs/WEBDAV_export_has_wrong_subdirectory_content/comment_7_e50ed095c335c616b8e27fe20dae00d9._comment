@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-03-16T18:19:17Z"
+ content="""
+I think I see another way that the same webdav server misbehavior could
+happen, since there is also a rename. When a file is in the top of the
+repo, is exported to webdav, then is moved into a subdirectory, and the
+export run again, it will rename it to avoid re-uploading.
+
+mid, can you check if the 4shared server breaks in that situation?
+
+(I notice there's a special case in that code path already for the box.com
+webdav server (see [[!commit bf48ba4ef7aeb69d5efca7c04068ff7752f57f3f]])
+which apparently also had problems with renames. Although as I noted
+upthread, I didn't see the problem reported in this bug report when I
+tested it against box.com.)
+"""]]
