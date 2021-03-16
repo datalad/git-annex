@@ -1,0 +1,85 @@
+### Please describe the problem.
+
+
+### What steps will reproduce the problem?
+
+```
+git clone http://datasets.datalad.org/labs/hasson/narratives/derivatives/fmriprep/.git
+cd fmriprep
+AWS_ACCESS_KEY_ID=X AWS_SECRET_ACCESS_KEY=Y git annex get  sub-001/anat/sub-001_space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz
+```
+
+results in
+```
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+get sub-001/anat/sub-001_space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz (from fcp-indi...) 
+
+
+  HttpExceptionRequest Request {
+    host                 = "fcp-indi.s3.amazonaws.com"
+    port                 = 80
+    secure               = False
+    requestHeaders       = [("Date","Tue, 16 Mar 2021 17:32:39 GMT"),("Authorization","<REDACTED>")]
+    path                 = "/data/Projects/narratives/derivatives/fmriprep/sub-001/anat/sub-001_space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz"
+    queryString          = ""
+    method               = "GET"
+    proxy                = Nothing
+    rawBody              = False
+    redirectCount        = 10
+    responseTimeout      = ResponseTimeoutDefault
+    requestVersion       = HTTP/1.1
+  }
+   (StatusCodeException (Response {responseStatus = Status {statusCode = 403, statusMessage = "Forbidden"}, responseVersion = HTTP/1.1, responseHeaders = [("x-amz-request-id","2RHPCARD2XCMWS10"),("x-amz-id-2","pUFqyuk39EhsOj3wkeN+9PB7SfNxRCkR2iYbROSf4PwiJ9EezRzpEfoA4FcHRpthqmaBF2pAhDQ="),("Content-Type","application/xml"),("Transfer-Encoding","chunked"),("Date","Tue, 16 Mar 2021 17:32:38 GMT"),("Server","AmazonS3")], responseBody = (), responseCookieJar = CJ {expose = []}, responseClose' = ResponseClose}) "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Error><Code>InvalidAccessKeyId</Code><Message>The AWS Access Key Id you provided does not exist in our records.</Message><AWSAccessKeyId>X</AWSAccessKeyId><RequestId>2RHPCARD2XCMWS10</RequestId><HostId>pUFqyuk39EhsOj3wkeN+9PB7SfNxRCkR2iYbROSf4PwiJ9EezRzpEfoA4FcHRpthqmaBF2pAhDQ=</HostId></Error>")
+
+  Unable to access these remotes: fcp-indi
+
+  Maybe add some of these git remotes (git remote add ...):
+  	4d79a724-9e8c-4cce-b030-f712eed3e131 -- snastase@scotty.pni.Princeton.EDU:/mnt/bucket/labs/hasson/snastase/smaug/narratives/derivatives/fmriprep
+   	5f96664f-23ba-4c25-8e75-9ca24fcd46f5 -- nastase@smaug:/mnt/datasets/incoming/nastase/narratives/derivatives/fmriprep
+failed
+git-annex: get: 1 failed
+```
+
+although direct S3 access was not even required (and would not trigger if no AWS_ variables are specified) due to
+
+```shell
+$> git show git-annex:remote.log                                                                                                  
+bf6f56f3-f6b7-4df8-9898-a4226dc71400 autoenable=true bucket=fcp-indi datacenter=US encryption=none exporttree=yes fileprefix=data/Projects/narratives/derivatives/fmriprep/ host=s3.amazonaws.com name=fcp-indi partsize=1GiB port=80 public=yes publicurl=https://s3.amazonaws.com/fcp-indi storageclass=STANDARD type=S3 versioning=yes timestamp=1607616182.971041s
+```
+
+Doing above attempt sets some flag somewhere (are those credentials get recorded somewhere locally? didn't investigate) making subsequent `git annex get` without AWS vars fail too...  In a fresh clone it works though just fine
+
+```shell
+
+$> git annex get sub-001/anat/sub-001_space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz   
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+get sub-001/anat/sub-001_space-MNI152NLin2009cAsym_desc-brain_mask.nii.gz (from fcp-indi...) 
+
+(checksum...) ok                  
+(recording state in git...)
+```
+
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+git-annex version: 8.20210310+git49-g4d6f74477-1~ndall+1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.0.0 ghc-8.4.4 http-client-0.5.13.1 persistent-sqlite-2.8.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+
+"""]]
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+
+
