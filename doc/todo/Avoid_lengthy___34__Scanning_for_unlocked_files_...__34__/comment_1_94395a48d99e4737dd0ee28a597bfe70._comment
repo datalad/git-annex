@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-16T18:29:26Z"
+ content="""
+Hmm, this does a git ls-tree -r and parses it looking for files that are
+not symlinks. Each such file has to pass through cat-file --batch to see if
+it is unlocked.
+
+So I think this should be reasonably fast unless the repo has a lot of
+non-annexed files. Does your repo, or is it simply so large that ls-tree -r
+is very expensive? 
+
+Benchmarking here, a repo with 100,000 annexed files (all locked):
+the git ls-tree ran in 3 seconds; the init took 17 seconds overall,
+with most time needed to set up the git-annex branch etc.
+
+One speedup I notice that scanUnlockedFiles uses catKey,
+which first checks catObjectMetaData to determine if the file is so large
+that it's clearly not a pointer file (and so avoid catting such a large file).
+If the file size was known, it could instead use catKey', which would
+double the speed of processing non-annexed files, as well as actual locked
+files. To get the size, git ls-tree has a --long switch. (git still has
+to do some work to get the size since tree objects don't contain it, but
+it should be much less expensive than a round trip through
+catObjectMetaData. In my benchmark it doubled the git ls-tree time to add
+--long.) Implementing this will need adding support for parsing
+the --long output so I've not done it quite yet.
+"""]]
