@@ -70,7 +70,7 @@ ifAnnexed file yes no = maybe no yes =<< lookupKey file
  - 
  - This is expensive, and so normally the associated files are updated
  - incrementally when changes are noticed. So, this only needs to be done
- - when initializing/upgrading a v6+ mode repository.
+ - when initializing/upgrading repository.
  -
  - Also, the content for the unlocked file may already be present as
  - an annex object. If so, populate the pointer file with it.
