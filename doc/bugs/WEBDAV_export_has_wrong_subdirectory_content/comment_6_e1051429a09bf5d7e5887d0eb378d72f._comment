@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-03-16T18:13:45Z"
+ content="""
+I think I see how my change broke exporting to the top directory of the
+repo. I've committed a fix for that.
+"""]]

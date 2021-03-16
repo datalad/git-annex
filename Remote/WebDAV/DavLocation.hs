@@ -62,10 +62,20 @@ exportLocation l =
 keyTmpLocation :: Key -> DavLocation
 keyTmpLocation = tmpLocation . fromRawFilePath . keyFile
 
+{- Where we store temporary data for a file as it's being exported.
+ -
+ - This could be just the keyTmpLocation, but when the file is in a
+ - subdirectory, the temp file is put in there. Partly this is to keep
+ - it close to the final destination; also certian webdav servers
+ - seem to be buggy when renaming files from the root into a subdir, 
+ - and so writing to the subdir avoids such problems.
+ -}
 exportTmpLocation :: ExportLocation -> Key -> DavLocation
-exportTmpLocation l k = d </> keyTmpLocation k
+exportTmpLocation l k
+	| length (splitDirectories p) > 1 = takeDirectory p </> keyTmpLocation k
+	| otherwise = keyTmpLocation k
   where
-	d = takeDirectory (fromRawFilePath (fromExportLocation l))
+	p = fromRawFilePath (fromExportLocation l)
 
 tmpLocation :: FilePath -> DavLocation
 tmpLocation f = "git-annex-webdav-tmp-" ++ f
