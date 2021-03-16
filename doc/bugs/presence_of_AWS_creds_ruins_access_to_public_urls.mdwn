@@ -10,6 +10,7 @@ AWS_ACCESS_KEY_ID=X AWS_SECRET_ACCESS_KEY=Y git annex get  sub-001/anat/sub-001_
 ```
 
 results in
+
 ```
 (merging origin/git-annex into git-annex...)
 (recording state in git...)
