@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-16T18:57:55Z"
+ content="""
+git-annex initremote caches the AWS creds locally in a file
+(.git/annex/creds/uuid) and that caching must be what's happening.
+I suppose with an autoinit of this particular repo.
+
+It may be that autoinit should avoid sucking in such information, since the
+user may not expect it. And also what if two S3 repos were auto-initted,
+probably the creds would only work for one. There is support in the API
+that remotes could use to avoid such behavior during auto-init, but not
+in the external special remote protocol.
+
+The S3 remote currently always uses S3 protocol when there are creds,
+even for read operations; when there are no creds it goes on to check if
+it can determinte a public url, and uses that instead. If it instead 
+preferred public urls, your use case would work even with the creds. 
+Could break other use cases though, eg if there was a public url
+recorded but it didn't work and the API did, also versioned repos maybe.
+
+So not sure I like that second approach, it seems better to use the creds, 
+so long as the user knowingly provided them.
+"""]]
