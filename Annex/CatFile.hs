@@ -133,10 +133,12 @@ catFileStop = do
 
 {- From ref to a symlink or a pointer file, get the key. -}
 catKey :: Ref -> Annex (Maybe Key)
-catKey ref = catKey' ref =<< catObjectMetaData ref
+catKey ref = catObjectMetaData ref >>= \case
+	Just (_, sz, _) -> catKey' ref sz
+	Nothing -> return Nothing
 
-catKey' :: Ref -> Maybe (Sha, Integer, ObjectType) -> Annex (Maybe Key)
-catKey' ref (Just (_, sz, _))
+catKey' :: Ref -> FileSize -> Annex (Maybe Key)
+catKey' ref sz
 	-- Avoid catting large files, that cannot be symlinks or
 	-- pointer files, which would require buffering their
 	-- content in memory, as well as a lot of IO.

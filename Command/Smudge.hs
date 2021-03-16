@@ -105,7 +105,10 @@ clean file = do
 		Nothing -> do
 			let fileref = Git.Ref.fileRef file
 			indexmeta <- catObjectMetaData fileref
-			go' b indexmeta =<< catKey' fileref indexmeta
+			oldkey <- case indexmeta of
+				Just (_, sz, _) -> catKey' fileref sz
+				Nothing -> return Nothing
+			go' b indexmeta oldkey
 	go' b indexmeta oldkey = ifM (shouldAnnex file indexmeta oldkey)
 		( do
 			-- Before git 2.5, failing to consume all stdin here
