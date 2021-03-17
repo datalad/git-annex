@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-17T14:07:15Z"
+ content="""
+I'm inclined to think that rmurl should not look at url claiming at all,
+and should remove whichever is set of the the url and the mangled version
+used for claimed urls.
+
+I think probably unregisterurl should do the same. Currently it
+does not look at claiming and only removes the url, not the mangled form. 
+But registerurl does look at claiming, and may add the mangled form,
+so unregister may not undo the effets of register.
+"""]]
