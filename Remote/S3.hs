@@ -273,7 +273,7 @@ s3Setup'  ss u mcreds c gc
 		(c', encsetup) <- encryptionSetup (c `M.union` defaults) gc
 		pc <- either giveup return . parseRemoteConfig c'
 			=<< configParser remote c'
-		c'' <- setRemoteCredPair encsetup pc gc (AWS.creds u) mcreds
+		c'' <- setRemoteCredPair ss encsetup pc gc (AWS.creds u) mcreds
 		pc' <- either giveup return . parseRemoteConfig c''
 			=<< configParser remote c''
 		info <- extractS3Info pc'
@@ -287,14 +287,14 @@ s3Setup'  ss u mcreds c gc
 		showNote "Internet Archive mode"
 		pc <- either giveup return . parseRemoteConfig c
 			=<< configParser remote c
-		c' <- setRemoteCredPair noEncryptionUsed pc gc (AWS.creds u) mcreds
+		c' <- setRemoteCredPair ss noEncryptionUsed pc gc (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
 		let validbucket = replace " " "-" $ map toLower $
 			maybe (giveup "specify bucket=") fromProposedAccepted
 				(M.lookup bucketField c')
 		let archiveconfig = 
-			-- IA acdepts x-amz-* as an alias for x-archive-*
+			-- IA accepts x-amz-* as an alias for x-archive-*
 			M.mapKeys (Proposed . replace "x-archive-" "x-amz-" . fromProposedAccepted) $
 			-- encryption does not make sense here
 			M.insert encryptionField (Proposed "none") $
@@ -1273,11 +1273,8 @@ enableBucketVersioning ss info _ _ _ = do
 	case ss of
 		Init -> when (versioning info) $
 			enableversioning (bucket info)
-		Enable oldc -> do
-			oldpc <- parsedRemoteConfig remote oldc
-			oldinfo <- extractS3Info oldpc
-			when (versioning info /= versioning oldinfo) $
-				giveup "Cannot change versioning= of existing S3 remote."
+		Enable oldc -> checkunchanged oldc
+		AutoEnable oldc -> checkunchanged oldc
   where
 	enableversioning b = do
 #if MIN_VERSION_aws(0,21,1)
@@ -1295,6 +1292,12 @@ enableBucketVersioning ss info _ _ _ = do
 			, "It's important you enable versioning before storing anything in the bucket!"
 			]
 #endif
+
+	checkunchanged oldc = do
+		oldpc <- parsedRemoteConfig remote oldc
+		oldinfo <- extractS3Info oldpc
+		when (versioning info /= versioning oldinfo) $
+			giveup "Cannot change versioning= of existing S3 remote."
 
 -- If the remote has versioning enabled, but the version ID is for some
 -- reason not being recorded, it's not safe to perform an action that

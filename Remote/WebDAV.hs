@@ -128,7 +128,7 @@ gen r u rc gc rs = do
 		chunkconfig = getChunkConfig c
 
 webdavSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-webdavSetup _ mu mcreds c gc = do
+webdavSetup ss mu mcreds c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	url <- maybe (giveup "Specify url=")
 		(return . fromProposedAccepted)
@@ -138,7 +138,7 @@ webdavSetup _ mu mcreds c gc = do
 	creds <- maybe (getCreds pc gc u) (return . Just) mcreds
 	testDav url creds
 	gitConfigSpecialRemote u c' [("webdav", "true")]
-	c'' <- setRemoteCredPair encsetup pc gc (davCreds u) creds
+	c'' <- setRemoteCredPair ss encsetup pc gc (davCreds u) creds
 	return (c'', u)
 
 store :: DavHandleVar -> ChunkConfig -> Storer

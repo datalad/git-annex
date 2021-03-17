@@ -3,9 +3,9 @@ This special remote type stores file contents in a WebDAV server.
 ## configuration
 
 The environment variables `WEBDAV_USERNAME` and `WEBDAV_PASSWORD` are used
-to supply login credentials. You need to set these only when running
-`git annex initremote`, as they will be cached in a file only you 
-can read inside the local git repository.
+to supply login credentials. You need to set these only when running `git
+annex initremote` (or `enableremote`), as they will be cached in a file
+only you can read inside the local git repository.
 
 A number of parameters can be passed to `git annex initremote` to configure
 the webdav remote.

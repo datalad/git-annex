@@ -4,6 +4,10 @@ git-annex (8.20210311) UNRELEASED; urgency=medium
   * import: When the previously exported tree contained a submodule,
     preserve it in the imported tree so it does not get deleted.
   * export --json: Fill in the file field.
+  * When autoenabling special remotes of type S3, weddav, or glacier,
+    do not take login credentials from environment variables, as the user
+    may not be expecting the autoenable to happen, and may have those
+    set for other purposes.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Mar 2021 12:06:37 -0400
 

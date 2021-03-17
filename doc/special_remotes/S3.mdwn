@@ -7,13 +7,12 @@ for usage examples.
 
 ## configuration
 
-The standard environment variables `AWS_ACCESS_KEY_ID` and 
-`AWS_SECRET_ACCESS_KEY` are used to supply login credentials
-for S3. You need to set these only when running
-`git annex initremote`, as they will be cached in a file only you
-can read inside the local git repository. If you’re working with
-temporary security credentials, you can also set the `AWS_SESSION_TOKEN`
-environment variable.
+The standard environment variables `AWS_ACCESS_KEY_ID` and
+`AWS_SECRET_ACCESS_KEY` are used to supply login credentials for S3. You
+need to set these only when running `git annex initremote` (or
+`enableremote`), as they will be cached in a file only you can read inside
+the local git repository. If you’re working with temporary security
+credentials, you can also set the `AWS_SESSION_TOKEN` environment variable.
 
 A number of parameters can be passed to `git annex initremote` to configure
 the S3 remote.

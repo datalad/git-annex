@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-03-17T13:37:01Z"
+ content="""
+Ok, I've made autoenable not take creds from the environment, which will
+avoid the problem.
+
+If there are any external special remotes that might behave similarly,
+it would need an extension to the external special remote protocol to
+support them. Currently `INITREMOTE` is sent during auto-enable, and so
+the protocol would need to have `ENABLEREMOTE` and `AUTOENBLEREMOTE` added
+to it. Since that would need an extension and I don't know if any externals
+actually look at env vars etc at (auto)enable time, I've skipped doing it
+for now.
+"""]]

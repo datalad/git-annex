@@ -123,7 +123,7 @@ glacierSetup' ss u mcreds c gc = do
 	(c', encsetup) <- encryptionSetup (c `M.union` defaults) gc
 	pc <- either giveup return . parseRemoteConfig c'
 		=<< configParser remote c'
-	c'' <- setRemoteCredPair encsetup pc gc (AWS.creds u) mcreds
+	c'' <- setRemoteCredPair ss encsetup pc gc (AWS.creds u) mcreds
 	pc' <- either giveup return . parseRemoteConfig c''
 		=<< configParser remote c''
 	case ss of

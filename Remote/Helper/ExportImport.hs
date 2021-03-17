@@ -87,11 +87,8 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 						| configured pc && encryptionIsEnabled pc ->
 							giveup $ "cannot enable both encryption and " ++ fromProposedAccepted configfield
 						| otherwise -> cont
-					Enable oldc -> do
-						oldpc <- parsedRemoteConfig rt oldc
-						if configured pc /= configured oldpc
-							then giveup $ "cannot change " ++ fromProposedAccepted configfield ++ " of existing special remote"
-							else cont
+					Enable oldc -> enable oldc pc configured configfield cont
+					AutoEnable oldc -> enable oldc pc configured configfield cont
 				, if configured pc
 					then giveup $ fromProposedAccepted configfield ++ " is not supported by this special remote"
 					else cont
@@ -99,6 +96,12 @@ adjustExportImportRemoteType rt = rt { setup = setup' }
 		checkconfig exportSupported exportTree exportTreeField $
 			checkconfig importSupported importTree importTreeField $
 				setup rt st mu cp c gc
+	
+	enable oldc pc configured configfield cont = do
+		oldpc <- parsedRemoteConfig rt oldc
+		if configured pc /= configured oldpc
+			then giveup $ "cannot change " ++ fromProposedAccepted configfield ++ " of existing special remote"
+			else cont
 
 -- | Adjust a remote to support exporttree=yes and/or importree=yes.
 adjustExportImport :: Remote -> RemoteStateHandle -> Annex Remote

@@ -48,7 +48,7 @@ import Utility.SafeCommand
 import Utility.Url
 import Utility.DataUnits
 
-data SetupStage = Init | Enable RemoteConfig
+data SetupStage = Init | Enable RemoteConfig | AutoEnable RemoteConfig
 
 {- There are different types of remotes. -}
 data RemoteTypeA a = RemoteType

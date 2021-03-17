@@ -1,6 +1,6 @@
 {- Credentials storage
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -25,6 +25,7 @@ import Annex.Common
 import qualified Annex
 import Types.Creds
 import Types.RemoteConfig
+import Types.Remote (SetupStage(..))
 import Annex.SpecialRemote.Config
 import Annex.Perms
 import Utility.FileMode
@@ -52,21 +53,25 @@ data CredPairStorage = CredPairStorage
  - that. Also caches them locally.
  -
  - The creds are found from the CredPairStorage storage if not provided,
- - so may be provided by an environment variable etc.
+ - so may be provided by an environment variable etc. When autoenabling,
+ - the user would not expect to provide creds, so none are found.
  -
  - The remote's configuration should have already had a cipher stored in it
  - if that's going to be done, so that the creds can be encrypted using the
  - cipher. The EncryptionIsSetup is witness to that being the case.
  -}
 setRemoteCredPair
-	:: EncryptionIsSetup
+	:: SetupStage
+	-> EncryptionIsSetup
 	-> ParsedRemoteConfig
 	-> RemoteGitConfig
 	-> CredPairStorage
 	-> Maybe CredPair
 	-> Annex RemoteConfig
-setRemoteCredPair encsetup pc gc storage mcreds = unparsedRemoteConfig <$>
-	setRemoteCredPair' pc encsetup gc storage mcreds
+setRemoteCredPair ss encsetup pc gc storage mcreds = case ss of
+	AutoEnable _ -> pure (unparsedRemoteConfig pc)
+	_ -> unparsedRemoteConfig <$>
+		setRemoteCredPair' pc encsetup gc storage mcreds
 
 setRemoteCredPair'
 	:: ParsedRemoteConfig

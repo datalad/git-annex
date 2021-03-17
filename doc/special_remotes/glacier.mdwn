@@ -15,8 +15,8 @@ download the data.
 The standard environment variables `AWS_ACCESS_KEY_ID` and 
 `AWS_SECRET_ACCESS_KEY` are used to supply login credentials
 for Amazon. You need to set these only when running
-`git annex initremote`, as they will be cached in a file only you
-can read inside the local git repository.
+`git annex initremote` (or `enableremote`), as they will be cached in
+a file only you can read inside the local git repository.
 
 A number of parameters can be passed to `git annex initremote` to configure
 the Glacier remote.

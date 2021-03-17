@@ -150,6 +150,7 @@ mySetup ss mu _ c gc = do
 	let failinitunlessforced msg = case ss of
 		Init -> unlessM (Annex.getState Annex.force) (giveup msg)
 		Enable _ -> noop
+		AutoEnable _ -> noop
 	case (isEncrypted pc, Git.GCrypt.urlPrefix `isPrefixOf` url) of
 		(False, False) -> noop
 		(True, True) -> Remote.GCrypt.setGcryptEncryption pc remotename
