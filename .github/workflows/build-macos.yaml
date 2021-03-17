@@ -397,6 +397,7 @@ jobs:
       - name: Set up environment
         run: |
           brew install exempi  # Needed by python-xmp-toolkit
+          mkdir -p ~/DLTMP
           echo TMPDIR="$HOME"/DLTMP >> "$GITHUB_ENV"
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
