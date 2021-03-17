@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="comment 10"
+ date="2021-03-17T17:03:34Z"
+ content="""
+Sorry, forgot about that.
+
+I `git mv`'ed a file from the root into a subdirectory, and re-exported. It fails:
+
+DAV failure: Status {statusCode = 500, statusMessage = \"Internal Server Error\"} \"<html><body><h1>Server Error</h1></body></html>\" HTTP request: \"MOVE\" \"/dltest20/some%20space/git-annex-webdav-tmp-MD5E-s4--ba1f2511fc30423bdbb183fe33f3dd0f\"
+
+On the server-side the file is removed from the root, but the target directory only has the tmp files.
+"""]]
