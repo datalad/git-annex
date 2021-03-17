@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2021-03-17T14:56:19Z"
+ content="""
+> Ok, I've made autoenable not take creds from the environment, which will avoid the problem.
+
+indeed it would avoid the problem for public ones, but wouldn't it introduce problem/regression for handling private ones?
+"""]]
