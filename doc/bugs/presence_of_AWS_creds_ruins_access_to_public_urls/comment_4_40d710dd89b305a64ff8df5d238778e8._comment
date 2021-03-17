@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-03-17T15:28:05Z"
+ content="""
+Yes, it's a behavior change. But the old behavior meant users had to set
+env vars when doing something that has nothing to do with enabling remotes,
+which is not a reasonable thing to expect users to do.
+
+If you relied on autoenabling of remotes that need creds to enable, you
+will need to change to explicitly enabling them.
+"""]]
