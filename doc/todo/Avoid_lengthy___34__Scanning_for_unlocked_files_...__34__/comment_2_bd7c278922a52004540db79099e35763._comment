@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="install clean/smudge filter only when needed"
+ date="2021-03-18T15:47:02Z"
+ content="""
+On a related note, maybe some way to [not install git-annex's clean/smudge filter when all annexed files are locked](https://git-annex.branchable.com/todo/only_pass_unlocked_files_through_the_clean__47__smudge_filter/) could be found?  Maybe, a flag could be stored on the git-annex branch to indicate that a repo is locked-files-only?  My repos often are.  Or maybe a flag in .gitattributes could indicate this.
+"""]]
