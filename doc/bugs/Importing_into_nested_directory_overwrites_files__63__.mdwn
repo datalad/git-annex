@@ -1,0 +1,102 @@
+I'm not sure if this is a bug, or if I'm just misunderstanding how to
+use `import`. Happy to move this to the forum, if that's more
+appropriate.
+
+--
+
+Importing from a directory special-remote into a nested directory
+which contains existing files that are more than 1 level deep tries to
+overwrite existing files?
+
+```shell
+# Import to level 1, with existing files in level 1 - WORKS
+#export import_location=level1 && export existing_file_location=level1
+
+# Import to level 2, with existing files in level 1 - WORKS
+#export import_location=level1/level2 && export existing_file_location=level1
+
+# Import to level 2, with existing files in level 2 - DOES NOT WORK
+#export import_location=level1/level2 && export existing_file_location=level1/level2
+
+# Import to level 3, with existing files in level 1 - WORKS
+#export import_location=level1/level2/level3 && export existing_file_location=level1
+
+# Import to level 3, with existing files in level 2 - DOES NOT WORK
+#export import_location=level1/level2/level3 && export existing_file_location=level1/level2
+
+# Import to level 3, with existing files in level 3 - DOES NOT WORK
+#export import_location=level1/level2/level3 && export existing_file_location=level1/level2/level3
+
+# Import to level 4, with existing files in level 1 - WORKS
+#export import_location=level1/level2/level3/level4 && export existing_file_location=level1
+
+# Import to level 4, with existing files in level 2 - DOES NOT WORK
+#export import_location=level1/level2/level3/level4 && export existing_file_location=level1/level2
+
+# Import to level 4, with existing files in level 3 - DOES NOT WORK
+#export import_location=level1/level2/level3/level4 && export existing_file_location=level1/level2/level3
+
+# Import to level 4, with existing files in level 4 - DOES NOT WORK
+export import_location=level1/level2/level3/level4 && export existing_file_location=level1/level2/level3/level4
+
+
+mkdir remote-directory
+echo "import content" > remote-directory/import-file.txt
+
+mkdir repo
+cd repo
+git init
+git annex init
+git annex initremote myremote type=directory directory=../remote-directory encryption=none importtree=yes exporttree=yes
+
+mkdir -p ${import_location}
+echo "content" > ${existing_file_location}/existing-file.txt
+git annex add --force-large
+git commit -m "add existing file to annex"
+
+git annex import master:${import_location} --from myremote
+git annex merge myremote/master
+```
+
+This is the output of the final scenario:
+
+```shell
+$ git annex merge myremote/master
+merge myremote/master
+error: The following untracked working tree files would be overwritten by merge:
+    level1/level2/level3/level4/existing-file.txt
+Please move or remove them before you merge.
+Aborting
+failed
+git-annex: merge: 1 failed
+```
+
+--
+
+Running this after encountering the situation above also causes
+strange things to happen on the `myremote/master` branch:
+
+```shell
+git annex import master:${import_location} --from myremote
+git annex import master:${import_location} --from myremote
+git annex import master:${import_location} --from myremote
+git annex import master:${import_location} --from myremote
+```
+
+The `myremote/master` branch appears to be stuck in some sort of loop,
+trying to remove and add the files over and over?
+
+--
+
+```shell
+$ git annex version
+git-annex version: 8.20210310
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.27 DAV-1.3.4 feed-1.3.2.0 ghc-8.10.4 http-client-0.6.4.1 persistent-sqlite-2.11.1.0 torrent-10000.1.1 uuid-1.3.14 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
