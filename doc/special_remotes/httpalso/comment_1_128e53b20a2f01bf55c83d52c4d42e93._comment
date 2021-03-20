@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="comment 1"
+ date="2021-03-20T05:31:26Z"
+ content="""
+Is it possible to use httpalso with a standard git remote that also runs git-annex?
+
+Also, does it support HTTP authentication?
+"""]]
