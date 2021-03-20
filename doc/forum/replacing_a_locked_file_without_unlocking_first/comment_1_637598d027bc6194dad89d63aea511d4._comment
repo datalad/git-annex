@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-03-20T17:42:06Z"
+ content="""
+I can't think of any problems, as the end-result is the same. ´git annex unlock´ also just removes the symlink and copies the (old)file into it's place. There's no state about this kept anywhere else. So whether you unlock the file and then replace it, or directly replace the symlink with the new file, ´git annex add´ afterwards sees exactly the same state of the worktree.
+"""]]
