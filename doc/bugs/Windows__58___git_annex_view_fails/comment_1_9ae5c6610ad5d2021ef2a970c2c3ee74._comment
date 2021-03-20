@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-03-20T17:33:31Z"
+ content="""
+Hi, <br>
+This is already fixed in version 8.20201103. However, the windows build seems to be outdated. You can try the latest [autobuild](http://datasets.datalad.org/datalad/packages/windows/) instead.
+"""]]
