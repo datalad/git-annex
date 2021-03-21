@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="gerta"
+ avatar="http://cdn.libravatar.org/avatar/35a862512e6a10052014537b0131e482"
+ subject="comment 2"
+ date="2021-03-21T11:56:26Z"
+ content="""
+Sorry, I think the way I formatted the question made it confusing.
+
+--
+
+Starting in an empty directory, and running this:
+
+```shell
+export import_location=level1/level2/level3/level4 && export existing_file_location=level1/level2/level3/level4
+
+
+mkdir remote-directory
+echo \"import content\" > remote-directory/import-file.txt
+
+mkdir repo
+cd repo
+git init
+git annex init
+git annex initremote myremote type=directory directory=../remote-directory encryption=none importtree=yes exporttree=yes
+
+mkdir -p ${import_location}
+echo \"content\" > ${existing_file_location}/existing-file.txt
+git annex add --force-large
+git commit -m \"add existing file to annex\"
+
+git annex import master:${import_location} --from myremote
+git annex merge myremote/master
+```
+
+results in the merge failing with this output:
+
+```
+$ git annex merge myremote/master
+merge myremote/master 
+error: The following untracked working tree files would be overwritten by merge:
+	level1/level2/level3/level4/existing-file.txt
+Please move or remove them before you merge.
+Aborting
+failed
+git-annex: merge: 1 failed
+```
+
+Should this work, or am I doing something wrong?
+
+--
+
+All the other combinations of `import_location` and `existing_file_location` in the original post were other things that I tried while trying to work out if I was using `import` correctly, but each scenario was run in a clean starting directory.
+"""]]
