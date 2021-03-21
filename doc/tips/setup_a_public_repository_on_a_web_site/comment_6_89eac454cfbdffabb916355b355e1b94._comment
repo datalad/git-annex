@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 6"
+ date="2021-03-21T08:11:00Z"
+ content="""
+Did you actually run `git annex init` on the remote which is exposed as http? And `http://server.name/annex/.git/config` needs to be accessible too.
+"""]]
