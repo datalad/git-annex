@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="comment 5"
+ date="2021-03-21T01:11:27Z"
+ content="""
+I'm trying to set up a read-only HTTP mirror of my repository, such that I can clone and get files but not upload anything. I've set up an HTTP file server pointing to the repository, and I can clone it over git (dumb protocol):
+
+```
+$ git clone http://server.name/annex/.git clone_test
+Cloning into 'clone_test'...              
+Fetching objects: 1987364, done.
+Checking connectivity: 1987364, done.
+Updating files: 100% (551410/551410), done.
+```
+
+However, git-annex doesn't seem to like it:
+
+```
+$ cd clone_test/
+$ git annex init
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)       
+(scanning for unlocked files...)      
+                                                           
+  Remote origin not usable by git-annex; setting annex-ignore
+ok
+(recording state in git...)
+```
+
+And thereafter I can't get any of the files using `git annex get`:
+
+```
+$ git annex get file.name
+get file.name (not available)
+  Maybe add some of these git remotes (git remote add ...):
+    (...)
+  (Note that these git remotes have annex-ignore set: origin)
+failed                                           
+git-annex: get: 1 failed                  
+$ git annex get file.name --from=origin
+git-annex: cannot determine uuid for origin (perhaps you need to run \"git annex sync\"?) (remote.origin.annex-ignore is set)
+```
+
+Running `git annex sync` fails for inability to push to origin, which is as expected since it's meant to be read-only.
+
+How can I get git-annex to fetch data over this http remote?
+"""]]
