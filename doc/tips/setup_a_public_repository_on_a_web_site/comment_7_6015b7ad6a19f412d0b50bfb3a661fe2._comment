@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="comment 7"
+ date="2021-03-21T17:10:41Z"
+ content="""
+Yes, the HTTP-exposed repo is my main repository copy, which has been initialized and is where I do most of my git-annex operations. And yes, the .git/config file is visible over HTTP.
+"""]]
