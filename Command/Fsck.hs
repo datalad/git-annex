@@ -306,25 +306,30 @@ verifyLocationLog' key ai present u updatestatus = do
 {- Verifies that all repos that are required to contain the content do,
  - checking against the location log. -}
 verifyRequiredContent :: Key -> ActionItem -> Annex Bool
-verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = do
-	requiredlocs <- S.fromList . M.keys <$> requiredContentMap
-	if S.null requiredlocs
-		then return True
-		else do
-			presentlocs <- S.fromList <$> loggedLocations key
-			missinglocs <- filterM
-				(\u -> isRequiredContent (Just u) S.empty (Just key) afile False)
-				(S.toList $ S.difference requiredlocs presentlocs)
-			if null missinglocs
-				then return True
-				else do
-					missingrequired <- Remote.prettyPrintUUIDs "missingrequired" missinglocs
-					warning $
-						"** Required content " ++
-						decodeBS' (actionItemDesc ai) ++
-						" is missing from these repositories:\n" ++
-						missingrequired
-					return False
+verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = case afile of
+	-- Can't be checked if there's no associated file.
+	AssociatedFile Nothing -> return True
+	AssociatedFile (Just _) -> do
+		requiredlocs <- S.fromList . M.keys <$> requiredContentMap
+		if S.null requiredlocs
+			then return True
+			else go requiredlocs
+  where
+	go requiredlocs = do
+		presentlocs <- S.fromList <$> loggedLocations key
+		missinglocs <- filterM
+			(\u -> isRequiredContent (Just u) S.empty (Just key) afile False)
+			(S.toList $ S.difference requiredlocs presentlocs)
+		if null missinglocs
+			then return True
+			else do
+				missingrequired <- Remote.prettyPrintUUIDs "missingrequired" missinglocs
+				warning $
+					"** Required content " ++
+					decodeBS' (actionItemDesc ai) ++
+					" is missing from these repositories:\n" ++
+					missingrequired
+				return False
 verifyRequiredContent _ _ = return True
 
 {- Verifies the associated file records. -}

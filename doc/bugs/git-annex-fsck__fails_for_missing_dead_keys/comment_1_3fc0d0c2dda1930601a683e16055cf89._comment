@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-22T18:47:00Z"
+ content="""
+Your transcript does not show the bug, but I was able to reproduce it eventually.
+
+	# git annex required here anything
+	# git annex add foo
+	# git annex drop --force foo
+	# git rm foo
+	# git annex fsck --all
+	fsck SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 
+	  ** No known copies exist of SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+	
+	  (Avoid this check by running: git annex dead --key )
+	# git-annex dead --key SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+	# git annex fsck --all
+	fsck SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 
+	  This key is dead, skipping.
+	ok
+	# 
+
+So far this is operating as expected. But then clone this repo to another
+one, and in the other one:
+
+	# git annex fsck --all --from origin
+	fsck SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 
+	  ** Required content SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 is missing from these repositories:
+	  	56b59085-83b0-4b98-82c3-1baacd93d3e2 -- joey@darkstar:/tmp/test [origin]
+	
+	  This key is dead, skipping.
+	failed
+	(recording state in git...)
+	git-annex: fsck: 1 failed
+
+So fsck --from --all is verifying required content when it should not,
+because a) matching required content with --all mostly doesn't make sense
+(considering things like "include=" can be in it and can't be matched)
+and b) it's not done without --all.
+
+(I don't think dead keys are actually involved, I mean if a particular file
+is set as required content of a repo, and is not present in it, fsck should
+complain about that, even if the key is dead.)
+"""]]

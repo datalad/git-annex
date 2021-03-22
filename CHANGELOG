@@ -16,6 +16,9 @@ git-annex (8.20210311) UNRELEASED; urgency=medium
     when it is claimed by a special remote other than the web.
   * Work around some buggy webdav server behavior involving renaming files.
   * Make --debug also enable debugging in child git-annex processes.
+  * fsck: When --from is used in combination with --all or similar options,
+    do not verify required content, which can't be checked properly when
+    operating on keys.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Mar 2021 12:06:37 -0400
 
