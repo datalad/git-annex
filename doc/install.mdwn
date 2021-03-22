@@ -19,6 +19,7 @@ detailed instructions             | quick install
 [[OSX]]                           |
 &nbsp;&nbsp;[[OSX/Homebrew]]      | `brew install git-annex`
 [[FreeBSD]]                       | `pkg install hs-git-annex`
+[[OpenBSD]]                       | `pkg_add git-annex`
 [[Android]]                       | **beta**
 [[Windows]]                       | **beta**
 """]]
