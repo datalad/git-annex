@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="Re: push doc-only changes"
+ date="2021-03-22T18:58:31Z"
+ content="""
+> I've fixed the permissions problem, but I'm not entirely sure what caused
+> it in the first place, so not positive my fix will last.
+
+I tried to push a doc/ change today and saw the same error, so it
+looks like the issue has resurfaced.
+
+"""]]
