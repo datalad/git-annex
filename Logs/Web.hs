@@ -72,14 +72,16 @@ setUrlPresent key url = do
 
 setUrlMissing :: Key -> URLString -> Annex ()
 setUrlMissing key url = do
-	config <- Annex.getGitConfig
-	addLog (urlLogFile config key)
-		=<< logNow InfoMissing (LogInfo (encodeBS url))
-	-- If the url was a web url (not OtherDownloader) and none of
-	-- the remaining urls for the key are web urls, the key must not
-	-- be present in the web.
-	when (isweb url) $
-		whenM (null . filter isweb <$> getUrls key) $
+	-- Avoid making any changes if the url was not registered.
+	us <- getUrls key
+	when (url `elem` us) $ do
+		config <- Annex.getGitConfig
+		addLog (urlLogFile config key)
+			=<< logNow InfoMissing (LogInfo (encodeBS url))
+		-- If the url was a web url and none of the remaining urls
+		-- for the key are web urls, the key must not be present
+		-- in the web.
+		when (isweb url && null (filter isweb $ filter (/= url) us)) $
 			logChange key webUUID InfoMissing
   where
 	isweb u = case snd (getDownloader u) of
@@ -120,7 +122,7 @@ removeTempUrl key = Annex.changeState $ \s ->
 	s { Annex.tempurls = M.delete key (Annex.tempurls s) }
 
 data Downloader = WebDownloader | YoutubeDownloader | QuviDownloader | OtherDownloader
-	deriving (Eq, Show)
+	deriving (Eq, Show, Enum, Bounded)
 
 {- To keep track of how an url is downloaded, it's mangled slightly in
  - the log, with a prefix indicating when a Downloader is used. -}

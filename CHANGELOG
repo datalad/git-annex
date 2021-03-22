@@ -8,6 +8,10 @@ git-annex (8.20210311) UNRELEASED; urgency=medium
     or glacier, do not take login credentials from environment variables,
     as the user may not be expecting the autoenable to happen, or may
     have those set for other purposes and not intend git-annex to use them.
+  * rmurl: When youtube-dl was used for an url, it no longer needs to be
+    prefixed with "yt:" in order to be removed.
+  * rmurl: If an url is both used by the web and also claimed by another
+    special remote, fix a bug that caused the url to to not be removed.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Mar 2021 12:06:37 -0400
 

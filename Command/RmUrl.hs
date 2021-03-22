@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,7 +9,6 @@ module Command.RmUrl where
 
 import Command
 import Logs.Web
-import qualified Remote
 
 cmd :: Command
 cmd = notBareRepo $
@@ -55,6 +54,7 @@ start (si, (file, url)) = flip whenAnnexed file' $ \_ key -> do
 
 cleanup :: String -> Key -> CommandCleanup
 cleanup url key = do
-	r <- Remote.claimingUrl url
-	setUrlMissing key (setDownloader' url r)
+	-- Remove the url, no matter what downloader.
+	forM_ [minBound..maxBound] $ \dl -> 
+		setUrlMissing key (setDownloader url dl)
 	return True
