@@ -9,7 +9,6 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[Debian]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Ubuntu]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Fedora]]            | `yum install git-annex`
-&nbsp;&nbsp;[[FreeBSD]]           | `pkg install hs-git-annex`
 &nbsp;&nbsp;[[ArchLinux]]         | `pacman -S git-annex`
 &nbsp;&nbsp;[[NixOS]]             | `nix-env -i git-annex`
 &nbsp;&nbsp;[[Gentoo]]            | `emerge git-annex`
@@ -20,6 +19,7 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[openSUSE]]          | `zypper in git-annex`
 &nbsp;&nbsp;[[Docker]]            | 
 &nbsp;&nbsp;[[conda]]             | `conda install -c conda-forge git-annex`
+[[FreeBSD]]                       | `pkg install hs-git-annex`
 [[Windows]]                       | **beta**
 """]]
 
