@@ -86,3 +86,4 @@ And I'm using the Git Bash terminal on Windows 10 Pro.
 I'm pretty hyped about git annex.  I finally sat down and started backing up my data on different drives and git annex is about the perfect solution.  Or at least it does everything I want it to (especially if the above tagging issue can be resolved).  I've even thought about writing little cli apps over it, like an ejournal or recipe organizer.  
 
 
+> [[fixed|done]] already some time ago --[[Joey]]
