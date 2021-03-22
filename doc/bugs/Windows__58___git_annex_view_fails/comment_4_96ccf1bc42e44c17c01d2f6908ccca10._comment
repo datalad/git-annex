@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-03-22T17:51:08Z"
+ content="""
+Oh I see, forgot that page still linked to the windows 7 build. We lost
+that autobuilder and with windows 7 fairly EOL only the windows 10 build is
+being updated. I've changed the link now.
+"""]]
