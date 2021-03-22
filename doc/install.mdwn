@@ -2,9 +2,6 @@
 
 [[!table format=dsv header=yes data="""
 detailed instructions             | quick install
-[[OSX]]                           |
-&nbsp;&nbsp;[[OSX/Homebrew]]      | `brew install git-annex`
-[[Android]]                       | **beta**
 [[Linux|linux_standalone]]        | 
 &nbsp;&nbsp;[[Debian]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Ubuntu]]            | `apt-get install git-annex`
@@ -19,7 +16,10 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[openSUSE]]          | `zypper in git-annex`
 &nbsp;&nbsp;[[Docker]]            | 
 &nbsp;&nbsp;[[conda]]             | `conda install -c conda-forge git-annex`
+[[OSX]]                           |
+&nbsp;&nbsp;[[OSX/Homebrew]]      | `brew install git-annex`
 [[FreeBSD]]                       | `pkg install hs-git-annex`
+[[Android]]                       | **beta**
 [[Windows]]                       | **beta**
 """]]
 
