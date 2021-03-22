@@ -4,7 +4,7 @@ git-annex now does Windows!
 
 * Then, install git-annex:
 
-  - Windows 7+ [download](https://downloads.kitenet.net/git-annex/windows/7/current/)
+  - Windows 10 [download](https://downloads.kitenet.net/git-annex/windows/current/)
 
 This port is now in reasonably good shape for command-line use of
 git-annex. The assistant and webapp are also usable. There are some known
