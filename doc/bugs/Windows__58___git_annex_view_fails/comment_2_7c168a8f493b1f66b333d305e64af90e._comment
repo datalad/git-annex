@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-03-22T14:18:03Z"
+ content="""
+The published windows build uses that autobuild and is up-to-date.
+The bug reporter just needs to upgrade.
+"""]]
