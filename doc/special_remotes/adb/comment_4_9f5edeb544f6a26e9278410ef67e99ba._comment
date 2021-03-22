@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-03-22T14:32:28Z"
+ content="""
+It would probably be better to file a bug report about it than to
+discuss the problem here. I guess something you could include in the bug
+report is how many files are in the directory.
+
+It may be that android's `find` command is either not breaking up the list
+of files that it passes to the -exec command at all, or is confused about
+how big an argument list it can build up. So this could also depend on your
+version of Android, so be sure to include that in the bug report.
+"""]]
