@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-03-22T18:39:46Z"
+ content="""
+I don't know what the financial costs of the API calls work out to,
+but it's true that setting a remote to a higher annex-cost makes git-annex
+avoid using it when possible. And also true that trusting a remote will
+avoid git-annex making API calls to verify that it still contains content.
+
+Bear in mind that trusting a repo can easily lead to data loss in
+situations where you remove content from it, which is
+documented in [[git-annex-trust]]. Indeed, recently git-annex has
+started warning about this when you try to trust a remote. If you are sure
+you'll never remove content from the remote, or will only ever access this
+remore from a single repository, you might be able to convince yourself
+you'll avoid situations where trusting it would lose data.
+"""]]
