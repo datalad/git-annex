@@ -24,3 +24,5 @@ I'm on RHEL7 and this problem is present in git master for me ever since the int
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I've written ESRPs and recovered many lost files =)
+
+> [[fixed|done]] --[[Joey]]

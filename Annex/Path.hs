@@ -69,7 +69,8 @@ gitAnnexChildProcess subcmd ps f a = do
 {- Parameters to pass to a git-annex child process to run a subcommand
  - with some parameters.
  -
- - Includes -c values that were passed on the git-annex command line.
+ - Includes -c values that were passed on the git-annex command line
+ - or due to --debug being enabled.
  -}
 gitAnnexChildProcessParams :: String -> [CommandParam] -> Annex [CommandParam]
 gitAnnexChildProcessParams subcmd ps = do

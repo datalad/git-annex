@@ -1,20 +1,25 @@
 {- common command-line options
  -
- - Copyright 2010-2011 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE OverloadedStrings #-}
 
 module CmdLine.Option where
 
 import Options.Applicative
 
-import Annex.Common
 import CmdLine.Usage
 import CmdLine.GlobalSetter
 import qualified Annex
 import Types.Messages
 import Types.DeferredParse
+import Types.GitConfig
+import Git.Types (ConfigKey(..))
+import Git.Config
+import Utility.FileSystemEncoding
 
 -- Global options accepted by both git-annex and git-annex-shell sub-commands.
 commonGlobalOptions :: [GlobalOption]
@@ -39,12 +44,12 @@ commonGlobalOptions =
 		<> help "allow verbose output (default)"
 		<> hidden
 		)
-	, globalFlag setdebug
+	, globalFlag (setdebug True)
 		( long "debug" <> short 'd'
 		<> help "show debug messages"
 		<> hidden
 		)
-	, globalFlag unsetdebug
+	, globalFlag (setdebug False)
 		( long "no-debug"
 		<> help "don't show debug messages"
 		<> hidden
@@ -59,5 +64,8 @@ commonGlobalOptions =
 	setforce v = Annex.changeState $ \s -> s { Annex.force = v }
 	setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
 	setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
-	setdebug = Annex.overrideGitConfig $ \c -> c { annexDebug = True }
-	unsetdebug = Annex.overrideGitConfig $ \c -> c { annexDebug = False }
+	-- Overriding this way, rather than just setting annexDebug
+	-- makes the config be passed on to any git-annex child processes.
+	setdebug b = Annex.addGitConfigOverride $ decodeBS' $
+		debugconfig <> "=" <> boolConfig' b
+	(ConfigKey debugconfig) = annexConfig "debug"
