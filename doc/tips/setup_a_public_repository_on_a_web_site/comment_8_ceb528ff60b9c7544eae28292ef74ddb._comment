@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2021-03-22T14:39:06Z"
+ content="""
+@tomdhunt a few problems could result in this error message.
+
+1. The .git/config file might not be readable by the web server, or some
+   similar problem might cause the web server to fail to serve it.
+   Just for example, a web server might be configured to not serve .git
+   directories, since exposing them can sometimes be a mistake.
+   The web server would have to fail with some problem other than a
+   404 not found.. in that case there would be no error message.
+
+2. git might somehow be failing to parse the .git/config file once it is
+   downloaded. You would have to be running an older version of
+   git-annex to get this error message in that situation though;
+   recent versions display a different message if the config parse fails.
+
+I think that's all the possibilities. To determine which it is, 
+I suggest you download the .git/config file from the webserver yourself
+(that would be `http://server.name/annex/.git/config` in your example),
+and pass the downloaded file to `git config --list --file` to get git to
+parse it, making sure git doesn't exit with an error.
+"""]]
