@@ -21,5 +21,14 @@ cmd = command "unregisterurl"
 
 seek :: RegisterUrlOptions -> CommandSeek
 seek o = case (batchOption o, keyUrlPairs o) of
-	(Batch fmt, _) -> commandAction $ startMass setUrlMissing fmt
-	(NoBatch, ps) -> withWords (commandAction . start setUrlMissing) ps
+	(Batch fmt, _) -> commandAction $ startMass unregisterUrl fmt
+	(NoBatch, ps) -> withWords (commandAction . start unregisterUrl) ps
+
+unregisterUrl :: Key -> String -> Annex ()
+unregisterUrl key url = do
+	-- Remove the url no matter what downloader;
+	-- registerurl can set OtherDownloader, and this should also
+	-- be able to remove urls added by addurl, which may use
+	-- YoutubeDownloader.
+	forM_ [minBound..maxBound] $ \dl ->
+		setUrlMissing key (setDownloader url dl)

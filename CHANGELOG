@@ -12,6 +12,8 @@ git-annex (8.20210311) UNRELEASED; urgency=medium
     prefixed with "yt:" in order to be removed.
   * rmurl: If an url is both used by the web and also claimed by another
     special remote, fix a bug that caused the url to to not be removed.
+  * unregisterurl: Fix a bug that caused an url to not be unregistered
+    when it is claimed by a special remote other than the web.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Mar 2021 12:06:37 -0400
 
