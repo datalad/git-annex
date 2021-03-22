@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-03-22T17:16:14Z"
+ content="""
+It's not even necessary to delete the symlink, you can just
+rename the new version of the file over it.
+
+Unlocking the file is only necessary if you want to edit it in place.
+
+Unlocking a file does add a little bit of overhead. Mostly making
+a copy of it that is not needed when you're just going to overwrite it.
+Also the annex pointer gets added as a git object (which will get garbage
+collected eventually) and some minor things get stored to git-annex's
+internal database to keep track of it.
+"""]]
