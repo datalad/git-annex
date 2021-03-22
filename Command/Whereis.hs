@@ -131,7 +131,8 @@ getUUIDUrls key uuids remotemap = forM uuids $ \uu -> (,)
 
 getRemoteUrls :: Key -> Remote -> Annex [URLString]
 getRemoteUrls key remote
-	| uuid remote == webUUID = getWebUrls key
+	| uuid remote == webUUID = 
+		map (fst . getDownloader) <$> getWebUrls key
 	| otherwise = (++)
 		<$> askremote
 		<*> claimedurls

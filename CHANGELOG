@@ -14,6 +14,8 @@ git-annex (8.20210311) UNRELEASED; urgency=medium
     special remote, fix a bug that caused the url to to not be removed.
   * unregisterurl: Fix a bug that caused an url to not be unregistered
     when it is claimed by a special remote other than the web.
+  * whereis: Don't include yt: prefix when showing url to content
+    retrieved with youtube-dl.
   * Work around some buggy webdav server behavior involving renaming files.
   * Make --debug also enable debugging in child git-annex processes.
   * fsck: When --from is used in combination with --all or similar options,
