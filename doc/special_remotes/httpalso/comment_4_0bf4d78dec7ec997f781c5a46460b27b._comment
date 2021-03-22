@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-03-22T14:23:21Z"
+ content="""
+@tomdhunt I think it could probably be used with a git remote that exported
+its .git files over http, but since git-annex supports using such a remote
+as a normmal git remote, there does not seem to be any point in using it
+that way.
+
+http authentication is not currently supported, I suppose it could be added
+if useful, file a [[todo]] if you have a use case.
+"""]]
