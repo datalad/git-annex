@@ -14,6 +14,7 @@ git-annex (8.20210311) UNRELEASED; urgency=medium
     special remote, fix a bug that caused the url to to not be removed.
   * unregisterurl: Fix a bug that caused an url to not be unregistered
     when it is claimed by a special remote other than the web.
+  * Work around some buggy webdav server behavior involving renaming files.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Mar 2021 12:06:37 -0400
 

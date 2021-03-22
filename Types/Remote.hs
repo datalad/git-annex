@@ -280,7 +280,10 @@ data ExportActions a = ExportActions
 	, checkPresentExport :: Key -> ExportLocation -> a Bool
 	-- Renames an already exported file.
 	--
-	-- If the remote does not support renames, it can return Nothing.
+	-- If the remote does not support the requested rename,
+	-- it can return Nothing. It's ok if the remove deletes
+	-- the file in such a situation too; it will be re-exported to
+	-- recover.
 	--
 	-- Throws an exception if the remote cannot be accessed, or
 	-- the file doesn't exist or cannot be renamed.
@@ -393,3 +396,4 @@ data ImportActions a = ImportActions
 		-> [ContentIdentifier]
 		-> a Bool
 	}
+

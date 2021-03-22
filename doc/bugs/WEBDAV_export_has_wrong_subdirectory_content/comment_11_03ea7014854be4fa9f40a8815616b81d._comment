@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2021-03-22T16:27:10Z"
+ content="""
+Ok, failed kind of like I expected, although I have to say the filenames
+don't entirely make sense to me.
+("git-annex-webdav-tmp" is not used in filenames when renaming an exported
+file, only when storing it in the first place)
+
+So what seems to make sense for git-annex to do when renaming an exported
+file is: Try to rename, and if it fails, delete the source and the
+destination -- since it has no idea what may have been left in either place
+-- and then fall back to uploading the file again instead. I have
+implemented that.
+"""]]

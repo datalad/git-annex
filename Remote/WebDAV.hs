@@ -247,15 +247,24 @@ removeExportDirectoryDav hdl dir = withDavHandle hdl $ \h -> runExport h $ \_dav
 
 renameExportDav :: DavHandleVar -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
 renameExportDav hdl _k src dest = case (exportLocation src, exportLocation dest) of
-	(Right srcl, Right destl) -> withDavHandle hdl $ \h -> 
-		-- box.com's DAV endpoint has buggy handling of renames,
-		-- so avoid renaming when using it.
-		if boxComUrl `isPrefixOf` baseURL h 
-			then return Nothing
-			else runExport h $ \dav -> do
-				maybe noop (void . mkColRecursive) (locationParent destl)
-				moveDAV (baseURL dav) srcl destl
-				return (Just ())
+	(Right srcl, Right destl) -> withDavHandle hdl $ \h -> do
+		-- Several webdav servers have buggy handing of renames,
+		-- and fail to rename in some circumstances.
+		-- Since after a failure it's not clear where the file ended
+		-- up, recover by deleting both the source and destination.
+		-- The file will later be re-uploaded to the destination,
+		-- so this deletion is ok.
+		let go = runExport h $ \dav -> do
+			maybe noop (void . mkColRecursive) (locationParent destl)
+			moveDAV (baseURL dav) srcl destl
+			return (Just ())
+		let recover = do
+			void $ runExport h $ \_dav -> safely $
+				inLocation srcl delContentM
+			void $ runExport h $ \_dav -> safely $
+				inLocation destl delContentM
+			return Nothing
+		catchNonAsync go (const recover)
 	(Left err, _) -> giveup err
 	(_, Left err) -> giveup err
 
