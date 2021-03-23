@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-03-23T16:02:47Z"
+ content="""
+> "the proposal would break this" -- suppose git-annex-unlock was changed to install the clean/smudge filter for * if not installed yet?
+
+git-annex unlock is not the only way unlocked files can appear in your
+tree. Consider git pull.
+"""]]

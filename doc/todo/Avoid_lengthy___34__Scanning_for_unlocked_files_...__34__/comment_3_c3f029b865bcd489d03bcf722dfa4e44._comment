@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-03-23T15:54:18Z"
+ content="""
+The idea of putting a flag in the git-annex branch means that every time
+the smudge filter gets run, it would have to check the git-annex branch to
+see if it needs to unset that flag. I do not want to make the smudge filter
+even slower than it is, and trading off a one-time (per repository) cost
+with an ongoing cost does not seem good.
+
+The flag would also be a source of problems in complex
+situations. Eg, someone could be operating on the repo w/o git-annex
+installed, merge in a branch that contains unlocked files, and push the
+result. Leading to the flag in the git-annex branch being left incorrectly
+set, and so causing breakage to someone who clones the repo later on.
+
+Also, a transient unlock/modify/add of a file leaves no unlocked files in
+the worktree, but the unlock would set the flag, so any performance benefit
+would need all users of the repo to avoid such workflows.
+
+So viable approaches seem to be to optimise the scanning as much as
+possible, and possibly to add some config to git-annex that avoids doing
+the scanning, which could be used if you happen to know your repo doesn't
+contain unlocked files.
+"""]]
