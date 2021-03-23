@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-03-23T17:10:22Z"
+ content="""
+If we zoom out a bit, and also consider Ilya's desire to skip installing
+smudge/clean filters, maybe what you guys want is a way to tell git-annex
+that a particular repo does not use unlocked files, so git-annex can
+avoid expensive stuff needed to support them.
+
+So, I've added an `annex.supportunlocked` config that can be set to false
+before running `git-annex init`, and it will disable the smudge filters
+and skip this expensive scan.
+
+(The config will also let you measure the actual time this scan takes,
+which I'm still curious about, because I've not seen it being a majority of
+the init time, even in a large repository. Seems likely to me that init is
+doing other expensive things right after this scan, in particular setting
+up the git-annex branch, and that it may be those are what was really
+seeming slow to you.)
+
+The config as implemented does not prevent later adding unlocked files, and
+if you do that, git-annex will get confused and not make the content
+accessible until you change the config back and re-run git-annex init, or
+you lock the file.
+
+While the config could grow in scope to preventing adding
+unlocked files, it seems like probably a bad idea (and a whole lot of work).
+For one thing `git add` with a largefiles configuration would then
+need to prevent adding the file unlocked.. but it can't add it locked, and
+the smudge filter can't prevent git from adding the file -- so it would
+need to ignore the largefiles configuration and add the file to git. Which
+could be pretty suprising.
+
+And really there's no way for git-annex to enforce that a repo doesn't
+contain unlocked files. Even if this became a repo-global config (probably
+not a good idea), someone could merge new unlocked files from a repo that
+does, using just git. Or add them using an old version of git-annex. (Or
+just convert symlinks to unlocked files manually, it's not hard..) If
+setting this config, you're telling git-annex you don't expect there to be
+any unlocked file, and are ok with some minor breakage if there are some.
+
+Combining the config with `git-annex adjust --lock` would somewhat
+avoid such problems, although it's still possible to add files
+unlocked when in such a branch.
+"""]]

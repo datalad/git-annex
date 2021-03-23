@@ -128,6 +128,7 @@ data GitConfig = GitConfig
 	, annexCommitMode :: CommitMode
 	, annexSkipUnknown :: Bool
 	, annexAdjustedBranchRefresh :: Integer
+	, annexSupportUnlocked :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
@@ -229,6 +230,7 @@ extractGitConfig configsource r = GitConfig
 		-- parse as bool if it's not a number
 		(if getbool "adjustedbranchrefresh" False then 1 else 0)
 		(getmayberead (annexConfig "adjustedbranchrefresh"))
+	, annexSupportUnlocked = getbool (annexConfig "supportunlocked") True
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r

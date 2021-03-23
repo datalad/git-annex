@@ -21,6 +21,8 @@ git-annex (8.20210311) UNRELEASED; urgency=medium
   * fsck: When --from is used in combination with --all or similar options,
     do not verify required content, which can't be checked properly when
     operating on keys.
+  * New annex.supportunlocked config that can be set to false to avoid
+    some expensive things needed to support unlocked files.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Mar 2021 12:06:37 -0400
 

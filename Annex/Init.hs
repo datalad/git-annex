@@ -128,10 +128,14 @@ initialize' mversion = checkInitializeAllowed $ do
 	setDifferences
 	unlessM (isJust <$> getVersion) $
 		setVersion (fromMaybe defaultVersion mversion)
-	configureSmudgeFilter
+	supportunlocked <- annexSupportUnlocked <$> Annex.getGitConfig
+	if supportunlocked
+		then configureSmudgeFilter
+		else deconfigureSmudgeFilter
 	unlessM isBareRepo $ do
-		showSideAction "scanning for unlocked files"
-		scanUnlockedFiles
+		when supportunlocked $ do
+			showSideAction "scanning for unlocked files"
+			scanUnlockedFiles
 		hookWrite postCheckoutHook
 		hookWrite postMergeHook
 	AdjustedBranch.checkAdjustedClone >>= \case

@@ -1171,6 +1171,20 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   And when multiple files in the work tree have the same content, only
   one of them gets hard linked to the annex.
 
+* `annex.supportunlocked'
+
+  By default git-annex supports unlocked files as well as locked files,
+  so this defaults to true. If set to false, git-annex will only support
+  locked files. That will avoid doing the work needed to support unlocked
+  files.
+
+  Note that setting this to false does not prevent a repository from
+  having unlocked files added to it, and in that case the content of the
+  files will not be accessible until they are locked.
+
+  After changing this config, you need to re-run `git-annex init` for it
+  to take effect.
+
 * `annex.resolvemerge`
 
   Set to false to prevent merge conflicts in the checked out branch
