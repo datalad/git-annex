@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-03-23T17:02:49Z"
+ content="""
+That catKey optimisation actually only helps if the tree has a lot of files
+that are not annex symlinks, but are either unlocked or not annexed. 
+If most of the files are locked, that would actually make the scan
+somewhere around twice as slow as it currently is. So not a worthwhile
+optimisation.
+
+And I don't see much else there that could be optimised. Possibly the
+ls-tree parser could be made faster but it's already using attoparsec
+so unlikely to be many gains.
+"""]]
