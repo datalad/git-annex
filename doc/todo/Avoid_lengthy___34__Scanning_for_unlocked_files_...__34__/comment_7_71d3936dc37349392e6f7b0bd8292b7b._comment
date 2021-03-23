@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="annex.supportunlocked"
+ date="2021-03-23T19:30:39Z"
+ content="""
+Thanks for adding `annex.supportunlocked`!
+
+It seems to me that this is a repo property that you'd want to be consistent across clones, i.e. a candidate for a [[`git-annex-config`|git-annex-config]] setting.
+
+\"there's no way for git-annex to enforce that a repo doesn't contain unlocked files\" -- maybe, have [[`git-annex-fsck`|git-annex-fsck]] check that there are none if `annex.supportunlocked` is set?
+
+\"git add with a largefiles configuration... would need to ignore the largefiles configuration and add the file to git\" -- which the `annex.gitaddtoannex` config setting already does, so maybe just document that `annex.supportunlocked=false` implies `annex.gitaddtoannex=false`?  Could you then uninstall (or skip installing) the smudge/clean filters?
+
+\"someone could merge new unlocked files from a repo that does, using just git\" -- they can't do that inadvertently if the repo has a `git-annex-config` setting disallowing the adding of unlocked files.   If they manually override the repo setting, or \"convert symlinks to unlocked files manually\", they're doing something odd you can't plan for anyway.
+"""]]
