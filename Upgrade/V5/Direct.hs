@@ -70,11 +70,12 @@ switchHEADBack = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
 		let orighead = fromDirectBranch currhead
 		inRepo (Git.Ref.sha currhead) >>= \case
 			Just headsha
-				| orighead /= currhead -> do
+				| orighead == currhead -> noop
+				| otherwise -> do
 					inRepo $ Git.Branch.update "leaving direct mode" orighead headsha
 					inRepo $ Git.Branch.checkout orighead
 					inRepo $ Git.Branch.delete currhead
-			_ -> inRepo $ Git.Branch.checkout orighead
+			Nothing -> inRepo $ Git.Branch.checkout orighead
 
 {- Absolute FilePaths of Files in the tree that are associated with a key. -}
 associatedFiles :: Key -> Annex [FilePath]
