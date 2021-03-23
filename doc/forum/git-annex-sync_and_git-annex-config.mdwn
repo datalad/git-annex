@@ -1,0 +1,1 @@
+How does [[git-annex-sync]] interact with [[git-annex-config]] settings?  Does the latest-in-time setting silently take over?
