@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 10"
+ date="2021-03-23T07:19:39Z"
+ content="""
+I got it. If the server is on a local network, you have to set `annex.security.allowed-ip-addresses` to allow access.
+
+@joey
+Is this intentional for this remote type? If it is, a better error message would be helpful.
+"""]]
