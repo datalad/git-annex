@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2021-03-23T18:43:30Z"
+ content="""
+>  I've added an annex.supportunlocked config that can be set 
+
+you are talking about a regular `git config` configuration variable? then FWIW it is of no use for the original use case of a user cloning an existing git-annex repo since I would have no clue if that repository contains any unlocked files or not.  It could indeed come handy for timing when desired to investigate.
+
+I am yet to appreciate how \"repo-global config\" situation would be different from handling any other git-annex manipulation within `git-annex` branch (e.g. of annex config there) where we already rely on git-annex to \"do the right thing\" (deciding on taking keys availability information based on timestamping etc).
+"""]]
