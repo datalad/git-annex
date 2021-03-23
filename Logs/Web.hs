@@ -97,6 +97,7 @@ withKnownUrls a = do
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
 		Git.LsTree.LsTreeRecursive
+		(Git.LsTree.LsTreeLong False)
 		Annex.Branch.fullname
 	g <- Annex.gitRepo
 	let want = urlLogFileKey . getTopFilePath . Git.LsTree.file

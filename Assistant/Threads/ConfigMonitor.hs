@@ -89,7 +89,7 @@ reloadConfigs changedconfigs = do
 
 getConfigs :: Assistant Configs
 getConfigs = S.fromList . map extract
-	<$> liftAnnex (inRepo $ LsTree.lsTreeFiles Annex.Branch.fullname files)
+	<$> liftAnnex (inRepo $ LsTree.lsTreeFiles (LsTree.LsTreeLong False) Annex.Branch.fullname files)
   where
 	files = map (fromRawFilePath . fst) configFilesActions
 	extract treeitem = (getTopFilePath $ LsTree.file treeitem, LsTree.sha treeitem)

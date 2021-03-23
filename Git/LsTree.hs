@@ -1,13 +1,14 @@
 {- git ls-tree interface
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Git.LsTree (
 	TreeItem(..),
-	LsTreeMode(..),
+	LsTreeRecursive(..),
+	LsTreeLong(..),
 	lsTree,
 	lsTree',
 	lsTreeStrict,
@@ -38,44 +39,55 @@ data TreeItem = TreeItem
 	{ mode :: FileMode
 	, typeobj :: S.ByteString
 	, sha :: Ref
+	, size :: Maybe FileSize
 	, file :: TopFilePath
+	-- ^ only available when long is used
 	} deriving (Show)
 
-data LsTreeMode = LsTreeRecursive | LsTreeNonRecursive
+data LsTreeRecursive = LsTreeRecursive | LsTreeNonRecursive
+
+{- Enabling --long also gets the size of tree items.
+ - This slows down ls-tree some, since it has to look up the size of each
+ - blob.
+ -}
+data LsTreeLong = LsTreeLong Bool
 
 {- Lists the contents of a tree, with lazy output. -}
-lsTree :: LsTreeMode -> Ref -> Repo -> IO ([TreeItem], IO Bool)
+lsTree :: LsTreeRecursive -> LsTreeLong -> Ref -> Repo -> IO ([TreeItem], IO Bool)
 lsTree = lsTree' []
 
-lsTree' :: [CommandParam] -> LsTreeMode -> Ref -> Repo -> IO ([TreeItem], IO Bool)
-lsTree' ps lsmode t repo = do
-	(l, cleanup) <- pipeNullSplit (lsTreeParams lsmode t ps) repo
-	return (rights (map parseLsTree l), cleanup)
+lsTree' :: [CommandParam] -> LsTreeRecursive -> LsTreeLong -> Ref -> Repo -> IO ([TreeItem], IO Bool)
+lsTree' ps recursive long t repo = do
+	(l, cleanup) <- pipeNullSplit (lsTreeParams recursive long t ps) repo
+	return (rights (map (parseLsTree long) l), cleanup)
 
-lsTreeStrict :: LsTreeMode -> Ref -> Repo -> IO [TreeItem]
+lsTreeStrict :: LsTreeRecursive -> LsTreeLong -> Ref -> Repo -> IO [TreeItem]
 lsTreeStrict = lsTreeStrict' []
 
-lsTreeStrict' :: [CommandParam] -> LsTreeMode -> Ref -> Repo -> IO [TreeItem]
-lsTreeStrict' ps lsmode t repo = rights . map parseLsTreeStrict
-	<$> pipeNullSplitStrict (lsTreeParams lsmode t ps) repo
+lsTreeStrict' :: [CommandParam] -> LsTreeRecursive -> LsTreeLong -> Ref -> Repo -> IO [TreeItem]
+lsTreeStrict' ps recursive long t repo = rights . map (parseLsTreeStrict long)
+	<$> pipeNullSplitStrict (lsTreeParams recursive long t ps) repo
 
-lsTreeParams :: LsTreeMode -> Ref -> [CommandParam] -> [CommandParam]
-lsTreeParams lsmode r ps =
+lsTreeParams :: LsTreeRecursive -> LsTreeLong -> Ref -> [CommandParam] -> [CommandParam]
+lsTreeParams recursive long r ps =
 	[ Param "ls-tree"
 	, Param "--full-tree"
 	, Param "-z"
-	] ++ recursiveparams ++ ps ++
+	] ++ recursiveparams ++ longparams ++ ps ++
 	[ Param "--"
 	, File $ fromRef r
 	]
   where
-	recursiveparams = case lsmode of
+	recursiveparams = case recursive of
 		LsTreeRecursive -> [ Param "-r" ]
 		LsTreeNonRecursive -> []
+	longparams = case long of
+		LsTreeLong True -> [ Param "--long" ]
+		LsTreeLong False -> []
 
 {- Lists specified files in a tree. -}
-lsTreeFiles :: Ref -> [FilePath] -> Repo -> IO [TreeItem]
-lsTreeFiles t fs repo = rights . map (parseLsTree . L.fromStrict)
+lsTreeFiles :: LsTreeLong -> Ref -> [FilePath] -> Repo -> IO [TreeItem]
+lsTreeFiles long t fs repo = rights . map (parseLsTree long . L.fromStrict)
 	<$> pipeNullSplitStrict ps repo
   where
 	ps =
@@ -86,41 +98,54 @@ lsTreeFiles t fs repo = rights . map (parseLsTree . L.fromStrict)
 		, File $ fromRef t
 		] ++ map File fs
 
-parseLsTree :: L.ByteString -> Either String TreeItem
-parseLsTree b = case A.parse parserLsTree b of
+parseLsTree :: LsTreeLong -> L.ByteString -> Either String TreeItem
+parseLsTree long b = case A.parse (parserLsTree long) b of
 	A.Done _ r  -> Right r
 	A.Fail _ _ err -> Left err
 
-parseLsTreeStrict :: S.ByteString -> Either String TreeItem
-parseLsTreeStrict b = go (AS.parse parserLsTree b)
+parseLsTreeStrict :: LsTreeLong -> S.ByteString -> Either String TreeItem
+parseLsTreeStrict long b = go (AS.parse (parserLsTree long) b)
   where
 	go (AS.Done _ r) = Right r
 	go (AS.Fail _ _ err) = Left err
 	go (AS.Partial c) = go (c mempty)
 
 {- Parses a line of ls-tree output, in format:
- - mode SP type SP sha TAB file
+ -   mode SP type SP sha TAB file
+ - Or long format:
+ -   mode SP type SP sha SPACES size TAB file
  -
  - The TAB can also be a space. Git does not use that, but an earlier
  - version of formatLsTree did, and this keeps parsing what it output
  - working.
- -
- - (The --long format is not currently supported.) -}
-parserLsTree :: A.Parser TreeItem
-parserLsTree = TreeItem
-	-- mode
-	<$> octal
-	<* A8.char ' '
-	-- type
-	<*> A8.takeTill (== ' ')
-	<* A8.char ' '
-	-- sha
-	<*> (Ref <$> A8.takeTill A8.isSpace)
-	<* A8.space
-	-- file
-	<*> (asTopFilePath . Git.Filename.decode <$> A.takeByteString)
+ -}
+parserLsTree :: LsTreeLong -> A.Parser TreeItem
+parserLsTree long = case long of
+	LsTreeLong False -> 
+		startparser <*> pure Nothing <* filesep <*> fileparser
+	LsTreeLong True ->
+		startparser <* sizesep <*> sizeparser <* filesep <*> fileparser
+  where
+	startparser = TreeItem
+		-- mode
+		<$> octal
+		<* A8.char ' '
+		-- type
+		<*> A8.takeTill (== ' ')
+		<* A8.char ' '
+		-- sha
+		<*> (Ref <$> A8.takeTill A8.isSpace)
 
-{- Inverse of parseLsTree -}
+	fileparser = asTopFilePath . Git.Filename.decode <$> A.takeByteString
+
+	sizeparser = fmap Just A8.decimal
+
+	filesep = A8.space
+
+	sizesep = A.many1 A8.space
+
+{- Inverse of parseLsTree. Note that the long output format is not
+ - generated, so any size information is not included. -}
 formatLsTree :: TreeItem -> String
 formatLsTree ti = unwords
 	[ showOct (mode ti) ""

@@ -238,7 +238,10 @@ newtype AllFilled = AllFilled { fromAllFilled :: Bool }
 -- remote tracking branch.
 fillExport :: Remote -> ExportHandle -> ExportFiltered Git.Ref -> Maybe (RemoteTrackingBranch, Sha) -> Annex Bool
 fillExport r db (ExportFiltered newtree) mtbcommitsha = do
-	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive newtree
+	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
+		Git.LsTree.LsTreeRecursive
+		(Git.LsTree.LsTreeLong False)
+		newtree
 	cvar <- liftIO $ newMVar (FileUploaded False)
 	allfilledvar <- liftIO $ newMVar (AllFilled True)
 	commandActions $

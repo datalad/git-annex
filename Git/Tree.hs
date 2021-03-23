@@ -55,16 +55,17 @@ data TreeContent
 	deriving (Show, Eq, Ord)
 
 {- Gets the Tree for a Ref. -}
-getTree :: LsTree.LsTreeMode -> Ref -> Repo -> IO Tree
-getTree lstreemode r repo = do
-	(l, cleanup) <- lsTreeWithObjects lstreemode r repo
+getTree :: LsTree.LsTreeRecursive -> Ref -> Repo -> IO Tree
+getTree recursive r repo = do
+	(l, cleanup) <- lsTreeWithObjects recursive r repo
 	let !t = either (\e -> error ("ls-tree parse error:" ++ e)) id
 		(extractTree l)
 	void cleanup
 	return t
 
-lsTreeWithObjects :: LsTree.LsTreeMode -> Ref -> Repo -> IO ([LsTree.TreeItem], IO Bool)
-lsTreeWithObjects = LsTree.lsTree' [Param "-t"]
+lsTreeWithObjects :: LsTree.LsTreeRecursive -> Ref -> Repo -> IO ([LsTree.TreeItem], IO Bool)
+lsTreeWithObjects recursive = 
+	LsTree.lsTree' [Param "-t"] recursive (LsTree.LsTreeLong False)
 
 newtype MkTreeHandle = MkTreeHandle CoProcess.CoProcessHandle
 
@@ -140,6 +141,7 @@ treeItemToLsTreeItem (TreeItem f mode sha) = LsTree.TreeItem
 		Just TreeSubtree -> TreeObject
 		_ -> BlobObject
 	, LsTree.sha = sha
+	, LsTree.size = Nothing
 	, LsTree.file = f
 	}
 

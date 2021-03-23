@@ -414,7 +414,9 @@ branchFiles = withIndex $ inRepo branchFiles'
 
 branchFiles' :: Git.Repo -> IO ([RawFilePath], IO Bool)
 branchFiles' = Git.Command.pipeNullSplit' $
-	lsTreeParams Git.LsTree.LsTreeRecursive fullname [Param "--name-only"]
+	lsTreeParams Git.LsTree.LsTreeRecursive (Git.LsTree.LsTreeLong False)
+		fullname
+		[Param "--name-only"]
 
 {- Populates the branch's index file with the current branch contents.
  - 

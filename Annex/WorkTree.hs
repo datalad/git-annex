@@ -82,7 +82,10 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 	dropold <- liftIO $ newMVar $ 
 		Database.Keys.runWriter $
 			liftIO . Database.Keys.SQL.dropAllAssociatedFiles
-	(l, cleanup) <- inRepo $ Git.LsTree.lsTree Git.LsTree.LsTreeRecursive Git.Ref.headRef
+	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
+		Git.LsTree.LsTreeRecursive
+		(Git.LsTree.LsTreeLong False)
+		Git.Ref.headRef
 	forM_ l $ \i -> 
 		when (isregfile i) $
 			maybe noop (add dropold i)

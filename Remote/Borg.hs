@@ -243,7 +243,7 @@ getImported :: UUID -> Annex (M.Map BorgArchiveName (Annex [(ImportLocation, (Co
 getImported u = M.unions <$> (mapM go . exportedTreeishes =<< getExport u)
   where
 	go t = M.fromList . mapMaybe mk
-		<$> inRepo (LsTree.lsTreeStrict LsTree.LsTreeNonRecursive t)
+		<$> inRepo (LsTree.lsTreeStrict LsTree.LsTreeNonRecursive (LsTree.LsTreeLong False) t)
 	
 	mk ti
 		| toTreeItemType (LsTree.mode ti) == Just TreeSubtree = Just
@@ -255,7 +255,7 @@ getImported u = M.unions <$> (mapM go . exportedTreeishes =<< getExport u)
 		| otherwise = Nothing
 
 	getcontents archivename t = mapMaybe (mkcontents archivename)
-		<$> inRepo (LsTree.lsTreeStrict LsTree.LsTreeRecursive t)
+		<$> inRepo (LsTree.lsTreeStrict LsTree.LsTreeRecursive (LsTree.LsTreeLong False) t)
 	
 	mkcontents archivename ti = do
 		let f = ThirdPartyPopulated.fromThirdPartyImportLocation $

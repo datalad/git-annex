@@ -279,6 +279,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		void Annex.Branch.update
 		(l, cleanup) <- inRepo $ LsTree.lsTree
 			LsTree.LsTreeRecursive
+			(LsTree.LsTreeLong False)
 			Annex.Branch.fullname
 		let getk f = fmap (,f) (locationLogFileKey config f)
 		let discard reader = reader >>= \case
@@ -301,7 +302,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 	runbranchkeys bs = do
 		keyaction <- mkkeyaction
 		forM_ bs $ \b -> do
-			(l, cleanup) <- inRepo $ LsTree.lsTree LsTree.LsTreeRecursive b
+			(l, cleanup) <- inRepo $ LsTree.lsTree LsTree.LsTreeRecursive (LsTree.LsTreeLong False) b
 			forM_ l $ \i -> catKey (LsTree.sha i) >>= \case
 				Just k -> 
 					let bfp = mkActionItem (BranchFilePath b (LsTree.file i), k)

@@ -1495,7 +1495,7 @@ test_conflict_resolution_symlink_bit = unlessM (hasUnlockedFiles <$> getTestMode
 	conflictor = "conflictor"
 	check_is_link f what = do
 		git_annex_expectoutput "find" ["--include=*", f] [fromRawFilePath (Git.FilePath.toInternalGitPath (toRawFilePath f))]
-		l <- annexeval $ Annex.inRepo $ Git.LsTree.lsTreeFiles Git.Ref.headRef [f]
+		l <- annexeval $ Annex.inRepo $ Git.LsTree.lsTreeFiles (Git.LsTree.LsTreeLong False) Git.Ref.headRef [f]
 		all (\i -> Git.Types.toTreeItemType (Git.LsTree.mode i) == Just Git.Types.TreeSymlink) l
 			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
 

@@ -204,5 +204,5 @@ getExportExcluded u = do
 exportExcludedParser :: L.ByteString -> [Git.Tree.TreeItem]
 exportExcludedParser = map Git.Tree.lsTreeItemToTreeItem
 	. rights
-	. map Git.LsTree.parseLsTree
+	. map (Git.LsTree.parseLsTree (Git.LsTree.LsTreeLong False))
 	. L.split (fromIntegral $ ord '\n')

@@ -351,8 +351,9 @@ verifyTree :: MissingObjects -> Sha -> Repo -> IO Bool
 verifyTree missing treesha r
 	| S.member treesha missing = return False
 	| otherwise = do
-		(ls, cleanup) <- pipeNullSplit (LsTree.lsTreeParams LsTree.LsTreeRecursive treesha []) r
-		let objshas = mapMaybe (LsTree.sha <$$> eitherToMaybe . LsTree.parseLsTree) ls
+		let nolong = LsTree.LsTreeLong False
+		(ls, cleanup) <- pipeNullSplit (LsTree.lsTreeParams LsTree.LsTreeRecursive nolong treesha []) r
+		let objshas = mapMaybe (LsTree.sha <$$> eitherToMaybe . LsTree.parseLsTree nolong) ls
 		if any (`S.member` missing) objshas
 			then do
 				void cleanup
