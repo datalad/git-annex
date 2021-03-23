@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-03-23T19:15:23Z"
+ content="""
+Found a way to speed up git-annex init's setup of the git-annex branch when
+run in a clone of an existing repo. In a 100,000 file repo, it improved
+from 17s to 10s. I have a feeling that might have been what was really
+making it seem slow to you.
+"""]]

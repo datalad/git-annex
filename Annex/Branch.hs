@@ -89,7 +89,7 @@ fullname = Git.Ref $ "refs/heads/" <> fromRef' name
 
 {- Branch's name in origin. -}
 originname :: Git.Ref
-originname = Git.Ref $ "origin/" <> fromRef' name
+originname = Git.Ref $ "refs/remotes/origin/" <> fromRef' name
 
 {- Does origin/git-annex exist? -}
 hasOrigin :: Annex Bool
@@ -114,7 +114,11 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
   where
 	go True = do
 		inRepo $ Git.Command.run
-			[Param "branch", Param $ fromRef name, Param $ fromRef originname]
+			[ Param "branch"
+			, Param "--no-track"
+			, Param $ fromRef name
+			, Param $ fromRef originname
+			]
 		fromMaybe (error $ "failed to create " ++ fromRef name)
 			<$> branchsha
 	go False = withIndex' True $ do

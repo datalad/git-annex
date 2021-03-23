@@ -84,7 +84,8 @@ dateRef r (RefDate d) = Ref $ fromRef' r <> "@" <> encodeBS' d
 fileFromRef :: Ref -> RawFilePath -> Ref
 fileFromRef r f = let (Ref fr) = fileRef f in Ref (fromRef' r <> fr)
 
-{- Checks if a ref exists. -}
+{- Checks if a ref exists. Note that it must be fully qualified,
+ - eg refs/heads/master rather than master. -}
 exists :: Ref -> Repo -> IO Bool
 exists ref = runBool
 	[ Param "show-ref"

@@ -23,6 +23,7 @@ git-annex (8.20210311) UNRELEASED; urgency=medium
     operating on keys.
   * New annex.supportunlocked config that can be set to false to avoid
     some expensive things needed to support unlocked files.
+  * Sped up git-annex init in a clone of an existing repository.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Mar 2021 12:06:37 -0400
 
