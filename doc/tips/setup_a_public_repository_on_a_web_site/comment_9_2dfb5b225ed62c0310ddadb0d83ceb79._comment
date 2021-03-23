@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="comment 9"
+ date="2021-03-22T23:35:30Z"
+ content="""
+```
+[tom@trafalgar clone_test]$ wget http://breitenfeld.lan/annex/.git/config
+--2021-03-22 10:23:32--  http://breitenfeld.lan/annex/.git/config
+Resolving breitenfeld.lan (breitenfeld.lan)... 192.168.1.241
+Connecting to breitenfeld.lan (breitenfeld.lan)|192.168.1.241|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1064 (1.0K)
+Saving to: ‘config’
+
+config                                                      100%[========================================================================================================================================>]   1.04K  --.-KB/s    in 0s      
+
+2021-03-22 10:23:32 (153 MB/s) - ‘config’ saved [1064/1064]
+
+[tom@trafalgar clone_test]$ file config
+config: ASCII text
+[tom@trafalgar clone_test]$ git config --list --file config
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+annex.uuid=4ad5f0f5-9b92-475b-9abf-c1845a42c758
+annex.version=8
+annex.dotfiles=true
+annex.thin=true
+annex.addunlocked=include=torrent-downloads/*
+annex.sshcaching=true
+filter.annex.smudge=git-annex smudge -- %f
+filter.annex.clean=git-annex smudge --clean -- %f
+remote.surface.url=ssh://tom@DESKTOP-K1RQ50D/home/tom/bigdata
+remote.surface.fetch=+refs/heads/*:refs/remotes/surface/*
+remote.surface.annex-uuid=b4b17fe9-4c46-44a9-b6cb-0c2c17904830
+remote.zfsrent2.url=gcrypt::rsync://user@redacted.server.name/rent_data/data/git/bigdata
+remote.zfsrent2.fetch=+refs/heads/*:refs/remotes/zfsrent2/*
+remote.zfsrent2.gcrypt-participants=BDF1CB2C01162329
+remote.zfsrent2.gcrypt-signingkey=BDF1CB2C01162329
+remote.zfsrent2.gcrypt-publish-participants=true
+remote.zfsrent2.gcrypt-id=:id:iSB2By8j7YrAY1Zycx+Q
+remote.gnubee.url=gcrypt::rsync://archive@gnubee/data2/bigdata
+remote.gnubee.fetch=+refs/heads/*:refs/remotes/gnubee/*
+remote.gnubee.gcrypt-participants=BDF1CB2C01162329
+remote.gnubee.gcrypt-signingkey=BDF1CB2C01162329
+remote.gnubee.gcrypt-publish-participants=true
+remote.gnubee.gcrypt-id=:id:wAwSE2kqUs9HLuq1usaP
+[tom@trafalgar clone_test]$ git remote -v
+origin  http://breitenfeld.lan/annex/.git/ (fetch)
+origin  DISABLE (push)
+```
+FWIW on the server side the only requests I'm seeing to the .git/config URL are my wget tests, so it seems like git-annex never even gets as far as trying to fetch it.
+"""]]
