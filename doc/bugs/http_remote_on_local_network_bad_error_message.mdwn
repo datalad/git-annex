@@ -1,0 +1,9 @@
+Apparently, if a http git remote is on a local network address,
+uuid discovery fails. The error message does not mention that 
+annex.security.allowed-ip-addresses has to be set, but setting it solves
+the problem. 
+
+There needs to be a better error message, or possibly don't apply
+annex.security.allowed-ip-addresses to uuid discovery -- which does not
+seem like it would involve the kind of security problem that config exists
+to prevent. --[[Joey]]
