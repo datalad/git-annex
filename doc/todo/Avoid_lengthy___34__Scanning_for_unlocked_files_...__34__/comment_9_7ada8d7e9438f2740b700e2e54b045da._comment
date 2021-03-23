@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-03-23T19:48:36Z"
+ content="""
+Just to be clear, annex.supportunlocked=false does prevent installing
+smudge/clean filters.
+"""]]
