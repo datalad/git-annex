@@ -9,7 +9,7 @@ module Logs.Line where
 
 import Common
 
-import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString as A
 import Data.Attoparsec.ByteString.Char8 (isEndOfLine)
 import qualified Data.DList as D
 

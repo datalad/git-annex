@@ -41,7 +41,8 @@ import Logs.Line
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
-import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString as A
+import qualified Data.Attoparsec.ByteString.Lazy as AL
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 import qualified Data.DList as D
@@ -63,8 +64,8 @@ parseLogOld :: A.Parser a -> L.ByteString -> Log a
 parseLogOld = parseLogOldWithUUID . const
 
 parseLogOldWithUUID :: (UUID -> A.Parser a) -> L.ByteString -> Log a
-parseLogOldWithUUID parser = fromMaybe M.empty . A.maybeResult
-	. A.parse (logParserOld parser)
+parseLogOldWithUUID parser = fromMaybe M.empty . AL.maybeResult
+	. AL.parse (logParserOld parser)
 
 logParserOld :: (UUID -> A.Parser a) -> A.Parser (Log a)
 logParserOld parser = M.fromListWith best <$> parseLogLines go

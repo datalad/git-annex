@@ -14,7 +14,7 @@ import Types.TrustLevel
 import Logs.UUIDBased
 
 import qualified Data.ByteString.Lazy as L
-import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 

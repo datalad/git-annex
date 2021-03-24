@@ -24,7 +24,8 @@ import Utility.QuickCheck
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map.Strict as M
-import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString as A
+import qualified Data.Attoparsec.ByteString.Lazy as AL
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 
@@ -49,8 +50,8 @@ buildMapLog fieldbuilder valuebuilder = mconcat . map genline . M.toList
 	nl = charUtf8 '\n'
 
 parseMapLog :: Ord f => A.Parser f -> A.Parser v -> L.ByteString -> MapLog f v
-parseMapLog fieldparser valueparser = fromMaybe M.empty . A.maybeResult 
-	. A.parse (mapLogParser fieldparser valueparser)
+parseMapLog fieldparser valueparser = fromMaybe M.empty . AL.maybeResult 
+	. AL.parse (mapLogParser fieldparser valueparser)
 
 mapLogParser :: Ord f => A.Parser f -> A.Parser v -> A.Parser (MapLog f v)
 mapLogParser fieldparser valueparser = M.fromListWith best <$> parseLogLines go

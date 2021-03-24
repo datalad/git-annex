@@ -27,7 +27,7 @@ import Utility.QuickCheck
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import Data.Char
-import qualified Data.Attoparsec.ByteString.Lazy as A
+import qualified Data.Attoparsec.ByteString as A
 import Data.ByteString.Builder
 
 calcRemoteConfigMap :: L.ByteString -> M.Map UUID RemoteConfig
