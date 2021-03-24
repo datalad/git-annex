@@ -367,7 +367,7 @@ Executable git-annex
    memory,
    deepseq,
    split,
-   attoparsec,
+   attoparsec (>= 0.13.2.2),
    concurrent-output (>= 1.10),
    QuickCheck (>= 2.10.0),
    tasty (>= 0.7),
