@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="git-annex@6f13b739194f758abc0b86556b7ce966c1bf3c00"
+ nickname="git-annex"
+ avatar="http://cdn.libravatar.org/avatar/198790d74209efe4896fd4cfc37ec2a6"
+ subject="borg hardlinks"
+ date="2021-03-24T10:29:12Z"
+ content="""
+Also not recognized by git-annex are hardlinks in borg, which show up in `borg list` like
+
+    hr--r--r-- woffs    1000        0 Sun, 2014-08-03 23:04:27 annex-objects/jP/40/SHA256E-s698785--bbe23f87e576cd7ab3a87c0ef8d82c99044515c63a83977d1ac870d82b88f8b4.jpg/SHA256E-s698785--bbe23f87e576cd7ab3a87c0ef8d82c99044515c63a83977d1ac870d82b88f8b4.jpg link to otherdir/sdcard/dcim/Camera/2014-07-28_13-07-42_306.jpg
+
+"""]]
