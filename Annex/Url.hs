@@ -82,9 +82,6 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 	
 	checkallowedaddr = words . annexAllowedIPAddresses <$> Annex.getGitConfig >>= \case
 		["all"] -> do
-			-- Only allow curl when all are allowed,
-			-- as its interface does not allow preventing
-			-- it from accessing specific IP addresses.
 			curlopts <- map Param . annexWebOptions <$> Annex.getGitConfig
 			let urldownloader = if null curlopts
 				then U.DownloadWithConduit $
@@ -120,6 +117,8 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 					"http proxy settings not used due to annex.security.allowed-ip-addresses configuration"
 			manager <- liftIO $ U.newManager $ 
 				avoidtimeout settings
+			-- Curl is not used, as its interface does not allow
+			-- preventing it from accessing specific IP addresses.
 			let urldownloader = U.DownloadWithConduit $
 				U.DownloadWithCurlRestricted r
 			return (urldownloader, manager)
