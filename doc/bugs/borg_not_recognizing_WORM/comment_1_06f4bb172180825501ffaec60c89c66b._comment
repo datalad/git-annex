@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="git-annex@6f13b739194f758abc0b86556b7ce966c1bf3c00"
+ nickname="git-annex"
+ avatar="http://cdn.libravatar.org/avatar/198790d74209efe4896fd4cfc37ec2a6"
+ subject="/ vs. % in key"
+ date="2021-03-24T10:07:26Z"
+ content="""
+the substitution of path elements (\"/\" in key to \"%\" in file) seems to be related:
+
+
+    $ git annex whereis --key WORM-s781040400-m1574160315--cd%therootsofsepultura.cdr
+    whereis WORM-s781040400-m1574160315--cd%therootsofsepultura.cdr (0 copies) 
+      The following untrusted locations may also have copies:
+        91fd7b0a-493b-408c-aa07-c8520210f6a6 -- [borg]
+    failed
+    git-annex: whereis: 1 failed
+
+    $ git annex whereis --key WORM-s781040400-m1574160315--cd/therootsofsepultura.cdr
+    whereis WORM-s781040400-m1574160315--cd/therootsofsepultura.cdr (1 copy) 
+        3340887b-e3b3-4a88-9de4-a8b60116cc66 -- [here]
+    ok
+
+The first one should be within the second one.
+"""]]

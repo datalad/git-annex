@@ -1,0 +1,4 @@
+Should `annex.gitaddtoannex` and `annex.addsmallfiles` be [[`git-annex-config`|git-annex-config]] settings, given that `annex.largefiles`, `annex.dotfiles` and `annex.addunlocked` already are?
+Also, [maybe](https://git-annex.branchable.com/todo/Avoid_lengthy___34__Scanning_for_unlocked_files_...__34__/#comment-85cb4d3eac345df7b08a31ea4bd810f6) make `annex.supportunlocked` a `git-annex-config` setting as well.
+
+

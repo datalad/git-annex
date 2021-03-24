@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="annex.supportunlocked=false"
+ date="2021-03-23T20:02:16Z"
+ content="""
+\"annex.supportunlocked=false does prevent installing smudge/clean filters\" -- then, do I understand correctly that, if it were a `git-annex-config` setting and `annex.supportunlocked=false` implied `annex.gitaddtoannex=false`, this would prevent inadvertently adding unlocked files?  Then, assuming \"typical\" repo usage, it would also prevent inadvertently merging unlocked files, since you'd
+have to add them first.
+
+"""]]
