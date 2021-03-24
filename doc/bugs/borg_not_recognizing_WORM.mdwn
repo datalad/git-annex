@@ -1,0 +1,15 @@
+### Please describe the problem.
+borg special remote is apparently ignoring WORM and URL key content (probably all content without hashes?)
+
+### What steps will reproduce the problem?
+archive a repo containing WORM or URL keys with borg and sync it with git annex like in the example https://git-annex.branchable.com/special_remotes/borg/
+
+doing `git annex list --not -i borg` later shows all WORM and URL keys not recognized being in borg
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 8.20210310
+on NixOS 20.09
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Thank you for including borg, and for fixing gcrypt remotes! This is great!
+
