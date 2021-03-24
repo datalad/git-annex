@@ -19,7 +19,6 @@ module Annex.Url (
 	download',
 	exists,
 	getUrlInfo,
-	U.downloadQuiet,
 	U.URLString,
 	U.UrlOptions(..),
 	U.UrlInfo(..),

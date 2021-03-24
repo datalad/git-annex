@@ -30,7 +30,6 @@ module Utility.Url (
 	getUrlInfo,
 	assumeUrlExists,
 	download,
-	downloadQuiet,
 	downloadConduit,
 	sinkResponseFile,
 	downloadPartial,
@@ -363,11 +362,6 @@ headRequest r = r
  -}
 download :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO (Either String ())
 download = download' False
-
-{- Avoids displaying any error message, including silencing curl errors. -}
-downloadQuiet :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO Bool
-downloadQuiet meterupdate url file uo = isRight 
-	<$> download' True meterupdate url file uo
 
 download' :: Bool -> MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO (Either String ())
 download' nocurlerror meterupdate url file uo =

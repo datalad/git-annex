@@ -260,7 +260,9 @@ tryGitConfigRead autoinit r hasuuid
 	| haveconfig r = return r -- already read
 	| Git.repoIsSsh r = storeUpdatedRemote $ do
 		v <- Ssh.onRemote NoConsumeStdin r
-			(pipedconfig Git.Config.ConfigList autoinit (Git.repoDescribe r), return (Left $ giveup "configlist failed"))
+			( pipedconfig Git.Config.ConfigList autoinit (Git.repoDescribe r)
+			, return (Left "configlist failed")
+			)
 			"configlist" [] configlistfields
 		case v of
 			Right r'
@@ -289,25 +291,32 @@ tryGitConfigRead autoinit r hasuuid
 				return $ Right r'
 			Left l -> do
 				warning $ "Unable to parse git config from " ++ configloc
-				return $ Left l
+				return $ Left (show l)
 
 	geturlconfig = Url.withUrlOptionsPromptingCreds $ \uo -> do
+		let url = Git.repoLocation r ++ "/config"
 		v <- withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			liftIO $ hClose h
-			let url = Git.repoLocation r ++ "/config"
-			ifM (liftIO $ Url.downloadQuiet nullMeterUpdate url tmpfile uo)
-				( Just <$> pipedconfig Git.Config.ConfigNullList False url "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
-				, return Nothing
-				)
+			Url.download' nullMeterUpdate url tmpfile uo >>= \case
+				Right () -> pipedconfig Git.Config.ConfigNullList
+					False url "git"
+					[ Param "config"
+					, Param "--null"
+					, Param "--list"
+					, Param "--file"
+					, File tmpfile
+					]
+				Left err -> return (Left err)
 		case v of
-			Just (Right r') -> do
+			Right r' -> do
 				-- Cache when http remote is not bare for
 				-- optimisation.
 				unless (Git.Config.isBare r') $
 					setremote setRemoteBare False
 				return r'
-			_ -> do
+			Left err -> do
 				set_ignore "not usable by git-annex" False
+				warning $ url ++ " " ++ err
 				return r
 
 	{- Is this remote just not available, or does

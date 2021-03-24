@@ -7,3 +7,12 @@ There needs to be a better error message, or possibly don't apply
 annex.security.allowed-ip-addresses to uuid discovery -- which does not
 seem like it would involve the kind of security problem that config exists
 to prevent. --[[Joey]]
+
+> While I think it would be safe to bypass
+> annex.security.allowed-ip-addresses in this case, it seemed complicated
+> to implement that, and also getting that wrong would be a security hole.
+> Since this is a pretty unusual case, I think it's ok to need that to be
+> set.
+> 
+> So, I've improved the error message in this case. (And a few other
+> cases.) [[done]] --[[Joey]]
