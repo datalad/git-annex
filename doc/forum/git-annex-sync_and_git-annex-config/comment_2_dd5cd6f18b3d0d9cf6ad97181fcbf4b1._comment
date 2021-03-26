@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="conflicting git-annex-config values"
+ date="2021-03-26T19:27:02Z"
+ content="""
+I guess I was wondering if that could lead to some surprises, e.g. if someone changes `annex.largefiles` and this propagates to other users without them realizing.  E.g. I'd want [`annex.gitaddtoannex` and `annex.supportunlocked` added as `git-annex-config` settings](todo/additional_git-annex-config_settings__63__) so they get set when someone first clones a repo, but the prospect of someone silently changing these settings in my existing clone gives pause.
+"""]]
