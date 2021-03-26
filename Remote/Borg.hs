@@ -1,9 +1,11 @@
 {- Using borg as a remote.
  -
- - Copyright 2020 Joey Hess <id@joeyh.name>
+ - Copyright 2020,2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE OverloadedStrings #-}
 
 module Remote.Borg (remote) where
 
@@ -26,6 +28,7 @@ import Types.ProposedAccepted
 import Utility.Metered
 import Logs.Export
 import qualified Remote.Helper.ThirdPartyPopulated as ThirdPartyPopulated
+import Utility.Env
 
 import Data.Either
 import Text.Read
@@ -151,18 +154,19 @@ listImportableContentsM :: UUID -> BorgRepo -> ParsedRemoteConfig -> Annex (Mayb
 listImportableContentsM u borgrepo c = prompt $ do
 	imported <- getImported u
 	ls <- withborglist borgrepo Nothing formatarchivelist $ \as ->
-		forM as $ \archivename ->
+		forM (filter (not . S.null) as) $ \archivename ->
 			case M.lookup archivename imported of
 				Just getfast -> return $ Left (archivename, getfast)
 				Nothing -> Right <$>
 					let archive = borgArchive borgrepo archivename
 					in withborglist archive subdir formatfilelist $
-						liftIO . evaluate . force . parsefilelist archivename
+						liftIO . evaluate . force $ parsefilelist archivename
 	if all isLeft ls && M.null (M.difference imported (M.fromList (lefts ls)))
 		then return Nothing -- unchanged since last time, avoid work
 		else Just . mkimportablecontents <$> mapM (either snd pure) ls
   where
 	withborglist what addparam format a = do
+		environ <- liftIO getEnvironment
 		let p = proc "borg" $ toCommand $ catMaybes
 			[ Just (Param "list")
 			, Just (Param "--format")
@@ -171,9 +175,13 @@ listImportableContentsM u borgrepo c = prompt $ do
 			, addparam
 			]
 		(Nothing, Just h, Nothing, pid) <- liftIO $ createProcess $ p
-			{ std_out = CreatePipe }
+			{ std_out = CreatePipe
+			-- Run in C locale because the file list can
+			-- include some possibly translatable text in the
+			-- "extra" field.
+			, env = Just (addEntry "LANG" "C" environ)
+			}
 		l <- liftIO $ map L.toStrict 
-			. filter (not . L.null) 
 			. L.split 0 
 			<$> L.hGetContents h
 		let cleanup = liftIO $ do
@@ -183,21 +191,31 @@ listImportableContentsM u borgrepo c = prompt $ do
 
 	formatarchivelist = "{barchive}{NUL}"
 
-	formatfilelist = "{size}{NUL}{path}{NUL}"
+	formatfilelist = "{size}{NUL}{path}{NUL}{extra}{NUL}"
 
 	subdir = File <$> getRemoteConfigValue subdirField c
 
-	parsefilelist archivename (bsz:f:rest) = case readMaybe (fromRawFilePath bsz) of
+	parsefilelist archivename (bsz:f:extra:rest) = case readMaybe (fromRawFilePath bsz) of
 		Nothing -> parsefilelist archivename rest
 		Just sz ->
 			let loc = genImportLocation archivename f
+			-- borg list reports hard links as 0 byte files,
+			-- with the extra field set to " link to ".
+			-- When the annex object is a hard link to
+			-- something else, we'll assume it has not been
+			-- modified, since usually git-annex does prevent
+			-- this. Since the 0 byte size is not the actual
+			-- size,  report the key size instead, when available.
+			    (reqsz, retsz) = case extra of
+				" link to " -> (Nothing, fromMaybe sz . fromKey keySize)
+				_ -> (Just sz, const sz)
 			-- This does a little unncessary work to parse the 
 			-- key, which is then thrown away. But, it lets the
 			-- file list be shrank down to only the ones that are
 			-- importable keys, so avoids needing to buffer all
 			-- the rest of the files in memory.
-			in case ThirdPartyPopulated.importKey' loc sz of
-				Just _k -> (loc, (borgContentIdentifier, sz))
+			in case ThirdPartyPopulated.importKey' loc reqsz of
+				Just k -> (loc, (borgContentIdentifier, retsz k))
 					: parsefilelist archivename rest
 				Nothing -> parsefilelist archivename rest
 	parsefilelist _ _ = []

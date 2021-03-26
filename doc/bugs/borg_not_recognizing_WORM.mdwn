@@ -13,3 +13,4 @@ on NixOS 20.09
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Thank you for including borg, and for fixing gcrypt remotes! This is great!
 
+> [[fixed|done]] --[[Joey]]

@@ -47,10 +47,10 @@ fromThirdPartyImportLocation =
 -- find only those ImportLocations that are annex object files.
 -- All other ImportLocations are ignored.
 importKey :: ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
-importKey loc _cid sz _ = return $ importKey' loc sz
+importKey loc _cid sz _ = return $ importKey' loc (Just sz)
 
-importKey' :: ImportLocation -> ByteSize -> Maybe Key
-importKey' loc sz = case fileKey f of
+importKey' :: ImportLocation -> Maybe ByteSize -> Maybe Key
+importKey' loc msz = case fileKey f of
 	Just k
 		-- Annex objects always are in a subdirectory with the same
 		-- name as the filename. If this is not the case for the file
@@ -75,11 +75,11 @@ importKey' loc sz = case fileKey f of
 		-- (eg, wrong data read off disk during backup, or the object
 		-- was corrupt in the git-annex repo and that bad object got
 		-- backed up), they can fsck the remote.
-		| otherwise -> case fromKey keySize k of
-			Just sz'
+		| otherwise -> case (msz, fromKey keySize k) of
+			(Just sz, Just sz')
 				| sz' == sz -> Just k
 				| otherwise -> Nothing
-			Nothing -> Just k
+			_ -> Just k
 	Nothing -> Nothing
   where
 	p = fromImportLocation loc
