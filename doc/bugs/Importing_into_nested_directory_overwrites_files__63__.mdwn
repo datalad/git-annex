@@ -100,3 +100,5 @@ supported repository versions: 8
 upgrade supported from repository versions: 0 1 2 3 4 5 6 7
 local repository version: 8
 ```
+
+> [[fixed|done]], thanks for an excellent test case. --[[Joey]]

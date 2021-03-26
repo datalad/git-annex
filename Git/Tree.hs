@@ -306,43 +306,43 @@ graftTree'
 	-> Repo
 	-> MkTreeHandle
 	-> IO Sha
-graftTree' subtree graftloc basetree repo hdl = go basetree graftdirs
+graftTree' subtree graftloc basetree repo hdl = go basetree subdirs graftdirs 
   where
-	go tsha (topmostgraphdir:restgraphdirs) = do
+	go tsha (subdir:restsubdirs) (topmostgraphdir:restgraphdirs) = do
 		Tree t <- getTree LsTree.LsTreeNonRecursive tsha repo
-		t' <- case partition isabovegraft t of
+		let abovegraftpoint i = gitPath i == gitPath subdir
+		t' <- case partition abovegraftpoint t of
+			-- the graft point is not already in the tree,
+			-- so graft it in, keeping the existing tree
+			-- content
 			([], _) -> do
 				graft <- graftin (topmostgraphdir:restgraphdirs)
 				return (graft:t)
-			-- normally there can only be one matching item
-			-- in the tree, but it's theoretically possible
-			-- for a git tree to have multiple items with the
-			-- same name, so process them all
 			(matching, rest) -> do
 				newshas <- forM matching $ \case
 					RecordedSubTree tloc tsha' _
 						| null restgraphdirs -> return $
 							RecordedSubTree tloc subtree []
 						| otherwise -> do
-							tsha'' <- go tsha' restgraphdirs
+							tsha'' <- go tsha' restsubdirs restgraphdirs
 							return $ RecordedSubTree tloc tsha'' []
 					_ -> graftin (topmostgraphdir:restgraphdirs)
 				return (newshas ++ rest)
 		mkTree hdl t'
-	go _ [] = return subtree
-
-	isabovegraft i = beneathSubTree i graftloc || gitPath i == gitPath graftloc
+	go _ _ [] = return subtree
 	
 	graftin t = recordSubTree hdl $ graftin' t
 	graftin' [] = RecordedSubTree graftloc subtree []
 	graftin' (d:rest) 
 		| d == graftloc = graftin' []
 		| otherwise = NewSubTree d [graftin' rest]
-	
+
+	subdirs = splitDirectories $ gitPath graftloc
+
 	-- For a graftloc of "foo/bar/baz", this generates
 	-- ["foo", "foo/bar", "foo/bar/baz"]
 	graftdirs = map (asTopFilePath . toInternalGitPath . encodeBS) $
-		mkpaths [] $ splitDirectories $ gitPath graftloc
+		mkpaths [] subdirs
 	mkpaths _ [] = []
 	mkpaths base (d:rest) = (joinPath base </> d) : mkpaths (base ++ [d]) rest
 

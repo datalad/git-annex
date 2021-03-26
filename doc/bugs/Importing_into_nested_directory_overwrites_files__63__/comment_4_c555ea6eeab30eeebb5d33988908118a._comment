@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-03-26T18:46:19Z"
+ content="""
+Note that level1/level2 is sufficient for git-annex to generate the bad
+tree. I also saw git merge fail at that depth.
+
+I've fixed this, at least the test case given and some other similar ones
+I thought of to try.
+"""]]

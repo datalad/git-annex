@@ -28,6 +28,9 @@ git-annex (8.20210311) UNRELEASED; urgency=medium
   * Improved display of errors when accessing a git http remote fails.
   * borg: Fix a bug that prevented importing keys of type URL and WORM.
   * borg: Support importing files that are hard linked in the borg backup.
+  * Fix bug importing from a special remote into a subdirectory more than
+    one level deep, which generated unusual git trees that could confuse
+    git merge.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Mar 2021 12:06:37 -0400
 
