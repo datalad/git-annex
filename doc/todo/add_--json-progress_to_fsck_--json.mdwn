@@ -1,0 +1,10 @@
+Please add the feature/switch `--json-progress` to `git annex fsck --json`.
+
+For a basic version, it would be nice to show the percentage using the number of processed chunks / total number of chunks for a given file while calculating checksum.
+
+Let's not forget that a file on a remote can be fsck-ed when using `--from <remote>`. In this case if the file is not present locally, the file must be downloaded first (`--json-progress` is already supported for `get`). Usually this takes much-much longer as the checksum calculation. When checking a large file (~1Gb) on a not too fast remote, it's quite a time for the first "response" that something is happening when using the `--json` switch. To be exact, the first and only response is that the check has finished (happy way). It would be nice to see the json progress of the download+checksum calculation.
+
+Test environment:
+Docker Community 20.10.5
+Ubuntu 20.04.2 LTS (Focal Fossa)
+git-annex version: 8.20210224-gf951847c6 (kitenet: SHA256E-s51232145--1e57d2e334cffdb3c3874785cfba4f6d5fc521808d0b1deef4fb68160dd88d48.tar.gz)
