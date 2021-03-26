@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 4"
+ date="2021-03-26T23:15:04Z"
+ content="""
+Maybe all `git-annex-config` settings should  be “only read from the git-annex branch by git annex init, and is copied to the corresponding git config setting”, like `annex.securehashesonly` already is.
+"""]]
