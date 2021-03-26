@@ -583,7 +583,6 @@ keyFile k =
 	esc '/' = "%"
 	esc c = S8.singleton c
 
-
 {- Reverses keyFile, converting a filename fragment (ie, the basename of
  - the symlink target) into a key. -}
 fileKey :: RawFilePath -> Maybe Key

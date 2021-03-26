@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-03-26T16:05:49Z"
+ content="""
+I've fixed this bug. Note that, git-annex won't re-scan borg archives that
+it's already scanned, so you will need to make a new borg backup in order
+to add a new archive, and then git-annex will notice the files it missed
+before.
+"""]]

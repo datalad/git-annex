@@ -260,7 +260,7 @@ getImported u = M.unions <$> (mapM go . exportedTreeishes =<< getExport u)
 	mkcontents archivename ti = do
 		let f = ThirdPartyPopulated.fromThirdPartyImportLocation $
 			mkImportLocation $ getTopFilePath $ LsTree.file ti
-		k <- deserializeKey' (P.takeFileName f)
+		k <- fileKey (P.takeFileName f)
 		return
 			( genImportLocation archivename f
 			,

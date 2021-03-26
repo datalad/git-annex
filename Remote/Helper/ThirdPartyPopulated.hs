@@ -50,7 +50,7 @@ importKey :: ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> A
 importKey loc _cid sz _ = return $ importKey' loc sz
 
 importKey' :: ImportLocation -> ByteSize -> Maybe Key
-importKey' loc sz = case deserializeKey' f of
+importKey' loc sz = case fileKey f of
 	Just k
 		-- Annex objects always are in a subdirectory with the same
 		-- name as the filename. If this is not the case for the file

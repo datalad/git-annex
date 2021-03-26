@@ -26,6 +26,7 @@ git-annex (8.20210311) UNRELEASED; urgency=medium
   * Sped up git-annex init in a clone of an existing repository.
   * Fix build with attoparsec-0.14.
   * Improved display of errors when accessing a git http remote fails.
+  * borg: Fix a bug that prevented importing keys of type URL and WORM.
 
  -- Joey Hess <id@joeyh.name>  Fri, 12 Mar 2021 12:06:37 -0400
 
