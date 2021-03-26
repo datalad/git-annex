@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-03-26T17:38:23Z"
+ content="""
+It seems that git-annex import is generating a tree containing 2 subtrees
+with the same name. While ls-tree -r shows this as a tree containing
+the 2 files like we'd want to have after the import, looking at it more
+closely shows the problem:
+
+	# git ls-tree -r remotes/myremote/master 
+	120000 blob a180a12b4c192cb67498f67e476196050cbac770	level1/level2/level3/level4/import-file.txt
+	120000 blob 55a266f9e9629be3d8eba3ad4a65b15d8614e1f8	level1/level2/level3/level4/existing-file.txt
+	# git ls-tree remotes/myremote/master
+	040000 tree d77ae5e1f666f8f13795c27ee85a55ce0d1c5136	level1
+	# git ls-tree d77ae5e1f666f8f13795c27ee85a55ce0d1c5136
+	040000 tree 79300b8717445f07eee006a0ba8992fb8adee3cd	level2
+	040000 tree 28092869684c815a23fb4d0d0753d598f352e9cc	level2
+	# git ls-tree -r 79300b8717445f07eee006a0ba8992fb8adee3cd
+	120000 blob a180a12b4c192cb67498f67e476196050cbac770	level3/level4/import-file.txt
+	# git ls-tree -r 28092869684c815a23fb4d0d0753d598f352e9cc
+	120000 blob 55a266f9e9629be3d8eba3ad4a65b15d8614e1f8	level3/level4/existing-file.txt
+
+I assume this is giving git merge its trouble, although it seems to be
+failing in a highly surprising way since it's getting confused about
+what files are tracked by git in the tree this is being merged into.
+"""]]
