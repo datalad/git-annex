@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-03-25T18:26:30Z"
+ content="""
+Yes, of course. This is a core feature of git-annex ans is done with [[git-annex-preferred-content]]. <br>
+First step is to let the usb drive want anything with `git annex wanted here anything`. Then you need to tell git-annex what files you want on the SSD. There are multiple ways to do that:
+
+The simplest one is to set the preferred-content expression on the SSD to something like `include=path/to/project_a or include=path/to/project_b or include=...` and so on.
+
+Or you can just decide manually what files to keep on the SSD with `git annex get`. Then you set the preferred-content expression to just `present`. I think that this should work pretty well with your workflow, since new files will appear first on the SSD and thus are already present.
+
+Tags are the most complicated way to do this. You basically set the preferred-content expression to something like `metadata=tag=keeponssd`. Then you tag the files you want to keep on the SSD with `git annex metadata --force -t keeponssd path/to/project_a` (--force makes it recursive). The disadvantage is that if you add new files, you have to manually tag them too or else they will be dropped with the next `git annex sync --content --all`.
+
+To update/sync changes back to the usb drive, you just run `git annex sync --content --all`. With --all, it will also copy old versions of files to the usb drive.
+"""]]

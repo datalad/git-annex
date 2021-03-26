@@ -1,0 +1,5 @@
+I have a large USB hard disk where I store all my projects and a computer with a rather small SSD.
+The SSD holds only projects that are active, they are my "working copy". 
+Whenever I connect the USB drive to the computer, I want it to be updated from the SSD.
+
+What would be the best possible setup for that? Is it possible at all? How would I tag certain projects as active?
