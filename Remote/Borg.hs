@@ -160,7 +160,7 @@ listImportableContentsM u borgrepo c = prompt $ do
 				Nothing -> Right <$>
 					let archive = borgArchive borgrepo archivename
 					in withborglist archive subdir formatfilelist $
-						liftIO . evaluate . force $ parsefilelist archivename
+						liftIO . evaluate . force . parsefilelist archivename
 	if all isLeft ls && M.null (M.difference imported (M.fromList (lefts ls)))
 		then return Nothing -- unchanged since last time, avoid work
 		else Just . mkimportablecontents <$> mapM (either snd pure) ls
