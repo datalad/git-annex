@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-26T17:30:24Z"
+ content="""
+If you're asking about how changes to git-annex config or conflicting
+values being set in different places work, the most recent set value wins.
+"""]]
