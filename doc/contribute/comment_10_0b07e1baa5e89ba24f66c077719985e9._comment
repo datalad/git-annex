@@ -4,5 +4,6 @@
  date="2021-03-29T17:38:41Z"
  content="""
 I have, at least temporarily, fixed the ACL breakage that was causing this
-anonymous push problem.
+anonymous push problem. I say temporarily because apparently a chmod messed
+up the existing ACLs and so it seems ACLs are pretty fragile.
 """]]
