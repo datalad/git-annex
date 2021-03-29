@@ -8,3 +8,8 @@ Initially generated an annex while having a restrictive umask 077.  Then cloned 
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> I'm going to close this. Mostly because rsync is no longer used for ssh
+> transfers and so file perms are not preserved, unless git-annex is
+> talking to a very old git-annex-shell. Also because not enough
+> information is known about the repo setup back then. [[done]] --[[Joey]]
