@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 3"
+ date="2021-03-26T21:47:38Z"
+ content="""
+Also note that:
+>These settings can be overridden on a per-repository basis using `git config`.
+"""]]
