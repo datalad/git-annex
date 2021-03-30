@@ -1,0 +1,1 @@
+When [[`git-annex-info`|git-annex-info]] lists repos, it can be unclear which ones are still "active".   It would help if the info command showed the time of last interaction for each repo.  Seems like the code to determine that already exists in [[`git-annex-expire`|git-annex-expire]]?
