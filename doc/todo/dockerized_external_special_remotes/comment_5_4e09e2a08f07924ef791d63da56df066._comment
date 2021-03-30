@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 5"
+ date="2021-03-30T16:21:10Z"
+ content="""
+IMHO, docker is too insecure to auto-install, enable and execute random special-remote programs. It has a extremely large attack surface (syscalls, ioctls, etc.) compared to, say, virtual machines. [And people regularly are able to break out of the latter](https://en.wikipedia.org/wiki/Virtual_machine_escape).
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-03-30T16:51:53Z"
+ content="""
+This is expected. git annex sync --content only returns an error if copying annexed files to/from a remote failed. If there are no remotes configured or enabled, there is nothing to copy, so it returns success.
+"""]]
