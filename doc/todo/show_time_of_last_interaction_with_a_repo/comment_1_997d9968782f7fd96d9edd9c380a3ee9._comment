@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-30T15:46:54Z"
+ content="""
+That is limited to fsck activities, so adding a display of specifically the
+last time a repo was fscked seems better than a more open-ended thing if
+it's going to use that information.
+
+But, I don't think that indicating which repos were fscked recently is
+likely to really determine which repos are active.
+
+And I don't think there's any cheap enough way to get at perhaps more general
+activity, such as changes to the content of a remote. Also a remote could
+have its contents unchanging and still be actively used frequently to
+access the data stored in it.
+
+I wonder if perhaps using group information in git-annex info's list of
+repositories could address the same need. If nothing else you could
+put repos into an "active" group manually.
+
+Maybe something like this:
+
+	semitrusted repositories:
+		uuid -- foo@bar [origin] (active, transfer)
+		uuid -- foo@bla
+		uuid -- foo@baz [here] (active, client)
+		uuid -- foo@whatever
+		uuid -- foo@xyzzy (backup)
+
+There could be a switch to filter to a specific group.
+"""]]
