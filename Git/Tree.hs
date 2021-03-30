@@ -330,6 +330,7 @@ graftTree' subtree graftloc basetree repo hdl = go basetree subdirs graftdirs
 				return (newshas ++ rest)
 		mkTree hdl t'
 	go _ _ [] = return subtree
+	go _ [] _ = return subtree
 	
 	graftin t = recordSubTree hdl $ graftin' t
 	graftin' [] = RecordedSubTree graftloc subtree []
