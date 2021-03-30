@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 3"
+ date="2021-03-30T19:17:06Z"
+ content="""
+I guess the \"sync\" in `git-annex-sync` made me think of file synchronizers like `rsync`, which do bring in all remote files not currently local. Maybe just change the manpage to clarify that `git-annex-sync` only synchronizes with [[_enabled_|git-annex-enableremote]] remotes.
+"""]]
