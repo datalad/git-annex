@@ -41,8 +41,9 @@ expired.
   expired. The default is any activity.
 
   Currently, the only activity that can be performed to avoid expiration
-  is `git annex fsck`. Note that fscking a remote updates the
-  expiration of the remote repository, not the local repository.
+  is --activity=Fsck which corresponds to `git annex fsck`. 
+  Note that fscking a remote updates the expiration of the remote
+  repository, not the local repository.
 
   The first version of git-annex that recorded fsck activity was
   5.20150405.
