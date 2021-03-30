@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-03-30T16:07:30Z"
+ content="""
+I don't think the `git-annex sync` documentation says in what situation
+it will exit nonzero, so the extent this is really a bug is debatable.
+
+The general rule is that, if git-annex looks at a file or other item,
+decides it needs to take some action, and then that action fails, it will
+later exit nonzero. And sync does behave that way: When it determines a
+file is not in any of the remotes it's syncing with, it does not try to
+download it from anywhere, so no action fails.
+
+The counterargument to that would be by analogy to `git-annex get`
+which does exit nonzero when no available remotes contain
+a file (because it acts on every file that's not already present).
+We could say that sync is currently behaving more like `git-annex get --from
+foo` which skips files not on the specified remote, and that it's
+doing it even when no particular remotes are specified, and that it would
+be better, when no particular remotes are specified, for it to behave like
+`git-annex get`. 
+
+I don't know if most users would come up with this analogy though..
+I also wonder if you would not be better off just using `git-annex get`
+if you want to check exit status based on if all files are present.
+"""]]
