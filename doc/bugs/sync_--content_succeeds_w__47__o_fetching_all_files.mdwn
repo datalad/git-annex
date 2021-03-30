@@ -1,0 +1,100 @@
+### Please describe the problem.
+I had assumed that [[`git-annex-sync --content`|git-annex-sync]], if it succeeds, guarantees that there are no broken symlinks to the annex.  But there is one circumstance when that's not true: if some of the files exist only on remotes that have not yet been enabled.  This still holds under `git annex required here anything`.
+
+This could of course be avoided with `autoenable=true`, but this doesn't work for [[external special remotes|special_remotes/external]].  [[todo/dockerized_external_special_remotes]], if doable, would address this.
+
+
+### What steps will reproduce the problem?
+See below
+
+### What version of git-annex are you using? On what operating system?
+[[!format sh """
+git-annex version: 8.20210224-gf951847c6
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+
+Linux New-VirtualBox 5.8.0-48-generic #54~20.04.1-Ubuntu SMP Sat Mar 20 13:40:25 UTC 2021 x86_64 x86_64 x86_64 GNU/Linux
+
+"""]]
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+(ga-env-05) /data/tmp [10:27:08]$ mkdir t
+(ga-env-05) /data/tmp [10:27:09]$ cd t
+(ga-env-05) /data/tmp/t [10:27:10]$ git init
+Initialized empty Git repository in /data/tmp/t/.git/
+(ga-env-05) /data/tmp/t [10:27:54]$ touch README
+(ga-env-05) /data/tmp/t [10:27:59]$ git annex init
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+(ga-env-05) /data/tmp/t [10:28:04]$ git annex add README 
+add README ok
+(recording state in git...)
+(ga-env-05) /data/tmp/t [10:28:10]$ git commit -m 'checking in README' .
+[master (root-commit) e3e6ecf] checking in README
+ 1 file changed, 1 insertion(+)
+ create mode 120000 README
+(ga-env-05) /data/tmp/t [10:28:19]$ mkdir /data/tmp/dirremote
+(ga-env-05) /data/tmp/t [10:29:09]$ git annex initremote dirremote type=directory directory=/data/tmp/dirremote encryption=none 
+initremote dirremote ok
+(recording state in git...)
+(ga-env-05) /data/tmp/t [10:30:00]$ git annex required dirremote anything
+required dirremote ok
+(recording state in git...)
+(ga-env-05) /data/tmp/t [10:30:37]$ git annex sync --content
+On branch master
+nothing to commit, working tree clean
+commit ok
+copy README (to dirremote...) ok
+(recording state in git...)
+(ga-env-05) /data/tmp/t [10:31:51]$ git annex drop .
+drop README ok
+(recording state in git...)
+(ga-env-05) /data/tmp/t [10:31:59]$ cd ..
+(ga-env-05) /data/tmp [10:32:00]$ git clone t t3
+Cloning into 't3'...
+done.
+(ga-env-05) /data/tmp [10:32:06]$ cd t3
+(ga-env-05) /data/tmp/t3 [10:32:08]$ git annex init
+init  (merging origin/git-annex origin/synced/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+ok
+(recording state in git...)
+(ga-env-05) /data/tmp/t3 [10:32:10]$ git annex sync --content
+On branch master
+Your branch is up to date with 'origin/master'.
+
+nothing to commit, working tree clean
+commit ok
+pull origin ok
+Enumerating objects: 20, done.
+Counting objects: 100% (19/19), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (10/10), 974 bytes | 974.00 KiB/s, done.
+Total 10 (delta 5), reused 0 (delta 0), pack-reused 0
+To /data/tmp/t
+   9726f90..f4f2f6c  git-annex -> synced/git-annex
+push origin ok
+(ga-env-05) /data/tmp/t3 [10:32:19]$ echo $?
+0
+(ga-env-05) /data/tmp/t3 [10:32:23]$ cat README
+cat: README: No such file or directory
+(ga-env-05) /data/tmp/t3 [10:32:26]$ 
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+git-annex is versatile and reliable, and reflects a crazy amount of work by @joeyh.   Thanks again for it!
+
