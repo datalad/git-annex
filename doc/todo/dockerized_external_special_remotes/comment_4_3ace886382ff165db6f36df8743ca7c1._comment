@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="autoenabling external special remotes"
+ date="2021-03-30T15:17:02Z"
+ content="""
+\"the minimum needed is a way to add a shell script to PATH with the name of the external special remote program\" -- that would of course be simpler; could specify a relative path within the repo itself.  But auto-running an untrusted script fetched along with the repo may be risky.  A Docker/Singularity container could be sandboxed; or maybe `chroot` or `bash -r` would suffice?
+
+"""]]
