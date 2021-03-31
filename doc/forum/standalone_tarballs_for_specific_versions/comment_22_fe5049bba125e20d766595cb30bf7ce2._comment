@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="git-annex-standalone-amd64.tar.gz not getting updated at archive.org"
+ date="2021-03-31T03:35:09Z"
+ content="""
+Seems like `git-annex-standalone-arm64.tar.gz` and `git-annex-standalone-armel.tar.gz` got (auto-)uploaded to the web, but `git-annex-standalone-amd64.tar.gz` did not.
+
+
+"""]]
