@@ -1,0 +1,30 @@
+### Please describe the problem.
+brew/cabal fails to build git-annex 8.20210330 on macOS 
+
+cabal errors out with (full log [here](https://github.com/Homebrew/homebrew-core/pull/74213/checks?check_run_id=2231233411#step:7:1547)):
+
+```
+Database/Handle.hs:257:20: error:
+    Variable not in scope: askLogFunc :: m LogFunc
+    |
+257 |         logFunc <- askLogFunc
+    |                    ^^^^^^^^^^
+cabal: Failed to build git-annex-8.20210330. See the build log above for
+details.
+```
+
+
+
+### What steps will reproduce the problem?
+```
+# brew install --verbose --build-bottle git-annex
+```
+
+### What version of git-annex are you using? On what operating system?
+macOS 10.15.7
+
+### Please provide any additional information below.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex has been great helping us "version control" a myriad of LARGE binary assets (from VM and FS snapshots, to archives, to deliverable content)
