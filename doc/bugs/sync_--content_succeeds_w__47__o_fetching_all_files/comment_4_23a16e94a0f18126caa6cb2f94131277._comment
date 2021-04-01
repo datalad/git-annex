@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-04-01T16:36:11Z"
+ content="""
+It would be impossible to sync with a remote that is not enabled,
+so I don't know if that is a useful distinction to draw.
+
+Also, if a file is not present in any remotes yet either, syncing will
+not get it, and not fail, and leave the local repo without the file's
+content. And this is not happening because a remote is not enabled,
+but because there is no path to get the data from the repo that contains
+it.
+
+I did change the man page to say "The --content option causes the content of annexed files
+to also be uploaded and downloaded as necessary, to sync the content between the repository and its remotes."
+
+Which may be explcit enough to remove the ambiguity that surprised you,
+but I'm not sure if I've hit on the right wording.
+"""]]

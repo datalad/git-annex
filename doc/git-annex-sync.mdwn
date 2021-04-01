@@ -108,16 +108,18 @@ have the same value as the currently checked out branch.
 
   Normally, syncing does not transfer the contents of annexed files.
   The --content option causes the content of annexed files
-  to also be uploaded and downloaded as necessary.
+  to also be uploaded and downloaded as necessary, to sync the content
+  between the repository and its remotes.
 
   The `annex.synccontent` configuration can be set to true to make content
   be synced by default.
 
   Normally this tries to get each annexed file that is in the working tree
-  and whose content the local repository does not yet have, and then copies
-  each file to every remote that it is syncing with.
-  This behavior can be overridden by configuring the preferred content
-  of a repository. See [[git-annex-preferred-content]](1).
+  and whose content the local repository does not yet have, from any remote
+  that it's syncing with that has a copy, and then copies each file to
+  every remote that it is syncing with. This behavior can be overridden by
+  configuring the preferred content of repositories. See
+  [[git-annex-preferred-content]](1).
 
 * `--content-of=path` `-C path`
 
