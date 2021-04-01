@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-04-01T16:04:56Z"
+ content="""
+A quick fix is to pin the haskell library persistent to a version older
+than 2.12.0.1, which is the new version that broke the build. An easy way
+to do that is to build using stack, which automatically pins all library
+dependencies to known-working versions. By building with cabal you
+choose to help me learn about new breakage the hard way, which is
+appreciated if it is your intent. ;)
+
+I've fixed this in master.
+"""]]

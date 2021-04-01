@@ -328,7 +328,7 @@ Executable git-annex
    filepath-bytestring (>= 1.4.2.1.1),
    IfElse,
    hslogger,
-   monad-logger,
+   monad-logger (>= 0.3.10),
    free,
    utf8-string,
    bytestring,

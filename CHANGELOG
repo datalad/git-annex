@@ -1,3 +1,9 @@
+git-annex (8.20210331) UNRELEASED; urgency=medium
+
+  * Fix build with persistent-2.12.0.1
+
+ -- Joey Hess <id@joeyh.name>  Thu, 01 Apr 2021 12:17:26 -0400
+
 git-annex (8.20210330) upstream; urgency=medium
 
   * Behavior change: When autoenabling special remotes of type S3, weddav,
