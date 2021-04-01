@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="dockerized special remotes: security"
+ date="2021-04-01T15:20:01Z"
+ content="""
+\"docker is too insecure to auto-install, enable and execute random special-remote programs\" -- interesting, didn't realize that.   Maybe prompt the user for permission, and/or tell them to set a git config setting to enable auto-install?
+
+In practice people often end up running less-than-vetted code, e.g. when trying out python packages written by people they don't know.  Running sandboxed code seems relatively safe next to that.
+
+Related: [dockerized external backends](https://git-annex.branchable.com/todo/external_backends/#comment-8d1d693391b3b30778c9ad8a0e8330e8) .
+
+"""]]
