@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-04-01T16:22:32Z"
+ content="""
+There is an expectation that checking out and looking at a git repository
+will not cause arbitrary code to be run, sandboxed or not.
+
+I think this can easily be dealt with in layers above git-annex, which can
+have different expectations about what code is safe to run.
+"""]]
