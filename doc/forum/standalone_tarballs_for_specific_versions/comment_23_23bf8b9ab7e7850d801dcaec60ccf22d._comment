@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2021-04-01T16:28:13Z"
+ content="""
+I checked in a fresh clone of the repository, and it shows it was
+uploaded to archive.org. It reached it soon after it was added to the
+repository:
+
+	joey@kite:~/tmp/downloads.kitenet.net/git-annex/linux/current>git annex log git-annex-standalone-amd64.tar.gz
+	+ Wed, 10 Mar 2021 14:12:30 JEST git-annex-standalone-amd64.tar.gz | 00000000-0000-0000-0000-000000000001 -- web
+	+ Wed, 10 Mar 2021 14:12:30 JEST git-annex-standalone-amd64.tar.gz | 5dc2ccd1-e534-4dae-8e8c-f31c8015e26e -- archive.org via S3
+	+ Wed, 10 Mar 2021 14:11:16 JEST git-annex-standalone-amd64.tar.gz | 840760dc-08f0-11e2-8c61-576b7e66acfd -- main repo [origin]
+"""]]
