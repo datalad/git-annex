@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2021-04-01T19:41:10Z"
+ content="""
+How about this as a compromise that avoids any unwanted code execution
+while making it easy to enable if you do want it:
+
+When git-annex enables an external special remote (including autoenable),
+and the special remote program is not available in PATH, and a git config
+(call it annex.special-remote-installer) is set to a command, git-annex
+runs that command with the name of the special remote program it wanted to
+install. The command should install the special remote program into a
+particular subdirectory in .git/annex/, and git-annex will then use it.
+
+It would then be up to users to decide if they want to set that git config,
+or if something is being built on top of git-annex and sets up the git repo
+for them, it could set the config to point to whatever command it provides
+to install special remote programs.
+
+This also has the benefit of not tying git-annex to any particular
+technology like docker.
+"""]]
