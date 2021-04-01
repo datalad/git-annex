@@ -34,6 +34,17 @@ similar with other branches). When `git-annex sync` is later run on the
 remote, it will merge the `synced/` branches that the repository has
 received.
 
+Some special remotes contain a tree of files that can be imported
+and/or exported, and syncing with these remotes behaves differently.
+See  [[git-annex-import]](1) and [[git-annex-export]](1) for details
+about how importing and exporting work; syncing with such a remote 
+is essentially an import followed by an export. In many cases,
+importing needs to download content from the remote, and so sync will
+only import when the --content option is used. (And exporting only
+ever happens when --content is used.) The remote's 
+`remote.<name>.annex-tracking-branch` also must be configured, and
+have the same value as the currently checked out branch.
+
 # OPTIONS
 
 * `[remote]`
@@ -107,15 +118,6 @@ received.
   each file to every remote that it is syncing with.
   This behavior can be overridden by configuring the preferred content
   of a repository. See [[git-annex-preferred-content]](1).
-
-  When `remote.<name>.annex-tracking-branch` is configured for a special
-  remote and that branch is checked out, syncing with --content will
-  import changes from the remote, merge them into the branch, and export
-  any changes that have been committed to the branch back to the remote.
-  With --no-content, imports will only be made from special remotes that
-  support importing without transferring files, and no exports will be done.
-  See [[git-annex-import]](1) and [[git-annex-export]](1) for details
-  about how importing and exporting work.
 
 * `--content-of=path` `-C path`
 
