@@ -91,9 +91,9 @@ runTransferThread' mkcheck rt d run = go
   where
 	go = catchPauseResume $ do
 		p <- runAssistant d $ liftAnnex $ 
-			Annex.getState Annex.transferrerpool
+			Annex.getRead Annex.transferrerpool
 		signalactonsvar <- runAssistant d $ liftAnnex $
-			Annex.getState Annex.signalactions
+			Annex.getRead Annex.signalactions
 		withTransferrer' True signalactonsvar mkcheck rt p run
 	pause = catchPauseResume $
 		runEvery (Seconds 86400) noop

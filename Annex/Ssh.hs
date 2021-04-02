@@ -219,7 +219,7 @@ prepSocket socketfile sshhost sshparams = do
 	-- from a previous git-annex run that was interrupted.
 	-- This must run only once, before we have made any ssh connection,
 	-- and any other prepSocket calls must block while it's run.
-	tv <- Annex.getState Annex.sshstalecleaned
+	tv <- Annex.getRead Annex.sshstalecleaned
 	join $ liftIO $ atomically $ do
 		cleaned <- takeTMVar tv
 		if cleaned

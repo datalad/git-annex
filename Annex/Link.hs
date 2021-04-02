@@ -204,7 +204,7 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 	runner :: Git.Queue.InternalActionRunner Annex
 	runner = Git.Queue.InternalActionRunner "restagePointerFile" $ \r l -> do
 		liftIO . Database.Keys.Handle.flushDbQueue
-			=<< Annex.getState Annex.keysdbhandle
+			=<< Annex.getRead Annex.keysdbhandle
 		realindex <- liftIO $ Git.Index.currentIndexFile r
 		let lock = fromRawFilePath (Git.Index.indexFileLock realindex)
 		    lockindex = liftIO $ catchMaybeIO $ Git.LockFile.openLock' lock

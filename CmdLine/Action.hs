@@ -68,9 +68,10 @@ commandAction start = getConcurrency >>= \case
 		Just tv -> 
 			liftIO (atomically (waitStartWorkerSlot tv)) >>=
 				maybe runnonconcurrent (runconcurrent' tv)
-	runconcurrent' tv (workerst, workerstage) = do
-		aid <- liftIO $ async $ snd <$> Annex.run workerst
-			(concurrentjob workerst)
+	runconcurrent' tv (workerstrd, workerstage) = do
+		aid <- liftIO $ async $ snd 
+			<$> Annex.run workerstrd
+				(concurrentjob (fst workerstrd))
 		liftIO $ atomically $ do
 			pool <- takeTMVar tv
 			let !pool' = addWorkerPool (ActiveWorker aid workerstage) pool
@@ -78,12 +79,12 @@ commandAction start = getConcurrency >>= \case
 		void $ liftIO $ forkIO $ debugLocks $ do
 			-- accountCommandAction will usually catch
 			-- exceptions. Just in case, fall back to the
-			-- original workerst.
-			workerst' <- either (const workerst) id
+			-- original workerstrd.
+			workerstrd' <- either (const workerstrd) id
 				<$> waitCatch aid
 			atomically $ do
 				pool <- takeTMVar tv
-				let !pool' = deactivateWorker pool aid workerst'
+				let !pool' = deactivateWorker pool aid workerstrd'
 				putTMVar tv pool'
 	
 	concurrentjob workerst = start >>= \case
@@ -133,12 +134,12 @@ finishCommandActions = Annex.getState Annex.workers >>= \case
 	Nothing -> noop
 	Just tv -> do
 		Annex.changeState $ \s -> s { Annex.workers = Nothing }
-		sts <- liftIO $ atomically $ do
+		vs <- liftIO $ atomically $ do
 			pool <- readTMVar tv
 			if allIdle pool
 				then return (spareVals pool)
 				else retry
-		mapM_ mergeState sts
+		mapM_ (mergeState . fst) vs
 
 {- Waits for all worker threads that have been started so far to finish. -}
 waitForAllRunningCommandActions :: Annex ()
@@ -254,8 +255,9 @@ startConcurrency usedstages a = do
 		Annex.changeState $ \s -> s { Annex.workers = Just tv }
 		prepDupState
 		st <- dupState
+		rd <- Annex.getRead id
 		liftIO $ atomically $ putTMVar tv $
-			allocateWorkerPool st (max n 1) usedstages
+			allocateWorkerPool (st, rd) (max n 1) usedstages
 
 -- Make sure that some expensive actions have been done before
 -- starting threads. This way the state has them already run,
@@ -277,7 +279,7 @@ ensureOnlyActionOn k a = debugLocks $
 	go (Concurrent _) = goconcurrent
 	go ConcurrentPerCpu = goconcurrent
 	goconcurrent = do
-		tv <- Annex.getState Annex.activekeys
+		tv <- Annex.getRead Annex.activekeys
 		bracket (setup tv) id (const a)
 	setup tv = liftIO $ do
 		mytid <- myThreadId

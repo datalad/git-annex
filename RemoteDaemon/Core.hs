@@ -139,7 +139,7 @@ runController ichan ochan = do
 -- Generates a map with a transport for each supported remote in the git repo,
 -- except those that have annex.sync = false
 genRemoteMap :: TransportHandle -> TChan Emitted -> IO RemoteMap
-genRemoteMap h@(TransportHandle (LocalRepo g) _) ochan = do
+genRemoteMap h@(TransportHandle (LocalRepo g) _ _) ochan = do
 	rs <- Git.Construct.fromRemotes g
 	M.fromList . catMaybes <$> mapM gen rs
   where
@@ -161,17 +161,18 @@ genRemoteMap h@(TransportHandle (LocalRepo g) _) ochan = do
 
 genTransportHandle :: IO TransportHandle
 genTransportHandle = do
-	annexstate <- newMVar =<< Annex.new =<< Git.CurrentRepo.get
-	g <- Annex.repo <$> readMVar annexstate
-	let h = TransportHandle (LocalRepo g) annexstate
+	(st, rd) <- Annex.new =<< Git.CurrentRepo.get
+	mvar <- newMVar st
+	let g = Annex.repo st
+	let h = TransportHandle (LocalRepo g) mvar rd
 	liftAnnex h $ do
 		Annex.setOutput QuietOutput
 		enableInteractiveBranchAccess
 	return h
 
 updateTransportHandle :: TransportHandle -> IO TransportHandle
-updateTransportHandle h@(TransportHandle _g annexstate) = do
+updateTransportHandle h@(TransportHandle _g st rd) = do
 	g' <- liftAnnex h $ do
 		reloadConfig
 		Annex.gitRepo
-	return (TransportHandle (LocalRepo g') annexstate)
+	return (TransportHandle (LocalRepo g') st rd)

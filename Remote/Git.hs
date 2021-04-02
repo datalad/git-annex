@@ -750,7 +750,7 @@ repairRemote r a = return $ do
 		ensureInitialized
 		a `finally` stopCoProcesses
 
-data LocalRemoteAnnex = LocalRemoteAnnex Git.Repo (MVar (Maybe Annex.AnnexState))
+data LocalRemoteAnnex = LocalRemoteAnnex Git.Repo (MVar (Maybe (Annex.AnnexState, Annex.AnnexRead)))
 
 {- This can safely be called on a Repo that is not local, but of course
  - onLocal will not work if used with the result. -}
@@ -775,20 +775,20 @@ onLocalRepo repo a = do
 	onLocal' lra a
 
 onLocal' :: LocalRemoteAnnex -> Annex a -> Annex a
-onLocal' (LocalRemoteAnnex repo v) a = liftIO (takeMVar v) >>= \case
+onLocal' (LocalRemoteAnnex repo mv) a = liftIO (takeMVar mv) >>= \case
 	Nothing -> do
-		st <- liftIO $ Annex.new repo
-		go (st, ensureInitialized >> a)
-	Just st -> go (st, a)
+		v <- liftIO $ Annex.new repo
+		go (v, ensureInitialized >> a)
+	Just v -> go (v, a)
   where
-	go (st, a') = do
+	go ((st, rd), a') = do
 		curro <- Annex.getState Annex.output
-		let act = Annex.run (st { Annex.output = curro }) $
+		let act = Annex.run (st { Annex.output = curro }, rd) $
 			a' `finally` stopCoProcesses
-		(ret, st') <- liftIO $ act `onException` cache st
-		liftIO $ cache st'
+		(ret, (st', _rd)) <- liftIO $ act `onException` cache (st, rd)
+		liftIO $ cache (st', rd)
 		return ret
-	cache st = putMVar v (Just st)
+	cache = putMVar mv . Just
 
 {- Faster variant of onLocal.
  -

@@ -371,7 +371,7 @@ pickRemote l a = debugLocks $ go l =<< getConcurrency
 			else gononconcurrent rs
 	
 	goconcurrent rs = do
-		mv <- Annex.getState Annex.activeremotes
+		mv <- Annex.getRead Annex.activeremotes
 		active <- liftIO $ takeMVar mv
 		let rs' = sortBy (lessActiveFirst active) rs
 		goconcurrent' mv active rs'

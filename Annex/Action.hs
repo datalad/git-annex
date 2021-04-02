@@ -52,7 +52,7 @@ verifiedAction a = tryNonAsync a >>= \case
 startup :: Annex ()
 startup = do
 #ifndef mingw32_HOST_OS
-	av <- Annex.getState Annex.signalactions
+	av <- Annex.getRead Annex.signalactions
 	let propagate sig = liftIO $ installhandleronce sig av
 	propagate sigINT
 	propagate sigQUIT

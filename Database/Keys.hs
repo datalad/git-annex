@@ -63,7 +63,7 @@ import qualified System.FilePath.ByteString as P
  -}
 runReader :: Monoid v => (SQL.ReadHandle -> Annex v) -> Annex v
 runReader a = do
-	h <- Annex.getState Annex.keysdbhandle
+	h <- Annex.getRead Annex.keysdbhandle
 	withDbState h go
   where
 	go DbUnavailable = return (mempty, DbUnavailable)
@@ -87,7 +87,7 @@ runReaderIO a = runReader (liftIO . a)
  - The database is created if it doesn't exist yet. -}
 runWriter :: (SQL.WriteHandle -> Annex ()) -> Annex ()
 runWriter a = do
-	h <- Annex.getState Annex.keysdbhandle
+	h <- Annex.getRead Annex.keysdbhandle
 	withDbState h go
   where
 	go st@(DbOpen qh) = do
@@ -144,7 +144,7 @@ openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
  - data to it.
  -}
 closeDb :: Annex ()
-closeDb = liftIO . closeDbHandle =<< Annex.getState Annex.keysdbhandle
+closeDb = liftIO . closeDbHandle =<< Annex.getRead Annex.keysdbhandle
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
 addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile k f

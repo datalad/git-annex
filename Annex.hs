@@ -10,10 +10,12 @@
 module Annex (
 	Annex,
 	AnnexState(..),
+	AnnexRead(..),
 	new,
 	run,
 	eval,
 	makeRunner,
+	getRead,
 	getState,
 	changeState,
 	withState,
@@ -88,18 +90,18 @@ import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
-{- git-annex's monad is a ReaderT around an AnnexState stored in a MVar.
- - The MVar is not exposed outside this module.
+{- git-annex's monad is a ReaderT around an AnnexState stored in a MVar,
+ - and an AnnexRead. The MVar is not exposed outside this module.
  -
  - Note that when an Annex action fails and the exception is caught,
  - any changes the action has made to the AnnexState are retained,
  - due to the use of the MVar to store the state.
  -}
-newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
+newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState, AnnexRead) IO a }
 	deriving (
 		Monad,
 		MonadIO,
-		MonadReader (MVar AnnexState),
+		MonadReader (MVar AnnexState, AnnexRead),
 		MonadCatch,
 		MonadThrow,
 		MonadMask,
@@ -109,7 +111,34 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 		Alternative
 	)
 
--- internal state storage
+-- Values that can be read, but not modified by an Annex action.
+data AnnexRead = AnnexRead
+	{ activekeys :: TVar (M.Map Key ThreadId)
+	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
+	, keysdbhandle :: Keys.DbHandle
+	, sshstalecleaned :: TMVar Bool
+	, signalactions :: TVar (M.Map SignalAction (Int -> IO ()))
+	, transferrerpool :: TransferrerPool
+	}
+
+newAnnexRead :: IO AnnexRead
+newAnnexRead = do
+	emptyactivekeys <- newTVarIO M.empty
+	emptyactiveremotes <- newMVar M.empty
+	kh <- Keys.newDbHandle
+	sc <- newTMVarIO False
+	si <- newTVarIO M.empty
+	tp <- newTransferrerPool
+	return $ AnnexRead
+		{ activekeys = emptyactivekeys
+		, activeremotes = emptyactiveremotes
+		, keysdbhandle = kh
+		, sshstalecleaned = sc
+		, signalactions = si
+		, transferrerpool = tp
+		}
+
+-- Values that can change while running an Annex action.
 data AnnexState = AnnexState
 	{ repo :: Git.Repo
 	, repoadjustment :: (Git.Repo -> IO Git.Repo)
@@ -125,7 +154,6 @@ data AnnexState = AnnexState
 	, fast :: Bool
 	, daemon :: Bool
 	, branchstate :: BranchState
-	, getvectorclock :: IO VectorClock
 	, repoqueue :: Maybe (Git.Queue.Queue Annex)
 	, catfilehandles :: CatFileHandles
 	, hashobjecthandle :: Maybe HashObjectHandle
@@ -147,11 +175,9 @@ data AnnexState = AnnexState
 	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
 	, lockcache :: LockCache
-	, sshstalecleaned :: TMVar Bool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	, cleanupactions :: M.Map CleanupAction (Annex ())
-	, signalactions :: TVar (M.Map SignalAction (Int -> IO ()))
 	, sentinalstatus :: Maybe SentinalStatus
 	, useragent :: Maybe String
 	, errcounter :: Integer
@@ -160,26 +186,17 @@ data AnnexState = AnnexState
 	, tempurls :: M.Map Key URLString
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
-	, workers :: Maybe (TMVar (WorkerPool AnnexState))
-	, activekeys :: TVar (M.Map Key ThreadId)
-	, activeremotes :: MVar (M.Map (Types.Remote.RemoteA Annex) Integer)
-	, keysdbhandle :: Keys.DbHandle
+	, workers :: Maybe (TMVar (WorkerPool (AnnexState, AnnexRead)))
 	, cachedcurrentbranch :: (Maybe (Maybe Git.Branch, Maybe Adjustment))
 	, cachedgitenv :: Maybe (AltIndexFile, FilePath, [(String, String)])
 	, urloptions :: Maybe UrlOptions
 	, insmudgecleanfilter :: Bool
-	, transferrerpool :: TransferrerPool
+	, getvectorclock :: IO VectorClock
 	}
 
-newState :: GitConfig -> Git.Repo -> IO AnnexState
-newState c r = do
-	emptyactiveremotes <- newMVar M.empty
-	emptyactivekeys <- newTVarIO M.empty
-	si <- newTVarIO M.empty
+newAnnexState :: GitConfig -> Git.Repo -> IO AnnexState
+newAnnexState c r = do
 	o <- newMessageState
-	sc <- newTMVarIO False
-	kh <- Keys.newDbHandle
-	tp <- newTransferrerPool
 	vc <- startVectorClock
 	return $ AnnexState
 		{ repo = r
@@ -196,7 +213,6 @@ newState c r = do
 		, fast = False
 		, daemon = False
 		, branchstate = startBranchState
-		, getvectorclock = vc
 		, repoqueue = Nothing
 		, catfilehandles = catFileHandlesNonConcurrent
 		, hashobjecthandle = Nothing
@@ -218,11 +234,9 @@ newState c r = do
 		, groupmap = Nothing
 		, ciphers = M.empty
 		, lockcache = M.empty
-		, sshstalecleaned = sc
 		, flags = M.empty
 		, fields = M.empty
 		, cleanupactions = M.empty
-		, signalactions = si
 		, sentinalstatus = Nothing
 		, useragent = Nothing
 		, errcounter = 0
@@ -232,91 +246,95 @@ newState c r = do
 		, existinghooks = M.empty
 		, desktopnotify = mempty
 		, workers = Nothing
-		, activekeys = emptyactivekeys
-		, activeremotes = emptyactiveremotes
-		, keysdbhandle = kh
 		, cachedcurrentbranch = Nothing
 		, cachedgitenv = Nothing
 		, urloptions = Nothing
 		, insmudgecleanfilter = False
-		, transferrerpool = tp
+		, getvectorclock = vc
 		}
 
 {- Makes an Annex state object for the specified git repo.
  - Ensures the config is read, if it was not already, and performs
  - any necessary git repo fixups. -}
-new :: Git.Repo -> IO AnnexState
+new :: Git.Repo -> IO (AnnexState, AnnexRead)
 new r = do
 	r' <- Git.Config.read r
 	let c = extractGitConfig FromGitConfig r'
-	newState c =<< fixupRepo r' c
+	st <- newAnnexState c =<< fixupRepo r' c
+	rd <- newAnnexRead
+	return (st, rd)
 
 {- Performs an action in the Annex monad from a starting state,
  - returning a new state. -}
-run :: AnnexState -> Annex a -> IO (a, AnnexState)
-run s a = flip run' a =<< newMVar s
+run :: (AnnexState, AnnexRead) -> Annex a -> IO (a, (AnnexState, AnnexRead))
+run (st, rd) a = do
+	mv <- newMVar st
+	run' mv rd a 
 
-run' :: MVar AnnexState -> Annex a -> IO (a, AnnexState)
-run' mvar a = do
-	r <- runReaderT (runAnnex a) mvar
-		`onException` (flush =<< readMVar mvar)
-	s' <- takeMVar mvar
-	flush s'
-	return (r, s')
+run' :: MVar AnnexState -> AnnexRead -> Annex a -> IO (a, (AnnexState, AnnexRead))
+run' mvar rd a = do
+	r <- runReaderT (runAnnex a) (mvar, rd)
+		`onException` (flush rd)
+	flush rd
+	st <- takeMVar mvar
+	return (r, (st, rd))
   where
 	flush = Keys.flushDbQueue . keysdbhandle
 
 {- Performs an action in the Annex monad from a starting state, 
- - and throws away the new state. -}
-eval :: AnnexState -> Annex a -> IO a
-eval s a = fst <$> run s a
+ - and throws away the changed state. -}
+eval :: (AnnexState, AnnexRead) -> Annex a -> IO a
+eval v a = fst <$> run v a
 
 {- Makes a runner action, that allows diving into IO and from inside
  - the IO action, running an Annex action. -}
 makeRunner :: Annex (Annex a -> IO a)
 makeRunner = do
-	mvar <- ask
+	(mvar, rd) <- ask
 	return $ \a -> do
-		(r, s) <- run' mvar a
+		(r, (s, _rd)) <- run' mvar rd a
 		putMVar mvar s
 		return r
 
+getRead :: (AnnexRead -> v) -> Annex v
+getRead selector = selector . snd <$> ask
+
 getState :: (AnnexState -> v) -> Annex v
 getState selector = do
-	mvar <- ask
-	s <- liftIO $ readMVar mvar
-	return $ selector s
+	mvar <- fst <$> ask
+	st <- liftIO $ readMVar mvar
+	return $ selector st
 
 changeState :: (AnnexState -> AnnexState) -> Annex ()
 changeState modifier = do
-	mvar <- ask
+	mvar <- fst <$> ask
 	liftIO $ modifyMVar_ mvar $ return . modifier
 
 withState :: (AnnexState -> IO (AnnexState, b)) -> Annex b
 withState modifier = do
-	mvar <- ask
+	mvar <- fst <$> ask
 	liftIO $ modifyMVar mvar modifier
 
 {- Sets a flag to True -}
 setFlag :: String -> Annex ()
-setFlag flag = changeState $ \s ->
-	s { flags = M.insert flag True $ flags s }
+setFlag flag = changeState $ \st ->
+	st { flags = M.insert flag True $ flags st }
 
 {- Sets a field to a value -}
 setField :: String -> String -> Annex ()
-setField field value = changeState $ \s ->
-	s { fields = M.insert field value $ fields s }
+setField field value = changeState $ \st ->
+	st { fields = M.insert field value $ fields st }
 
 {- Adds a cleanup action to perform. -}
 addCleanupAction :: CleanupAction -> Annex () -> Annex ()
-addCleanupAction k a = changeState $ \s ->
-	s { cleanupactions = M.insert k a $ cleanupactions s }
+addCleanupAction k a = changeState $ \st ->
+	st { cleanupactions = M.insert k a $ cleanupactions st }
 
 {- Sets the type of output to emit. -}
 setOutput :: OutputType -> Annex ()
-setOutput o = changeState $ \s ->
-	let m = output s
-	in s { output = m { outputType = adjustOutputType (outputType m) o } }
+setOutput o = changeState $ \st ->
+	let m = output st
+	in st { output = m { outputType = adjustOutputType (outputType m) o } }
 
 {- Checks if a flag was set. -}
 getFlag :: String -> Annex Bool
@@ -351,9 +369,9 @@ getGitConfig = getState gitconfig
 {- Overrides a GitConfig setting. The modification persists across
  - reloads of the repo's config. -}
 overrideGitConfig :: (GitConfig -> GitConfig) -> Annex ()
-overrideGitConfig f = changeState $ \s -> s
-	{ gitconfigadjustment = gitconfigadjustment s . f
-	, gitconfig = f (gitconfig s)
+overrideGitConfig f = changeState $ \st -> st
+	{ gitconfigadjustment = gitconfigadjustment st . f
+	, gitconfig = f (gitconfig st)
 	}
 
 {- Adds an adjustment to the Repo data. Adjustments persist across reloads
@@ -364,7 +382,7 @@ overrideGitConfig f = changeState $ \s -> s
  -}
 adjustGitRepo :: (Git.Repo -> IO Git.Repo) -> Annex ()
 adjustGitRepo a = do
-	changeState $ \s -> s { repoadjustment = \r -> repoadjustment s r >>= a }
+	changeState $ \st -> st { repoadjustment = \r -> repoadjustment st r >>= a }
 	changeGitRepo =<< gitRepo
 
 {- Adds git config setting, like "foo=bar". It will be passed with -c
@@ -375,7 +393,7 @@ addGitConfigOverride v = do
 	adjustGitRepo $ \r ->
 		Git.Config.store (encodeBS' v) Git.Config.ConfigList $
 			r { Git.gitGlobalOpts = go (Git.gitGlobalOpts r) }
-	changeState $ \s -> s { gitconfigoverride = v : gitconfigoverride s }
+	changeState $ \st -> st { gitconfigoverride = v : gitconfigoverride st }
   where
 	-- Remove any prior occurrance of the setting to avoid
 	-- building up many of them when the adjustment is run repeatedly,
@@ -394,7 +412,7 @@ changeGitRepo r = do
 	repoadjuster <- getState repoadjustment
 	gitconfigadjuster <- getState gitconfigadjustment
 	r' <- liftIO $ repoadjuster r
-	changeState $ \s -> s
+	changeState $ \st -> st
 		{ repo = r'
 		, gitconfig = gitconfigadjuster $
 			extractGitConfig FromGitConfig r'
@@ -414,8 +432,9 @@ getRemoteGitConfig r = do
  - state, as it will be thrown away. -}
 withCurrentState :: Annex a -> Annex (IO a)
 withCurrentState a = do
-	s <- getState id
-	return $ eval s a
+	(mvar, rd) <- ask
+	st <- liftIO $ readMVar mvar
+	return $ eval (st, rd) a
 
 {- It's not safe to use setCurrentDirectory in the Annex monad,
  - because the git repo paths are stored relative.
@@ -426,20 +445,20 @@ changeDirectory d = do
 	r <- liftIO . Git.adjustPath absPath =<< gitRepo
 	liftIO $ setCurrentDirectory d
 	r' <- liftIO $ Git.relPath r
-	changeState $ \s -> s { repo = r' }
+	changeState $ \st -> st { repo = r' }
 
 incError :: Annex ()
-incError = changeState $ \s -> 
-	let !c = errcounter s + 1 
-	    !s' = s { errcounter = c }
-	in s'
+incError = changeState $ \st -> 
+	let !c = errcounter st + 1 
+	    !st' = st { errcounter = c }
+	in st'
 
 getGitRemotes :: Annex [Git.Repo]
 getGitRemotes = do
-	s <- getState id
-	case gitremotes s of
+	st <- getState id
+	case gitremotes st of
 		Just rs -> return rs
 		Nothing -> do
-			rs <- liftIO $ Git.Construct.fromRemotes (repo s)
-			changeState $ \s' -> s' { gitremotes = Just rs }
+			rs <- liftIO $ Git.Construct.fromRemotes (repo st)
+			changeState $ \st' -> st' { gitremotes = Just rs }
 			return rs

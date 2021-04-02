@@ -55,9 +55,10 @@ setConcurrency' c f = do
  -}
 forkState :: Annex a -> Annex (IO (Annex a))
 forkState a = do
+	rd <- Annex.getRead id
 	st <- dupState
 	return $ do
-		(ret, newst) <- run st a
+		(ret, (newst, _rd)) <- run (st, rd) a
 		return $ do
 			mergeState newst
 			return ret
@@ -90,7 +91,9 @@ dupState = do
  - Also closes various handles in it. -}
 mergeState :: AnnexState -> Annex ()
 mergeState st = do
-	st' <- liftIO $ snd <$> run st stopNonConcurrentSafeCoProcesses
+	rd <- Annex.getRead id
+	st' <- liftIO $ (fst . snd)
+		<$> run (st, rd) stopNonConcurrentSafeCoProcesses
 	forM_ (M.toList $ Annex.cleanupactions st') $
 		uncurry addCleanupAction
 	Annex.Queue.mergeFrom st'

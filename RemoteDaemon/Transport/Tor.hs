@@ -39,7 +39,7 @@ import System.Posix.User
 
 -- Run tor hidden service.
 server :: Server
-server ichan th@(TransportHandle (LocalRepo r) _) = go
+server ichan th@(TransportHandle (LocalRepo r) _ _) = go
   where
 	go = checkstartservice >>= handlecontrol
 
@@ -88,7 +88,7 @@ maxConnections :: Int
 maxConnections = 100
 
 serveClient :: TransportHandle -> UUID -> Repo -> TBMQueue Handle -> IO ()
-serveClient th u r q = bracket setup cleanup start
+serveClient th@(TransportHandle _ _ rd) u r q = bracket setup cleanup start
   where
 	setup = do
 		h <- atomically $ readTBMQueue q
@@ -105,7 +105,7 @@ serveClient th u r q = bracket setup cleanup start
 		-- Avoid doing any work in the liftAnnex, since only one
 		-- can run at a time.
 		st <- liftAnnex th dupState
-		((), st') <- Annex.run st $ do
+		((), (st', _rd)) <- Annex.run (st, rd) $ do
 			-- Load auth tokens for every connection, to notice
 			-- when the allowed set is changed.
 			allowed <- loadP2PAuthTokens

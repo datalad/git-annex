@@ -50,9 +50,9 @@ mkRunTransferrer batchmaker = RunTransferrer
 withTransferrer :: (Transferrer -> Annex a) -> Annex a
 withTransferrer a = do
 	rt <- mkRunTransferrer nonBatchCommandMaker
-	pool <- Annex.getState Annex.transferrerpool
+	pool <- Annex.getRead Annex.transferrerpool
 	let nocheck = pure (pure True)
-	signalactonsvar <- Annex.getState Annex.signalactions
+	signalactonsvar <- Annex.getRead Annex.signalactions
 	withTransferrer' False signalactonsvar nocheck rt pool a
 
 withTransferrer'
@@ -279,7 +279,7 @@ killTransferrer t = do
 {- Stop all transferrers in the pool. -}
 emptyTransferrerPool :: Annex ()
 emptyTransferrerPool = do
-	poolvar <- Annex.getState Annex.transferrerpool
+	poolvar <- Annex.getRead Annex.transferrerpool
 	pool <- liftIO $ atomically $ swapTVar poolvar []
 	liftIO $ forM_ pool $ \case
 		TransferrerPoolItem (Just t) _ -> transferrerShutdown t

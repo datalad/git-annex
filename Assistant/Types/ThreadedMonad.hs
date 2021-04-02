@@ -15,7 +15,7 @@ import Data.Tuple
 
 {- The Annex state is stored in a MVar, so that threaded actions can access
  - it. -}
-type ThreadState = MVar Annex.AnnexState
+type ThreadState = MVar (Annex.AnnexState, Annex.AnnexRead)
 
 {- Stores the Annex state in a MVar.
  -
@@ -24,9 +24,10 @@ type ThreadState = MVar Annex.AnnexState
 withThreadState :: (ThreadState -> Annex a) -> Annex a
 withThreadState a = do
 	state <- Annex.getState id
-	mvar <- liftIO $ newMVar state
+	rd <- Annex.getRead id
+	mvar <- liftIO $ newMVar (state, rd)
 	r <- a mvar
-	newstate <- liftIO $ takeMVar mvar
+	newstate <- liftIO $ fst <$> takeMVar mvar
 	Annex.changeState (const newstate)
 	return r
 
@@ -35,4 +36,5 @@ withThreadState a = do
  - This serializes calls by threads; only one thread can run in Annex at a
  - time. -}
 runThreadState :: ThreadState -> Annex a -> IO a
-runThreadState mvar a = modifyMVar mvar $ \state -> swap <$> Annex.run state a
+runThreadState mvar a = modifyMVar mvar $ \v -> swap <$> Annex.run v a
+

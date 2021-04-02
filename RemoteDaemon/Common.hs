@@ -26,14 +26,14 @@ import Control.Concurrent
 -- since only one liftAnnex can be running at a time, across all
 -- transports.
 liftAnnex :: TransportHandle -> Annex a -> IO a
-liftAnnex (TransportHandle _ annexstate) a = do
-	st <- takeMVar annexstate
-	(r, st') <- Annex.run st a
-	putMVar annexstate st'
+liftAnnex (TransportHandle _ stmv rd) a = do
+	st <- takeMVar stmv
+	(r, (st', _rd)) <- Annex.run (st, rd) a
+	putMVar stmv st'
 	return r
 
 inLocalRepo :: TransportHandle -> (Git.Repo -> IO a) -> IO a
-inLocalRepo (TransportHandle (LocalRepo g) _) a = a g
+inLocalRepo (TransportHandle (LocalRepo g) _ _) a = a g
 
 -- Check if some shas should be fetched from the remote,
 -- and presumably later merged.

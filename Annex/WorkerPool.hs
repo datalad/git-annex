@@ -60,7 +60,7 @@ enteringInitialStage = Annex.getState Annex.workers >>= \case
  - in the pool than spareVals. That does not prevent other threads that call
  - this from using them though, so it's fine.
  -}
-changeStageTo :: ThreadId -> TMVar (WorkerPool AnnexState) -> (UsedStages -> WorkerStage) -> Annex (Maybe WorkerStage)
+changeStageTo :: ThreadId -> TMVar (WorkerPool t) -> (UsedStages -> WorkerStage) -> Annex (Maybe WorkerStage)
 changeStageTo mytid tv getnewstage = liftIO $
 	replaceidle >>= maybe
 		(return Nothing)
@@ -99,11 +99,11 @@ changeStageTo mytid tv getnewstage = liftIO $
 -- removes it from the pool, and returns its state.
 --
 -- If the worker pool is not already allocated, returns Nothing.
-waitStartWorkerSlot :: TMVar (WorkerPool Annex.AnnexState) -> STM (Maybe (Annex.AnnexState, WorkerStage))
+waitStartWorkerSlot :: TMVar (WorkerPool t) -> STM (Maybe (t, WorkerStage))
 waitStartWorkerSlot tv = do
 	pool <- takeTMVar tv
-	st <- go pool
-	return $ Just (st, StartStage)
+	v <- go pool
+	return $ Just (v, StartStage)
   where
 	go pool = case spareVals pool of
 		[] -> retry
@@ -112,10 +112,10 @@ waitStartWorkerSlot tv = do
 			putTMVar tv =<< waitIdleWorkerSlot StartStage pool'
 			return v
 
-waitIdleWorkerSlot :: WorkerStage -> WorkerPool Annex.AnnexState -> STM (WorkerPool Annex.AnnexState)
+waitIdleWorkerSlot :: WorkerStage -> WorkerPool t -> STM (WorkerPool t)
 waitIdleWorkerSlot wantstage = maybe retry return . getIdleWorkerSlot wantstage
 
-getIdleWorkerSlot :: WorkerStage -> WorkerPool Annex.AnnexState -> Maybe (WorkerPool Annex.AnnexState)
+getIdleWorkerSlot :: WorkerStage -> WorkerPool t -> Maybe (WorkerPool t)
 getIdleWorkerSlot wantstage pool = do
 	l <- findidle [] (workerList pool)
 	return $ pool { workerList = l }

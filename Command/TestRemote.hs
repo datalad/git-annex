@@ -102,7 +102,9 @@ start o = starting "testremote" (ActionItemOther (Just (testRemote o))) si $ do
 
 perform :: [Described (Annex (Maybe Remote))] -> Maybe Remote -> Annex (Maybe Remote) -> [Key] -> CommandPerform
 perform drs unavailr exportr ks = do
-	st <- liftIO . newTVarIO =<< Annex.getState id
+	st <- liftIO . newTVarIO =<< (,)
+		<$> Annex.getState id
+		<*> Annex.getRead id
 	let tests = testGroup "Remote Tests" $ mkTestTrees
 		(runTestCase st) 
 		drs
@@ -198,7 +200,7 @@ data Described t = Described
 
 type RunAnnex = forall a. Annex a -> IO a
 
-runTestCase :: TVar Annex.AnnexState -> RunAnnex
+runTestCase :: TVar (Annex.AnnexState, Annex.AnnexRead) -> RunAnnex
 runTestCase stv a = do
 	st <- atomically $ readTVar stv
 	(r, st') <- Annex.run st $ do

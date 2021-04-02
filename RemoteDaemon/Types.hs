@@ -35,12 +35,12 @@ type Server = TChan Consumed -> TransportHandle -> IO ()
 data RemoteRepo = RemoteRepo Git.Repo RemoteGitConfig
 newtype LocalRepo = LocalRepo Git.Repo
 
--- All Transports share a single AnnexState MVar
+-- All Transports share a single AnnexState MVar and an AnnexRead.
 --
 -- Different TransportHandles may have different versions of the LocalRepo.
 -- (For example, the ssh transport modifies it to enable ssh connection
 -- caching.)
-data TransportHandle = TransportHandle LocalRepo (MVar Annex.AnnexState)
+data TransportHandle = TransportHandle LocalRepo (MVar Annex.AnnexState) Annex.AnnexRead
 
 -- Messages that the daemon emits.
 data Emitted
