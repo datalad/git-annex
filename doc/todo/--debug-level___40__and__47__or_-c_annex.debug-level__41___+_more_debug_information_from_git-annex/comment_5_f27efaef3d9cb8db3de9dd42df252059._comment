@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-04-02T17:31:57Z"
+ content="""
+Re comment #3, it occurs to me that currently anything that accesses
+AnnexState does an MVar access, which will have around the same overhead as
+a call to debugM. But much more frequently used.
+
+So, anything in AnnexState that is frequently used and is immutable
+and could be split out to Reader will avoid that MVar access and be a
+free performance win. Good reason to split AnnexState, whether or not
+it's used to speed debugging.
+"""]]

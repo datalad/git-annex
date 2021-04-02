@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-04-02T16:09:45Z"
+ content="""
+I benchmarked calls to debugM when no debug output is enabled,
+and it looks like around 1 million can be made per second
+on my netbook. So if a 1% slowdown due to debugging is acceptable (which
+seems a bit above the upper bound to me), that would allow 10 thousand
+debugM calls per second.
+
+Current call rate is probably always under 10 per second. Keeping it
+out of tight loops would probably be sufficient.
+
+Once place I sometimes wish had debugging is reads from the git-annex
+branch. But running eg "git-annex get --from foo" in a repository with
+many thousands of files, none of them in foo, does tends of 
+thousands of reads per second in a tight loop. Benchmarked
+that command with debugM of reads added, and it was 0.05% slower
+than without debugM.
+
+So, to add debugM there, would need to do what comment #3 discussed.
+"""]]
