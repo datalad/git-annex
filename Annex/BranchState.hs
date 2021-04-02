@@ -37,18 +37,21 @@ checkIndexOnce a = unlessM (indexChecked <$> getState) $ do
  - before got staged (or if the journal was empty). That lets an opmisation
  - be done: The journal then does not need to be checked going forward,
  - until new information gets written to it.
+ -
+ - When interactive access is enabled, the journal is always checked when
+ - reading values from the branch, and so this does not need to update
+ - the branch.
  -}
 runUpdateOnce :: Annex Bool -> Annex BranchState
 runUpdateOnce a = do
 	st <- getState
-	if branchUpdated st
+	if branchUpdated st || needInteractiveAccess st
 		then return st
 		else do
 			journalstaged <- a
 			let stf = \st' -> st'
 				{ branchUpdated = True
 				, journalIgnorable = journalstaged 
-					&& not (needInteractiveAccess st')
 				}
 			changeState stf
 			return (stf st)
