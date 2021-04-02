@@ -55,7 +55,7 @@ runUpdateOnce a = do
 
 {- Avoids updating the branch. A useful optimisation when the branch
  - is known to have not changed, or git-annex won't be relying on info
- - from it. -}
+ - queried from it being as up-to-date as possible. -}
 disableUpdate :: Annex ()
 disableUpdate = changeState $ \s -> s { branchUpdated = True }
 
