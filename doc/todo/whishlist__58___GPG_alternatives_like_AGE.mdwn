@@ -1,0 +1,8 @@
+GA uses GPG for encryption but it's neither fast, user friendly or particularly secure (C software from the 90s with huge legacy debt...).
+
+It'd be really nice if you could use a faster, simpler/leaner, modern and reasonably secure piece of software instead for encryption in GA.
+
+I'm not too deep into this but https://github.com/FiloSottile/age looks like an ideal replacement for what GA currently needs GPG for:  
+It's fast (encrypts `/dev/zero` at 1.4GiB/s on my machine), modern, simple and designed to integrate well with other tools via the command line. Its creator is the Golang security lead, so the crypto is probably good too ;)
+
+Age seems to be closing in on its "production-ready" 1.0.0 release, so it might be worth having a look at now.

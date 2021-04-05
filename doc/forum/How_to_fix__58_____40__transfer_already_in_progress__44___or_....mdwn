@@ -1,0 +1,7 @@
+This is more of a mini-tip or self-answered question: What to do when git-annex says "... (transfer already in progress, or unable to take transfer lock)" when trying to transfer a file to a special remote.
+
+If you are sure that there are no other git-annex processes trying to upload (i.e. you cancelled it but git-annex crashed in the middle or something), have a look at `.git/annex/transfer/upload/`. This is only for when you can't get them to be copied by re-running the git-annex command, only for when subsequent calls don't fix it. Intermittent issues might be caused by multiple jobs, so dropping the `--jobs` parameter should fix those.
+
+In my case I had two keys that git-annex refused to copy to a special remote no matter what I did and those dirs contained files named after the keys + ones with `lck.` prefix. After removing those dirs, the upload went through as expected.
+
+Hope this helps someone :) 
