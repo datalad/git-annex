@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-04-05T19:38:17Z"
+ content="""
+The only way I know of that this can perhaps happen is if you have
+a remote accessed over ssh, and you are uploading to it, and ctrl-c
+git-annex and then start the upload again. In that case, it's the remote
+git-annex that complains about the transfer lock, and that happens because
+sometimes the ctrl-c doesn't immediately stop the remote git-annex-shell
+process. But if this were the case, deleting the local directory wouldn't
+help, it would be the remote repo's directory you'd need to mess with, or
+better just stop that git-annex-shell process.
+
+Otherwise, it's true that the lock files for transfers live in that directory,
+and deleting it is safe enough. However, the way git-annex uses locks should
+not suffer from stale lock files normally. A few cases where I guess it
+could:
+
+* When annex.pidlock is set
+* Maybe when using NFS
+* Windows maybe?
+* Older versions of git-annex could get confused with --jobs when
+  several worktree files used the same key, but that's been fixed for a
+  while.
+
+Otherwise, it seems much more likely that you still had a git-annex process
+that  you didn't notice holding the lock open, than it does that your OS is
+letting stale fcntl locks linger around after a process exits.
+"""]]
