@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE CPP #-}
 
@@ -23,13 +24,13 @@ import Annex.Path
 import Annex.StallDetection
 import Utility.Batch
 import Utility.Metered
+import Utility.Debug
 import qualified Utility.SimpleProtocol as Proto
 
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Concurrent.STM hiding (check)
 import Control.Monad.IO.Class (MonadIO)
-import System.Log.Logger (debugM)
 import qualified Data.Map as M
 #ifndef mingw32_HOST_OS
 import System.Posix.Signals
@@ -241,7 +242,7 @@ sendRequest level t mremote afile h = do
 		(AssistantLevel, Download) -> AssistantDownloadRequest
 	let r = f tr (transferKey t) (TransferAssociatedFile afile)
 	let l = unwords $ Proto.formatMessage r
-	debugM "transfer" ("> " ++ l)
+	debug "Annex.TransferrerPool" ("> " ++ l)
 	hPutStrLn h l
 	hFlush h
 
@@ -249,7 +250,7 @@ sendSerializedOutputResponse :: Handle -> SerializedOutputResponse -> IO ()
 sendSerializedOutputResponse h sor = do
 	let l = unwords $ Proto.formatMessage $
 		TransferSerializedOutputResponse sor
-	debugM "transfer" ("> " ++ show l)
+	debug "Annex.TransferrerPool" ("> " ++ show l)
 	hPutStrLn h l
 	hFlush h
 
@@ -260,7 +261,7 @@ sendSerializedOutputResponse h sor = do
 readResponse :: Handle -> IO (Either SerializedOutput Bool)
 readResponse h = do
 	l <- liftIO $ hGetLine h
-	debugM "transfer" ("< " ++ l)
+	debug "Annex.TransferrerPool" ("< " ++ l)
 	case Proto.parseMessage l of
 		Just (TransferOutput so) -> return (Left so)
 		Just (TransferResult r) -> return (Right r)

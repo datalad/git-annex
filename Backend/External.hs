@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Backend.External (makeBackend) where
 
@@ -16,6 +17,7 @@ import Types.Key
 import Types.Backend
 import Types.KeySource
 import Utility.Metered
+import Utility.Debug
 import qualified Utility.SimpleProtocol as Proto
 
 import qualified Data.ByteString as S
@@ -23,7 +25,6 @@ import qualified Data.Map.Strict as M
 import Data.Char
 import Control.Concurrent
 import System.IO.Unsafe (unsafePerformIO)
-import System.Log.Logger (debugM)
 
 newtype ExternalBackendName = ExternalBackendName S.ByteString
 	deriving (Show, Eq, Ord)
@@ -141,7 +142,7 @@ handleRequest st req whenunavail responsehandler =
 		warning ("external special remote error: " ++ err)
 		whenunavail
 	handleExceptionalMessage loop (DEBUG msg) = do
-		liftIO $ debugM "external" msg
+		liftIO $ debug "Backend.External" msg
 		loop
 
 withExternalAddon :: ExternalState -> a -> (ExternalAddonProcess -> a) -> a

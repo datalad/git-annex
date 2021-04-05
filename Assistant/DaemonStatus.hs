@@ -221,9 +221,7 @@ notifyAlert = do
 
 {- Returns the alert's identifier, which can be used to remove it. -}
 addAlert :: Alert -> Assistant AlertId
-addAlert alert = do
-	notice [showAlert alert]
-	notifyAlert `after` modifyDaemonStatus add
+addAlert alert = notifyAlert `after` modifyDaemonStatus add
   where
 	add s = (s { lastAlertId = i, alertMap = m }, i)
 	  where

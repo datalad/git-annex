@@ -44,6 +44,7 @@ module Utility.Url (
 ) where
 
 import Common
+import Utility.Debug
 import Utility.Metered
 #ifdef WITH_HTTP_CLIENT_RESTRICTED
 import Network.HTTP.Client.Restricted
@@ -73,7 +74,6 @@ import Network.BSD (getProtocolNumber)
 import Data.Either
 import Data.Conduit
 import Text.Read
-import System.Log.Logger
 
 type URLString = String
 
@@ -269,7 +269,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 
 	existsconduit' req uo' = do
 		let req' = headRequest (applyRequest uo req)
-		debugM "url" (show req')
+		debug "Utility.Url" (show req')
 		join $ runResourceT $ do
 			resp <- http req' (httpManager uo)
 			if responseStatus resp == ok200
@@ -383,7 +383,7 @@ download' nocurlerror meterupdate url file uo =
 					| isfileurl u -> downloadfile u
 					| otherwise -> downloadcurl url basecurlparams
 		Nothing -> do
-			liftIO $ debugM "url" url
+			liftIO $ debug "Utility.Url" url
 			dlfailed "invalid url"
 	
 	isfileurl u = uriScheme u == "file:"
@@ -458,7 +458,7 @@ downloadConduit meterupdate req file uo =
 	catchMaybeIO (getFileSize (toRawFilePath file)) >>= \case
 		Just sz | sz > 0 -> resumedownload sz
 		_ -> join $ runResourceT $ do
-			liftIO $ debugM "url" (show req')
+			liftIO $ debug "Utility.Url" (show req')
 			resp <- http req' (httpManager uo)
 			if responseStatus resp == ok200
 				then do
@@ -490,7 +490,7 @@ downloadConduit meterupdate req file uo =
 	-- send the whole file rather than resuming.
 	resumedownload sz = join $ runResourceT $ do
 		let req'' = req' { requestHeaders = resumeFromHeader sz : requestHeaders req' }
-		liftIO $ debugM "url" (show req'')
+		liftIO $ debug "Urility.Url" (show req'')
 		resp <- http req'' (httpManager uo)
 		if responseStatus resp == partialContent206
 			then do
@@ -579,7 +579,7 @@ downloadPartial url uo n = case parseURIRelaxed url of
 		Nothing -> return Nothing
 		Just req -> do
 			let req' = applyRequest uo req
-			liftIO $ debugM "url" (show req')
+			liftIO $ debug "Utility.Url" (show req')
 			withResponse req' (httpManager uo) $ \resp ->
 				if responseStatus resp == ok200
 					then Just <$> brReadSome (responseBody resp) n

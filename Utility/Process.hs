@@ -7,6 +7,7 @@
  -}
 
 {-# LANGUAGE CPP, Rank2Types, LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Process (
@@ -38,10 +39,10 @@ import Utility.Process.Shim as X (CreateProcess(..), ProcessHandle, StdStream(..
 import Utility.Misc
 import Utility.Exception
 import Utility.Monad
+import Utility.Debug
 
 import System.Exit
 import System.IO
-import System.Log.Logger
 import Control.Monad.IO.Class
 import Control.Concurrent.Async
 import qualified Data.ByteString as S
@@ -187,7 +188,7 @@ withCreateProcess p action = bracket (createProcess p) cleanupProcess
 debugProcess :: CreateProcess -> ProcessHandle -> IO ()
 debugProcess p h = do
 	pid <- getPid h
-	debugM "Utility.Process" $ unwords
+	debug "Utility.Process" $ unwords
 		[ describePid pid
 		, action ++ ":"
 		, showCmd p
@@ -211,7 +212,7 @@ waitForProcess h = do
 	-- Have to get pid before waiting, which closes the ProcessHandle.
 	pid <- getPid h
 	r <- Utility.Process.Shim.waitForProcess h
-	debugM "Utility.Process" (describePid pid ++ " done " ++ show r)
+	debug "Utility.Process" (describePid pid ++ " done " ++ show r)
 	return r
 
 cleanupProcess :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> IO () 

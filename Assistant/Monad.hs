@@ -22,11 +22,9 @@ module Assistant.Monad (
 	asIO2,
 	ThreadName,
 	debug,
-	notice
 ) where
 
 import "mtl" Control.Monad.Reader
-import System.Log.Logger
 import qualified Control.Monad.Fail as Fail
 
 import Annex.Common
@@ -43,6 +41,7 @@ import Assistant.Types.RepoProblem
 import Assistant.Types.ThreadName
 import Assistant.Types.RemoteControl
 import Assistant.Types.CredPairCache
+import qualified Utility.Debug as Debug
 
 newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 	deriving (
@@ -139,12 +138,6 @@ asIO2 a = do
 io <<~ v = reader v >>= liftIO . io
 
 debug :: [String] -> Assistant ()
-debug = logaction debugM
-
-notice :: [String] -> Assistant ()
-notice = logaction noticeM
-
-logaction :: (String -> String -> IO ()) -> [String] -> Assistant ()
-logaction a ws = do
+debug ws = do
 	ThreadName name <- getAssistant threadName
-	liftIO $ a name $ unwords $ (name ++ ":") : ws
+	liftIO $ Debug.debug (Debug.DebugSource (encodeBS name)) (unwords ws)

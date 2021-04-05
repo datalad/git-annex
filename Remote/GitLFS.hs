@@ -39,6 +39,7 @@ import Backend.Hash
 import Utility.Hash
 import Utility.SshHost
 import Utility.Url
+import Utility.Debug
 import Logs.Remote
 import Logs.RemoteState
 import qualified Git.Config
@@ -53,7 +54,6 @@ import Control.Concurrent.STM
 import Data.String
 import Network.HTTP.Types
 import Network.HTTP.Client hiding (port)
-import System.Log.Logger
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
@@ -349,11 +349,11 @@ makeSmallAPIRequest :: Request -> Annex (Response L.ByteString)
 makeSmallAPIRequest req = do
 	uo <- getUrlOptions
 	let req' = applyRequest uo req
-	liftIO $ debugM "git-lfs" (show req')
+	liftIO $ debug "Remote.GitLFS" (show req')
 	resp <- liftIO $ httpLbs req' (httpManager uo)
 	-- Only debug the http status code, not the json
 	-- which may include an authentication token.
-	liftIO $ debugM "git-lfs" (show $ responseStatus resp)
+	liftIO $ debug "Remote.GitLFS" (show $ responseStatus resp)
 	return resp
 
 sendTransferRequest

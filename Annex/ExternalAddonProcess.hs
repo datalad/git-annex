@@ -5,16 +5,18 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.ExternalAddonProcess where
 
 import qualified Annex
 import Annex.Common
 import Git.Env
 import Utility.Shell
+import Utility.Debug
 import Messages.Progress
 
 import Control.Concurrent.Async
-import System.Log.Logger (debugM)
 
 data ExternalAddonProcess = ExternalAddonProcess
 	{ externalSend :: Handle
@@ -91,7 +93,7 @@ startExternalAddonProcess basecmd pid = do
 			"Cannot run " ++ basecmd ++ " -- It is not installed in PATH (" ++ path ++ ")"
 
 protocolDebug :: ExternalAddonProcess -> Bool -> String -> IO ()
-protocolDebug external sendto line = debugM "external" $ unwords
+protocolDebug external sendto line = debug "Annex.ExternalAddonProcess" $ unwords
 	[ externalProgram external ++ 
 		"[" ++ show (externalPid external) ++ "]"
 	, if sendto then "<--" else "-->"

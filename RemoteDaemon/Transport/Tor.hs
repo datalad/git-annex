@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module RemoteDaemon.Transport.Tor (server, transport, torSocketFile) where
 
@@ -27,9 +28,9 @@ import Types.UUID
 import Messages
 import Git
 import Git.Command
+import Utility.Debug
 
 import Control.Concurrent
-import System.Log.Logger (debugM)
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TBMQueue
 import Control.Concurrent.Async
@@ -48,7 +49,7 @@ server ichan th@(TransportHandle (LocalRepo r) _ _) = go
 		msock <- liftAnnex th torSocketFile
 		case msock of
 			Nothing -> do
-				debugM "remotedaemon" "Tor hidden service not enabled"
+				debugTor "Tor hidden service not enabled"
 				return False
 			Just sock -> do
 				void $ async $ startservice sock u
@@ -59,7 +60,7 @@ server ichan th@(TransportHandle (LocalRepo r) _ _) = go
 		replicateM_ maxConnections $
 			forkIO $ forever $ serveClient th u r q
 
-		debugM "remotedaemon" "Tor hidden service running"
+		debugTor "Tor hidden service running"
 		serveUnixSocket sock $ \conn -> do
 			ok <- atomically $ ifM (isFullTBMQueue q)
 				( return False
@@ -92,12 +93,12 @@ serveClient th@(TransportHandle _ _ rd) u r q = bracket setup cleanup start
   where
 	setup = do
 		h <- atomically $ readTBMQueue q
-		debugM "remotedaemon" "serving a Tor connection"
+		debugTor "serving a Tor connection"
 		return h
 	
 	cleanup Nothing = return ()
 	cleanup (Just h) = do
-		debugM "remotedaemon" "done with Tor connection"
+		debugTor "done with Tor connection"
 		hClose h
 
 	start Nothing = return ()
@@ -121,9 +122,9 @@ serveClient th@(TransportHandle _ _ rd) u r q = bracket setup cleanup start
 			v <- liftIO $ runNetProto runstauth conn $ P2P.serveAuth u
 			case v of
 				Right (Just theiruuid) -> authed conn theiruuid
-				Right Nothing -> liftIO $ debugM "remotedaemon"
+				Right Nothing -> liftIO $ debugTor
 					"Tor connection failed to authenticate"
-				Left e -> liftIO $ debugM "remotedaemon" $
+				Left e -> liftIO $ debugTor $
 					"Tor connection error before authentication: " ++ describeProtoFailure e
 		-- Merge the duplicated state back in.
 		liftAnnex th $ mergeState st'
@@ -135,7 +136,7 @@ serveClient th@(TransportHandle _ _ rd) u r q = bracket setup cleanup start
 				P2P.serveAuthed P2P.ServeReadWrite u
 			case v' of
 				Right () -> return ()
-				Left e -> liftIO $ debugM "remotedaemon" $ 
+				Left e -> liftIO $ debugTor $ 
 					"Tor connection error: " ++ describeProtoFailure e
 
 -- Connect to peer's tor hidden service.
@@ -200,3 +201,6 @@ torSocketFile = do
 	let uid = 0
 #endif
 	liftIO $ getHiddenServiceSocketFile torAppName uid ident
+
+debugTor :: String -> IO ()
+debugTor = debug "RemoteDaemon.Transport.Tor"

@@ -66,7 +66,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	 - all, so detect and repair. -}
 	ifM (not <$> liftAnnex (inRepo checkIndexFast))
 		( do
-			notice ["corrupt index file found at startup; removing and restaging"]
+			debug ["corrupt index file found at startup; removing and restaging"]
 			liftAnnex $ inRepo $ removeWhenExistsWith R.removeLink . indexFile
 			{- Normally the startup scan avoids re-staging files,
 			 - but with the index deleted, everything needs to be
@@ -80,7 +80,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	 - the data from the git-annex branch will be used, and the index
 	 - will be automatically regenerated. -}
 	unlessM (liftAnnex $ Annex.Branch.withIndex $ inRepo $ Git.Repair.checkIndexFast) $ do
-		notice ["corrupt annex/index file found at startup; removing"]
+		debug ["corrupt annex/index file found at startup; removing"]
 		liftAnnex $ liftIO . removeWhenExistsWith R.removeLink =<< fromRepo gitAnnexIndex
 
 	{- Fix up ssh remotes set up by past versions of the assistant. -}
@@ -226,7 +226,7 @@ checkLogSize n = do
 	logs <- liftIO $ listLogs f
 	totalsize <- liftIO $ sum <$> mapM (getFileSize . toRawFilePath) logs
 	when (totalsize > 2 * oneMegabyte) $ do
-		notice ["Rotated logs due to size:", show totalsize]
+		debug ["Rotated logs due to size:", show totalsize]
 		liftIO $ openLog f >>= handleToFd >>= redirLog
 		when (n < maxLogs + 1) $ do
 			df <- liftIO $ getDiskFree $ takeDirectory f

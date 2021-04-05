@@ -297,10 +297,11 @@ source-repository head
   location: git://git-annex.branchable.com/
 
 custom-setup
-  Setup-Depends: base (>= 4.11.1.0), hslogger, split, unix-compat, 
+  Setup-Depends: base (>= 4.11.1.0), split, unix-compat, 
     filepath, exceptions, bytestring, directory, IfElse, data-default,
     filepath-bytestring (>= 1.4.2.1.4),
     process (>= 1.6.3),
+    time (>= 1.5.0),
     async, utf8-string, transformers, Cabal
 
 Executable git-annex
@@ -327,7 +328,6 @@ Executable git-annex
    filepath,
    filepath-bytestring (>= 1.4.2.1.1),
    IfElse,
-   hslogger,
    monad-logger (>= 0.3.10),
    free,
    utf8-string,
@@ -1068,6 +1068,7 @@ Executable git-annex
     Utility.Daemon
     Utility.Data
     Utility.DataUnits
+    Utility.Debug
     Utility.DebugLocks
     Utility.DirWatcher
     Utility.DirWatcher.Types

@@ -157,5 +157,5 @@ repairStaleLocks lockfiles = go =<< getsizes
 			go =<< getsizes
 		)
 	waitforit why = do
-		notice ["Waiting for 60 seconds", why]
+		debug ["Waiting for 60 seconds", why]
 		liftIO $ threadDelaySeconds $ Seconds 60

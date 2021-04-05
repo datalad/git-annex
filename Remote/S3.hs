@@ -33,7 +33,6 @@ import Network.URI
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
 import Data.IORef
-import System.Log.Logger
 import Control.Concurrent.STM (atomically)
 import Control.Concurrent.STM.TVar
 import Data.Maybe
@@ -67,6 +66,7 @@ import qualified Annex.Url as Url
 import Utility.Url (extractFromResourceT)
 import Annex.Url (getUrlOptions, withUrlOptions, UrlOptions(..))
 import Utility.Env
+import Utility.Debug
 
 type BucketName = String
 type BucketObject = String
@@ -1069,13 +1069,13 @@ mkLocationConstraint "US" = S3.locationUsClassic
 mkLocationConstraint r = r
 
 debugMapper :: AWS.Logger
-debugMapper level t = forward "S3" (T.unpack t)
+debugMapper level t = forward "Remote.S3" (T.unpack t)
   where
 	forward = case level of
-		AWS.Debug -> debugM
-		AWS.Info -> infoM
-		AWS.Warning -> warningM
-		AWS.Error -> errorM
+		AWS.Debug -> debug
+		AWS.Warning -> debug
+		AWS.Error -> debug
+		AWS.Info -> \_ _ -> return ()
 
 s3Info :: ParsedRemoteConfig -> S3Info -> [(String, String)]
 s3Info c info = catMaybes

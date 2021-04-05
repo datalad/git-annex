@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Assistant where
 
@@ -48,7 +49,6 @@ import Assistant.Types.UrlRenderer
 import qualified Utility.Daemon
 import Utility.ThreadScheduler
 import Utility.HumanTime
-import qualified BuildInfo
 import Annex.Perms
 import Annex.BranchState
 import Utility.LogFile
@@ -57,8 +57,8 @@ import Utility.Env
 import Annex.Path
 import System.Environment (getArgs)
 #endif
+import qualified Utility.Debug as Debug
 
-import System.Log.Logger
 import Network.Socket (HostName)
 
 stopDaemon :: Annex ()
@@ -76,7 +76,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 	enableInteractiveBranchAccess
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexDaemonLogFile
-	liftIO $ debugM desc $ "logging to " ++ fromRawFilePath logfile
+	liftIO $ Debug.debug "Assistant" $ "logging to " ++ fromRawFilePath logfile
 	createAnnexDirectory (parentDir pidfile)
 #ifndef mingw32_HOST_OS
 	createAnnexDirectory (parentDir logfile)
@@ -122,14 +122,11 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 			)
 #endif
   where
-	desc
-		| assistant = "assistant"
-		| otherwise = "watch"
 	start daemonize webappwaiter = withThreadState $ \st -> do
 		checkCanWatch
 		dstatus <- startDaemonStatus
 		logfile <- fromRepo gitAnnexDaemonLogFile
-		liftIO $ debugM desc $ "logging to " ++ fromRawFilePath logfile
+		liftIO $ Debug.debug "Assistant" $ "logging to " ++ fromRawFilePath logfile
 		liftIO $ daemonize $
 			flip runAssistant (go webappwaiter) 
 				=<< newAssistantData st dstatus
@@ -140,7 +137,6 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 #else
 	go _webappwaiter = do
 #endif
-		notice ["starting", desc, "version", BuildInfo.packageversion]
 		urlrenderer <- liftIO newUrlRenderer
 #ifdef WITH_WEBAPP
 		let webappthread = [ assist $ webAppThread d urlrenderer False cannotrun Nothing listenhost webappwaiter ]

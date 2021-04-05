@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.Move where
 
 import Command
@@ -18,8 +20,8 @@ import Logs.Presence
 import Logs.Trust
 import Logs.File
 import Annex.NumCopies
+import Utility.Debug
 
-import System.Log.Logger (debugM)
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy as L
 
@@ -175,7 +177,7 @@ toPerform dest removewhen key afile fastcheck isthere = do
 				DropWorse -> faileddrophere setpresentremote
 	showproof proof = "proof: " ++ show proof
 	drophere setpresentremote contentlock reason = do
-		liftIO $ debugM "move" $ unwords
+		liftIO $ debug "Command.Move" $ unwords
 			[ "Dropping from here"
 			, "(" ++ reason ++ ")"
 			]
@@ -255,7 +257,7 @@ fromPerform src removewhen key afile = do
 	showproof proof = "proof: " ++ show proof
 	
 	dropremote reason = do
-		liftIO $ debugM "move" $ unwords
+		liftIO $ debug "Command.Move" $ unwords
 			[ "Dropping from remote"
 			, show src
 			, "(" ++ reason ++ ")"

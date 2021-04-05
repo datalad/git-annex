@@ -59,7 +59,7 @@ git_annex_shell cs r command params fields
 	dir = Git.repoPath r
 	shellcmd = "git-annex-shell"
 	getshellopts = do
-		debug <- liftIO debugEnabled
+		debug <- annexDebug <$> Annex.getGitConfig
 		let params' = if debug
 			then Param "--debug" : params
 			else params

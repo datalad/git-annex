@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Remote.WebDAV (remote, davCreds, configUrl) where
 
@@ -21,7 +22,6 @@ import Network.HTTP.Types
 import System.IO.Error
 import Control.Monad.Catch
 import Control.Monad.IO.Class (MonadIO)
-import System.Log.Logger (debugM)
 import Control.Concurrent.STM hiding (check)
 
 import Annex.Common
@@ -43,6 +43,7 @@ import Utility.Url (URLString, matchStatusCodeException, matchHttpExceptionConte
 import Annex.UUID
 import Remote.WebDAV.DavLocation
 import Types.ProposedAccepted
+import Utility.Debug
 
 remote :: RemoteType
 remote = specialRemoteType $ RemoteType
@@ -533,4 +534,4 @@ withStoredFilesLegacyChunked k dav onerr a = do
 	keyloc = keyLocation k
 
 debugDav :: MonadIO m => String -> DAVT m ()
-debugDav msg = liftIO $ debugM "WebDAV" msg
+debugDav msg = liftIO $ debug "Remote.WebDAV" msg

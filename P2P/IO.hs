@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, FlexibleContexts, CPP #-}
+{-# LANGUAGE RankNTypes, FlexibleContexts, OverloadedStrings, CPP #-}
 
 module P2P.IO
 	( RunProto
@@ -35,6 +35,7 @@ import Utility.SimpleProtocol
 import Utility.Metered
 import Utility.Tor
 import Utility.FileMode
+import Utility.Debug
 import Types.UUID
 import Annex.ChangedRefs
 import qualified Utility.RawFilePath as R
@@ -48,7 +49,6 @@ import Control.Concurrent.Async
 import Control.Concurrent.STM
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
-import System.Log.Logger (debugM)
 import qualified Network.Socket as S
 
 -- Type of interpreters of the Proto free monad.
@@ -235,7 +235,7 @@ runNet runst conn runner f = case f of
 debugMessage :: P2PConnection -> String -> Message -> IO ()
 debugMessage conn prefix m = do
 	tid <- myThreadId	
-	debugM "p2p" $ concat $ catMaybes $
+	debug "P2P.IO" $ concat $ catMaybes $
 		[ (\ident -> "[" ++ ident ++ "] ") <$> mident
 		, Just $ "[" ++ show tid ++ "] "
 		, Just $ prefix ++ " " ++ unwords (formatMessage safem)

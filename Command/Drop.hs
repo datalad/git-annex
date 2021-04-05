@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.Drop where
 
 import Command
@@ -18,8 +20,8 @@ import Annex.NumCopies
 import Annex.Content
 import Annex.Wanted
 import Annex.Notification
+import Utility.Debug
 
-import System.Log.Logger (debugM)
 import qualified Data.Set as S
 
 cmd :: Command
@@ -113,7 +115,7 @@ performLocal key afile numcopies mincopies preverified = lockContentForRemoval k
 	(tocheck, verified) <- verifiableCopies key [u]
 	doDrop u (Just contentlock) key afile numcopies mincopies [] (preverified ++ verified) tocheck
 		( \proof -> do
-			liftIO $ debugM "drop" $ unwords
+			liftIO $ debug "Command.Drop" $ unwords
 				[ "Dropping from here"
 				, "proof:"
 				, show proof
@@ -140,7 +142,7 @@ performRemote key afile numcopies mincopies remote = do
 	(tocheck, verified) <- verifiableCopies key [uuid]
 	doDrop uuid Nothing key afile numcopies mincopies [uuid] verified tocheck
 		( \proof -> do 
-			liftIO $ debugM "drop" $ unwords
+			liftIO $ debug "Command.Drop" $ unwords
 				[ "Dropping from remote"
 				, show remote
 				, "proof:"

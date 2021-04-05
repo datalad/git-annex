@@ -20,7 +20,6 @@ import Data.Time.Format
 import Data.Time.Calendar
 import Data.Time.LocalTime
 import qualified Data.Text as T
-import System.Log.Logger
 import Control.Concurrent.Async
 import qualified System.FilePath.ByteString as P
 
@@ -50,6 +49,7 @@ import qualified Git.Ref
 import qualified Annex.Branch
 import Logs
 import Git.CatFile (catObjectStream)
+import Utility.Debug
 
 cmd :: Command
 cmd = notBareRepo $
@@ -96,7 +96,7 @@ getFeed addunlockedmatcher opts cache url = do
 						)
   where
 	debugfeedcontent feedcontent msg = do
-		liftIO $ debugM "feed content" $ unlines
+		liftIO $ debug "Command.ImportFeed" $ unlines
 			[ "start of feed content"
 			, feedcontent
 			, "end of feed content"

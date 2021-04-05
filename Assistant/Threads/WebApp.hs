@@ -80,7 +80,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 		<*> newWormholePairingState
 	setUrlRenderer urlrenderer $ yesodRender webapp (pack "")
 	app <- toWaiAppPlain webapp
-	app' <- ifM debugEnabled
+	app' <- ifM (fromMaybe False <$> (getAnnex $ Just . annexDebug <$> Annex.getGitConfig))
 		( return $ logStdout app
 		, return app
 		)

@@ -1,6 +1,6 @@
 {- git-annex output messages
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -43,7 +43,6 @@ module Messages (
 	setupConsole,
 	enableDebugOutput,
 	disableDebugOutput,
-	debugEnabled,
 	commandProgressDisabled,
 	jsonOutputEnabled,
 	outputMessage,
@@ -52,10 +51,6 @@ module Messages (
 	mkPrompter,
 ) where
 
-import System.Log.Logger
-import System.Log.Formatter
-import System.Log.Handler (setFormatter)
-import System.Log.Handler.Simple
 import Control.Concurrent
 import Control.Monad.IO.Class
 import qualified Data.ByteString as S
@@ -69,6 +64,7 @@ import Types.Command (StartMessage(..), SeekInput)
 import Types.Transfer (transferKey)
 import Messages.Internal
 import Messages.Concurrent
+import Utility.Debug
 import Annex.Concurrent.Utility
 import qualified Messages.JSON as JSON
 import qualified Annex
@@ -254,31 +250,33 @@ showRaw s = outputMessage JSON.none (s <> "\n")
 
 setupConsole :: IO ()
 setupConsole = do
-	s <- setFormatter
-		<$> streamHandler stderr DEBUG
-		<*> pure preciseLogFormatter
-	updateGlobalLogger rootLoggerName (setLevel NOTICE . setHandlers [s])
+	dd <- debugDisplayer
+	configureDebug dd (DebugSelector (\_ -> False))
 	{- Force output to be line buffered. This is normally the case when
 	 - it's connected to a terminal, but may not be when redirected to
 	 - a file or a pipe. -}
 	hSetBuffering stdout LineBuffering
 	hSetBuffering stderr LineBuffering
 
-{- Log formatter with precision into fractions of a second. -}
-preciseLogFormatter :: LogFormatter a
-preciseLogFormatter = tfLogFormatter "%F %X%Q" "[$time] $msg"
-
 enableDebugOutput :: IO ()
-enableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel DEBUG
+enableDebugOutput = do
+	dd <- debugDisplayer
+	configureDebug dd (DebugSelector (\_ -> True))
 
 disableDebugOutput :: IO ()
-disableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel NOTICE
+disableDebugOutput = do
+	dd <- debugDisplayer
+	configureDebug dd (DebugSelector (\_ -> False))
 
-{- Checks if debugging is enabled. -}
-debugEnabled :: IO Bool
-debugEnabled = do
-	l <- getRootLogger
-	return $ getLevel l <= Just DEBUG
+debugDisplayer :: IO (S.ByteString -> IO ())
+debugDisplayer = do
+	-- Debug output will get mixed in with any other output
+	-- made by git-annex, but use a lock to prevent two debug lines
+	-- that are displayed at the same time from mixing together.
+	lock <- newMVar ()
+	return $ \s -> withMVar lock $ \() -> do
+		S.putStr (s <> "\n")
+		hFlush stderr
 
 {- Should commands that normally output progress messages have that
  - output disabled? -}
