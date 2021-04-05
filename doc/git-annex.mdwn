@@ -780,11 +780,27 @@ may not be explicitly listed on their individual man pages.
 
 * `--debug`
 
-  Show debug messages.
+  Display debug messages.
 
 * `--no-debug`
 
-  Disable debug messages.
+  Disable display of debug messages.
+
+* `--debugfilter=name[,name..]`
+
+  When debug message display has been enabled by `--debug`, this filters
+  the debug messages that are displayed to ones coming from modules with
+  the specified names.
+  
+  To find the names of modules, see the full debug output, which includes
+  the module name, eg "(Utility.Process)"
+
+  The full module name does not need to be
+  specified when using this, a substring of the name will do.
+
+  For example, `--debugfilter=Process,External` will display debugging
+  output when git-annex runs processes, and when it communicates with
+  external special remotes.
 
 * `--numcopies=n`
 
@@ -1213,6 +1229,12 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 * `annex.debug`
 
   Set to true to enable debug logging by default.
+
+* `annex.debugfilter`
+
+  Set to configure which debug messages to display (when debug message
+  display has been enabled by annex.debug or --debug). The value is one
+  or more module names, separated by commas.
 
 * `annex.version`
 

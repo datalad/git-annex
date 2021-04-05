@@ -258,13 +258,17 @@ setupConsole = do
 	hSetBuffering stdout LineBuffering
 	hSetBuffering stderr LineBuffering
 
-enableDebugOutput :: IO ()
+enableDebugOutput :: Annex ()
 enableDebugOutput = do
-	dd <- debugDisplayer
-	configureDebug dd (DebugSelector (\_ -> True))
+	names <- map encodeBS . annexDebugFilter <$> Annex.getGitConfig
+	let selector
+		| null names = const True
+		| otherwise = \(DebugSource s) -> any (`S.isInfixOf` s) names
+	dd <- liftIO debugDisplayer
+	liftIO $ configureDebug dd (DebugSelector selector)
 
-disableDebugOutput :: IO ()
-disableDebugOutput = do
+disableDebugOutput :: Annex ()
+disableDebugOutput = liftIO $ do
 	dd <- debugDisplayer
 	configureDebug dd (DebugSelector (\_ -> False))
 

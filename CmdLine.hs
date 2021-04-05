@@ -146,7 +146,7 @@ prepRunCommand cmd globalconfig = do
 		Annex.setOutput QuietOutput
 	getParsed globalconfig
 	whenM (annexDebug <$> Annex.getGitConfig) $
-		liftIO enableDebugOutput
+		enableDebugOutput
 
 findAddonCommand :: Maybe String -> IO (Maybe Command)
 findAddonCommand Nothing = return Nothing

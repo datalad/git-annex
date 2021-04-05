@@ -54,6 +54,11 @@ commonGlobalOptions =
 		<> help "don't show debug messages"
 		<> hidden
 		)
+	, globalSetter setdebugfilter $ strOption
+		( long "debugfilter" <> metavar "NAME[,NAME..]"
+		<> help "show debug messages coming from a module"
+		<> hidden
+		)
 	, globalSetter setforcebackend $ strOption
 		( long "backend" <> short 'b' <> metavar paramName
 		<> help "specify key-value backend to use"
@@ -66,6 +71,9 @@ commonGlobalOptions =
 	setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 	-- Overriding this way, rather than just setting annexDebug
 	-- makes the config be passed on to any git-annex child processes.
-	setdebug b = Annex.addGitConfigOverride $ decodeBS' $
-		debugconfig <> "=" <> boolConfig' b
+	setdebug v = Annex.addGitConfigOverride $
+		decodeBS' $ debugconfig <> "=" <> boolConfig' v
+	setdebugfilter v = Annex.addGitConfigOverride $ 
+		decodeBS' (debugfilterconfig <> "=") ++ v
 	(ConfigKey debugconfig) = annexConfig "debug"
+	(ConfigKey debugfilterconfig) = annexConfig "debugfilter"

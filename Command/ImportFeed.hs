@@ -102,7 +102,7 @@ getFeed addunlockedmatcher opts cache url = do
 			, "end of feed content"
 			]
 		showEndResult =<< feedProblem url
-			(msg ++ " (use --debug to see the feed content that was downloaded)")
+			(msg ++ " (use --debug --debugfilter=ImportFeed to see the feed content that was downloaded)")
 
 data ToDownload = ToDownload
 	{ feed :: Feed

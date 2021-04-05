@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-04-05T19:28:36Z"
+ content="""
+I've implemented --debugfilter which can select the debug output you want
+to see.
+
+Also started splitting out the immutable parts of AnnexState, but that does
+not yet include debug options, due to the way option parsing currently
+works. Once that gets done, there's a new fastDebug that can be used inside
+tight loop code paths.
+"""]]

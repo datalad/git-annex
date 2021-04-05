@@ -100,8 +100,8 @@ storePrefs p = do
 			then addAutoStartFile here
 			else removeAutoStartFile here
 	setConfig (annexConfig "debug") (boolConfig $ enableDebug p)
-	liftIO $ if enableDebug p
-		then enableDebugOutput 
+	if enableDebug p
+		then enableDebugOutput
 		else disableDebugOutput
 
 getPreferencesR :: Handler Html

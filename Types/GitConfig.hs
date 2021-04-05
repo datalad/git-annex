@@ -1,6 +1,6 @@
 {- git-annex configuration
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -90,6 +90,7 @@ data GitConfig = GitConfig
 	, annexSyncContent :: GlobalConfigurable Bool
 	, annexSyncOnlyAnnex :: GlobalConfigurable Bool
 	, annexDebug :: Bool
+	, annexDebugFilter :: [String]
 	, annexWebOptions :: [String]
 	, annexYoutubeDlOptions :: [String]
 	, annexAriaTorrentOptions :: [String]
@@ -170,6 +171,8 @@ extractGitConfig configsource r = GitConfig
 	, annexSyncOnlyAnnex = configurable False $ 
 		getmaybebool (annexConfig "synconlyannex")
 	, annexDebug = getbool (annexConfig "debug") False
+	, annexDebugFilter = maybe [] (splitc ',') $
+		getmaybe (annexConfig "debugfilter")
 	, annexWebOptions = getwords (annexConfig "web-options")
 	, annexYoutubeDlOptions = getwords (annexConfig "youtube-dl-options")
 	, annexAriaTorrentOptions = getwords (annexConfig "aria-torrent-options")
