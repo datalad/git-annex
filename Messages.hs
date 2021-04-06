@@ -42,7 +42,6 @@ module Messages (
 	showRaw,
 	setupConsole,
 	enableDebugOutput,
-	disableDebugOutput,
 	commandProgressDisabled,
 	jsonOutputEnabled,
 	outputMessage,
@@ -263,11 +262,6 @@ enableDebugOutput = do
 	selector <- Annex.getRead Annex.debugselector
 	dd <- liftIO debugDisplayer
 	liftIO $ configureDebug dd selector
-
-disableDebugOutput :: Annex ()
-disableDebugOutput = liftIO $ do
-	dd <- debugDisplayer
-	configureDebug dd (DebugSelector (const False))
 
 debugDisplayer :: IO (S.ByteString -> IO ())
 debugDisplayer = do
