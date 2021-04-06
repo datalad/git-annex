@@ -43,7 +43,6 @@ import Utility.Url (URLString, matchStatusCodeException, matchHttpExceptionConte
 import Annex.UUID
 import Remote.WebDAV.DavLocation
 import Types.ProposedAccepted
-import Utility.Debug
 
 remote :: RemoteType
 remote = specialRemoteType $ RemoteType

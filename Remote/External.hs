@@ -38,7 +38,6 @@ import Annex.Content
 import Annex.Url
 import Annex.UUID
 import Creds
-import Utility.Debug
 
 import Control.Concurrent.STM
 import qualified Data.Map as M
@@ -494,7 +493,7 @@ handleRequest' st external req mp responsehandler
 	handleRemoteRequest (GETURLS key prefix) = do
 		mapM_ (send . VALUE) =<< getUrlsWithPrefix key prefix
 		send (VALUE "") -- end of list
-	handleRemoteRequest (DEBUG msg) = liftIO $ debug "Remote.External" msg
+	handleRemoteRequest (DEBUG msg) = fastDebug "Remote.External" msg
 	handleRemoteRequest (INFO msg) = showInfo msg
 	handleRemoteRequest (VERSION _) = senderror "too late to send VERSION"
 

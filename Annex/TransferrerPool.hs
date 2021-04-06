@@ -24,7 +24,6 @@ import Annex.Path
 import Annex.StallDetection
 import Utility.Batch
 import Utility.Metered
-import Utility.Debug
 import qualified Utility.SimpleProtocol as Proto
 
 import Control.Concurrent

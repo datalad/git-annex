@@ -49,7 +49,6 @@ import qualified Git.Ref
 import qualified Annex.Branch
 import Logs
 import Git.CatFile (catObjectStream)
-import Utility.Debug
 
 cmd :: Command
 cmd = notBareRepo $
@@ -96,7 +95,7 @@ getFeed addunlockedmatcher opts cache url = do
 						)
   where
 	debugfeedcontent feedcontent msg = do
-		liftIO $ debug "Command.ImportFeed" $ unlines
+		fastDebug "Command.ImportFeed" $ unlines
 			[ "start of feed content"
 			, feedcontent
 			, "end of feed content"

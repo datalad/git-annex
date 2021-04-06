@@ -66,7 +66,6 @@ import qualified Annex.Url as Url
 import Utility.Url (extractFromResourceT)
 import Annex.Url (getUrlOptions, withUrlOptions, UrlOptions(..))
 import Utility.Env
-import Utility.Debug
 
 type BucketName = String
 type BucketObject = String

@@ -27,7 +27,7 @@ module Assistant.Monad (
 import "mtl" Control.Monad.Reader
 import qualified Control.Monad.Fail as Fail
 
-import Annex.Common
+import Annex.Common hiding (debug)
 import Assistant.Types.ThreadedMonad
 import Assistant.Types.DaemonStatus
 import Assistant.Types.ScanRemotes

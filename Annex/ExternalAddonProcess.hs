@@ -13,7 +13,6 @@ import qualified Annex
 import Annex.Common
 import Git.Env
 import Utility.Shell
-import Utility.Debug
 import Messages.Progress
 
 import Control.Concurrent.Async

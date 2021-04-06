@@ -22,7 +22,6 @@ import Annex.Content
 import Annex.SpecialRemote.Config
 import qualified Database.Keys
 import Git.FilePath
-import Utility.Debug
 
 import qualified Data.Set as S
 
@@ -117,7 +116,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 	dodrop n@(have, numcopies, mincopies, _untrusted) u a = 
 		ifM (safely $ runner $ a numcopies mincopies)
 			( do
-				liftIO $ debug "Annex.Drop" $ unwords
+				fastDebug "Annex.Drop" $ unwords
 					[ "dropped"
 					, case afile of
 						AssociatedFile Nothing -> serializeKey key

@@ -17,7 +17,6 @@ import Types.Key
 import Types.Backend
 import Types.KeySource
 import Utility.Metered
-import Utility.Debug
 import qualified Utility.SimpleProtocol as Proto
 
 import qualified Data.ByteString as S
@@ -142,7 +141,7 @@ handleRequest st req whenunavail responsehandler =
 		warning ("external special remote error: " ++ err)
 		whenunavail
 	handleExceptionalMessage loop (DEBUG msg) = do
-		liftIO $ debug "Backend.External" msg
+		fastDebug "Backend.External" msg
 		loop
 
 withExternalAddon :: ExternalState -> a -> (ExternalAddonProcess -> a) -> a
