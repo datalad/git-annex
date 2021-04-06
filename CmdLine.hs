@@ -53,14 +53,14 @@ dispatch' subcommandname args fuzzy cmds allargs allcmds fields getgitrepo progn
   where
 	go (Right g) = do
 		g' <- Git.Config.read g
-		(cmd, seek, globalconfig) <- parsewith False cmdparser
+		(cmd, seek, globalsetter) <- parsewith False cmdparser
 			(\a -> a (Just g'))
 			O.handleParseResult
-		state <- Annex.new g'
+		state <- applyAnnexReadSetter globalsetter <$> Annex.new g'
 		Annex.eval state $ do
 			checkEnvironment
 			forM_ fields $ uncurry Annex.setField
-			prepRunCommand cmd globalconfig
+			prepRunCommand cmd globalsetter
 			startup
 			performCommandAction cmd seek $
 				shutdown $ cmdnocommit cmd
@@ -141,11 +141,14 @@ subCmdName argv = (name, args)
 		| "-" `isPrefixOf` a = findname as (a:c)
 		| otherwise = (Just a, reverse c ++ as)
 
+-- | Note that the GlobalSetter must have already had its annexReadSetter
+-- applied before entering the Annex monad; that cannot be changed while
+-- running in the Annex monad.
 prepRunCommand :: Command -> GlobalSetter -> Annex ()
-prepRunCommand cmd globalconfig = do
+prepRunCommand cmd globalsetter = do
 	when (cmdnomessages cmd) $
 		Annex.setOutput QuietOutput
-	getParsed globalconfig
+	annexStateSetter globalsetter
 	whenM (annexDebug <$> Annex.getGitConfig) $
 		enableDebugOutput
 

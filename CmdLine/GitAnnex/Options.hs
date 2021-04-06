@@ -43,55 +43,55 @@ import Annex.Concurrent
 -- although not always used.
 gitAnnexGlobalOptions :: [GlobalOption]
 gitAnnexGlobalOptions = commonGlobalOptions ++
-	[ globalSetter setnumcopies $ option auto
+	[ globalOption (setAnnexState . setnumcopies) $ option auto
 		( long "numcopies" <> short 'N' <> metavar paramNumber
 		<> help "override desired number of copies"
 		<> hidden
 		)
-	, globalSetter setmincopies $ option auto
+	, globalOption (setAnnexState . setmincopies) $ option auto
 		( long "mincopies" <> short 'N' <> metavar paramNumber
 		<> help "override minimum number of copies"
 		<> hidden
 		)
-	, globalSetter (Remote.forceTrust Trusted) $ strOption
+	, globalOption (setAnnexState . Remote.forceTrust Trusted) $ strOption
 		( long "trust" <> metavar paramRemote
 		<> help "deprecated, does not override trust setting"
 		<> hidden
 		<> completeRemotes
 		)
-	, globalSetter (Remote.forceTrust SemiTrusted) $ strOption
+	, globalOption (setAnnexState . Remote.forceTrust SemiTrusted) $ strOption
 		( long "semitrust" <> metavar paramRemote
 		<> help "override trust setting back to default"
 		<> hidden
 		<> completeRemotes
 		)
-	, globalSetter (Remote.forceTrust UnTrusted) $ strOption
+	, globalOption (setAnnexState . Remote.forceTrust UnTrusted) $ strOption
 		( long "untrust" <> metavar paramRemote
 		<> help "override trust setting to untrusted"
 		<> hidden
 		<> completeRemotes
 		)
-	, globalSetter setgitconfig $ strOption
+	, globalOption (setAnnexState . setgitconfig) $ strOption
 		( long "config" <> short 'c' <> metavar "NAME=VALUE"
 		<> help "override git configuration setting"
 		<> hidden
 		)
-	, globalSetter setuseragent $ strOption
+	, globalOption (setAnnexState . setuseragent) $ strOption
 		( long "user-agent" <> metavar paramName
 		<> help "override default User-Agent"
 		<> hidden
 		)
-	, globalFlag (toplevelWarning False "--trust-glacier no longer has any effect")
+	, globalFlag (setAnnexState $ toplevelWarning False "--trust-glacier no longer has any effect")
 		( long "trust-glacier"
 		<> help "deprecated, does not trust Amazon Glacier inventory"
 		<> hidden
 		)
-	, globalFlag (setdesktopnotify mkNotifyFinish)
+	, globalFlag (setAnnexState $ setdesktopnotify mkNotifyFinish)
 		( long "notify-finish"
 		<> help "show desktop notification after transfer finishes"
 		<> hidden
 		)
-	, globalFlag (setdesktopnotify mkNotifyStart)
+	, globalFlag (setAnnexState $ setdesktopnotify mkNotifyStart)
 		( long "notify-start"
 		<> help "show desktop notification after transfer starts"
 		<> hidden
@@ -241,80 +241,81 @@ keyMatchingOptions = keyMatchingOptions' ++ combiningOptions ++ timeLimitOption
 
 keyMatchingOptions' :: [GlobalOption]
 keyMatchingOptions' = 
-	[ globalSetter Limit.addIn $ strOption
+	[ globalOption (setAnnexState . Limit.addIn) $ strOption
 		( long "in" <> short 'i' <> metavar paramRemote
 		<> help "match files present in a remote"
 		<> hidden
 		<> completeRemotes
 		)
-	, globalSetter Limit.addCopies $ strOption
+	, globalOption (setAnnexState . Limit.addCopies) $ strOption
 		( long "copies" <> short 'C' <> metavar paramRemote
 		<> help "skip files with fewer copies"
 		<> hidden
 		)
-	, globalSetter (Limit.addLackingCopies False) $ strOption
+	, globalOption (setAnnexState . Limit.addLackingCopies False) $ strOption
 		( long "lackingcopies" <> metavar paramNumber
 		<> help "match files that need more copies"
 		<> hidden
 		)
-	, globalSetter (Limit.addLackingCopies True) $ strOption
+	, globalOption (setAnnexState . Limit.addLackingCopies True) $ strOption
 		( long "approxlackingcopies" <> metavar paramNumber
 		<> help "match files that need more copies (faster)"
 		<> hidden
 		)
-	, globalSetter Limit.addInBackend $ strOption
+	, globalOption (setAnnexState . Limit.addInBackend) $ strOption
 		( long "inbackend" <> short 'B' <> metavar paramName
 		<> help "match files using a key-value backend"
 		<> hidden
 		<> completeBackends
 		)
-	, globalFlag Limit.addSecureHash
+	, globalFlag (setAnnexState Limit.addSecureHash)
 		( long "securehash"
 		<> help "match files using a cryptographically secure hash"
 		<> hidden
 		)
-	, globalSetter Limit.addInAllGroup $ strOption
+	, globalOption (setAnnexState . Limit.addInAllGroup) $ strOption
 		( long "inallgroup" <> metavar paramGroup
 		<> help "match files present in all remotes in a group"
 		<> hidden
 		)
-	, globalSetter Limit.addMetaData $ strOption
+	, globalOption (setAnnexState . Limit.addMetaData) $ strOption
 		( long "metadata" <> metavar "FIELD=VALUE"
 		<> help "match files with attached metadata"
 		<> hidden
 		)
-	, globalFlag Limit.Wanted.addWantGet
+	, globalFlag (setAnnexState Limit.Wanted.addWantGet)
 		( long "want-get"
 		<> help "match files the repository wants to get"
 		<> hidden
 		)
-	, globalFlag Limit.Wanted.addWantDrop
+	, globalFlag (setAnnexState Limit.Wanted.addWantDrop)
 		( long "want-drop"
 		<> help "match files the repository wants to drop"
 		<> hidden
 		)
-	, globalSetter Limit.addAccessedWithin $ option (eitherReader parseDuration)
-		( long "accessedwithin"
-		<> metavar paramTime
-		<> help "match files accessed within a time interval"
-		<> hidden
-		)
-	, globalSetter Limit.addMimeType $ strOption
+	, globalOption (setAnnexState . Limit.addAccessedWithin) $
+		option (eitherReader parseDuration)
+			( long "accessedwithin"
+			<> metavar paramTime
+			<> help "match files accessed within a time interval"
+			<> hidden
+			)
+	, globalOption (setAnnexState . Limit.addMimeType) $ strOption
 		( long "mimetype" <> metavar paramGlob
 		<> help "match files by mime type"
 		<> hidden
 		)
-	, globalSetter Limit.addMimeEncoding $ strOption
+	, globalOption (setAnnexState . Limit.addMimeEncoding) $ strOption
 		( long "mimeencoding" <> metavar paramGlob
 		<> help "match files by mime encoding"
 		<> hidden
 		)
-	, globalFlag Limit.addUnlocked
+	, globalFlag (setAnnexState Limit.addUnlocked)
 		( long "unlocked"
 		<> help "match files that are unlocked"
 		<> hidden
 		)
-	, globalFlag Limit.addLocked
+	, globalFlag (setAnnexState Limit.addLocked)
 		( long "locked"
 		<> help "match files that are locked"
 		<> hidden
@@ -327,22 +328,22 @@ fileMatchingOptions lb = fileMatchingOptions' lb ++ combiningOptions ++ timeLimi
 
 fileMatchingOptions' :: Limit.LimitBy -> [GlobalOption]
 fileMatchingOptions' lb =
-	[ globalSetter Limit.addExclude $ strOption
+	[ globalOption (setAnnexState . Limit.addExclude) $ strOption
 		( long "exclude" <> short 'x' <> metavar paramGlob
 		<> help "skip files matching the glob pattern"
 		<> hidden
 		)
-	, globalSetter Limit.addInclude $ strOption
+	, globalOption (setAnnexState . Limit.addInclude) $ strOption
 		( long "include" <> short 'I' <> metavar paramGlob
 		<> help "limit to files matching the glob pattern"
 		<> hidden
 		)
-	, globalSetter (Limit.addLargerThan lb) $ strOption
+	, globalOption (setAnnexState . Limit.addLargerThan lb) $ strOption
 		( long "largerthan" <> metavar paramSize
 		<> help "match files larger than a size"
 		<> hidden
 		)
-	, globalSetter (Limit.addSmallerThan lb) $ strOption
+	, globalOption (setAnnexState . Limit.addSmallerThan lb) $ strOption
 		( long "smallerthan" <> metavar paramSize
 		<> help "match files smaller than a size"
 		<> hidden
@@ -358,17 +359,19 @@ combiningOptions =
 	, shortopt ')' "close group of options"
 	]
   where
-	longopt o h = globalFlag (Limit.addSyntaxToken o) ( long o <> help h <> hidden )
-	shortopt o h = globalFlag (Limit.addSyntaxToken [o]) ( short o <> help h <> hidden )
+	longopt o h = globalFlag (setAnnexState $ Limit.addSyntaxToken o)
+		( long o <> help h <> hidden )
+	shortopt o h = globalFlag (setAnnexState $ Limit.addSyntaxToken [o])
+		( short o <> help h <> hidden )
 
 jsonOptions :: [GlobalOption]
 jsonOptions = 
-	[ globalFlag (Annex.setOutput (JSONOutput stdjsonoptions))
+	[ globalFlag (setAnnexState $ Annex.setOutput (JSONOutput stdjsonoptions))
 		( long "json" <> short 'j'
 		<> help "enable JSON output"
 		<> hidden
 		)
-	, globalFlag (Annex.setOutput (JSONOutput jsonerrormessagesoptions))
+	, globalFlag (setAnnexState $ Annex.setOutput (JSONOutput jsonerrormessagesoptions))
 		( long "json-error-messages"
 		<> help "include error messages in JSON"
 		<> hidden
@@ -383,7 +386,7 @@ jsonOptions =
 
 jsonProgressOption :: [GlobalOption]
 jsonProgressOption = 
-	[ globalFlag (Annex.setOutput (JSONOutput jsonoptions))
+	[ globalFlag (setAnnexState $ Annex.setOutput (JSONOutput jsonoptions))
 		( long "json-progress"
 		<> help "include progress in JSON output"
 		<> hidden
@@ -399,7 +402,7 @@ jsonProgressOption =
 -- action in `allowConcurrentOutput`.
 jobsOption :: [GlobalOption]
 jobsOption = 
-	[ globalSetter (setConcurrency . ConcurrencyCmdLine) $ 
+	[ globalOption (setAnnexState . setConcurrency . ConcurrencyCmdLine) $ 
 		option (maybeReader parseConcurrency)
 			( long "jobs" <> short 'J' 
 			<> metavar (paramNumber `paramOr` "cpus")
@@ -410,14 +413,14 @@ jobsOption =
 
 timeLimitOption :: [GlobalOption]
 timeLimitOption = 
-	[ globalSetter settimelimit $ option (eitherReader parseDuration)
+	[ globalOption settimelimit $ option (eitherReader parseDuration)
 		( long "time-limit" <> short 'T' <> metavar paramTime
 		<> help "stop after the specified amount of time"
 		<> hidden
 		)
 	]
   where
-	settimelimit duration = do
+	settimelimit duration = setAnnexState $ do
 		start <- liftIO getPOSIXTime
 		let cutoff = start + durationToPOSIXTime duration
 		Annex.changeState $ \s -> s { Annex.timelimit = Just (duration, cutoff) }

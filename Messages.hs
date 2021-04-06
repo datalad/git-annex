@@ -64,7 +64,7 @@ import Types.Command (StartMessage(..), SeekInput)
 import Types.Transfer (transferKey)
 import Messages.Internal
 import Messages.Concurrent
-import Utility.Debug
+import Annex.Debug
 import Annex.Concurrent.Utility
 import qualified Messages.JSON as JSON
 import qualified Annex
@@ -251,7 +251,7 @@ showRaw s = outputMessage JSON.none (s <> "\n")
 setupConsole :: IO ()
 setupConsole = do
 	dd <- debugDisplayer
-	configureDebug dd mempty
+	configureDebug dd (DebugSelector (const False))
 	{- Force output to be line buffered. This is normally the case when
 	 - it's connected to a terminal, but may not be when redirected to
 	 - a file or a pipe. -}
@@ -260,17 +260,14 @@ setupConsole = do
 
 enableDebugOutput :: Annex ()
 enableDebugOutput = do
-	names <- map encodeBS . annexDebugFilter <$> Annex.getGitConfig
-	let selector
-		| null names = const True
-		| otherwise = \(DebugSource s) -> any (`S.isInfixOf` s) names
+	selector <- Annex.getRead Annex.debugselector
 	dd <- liftIO debugDisplayer
-	liftIO $ configureDebug dd (DebugSelector selector)
+	liftIO $ configureDebug dd selector
 
 disableDebugOutput :: Annex ()
 disableDebugOutput = liftIO $ do
 	dd <- debugDisplayer
-	configureDebug dd mempty
+	configureDebug dd (DebugSelector (const False))
 
 debugDisplayer :: IO (S.ByteString -> IO ())
 debugDisplayer = do

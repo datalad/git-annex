@@ -74,7 +74,7 @@ addGlobalOptions c = c { cmdglobaloptions = globalOptions ++ cmdglobaloptions c 
 
 globalOptions :: [GlobalOption]
 globalOptions = 
-	globalSetter checkUUID (strOption
+	globalOption (setAnnexState . checkUUID) (strOption
 		( long "uuid" <> metavar paramUUID
 		<> help "local repository uuid"
 		))

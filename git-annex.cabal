@@ -627,6 +627,8 @@ Executable git-annex
     Annex.Content.LowLevel
     Annex.Content.PointerFile
     Annex.CurrentBranch
+    Annex.Debug
+    Annex.Debug.Utility
     Annex.Difference
     Annex.DirHashes
     Annex.Drop

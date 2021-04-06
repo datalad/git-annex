@@ -76,6 +76,7 @@ import Types.RemoteConfig
 import Types.TransferrerPool
 import Types.VectorClock
 import Annex.VectorClock.Utility
+import Annex.Debug.Utility
 import qualified Database.Keys.Handle as Keys
 import Utility.InodeCache
 import Utility.Url
@@ -119,10 +120,11 @@ data AnnexRead = AnnexRead
 	, sshstalecleaned :: TMVar Bool
 	, signalactions :: TVar (M.Map SignalAction (Int -> IO ()))
 	, transferrerpool :: TransferrerPool
+	, debugselector :: DebugSelector
 	}
 
-newAnnexRead :: IO AnnexRead
-newAnnexRead = do
+newAnnexRead :: GitConfig -> IO AnnexRead
+newAnnexRead c = do
 	emptyactivekeys <- newTVarIO M.empty
 	emptyactiveremotes <- newMVar M.empty
 	kh <- Keys.newDbHandle
@@ -136,6 +138,7 @@ newAnnexRead = do
 		, sshstalecleaned = sc
 		, signalactions = si
 		, transferrerpool = tp
+		, debugselector = debugSelectorFromGitConfig c
 		}
 
 -- Values that can change while running an Annex action.
@@ -261,7 +264,7 @@ new r = do
 	r' <- Git.Config.read r
 	let c = extractGitConfig FromGitConfig r'
 	st <- newAnnexState c =<< fixupRepo r' c
-	rd <- newAnnexRead
+	rd <- newAnnexRead c
 	return (st, rd)
 
 {- Performs an action in the Annex monad from a starting state,
