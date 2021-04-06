@@ -264,7 +264,9 @@ get file = getCache file >>= \case
  - (Changing the value this returns, and then merging is always the
  - same as using get, and then changing its value.) -}
 getLocal :: RawFilePath -> Annex L.ByteString
-getLocal file = go =<< getJournalFileStale file
+getLocal file = do
+	fastDebug "Annex.Branch" ("read " ++ fromRawFilePath file)
+	go =<< getJournalFileStale file
   where
 	go (Just journalcontent) = return journalcontent
 	go Nothing = getRef fullname file
@@ -312,6 +314,7 @@ set :: Journalable content => JournalLocked -> RawFilePath -> content -> Annex (
 set jl f c = do
 	journalChanged
 	setJournalFile jl f c
+	fastDebug "Annex.Branch" ("set " ++ fromRawFilePath f)
 	-- Could cache the new content, but it would involve
 	-- evaluating a Journalable Builder twice, which is not very
 	-- efficient. Instead, assume that it's not common to need to read
