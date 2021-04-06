@@ -52,13 +52,14 @@ dispatch' subcommandname args fuzzy cmds allargs allcmds fields getgitrepo progn
 	go =<< tryNonAsync getgitrepo
   where
 	go (Right g) = do
-		state <- Annex.new g
+		g' <- Git.Config.read g
+		(cmd, seek, globalconfig) <- parsewith False cmdparser
+			(\a -> a (Just g'))
+			O.handleParseResult
+		state <- Annex.new g'
 		Annex.eval state $ do
 			checkEnvironment
 			forM_ fields $ uncurry Annex.setField
-			(cmd, seek, globalconfig) <- parsewith False cmdparser
-				(\a -> inRepo $ a . Just)
-				(liftIO . O.handleParseResult)
 			prepRunCommand cmd globalconfig
 			startup
 			performCommandAction cmd seek $
