@@ -1,0 +1,5 @@
+AnnexRead has recently been split out of AnnexState,
+and reading values from it is faster (no MVar). So,
+anything that never needs to be modified while git-annex is running can be
+moved to AnnexRead for a performance win and also to make clean how it's
+used. --[[Joey]]

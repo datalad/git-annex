@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-04-06T19:42:06Z"
+ content="""
+fastDebug is implemented.. Benchmarking, I get:
+
+- without debugging in Annex.Branch: 4.75s
+- debug in Annex.Branch: 4.88s, 0.027% slower
+- fastDebug in Annex.Branch: 4.83s, 0.016% slower
+
+So I was right that fastDebug would be faster, but I guess there's still
+some small overhead to check the data structure to see if debugging is
+enabled, and it may not be possible to avoid that. (Maybe unboxing would
+help?)
+
+I'm not bothered by such a small slowdown;
+git-annex has been sped up a lot in recent times and it's ok to pay that.
+(Although I actually finessed it by not debugging cache hits.)
+But cumulative slowdowns from adding debugging lots of places that end up
+all being used in the same tight loop is still something to keep an eye on.
+
+With that said, it should be easy to add
+additional debug info to most parts of git-annex now, so get in touch if
+you have something specific you want debug info for. I'm closing this todo
+here.
+
+(See also, [[todo/move_readonly_values_to_AnnexRead]])
+"""]]
