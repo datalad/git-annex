@@ -59,7 +59,7 @@ git_annex_shell cs r command params fields
 	dir = Git.repoPath r
 	shellcmd = "git-annex-shell"
 	getshellopts = do
-		debugenabled <- annexDebug <$> Annex.getGitConfig
+		debugenabled <- Annex.getRead Annex.debugenabled
 		let params' = if debugenabled
 			then Param "--debug" : params
 			else params

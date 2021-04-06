@@ -142,14 +142,14 @@ subCmdName argv = (name, args)
 		| otherwise = (Just a, reverse c ++ as)
 
 -- | Note that the GlobalSetter must have already had its annexReadSetter
--- applied before entering the Annex monad; that cannot be changed while
--- running in the Annex monad.
+-- applied before entering the Annex monad to run this; that cannot be
+-- changed while running in the Annex monad.
 prepRunCommand :: Command -> GlobalSetter -> Annex ()
 prepRunCommand cmd globalsetter = do
 	when (cmdnomessages cmd) $
 		Annex.setOutput QuietOutput
 	annexStateSetter globalsetter
-	whenM (annexDebug <$> Annex.getGitConfig) $
+	whenM (Annex.getRead Annex.debugenabled) $
 		enableDebugOutput
 
 findAddonCommand :: Maybe String -> IO (Maybe Command)

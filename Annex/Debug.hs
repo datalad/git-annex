@@ -26,5 +26,6 @@ import Annex.Debug.Utility
 -- when debugging is not enabled.
 fastDebug :: DebugSource -> String -> Annex.Annex ()
 fastDebug src msg = do
-	selector <- Annex.getRead Annex.debugselector
-	liftIO $ Utility.Debug.fastDebug selector src msg
+	rd <- Annex.getRead id
+	when (Annex.debugenabled rd) $
+		liftIO $ Utility.Debug.fastDebug (Annex.debugselector rd) src msg

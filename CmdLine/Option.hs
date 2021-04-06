@@ -45,12 +45,12 @@ commonGlobalOptions =
 		<> help "allow verbose output (default)"
 		<> hidden
 		)
-	, globalFlag (setAnnexState $ setdebug True)
+	, globalFlag (setdebug True)
 		( long "debug" <> short 'd'
 		<> help "show debug messages"
 		<> hidden
 		)
-	, globalFlag (setAnnexState $ setdebug False)
+	, globalFlag (setdebug False)
 		( long "no-debug"
 		<> help "don't show debug messages"
 		<> hidden
@@ -74,15 +74,17 @@ commonGlobalOptions =
 	setforcebackend v = setAnnexState $
 		Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 	
-	-- Overriding this way, rather than just setting annexDebug
-	-- makes the config be passed on to any git-annex child processes.
-	setdebug v = Annex.addGitConfigOverride $
-		decodeBS' $ debugconfig <> "=" <> boolConfig' v
+	setdebug v = mconcat
+		[ setAnnexRead $ \rd -> rd { Annex.debugenabled = v }
+		-- Also set in git config so it will be passed on to any
+		-- git-annex child processes.
+		, setAnnexState $ Annex.addGitConfigOverride $
+			decodeBS' $ debugconfig <> "=" <> boolConfig' v
+		]
 	
 	setdebugfilter v = mconcat
 		[ setAnnexRead $ \rd -> rd
-			{ Annex.debugselector = parseDebugSelector v
-			}
+			{ Annex.debugselector = parseDebugSelector v }
 		-- Also set in git config so it will be passed on to any
 		-- git-annex child processes.
 		, setAnnexState $ Annex.addGitConfigOverride $ 

@@ -120,6 +120,7 @@ data AnnexRead = AnnexRead
 	, sshstalecleaned :: TMVar Bool
 	, signalactions :: TVar (M.Map SignalAction (Int -> IO ()))
 	, transferrerpool :: TransferrerPool
+	, debugenabled :: Bool
 	, debugselector :: DebugSelector
 	}
 
@@ -138,6 +139,7 @@ newAnnexRead c = do
 		, sshstalecleaned = sc
 		, signalactions = si
 		, transferrerpool = tp
+		, debugenabled = annexDebug c
 		, debugselector = debugSelectorFromGitConfig c
 		}
 
