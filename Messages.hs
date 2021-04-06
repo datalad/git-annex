@@ -251,7 +251,7 @@ showRaw s = outputMessage JSON.none (s <> "\n")
 setupConsole :: IO ()
 setupConsole = do
 	dd <- debugDisplayer
-	configureDebug dd (DebugSelector (\_ -> False))
+	configureDebug dd mempty
 	{- Force output to be line buffered. This is normally the case when
 	 - it's connected to a terminal, but may not be when redirected to
 	 - a file or a pipe. -}
@@ -270,7 +270,7 @@ enableDebugOutput = do
 disableDebugOutput :: Annex ()
 disableDebugOutput = liftIO $ do
 	dd <- debugDisplayer
-	configureDebug dd (DebugSelector (\_ -> False))
+	configureDebug dd mempty
 
 debugDisplayer :: IO (S.ByteString -> IO ())
 debugDisplayer = do

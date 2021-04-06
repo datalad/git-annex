@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings, FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -fno-warn-tabs -w #-}
 
 module Utility.Debug (
@@ -22,6 +23,8 @@ import Data.IORef
 import Data.String
 import Data.Time
 import System.IO.Unsafe (unsafePerformIO)
+import qualified Data.Semigroup as Sem
+import Prelude
 
 import Utility.FileSystemEncoding
 
@@ -34,7 +37,18 @@ instance IsString DebugSource where
 	fromString = DebugSource . encodeBS'
 
 -- | Selects whether to display a message from a source.
-newtype DebugSelector = DebugSelector (DebugSource -> Bool)
+data DebugSelector 
+	= DebugSelector (DebugSource -> Bool)
+	| NoDebugSelector
+
+instance Sem.Semigroup DebugSelector where
+	DebugSelector a <> DebugSelector b = DebugSelector (\v -> a v || b v)
+	NoDebugSelector <> NoDebugSelector = NoDebugSelector
+	NoDebugSelector <> b = b
+	a <> NoDebugSelector = a
+
+instance Monoid DebugSelector where
+	mempty = NoDebugSelector
 
 -- | Configures debugging.
 configureDebug
@@ -54,7 +68,7 @@ debugConfigGlobal :: IORef (S.ByteString -> IO (), DebugSelector)
 debugConfigGlobal = unsafePerformIO $ newIORef (dontshow, selectnone)
   where
 	dontshow _ = return ()
-	selectnone = DebugSelector (\_ -> False)
+	selectnone = NoDebugSelector
 
 -- | Displays a debug message, if that has been enabled by configureDebug.
 --
@@ -62,21 +76,23 @@ debugConfigGlobal = unsafePerformIO $ newIORef (dontshow, selectnone)
 -- have to consult a IORef each time, using it in a tight loop may slow
 -- down the program.
 debug :: DebugSource -> String -> IO ()
-debug src msg = do
-	(displayer, DebugSelector p) <- readIORef debugConfigGlobal
-	if p src
-		then displayer =<< formatDebugMessage src msg
-		else return ()
+debug src msg = readIORef debugConfigGlobal >>= \case
+	(displayer, NoDebugSelector) ->
+		displayer =<< formatDebugMessage src msg
+	(displayer, DebugSelector p)
+		| p src -> displayer =<< formatDebugMessage src msg
+		| otherwise -> return ()
 
 -- | Displays a debug message, if the DebugSelector allows.
 --
 -- When the DebugSelector does not let the message be displayed, this runs
 -- very quickly, allowing it to be used inside tight loops.
 fastDebug :: DebugSelector -> DebugSource -> String -> IO ()
+fastDebug NoDebugSelector src msg = do
+	(displayer, _) <- readIORef debugConfigGlobal
+	displayer =<< formatDebugMessage src msg
 fastDebug (DebugSelector p) src msg
-	| p src = do
-		(displayer, _) <- readIORef debugConfigGlobal
-		displayer =<< formatDebugMessage src msg
+	| p src = fastDebug NoDebugSelector src msg
 	| otherwise = return ()
 
 formatDebugMessage :: DebugSource -> String -> IO S.ByteString
