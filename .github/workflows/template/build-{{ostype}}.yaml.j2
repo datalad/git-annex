@@ -252,7 +252,7 @@ jobs:
           if git rev-parse refs/tags/"$INPUT_COMMITISH" &> /dev/null
           then
               echo "[INFO] Building a tag; uploading assets to release ..."
-              if gh release list | grep -Fqx "$INPUT_COMMITISH"
+              if gh release list | grep -q "^$INPUT_COMMITISH\b"
               then
                   echo "[INFO] Release already exists; uploading assets"
                   gh release upload "$INPUT_COMMITISH" git-annex[-_]*.*
