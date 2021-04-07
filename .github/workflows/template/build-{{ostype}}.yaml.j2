@@ -246,6 +246,29 @@ jobs:
             git-annex[-_]*.*
             dist/build-version
 
+      - name: Create new release
+        if: github.event.inputs.commitish != ''
+        run: |
+          if git rev-parse refs/tags/"$INPUT_COMMITISH" &> /dev/null
+          then
+              echo "[INFO] Building a tag; uploading assets to release ..."
+              if gh release list | grep -Fqx "$INPUT_COMMITISH"
+              then
+                  echo "[INFO] Release already exists; uploading assets"
+                  gh release upload "$INPUT_COMMITISH" git-annex[-_]*.*
+              else
+                  echo "[INFO] Creating release"
+                  gh release create \
+                    --notes "This is an unofficial release build provided by the DataLad team." \
+                    "$INPUT_COMMITISH" git-annex[-_]*.*
+              fi
+          else
+              echo "[INFO] Not building a tag; no release to make"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_COMMITISH: ${{ github.event.inputs.commitish }}
+
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
         run: |
