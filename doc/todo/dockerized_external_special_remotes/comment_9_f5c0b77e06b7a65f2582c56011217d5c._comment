@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="running untrusted code"
+ date="2021-04-07T16:52:41Z"
+ content="""
+My main reason for wanting dockerized special remotes and external backends, is to be able to use custom remotes/backends without adding a burden on repo users (beyond the standard `git-annex-init` after checkout), similar to what autoenabling of remotes does.  So needing users to know about and set some special git config kind of removes the point.   Maybe, instead, can just prompt the user for permission to install an external remote/backend, like [what emacs does](https://orgmode.org/manual/Code-Evaluation-Security.html) for calling untrusted code?
+
+In practice you'd typically trust code from a specific repo or author, so not sure `annex.special-remote-installer` could automatically determine the trust.  
+
+I understand \"the benefit of not tying git-annex to any particular technology like docker\"; OTOH it's already tied to some particular technologies, like with the built-in S3 special remote.
+
+
+"""]]
