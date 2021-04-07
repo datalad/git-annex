@@ -19,7 +19,6 @@ import Config
 import Config.Files.AutoStart
 import Annex.NumCopies
 import Utility.DataUnits
-import Git.Config
 import Types.Distribution
 import Assistant.Upgrade
 
@@ -31,7 +30,6 @@ data PrefsForm = PrefsForm
 	, numCopies :: Int
 	, autoStart :: Bool
 	, autoUpgrade :: AutoUpgrade
-	, enableDebug :: Bool
 	}
 
 prefsAForm :: PrefsForm -> MkAForm PrefsForm
@@ -44,12 +42,9 @@ prefsAForm d = PrefsForm
 		"Auto start" (Just $ autoStart d)
 	<*> areq (selectFieldList autoUpgradeChoices)
 		(bfs autoUpgradeLabel) (Just $ autoUpgrade d)
-	<*> areq (checkBoxField `withNote` debugnote)
-		"Enable debug logging" (Just $ enableDebug d)
   where
 	diskreservenote = [whamlet|<br>Avoid downloading files from other repositories when there is too little free disk space.|]
 	numcopiesnote = [whamlet|<br>Only drop a file after verifying that other repositories contain this many copies.|]
-	debugnote = [whamlet|<a href="@{LogR}">View Log</a>|]
 	autostartnote = [whamlet|Start the git-annex assistant at boot or on login.|]
 
 	autoUpgradeChoices :: [(Text, AutoUpgrade)]
@@ -86,7 +81,6 @@ getPrefs = PrefsForm
 	<*> (fromNumCopies <$> getNumCopies)
 	<*> inAutoStartFile
 	<*> (annexAutoUpgrade <$> Annex.getGitConfig)
-	<*> (annexDebug <$> Annex.getGitConfig)
 
 storePrefs :: PrefsForm -> Annex ()
 storePrefs p = do
@@ -99,10 +93,6 @@ storePrefs p = do
 		liftIO $ if autoStart p
 			then addAutoStartFile here
 			else removeAutoStartFile here
-	setConfig (annexConfig "debug") (boolConfig $ enableDebug p)
-	if enableDebug p
-		then enableDebugOutput
-		else disableDebugOutput
 
 getPreferencesR :: Handler Html
 getPreferencesR = postPreferencesR
