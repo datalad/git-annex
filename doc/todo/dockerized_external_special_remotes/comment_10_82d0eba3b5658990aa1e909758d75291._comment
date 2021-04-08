@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2021-04-08T17:40:40Z"
+ content="""
+Prompting users about things rarely improves security.
+(Not saying it doesn't in the case of emacs org mode, which may be a
+special case.) A good way to make clear to a user that they are running
+code that comes from a git repository is to make them take the effort to
+run ./setup or something like that.
+
+It would also be weird for git-annex to prompt for this, since it never
+prompts about anything else, and auto-enabling these special remotes could
+happen when running any git-annex command.
+"""]]
