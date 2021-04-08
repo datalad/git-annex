@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-04-08T17:02:04Z"
+ content="""
+The assistant's local pairing uses a custom method to discover
+other assistants on the LAN, but then all it does is exchange ssh public
+keys, and each configures ssh to let the other's ssh public key in,
+limiting it to running `git-annex-shell` and limiting git-annex-shell
+to access the one repository.
+
+It's pretty easy to set up the same kind of ssh public 
+key configuration yourself manually. Just generate a public key, and on the
+other host add it to `.ssh/authorized_keys`. The git-annex-shell man page
+has an example of what to put in `authorized_keys` to fully lock it down.
+
+There could be room in `git-annex p2p` to implement something like the
+assistant's local pairing. But I don't know if it's called for since
+setting up a locked down ssh key is straightforward, at least
+compared with its current use case of setting up a tor hidden service
+and limiting who can access it.
+"""]]
