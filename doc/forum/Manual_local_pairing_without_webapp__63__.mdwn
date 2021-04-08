@@ -1,0 +1,5 @@
+I haven't found anything on this, is there a way to do local pairing without starting the assistant (ideally from the CLI)?
+
+The assistant is pretty heavy, does lots of stuff automatically I might not want it to in many situations (commit, sync) and a GUI is often more cumbersome than a CLI in my experience.
+
+The main use-case would be for headless systems where I might want to give a user/machine access to an annex repo without granting them full access to the system.
