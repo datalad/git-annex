@@ -119,7 +119,7 @@ activeNetworkAddresses = filter (not . all (`elem` "0.:") . showAddr)
  - Note that the repository's description is not shown to the user, because
  - it could be something like "my repo", which is confusing when pairing
  - with someone else's repo. However, this has the same format as the
- - default decription of a repo. -}
+ - default description of a repo. -}
 pairRepo :: PairMsg -> String
 pairRepo msg = concat
 	[ remoteUserName d
