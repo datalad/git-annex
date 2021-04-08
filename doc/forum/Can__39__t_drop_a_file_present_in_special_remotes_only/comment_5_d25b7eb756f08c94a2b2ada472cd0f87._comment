@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 5"
+ date="2021-04-08T19:33:44Z"
+ content="""
+I guess one difference is be that other repos may erroneously think a file is present in the special remote when, in actuality, it has been deleted. (That's what trust/semitrust is for, right?)  
+In my use-case it doesn't make much of a difference since the special remote will rarely see a deletion but I can imagine there might also be ones where it could end catastrophically.
+
+A better solution all around would probably be to enable the user to override a special remote's perceived locking ability somehow (and only that, no other trust factors).
+
+Having a runtime switch for temporarily trusting special remotes to lock files would be useful in any case though IMO.
+"""]]
