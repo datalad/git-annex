@@ -18,7 +18,7 @@ What's important though is that this workflow doesn't involve manually running m
 
 # Implementation
 
-There has been some discussion around specific implementations of a deletion workflow few years ago already: https://git-annex.branchable.com/forum/Blacklisting_files___40__so_that_they_get_removed_any_time_a_copy_is_found__41__/
+[There has been some discussion around specific implementations of a deletion workflow few years ago already](https://git-annex.branchable.com/forum/Blacklisting_files___40__so_that_they_get_removed_any_time_a_copy_is_found__41__/)
 
 I'd personally like to see a recycle bin in the form of a special (gitignored?) directory inside the working tree where deleted files would land. One could then either delete the files from the bin (thus marking them for final deletion) or move them back into the repo, cancelling deletion. (Any copy present in the regular working tree should imply that the file is wanted.)  
 This would be quite a simple workflow from a user's perspective IMO and would mimic the behaviour of all major desktop environments (Windows, OSXI, GNOME, KDE).
