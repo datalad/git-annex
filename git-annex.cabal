@@ -48,6 +48,7 @@ Extra-Source-Files:
   doc/git-annex-assistant.mdwn
   doc/git-annex-calckey.mdwn
   doc/git-annex-checkpresentkey.mdwn
+  doc/git-annex-config.mdwn
   doc/git-annex-contentlocation.mdwn
   doc/git-annex-copy.mdwn
   doc/git-annex-dead.mdwn
@@ -128,6 +129,7 @@ Extra-Source-Files:
   doc/git-annex-uninit.mdwn
   doc/git-annex-unlock.mdwn
   doc/git-annex-untrust.mdwn
+  doc/git-annex-unregisterurl.mdwn
   doc/git-annex-unused.mdwn
   doc/git-annex-upgrade.mdwn
   doc/git-annex-vadd.mdwn
