@@ -674,8 +674,8 @@ jobs:
         run: |
           {% if ostype == "macos" %}
           brew install exempi  # Needed by python-xmp-toolkit
-          mkdir -p /tmp/DLTMP
-          echo TMPDIR=/tmp/DLTMP >> "$GITHUB_ENV"
+          mkdir -p /private/tmp/DLTMP
+          echo TMPDIR=/private/tmp/DLTMP >> "$GITHUB_ENV"
           {% endif %}
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
