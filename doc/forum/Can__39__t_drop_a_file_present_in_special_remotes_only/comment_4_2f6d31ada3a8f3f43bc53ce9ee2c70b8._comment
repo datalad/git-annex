@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-04-08T16:49:43Z"
+ content="""
+I don't think there's much difference between your suggested `--no-lock`
+and trusting the special remote, is there?
+
+Anyway, there is the recently added annex.mincopies, which controls
+how many copies git-annex requires to have locked for a drop to succeed.
+Default is 1. I added that thinking some might want *more* locking
+and so a higher value, but you could set it to a lower value which 
+would behave the same as `--no-lock`.
+"""]]
