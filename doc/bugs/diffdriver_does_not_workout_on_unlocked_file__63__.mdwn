@@ -10,6 +10,7 @@ $> git diff HEAD^
 +/annex/objects/MD5E-s2--6d7fce9fee471194aa8b5b6e47267f03.dat
 """]]
 
+NB edit: order of the diff is reverted from what it should be, I guess need to swap `$1` and `$2` in the driver
 
 <details>
 <summary>my current git config and (dirty) git-annex diffdriver</summary> 
