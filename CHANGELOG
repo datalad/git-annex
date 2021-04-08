@@ -4,6 +4,7 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
   * Avoid excess commits to the git-annex branch when stall detection is
     enabled.
   * Added --debugfilter (and annex.debugfilter)
+  * diffdriver: Support unlocked files.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Apr 2021 12:17:26 -0400
 

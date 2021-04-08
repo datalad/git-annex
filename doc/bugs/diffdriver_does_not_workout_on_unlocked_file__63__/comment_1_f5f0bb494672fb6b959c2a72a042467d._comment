@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-04-08T18:09:25Z"
+ content="""
+Let's see, I have a file foo that was added, locked, and committed.
+I then unlock foo, and modify it. Then I run
+
+	GIT_EXTERNAL_DIFF='git-annex diffdriver -- my-diff --' git diff HEAD
+
+And my-diff is a shell script that prints "$@". So I see:
+
+	foo .git/annex/objects/W8/Zw/SHA256E-s30--9e179ece66f95419f996974c1e478294d6d6e8ea3eee2e6694d1d2fba5d82704/SHA256E-s30--9e179ece66f95419f996974c1e478294d6d6e8ea3eee2e6694d1d2fba5d82704 ebf7004afbf3838eaad7db6af8b77eb21eb1f810 120000 foo 0000000000000000000000000000000000000000 100644
+
+$2 is the old content of the file, which git-annex diffdriver has correctly
+fixed up to be the annex object file. $5 is the new version of the file
+which git-annex has not touched, but it's "foo" in the working tree, which is right.
+
+So that's ok, what about the other way around. Start with foo being unlocked,
+commit that, then modify it, and add it locked. Now I see:
+
+	foo /home/joey/tmp/5klQtl_foo 1a822e679e46982e0119f0ea725aaaffc6954f4b 100644 .git/annex/objects/wm/ZV/SHA256E-s8--ca7eb6f8a60a1abaddc1df52662184d6e7b33feca3cb5165343321dc35aeda17/SHA256E-s8--ca7eb6f8a60a1abaddc1df52662184d6e7b33feca3cb5165343321dc35aeda17 3ba78f367ca1a5b5bf6a4054a117d5d9a013073a 120000
+
+Here git-annex diffdriver has correctly fixed up $5, but $2 is left as-is,
+and if I have it cat that tmp file, it's "/annex/objects/SHA..."; the git-annex
+link used for the locked file.
+
+Ok, now I understand. :)
+"""]]

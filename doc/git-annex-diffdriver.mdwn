@@ -9,10 +9,10 @@ git annex diffdriver `-- cmd --opts --`
 # DESCRIPTION
 
 This is an external git diff driver shim. Normally, when using `git diff`
-with an external diff driver, the symlinks to annexed files are not set up
-right, so the external diff driver cannot read them in order to perform
-smart diffing of their contents. This command works around the problem,
-by passing the fixed up files to the real external diff driver.
+with an external diff driver, it will not see the contents of annexed
+files, since git passes to it the git-annex symlinks or pointer files.
+This command works around the problem, by running the 
+real external diff driver, and passing it the paths to the annexed content.
 
 To use this, you will need to have installed some git external diff driver
 command. This is not the regular diff command; it takes a git-specific

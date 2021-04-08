@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -77,8 +77,12 @@ parseReq opts = case separate (== "--") opts of
 
 {- Check if either file is a symlink to a git-annex object,
  - which git-diff will leave as a normal file containing the link text.
- - Adjust the Req to instead point to the actual location of the annexed
- - object (which may or may not exist). -}
+ -
+ - Also check if either file is a pointer file, as used for unlocked files.
+ -
+ - In either case, adjust the Req to instead point to the actual
+ - location of the annexed object (which may or may not be present).
+ -}
 fixupReq :: Req -> Annex Req
 fixupReq req@(UnmergedReq {}) = return req
 fixupReq req@(Req {}) = 
@@ -87,12 +91,13 @@ fixupReq req@(Req {}) =
   where
 	check getfile getmode setfile r = case readTreeItemType (encodeBS' (getmode r)) of
 		Just TreeSymlink -> do
-			v <- getAnnexLinkTarget' (toRawFilePath (getfile r)) False
-			case parseLinkTargetOrPointer =<< v of
-				Nothing -> return r
-				Just k -> withObjectLoc k $
-					pure . setfile r . fromRawFilePath
-		_ -> return r
+			v <- getAnnexLinkTarget' f False
+			maybe (return r) repoint (parseLinkTargetOrPointer =<< v)
+		_ -> maybe (return r) repoint =<< liftIO (isPointerFile f)
+	  where
+		repoint k = withObjectLoc k $
+			pure . setfile r . fromRawFilePath
+		f = toRawFilePath (getfile r)
 
 externalDiffer :: String -> [String] -> Differ
 externalDiffer c ps = \req -> boolSystem c (map Param ps ++ serializeReq req )
