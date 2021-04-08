@@ -1,0 +1,119 @@
+### Please describe the problem.
+
+[[!format sh """
+(git-annex)lena:/tmp/testds3[master]git-annex
+$> git diff HEAD^                            
+--- file.dat      2021-04-08 13:38:57.578593717 -0400
++++ /home/yoh/.tmp/hT81L0_file.dat        2021-04-08 13:39:04.794565306 -0400
+@@ -1 +1 @@
+-4
++/annex/objects/MD5E-s2--6d7fce9fee471194aa8b5b6e47267f03.dat
+"""]]
+
+NB edit: order of the diff is reverted from what it should be, I guess need to swap `$1` and `$2` in the driver
+
+<details>
+<summary>my current git config and (dirty) git-annex diffdriver</summary> 
+
+```shell
+
+$> git config  diff.external                                                          
+git-annex diffdriver -- git-annex-diff-wrapper --
+
+$> cat ~/bin/git-annex-diff-wrapper 
+#!/usr/bin/env bash                                                             
+#set -eu
+echo "Called with $@ under $PWD" >> /tmp/calls
+LANG=C colordiff --color=auto -u "$1" "$2"                                                   
+exit 0
+#LANG=C diff --color=always -u "$2" "$5"                                                   
+#LANG=C diff --color=always --ignore-matching-lines="\(AFNI version=\|time.*Elapsed\)" -u "$2" "$5"                                                   
+#label="$1:${2##*/}->${5##*/}" 
+label="$1"
+regex="XXXXXX" #\(AFNI version=\|time.*Elapsed\)"
+LANG=C diff --label "$1" --color=auto --ignore-matching-lines="$regex" -u "$2" "$5"                                                   
+exit 0
+
+```
+</details>
+
+<details>
+<summary>a more complete dump from the terminal</summary> 
+
+```shell
+(git-annex)lena:/tmp/testds3[master]git-annex
+$> rm  file.dat 
+(dev3) 1 70670 [3].....................................:Thu 08 Apr 2021 01:38:54 PM EDT:.
+(git-annex)lena:/tmp/testds3[master]git-annex
+$> echo 4 >| file.dat
+(dev3) 1 70671 [3].....................................:Thu 08 Apr 2021 01:38:57 PM EDT:.
+(git-annex)lena:/tmp/testds3[master]git-annex
+$> git commit -m 'commit unlocked 4' file.dat
+[master 5f57c78] commit unlocked 4
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+(dev3) 1 70672 [3].....................................:Thu 08 Apr 2021 01:39:02 PM EDT:.
+(git-annex)lena:/tmp/testds3[master]git-annex
+$> git diff HEAD^                            
+--- file.dat      2021-04-08 13:38:57.578593717 -0400
++++ /home/yoh/.tmp/hT81L0_file.dat        2021-04-08 13:39:04.794565306 -0400
+@@ -1 +1 @@
+-4
++/annex/objects/MD5E-s2--6d7fce9fee471194aa8b5b6e47267f03.dat
+(dev3) 1 70673 [3].....................................:Thu 08 Apr 2021 01:39:04 PM EDT:.
+(git-annex)lena:/tmp/testds3[master]git-annex
+$> cat file.dat 
+4
+(dev3) 1 70674 [3].....................................:Thu 08 Apr 2021 01:39:17 PM EDT:.
+(git-annex)lena:/tmp/testds3[master]git-annex
+$> git --version
+git version 2.29.2
+(dev3) 1 70675 [3].....................................:Thu 08 Apr 2021 01:39:24 PM EDT:.
+(git-annex)lena:/tmp/testds3[master]git-annex
+$> git annex version | head -n 1
+git-annex version: 8.20210223
+
+```
+</details>
+
+### What steps will reproduce the problem?
+
+<details>
+<summary>a complete but dirty (uses datalad) shell history</summary> 
+
+```shell
+datalad create /tmp/testds3
+cd /tmp/testds3
+echo 1 > file.dat
+datalad save -m 1
+rm file.dat
+echo 2 > file.dat
+datalad save -m 2
+git diff HEAD^^
+git diff HEAD^
+git annex unlock file.dat
+git add file.dat
+echo 3 >| file.dat
+git commit -m 'commit unlocked 3'
+git commit --amend
+git commit -m 'commit unlocked 3' file.dat
+git diff HEAD^
+git diff HEAD^^
+rm file.dat
+echo 4 >| file.dat
+git commit -m 'commit unlocked 4' file.dat
+git diff HEAD^
+cat file.dat
+git --version
+git annex version | head -n 1
+git status
+
+```
+</details>
+
+### What version of git-annex are you using? On what operating system?
+
+
+8.20210223
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
