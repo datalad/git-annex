@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="Workaround"
+ date="2021-04-08T14:02:51Z"
+ content="""
+If you trust the special remote to not be accessed by multiple repos at the same time, you can `git annex trust` it. That makes git annex trust it to be locked aswell and regular `sync --content` works for me.
+"""]]
