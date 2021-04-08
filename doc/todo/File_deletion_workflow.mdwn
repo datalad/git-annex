@@ -1,0 +1,24 @@
+In a perfect world, we could hoard infinite amounts of data but unfortunately, our world is a finite one and we need to delete stuff sometimes.
+
+# Current situation
+
+You can drop files but that's seems to be intended for when you want to get rid of singular copies of a file in some repos, while copies in other repos remain untouched.    
+Dropping files with `--force` works but only drops from the current repo and thus needs to be run for each file on every remote which is cumbersome and, more importantly, error-prone.  
+You can also drop keys using `dropunused` but the same downsides apply here and you might want to keep old version of all the other files around (that's kinda the point of managing them with git).
+
+Dropping files completely like this also makes fsck complain about their inexistance. Fsck shouldn't care about intentionally deleted files.
+
+You can `dead` unwanted files to make fsck semi-ignore them but that should be reserved for unintentionally lost files and is a bit cumbersome (`git annex dead --key $(readlink path/to/file) && git annex drop path/to/file && git rm path/to/file`). It also still doesn't propagate deletion to remotes; they will (and should!) hold on to copies of seemingly dead keys.
+
+Thus, there needs to be a new specific workflow for intentionally deleting files.  
+A user needs to be able to express: "These files, I don't need them anymore. Delete them from all my repos please.".  
+
+Ideally, this should be a very explicit action to avoid accidental deletion.  
+What's important though is that this workflow doesn't involve manually running magic git annex commands for every deleted file on all possible remotes (especially not hard to reach ones). An explicit deletion should be final, irreversible.
+
+# Implementation
+
+There has been some discussion around specific implementations of a deletion workflow few years ago already: https://git-annex.branchable.com/forum/Blacklisting_files___40__so_that_they_get_removed_any_time_a_copy_is_found__41__/
+
+I'd personally like to see a recycle bin in the form of a special (gitignored?) directory inside the working tree where deleted files would land. One could then either delete the files from the bin (thus marking them for final deletion) or move them back into the repo, cancelling deletion. (Any copy present in the regular working tree should imply that the file is wanted.)  
+This would be quite a simple workflow from a user's perspective IMO and would mimic the behaviour of all major desktop environments (Windows, OSXI, GNOME, KDE).
