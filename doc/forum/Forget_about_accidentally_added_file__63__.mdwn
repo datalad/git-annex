@@ -1,0 +1,5 @@
+As I am bringing order to my collection, I sometimes add wrong files to a repo (usually because they're in an unexpected place, it's a mess).
+
+Is there a way to make git annex forget about having added the key, as in delete the according `.log` file from the `git-annex` branch's working dir?
+
+I don't need the history to be rewritten but do want it to "soft forget" about the key's existance and stop trying to track or `fsck` it.
