@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 2"
+ date="2021-04-11T10:54:39Z"
+ content="""
+I just gave it a try in a test repo and manually deleting a key's `.log*` files makes git-annex forget about that key's existance. The record of it having existed at some point is still there in the historical commits but git annex doesn't care about those.
+
+Not sure about unwanted side-effects in a real repo though.
+"""]]
