@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="lockContent for special remotes w/o changing the protocol"
+ date="2021-04-12T01:20:13Z"
+ content="""
+Maybe, can implement lockContent with the existing protocol?  To lock a key, use `TRANSFER STORE` to store a lockfile to the remote, with the lockfile's key derived from the key being locked, and the lockfile's content storing details like when was the lock set and by whom.  Before any `REMOVE` request, git-annex would use `CHECKPRESENT` on the lockfile key, and not count the key as present if the lockfile key exists.
+
+Or, simpler, just store one special key into the remote indicating \"prevent all removals by git-annex instances other than this one\" before doing a series of removals, and `REMOVE` the key when removals end.
+
+"""]]
