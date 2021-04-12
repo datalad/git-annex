@@ -54,6 +54,12 @@ remotes, without needing to set mincopies to 0 and risk losing content.
   there's nowhere in a directory special remote to record information about
   locking problems with it. Getting this right seems hard..
 
+  > If lockContent throws an exception, that remote is treated the same
+  > as if it did not support lockContent, so if these problems can be
+  > differentiated from a failure to lock at all, can just throw an
+  > exception. But need to avoid lockContent succeeding in any case
+  > where removeKey will not be prevented from removing the content.
+
 * S3 has an object lock feature, I don't know if it would be usable for
   this.
 
