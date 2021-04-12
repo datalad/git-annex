@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 3"
+ date="2021-04-12T15:39:27Z"
+ content="""
+Maybe, instead of `lockContent`, before dropping content from a remote, could temporarily untrust it, sync the `git-annex` branch, then -- only if the sync succeeds -- drop the content, then restore the trust level and sync again?
+"""]]
