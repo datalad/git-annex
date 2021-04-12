@@ -20,6 +20,24 @@ remotes, without needing to set mincopies to 0 and risk losing content.
   b) wait long enough or document well enough to be sure that situation
   never happens.
 
+  > Maybe this second part is not a problem actually? Analysis follows:
+  > 
+  > There are 2 git-annex
+  > instances A and B, and 2 special remotes X and Y. A is using the old
+  > program that does not support locking, B uses the new program that does.
+  > Both X and Y have a copy of an object.
+  > 
+  > If A is dropping from X, it will not trust Y to satisfy mincopies,
+  > since A cannot lockContent Y. So it will not drop from X.
+  > 
+  > If B is dropping from Y, it can lockContent X, and so the drop
+  > succeeds.
+  > 
+  > It seems it's ok for B to trust lockContent X, even though A does
+  > not check if X is locked when dropping from it. Because A will not
+  > drop from X unless it's able to satisfy mincopies by locking the
+  > content somewhere else. --[[Joey]]
+
 * directory could use fcntl locking
 
   This would need a transition, because dropping from directory first needs
@@ -28,6 +46,8 @@ remotes, without needing to set mincopies to 0 and risk losing content.
   lockContent to take the lock. So git-annex would need to be released with
   the first change, then wait several months or years before making the
   second change.
+
+  > Update: See analysis above, should also apply here.
 
   Also, the directory might be on a filesystem that does not support
   locking, with various failure modes. And unlike a git-annex repo,

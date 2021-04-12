@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-04-12T16:30:06Z"
+ content="""
+Both of these ideas above seem to suffer from race conditions,
+which lockContent needs to prevent. lockContent needs the remote to
+support an actual exclusive locking operation.
+
+Do you have an external special remote that could actually support that?
+"""]]
