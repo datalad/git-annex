@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="un-adding a key"
+ date="2021-04-12T00:50:41Z"
+ content="""
+See [[`git-annex-dead --key`|git-annex-dead]].
+"""]]
