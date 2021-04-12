@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 2"
+ date="2021-04-12T14:42:11Z"
+ content="""
+Never mind, `TRANSFER STORE` is not specified to fail if the key is already stored, so not usable for locking.
+"""]]
