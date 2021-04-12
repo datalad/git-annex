@@ -61,6 +61,8 @@ remotes, without needing to set mincopies to 0 and risk losing content.
   lock was in place, and then once that git-annex was in use everywhere,
   lockContent setting the object lock.
   
+  > Update: See analysis above, should also apply here.
+  
   (S3 with versioning=yes already supports lockContent.)
 
 * adb could use some shell trick perhaps.. But it would depend on doing
