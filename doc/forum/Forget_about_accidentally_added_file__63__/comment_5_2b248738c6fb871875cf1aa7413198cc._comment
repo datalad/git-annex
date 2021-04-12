@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="un-adding annexed files"
+ date="2021-04-12T14:18:19Z"
+ content="""
+\"[[`git-annex-dead`|git-annex-dead]] only marks the key as dead and doesn't delete its record from the git-annex branch\" -- true.  But, in theory, the presence of the dead key record would not affect you as a user?   Or are there so many dead keys that they are slowing down git-annex?
+
+The usual git way of undoing changes would be to revert to an earlier state of the branch.  This doesn't quite work with git-annex, because keys added on a reverted branch are still tracked in the current git-annex branch. I've asked about this in an earlier post (can't find it now), and the upshot was that there is not simple fix for this.
+
+[[`git-annex-forget --drop-dead`|git-annex-forget]] will \"prune references to repositories that have been marked as dead\"; maybe it can also prune dead keys?
+"""]]
