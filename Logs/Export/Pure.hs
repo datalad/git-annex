@@ -17,6 +17,7 @@ module Logs.Export.Pure (
 	exportedTreeishes,
 	incompleteExportedTreeishes,
 	parseExportLog,
+	parseExportLogMap,
 	buildExportLog,
 	updateForExportChange,
 ) where
@@ -25,6 +26,7 @@ import Annex.Common
 import qualified Git
 import Logs.MapLog
 
+import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
@@ -71,6 +73,9 @@ data ExportChange = ExportChange
 
 parseExportLog :: L.ByteString -> MapLog ExportParticipants Exported
 parseExportLog = parseMapLog exportParticipantsParser exportedParser
+
+parseExportLogMap :: L.ByteString -> M.Map ExportParticipants Exported
+parseExportLogMap = simpleMap . parseExportLog
 
 buildExportLog :: MapLog ExportParticipants Exported -> Builder
 buildExportLog = buildMapLog buildExportParticipants buildExported

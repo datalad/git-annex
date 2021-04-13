@@ -39,3 +39,5 @@ A solution might be for the branch transition code to preserve old commits
 that add/remove export.tree. Or, the branch transition code could examine
 the export.log to find the trees that it refers to, and re-graft those back
 into the new git-annex branch.
+
+> [[fixed|done]] --[[Joey]]

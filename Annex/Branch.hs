@@ -71,6 +71,7 @@ import Logs.Transitions
 import Logs.File
 import Logs.Trust.Pure
 import Logs.Remote.Pure
+import Logs.Export.Pure
 import Logs.Difference.Pure
 import qualified Annex.Queue
 import Annex.Branch.Transitions
@@ -610,6 +611,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 			else do
 				ref <- getBranch
 				commitIndex jl ref message (nub $ fullname:transitionedrefs)
+	regraftexports
   where
 	message
 		| neednewlocalbranch && null transitionedrefs = "new branch for transition " ++ tdesc
@@ -638,6 +640,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 			content <- getStaged f
 			apply changers' f content
 		liftIO $ void cleanup
+	
 	apply [] _ _ = return ()
 	apply (changer:rest) file content = case changer file content of
 		PreserveFile -> apply rest file content
@@ -655,6 +658,15 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 					Annex.Queue.addUpdateIndex $ Git.UpdateIndex.pureStreamer $
 						Git.UpdateIndex.updateIndexLine sha TreeFile (asTopFilePath file)
 					apply rest file content'
+
+	-- Trees mentioned in export.log were grafted into the old
+	-- git-annex branch to make sure they remain available. Re-graft
+	-- the trees into the new branch.
+	regraftexports = do
+		l <- exportedTreeishes . M.elems . parseExportLogMap
+			<$> getStaged exportLog
+		forM_ l $ \t ->
+			rememberTreeishLocked t (asTopFilePath exportTreeGraftPoint) jl
 
 checkBranchDifferences :: Git.Ref -> Annex ()
 checkBranchDifferences ref = do
@@ -708,7 +720,9 @@ getMergedRefs' = do
  - collected, and will always be available as long as the git-annex branch
  - is available. -}
 rememberTreeish :: Git.Ref -> TopFilePath -> Annex ()
-rememberTreeish treeish graftpoint = lockJournal $ \jl -> do
+rememberTreeish treeish graftpoint = lockJournal $ rememberTreeishLocked treeish graftpoint
+rememberTreeishLocked :: Git.Ref -> TopFilePath -> JournalLocked -> Annex ()
+rememberTreeishLocked treeish graftpoint jl = do
 	branchref <- getBranch
 	updateIndex jl branchref
 	origtree <- fromMaybe (giveup "unable to determine git-annex branch tree") <$>

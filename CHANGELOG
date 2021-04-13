@@ -5,6 +5,8 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
     enabled.
   * Added --debugfilter (and annex.debugfilter)
   * diffdriver: Support unlocked files.
+  * forget: Preserve currently exported trees, avoiding problems with
+    exporttree remotes in some unusual circumstances.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Apr 2021 12:17:26 -0400
 

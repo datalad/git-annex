@@ -45,7 +45,7 @@ getTransitionCalculator ForgetDeadRemotes = Just dropDead
 -- Removes data about all dead repos.
 --
 -- The trust log is not changed, because other, unmerged clones
--- may contain other data about the dead repos. So we need to rememebr
+-- may contain other data about the dead repos. So we need to remember
 -- which are dead to later remove that.
 --
 -- When the remote log contains a sameas-uuid pointing to a dead uuid,

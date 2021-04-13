@@ -139,6 +139,11 @@ multicastLog = "multicast.log"
 exportLog :: RawFilePath
 exportLog = "export.log"
 
+{- This is not a log file, it's where exported treeishes get grafted into
+ - the git-annex branch. -}
+exportTreeGraftPoint :: RawFilePath
+exportTreeGraftPoint = "export.tree"
+
 {- The pathname of the location log file for a given key. -}
 locationLogFile :: GitConfig -> Key -> RawFilePath
 locationLogFile config key =

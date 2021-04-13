@@ -43,8 +43,8 @@ import Data.Char
 
 -- | Get what's been exported to a special remote.
 getExport :: UUID -> Annex [Exported]
-getExport remoteuuid = nub . mapMaybe get . M.toList . simpleMap 
-	. parseExportLog
+getExport remoteuuid = nub . mapMaybe get . M.toList
+	. parseExportLogMap
 	<$> Annex.Branch.get exportLog
   where
 	get (ep, exported)
@@ -61,8 +61,8 @@ recordExportBeginning remoteuuid newtree = do
 	u <- getUUID
 	let ep = ExportParticipants { exportFrom = u, exportTo = remoteuuid }
 	old <- fromMaybe (mkExported emptyTree [])
-		. M.lookup ep . simpleMap 
-		. parseExportLog
+		. M.lookup ep
+		. parseExportLogMap
 		<$> Annex.Branch.get exportLog
 	let new = updateIncompleteExportedTreeish old (nub (newtree:incompleteExportedTreeishes [old]))
 	Annex.Branch.change exportLog $
@@ -71,14 +71,14 @@ recordExportBeginning remoteuuid newtree = do
 			. parseExportLog
 	recordExportTreeish newtree
 
--- Grade a tree ref into the git-annex branch. This is done
+-- Graft a tree ref into the git-annex branch. This is done
 -- to ensure that it's available later, when getting exported files
 -- from the remote. Since that could happen in another clone of the
 -- repository, the tree has to be kept available, even if it
 -- doesn't end up being merged into the master branch.
 recordExportTreeish :: Git.Ref -> Annex ()
 recordExportTreeish t = 
-	Annex.Branch.rememberTreeish t (asTopFilePath "export.tree")
+	Annex.Branch.rememberTreeish t (asTopFilePath exportTreeGraftPoint)
 
 -- | Record that an export to a special remote is under way.
 --
