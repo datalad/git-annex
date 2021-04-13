@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-04-13T17:00:10Z"
+ content="""
+Marking a key as dead does stop fsck complaining about it, and necessarily
+means there are no copies of it tracked. So it kind of seems to me that
+meets the goal of "forget about the key's existance and stop trying to track
+or `fsck` it"
+
+I do think it would be reasonable to have git-annex forget --drop-dead
+also remove logs for dead keys, but for other reasons: It would reduce the
+size of the git-annex branch, and also eliminate mention of the key in the
+git-annex branch's history. [[todo/forget_dead_keys]]
+"""]]
