@@ -1,0 +1,12 @@
+Make git-annex forget --drop-dead also remove log files for keys that have
+been marked as dead.
+
+This would have the benefit of reducing the size of the git-annex branch. 
+Also it would eliminate mention of the key in the git-annex branch's
+history. 
+
+Although whether it would actually delete *all* mention of a key is a bit
+hard to guarantee. Can remove all the log files that are specific to a key,
+like presence and metadata and chunks and remote state. But, the export.log
+refers to trees, and somewhere in a tree there could be a reference to a
+dead key.
