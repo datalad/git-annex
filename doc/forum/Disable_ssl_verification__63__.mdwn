@@ -1,0 +1,34 @@
+I'm trying to create an S3 special remote with git annex using the following command:
+
+git annex initremote snd-2020-51-in-progress type=S3 encryption=none public=yes host=s3.ki.se bucket=snd-2020-51-in-progress protocol=https requeststyle=path
+
+The result is the following:
+
+initremote snd-2020-51-in-progress (checking bucket...) (creating bucket in US...)
+git-annex: HttpExceptionRequest Request {
+  host                 = "s3.ki.se"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Date","Tue, 13 Apr 2021 23:21:41 GMT"),("Authorization","<REDACTED>"),("x-amz-acl","public-read")]
+  path                 = "/snd-2020-51-in-progress/"
+  queryString          = ""
+  method               = "PUT"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+}
+ (InternalException (HandshakeFailed (Error_Protocol ("certificate has unknown CA",True,UnknownCa))))
+failed
+
+When I access the S3 bucket using awscli, I use the "--no-verify-ssl" option: 
+
+aws s3 ls s3://snd-2020-51-in-progress/ --no-verify-ssl --endpoint-url https://s3.ki.se
+
+I haven't found anyway to disable ssl verification with git annex. Is this possible? If not, is there any work around?
+
+Thanks!
+
+Best,
+Joe
