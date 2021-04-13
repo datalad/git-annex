@@ -9,4 +9,11 @@ Although whether it would actually delete *all* mention of a key is a bit
 hard to guarantee. Can remove all the log files that are specific to a key,
 like presence and metadata and chunks and remote state. But, the export.log
 refers to trees, and somewhere in a tree there could be a reference to a
-dead key.
+dead key. 
+
+Eg, if a file was exported to a remote, and then its key marked dead, the
+file could still be on the remote, and the export.log needs to keep its
+reference to that tree, until some other tree is exported that deletes that
+file. So this is a not very likely, but possible, way for the git-annex
+branch to still mention a dead key after --drop-dead. Could rewrite the
+tree as well, but now it's getting complicated indeed.
