@@ -905,6 +905,7 @@ Executable git-annex
     Logs.Difference
     Logs.Difference.Pure
     Logs.Export
+    Logs.Export.Pure
     Logs.File
     Logs.FsckResults
     Logs.Group
