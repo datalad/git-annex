@@ -1,0 +1,41 @@
+In unusual circumstances, `git-annex forget` being used in a repo
+can confuse updating exporttree remotes.
+
+The export.log contains refs to trees that have been exported. Those trees
+get grafted into the git-annex branch to ensure the tree object does not
+get garbage collected and is available in clones. But forget rewrites the
+branch and those historical versions that include the grafting of the trees
+are not included.
+
+Now, this is not normally a problem because the same tree object tends to
+get merged into the master branch -- or is the master or other branch that
+was exported. And so remains available despite the copy from the git-annex
+branch having been garbage collected. But, it is possible for that not to
+be the case.
+
+So, the tree object can be garbage collected, and it might be possible for
+something involving tree import or export to fail to access it. When that
+happens in the same repo that was accessing that exporttree remote, 
+I'm not sure if that really is a problem, since the export database still
+contains the information.
+
+So far, I have only produced the problem by making a clone from the
+original repo, and then in the clone the tree object is not accessible,
+and it fails like this:
+
+	git annex get foo  --from dir
+	get foo (from dir...) fatal: bad object 7cb908c2a9aa7703a39b6c9f10ccb63bf903135b
+	
+	  unknown export location
+	failed
+
+To cause this problem, I first exported master to dir, the I moved 
+a file and did a git commit --amend, to change the tree object for master.
+Then `git annex forget`. Then I cloned the repo, over ssh (a local
+clone still got a copy of the now dangling tree object). After enableremote,
+get fails as shown. --[[Joey]]
+
+A solution might be for the branch transition code to preserve old commits
+that add/remove export.tree. Or, the branch transition code could examine
+the export.log to find the trees that it refers to, and re-graft those back
+into the new git-annex branch.
