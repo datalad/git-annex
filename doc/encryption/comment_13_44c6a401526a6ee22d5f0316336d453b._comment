@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="datamanager"
+ avatar="http://cdn.libravatar.org/avatar/7d4ca7c5e571d4740ef072b83a746c12"
+ subject="Can I manually decrypt my files?"
+ date="2021-04-13T20:04:31Z"
+ content="""
+I have a dropbox remote configured, and `git annex copy/move/get/etc` all seem to work just fine. I have hybrid encryption enabled on the remote, using my gpg key. So I thought, what if I were to download the encrypted file, and attempt to decrypt it locally. Would that work?
+It didn't work. Maybe I'm doing something wrong? I simply download the file through rclone, or the dropbox interface, and run `gpg --decrypt filename....` pinentry does ask for my password, but I don't think it's asking for the password to my gpg key. Maybe the file is encrypted twice? Once with my key, and again using a generic password that git-annex knows? I am not sure.
+Any help would be appreciated!
+"""]]
