@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-04-13T23:55:12Z"
+ content="""
+There is not currently a way to do this, other than of course to use http
+rather than https.
+
+I'm not sure if it's even possible to implement it; the underlying tls
+library would would need a way to configure it to be insecure, and that is
+rather in tension with the actual purpose of a tls library.
+"""]]
