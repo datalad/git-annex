@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="hybrid encryption"
+ date="2021-04-13T20:30:43Z"
+ content="""
+With [[hybrid encryption|design/encryption]], your gpg key encrypts a symmetric key which then encrypts file content.  Try getting the encrypted symmetric key from [[`remote.log`|internals]], decrypting it with your gpg key, then using that to decrypt file content.
+"""]]
