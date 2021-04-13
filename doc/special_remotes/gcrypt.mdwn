@@ -32,14 +32,11 @@ gcrypt:
 
   To use a local git repository, use: `gitrepo=/path/to/repo`
 
-  For a git repository accessed using rsync over ssh, use:
-  `gitrepo=rsync://user@host:/path/to/repo`
-
-  For a git repository accessed over ssh, and using git-annex-shell
-  to transfer data, use:
-  `gitrepo=ssh://user@host/path/to/repo` or `gitrepo=host:path`  
+  For a git repository accessed over ssh, an `rsync://` url uses rsync over
+  ssh, while a `ssh://` url uses git-annex-shell over ssh.
   Note that each `git push` has to re-send the whole content of the git
-  repository when using this option.
+  repository when using the latter option, so rsync urls are generally more
+  efficient.
 
 * `chunk` - Enables [[chunking]] when storing large files.
 
