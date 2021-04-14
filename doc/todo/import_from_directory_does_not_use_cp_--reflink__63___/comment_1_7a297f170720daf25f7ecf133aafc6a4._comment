@@ -10,4 +10,9 @@ set.)
 But when it does transfer the imported file from the remote, either at sync time 
 or because of a later get, it currently does not make reflinks. That should
 be relatively easy to fix.
+
+Of course, if you can get the content into the git-annex repository by
+other means like manual cp --reflink, git-annex will never have any reason
+to transfer the imported file from the remote, so that workaround would
+work.
 """]]
