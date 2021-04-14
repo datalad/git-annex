@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-04-14T18:09:28Z"
+ content="""
+Worth noting that `git annex import /dir` also does not use CoW. However,
+since that part of the import interface is desired to be replaced with
+importing from a special remote, I'm inclined not to go the extra mile for
+CoW there.
+
+I think I'll be able to implement the Cow before you have to workaround
+again, yarik.
+"""]]
