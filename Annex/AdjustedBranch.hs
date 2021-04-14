@@ -600,9 +600,7 @@ data AdjustedClone = InAdjustedClone | NotInAdjustedClone
  - So, find the adjusting commit on the currently checked out adjusted
  - branch, and use the parent of that commit as the basis, and set the
  - origbranch to it.
- -
- - The repository may also need to be upgraded to a new version, if the
- - current version is too old to support adjusted branches. -}
+ -}
 checkAdjustedClone :: Annex AdjustedClone
 checkAdjustedClone = ifM isBareRepo
 	( return NotInAdjustedClone
