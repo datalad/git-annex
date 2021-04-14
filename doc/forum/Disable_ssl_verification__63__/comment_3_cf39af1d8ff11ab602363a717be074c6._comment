@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 3"
+ date="2021-04-14T20:06:29Z"
+ content="""
+I guess you could put your self-signed certificate in your ca-store (usually `/etc/ssl/certs`), so the tls library accepts it as a valid certificate. This is much safer than disabling certificate validation altogether.
+"""]]
