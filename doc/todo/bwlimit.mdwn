@@ -7,3 +7,5 @@ This should be possible to implement in a way that works for any remote
 that streams to/from a bytestring, by just pausing for a fraction of a
 second when it's running too fast. The way the progress reporting interface
 works, it will probably work to put the delay in there. --[[Joey]]
+
+[[confirmed]]
