@@ -613,12 +613,12 @@ checkAdjustedClone = ifM isBareRepo
 		Just (adj, origbranch) -> do
 			let basis@(BasisBranch bb) = basisBranch (originalToAdjusted origbranch adj)
 			unlessM (inRepo $ Git.Ref.exists bb) $ do
-				unlessM (inRepo $ Git.Ref.exists origbranch) $ do
-					let remotebranch = Git.Ref.underBase "refs/remotes/origin" origbranch
-					inRepo $ Git.Branch.update' origbranch remotebranch
 				aps <- fmap commitParent <$> findAdjustingCommit (AdjBranch currbranch)
 				case aps of
-					Just [p] -> setBasisBranch basis p
+					Just [p] -> do
+						unlessM (inRepo $ Git.Ref.exists origbranch) $
+							inRepo $ Git.Branch.update' origbranch p
+						setBasisBranch basis p
 					_ -> giveup $ "Unable to clean up from clone of adjusted branch; perhaps you should check out " ++ Git.Ref.describe origbranch
 			return InAdjustedClone
 

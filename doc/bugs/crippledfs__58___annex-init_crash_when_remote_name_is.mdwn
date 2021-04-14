@@ -51,3 +51,5 @@ overriding `annex.crippledfilesystem`.  Entering an adjusted branch in
 `a` is sufficient to trigger this.
 
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
