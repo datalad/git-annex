@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-04-14T20:07:33Z"
+ content="""
+Correction: Import from directory special remote copies the content by
+default still. But with --no-content it does not. Might be you could have
+used that, if you did not want to load the content up into your repo and
+were ok leaving it on the remote.
+"""]]

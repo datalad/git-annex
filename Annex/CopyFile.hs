@@ -44,6 +44,25 @@ newtype CopyCoWTried = CopyCoWTried (MVar Bool)
 newCopyCoWTried :: IO CopyCoWTried
 newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
 
+{- Copies a file is copy-on-write is supported. Otherwise, returns False. -}
+tryCopyCoW :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> IO Bool
+tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
+	-- If multiple threads reach this at the same time, they
+	-- will both try CoW, which is acceptable.
+	ifM (isEmptyMVar copycowtried)
+		( do
+			ok <- docopycow
+			void $ tryPutMVar copycowtried ok
+			return ok
+		, ifM (readMVar copycowtried)
+			( docopycow
+			, return False
+			)
+		)
+  where
+	docopycow = watchFileSize dest meterupdate $
+		copyCoW CopyTimeStamps src dest
+
 {- Copys a file. Uses copy-on-write if it is supported. Otherwise,
  - copies the file itself. If the destination already exists,
  - an interruped copy will resume where it left off.
@@ -62,32 +81,14 @@ newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
 fileCopier :: CopyCoWTried -> FileCopier
 #ifdef mingw32_HOST_OS
 fileCopier _ src dest k meterupdate check verifyconfig = docopy
-  where
 #else
-fileCopier (CopyCoWTried copycowtried) src dest k meterupdate check verifyconfig =
-	-- If multiple threads reach this at the same time, they
-	-- will both try CoW, which is acceptable.
-	ifM (liftIO $ isEmptyMVar copycowtried)
-		( do
-			ok <- docopycow
-			void $ liftIO $ tryPutMVar copycowtried ok
-			if ok
-				then unVerified check
-				else docopy
-		, ifM (liftIO $ readMVar copycowtried)
-			( do
-				ok <- docopycow
-				if ok
-					then unVerified check
-					else docopy
-			, docopy
-			)
+fileCopier copycowtried src dest k meterupdate check verifyconfig =
+	ifM (liftIO $ tryCopyCoW copycowtried src dest meterupdate)
+		( unVerified check
+		, docopy
 		)
-  where
-	docopycow = liftIO $ watchFileSize dest meterupdate $
-		copyCoW CopyTimeStamps src dest
 #endif
-
+  where
 	dest' = toRawFilePath dest
 
 	docopy = do

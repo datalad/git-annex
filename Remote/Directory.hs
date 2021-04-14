@@ -88,7 +88,7 @@ gen r u rc gc rs = do
 			, checkPresentCheap = True
 			, exportActions = ExportActions
 				{ storeExport = storeExportM dir
-				, retrieveExport = retrieveExportM dir
+				, retrieveExport = retrieveExportM dir cow
 				, removeExport = removeExportM dir
 				, versionedExport = False
 				, checkPresentExport = checkPresentExportM dir
@@ -100,7 +100,7 @@ gen r u rc gc rs = do
 			, importActions = ImportActions
 				{ listImportableContents = listImportableContentsM dir
 				, importKey = Just (importKeyM dir)
-				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM dir
+				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM dir cow
 				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM dir
 				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM dir
 				-- Not needed because removeExportWithContentIdentifier
@@ -190,8 +190,7 @@ storeKeyM d chunkconfig cow k c m =
 			in byteStorer go k c m
 		NoChunks ->
 			let go _k src p = do
-				(ok, _verification) <- fileCopier cow src tmpf k p (return True) NoVerify
-				unless ok $ giveup "failed to copy file to remote"
+				fileCopierUnVerified cow src tmpf k p
 				liftIO $ finalizeStoreGeneric d tmpdir destdir
 			in fileStorer go k c m
 		_ -> 
@@ -204,6 +203,11 @@ storeKeyM d chunkconfig cow k c m =
 	tmpf = fromRawFilePath tmpdir </> fromRawFilePath kf
 	kf = keyFile k
 	destdir = storeDir d k
+
+fileCopierUnVerified :: CopyCoWTried -> FilePath -> FilePath -> Key -> MeterUpdate -> Annex ()
+fileCopierUnVerified cow src dest k p = do
+	(ok, _verification) <- fileCopier cow src dest k p (return True) NoVerify
+	unless ok $ giveup "failed to copy file"
 
 checkDiskSpaceDirectory :: RawFilePath -> Key -> Annex Bool
 checkDiskSpaceDirectory d k = do
@@ -234,8 +238,7 @@ retrieveKeyFileM :: RawFilePath -> ChunkConfig -> CopyCoWTried -> Retriever
 retrieveKeyFileM d (LegacyChunks _) _ = Legacy.retrieve locations d
 retrieveKeyFileM d NoChunks cow = fileRetriever $ \dest k p -> do
 	src <- liftIO $ fromRawFilePath <$> getLocation d k
-	(ok, _verification) <- fileCopier cow src dest k p (return True) NoVerify
-	unless ok $ giveup "failed to copy file from remote"
+	fileCopierUnVerified cow src dest k p
 retrieveKeyFileM d _ _ = byteRetriever $ \k sink ->
 	sink =<< liftIO (L.readFile . fromRawFilePath =<< getLocation d k)
 
@@ -310,9 +313,8 @@ storeExportM d src _k loc p = liftIO $ do
 	dest = exportPath d loc
 	go tmp () = withMeteredFile src p (L.writeFile tmp)
 
-retrieveExportM :: RawFilePath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
-retrieveExportM d _k loc dest p = 
-	liftIO $ withMeteredFile src p (L.writeFile dest)
+retrieveExportM :: RawFilePath -> CopyCoWTried -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
+retrieveExportM d cow k loc dest p = fileCopierUnVerified cow src dest k p
   where
 	src = fromRawFilePath $ exportPath d loc
 
@@ -407,14 +409,21 @@ importKeyM dir loc cid sz p = do
 		, inodeCache = Nothing
 		}
 
-retrieveExportWithContentIdentifierM :: RawFilePath -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
-retrieveExportWithContentIdentifierM dir loc cid dest mkkey p = 
-	precheck $ docopy postcheck
+retrieveExportWithContentIdentifierM :: RawFilePath -> CopyCoWTried -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
+retrieveExportWithContentIdentifierM dir cow loc cid dest mkkey p = 
+	precheck docopy
   where
 	f = exportPath dir loc
 	f' = fromRawFilePath f
 
-	docopy cont = do
+	docopy = ifM (liftIO $ tryCopyCoW cow f' dest p)
+		( do
+			k <- mkkey
+			postcheckcow (return k)
+		, docopynoncow
+		)
+
+	docopynoncow = do
 #ifndef mingw32_HOST_OS
 		let open = do
 			-- Need a duplicate fd for the post check, since
@@ -435,9 +444,9 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 			liftIO $ hGetContentsMetered h p >>= L.writeFile dest
 			k <- mkkey
 #ifndef mingw32_HOST_OS
-			cont dupfd (return k)
+			postchecknoncow dupfd (return k)
 #else
-			cont (return k)
+			postchecknoncow (return k)
 #endif
 	
 	-- Check before copy, to avoid expensive copy of wrong file
@@ -460,9 +469,9 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 	-- situations with files being modified while it's updating the
 	-- working tree for a merge.
 #ifndef mingw32_HOST_OS
-	postcheck fd cont = do
+	postchecknoncow fd cont = do
 #else
-	postcheck cont = do
+	postchecknoncow cont = do
 #endif
 		currcid <- liftIO $ mkContentIdentifier f
 #ifndef mingw32_HOST_OS
@@ -470,6 +479,16 @@ retrieveExportWithContentIdentifierM dir loc cid dest mkkey p =
 #else
 			=<< R.getFileStatus f
 #endif
+		guardSameContentIdentifiers cont cid currcid
+
+	-- When copy-on-write was done, cannot check the handle that was
+	-- copied from, but such a copy should run very fast, so
+	-- it's very unlikely that the file changed after precheck,
+	-- the modified version was copied CoW, and then the file was
+	-- restored to the original content before this check.
+	postcheckcow cont = do
+		currcid <- liftIO $ mkContentIdentifier f
+			=<< R.getFileStatus f
 		guardSameContentIdentifiers cont cid currcid
 
 storeExportWithContentIdentifierM :: RawFilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
