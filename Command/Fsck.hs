@@ -156,17 +156,20 @@ performRemote key afile backend numcopies remote =
 	dispatch (Right True) = withtmp $ \tmpfile ->
 		getfile tmpfile >>= \case
 			Nothing -> go True Nothing
-			Just True -> go True (Just tmpfile)
-			Just False -> do
+			Just (Right verification) -> go True (Just (tmpfile, verification))
+			Just (Left _) -> do
 				warning "failed to download file from remote"
 				void $ go True Nothing
 				return False
 	dispatch (Right False) = go False Nothing
-	go present localcopy = check
+	go present lv = check
 		[ verifyLocationLogRemote key ai remote present
 		, verifyRequiredContent key ai
-		, withLocalCopy localcopy $ checkKeySizeRemote key remote ai
-		, withLocalCopy localcopy $ checkBackendRemote backend key remote ai
+		, withLocalCopy (fmap fst lv) $ checkKeySizeRemote key remote ai
+		, case fmap snd lv of
+			Just Verified -> return True
+			_ -> withLocalCopy (fmap fst lv) $
+				checkBackendRemote backend key remote ai
 		, checkKeyNumCopies key afile numcopies
 		]
 	ai = mkActionItem (key, afile)
@@ -185,13 +188,13 @@ performRemote key afile backend numcopies remote =
 		cleanup `after` a tmp
 	getfile tmp = ifM (checkDiskSpace (Just (P.takeDirectory tmp)) key 0 True)
 		( ifM (getcheap tmp)
-			( return (Just True)
+			( return (Just (Right UnVerified))
 			, ifM (Annex.getState Annex.fast)
 				( return Nothing
-				, Just . isRight <$> tryNonAsync (getfile' tmp)
+				, Just <$> tryNonAsync (getfile' tmp)
 				)
 			)
-		, return (Just False)
+		, return Nothing
 		)
 	getfile' tmp = Remote.retrieveKeyFile remote key (AssociatedFile Nothing) (fromRawFilePath tmp) dummymeter
 	dummymeter _ = noop
