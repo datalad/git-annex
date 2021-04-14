@@ -628,6 +628,7 @@ Executable git-annex
     Annex.Content.Presence
     Annex.Content.LowLevel
     Annex.Content.PointerFile
+    Annex.CopyFile
     Annex.CurrentBranch
     Annex.Debug
     Annex.Debug.Utility
