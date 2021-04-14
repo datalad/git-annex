@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-04-14T17:34:23Z"
+ content="""
+Er, actually the directory special remote never uses cp --reflink, even
+when it's a key/value store. That's only implemented for gets from git
+remotes currently. So some refactoring will be needed.
+"""]]
