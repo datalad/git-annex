@@ -1,0 +1,5 @@
+When fsck'ing a remote repo, files seem to be copied from the remote to a local dir (thus written to disk), read back again for checksumming and then deleted.
+
+This is very time-inefficient and wastes precious SSD erase cycles which is especially problematic in the case of special remotes because they can only be fsck'd "remotely" (AFAIK).
+
+Instead, remote files should be directly piped into an in-memory checksum function and never written to disk on the machine performing the fsck.
