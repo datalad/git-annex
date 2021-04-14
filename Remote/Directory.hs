@@ -70,7 +70,7 @@ gen r u rc gc rs = do
 	let chunkconfig = getChunkConfig c
 	cow <- liftIO newCopyCoWTried
 	return $ Just $ specialRemote c
-		(storeKeyM dir chunkconfig)
+		(storeKeyM dir chunkconfig cow)
 		(retrieveKeyFileM dir chunkconfig cow)
 		(removeKeyM dir)
 		(checkPresentM dir chunkconfig)
@@ -169,12 +169,41 @@ storeDir d k = P.addTrailingPathSeparator $
 
 {- Check if there is enough free disk space in the remote's directory to
  - store the key. Note that the unencrypted key size is checked. -}
-storeKeyM :: RawFilePath -> ChunkConfig -> Storer
-storeKeyM d chunkconfig k c m = 
+storeKeyM :: RawFilePath -> ChunkConfig -> CopyCoWTried -> Storer
+storeKeyM d chunkconfig cow k c m = 
 	ifM (checkDiskSpaceDirectory d k)
-		( byteStorer (store d chunkconfig) k c m
+		( do
+			void $ liftIO $ tryIO $ createDirectoryUnder d tmpdir
+			store
 		, giveup "Not enough free disk space."
 		)
+  where
+	store = case chunkconfig of
+		LegacyChunks chunksize -> 
+			let go _k b p = liftIO $ Legacy.store
+				(fromRawFilePath d)
+				chunksize
+				(finalizeStoreGeneric d)
+				k b p
+				(fromRawFilePath tmpdir)
+				(fromRawFilePath destdir)
+			in byteStorer go k c m
+		NoChunks ->
+			let go _k src p = do
+				(ok, _verification) <- fileCopier cow src tmpf k p (return True) NoVerify
+				unless ok $ giveup "failed to copy file to remote"
+				liftIO $ finalizeStoreGeneric d tmpdir destdir
+			in fileStorer go k c m
+		_ -> 
+			let go _k b p = liftIO $ do
+				meteredWriteFile p tmpf b
+				finalizeStoreGeneric d tmpdir destdir
+			in byteStorer go k c m
+	
+	tmpdir = P.addTrailingPathSeparator $ d P.</> "tmp" P.</> kf
+	tmpf = fromRawFilePath tmpdir </> fromRawFilePath kf
+	kf = keyFile k
+	destdir = storeDir d k
 
 checkDiskSpaceDirectory :: RawFilePath -> Key -> Annex Bool
 checkDiskSpaceDirectory d k = do
@@ -184,27 +213,6 @@ checkDiskSpaceDirectory d k = do
 			<$> R.getFileStatus d
 			<*> R.getFileStatus annexdir
 	checkDiskSpace (Just d) k 0 samefilesystem
-
-store :: RawFilePath -> ChunkConfig -> Key -> L.ByteString -> MeterUpdate -> Annex ()
-store d chunkconfig k b p = liftIO $ do
-	void $ tryIO $ createDirectoryUnder d tmpdir
-	case chunkconfig of
-		LegacyChunks chunksize -> 
-			Legacy.store
-				(fromRawFilePath d)
-				chunksize
-				(finalizeStoreGeneric d)
-				k b p
-				(fromRawFilePath tmpdir)
-				(fromRawFilePath destdir)
-		_ -> do
-			let tmpf = tmpdir P.</> kf
-			meteredWriteFile p (fromRawFilePath tmpf) b
-			finalizeStoreGeneric d tmpdir destdir
-  where
-	tmpdir = P.addTrailingPathSeparator $ d P.</> "tmp" P.</> kf
-	kf = keyFile k
-	destdir = storeDir d k
 
 {- Passed a temp directory that contains the files that should be placed
  - in the dest directory, moves it into place. Anything already existing
