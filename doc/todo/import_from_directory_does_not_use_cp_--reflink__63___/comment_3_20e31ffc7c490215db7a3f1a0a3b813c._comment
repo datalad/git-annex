@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment to joey response on cp --reflink workaround"
+ date="2021-04-14T18:04:49Z"
+ content="""
+> Of course, if you can get the content into the git-annex repository by other means like manual cp --reflink, git-annex will never have any reason to transfer the imported file from the remote, so that workaround would work.
+
+FWIW: doing that now.  Minor pain will come later when I will need to update it (only once again) with a new sync'ed data (some files will be added, some removed) -- to simplify my own life I will just `rm -rf` in target git-annex repo, redo `cp --reflink` and redo `datalad save` (which will take care about removing gone, and `git-annex add` on all others -- but that would take again many hours to complete even though only a handful of files will be changed)
+"""]]
