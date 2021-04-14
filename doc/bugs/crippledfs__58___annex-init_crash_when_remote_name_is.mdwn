@@ -1,0 +1,53 @@
+git-clone makes it easy to specify a name other than "origin" via the
+`--origin` option, and, as of Git 2.30.0, via the
+`clone.defaultRemoteName` configuration option.  Running `git annex
+init` in a clone on a system where git-annex sets
+`annex.crippledfilesystem` leads to a crash due to a hard-coded
+"refs/remotes/origin".
+
+[[!format sh """
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/ga-XXXXXXX)"  || exit 1
+
+export GIT_CONFIG_PARAMETERS="'annex.crippledfilesystem=true'"
+
+git version
+git annex version | head -1
+
+git init -q a
+git -C a commit -q --allow-empty -m c0
+git -C a annex init
+
+git clone --origin=not-origin a b
+git -C b annex init
+"""]]
+
+```
+git version 2.31.1.424.g95a8dafae5
+git-annex version: 8.20210331-g17646b0b3
+init  (scanning for unlocked files...)
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+Cloning into 'b'...
+done.
+init  (merging not-origin/git-annex into git-annex...)
+(scanning for unlocked files...)
+fatal: refs/remotes/origin/master: not a valid SHA1
+
+git-annex: git [Param "update-ref",Param "refs/heads/master",Param "refs/remotes/origin/master"] failed
+CallStack (from HasCallStack):
+  error, called at ./Git/Command.hs:42:17 in main:Git.Command
+failed
+git-annex: init: 1 failed
+```
+
+Thanks in advance for taking a look.
+
+Update: Before posting, I should have tried to trigger this without
+overriding `annex.crippledfilesystem`.  Entering an adjusted branch in
+`a` is sufficient to trigger this.
+
+[[!tag projects/datalad]]

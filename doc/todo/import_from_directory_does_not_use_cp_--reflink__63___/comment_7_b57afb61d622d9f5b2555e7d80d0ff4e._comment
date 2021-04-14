@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2021-04-14T20:46:05Z"
+ content="""
+> Implemented CoW for directory special remote, comprehensively.
+
+woohoo -- I will give it a shot! (might as well just interrupt ongoing \"process\") 
+
+it is good that it copies content -- that is the point for use of CoW here - to gain a full copy of the content virtually at no (storage) cost, so if original directory gets it changed - its copy would be all nicely versioned etc in the git-annex land ;)
+"""]]
