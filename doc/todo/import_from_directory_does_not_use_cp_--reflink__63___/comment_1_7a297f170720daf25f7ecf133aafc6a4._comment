@@ -9,4 +9,9 @@ Of course, if you can get the content into the git-annex repository by
 other means like manual cp --reflink, git-annex will never have any reason
 to transfer the imported file from the remote, so that workaround would
 work.
+
+Also, git-annex import from directory special remote changed fairly
+recently to only hash the files and not get their contents. But an older
+version would. Anyway, when the contents do eventually need to be copied
+from it, the above still applies.
 """]]
