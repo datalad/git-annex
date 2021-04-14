@@ -9,6 +9,8 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
     exporttree remotes in some unusual circumstances.
   * fsck: When downloading content from a remote, if the content is able
     to be verified during the transfer, skip checksumming it a second time.
+  * directory: When cp supports reflinks, use it when getting content from
+    a directory special remote.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Apr 2021 12:17:26 -0400
 

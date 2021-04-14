@@ -31,6 +31,7 @@ import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Types.Import
 import qualified Remote.Directory.LegacyChunked as Legacy
+import Annex.CopyFile
 import Annex.Content
 import Annex.Perms
 import Annex.UUID
@@ -67,9 +68,10 @@ gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc cheapRemoteCost
 	let chunkconfig = getChunkConfig c
+	cow <- liftIO newCopyCoWTried
 	return $ Just $ specialRemote c
 		(storeKeyM dir chunkconfig)
-		(retrieveKeyFileM dir chunkconfig)
+		(retrieveKeyFileM dir chunkconfig cow)
 		(removeKeyM dir)
 		(checkPresentM dir chunkconfig)
 		Remote
@@ -220,9 +222,13 @@ finalizeStoreGeneric d tmp dest = do
   where
 	dest' = fromRawFilePath dest
 
-retrieveKeyFileM :: RawFilePath -> ChunkConfig -> Retriever
-retrieveKeyFileM d (LegacyChunks _) = Legacy.retrieve locations d
-retrieveKeyFileM d _ = byteRetriever $ \k sink ->
+retrieveKeyFileM :: RawFilePath -> ChunkConfig -> CopyCoWTried -> Retriever
+retrieveKeyFileM d (LegacyChunks _) _ = Legacy.retrieve locations d
+retrieveKeyFileM d NoChunks cow = fileRetriever $ \dest k p -> do
+	src <- liftIO $ fromRawFilePath <$> getLocation d k
+	(ok, _verification) <- fileCopier cow src dest k p (return True) NoVerify
+	unless ok $ giveup "failed to copy file from remote"
+retrieveKeyFileM d _ _ = byteRetriever $ \k sink ->
 	sink =<< liftIO (L.readFile . fromRawFilePath =<< getLocation d k)
 
 retrieveKeyFileCheapM :: RawFilePath -> ChunkConfig -> Maybe (Key -> AssociatedFile -> FilePath -> Annex ())
