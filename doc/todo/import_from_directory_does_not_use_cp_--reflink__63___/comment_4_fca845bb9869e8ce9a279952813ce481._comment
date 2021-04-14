@@ -4,7 +4,4 @@
  date="2021-04-14T19:33:13Z"
  content="""
 Implemented CoW for directory special remote, comprehensively.
-
-(Except for when exporting to it, which I'll do for completeness before closing
-this.)
 """]]

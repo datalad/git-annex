@@ -18,3 +18,4 @@ Joey, is it expected to take advantage of CoW with git-annex 8.20210223-1~ndall+
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
+> [[fixed|done]] --[[Joey]]

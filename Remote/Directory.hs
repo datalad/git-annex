@@ -87,7 +87,7 @@ gen r u rc gc rs = do
 			, checkPresent = checkPresentDummy
 			, checkPresentCheap = True
 			, exportActions = ExportActions
-				{ storeExport = storeExportM dir
+				{ storeExport = storeExportM dir cow
 				, retrieveExport = retrieveExportM dir cow
 				, removeExport = removeExportM dir
 				, versionedExport = False
@@ -101,7 +101,7 @@ gen r u rc gc rs = do
 				{ listImportableContents = listImportableContentsM dir
 				, importKey = Just (importKeyM dir)
 				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM dir cow
-				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM dir
+				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM dir cow
 				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM dir
 				-- Not needed because removeExportWithContentIdentifier
 				-- auto-removes empty directories.
@@ -303,15 +303,15 @@ checkPresentGeneric' d check = ifM check
 		)
 	)
 
-storeExportM :: RawFilePath -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
-storeExportM d src _k loc p = liftIO $ do
-	createDirectoryUnder d (P.takeDirectory dest)
+storeExportM :: RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
+storeExportM d cow src k loc p = do
+	liftIO $ createDirectoryUnder d (P.takeDirectory dest)
 	-- Write via temp file so that checkPresentGeneric will not
 	-- see it until it's fully stored.
 	viaTmp go (fromRawFilePath dest) ()
   where
 	dest = exportPath d loc
-	go tmp () = withMeteredFile src p (L.writeFile tmp)
+	go tmp () = fileCopierUnVerified cow src tmp k p
 
 retrieveExportM :: RawFilePath -> CopyCoWTried -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
 retrieveExportM d cow k loc dest p = fileCopierUnVerified cow src dest k p
@@ -491,14 +491,12 @@ retrieveExportWithContentIdentifierM dir cow loc cid dest mkkey p =
 			=<< R.getFileStatus f
 		guardSameContentIdentifiers cont cid currcid
 
-storeExportWithContentIdentifierM :: RawFilePath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
-storeExportWithContentIdentifierM dir src _k loc overwritablecids p = do
+storeExportWithContentIdentifierM :: RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
+storeExportWithContentIdentifierM dir cow src k loc overwritablecids p = do
 	liftIO $ createDirectoryUnder dir (toRawFilePath destdir)
-	withTmpFileIn destdir template $ \tmpf tmph -> do
+	withTmpFileIn destdir template $ \tmpf _tmph -> do
+		fileCopierUnVerified cow src tmpf k p
 		let tmpf' = toRawFilePath tmpf
-		liftIO $ withMeteredFile src p (L.hPut tmph)
-		liftIO $ hFlush tmph
-		liftIO $ hClose tmph
 		resetAnnexFilePerm tmpf'
 		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf' >>= \case
 			Nothing -> giveup "unable to generate content identifier"
