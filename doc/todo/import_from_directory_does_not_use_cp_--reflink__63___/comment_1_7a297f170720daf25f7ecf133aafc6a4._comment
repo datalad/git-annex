@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-04-14T17:25:26Z"
+ content="""
+git-annex import without --content does not copy files at all, so the disk
+IO would AFAICS be it hashing files. (Unless you have annex.synccontent
+set.)
+
+But when it does transfer the imported file from the remote, either at sync time 
+or because of a later get, it currently does not make reflinks. That should
+be relatively easy to fix.
+"""]]
