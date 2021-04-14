@@ -1,0 +1,69 @@
+I've been debugging an intermittent DataLad test failure
+(<https://github.com/datalad/datalad/issues/5300>) that is related to
+an unlocked annex file whose content switches to being tracked by git.
+Basically
+
+  * `git annex add` file A to the annex.
+
+  * Configure `annex.largefiles` in a way that would have sent file A
+    to git.
+
+  * If file A's mtime matches the index's, adding file B triggers the
+    clean filter to run on file A and sends its content to git in when
+    an unrelated file is added.
+
+This sequence looks pretty close to a situation described in a comment
+of the bug report below, except that `annex.largefiles` is configured
+persistently in the repository rather than via a temporary `-c
+annex.largefiles` override.
+
+https://git-annex.branchable.com/bugs/A_case_where_file_tracked_by_git_unexpectedly_becomes_annex_pointer_file/#comment-215a295d83c8a08806d4f9c65ae52b10
+
+As a concrete example, here's a demo that configures .txt files to be
+added to git, but then forces the addition of an unlocked annex file
+with `--force-large`.
+
+[[!format sh """
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/ga-XXXXXXX)" || exit 1
+
+git version
+git annex version | head -1
+
+git init -q
+git annex init
+git config annex.addunlocked true
+
+printf '*.txt annex.largefiles=nothing\n' >.gitattributes
+git add .gitattributes
+git commit -m"configured annex.largefiles"
+
+echo a >foo.txt
+git annex add --force-large foo.txt
+
+git diff
+"""]]
+
+```
+git version 2.31.1.394.g7d1e84936f
+git-annex version: 8.20210330
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+[master (root-commit) 0018dd1] configured annex.largefiles
+ 1 file changed, 1 insertion(+)
+ create mode 100644 .gitattributes
+add foo.txt
+ok
+(recording state in git...)
+diff --git a/foo.txt b/foo.txt
+index 4580ed7..7898192 100644
+--- a/foo.txt
++++ b/foo.txt
+@@ -1 +1 @@
+-/annex/objects/SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7.txt
++a
+```
+
+Is the above showing expected behavior?  That is, if
+`annex.largefiles` is configured to send a file to git, the clean
+filter will move it there the next time it runs on it?

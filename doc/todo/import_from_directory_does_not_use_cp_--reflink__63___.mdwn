@@ -1,0 +1,20 @@
+Need to import ~10TB of data from a content synced from a google storage. I have BTRFS file system (so CoW is available), and initialized it with
+
+```
+git annex initremote buckets type=directory importtree=yes encryption=none directory=../buckets/
+```
+
+and `../buckets` resides on the same mount point, so `cp --reflink=always ../buckets/....` works out nicely.
+
+But when I have ran `git annex import --from=buckets -J 10 master` I saw that
+
+- no `cp` is invoked by git-annex (according to `pstree`)
+- I have equal amount of output IO as input IO (in `dstat`), suggesting that I am actually copying data
+
+I have not done a really detailed look inside copied keys to see if they share storage extents etc, so my observation could still be wrong.
+
+Joey, is it expected to take advantage of CoW with git-annex 8.20210223-1~ndall+1 in such a case or it is still a TODO?  any "workaround"? (e.g. may be I could just cp --reflink=always, git annex add, and then do import and annex would just reuse keys already CoWed?)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+
