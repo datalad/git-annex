@@ -46,4 +46,8 @@ git-annex: init: 1 failed
 
 Thanks in advance for taking a look.
 
+Update: Before posting, I should have tried to trigger this without
+overriding `annex.crippledfilesystem`.  Entering an adjusted branch in
+`a` is sufficient to trigger this.
+
 [[!tag projects/datalad]]
