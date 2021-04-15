@@ -1,0 +1,25 @@
+### Please describe the problem.
+
+started to happen in https://github.com/datalad/git-annex/actions/runs/750505573
+
+looked only at "normal" run
+```
+    export_import:                                        FAIL (0.93s)
+      ./Test/Framework.hs:57:
+      export to dir failed (transcript follows)
+      export foo bar.c okexport foo foo   /home/runner/.t/tmprepo4/dir/foo6874-4.tmp: openBinaryFile: resource busy (file is locked)failedexport foo sha1foo   /home/runner/.t/tmprepo4/dir/sha1foo6874-7.tmp: openBinaryFile: resource busy (file is locked)failed(recording state in git...)git-annex: export: 2 failed
+
+    export_import:                                        FAIL (0.58s)
+      ./Test/Framework.hs:57:
+      export to dir failed (transcript follows)
+      export foo bar.c okexport foo foo   /home/runner/.t/tmprepo98/dir/foo45594-4.tmp: openBinaryFile: resource busy (file is locked)failedexport foo sha1foo   /home/runner/.t/tmprepo98/dir/sha1foo45594-7.tmp: openBinaryFile: resource busy (file is locked)failed(recording state in git...)git-annex: export: 2 failed
+...
+    export_import:                                        FAIL (0.52s)
+      ./Test/Framework.hs:57:
+      export to dir failed (transcript follows)
+      export foo bar.c okexport foo foo   /home/runner/.t/tmprepo192/dir/foo75699-4.tmp: openBinaryFile: resource busy (file is locked)failedexport foo sha1foo   /home/runner/.t/tmprepo192/dir/sha1foo75699-7.tmp: openBinaryFile: resource busy (file is locked)failed(recording state in git...)git-annex: export: 2 failed
+```
+
+so  actually looks like the same test in various scenarios.
+
+probably relates to the tune ups to make importtree work with CoW
