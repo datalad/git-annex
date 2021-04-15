@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="lockContent for special remotes"
+ date="2021-04-15T16:32:32Z"
+ content="""
+\"lockContent needs the remote to support an actual exclusive locking operation.  Do you have an external special remote that could actually support that?\" -- I do, the [DNAnexus](https://www.dnanexus.com/) special remote.  But it'd better if `git-annex` itself handled locking, so that one didn't have to trust each external remote's implementation.  Locking for a remote doesn't have to be done through the remote itself; it can be done through another remote for which git-annex has built-in locking support. Doing it through the git remote itself seems simplest.
+
+\"ideas above seem to suffer from race conditions\" -- what is the race condition for syncing through the git-annex branch?  If two people try to push to git-annex branch one will fail, and require a pull first.  Let's say people P1 and P2 try to drop a file from remotes R1 and R2.  They both cloned the repo from git remote G.  P1's git-annex marks R1 untrusted on the git-annex branch, and pushes that branch to G.  P2's git-annex marks R2 untrusted on the git-annex branch, and tries to push that branch to G, but fails, so has to pull first.  Then P2's git-annex sees that R1 is now untrusted, and refuses to drop from R2.  P1's git-annex finishes the drop from R1, then restores R1's trust level.
+
+This does require there to be a shared git remote G, but that's often the case.   Maybe the URL of G could be stored in the remotes R1/R2 as contents of a special key?
+"""]]
