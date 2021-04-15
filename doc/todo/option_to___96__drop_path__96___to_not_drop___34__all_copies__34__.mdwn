@@ -1,0 +1,8 @@
+Well, may be there is already a way, I could not find via search or look at `drop --help`.
+
+In our repositories/workflows we quite often encounter cases where multiple subfolders might contain the same (in content, and thus linking to the same key) file.  At times it is desired to drop content in specific folders while still retaining annexed content for other folders in the tree (for further processing etc).
+
+`git annex drop path1` would drop a key path1 points to regardless either there is another path2 within a tree which points to it and might still be "needed".  So what I am looking is some option (can't even come up with a good name for it, smth like `--not-used-elsewhere`?) for `drop`, so it would not drop keys which are used in the tree not pointed by `path`s provided to `drop` command.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
