@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-04-16T18:29:19Z"
+ content="""
+Good Idea. In cases with a centralized repo and a lot of clients that don't directly exchange files with each other, this can be used to disable (useless) location tracking on the clients so the git-annex branch doesn't get bloated.
+
+Regarding `git annex add` in a hidden repo. I guess it will just add a empty location log for the new key to the git-annex branch, right?
+"""]]
