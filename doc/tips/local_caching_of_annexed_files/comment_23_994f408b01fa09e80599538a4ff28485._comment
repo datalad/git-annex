@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="kousu"
+ avatar="http://cdn.libravatar.org/avatar/ad9a5f59c296f9cb4e8f8a85510b049c"
+ subject="Hardlinks"
+ date="2021-04-16T08:17:35Z"
+ content="""
+I tried following the recipe above using git-annex v8 and successfully made a cache to which I can *write* efficient hardlinks to my working repos, but I am unable to *read* them back the same way, as hardlinks.
+
+This means that on a 10GB dataset, where `annex.thin` lets me use only those 10GB, adding the cache doubles it to 20GB. This is not really a feasible amount of overhead for my use-case.
+
+I've done a full report with test cases comparing different solutions (check the branches!) at https://github.com/kousu/test-git-annex-hardlinks.
+
+There seem to be several tangled issues: `annex.hardlink` in the cache overrides `annex.thin` in the working repo (despite the manpage claming `annex.thin` overrides `annex.hardlink`), `annex get` and `annex copy` both want to do the equivalent of a one-step `fetch` and `checkout` and the `checkout` does a copy despite `annex.thin` being set.
+
+Either:
+
+* I get hardlinks from `~/.annex-cache/.git/annex/objects <-> dataset/.git/annex/objects` but a copy between `dataset/.git/annex/objects <-> dataset/`, or
+* If I disable `annex.hardlink` **[in the cache](https://github.com/kousu/test-git-annex-hardlinks/blob/4b74841c8b9297879968f4fee69c31a6b82e9354/annex-hardlinks.sh#L165)**, then vice-versa: a copy happens between `~/.annex-cache/.git/annex/objects <-> dataset/.git/annex/objects` and a hardlink happens between `dataset/.git/annex/objects <-> dataset/`.
+
+In either case there's an extra full copy of my dataset, and I would rather not spend the time and space it takes to construct that every time I want to use my dataset somewhere.
+
+I also tried `mv ~/.annex-cache/.git/annex dataset/.git/` but that just confused `git-annex` fiercely.
+
+I also tried `git annex fix` but it just seemed to do nothing. And anyway isn't much help since I need to run it after `copy` which has already done a wasteful copy. I thought maybe `fix` could at least recognize that `annex.thin` is set and undo the wasted copy but it doesn't.
+
+I managed to work around it by side-stepping `git-annex` with `find .git/annex/objects | ... | ln -f` [directly](https://github.com/kousu/test-git-annex-hardlinks/blob/1edcdd2b13d4a8abd7d32c1727da1f820b23409c/annex-hardlinks.sh#L189-L195). This seems to work, and to not confuse `git-annex` [too much](https://github.com/kousu/test-git-annex-hardlinks#-bare-) -- it just makes an extra hardlink for some reason, but I can live with that.
+
+What's the most supported way to cache and directly use the data in the cache? That's one of the main features I want in a cache and I can't figure out how to do it with `git-annex`.
+
+Thanks for any pointers or clues towards getting this to work.
+
+"""]]
