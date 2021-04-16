@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-04-16T17:49:18Z"
+ content="""
+See also:
+<https://git-annex.branchable.com/todo/option_to___96__drop_path__96___to_not_drop___34__all_copies__34__/>
+Which needs the same information.
+
+Occurs to me one way to make sure git-annex has the information up-to-date
+would be to stat the index file, and if it's changed since last time,
+use `git ls-files --cached` to find all annexed files and update the keys
+database. But this could be quite slow.
+"""]]
