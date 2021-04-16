@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-04-16T18:42:29Z"
+ content="""
+Hmm, good point because --all looks at the location logs to get a list of
+keys, and so if it did not create the log at all, --all would not find it.
+
+So I guess it would need to write an empty log in that case, rather than
+omitting writing a log at all. Which does indicate a hidden repo added a
+file, if someone is curious about how they're being used.
+"""]]
