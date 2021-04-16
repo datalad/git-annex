@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-04-16T17:33:39Z"
+ content="""
+Problem is git-annex does not keep track of the information it would need
+in order to do this. Same problem as in
+[[bugs/indeterminite_preferred_content_state_for_duplicated_file]].
+
+Unlike that bug, I think it's actually rather ambiguous whether the user
+wants the file to be dropped in this case. Obviously you want it not to,
+the way your file tree is arranged, but other could 
+rely on the current behavior.
+
+Here's one way: Imagine a repo storing music. It has directories for
+albums, and also directories containing playlists, which are copies of
+files from albums. If I was in a mood for Brazilian music, but have gotten
+over it for now, I might want to drop Brazilian_playlist (which got very
+long in my travels there) to free up some space. If it refused to drop
+files because the same files were also in the corresponding album
+directories, I would wonder why git-annex had gotten broken.
+
+But the --not-used-elsewhere switch seems reasonable, if the needed info
+was available. I suppose git-annex could scan the index for changes and
+update state when this switch was used. Could be slow to update
+that state though.
+"""]]
