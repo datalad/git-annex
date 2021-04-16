@@ -1,0 +1,115 @@
+In some situations it can be useful for a reposistory to not store its
+state on the git-annex branch. One example is a temporary clone that's
+going to be deleted. One way is just to not push the git-annex branch
+from the repository to anywhere, but that limits what can be done in the
+repository. For example, files might be added, and copied to public
+repositories, but then the git-annex branch would need to be pushed to
+publish them.
+
+There could be a git config to hide the current repository.
+
+(There could also be per-remote git configs, but it seems likely that,
+if location tracking and other data is not stored for a remote, it will be
+hard to do much useful with that remote. For example, git-annex get from 
+that remote would not work. (Without setting annex-speculate-present.) Also
+some remotes depend on state being stored, like chunking data, encryption,
+etc. So setting up networks of repos that know about one-another but are
+hidden from the wider world would need some kind of public/private
+git-annex branch separation. Which would be a very large complication.)
+
+## location tracking effects
+
+The main logs this would affect are for location tracking. 
+
+git-annex will mostly work the same without location tracking information
+being recorded for the local repo. Often, git-annex uses inAnnex to
+directly check if an annex object is present, rather than looking at
+location tracking. For example --in=here uses inAnnex so would still work;
+
+Of course, `git annex whereis`reports on location tracking info, so if a
+file were added to such a repo, whereis on it would report no copies. And
+I said "of course", but this may not be obvious to all users. 
+
+And there are parts of git-annex that do look at location tracking for
+the current repo, even though it's generally slower than inAnnex. Since the
+two are generally equivilant now, some general-purpose code that looks at
+locations generally has no real need to use inAnnex. One example of this
+is --copies.
+
+One thing that would certainly need to be changed is git-annex
+fsck, which notices when the location tracking information is wrong/missing and
+corrects it. (Note that unsetting the git config followed by a fsck would
+update the location logs, which could be useful to stop hiding the repo,
+but if other stuff like annex.uuid is also affected, fsck would not do
+anything about that stuff.)
+
+git-annex info is a bit of a mess from this perspecitve. Its repo list
+would not include the repo (if it was also hidden from uuid.log), but it
+would report on the number of locally present objects, while other info
+like numcopies stats and combined size of repositories are based on
+location tracking, so would not include the current repo.
+
+Looks like git-annex drop --from remote relies on the location log
+to see if there's a local copy, so a hidden repo would not be treated as a
+copy. This could be changed, but checking inAnnex here would actually slow
+it down. It could also be argued that this is a good thing since dropping
+from a remote could leave the only copy in a hidden repo. But then move
+--from should also prevent that, and I think it might not.
+
+So the question is, would adding this feature complicate git-annex too
+much, in needing to pick the right choice of inAnnex or location log
+querying, or in the user's mental model of how git-annex works? 
+
+## uuid.log
+
+To really hide a repository, it needs to not be written to uuid.log.
+
+So the config would need to be set before git-annex init.
+
+If a repository is also hidden from uuid.log, it follows that this option
+is not given a name specific to location tracking. Eg annex.hidden rather
+than annex.omit-location-logs. But that does raise the
+question about all the other places a repo's uuid could crop up in the
+git-annex branch.
+
+## everything else
+
+* remote.log: A special remote is not usable without this, and this does
+  not seem to be a config that affects what is stored about remotes, but only
+  the current repo.
+
+* trust.log: If the user sets this config, are things
+  like `git-annex trust here` supposed to refuse to work? Seems limiting,
+  and a significant source of scope creep. Maybe it would be better to
+  let the uuid be written to these, if the user chooses to set a trust.
+  After all, having some uuids in these logs, that are not described in
+  uuid.log, does not tell anyone else much, except that someone had a
+  hidden repository.
+
+* group.log, preferred-content.log, required-content.log: Same as trust.log;
+  Names in group.log do hint about how a hidden repo might be used, but if
+  the user is concerned about that they can not add their repo to groups
+  that expose information.
+
+* export.log: Same as remote.log
+
+* `*.log.rmt`, `*.log.rmet`, `*.log.cid`, `*.log.cnk`: Same as remote.log
+
+* schedule.log: Same as trust.log
+
+* activity.log: A user might be surprised that fscking a hidden repo
+  mentions its uuid here. Also it seems unnecessary info to log for a
+  hidden repo. Should be special cased if uuid.log is.
+
+* multicast.log: This includes the uuid of the current repo, when using
+  git-annex multicast. That could be surprising to a user, so probably
+  git-annex multicast would need to refuse to run in hidden repos.
+
+* difference.log: Surprisingly to me, in a clone of a repo that was initialized
+  with tunings, git-annex init adds the new repo's uuid to this log file.
+  Should be special cased if uuid.log is. Unsure yet if it will be possible
+  to avoid writing it, or if tunings and hidden repos need to be
+  incompatible features.
+
+That seems to be all. --[[Joey]]
+
