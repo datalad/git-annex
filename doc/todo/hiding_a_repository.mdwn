@@ -15,7 +15,7 @@ that remote would not work. (Without setting annex-speculate-present.) Also
 some remotes depend on state being stored, like chunking data, encryption,
 etc. So setting up networks of repos that know about one-another but are
 hidden from the wider world would need some kind of public/private
-git-annex branch separation. Which would be a very large complication.)
+git-annex branch separation (see alternative section below).)
 
 ## location tracking effects
 
@@ -113,3 +113,43 @@ git-annex branch.
 
 That seems to be all. --[[Joey]]
 
+---
+
+## alternative: public/private git-annex branch separation
+
+This would need a separate index file in addition to .git/annex/index,
+call it index-private. Any logging of information that includes a hidden
+uuid would modify index-private instead. When index-private exists,
+git-annex branch queries have to read from both index and index-private,
+and can just concacentate the two. (But writes are more complicated, see below.)
+
+index-private could be committed to a git-annex-private branch, but this is
+not necessary for the single repo case. But doing that could allow for a
+group of repos that are all hidden but share information via that branch.
+
+Performance overhead seems like it would mostly be in determining if
+index-private exists and needs to be read from. And that should be
+cacheable for the life of git-annex. 
+
+Or, it could only read from index-private when the git config has the
+feature enabled. Then turning off the feature would need the user to do
+something to merge index-private into index, in order to keep using the
+repo with the info stored there. This approach also means that the user can
+temporarily disable the feature and see how the git-annex info will appear
+to others, eg see that whereis and info do not list their hidden repository.
+
+In a lot of ways this seems simpler than the approach of not writing to the
+branch. Main complication is log writes. All the log modules need to
+indicate when writes are adding information that needs to be kept private.
+
+Often a log file will be read, and then written with a new line added
+and perhaps an old line removed. Eg:
+
+	addLog file line = Annex.Branch.change file $ \b ->
+	        buildLog $ compactLog (line : parseLog b)
+
+This seems like it would need Annex.Branch.change to be passed a parameter
+indicating if it's changing the public or private log. Luckily, I think 
+all reads followed by writes do go via Annex.Branch.change, so Annex.Branch.get
+can just concacenate the two without worrying about it leaking back out in a
+later write.
