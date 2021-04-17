@@ -1,0 +1,20 @@
+I may be misunderstanding the purpose of mincopies, but I found this surprising. I would expect annex to not drop the file, because doing so violates the mincopies setting:
+
+```
+luckbox:orig patmaddox$ git annex mincopies
+3
+luckbox:orig patmaddox$ git annex whereis testmincopies
+whereis testmincopies (3 copies) 
+  	1c09b94f-eed3-425d-9bbe-49aa5e575ed9 -- [s3]
+   	c2bafb10-bf48-4ae5-a1b9-d142f2bea86a -- patmaddox@luckbox.local:~/Desktop/annex_test [here]
+   	c8144467-348b-476d-8464-5dfe98580f0b -- patmaddox@istudo.local:~/Desktop/annex [istudo]
+ok
+luckbox:orig patmaddox$ git annex drop testmincopies
+drop testmincopies (locking istudo...) ok
+(recording state in git...)
+luckbox:orig patmaddox$ git annex whereis testmincopies
+whereis testmincopies (2 copies) 
+  	1c09b94f-eed3-425d-9bbe-49aa5e575ed9 -- [s3]
+   	c8144467-348b-476d-8464-5dfe98580f0b -- patmaddox@istudo.local:~/Desktop/annex [istudo]
+ok
+```
