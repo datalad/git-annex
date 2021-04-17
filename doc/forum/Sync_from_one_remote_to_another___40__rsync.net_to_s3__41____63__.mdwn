@@ -1,0 +1,1 @@
+Can I have an rsync.net remote sync directly to s3? I want to use rsync.net's faster network, rather than uploading the same file twice from my slower connection. rsync.net doesn’t provide `git-annex-script` so I don’t know if there’s a way to do that. Thanks, Pat
