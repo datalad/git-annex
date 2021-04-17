@@ -1,0 +1,45 @@
+I am trying to [follow the instructions](https://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt/). I can create a gcrypt repo and push it with no problems. I don't seem to be able to use it as a special remote, however.
+
+In this output, `rsync://pat.rsync:encrypted.git` is an encrypted repo that I've already pushed. I've also tried initing a bare git repo, per the instructions.
+
+```
+$ git annex initremote encrypted type=gcrypt gitrepo=rsync://pat.rsync:encrypted.git keyid=E4D58139BF9A13DA14CD1550A52F3B969AFE6C9F
+initremote encrypted (encryption setup) (to gpg keys: A52F3B969AFE6C9F) gcrypt: Decrypting manifest
+gpg: Signature made Sat Apr 17 12:50:57 2021 PDT
+gpg:                using RSA key E4D58139BF9A13DA14CD1550A52F3B969AFE6C9F
+gpg: Good signature from "Pat" [ultimate]
+gcrypt: Remote ID is :id:Ooakc7VPxvVeXUtVyJap
+gcrypt: Decrypting manifest
+gpg: Signature made Sat Apr 17 12:50:57 2021 PDT
+gpg:                using RSA key E4D58139BF9A13DA14CD1550A52F3B969AFE6C9F
+gpg: Good signature from "Pat" [ultimate]
+Everything up-to-date
+
+git-annex: git: createProcess: runInteractiveProcess: chdir: does not exist (No such file or directory)
+failed
+git-annex: initremote: 1 failed
+```
+
+From [`git-annex-gcrypt`](https://git-annex.branchable.com/special_remotes/gcrypt/):
+
+> For git-annex to store files in a repository on a remote server, you need shell access, and it needs to be able to run `rsync` or `git-annex-shell`.
+
+rsync.net doesn't provide `git-annex-shell`, but they do provide `rsync`. So based on my reading of the docs, I think it should work.
+
+Here's my version info:
+
+```
+$ git-annex version
+git-annex version: 8.20210310
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.28 DAV-1.3.4 feed-1.3.0.1 ghc-8.10.4 http-client-0.7.6 persistent-sqlite-2.11.1.0 torrent-10000.1.1 uuid-1.3.14 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: darwin x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+```
+
+- local: git version 2.31.1
+- rsync.net: git version 2.24.1
+
