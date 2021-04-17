@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="drop --not-used-elsewhere"
+ date="2021-04-17T22:31:52Z"
+ content="""
++1 for `drop --not-used-elsewhere`.  Would be good if \"elsewhere\" included [[linked worktrees|tips/Using_git-worktree_with_annex]].
+For unlocked files, could just look at the hardlink count to the content file?   (But would be odd if only worked for unlocked files.)
+
+"""]]
