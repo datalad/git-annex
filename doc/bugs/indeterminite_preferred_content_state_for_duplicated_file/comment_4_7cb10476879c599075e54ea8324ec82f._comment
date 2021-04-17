@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="updating the keys database incrementally"
+ date="2021-04-17T22:23:45Z"
+ content="""
+\"stat the index file, and if it's changed since last time, use git ls-files --cached to find all annexed files and update the keys database. But this could be quite slow.\"  -- could you instead record the tree-ish for which the database is valid (e.g. from the last commit or checkout), and then use [`git-diff`](https://git-scm.com/docs/git-diff)/[`git-diff-index`](https://git-scm.com/docs/git-diff-index)/[`git-status`](https://git-scm.com/docs/git-status) to update just the keys that changed? 
+"""]]
