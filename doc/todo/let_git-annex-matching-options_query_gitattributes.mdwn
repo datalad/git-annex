@@ -1,0 +1,3 @@
+To [[git-annex-matching-options]], add `--gitattribute` option analogous to the current `--metadata` option but reading a value from [`.gitattributes`](https://git-scm.com/docs/gitattributes).
+
+Unclear what to do when different repo paths with conflicting `.gitattributes` point to the same content, but that can already happen with `--include=glob/--exclude=glob`?   How is it handled there?
