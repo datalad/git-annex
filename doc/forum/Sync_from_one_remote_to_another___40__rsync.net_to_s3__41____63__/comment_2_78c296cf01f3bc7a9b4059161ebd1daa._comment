@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="pat"
- avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
- subject="comment 2"
- date="2021-04-17T20:21:39Z"
- content="""
-Okay so it sounds like if I want to store stuff on rsync.net and s3, and use a faster connection, I'll need to set up a VPS instance as a transfer remote. Then I upload files from my local machine to the transfer remote, and have it upload to rsync.net and S3. Are there any other options that I'm overlooking?
-"""]]
