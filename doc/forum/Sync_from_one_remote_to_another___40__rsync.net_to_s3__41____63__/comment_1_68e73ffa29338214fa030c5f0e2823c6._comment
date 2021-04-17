@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="re: Sync from one remote to another"
+ date="2021-04-17T19:34:19Z"
+ content="""
+I don't think there's currently a way to tell git-annex to tell rsync.net to copy to s3; see [[todo/transitive_transfers]].  But if you do the in-cloud copying yourself outside of git-annex, you can use [[`git-annex-import --no-content`|git-annex-import]] to record in git-annex the location of the copies in s3.  See also [[todo/sync_fast_import]].
+"""]]
