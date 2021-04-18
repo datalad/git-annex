@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="datamanager"
+ avatar="http://cdn.libravatar.org/avatar/7d4ca7c5e571d4740ef072b83a746c12"
+ subject="reply"
+ date="2021-04-18T15:38:33Z"
+ content="""
+>  Try getting the encrypted symmetric key from remote.log
+
+Sorry, but where is that file? `find ./ -type f -name *.log` doesn't show me anything in this repository. 
+
+
+"""]]
