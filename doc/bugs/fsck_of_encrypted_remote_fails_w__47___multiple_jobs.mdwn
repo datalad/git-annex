@@ -1,0 +1,82 @@
+`git annex fsck` of an encrypted s3 remote fails when using multiple jobs.
+
+Version info:
+
+```
+$ git annex version
+git-annex version: 8.20210310
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.28 DAV-1.3.4 feed-1.3.0.1 ghc-8.10.4 http-client-0.7.6 persistent-sqlite-2.11.1.0 torrent-10000.1.1 uuid-1.3.14 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: darwin x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+transcript:
+
+[[!format sh """
+# failed
+
+$ git annex fsck -f s3 --fast
+fsck 50MB_3 
+fsck testmincopies (checking s3...) ok
+fsck 50MB_3 (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s
+fsck chicken (checking s3...) ok
+fsck hellothere (checking s3...) ok
+fsck 50MB_4 (user error (gpg ["--quiet","--trust-model","always","--decrypt"] exited 2)) failed
+fsck pig (checking s3...) ok
+fsck baz (checking s3...) ok
+fsck sawka.wav (checking s3...) ok
+fsck clap_tape.wav (user error (gpg ["--quiet","--trust-model","always","--decrypt"] exited 2)) failed
+fsck supa_kick.wav (checking s3...) ok
+fsck 50MB (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck 50MB_3 (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck whatisthis (checking s3...) ok
+fsck 50MB_5 (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck drums/clap.wav (checking s3...) ok
+fsck kindabig (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck drums/big_kick_2.wav (checking s3...) ok
+fsck dmd2_chstkck4.wav (checking s3...) ok
+fsck drums/big_kick.wav (checking s3...) ok
+fsck 50MB_2 (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck MB100 (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+(recording state in git...)
+git-annex: fsck: 2 failed
+luckbox:orig patmaddox$ 
+
+
+
+
+# success
+
+$ git annex fsck -f s3 --fast -J 1
+fsck 50MB (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck 50MB_2 (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck 50MB_3 (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck 50MB_4 (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck 50MB_5 (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck MB100 (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck baz (checking s3...) ok
+fsck chicken (checking s3...) ok
+fsck clap_tape.wav (checking s3...) ok
+fsck dmd2_chstkck4.wav (checking s3...) ok
+fsck drums/big_kick.wav (checking s3...) ok
+fsck drums/big_kick_2.wav (checking s3...) ok
+fsck drums/clap.wav (checking s3...) ok
+fsck hellothere (checking s3...) ok
+fsck kindabig (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) (checking s3...) ok
+fsck pig (checking s3...) ok
+fsck sawka.wav (checking s3...) ok
+fsck supa_kick.wav (checking s3...) ok
+fsck testmincopies (checking s3...) ok
+fsck whatisthis (checking s3...) ok
+(recording state in git...)
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+`git-annex` is over all working very well for me. I am able to do some things that I've wanted to be able to do for years. I believe I have worked it out well enough that I can stop testing it and start using it for real.
