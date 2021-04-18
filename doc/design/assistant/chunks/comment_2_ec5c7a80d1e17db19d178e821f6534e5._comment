@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-04-18T17:05:43Z"
+ content="""
+git-annex does not pad chunks, although the data it stores is designed to
+allow adding padding later if there's a good reason to.
+"""]]
