@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="pat"
- avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
- subject="comment 1"
- date="2021-04-17T21:05:28Z"
- content="""
-I've also tried setting `numcopies` to 3 and it behaves the same. All remotes are `semitrusted`.
-"""]]
