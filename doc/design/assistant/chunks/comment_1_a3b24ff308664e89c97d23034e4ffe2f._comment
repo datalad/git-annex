@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 1"
+ date="2021-04-18T16:18:45Z"
+ content="""
+I am unclear about something: does git-annex in fact pad chunks? And does that mean if I annex a 500 KB file, it will actually use 1MB of space (or whatever the chunk size is?)
+"""]]
