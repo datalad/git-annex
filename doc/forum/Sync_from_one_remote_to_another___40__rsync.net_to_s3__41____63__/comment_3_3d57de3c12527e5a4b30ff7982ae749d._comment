@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 3"
+ date="2021-04-18T01:19:53Z"
+ content="""
+rsync.net provides `rclone` - so I wonder if there's some way for `git-annex` to use that? Maybe it could `rclone` from rsync.net to s3 and use that faster connection.
+"""]]
