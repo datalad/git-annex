@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="anatoly.sayenko@880a118acc67f3244b406a2700f0556b2f10672c"
+ nickname="anatoly.sayenko"
+ avatar="http://cdn.libravatar.org/avatar/f64c8f28fe60aacbed60e4adaf301599"
+ subject="migration warning still present after migration "
+ date="2021-04-18T09:37:09Z"
+ content="""
+Hi, I'm trying to get rid of that warning by migrating my repo to SHA256E, as the messages during fsck suggest, but right after the migration I still get the warning.
+For example:  
+
+    $ git annex fsck study/sport/kite/kiteboarding_progression_beginner.avi
+    fsck study/sport/kite/kiteboarding_progression_beginner.avi (checksum...) 
+    study/sport/kite/kiteboarding_progression_beginner.avi: Can be upgraded to an improved key format. You can do so by running: git annex migrate --backend=SHA256E study/sport/kite/kiteboarding_progression_beginner.avi
+    ok
+    (recording state in git...)
+
+    $ git annex migrate --backend=SHA256E study/sport/kite/kiteboarding_progression_beginner.avi
+    migrate study/sport/kite/kiteboarding_progression_beginner.avi (checksum...) (checksum...) ok
+    (recording state in git...)
+
+    $ git annex fsck study/sport/kite/kiteboarding_progression_beginner.avi
+    fsck study/sport/kite/kiteboarding_progression_beginner.avi (checksum...) 
+    study/sport/kite/kiteboarding_progression_beginner.avi: Can be upgraded to an improved key format. You can do so by running: git annex migrate --backend=SHA256E study/sport/kite/kiteboarding_progression_beginner.avi
+    ok
+
+    $ ls -la study/sport/kite/kiteboarding_progression_beginner.avi
+    lrwxrwxrwx 1 tsayen tsayen 211 Apr 18 11:27 study/sport/kite/kiteboarding_progression_beginner.avi -> ../../../.git/annex/objects/5b6/SHA256E-s1802139648--3d86059c3b74145c7085467ff4661f2ab248daa4a9845ddb9228766dc8f2720e.avi/SHA256E-s1802139648--3d86059c3b74145c7085467ff4661f2ab248daa4a9845ddb9228766dc8f2720e.avi
+    (recording state in git...)
+
+    $ git annex unused
+    unused . (checking for unused data...) ok
+
+
+I've tried squashing the entire history on master to 1 commit, removing all remotes, running `git annex forget` and rerunnig `migrate`, but it didn't help.
+Could you suggest where should I look for that old key that keeps this message popping up? I have the same situation with all my annex repos.
+I'm using version 8.20200226
+
+
+"""]]
