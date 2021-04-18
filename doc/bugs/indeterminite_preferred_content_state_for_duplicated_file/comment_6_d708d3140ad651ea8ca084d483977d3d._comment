@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="comment 6"
- date="2021-04-17T22:54:44Z"
- content="""
-P.S.  There might be some more uses for a keys-to-paths db.  E.g. when operating on all keys,  [[git-annex-matching-options]] could support matching by filename.  When storing to a (non-exporttree) remote, path could be given as a hint to use for the storage path.
-"""]]
