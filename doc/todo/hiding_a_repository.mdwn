@@ -8,15 +8,6 @@ publish them.
 
 There could be a git config to hide the current repository.
 
-(There could also be per-remote git configs, but it seems likely that,
-if location tracking and other data is not stored for a remote, it will be
-hard to do much useful with that remote. For example, git-annex get from 
-that remote would not work. (Without setting annex-speculate-present.) Also
-some remotes depend on state being stored, like chunking data, encryption,
-etc. So setting up networks of repos that know about one-another but are
-hidden from the wider world would need some kind of public/private
-git-annex branch separation (see alternative section below).)
-
 ## location tracking effects
 
 The main logs this would affect are for location tracking. 
@@ -153,5 +144,50 @@ indicating if it's changing the public or private log. Luckily, I think
 all reads followed by writes do go via Annex.Branch.change, so Annex.Branch.get
 can just concacenate the two without worrying about it leaking back out in a
 later write.
+
+## networks of hidden repos
+
+There are a lot of complications involving using hidden repos as remotes.
+It may be best to not support doing it at all. Some of the complications
+are discussed below.
+
+If location tracking and other data is not stored for a hidden remote, it
+will be hard to do much useful with that remote. For example, git-annex get
+from that remote would not work. (Without setting annex-speculate-present.)
+Also some remotes depend on state being stored, like chunking data,
+encryption, etc. So setting up networks of repos that know about
+one-another but are hidden from the wider world would need some kind of
+public/private git-annex branch separation.
+
+If there's a branch such as git-annex-private that should only be pushed
+to remotes that know about the hidden repo, it invites mistakes. git push
+of matching branches would push it to any remote that happens to have a
+branch by the same name, which could even be done maliciously. Avoiding
+that would need to avoid using a named branch, and only let 
+git-annex sync push the information, to remotes it knows should receive it.
+
+A related problem is, git-annex move will update location tracking for the
+remote. If the remote is hidden, that would expose its uuid, unless
+git-annex move knew that it was and either avoided doing that, or wrote to
+the private git-annex branch. So, setting up a network of hidden repos
+would need some way to tell each of them which of the others were also
+hidden. A per-remote git config is one way, but the user would need to
+remember to set them up when setting up the remotes.
+
+Would storing a list of the uuids of hidden repos be acceptable? If there
+were a list in the git-annex branch, then it would be easier to support
+networks of hidden repos. The only information exposed would be the number
+of hidden repos and when they were added. Space used would generally be
+small, although in situations where temporary repos are being created
+frequently, and are hidden to avoid bloating the branch, there would be a
+small amount of bloat. 
+
+Alternatively, the UUID of a hidden repo could somehow encode the fact that
+it's hidden. Although this would make it hard to convert a repo from/to
+being hidden.
+
+None of the above allows for a network of hidden repos, one of which is
+part of a *different* network of hidden repos. Supporting that would be a
+major complication.
 
 [[!tag projects/datalad]]
