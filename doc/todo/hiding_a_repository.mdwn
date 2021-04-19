@@ -153,3 +153,5 @@ indicating if it's changing the public or private log. Luckily, I think
 all reads followed by writes do go via Annex.Branch.change, so Annex.Branch.get
 can just concacenate the two without worrying about it leaking back out in a
 later write.
+
+[[!tag projects/datalad]]
