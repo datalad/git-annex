@@ -494,7 +494,8 @@ retrieveExportWithContentIdentifierM dir cow loc cid dest mkkey p =
 storeExportWithContentIdentifierM :: RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierM dir cow src k loc overwritablecids p = do
 	liftIO $ createDirectoryUnder dir (toRawFilePath destdir)
-	withTmpFileIn destdir template $ \tmpf _tmph -> do
+	withTmpFileIn destdir template $ \tmpf tmph -> do
+		liftIO $ hClose tmph
 		fileCopierUnVerified cow src tmpf k p
 		let tmpf' = toRawFilePath tmpf
 		resetAnnexFilePerm tmpf'
