@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-The naming conventions for adjusted branches are poorly chosen (adjusted/master(unlocked) or adjusted/master(hidemissing)).  The parentheses cause problems when checking out the branch without protecting the name by way of quotation marks.  This problem is exacarbated that at least on my Ubuntu Focal system the provided bash-completion completes the branch name without those marks.
+The naming conventions for adjusted branches are poorly chosen (adjusted/master(unlocked) or adjusted/master(hidemissing)).  The parentheses cause problems when checking out the branch without protecting the name by way of quotation marks.  This problem is exacarbated at least on my Ubuntu Focal system by the fact that the provided bash-completion completes the branch name without those marks.
 
 ### What version of git-annex are you using? On what operating system?
 8.20200226-1 on Ubuntu Focal
