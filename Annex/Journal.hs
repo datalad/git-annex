@@ -106,7 +106,7 @@ journalDirty = do
  - in the journal directory.
  -}
 journalFile :: RawFilePath -> Git.Repo -> RawFilePath
-journalFile file repo = gitAnnexJournalDir' repo P.</> S.concatMap mangle file
+journalFile file repo = gitAnnexJournalDir repo P.</> S.concatMap mangle file
   where
 	mangle c
 		| P.isPathSeparator c = S.singleton underscore

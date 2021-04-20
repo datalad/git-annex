@@ -63,7 +63,6 @@ module Annex.Locations (
 	gitAnnexFeedState,
 	gitAnnexMergeDir,
 	gitAnnexJournalDir,
-	gitAnnexJournalDir',
 	gitAnnexJournalLock,
 	gitAnnexGitQueueLock,
 	gitAnnexIndex,
@@ -430,10 +429,6 @@ gitAnnexTransferDir r =
  - branch -}
 gitAnnexJournalDir :: Git.Repo -> RawFilePath
 gitAnnexJournalDir r = 
-	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "journal"
-
-gitAnnexJournalDir' :: Git.Repo -> RawFilePath
-gitAnnexJournalDir' r =
 	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "journal"
 
 {- Lock file for the journal. -}
