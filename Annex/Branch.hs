@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ module Annex.Branch (
 	updateTo,
 	get,
 	getHistorical,
+	RegardingUUID(..),
 	change,
 	maybeChange,
 	commitMessage,
@@ -172,7 +173,7 @@ updateTo' :: [(Git.Sha, Git.Branch)] -> Annex UpdateMade
 updateTo' pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
-	dirty <- journalDirty
+	dirty <- journalDirty gitAnnexJournalDir
 	ignoredrefs <- getIgnoredRefs
 	let unignoredrefs = excludeset ignoredrefs pairs
 	tomerge <- if null unignoredrefs
@@ -265,9 +266,12 @@ get file = getCache file >>= \case
  - (Changing the value this returns, and then merging is always the
  - same as using get, and then changing its value.) -}
 getLocal :: RawFilePath -> Annex L.ByteString
-getLocal file = do
+getLocal = getLocal' (GetPrivate True)
+
+getLocal' :: GetPrivate -> RawFilePath -> Annex L.ByteString
+getLocal' getprivate file = do
 	fastDebug "Annex.Branch" ("read " ++ fromRawFilePath file)
-	go =<< getJournalFileStale file
+	go =<< getJournalFileStale getprivate file
   where
 	go (Just journalcontent) = return journalcontent
 	go Nothing = getRef fullname file
@@ -297,24 +301,36 @@ getRef ref file = withIndex $ catFile ref file
  - Note that this does not cause the branch to be merged, it only
  - modifes the current content of the file on the branch.
  -}
-change :: Journalable content => RawFilePath -> (L.ByteString -> content) -> Annex ()
-change file f = lockJournal $ \jl -> f <$> getLocal file >>= set jl file
+change :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> content) -> Annex ()
+change ru file f = lockJournal $ \jl -> f <$> getToChange ru file >>= set jl ru file
 
 {- Applies a function which can modify the content of a file, or not. -}
-maybeChange :: Journalable content => RawFilePath -> (L.ByteString -> Maybe content) -> Annex ()
-maybeChange file f = lockJournal $ \jl -> do
-	v <- getLocal file
+maybeChange :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> Maybe content) -> Annex ()
+maybeChange ru file f = lockJournal $ \jl -> do
+	v <- getToChange ru file
 	case f v of
 		Just jv ->
 			let b = journalableByteString jv
-			in when (v /= b) $ set jl file b
+			in when (v /= b) $ set jl ru file b
 		_ -> noop
 
-{- Records new content of a file into the journal -}
-set :: Journalable content => JournalLocked -> RawFilePath -> content -> Annex ()
-set jl f c = do
+{- Only get private information when the RegardingUUID is itself private. -}
+getToChange :: RegardingUUID -> RawFilePath -> Annex L.ByteString
+getToChange = getLocal' . GetPrivate . regardingPrivateUUID
+
+{- Records new content of a file into the journal.
+ -
+ - This is not exported; all changes have to be made via change. This
+ - ensures that information that was written to the branch is not
+ - overwritten. Also, it avoids a get followed by a set without taking into
+ - account whether private information was gotten from the private
+ - git-annex index, and should not be written to the public git-annex
+ - branch.
+ -}
+set :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> content -> Annex ()
+set jl ru f c = do
 	journalChanged
-	setJournalFile jl f c
+	setJournalFile jl ru f c
 	fastDebug "Annex.Branch" ("set " ++ fromRawFilePath f)
 	-- Could cache the new content, but it would involve
 	-- evaluating a Journalable Builder twice, which is not very
@@ -329,7 +345,7 @@ commitMessage = fromMaybe "update" . annexCommitMessage <$> Annex.getGitConfig
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
-commit = whenM journalDirty . forceCommit
+commit = whenM (journalDirty gitAnnexJournalDir) . forceCommit
 
 {- Commits the current index to the branch even without any journalled
  - changes. -}
@@ -407,11 +423,14 @@ files :: Annex ([RawFilePath], IO Bool)
 files = do
 	_  <- update
 	(bfs, cleanup) <- branchFiles
-	-- ++ forces the content of the first list to be buffered in memory,
-	-- so use getJournalledFilesStale which should be much smaller most
-	-- of the time. branchFiles will stream as the list is consumed.
-	l <- (++)
-		<$> getJournalledFilesStale
+	-- ++ forces the content of all but the last list to be buffered in
+	-- memory, so use getJournalledFilesStale which should be much smaller
+	-- most of the time. branchFiles will stream as the list is consumed.
+	l <- (\a b c -> a ++ b ++ c)
+		<$> (if privateUUIDsKnown 
+			then getJournalledFilesStale gitAnnexPrivateJournalDir
+			else pure [])
+		<*> (getJournalledFilesStale gitAnnexJournalDir)
 		<*> pure bfs
 	return (l, cleanup)
 
@@ -520,7 +539,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 	let dir = gitAnnexJournalDir g
 	(jlogf, jlogh) <- openjlog (fromRawFilePath tmpdir)
 	h <- hashObjectHandle
-	withJournalHandle $ \jh ->
+	withJournalHandle gitAnnexJournalDir $ \jh ->
 		Git.UpdateIndex.streamUpdateIndex g
 			[genstream dir h jh jlogh]
 	commitindex

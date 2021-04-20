@@ -32,7 +32,7 @@ import qualified Data.Attoparsec.ByteString.Lazy as A
 describeUUID :: UUID -> UUIDDesc -> Annex ()
 describeUUID uuid desc = do
 	c <- currentVectorClock
-	Annex.Branch.change uuidLog $
+	Annex.Branch.change (Annex.Branch.RegardingUUID [uuid]) uuidLog $
 		buildLogOld buildUUIDDesc . changeLog c uuid desc . parseUUIDLog
 
 {- The map is cached for speed. -}

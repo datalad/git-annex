@@ -31,8 +31,8 @@ readLog = parseLog <$$> Annex.Branch.get
 getLog :: (Ord v, SingleValueSerializable v) => RawFilePath -> Annex (Maybe v)
 getLog = newestValue <$$> readLog
 
-setLog :: (SingleValueSerializable v) => RawFilePath -> v -> Annex ()
-setLog f v = do
+setLog :: (SingleValueSerializable v) => Annex.Branch.RegardingUUID -> RawFilePath -> v -> Annex ()
+setLog ru f v = do
 	c <- currentVectorClock
 	let ent = LogEntry c v
-	Annex.Branch.change f $ \_old -> buildLog (S.singleton ent)
+	Annex.Branch.change ru f $ \_old -> buildLog (S.singleton ent)

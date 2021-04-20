@@ -190,4 +190,15 @@ None of the above allows for a network of hidden repos, one of which is
 part of a *different* network of hidden repos. Supporting that would be a
 major complication.
 
+## other uuid exposures
+
+Things other than the git-annex branch that can expose the existence of the
+repository:
+
+* The p2p protocol has an AUTH that includes the repository that is
+  connecting. This should be ok, since links between repositories have to be
+  set up explicitly.
+* git-annex-shell configlist will list the UUID. User has to know/guess
+  the repo exists and have an accepted ssh key.
+
 [[!tag projects/datalad]]

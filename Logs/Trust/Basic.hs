@@ -23,7 +23,7 @@ import Logs.Trust.Pure as X
 trustSet :: UUID -> TrustLevel -> Annex ()
 trustSet uuid@(UUID _) level = do
 	c <- currentVectorClock
-	Annex.Branch.change trustLog $
+	Annex.Branch.change (Annex.Branch.RegardingUUID [uuid]) trustLog $
 		buildLogOld buildTrustLevel .
 			changeLog c uuid level .
 				parseLogOld trustLevelParser

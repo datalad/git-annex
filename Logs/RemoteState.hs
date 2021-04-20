@@ -28,8 +28,10 @@ setRemoteState :: RemoteStateHandle -> Key -> RemoteState -> Annex ()
 setRemoteState (RemoteStateHandle u) k s = do
 	c <- currentVectorClock
 	config <- Annex.getGitConfig
-	Annex.Branch.change (remoteStateLogFile config k) $
-		buildRemoteState . changeLog c u s . parseRemoteState
+	Annex.Branch.change
+		(Annex.Branch.RegardingUUID [u])
+		(remoteStateLogFile config k)
+		(buildRemoteState . changeLog c u s . parseRemoteState)
 
 buildRemoteState :: Log RemoteState -> Builder
 buildRemoteState = buildLogNew (byteString . encodeBS)

@@ -63,9 +63,11 @@ module Annex.Locations (
 	gitAnnexFeedState,
 	gitAnnexMergeDir,
 	gitAnnexJournalDir,
+	gitAnnexPrivateJournalDir,
 	gitAnnexJournalLock,
 	gitAnnexGitQueueLock,
 	gitAnnexIndex,
+	gitAnnexPrivateIndex,
 	gitAnnexIndexStatus,
 	gitAnnexViewIndex,
 	gitAnnexViewLog,
@@ -431,6 +433,12 @@ gitAnnexJournalDir :: Git.Repo -> RawFilePath
 gitAnnexJournalDir r = 
 	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "journal"
 
+{- .git/annex/journal.private/ is used to journal changes regarding private
+ - repositories. -}
+gitAnnexPrivateJournalDir :: Git.Repo -> RawFilePath
+gitAnnexPrivateJournalDir r = 
+	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "journal-private"
+
 {- Lock file for the journal. -}
 gitAnnexJournalLock :: Git.Repo -> RawFilePath
 gitAnnexJournalLock r = gitAnnexDir r P.</> "journal.lck"
@@ -443,6 +451,11 @@ gitAnnexGitQueueLock r = gitAnnexDir r P.</> "gitqueue.lck"
 {- .git/annex/index is used to stage changes to the git-annex branch -}
 gitAnnexIndex :: Git.Repo -> RawFilePath
 gitAnnexIndex r = gitAnnexDir r P.</> "index"
+
+{- .git/annex/index-private is used to store information that is not to
+ - be exposed to the git-annex branch. -}
+gitAnnexPrivateIndex :: Git.Repo -> RawFilePath
+gitAnnexPrivateIndex r = gitAnnexDir r P.</> "index-private"
 
 {- Holds the ref of the git-annex branch that the index was last updated to.
  -

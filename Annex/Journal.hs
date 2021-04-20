@@ -4,7 +4,7 @@
  - git-annex branch. Among other things, it ensures that if git-annex is
  - interrupted, its recorded data is not lost.
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -39,6 +39,24 @@ instance Journalable Builder where
 	writeJournalHandle = hPutBuilder
 	journalableByteString = toLazyByteString
 
+{- When a file in the git-annex branch is changed, this indicates what
+ - repository UUID (or in some cases, UUIDs) a change is regarding.
+ -
+ - Using this lets changes regarding private UUIDs be written to the
+ - private index, rather than to the main branch index, so it does
+ - not get exposed to other remotes.
+ -}
+data RegardingUUID = RegardingUUID [UUID]
+
+regardingPrivateUUID :: RegardingUUID -> Bool
+regardingPrivateUUID _ = False -- TODO
+
+-- Are any private UUIDs known to exist? If so, extra work has to be done,
+-- to check for information separately recorded for them, outside the usual
+-- locations.
+privateUUIDsKnown :: Bool
+privateUUIDsKnown = False -- TODO
+
 {- Records content for a file in the branch to the journal.
  -
  - Using the journal, rather than immediatly staging content to the index
@@ -48,19 +66,24 @@ instance Journalable Builder where
  - getJournalFileStale to always return a consistent journal file
  - content, although possibly not the most current one.
  -}
-setJournalFile :: Journalable content => JournalLocked -> RawFilePath -> content -> Annex ()
-setJournalFile _jl file content = withOtherTmp $ \tmp -> do
-	createAnnexDirectory =<< fromRepo gitAnnexJournalDir
+setJournalFile :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> content -> Annex ()
+setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
+	jd <- fromRepo $ if regardingPrivateUUID ru
+		then gitAnnexPrivateJournalDir
+		else gitAnnexJournalDir
+	createAnnexDirectory jd
 	-- journal file is written atomically
-	jfile <- fromRepo (journalFile file)
-	let tmpfile = fromRawFilePath (tmp P.</> P.takeFileName jfile)
+	let jfile = journalFile file
+	let tmpfile = fromRawFilePath (tmp P.</> jfile)
 	liftIO $ do
 		withFile tmpfile WriteMode $ \h -> writeJournalHandle h content
-		moveFile tmpfile (fromRawFilePath jfile)
+		moveFile tmpfile (fromRawFilePath (jd P.</> jfile))
 
 {- Gets any journalled content for a file in the branch. -}
-getJournalFile :: JournalLocked -> RawFilePath -> Annex (Maybe L.ByteString)
+getJournalFile :: JournalLocked -> GetPrivate -> RawFilePath -> Annex (Maybe L.ByteString)
 getJournalFile _jl = getJournalFileStale
+
+data GetPrivate = GetPrivate Bool
 
 {- Without locking, this is not guaranteed to be the most recent
  - version of the file in the journal, so should not be used as a basis for
@@ -73,42 +96,55 @@ getJournalFile _jl = getJournalFileStale
  - concurrency or other issues with a lazy read, and the minor loss of
  - laziness doesn't matter much, as the files are not very large.
  -}
-getJournalFileStale :: RawFilePath -> Annex (Maybe L.ByteString)
-getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
-	L.fromStrict <$> S.readFile (fromRawFilePath $ journalFile file g)
+getJournalFileStale :: GetPrivate -> RawFilePath -> Annex (Maybe L.ByteString)
+getJournalFileStale (GetPrivate getprivate) file = inRepo $ \g -> 
+	if getprivate
+		then do
+			x <- getfrom (gitAnnexJournalDir g)
+			y <- getfrom (gitAnnexPrivateJournalDir g)
+			-- This concacenation is the same as happens in a
+			-- merge of two git-annex branches.
+			return (x <> y)
+		else getfrom (gitAnnexJournalDir g)
+  where
+	jfile = journalFile file
+	getfrom d = catchMaybeIO $
+		L.fromStrict <$> S.readFile (fromRawFilePath (d P.</> jfile))
 
-{- List of existing journal files, but without locking, may miss new ones
- - just being added, or may have false positives if the journal is staged
- - as it is run. -}
-getJournalledFilesStale :: Annex [RawFilePath]
-getJournalledFilesStale = do
+{- List of existing journal files in a journal directory, but without locking,
+ - may miss new ones just being added, or may have false positives if the
+ - journal is staged as it is run. -}
+getJournalledFilesStale :: (Git.Repo -> RawFilePath) -> Annex [RawFilePath]
+getJournalledFilesStale getjournaldir = do
 	g <- gitRepo
 	fs <- liftIO $ catchDefaultIO [] $
-		getDirectoryContents $ fromRawFilePath $ gitAnnexJournalDir g
+		getDirectoryContents $ fromRawFilePath (getjournaldir g)
 	return $ filter (`notElem` [".", ".."]) $
 		map (fileJournal . toRawFilePath) fs
 
-withJournalHandle :: (DirectoryHandle -> IO a) -> Annex a
-withJournalHandle a = do
-	d <- fromRawFilePath <$> fromRepo gitAnnexJournalDir
+{- Directory handle open on a journal directory. -}
+withJournalHandle :: (Git.Repo -> RawFilePath) -> (DirectoryHandle -> IO a) -> Annex a
+withJournalHandle getjournaldir a = do
+	d <- fromRawFilePath <$> fromRepo getjournaldir
 	bracketIO (openDirectory d) closeDirectory (liftIO . a)
 
 {- Checks if there are changes in the journal. -}
-journalDirty :: Annex Bool
-journalDirty = do
-	d <- fromRawFilePath <$> fromRepo gitAnnexJournalDir
+journalDirty :: (Git.Repo -> RawFilePath) -> Annex Bool
+journalDirty getjournaldir = do
+	d <- fromRawFilePath <$> fromRepo getjournaldir
 	liftIO $ 
 		(not <$> isDirectoryEmpty d)
 			`catchIO` (const $ doesDirectoryExist d)
 
 {- Produces a filename to use in the journal for a file on the branch.
+ - The filename does not include the journal directory.
  -
  - The journal typically won't have a lot of files in it, so the hashing
  - used in the branch is not necessary, and all the files are put directly
  - in the journal directory.
  -}
-journalFile :: RawFilePath -> Git.Repo -> RawFilePath
-journalFile file repo = gitAnnexJournalDir repo P.</> S.concatMap mangle file
+journalFile :: RawFilePath -> RawFilePath
+journalFile file = S.concatMap mangle file
   where
 	mangle c
 		| P.isPathSeparator c = S.singleton underscore

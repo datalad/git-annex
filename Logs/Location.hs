@@ -66,7 +66,8 @@ logChange = logChange' logNow
 logChange' :: (LogStatus -> LogInfo -> Annex LogLine) -> Key -> UUID -> LogStatus -> Annex ()
 logChange' mklog key u@(UUID _) s = do
 	config <- Annex.getGitConfig
-	maybeAddLog (locationLogFile config key) =<< mklog s (LogInfo (fromUUID u))
+	maybeAddLog (Annex.Branch.RegardingUUID [u]) (locationLogFile config key)
+		=<< mklog s (LogInfo (fromUUID u))
 logChange' _ _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have
@@ -114,7 +115,9 @@ setDead key = do
 	ls <- compactLog <$> readLog logfile
 	mapM_ (go logfile) (filter (\l -> status l == InfoMissing) ls)
   where
-	go logfile l = addLog logfile $ setDead' l
+	go logfile l = 
+		let u = toUUID (fromLogInfo (info l))
+		in addLog (Annex.Branch.RegardingUUID [u]) logfile (setDead' l)
 
 {- Note that the timestamp in the log is updated minimally, so that this
  - can be overruled by other location log changes. -}

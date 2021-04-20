@@ -30,16 +30,16 @@ import Git.Types (RefDate)
 
 {- Adds a LogLine to the log, removing any LogLines that are obsoleted by
  - adding it. -}
-addLog :: RawFilePath -> LogLine -> Annex ()
-addLog file line = Annex.Branch.change file $ \b ->
+addLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogLine -> Annex ()
+addLog ru file line = Annex.Branch.change ru file $ \b ->
 	buildLog $ compactLog (line : parseLog b)
 
 {- When a LogLine already exists with the same status and info, but an
  - older timestamp, that LogLine is preserved, rather than updating the log
  - with a newer timestamp.
  -}
-maybeAddLog :: RawFilePath -> LogLine -> Annex ()
-maybeAddLog file line = Annex.Branch.maybeChange file $ \s -> do
+maybeAddLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogLine -> Annex ()
+maybeAddLog ru file line = Annex.Branch.maybeChange ru file $ \s -> do
 	m <- insertNewStatus line $ logMap $ parseLog s
 	return $ buildLog $ mapLog m
 

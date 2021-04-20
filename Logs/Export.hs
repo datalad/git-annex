@@ -65,10 +65,10 @@ recordExportBeginning remoteuuid newtree = do
 		. parseExportLogMap
 		<$> Annex.Branch.get exportLog
 	let new = updateIncompleteExportedTreeish old (nub (newtree:incompleteExportedTreeishes [old]))
-	Annex.Branch.change exportLog $
-		buildExportLog 
-			. changeMapLog c ep new
-			. parseExportLog
+	Annex.Branch.change
+		(Annex.Branch.RegardingUUID [remoteuuid, u])
+		exportLog
+		(buildExportLog . changeMapLog c ep new . parseExportLog)
 	recordExportTreeish newtree
 
 -- Graft a tree ref into the git-annex branch. This is done
@@ -96,7 +96,9 @@ recordExportUnderway remoteuuid ec = do
 	hereuuid <- getUUID
 	let ep = ExportParticipants { exportFrom = hereuuid, exportTo = remoteuuid }
 	let exported = mkExported (newTreeish ec) []
-	Annex.Branch.change exportLog $
+	Annex.Branch.change
+		(Annex.Branch.RegardingUUID [remoteuuid, hereuuid]) 
+		exportLog $
 		buildExportLog
 			. changeMapLog c ep exported 
 			. M.mapWithKey (updateForExportChange remoteuuid ec c hereuuid)

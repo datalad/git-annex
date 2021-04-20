@@ -99,25 +99,25 @@ getCurrentRemoteMetaData (RemoteStateHandle u) k = extractRemoteMetaData u <$>
 {- Adds in some metadata, which can override existing values, or unset
  - them, but otherwise leaves any existing metadata as-is. -}
 addMetaData :: Key -> MetaData -> Annex ()
-addMetaData = addMetaData' metaDataLogFile
+addMetaData = addMetaData' (Annex.Branch.RegardingUUID []) metaDataLogFile
 
-addMetaData' :: (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> Annex ()
-addMetaData' getlogfile k metadata = 
-	addMetaDataClocked' getlogfile k metadata =<< currentVectorClock
+addMetaData' :: Annex.Branch.RegardingUUID -> (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> Annex ()
+addMetaData' ru getlogfile k metadata = 
+	addMetaDataClocked' ru getlogfile k metadata =<< currentVectorClock
 
 {- Reusing the same VectorClock when making changes to the metadata
  - of multiple keys is a nice optimisation. The same metadata lines
  - will tend to be generated across the different log files, and so
  - git will be able to pack the data more efficiently. -}
 addMetaDataClocked :: Key -> MetaData -> VectorClock -> Annex ()
-addMetaDataClocked = addMetaDataClocked' metaDataLogFile
+addMetaDataClocked = addMetaDataClocked' (Annex.Branch.RegardingUUID []) metaDataLogFile
 
-addMetaDataClocked' :: (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> VectorClock -> Annex ()
-addMetaDataClocked' getlogfile k d@(MetaData m) c
+addMetaDataClocked' :: Annex.Branch.RegardingUUID -> (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> VectorClock -> Annex ()
+addMetaDataClocked' ru getlogfile k d@(MetaData m) c
 	| d == emptyMetaData = noop
 	| otherwise = do
 		config <- Annex.getGitConfig
-		Annex.Branch.change (getlogfile config k) $
+		Annex.Branch.change ru (getlogfile config k) $
 			buildLog . simplifyLog 
 				. S.insert (LogEntry c metadata)
 				. parseLog
@@ -126,7 +126,7 @@ addMetaDataClocked' getlogfile k d@(MetaData m) c
 
 addRemoteMetaData :: Key -> RemoteStateHandle -> MetaData -> Annex ()
 addRemoteMetaData k (RemoteStateHandle u) m = 
-	addMetaData' remoteMetaDataLogFile k $ fromRemoteMetaData $
+	addMetaData' (Annex.Branch.RegardingUUID [u]) remoteMetaDataLogFile k $ fromRemoteMetaData $
 		RemoteMetaData u m
 
 getMetaDataLog :: Key -> Annex (Log MetaData)
@@ -153,8 +153,10 @@ copyMetaData oldkey newkey
 			then return False
 			else do
 				config <- Annex.getGitConfig
-				Annex.Branch.change (metaDataLogFile config newkey) $
-					const $ buildLog l
+				Annex.Branch.change
+					(Annex.Branch.RegardingUUID [])
+					(metaDataLogFile config newkey)
+					(const $ buildLog l)
 				return True
 
 readLog :: RawFilePath -> Annex (Log MetaData)

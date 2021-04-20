@@ -31,7 +31,7 @@ requiredContentSet = setLog requiredContentLog
 setLog :: RawFilePath -> UUID -> PreferredContentExpression -> Annex ()
 setLog logfile uuid@(UUID _) val = do
 	c <- currentVectorClock
-	Annex.Branch.change logfile $
+	Annex.Branch.change (Annex.Branch.RegardingUUID [uuid]) logfile $
 		buildLogOld buildPreferredContentExpression
 		. changeLog c uuid val
 		. parseLogOld parsePreferredContentExpression
@@ -45,7 +45,9 @@ setLog _ NoUUID _ = error "unknown UUID; cannot modify"
 groupPreferredContentSet :: Group -> PreferredContentExpression -> Annex ()
 groupPreferredContentSet g val = do
 	c <- currentVectorClock
-	Annex.Branch.change groupPreferredContentLog $
+	Annex.Branch.change
+		(Annex.Branch.RegardingUUID [])
+		groupPreferredContentLog $
 		buildGroupPreferredContent
 		. changeMapLog c g val 
 		. parseGroupPreferredContent

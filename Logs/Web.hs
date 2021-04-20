@@ -62,7 +62,7 @@ setUrlPresent key url = do
 	us <- getUrls key
 	unless (url `elem` us) $ do
 		config <- Annex.getGitConfig
-		addLog (urlLogFile config key)
+		addLog (Annex.Branch.RegardingUUID []) (urlLogFile config key)
 			=<< logNow InfoPresent (LogInfo (encodeBS url))
 	-- If the url does not have an OtherDownloader, it must be present
 	-- in the web.
@@ -76,7 +76,7 @@ setUrlMissing key url = do
 	us <- getUrls key
 	when (url `elem` us) $ do
 		config <- Annex.getGitConfig
-		addLog (urlLogFile config key)
+		addLog (Annex.Branch.RegardingUUID []) (urlLogFile config key)
 			=<< logNow InfoMissing (LogInfo (encodeBS url))
 		-- If the url was a web url and none of the remaining urls
 		-- for the key are web urls, the key must not be present

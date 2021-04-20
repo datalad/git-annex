@@ -39,7 +39,7 @@ groupChange :: UUID -> (S.Set Group -> S.Set Group) -> Annex ()
 groupChange uuid@(UUID _) modifier = do
 	curr <- lookupGroups uuid
 	c <- currentVectorClock
-	Annex.Branch.change groupLog $
+	Annex.Branch.change (Annex.Branch.RegardingUUID [uuid]) groupLog $
 		buildLogOld buildGroup . changeLog c uuid (modifier curr) . parseLogOld parseGroup
 	
 	-- The changed group invalidates the preferred content cache.

@@ -18,6 +18,7 @@ module Logs.NumCopies (
 
 import Annex.Common
 import qualified Annex
+import qualified Annex.Branch
 import Types.NumCopies
 import Logs
 import Logs.SingleValue
@@ -34,13 +35,13 @@ setGlobalNumCopies :: NumCopies -> Annex ()
 setGlobalNumCopies new = do
 	curr <- getGlobalNumCopies
 	when (curr /= Just new) $
-		setLog numcopiesLog new
+		setLog (Annex.Branch.RegardingUUID []) numcopiesLog new
 
 setGlobalMinCopies :: MinCopies -> Annex ()
 setGlobalMinCopies new = do
 	curr <- getGlobalMinCopies
 	when (curr /= Just new) $
-		setLog mincopiesLog new
+		setLog (Annex.Branch.RegardingUUID []) mincopiesLog new
 
 {- Value configured in the numcopies log. Cached for speed. -}
 getGlobalNumCopies :: Annex (Maybe NumCopies)

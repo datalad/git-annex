@@ -35,7 +35,7 @@ setGlobalConfig name new = do
 setGlobalConfig' :: ConfigKey -> ConfigValue -> Annex ()
 setGlobalConfig' name new = do
 	c <- currentVectorClock
-	Annex.Branch.change configLog $ 
+	Annex.Branch.change (Annex.Branch.RegardingUUID []) configLog $ 
 		buildGlobalConfig . changeMapLog c name new . parseGlobalConfig
 
 unsetGlobalConfig :: ConfigKey -> Annex ()

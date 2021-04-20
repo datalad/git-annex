@@ -83,7 +83,7 @@ inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do
 	old <- fromRepo olddir
 	new <- liftIO (readFile $ old </> source)
-	Annex.Branch.change (toRawFilePath dest) $ \prev -> 
+	Annex.Branch.change (Annex.Branch.RegardingUUID []) (toRawFilePath dest) $ \prev -> 
 		encodeBL $ unlines $ nub $ lines (decodeBL prev) ++ lines new
 
 logFiles :: FilePath -> Annex [FilePath]

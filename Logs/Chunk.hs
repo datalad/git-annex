@@ -37,8 +37,10 @@ chunksStored :: UUID -> Key -> ChunkMethod -> ChunkCount -> Annex ()
 chunksStored u k chunkmethod chunkcount = do
 	c <- currentVectorClock
 	config <- Annex.getGitConfig
-	Annex.Branch.change (chunkLogFile config k) $
-		buildLog . changeMapLog c (u, chunkmethod) chunkcount . parseLog
+	Annex.Branch.change
+		(Annex.Branch.RegardingUUID [u])
+		(chunkLogFile config k)
+		(buildLog . changeMapLog c (u, chunkmethod) chunkcount . parseLog)
 
 chunksRemoved :: UUID -> Key -> ChunkMethod -> Annex ()
 chunksRemoved u k chunkmethod = chunksStored u k chunkmethod 0

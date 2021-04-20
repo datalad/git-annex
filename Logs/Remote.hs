@@ -33,7 +33,7 @@ import qualified Data.Map as M
 configSet :: UUID -> RemoteConfig -> Annex ()
 configSet u cfg = do
 	c <- currentVectorClock
-	Annex.Branch.change remoteLog $
+	Annex.Branch.change (Annex.Branch.RegardingUUID [u]) remoteLog $
 		buildRemoteConfigLog
 			. changeLog c u (removeSameasInherited cfg)
 			. parseRemoteConfigLog
