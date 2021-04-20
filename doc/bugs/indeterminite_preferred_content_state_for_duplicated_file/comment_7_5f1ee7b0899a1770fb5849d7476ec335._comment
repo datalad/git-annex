@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="semantics of preferred content expressions"
+ date="2021-04-18T22:03:02Z"
+ content="""
+It seems the underlying issue is that preferred content expressions are defined as predicates on *files*, but then used to determine preferred state of *keys*.  The name \"preferred *content*\" suggests they're predicates on *keys*.  The set of paths that use a key is a property of a key, like a special metadata field `_path`.  Suppose `includeifany=glob` was true for a key if *any* value in `_path` matched `glob`, while `includeifall=glob` was true if *all* values in `_path` did.  Treat `include=glob` as `includeifany=glob` and `exclude=glob` as `not includeifall=glob`.   Then `include=* and exclude=archive/*` unambiguously means \"include all keys except those used only under `archive/`\".  (This has the problem that `include=glob` is not the same as `not exclude=glob`.  But the meaning seems to match the typical current usage of `include` and `exclude`?)
+
+"""]]
