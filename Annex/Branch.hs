@@ -411,7 +411,7 @@ files = do
 	-- so use getJournalledFilesStale which should be much smaller most
 	-- of the time. branchFiles will stream as the list is consumed.
 	l <- (++)
-		<$> (map toRawFilePath <$> getJournalledFilesStale)
+		<$> getJournalledFilesStale
 		<*> pure bfs
 	return (l, cleanup)
 

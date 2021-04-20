@@ -9,6 +9,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.Journal where
 
 import Annex.Common
@@ -78,13 +80,13 @@ getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
 {- List of existing journal files, but without locking, may miss new ones
  - just being added, or may have false positives if the journal is staged
  - as it is run. -}
-getJournalledFilesStale :: Annex [FilePath]
+getJournalledFilesStale :: Annex [RawFilePath]
 getJournalledFilesStale = do
 	g <- gitRepo
 	fs <- liftIO $ catchDefaultIO [] $
 		getDirectoryContents $ fromRawFilePath $ gitAnnexJournalDir g
 	return $ filter (`notElem` [".", ".."]) $
-		map (fromRawFilePath . fileJournal . toRawFilePath) fs
+		map (fileJournal . toRawFilePath) fs
 
 withJournalHandle :: (DirectoryHandle -> IO a) -> Annex a
 withJournalHandle a = do
