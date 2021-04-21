@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="Are my unlocked, annexed files still safe?"
+ date="2021-04-21T15:47:48Z"
+ content="""
+I want to double-check something: if I've annexed and committed files, I believe they are safely stored in git-annex even if I unlock them (as long as I don't use `--thin`). If I annex copies of the the same file, annex will only store it once, and use a symlink for the two original files. But if I unlock them, I can edit them independently.
+
+Basically, unlock gives me an editable copy of the file - but I always have the original version, and can revert or check it out if I need to. Is that correct?
+"""]]
