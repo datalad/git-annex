@@ -12,6 +12,9 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
   * directory: When cp supports reflinks, use it.
   * init: Fix a crash when the repo's was cloned from a repo that had an
     adjusted branch checked out, and the origin remote is not named "origin".    
+  * Fix bug caused by recent optimisations that could make git-annex not
+    see recently recorded status information when configured with
+    annex.alwayscommit=false.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Apr 2021 12:17:26 -0400
 

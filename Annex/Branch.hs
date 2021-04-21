@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -30,6 +30,7 @@ module Annex.Branch (
 	rememberTreeish,
 	performTransitions,
 	withIndex,
+	precache,
 ) where
 
 import qualified Data.ByteString as B
@@ -259,6 +260,18 @@ get file = getCache file >>= \case
 			else getLocal file
 		setCache file content
 		return content
+
+{- Used to cache the value of a file, which has been read from the branch
+ - using some optimised method. The journal has to be checked, in case
+ - it has a newer version of the file that has not reached the branch yet.
+ -}
+precache :: RawFilePath -> L.ByteString -> Annex ()
+precache file branchcontent = do
+	st <- getState
+	content <- if journalIgnorable st
+		then pure branchcontent
+		else fromMaybe branchcontent <$> getJournalFileStale file
+	Annex.BranchState.setCache file content
 
 {- Like get, but does not merge the branch, so the info returned may not
  - reflect changes in remotes.

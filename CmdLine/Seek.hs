@@ -44,7 +44,6 @@ import Annex.Concurrent
 import Annex.CheckIgnore
 import Annex.Action
 import qualified Annex.Branch
-import qualified Annex.BranchState
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 import Utility.Tuple
@@ -288,7 +287,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		let go reader = liftIO reader >>= \case
 			Nothing -> return ()
 			Just ((k, f), content) -> checktimelimit (discard reader) $ do
-				maybe noop (Annex.BranchState.setCache f) content
+				maybe noop (Annex.Branch.precache f) content
 				keyaction Nothing (SeekInput [], k, mkActionItem k)
 				go reader
 		catObjectStreamLsTree l (getk . getTopFilePath . LsTree.file) g go
@@ -395,7 +394,7 @@ seekFilteredKeys seeker listfs = do
 
 	precachefinisher mi lreader checktimelimit = liftIO lreader >>= \case
 		Just ((logf, (si, f), k), logcontent) -> checktimelimit discard $ do
-			maybe noop (Annex.BranchState.setCache logf) logcontent
+			maybe noop (Annex.Branch.precache logf) logcontent
 			checkMatcherWhen mi
 				(matcherNeedsLocationLog mi && not (matcherNeedsFileName mi))
 				(MatchingFile $ FileInfo f f (Just k))
