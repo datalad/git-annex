@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-04-21T16:11:15Z"
+ content="""
+Still failing on windows after other fix.
+
+More context on the failure shows it cannot be related to exporting,
+this is pure key/value store operation.
+
+	key size 1048576; directory remote chunksize=0 encryption=none
+	        removeKey when not present:                       OK (0.07s)
+	        present False:                                    OK (0.07s)
+	        storeKey:                                         OK (0.02s)
+	        present True:                                     OK
+	        storeKey when already present:                    OK (0.02s)
+	        present True:                                     OK
+	        retrieveKeyFile:                                  OK (0.17s)
+	        fsck downloaded object:                           OK
+	        retrieveKeyFile resume from 33%:                  FAIL
+	          Exception: .git\annex\objects\d78\ee7\SHA256E-s1048576--b9be1c0379146c0bc17c03d1caa8fb1c9d25cc741f59c09ab27379d5fc41862d.this-is-a-test-key\SHA256E-s1048576--b9be1c0379146c0bc17c03d1caa8fb1c9d25cc741f59c09ab27379d5fc41862d.this-is-a-test-key: DeleteFile "\\\\?\\C:\\Users\\runneradmin\\.t\\main2\\.git\\annex\\objects\\d78\\ee7\\SHA256E-s1048576--b9be1c0379146c0bc17c03d1caa8fb1c9d25cc741f59c09ab27379d5fc41862d.this-is-a-test-key\\SHA256E-s1048576--b9be1c0379146c0bc17c03d1caa8fb1c9d25cc741f59c09ab27379d5fc41862d.this-is-a-test-key": permission denied (Access is denied.)
+"""]]
