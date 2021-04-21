@@ -2,15 +2,12 @@ If the journal contains a newer version of a log file than the git-annex
 branch, and annex.alwayscommit=false so the branch is not getting updated,
 the value from the journal can be ignored when reading that log file.
 
-In CmdLine.Seek, there is some code that precached location logs as an
-optimisation. That streams info from the git-annex branch into the cache.
-But it never checks for a journal file.
+In CmdLine.Seek, there is some code that precaches location logs as an
+optimisation (when using eg --copies). That streams info from the
+git-annex branch into the cache. But it never checks for a journal file
+with newer information.
 
-One fix would be to just check the journal file too, but that would
-probably slow down the optimisation and would not speed up anything. So I
-think that the caching needs to note that it's got cached a value from the
-git-annex branch, but that the journal file needs to be checked for before
-using that cached data.
+> fixed this
 
 Also in Cmdline.Seek, there is a LsTreeRecursive over the branch to handle
 `--all`, and I think again that would mean it doesn't notice location
