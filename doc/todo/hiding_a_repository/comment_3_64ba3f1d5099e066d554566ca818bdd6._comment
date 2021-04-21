@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="auto-expire temp repos"
+ date="2021-04-21T15:37:37Z"
+ content="""
+As a possible simpler alternative, maybe add an option to [[git-annex-dead]] to mark a repo dead from a future time onwards?  I often have temp repos created on temp cloud instances.   I mark them untrusted right after cloning, and then manually mark them dead after the cloud instance is gone.  If the latter part were automated, would that cover most of what hidden repos do?
+"""]]

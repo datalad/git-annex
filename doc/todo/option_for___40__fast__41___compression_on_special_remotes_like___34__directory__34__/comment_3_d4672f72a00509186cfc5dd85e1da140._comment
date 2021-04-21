@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 3"
+ date="2021-04-20T18:05:27Z"
+ content="""
+Would it perhaps be possible to set the compression using filters like file name/extension?  
+For example, I wouldn't want GA to waste time on compressing multimedia files that are already at entropy and, since they make up the majority of my special remote's content, re-writing them would be very time intensive (even more so when remote solutions are involved).
+Certain compressors might also work better on some files types compared to others.   
+This could be very important to scientists using datalad as they are likely to A. be working very specific kinds of data where certain compressors might significantly outperform others and B. have large quantities of data where compression is essential.
+
+If compressors are going to be limited to a known-safe selection, an important aspect to keep in mind would be compression levels as some compressors like zstd can range from lzo-like performance characteristics to lzma ones.
+
+Definitely a +1 on this one though, it would be very useful for my use-case aswell.
+"""]]

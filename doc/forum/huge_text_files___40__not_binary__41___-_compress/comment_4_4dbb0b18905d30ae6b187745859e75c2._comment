@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 4"
+ date="2021-04-20T18:30:39Z"
+ content="""
+Perhaps Git Annex could have first-class support for a local special remote inside the .git/annex dir where files that aren't checked out are stored in a more efficient manner.  
+This would mainly be useful for old versions of files you want to keep in the repo but don't need immediate access to or bare repos like in OP's case. Once special remotes support compression, it might make sense to make it the default storage method for bare repos actually.    
+Ideally these could be set to be any local special remote backend; bup would make an ideal candidate for storing old versions of documents efficiently for example.
+
+Having files in this such a \"local special remote\" would then be equivalent to having them in the regular .git/annex/objects dir for tracking purposes.
+"""]]

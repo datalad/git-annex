@@ -251,6 +251,12 @@ test runannex mkr mkk =
 		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
+	, check "retrieveKeyFile resume from 0" $ \r k -> do
+		tmp <- fromRawFilePath <$> prepTmp k
+		liftIO $ writeFile tmp ""
+		lockContentForRemoval k noop removeAnnex
+		get r k
+	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 33%" $ \r k -> do
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
 		tmp <- fromRawFilePath <$> prepTmp k
@@ -258,12 +264,6 @@ test runannex mkr mkk =
 			sz <- hFileSize h
 			L.hGet h $ fromInteger $ sz `div` 3
 		liftIO $ L.writeFile tmp partial
-		lockContentForRemoval k noop removeAnnex
-		get r k
-	, check "fsck downloaded object" fsck
-	, check "retrieveKeyFile resume from 0" $ \r k -> do
-		tmp <- fromRawFilePath <$> prepTmp k
-		liftIO $ writeFile tmp ""
 		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck
