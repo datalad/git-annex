@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="clarifying unlocked files"
+ date="2021-04-21T16:08:05Z"
+ content="""
+Does the locked/unlocked state apply to one particular path within the repo, or to a particular key?  Can the same key be used by both a locked and an unlocked file?
+"""]]
