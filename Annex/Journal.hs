@@ -99,7 +99,7 @@ data GetPrivate = GetPrivate Bool
  -}
 getJournalFileStale :: GetPrivate -> RawFilePath -> Annex (Maybe L.ByteString)
 getJournalFileStale (GetPrivate getprivate) file = inRepo $ \g -> 
-	if getprivate
+	if getprivate && privateUUIDsKnown
 		then do
 			x <- getfrom (gitAnnexJournalDir g)
 			y <- getfrom (gitAnnexPrivateJournalDir g)
