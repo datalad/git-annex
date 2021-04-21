@@ -203,4 +203,30 @@ None of the above allows for a network of hidden repos, one of which is
 part of a *different* network of hidden repos. Supporting that would be a
 major complication.
 
+# alternative: git-annex branch filtering
+
+Different angle on this: Let the git-annex branch grow as usual. But
+provide a way to filter uuids out of the git-annex branch, producing a new
+branch.
+
+Then the user can push the filtered branch back to origin or whatever that
+want to do with it. It would be up to them to avoid making a mistake and
+letting git push automatically send git-annex to origin/git-annex.
+Maybe git has sufficient configs to let it be configured to avoid such
+mistakes, dunno. git-annex sync would certianly be a foot shooting
+opportunity too.
+
+The filtering would need to go back from the top commit to the last commit
+that was filtered, and remove all mentions of the uuid. The transition
+code (mostly) knows how to do that, but it doesn't preserve the history of
+commits currently, and filtering would need to preserve that.
+
+Any commits that were made elsewhere or that don't contain the UUIDs would
+keep the same trees, and should keep the same commit hashes too, as long
+as their parents are the same.
+
+This would support any networks of hidden repos that might be wanted.
+And it's *clean*.. Except it punts all the potential foot shooting to the
+user.
+
 [[!tag projects/datalad]]
