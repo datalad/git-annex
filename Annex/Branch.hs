@@ -31,6 +31,7 @@ module Annex.Branch (
 	performTransitions,
 	withIndex,
 	precache,
+	overBranchFileContents,
 ) where
 
 import qualified Data.ByteString as B
@@ -66,6 +67,7 @@ import Annex.HashObject
 import Git.Types (Ref(..), fromRef, fromRef', RefDate, TreeItemType(..))
 import Git.FilePath
 import Annex.CatFile
+import Git.CatFile (catObjectStreamLsTree)
 import Annex.Perms
 import Logs
 import Logs.Transitions
@@ -752,3 +754,28 @@ rememberTreeishLocked treeish graftpoint jl = do
 	-- say that the index contains c'.
 	setIndexSha c'
 
+{- Runs an action on the content of selected files from the branch.
+ - This is much faster than reading the content of each file in turn,
+ - because it lets git cat-file stream content as fast as it can run.
+ -
+ - The action is passed an IO action that it can repeatedly call to read
+ - the next file and its contents. When there are no more files, that
+ - action will return Nothing.
+ -}
+overBranchFileContents
+	:: (RawFilePath -> Maybe v)
+	-> (IO (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex ())
+	-> Annex ()
+overBranchFileContents select go = do
+	void update
+	g <- Annex.gitRepo
+	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
+		Git.LsTree.LsTreeRecursive
+		(Git.LsTree.LsTreeLong False)
+		fullname
+	let select' f = fmap (\v -> (v, f)) (select f)
+	let go' reader = go $ reader >>= \case
+		Nothing -> return Nothing
+		Just ((v, f), content) -> return (Just (v, f, content))
+	catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
+	liftIO $ void cleanup

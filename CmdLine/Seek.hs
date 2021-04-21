@@ -9,8 +9,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TupleSections #-}
-
 module CmdLine.Seek where
 
 import Annex.Common
@@ -273,25 +271,18 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		checktimelimit <- mkCheckTimeLimit
 		keyaction <- mkkeyaction
 		config <- Annex.getGitConfig
-		g <- Annex.gitRepo
 		
-		void Annex.Branch.update
-		(l, cleanup) <- inRepo $ LsTree.lsTree
-			LsTree.LsTreeRecursive
-			(LsTree.LsTreeLong False)
-			Annex.Branch.fullname
-		let getk f = fmap (,f) (locationLogFileKey config f)
+		let getk = locationLogFileKey config
 		let discard reader = reader >>= \case
 			Nothing -> noop
 			Just _ -> discard reader
 		let go reader = liftIO reader >>= \case
-			Nothing -> return ()
-			Just ((k, f), content) -> checktimelimit (discard reader) $ do
+			Just (k, f, content) -> checktimelimit (discard reader) $ do
 				maybe noop (Annex.Branch.precache f) content
 				keyaction Nothing (SeekInput [], k, mkActionItem k)
 				go reader
-		catObjectStreamLsTree l (getk . getTopFilePath . LsTree.file) g go
-		liftIO $ void cleanup
+			Nothing -> return ()
+		Annex.Branch.overBranchFileContents getk go
 
 	runkeyaction getks = do
 		keyaction <- mkkeyaction
