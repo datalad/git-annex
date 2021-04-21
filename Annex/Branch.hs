@@ -212,7 +212,10 @@ updateTo' pairs = do
 			return True
 	return $ UpdateMade
 		{ refsWereMerged = not (null tomerge)
-		, journalClean = journalclean
+		, journalClean = journalclean 
+			-- TODO need private index, then this can be
+			-- removed
+			&& not privateUUIDsKnown
 		}
   where
 	excludeset s = filter (\(r, _) -> S.notMember r s)
