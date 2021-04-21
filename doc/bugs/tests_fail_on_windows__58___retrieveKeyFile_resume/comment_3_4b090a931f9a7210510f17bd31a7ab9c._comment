@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-04-21T16:21:15Z"
+ content="""
+Note that, before it fails, retrieveKeyFile has already succeeded once.
+
+It may be that the cause is that the earlier retrieveKeyFile leaves
+the annex object file somehow inaccessible.
+
+Or it may be that the cause is in Command.TestRemote's code
+that sets up this "resume from 33%" test case:
+
+                loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
+                tmp <- fromRawFilePath <$> prepTmp k
+                partial <- liftIO $ bracket (openBinaryFile loc ReadMode) hClose $ \h -> do
+                        sz <- hFileSize h
+                        L.hGet h $ fromInteger $ sz `div` 3
+                liftIO $ L.writeFile tmp partial
+		lockContentForRemoval k noop removeAnnex -- appears that this is what fails to delete the file
+
+If the handle that is opened to read the annex object file somehow
+causes it to linger in a locked state past when the handle should be closed,
+it could cause the later failure to delete the annex object file, since windows
+may consider an open file handle to be a lock.
+
+(Some issues with ghc not promptly closing file handles, in a version
+in the last year or so, come to mind..)
+
+I've swapped the order of the resume from 33% and resume from 0%
+tests. The 0% test does not open a handle that way. So if the
+resume from 0% still fails, we'll know for sure the problem is not
+caused by the 33% test.
+
+If it is caused by the CoW changes, it seems likely to involve fileCopier's
+code that tries to preserve the source file's mode. Before the CoW
+changes, I don't think that was done by Remote.Directory's retrieveKeyFile.
+"""]]
