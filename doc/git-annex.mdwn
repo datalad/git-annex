@@ -1158,6 +1158,19 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   To avoid that merging, set this to "false". This can be useful
   particularly when you don't have write permission to the repository.
 
+* `annex.privaterepo`
+
+  When this is set to true, no information about the repository will be
+  recorded in the git-annex branch.
+
+  For example, to make a repository without any mention of it ever
+  appearing in the git-annex branch:
+
+	git init myprivaterepo
+	cd myprivaterepo
+	git config annex.privaterepo true
+	git annex init
+
 * `annex.hardlink`
 
   Set this to `true` to make file contents be hard linked between the
@@ -1526,6 +1539,13 @@ Remotes are configured using these settings in `.git/config`.
   content of any file, even though its normal location tracking does not
   indicate that it does. This will cause git-annex to try to get all file
   contents from the remote. Can be useful in setting up a caching remote.
+
+* `remote.<name>.annex-private`
+
+  When this is set to true, no information about the remote will be
+  recorded in the git-annex branch. This is mostly useful for special
+  remotes, and is set when using [[git-annex-initremote]](1) with the
+  `--private` option.
 
 * `remote.<name>.annex-bare`
 

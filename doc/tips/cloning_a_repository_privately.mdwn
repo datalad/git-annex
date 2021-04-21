@@ -1,0 +1,44 @@
+Normally, when you clone a git-annex repository, and use git-annex in it,
+and then push or otherwise send changes back to origin, information gets
+committed to the git-annex branch about your clone. Things like the annexed
+files that are in it, its description, etc.
+
+If you don't want the world to know about your clone, either for privacy
+reason or only because the clone is a temporary copy of the repository,
+here's how.
+
+Recently git-annex got a new config setting, `annex.privaterepo`.
+Set it before you start using git-annex in a repository, and git-annex
+will avoid recording any information about the repository into the
+git-annex branch.
+
+	git clone ssh://... myclone
+	cd myclone
+	git config annex.privaterepo true
+	git annex init
+
+Now you can use git-annex as usual, adding files to the repository,
+getting the contents of files, etc.
+
+When you push changes back to origin, do still push the git-annex branch,
+since git-annex still uses it to record anything it needs to keep track of
+that does not involve your private repository.
+
+And be sure, when adding or editing annexed files, that you `git-annex copy`
+them to a publically accessible repository. Otherwise, to everyone else,
+there will seem to be no copies of that file availble anywhere, since they
+won't know about your private repo's copy.
+
+## private special remotes
+
+You can also make private special remotes, by using `git annex initremote
+--private`. 
+
+Like a private repository, git-annex avoids storing any information about
+a private special remote to the git-annex branch. It will only be available in
+the repository where the special remote was created. 
+
+Bear in mind that, if you lose the repository where the private special 
+remote was created, you'll lose the information git-annex needs to access
+that special remote, and that will likely mean you'll not be able to
+recover any files stored in it.

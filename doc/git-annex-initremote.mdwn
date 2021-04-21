@@ -74,6 +74,12 @@ want to use `git annex renameremote`.
   compatabilities.
   <http://git-annex.branchable.com/tips/multiple_remotes_accessing_the_same_data_store/>
 
+* `--private`
+
+  Avoid recording information about the special remote in the git-annex
+  branch. The special remote will only be usable from the repository where
+  it was created.
+
 # COMMON CONFIGURATION PARAMETERS
 
 * `encryption`
