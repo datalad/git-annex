@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="re: Are my unlocked, annexed files still safe?"
+ date="2021-04-21T16:32:42Z"
+ content="""
+@pat:
+> Basically, unlock gives me an editable copy of the file - but I always
+> have the original version, and can revert or check it out if I need
+> to. Is that correct?
+
+Yes, it's a copy as long as you don't set `annex.thin=true` (as you
+mention).  Just as with locked files, though, you may not be able to
+get the content back from an earlier version if you've dropped unused
+content.
+
+"""]]
