@@ -15,5 +15,8 @@ logs that are only in the journal.
 Before that optimisation, it was using Logs.Location.loggedKeys,
 which does look at the journal.
 
+> fixed
+
 (This is also a blocker for [[todo/hiding_a_repository]].)
---[[Joey]]
+
+[[done]] --[[Joey]]

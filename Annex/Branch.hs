@@ -43,6 +43,7 @@ import Data.Function
 import Data.Char
 import Data.ByteString.Builder
 import Control.Concurrent (threadDelay)
+import Control.Concurrent.MVar
 import qualified System.FilePath.ByteString as P
 
 import Annex.Common
@@ -756,26 +757,57 @@ rememberTreeishLocked treeish graftpoint jl = do
 
 {- Runs an action on the content of selected files from the branch.
  - This is much faster than reading the content of each file in turn,
- - because it lets git cat-file stream content as fast as it can run.
+ - because it lets git cat-file stream content without blocking.
  -
- - The action is passed an IO action that it can repeatedly call to read
- - the next file and its contents. When there are no more files, that
- - action will return Nothing.
+ - The action is passed a callback that it can repeatedly call to read
+ - the next file and its contents. When there are no more files, the
+ - callback will return Nothing.
  -}
 overBranchFileContents
 	:: (RawFilePath -> Maybe v)
-	-> (IO (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex ())
+	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex ())
 	-> Annex ()
 overBranchFileContents select go = do
-	void update
+	st <- update
 	g <- Annex.gitRepo
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
 		Git.LsTree.LsTreeRecursive
 		(Git.LsTree.LsTreeLong False)
 		fullname
 	let select' f = fmap (\v -> (v, f)) (select f)
-	let go' reader = go $ reader >>= \case
-		Nothing -> return Nothing
-		Just ((v, f), content) -> return (Just (v, f, content))
+	buf <- liftIO newEmptyMVar
+	let go' reader = go $ liftIO reader >>= \case
+		Just ((v, f), content) -> do
+			-- Check the journal if it did not get
+			-- committed to the branch
+			content' <- if journalIgnorable st
+				then pure content
+				else maybe content Just <$> getJournalFileStale f
+			return (Just (v, f, content'))
+		Nothing
+			| journalIgnorable st -> return Nothing
+			-- The journal did not get committed to the
+			-- branch, and may contain files that
+			-- are not present in the branch, which 
+			-- need to be provided to the action still.
+			-- This can cause the action to be run a
+			-- second time with a file it already ran on.
+			| otherwise -> liftIO (tryTakeMVar buf) >>= \case
+				Nothing -> drain buf =<< getJournalledFilesStale
+				Just fs -> drain buf fs
 	catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
 	liftIO $ void cleanup
+  where
+	getnext [] = Nothing
+	getnext (f:fs) = case select f of
+		Nothing -> getnext fs
+		Just v -> Just (v, f, fs)
+					
+	drain buf fs = case getnext fs of
+		Just (v, f, fs') -> do
+			liftIO $ putMVar buf fs'
+			content <- getJournalFileStale f
+			return (Just (v, f, content))
+		Nothing -> do
+			liftIO $ putMVar buf []
+			return Nothing
