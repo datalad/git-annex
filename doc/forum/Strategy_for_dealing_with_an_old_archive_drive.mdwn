@@ -1,0 +1,12 @@
+Hi there, I have an old archive drive with ~300k files, ~2 TB data. They're files that I would like to use in my work, but I've had to move them off my machine due to space. I periodically copy files off of the archive when I need to work with them. This of course is before I had even heard of `git-annex`.
+
+So now I'm wondering how I can start to integrate these files into my work. Two basic ideas I have are:
+
+1. `git-annex` the whole thing right away, and `git annex get` them onto my local machine as needed.
+2. Start an empty annex on the archive drive. Move files from the old archive location into the annex as needed.
+
+So basically I'm wondering between annexing the whole thing to start, or gradually building up the annex.
+
+I have no idea how well `git-annex` will work with 300k files / 2 TB data.
+
+How would you approach incorporating an old archive drive into a new annex?
