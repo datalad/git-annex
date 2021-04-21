@@ -151,19 +151,9 @@ later write.
 > No way to configure what repo is hidden yet. --[[Joey]]
 > 
 > Implementation notes:
-> 
-> * CmdLine.Seek precaches git-annex branch
->   location logs, but that does not include private ones. Since they're
->   cached, the private ones don't get read. Result is eg, whereis finds no
->   copies. Either need to disable CmdLine.Seek precaching when there's
->   hidden repos, or could make the cache indicate it's only of public
->   info, so private info still gets read.
-> * CmdLine.Seek contains a LsTreeRecursive over the branch to handle
->   --all, and again that won't see private information, including even
->   annexed files that are only present in the hidden repo.
-> * (And I wonder, don't both the caches above already miss things in
->   the journal?)
-> * Any other direct accesses of the branch, not going through
+>
+> * [[bugs/git-annex_branch_caching_bug]] was a problem, now fixed.
+> * Any other similar direct accesses of the branch, not going through
 >   Annex.Branch, also need to be fixed (and may be missing journal files
 >   already?) Command.ImportFeed.knownItems is one. Command.Log behavior
 >   needs to be investigated, may be ok. And Logs.Web.withKnownUrls is another.

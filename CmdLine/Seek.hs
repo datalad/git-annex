@@ -9,8 +9,6 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TupleSections #-}
-
 module CmdLine.Seek where
 
 import Annex.Common
@@ -44,7 +42,6 @@ import Annex.Concurrent
 import Annex.CheckIgnore
 import Annex.Action
 import qualified Annex.Branch
-import qualified Annex.BranchState
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 import Utility.Tuple
@@ -274,25 +271,18 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		checktimelimit <- mkCheckTimeLimit
 		keyaction <- mkkeyaction
 		config <- Annex.getGitConfig
-		g <- Annex.gitRepo
 		
-		void Annex.Branch.update
-		(l, cleanup) <- inRepo $ LsTree.lsTree
-			LsTree.LsTreeRecursive
-			(LsTree.LsTreeLong False)
-			Annex.Branch.fullname
-		let getk f = fmap (,f) (locationLogFileKey config f)
+		let getk = locationLogFileKey config
 		let discard reader = reader >>= \case
 			Nothing -> noop
 			Just _ -> discard reader
-		let go reader = liftIO reader >>= \case
-			Nothing -> return ()
-			Just ((k, f), content) -> checktimelimit (discard reader) $ do
-				maybe noop (Annex.BranchState.setCache f) content
+		let go reader = reader >>= \case
+			Just (k, f, content) -> checktimelimit (discard reader) $ do
+				maybe noop (Annex.Branch.precache f) content
 				keyaction Nothing (SeekInput [], k, mkActionItem k)
 				go reader
-		catObjectStreamLsTree l (getk . getTopFilePath . LsTree.file) g go
-		liftIO $ void cleanup
+			Nothing -> return ()
+		Annex.Branch.overBranchFileContents getk go
 
 	runkeyaction getks = do
 		keyaction <- mkkeyaction
@@ -383,7 +373,7 @@ seekFilteredKeys seeker listfs = do
 	liftIO $ void cleanup
   where
 	finisher mi oreader checktimelimit = liftIO oreader >>= \case
-		Just ((si, f), content) -> checktimelimit discard $ do
+		Just ((si, f), content) -> checktimelimit (liftIO discard) $ do
 			keyaction f mi content $ 
 				commandAction . startAction seeker si f
 			finisher mi oreader checktimelimit
@@ -394,8 +384,8 @@ seekFilteredKeys seeker listfs = do
 			Just _ -> discard
 
 	precachefinisher mi lreader checktimelimit = liftIO lreader >>= \case
-		Just ((logf, (si, f), k), logcontent) -> checktimelimit discard $ do
-			maybe noop (Annex.BranchState.setCache logf) logcontent
+		Just ((logf, (si, f), k), logcontent) -> checktimelimit (liftIO discard) $ do
+			maybe noop (Annex.Branch.precache logf) logcontent
 			checkMatcherWhen mi
 				(matcherNeedsLocationLog mi && not (matcherNeedsFileName mi))
 				(MatchingFile $ FileInfo f f (Just k))
@@ -601,9 +591,9 @@ notSymlink :: RawFilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> R.getSymbolicLinkStatus f
 
 {- Returns an action that, when there's a time limit, can be used
- - to check it before processing a file. The IO action is run when over the
- - time limit. -}
-mkCheckTimeLimit :: Annex (IO () -> Annex () -> Annex ())
+ - to check it before processing a file. The first action is run when over the
+ - time limit, otherwise the second action is run. -}
+mkCheckTimeLimit :: Annex (Annex () -> Annex () -> Annex ())
 mkCheckTimeLimit = Annex.getState Annex.timelimit >>= \case
 	Nothing -> return $ \_ a -> a
 	Just (duration, cutoff) -> return $ \cleanup a -> do
@@ -612,6 +602,6 @@ mkCheckTimeLimit = Annex.getState Annex.timelimit >>= \case
 			then do
 				warning $ "Time limit (" ++ fromDuration duration ++ ") reached! Shutting down..."
 				shutdown True
-				liftIO cleanup
+				cleanup
 				liftIO $ exitWith $ ExitFailure 101
 			else a

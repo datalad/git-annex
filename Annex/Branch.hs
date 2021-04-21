@@ -31,6 +31,8 @@ module Annex.Branch (
 	rememberTreeish,
 	performTransitions,
 	withIndex,
+	precache,
+	overBranchFileContents,
 ) where
 
 import qualified Data.ByteString as B
@@ -42,6 +44,7 @@ import Data.Function
 import Data.Char
 import Data.ByteString.Builder
 import Control.Concurrent (threadDelay)
+import Control.Concurrent.MVar
 import qualified System.FilePath.ByteString as P
 
 import Annex.Common
@@ -66,6 +69,7 @@ import Annex.HashObject
 import Git.Types (Ref(..), fromRef, fromRef', RefDate, TreeItemType(..))
 import Git.FilePath
 import Annex.CatFile
+import Git.CatFile (catObjectStreamLsTree)
 import Annex.Perms
 import Logs
 import Logs.Transitions
@@ -260,6 +264,18 @@ get file = getCache file >>= \case
 			else getLocal file
 		setCache file content
 		return content
+
+{- Used to cache the value of a file, which has been read from the branch
+ - using some optimised method. The journal has to be checked, in case
+ - it has a newer version of the file that has not reached the branch yet.
+ -}
+precache :: RawFilePath -> L.ByteString -> Annex ()
+precache file branchcontent = do
+	st <- getState
+	content <- if journalIgnorable st
+		then pure branchcontent
+		else fromMaybe branchcontent <$> getJournalFileStale file
+	Annex.BranchState.setCache file content
 
 {- Like get, but does not merge the branch, so the info returned may not
  - reflect changes in remotes.
@@ -758,3 +774,59 @@ rememberTreeishLocked treeish graftpoint jl = do
 	-- say that the index contains c'.
 	setIndexSha c'
 
+{- Runs an action on the content of selected files from the branch.
+ - This is much faster than reading the content of each file in turn,
+ - because it lets git cat-file stream content without blocking.
+ -
+ - The action is passed a callback that it can repeatedly call to read
+ - the next file and its contents. When there are no more files, the
+ - callback will return Nothing.
+ -}
+overBranchFileContents
+	:: (RawFilePath -> Maybe v)
+	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex ())
+	-> Annex ()
+overBranchFileContents select go = do
+	st <- update
+	g <- Annex.gitRepo
+	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
+		Git.LsTree.LsTreeRecursive
+		(Git.LsTree.LsTreeLong False)
+		fullname
+	let select' f = fmap (\v -> (v, f)) (select f)
+	buf <- liftIO newEmptyMVar
+	let go' reader = go $ liftIO reader >>= \case
+		Just ((v, f), content) -> do
+			-- Check the journal if it did not get
+			-- committed to the branch
+			content' <- if journalIgnorable st
+				then pure content
+				else maybe content Just <$> getJournalFileStale f
+			return (Just (v, f, content'))
+		Nothing
+			| journalIgnorable st -> return Nothing
+			-- The journal did not get committed to the
+			-- branch, and may contain files that
+			-- are not present in the branch, which 
+			-- need to be provided to the action still.
+			-- This can cause the action to be run a
+			-- second time with a file it already ran on.
+			| otherwise -> liftIO (tryTakeMVar buf) >>= \case
+				Nothing -> drain buf =<< getJournalledFilesStale
+				Just fs -> drain buf fs
+	catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
+	liftIO $ void cleanup
+  where
+	getnext [] = Nothing
+	getnext (f:fs) = case select f of
+		Nothing -> getnext fs
+		Just v -> Just (v, f, fs)
+					
+	drain buf fs = case getnext fs of
+		Just (v, f, fs') -> do
+			liftIO $ putMVar buf fs'
+			content <- getJournalFileStale f
+			return (Just (v, f, content))
+		Nothing -> do
+			liftIO $ putMVar buf []
+			return Nothing
