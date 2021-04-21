@@ -49,13 +49,14 @@ instance Journalable Builder where
 data RegardingUUID = RegardingUUID [UUID]
 
 regardingPrivateUUID :: RegardingUUID -> Bool
-regardingPrivateUUID _ = False -- TODO
+regardingPrivateUUID (RegardingUUID []) = False
+regardingPrivateUUID (RegardingUUID _) = True -- TODO
 
 -- Are any private UUIDs known to exist? If so, extra work has to be done,
 -- to check for information separately recorded for them, outside the usual
 -- locations.
 privateUUIDsKnown :: Bool
-privateUUIDsKnown = False -- TODO
+privateUUIDsKnown = True -- TODO
 
 {- Records content for a file in the branch to the journal.
  -

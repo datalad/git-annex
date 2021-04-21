@@ -274,7 +274,8 @@ precache file branchcontent = do
 	st <- getState
 	content <- if journalIgnorable st
 		then pure branchcontent
-		else fromMaybe branchcontent <$> getJournalFileStale file
+		else fromMaybe branchcontent
+			<$> getJournalFileStale (GetPrivate True) file
 	Annex.BranchState.setCache file content
 
 {- Like get, but does not merge the branch, so the info returned may not
@@ -439,16 +440,20 @@ files :: Annex ([RawFilePath], IO Bool)
 files = do
 	_  <- update
 	(bfs, cleanup) <- branchFiles
-	-- ++ forces the content of all but the last list to be buffered in
-	-- memory, so use getJournalledFilesStale which should be much smaller
+	-- ++ forces the content of the first list to be buffered in
+	-- memory, so use journalledFiles, which should be much smaller
 	-- most of the time. branchFiles will stream as the list is consumed.
-	l <- (\a b c -> a ++ b ++ c)
-		<$> (if privateUUIDsKnown 
-			then getJournalledFilesStale gitAnnexPrivateJournalDir
-			else pure [])
-		<*> (getJournalledFilesStale gitAnnexJournalDir)
-		<*> pure bfs
+	l <- (++) <$> journalledFiles <*> pure bfs
 	return (l, cleanup)
+
+{- Lists all files currently in the journal. There may be duplicates in
+ - the list when using a private journal. -}
+journalledFiles :: Annex [RawFilePath]
+journalledFiles
+	| privateUUIDsKnown = (++)
+		<$> getJournalledFilesStale gitAnnexPrivateJournalDir
+		<*> getJournalledFilesStale gitAnnexJournalDir
+	| otherwise = getJournalledFilesStale gitAnnexJournalDir
 
 {- Files in the branch, not including any from journalled changes,
  - and without updating the branch. -}
@@ -801,7 +806,8 @@ overBranchFileContents select go = do
 			-- committed to the branch
 			content' <- if journalIgnorable st
 				then pure content
-				else maybe content Just <$> getJournalFileStale f
+				else maybe content Just 
+					<$> getJournalFileStale (GetPrivate True) f
 			return (Just (v, f, content'))
 		Nothing
 			| journalIgnorable st -> return Nothing
@@ -812,7 +818,7 @@ overBranchFileContents select go = do
 			-- This can cause the action to be run a
 			-- second time with a file it already ran on.
 			| otherwise -> liftIO (tryTakeMVar buf) >>= \case
-				Nothing -> drain buf =<< getJournalledFilesStale
+				Nothing -> drain buf =<< journalledFiles
 				Just fs -> drain buf fs
 	catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
 	liftIO $ void cleanup
@@ -825,7 +831,7 @@ overBranchFileContents select go = do
 	drain buf fs = case getnext fs of
 		Just (v, f, fs') -> do
 			liftIO $ putMVar buf fs'
-			content <- getJournalFileStale f
+			content <- getJournalFileStale (GetPrivate True) f
 			return (Just (v, f, content))
 		Nothing -> do
 			liftIO $ putMVar buf []
