@@ -19,4 +19,6 @@ this is pure key/value store operation.
 	        fsck downloaded object:                           OK
 	        retrieveKeyFile resume from 33%:                  FAIL
 	          Exception: .git\annex\objects\d78\ee7\SHA256E-s1048576--b9be1c0379146c0bc17c03d1caa8fb1c9d25cc741f59c09ab27379d5fc41862d.this-is-a-test-key\SHA256E-s1048576--b9be1c0379146c0bc17c03d1caa8fb1c9d25cc741f59c09ab27379d5fc41862d.this-is-a-test-key: DeleteFile "\\\\?\\C:\\Users\\runneradmin\\.t\\main2\\.git\\annex\\objects\\d78\\ee7\\SHA256E-s1048576--b9be1c0379146c0bc17c03d1caa8fb1c9d25cc741f59c09ab27379d5fc41862d.this-is-a-test-key\\SHA256E-s1048576--b9be1c0379146c0bc17c03d1caa8fb1c9d25cc741f59c09ab27379d5fc41862d.this-is-a-test-key": permission denied (Access is denied.)
+
+Also, the directory special remote exporttree tests actually pass!
 """]]
