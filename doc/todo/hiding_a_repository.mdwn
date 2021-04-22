@@ -209,12 +209,21 @@ Different angle on this: Let the git-annex branch grow as usual. But
 provide a way to filter uuids out of the git-annex branch, producing a new
 branch.
 
-Then the user can push the filtered branch back to origin or whatever that
+Then the user can push the filtered branch back to origin or whatever they
 want to do with it. It would be up to them to avoid making a mistake and
 letting git push automatically send git-annex to origin/git-annex.
 Maybe git has sufficient configs to let it be configured to avoid such
-mistakes, dunno. git-annex sync would certianly be a foot shooting
-opportunity too.
+mistakes, dunno. (git-annex sync would certianly be a foot shooting
+opportunity too.)
+
+> Setting remote.name.push = simple would avoid accidental pushes.
+> But if the user wanted to otherwise push matching branches, they would
+> not be able to express that with a git config. Also, `git push origin :`
+> would override that config.
+> 
+> Using a different branch name than git-annex when branch filtering is
+> enabled would be avoid most accidental pushes. And then the filtering
+> could produce the git-annex branch.
 
 The filtering would need to go back from the top commit to the last commit
 that was filtered, and remove all mentions of the uuid. The transition
@@ -226,7 +235,8 @@ keep the same trees, and should keep the same commit hashes too, as long
 as their parents are the same.
 
 This would support any networks of hidden repos that might be wanted.
-And it's *clean*.. Except it punts all the potential foot shooting to the
-user.
+And it's *clean*.. Except it punts the potential foot shooting of
+keeping the unfiltered branch private and unpushed to the user, and it
+adds a step of needing to do the filtering before pushing.
 
 [[!tag projects/datalad]]
