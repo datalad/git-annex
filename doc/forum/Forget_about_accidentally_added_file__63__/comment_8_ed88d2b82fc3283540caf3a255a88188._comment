@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 8"
+ date="2021-04-22T10:01:01Z"
+ content="""
+It'd also be helpful if this could be integrated into the unannex subcommand:
+
+`git annex add file` -> realise it shouldn't have been added -> `git annex unannex --forget file`
+
+That would make for a rather intuitive and user-friendly workflow.
+
+If the git-annex branch is unpushed, it could even be rebased to reflect that change but that might be too complicated to do reliably.
+"""]]

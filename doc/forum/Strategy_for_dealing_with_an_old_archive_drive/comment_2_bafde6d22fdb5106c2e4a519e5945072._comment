@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 2"
+ date="2021-04-21T22:33:55Z"
+ content="""
+> Committing the files to a branch other than master might be a reasonable compromise. Then you can just copy the git-annex symlinks over to master as needed, or check out the branch from time to time.
+
+I think that could work nicely. I do like the idea of having my files annexed, and distributing them across machines that way, so this strikes me as a good compromise.
+
+Thank you for the idea!
+"""]]
