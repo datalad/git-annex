@@ -157,6 +157,19 @@ later write.
 >   Annex.Branch, also need to be fixed (and may be missing journal files
 >   already?) Command.ImportFeed.knownItems is one. Command.Log behavior
 >   needs to be investigated, may be ok. And Logs.Web.withKnownUrls is another.
+> 
+> * Need to implement regardingPrivateUUID and privateUUIDsKnown,
+>   which need to look at the git config to find the private uuids.
+> 
+>   But that involves a mvar access, so there will be some slow down,
+>   although often it will be swamped by the actual branch querying.
+>   So far it's been possible to avoid any slow down from this feature
+>   when it's not in use.
+>   
+>   Encoding inside the uuid if a repo is private avoids slowdown of
+>   regardingPrivateUUID, but not privateUUIDsKnown. (So branch queries
+>   still slow down). It also avoids needing to set the config before
+>   writing to the branch when setting up a private repo or special remote.
 
 ## networks of hidden repos
 
