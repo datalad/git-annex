@@ -247,10 +247,6 @@ test runannex mkr mkk =
 	, check "storeKey when already present" $ \r k ->
 		whenwritable r $ runBool (store r k)
 	, check ("present " ++ show True) $ \r k -> present r k True
-	, check "retrieveKeyFile" $ \r k -> do
-		lockContentForRemoval k noop removeAnnex
-		get r k
-	, check "fsck downloaded object" fsck
 	, check "retrieveKeyFile resume from 0" $ \r k -> do
 		tmp <- fromRawFilePath <$> prepTmp k
 		liftIO $ writeFile tmp ""
@@ -271,6 +267,10 @@ test runannex mkr mkk =
 		loc <- fromRawFilePath <$> Annex.calcRepo (gitAnnexLocation k)
 		tmp <- fromRawFilePath <$> prepTmp k
 		void $ liftIO $ copyFileExternal CopyAllMetaData loc tmp
+		lockContentForRemoval k noop removeAnnex
+		get r k
+	, check "fsck downloaded object" fsck
+	, check "retrieveKeyFile" $ \r k -> do
 		lockContentForRemoval k noop removeAnnex
 		get r k
 	, check "fsck downloaded object" fsck

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-04-22T13:40:33Z"
+ content="""
+Problem is confirmed to not be from the 33% test, the 0% test failed when
+run before it, also in the removeAnnex part. And removeAnnex didn't change
+lately, so it seems probably an earlier test sets up the failure.
+
+I've moved the 0% test to be the first test that retrieves the file, let's
+see if it succeeds that way, and if so, it must be that retrieveKeyFile is
+leaking a file handle, despite using withBinaryFile which is supposed to
+close handles automatically.
+
+ghc version used for this windows build is 8.8.4 btw.
+"""]]
