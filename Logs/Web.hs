@@ -30,9 +30,6 @@ import Logs
 import Logs.Presence
 import Logs.Location
 import qualified Annex.Branch
-import qualified Git.LsTree
-import Git.CatFile (catObjectStreamLsTree)
-import Git.FilePath
 import Utility.Url
 import Annex.UUID
 import qualified Types.Remote as Remote
@@ -90,26 +87,14 @@ setUrlMissing key url = do
 
 {- Finds all known urls. -}
 withKnownUrls :: (Annex (Maybe (Key, [URLString])) -> Annex a) -> Annex a
-withKnownUrls a = do
-	{- Ensure any journalled changes are committed to the git-annex
-	 - branch, since we're going to look at its tree. -}
-	_ <- Annex.Branch.update
-	Annex.Branch.commit =<< Annex.Branch.commitMessage
-	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
-		Git.LsTree.LsTreeRecursive
-		(Git.LsTree.LsTreeLong False)
-		Annex.Branch.fullname
-	g <- Annex.gitRepo
-	let want = urlLogFileKey . getTopFilePath . Git.LsTree.file
-	catObjectStreamLsTree l want g (\reader -> a (go reader))
-		`finally` void (liftIO cleanup)
+withKnownUrls a = Annex.Branch.overBranchFileContents urlLogFileKey (a . go)
   where
-	go reader = liftIO reader >>= \case
-		Just (k, Just content) ->
+	go reader = reader >>= \case
+		Just (k, _, Just content) ->
 			case geturls content of
 				[] -> go reader
 				us -> return (Just (k, us))
-		Just (_, Nothing) -> go reader
+		Just (_, _, Nothing) -> go reader
 		Nothing -> return Nothing
 	
 	geturls = map (decodeBS . fromLogInfo) . getLog

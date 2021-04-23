@@ -156,7 +156,7 @@ later write.
 > * Any other similar direct accesses of the branch, not going through
 >   Annex.Branch, also need to be fixed (and may be missing journal files
 >   already?) Command.ImportFeed.knownItems is one. Command.Log behavior
->   needs to be investigated, may be ok. And Logs.Web.withKnownUrls is another.
+>   needs to be investigated, may be ok.
 > 
 > * Need to implement regardingPrivateUUID and privateUUIDsKnown,
 >   which need to look at the git config to find the private uuids.
