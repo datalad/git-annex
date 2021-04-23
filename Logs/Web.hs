@@ -32,6 +32,7 @@ import Logs.Presence
 import Logs.Location
 import Utility.Url
 import Annex.UUID
+import qualified Annex.Branch
 import qualified Types.Remote as Remote
 
 {- Gets all urls that a key might be available from. -}
