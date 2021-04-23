@@ -1158,7 +1158,7 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   To avoid that merging, set this to "false". This can be useful
   particularly when you don't have write permission to the repository.
 
-* `annex.privaterepo`
+* `annex.private`
 
   When this is set to true, no information about the repository will be
   recorded in the git-annex branch.
@@ -1166,9 +1166,9 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   For example, to make a repository without any mention of it ever
   appearing in the git-annex branch:
 
-	git init myprivaterepo
+	git init myprivate
 	cd myprivaterepo
-	git config annex.privaterepo true
+	git config annex.private true
 	git annex init
 
 * `annex.hardlink`

@@ -7,14 +7,14 @@ If you don't want the world to know about your clone, either for privacy
 reason or only because the clone is a temporary copy of the repository,
 here's how.
 
-Recently git-annex got a new config setting, `annex.privaterepo`.
+Recently git-annex got a new config setting, `annex.private`.
 Set it before you start using git-annex in a repository, and git-annex
 will avoid recording any information about the repository into the
 git-annex branch.
 
 	git clone ssh://... myclone
 	cd myclone
-	git config annex.privaterepo true
+	git config annex.private true
 	git annex init
 
 Now you can use git-annex as usual, adding files to the repository,
@@ -42,3 +42,21 @@ Bear in mind that, if you lose the repository where the private special
 remote was created, you'll lose the information git-annex needs to access
 that special remote, and that will likely mean you'll not be able to
 recover any files stored in it.
+
+## private git remotes
+
+When the git config "remote.name.private" is set, git-annex will avoid
+recording anything in the git-annex branch about the remote. This is
+set by `git-annex initremote --private`, and could also be set for
+git remotes. This could be useful, perhaps. Update this tip if you have a
+good way to use it.
+
+## where the data is actually stored
+
+The private data gets stored in .git/annex/journal-private/ rather
+than in the git-annex branch.
+
+It's possible to move those files to .git/annex/journal/ (being careful
+to not overwrite files already in there), and it will then get committed to
+the git-annex branch. Do this only if you decide you don't want a private
+repository after all.
