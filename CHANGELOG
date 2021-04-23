@@ -1,5 +1,9 @@
 git-annex (8.20210331) UNRELEASED; urgency=medium
 
+  * New annex.private and remote.name.annex-private configs that can
+    prevent storing information about a repository and remotes in the
+    git-annex branch.
+  * initremote: Added --private option to set up a private special remote.
   * Fix build with persistent-2.12.0.1
   * Avoid excess commits to the git-annex branch when stall detection is
     enabled.

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -34,6 +34,7 @@ data InitRemoteOptions = InitRemoteOptions
 	{ cmdparams :: CmdParams
 	, sameas :: Maybe (DeferredParse UUID)
 	, whatElse :: Bool
+	, privateRemote :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser InitRemoteOptions
@@ -44,6 +45,10 @@ optParser desc = InitRemoteOptions
 		( long "whatelse"
 		<> short 'w'
 		<> help "describe other configuration parameters for a special remote"
+		)
+	<*> switch
+		( long "private"
+		<> help "keep special remote information out of git-annex branch"
 		)
 
 parseSameasOption :: Parser (DeferredParse UUID)
@@ -85,6 +90,8 @@ start o (name:ws) = ifM (isJust <$> findExisting name)
 
 perform :: RemoteType -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandPerform
 perform t name c o = do
+	when (privateRemote o) $
+		setConfig (remoteAnnexConfig c "private") (boolConfig True)
 	dummycfg <- liftIO dummyRemoteGitConfig
 	let c' = M.delete uuidField c
 	(c'', u) <- R.setup t R.Init (sameasu <|> uuidfromuser) Nothing c' dummycfg
