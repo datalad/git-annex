@@ -30,6 +30,7 @@ import qualified Git.Config
 import qualified Git.Construct
 import Git.Types
 import Git.ConfigTypes
+import Git.Remote (isRemoteKey, remoteKeyToRemoteName)
 import Git.Branch (CommitMode(..))
 import Utility.DataUnits
 import Config.Cost
@@ -50,6 +51,7 @@ import Utility.Url (Scheme, mkScheme)
 
 import Control.Concurrent.STM
 import qualified Data.Set as S
+import qualified Data.Map as M
 import qualified Data.ByteString as B
 
 -- | A configurable value, that may not be fully determined yet because
@@ -136,12 +138,13 @@ data GitConfig = GitConfig
 	, gcryptId :: Maybe String
 	, gpgCmd :: GpgCmd
 	, mergeDirectoryRenames :: Maybe String
+	, annexPrivateRepos :: S.Set UUID
 	}
 
 extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
 extractGitConfig configsource r = GitConfig
 	{ annexVersion = RepoVersion <$> getmayberead (annexConfig "version")
-	, annexUUID = maybe NoUUID toUUID $ getmaybe (annexConfig "uuid")
+	, annexUUID = hereuuid
 	, annexNumCopies = NumCopies <$> getmayberead (annexConfig "numcopies")
 	, annexDiskReserve = fromMaybe onemegabyte $
 		readSize dataUnits =<< getmaybe (annexConfig "diskreserve")
@@ -239,6 +242,19 @@ extractGitConfig configsource r = GitConfig
 	, gcryptId = getmaybe "core.gcrypt-id"
 	, gpgCmd = mkGpgCmd (getmaybe "gpg.program")
 	, mergeDirectoryRenames = getmaybe "directoryrenames"
+	, annexPrivateRepos = S.fromList $ concat
+		[ if getbool (annexConfig "private") False
+			then [hereuuid]
+			else []
+		, let get (k, v)
+			| Git.Config.isTrueFalse' v /= Just True = Nothing
+			| isRemoteKey (remoteAnnexConfigEnd "private") k = do
+				remotename <- remoteKeyToRemoteName k
+				toUUID <$> Git.Config.getMaybe
+					(remoteAnnexConfig remotename "uuid") r
+			| otherwise = Nothing
+		  in mapMaybe get (M.toList (Git.config r))
+		]
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
@@ -255,6 +271,8 @@ extractGitConfig configsource r = GitConfig
 		FromGlobalConfig -> HasGlobalConfig v
 
 	onemegabyte = 1000000
+	
+	hereuuid = maybe NoUUID toUUID $ getmaybe (annexConfig "uuid")
 
 {- Merge a GitConfig that comes from git-config with one containing
  - repository-global defaults. -}
@@ -443,7 +461,10 @@ instance RemoteNameable RemoteName where
 
 {- A per-remote annex setting in git config. -}
 remoteAnnexConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
-remoteAnnexConfig r key = remoteConfig r ("annex-" <> key)
+remoteAnnexConfig r = remoteConfig r . remoteAnnexConfigEnd
+
+remoteAnnexConfigEnd :: UnqualifiedConfigKey -> UnqualifiedConfigKey
+remoteAnnexConfigEnd key = "annex-" <> key
 
 {- A per-remote setting in git config. -}
 remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey

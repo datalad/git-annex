@@ -1,6 +1,6 @@
 {- git remote stuff
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -25,7 +25,11 @@ import Git.FilePath
 
 {- Is a git config key one that specifies the url of a remote? -}
 isRemoteUrlKey :: ConfigKey -> Bool
-isRemoteUrlKey (ConfigKey k) = "remote." `S.isPrefixOf` k && ".url" `S.isSuffixOf` k
+isRemoteUrlKey = isRemoteKey "url"
+
+isRemoteKey :: S.ByteString -> ConfigKey -> Bool
+isRemoteKey want (ConfigKey k) =
+	"remote." `S.isPrefixOf` k && ("." <> want) `S.isSuffixOf` k
 
 {- Get a remote's name from the a config key such as remote.name.url
  - or any other per-remote config key. -}

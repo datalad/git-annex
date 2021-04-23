@@ -185,7 +185,7 @@ updateTo' pairs = do
 		else do
 			mergedrefs <- getMergedRefs
 			filterM isnewer (excludeset mergedrefs unignoredrefs)
-	journalclean <- if null tomerge
+	journalcleaned <- if null tomerge
 		{- Even when no refs need to be merged, the index
 		 - may still be updated if the branch has gotten ahead 
 		 - of the index, or just if the journal is dirty. -}
@@ -210,12 +210,12 @@ updateTo' pairs = do
 		else do
 			lockJournal $ go branchref dirty tomerge
 			return True
+	journalclean <- if journalcleaned
+		then not <$> privateUUIDsKnown
+		else pure False
 	return $ UpdateMade
 		{ refsWereMerged = not (null tomerge)
 		, journalClean = journalclean 
-			-- TODO need private index, then this can be
-			-- removed
-			&& not privateUUIDsKnown
 		}
   where
 	excludeset s = filter (\(r, _) -> S.notMember r s)
@@ -336,7 +336,7 @@ maybeChange ru file f = lockJournal $ \jl -> do
 
 {- Only get private information when the RegardingUUID is itself private. -}
 getToChange :: RegardingUUID -> RawFilePath -> Annex L.ByteString
-getToChange = getLocal' . GetPrivate . regardingPrivateUUID
+getToChange ru f = flip getLocal' f . GetPrivate =<< regardingPrivateUUID ru
 
 {- Records new content of a file into the journal.
  -
@@ -452,11 +452,12 @@ files = do
 {- Lists all files currently in the journal. There may be duplicates in
  - the list when using a private journal. -}
 journalledFiles :: Annex [RawFilePath]
-journalledFiles
-	| privateUUIDsKnown = (++)
+journalledFiles = ifM privateUUIDsKnown
+	( (++)
 		<$> getJournalledFilesStale gitAnnexPrivateJournalDir
 		<*> getJournalledFilesStale gitAnnexJournalDir
-	| otherwise = getJournalledFilesStale gitAnnexJournalDir
+	, getJournalledFilesStale gitAnnexJournalDir
+	)
 
 {- Files in the branch, not including any from journalled changes,
  - and without updating the branch. -}

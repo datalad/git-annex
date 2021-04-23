@@ -14,14 +14,16 @@
 module Annex.Journal where
 
 import Annex.Common
+import qualified Annex
 import qualified Git
 import Annex.Perms
 import Annex.Tmp
 import Annex.LockFile
 import Utility.Directory.Stream
 
+import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString as S
+import qualified Data.ByteString as B
 import qualified System.FilePath.ByteString as P
 import Data.ByteString.Builder
 import Data.Char
@@ -42,21 +44,27 @@ instance Journalable Builder where
 {- When a file in the git-annex branch is changed, this indicates what
  - repository UUID (or in some cases, UUIDs) a change is regarding.
  -
- - Using this lets changes regarding private UUIDs be written to the
- - private index, rather than to the main branch index, so it does
- - not get exposed to other remotes.
+ - Using this lets changes regarding private UUIDs be stored separately
+ - from the git-annex branch, so its information does not get exposed
+ - outside the repo.
  -}
 data RegardingUUID = RegardingUUID [UUID]
 
-regardingPrivateUUID :: RegardingUUID -> Bool
-regardingPrivateUUID (RegardingUUID []) = False
-regardingPrivateUUID (RegardingUUID _) = True -- TODO
+regardingPrivateUUID :: RegardingUUID -> Annex Bool
+regardingPrivateUUID (RegardingUUID []) = pure False
+regardingPrivateUUID (RegardingUUID us) = do
+	s <- annexPrivateRepos <$> Annex.getGitConfig
+	return (any (flip S.member s) us)
 
--- Are any private UUIDs known to exist? If so, extra work has to be done,
--- to check for information separately recorded for them, outside the usual
--- locations.
-privateUUIDsKnown :: Bool
-privateUUIDsKnown = True -- TODO
+{- Are any private UUIDs known to exist? If so, extra work has to be done,
+ - to check for information separately recorded for them, outside the usual
+ - locations.
+ -}
+privateUUIDsKnown :: Annex Bool
+privateUUIDsKnown = privateUUIDsKnown' <$> Annex.getState id
+
+privateUUIDsKnown' :: Annex.AnnexState -> Bool
+privateUUIDsKnown' = not . S.null . annexPrivateRepos . Annex.gitconfig
 
 {- Records content for a file in the branch to the journal.
  -
@@ -69,9 +77,10 @@ privateUUIDsKnown = True -- TODO
  -}
 setJournalFile :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> content -> Annex ()
 setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
-	jd <- fromRepo $ if regardingPrivateUUID ru
-		then gitAnnexPrivateJournalDir
-		else gitAnnexJournalDir
+	jd <- fromRepo =<< ifM (regardingPrivateUUID ru)
+		( return gitAnnexPrivateJournalDir
+		, return gitAnnexJournalDir
+		)
 	createAnnexDirectory jd
 	-- journal file is written atomically
 	let jfile = journalFile file
@@ -98,8 +107,12 @@ data GetPrivate = GetPrivate Bool
  - laziness doesn't matter much, as the files are not very large.
  -}
 getJournalFileStale :: GetPrivate -> RawFilePath -> Annex (Maybe L.ByteString)
-getJournalFileStale (GetPrivate getprivate) file = inRepo $ \g -> 
-	if getprivate && privateUUIDsKnown
+getJournalFileStale (GetPrivate getprivate) file = do
+	-- Optimisation to avoid a second MVar access.
+	st <- Annex.getState id
+	let g = Annex.repo st
+	liftIO $
+		if getprivate && privateUUIDsKnown' st
 		then do
 			x <- getfrom (gitAnnexJournalDir g)
 			y <- getfrom (gitAnnexPrivateJournalDir g)
@@ -110,7 +123,7 @@ getJournalFileStale (GetPrivate getprivate) file = inRepo $ \g ->
   where
 	jfile = journalFile file
 	getfrom d = catchMaybeIO $
-		L.fromStrict <$> S.readFile (fromRawFilePath (d P.</> jfile))
+		L.fromStrict <$> B.readFile (fromRawFilePath (d P.</> jfile))
 
 {- List of existing journal files in a journal directory, but without locking,
  - may miss new ones just being added, or may have false positives if the
@@ -145,12 +158,12 @@ journalDirty getjournaldir = do
  - in the journal directory.
  -}
 journalFile :: RawFilePath -> RawFilePath
-journalFile file = S.concatMap mangle file
+journalFile file = B.concatMap mangle file
   where
 	mangle c
-		| P.isPathSeparator c = S.singleton underscore
-		| c == underscore = S.pack [underscore, underscore]
-		| otherwise = S.singleton c
+		| P.isPathSeparator c = B.singleton underscore
+		| c == underscore = B.pack [underscore, underscore]
+		| otherwise = B.singleton c
 	underscore = fromIntegral (ord '_')
 
 {- Converts a journal file (relative to the journal dir) back to the
@@ -159,16 +172,16 @@ fileJournal :: RawFilePath -> RawFilePath
 fileJournal = go
   where
 	go b = 
-		let (h, t) = S.break (== underscore) b
-		in h <> case S.uncons t of
+		let (h, t) = B.break (== underscore) b
+		in h <> case B.uncons t of
 			Nothing -> t
-			Just (_u, t') -> case S.uncons t' of
+			Just (_u, t') -> case B.uncons t' of
 				Nothing -> t'			
 				Just (w, t'')
 					| w == underscore ->
-						S.cons underscore (go t'')
+						B.cons underscore (go t'')
 					| otherwise -> 
-						S.cons P.pathSeparator (go t')
+						B.cons P.pathSeparator (go t')
 	
 	underscore = fromIntegral (ord '_')
 
