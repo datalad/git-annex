@@ -61,7 +61,7 @@ import qualified Data.Map as M
 findSpecialRemotes :: String -> Annex [Git.Repo]
 findSpecialRemotes s = do
 	m <- fromRepo Git.config
-	liftIO $ mapM construct $ remotepairs m
+	liftIO $ catMaybes <$> mapM construct (remotepairs m)
   where
 	remotepairs = M.toList . M.filterWithKey match
 	construct (k,_) = Git.Construct.remoteNamedFromKey k

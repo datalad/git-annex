@@ -23,14 +23,18 @@ import Network.URI
 import Git.FilePath
 #endif
 
-{- Is a git config key one that specifies the location of a remote? -}
-isRemoteKey :: ConfigKey -> Bool
-isRemoteKey (ConfigKey k) = "remote." `S.isPrefixOf` k && ".url" `S.isSuffixOf` k
+{- Is a git config key one that specifies the url of a remote? -}
+isRemoteUrlKey :: ConfigKey -> Bool
+isRemoteUrlKey (ConfigKey k) = "remote." `S.isPrefixOf` k && ".url" `S.isSuffixOf` k
 
-{- Get a remote's name from the config key that specifies its location. -}
-remoteKeyToRemoteName :: ConfigKey -> RemoteName
-remoteKeyToRemoteName (ConfigKey k) = decodeBS' $
-	S.intercalate "." $ dropFromEnd 1 $ drop 1 $ S8.split '.' k
+{- Get a remote's name from the a config key such as remote.name.url
+ - or any other per-remote config key. -}
+remoteKeyToRemoteName :: ConfigKey -> Maybe RemoteName
+remoteKeyToRemoteName (ConfigKey k)
+	| "remote." `S.isPrefixOf` k = 
+		let n = S.intercalate "." $ dropFromEnd 1 $ drop 1 $ S8.split '.' k
+		in if S.null n then Nothing else Just (decodeBS' n)
+	| otherwise = Nothing
 
 {- Construct a legal git remote name out of an arbitrary input string.
  -

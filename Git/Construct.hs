@@ -133,11 +133,11 @@ localToUrl reference r
 
 {- Calculates a list of a repo's configured remotes, by parsing its config. -}
 fromRemotes :: Repo -> IO [Repo]
-fromRemotes repo = mapM construct remotepairs
+fromRemotes repo = catMaybes <$> mapM construct remotepairs
   where
 	filterconfig f = filter f $ M.toList $ config repo
 	filterkeys f = filterconfig (\(k,_) -> f k)
-	remotepairs = filterkeys isRemoteKey
+	remotepairs = filterkeys isRemoteUrlKey
 	construct (k,v) = remoteNamedFromKey k $
 		fromRemoteLocation (fromConfigValue v) repo
 
@@ -149,8 +149,10 @@ remoteNamed n constructor = do
 
 {- Sets the name of a remote based on the git config key, such as
  - "remote.foo.url". -}
-remoteNamedFromKey :: ConfigKey -> IO Repo -> IO Repo
-remoteNamedFromKey = remoteNamed . remoteKeyToRemoteName
+remoteNamedFromKey :: ConfigKey -> IO Repo -> IO (Maybe Repo)
+remoteNamedFromKey k r = case remoteKeyToRemoteName k of
+	Nothing -> pure Nothing
+	Just n -> Just <$> remoteNamed n r
 
 {- Constructs a new Repo for one of a Repo's remotes using a given
  - location (ie, an url). -}

@@ -449,8 +449,8 @@ completeRemotes = completer $ mkCompleter $ \input -> do
 	r <- maybe (pure Nothing) (Just <$$> Git.Config.read)
 		=<< Git.Construct.fromCwd
 	return $ filter (input `isPrefixOf`) $
-		map remoteKeyToRemoteName $
-			filter isRemoteKey $
+		mapMaybe remoteKeyToRemoteName $
+			filter isRemoteUrlKey $
 				maybe [] (M.keys . config) r
 		
 completeBackends :: HasCompleter f => Mod f a
