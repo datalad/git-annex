@@ -249,3 +249,5 @@ keeping the unfiltered branch private and unpushed to the user, and it
 adds a step of needing to do the filtering before pushing.
 
 [[!tag projects/datalad]]
+
+> [[done]]; see [[tips/cloning_a_repository_privately]] --[[Joey]]
