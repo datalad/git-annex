@@ -55,8 +55,3 @@ good way to use it.
 
 The private data gets stored in .git/annex/journal-private/ rather
 than in the git-annex branch.
-
-It's possible to move those files to .git/annex/journal/ (being careful
-to not overwrite files already in there), and it will then get committed to
-the git-annex branch. Do this only if you decide you don't want a private
-repository after all.
