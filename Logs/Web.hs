@@ -1,6 +1,6 @@
 {- Web url logs.
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,23 +13,23 @@ module Logs.Web (
 	getUrlsWithPrefix,
 	setUrlPresent,
 	setUrlMissing,
-	withKnownUrls,
 	Downloader(..),
 	getDownloader,
 	setDownloader,
 	setDownloader',
 	setTempUrl,
 	removeTempUrl,
+	parseUrlLog,
 ) where
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 
 import Annex.Common
 import qualified Annex
 import Logs
 import Logs.Presence
 import Logs.Location
-import qualified Annex.Branch
 import Utility.Url
 import Annex.UUID
 import qualified Types.Remote as Remote
@@ -47,7 +47,7 @@ getUrls key = do
 		us <- currentLogInfo l
 		if null us
 			then go ls
-			else return $ map (decodeBS  . fromLogInfo) us
+			else return $ map decodeUrlLogInfo us
 
 getUrlsWithPrefix :: Key -> String -> Annex [URLString]
 getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`) 
@@ -85,20 +85,6 @@ setUrlMissing key url = do
 		OtherDownloader -> False
 		_ -> True
 
-{- Finds all known urls. -}
-withKnownUrls :: (Annex (Maybe (Key, [URLString])) -> Annex a) -> Annex a
-withKnownUrls a = Annex.Branch.overBranchFileContents urlLogFileKey (a . go)
-  where
-	go reader = reader >>= \case
-		Just (k, _, Just content) ->
-			case geturls content of
-				[] -> go reader
-				us -> return (Just (k, us))
-		Just (_, _, Nothing) -> go reader
-		Nothing -> return Nothing
-	
-	geturls = map (decodeBS . fromLogInfo) . getLog
-
 setTempUrl :: Key -> URLString -> Annex ()
 setTempUrl key url = Annex.changeState $ \s ->
 	s { Annex.tempurls = M.insert key url (Annex.tempurls s) }
@@ -131,3 +117,11 @@ getDownloader u = case separate (== ':') u of
 	("quvi", u') -> (u', YoutubeDownloader)
 	("", u') -> (u', OtherDownloader)
 	_ -> (u, WebDownloader)
+
+decodeUrlLogInfo :: LogInfo -> URLString
+decodeUrlLogInfo = decodeBS . fromLogInfo
+
+{- Parses the content of an url log file, returning the urls that are
+ - currently recorded. -}
+parseUrlLog :: L.ByteString -> [URLString]
+parseUrlLog = map decodeUrlLogInfo . getLog

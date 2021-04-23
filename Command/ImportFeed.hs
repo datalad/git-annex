@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -139,7 +139,7 @@ knownItems = do
 	config <- Annex.getGitConfig
 	catObjectStream g $ \catfeeder catcloser catreader -> do
 		rt <- liftIO $ async $ reader catreader []
-		withKnownUrls (feeder config catfeeder catcloser)
+		overKnownUrls (feeder config catfeeder catcloser)
 		liftIO (wait rt)
   where
 	feeder config catfeeder catcloser urlreader = urlreader >>= \case
@@ -160,6 +160,17 @@ knownItems = do
 			in reader catreader ((itemids,u):c)
 		Just (u, Nothing) -> reader catreader (([],u):c)
 		Nothing -> return c
+
+overKnownUrls :: (Annex (Maybe (Key, [URLString])) -> Annex a) -> Annex a
+overKnownUrls a = Annex.Branch.overBranchFileContents urlLogFileKey (a . go)
+  where
+	go reader = reader >>= \case
+		Just (k, _, Just content) ->
+			case parseUrlLog content of
+				[] -> go reader
+				us -> return (Just (k, us))
+		Just (_, _, Nothing) -> go reader
+		Nothing -> return Nothing
 
 findDownloads :: URLString -> Feed -> [ToDownload]
 findDownloads u f = catMaybes $ map mk (feedItems f)
