@@ -155,8 +155,21 @@ later write.
 > * [[bugs/git-annex_branch_caching_bug]] was a problem, now fixed.
 > * Any other similar direct accesses of the branch, not going through
 >   Annex.Branch, also need to be fixed (and may be missing journal files
->   already?) Command.ImportFeed.knownItems is one. Command.Log behavior
->   needs to be investigated, may be ok. And Logs.Web.withKnownUrls is another.
+>   already?) Most fixed now. Command.Log behavior needs to be
+>   investigated still.
+> 
+> * Need to implement regardingPrivateUUID and privateUUIDsKnown,
+>   which need to look at the git config to find the private uuids.
+> 
+>   But that involves a mvar access, so there will be some slow down,
+>   although often it will be swamped by the actual branch querying.
+>   So far it's been possible to avoid any slow down from this feature
+>   when it's not in use.
+>   
+>   Encoding inside the uuid if a repo is private avoids slowdown of
+>   regardingPrivateUUID, but not privateUUIDsKnown. (So branch queries
+>   still slow down). It also avoids needing to set the config before
+>   writing to the branch when setting up a private repo or special remote.
 
 ## networks of hidden repos
 
@@ -203,8 +216,6 @@ None of the above allows for a network of hidden repos, one of which is
 part of a *different* network of hidden repos. Supporting that would be a
 major complication.
 
-## other uuid exposures
-
 Things other than the git-annex branch that can expose the existence of the
 repository:
 
@@ -213,5 +224,41 @@ repository:
   set up explicitly.
 * git-annex-shell configlist will list the UUID. User has to know/guess
   the repo exists and have an accepted ssh key.
+
+# alternative: git-annex branch filtering
+
+Different angle on this: Let the git-annex branch grow as usual. But
+provide a way to filter uuids out of the git-annex branch, producing a new
+branch.
+
+Then the user can push the filtered branch back to origin or whatever they
+want to do with it. It would be up to them to avoid making a mistake and
+letting git push automatically send git-annex to origin/git-annex.
+Maybe git has sufficient configs to let it be configured to avoid such
+mistakes, dunno. (git-annex sync would certianly be a foot shooting
+opportunity too.)
+
+> Setting remote.name.push = simple would avoid accidental pushes.
+> But if the user wanted to otherwise push matching branches, they would
+> not be able to express that with a git config. Also, `git push origin :`
+> would override that config.
+> 
+> Using a different branch name than git-annex when branch filtering is
+> enabled would be avoid most accidental pushes. And then the filtering
+> could produce the git-annex branch.
+
+The filtering would need to go back from the top commit to the last commit
+that was filtered, and remove all mentions of the uuid. The transition
+code (mostly) knows how to do that, but it doesn't preserve the history of
+commits currently, and filtering would need to preserve that.
+
+Any commits that were made elsewhere or that don't contain the UUIDs would
+keep the same trees, and should keep the same commit hashes too, as long
+as their parents are the same.
+
+This would support any networks of hidden repos that might be wanted.
+And it's *clean*.. Except it punts the potential foot shooting of
+keeping the unfiltered branch private and unpushed to the user, and it
+adds a step of needing to do the filtering before pushing.
 
 [[!tag projects/datalad]]

@@ -792,8 +792,8 @@ rememberTreeishLocked treeish graftpoint jl = do
  -}
 overBranchFileContents
 	:: (RawFilePath -> Maybe v)
-	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex ())
-	-> Annex ()
+	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
+	-> Annex a
 overBranchFileContents select go = do
 	st <- update
 	g <- Annex.gitRepo
@@ -824,7 +824,7 @@ overBranchFileContents select go = do
 				Nothing -> drain buf =<< journalledFiles
 				Just fs -> drain buf fs
 	catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
-	liftIO $ void cleanup
+		`finally` liftIO (void cleanup)
   where
 	getnext [] = Nothing
 	getnext (f:fs) = case select f of

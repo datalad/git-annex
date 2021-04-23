@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,7 +20,6 @@ import Data.Time.Format
 import Data.Time.Calendar
 import Data.Time.LocalTime
 import qualified Data.Text as T
-import Control.Concurrent.Async
 import qualified System.FilePath.ByteString as P
 
 import Command
@@ -45,10 +44,8 @@ import Annex.MetaData
 import Annex.FileMatcher
 import Command.AddUrl (addWorkTree)
 import Annex.UntrustedFilePath
-import qualified Git.Ref
 import qualified Annex.Branch
 import Logs
-import Git.CatFile (catObjectStream)
 
 cmd :: Command
 cmd = notBareRepo $
@@ -125,41 +122,38 @@ getCache opttemplate = ifM (Annex.getState Annex.force)
 	( ret S.empty S.empty
 	, do
 		showStart "importfeed" "checking known urls" (SeekInput [])
-		(is, us) <- unzip <$> knownItems
+		(us, is) <- knownItems
 		showEndOk
-		ret (S.fromList us) (S.fromList (concat is))
+		ret (S.fromList us) (S.fromList is)
 	)
   where
 	tmpl = Utility.Format.gen $ fromMaybe defaultTemplate opttemplate
 	ret us is = return $ Cache us is tmpl
 
-knownItems :: Annex [([ItemId], URLString)]
-knownItems = do
-	g <- Annex.gitRepo
-	config <- Annex.getGitConfig
-	catObjectStream g $ \catfeeder catcloser catreader -> do
-		rt <- liftIO $ async $ reader catreader []
-		withKnownUrls (feeder config catfeeder catcloser)
-		liftIO (wait rt)
+{- Scan all url logs and metadata logs in the branch and find urls
+ - and ItemIds that are already known. -}
+knownItems :: Annex ([URLString], [ItemId])
+knownItems = Annex.Branch.overBranchFileContents select (go [] [])
   where
-	feeder config catfeeder catcloser urlreader = urlreader >>= \case
-		Just (k, us) -> do
-			forM_ us $ \u ->
-				let logf = metaDataLogFile config k
-				    ref = Git.Ref.branchFileRef Annex.Branch.fullname logf
-				in liftIO $ catfeeder (u, ref)
-			feeder config catfeeder catcloser urlreader
-		Nothing -> liftIO catcloser
-	
-	reader catreader c = catreader >>= \case
-		Just (u, Just mdc) ->
-			let !itemids = S.toList $ S.filter (/= noneValue) $
-				S.map (decodeBS . fromMetaValue) $
-					currentMetaDataValues itemIdField $
-						parseCurrentMetaData mdc
-			in reader catreader ((itemids,u):c)
-		Just (u, Nothing) -> reader catreader (([],u):c)
-		Nothing -> return c
+	select f
+		| isUrlLog f = Just ()
+		| isMetaDataLog f = Just ()
+		| otherwise = Nothing
+
+	go uc ic reader = reader >>= \case
+		Just ((), f, Just content)
+			| isUrlLog f -> case parseUrlLog content of
+				[] -> go uc ic reader
+				us -> go (us++uc) ic reader
+			| isMetaDataLog f ->
+				let s = currentMetaDataValues itemIdField $
+					parseCurrentMetaData content
+				in if S.null s
+					then go uc ic reader
+					else go uc (map (decodeBS . fromMetaValue) (S.toList s)++ic) reader
+			| otherwise -> go uc ic reader
+		Just ((), _, Nothing) -> go uc ic reader
+		Nothing -> return (uc, ic)
 
 findDownloads :: URLString -> Feed -> [ToDownload]
 findDownloads u f = catMaybes $ map mk (feedItems f)

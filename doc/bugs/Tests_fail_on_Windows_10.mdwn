@@ -2002,3 +2002,7 @@ PS G:\test2>
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Of course! On Linux, it runs perfectly. I manage all my data with git-annex.
+
+> The test suite passes on windows 10 on the autobuilder used to build
+> git-annex. Given the age of this bug, I don't think it's useful to keep
+> it open, so [[done]] --[[Joey]]

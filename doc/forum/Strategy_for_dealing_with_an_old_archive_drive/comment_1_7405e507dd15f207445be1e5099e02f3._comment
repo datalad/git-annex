@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-04-21T21:19:54Z"
+ content="""
+2TB of data is no problem. git does start to slow down as the number of
+files in a tree increases, with 200,000 or so where it might start to become
+noticable. With this many files, updating .git/index will need to write out
+something like 50mb of data to disk.
+
+(git has some "split index" stuff that is supposed to help with this, but
+I have not had the best experience with it.)
+
+Committing the files to a branch other than master might be a reasonable
+compromise. Then you can just copy the git-annex symlinks over to master as
+needed, or check out the branch from time to time.
+
+The main bottleneck doing that would be that the git-annex branch will also
+contain 1 location log file per annexed file, and writing to
+.git/annex/index will slow down a bit with so many files too. But,
+git-annex has a lot of optimisations around batching writes to its index that
+should make the impact minimal.
+"""]]

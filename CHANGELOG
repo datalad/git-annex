@@ -15,6 +15,9 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
   * Fix bug caused by recent optimisations that could make git-annex not
     see recently recorded status information when configured with
     annex.alwayscommit=false.
+  * Fix bug that could make git-annex importfeed not see recently recorded
+    state when configured with annex.alwayscommit=false.
+  * importfeed: Made "checking known urls" phase run 12 times faster.
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Apr 2021 12:17:26 -0400
 
