@@ -8,10 +8,18 @@ git annex log `[path ...]`
 
 # DESCRIPTION
 
-Displays the location log for the specified file or files,
-showing each repository they were added to ("+") and removed from ("-").
-Note that the location log is for the particular file contents currently at these paths,
+Displays the location log for the specified file or files, showing each
+repository they were added to ("+") and removed from ("-"). Note that the
+location log is for the particular file contents currently at these paths,
 not for any different content that was there in earlier commits.
+
+This displays information from the history of the git-annex branch. Several
+things can prevent that information being available to display. When
+[[git-annex-dead]] and [[git-annex-forget]] are used, old historical
+data gets cleared from the branch. When annex.private or 
+remote.name.annex-private is configured, git-annex does not write
+information to the branch at all. And when annex.alwayscommit is set to
+false, information may not have been committed to the branch yet.
 
 # OPTIONS
 

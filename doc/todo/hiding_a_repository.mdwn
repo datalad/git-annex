@@ -145,19 +145,6 @@ all reads followed by writes do go via Annex.Branch.change, so Annex.Branch.get
 can just concacenate the two without worrying about it leaking back out in a
 later write.
 
-> Implementing this is in progress, in the `hiddenannex` branch.
-> 
-> Got the separate journal mostly working. No separate index yet.
-> No way to configure what repo is hidden yet. --[[Joey]]
-> 
-> Implementation notes:
->
-> * [[bugs/git-annex_branch_caching_bug]] was a problem, now fixed.
-> * Any other similar direct accesses of the branch, not going through
->   Annex.Branch, also need to be fixed (and may be missing journal files
->   already?) Most fixed now. Command.Log behavior needs to be
->   investigated still.
-
 ## networks of hidden repos
 
 There are a lot of complications involving using hidden repos as remotes.
