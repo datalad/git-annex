@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="felix.hagemann@b76e9ea0928cf33dacffc37ec3dbecf33171a8a5"
+ nickname="felix.hagemann"
+ avatar="http://cdn.libravatar.org/avatar/1f7e89860de517a494f35ebfb385288e"
+ subject="Still happening"
+ date="2021-04-25T16:20:04Z"
+ content="""
+I am still suffering from the same problem, git-annex versions are:
+laptop git-annex version: 8.20210223
+server git-annex version: 8.20200330
+
+Also as soon as there is a bit more something to be synced the repositories frequently need to be repaired, which on the server takes days for this 130GB repo.
+
+Anything I can do to help debug this?
+"""]]
