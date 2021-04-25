@@ -1,0 +1,15 @@
+Hey Joey, thanks for this awesome software! I am starting to use it for some personal git repos with images/PDFs/etc.
+
+I was wondering if you have considered a feature similar to Git LFS's file locking feature (https://github.com/git-lfs/git-lfs/wiki/File-Locking).
+
+Not sure if it's easy or possible with the way that git-annex does things, but I can imagine it would be useful to know if someone is actively working on a binary file so that 2 different people don't change the same binary file at once. I think it's important to know because it's often difficult or impossible to merge binary files. And on multi-person projects, this becomes more important.
+
+I think the interface described in the LFS wiki link above is pretty nice:
+
+```
+$ git lfs locks
+images/bar.jpg  jane   ID:123
+images/foo.jpg  alice  ID:456
+```
+
+Here we can see who has locked each individual file.
