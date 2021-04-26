@@ -4,9 +4,7 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
     prevent storing information about a repository and remotes in the
     git-annex branch.
   * initremote: Added --private option to set up a private special remote.
-  * Fix build with persistent-2.12.0.1
-  * Avoid excess commits to the git-annex branch when stall detection is
-    enabled.
+  * importfeed: Made "checking known urls" phase run 12 times faster.
   * Added --debugfilter (and annex.debugfilter)
   * diffdriver: Support unlocked files.
   * forget: Preserve currently exported trees, avoiding problems with
@@ -14,14 +12,13 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
   * fsck: When downloading content from a remote, if the content is able
     to be verified during the transfer, skip checksumming it a second time.
   * directory: When cp supports reflinks, use it.
+  * Avoid excess commits to the git-annex branch when stall detection is
+    enabled.
   * init: Fix a crash when the repo's was cloned from a repo that had an
     adjusted branch checked out, and the origin remote is not named "origin".    
-  * Fix bug caused by recent optimisations that could make git-annex not
-    see recently recorded status information when configured with
-    annex.alwayscommit=false.
-  * Fix bug that could make git-annex importfeed not see recently recorded
-    state when configured with annex.alwayscommit=false.
-  * importfeed: Made "checking known urls" phase run 12 times faster.
+  * Fix some bugs that made git-annex not see recently recorded status
+    information when configured with annex.alwayscommit=false.
+  * Fix build with persistent-2.12.0.1
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Apr 2021 12:17:26 -0400
 
