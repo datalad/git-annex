@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="ntraut9@6c7c5e5bfddb591c28ab8222f1de9cb56840a69e"
+ nickname="ntraut9"
+ avatar="http://cdn.libravatar.org/avatar/c39ac3cf2806b08e1fdf8384c2817e6c"
+ subject="comment 3"
+ date="2021-04-26T16:40:15Z"
+ content="""
+I tried to do `git annex config --set annex.tune.objecthashlower true` just after doing `git annex init` but after some other commands I got this error when trying to do `git annex sync` (I'm using git-annex v6):
+```
+git-annex: Remote repository is tuned in incompatible way; cannot be merged with local repository.
+```
+So I guess there is way to have this behavior in normal repos, but again I don't see why since it's even possible on crippled filesystems.
+"""]]
