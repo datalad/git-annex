@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-04-26T17:13:45Z"
+ content="""
+git-lfs is a centralized system with a server that can manage the locks.
+git-annex is generally not, and so I do not think it's possible to
+implement locks of that kind generally, for the same reason git does not
+support file locking itself, while contralized VCS systems often do.
+
+However, if you wanted something like git-lfs's behavior of preventing
+pushes that modify files locked by another user, it could be
+implemented as a pre-receive hook on a centralized git server. You would
+only need some way to register the locks to the server, for the pre-receive
+hook to check.
+"""]]
