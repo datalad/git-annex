@@ -14,6 +14,9 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
   * directory: When cp supports reflinks, use it.
   * Avoid excess commits to the git-annex branch when stall detection is
     enabled.
+  * git-annex-config: Allow setting annex.securehashesonly, which has
+    otherwise been supported since 2019, but was missing from the list of
+    allowed repo-global configs.
   * init: Fix a crash when the repo's was cloned from a repo that had an
     adjusted branch checked out, and the origin remote is not named "origin".    
   * Fix some bugs that made git-annex not see recently recorded status

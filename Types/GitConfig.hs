@@ -297,13 +297,14 @@ mergeGitConfig gitconfig repoglobals = gitconfig
 {- Configs that can be set repository-global. -}
 globalConfigs :: [ConfigKey]
 globalConfigs =
-	[ annexConfig "autocommit"
-	, annexConfig "synccontent"
-	, annexConfig "synconlyannex"
-	, annexConfig "resolvemerge"
-	, annexConfig "largefiles"
+	[ annexConfig "largefiles"
 	, annexConfig "dotfiles"
 	, annexConfig "addunlocked"
+	, annexConfig "autocommit"
+	, annexConfig "resolvemerge"
+	, annexConfig "synccontent"
+	, annexConfig "synconlyannex"
+	, annexConfig "securehashesonly"
 	]
 
 {- Per-remote git-annex settings. Each setting corresponds to a git-config

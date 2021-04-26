@@ -31,3 +31,7 @@ local repository version: 8
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 it's great!
+
+> Ooops, it seems I implemented everything needed for that except 
+> forgot to add it to the list of allowed configs. Fixed now, and tested to
+> work. [[done]] --[[Joey]]
