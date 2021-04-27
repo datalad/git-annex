@@ -241,9 +241,11 @@ notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
 		then showLongNote $
 			"Could only verify the existence of " ++
 			show (length have) ++ " out of " ++ show (fromNumCopies neednum) ++ 
-			" necessary copies"
+			" necessary " ++ pluralcopies (fromNumCopies neednum)
 		else do
-			showLongNote $ "Unable to lock down " ++ show (fromMinCopies needmin) ++ " copy of file that is required to safely drop it."
+			showLongNote $ "Unable to lock down " ++ show (fromMinCopies needmin) ++ 
+				" " ++ pluralcopies (fromMinCopies needmin) ++ 
+				" of file necessary to safely drop it."
 			if null lockunsupported
 				then showLongNote "(This could have happened because of a concurrent drop, or because a remote has too old a version of git-annex-shell installed.)"
 				else showLongNote $ "These remotes do not support locking: "
@@ -251,6 +253,9 @@ notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
 
 	Remote.showTriedRemotes bad
 	Remote.showLocations True key (map toUUID have++skip) nolocmsg
+  where
+	pluralcopies 1 = "copy"
+	pluralcopies _ = "copies"
 
 {- Finds locations of a key that can be used to get VerifiedCopies,
  - in order to allow dropping the key.
