@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-04-27T17:06:45Z"
+ content="""
+Please, when filing a bug report, especially one that has the potential
+to be a major data loss bug, provide enough information to reproduce the bug
+report. This includes a version number, and ideally showing how to create a
+new repository and configure it, from scratch, so that the bug occurs.
+
+I suspect that what is happening here is, you don't have numcopies set to a
+number >= mincopies. And there's code that only checks numcopies, with the
+assumption that if it makes sure numcopies is satisfied, mincopies must be
+satisfied since it's a smaller or equal number.
+
+Of course, that's just a guess, but it was the first way I was able to
+reproduce a behavior like you show.
+
+I guess that's a bug, but it's not a major data loss bug since numcopies
+defaults to 1 it will preserve at least that many. Also, it's not a very
+wise configuration because mincopies is a new feature and if an older
+version of git-annex, that does not support it, is used with this
+repository, it will not know about mincopies and will only enforce
+numcopies.
+"""]]

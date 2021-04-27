@@ -21,6 +21,10 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
     adjusted branch checked out, and the origin remote is not named "origin".    
   * Fix some bugs that made git-annex not see recently recorded status
     information when configured with annex.alwayscommit=false.
+  * When mincopies is set to a larger value than numcopies, make sure that
+    mincopies is satisfied. Before, it assumed a sane configuration would
+    have numcopies larger or equal to mincopies. It's still a good idea
+    not to configure git-annex this way.
   * Fix build with persistent-2.12.0.1
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Apr 2021 12:17:26 -0400

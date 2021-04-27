@@ -145,9 +145,9 @@ isSafeDrop :: NumCopies -> MinCopies -> [VerifiedCopy] -> Maybe ContentRemovalLo
  - dropped from the local repo. That lock will prevent other git repos
  - that are concurrently dropping from using the local copy as a VerifiedCopy.
  - So, no additional locking is needed; all we need is verifications
- - of any kind of N other copies of the content. -}
-isSafeDrop (NumCopies n) _ l (Just (ContentRemovalLock _)) = 
-	length (deDupVerifiedCopies l) >= n
+ - of any kind of enough other copies of the content. -}
+isSafeDrop (NumCopies n) (MinCopies m) l (Just (ContentRemovalLock _)) = 
+	length (deDupVerifiedCopies l) >= max n m
 {- Dropping from a remote repo.
  -
  - To guarantee MinCopies is never violated, at least that many LockedCopy

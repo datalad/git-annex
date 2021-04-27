@@ -18,3 +18,5 @@ whereis testmincopies (2 copies)
    	c8144467-348b-476d-8464-5dfe98580f0b -- patmaddox@istudo.local:~/Desktop/annex [istudo]
 ok
 ```
+
+> [[fixed|done]] --[[Joey]]

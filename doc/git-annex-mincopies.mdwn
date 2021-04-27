@@ -25,6 +25,12 @@ repositories, git-annex may violate the numcopies setting.
 In these unusual situations, git-annex ensures that the number of copies
 never goes below mincopies.
 
+It is a good idea to not only rely on only setting mincopies. Set
+numcopies as well, to a larger number, and keep mincopies at the
+bare minimum you're comfortable with. Setting mincopies to a large
+number, rather than setting numcopies will in some cases prevent
+droping content in entirely safe situations.
+
 # SEE ALSO
 
 [[git-annex]](1)

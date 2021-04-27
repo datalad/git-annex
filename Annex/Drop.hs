@@ -69,7 +69,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 			else do
 				l <- mapM getFileNumMinCopies fs
 				return (maximum $ map fst l, maximum $ map snd l)
-		return (NumCopies (length have), numcopies, mincopies, S.fromList untrusted)
+		return (length have, numcopies, mincopies, S.fromList untrusted)
 
 	{- Check that we have enough copies still to drop the content.
 	 - When the remote being dropped from is untrusted, it was not
@@ -80,13 +80,14 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 	 - avoids doing extra work to do that check later in cases where it
 	 - will surely fail.
 	 -}
-	checkcopies (have, numcopies, _mincopies, _untrusted) Nothing = have > numcopies
-	checkcopies (have, numcopies, _mincopies, untrusted) (Just u)
-		| S.member u untrusted = have >= numcopies
-		| otherwise = have > numcopies
+	checkcopies (have, numcopies, mincopies, _untrusted) Nothing =
+		NumCopies have > numcopies && MinCopies have > mincopies
+	checkcopies (have, numcopies, mincopies, untrusted) (Just u)
+		| S.member u untrusted = NumCopies have >= numcopies && MinCopies have >= mincopies
+		| otherwise = NumCopies have > numcopies && MinCopies have > mincopies
 	
 	decrcopies (have, numcopies, mincopies, untrusted) Nothing =
-		(NumCopies (fromNumCopies have - 1), numcopies, mincopies, untrusted)
+		(have - 1, numcopies, mincopies, untrusted)
 	decrcopies v@(_have, _numcopies, _mincopies, untrusted) (Just u)
 		| S.member u untrusted = v
 		| otherwise = decrcopies v Nothing
@@ -122,7 +123,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 						AssociatedFile Nothing -> serializeKey key
 						AssociatedFile (Just af) -> fromRawFilePath af
 					, "(from " ++ maybe "here" show u ++ ")"
-					, "(copies now " ++ show (fromNumCopies have - 1) ++ ")"
+					, "(copies now " ++ show (have - 1) ++ ")"
 					, ": " ++ reason
 					]
 				return $ decrcopies n u
