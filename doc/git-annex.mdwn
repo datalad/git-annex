@@ -812,7 +812,7 @@ may not be explicitly listed on their individual man pages.
 
   Overrides the mincopies setting.
 
-  Note that setting numcopies to 0 is very unsafe.
+  Note that setting mincopies to 0 is very unsafe.
 
 * `--time-limit=time`
 
@@ -1940,7 +1940,7 @@ for flac files:
 	*.wav annex.numcopies=2
 	*.flac annex.numcopies=3
 
-Note that setting numcopies and mincopies to 0 is very unsafe.
+Note that setting numcopies or mincopies to 0 is very unsafe.
 
 These settings are honored by git-annex whenever it's operating on a
 matching file. However, when using --all, --unused, or --key to specify
