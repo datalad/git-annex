@@ -25,6 +25,8 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
     mincopies is satisfied. Before, it assumed a sane configuration would
     have numcopies larger or equal to mincopies. It's still a good idea
     not to configure git-annex this way.
+  * Avoid more than 1 gpg password prompt at the same time, which
+    could happen occasionally before when concurrency is enabled.
   * Fix build with persistent-2.12.0.1
 
  -- Joey Hess <id@joeyh.name>  Thu, 01 Apr 2021 12:17:26 -0400

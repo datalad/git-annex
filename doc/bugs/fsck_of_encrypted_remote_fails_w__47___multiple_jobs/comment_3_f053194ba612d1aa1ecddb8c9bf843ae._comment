@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-04-27T20:33:41Z"
+ content="""
+I've implemented the race protection. Pretty sure this fixes it, at least
+to the extent it can be fixed if it's a gpg bug that any 2 concurrent
+password prompts can sometimes trigger. I'll run git-annex fsck in a
+loop for an hour or so to be more sure.
+
+It would be nice if someone wants to file a bug on gpg, but I don't have
+time right now.
+"""]]

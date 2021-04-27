@@ -122,6 +122,7 @@ data AnnexRead = AnnexRead
 	, transferrerpool :: TransferrerPool
 	, debugenabled :: Bool
 	, debugselector :: DebugSelector
+	, ciphers :: TMVar (M.Map StorableCipher Cipher)
 	}
 
 newAnnexRead :: GitConfig -> IO AnnexRead
@@ -132,6 +133,7 @@ newAnnexRead c = do
 	sc <- newTMVarIO False
 	si <- newTVarIO M.empty
 	tp <- newTransferrerPool
+	cm <- newTMVarIO M.empty
 	return $ AnnexRead
 		{ activekeys = emptyactivekeys
 		, activeremotes = emptyactiveremotes
@@ -141,6 +143,7 @@ newAnnexRead c = do
 		, transferrerpool = tp
 		, debugenabled = annexDebug c
 		, debugselector = debugSelectorFromGitConfig c
+		, ciphers = cm
 		}
 
 -- Values that can change while running an Annex action.
@@ -178,7 +181,6 @@ data AnnexState = AnnexState
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
-	, ciphers :: M.Map StorableCipher Cipher
 	, lockcache :: LockCache
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
@@ -237,7 +239,6 @@ newAnnexState c r = do
 		, forcetrust = M.empty
 		, trustmap = Nothing
 		, groupmap = Nothing
-		, ciphers = M.empty
 		, lockcache = M.empty
 		, flags = M.empty
 		, fields = M.empty

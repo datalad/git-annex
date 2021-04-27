@@ -1,6 +1,6 @@
 {- common functions for encryptable remotes
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -30,6 +30,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified "sandi" Codec.Binary.Base64 as B64
 import qualified Data.ByteString as B
+import Control.Concurrent.STM
 
 import Annex.Common
 import Types.Remote
@@ -218,18 +219,29 @@ remoteCipher c gc = fmap fst <$> remoteCipher' c gc
 {- Gets encryption Cipher. The decrypted Ciphers are cached in the Annex
  - state. -}
 remoteCipher' :: ParsedRemoteConfig -> RemoteGitConfig -> Annex (Maybe (Cipher, StorableCipher))
-remoteCipher' c gc = go $ extractCipher c
-  where
-	go Nothing = return Nothing
-	go (Just encipher) = do
-		cache <- Annex.getState Annex.ciphers
-		case M.lookup encipher cache of
+remoteCipher' c gc = case extractCipher c of
+	Nothing -> return Nothing
+	Just encipher -> do
+		cachev <- Annex.getRead Annex.ciphers
+		cachedciper <- liftIO $ atomically $ 
+			M.lookup encipher <$> readTMVar cachev
+		case cachedciper of
 			Just cipher -> return $ Just (cipher, encipher)
-			Nothing -> do
-				cmd <- gpgCmd <$> Annex.getGitConfig
-				cipher <- liftIO $ decryptCipher cmd (c, gc) encipher
-				Annex.changeState (\s -> s { Annex.ciphers = M.insert encipher cipher cache })
-				return $ Just (cipher, encipher)
+			-- Not cached; decrypt it, making sure
+			-- to only decrypt one at a time. Avoids
+			-- prompting for decrypting the same thing twice
+			-- when this is run concurrently.
+			Nothing -> bracketOnError
+				(liftIO $ atomically $ takeTMVar cachev)
+				(liftIO . atomically . putTMVar cachev)
+				(go cachev encipher)
+  where
+	go cachev encipher cache = do
+		cmd <- gpgCmd <$> Annex.getGitConfig
+		cipher <- liftIO $ decryptCipher cmd (c, gc) encipher
+		liftIO $ atomically $ putTMVar cachev $
+			M.insert encipher cipher cache
+		return $ Just (cipher, encipher)
 
 {- Checks if the remote's config allows storing creds in the remote's config.
  - 
