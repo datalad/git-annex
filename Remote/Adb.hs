@@ -15,7 +15,6 @@ import Types.Import
 import qualified Git
 import Config.Cost
 import Remote.Helper.Special
-import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Annex.UUID
 import Utility.Metered
@@ -77,7 +76,7 @@ gen r u rc gc rs = do
 			, retrieveExport = retrieveExportM serial adir
 			, removeExport = removeExportM serial adir
 			, versionedExport = False
-			, checkPresentExport = checkPresentExportM this serial adir
+			, checkPresentExport = checkPresentExportM serial adir
 			, removeExportDirectory = Just $ removeExportDirectoryM serial adir
 			, renameExport = renameExportM serial adir
 			}
@@ -115,7 +114,7 @@ gen r u rc gc rs = do
 		(store serial adir)
 		(retrieve serial adir)
 		(remove serial adir)
-		(checkKey this serial adir)
+		(checkKey serial adir)
 		this
   where
 	adir = maybe (giveup "missing androiddirectory") AndroidPath
@@ -214,12 +213,11 @@ remove' :: AndroidSerial -> AndroidPath -> Annex Bool
 remove' serial aloc = adbShellBool serial
 	[Param "rm", Param "-f", File (fromAndroidPath aloc)]
 
-checkKey :: Remote -> AndroidSerial -> AndroidPath -> CheckPresent
-checkKey r serial adir k = checkKey' r serial (androidLocation adir k)
+checkKey :: AndroidSerial -> AndroidPath -> CheckPresent
+checkKey serial adir k = checkKey' serial (androidLocation adir k)
 
-checkKey' :: Remote -> AndroidSerial -> AndroidPath -> Annex Bool
-checkKey' r serial aloc = do
-	showChecking r
+checkKey' :: AndroidSerial -> AndroidPath -> Annex Bool
+checkKey' serial aloc = do
 	out <- adbShellRaw serial $ unwords
 		[ "if test -e ", shellEscape (fromAndroidPath aloc)
 		, "; then echo y"
@@ -268,8 +266,8 @@ removeExportDirectoryM serial abase dir =
 	go = adbShellBool serial [Param "rm", Param "-rf", File (fromAndroidPath adir)]
 	adir = androidExportLocation abase (mkExportLocation (fromExportDirectory dir))
 
-checkPresentExportM :: Remote -> AndroidSerial -> AndroidPath -> Key -> ExportLocation -> Annex Bool
-checkPresentExportM r serial adir _k loc = checkKey' r serial aloc
+checkPresentExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> Annex Bool
+checkPresentExportM serial adir _k loc = checkKey' serial aloc
   where
 	aloc = androidExportLocation adir loc
 

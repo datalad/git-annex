@@ -25,9 +25,6 @@ instance Describable (Remote.RemoteA a) where
 instance Describable String where
 	describe = id
 
-showChecking :: Describable a => a -> Annex ()
-showChecking v = showAction $ "checking " ++ describe v
-
 cantCheck :: Describable a => a -> e
 cantCheck v = giveup $ "unable to check " ++ describe v
 

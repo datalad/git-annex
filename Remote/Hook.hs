@@ -17,7 +17,6 @@ import Config.Cost
 import Annex.UUID
 import Annex.SpecialRemote.Config
 import Remote.Helper.Special
-import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Utility.Env
 import Messages.Progress
@@ -54,7 +53,7 @@ gen r u rc gc rs = do
 		(store hooktype)
 		(retrieve hooktype)
 		(remove hooktype)
-		(checkKey r hooktype)
+		(checkKey hooktype)
 		Remote
 			{ uuid = u
 			, cost = cst
@@ -169,9 +168,8 @@ remove h k =
 	unlessM (runHook' h "remove" k Nothing $ return True) $
 		giveup "failed to remove content"
 
-checkKey :: Git.Repo -> HookName -> CheckPresent
-checkKey r h k = do
-	showChecking r
+checkKey :: HookName -> CheckPresent
+checkKey h k = do
 	v <- lookupHook h action
 	liftIO $ check v
   where

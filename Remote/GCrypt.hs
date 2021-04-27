@@ -460,7 +460,7 @@ checkKey' repo r rsyncopts accessmethod k
 	| accessmethod == AccessRsyncOverSsh = checkrsync
 	| otherwise = unsupportedUrl
   where
-	checkrsync = Remote.Rsync.checkKey repo rsyncopts k
+	checkrsync = Remote.Rsync.checkKey rsyncopts k
 	checkshell = Ssh.inAnnex repo k
 
 {- Annexed objects are hashed using lower-case directories for max

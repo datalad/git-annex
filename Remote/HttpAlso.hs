@@ -11,7 +11,6 @@ import Annex.Common
 import Types.Remote
 import Types.ProposedAccepted
 import Types.Export
-import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Remote.Helper.Special
 import qualified Git
@@ -67,7 +66,7 @@ gen r u rc gc rs = do
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = cannotModify
 		, lockContent = Nothing
-		, checkPresent = checkKey url ll (this url ll c cst)
+		, checkPresent = checkKey url ll
 		, checkPresentCheap = False
 		, exportActions = ExportActions
 			{ storeExport = cannotModify
@@ -130,9 +129,8 @@ downloadAction dest p key run =
 			run (\url -> Url.download' p url dest uo)
 				>>= either giveup (const (return ()))
 
-checkKey :: Maybe URLString -> LearnedLayout -> Remote -> Key -> Annex Bool
-checkKey baseurl ll r key = do
-	showChecking r
+checkKey :: Maybe URLString -> LearnedLayout -> Key -> Annex Bool
+checkKey baseurl ll key =
 	isRight <$> keyUrlAction baseurl ll key (checkKey' key)
 
 checkKey' :: Key -> URLString -> Annex (Either String ())

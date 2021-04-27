@@ -94,9 +94,8 @@ onRemote cs r (with, errorval) command params fields = do
 
 {- Checks if a remote contains a key. -}
 inAnnex :: Git.Repo -> Key -> Annex Bool
-inAnnex r k = do
-	showChecking r
-	onRemote NoConsumeStdin r (runcheck, cantCheck r) "inannex" [Param $ serializeKey k] []
+inAnnex r k = onRemote NoConsumeStdin r (runcheck, cantCheck r) "inannex"
+	[Param $ serializeKey k] []
   where
 	runcheck c p = liftIO $ dispatch =<< safeSystem c p
 	dispatch ExitSuccess = return True

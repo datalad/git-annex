@@ -27,7 +27,6 @@ import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import Remote.Helper.ReadOnly
-import Remote.Helper.Messages
 import Utility.Metered
 import Types.Transfer
 import Logs.PreferredContent.Raw
@@ -71,7 +70,7 @@ gen r u rc gc rs
 			readonlyStorer
 			retrieveUrl
 			readonlyRemoveKey
-			(checkKeyUrl r)
+			checkKeyUrl
 			Nothing
 			(externalInfo externaltype)
 			Nothing
@@ -815,9 +814,8 @@ retrieveUrl = fileRetriever $ \f k p -> do
 	unlessM (withUrlOptions $ downloadUrl k p us f) $
 		giveup "failed to download content"
 
-checkKeyUrl :: Git.Repo -> CheckPresent
-checkKeyUrl r k = do
-	showChecking r
+checkKeyUrl :: CheckPresent
+checkKeyUrl k = do
 	us <- getWebUrls k
 	anyM (\u -> withUrlOptions $ checkBoth u (fromKey keySize k)) us
 

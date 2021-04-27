@@ -407,7 +407,6 @@ inAnnex' repo rmt st@(State connpool duc _ _ _) key
 	| otherwise = checklocal
   where
 	checkhttp = do
-		showChecking repo
 		gc <- Annex.getGitConfig
 		ifM (Url.withUrlOptionsPromptingCreds $ \uo -> anyM (\u -> Url.checkBoth u (fromKey keySize key) uo) (keyUrls gc repo rmt key))
 			( return True

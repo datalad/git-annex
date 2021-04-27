@@ -19,7 +19,6 @@ import Config
 import Config.Cost
 import Annex.SpecialRemote.Config
 import Remote.Helper.Special
-import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import qualified Remote.Helper.AWS as AWS
 import Creds
@@ -222,9 +221,7 @@ remove r k = unlessM go $
 		]
 
 checkKey :: Remote -> CheckPresent
-checkKey r k = do
-	showChecking r
-	go =<< glacierEnv (config r) (gitconfig r) (uuid r)
+checkKey r k = go =<< glacierEnv (config r) (gitconfig r) (uuid r)
   where
 	go Nothing = giveup "cannot check glacier"
 	go (Just e) = do

@@ -47,7 +47,6 @@ import Config.Cost
 import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.Http
-import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Types.Import
 import qualified Remote.Helper.AWS as AWS
@@ -449,20 +448,17 @@ lockContentS3 hv r rs c info
 
 checkKey :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> CheckPresent
 checkKey hv r rs c info k = withS3Handle hv $ \case
-	Just h -> do
-		showChecking r
-		eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
-			Left failreason -> do
-				warning failreason
-				giveup "cannot check content"
-			Right loc -> checkKeyHelper info h loc
+	Just h -> eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
+		Left failreason -> do
+			warning failreason
+			giveup "cannot check content"
+		Right loc -> checkKeyHelper info h loc
 	Nothing ->
 		getPublicWebUrls' (uuid r) rs info c k >>= \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot check content"
 			Right us -> do
-				showChecking r
 				let check u = withUrlOptions $ 
 					Url.checkBoth u (fromKey keySize k)
 				anyM check us

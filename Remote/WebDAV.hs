@@ -33,7 +33,6 @@ import Config
 import Config.Cost
 import Annex.SpecialRemote.Config
 import Remote.Helper.Special
-import Remote.Helper.Messages
 import Remote.Helper.Http
 import Remote.Helper.ExportImport
 import qualified Remote.Helper.Chunked.Legacy as Legacy
@@ -78,7 +77,7 @@ gen r u rc gc rs = do
 		(store hdl chunkconfig)
 		(retrieve hdl chunkconfig)
 		(remove hdl)
-		(checkKey hdl this chunkconfig)
+		(checkKey hdl chunkconfig)
 		this
 	  where
 		this = Remote
@@ -198,9 +197,8 @@ removeHelper d = do
 				Right False -> return ()
 				_ -> giveup "failed to remove content from remote"
 
-checkKey :: DavHandleVar -> Remote -> ChunkConfig -> CheckPresent
-checkKey hv r chunkconfig k = withDavHandle hv $ \dav -> do
-	showChecking r
+checkKey :: DavHandleVar -> ChunkConfig -> CheckPresent
+checkKey hv chunkconfig k = withDavHandle hv $ \dav ->
 	case chunkconfig of
 		LegacyChunks _ -> checkKeyLegacyChunked dav k
 		_ -> do

@@ -9,7 +9,6 @@ module Remote.Web (remote, getWebUrls) where
 
 import Annex.Common
 import Types.Remote
-import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import qualified Git
 import qualified Git.Construct
@@ -112,7 +111,6 @@ checkKey key = do
 checkKey' :: Key -> [URLString] -> Annex (Either String Bool)
 checkKey' key us = firsthit us (Right False) $ \u -> do
 	let (u', downloader) = getDownloader u
-	showChecking u'
 	case downloader of
 		YoutubeDownloader -> youtubeDlCheck u'
 		_ -> catchMsgIO $

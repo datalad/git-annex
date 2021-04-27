@@ -27,7 +27,6 @@ import Config.Cost
 import qualified Remote.Helper.Ssh as Ssh
 import Annex.SpecialRemote.Config
 import Remote.Helper.Special
-import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Utility.Hash
 import Utility.UserInfo
@@ -110,7 +109,7 @@ gen r u rc gc rs = do
 		(store this buprepo)
 		(retrieve buprepo)
 		(remove buprepo)
-		(checkKey r bupr')
+		(checkKey bupr')
 		this
   where
 	buprepo = fromMaybe (giveup "missing buprepo") $ remoteAnnexBupRepo gc
@@ -212,11 +211,9 @@ remove buprepo k = do
  - in a bup repository. One way it to check if the git repository has
  - a branch matching the name (as created by bup split -n).
  -}
-checkKey :: Git.Repo -> Git.Repo -> CheckPresent
-checkKey r bupr k
-	| Git.repoIsUrl bupr = do
-		showChecking r
-		onBupRemote bupr boolSystem "git" params
+checkKey :: Git.Repo -> CheckPresent
+checkKey bupr k
+	| Git.repoIsUrl bupr = onBupRemote bupr boolSystem "git" params
 	| otherwise = liftIO $ boolSystem "git" $
 		Git.Command.gitCommandLine params bupr
   where

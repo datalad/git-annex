@@ -29,7 +29,6 @@ import Annex.UUID
 import Annex.Ssh
 import Annex.Perms
 import Remote.Helper.Special
-import Remote.Helper.Messages
 import Remote.Helper.ExportImport
 import Types.Export
 import Types.ProposedAccepted
@@ -84,7 +83,7 @@ gen r u rc gc rs = do
 		(fileStorer $ store o)
 		(fileRetriever $ retrieve o)
 		(remove o)
-		(checkKey r o)
+		(checkKey o)
 		Remote
 			{ uuid = u
 			, cost = cst
@@ -280,10 +279,8 @@ removeGeneric o includes = do
 	unless ok $
 		giveup "rsync failed"
 
-checkKey :: Git.Repo -> RsyncOpts -> CheckPresent
-checkKey r o k = do
-	showChecking r
-	checkPresentGeneric o (rsyncUrls o k)
+checkKey :: RsyncOpts -> CheckPresent
+checkKey o k = checkPresentGeneric o (rsyncUrls o k)
 
 checkPresentGeneric :: RsyncOpts -> [RsyncUrl] -> Annex Bool
 checkPresentGeneric o rsyncurls = do
