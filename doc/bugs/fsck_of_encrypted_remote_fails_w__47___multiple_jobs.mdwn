@@ -80,3 +80,5 @@ fsck whatisthis (checking s3...) ok
 
 
 `git-annex` is over all working very well for me. I am able to do some things that I've wanted to be able to do for years. I believe I have worked it out well enough that I can stop testing it and start using it for real.
+
+> [[fixed|done]] --[[Joey]]
