@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 2"
+ date="2021-04-27T18:34:30Z"
+ content="""
+Ah yes, sorry about that. I have `annex.jobs=cpus` by default. Here's the annex info. I don't remember if I explicitly set chunking.
+
+```
+$ git annex info s3
+uuid: 941b57e7-4144-43a8-8cc7-a4be920ee48f
+description: [s3]
+trust: semitrusted
+remote: s3
+cost: 250.0
+type: S3
+creds: embedded in git repository (gpg encrypted)
+bucket: patmaddox-annex-test
+endpoint: s3-us-west-2.amazonaws.com
+port: 80
+protocol: http
+storage class: STANDARD
+partsize: unlimited
+public: no
+versioning: no
+encryption: hybrid (to gpg keys: A52F3B969AFE6C9F)
+chunking: 1.05 megabyteschunks
+remote annex keys: 17
+remote annex size: 367.93 megabytes
+```
+
+
+"""]]
