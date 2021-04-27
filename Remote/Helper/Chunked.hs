@@ -43,7 +43,7 @@ data ChunkConfig
 
 describeChunkConfig :: ChunkConfig -> String
 describeChunkConfig NoChunks = "none"
-describeChunkConfig (UnpaddedChunks sz) = describeChunkSize sz ++ "chunks"
+describeChunkConfig (UnpaddedChunks sz) = describeChunkSize sz ++ " chunks"
 describeChunkConfig (LegacyChunks sz) = describeChunkSize sz ++ " chunks (old style)"
 
 describeChunkSize :: ChunkSize -> String
