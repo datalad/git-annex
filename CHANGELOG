@@ -1,4 +1,4 @@
-git-annex (8.20210331) UNRELEASED; urgency=medium
+git-annex (8.20210428) upstream; urgency=medium
 
   * New annex.private and remote.name.annex-private configs that can
     prevent storing information about a repository and remotes in the
@@ -29,7 +29,7 @@ git-annex (8.20210331) UNRELEASED; urgency=medium
     could happen occasionally before when concurrency is enabled.
   * Fix build with persistent-2.12.0.1
 
- -- Joey Hess <id@joeyh.name>  Thu, 01 Apr 2021 12:17:26 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 28 Apr 2021 12:13:24 -0400
 
 git-annex (8.20210330) upstream; urgency=medium
 
