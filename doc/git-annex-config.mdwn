@@ -80,7 +80,7 @@ looks for these.
 
 * `annex.synconlyannex`
 
-  Set to true to make git-annex sync default to only sincing the git-annex
+  Set to true to make git-annex sync default to only sync the git-annex
   branch and annexed content.
 
 * `annex.securehashesonly`
