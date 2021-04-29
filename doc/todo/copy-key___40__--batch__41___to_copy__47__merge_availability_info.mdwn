@@ -1,0 +1,14 @@
+An ability to copy key availability information from one git-annex'ed repo to another had been a use case we needed for quite some time. Michael even implemented [datalad copy-file](http://docs.datalad.org/en/stable/generated/datalad.api.copy_file.html?highlight=copy_file) remotes - that was an immediate use-case whenever it was necessary to craft "custom" smaller datasets from a much larger (super)dataset . And now we came to the same need to facilitate "splitting" a larger dataset into sub-datasets: [issues/600](https://github.com/datalad/datalad/issues/600#issuecomment-824715427).
+
+I think, in particular with [https://git-annex.branchable.com/todo/hiding_a_repository/](https://git-annex.branchable.com/todo/hiding_a_repository/), something like `git annex copy-key --from hidden-repo KEY` could become the ultimate tool for such operations.  Alternatively may be it could be `git annex copy-key --from-repo /repo/path KEY` so there would not even be a need to link original one as some hidden repo, but rather even "include" original one as a `git submodule` (e.g. `original/`).
+
+Such command would need to pretty much do whatever `git annex merge` already does, just limiting its effects to only relevant key(s) and only the remotes which are known to have that key.
+
+Although I concentrated on "copy-**key**" pretty much the same feature could be useful to provide a `git annex copy-file PATH1 PATH2 ... DEST` where PATH?s would be paths in other git-annex repo(s) -- so it would pretty be similar (just better since not only URLs copied) to `datalad copy-file`.
+
+`--batch` mode in both cases would be super handy to streamline use of the command(s).
+
+WDYT Joey?
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
