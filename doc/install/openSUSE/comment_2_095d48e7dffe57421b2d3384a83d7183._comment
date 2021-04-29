@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="daniel"
+ avatar="http://cdn.libravatar.org/avatar/2494072cb19027868a5111e94ad71986"
+ subject="openSUSE Leap 15.2"
+ date="2021-04-29T14:47:00Z"
+ content="""
+Confirm getting the following error on runnning zypper in git-annex:
+
+    Loading repository data...
+    Reading installed packages...
+    Package 'git-annex' not found.
+
+Looking at [software.opensuse](https://software.opensuse.org/package/git-annex) I found at least an experimental package, which seems to work for me:
+
+    zypper addrepo https://download.opensuse.org/repositories/devel:languages:haskell/openSUSE_Leap_15.2/devel:languages:haskell.repo
+    zypper refresh
+    zypper install git-annex
+
+"""]]
