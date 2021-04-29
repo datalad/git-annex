@@ -1,0 +1,1 @@
+For commands like [[`git-annex-whereis`|git-annex-whereis]] that take a `path` argument, it would help if this could be generalized to taking a [tree-ish](https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddeftree-ishatree-ishalsotreeish).  E.g. for `git-annex-whereis` this could be used to look up where previous file versions are stored.
