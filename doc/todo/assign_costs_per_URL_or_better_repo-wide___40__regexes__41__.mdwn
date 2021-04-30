@@ -1,0 +1,58 @@
+I could have bet all my savings (well, not that much anyways - kids keep eating) that there was a way to give different costs for different URLs.  I believe it was in the same spirit as `remote.<name>.annex-cost-command` - that there could be a command which then be used to prioritize one url over another.  But I fail to find any hint on it
+
+<details>
+<summary>e.g. nothing in `cost` related config vars</summary> 
+
+```shell
+$> grep '^\*.*cost' doc/git-annex.mdwn
+* `remote.<name>.annex-cost`
+* `remote.<name>.annex-cost-command`
+
+$> grep '^\*.*web' doc/git-annex.mdwn 
+* `webapp`
+* `remote.<name>.annex-webdav`
+* `annex.web-options`
+
+$> grep '^\*.*url' doc/git-annex.mdwn
+* `addurl [url ...]`
+* `rmurl file url`
+* `importfeed [url ...]`
+* `registerurl [key url]`
+* `unregisterurl [key url]`
+* `remote.<name>.annex-rsyncurl`
+* `annex.security.allowed-url-schemes`
+
+```
+</details>
+
+but even with such command it would have made it not really fit my need -- I would like to assign costs and propagate that information through the clones without requiring users to install additional commands or configure their clones.
+
+Use case: 
+
+For the same file we provide API end-point which redirects to a minted url (with content-disposition etc), and file could be accessed directly from that url.  E.g. both 
+https://api.dandiarchive.org/api/dandisets/000027/versions/draft/assets/ff453f4c-a435-4a5d-a48b-128abca5ec47/download/
+and
+https://dandiarchive.s3.amazonaws.com/blobs/2db/af0/2dbaf0fd-5003-4a0a-b4c0-bc8cdbdb3826
+point to the same (small) file.
+
+I would like git-annex to know both, since if we migrate backend storage, I would like users to still be able to access via api url.  But by default, while still works, I would like them to access via direct url to s3.
+
+ATM, regardless of the order in which I add those two urls to a file, git-annex seems (didn't look in the code etc) to use them in a "sorted" order, so it would go for the API one, thus causing unnecessary url minting etc.  I would like to make direct url having lower cost so it would be preferred over the api one.
+
+May be there is a way already?  
+
+If not, I think it could be flexibly achieved if in `git annex config` I could provide url regexes with costs.  Then I could encode that information while allowing users/clones to tune it if becomes desired.  If possible, smth like
+
+```
+# assuming default cost of web remote 100 if it is
+cost url-https?://api.dandiarchive.org/.* = 200
+```
+
+or alike in my case. May be it could even be like `[+-]COST` so it would then add or subtract from the cost of the remote, thus allowing to account for the remote cost if assigned/set and costs are considered across remotes and their URLs.
+
+Alternative could be - a cost per url (while registerurl or addurl) but IMHO that might be too much, and harder to tune per specific clone "globally".
+
+PS question -- how to see the costs?  `annex whereis --json FILE` seems to not provide them.
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
