@@ -3,3 +3,5 @@ I have a setup right now with a dev machine, a local NAS drive, and offsite clou
 Apparently I can't run assistant in a bare repository, which is what's on NAS. And, I'm not even sure assistant is the right thing, I think maybe it does more than just sync content.
 
 What's a good way to set this up so that when NAS receives `annex sync` content, it immediately does its own `annex sync` to cloud remote?
+
+One thing I can think of is set up a `update` / `post-receive` hook to touch a file on the NAS. Then have a cron job check for the file, and if it's there, start a cloud sync.
