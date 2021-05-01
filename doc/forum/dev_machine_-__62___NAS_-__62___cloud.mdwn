@@ -1,0 +1,5 @@
+I have a setup right now with a dev machine, a local NAS drive, and offsite cloud storage. I want annex content to flow that way: so I `git annex sync nas` from my dev box, then I SSH into the NAS and `git annex sync cloud`. It's this last part that I want to automate - I want to make sure that any content I sync to NAS, gets synced from NAS to cloud. I don't want my dev machine uploading directly to cloud unless I explicitly set that.
+
+Apparently I can't run assistant in a bare repository, which is what's on NAS. And, I'm not even sure assistant is the right thing, I think maybe it does more than just sync content.
+
+What's a good way to set this up so that when NAS receives `annex sync` content, it immediately does its own `annex sync` to cloud remote?
