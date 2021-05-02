@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="ijc@c69abafeb65fa2e784811fc549e9976a5cf4b903"
+ nickname="ijc"
+ avatar="http://cdn.libravatar.org/avatar/83432d9f01a0bedc575703583f7aa7c6"
+ subject="comment 2"
+ date="2021-05-02T17:54:56Z"
+ content="""
+I don't think git-annex is starting any retrieval process, I have to do it manually. I wasn't sure if it was supposed to (it doesn't seem to try) but maybe that's an aspect of this bug too.
+"""]]
