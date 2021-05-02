@@ -1,0 +1,15 @@
+I use a backup service which mirrors the contents of directories to The Cloud^(TM). One of the dirs I make it mirror is a directory special remote with encryption and chunking which I move data into.  
+Now I would like to make GA aware of the second copy that the mirroring service creates of that special remote.
+
+I use BTRFS as the underlying FS, so my idea is it to store the special remote inside a subvolume and then snapshot it before sending it off to mirror. (The same could probably be done with hardlinks as special remotes are read- and unlink-only.) This way I've got a local directory which represents the state of the remote mirror once the service's tool is done uploading it.
+
+My idea was to then let GA know about it in the form of a second directory special remote to give me the correct numcopies count.
+
+The problem I have run into here is that there does not seem to be a way to get GA to "import" pre-existing state of a directory special remote. I just can't get it to recognise the existance of the keys inside it.
+
+I could probably hack up an something that could query the mirrored keys directly and maybe make a special remote out of that but the same problem would apply here as it's still a special remote that changes outside of GA's control.
+
+Is there a way of doing what I want that I may have overlooked? Is there a better way of making GA aware of this external copy perhaps?
+
+Thanks,
+- Atemu
