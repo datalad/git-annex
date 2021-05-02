@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-05-02T18:36:56Z"
+ content="""
+Hi,
+I tested it with `encryption=shared` and it works, but not with chunking. When creating the 2nd remote, you have to look up the cipher of the first one with `git cat-file blob git-annex:remote.log` and pass it to initremote with `cipher=`. Finally, after externally copying everything from the 1st remote to the 2nd remote, you have to run `git annex fsck --fast --all --from=remote2` to make git-annex aware of the copies.
+"""]]
