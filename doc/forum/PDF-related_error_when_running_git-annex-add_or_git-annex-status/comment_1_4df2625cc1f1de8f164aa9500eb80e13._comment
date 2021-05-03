@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-05-03T12:33:32Z"
+ content="""
+Git on Windows configures a diff driver by default, which is probably throwing these errors (For whathever reason... sigh). It's the `diff.astextplain.textconv` setting that you have to unset. I.e. Launch Git Bash as Administrator and run `git config --unset --system diff.astextplain.textconv`.
+"""]]
