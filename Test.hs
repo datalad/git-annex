@@ -545,11 +545,10 @@ test_reinject = intmpclonerepo $ do
 	key <- Key.serializeKey <$> getKey backendSHA1 tmp
 	git_annex "reinject" [tmp, sha1annexedfile] "reinject"
 	annexed_present sha1annexedfile
-	-- fromkey can't be used on a crippled filesystem, since it makes a
-	-- symlink
-	unlessM (annexeval Config.crippledFileSystem) $ do
-		git_annex "fromkey" [key, sha1annexedfiledup] "fromkey for dup"
-		annexed_present_locked sha1annexedfiledup
+	git_annex "fromkey" [key, sha1annexedfiledup] "fromkey for dup"
+	whenM (unlockedFiles <$> getTestMode) $
+		git_annex "unlock" [sha1annexedfiledup] "unlock"
+	annexed_present sha1annexedfiledup
   where
 	tmp = "tmpfile"
 
