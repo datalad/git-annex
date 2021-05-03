@@ -25,3 +25,5 @@ Windows 10 Pro 1903 <br>
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes! git-annex is really great and there is nothing else like it. 
 
+> [[fixed|done]] by making it create an unlocked file when used on an
+> unlocked adjusted branch. --[[Joey]]

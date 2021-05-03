@@ -47,6 +47,16 @@ data ProvidedInfo = ProvidedInfo
 	, providedLinkType :: Maybe LinkType
 	}
 
+keyMatchInfoWithoutContent :: Key -> RawFilePath -> MatchInfo
+keyMatchInfoWithoutContent key file = MatchingInfo $ ProvidedInfo
+	{ providedFilePath = Just file
+	, providedKey = Just key
+	, providedFileSize = Nothing
+	, providedMimeType = Nothing
+	, providedMimeEncoding = Nothing
+	, providedLinkType = Nothing
+	}
+
 -- This is used when testing a matcher, with values to match against
 -- provided by the user.
 data UserProvidedInfo = UserProvidedInfo

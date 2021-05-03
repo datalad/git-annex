@@ -1,22 +1,23 @@
 {- git-annex command
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
-
 module Command.FromKey where
 
 import Command
-import qualified Annex.Queue
+import qualified Annex
+import qualified Database.Keys
+import qualified Backend.URL
 import Annex.Content
 import Annex.WorkTree
 import Annex.Perms
-import qualified Annex
-import qualified Backend.URL
-import qualified Utility.RawFilePath as R
+import Annex.Link
+import Annex.FileMatcher
+import Annex.Ingest
+import Git.FilePath
 
 import Network.URI
 
@@ -37,16 +38,18 @@ optParser desc = FromKeyOptions
 	<*> parseBatchOption
 
 seek :: FromKeyOptions -> CommandSeek
-seek o = case (batchOption o, keyFilePairs o) of
-	(Batch fmt, _) -> seekBatch fmt
-	-- older way of enabling batch input, does not support BatchNull
-	(NoBatch, []) -> seekBatch BatchLine
-	(NoBatch, ps) -> do
-		force <- Annex.getState Annex.force
-		withPairs (commandAction . start force) ps
+seek o = do
+	matcher <- addUnlockedMatcher
+	case (batchOption o, keyFilePairs o) of
+		(Batch fmt, _) -> seekBatch matcher fmt
+		-- older way of enabling batch input, does not support BatchNull
+		(NoBatch, []) -> seekBatch matcher BatchLine
+		(NoBatch, ps) -> do
+			force <- Annex.getState Annex.force
+			withPairs (commandAction . start matcher force) ps
 
-seekBatch :: BatchFormat -> CommandSeek
-seekBatch fmt = batchInput fmt parse (commandAction . go)
+seekBatch :: AddUnlockedMatcher -> BatchFormat -> CommandSeek
+seekBatch matcher fmt = batchInput fmt parse (commandAction . go)
   where
 	parse s = do
 		let (keyname, file) = separate (== ' ') s
@@ -59,10 +62,10 @@ seekBatch fmt = batchInput fmt parse (commandAction . go)
 	go (si, (file, key)) = 
 		let ai = mkActionItem (key, file)
 		in starting "fromkey" ai si $
-			perform key file
+			perform matcher key file
 
-start :: Bool -> (SeekInput, (String, FilePath)) -> CommandStart
-start force (si, (keyname, file)) = do
+start :: AddUnlockedMatcher -> Bool -> (SeekInput, (String, FilePath)) -> CommandStart
+start matcher force (si, (keyname, file)) = do
 	let key = keyOpt keyname
 	unless force $ do
 		inbackend <- inAnnex key
@@ -70,7 +73,7 @@ start force (si, (keyname, file)) = do
 			"key ("++ keyname ++") is not present in backend (use --force to override this sanity check)"
 	let ai = mkActionItem (key, file')
 	starting "fromkey" ai si $
-		perform key file'
+		perform matcher key file'
   where
 	file' = toRawFilePath file
 
@@ -89,16 +92,32 @@ keyOpt s = case parseURI s of
 		Just k -> k
 		Nothing -> giveup $ "bad key/url " ++ s
 
-perform :: Key -> RawFilePath -> CommandPerform
-perform key file = lookupKeyNotHidden file >>= \case
+perform :: AddUnlockedMatcher -> Key -> RawFilePath -> CommandPerform
+perform matcher key file = lookupKeyNotHidden file >>= \case
 	Nothing -> ifM (liftIO $ doesFileExist (fromRawFilePath file))
 		( hasothercontent
 		, do
-			link <- calcRepo $ gitAnnexLink file key
-			createWorkTreeDirectory (parentDir file)
-			liftIO $ R.createSymbolicLink link file
-			Annex.Queue.addCommand [] "add" [Param "--"]
-				[fromRawFilePath file]
+			contentpresent <- inAnnex key
+			objectloc <- calcRepo (gitAnnexLocation key)
+			let mi = if contentpresent
+				then MatchingFile $ FileInfo
+					{ contentFile = objectloc
+					, matchFile = file
+					, matchKey = Just key
+					}
+				else keyMatchInfoWithoutContent key file
+			ifM (addUnlocked matcher mi contentpresent)
+				( do
+					stagePointerFile file Nothing =<< hashPointerFile key
+					Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
+					if contentpresent
+						then linkunlocked
+						else writepointer
+				, do
+					link <- calcRepo $ gitAnnexLink file key
+					createWorkTreeDirectory (parentDir file)
+					addAnnexLink link file
+				)
 			next $ return True
 		)
 	Just k
@@ -108,3 +127,9 @@ perform key file = lookupKeyNotHidden file >>= \case
 	hasothercontent = do
 		warning $ fromRawFilePath file ++ " already exists with different content"
 		next $ return False
+	
+	linkunlocked = linkFromAnnex key file Nothing >>= \case
+		LinkAnnexFailed -> writepointer
+		_ -> return ()
+	
+	writepointer = liftIO $ writePointerFile file key Nothing

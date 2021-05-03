@@ -387,19 +387,10 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi (isJust mt
 			, matchFile = file
 			, matchKey = Just key
 			}
-		-- Provide as much info as we can without access to the
-		-- file's content.
-		Nothing -> MatchingInfo $ ProvidedInfo
-			{ providedFilePath = Just file
-			, providedKey = Just key
-			, providedFileSize = Nothing
-			, providedMimeType = Nothing
-			, providedMimeEncoding = Nothing
-			, providedLinkType = Nothing
-			}
+		Nothing -> keyMatchInfoWithoutContent key file
 	
 	linkunlocked mode = linkFromAnnex key file mode >>= \case
-		LinkAnnexFailed -> liftIO $ writepointer mode
+		LinkAnnexFailed -> writepointer mode
 		_ -> return ()
 	
 	writepointer mode = liftIO $ writePointerFile file key mode
