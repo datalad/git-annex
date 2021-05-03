@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="ijc@c69abafeb65fa2e784811fc549e9976a5cf4b903"
+ nickname="ijc"
+ avatar="http://cdn.libravatar.org/avatar/83432d9f01a0bedc575703583f7aa7c6"
+ subject="comment 4"
+ date="2021-05-03T15:45:14Z"
+ content="""
+Thanks Lukey. I'm not really sure how I missed (or how I found and then for some reason discounted) the glacier-cli backend but I think the fact I've started with s3 means I'm stuck with it unless I want to reupload a dozen TB of data and/or pay enormous retrieval/move fees (AIUI this is a property of the AWS end of things, not a git-annex issue, although s3 DEEP_ARCHIVE uses Glacier it's not the same objects/apis as going at glacier direct).
+
+FWIW the docs for storageclass at https://git-annex.branchable.com/special_remotes/S3/ refer one to s3cmd(1) for the list of valid values which includes DEEP_ARCHIVE, so that might be how I came to do things this way. Perhaps a pointer to glacier-cli at that point would be appropriate?
+
+I also just found https://git-annex.branchable.com/todo/wishlist__58___Restore_s3_files_moved_to_Glacier/ which is related to this but involves s3 lifecycles moving things between s3 and glacier on schedules etc which I think precludes glacier-cli. I've used that in other contexts (perhaps another reason I ended up following this path here too) but never with git-annex.
+"""]]
