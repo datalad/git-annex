@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-05-03T16:26:26Z"
+ content="""
+I think this is a bug.
+
+The smudge/clean filter already handles several similar cases so ought to
+also be able to handle this one.
+
+I've made a change that seems to work, and will *probably* not break other
+cases, although this is a complex and subtle area.
+"""]]
