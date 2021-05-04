@@ -1,0 +1,3 @@
+macOS has CoW copies too but they're only available via the `/bin/cp` binary as GNU coreutils doesn't support using macOS' calls for this unfortunately.
+
+One trouble here is that it doesn't automatically fall back to a non-reflink copy when a reflink copy is not possible, so that would have to be handled by us somehow.
