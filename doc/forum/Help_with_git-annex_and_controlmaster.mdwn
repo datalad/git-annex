@@ -1,0 +1,42 @@
+All,
+
+I am quite new to `git-annex` so it's possible/probable this is a FAQ, but my search-fu has failed me.
+
+Namely, I'm testing out `git-annex` and have a sample repo on a remote server, let's call it "foo". Now I have SSH Controlmaster setup because foo has both a password and PIN that need entered so I usually do a `screen` and run `ssh -MN foo` and detach so that I can do `ssh foo` and boom, on foo no problem. And I can do `scp foo:file .` and no need to enter in either.
+
+So then I tried following the walkthroughs here. First:
+
+```
+❯ git clone git+ssh://foo:/path/to/my/annex
+Cloning into 'annex'...
+remote: Enumerating objects: 28, done.
+remote: Counting objects: 100% (28/28), done.
+remote: Compressing objects: 100% (22/22), done.
+remote: Total 28 (delta 4), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (28/28), done.
+Resolving deltas: 100% (4/4), done.
+```
+
+Nice. Then I did:
+
+```
+❯ git annex init "my laptop"
+init my laptop (scanning for unlocked files...)
+Enter PIN:
+Password:
+ok
+(recording state in git...)
+```
+
+Worked, but had to enter PIN and password. And then I `get` and:
+
+```
+❯ git annex get file1.nc4
+get file1.nc4 (from origin...)
+Enter PIN:
+Password:
+ok
+(recording state in git...)
+```
+
+Same thing: worked, but had to do PIN/password. So, is there a way I can utilize an existing controlmaster "tunnel" and avoid the pin/password like I can with a simple `ssh foo`? 
