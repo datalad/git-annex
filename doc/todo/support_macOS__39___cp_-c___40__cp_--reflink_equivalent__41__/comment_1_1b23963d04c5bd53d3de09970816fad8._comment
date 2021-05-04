@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 1"
+ date="2021-05-04T12:46:59Z"
+ content="""
+I've got a fix done for this locally but it's unconditional for now. What's the best way of making this a configure flag or something similar so that users can disable it should they not want it? Not too familiar with Haskell standards on this sort of thing.
+"""]]
