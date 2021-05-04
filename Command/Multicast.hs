@@ -108,7 +108,7 @@ genAddress = starting "gen-address" (ActionItemOther Nothing) (SeekInput []) $ d
 	-- Except for on Windows XP, secp521r1 is supported on all
 	-- platforms by uftp. DJB thinks it's pretty good compared
 	-- with other NIST curves: "there's one standard NIST curve
-	-- using a nice prime, namely 2521−1  but the sheer size of this
+	-- using a nice prime, namely 2521-1  but the sheer size of this
 	-- prime makes it much slower than NIST P-256"
 	-- (http://blog.cr.yp.to/20140323-ecdsa.html)
 	-- Since this key is only used to set up the block encryption,
