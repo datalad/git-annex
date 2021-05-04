@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-05-04T14:58:17Z"
+ content="""
+If I understand correctly, this might be as straightforard as extracting
+the various per-key logs from the git-annex branch, and shoving them into a
+new git tree, which the user can then do whatever with. Something like:
+
+	git-annex copy-key path/
+	8e1c53342eb6461eedf13ee7d15038b400c70269
+
+The obvious thing for the user to do with such a tree would be 
+to git push it to the other repo with a name ending in /git-annex,
+which git-annex there will then auto-merge into that repo's git-annex
+branch.
+
+When you start talking about hidden repos though, things get more complex,
+because exporting key logs from a hidden repo would necessarily expose the
+uuid of that repo, and maybe other logged information that was only
+stored in the hidden repo as well. If it has to filter it to only the parts
+of logs that are used by non-hidden repos, that would be a lot more complex.
+
+It also seems to me that, if you're splitting a repo, you would also want
+to include things like trust.log and remote.log, or at least parts of them
+for some remotes?
+"""]]
