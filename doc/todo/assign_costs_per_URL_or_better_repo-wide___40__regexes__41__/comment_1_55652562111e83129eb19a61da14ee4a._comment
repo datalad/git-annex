@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-05-04T14:33:42Z"
+ content="""
+Costs are information about the connection from the local repository to a
+remote, which is why they are stored only locally in the git config -- I
+may have much different cost than you to access the same repository.
+
+When there are multiple urls all claimed by the web remote, that's a
+single remote, and the code that looks at costs decides which remote is
+lowest cost, and tries that one first. When it gets down to the web remote,
+it tries the urls in whatever order it happens to have them.
+
+So, the proposed way to assign costs to urls could only change the order
+that urls are presented to the web remote. It would not let git-annex
+try to get first from web (cheap url), followed by another repo, followed
+by web (expensive url).
+
+What you can do is have a special remote, that claims all the relevent
+urls and then does its own ordering of them. Or perhaps different
+special remotes that claim different sets of urls, and assign costs to
+those remotes. (Using --sameas so the several remotes do not
+count as more than 1 copy.)
+"""]]
