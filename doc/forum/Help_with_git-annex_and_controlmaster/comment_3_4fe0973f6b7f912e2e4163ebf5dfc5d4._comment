@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="fortran"
+ avatar="http://cdn.libravatar.org/avatar/ee27e12e945c0af698d58f0d8dde2457"
+ subject="comment 3"
+ date="2021-05-04T19:25:47Z"
+ content="""
+Essentially, we are hoping to deploy git-annex so the less messages from git-annex, the better for our end users. (Or, I guess, my *supporting* the end users :) )
+"""]]
