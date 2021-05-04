@@ -1,0 +1,9 @@
+It may be useful for a repository to count as more than 1 copy of a file.
+
+Examples could include: A repository on S3, when a bucket is configured to be
+sufficiently durable. A --sameas special remote that accesses data copied
+from the other remote to another storage media (eg by a backup process).
+A repository on a RAID array.
+
+If this were made configurable, it might also make sense to allow a
+repository to count as less than 1 copy, eg 0.5 copies.

@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-05-04T13:54:45Z"
+ content="""
+I think it should be possible to get this to work with chunking, if you
+have git-annex version 8.20201103 or newer, and if you configure the second
+special remote with the same chunk size.
+
+git-annex records state about a special remote's chunks, and that state is
+not available for the second special remote. Which used to prevent accessing
+chunks when the information is not available, but that version made it fall
+back to trying chunks of the configured chunk size.
+
+See the bug report that resulted in that change for details:
+[[bugs/fsck_--key_without___34__chunking__34___information_in_git-annex_does_not_try_chunks]]
+
+Oh also this only works with keys that have a recorded size. Which is most
+of them, but git-annex addurl --fast adds keys without a recorded size.
+
+---
+
+An alternative you might consider is to use the --sameas flag to initremote
+when setting up the second remote. Then git-annex would consider the two
+remotes as one repository, which means it only considers them to be one
+copy, but also it can retrieve content from either.
+
+If git-annex only had a way to treat a repository a more than 1 copy, that
+would do just what you want. I do think there might be the possibility to
+add such a feature, but it would need some thought.
+[[todo/repositories_that_count_as_more_than_one_copy]]
+"""]]
