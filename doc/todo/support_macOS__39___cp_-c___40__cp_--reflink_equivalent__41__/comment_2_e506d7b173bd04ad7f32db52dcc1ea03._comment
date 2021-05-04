@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-05-04T14:15:38Z"
+ content="""
+The cp command not falling back is ok, as long as it exits nonzero in a
+situation where it can't make a CoW copy and doesn't misbehave badly. In
+Annex/CopyFile.hs, tryCopyCoW probes to see if cp can make a CoW copy, and
+if not it falls back to copying itself, without cp.
+
+So what you can do is change copyCow in Utility/CopyFile.hs to support the
+OSX cp command and parameters (inside a `#ifdef darwin_HOST_OS`).
+
+Notice that the probe deals with discarding error messages from the
+command, also also deals with linux's cp failing after creating an empty
+file when it doesn't support CoW.
+
+That would leave copyFileExternal not using CoW; it could be made to probe
+too on OSX, but that's not really used in many places and it would probably
+make more sense to convert any of those places that matter to use
+Annex/CopyFile.hs's tryCopyCoW. This could be deferred until later.
+
+I don't think it needs to be a configure flag unless this feature is
+somehow flakey.
+"""]]
