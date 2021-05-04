@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 3"
+ date="2021-05-04T17:37:04Z"
+ content="""
+Oh, I've already got all of that implemented; it's just the flag for disabling that behaviour at build time that's missing.
+
+What I did is to conditionally set the executable to `/bin/cp` and the reflink param to `-c`.
+
+The problem with using it without a fallback is that when you use it on a FS that doesn't support CoW, `/bin/cp` will hard-fail and make unlocking impossible. GNU coreutils actually fall back automatically by themselves, GA couldn't handle reflink cp failing before AFAICT. I refactored the copy functions a bit to make it fall back properly.
+
+The reason I want it to be a configure flag is that some users might use GA exclusively on non-APFS FSs (trying to reflink copy here would be a waste of time) and some might prefer to use their $PATH's uutils-coreutils whose `cp` can handle `--reflink` just like the GNU ones.
+
+~~I originally wanted to add it as a cabal configure flag but apparently you can't reference those anywhere?~~ Found this: https://stackoverflow.com/questions/48157516/conditional-compilation-in-haskell-submodule, that's probably what I'll end up doing. Will default to true on macOS.
+"""]]
