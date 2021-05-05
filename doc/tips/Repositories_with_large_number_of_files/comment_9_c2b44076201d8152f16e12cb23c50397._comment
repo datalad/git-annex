@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 9"
+ date="2021-05-05T22:51:28Z"
+ content="""
+Separate branch is a no-go. `git annex info` takes 3 minutes 30 seconds to report 320k annex keys.
+
+So for my purposes I think I will keep one slow reference repo, and one fast working repo.
+"""]]
