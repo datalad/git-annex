@@ -1,0 +1,62 @@
+### Please describe the problem.
+
+When adding 400k files to a new annex, I get an error "rename: permission denied". It doesn't seem to be about file permissions (I have `chown`ed them), and it's inconsistent from run to run. So each time I try the import, different files may show the permission denied error.
+
+One thing I'm concerned about is how to confirm whether these files have made it into annex, or if I now have a corrupted folder structure.
+
+I do intend to do smaller imports, or try using `-J1`.
+
+
+### What steps will reproduce the problem?
+
+1. `git config annex.jobs cpus`
+2. `git annex add .`
+
+
+### What version of git-annex are you using? On what operating system?
+
+macOS 10.15.7
+
+```
+git-annex version: 8.20210310
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.28 DAV-1.3.4 feed-1.3.0.1 ghc-8.10.4 http-client-0.7.6 persistent-sqlite-2.11.1.0 torrent-10000.1.1 uuid-1.3.14 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: darwin x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+```
+
+
+### Please provide any additional information below.
+
+iMac 10-core i9 (maybe 20 threads?)
+
+```
+git-annex: .git/annex/othertmp/ingest-A23998-2216: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-Ad23998-21291: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-P23998-30359: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-Audio23998-182890: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-wasd_clap_sys100_cra23998-206554: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-wasd_clap_sys100_f23998-206560: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-wasd_clap_sys100_f23998-206561: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-Fairligh23998-248968: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-ly23998-268165: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-123998-269213: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-46223998-278087.wav: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ing23998-290478: rename: permission denied (Permission denied)
+git-annex: .git/annex/othertmp/ingest-H23998-292758: rename: permission denied (Permission denied)
+```
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Absolutely! :)
