@@ -1,3 +1,10 @@
+## I'm considering this a "false alarm", but leaving it around for others who may run into it
+
+It took a long time to add the files (50 minutes). When I did, and did a `git status`, the ones that failed due to "permission denied" just appeared as having not been added. I added them, and it worked fine. I have no reason to believe that my folder has gotten corrupted.
+
+So I don't personally think this needs fixing. But if anyone else out there runs into this issue, at least this page is here.
+
+
 ### Please describe the problem.
 
 When adding 400k files to a new annex, I get an error "rename: permission denied". It doesn't seem to be about file permissions (I have `chown`ed them), and it's inconsistent from run to run. So each time I try the import, different files may show the permission denied error.
