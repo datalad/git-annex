@@ -1,0 +1,13 @@
+Currently, SHA256E creates duplicate files for different extensions, i.e.:
+
+```
+$ l * && l -Li * && sha256sum *
+lrwxrwxrwx 1 atemu users 198 2021-05-04 03:47 random.1 -> .git/annex/objects/F9/Kk/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.1/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.1
+lrwxrwxrwx 1 atemu users 198 2021-05-05 10:01 random.2 -> .git/annex/objects/Pm/J1/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.2/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.2
+ 3720 -r--r--r-- 1 atemu users 100M 2021-05-04 03:47 random.1
+49696 -r--r--r-- 1 atemu users 100M 2021-05-05 10:01 random.2
+2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a  random.1
+2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a  random.2
+```
+
+These have the exact same content though, they could be hardlinks of one another instead and nothing would change.
