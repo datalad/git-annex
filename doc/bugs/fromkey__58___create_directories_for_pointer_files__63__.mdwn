@@ -1,0 +1,93 @@
+Thanks for extending `fromkey` to support for unlocked files.  When
+updating some DataLad code to make use of this, a test flagged a
+difference between how links and pointer files are handled: the
+necessary leading directories will be created for links but not
+pointer files.
+
+[[!format sh """
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/ga-XXXXXXX)" || exit 1
+
+git version
+git annex version | head -1
+
+git init -q
+git annex init
+
+set -x
+
+git annex fromkey --force \
+    SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c \
+    foo/a
+git cat-file -p :foo/a
+
+git config annex.addunlocked true
+git annex fromkey --force \
+    SHA256E-s4--7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730 \
+    bar/a
+"""]]
+
+```
+git version 2.31.1.705.g1ce651569c
+git-annex version: 8.20210429-gdab203070
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
++ git annex fromkey --force SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c foo/a
+fromkey foo/a ok
+(recording state in git...)
++ git cat-file -p :foo/a
+../.git/annex/objects/91/9x/SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c/SHA256E-s4--b5bb9d8014a0f9b1d61e21e796d78dccdf1352f23cd32812f4850b878ae4944c+ git config annex.addunlocked true
++ git annex fromkey --force SHA256E-s4--7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730 bar/a
+fromkey bar/a
+git-annex: bar/a: openBinaryFile: does not exist (No such file or directory)
+failed
+(recording state in git...)
+git-annex: fromkey: 1 failed
+```
+
+The caller can of course make sure that leading directories exist, but
+I think it makes sense for the locked and unlocked variants to behave
+the same here.  What do you think about the patch below?
+
+[[!format patch """
+From f6c97b8d01c7e9b8069638e9827062aa2462d429 Mon Sep 17 00:00:00 2001
+From: Kyle Meyer <kyle@kyleam.com>
+Date: Thu, 6 May 2021 11:11:14 -0400
+Subject: [PATCH] fromkey: create directory for pointer files too
+
+fromkey creates leading directories for symbolic links.  Do the same
+for pointer files.
+---
+ Command/FromKey.hs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Command/FromKey.hs b/Command/FromKey.hs
+index eadb89fd1..16ff1693f 100644
+--- a/Command/FromKey.hs
++++ b/Command/FromKey.hs
+@@ -106,6 +106,7 @@ perform matcher key file = lookupKeyNotHidden file >>= \case
+ 					, matchKey = Just key
+ 					}
+ 				else keyMatchInfoWithoutContent key file
++			createWorkTreeDirectory (parentDir file)
+ 			ifM (addUnlocked matcher mi contentpresent)
+ 				( do
+ 					stagePointerFile file Nothing =<< hashPointerFile key
+@@ -115,7 +116,6 @@ perform matcher key file = lookupKeyNotHidden file >>= \case
+ 						else writepointer
+ 				, do
+ 					link <- calcRepo $ gitAnnexLink file key
+-					createWorkTreeDirectory (parentDir file)
+ 					addAnnexLink link file
+ 				)
+ 			next $ return True
+
+base-commit: dab2030702200bc9abea4bff9ce83ba63aeca41c
+-- 
+2.31.1.705.g1ce651569c
+
+"""]]
+
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
