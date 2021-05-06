@@ -106,6 +106,7 @@ perform matcher key file = lookupKeyNotHidden file >>= \case
 					, matchKey = Just key
 					}
 				else keyMatchInfoWithoutContent key file
+			createWorkTreeDirectory (parentDir file)
 			ifM (addUnlocked matcher mi contentpresent)
 				( do
 					stagePointerFile file Nothing =<< hashPointerFile key
@@ -115,7 +116,6 @@ perform matcher key file = lookupKeyNotHidden file >>= \case
 						else writepointer
 				, do
 					link <- calcRepo $ gitAnnexLink file key
-					createWorkTreeDirectory (parentDir file)
 					addAnnexLink link file
 				)
 			next $ return True
