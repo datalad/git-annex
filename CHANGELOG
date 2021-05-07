@@ -8,6 +8,8 @@ git-annex (8.20210429) UNRELEASED; urgency=medium
   * Fix behavior of several commands, including reinject, addurl, and rmurl
     when given an absolute path to an unlocked file, or a relative path
     that leaves and re-enters the repository.
+  * reinject: Error out when run on a file that is not annexed, rather
+    than silently skipping it.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 May 2021 10:33:10 -0400
 

@@ -39,3 +39,5 @@ configuration in the script above) or a relative path is used
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

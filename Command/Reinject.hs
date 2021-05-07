@@ -44,7 +44,9 @@ startSrcDest :: [FilePath] -> CommandStart
 startSrcDest ps@(src:dest:[])
 	| src == dest = stop
 	| otherwise = notAnnexed src' $
-		ifAnnexed (toRawFilePath dest) go stop
+		ifAnnexed (toRawFilePath dest) 
+			go
+			(giveup $ src ++ " is not an annexed file")
   where
 	src' = toRawFilePath src
 	go key = starting "reinject" ai si $
