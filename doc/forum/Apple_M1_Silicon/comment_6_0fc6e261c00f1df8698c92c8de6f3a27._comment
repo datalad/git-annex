@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="strmd"
+ avatar="http://cdn.libravatar.org/avatar/035707b9756129bbdea6b36a7f7b38d3"
+ subject="comment 6"
+ date="2021-05-07T20:00:07Z"
+ content="""
+Seeing some strange things lately, I believe it started after updating to macOS 11.3. Some git annex commands work fine (like `git annex àdd` or copying to a remote), others (like `git annex sync`, the webapp) throw errors like this:
+
+    git-annex(55965,0x2046f9e00) malloc: can't allocate region
+    :*** mach_vm_map(size=1048576, flags: 100) failed (error code=268435465)
+    git-annex(55965,0x2046f9e00) malloc: *** set a breakpoint in malloc_error_break to debug
+    git-annex: git: createProcess: runInteractiveProcess: exec: resource exhausted (Cannot allocate memory)
+
+I'm using `8.20210331-g1fb59a63a` from the .dmg provided here. I realize it's a bit of a hack setup so I haven't really investigated much yet, just wondering if someone knows what may be going on.
+"""]]
