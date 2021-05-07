@@ -91,3 +91,6 @@ base-commit: dab2030702200bc9abea4bff9ce83ba63aeca41c
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> Thanks for the patch, applied
+> [[done]] --[[Joey]]
