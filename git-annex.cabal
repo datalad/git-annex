@@ -394,6 +394,8 @@ Executable git-annex
       GHC-Options: -O2 -optlo-O2
     else
       GHC-Options: -O2
+  else
+    GHC-Options: -O0
 
   -- Avoid linking with unused dynamic libaries.
   -- (Only tested on Linux).
