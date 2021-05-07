@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="fortran"
+ avatar="http://cdn.libravatar.org/avatar/ee27e12e945c0af698d58f0d8dde2457"
+ subject="comment 2"
+ date="2021-05-04T19:10:35Z"
+ content="""
+Oh. Wow. That's a big man page...
+
+Okay. So if I run `git config annex.sshcaching false`, then things are happier. Well:
+
+```
+❯ git annex get file1.nc4
+get file1.nc4 (from origin...)
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+ok
+(recording state in git...)
+```
+
+Now, reading the man pages, I see that the default concurrency is 1, so I think I'm safe?  Or is there perhaps something I should use to tell it \"nope\" for that?
+"""]]

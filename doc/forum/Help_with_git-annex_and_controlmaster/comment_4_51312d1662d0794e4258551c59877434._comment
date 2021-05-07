@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 4"
+ date="2021-05-04T20:31:45Z"
+ content="""
+Even with concurrency enabled, this should not be a problem in your case, as you're manually doing the controlmaster setup.
+
+@joey I guess there needs to be a way to hide such messages, like git with the `advice.*` configuration options.
+"""]]

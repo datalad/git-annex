@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 3"
+ date="2021-05-04T17:19:57Z"
+ content="""
+I used the exact same settings for the second special remote as the first one: `type=directory chunk=50MiB encryption=hybrid mac=HMACSHA256`.
+
+GA was 8.20200810 though because my server machine is built from the stable Nixpkgs channel; I will test that again with the most recent version tomorrow.
+
+`--sameas` won't help here; the special remotes are accessible via the same FS (the second is just a btrfs snapshot of the first) and they'd still only count as one copy. That's the same situation I have right now.
+
+Counting it as two copies would work but there is a large delay between having moved the files to the special remote and them actually being mirrored (residential internet upload) which means the numcopies of somewhat newly added files wouldn't be correct. It'd be a step up though.
+"""]]

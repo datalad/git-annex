@@ -1,0 +1,13 @@
+I first mentioned this issue in a thread about 4 years ago (https://git-annex.branchable.com/forum/git-annex_across_two_filesystems/), and at time was encouraged to instead open a new thread.   Priorities changed, and I'm only now returning to the issue.
+
+The situation we have is as follows:    We have a large collection of boundary condition data used in our weather/climate model.    Individual "experiments" are run against specific versions of this data and we would like to minimize the total storage footprint as well as time spent copying data at the beginning of an experiment.      The clones for the experiments would always be used in a read-only manner.  New files would never be added through these repos.
+
+At first glance,   using git-annex with `git clone --shared` would seem to be a good solution.     Unfortunately these experiments span a large number (~10) of separate cross-mounted filesystems and would result ~90% of the experiments still duplicating data rather than sharing across a hardlink.
+
+A couple of partial solutions suggest themselves.   (1)  Put all of the clones on the same filesystem as the primary repo, and then create a symlink within each experiment back to the corresponding clone.   (2) Maintain a secondary (fully populated) clone on each filesystem and ensure that the experiment setup script clones from the proper secondary.
+
+Option (1) is viable, but would require some negotiations with the computing center to ensure that there is a single filesystem that gives appropriate privileges to all of our users.   Tedious, but probably not a showstopper.
+
+Option (2) sounds like an improvement over having 90% of the experiments duplicating data locally, except ... because the secondary clones would need to support any recent model configuration, the 10x duplication of "all" data could be much larger than the hundreds of copies of the smaller subsets needed by individual experiments.
+
+Perhaps the ideal solution would be some sort of special "clone" that uses symlinks back to the primary repository.    These special clones would be read only, and could even disable "dangerous" git actions that would allow adding/modifying files.   `git-new-workdir` hints that something like this might be possible, but it does not appear to play nicely with git-annex in any event.

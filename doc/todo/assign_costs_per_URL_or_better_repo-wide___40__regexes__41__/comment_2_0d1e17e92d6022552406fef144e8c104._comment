@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2021-05-04T16:53:18Z"
+ content="""
+FWIW, verified that `git annex --debug initremote --sameas web datalad externaltype=datalad type=external encryption=none autoenable=true` makes `git-annex` to make `datalad` special remote to handle those urls.  And since we do not have any prioritization handling in datalad we also grab the first one (the api. one) returned by git-annex and proceed with it.
+
+So, indeed, if you do not like (or even just feel lukewarm) about an idea of adding costs within built-in `web` remote, feel welcome to close, and we will still have a way forward by providing such handling within datalad external special remote. It would be a bit sub-optimal since would require people to install datalad, but at least it would enable desired prioritization in some use cases (e.g. for QA `annex fsck --fast` run).
+
+And indeed with the singular cost (not even a range of costs) assigned/returned by a remote and no e.g. cost provisioned to be returned by CLAIMURL, I guess there is no (easy) way to mix-in the URL based costs into overall decision making to order the remotes.
+
+NB with `--sameas` trick above, `git-annex` doesn't even ask `datalad` with CLAIMURL and immediately passes `TRANSFER` of the key to `datalad` external remote.  Without `--sameas` - `git-annex` (8.20210330-g0b03b3d) doesn't even bother asking datalad (within `whereis` at least) on either it could CLAIMURL those... even if I assign `annex-cost = 1.0` for datalad remote.  Not sure yet if that is \"by design\".
+
+> When it gets down to the web remote, it tries the urls in whatever order it happens to have them.
+
+FWIW - I think I have tried to add them in different orders but it always went for the `api` one so I concluded that the order it has them is sorted and there is no way to \"tune it up\".
+
+P.S. I still wonder why I have some memory of git-annex supporting some (external) way to prioritize URLs... may be it was indeed \"craft a special remote to do that\"...
+"""]]

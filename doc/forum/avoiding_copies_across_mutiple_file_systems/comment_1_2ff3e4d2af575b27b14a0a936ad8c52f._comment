@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-05-05T18:08:49Z"
+ content="""
+Have I understood you correctly, you have a \"primary\" repository (with all data/keys present), accessible by the clients via NFS/cifs/whatever? And the clients(/\"experiments\") want to check out a specific version/branch from that repo?
+
+I think you have two alternatives to cloning it everywhere including all keys:
+
+a) Every client clones the git repo (and remove the \"origin\" remote to ensure that nothing flows back), creates a symlink from `.git/annex/objects` to `/path/to/primary/.git/annex/objects` and checks out whatever version/branch it wants. Easy.
+
+b) Every client uses the primary repo, but via its own worktree (See `git-worktree`). git-annex supports external worktrees, but I'm not sure what problems could arise in this particular setup. 
+"""]]

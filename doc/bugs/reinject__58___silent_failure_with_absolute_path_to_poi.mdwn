@@ -1,0 +1,41 @@
+When using `reinject <src> <dest>` and `dest` is an absolute path to a
+pointer file, the operation silently fails to reinject the content.
+
+[[!format sh """
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/ga-XXXXXXX)" || exit 1
+
+git version
+git annex version | head -1
+
+git init -q
+git annex init
+git config annex.addunlocked true
+
+git annex fromkey --force \
+    SHA256E-s3--2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae \
+    foo
+
+printf foo >.git/tmp-to-copy
+git annex reinject .git/tmp-to-copy "$PWD"/foo
+echo $?
+cat foo
+"""]]
+
+```
+git version 2.31.1.705.g1ce651569c
+git-annex version: 8.20210429-g06e996efa
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+fromkey foo ok
+(recording state in git...)
+0
+/annex/objects/SHA256E-s3--2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae
+```
+
+If a link destination is used (i.e. drop the `addunlocked`
+configuration in the script above) or a relative path is used
+(i.e. drop the `"$PWD"/`), the content is injected.
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 8"
+ date="2021-05-05T19:39:11Z"
+ content="""
+Do you have any information on actual times for working with big repos?
+
+As an example, I created one with 400k files. After following the steps here, `git status` takes 8 seconds to complete. I have plenty of resources. So, it's just slow. I am curious what sort of times you're getting with your big repos.
+
+I will have to see if submodules help with this at all. This material is all reference information, and isn't going to be changed very much. So it's possible I'd be better off with an \"active\" repo, and a \"reference\" repo (maybe connected by submodule, maybe not).
+
+Joey did make the suggestion of storing those sorts of files in a separate branch. I just did a test, and it appears that the limiting factor is in fact the number of files in the working tree. Deleting a lot of the files brought git back up to speed. So from a simplicity standpoint, I may want to have a `reference` branch with those files in it. And perhaps have two local clones of the repo - one `main` and one `reference` so I can explore and copy files from `reference` to `main` as needed.
+"""]]

@@ -1,0 +1,3 @@
+https://editorconfig.org/ is a cross-editor standard for setting formatting rules like indent etc.
+
+A blurb of elisp probably isn't too useful to vim users and I had some really strange memory leak with it in my Emacs.

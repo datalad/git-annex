@@ -1,0 +1,117 @@
+424bef6b6 (smudge: check for known annexed inodes before checking
+annex.largefiles, 2021-05-03) fixed a case where an unlocked annexed
+file that annex.largefiles does not match could get its unchanged
+content checked into git.  This was in response to
+<https://git-annex.branchable.com/forum/one-off_unlocked_annex_files_that_go_against_large/>.
+
+In a comment there, Joey said:
+
+> I've made a change that seems to work, and will probably not break
+> other cases, although this is a complex and subtle area.
+
+I'm following up with a change in behavior flagged by a DataLad test.
+As with most things in this area, I have a hard time reasoning about
+what the expected behavior should be and whether it should be
+considered a bug.  Here's the reproducer:
+
+[[!format sh """
+set -eu
+
+cd "$(mktemp -d "${TMPDIR:-/tmp}"/ga-XXXXXXX)"
+
+git version
+git annex version | head -1
+
+git init -q
+git annex init
+
+echo a >foo
+git annex add foo
+git commit --quiet -m 'add foo'
+
+git annex unlock foo
+printf '* annex.largefiles=nothing\n' >.gitattributes
+
+sleep 1
+
+git annex add foo
+git commit -q -m 'commit unlocked' -- foo
+
+set -x
+export PS4='> '
+git diff HEAD^- -- foo
+git diff --cached
+"""]]
+
+Here's the output with 8.20210428:
+
+```
+git version 2.31.1.659.g12c5fe8677
+git-annex version: 8.20210428
+[...]
+> git diff HEAD^- -- foo
+diff --git a/foo b/foo
+deleted file mode 120000
+index 8a2a0c9..0000000
+--- a/foo
++++ /dev/null
+@@ -1 +0,0 @@
+-.git/annex/objects/3z/F8/SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7/SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7
+\ No newline at end of file
+diff --git a/foo b/foo
+new file mode 100644
+index 0000000..7898192
+--- /dev/null
++++ b/foo
+@@ -0,0 +1 @@
++a
+> git diff --cached
+```
+
+And here's the output with a recent commit on master following
+424bef6b6:
+
+```
+git version 2.31.1.659.g12c5fe8677
+git-annex version: 8.20210429-ge811a50e2
+[...]
+> git diff HEAD^- -- foo
+diff --git a/foo b/foo
+deleted file mode 120000
+index 8a2a0c9..0000000
+--- a/foo
++++ /dev/null
+@@ -1 +0,0 @@
+-.git/annex/objects/3z/F8/SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7/SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7
+\ No newline at end of file
+diff --git a/foo b/foo
+new file mode 100644
+index 0000000..3de500c
+--- /dev/null
++++ b/foo
+@@ -0,0 +1 @@
++/annex/objects/SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7
+> git diff --cached
+diff --git a/foo b/foo
+index 3de500c..7898192 100644
+--- a/foo
++++ b/foo
+@@ -1 +1 @@
+-/annex/objects/SHA256E-s2--87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7
++a
+```
+
+Before 424bef6b6, `git annex add foo + git commit ... foo` results in
+a commit that has foo's content tracked in git.  After 424bef6b6, the
+unlocked file is still recorded, and the switch to being tracked by
+git ends up staged in the index.
+
+The new behavior isn't seen if the pathspec is dropped from `git
+commit`.  Also, without the sleep, it isn't triggered reliably
+(presumably because the index and foo have the same mtime, bypassing
+the clean filter).
+
+Thanks for taking a look.
+
+[[!meta author=kyle]]
+[[!tag projects/datalad]]
