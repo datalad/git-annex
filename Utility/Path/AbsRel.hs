@@ -1,6 +1,6 @@
 {- absolute and relative path manipulation
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -19,6 +19,7 @@ module Utility.Path.AbsRel (
 ) where
 
 import System.FilePath.ByteString
+import qualified Data.ByteString as B
 #ifdef mingw32_HOST_OS
 import System.Directory (getCurrentDirectory)
 #else
@@ -72,13 +73,17 @@ absPath file
  -    relPathCwdToFile "../bar/baz" == "baz"
  -}
 relPathCwdToFile :: RawFilePath -> IO RawFilePath
-relPathCwdToFile f = do
+relPathCwdToFile f
+	-- Optimisation: Avoid doing any IO when the path is relative
+	-- and does not contain any ".." component.
+	| isRelative f && not (".." `B.isInfixOf` f) = return f
+	| otherwise = do
 #ifdef mingw32_HOST_OS
-	c <- toRawFilePath <$> getCurrentDirectory
+		c <- toRawFilePath <$> getCurrentDirectory
 #else
-	c <- getWorkingDirectory
+		c <- getWorkingDirectory
 #endif
-	relPathDirToFile c f
+		relPathDirToFile c f
 
 {- Constructs a minimal relative path from a directory to a file. -}
 relPathDirToFile :: RawFilePath -> RawFilePath -> IO RawFilePath

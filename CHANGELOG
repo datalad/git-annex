@@ -5,6 +5,9 @@ git-annex (8.20210429) UNRELEASED; urgency=medium
   * smudge: Fix a case where an unlocked annexed file that annex.largefiles
     does not match could get its unchanged content checked into git,
     due to git running the smudge filter unecessarily.
+  * Fix behavior of several commands, including reinject, addurl, and rmurl
+    when given an absolute path to an unlocked file, or a relative path
+    that leaves and re-enters the repository.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 May 2021 10:33:10 -0400
 

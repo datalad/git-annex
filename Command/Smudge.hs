@@ -103,7 +103,7 @@ clean file = do
 				getMoveRaceRecovery k file
 				liftIO $ L.hPut stdout b
 		Nothing -> do
-			let fileref = Git.Ref.fileRef file
+			fileref <- liftIO $ Git.Ref.fileRef file
 			indexmeta <- catObjectMetaData fileref
 			oldkey <- case indexmeta of
 				Just (_, sz, _) -> catKey' fileref sz
