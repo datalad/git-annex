@@ -64,11 +64,12 @@ absPath file
 #endif
 		return $ absPathFrom cwd file
 
-{- Constructs a relative path from the CWD to a file.
+{- Constructs the minimal relative path from the CWD to a file.
  -
  - For example, assuming CWD is /tmp/foo/bar:
  -    relPathCwdToFile "/tmp/foo" == ".."
  -    relPathCwdToFile "/tmp/foo/bar" == "" 
+ -    relPathCwdToFile "../bar/baz" == "baz"
  -}
 relPathCwdToFile :: RawFilePath -> IO RawFilePath
 relPathCwdToFile f = do
@@ -79,7 +80,7 @@ relPathCwdToFile f = do
 #endif
 	relPathDirToFile c f
 
-{- Constructs a relative path from a directory to a file. -}
+{- Constructs a minimal relative path from a directory to a file. -}
 relPathDirToFile :: RawFilePath -> RawFilePath -> IO RawFilePath
 relPathDirToFile from to = relPathDirToFileAbs <$> absPath from <*> absPath to
 
