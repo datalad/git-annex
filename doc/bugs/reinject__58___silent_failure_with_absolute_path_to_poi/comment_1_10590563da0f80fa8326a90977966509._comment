@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-05-07T15:57:03Z"
+ content="""
+It thinks the file is not annexed, due to asking git cat-file about it, and
+git cat-file not supporting paths that extend outside the repo.
+
+Most commands pass through ls-files which makes absolute relative.
+A similar bug has been fixed earlier for --batch with absolute
+filenames, [[!commit 957a87b437d6f056aa159e484a5f0a5af54e45db]].
+
+Also, `git-annex reinject /path/to/foo bar` fails to notice when the first
+parameter is an annexed file, for the same reason.
+
+And, grepping for ifAnnexed, whenAnnexed, and lookupKey, I found some
+other commands that also have the same problem, including rekey
+(also silently skips it), addurl --file (refuses to overwrite file, rather
+than adding url to key), rmurl (silently skips). Seems likely there are
+other commands with the bug too, that call those functions indirectly.
+
+Also, `git annex reinject content ../thisrepo/foo` fails in a really ugly
+way with a lot of "is outside repository" from git (despite it being
+inside the repository).
+
+So I think that it probably makes sense for catKeyFile to fix up the path
+to avoid these problems. There could be other problems caused by absolute
+paths, but at least that would eliminate this particular set of bugs.
+
+---
+
+This also raises the question of why reinject silently ignores non-annexed
+files. I don't think there's really a good reason, other than git-annex
+generally ignoring non-annexed files. But in this case, the user is
+explicitly providing the content of the file, so has a high
+expectation it's annexed.
+"""]]
