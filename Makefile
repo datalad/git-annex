@@ -48,8 +48,8 @@ tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 # This leaves cabal.project.local configured for a dev build,
 # so just running make will continue to do dev builds.
 dev:
-	$(BUILDER) configure -f"-Production" -O0 \
-			--enable-executable-dynamic --enable-profiling
+	$(BUILDER) configure -f"-Production" \
+		--enable-executable-dynamic --enable-profiling
 	mkdir -p tmp
 	touch tmp/configure-stamp
 	$(MAKE) git-annex
