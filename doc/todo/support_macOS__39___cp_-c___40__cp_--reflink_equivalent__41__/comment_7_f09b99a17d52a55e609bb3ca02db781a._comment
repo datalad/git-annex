@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-05-07T15:28:46Z"
+ content="""
+The patch makes copyFileExternal slower on linux when CoW is not supported,
+as it will try cp --reflink=always every time, and then when it fails, 
+run cp a second time. This is why I discussed in my comment above that
+it would make sense to switch code using copyFileExternal to instead use
+tryCopyCoW.
+
+> GA couldn't handle reflink cp failing before AFAICT 
+
+Yes, it could, this is done in tryCopyCoW.
+
+> The reason I want it to be a configure flag is that some users might use
+> GA exclusively on non-APFS FSs (trying to reflink copy here would be a
+> waste of time)
+
+Current places that use tryCopyCoW maintain state, so it only
+pays the overhead of running cp one extra time to probe if reflinks work.
+That should also be possible on OSX. 
+
+I do not see a need for a build flag, also I doubt that many users in such
+a situation would rebuild with that flag.
+
+> some might prefer to use their $PATH's uutils-coreutils whose cp can
+> handle --reflink just like the GNU ones
+
+The system /bin/cp will always be there, right? So I don't see a need to
+bother about other cp implementations.
+"""]]
