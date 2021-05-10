@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-05-10T14:41:53Z"
+ content="""
+I guess you're talking about the elisp in [[coding_style]].
+
+editorconfig looks reasonable though pretty limited in what it can do. 
+I like that plugins are included in Debian. If you want to develop
+an editorconfig file we can add it to git-annex.
+"""]]
