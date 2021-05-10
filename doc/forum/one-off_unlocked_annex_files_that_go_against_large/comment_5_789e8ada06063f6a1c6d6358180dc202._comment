@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-05-10T17:21:14Z"
+ content="""
+Yes, I seem to have been able to fix it like that. Also added a test case
+to make sure the largefiles conversion recipes keep working.
+
+Of course it's always possible there are other cases I've not thought of..
+"""]]
