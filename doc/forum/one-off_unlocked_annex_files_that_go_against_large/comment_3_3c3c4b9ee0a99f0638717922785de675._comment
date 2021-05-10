@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-05-10T16:20:37Z"
+ content="""
+Well Lukey was right, fixing this causes other breakage. Here's
+the bug report about what my change broke:
+[[bugs/case_where_using_pathspec_with_git-commit_leaves_s]]
+
+As well as the case in that bug, [[tips/largefiles]] has a recipe to convert
+an annexed file to be stored in git, which the change broke. 
+The recipe has `git annex add --force-small` be run on a file, which in turn
+runs `git add` on the file, which runs the smudge filter. So if the smudge
+filter then sees an annexed inode and keeps it annexed, it is going against
+what the user is trying to do there.
+
+So the change has been reverted.
+
+I guess that both problems could be avoided by having git-annex add not run
+git add, but stage the file in the index itself. (IIRC there were some
+reasons to use git add there, to do with .gitignore.)
+
+But I'm doubtful now that all problems could be avoided. For one,
+consider what happens when the user follows the recipe to convert an
+annexed file to be stored in git, running `git annex add --force-small
+file`, which does store it in git. But then, if the smudge clean filter runs
+on the file later for any reason, it would still see a known annexed inode,
+and convert it back to being stored in the annex.
+"""]]
