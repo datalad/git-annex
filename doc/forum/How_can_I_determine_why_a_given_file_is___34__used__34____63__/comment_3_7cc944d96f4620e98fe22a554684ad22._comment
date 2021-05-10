@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="erics"
+ avatar="http://cdn.libravatar.org/avatar/6e5f74c742128e5d98fd672ed6ea4865"
+ subject="D'oh!"
+ date="2021-05-10T21:26:25Z"
+ content="""
+\"Is it in use in git's index?\"
+
+That was it; after *git reset*, the file is now again reported as unused.
+
+Thanks, and sorry for the noise.
+"""]]
