@@ -1,0 +1,21 @@
+`git annex whereused` would report where in the git repository a
+key is used, as a complement to `git-annex unused`.
+
+Use cases include users not getting confused about why git-annex unused
+says a key is used.
+
+Also, it could scan through history to find where a key *was* used.
+git-annex unused outputs a suggestion to use a rather hairy `git log -S`
+command to do that currently.
+
+If it does both these things, it could explain why git-annex unused
+considers a key used despite a previous git rev referring to it. Eg:
+
+	# git annex whereused SHA1--foo
+	checking index... unused
+	checking branches... unused
+	checking tags... unused
+	checking history... last used in master^40:somefile
+	checking reflog... last used in HEAD@{30}:somefile
+
+--[[Joey]]
