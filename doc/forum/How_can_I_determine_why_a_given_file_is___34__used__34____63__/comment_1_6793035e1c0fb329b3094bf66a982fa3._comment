@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="kyle"
+ avatar="http://cdn.libravatar.org/avatar/7d6e85cde1422ad60607c87fa87c63f3"
+ subject="comment 1"
+ date="2021-05-10T19:05:57Z"
+ content="""
+> I rm'ed the symlink, expecting git annex unused to again report K as
+> unused.  But it doesn't; it still reports no unused files.
+
+That's odd.  Did you also remove it from the index (`git rm`)?
+
+> git log --stat --no-textconv -S'K'
+
+Perhaps try with `--all` to do a wider search, though given what you
+said above (that is was reported as unused before using `addunused`) my
+bet would be on the index.
+
+"""]]
