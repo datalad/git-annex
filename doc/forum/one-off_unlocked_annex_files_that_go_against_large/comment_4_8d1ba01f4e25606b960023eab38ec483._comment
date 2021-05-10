@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-05-10T16:43:00Z"
+ content="""
+Maybe the solution would be for `git annex add`, whenever it decides to
+add a file to git (due to --force-small or largefiles config), to drop the
+inode out of the keys database? I think that would make all of the cases
+described so far work.
+"""]]
