@@ -17,6 +17,10 @@ change it to year/author/tag.
 So will `vadd year=2014 year=2013`, but limiting the years in view
 to only those two.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -37,6 +37,8 @@ valid url, an URL key is constructed from the url.
    (Note that for this to be used, you have to explicitly enable batch mode
    with `--batch`)
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

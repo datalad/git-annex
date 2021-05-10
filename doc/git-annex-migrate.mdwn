@@ -37,6 +37,8 @@ it's best to run migrate in all of them.
   The [[git-annex-matching-options]](1)
   can be used to specify files to migrate.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

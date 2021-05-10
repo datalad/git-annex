@@ -13,6 +13,10 @@ Returns a repository to the default semi trusted state.
 Repositories can be specified using their remote name, their
 description, or their UUID. For the current repository, use "here".
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

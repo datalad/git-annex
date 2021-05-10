@@ -15,6 +15,10 @@ and when it exits, stores any changes made back to the git-annex branch.
 Unlike git config settings, these configuration settings can be seen
 by all clones of the repository.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

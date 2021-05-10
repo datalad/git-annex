@@ -21,6 +21,8 @@ not present.
   Enables batch mode, in which lines are read from stdin.
   The line format is "key uuid [1|0]"
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

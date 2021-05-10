@@ -12,6 +12,10 @@ Use this to stop using git annex. It will unannex every file in the
 repository, and remove all of git-annex's other data, leaving you with a
 git repository plus the previously annexed files.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

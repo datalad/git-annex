@@ -18,6 +18,10 @@ For example:
 Without an expression, displays the current preferred content setting
 of the repository.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

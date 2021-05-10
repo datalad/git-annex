@@ -26,6 +26,8 @@ transferred.
   Provides a hint about the name of the file associated with the key.
   (This name is only used in progress displays.)
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

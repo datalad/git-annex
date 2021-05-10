@@ -17,6 +17,10 @@ point to annexed content.
 When in a view, updates metadata to reflect changes
 made to files in the view.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

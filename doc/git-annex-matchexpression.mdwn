@@ -53,6 +53,8 @@ For example, this will exit 0:
   Tell what the mime encoding of the file is. Only needed when using
   --largefiles with a mimeencoding= expression.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

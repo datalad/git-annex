@@ -117,6 +117,8 @@ better format.
   normally displays all the files it's checking even when there is no
   problem with them.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

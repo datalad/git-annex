@@ -28,6 +28,8 @@ it opens a browser window.
   Set annex.listen in the git config to make the webapp always
   listen on an address.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # USING HTTPS
 
 When using the webapp on a remote computer, you'll almost certainly

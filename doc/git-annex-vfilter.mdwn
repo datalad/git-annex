@@ -11,6 +11,10 @@ git annex vfilter `[tag ...] [field=value ...] [!tag ...] [field!=value ...]`
 Filters the current view to only the files that have the
 specified field values and tags.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

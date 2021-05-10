@@ -205,6 +205,8 @@ and `--reinject-duplicates` documentation below.
   Messages that would normally be output to standard error are included in
   the json instead.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # CAVEATS
 
 Note that using `--deduplicate` or `--clean-duplicates` with the WORM

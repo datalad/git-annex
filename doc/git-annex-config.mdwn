@@ -100,6 +100,22 @@ looks for these.
   So, changes to the value in the git-annex branch won't affect a
   repository once it has been initialized.
 
+# OPTIONS
+
+* `--set name value`
+
+  Set a value.
+
+* `--get name`
+
+  Get a value.
+
+* `--unset`
+
+  Unset a value.
+
+* Also the [[git-annex-common-options]](1) can be used.
+
 # EXAMPLE
 
 Suppose you want to prevent git annex sync from committing changes

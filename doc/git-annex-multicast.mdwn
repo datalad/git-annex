@@ -59,6 +59,8 @@ The uftp program is used for multicast.
 
 	git annex multicast send -U-R -U50000
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # EXAMPLE
 
 Suppose a teacher wants to multicast files to students in a classroom.

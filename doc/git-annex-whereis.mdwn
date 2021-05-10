@@ -97,6 +97,8 @@ received from remotes.
   The same applies when the url variable is used and a file has multiple
   recorded urls.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

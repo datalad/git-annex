@@ -12,6 +12,10 @@ Generates random changes to files in the current repository,
 for use in testing the assistant. This is dangerous, so it will not
 do anything unless --forced.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -25,6 +25,10 @@ Note that there must be exactly one groupwanted expression configured
 amoung all the groups that a repository is in; if there's more than one,
 none of them will be used.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

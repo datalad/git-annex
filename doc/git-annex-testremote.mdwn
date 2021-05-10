@@ -43,6 +43,8 @@ is limited to checking various properties of downloading from it.
 
   Tune the base size of generated objects. The default is 1MiB.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

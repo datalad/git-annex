@@ -80,6 +80,8 @@ want to use `git annex renameremote`.
   branch. The special remote will only be usable from the repository where
   it was created.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # COMMON CONFIGURATION PARAMETERS
 
 * `encryption`

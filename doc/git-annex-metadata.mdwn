@@ -162,6 +162,8 @@ the modified file.
   Note that file matching options do not affect the files that are
   processed when in batch mode.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # EXAMPLES
 
 To set some tags on a file and also its author:

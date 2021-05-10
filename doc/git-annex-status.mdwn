@@ -31,6 +31,8 @@ modified (M), added but not committed (A), and type changed/unlocked (T).
   Messages that would normally be output to standard error are included in
   the json instead.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

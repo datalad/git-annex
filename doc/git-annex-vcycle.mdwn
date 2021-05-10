@@ -13,6 +13,10 @@ When a view involves nested subdirectories, this cycles the order.
 For example, when the view is by year/author/tag, `vcycle` will switch
 it to author/tag/year.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -33,6 +33,8 @@ case you should use `git annex drop` instead, and you can also
   The [[git-annex-matching-options]](1)
   can be used to specify files to unannex.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

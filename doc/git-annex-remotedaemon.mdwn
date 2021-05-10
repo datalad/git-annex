@@ -31,13 +31,15 @@ will avoid fetching changes from that remote.
 
 * `--foreground`
 
-Don't fork to the background, and communicate on stdin/stdout using a
-simple textual protocol. The assistant runs the remotedaemon this way.
+  Don't fork to the background, and communicate on stdin/stdout using a
+  simple textual protocol. The assistant runs the remotedaemon this way.
 
-Commands in the protocol include LOSTNET, which tells the remotedaemon
-that the network connection has been lost, and causes it to stop any TCP
-connctions. That can be followed by RESUME when the network connection
-comes back up.
+  Commands in the protocol include LOSTNET, which tells the remotedaemon
+  that the network connection has been lost, and causes it to stop any TCP
+  connctions. That can be followed by RESUME when the network connection
+  comes back up.
+
+* Also the [[git-annex-common-options]](1) can be used.
 
 # SEE ALSO
 

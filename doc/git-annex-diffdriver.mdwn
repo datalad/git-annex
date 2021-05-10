@@ -26,6 +26,13 @@ to it. Note the trailing "--", which is required.
 
 For example, set `GIT_EXTERNAL_DIFF=git-annex diffdriver -- j-c-diff --`
 
+# OPTIONS
+
+Normally "--" followed by the diff driver command, its options, 
+and another "--"
+
+Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

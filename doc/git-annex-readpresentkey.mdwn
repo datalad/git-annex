@@ -17,6 +17,10 @@ It exits 0 if the key is recorded to be present and 1 if not.
 Note that this does not do an active check to verify if the key
 is present. To do such a check, use [[git-annex-checkpresentkey]](1)
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

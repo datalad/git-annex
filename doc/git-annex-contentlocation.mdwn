@@ -23,6 +23,8 @@ present in the local repository, nothing is output, and it exits nonzero.
   Note that if a key's content is not present, an empty line is output to
   stdout instead.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

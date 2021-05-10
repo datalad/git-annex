@@ -109,6 +109,8 @@ to git-annex-shell are:
   git-annex uses this to specify the UUID of the repository it was expecting
   git-annex-shell to access, as a sanity check.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 * -- fields=val fields=val.. --
 
   Additional fields may be specified this way, to retain compatibility with

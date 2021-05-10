@@ -3,3 +3,5 @@
 A simple solution to this could be an fsck option which skips printing ok'd (and perhaps also dead) keys, i.e. `--no-ok` and `--no-dead`.
 
 [[!meta title="mention common options on per-command man pages"]]
+
+> common option man page and references [[done]] --[[Joey]]

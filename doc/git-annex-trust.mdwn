@@ -21,6 +21,10 @@ and so the drop proceeds. Then `git-annex drop` is run on repository B,
 which trusts A to still contain the content, so the drop succeeds. Now
 the content has been lost.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -13,6 +13,10 @@ It is a long-running process, which is fed instructions about
 what to transfer using an internal stdio protocol, which is
 intentionally not documented (as it may change at any time).
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

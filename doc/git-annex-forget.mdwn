@@ -26,6 +26,8 @@ git to push the branch to any git repositories not running git-annex.)
 
   Also prune references to repositories that have been marked as dead.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

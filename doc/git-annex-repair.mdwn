@@ -44,6 +44,8 @@ to make sure that the git-annex branch reflects reality.
   Enable repair actions that involve deleting data that has been
   lost due to git repository corruption.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

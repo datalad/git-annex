@@ -57,6 +57,13 @@ to be done to get it enabled.
 has found didn't work before and gave up on using, setting 
 `remote.<name>.annex-ignore`.)
 
+# OPTIONS
+
+Most options are not prefixed by a dash, and set parameters of the remote,
+as shown above. 
+
+Also, the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

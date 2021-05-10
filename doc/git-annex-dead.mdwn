@@ -4,7 +4,7 @@ git-annex dead - hide a lost repository or key
 
 # SYNOPSIS
 
-git annex dead `[repository ...] [--key key]`
+git annex dead `[repository ...] [--key somekey]`
 
 # DESCRIPTION
 
@@ -21,6 +21,14 @@ irretrievably lost. This prevents commands like `git annex fsck --all`
 from complaining about it; `--all` will not operate on the key anymore.
 (To undo, add the key's content back to the repository, 
 by using eg, `git-annex reinject`.)
+
+# OPTIONS
+
+* `--key=somekey`
+
+  Use to specify a key that is dead.
+
+* Also the [[git-annex-common-options]](1) can be used.
 
 # SEE ALSO
 

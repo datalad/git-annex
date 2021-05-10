@@ -31,6 +31,10 @@ bare minimum you're comfortable with. Setting mincopies to a large
 number, rather than setting numcopies will in some cases prevent
 droping content in entirely safe situations.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

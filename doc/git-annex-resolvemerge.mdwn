@@ -55,6 +55,10 @@ version. The `bar` file remains deleted. The user can later examine the
 variant of the file and either rename it back to `bar`, or decide to delete
 it too.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

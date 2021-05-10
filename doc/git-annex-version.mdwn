@@ -25,6 +25,8 @@ built. Therefore, "5.20150320-gdd35cf3" is a daily build, and
 
   Causes only git-annex's version to be output, and nothing else.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

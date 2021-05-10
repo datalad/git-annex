@@ -17,6 +17,10 @@ for repositories that have an adjusted branch checked
 out. The hook updates the work tree when run in such a repository,
 the same as running `git-annex merge` would.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

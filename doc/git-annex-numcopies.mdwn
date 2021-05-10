@@ -28,6 +28,10 @@ repositories, git-annex may violate the numcopies setting. It still
 guarantees at least 1 copy is preserved. This can be configured by
 using [[git-annex-mincopies]](1)
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

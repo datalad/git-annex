@@ -18,6 +18,10 @@ settings. See <https://git-annex.branchable.com/preferred_content/standard_group
 
 A repository can be in multiple groups at the same time.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

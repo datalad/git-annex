@@ -23,6 +23,8 @@ files. This is similar to `git annex whereis` but a more compact display.
   The [[git-annex-matching-options]](1)
   can be used to specify files to list.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

@@ -49,6 +49,8 @@ some file formats can be usefully streamed in this way.
   The [[git-annex-matching-options]](1)
   can be used to specify files to access.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # EXIT STATUS
 
 If any of the requested items are not currently being downloaded,

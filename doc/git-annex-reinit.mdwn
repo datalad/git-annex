@@ -23,6 +23,10 @@ correctly.
 Like `git annex init`, this attempts to enable any special remotes
 that are configured with autoenable=true.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

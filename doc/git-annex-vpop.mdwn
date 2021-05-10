@@ -13,6 +13,10 @@ Or, from the first view back to original branch.
   
 The optional number tells how many views to pop.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

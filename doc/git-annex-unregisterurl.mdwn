@@ -26,6 +26,8 @@ as being present in the web special remote.
    When in batch mode, the input is delimited by nulls instead of the usual
    newlines.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

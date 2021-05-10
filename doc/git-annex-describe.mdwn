@@ -18,6 +18,10 @@ Repository descriptions are displayed by git-annex in various places.
 They are most useful when git-annex knows about a repository, but there is
 no git remote corresponding to it.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

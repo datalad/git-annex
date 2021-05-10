@@ -28,6 +28,8 @@ Or, specify "all" to drop all unused data.
   the last repository that is storing their content. Data loss can
   result from using this option.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

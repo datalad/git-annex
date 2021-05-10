@@ -21,6 +21,10 @@ After this command is run, `git annex remotedaemon` can be run to serve the
 tor hidden service, and then `git-annex p2p --gen-address` can be run to
 give other users access to your repository via the tor hidden service.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

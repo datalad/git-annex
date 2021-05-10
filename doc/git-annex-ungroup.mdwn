@@ -10,6 +10,10 @@ git annex ungroup `repository groupname`
 
 Removes a repository from a group.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

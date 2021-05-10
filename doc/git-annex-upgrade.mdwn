@@ -31,6 +31,8 @@ allow archives to be taken offline for years and later used.
   Only do whatever automatic upgrade can be done, don't necessarily
   upgrade to the latest version. This is used internally by git-annex.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

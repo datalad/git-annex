@@ -36,6 +36,10 @@ field or tag, specify field!=value or !tag. Globs can also be used here,
 so `field!="*"` will enter a view containing only files that do not have
 the field set to any value.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

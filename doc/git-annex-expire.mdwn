@@ -48,6 +48,8 @@ expired.
   The first version of git-annex that recorded fsck activity was
   5.20150405.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

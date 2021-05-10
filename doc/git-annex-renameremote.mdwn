@@ -26,6 +26,10 @@ by `git annex enableremote`. It does not update the git config stanza
 for the special remote to use the new name, but of course you can edit
 the git config if you want to rename it there.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

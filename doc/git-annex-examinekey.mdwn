@@ -74,6 +74,8 @@ that can be determined purely by looking at the key.
   In order to also provide the name of a file associated with the key, the
   line can be in the format "$key $file"
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

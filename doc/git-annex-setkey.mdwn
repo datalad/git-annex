@@ -14,6 +14,10 @@ be set to the specified file. The file is moved into the annex.
 It's generally a better idea to use [[git-annex-reinject]](1) instead of
 this command.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

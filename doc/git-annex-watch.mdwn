@@ -32,6 +32,8 @@ files that it does not match will instead be added with `git add`.
 
   Stop a running daemon in the current repository.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

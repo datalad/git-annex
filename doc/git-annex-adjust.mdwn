@@ -109,6 +109,8 @@ and will also propagate commits back to the original branch.
   set the `annex.adjustedbranchrefresh` config. Or use `git-annex sync
   --content`, which updates the branch after transferring content.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

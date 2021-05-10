@@ -26,6 +26,10 @@ need to be removed with `git annex drop --force`.
 Also, `git-annex fsck` will warn about required contents that are not
 present.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # NOTES
 
 The `required` command was added in git-annex 5.20150420.

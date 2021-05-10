@@ -50,6 +50,8 @@ false, information may not have been committed to the branch yet.
   In this mode, the names of files are not available and keys are displayed
   instead.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

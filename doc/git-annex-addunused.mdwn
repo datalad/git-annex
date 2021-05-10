@@ -13,6 +13,10 @@ as listed by the last `git annex unused`.
 
 The files will have names starting with "unused."
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

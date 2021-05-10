@@ -175,6 +175,8 @@ have the same value as the currently checked out branch.
   around and still has the change in it. Cleaning up the `synced/` branches
   prevents that problem.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

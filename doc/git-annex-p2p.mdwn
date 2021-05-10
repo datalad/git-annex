@@ -63,6 +63,8 @@ services.
   Specify a name to use when setting up a git remote with `--link`
   or `--pair`.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

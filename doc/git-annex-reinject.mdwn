@@ -54,6 +54,8 @@ needing to specify the dest file.
   Specify the key-value backend to use when checking if a file is known
   with the `--known` option.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

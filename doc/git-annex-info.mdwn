@@ -51,6 +51,8 @@ for the local repository and all known annexed files.
   can be used to select the files in the directory that are included
   in the statistics.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # EXAMPLES
 
 Suppose you want to run "git annex get .", but

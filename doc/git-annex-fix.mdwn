@@ -24,6 +24,8 @@ configured by annex.thin.
   The [[git-annex-matching-options]](1)
   can be used to specify files to fix.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

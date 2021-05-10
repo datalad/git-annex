@@ -1,0 +1,136 @@
+# NAME
+
+git-annex-common-options - options supported by all git-annex commands
+
+# DESCRIPTION
+
+These common options are accepted by all git-annex commands, and
+may not be explicitly listed on their individual man pages.
+(Many commands also accept the [[git-annex-matching-options]](1).)
+
+# OPTIONS
+
+* `--force`
+
+  Force unsafe actions, such as dropping a file's content when no other
+  source of it can be verified to still exist, or adding ignored files.
+  Use with care.
+
+* `--fast`
+
+  Avoid some expensive operations normally performed by a command.
+  What is avoided depends on the command, see individual command's man
+  pages for details.
+
+* `--quiet`
+
+  Avoid the default verbose display of what is done; only show errors.
+
+* `--verbose`
+
+  Enable verbose display.
+
+* `--debug`
+
+  Display debug messages.
+
+* `--no-debug`
+
+  Disable display of debug messages.
+
+* `--debugfilter=name[,name..]`
+
+  When debug message display has been enabled by `--debug`, this filters
+  the debug messages that are displayed to ones coming from modules with
+  the specified names.
+  
+  To find the names of modules, see the full debug output, which includes
+  the module name, eg "(Utility.Process)"
+
+  The full module name does not need to be
+  specified when using this, a substring of the name will do.
+
+  For example, `--debugfilter=Process,External` will display debugging
+  output when git-annex runs processes, and when it communicates with
+  external special remotes.
+
+* `--numcopies=n`
+
+  Overrides the numcopies setting.
+
+  Note that setting numcopies to 0 is very unsafe.
+
+* `--mincopies=n`
+
+  Overrides the mincopies setting.
+
+  Note that setting mincopies to 0 is very unsafe.
+
+* `--time-limit=time`
+
+  Limits how long a git-annex command runs. The time can be something
+  like "5h", or "30m" or even "45s" or "10d".
+
+  Note that git-annex may continue running a little past the specified
+  time limit, in order to finish processing a file.
+
+  Also, note that if the time limit prevents git-annex from doing all it
+  was asked to, it will exit with a special code, 101.
+
+* `--semitrust=repository`
+* `--untrust=repository`
+
+  Overrides trust settings for a repository. May be specified more than once.
+
+  The repository should be specified using the name of a configured remote,
+  or the UUID or description of a repository.
+
+* `--trust=repository`
+
+  This used to override trust settings for a repository, but now will
+  not do so, because trusting a repository can lead to data loss,
+  and data loss is now only enabled when using the `--force` option.
+
+* `--trust-glacier`
+
+  This used to override trust settings for Glacier special remotes,
+  but now will not do so, because it could lead to data loss,
+  and data loss is now only enabled when using the `--force` option.
+
+* `--backend=name`
+
+  Specifies which key-value backend to use. This can be used when
+  adding a file to the annex, or migrating a file. Once files
+  are in the annex, their backend is known and this option is not
+  necessary.
+
+* `--user-agent=value`
+
+  Overrides the User-Agent to use when downloading files from the web.
+
+* `--notify-finish`
+
+  Caused a desktop notification to be displayed after each successful
+  file download and upload.
+
+  (Only supported on some platforms, e.g. Linux with dbus. A no-op when
+  not supported.)
+
+* `--notify-start`
+
+  Caused a desktop notification to be displayed when a file upload
+  or download has started, or when a file is dropped.
+
+* `-c name=value`
+
+  Overrides git configuration settings. May be specified multiple times.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -20,6 +20,10 @@ branch before merging it.
 When annex.resolvemerge is set to false, merge conflict resolution
 will not be done.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

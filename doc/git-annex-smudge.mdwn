@@ -51,6 +51,10 @@ and post-merge. However, a few git commands, notably `git stash` and
 you can manually run `git annex smudge --update` to update the working
 tree.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

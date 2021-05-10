@@ -22,6 +22,10 @@ undo command.
 Note that this does not undo get/drop of a file's content; it only
 operates on the file tree committed to git.
 
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)

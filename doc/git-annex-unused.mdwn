@@ -42,6 +42,8 @@ For example, to move all unused data to origin:
   The git configuration annex.used-refspec can be used to configure
   this in a more permanent fashion.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # REFSPEC FORMAT
 
 The refspec format for --used-refspec is a colon-separated list of

@@ -27,6 +27,8 @@ the special exit code 100 is used, and an error message is output to stderr.
   read from stdin, and a line is output with "1" if the key is verified to
   be present, and "0" otherwise.
 
+* Also the [[git-annex-common-options]](1) can be used.
+
 # SEE ALSO
 
 [[git-annex]](1)
