@@ -340,6 +340,8 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "fsck (local untrusted)" test_fsck_localuntrusted
 	, testCase "fsck (remote untrusted)" test_fsck_remoteuntrusted
 	, testCase "fsck --from remote" test_fsck_fromremote
+	, testCase "conversion git to annexed" test_conversion_git_to_annexed
+	, testCase "conversion annexed to git" test_conversion_annexed_to_git
 	, testCase "migrate" test_migrate
 	, testCase "migrate (via gitattributes)" test_migrate_via_gitattributes
 	, testCase "unused" test_unused
@@ -925,6 +927,28 @@ test_fsck_fromremote = intmpclonerepo $ do
 fsck_should_fail :: String -> Assertion
 fsck_should_fail m = git_annex_shouldfail "fsck" []
 	("fsck should not succeed with " ++ m)
+
+-- Make sure that the "converting git to annexed" recipe in
+-- doc/tips/largefiles.mdwn continues to work.
+test_conversion_git_to_annexed :: Assertion
+test_conversion_git_to_annexed = intmpclonerepo $ do
+	git "rm" ["--cached", ingitfile] "git rm --cached"
+	git_annex "add" ["--force-large", ingitfile] "add --force-large"
+	git "commit" ["-q", "-m", "commit", ingitfile] "git commit"
+	whenM (unlockedFiles <$> getTestMode) $
+		git_annex "unlock" [ingitfile] "unlock"
+	annexed_present ingitfile
+
+-- Make sure that the "converting annexed to git" recipe in
+-- doc/tips/largefiles.mdwn continues to work.
+test_conversion_annexed_to_git :: Assertion
+test_conversion_annexed_to_git = intmpclonerepo $ do	
+	git_annex "get" [annexedfile] "get"
+	git_annex "unlock" [annexedfile] "unlock"
+	git "rm" ["--cached", annexedfile] "git rm --cached"
+	git_annex "add" ["--force-small", annexedfile] "add --force-small"
+	git "commit" ["-q", "-m", "commit", annexedfile] "git commit"
+	unannexed_in_git annexedfile
 
 test_migrate :: Assertion
 test_migrate = test_migrate' False

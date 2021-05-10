@@ -415,6 +415,16 @@ annexed_notpresent_imported f = ifM (annexeval Config.crippledFileSystem)
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
+-- Check that a file is unannexed, but also that what's recorded in git
+-- is not an annexed file.
+unannexed_in_git :: FilePath -> Assertion
+unannexed_in_git f = do
+	unannexed f
+	r <- annexeval $ Annex.WorkTree.lookupKey (toRawFilePath f)
+	case r of
+		Just _k -> assertFailure $ f ++ " is annexed in git"
+		Nothing -> return ()
+
 add_annex :: FilePath -> String -> Assertion
 add_annex f faildesc = ifM (unlockedFiles <$> getTestMode)
 	( git "add" [f] faildesc
