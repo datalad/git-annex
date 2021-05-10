@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-05-10T16:04:07Z"
+ content="""
+On the second `git annex add foo`, I see:
+
+	add foo (non-large file; adding content to git repository) ok
+
+Which seems right as far as the largefiles config goes.
+
+That in turn runs `git add`, which runs the smudge filter. Due to my change
+in [[!commit 424bef6b6]], the smudge filter then sees an inode it already
+knows (because the file was unlocked), and so it avoids adding the file to
+git, and leaves it annexed.
+
+I don't quite understand how the different ways of running git commit play
+into this, or how the file ends up, after the commit, to having a
+non-annexed file recorded in the index. I guess the smudge filter must
+end up being run again, and perhaps the [[!commit 424bef6b6]] change
+doesn't work then, but anyway the behavior before that point is already a
+problem.
+
+Another instance of I think the same problem is following the
+[[tips/largefiles]] recipe to convert an annexed file to git:
+
+	git init repo; cd repo; git annex init
+	echo foo > file
+	git annex add file
+	git commit -m add
+	git annex unlock file
+	git rm --cached file
+	git annex add --force-small file
+	git commit -m convert file
+
+This results in a commit that unlocked the file but leaves
+it annexed, and after the commit, git diff --cached shows that the index
+has staged a conversion from unlocked to stored in git. So very similar,
+and clearly [[!commit 424bef6b6]] cannot be allowed to cause that breakage,
+which does not even involve largefiles!
+
+So I've reverted the commit for now, and we can discuss next steps in the
+forum thread.
+"""]]

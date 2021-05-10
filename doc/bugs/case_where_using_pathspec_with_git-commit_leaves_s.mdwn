@@ -115,3 +115,5 @@ Thanks for taking a look.
 
 [[!meta author=kyle]]
 [[!tag projects/datalad]]
+
+> commit reverted; [[done]] --[[Joey]]

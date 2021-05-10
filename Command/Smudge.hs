@@ -168,26 +168,25 @@ clean file = do
 		filepath <- liftIO $ absPath file
 		return $ not $ dirContains repopath filepath
 
--- If annex.largefiles is configured (and not disabled by annex.gitaddtoannex
--- being set to false), matching files are added to the annex and the rest to
--- git.
+-- If annex.largefiles is configured, matching files are added to the
+-- annex. But annex.gitaddtoannex can be set to false to disable that.
 --
 -- When annex.largefiles is not configured, files are normally not
--- added to the annex, so will be added to git. However, if the file
--- is annexed in the index, keep it annexed. This prevents accidental
--- conversions when previously annexed files get modified and added.
+-- added to the annex, so will be added to git. But some heuristics
+-- are used to avoid bad behavior:
 --
--- In either case, if the file's inode is the same as one that was used
--- for annexed content before, annex it. And if the file is not annexed
--- in the index, and has the same content, leave it in git.
--- This handles cases such as renaming a file followed by git add,
--- which the user naturally expects to behave the same as git mv.
+-- If the file is annexed in the index, keep it annexed.
+-- This prevents accidental conversions.
+--
+-- Otherwise, when the file's inode is the same as one that was used for
+-- annexed content before, annex it. This handles cases such as renaming an
+-- unlocked annexed file followed by git add, which the user naturally
+-- expects to behave the same as git mv.
 shouldAnnex :: RawFilePath -> Maybe (Sha, FileSize, ObjectType) -> Maybe Key -> Annex Bool
-shouldAnnex file indexmeta moldkey = do
-	ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
-		( checkunchanged $ checkmatcher checkwasannexed
-		, checkunchanged checkwasannexed
-		)
+shouldAnnex file indexmeta moldkey = ifM (annexGitAddToAnnex <$> Annex.getGitConfig)
+	( checkunchangedgitfile $ checkmatcher checkheuristics
+	, checkunchangedgitfile checkheuristics
+	)
   where
 	checkmatcher d
 		| dotfile file = ifM (getGitConfigVal annexDotFiles)
@@ -200,20 +199,13 @@ shouldAnnex file indexmeta moldkey = do
 			matcher <- largeFilesMatcher
 			checkFileMatcher' matcher file d
 	
-	checkwasannexed = pure $ isJust moldkey
+	checkheuristics = case moldkey of
+		Just _ -> return True
+		Nothing -> checkknowninode
 
-	isknownannexedinode = withTSDelta (liftIO . genInodeCache file) >>= \case
+	checkknowninode = withTSDelta (liftIO . genInodeCache file) >>= \case
 		Nothing -> pure False
 		Just ic -> Database.Keys.isInodeKnown ic =<< sentinalStatus
-
-	-- If the inode matches one known used for annexed content,
-	-- keep the file annexed. This handles a case where the file
-	-- has been annexed before, and the git is running the clean filter
-	-- again on it for whatever reason.
-	checkunchanged cont = ifM isknownannexedinode
-		( return True
-		, checkunchangedgitfile cont
-		)
 
 	-- This checks for a case where the file had been added to git
 	-- previously, not to the annex before, and its content is not

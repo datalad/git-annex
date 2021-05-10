@@ -2,9 +2,6 @@ git-annex (8.20210429) UNRELEASED; urgency=medium
 
   * fromkey: Create an unlocked file when used in an adjusted branch
     where the file should be unlocked, or when configured by annex.addunlocked.
-  * smudge: Fix a case where an unlocked annexed file that annex.largefiles
-    does not match could get its unchanged content checked into git,
-    due to git running the smudge filter unecessarily.
   * Fix behavior of several commands, including reinject, addurl, and rmurl
     when given an absolute path to an unlocked file, or a relative path
     that leaves and re-enters the repository.
