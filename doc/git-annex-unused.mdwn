@@ -9,7 +9,8 @@ git annex unused
 # DESCRIPTION
 
 Checks the annex for data that does not correspond to any files present
-in any tag or branch, and prints a numbered list of the data.
+in any tag or branch, or in the git index, and prints a numbered list
+of the data.
 
 After running this command, you can use the `--unused` option with many 
 other git-annex commands to operate on all the unused data that was found.
@@ -33,10 +34,10 @@ For example, to move all unused data to origin:
 
 * `--used-refspec=+ref:-ref`
 
-  By default, any data that the work tree uses, or that any refs in the git
+  By default, any data that the git index uses, or that any refs in the git
   repository point to is considered to be used. If you only want to use
   some refs, you can use this option to specify the ones to use. Data that
-  is not in the specified refs (and not used by the work tree) will then be
+  is not in the specified refs (and not used by the index) will then be
   considered unused.
 
   The git configuration annex.used-refspec can be used to configure
