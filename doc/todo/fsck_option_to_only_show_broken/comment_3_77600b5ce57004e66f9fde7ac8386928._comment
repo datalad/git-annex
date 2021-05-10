@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-05-10T15:07:06Z"
+ content="""
+Normally the common options are not included in every command's man page
+because there are over 100 lines of them. However, I do think it's worth
+including --quiet on fsck's man page in this specific case and am doing
+that.
+
+Maybe individual command man pages should mention that there are
+also a bunch of common options. Perhaps those should be split out of the
+git-annex man page, like the git-annex-matching-options man page is
+handled.
+"""]]

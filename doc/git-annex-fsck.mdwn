@@ -110,6 +110,13 @@ better format.
   Messages that would normally be output to standard error are included in
   the json instead.
 
+* `--quiet`
+
+  Like all git-annex commands, this option makes only error and warning
+  messages be displayed. This is particularly useful with fsck, which
+  normally displays all the files it's checking even when there is no
+  problem with them.
+
 # SEE ALSO
 
 [[git-annex]](1)

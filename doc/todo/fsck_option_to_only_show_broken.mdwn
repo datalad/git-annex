@@ -1,3 +1,5 @@
 `git annex fsck` currently spams the terminal with all keys in a repo and prints `git-annex: fsck: n failed` at the end if errors occur. Finding these errors in a sea of `ok`s is not trivial however.
 
 A simple solution to this could be an fsck option which skips printing ok'd (and perhaps also dead) keys, i.e. `--no-ok` and `--no-dead`.
+
+[[!meta title="mention common options on per-command man pages"]]
