@@ -1,0 +1,25 @@
+I have a particular annexed file (call its key *K*), and I'm trying to find out why *git annex* considers it in-use.
+
+Joey's comment to [[Dead repo content is not considered unused]] does a good job of explaining why, in theory, a file *might be* considered in-use.
+
+But how can I determine, in a particular case, why a given file *is* in-use?  I.e. how can I determine what's referencing it?
+
+Things I've tried:
+
+* *git annex unused --used-refspec=+foo*, where I'm certain that neither tag *foo* nor any of its ancestors references the file in question (that command doesn't report any unused files)
+
+* Verifying that there are now no symlinks to the annex object in question
+
+* *git log --stat --no-textconv -S'K'* (which produces no output)
+
+Background:
+
+*git annex unused* listed *K* as unused.  I wanted to see what it was, so I did *git annex addunused* on it to create a symlink. (As expected, after this, *git annex unused* reported no unused files.)
+
+Having determined that the file was in fact no longer needed, I rm'ed the symlink, expecting *git annex unused* to again report *K* as unused.  But it doesn't; it still reports no unused files.
+
+I'm not aware of having done anything that would create a reference other than *addunused*'s new symlink, but clearly I did so without being aware of it...
+
+So I'm trying to figure out where that reference is, so I can stomp on it and then *git annex dropunused* to get rid of the file for good.
+
+Thanks.
