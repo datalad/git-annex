@@ -144,6 +144,11 @@ removeInodeCaches :: Key -> WriteHandle -> IO ()
 removeInodeCaches k = queueDb $
 	deleteWhere [ContentKey ==. k]
 
+removeInodeCache :: InodeCache -> WriteHandle -> IO ()
+removeInodeCache i = queueDb $ deleteWhere
+	[ ContentInodecache ==. i
+	]
+
 {- Check if the inode is known to be used for an annexed file. -}
 isInodeKnown :: InodeCache -> SentinalStatus -> ReadHandle -> IO Bool
 isInodeKnown i s = readDb (isJust <$> selectFirst q [])

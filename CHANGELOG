@@ -5,6 +5,9 @@ git-annex (8.20210429) UNRELEASED; urgency=medium
   * Fix behavior of several commands, including reinject, addurl, and rmurl
     when given an absolute path to an unlocked file, or a relative path
     that leaves and re-enters the repository.
+  * smudge: Fix a case where an unlocked annexed file that annex.largefiles
+    does not match could get its unchanged content checked into git,
+    due to git running the smudge filter unecessarily.
   * reinject: Error out when run on a file that is not annexed, rather
     than silently skipping it.
 

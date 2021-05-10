@@ -20,6 +20,7 @@ module Database.Keys (
 	addInodeCaches,
 	getInodeCaches,
 	removeInodeCaches,
+	removeInodeCache,
 	isInodeKnown,
 	runWriter,
 ) where
@@ -179,8 +180,13 @@ addInodeCaches k is = runWriterIO $ SQL.addInodeCaches k is
 getInodeCaches :: Key -> Annex [InodeCache]
 getInodeCaches = runReaderIO . SQL.getInodeCaches
 
+{- Remove all inodes cached for a key. -}
 removeInodeCaches :: Key -> Annex ()
 removeInodeCaches = runWriterIO . SQL.removeInodeCaches
+
+{- Remove cached inodes, for any key. -}
+removeInodeCache :: InodeCache -> Annex ()
+removeInodeCache = runWriterIO . SQL.removeInodeCache
 
 isInodeKnown :: InodeCache -> SentinalStatus -> Annex Bool
 isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)

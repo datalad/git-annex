@@ -22,6 +22,8 @@ import Git.FilePath
 import Config.GitConfig
 import Config.Smudge
 import Utility.OptParse
+import Utility.InodeCache
+import Annex.InodeSentinal
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
@@ -129,13 +131,24 @@ data SmallOrLarge = Small | Large
 addFile :: SmallOrLarge -> CheckGitIgnore -> RawFilePath -> Annex Bool
 addFile smallorlarge ci file = do
 	ps <- gitAddParams ci
+	cps <- case smallorlarge of
+		-- In case the file is being converted from an annexed file
+		-- to be stored in git, remove the cached inode, so that
+		-- if the smudge clean filter later runs on the file,
+		-- it will not remember it was annexed.
+		--
+		-- The use of bypassSmudgeConfig prevents the smudge
+		-- filter from being run. So the changes to the database
+		-- can be queued up and not flushed to disk immediately.
+		Small -> do
+			withTSDelta (liftIO . genInodeCache file) >>= \case
+				Just ic -> Database.Keys.removeInodeCache ic
+				Nothing -> return ()
+			return bypassSmudgeConfig
+		Large -> return []
 	Annex.Queue.addCommand cps "add" (ps++[Param "--"])
 		[fromRawFilePath file]
 	return True
-  where
-	cps = case smallorlarge of
-		Large -> []
-		Small -> bypassSmudgeConfig
 
 start :: AddOptions -> SeekInput -> RawFilePath -> AddUnlockedMatcher -> CommandStart
 start o si file addunlockedmatcher = do
