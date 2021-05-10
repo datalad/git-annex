@@ -1,0 +1,4 @@
+If I do git-annex sync remote when in branch foo, 
+and then in the remote repo, do git-annex merge,
+it does not merge the synced/foo branch, despite branch foo being checked
+out. --[[Joey]]
