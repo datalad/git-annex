@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-05-10T14:53:34Z"
+ content="""
+Currently the assistant simply tries to drop when it thinks it's possible
+that the content may be droppable. It doesn't check if the drop is allowed
+before trying to drop. Because that would be redundant with the check
+that's done when actually dropping.
+
+I don't see anything dangerous about this, same as running `git annex drop`
+on lots of files and having them be preserved by numcopies is not
+dangerous.
+
+If it's a bug at all, it's only that it should be silent if
+it is unable to perform the drop due to numcopies. However, 
+making it silent about that also seems like it would make it harder to
+figure out what is preventing things from being dropping in situations
+where you do expect drops to happen.
+
+As in, ironically, your specific case! You have a transfer remote, which is
+having files pile up on it, despite them apparently having been transferred
+from it to both of the repos you want it to transfer them to. Since your
+local repo cannot access the other repo, it cannot verify it has the
+content and so leaves a copy on the transfer remote.
+
+If you had a problem with that transfer remote filling up, and nothing was
+ever logged about why it was not dropping from it, it would be hard to
+understand what was going on and how to fix it (eg by trusting the other
+repo, or adding it as a remote, or lowering numcopies to 1).
+
+So the logging seems like a good thing to me.
+"""]]
