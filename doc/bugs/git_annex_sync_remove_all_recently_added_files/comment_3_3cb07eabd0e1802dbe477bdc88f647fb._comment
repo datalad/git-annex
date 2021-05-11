@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 3"
+ date="2021-05-11T09:21:37Z"
+ content="""
+And indeed, I can reproduce it like this:
+
+    mkdir test
+    cd test
+    git init a
+    cd a
+    git checkout -b master
+    git annex init a
+    touch file
+    git annex add .
+    git annex sync
+    git config receive.denyCurrentBranch warn
+    cd ..
+    git clone a b
+    cd b
+    git annex init b
+    git annex sync
+    touch new-file
+    git annex add .
+    git annex sync
+    cd ../a
+    git annex sync
+    cd ../b
+    git annex sync
+    ls
+    # new-file was deleted
+
+So this is definitely a user error. But on the other hand I think that `git annex sync` maybe should only push to the `synced/` branches.
+"""]]
