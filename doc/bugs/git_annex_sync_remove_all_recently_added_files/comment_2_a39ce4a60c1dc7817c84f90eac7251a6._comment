@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 2"
+ date="2021-05-11T08:50:36Z"
+ content="""
+Similar to [[bugs/OSX\_\_58\_\_\_Pushed_changes_are_autocommited/]], I guess the `receive.denyCurrentBranch` git config could be at play here too.
+"""]]

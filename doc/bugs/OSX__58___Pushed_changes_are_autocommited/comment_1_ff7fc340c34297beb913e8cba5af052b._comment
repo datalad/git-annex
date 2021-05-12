@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-05-11T08:41:41Z"
+ content="""
+Do you have `receive.denyCurrentBranch` set to `warn` or `ignore` anywhere? I could imagine this may cause such problems.
+"""]]
