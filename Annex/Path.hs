@@ -1,11 +1,17 @@
 {- git-annex program path
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Annex.Path where
+module Annex.Path (
+	programPath,
+	readProgramFile,
+	gitAnnexChildProcess,
+	gitAnnexChildProcessParams,
+	gitAnnexDaemonizeParams,
+) where
 
 import Annex.Common
 import Config.Files
@@ -13,7 +19,7 @@ import Utility.Env
 import Annex.PidLock
 import qualified Annex
 
-import System.Environment (getExecutablePath)
+import System.Environment (getExecutablePath, getArgs)
 
 {- A fully qualified path to the currently running git-annex program.
  - 
@@ -70,9 +76,24 @@ gitAnnexChildProcess subcmd ps f a = do
  - with some parameters.
  -
  - Includes -c values that were passed on the git-annex command line
- - or due to --debug being enabled.
+ - or due to options like --debug being enabled.
  -}
 gitAnnexChildProcessParams :: String -> [CommandParam] -> Annex [CommandParam]
 gitAnnexChildProcessParams subcmd ps = do
-	cps <- concatMap (\c -> [Param "-c", Param c]) <$> Annex.getGitConfigOverrides
+	cps <- gitAnnexGitConfigOverrides
 	return (Param subcmd : cps ++ ps)
+
+gitAnnexGitConfigOverrides :: Annex [CommandParam]
+gitAnnexGitConfigOverrides = concatMap (\c -> [Param "-c", Param c])
+	<$> Annex.getGitConfigOverrides
+
+{- Parameters to pass to git-annex when re-running the current command
+ - to daemonize it. Used with Utility.Daemon.daemonize. -}
+gitAnnexDaemonizeParams :: Annex [CommandParam]
+gitAnnexDaemonizeParams = do
+	-- This inclues -c parameters passed to git, as well as ones
+	-- passed to git-annex.
+	cps <- gitAnnexGitConfigOverrides
+	-- Get every parameter git-annex was run with.
+	ps <- liftIO getArgs
+	return (map Param ps ++ cps)

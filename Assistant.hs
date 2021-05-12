@@ -52,9 +52,9 @@ import Utility.HumanTime
 import Annex.Perms
 import Annex.BranchState
 import Utility.LogFile
+import Annex.Path
 #ifdef mingw32_HOST_OS
 import Utility.Env
-import Annex.Path
 import System.Environment (getArgs)
 #endif
 import qualified Utility.Debug as Debug
@@ -80,7 +80,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 	createAnnexDirectory (parentDir pidfile)
 #ifndef mingw32_HOST_OS
 	createAnnexDirectory (parentDir logfile)
-	logfd <- liftIO $ handleToFd =<< openLog (fromRawFilePath logfile)
+	let logfd = handleToFd =<< openLog (fromRawFilePath logfile)
 	if foreground
 		then do
 			origout <- liftIO $ catchMaybeIO $ 
@@ -92,8 +92,10 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 				case startbrowser of
 					Nothing -> Nothing
 					Just a -> Just $ a origout origerr
-		else
-			start (Utility.Daemon.daemonize logfd (Just (fromRawFilePath pidfile)) False) Nothing
+		else do
+			git_annex <- liftIO programPath
+			ps <- gitAnnexDaemonizeParams
+			start (Utility.Daemon.daemonize git_annex ps logfd (Just (fromRawFilePath pidfile)) False) Nothing
 #else
 	-- Windows doesn't daemonize, but does redirect output to the
 	-- log file. The only way to do so is to restart the program.

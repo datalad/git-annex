@@ -1,6 +1,6 @@
 {- daemon support
  -
- - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -20,53 +20,58 @@ import Common
 import Utility.PID
 #ifndef mingw32_HOST_OS
 import Utility.LogFile
+import Utility.Env
 #else
 import System.Win32.Process (terminateProcessById)
 import Utility.LockFile
 #endif
 
 #ifndef mingw32_HOST_OS
-import System.Posix
-import Control.Concurrent.Async
+import System.Posix hiding (getEnv, getEnvironment)
 #endif
 
 #ifndef mingw32_HOST_OS
-{- Run an action as a daemon, with all output sent to a file descriptor.
+{- Run an action as a daemon, with all output sent to a file descriptor,
+ - and in a new session.
  -
- - Can write its pid to a file, to guard against multiple instances
- - running and allow easy termination.
+ - Can write its pid to a file.
  -
- - When successful, does not return. -}
-daemonize :: Fd -> Maybe FilePath -> Bool -> IO () -> IO ()
-daemonize logfd pidfile changedirectory a = do
+ - This does not double-fork to background, because forkProcess is
+ - rather fragile and highly unused in haskell programs, so likely to break.
+ - Instead, it runs the cmd with provided params, in the background,
+ - which the caller should arrange to run this again.
+ -}
+daemonize :: String -> [CommandParam] -> IO Fd -> Maybe FilePath -> Bool -> IO () -> IO ()
+daemonize cmd params openlogfd pidfile changedirectory a = do
 	maybe noop checkalreadyrunning pidfile
-	_ <- forkProcess child1
-	out
+	getEnv envvar >>= \case
+		Just s | s == cmd -> do
+			maybe noop lockPidFile pidfile 
+			a
+		_ -> do
+			nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
+			redir nullfd stdInput
+			redirLog =<< openlogfd
+			when changedirectory $
+				setCurrentDirectory "/"
+			environ <- getEnvironment
+			_ <- createProcess $
+				(proc cmd (toCommand params))
+				{ env = Just (addEntry envvar cmd environ)
+				, create_group = True
+				, new_session = True
+				}
+			return ()
   where
 	checkalreadyrunning f = maybe noop (const alreadyRunning) 
 		=<< checkDaemon f
-	child1 = do
-		_ <- tryIO createSession
-		_ <- forkProcess child2
-		out
-	child2 = do
-		maybe noop lockPidFile pidfile 
-		when changedirectory $
-			setCurrentDirectory "/"
-		nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
-		redir nullfd stdInput
-		redirLog logfd
-		{- In old versions of ghc, forkProcess masks async exceptions;
-		 - unmask them inside the action. -}
-		wait =<< asyncWithUnmask (\unmask -> unmask a)
-		out
-	out = exitImmediately ExitSuccess
+	envvar = "DAEMONIZED"
 #endif
 
 {- To run an action that is normally daemonized in the forground. -}
 #ifndef mingw32_HOST_OS
-foreground :: Fd -> Maybe FilePath -> IO () -> IO ()
-foreground logfd pidfile a = do
+foreground :: IO Fd -> Maybe FilePath -> IO () -> IO ()
+foreground openlogfd pidfile a = do
 #else
 foreground :: Maybe FilePath -> IO () -> IO ()
 foreground pidfile a = do
@@ -74,7 +79,7 @@ foreground pidfile a = do
 	maybe noop lockPidFile pidfile
 #ifndef mingw32_HOST_OS
 	_ <- tryIO createSession
-	redirLog logfd
+	redirLog =<< openlogfd
 #endif
 	a
 #ifndef mingw32_HOST_OS

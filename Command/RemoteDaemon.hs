@@ -12,6 +12,7 @@ module Command.RemoteDaemon where
 import Command
 import RemoteDaemon.Core
 import Utility.Daemon
+import Annex.Path
 
 cmd :: Command
 cmd = noCommit $
@@ -25,8 +26,10 @@ run o
 	| foregroundDaemonOption o = liftIO runInteractive
 	| otherwise = do
 #ifndef mingw32_HOST_OS
-		nullfd <- liftIO $ openFd "/dev/null" ReadOnly Nothing defaultFileFlags
-		liftIO $ daemonize nullfd Nothing False runNonInteractive
+		git_annex <- liftIO programPath
+		ps <- gitAnnexDaemonizeParams
+		let logfd = openFd "/dev/null" ReadOnly Nothing defaultFileFlags
+		liftIO $ daemonize git_annex ps logfd Nothing False runNonInteractive
 #else
 		liftIO $ foreground Nothing runNonInteractive	
 #endif

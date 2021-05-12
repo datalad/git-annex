@@ -39,3 +39,6 @@ local repository version: 8
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> [[fixed|done]] in git-annex by avoiding using forkProcess.
+> If the root cause is a ghc bug it's still unfixed there, but it won't
+> affect git-annex. --[[Joey]]
