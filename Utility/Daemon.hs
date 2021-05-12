@@ -52,14 +52,13 @@ daemonize cmd params openlogfd pidfile changedirectory a = do
 			nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
 			redir nullfd stdInput
 			redirLog =<< openlogfd
-			when changedirectory $
-				setCurrentDirectory "/"
 			environ <- getEnvironment
 			_ <- createProcess $
 				(proc cmd (toCommand params))
 				{ env = Just (addEntry envvar cmd environ)
 				, create_group = True
 				, new_session = True
+				, cwd = if changedirectory then Just "/" else Nothing
 				}
 			return ()
   where
