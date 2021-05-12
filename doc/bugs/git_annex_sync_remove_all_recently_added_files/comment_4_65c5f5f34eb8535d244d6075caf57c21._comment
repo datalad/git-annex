@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-05-12T15:19:45Z"
+ content="""
+Sure, if you set receive.denyCurrentBranch that way, you let git update
+the repo's master branch while the index has not been updated. The result
+is the same as if you had run "git rm" on all newly added files. Same
+happens when using regular "git push origin master" as well.
+
+git-annex sync tries to push the master branch because
+
+1. The remote may be a bare repository, and then you certianly *do* want
+   the master branch to be pushed. Note that there is, generally, no way
+   to tell if a given git remote is a bare repository or not.
+2. The user may have some config like receive.denyCurrentBranch=updateInstead
+   which will work fine if the master branch is pushed.
+
+So if the original bug reporter had a setting like
+receive.denyCurrentBranch=warn, then yes it would be user error.
+Unfortunately, they didn't say how they had things configured. I still
+await a followup from them.
+"""]]
