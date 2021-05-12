@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-05-12T15:44:23Z"
+ content="""
+Symlinking .git/annex/objects back to the primary repo might just work. I
+seem to remember that parts of git-annex get slow or may even not work if
+.git/annex/objects is on a different filesystem than .git/annex/. So I'd
+try symlinking .git/annex back to the primary repo instead. Note that this
+limits how the clone can be used, if the user lacks permissions to write to
+the primary repo.
+
+The problem with git-worktree in your situation is that it actually
+needs to be run in the primary repo, and it modifies that repo,
+by eg creating .git/worktrees/. So users who do not have write access to
+the primary repo would not be able to do that, and you seemed to indicate
+it would be a problem getting all users write access to it.
+
+I think maybe you could have one replica of the primary repo per drive, and
+then individual experiments run on that drive are set up with git-worktree
+in the drive's replica. This way you would avoid permissions problems
+with the primary repo, and also the experiment runs on a presumably more
+local and faster drive. When setting up each experiment, you can `git annex
+get` the files it needs, which will pull them into the replica.
+
+Now, that does run the risk that all the replicas end up caching a lot of
+data from old experiments that is not being used by new experiments. So 
+you would want to find a way to clear out the unused data. 
+
+It seems helpful to that end that git worktree manages a branch for each
+worktree that's currently checked out.
+If each experiment used its own branch that contained only the files used
+in that experiment and not a lot of other files, then you could use
+`git annex unused --used-refspec=+refs/heads/*` to find data that was not
+used by any experiment that had a worktree using that replica.
+
+Alternatively, you could check, when removing an experiment's worktree from 
+the replica, if that was the last experiment using that replica. When it
+was, simply use `git annex drop --all` to clean out the replica.
+"""]]
