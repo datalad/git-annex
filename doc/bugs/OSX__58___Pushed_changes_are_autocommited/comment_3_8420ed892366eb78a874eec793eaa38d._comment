@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-05-12T15:26:00Z"
+ content="""
+I do not think you need to reach for receive.denyCurrentBranch
+to explain this behavior. The assistant runs git merge itself,
+and is watching for changes to the working tree at the same time. 
+So it can get notifications of changes, that are made by git merge,
+and commit them. 
+
+The result is that basically, any change that gets made to the work tree
+while the assistant is running, can end up being recorded in a git commit.
+Which is normally what you want and expect. In this case the change is
+a file being removed breifly before being replaced with a new version.
+Whether that is a bug is debatable, but it might be a good idea for the
+assistant to at least pause committing while it's running a git merge.
+
+The fact that it's committing files with merge conflict markers in them
+is certianly a bug. I do wonder if that might be due to annex.resolvemerge
+being configured to false; normally the assistant does not merge in a way
+that would result in merge conflict markers ever appearing in the working
+tree.
+"""]]
