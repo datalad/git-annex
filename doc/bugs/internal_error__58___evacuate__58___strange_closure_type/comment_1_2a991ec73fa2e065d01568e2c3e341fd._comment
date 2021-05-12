@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-05-12T17:09:06Z"
+ content="""
+I'm seeing this too, although sometimes it seems to crash out before that
+gets written to the log. And sometimes it manages to get running and seems
+to run ok.
+
+It does not happen with --foreground AFAICS.
+
+Reproduced it with that most recent standalone release, and also with a
+local dev build, also with ghc 8.8.4.
+
+This would usually be a ghc or library bug, as there's no code in git-annex
+low-level enough to cause this kind of memory corruption or whatever it is.
+
+But, the assistant does one really funky thing for a haskell program, and that
+is forking to the background. It seems just possible that doing that has
+started confusing the garbage collector in some way.
+
+forkProcess is really problimatic with its handling of threads etc,
+and this may be the signal that git-annex needs to stop using it.
+"""]]
