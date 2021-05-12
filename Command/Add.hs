@@ -141,9 +141,8 @@ addFile smallorlarge ci file = do
 		-- filter from being run. So the changes to the database
 		-- can be queued up and not flushed to disk immediately.
 		Small -> do
-			withTSDelta (liftIO . genInodeCache file) >>= \case
-				Just ic -> Database.Keys.removeInodeCache ic
-				Nothing -> return ()
+			maybe noop Database.Keys.removeInodeCache
+				=<< withTSDelta (liftIO . genInodeCache file)
 			return bypassSmudgeConfig
 		Large -> return []
 	Annex.Queue.addCommand cps "add" (ps++[Param "--"])

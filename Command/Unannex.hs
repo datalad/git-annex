@@ -14,6 +14,8 @@ import Annex.Link
 import qualified Annex.Queue
 import Utility.CopyFile
 import qualified Database.Keys
+import Utility.InodeCache
+import Annex.InodeSentinal
 import Git.FilePath
 import qualified Utility.RawFilePath as R
 
@@ -55,17 +57,19 @@ perform file key = do
 		-- for key' (read from the symlink) to differ from key
 		-- (cached in git).
 		Just key' -> do
-			removeassociated
+			cleanupdb
 			next $ cleanup file key'
 		-- If the file is unlocked, it can be unmodified or not and
 		-- does not need to be replaced either way.
 		Nothing -> do
-			removeassociated
+			cleanupdb
 			next $ return True
   where
-	removeassociated = 
+	cleanupdb = do
 		Database.Keys.removeAssociatedFile key
 			=<< inRepo (toTopFilePath file)
+		maybe noop Database.Keys.removeInodeCache
+			=<< withTSDelta (liftIO . genInodeCache file)
 
 cleanup :: RawFilePath -> Key -> CommandCleanup
 cleanup file key = do
