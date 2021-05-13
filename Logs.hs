@@ -91,6 +91,7 @@ otherLogs :: [RawFilePath]
 otherLogs =
 	[ numcopiesLog
 	, mincopiesLog
+	, configLog
 	, groupPreferredContentLog
 	]
 
