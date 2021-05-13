@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-05-13T16:29:41Z"
+ content="""
+The other axis is, I guess, should it include past commits to the git-annex
+branch, or only the current data? I'm inclined toward only the current
+data. The only thing that uses past data really is `git-annex log` and it's just
+not worth the added time expense. And also `git annex forget` already
+throws away the past data.
+
+There is the added wart of exported treeishes being grafted into the
+git-annex branch (to avoid them being lost in GC in some edge cases).
+It would need to do like `git annex forget` was recently fixed to, and
+include those grafts when throwing away the rest of the history.
+(See [[!commit 8e7dc958d20861a91562918e24e071f70d34cf5b]])
+"""]]

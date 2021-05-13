@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-05-13T16:55:36Z"
+ content="""
+The filtering of uuids from logs this command needs is very closely
+related to how the git-annex branch is filtered when dropping dead uuids
+and keys.
+
+Annex.Branch.Transitions.dropDead could alsmost be used as-is, just
+providing it a trustmap that has the excluded uuids marked as dead.
+
+But, it does not currently modify the trustLog, which makes sense for
+transitions, but for this the trust log needs to include only the desired
+uuids.
+
+And, providing a trustmap does have the problem that,
+if a uuid is mentioned in the branch without being in uuid.log,
+it would not be in the trustmap, and so it would not be excluded. One way
+for that to happen is well, using this command to copy only per-key info
+for a remote, but not config for a remote. Hmm. Using a filtering
+function, rather than a trustmap, would avoid this problem. But,
+dropDead does some processing to handle sameas-uuid pointing to a dead
+uuid, including a special case involving remoteLog.
+
+Implementation plan:
+
+* Address above problems with dropDead, somehow, so it can be reused.
+* Add a function (in Logs) from a key to all possible git-annex branch log
+  files for that key.
+* For each key seeked, run that function, query the branch to see which 
+  log files exist, and pass through dropDead to filter and populate
+  the temporary index. This way, the command does not need to buffer
+  the whole set of keys in memory.
+* Get a list of all non-key logs
+  `(topLevelNewUUIDBasedLogs++topLevelOldUUIDBasedLogs++otherLogs)`,
+  and pass them all through dropDead as well.
+* Refactor regraftexports from Annex.Branch, and call it after
+  constructing the filtered index.
+"""]]
