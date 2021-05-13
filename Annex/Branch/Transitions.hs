@@ -1,6 +1,6 @@
 {- git-annex branch transitions
  -
- - Copyright 2013-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -36,9 +36,9 @@ data FileTransition
 	= ChangeFile Builder
 	| PreserveFile
 
-type TransitionCalculator = GitConfig -> TrustMap -> M.Map UUID RemoteConfig -> RawFilePath -> L.ByteString -> FileTransition
+type TransitionCalculator = GitConfig -> RawFilePath -> L.ByteString -> FileTransition
 
-getTransitionCalculator :: Transition -> Maybe TransitionCalculator
+getTransitionCalculator :: Transition -> Maybe (TrustMap -> M.Map UUID RemoteConfig -> TransitionCalculator)
 getTransitionCalculator ForgetGitHistory = Nothing
 getTransitionCalculator ForgetDeadRemotes = Just dropDead
 
@@ -54,36 +54,17 @@ getTransitionCalculator ForgetDeadRemotes = Just dropDead
 -- the latter uuid, that also needs to be removed. The sameas-uuid
 -- is not removed from the remote log, for the same reason the trust log
 -- is not changed.
-dropDead :: TransitionCalculator
-dropDead gc trustmap remoteconfigmap f content = case getLogVariety gc f of
-	Just OldUUIDBasedLog
-		| f == trustLog -> PreserveFile
-		| f == remoteLog -> ChangeFile $
-			Remote.buildRemoteConfigLog $
-				M.mapWithKey minimizesameasdead $
-					dropDeadFromMapLog trustmap id $
-						Remote.parseRemoteConfigLog content
-		| otherwise -> ChangeFile $
-			UUIDBased.buildLogOld byteString $
-				dropDeadFromMapLog trustmap' id $
-					UUIDBased.parseLogOld A.takeByteString content
-	Just NewUUIDBasedLog -> ChangeFile $
-		UUIDBased.buildLogNew byteString $
-			dropDeadFromMapLog trustmap' id $
-				UUIDBased.parseLogNew A.takeByteString content
-	Just (ChunkLog _) -> ChangeFile $
-		Chunk.buildLog $ dropDeadFromMapLog trustmap' fst $
-			Chunk.parseLog content
-	Just (PresenceLog _) -> ChangeFile $ Presence.buildLog $
-		Presence.compactLog $
-			dropDeadFromPresenceLog trustmap' $
-				Presence.parseLog content
-	Just RemoteMetaDataLog -> ChangeFile $ MetaData.buildLog $
-		dropDeadFromRemoteMetaDataLog trustmap' $
-			MetaData.simplifyLog $ MetaData.parseLog content
-	Just OtherLog -> PreserveFile
-	Nothing -> PreserveFile
+dropDead :: TrustMap -> M.Map UUID RemoteConfig -> TransitionCalculator
+dropDead trustmap remoteconfigmap gc f content
+	| f == trustLog = PreserveFile
+	| f == remoteLog = ChangeFile $
+		Remote.buildRemoteConfigLog $
+			M.mapWithKey minimizesameasdead $
+				filterMapLog (notdead trustmap) id $
+					Remote.parseRemoteConfigLog content
+	| otherwise = filterBranch (notdead trustmap') gc f content
   where
+	notdead m u = M.findWithDefault def u m /= DeadTrusted
 	trustmap' = trustmap `M.union`
 		M.map (const DeadTrusted) (M.filter sameasdead remoteconfigmap)
 	sameasdead cm =
@@ -96,19 +77,37 @@ dropDead gc trustmap remoteconfigmap f content = case getLogVariety gc f of
 		| otherwise = l
 	minimizesameasdead' c = M.restrictKeys c (S.singleton sameasUUIDField)
 
-dropDeadFromMapLog :: TrustMap -> (k -> UUID) -> M.Map k v -> M.Map k v
-dropDeadFromMapLog trustmap getuuid =
-	M.filterWithKey $ \k _v -> notDead trustmap getuuid k
+filterBranch :: (UUID -> Bool) -> TransitionCalculator
+filterBranch wantuuid gc f content = case getLogVariety gc f of
+	Just OldUUIDBasedLog -> ChangeFile $
+		UUIDBased.buildLogOld byteString $
+			filterMapLog wantuuid id $
+				UUIDBased.parseLogOld A.takeByteString content
+	Just NewUUIDBasedLog -> ChangeFile $
+		UUIDBased.buildLogNew byteString $
+			filterMapLog wantuuid id $
+				UUIDBased.parseLogNew A.takeByteString content
+	Just (ChunkLog _) -> ChangeFile $
+		Chunk.buildLog $ filterMapLog wantuuid fst $
+			Chunk.parseLog content
+	Just (LocationLog _) -> ChangeFile $ Presence.buildLog $
+		Presence.compactLog $
+			filterLocationLog wantuuid $
+				Presence.parseLog content
+	Just (UrlLog _) -> PreserveFile
+	Just RemoteMetaDataLog -> ChangeFile $ MetaData.buildLog $
+		filterRemoteMetaDataLog wantuuid $
+			MetaData.simplifyLog $ MetaData.parseLog content
+	Just OtherLog -> PreserveFile
+	Nothing -> PreserveFile
 
-{- Presence logs can contain UUIDs or other values. Any line that matches
- - a dead uuid is dropped; any other values are passed through. -}
-dropDeadFromPresenceLog :: TrustMap -> [Presence.LogLine] -> [Presence.LogLine]
-dropDeadFromPresenceLog trustmap =
-	filter $ notDead trustmap (toUUID . Presence.fromLogInfo . Presence.info)
+filterMapLog :: (UUID -> Bool) -> (k -> UUID) -> M.Map k v -> M.Map k v
+filterMapLog wantuuid getuuid = M.filterWithKey $ \k _v -> wantuuid (getuuid k)
 
-dropDeadFromRemoteMetaDataLog :: TrustMap -> MetaData.Log MetaData -> MetaData.Log MetaData
-dropDeadFromRemoteMetaDataLog trustmap =
-	MetaData.filterOutEmpty . MetaData.filterRemoteMetaData (notDead trustmap id)
+filterLocationLog :: (UUID -> Bool) -> [Presence.LogLine] -> [Presence.LogLine]
+filterLocationLog wantuuid = filter $
+	wantuuid . toUUID . Presence.fromLogInfo . Presence.info
 
-notDead :: TrustMap -> (v -> UUID) -> v -> Bool
-notDead trustmap a v = M.findWithDefault def (a v) trustmap /= DeadTrusted
+filterRemoteMetaDataLog :: (UUID -> Bool) -> MetaData.Log MetaData -> MetaData.Log MetaData
+filterRemoteMetaDataLog wantuuid = 
+	MetaData.filterOutEmpty . MetaData.filterRemoteMetaData wantuuid

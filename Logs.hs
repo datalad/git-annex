@@ -1,6 +1,6 @@
 {- git-annex log file names
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,7 +20,8 @@ data LogVariety
 	= OldUUIDBasedLog
 	| NewUUIDBasedLog
 	| ChunkLog Key
-	| PresenceLog Key
+	| LocationLog Key
+	| UrlLog Key
 	| RemoteMetaDataLog
 	| OtherLog
 	deriving (Show)
@@ -33,10 +34,11 @@ getLogVariety config f
 	| f `elem` topLevelNewUUIDBasedLogs = Just NewUUIDBasedLog
 	| isRemoteStateLog f = Just NewUUIDBasedLog
 	| isRemoteContentIdentifierLog f = Just NewUUIDBasedLog
-	| isChunkLog f = ChunkLog <$> extLogFileKey chunkLogExt f
 	| isRemoteMetaDataLog f = Just RemoteMetaDataLog
-	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
-	| otherwise = PresenceLog <$> firstJust (presenceLogs config f)
+	| isMetaDataLog f || f `elem` otherTopLevelLogs = Just OtherLog
+	| otherwise = (LocationLog <$> locationLogFileKey config f)
+		<|> (ChunkLog <$> extLogFileKey chunkLogExt f)
+		<|> (UrlLog  <$> urlLogFileKey f)
 
 {- Typical number of log files that may be read while processing a single
  - key. This is used to size a cache.
@@ -79,16 +81,9 @@ topLevelNewUUIDBasedLogs =
 	[ exportLog
 	]
 
-{- All the ways to get a key from a presence log file -}
-presenceLogs :: GitConfig -> RawFilePath -> [Maybe Key]
-presenceLogs config f =
-	[ urlLogFileKey f
-	, locationLogFileKey config f
-	]
-
-{- Top-level logs that are neither UUID based nor presence logs. -}
-otherLogs :: [RawFilePath]
-otherLogs =
+{- Other top-level logs. -}
+otherTopLevelLogs :: [RawFilePath]
+otherTopLevelLogs =
 	[ numcopiesLog
 	, mincopiesLog
 	, configLog
@@ -191,9 +186,6 @@ chunkLogFile config key =
 
 chunkLogExt :: S.ByteString
 chunkLogExt = ".log.cnk"
-
-isChunkLog :: RawFilePath -> Bool
-isChunkLog path = chunkLogExt `S.isSuffixOf` path
 
 {- The filename of the metadata log for a given key. -}
 metaDataLogFile :: GitConfig -> Key -> RawFilePath
