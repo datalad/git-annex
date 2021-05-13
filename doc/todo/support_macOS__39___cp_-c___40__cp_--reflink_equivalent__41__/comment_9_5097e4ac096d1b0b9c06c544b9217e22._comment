@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-05-13T15:51:41Z"
+ content="""
+fork/exec can end up being fairly significant overhead when the files are
+small enough. And, at least on linux systems, most people are probably not
+using a filesystem supporting CoW, so most people would pay that perf
+penalty. That's why the current code is optimised to avoid it,
+at least in places where it's seemed worthwhile.
+
+I'll suggest again: Just start with copyCoW, leave copyFileExternal
+not doing CoW copies, I'll accept that easy patch. And then if any of
+the 6 or so call sites of copyFileExternal end up being ones you want to
+make support CoW on OSX, convert them to use tryCopyCoW.
+
+(Alternatively, if there were a haskell library that provided the syscall
+that does a CoW copy, it could just use it.)
+"""]]
