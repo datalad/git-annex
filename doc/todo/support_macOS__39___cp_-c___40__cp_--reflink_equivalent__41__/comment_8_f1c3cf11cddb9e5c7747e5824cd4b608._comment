@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 8"
+ date="2021-05-13T10:26:53Z"
+ content="""
+I missed `copyFileExternal` actually using `--reflink=auto` instead of `always`, thus letting `cp` handle falling back. Although, `cp` would have to do the check and fallback internally for every call we make to it too so there might not be that much of an performance impact of doing the same in GA.
+
+Tracking the reflinkability for a batch of `cp`s is a good idea though and I like it as a generally cleaner solution but I'm not so sure about any real performance benefits of that.
+
+I tried using tryCopyCoW in copyFileExternal (seemed like the most obvious thing to do) but it doesn't seem to support the `CopyMetaData` arg `copyFileExternal` is supposed to be able to handle, right?
+"""]]
