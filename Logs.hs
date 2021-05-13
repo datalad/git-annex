@@ -60,6 +60,26 @@ getLogVariety config f
 logFilesToCache :: Int
 logFilesToCache = 2
 
+{- All the log files that might contain information about a key. -}
+keyLogFiles :: GitConfig -> Key -> [RawFilePath]
+keyLogFiles config k = 
+	[ locationLogFile config k
+	, urlLogFile config k
+	, remoteStateLogFile config k
+	, metaDataLogFile config k
+	, remoteMetaDataLogFile config k
+	, remoteContentIdentifierLogFile config k
+	, chunkLogFile config k
+	] ++ oldurlLogs config k
+
+{- All the log files that do not contain information specific to a key. -}
+nonKeyLogFiles :: [RawFilePath]
+nonKeyLogFiles = concat
+	[ topLevelNewUUIDBasedLogs
+	, topLevelOldUUIDBasedLogs
+	, otherTopLevelLogs
+	]
+
 {- All the old-format uuid-based logs stored in the top of the git-annex branch. -}
 topLevelOldUUIDBasedLogs :: [RawFilePath]
 topLevelOldUUIDBasedLogs =

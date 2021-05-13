@@ -26,15 +26,14 @@ uuid, including a special case involving remoteLog.
 Implementation plan:
 
 * Address above problems with dropDead, somehow, so it can be reused.
+  (done; refactored to filterBranch)
 * Add a function (in Logs) from a key to all possible git-annex branch log
-  files for that key.
+  files for that key. (done; keyLogFiles)
 * For each key seeked, run that function, query the branch to see which 
   log files exist, and pass through dropDead to filter and populate
   the temporary index. This way, the command does not need to buffer
   the whole set of keys in memory.
-* Get a list of all non-key logs
-  `(topLevelNewUUIDBasedLogs++topLevelOldUUIDBasedLogs++otherLogs)`,
-  and pass them all through dropDead as well.
+* Pass nonKeyLogFiles through dropDead as well.
 * Refactor regraftexports from Annex.Branch, and call it after
   constructing the filtered index.
 """]]
