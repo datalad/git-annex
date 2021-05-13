@@ -12,3 +12,5 @@ WDYT Joey?
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> In progress in the `filter-branch` branch. --[[Joey]]
