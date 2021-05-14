@@ -53,18 +53,20 @@ multiple times.
 
   When including information about a key, include information specific to
   this repository. The repository can be specified with a uuid or the name
-  of a remote.
+  of a remote. This option can be used repeatedly to include several
+  repositories.
+
+* `--include-all-key-information`
+
+  Include key information for all repositories, except any excluded with
+  the `--exclude-key-information-for` option.
 
 * `--exclude-key-information-for=repo`
 
   When including information about a key, exclude information specific to
   this repository. The repository can be specified with a uuid or the name
-  of a remote. When this is used, all repositories that are not
-  excluded will be included.
-
-* `--include-all-key-information`
-
-  Include key information for all repositories.
+  of a remote. This option can be used repeatedly to exclude
+  several repositories.
 
 * `--include-repo-config-for=repo`
 
@@ -74,17 +76,19 @@ multiple times.
   This includes the configuration of special remotes, which may include
   embedded credentials, or encryption parameters. It also includes trust
   settings, preferred content, etc. It does not include information
-  about any git-annex keys.
+  about any git-annex keys. This option can be used repeatedly to include
+  several repositories.
+
+* `--include-all-repo-config`
+
+  Include the configuration of all repositories, except for any excluded
+  with the `--exclude-repo-config-for` option.
 
 * `--exclude-repo-config-for=repo`
 
   Exclude configuration specific to this repository. 
   The repository can be specified with a uuid or the name of a remote.
-  When this is used, all repositories that are not excluded will be included.
-
-* `--include-all-repo-config`
-
-  Include the configuration of all repositories.
+  This option can be used repeatedly to exclude several repositories.
 
 * `--include-global-config`
 
@@ -92,10 +96,6 @@ multiple times.
 
   This includes configs stored by [[git-annex-numcopies]](1),
   [[git-annex-config]](1), etc.
-
-* `--exclude-global-config`
-
-  Do not include global configuration.
 
 # EXAMPLES
 
@@ -117,7 +117,8 @@ about which annexed files are stored in it, but without sharing anything
 about the configuration of the remote.
 
 	git-annex filter-branch --all --include-all-key-information \
-		--exclude-repo-config-for=bar --include-global-config
+		--include-all-repo-config --exclude-repo-config-for=bar \
+		--include-global-config
 
 # SEE ALSO
 
