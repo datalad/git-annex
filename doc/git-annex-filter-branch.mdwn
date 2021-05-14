@@ -15,10 +15,11 @@ and git-annex there will automatically merge that into its git-annex
 branch. This allows publishing some information from your git-annex branch,
 without publishing the whole thing.
 
-Other ways to avoid publishing information from a git-annex branch
-include [[git-annex-forget]](1), the `annex.private` git config,
-and the `--private` option to [[git-annex-initremote](1). Those are much
-easier to use, but this provides full control for those who need it.
+Other ways to avoid publishing information from a git-annex branch,
+or remove information from it include [[git-annex-forget]](1), the 
+`annex.private` git config, and the `--private` option to
+[[git-annex-initremote](1). Those are much easier to use, but this
+provides full control for those who need it.
 
 With no options, no information at all will be included from the git-annex
 branch. Use options to specify what to include. All options can be specified
@@ -82,6 +83,8 @@ multiple times.
   When this is used, all repositories that are not excluded will be included.
 
 * `--include-all-repo-config`
+
+  Include the configuration of all repositories.
 
 * `--include-global-config`
 
