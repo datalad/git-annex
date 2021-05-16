@@ -1,0 +1,8 @@
+I've re-connected my PC and laptop directly again (previously, they could only see each other via a NAS) to get location tracking to work at its best but now that I have, there's an issue:
+
+My laptop is a MBP that goes to sleep and, on battery, can't even be woken up. When it does this, trying to sync with it completely stalls git-annex. It doesn't even push my local changes to the NAS anymore because it's waiting on the laptop that won't ever answer until I manually wake it.
+
+I don't care if that machine is unreachable temporarily, it happens. Ideally git-annex shouldn't be dead-set on trying to sync with it or even treat being unable to sync with it as an error.  
+Can I reach that behaviour or at least stop it from stalling somehow (a timeout perhaps)?
+
+I've looked through the options but couldn't find anything that seemed relevant.
