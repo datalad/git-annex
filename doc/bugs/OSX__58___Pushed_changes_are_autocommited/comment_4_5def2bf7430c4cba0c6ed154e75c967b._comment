@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 4"
+ date="2021-05-16T11:37:25Z"
+ content="""
+Neither of those options are set AFAICT.
+
+The assistant not trying to commit anything while it's waiting for git to do something else sound like a good idea to me aswell. Shouldn't such behaviour at least be caught by a lockfile though?
+
+Are you able to reproduce the assistant turining unlocked files into merge markers Joey?
+"""]]
