@@ -25,6 +25,12 @@ With no options, no information at all will be included from the git-annex
 branch. Use options to specify what to include. All options can be specified
 multiple times.
 
+Note that, when the repository contains information about a private
+repository (due to `annex.private` being set, or `--private` being used
+with [[git-annex-initremote](1)), that private information will be included
+when allowed by the options, even though it is not recorded on the git-annex
+branch.
+
 # OPTIONS
 
 * `path`

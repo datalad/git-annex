@@ -22,6 +22,7 @@ import Git.Index
 import Git.Env
 import Git.UpdateIndex
 import qualified Git.LsTree as LsTree
+import qualified Git.Branch as Git
 import Utility.RawFilePath
 
 import qualified Data.Set as S
@@ -107,12 +108,12 @@ seek :: FilterBranchOptions -> CommandSeek
 seek o = withOtherTmp $ \tmpdir -> do
 	let tmpindex = tmpdir P.</> "index"
 	gc <- Annex.getGitConfig
-	r' <- Annex.inRepo $ \r ->
+	tmpindexrepo <- Annex.inRepo $ \r ->
 		addGitEnv r indexEnv (fromRawFilePath tmpindex)
-	withUpdateIndex r' $ \h -> do
+	withUpdateIndex tmpindexrepo $ \h -> do
 		keyinfomatcher <- mkUUIDMatcher (keyInformation o)
-		configmatcher <- mkUUIDMatcher (repoConfig o)
-		
+		repoconfigmatcher <- mkUUIDMatcher (repoConfig o)
+
 		let addtoindex f sha = liftIO $ streamUpdateIndex' h $
 			pureStreamer $ L.fromStrict $ LsTree.formatLsTree $ LsTree.TreeItem
 				{ LsTree.mode = fromTreeItemType TreeFile
@@ -133,12 +134,14 @@ seek o = withOtherTmp $ \tmpdir -> do
 				-- up the sha of the file in the branch.
 				PreserveFile -> addtoindex f =<< hashBlob c
 
+		-- Add information for all keys that are being included,
+		-- filtering out information for repositories that are not
+		-- being included.
 		let addkeyinfo k = startingCustomOutput k $ do
 			forM_ (keyLogFiles gc k) $ \f ->
 				filterbanch keyinfomatcher f
 					=<< Annex.Branch.get f
 			next (return True)
-
 		let seeker = AnnexedFileSeeker
 			{ startAction = \_ _ k -> addkeyinfo k
 			, checkContentPresent = Nothing
@@ -154,7 +157,27 @@ seek o = withOtherTmp $ \tmpdir -> do
 				(withFilesInGitAnnex ww seeker)
 				=<< workTreeItems ww (includeFiles o)
 	
-	-- TODO output commit
+		-- Add repository configs for all repositories that are
+		-- being included.
+		-- TODO need to include configs for sameas remotes
+		forM_ topLevelUUIDBasedLogs $ \f ->
+			filterbanch repoconfigmatcher f
+				=<< Annex.Branch.get f
+
+		-- Add global configs when included.
+		when (includeGlobalConfig o) $
+			forM_ otherTopLevelLogs $ \f -> do
+				c <- Annex.Branch.get f
+				unless (L.null c) $
+					addtoindex f =<< hashBlob c
+
+	-- Commit the temporary index, and output the result.
+	t <- liftIO $ Git.writeTree tmpindexrepo
 	liftIO $ removeWhenExistsWith removeLink tmpindex
+	cmode <- annexCommitMode <$> Annex.getGitConfig
+	cmessage <- Annex.Branch.commitMessage
+	c <- inRepo $ Git.commitTree cmode cmessage [] t
+	-- TODO export.log trees
+	liftIO $ putStrLn (fromRef c)
   where
 	ww = WarnUnmatchLsFiles

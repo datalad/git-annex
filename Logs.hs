@@ -72,13 +72,9 @@ keyLogFiles config k =
 	, chunkLogFile config k
 	] ++ oldurlLogs config k
 
-{- All the log files that do not contain information specific to a key. -}
-nonKeyLogFiles :: [RawFilePath]
-nonKeyLogFiles = concat
-	[ topLevelNewUUIDBasedLogs
-	, topLevelOldUUIDBasedLogs
-	, otherTopLevelLogs
-	]
+{- All uuid-based logs stored in the top of the git-annex branch. -}
+topLevelUUIDBasedLogs :: [RawFilePath]
+topLevelUUIDBasedLogs = topLevelNewUUIDBasedLogs ++ topLevelOldUUIDBasedLogs
 
 {- All the old-format uuid-based logs stored in the top of the git-annex branch. -}
 topLevelOldUUIDBasedLogs :: [RawFilePath]

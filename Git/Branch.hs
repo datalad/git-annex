@@ -1,6 +1,6 @@
 {- git branch stuff
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -166,7 +166,7 @@ commitCommand' runner commitmode ps = runner $
  -}
 commit :: CommitMode -> Bool -> String -> Branch -> [Ref] -> Repo -> IO (Maybe Sha)
 commit commitmode allowempty message branch parentrefs repo = do
-	tree <- getSha "write-tree" $ pipeReadStrict [Param "write-tree"] repo
+	tree <- writeTree repo
 	ifM (cancommit tree)
 		( do
 			sha <- commitTree commitmode message parentrefs tree repo
@@ -184,6 +184,9 @@ commit commitmode allowempty message branch parentrefs repo = do
 commitAlways :: CommitMode -> String -> Branch -> [Ref] -> Repo -> IO Sha
 commitAlways commitmode message branch parentrefs repo = fromJust
 	<$> commit commitmode True message branch parentrefs repo
+
+writeTree :: Repo -> IO Sha
+writeTree repo = getSha "write-tree" $ pipeReadStrict [Param "write-tree"] repo
 
 commitTree :: CommitMode -> String -> [Ref] -> Ref -> Repo -> IO Sha
 commitTree commitmode message parentrefs tree repo =
