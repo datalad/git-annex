@@ -24,6 +24,7 @@ module Annex.Branch (
 	change,
 	maybeChange,
 	commitMessage,
+	createMessage,
 	commit,
 	forceCommit,
 	getBranch,
@@ -129,7 +130,8 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 			<$> branchsha
 	go False = withIndex' True $ do
 		cmode <- annexCommitMode <$> Annex.getGitConfig
-		inRepo $ Git.Branch.commitAlways cmode "branch created" fullname []
+		cmessage <- createMessage
+		inRepo $ Git.Branch.commitAlways cmode cmessage fullname []
 	use sha = do
 		setIndexSha sha
 		return sha
@@ -362,6 +364,10 @@ set jl ru f c = do
  - to the git-annex brach. -}
 commitMessage :: Annex String
 commitMessage = fromMaybe "update" . annexCommitMessage <$> Annex.getGitConfig
+
+{- Commit message used when creating the branch. -}
+createMessage :: Annex String
+createMessage = fromMaybe "branch created" . annexCommitMessage <$> Annex.getGitConfig
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
