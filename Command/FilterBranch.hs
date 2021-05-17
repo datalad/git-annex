@@ -15,7 +15,10 @@ import qualified Annex.Branch
 import Annex.Branch.Transitions (filterBranch, FileTransition(..))
 import Annex.HashObject
 import Annex.Tmp
+import Annex.SpecialRemote.Config
+import Types.ProposedAccepted
 import Logs
+import Logs.Remote
 import Git.Types
 import Git.FilePath
 import Git.Index
@@ -25,6 +28,7 @@ import qualified Git.LsTree as LsTree
 import qualified Git.Branch as Git
 import Utility.RawFilePath
 
+import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Builder
@@ -91,18 +95,27 @@ parseRepositoryOption s h = parseUUIDOption <$> strOption
 	)
 
 mkUUIDMatcher :: [IncludeExclude (DeferredParse UUID)] -> Annex (UUID -> Bool)
-mkUUIDMatcher l = mkUUIDMatcher' <$> mapM get l
+mkUUIDMatcher l = do
+	sameasmap <- M.mapMaybe
+		(toUUID . fromProposedAccepted <$$> M.lookup sameasUUIDField)
+		<$> remoteConfigMap
+	mkUUIDMatcher' sameasmap <$> mapM get l
   where
 	get (Include v) = Include <$> getParsed v
 	get (Exclude v) = Exclude <$> getParsed v
 	get IncludeAll = pure IncludeAll
 
-mkUUIDMatcher' :: [IncludeExclude UUID] -> (UUID -> Bool)
-mkUUIDMatcher' l = \u -> 
-	(S.member (Include u) includes || S.member IncludeAll includes)
+mkUUIDMatcher' :: M.Map UUID UUID -> [IncludeExclude UUID] -> (UUID -> Bool)
+mkUUIDMatcher' sameasmap l = \u -> 
+	let sameas = M.lookup u sameasmap
+	in ( S.member (Include u) includes
+		|| S.member IncludeAll includes
+		|| maybe False (\u' -> S.member (Include u') includes) sameas
+		)
 		&& S.notMember (Exclude u) excludes
+		&& maybe True (\u' -> S.notMember (Exclude u') excludes) sameas
   where
-	(includes, excludes) = S.partition isInclude (S.fromList l)
+	(includes, excludes) = (S.partition isInclude (S.fromList l))
 
 seek :: FilterBranchOptions -> CommandSeek
 seek o = withOtherTmp $ \tmpdir -> do
@@ -159,7 +172,6 @@ seek o = withOtherTmp $ \tmpdir -> do
 	
 		-- Add repository configs for all repositories that are
 		-- being included.
-		-- TODO need to include configs for sameas remotes
 		forM_ topLevelUUIDBasedLogs $ \f ->
 			filterbanch repoconfigmatcher f
 				=<< Annex.Branch.get f
