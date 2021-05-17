@@ -7,7 +7,8 @@
 
 module Annex.Branch.Transitions (
 	FileTransition(..),
-	getTransitionCalculator
+	getTransitionCalculator,
+	filterBranch,
 ) where
 
 import Common

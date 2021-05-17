@@ -404,6 +404,12 @@ content from the key-value store.
   
   See [[git-annex-forget]](1) for details.
 
+* `filter-branch`
+
+  Produces a filtered version of the git-annex branch.
+  
+  See [[git-annex-filter-branch]](1) for details.
+
 * `repair`
 
   This can repair many of the problems with git repositories that `git fsck`
@@ -1008,7 +1014,7 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 * `annex.commitmessage`
 
   When git-annex updates the git-annex branch, it usually makes up
-  its own commit message ("update"), since users rarely look at or
+  its own commit message (eg "update"), since users rarely look at or
   care about changes to that branch. If you do care, you can
   specify this setting by running commands with
   `-c annex.commitmessage=whatever`

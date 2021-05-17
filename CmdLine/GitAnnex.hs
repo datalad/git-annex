@@ -68,6 +68,7 @@ import qualified Command.Unlock
 import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.PostReceive
+import qualified Command.FilterBranch
 import qualified Command.Find
 import qualified Command.FindRef
 import qualified Command.Whereis
@@ -202,6 +203,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexGlobalOption
 	, Command.Unused.cmd
 	, Command.DropUnused.cmd
 	, Command.AddUnused.cmd
+	, Command.FilterBranch.cmd
 	, Command.Find.cmd
 	, Command.FindRef.cmd
 	, Command.Whereis.cmd
