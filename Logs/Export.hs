@@ -23,6 +23,7 @@ module Logs.Export (
 ) where
 
 import qualified Data.Map as M
+import qualified Data.ByteString as B
 
 import Annex.Common
 import qualified Annex.Branch
@@ -119,10 +120,10 @@ logExportExcluded :: UUID -> ((Git.Tree.TreeItem -> IO ()) -> Annex a) -> Annex 
 logExportExcluded u a = do
 	logf <- fromRepo $ gitAnnexExportExcludeLog u
 	withLogHandle logf $ \logh -> do
-		liftIO $ hSetNewlineMode logh noNewlineTranslation
 		a (writer logh)
   where
-	writer logh = hPutStrLn logh
+	writer logh = B.hPutStr logh
+		. flip B.snoc (fromIntegral (ord '\n'))
 		. Git.LsTree.formatLsTree
 		. Git.Tree.treeItemToLsTreeItem
 

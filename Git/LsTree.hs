@@ -28,6 +28,7 @@ import Utility.Attoparsec
 
 import Numeric
 import Data.Either
+import Data.Char
 import System.Posix.Types
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -146,9 +147,9 @@ parserLsTree long = case long of
 
 {- Inverse of parseLsTree. Note that the long output format is not
  - generated, so any size information is not included. -}
-formatLsTree :: TreeItem -> String
-formatLsTree ti = unwords
-	[ showOct (mode ti) ""
-	, decodeBS (typeobj ti)
-	, fromRef (sha ti)
-	] ++ ('\t' : fromRawFilePath (getTopFilePath (file ti)))
+formatLsTree :: TreeItem -> S.ByteString
+formatLsTree ti = S.intercalate (S.singleton (fromIntegral (ord ' ')))
+	[ encodeBS' (showOct (mode ti) "")
+	, typeobj ti
+	, fromRef' (sha ti)
+	] <> (S.cons (fromIntegral (ord '\t')) (getTopFilePath (file ti)))
