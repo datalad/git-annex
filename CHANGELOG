@@ -1,5 +1,7 @@
 git-annex (8.20210429) UNRELEASED; urgency=medium
 
+  * filter-branch: New command, useful to produce a filtered version of the
+    git-annex branch, eg when splitting a repository.
   * fromkey: Create an unlocked file when used in an adjusted branch
     where the file should be unlocked, or when configured by annex.addunlocked.
   * Fix behavior of several commands, including reinject, addurl, and rmurl
