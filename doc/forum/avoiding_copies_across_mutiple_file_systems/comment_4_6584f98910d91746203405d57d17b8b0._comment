@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://esgf-node.llnl.gov/esgf-idp/openid/tom_clune"
+ nickname="tom_clune"
+ avatar="http://cdn.libravatar.org/avatar/ab2fcb3663856220387ef216fa46d9717513d750fd9ee5a3504c4c7b560ad96e"
+ subject="update"
+ date="2021-05-17T14:53:19Z"
+ content="""
+I just wanted to confirm that the suggestion of linking .git/annex (as opposed to .git/annex/objects)  appears to work as well.   I'm not sure what I did wrong on my earlier attempt.
+
+Performance measurements will not be available for quite some time, but anecdotally both approaches seem extremely fast.
+
+"""]]
