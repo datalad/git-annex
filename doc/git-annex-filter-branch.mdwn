@@ -25,7 +25,7 @@ With no options, no information at all will be included from the git-annex
 branch. Use options to specify what to include. All options can be specified
 multiple times.
 
-Note that, when the repository contains information about a private
+When the repository contains information about a private
 repository (due to `annex.private` being set, or `git-annex initremote
 --private` being used), that private information will be included when
 allowed by the options, even though it is not recorded on the git-annex
@@ -34,6 +34,14 @@ branch.
 When a repository was created with `git annex initremote --sameas=foo`,
 its information will be included when the information for foo is,
 and excluded when foo is excluded.
+
+When a special remote is configured with importtree=yes or exporttree=yes,
+normally the git tree corresponding to the repository is included in
+the git-annex branch, to make sure it does not get garbage collected
+by `git gc`. Those trees are *not* included when filtering the git-annex
+branch. Usually this will not cause any problems, but if such a tree does
+get garbage collected, it will prevent accessing files on the special
+remote, until the next time a tree is imported or exported to it.
 
 # OPTIONS
 

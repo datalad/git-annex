@@ -189,7 +189,6 @@ seek o = withOtherTmp $ \tmpdir -> do
 	cmode <- annexCommitMode <$> Annex.getGitConfig
 	cmessage <- Annex.Branch.commitMessage
 	c <- inRepo $ Git.commitTree cmode cmessage [] t
-	-- TODO export.log trees
 	liftIO $ putStrLn (fromRef c)
   where
 	ww = WarnUnmatchLsFiles
