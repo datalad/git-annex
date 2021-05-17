@@ -1,13 +1,78 @@
 [[!meta title="Splitting a git-annex repository"]]
 
-Note: this is the reverse of [[migrating two seperate disconnected directories to git annex]].
-
 I have a [git annex](https://git-annex.branchable.com/) repo for all my media
 that has grown to 57866 files and git operations are getting slow, especially
 on external spinning hard drives, so I decided to split it into separate
 repositories.
 
-This is how I did it, with some help from `#git-annex`. Suppose the old big repo is at `~/oldrepo`:
+Here is how to split out a repository that contains a subset of the files
+in the larger repository. The larger repository is left as-is, but similar
+methods can be used to remove the files from it. Or, it can be deleted
+once it gets split up into several smaller repositories.
+
+(This is the reverse of [[migrating two seperate disconnected directories
+to git annex]].)
+
+Suppose the old big repo is at `~/oldrepo`, and you want to split out
+photos from it, and those are all located inside `~/oldrepo/photos`.
+
+First, let's create a new empty repo.
+
+	mkdir ~/photos
+	cd photos
+	git init
+
+Now to populate the new repo with the files we want from the old repo. We
+can use `git filter-branch` to create a git branch that contains only the
+history of the files in `photos`. That command has a *lot* of options and
+ways to use it, but here is one simple way:
+
+	cd ~/oldrepo
+
+	# filter a branch to with only the files wanted by the new repository
+	git branch split-master master
+	git filter-branch --prune-empty --subdirectory-filter photos split-master
+
+	# replace the new repo's master branch with the filtered branch
+	git push ~/photos split-master
+	git branch -D split-master
+	cd ~/photos
+	git reset --hard split-master
+	git branch -d split-master
+
+Next, the git-annex branch needs to be filtered to include only
+the files in `photos`, and that filtered branch sent to the new repository.
+That can be done with the [[git-annex-filter-branch]](1) command.
+
+	cd ~/oldrepo
+	annexrev=$(git annex filter-branch photos --include-all-key-information --include-all-repo-config --include-global-config)
+	git push ~/photos $annexrev:refs/heads/git-annex
+
+Next, initialize git-annex on the new repository. This uses
+the same annex.uuid as was in the old repository. That's ok, because
+the repository that's been split off will never have the old repository
+as a remote.
+
+	cd ~/photos
+	git annex reinit $(git config --file ../tofilter/.git/config annex.uuid)
+
+Finally the annexed file contents need to be copied to the new repository:
+
+	cd ~/photos
+
+	# Hardlink all the annexed data from the old repo
+	cp -rl ~/oldrepo/.git/annex/objects .git/annex/
+
+	# Remove unneeded hard links
+	git annex unused --quiet
+	git annex drop --unused --force
+
+	# Fix up annex links to content and make sure it's all ok.
+	git annex fsck
+
+# alternative older method
+
+Here is another way to do it. Suppose the old big repo is at `~/oldrepo`:
 
 ```
 # Create a new repo for photos only

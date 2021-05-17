@@ -3,8 +3,14 @@
  subject="""comment 1"""
  date="2017-05-11T16:28:32Z"
  content="""
-This is a simple way to split a repository, but the resulting split git
-repository will be larger than is really necessary.
+2021 update: The new [[git-annex-filter-branch]] command
+can be used to produce a filtered version of the git-annex branch that only
+includes information for the files you want. I have updated the tip to
+show how to do it that way, and kept the old way as an alternative
+
+The old, alternative way is a simple way to split a repository, but the
+resulting split git repository will be larger than is really necessary.
+(The new method avoids this problem.)
 
 When you `dropunused` all the hard links that are not present in the
 repository, git-annex will commit a log to the git-annex branch saying "I
