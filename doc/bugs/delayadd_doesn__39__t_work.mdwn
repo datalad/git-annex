@@ -8,6 +8,7 @@ annex.delayadd doesn't seem to do anything.
 git init test
 cd test
 git annex init
+git annex assistant
 git config annex.delayadd 9999999
 echo `date` > test
 git log
