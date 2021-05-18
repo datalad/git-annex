@@ -1,0 +1,25 @@
+We're experiencing a zombie outbreak:
+
+```
+user 25976  0.0  0.0   6808  1240 ?        S    17:17   0:00          \_ /opt/git-annex.linux/exe/git --library-path /opt/git-annex.linux//lib/x86_64-linux-gnu: /opt/git-annex.linux/shimmed/git/git annex get --jobs 4 --batch -z
+user 26001 88.4  0.2 1076112312 41728 ?    Sl   17:17   4:09              \_ /opt/git-annex.linux/exe/git-annex --library-path /opt/git-annex.linux//lib/x86_64-linux-gnu: /opt/git-annex.linux/shimmed/git-annex/git-annex get --jobs 4 --batch -z
+user 26278  0.0  0.0      0     0 ?        Z    17:17   0:00                  \_ [git] <defunct>
+user 26279  0.0  0.0      0     0 ?        Z    17:17   0:00                  \_ [git] <defunct>
+user 26474  0.0  0.0      0     0 ?        Z    17:17   0:00                  \_ [git] <defunct>
+user 26475  0.0  0.0      0     0 ?        Z    17:17   0:00                  \_ [git] <defunct>
+user 26735  0.0  0.0      0     0 ?        Z    17:17   0:00                  \_ [git] <defunct>
+user 26737  0.0  0.0      0     0 ?        Z    17:17   0:00                  \_ [git] <defunct>
+...
+```
+
+over 1229 and climbing as I type.
+
+It's git-annex version: 8.20210331-g1fb59a63a
+
+I've now stopped and restarted the 'git-annex get', but without `--jobs 4`, and this time it appears to have two zombie git processes, but it's not increasing as it gets more objects.
+
+I'm unsure how to debug what is wrong, so seeking guidance.
+
+Tomorrow I'll start to see if I can reproduce with older/newer versions of git-annex.
+
+
