@@ -1,0 +1,26 @@
+Ben is trying to troubleshoot an issue with ora external special remote [datalad/issues/5613](https://github.com/datalad/datalad/issues/5613) which seems (I didn't check, Michael [bisected](https://github.com/datalad/datalad/issues/5613#issuecomment-828731447)) to start with  [8.20200501-67-gc1cd40208 AKA 8.20200522~38](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=c1cd40208144b9aa2e65690bedf538780f2e47d1)
+
+```
+% git annex --debug copy --to inm7-storage --key MD5E-s190--e6e1f4d3923cfd861e23f0f4cb20fa03.mat     
+...
+[2021-04-28 19:04:24.889361743] /home/mih/venvs/datalad/bin/git-annex-remote-ora[1] --> TRANSFER-SUCCESS STORE MD5E-s190--e
+6e1f4d3923cfd861e23f0f4cb20fa03.mat
+[2021-04-28 19:04:24.889712207] /home/mih/venvs/datalad/bin/git-annex-remote-ora[1] <-- REMOVE MD5E-s190--e6e1f4d3923cfd861
+e23f0f4cb20fa03.mat
+[2021-04-28 19:04:24.896431701] /home/mih/venvs/datalad/bin/git-annex-remote-ora[1] --> REMOVE-SUCCESS MD5E-s190--e6e1f4d39
+23cfd861e23f0f4cb20fa03.mat
+
+  content changed while it was being sent
+failed
+[2021-04-28 19:04:24.944472153] process [173173] done ExitSuccess
+git-annex: copy: 1 failed
+```
+
+so from all looks everything went well but then git-annex decided that file has changed (locally?).  
+
+Could there be more information somehow (e.g. that size changed, file disappeared, inode changed, ...)?
+
+May be extra logging could already be triggered with some new more detailed debug info?
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
