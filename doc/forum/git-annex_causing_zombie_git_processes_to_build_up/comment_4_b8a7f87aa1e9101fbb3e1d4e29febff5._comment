@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-05-19T14:53:30Z"
+ content="""
+Pass --debug to git-annex, it will output the git commands it runs along
+with their pid in [brackets], correlate that to the pid of a zombie and
+tell me what the specific git command is that has the problem.
+"""]]
