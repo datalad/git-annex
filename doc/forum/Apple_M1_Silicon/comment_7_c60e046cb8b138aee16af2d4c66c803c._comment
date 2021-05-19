@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="strmd"
+ avatar="http://cdn.libravatar.org/avatar/035707b9756129bbdea6b36a7f7b38d3"
+ subject="comment 7"
+ date="2021-05-19T06:33:02Z"
+ content="""
+Update: To me, this seems to be related to Apple's System Integrity Protection somehow, maybe related to the OS upgrade.
+
+Manually whitelisting the entire contents of the application package under \"Full Disk Access\" seemed to help, at first. But then various commands were still a no-go, as per above. Perhaps because some of the tooling overlap with Homebrew etc.
+
+Maybe if I was just using the webapp I could try again and reinstall everything, but as my needs are more specific I eventually gave up and will wait for proper support. Shouldn't be too far off now.
+"""]]
