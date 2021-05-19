@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Nick_P"
+ avatar="http://cdn.libravatar.org/avatar/abf8aa3ac1a976a6a292416b9c604581"
+ subject="comment 2"
+ date="2021-05-19T14:29:22Z"
+ content="""
+My testing suggests that this was introduced between 8.20210127 (is good), and 8.20210223 (is bad).
+"""]]
