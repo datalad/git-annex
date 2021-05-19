@@ -1745,6 +1745,10 @@ Remotes are configured using these settings in `.git/config`.
   is not needed, because they already wait for all writers of the file
   to close it.
 
+  Note that this only delays adding files created while the daemon is
+  running. Changes made when it is not running will be added the next time
+  it is started up.
+
 * `annex.expireunused`
 
   Controls what the assistant does about unused file contents
