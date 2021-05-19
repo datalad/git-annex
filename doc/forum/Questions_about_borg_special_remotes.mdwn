@@ -1,0 +1,12 @@
+This is a fantastic improvement and one I'm eager to put to use. But are there specific requirements not outlined in the manpages or tips thread?
+
+I'm having mixed success so far, but after my tribulations on an Apple Silicon machine I'm inclined to suspect the macOS environment (though on an Intel machine this time). 
+
+Early tests on an experimental repo worked fine: I backed up my git annex repo using the Vorta GUI and initiated the special remote, pointing to the borg repo, which was not encrypted. Everything worked as expected, including syncing and manually dropping unused files.
+
+Doing the same thing on my real repo, with an existing *encrypted* borg repo, I get stuck being repeatedly asked for my passphrase. Looking at the debug info, after accepting my passphrase git annex seems to go through every existing archive one at a time, outputting stuff like this but not doing much:
+`[2021-05-18 13:33:36.703495] (Utility.Process) process [50690] read: borg ["list","--format","{size}{NUL}{path}{NUL}{extra}{NUL}",`
+
+I created a new archive with borg directly from the command line, too, but no change. borg seems to be doing its thing, locking the repo with each requested iteration.
+
+Also, the syntax in the example on the tips page may not be entirely correct, AFAICT.
