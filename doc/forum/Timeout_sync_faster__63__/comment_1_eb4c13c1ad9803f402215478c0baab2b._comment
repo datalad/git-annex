@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 1"
+ date="2021-05-19T17:13:45Z"
+ content="""
+After observing the issue over the past few days, it has become a bit clearer now.
+
+The stalling happens when both machines are on, have synced and then one of them goes offline. The assistant never recovers from the loss of connection and since this also stalls manual syncs, this might be because of the SSH caching thingy? I will try disabling it and see whether that helps.
+
+I guess this probably is a bug then; could this post be moved (and possibly renamed) or should I create a separate bug for this?
+"""]]
