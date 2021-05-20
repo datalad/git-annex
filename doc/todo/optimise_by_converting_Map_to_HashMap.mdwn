@@ -1,0 +1,7 @@
+Map is used in lots of places, but HashMap is faster, at least sometimes.
+It would be worth benchmarking some of the more performance critical
+parts with HashMap. The uses in AnnexRead especially.
+
+(Set and HashSet too.)
+
+--[[Joey]]
