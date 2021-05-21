@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Nick_P"
+ avatar="http://cdn.libravatar.org/avatar/abf8aa3ac1a976a6a292416b9c604581"
+ subject="comment 5"
+ date="2021-05-19T16:59:21Z"
+ content="""
+Using 8.20210223-1~ndall+1 ; 
+
+```
+chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+```
+
+
+"""]]

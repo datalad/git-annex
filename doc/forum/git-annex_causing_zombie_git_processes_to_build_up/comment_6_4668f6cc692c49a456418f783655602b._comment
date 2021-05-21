@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="Nick_P"
+ avatar="http://cdn.libravatar.org/avatar/abf8aa3ac1a976a6a292416b9c604581"
+ subject="comment 6"
+ date="2021-05-20T10:43:14Z"
+ content="""
+This is the result of my test framework at the moment, which aims to determine when this issue appeared:
+
+```
+version,measured after seconds,zombies
+8.20201104-g13bab4f2c,30,3
+8.20201104-g13bab4f2c,60,3
+8.20201104-g13bab4f2c,90,3
+8.20201104-g13bab4f2c,120,3
+8.20201104-g13bab4f2c,150,3
+8.20201128-g4262ba3c4,30,3
+8.20201128-g4262ba3c4,60,3
+8.20201128-g4262ba3c4,90,3
+8.20201128-g4262ba3c4,120,3
+8.20201128-g4262ba3c4,150,3
+8.20210128-g5e5829a8d,30,5
+8.20210128-g5e5829a8d,60,21
+8.20210128-g5e5829a8d,90,47
+8.20210128-g5e5829a8d,120,51
+8.20210128-g5e5829a8d,150,55
+8.20210224-gf951847c6,30,9
+8.20210224-gf951847c6,60,19
+8.20210224-gf951847c6,90,35
+8.20210224-gf951847c6,120,51
+8.20210224-gf951847c6,150,61
+8.20210429-g84ceedb26,30,3
+8.20210429-g84ceedb26,60,17
+8.20210429-g84ceedb26,90,35
+8.20210429-g84ceedb26,120,49
+8.20210429-g84ceedb26,150,55
+```
+
+I can add more versions to check if requested.
+
+"""]]
