@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-05-21T15:50:59Z"
+ content="""
+git-annex lets borg do whatever passphrase prompting it needs,
+and git-annex necessarily needs to run borg more than once, to scan all
+archives that it has not scanned before for annexed content. Also,
+getting files from a borg repository involves running borg once per file. 
+So using it with a repo with a passphrase will probably be
+inconvenient, unless you use `BORG_PASSPHRASE` or `BORG_PASSCOMMAND`.
+
+If there was a good way for git-annex to know if borg would need a
+passphrase, it could prompt for it a single time and provide it to borg,
+but I don't know if there's a good way to ask borg if a repository needs a
+passphrase. The only half-decent way I can find is to try to do something
+like `BORG_PASSPHRASE=wrong borg info` and see if it fails due to the wrong
+passphrase, or works due to not needing a passphrase.
+
+> Also, the syntax in the example on the tips page may not be entirely correct, AFAICT.
+
+Please be more specific.
+"""]]
