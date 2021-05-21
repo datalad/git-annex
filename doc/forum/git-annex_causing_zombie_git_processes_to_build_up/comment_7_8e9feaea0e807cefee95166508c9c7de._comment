@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-05-21T15:33:06Z"
+ content="""
+If you want to completely narrow down a commit, use `git bisect`
+between 4262ba3c4 and 5e5829a8d. With 400 commits in that range it should
+take less than 9 rebuilds.
+
+Do you have annex.retry or similar config set? That range includes a change
+that spins up a bunch of child git-annex processes when that is set,
+which seems like the kind of thing that could be relevant.
+
+Since git cat-file is usually started up once and left running for the
+lifetime of git-annex (and waited for at the end if it exits normally),
+it's hard to see how it could end up being run repeatedly otherwise.
+"""]]
