@@ -1,6 +1,6 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -44,6 +44,9 @@ import Git.FilePath
 import Git.Command
 import Git.Types
 import Git.Index
+import Git.Sha
+import Git.Branch (writeTree, update')
+import qualified Git.Ref
 import Config.Smudge
 import qualified Utility.RawFilePath as R
 
@@ -191,20 +194,17 @@ removeInodeCache = runWriterIO . SQL.removeInodeCache
 isInodeKnown :: InodeCache -> SentinalStatus -> Annex Bool
 isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
 
-{- Looks at staged changes to find when unlocked files are copied/moved,
- - and updates associated files in the keys database.
+{- Looks at staged changes to annexed files, and updates the keys database,
+ - so that its information is consistent with the state of the repository.
  -
- - Since staged changes can be dropped later, does not remove any
- - associated files; only adds new associated files.
- -
- - This needs to be run before querying the keys database so that
- - information is consistent with the state of the repository.
+ - This is run with a lock held, so only one process can be running this at
+ - a time.
  -
  - To avoid unncessary work, the index file is statted, and if it's not
  - changed since last time this was run, nothing is done.
  -
- - Note that this is run with a lock held, so only one process can be
- - running this at a time.
+ - A tree is generated from the index, and the diff between that tree
+ - and the last processed tree is examined for changes.
  -
  - This also cleans up after a race between eg a git mv and git-annex
  - get/drop/similar. If git moves the file between this being run and the
@@ -233,17 +233,28 @@ reconcileStaged qh = do
 					)
 		Nothing -> noop
   where
+	lastindexref = Ref "refs/annex/last-index"
+
 	go cur indexcache = do
-		(l, cleanup) <- inRepo $ pipeNullSplit' diff
-		changed <- procdiff l False
-		void $ liftIO cleanup
-		-- Flush database changes immediately
-		-- so other processes can see them.
-		when changed $
-			liftIO $ H.flushDbQueue qh
-		liftIO $ writeFile indexcache $ showInodeCache cur
+		oldtree <- fromMaybe emptyTree
+			<$> inRepo (Git.Ref.sha lastindexref)
+		newtree <- inRepo writeTree
+		when (oldtree /= newtree) $ do
+			(l, cleanup) <- inRepo $ pipeNullSplit' $
+				diff oldtree newtree
+			changed <- procdiff l False
+			void $ liftIO cleanup
+			-- Flush database changes immediately
+			-- so other processes can see them.
+			when changed $
+				liftIO $ H.flushDbQueue qh
+			liftIO $ writeFile indexcache $ showInodeCache cur
+			-- Storing the tree in a ref makes sure it does not
+			-- get garbage collected, and is available to diff
+			-- against next time.
+			inRepo $ update' lastindexref newtree
 	
-	diff =
+	diff oldtree newtree =
 		-- Avoid running smudge or clean filters, since we want the
 		-- raw output, and they would block trying to access the
 		-- locked database. The --raw normally avoids git diff
@@ -253,43 +264,49 @@ reconcileStaged qh = do
 		-- (The -G option may make it be used otherwise.)
 		[ Param "-c", Param "diff.external="
 		, Param "diff"
-		, Param "--cached"
 		, Param "--raw"
 		, Param "-z"
 		, Param "--no-abbrev"
-		-- Optimization: Only find pointer files. This is not
-		-- perfect. A file could start with this and not be a
-		-- pointer file. And a pointer file that is replaced with
-		-- a non-pointer file will match this.
-		, Param $ "-G^" ++ fromRawFilePath (toInternalGitPath $
+		-- Optimization: Limit to pointer files and annex symlinks.
+		-- This is not perfect. A file could contain with this and not
+		-- be a pointer file. And a pointer file that is replaced with
+		-- a non-pointer file will match this. This is only a
+		-- prefilter so that's ok.
+		, Param $ "-G" ++ fromRawFilePath (toInternalGitPath $
 			P.pathSeparator `S.cons` objectDir')
-		-- Don't include files that were deleted, because this only
-		-- wants to update information for files that are present
-		-- in the index.
-		, Param "--diff-filter=AMUT"
 		-- Disable rename detection.
 		, Param "--no-renames"
 		-- Avoid other complications.
 		, Param "--ignore-submodules=all"
 		, Param "--no-ext-diff"
+		, Param (fromRef oldtree)
+		, Param (fromRef newtree)
 		]
 	
 	procdiff (info:file:rest) changed
 		| ":" `S.isPrefixOf` info = case S8.words info of
-			(_colonsrcmode:dstmode:_srcsha:dstsha:_change:[])
-				-- Only want files, not symlinks
-				| dstmode /= fmtTreeItemType TreeSymlink -> do
-					maybe noop (reconcile (asTopFilePath file))
-						=<< catKey (Ref dstsha)
-					procdiff rest True
-				| otherwise -> procdiff rest changed
+			(_colonsrcmode:dstmode:srcsha:dstsha:_change:[]) -> do
+				removed <- catKey (Ref srcsha) >>= \case
+					Just oldkey -> do
+						liftIO $ SQL.removeAssociatedFile oldkey
+							(asTopFilePath file)
+							(SQL.WriteHandle qh)
+						return True
+					Nothing -> return False
+				added <- catKey (Ref dstsha) >>= \case
+					Just key -> do
+						liftIO $ SQL.addAssociatedFile key
+							(asTopFilePath file)
+							(SQL.WriteHandle qh)
+						when (dstmode /= fmtTreeItemType TreeSymlink) $
+							reconcilerace (asTopFilePath file) key
+						return True
+					Nothing -> return False
+				procdiff rest (changed || removed || added)
 			_ -> return changed -- parse failed
 	procdiff _ changed = return changed
 
-	-- Note that database writes done in here will not necessarily 
-	-- be visible to database reads also done in here.
-	reconcile file key = do
-		liftIO $ SQL.addAssociatedFileFast key file (SQL.WriteHandle qh)
+	reconcilerace file key = do
 		caches <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
 		keyloc <- calcRepo (gitAnnexLocation key)
 		keypopulated <- sameInodeCache keyloc caches

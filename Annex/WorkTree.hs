@@ -66,19 +66,19 @@ whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 ifAnnexed :: RawFilePath -> (Key -> Annex a) -> Annex a -> Annex a
 ifAnnexed file yes no = maybe no yes =<< lookupKey file
 
-{- Find all unlocked files and update the keys database for them. 
+{- Find all annexed files and update the keys database for them.
  - 
  - This is expensive, and so normally the associated files are updated
  - incrementally when changes are noticed. So, this only needs to be done
- - when initializing/upgrading repository.
+ - when initializing/upgrading a repository.
  -
- - Also, the content for the unlocked file may already be present as
+ - Also, the content for an unlocked file may already be present as
  - an annex object. If so, populate the pointer file with it.
  - But if worktree file does not have a pointer file's content, it is left
  - as-is.
  -}
-scanUnlockedFiles :: Annex ()
-scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ do
+scanAnnexedFiles :: Annex ()
+scanAnnexedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ do
 	dropold <- liftIO $ newMVar $ 
 		Database.Keys.runWriter $
 			liftIO . Database.Keys.SQL.dropAllAssociatedFiles
@@ -87,9 +87,10 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 		(Git.LsTree.LsTreeLong False)
 		Git.Ref.headRef
 	forM_ l $ \i -> 
-		when (isregfile i) $
-			maybe noop (add dropold i)
-				=<< catKey (Git.LsTree.sha i)
+		maybe noop (add dropold i)
+			=<< catKey'
+				(Git.LsTree.sha i)
+				(fromMaybe 0 (Git.LsTree.size i))				
 	liftIO $ void cleanup
   where
 	isregfile i = case Git.Types.toTreeItemType (Git.LsTree.mode i) of
@@ -101,7 +102,7 @@ scanUnlockedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ 
 		let tf = Git.LsTree.file i
 		Database.Keys.runWriter $
 			liftIO . Database.Keys.SQL.addAssociatedFileFast k tf
-		whenM (inAnnex k) $ do
+		whenM (pure (isregfile i) <&&> inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
 			liftIO (isPointerFile f) >>= \case
 				Just k' | k' == k -> do
