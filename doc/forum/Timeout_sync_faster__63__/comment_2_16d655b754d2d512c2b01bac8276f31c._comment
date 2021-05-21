@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-05-21T16:19:44Z"
+ content="""
+You may want to set ServerAliveInterval in your ssh config,
+or some of the related options like ServerAliveCountMax and
+TCPKeepAlive. See `man ssh_config`
+
+I think that normally, ssh does detect when a connection to a server has
+gone away, just due to the tcp connection dropping. But that may take some
+time to happen.
+"""]]
