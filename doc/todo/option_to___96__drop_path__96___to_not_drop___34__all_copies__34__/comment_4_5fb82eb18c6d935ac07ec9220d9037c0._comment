@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-05-21T17:29:09Z"
+ content="""
+I have a plan over in [[bugs/indeterminite_preferred_content_state_for_duplicated_file]]
+and will be working on it over there.
+
+Linked worktrees seems out of scope for this though.
+"""]]
