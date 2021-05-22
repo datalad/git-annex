@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="strmd"
+ avatar="http://cdn.libravatar.org/avatar/035707b9756129bbdea6b36a7f7b38d3"
+ subject="comment 2"
+ date="2021-05-22T05:16:44Z"
+ content="""
+Well, that certainly explains it. Not only that, it makes perfect sense. The borg repo in question has about a hundred archives so I soon grew tired. ```BORG_PASSPHRASE``` seems obvious in retrospect, of course the GUI does that for me in my day-to-day use.
+
+Trying to use some of the really clever combinations on offer is challenging to a novice user. I sometimes feel like my ambition is to be a half-decent conductor, only I'm periodically also expected to step down and tune the harpsichord. Mind you, this isn't criticism – it's one of the principles that makes git-annex so great. borg is a solo performer, adding it to the ensemble is my choice and making it blend well with the rest of the instruments is up to me.
+
+On third, careful look, I don't believe there's any error on the tips page.
+
+Thanks!
+
+
+"""]]
