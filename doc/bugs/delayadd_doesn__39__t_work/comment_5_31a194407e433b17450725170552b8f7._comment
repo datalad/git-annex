@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 5"
+ date="2021-05-22T10:20:35Z"
+ content="""
+I found the culprit: largefiles.
+
+I use 
+```
+* annex.largefiles=mimeencoding=binary
+```
+
+in my documents repo because I need to efficiently store lots of text and diff, merge etc. properly.
+
+Here are the revised repro steps:
+
+```
+git init test
+cd test
+git annex init
+git config annex.delayadd 5
+echo '* annex.largefiles=mimeencoding=binary' > .gitattributes
+git add .
+git commit -m \"gitattributes: largefiles\"
+git annex assistant
+echo `date` > test
+git log --patch
+```
+
+The date of the commit should be the date in the file +5s.
+"""]]
