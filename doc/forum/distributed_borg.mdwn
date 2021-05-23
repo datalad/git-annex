@@ -1,0 +1,37 @@
+The Borg special remote is indeed an exciting next step for this amazing
+project. I’m currently testing it with a small team. For remote collaboration,
+each of us has provisioned:
+
+- one workstation with a git-annex repo (accessible only to the workstation user)
+- one server (NAS) with a Borg repo (accessible to all team members)
+
+The idea was to implement a basic distributed topology by adding all the Borg
+repos as special remotes to all the git-annex repos. With such an implementation,
+a typical workflow would be:
+
+1. A team member:
+  **(a)** commits a change to the git-annex repo on the member’s own workstation,
+  **(b)** creates an archive of the updated git-annex repo in each of the Borg
+repos, and
+  **(c)** informs the member’s own git-annex repo of the new Borg archives by running `git annex sync`.
+2. All other team members inform their respective git-annex repos of the new
+Borg archives by simply running `git annex sync`.
+
+Step 1 worked, but Step 2 did not, so as a workaround, we added a bare
+git-annex repo alongside the Borg repo on each server, then added all the new
+bare repos as remotes to each of our respective workstation repos. It works
+but is less than ideal.
+
+My simplified question: can two git-annex repos share a Borg special remote?
+
+Joey commented back in December: “The Remote interface recently got
+importKey, which gets us unexpectedly a lot closer to making git-annex import
+--from borg a reality!” However, I’ve struggled to find any other clues.
+
+Potentially related issues (all of which appear to have been addressed):
+
+- [sync --content with borg does not get content](https://git-annex.branchable.com/todo/sync_--content_with_borg_does_not_get_content/)
+- [borg sync tree not grafted](https://git-annex.branchable.com/todo/borg_sync_tree_not_grafted/)
+- [use same vector clock for content identifier updates in import](https://git-annex.branchable.com/todo/use_same_vector_clock_for_content_identifier_updates_in_import/)
+
+Thanks!
