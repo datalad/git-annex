@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="defining preferred content state"
+ date="2021-05-23T20:39:23Z"
+ content="""
+Thanks @joeyh for working on this.
+
+Is the following understanding of preferred content expressions accurate:
+
+* the expression is a predicate on file paths, not on keys.   Expressions that check the property of a key (e.g. numcopies) are evaluated for each file path on the key it uses.
+* a given key is wanted in a repo if the preferred content expression is true for *any* file path which uses the key
+
+Also, if the above if correct, is \"any file path which uses the key\" defined the same way as in [[git-annex-unused]]?
+"""]]
