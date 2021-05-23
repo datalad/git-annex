@@ -1,2 +1,1 @@
-git-annex is [in OpenBSD ports](https://openports.pl/path/devel/git-annex)
-(since 6.9), and can be installed with `pkg_add git-annex`
+git-annex is [in OpenBSD ports](https://openports.pl/path/devel/git-annex), and can be installed with `pkg_add git-annex`
