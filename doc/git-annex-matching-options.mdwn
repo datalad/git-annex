@@ -141,6 +141,11 @@ in either of two repositories.
   make it want to drop. Note that this will match even files that have
   already been dropped, unless limited with e.g., `--in .`
 
+  Files that this matches will not necessarily be dropped by
+  `git-annex drop --auto`. This does not check that there are enough copies
+  to drop. Also the same content may be used by a file that is not wanted
+  to be dropped.
+
 * `--accessedwithin=interval`
 
   Matches files that were accessed recently, within the specified time

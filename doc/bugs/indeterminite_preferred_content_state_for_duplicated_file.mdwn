@@ -19,3 +19,5 @@ So, this seems solvable in v7 repositories, but not in v5.
 Also, the associated files map may not be accurate at all times, so that's
 a wrinkle to using it for this. Also, only unlocked files get into the
 associated files map. --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]

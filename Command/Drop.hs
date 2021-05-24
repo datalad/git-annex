@@ -86,13 +86,13 @@ start o from si file key = start' o from key afile ai si
 start' :: DropOptions -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> SeekInput -> CommandStart
 start' o from key afile ai si = 
 	checkDropAuto (autoMode o) from afile key $ \numcopies mincopies ->
-		stopUnless want $
+		stopUnless wantdrop $
 			case from of
 				Nothing -> startLocal afile ai si numcopies mincopies key []
 				Just remote -> startRemote afile ai si numcopies mincopies key remote
   where
-	want
-		| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile
+	wantdrop
+		| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile Nothing
 		| otherwise = return True
 
 startKeys :: DropOptions -> Maybe Remote -> (SeekInput, Key, ActionItem) -> CommandStart

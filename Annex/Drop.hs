@@ -103,16 +103,12 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 			dropr fs r n >>= go fs rest
 		| otherwise = pure n
 
-	checkdrop fs n u a
-		| null fs = check $ -- no associated files; unused content
-			wantDrop True u (Just key) (AssociatedFile Nothing)
-		| otherwise = check $
-			allM (wantDrop True u (Just key) . AssociatedFile . Just) fs
-		where
-			check c = ifM c
-				( dodrop n u a
-				, return n
-				)
+	checkdrop fs n u a =
+		let afs = map (AssociatedFile . Just) fs
+		in ifM (wantDrop True u (Just key) afile (Just afs))
+			( dodrop n u a
+			, return n
+			)
 
 	dodrop n@(have, numcopies, mincopies, _untrusted) u a = 
 		ifM (safely $ runner $ a numcopies mincopies)

@@ -1,5 +1,9 @@
 git-annex (8.20210429) UNRELEASED; urgency=medium
 
+  * drop: When two files have the same content, and a preferred content
+    expression matches one but not the other, do not drop the file.
+  * sync --content, assistant: Fix an edge case where a file that is not
+    preferred content did not get dropped.
   * filter-branch: New command, useful to produce a filtered version of the
     git-annex branch, eg when splitting a repository.
   * fromkey: Create an unlocked file when used in an adjusted branch
