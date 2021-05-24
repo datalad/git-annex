@@ -70,17 +70,15 @@ pipeReadLazy params repo = assertLocal repo $ do
  - Nonzero exit status is ignored.
  -}
 pipeReadStrict :: [CommandParam] -> Repo -> IO S.ByteString
-pipeReadStrict = pipeReadStrict' S.hGetContents
+pipeReadStrict = pipeReadStrict' id
 
-{- The reader action must be strict. -}
-pipeReadStrict' :: (Handle -> IO a) -> [CommandParam] -> Repo -> IO a
-pipeReadStrict' reader params repo = assertLocal repo $ withCreateProcess p go
+pipeReadStrict' :: (CreateProcess -> CreateProcess) -> [CommandParam] -> Repo -> IO S.ByteString
+pipeReadStrict' fp params repo = assertLocal repo $ withCreateProcess p go
   where
-	p  = (gitCreateProcess params repo)
-		{ std_out = CreatePipe }
+	p = fp (gitCreateProcess params repo) { std_out = CreatePipe }
 
 	go _ (Just outh) _ pid = do
-		output <- reader outh
+		output <- S.hGetContents outh
 		hClose outh
 		void $ waitForProcess pid
 		return output

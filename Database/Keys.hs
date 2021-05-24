@@ -45,7 +45,7 @@ import Git.Command
 import Git.Types
 import Git.Index
 import Git.Sha
-import Git.Branch (writeTree, update')
+import Git.Branch (writeTreeQuiet, update')
 import qualified Git.Ref
 import Config.Smudge
 import qualified Utility.RawFilePath as R
@@ -226,35 +226,48 @@ reconcileStaged qh = do
 	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
 		Just cur -> 
 			liftIO (maybe Nothing readInodeCache <$> catchMaybeIO (readFile indexcache)) >>= \case
-				Nothing -> go cur indexcache
+				Nothing -> go cur indexcache =<< getindextree
 				Just prev -> ifM (compareInodeCaches prev cur)
 					( noop
-					, go cur indexcache
+					, go cur indexcache =<< getindextree
 					)
 		Nothing -> noop
   where
 	lastindexref = Ref "refs/annex/last-index"
 
-	go cur indexcache = do
-		oldtree <- fromMaybe emptyTree
-			<$> inRepo (Git.Ref.sha lastindexref)
-		newtree <- inRepo writeTree
+	getindextree = inRepo writeTreeQuiet
+
+	getoldtree = fromMaybe emptyTree <$> inRepo (Git.Ref.sha lastindexref)
+
+	go cur indexcache (Just newtree) = do
+		oldtree <- getoldtree
 		when (oldtree /= newtree) $ do
-			(l, cleanup) <- inRepo $ pipeNullSplit' $
-				diff oldtree newtree
-			changed <- procdiff l False
-			void $ liftIO cleanup
-			-- Flush database changes immediately
-			-- so other processes can see them.
-			when changed $
-				liftIO $ H.flushDbQueue qh
+			updatetodiff (fromRef oldtree) (fromRef newtree)
 			liftIO $ writeFile indexcache $ showInodeCache cur
 			-- Storing the tree in a ref makes sure it does not
 			-- get garbage collected, and is available to diff
 			-- against next time.
 			inRepo $ update' lastindexref newtree
+	-- git write-tree will fail if the index is locked or when there is
+	-- a merge conflict. To get up-to-date with the current index, 
+	-- diff --cached with the old index tree. The current index tree
+	-- is not known, so not recorded, and the inode cache is not updated,
+	-- so the next time git-annex runs, it will diff again, even
+	-- if the index is unchanged.
+	go _ _ Nothing = do
+		oldtree <- getoldtree
+		updatetodiff (fromRef oldtree) "--cached"
+		
+	updatetodiff old new = do
+		(l, cleanup) <- inRepo $ pipeNullSplit' $ diff old new
+		changed <- procdiff l False
+		void $ liftIO cleanup
+		-- Flush database changes immediately
+		-- so other processes can see them.
+		when changed $
+			liftIO $ H.flushDbQueue qh
 	
-	diff oldtree newtree =
+	diff old new =
 		-- Avoid running smudge or clean filters, since we want the
 		-- raw output, and they would block trying to access the
 		-- locked database. The --raw normally avoids git diff
@@ -264,6 +277,8 @@ reconcileStaged qh = do
 		-- (The -G option may make it be used otherwise.)
 		[ Param "-c", Param "diff.external="
 		, Param "diff"
+		, Param old
+		, Param new
 		, Param "--raw"
 		, Param "-z"
 		, Param "--no-abbrev"
@@ -279,8 +294,6 @@ reconcileStaged qh = do
 		-- Avoid other complications.
 		, Param "--ignore-submodules=all"
 		, Param "--no-ext-diff"
-		, Param (fromRef oldtree)
-		, Param (fromRef newtree)
 		]
 	
 	procdiff (info:file:rest) changed
