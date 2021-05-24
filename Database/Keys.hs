@@ -56,10 +56,6 @@ import qualified System.FilePath.ByteString as P
 
 {- Runs an action that reads from the database.
  -
- - If the database doesn't already exist, it's not created; mempty is
- - returned instead. This way, when the keys database is not in use,
- - there's minimal overhead in checking it.
- -
  - If the database is already open, any writes are flushed to it, to ensure
  - consistency.
  -
@@ -76,7 +72,7 @@ runReader a = do
 		v <- a (SQL.ReadHandle qh)
 		return (v, st)
 	go DbClosed = do
-		st' <- openDb False DbClosed
+		st' <- openDb True DbClosed
 		v <- case st' of
 			(DbOpen qh) -> a (SQL.ReadHandle qh)
 			_ -> return mempty
@@ -98,7 +94,7 @@ runWriter a = do
 		v <- a (SQL.WriteHandle qh)
 		return (v, st)
 	go st = do
-		st' <- openDb True st
+		st' <- openDb False st
 		v <- case st' of
 			DbOpen qh -> a (SQL.WriteHandle qh)
 			_ -> error "internal"
@@ -107,7 +103,7 @@ runWriter a = do
 runWriterIO :: (SQL.WriteHandle -> IO ()) -> Annex ()
 runWriterIO a = runWriter (liftIO . a)
 
-{- Opens the database, perhaps creating it if it doesn't exist yet.
+{- Opens the database, creating it if it doesn't exist yet.
  -
  - Multiple readers and writers can have the database open at the same
  - time. Database.Handle deals with the concurrency issues.
@@ -118,22 +114,21 @@ runWriterIO a = runWriter (liftIO . a)
 openDb :: Bool -> DbState -> Annex DbState
 openDb _ st@(DbOpen _) = return st
 openDb False DbUnavailable = return DbUnavailable
-openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKeysDbLock $ do
+openDb forwrite _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKeysDbLock $ do
 	dbdir <- fromRepo gitAnnexKeysDb
 	let db = dbdir P.</> "db"
 	dbexists <- liftIO $ R.doesPathExist db
-	case (dbexists, createdb) of
-		(True, _) -> open db
-		(False, True) -> do
+	case dbexists of
+		True -> open db
+		False -> do
 			initDb db SQL.createTables
 			open db
-		(False, False) -> return DbUnavailable
   where
-	-- If permissions don't allow opening the database, treat it as if
-	-- it does not exist.
-	permerr e = case createdb of
-		False -> return DbUnavailable
-		True -> throwM e
+	-- If permissions don't allow opening the database, and it's being
+	-- opened for read, treat it as if it does not exist.
+	permerr e
+		| forwrite = throwM e
+		| otherwise = return DbUnavailable
 	
 	open db = do
 		qh <- liftIO $ H.openDbQueue H.MultiWriter db SQL.containedTable

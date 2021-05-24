@@ -44,8 +44,9 @@ wantDrop d from key file others = do
 			others' <- case others of
 				Just afs -> pure (filter (/= file) afs)
 				Nothing -> case key of
-					Just k -> mapM (\f -> AssociatedFile . Just <$> fromRepo (fromTopFilePath f))
-						=<< Database.Keys.getAssociatedFiles k
+					Just k ->
+						mapM (\f -> AssociatedFile . Just <$> fromRepo (fromTopFilePath f))
+							=<< Database.Keys.getAssociatedFiles k
 					Nothing -> pure []
 			l <- filterM checkwant others'
 			if null l
