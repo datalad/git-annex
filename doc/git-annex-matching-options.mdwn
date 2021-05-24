@@ -134,16 +134,12 @@ in either of two repositories.
   Matches files that the preferred content settings for the repository
   make it want to get. Note that this will match even files that are
   already present, unless limited with e.g., `--not --in .`
-  
-  Note that this will not match anything when using --all or --unused.
 
 * `--want-drop`
 
   Matches files that the preferred content settings for the repository
   make it want to drop. Note that this will match even files that have
   already been dropped, unless limited with e.g., `--in .`
-  
-  Note that this will not match anything when using --all or --unused.
 
 * `--accessedwithin=interval`
 
