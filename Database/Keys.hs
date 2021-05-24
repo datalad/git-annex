@@ -224,18 +224,20 @@ reconcileStaged qh = do
 	gitindex <- inRepo currentIndexFile
 	indexcache <- fromRawFilePath <$> fromRepo gitAnnexKeysDbIndexCache
 	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
-		Just cur -> 
-			liftIO (maybe Nothing readInodeCache <$> catchMaybeIO (readFile indexcache)) >>= \case
-				Nothing -> go cur indexcache =<< getindextree
-				Just prev -> ifM (compareInodeCaches prev cur)
-					( noop
-					, go cur indexcache =<< getindextree
-					)
+		Just cur -> readindexcache indexcache >>= \case
+			Nothing -> go cur indexcache =<< getindextree
+			Just prev -> ifM (compareInodeCaches prev cur)
+				( noop
+				, go cur indexcache =<< getindextree
+				)
 		Nothing -> noop
   where
 	lastindexref = Ref "refs/annex/last-index"
 
 	getindextree = inRepo writeTreeQuiet
+
+	readindexcache indexcache = liftIO $ maybe Nothing readInodeCache
+		<$> catchMaybeIO (readFile indexcache)
 
 	getoldtree = fromMaybe emptyTree <$> inRepo (Git.Ref.sha lastindexref)
 
