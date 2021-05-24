@@ -237,8 +237,6 @@ reconcileStaged qh = do
   where
 	lastindexref = Ref "refs/annex/last-index"
 
-	getindextree = inRepo writeTreeQuiet
-
 	readindexcache indexcache = liftIO $ maybe Nothing readInodeCache
 		<$> catchMaybeIO (readFile indexcache)
 
@@ -272,9 +270,17 @@ reconcileStaged qh = do
 		when changed $
 			liftIO $ H.flushDbQueue qh
 	
+	-- Avoid running smudge clean filter, which would block trying to
+	-- access the locked database. git write-tree sometimes calls it,
+	-- even though it is not adding work tree files to the index,
+	-- and so the filter cannot have an effect on the contents of the
+	-- index or on the tree that gets written from it.
+	getindextree = inRepo $ \r -> writeTreeQuiet $ r
+		{ gitGlobalOpts = gitGlobalOpts r ++ bypassSmudgeConfig }
+	
 	diff old new =
-		-- Avoid running smudge or clean filters, since we want the
-		-- raw output, and they would block trying to access the
+		-- Avoid running smudge clean filter, since we want the
+		-- raw output, and it would block trying to access the
 		-- locked database. The --raw normally avoids git diff
 		-- running them, but older versions of git need this.
 		bypassSmudgeConfig ++
