@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 4"
+ date="2021-05-22T09:55:31Z"
+ content="""
+You are quite correct, the minimal test case works just as expected when the config is applied *before* running the daemon.
+
+`delayadd` has been in my actual repo's config for many months now and has seen countless daemon restarts however, so that can't be my actual problem unfortunately.
+
+Now that I have a working repo, I will try to break it like I did with my regular repo.
+"""]]
