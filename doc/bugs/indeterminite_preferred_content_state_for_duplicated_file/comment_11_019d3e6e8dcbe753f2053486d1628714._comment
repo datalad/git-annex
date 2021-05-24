@@ -24,9 +24,37 @@ There is a problem though:
 	1|SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855|n
 	2|SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855|n2
 
-The old filename does not get removed in this case.
+The old filename does not get removed in this case. What happened here
+is that the first git-annex add recorded the associated file itself,
+but no index tree was recorded yet. So when the second git-annex
+runs reconcileStaged, it diffs from the empty tree to the index that
+contains only n2. So the removal of n is not noticed.
+
+This may not be a blocker for fixing preferred content, it just
+means that the list of associated files can include files that have since
+been deleted. The list could be double-checked once a punative second
+file has been found, with catKey. So it would only slow things down in
+the cases this bug is about and not generally. Still, it seems a shame
+that this case exists, because otherwise my recent changes have made old
+associated files get removed, and it would be nice to be able to trust
+that the associated files list is accurate.
+
+Also, bloating the keys db with stale associated files could happen.
+Well, it could already happen, indeed it was much worse, but that was
+limited to unlocked files, now it can also happen for locked files.
+
+Only fix I can think of is to make commands like git add that register
+an associated file to also update the cached index tree. That would let
+it diff from the previous index to the current one, and so notice the
+deletion. But it would have to be done at git-annex shutdown, and so if it
+were interrupted the problem could still happen. (Or, the database
+could have something added to it to indicate when an associated file
+has been added but has not been seen in the index yet, and the next update
+from the index could clear those flags, and remove any files still with the
+flag. This seems race-prone and it would need a change to the database
+schema.)
 
 Also, git commit currently fails, problem with index locking inside the smudge
 filter, which prevents git write-tree from working. Should be fixable by
-detecting when the index is locked and avoiding updating then.
+detecting when the index is locked and avoiding updating then. (Fixed now.)
 """]]
