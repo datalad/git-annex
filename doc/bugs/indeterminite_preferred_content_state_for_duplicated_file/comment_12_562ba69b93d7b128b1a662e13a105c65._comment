@@ -8,5 +8,5 @@ This is about ready to be merged, and is fully working.
 Except.. `git annex drop --auto --branch=foo` seems likely to do something
 confusing, since it will check the associated files, which may not be on
 that branch. That combination of options doesn't really make a lot of sense
-anyway?
+anyway? Also consider `git-annex drop --all --auto`
 """]]
