@@ -218,6 +218,14 @@ isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
  - filter. If a drop missed the file then the file is added back into the
  - annex. If a get missed the file then the clean filter populates the
  - file.
+ -
+ - There is a situation where, after this has run, the database can still
+ - contain associated files that have been deleted from the index.
+ - That happens when addAssociatedFile is used to record a newly
+ - added file, but that file then gets removed from the index before
+ - this is run. Eg, "git-annex add foo; git rm foo"
+ - So when using getAssociatedFiles, have to make sure the file still
+ - is an associated file.
  -}
 reconcileStaged :: H.DbQueue -> Annex ()
 reconcileStaged qh = do
