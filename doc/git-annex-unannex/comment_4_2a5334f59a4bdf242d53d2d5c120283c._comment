@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="datamanager"
+ avatar="http://cdn.libravatar.org/avatar/7d4ca7c5e571d4740ef072b83a746c12"
+ subject="is there some way to remove a file I've commited? "
+ date="2021-05-25T13:10:35Z"
+ content="""
+Essentially, I want to tell git-annex to forget about my file; remove it from the annex, and put the original file back where it was in my local filesystem. 
+
+I made the mistake of adding a list of files accidentally, and then panicked. I even ran git-annex-sync, so there's now a commit on the git-annex branch with my accidentally added files. I thought that maybe I could just revert that commit and all would be well, but I thought I'd seek some assistance before doing that. 
+
+I haven't copied the files to any other remotes as yet, but git-annex-whereis returns nothing when I give it one of the paths I added by mistake, so those files seem to be in some kind of limbo, where they're in the annex, but it doesn't know about them. I am not sure what I broke along the way. 
+"""]]
