@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-05-25T15:32:40Z"
+ content="""
+What happens if I run `git annex drop --not-used-elsewhere foo bar` and foo
+and bar have the same content?
+
+The content is not used except for in the files I listed, so it could be
+argued that the --not-used-elsewhere does not apply, and it should drop it.
+But of course, that becomes a problem when dropping large directory trees.
+
+This also makes me thing that not-used-elsewhere is too broad, maybe I want
+to only avoid dropping content shared by files in bardir while dropping
+foodir, and the option does not allow it.
+
+So I do think @Ilya's on to something with his suggestion.
+`git annex drop foo --excludeifany=bar` does not have the ambiguity.
+
+I guess it's also useful for querying, potentially. Eg, if I have an inbox
+and an outbox and think perhaps some things from the inbox are things I've
+already dealt with before, I can find such files:
+
+	git annex find inbox --includeifany='outbox/*'
+"""]]

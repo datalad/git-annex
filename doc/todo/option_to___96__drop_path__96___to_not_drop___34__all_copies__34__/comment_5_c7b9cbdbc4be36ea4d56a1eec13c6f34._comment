@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-05-25T15:14:49Z"
+ content="""
+On the --includeifany=glob idea, that seems to suggest a preferred content
+expression like includeifany=, analagous to how --include matches include=
+
+I'm feeling a bit cautious about adding a preferred content expression for
+this brand new capability. 
+
+And also unfortunately, it turned out not to be possible to prevent the
+associated files db from sometimes having stale filenames in it (see
+[[!commit c1b50282118520350d5328153fceedac2b8d8ed5]]). Which all current
+uses of the associated files db deal with by checking the list of
+associated files to see if all of them are in HEAD tree. A preferred
+content expression would also have to deal with that, and that risks
+slowing down evaluation of preferred content expressions generally.
+
+So I think it's best to not add a preferred content expression,
+at least until there's a use case and this has had
+some time to soak.
+"""]]
