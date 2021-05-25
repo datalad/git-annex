@@ -2,6 +2,10 @@ git-annex (8.20210429) UNRELEASED; urgency=medium
 
   * drop --auto: When two files have the same content, and a preferred content
     expression matches one but not the other, do not drop the content.
+  * sync --content, assistant: When two unlocked files have the same
+    content, and a preferred content expression matches one but not the
+    other, do not drop the content. (This was already the case for locked
+    files.)
   * sync --content, assistant: Fix an edge case where a file that is not
     preferred content did not get dropped.
   * filter-branch: New command, useful to produce a filtered version of the
