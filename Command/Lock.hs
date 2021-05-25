@@ -62,7 +62,7 @@ perform file key = do
 	lockdown =<< calcRepo (gitAnnexLocation key)
 	addLink (CheckGitIgnore False) file key
 		=<< withTSDelta (liftIO . genInodeCache file)
-	next $ cleanup file key
+	next $ return True
   where
 	lockdown obj = do
 		ifM (isUnmodified key obj)
@@ -96,11 +96,6 @@ perform file key = do
 			Nothing -> lostcontent
 
 	lostcontent = logStatus key InfoMissing
-
-cleanup :: RawFilePath -> Key -> CommandCleanup
-cleanup file key = do
-	Database.Keys.removeAssociatedFile key =<< inRepo (toTopFilePath file)
-	return True
 
 errorModified :: a
 errorModified =  giveup "Locking this file would discard any changes you have made to it. Use 'git annex add' to stage your changes. (Or, use --force to override)"

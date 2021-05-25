@@ -46,8 +46,8 @@ import Logs.Remote
 import Types.StandardGroups
 import Limit
 
-{- Checks if a file is preferred content for the specified repository
- - (or the current repository if none is specified). -}
+{- Checks if a file is preferred content (or required content) for the
+ - specified repository (or the current repository if none is specified). -}
 isPreferredContent :: Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool
 isPreferredContent = checkMap preferredContentMap
 

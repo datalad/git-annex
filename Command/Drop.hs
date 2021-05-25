@@ -21,8 +21,6 @@ import Annex.Content
 import Annex.Wanted
 import Annex.Notification
 
-import qualified Data.Set as S
-
 cmd :: Command
 cmd = withGlobalOptions [jobsOption, jsonOptions, annexedMatchingOptions] $
 	command "drop" SectionCommon
@@ -86,33 +84,34 @@ start o from si file key = start' o from key afile ai si
 start' :: DropOptions -> Maybe Remote -> Key -> AssociatedFile -> ActionItem -> SeekInput -> CommandStart
 start' o from key afile ai si = 
 	checkDropAuto (autoMode o) from afile key $ \numcopies mincopies ->
-		stopUnless want $
+		stopUnless wantdrop $
 			case from of
-				Nothing -> startLocal afile ai si numcopies mincopies key []
-				Just remote -> startRemote afile ai si numcopies mincopies key remote
+				Nothing -> startLocal pcc afile ai si numcopies mincopies key []
+				Just remote -> startRemote pcc afile ai si numcopies mincopies key remote
   where
-	want
-		| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile
+	wantdrop
+		| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile Nothing
 		| otherwise = return True
+	pcc = PreferredContentChecked (autoMode o)
 
 startKeys :: DropOptions -> Maybe Remote -> (SeekInput, Key, ActionItem) -> CommandStart
 startKeys o from (si, key, ai) = start' o from key (AssociatedFile Nothing) ai si
 
-startLocal :: AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> [VerifiedCopy] -> CommandStart
-startLocal afile ai si numcopies mincopies key preverified =
+startLocal :: PreferredContentChecked -> AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> [VerifiedCopy] -> CommandStart
+startLocal pcc afile ai si numcopies mincopies key preverified =
 	starting "drop" (OnlyActionOn key ai) si $
-		performLocal key afile numcopies mincopies preverified
+		performLocal pcc key afile numcopies mincopies preverified
 
-startRemote :: AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> Remote -> CommandStart
-startRemote afile ai si numcopies mincopies key remote = 
+startRemote :: PreferredContentChecked -> AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> Remote -> CommandStart
+startRemote pcc afile ai si numcopies mincopies key remote = 
 	starting ("drop " ++ Remote.name remote) (OnlyActionOn key ai) si $
-		performRemote key afile numcopies mincopies remote
+		performRemote pcc key afile numcopies mincopies remote
 
-performLocal :: Key -> AssociatedFile -> NumCopies -> MinCopies -> [VerifiedCopy] -> CommandPerform
-performLocal key afile numcopies mincopies preverified = lockContentForRemoval key fallback $ \contentlock -> do
+performLocal :: PreferredContentChecked -> Key -> AssociatedFile -> NumCopies -> MinCopies -> [VerifiedCopy] -> CommandPerform
+performLocal pcc key afile numcopies mincopies preverified = lockContentForRemoval key fallback $ \contentlock -> do
 	u <- getUUID
 	(tocheck, verified) <- verifiableCopies key [u]
-	doDrop u (Just contentlock) key afile numcopies mincopies [] (preverified ++ verified) tocheck
+	doDrop pcc u (Just contentlock) key afile numcopies mincopies [] (preverified ++ verified) tocheck
 		( \proof -> do
 			fastDebug "Command.Drop" $ unwords
 				[ "Dropping from here"
@@ -134,12 +133,12 @@ performLocal key afile numcopies mincopies preverified = lockContentForRemoval k
 	-- to be done except for cleaning up.
 	fallback = next $ cleanupLocal key
 
-performRemote :: Key -> AssociatedFile -> NumCopies -> MinCopies -> Remote -> CommandPerform
-performRemote key afile numcopies mincopies remote = do
+performRemote :: PreferredContentChecked -> Key -> AssociatedFile -> NumCopies -> MinCopies -> Remote -> CommandPerform
+performRemote pcc key afile numcopies mincopies remote = do
 	-- Filter the uuid it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
 	(tocheck, verified) <- verifiableCopies key [uuid]
-	doDrop uuid Nothing key afile numcopies mincopies [uuid] verified tocheck
+	doDrop pcc uuid Nothing key afile numcopies mincopies [uuid] verified tocheck
 		( \proof -> do 
 			fastDebug "Command.Drop" $ unwords
 				[ "Dropping from remote"
@@ -169,12 +168,11 @@ cleanupRemote key remote ok = do
  - verify that enough copies of a key exist to allow it to be
  - safely removed (with no data loss).
  -
- - Also checks if it's required content, and refuses to drop if so.
- -
  - --force overrides and always allows dropping.
  -}
 doDrop
-	:: UUID
+	:: PreferredContentChecked
+	-> UUID
 	-> Maybe ContentRemovalLock
 	-> Key
 	-> AssociatedFile
@@ -185,10 +183,10 @@ doDrop
 	-> [UnVerifiedCopy]
 	-> (Maybe SafeDropProof -> CommandPerform, CommandPerform)
 	-> CommandPerform
-doDrop dropfrom contentlock key afile numcopies mincopies skip preverified check (dropaction, nodropaction) = 
+doDrop pcc dropfrom contentlock key afile numcopies mincopies skip preverified check (dropaction, nodropaction) = 
 	ifM (Annex.getState Annex.force)
 		( dropaction Nothing
-		, ifM (checkRequiredContent dropfrom key afile)
+		, ifM (checkRequiredContent pcc dropfrom key afile)
 			( verifyEnoughCopiesToDrop nolocmsg key 
 				contentlock numcopies mincopies
 				skip preverified check
@@ -203,18 +201,27 @@ doDrop dropfrom contentlock key afile numcopies mincopies skip preverified check
 		showLongNote "(Use --force to override this check, or adjust numcopies.)"
 		a
 
-checkRequiredContent :: UUID -> Key -> AssociatedFile -> Annex Bool
-checkRequiredContent u k afile =
-	ifM (isRequiredContent (Just u) S.empty (Just k) afile False)
-		( requiredContent
-		, return True
-		)
+{- Checking preferred content also checks required content, so when
+ - auto mode causes preferred content to be checked, it's redundant
+ - for checkRequiredContent to separately check required content, and
+ - providing this avoids that extra work. -}
+newtype PreferredContentChecked = PreferredContentChecked Bool
 
-requiredContent :: Annex Bool
-requiredContent = do
-	showLongNote "That file is required content, it cannot be dropped!"
-	showLongNote "(Use --force to override this check, or adjust required content configuration.)"
-	return False
+checkRequiredContent :: PreferredContentChecked -> UUID -> Key -> AssociatedFile -> Annex Bool
+checkRequiredContent (PreferredContentChecked True) _ _ _ = return True
+checkRequiredContent (PreferredContentChecked False) u k afile =
+	checkDrop isRequiredContent False (Just u) (Just k) afile Nothing >>= \case
+		Nothing -> return True
+		Just afile' -> do
+			if afile == afile'
+				then showLongNote "That file is required content. It cannot be dropped!"
+				else showLongNote $ "That file has the same content as another file"
+					++ case afile' of
+						AssociatedFile (Just f) -> " (" ++ fromRawFilePath f ++ "),"
+						AssociatedFile Nothing -> ""
+					++ " which is required content. It cannot be dropped!"
+			showLongNote "(Use --force to override this check, or adjust required content configuration.)"
+			return False
 
 {- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories. -}

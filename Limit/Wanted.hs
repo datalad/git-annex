@@ -19,7 +19,7 @@ addWantGet = addPreferredContentLimit $
 
 addWantDrop :: Annex ()
 addWantDrop = addPreferredContentLimit $
-	checkWant $ wantDrop False Nothing Nothing
+	checkWant $ \af -> wantDrop False Nothing Nothing af (Just [])
 
 addPreferredContentLimit :: (MatchInfo -> Annex Bool) -> Annex ()
 addPreferredContentLimit a = do

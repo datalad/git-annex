@@ -134,8 +134,8 @@ initialize' mversion = checkInitializeAllowed $ do
 		else deconfigureSmudgeFilter
 	unlessM isBareRepo $ do
 		when supportunlocked $ do
-			showSideAction "scanning for unlocked files"
-			scanUnlockedFiles
+			showSideAction "scanning for annexed files"
+			scanAnnexedFiles
 		hookWrite postCheckoutHook
 		hookWrite postMergeHook
 	AdjustedBranch.checkAdjustedClone >>= \case

@@ -49,7 +49,7 @@ perform :: Maybe Remote -> NumCopies -> MinCopies -> Key -> CommandPerform
 perform from numcopies mincopies key = case from of
 	Just r -> do
 		showAction $ "from " ++ Remote.name r
-		Command.Drop.performRemote key (AssociatedFile Nothing) numcopies mincopies r
+		Command.Drop.performRemote pcc key (AssociatedFile Nothing) numcopies mincopies r
 	Nothing -> ifM (inAnnex key)
 		( droplocal
 		, ifM (objectFileExists key)
@@ -63,7 +63,8 @@ perform from numcopies mincopies key = case from of
 			)
 		)
   where
-	droplocal = Command.Drop.performLocal key (AssociatedFile Nothing) numcopies mincopies []
+	droplocal = Command.Drop.performLocal pcc key (AssociatedFile Nothing) numcopies mincopies []
+	pcc = Command.Drop.PreferredContentChecked False
 
 performOther :: (Key -> Git.Repo -> RawFilePath) -> Key -> CommandPerform
 performOther filespec key = do

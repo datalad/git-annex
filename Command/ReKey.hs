@@ -15,8 +15,6 @@ import Annex.Link
 import Annex.Perms
 import Annex.ReplaceFile
 import Logs.Location
-import Git.FilePath
-import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.InodeCache
 import qualified Utility.RawFilePath as R
@@ -79,7 +77,7 @@ perform file oldkey newkey = do
 		, unlessM (Annex.getState Annex.force) $
 			giveup $ fromRawFilePath file ++ " is not available (use --force to override)"
 		)
-	next $ cleanup file oldkey newkey
+	next $ cleanup file newkey
 
 {- Make a hard link to the old key content (when supported),
  - to avoid wasting disk space. -}
@@ -119,8 +117,8 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 					LinkAnnexNoop -> True
 	)
 
-cleanup :: RawFilePath -> Key -> Key -> CommandCleanup
-cleanup file oldkey newkey = do
+cleanup :: RawFilePath -> Key -> CommandCleanup
+cleanup file newkey = do
 	ifM (isJust <$> isAnnexLink file)
 		( do
 			-- Update symlink to use the new key.
@@ -131,8 +129,6 @@ cleanup file oldkey newkey = do
 			liftIO $ whenM (isJust <$> isPointerFile file) $
 				writePointerFile file newkey mode
 			stagePointerFile file mode =<< hashPointerFile newkey
-			Database.Keys.removeAssociatedFile oldkey 
-				=<< inRepo (toTopFilePath file)
 		)
 	whenM (inAnnex newkey) $
 		logStatus newkey InfoPresent

@@ -134,16 +134,17 @@ in either of two repositories.
   Matches files that the preferred content settings for the repository
   make it want to get. Note that this will match even files that are
   already present, unless limited with e.g., `--not --in .`
-  
-  Note that this will not match anything when using --all or --unused.
 
 * `--want-drop`
 
   Matches files that the preferred content settings for the repository
   make it want to drop. Note that this will match even files that have
   already been dropped, unless limited with e.g., `--in .`
-  
-  Note that this will not match anything when using --all or --unused.
+
+  Files that this matches will not necessarily be dropped by
+  `git-annex drop --auto`. This does not check that there are enough copies
+  to drop. Also the same content may be used by a file that is not wanted
+  to be dropped.
 
 * `--accessedwithin=interval`
 

@@ -1,6 +1,6 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -44,6 +44,9 @@ import Git.FilePath
 import Git.Command
 import Git.Types
 import Git.Index
+import Git.Sha
+import Git.Branch (writeTreeQuiet, update')
+import qualified Git.Ref
 import Config.Smudge
 import qualified Utility.RawFilePath as R
 
@@ -52,10 +55,6 @@ import qualified Data.ByteString.Char8 as S8
 import qualified System.FilePath.ByteString as P
 
 {- Runs an action that reads from the database.
- -
- - If the database doesn't already exist, it's not created; mempty is
- - returned instead. This way, when the keys database is not in use,
- - there's minimal overhead in checking it.
  -
  - If the database is already open, any writes are flushed to it, to ensure
  - consistency.
@@ -73,7 +72,7 @@ runReader a = do
 		v <- a (SQL.ReadHandle qh)
 		return (v, st)
 	go DbClosed = do
-		st' <- openDb False DbClosed
+		st' <- openDb True DbClosed
 		v <- case st' of
 			(DbOpen qh) -> a (SQL.ReadHandle qh)
 			_ -> return mempty
@@ -95,7 +94,7 @@ runWriter a = do
 		v <- a (SQL.WriteHandle qh)
 		return (v, st)
 	go st = do
-		st' <- openDb True st
+		st' <- openDb False st
 		v <- case st' of
 			DbOpen qh -> a (SQL.WriteHandle qh)
 			_ -> error "internal"
@@ -104,7 +103,7 @@ runWriter a = do
 runWriterIO :: (SQL.WriteHandle -> IO ()) -> Annex ()
 runWriterIO a = runWriter (liftIO . a)
 
-{- Opens the database, perhaps creating it if it doesn't exist yet.
+{- Opens the database, creating it if it doesn't exist yet.
  -
  - Multiple readers and writers can have the database open at the same
  - time. Database.Handle deals with the concurrency issues.
@@ -115,22 +114,21 @@ runWriterIO a = runWriter (liftIO . a)
 openDb :: Bool -> DbState -> Annex DbState
 openDb _ st@(DbOpen _) = return st
 openDb False DbUnavailable = return DbUnavailable
-openDb createdb _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKeysDbLock $ do
+openDb forwrite _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKeysDbLock $ do
 	dbdir <- fromRepo gitAnnexKeysDb
 	let db = dbdir P.</> "db"
 	dbexists <- liftIO $ R.doesPathExist db
-	case (dbexists, createdb) of
-		(True, _) -> open db
-		(False, True) -> do
+	case dbexists of
+		True -> open db
+		False -> do
 			initDb db SQL.createTables
 			open db
-		(False, False) -> return DbUnavailable
   where
-	-- If permissions don't allow opening the database, treat it as if
-	-- it does not exist.
-	permerr e = case createdb of
-		False -> return DbUnavailable
-		True -> throwM e
+	-- If permissions don't allow opening the database, and it's being
+	-- opened for read, treat it as if it does not exist.
+	permerr e
+		| forwrite = throwM e
+		| otherwise = return DbUnavailable
 	
 	open db = do
 		qh <- liftIO $ H.openDbQueue H.MultiWriter db SQL.containedTable
@@ -191,20 +189,17 @@ removeInodeCache = runWriterIO . SQL.removeInodeCache
 isInodeKnown :: InodeCache -> SentinalStatus -> Annex Bool
 isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
 
-{- Looks at staged changes to find when unlocked files are copied/moved,
- - and updates associated files in the keys database.
+{- Looks at staged changes to annexed files, and updates the keys database,
+ - so that its information is consistent with the state of the repository.
  -
- - Since staged changes can be dropped later, does not remove any
- - associated files; only adds new associated files.
- -
- - This needs to be run before querying the keys database so that
- - information is consistent with the state of the repository.
+ - This is run with a lock held, so only one process can be running this at
+ - a time.
  -
  - To avoid unncessary work, the index file is statted, and if it's not
  - changed since last time this was run, nothing is done.
  -
- - Note that this is run with a lock held, so only one process can be
- - running this at a time.
+ - A tree is generated from the index, and the diff between that tree
+ - and the last processed tree is examined for changes.
  -
  - This also cleans up after a race between eg a git mv and git-annex
  - get/drop/similar. If git moves the file between this being run and the
@@ -218,34 +213,74 @@ isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
  - filter. If a drop missed the file then the file is added back into the
  - annex. If a get missed the file then the clean filter populates the
  - file.
+ -
+ - There is a situation where, after this has run, the database can still
+ - contain associated files that have been deleted from the index.
+ - That happens when addAssociatedFile is used to record a newly
+ - added file, but that file then gets removed from the index before
+ - this is run. Eg, "git-annex add foo; git rm foo"
+ - So when using getAssociatedFiles, have to make sure the file still
+ - is an associated file.
  -}
 reconcileStaged :: H.DbQueue -> Annex ()
 reconcileStaged qh = do
 	gitindex <- inRepo currentIndexFile
 	indexcache <- fromRawFilePath <$> fromRepo gitAnnexKeysDbIndexCache
 	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
-		Just cur -> 
-			liftIO (maybe Nothing readInodeCache <$> catchMaybeIO (readFile indexcache)) >>= \case
-				Nothing -> go cur indexcache
-				Just prev -> ifM (compareInodeCaches prev cur)
-					( noop
-					, go cur indexcache
-					)
+		Just cur -> readindexcache indexcache >>= \case
+			Nothing -> go cur indexcache =<< getindextree
+			Just prev -> ifM (compareInodeCaches prev cur)
+				( noop
+				, go cur indexcache =<< getindextree
+				)
 		Nothing -> noop
   where
-	go cur indexcache = do
-		(l, cleanup) <- inRepo $ pipeNullSplit' diff
+	lastindexref = Ref "refs/annex/last-index"
+
+	readindexcache indexcache = liftIO $ maybe Nothing readInodeCache
+		<$> catchMaybeIO (readFile indexcache)
+
+	getoldtree = fromMaybe emptyTree <$> inRepo (Git.Ref.sha lastindexref)
+
+	go cur indexcache (Just newtree) = do
+		oldtree <- getoldtree
+		when (oldtree /= newtree) $ do
+			updatetodiff (fromRef oldtree) (fromRef newtree)
+			liftIO $ writeFile indexcache $ showInodeCache cur
+			-- Storing the tree in a ref makes sure it does not
+			-- get garbage collected, and is available to diff
+			-- against next time.
+			inRepo $ update' lastindexref newtree
+	-- git write-tree will fail if the index is locked or when there is
+	-- a merge conflict. To get up-to-date with the current index, 
+	-- diff --cached with the old index tree. The current index tree
+	-- is not known, so not recorded, and the inode cache is not updated,
+	-- so the next time git-annex runs, it will diff again, even
+	-- if the index is unchanged.
+	go _ _ Nothing = do
+		oldtree <- getoldtree
+		updatetodiff (fromRef oldtree) "--cached"
+		
+	updatetodiff old new = do
+		(l, cleanup) <- inRepo $ pipeNullSplit' $ diff old new
 		changed <- procdiff l False
 		void $ liftIO cleanup
 		-- Flush database changes immediately
 		-- so other processes can see them.
 		when changed $
 			liftIO $ H.flushDbQueue qh
-		liftIO $ writeFile indexcache $ showInodeCache cur
 	
-	diff =
-		-- Avoid running smudge or clean filters, since we want the
-		-- raw output, and they would block trying to access the
+	-- Avoid running smudge clean filter, which would block trying to
+	-- access the locked database. git write-tree sometimes calls it,
+	-- even though it is not adding work tree files to the index,
+	-- and so the filter cannot have an effect on the contents of the
+	-- index or on the tree that gets written from it.
+	getindextree = inRepo $ \r -> writeTreeQuiet $ r
+		{ gitGlobalOpts = gitGlobalOpts r ++ bypassSmudgeConfig }
+	
+	diff old new =
+		-- Avoid running smudge clean filter, since we want the
+		-- raw output, and it would block trying to access the
 		-- locked database. The --raw normally avoids git diff
 		-- running them, but older versions of git need this.
 		bypassSmudgeConfig ++
@@ -253,20 +288,18 @@ reconcileStaged qh = do
 		-- (The -G option may make it be used otherwise.)
 		[ Param "-c", Param "diff.external="
 		, Param "diff"
-		, Param "--cached"
+		, Param old
+		, Param new
 		, Param "--raw"
 		, Param "-z"
 		, Param "--no-abbrev"
-		-- Optimization: Only find pointer files. This is not
-		-- perfect. A file could start with this and not be a
-		-- pointer file. And a pointer file that is replaced with
-		-- a non-pointer file will match this.
-		, Param $ "-G^" ++ fromRawFilePath (toInternalGitPath $
+		-- Optimization: Limit to pointer files and annex symlinks.
+		-- This is not perfect. A file could contain with this and not
+		-- be a pointer file. And a pointer file that is replaced with
+		-- a non-pointer file will match this. This is only a
+		-- prefilter so that's ok.
+		, Param $ "-G" ++ fromRawFilePath (toInternalGitPath $
 			P.pathSeparator `S.cons` objectDir')
-		-- Don't include files that were deleted, because this only
-		-- wants to update information for files that are present
-		-- in the index.
-		, Param "--diff-filter=AMUT"
 		-- Disable rename detection.
 		, Param "--no-renames"
 		-- Avoid other complications.
@@ -276,20 +309,28 @@ reconcileStaged qh = do
 	
 	procdiff (info:file:rest) changed
 		| ":" `S.isPrefixOf` info = case S8.words info of
-			(_colonsrcmode:dstmode:_srcsha:dstsha:_change:[])
-				-- Only want files, not symlinks
-				| dstmode /= fmtTreeItemType TreeSymlink -> do
-					maybe noop (reconcile (asTopFilePath file))
-						=<< catKey (Ref dstsha)
-					procdiff rest True
-				| otherwise -> procdiff rest changed
+			(_colonsrcmode:dstmode:srcsha:dstsha:_change:[]) -> do
+				removed <- catKey (Ref srcsha) >>= \case
+					Just oldkey -> do
+						liftIO $ SQL.removeAssociatedFile oldkey
+							(asTopFilePath file)
+							(SQL.WriteHandle qh)
+						return True
+					Nothing -> return False
+				added <- catKey (Ref dstsha) >>= \case
+					Just key -> do
+						liftIO $ SQL.addAssociatedFile key
+							(asTopFilePath file)
+							(SQL.WriteHandle qh)
+						when (dstmode /= fmtTreeItemType TreeSymlink) $
+							reconcilerace (asTopFilePath file) key
+						return True
+					Nothing -> return False
+				procdiff rest (changed || removed || added)
 			_ -> return changed -- parse failed
 	procdiff _ changed = return changed
 
-	-- Note that database writes done in here will not necessarily 
-	-- be visible to database reads also done in here.
-	reconcile file key = do
-		liftIO $ SQL.addAssociatedFileFast key file (SQL.WriteHandle qh)
+	reconcilerace file key = do
 		caches <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
 		keyloc <- calcRepo (gitAnnexLocation key)
 		keypopulated <- sameInodeCache keyloc caches

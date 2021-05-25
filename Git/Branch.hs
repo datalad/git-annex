@@ -185,8 +185,18 @@ commitAlways :: CommitMode -> String -> Branch -> [Ref] -> Repo -> IO Sha
 commitAlways commitmode message branch parentrefs repo = fromJust
 	<$> commit commitmode True message branch parentrefs repo
 
+-- Throws exception if the index is locked, with an error message output by
+-- git on stderr.
 writeTree :: Repo -> IO Sha
-writeTree repo = getSha "write-tree" $ pipeReadStrict [Param "write-tree"] repo
+writeTree repo = getSha "write-tree" $
+	pipeReadStrict [Param "write-tree"] repo
+
+-- Avoids error output if the command fails due to eg, the index being locked.
+writeTreeQuiet :: Repo -> IO (Maybe Sha)
+writeTreeQuiet repo = extractSha <$> withNullHandle go
+  where
+	go nullh = pipeReadStrict' (\p -> p { std_err = UseHandle nullh }) 
+		[Param "write-tree"] repo
 
 commitTree :: CommitMode -> String -> [Ref] -> Ref -> Repo -> IO Sha
 commitTree commitmode message parentrefs tree repo =

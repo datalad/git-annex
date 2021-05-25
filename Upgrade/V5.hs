@@ -47,7 +47,7 @@ upgrade automatic = flip catchNonAsync onexception $ do
 		, do
 			checkGitVersionForIndirectUpgrade
 		)
-	scanUnlockedFiles
+	scanAnnexedFiles
 	configureSmudgeFilter
 	-- Inode sentinal file was only used in direct mode and when
 	-- locking down files as they were added. In v6, it's used more

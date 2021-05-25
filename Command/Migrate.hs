@@ -86,7 +86,7 @@ perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbacken
 			urls <- getUrls oldkey
 			forM_ urls $ \url ->
 				setUrlPresent newkey url
-			next $ Command.ReKey.cleanup file oldkey newkey
+			next $ Command.ReKey.cleanup file newkey
 		, giveup "failed creating link from old to new key"
 		)
 	genkey Nothing = do
