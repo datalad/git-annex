@@ -27,8 +27,8 @@ import qualified Data.Set as S
 
 type Reason = String
 
-{- Drop a key from local and/or remote when allowed by the preferred content
- - and numcopies settings.
+{- Drop a key from local and/or remote when allowed by the preferred content,
+ - required content, and numcopies settings.
  -
  - Skips trying to drop from remotes that are appendonly, since those drops
  - would presumably fail. Also skips dropping from exporttree/importtree remotes,
@@ -105,8 +105,9 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 
 	checkdrop fs n u a =
 		let afs = map (AssociatedFile . Just) fs
+		    pcc = Command.Drop.PreferredContentChecked True
 		in ifM (wantDrop True u (Just key) afile (Just afs))
-			( dodrop n u a
+			( dodrop n u (a pcc)
 			, return n
 			)
 
@@ -126,12 +127,12 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 			, return n
 			)
 
-	dropl fs n = checkdrop fs n Nothing $ \numcopies mincopies ->
+	dropl fs n = checkdrop fs n Nothing $ \pcc numcopies mincopies ->
 		stopUnless (inAnnex key) $
-			Command.Drop.startLocal afile ai si numcopies mincopies key preverified
+			Command.Drop.startLocal pcc afile ai si numcopies mincopies key preverified
 
-	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies mincopies ->
-		Command.Drop.startRemote afile ai si numcopies mincopies key r
+	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \pcc numcopies mincopies ->
+		Command.Drop.startRemote pcc afile ai si numcopies mincopies key r
 
 	ai = mkActionItem (key, afile)
 

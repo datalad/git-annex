@@ -1,5 +1,8 @@
 git-annex (8.20210429) UNRELEASED; urgency=medium
 
+  * When two files have the same content, and a required content expression
+    matches one but not the other, dropping the latter file will fail as it
+    would also remove the content of the required file.
   * drop --auto: When two files have the same content, and a preferred content
     expression matches one but not the other, do not drop the content.
   * sync --content, assistant: When two unlocked files have the same

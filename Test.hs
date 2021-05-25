@@ -376,6 +376,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "bup remote" test_bup_remote
 	, testCase "crypto" test_crypto
 	, testCase "preferred content" test_preferred_content
+	, testCase "required_content" test_required_content
 	, testCase "add subdirs" test_add_subdirs
 	, testCase "addurl" test_addurl
 	]
@@ -748,6 +749,27 @@ test_preferred_content = intmpclonerepo $ do
 	annexed_notpresent annexedfile
 	git_annex "get" ["--auto", annexedfile] "get --auto of file with exclude=*"
 	annexed_notpresent annexedfile
+
+test_required_content :: Assertion
+test_required_content = intmpclonerepo $ do
+	git_annex "get" [annexedfile] "get"
+	annexed_present annexedfile
+	git_annex "required" [".", "include=" ++ annexedfile] "annexedfile required"
+
+	git_annex_shouldfail "drop" [annexedfile] "drop of required content should fail"
+	annexed_present annexedfile
+
+	git_annex "drop" ["--auto", annexedfile] "drop --auto of required content skips it"
+	annexed_present annexedfile
+	
+	writecontent annexedfiledup $ content annexedfiledup
+	add_annex annexedfiledup "add of second file with same content failed"
+	annexed_present annexedfiledup
+	annexed_present annexedfile
+
+	git_annex_shouldfail "drop" [annexedfiledup] "drop of file sharing required content should fail"
+	annexed_present annexedfiledup
+	annexed_present annexedfile
 
 test_lock :: Assertion
 test_lock = intmpclonerepo $ do

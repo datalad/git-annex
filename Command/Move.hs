@@ -293,7 +293,7 @@ toHereStart removewhen afile key ai si =
  - repository reduces the number of copies, and should fail if
  - that would violate numcopies settings.
  -
- - On the other hand, when the destiation repository does not already
+ - On the other hand, when the destination repository does not already
  - have a copy of a file, it can be dropped without making numcopies
  - worse, so the move is allowed even if numcopies is not met.
  -
@@ -311,7 +311,7 @@ toHereStart removewhen afile key ai si =
  -}
 willDropMakeItWorse :: UUID -> UUID -> DestStartedWithCopy -> Key -> AssociatedFile -> Annex DropCheck
 willDropMakeItWorse srcuuid destuuid (DestStartedWithCopy deststartedwithcopy) key afile =
-	ifM (Command.Drop.checkRequiredContent srcuuid key afile)
+	ifM (Command.Drop.checkRequiredContent (Command.Drop.PreferredContentChecked False) srcuuid key afile)
 		( if deststartedwithcopy
 			then unlessforced DropCheckNumCopies
 			else ifM checktrustlevel
