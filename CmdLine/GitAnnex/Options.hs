@@ -338,6 +338,16 @@ fileMatchingOptions' lb =
 		<> help "limit to files matching the glob pattern"
 		<> hidden
 		)
+	, globalOption (setAnnexState . Limit.addExcludeSameContent) $ strOption
+		( long "excludesamecontent" <> short 'x' <> metavar paramGlob
+		<> help "skip files whose content is the same as another file matching the glob pattern"
+		<> hidden
+		)
+	, globalOption (setAnnexState . Limit.addIncludeSameContent) $ strOption
+		( long "includesamecontent" <> short 'I' <> metavar paramGlob
+		<> help "limit to files whose content is the same as another file matching the glob pattern"
+		<> hidden
+		)
 	, globalOption (setAnnexState . Limit.addLargerThan lb) $ strOption
 		( long "largerthan" <> metavar paramSize
 		<> help "match files larger than a size"

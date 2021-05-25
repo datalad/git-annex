@@ -1,9 +1,11 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Limit where
 
@@ -29,16 +31,20 @@ import Logs.MetaData
 import Logs.Group
 import Logs.Unused
 import Logs.Location
+import Annex.CatFile
+import Git.FilePath
 import Git.Types (RefDate(..))
 import Utility.Glob
 import Utility.HumanTime
 import Utility.DataUnits
+import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 import Backend
 
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified System.FilePath.ByteString as P
 
 {- Some limits can look at the current status of files on
  - disk, or in the annex. This allows controlling which happens. -}
@@ -121,6 +127,65 @@ matchGlobFile glob = go
 		Just f -> matchGlob cglob (fromRawFilePath f)
 		Nothing -> False
 	go (MatchingUserInfo p) = matchGlob cglob <$> getUserInfo (userProvidedFilePath p)
+
+{- Add a limit to skip files when there is no other file using the same
+ - content, with a name matching the glob. -}
+addIncludeSameContent :: String -> Annex ()
+addIncludeSameContent = addLimit . limitIncludeSameContent
+
+limitIncludeSameContent :: MkLimit Annex
+limitIncludeSameContent glob = Right $ MatchFiles
+	{ matchAction = const $ matchSameContentGlob glob
+	, matchNeedsFileName = True
+	, matchNeedsFileContent = False
+	, matchNeedsKey = False
+	, matchNeedsLocationLog = False
+	}
+
+{- Add a limit to skip files when there is no other file using the same
+ - content, with a name matching the glob. -}
+addExcludeSameContent :: String -> Annex ()
+addExcludeSameContent = addLimit . limitExcludeSameContent
+
+limitExcludeSameContent :: MkLimit Annex
+limitExcludeSameContent glob = Right $ MatchFiles
+	{ matchAction = const $ not <$$> matchSameContentGlob glob
+	, matchNeedsFileName = True
+	, matchNeedsFileContent = False
+	, matchNeedsKey = False
+	, matchNeedsLocationLog = False
+	}
+
+matchSameContentGlob :: String -> MatchInfo -> Annex Bool
+matchSameContentGlob glob mi = checkKey (go mi) mi
+  where
+	go (MatchingFile fi) k = check k (matchFile fi)
+	go (MatchingInfo p) k = case providedFilePath p of
+		Just f -> check k f
+		Nothing -> return False
+	go (MatchingUserInfo p) k = 
+		check k . toRawFilePath
+			=<< getUserInfo (userProvidedFilePath p)
+	
+	cglob = compileGlob glob CaseSensative (GlobFilePath True) -- memoized
+	
+	matchesglob f = matchGlob cglob (fromRawFilePath f)
+#ifdef mingw32_HOST_OS
+		|| matchGlob cglob (fromRawFilePath (toInternalGitPath f))
+#endif
+
+	check k skipf = do
+		-- Find other files with the same content, with filenames
+		-- matching the glob.
+		g <- Annex.gitRepo
+		fs <- filter (/= P.normalise skipf)
+			. filter matchesglob
+			. map (\f -> P.normalise (fromTopFilePath f g))
+			<$> Database.Keys.getAssociatedFiles k
+		-- Some associated files in the keys database may no longer
+		-- correspond to files in the repository. This is checked
+		-- last as it's most expensive.
+		anyM (\f -> maybe False (== k) <$> catKeyFile f) fs
 
 addMimeType :: String -> Annex ()
 addMimeType = addMagicLimit "mimetype" getMagicMimeType providedMimeType userProvidedMimeType

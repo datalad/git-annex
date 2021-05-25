@@ -1,5 +1,6 @@
 git-annex (8.20210429) UNRELEASED; urgency=medium
 
+  * New matching options --excludesamecontent and --includesamecontent
   * When two files have the same content, and a required content expression
     matches one but not the other, dropping the latter file will fail as it
     would also remove the content of the required file.

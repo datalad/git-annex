@@ -6,3 +6,5 @@ In our repositories/workflows we quite often encounter cases where multiple subf
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]] --[[Joey]]

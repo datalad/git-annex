@@ -22,7 +22,7 @@ in either of two repositories.
   Skips files matching the glob pattern. The glob is matched relative to
   the current directory. For example:
 
-        	--exclude='*.mp3' --exclude='subdir/*'
+        	git annex get --exclude='*.mp3' --exclude='subdir/*'
 
   Note that this will not match anything when using --all or --unused.
 
@@ -31,9 +31,30 @@ in either of two repositories.
   Skips files not matching the glob pattern.  (Same as `--not --exclude`.)
   For example, to include only mp3 and ogg files:
 
-        	--include='*.mp3' --or --include='*.ogg'
+        	git annex get --include='*.mp3' --or --include='*.ogg'
 
   Note that this will not skip anything when using --all or --unused.
+
+* `--excludesamecontent=glob`
+
+  Skips a file when there is another file with the same content,
+  whose name matches the glob. The glob is matched relative to the current
+  directory.
+
+  For example, to drop files in the archive directory, but not when the same
+  content is used by a file in the work directory:
+
+        	git annex drop archive/ --excludesamecontent='work/*'
+
+* `--includesamecontent=glob`
+
+  Skips files when there is no other file with the same content
+  whose name matches the glob. (Same as `--not --includesamecontent`)
+
+  For example, if you have inbox and outbox directories, and want to find
+  anything in the inbox that has the same content as something in the outbox:
+
+        	git annex find inbox --includesamecontent='outbox/*'
 
 * `--in=repository`
 
