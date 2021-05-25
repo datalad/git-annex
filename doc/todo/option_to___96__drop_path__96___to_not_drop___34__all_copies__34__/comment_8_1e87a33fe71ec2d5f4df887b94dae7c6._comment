@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2021-05-25T20:34:00Z"
+ content="""
+Thinking about preferred content expression some more, there should not
+be much reason to use this in one. includesamecontent=foo would have the
+same effect as include=foo, because when it operates on bar, it already
+checks if foo is the same content and is preferred content, and if so
+avoids dropping it. And when getting files, the effect would also be the
+same, because include=foo makes it get foo, same as includesamecontent=foo
+would.
+"""]]

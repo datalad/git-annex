@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-05-25T16:44:56Z"
+ content="""
+Going with --includesamecontent=glob and --excludesamecontent=glob
+"""]]
