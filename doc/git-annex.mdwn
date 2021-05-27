@@ -1002,6 +1002,15 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   ControlMaster and ControlPersist settings
   (if built using a new enough ssh). To disable this, set to `false`.
 
+* `annex.adviceNoSshCaching`
+
+  When git-annex is unable to use ssh connection caching, or has been
+  configured not to, and concurrency is enabled, it will warn that
+  this might result in multiple ssh processes prompting for passwords
+  at the same time. To disable that warning, eg if you have configured ssh
+  connection caching yourself, or have ssh agent caching passwords, 
+  set this to `false`.
+
 * `annex.alwayscommit`
 
   By default, git-annex automatically commits data to the git-annex branch

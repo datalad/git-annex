@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-05-27T16:26:19Z"
+ content="""
+Seems to me that annex.jobs must be set in the git config for that message
+to be displayed as shown.
+
+I agree, it would make sense to have a way to disable the message.
+Added annex.adviceNoSshCaching
+"""]]

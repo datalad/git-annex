@@ -139,6 +139,7 @@ data GitConfig = GitConfig
 	, gpgCmd :: GpgCmd
 	, mergeDirectoryRenames :: Maybe String
 	, annexPrivateRepos :: S.Set UUID
+	, annexAdviceNoSshCaching :: Bool
 	}
 
 extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
@@ -255,6 +256,7 @@ extractGitConfig configsource r = GitConfig
 			| otherwise = Nothing
 		  in mapMaybe get (M.toList (Git.config r))
 		]
+	, annexAdviceNoSshCaching = getbool (annexConfig "adviceNoSshCaching") True
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
