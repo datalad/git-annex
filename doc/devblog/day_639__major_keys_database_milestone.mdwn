@@ -1,0 +1,15 @@
+I've fallen completely out of practice on this dev blog, but I felt I had
+to mention a major milestone accomplished over the past week. The database
+that git-annex maintains about keys and worktree files used to only be
+guaranteed to be maintained for unlocked files, but it did not have
+information about locked files. Now it does, and it's automatically, and
+efficiently (I hope) kept up-to-date.
+
+That let a long-standing bug get fixed, where when 2 files used the same
+key, the preferred content expression could match one file and not the
+other and cause get/drop to happen over and over. 
+
+But there are probably a lot of other ways this database could be used, now
+that's it's fully available. For example, it would be easy to write a
+git-annex command that queries for which worktree files use a key, without
+needing to scan the whole worktree to find them.
