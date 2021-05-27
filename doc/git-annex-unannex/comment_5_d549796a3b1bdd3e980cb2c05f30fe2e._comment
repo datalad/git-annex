@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-05-27T16:20:11Z"
+ content="""
+@datamanager the `git-annex unannex` command can't rewrite git history,
+it just stops further tracking of an annexed file by git. Any way you would
+usually scrub an unwanted commit out of git's history can be used with
+git-annex; scrubbing mentioned of hashes out of the git-annex branch's
+history gets more involved.
+
+Once you have run `git-annex unannex` on a file, it's not annexed, so
+commands like `git-annex whereis` will not have anything to say about it.
+"""]]
