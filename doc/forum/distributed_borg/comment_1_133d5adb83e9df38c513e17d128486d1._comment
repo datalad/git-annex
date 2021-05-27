@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-05-27T16:08:07Z"
+ content="""
+This should be possible to set up. This is just a special remote that is
+accessible from several clones of the repository, and git-annex is able to
+get files that were sent from another clone to the special remote, once the
+git-annex branch gets synced between the two clones.
+
+You have to use `git annex initremote` a single time to set up the borg
+special remote, and then use `git annex enableremote` on every other clone
+to access it. Since initremote borg needs the borgrepo= parameter, which
+then gets used to access it from the other clones, it would make sense to
+use ssh user@host:path syntax, with a shared user account, or perhaps
+host:path if the permissions on the server allow multiple users to access
+the borg repo.
+"""]]
