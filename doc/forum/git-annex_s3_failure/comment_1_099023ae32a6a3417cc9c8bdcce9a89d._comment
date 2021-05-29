@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Steven"
+ avatar="http://cdn.libravatar.org/avatar/bc0cef8062401f1b84db320cb56c28bd"
+ subject="Using the --content flag"
+ date="2021-05-29T00:14:30Z"
+ content="""
+It seems like I had to use the following command:
+
+```
+git annex sync --content
+```
+
+After this, I saw all the files available. 
+
+I expected `git annex get .` to do that, but I might simply have the wrong mental model of all of this. 
+"""]]
