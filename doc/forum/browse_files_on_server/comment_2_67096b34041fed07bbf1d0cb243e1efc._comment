@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="frodo"
+ avatar="http://cdn.libravatar.org/avatar/a647438d8bd49248b7e2cfe0ce3ecd4e"
+ subject="comment 2"
+ date="2021-05-29T13:51:50Z"
+ content="""
+I tried running that, and got the following output:
+
+% git annex sync
+commit 
+fatal: this operation must be run in a work tree
+ok
+
+I can see through the web interface that the clients have uploaded the files to the server. I just can't browse them.
+"""]]
