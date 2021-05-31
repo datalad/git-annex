@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="keys-to-paths db"
+ date="2021-05-31T23:15:21Z"
+ content="""
+The lengthy scan would only happen once -- when the worktree is first checked out -- and would be incremental from then on, right?
+But it would slow things down every time a new checkout of a large repo happens?  Maybe the scan could be done lazily, invoked when the results are first needed?
+Also, if you just need to know which keys are used more than once, maybe a Bloom filter of the keys used in the worktree would suffice, instead of a full keys-to-paths SQL db?
+
+"""]]
