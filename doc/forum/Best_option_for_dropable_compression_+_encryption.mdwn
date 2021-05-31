@@ -1,0 +1,15 @@
+I'm currently using a directory special remote with encryption for dropable storage for incompressible files but I also need one for compressible text files.
+
+Borg would be my go-to for encryption and compression for append-only storage needs and even comes with the additional benefit of best-in-class dedup (though that is not important in this case). Unfortunately, I need to be able to drop files from this remote, so Borg is out of the question.
+
+An encrypted directory would be an option since gpg does its own compression before encryption but I turned that off globally because it uses a horribly inefficient compression algorithm (gzip) which I never want when using it manually and definitely don't want on my already-existing encrypted directory special remote full of incompressible files.
+
+I'd be fine with gzip for this particular purpose but I haven't found a way to make git-annex call gpg with a certain compression flag in one remote but not the other. LMK if you're aware of one.
+
+Two other possible options I can think of that aren't implemented yet (AFAICT) would be:
+
+* customisable compression for special remotes  
+  (This would probably be the best option; efficient, customisable and simple)
+* storing the text files in an actual git repo encrypted with gcrypt
+
+How do you store compressible files which you might need to drop?
