@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="clarifying preferred content expressions"
+ date="2021-05-30T19:40:50Z"
+ content="""
+Thanks Joey for clarifying.  \"Preferred content only relates to the currently checked out branch\" -- what about repos with no \"currently checked out branch\", e.g. bare repos or special remotes, or those with more than one checked out branch (using [[git-worktree|tips/Using_git-worktree_with_annex]])?   I had thought that e.g. setting the required content setting of an S3 special remote to `anything` would ensure that it gets a copy of every file ever annexed, but sounds like that might not be true.
+"""]]

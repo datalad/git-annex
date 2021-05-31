@@ -1,0 +1,33 @@
+Hello,
+
+I have a repository that is set up to upload files to S3.
+
+I am testing the idea of fetching files by doing the following
+
+```
+mkdir tmp
+
+cd tmp
+
+git clone git@github.com:MyUserName/MyRepo.git
+
+git annex enableremote mys3
+
+git annex get .
+
+```
+
+I get error messages such as:
+
+```
+get files/a-tutorial-on-the-universality-and-expressiveness-of-fold.pdf (not available)                                                                
+  Maybe add some of these git remotes (git remote add ...):                
+        942f7e73-262b-4850-8a2b-ccb7c0e5666d -- <ommitted>
+                                                                                                                                                       
+  (Note that these git remotes have annex-ignore set: origin)       
+failed 
+```
+
+This happens even though the S3 environmental variables are properly set.
+
+Thank you for your help! This program seems awesome - I just need to figure out how to use it. 

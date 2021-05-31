@@ -1,0 +1,1 @@
+Hi. I have a local repository on my computer and a transfer repository on my server. When I ssh into the server, I see the git repo, but none of the files. Is there a way to browse my files in the transfer repository?

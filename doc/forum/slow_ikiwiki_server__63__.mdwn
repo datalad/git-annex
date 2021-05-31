@@ -1,0 +1,1 @@
+The ikiwiki server hosting this forum seems to take much longer to finish posting a message/comment than it used to.  Not a big deal, but wondering if anyone else has noticed this?
