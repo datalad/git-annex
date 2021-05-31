@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2021-05-31T21:50:35Z"
+ content="""
+By "currently checked out branch", I meant in the repository where
+git-annex is running. It might be copying to a special remote or whatever,
+but the filename matched by include= or exclude= in a preferred content
+expression comes from the branch it's run in.
+
+When run in a bare git repo (or with --all), include= and exclude= are
+documented not to match.
+"""]]
