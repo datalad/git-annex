@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-05-31T19:08:32Z"
+ content="""
+I suppose this could be useful, but note that `git annex fsck` without
+--all will still warn if it finds a file in the working tree with no
+existing content, even if its key has been marked dead. Because having a
+file in the working tree that you can't get is certainly a bad situation.
+
+So, if this feature got implemented, you would want to follow `git annex
+dead` of a file with `git rm` of the file. Probably.
+
+The other reason dead only operates on keys is that the expected
+workflow was that the user will lose data, will delete the lost file out of
+their working tree, or overwrite it or whatever, and then at some later
+point get annoyed that fsck --all complains about it, and so then mark it
+dead. But if you want to be proactive, marking a file dead is certainly
+useful to be able to do.
+
+I'd also be concerned that `git annex dead` or `git annex dead .` run
+accidentally could be an annoying mistake to recover from. Certianly
+it should not default to marking all files dead when there are no
+parameters!
+"""]]
