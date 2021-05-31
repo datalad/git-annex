@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2021-05-31T16:30:11Z"
+ content="""
+Implemented streaming through git. In a repo with 100000 unlocked files,
+version 8.20210429 took 46 seconds, now reduced to 36 seconds.
+
+When the files are locked, of course the old version was faster
+due to being able to skip all symlinks, 2 seconds. The new version takes
+slightly less time than it does for unlocked files, 35 seconds.
+
+Now the git query and processing is only a few seconds of the total run time,
+writing information about all the files to sqlite is most of the rest,
+and may also be possible to speed up.
+"""]]

@@ -1,6 +1,6 @@
 {- git-annex worktree files
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module Annex.WorkTree where
 
 import Annex.Common
+import qualified Annex
 import Annex.Link
 import Annex.CatFile
 import Annex.Content
@@ -16,6 +17,7 @@ import Annex.CurrentBranch
 import Annex.InodeSentinal
 import Utility.InodeCache
 import Git.FilePath
+import Git.CatFile
 import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.Types
@@ -24,7 +26,7 @@ import qualified Database.Keys.SQL
 import Config
 import qualified Utility.RawFilePath as R
 
-import Control.Concurrent
+import qualified Data.ByteString.Lazy as L
 
 {- Looks up the key corresponding to an annexed file in the work tree,
  - by examining what the file links to.
@@ -79,30 +81,40 @@ ifAnnexed file yes no = maybe no yes =<< lookupKey file
  -}
 scanAnnexedFiles :: Annex ()
 scanAnnexedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ do
-	dropold <- liftIO $ newMVar $ 
-		Database.Keys.runWriter $
-			liftIO . Database.Keys.SQL.dropAllAssociatedFiles
+	g <- Annex.gitRepo
+	Database.Keys.runWriter $
+		liftIO . Database.Keys.SQL.dropAllAssociatedFiles
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
 		Git.LsTree.LsTreeRecursive
-		(Git.LsTree.LsTreeLong False)
+		(Git.LsTree.LsTreeLong True)
 		Git.Ref.headRef
-	forM_ l $ \i -> 
-		maybe noop (add dropold i)
-			=<< catKey'
-				(Git.LsTree.sha i)
-				(fromMaybe 0 (Git.LsTree.size i))				
+	catObjectStreamLsTree l want g go
 	liftIO $ void cleanup
   where
-	isregfile i = case Git.Types.toTreeItemType (Git.LsTree.mode i) of
-		Just Git.Types.TreeFile -> True
-		Just Git.Types.TreeExecutable -> True
-		_ -> False
-	add dropold i k = do
-		join $ fromMaybe noop <$> liftIO (tryTakeMVar dropold)
+	-- Want to process symlinks, and regular files.
+	want i = case Git.Types.toTreeItemType (Git.LsTree.mode i) of
+		Just Git.Types.TreeSymlink -> Just (i, False)
+		Just Git.Types.TreeFile -> checkfilesize i
+		Just Git.Types.TreeExecutable -> checkfilesize i
+		_ -> Nothing
+	
+	-- Avoid processing files that are too large to be pointer files.
+	checkfilesize i = case Git.LsTree.size i of
+		Just n | n < maxPointerSz -> Just (i, True)
+		_ -> Nothing
+	
+	go getnext = liftIO getnext >>= \case
+		Just ((i, isregfile), Just c) -> do
+			maybe noop (add i isregfile)
+				(parseLinkTargetOrPointer (L.toStrict c))
+			go getnext
+		_ -> return ()
+	
+	add i isregfile k = do
 		let tf = Git.LsTree.file i
 		Database.Keys.runWriter $
 			liftIO . Database.Keys.SQL.addAssociatedFileFast k tf
-		whenM (pure (isregfile i) <&&> inAnnex k) $ do
+		whenM (pure isregfile <&&> inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
 			liftIO (isPointerFile f) >>= \case
 				Just k' | k' == k -> do
