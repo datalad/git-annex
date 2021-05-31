@@ -1,0 +1,17 @@
+Like was recently done for preferred content, when checking numcopies for a
+drop, it could check if other files are using the same key, and if so check
+that their numcopies (and mincopies) is satisfied as well.
+
+There would be an efficiency tradeoff of course, since it would have to
+query the keys db. The question I suppose is, if someone sets different
+numcopies for different files via .gitattributes, and they use the same
+key, will the user think it's a problem that numcopies can be violated in
+some circumstances. And I think that users would maybe consider that to be
+a problem, if they happened to encounter the behavior.
+
+It may also be worth considering making --all (etc) also check numcopies of
+associated files. Although then, in a bare repo, it would behave
+differently than in a non-bare repo. (Also if this is done, the preferred
+content checking should also behave the same way.) The docs for --all 
+do say that it bypasses checking .gitattributes numcopies.
+--[[Joey]]
