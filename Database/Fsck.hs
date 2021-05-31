@@ -88,7 +88,9 @@ addDb :: FsckHandle -> Key -> IO ()
 addDb (FsckHandle h _) k = H.queueDb h checkcommit $
 	void $ insertUnique $ Fscked k
   where
-	-- commit queue after 1000 files or 5 minutes, whichever comes first
+	-- Commit queue after 1000 changes or 5 minutes, whichever comes first.
+	-- The time based commit allows for an incremental fsck to be
+	-- interrupted and not lose much work.
 	checkcommit sz lastcommittime
 		| sz > 1000 = return True
 		| otherwise = do

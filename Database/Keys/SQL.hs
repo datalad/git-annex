@@ -27,7 +27,6 @@ import Git.FilePath
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
-import Data.Time.Clock
 import Control.Monad
 import Data.Maybe
 
@@ -77,12 +76,8 @@ newtype WriteHandle = WriteHandle H.DbQueue
 queueDb :: SqlPersistM () -> WriteHandle -> IO ()
 queueDb a (WriteHandle h) = H.queueDb h checkcommit a
   where
-	-- commit queue after 1000 changes or 5 minutes, whichever comes first
-	checkcommit sz lastcommittime
-		| sz > 1000 = return True
-		| otherwise = do
-			now <- getCurrentTime
-			return $ diffUTCTime now lastcommittime > 300
+	-- commit queue after 1000 changes
+	checkcommit sz _lastcommittime = pure (sz > 1000)
 
 addAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
 addAssociatedFile k f = queueDb $ do

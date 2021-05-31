@@ -4,3 +4,6 @@ E.g. following idea came to mind: git-annex could add some flag/beacon file (e.g
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> I think I've improved this all that it can reasonably be sped up,
+> so [[done]]. --[[Joey]]

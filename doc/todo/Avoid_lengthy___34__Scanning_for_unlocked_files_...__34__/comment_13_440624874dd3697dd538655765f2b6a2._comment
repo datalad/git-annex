@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2021-05-31T18:40:59Z"
+ content="""
+There was an unncessary check of the current time per sql insert, removing
+that sped it up by 3 seconds in my benchmark.
+
+Also tried increasing the number of inserts per sqlite transaction from 1k
+to 10k. Memory use increased to 90 mb, but no measurable speed increase.
+
+I don't see much else that can speed up the sqlite part, without going deep
+into the weeds of populating sqlite databases without using sql, or using
+multi-value inserts ([like described here](https://medium.com/@JasonWyatt/squeezing-performance-from-sqlite-insertions-971aff98eef2).
+Both would prevent using persistent to abstract sql away, and would
+only be usable in this case, not speeding up git-annex generally, 
+so not too enthused.
+"""]]
