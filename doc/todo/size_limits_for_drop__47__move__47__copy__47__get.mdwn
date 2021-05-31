@@ -1,0 +1,7 @@
+It'd be very useful if you could specify a size limit for drop/move/copy/get-type operations. `git annex move --to other --limit 1G` would move at most 1G of data to the other repo for example.
+
+This way you could quickly "garbage collect" a few dozen GiB from your annex repo when you're running out of space without dropping everything for example.
+
+Another issue this could be used to mitigates is that, for some reason, git-annex doesn't auto-stop the transfer when the repos on my external drives are full properly.
+
+I imagine there are many more use-cases where quickly being able to set a limit for the amount of data a command should act on could come in handy.
