@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2021-05-31T14:39:17Z"
+ content="""
+This got slower again since it now also has to scan locked files as well as
+unlocked. And so disabling smudge filters doesn't avoid it either.
+
+It should be possible to speed this up by streaming the ls-tree through
+cat-file, like is done in CmdLine.Seek (catObjectStreamLsTree). Speedup
+probably in the order of 2-3x.
+"""]]
