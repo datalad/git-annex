@@ -1,0 +1,7 @@
+reconcileStaged should be able to be sped up by improving streaming through
+git, similar to [[!commit 0f54e5e0ae73b89bb6743bf298915619da00c3f4]].
+
+Normally it's plenty fast enough, but users who often switch between
+branches that have tens to hundreds of thousands of diverged files will
+find it slow, and this should speed it up by somewhere around 3x (excluding
+sqlite writes). --[[Joey]]
