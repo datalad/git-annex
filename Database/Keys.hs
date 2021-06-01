@@ -309,14 +309,18 @@ reconcileStaged qh = do
 	
 	procdiff (info:file:rest) changed
 		| ":" `S.isPrefixOf` info = case S8.words info of
-			(_colonsrcmode:dstmode:srcsha:dstsha:_change:[]) -> do
-				removed <- catKey (Ref srcsha) >>= \case
-					Just oldkey -> do
-						liftIO $ SQL.removeAssociatedFile oldkey
-							(asTopFilePath file)
-							(SQL.WriteHandle qh)
-						return True
-					Nothing -> return False
+			(_colonsrcmode:dstmode:srcsha:dstsha:status:[]) -> do
+				-- avoid removing associated file when
+				-- there is a merge conflict
+				removed <- if status /= "U" 
+					then catKey (Ref srcsha) >>= \case
+						Just oldkey -> do
+							liftIO $ SQL.removeAssociatedFile oldkey
+								(asTopFilePath file)
+								(SQL.WriteHandle qh)
+							return True
+						Nothing -> return False
+					else return False
 				added <- catKey (Ref dstsha) >>= \case
 					Just key -> do
 						liftIO $ SQL.addAssociatedFile key

@@ -1,0 +1,28 @@
+Found a case where the associated files in the keys db end up out-of-date.
+Make a repo with an unlocked file, clone it to a second repo, and set up a
+conflict involving that file in both repos, using git-annex add to add the
+conflicting version, and not running other git-annex commands after that,
+before pulling the conflicting branch. When the associated files db
+gets updated in the conflict situation, only 1 key has the conflicting file
+associated with it, rather than 2 or 3.
+
+The original key before the conflict has the file associated with it, but
+the new local key and new remote key do not.
+
+The result is that a drop of another file that uses the same key may not
+honor the preferred content of the file that is in conflict.
+
+Once the conflict is resolved, git-annex will recover, the problem only
+occurs while there's an unmerged conflict, and only when git-annex did not
+get a change to notice the local modification before the conflict happened.
+
+This only affected locked files, because when an unlocked file is staged,
+git-annex updates the keys db. So, one solution to this bug will be for
+git-annex to also update the keys db when staging locked files.
+(Unfortunately this would make mass adds somewhat slower.)
+
+Or, possibly, for reconcileStaged to not use git diff --index in this case,
+but git diff with -1 and -3. That lets both sides of the merge conflict be
+accessed, and it could then add the file to both keys. As well as not
+slowing down git-annex add, this would let it honor the preferred content
+of the conflicting file for all 3 keys. --[[Joey]]
