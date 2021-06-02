@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="matching include/exclude based on file extension in the key"
+ date="2021-06-02T17:02:58Z"
+ content="""
+Actually, the include/exclude limitation above could be removed by just looking at the keys themselves, if the include/exclude expression is of the form `*.ext` and the keys include file extensions.
+
+"""]]
