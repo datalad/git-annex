@@ -1,11 +1,12 @@
 # NAME
 
-git-annex-common-options - options supported by all git-annex commands
+git-annex-common-options - options supported by many git-annex commands
 
 # DESCRIPTION
 
-These common options are accepted by all git-annex commands, and
+These common options are accepted by many git-annex commands, and
 may not be explicitly listed on their individual man pages.
+Most of these options are accepted by all git-annex commands.
 (Many commands also accept the [[git-annex-matching-options]](1).)
 
 # OPTIONS
@@ -74,8 +75,19 @@ may not be explicitly listed on their individual man pages.
   Note that git-annex may continue running a little past the specified
   time limit, in order to finish processing a file.
 
-  Also, note that if the time limit prevents git-annex from doing all it
+  When the time limit prevents git-annex from doing all it
   was asked to, it will exit with a special code, 101.
+
+* `--size-limit=size`
+
+  Limits the total size of annexed files that a git-annex command
+  can process.
+
+  The size can be specified with any commonly used units, for example,
+  "50gb".
+
+  In some cases, an annexed file's size is not known. This option will
+  prevent git-annex from processing such files.
 
 * `--semitrust=repository`
 * `--untrust=repository`

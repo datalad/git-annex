@@ -1,6 +1,6 @@
 {- git-annex command-line actions and concurrency
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,9 +15,11 @@ import Annex.Concurrent
 import Annex.WorkerPool
 import Types.Command
 import Types.Concurrency
+import Annex.Content
 import Messages.Concurrent
 import Types.Messages
 import Types.WorkerPool
+import Types.ActionItem
 import Remote.List
 
 import Control.Concurrent
@@ -58,21 +60,29 @@ commandAction :: CommandStart -> Annex ()
 commandAction start = do
 	st <- Annex.getState id
 	case getConcurrency' (Annex.concurrency st) of
-		NonConcurrent -> runnonconcurrent
+		NonConcurrent -> runnonconcurrent (Annex.sizelimit st)
 		Concurrent n
-			| n > 1 -> runconcurrent (Annex.workers st)
-			| otherwise -> runnonconcurrent
-		ConcurrentPerCpu -> runconcurrent (Annex.workers st)
+			| n > 1 -> runconcurrent (Annex.sizelimit st) (Annex.workers st)
+			| otherwise -> runnonconcurrent (Annex.sizelimit st)
+		ConcurrentPerCpu -> runconcurrent (Annex.sizelimit st) (Annex.workers st)
   where
-	runnonconcurrent = void $ includeCommandAction start
-	runconcurrent Nothing = runnonconcurrent
-	runconcurrent (Just tv) = 
-		liftIO (atomically (waitStartWorkerSlot tv)) >>=
-			maybe runnonconcurrent (runconcurrent' tv)
-	runconcurrent' tv (workerstrd, workerstage) = do
+	runnonconcurrent sizelimit = start >>= \case
+		Nothing -> noop
+		Just (startmsg, perform) -> 
+			checkSizeLimit sizelimit startmsg $ do
+				showStartMessage startmsg
+				void $ accountCommandAction startmsg $
+					performCommandAction' startmsg perform
+
+	runconcurrent sizelimit Nothing = runnonconcurrent sizelimit
+	runconcurrent sizelimit (Just tv) = 
+		liftIO (atomically (waitStartWorkerSlot tv)) >>= maybe
+			(runnonconcurrent sizelimit)
+			(runconcurrent' sizelimit tv)
+	runconcurrent' sizelimit tv (workerstrd, workerstage) = do
 		aid <- liftIO $ async $ snd 
 			<$> Annex.run workerstrd
-				(concurrentjob (fst workerstrd))
+				(concurrentjob sizelimit (fst workerstrd))
 		liftIO $ atomically $ do
 			pool <- takeTMVar tv
 			let !pool' = addWorkerPool (ActiveWorker aid workerstage) pool
@@ -88,10 +98,11 @@ commandAction start = do
 				let !pool' = deactivateWorker pool aid workerstrd'
 				putTMVar tv pool'
 	
-	concurrentjob workerst = start >>= \case
+	concurrentjob sizelimit workerst = start >>= \case
 		Nothing -> noop
 		Just (startmsg, perform) ->
-			concurrentjob' workerst startmsg perform
+			checkSizeLimit sizelimit startmsg $
+				concurrentjob' workerst startmsg perform
 	
 	concurrentjob' workerst startmsg perform = case mkActionItem startmsg of
 		OnlyActionOn k _ -> ensureOnlyActionOn k $
@@ -126,7 +137,7 @@ commandAction start = do
 			Nothing -> do
 				showEndMessage startmsg False
 				return False
-
+	
 {- Waits for all worker threads to finish and merges their AnnexStates
  - back into the current Annex's state.
  -}
@@ -294,3 +305,26 @@ ensureOnlyActionOn k a = debugLocks $
 					writeTVar tv $! M.insert k mytid m
 					return $ liftIO $ atomically $
 						modifyTVar tv $ M.delete k
+
+checkSizeLimit :: Maybe (TVar Integer) -> StartMessage -> Annex () -> Annex ()
+checkSizeLimit Nothing _ a = a
+checkSizeLimit (Just sizelimitvar) startmsg a =
+	case actionItemKey (mkActionItem startmsg) of
+		Just k -> case fromKey keySize k of
+			Just sz -> go sz
+			Nothing -> do
+				fsz <- catchMaybeIO $ withObjectLoc k $
+					liftIO . getFileSize
+				maybe noop go fsz
+		Nothing -> a
+  where
+	go sz = do
+		fits <- liftIO $ atomically $ do
+			n <- readTVar sizelimitvar
+			let !n' = n - sz
+			if n' >= 0
+				then do
+					writeTVar sizelimitvar n'
+					return True
+				else return False
+		when fits a

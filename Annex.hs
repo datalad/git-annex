@@ -174,6 +174,7 @@ data AnnexState = AnnexState
 	, forcemincopies :: Maybe MinCopies
 	, limit :: ExpandableMatcher Annex
 	, timelimit :: Maybe (Duration, POSIXTime)
+	, sizelimit :: Maybe (TVar Integer)
 	, uuiddescmap :: Maybe UUIDDescMap
 	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
 	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
@@ -232,6 +233,7 @@ newAnnexState c r = do
 		, forcemincopies = Nothing
 		, limit = BuildingMatcher []
 		, timelimit = Nothing
+		, sizelimit = Nothing
 		, uuiddescmap = Nothing
 		, preferredcontentmap = Nothing
 		, requiredcontentmap = Nothing

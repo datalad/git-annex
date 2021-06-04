@@ -28,6 +28,7 @@ git-annex (8.20210429) UNRELEASED; urgency=medium
   * init: When annex.commitmessage is set, use that message for the commit
     that creates the git-annex branch.
   * Added annex.adviceNoSshCaching config.
+  * Added --size-limit option.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 May 2021 10:33:10 -0400
 

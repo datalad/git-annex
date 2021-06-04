@@ -12,6 +12,7 @@ module CmdLine.GitAnnex.Options where
 import Control.Monad.Fail as Fail (MonadFail(..))
 import Options.Applicative
 import Data.Time.Clock.POSIX
+import Control.Concurrent.STM
 import qualified Data.Map as M
 
 import Annex.Common
@@ -37,6 +38,7 @@ import CmdLine.GlobalSetter
 import qualified Backend
 import qualified Types.Backend as Backend
 import Utility.HumanTime
+import Utility.DataUnits
 import Annex.Concurrent
 
 -- Global options that are accepted by all git-annex sub-commands,
@@ -233,11 +235,12 @@ annexedMatchingOptions = concat
 	, fileMatchingOptions' Limit.LimitAnnexFiles
 	, combiningOptions
 	, timeLimitOption
+	, sizeLimitOption
 	]
 
 -- Matching options that can operate on keys as well as files.
 keyMatchingOptions :: [GlobalOption]
-keyMatchingOptions = keyMatchingOptions' ++ combiningOptions ++ timeLimitOption
+keyMatchingOptions = keyMatchingOptions' ++ combiningOptions ++ timeLimitOption ++ sizeLimitOption
 
 keyMatchingOptions' :: [GlobalOption]
 keyMatchingOptions' = 
@@ -434,6 +437,19 @@ timeLimitOption =
 		start <- liftIO getPOSIXTime
 		let cutoff = start + durationToPOSIXTime duration
 		Annex.changeState $ \s -> s { Annex.timelimit = Just (duration, cutoff) }
+
+sizeLimitOption :: [GlobalOption]
+sizeLimitOption =
+	[ globalOption setsizelimit $ option (maybeReader (readSize dataUnits))
+		( long "size-limit" <> metavar paramSize
+		<> help "total size of annexed files to process"
+		<> hidden
+		)
+	]
+  where
+	setsizelimit n = setAnnexState $ do
+		v <- liftIO $ newTVarIO n
+		Annex.changeState $ \s -> s { Annex.sizelimit = Just v }
 
 data DaemonOptions = DaemonOptions
 	{ foregroundDaemonOption :: Bool
