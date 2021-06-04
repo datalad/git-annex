@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="&quot;why all these wild ideas are being thrown out there&quot;"
+ date="2021-06-04T22:15:32Z"
+ content="""
+It just seemed like all the speedup possibilities from `annex.supportunlocked=false` are getting undone to optimize a not-too-common scenario?
+"""]]
