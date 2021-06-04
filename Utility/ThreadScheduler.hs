@@ -15,6 +15,7 @@ module Utility.ThreadScheduler (
 	threadDelaySeconds,
 	waitForTermination,
 	oneSecond,
+	unboundDelay,
 ) where
 
 import Control.Monad

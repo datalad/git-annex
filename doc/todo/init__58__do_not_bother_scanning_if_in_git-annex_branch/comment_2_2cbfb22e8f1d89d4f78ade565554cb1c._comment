@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-06-04T17:14:42Z"
+ content="""
+Made the scanning message not be displayed unless it takes at least 1
+second. Of course, if some test suite is still looking at that message,
+it will break..
+"""]]
