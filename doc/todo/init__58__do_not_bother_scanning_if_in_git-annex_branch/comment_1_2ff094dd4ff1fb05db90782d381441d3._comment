@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-06-04T16:03:34Z"
+ content="""
+Well, the init scanning is quite optimised by now, and since it will find no
+annexed objects, there are no database writes needed, which are the slower
+part of that.
+
+You will pay the price though when you later check out the master
+branch, since it then has to scan the delta. And that scanning is less
+optimised. It would be more beneficial to speed up that scanning
+(reconcileStaged), which should be doable by using the git cat-key --batch
+trick.
+
+I think the effect is somewhat psychological; if it says it's doing
+a scan then people are going to feel on guard that it's expensive. I know that
+sometimes git avoids displaying certain progress messages unless it's
+determined the operation is going to take a long time (eg git status will
+show a progress display in some circumstances but not commonly). That could
+be useful here, and probably in other parts of git-annex.
+"""]]
