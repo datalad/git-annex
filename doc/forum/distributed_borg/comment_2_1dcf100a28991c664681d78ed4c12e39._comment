@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="alt"
+ subject="comment 2"
+ date="2021-06-04T10:13:06Z"
+ content="""
+Leave it to the Grand Wizard himself :)
+
+With a few tweaks based on your explanation, this appears to be working smoothly. I think our issue was caused by attempting to connect repos that were individually initialized (i.e., with `git init`, `git annex init`, and `git annex initremote` on each workstation); by performing this initialization routine only on a single workstation, then following through with `git clone` and `git annex enableremote` on each additional workstation, the syncing works as expected.
+
+Thank you for your work and guidance! This is very exciting.
+
+The next thing to figure out is Borg repo mirroring to alleviate the overhead caused by Step 1(b) in the procedure above. Currently, the number of `borg create` operations each workstation must perform is multiplied by the number of Borg special remotes, which obviously doesn’t scale well. Ideally, a workstation could create an archive on a single server—say, the nearest available—offloading to the server the burden of creating archives on the remaining Borg repos. It sounds good in my head, but I struggle to find prior art for something like Borg-based swarms for eventual consistency.
+"""]]
