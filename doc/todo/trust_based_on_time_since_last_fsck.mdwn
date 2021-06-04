@@ -1,0 +1,5 @@
+It'd be really useful if I could specify my level of trust in a remote holding a file as a function of the time since the file has last been fsck'd in that remote.
+
+This way, if I haven't fsck'd say my off-site cold storage in x amount of time, git-annex would automatically try to create additional copies of its files in other remotes for example.
+
+Expiry can be used in a similar way but declaring the remote as dead is overkill and has unwanted side-effects.
