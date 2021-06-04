@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-06-04T17:53:51Z"
+ content="""
+Yeah, that's the pattern for any special remote: Initialize once and
+enableremote everywhere else. Otherwise you have a bunch of different
+special remotes that happened to be initialized more or less the same
+but git-annex doesn't know you consider them all to be the same place.
+
+I'd be keen to improve whatever docs might have led to the multiple
+initremote mistake. The man page for initremote does
+say to use enableremote in other clones. But maybe you were
+following a page like 
+[[tips/using_borg_for_efficient_storage_of_old_annexed_files]] and just
+assumed you'd follow that same procedure in each clone?
+"""]]
