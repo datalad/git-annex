@@ -55,19 +55,20 @@ commandActions = mapM_ commandAction
  - This should only be run in the seek stage.
  -}
 commandAction :: CommandStart -> Annex ()
-commandAction start = getConcurrency >>= \case
-	NonConcurrent -> runnonconcurrent
-	Concurrent n
-		| n > 1 -> runconcurrent
-		| otherwise -> runnonconcurrent
-	ConcurrentPerCpu -> runconcurrent
+commandAction start = do
+	st <- Annex.getState id
+	case getConcurrency' (Annex.concurrency st) of
+		NonConcurrent -> runnonconcurrent
+		Concurrent n
+			| n > 1 -> runconcurrent (Annex.workers st)
+			| otherwise -> runnonconcurrent
+		ConcurrentPerCpu -> runconcurrent (Annex.workers st)
   where
 	runnonconcurrent = void $ includeCommandAction start
-	runconcurrent = Annex.getState Annex.workers >>= \case
-		Nothing -> runnonconcurrent
-		Just tv -> 
-			liftIO (atomically (waitStartWorkerSlot tv)) >>=
-				maybe runnonconcurrent (runconcurrent' tv)
+	runconcurrent Nothing = runnonconcurrent
+	runconcurrent (Just tv) = 
+		liftIO (atomically (waitStartWorkerSlot tv)) >>=
+			maybe runnonconcurrent (runconcurrent' tv)
 	runconcurrent' tv (workerstrd, workerstage) = do
 		aid <- liftIO $ async $ snd 
 			<$> Annex.run workerstrd
