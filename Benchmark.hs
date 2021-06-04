@@ -32,9 +32,9 @@ mkGenerator cmds userinput = do
 		forM_ l $ \(cmd, seek, st) ->
 			-- The cmd is run for benchmarking without startup or
 			-- shutdown actions.
-			Annex.eval st $ performCommandAction cmd seek noop
+			Annex.eval st $ performCommandAction False cmd seek noop
   where
-	-- Simplified versio of CmdLine.dispatch, without support for fuzzy
+	-- Simplified version of CmdLine.dispatch, without support for fuzzy
 	-- matching or out-of-repo commands.
 	parsesubcommand ps = do
 		(cmd, seek, globalconfig) <- liftIO $ O.handleParseResult $

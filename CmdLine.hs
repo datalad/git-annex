@@ -62,7 +62,7 @@ dispatch' subcommandname args fuzzy cmds allargs allcmds fields getgitrepo progn
 			forM_ fields $ uncurry Annex.setField
 			prepRunCommand cmd globalsetter
 			startup
-			performCommandAction cmd seek $
+			performCommandAction True cmd seek $
 				shutdown $ cmdnocommit cmd
 	go (Left norepo) = do
 		let ingitrepo = \a -> a =<< Git.Config.global

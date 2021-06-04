@@ -30,19 +30,32 @@ import qualified Data.Map.Strict as M
 import qualified System.Console.Regions as Regions
 
 {- Runs a command, starting with the check stage, and then
- - the seek stage. Finishes by running the continutation, and 
- - then showing a count of any failures. -}
-performCommandAction :: Command -> CommandSeek -> Annex () -> Annex ()
-performCommandAction Command { cmdcheck = c, cmdname = name } seek cont = do
+ - the seek stage. Finishes by running the continuation.
+ -
+ - Can exit when there was a problem or when files were skipped.
+ - Also shows a count of any failures when that is enabled.
+ -}
+performCommandAction :: Bool -> Command -> CommandSeek -> Annex () -> Annex ()
+performCommandAction canexit (Command { cmdcheck = c, cmdname = name }) seek cont = do
 	mapM_ runCheck c
 	Annex.changeState $ \s -> s { Annex.errcounter = 0 }
 	seek
 	finishCommandActions
 	cont
-	showerrcount =<< Annex.getState Annex.errcounter
+	st <- Annex.getState id
+	when canexit $ liftIO $ case (Annex.errcounter st, Annex.skippedfiles st) of
+		(0, False) -> noop
+		(errcnt, False) -> do
+			showerrcount errcnt
+			exitWith $ ExitFailure 1
+		(0, True) -> exitskipped
+		(errcnt, True) -> do
+			showerrcount errcnt
+			exitskipped
   where
-	showerrcount 0 = noop
-	showerrcount cnt = giveup $ name ++ ": " ++ show cnt ++ " failed"
+	showerrcount cnt = hPutStrLn stderr $
+		name ++ ": " ++ show cnt ++ " failed"
+	exitskipped = exitWith $ ExitFailure 101
 
 commandActions :: [CommandStart] -> Annex ()
 commandActions = mapM_ commandAction
@@ -315,7 +328,7 @@ checkSizeLimit (Just sizelimitvar) startmsg a =
 			Nothing -> do
 				fsz <- catchMaybeIO $ withObjectLoc k $
 					liftIO . getFileSize
-				maybe noop go fsz
+				maybe skipped go fsz
 		Nothing -> a
   where
 	go sz = do
@@ -327,4 +340,8 @@ checkSizeLimit (Just sizelimitvar) startmsg a =
 					writeTVar sizelimitvar n'
 					return True
 				else return False
-		when fits a
+		if fits 
+			then a
+			else skipped
+	
+	skipped = Annex.changeState $ \s -> s { Annex.skippedfiles = True }

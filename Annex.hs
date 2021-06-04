@@ -189,6 +189,7 @@ data AnnexState = AnnexState
 	, sentinalstatus :: Maybe SentinalStatus
 	, useragent :: Maybe String
 	, errcounter :: Integer
+	, skippedfiles :: Bool
 	, adjustedbranchrefreshcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
 	, tempurls :: M.Map Key URLString
@@ -248,6 +249,7 @@ newAnnexState c r = do
 		, sentinalstatus = Nothing
 		, useragent = Nothing
 		, errcounter = 0
+		, skippedfiles = False
 		, adjustedbranchrefreshcounter = 0
 		, unusedkeys = Nothing
 		, tempurls = M.empty

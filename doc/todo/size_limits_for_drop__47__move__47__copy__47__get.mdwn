@@ -5,3 +5,5 @@ This way you could quickly "garbage collect" a few dozen GiB from your annex rep
 Another issue this could be used to mitigates is that, for some reason, git-annex doesn't auto-stop the transfer when the repos on my external drives are full properly.
 
 I imagine there are many more use-cases where quickly being able to set a limit for the amount of data a command should act on could come in handy.
+
+> [[done]] --[[Joey]]

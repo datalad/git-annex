@@ -89,6 +89,9 @@ Most of these options are accepted by all git-annex commands.
   In some cases, an annexed file's size is not known. This option will
   prevent git-annex from processing such files.
 
+  When the size limit prevents git-annex from acting on any files,
+  it will exit with a special code, 101.
+
 * `--semitrust=repository`
 * `--untrust=repository`
 
