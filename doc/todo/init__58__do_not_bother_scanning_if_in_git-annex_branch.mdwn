@@ -1,0 +1,31 @@
+a very minor and probably should not happen in real-life since noone should check out git-annex branch (besides may be to fix up something manually) but I still do not see the point of scanning for unlocked/annexed files if `init` ran in that branch.  ATM ([8.20210428-270-g651fe3f39](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=8.20210429-g651fe3f39)) I see
+
+```
+$> bash annex-scanning-git-annex
+> set -eu
+>> mktemp -d /home/yoh/.tmp/dl-XXXXXXX
+> cd /home/yoh/.tmp/dl-yHMtPGl
+> git clone --branch git-annex http://datasets.datalad.org/.git out
+Cloning into 'out'...
+Fetching objects: 11612, done.
+> cd out
+> git branch
+* git-annex
+> git annex init
+init  (scanning for annexed files...)
+ok
+(recording state in git...)
+
+real	0m0.622s
+user	0m0.435s
+sys	0m0.163s
+
+```
+
+so it reports scanning while in git-annex, although goes quickly (has only about 1000 keys there), so may be doesn't even actually do any scanning and it is just a matter of reporting?
+
+
+Actually -- it made me think: is that `scanning` branch specific? then what would happen if e.g. master has no unlocked files in the tree and some other branch has unlocked files in the tree -- I could checkout/switch between branches without causing `git-annex` to redo its scanning and would require manual `git annex init`?
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
