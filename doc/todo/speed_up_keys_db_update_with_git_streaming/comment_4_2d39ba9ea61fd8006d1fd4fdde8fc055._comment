@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-06-04T17:49:43Z"
+ content="""
+Keys with extensions do not necessarily have the same extension as used in
+the worktree files that include/exclude match on.
+
+I'm not sure why all these wild ideas are being thrown out there when this
+todo is about a specific, simple improvement that will speed up the git
+part of the scanning by about 3x? It's like you somehow consider this an
+emergency where increasingly wild measures have to be taken to prevent me
+from making a terrible mistake?
+"""]]

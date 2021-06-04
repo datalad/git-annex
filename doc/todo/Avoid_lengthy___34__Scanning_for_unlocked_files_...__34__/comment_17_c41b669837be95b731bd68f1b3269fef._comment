@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2021-06-04T17:37:30Z"
+ content="""
+The scan could be done lazily, but there are situations that use the
+database where unexpectedly taking a much longer time than usual
+would be a real problem. For example "git add".
+
+The bloom filter idea does not work.
+"""]]
