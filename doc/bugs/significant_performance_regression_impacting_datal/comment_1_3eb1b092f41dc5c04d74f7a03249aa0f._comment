@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2021-06-05T13:50:42Z"
+ content="""
+Oh, fresh runs datalad tests fail because I guess you implemented that \"don't display message unless takes awhile\" I spotted in one of the comments but didn't have a chance to follow up - I guess from now on we weren't be able to test us passing through messages from git annex (unless there is some setting where were could disable that feature during tests).
+
+That is unrelated to this issue of slow down though
+"""]]
