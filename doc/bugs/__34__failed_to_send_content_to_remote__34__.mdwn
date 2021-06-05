@@ -1,0 +1,218 @@
+### Please describe the problem.
+
+I am unable to copy files from one git-annex repo to another, either using `copy --from=...' from the destination repo or `--to=...' from the source repo.
+
+Even with the added output from `--debug` I have no idea what is going wrong. The example below focusses on one file, but I think no files work.
+
+`git annex unused` shows `partially transferred data` after the failures. As far as I can tell, the rsync commands that copy the files to `.git/annex/objects/tmp` are working, so I guess the failure happens after that.
+
+From the source repo, located at `/home/james/w/annex-neu`:
+
+	james copter annex-neu $ git remote show -n nature
+	* remote nature
+	  Fetch URL: /d/nature-ext2/falsifian/w/annex-neu
+	  Push  URL: /d/nature-ext2/falsifian/w/annex-neu
+	  HEAD branch: (not queried)
+	  Remote branches: (status not queried)
+	    git-annex
+	    master
+	    synced/git-annex
+	    synced/master
+	  Local ref configured for 'git push' (status not queried):
+	    (matching) pushes to (matching)
+
+	james copter annex-neu $ git annex copy --to=nature datasets/reddit/files.pushshift.io/reddit/daily/RS_2019_10_01.gz
+	copy datasets/reddit/files.pushshift.io/reddit/daily/RS_2019_10_01.gz (to nature...)
+
+
+	  failed to send content to remote
+
+
+
+	  failed to send content to remote
+	failed
+	git-annex: copy: 1 failed
+
+And with `--debug`:
+
+	james copter annex-neu $ git annex copy --debug --to=nature datasets/reddit/files.pushshift.io/reddit/daily/RS_2019_10_01.gz                                    [2021-06-05 20:24:58.016674809] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+	[2021-06-05 20:24:58.021106113] process done ExitSuccess                        
+	[2021-06-05 20:24:58.021381484] read: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+	[2021-06-05 20:24:58.025170816] process done ExitSuccess                        [2021-06-05 20:24:58.025705324] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..803d71e5e3f15ee4a2a30e63c5e0e9faccf0defe","--pretty=%H","-n1"]                                                   [2021-06-05 20:24:58.029655191] process done ExitSuccess                        [2021-06-05 20:24:58.030257913] read: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","log","refs/heads/git-annex..4a7de0d2b9a7f4a2b9cf88c57636a8388
+	6f6b340","--pretty=%H","-n1"]
+	[2021-06-05 20:24:58.034210664] process done ExitSuccess
+	[2021-06-05 20:24:58.034470983] read: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","log","refs/heads/git-annex..bbfde8eb1c05e46c1a4e25719c8eb0418
+	9fa7cf2","--pretty=%H","-n1"]                                                   
+	[2021-06-05 20:24:58.038954155] process done ExitSuccess
+	[2021-06-05 20:24:58.039404429] chat: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","cat-file","--batch"]
+	[2021-06-05 20:24:58.039881197] chat: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(object
+	size)"]
+	[2021-06-05 20:24:58.050584672] read: git ["config","--null","--list"]
+	[2021-06-05 20:24:58.053085725] process done ExitSuccess
+	[2021-06-05 20:24:58.053918467] read: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","symbolic-ref","-q","HEAD"]
+	[2021-06-05 20:24:58.056598571] process done ExitSuccess
+	[2021-06-05 20:24:58.056750274] read: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","show-ref","refs/heads/master"]
+	[2021-06-05 20:24:58.059953296] process done ExitSuccess
+	[2021-06-05 20:24:58.060270357] read: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","ls-files","--stage","-z","--","datasets/reddit/files.pushshif
+	t.io/reddit/daily/RS_2019_10_01.gz"]
+	[2021-06-05 20:24:58.060602372] chat: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(object
+	size)","--buffer"]
+	[2021-06-05 20:24:58.061149131] chat: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)"
+	,"--buffer"]
+	[2021-06-05 20:24:58.061754169] chat: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)"
+	,"--buffer"]
+	copy datasets/reddit/files.pushshift.io/reddit/daily/RS_2019_10_01.gz (to nature
+	...) 
+	[2021-06-05 20:24:58.124257351] read: cp ["--reflink=always","--preserve=timesta
+	mps",".git/annex/objects/vv/Km/SHA256E-s302380112--fb63e37bf5af350af35be3400a47b
+	c1bf3a46253646b710579b9162560cea087.gz/SHA256E-s302380112--fb63e37bf5af350af35be
+	3400a47bc1bf3a46253646b710579b9162560cea087.gz","../../../../nature-ext2/falsifi
+	an/w/annex-neu/.git/annex/tmp/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc
+	1bf3a46253646b710579b9162560cea087.gz"]
+	[2021-06-05 20:24:58.125931854] process done ExitFailure 1
+	[2021-06-05 20:24:58.12621772] read: rsync ["--progress","--inplace","--perms","
+	.git/annex/objects/vv/Km/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a
+	46253646b710579b9162560cea087.gz/SHA256E-s302380112--fb63e37bf5af350af35be3400a4
+	7bc1bf3a46253646b710579b9162560cea087.gz","../../../../nature-ext2/falsifian/w/a
+	nnex-neu/.git/annex/tmp/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a4
+	6253646b710579b9162560cea087.gz"]
+	100%  288.37 MiB      330 MiB/s 0s  [2021-06-05 20:24:59.003840882] process done
+	 ExitSuccess
+
+	[2021-06-05 20:24:59.004436111] read: rsync ["--progress","--inplace","--perms",
+	".git/annex/objects/vv/Km/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3
+	a46253646b710579b9162560cea087.gz/SHA256E-s302380112--fb63e37bf5af350af35be3400a
+	47bc1bf3a46253646b710579b9162560cea087.gz","../../../../nature-ext2/falsifian/w/
+	annex-neu/.git/annex/tmp/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a
+	46253646b710579b9162560cea087.gz"]
+	100%  288.37 MiB      463 MiB/s 0s [2021-06-05 20:24:59.629830876] process done
+	ExitSuccess
+
+	  failed to send content to remote
+
+	[2021-06-05 20:24:59.631304163] read: rsync ["--progress","--inplace","--perms",
+	".git/annex/objects/vv/Km/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3
+	a46253646b710579b9162560cea087.gz/SHA256E-s302380112--fb63e37bf5af350af35be3400a
+	47bc1bf3a46253646b710579b9162560cea087.gz","../../../../nature-ext2/falsifian/w/
+	annex-neu/.git/annex/tmp/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a
+	46253646b710579b9162560cea087.gz"]
+	100%  288.37 MiB      462 MiB/s 0s [2021-06-05 20:25:00.257185993] process done
+	ExitSuccess
+
+	[2021-06-05 20:25:00.257891486] read: rsync ["--progress","--inplace","--perms",
+	".git/annex/objects/vv/Km/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3
+	a46253646b710579b9162560cea087.gz/SHA256E-s302380112--fb63e37bf5af350af35be3400a
+	47bc1bf3a46253646b710579b9162560cea087.gz","../../../../nature-ext2/falsifian/w/
+	annex-neu/.git/annex/tmp/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a
+	46253646b710579b9162560cea087.gz"]
+	100%  288.37 MiB      437 MiB/s 0s [2021-06-05 20:25:00.92075523] process done E
+	xitSuccess
+
+	  failed to send content to remote
+	failed
+	[2021-06-05 20:25:00.921692771] process done ExitSuccess
+	[2021-06-05 20:25:00.921771903] process done ExitSuccess
+	[2021-06-05 20:25:00.921837622] process done ExitSuccess
+	git-annex: copy: 1 failed
+
+
+Trying in the other direction (note /home/falsifian is a symlink to james):
+
+	james copter annex-neu $ git remote show -n local                               * remote local
+	  Fetch URL: /home/falsifian/w/annex-neu
+	  Push  URL: /home/falsifian/w/annex-neu
+	  HEAD branch: (not queried)
+	  Remote branches: (status not queried)
+	    git-annex
+	    master                                                                          synced/git-annex                                                                synced/master                                                                 Local ref configured for 'git push' (status not queried):                         (matching) pushes to (matching)                                             james copter annex-neu $ git annex get --debug --from=local datasets/reddit/file
+	s.pushshift.io/reddit/daily/RS_2019_10_01.gz
+	[2021-06-05 20:26:43.459693059] read: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","show-ref","git-annex"]
+	[2021-06-05 20:26:43.4637773] process done ExitSuccess
+	[2021-06-05 20:26:43.464083545] read: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+	[2021-06-05 20:26:43.467747946] process done ExitSuccess
+	[2021-06-05 20:26:43.468371444] read: git ["--git-dir=.git","--work-tree=.","--l
+	iteral-pathspecs","log","refs/heads/git-annex..2585bc984868658a30bac238f343e14ee
+	0ab4a40","--pretty=%H","-n1"]
+	[2021-06-05 20:26:43.472230994] process done ExitSuccess
+	[2021-06-05 20:26:43.472821833] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..4026e21e431b23f3ed8bab4a59d076a07eb38aba","--pretty=%H","-n1"]
+	[2021-06-05 20:26:43.476524704] process done ExitSuccess
+	[2021-06-05 20:26:43.476704328] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..4a7de0d2b9a7f4a2b9cf88c57636a83886f6b340","--pretty=%H","-n1"]
+	[2021-06-05 20:26:43.480419871] process done ExitSuccess
+	[2021-06-05 20:26:43.480903262] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+	[2021-06-05 20:26:43.481438522] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+	[2021-06-05 20:26:43.484464329] read: git ["config","--null","--list"]
+	[2021-06-05 20:26:43.484899963] read: git ["config","--null","--list"]
+	[2021-06-05 20:26:43.494876192] process done ExitSuccess
+	[2021-06-05 20:26:43.495606623] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+	[2021-06-05 20:26:43.498087081] process done ExitSuccess
+	[2021-06-05 20:26:43.498254949] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/master"]
+	[2021-06-05 20:26:43.50112263] process done ExitSuccess
+	[2021-06-05 20:26:43.501446299] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--stage","-z","--","datasets/reddit/files.pushshift.io/reddit/daily/RS_2019_10_01.gz"]
+	[2021-06-05 20:26:43.501858278] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+	[2021-06-05 20:26:43.503867361] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+	[2021-06-05 20:26:43.504653623] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+	[2021-06-05 20:26:43.50750836] chat: git ["--git-dir=.git","--work-tree=.","--li
+	teral-pathspecs","cat-file","--batch"]
+	[2021-06-05 20:26:43.50796496] chat: git ["--git-dir=.git","--work-tree=.","--li
+	teral-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+	get datasets/reddit/files.pushshift.io/reddit/daily/RS_2019_10_01.gz (from local...)
+	[2021-06-05 20:26:43.568982372] read: cp ["--reflink=always","--preserve=timesta
+	mps","../../../../../home/falsifian/w/annex-neu/.git/annex/objects/vv/Km/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a46253646b710579b9162560cea087.gz/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a46253646b710579b9162560cea087.gz",".git/annex/tmp/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a46253646b710579b9162560cea087.gz"]
+	[2021-06-05 20:26:43.571638865] process done ExitFailure 1
+	[2021-06-05 20:26:43.572002434] read: rsync ["--progress","--inplace","--perms","../../../../../home/falsifian/w/annex-neu/.git/annex/objects/vv/Km/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a46253646b710579b9162560cea087.gz/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a46253646b710579b9162560cea087.gz",".git/annex/tmp/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a46253646b710579b9162560cea087.gz"]
+	100%  288.37 MiB      351 MiB/s 0s   [2021-06-05 20:26:44.396269512] process don
+	e ExitSuccess
+
+	  failed to retrieve content from remote
+
+	[2021-06-05 20:26:44.397675637] read: rsync ["--progress","--inplace","--perms","../../../../../home/falsifian/w/annex-neu/.git/annex/objects/vv/Km/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a46253646b710579b9162560cea087.gz/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a46253646b710579b9162560cea087.gz",".git/annex/tmp/SHA256E-s302380112--fb63e37bf5af350af35be3400a47bc1bf3a46253646b710579b9162560cea087.gz"]
+	0%    32 KiB           23 MiB/s 12s[2021-06-05 20:26:45.0364163] process done Ex
+	itSuccess
+
+	  failed to retrieve content from remote
+	failed
+	[2021-06-05 20:26:45.037805309] process done ExitSuccess
+	[2021-06-05 20:26:45.03799324] process done ExitSuccess
+	[2021-06-05 20:26:45.038069266] process done ExitSuccess
+	[2021-06-05 20:26:45.038244936] process done ExitSuccess
+	[2021-06-05 20:26:45.03831897] process done ExitSuccess
+	git-annex: get: 1 failed
+
+
+### What steps will reproduce the problem?
+
+I don't know how to reproduce this on a different repo. This is the first time I've seen this. I haven't had trouble in the past.
+
+
+### What version of git-annex are you using? On what operating system?
+
+	james copter annex-neu $ git annex version
+	git-annex version: 8.20200810
+	build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+	dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.27 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+	key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+	remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+	operating system: linux x86_64
+	supported repository versions: 8
+	upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+	local repository version: 8
+	james copter annex-neu $ uname -a
+	Linux copter 4.9.0-15-amd64 #1 SMP Debian 4.9.258-1 (2021-03-08) x86_64 GNU/Linux
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex is awesome! I am using it a lot.
