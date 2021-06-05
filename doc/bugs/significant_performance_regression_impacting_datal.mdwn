@@ -1,0 +1,16 @@
+### Please describe the problem.
+
+With recent RFing of scanning for unlocked/annexed files (I guess), a sweep of datalad tests on OSX started to take about 3h 30min instead of prior 1h 46min. So pretty much twice. Besides possibly affecting user experience, I am afraid that would cause too much ripples though our CI setup which might not run out of time
+
+Logs etc are at https://github.com/datalad/git-annex/actions/workflows/build-macos.yaml 
+
+The first red is ok, just a fluke but then they all fail due to change in output log string (for which there is a fix but somehow behavior on osx seems different, yet to check).
+ 
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+Currently 8.20210428+git282-gd39dfed2a and first got slow with 
+8.20210428+git228-g13a6bfff4 and was ok with 8.20210428+git202-g9a5981a15
+
