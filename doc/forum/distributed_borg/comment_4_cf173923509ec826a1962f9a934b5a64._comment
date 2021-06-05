@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="alt"
+ subject="comment 4"
+ date="2021-06-05T13:07:47Z"
+ content="""
+Indeed, we had been following that page. Considering that a git-annex repo is stored in its entirety within a Borg archive, the explanation that “`git-annex` sync scans the borg repository to find out what annexed files are stored in it” likely led to the mistaken assumption that simply adding the special remote would be enough for git-annex to know how to handle it. (We had also tried specifying `subdir` to tell it exactly where to look but clearly were cargo culting by that point.)
+
+In retrospect, the outline of our intended implementation reveals a predisposition to make such an assumption: that the git-annex repo on each workstation would be “accessible only to the workstation user” suggests that there would be no provision for cloning in the first place. (Instead, there simply would be a bunch of repos that happened to be privately initialized more or less the same that all share a bunch of special remotes that also happened to be initialized more or less the same. Highly technical, I know!)
+
+Also, I had read the man pages, but due to Borg being an “unusual kind of remote”—a _special_ special remote, if you will—I was unsure how much of the information applied. Thus, the difference between `initremote` and `enableremote` in this case was not immediately clear.
+"""]]
