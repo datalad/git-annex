@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 2"
+ date="2021-06-06T20:47:31Z"
+ content="""
+> You could make the subtitles wanted in every repo so that all subtitles are present in every repo. Since they are small, the overhead shouldn't be large.
+
+This is probably what I'll end up doing.
+
+> Or you could directly add them to git (\"small files\") so they are also present everywhere.
+
+I do that for one type of metadata file that isn't important for consumption but I want everything else to be annex files so that I can assign metadata etc. to them.
+
+
+
+"""]]
