@@ -1,0 +1,5 @@
+I've got a repo full of (legally aquired) Movies and series, most of which have corresponding metadata JSON and ASS subtitle files. When distributing them over many cold storage drives, I've noticed that git-annex would try to fill them up with many of the (much smaller) text files when there isn't enough space for another video file, leaving video and subtitles files on separate drives.
+
+This isn't a critical issue since there are still enough copies and everything but it'd be annoying to have to search for and connect two or more drives to get videos + subtitles for a single series. 
+
+I was wondering if there was perhaps a clever solution to prevent this from happening. Everything is organised into subfolders, so *ideally* I'd prefer if git-annex could be made to operate on full series (as defined by subdirectories or metadata perhaps?) instead of context-less files somehow.
