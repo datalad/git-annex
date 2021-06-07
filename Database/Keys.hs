@@ -34,7 +34,6 @@ import Annex.Locations
 import Annex.Common hiding (delete)
 import qualified Annex
 import Annex.LockFile
-import Annex.CatFile
 import Annex.Content.PointerFile
 import Annex.Link
 import Utility.InodeCache
@@ -45,6 +44,7 @@ import Git.Command
 import Git.Types
 import Git.Index
 import Git.Sha
+import Git.CatFile
 import Git.Branch (writeTreeQuiet, update')
 import qualified Git.Ref
 import Config.Smudge
@@ -53,6 +53,7 @@ import qualified Utility.RawFilePath as R
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified System.FilePath.ByteString as P
+import Control.Concurrent.Async
 
 {- Runs an action that reads from the database.
  -
@@ -241,12 +242,16 @@ reconcileStaged qh = do
 		<$> catchMaybeIO (readFile indexcache)
 
 	getoldtree = fromMaybe emptyTree <$> inRepo (Git.Ref.sha lastindexref)
-
+	
 	go cur indexcache (Just newtree) = do
 		oldtree <- getoldtree
 		when (oldtree /= newtree) $ do
-			updatetodiff (Just (fromRef oldtree)) (fromRef newtree) procdiff
-				>>= flushdb . fst
+			g <- Annex.gitRepo
+			void $ catstream $ \mdfeeder -> 
+				void $ updatetodiff g
+					(Just (fromRef oldtree)) 
+					(fromRef newtree)
+					(procdiff mdfeeder)
 			liftIO $ writeFile indexcache $ showInodeCache cur
 			-- Storing the tree in a ref makes sure it does not
 			-- get garbage collected, and is available to diff
@@ -264,24 +269,18 @@ reconcileStaged qh = do
 	-- is done, with --staged but no old tree.
 	go _ _ Nothing = do
 		oldtree <- getoldtree
-		(changed, conflicted) <- updatetodiff
-			(Just (fromRef oldtree)) "--staged" procdiff
-		changed' <- if conflicted
-			then fst <$> updatetodiff Nothing "--staged"
-				procmergeconflictdiff
-			else pure False
-		flushdb (changed || changed')
-		
-	updatetodiff old new processor = do
-		(l, cleanup) <- inRepo $ pipeNullSplit' $ diff old new
-		processor l False False
-			`finally` void (liftIO cleanup)
+		g <- Annex.gitRepo
+		catstream $ \mdfeeder -> do
+			conflicted <- updatetodiff g
+				(Just (fromRef oldtree)) "--staged" (procdiff mdfeeder)
+			when conflicted $
+				void $ updatetodiff g Nothing "--staged"
+					(procmergeconflictdiff mdfeeder)
 	
-	-- Flush database changes immediately
-	-- so other processes can see them.
-	flushdb changed
-		| changed = liftIO $ H.flushDbQueue qh
-		| otherwise = noop
+	updatetodiff g old new processor = do
+		(l, cleanup) <- pipeNullSplit' (diff old new) g
+		processor l False
+			`finally` void cleanup
 	
 	-- Avoid running smudge clean filter, which would block trying to
 	-- access the locked database. git write-tree sometimes calls it,
@@ -320,22 +319,21 @@ reconcileStaged qh = do
 		, Param "--no-ext-diff"
 		]
 	
-	procdiff (info:file:rest) changed conflicted
+	procdiff mdfeeder (info:file:rest) conflicted
 		| ":" `S.isPrefixOf` info = case S8.words info of
 			(_colonsrcmode:dstmode:srcsha:dstsha:status:[]) -> do
 				let conflicted' = status == "U"
 				-- avoid removing associated file when
 				-- there is a merge conflict
-				removed <- if not conflicted'
-					then catKey (Ref srcsha) >>= \case
+				unless conflicted' $
+					send mdfeeder (Ref srcsha) $ \case
 						Just oldkey -> do
 							liftIO $ SQL.removeAssociatedFile oldkey
 								(asTopFilePath file)
 								(SQL.WriteHandle qh)
 							return True
 						Nothing -> return False
-					else return False
-				added <- catKey (Ref dstsha) >>= \case
+				send mdfeeder (Ref dstsha) $ \case
 					Just key -> do
 						liftIO $ SQL.addAssociatedFile key
 							(asTopFilePath file)
@@ -344,32 +342,30 @@ reconcileStaged qh = do
 							reconcilerace (asTopFilePath file) key
 						return True
 					Nothing -> return False
-				procdiff rest
-					(changed || removed || added)
+				procdiff mdfeeder rest
 					(conflicted || conflicted')
-			_ -> return (changed, conflicted) -- parse failed
-	procdiff _ changed conflicted = return (changed, conflicted)
-	
+			_ -> return conflicted -- parse failed
+	procdiff _ _ conflicted = return conflicted
+
 	-- Processing a diff --index when there is a merge conflict.
 	-- This diff will have the new local version of a file as the
 	-- first sha, and a null sha as the second sha, and we only
 	-- care about files that are in conflict.
-	procmergeconflictdiff (info:file:rest) changed conflicted
+	procmergeconflictdiff mdfeeder (info:file:rest) conflicted
 		| ":" `S.isPrefixOf` info = case S8.words info of
 			(_colonmode:_mode:sha:_sha:status:[]) -> do
-				let conflicted' = status == "U"
-				added <- catKey (Ref sha) >>= \case
+				send mdfeeder (Ref sha) $ \case
 					Just key -> do
 						liftIO $ SQL.addAssociatedFile key
 							(asTopFilePath file)
 							(SQL.WriteHandle qh)
 						return True
 					Nothing -> return False
-				procmergeconflictdiff rest
-					(changed || added)
+				let conflicted' = status == "U"
+				procmergeconflictdiff mdfeeder rest
 					(conflicted || conflicted')
-			_ -> return (changed, conflicted) -- parse failed
-	procmergeconflictdiff _ changed conflicted = return (changed, conflicted)
+			_ -> return conflicted -- parse failed
+	procmergeconflictdiff _ _ conflicted = return conflicted
 
 	reconcilerace file key = do
 		caches <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
@@ -385,3 +381,41 @@ reconcileStaged qh = do
 						SQL.addInodeCaches key [ic] (SQL.WriteHandle qh)
 			(False, True) -> depopulatePointerFile key p
 			_ -> return ()
+	
+	send :: ((Maybe Key -> Annex a, Ref) -> IO ()) -> Ref -> (Maybe Key -> Annex a) -> IO ()
+	send feeder r withk = feeder (withk, r)
+
+	-- Streaming through git cat-file like this is significantly
+	-- faster than using catKey.
+	catstream a = do
+		g <- Annex.gitRepo
+		catObjectMetaDataStream g $ \mdfeeder mdcloser mdreader ->
+			catObjectStream g $ \catfeeder catcloser catreader -> do
+				feedt <- liftIO $ async $
+					a mdfeeder
+						`finally` void mdcloser
+				proct <- liftIO $ async $
+					procthread mdreader catfeeder
+						`finally` void catcloser
+				dbchanged <- dbwriter False catreader
+				-- Flush database changes now
+				-- so other processes can see them.
+				when dbchanged $
+					liftIO $ H.flushDbQueue qh
+				() <- liftIO $ wait feedt
+				liftIO $ wait proct
+				return ()
+	  where
+		procthread mdreader catfeeder = mdreader >>= \case
+			Just (ka, Just (sha, size, _type))
+				| size < maxPointerSz -> do
+					() <- catfeeder (ka, sha)
+					procthread mdreader catfeeder
+			Just _ -> procthread mdreader catfeeder
+			Nothing -> return ()
+
+		dbwriter dbchanged catreader = liftIO catreader >>= \case
+			Just (ka, content) -> do
+				changed <- ka (parseLinkTargetOrPointerLazy =<< content)
+				dbwriter (dbchanged || changed) catreader
+			Nothing -> return dbchanged

@@ -5,3 +5,15 @@ Normally it's plenty fast enough, but users who often switch between
 branches that have tens to hundreds of thousands of diverged files will
 find it slow, and this should speed it up by somewhere around 3x (excluding
 sqlite writes). --[[Joey]]
+
+> Implemented this. Benchmarked it in a situation where 100,000 annexed 
+> files were added to the index (by checking out a branch with more annexed
+> files). old: 50 seconds; new: 41 seconds
+
+> Also benchmarked when 100,000 annexed files were removed from the index.
+> old: 26 seconds; new: 17 seconds.
+> 
+> Adding associated files to the sqlite db is clearly more expensive than
+> removing from it.
+> 
+> [[done]] --[[Joey]] 
