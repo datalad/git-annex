@@ -7,7 +7,7 @@
 >The scan could be done lazily, but there are situations that use the database where unexpectedly taking a much longer time than usual would be a real problem
 
 For unlocked files, certainly.  When `annex.supportunlocked=false`, it sounded like the only situation that uses the database is `drop --auto`, or a [[matching expression|git-annex-matching-options]] with `--includesamecontent/--excludesamecontent`?  (And maybe [[todo/git-annex_whereused]]).
-Personally I would prefer an unexpected delay in these rare cases, to a [delay](https://git-annex.branchable.com/bugs/significant_performance_regression_impacting_data!) in the more common case of checking out or switching branches.
+Personally I would prefer an unexpected delay in these rare cases, to a [delay](https://git-annex.branchable.com/bugs/significant_performance_regression_impacting_datal) in the more common case of checking out or switching branches.
  
 
 
