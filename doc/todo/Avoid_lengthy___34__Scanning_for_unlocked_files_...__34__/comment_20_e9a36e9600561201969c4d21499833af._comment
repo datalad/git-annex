@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 20"""
+ date="2021-06-07T19:22:03Z"
+ content="""
+Turns out git-annex init was running both scanAnnexedFiles and
+reconcileStaged, which after recent changes to the latter, both do
+close to the same scan when run in a fresh clone. So double work!
+
+Benchmarking with 100,000 files, git-annex init took 88 seconds.  
+Fixed not to use reconcileStaged it took 37 seconds.
+
+(Keeping reconcileStaged and removing scanAnnexedFiles it took 47 seconds.
+That makes sense; reconcileStaged is an incremental updater and is not
+able to use SQL as efficiently as scanAnnexedFiles.)
+"""]]

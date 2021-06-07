@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-06-07T20:22:24Z"
+ content="""
+Turns out `git-annex init` got a lot slower than it had to, it was doing
+the same kind of scan twice. I think that probably explains much of the
+slowdown you saw. (Although it still needs to do somewhat more work than
+before, but also does it more efficiently than before.)
+
+Also I've optimised the update scan's use of git, around a 20% speedup,
+although I don't know if your test case speed was impacted much by that
+scan anyway.
+"""]]

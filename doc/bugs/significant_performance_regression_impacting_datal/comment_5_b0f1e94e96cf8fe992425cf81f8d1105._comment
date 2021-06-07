@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-06-07T20:42:34Z"
+ content="""
+Looking at the CI log, I don't see any past runs that took 1h 46min.
+A month ago they were taking 2h 6min. Let's see if the changes I'm pushing
+now drop it back to that.
+"""]]
