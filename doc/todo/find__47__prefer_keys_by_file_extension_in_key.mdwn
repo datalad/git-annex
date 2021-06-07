@@ -1,0 +1,1 @@
+Add [[preferred content expression|git-annex-preferred-content]] and [[matching option|git-annex-matching-options]] to match the file extension incorporated into a `*E` [[key|backends]], e.g. `keyext=.mp3` .  This would help address the limitation that `include=*.mp3` does not work with `--all` or `--unused`.
