@@ -1,0 +1,4 @@
+As of commit a706708d1, trying to build git-annex on Windows fails because the import of `oneSecond` from `Utility.ThreadScheduler` is not available.  [This patch](https://raw.githubusercontent.com/datalad/git-annex/master/patches/20210607-a706708d1-fix-oneSecond.patch) fixes that.
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]
