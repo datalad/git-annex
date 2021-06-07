@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-06-07T15:48:07Z"
+ content="""
+annex.supportunlocked=false still prevents the smudge/clean filter from
+being used, which can significantly speed up git if the repository has a
+lot of files stored in git.
+"""]]
