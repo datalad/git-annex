@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-06-07T15:41:43Z"
+ content="""
+I assume these tests are creating lots of clones of repositories. Are they
+also doing lots of merges or switching between branches?
+
+The init scan time has already been optimised as much as seems feasible.
+The update scan time can still be optimised, see
+[[speed_up_keys_db_update_with_git_streaming]].
+"""]]
