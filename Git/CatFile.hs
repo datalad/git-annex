@@ -326,7 +326,7 @@ catObjectStream repo a = withCatFileStream False repo go
 		(hClose hin)
 		(catObjectReader readObjectContent c hout)
 	feeder c h (v, ref) = do
-		liftIO $ writeChan c (ref, v)
+		writeChan c (ref, v)
 		S8.hPutStrLn h (fromRef' ref)
 
 catObjectMetaDataStream
