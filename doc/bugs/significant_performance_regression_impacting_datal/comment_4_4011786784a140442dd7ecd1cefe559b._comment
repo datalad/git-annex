@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="deferring the scan"
+ date="2021-06-07T17:41:44Z"
+ content="""
+>The only way to fix it that would not have an on performance would be to remove include= and exclude= from the preferred content expression syntax
+
+What about deferring the scan until the first command that uses `include=/exclude=` gets run, if `annex.supportunlocked=false`?
+Also, could the scan be limited to the files that match one of the include/exclude globs?
+"""]]
