@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-06-07T15:49:51Z"
+ content="""
+Also worth saying: When I have a choice between a bug fix and a performance
+change, I kind of have to pick the bug fix.
+[[bugs/indeterminite_preferred_content_state_for_duplicated_file]] was a
+longstanding bug that could cause *very* expensive misbehavior. The only
+way to fix it that would not have an on performance would be to
+remove include= and exclude= from the preferred content expression syntax,
+which would prevent a lot of current uses of preferred content.
+"""]]
