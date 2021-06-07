@@ -1,0 +1,36 @@
+Consider this, where branch foo has ten to a hundred thousand files
+not in the master branch:
+	
+	git checkout foo
+	touch newfile
+	git annex add newfile
+
+After recent changes to reconcileStaged, the result can be:
+
+	add newfile 0b 100% # cursor sits here for several seconds
+
+This is because it has to look in the keys db to see if there's an
+associated file that's unlocked and needs populating with the content of
+this newly available key, so it does reconcileStaged, which can take some
+time.
+
+One fix would be, if reconcileStaged is taking a long time, make it display
+a note about what it's doing:
+
+	add newfile 0b 100% (scanning annexed files...)
+
+It would also be possible to do the scan before starting to add files,
+which would look more consitent and would avoid it getting stuck
+with the progress display in view:
+
+	(scanning annexed files...)
+	add newfile ok
+
+It might also be possible to make reconcileStaged run a less expensive
+scan in this case, eg the scan it did before
+[[!commit 428c91606b434512d1986622e751c795edf4df44]]. In this case, it
+only really cares about associated files that are unlocked, and so
+diffing from HEAD to the index is sufficient, because the git checkout
+will have run the smudge filter on all the unlocked ones in HEAD and so it
+will already know about those associated files. However, I can't say I like
+this idea much because it complicates using the keys db significantly.

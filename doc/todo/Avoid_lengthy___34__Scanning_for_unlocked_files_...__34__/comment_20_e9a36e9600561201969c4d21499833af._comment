@@ -13,4 +13,16 @@ Fixed not to use reconcileStaged it took 37 seconds.
 (Keeping reconcileStaged and removing scanAnnexedFiles it took 47 seconds.
 That makes sense; reconcileStaged is an incremental updater and is not
 able to use SQL as efficiently as scanAnnexedFiles.)
+
+---
+
+Also the git clone of that 100,000 file repo itself, from another repo on
+the same SSD, takes 9 seconds. git-annex init taking 4x as long as
+a fast local git clone to do a scan is not bad.
+
+This is EOT for me, but I will accept pathes if someone wants to make
+git-annex faster. 
+
+(Also see
+[[todo/display_when_reconcileStaged_is_taking_a_long_time]])
 """]]
