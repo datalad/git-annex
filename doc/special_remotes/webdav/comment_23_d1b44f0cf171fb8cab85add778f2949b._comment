@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="jenkin.schibel@286264d9ceb79998aecff0d5d1a4ffe34f8b8421"
+ nickname="jenkin.schibel"
+ avatar="http://cdn.libravatar.org/avatar/692d82fb5c42fc86d97cc44ae0fb61ca"
+ subject="using import tree and export tree"
+ date="2021-06-06T14:43:39Z"
+ content="""
+hey will being able to import a treeish from a webdav remote ever be supported? my use case is that i have a nextcloud instance where i store photo backups for all the smart devices in my family which all get backed up to a single shared directory.  since this tree would be ever changing due to the many smart phones connecting to it, and storing data in it, i figured a push and pull method similar to what can be done with the adb special remote could be useful to keep all the files tracked in my annex.
+"""]]

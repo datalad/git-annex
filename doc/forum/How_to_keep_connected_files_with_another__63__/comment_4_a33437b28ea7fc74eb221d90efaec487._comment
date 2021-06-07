@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="keeping connected files together"
+ date="2021-06-07T14:45:35Z"
+ content="""
+One other option is to `tar` up each movie and all associated files into one archive, and annex that.
+
+There's a [special remote in DataLad](https://github.com/datalad/datalad/blob/master/datalad/customremotes/archives.py) for accessing individual files inside annexed archives, though I guess in your case you'd normally want all files anyway.
+"""]]
