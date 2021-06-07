@@ -245,7 +245,8 @@ reconcileStaged qh = do
 	go cur indexcache (Just newtree) = do
 		oldtree <- getoldtree
 		when (oldtree /= newtree) $ do
-			updatetodiff (fromRef oldtree) (fromRef newtree)
+			updatetodiff (Just (fromRef oldtree)) (fromRef newtree) procdiff
+				>>= flushdb . fst
 			liftIO $ writeFile indexcache $ showInodeCache cur
 			-- Storing the tree in a ref makes sure it does not
 			-- get garbage collected, and is available to diff
@@ -253,22 +254,34 @@ reconcileStaged qh = do
 			inRepo $ update' lastindexref newtree
 	-- git write-tree will fail if the index is locked or when there is
 	-- a merge conflict. To get up-to-date with the current index, 
-	-- diff --cached with the old index tree. The current index tree
+	-- diff --staged with the old index tree. The current index tree
 	-- is not known, so not recorded, and the inode cache is not updated,
 	-- so the next time git-annex runs, it will diff again, even
 	-- if the index is unchanged.
+	--
+	-- When there is a merge conflict, that will not see the new local
+	-- version of the files that are conflicted. So a second diff
+	-- is done, with --staged but no old tree.
 	go _ _ Nothing = do
 		oldtree <- getoldtree
-		updatetodiff (fromRef oldtree) "--cached"
+		(changed, conflicted) <- updatetodiff
+			(Just (fromRef oldtree)) "--staged" procdiff
+		changed' <- if conflicted
+			then fst <$> updatetodiff Nothing "--staged"
+				procmergeconflictdiff
+			else pure False
+		flushdb (changed || changed')
 		
-	updatetodiff old new = do
+	updatetodiff old new processor = do
 		(l, cleanup) <- inRepo $ pipeNullSplit' $ diff old new
-		changed <- procdiff l False
-		void $ liftIO cleanup
-		-- Flush database changes immediately
-		-- so other processes can see them.
-		when changed $
-			liftIO $ H.flushDbQueue qh
+		processor l False False
+			`finally` void (liftIO cleanup)
+	
+	-- Flush database changes immediately
+	-- so other processes can see them.
+	flushdb changed
+		| changed = liftIO $ H.flushDbQueue qh
+		| otherwise = noop
 	
 	-- Avoid running smudge clean filter, which would block trying to
 	-- access the locked database. git write-tree sometimes calls it,
@@ -288,8 +301,8 @@ reconcileStaged qh = do
 		-- (The -G option may make it be used otherwise.)
 		[ Param "-c", Param "diff.external="
 		, Param "diff"
-		, Param old
-		, Param new
+		] ++ maybeToList (Param <$> old) ++
+		[ Param new
 		, Param "--raw"
 		, Param "-z"
 		, Param "--no-abbrev"
@@ -307,12 +320,13 @@ reconcileStaged qh = do
 		, Param "--no-ext-diff"
 		]
 	
-	procdiff (info:file:rest) changed
+	procdiff (info:file:rest) changed conflicted
 		| ":" `S.isPrefixOf` info = case S8.words info of
 			(_colonsrcmode:dstmode:srcsha:dstsha:status:[]) -> do
+				let conflicted' = status == "U"
 				-- avoid removing associated file when
 				-- there is a merge conflict
-				removed <- if status /= "U" 
+				removed <- if not conflicted'
 					then catKey (Ref srcsha) >>= \case
 						Just oldkey -> do
 							liftIO $ SQL.removeAssociatedFile oldkey
@@ -330,9 +344,32 @@ reconcileStaged qh = do
 							reconcilerace (asTopFilePath file) key
 						return True
 					Nothing -> return False
-				procdiff rest (changed || removed || added)
-			_ -> return changed -- parse failed
-	procdiff _ changed = return changed
+				procdiff rest
+					(changed || removed || added)
+					(conflicted || conflicted')
+			_ -> return (changed, conflicted) -- parse failed
+	procdiff _ changed conflicted = return (changed, conflicted)
+	
+	-- Processing a diff --index when there is a merge conflict.
+	-- This diff will have the new local version of a file as the
+	-- first sha, and a null sha as the second sha, and we only
+	-- care about files that are in conflict.
+	procmergeconflictdiff (info:file:rest) changed conflicted
+		| ":" `S.isPrefixOf` info = case S8.words info of
+			(_colonmode:_mode:sha:_sha:status:[]) -> do
+				let conflicted' = status == "U"
+				added <- catKey (Ref sha) >>= \case
+					Just key -> do
+						liftIO $ SQL.addAssociatedFile key
+							(asTopFilePath file)
+							(SQL.WriteHandle qh)
+						return True
+					Nothing -> return False
+				procmergeconflictdiff rest
+					(changed || added)
+					(conflicted || conflicted')
+			_ -> return (changed, conflicted) -- parse failed
+	procmergeconflictdiff _ changed conflicted = return (changed, conflicted)
 
 	reconcilerace file key = do
 		caches <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
