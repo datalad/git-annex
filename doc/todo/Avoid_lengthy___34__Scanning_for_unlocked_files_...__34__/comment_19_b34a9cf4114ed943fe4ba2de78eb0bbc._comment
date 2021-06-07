@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2021-06-07T17:07:26Z"
+ content="""
+It can't know if there are unlocked files without doing this scan.
+
+Except for when annex.supportunlocked=false, but then that config option
+would have the side effect of making git-annex *slower* at some point after
+init, with the situations where it does hard to enumerate and probably
+growing. This would be a hard behavior to explain to the user.
+
+And there are numerous other points than the ones you listed where
+git-annex accesses the keys db and would trigger a deferred scan. Eg, anytime
+it might need to update a pointer file. Eg, when `git annex get` is run. 
+Avoiding using the keys db when annex.supportunlocked=false in all such
+cases in order to avoid the scan would be effectively the same complexity
+as continuing to support v5 repos, which I've NAKed before.
+""]]
