@@ -26,6 +26,8 @@ with the progress display in view:
 	(scanning annexed files...)
 	add newfile ok
 
+> [[done]] --[[Joey]]
+
 It might also be possible to make reconcileStaged run a less expensive
 scan in this case, eg the scan it did before
 [[!commit 428c91606b434512d1986622e751c795edf4df44]]. In this case, it

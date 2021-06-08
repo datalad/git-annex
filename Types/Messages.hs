@@ -47,6 +47,7 @@ data MessageState = MessageState
 	, consoleRegionErrFlag :: Bool
 	, jsonBuffer :: Maybe Aeson.Object
 	, promptLock :: MVar () -- left full when not prompting
+	, clearProgressMeter :: IO ()
 	}
 
 newMessageState :: IO MessageState
@@ -60,6 +61,7 @@ newMessageState = do
 		, consoleRegionErrFlag = False
 		, jsonBuffer = Nothing
 		, promptLock = promptlock
+		, clearProgressMeter = return ()
 		}
 
 -- | When communicating with a child process over a pipe while it is

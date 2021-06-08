@@ -7,6 +7,7 @@
 
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Database.Keys (
 	DbHandle,
@@ -403,7 +404,7 @@ reconcileStaged qh = do
 				proct <- liftIO $ async $
 					procthread mdreader catfeeder
 						`finally` void catcloser
-				dbchanged <- dbwriter False catreader
+				dbchanged <- dbwriter False largediff catreader
 				-- Flush database changes now
 				-- so other processes can see them.
 				when dbchanged $
@@ -420,8 +421,27 @@ reconcileStaged qh = do
 			Just _ -> procthread mdreader catfeeder
 			Nothing -> return ()
 
-		dbwriter dbchanged catreader = liftIO catreader >>= \case
+		dbwriter dbchanged n catreader = liftIO catreader >>= \case
 			Just (ka, content) -> do
 				changed <- ka (parseLinkTargetOrPointerLazy =<< content)
-				dbwriter (dbchanged || changed) catreader
+				!n' <- countdownToMessage n
+				dbwriter (dbchanged || changed) n' catreader
 			Nothing -> return dbchanged
+
+	-- When the diff is large, the scan can take a while,
+	-- so let the user know what's going on.
+	countdownToMessage n
+		| n < 1 = return 0
+		| n == 1 = do
+			showSideAction "scanning for annexed files"
+			return 0
+		| otherwise = return (pred n)
+
+	-- How large is large? Too large and there will be a long
+	-- delay before the message is shown; too short and the message
+	-- will clutter things up unncessarily. It's uncommon for 1000
+	-- files to change in the index, and processing that many files
+	-- takes less than half a second, so that seems about right.
+	largediff :: Int
+	largediff = 1000
+

@@ -15,8 +15,6 @@ import Annex.Content
 import Annex.ReplaceFile
 import Annex.CurrentBranch
 import Annex.InodeSentinal
-import Annex.Concurrent
-import Utility.ThreadScheduler
 import Utility.InodeCache
 import Git.FilePath
 import Git.CatFile
@@ -81,7 +79,7 @@ ifAnnexed file yes no = maybe no yes =<< lookupKey file
  - as-is.
  -}
 scanAnnexedFiles :: Bool -> Annex ()
-scanAnnexedFiles initscan = showSideActionAfter oneSecond "scanning for annexed files" $ do
+scanAnnexedFiles initscan = do
 	-- This gets the keys database populated with all annexed files,
 	-- by running Database.Keys.reconcileStaged.
 	Database.Keys.runWriter (const noop)

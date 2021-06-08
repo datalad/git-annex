@@ -100,23 +100,3 @@ mergeState st = do
 		uncurry addCleanupAction
 	Annex.Queue.mergeFrom st'
 	changeState $ \s -> s { errcounter = errcounter s + errcounter st' }
-
-{- Display a message, only when the action runs for a long enough
- - amount of time.
- - 
- - The action should not display any other messages, progress, etc;
- - if it did there could be some scrambling of the display since the
- - message display could happen at the same time as other output,
- - or after it.
- -}
-showSideActionAfter :: Microseconds -> String -> Annex a -> Annex a
-showSideActionAfter t m a = do
-	waiter <- liftIO $ async $ unboundDelay t
-	let display = liftIO (waitCatch waiter) >>= \case
-		Left _ -> return ()
-		Right _ -> showSideAction m
-	displayer <- liftIO . async =<< forkState display
-	let cleanup = do
-		liftIO $ cancel waiter
-		join (liftIO (wait displayer))
-	a `finally` cleanup

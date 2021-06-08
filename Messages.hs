@@ -124,12 +124,14 @@ showSideAction m = Annex.getState Annex.output >>= go
   where
 	go st
 		| sideActionBlock st == StartBlock = do
-			p
+			go' st
 			let st' = st { sideActionBlock = InBlock }
 			Annex.changeState $ \s -> s { Annex.output = st' }
 		| sideActionBlock st == InBlock = return ()
-		| otherwise = p
-	p = outputMessage JSON.none $ encodeBS' $ "(" ++ m ++ "...)\n"
+		| otherwise = go' st
+	go' st = do
+		liftIO $ clearProgressMeter st
+		outputMessage JSON.none $ encodeBS' $ "(" ++ m ++ "...)\n"
 			
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "recording state in git"

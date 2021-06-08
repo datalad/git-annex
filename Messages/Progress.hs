@@ -11,6 +11,7 @@
 module Messages.Progress where
 
 import Common
+import qualified Annex
 import Messages
 import Utility.Metered
 import Types
@@ -66,7 +67,7 @@ instance MeterSize KeySizer where
 
 {- Shows a progress meter while performing an action.
  - The action is passed the meter and a callback to use to update the meter.
- --}
+ -}
 metered
 	:: MeterSize sizer
 	=> Maybe MeterUpdate
@@ -75,28 +76,38 @@ metered
 	-> Annex a
 metered othermeter sizer a = withMessageState $ \st -> do
 	sz <- getMeterSize sizer
-	metered' st othermeter sz showOutput a
+	metered' st setclear othermeter sz showOutput a
+  where
+	setclear c = Annex.changeState $ \st -> st
+		{ Annex.output = (Annex.output st) { clearProgressMeter = c } }
 
 metered'
 	:: (Monad m, MonadIO m, MonadMask m)
 	=> MessageState
+	-> (IO () -> m ())
+	-- ^ This should set clearProgressMeter when progress meters
+	-- are being displayed; not needed when outputType is not
+	-- NormalOutput.
 	-> Maybe MeterUpdate
 	-> Maybe TotalSize
 	-> m ()
 	-- ^ this should run showOutput
 	-> (Meter -> MeterUpdate -> m a)
 	-> m a
-metered' st othermeter msize showoutput a = go st
+metered' st setclear othermeter msize showoutput a = go st
   where
 	go (MessageState { outputType = QuietOutput }) = nometer
 	go (MessageState { outputType = NormalOutput, concurrentOutputEnabled = False }) = do
 		showoutput
 		meter <- liftIO $ mkMeter msize $ 
 			displayMeterHandle stdout bandwidthMeter
+		let clear = clearMeterHandle meter stdout
+		setclear clear
 		m <- liftIO $ rateLimitMeterUpdate consoleratelimit meter $
 			updateMeter meter
 		r <- a meter (combinemeter m)
-		liftIO $ clearMeterHandle meter stdout
+		setclear noop
+		liftIO clear
 		return r
 	go (MessageState { outputType = NormalOutput, concurrentOutputEnabled = True }) =
 		withProgressRegion st $ \r -> do
@@ -149,7 +160,7 @@ metered' st othermeter msize showoutput a = go st
 	jsonratelimit = 0.1
 
 	minratelimit = min consoleratelimit jsonratelimit
-
+		
 {- Poll file size to display meter. -}
 meteredFile :: FilePath -> Maybe MeterUpdate -> Key -> Annex a -> Annex a
 meteredFile file combinemeterupdate key a = 

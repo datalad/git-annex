@@ -425,7 +425,8 @@ displayMeterHandle h rendermeter v msize old new = do
 		hPutStr h ('\r':s ++ padding)
 		hFlush h
 
--- | Clear meter displayed by displayMeterHandle.
+-- | Clear meter displayed by displayMeterHandle. May be called before
+-- outputting something else, followed by more calls to displayMeterHandle.
 clearMeterHandle :: Meter -> Handle -> IO ()
 clearMeterHandle (Meter _ _ v _) h = do
 	olds <- readMVar v
