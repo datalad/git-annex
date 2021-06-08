@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="OSX mystery resolved. add --batch is effective mitigation"
+ date="2021-06-08T21:56:53Z"
+ content="""
+> Perhaps on OSX something is making the write-tree significantly slower. Or something is making it run the command more with fewer files per run.
+
+The latter would be my guess... We seems to get 2 vs 5 splits on Linux vs OSX... our `datalad.utils.CMD_MAX_ARG` (logic is [here](https://github.com/datalad/datalad/blob/HEAD/datalad/utils.py#L103)) gets set to 1048576 on linux and 524288 on OSX.  So \"matches\" and \"OSX mystery resolved\"! ;)
+
+Meanwhile confirming that using `add --batch` mitigates it. With [ad-hoc patch to add add --batched to datalad](https://github.com/datalad/datalad/pull/5722) I get 187.8053s run for our test using `annex add --batch` and bleeding edge annex 57b567ac8 and 183.1654s (so about the same) using annex 9a5981a15 from 20210525 (which takes over hour with splitting); and then with our old splitting and that old git-annex 9a5981a15 I get 188.3987s run.
+"""]]
