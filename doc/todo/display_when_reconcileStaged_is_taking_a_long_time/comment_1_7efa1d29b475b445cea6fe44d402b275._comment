@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-06-08T15:21:02Z"
+ content="""
+Made `git-annex smudge --update` run the scan, and so the post-checkout or
+post-merge hook will call it. 
+
+That avoids the scenario shown above. But adding a lot of files to the
+index can still cause a later pause for reconcileStaged without indication
+what it's doing.
+"""]]

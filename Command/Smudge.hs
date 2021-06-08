@@ -13,6 +13,7 @@ import Annex.Link
 import Annex.FileMatcher
 import Annex.Ingest
 import Annex.CatFile
+import Annex.WorkTree
 import Logs.Smudge
 import Logs.Location
 import qualified Database.Keys
@@ -262,6 +263,11 @@ getMoveRaceRecovery k file = void $ tryNonAsync $
 
 update :: CommandStart
 update = do
+	-- This gets run after a git checkout or merge, so it's a good
+	-- point to refresh the keys database for changes to annexed files.
+	-- Doing it explicitly here avoids a later pause in the middle of
+	-- some other action.
+	scanAnnexedFiles False
 	updateSmudged (Restage True)
 	stop
 

@@ -37,7 +37,6 @@ import Annex.UUID
 import Annex.WorkTree
 import Annex.Fixup
 import Annex.Path
-import Annex.Concurrent
 import Config
 import Config.Files
 import Config.Smudge
@@ -134,8 +133,7 @@ initialize' mversion = checkInitializeAllowed $ do
 		then configureSmudgeFilter
 		else deconfigureSmudgeFilter
 	unlessM isBareRepo $ do
-		showSideActionAfter oneSecond "scanning for annexed files" $
-			scanAnnexedFiles
+		scanAnnexedFiles True
 		hookWrite postCheckoutHook
 		hookWrite postMergeHook
 	AdjustedBranch.checkAdjustedClone >>= \case

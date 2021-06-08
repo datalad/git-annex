@@ -15,6 +15,8 @@ import Annex.Content
 import Annex.ReplaceFile
 import Annex.CurrentBranch
 import Annex.InodeSentinal
+import Annex.Concurrent
+import Utility.ThreadScheduler
 import Utility.InodeCache
 import Git.FilePath
 import Git.CatFile
@@ -78,8 +80,8 @@ ifAnnexed file yes no = maybe no yes =<< lookupKey file
  - But if worktree file does not have a pointer file's content, it is left
  - as-is.
  -}
-scanAnnexedFiles :: Annex ()
-scanAnnexedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ do
+scanAnnexedFiles :: Bool -> Annex ()
+scanAnnexedFiles initscan = showSideActionAfter oneSecond "scanning for annexed files" $ do
 	-- This gets the keys database populated with all annexed files,
 	-- by running Database.Keys.reconcileStaged.
 	Database.Keys.runWriter (const noop)
@@ -88,14 +90,19 @@ scanAnnexedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ d
 	-- annex object file already exists, but its inode is not yet
 	-- cached and annex.thin is set. So, the rest of this makes
 	-- another pass over the tree to do that.
-	whenM (annexThin <$> Annex.getGitConfig) $ do
-		g <- Annex.gitRepo
-		(l, cleanup) <- inRepo $ Git.LsTree.lsTree
-			Git.LsTree.LsTreeRecursive
-			(Git.LsTree.LsTreeLong True)
-			Git.Ref.headRef
-		catObjectStreamLsTree l want g go
-		liftIO $ void cleanup
+	whenM
+		( pure initscan
+		<&&> annexThin <$> Annex.getGitConfig
+		<&&> inRepo Git.Ref.headExists
+		<&&> not <$> isBareRepo
+		) $ do
+			g <- Annex.gitRepo
+			(l, cleanup) <- inRepo $ Git.LsTree.lsTree
+				Git.LsTree.LsTreeRecursive
+				(Git.LsTree.LsTreeLong True)
+				Git.Ref.headRef
+			catObjectStreamLsTree l want g go
+			liftIO $ void cleanup
   where
 	-- Want to process symlinks, and regular files.
 	want i = case Git.Types.toTreeItemType (Git.LsTree.mode i) of
