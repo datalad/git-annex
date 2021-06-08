@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 19"
+ date="2021-06-08T22:02:33Z"
+ content="""
+and we seems to not run that test on windows (marked as `@known_failure_windows` ;)) so we do not see that \"regression\" on windows runs (was yet another part of mystery to me why OSX only ;))
+"""]]
