@@ -339,7 +339,7 @@ reconcileStaged qh = do
 							(asTopFilePath file)
 							(SQL.WriteHandle qh)
 						when (dstmode /= fmtTreeItemType TreeSymlink) $
-							reconcilerace (asTopFilePath file) key
+							reconcilepointerfile (asTopFilePath file) key
 						return True
 					Nothing -> return False
 				procdiff mdfeeder rest
@@ -367,7 +367,7 @@ reconcileStaged qh = do
 			_ -> return conflicted -- parse failed
 	procmergeconflictdiff _ _ conflicted = return conflicted
 
-	reconcilerace file key = do
+	reconcilepointerfile file key = do
 		caches <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
 		keyloc <- calcRepo (gitAnnexLocation key)
 		keypopulated <- sameInodeCache keyloc caches

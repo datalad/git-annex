@@ -22,7 +22,6 @@ import qualified Git.Ref
 import qualified Git.LsTree
 import qualified Git.Types
 import qualified Database.Keys
-import qualified Database.Keys.SQL
 import Config
 import qualified Utility.RawFilePath as R
 
@@ -81,9 +80,15 @@ ifAnnexed file yes no = maybe no yes =<< lookupKey file
  -}
 scanAnnexedFiles :: Annex ()
 scanAnnexedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ do
+	-- This gets the keys database populated with all annexed files,
+	-- by running Database.Keys.reconcileStaged.
+	Database.Keys.runWriter (const noop)
+	-- The above tries to populate pointer files, but one thing it
+	-- is not able to handle is populating a pointer file when the
+	-- annex object file already exists, but its inode is not yet
+	-- cached. So, the rest of this makes another pass over the
+	-- tree to do that.
 	g <- Annex.gitRepo
-	Database.Keys.runWriter $
-		liftIO . Database.Keys.SQL.dropAllAssociatedFiles
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
 		Git.LsTree.LsTreeRecursive
 		(Git.LsTree.LsTreeLong True)
@@ -112,8 +117,6 @@ scanAnnexedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ d
 	
 	add i isregfile k = do
 		let tf = Git.LsTree.file i
-		Database.Keys.runWriter $
-			liftIO . Database.Keys.SQL.addAssociatedFileFast k tf
 		whenM (pure isregfile <&&> inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
 			liftIO (isPointerFile f) >>= \case
