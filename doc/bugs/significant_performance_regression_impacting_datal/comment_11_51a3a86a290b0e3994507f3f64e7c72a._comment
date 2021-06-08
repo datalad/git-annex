@@ -17,9 +17,12 @@ wastes some time, eg:
 	[2021-06-08 11:52:44.092620256] (Database.Keys) reconcileStaged end
 	ok
 
-All the new work happens in between those two debugs, so you could check if
+All the new work happens in between those two debugs[1], so you could check if
 the time sink is there or elsewhere.
 
 (Note that the last release takes 2 seconds longer for that init than
 it does now..)
+
+[1] With the exception of a single call to `git write-tree`, but that
+should be very fast.
 """]]
