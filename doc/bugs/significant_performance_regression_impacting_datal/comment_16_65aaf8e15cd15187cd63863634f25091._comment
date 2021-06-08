@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2021-06-08T20:56:50Z"
+ content="""
+This is starting to make some sense. If you're running git-annex add
+N times adding M files each time, then each run will now diff the
+changes in the index made by the previous run.
+
+And the first part of diffing the index is generating a tree from all the
+files in it, which is to some extent `O(N*M)` (though IDK, git may have
+optimisations involving subtrees or such). So the combined N git-annex add
+runs come to `O(N*N*M)`
+
+On linux, `git write-tree` with 100,000 files in the index runs in under 1
+second, so athe `N*M` is not too bad. And then there's the overhead of
+git-annex processing the resulting diff, which takes more time but is what
+I've been optimising.
+
+Perhaps on OSX something is making the write-tree significantly slower.
+Or something is making it run the command more with fewer files per run.
+Although IIRC OSX has close to the same maximum command line length as
+linux.
+
+Or maybe the index diffing is diffing from the wrong start point.
+One way I can think of where this would happen is if
+it somehow misdetects the index as being locked.
+
+A --debug trace of the one of the later git-annex add runs in that
+test case would probably shed some useful light.
+
+Yes, --batch should avoid the problem...
+"""]]
