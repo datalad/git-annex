@@ -86,15 +86,16 @@ scanAnnexedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ d
 	-- The above tries to populate pointer files, but one thing it
 	-- is not able to handle is populating a pointer file when the
 	-- annex object file already exists, but its inode is not yet
-	-- cached. So, the rest of this makes another pass over the
-	-- tree to do that.
-	g <- Annex.gitRepo
-	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
-		Git.LsTree.LsTreeRecursive
-		(Git.LsTree.LsTreeLong True)
-		Git.Ref.headRef
-	catObjectStreamLsTree l want g go
-	liftIO $ void cleanup
+	-- cached and annex.thin is set. So, the rest of this makes
+	-- another pass over the tree to do that.
+	whenM (annexThin <$> Annex.getGitConfig) $ do
+		g <- Annex.gitRepo
+		(l, cleanup) <- inRepo $ Git.LsTree.lsTree
+			Git.LsTree.LsTreeRecursive
+			(Git.LsTree.LsTreeLong True)
+			Git.Ref.headRef
+		catObjectStreamLsTree l want g go
+		liftIO $ void cleanup
   where
 	-- Want to process symlinks, and regular files.
 	want i = case Git.Types.toTreeItemType (Git.LsTree.mode i) of

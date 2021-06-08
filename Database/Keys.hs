@@ -362,17 +362,25 @@ reconcileStaged qh = do
 	procmergeconflictdiff _ _ conflicted = return conflicted
 
 	reconcilepointerfile file key = do
-		caches <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
-		keyloc <- calcRepo (gitAnnexLocation key)
-		keypopulated <- sameInodeCache keyloc caches
+		ics <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
+		obj <- calcRepo (gitAnnexLocation key)
+		objic <- withTSDelta (liftIO . genInodeCache obj)
+		-- Like inAnnex, check the annex object's inode cache
+		-- when annex.thin is set.
+		keypopulated <- ifM (annexThin <$> Annex.getGitConfig)
+			( maybe (pure False) (`elemInodeCaches` ics) objic
+			, pure (isJust objic)
+			)
 		p <- fromRepo $ fromTopFilePath file
-		filepopulated <- sameInodeCache p caches
+		filepopulated <- sameInodeCache p ics
 		case (keypopulated, filepopulated) of
 			(True, False) ->
-				populatePointerFile (Restage True) key keyloc p >>= \case
+				populatePointerFile (Restage True) key obj p >>= \case
 					Nothing -> return ()
 					Just ic -> liftIO $
-						SQL.addInodeCaches key [ic] (SQL.WriteHandle qh)
+						SQL.addInodeCaches key
+							(catMaybes [Just ic, objic])
+							(SQL.WriteHandle qh)
 			(False, True) -> depopulatePointerFile key p
 			_ -> return ()
 	
