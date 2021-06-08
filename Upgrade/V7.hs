@@ -115,7 +115,7 @@ populateKeysDb = unlessM isBareRepo $ do
 				Just k -> do
 					topf <- inRepo $ toTopFilePath $ toRawFilePath f
 					Database.Keys.runWriter $ \h -> liftIO $ do
-						Database.Keys.SQL.addAssociatedFileFast k topf h
+						Database.Keys.SQL.addAssociatedFile k topf h
 						Database.Keys.SQL.addInodeCaches k [ic] h
 	liftIO $ void cleanup
 	Database.Keys.closeDb
