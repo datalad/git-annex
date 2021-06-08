@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="getting closer..."
+ date="2021-06-08T19:21:59Z"
+ content="""
+I think I have localized the slowdown to a single particular test in datalad which operates on a very heavy tree with tiny files.
+Good and bad runs:
+
+```
+*$> grep -h -A3 'datalad.support.tests.test_annexrepo.test_files_split(' builds/2021/05/*/cron-*/44196064/Build\ git-annex\ on\ macOS-29{2,3}-failed/1_test-datalad\ \(master\).txt
+2021-05-25T04:34:39.7723910Z datalad.support.tests.test_annexrepo.test_files_split(<class 'datalad.support.gitrepo.GitRepo'>,) ... ok
+2021-05-25T04:39:31.3031220Z datalad.support.tests.test_annexrepo.test_files_split(<class 'datalad.support.annexrepo.AnnexRepo'>,) ... ok
+2021-05-25T04:39:31.3032670Z datalad.support.tests.test_annexrepo.test_get_size_from_key ... ok
+2021-05-25T04:39:31.3043440Z datalad.support.tests.test_annexrepo.test_done_deprecation ... ok
+2021-05-25T04:39:31.3104830Z datalad.support.tests.test_ansi_colors.test_color_enabled ... ok
+--
+2021-05-26T05:01:12.6881120Z datalad.support.tests.test_annexrepo.test_files_split(<class 'datalad.support.gitrepo.GitRepo'>,) ... ok
+2021-05-26T06:47:04.8547640Z datalad.support.tests.test_annexrepo.test_files_split(<class 'datalad.support.annexrepo.AnnexRepo'>,) ... ok
+2021-05-26T06:47:04.8549600Z datalad.support.tests.test_annexrepo.test_get_size_from_key ... ok
+2021-05-26T06:47:04.8559760Z datalad.support.tests.test_annexrepo.test_done_deprecation ... ok
+2021-05-26T06:47:04.8636720Z datalad.support.tests.test_ansi_colors.test_color_enabled ... ok
+
+```
+you can see from timestamps (a guess github prepends time stamp AFTER getting full line) that there is over 1h30m spent there on `test_files_split(<class 'datalad.support.annexrepo.AnnexRepo'>,)`.  [Here is the actual test etc for posterity](https://github.com/datalad/datalad/blob/master/datalad/support/tests/test_annexrepo.py#L2354).  Yet to pin point more specifically on what is going on but most likely some interplay with command line length invocation limits (specific to OSX) etc.
+
+So good news is that it is not some widely spread drastic slow-down effect as far as I see it.
+"""]]
