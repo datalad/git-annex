@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="comment 13"
+ date="2021-06-08T19:08:01Z"
+ content="""
+One other test for “some coincidence with OSX VM getting slower“ is to try the current github CI test with an older git-annex.
+"""]]
