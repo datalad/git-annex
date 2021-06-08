@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-06-08T13:45:18Z"
+ content="""
+I do not see 1h40min anywhere on the page you linked. It says
+2h 6m at the top. Oh I see, you are clicking around to get to
+https://github.com/datalad/git-annex/runs/2661363385?check_suite_focus=true,
+and that number is in there next to "Run datalad tests".
+
+My improvements yesterday did not improve your test suite time any. But
+they certainly sped it up a *lot* in my benchmarks. So I think what you
+think is taking more time, eg the scanning at init, does not really have
+much to do with whatever is really taking more time. And if your test suite
+is mostly not cloning repos but is initializing new empty repos, then the
+scanning at init was and still is effectively a noop, it will not have
+gotten more expensive.
+
+It might be that the incremental updating git-annex now does when it sees
+changes to the index is making your test suite run a bit longer. But twice
+as long? That is not a very expensive process.
+
+Also notice that the git-annex test part of the CI job used to take
+15m54s and is now taking 17m29s. That's doing some cloning and some adding
+of files etc, and it didn't double in run time.
+
+I did find another nice optimisation this morning
+[[!commit c831a562f550e6ff93e081f555eced3a8a0d524f]], so we can see if that
+improves things in the next run.
+
+I suspect you're going to have to look at specific parts of your test suite
+and/or the CI system to identify what's slower though.
+"""]]
