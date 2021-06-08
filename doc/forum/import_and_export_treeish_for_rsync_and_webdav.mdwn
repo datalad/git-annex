@@ -1,0 +1,3 @@
+is it possible for having import/export (pull/push) funciontality for the rsync special remote? similar to how the adb special remote handles importing and exporting treeishes?  an example use case is that i have a pinePhone which i push files (music, podcasts, pdfs) to using the rsync special remote so it can be done over my wifi network, but it would be cool to also be able to import either any picutres i take, or to import any documents that I pull from the internet and then store on the pinePhone back into my annex.
+
+some reasons that I do not just make a another full annex repo on the pinePhone really comes down computation resource limitations of the pinephone. and I have a very large git annex (150,000+ keys) which can make the git repo fairly large.
