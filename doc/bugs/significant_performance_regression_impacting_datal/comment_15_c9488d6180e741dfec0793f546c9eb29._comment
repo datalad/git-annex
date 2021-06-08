@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 15"
+ date="2021-06-08T20:23:09Z"
+ content="""
+ok -- I think it (or at least a part of it, datalad test is still running) boils down to `git-annex add` now doing some `O(n-staged * n-cmdline-paths)` lookup/operation (instead of before just `O(n-cmdline-paths)`) whenever we have a series of `annex add --json cmdline-paths ...`. This is reflected by the fact that if before we had about `~30 sec` per each invocation of `annex add`, now we have `30 284 528 720`.
+
+In any case in datalad we should finally switch to use `annex add --batch`, filed [an issue](https://github.com/datalad/datalad/issues/5721), but I guess may be it could also be addressed on git-annex side since sounds like some suboptimal data structure is used for some paths' matching.
+"""]]
