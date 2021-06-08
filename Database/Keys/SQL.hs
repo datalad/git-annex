@@ -1,6 +1,6 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -36,15 +36,12 @@ import Data.Maybe
 -- (Unfortunatly persistent does not support indexes that are not
 -- uniqueness constraints; https://github.com/yesodweb/persistent/issues/109)
 --
--- KeyFileIndex contains both the key and the file because the combined
--- pair is unique, whereas the same key can appear in the table multiple
--- times with different files.
+-- To speed up queries for a key, there's KeyFileIndex, 
+-- which makes there be a covering index for keys.
 --
--- The other benefit to including the file in the index is that it makes
--- queries that include the file faster, since it's a covering index.
---
--- The KeyFileIndex only speeds up selects for a key, since it comes first.
--- To also speed up selects for a file, there's a separate FileKeyIndex.
+-- FileKeyIndex speeds up queries that include the file, since
+-- it makes there be a covering index for files. Note that, despite the name, it is
+-- used as a uniqueness constraint now.
 share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
 Associated
   key Key
@@ -79,12 +76,15 @@ queueDb a (WriteHandle h) = H.queueDb h checkcommit a
 	-- commit queue after 1000 changes
 	checkcommit sz _lastcommittime = pure (sz > 1000)
 
+-- Insert the associated file.
+-- When the file was associated with a different key before,
+-- update it to the new key.
 addAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
-addAssociatedFile k f = queueDb $ do
-	-- If the same file was associated with a different key before,
-	-- remove that.
-	deleteWhere [AssociatedFile ==. af, AssociatedKey !=. k]
-	void $ insertUnique $ Associated k af
+addAssociatedFile k f = queueDb $
+	void $ upsertBy
+		(FileKeyIndex af k)
+		(Associated k af)
+		[AssociatedFile =. af, AssociatedKey =. k]
   where
 	af = SFilePath (getTopFilePath f)
 
@@ -108,7 +108,7 @@ getAssociatedFiles k = readDb $ do
 	return $ map (asTopFilePath . (\(SFilePath f) -> f) . associatedFile . entityVal) l
 
 {- Gets any keys that are on record as having a particular associated file.
- - (Should be one or none but the database doesn't enforce that.) -}
+ - (Should be one or none.) -}
 getAssociatedKey :: TopFilePath -> ReadHandle -> IO [Key]
 getAssociatedKey f = readDb $ do
 	l <- selectList [AssociatedFile ==. af] []
