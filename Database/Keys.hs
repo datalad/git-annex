@@ -240,6 +240,7 @@ reconcileStaged qh = do
 	go cur indexcache (Just newtree) = do
 		oldtree <- getoldtree
 		when (oldtree /= newtree) $ do
+			fastDebug "Database.Keys" "reconcileStaged start"
 			g <- Annex.gitRepo
 			void $ catstream $ \mdfeeder -> 
 				void $ updatetodiff g
@@ -251,6 +252,7 @@ reconcileStaged qh = do
 			-- get garbage collected, and is available to diff
 			-- against next time.
 			inRepo $ update' lastindexref newtree
+			fastDebug "Database.Keys" "reconcileStaged end"
 	-- git write-tree will fail if the index is locked or when there is
 	-- a merge conflict. To get up-to-date with the current index, 
 	-- diff --staged with the old index tree. The current index tree
@@ -262,6 +264,7 @@ reconcileStaged qh = do
 	-- version of the files that are conflicted. So a second diff
 	-- is done, with --staged but no old tree.
 	go _ _ Nothing = do
+		fastDebug "Database.Keys" "reconcileStaged start (in conflict)"
 		oldtree <- getoldtree
 		g <- Annex.gitRepo
 		catstream $ \mdfeeder -> do
@@ -270,6 +273,7 @@ reconcileStaged qh = do
 			when conflicted $
 				void $ updatetodiff g Nothing "--staged"
 					(procmergeconflictdiff mdfeeder)
+		fastDebug "Database.Keys" "reconcileStaged end"
 	
 	updatetodiff g old new processor = do
 		(l, cleanup) <- pipeNullSplit' (diff old new) g

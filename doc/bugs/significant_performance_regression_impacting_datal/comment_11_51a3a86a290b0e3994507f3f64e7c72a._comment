@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2021-06-08T15:41:23Z"
+ content="""
+I can't think of anything OSX specific in the recent changes.
+
+I have added debugging of when reconcileStaged wakes up and possibly
+wastes some time, eg:
+
+	joey@darkstar:~/tmp/big> git config annex.debug true
+	joey@darkstar:~/tmp/big> git config annex.debugfilter Database.Keys
+	joey@darkstar:~/tmp/big> git-annex init
+	init  
+	[2021-06-08 11:52:11.854202926] (Database.Keys) reconcileStaged start
+	(scanning for annexed files...)
+	[2021-06-08 11:52:44.092620256] (Database.Keys) reconcileStaged end
+	ok
+
+All the new work happens in between those two debugs, so you could check if
+the time sink is there or elsewhere.
+
+(Note that the last release takes 2 seconds longer for that init than
+it does now..)
+"""]]
