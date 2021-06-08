@@ -203,20 +203,14 @@ isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
  - and the last processed tree is examined for changes.
  -
  - This also cleans up after a race between eg a git mv and git-annex
- - get/drop/similar. If git moves the file between this being run and the
- - get/drop, the moved file won't be updated for the get/drop. 
+ - get/drop/similar. If git moves a pointer file between this being run and the
+ - get/drop, the moved pointer file won't be updated for the get/drop. 
  - The next time this runs, it will see the staged change. It then checks
- - if the worktree file's content availability does not match the git-annex
- - content availablity, and makes changes as necessary to reconcile them.
+ - if the pointer file needs to be updated to contain or not contain the
+ - annex content.
  -
- - Note that if a commit happens before this runs again, it won't see
- - the staged change. Instead, during the commit, git will run the clean
- - filter. If a drop missed the file then the file is added back into the
- - annex. If a get missed the file then the clean filter populates the
- - file.
- -
- - There is a situation where, after this has run, the database can still
- - contain associated files that have been deleted from the index.
+ - Note: There is a situation where, after this has run, the database can
+ - still contain associated files that have been deleted from the index.
  - That happens when addAssociatedFile is used to record a newly
  - added file, but that file then gets removed from the index before
  - this is run. Eg, "git-annex add foo; git rm foo"
