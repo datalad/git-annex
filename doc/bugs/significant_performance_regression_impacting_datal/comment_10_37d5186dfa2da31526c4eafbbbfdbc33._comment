@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="slow down is OSX specific"
+ date="2021-06-08T14:28:18Z"
+ content="""
+Thank you Joey for all the OPTs. 
+Looking at it again: the significant impact seems to be OSX builds specific: Linux and Windows builds did get just a bit slower (if at all).  So may be situation is not that dire ;-)  Two possibilities:
+
+- Even though coincidences like this are unlikely, it is possible that OSX VMs on Github actions got slower? 
+- may be the RFing is somehow effecting OSX specifically?
+
+I will try to do some timings locally.  Also I should finally get those logs (and built packages) into some more convenient form using [tinuous](https://github.com/con/tinuous/) John has been developing -- would allow for easy greps instead of all these jumping through CIs etc.
+"""]]
