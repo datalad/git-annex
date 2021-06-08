@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2021-06-07T21:39:05Z"
+ content="""
+FWIW:
+
+> I assume these tests are creating lots of clones of repositories.
+
+lots of `git annex init` in new git repos.  Also a good number of clones AFAIK.  FWIW: we used to do more clones instead of just recreating new repos per test, but then we switched to just creating a new repo.  We still have a good number though of cloning.
+
+> Are they also doing lots of merges or switching between branches?
+
+Not that many AFAIK.
+"""]]

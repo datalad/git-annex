@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="clarification"
+ date="2021-06-07T21:20:35Z"
+ content="""
+For completeness 
+
+> Looking at the CI log, I don't see any past runs that took 1h 46min. A month ago they were taking 2h 6min. 
+
+I was looking at OSX ones. And the timing was for the one right before slow down: It was [this one](https://github.com/datalad/git-annex/actions/runs/873390021), but even [previous one](https://github.com/datalad/git-annex/actions/runs/869970007) was 1h40min
+
+> Let's see if the changes I'm pushing now drop it back to that.
+
+🤞
+"""]]
