@@ -23,7 +23,6 @@ module Database.Keys (
 	removeInodeCache,
 	isInodeKnown,
 	runWriter,
-	runWriter',
 ) where
 
 import qualified Database.Keys.SQL as SQL
@@ -74,7 +73,7 @@ runReader a = do
 		v <- a (SQL.ReadHandle qh)
 		return (v, st)
 	go DbClosed = do
-		st' <- openDb True Nothing DbClosed
+		st' <- openDb True DbClosed
 		v <- case st' of
 			(DbOpen qh) -> a (SQL.ReadHandle qh)
 			_ -> return mempty
@@ -88,15 +87,7 @@ runReaderIO a = runReader (liftIO . a)
  -
  - The database is created if it doesn't exist yet. -}
 runWriter :: (SQL.WriteHandle -> Annex ()) -> Annex ()
-runWriter = runWriter' Nothing
-
-runWriterIO :: (SQL.WriteHandle -> IO ()) -> Annex ()
-runWriterIO a = runWriter (liftIO . a)
-
-{- When a reconcile action is passed, it is run by reconcileStaged instead
- - of its usual scan, and must update the database in the same way. -}
-runWriter' :: Maybe (SQL.WriteHandle -> Annex ()) -> (SQL.WriteHandle -> Annex ()) -> Annex ()
-runWriter' reconciler a = do
+runWriter a = do
 	h <- Annex.getRead Annex.keysdbhandle
 	withDbState h go
   where
@@ -104,11 +95,14 @@ runWriter' reconciler a = do
 		v <- a (SQL.WriteHandle qh)
 		return (v, st)
 	go st = do
-		st' <- openDb False reconciler st
+		st' <- openDb False st
 		v <- case st' of
 			DbOpen qh -> a (SQL.WriteHandle qh)
 			_ -> error "internal"
 		return (v, st')
+
+runWriterIO :: (SQL.WriteHandle -> IO ()) -> Annex ()
+runWriterIO a = runWriter (liftIO . a)
 
 {- Opens the database, creating it if it doesn't exist yet.
  -
@@ -118,10 +112,10 @@ runWriter' reconciler a = do
  - the database doesn't exist yet, one caller wins the lock and
  - can create it undisturbed.
  -}
-openDb :: Bool -> (Maybe (SQL.WriteHandle -> Annex ())) -> DbState -> Annex DbState
-openDb _ _ st@(DbOpen _) = return st
-openDb False _ DbUnavailable = return DbUnavailable
-openDb forwrite reconciler _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKeysDbLock $ do
+openDb :: Bool -> DbState -> Annex DbState
+openDb _ st@(DbOpen _) = return st
+openDb False DbUnavailable = return DbUnavailable
+openDb forwrite _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKeysDbLock $ do
 	dbdir <- fromRepo gitAnnexKeysDb
 	let db = dbdir P.</> "db"
 	dbexists <- liftIO $ R.doesPathExist db
@@ -139,7 +133,7 @@ openDb forwrite reconciler _ = catchPermissionDenied permerr $ withExclusiveLock
 	
 	open db = do
 		qh <- liftIO $ H.openDbQueue H.MultiWriter db SQL.containedTable
-		reconcileStaged qh reconciler
+		reconcileStaged qh
 		return $ DbOpen qh
 
 {- Closes the database if it was open. Any writes will be flushed to it.
@@ -229,8 +223,8 @@ isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
  - So when using getAssociatedFiles, have to make sure the file still
  - is an associated file.
  -}
-reconcileStaged :: H.DbQueue -> Maybe (SQL.WriteHandle -> Annex ()) -> Annex ()
-reconcileStaged qh mreconciler = do
+reconcileStaged :: H.DbQueue -> Annex ()
+reconcileStaged qh = do
 	gitindex <- inRepo currentIndexFile
 	indexcache <- fromRawFilePath <$> fromRepo gitAnnexKeysDbIndexCache
 	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
@@ -252,21 +246,12 @@ reconcileStaged qh mreconciler = do
 	go cur indexcache (Just newtree) = do
 		oldtree <- getoldtree
 		when (oldtree /= newtree) $ do
-			case mreconciler of
-				Just reconciler ->
-					reconciler (SQL.WriteHandle qh)
-				Nothing -> noop
 			g <- Annex.gitRepo
-			void $ catstream $ \mdfeeder -> do
-				case mreconciler of
-					Nothing -> void $ updatetodiff g
-						(Just (fromRef oldtree)) 
-						(fromRef newtree)
-						(procdiff mdfeeder)
-					Just _ -> void $ updatetodiff g
-						Nothing "--staged"
-						(procdiff mdfeeder)
-
+			void $ catstream $ \mdfeeder -> 
+				void $ updatetodiff g
+					(Just (fromRef oldtree)) 
+					(fromRef newtree)
+					(procdiff mdfeeder)
 			liftIO $ writeFile indexcache $ showInodeCache cur
 			-- Storing the tree in a ref makes sure it does not
 			-- get garbage collected, and is available to diff

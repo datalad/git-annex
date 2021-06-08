@@ -70,29 +70,27 @@ ifAnnexed file yes no = maybe no yes =<< lookupKey file
 
 {- Find all annexed files and update the keys database for them.
  - 
+ - This is expensive, and so normally the associated files are updated
+ - incrementally when changes are noticed. So, this only needs to be done
+ - when initializing/upgrading a repository.
+ -
  - Also, the content for an unlocked file may already be present as
  - an annex object. If so, populate the pointer file with it.
  - But if worktree file does not have a pointer file's content, it is left
  - as-is.
- -
- - Normally the keys database is updated incrementally when changes are
- - noticed. For an initial scan, this is faster than that incremental
- - update.
  -}
 scanAnnexedFiles :: Annex ()
-scanAnnexedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $
-	Database.Keys.runWriter' (Just reconciler) (const noop)
+scanAnnexedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $ do
+	g <- Annex.gitRepo
+	Database.Keys.runWriter $
+		liftIO . Database.Keys.SQL.dropAllAssociatedFiles
+	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
+		Git.LsTree.LsTreeRecursive
+		(Git.LsTree.LsTreeLong True)
+		Git.Ref.headRef
+	catObjectStreamLsTree l want g go
+	liftIO $ void cleanup
   where
-	reconciler dbh = do
-		g <- Annex.gitRepo
-		liftIO $ Database.Keys.SQL.dropAllAssociatedFiles dbh
-		(l, cleanup) <- inRepo $ Git.LsTree.lsTree
-			Git.LsTree.LsTreeRecursive
-			(Git.LsTree.LsTreeLong True)
-			Git.Ref.headRef
-		catObjectStreamLsTree l want g (go dbh)
-		liftIO $ void cleanup
-	
 	-- Want to process symlinks, and regular files.
 	want i = case Git.Types.toTreeItemType (Git.LsTree.mode i) of
 		Just Git.Types.TreeSymlink -> Just (i, False)
@@ -105,16 +103,17 @@ scanAnnexedFiles = whenM (inRepo Git.Ref.headExists <&&> not <$> isBareRepo) $
 		Just n | n < maxPointerSz -> Just (i, True)
 		_ -> Nothing
 	
-	go dbh getnext = liftIO getnext >>= \case
+	go getnext = liftIO getnext >>= \case
 		Just ((i, isregfile), Just c) -> do
-			maybe noop (add i isregfile dbh)
+			maybe noop (add i isregfile)
 				(parseLinkTargetOrPointer (L.toStrict c))
-			go dbh getnext
+			go getnext
 		_ -> return ()
 	
-	add i isregfile dbh k = do
+	add i isregfile k = do
 		let tf = Git.LsTree.file i
-		liftIO $ Database.Keys.SQL.addAssociatedFileFast k tf dbh
+		Database.Keys.runWriter $
+			liftIO . Database.Keys.SQL.addAssociatedFileFast k tf
 		whenM (pure isregfile <&&> inAnnex k) $ do
 			f <- fromRepo $ fromTopFilePath tf
 			liftIO (isPointerFile f) >>= \case
