@@ -1,0 +1,104 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="more &quot;mystery resolved&quot; -- identical (empty) keys"
+ date="2021-06-09T21:00:34Z"
+ content="""
+thank you Joey for timing it up! May be relevant: in our [test scenario](https://github.com/datalad/datalad/blob/master/datalad/support/tests/test_annexrepo.py#L2354) we have 100 directories with 100 files in each one of those and each directory or file name is 100 chars long (not sure if this is relevant either). So doing 5 subsequent adds (on OSX) should result in ~20k paths specified on the command line for each invocation.
+
+<details>
+<summary>so I did this little replication script which would do similar drill (just not long filenames for this one)</summary> 
+
+```shell
+#!/bin/bash
+
+export PS4='> '
+set -eu
+cd \"$(mktemp -d ${TMPDIR:-/tmp}/ann-XXXXXXX)\"
+
+echo \"Populating the tree\"
+for d in {0..99}; do
+    mkdir $d
+    for f in {0..99}; do
+        echo \"$d$f\" >> $d/$f
+    done
+done
+
+git init
+git annex init
+/usr/bin/time git annex add --json {,1}?/* >/dev/null
+/usr/bin/time git annex add --json {2,3}?/* >/dev/null
+/usr/bin/time git annex add --json {4,5}?/* >/dev/null
+/usr/bin/time git annex add --json {6,7}?/* >/dev/null
+/usr/bin/time git annex add --json {8,9}?/* >/dev/null
+
+```
+</details>
+
+<details>
+<summary>with \"older\" 8.20210429-g9a5981a15 on OSX - stable 30 sec per batch (matches what I observed from running our tests)</summary> 
+
+```shell
+       29.83 real         9.52 user        17.43 sys
+       30.49 real        10.02 user        17.34 sys
+       30.67 real        10.37 user        17.36 sys
+       31.00 real        10.57 user        17.39 sys
+       30.78 real        10.77 user        17.23 sys
+```
+</details>
+
+<details>
+<summary>and the newer 8.20210429-g57b567ac8 -- I got the same-ish nice timing without significant growth! -- damn it</summary> 
+
+```shell
+       31.26 real        10.08 user        18.14 sys
+       31.97 real        10.99 user        18.69 sys
+       31.77 real        11.23 user        18.24 sys
+       32.08 real        11.26 user        18.06 sys
+       32.53 real        11.45 user        18.27 sys
+```
+</details>
+
+so I looked into our test generation again and realized -- we are not populating unique files.  They are all empty!
+
+<details>
+<summary>and now confirming with this slightly adjusted script which just touches them:</summary> 
+
+```shell
+#!/bin/bash
+
+export PS4='> '
+set -eu
+cd \"$(mktemp -d ${TMPDIR:-/tmp}/ann-XXXXXXX)\"
+
+echo \"Populating the tree\"
+for d in {0..99}; do
+    mkdir $d
+    for f in {0..99}; do
+        touch $d/$f
+    done
+done
+
+git init
+git annex init
+/usr/bin/time git annex add --json {,1}?/* >/dev/null
+/usr/bin/time git annex add --json {2,3}?/* >/dev/null
+/usr/bin/time git annex add --json {4,5}?/* >/dev/null
+/usr/bin/time git annex add --json {6,7}?/* >/dev/null
+/usr/bin/time git annex add --json {8,9}?/* >/dev/null
+
+```
+</details>
+
+the case I had observed
+
+```
+(base) yoh@dataladmac2 ~ % bash macos-slow-annex-add-empty.sh
+...
+       21.65 real         8.47 user        10.89 sys
+      139.96 real        61.51 user        78.18 sys
+... waiting for the rest -- too eager to post as is for now
+```
+
+so -- sorry I have not spotted that peculiarity right from the beginning!
+"""]]
