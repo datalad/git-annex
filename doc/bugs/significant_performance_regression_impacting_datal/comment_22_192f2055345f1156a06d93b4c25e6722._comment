@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 22"
+ date="2021-06-09T22:28:06Z"
+ content="""
+FWIW the complete timing was
+```
+       21.65 real         8.47 user        10.89 sys
+      139.96 real        61.51 user        78.18 sys
+      253.47 real       112.01 user       142.78 sys
+      370.43 real       161.94 user       211.15 sys
+      481.03 real       210.78 user       274.31 sys
+```
+so goes pretty close with what I observed with 4 splits (`30 284 528 720`).
+"""]]
