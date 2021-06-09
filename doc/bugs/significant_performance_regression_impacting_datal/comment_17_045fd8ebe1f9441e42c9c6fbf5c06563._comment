@@ -1,0 +1,93 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2021-06-09T18:53:14Z"
+ content="""
+Trying to repro on linux, batches of 1000 files each time:
+
+	joey@darkstar:~/tmp/bench6>/usr/bin/time git-annex add 1??? --quiet
+	7.17user 5.02system 0:11.33elapsed 107%CPU (0avgtext+0avgdata 69480maxresident)k
+	6880inputs+40344outputs (4major+404989minor)pagefaults 0swaps
+	joey@darkstar:~/tmp/bench>/usr/bin/time git-annex add 2??? --quiet
+	7.75user 5.63system 0:12.62elapsed 106%CPU (0avgtext+0avgdata 70296maxresident)k
+	3640inputs+42656outputs (9major+414106minor)pagefaults 0swaps
+	joey@darkstar:~/tmp/bench>/usr/bin/time git-annex add 3??? --quiet
+	8.04user 5.74system 0:12.92elapsed 106%CPU (0avgtext+0avgdata 70396maxresident)k
+	1456inputs+44200outputs (8major+414767minor)pagefaults 0swaps
+	joey@darkstar:~/tmp/bench>/usr/bin/time git-annex add 4??? --quiet
+	8.66user 5.57system 0:13.45elapsed 105%CPU (0avgtext+0avgdata 69620maxresident)k
+	768inputs+45768outputs (11major+416364minor)pagefaults 0swaps
+	joey@darkstar:~/tmp/bench>/usr/bin/time git-annex add 5??? --quiet
+	8.83user 5.58system 0:13.92elapsed 103%CPU (0avgtext+0avgdata 69956maxresident)k
+	5448inputs+47128outputs (45major+415820minor)pagefaults 0swaps
+	joey@darkstar:~/tmp/bench>/usr/bin/time git-annex add 6??? --quiet
+	9.00user 5.49system 0:13.60elapsed 106%CPU (0avgtext+0avgdata 70340maxresident)k
+	20864inputs+48768outputs (270major+418220minor)pagefaults 0swaps
+	joey@darkstar:~/tmp/bench>/usr/bin/time git-annex add 7??? --quiet
+	9.23user 5.56system 0:13.90elapsed 106%CPU (0avgtext+0avgdata 70352maxresident)k
+	12736inputs+50024outputs (492major+417882minor)pagefaults 0swaps
+	joey@darkstar:~/tmp/bench>/usr/bin/time git-annex add 8??? --quiet
+	9.27user 5.62system 0:13.89elapsed 107%CPU (0avgtext+0avgdata 70236maxresident)k
+	11320inputs+51816outputs (411major+419672minor)pagefaults 0swaps
+	joey@darkstar:~/tmp/bench>/usr/bin/time git-annex add 9??? --quiet
+	9.33user 5.80system 0:14.04elapsed 107%CPU (0avgtext+0avgdata 70380maxresident)k
+	10952inputs+53128outputs (281major+419771minor)pagefaults 0swaps
+
+There's some growth here, but it seems linear to the number of new files in the git index.
+
+Doing the same with the last git-annex release:
+
+0:10.97elapsed, 0:11.24elapsed, 0:11.65elapsed, 0:11.90elapsed,
+0:12.25elapsed, 0:12.86elapsed, 0:12.74elapsed, 0:12.84elapsed,
+0:13.26elapsed
+
+So close to the same, the slowdown feels minimal.
+
+Then on OSX:
+
+	datalads-imac:bench joey$ PATH=$HOME:$PATH /usr/bin/time ~/git-annex  add 1??? --quiet
+	       18.26 real         6.03 user         8.35 sys
+	datalads-imac:bench joey$ PATH=$HOME:$PATH /usr/bin/time ~/git-annex  add 2??? --quiet
+	       26.68 real         6.63 user         9.08 sys
+	datalads-imac:bench joey$ PATH=$HOME:$PATH /usr/bin/time ~/git-annex  add 3??? --quiet
+	       32.13 real         6.75 user         9.09 sys
+	datalads-imac:bench joey$ PATH=$HOME:$PATH /usr/bin/time ~/git-annex  add 4??? --quiet
+	       34.49 real         7.11 user         9.40 sys
+	datalads-imac:bench joey$ PATH=$HOME:$PATH /usr/bin/time ~/git-annex  add 5??? --quiet
+	       34.61 real         7.08 user         9.18 sys
+	datalads-imac:bench joey$ PATH=$HOME:$PATH /usr/bin/time ~/git-annex  add 6??? --quiet
+	       36.66 real         7.20 user         9.31 sys
+	datalads-imac:bench joey$ PATH=$HOME:$PATH /usr/bin/time ~/git-annex  add 7??? --quiet
+	       38.29 real         7.35 user         9.42 sys
+	datalads-imac:bench joey$ PATH=$HOME:$PATH /usr/bin/time ~/git-annex  add 8??? --quiet
+	       35.85 real         7.39 user         9.57 sys
+	datalads-imac:bench joey$ PATH=$HOME:$PATH /usr/bin/time ~/git-annex  add 9??? --quiet
+	       36.20 real         7.56 user         9.59 sys
+
+Well, this does not seem exponential but it's certainly growing
+faster than linux.
+
+Then tried on OSX with 100 chunks of 100 files each:
+
+	datalads-imac:bench joey$ for x in $(seq 10 99); do echo $x; PATH=$HOME:$PATH /usr/bin/time ~/git-annex  add $x?? --quiet; done
+	...
+	23
+	        3.91 real         0.83 user         1.17 sys
+	24
+	        3.31 real         0.83 user         1.25 sys
+	25
+	        3.32 real         0.83 user         1.26 sys
+	...
+	80
+	        5.68 real         1.05 user         1.60 sys
+	81
+	        6.18 real         1.06 user         1.60 sys
+	82
+	        7.06 real         1.06 user         1.59 sys
+
+There's more overhead because git-annex has to start up and diff
+the index trees, which takes longer than processing the 100 files
+in the chunk. But this is not taking hours to run, so either the
+test case involves a *lot* more than 10k files, or there is
+something else involved.
+"""]]
