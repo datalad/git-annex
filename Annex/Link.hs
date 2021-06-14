@@ -7,7 +7,7 @@
  -
  - Pointer files are used instead of symlinks for unlocked files.
  -
- - Copyright 2013-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -294,10 +294,36 @@ unpaddedMaxPointerSz = 8192
 
 {- Checks if a worktree file is a pointer to a key.
  -
- - Unlocked files whose content is present are not detected by this. -}
+ - Unlocked files whose content is present are not detected by this.
+ -
+ - It's possible, though unlikely, that an annex symlink points to
+ - an object that looks like a pointer file. Or that a non-annex
+ - symlink does. Avoids a false positive in those cases.
+ - -}
 isPointerFile :: RawFilePath -> IO (Maybe Key)
-isPointerFile f = catchDefaultIO Nothing $ withFile (fromRawFilePath f) ReadMode $ \h ->
-	parseLinkTargetOrPointer <$> S.hGet h unpaddedMaxPointerSz
+isPointerFile f = catchDefaultIO Nothing $ do
+#if defined(mingw32_HOST_OS)
+	checkcontentfollowssymlinks -- no symlinks supported on windows
+#else
+#if MIN_VERSION_unix(2,8,0)
+	bracket
+		(openFd (fromRawFilePath f) ReadOnly (defaultFileFlags { nofollow = True }) Nothing)
+		closeFd
+		(\fd -> readhandle =<< fdToHandle fd)
+#else
+	pointercontent <- checkcontentfollowssymlinks
+	if isJust pointercontent
+		then ifM (isSymbolicLink <$> R.getSymbolicLinkStatus f)
+			( return Nothing
+			, return pointercontent
+			)
+		else return Nothing
+#endif
+#endif
+  where
+	checkcontentfollowssymlinks = 
+		withFile (fromRawFilePath f) ReadMode readhandle
+	readhandle h = parseLinkTargetOrPointer <$> S.hGet h unpaddedMaxPointerSz
 
 {- Checks a symlink target or pointer file first line to see if it
  - appears to point to annexed content.
