@@ -1,0 +1,7 @@
+I‘ve decided to get my head wrapped around setting up `annex.largefiles` and stop manually deciding to `git add` or `git annex add` files as I go. I fumbled a bit, unsure if I had configured things correctly as it appeared that `git add` was still adding my large files into git history. I forgot that `git add` is configured to add annexed files unlocked and so the symlink I was expecting to see wasn't there. `git annex list` and `git annex find` helped me to see which files where staged to be committed into annex storage.
+
+What I would like to be able to do is to more easily list files which are not present in annex storage and are tracked into git storage. I have had a play with `git annex find` and the matching options however I have been unable to display a list of files that I have added as small files. Is there a way to achieve this?
+
+What I think would be ideal is for `git annex list` to show this information or another command which can print a tree with files in either of the two storage modes.
+
+Thanks for any help!
