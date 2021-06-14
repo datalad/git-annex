@@ -52,3 +52,9 @@ repository, freeing up disk space.
 
 You can continue running `borg create` and `git-annex sync` to store
 changed files in borg and let git-annex know what's stored there.
+
+It's possible to access the same borg repository from another clone of the
+git-annex repository too. Just run `git annex enableremote borg` in that
+clone to set it up. This uses the same `borgrepo` value that was passed
+to initremote, but you can override it, if, for example, you want to access
+the borg repository over ssh from this new clone.
