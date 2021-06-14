@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 25"""
+ date="2021-06-14T15:52:37Z"
+ content="""
+Found an optimisation that sped it up 50%, but this edge case is still 
+`O(N^2)`, so *shrug*.
+"""]]

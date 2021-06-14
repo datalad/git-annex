@@ -301,7 +301,7 @@ unpaddedMaxPointerSz = 8192
  - symlink does. Avoids a false positive in those cases.
  - -}
 isPointerFile :: RawFilePath -> IO (Maybe Key)
-isPointerFile f = catchDefaultIO Nothing $ do
+isPointerFile f = catchDefaultIO Nothing $
 #if defined(mingw32_HOST_OS)
 	checkcontentfollowssymlinks -- no symlinks supported on windows
 #else
@@ -311,13 +311,10 @@ isPointerFile f = catchDefaultIO Nothing $ do
 		closeFd
 		(\fd -> readhandle =<< fdToHandle fd)
 #else
-	pointercontent <- checkcontentfollowssymlinks
-	if isJust pointercontent
-		then ifM (isSymbolicLink <$> R.getSymbolicLinkStatus f)
-			( return Nothing
-			, return pointercontent
-			)
-		else return Nothing
+	ifM (isSymbolicLink <$> R.getSymbolicLinkStatus f)
+		( return Nothing
+		, checkcontentfollowssymlinks
+		)
 #endif
 #endif
   where
