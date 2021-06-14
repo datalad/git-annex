@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-06-14T16:45:21Z"
+ content="""
+exporttree is already supported by both. importtree is unlikely to be
+supported. It's difficult to support this without opening up a very real
+possibility of data loss. If you're importing and exporting to the same
+remote, what happens when there's a conflict? Eg, whatever else is writing
+files to the remote writes to a file, but you locally modify the same file,
+and export a tree, without importing the new version first. That
+would overwrite the modified file on the remote, losing data.
+
+All the special remotes that support exporttree+importtree are able to
+avoid losing data in this scenario. (At least as well as git is able to,
+there are similar races when git updates a working tree at the same time
+you modify a file in the working tree, but the timing of it makes it very
+unlikely, so much that noone seems to worry about it).
+See also [[todo/import_tree_from_rsync_special_remote]]
+
+I have not felt comfortable giving users a loaded gun in this case. So only
+exporttree is supported, because the user doesn't expect something
+else to be writing to files on that remote, or if they do, they don't
+have any reason to expect git-annex to deal with it well.
+
+Anyway, it seems to me it should be possible to install git-annex on
+your pinephone and connect the repos using ssh.
+"""]]
