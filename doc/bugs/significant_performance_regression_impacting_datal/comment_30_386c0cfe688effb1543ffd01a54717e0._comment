@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 30"
+ date="2021-06-14T17:36:16Z"
+ content="""
+> The same needs to also hold true for unlocked files, and so it has to check if foo is an unlocked pointer to K and populate the file with the content.
+
+but that should only needs to be done iff K became present/known whenever it was not present before. If K is already known (e.g. was just added for another file, or may be was added in previous \"commit\") no such checks are needed since those files could be expected to already be populated. Right?
+"""]]
