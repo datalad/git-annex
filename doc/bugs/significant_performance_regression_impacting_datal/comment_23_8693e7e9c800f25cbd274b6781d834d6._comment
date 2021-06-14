@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2021-06-14T14:09:07Z"
+ content="""
+The file contents all being the same is the crucial thing. On linux,
+adding 1000 dup files at a time (all in same directory), I get:
+
+run 1: 0:08  
+run 2: 0:42  
+run 3: 1:14  
+run 4: 1:46
+
+After run 4, adding 1000 files with all different content takes 
+0:11, so not appreciably slowed down; it only affects adding dups,
+and only when there are a *lot* of them.
+
+This feels like quite an edge case, and also not
+really a new problem, since unlocked files would have already
+had the same problem before recent changes.
+
+I thought this might be an innefficiency in sqlite's index, similar to how
+hash tables can scale poorly when a lot of things end up in the same
+bucket. But disabling the index did not improve performance.
+
+Aha -- the slowdown is caused by `git-annex add` looking to see what other
+annexed files use the same content, so that it can populate any unlocked
+files that didn't have the content present before. With all these locked
+files now recorded in the db, it has to check each file in turn, and
+there's the `O(N^2)`
+"""]]

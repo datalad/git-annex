@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 24"""
+ date="2021-06-14T15:36:30Z"
+ content="""
+If the database recorded when files were unlocked or not, that could be
+avoided, but tracking that would add a lot of complexity for what is just
+an edge case. And probably slow things down generally by some amount due to
+the db being larger.
+
+It seems almost cheating, but it could remember the last few keys it's added,
+and avoid trying to populate unlocked files when adding those keys again.
+This would slow down the usual case by some tiny amount (eg an IORef access) 
+but avoid `O(N^2)` in this edge case. Though it wouldn't fix all edge cases,
+eg when the files it's adding rotate through X different contents, and X is
+larger than the number of keys it remembers.
+"""]]
