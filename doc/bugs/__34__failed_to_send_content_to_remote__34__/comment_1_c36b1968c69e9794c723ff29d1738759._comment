@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-06-14T17:06:19Z"
+ content="""
+From the --deubg you provided, the important part is that rsync is
+succeeding to copy the file, but then git-annex for some reason thinks it
+failed, or has some other problem. Eg, if the annexed object was corrupt,
+it could copy it with rsync and then fail to verify the copy.
+
+Your git-annex version is a year out of date, so you should upgrade. The
+code that is failing has definitely been changed a lot in the meantime,
+though not that I can remember to fix a bug like this.
+"""]]
