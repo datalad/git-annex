@@ -50,8 +50,8 @@ import Upgrade
 import Annex.Tmp
 import Utility.UserInfo
 import qualified Utility.RawFilePath as R
-#ifndef mingw32_HOST_OS
 import Utility.ThreadScheduler
+#ifndef mingw32_HOST_OS
 import Annex.Perms
 import Utility.FileMode
 import System.Posix.User
