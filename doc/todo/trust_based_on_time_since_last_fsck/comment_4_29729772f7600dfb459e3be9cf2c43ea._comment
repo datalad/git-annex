@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-06-14T18:20:06Z"
+ content="""
+Maybe it's better to not tie this directly in to fsck. Another way
+would be:
+
+	git annex untrust foo --after=100days
+
+The first time this is run, it would record that the trust level will
+change to untrust after 100 days. The next time it's run, it would advance
+the timeout.
+
+So, you could do whatever fsck or other checks make you still trust the
+repo, and then run this again.
+
+Implementation would I guess need a separate future-trust.log in addition
+to trust.log, and when loading trust levels, if there was a value in
+future-trust.log that has a newer timestamp than the value in trust.log,
+and enough time has passed, use it instead of the value from trust.log.
+That way it avoids breaking older git-annex with changes to trust.log.
+
+No need to change what's in trust.log, although it could, which would also
+let older git-annex versions learn about the change to trust.
+"""]]
