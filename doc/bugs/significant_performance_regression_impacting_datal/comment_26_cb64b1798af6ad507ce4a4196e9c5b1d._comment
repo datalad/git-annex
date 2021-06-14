@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="git-annex-add slowdown"
+ date="2021-06-14T16:00:44Z"
+ content="""
+> git-annex add looking to see what other annexed files use the same content, so that it can populate any unlocked files that didn't have the content present before
+
+Could this be skipped if `annex.supportunlocked=false`?
+
+>The file contents all being the same is the crucial thing
+
+One not-quite-edge case where that happens is when empty files are used as placedholders for outputs of failed steps throughout a large workflow.
+
+
+"""]]
