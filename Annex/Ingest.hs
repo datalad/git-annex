@@ -179,7 +179,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 	golocked key mcache s =
 		tryNonAsync (moveAnnex key naf (contentLocation source)) >>= \case
 			Right True -> do
-				populateAssociatedFiles key source restage
+				populateUnlockedFiles key source restage
 				success key mcache s		
 			Right False -> giveup "failed to add content to annex"
 			Left e -> restoreFile (keyFilename source) key e
@@ -221,11 +221,11 @@ finishIngestUnlocked' :: Key -> KeySource -> Restage -> Annex ()
 finishIngestUnlocked' key source restage = do
 	Database.Keys.addAssociatedFile key
 		=<< inRepo (toTopFilePath (keyFilename source))
-	populateAssociatedFiles key source restage
+	populateUnlockedFiles key source restage
 
-{- Copy to any other locations using the same key. -}
-populateAssociatedFiles :: Key -> KeySource -> Restage -> Annex ()
-populateAssociatedFiles key source restage = do
+{- Copy to any unlocked files using the same key. -}
+populateUnlockedFiles :: Key -> KeySource -> Restage -> Annex ()
+populateUnlockedFiles key source restage = do
 	obj <- calcRepo (gitAnnexLocation key)
 	g <- Annex.gitRepo
 	ingestedf <- flip fromTopFilePath g
