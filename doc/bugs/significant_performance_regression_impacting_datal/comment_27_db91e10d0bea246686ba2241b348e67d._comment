@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 27"
+ date="2021-06-14T16:23:41Z"
+ content="""
+FWIW, without having a clear idea on code logic/data structures, it smells a bit like somewhere may be it could be `any` vs current `all` operation/check (in case of `add` at least) if needed just to test if there is already a path with a given key, and assuming that DB doesn't require a full rewrite of all `path` entries if a new path added for the key.
+"""]]
