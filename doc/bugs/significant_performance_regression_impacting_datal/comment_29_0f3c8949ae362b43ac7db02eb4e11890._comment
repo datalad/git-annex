@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 29"""
+ date="2021-06-14T16:32:38Z"
+ content="""
+@yarik no, it needs to check all files. Consider what happens when `foo` is
+an annexed link to key K, which is not present, and you copy 
+`.git/annex/objects/../K` from some other repo and run `git annex add K`
+(or reinject, or get, it's all the same) -- `foo` now points to the content
+of K. The same needs to also hold true for unlocked files, and so it has to
+check if `foo` is an unlocked pointer to K and populate the file with the
+content. Repeat for all the other 9999 files..
+"""]]
