@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 28"""
+ date="2021-06-14T16:31:26Z"
+ content="""
+@Ilya sure can be skipped when annex.supportunlocked=false.
+I've implemented that. (And also for several other cases that have similar
+behavior, like dropping a key.)
+"""]]

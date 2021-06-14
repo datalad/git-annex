@@ -225,14 +225,15 @@ finishIngestUnlocked' key source restage = do
 
 {- Copy to any unlocked files using the same key. -}
 populateUnlockedFiles :: Key -> KeySource -> Restage -> Annex ()
-populateUnlockedFiles key source restage = do
-	obj <- calcRepo (gitAnnexLocation key)
-	g <- Annex.gitRepo
-	ingestedf <- flip fromTopFilePath g
-		<$> inRepo (toTopFilePath (keyFilename source))
-	afs <- map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
-	forM_ (filter (/= ingestedf) afs) $
-		populatePointerFile restage key obj
+populateUnlockedFiles key source restage = 
+	whenM (annexSupportUnlocked <$> Annex.getGitConfig) $ do
+		obj <- calcRepo (gitAnnexLocation key)
+		g <- Annex.gitRepo
+		ingestedf <- flip fromTopFilePath g
+			<$> inRepo (toTopFilePath (keyFilename source))
+		afs <- map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
+		forM_ (filter (/= ingestedf) afs) $
+			populatePointerFile restage key obj
 
 cleanCruft :: KeySource -> Annex ()
 cleanCruft source = when (contentLocation source /= keyFilename source) $
