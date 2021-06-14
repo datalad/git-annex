@@ -10,19 +10,23 @@ returning a long list of files. So it could detect say 10 files in the list
 and start doing something other than the usual, without bothering the usual
 case with any extra work.
 
-A bloom filter could be used to keep track of keys that have already had
-their associated files populated, and be used to skip the work the next
-time that same key is added. In the false positive case, it would check the
-associated files as it does now, so no harm done.
+Git starts to get slow anyway in the 1 million to 10 million file range. So
+we can assume less than that many files are being added. And there need to
+be a fairly large number of duplicates of a key for speed to become a problem
+when adding that key. Around 1000 based on above benchmarks, but 100 would
+be safer.
 
-Putting these together, a bloom filter with a large enough capacity could
-be set up when it detects the problem, and used to skip the redundant work.
-This would change the checking overhead from `O(N^2)` to O(N^F)` where F is
-the false positive rate of the bloom filter. And the false positive rate of
-the usual git-annex bloom filter is small: 1/1000000 when half a million
-files are in it. Since 1-10 million files is where git gets too slow to be
-usable, the false positive rate should remain low up until the point other
-performance becomes a problem.
+If it's adding 10 million files, there can be at most 10000 keys
+that have `>=` 1000 duplicates (10 million / 1000).
+No problem to remember 10000 keys; a key is less than 128 bytes long, so
+that would take 1250 kb, plus the overhead of the Map. Might as well
+remember 12 mb worth of keys, to catch 100 duplicates.
+
+It would be even better to use a bloom filter, which could remember many
+more, and I thought I had a way, but the false positive case seems the
+wrong way around. If the bloom filter remembers keys that have already had
+their associated files populated, then a false positive would prevent doing
+that for a key that it's not been done for.
 
 It would make sense to do this not only in populateUnlockedFiles but in
 Annex.Content.moveAnnex and Annex.Content.removeAnnex. Although removeAnnex
