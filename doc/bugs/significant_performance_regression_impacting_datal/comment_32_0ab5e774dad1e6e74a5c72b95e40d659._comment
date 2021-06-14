@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 32"""
+ date="2021-06-14T20:26:52Z"
+ content="""
+Some thoughts leading to a workable plan:
+
+It's easy to detect this edge case because getAssociatedFiles will be
+returning a long list of files. So it could detect say 10 files in the list
+and start doing something other than the usual, without bothering the usual
+case with any extra work.
+
+A bloom filter could be used to keep track of keys that have already had
+their associated files populated, and be used to skip the work the next
+time that same key is added. In the false positive case, it would check the
+associated files as it does now, so no harm done.
+
+Putting these together, a bloom filter with a large enough capacity could
+be set up when it detects the problem, and used to skip the redundant work.
+This would change the checking overhead from `O(N^2)` to O(N^F)` where F is
+the false positive rate of the bloom filter. And the false positive rate of
+the usual git-annex bloom filter is small: 1/1000000 when half a million
+files are in it. Since 1-10 million files is where git gets too slow to be
+usable, the false positive rate should remain low up until the point other
+performance becomes a problem.
+
+It would make sense to do this not only in populateUnlockedFiles but in
+Annex.Content.moveAnnex and Annex.Content.removeAnnex. Although removeAnnex
+would need a different bloom filter, since a file might have been populated
+and then somehow get removed in the same git-annex call.
+"""]]
