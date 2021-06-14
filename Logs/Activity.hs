@@ -1,6 +1,6 @@
 {- git-annex activity log
  -
- - Copyright 2015-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module Logs.Activity (
 	Log,
 	Activity(..),
+	allActivities,
 	recordActivity,
 	lastActivities,
 ) where
@@ -23,30 +24,38 @@ import Data.ByteString.Builder
 
 data Activity 
 	= Fsck
-	deriving (Eq, Read, Show, Enum, Bounded)
+	-- Allow for unknown activities to be added later.
+	| UnknownActivity S.ByteString
+	deriving (Eq, Read, Show)
 
+allActivities :: [Activity]
+allActivities = [Fsck]
+
+-- Record an activity. This takes the place of previously recorded activity
+-- for the UUID.
 recordActivity :: Activity -> UUID -> Annex ()
 recordActivity act uuid = do
 	c <- currentVectorClock
 	Annex.Branch.change (Annex.Branch.RegardingUUID [uuid]) activityLog $
 		buildLogOld buildActivity
-			. changeLog c uuid (Right act)
+			. changeLog c uuid act
 			. parseLogOld parseActivity
 
+-- Most recent activity for each UUID.
 lastActivities :: Maybe Activity -> Annex (Log Activity)
 lastActivities wantact = parseLogOld (onlywanted =<< parseActivity)
 	<$> Annex.Branch.get activityLog
   where
-	onlywanted (Right a) | wanted a = pure a
-	onlywanted _ = fail "unwanted activity"
+	onlywanted a 
+		| wanted a = pure a
+		| otherwise = fail "unwanted activity"
 	wanted a = maybe True (a ==) wantact
 
-buildActivity :: Either S.ByteString Activity -> Builder
-buildActivity (Right a) = byteString $ encodeBS $ show a
-buildActivity (Left b) = byteString b
+buildActivity :: Activity -> Builder
+buildActivity (UnknownActivity b) = byteString b
+buildActivity a = byteString $ encodeBS $ show a
 
--- Allow for unknown activities to be added later by preserving them.
-parseActivity :: A.Parser (Either S.ByteString Activity)
+parseActivity :: A.Parser Activity
 parseActivity = go <$> A.takeByteString
   where
-	go b = maybe (Left b) Right $ readish $ decodeBS b
+	go b = fromMaybe (UnknownActivity b) (readish $ decodeBS b)

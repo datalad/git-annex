@@ -29,6 +29,7 @@ git-annex (8.20210429) UNRELEASED; urgency=medium
     that creates the git-annex branch.
   * Added annex.adviceNoSshCaching config.
   * Added --size-limit option.
+  * Future proof activity log parsing.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 May 2021 10:33:10 -0400
 

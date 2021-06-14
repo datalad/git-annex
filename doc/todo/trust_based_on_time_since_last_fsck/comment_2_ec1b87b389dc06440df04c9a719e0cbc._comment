@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-06-14T17:29:29Z"
+ content="""
+What if `git annex fsck --all` recorded an additional activity, eg FsckAll.
+Then there could be a command, or a config that untrusts repos that do not
+have a FsckAll activity that happened recently enough.
+
+A git config would be simplest, eg:
+
+	git config annex.untrustLastFscked 10d
+"""]]

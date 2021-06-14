@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-06-14T17:56:23Z"
+ content="""
+Tried to implement this, but ran into a problem adding FsckAll:
+If it only logs FsckAll and not also Fsck, then old git-annex expire
+will see the FsckAll and not understand it, and treats it as no activity,
+so expires. (I did fix git-annex now so an unknown activity is not treated
+as no activity.)
+
+And, the way recordActivity is implemented, it
+removes previous activities, and adds the current activity. So a FsckAll
+followed by a Fsck would remove the FsckAll activity.
+
+That could be fixed, and both be logged, but old git-annex would probably
+not be able to parse the result. And if old git-annex is then used to do a
+fsck, it would log Fsck and remove the previously added FsckAll.
+
+So, it seems this will need to use some log other than activity.log
+to keep track of fsck --all.
+"""]]

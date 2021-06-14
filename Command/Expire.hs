@@ -111,6 +111,6 @@ parseExpire ps = do
 parseActivity :: MonadFail m => String -> m Activity
 parseActivity s = case readish s of
 	Nothing -> Fail.fail $ "Unknown activity. Choose from: " ++ 
-		unwords (map show [minBound..maxBound :: Activity])
+		unwords (map show allActivities)
 	Just v -> return v
 

@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-06-14T17:14:44Z"
+ content="""
+You can query for repositories that have not been fscked
+for some amount of time:
+
+	git annex expire 10d --no-act --activity=Fsck
+
+From there, it's a simple script to set the unfscked ones to untrusted, or
+whatever.
+
+	| grep '^expire' | awk '{print $2}' | xargs git-annex untrust
+
+I suppose `git-annex expire` could have an option added, like `--untrust`
+to specify *how* to expire, rather than the default of marking the repo
+dead.
+
+I suppose you'd want a way to also go the other way, to stop untrusting a
+repo once it's been fscked.. There is not currently a way to do that.
+
+Note that a fsck that is interrupted does not count as a fsck activity,
+and it's not keeping track of what files were fscked. That would bloat the
+git-annex branch. On the other hand, if you `git annex fsck onefile`
+that counts as a fsck activity, even though other files in the repo didn't get
+fscked. So you would have to limit the ways you use fsck to ones that
+generate the activity you want, perhaps to `git annex fsck --all`. 
+
+Perhaps fsck should also have a way to control whether it records an
+activity or not..
+"""]]
