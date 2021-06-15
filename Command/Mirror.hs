@@ -81,7 +81,7 @@ startKey o afile (si, key, ai) = case fromToOptions o of
 				)
 			Right False -> ifM (inAnnex key)
 				( do
-					(numcopies, mincopies) <- getnummincopies
+					(numcopies, mincopies) <- getAssociatedFileNumMinCopies afile
 					Command.Drop.startLocal pcc afile ai si numcopies mincopies key []
 				, stop
 				)
