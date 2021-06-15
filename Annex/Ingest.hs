@@ -229,7 +229,7 @@ finishIngestUnlocked' key source restage lar = do
  -}
 populateUnlockedFiles :: Key -> KeySource -> Restage -> Maybe LinkAnnexResult -> Annex ()
 populateUnlockedFiles _ _ _ (Just LinkAnnexNoop) = return ()
-populateUnlockedFiles key source restage lar = do
+populateUnlockedFiles key source restage _ = do
 	obj <- calcRepo (gitAnnexLocation key)
 	g <- Annex.gitRepo
 	ingestedf <- flip fromTopFilePath g
