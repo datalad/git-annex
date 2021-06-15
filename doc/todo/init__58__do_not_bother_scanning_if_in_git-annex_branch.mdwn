@@ -29,3 +29,6 @@ Actually -- it made me think: is that `scanning` branch specific? then what woul
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> I feel this is unncessary complexity and I've optimised the scans quite a
+> lot in the meantime, so [[wontfix|done]] --[[Joey]]
