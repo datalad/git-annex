@@ -52,11 +52,7 @@ type Reason = String
 handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> SeekInput -> [VerifiedCopy] -> (CommandStart -> CommandCleanup) -> Annex ()
 handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 	g <- Annex.gitRepo
-	l <- map (`fromTopFilePath` g)
-		<$> Database.Keys.getAssociatedFiles key
-	let fs = case afile of
-		AssociatedFile (Just f) -> f : filter (/= f) l
-		AssociatedFile Nothing -> l
+	fs <- Database.Keys.getAssociatedFilesIncluding afile key
 	n <- getcopies fs
 	void $ if fromhere && checkcopies n Nothing
 		then go fs rs n >>= dropl fs
@@ -64,11 +60,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
   where
 	getcopies fs = do
 		(untrusted, have) <- trustPartition UnTrusted locs
-		(numcopies, mincopies) <- if null fs
-			then (,) <$> getNumCopies <*> getMinCopies
-			else do
-				l <- mapM getFileNumMinCopies fs
-				return (maximum $ map fst l, maximum $ map snd l)
+		(numcopies, mincopies) <- getSafestNumMinCopies' key fs
 		return (length have, numcopies, mincopies, S.fromList untrusted)
 
 	{- Check that we have enough copies still to drop the content.

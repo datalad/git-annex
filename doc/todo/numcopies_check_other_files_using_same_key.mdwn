@@ -15,3 +15,10 @@ differently than in a non-bare repo. (Also if this is done, the preferred
 content checking should also behave the same way.) The docs for --all 
 do say that it bypasses checking .gitattributes numcopies.
 --[[Joey]]
+
+> Note that the assistant and git-annex sync already check numcopies
+> for all known associated files, so already handled this for unlocked
+> files. With the recent change to also track
+> associated files for locked files, they also handle it for those.
+> 
+> But, git-annex drop/move/import don't yet.

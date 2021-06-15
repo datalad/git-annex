@@ -14,6 +14,7 @@ module Database.Keys (
 	closeDb,
 	addAssociatedFile,
 	getAssociatedFiles,
+	getAssociatedFilesIncluding,
 	getAssociatedKey,
 	removeAssociatedFile,
 	storeInodeCaches,
@@ -154,6 +155,15 @@ addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile k f
  - some of them may not be any longer. -}
 getAssociatedFiles :: Key -> Annex [TopFilePath]
 getAssociatedFiles = runReaderIO . SQL.getAssociatedFiles
+
+{- Include a known associated file along with any recorded in the database. -}
+getAssociatedFilesIncluding :: AssociatedFile -> Key -> Annex [RawFilePath]
+getAssociatedFilesIncluding afile k = do
+	g <- Annex.gitRepo
+	l <- map (`fromTopFilePath` g) <$> getAssociatedFiles k
+	return $ case afile of
+		AssociatedFile (Just f) -> f : filter (/= f) l
+		AssociatedFile Nothing -> l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}

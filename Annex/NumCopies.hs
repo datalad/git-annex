@@ -12,6 +12,8 @@ module Annex.NumCopies (
 	module Logs.NumCopies,
 	getFileNumMinCopies,
 	getAssociatedFileNumMinCopies,
+	getSafestNumMinCopies,
+	getSafestNumMinCopies',
 	getGlobalFileNumCopies,
 	getNumCopies,
 	getMinCopies,
@@ -34,6 +36,8 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.Content
 import Annex.UUID
+import Annex.CatFile
+import qualified Database.Keys
 
 import Control.Exception
 import qualified Control.Monad.Catch as M
@@ -119,12 +123,55 @@ getFileNumMinCopies f = do
 					<$> fallbacknum
 					<*> fallbackmin
 
+{- NumCopies and MinCopies value for an associated file, or the default
+ - when there is no associated file.
+ -
+ - This does not include other associated files using the same key.
+ -}
 getAssociatedFileNumMinCopies :: AssociatedFile -> Annex (NumCopies, MinCopies)
 getAssociatedFileNumMinCopies (AssociatedFile (Just file)) =
 	getFileNumMinCopies file
 getAssociatedFileNumMinCopies (AssociatedFile Nothing) = (,)
 	<$> getNumCopies
 	<*> getMinCopies
+
+{- Gets the highest NumCopies and MinCopies value for all files
+ - associated with a key. Provide any known associated file;
+ - the rest are looked up from the database.
+ -
+ - Using this when dropping avoids dropping one file that
+ - has a smaller value violating the value set for another file
+ - that uses the same content.
+ -}
+getSafestNumMinCopies :: AssociatedFile -> Key -> Annex (NumCopies, MinCopies)
+getSafestNumMinCopies afile k =
+	Database.Keys.getAssociatedFilesIncluding afile k
+		>>= getSafestNumMinCopies' k
+
+getSafestNumMinCopies' :: Key -> [RawFilePath] -> Annex (NumCopies, MinCopies)
+getSafestNumMinCopies' k fs = do
+	l <- mapM getFileNumMinCopies fs
+	let l' = zip l fs
+	(,)
+		<$> findmax fst l' getNumCopies
+		<*> findmax snd l' getMinCopies
+  where
+	-- Some associated files in the keys database may no longer
+	-- correspond to files in the repository.
+	stillassociated f = catKeyFile f >>= \case
+		Just k' | k' == k -> return True
+		_ -> return False
+	
+	-- Avoid calling stillassociated on every file; just make sure
+	-- that the one with the highest value is still associated.
+	findmax _ [] fallback = fallback
+	findmax getv l fallback = do
+		let n = maximum (map (getv . fst) l)
+		let (maxls, l') = partition (\(x, _) -> getv x == n) l
+		ifM (anyM stillassociated (map snd maxls))
+			( return n
+			, findmax getv l' fallback
+			)
 
 {- This is the globally visible numcopies value for a file. So it does
  - not include local configuration in the git config or command line
