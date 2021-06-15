@@ -55,7 +55,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 	l <- map (`fromTopFilePath` g)
 		<$> Database.Keys.getAssociatedFiles key
 	let fs = case afile of
-		AssociatedFile (Just f) -> nub (f : l)
+		AssociatedFile (Just f) -> f : filter (/= f) l
 		AssociatedFile Nothing -> l
 	n <- getcopies fs
 	void $ if fromhere && checkcopies n Nothing
