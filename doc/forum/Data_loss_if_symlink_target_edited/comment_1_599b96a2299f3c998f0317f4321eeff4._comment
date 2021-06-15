@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-06-15T13:50:17Z"
+ content="""
+`git-annex fsck` will detect this problem, but the real problem here is not
+that some edit got lost, but that you corrupted a version control object
+file. Similar to editing a file in `.git/objects/`. Fsck will, when it
+notices the problem, move the corrupted object file to `.git/annex/bad/'.
+So your edits are not lost, but are in danger of being forgotten.
+
+Note that, once the modified version of the file from repo B replaces
+the worktree file, `git annex fsck` of that file won't check the old
+version, so will not detect the problem. `git annex fsck --all` still will
+detect it.
+
+git-annex mostly prevents this kind of problem by making the file not have a
+write bit be set, and putting it in a directory that also has its write bit
+not set.
+
+You have to either be running as root, or using a program that goes
+out of its way to change multiple permissions, to get into that situation.
+
+(One example of a program that does is vim. `:w!` will
+temporarily overwrite both write bits.)
+"""]]
