@@ -7,4 +7,17 @@ Oh, there's a much better solution: If the annex object file already exists
 when ingesting a new file, skip populating other associated files. They
 will have already been populated. moveAnnex has to check if the annex object
 file already exists anyway, so this will have zero overhead.
+
+(Maybe that's what yarik was getting at in comment #30)
+
+Implemented that, and here's the results, re-running my prior benchmark:
+
+run 1: 0:03.14
+run 2: 0:03.24
+run 3: 0.03.35
+run 4: 0.03.45
+run 9: 0:03.65
+
+That also shows the actual overhead of the diffing of the index,
+as its size grows, is quite small.
 """]]

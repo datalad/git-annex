@@ -30,6 +30,8 @@ git-annex (8.20210429) UNRELEASED; urgency=medium
   * Added annex.adviceNoSshCaching config.
   * Added --size-limit option.
   * Future proof activity log parsing.
+  * Fix an exponential slowdown when large numbers of duplicate files are
+    being added in unlocked form.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 May 2021 10:33:10 -0400
 

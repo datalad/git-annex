@@ -178,9 +178,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 
 	golocked key mcache s =
 		tryNonAsync (moveAnnex key naf (contentLocation source)) >>= \case
-			Right True -> do
-				populateUnlockedFiles key source restage
-				success key mcache s		
+			Right True -> success key mcache s		
 			Right False -> giveup "failed to add content to annex"
 			Left e -> restoreFile (keyFilename source) key e
 
@@ -198,8 +196,8 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 		cleanOldKeys (keyFilename source) key
 		linkToAnnex key (keyFilename source) (Just cache) >>= \case
 			LinkAnnexFailed -> failure "failed to link to annex"
-			_ -> do
-				finishIngestUnlocked' key source restage
+			lar -> do
+				finishIngestUnlocked' key source restage (Just lar)
 				success key (Just cache) s
 	gounlocked _ _ _ = failure "failed statting file"
 
@@ -215,25 +213,30 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 finishIngestUnlocked :: Key -> KeySource -> Annex ()
 finishIngestUnlocked key source = do
 	cleanCruft source
-	finishIngestUnlocked' key source (Restage True)
+	finishIngestUnlocked' key source (Restage True) Nothing
 
-finishIngestUnlocked' :: Key -> KeySource -> Restage -> Annex ()
-finishIngestUnlocked' key source restage = do
+finishIngestUnlocked' :: Key -> KeySource -> Restage -> Maybe LinkAnnexResult -> Annex ()
+finishIngestUnlocked' key source restage lar = do
 	Database.Keys.addAssociatedFile key
 		=<< inRepo (toTopFilePath (keyFilename source))
-	populateUnlockedFiles key source restage
+	populateUnlockedFiles key source restage lar
 
-{- Copy to any unlocked files using the same key. -}
-populateUnlockedFiles :: Key -> KeySource -> Restage -> Annex ()
-populateUnlockedFiles key source restage = 
-	whenM (annexSupportUnlocked <$> Annex.getGitConfig) $ do
-		obj <- calcRepo (gitAnnexLocation key)
-		g <- Annex.gitRepo
-		ingestedf <- flip fromTopFilePath g
-			<$> inRepo (toTopFilePath (keyFilename source))
-		afs <- map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
-		forM_ (filter (/= ingestedf) afs) $
-			populatePointerFile restage key obj
+{- Copy to any other unlocked files using the same key.
+ -
+ - When linkToAnnex did not have to do anything, the object file
+ - was already present, and so other unlocked files are already populated,
+ - and nothing needs to be done here.
+ -}
+populateUnlockedFiles :: Key -> KeySource -> Restage -> Maybe LinkAnnexResult -> Annex ()
+populateUnlockedFiles _ _ _ (Just LinkAnnexNoop) = return ()
+populateUnlockedFiles key source restage lar = do
+	obj <- calcRepo (gitAnnexLocation key)
+	g <- Annex.gitRepo
+	ingestedf <- flip fromTopFilePath g
+		<$> inRepo (toTopFilePath (keyFilename source))
+	afs <- map (`fromTopFilePath` g) <$> Database.Keys.getAssociatedFiles key
+	forM_ (filter (/= ingestedf) afs) $
+		populatePointerFile restage key obj
 
 cleanCruft :: KeySource -> Annex ()
 cleanCruft source = when (contentLocation source /= keyFilename source) $

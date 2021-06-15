@@ -15,3 +15,5 @@ Currently 8.20210428+git282-gd39dfed2a and first got slow with
 8.20210428+git228-g13a6bfff4 and was ok with 8.20210428+git202-g9a5981a15
 
 [[!meta title="performance edge case when adding large numbers of identical files"]]
+
+> [[fixed|done]] --[[Joey]]
