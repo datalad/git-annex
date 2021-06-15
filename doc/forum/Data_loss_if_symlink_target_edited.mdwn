@@ -1,0 +1,7 @@
+I am syncing two repos A and B. Will the following operations cause data loss:
+1. File 1 is locked in repo A, and its symlink target is edited without unlocking file 1.
+2. File 1 is unlocked and editted in repo B, followed by a git-annex add operation.
+3. Repo A and B are synced with git-annex sync --content
+Will the editing in step 1 be lost? If so, can you please do a git fsck on the file to be overwritten to at lease give a warning.
+
+I am using emacs su-mode, until recently have I found that su-mode let me edit the symlink target without unlocking.
