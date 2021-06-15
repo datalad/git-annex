@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 33"""
+ date="2021-06-15T13:01:04Z"
+ content="""
+Oh, there's a much better solution: If the annex object file already exists
+when ingesting a new file, skip populating other associated files. They
+will have already been populated. moveAnnex has to check if the annex object
+file already exists anyway, so this will have zero overhead.
+"""]]

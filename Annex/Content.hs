@@ -340,13 +340,12 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
 			liftIO $ moveFile
 				(fromRawFilePath src)
 				(fromRawFilePath dest)
-			whenM (annexSupportUnlocked <$> Annex.getGitConfig) $ do
-				g <- Annex.gitRepo 
-				fs <- map (`fromTopFilePath` g)
-					<$> Database.Keys.getAssociatedFiles key
-				unless (null fs) $ do
-					ics <- mapM (populatePointerFile (Restage True) key dest) fs
-					Database.Keys.storeInodeCaches' key [dest] (catMaybes ics)
+			g <- Annex.gitRepo 
+			fs <- map (`fromTopFilePath` g)
+				<$> Database.Keys.getAssociatedFiles key
+			unless (null fs) $ do
+				ics <- mapM (populatePointerFile (Restage True) key dest) fs
+				Database.Keys.storeInodeCaches' key [dest] (catMaybes ics)
 		)
 	alreadyhave = liftIO $ R.removeLink src
 
@@ -503,11 +502,10 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 	cleanObjectLoc key $ do
 		secureErase file
 		liftIO $ removeWhenExistsWith R.removeLink file
-		whenM (annexSupportUnlocked <$> Annex.getGitConfig) $ do
-			g <- Annex.gitRepo 
-			mapM_ (\f -> void $ tryIO $ resetpointer $ fromTopFilePath f g)
-				=<< Database.Keys.getAssociatedFiles key
-			Database.Keys.removeInodeCaches key
+		g <- Annex.gitRepo 
+		mapM_ (\f -> void $ tryIO $ resetpointer $ fromTopFilePath f g)
+			=<< Database.Keys.getAssociatedFiles key
+		Database.Keys.removeInodeCaches key
   where
 	-- Check associated pointer file for modifications, and reset if
 	-- it's unmodified.
