@@ -227,7 +227,7 @@ checkRequiredContent (PreferredContentChecked False) u k afile =
  - copies on other semitrusted repositories. -}
 checkDropAuto :: Bool -> Maybe Remote -> AssociatedFile -> Key -> (NumCopies -> MinCopies -> CommandStart) -> CommandStart
 checkDropAuto automode mremote afile key a =
-	go =<< getAssociatedFileNumMinCopies afile
+	go =<< getSafestNumMinCopies afile key
   where
 	go (numcopies, mincopies)
 		| automode = do

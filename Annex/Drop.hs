@@ -60,7 +60,7 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
   where
 	getcopies fs = do
 		(untrusted, have) <- trustPartition UnTrusted locs
-		(numcopies, mincopies) <- getSafestNumMinCopies' key fs
+		(numcopies, mincopies) <- getSafestNumMinCopies' afile key fs
 		return (length have, numcopies, mincopies, S.fromList untrusted)
 
 	{- Check that we have enough copies still to drop the content.

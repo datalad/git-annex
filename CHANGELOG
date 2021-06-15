@@ -4,7 +4,7 @@ git-annex (8.20210429) UNRELEASED; urgency=medium
   * When two files have the same content, and a required content expression
     matches one but not the other, dropping the latter file will fail as it
     would also remove the content of the required file.
-  * drop, move, import: When two files have the same content, and
+  * drop, move, mirror: When two files have the same content, and
     different numcopies or requiredcopies values, use the higher value.
   * drop --auto: When two files have the same content, and a preferred content
     expression matches one but not the other, do not drop the content.

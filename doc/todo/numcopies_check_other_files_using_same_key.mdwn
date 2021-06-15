@@ -21,4 +21,6 @@ do say that it bypasses checking .gitattributes numcopies.
 > files. With the recent change to also track
 > associated files for locked files, they also handle it for those.
 > 
-> But, git-annex drop/move/import don't yet.
+> But, git-annex drop/move/mirror don't yet.
+> 
+> > [[fixed|done]] (did not change --all behavior) --[[Joey]]
