@@ -19,10 +19,8 @@ import Types.Concurrency
 import Types.CatFileHandles
 import Annex.CheckAttr
 import Annex.CheckIgnore
-import Utility.ThreadScheduler
 
 import qualified Data.Map as M
-import Control.Concurrent.Async
 
 setConcurrency :: ConcurrencySetting -> Annex ()
 setConcurrency (ConcurrencyCmdLine s) = setConcurrency' s ConcurrencyCmdLine
