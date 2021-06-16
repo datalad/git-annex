@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-06-16T16:02:04Z"
+ content="""
+This tip is mostly talking about the web special remote, which is unusual
+in that it's enabled by default. So there is nothing in `.git/config` about
+it.
+
+Any special remote that you set up with `initremote` or `enableremote` does
+have a section in `.git/config` same as a regular git remote would
+(just with git-annex specific configs in there). So `git remote`
+can be used to list it, and `git remote rm` will disable it.
+
+As far as setting annex-ignore goes, it prevents git-annex from using that
+remote *unless* you explicitly ask it to. @yarikoptic's example above
+sets that for a remote and then explicitly fscks it.
+"""]]
