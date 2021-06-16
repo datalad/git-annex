@@ -25,8 +25,12 @@ outputMessage = outputMessage' bufferJSON
 outputMessage' :: (JSONBuilder -> MessageState -> Annex Bool) -> JSONBuilder -> S.ByteString -> Annex ()
 outputMessage' jsonoutputter jsonbuilder msg = withMessageState $ \s -> case outputType s of
 	NormalOutput
-		| concurrentOutputEnabled s -> concurrentMessage s False (decodeBS msg) q
-		| otherwise -> liftIO $ flushed $ S.putStr msg
+		| concurrentOutputEnabled s -> do
+			liftIO $ clearProgressMeter s
+			concurrentMessage s False (decodeBS msg) q
+		| otherwise -> do
+			liftIO $ clearProgressMeter s
+			liftIO $ flushed $ S.putStr msg
 	JSONOutput _ -> void $ jsonoutputter jsonbuilder s
 	QuietOutput -> q
 	SerializedOutput h _ -> do
