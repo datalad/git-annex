@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 36"
+ date="2021-06-16T21:32:58Z"
+ content="""
+yes, awesome, thank you Joey!
+
+FWIW, here is the little trail of our tests (non-adjusted in released version) timings
+
+```
+$> grep -h Ran 0[56]/cron-*/build-macos.yaml-*/*_test-datalad\ \(release\).txt
+2021-05-01T04:28:55.4957910Z Ran 1257 tests in 6033.095s
+2021-05-02T04:24:43.3005800Z Ran 1257 tests in 5722.774s
+2021-05-03T04:24:54.5178860Z Ran 1257 tests in 5846.700s
+...
+2021-05-24T04:39:07.5375680Z Ran 1257 tests in 5710.372s
+2021-05-25T04:54:01.2232460Z Ran 1257 tests in 6459.339s
+2021-05-26T06:41:04.2956530Z Ran 1257 tests in 11655.761s
+2021-05-27T07:07:28.4722960Z Ran 1257 tests in 11954.671s
+...
+2021-06-13T05:59:36.9626910Z Ran 1257 tests in 11987.233s
+2021-06-14T06:05:36.1668770Z Ran 1257 tests in 12135.290s
+2021-06-15T04:45:33.3489450Z Ran 1257 tests in 7046.095s
+2021-06-16T04:26:46.1256550Z Ran 1257 tests in 5706.314s
+```
+so we are indeed back to normal (if not better ;)) !
+"""]]
