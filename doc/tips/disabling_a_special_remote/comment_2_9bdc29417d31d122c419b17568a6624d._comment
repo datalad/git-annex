@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Oumaima"
- avatar="http://cdn.libravatar.org/avatar/252ac40793aa70c6113ba1d44e76bef8"
- subject="adding disableremote"
- date="2021-06-16T07:36:16Z"
- content="""
-We are currently working on implementing a new special remote using Zenodo as a backend and we would like to be able to disable some remotes that we no longer aim to upload to. We also thought that adding a new disableremote command could be really useful in this case and in so many other cases and so we would like to know if it's something in the works or something that's being considered to be added.
-"""]]
