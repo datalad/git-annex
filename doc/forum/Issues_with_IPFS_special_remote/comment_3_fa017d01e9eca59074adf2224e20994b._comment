@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="setting up sync"
+ date="2021-06-18T18:54:59Z"
+ content="""
+Are you running `git-annex-sync` with the `--content` flag?
+"""]]
