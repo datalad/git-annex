@@ -1,0 +1,144 @@
+[[!comment format=mdwn
+ username="falsifian"
+ avatar="http://cdn.libravatar.org/avatar/59c3c23c500d20d83ecb9d1f149be9ae"
+ subject="comment 2"
+ date="2021-06-19T23:41:24Z"
+ content="""
+I tried again with 8.20210428 and saw a similar error. `git annex fsck` thinks the file is okay. It doesn't exist on the remote (`elbow`) in this case (confirmed that the symlink is broken).
+
+copy&paste showing `version`, `copy --debug` and `fsck`:
+
+    james copter annex-neu $ git annex version                             [61/5067]
+    git-annex version: 8.20210428
+    build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser M
+    agicMime Feeds Testsuite S3 WebDAV
+    dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.28 DAV-1.3.4 feed
+    -1.3.2.0 ghc-8.10.4 http-client-0.6.4.1 persistent-sqlite-2.11.1.0 torrent-10000
+    .1.1 uuid-1.3.15 yesod-1.6.1.1
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEI
+    N256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512
+    E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM UR
+    L X*                                                                            remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb ta
+    hoe glacier ddar git-lfs httpalso borg hook external
+    operating system: linux x86_64
+    supported repository versions: 8
+    upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+    local repository version: 8
+    james copter annex-neu $ git remote show -n elbow
+    * remote elbow
+      Fetch URL: /d/elbow-ext2/falsifian/w/annex-neu
+      Push  URL: /d/elbow-ext2/falsifian/w/annex-neu
+      HEAD branch: (not queried)
+      Remote branches: (status not queried)
+        git-annex
+        master
+        synced/git-annex
+        synced/master
+      Local ref configured for 'git push' (status not queried):
+        (matching) pushes to (matching)
+    james copter annex-neu $ git annex fsck software_releases/openbsd/68/amd64/insta
+    ll68.img
+    fsck software_releases/openbsd/68/amd64/install68.img (checksum...) ok
+    (recording state in git...)
+    james copter annex-neu $ git annex copy --debug --to=elbow software_releases/ope
+    nbsd/68/amd64/install68.img
+    [2021-06-19 23:37:59.820462299] (Utility.Process) process [28235] read: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"sho
+    w-ref\",\"git-annex\"]
+    [2021-06-19 23:37:59.824734704] (Utility.Process) process [28235] done ExitSucce
+    ss
+    [2021-06-19 23:37:59.825397492] (Utility.Process) process [28236] read: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"sho
+    w-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2021-06-19 23:37:59.829279502] (Utility.Process) process [28236] done ExitSucce
+    ss
+    [2021-06-19 23:37:59.830626358] (Utility.Process) process [28237] read: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"log
+    \",\"refs/heads/git-annex..ddbef20f72b72bf2c36bc07574cf211c954bbc41\",\"--pretty=%H\"
+    ,\"-n1\"]
+    [2021-06-19 23:37:59.834246281] (Utility.Process) process [28237] done ExitSucce
+    ss
+    [2021-06-19 23:37:59.834758464] (Utility.Process) process [28238] read: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"log
+    \",\"refs/heads/git-annex..061e90a61d21283803bd3a16628337e3d098452d\",\"--pretty=%H\"
+    ,\"-n1\"]
+    [2021-06-19 23:37:59.838545279] (Utility.Process) process [28238] done ExitSucce
+    ss
+    [2021-06-19 23:37:59.838996643] (Utility.Process) process [28239] read: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"log
+    \",\"refs/heads/git-annex..5c367f9a01548348bffa89e8d441c64b18e0dd51\",\"--pretty=%H\"
+    ,\"-n1\"]
+    [2021-06-19 23:37:59.842728492] (Utility.Process) process [28239] done ExitSucce
+    ss
+    [2021-06-19 23:37:59.84317283] (Utility.Process) process [28240] read: git [\"--g
+    it-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"log\"
+    ,\"refs/heads/git-annex..194c38c1020fe2f5fb62a1358c08589feb845e06\",\"--pretty=%H\",
+    \"-n1\"]
+    [2021-06-19 23:37:59.847513494] (Utility.Process) process [28240] done ExitSucce
+    ss
+    [2021-06-19 23:37:59.847961228] (Utility.Process) process [28241] read: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"log
+    \",\"refs/heads/git-annex..9dbdfd430c2d74c58de025c9f30d8a218cf137ca\",\"--pretty=%H\"
+    ,\"-n1\"]
+    [2021-06-19 23:37:59.851669136] (Utility.Process) process [28241] done ExitSucce
+    ss
+    [2021-06-19 23:37:59.859466727] (Utility.Process) process [28242] chat: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat
+    -file\",\"--batch\"]
+    [2021-06-19 23:37:59.860034811] (Utility.Process) process [28243] chat: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat
+    -file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+    [2021-06-19 23:37:59.863651703] (Utility.Process) process [28244] read: git [\"co
+    nfig\",\"--null\",\"--list\"]
+    [2021-06-19 23:37:59.86580683] (Utility.Process) process [28244] done ExitSucces
+    s
+    [2021-06-19 23:37:59.867051153] (Utility.Process) process [28246] read: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"sym
+    bolic-ref\",\"-q\",\"HEAD\"]
+    [2021-06-19 23:37:59.86930561] (Utility.Process) process [28246] done ExitSucces
+    s
+    [2021-06-19 23:37:59.870034557] (Utility.Process) process [28247] read: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"sho
+    w-ref\",\"refs/heads/master\"]
+    [2021-06-19 23:37:59.873057419] (Utility.Process) process [28247] done ExitSucce
+    ss
+    [2021-06-19 23:37:59.873564996] (Utility.Process) process [28248] read: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"ls-
+    files\",\"--stage\",\"-z\",\"--\",\"software_releases/openbsd/68/amd64/install68.img\"]
+    [2021-06-19 23:37:59.874034406] (Utility.Process) process [28249] chat: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat
+    -file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+    [2021-06-19 23:37:59.874572424] (Utility.Process) process [28250] chat: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat
+    -file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+    [2021-06-19 23:37:59.875594055] (Utility.Process) process [28251] chat: git [\"--
+    git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat
+    -file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+    copy software_releases/openbsd/68/amd64/install68.img (to elbow...)
+    [2021-06-19 23:37:59.994828229] (Utility.Process) process [28253] read: cp [\"--r
+    eflink=always\",\"--preserve=timestamps\",\".git/annex/objects/MF/F8/SHA256-s6967459
+    84--14ea602583030b33e91ee8fde8dd76113984e9fac6598f9f609f408137c4cff2/SHA256-s696
+    745984--14ea602583030b33e91ee8fde8dd76113984e9fac6598f9f609f408137c4cff2\",\"/d/el
+    bow-ext2/falsifian/w/annex-neu/.git/annex/tmp/SHA256-s696745984--14ea602583030b3
+    3e91ee8fde8dd76113984e9fac6598f9f609f408137c4cff2\"]
+    [2021-06-19 23:37:59.996355598] (Utility.Process) process [28253] done ExitFailu
+    re 1
+    
+    
+      failed to send content to remote
+    
+    
+    
+      failed to send content to remote
+    failed
+    [2021-06-19 23:38:16.192591254] (Utility.Process) process [28251] done ExitSucce
+    ss
+    [2021-06-19 23:38:16.192851278] (Utility.Process) process [28250] done ExitSucce
+    ss
+    [2021-06-19 23:38:16.193064177] (Utility.Process) process [28249] done ExitSucce
+    ss
+    [2021-06-19 23:38:16.193167533] (Utility.Process) process [28248] done ExitSucce
+    ss
+    git-annex: copy: 1 failed
+
+"""]]
