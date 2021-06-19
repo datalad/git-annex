@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="falsifian"
+ avatar="http://cdn.libravatar.org/avatar/59c3c23c500d20d83ecb9d1f149be9ae"
+ subject="comment 3"
+ date="2021-06-19T23:48:20Z"
+ content="""
+If it helps: I see a progress indicator go from 0% to 100% four times when I run the copy command. The \"failed to send content to remote\" messages appear after the second and fourth times.
+
+Also, I was able to copy that reddit dataset file (from my original comment) to this remote (`elbow`) today. So I guess it is not a property of the particular file on the source repository?
+"""]]
