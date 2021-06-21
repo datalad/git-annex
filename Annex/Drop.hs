@@ -21,7 +21,6 @@ import Annex.Wanted
 import Annex.Content
 import Annex.SpecialRemote.Config
 import qualified Database.Keys
-import Git.FilePath
 
 import qualified Data.Set as S
 
@@ -51,7 +50,6 @@ type Reason = String
  -}
 handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> SeekInput -> [VerifiedCopy] -> (CommandStart -> CommandCleanup) -> Annex ()
 handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
-	g <- Annex.gitRepo
 	fs <- Database.Keys.getAssociatedFilesIncluding afile key
 	n <- getcopies fs
 	void $ if fromhere && checkcopies n Nothing
