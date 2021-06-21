@@ -1,0 +1,128 @@
+[[!comment format=mdwn
+ username="kinshukkashyap.me@35751535d5ebba69df2f2ead4f868251d1aadacf"
+ nickname="kinshukkashyap.me"
+ avatar="http://cdn.libravatar.org/avatar/3b7e38fd42309b3ecebf85e0619fc3d8"
+ subject="comment 7"
+ date="2021-06-20T06:54:37Z"
+ content="""
+Here's a detailed sequence of what I'm doing:
+I made an empty repository on github. Then, on machine #1:
+
+
+    $ git init
+    Reinitialized existing Git repository in /home/kinshuk/code/annex-again/.git/
+
+
+    $ git annex init origin
+    init origin (scanning for unlocked files...)
+
+      Remote origin not usable by git-annex; setting annex-ignore
+    ok
+    (recording state in git...)
+
+
+    $ git annex initremote ipfs type=external externaltype=ipfs encryption=none
+    initremote ipfs ok
+    (recording state in git...)
+
+
+    $ vim test1.txt
+    $ git annex add test1.txt 
+    add test1.txt 
+    ok                                
+    (recording state in git...)
+
+
+    $ git annex copy --to ipfs
+    copy test1.txt (to ipfs...) 
+    ok
+    (recording state in git...)
+
+
+    $ git annex whereis
+    whereis test1.txt (2 copies) 
+          27123293-bec2-49a6-ac67-8c87fe72ffd6 -- origin [here]
+           e7582073-415a-48d2-9dec-29c58311fd21 -- [ipfs]
+
+      ipfs: ipfs:QmUk36hewmeivRKf1LKYvn2sG1ALqnt2NtAxaJAHJrrSH8
+    ok
+
+
+    $ git annex sync
+    commit 
+    [master (root-commit) d2860cd] git-annex in origin
+     1 file changed, 1 insertion(+)
+     create mode 120000 test1.txt
+    ok
+    pull origin 
+    ok
+    push origin 
+    Enumerating objects: 26, done.
+    Counting objects: 100% (26/26), done.
+    Delta compression using up to 4 threads
+    Compressing objects: 100% (20/20), done.
+    Writing objects: 100% (26/26), 2.33 KiB | 1.16 MiB/s, done.
+    Total 26 (delta 3), reused 0 (delta 0)
+    remote: Resolving deltas: 100% (3/3), done.
+    To https://github.com/plsrgb/annex-again
+     * [new branch]      git-annex -> synced/git-annex
+     * [new branch]      master -> synced/master
+    ok
+
+
+    $ git annex log
+    + Sun, 20 Jun 2021 12:02:21 IST test1.txt | e7582073-415a-48d2-9dec-29c58311fd21 -- [ipfs]
+    + Sun, 20 Jun 2021 12:02:08 IST test1.txt | 27123293-bec2-49a6-ac67-8c87fe72ffd6 -- origin
+
+Then I clone the repository from github on machine #2:
+
+    $ git annex sync
+    commit 
+    On branch synced/git-annex
+    Your branch is up to date with 'origin/synced/git-annex'.
+
+    nothing to commit, working tree clean
+    ok
+    pull origin 
+    ok
+    push origin 
+    Enumerating objects: 9, done.
+    Counting objects: 100% (9/9), done.
+    Delta compression using up to 12 threads
+    Compressing objects: 100% (6/6), done.
+    Writing objects: 100% (6/6), 750 bytes | 750.00 KiB/s, done.
+    Total 6 (delta 2), reused 0 (delta 0), pack-reused 0
+    remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+    To https://github.com/plsrgb/annex-again
+       c95a7b3..d9cc5d1  git-annex -> synced/git-annex
+     * [new branch]      synced/git-annex -> synced/synced/git-annex
+    ok
+    To https://github.com/plsrgb/annex-again ! [rejected]        synced/git-annex -> synced/git-annex (non-fast-forward)error: failed to push some refs to 'https://github.com/plsrgb/annex-again'hint: Updates were rejected because the tip of your current branch is behindhint: its remote counterpart. Integrate the remote changes (e.g.hint: 'git pull ...') before pushing again.hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+
+To resolve this, I run git pull, then run sync again:
+
+    $ git pull
+    Updating c95a7b3..d9cc5d1
+    Fast-forward
+     remote.log | 2 +-
+     uuid.log   | 1 +
+     2 files changed, 2 insertions(+), 1 deletion(-)
+
+
+    $ git annex sync
+    commit 
+    On branch synced/git-annex
+    Your branch is up to date with 'origin/synced/git-annex'.
+
+    nothing to commit, working tree clean
+    ok
+    pull origin 
+    ok
+    push origin 
+    Total 0 (delta 0), reused 0 (delta 0), pack-reused 0
+    To https://github.com/plsrgb/annex-again
+       c95a7b3..d9cc5d1  synced/git-annex -> synced/synced/git-annex
+    ok
+
+"""]]

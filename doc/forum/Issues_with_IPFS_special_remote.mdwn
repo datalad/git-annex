@@ -1,0 +1,7 @@
+I'm trying to make git-annex work with the ipfs special remote here: (https://git-annex.branchable.com/special_remotes/ipfs/). Publishing to IPFS works, but I cannot retrieve the files onto another machine through git-annex
+
+Running `git-annex copy --to ipfs` does copy files onto ipfs, I can access them through the CIDs (through an IPFS gateway like ipfs.io/ipfs/<CID>), and I can view the annexed files on running `git annex whereis`
+
+But, `git annex whereis` on the other computer gives an empty output. (even after running `git annex sync` on both systems). `git annex copy --from ipfs` also gives no output on the other system.
+
+Is there something obvious that I'm missing?
