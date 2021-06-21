@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2021-06-21T15:38:06Z"
+ content="""
+Hmm, github has found some way to break usual git operation here,
+by making the git-annex branch be the one that git checks out
+on clone.
+
+I was able to reproduce that with the bare repository on github,
+the list of branches in their UI started with synced/git-annex, 
+and cloning that repo resulted in that branch being checked out.
+
+Compare with a bare repository on a regular ssh server, git clone
+picks master as the head branch, because the bare git repo has HEAD
+set to master. (That happens at init time, the init 
+branch name is configurable now.)
+
+Seems that github is assuming that the first branch pushed is the head
+branch. It may be that's the best they can do, since the git push protocol
+does not specify what the HEAD is, and they don't want to default to a name
+like "master".
+
+If git-annex sync pushed master before git-annex and synced/master, it
+would avoid this problem. But pushing master to a non-bare remote often
+fails due to non-fast-forward, and so the stderr of the master push is
+discarded to avoid displaying an error message. Which also
+prevents seeing the progress display for that push. So, it pushes
+synced/master before master in order for the data transfer and progress
+display to be done there. It is possible to at least push git-annex
+after synced/master, but that will leave github defaulting to synced/master
+in this case, which remains weird behavior. Oh well, it's a behavior
+apparently specific to github, and I can't see a good way for git-annex
+to avoid it given its other constraints.
+"""]]
