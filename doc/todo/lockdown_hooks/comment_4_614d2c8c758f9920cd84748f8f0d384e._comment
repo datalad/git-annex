@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-06-21T17:41:54Z"
+ content="""
+There's a choice between the hook needing to replicate git-annex's
+use of permissions as well as doing whatever else it does, or git-annex
+setting the permissions first, and only then running the hook.
+
+Seems to me that git-annex setting the permissions is better, because then
+the hook does not need to worry about details like core.sharedrepository
+if it's doing something simple like setting immutable. (But if it adjusts
+ACLs, it might make sense for it to consider core.sharedrepository.) Also,
+the precise details of what file permissions git-annex uses don't need to
+be documented well enough for the hook to replicate them if git-annex just
+makes the permissions changes itself.
+
+It seems to make sense that when restoring permissions, it should run the
+that hook before changing the permissions. The freeze hook might do
+something that prevents changing permissions and the thaw hook undo that.
+"""]]
