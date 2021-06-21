@@ -50,3 +50,4 @@ fed the names of files to operate on via stdin.
 > --[[Joey]]
 
 [[!tag needsthought]]
+[[!tag projects/datalad]]
