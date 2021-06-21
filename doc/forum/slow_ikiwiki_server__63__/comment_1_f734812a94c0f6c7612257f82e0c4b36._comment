@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-06-21T17:13:52Z"
+ content="""
+Ikiwiki slows down the more files there are, so removing old
+closed bug reports and comments on them periodically is mostly how this is
+dealt with. I've deleted ones from before 2020, which shrank the number of
+files by 10%.
+
+It's worth noting that 1/3 of the remaining files are in this forum,
+more than the remaining bugs+todos. Of course splitting it is an option,
+but I wonder how useful 10 year old posts in it actually are..
+"""]]
