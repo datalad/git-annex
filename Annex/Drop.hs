@@ -10,7 +10,6 @@
 module Annex.Drop where
 
 import Annex.Common
-import qualified Annex
 import Logs.Trust
 import Annex.NumCopies
 import Types.Remote (uuid, appendonly, config, remotetype, thirdPartyPopulated)
