@@ -604,8 +604,15 @@ pushRemote o remote (Just branch, _) = do
  - direct push is tried, with stderr discarded, to update the branch ref
  - on the remote.
  -
- - The sync push forces the update of the remote synced/git-annex branch.
- - This is necessary if a transition has rewritten the git-annex branch.
+ - The sync push first sends the synced/master branch,
+ - and then forces the update of the remote synced/git-annex branch.
+ -
+ - Since some providers like github may treat the first branch sent
+ - as the default branch, it's better to make that be synced/master than
+ - synced/git-annex. (Although neither is ideal, it's the best that
+ - can be managed given the constraints on order.)
+ -
+ - The forcing is necessary if a transition has rewritten the git-annex branch.
  - Normally any changes to the git-annex branch get pulled and merged before
  - this push, so this forcing is unlikely to overwrite new data pushed
  - in from another repository that is also syncing.
@@ -618,8 +625,8 @@ pushBranch :: Remote -> Maybe Git.Branch -> Git.Repo -> IO Bool
 pushBranch remote mbranch g = directpush `after` annexpush `after` syncpush
   where
 	syncpush = flip Git.Command.runBool g $ pushparams $ catMaybes
-		[ Just $ Git.Branch.forcePush $ refspec Annex.Branch.name
-		, (refspec . fromAdjustedBranch) <$> mbranch
+		[ (refspec . fromAdjustedBranch) <$> mbranch
+		, Just $ Git.Branch.forcePush $ refspec Annex.Branch.name
 		]
 	annexpush = void $ tryIO $ flip Git.Command.runQuiet g $ pushparams
 		[ Git.fromRef $ Git.Ref.base $ Annex.Branch.name ]
