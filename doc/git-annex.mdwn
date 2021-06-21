@@ -1213,6 +1213,16 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
   For example, to use the wipe command, set it to `wipe -f %file`.
 
+* `annex.freezecontent-command`, `annex.thawcontent-command`
+
+  Usually the write permission bits are unset to protect annexed objects
+  from being modified or deleted. The freezecontent-command is run after
+  git-annex has removed the write bit. The thawcontent-command should undo
+  its effect, and is run before git-annex restores the write bit.
+
+  In the command line, %path is replaced with the file or directory to
+  operate on.
+
 * `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
 
   These can be passed to `git annex init` to tune the repository.

@@ -3,6 +3,8 @@ git-annex (8.20210622) UNRELEASED; urgency=medium
   * sync: Partly work around github behavior that first branch to be pushed
     to a new repository is assumed to be the head branch, by not pushing
     synced/git-annex first.
+  * Added annex.freezecontent-command and annex.thawcontent-command
+    configs.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Jun 2021 12:25:25 -0400
 

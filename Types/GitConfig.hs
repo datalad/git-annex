@@ -104,6 +104,8 @@ data GitConfig = GitConfig
 	, annexFsckNudge :: Bool
 	, annexAutoUpgrade :: AutoUpgrade
 	, annexExpireUnused :: Maybe (Maybe Duration)
+	, annexFreezeContentCommand :: Maybe String
+	, annexThawContentCommand :: Maybe String
 	, annexSecureEraseCommand :: Maybe String
 	, annexGenMetaData :: Bool
 	, annexListen :: Maybe String
@@ -191,6 +193,8 @@ extractGitConfig configsource r = GitConfig
 		getmaybe (annexConfig "autoupgrade")
 	, annexExpireUnused = either (const Nothing) Just . parseDuration
 		<$> getmaybe (annexConfig "expireunused")
+	, annexFreezeContentCommand = getmaybe (annexConfig "freezecontent-command")
+	, annexThawContentCommand = getmaybe (annexConfig "thawcontent-command")
 	, annexSecureEraseCommand = getmaybe (annexConfig "secure-erase-command")
 	, annexGenMetaData = getbool (annexConfig "genmetadata") False
 	, annexListen = getmaybe (annexConfig "listen")

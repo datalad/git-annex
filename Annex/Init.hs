@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -59,6 +59,7 @@ import qualified Utility.LockFile.Posix as Posix
 #endif
 
 import qualified Data.Map as M
+import Control.Monad.IO.Class (MonadIO)
 #ifndef mingw32_HOST_OS
 import Data.Either
 import qualified System.FilePath.ByteString as P
@@ -241,32 +242,40 @@ isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersi
  - or removing write access from files. -}
 probeCrippledFileSystem :: Annex Bool
 probeCrippledFileSystem = withEventuallyCleanedOtherTmp $ \tmp -> do
-	(r, warnings) <- liftIO $ probeCrippledFileSystem' tmp
+	(r, warnings) <- probeCrippledFileSystem' tmp
+		(Just freezeContent)
+		(Just thawContent)
 	mapM_ warning warnings
 	return r
 
-probeCrippledFileSystem' :: RawFilePath -> IO (Bool, [String])
+probeCrippledFileSystem'
+	:: (MonadIO m, MonadCatch m)
+	=> RawFilePath
+	-> Maybe (RawFilePath -> m ())
+	-> Maybe (RawFilePath -> m ())
+	-> m (Bool, [String])
 #ifdef mingw32_HOST_OS
-probeCrippledFileSystem' _ = return (True, [])
+probeCrippledFileSystem' _ _ = return (True, [])
 #else
-probeCrippledFileSystem' tmp = do
-	let f = fromRawFilePath (tmp P.</> "gaprobe")
-	writeFile f ""
-	r <- probe f
-	void $ tryIO $ allowWrite (toRawFilePath f)
-	removeFile f
+probeCrippledFileSystem' tmp freezecontent thawcontent = do
+	let f = tmp P.</> "gaprobe"
+	let f' = fromRawFilePath f
+	liftIO $ writeFile f' ""
+	r <- probe f'
+	void $ tryNonAsync $ (fromMaybe (liftIO . allowWrite) thawcontent) f
+	liftIO $ removeFile f'
 	return r
   where
 	probe f = catchDefaultIO (True, []) $ do
 		let f2 = f ++ "2"
-		removeWhenExistsWith R.removeLink (toRawFilePath f2)
-		createSymbolicLink f f2
-		removeWhenExistsWith R.removeLink (toRawFilePath f2)
-		preventWrite (toRawFilePath f)
+		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f2)
+		liftIO $ createSymbolicLink f f2
+		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f2)
+		(fromMaybe (liftIO . preventWrite) freezecontent) (toRawFilePath f)
 		-- Should be unable to write to the file, unless
 		-- running as root, but some crippled
 		-- filesystems ignore write bit removals.
-		ifM ((== 0) <$> getRealUserID)
+		liftIO $ ifM ((== 0) <$> getRealUserID)
 			( return (False, [])
 			, do
 				r <- catchBoolIO $ do
@@ -283,7 +292,8 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 	warning "Detected a crippled filesystem."
 	setCrippledFileSystem True
 
-	{- Normally git disables core.symlinks itself when the
+	{- Normally git disables core.symlinks itself when the:w
+	 -
 	 - filesystem does not support them. But, even if symlinks are
 	 - supported, we don't use them by default in a crippled
 	 - filesystem. -}

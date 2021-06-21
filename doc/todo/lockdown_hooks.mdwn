@@ -15,7 +15,7 @@ Use cases include:
 
 Design:
 
-Configs: annex.lockdown-command, annex.unlockdown-command
+Configs: annex.freezecontent-command, annex.thawcontent-command
 In these, "%path" is replaced with the file/directory to act on.
 
 Locking down a directory only needs to do the equivilant of removing its
@@ -49,5 +49,11 @@ fed the names of files to operate on via stdin.
 > hook could also support things like [[storing_xattrs|support_for_storing_xattrs]]
 > --[[Joey]]
 
-[[!tag needsthought]]
 [[!tag projects/datalad]]
+
+> [[done]].. `git-annex init` does run annex.freezecontent-command and if it
+> prevents writing to a file, it will avoid setting
+> annex.crippledfilesystem.
+> 
+> I didn't make `git-annex test` use the global git config of the hooks
+> though, not sure if that really makes sense or is needed.

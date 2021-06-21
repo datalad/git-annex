@@ -42,3 +42,7 @@ it is that if you explicitly run `chmod +w` on an annexed file in the working
 tree, this follows the symlink and allows writing to the file. It would be
 better to make the files fully immutable. But most systems either don't
 support immutable attributes, or only let root make files immutable.
+
+The git configs `annex.freezecontent-command` and `annex.thawcontent-command`
+can be used to run additional commands to further lock down and later thaw
+the annex object and directory.

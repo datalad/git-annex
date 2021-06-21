@@ -1,6 +1,6 @@
 {- git-annex file permissions
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -131,8 +131,9 @@ createWorkTreeDirectory dir = do
  - owned by another user, so failure to set this mode is ignored.
  -}
 freezeContent :: RawFilePath -> Annex ()
-freezeContent file = unlessM crippledFileSystem $
+freezeContent file = unlessM crippledFileSystem $ do
 	withShared go
+	freezeHook file
   where
 	go GroupShared = liftIO $ void $ tryIO $ modifyFileMode file $
 		addModes [ownerReadMode, groupReadMode, ownerWriteMode, groupWriteMode]
@@ -159,7 +160,7 @@ isContentWritePermOk file = ifM crippledFileSystem
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
 thawContent :: RawFilePath -> Annex ()
-thawContent file = thawPerms $ withShared go
+thawContent file = thawPerms (withShared go) (thawHook file)
   where
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead file
 	go AllShared = liftIO $ void $ tryIO $ groupWriteRead file
@@ -167,11 +168,12 @@ thawContent file = thawPerms $ withShared go
 
 {- Runs an action that thaws a file's permissions. This will probably
  - fail on a crippled filesystem. But, if file modes are supported on a
- - crippled filesystem, the file may be frozen, so try to thaw it. -}
-thawPerms :: Annex () -> Annex ()
-thawPerms a = ifM crippledFileSystem
-	( void $ tryNonAsync a
-	, a
+ - crippled filesystem, the file may be frozen, so try to thaw its
+ - permissions. -}
+thawPerms :: Annex () -> Annex () -> Annex ()
+thawPerms a hook = ifM crippledFileSystem
+	( void (tryNonAsync a)
+	, hook >> a
 	)
 
 {- Blocks writing to the directory an annexed file is in, to prevent the
@@ -180,8 +182,9 @@ thawPerms a = ifM crippledFileSystem
  - file.
  -}
 freezeContentDir :: RawFilePath -> Annex ()
-freezeContentDir file = unlessM crippledFileSystem $
+freezeContentDir file = unlessM crippledFileSystem $ do
 	withShared go
+	freezeHook dir
   where
 	dir = parentDir file
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead dir
@@ -189,8 +192,9 @@ freezeContentDir file = unlessM crippledFileSystem $
 	go _ = liftIO $ preventWrite dir
 
 thawContentDir :: RawFilePath -> Annex ()
-thawContentDir file = 
-	thawPerms $ liftIO $ allowWrite $ parentDir file
+thawContentDir file = thawPerms (liftIO $ allowWrite dir) (thawHook dir)
+  where
+	dir = parentDir file
 
 {- Makes the directory tree to store an annexed file's content,
  - with appropriate permissions on each level. -}
@@ -199,7 +203,8 @@ createContentDir dest = do
 	unlessM (liftIO $ R.doesPathExist dir) $
 		createAnnexDirectory dir 
 	-- might have already existed with restricted perms
-	unlessM crippledFileSystem $
+	unlessM crippledFileSystem $ do
+		thawHook dir
 		liftIO $ allowWrite dir
   where
 	dir = parentDir dest
@@ -213,3 +218,17 @@ modifyContent f a = do
 	v <- tryNonAsync a
 	freezeContentDir f
 	either throwM return v
+
+freezeHook :: RawFilePath -> Annex ()
+freezeHook p = maybe noop go =<< annexFreezeContentCommand <$> Annex.getGitConfig
+  where
+	go basecmd = void $ liftIO $
+		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
+	gencmd = massReplace [ ("%path", shellEscape (fromRawFilePath p)) ]
+
+thawHook :: RawFilePath -> Annex ()
+thawHook p = maybe noop go =<< annexThawContentCommand <$> Annex.getGitConfig
+  where
+	go basecmd = void $ liftIO $
+		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
+	gencmd = massReplace [ ("%path", shellEscape (fromRawFilePath p)) ]

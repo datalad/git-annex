@@ -142,7 +142,9 @@ runner opts
 		exitWith exitcode
 	runsubprocesstests (Just _) = isolateGitConfig $ do
 		ensuretmpdir
-		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem' (toRawFilePath tmpdir)
+		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem'
+			(toRawFilePath tmpdir)
+			Nothing Nothing
 		adjustedbranchok <- Annex.AdjustedBranch.isGitVersionSupported
 		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem adjustedbranchok opts) of
 			Nothing -> error "No tests found!?"
