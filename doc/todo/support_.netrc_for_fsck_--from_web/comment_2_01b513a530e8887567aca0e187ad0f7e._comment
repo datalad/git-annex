@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="mbekkema97@66b135681014f005a3a14c4011d148fcb6655f81"
- nickname="mbekkema97"
- avatar="http://cdn.libravatar.org/avatar/a5037b8a5914bd9f803af7b7e881d632"
- subject="comment 2"
- date="2018-01-19T03:46:29Z"
- content="""
-That's strange, I was observing the process list and didn't see any instances of wget or curl. Could it be that `fsck` uses http-conduit to ping the URL before proceeding with the full check?
-"""]]

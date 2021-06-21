@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2017-08-01T16:18:18Z"
- content="""
-The cabal bug is <https://github.com/haskell/cabal/issues/4655>,
-and it seems like it would require *extensive* changes to git-annex's
-source code to work around this cabal behavior.
-"""]]

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2017-08-28T17:00:21Z"
- content="""
-You didn't say what OS/filesystem you're using that has trouble with
-filenames that are 144 characters long. Even Windows supports up to 255
-character long filenames IIRC.
-"""]]

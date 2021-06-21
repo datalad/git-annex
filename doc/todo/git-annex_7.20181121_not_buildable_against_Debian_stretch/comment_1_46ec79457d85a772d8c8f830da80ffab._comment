@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2018-12-03T16:33:17Z"
- content="""
-Simple fix in [[!commit 19372e47ea2d4e153c1ba35cc3267879ebaa2050]].
-"""]]

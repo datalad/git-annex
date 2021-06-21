@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="StéphaneGL"
- avatar="http://cdn.libravatar.org/avatar/a12e6e0852d5a1985b8684b17202561c"
- subject="comment 2"
- date="2018-12-05T22:58:57Z"
- content="""
-Thanks for the prompt reply! Yes, you're right, it's the config file in the bup repo that was corrupted, for some reason. I hadn't thought running git-annex in the other repo would get the bup UUID from the bup's config file and not the local one. All works like a charm! Thanks again!
-"""]]

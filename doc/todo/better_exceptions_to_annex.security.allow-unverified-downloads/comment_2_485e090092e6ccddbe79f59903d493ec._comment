@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="comment 2"
- date="2018-09-26T00:14:53Z"
- content="""
-per-remote config solves this, thanks.  \"It would be better perhaps to just remove those types of keys\" -- please don't, I've had various uses for both.
-"""]]

@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2019-03-22T15:48:24Z"
- content="""
-I've added a protocol= setting, so you can use port=N protocol=https
-"""]]

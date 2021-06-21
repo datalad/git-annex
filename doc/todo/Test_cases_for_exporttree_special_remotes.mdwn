@@ -1,3 +1,0 @@
-As far as I can tell, `git annex testremote` doesn't test exporting yet
-
-> [[fixed|done]] --[[Joey]]

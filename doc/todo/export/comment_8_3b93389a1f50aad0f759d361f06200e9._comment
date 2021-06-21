@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 8"""
- date="2018-02-28T15:54:06Z"
- content="""
-Remotes need to have a nontrivial amount of code added to them in order to
-support export. That had not been done for rsync yet. I've implemented it
-now.
-"""]]

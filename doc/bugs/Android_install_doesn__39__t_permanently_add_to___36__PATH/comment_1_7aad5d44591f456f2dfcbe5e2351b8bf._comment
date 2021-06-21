@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="anthony@ad39673d230d75cbfd19d2757d754030049c7673"
- nickname="anthony"
- avatar="http://cdn.libravatar.org/avatar/05b48b72766177b3b0a6ff4afdb70790"
- subject="Should be in ~/.profile"
- date="2019-05-14T19:15:07Z"
- content="""
-At least here (on two Android devices I've used the installer on), the installer sets up ~/.profile to add git-annex to PATH.
-"""]]

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="lykos@d125a37d89b1cfac20829f12911656c40cb70018"
- nickname="lykos"
- avatar="http://cdn.libravatar.org/avatar/085df7b04d3408ba23c19f9c49be9ea2"
- subject="comment 2"
- date="2018-06-13T10:46:25Z"
- content="""
-Thanks! I think it's independent from adb, as it's the same serial number shown by dmesg.
-"""]]

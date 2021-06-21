@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="comment 5"
- date="2018-10-08T21:48:27Z"
- content="""
-\"why run 64 processes on a 64 CPU system if it has the same speed bus / same network speed as a 4 CPU system\" -- it doesn't always; higher-end AWS instances have 25Gbps networks, and you can buy more throughput as needed.
-"""]]

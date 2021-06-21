@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 5"""
- date="2019-03-18T15:18:06Z"
- content="""
-The patch got into git's pu branch on March 7th, and seems to be wending
-its way to master (made it into Junio's branch today).
-"""]]

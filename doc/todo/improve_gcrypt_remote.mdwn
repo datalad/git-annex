@@ -1,6 +1,0 @@
-I just created a [[bug report|bugs/gcrypt_rsync_remotes_don__39__t_work]] regarding gcrypt rsync remotes. In fact, I think the gcrypt special remote should allow rsync urls as well. The annexed files are going to be transferred using rsync anyway, aren't they? That would speed up `git annex sync` a lot, especially on slow (mobile) connections.
-
--- Lykos
-
-> There is no need to file todo items about bug reports. Closing this.
-> [[done]] --[[Joey]]

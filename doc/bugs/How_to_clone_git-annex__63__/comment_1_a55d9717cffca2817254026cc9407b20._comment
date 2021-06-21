@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="aditya.mmy@be7b2fbd14a6ce2b6b8588f6719672725a11ed35"
- nickname="aditya.mmy"
- avatar="http://cdn.libravatar.org/avatar/ec711faaa06edd971f00a6d107fd3206"
- subject="Nevermind - I got it working"
- date="2017-08-27T10:18:03Z"
- content="""
-The problem was that I am using ecryptfs - I was not aware of any file-length limitations in it until now, but here they are - https://unix.stackexchange.com/questions/32795/what-is-the-maximum-allowed-filename-and-folder-size-with-ecryptfs
-"""]]

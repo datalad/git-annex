@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="anthony@2b89f08c5c67f83d920fe464d7363db8f45cec20"
- nickname="anthony"
- avatar="http://cdn.libravatar.org/avatar/5d9fb1b0dd5ae1428c4c5b7df8d26bf2"
- subject="comment 5"
- date="2019-05-19T08:39:09Z"
- content="""
-I have the latest from the Play store on one device and the latest from F-Droid on the other. Is it possible you have a bash_profile or bash_login? If so, then I believe bash won't read profile. 
-"""]]

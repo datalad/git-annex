@@ -1,8 +1,0 @@
-Seems that progress displays are not set up for storage and 
-retrieval for export remotes.
-
-Probably Remote.Helper.Special ought to do this, since it already deals
-with setting up progress displays for normal storage and retrieval when
-requested by the remote. --[[Joey]]
-
-> [[fixed|done]] --[[Joey]]

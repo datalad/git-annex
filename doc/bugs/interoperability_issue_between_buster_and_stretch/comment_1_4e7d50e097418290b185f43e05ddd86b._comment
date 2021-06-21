@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="spwhitton"
- avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
- subject="comment 1"
- date="2018-11-03T19:41:32Z"
- content="""
-Looking at the error message alone, I am pretty sure this is fixed in recent git-annex; I am just waiting on the Haskell transition in Debian to be able to build the package.
-"""]]

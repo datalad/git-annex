@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="duncan_bayne"
- avatar="http://cdn.libravatar.org/avatar/2fc23e2009234ad965f9d5d796400417"
- subject="Known issue"
- date="2019-01-09T09:17:20Z"
- content="""
-This is a known issue, and is being fixed: https://github.com/commercialhaskell/stack/issues/3515
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="rfourquet"
- avatar="http://cdn.libravatar.org/avatar/2c78d7b5b3c6a417e5d666666ec40d51"
- subject="comment 3"
- date="2017-11-05T12:04:50Z"
- content="""
-I ran into the same problem: assuming I have a repo at \"/mnt/hd/repo\", then `$ cd /; sudo ln -s /mnt/hd/ .; cd /hd/repo; git annex copy --to=someremote ./some-file` exhibits the problem. Thanks!
-"""]]

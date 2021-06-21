@@ -1,7 +1,0 @@
-Current *E key-value backends support file extensions of length <=4.  Files with longer extensions (such as .fasta files common in bioinformatics) get linked to extension-less files, potentially causing hard-to-predict problems.  Simple fix is to add backends like MD5E5 which keeps extensions of length <=5 .   Better fix would be to keep the entire filename:
-file myfile.fasta becomes the symlink .git/annex/objects/xx/xx/key/myfile.fasta .  If there's anotherfile.fasta with the same key but different filename, it becomes a symlink to
-.git/annex/objects/xx/xx/key/anotherfile.fasta which is a hardlink to myfile.fasta . An added plus is that the symlinks checked into git typically becomes shorter. Or, for better backwards compatibility, the symlinks checked into git don't change, but
-.git/annex/objects/xx/xx/key/key becomes a symlink to .git/annex/objects/xx/xx/key/myfile.fasta .   However, if there is anotherfile.fasta with the same key, its symlink will still end up terminating at myfile.fasta rather than anotherfile.fasta .
-It's useful to preserve full filenames, because it's not uncommon to e.g. encode parameter information in filenames (myresult.threshold100.dat); and it's not uncommon to call something like python's os.path.realpath to unwind symlink chains before processing a file.
-
-> [[done]] --[[Joey]]

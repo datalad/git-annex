@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 8"""
- date="2017-10-02T16:36:40Z"
- content="""
-The git-annex test FD leak is now fixed.
-"""]]

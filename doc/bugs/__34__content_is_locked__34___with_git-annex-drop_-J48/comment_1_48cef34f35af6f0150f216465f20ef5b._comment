@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2018-10-29T19:12:30Z"
- content="""
-Is annex.pidlock set?
-
-Do you have multiple files in the repository that point to the same key?
-"""]]

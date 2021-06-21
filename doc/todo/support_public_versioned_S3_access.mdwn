@@ -1,9 +1,0 @@
-When a S3 remote uses exporttree=yes versioning=yes public=yes,
-it's possible to use anonymous http to download anything from it. git-annex
-does not yet support that, nor does whereis show the urls.
-
-Should not be super hard to add, but it involves converting `getpublicurl`
-into an Annex action and distinguishing between different uses of it,
-some of which work with this and some don't. --[[Joey]]
-
-> [[done]] --[[Joey]]

@@ -1,3 +1,0 @@
-A simple typo is causing this: https://github.com/dotlambda/git-annex/commit/a46eadab78efef81825302fc0de7963a46fc3b52
-
-> Patch applied, thank you.  [[done]] --[[Joey]]

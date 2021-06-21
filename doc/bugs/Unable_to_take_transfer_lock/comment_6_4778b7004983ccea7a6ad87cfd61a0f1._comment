@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="aer1PheiZa"
- avatar="http://cdn.libravatar.org/avatar/1fb7b6779a544f27abf147fc614d6633"
- subject="6.20170101 - still unable. "
- date="2017-08-07T11:58:05Z"
- content="""
-In 'git annex get . -J1' anything more than one given to -J causes annex to \"unable to transfer\", and the files are not copied. The higher the number, the more likely it is not to transfer any of the involved files. At the end it has to be run with -J1, because even running it multiple times does not really help. 
-And yes, all the files are different, as they are photos, and there are no copies. For me it looks like a race. 
-"""]]

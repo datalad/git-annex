@@ -1,3 +1,0 @@
-It would be nice to allow LAN sync on the android client.  This would allow for easily syncing files when in an out-of-service area, or rapidly syncing to a device with a better network connection.
-
-> Closing as this was a bug in the deprecated Android app. [[done]] --[[Joey]]

@@ -1,6 +1,0 @@
-On windows, the links to .git/annex/objects are no longer relative; include
-drive letter and full path.
-
-This used to not be the case; it must have gotten broken. --[[Joey]]
-
-> [[fixed|done]]

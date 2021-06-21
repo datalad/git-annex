@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2019-05-07T16:08:58Z"
- content="""
-It can occur whenever another git-annex process shuts down and tries to
-clean up the temp direcotry while the earlier process is still using it to
-ingest a file.
-"""]]

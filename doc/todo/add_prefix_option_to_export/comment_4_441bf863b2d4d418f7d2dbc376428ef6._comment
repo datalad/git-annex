@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="andrew"
- avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
- subject="comment 4"
- date="2018-11-26T15:42:36Z"
- content="""
-After thinking about this for a few days I am thinking that the existing `git-annex export` functionality can work well. I think I will have users specify a local directory in their annex called something like `public-share` along with a single public exporttree remote to use with that local share. Whenever the user clicks `Share` on a single file (or folder or multi-selection of files and folders) i'll just create a new sub-directory in `public-share` called something like `public-share/CURRENT_DATETIME/` and place all of the new files to share in there. Then i'll do an export like: `git-annex export master:public-share --to=public-tree-remote`. This takes advantage of the existing export functionality and has the added benefit of giving the user a local record of all files that are currently publicly shared, which seems pretty useful.
-"""]]

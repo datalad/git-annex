@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="yarikoptic"
- avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
- subject="reproduced more"
- date="2018-08-30T16:02:39Z"
- content="""
-tried across a number of boxes, and other users, and older git-annex -- the same effect everywhere.
-The common denominator - I was using neurodebian build (will check next)
-"""]]

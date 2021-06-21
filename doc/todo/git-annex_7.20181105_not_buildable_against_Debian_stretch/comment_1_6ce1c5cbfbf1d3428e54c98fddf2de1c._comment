@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2018-11-09T17:09:50Z"
- content="""
-I've ifdefed in support.
-"""]]

@@ -1,3 +1,0 @@
-It's not uncommon to create external special remotes for which, like for the built-in web remote, only download operations are defined.  It would be good if git-annex-testremote had the option of testing such remotes, using as test data the keys and URLs already registered as present in the remote.  This could also be used to test addurl-related functionality for fully implemented remotes; currently this part of a remote's implementation isn't tested.
-
-> Good idea, [[done]] using the --test-readonly option. --[[Joey]]

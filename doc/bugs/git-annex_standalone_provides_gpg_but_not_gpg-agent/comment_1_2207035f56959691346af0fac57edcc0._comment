@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2019-03-18T17:49:05Z"
- content="""
-What problem does this bug cause when running the test suite?
-"""]]

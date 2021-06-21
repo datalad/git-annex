@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="xsteadfastx"
- avatar="http://cdn.libravatar.org/avatar/a07e2adf7ff40bdd4c3fe20ededc0a4e"
- subject="comment 5"
- date="2018-12-05T09:57:36Z"
- content="""
-yes i have it set to thin. i forgot to tell. i edited the jpegs listed there and saved them under the same filename. that would explain why the checksums differ. but i thought a `git annex add .` would get it right. so this could be the bug you talk about?
-"""]]

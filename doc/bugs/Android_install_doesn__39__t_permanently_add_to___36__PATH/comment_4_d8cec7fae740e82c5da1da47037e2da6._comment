@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
- nickname="branchable"
- avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
- subject=".profile doesn't take effect"
- date="2019-05-18T19:46:09Z"
- content="""
-Ah, interesting.  Very odd that the install script doesn't do that directly.  I do have the same contents in my `~/.profile`, but Termux happily ignores it, so `$PATH` is unaltered.  Does it really work for you?  What version of Termux do you have?
-"""]]

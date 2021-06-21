@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="yarikoptic"
- avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
- subject="comment 4"
- date="2018-04-17T03:52:55Z"
- content="""
-thank you Joey.  It seems to be healed now (after ` rm ../.git/annex/index*`, since there also was .lck file, just killed them together, annex fsck didn't raise any alarm)
-"""]]

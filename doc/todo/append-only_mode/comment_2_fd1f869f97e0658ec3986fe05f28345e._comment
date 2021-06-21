@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="anarcat"
- avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
- subject="some docs"
- date="2018-07-06T01:44:08Z"
- content="""
-I have tried to document this in the [[git-annex-shell]] manpage, see if it works for you... thanks so much for implementing this key feature so quickly!
-"""]]

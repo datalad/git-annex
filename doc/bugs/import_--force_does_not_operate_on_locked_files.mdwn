@@ -1,3 +1,0 @@
-`git-annex import --force` does not work on locked files (only unlocked files). Running `7.20181106-g352f88226` on macOS 10.12.6
-
-> Nicely spotted! [[fixed|done]] --[[Joey]]

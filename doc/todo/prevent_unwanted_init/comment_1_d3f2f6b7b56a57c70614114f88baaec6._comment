@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="yarikoptic"
- avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
- subject="comment 1"
- date="2017-12-11T19:41:35Z"
- content="""
-+1 for this feature.  For our usecase I would vote for \"something checked into the repo\", e.g. a file `.noannex`, optionally containing a message to be displayed whenever `annex init` detects its presence and refuses to proceed forward.  Message could then provide instructions on what repository authors advise to do (e.g. establish submodules with git-annex'ed repositories).
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="CandyAngel"
- avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
- subject="comment 1"
- date="2018-05-17T20:15:13Z"
- content="""
-Just as a cross-reference, this may have broken downloads in some cases, where [addurl results in a different file to wget](https://git-annex.branchable.com/bugs/addurl_results_in_different_file_to_wget), seemingly because it is being decompressedon-the-fly by the http library.
-"""]]

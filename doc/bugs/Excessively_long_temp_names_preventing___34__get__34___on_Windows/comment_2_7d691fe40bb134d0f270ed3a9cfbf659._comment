@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="kubaello@d561f15ff5c07a78b706b096375cd89d6d706066"
- nickname="kubaello"
- avatar="http://cdn.libravatar.org/avatar/df2d1d9871b92552b99c3bacf442d739"
- subject="comment 2"
- date="2017-03-16T01:22:44Z"
- content="""
-I came across the same problem today and I think I've found a workaround: [long paths on windows 10 - workaround](https://git-annex.branchable.com/forum/long_paths_on_windows_10_-_workaround/). It turns out Windows 10 allows enabling support for long paths with a single registry modification - unfortunately it is a system level setting, so it can potentially break some other programs.
-"""]]

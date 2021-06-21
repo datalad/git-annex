@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2019-04-23T16:41:43Z"
- content="""
-This feature is new and has not been in a release of git-annex yet.
-"""]]

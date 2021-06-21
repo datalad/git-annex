@@ -4,7 +4,7 @@ now when the security hole is disclosed.
 Security is not compositional. You can have one good feature, and add
 another good feature, and the result is not two good features, but a new
 security hole. In this case
-[[bugs/security_hole_private_data_exposure_via_addurl]] (CVE-2018-10857). 
+[[security/CVE-2018-10857_and_CVE-2018-10859|CVE-2018-10857]]. 
 And it can be hard to spot this kind of security hole, but then once it's
 known it seems blindly obvious.
 

@@ -1,5 +1,0 @@
-When cloning eg <https://github.com/datalad/ds000114>, each time git-annex
-is run, it tries to get the uuid, fails, prints a warning. It should set
-annex-ignore instead, so that only happens once. --[[Joey]]
-
-> [[fixed|done]] --[[Joey]] 

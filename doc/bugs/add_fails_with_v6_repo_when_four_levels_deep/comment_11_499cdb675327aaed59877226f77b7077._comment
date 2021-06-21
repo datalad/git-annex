@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="t.z.mates"
- avatar="http://cdn.libravatar.org/avatar/90f15fad216078fd08d62cc676487925"
- subject="comment 11"
- date="2017-06-15T23:07:48Z"
- content="""
-More specifically, I noticed it first on version 6.20170519-gc6079c3ce8 (it's possible it was one or two commits before that, but I pull updates daily, so the change occured at most a day before).
-"""]]

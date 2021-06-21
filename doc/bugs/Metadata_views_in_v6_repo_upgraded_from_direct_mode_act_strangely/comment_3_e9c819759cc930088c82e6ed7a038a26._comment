@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://openid-provider.appspot.com/iakornfeld"
- nickname="iakornfeld"
- subject="Looking at code"
- date="2018-05-15T19:01:10Z"
- content="""
-I was going to try to program this, and https://git.kitenet.net/index.cgi/git-annex.git/tree/Annex/AdjustedBranch.hs appears to have (some?) code already. If the problem has to do with it not being immutable, I was thinking of adding a `filter.*.drop` option. This would, for all filters that have this property matching the file, be called like a normal git filter when the file gets dropped. On the v6 repository filter, there would be a drop filter that's a no-op outside an adjusted branch and would remove it from the adjusted branch when on one. Other uses could include backing up dropped files to a slow, local drive (like a portable NAS with a low-RPM drive?) when they're dropped in the background, so that they wouldn't have to be redownloaded when your main server is unavailable/remote.
-"""]]

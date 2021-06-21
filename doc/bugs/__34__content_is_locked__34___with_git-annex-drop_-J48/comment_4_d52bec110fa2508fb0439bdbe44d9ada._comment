@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="comment 4"
- date="2018-10-29T21:08:55Z"
- content="""
-\"Do you have multiple files in the repository that point to the same key?\" -- I wrote \"There are some keys to which multiple git-annex symlinks point.\"  Does this not answer your question?
-"""]]

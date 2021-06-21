@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="branchable@bafd175a4b99afd6ed72501042e364ebd3e0c45e"
- nickname="branchable"
- avatar="http://cdn.libravatar.org/avatar/ae41dba34ee6000056f00793c695be75"
- subject="it's zsh"
- date="2019-05-19T10:05:27Z"
- content="""
-I figured it out - I changed my default shell to `zsh`, which doesn't read `.profile`.  IMHO the installation should also set up `.zprofile` in the same way.
-"""]]

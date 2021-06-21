@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="yarikoptic"
- avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
- subject="comment 2"
- date="2018-08-21T16:23:05Z"
- content="""
-Thanks for the analysis!
-Apparently we did have some web URLs available for that key awhile back, then bucket was redone so they were marked not available.  I wonder if may be for that batch fixup I just did it \"manually\" instead of using `rmurl` which would have taken care about it.  So I guess nothing to fix ;-)
-"""]]

@@ -1,3 +1,0 @@
-For batch commands like fromkey and setpresentkey, when some operations in a batch succeed and others fail, it's hard to know which ones were done.  It would be good if the operations had an option to output the status to stdout or to a file, maybe in json format.  It would also be good if there was a --keep-going option to try each operation even if some early ones fail.  Currently, when some operations fail, the set of doable operations that gets done depends on the input order, and there is no reliable way to know which ones succeeded.  
-
-> Limiting this to fromkey, [[done]] --[[Joey]] 

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2018-03-22T15:52:04Z"
- content="""
-I've excluded  libz.1.dylb from git-annex.apk, on the assumuption that OSX
-always ships with libz, and so git-annex does not need to provide it.
-"""]]

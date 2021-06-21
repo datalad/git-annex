@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2019-01-24T20:37:24Z"
- content="""
-A patch to git that avoids this problem has been submitted to the mailing
-list, and hopefully will be in an upcoming release.
-"""]]

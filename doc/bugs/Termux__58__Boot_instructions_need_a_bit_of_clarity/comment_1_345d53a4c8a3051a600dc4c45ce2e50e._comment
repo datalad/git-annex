@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="marvin@3296bf3c446430c3b2ebc32b5c784ee976620847"
- nickname="marvin"
- avatar="http://cdn.libravatar.org/avatar/a07e2adf7ff40bdd4c3fe20ededc0a4e"
- subject="comment 1"
- date="2018-10-25T21:00:32Z"
- content="""
-i never ran the termux:boot on my android so far. but i can tell you what i discovered about the format of ~/.config/git-annex/autostart. use the full paths... no \"~\"s. that was my failure and i wondered why git-annex assistant --autostart didnt find anything. and then one repo per line. this worked for me.
-"""]]

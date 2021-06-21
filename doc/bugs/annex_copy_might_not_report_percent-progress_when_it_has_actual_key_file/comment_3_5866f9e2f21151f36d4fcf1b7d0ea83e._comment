@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2017-11-14T20:17:10Z"
- content="""
-I suppose that, since some remotes don't have progress display implemented,
-in paricular some external special remotes, there's no point in worrying
-about interface consistency. So, may as well display progress when we can.
-"""]]

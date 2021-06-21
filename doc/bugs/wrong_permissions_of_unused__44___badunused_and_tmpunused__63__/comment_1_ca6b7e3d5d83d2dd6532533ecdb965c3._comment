@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="emanuele"
- nickname="emanuele.olivetti"
- avatar="http://cdn.libravatar.org/avatar/f51cc5c6c3a0eb28faa6491c3cbcfcce"
- subject="comment 1"
- date="2017-12-19T14:19:14Z"
- content="""
-Notice that, if I manually change the permsissions of `unused`, `badunused` and `tmpunused` to `660`, then other another user of the group can do `git annex unused` and `git annex dropunused 1` without errors. Unfortunately, after `git annex unused`, the ownership of `unused`, `badunused` and `tmpunused` changes from the initial user to the new user, and permissions are reset to `600`, which re-creates the initial problem.
-"""]]

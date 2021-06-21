@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2017-10-07T18:05:44Z"
- content="""
-Also, I've added logging of all webdav operations with --debug, which 
-should help with determining what operation is being slow.
-"""]]

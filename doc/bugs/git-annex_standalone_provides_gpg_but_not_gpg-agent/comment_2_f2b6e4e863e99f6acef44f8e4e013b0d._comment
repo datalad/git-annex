@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="comment 2"
- date="2019-03-18T18:08:06Z"
- content="""
-Tests that rely on gpg fail.  I think the latest gpg versions always run gpg-agent.  So if you package gpg but not gpg-agent it will try to run the host's gpg-agent which may be incompatible with the gpg included in the standalone package.
-"""]]

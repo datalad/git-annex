@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="yves.noirjean@3f9b06d19a920fbf5c82340c362e5971b00d4af2"
- nickname="yves.noirjean"
- avatar="http://cdn.libravatar.org/avatar/2f1ad9d443c037337d91f29781560344"
- subject="comment 2"
- date="2018-06-22T07:53:26Z"
- content="""
-I stumbled over the same problem. With \"git annex add\" I can add the file. But in unlocked mode, I get the \"out of memory\" error when trying to commit. Is this also a known problem? Is there a workaround?
-"""]]

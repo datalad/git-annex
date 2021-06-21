@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="madalu"
- avatar="http://cdn.libravatar.org/avatar/c00d4aa29fd053f08a2ef35531592914"
- subject="comment 8"
- date="2017-10-09T14:52:54Z"
- content="""
-Yes, I am confused as well. Sometimes the stack build works, sometimes it doesn't. So I can't reliably reproduce the bug. You can see an example of a failure (with debug information) on the other bug report. I'll see if I can get stack without a system wide install and rebuild.
-"""]]

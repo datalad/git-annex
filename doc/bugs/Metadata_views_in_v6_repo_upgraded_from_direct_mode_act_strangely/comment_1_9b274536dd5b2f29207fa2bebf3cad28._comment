@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://openid-provider.appspot.com/iakornfeld"
- nickname="iakornfeld"
- subject="Another weird bit"
- date="2018-05-15T14:59:42Z"
- content="""
-I forgot to put this in the example, but if the file has an extension the directory name is put *before* the extension.
-"""]]

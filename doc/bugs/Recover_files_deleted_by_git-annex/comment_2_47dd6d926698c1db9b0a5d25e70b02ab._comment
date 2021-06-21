@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="Chymera"
- avatar="http://cdn.libravatar.org/avatar/555d585d6d78c68894ac90fd1e984309"
- subject="comment 2"
- date="2018-12-30T20:47:00Z"
- content="""
-Luckily I had a backup, so I fixed this by re-adding my disappeared files with the cutting edge `cp` command.
-Most probably this ended up cluttering my history, though.
-"""]]

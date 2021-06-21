@@ -1,8 +1,0 @@
-It appears that `git annex importfeed` can not be used in with socks proxies because it uses wget unconditionally (at least in the Debian build).
-
-For `addurl`, I could configure the system to use a socks proxy by setting `git config annex.web-download-command "curl --silent --preproxy socks4a://localhost:1080 %url -o %file"`; for `importfeed`, I found no option to override the command used to fetch the URL, and `wget` [lacks SOCKS support](https://savannah.gnu.org/bugs/?func=detailitem&item_id=43576).
-
-Please consider using `web-download-command` for `importfeed` too, introducing a dedicated option `web-get-command` (that would output to stdout rather than %file), or otherwise supporting operation behind a SOCKS proxy.
-
-> Closing this, since the http library git-annex uses supports socks
-> proxies via environment settings, as far as I know. [[done]] --[[Joey]] 

@@ -1,5 +1,0 @@
-git annex sync with a git-lfs special remote does not pull or push.
-It should.
---[[Joey]]
-
-> [[fixed|done]] --[[Joey]]

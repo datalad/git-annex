@@ -1,7 +1,0 @@
-When using addurl on an url that youtube-dl supports, if it's installed but
-not enabled to be used due to the recent security fix, git-annex will
-download the web page and add it, which is unlikely to be desired behavior.
-Instead, it should check if youtube-dl supports the page, and then error
-out at the download stage, with a message that points at how to enable it.
-
-> [[done]] --[[Joey]]

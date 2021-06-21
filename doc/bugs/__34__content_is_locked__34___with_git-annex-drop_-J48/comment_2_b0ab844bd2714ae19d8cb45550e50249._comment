@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="comment 2"
- date="2018-10-29T19:48:36Z"
- content="""
-annex.pidlock is not set in the config file.   \"Do you see git-annex displaying multiple concurrent actions at the same time?\" -- displaying where?  I was just looking at 'top'.
-There are some keys to which multiple git-annex symlink point.
-"""]]

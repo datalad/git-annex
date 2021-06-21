@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="anarcat"
- avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
- subject="thanks!"
- date="2019-01-06T04:12:03Z"
- content="""
-I confirm this is fixed - thanks! This makes exporttree, the webdav endpoint, and so many more things finally make sense to me! :) 
-"""]]

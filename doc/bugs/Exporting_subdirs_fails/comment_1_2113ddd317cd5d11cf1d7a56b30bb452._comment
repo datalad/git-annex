@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2017-11-07T21:08:48Z"
- content="""
-This got fixed in [[!commit 24883e01cd487feb1be95146811d65e4f240465d]],
-the next release of git-annex will have the fix.
-"""]]

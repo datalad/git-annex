@@ -1,7 +1,0 @@
-"Downloading unverified content from (non-encrypted) external special remotes is prevented, because they could follow http redirects to web servers on localhost or on a private network, or in some cases to a file:/// url" -- it's be good if an exception to this could be configured for a given type of external special remote, and/or for specific special remotes.
-Sometimes I _know_ that a given external special remote doesn't do redirects, or that a given special remote repository won't have bad URLs.  Remembering to do
-git -c annex.security.allow-unverified-downloads=ACKTHPPT annex get myfile
-every time is another thing to think about, when the whole point of git-annex is to not have to think about where things are :)  While configuring 
-annex.security.allow-unverified-downloads=ACKTHPPT permanently opens security holes.
-
-> [[done]] --[[Joey]]

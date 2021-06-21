@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="madalu"
- avatar="http://cdn.libravatar.org/avatar/c00d4aa29fd053f08a2ef35531592914"
- subject="comment 10"
- date="2017-10-09T15:46:09Z"
- content="""
-I should add that the automated standalone build downloaded from the git-annex website reliably uploads to box, though slowly (per the other bug report). 
-"""]]

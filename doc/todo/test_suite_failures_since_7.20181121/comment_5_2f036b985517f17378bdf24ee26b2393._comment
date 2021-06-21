@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="spwhitton"
- avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
- subject="comment 5"
- date="2018-12-21T12:27:13Z"
- content="""
-Thanks for letting me know about `--keep-failures`.  I can't reliably reproduce the current failure but if that changes, I will investigate further.
-"""]]

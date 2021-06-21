@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="checksums of remote data"
- date="2019-05-13T22:03:38Z"
- content="""
-\"I don't see any way to do checksum verification on upload to a special remote, without it somehow having a way to verify an arbitrary checksum method of data stored in it, which nothing supports\" -- arbitrary checksum no, but some remotes do support verifying MD5 checksums specifically.  E.g. DNAnexus can tell you the MD5 of each uploaded part of a multi-part file; Google Cloud Storage can tell you the MD5 for a non-composite file, and CRC32 for composite files. Maybe, the [[external special remote protocol|design/external_special_remote_protocol]] could be extended with optional requests/replies to expose these capabilities?
-"""]]

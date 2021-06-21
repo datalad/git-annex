@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2018-12-04T16:16:42Z"
- content="""
-Thing is, it should have auto-upgraded to v7 in that case, and a bug
-prevented it from doing so. Already fixed in
-[[!commit 865d5561035fec84749f8b2131110fab97cd3aa6]].
-"""]]

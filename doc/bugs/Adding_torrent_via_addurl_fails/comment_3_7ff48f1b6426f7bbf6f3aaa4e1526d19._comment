@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="mbekkema97@66b135681014f005a3a14c4011d148fcb6655f81"
- nickname="mbekkema97"
- avatar="http://cdn.libravatar.org/avatar/a5037b8a5914bd9f803af7b7e881d632"
- subject="comment 3"
- date="2018-01-12T12:01:30Z"
- content="""
-This seems to be fixed now due to an update to Haskell's torrent library.
-"""]]

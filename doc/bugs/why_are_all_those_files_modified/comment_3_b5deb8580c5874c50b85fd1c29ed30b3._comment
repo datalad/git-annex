@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="anarcat"
- avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
- subject="happened again"
- date="2018-12-04T22:08:36Z"
- content="""
-I just did a `git annex upgrade` with (again) 6.20180913-1~bpo9+1 and I am again seeing all files as modified (but diff is empty). No other command was running on the repository that I know of.
-"""]]

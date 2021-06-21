@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2018-01-02T20:17:03Z"
- content="""
-Fixed, but I was not able to reproduce the part where dropunused failed
-with a permissions error involving .git/annex/misctmp, despite having it
-set up the same as you did.
-"""]]

@@ -1,4 +1,0 @@
-The newly added per-remote metadata log files need to be scrubbed clean of
-dead remotes during a transition. --[[Joey]]
-
-> [[done]] --[[Joey]]

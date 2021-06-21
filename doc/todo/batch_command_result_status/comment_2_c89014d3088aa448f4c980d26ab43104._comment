@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="comment 2"
- date="2019-02-05T20:55:59Z"
- content="""
-Thanks a lot!  I mostly use fromkey/setpresentkey/registerurl for now.  registerurl, I guess, also cannot fail?  Though, I think I've seen failures related to git locks being held?
-"""]]

@@ -1,3 +1,0 @@
-Currently, git-annex-fromkey errors if the target file exists.  It would help if, when the target file is the same symlink that would be created by the command (i.e. to the same key), this wasn't considered an error.  Together with [[todo/batch_command_result_status]] this would make the command a more robust building block for higher-level operations.
-
-> idempotency is good, [[done]] --[[Joey]]

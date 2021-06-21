@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 3"""
- date="2018-12-19T17:18:19Z"
- content="""
-The NFS problem is probably fixed by 
-[[!commit 14971414dc263fcb8124b4cf6b14b9b7a19189af]]
-"""]]

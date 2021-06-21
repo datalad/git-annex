@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 5"""
- date="2019-05-23T17:34:40Z"
- content="""
-It seems better to keep checksums specific to a given protocol at the level
-of that protocol. What would be the benefit of pushing that up to
-git-annex's APIs?
-"""]]

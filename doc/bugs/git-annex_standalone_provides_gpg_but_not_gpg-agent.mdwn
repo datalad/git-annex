@@ -1,5 +1,0 @@
-In the sandbox environment used by git-annex standalone, the gpg binary exists, but not gpg-agent (or gpgconf or other potentially needed binaries).  This causes problems when the host system provides a different version of gpg that does provide these programs.  E.g. git-annex-test crypto tests seem to (indirectly?) use gpg-agent.
-
-If I want to use my own gpg version (compatible with my own gpg-agent), is it safe to just delete all files named 'gpg' from the git-annex.linux directory?
-
-> [[fixed|done]] --[[Joey]]

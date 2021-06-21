@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 4"""
- date="2018-01-04T18:28:20Z"
- content="""
-Yes, I was running dropunused as other user, and still see no permissions
-problem there. .git/annex/misctmp is writable by the group.
-"""]]

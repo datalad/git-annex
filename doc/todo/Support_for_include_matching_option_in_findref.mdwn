@@ -1,7 +1,0 @@
-The documentation for `findref` says it accepts the same options as `find` but the matching option `--include` isn't supported here.
-
-This leads to the confusing behavior where `findref` is sensitive to the presence of content, but you can't tell it not to be in the same manner as `find`.
-
-Could the difference be removed by adding support for `--include`?
-
-> [[done]] --[[Joey]]

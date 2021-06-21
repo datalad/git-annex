@@ -1,3 +1,0 @@
-link [gitweb](https://git.kitenet.net/?p=git-annex.git;a=summary) on [http://git-annex.branchable.com/download/](http://git-annex.branchable.com/download/) leads to cgit error Invalid request
-
-> [[fixed|done]] --[[Joey]]

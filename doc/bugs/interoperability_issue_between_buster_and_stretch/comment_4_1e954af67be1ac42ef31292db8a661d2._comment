@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="anarcat"
- avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
- subject="probably fixed indeed"
- date="2018-11-12T20:54:05Z"
- content="""
-Yes, you're right it's probably fixed. But just for the record, i did mention both version numbers in the bug report (6.20180913-1 and 6.20170101-1+deb9u2). It's the second line of the bug report.
-"""]]

@@ -1,6 +1,0 @@
-git-annex uses copyHook in Setup.hs to create/install man pages, .desktop file and etc.
-
-I'm using cabal new-build/new-install to install it, and these copyHooks don't get called. I reported it to Cabal, but they replied that this should be fixed on git-annex side: https://github.com/haskell/cabal/issues/5933
-
-> [[done]], make install-home. Can't be done in Setup.hs for new-build so
-> this is the best that can be done. --[[Joey]]
