@@ -17,7 +17,6 @@ module Annex.Perms (
 	freezeContent,
 	isContentWritePermOk,
 	thawContent,
-	chmodContent,
 	createContentDir,
 	freezeContentDir,
 	thawContentDir,
@@ -156,18 +155,6 @@ isContentWritePermOk file = ifM crippledFileSystem
 		liftIO (catchMaybeIO $ fileMode <$> R.getFileStatus file) >>= return . \case
 			Nothing -> True
 			Just havemode -> havemode == combineModes (havemode:wantmode)
-
-{- Adjusts read mode of annexed file per core.sharedRepository setting. -}
-chmodContent :: RawFilePath -> Annex ()
-chmodContent file = unlessM crippledFileSystem $
-	withShared go
-  where
-	go GroupShared = liftIO $ void $ tryIO $ modifyFileMode file $
-		addModes [ownerReadMode, groupReadMode]
-	go AllShared = liftIO $ void $ tryIO $ modifyFileMode file $
-		addModes readModes
-	go _ = liftIO $ modifyFileMode file $
-		addModes [ownerReadMode]
 
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
