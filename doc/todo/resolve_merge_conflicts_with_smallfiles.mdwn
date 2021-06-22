@@ -1,0 +1,1 @@
+Small files might also be used for performance reasons, so there should be an option to also automatically fix merge conflicts for small files in git-annex-sync.
