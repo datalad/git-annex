@@ -1,0 +1,4 @@
+As of commit 4b1b9d7a8, trying to build git-annex on Windows fails because of a missing function argument and a missing import, both in `Annex/Init.hs`.  [This patch](https://raw.githubusercontent.com/datalad/git-annex/master/patches/20210622-4b1b9d7a8-fix-windows.patch) fixes both problems.
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]
