@@ -1,0 +1,23 @@
+diff --git a/Annex/Init.hs b/Annex/Init.hs
+index a8f260eda..4209478e9 100644
+--- a/Annex/Init.hs
++++ b/Annex/Init.hs
+@@ -51,8 +51,8 @@ import Annex.Tmp
+ import Utility.UserInfo
+ import qualified Utility.RawFilePath as R
+ import Utility.ThreadScheduler
+-#ifndef mingw32_HOST_OS
+ import Annex.Perms
++#ifndef mingw32_HOST_OS
+ import Utility.FileMode
+ import System.Posix.User
+ import qualified Utility.LockFile.Posix as Posix
+@@ -255,7 +255,7 @@ probeCrippledFileSystem'
+ 	-> Maybe (RawFilePath -> m ())
+ 	-> m (Bool, [String])
+ #ifdef mingw32_HOST_OS
+-probeCrippledFileSystem' _ _ = return (True, [])
++probeCrippledFileSystem' _ _ _ = return (True, [])
+ #else
+ probeCrippledFileSystem' tmp freezecontent thawcontent = do
+ 	let f = tmp P.</> "gaprobe"
