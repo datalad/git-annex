@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-06-23T17:05:38Z"
+ content="""
+I think it could at least use synchronous=NORMAL, entirely safely, since it
+uses WAL mode. 
+
+"WAL mode is always consistent with synchronous=NORMAL, but WAL mode does
+lose durability. A transaction committed in WAL mode with
+synchronous=NORMAL might roll back following a power loss or system crash."
+
+It's certianly already possible for a power loss or ctrl-c while git-annex
+is running to cause database changes to be lost, since git-annex buffers
+several changes together into a transaction and until it sends that
+transaction, can lose the data.
+
+Exactly how well git-annex recovers from that probably varies, eg
+Database.Keys.reconcileStaged flushes the transactions before updating its
+own state files, so on power loss it will just run again and recover. The
+fsck database gets recovered likewise. But there are probably other write points
+where getting the data recovered is harder.
+
+For example, moveAnnex updates the inode cache at the end when it populated
+a pointer file. If that database write is lost, git-annex won't know that
+the pointer file is populated with annexed content. So it will treat it as
+a possibly modified unlocked file, and when it eventually has a reason to,
+will re-hash it, and then should recover the lost information.
+
+Quite possible there are situations where it fails to recover the lost
+information and does something annoying. But like I said, such situations
+can already happen and setting synchronous=NORMAL does not make them more
+likely.
+
+It would still make sense to benchmark it before changing to it. It may
+well be that git-annex's buffering of changes into larger transactions
+already has a similar performance gain as the pragma and that the pragma
+does not speed it up.
+
+As far as OFF goes, I'd need to see some serious performance improvements
+in benchmarking, and also be sure that git-annex always recovered well,
+which would have to somehow include detecting corrupted sqlite databases
+and rebuilding them. I don't know if it's really possible to detect.
+Might some form of corrupted sqlite database cause sqlite, and thus
+git-annex, to crash? And rebuilding might entail re-hashing the entire
+repository, so very expensive.
+"""]]
