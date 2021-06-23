@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="recovering from sqlite db corruption"
+ date="2021-06-23T18:45:47Z"
+ content="""
+>detecting corrupted sqlite databases and rebuilding them. I don't know if it's really possible to detect.
+
+Could you detect whether a git-annex command finished normally,by creating a marker file when it starts, and deleting the marker file as the last thing before exiting?
+The next command then checks if the previous one crashed, and rebuilds the dbs if yes (or just warns the user and offers to rebuild.)
+
+>Rebuilding might entail re-hashing the entire repository
+
+Aren't all file hashes recorded in git, which would not be affected by a sqlite crash?
+
+
+
+
+"""]]
