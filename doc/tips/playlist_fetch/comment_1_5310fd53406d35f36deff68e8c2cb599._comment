@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="datamanager"
+ avatar="http://cdn.libravatar.org/avatar/7d4ca7c5e571d4740ef072b83a746c12"
+ subject="an alternative"
+ date="2021-06-23T01:29:23Z"
+ content="""
+This is cool! I had to do the same thing earlier tonight, and ended up with this:
+
+```
+cat ~/path/to/playlist.m3u | sed -e \"s/\ /\\\ /g\" | xargs git annex copy --to remote
+```
+
+I thought I might stick that into a bash alias, or function. 
+"""]]
