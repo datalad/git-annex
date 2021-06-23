@@ -56,3 +56,7 @@ PS question -- how to see the costs?  `annex whereis --json FILE` seems to not p
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> Closing this since yarik said my suggestion would work. Even though I
+> think neither of us is entirely satisfied with it, I can't think of a
+> better approach. [[done]] --[[Joey]]
