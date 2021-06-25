@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-06-25T17:56:02Z"
+ content="""
+I'm not super enthused by this idea. The git-check-attr interface would
+make it hard to avoid using one process per use of the option. 
+Checking attributes can be slow. Attributes are limited in what 
+they can contain. Some places where git-annex uses gitattributes I have
+ended up regretting it. A compelling use case would be good.
+
+Might also be possible to support this in preferred content. Although it
+looks a bit hard to do, because it would need to start up a git-check-attr
+process for each different attribute used, while parsing the preferred content
+expression.
+"""]]
