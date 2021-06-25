@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-06-25T17:39:41Z"
+ content="""
+Actually, fsck never warns about upgrading MD5 to any SHA hash.
+The message you are seeing is about upgrading something already using
+SHA256E to an improved version. The `--backend=SHA256E` displayed by
+git-annex fsck comes from the backend it sees the file is already using.
+
+The most likely reason a SHA256E file would need migration would be if it
+has non-alphanumeric characters in its extension. There are some other
+historical problems that it migrates to solve as well. A `git diff` of the
+changes that `git annex migrate` made would tell what it did the migration for.
+
+I don't know why fsck then wants to migrate it again. It only looks at the
+file staged in git. When I stage that same symlink here, it does not want
+to migrate it.
+
+Since your git-annex version is over a year out of date, upgrading to the
+current version and checking if it still has the problem is the first step.
+
+(You also seem to have some unusual configuration of your repository, eg
+annex.tune.objecthash1=true and annex.tune.objecthashlower=true ... 
+is that right?)
+"""]]
