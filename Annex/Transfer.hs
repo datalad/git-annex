@@ -205,13 +205,8 @@ runTransfer' ignorelock t afile stalldetection retrydecider transferaction =
 				, return observeFailure
 				)
 
-	getbytescomplete metervar
-		| transferDirection t == Upload =
-			liftIO $ maybe 0 fromBytesProcessed 
-				<$> readTVarIO metervar
-		| otherwise = do
-			f <- fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
-			liftIO $ catchDefaultIO 0 $ getFileSize f
+	getbytescomplete metervar = liftIO $
+		maybe 0 fromBytesProcessed <$> readTVarIO metervar
 
 detectStallsAndSuggestConfig :: Maybe StallDetection -> TVar (Maybe BytesProcessed) -> Annex a -> Annex a
 detectStallsAndSuggestConfig Nothing _ a = a

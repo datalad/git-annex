@@ -32,7 +32,7 @@ relaySerializedOutput
 	-> (SerializedOutputResponse -> m ())
 	-- ^ Send response to child process.
 	-> (Maybe BytesProcessed -> m ())
-	-- ^ When a progress meter is running, is updated with
+	-- ^ When a progress meter is running, it is updated with
 	-- progress meter values sent by the process.
 	-- When a progress meter is stopped, Nothing is sent.
 	-> (forall a. Annex a -> m a)

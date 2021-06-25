@@ -133,12 +133,8 @@ performTransfer stalldetection level runannex r t info transferrer = do
 	ifM (catchBoolIO $ bracket setup cleanup (go bpv))
 		( return (Right ())
 		, do
-			n <- case transferDirection t of
-				Upload -> liftIO $ atomically $ 
-					fromBytesProcessed <$> readTVar bpv
-				Download -> do
-					f <- runannex $ fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
-					liftIO $ catchDefaultIO 0 $ getFileSize f
+			n <- liftIO $ atomically $
+				fromBytesProcessed <$> readTVar bpv
 			return $ Left $ info { bytesComplete = Just n }
 		)
   where
