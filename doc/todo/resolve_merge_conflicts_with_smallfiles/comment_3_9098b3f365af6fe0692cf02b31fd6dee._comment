@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="resolving merge conflicts"
+ date="2021-06-24T18:03:40Z"
+ content="""
+\"Small files\" here means \"non-annexed files\", right?
+
+Whether a file is annexed, and whether its merge conflicts should be auto-resolved by creating two files `file.version-a` and `file.version-b`, seem like orthogonal things.
+One might check small binary files directly into git, and one might annex source code files e.g. just for the simplicity of annexing everything (as [[DataLad|projects/datalad]] does or at least used to).
+
+So, maybe, `.gitattributes` should control which files' merge conflicts get auto-resolved?
+
+
+
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="strmd"
+ avatar="http://cdn.libravatar.org/avatar/035707b9756129bbdea6b36a7f7b38d3"
+ subject="comment 8"
+ date="2021-06-25T15:07:54Z"
+ content="""
+Using my M1 Air a lot more these days, not having git-annex is a pain. The Homebrew formula dependencies all have ARM bottles at this point, but building from source fails (criterion-measurement-0.1.2.0). Anyone with ideas on how to end up with a working Rosetta 2 setup? My previous experiments were a mess (see above), no doubt partly due to an environment where multiple versions of various components are conflicting with each other. 
+"""]]
