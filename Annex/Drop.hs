@@ -118,10 +118,10 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 
 	dropl fs n = checkdrop fs n Nothing $ \pcc numcopies mincopies ->
 		stopUnless (inAnnex key) $
-			Command.Drop.startLocal pcc afile ai si numcopies mincopies key preverified
+			Command.Drop.startLocal pcc afile ai si numcopies mincopies key preverified (Command.Drop.DroppingUnused False)
 
 	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \pcc numcopies mincopies ->
-		Command.Drop.startRemote pcc afile ai si numcopies mincopies key r
+		Command.Drop.startRemote pcc afile ai si numcopies mincopies key (Command.Drop.DroppingUnused False) r
 
 	ai = mkActionItem (key, afile)
 

@@ -9,7 +9,7 @@ git annex dropunused `[number|range ...]`
 # DESCRIPTION
 
 Drops the data corresponding to the numbers, as listed by the last
-git annex unused`
+`git annex unused`
 
 You can also specify ranges of numbers, such as "1-1000".
 Or, specify "all" to drop all unused data.

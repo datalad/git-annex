@@ -86,29 +86,32 @@ start' o from key afile ai si =
 	checkDropAuto (autoMode o) from afile key $ \numcopies mincopies ->
 		stopUnless wantdrop $
 			case from of
-				Nothing -> startLocal pcc afile ai si numcopies mincopies key []
-				Just remote -> startRemote pcc afile ai si numcopies mincopies key remote
+				Nothing -> startLocal pcc afile ai si numcopies mincopies key [] ud
+				Just remote -> startRemote pcc afile ai si numcopies mincopies key ud remote
   where
 	wantdrop
 		| autoMode o = wantDrop False (Remote.uuid <$> from) (Just key) afile Nothing
 		| otherwise = return True
 	pcc = PreferredContentChecked (autoMode o)
+	ud = case (batchOption o, keyOptions o) of
+		(NoBatch, Just WantUnusedKeys) -> DroppingUnused True
+		_ -> DroppingUnused False
 
 startKeys :: DropOptions -> Maybe Remote -> (SeekInput, Key, ActionItem) -> CommandStart
 startKeys o from (si, key, ai) = start' o from key (AssociatedFile Nothing) ai si
 
-startLocal :: PreferredContentChecked -> AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> [VerifiedCopy] -> CommandStart
-startLocal pcc afile ai si numcopies mincopies key preverified =
+startLocal :: PreferredContentChecked -> AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> [VerifiedCopy] -> DroppingUnused -> CommandStart
+startLocal pcc afile ai si numcopies mincopies key preverified ud =
 	starting "drop" (OnlyActionOn key ai) si $
-		performLocal pcc key afile numcopies mincopies preverified
+		performLocal pcc key afile numcopies mincopies preverified ud
 
-startRemote :: PreferredContentChecked -> AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> Remote -> CommandStart
-startRemote pcc afile ai si numcopies mincopies key remote = 
+startRemote :: PreferredContentChecked -> AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> DroppingUnused -> Remote -> CommandStart
+startRemote pcc afile ai si numcopies mincopies key ud remote = 
 	starting ("drop " ++ Remote.name remote) (OnlyActionOn key ai) si $
-		performRemote pcc key afile numcopies mincopies remote
+		performRemote pcc key afile numcopies mincopies remote ud
 
-performLocal :: PreferredContentChecked -> Key -> AssociatedFile -> NumCopies -> MinCopies -> [VerifiedCopy] -> CommandPerform
-performLocal pcc key afile numcopies mincopies preverified = lockContentForRemoval key fallback $ \contentlock -> do
+performLocal :: PreferredContentChecked -> Key -> AssociatedFile -> NumCopies -> MinCopies -> [VerifiedCopy] -> DroppingUnused -> CommandPerform
+performLocal pcc key afile numcopies mincopies preverified ud = lockContentForRemoval key fallback $ \contentlock -> do
 	u <- getUUID
 	(tocheck, verified) <- verifiableCopies key [u]
 	doDrop pcc u (Just contentlock) key afile numcopies mincopies [] (preverified ++ verified) tocheck
@@ -120,7 +123,7 @@ performLocal pcc key afile numcopies mincopies preverified = lockContentForRemov
 				]
 			removeAnnex contentlock
 			notifyDrop afile True
-			next $ cleanupLocal key
+			next $ cleanupLocal key ud
 		, do 
 			notifyDrop afile False
 			stop
@@ -131,10 +134,10 @@ performLocal pcc key afile numcopies mincopies preverified = lockContentForRemov
 	-- is present, but due to buffering, may find it present for the
 	-- second file before the first is dropped. If so, nothing remains
 	-- to be done except for cleaning up.
-	fallback = next $ cleanupLocal key
+	fallback = next $ cleanupLocal key ud
 
-performRemote :: PreferredContentChecked -> Key -> AssociatedFile -> NumCopies -> MinCopies -> Remote -> CommandPerform
-performRemote pcc key afile numcopies mincopies remote = do
+performRemote :: PreferredContentChecked -> Key -> AssociatedFile -> NumCopies -> MinCopies -> Remote -> DroppingUnused -> CommandPerform
+performRemote pcc key afile numcopies mincopies remote ud = do
 	-- Filter the uuid it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
 	(tocheck, verified) <- verifiableCopies key [uuid]
@@ -147,22 +150,35 @@ performRemote pcc key afile numcopies mincopies remote = do
 				, show proof
 				]
 			ok <- Remote.action (Remote.removeKey remote key)
-			next $ cleanupRemote key remote ok
+			next $ cleanupRemote key remote ud ok
 		, stop
 		)
   where
 	uuid = Remote.uuid remote
 
-cleanupLocal :: Key -> CommandCleanup
-cleanupLocal key = do
-	logStatus key InfoMissing
+cleanupLocal :: Key -> DroppingUnused -> CommandCleanup
+cleanupLocal key ud = do
+	logStatus key (dropStatus ud)
 	return True
 
-cleanupRemote :: Key -> Remote -> Bool -> CommandCleanup
-cleanupRemote key remote ok = do
+cleanupRemote :: Key -> Remote -> DroppingUnused -> Bool -> CommandCleanup
+cleanupRemote key remote ud ok = do
 	when ok $
-		Remote.logStatus remote key InfoMissing
+		Remote.logStatus remote key (dropStatus ud)
 	return ok
+
+{- Set when the user explicitly chose to operate on unused content.
+ - Presumably the user still expects the last git-annex unused to be
+ - correct at this point. -}
+newtype DroppingUnused = DroppingUnused Bool
+
+{- When explicitly dropping unused content, mark the key as dead, at least
+ - in the repository it was dropped from. It may still be in other
+ - repositories, and will not be treated as dead until dropped from all of
+ - them. -}
+dropStatus :: DroppingUnused -> LogStatus
+dropStatus (DroppingUnused False) = InfoMissing
+dropStatus (DroppingUnused True) = InfoDead
 
 {- Before running the dropaction, checks specified remotes to
  - verify that enough copies of a key exist to allow it to be

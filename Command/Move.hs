@@ -186,7 +186,7 @@ toPerform dest removewhen key afile fastcheck isthere = do
 		removeAnnex contentlock
 		next $ do
 			() <- setpresentremote
-			Command.Drop.cleanupLocal key
+			Command.Drop.cleanupLocal key (Command.Drop.DroppingUnused False)
 	faileddrophere setpresentremote = do
 		showLongNote "(Use --force to override this check, or adjust numcopies.)"
 		showLongNote "Content not dropped from here."
@@ -199,7 +199,7 @@ toPerform dest removewhen key afile fastcheck isthere = do
 	-- is present, but due to buffering, may find it present for the
 	-- second file before the first is dropped. If so, nothing remains
 	-- to be done except for cleaning up.
-	lockfailed = next $ Command.Drop.cleanupLocal key
+	lockfailed = next $ Command.Drop.cleanupLocal key (Command.Drop.DroppingUnused False)
 
 fromStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> SeekInput -> Remote -> CommandStart
 fromStart removewhen afile key ai si src = 
@@ -262,7 +262,7 @@ fromPerform src removewhen key afile = do
 			, "(" ++ reason ++ ")"
 			]
 		ok <- Remote.action (Remote.removeKey src key)
-		next $ Command.Drop.cleanupRemote key src ok
+		next $ Command.Drop.cleanupRemote key src (Command.Drop.DroppingUnused False) ok
 	
 	faileddropremote = do
 		showLongNote "(Use --force to override this check, or adjust numcopies.)"

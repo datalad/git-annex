@@ -69,7 +69,8 @@ startKey o afile (si, key, ai) = case fromToOptions o of
 		( Command.Move.toStart Command.Move.RemoveNever afile key ai si =<< getParsed r
 		, do
 			(numcopies, mincopies) <- getSafestNumMinCopies afile key
-			Command.Drop.startRemote pcc afile ai si numcopies mincopies key =<< getParsed r
+			Command.Drop.startRemote pcc afile ai si numcopies mincopies key (Command.Drop.DroppingUnused False)
+				=<< getParsed r
 		)
 	FromRemote r -> checkFailedTransferDirection ai Download $ do
 		haskey <- flip Remote.hasKey key =<< getParsed r
@@ -82,7 +83,7 @@ startKey o afile (si, key, ai) = case fromToOptions o of
 			Right False -> ifM (inAnnex key)
 				( do
 					(numcopies, mincopies) <- getSafestNumMinCopies afile key
-					Command.Drop.startLocal pcc afile ai si numcopies mincopies key []
+					Command.Drop.startLocal pcc afile ai si numcopies mincopies key [] (Command.Drop.DroppingUnused False)
 				, stop
 				)
   where

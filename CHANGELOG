@@ -6,6 +6,9 @@ git-annex (8.20210622) UNRELEASED; urgency=medium
   * Added annex.freezecontent-command and annex.thawcontent-command
     configs.
   * Improve display of errors when transfers fail.
+  * Dropping an unused object with drop --unused or dropunused will
+    mark it as dead, preventing fsck --all from complaining about it
+    after it's been dropped from all repositories.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Jun 2021 12:25:25 -0400
 
