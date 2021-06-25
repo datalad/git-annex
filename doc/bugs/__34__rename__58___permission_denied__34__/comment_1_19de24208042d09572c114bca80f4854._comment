@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-06-25T17:23:44Z"
+ content="""
+git-annex is hard linking the file to the temp directory with "ingest-" in its
+name. Then later it renames that into .git/annex/objects/
+
+So the permissions problem must involve one of those directories, but neither
+seems likely. The newly created temp file is in a directory whose permissions
+certainly let it delete it since they let it create it there. The destination
+directory gets its write bit set before the rename.
+
+I wonder if some of these files, or other files you're
+adding might have identical content? It seems possible that there
+could be some concurrency related problem with that. Although I
+have not been able to produce any.
+
+Something OSX specific, possibly...
+"""]]
