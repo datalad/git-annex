@@ -549,8 +549,11 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
-		onLocalFast st $ Annex.Content.prepSendAnnex key >>= \case
-			Just (object, checksuccess) -> do
+		onLocalFast st $ Annex.Content.prepSendAnnex' key >>= \case
+			Just (object, check) -> do
+				let checksuccess = check >>= \case
+					Just err -> giveup err
+					Nothing -> return True
 				let verify = Annex.Content.RemoteVerify r
 				copier <- mkFileCopier hardlink st
 				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
@@ -673,7 +676,7 @@ copyToRemote' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> MeterUp
 copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 	| not $ Git.repoIsUrl repo = ifM duc
 		( guardUsable repo (giveup "cannot access remote") $ commitOnCleanup repo r st $
-			copylocal =<< Annex.Content.prepSendAnnex key
+			copylocal =<< Annex.Content.prepSendAnnex' key
 		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsSsh repo = commitOnCleanup repo r st $
@@ -684,11 +687,11 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 	| otherwise = giveup "copying to non-ssh repo not supported"
   where
 	copylocal Nothing = giveup "content not available"
-	copylocal (Just (object, checksuccess)) = do
-		-- The checksuccess action is going to be run in
+	copylocal (Just (object, check)) = do
+		-- The check action is going to be run in
 		-- the remote's Annex, but it needs access to the local
 		-- Annex monad's state.
-		checksuccessio <- Annex.withCurrentState checksuccess
+		checkio <- Annex.withCurrentState check
 		u <- getUUID
 		hardlink <- wantHardLink
 		-- run copy from perspective of remote
@@ -698,9 +701,12 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 				let verify = Annex.Content.RemoteVerify r
 				copier <- mkFileCopier hardlink st
 				let rsp = RetrievalAllKeysSecure
+				let checksuccess = liftIO checkio >>= \case
+					Just err -> giveup err
+					Nothing -> return True
 				res <- logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key $ \_ p' -> 
-						copier object (fromRawFilePath dest) key p' (liftIO checksuccessio) verify
+						copier object (fromRawFilePath dest) key p' checksuccess verify
 				Annex.Content.saveState True
 				return res
 			)

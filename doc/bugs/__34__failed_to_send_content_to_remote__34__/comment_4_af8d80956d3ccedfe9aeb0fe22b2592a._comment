@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-06-25T16:15:40Z"
+ content="""
+I've taken a close look at the error handling in the relevant code path.
+Normally when there's an exception it gets displayed. It is possible
+for the transfer to fail without displaying anything and without throwing an
+exception. When I synthesize such a failure, I see the same
+output you described.
+
+One way that could happen is if git-annex thinks the file got
+modified while it was being sent. If the file was unlocked, and was touched
+by something else while the copy was running, it would be enough to make
+git-annex think that, even though the content is still good. I've made
+it display a reason for the failure in that case.
+
+The only other way I found was if the hash fails to verify, which seems
+already ruled out in your case, but it did result in the same hard to understand
+output, so I've fixed that too.
+
+It would be good to know if one of these changes has fixed it for you.
+The autobuild for linux should be updated within an hour.
+While the scenario with the file having been touched seems unlikely to
+happen repeatedly with different files, it does otherwise match your
+circumstances and seems like the most likely fit.
+"""]]

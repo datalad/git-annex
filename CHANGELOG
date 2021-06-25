@@ -5,6 +5,7 @@ git-annex (8.20210622) UNRELEASED; urgency=medium
     synced/git-annex first.
   * Added annex.freezecontent-command and annex.thawcontent-command
     configs.
+  * Improve display of errors when transfers fail.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Jun 2021 12:25:25 -0400
 

@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -36,6 +36,7 @@ module Annex.Content (
 	linkOrCopy',
 	sendAnnex,
 	prepSendAnnex,
+	prepSendAnnex',
 	removeAnnex,
 	moveBad,
 	KeyLocation(..),
@@ -446,14 +447,15 @@ unlinkAnnex key = do
  - The rollback action should remove the data that was transferred.
  -}
 sendAnnex :: Key -> Annex () -> (FilePath -> Annex a) -> Annex a
-sendAnnex key rollback sendobject = go =<< prepSendAnnex key
+sendAnnex key rollback sendobject = go =<< prepSendAnnex' key
   where
-	go (Just (f, checksuccess)) = do
+	go (Just (f, check)) = do
 		r <- sendobject f
-		unlessM checksuccess $ do
-			rollback
-			giveup "content changed while it was being sent"
-		return r
+		check >>= \case
+			Nothing -> return r
+			Just err -> do
+				rollback
+				giveup err
 	go Nothing = giveup "content not available to send"
 
 {- Returns a file that contains an object's content,
@@ -482,6 +484,16 @@ prepSendAnnex key = withObjectLoc key $ \f -> do
 	return $ if null cache'
 		then Nothing
 		else Just (fromRawFilePath f, sameInodeCache f cache')
+
+prepSendAnnex' :: Key -> Annex (Maybe (FilePath, Annex (Maybe String)))
+prepSendAnnex' key = prepSendAnnex key >>= \case
+	Just (f, checksuccess) -> 
+		let checksuccess' = ifM checksuccess
+			( return Nothing
+			, return (Just "content changed while it was being sent")
+			)
+		in return (Just (f, checksuccess'))
+	Nothing -> return Nothing
 
 cleanObjectLoc :: Key -> Annex () -> Annex ()
 cleanObjectLoc key cleaner = do

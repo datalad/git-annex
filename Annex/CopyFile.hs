@@ -113,7 +113,9 @@ fileCopier copycowtried src dest k meterupdate check verifyconfig =
 			( case iv of
 				Just x -> ifM (liftIO $ finalizeIncremental x)
 					( return (True, Verified)
-					, return (False, UnVerified)
+					, do
+						warning "verification of content failed"
+						return (False, UnVerified)
 					)
 				Nothing -> return (True, UnVerified)
 			, return (False, UnVerified)
