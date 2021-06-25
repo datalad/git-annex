@@ -18,7 +18,7 @@ description, or their UUID. (To undo, use `git-annex semitrust`.)
 
 When a key is specified, indicates that the content of that key has been
 irretrievably lost. This prevents commands like `git annex fsck --all`
-from complaining about it; `--all` will not operate on the key anymore.
+from complaining about it. 
 (To undo, add the key's content back to the repository, 
 by using eg, `git-annex reinject`.)
 
