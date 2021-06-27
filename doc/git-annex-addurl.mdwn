@@ -49,6 +49,12 @@ be used to get better filenames.
   special remotes. This will for example, make addurl
   download the .torrent file and not the contents it points to.
 
+* `--no-raw`
+
+  Require content pointed to by the url to be downloaded using youtube-dl
+  or a special remote, rather than the raw content of the url. if that
+  cannot be done, the add will fail.
+
 * `--file=name`
 
   Use with a filename that does not yet exist to add a new file

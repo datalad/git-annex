@@ -58,6 +58,13 @@ resulting in the new url being downloaded to such a filename.
   special remotes. This will for example, make importfeed
   download a .torrent file and not the contents it points to.
 
+* `--no-raw`
+
+  Require content pointed to by the url to be downloaded using youtube-dl
+  or a special remote, rather than the raw content of the url. if that
+  cannot be done, the import will fail, and the next import of the feed
+  will retry.
+
 * `--template`
 
   Controls where the files are stored.

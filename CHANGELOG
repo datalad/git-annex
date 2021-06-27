@@ -9,6 +9,10 @@ git-annex (8.20210622) UNRELEASED; urgency=medium
   * Dropping an unused object with drop --unused or dropunused will
     mark it as dead, preventing fsck --all from complaining about it
     after it's been dropped from all repositories.
+  * addurl, importfeed: Added --no-raw option that forces download
+    with youtube-dl or a special remote. In particular this can avoid
+    falling back to raw download when youtube-dl is blocked for some
+    reason.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Jun 2021 12:25:25 -0400
 

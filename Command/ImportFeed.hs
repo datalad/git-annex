@@ -42,7 +42,7 @@ import Types.MetaData
 import Logs.MetaData
 import Annex.MetaData
 import Annex.FileMatcher
-import Command.AddUrl (addWorkTree)
+import Command.AddUrl (addWorkTree, checkRaw)
 import Annex.UntrustedFilePath
 import qualified Annex.Branch
 import Logs
@@ -185,7 +185,7 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 			let f' = fromRawFilePath f
 			r <- Remote.claimingUrl url
 			if Remote.uuid r == webUUID || rawOption (downloadOptions opts)
-				then do
+				then checkRaw (downloadOptions opts) $ do
 					let dlopts = (downloadOptions opts)
 						-- force using the filename
 						-- chosen here
@@ -326,8 +326,9 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 			, downloadlink
 			)
 	  where
-		downloadlink = performDownload addunlockedmatcher opts cache todownload
-			{ location = Enclosure linkurl }
+		downloadlink = checkRaw (downloadOptions opts) $
+			performDownload addunlockedmatcher opts cache todownload
+				{ location = Enclosure linkurl }
 
 	addmediafast linkurl mediaurl mediakey =
 		ifM (pure (not (rawOption (downloadOptions opts)))

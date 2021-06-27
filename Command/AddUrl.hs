@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -54,6 +54,7 @@ data AddUrlOptions = AddUrlOptions
 data DownloadOptions = DownloadOptions
 	{ relaxedOption :: Bool
 	, rawOption :: Bool
+	, noRawOption :: Bool
 	, fileOption :: Maybe FilePath
 	, preserveFilenameOption :: Bool
 	, checkGitIgnoreOption :: CheckGitIgnore
@@ -90,6 +91,10 @@ parseDownloadOptions withfileoptions = DownloadOptions
 	<*> switch
 		( long "raw"
 		<> help "disable special handling for torrents, youtube-dl, etc"
+		)
+	<*> switch
+		( long "no-raw"
+		<> help "prevent downloading raw url content, must use special handling"
 		)
 	<*> (if withfileoptions
 		then optional (strOption
@@ -265,7 +270,7 @@ performWeb addunlockedmatcher o url file urlinfo = ifAnnexed file addurl geturl
 	addurl = addUrlChecked o url file webUUID $ \k ->
 		ifM (pure (not (rawOption (downloadOptions o))) <&&> youtubeDlSupported url)
 			( return (True, True, setDownloader url YoutubeDownloader)
-			, return (Url.urlExists urlinfo, Url.urlSize urlinfo == fromKey keySize k, url)
+			, checkRaw (downloadOptions o) $ return (Url.urlExists urlinfo, Url.urlSize urlinfo == fromKey keySize k, url)
 			)
 
 {- Check that the url exists, and has the same size as the key,
@@ -326,7 +331,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 			in ifAnnexed f
 				(alreadyannexed (fromRawFilePath f))
 				(dl f)
-		Left _ -> normalfinish tmp
+		Left _ -> checkRaw o (normalfinish tmp)
 	  where
 		dl dest = withTmpWorkDir mediakey $ \workdir -> do
 			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith R.removeLink)
@@ -340,7 +345,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 								showDestinationFile (fromRawFilePath dest)
 								addWorkTree canadd addunlockedmatcher webUUID mediaurl dest mediakey (Just (toRawFilePath mediafile))
 								return $ Just mediakey
-						Right Nothing -> normalfinish tmp
+						Right Nothing -> checkRaw o (normalfinish tmp)
 						Left msg -> do
 							cleanuptmp
 							warning msg
@@ -356,6 +361,11 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 				else do
 					warning $ dest ++ " already exists; not overwriting"
 					return Nothing
+	
+checkRaw :: DownloadOptions -> Annex a -> Annex a
+checkRaw o a
+	| noRawOption o = giveup "Unable to use youtube-dl or a special remote and --no-raw was specified."
+	| otherwise = a
 
 {- The destination file is not known at start time unless the user provided
  - a filename. It's not displayed then for output consistency, 
@@ -464,8 +474,9 @@ nodownloadWeb :: AddUnlockedMatcher -> DownloadOptions -> URLString -> Url.UrlIn
 nodownloadWeb addunlockedmatcher o url urlinfo file
 	| Url.urlExists urlinfo = if rawOption o
 		then nomedia
-		else either (const nomedia) (usemedia . toRawFilePath)
-			=<< youtubeDlFileName url
+		else youtubeDlFileName url >>= \case
+			Right mediafile -> usemedia (toRawFilePath mediafile)
+			Left _ -> checkRaw o nomedia
 	| otherwise = do
 		warning $ "unable to access url: " ++ url
 		return Nothing
