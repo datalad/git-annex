@@ -32,3 +32,10 @@ Clone a git annex repo on a network file system,  run
 [[!meta title="git-annex and NFS don't mix; could git annex init detect NFS and refuse to use it?"]]
 
 [[!tag projects/datalad]]
+
+> [[closing|done]] because annex.pidlock exists, and git-annex init 
+> checks if FCNTL locking works, and if not, enables it. So if the NFS
+> server does not support FCNTL locking at all, it will use pidlock
+> automatically. And if the NFS server does support locking, there does not
+> seem to be a good way to probe that it's NFS and enable annex.pidlock.
+> --[[Joey]]
