@@ -3,3 +3,6 @@
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 [[!tag moreinfo]]
+
+> [[closing|done]] because this never got to a concrete proposal that
+> didn't have fatal problems. --[[Joey]]
