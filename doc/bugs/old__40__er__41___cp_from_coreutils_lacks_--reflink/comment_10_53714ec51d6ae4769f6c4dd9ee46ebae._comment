@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2021-06-28T16:34:31Z"
+ content="""
+Since this bug was opened, some uses of cp have been converted to git-annex
+doing the copy itself without cp, first probing for CoW support.
+
+I do not think that the places mentioned in this bug report where cp fails
+are ones that have been converted yet.
+The most likely way to fix this bug would be to convert them. But the need
+to remember what directory combinations it's probed for CoW support in and
+so avoid probing for CoW support every time complicates that conversion.
+See related: [[todo/support_macOS__39___cp_-c___40__cp_--reflink_equivalent__41__]]
+
+But I don't think git-annex will ever stop relying on programs bundled with
+it (when not packaged with a package manager that supports deps). It's much
+easier to reimplement cp than gpg or ssh. So these version skews are always
+a potential problem, when people are doing things that put other programs
+ahead of the ones bundled with git-annex in PATH. So the benefit of
+avoiding external cp entirely just doesn't seem compelling.
+
+I've disabled using --reflink=auto on windows. Going to close this with
+that. 
+"""]]

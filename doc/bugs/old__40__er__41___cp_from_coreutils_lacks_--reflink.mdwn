@@ -41,3 +41,5 @@ Meanwhile I will see if there is some sensible way to get more uptodate coreutil
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]](ish) --[[Joey]]

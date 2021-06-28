@@ -1,6 +1,7 @@
 {- Checks system configuration and generates Build/SysConfig and Build/Version. -}
 
 {-# OPTIONS_GHC -fno-warn-tabs #-}
+{-# LANGUAGE CPP #-}
 
 module Build.Configure where
 
@@ -23,7 +24,7 @@ tests =
 	, testCp "cp_a" "-a"
 	, testCp "cp_p" "-p"
 	, testCp "cp_preserve_timestamps" "--preserve=timestamps"
-	, testCp "cp_reflink_supported" "--reflink=auto"
+	, testCpReflinkAuto
 	, TestCase "xargs -0" $ testCmd "xargs_0" "xargs -0 </dev/null"
 	, TestCase "rsync" $ testCmd "rsync" "rsync --version >/dev/null"
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
@@ -50,6 +51,16 @@ testCp k option = TestCase cmd $ testCmd k cmdline
   where
 	cmd = "cp " ++ option
 	cmdline = cmd ++ " " ++ testFile ++ " " ++ testFile ++ ".new"
+
+testCpReflinkAuto :: TestCase
+#ifdef mingw32_HOST_OS
+-- Windows does not support reflink so don't even try to use the option.
+testCpReflinkAuto = TestCase k (Config k (BoolConfig False))
+#else
+testCpReflinkAuto = testCp k "--reflink=auto"
+#endif
+  where
+	k = "cp_reflink_supported"
 
 getUpgradeLocation :: Test
 getUpgradeLocation = do
