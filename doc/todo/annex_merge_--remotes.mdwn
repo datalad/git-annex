@@ -3,3 +3,6 @@ ATM 'annex merge' does not accept any parameter to specify which remotes to cons
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 [[!tag moreinfo]]
+
+> [[closing|done]] because there is a way to do it with git config, and no
+> better way for git-annex to do it. --[[Joey]]
