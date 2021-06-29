@@ -42,6 +42,7 @@ import Utility.Directory.Create
 import Utility.Tmp.Dir
 import Utility.Rsync
 import Utility.FileMode
+import Utility.CopyFile
 import qualified Utility.RawFilePath as R
 
 import qualified Data.Set as S
@@ -115,7 +116,12 @@ retrieveMissingObjects missing referencerepo r
 	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
 		unlessM (boolSystem "git" [Param "init", File tmpdir]) $
 			error $ "failed to create temp repository in " ++ tmpdir
+		let repoconfig r' = fromRawFilePath (localGitDir r' P.</> "config")
 		tmpr <- Config.read =<< Construct.fromPath (toRawFilePath tmpdir)
+		whenM (doesFileExist (repoconfig r)) $
+			void $ copyFileExternal CopyAllMetaData
+				(repoconfig r)
+				(repoconfig tmpr)
 		rs <- Construct.fromRemotes r
 		stillmissing <- pullremotes tmpr rs fetchrefstags missing
 		if S.null (knownMissing stillmissing)
