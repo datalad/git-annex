@@ -1,6 +1,6 @@
 {- git repository recovery
  -
- - Copyright 2013-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -29,6 +29,7 @@ import Git.Sha
 import Git.Types
 import Git.Fsck
 import Git.Index
+import Git.Env
 import qualified Git.Config as Config
 import qualified Git.Construct as Construct
 import qualified Git.LsTree as LsTree
@@ -61,15 +62,14 @@ cleanCorruptObjects fsckresults r = do
 		whenM (isMissing s r) $
 			removeLoose s
 
-{- Explodes all pack files, and deletes them.
+{- Explodes all pack files to loose objects, and deletes the pack files.
  -
- - First moves all pack files to a temp dir, before unpacking them each in
- - turn.
+ - git unpack-objects will not unpack objects from a pack file that are
+ - in the git repo. So, GIT_OBJECT_DIRECTORY is pointed to a temporary
+ - directory, and the loose objects then are moved into place, before
+ - deleting the pack files.
  -
- - This is because unpack-objects will not unpack a pack file if it's in the
- - git repo.
- -
- - Also, this prevents unpack-objects from possibly looking at corrupt
+ - Also, that prevents unpack-objects from possibly looking at corrupt
  - pack files to see if they contain an object, while unpacking a
  - non-corrupt pack file.
  -}
@@ -78,18 +78,28 @@ explodePacks r = go =<< listPackFiles r
   where
 	go [] = return False
 	go packs = withTmpDir "packs" $ \tmpdir -> do
+		r' <- addGitEnv r "GIT_OBJECT_DIRECTORY" tmpdir
 		putStrLn "Unpacking all pack files."
 		forM_ packs $ \packfile -> do
-			moveFile packfile (tmpdir </> takeFileName packfile)
-			removeWhenExistsWith R.removeLink
-				(packIdxFile (toRawFilePath packfile))
-		forM_ packs $ \packfile -> do
-			let tmp = tmpdir </> takeFileName packfile
-			allowRead (toRawFilePath tmp)
+			-- Just in case permissions are messed up.
+			allowRead (toRawFilePath packfile)
 			-- May fail, if pack file is corrupt.
 			void $ tryIO $
-				pipeWrite [Param "unpack-objects", Param "-r"] r $ \h ->
-				L.hPut h =<< L.readFile tmp
+				pipeWrite [Param "unpack-objects", Param "-r"] r' $ \h ->
+				L.hPut h =<< L.readFile packfile
+		objs <- dirContentsRecursive tmpdir
+		forM_ objs $ \objfile -> do
+			f <- relPathDirToFile
+				(toRawFilePath tmpdir)
+				(toRawFilePath objfile)
+			let dest = objectsDir r P.</> f
+			createDirectoryIfMissing True
+				(fromRawFilePath (parentDir dest))
+			moveFile objfile (fromRawFilePath dest)
+		forM_ packs $ \packfile -> do
+			let f = toRawFilePath packfile
+			removeWhenExistsWith R.removeLink f
+			removeWhenExistsWith R.removeLink (packIdxFile f)
 		return True
 
 {- Try to retrieve a set of missing objects, from the remotes of a

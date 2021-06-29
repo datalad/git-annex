@@ -13,6 +13,9 @@ git-annex (8.20210622) UNRELEASED; urgency=medium
     with youtube-dl or a special remote. In particular this can avoid
     falling back to raw download when youtube-dl is blocked for some
     reason.
+  * Fixed bug that interrupting git-annex repair (or assistant) while
+    it was fixing repository corruption would lose objects that were
+    contained in pack files.
 
  -- Joey Hess <id@joeyh.name>  Mon, 21 Jun 2021 12:25:25 -0400
 
