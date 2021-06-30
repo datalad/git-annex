@@ -105,4 +105,5 @@ Git fsck spat out a huge list of broken blobs and trees.
 
 There are a surprising amount of weird bugs and quirks like these but it's such an amazing tool, there's nothing like it.
 
-> [[fixed|done]] --[[Joey]]
+> [[fixed|done]] although I have opened [[assistant_repair_misfires]] for
+> part of the cause of this. --[[Joey]]

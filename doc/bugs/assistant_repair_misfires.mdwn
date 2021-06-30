@@ -1,0 +1,15 @@
+The assistant's git-annex repair sometimes happens when git fsck does not
+actually detect any problems.
+
+See [[Git_repos_corrupt_themselves]] of which this was part of the cause,
+although the data loss part of that was solved.
+
+I saw this happen on my sister's laptop, in a freshly cloned repo,
+with a git-annex version that fixed that data loss.
+assistant was set up to fsck and on the very first fsck it started git
+repair. git fsck reported no problems at all. --[[Joey]]
+
+> .git/annex/fsckresults/$uuid was empty, which means that
+> writeFsckResults was called with FsckFailed. So apparently
+> the fsck exited nonzero for some reason, but did not detect
+> any misssing shas.
