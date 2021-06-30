@@ -22,14 +22,20 @@ import qualified Data.Set as S
 writeFsckResults :: UUID -> FsckResults -> Annex ()
 writeFsckResults u fsckresults = do
 	logfile <- fromRepo $ gitAnnexFsckResultsLog u
-	case fsckresults of
-		FsckFailed -> store S.empty False logfile
-		FsckFoundMissing s t
-			| S.null s -> liftIO $
-				removeWhenExistsWith R.removeLink logfile
-			| otherwise -> store s t logfile
+	case serializeFsckResults fsckresults of
+		Just s -> store s logfile
+		Nothing -> liftIO $
+			removeWhenExistsWith R.removeLink logfile
   where
-	store s t logfile = writeLogFile logfile $ serialize s t
+	store s logfile = writeLogFile logfile s
+
+serializeFsckResults :: FsckResults -> Maybe String
+serializeFsckResults fsckresults = case fsckresults of
+	FsckFailed -> Just (serialize S.empty False)
+	FsckFoundMissing s t
+		| S.null s -> Nothing
+		| otherwise -> Just (serialize s t)
+  where
 	serialize s t =
 		let ls = map fromRef (S.toList s)
 		in if t
@@ -40,7 +46,10 @@ readFsckResults :: UUID -> Annex FsckResults
 readFsckResults u = do
 	logfile <- fromRepo $ gitAnnexFsckResultsLog u
 	liftIO $ catchDefaultIO (FsckFoundMissing S.empty False) $
-		deserialize . lines <$> readFile (fromRawFilePath logfile)
+		deserializeFsckResults <$> readFile (fromRawFilePath logfile)
+
+deserializeFsckResults :: String -> FsckResults
+deserializeFsckResults = deserialize . lines
   where
 	deserialize ("truncated":ls) = deserialize' ls True
 	deserialize ls = deserialize' ls False
