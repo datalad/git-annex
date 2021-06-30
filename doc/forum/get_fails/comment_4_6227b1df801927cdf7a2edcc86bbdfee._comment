@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2021-06-30T14:26:33Z"
+ content="""
+I think we ran into this issue in DataLad while working on ZFS across volumes: see [datalad/issues/5750](https://github.com/datalad/datalad/issues/5750) for more info.
+"""]]
