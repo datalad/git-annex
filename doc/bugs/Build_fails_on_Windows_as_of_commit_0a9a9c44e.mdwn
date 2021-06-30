@@ -1,0 +1,4 @@
+As of commit 0a9a9c44e, trying to build git-annex on Windows fails because due to a type error.  [This patch](https://raw.githubusercontent.com/datalad/git-annex/master/patches/20210630-0a9a9c44e-fix-windows.patch) fixes it.
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]
