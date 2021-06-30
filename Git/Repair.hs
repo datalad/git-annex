@@ -476,7 +476,7 @@ runRepair :: (Ref -> Bool) -> Bool -> Repo -> IO (Bool, [Branch])
 runRepair removablebranch forced g = do
 	preRepair g
 	putStrLn "Running git fsck ..."
-	fsckresult <- findBroken False g
+	fsckresult <- findBroken False False g
 	if foundBroken fsckresult
 		then do
 			putStrLn "Fsck found problems, attempting repair."
@@ -500,7 +500,7 @@ runRepairOf fsckresult removablebranch forced referencerepo g = do
 runRepair' :: (Ref -> Bool) -> FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, [Branch])
 runRepair' removablebranch fsckresult forced referencerepo g = do
 	cleanCorruptObjects fsckresult g
-	missing <- findBroken False g
+	missing <- findBroken False False g
 	stillmissing <- retrieveMissingObjects missing referencerepo g
 	case stillmissing of
 		FsckFoundMissing s t
@@ -529,7 +529,7 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 			| forced -> ifM (pure (repoIsLocalBare g) <||> checkIndex g)
 				( do
 					cleanCorruptObjects FsckFailed g
-					stillmissing' <- findBroken False g
+					stillmissing' <- findBroken False False g
 					case stillmissing' of
 						FsckFailed -> return (False, [])
 						FsckFoundMissing s t -> forcerepair s t
@@ -575,7 +575,7 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 		-- the repair process.
 		if fscktruncated
 			then do
-				fsckresult' <- findBroken False g
+				fsckresult' <- findBroken False False g
 				case fsckresult' of
 					FsckFailed -> do
 						putStrLn "git fsck is failing"
@@ -597,7 +597,7 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 		removeWhenExistsWith R.removeLink (indexFile g)
 		-- The corrupted index can prevent fsck from finding other
 		-- problems, so re-run repair.
-		fsckresult' <- findBroken False g
+		fsckresult' <- findBroken False False g
 		result <- runRepairOf fsckresult' removablebranch forced referencerepo g
 		putStrLn "Removed the corrupted index file. You should look at what files are present in your working tree and git add them back to the index when appropriate."
 		return result

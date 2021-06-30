@@ -14,13 +14,39 @@ repair. git fsck reported no problems at all. --[[Joey]]
 > the fsck exited nonzero for some reason, but did not detect
 > any misssing shas.
 > 
-> Reproed on my own laptop, with the family annex. However,
-> it is not fully repoducible, I repeated the same steps
-> again and it didn't happen. Those were: Clone;
+> Reproed on my own laptop, with the family annex. This reproduces it about
+> 50% of the time: Clone over ssh; git-annex init;
 > git remote rm origin; git annex schedule here 'fsck self 30m every day at
-> any time'; git annex assistant
+> any time'; git annex assistant; kill git-annex fsck process
+> 
+> Confirmed that it's getting FsckFailed.
 > 
 > Hypothesis: Maybe fsck is failing due to some other change
-> that is being made to the git repo at the same time it's running?
+> that is being made to the git repo by the assistant
+> at the same time it's running?
 > I noticed some files being downloaded from the web at the same
 > time the failed fsck was running.
+> 
+> Fsck output to stdout is empty, stderr is:
+> 
+> 	missing commit 4da14c19140e4c240358af4518d83661713ab044
+> 
+> Intriguingly, that commit is present. It is a commit on the git-annex
+> branch. And fscking again succeeds. So, fsck found a reference to a
+> commit object that had not yet been written to disk. This feels like a
+> bug in git, because if it were interrupted there the repo would be left
+> in a bad state.
+> 
+> Anyway, git-annex verifies that the commit is present, to double-check
+> it understood fsck correctly. And it is. So it is not considered a
+> problem. But, fsck still exits nonzero because it thinks there was a
+> problem. And that's the problem.
+> 
+> Fixed by making git-annex assistant ignore fsck nonzero
+> exit status when it does not find any missing objects.
+> Since any actual failure that makes fsck do that can't
+> be distinguished from a false positive. I left git-annex repair
+> unchanged, because if the user knows the repo is badly broken and explictly
+> runs it, they would be surprised if it didn't repair.
+> 
+> [[fixed|done]] --[[Joey]]

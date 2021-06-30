@@ -1,4 +1,5 @@
 {- git fsck interface
+i it is not fully repoducibleI repeated the same steps
  -
  - Copyright 2013 Joey Hess <id@joeyh.name>
  -
@@ -69,9 +70,17 @@ instance Monoid FsckOutput where
  - look for anything in its output (both stdout and stderr) that appears
  - to be a git sha. Not all such shas are of broken objects, so ask git
  - to try to cat the object, and see if it fails.
+ -
+ - Note that there is a possible false positive: When changes are being
+ - made to the repo while this is running, fsck might complain about a
+ - missing object that has not made it to disk yet. Catting the object
+ - then succeeds, so it's not included in the FsckResults. But, fsck then
+ - exits nonzero, and so FsckFailed is returned. Set ignorenonzeroexit
+ - to avoid this false positive, at the risk of perhaps missing a problem
+ - so bad that fsck crashes without outputting any missing shas.
  -}
-findBroken :: Bool -> Repo -> IO FsckResults
-findBroken batchmode r = do
+findBroken :: Bool -> Bool -> Repo -> IO FsckResults
+findBroken batchmode ignorenonzeroexit r = do
 	let (command, params) = ("git", fsckParams r)
 	(command', params') <- if batchmode
 		then toBatchCommand (command, params)
@@ -90,10 +99,10 @@ findBroken batchmode r = do
 		fsckok <- checkSuccessProcess pid
 		case mappend o1 o2 of
 			FsckOutput badobjs truncated
-				| S.null badobjs && not fsckok -> return FsckFailed
+				| S.null badobjs && not fsckok -> return fsckfailed
 				| otherwise -> return $ FsckFoundMissing badobjs truncated
 			NoFsckOutput
-				| not fsckok -> return FsckFailed
+				| not fsckok -> return fsckfailed
 				| otherwise -> return noproblem
 			-- If all fsck output was duplicateEntries warnings,
 			-- the repository is not broken, it just has some
@@ -104,6 +113,9 @@ findBroken batchmode r = do
 	
 	maxobjs = 10000
 	noproblem = FsckFoundMissing S.empty False
+	fsckfailed
+		| ignorenonzeroexit = noproblem
+		| otherwise = FsckFailed
 
 foundBroken :: FsckResults -> Bool
 foundBroken FsckFailed = True

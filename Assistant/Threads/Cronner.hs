@@ -185,7 +185,7 @@ runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
 	g <- liftAnnex gitRepo
 	fsckresults <- showFscking urlrenderer Nothing $ tryNonAsync $ do
 		void $ batchCommand program (Param "fsck" : annexFsckParams d)
-		Git.Fsck.findBroken True g
+		Git.Fsck.findBroken True False g
 	u <- liftAnnex getUUID
 	void $ repairWhenNecessary urlrenderer u Nothing fsckresults
 	mapM_ reget =<< liftAnnex (dirKeys gitAnnexBadDir)
@@ -214,7 +214,7 @@ runActivity' urlrenderer (ScheduledRemoteFsck u s d) = dispatch =<< liftAnnex (r
 		fsckresults <- showFscking urlrenderer (Just rmt) $ tryNonAsync $ do
 			void annexfscker
 			if Git.repoIsLocal repo && not (Git.repoIsLocalUnknown repo)
-				then Just <$> Git.Fsck.findBroken True repo
+				then Just <$> Git.Fsck.findBroken True True repo
 				else pure Nothing
 		maybe noop (void . repairWhenNecessary urlrenderer u (Just rmt)) fsckresults
 

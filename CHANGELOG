@@ -1,3 +1,10 @@
+git-annex (8.20210631) UNRELEASED; urgency=medium
+
+  * assistant: Avoid unncessary git repository repair in a situation where
+    git fsck gets confused about a commit that is made while it's running.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 30 Jun 2021 17:55:10 -0400
+
 git-annex (8.20210630) upstream; urgency=medium
 
   * Fixed bug that interrupting git-annex repair (or assistant) while

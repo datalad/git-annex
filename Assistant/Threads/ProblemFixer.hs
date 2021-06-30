@@ -60,7 +60,7 @@ handleRemoteProblem' repo urlrenderer rmt
 			( do
 				fixedlocks <- repairStaleGitLocks repo
 				fsckresults <- showFscking urlrenderer (Just rmt) $ tryNonAsync $
-					Git.Fsck.findBroken True repo
+					Git.Fsck.findBroken True True repo
 				repaired <- repairWhenNecessary urlrenderer (Remote.uuid rmt) (Just rmt) fsckresults
 				return $ fixedlocks || repaired
 			, return False
