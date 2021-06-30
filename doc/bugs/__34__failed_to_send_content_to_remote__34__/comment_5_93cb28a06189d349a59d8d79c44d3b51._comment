@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="falsifian"
+ avatar="http://cdn.libravatar.org/avatar/59c3c23c500d20d83ecb9d1f149be9ae"
+ subject="comment 5"
+ date="2021-06-30T00:09:23Z"
+ content="""
+Hm, the mtime of the target of `software_releases/openbsd/68/amd64/install68.img` is later than the time of my last comment:
+
+    james copter annex-neu $ ls -l .git/annex/objects/MF/F8/SHA256-s696745984--14ea602583030b33e91ee8fde8dd76113984e9fac6598f9f609f408137c4cff2/SHA256-s696745984--14ea602583030b33e91ee8fde8dd76113984e9fac6598f9f609f408137c4cff2
+    -r--r--r-- 1 james james 696745984 Jun 23 20:17 .git/annex/objects/MF/F8/SHA256-s696745984--14ea602583030b33e91ee8fde8dd76113984e9fac6598f9f609f408137c4cff2/SHA256-696745984--14ea602583030b33e91ee8fde8dd76113984e9fac6598f9f609f408137c4cff2
+
+I can't imagine what would have touched it in the meantime, but there it is. So, I suspect your theory about the mtime changing is right. (I double-checked that git annex fsck is still happy with the file today.)
+
+Next time I see this behaviour, I'll try running your updated code to confirm the cause, and also try to figure out what's touching the file.
+"""]]
