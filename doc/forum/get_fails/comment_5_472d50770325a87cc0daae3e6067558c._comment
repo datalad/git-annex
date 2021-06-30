@@ -1,0 +1,193 @@
+[[!comment format=mdwn
+ username="adina.wagner@2a4cac6443aada2bd2a329b8a33f4a7b87cc8eff"
+ nickname="adina.wagner"
+ avatar="http://cdn.libravatar.org/avatar/80b124ad61d6008fa0f6f0b4b0f7c2ef"
+ subject="comment 5"
+ date="2021-06-30T16:22:13Z"
+ content="""
+Just to migrate a bit of maybe-relevant information to this issue:
+
+
+With git-annex version ``8.20210310`` in a v8 repository, file retrieval from origin (a local path, but one a different ZFS volume) fails for a file that was created in a distributed workflow on a compute node, even though the file content is present in origin (as verified via ``git-annex fsck``).
+
+It seems to be a combination of system, git-annex version, and the way that the file in question came to life. 
+
+I only have a few \"breadcrumbs\" to the cause. For one, here is the debug output of retrieving this file with git annex ``8.20210310`` and higher versions (the latest snapshot I tried was from June this year).
+
+
+```
+(magma) adina@juseless in /tmp/memento-sss on git:master                                                              
+❱ git annex -v -d get sub-001/meg/sub-001_task-memento_proc-sss_meg.fif                                       
+[2021-06-16 17:46:07.800857089] process [3696034] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"s
+ymbolic-ref\",\"-q\",\"HEAD\"]                                                                                             
+[2021-06-16 17:46:07.803102514] process [3696034] done ExitSuccess                                                    
+[2021-06-16 17:46:07.803457883] process [3696035] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"s
+how-ref\",\"refs/heads/master\"]                                                                                         
+[2021-06-16 17:46:07.805656038] process [3696035] done ExitSuccess                                                    
+[2021-06-16 17:46:07.806171387] process [3696036] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"l
+s-files\",\"--stage\",\"-z\",\"--\",\"sub-001/meg/sub-001_task-memento_proc-sss_meg.fif\"]                                     
+[2021-06-16 17:46:07.806645086] process [3696037] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"c
+at-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]                                        
+[2021-06-16 17:46:07.807008445] process [3696038] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"c
+at-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]                                              
+[2021-06-16 17:46:07.807465024] process [3696039] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"c
+at-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]                                              
+get sub-001/meg/sub-001_task-memento_proc-sss_meg.fif [2021-06-16 17:46:07.812041813] process [3696040] read: git [\"--
+git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]                                           
+[2021-06-16 17:46:07.814947676] process [3696040] done ExitSuccess                                                    
+[2021-06-16 17:46:07.815368285] process [3696041] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"s
+how-ref\",\"--hash\",\"refs/heads/git-annex\"]                                                                             
+[2021-06-16 17:46:07.816996222] process [3696041] done ExitSuccess                                                    
+[2021-06-16 17:46:07.81766784] process [3696042] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"lo
+g\",\"refs/heads/git-annex..27c5aca9a00451712975cb05c5769a76b4aa0d0e\",\"--pretty=%H\",\"-n1\"]                              
+[2021-06-16 17:46:07.819557716] process [3696042] done ExitSuccess                                                    
+[2021-06-16 17:46:07.831766578] process [3696043] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"c
+at-file\",\"--batch\"]                                                                                                   
+[2021-06-16 17:46:07.832626286] process [3696044] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"c
+at-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]                                                   
+[2021-06-16 17:46:07.835034] process [3696045] read: git [\"config\",\"--null\",\"--list\"]                                 
+[2021-06-16 17:46:07.837243505] process [3696045] done ExitSuccess                                                    
+(from origin...)                                                                                                      
+[2021-06-16 17:46:08.10846678] process [3696047] read: cp [\"--reflink=always\",\"--preserve=timestamps\",\"/data/project/b
+rainpeach/memento-sss/.git/annex/objects/gX/13/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif/MD5E-s2145810666
+--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif\",\".git/annex/tmp/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif\"]      
+[2021-06-16 17:46:08.110451355] process [3696047] done ExitFailure 1                                                  
+                                                                                                                      
+  failed to retrieve content from remote
+[2021-06-16 17:46:14.452454236] process [3696043] done ExitSuccess
+[2021-06-16 17:46:14.452774955] process [3696044] done ExitSuccess
+
+
+  failed to retrieve content from remote
+  Unable to access these remotes: origin
+[2021-06-16 17:46:19.631489338] process [3696371] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"c
+at-file\",\"--batch\"]
+[2021-06-16 17:46:19.632672226] process [3696372] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"c
+at-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+
+  Maybe add some of these git remotes (git remote add ...):
+        43d8b7cc-0a36-4b30-b275-5b1b4b3ecdb9 -- adina@cpu10:/tmp/ds
+failed
+[2021-06-16 17:46:19.635961178] process [3696371] done ExitSuccess
+[2021-06-16 17:46:19.636481017] process [3696372] done ExitSuccess
+[2021-06-16 17:46:19.636659226] process [3696039] done ExitSuccess
+[2021-06-16 17:46:19.637114375] process [3696038] done ExitSuccess
+[2021-06-16 17:46:19.637294665] process [3696037] done ExitSuccess
+[2021-06-16 17:46:19.637420785] process [3696036] done ExitSuccess
+git-annex: get: 1 failed
+```
+
+Note that ``cp --reflink=\"always\"`` fails on this system with \"Operation not supported\" if executed on its own.
+
+Next, I have rolled back git-annex to version ``8.20200330-1~bpo10+1`` on this system (a version where the workflow that now fails for us has succeeded), and file retrieval (using ``datalad get``) succeeds. 
+Still, there are a few details of this issue that I do not have a good enough understanding of.
+
+One, a ``git annex get`` debug output still looks fishy, because it seems that even though file retrieval via ``rsync`` succeeds, git-annex reports a failure (datalad does not bubble this failure up, so ``datalad get`` reports success)
+
+```
+adina@cpu10 in ~/test39 on git:cleaned_epochs_from_first_stimulus
+❱ git annex --debug get sub-001/meg/sub-001_task-memento_proc-sss_meg.fif
+[2021-06-30 17:33:49.728477371] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2021-06-30 17:33:49.731865736] process done ExitSuccess
+[2021-06-30 17:33:49.731981718] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/cleaned_epochs_from_first_stimulus\"]
+[2021-06-30 17:33:49.740968815] process done ExitSuccess
+[2021-06-30 17:33:49.741741152] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"sub-001/meg/sub-001_task-memento_proc-sss_meg.fif\"]
+[2021-06-30 17:33:49.744215456] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2021-06-30 17:33:49.744686577] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+get sub-001/meg/sub-001_task-memento_proc-sss_meg.fif [2021-06-30 17:33:49.752044898] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2021-06-30 17:33:49.75626739] process done ExitSuccess
+[2021-06-30 17:33:49.756560297] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2021-06-30 17:33:49.761823592] process done ExitSuccess
+[2021-06-30 17:33:49.762766313] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..92f8b4701dc825ce433f6be042be281ffe12326b\",\"--pretty=%H\",\"-n1\"]
+[2021-06-30 17:33:49.771567205] process done ExitSuccess
+[2021-06-30 17:33:49.78138944] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2021-06-30 17:33:49.782178708] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2021-06-30 17:33:49.789209722] read: git [\"config\",\"--null\",\"--list\"]
+[2021-06-30 17:33:49.793189149] process done ExitSuccess
+(from origin...) 
+[2021-06-30 17:33:49.812118624] read: cp [\"--reflink=always\",\"--preserve=timestamps\",\"../../../data/project/brainpeach/memento-sss/.git/annex/objects/gX/13/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif\",\".git/annex/tmp/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif\"]
+[2021-06-30 17:33:49.814419614] process done ExitFailure 1
+[2021-06-30 17:33:49.814802862] read: rsync [\"--progress\",\"--inplace\",\"--perms\",\"../../../data/project/brainpeach/memento-sss/.git/annex/objects/gX/13/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif\",\".git/annex/tmp/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif\"]
+100%  1.1 GiB         324 MiB/s 0s[2021-06-30 17:33:57.881996659] process done ExitSuccess
+(from origin...)                  
+[2021-06-30 17:33:57.891459866] read: rsync [\"--progress\",\"--inplace\",\"--perms\",\"../../../data/project/brainpeach/memento-sss/.git/annex/objects/gX/13/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif\",\".git/annex/tmp/MD5E-s2145810666--6dc9f68f36918eb0d4e2522ac0a3ec5a.fif\"]
+100%  1.1 GiB         304 MiB/s 0s[2021-06-30 17:34:04.814109593] process done ExitSuccess
+                                  
+  Unable to access these remotes: origin
+
+  Try making some of these repositories available:
+  	43d8b7cc-0a36-4b30-b275-5b1b4b3ecdb9 -- adina@cpu10:/tmp/ds
+   	925547b2-8ee7-4856-be15-a247e762eb56 -- adina@juseless:/data/project/brainpeach/memento-sss [origin]
+failed
+[2021-06-30 17:34:04.823873316] process done ExitSuccess
+[2021-06-30 17:34:04.824383708] process done ExitSuccess
+[2021-06-30 17:34:04.824748416] process done ExitSuccess
+[2021-06-30 17:34:04.825197456] process done ExitSuccess
+git-annex: get: 1 failed
+
+```
+
+Second, this issue doesn't affect all files, and I haven't been able to create a reproducer yet. The issue has surfaced for us in distributed workflows where compute nodes of a cluster perform jobs, and push their results back to origin (that's why a second location of the file in my output exists at cpu10 - its the node it has originally been created on before it was pushed to origin). It does not affect files that haven't been created in a distributed fashion but lie right next to the files where file retrieval fails. Here is the debug output from retrieving different data from a different dataset in the same fashion:
+
+```
+adina@juseless in ~/scratch/memento-bids on git:master
+❱ git annex --debug get sub-001/meg/sub-001_acq-crosstalk_meg.fif
+
+[2021-06-30 18:05:39.354458024] process [3120711] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2021-06-30 18:05:39.357027239] process [3120711] done ExitSuccess
+[2021-06-30 18:05:39.357334809] process [3120712] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/master\"]
+[2021-06-30 18:05:39.369392179] process [3120712] done ExitSuccess
+[2021-06-30 18:05:39.370684287] process [3120713] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"ls-files\",\"--stage\",\"-z\",\"--\",\"sub-001/meg/sub-001_acq-crosstalk_meg.fif\"]
+[2021-06-30 18:05:39.371346376] process [3120714] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2021-06-30 18:05:39.372152014] process [3120715] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2021-06-30 18:05:39.374255541] process [3120716] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+get sub-001/meg/sub-001_acq-crosstalk_meg.fif [2021-06-30 18:05:39.379270343] process [3120717] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"git-annex\"]
+[2021-06-30 18:05:39.381834378] process [3120717] done ExitSuccess
+[2021-06-30 18:05:39.382109258] process [3120718] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2021-06-30 18:05:39.384463794] process [3120718] done ExitSuccess
+[2021-06-30 18:05:39.385120813] process [3120719] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"log\",\"refs/heads/git-annex..610e016c34619c5df9b81e35a3bef749c0a556f9\",\"--pretty=%H\",\"-n1\"]
+[2021-06-30 18:05:39.388050878] process [3120719] done ExitSuccess
+[2021-06-30 18:05:39.39918469] process [3120720] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2021-06-30 18:05:39.399882519] process [3120721] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2021-06-30 18:05:39.402873194] process [3120722] read: git [\"config\",\"--null\",\"--list\"]
+[2021-06-30 18:05:39.406106719] process [3120722] done ExitSuccess
+(from origin...) 
+[2021-06-30 18:05:39.438294596] process [3120724] read: cp [\"--reflink=always\",\"--preserve=timestamps\",\"/data/project/brainpeach/memento-bids/.git/annex/objects/J2/X9/MD5E-s27253--1549e4884af4cee94b94bf9a9345d3c5.fif/MD5E-s27253--1549e4884af4cee94b94bf9a9345d3c5.fif\",\".git/annex/tmp/MD5E-s27253--1549e4884af4cee94b94bf9a9345d3c5.fif\"]
+[2021-06-30 18:05:39.442899098] process [3120724] done ExitFailure 1
+[2021-06-30 18:05:39.450760045] process [3120720] done ExitSuccess
+[2021-06-30 18:05:39.451298664] process [3120721] done ExitSuccess
+[2021-06-30 18:05:39.456210596] process [3120725] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"filter.annex.smudge=\",\"-c\",\"filter.annex.clean=\",\"-c\",\"diff.external=\",\"diff\",\"--cached\",\"--raw\",\"-z\",\"--no-abbrev\",\"-G^/annex/objects/\",\"--diff-filter=AMUT\",\"--no-renames\",\"--ignore-submodules=all\",\"--no-ext-diff\"]
+[2021-06-30 18:05:39.459241931] process [3120725] done ExitSuccess
+[2021-06-30 18:05:39.465299851] process [3120726] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2021-06-30 18:05:39.46620159] process [3120727] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+ok
+[2021-06-30 18:05:39.483714491] process [3120726] done ExitSuccess
+[2021-06-30 18:05:39.48414226] process [3120727] done ExitSuccess
+[2021-06-30 18:05:39.48431099] process [3120716] done ExitSuccess
+[2021-06-30 18:05:39.4844599] process [3120715] done ExitSuccess
+[2021-06-30 18:05:39.48457984] process [3120714] done ExitSuccess
+[2021-06-30 18:05:39.484681599] process [3120713] done ExitSuccess
+[2021-06-30 18:05:39.49057526] process [3120728] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2021-06-30 18:05:39.491780998] process [3120729] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-index\",\"-z\",\"--index-info\"]
+[2021-06-30 18:05:39.497171329] process [3120729] done ExitSuccess
+[2021-06-30 18:05:39.497947118] process [3120730] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2021-06-30 18:05:39.501412142] process [3120730] done ExitSuccess
+(recording state in git...)
+[2021-06-30 18:05:39.502305251] process [3120731] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"write-tree\"]
+[2021-06-30 18:05:39.532505381] process [3120731] done ExitSuccess
+[2021-06-30 18:05:39.53302693] process [3120732] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"commit-tree\",\"1883f43ee06ac4d945e2ed4e4f59757ef63a9ae9\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\"]
+[2021-06-30 18:05:39.538093292] process [3120732] done ExitSuccess
+[2021-06-30 18:05:39.538544301] process [3120733] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"update-ref\",\"refs/heads/git-annex\",\"cd11614c4d5b90afd36dc10973e52c41c24f1afb\"]
+[2021-06-30 18:05:39.544866951] process [3120733] done ExitSuccess
+[2021-06-30 18:05:39.554490845] process [3120734] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch\"]
+[2021-06-30 18:05:39.555648263] process [3120735] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+[2021-06-30 18:05:39.565458357] process [3120734] done ExitSuccess
+[2021-06-30 18:05:39.565876866] process [3120735] done ExitSuccess
+[2021-06-30 18:05:39.566606815] process [3120728] done ExitSuccess
+
+```
+
+And finally, I am able to clone the first repository to my local computer (git-annex 8.20210223), and file retrieval via SSH works fine.
+
+I'll continue to try to create a reproducer, but maybe somebody has an idea based on what I have posted already. Sorry for the convoluted and complex issue description!
+"""]]
