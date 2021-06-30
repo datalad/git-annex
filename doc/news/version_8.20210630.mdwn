@@ -1,0 +1,20 @@
+git-annex 8.20210630 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Fixed bug that interrupting git-annex repair (or assistant) while
+    it was fixing repository corruption would lose objects that were
+    contained in pack files. Also the assistant might sometimes have
+    crashed with the same result.
+  * repair: Fix reversion in version 8.20200522 that prevented fetching
+    missing objects from remotes.
+  * sync: Partly work around github behavior that first branch to be pushed
+    to a new repository is assumed to be the head branch, by not pushing
+    synced/git-annex first.
+  * Added annex.freezecontent-command and annex.thawcontent-command
+    configs.
+  * Improve display of errors when transfers fail.
+  * Dropping an unused object with drop --unused or dropunused will
+    mark it as dead, preventing fsck --all from complaining about it
+    after it's been dropped from all repositories.
+  * addurl, importfeed: Added --no-raw option that forces download
+    with youtube-dl or a special remote. In particular this can avoid
+    falling back to raw download when youtube-dl is blocked for some
+    reason."""]]
