@@ -1,0 +1,13 @@
+diff --git a/Build/Configure.hs b/Build/Configure.hs
+index a22112507..5fd172d3d 100644
+--- a/Build/Configure.hs
++++ b/Build/Configure.hs
+@@ -55,7 +55,7 @@ testCp k option = TestCase cmd $ testCmd k cmdline
+ testCpReflinkAuto :: TestCase
+ #ifdef mingw32_HOST_OS
+ -- Windows does not support reflink so don't even try to use the option.
+-testCpReflinkAuto = TestCase k (Config k (BoolConfig False))
++testCpReflinkAuto = TestCase k (return $ Config k (BoolConfig False))
+ #else
+ testCpReflinkAuto = testCp k "--reflink=auto"
+ #endif
