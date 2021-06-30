@@ -13,3 +13,14 @@ repair. git fsck reported no problems at all. --[[Joey]]
 > writeFsckResults was called with FsckFailed. So apparently
 > the fsck exited nonzero for some reason, but did not detect
 > any misssing shas.
+> 
+> Reproed on my own laptop, with the family annex. However,
+> it is not fully repoducible, I repeated the same steps
+> again and it didn't happen. Those were: Clone;
+> git remote rm origin; git annex schedule here 'fsck self 30m every day at
+> any time'; git annex assistant
+> 
+> Hypothesis: Maybe fsck is failing due to some other change
+> that is being made to the git repo at the same time it's running?
+> I noticed some files being downloaded from the web at the same
+> time the failed fsck was running.
