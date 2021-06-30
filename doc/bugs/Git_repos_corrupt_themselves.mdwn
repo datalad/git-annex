@@ -104,3 +104,5 @@ Git fsck spat out a huge list of broken blobs and trees.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 There are a surprising amount of weird bugs and quirks like these but it's such an amazing tool, there's nothing like it.
+
+> [[fixed|done]] --[[Joey]]
