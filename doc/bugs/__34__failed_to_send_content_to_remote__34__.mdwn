@@ -216,3 +216,5 @@ I don't know how to reproduce this on a different repo. This is the first time I
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex is awesome! I am using it a lot.
+
+[[!tag projects/datalad]]
