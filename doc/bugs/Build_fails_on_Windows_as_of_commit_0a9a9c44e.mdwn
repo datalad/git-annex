@@ -2,3 +2,5 @@ As of commit 0a9a9c44e, trying to build git-annex on Windows fails because due t
 
 [[!meta author=jwodder]]
 [[!tag projects/datalad]]
+
+> [[done]] thankyou! --[[Joey]]
