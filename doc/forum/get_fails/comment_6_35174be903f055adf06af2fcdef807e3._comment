@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-07-01T16:33:35Z"
+ content="""
+There is a bug report that looks very similar to what is being reported
+here, in particular the doubled "failed to retrieve" with no other
+information: <https://git-annex.branchable.com/bugs/__34__failed_to_send_content_to_remote__34__/>
+
+The most recent git-annex release adds some additional error messages in
+some cases that could be the reason for the failure. The fact that rsync
+succeeds and then the get fails suggests rather strongly that git-annex
+thinks the file got modified while rsync was running -- which the new
+version will display an informative message about.
+
+(Please do not use this forum for bug reports; it is not an effective BTS
+since nothing ever gets closed.)
+"""]]
