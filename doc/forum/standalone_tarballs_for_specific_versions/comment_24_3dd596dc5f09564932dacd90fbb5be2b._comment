@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="syncing standalone version with the standard version"
+ date="2021-07-01T18:44:03Z"
+ content="""
+The version string printed by the standalone version seems to always be behind the current [latest version on hackage](https://hackage.haskell.org/package/git-annex).  E.g. the current standalone version (`git-annex-standalone-amd64.tar.gz -> ../../../.git/annex/objects/KM/Ff/SHA256E-s51276461--a1cef631ef2cc0c977580eacaa1294d7617727df99214920ca6e8f3172bae03e.tar.gz/SHA256E-s51276461--a1cef631ef2cc0c977580eacaa1294d7617727df99214920ca6e8f3172bae03e.tar.gz`) prints `8.20210622-g0e7906e80`, while the current standard version is `8.20210630`.   If the versions could be synced up, it would simplify things for the conda package.  Thanks!
+"""]]
