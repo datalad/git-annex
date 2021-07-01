@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="read-only view of repo clone with symlinks as normal files"
+ date="2021-07-01T17:17:20Z"
+ content="""
+I've used [bindfs](https://bindfs.org/) with `-o ro` and `--resolve-symlinks` to create a read-only view of a repo where symlinks look like regular files.
+"""]]
