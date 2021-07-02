@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-07-02T14:26:34Z"
+ content="""
+       EBUSY  The rename fails because oldpath or new‐
+              path  is  a  directory that is in use by
+              some process (perhaps as current working
+              directory,  or as root directory, or be‐
+              cause it was open for reading) or is  in
+              use  by the system (for example as mount
+              point), while the system considers  this
+              an  error.   (Note  that there is no re‐
+              quirement to return EBUSY in such cases—
+              there  is  nothing  wrong with doing the
+              rename anyway—but it is allowed  to  re‐
+              turn  EBUSY  if the system cannot other‐
+              wise handle such situations.)
+
+".git/annex/tmp/URL-s3--file&c%%%mnt%beegfs%yoh%tmp%.t%tmprepo193%myurl"
+is not a directory, it is a file. So, rename seems to have no business failing
+in this way. Probably the FS is buggy.
+"""]]
