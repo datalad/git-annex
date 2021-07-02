@@ -114,10 +114,6 @@ retest: git-annex
 tags:
 	@$(MAKE) --quiet hothasktags HOTHASKTAGS_OPT= TAGFILE=tags
 
-# TAGS file for emacs
-TAGS:
-	@$(MAKE) --quiet hothasktags HOTHASKTAGS_OPT=-e TAGFILE=TAGS
-
 # https://github.com/luqui/hothasktags/issues/18
 HOTHASKTAGS_ARGS=-XLambdaCase -XPackageImports --cpp
 
@@ -249,4 +245,4 @@ distributionupdate:
 	ghc -Wall -fno-warn-tabs --make Build/DistributionUpdate -XLambdaCase -XPackageImports
 	./Build/DistributionUpdate
 
-.PHONY: git-annex git-union-merge tags TAGS
+.PHONY: git-annex git-union-merge tags
