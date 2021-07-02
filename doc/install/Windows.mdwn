@@ -15,7 +15,8 @@ current status.
 
 An autobuild is also available, thanks to the Datalad project.
 
-* Windows 10 [CI build](https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+Windows%22)
+* Windows 10 [download](https://downloads.kitenet.net/git-annex/autobuild/windows/git-annex-installer.exe)
+  ([build logs](https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+Windows%22))
 
 ## building it yourself
 
