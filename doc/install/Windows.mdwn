@@ -15,7 +15,7 @@ current status.
 
 An autobuild is also available, thanks to the Datalad project.
 
-* Windows 10 [download](http://datasets.datalad.org/datalad/packages/windows/)
+* Windows 10 [CI build](https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+Windows%22)
 
 ## building it yourself
 
