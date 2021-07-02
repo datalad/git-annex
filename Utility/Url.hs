@@ -97,6 +97,7 @@ data UrlOptions = UrlOptions
 	, applyRequest :: Request -> Request
 	, httpManager :: Manager
 	, allowedSchemes :: S.Set Scheme
+	, disallowedSchemeMessage :: Maybe (URI -> String)
 	, getBasicAuth :: GetBasicAuth
 	}
 
@@ -115,11 +116,12 @@ defUrlOptions = UrlOptions
 	<*> pure id
 	<*> newManager tlsManagerSettings
 	<*> pure (S.fromList $ map mkScheme ["http", "https", "ftp"])
+	<*> pure Nothing
 	<*> pure noBasicAuth
 
-mkUrlOptions :: Maybe UserAgent -> Headers -> UrlDownloader -> Manager -> S.Set Scheme -> GetBasicAuth -> UrlOptions
-mkUrlOptions defuseragent reqheaders urldownloader manager getbasicauth =
-	UrlOptions useragent reqheaders urldownloader applyrequest manager getbasicauth
+mkUrlOptions :: Maybe UserAgent -> Headers -> UrlDownloader -> Manager -> S.Set Scheme -> Maybe (URI -> String) -> GetBasicAuth -> UrlOptions
+mkUrlOptions defuseragent reqheaders urldownloader =
+	UrlOptions useragent reqheaders urldownloader applyrequest
   where
 	applyrequest = \r -> r { requestHeaders = requestHeaders r ++ addedheaders }
 	addedheaders = uaheader ++ otherheaders
@@ -156,8 +158,9 @@ curlParams uo ps = ps ++ uaparams ++ headerparams ++ addedparams ++ schemeparams
 checkPolicy :: UrlOptions -> URI -> IO (Either String a) -> IO (Either String a)
 checkPolicy uo u a
 	| allowedScheme uo u = a
-	| otherwise = return $ Left $
-		"Configuration does not allow accessing " ++ show u
+	| otherwise = return $ Left $ case disallowedSchemeMessage uo of
+		Nothing -> "Configuration does not allow accessing" ++ show u
+		Just f -> f u
 
 unsupportedUrlScheme :: URI -> String
 unsupportedUrlScheme u = "Unsupported url scheme " ++ show u

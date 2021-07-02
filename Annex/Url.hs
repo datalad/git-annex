@@ -73,6 +73,7 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 			<*> pure urldownloader
 			<*> pure manager
 			<*> (annexAllowedUrlSchemes <$> Annex.getGitConfig)
+			<*> pure (Just (\u -> "Configuration of annex.security.allowed-url-schemes does not allow accessing " ++ show u))
 			<*> pure U.noBasicAuth
 	
 	headers = annexHttpHeadersCommand <$> Annex.getGitConfig >>= \case
