@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2021-07-04T03:27:20Z"
+ content="""
+Thank you Joey!  indeed most likely a \"too fancy\" of a file system.
+
+On [https://www.beegfs.io/release/beegfs_6/Changelog.txt](https://www.beegfs.io/release/beegfs_6/Changelog.txt) I found 
+
+
+```
+== Changes in 6.11 (release date: 2017-05-26) ==
+
+General Changes:
+
+* client: Add option sysRenameEbusyAsXdev to return EXDEV instead of EBUSY if
+  rename() is called on open files. (Tools like \"mv\" can handle EXDEV as return
+  value.)
+```
+
+do you think EXDEV would be worked out Ok if that is the culprit? (meanwhile I will let the beegfs users know as well - may be they could try)
+
+"""]]
