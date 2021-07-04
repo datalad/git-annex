@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 1"
+ date="2021-07-04T00:28:09Z"
+ content="""
+`git config annex.addsmallfiles false` will make it so `git annex add` only adds files that should be annexed. So I can `git annex add` first, and then if I have any files left over that should have been annexed, I can add their file suffixes to the inclusion list. Slick!
+"""]]
