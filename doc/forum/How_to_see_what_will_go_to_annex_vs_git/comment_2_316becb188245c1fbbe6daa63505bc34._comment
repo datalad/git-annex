@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-07-05T16:13:05Z"
+ content="""
+Good solution. And if it somehow added a file to annex that you want in git
+you can `git annex unannex` easily enough.
+
+There is not any way to query without adding, query commands like
+`git-annex find` only operate on annexed files so it would need to be
+a new mode added to the command. Or I suppose `git annex add --dry-run`
+could be made to, but don't know that I really like the idea. I like
+your solution better than these ideas though.
+"""]]
