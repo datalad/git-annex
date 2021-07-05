@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-07-05T17:17:59Z"
+ content="""
+Also looked over other uses of readFile. While there are a couple that
+don't read the whole file and so may have a lag closing, none of them are
+files that are used in ways that seem likely to trigger this kind of
+problem.
+"""]]
