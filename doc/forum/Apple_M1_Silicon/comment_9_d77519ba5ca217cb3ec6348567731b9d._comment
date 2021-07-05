@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="css@fcd6583660cae4ea6565f44f31443feb8e131139"
+ nickname="css"
+ avatar="http://cdn.libravatar.org/avatar/029af00c2f4a43194d6993d4cd2283e3"
+ subject="comment 9"
+ date="2021-07-05T03:17:39Z"
+ content="""
+A new version of criterion-measurement is out with support for Apple Silicon, it's possible to install git-annex via Homebrew now. No bottle is available as of yet but building from source works fine. 
+"""]]
