@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-07-05T16:18:39Z"
+ content="""
+I've checked with strace, to see if the file was open while it was being
+renamed. Not that there is anything generally wrong with renaming an open
+file on a POSIX file system, but it would possibly be a problem on windows,
+where some forms of opening a file locks it in place. And apparently
+this filesystem is not trying to be very POSIX either.
+
+	413026 openat(AT_FDCWD, ".git/annex/tmp/URL-s3--file&c%%%tmp%foo", O_WRONLY|O_CREAT|O_NOCTTY|O_NONBLOCK, 0666) = 17
+	413026 write(17, "hi\n", 3)             = 3
+	413026 close(17)                        = 0
+	...
+	413026 openat(AT_FDCWD, ".git/annex/tmp/URL-s3--file&c%%%tmp%foo", O_RDONLY|O_NOCTTY|O_NONBLOCK) = 11
+	413026 read(11, "hi\n", 8192)           = 3
+	...
+	413026 openat(AT_FDCWD, ".git/annex/tmp/URL-s3--file&c%%%tmp%foo", O_RDONLY|O_NOCTTY|O_NONBLOCK <unfinished ...>
+	413028 <... futex resumed>)             = 0
+	413026 <... openat resumed>)            = 16
+	...
+	413026 read(16, "hi\n", 32752)          = 3
+	...
+	413026 close(16)                        = 0
+	...
+	413026 rename(".git/annex/tmp/URL-s3--file&c%%%tmp%foo", "_tmp_foo") = 0
+	...
+	413028 close(11)                        = 0
+
+So the file is left open across the rename, which ought to be able to be
+changed and would presumably fix the problem.
+
+It's also a bit odd that the file gets read twice after being copied,
+once for checksum makes sense, but what's the other one?
+(Copying while checksumming should be able to avoid one of the reads,
+but there is an open todo tracking progress on that.)
+
+Aah, the other read is when it's probing if the file is html in case it ought
+to be passed off to youtube-dl. That is the read that lingers for a while,
+because it's done with a lazy readFile and probing if the file is html doesn't
+read to the end and close it, so the file handle lingers until the GC gets
+around to closing it. Of course youtube-dl won't be able to do anything with a
+file url, but git-annex doesn't know that. And anyway the failure on this
+filesystem would also happen when adding a http url.
+
+Ok, fixed it to close the handle promptly. That should fix the test suite.
+It does not seem unlikely that something else will break due to this 
+filesystem's unusual behavior though.
+"""]]

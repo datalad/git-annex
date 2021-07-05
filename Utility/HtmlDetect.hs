@@ -1,6 +1,6 @@
 {- html detection
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -8,10 +8,12 @@
 module Utility.HtmlDetect (
 	isHtml,
 	isHtmlBs,
+	isHtmlFile,
 	htmlPrefixLength,
 ) where
 
 import Text.HTML.TagSoup
+import System.IO
 import Data.Char
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as B8
@@ -43,6 +45,15 @@ isHtmlBs :: B.ByteString -> Bool
 -- The encoding of the ByteString is not known, but isHtml only
 -- looks for ascii strings.
 isHtmlBs = isHtml . B8.unpack
+
+-- | Check if the file is html.
+--
+-- It would be equivilant to use isHtml <$> readFile file,
+-- but since that would not read all of the file, the handle
+-- would remain open until it got garbage collected sometime later.
+isHtmlFile :: FilePath -> IO Bool
+isHtmlFile file = withFile file ReadMode $ \h ->
+	isHtmlBs <$> B.hGet h htmlPrefixLength
 
 -- | How much of the beginning of a html document is needed to detect it.
 -- (conservatively)
