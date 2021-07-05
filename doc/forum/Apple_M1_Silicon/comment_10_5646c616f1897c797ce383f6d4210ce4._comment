@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="strmd"
+ avatar="http://cdn.libravatar.org/avatar/035707b9756129bbdea6b36a7f7b38d3"
+ subject="comment 10"
+ date="2021-07-05T07:07:34Z"
+ content="""
+Thanks, but it's still not working for me (tried twice):
+
+    Last 15 lines from /Users/md/Library/Logs/Homebrew/git-annex/02.cabal:
+    Currently only 10 to 12 is supported. System LLVM version: 12.0.0
+    We will try though...
+    [518 of 668] Compiling Command.InAnnex  ( Command/InAnnex.hs, dist/build/git-annex/git-annex-tmp/Command/InAnnex.o, dist/build/git-annex/git-annex-tmp/Command/InAnnex.dyn_o )
+    You are using an unsupported version of LLVM!
+    Currently only 10 to 12 is supported. System LLVM version: 12.0.0
+    We will try though...
+    clang: error: unable to execute command: posix_spawn failed: Resource temporarily unavailable
+
+    <no location info>: error:
+    Error running clang! you need clang installed to use the LLVM backend
+    (or GHC tried to execute clang incorrectly)
+    `clang' failed in phase `Clang (Assembler)'. (Exit code: 1)
+
+But perhaps a bottle is not that far away now.
+"""]]

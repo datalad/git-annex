@@ -81,3 +81,5 @@ Init Tests
 
 on days ending with `y` it seems to work quite nicely.
 
+[[!meta author=yoh]]
+[[!tag projects/dandi]]

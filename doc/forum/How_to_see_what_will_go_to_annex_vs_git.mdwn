@@ -1,0 +1,10 @@
+I am importing lots of files from various sources, and want to make sure that I don't inadvertently commit big files to git. On a file-by-file basis, it's easy enough to tell if it matches the inclusion pattern. But for lots of files, I find myself doing:
+
+1. `git annex add .`
+2. Look for the "non-large file; adding content to git repository" message
+3. `git reset`
+4. `git annex config --set annex.largefiles ...` to add the new file extension to the list
+
+`git add` doesn't provide any info on what goes where.
+
+So is there a way to see, in a given directory, what would be annexed and what would be stored in git when doing `git add` / `git annex add` ?
