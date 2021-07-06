@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jkniiv@b330fc3a602d36a37a67b2a2d99d4bed3bb653cb"
+ nickname="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/419f2eee8b0c37256488fabcc2737ff2"
+ subject="comment 1"
+ date="2021-07-06T19:49:07Z"
+ content="""
+I wholeheartedly agree that this could be useful. On that note I (meekly) query why not put `annex.backend`
+also in the set of configs stored in the git-annex branch? Personally I have a script/command file called
+`_scripts/init-git-annex.cmd` checked into the repo so that after cloning I can easily `git config` any settings
+I need and also `git annex init` the clone by running said script. In OOP terminology it works as a kind
+of constructor, if you will. :)
+
+"""]]
