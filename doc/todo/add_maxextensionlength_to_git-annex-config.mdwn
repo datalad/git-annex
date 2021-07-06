@@ -1,0 +1,1 @@
+To the list of config settings applied to all clones of a repo, add `annex.maxextensionlength`.
