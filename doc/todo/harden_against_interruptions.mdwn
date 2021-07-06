@@ -4,3 +4,5 @@ From [another thread](https://git-annex.branchable.com/todo/add_option_to_use_sq
 
 Maybe, there are some simple ways to harden git-annex against possible weirdness following abrupt interruptions?   E.g. using flag files to detect when a prior operation got interrupted,
 and rebuilding the sqlite dbs from git data.  Or tagging sqlite records with the timestamp of their creation, and not using the data if the relevant worktree files got modified since then.
+
+> [[closing|done]] per comment --[[Joey]]
