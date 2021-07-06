@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="about keys with extensions"
+ date="2021-07-06T14:59:24Z"
+ content="""
+>It would be perfectly possible for include= to match on filenames in the current branch when used with --all etc
+
+I think the ability of `--all` to operate on all files regardless of branch is important.  I often have many branches, and have files on the current branch that I've overwritten but may want to revert.  It's useful to e.g. copy the content of all `*.bam` files ever created to a given S3 remote, or to generate a report of how much total space is used by content with different extensions.
+
+>Keys with extensions are really a hack to work around the limitations of certain programs
+
+Which still have them ;)  Worse, it's hard to know which do.  So please don't deprecate.   But also, even if started as a hack, letting keys encode metadata like file type -- and then efficiently matching on it -- is separately useful.
+
+"""]]
