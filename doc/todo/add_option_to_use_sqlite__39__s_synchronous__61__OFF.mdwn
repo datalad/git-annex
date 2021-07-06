@@ -1,1 +1,3 @@
 Sqlite docs [say](https://www.sqlite.org/pragma.html#pragma_synchronous) "commits can be orders of magnitude faster with synchronous OFF".   The downside is a chance of db corruption if power fails at a bad moment, but since git-annex's dbs can be re-generated from git data, maybe that's a tradeoff some users would be ok with?  One usually knows when power has failed.
+
+> [[closing|done]] per comments --[[Joey]]
