@@ -3,9 +3,10 @@ For using Dropbox as a special remote, there are currently two choices:
 * rclone supports the Dropbox API,
   so the [[rclone_special_remote|special_remotes/rclone]] can be used.  
   (Actively maintained)
-* Alternatively, there is a dedicated special remote,
-  <https://github.com/TobiasTheViking/dropboxannex>  
-  (Last updated 2014)
+* Alternatively, there are some dedicated special remotes:
+  * <https://github.com/TobiasTheViking/dropboxannex>  
+    (Last updated 2014)
+  * <https://pypi.org/project/git-annex-remote-dbx/>
 
 At this time it's not clear which is better, so if you find one works
 best, please comment below.
