@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 3"
+ date="2021-07-06T19:13:17Z"
+ content="""
+`git annex add --dry-run` is actually the first thing I tried :)
+
+I came across `git-annex-matchexpression` and was able to put together [this script](https://gist.github.com/patmaddox/61ddf773f7b65bd2b42cee7f4e5e574d) that neatly shows me what untracked files will go where:
+
+```
+% ./bin/whereto.rb
+files to annex:
+	- projects/chicken/hello.wav
+
+files to git:
+	- bin/whereto.rb
+	- projects/chicken/bar
+	- projects/chicken/foo
+
+annex.largefiles:
+	include=*.dorico or include=*.mp3 or include=*.pdf or include=*.mxl or include=*.mscz or include=*.xml or include=*.RPP or include=*.wav or include=*.aif*
+```
+"""]]
