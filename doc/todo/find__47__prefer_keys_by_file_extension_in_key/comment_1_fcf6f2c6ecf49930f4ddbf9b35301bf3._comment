@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-07-06T13:47:31Z"
+ content="""
+I don't like the idea much. Keys with extensions are really a hack to work
+around the limitations of certian programs, and adding this feature would
+make it harder to deprecate them, which is a long term goal. Though
+admittedly not a likely one to be achieved entirely, it certianly seems possible
+right now for git-annex to eventually default to a non-extension backend..
+And adding this feature would work against that.
+
+But.. After recent changes, it would be perfectly possible for include= to match
+on filenames in the current branch when used with --all etc. I'll copy some
+thoughts on it from
+<https://git-annex.branchable.com/todo/option_to___96__drop_path__96___to_not_drop___34__all_copies__34__/>:
+
+---
+
+I'm feeling a bit cautious about adding a preferred content expression for
+this brand new capability.
+
+And also unfortunately, it turned out not to be possible to prevent the
+associated files db from sometimes having stale filenames in it (see
+[[!commit c1b50282118520350d5328153fceedac2b8d8ed5]]). Which all current
+uses of the associated files db deal with by checking the list of
+associated files to see if all of them are in HEAD tree. A preferred
+content expression would also have to deal with that, and that risks
+slowing down evaluation of preferred content expressions generally.
+
+So I think it's best to not add a preferred content expression,
+at least until there's a use case and this has had
+some time to soak.
+
+---
+
+Although as far as slow down goes, that would only need to affect cases
+where --all/--key/--unused is used, and preferred content matches on 
+include=/exclude=. Which is a combination noone should be using now,
+since it doesn't match on anything. So a slow down is not a problem.
+
+When those options are not used, include=/exclude= could skip looking
+at the associated files db. Consider `git-annex get --auto .` -- If the
+preferred content expression matches foo and not bar, and they have the same 
+content, it will not get bar, but will get foo, which has the desired result.
+And it's ok for `git annex get --auto bar` to not get the content of foo;
+the user didn't request it. And in the case of `git-annex drop --auto bar`,
+the preferred content expression not matching bar doesn't matter, because
+dropping checks if other files using the content are preferred content
+and so would skip dropping bar in order not to drop foo.
+
+So this would only need a way for preferred content matching to know if
+an option like --all was used, and check the keys database then.
+I think it could probably just check for `providedFilePath == Nothing`
+"""]]
