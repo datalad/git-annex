@@ -1,4 +1,4 @@
-For using Dropbox as a special remote, there are currently two choices:
+For using Dropbox as a special remote, there are currently several choices:
 
 * rclone supports the Dropbox API,
   so the [[rclone_special_remote|special_remotes/rclone]] can be used.  
