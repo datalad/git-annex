@@ -1,0 +1,66 @@
+Upon datalad's `clone`
+
+<details>
+<summary>with git-annex 8.20210630-1~ndall+1 and bundled git 2.24.0</summary> 
+
+```shell
+(git-annex)lena:~/.tmp/datalad_temp_check_recklesssutnjo68[adjusted/master(unlocked)]git-annex
+$> cat .git/config
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	sharedrepository = 1
+	symlinks = false
+[remote "origin"]
+	url = /home/yoh/.tmp/datalad_temp_check_recklesswnpsqpys
+	fetch = +refs/heads/*:refs/remotes/origin/*
+	annex-uuid = a69ecda5-b653-4147-b190-37b7911e3ebc
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+[annex "security"]
+	allowed-url-schemes = http https file
+	allowed-http-addresses = all
+[receive]
+	denyNonFastforwards = true
+[annex]
+	uuid = 06e1e8e1-32ca-484e-9dd6-daf332da0b36
+	crippledfilesystem = true
+	version = 8
+[filter "annex"]
+	smudge = git-annex smudge -- %f
+	clean = git-annex smudge --clean -- %f
+[datalad "clone"]
+	reckless = shared-group
+
+$> ls -ld .git/annex/index*   
+-rw-rw---- 1 yoh yoh 209 Jul  7 18:24 .git/annex/index
+-rw------- 1 yoh yoh  41 Jul  7 18:24 .git/annex/index.lck
+
+```
+</details>
+
+we end up with group non-writeable index.lck, whenever before
+
+<details>
+<summary>it was writeable with annex 8.20210330-1~ndall+1 and git 2.24.0 </summary> 
+
+```shell
+$> ls -ld .git/annex/index*                             
+-rw-rw---- 1 yoh yoh 209 Jul  7 18:29 .git/annex/index
+-rw-rw---- 1 yoh yoh  41 Jul  7 18:29 .git/annex/index.lck
+
+$> git annex version | head -n 1
+git-annex version: 8.20210330-1~ndall+1
+
+```
+</details>
+
+is that somehow intended (didn't spot anything in CHANGELOG.md) or a regression?
+
+reference: https://github.com/datalad/datalad/issues/5759
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
