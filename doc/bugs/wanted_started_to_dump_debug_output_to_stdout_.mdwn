@@ -1,0 +1,66 @@
+### Please describe the problem.
+
+regression
+
+<details>
+<summary>with 8.20210330-1~ndall+1 -- goes to stderr</summary> 
+
+```shell
+(git-annex)lena:~/.tmp/datalad_temp__test_target_ssh_inherit45vhem5p[master]git-annex
+$> git annex --debug wanted magical >/dev/null
+[2021-07-07 17:54:22.761087128] process [1831247] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2021-07-07 17:54:22.764910568] process [1831247] done ExitSuccess
+[2021-07-07 17:54:22.765204421] process [1831248] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2021-07-07 17:54:22.769148287] process [1831248] done ExitSuccess
+[2021-07-07 17:54:22.769446197] process [1831249] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..304037fd0d391f6355dd47c597e68873ad9f1f95","--pretty=%H","-n1"]
+[2021-07-07 17:54:22.774727009] process [1831249] done ExitSuccess
+[2021-07-07 17:54:22.77555157] process [1831250] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2021-07-07 17:54:22.782439234] process [1831251] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2021-07-07 17:54:22.783351669] process [1831252] read: git ["config","--null","--list"]
+[2021-07-07 17:54:22.790612497] process [1831252] done ExitSuccess
+[2021-07-07 17:54:22.79412946] process [1831250] done ExitSuccess
+[2021-07-07 17:54:22.795914732] process [1831251] done ExitSuccess
+(dev3) 1 20603.....................................:Wed 07 Jul 2021 05:54:22 PM EDT:.
+(git-annex)lena:~/.tmp/datalad_temp__test_target_ssh_inherit45vhem5p[master]git-annex
+$> git annex version | head -n 1
+git-annex version: 8.20210330-1~ndall+1
+(dev3) 1 20604.....................................:Wed 07 Jul 2021 05:54:32 PM EDT:.
+(git-annex)lena:~/.tmp/datalad_temp__test_target_ssh_inherit45vhem5p[master]git-annex
+$> git annex  wanted magical           
+
+
+```
+</details>
+
+<details>
+<summary>with newer -- stdout</summary> 
+
+```shell
+(git-annex)lena:~/.tmp/datalad_temp__test_target_ssh_inherit45vhem5p[master]git-annex
+$> git annex version | head -n 1                                                                                           
+git-annex version: 8.20210630-1~ndall+1
+(dev3) 1 20607.....................................:Wed 07 Jul 2021 05:56:18 PM EDT:.
+(git-annex)lena:~/.tmp/datalad_temp__test_target_ssh_inherit45vhem5p[master]git-annex
+$> git annex --debug wanted magical >/dev/null
+(dev3) 1 20608.....................................:Wed 07 Jul 2021 05:56:22 PM EDT:.
+(git-annex)lena:~/.tmp/datalad_temp__test_target_ssh_inherit45vhem5p[master]git-annex
+$> git annex --debug wanted magical           
+[2021-07-07 17:56:27.664305073] (Utility.Process) process [1832476] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2021-07-07 17:56:27.667788119] (Utility.Process) process [1832476] done ExitSuccess
+[2021-07-07 17:56:27.668248788] (Utility.Process) process [1832477] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2021-07-07 17:56:27.671956413] (Utility.Process) process [1832477] done ExitSuccess
+[2021-07-07 17:56:27.672539643] (Utility.Process) process [1832478] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..304037fd0d391f6355dd47c597e68873ad9f1f95","--pretty=%H","-n1"]
+[2021-07-07 17:56:27.679373344] (Utility.Process) process [1832478] done ExitSuccess
+[2021-07-07 17:56:27.695953125] (Utility.Process) process [1832479] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2021-07-07 17:56:27.698411189] (Utility.Process) process [1832480] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2021-07-07 17:56:27.704051561] (Utility.Process) process [1832481] read: git ["config","--null","--list"]
+[2021-07-07 17:56:27.713735999] (Utility.Process) process [1832481] done ExitSuccess
+
+[2021-07-07 17:56:27.717332702] (Utility.Process) process [1832479] done ExitSuccess
+[2021-07-07 17:56:27.718511353] (Utility.Process) process [1832480] done ExitSuccess
+(dev3) 1 20609.....................................:Wed 07 Jul 2021 05:56:27 PM EDT:.
+```
+</details>
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
