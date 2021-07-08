@@ -1,0 +1,5 @@
+not sure if regression and what specific annex command caused it yet. 
+initially detected with 8.20210621 released and bisected to [8.20210621-12-g4b1b9d7a8 AKA 8.20210630~39](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=4b1b9d7a83f0da71665658e6234e699e182cbddc): datalad tests started to fail to `git push` because freshly created remote was already carrying some `master`. Some more details on [original datalad issue #5759](https://github.com/datalad/datalad/issues/5759#issuecomment-875973598)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
