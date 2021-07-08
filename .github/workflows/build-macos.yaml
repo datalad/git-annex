@@ -102,6 +102,12 @@ jobs:
       - name: Build git-annex
         run: make osxapp
 
+      - name: Update version info for git rev being built.
+        run: |
+          mkdir -p dist
+          make Build/BuildVersion
+          ./Build/BuildVersion > dist/build-version
+
       - name: Add version to DMG name and move it
         run: |
           mv tmp/git-annex.dmg \
