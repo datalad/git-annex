@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-07-12T13:42:12Z"
+ content="""
+Is datalad doing something with the new annex.freezecontent-command?
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-07-12T13:43:41Z"
+ content="""
+In the linked issue, it is apparently bisected to 
+[[!commit 4b1b9d7a83f0da71665658e6234e699e182cbddc]] which added
+annex.freezecontent-command.
+
+But unless you're setting that config, I don't see it changing behavior,
+and if you are setting that config, it kind of follows that the behavior
+change is due to whatever you set it to?
+"""]]
