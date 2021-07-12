@@ -3,5 +3,12 @@
  subject="""comment 3"""
  date="2021-07-12T14:09:19Z"
  content="""
-(Fixed the problem with git-annex init's probing.)
+Fixed the problem with git-annex init's probing. 
+
+Oh, that's odd, fixing that also fixed the index.lck permissions.
+
+So, the actual cause of the permissions problem is init deciding to enter
+an adjusted unlocked branch. Entering the branch after init does not result
+in the problem though. So still need to track down what's happening there,
+since it can enter the adjusted branch for other reasons.
 """]]
