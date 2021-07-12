@@ -25,6 +25,7 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Objects
 import Git.Types (fromConfigValue)
+import Git.ConfigTypes (SharedRepository(..))
 import qualified Annex.Branch
 import Logs.UUID
 import Logs.Trust.Basic
@@ -243,8 +244,8 @@ isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersi
 probeCrippledFileSystem :: Annex Bool
 probeCrippledFileSystem = withEventuallyCleanedOtherTmp $ \tmp -> do
 	(r, warnings) <- probeCrippledFileSystem' tmp
-		(Just freezeContent)
-		(Just thawContent)
+		(Just (freezeContent' UnShared))
+		(Just (thawContent' UnShared))
 	mapM_ warning warnings
 	return r
 

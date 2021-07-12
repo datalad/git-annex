@@ -15,8 +15,10 @@ module Annex.Perms (
 	createWorkTreeDirectory,
 	noUmask,
 	freezeContent,
+	freezeContent',
 	isContentWritePermOk,
 	thawContent,
+	thawContent',
 	createContentDir,
 	freezeContentDir,
 	thawContentDir,
@@ -131,8 +133,12 @@ createWorkTreeDirectory dir = do
  - owned by another user, so failure to set this mode is ignored.
  -}
 freezeContent :: RawFilePath -> Annex ()
-freezeContent file = unlessM crippledFileSystem $ do
-	withShared go
+freezeContent file = unlessM crippledFileSystem $
+	withShared $ \sr -> freezeContent' sr file
+
+freezeContent' :: SharedRepository -> RawFilePath -> Annex ()
+freezeContent' sr file = do
+	go sr
 	freezeHook file
   where
 	go GroupShared = liftIO $ void $ tryIO $ modifyFileMode file $
@@ -160,7 +166,10 @@ isContentWritePermOk file = ifM crippledFileSystem
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
 thawContent :: RawFilePath -> Annex ()
-thawContent file = thawPerms (withShared go) (thawHook file)
+thawContent file = withShared $ \sr -> thawContent' sr file
+
+thawContent' :: SharedRepository -> RawFilePath -> Annex ()
+thawContent' sr file = thawPerms (go sr) (thawHook file)
   where
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead file
 	go AllShared = liftIO $ void $ tryIO $ groupWriteRead file
