@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-07-12T13:46:18Z"
+ content="""
+I don't think annex.freezecontent-command will affect writing this file
+though.
+
+This seems to be how to reproduce it:
+
+	git config sharedRepository group
+	git annex init
+
+	-rw-rw-r-- 1 joey joey 137 Jul 12 09:53 .git/annex/index
+	-rw-r--r-- 1 joey joey  41 Jul 12 09:53 .git/annex/index.lck
+
+Not identical modes here, but with an older git-annex the index.lck is 664
+not 644.
+
+Also, for some reason git-annex init with that config set complains that
+"Filesystem allows writing to files whose write bit is not set."
+And enters an adjusted brach. The older git-annex didn't do that either.
+"""]]
