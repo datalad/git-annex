@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2021-07-12T14:17:52Z"
+ content="""
+I don't know yet how, but I was just stating the fact that behavior has changed and we do not have yet added any handling for  `annex.freezecontent-command`. May be bisection was not entirely correct and it is some prior commit where it failed to build or smth like that - I didn't double check manually the status of prior commit etc.
+"""]]
