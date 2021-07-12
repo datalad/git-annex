@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-07-12T20:00:32Z"
+ content="""
+Yes that's the commit. Normally I'd have closed it in the commit but I
+didn't realize at that point that the commit actually fixed it.
+"""]]
