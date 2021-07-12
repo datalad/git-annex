@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="jkniiv@b330fc3a602d36a37a67b2a2d99d4bed3bb653cb"
+ nickname="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/419f2eee8b0c37256488fabcc2737ff2"
+ subject="comment 5"
+ date="2021-07-12T22:48:25Z"
+ content="""
+_joey:_
+> It's already possible to configure the backend via .gitattributes;
+
+Thanks for reminding me about that option. I shall use the .gitattributes trick to shorten
+my init-git-annex.cmd script. :)
+
+_joey:_
+> It should probably be hard capped to something sensible.
+
+As long as that sensible setting is >= 8 as that is a lower bound is what I use. I tend to think
+that at most two extension components is what you usually need for identifying a file's \"type\" (think \".tar.gz\").
+As for the length of a component, Windows (and probably other modern desktop environments) produces
+for instance such extensions as \".search-ms\" (9 characters excluding the dot) for saved Explorer searches.
+I don't think that's an unreasonably long extension component for this use case. For more standard file types
+to be exchanged via public methods maybe at most five characters per component should be the maximum. However,
+git-annex should be lenient towards what it accepts as long as that is reasonably possible to uphold. IMHO, a practical
+upper limit for annex.maxextensionlength could be 16 to 20 characters.
+
+"""]]
