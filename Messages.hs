@@ -270,7 +270,7 @@ debugDisplayer = do
 	-- that are displayed at the same time from mixing together.
 	lock <- newMVar ()
 	return $ \s -> withMVar lock $ \() -> do
-		S.putStr (s <> "\n")
+		S.hPutStr stderr (s <> "\n")
 		hFlush stderr
 
 {- Should commands that normally output progress messages have that

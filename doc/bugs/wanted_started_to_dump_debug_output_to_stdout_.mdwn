@@ -64,3 +64,5 @@ $> git annex --debug wanted magical
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> All commands did. [[fixed|done]] --[[Joey]]
