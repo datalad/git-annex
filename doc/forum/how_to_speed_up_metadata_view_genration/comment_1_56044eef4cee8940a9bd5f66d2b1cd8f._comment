@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-07-12T13:19:53Z"
+ content="""
+It's possible to limit a view to a subdirectory, by
+using something like `git annex view 'foo/=*'`
+
+It might still take a while to generate that view, but
+once you're in that view, you can use `git annex vfilter`
+to further filter to tags, and it will only look at the files from the
+subdirectory, so will run faster. And `git annex vpop` will
+quickly undo a view change.
+"""]]
