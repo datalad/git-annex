@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="about maxextensionlength"
+ date="2021-07-12T15:38:22Z"
+ content="""
+>the entire filename (or a lot of it) was treated as an \"extension\" and appeared in a key
+
+What problems do you see this causing, other than some possible loss of deduplication?
+
+>It should probably be hard capped
+
+>global configs can be an imposition on other users
+
+Hard caps are the ultimate global configs ;)
+
+"""]]
