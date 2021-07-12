@@ -6,7 +6,7 @@ git-annex (8.20210631) UNRELEASED; urgency=medium
   * --debug output goes to stderr again, not stdout.
     (Reversion in version 8.20210428)
   * init: Fix misbehavior when core.sharedRepository = group that
-    caused it to enter an adjusted branch.
+    caused it to enter an adjusted branch and set annex.crippledfilesystem
     (Reversion in version 8.20210630)
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 Jun 2021 17:55:10 -0400

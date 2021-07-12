@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-07-12T14:41:50Z"
+ content="""
+The bug was making init set annex.crippledfilesystem,
+and once that's set, git-annex avoids setting file
+perms, so then it writes index.lck it leaves it at the default permissions.
+
+That might or might not be a problem in some case (eg if some filesystem
+was detected as crippled but still supported file permissions to a point
+that write bits need to be added to support core.sharedRepository = group), but 
+the reversion was fixed by fixing init's behavior. So, closing this.
+"""]]

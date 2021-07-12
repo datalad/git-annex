@@ -64,3 +64,5 @@ reference: https://github.com/datalad/datalad/issues/5759
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
