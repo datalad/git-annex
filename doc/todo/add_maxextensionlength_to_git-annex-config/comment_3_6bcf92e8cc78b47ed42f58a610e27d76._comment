@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-07-12T15:05:57Z"
+ content="""
+I went back and looked at why this config was added in the first place, and
+it seemed to be partly to support extensions of length 5, but also partly
+someone wanted to configure it to something large, so the entire filename
+(or a lot of it) was treated as an "extension" and appeared in a key!
+
+It should probably be hard capped to something sensible. Setting something
+wacky like that locally is shooting your own foot, but once it becomes a global
+setting, you can make other users shoot their feet.
+
+I can see how, if a repo's domain includes files that have a longer than
+usual extension, it would be useful to set this globally. But I also
+have to push back against adding global configs, because the general
+trend is toward users requesting a global config for *everything*, which
+is not where I want git-anenx to end up. global configs can be an *imposition*
+on other users of the repository, and also risk slowing git-annex down.
+"""]]
