@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2021-07-12T17:44:58Z"
+ content="""
+FWIW FTR: the fix (will check on datalad side with the next cron build) is likely the [8.20210630-52-g6a581f8b8](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=6a581f8b8b54719f2c34fdeb071e546d9a8f64c9) (I still don't know how to navigate from the `[fixed]` tag to actual fix/version)
+"""]]
