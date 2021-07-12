@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-07-12T14:26:14Z"
+ content="""
+<https://git-annex.branchable.com/bugs/regression__58___index.lck_in_shared-group_is_not_g+w/>
+fixed a problem where git-annex init entered an adjusted branch
+unexpectedly.
+
+Entering an adjusted branch involves creating a master branch at init time,
+because it has to have a branch existing in order to adjust it.
+
+So, these bugs appear to have the same cause. I'll close this dup.
+
+But, note that the same thing could happen if git-annex init were run on a
+crippled filesystem, so it may be your test needs to deal with
+such a new-born master branch.
+"""]]
