@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-07-12T14:58:34Z"
+ content="""
+It's already possible to configure the backend via .gitattributes;
+that is strictly better than a `git-annex config` setting for it would be:
+It allows selecting different backends in for different types of files, and
+even in different branches.
+
+Anyway, this todo can only be about one thing, and that's
+maxextensionlength, not backends or whatever other suggestions might have
+later be added to it.
+"""]]
