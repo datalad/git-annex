@@ -15,3 +15,5 @@ Given that repo1 and repo2 both have a branch adjusted/master(hidemissing), thos
      + 20bcd18...170148a adjusted/master(hidemissing) -> WD250G/adjusted/master(hidemissing)  (forced update)
        a071f8c..4a1f6d3  git-annex                    -> WD250G/git-annex
     pull WD250G ok
+
+> [[not a bug|done]] --[[Joey]]

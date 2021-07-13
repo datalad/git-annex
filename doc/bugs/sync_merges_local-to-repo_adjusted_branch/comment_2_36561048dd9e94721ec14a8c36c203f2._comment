@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-07-13T17:27:57Z"
+ content="""
+Like Lukey said, your output does not show branches being "forcibly merged". What it shows
+is `git fetch WD250G` running and fetching a
+"WD250G/adjusted/master(hidemissing)" ref. That updates a previous version
+of that it fetched from the remote before.
+
+Nothing else will be done with that ref, as far as I can see. It's just
+being maintained by git as a remote tracking branch, the same as it would
+keep track of any other branch that happened to be on the remote.
+
+You can configure git to not fetch this or other branches, by
+changing the remote.WD250G.fetch git config.
+
+Now, what `git annex sync` does do, when in an adjusted branch, is
+propigate any changes that you have made to that branch back to the master
+branch, and then it pushes the master branch over to the remote. And if the
+remote is also in an adjusted branch, then running `git annex sync` on
+the remote will merge in those changes from the master branch. But
+when the branch is a --hide-missing branch, this process does not cause
+files that are missing on the one repo to get deleted from the branch on
+the other repo.
+"""]]
