@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-07-13T17:18:49Z"
+ content="""
+Dropping does present a problem though -- If a single chunk is used by
+multiple keys, then dropping one key would drop the chunk and make the
+other key no longer be stored on the remote. So it would somehow need to
+check if the chunk is used by other keys still stored on the remote,
+and the chunk logs don't let that be done efficiently.
+"""]]
