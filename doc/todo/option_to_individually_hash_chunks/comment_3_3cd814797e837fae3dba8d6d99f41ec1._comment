@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-07-13T17:09:11Z"
+ content="""
+Hashing fixed sized chunks does not get very far toward
+deduplication, it really needs a rolling hash.
+
+The chunk design was designed to support this kind of thing from the
+beginning, see [[design/assistant/chunks]]. Each chunk has its own Key, and
+the chunk log only needs to somehow store data to get from an object's Key
+to a list of chunk Keys. Which is currently just a chunk size and number of
+chunks, but could be a list of Keys, or a pointer to where to find the
+list.
+
+So it's doable, but I have never quite found the tuits to attempt it.
+"""]]
