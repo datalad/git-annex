@@ -1,6 +1,6 @@
 {- git-annex assistant commit thread
  -
- - Copyright 2012, 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -33,6 +33,7 @@ import Annex.Perms
 import Annex.CatFile
 import Annex.InodeSentinal
 import Annex.CurrentBranch
+import Annex.FileMatcher
 import qualified Annex
 import Utility.InodeCache
 import qualified Database.Keys
@@ -52,6 +53,7 @@ commitThread = namedThread "Committer" $ do
 	havelsof <- liftIO $ inSearchPath "lsof"
 	delayadd <- liftAnnex $
 		fmap Seconds . annexDelayAdd <$> Annex.getGitConfig
+	largefilematcher <- liftAnnex largeFilesMatcher
 	msg <- liftAnnex Command.Sync.commitMsg
 	lockdowndir <- liftAnnex $ fromRepo gitAnnexTmpWatcherDir
 	liftAnnex $ do
@@ -61,7 +63,7 @@ commitThread = namedThread "Committer" $ do
 			(fromRawFilePath lockdowndir)
 		void $ createAnnexDirectory lockdowndir
 	waitChangeTime $ \(changes, time) -> do
-		readychanges <- handleAdds (fromRawFilePath lockdowndir) havelsof delayadd $
+		readychanges <- handleAdds (fromRawFilePath lockdowndir) havelsof largefilematcher delayadd $
 			simplifyChanges changes
 		if shouldCommit False time (length readychanges) readychanges
 			then do
@@ -239,7 +241,7 @@ commitStaged msg = do
 			return ok
 
 {- If there are PendingAddChanges, or InProcessAddChanges, the files
- - have not yet actually been added to the annex, and that has to be done
+ - have not yet actually been added, and that has to be done
  - now, before committing.
  -
  - Deferring the adds to this point causes batches to be bundled together,
@@ -257,8 +259,8 @@ commitStaged msg = do
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: FilePath -> Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
-handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
+handleAdds :: FilePath -> Bool -> GetFileMatcher -> Maybe Seconds -> [Change] -> Assistant [Change]
+handleAdds lockdowndir havelsof largefilematcher delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	let lockdownconfig = LockDownConfig
 		{ lockingFile = False
@@ -271,9 +273,12 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 		refillChanges postponed
 
 	returnWhen (null toadd) $ do
-		added <- addaction toadd $
-			catMaybes <$> addunlocked toadd
-		return $ added ++ otherchanges
+		(toaddannexed, toaddsmall) <- partitionEithers
+			<$> mapM checksmall toadd
+		addsmall toaddsmall
+		addedannexed <- addaction toadd $
+			catMaybes <$> addannexed toaddannexed
+		return $ addedannexed ++ toaddsmall ++ otherchanges
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
 
@@ -281,25 +286,24 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 		| c = return otherchanges
 		| otherwise = a
 
-	add :: LockDownConfig -> Change -> Assistant (Maybe Change)
-	add lockdownconfig change@(InProcessAddChange { lockedDown = ld }) = 
-		catchDefaultIO Nothing <~> doadd
-	  where
-	  	ks = keySource ld
-		doadd = sanitycheck ks $ do
-			(mkey, _mcache) <- liftAnnex $ do
-				showStart "add" (keyFilename ks) (SeekInput [])
-				ingest nullMeterUpdate (Just $ LockedDown lockdownconfig ks) Nothing
-			maybe (failedingest change) (done change $ fromRawFilePath $ keyFilename ks) mkey
-	add _ _ = return Nothing
+	checksmall change =
+		ifM (liftAnnex $ checkFileMatcher largefilematcher (toRawFilePath (changeFile change)))
+			( return (Left change)
+			, return (Right change)
+			)
+
+	addsmall [] = noop
+	addsmall toadd = liftAnnex $ Annex.Queue.addCommand [] "add"
+		[ Param "--force", Param "--"] (map changeFile toadd)
 
 	{- Avoid overhead of re-injesting a renamed unlocked file, by
 	 - examining the other Changes to see if a removed file has the
 	 - same InodeCache as the new file. If so, we can just update
 	 - bookkeeping, and stage the file in git.
 	 -}
-	addunlocked :: [Change] -> Assistant [Maybe Change]
-	addunlocked toadd = do
+	addannexed :: [Change] -> Assistant [Maybe Change]
+	addannexed [] = return []
+	addannexed toadd = do
 		ct <- liftAnnex compareInodeCachesWith
 		m <- liftAnnex $ removedKeysMap ct cs
 		delta <- liftAnnex getTSDelta
@@ -308,15 +312,27 @@ handleAdds lockdowndir havelsof delayadd cs = returnWhen (null incomplete) $ do
 			, hardlinkFileTmpDir = Just (toRawFilePath lockdowndir)
 			}
 		if M.null m
-			then forM toadd (add cfg)
+			then forM toadd (addannexed' cfg)
 			else forM toadd $ \c -> do
 				mcache <- liftIO $ genInodeCache (toRawFilePath (changeFile c)) delta
 				case mcache of
-					Nothing -> add cfg c
+					Nothing -> addannexed' cfg c
 					Just cache ->
 						case M.lookup (inodeCacheToKey ct cache) m of
-							Nothing -> add cfg c
+							Nothing -> addannexed' cfg c
 							Just k -> fastadd c k
+
+	addannexed' :: LockDownConfig -> Change -> Assistant (Maybe Change)
+	addannexed' lockdownconfig change@(InProcessAddChange { lockedDown = ld }) = 
+		catchDefaultIO Nothing <~> doadd
+	  where
+	  	ks = keySource ld
+		doadd = sanitycheck ks $ do
+			(mkey, _mcache) <- liftAnnex $ do
+				showStart "add" (keyFilename ks) (SeekInput [])
+				ingest nullMeterUpdate (Just $ LockedDown lockdownconfig ks) Nothing
+			maybe (failedingest change) (done change $ fromRawFilePath $ keyFilename ks) mkey
+	addannexed' _ _ = return Nothing
 
 	fastadd :: Change -> Key -> Assistant (Maybe Change)
 	fastadd change key = do

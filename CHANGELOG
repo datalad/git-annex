@@ -8,6 +8,9 @@ git-annex (8.20210631) UNRELEASED; urgency=medium
   * init: Fix misbehavior when core.sharedRepository = group that
     caused it to enter an adjusted branch and set annex.crippledfilesystem
     (Reversion in version 8.20210630)
+  * assistant: When adding non-large files to git, honor annex.delayadd
+    configuration. Also, don't add non-large files to git when they
+    are still being written to.
 
  -- Joey Hess <id@joeyh.name>  Wed, 30 Jun 2021 17:55:10 -0400
 

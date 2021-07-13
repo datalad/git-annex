@@ -34,7 +34,6 @@ import Annex.WorkTree
 import Annex.CatFile
 import Annex.CheckIgnore
 import Annex.Link
-import Annex.FileMatcher
 import Annex.Content
 import Annex.ReplaceFile
 import Annex.InodeSentinal
@@ -89,9 +88,8 @@ watchThread = namedThread "Watcher" $
 runWatcher :: Assistant ()
 runWatcher = do
 	startup <- asIO1 startupScan
-	matcher <- liftAnnex largeFilesMatcher
 	symlinkssupported <- liftAnnex $ coreSymlinks <$> Annex.getGitConfig
-	addhook <- hook $ onAddUnlocked symlinkssupported matcher
+	addhook <- hook $ onAddUnlocked symlinkssupported
 	delhook <- hook onDel
 	addsymlinkhook <- hook onAddSymlink
 	deldirhook <- hook onDelDir
@@ -193,24 +191,14 @@ runHandler handler file filestatus = void $ do
 		| "./" `isPrefixOf` file = drop 2 f
 		| otherwise = f
 
-{- Small files are added to git as-is, while large ones go into the annex. -}
-add :: GetFileMatcher -> FilePath -> Assistant (Maybe Change)
-add largefilematcher file = ifM (liftAnnex $ checkFileMatcher largefilematcher (toRawFilePath file))
-	( pendingAddChange file
-	, do
-		liftAnnex $ Annex.Queue.addCommand [] "add"
-			[Param "--force", Param "--"] [file]
-		madeChange file AddFileChange
-	)
-
 shouldRestage :: DaemonStatus -> Bool
 shouldRestage ds = scanComplete ds || forceRestage ds
 
-onAddUnlocked :: Bool -> GetFileMatcher -> Handler
-onAddUnlocked symlinkssupported matcher f fs = do
+onAddUnlocked :: Bool -> Handler
+onAddUnlocked symlinkssupported f fs = do
 	mk <- liftIO $ isPointerFile $ toRawFilePath f
 	case mk of
-		Nothing -> onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher f fs
+		Nothing -> onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkssupported f fs
 		Just k -> addlink f k
   where
 	addassociatedfile key file = 
@@ -240,9 +228,8 @@ onAddUnlocked'
 	-> (FilePath -> Key -> Assistant (Maybe Change))
 	-> (Key -> FilePath -> FileStatus -> Annex Bool)
 	-> Bool
-	-> GetFileMatcher
 	-> Handler
-onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkssupported matcher file fs = do
+onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkssupported file fs = do
 	v <- liftAnnex $ catKeyFile (toRawFilePath file)
 	case (v, fs) of
 		(Just key, Just filestatus) ->
@@ -259,12 +246,12 @@ onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkss
 				, guardSymlinkStandin (Just key) $ do
 					debug ["changed", file]
 					liftAnnex $ contentchanged key file
-					add matcher file
+					pendingAddChange file
 				)
 		_ -> unlessIgnored file $
 			guardSymlinkStandin Nothing $ do
 				debug ["add", file]
-				add matcher file
+				pendingAddChange file
   where
 	{- On a filesystem without symlinks, we'll get changes for regular
 	 - files that git uses to stand-in for symlinks. Detect when
