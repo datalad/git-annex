@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="(partial) filenames in keys"
+ date="2021-07-13T15:13:27Z"
+ content="""
+WOM and URL keys [[already contain|backends]] filenames or parts of filenames.  Docs warn that too-long keys might cause issues on Windows, but also that 512 and 384 length hashes already have that problem.  So it seems that permitting larger `maxextensionlength` should not add new issues?
+"""]]
