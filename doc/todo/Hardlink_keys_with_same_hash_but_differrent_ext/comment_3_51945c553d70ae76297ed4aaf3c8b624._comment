@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 3"
+ date="2021-07-13T21:13:12Z"
+ content="""
+> when the object file is hard linked to somewhere already, it is unable to hard link it to the unlocked file location
+
+Why? You should be able to create as many hardlinks of any hardlink as you please or am I missing something? A \"regular\" file is just a hardlink with refcount = 1 and if it works there, it should work for any other refcount.
+
+> This feature would also need a way to find all the other equivilant keys that are in use, which would have to be done whenever an object file gets populated. So it would need to be very fast, otherwise it would slow down eg `git annex get`.
+
+A simpler approach might be to change the file layout so that files with the same hash are always in the same directory, I.e.:
+
+```
+.git/annex/objects/F9/Kk/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.1/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.1
+.git/annex/objects/Pm/J1/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.2/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.2
+```
+
+->
+
+```
+.git/annex/objects/F9/Kk/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.1
+.git/annex/objects/F9/Kk/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a/SHA256E-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.2
+```
+
+This is basically the SHA256 backend but the files in the final dir in have the respective extensions like the SHA256E backend but they are hardlinks of another (SHA256H^ybrid/SHA256H^ardlink ?).
+
+Lookups should be super cheap with this method because files with the same hash are simply in the same directory as all the others. These probably shouldn't be treated as separate keys either but as \"instances\" of the same key.
+"""]]
