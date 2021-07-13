@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-07-13T16:20:10Z"
+ content="""
+There is some precident for this; `git annex migrate`
+hard links the annex objects for the old and new key.
+
+But hard links are also used for unlocked files with annex.thin,
+and when the object file is hard linked to somewhere already,
+it is unable to hard link it to the unlocked file location, and so
+annex.thin doesn't work.
+
+It would perhaps make sense for such a hard link to be broken when
+populating an unlocked file when annex.thin is enabled. Ie, replace
+the object file with a copy of itself. Which can then be hard linked to the
+unlocked file. That would also improve the situation when it's been
+migrated.
+
+This feature would also need a way to find all the other equivilant keys
+that are in use, which would have to be done whenever an object file gets
+populated. So it would need to be very fast, otherwise it would slow down
+eg `git annex get`. While the keys database does have the necessary
+information in it (finally), it would need to select keys matching a
+pattern, which I doubt would be an optmised query, even if the index
+in the database can be used. 
+(See <https://sqlite.org/optoverview.html#like_opt>)
+Even if the query were optimised, it could turn out to be a significant
+speed hit.
+
+And I have a feeling that most people bothered by this duplication
+would just do better to migrate away from SHA256E to SHA256..
+"""]]
