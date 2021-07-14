@@ -15,6 +15,7 @@ module Git.DiffTree (
 	diffFiles,
 	diffLog,
 	commitDiff,
+	parseDiffRaw,
 ) where
 
 import qualified Data.ByteString as B
@@ -116,9 +117,13 @@ parseDiffRaw l = go l
 	go (s:[]) = error $ "diff-tree parse error near \"" ++ decodeBL' s ++ "\""
 
 -- :<srcmode> SP <dstmode> SP <srcsha> SP <dstsha> SP <status>
+--
+-- May be prefixed with a newline, which git log --pretty=format
+-- adds to the first line of the diff, even with -z.
 parserDiffRaw :: RawFilePath -> A.Parser DiffTreeItem
 parserDiffRaw f = DiffTreeItem
-	<$ A8.char ':'
+	<$ A.option '\n' (A8.char '\n')
+	<* A8.char ':'
 	<*> octal
 	<* A8.char ' '
 	<*> octal
