@@ -620,6 +620,7 @@ jobs:
           {% endif %}
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
+          git config --global datalad.log.exc "1"
 
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
