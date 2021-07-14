@@ -1,6 +1,6 @@
 # NAME
 
-git-annex whereused - find what files use, or used a key
+git-annex whereused - find what files use or used a key
 
 # SYNOPSIS
 
@@ -8,7 +8,7 @@ git annex whereused `--key=keyname|--unused`
 
 # DESCRIPTION
 
-Finds what files use, or used a key.
+Finds what files use or used a key.
 
 For each file in the working tree that uses a key, this outputs one line,
 starting with the key, then a space, and then the name of the file.

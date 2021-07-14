@@ -449,7 +449,7 @@ content from the key-value store.
 
 * `whereused`
 
-  Finds what files use, or used a key.
+  Finds what files use or used a key.
 
 * `log [path ...]`
 
