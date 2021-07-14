@@ -76,57 +76,75 @@ display key loc = putStrLn (serializeKey key ++ " " ++ loc)
 
 findHistorical :: Key -> Annex ()
 findHistorical key = do
-	Annex.inRepo $ \repo -> do
-		-- Find most recent change to the key, in all branches and
-		-- tags, except the git-annex branch.
-		(output, cleanup) <- Git.Command.pipeNullSplit 
-			[ Param "log"
-			, Param "-z"
-			-- Don't convert pointer files.
-			, Param "--no-textconv"
-			-- Only find the most recent commit, for speed.
-			, Param "-n1"
-			-- Find commits that contain the key.
-			, Param ("-S" ++ fromRawFilePath (keyFile key))
-			-- Skip commits where the file was deleted,
-			-- only find those where it was added or modified.
-			, Param "--diff-filter=ACMRTUX"
-			-- Search all local branches, except git-annex branch.
-			, Param ("--exclude=*/" ++ fromRef (Annex.Branch.name))
-			, Param "--glob=*"
-			-- Also search remote branches
-			, Param ("--exclude=" ++ fromRef (Annex.Branch.name))
-			, Param "--remotes=*"
-			-- And search tags.
-			, Param "--tags=*"
-			-- Output the commit hash
-			, Param "--pretty=%H"
-			-- And the raw diff.
-			, Param "--raw"
-			-- Don't abbreviate hashes.
-			, Param "--no-abbrev"
-			] repo
-		found <- case output of
-			(h:rest) -> do
-				commitsha <- getSha "log" (pure (L.toStrict h))
-				let diff = DiffTree.parseDiffRaw rest
-				forM_ (map (flip fromTopFilePath repo . DiffTree.file) diff) $ \f -> do
-					commitdesc <- S.takeWhile (/= fromIntegral (ord '\n'))
-						<$> Git.Command.pipeReadStrict
-							[ Param "describe"
-							, Param "--contains"
-							, Param "--all"
-							, Param (fromRef commitsha)
-							] repo
-					if S.null commitdesc
-						then return False
-						else do
-							rf <- relPathCwdToFile f
-							let fref = Git.Ref.branchFileRef (Ref commitdesc) rf
-							display key (fromRef fref)
-							return True
-			_ -> return False
-		void cleanup
+	-- Find most recent change to the key, in all branches and
+	-- tags, except the git-annex branch.
+	found <- searchLog key 
+		-- Search all local branches, except git-annex branch.
+		[ Param ("--exclude=*/" ++ fromRef (Annex.Branch.name))
+		, Param "--glob=*"
+		-- Also search remote branches
+		, Param ("--exclude=" ++ fromRef (Annex.Branch.name))
+		, Param "--remotes=*"
+		-- And search tags.
+		, Param "--tags=*"
+		-- Output the commit hash
+		, Param "--pretty=%H"
+		] $ \h fs repo -> do
+			commitsha <- getSha "log" (pure h)
+			commitdesc <- S.takeWhile (/= fromIntegral (ord '\n'))
+				<$> Git.Command.pipeReadStrict
+					[ Param "describe"
+					, Param "--contains"
+					, Param "--all"
+					, Param (fromRef commitsha)
+					] repo
+			if S.null commitdesc
+				then return False
+				else process fs $
+					displayreffile (Ref commitdesc)
 		
-		unless found $ do
-			error "todo reflog"
+	unless found $
+		void $ searchLog key
+			[ Param "--walk-reflogs"
+			-- Output the reflog selector
+			, Param "--pretty=%gd"
+			] $ \h fs _ -> process fs $
+				displayreffile (Ref h)
+  where
+	process fs a = or <$> forM fs a
+
+	displayreffile r f = do
+		let fref = Git.Ref.branchFileRef r f
+		display key (fromRef fref)
+		return True
+
+searchLog :: Key -> [CommandParam] -> (S.ByteString -> [RawFilePath] -> Repo -> IO Bool) -> Annex Bool
+searchLog key ps a = Annex.inRepo $ \repo -> do
+	(output, cleanup) <- Git.Command.pipeNullSplit ps' repo
+	found <- case output of
+		(h:rest) -> do
+			let diff = DiffTree.parseDiffRaw rest
+			let fs = map (flip fromTopFilePath repo . DiffTree.file) diff
+			rfs <- mapM relPathCwdToFile fs
+			a (L.toStrict h) rfs repo
+		_ -> return False
+	void cleanup
+	return found
+  where
+	ps' = 
+		[ Param "log"
+		, Param "-z"
+		-- Don't convert pointer files.
+		, Param "--no-textconv"
+		-- Don't abbreviate hashes.
+		, Param "--no-abbrev"
+		-- Only find the most recent commit, for speed.
+		, Param "-n1"
+		-- Find commits that contain the key.
+		, Param ("-S" ++ fromRawFilePath (keyFile key))
+		-- Skip commits where the file was deleted,
+		-- only find those where it was added or modified.
+		, Param "--diff-filter=ACMRTUX"
+		-- Output the raw diff.
+		, Param "--raw"
+		] ++ ps
