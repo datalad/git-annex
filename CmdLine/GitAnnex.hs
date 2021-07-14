@@ -72,6 +72,7 @@ import qualified Command.FilterBranch
 import qualified Command.Find
 import qualified Command.FindRef
 import qualified Command.Whereis
+import qualified Command.WhereUsed
 import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
@@ -207,6 +208,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexGlobalOption
 	, Command.Find.cmd
 	, Command.FindRef.cmd
 	, Command.Whereis.cmd
+	, Command.WhereUsed.cmd
 	, Command.List.cmd
 	, Command.Log.cmd
 	, Command.Merge.cmd

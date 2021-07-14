@@ -4,7 +4,7 @@ git-annex whereused - find what files use, or used a key
 
 # SYNOPSIS
 
-git annex whereused `--key=K|--unused`
+git annex whereused `--key=keyname|--unused`
 
 # DESCRIPTION
 

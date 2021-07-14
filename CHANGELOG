@@ -1,3 +1,10 @@
+git-annex (8.20210715) UNRELEASED; urgency=medium
+
+  * whereused: New command, finds what files use a key, or where a key
+    was used historically.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 14 Jul 2021 14:26:36 -0400
+
 git-annex (8.20210714) upstream; urgency=medium
 
   * assistant: Avoid unncessary git repository repair in a situation where

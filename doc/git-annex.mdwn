@@ -373,10 +373,6 @@ content from the key-value store.
   
   See [[git-annex-addunused]](1) for details.
 
-* `whereused`
-
-  Finds what files use, or used a key.
-
 * `fix [path ...]`
 
   Fixes up symlinks that have become broken to again point to annexed content.
@@ -450,6 +446,10 @@ content from the key-value store.
   files. This is similar to whereis but a more compact display.
   
   See [[git-annex-list]](1) for details.
+
+* `whereused`
+
+  Finds what files use, or used a key.
 
 * `log [path ...]`
 

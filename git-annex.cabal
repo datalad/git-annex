@@ -144,6 +144,7 @@ Extra-Source-Files:
   doc/git-annex-watch.mdwn
   doc/git-annex-webapp.mdwn
   doc/git-annex-whereis.mdwn
+  doc/git-annex-whereused.mdwn
   doc/git-remote-tor-annex.mdwn
   doc/logo.svg
   doc/logo_16x16.png
@@ -830,6 +831,7 @@ Executable git-annex
     Command.View
     Command.Wanted
     Command.Whereis
+    Command.WhereUsed
     Common
     Config
     Config.Cost
