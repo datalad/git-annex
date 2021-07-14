@@ -3,7 +3,7 @@
 [[!img /assistant/osx-app.png align=right link=/assistant]]
 For easy installation, use the prebuilt app bundle.
 
-* 10.11 El Capitan / 10.10 Yosemite / 10.9 Mavericks: [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.10_Yosemite/git-annex.dmg)  
+* 10.15 Catalina: [git-annex.dmg](https://downloads.kitenet.net/git-annex/OSX/current/10.15_Catalina/git-annex.dmg)
 
 To run the [[git-annex_assistant|/assistant]], just
 install the app, look for the icon, and start it up. 
