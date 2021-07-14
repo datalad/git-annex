@@ -1,0 +1,53 @@
+# NAME
+
+git-annex whereused - find what files use, or used a key
+
+# SYNOPSIS
+
+git annex whereused `--key=K|--unused`
+
+# DESCRIPTION
+
+Finds what files use, or used a key.
+
+For each file in the working tree that uses a key, this outputs one line,
+starting with the key, then a space, and then the name of the file.
+When multiple files use the same key, they will all be listed. When
+nothing is found that uses the key, there will be no output.
+
+The default is to find only files in the current working tree that use a
+key. The `--historical` option makes it also find past versions of files.
+
+# OPTIONS
+
+* `--key=keyname`
+
+  Operate on this key.
+
+* `--unused`
+
+  Operate on keys found by last run of git-annex unused.
+
+  Usually these keys won't be used by any files in the current working
+  tree, or any tags or branches. Combining this option with `--historical`
+  will find past uses of the keys.
+
+* `--historical`
+
+  When no files in the current working tree use a key, this causes more
+  work to be done, looking at past versions of the current branch, other
+  branches, tags, and the reflog, to find somewhere that the key was used.
+  It stops after finding one use of the key, and outputs a git rev that
+  refers to where it was used, eg "HEAD@{40}:somefile"
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-unused]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

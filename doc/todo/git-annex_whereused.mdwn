@@ -19,3 +19,24 @@ considers a key used despite a previous git rev referring to it. Eg:
 	checking reflog... last used in HEAD@{30}:somefile
 
 --[[Joey]]
+
+> First pass is a keys db lookup to filenames.
+> 
+> The historical pass can be done fairly efficiently by using
+> `git log -Skey --exclude=*/git-annex --glob=* --exclude=git-annex --remotes=* --tags=* --pretty='%H' --raw`
+> and fall back to `git log -Skey --walk-reflogs --pretty='%gd' --raw` if nothing was found.
+> 
+> That makes git log check all commits reachable from those refs,
+> probably as efficiently as possible, and stop after one match.
+> It won't allow quite as nice a display as above.
+> 
+> Parse the log output for commit sha and filename. Double-check 
+> by catting the file's object and making sure it parses as an annex
+> link or pointer.
+> 
+> Then use `git describe --contains --all` to get a description of the commit
+> sha, which will be something like "master~2" or "origin/master~2",
+> and add ":filename" to get the ref to output.
+> 
+> Or, if it was found in the ref log, take the "HEAD@{n}" from log
+> output, and add ":filename"
