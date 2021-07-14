@@ -140,11 +140,24 @@ searchLog key ps a = Annex.inRepo $ \repo -> do
 		, Param "--no-abbrev"
 		-- Only find the most recent commit, for speed.
 		, Param "-n1"
-		-- Find commits that contain the key.
-		, Param ("-S" ++ fromRawFilePath (keyFile key))
+		-- Be sure to treat -G as a regexp.
+		, Param "--basic-regexp"
+		-- Find commits that contain the key. The object has to
+		-- end with the key to avoid confusion with longer keys,
+		-- so a regexp is used. Since annex pointer files
+		-- may contain a newline followed by perhaps something
+		-- else, that is also matched.
+		, Param ("-G" ++ escapeRegexp (fromRawFilePath (keyFile key)) ++ "($|\n)")
 		-- Skip commits where the file was deleted,
 		-- only find those where it was added or modified.
 		, Param "--diff-filter=ACMRTUX"
 		-- Output the raw diff.
 		, Param "--raw"
 		] ++ ps
+
+escapeRegexp :: String -> String
+escapeRegexp = concatMap esc
+  where
+	esc c
+		| isAscii c && isAlphaNum c = [c]
+		| otherwise = ['[', c, ']']
