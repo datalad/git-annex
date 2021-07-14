@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-07-14T15:57:43Z"
+ content="""
+@Atemu because the hard link to an unlocked file risks
+it being modified, and losing the content of another key
+is outside the risk profile allowed by annex.thin.
+
+Also it could be hard linked for other reasons, like
+a local clone does, and that also should not be exposed
+to modification.
+
+Moving all the object files to the same directory does not
+help in the case of git-annex get, where the object files
+don't exist yet. It would still need a way to find all the equivilant keys
+to populate those.
+"""]]
