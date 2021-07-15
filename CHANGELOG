@@ -2,6 +2,9 @@ git-annex (8.20210715) UNRELEASED; urgency=medium
 
   * whereused: New command, finds what files use a key, or where a key
     was used historically.
+  * Fix a bug that prevented getting content from a repository that
+    started out as a bare repository, or had annex.crippledfilesystem
+    set, and was converted to a non-bare repository.
 
  -- Joey Hess <id@joeyh.name>  Wed, 14 Jul 2021 14:26:36 -0400
 

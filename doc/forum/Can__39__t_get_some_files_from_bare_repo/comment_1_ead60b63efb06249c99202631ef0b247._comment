@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-07-15T15:51:16Z"
+ content="""
+Note that 8.20.200226 is not a valid git-annex version and it would be good
+to know the actual version used on WSL.
+
+The mixed-case folder name is what git-annex uses when storing files in a
+git repository that is not bare. The lower-case 3 letter name is used in a bare
+repository. It is also used when git-annex detects a crippled filesystem
+-- which it likely would for a USB drive using FAT or something. 
+Does the repository have annex.crippledfilesystem set in its git config?
+
+Ok, I found a way to reproduce this. I made a repository with
+annex.crippledfilesystem set, and copied a file to it. Then I unset 
+annex.crippledfilesystem. Getting the file in another repository then
+fails.
+
+git-annex does already deal with cases where a non-bare repo is converted
+to bare, by trying both names, but it does not in this case.
+
+I've fixed the problem, but am still curious about how you got into this
+situation. Anyway, install a git-annex autobuild a few hours after this
+comment to get the fix.
+
+(Please use [[bugs]] to report bug reports in the future, this forum is not
+a BTS and you cause extra work by posting bugs here.)
+"""]]
