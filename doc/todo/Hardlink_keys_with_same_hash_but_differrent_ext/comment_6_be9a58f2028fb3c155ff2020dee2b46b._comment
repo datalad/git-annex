@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-07-15T16:19:02Z"
+ content="""
+But making a hardlink from SHA256-foo.1 to SHA256-foo does
+not help when another file calls it SHA256-foo.2 ...
+"""]]
