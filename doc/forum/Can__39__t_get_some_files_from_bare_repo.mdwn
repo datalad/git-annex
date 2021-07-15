@@ -1,0 +1,12 @@
+I have a bare repo on a USB drive with ntfs. Files there sink from two PC: one with WSL/Ubuntu on Windows 10 and one with Manjaro linux.
+I found that though some files are on the usb git annex says:  content is not present in remote as I getting them.
+
+Then I tried drop files from the usb an copy them there again. And I discovered that on the usb now are two files in different folders:
+
+Before dropping / copy it was: 
+```.git/annex/objects/Pg/vw/SHA256E-s91600--aa3c4ec61a1b5642b8c9c0f04dd36884130b8f0135bc9dae9b48b71c26511e4f.xlsx/SHA256E-s91600--aa3c4ec61a1b5642b8c9c0f04dd36884130b8f0135bc9dae9b48b71c26511e4f.xlsx```
+
+After this there appeared another one: 
+```.git/annex/objects/d21/4c3/SHA256E-s91600--aa3c4ec61a1b5642b8c9c0f04dd36884130b8f0135bc9dae9b48b71c26511e4f.xlsx/SHA256E-s91600--aa3c4ec61a1b5642b8c9c0f04dd36884130b8f0135bc9dae9b48b71c26511e4f.xlsx```
+
+The folders are different. How to fix these strange behavior?
