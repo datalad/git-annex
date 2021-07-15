@@ -18,4 +18,4 @@ on the manjaro linux: 8.20210428-g27e5f3cd5
 # Question
 I understood that it's something about old and new hash format but how to get files in a such situation? Or how to unify hash format?
 
-[[!tag bugreport]] [[done]]
+[[!tag forumbug]] [[bugs/done]]
