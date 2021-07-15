@@ -5,5 +5,5 @@ But, please don't post bug reports here. Put them in [[bugs]].
 And please don't make wishlist requests here. Put them in [[todo]].  
 (If you post bugs/todo here, it'll just get moved.)
 
-[[!inline pages="forum/* and !tagged(forum/bugreport) and !*/Discussion" archive=yes feedlimit=10 
+[[!inline pages="forum/* and !tagged(forum/bugreport) and !forum/bugreport and !*/Discussion" archive=yes feedlimit=10 
 rootpage=forum postformtext="Add a new thread titled:"]]
