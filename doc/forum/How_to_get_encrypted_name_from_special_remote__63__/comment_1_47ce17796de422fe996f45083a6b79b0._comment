@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-07-15T15:44:03Z"
+ content="""
+See [[tips/Decrypting_files_in_special_remotes_without_git-annex]].
+
+But there is a glacier special remote which handles its particulars.
+It's probably possible to set up a new remote using that,
+which will access the data in your S3 remote now,
+using the method described in
+[[tips/multiple_remotes_accessing_the_same_data_store]].
+"""]]
