@@ -10,3 +10,5 @@ While trying to compile the current master I run in the following error:
     make: *** [git-annex] Fehler 1
 
 I installed all dependencies from the INSTALL document. What is wrong?
+
+[[!tag forumbug]] [[bugs/done]]

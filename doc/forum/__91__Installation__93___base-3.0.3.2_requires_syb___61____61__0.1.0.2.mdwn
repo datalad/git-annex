@@ -14,3 +14,5 @@ However, I got some dpendancy error:
 Any ideas?
 
 Thanks for your help!
+
+[[!tag forumbug]] [[bugs/done]]

@@ -20,3 +20,5 @@ Whenever I try to get a file with a non-English character, git annex gives me tr
 It spits out similar errors for all files with Japanese/German/French/special characters, and ends with this on the last line:
 
     git-annex: get: 138 failed
+
+[[!tag forumbug]] [[bugs/done]]
