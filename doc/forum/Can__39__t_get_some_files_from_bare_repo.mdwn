@@ -2,7 +2,7 @@
 I have a bare repo on a USB drive with ntfs. Files there sink from two PC: one with WSL/Ubuntu on Windows 10 and one with Manjaro linux.
 I found that though some files are on the usb git annex says:  content is not present in remote as I getting them.
 
-# Discovering
+# Researching
 I tried drop files from the usb an copy them there again. And I discovered that on the usb now are two files in different folders:
 
 Before dropping / copy it was: 
