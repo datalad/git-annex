@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 5"
+ date="2021-07-14T21:27:42Z"
+ content="""
+> the hard link to an unlocked file risks it being modified, and losing the content of another key is outside the risk profile allowed by annex.thin
+
+I see. I guess annex.thin's risk profile would simply need to be different when using SHA256H then. If you use annex.thin with hardlinks, you're at high risk of accidental modification anyways, so that wouldn't be much of a change tbh.
+
+Also, since it'd be the exact same file and key, such behaviour should be expected and would be exactly the same as with the SHA256 backend.
+
+> Moving all the object files to the same directory does not help in the case of git-annex get, where the object files don't exist yet. It would still need a way to find all the equivilant keys to populate those.
+
+I'm not 100% familiar with how `get` works but what I'm thinking of might work like this:
+
+`git annex get random.1`
+
+```
+file = \"random.1\" 
+key = keyOf file = \"SHA256-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a\"
+ext = extOf file = \".1\"
+pathWanted = hybridPathOf key ext = \".git/annex/objects/F9/Kk/SHA256-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a/SHA256H-s104857600--2fdbdc9c3b23d1986a743aede593765e57ade9f173f9fd9766057f0efd63197a.1\"
+sha256Path = pathOf key
+
+when (!inLocalAnnex key) (fetch key)
+unless (fileExists pathWanted) (hardLink sha256Path pathWanted)
+```
+
+SHA256H should behave just like SHA256 here; it gets the SHA256-indexed key with the same logic. The only difference should be that it adds another file with a suffix when writing.
+
+"""]]

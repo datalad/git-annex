@@ -1,0 +1,1 @@
+I'm using Amazon S3 (Glacier Deep Archive) as a special remote, and using pubkey encryption. Is there a command to get the encrypted file name for a file so that I can initiate restore on that file before calling `git annex get`? 
