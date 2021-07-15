@@ -9,4 +9,4 @@ Before dropping / copy it was:
 After this there appeared another one: 
 ```.git/annex/objects/d21/4c3/SHA256E-s91600--aa3c4ec61a1b5642b8c9c0f04dd36884130b8f0135bc9dae9b48b71c26511e4f.xlsx/SHA256E-s91600--aa3c4ec61a1b5642b8c9c0f04dd36884130b8f0135bc9dae9b48b71c26511e4f.xlsx```
 
-The folders are different. How to fix these strange behavior?
+I understood that it's something about old and new hash format but how to get files in a such situation? Or how to unify hash format?
