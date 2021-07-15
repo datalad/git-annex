@@ -39,7 +39,7 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 
-type BorgRepo = String
+newtype BorgRepo = BorgRepo { locBorgRepo :: String }
 
 type BorgArchiveName = S.ByteString
 
@@ -109,9 +109,7 @@ gen r u rc gc rs = do
 		, config = c
 		, getRepo = return r
 		, gitconfig = gc
-		, localpath = if borgLocal borgrepo && not (null borgrepo)
-			then Just borgrepo
-			else Nothing
+		, localpath = borgRepoLocalPath borgrepo
 		, remotetype = remote
 		, availability = if borgLocal borgrepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
@@ -122,13 +120,16 @@ gen r u rc gc rs = do
 		, untrustworthy = maybe True not $
 			getRemoteConfigValue appendonlyField c
 		, mkUnavailable = return Nothing
-		, getInfo = return [("repo", borgrepo)]
+		, getInfo = return [("repo", locBorgRepo borgrepo)]
 		, claimUrl = Nothing
 		, checkUrl = Nothing
 		, remoteStateHandle = rs
 		}
   where
-	borgrepo = fromMaybe (giveup "missing borgrepo") $ remoteAnnexBorgRepo gc
+	borgrepo = maybe
+		(giveup "missing borgrepo")
+		BorgRepo
+		(remoteAnnexBorgRepo gc)
 
 borgSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 borgSetup _ mu _ c _gc = do
@@ -145,15 +146,26 @@ borgSetup _ mu _ c _gc = do
 	return (c, u)
 
 borgLocal :: BorgRepo -> Bool
-borgLocal = notElem ':'
+borgLocal (BorgRepo r) = notElem ':' r
 
 borgArchive :: BorgRepo -> BorgArchiveName -> String
-borgArchive r n = r ++ "::" ++ decodeBS' n
+borgArchive (BorgRepo r) n = r ++ "::" ++ decodeBS' n
+
+absBorgRepo :: BorgRepo -> IO BorgRepo
+absBorgRepo r@(BorgRepo p)
+	| borgLocal r = BorgRepo . fromRawFilePath
+		<$> absPath (toRawFilePath p)
+	| otherwise = return r
+
+borgRepoLocalPath :: BorgRepo -> Maybe FilePath
+borgRepoLocalPath r@(BorgRepo p)
+	| borgLocal r && not (null p) = Just p
+	| otherwise = Nothing
 
 listImportableContentsM :: UUID -> BorgRepo -> ParsedRemoteConfig -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
 listImportableContentsM u borgrepo c = prompt $ do
 	imported <- getImported u
-	ls <- withborglist borgrepo Nothing formatarchivelist $ \as ->
+	ls <- withborglist (locBorgRepo borgrepo) Nothing formatarchivelist $ \as ->
 		forM (filter (not . S.null) as) $ \archivename ->
 			case M.lookup archivename imported of
 				Just getfast -> return $ Left (archivename, getfast)
@@ -329,14 +341,14 @@ checkPresentExportWithContentIdentifierM borgrepo _ loc _ = prompt $ liftIO $ do
 			[ Param "list"
 			, Param "--format"
 			, Param "1"
-			, Param borgrepo
+			, Param (locBorgRepo borgrepo)
 			]
 		(Nothing, Nothing, Nothing, pid) <- withNullHandle $ \nullh ->
 			createProcess $ p
 				{ std_out = UseHandle nullh }
 		ifM (checkSuccessProcess pid)
 			( return False -- repo exists, content not in it
-			, giveup $ "Unable to access borg repository " ++ borgrepo
+			, giveup $ "Unable to access borg repository " ++ locBorgRepo borgrepo
 			)
 
 retrieveExportWithContentIdentifierM :: BorgRepo -> ImportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
@@ -345,7 +357,7 @@ retrieveExportWithContentIdentifierM borgrepo loc _ dest mkk _ = do
 	prompt $ withOtherTmp $ \othertmp -> liftIO $ do
 		-- borgrepo could be relative, and borg has to be run
 		-- in the temp directory to get it to write there
-		absborgrepo <- fromRawFilePath <$> absPath (toRawFilePath borgrepo)
+		absborgrepo <- absBorgRepo borgrepo
 		let p = proc "borg" $ toCommand
 			[ Param "extract"
 			, Param (borgArchive absborgrepo archivename)

@@ -71,3 +71,5 @@ NOTE: I tried several variations of the ssh url syntax, but they all resulted in
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Definitely. I love git-annex. I LOVE it. It has no equal and is the secret to my productivity, not to mention peace of mind in this epoch. Much, much respect.
+
+> [[fixed|done]] --[[Joey]]
