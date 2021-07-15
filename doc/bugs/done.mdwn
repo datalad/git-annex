@@ -1,4 +1,4 @@
 recently fixed [[bugs]]
 
-[[!inline pages="(./* or  or tagged(forum/bugreport)) and link(./done) and !*/Discussion" sort=mtime show=0
+[[!inline pages="(./* or tagged(forum/bugreport)) and link(./done) and !*/Discussion" sort=mtime show=0
 archive=yes feedlimit=10]]
