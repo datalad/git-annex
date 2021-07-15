@@ -1,0 +1,5 @@
+This forum is not for bug reports, but people ignore that and post them
+here anyway. Such posts get tagged with this bugreport page, which makes
+them be listed in [[bugs]] rather than in the forum.
+
+[[!tag bugreport]]

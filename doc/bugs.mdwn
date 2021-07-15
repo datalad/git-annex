@@ -2,7 +2,7 @@ This is git-annex's bug list.
 
 To mark a bug as closed add \[\[done\]\] to the end of the original bug description. Closed bugs are moved to [[done]].
 
-[[!inline pages="./bugs/* and !./bugs/*/* and !./bugs/done and !link(done) 
+[[!inline pages="(./bugs/* or tagged(forum/bugreport)) and !./bugs/*/* and !./bugs/done and !link(done) 
 and !./bugs/moreinfo and !./bugs/confirmed and !./bugs/forwarded and !./bugs/duplicate
 and !*/Discussion"
 actions=yes postform=yes postformtext="Report a new bug titled:" show=0 archive=yes
