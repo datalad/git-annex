@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="guardcat"
+ avatar="http://cdn.libravatar.org/avatar/60a9f9f0159e3a732d448f0fd5642d41"
+ subject="Fixing problem"
+ date="2021-07-16T06:21:23Z"
+ content="""
+Thanks for you answer! 
+Sorry for choosing the wrong way to report the rpoblem. It happend because I didn't think it's the program's bug I thought it's my mistake.
+My WSL repo works on FAT32 so it's crippled. The version it the exactly what the git annex says me by ```git annex version``` on WSL. May be Ubuntu developers repacked it?
+
+# How I got into
+1. On the WSL system I mounted NTFS usb-stick.
+2. I created a folder on the usb stick and run ```git init``` and ```git annex init``` in it.
+3. I gone to my HDD repo and done ```git remote add usb /way/to/usb/folder```.
+4. I set ```archive``` group for the usb stick.
+5. I done ```git annex sync --content``` that copied all needed files to the usb stick. 
+6. When I started sync at home I noticed that not all files are on the usb stick. 
+
+# As I seem to have fixed it
+I use my distributive's version of git annex, so I wil get the new version much later.
+I done some steps to fix the problem. Were I right?
+I started ```git annex fix``` in my bare repo, and this command found that approximately a half of files aren't present though they ought to be there according to log. Log was fixed in three hours and then I synced repos. But my WSL repo is behind a NAT so I will sync it in several days and I a little afraid of some problems with it.
+
+If you can give me some pieces of advice to avoid further porblems in my situation I woud be happy.
+"""]]
