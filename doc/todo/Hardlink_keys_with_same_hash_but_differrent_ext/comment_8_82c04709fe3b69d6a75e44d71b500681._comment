@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2021-07-16T19:13:36Z"
+ content="""
+Right. It is possible to get this into a sqlite database and update it
+incrementally. The keys database is populated this way, but that's by
+tracking changes to the HEAD branch. This would instead involve
+tracking changes to the git-annex branch.
+
+See [[cache_key_info]] for discussion of this kind of thing.
+"""]]

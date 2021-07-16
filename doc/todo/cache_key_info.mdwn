@@ -35,3 +35,8 @@ data if nothing references it. Or maybe it could be required to have a
 clean tree with nothing staged before running git-annex unused.
 
 Anyway, this is a semi-longterm item for me. --[[Joey]] 
+
+> Update: It seems like #2 has been accomplished now, the keys database
+> tracks associated files in all cases now. Although with the caveat
+> that there can be stale information sometimes, so it might still not be
+> useful for these purposes. --[[Joey]]
