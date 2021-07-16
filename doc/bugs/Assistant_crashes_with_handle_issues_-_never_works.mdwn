@@ -1,0 +1,51 @@
+### Please describe the problem.
+
+I have tried to use the assistant as per archival walkthrough. I have
+
+1. Created a client drive locally
+2. Created a small archive on an attached drive
+3. Created and archive folder on the user drive
+4. Moved files into the user drive and then into the archive
+
+I very soon saw the assistant fail with errors all referencing `fd:50: hPutStr: illegal operation (handle is closed)`.
+
+As a result, transactions and syncs were often incomplete and I had to use `git` and `git annex` commands to fix things up. The behaviour I had expected based on the documentation - automated archival of files moved to the `archive` directory - **never** worked.
+
+I upgraded to the PPA that is offering the latest builds but have seen no change.
+
+I ran the built-in self-test and saw 74 failed tests.
+
+
+```sh
+
+ warning
+NetWatcherFallback crashed: fd:50: hPutStr: illegal operation (handle is closed)
+×
+ warning
+Committer crashed: fd:50: hPutStr: illegal operation (handle is closed)
+×
+ warning
+PushRetrier crashed: fd:50: hPutStr: illegal operation (handle is closed)
+```
+
+### What steps will reproduce the problem?
+
+I do not have the time to produce a repeatable test suite.
+
+### What version of git-annex are you using? On what operating system?
+
+Latest from PPA on Ubuntu 20.04 LTS current to-the-day.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+No. But I *was* very enthusiastic about the theory behind it.
