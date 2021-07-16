@@ -16,3 +16,5 @@ So I have yet another idea to speed up git annex. For now only for the 2nd pass 
 
 1. In the 2nd pass of git annex sync --content --all, only look at keys whose location log changed since the last (full or incremental) sync via `git diff-tree -r --name-only <lowest recorded commit id of all remotes> git-annex`.
 2. Again, update the commit id of remotes that we successfully synced with.
+
+[[!tag confirmed]]

@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-07-16T17:42:49Z"
+ content="""
+Thank you for rewording, which should not have been necessary, but seems to
+have helped my reading comprehension.
+
+This does seem like a good idea! That diff should be fast and if the
+location log changed, it needs to recheck preferred content against the
+changed situation, and if it didn't, we know preferred content will have
+the same result as currently applies. Elegant.
+
+I suppose it needs to record the branch tip for each remote, because
+different remotes can be synced at different times. It can record it
+locally, in a hidden ref or something.
+
+Your script checks for changes to the preferred-content.log etc 
+by storing a copy and comparing it with the current one. But since it knows
+the old git-annex branch tip, it can just request a diff of those files
+between the old and new shas, eg:
+
+	git diff-tree refs/annex/last-sync/origin/git-annex..git-annex --name-only -- preferred-content.log required-content.log etc
+
+If that outputs anything the logs changed and the optimisation can't be
+used.
+
+Weirdly, this will make --all often faster than not using --all, because it
+will be able to quickly see there is nothing to do. Occurs to me that
+the same method could be used to tell when a non-all sync is a no-op,
+and so speed up those, although only in the case where there was a previous
+--all sync. Or, it could record a tuple of (tree, git-annex branch), and
+use that to speed up non-all syncs, at least of the variety that don't
+operate on a specific list of files, but on a whole tree.
+"""]]
