@@ -171,7 +171,7 @@ gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (RawFilePat
 gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 	{- Bare repositories default to hashDirLower for new
 	 - content, as it's more portable. But check all locations. -}
-	| Git.repoIsLocalBare r = checkall
+	| Git.repoIsLocalBare r = checkall id
 	{- If the repository is configured to only use lower, no need
 	 - to check both. -}
 	| hasDifference ObjectHashLower (annexDifferences config) = 
@@ -181,16 +181,16 @@ gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 	 - Then hashDirMixed is used. But, the content could be
 	 - in either location so check both. -}
 	| crippled = if symlinkssupported
-		then check $ map inrepo $ reverse $ annexLocations config key
-		else checkall
+		then checkall reverse
+		else checkall id
 	{- Regular repositories usually only use hashDirMixed.
 	 - However, it's always possible that a bare repository was
 	 - converted to non-bare, or that the cripped filesystem
 	 - setting changed, so still need to check both. -}
-	| otherwise = checkall
+	| otherwise = checkall reverse
   where
 	only = return . inrepo . annexLocation config key
-	checkall = check $ map inrepo $ annexLocations config key
+	checkall f = check $ map inrepo $ f $ annexLocations config key
 
 	inrepo d = gitdir P.</> d
 	check locs@(l:_) = fromMaybe l <$> firstM checker locs
