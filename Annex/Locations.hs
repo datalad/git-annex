@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,7 +22,8 @@ module Annex.Locations (
 	gitAnnexContentLock,
 	gitAnnexInodeSentinal,
 	gitAnnexInodeSentinalCache,
-	annexLocations,
+	annexLocationsBare,
+	annexLocationsNonBare,
 	gitAnnexDir,
 	gitAnnexObjectDir,
 	gitAnnexTmpOtherDir,
@@ -134,13 +135,20 @@ objectDir = fromRawFilePath objectDir'
 objectDir' :: RawFilePath
 objectDir' = P.addTrailingPathSeparator $ annexDir P.</> "objects"
 
-{- Annexed file's possible locations relative to the .git directory.
- - There are two different possibilities, using different hashes.
+{- Annexed file's possible locations relative to the .git directory
+ - in a non-bare repository.
  -
- - Also, some repositories have a Difference in hash directory depth.
- -}
-annexLocations :: GitConfig -> Key -> [RawFilePath]
-annexLocations config key = map (annexLocation config key) dirHashes
+ - Normally it is hashDirMixed. However, it's always possible that a
+ - bare repository was converted to non-bare, or that the cripped
+ - filesystem setting changed, so still need to check both. -}
+annexLocationsNonBare :: GitConfig -> Key -> [RawFilePath]
+annexLocationsNonBare config key = 
+	map (annexLocation config key) [hashDirMixed, hashDirLower]
+
+{- Annexed file's possible locations relative to a bare repository. -}
+annexLocationsBare :: GitConfig -> Key -> [RawFilePath]
+annexLocationsBare config key = 
+	map (annexLocation config key) [hashDirLower, hashDirMixed]
 
 annexLocation :: GitConfig -> Key -> (HashLevels -> Hasher) -> RawFilePath
 annexLocation config key hasher = objectDir' P.</> keyPath key (hasher $ objectHashLevels config)
@@ -171,26 +179,20 @@ gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (RawFilePat
 gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
 	{- Bare repositories default to hashDirLower for new
 	 - content, as it's more portable. But check all locations. -}
-	| Git.repoIsLocalBare r = checkall id
+	| Git.repoIsLocalBare r = checkall annexLocationsBare
 	{- If the repository is configured to only use lower, no need
 	 - to check both. -}
 	| hasDifference ObjectHashLower (annexDifferences config) = 
 		only hashDirLower
-	{- Repositories on crippled filesystems use hashDirLower
-	 - for new content, unless symlinks are supported too.
-	 - Then hashDirMixed is used. But, the content could be
-	 - in either location so check both. -}
+	{- Repositories on crippled filesystems use same layout as bare
+	 - repos for new content, unless symlinks are supported too. -}
 	| crippled = if symlinkssupported
-		then checkall reverse
-		else checkall id
-	{- Regular repositories usually only use hashDirMixed.
-	 - However, it's always possible that a bare repository was
-	 - converted to non-bare, or that the cripped filesystem
-	 - setting changed, so still need to check both. -}
-	| otherwise = checkall reverse
+		then checkall annexLocationsNonBare
+		else checkall annexLocationsBare
+	| otherwise = checkall annexLocationsNonBare
   where
 	only = return . inrepo . annexLocation config key
-	checkall f = check $ map inrepo $ f $ annexLocations config key
+	checkall f = check $ map inrepo $ f config key
 
 	inrepo d = gitdir P.</> d
 	check locs@(l:_) = fromMaybe l <$> firstM checker locs
@@ -624,8 +626,8 @@ keyPath key hasher = hasher key P.</> f P.</> f
 {- All possibile locations to store a key in a special remote
  - using different directory hashes.
  -
- - This is compatible with the annexLocations, for interoperability between
- - special remotes and git-annex repos.
+ - This is compatible with the annexLocationsNonBare and annexLocationsBare,
+ - for interoperability between special remotes and git-annex repos.
  -}
 keyPaths :: Key -> [RawFilePath]
 keyPaths key = map (\h -> keyPath key (h def)) dirHashes

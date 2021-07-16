@@ -429,8 +429,8 @@ keyUrls gc repo r key = map tourl locs'
 	-- If the remote is known to not be bare, try the hash locations
 	-- used for non-bare repos first, as an optimisation.
 	locs
-		| remoteAnnexBare remoteconfig == Just False = reverse (annexLocations gc key)
-		| otherwise = annexLocations gc key
+		| remoteAnnexBare remoteconfig == Just False = annexLocationsNonBare gc key
+		| otherwise = annexLocationsBare gc key
 #ifndef mingw32_HOST_OS
 	locs' = map fromRawFilePath locs
 #else
