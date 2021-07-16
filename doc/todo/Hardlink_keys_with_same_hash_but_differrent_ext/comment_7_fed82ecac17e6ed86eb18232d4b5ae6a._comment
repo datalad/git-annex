@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 7"
+ date="2021-07-16T11:21:43Z"
+ content="""
+Ah I see. The whole tree would have to be scanned for SHA256H references of a certain SHA256 key on `get` and tree-modifying commands like `checkout`.
+
+With the existing backends that doesn't need to happen since the key existing in the local repo implies that it is reachable via the symlinks in the checkout.
+
+Trickier than I had anticipated, thank you for your insights!
+
+Maybe the extension aliases of a key could be recorded and simply applied in every repo a key exists in. This might require another lookup on get (though it could perhaps be done in the same lookup) but, since it'd require a lookup of a key anyways under SHA256E because they're entirely separate, we wouldn't lose on performance either.  
+The only problem would be propagating new aliases on `sync`...
+"""]]
