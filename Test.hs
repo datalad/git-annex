@@ -1983,7 +1983,7 @@ test_export_import_subdir = intmpclonerepo $ do
 	testimport = do
 		origbranch <- annexeval origBranch
 		git_annex "import" [origbranch++":"++subdir, "--from", "foo"] "import of subdir"
-		git_annex "merge" ["foo/master"] "git annex merge foo/master"
+		git_annex "merge" ["foo/master", "--allow-unrelated-histories"] "git annex merge foo/master"
 
 		-- Make sure that import did not import the file to the top
 		-- of the repo.

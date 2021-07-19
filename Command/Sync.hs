@@ -1,7 +1,7 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ module Command.Sync (
 	syncBranch,
 	updateBranches,
 	seekExportContent,
+	parseUnrelatedHistoriesOption,
 	SyncOptions(..),
 ) where
 
@@ -102,6 +103,7 @@ data SyncOptions = SyncOptions
 	, cleanupOption :: Bool
 	, keyOptions :: Maybe KeyOptions
 	, resolveMergeOverride :: Bool
+	, allowUnrelatedHistories :: Bool
 	}
 
 instance Default SyncOptions where
@@ -120,6 +122,7 @@ instance Default SyncOptions where
 		, cleanupOption = False
 		, keyOptions = Nothing
 		, resolveMergeOverride = False
+		, allowUnrelatedHistories = False
 		}
 
 optParser :: CmdParamsDesc -> Parser SyncOptions
@@ -177,6 +180,13 @@ optParser desc = SyncOptions
 	<*> invertableSwitch "resolvemerge" True
 		( help "do not automatically resolve merge conflicts"
 		)
+	<*> parseUnrelatedHistoriesOption
+
+parseUnrelatedHistoriesOption :: Parser Bool
+parseUnrelatedHistoriesOption = 
+	invertableSwitch "allow-unrelated-histories" False
+		( help "allow merging unrelated histories"
+		)
 
 -- Since prepMerge changes the working directory, FilePath options
 -- have to be adjusted.
@@ -196,6 +206,7 @@ instance DeferredParseClass SyncOptions where
 		<*> pure (cleanupOption v)
 		<*> pure (keyOptions v)
 		<*> pure (resolveMergeOverride v)
+		<*> pure (allowUnrelatedHistories v)
 
 seek :: SyncOptions -> CommandSeek
 seek o = do
@@ -218,7 +229,7 @@ seek' o = do
 			commandAction (withbranch cleanupLocal)
 			mapM_ (commandAction . withbranch . cleanupRemote) gitremotes
 		else do
-			mc <- mergeConfig False
+			mc <- mergeConfig (allowUnrelatedHistories o)
 
 			-- Syncing involves many actions, any of which
 			-- can independently fail, without preventing

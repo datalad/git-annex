@@ -22,7 +22,12 @@ will not be done.
 
 # OPTIONS
 
-* The [[git-annex-common-options]](1) can be used.
+* `--allow-unrelated-histories`, `--no-allow-unrelated-histories`
+
+  Passed on to `git merge`, to control whether or not to merge
+  histories that do not share a common ancestor.
+
+* Also, the [[git-annex-common-options]](1) can be used.
 
 # SEE ALSO
 

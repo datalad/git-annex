@@ -150,6 +150,11 @@ have the same value as the currently checked out branch.
   less efficient. When --content is synced, the files are processed
   in parallel as well.
 
+* `--allow-unrelated-histories`, `--no-allow-unrelated-histories`
+
+  Passed on to `git merge`, to control whether or not to merge
+  histories that do not share a common ancestor.
+
 * `--resolvemerge`, `--no-resolvemerge`
 
   By default, merge conflicts are automatically handled by sync. When two

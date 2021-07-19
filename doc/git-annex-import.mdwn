@@ -42,19 +42,17 @@ currently checked out branch.
 For example:
 
 	git annex import master --from myremote
-	git annex merge myremote/master
+	git annex merge --allow-unrelated-histories myremote/master
 
-You could just as well use `git merge myremote/master` as the second step,
-but using `git-annex merge` avoids a couple of gotchas. When using adjusted
-branches, it adjusts the branch before merging from it. And it avoids
-the merge failing on the first merge from an import due to unrelated
-histories.
+You could just as well use `git merge --allow-unrelated-histories myremote/master`
+as the second step, but using `git-annex merge` avoids a couple of gotchas.
+When using adjusted branches, it adjusts the branch before merging from it.
 
-If you do use `git merge`, you can pass `--allow-unrelated-histories` the
-first time you `git merge` from an import. Think of this as the remote
-being a separate git repository with its own files. If you first
-`git annex export` files to a remote, and then `git annex import` from it,
-you won't need that option.
+The --allow-unrelated-histories option is needed for at least the first
+merge of an imported remote tracking branch, since the branch's history is
+not connected. Think of this as the remote being a separate git repository
+with its own files. If you first `git annex export` files to a remote, and
+then `git annex import` from it, you won't need that option.
 
 You can import into a subdirectory, using the "branch:subdir" syntax. For
 example, if "camera" is a special remote that accesses a camera, and you

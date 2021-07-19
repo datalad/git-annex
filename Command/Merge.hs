@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,22 +12,34 @@ import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
 import Annex.CurrentBranch
-import Command.Sync (prepMerge, mergeLocal, mergeConfig, merge, SyncOptions(..))
+import Command.Sync (prepMerge, mergeLocal, mergeConfig, merge, notOnlyAnnexOption, parseUnrelatedHistoriesOption)
 import Git.Types
 
 cmd :: Command
 cmd = command "merge" SectionMaintenance
 	"merge changes from remotes"
-	(paramOptional paramRef) (withParams seek)
+	(paramOptional paramRef) (seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek [] = do
-	prepMerge
-	commandAction mergeAnnexBranch
-	commandAction mergeSyncedBranch
-seek bs = do
-	prepMerge
-	forM_ bs (commandAction . mergeBranch . Git.Ref . encodeBS')
+data MergeOptions = MergeOptions
+	{ mergeBranches :: [String]
+	, allowUnrelatedHistories :: Bool
+	}
+
+optParser :: CmdParamsDesc -> Parser MergeOptions
+optParser desc = MergeOptions
+	<$> cmdParams desc
+	<*> parseUnrelatedHistoriesOption
+
+seek :: MergeOptions -> CommandSeek
+seek o
+	| mergeBranches o == [] = do
+		prepMerge
+		commandAction mergeAnnexBranch
+		commandAction (mergeSyncedBranch o)
+	| otherwise = do
+		prepMerge
+		forM_ (mergeBranches o) $
+			commandAction . mergeBranch o . Git.Ref . encodeBS'
 
 mergeAnnexBranch :: CommandStart
 mergeAnnexBranch = starting "merge" ai si $ do
@@ -39,17 +51,17 @@ mergeAnnexBranch = starting "merge" ai si $ do
 	ai = ActionItemOther (Just (fromRef Annex.Branch.name))
 	si = SeekInput []
 
-mergeSyncedBranch :: CommandStart
-mergeSyncedBranch = do
-	mc <- mergeConfig False
+mergeSyncedBranch :: MergeOptions -> CommandStart
+mergeSyncedBranch o = do
+	mc <- mergeConfig (allowUnrelatedHistories o)
 	mergeLocal mc def =<< getCurrentBranch
 
-mergeBranch :: Git.Ref -> CommandStart
-mergeBranch r = starting "merge" ai si $ do
+mergeBranch :: MergeOptions -> Git.Ref -> CommandStart
+mergeBranch o r = starting "merge" ai si $ do
 	currbranch <- getCurrentBranch
-	let o = def { notOnlyAnnexOption = True }
-	mc <- mergeConfig False
-	next $ merge currbranch mc o Git.Branch.ManualCommit r
+	mc <- mergeConfig (allowUnrelatedHistories o)
+	let so = def { notOnlyAnnexOption = True }
+	next $ merge currbranch mc so Git.Branch.ManualCommit r
   where
 	ai = ActionItemOther (Just (Git.fromRef r))
 	si = SeekInput []

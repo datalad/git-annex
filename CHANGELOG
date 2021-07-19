@@ -14,6 +14,8 @@ git-annex (8.20210715) UNRELEASED; urgency=medium
     (However, sync does still merge unrelated histories when importing
     trees from special remotes, and the assistant still merges unrelated
     histories.)
+  * sync, merge: Added --allow-unrelated-histories option, which
+    is the same as the git merge option.
 
  -- Joey Hess <id@joeyh.name>  Wed, 14 Jul 2021 14:26:36 -0400
 
