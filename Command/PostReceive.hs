@@ -52,5 +52,5 @@ updateInsteadEmulation :: CommandStart
 updateInsteadEmulation = do
 	prepMerge
 	let o = def { notOnlyAnnexOption = True }
-	mc <- mergeConfig
+	mc <- mergeConfig False
 	mergeLocal mc o =<< getCurrentBranch

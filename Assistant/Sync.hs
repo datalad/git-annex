@@ -213,7 +213,8 @@ syncAction rs a
 manualPull :: Command.Sync.CurrBranch -> [Remote] -> Assistant ([Remote], Bool)
 manualPull currentbranch remotes = do
 	g <- liftAnnex gitRepo
-	mc <- liftAnnex Command.Sync.mergeConfig
+	-- Allow merging unrelated histories.
+	mc <- liftAnnex $ Command.Sync.mergeConfig True
 	failed <- forM remotes $ \r -> if wantpull $ Remote.gitconfig r
 		then do
 			g' <- liftAnnex $ do

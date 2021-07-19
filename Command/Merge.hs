@@ -41,14 +41,14 @@ mergeAnnexBranch = starting "merge" ai si $ do
 
 mergeSyncedBranch :: CommandStart
 mergeSyncedBranch = do
-	mc <- mergeConfig
+	mc <- mergeConfig False
 	mergeLocal mc def =<< getCurrentBranch
 
 mergeBranch :: Git.Ref -> CommandStart
 mergeBranch r = starting "merge" ai si $ do
 	currbranch <- getCurrentBranch
 	let o = def { notOnlyAnnexOption = True }
-	mc <- mergeConfig
+	mc <- mergeConfig False
 	next $ merge currbranch mc o Git.Branch.ManualCommit r
   where
 	ai = ActionItemOther (Just (Git.fromRef r))

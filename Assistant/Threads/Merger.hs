@@ -90,7 +90,8 @@ onChange file
 					]
 				void $ liftAnnex $ do
 					cmode <- annexCommitMode <$> Annex.getGitConfig
-					mc <- Command.Sync.mergeConfig
+					-- Allow merging unrelated histories.
+					mc <- Command.Sync.mergeConfig True
 					Command.Sync.merge
 						currbranch
 						mc

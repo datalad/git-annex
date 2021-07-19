@@ -9,6 +9,11 @@ git-annex (8.20210715) UNRELEASED; urgency=medium
   * sync: When --quiet is used, run git commit, push, and pull without
     their ususual output.
   * merge: When --quiet is used, run git merge without its usual output.
+  * sync, merge, post-receive: Avoid merging unrelated histories,
+    which used to be allowed only to support direct mode repositories.
+    (However, sync does still merge unrelated histories when importing
+    trees from special remotes, and the assistant still merges unrelated
+    histories.)
 
  -- Joey Hess <id@joeyh.name>  Wed, 14 Jul 2021 14:26:36 -0400
 

@@ -218,7 +218,7 @@ seek' o = do
 			commandAction (withbranch cleanupLocal)
 			mapM_ (commandAction . withbranch . cleanupRemote) gitremotes
 		else do
-			mc <- mergeConfig
+			mc <- mergeConfig False
 
 			-- Syncing involves many actions, any of which
 			-- can independently fail, without preventing
@@ -234,7 +234,7 @@ seek' o = do
 			content <- shouldSyncContent o
 
 			forM_ (filter isImport contentremotes) $
-				withbranch . importRemote content o mc
+				withbranch . importRemote content o
 			forM_ (filter isThirdPartyPopulated contentremotes) $
 				pullThirdPartyPopulated o
 			
@@ -275,20 +275,17 @@ seek' o = do
 prepMerge :: Annex ()
 prepMerge = Annex.changeDirectory . fromRawFilePath =<< fromRepo Git.repoPath
 
-mergeConfig :: Annex [Git.Merge.MergeConfig]
-mergeConfig = do
+mergeConfig :: Bool -> Annex [Git.Merge.MergeConfig]
+mergeConfig mergeunrelated = do
 	quiet <- commandProgressDisabled
 	return $ catMaybes
 		[ Just Git.Merge.MergeNonInteractive
-		-- In several situations, unrelated histories should be
-		-- merged together. This includes pairing in the assistant,
-		-- merging from a remote into a newly created direct mode
-		-- repo, and an initial merge from an import from a special
-		-- remote. (Once direct mode is removed, this could be
-		-- changed, so only the assistant and import from special
-		-- remotes use it.)
-		, Just Git.Merge.MergeUnrelatedHistories
-		, if quiet then Just Git.Merge.MergeQuiet else Nothing
+		, if mergeunrelated 
+			then Just Git.Merge.MergeUnrelatedHistories
+			else Nothing
+		, if quiet
+			then Just Git.Merge.MergeQuiet
+			else Nothing
 		]
 
 merge :: CurrBranch -> [Git.Merge.MergeConfig] -> SyncOptions -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
@@ -483,8 +480,8 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 	ai = ActionItemOther (Just (Remote.name remote))
 	si = SeekInput []
 
-importRemote :: Bool -> SyncOptions -> [Git.Merge.MergeConfig] -> Remote -> CurrBranch -> CommandSeek
-importRemote importcontent o mergeconfig remote currbranch
+importRemote :: Bool -> SyncOptions -> Remote -> CurrBranch -> CommandSeek
+importRemote importcontent o remote currbranch
 	| not (pullOption o) || not wantpull = noop
 	| otherwise = case remoteAnnexTrackingBranch (Remote.gitconfig remote) of
 		Nothing -> noop
@@ -497,7 +494,13 @@ importRemote importcontent o mergeconfig remote currbranch
 			if canImportKeys remote importcontent
 				then do
 					Command.Import.seekRemote remote branch subdir importcontent (CheckGitIgnore True)
-					void $ mergeRemote remote currbranch mergeconfig o
+					-- Importing generates a branch
+					-- that is not initially connected
+					-- to the current branch, so allow
+					-- merging unrelated histories when
+					-- mergeing it.
+					mc <- mergeConfig True
+					void $ mergeRemote remote currbranch mc o
 				else warning $ "Cannot import from " ++ Remote.name remote ++ " when not syncing content."
   where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
