@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-07-19T15:24:55Z"
+ content="""
+It's perfectly fine to file a bug report if you find something like this.
+
+Nobody seems to have wanted that before.. I've implemented it now.
+"""]]

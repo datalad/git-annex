@@ -1,6 +1,6 @@
 {- git merging
  -
- - Copyright 2012-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,9 +22,12 @@ import Git.Branch (CommitMode(..))
 
 data MergeConfig
 	= MergeNonInteractive
-	-- ^ avoids interactive merge
+	-- ^ avoids interactive merge with commit message edit
 	| MergeUnrelatedHistories
 	-- ^ avoids git's prevention of merging unrelated histories
+	| MergeQuiet
+	-- ^ avoids usual output when merging, but errors will still be
+	-- displayed
 	deriving (Eq)
 
 merge :: Ref -> [MergeConfig] -> CommitMode -> Repo -> IO Bool
@@ -36,11 +39,14 @@ merge' extraparams branch mergeconfig commitmode r
 		go [Param $ fromRef branch]
 	| otherwise = go [Param "--no-edit", Param $ fromRef branch]
   where
-	go ps = merge'' (sp ++ [Param "merge"] ++ ps ++ extraparams) mergeconfig r
+	go ps = merge'' (sp ++ [Param "merge"] ++ qp ++ ps ++ extraparams) mergeconfig r
 	sp
 		| commitmode == AutomaticCommit =
 			[Param "-c", Param "commit.gpgsign=false"]
 		| otherwise = []
+	qp
+		| MergeQuiet `notElem` mergeconfig = []
+		| otherwise = [Param "--quiet"]
 
 merge'' :: [CommandParam] -> [MergeConfig] -> Repo -> IO Bool
 merge'' ps mergeconfig r

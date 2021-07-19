@@ -40,13 +40,16 @@ mergeAnnexBranch = starting "merge" ai si $ do
 	si = SeekInput []
 
 mergeSyncedBranch :: CommandStart
-mergeSyncedBranch = mergeLocal mergeConfig def =<< getCurrentBranch
+mergeSyncedBranch = do
+	mc <- mergeConfig
+	mergeLocal mc def =<< getCurrentBranch
 
 mergeBranch :: Git.Ref -> CommandStart
 mergeBranch r = starting "merge" ai si $ do
 	currbranch <- getCurrentBranch
 	let o = def { notOnlyAnnexOption = True }
-	next $ merge currbranch mergeConfig o Git.Branch.ManualCommit r
+	mc <- mergeConfig
+	next $ merge currbranch mc o Git.Branch.ManualCommit r
   where
 	ai = ActionItemOther (Just (Git.fromRef r))
 	si = SeekInput []

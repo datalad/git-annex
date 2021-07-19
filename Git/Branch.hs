@@ -121,6 +121,13 @@ fastForward branch (first:rest) repo =
 			(False, True) -> findbest c rs -- worse
 			(False, False) -> findbest c rs -- same
 
+{- Should the commit avoid the usual summary output? -}
+newtype CommitQuiet = CommitQuiet Bool
+
+applyCommitQuiet :: CommitQuiet -> [CommandParam] -> [CommandParam]
+applyCommitQuiet (CommitQuiet True) ps = Param "--quiet" : ps
+applyCommitQuiet (CommitQuiet False) ps = ps
+
 {- The user may have set commit.gpgsign, intending all their manual
  - commits to be signed. But signing automatic/background commits could
  - easily lead to unwanted gpg prompts or failures.
@@ -148,12 +155,14 @@ applyCommitModeForCommitTree commitmode ps r
 	ps' = applyCommitMode commitmode ps
 
 {- Commit via the usual git command. -}
-commitCommand :: CommitMode -> [CommandParam] -> Repo -> IO Bool
+commitCommand :: CommitMode -> CommitQuiet -> [CommandParam] -> Repo -> IO Bool
 commitCommand = commitCommand' runBool
 
-commitCommand' :: ([CommandParam] -> Repo -> IO a) -> CommitMode -> [CommandParam] -> Repo -> IO a
-commitCommand' runner commitmode ps = runner $
-	Param "commit" : applyCommitMode commitmode ps
+commitCommand' :: ([CommandParam] -> Repo -> IO a) -> CommitMode -> CommitQuiet -> [CommandParam] -> Repo -> IO a
+commitCommand' runner commitmode commitquiet ps =
+	runner $ Param "commit" : ps'
+  where
+	ps' = applyCommitMode commitmode (applyCommitQuiet commitquiet ps)
 
 {- Commits the index into the specified branch (or other ref), 
  - with the specified parent refs, and returns the committed sha.
@@ -162,7 +171,7 @@ commitCommand' runner commitmode ps = runner $
  - one parent, and it has the same tree that would be committed.
  -
  - Unlike git-commit, does not run any hooks, or examine the work tree
- - in any way.
+ - in any way, or output a summary.
  -}
 commit :: CommitMode -> Bool -> String -> Branch -> [Ref] -> Repo -> IO (Maybe Sha)
 commit commitmode allowempty message branch parentrefs repo = do

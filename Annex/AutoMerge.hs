@@ -352,11 +352,13 @@ reuseOldFile srcmap key origfile destfile = do
 		| otherwise = go fs
 	
 commitResolvedMerge :: Git.Branch.CommitMode -> Annex Bool
-commitResolvedMerge commitmode = inRepo $ Git.Branch.commitCommand commitmode
-	[ Param "--no-verify"
-	, Param "-m"
-	, Param "git-annex automatic merge conflict fix"
-	]
+commitResolvedMerge commitmode = do
+	commitquiet <- Git.Branch.CommitQuiet <$> commandProgressDisabled
+	inRepo $ Git.Branch.commitCommand commitmode commitquiet
+		[ Param "--no-verify"
+		, Param "-m"
+		, Param "git-annex automatic merge conflict fix"
+		]
 
 type InodeMap = M.Map (Either FilePath InodeCacheKey) FilePath
 

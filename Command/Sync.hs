@@ -218,21 +218,23 @@ seek' o = do
 			commandAction (withbranch cleanupLocal)
 			mapM_ (commandAction . withbranch . cleanupRemote) gitremotes
 		else do
+			mc <- mergeConfig
+
 			-- Syncing involves many actions, any of which
 			-- can independently fail, without preventing
 			-- the others from running. 
 			-- These actions cannot be run concurrently.
 			mapM_ includeCommandAction $ concat
 				[ [ commit o ]
-				, [ withbranch (mergeLocal mergeConfig o) ]
-				, map (withbranch . pullRemote o mergeConfig) gitremotes
+				, [ withbranch (mergeLocal mc o) ]
+				, map (withbranch . pullRemote o mc) gitremotes
 				,  [ mergeAnnex ]
 				]
 			
 			content <- shouldSyncContent o
 
 			forM_ (filter isImport contentremotes) $
-				withbranch . importRemote content o mergeConfig
+				withbranch . importRemote content o mc
 			forM_ (filter isThirdPartyPopulated contentremotes) $
 				pullThirdPartyPopulated o
 			
@@ -259,7 +261,7 @@ seek' o = do
 				-- avoid our push overwriting those changes.
 				when (syncedcontent || exportedcontent) $ do
 					mapM_ includeCommandAction $ concat
-						[ map (withbranch . pullRemote o mergeConfig) gitremotes
+						[ map (withbranch . pullRemote o mc) gitremotes
 						, [ commitAnnex, mergeAnnex ]
 						]
 	
@@ -273,17 +275,21 @@ seek' o = do
 prepMerge :: Annex ()
 prepMerge = Annex.changeDirectory . fromRawFilePath =<< fromRepo Git.repoPath
 
-mergeConfig :: [Git.Merge.MergeConfig]	
-mergeConfig = 
-	[ Git.Merge.MergeNonInteractive
-	-- In several situations, unrelated histories should be merged
-	-- together. This includes pairing in the assistant, merging
-	-- from a remote into a newly created direct mode repo,
-	-- and an initial merge from an import from a special remote.
-	-- (Once direct mode is removed, this could be changed, so only
-	-- the assistant and import from special remotes use it.)
-	, Git.Merge.MergeUnrelatedHistories
-	]
+mergeConfig :: Annex [Git.Merge.MergeConfig]
+mergeConfig = do
+	quiet <- commandProgressDisabled
+	return $ catMaybes
+		[ Just Git.Merge.MergeNonInteractive
+		-- In several situations, unrelated histories should be
+		-- merged together. This includes pairing in the assistant,
+		-- merging from a remote into a newly created direct mode
+		-- repo, and an initial merge from an import from a special
+		-- remote. (Once direct mode is removed, this could be
+		-- changed, so only the assistant and import from special
+		-- remotes use it.)
+		, Just Git.Merge.MergeUnrelatedHistories
+		, if quiet then Just Git.Merge.MergeQuiet else Nothing
+		]
 
 merge :: CurrBranch -> [Git.Merge.MergeConfig] -> SyncOptions -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
 merge currbranch mergeconfig o commitmode tomerge = do
@@ -331,7 +337,9 @@ commit o = stopUnless shouldcommit $ starting "commit" ai si $ do
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	next $ do
 		showOutput
-		void $ inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
+		let cmode = Git.Branch.ManualCommit
+		cquiet <- Git.Branch.CommitQuiet <$> commandProgressDisabled
+		void $ inRepo $ Git.Branch.commitCommand cmode cquiet
 			[ Param "-a"
 			, Param "-m"
 			, Param commitmessage
@@ -462,10 +470,15 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
   where
 	fetch bs = do
 		repo <- Remote.getRepo remote
+		ms <- Annex.getState Annex.output
 		inRepoWithSshOptionsTo repo (Remote.gitconfig remote) $
-			Git.Command.runBool $
-				[Param "fetch", Param $ Remote.name remote]
-					++ map Param bs
+			Git.Command.runBool $ catMaybes
+				[ Just $ Param "fetch"
+				, if commandProgressDisabled' ms
+					then Just $ Param "--quiet"
+					else Nothing
+				, Just $ Param $ Remote.name remote
+				] ++ map Param bs
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 	ai = ActionItemOther (Just (Remote.name remote))
 	si = SeekInput []
@@ -548,8 +561,9 @@ pushRemote o remote (Just branch, _) = do
 		starting "push" ai si $ next $ do
 			repo <- Remote.getRepo remote
 			showOutput
+			ms <- Annex.getState Annex.output
 			ok <- inRepoWithSshOptionsTo repo gc $
-				pushBranch remote mainbranch
+				pushBranch remote mainbranch ms
 			if ok
 				then postpushupdate repo
 				else do
@@ -621,8 +635,8 @@ pushRemote o remote (Just branch, _) = do
  - The only difference caused by using a forced push in that case is that
  - the last repository to push wins the race, rather than the first to push.
  -}
-pushBranch :: Remote -> Maybe Git.Branch -> Git.Repo -> IO Bool
-pushBranch remote mbranch g = directpush `after` annexpush `after` syncpush
+pushBranch :: Remote -> Maybe Git.Branch -> MessageState -> Git.Repo -> IO Bool
+pushBranch remote mbranch ms g = directpush `after` annexpush `after` syncpush
   where
 	syncpush = flip Git.Command.runBool g $ pushparams $ catMaybes
 		[ (refspec . fromAdjustedBranch) <$> mbranch
@@ -648,9 +662,12 @@ pushBranch remote mbranch g = directpush `after` annexpush `after` syncpush
 			(transcript, ok) <- processTranscript' p Nothing
 			when (not ok && not ("denyCurrentBranch" `isInfixOf` transcript)) $
 				hPutStr stderr transcript
-	pushparams branches =
-		[ Param "push"
-		, Param $ Remote.name remote
+	pushparams branches = catMaybes
+		[ Just $ Param "push"
+		, if commandProgressDisabled' ms
+			then Just $ Param "--quiet"
+			else Nothing
+		, Just $ Param $ Remote.name remote
 		] ++ map Param branches
 	refspec b = concat 
 		[ Git.fromRef $ Git.Ref.base b

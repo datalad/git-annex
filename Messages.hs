@@ -43,9 +43,11 @@ module Messages (
 	setupConsole,
 	enableDebugOutput,
 	commandProgressDisabled,
+	commandProgressDisabled',
 	jsonOutputEnabled,
 	outputMessage,
 	withMessageState,
+	MessageState,
 	prompt,
 	mkPrompter,
 ) where
@@ -276,12 +278,14 @@ debugDisplayer = do
 {- Should commands that normally output progress messages have that
  - output disabled? -}
 commandProgressDisabled :: Annex Bool
-commandProgressDisabled = withMessageState $ \s -> return $
-	case outputType s of
-		NormalOutput -> concurrentOutputEnabled s
-		QuietOutput -> True
-		JSONOutput _ -> True
-		SerializedOutput _ _ -> True
+commandProgressDisabled = withMessageState $ return . commandProgressDisabled'
+
+commandProgressDisabled' :: MessageState -> Bool
+commandProgressDisabled' s = case outputType s of
+	NormalOutput -> concurrentOutputEnabled s
+	QuietOutput -> True
+	JSONOutput _ -> True
+	SerializedOutput _ _ -> True
 
 jsonOutputEnabled :: Annex Bool
 jsonOutputEnabled = withMessageState $ \s -> return $

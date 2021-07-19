@@ -60,8 +60,8 @@ initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
 	unlessM (Git.Config.isBare <$> gitRepo) $ do
 		cmode <- annexCommitMode <$> Annex.getGitConfig
 		void $ inRepo $ Git.Branch.commitCommand cmode
-			[ Param "--quiet"
-			, Param "--allow-empty"
+			(Git.Branch.CommitQuiet True)
+			[ Param "--allow-empty"
 			, Param "-m"
 			, Param "created repository"
 			]

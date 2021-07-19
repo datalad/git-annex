@@ -362,9 +362,9 @@ adjustToCrippledFileSystem = do
 commitForAdjustedBranch :: [CommandParam] -> Annex ()
 commitForAdjustedBranch ps = do
 	cmode <- annexCommitMode <$> Annex.getGitConfig
-	void $ inRepo $ Git.Branch.commitCommand cmode $
-		[ Param "--quiet"
-		, Param "--allow-empty"
+	let cquiet = Git.Branch.CommitQuiet True
+	void $ inRepo $ Git.Branch.commitCommand cmode cquiet $
+		[ Param "--allow-empty"
 		, Param "-m"
 		, Param "commit before entering adjusted branch"
 		] ++ ps

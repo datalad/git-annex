@@ -21,6 +21,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Remote
 import qualified Types.Remote as Remote
+import qualified Annex
 import qualified Annex.Branch
 import Remote.List.Util
 import Annex.UUID
@@ -125,25 +126,26 @@ pushToRemotes remotes = do
 
 pushToRemotes' :: UTCTime -> [Remote] -> Assistant [Remote]
 pushToRemotes' now remotes = do
-	(g, branch, u) <- liftAnnex $ do
+	(g, branch, u, ms) <- liftAnnex $ do
 		Annex.Branch.commit =<< Annex.Branch.commitMessage
-		(,,)
+		(,,,)
 			<$> gitRepo
 			<*> getCurrentBranch
 			<*> getUUID
-	ret <- go True branch g u remotes
+			<*> Annex.getState Annex.output
+	ret <- go ms True branch g u remotes
 	return ret
   where
-	go _ (Nothing, _) _ _ _ = return [] -- no branch, so nothing to do
-	go _ _ _ _ [] = return [] -- no remotes, so nothing to do
-	go shouldretry currbranch@(Just branch, _) g u rs =  do
+	go _ _ (Nothing, _) _ _ _ = return [] -- no branch, so nothing to do
+	go _ _ _ _ _ [] = return [] -- no remotes, so nothing to do
+	go ms shouldretry currbranch@(Just branch, _) g u rs =  do
 		debug ["pushing to", show rs]
-		(succeeded, failed) <- parallelPush g rs (push branch)
+		(succeeded, failed) <- parallelPush g rs (push ms branch)
 		updatemap succeeded []
 		if null failed
 			then return []
 			else if shouldretry
-				then retry currbranch g u failed
+				then retry ms currbranch g u failed
 				else fallback branch g u failed
 
 	updatemap succeeded failed = do
@@ -153,10 +155,10 @@ pushToRemotes' now remotes = do
 				M.difference m (makemap succeeded)
 	makemap l = M.fromList $ zip l (repeat now)
 
-	retry currbranch g u rs = do
+	retry ms currbranch g u rs = do
 		debug ["trying manual pull to resolve failed pushes"]
 		void $ manualPull currbranch rs
-		go False currbranch g u rs
+		go ms False currbranch g u rs
 
 	fallback branch g u rs = do
 		debug ["fallback pushing to", show rs]
@@ -164,7 +166,7 @@ pushToRemotes' now remotes = do
 		updatemap succeeded failed
 		return failed
 		
-	push branch remote = Command.Sync.pushBranch remote (Just branch)
+	push ms branch remote = Command.Sync.pushBranch remote (Just branch) ms
 
 parallelPush :: Git.Repo -> [Remote] -> (Remote -> Git.Repo -> IO Bool)-> Assistant ([Remote], [Remote])
 parallelPush g rs a = do
@@ -211,6 +213,7 @@ syncAction rs a
 manualPull :: Command.Sync.CurrBranch -> [Remote] -> Assistant ([Remote], Bool)
 manualPull currentbranch remotes = do
 	g <- liftAnnex gitRepo
+	mc <- liftAnnex Command.Sync.mergeConfig
 	failed <- forM remotes $ \r -> if wantpull $ Remote.gitconfig r
 		then do
 			g' <- liftAnnex $ do
@@ -225,7 +228,7 @@ manualPull currentbranch remotes = do
 		<$> liftAnnex Annex.Branch.forceUpdate
 	forM_ remotes $ \r ->
 		liftAnnex $ Command.Sync.mergeRemote r
-			currentbranch Command.Sync.mergeConfig def
+			currentbranch mc def
 	when haddiverged $
 		updateExportTreeFromLogAll
 	return (catMaybes failed, haddiverged)

@@ -90,8 +90,10 @@ onChange file
 					]
 				void $ liftAnnex $ do
 					cmode <- annexCommitMode <$> Annex.getGitConfig
+					mc <- Command.Sync.mergeConfig
 					Command.Sync.merge
-						currbranch Command.Sync.mergeConfig
+						currbranch
+						mc
 						def
 						cmode
 						changedbranch

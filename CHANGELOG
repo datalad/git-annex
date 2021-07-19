@@ -6,6 +6,9 @@ git-annex (8.20210715) UNRELEASED; urgency=medium
     started out as a bare repository, or had annex.crippledfilesystem
     set, and was converted to a non-bare repository.
   * Fix retrieval of content from borg repos accessed over ssh.
+  * sync: When --quiet is used, run git commit, push, and pull without
+    their ususual output.
+  * merge: When --quiet is used, run git merge without its usual output.
 
  -- Joey Hess <id@joeyh.name>  Wed, 14 Jul 2021 14:26:36 -0400
 
