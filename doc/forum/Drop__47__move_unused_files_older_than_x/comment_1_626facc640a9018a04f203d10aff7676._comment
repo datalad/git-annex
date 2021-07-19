@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-07-19T15:43:46Z"
+ content="""
+There's a new command, added just last week, that gets close to this. 
+`git annex whereused --unused --historical` will display each unused
+key, along with a git rev where that key was found to be used.
+
+The git rev looks like eg "master~4:filename" or "HEAD@{40}:filename".
+It will usually be the most recent use, although it prefers older uses
+that made it into a branch over any revs from the reflog.
+
+Seems like perhaps `git rev-list --no-walk --before=` could be used in a shell
+pipeline with whereused. I suppose it would be a kind of ugly pipeline,
+since it would have to extract the rev, strip the filename from it, pass
+it through git rev-list, and then output the key when rev-list output a
+rev.
+
+Or, the same method that whereused uses to find where keys were used
+could be applied in something like `git annex unused --older-than=1day`.
+"""]]
