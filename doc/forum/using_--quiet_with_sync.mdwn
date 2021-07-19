@@ -1,0 +1,9 @@
+When using `git annex sync --quiet --content --message="$(date +%F)"` I still get undesirable output in stderr even though it's not an error. Specifically, looks like:
+
+```
+>From /media/usb/backup-secrets
+   4909d792..694d8203  git-annex  -> usb/git-annex
+   6c8e7713..9d5a7e62  master     -> usb/master
+```
+
+I'd prefer not to use the approach of piping stdout/stderr to /dev/null because I still want errors to appear. Am I doing something wrong or is it not possible?

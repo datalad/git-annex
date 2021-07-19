@@ -1,0 +1,1 @@
+I like to keep unused files around in case I need them but I probably won't need files from more than a month ago. Is there a way to drop or move just unused files that were last referenced >x days ago and keep the rest?

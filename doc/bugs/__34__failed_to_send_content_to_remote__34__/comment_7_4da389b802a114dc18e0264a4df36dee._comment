@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="anarcat"
+ avatar="http://cdn.libravatar.org/avatar/4ad594c1e13211c1ad9edb81ce5110b7"
+ subject="same problem on debian bullseye"
+ date="2021-07-18T02:02:42Z"
+ content="""
+I'm having the same problem with the latest git-annex from Debian bullseye (`8.20210223-2`). I have a flaky hardware clock on this computer, which NTP regularly adjusts by a few seconds (!):
+
+    jui 17 21:56:27 curie ntpd[1042]: adjusting local clock by -2.525655s
+    jui 17 21:57:30 curie ntpd[1042]: adjusting local clock by -2.546923s
+    jui 17 22:01:51 curie ntpd[1042]: adjusting local clock by -2.537140s
+
+so maybe that's what's going on? i understand that having a working clock is kind of ... expected of computers nowadays (!) but maybe that could be the source of this problem...
+
+
+"""]]
