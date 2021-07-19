@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-07-19T14:27:50Z"
+ content="""
+Whether the timestamp is right or not doesn't matter, but if something is
+causing it to *change*, it could result in this error.
+
+All I can suggest is you upgrade git-annex to a current release, to get a
+hopefully better error message.
+"""]]
