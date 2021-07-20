@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="neil.okamoto@6ca5b1b6563bc71ce13ec235852d23e6ac86e331"
+ nickname="neil.okamoto"
+ avatar="http://cdn.libravatar.org/avatar/d9ced27b5d480416c9c3134b365e96d2"
+ subject="comment 18"
+ date="2021-07-20T23:22:28Z"
+ content="""
+Is there any chance of getting ssh connection caching supported on Windows?
+
+I didn’t realize the full impact of this until I started syncing a larger repo, but now I understand if you start a sync you have to hand around and be ready with a passphrase when asked, because the sync will pause multiple times waiting for that input.  For testing that’s fine but in production that’s too inconvenient. 
+"""]]
