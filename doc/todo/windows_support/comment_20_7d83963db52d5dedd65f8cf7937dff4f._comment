@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 20"""
+ date="2021-07-21T15:03:52Z"
+ content="""
+Enabling the ssh agent avoids password prompts, but not the latency
+of making a ssh connection per transfer.
+
+You can try setting the environment variable `GIT_ANNEX_SSH_SOCKET_DIR`
+to point to a directory where ssh can try to put its socket. I don't know
+if ssh on windows is able to use a socket or not. It might just work.
+"""]]
