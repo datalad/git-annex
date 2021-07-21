@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="neil.okamoto@6ca5b1b6563bc71ce13ec235852d23e6ac86e331"
+ nickname="neil.okamoto"
+ avatar="http://cdn.libravatar.org/avatar/d9ced27b5d480416c9c3134b365e96d2"
+ subject="comment 19"
+ date="2021-07-21T07:13:01Z"
+ content="""
+Turns out ssh-agent works just fine in the git bash shell on Windows, and at least I'm not prompted over and over.
+"""]]
