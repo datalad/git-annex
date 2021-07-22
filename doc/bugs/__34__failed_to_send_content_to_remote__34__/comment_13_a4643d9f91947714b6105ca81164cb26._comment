@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2021-07-22T17:59:12Z"
+ content="""
+(This stat check is not strictly necessary, at least when annex.verify is
+enabled, so removing it is a possibility. Or perhaps not making a failure
+to stat be treated as a problem. But I need to understand what's happening
+first.)
+"""]]
