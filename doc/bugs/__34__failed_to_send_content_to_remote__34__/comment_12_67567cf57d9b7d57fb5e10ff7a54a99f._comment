@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2021-07-22T17:26:02Z"
+ content="""
+I don't think it's a case of the file being deleted file it's being
+transferred. It is possible to do that, just `git annex drop` while
+a transfer is in progress. But that transfer fails in a different way:
+
+	  .git/annex/objects/Pg/8g/SHA256E-s1048576000--81a66cc6944beade4f98430ad1993bfe98a773fd0db76dd7818b2486b7c33399/SHA256E-s1048576000--81a66cc6944beade4f98430ad1993bfe98a773fd0db76dd7818b2486b7c33399: getFileStatus: does not exist (No such file or directory)
+	
+	  .git/annex/objects/Pg/8g/SHA256E-s1048576000--81a66cc6944beade4f98430ad1993bfe98a773fd0db76dd7818b2486b7c33399/SHA256E-s1048576000--81a66cc6944beade4f98430ad1993bfe98a773fd0db76dd7818b2486b7c33399: openBinaryFile: does not exist (No such file or directory)
+	
+	  failed to send content to remote
+	
+	  content not available
+"""]]

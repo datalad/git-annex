@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2021-07-22T17:08:56Z"
+ content="""
+@mih so the new version's output confirms my suspicion that git-annex
+sees a change in the stat information of the file (mtime, size, inode)
+from before it started the transfer to when it finished.
+
+I could imagine eg, that somehow the filesystem is not preserving stable
+inode numbers, and so the inode might appear different, without anything
+having actually changed.
+
+It also seems possible that git-annex might somehow fail to stat the file
+either before or afterwards. In either case that would result in the same
+message. Maybe there's some way that the file gets deleted at the same time
+it's being transferred. Maybe the stat call fails for some other reason.
+
+A strace of git-annex seems like the next step, if you can reproduce this
+somewhat reliably. I suggest a `strace -v`, which will display the full
+results of the stat() calls. The stats of the object file done before
+and after are the only part of the strace that we should need.
+"""]]
