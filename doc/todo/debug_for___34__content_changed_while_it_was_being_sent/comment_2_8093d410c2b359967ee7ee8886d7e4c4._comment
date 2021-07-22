@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-07-22T17:32:30Z"
+ content="""
+This request seems like it might be related to 
+<https://git-annex.branchable.com/bugs/__34__failed_to_send_content_to_remote__34__/>.
+Same basic problem and I think Michael is involved with both. Are these the
+same problem?
+"""]]
