@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2021-07-22T18:07:37Z"
+ content="""
+Also seems possible that the keys db contains an inode cache for the object
+that is somehow out of date. It would then only stat the object once,
+which would succeed, but would differ from the previous value.
+"""]]
