@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Reproducible with 8.20210715-g39d747936"
+ date="2021-07-22T14:54:40Z"
+ content="""
+```
+...
+[2021-07-22 16:48:57.422143438] (Utility.Process) process [4094853] read: cp [\"--reflink=always\",\"--preserve=timestamps\",\"/data/project/brainpeach/memento-sss/.git/annex/objects/3M/zW/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\",\".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\"]
+[2021-07-22 16:48:57.432008244] (Utility.Process) process [4094853] done ExitFailure 1
+  content changed while it was being sent
+  content changed while it was being sent
+  failed to retrieve content from remote
+[2021-07-22 16:49:08.991227722] (Utility.Process) process [4094849] done ExitSuccess
+[2021-07-22 16:49:08.991545471] (Utility.Process) process [4094850] done ExitSuccess
+  content changed while it was being sent
+  content changed while it was being sent
+  failed to retrieve content from remote
+```
+
+I have a repository with a file where this happens reliably for `get` requests by different users to different locations on that system (but not for `get` requests issued from  different systems).
+
+If it helps, we could arrange for access Joey.
+"""]]
