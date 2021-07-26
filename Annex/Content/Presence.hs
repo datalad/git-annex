@@ -1,6 +1,6 @@
 {- git-annex object content presence
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ module Annex.Content.Presence (
 	objectFileExists,
 	withObjectLoc,
 	isUnmodified,
+	isUnmodified',
 	isUnmodifiedCheap,
 	verifyKeyContent,
 	VerifyConfig(..),
@@ -145,11 +146,17 @@ withObjectLoc key a = a =<< calcRepo (gitAnnexLocation key)
  - The cheaper way is to see if the InodeCache for the key matches the
  - file. -}
 isUnmodified :: Key -> RawFilePath -> Annex Bool
-isUnmodified key f = go =<< geti
+isUnmodified key f = 
+	withTSDelta (liftIO . genInodeCache f) >>= \case
+		Just fc -> do
+			ic <- Database.Keys.getInodeCaches key
+			isUnmodified' key f fc ic
+		Nothing -> return False
+
+isUnmodified' :: Key -> RawFilePath -> InodeCache -> [InodeCache] -> Annex Bool
+isUnmodified' key f fc ic = isUnmodifiedCheap'' fc ic <||> expensivecheck
   where
-	go Nothing = return False
-	go (Just fc) = isUnmodifiedCheap' key fc <||> expensivecheck fc
-	expensivecheck fc = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key f)
+	expensivecheck = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key f)
 		( do
 			-- The file could have been modified while it was
 			-- being verified. Detect that.
@@ -177,8 +184,11 @@ isUnmodifiedCheap key f = maybe (return False) (isUnmodifiedCheap' key)
 	=<< withTSDelta (liftIO . genInodeCache f)
 
 isUnmodifiedCheap' :: Key -> InodeCache -> Annex Bool
-isUnmodifiedCheap' key fc = 
-	anyM (compareInodeCaches fc) =<< Database.Keys.getInodeCaches key
+isUnmodifiedCheap' key fc = isUnmodifiedCheap'' fc
+	=<< Database.Keys.getInodeCaches key
+
+isUnmodifiedCheap'' :: InodeCache -> [InodeCache] -> Annex Bool
+isUnmodifiedCheap'' fc ic = anyM (compareInodeCaches fc) ic
 
 {- Verifies that a file is the expected content of a key.
  -

@@ -16,6 +16,9 @@ git-annex (8.20210715) UNRELEASED; urgency=medium
     histories.)
   * sync, merge: Added --allow-unrelated-histories option, which
     is the same as the git merge option.
+  * Fix bug that caused some transfers to incorrectly fail with
+    "content changed while it was being sent", when the content was not
+    changed.
 
  -- Joey Hess <id@joeyh.name>  Wed, 14 Jul 2021 14:26:36 -0400
 

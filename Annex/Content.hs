@@ -483,9 +483,18 @@ prepSendAnnex key = withObjectLoc key $ \f -> do
 			fastDebug "Annex.Content" ("found no inode cache for " ++ show f)
 			maybeToList <$>
 				withTSDelta (liftIO . genInodeCache f)
-		else do
-			fastDebug "Annex.Content" ("found inode cache for " ++ show f)
-			pure cache
+		-- Verify that the object is not modified. Usually this
+		-- only has to check the inode cache, but if the cache
+		-- is somehow stale, it will fall back to verifying its
+		-- content.
+		else withTSDelta (liftIO . genInodeCache f) >>= \case
+			Just fc -> ifM (isUnmodified' key f fc cache)
+				( do
+					fastDebug "Annex.Content" ("found inode cache for " ++ show f)
+					return (fc:cache)
+				, return []
+				)
+			Nothing -> return []
 	return $ if null cache'
 		then Nothing
 		else Just (fromRawFilePath f, sameInodeCache f cache')

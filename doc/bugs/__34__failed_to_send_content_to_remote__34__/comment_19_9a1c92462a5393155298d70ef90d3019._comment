@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2021-07-26T21:20:15Z"
+ content="""
+I've made it fall back to checking the file's content when the inode cache
+is somehow stale. I expect this will solve the problem. But, I would still
+like to know how to reproduce the problem, because if something is making
+the inode cache go stale, this fallback check will need to hash the file,
+which could make git-annex significantly more expensive.
+"""]]
