@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="strace logs"
+ date="2021-07-26T07:10:22Z"
+ content="""
+I ran `PATH=/tmp/dl-build-eyhm_8vt/git-annex.linux:$PATH strace -v -f -e trace=%%stat git annex get sub-001/meg/sub-001_task-memento_proc-sss_meg-1.fif &> annex_strace_stat.txt` to produce a log using `git-annex version: 8.20210715-g39d747936`. `-f` was needed as the real action is taking place in a fork. And here is the `stat` evolution of the transfer file from that log (leaving the \"changed\" messages in to give a sense, when those happen):
+
+```
+% grep '\(stat.*/tmp/.*9aed9592cd3a6c1917b7c4c031aad4fa.fif\)\|\(content changed\)' < annex_strace_stat.txt 
+(from origin...) [pid 1294882] stat(\".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\", {st_dev=makedev(0x9, 0x2), st_ino=12191752, st_mode=S_IFREG|0644, st_nlink=1, st_uid=40214, st_gid=3104, st_blksize=4096, st_blocks=4191048, st_size=2145810855, st_atime=1627282213 /* 2021-07-26T08:50:13.284852080+0200 */, st_atime_nsec=284852080, st_mtime=1617777225 /* 2021-04-07T08:33:45.757412790+0200 */, st_mtime_nsec=757412790, st_ctime=1627282213 /* 2021-07-26T08:50:13.280852098+0200 */, st_ctime_nsec=280852098}) = 0
+[pid 1294882] stat(\".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\", {st_dev=makedev(0x9, 0x2), st_ino=12191752, st_mode=S_IFREG|0644, st_nlink=1, st_uid=40214, st_gid=3104, st_blksize=4096, st_blocks=4191048, st_size=2145810855, st_atime=1627282213 /* 2021-07-26T08:50:13.284852080+0200 */, st_atime_nsec=284852080, st_mtime=1617777225 /* 2021-04-07T08:33:45.757412790+0200 */, st_mtime_nsec=757412790, st_ctime=1627282213 /* 2021-07-26T08:50:13.280852098+0200 */, st_ctime_nsec=280852098}) = 0
+[pid 1294882] stat(\".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\", {st_dev=makedev(0x9, 0x2), st_ino=12191752, st_mode=S_IFREG|0644, st_nlink=1, st_uid=40214, st_gid=3104, st_blksize=4096, st_blocks=4191048, st_size=2145810855, st_atime=1627282213 /* 2021-07-26T08:50:13.284852080+0200 */, st_atime_nsec=284852080, st_mtime=1617777225 /* 2021-04-07T08:33:45.757412790+0200 */, st_mtime_nsec=757412790, st_ctime=1627282213 /* 2021-07-26T08:50:13.280852098+0200 */, st_ctime_nsec=280852098}) = 0
+[pid 1294887] stat(\".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\", 0x42000a91b0) = -1 ENOENT (No such file or directory)
+[pid 1294901] stat(\".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\", 0x7ffd582998a0) = -1 ENOENT (No such file or directory)
+[pid 1294901] newfstatat(AT_FDCWD, \".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\", 0x7ffd58299630, 0) = -1 ENOENT (No such file or directory)
+[pid 1294882] stat(\".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\", 0x42000b9970) = -1 ENOENT (No such file or directory)
+  content changed while it was being sent
+[pid 1294882] stat(\".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\", {st_dev=makedev(0x9, 0x2), st_ino=12191752, st_mode=S_IFREG|0444, st_nlink=1, st_uid=40214, st_gid=3104, st_blksize=4096, st_blocks=4191048, st_size=2145810855, st_atime=1617777225 /* 2021-04-07T08:33:45.757412790+0200 */, st_atime_nsec=757412790, st_mtime=1617777225 /* 2021-04-07T08:33:45.757412790+0200 */, st_mtime_nsec=757412790, st_ctime=1627282242 /* 2021-07-26T08:50:42.444725931+0200 */, st_ctime_nsec=444725931}) = 0
+  content changed while it was being sent
+[pid 1294882] stat(\".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\", {st_dev=makedev(0x9, 0x2), st_ino=12191752, st_mode=S_IFREG|0444, st_nlink=1, st_uid=40214, st_gid=3104, st_blksize=4096, st_blocks=4191048, st_size=2145810855, st_atime=1617777225 /* 2021-04-07T08:33:45.757412790+0200 */, st_atime_nsec=757412790, st_mtime=1617777225 /* 2021-04-07T08:33:45.757412790+0200 */, st_mtime_nsec=757412790, st_ctime=1627282252 /* 2021-07-26T08:50:52.464682583+0200 */, st_ctime_nsec=464682583}) = 0
+  content changed while it was being sent
+[pid 1294882] stat(\".git/annex/tmp/MD5E-s2145810855--9aed9592cd3a6c1917b7c4c031aad4fa.fif\", {st_dev=makedev(0x9, 0x2), st_ino=12191752, st_mode=S_IFREG|0444, st_nlink=1, st_uid=40214, st_gid=3104, st_blksize=4096, st_blocks=4191048, st_size=2145810855, st_atime=1617777225 /* 2021-04-07T08:33:45.757412790+0200 */, st_atime_nsec=757412790, st_mtime=1617777225 /* 2021-04-07T08:33:45.757412790+0200 */, st_mtime_nsec=757412790, st_ctime=1627282262 /* 2021-07-26T08:51:02.804637850+0200 */, st_ctime_nsec=804637850}) = 0
+  content changed while it was being sent
+
+```
+
+So without having a clear understanding of what is happening inside the key properties `mtime`, `size`, and `inode` ae stable (except that the file vanishes in some intermediate `stat` attempts). What changes is `atime` (no surprise, I guess), but also `ctime`, and the permissions.
+"""]]
