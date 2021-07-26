@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 18"""
+ date="2021-07-26T20:29:13Z"
+ content="""
+One way to reproduce this is to replace the git repository with a copy
+produced with eg `cp -r` (not `-a`), with the file unlocked before that
+point. Eg:
+
+	#!/bin/sh
+	set -e
+	cd tmp
+	sudo rm -rf xx yy xx.old
+	git init xx
+	cd xx
+	git annex init
+	echo hi > foo
+	git annex add foo
+	git annex unlock foo
+	git commit -m add
+	cd ..
+	git clone xx yy
+	mv xx xx.old
+	sleep 10
+	cp -r xx.old xx
+	cd yy
+	git annex init
+	git annex get foo
+
+I doubt this is what people have been doing to see the behavior though.
+"""]]
