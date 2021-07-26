@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2021-07-26T17:12:28Z"
+ content="""
+I can certianly reproduce this if I manually get the keys database
+into a state where it has the wrong inode recorded for the object file.
+
+I have not found a way to make that happen using git-annex, but I'm
+guessing it might involve annex.thin being set, and almost certianly
+involves unlocked files. Some sequence of events is happening in
+the git repo that later prevents getting content from it, even though
+the content is still there.
+
+It kind of looks like Command.Lock might neglect to update the keys
+database when it repopulates the annex object from an unmodified associated
+file in the case where it was hard linked to another, unlocked file and so
+got modified. I have not quite managed to make that reproduce it though.
+
+But that's just guessing and the real situation could be something
+different. Someone needs to figure out how to reproduce this,
+until then I'm probably stuck.
+
+(Enough other things could break due to this kind of database inconsistency
+that simply removing the check when transferring the file would only paper
+over the problem.)
+"""]]
