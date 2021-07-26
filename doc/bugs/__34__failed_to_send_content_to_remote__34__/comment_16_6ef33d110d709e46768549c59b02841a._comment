@@ -11,6 +11,6 @@ AFAICS.) It's the stat of that file that's relevant.
 
 I've added some debugging now, so --debug with a fresh git-annex build
 should explain what's going on with the stats. 
-Use -c annex.debugfilter=Annex.InodeSentinal 
+Use -c annex.debugfilter=Annex.InodeSentinal,Annex.Content 
 to limit debug output to the relevant ones.
 """]]

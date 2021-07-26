@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Content (
 	inAnnex,
@@ -478,9 +479,13 @@ prepSendAnnex key = withObjectLoc key $ \f -> do
 		-- change while the transfer is in progress, so
 		-- generate an inode cache for the starting
 		-- content.
-		then maybeToList <$>
-			withTSDelta (liftIO . genInodeCache f)
-		else pure cache
+		then do
+			fastDebug "Annex.Content" ("found no inode cache for " ++ show f)
+			maybeToList <$>
+				withTSDelta (liftIO . genInodeCache f)
+		else do
+			fastDebug "Annex.Content" ("found inode cache for " ++ show f)
+			pure cache
 	return $ if null cache'
 		then Nothing
 		else Just (fromRawFilePath f, sameInodeCache f cache')
