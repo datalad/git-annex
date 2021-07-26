@@ -24,3 +24,10 @@ May be extra logging could already be triggered with some new more detailed debu
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> This todo is not useful, and is not being followed up on. I happened to
+> add some debugging information while debugging another bug, that is
+> probably what this todo was requesting. It's very annoying that this is
+> filed and then left to sit on my todo list without followup to repeated
+> requests for some explanation. For all these reasons, I'm [[done]] with
+> this, whether I've addressed the problem or not.
