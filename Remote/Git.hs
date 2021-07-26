@@ -269,7 +269,7 @@ tryGitConfigRead autoinit r hasuuid
 		set_ignore "uses a protocol not supported by git-annex" False
 		return r
 	| otherwise = storeUpdatedRemote $
-		liftIO readlocalannexconfig
+		readlocalannexconfig
 			`catchNonAsync` const failedreadlocalconfig
   where
 	haveconfig = not . M.null . Git.config
@@ -355,8 +355,8 @@ tryGitConfigRead autoinit r hasuuid
 				warning $ "remote " ++ Git.repoDescribe r ++
 					":"  ++ show e
 			Annex.getState Annex.repo
-		s <- Annex.new r
-		Annex.eval s $ check `finally` stopCoProcesses
+		s <- newLocal r
+		liftIO $ Annex.eval s $ check `finally` stopCoProcesses
 		
 	failedreadlocalconfig = do
 		unless hasuuid $ case Git.remoteName r of
@@ -773,10 +773,20 @@ onLocalRepo repo a = do
 	lra <- mkLocalRemoteAnnex repo
 	onLocal' lra a
 
+newLocal :: Git.Repo -> Annex (Annex.AnnexState, Annex.AnnexRead)
+newLocal repo = do
+	(st, rd) <- liftIO $ Annex.new repo
+	debugenabled <- Annex.getRead Annex.debugenabled
+	debugselector <- Annex.getRead Annex.debugselector
+	return (st,  rd
+		{ Annex.debugenabled = debugenabled
+		, Annex.debugselector = debugselector
+		})
+
 onLocal' :: LocalRemoteAnnex -> Annex a -> Annex a
 onLocal' (LocalRemoteAnnex repo mv) a = liftIO (takeMVar mv) >>= \case
 	Nothing -> do
-		v <- liftIO $ Annex.new repo
+		v <- newLocal repo
 		go (v, ensureInitialized >> a)
 	Just v -> go (v, a)
   where
