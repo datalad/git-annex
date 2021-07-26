@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Annex.InodeSentinal where
 
@@ -30,11 +31,23 @@ compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
 {- Checks if one of the provided old InodeCache matches the current
  - version of a file. -}
 sameInodeCache :: RawFilePath -> [InodeCache] -> Annex Bool
-sameInodeCache _ [] = return False
+sameInodeCache file [] = do
+	fastDebug "Annex.InodeSentinal" $
+		fromRawFilePath file ++ " inode cache empty"
+	return False
 sameInodeCache file old = go =<< withTSDelta (liftIO . genInodeCache file)
   where
-	go Nothing = return False
-	go (Just curr) = elemInodeCaches curr old
+	go Nothing = do
+		fastDebug "Annex.InodeSentinal" $
+			fromRawFilePath file ++ " not present, cannot compare with inode cache"
+		return False
+	go (Just curr) = ifM (elemInodeCaches curr old)
+		( return True
+		, do
+			fastDebug "Annex.InodeSentinal" $
+				fromRawFilePath file ++ " (" ++ show curr ++ ") does not match inode cache (" ++ show old ++ ")"
+			return False
+		)
 
 elemInodeCaches :: InodeCache -> [InodeCache] -> Annex Bool
 elemInodeCaches _ [] = return False
