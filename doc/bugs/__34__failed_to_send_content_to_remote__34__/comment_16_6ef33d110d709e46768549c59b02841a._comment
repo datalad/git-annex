@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2021-07-26T14:21:17Z"
+ content="""
+You grepped for stats of a file in `tmp` directory but those stats are not
+relevant to this problem. Since you ran git-annex get, it should be statting
+the annex object file in the remote repository, which I assume is another git
+repo on the same computer. (Otherwise it would not be able to fail this way
+AFAICS.) It's the stat of that file that's relevant.
+
+I've added some debugging now, so --debug with a fresh git-annex build
+should explain what's going on with the stats. 
+Use -c annex.debugfilter=Annex.InodeSentinal 
+to limit debug output to the relevant ones.
+"""]]
