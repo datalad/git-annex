@@ -91,8 +91,10 @@ perform file key = do
 		liftIO $ removeWhenExistsWith R.removeLink obj
 		case mfile of
 			Just unmodified ->
-				unlessM (checkedCopyFile key unmodified obj Nothing)
-					lostcontent
+				ifM (checkedCopyFile key unmodified obj Nothing)
+					( Database.Keys.storeInodeCaches key [obj]
+					, lostcontent
+					)
 			Nothing -> lostcontent
 
 	lostcontent = logStatus key InfoMissing
