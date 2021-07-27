@@ -18,7 +18,6 @@ module Database.Keys (
 	getAssociatedKey,
 	removeAssociatedFile,
 	storeInodeCaches,
-	storeInodeCaches',
 	addInodeCaches,
 	getInodeCaches,
 	removeInodeCaches,
@@ -175,11 +174,8 @@ removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile k
 
 {- Stats the files, and stores their InodeCaches. -}
 storeInodeCaches :: Key -> [RawFilePath] -> Annex ()
-storeInodeCaches k fs = storeInodeCaches' k fs []
-
-storeInodeCaches' :: Key -> [RawFilePath] -> [InodeCache] -> Annex ()
-storeInodeCaches' k fs ics = withTSDelta $ \d ->
-	addInodeCaches k . (++ ics) . catMaybes
+storeInodeCaches k fs = withTSDelta $ \d ->
+	addInodeCaches k . catMaybes
 		=<< liftIO (mapM (\f -> genInodeCache f d) fs)
 
 addInodeCaches :: Key -> [InodeCache] -> Annex ()

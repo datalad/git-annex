@@ -363,7 +363,7 @@ verifyWorkTree key file = do
 						void $ checkedCopyFile key obj tmp' mode
 						thawContent tmp'
 					)
-			Database.Keys.storeInodeCaches key [file]
+				Database.Keys.storeInodeCaches key [tmp']
 		_ -> return ()
 	return True
 

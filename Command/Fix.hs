@@ -77,8 +77,8 @@ breakHardLink file key obj = do
 		unlessM (checkedCopyFile key obj tmp' mode) $
 			error "unable to break hard link"
 		thawContent tmp'
+		Database.Keys.storeInodeCaches key [tmp']
 		modifyContent obj $ freezeContent obj
-	Database.Keys.storeInodeCaches key [file]
 	next $ return True
 
 makeHardLink :: RawFilePath -> Key -> CommandPerform

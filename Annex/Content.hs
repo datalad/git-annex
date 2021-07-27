@@ -346,8 +346,11 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
 			fs <- map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
 			unless (null fs) $ do
+				destic <- withTSDelta $
+					liftIO . genInodeCache dest
 				ics <- mapM (populatePointerFile (Restage True) key dest) fs
-				Database.Keys.storeInodeCaches' key [dest] (catMaybes ics)
+				Database.Keys.addInodeCaches key
+					(catMaybes (destic:ics))
 		)
 	alreadyhave = liftIO $ R.removeLink src
 
