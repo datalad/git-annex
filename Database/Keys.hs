@@ -384,10 +384,14 @@ reconcileStaged qh = do
 		ics <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
 		obj <- calcRepo (gitAnnexLocation key)
 		mobjic <- withTSDelta (liftIO . genInodeCache obj)
+		let addinodecaches k v = liftIO $
+			SQL.addInodeCaches k v (SQL.WriteHandle qh)
 		-- Like inAnnex, check the annex object is unmodified
 		-- when annex.thin is set.
 		keypopulated <- ifM (annexThin <$> Annex.getGitConfig)
-			( maybe (pure False) (\objic -> isUnmodifiedLowLevel addInodeCaches key obj objic ics) mobjic
+			( case mobjic of
+				Just objic -> isUnmodifiedLowLevel addinodecaches key obj objic ics
+				Nothing -> pure False
 			, pure (isJust mobjic)
 			)
 		p <- fromRepo $ fromTopFilePath file
@@ -396,10 +400,8 @@ reconcileStaged qh = do
 			(True, False) ->
 				populatePointerFile (Restage True) key obj p >>= \case
 					Nothing -> return ()
-					Just ic -> liftIO $
-						SQL.addInodeCaches key
-							(catMaybes [Just ic, mobjic])
-							(SQL.WriteHandle qh)
+					Just ic -> addinodecaches key
+						(catMaybes [Just ic, mobjic])
 			(False, True) -> depopulatePointerFile key p
 			_ -> return ()
 	
