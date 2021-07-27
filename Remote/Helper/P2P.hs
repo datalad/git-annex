@@ -17,7 +17,7 @@ import Annex.Content
 import Messages.Progress
 import Utility.Metered
 import Types.NumCopies
-import Backend
+import Annex.Verify
 
 import Control.Concurrent
 

@@ -66,6 +66,7 @@ import Annex.Common
 import Annex.Content.Presence
 import Annex.Content.LowLevel
 import Annex.Content.PointerFile
+import Annex.Verify
 import qualified Git
 import qualified Annex
 import qualified Annex.Queue
@@ -253,7 +254,7 @@ getViaTmpFromDisk rsp v key af action = checkallowed $ do
 	-- RetrievalSecurityPolicy would cause verification to always fail.
 	checkallowed a = case rsp of
 		RetrievalAllKeysSecure -> a
-		RetrievalVerifiableKeysSecure -> ifM (Backend.isVerifiable key)
+		RetrievalVerifiableKeysSecure -> ifM (isVerifiable key)
 			( a
 			, ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
 				( a

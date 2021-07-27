@@ -17,11 +17,6 @@ module Annex.Content.Presence (
 	isUnmodified,
 	isUnmodified',
 	isUnmodifiedCheap,
-	verifyKeyContent,
-	VerifyConfig(..),
-	Verification(..),
-	unVerified,
-	warnUnverifiableInsecure,
 	contentLockFile,
 ) where
 
@@ -29,15 +24,10 @@ import Annex.Common
 import qualified Annex
 import Annex.Verify
 import Annex.LockPool
-import Annex.WorkerPool
-import Types.Remote (unVerified, Verification(..), RetrievalSecurityPolicy(..))
-import qualified Types.Backend
-import qualified Backend
 import qualified Database.Keys
-import Types.Key
+import Types.Remote
 import Annex.InodeSentinal
 import Utility.InodeCache
-import Types.WorkerPool
 import qualified Utility.RawFilePath as R
 
 #ifdef mingw32_HOST_OS
@@ -189,55 +179,3 @@ isUnmodifiedCheap' key fc = isUnmodifiedCheap'' fc
 
 isUnmodifiedCheap'' :: InodeCache -> [InodeCache] -> Annex Bool
 isUnmodifiedCheap'' fc ic = anyM (compareInodeCaches fc) ic
-
-{- Verifies that a file is the expected content of a key.
- -
- - Configuration can prevent verification, for either a
- - particular remote or always, unless the RetrievalSecurityPolicy
- - requires verification.
- -
- - Most keys have a known size, and if so, the file size is checked.
- -
- - When the key's backend allows verifying the content (via checksum),
- - it is checked. 
- -
- - If the RetrievalSecurityPolicy requires verification and the key's
- - backend doesn't support it, the verification will fail.
- -}
-verifyKeyContent :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> Key -> RawFilePath -> Annex Bool
-verifyKeyContent rsp v verification k f = case (rsp, verification) of
-	(_, Verified) -> return True
-	(RetrievalVerifiableKeysSecure, _) -> ifM (Backend.isVerifiable k)
-		( verify
-		, ifM (annexAllowUnverifiedDownloads <$> Annex.getGitConfig)
-			( verify
-			, warnUnverifiableInsecure k >> return False
-			)
-		)
-	(_, UnVerified) -> ifM (shouldVerify v)
-		( verify
-		, return True
-		)
-	(_, MustVerify) -> verify
-  where
-	verify = enteringStage VerifyStage $ verifysize <&&> verifycontent
-	verifysize = case fromKey keySize k of
-		Nothing -> return True
-		Just size -> do
-			size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
-			return (size' == size)
-	verifycontent = Backend.maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
-		Nothing -> return True
-		Just b -> case Types.Backend.verifyKeyContent b of
-			Nothing -> return True
-			Just verifier -> verifier k f
-
-warnUnverifiableInsecure :: Key -> Annex ()
-warnUnverifiableInsecure k = warning $ unwords
-	[ "Getting " ++ kv ++ " keys with this remote is not secure;"
-	, "the content cannot be verified to be correct."
-	, "(Use annex.security.allow-unverified-downloads to bypass"
-	, "this safety check.)"
-	]
-  where
-	kv = decodeBS (formatKeyVariety (fromKey keyVariety k))

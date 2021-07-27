@@ -16,14 +16,11 @@ module Backend (
 	maybeLookupBackendVariety,
 	isStableKey,
 	isCryptographicallySecure,
-	isVerifiable,
-	startVerifyKeyContentIncrementally,
 ) where
 
 import Annex.Common
 import qualified Annex
 import Annex.CheckAttr
-import Annex.Verify
 import Types.Key
 import Types.KeySource
 import qualified Types.Backend as B
@@ -125,18 +122,3 @@ isStableKey k = maybe False (`B.isStableKey` k)
 isCryptographicallySecure :: Key -> Annex Bool
 isCryptographicallySecure k = maybe False (`B.isCryptographicallySecure` k)
 	<$> maybeLookupBackendVariety (fromKey keyVariety k)
-
-isVerifiable :: Key -> Annex Bool
-isVerifiable k = maybe False (isJust . B.verifyKeyContent) 
-	<$> maybeLookupBackendVariety (fromKey keyVariety k)
-
-startVerifyKeyContentIncrementally :: VerifyConfig -> Key -> Annex (Maybe B.IncrementalVerifier)
-startVerifyKeyContentIncrementally verifyconfig k = 
-	ifM (shouldVerify verifyconfig)
-		( maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
-			Just b -> case B.verifyKeyContentIncrementally b of
-				Just v -> Just <$> v k
-				Nothing -> return Nothing
-			Nothing -> return Nothing
-		, return Nothing
-		)

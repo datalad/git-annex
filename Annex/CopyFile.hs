@@ -16,7 +16,6 @@ import Utility.CopyFile
 import Utility.FileMode
 import Utility.Touch
 import Types.Backend
-import Backend
 import Annex.Verify
 
 import Control.Concurrent

@@ -13,7 +13,7 @@ import Annex.Common
 import Types.Remote
 import Types.Key
 import Types.ProposedAccepted
-import Backend
+import Annex.Verify
 import Remote.Helper.Encryptable (encryptionIsEnabled)
 import qualified Database.Export as Export
 import qualified Database.ContentIdentifier as ContentIdentifier

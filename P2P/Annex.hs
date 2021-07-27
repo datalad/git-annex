@@ -23,8 +23,7 @@ import P2P.IO
 import Logs.Location
 import Types.NumCopies
 import Utility.Metered
-import Types.Backend (IncrementalVerifier(..))
-import Backend
+import Annex.Verify
 
 import Control.Monad.Free
 import Control.Concurrent.STM
