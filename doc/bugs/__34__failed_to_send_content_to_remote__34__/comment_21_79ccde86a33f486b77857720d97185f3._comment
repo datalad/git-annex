@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 21"""
+ date="2021-07-27T17:16:50Z"
+ content="""
+I don't think a strace will tell me anything now.
+
+Is this the same repository that this issue was regarding?
+<https://github.com/datalad/datalad/issues/5613>
+If not, that does seem like the same problem so perhaps we could learn
+something from that repository.
+
+Was this repository upgraded from git-annex repository format 7 to 8?
+If so, I see one way this could have happened. That upgrade regenerates
+the keys db, but does not add inode caches for annex objects.
+"""]]
