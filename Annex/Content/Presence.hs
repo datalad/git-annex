@@ -20,12 +20,11 @@ module Annex.Content.Presence (
 	contentLockFile,
 ) where
 
+import Annex.Content.Presence.LowLevel
 import Annex.Common
 import qualified Annex
-import Annex.Verify
 import Annex.LockPool
 import qualified Database.Keys
-import Types.Remote
 import Annex.InodeSentinal
 import Utility.InodeCache
 import qualified Utility.RawFilePath as R
@@ -144,23 +143,7 @@ isUnmodified key f =
 		Nothing -> return False
 
 isUnmodified' :: Key -> RawFilePath -> InodeCache -> [InodeCache] -> Annex Bool
-isUnmodified' key f fc ic = isUnmodifiedCheap'' fc ic <||> expensivecheck
-  where
-	expensivecheck = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key f)
-		( do
-			-- The file could have been modified while it was
-			-- being verified. Detect that.
-			ifM (geti >>= maybe (return False) (compareInodeCaches fc))
-				( do
-					-- Update the InodeCache to avoid
-					-- performing this expensive check again.
-					Database.Keys.addInodeCaches key [fc]
-					return True
-				, return False
-				)
-		, return False
-		)
-	geti = withTSDelta (liftIO . genInodeCache f)
+isUnmodified' = isUnmodifiedLowLevel Database.Keys.addInodeCaches
 
 {- Cheap check if a file contains the unmodified content of the key,
  - only checking the InodeCache of the key.
@@ -174,8 +157,5 @@ isUnmodifiedCheap key f = maybe (return False) (isUnmodifiedCheap' key)
 	=<< withTSDelta (liftIO . genInodeCache f)
 
 isUnmodifiedCheap' :: Key -> InodeCache -> Annex Bool
-isUnmodifiedCheap' key fc = isUnmodifiedCheap'' fc
+isUnmodifiedCheap' key fc = isUnmodifiedCheapLowLevel fc
 	=<< Database.Keys.getInodeCaches key
-
-isUnmodifiedCheap'' :: InodeCache -> [InodeCache] -> Annex Bool
-isUnmodifiedCheap'' fc ic = anyM (compareInodeCaches fc) ic

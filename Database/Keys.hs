@@ -36,6 +36,7 @@ import Annex.Common hiding (delete)
 import qualified Annex
 import Annex.LockFile
 import Annex.Content.PointerFile
+import Annex.Content.Presence.LowLevel
 import Annex.Link
 import Utility.InodeCache
 import Annex.InodeSentinal
@@ -182,7 +183,14 @@ addInodeCaches :: Key -> [InodeCache] -> Annex ()
 addInodeCaches k is = runWriterIO $ SQL.addInodeCaches k is
 
 {- A key may have multiple InodeCaches; one for the annex object, and one
- - for each pointer file that is a copy of it. -}
+ - for each pointer file that is a copy of it.
+ -
+ - When there are no pointer files, the annex object typically does not
+ - have its InodeCache recorded either, so the list will be empty.
+ -
+ - Note that, in repos upgraded from v7, there may be InodeCaches recorded
+ - for pointer files, but none recorded for the annex object.
+ -}
 getInodeCaches :: Key -> Annex [InodeCache]
 getInodeCaches = runReaderIO . SQL.getInodeCaches
 
@@ -375,12 +383,12 @@ reconcileStaged qh = do
 	reconcilepointerfile file key = do
 		ics <- liftIO $ SQL.getInodeCaches key (SQL.ReadHandle qh)
 		obj <- calcRepo (gitAnnexLocation key)
-		objic <- withTSDelta (liftIO . genInodeCache obj)
-		-- Like inAnnex, check the annex object's inode cache
+		mobjic <- withTSDelta (liftIO . genInodeCache obj)
+		-- Like inAnnex, check the annex object is unmodified
 		-- when annex.thin is set.
 		keypopulated <- ifM (annexThin <$> Annex.getGitConfig)
-			( maybe (pure False) (`elemInodeCaches` ics) objic
-			, pure (isJust objic)
+			( maybe (pure False) (\objic -> isUnmodifiedLowLevel addInodeCaches key obj objic ics) mobjic
+			, pure (isJust mobjic)
 			)
 		p <- fromRepo $ fromTopFilePath file
 		filepopulated <- sameInodeCache p ics
@@ -390,7 +398,7 @@ reconcileStaged qh = do
 					Nothing -> return ()
 					Just ic -> liftIO $
 						SQL.addInodeCaches key
-							(catMaybes [Just ic, objic])
+							(catMaybes [Just ic, mobjic])
 							(SQL.WriteHandle qh)
 			(False, True) -> depopulatePointerFile key p
 			_ -> return ()
