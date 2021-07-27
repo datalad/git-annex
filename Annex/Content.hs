@@ -30,6 +30,7 @@ module Annex.Content (
 	populatePointerFile,
 	linkToAnnex,
 	linkFromAnnex,
+	linkFromAnnex',
 	LinkAnnexResult(..),
 	unlinkAnnex,
 	checkedCopyFile,
@@ -78,6 +79,7 @@ import Annex.Link
 import Annex.LockPool
 import Annex.UUID
 import Annex.InodeSentinal
+import Annex.ReplaceFile
 import Annex.AdjustedBranch (adjustedBranchRefresh)
 import Messages.Progress
 import Types.Remote (RetrievalSecurityPolicy(..))
@@ -382,9 +384,23 @@ linkToAnnex key src srcic = ifM (checkSecureHashes' key)
 	, return LinkAnnexFailed
 	)
 
-{- Makes a destination file be a link or copy from the annex object. -}
+{- Makes a destination file be a link or copy from the annex object.
+ -
+ - linkAnnex stats the file after copying it to add to the inode
+ - cache. But dest may be a file in the working tree, which could
+ - get modified immediately after being populated. To avoid such a
+ - race, call linkAnnex on a temporary file and move it into place
+ - afterwards. Note that a consequence of this is that, if the file
+ - already exists, it will be overwritten.
+ -}
 linkFromAnnex :: Key -> RawFilePath -> Maybe FileMode -> Annex LinkAnnexResult
-linkFromAnnex key dest destmode = do
+linkFromAnnex key dest destmode =
+	replaceFile (const noop) (fromRawFilePath dest) $ \tmp ->
+		linkFromAnnex' key (toRawFilePath tmp) destmode
+
+{- This is only safe to use when dest is not a worktree file. -}
+linkFromAnnex' :: Key -> RawFilePath -> Maybe FileMode -> Annex LinkAnnexResult
+linkFromAnnex' key dest destmode = do
 	src <- calcRepo (gitAnnexLocation key)
 	srcic <- withTSDelta (liftIO . genInodeCache src)
 	linkAnnex From key src srcic dest destmode

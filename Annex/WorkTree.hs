@@ -131,7 +131,7 @@ scanAnnexedFiles initscan = do
 						fileMode <$> R.getFileStatus f
 					ic <- replaceWorkTreeFile (fromRawFilePath f) $ \tmp -> do
 						let tmp' = toRawFilePath tmp
-						linkFromAnnex k tmp' destmode >>= \case
+						linkFromAnnex' k tmp' destmode >>= \case
 							LinkAnnexOk -> 
 								withTSDelta (liftIO . genInodeCache tmp')
 							LinkAnnexNoop -> return Nothing

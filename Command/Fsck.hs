@@ -357,7 +357,7 @@ verifyWorkTree key file = do
 				let tmp' = toRawFilePath tmp
 				mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 				ifM (annexThin <$> Annex.getGitConfig)
-					( void $ linkFromAnnex key tmp' mode
+					( void $ linkFromAnnex' key tmp' mode
 					, do
 						obj <- calcRepo (gitAnnexLocation key)
 						void $ checkedCopyFile key obj tmp' mode

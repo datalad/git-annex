@@ -85,7 +85,7 @@ makeHardLink :: RawFilePath -> Key -> CommandPerform
 makeHardLink file key = do
 	replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
-		linkFromAnnex key (toRawFilePath tmp) mode >>= \case
+		linkFromAnnex' key (toRawFilePath tmp) mode >>= \case
 			LinkAnnexFailed -> error "unable to make hard link"
 			_ -> noop
 	next $ return True
