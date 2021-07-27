@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Fixed in 8.20210715-g3b5a3e168"
+ date="2021-07-27T12:00:35Z"
+ content="""
+I tried with the update from yesterday and it checksumed the file first, and only then started the download -- which matches the code change, I think.
+
+After the update in the source dataset, I can now also `get` the file with git annex 8.20210310.
+
+I am afraid that I have no idea how to replicate the original state. It was a rather organic process that involved computation across a cluster. Each compute node operated on its own branch of a clone, the branches were pushed back and merged. A final `git annex fsck` seemingly confirmed that all is kosher.
+
+I tried this with two affected files, but I have a few more left. If you let me know what exactly would be meaningful input for you to get a sense of what is going on, I'd be happy to provide that. Would a full `strace` log (analog to the above) be suitable?
+"""]]
