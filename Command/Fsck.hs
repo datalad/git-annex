@@ -460,29 +460,18 @@ checkBackendRemote backend key remote ai localcopy =
 
 checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> RawFilePath -> ActionItem -> Annex Bool
 checkBackendOr bad backend key file ai =
-	checkBackendOr' bad backend key file ai (return True)
-
--- The postcheck action is run after the content is verified,
--- in order to detect situations where the file is changed while being
--- verified.
-checkBackendOr' :: (Key -> Annex String) -> Backend -> Key -> RawFilePath -> ActionItem -> Annex Bool -> Annex Bool
-checkBackendOr' bad backend key file ai postcheck =
 	case Types.Backend.verifyKeyContent backend of
-		Nothing -> return True
 		Just verifier -> do
 			ok <- verifier key file
-			ifM postcheck
-				( do
-					unless ok $ do
-						msg <- bad key
-						warning $ concat
-							[ decodeBS' (actionItemDesc ai)
-							, ": Bad file content; "
-							, msg
-							]
-					return ok
-				, return True
-				)
+			unless ok $ do
+				msg <- bad key
+				warning $ concat
+					[ decodeBS' (actionItemDesc ai)
+					, ": Bad file content; "
+					, msg
+					]
+			return ok
+		Nothing -> return True
 
 checkKeyNumCopies :: Key -> AssociatedFile -> NumCopies -> Annex Bool
 checkKeyNumCopies key afile numcopies = do
