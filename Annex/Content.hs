@@ -491,28 +491,26 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex' key
  -}
 prepSendAnnex :: Key -> Annex (Maybe (FilePath, Annex Bool))
 prepSendAnnex key = withObjectLoc key $ \f -> do
+	let retval c = return $ Just (fromRawFilePath f, sameInodeCache f c)
 	cache <- Database.Keys.getInodeCaches key
-	cache' <- if null cache
+	if null cache
 		-- Since no inode cache is in the database, this
 		-- object is not currently unlocked. But that could
 		-- change while the transfer is in progress, so
 		-- generate an inode cache for the starting
 		-- content.
-		then maybeToList <$>
-			withTSDelta (liftIO . genInodeCache f)
+		then maybe (return Nothing) (retval . (:[]))
+			=<< withTSDelta (liftIO . genInodeCache f)
 		-- Verify that the object is not modified. Usually this
 		-- only has to check the inode cache, but if the cache
 		-- is somehow stale, it will fall back to verifying its
 		-- content.
 		else withTSDelta (liftIO . genInodeCache f) >>= \case
 			Just fc -> ifM (isUnmodified' key f fc cache)
-				( return (fc:cache)
-				, return []
+				( retval (fc:cache)
+				, return Nothing
 				)
-			Nothing -> return []
-	return $ if null cache'
-		then Nothing
-		else Just (fromRawFilePath f, sameInodeCache f cache')
+			Nothing -> return Nothing
 
 prepSendAnnex' :: Key -> Annex (Maybe (FilePath, Annex (Maybe String)))
 prepSendAnnex' key = prepSendAnnex key >>= \case

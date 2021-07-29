@@ -14,7 +14,8 @@ import Annex.InodeSentinal
 import Utility.InodeCache
 
 isUnmodifiedLowLevel :: (Key -> [InodeCache] -> Annex ()) -> Key -> RawFilePath -> InodeCache -> [InodeCache] -> Annex Bool
-isUnmodifiedLowLevel addinodecaches key f fc ic = isUnmodifiedCheapLowLevel fc ic <||> expensivecheck
+isUnmodifiedLowLevel addinodecaches key f fc ic =
+	isUnmodifiedCheapLowLevel fc ic <||> expensivecheck
   where
 	expensivecheck = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key f)
 		( do
