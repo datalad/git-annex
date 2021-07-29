@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Cause cannot (only) be a v7->v8 upgrade"
+ date="2021-07-29T05:40:36Z"
+ content="""
+I posted an update to https://github.com/datalad/datalad/issues/5613#issuecomment-888813877 Below is an edited version:
+
+The repository this issue is referring to is indeed old (started in 2015). So an upgrade from 7 (or earlier) is a potential cause. It is currently a version 8 repo.
+
+Moreover, I can still replicate the exact same issue with `git-annex version: 8.20210310`. I have not attempted to use the newest git-annex to preserve the state of this repo.
+
+I can confirm, however, that this issue is unrelated to the special datalad special remote implementation. I created a plain new remote on the local filesystem, and I can see the same behavior when attempting to copy the key to it:
+
+```
+% git remote -v
+...
+tmp     /tmp/mytest (fetch)
+tmp     /tmp/mytest (push)
+
+% git annex copy --to tmp --key MD5E-s190--e6e1f4d3923cfd861e23f0f4cb20fa03.mat 
+copy MD5E-s190--e6e1f4d3923cfd861e23f0f4cb20fa03.mat (to tmp...) 
+  failed to send content to remote
+  failed to send content to remote
+failed
+git-annex: copy: 1 failed
+```
+
+That being said, the cause cannot (only) be a v7 to v8 upgrade. The repository concerning https://github.com/datalad/datalad/issues/5750 was created in April 2021 (v8 from the very start), and there are more recent examples too.
+
+In both cases a `git annex fsck` was attempted in the repository from which a key was to be transferred from. In both cases that did not fix the issue. As far as I understand the fix made in 8.20210715-g3b5a3e168 forces a file checksuming before transfer. This is an expensive change, and the `fsck` should have already performed the same checksuming. Should `fsck` not also be able to update the respective key property caches?
+
+
+
+"""]]
