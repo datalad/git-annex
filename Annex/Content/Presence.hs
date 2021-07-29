@@ -148,6 +148,9 @@ isUnmodified' = isUnmodifiedLowLevel Database.Keys.addInodeCaches
 {- Cheap check if a file contains the unmodified content of the key,
  - only checking the InodeCache of the key.
  -
+ - When the InodeCache is stale, this may incorrectly report that a file is
+ - modified.
+ -
  - Note that, on systems not supporting high-resolution mtimes,
  - this may report a false positive when repeated edits are made to a file
  - within a small time window (eg 1 second).
