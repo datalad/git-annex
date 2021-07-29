@@ -437,10 +437,9 @@ checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
 
 {- Runs the backend specific check on a key's content object.
  -
- - When a file is unlocked, it may be a hard link to the object,
- - thus when the user modifies the file, the object will be modified and
+ - When a annex.this is set, an unlocked file may be a hard link to the object.
+ - Thus when the user modifies the file, the object will be modified and
  - not pass the check, and we don't want to find an error in this case.
- - So, skip the check if the key is unlocked and modified.
  -}
 checkBackend :: Backend -> Key -> KeyStatus -> AssociatedFile -> Annex Bool
 checkBackend backend key keystatus afile = do
