@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2021-07-29T16:30:46Z"
+ content="""
+There are probably multiple causes. v8 upgrade does seem likely to be the
+main one, but I see that adswa seems to have found a way to reproduce it from
+scratch:
+<https://github.com/datalad/datalad/issues/5750#issuecomment-888819347>
+It's looking like perhaps inode instability in their case, due to use
+of a networked filesystem in a cluster.
+
+I have done some detailed auditing, and I'm pretty sure git-annex doesn't
+just forget to record the inode in some case. Well, except for potentially
+one case involving git-annex lock and annex.thin, which I fixed but was not
+able to actually quite get to reproduce the problem. 
+
+(I did find a some potential races, that would cause other problems but not
+this one, so the auditing was good for something..)
+"""]]
