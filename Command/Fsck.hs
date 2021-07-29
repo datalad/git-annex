@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ import qualified Remote
 import qualified Types.Backend
 import qualified Backend
 import Annex.Content
+import Annex.Content.Presence.LowLevel
 import Annex.Perms
 import Annex.Link
 import Logs.Location
@@ -31,6 +32,8 @@ import Utility.HumanTime
 import Utility.CopyFile
 import Git.FilePath
 import Utility.PID
+import Utility.InodeCache
+import Annex.InodeSentinal
 import qualified Database.Keys
 import qualified Database.Fsck as FsckDb
 import Types.CleanupActions
@@ -446,7 +449,14 @@ checkBackend backend key keystatus afile = do
 	content <- calcRepo (gitAnnexLocation key)
 	ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
 		( nocheck
-		, checkBackendOr badContent backend key content ai
+		, do
+			mic <- withTSDelta (liftIO . genInodeCache content)
+			ifM (checkBackendOr badContent backend key content ai)
+				( do
+					checkInodeCache key content mic ai
+					return True
+				, return False
+				)
 		)
   where
 	nocheck = return True
@@ -471,6 +481,32 @@ checkBackendOr bad backend key file ai =
 					]
 			return ok
 		Nothing -> return True
+
+{- Check, if there are InodeCaches recorded for a key, that one of them
+ - matches the object file. There are situations where the InodeCache
+ - of the object file does not get recorded, including a v8 upgrade.
+ - There may also be situations where the wrong InodeCache is recorded,
+ - if inodes are not stable.
+ -
+ - This must be called after the content of the object file has been
+ - verified to be correct. The InodeCache is generated again to detect if
+ - the object file was changed while the content was being verified.
+ -}
+checkInodeCache :: Key -> RawFilePath -> Maybe InodeCache -> ActionItem -> Annex ()
+checkInodeCache key content mic ai = case mic of
+	Nothing -> noop
+	Just ic -> do
+		ics <- Database.Keys.getInodeCaches key
+		unless (null ics) $
+			unlessM (isUnmodifiedCheapLowLevel ic ics) $ do
+				withTSDelta (liftIO . genInodeCache content) >>= \case
+					Nothing -> noop
+					Just ic' -> whenM (compareInodeCaches ic ic') $ do
+						warning $ concat
+							[ decodeBS' (actionItemDesc ai)
+							, ": Stale or missing inode cache; updating."
+							]
+						Database.Keys.addInodeCaches key [ic]
 
 checkKeyNumCopies :: Key -> AssociatedFile -> NumCopies -> Annex Bool
 checkKeyNumCopies key afile numcopies = do

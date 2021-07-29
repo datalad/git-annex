@@ -21,6 +21,7 @@ git-annex (8.20210715) UNRELEASED; urgency=medium
     changed.
   * Fix bug that could prevent pointer files from being populated,
     in a repository that was upgraded from v7.
+  * fsck: Detect and correct stale or missing inode caches.
 
  -- Joey Hess <id@joeyh.name>  Wed, 14 Jul 2021 14:26:36 -0400
 

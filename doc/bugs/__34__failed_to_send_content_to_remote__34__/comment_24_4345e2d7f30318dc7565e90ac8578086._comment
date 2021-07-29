@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 24"""
+ date="2021-07-29T17:00:57Z"
+ content="""
+I agree, fsck should notice and correct this problem. The current fix
+papers over the problem it in a way that will prevent users noticing it.
+Fsck being noisy about it will help avoid sweeping it under the rug and
+forgetting about it. Implemented that.
+
+The performance impact here is relatively small. Aside from
+whenever this problem occurs, the extra checksumming will only happen when
+files are unlocked and the object file is modified. So annex.thin
+would need to be set and a file modified in a way that affects the object
+file. Several other parts of git-annex also checksum in that situation;
+that's a perf price you pay for using annex.thin. When this problem does
+occur, it will only checksum the object file once, and then will get its
+inode information cached.
+"""]]
