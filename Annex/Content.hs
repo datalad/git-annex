@@ -51,6 +51,7 @@ module Annex.Content (
 	pruneTmpWorkDirBefore,
 	isUnmodified,
 	isUnmodifiedCheap,
+	verifyKeyContentPostRetrieval,
 	verifyKeyContent,
 	VerifyConfig(..),
 	Verification(..),
@@ -230,7 +231,7 @@ getViaTmpFromDisk rsp v key af action = checkallowed $ do
 			_ -> MustVerify
 		else verification
 	if ok
-		then ifM (verifyKeyContent rsp v verification' key tmpfile)
+		then ifM (verifyKeyContentPostRetrieval rsp v verification' key tmpfile)
 			( pruneTmpWorkDirBefore tmpfile (moveAnnex key af)
 			, do
 				warning "verification of content failed"

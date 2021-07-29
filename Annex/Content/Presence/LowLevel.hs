@@ -9,7 +9,6 @@ module Annex.Content.Presence.LowLevel where
 
 import Annex.Common
 import Annex.Verify
-import Types.Remote
 import Annex.InodeSentinal
 import Utility.InodeCache
 
@@ -17,7 +16,7 @@ isUnmodifiedLowLevel :: (Key -> [InodeCache] -> Annex ()) -> Key -> RawFilePath 
 isUnmodifiedLowLevel addinodecaches key f fc ic =
 	isUnmodifiedCheapLowLevel fc ic <||> expensivecheck
   where
-	expensivecheck = ifM (verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified key f)
+	expensivecheck = ifM (verifyKeyContent key f)
 		( do
 			-- The file could have been modified while it was
 			-- being verified. Detect that.

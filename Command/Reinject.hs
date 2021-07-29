@@ -50,7 +50,7 @@ startSrcDest ps@(src:dest:[])
   where
 	src' = toRawFilePath src
 	go key = starting "reinject" ai si $
-		ifM (verifyKeyContent RetrievalAllKeysSecure DefaultVerify UnVerified key src')
+		ifM (verifyKeyContent key src')
 			( perform src' key
 			, giveup $ src ++ " does not have expected content of " ++ dest
 			)

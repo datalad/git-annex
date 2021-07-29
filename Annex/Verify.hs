@@ -8,6 +8,7 @@
 module Annex.Verify (
 	VerifyConfig(..),
 	shouldVerify,
+	verifyKeyContentPostRetrieval,
 	verifyKeyContent,
 	Verification(..),
 	unVerified,
@@ -55,8 +56,8 @@ shouldVerify (RemoteVerify r) =
  - If the RetrievalSecurityPolicy requires verification and the key's
  - backend doesn't support it, the verification will fail.
  -}
-verifyKeyContent :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> Key -> RawFilePath -> Annex Bool
-verifyKeyContent rsp v verification k f = case (rsp, verification) of
+verifyKeyContentPostRetrieval :: RetrievalSecurityPolicy -> VerifyConfig -> Verification -> Key -> RawFilePath -> Annex Bool
+verifyKeyContentPostRetrieval rsp v verification k f = case (rsp, verification) of
 	(_, Verified) -> return True
 	(RetrievalVerifiableKeysSecure, _) -> ifM (isVerifiable k)
 		( verify
@@ -71,7 +72,11 @@ verifyKeyContent rsp v verification k f = case (rsp, verification) of
 		)
 	(_, MustVerify) -> verify
   where
-	verify = enteringStage VerifyStage $ verifysize <&&> verifycontent
+	verify = enteringStage VerifyStage $ verifyKeyContent k f
+
+verifyKeyContent :: Key -> RawFilePath -> Annex Bool
+verifyKeyContent k f = verifysize <&&> verifycontent
+  where
 	verifysize = case fromKey keySize k of
 		Nothing -> return True
 		Just size -> do

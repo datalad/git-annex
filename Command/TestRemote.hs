@@ -354,7 +354,7 @@ testExportTree runannex mkr mkk1 mkk2 =
 		liftIO $ hClose h
 		tryNonAsync (Remote.retrieveExport ea k testexportlocation tmp nullMeterUpdate) >>= \case
 			Left _ -> return False
-			Right () -> verifyKeyContent RetrievalAllKeysSecure AlwaysVerify UnVerified k (toRawFilePath tmp)
+			Right () -> verifyKeyContentPostRetrieval RetrievalAllKeysSecure AlwaysVerify UnVerified k (toRawFilePath tmp)
 	checkpresentexport ea k = Remote.checkPresentExport ea k testexportlocation
 	removeexport ea k = Remote.removeExport ea k testexportlocation
 	removeexportdirectory ea = case Remote.removeExportDirectory ea of
