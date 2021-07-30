@@ -1,0 +1,9 @@
+Clone a repository containing an unlocked file, and `git annex get` it. The
+object is transferred, but the pointer file does not get populated.
+(`git annex fsck` will then notice and correct the problem.)
+
+If any other git-annex command is run before the get, it avoids the
+problem. So the problem has to do with autoinit followed by reading
+associated files from the keys db.
+
+Besected to [[!commit 428c91606b434512d1986622e751c795edf4df44]] --[[Joey]] 
