@@ -267,7 +267,7 @@ update = do
 	-- point to refresh the keys database for changes to annexed files.
 	-- Doing it explicitly here avoids a later pause in the middle of
 	-- some other action.
-	scanAnnexedFiles False
+	scanAnnexedFiles
 	updateSmudged (Restage True)
 	stop
 

@@ -135,7 +135,7 @@ initialize' mversion = checkInitializeAllowed $ do
 		then configureSmudgeFilter
 		else deconfigureSmudgeFilter
 	unlessM isBareRepo $ do
-		scanAnnexedFiles True
+		scanAnnexedFiles
 		hookWrite postCheckoutHook
 		hookWrite postMergeHook
 	AdjustedBranch.checkAdjustedClone >>= \case
