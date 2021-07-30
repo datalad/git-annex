@@ -45,3 +45,5 @@ All remotes above sit on 2tb disk drives, which are filled as much as possible. 
 
 
 Thank you for all your time creating and maintaining such a usefull software!
+
+> [[fixed|done]] --[[Joey]]

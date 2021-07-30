@@ -1,0 +1,70 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-07-30T12:59:46Z"
+ content="""
+I am confused by the output you show, because 2147483647 is not any number
+of terabytes. It is a couple of gigabytes. This makes me suspect you
+arrived at that number in some mistaken way.
+
+Also, when git-annex displays "TB", it's talking about TeraBytes, not
+TebiBytes (TiB). But your divisions by 1024 is calulating the latter, not the
+former. (Well, actually it's calculating gibibytes..)
+
+If there is a bug, it's presumably in Utility.HumanNumber.showImprecise,
+which does some tricky rounding of decimals.
+
+Here's a few simple tests:
+
+	# ghci Utility/DataUnits.hs
+	ghci> roughSize storageUnits  True 1000000000000
+	"1 TB"
+	ghci> roughSize storageUnits  True 1099511627776
+	"1.1 TB"
+
+Those are the correct results for an even terabyte and a tebibyte,
+displayed as terabytes. Now trying the number you provided to see what
+git-annex info will display:
+
+	ghci> roughSize storageUnits True 2147483647
+	"2.15 GB"
+
+units confirms that is the correct value, after rounding the decimal:
+
+	# units
+	You have: 2147483647 bytes
+	You want: gigabytes
+		* 2.1474836
+		/ 0.46566129
+
+aIt's also almost exactly 2 gibibytes:
+
+	You have: 2147483647 bytes
+	You want: gibibytes
+		* 2
+		/ 0.5
+
+The actual value is 1 byte less than 2, if I do my manual math correctly:
+	2^30*2 = 2147483648 = 2147483647+1
+
+Asking git-annex for the same using memoryUnits which are the SI units:
+
+	ghci> roughSize memoryUnits False 2147483647
+	"1.1 gibibytes"
+
+Well, this final result looks wrong, and indeed what's going on is
+similar to what you hypothesized:
+
+	ghci> roughSize' memoryUnits False 10 2147483647
+	"1.9999999991 gibibytes"
+	ghci> showImprecise 10 1.9999999990686774
+	"1.9999999991"
+	ghci> showImprecise 2 1.9999999990686774
+	"1.1"
+	ghci> round 0.9999999990686774 * (10^2)
+	100
+
+So indeed showImprecise is forgetting to carry the 1.
+
+Excellent diagnosis, but next time, show your work. ;-)
+"""]]
