@@ -218,3 +218,5 @@ I don't know how to reproduce this on a different repo. This is the first time I
 git-annex is awesome! I am using it a lot.
 
 [[!tag projects/datalad]]
+
+> [[done]] --[[Joey]]
