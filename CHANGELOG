@@ -23,6 +23,9 @@ git-annex (8.20210715) UNRELEASED; urgency=medium
     in a repository that was upgraded from v7.
   * fsck: Detect and correct stale or missing inode caches.
   * Fix a rounding bug in display of data sizes.
+  * git-annex get when run as the first git-annex command in a new repo
+    did not populate unlocked files.
+    (Reversion in version 8.20210621)
 
  -- Joey Hess <id@joeyh.name>  Wed, 14 Jul 2021 14:26:36 -0400
 

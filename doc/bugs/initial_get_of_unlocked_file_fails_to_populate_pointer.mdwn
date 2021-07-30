@@ -6,4 +6,12 @@ If any other git-annex command is run before the get, it avoids the
 problem. So the problem has to do with autoinit followed by reading
 associated files from the keys db.
 
-Besected to [[!commit 428c91606b434512d1986622e751c795edf4df44]] --[[Joey]] 
+Bisected to [[!commit 428c91606b434512d1986622e751c795edf4df44]] --[[Joey]] 
+
+It seems that reconcileStaged is populating the
+associated files, but later when they're queried, the query returns an
+empty list. So something to do with database write caching.
+
+Somehow, not having init call `scanAnnexedFiles` makes this bug go away.
+
+> [[fixed|done]] --[[Joey]]

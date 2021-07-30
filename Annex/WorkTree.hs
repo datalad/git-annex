@@ -58,10 +58,10 @@ ifAnnexed file yes no = maybe no yes =<< lookupKey file
  - Normally the keys database is updated incrementally when it's being
  - opened, and changes are noticed. Calling this explicitly allows
  - running the update at an earlier point.
+ -
+ - All that needs to be done is to open the database,
+ - that will result in Database.Keys.reconcileStaged
+ - running, and doing the work.
  -}
 scanAnnexedFiles :: Annex ()
-scanAnnexedFiles =
-	-- All that needs to be done is to open the database,
-	-- that will result in Database.Keys.reconcileStaged
-	-- running, and doing the work.
-	Database.Keys.runWriter (const noop)
+scanAnnexedFiles = Database.Keys.runWriter (const noop)

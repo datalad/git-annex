@@ -96,8 +96,8 @@ genDescription Nothing = do
 		Right username -> [username, at, hostname, ":", reldir]
 		Left _ -> [hostname, ":", reldir]
 
-initialize :: Maybe String -> Maybe RepoVersion -> Annex ()
-initialize mdescription mversion = checkInitializeAllowed $ do
+initialize :: Bool -> Maybe String -> Maybe RepoVersion -> Annex ()
+initialize autoinit mdescription mversion = checkInitializeAllowed $ do
 	{- Has to come before any commits are made as the shared
 	 - clone heuristic expects no local objects. -}
 	sharedclone <- checkSharedClone
@@ -107,10 +107,10 @@ initialize mdescription mversion = checkInitializeAllowed $ do
 	ensureCommit $ Annex.Branch.create
 
 	prepUUID
-	initialize' mversion
+	initialize' autoinit mversion
 	
 	initSharedClone sharedclone
-
+	
 	u <- getUUID
 	{- Avoid overwriting existing description with a default
 	 - description. -}
@@ -119,8 +119,8 @@ initialize mdescription mversion = checkInitializeAllowed $ do
 
 -- Everything except for uuid setup, shared clone setup, and initial
 -- description.
-initialize' :: Maybe RepoVersion -> Annex ()
-initialize' mversion = checkInitializeAllowed $ do
+initialize' :: Bool -> Maybe RepoVersion -> Annex ()
+initialize' autoinit mversion = checkInitializeAllowed $ do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
@@ -135,9 +135,11 @@ initialize' mversion = checkInitializeAllowed $ do
 		then configureSmudgeFilter
 		else deconfigureSmudgeFilter
 	unlessM isBareRepo $ do
-		scanAnnexedFiles
 		hookWrite postCheckoutHook
 		hookWrite postMergeHook
+		unless autoinit $
+			scanAnnexedFiles
+
 	AdjustedBranch.checkAdjustedClone >>= \case
 		AdjustedBranch.InAdjustedClone -> return ()
 		AdjustedBranch.NotInAdjustedClone ->
@@ -198,7 +200,7 @@ ensureInitialized = getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM autoInitializeAllowed
 		( do
-			initialize Nothing Nothing
+			initialize True Nothing Nothing
 			autoEnableSpecialRemotes
 		, giveup "First run: git-annex init"
 		)
@@ -232,7 +234,7 @@ autoInitialize = getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit =
 		whenM (initializeAllowed <&&> autoInitializeAllowed) $ do
-			initialize Nothing Nothing
+			initialize True Nothing Nothing
 			autoEnableSpecialRemotes
 
 {- Checks if a repository is initialized. Does not check version for ugrade. -}

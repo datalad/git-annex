@@ -45,6 +45,6 @@ start (UpgradeOptions { autoOnly = True }) =
 start _ =
 	starting "upgrade" (ActionItemOther Nothing) (SeekInput []) $ do
 		whenM (isNothing <$> getVersion) $ do
-			initialize Nothing Nothing
+			initialize False Nothing Nothing
 		r <- upgrade False latestVersion
 		next $ return r
