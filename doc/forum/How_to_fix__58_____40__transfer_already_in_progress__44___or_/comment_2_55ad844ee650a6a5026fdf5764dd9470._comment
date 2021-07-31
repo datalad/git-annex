@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="mattplasmastrike@59cb7d099c8665f6c7668d78d9f17db87cabc2fe"
+ nickname="mattplasmastrike"
+ avatar="http://cdn.libravatar.org/avatar/b700eeba98fedf3acb60d76ed1a6df40"
+ subject="comment 2"
+ date="2021-07-31T23:59:12Z"
+ content="""
+- I was also affected by this and removing everything in the transfer folder \"rm -rf ./.git/annex/transfer/*\" on both devices fixed the issue for me.
+- I sure I could have fixed this with a more surgical operation by selectively deleting files or maybe a command that I do not know
+- although I am not sure what caused it I was canceling the progress with \"control c\"
+"""]]
