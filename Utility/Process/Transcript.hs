@@ -86,7 +86,7 @@ processTranscript'' cp input = do
   where
 	asyncreader pid h = async $ reader pid h []
 	reader pid h c = hGetLineUntilExitOrEOF pid h >>= \case
-		Nothing -> return (concat (reverse c))
+		Nothing -> return (unlines (reverse c))
 		Just l -> reader pid h (l:c)
 	writeinput (Just s) p = do
 		let inh = stdinHandle p
