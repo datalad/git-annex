@@ -374,6 +374,7 @@ checkSecureHashes' key = checkSecureHashes key >>= \case
 		return False
 
 data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
+	deriving (Eq)
 
 {- Populates the annex object file by hard linking or copying a source
  - file to it. -}
@@ -396,7 +397,7 @@ linkToAnnex key src srcic = ifM (checkSecureHashes' key)
  -}
 linkFromAnnex :: Key -> RawFilePath -> Maybe FileMode -> Annex LinkAnnexResult
 linkFromAnnex key dest destmode =
-	replaceFile (const noop) (fromRawFilePath dest) $ \tmp ->
+	replaceFile' (const noop) (fromRawFilePath dest) (== LinkAnnexOk) $ \tmp ->
 		linkFromAnnex' key (toRawFilePath tmp) destmode
 
 {- This is only safe to use when dest is not a worktree file. -}

@@ -1,6 +1,6 @@
 {- git-annex file replacing
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ module Annex.ReplaceFile (
 	replaceGitDirFile,
 	replaceWorkTreeFile,
 	replaceFile,
+	replaceFile',
 ) where
 
 import Annex.Common
@@ -54,7 +55,10 @@ replaceWorkTreeFile = replaceFile createWorkTreeDirectory
  - fails, and can create any parent directory structure needed.
  -}
 replaceFile :: (RawFilePath -> Annex ()) -> FilePath -> (FilePath -> Annex a) -> Annex a
-replaceFile createdirectory file action = withOtherTmp $ \othertmpdir -> do
+replaceFile createdirectory file action = replaceFile' createdirectory file (const True) action
+
+replaceFile' :: (RawFilePath -> Annex ()) -> FilePath -> (a -> Bool) -> (FilePath -> Annex a) -> Annex a
+replaceFile' createdirectory file checkres action = withOtherTmp $ \othertmpdir -> do
 	let othertmpdir' = fromRawFilePath othertmpdir
 #ifndef mingw32_HOST_OS
 	-- Use part of the filename as the template for the temp
@@ -70,7 +74,8 @@ replaceFile createdirectory file action = withOtherTmp $ \othertmpdir -> do
 	withTmpDirIn othertmpdir' basetmp $ \tmpdir -> do
 		let tmpfile = tmpdir </> basetmp
 		r <- action tmpfile
-		replaceFileFrom tmpfile file createdirectory
+		when (checkres r) $
+			replaceFileFrom tmpfile file createdirectory
 		return r
 
 replaceFileFrom :: FilePath -> FilePath -> (RawFilePath -> Annex ()) -> Annex ()
