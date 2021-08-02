@@ -1,0 +1,61 @@
+### Please describe the problem.
+
+I guess it might be argued against, but I just spotted getting 
+```
+lrwxrwxrwx 1 yoh yoh   186 Aug  2 12:44 .dot -> .git/annex/objects/k4/g9/SHA256E-s4--5ddbce254c08372e429a250112c6f4593868687ab01e9a126193e5a83560362b.dot/SHA256E-s4--5ddbce254c08372e429a250112c6f4593868687ab01e9a126193e5a83560362b.dot
+```
+
+so the entire filename of `.dot` upon `add --force-large` was considered to be an extension.  I think it might be worthwhile to not consider leading `.` as belonging to extension?
+
+checking on how we treat that case in datalad [in split_ext](https://github.com/datalad/datalad/blob/master/datalad/support/path.py#L84) -- apparently we are consistent with git-annex here:
+
+```
+$> python -c 'from datalad.support.path import split_ext; print(split_ext(".dot"))'
+('', '.dot')
+```
+
+and we do not test for this case in tests, so not clear if omission was "conscious"
+ 
+### What steps will reproduce the problem?
+
+<details>
+<summary>spotted on following "toy script" while exploring `drop --excludesamecontent=glob` functionality</summary> 
+
+```bash
+#!/bin/bash
+
+export PS4='> '
+set -eu
+cd "$(mktemp -d ${TMPDIR:-/tmp}/ann-XXXXXXX)"
+
+set -x
+
+git init 
+git annex init
+
+mkdir -p d{1,2,3}
+echo dot > .dot
+echo 123 > d1/f1
+cp .dot d1/same-as-dot
+echo 124 > d1/unique
+cp d1/f1 d2/same-as-in-d1
+echo 125 > d2/unique
+
+git annex add --force-large * .dot 
+git commit -m 'all initial' -a
+
+git status
+git annex list
+git annex drop --force '--excludesamecontent=*' '--excludesamecontent=.*' d1
+git annex list
+
+```
+</details>
+
+### What version of git-annex are you using? On what operating system?
+
+8.20210714+git68-g645b045e0-1~ndall+1
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
