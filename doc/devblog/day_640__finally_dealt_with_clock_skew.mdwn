@@ -1,0 +1,20 @@
+I've been unsatisfied with git-annex's handling of clock skew since day 1.
+Since it relies on timestamps, it needs clocks to be synchronised across
+users, at least to a reasonable extent. A clock in the far future or distant
+past could potentially confuse git-annex a lot. Vector clocks felt like
+the right kind of solution, but also wrong somehow.
+
+I've finally cracked it! See [[todo/git-annex_branch_clocks]] for the
+details, but in summary, git-annex will be able to detect clock skew
+and fall back to vector clocks, but will otherwise continue to use
+timestamps for their benefits over vector clocks
+(ie, having some idea about what order disconnected events actually occurred,
+to the extent physics makes that possible).
+
+That is mostly implemented, only needs some more testing and cleanup before
+merging.
+
+----
+
+Today's work was sponsored by Graham Spencer 
+[on Patreon](https://patreon.com/joeyh)
