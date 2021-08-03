@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="jwrauch"
+ avatar="http://cdn.libravatar.org/avatar/0e83010187ef0c8c587e0c99e2ca5474"
+ subject="comment 4"
+ date="2021-08-03T16:36:20Z"
+ content="""
+Thanks for the support guys!  I really appreciate knowing that others have struggled with similar issues and I'm not giving up yet.  
+
+@Lukey That's a great idea, except I'm already doing that.  The issue really wasn't to do with annex, as it wasn't the hash files names.  I was downloading torrent files directly to the annex so I could keep the torrent link active without keeping two copies of the files.  But torrent filenames are packed with information and thus long, leading to my issue.  I just changed the filename and broke the torrent link.  Frustrating, but ultimately not really a big deal. Thanks for the suggestion though.
+
+@Ilya_Shlyakhter Thanks for the support.  I'll go through the Main Page again as well as that Internals page.  I think I skipped the Internals page when I was going through the documentation a few months ago, but looking at it now it looks pretty illuminating.  I'll also check out using a VM, but I may just decide to make the jump to linux and use a windows VM there.  
+
+"""]]
