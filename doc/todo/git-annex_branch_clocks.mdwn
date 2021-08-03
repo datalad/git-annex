@@ -63,8 +63,8 @@ into account.
 ---
 
 A better idea: When writing new information, check if the old
-value for the log has a timestamp in the future. If so, don't use the
-current timestamp for the new information, instead increment that future
+value for the log has a timestamp `>=` current timestamp. If so, don't use the
+current timestamp for the new information, instead increment the old
 timestamp. So when there's clock skew (forwards or backwards), this makes
 it fall back, effectively to vector clocks.
 
@@ -74,3 +74,9 @@ of clock skew, the most recent change to a configuration wins. For state
 changes, it keeps the benefits of timestamps except when there's clock
 skew, in which case there are not any benefits of timestamps anymore
 so vector clocks is the best that can be done. --[[Joey]]
+
+(How would `GIT_ANNEX_VECTOR_CLOCK` interact with this? Maybe, when that's
+set to a low number, it would be treated as the current time. So this would
+let it be used and not, without issues, and also would let it be set to a
+low number once, and not need to be changed, since git-annex would
+increment as necessary.)
