@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="don't give up ;)"
+ date="2021-08-03T15:06:35Z"
+ content="""
+There's a learning curve, especially around the areas you mention.   I think the rules for which files go into annex vs git have evolved in a somewhat ad-hoc way as @joeyh did his best to reconcile people's different use cases, so ended up being somewhat complex.  It may be worth taking the time to read the [[main page|git-annex]] top-to-bottom once, especially the config options, and also the [[internals]] page.  You can tag git branches when things are in a good state so you can later reset them if anything goes wrong; note though that you'd want to tag the git-annex branch and any `synced/*` branches as well.
+
+I've tried using git-annex on Windows and gave up, using it inside an Ubuntu guest VM via VirtualBox, but I think others have successfully used it on Windows.  Overall I've found git-annex to be very reliable and adaptable to almost any scenario, and these forums helpful.   The issues I've had with git-annex have been mostly around slowness on large repos, but recent releases have made strides to address that.
+"""]]
