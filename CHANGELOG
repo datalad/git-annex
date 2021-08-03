@@ -1,4 +1,4 @@
-git-annex (8.20210715) UNRELEASED; urgency=medium
+git-annex (8.20210803) upstream; urgency=medium
 
   * whereused: New command, finds what files use a key, or where a key
     was used historically.
@@ -27,7 +27,7 @@ git-annex (8.20210715) UNRELEASED; urgency=medium
     did not populate unlocked files.
     (Reversion in version 8.20210621)
 
- -- Joey Hess <id@joeyh.name>  Wed, 14 Jul 2021 14:26:36 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:20:09 -0400
 
 git-annex (8.20210714) upstream; urgency=medium
 
