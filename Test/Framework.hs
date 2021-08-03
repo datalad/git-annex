@@ -488,6 +488,7 @@ setTestMode testmode = do
 		, ("GIT_ANNEX_USE_GIT_SSH", "1")
 		, ("TESTMODE", show testmode)
 		]
+
 runFakeSsh :: [String] -> IO ()
 runFakeSsh ("-n":ps) = runFakeSsh ps
 runFakeSsh (_host:cmd:[]) =
