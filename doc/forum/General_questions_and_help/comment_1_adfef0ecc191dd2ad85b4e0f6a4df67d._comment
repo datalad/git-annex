@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-08-03T07:54:12Z"
+ content="""
+Hi,<br>
+What may help with the filenames too long is putting the repository directly under `C:` like `C:\repo`. The reason is that Windows paths are limited to a maximum of 260? bytes and if you have it under like `C:\Users\bla\loong\path\repo` then the whole path to the keys (`C:\Users\bla\loong\path\repo\.git\annex\objects\xyz\xyz\SHA256E-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`) might be too long. <br>
+You could also try with a different [[backends]] like `SHA1` since then the hash part (`SHA256E-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`) is shorter.
+"""]]
