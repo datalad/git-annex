@@ -80,3 +80,5 @@ set to a low number, it would be treated as the current time. So this would
 let it be used and not, without issues, and also would let it be set to a
 low number once, and not need to be changed, since git-annex would
 increment as necessary.)
+
+> The `vectorclock` branch has this mostly implemented. --[[Joey]]
