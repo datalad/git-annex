@@ -6,7 +6,7 @@
  - A line of the log will look like: "date N INFO"
  - Where N=1 when the INFO is present, 0 otherwise.
  - 
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,9 +14,9 @@
 module Logs.Presence (
 	module X,
 	addLog,
+	addLog',
 	maybeAddLog,
 	readLog,
-	logNow,
 	currentLog,
 	currentLogInfo,
 	historicalLogInfo,
@@ -28,31 +28,42 @@ import Annex.VectorClock
 import qualified Annex.Branch
 import Git.Types (RefDate)
 
-{- Adds a LogLine to the log, removing any LogLines that are obsoleted by
- - adding it. -}
-addLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogLine -> Annex ()
-addLog ru file line = Annex.Branch.change ru file $ \b ->
-	buildLog $ compactLog (line : parseLog b)
+{- Adds to the log, removing any LogLines that are obsoleted. -}
+addLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> Annex ()
+addLog ru file logstatus loginfo = 
+	addLog' ru file logstatus loginfo =<< currentVectorClock
+
+addLog' :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> CandidateVectorClock -> Annex ()
+addLog' ru file logstatus loginfo c = 
+	Annex.Branch.change ru file $ \b ->
+		let old = parseLog b
+		    line = genLine logstatus loginfo c old
+		in buildLog $ compactLog (line : old)
 
 {- When a LogLine already exists with the same status and info, but an
  - older timestamp, that LogLine is preserved, rather than updating the log
  - with a newer timestamp.
  -}
-maybeAddLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogLine -> Annex ()
-maybeAddLog ru file line = Annex.Branch.maybeChange ru file $ \s -> do
-	m <- insertNewStatus line $ logMap $ parseLog s
-	return $ buildLog $ mapLog m
+maybeAddLog :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> Annex ()
+maybeAddLog ru file logstatus loginfo = do
+	c <- currentVectorClock
+	Annex.Branch.maybeChange ru file $ \b ->
+		let old = parseLog b
+		    line = genLine logstatus loginfo c old
+		in do
+			m <- insertNewStatus line $ logMap old
+			return $ buildLog $ mapLog m
+
+genLine :: LogStatus -> LogInfo -> CandidateVectorClock -> [LogLine] -> LogLine
+genLine logstatus loginfo c old = LogLine c' logstatus loginfo
+  where
+	oldcs = map date (filter (\l -> info l == loginfo) old)
+	c' = advanceVectorClock c oldcs
 
 {- Reads a log file.
  - Note that the LogLines returned may be in any order. -}
 readLog :: RawFilePath -> Annex [LogLine]
 readLog = parseLog <$$> Annex.Branch.get
-
-{- Generates a new LogLine with the current time. -}
-logNow :: LogStatus -> LogInfo -> Annex LogLine
-logNow s i = do
-	c <- currentVectorClock
-	return $ LogLine c s i
 
 {- Reads a log and returns only the info that is still in effect. -}
 currentLogInfo :: RawFilePath -> Annex [LogInfo]

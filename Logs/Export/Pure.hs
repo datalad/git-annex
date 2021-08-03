@@ -23,6 +23,7 @@ module Logs.Export.Pure (
 ) where
 
 import Annex.Common
+import Annex.VectorClock
 import qualified Git
 import Logs.MapLog
 
@@ -110,7 +111,9 @@ exportedParser = Exported <$> refparser <*> many refparser
 -- This way, when multiple repositories are exporting to
 -- the same special remote, there's no conflict as long as they move
 -- forward in lock-step.
-updateForExportChange :: UUID -> ExportChange -> VectorClock -> UUID -> ExportParticipants -> LogEntry Exported -> LogEntry Exported
-updateForExportChange remoteuuid ec c hereuuid ep le@(LogEntry _ exported@(Exported { exportedTreeish = t }))
+updateForExportChange :: UUID -> ExportChange -> CandidateVectorClock -> UUID -> ExportParticipants -> LogEntry Exported -> LogEntry Exported
+updateForExportChange remoteuuid ec c hereuuid ep le@(LogEntry lc exported@(Exported { exportedTreeish = t }))
 	| hereuuid == exportFrom ep || remoteuuid /= exportTo ep || t `notElem` oldTreeish ec = le
-	| otherwise = LogEntry c (exported { exportedTreeish = newTreeish ec })
+	| otherwise = LogEntry c' (exported { exportedTreeish = newTreeish ec })
+  where
+	c' = advanceVectorClock c [lc]

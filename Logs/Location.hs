@@ -8,7 +8,7 @@
  - Repositories record their UUID and the date when they --get or --drop
  - a value.
  - 
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -61,14 +61,14 @@ logStatusAfter key a = ifM a
 
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Key -> UUID -> LogStatus -> Annex ()
-logChange = logChange' logNow
-
-logChange' :: (LogStatus -> LogInfo -> Annex LogLine) -> Key -> UUID -> LogStatus -> Annex ()
-logChange' mklog key u@(UUID _) s = do
+logChange key u@(UUID _) s = do
 	config <- Annex.getGitConfig
-	maybeAddLog (Annex.Branch.RegardingUUID [u]) (locationLogFile config key)
-		=<< mklog s (LogInfo (fromUUID u))
-logChange' _ _ NoUUID _ = noop
+	maybeAddLog
+		(Annex.Branch.RegardingUUID [u])
+		(locationLogFile config key)
+		s
+		(LogInfo (fromUUID u))
+logChange _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have
  - the value of a key. -}
@@ -107,6 +107,9 @@ checkDead key = do
  - 
  - Changes all logged lines for the key, in any location, that are
  - currently InfoMissing, to be InfoDead.
+ - 
+ - The vector clock in the log is updated minimally, so that any
+ - other location log changes are guaranteed to overrule this.
  -}
 setDead :: Key -> Annex ()
 setDead key = do
@@ -117,18 +120,12 @@ setDead key = do
   where
 	go logfile l = 
 		let u = toUUID (fromLogInfo (info l))
-		in addLog (Annex.Branch.RegardingUUID [u]) logfile (setDead' l)
-
-{- Note that the timestamp in the log is updated minimally, so that this
- - can be overruled by other location log changes. -}
-setDead' :: LogLine -> LogLine
-setDead' l = l
-	{ status = InfoDead
-	, date = case date l of
-		VectorClock c -> VectorClock $
-			c + realToFrac (picosecondsToDiffTime 1)
-		Unknown -> Unknown
-	}
+		    c = case date l of
+			VectorClock v -> CandidateVectorClock $
+				v + realToFrac (picosecondsToDiffTime 1)
+			Unknown -> CandidateVectorClock 0
+		in addLog' (Annex.Branch.RegardingUUID [u]) logfile InfoDead
+			(info l) c
 
 data Unchecked a = Unchecked (Annex (Maybe a))
 

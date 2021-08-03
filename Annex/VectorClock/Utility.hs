@@ -13,11 +13,11 @@ import Types.VectorClock
 import Utility.Env
 import Utility.TimeStamp
 
-startVectorClock :: IO (IO VectorClock)
+startVectorClock :: IO (IO CandidateVectorClock)
 startVectorClock = go =<< getEnv "GIT_ANNEX_VECTOR_CLOCK"
   where
 	go Nothing = timebased
 	go (Just s) = case parsePOSIXTime s of
-		Just t -> return (pure (VectorClock t))
+		Just t -> return (pure (CandidateVectorClock t))
 		Nothing -> timebased
-	timebased = return (VectorClock <$> getPOSIXTime)
+	timebased = return (CandidateVectorClock <$> getPOSIXTime)

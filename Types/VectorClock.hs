@@ -1,9 +1,6 @@
 {- git-annex vector clocks
  -
- - We don't have a way yet to keep true distributed vector clocks.
- - The next best thing is a timestamp.
- -
- - Copyright 2017-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +17,11 @@ import Utility.QuickCheck
 -- Unknown is used for those.
 data VectorClock = Unknown | VectorClock POSIXTime
 	deriving (Eq, Ord, Show)
+
+-- | This is a candidate value to use in a VectorClock. It
+-- may not be suitable to use this, when a previously used VectorClock
+-- is the same or higher.
+data CandidateVectorClock = CandidateVectorClock POSIXTime
 
 -- Unknown is oldest.
 prop_VectorClock_sane :: Bool

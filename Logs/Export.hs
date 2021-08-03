@@ -97,9 +97,8 @@ recordExportUnderway remoteuuid ec = do
 	hereuuid <- getUUID
 	let ep = ExportParticipants { exportFrom = hereuuid, exportTo = remoteuuid }
 	let exported = mkExported (newTreeish ec) []
-	Annex.Branch.change
-		(Annex.Branch.RegardingUUID [remoteuuid, hereuuid]) 
-		exportLog $
+	let ru = Annex.Branch.RegardingUUID [remoteuuid, hereuuid]
+	Annex.Branch.change ru exportLog $ 
 		buildExportLog
 			. changeMapLog c ep exported 
 			. M.mapWithKey (updateForExportChange remoteuuid ec c hereuuid)

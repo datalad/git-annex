@@ -1908,14 +1908,13 @@ These environment variables are used by git-annex when set:
 
   Normally git-annex timestamps lines in the log files committed to the
   git-annex branch. Setting this environment variable to a number
-  will make git-annex use that rather than the current number of seconds
-  since the UNIX epoch. Note that decimal seconds are supported.
+  will make git-annex use that (or a larger number) 
+  rather than the current number of seconds since the UNIX epoch.
+  Note that decimal seconds are supported.
   
   This is only provided for advanced users who either have a better way to
   tell which commit is current than the local clock, or who need to avoid
-  embedding timestamps for policy reasons. Misuse of this environment
-  variable can confuse git-annex's book-keeping, sometimes in ways that
-  `git annex fsck` is unable to repair.
+  embedding timestamps for policy reasons.
 
 * Some special remotes use additional environment variables
   for authentication etc. For example, `AWS_ACCESS_KEY_ID`

@@ -53,8 +53,10 @@ buildLogOld :: (v -> Builder) -> Log v -> Builder
 buildLogOld builder = mconcat . map genline . M.toList
   where
 	genline (u, LogEntry c@(VectorClock {}) v) =
-		buildUUID u <> sp <> builder v <> sp <>
-			byteString "timestamp=" <> buildVectorClock c <> nl
+		buildUUID u <> sp <> builder v <> sp
+			<> byteString "timestamp="
+			<> buildVectorClock c
+			<> nl
 	genline (u, LogEntry Unknown v) =
 		buildUUID u <> sp <> builder v <> nl
 	sp = charUtf8 ' '
@@ -89,7 +91,7 @@ buildLogNew = buildMapLog buildUUID
 parseLogNew :: A.Parser v -> L.ByteString -> Log v
 parseLogNew = parseMapLog (toUUID <$> A.takeByteString)
 
-changeLog :: VectorClock -> UUID -> v -> Log v -> Log v
+changeLog :: CandidateVectorClock -> UUID -> v -> Log v -> Log v
 changeLog = changeMapLog
 
 addLog :: UUID -> LogEntry v -> Log v -> Log v

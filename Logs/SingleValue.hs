@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 {- git-annex single-value log
  -
  - This is used to store a value in a way that can be union merged.
@@ -6,7 +8,7 @@
  -
  - The line with the newest timestamp wins.
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -31,8 +33,10 @@ readLog = parseLog <$$> Annex.Branch.get
 getLog :: (Ord v, SingleValueSerializable v) => RawFilePath -> Annex (Maybe v)
 getLog = newestValue <$$> readLog
 
-setLog :: (SingleValueSerializable v) => Annex.Branch.RegardingUUID -> RawFilePath -> v -> Annex ()
+setLog :: (Ord v, SingleValueSerializable v) => Annex.Branch.RegardingUUID -> RawFilePath -> v -> Annex ()
 setLog ru f v = do
 	c <- currentVectorClock
-	let ent = LogEntry c v
-	Annex.Branch.change ru f $ \_old -> buildLog (S.singleton ent)
+	Annex.Branch.change ru f $ \old ->
+		let oldcs = map changed ((parseLog' old) `asTypeOf` [ent])
+		    ent = LogEntry (advanceVectorClock c oldcs) v
+		in buildLog (S.singleton ent)
