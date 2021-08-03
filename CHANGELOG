@@ -1,3 +1,9 @@
+git-annex (8.20210804) UNRELEASED; urgency=medium
+
+  * add: When adding a dotfile, avoid treating its name as an extension.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
+
 git-annex (8.20210803) upstream; urgency=medium
 
   * whereused: New command, finds what files use a key, or where a key

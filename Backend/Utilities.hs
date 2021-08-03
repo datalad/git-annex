@@ -59,8 +59,11 @@ selectExtension maxlen f
 	es = filter (not . S.null) $ reverse $
 		take 2 $ filter (S.all validInExtension) $
 		takeWhile shortenough $
-		reverse $ S.split (fromIntegral (ord '.')) (P.takeExtensions f)
+		reverse $ S.split (fromIntegral (ord '.')) (P.takeExtensions f')
 	shortenough e = S.length e <= fromMaybe maxExtensionLen maxlen
+	-- Avoid treating a file ".foo" as having its whole name as an
+	-- extension.
+	f' = S.dropWhile (== fromIntegral (ord '.')) (P.takeFileName f)
 
 validInExtension :: Word8 -> Bool
 validInExtension c
