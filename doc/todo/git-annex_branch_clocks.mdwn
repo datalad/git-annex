@@ -1,0 +1,76 @@
+Files in the git-annex branch use timestamps to ensure that the most
+recently recorded state wins. This is unsatisfying, because it requires
+accurate clocks amoung all users. It would be better to use vector clocks,
+where possible, but it is not possible to use vector clocks for all
+information in the branch.
+
+To see why vector clocks can't be used for some information in the branch,
+consider location log files. They are meant to reflect the actual state of
+an external resource. Vector clocks can ensure that a consistent state is
+agreed on by distributed users, but there's no way to guarantee that state
+matches the actual state. 
+
+For example, let's assume there's a vector clock consisting of an an
+integer, and an object is being added and removed from a remote by multiple
+parties. First Alice logs (present, 1), and then some time later, Alice
+logs (missing, 2). Meanwhile, Bob merges (present, 1) from Alice
+and then logs (missing, 2), followed by (present, 3). At some later point,
+they merge back up, and the winning state is (present, 3) as it has the
+highest vector clock. Is the content really present on the remote?
+Well, we don't know, Alice could have removed it before Bob stored it,
+or afterwards.
+
+But, other information in the branch could use vector clocks. Consider
+numcopies setting. It's fine if the winner of a conflict over that is not
+the one who set it most recently, as long as a value can be consistently
+determined. So, the numcopies setting, and similar other configuration, is not
+trying to track an external state, and so it could use vector clocks.
+
+How would these vector clocks work, and how to transition to using them
+without confusing old versions of git-annex that expect timestamps? A
+change to a log could simply increment the clock from the previous
+version of the log. This would make the new git-annex normally lose
+when a conflicting change was written by an old git-annex, but the result
+would be consistent, so that's acceptable.
+
+Files that are related to external state need to continue to use
+timestamps. But this could still be improved. Currently, if the clock is
+wronly set far in the future, logs using those timestamps will win over
+other logs for a long time. This could break git-annex badly as there
+becomes no way to correct wrong information.
+
+Experimenting with `GIT_ANNEX_VECTOR_CLOCK`, it looks like `git annex fsck`
+is able to recover from wrong location information being recorded with a
+far future timestamp. It replaces that timestamp with the current one.
+However, if that then gets union merged with a change to the same location
+log made in another repository, fsck's correction can be lost in the merge.
+Re-running the fsck will eventually get the information corrected, once a
+non-union merge happens. However, `git annex fsck` can't correct other
+logs, like remote state logs, if they end up with bad information with
+a far future timestamp.
+
+There's a mirror problem of information being recorded with a timestamp
+in the past and being ignored. But, at least in that case, re-recording
+good information with the right timestamp will fix the problem.
+
+Consider making git-annex ignore future timestamps 
+(with some amount of allowance for minor lock skew). There are two
+problems, one is that currently valid information gets ignored, until it's
+able to be re-recorded. The second is that when the timestamp slips
+into the past, the old, invalid information suddenly starts being taken
+into account.
+
+---
+
+A better idea: When writing new information, check if the old
+value for the log has a timestamp in the future. If so, don't use the
+current timestamp for the new information, instead increment that future
+timestamp. So when there's clock skew (forwards or backwards), this makes
+it fall back, effectively to vector clocks.
+
+This would work for both kinds of logs. For configuration changes,
+it's kind of better than using only vector clocks, because in the absence
+of clock skew, the most recent change to a configuration wins. For state
+changes, it keeps the benefits of timestamps except when there's clock
+skew, in which case there are not any benefits of timestamps anymore
+so vector clocks is the best that can be done. --[[Joey]]
