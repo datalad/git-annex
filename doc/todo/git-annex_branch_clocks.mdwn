@@ -82,3 +82,5 @@ low number once, and not need to be changed, since git-annex would
 increment as necessary.)
 
 > The `vectorclock` branch has this mostly implemented. --[[Joey]]
+
+> > [[done]] --[[Joey]]
