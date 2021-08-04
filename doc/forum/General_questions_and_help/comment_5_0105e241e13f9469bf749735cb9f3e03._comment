@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="downloading torrent files to annex"
+ date="2021-08-04T15:47:11Z"
+ content="""
+>I was downloading torrent files directly to the annex
+
+Not sure if you're already using it, but there is a [[bittorrent special remote|special_remotes/bittorrent]] (haven't tried it myself).
+"""]]
