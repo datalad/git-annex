@@ -51,8 +51,12 @@ describeTransition ForgetDeadRemotes = "forget dead remotes"
 noTransitions :: Transitions
 noTransitions = S.empty
 
-addTransition :: VectorClock -> Transition -> Transitions -> Transitions
-addTransition c t = S.insert $ TransitionLine c (Right t)
+addTransition :: CandidateVectorClock -> Transition -> Transitions -> Transitions
+addTransition c t s = S.insert (TransitionLine c' (Right t)) s
+  where
+	oldcs = map transitionStarted $
+		filter (\l -> transition l == Right t) (S.toList s)
+	c' = advanceVectorClock c oldcs
 
 buildTransitions :: Transitions -> Builder
 buildTransitions = mconcat . map genline . S.elems
@@ -72,9 +76,6 @@ parseTransitionsStrictly source b =
 	in if S.null $ S.filter (isLeft . transition) ts
 		then ts
 		else giveup $ "unknown transitions listed in " ++ source ++ "; upgrade git-annex!"
-
-showTransitionLine :: TransitionLine -> String
-showTransitionLine (TransitionLine c t) = unwords [show t, formatVectorClock c]
 
 transitionLineParser :: A.Parser TransitionLine
 transitionLineParser = do

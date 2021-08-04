@@ -123,4 +123,5 @@ instance Arbitrary LogLine where
 			(\b -> C8.notElem '\n' b && C8.notElem '\r' b)
 
 prop_parse_build_presence_log :: [LogLine] -> Bool
-prop_parse_build_presence_log l = parseLog (toLazyByteString (buildLog l)) == l
+prop_parse_build_presence_log l =
+	parseLog (toLazyByteString (buildLog l)) == l

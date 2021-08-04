@@ -200,7 +200,7 @@ data AnnexState = AnnexState
 	, cachedgitenv :: Maybe (AltIndexFile, FilePath, [(String, String)])
 	, urloptions :: Maybe UrlOptions
 	, insmudgecleanfilter :: Bool
-	, getvectorclock :: IO VectorClock
+	, getvectorclock :: IO CandidateVectorClock
 	}
 
 newAnnexState :: GitConfig -> Git.Repo -> IO AnnexState

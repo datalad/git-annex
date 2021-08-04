@@ -1,9 +1,11 @@
 {- git-annex vector clocks
  -
- - We don't have a way yet to keep true distributed vector clocks.
- - The next best thing is a timestamp.
+ - These are basically a timestamp. However, when logging a new
+ - value, if the old value has a vector clock that is the same or greater
+ - than the current vector clock, the old vector clock is incremented.
+ - This way, clock skew does not cause confusion.
  -
- - Copyright 2017-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,10 +23,12 @@ import Utility.TimeStamp
 import Data.ByteString.Builder
 import qualified Data.Attoparsec.ByteString.Lazy as A
 
-currentVectorClock :: Annex VectorClock
+currentVectorClock :: Annex CandidateVectorClock
 currentVectorClock = liftIO =<< Annex.getState Annex.getvectorclock
 
--- Runs the action and uses the same vector clock throughout.
+-- Runs the action and uses the same vector clock throughout,
+-- except when it's necessary to use a newer one due to a past value having
+-- a newer vector clock.
 --
 -- When the action modifies several files in the git-annex branch,
 -- this can cause less space to be used, since the same vector clock
@@ -51,6 +55,19 @@ reuseVectorClockWhile = bracket setup cleanup . const
 
 	use vc = Annex.changeState $ \s ->
 		s { Annex.getvectorclock = vc }
+
+-- Convert a candidate vector clock in to the final one to use,
+-- advancing it if necessary when necessary to get ahead of a previously
+-- used vector clock.
+advanceVectorClock :: CandidateVectorClock -> [VectorClock] -> VectorClock
+advanceVectorClock (CandidateVectorClock c) [] = VectorClock c
+advanceVectorClock (CandidateVectorClock c) prevs
+	| prev >= VectorClock c = case prev of
+		VectorClock v -> VectorClock (v + 1)
+		Unknown -> VectorClock c
+	| otherwise = VectorClock c
+  where
+	prev = maximum prevs
 
 formatVectorClock :: VectorClock -> String
 formatVectorClock Unknown = "0"

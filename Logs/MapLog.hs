@@ -67,8 +67,12 @@ mapLogParser fieldparser valueparser = M.fromListWith best <$> parseLogLines go
 		A.endOfInput
 		return (f, LogEntry c v)
 
-changeMapLog :: Ord f => VectorClock -> f -> v -> MapLog f v -> MapLog f v
-changeMapLog c f v = M.insert f $ LogEntry c v
+changeMapLog :: Ord f => CandidateVectorClock -> f -> v -> MapLog f v -> MapLog f v
+changeMapLog c f v m = M.insert f (LogEntry c' v) m
+  where
+	c' = case M.lookup f m of
+		Nothing -> advanceVectorClock c []
+		Just old -> advanceVectorClock c [changed old]
 
 {- Only add an LogEntry if it's newer (or at least as new as) than any
  - existing LogEntry for a field. -}

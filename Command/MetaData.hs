@@ -98,12 +98,12 @@ seek o = case batchOption o of
 			)
 		_ -> giveup "--batch is currently only supported in --json mode"
 
-start :: VectorClock -> MetaDataOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start :: CandidateVectorClock -> MetaDataOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
 start c o si file k = startKeys c o (si, k, mkActionItem (k, afile))
   where
 	afile = AssociatedFile (Just file)
 
-startKeys :: VectorClock -> MetaDataOptions -> (SeekInput, Key, ActionItem) -> CommandStart
+startKeys :: CandidateVectorClock -> MetaDataOptions -> (SeekInput, Key, ActionItem) -> CommandStart
 startKeys c o (si, k, ai) = case getSet o of
 	Get f -> startingCustomOutput k $ do
 		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
@@ -113,7 +113,7 @@ startKeys c o (si, k, ai) = case getSet o of
 	_ -> starting "metadata" ai si $
 		perform c o k
 
-perform :: VectorClock -> MetaDataOptions -> Key -> CommandPerform
+perform :: CandidateVectorClock -> MetaDataOptions -> Key -> CommandPerform
 perform c o k = case getSet o of
 	Set ms -> do
 		oldm <- getCurrentMetaData k

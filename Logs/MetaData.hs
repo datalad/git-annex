@@ -105,22 +105,23 @@ addMetaData' :: Annex.Branch.RegardingUUID -> (GitConfig -> Key -> RawFilePath) 
 addMetaData' ru getlogfile k metadata = 
 	addMetaDataClocked' ru getlogfile k metadata =<< currentVectorClock
 
-{- Reusing the same VectorClock when making changes to the metadata
+{- Reusing the same CandidateVectorClock when making changes to the metadata
  - of multiple keys is a nice optimisation. The same metadata lines
  - will tend to be generated across the different log files, and so
  - git will be able to pack the data more efficiently. -}
-addMetaDataClocked :: Key -> MetaData -> VectorClock -> Annex ()
+addMetaDataClocked :: Key -> MetaData -> CandidateVectorClock -> Annex ()
 addMetaDataClocked = addMetaDataClocked' (Annex.Branch.RegardingUUID []) metaDataLogFile
 
-addMetaDataClocked' :: Annex.Branch.RegardingUUID -> (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> VectorClock -> Annex ()
+addMetaDataClocked' :: Annex.Branch.RegardingUUID -> (GitConfig -> Key -> RawFilePath) -> Key -> MetaData -> CandidateVectorClock -> Annex ()
 addMetaDataClocked' ru getlogfile k d@(MetaData m) c
 	| d == emptyMetaData = noop
 	| otherwise = do
 		config <- Annex.getGitConfig
-		Annex.Branch.change ru (getlogfile config k) $
-			buildLog . simplifyLog 
-				. S.insert (LogEntry c metadata)
-				. parseLog
+		Annex.Branch.change ru (getlogfile config k) $ \b ->
+			let s = parseLog b
+			    c' = advanceVectorClock c (map changed (S.toList s))
+			    ent = LogEntry c' metadata
+			in buildLog $ simplifyLog $ S.insert ent s
   where
 	metadata = MetaData $ M.filterWithKey (\f _ -> not (isLastChangedField f)) m
 

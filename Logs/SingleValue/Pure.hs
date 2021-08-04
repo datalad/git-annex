@@ -1,6 +1,6 @@
 {- git-annex single-value log, pure operations
  -
- - Copyright 2014-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -33,13 +33,18 @@ buildLog :: (SingleValueSerializable v) => Log v -> Builder
 buildLog = mconcat . map genline . S.toList
   where
 	genline (LogEntry c v) =
-		buildVectorClock c <> sp <> byteString (serialize v) <> nl
+		buildVectorClock c
+			<> sp 
+			<> byteString (serialize v)
+			<> nl
 	sp = charUtf8 ' '
 	nl = charUtf8 '\n'
 
 parseLog :: (Ord v, SingleValueSerializable v) => L.ByteString -> Log v
-parseLog = S.fromList . fromMaybe [] 
-	. A.maybeResult . A.parse (logParser <* A.endOfInput)
+parseLog = S.fromList . parseLog'
+
+parseLog' :: SingleValueSerializable v => L.ByteString -> [LogEntry v]
+parseLog' = fromMaybe [] . A.maybeResult . A.parse (logParser <* A.endOfInput)
 
 logParser :: SingleValueSerializable v => A.Parser [LogEntry v]
 logParser = parseLogLines $ LogEntry

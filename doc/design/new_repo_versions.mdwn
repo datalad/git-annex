@@ -103,10 +103,6 @@ Possible reasons to make changes:
   performance. The disk usage change of this method has not yet been
   quantified.
 
-* Another reason to do it would be improving git-annex to use vector clocks,
-  instead of its current assumption that client's clocks are close enough to
-  accurate. This would presumably change the contents of the files.
-
 * While not a sufficient reason on its own, the best practices for file
   formats in the git-annex branch has evolved over time, and there are some
   files that have unusual formats for historical reasons. Other files have
