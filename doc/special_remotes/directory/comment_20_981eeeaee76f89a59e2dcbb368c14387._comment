@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 20"
+ date="2021-08-06T06:02:38Z"
+ content="""
+Note that `git-annex-import` has a `--no-content` switch.
+"""]]
