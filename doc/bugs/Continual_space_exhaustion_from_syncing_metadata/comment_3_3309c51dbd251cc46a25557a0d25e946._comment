@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="jgsuess@732b8c62c50d8595d7b1d58eea11e5019c2308b1"
+ nickname="jgsuess"
+ avatar="http://cdn.libravatar.org/avatar/35a99d1b5df046b206807941ce9795d3"
+ subject="Automatic watch for the heuristic"
+ date="2021-08-07T12:25:02Z"
+ content="""
+It seems there is a good heuristic based on the object size. It is given in this thread. Could this check not be used in annex automatic syncing modes to avoid this problem. I have run into it several times now and recovery, while possible, is time-consuming and messy.
+"""]]
