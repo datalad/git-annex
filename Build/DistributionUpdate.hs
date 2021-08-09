@@ -117,14 +117,14 @@ getbuild repodir (url, f) = do
 	versionchar c = isAlphaNum c || c == '.' || c == '-'
 
 makeinfos :: [(FilePath, Version)] -> Version -> Annex [([Char], Maybe GitAnnexDistribution)]
-makeinfos updated version = do
+makeinfos updated changelogversion = do
 	mapM_ (\f -> inRepo $ runBool [Param "annex", Param "add", File f]) (map fst updated)
 	void $ inRepo $ runBool 
 		[ Param "commit"
 		, Param "-a"
 		, Param ("-S" ++ signingKey)
 		, Param "-m"
-		, Param $ "publishing git-annex " ++ version
+		, Param $ "publishing git-annex " ++ descversion
 		]
 	now <- liftIO getCurrentTime
 	liftIO $ putStrLn $ "building info files"
@@ -150,7 +150,7 @@ makeinfos updated version = do
 		[ Param "commit"
 		, Param ("-S" ++ signingKey)
 		, Param "-m"
-		, Param $ "updated info files for git-annex " ++ version
+		, Param $ "updated info files for git-annex " ++ descversion
 		]
 	void $ inRepo $ runBool
 		[ Param "annex"
@@ -174,7 +174,8 @@ makeinfos updated version = do
   where
 	outofdate (_, md) = case md of
 		Nothing -> True
-		Just d -> distributionVersion d /= version
+		Just d -> distributionVersion d /= changelogversion
+	descversion = unwords (nub (map snd updated))
 
 getRepoDir :: IO FilePath
 getRepoDir = do
