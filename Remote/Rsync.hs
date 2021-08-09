@@ -76,7 +76,7 @@ gen r u rc gc rs = do
 		fromMaybe (giveup "missing rsyncurl") $ remoteAnnexRsyncUrl gc
 	let o = genRsyncOpts c gc transport url
 	let islocal = rsyncUrlIsPath $ rsyncUrl o
-	return $ Just $ specialRemote' (specialRemoteCfg c) c
+	return $ Just $ specialRemote c
 		(fileStorer $ store o)
 		(fileRetriever $ retrieve o)
 		(remove o)
