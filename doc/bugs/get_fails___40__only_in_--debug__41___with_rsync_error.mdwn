@@ -79,3 +79,5 @@ I just merged freshier update of conda-forge to 8.20210803 -- will try that one 
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]] --[[Joey]]
