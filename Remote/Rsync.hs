@@ -76,10 +76,7 @@ gen r u rc gc rs = do
 		fromMaybe (giveup "missing rsyncurl") $ remoteAnnexRsyncUrl gc
 	let o = genRsyncOpts c gc transport url
 	let islocal = rsyncUrlIsPath $ rsyncUrl o
-	let specialcfg = (specialRemoteCfg c)
-		-- Rsync displays its own progress.
-		{ displayProgress = False }
-	return $ Just $ specialRemote' specialcfg c
+	return $ Just $ specialRemote' (specialRemoteCfg c) c
 		(fileStorer $ store o)
 		(fileRetriever $ retrieve o)
 		(remove o)
@@ -381,13 +378,12 @@ showResumable a = ifM a
 
 rsyncRemote :: Direction -> RsyncOpts -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
 rsyncRemote direction o m params = do
-	showOutput -- make way for progress bar
 	opts <- mkopts
 	let ps = opts ++ Param "--progress" : params
 	case m of
 		Nothing -> liftIO $ rsync ps
 		Just meter -> do
-			oh <- mkOutputHandler
+			oh <- mkOutputHandlerQuiet
 			liftIO $ rsyncProgress oh meter ps
   where
 	mkopts

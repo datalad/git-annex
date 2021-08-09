@@ -6,6 +6,8 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
     rather than needing to be advanced each time a new change is made.
   * Misuse of GIT_ANNEX_VECTOR_CLOCK will no longer confuse git-annex.
   * add: When adding a dotfile, avoid treating its name as an extension.
+  * rsync special remote: Stop displaying rsync progress, and use
+    git-annex's own progress display.
 
  -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
 
