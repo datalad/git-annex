@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+I have been trying to get to the bottom of it but failed
+
+Seems to relate to the version and/or build of git-annex on remote end, but happens whenever on remote it is a conda-forge build 8.20210621-g91f9aac 
+
+Whenever I can get/drop without `--debug`, with `--debug` it fails:
+
+```
+(git-annex)lena:/tmp/testds-mit[master]git-annex
+$> git annex get 123                                
+get 123 (from origin...) 
+ok
+(recording state in git...)
+1 11897.....................................:Fri 06 Aug 2021 06:09:05 PM EDT:.
+(git-annex)lena:/tmp/testds-mit[master]git-annex
+$> git annex drop 123
+drop 123 (locking origin...) ok
+(recording state in git...)
+1 11898.....................................:Fri 06 Aug 2021 06:09:11 PM EDT:.
+(git-annex)lena:/tmp/testds-mit[master]git-annex
+$> git annex get 123 --debug
+[2021-08-06 18:09:22.424837137] (Utility.Process) process [1488170] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2021-08-06 18:09:22.437700889] (Utility.Process) process [1488170] done ExitSuccess
+[2021-08-06 18:09:22.438748331] (Utility.Process) process [1488171] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","refs/heads/master"]
+[2021-08-06 18:09:22.449949392] (Utility.Process) process [1488171] done ExitSuccess
+[2021-08-06 18:09:22.451491273] (Utility.Process) process [1488172] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","--stage","-z","--","123"]
+[2021-08-06 18:09:22.45371749] (Utility.Process) process [1488173] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2021-08-06 18:09:22.455744285] (Utility.Process) process [1488174] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2021-08-06 18:09:22.458678421] (Utility.Process) process [1488175] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+get 123 [2021-08-06 18:09:22.471519462] (Utility.Process) process [1488176] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2021-08-06 18:09:22.479244675] (Utility.Process) process [1488176] done ExitSuccess
+[2021-08-06 18:09:22.480965615] (Utility.Process) process [1488177] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2021-08-06 18:09:22.494689644] (Utility.Process) process [1488177] done ExitSuccess
+[2021-08-06 18:09:22.496859969] (Utility.Process) process [1488178] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..b1854b845d5ab7dbae4f50607ae02b76ae526716","--pretty=%H","-n1"]
+[2021-08-06 18:09:22.505499833] (Utility.Process) process [1488178] done ExitSuccess
+[2021-08-06 18:09:22.507468513] (Utility.Process) process [1488179] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..83d0262dcb3d3abf7f64ce7079e5d6e4a27c2293","--pretty=%H","-n1"]
+[2021-08-06 18:09:22.517489766] (Utility.Process) process [1488179] done ExitSuccess
+[2021-08-06 18:09:22.519480403] (Utility.Process) process [1488180] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2021-08-06 18:09:22.519793644] (Utility.Process) process [1488181] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+(from origin...) 
+[2021-08-06 18:09:22.524141345] (Utility.Process) process [1488182] read: ssh ["-o","BatchMode=true","-S",".git/annex/ssh/openmind7.mit.edu","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","openmind7.mit.edu","true"]
+[2021-08-06 18:09:24.650559322] (Utility.Process) process [1488182] done ExitSuccess
+[2021-08-06 18:09:24.651134161] (Utility.Process) process [1488187] chat: ssh ["openmind7.mit.edu","-S",".git/annex/ssh/openmind7.mit.edu","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/~/tmp/testds' '--debug' '339c2fc7-df7a-44fd-97eb-5a2c41ac8a0a' --uuid f30e2969-4ddf-4edb-ba45-37c455816c9a"]
+[2021-08-06 18:09:24.80528113] (P2P.IO) [ssh connection Just 1488187] [ThreadId 4] P2P > ERROR auth failed
+[2021-08-06 18:09:24.84393255] (Utility.Process) process [1488187] done ExitSuccess
+[2021-08-06 18:09:24.846367147] (Utility.Process) process [1488189] read: rsync ["--progress","--inplace","--perms","-e","'ssh' 'openmind7.mit.edu' '-S' '.git/annex/ssh/openmind7.mit.edu' '-o' 'ControlMaster=auto' '-o' 'ControlPersist=yes' '-T' 'git-annex-shell ''sendkey'' ''/~/tmp/testds'' ''--debug'' ''MD5E-s0--d41d8cd98f00b204e9800998ecf8427e'' --uuid f30e2969-4ddf-4edb-ba45-37c455816c9a ''--'' ''remoteuuid=339c2fc7-df7a-44fd-97eb-5a2c41ac8a0a'' ''unlocked='' ''direct='' ''associatedfile=123'' ''--'''","--","dummy:",".git/annex/tmp/MD5E-s0--d41d8cd98f00b204e9800998ecf8427e"]
+protocol version mismatch -- is your shell clean?
+(see the rsync man page for an explanation)
+rsync error: protocol incompatibility (code 2) at compat.c(178) [Receiver=3.1.3]
+[2021-08-06 18:09:24.970785079] (Utility.Process) process [1488189] done ExitFailure 2
+rsync exited 2
+
+  rsync failed -- run git annex again to resume file transfer
+
+  Transfer failed
+[2021-08-06 18:09:25.014462898] (Utility.Process) process [1488180] done ExitSuccess
+[2021-08-06 18:09:25.016852848] (Utility.Process) process [1488181] done ExitSuccess
+
+  Unable to access these remotes: origin
+[2021-08-06 18:09:25.021878961] (Utility.Process) process [1488191] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2021-08-06 18:09:25.025537927] (Utility.Process) process [1488192] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+
+  No other repository is known to contain the file.
+failed
+[2021-08-06 18:09:25.038970056] (Utility.Process) process [1488191] done ExitSuccess
+[2021-08-06 18:09:25.040408598] (Utility.Process) process [1488192] done ExitSuccess
+[2021-08-06 18:09:25.040589952] (Utility.Process) process [1488175] done ExitSuccess
+[2021-08-06 18:09:25.040701306] (Utility.Process) process [1488174] done ExitSuccess
+[2021-08-06 18:09:25.040787814] (Utility.Process) process [1488173] done ExitSuccess
+[2021-08-06 18:09:25.040861945] (Utility.Process) process [1488172] done ExitSuccess
+[2021-08-06 18:09:25.041785909] (Utility.Process) process [1488193] read: ssh ["-O","stop","-S","openmind7.mit.edu","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"]
+[2021-08-06 18:09:25.061503656] (Utility.Process) process [1488193] done ExitSuccess
+get: 1 failed
+
+```
+
+I just merged freshier update of conda-forge to 8.20210803 -- will try that one later 
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]

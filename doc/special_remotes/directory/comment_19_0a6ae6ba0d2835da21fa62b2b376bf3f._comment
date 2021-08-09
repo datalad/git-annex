@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="Rob"
+ avatar="http://cdn.libravatar.org/avatar/1d12b1e7e4d6ef1dd57cd9f3ec848dc7"
+ subject="creating directory special remote &quot;in-place&quot;"
+ date="2021-08-05T18:13:35Z"
+ content="""
+I'm using git-annex for backing up a variety of data, with several different remotes (including a USB drive for backup, rsync for encrypted cloud backup, etc).  I have one particular use case that I am trying to figure out how to implement:
+
+Pictures, Music, and Video are stored on a WD MyCloud under three corresponding folders.  They are accessible via NFS, as well as via AFP; I specifically mount them on my laptop via NFS.  I want to be able to access the files in the following ways:
+
+- Store new photos from other sources, including my laptop, using git-annex.
+- Have available the list of files on my laptop repository, in git-annex... i.e. like any repository.
+- Retain all the file contents on the WD MyCloud... i.e. like a special remote.
+- ONLY pull file contents to the laptop (or other repositories) if specifically requested (i.e. I don't want a sync to cause things to get pulled to the laptop).
+- When photos are pulled from the special remote, they go into ~/annex/photos (i.e. a different name than the folder on the remote).
+- I want to be able to access the files on the WD MyCloud \"normally\" from other computers, TVs, etc.  I realize there's some 'danger' here.  But I wanted to keep normal file trees for the special remote, not the hash-based filenames with symlinks.
+
+So what I decided I needed was a directory special remote, with both the exporttree and importtree options.  So I created the special remote using something like:
+
+    git annex initremote wdmycloud-pics directory=/net/wdmycloud/nfs/Public/Shared\ Pictures encryption=none exportree=yes importtree=yes
+
+On my laptop's repository, I executed the following:
+
+    git annex import master:photos --from wdmycloud-pics
+    git merge wdmycloud-pics/master
+
+Problem:
+- This imports the content from the special remote, into the laptop's repository.  I don't want that.
+
+I do realize that my main git-annex repository on the laptop probably has to actually download all of the files in order to compute their hashes.  However, I do not want them to stay on the laptop, as there is nowhere's near enough space for all of them.  I did try:
+
+    git-annex wanted wdmycloud-pics \"exclude=photos/*\"
+
+However, this results in none of the files on the WD MyCloud actually getting processed.
+
+What am I missing?
+
+Thanks!
+-Rob
+
+"""]]

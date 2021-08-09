@@ -1,0 +1,43 @@
+### Please describe the problem.
+
+it seems that git-annex/linux/current/git-annex-standalone-amd64.tar.gz which is claimed in the last commit to be 8.20210804 is really a 8.20210715-g6e67ea5d7 
+
+
+### What steps will reproduce the problem?
+
+```
+(git-annex)lena:~datalad/distributions/downloads.kitenet.net[master]git-annex
+$> git log git-annex/linux/current/git-annex-standalone-amd64.tar.gz | head 
+commit 9670be5007ab9a084e9f7a47c9d315555b477ca0
+Author: Joey Hess <joeyh@joeyh.name>
+Date:   Tue Aug 3 12:30:46 2021 -0400
+
+    publishing git-annex 8.20210804
+
+commit 780e402a5f0fd188e2edef61303db023f492459c
+Author: Joey Hess <joeyh@joeyh.name>
+Date:   Wed Jul 14 12:33:03 2021 -0400
+
+$> ls -l git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+lrwxrwxrwx 1 yoh yoh 215 Aug  6 17:35 git-annex/linux/current/git-annex-standalone-amd64.tar.gz -> ../../../.git/annex/objects/9q/67/SHA256E-s51281961--c2419981d633d598b760c89f5a309d1ec7ec66f5b8a1e734a7239b2d4c7a3d21.tar.gz/SHA256E-s51281961--c2419981d633d598b760c89f5a309d1ec7ec66f5b8a1e734a7239b2d4c7a3d21.tar.gz
+
+$> tar -xzf git-annex/linux/current/git-annex-standalone-amd64.tar.gz 
+
+$> lst       
+total 4
+drwx------ 1 yoh yoh  472 Aug  6 17:48 git-annex.linux/
+...
+
+$> ./git-annex.linux/git-annex version | head
+git-annex version: 8.20210715-g6e67ea5d7
+...
+```
+
+also note that it is "publishing git-annex 8.20210804" (on 0803) and there is no `8.20210804` version but there is 
+
+```
+$> git tag | grep 202108
+8.20210803
+```
+
+so it seems odd
