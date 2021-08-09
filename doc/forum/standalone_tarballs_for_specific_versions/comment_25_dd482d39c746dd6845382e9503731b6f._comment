@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 25"""
+ date="2021-08-09T19:50:11Z"
+ content="""
+It would take a significant amount of extra work, on an ongoing basis, for
+the version output by the standalone build to match the version used for
+the release. I would need to, after making a release, go build git-annex
+against that tag, on multiple OS's. It is much easier to simply have an
+autobuilder that builds current master, and when I make a release, ship the
+most recent build.
+
+It's also some ongoing amount of work to respond to repeated
+questions about it, when people notice that the version strings don't
+perfectly match up, but I guess I've answered your questions about it now
+and you won't be contributing to that workload further. Right?
+
+(The third way I could reduce the workload, which does seem more appealing
+for some reason right now, would be to stop offering release builds.)
+"""]]
