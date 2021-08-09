@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-08-09T16:52:53Z"
+ content="""
+It seems likely to me that the directory you're trying to use git-annex in
+either no longer exists, or is in some other strange state.
+
+I can get close to this error message by asking for 
+the contents of the directory "/etc/passwd". Of course,
+that file is not a directory.
+
+	ghci> System.Directory.getDirectoryContents "/etc/passwd"
+	*** Exception: /etc/passwd: getDirectoryContents:openDirStream: inappropriate type (Not a directory)
+
+I have not found a way to make readDirStream throw the error, but this
+shows that the problem is basically something to do with getting directory
+contents.
+
+stracing git-annex might shed some more light on how the `readdir()`
+syscall is failing.
+"""]]
