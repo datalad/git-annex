@@ -26,7 +26,7 @@ another request.
 
 ## Authentication
 
-The protocol genernally starts with authentication. However, if
+The protocol generally starts with authentication. However, if
 authentication already occurs on another layer, as is the case with
 git-annex-shell, authentication will be skipped.
 
