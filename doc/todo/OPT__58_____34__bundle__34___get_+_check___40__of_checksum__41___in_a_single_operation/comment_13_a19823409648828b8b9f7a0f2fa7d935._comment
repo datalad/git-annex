@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2021-08-11T18:16:41Z"
+ content="""
+Some special remotes now support incremental update. So far, limited to
+ones that use the byteRetriever interface.
+Others, that use fileRetriever, including external special remotes, still
+need work.
+"""]]

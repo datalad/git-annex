@@ -10,8 +10,7 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
     git-annex's own progress display.
   * Several special remotes verify content while it is being retrieved,
     avoiding a separate checksum pass. They are: S3, bup, ddar,
-    and gcrypt (with a local repository). This optimisation is not yet
-    available when chunks are used.
+    and gcrypt (with a local repository).
 
  -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
 

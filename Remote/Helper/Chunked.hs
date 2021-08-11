@@ -269,33 +269,28 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 		-- that are likely not there.
 		iv <- startVerifyKeyContentIncrementally vc basek
 		tryNonAsync (getunchunked iv) >>= \case
-			Right Nothing -> return UnVerified
-			Right (Just iv') ->
-				ifM (liftIO $ finalizeIncremental iv')
-					( return Verified
-					, return UnVerified
-					)
-			Left e -> do
-				go (Just e) =<< chunkKeysOnly u chunkconfig basek
-				return UnVerified
-	| otherwise = do
-		go Nothing =<< chunkKeys u chunkconfig basek
-		return UnVerified
+			Right r -> finalize r
+			Left e -> go (Just e) 
+				=<< chunkKeysOnly u chunkconfig basek
+	| otherwise = go Nothing 
+		=<< chunkKeys u chunkconfig basek
   where
 	go pe cks = do
 		let ls = map chunkKeyList cks
 		currsize <- liftIO $ catchMaybeIO $ getFileSize (toRawFilePath dest)
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
-			then noop -- dest is already complete
-			else firstavail pe currsize ls'
+			then finalize Nothing -- dest is already complete
+			else finalize =<< firstavail pe currsize ls'
 
 	firstavail Nothing _ [] = giveup "unable to determine the chunks to use for this remote"
 	firstavail (Just e) _ [] = throwM e
 	firstavail pe currsize ([]:ls) = firstavail pe currsize ls
 	firstavail _ currsize ((k:ks):ls)
-		| k == basek = void (getunchunked Nothing)
-			`catchNonAsync` (\e -> firstavail (Just e) currsize ls)
+		| k == basek = do
+			iv <- startVerifyKeyContentIncrementally vc basek
+			getunchunked iv
+				`catchNonAsync` (\e -> firstavail (Just e) currsize ls)
 		| otherwise = do
 			let offset = resumeOffset currsize k
 			let p = maybe basep
@@ -303,36 +298,42 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 				offset
 			v <- tryNonAsync $
 				retriever (encryptor k) p $ \content ->
-					bracketIO (maybe opennew openresume offset) hClose $ \h -> do
-						void $ retrieved Nothing (Just h) p content
+					bracket (maybe opennew openresume offset) (liftIO . hClose . fst) $ \(h, iv) -> do
+						iv' <- retrieved iv (Just h) p content
 						let sz = toBytesProcessed $
 							fromMaybe 0 $ fromKey keyChunkSize k
-						getrest p h sz sz ks
+						getrest p h iv' sz sz ks
 			case v of
 				Left e
 					| null ls -> throwM e
 					| otherwise -> firstavail (Just e) currsize ls
 				Right r -> return r
 
-	getrest _ _ _ _ [] = noop
-	getrest p h sz bytesprocessed (k:ks) = do
+	getrest _ _ iv _ _ [] = return iv
+	getrest p h iv sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
 		liftIO $ p' zeroBytesProcessed
-		retriever (encryptor k) p' $ 
-			void . retrieved Nothing (Just h) p'
-		getrest p h sz (addBytesProcessed bytesprocessed sz) ks
+		iv' <- retriever (encryptor k) p' $ 
+			retrieved iv (Just h) p'
+		getrest p h iv' sz (addBytesProcessed bytesprocessed sz) ks
 
 	getunchunked iv = retriever (encryptor basek) basep $
 		retrieved iv Nothing basep
 
-	opennew = openBinaryFile dest WriteMode
+	opennew = do
+		iv <- startVerifyKeyContentIncrementally vc basek
+		h <- liftIO $ openBinaryFile dest WriteMode
+		return (h, iv)
 
 	-- Open the file and seek to the start point in order to resume.
 	openresume startpoint = do
 		-- ReadWriteMode allows seeking; AppendMode does not.
-		h <- openBinaryFile dest ReadWriteMode
-		hSeek h AbsoluteSeek startpoint
-		return h
+		h <- liftIO $ openBinaryFile dest ReadWriteMode
+		liftIO $ hSeek h AbsoluteSeek startpoint
+		-- No incremental verification when resuming, since that
+		-- would need to read up to the startpoint.
+		let iv = Nothing
+		return (h, iv)
 
 	{- Progress meter updating is a bit tricky: If the Retriever
 	 - populates a file, it is responsible for updating progress
@@ -349,6 +350,13 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 		p'
 			| isByteContent content = Just p
 			| otherwise = Nothing
+	
+	finalize Nothing = return UnVerified
+	finalize (Just iv) = 
+		ifM (liftIO $ finalizeIncremental iv)
+			( return Verified
+			, return UnVerified
+			)
 
 {- Writes retrieved file content to the provided Handle, decrypting it
  - first if necessary.
