@@ -11,7 +11,6 @@
 module Utility.FileSystemEncoding (
 	useFileSystemEncoding,
 	fileEncoding,
-	withFilePath,
 	RawFilePath,
 	fromRawFilePath,
 	toRawFilePath,
@@ -80,14 +79,6 @@ fileEncoding h = hSetEncoding h =<< Encoding.getFileSystemEncoding
 #else
 fileEncoding h = hSetEncoding h Encoding.utf8
 #endif
-
-{- Marshal a Haskell FilePath into a NUL terminated C string using temporary
- - storage. The FilePath is encoded using the filesystem encoding,
- - reversing the decoding that should have been done when the FilePath
- - was obtained. -}
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath fp f = Encoding.getFileSystemEncoding
-	>>= \enc -> GHC.withCString enc fp f
 
 {- Encodes a FilePath into a String, applying the filesystem encoding.
  -
