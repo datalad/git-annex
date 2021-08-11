@@ -1,0 +1,10 @@
+I'm not sure if the feature I want exists in git-annex, so this might be a question for the wishlist.
+
+Can I use a cloud server as a middle-man for pulling files from a host that's unreachable at the moment? My situation is:
+  - Desktop, behind cg-nat, can talk to Cloud. Multiple TB of files.
+  - Cloud provider, generally accessible, just a few GB of space.
+  - Notebook, when at home can talk to desktop, on the go can only talk to cloud.
+
+I would like to (in the notebook), request a file to the cloud, and have the cloud pull it from the desktop to be retrieved by the notebook (Or the cloud broker the double-NAT hole punching, but that's much harder).
+
+My current (crude) solution is a script running in the desktop that every few minutes reads a textfile in the cloud with the paths that should be pushed there, so when I need a file in the notebook I add its path to the textfile, and after a few minutes I can sync and pull it from the cloud. But is there a more automated solution?
