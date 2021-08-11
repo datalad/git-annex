@@ -8,6 +8,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Remote.Directory.LegacyChunked where
 

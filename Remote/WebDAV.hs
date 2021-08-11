@@ -7,6 +7,7 @@
 
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Remote.WebDAV (remote, davCreds, configUrl) where
 

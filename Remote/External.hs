@@ -7,6 +7,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Remote.External (remote) where
 
@@ -66,17 +67,19 @@ gen r u rc gc rs
 	| externaltype == "readonly" = do
 		c <- parsedRemoteConfig remote rc
 		cst <- remoteCost gc expensiveRemoteCost
-		mk c cst GloballyAvailable
-			readonlyStorer
-			retrieveUrl
-			readonlyRemoveKey
-			checkKeyUrl
+		let rmt = mk c cst GloballyAvailable
 			Nothing
 			(externalInfo externaltype)
 			Nothing
 			Nothing
 			exportUnsupported
 			exportUnsupported
+		return $ Just $ specialRemote c
+			readonlyStorer
+			retrieveUrl
+			readonlyRemoveKey
+			checkKeyUrl
+			rmt
 	| otherwise = do
 		c <- parsedRemoteConfig remote rc
 		external <- newExternal externaltype (Just u) c (Just gc)
@@ -103,20 +106,22 @@ gen r u rc gc rs
 		let cheapexportsupported = if exportsupported
 			then exportIsSupported
 			else exportUnsupported
-		mk c cst avail
-			(storeKeyM external)
-			(retrieveKeyFileM external)
-			(removeKeyM external)
-			(checkPresentM external)
+		let rmt = mk c cst avail
 			(Just (whereisKeyM external))
 			(getInfoM external)
 			(Just (claimUrlM external))
 			(Just (checkUrlM external))
 			exportactions
 			cheapexportsupported
+		return $ Just $ specialRemote c
+			(storeKeyM external)
+			(retrieveKeyFileM external)
+			(removeKeyM external)
+			(checkPresentM external)
+			rmt
   where
-	mk c cst avail tostore toretrieve toremove tocheckkey towhereis togetinfo toclaimurl tocheckurl exportactions cheapexportsupported = do
-		let rmt = Remote
+	mk c cst avail towhereis togetinfo toclaimurl tocheckurl exportactions cheapexportsupported =
+		Remote
 			{ uuid = u
 			, cost = cst
 			, name = Git.repoDescribe r
@@ -154,12 +159,6 @@ gen r u rc gc rs
 			, checkUrl = tocheckurl
 			, remoteStateHandle = rs
 			}
-		return $ Just $ specialRemote c
-			tostore
-			toretrieve
-			toremove
-			tocheckkey
-			rmt
 	externaltype = fromMaybe (giveup "missing externaltype") (remoteAnnexExternalType gc)
 
 externalSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)

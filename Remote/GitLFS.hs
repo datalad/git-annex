@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE CPP #-}
 
 module Remote.GitLFS (remote, gen, configKnownUrl) where

@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE RankNTypes #-}
+
 module Remote.Hook (remote) where
 
 import Annex.Common

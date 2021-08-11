@@ -5,6 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Remote.Helper.Special (
@@ -111,7 +112,7 @@ fileRetriever a k m callback = do
 -- A Retriever that generates a lazy ByteString containing the Key's
 -- content, and passes it to a callback action which will fully consume it
 -- before returning.
-byteRetriever :: (Key -> (L.ByteString -> Annex ()) -> Annex ()) -> Retriever
+byteRetriever :: (Key -> (L.ByteString -> Annex a) -> Annex a) -> Key -> MeterUpdate -> (ContentSource -> Annex a) -> Annex a
 byteRetriever a k _m callback = a k (callback . ByteContent)
 
 {- The base Remote that is provided to specialRemote needs to have
@@ -216,11 +217,12 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 		enck = maybe id snd enc
 
 	-- call retriever to get chunks; decrypt them; stream to dest file
-	retrieveKeyFileGen k dest p enc = do
+	retrieveKeyFileGen k dest p enc =
 		displayprogress p k Nothing $ \p' ->
-			retrieveChunks retriever (uuid baser) chunkconfig
-				enck k dest p' enc encr
-		return UnVerified
+			retrieveChunks retriever
+				(uuid baser)
+				(RemoteVerify baser) 
+				chunkconfig enck k dest p' enc encr
 	  where
 		enck = maybe id snd enc
 

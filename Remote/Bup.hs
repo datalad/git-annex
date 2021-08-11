@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE RankNTypes #-}
+
 module Remote.Bup (remote) where
 
 import qualified Data.Map as M
@@ -184,10 +186,11 @@ retrieve buprepo = byteRetriever $ \k sink -> do
 	bracketIO (createProcess p) cleanupProcess (go sink p)
   where
 	go sink p (_, Just h, _, pid) = do
-		() <- sink =<< liftIO (L.hGetContents h)
+		r <- sink =<< liftIO (L.hGetContents h)
 		liftIO $ do
 			hClose h
 			forceSuccessProcess p pid
+		return r
 	go _ _ _ = error "internal"
 
 {- Cannot revert having stored a key in bup, but at least the data for the

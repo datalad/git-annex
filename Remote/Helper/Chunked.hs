@@ -1,9 +1,11 @@
 {- git-annex chunked remotes
  -
- - Copyright 2014-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE RankNTypes #-}
 
 module Remote.Helper.Chunked (
 	ChunkSize,
@@ -30,6 +32,7 @@ import Utility.Metered
 import Crypto
 import Backend (isStableKey)
 import Annex.SpecialRemote.Config
+import Annex.Verify
 import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
@@ -250,6 +253,7 @@ retrieveChunks
 	:: LensGpgEncParams encc
 	=> Retriever
 	-> UUID
+	-> VerifyConfig
 	-> ChunkConfig
 	-> EncKey
 	-> Key
@@ -257,15 +261,26 @@ retrieveChunks
 	-> MeterUpdate
 	-> Maybe (Cipher, EncKey)
 	-> encc
-	-> Annex ()
-retrieveChunks retriever u chunkconfig encryptor basek dest basep enc encc
-	| noChunks chunkconfig =
+	-> Annex Verification
+retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
+	| noChunks chunkconfig = do
 		-- Optimisation: Try the unchunked key first, to avoid
 		-- looking in the git-annex branch for chunk counts
 		-- that are likely not there.
-		getunchunked `catchNonAsync`
-			(\e -> go (Just e) =<< chunkKeysOnly u chunkconfig basek)
-	| otherwise = go Nothing =<< chunkKeys u chunkconfig basek
+		iv <- startVerifyKeyContentIncrementally vc basek
+		tryNonAsync (getunchunked iv) >>= \case
+			Right Nothing -> return UnVerified
+			Right (Just iv') ->
+				ifM (liftIO $ finalizeIncremental iv')
+					( return Verified
+					, return UnVerified
+					)
+			Left e -> do
+				go (Just e) =<< chunkKeysOnly u chunkconfig basek
+				return UnVerified
+	| otherwise = do
+		go Nothing =<< chunkKeys u chunkconfig basek
+		return UnVerified
   where
 	go pe cks = do
 		let ls = map chunkKeyList cks
@@ -279,7 +294,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep enc encc
 	firstavail (Just e) _ [] = throwM e
 	firstavail pe currsize ([]:ls) = firstavail pe currsize ls
 	firstavail _ currsize ((k:ks):ls)
-		| k == basek = getunchunked
+		| k == basek = void (getunchunked Nothing)
 			`catchNonAsync` (\e -> firstavail (Just e) currsize ls)
 		| otherwise = do
 			let offset = resumeOffset currsize k
@@ -289,7 +304,7 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep enc encc
 			v <- tryNonAsync $
 				retriever (encryptor k) p $ \content ->
 					bracketIO (maybe opennew openresume offset) hClose $ \h -> do
-						retrieved (Just h) p content
+						void $ retrieved Nothing (Just h) p content
 						let sz = toBytesProcessed $
 							fromMaybe 0 $ fromKey keyChunkSize k
 						getrest p h sz sz ks
@@ -303,10 +318,12 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep enc encc
 	getrest p h sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
 		liftIO $ p' zeroBytesProcessed
-		retriever (encryptor k) p' $ retrieved (Just h) p'
+		retriever (encryptor k) p' $ 
+			void . retrieved Nothing (Just h) p'
 		getrest p h sz (addBytesProcessed bytesprocessed sz) ks
 
-	getunchunked = retriever (encryptor basek) basep $ retrieved Nothing basep
+	getunchunked iv = retriever (encryptor basek) basep $
+		retrieved iv Nothing basep
 
 	opennew = openBinaryFile dest WriteMode
 
@@ -326,21 +343,27 @@ retrieveChunks retriever u chunkconfig encryptor basek dest basep enc encc
 	 - Instead, writeRetrievedContent is passed a meter to update
 	 - as it consumes the ByteString.
 	 -}
-	retrieved h p content = writeRetrievedContent dest enc encc h p' content
+	retrieved iv h p content =
+		writeRetrievedContent dest enc encc h p' content iv
 	  where
 		p'
 			| isByteContent content = Just p
 			| otherwise = Nothing
 
-{- Writes retrieved file content into the provided Handle, decrypting it
+{- Writes retrieved file content to the provided Handle, decrypting it
  - first if necessary.
  - 
  - If the remote did not store the content using chunks, no Handle
- - will be provided, and it's up to us to open the destination file.
+ - will be provided, and instead the content will be written to the
+ - dest file.
  -
  - Note that when neither chunking nor encryption is used, and the remote
  - provides FileContent, that file only needs to be renamed
  - into place. (And it may even already be in the right place..)
+ -
+ - The IncrementalVerifier is updated as the file content is read.
+ - If it was not able to be updated, due to the file not needing to be read,
+ - Nothing will be returned.
  -}
 writeRetrievedContent
 	:: LensGpgEncParams encc
@@ -350,31 +373,45 @@ writeRetrievedContent
 	-> Maybe Handle
 	-> Maybe MeterUpdate
 	-> ContentSource
-	-> Annex ()
-writeRetrievedContent dest enc encc mh mp content = case (enc, mh, content) of
+	-> Maybe IncrementalVerifier
+	-> Annex (Maybe IncrementalVerifier)
+writeRetrievedContent dest enc encc mh mp content miv = case (enc, mh, content) of
 	(Nothing, Nothing, FileContent f)
-		| f == dest -> noop
-		| otherwise -> liftIO $ moveFile f dest
+		| f == dest -> return Nothing
+		| otherwise -> do
+			liftIO $ moveFile f dest
+			return Nothing
 	(Just (cipher, _), _, ByteContent b) -> do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		decrypt cmd encc cipher (feedBytes b) $
 			readBytes write
+		return miv
 	(Just (cipher, _), _, FileContent f) -> do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		withBytes content $ \b ->
 			decrypt cmd encc cipher (feedBytes b) $
 				readBytes write
 		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
+		return miv
 	(Nothing, _, FileContent f) -> do
 		withBytes content write
 		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
-	(Nothing, _, ByteContent b) -> write b
+		return miv
+	(Nothing, _, ByteContent b) -> do
+		write b
+		return miv
   where
 	write b = case mh of
-		Just h -> liftIO $ b `streamto` h
-		Nothing -> liftIO $ bracket opendest hClose (b `streamto`)
-	streamto b h = case mp of
-		Just p -> meteredWrite p (S.hPut h) b
+		Just h -> liftIO $ write' b h
+		Nothing -> liftIO $ bracket opendest hClose (write' b)
+	write' b h = case mp of
+		Just p -> 
+			let writer = case miv of
+				Just iv -> \s -> do
+					updateIncremental iv s
+					S.hPut h s
+				Nothing -> S.hPut h
+			in meteredWrite p writer b
 		Nothing -> L.hPut h b
 	opendest = openBinaryFile dest WriteMode
 

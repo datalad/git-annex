@@ -7,6 +7,7 @@
  -}
 
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE RankNTypes #-}
 
 module Remote.Ddar (remote) where
 
@@ -166,10 +167,11 @@ retrieve ddarrepo = byteRetriever $ \k sink -> do
 	bracketIO (createProcess p) cleanupProcess (go sink p)
   where
 	go sink p (_, Just h, _, pid) = do
-		() <- sink =<< liftIO (L.hGetContents h)
+		r <- sink =<< liftIO (L.hGetContents h)
 		liftIO $ do
 			hClose h
 			forceSuccessProcess p pid
+		return r
 	go _ _ _ = error "internal"
 
 remove :: DdarRepo -> Remover

@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE RankNTypes #-}
+
 module Remote.Glacier (remote, jobList, checkSaneGlacierCommand) where
 
 import qualified Data.Map as M
@@ -176,7 +178,7 @@ store' r k b p = go =<< glacierEnv c gc u
 retrieve :: Remote -> Retriever
 retrieve = byteRetriever . retrieve'
 
-retrieve' :: Remote -> Key -> (L.ByteString -> Annex ()) -> Annex ()
+retrieve' :: Remote -> Key -> (L.ByteString -> Annex a) -> Annex a
 retrieve' r k sink = go =<< glacierEnv c gc u
   where
 	c = config r
