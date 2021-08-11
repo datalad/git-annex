@@ -68,13 +68,13 @@ findSpecialRemotes s = do
 		(pure Git.Construct.fromUnknown)
 	match (ConfigKey k) _ =
 		"remote." `S.isPrefixOf` k 
-		&& (".annex-" <> encodeBS' s) `S.isSuffixOf` k
+		&& (".annex-" <> encodeBS s) `S.isSuffixOf` k
 
 {- Sets up configuration for a special remote in .git/config. -}
 gitConfigSpecialRemote :: UUID -> RemoteConfig -> [(String, String)] -> Annex ()
 gitConfigSpecialRemote u c cfgs = do
 	forM_ cfgs $ \(k, v) -> 
-		setConfig (remoteAnnexConfig c (encodeBS' k)) v
+		setConfig (remoteAnnexConfig c (encodeBS k)) v
 	storeUUIDIn (remoteAnnexConfig c "uuid") u
 
 -- RetrievalVerifiableKeysSecure unless overridden by git config.

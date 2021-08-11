@@ -48,10 +48,10 @@ instance ToUUID B.ByteString where
 		| otherwise = UUID b
 
 instance FromUUID String where
-	fromUUID s = decodeBS' (fromUUID s)
+	fromUUID s = decodeBS (fromUUID s)
 
 instance ToUUID String where
-	toUUID s = toUUID (encodeBS' s)
+	toUUID s = toUUID (encodeBS s)
 
 instance FromUUID ConfigValue where
 	fromUUID s = (ConfigValue (fromUUID s))

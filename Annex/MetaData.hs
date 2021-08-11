@@ -72,11 +72,11 @@ genMetaData key file status = do
  - only changes to add the date fields. -}
 dateMetaData :: UTCTime -> MetaData -> MetaData
 dateMetaData mtime old = modMeta old $
-	(SetMeta yearMetaField $ S.singleton $ toMetaValue $ encodeBS' $ show y)
+	(SetMeta yearMetaField $ S.singleton $ toMetaValue $ encodeBS $ show y)
 		`ComposeModMeta`
-	(SetMeta monthMetaField $ S.singleton $ toMetaValue $ encodeBS' $ show m)
+	(SetMeta monthMetaField $ S.singleton $ toMetaValue $ encodeBS $ show m)
 		`ComposeModMeta`
-	(SetMeta dayMetaField $ S.singleton $ toMetaValue $ encodeBS' $ show d)
+	(SetMeta dayMetaField $ S.singleton $ toMetaValue $ encodeBS $ show d)
   where
 	(y, m, d) = toGregorian $ utctDay mtime
 

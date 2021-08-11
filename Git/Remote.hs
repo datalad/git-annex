@@ -37,7 +37,7 @@ remoteKeyToRemoteName :: ConfigKey -> Maybe RemoteName
 remoteKeyToRemoteName (ConfigKey k)
 	| "remote." `S.isPrefixOf` k = 
 		let n = S.intercalate "." $ dropFromEnd 1 $ drop 1 $ S8.split '.' k
-		in if S.null n then Nothing else Just (decodeBS' n)
+		in if S.null n then Nothing else Just (decodeBS n)
 	| otherwise = Nothing
 
 {- Construct a legal git remote name out of an arbitrary input string.
@@ -90,7 +90,7 @@ parseRemoteLocation s repo = ret $ calcloc s
 		| null insteadofs = l
 		| otherwise = replacement ++ drop (S.length bestvalue) l
 	  where
-		replacement = decodeBS' $ S.drop (S.length prefix) $
+		replacement = decodeBS $ S.drop (S.length prefix) $
 			S.take (S.length bestkey - S.length suffix) bestkey
 		(bestkey, bestvalue) = 
 			case maximumBy longestvalue insteadofs of

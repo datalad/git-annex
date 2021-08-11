@@ -35,7 +35,7 @@ describeTransfer :: Transfer -> TransferInfo -> String
 describeTransfer t info = unwords
 	[ show $ transferDirection t
 	, show $ transferUUID t
-	, decodeBS' $ actionItemDesc $ ActionItemAssociatedFile
+	, decodeBS $ actionItemDesc $ ActionItemAssociatedFile
 		(associatedFile info)
 		(transferKey t)
 	, show $ bytesComplete info

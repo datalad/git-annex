@@ -85,7 +85,7 @@ optParser desc = do
 			[bs] -> 
 				let (branch, subdir) = separate (== ':') bs
 				in RemoteImportOptions r
-					(Ref (encodeBS' branch))
+					(Ref (encodeBS branch))
 					(if null subdir then Nothing else Just subdir)
 					content
 					ic

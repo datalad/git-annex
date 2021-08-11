@@ -149,7 +149,7 @@ borgLocal :: BorgRepo -> Bool
 borgLocal (BorgRepo r) = notElem ':' r
 
 borgArchive :: BorgRepo -> BorgArchiveName -> String
-borgArchive (BorgRepo r) n = r ++ "::" ++ decodeBS' n
+borgArchive (BorgRepo r) n = r ++ "::" ++ decodeBS n
 
 absBorgRepo :: BorgRepo -> IO BorgRepo
 absBorgRepo r@(BorgRepo p)

@@ -230,7 +230,7 @@ getGitLog fs os = do
 		[ Param $ Git.fromRef Annex.Branch.fullname
 		, Param "--"
 		] ++ map Param fs
-	return (parseGitRawLog config (map decodeBL' ls), cleanup)
+	return (parseGitRawLog config (map decodeBL ls), cleanup)
 
 -- Parses chunked git log --raw output, which looks something like:
 --

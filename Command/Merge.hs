@@ -39,7 +39,7 @@ seek o
 	| otherwise = do
 		prepMerge
 		forM_ (mergeBranches o) $
-			commandAction . mergeBranch o . Git.Ref . encodeBS'
+			commandAction . mergeBranch o . Git.Ref . encodeBS
 
 mergeAnnexBranch :: CommandStart
 mergeAnnexBranch = starting "merge" ai si $ do

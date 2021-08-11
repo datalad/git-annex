@@ -79,7 +79,7 @@ commonGlobalOptions =
 		-- Also set in git config so it will be passed on to any
 		-- git-annex child processes.
 		, setAnnexState $ Annex.addGitConfigOverride $
-			decodeBS' $ debugconfig <> "=" <> boolConfig' v
+			decodeBS $ debugconfig <> "=" <> boolConfig' v
 		]
 	
 	setdebugfilter v = mconcat
@@ -88,7 +88,7 @@ commonGlobalOptions =
 		-- Also set in git config so it will be passed on to any
 		-- git-annex child processes.
 		, setAnnexState $ Annex.addGitConfigOverride $ 
-			decodeBS' (debugfilterconfig <> "=") ++ v
+			decodeBS (debugfilterconfig <> "=") ++ v
 		]
 	
 	(ConfigKey debugconfig) = annexConfig "debug"

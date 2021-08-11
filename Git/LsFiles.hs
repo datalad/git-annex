@@ -251,7 +251,7 @@ data Unmerged = Unmerged
 unmerged :: [RawFilePath] -> Repo -> IO ([Unmerged], IO Bool)
 unmerged l repo = guardSafeForLsFiles repo $ do
 	(fs, cleanup) <- pipeNullSplit params repo
-	return (reduceUnmerged [] $ catMaybes $ map (parseUnmerged . decodeBL') fs, cleanup)
+	return (reduceUnmerged [] $ catMaybes $ map (parseUnmerged . decodeBL) fs, cleanup)
   where
 	params = 
 		Param "ls-files" :
@@ -277,7 +277,7 @@ parseUnmerged s
 				then Nothing
 				else do
 					treeitemtype <- readTreeItemType (encodeBS rawtreeitemtype)
-					sha <- extractSha (encodeBS' rawsha)
+					sha <- extractSha (encodeBS rawsha)
 					return $ InternalUnmerged (stage == 2) (toRawFilePath file)
 						(Just treeitemtype) (Just sha)
 		_ -> Nothing

@@ -1,6 +1,6 @@
 {- GHC File system encoding handling.
  -
- - Copyright 2012-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -18,35 +18,21 @@ module Utility.FileSystemEncoding (
 	encodeBL,
 	decodeBS,
 	encodeBS,
-	decodeBL',
-	encodeBL',
-	decodeBS',
-	encodeBS',
 	truncateFilePath,
-	s2w8,
-	w82s,
-	c2w8,
-	w82c,
 ) where
 
 import qualified GHC.Foreign as GHC
 import qualified GHC.IO.Encoding as Encoding
-import Foreign.C
 import System.IO
 import System.IO.Unsafe
-import Data.Word
 import System.FilePath.ByteString (RawFilePath, encodeFilePath, decodeFilePath)
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
+import Data.ByteString.Unsafe (unsafePackMallocCStringLen)
 #ifdef mingw32_HOST_OS
 import qualified Data.ByteString.UTF8 as S8
 import qualified Data.ByteString.Lazy.UTF8 as L8
-#else
-import Data.List
-import Utility.Split
 #endif
-
-import Utility.Exception
 
 {- Makes all subsequent Handles that are opened, as well as stdio Handles,
  - use the filesystem encoding, instead of the encoding of the current
@@ -80,32 +66,10 @@ fileEncoding h = hSetEncoding h =<< Encoding.getFileSystemEncoding
 fileEncoding h = hSetEncoding h Encoding.utf8
 #endif
 
-{- Encodes a FilePath into a String, applying the filesystem encoding.
- -
- - There are very few things it makes sense to do with such an encoded
- - string. It's not a legal filename; it should not be displayed.
- - So this function is not exported, but instead used by the few functions
- - that can usefully consume it.
- -
- - This use of unsafePerformIO is belived to be safe; GHC's interface
- - only allows doing this conversion with CStrings, and the CString buffer
- - is allocated, used, and deallocated within the call, with no side
- - effects.
- -
- - If the FilePath contains a value that is not legal in the filesystem
- - encoding, rather than thowing an exception, it will be returned as-is.
- -}
-{-# NOINLINE _encodeFilePath #-}
-_encodeFilePath :: FilePath -> String
-_encodeFilePath fp = unsafePerformIO $ do
-	enc <- Encoding.getFileSystemEncoding
-	GHC.withCString enc fp (GHC.peekCString Encoding.char8)
-		`catchNonAsync` (\_ -> return fp)
-
 {- Decodes a ByteString into a FilePath, applying the filesystem encoding. -}
 decodeBL :: L.ByteString -> FilePath
 #ifndef mingw32_HOST_OS
-decodeBL = encodeW8NUL . L.unpack
+decodeBL = decodeBS . L.toStrict
 #else
 {- On Windows, we assume that the ByteString is utf-8, since Windows
  - only uses unicode for filenames. -}
@@ -115,53 +79,37 @@ decodeBL = L8.toString
 {- Encodes a FilePath into a ByteString, applying the filesystem encoding. -}
 encodeBL :: FilePath -> L.ByteString
 #ifndef mingw32_HOST_OS
-encodeBL = L.pack . decodeW8NUL
+encodeBL = L.fromStrict . encodeBS
 #else
 encodeBL = L8.fromString
 #endif
 
 decodeBS :: S.ByteString -> FilePath
 #ifndef mingw32_HOST_OS
-decodeBS = encodeW8NUL . S.unpack
+-- This is a copy of code from System.FilePath.Internal.decodeFilePath.
+-- However, older versions of that library truncated at NUL, which this
+-- must not do, because it may end up used on something other than a unix
+-- filepath.
+{-# NOINLINE decodeBS #-}
+decodeBS b = unsafePerformIO $ do
+	enc <- Encoding.getFileSystemEncoding
+	S.useAsCStringLen b (GHC.peekCStringLen enc)
 #else
 decodeBS = S8.toString
 #endif
 
 encodeBS :: FilePath -> S.ByteString
 #ifndef mingw32_HOST_OS
-encodeBS = S.pack . decodeW8NUL
+-- This is a copy of code from System.FilePath.Internal.encodeFilePath.
+-- However, older versions of that library truncated at NUL, which this
+-- must not do, because it may end up used on something other than a unix
+-- filepath.
+{-# NOINLINE encodeBS #-}
+encodeBS f = unsafePerformIO $ do
+	enc <- Encoding.getFileSystemEncoding
+	GHC.newCStringLen enc f >>= unsafePackMallocCStringLen
 #else
 encodeBS = S8.fromString
-#endif
-
-{- Faster version that assumes the string does not contain NUL;
- - if it does it will be truncated before the NUL. -}
-decodeBS' :: S.ByteString -> FilePath
-#ifndef mingw32_HOST_OS
-decodeBS' = encodeW8 . S.unpack
-#else
-decodeBS' = S8.toString
-#endif
-
-encodeBS' :: FilePath -> S.ByteString
-#ifndef mingw32_HOST_OS
-encodeBS' = S.pack . decodeW8
-#else
-encodeBS' = S8.fromString
-#endif
-
-decodeBL' :: L.ByteString -> FilePath
-#ifndef mingw32_HOST_OS
-decodeBL' = encodeW8 . L.unpack
-#else
-decodeBL' = L8.toString
-#endif
-
-encodeBL' :: FilePath -> L.ByteString
-#ifndef mingw32_HOST_OS
-encodeBL' = L.pack . decodeW8
-#else
-encodeBL' = L8.fromString
 #endif
 
 fromRawFilePath :: RawFilePath -> FilePath
@@ -169,49 +117,6 @@ fromRawFilePath = decodeFilePath
 
 toRawFilePath :: FilePath -> RawFilePath
 toRawFilePath = encodeFilePath
-
-#ifndef mingw32_HOST_OS
-{- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
- -
- - w82s produces a String, which may contain Chars that are invalid
- - unicode. From there, this is really a simple matter of applying the
- - file system encoding, only complicated by GHC's interface to doing so.
- -
- - Note that the encoding stops at any NUL in the input. FilePaths
- - cannot contain embedded NUL, but Haskell Strings may.
- -}
-{-# NOINLINE encodeW8 #-}
-encodeW8 :: [Word8] -> FilePath
-encodeW8 w8 = unsafePerformIO $ do
-	enc <- Encoding.getFileSystemEncoding
-	GHC.withCString Encoding.char8 (w82s w8) $ GHC.peekCString enc
-
-decodeW8 :: FilePath -> [Word8]
-decodeW8 = s2w8 . _encodeFilePath
-
-{- Like encodeW8 and decodeW8, but NULs are passed through unchanged. -}
-encodeW8NUL :: [Word8] -> FilePath
-encodeW8NUL = intercalate [nul] . map encodeW8 . splitc (c2w8 nul)
-  where
-	nul = '\NUL'
-
-decodeW8NUL :: FilePath -> [Word8]
-decodeW8NUL = intercalate [c2w8 nul] . map decodeW8 . splitc nul
-  where
-	nul = '\NUL'
-#endif
-
-c2w8 :: Char -> Word8
-c2w8 = fromIntegral . fromEnum
-
-w82c :: Word8 -> Char
-w82c = toEnum . fromIntegral
-
-s2w8 :: String -> [Word8]
-s2w8 = map c2w8
-
-w82s :: [Word8] -> String
-w82s = map w82c
 
 {- Truncates a FilePath to the given number of bytes (or less),
  - as represented on disk.
@@ -224,8 +129,8 @@ truncateFilePath :: Int -> FilePath -> FilePath
 truncateFilePath n = go . reverse
   where
 	go f =
-		let bytes = decodeW8 f
-		in if length bytes <= n
+		let b = encodeBS f
+		in if S.length b <= n
 			then reverse f
 			else go (drop 1 f)
 #else

@@ -75,7 +75,7 @@ instance Default ConfigValue where
 	def = ConfigValue mempty
 
 fromConfigKey :: ConfigKey -> String
-fromConfigKey (ConfigKey s) = decodeBS' s
+fromConfigKey (ConfigKey s) = decodeBS s
 
 instance Show ConfigKey where
 	show = fromConfigKey
@@ -88,16 +88,16 @@ instance FromConfigValue S.ByteString where
 	fromConfigValue NoConfigValue = mempty
 
 instance FromConfigValue String where
-	fromConfigValue = decodeBS' . fromConfigValue
+	fromConfigValue = decodeBS . fromConfigValue
 
 instance Show ConfigValue where
 	show = fromConfigValue
 
 instance IsString ConfigKey where
-	fromString = ConfigKey . encodeBS'
+	fromString = ConfigKey . encodeBS
 
 instance IsString ConfigValue where
-	fromString = ConfigValue . encodeBS'
+	fromString = ConfigValue . encodeBS
 
 type RemoteName = String
 
@@ -106,7 +106,7 @@ newtype Ref = Ref S.ByteString
 	deriving (Eq, Ord, Read, Show)
 
 fromRef :: Ref -> String
-fromRef = decodeBS' . fromRef'
+fromRef = decodeBS . fromRef'
 
 fromRef' :: Ref -> S.ByteString
 fromRef' (Ref s) = s

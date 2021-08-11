@@ -131,8 +131,8 @@ lookupHook hookname action = do
 				else return $ Just fallback
 		else return $ Just command
   where
-	hook = annexConfig $ encodeBS' $ hookname ++ "-" ++ action ++ "-hook"
-	hookfallback = annexConfig $ encodeBS' $ hookname ++ "-hook"
+	hook = annexConfig $ encodeBS $ hookname ++ "-" ++ action ++ "-hook"
+	hookfallback = annexConfig $ encodeBS $ hookname ++ "-hook"
 
 runHook :: HookName -> Action -> Key -> Maybe FilePath -> Annex ()
 runHook hook action k f = lookupHook hook action >>= \case

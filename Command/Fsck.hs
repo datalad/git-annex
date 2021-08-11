@@ -292,7 +292,7 @@ verifyLocationLog' key ai present u updatestatus = do
 			fix InfoMissing
 			warning $
 				"** Based on the location log, " ++
-				decodeBS' (actionItemDesc ai) ++
+				decodeBS (actionItemDesc ai) ++
 				"\n** was expected to be present, " ++
 				"but its content is missing."
 			return False
@@ -332,7 +332,7 @@ verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = case afile of
 				missingrequired <- Remote.prettyPrintUUIDs "missingrequired" missinglocs
 				warning $
 					"** Required content " ++
-					decodeBS' (actionItemDesc ai) ++
+					decodeBS (actionItemDesc ai) ++
 					" is missing from these repositories:\n" ++
 					missingrequired
 				return False
@@ -406,7 +406,7 @@ checkKeySizeOr bad key file ai = case fromKey keySize key of
 	badsize a b = do
 		msg <- bad key
 		warning $ concat
-			[ decodeBS' (actionItemDesc ai)
+			[ decodeBS (actionItemDesc ai)
 			, ": Bad file size ("
 			, compareSizes storageUnits True a b
 			, "); "
@@ -424,11 +424,11 @@ checkKeyUpgrade backend key ai (AssociatedFile (Just file)) =
 	case Types.Backend.canUpgradeKey backend of
 		Just a | a key -> do
 			warning $ concat
-				[ decodeBS' (actionItemDesc ai)
+				[ decodeBS (actionItemDesc ai)
 				, ": Can be upgraded to an improved key format. "
 				, "You can do so by running: git annex migrate --backend="
 				, decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " "
-				, decodeBS' file
+				, decodeBS file
 				]
 			return True
 		_ -> return True
@@ -475,7 +475,7 @@ checkBackendOr bad backend key file ai =
 			unless ok $ do
 				msg <- bad key
 				warning $ concat
-					[ decodeBS' (actionItemDesc ai)
+					[ decodeBS (actionItemDesc ai)
 					, ": Bad file content; "
 					, msg
 					]
@@ -503,7 +503,7 @@ checkInodeCache key content mic ai = case mic of
 					Nothing -> noop
 					Just ic' -> whenM (compareInodeCaches ic ic') $ do
 						warning $ concat
-							[ decodeBS' (actionItemDesc ai)
+							[ decodeBS (actionItemDesc ai)
 							, ": Stale or missing inode cache; updating."
 							]
 						Database.Keys.addInodeCaches key [ic]

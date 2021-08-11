@@ -34,7 +34,7 @@ newtype DebugSource = DebugSource S.ByteString
 	deriving (Eq, Show)
 
 instance IsString DebugSource where
-	fromString = DebugSource . encodeBS'
+	fromString = DebugSource . encodeBS
 
 -- | Selects whether to display a message from a source.
 data DebugSelector 
@@ -97,6 +97,6 @@ fastDebug (DebugSelector p) src msg
 
 formatDebugMessage :: DebugSource -> String -> IO S.ByteString
 formatDebugMessage (DebugSource src) msg = do
-	t <- encodeBS' . formatTime defaultTimeLocale "[%F %X%Q]"
+	t <- encodeBS . formatTime defaultTimeLocale "[%F %X%Q]"
 		<$> getZonedTime
 	return (t <> " (" <> src <> ") " <> encodeBS msg)

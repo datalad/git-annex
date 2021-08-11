@@ -59,13 +59,13 @@ isChunkKey :: Key -> Bool
 isChunkKey k = isJust (fromKey keyChunkSize k) && isJust (fromKey keyChunkNum k)
 
 serializeKey :: Key -> String
-serializeKey = decodeBS' . serializeKey'
+serializeKey = decodeBS . serializeKey'
 
 serializeKey' :: Key -> S.ByteString
 serializeKey' = keySerialization
 
 deserializeKey :: String -> Maybe Key
-deserializeKey = deserializeKey' . encodeBS'
+deserializeKey = deserializeKey' . encodeBS
 
 deserializeKey' :: S.ByteString -> Maybe Key
 deserializeKey' = eitherToMaybe . A.parseOnly keyParser

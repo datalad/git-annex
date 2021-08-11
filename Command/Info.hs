@@ -163,7 +163,7 @@ itemInfo o (si, p) = ifM (isdir p)
 
 noInfo :: String -> SeekInput -> Annex ()
 noInfo s si = do
-	showStart "info" (encodeBS' s) si
+	showStart "info" (encodeBS s) si
 	showNote $ "not a directory or an annexed file or a treeish or a remote or a uuid"
 	showEndFail
 
@@ -183,7 +183,7 @@ dirInfo o dir si = showCustom (unwords ["info", dir]) si $ do
 
 treeishInfo :: InfoOptions -> String -> SeekInput -> Annex ()
 treeishInfo o t si = do
-	mi <- getTreeStatInfo o (Git.Ref (encodeBS' t))
+	mi <- getTreeStatInfo o (Git.Ref (encodeBS t))
 	case mi of
 		Nothing -> noInfo t si
 		Just i -> showCustom (unwords ["info", t]) si $ do
@@ -313,8 +313,8 @@ showStat :: Stat -> StatState ()
 showStat s = maybe noop calc =<< s
   where
 	calc (desc, a) = do
-		(lift . showHeader . encodeBS') desc
-		lift . showRaw . encodeBS' =<< a
+		(lift . showHeader . encodeBS) desc
+		lift . showRaw . encodeBS =<< a
 
 repo_list :: TrustLevel -> Stat
 repo_list level = stat n $ nojson $ lift $ do

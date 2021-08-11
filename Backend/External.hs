@@ -239,7 +239,7 @@ newExternalState ebname hasext pid = do
 		warning msg
 
 externalBackendProgram :: ExternalBackendName -> String
-externalBackendProgram (ExternalBackendName bname) = "git-annex-backend-X" ++ decodeBS' bname
+externalBackendProgram (ExternalBackendName bname) = "git-annex-backend-X" ++ decodeBS bname
 
 -- Runs an action with an ExternalState, starting a new external backend
 -- process if necessary. It is returned to the pool once the action

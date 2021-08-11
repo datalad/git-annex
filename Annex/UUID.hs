@@ -110,7 +110,7 @@ storeUUIDIn configfield = setConfig configfield . fromUUID
 {- Only sets the configkey in the Repo; does not change .git/config -}
 setUUID :: Git.Repo -> UUID -> IO Git.Repo
 setUUID r u = do
-	let s = encodeBS' $ show configkeyUUID ++ "=" ++ fromUUID u
+	let s = encodeBS $ show configkeyUUID ++ "=" ++ fromUUID u
 	Git.Config.store s Git.Config.ConfigList r
 
 -- Dummy uuid for the whole web. Do not alter.

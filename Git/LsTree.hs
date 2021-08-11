@@ -149,7 +149,7 @@ parserLsTree long = case long of
  - generated, so any size information is not included. -}
 formatLsTree :: TreeItem -> S.ByteString
 formatLsTree ti = S.intercalate (S.singleton (fromIntegral (ord ' ')))
-	[ encodeBS' (showOct (mode ti) "")
+	[ encodeBS (showOct (mode ti) "")
 	, typeobj ti
 	, fromRef' (sha ti)
 	] <> (S.cons (fromIntegral (ord '\t')) (getTopFilePath (file ti)))

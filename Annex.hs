@@ -401,7 +401,7 @@ adjustGitRepo a = do
 addGitConfigOverride :: String -> Annex ()
 addGitConfigOverride v = do
 	adjustGitRepo $ \r ->
-		Git.Config.store (encodeBS' v) Git.Config.ConfigList $
+		Git.Config.store (encodeBS v) Git.Config.ConfigList $
 			r { Git.gitGlobalOpts = go (Git.gitGlobalOpts r) }
 	changeState $ \st -> st { gitconfigoverride = v : gitconfigoverride st }
   where

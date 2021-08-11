@@ -54,7 +54,7 @@ deserializeFsckResults = deserialize . lines
 	deserialize ("truncated":ls) = deserialize' ls True
 	deserialize ls = deserialize' ls False
 	deserialize' ls t =
-		let s = S.fromList $ map (Ref . encodeBS') ls
+		let s = S.fromList $ map (Ref . encodeBS) ls
 		in if S.null s then FsckFailed else FsckFoundMissing s t
 
 clearFsckResults :: UUID -> Annex ()

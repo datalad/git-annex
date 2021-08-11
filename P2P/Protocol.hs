@@ -172,7 +172,7 @@ instance Proto.Serializable Service where
 instance Proto.Serializable ProtoAssociatedFile where
 	serialize (ProtoAssociatedFile (AssociatedFile Nothing)) = ""
 	serialize (ProtoAssociatedFile (AssociatedFile (Just af))) = 
-		decodeBS' $ toInternalGitPath $ encodeBS' $ concatMap esc $ fromRawFilePath af
+		decodeBS $ toInternalGitPath $ encodeBS $ concatMap esc $ fromRawFilePath af
 	  where
 		esc '%' = "%%"
 		esc c 

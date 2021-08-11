@@ -170,7 +170,7 @@ parse s st
 
 {- Checks if a string from git config is a true/false value. -}
 isTrueFalse :: String -> Maybe Bool
-isTrueFalse = isTrueFalse' . ConfigValue . encodeBS'
+isTrueFalse = isTrueFalse' . ConfigValue . encodeBS
 
 isTrueFalse' :: ConfigValue -> Maybe Bool
 isTrueFalse' (ConfigValue s)
@@ -248,8 +248,8 @@ changeFile f (ConfigKey k) v = boolSystem "git"
 	[ Param "config"
 	, Param "--file"
 	, File f
-	, Param (decodeBS' k)
-	, Param (decodeBS' v)
+	, Param (decodeBS k)
+	, Param (decodeBS v)
 	]
 
 {- Unsets a git config setting, in both the git repo,
@@ -264,4 +264,4 @@ unset ck@(ConfigKey k) r = ifM (Git.Command.runBool ps r)
 	, return Nothing
 	)
   where
-	ps = [Param "config", Param "--unset-all", Param (decodeBS' k)]
+	ps = [Param "config", Param "--unset-all", Param (decodeBS k)]

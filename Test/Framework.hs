@@ -108,7 +108,7 @@ inmainrepo a = do
 
 with_ssh_origin :: (Assertion -> Assertion) -> (Assertion -> Assertion)
 with_ssh_origin cloner a = cloner $ do
-	let k = Git.Types.ConfigKey (encodeBS' config)
+	let k = Git.Types.ConfigKey (encodeBS config)
 	let v = Git.Types.ConfigValue (toRawFilePath "/dev/null")
 	origindir <- absPath . Git.Types.fromConfigValue
 		=<< annexeval (Config.getConfig k v)

@@ -114,7 +114,7 @@ parseDiffRaw l = go l
 	go (info:f:rest) = case A.parse (parserDiffRaw (L.toStrict f)) info of
 		A.Done _ r -> r : go rest
 		A.Fail _ _ err -> error $ "diff-tree parse error: " ++ err
-	go (s:[]) = error $ "diff-tree parse error near \"" ++ decodeBL' s ++ "\""
+	go (s:[]) = error $ "diff-tree parse error near \"" ++ decodeBL s ++ "\""
 
 -- :<srcmode> SP <dstmode> SP <srcsha> SP <dstsha> SP <status>
 --

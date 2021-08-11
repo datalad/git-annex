@@ -307,7 +307,7 @@ listImportableContentsM serial adir = adbfind >>= \case
 	mk ('S':'T':'\t':l) =
 		let (stat, fn) = separate (== '\t') l
 		    sz = fromMaybe 0 (readish (takeWhile (/= ' ') stat))
-		    cid = ContentIdentifier (encodeBS' stat)
+		    cid = ContentIdentifier (encodeBS stat)
 		    loc = mkImportLocation $ toRawFilePath $ 
 		    	Posix.makeRelative (fromAndroidPath adir) fn
 		in Just (loc, (cid, sz))
@@ -440,7 +440,7 @@ getExportContentIdentifier serial adir loc = do
 	return $ case ls of
 		Just ["n"] -> Right Nothing
 		Just (('S':'T':'\t':stat):[]) -> Right $ Just $
-			ContentIdentifier (encodeBS' stat)
+			ContentIdentifier (encodeBS stat)
 		_ -> Left (ExitFailure 1)
   where
 	aloc = fromAndroidPath $ androidExportLocation adir loc

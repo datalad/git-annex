@@ -95,10 +95,10 @@ newtype SSha = SSha String
 	deriving (Eq, Show)
 
 toSSha :: Sha -> SSha
-toSSha (Ref s) = SSha (decodeBS' s)
+toSSha (Ref s) = SSha (decodeBS s)
 
 fromSSha :: SSha -> Ref
-fromSSha (SSha s) = Ref (encodeBS' s)
+fromSSha (SSha s) = Ref (encodeBS s)
 
 instance PersistField SSha where
 	toPersistValue (SSha b) = toPersistValue b

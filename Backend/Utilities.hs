@@ -28,10 +28,10 @@ import Data.Word
 genKeyName :: String -> S.ByteString
 genKeyName s
 	-- Avoid making keys longer than the length of a SHA256 checksum.
-	| bytelen > sha256len = encodeBS' $
+	| bytelen > sha256len = encodeBS $
 		truncateFilePath (sha256len - md5len - 1) s' ++ "-" ++ 
 			show (md5 bl)
-	| otherwise = encodeBS' s'
+	| otherwise = encodeBS s'
   where
 	s' = preSanitizeKeyName s
 	bl = encodeBL s

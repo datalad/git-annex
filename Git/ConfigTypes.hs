@@ -31,7 +31,7 @@ getSharedRepository r =
 			"all" -> AllShared
 			"world" -> AllShared
 			"everybody" -> AllShared
-			_ -> maybe UnShared UmaskShared (readish (decodeBS' v))
+			_ -> maybe UnShared UmaskShared (readish (decodeBS v))
 		Just NoConfigValue -> UnShared
 		Nothing -> UnShared
 

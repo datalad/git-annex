@@ -65,7 +65,7 @@ actionItemDesc (ActionItemBranchFilePath bfp _) = descBranchFilePath bfp
 actionItemDesc (ActionItemFailedTransfer t i) = actionItemDesc $
 	ActionItemAssociatedFile (associatedFile i) (transferKey t)
 actionItemDesc (ActionItemTreeFile f) = f
-actionItemDesc (ActionItemOther s) = encodeBS' (fromMaybe "" s)
+actionItemDesc (ActionItemOther s) = encodeBS (fromMaybe "" s)
 actionItemDesc (OnlyActionOn _ ai) = actionItemDesc ai
 
 actionItemKey :: ActionItem -> Maybe Key

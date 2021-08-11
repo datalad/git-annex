@@ -476,4 +476,4 @@ remoteAnnexConfigEnd key = "annex-" <> key
 {- A per-remote setting in git config. -}
 remoteConfig :: RemoteNameable r => r -> UnqualifiedConfigKey -> ConfigKey
 remoteConfig r key = ConfigKey $
-	"remote." <> encodeBS' (getRemoteName r) <> "." <> key
+	"remote." <> encodeBS (getRemoteName r) <> "." <> key

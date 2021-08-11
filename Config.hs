@@ -39,7 +39,7 @@ setConfig :: ConfigKey -> String -> Annex ()
 setConfig (ConfigKey key) value = do
 	inRepo $ Git.Command.run
 		[ Param "config"
-		, Param (decodeBS' key)
+		, Param (decodeBS key)
 		, Param value
 		]
 	reloadConfig

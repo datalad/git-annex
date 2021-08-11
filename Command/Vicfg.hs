@@ -311,7 +311,7 @@ parseCfg defcfg = go [] defcfg . lines
 				let m = M.insert u l (cfgScheduleMap cfg)
 				in Right $ cfg { cfgScheduleMap = m }
 		| setting == "config" =
-			let m = M.insert (ConfigKey (encodeBS' f)) (ConfigValue (encodeBS' val)) (cfgGlobalConfigs cfg)
+			let m = M.insert (ConfigKey (encodeBS f)) (ConfigValue (encodeBS val)) (cfgGlobalConfigs cfg)
 			in Right $ cfg { cfgGlobalConfigs = m }
 		| setting == "numcopies" = case readish val of
 			Nothing -> Left "parse error (expected an integer)"

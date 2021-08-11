@@ -118,6 +118,6 @@ isAnnexBranch f = n `isSuffixOf` f
 	n = '/' : Git.fromRef Annex.Branch.name
 
 fileToBranch :: FilePath -> Git.Ref
-fileToBranch f = Git.Ref $ encodeBS' $ "refs" </> base
+fileToBranch f = Git.Ref $ encodeBS $ "refs" </> base
   where
 	base = Prelude.last $ split "/refs/" f

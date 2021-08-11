@@ -153,7 +153,7 @@ byName' n = go . filter matching <$> remoteList
 
 {- Finds the remote or remote group matching the name. -}
 byNameOrGroup :: RemoteName -> Annex [Remote]
-byNameOrGroup n = go =<< getConfigMaybe (ConfigKey ("remotes." <> encodeBS' n))
+byNameOrGroup n = go =<< getConfigMaybe (ConfigKey ("remotes." <> encodeBS n))
   where
 	go (Just l) = catMaybes
 		<$> mapM (byName . Just) (splitc ' ' (fromConfigValue l))

@@ -82,7 +82,7 @@ branchFileRef branch f = Ref $ fromRef' branch <> ":" <> toInternalGitPath f
 
 {- Converts a Ref to refer to the content of the Ref on a given date. -}
 dateRef :: Ref -> RefDate -> Ref
-dateRef r (RefDate d) = Ref $ fromRef' r <> "@" <> encodeBS' d
+dateRef r (RefDate d) = Ref $ fromRef' r <> "@" <> encodeBS d
 
 {- A Ref that can be used to refer to a file in the repository as it
  - appears in a given Ref. -}
@@ -177,7 +177,7 @@ tree (Ref ref) = extractSha <$$> pipeReadStrict
 	[ Param "rev-parse"
 	, Param "--verify"
 	, Param "--quiet"
-	, Param (decodeBS' ref')
+	, Param (decodeBS ref')
 	]
   where
 	ref' = if ":" `S.isInfixOf` ref

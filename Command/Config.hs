@@ -55,23 +55,23 @@ optParser _ = setconfig <|> getconfig <|> unsetconfig
 
 seek :: Action -> CommandSeek
 seek (SetConfig ck@(ConfigKey name) val) = checkIsGlobalConfig ck $ commandAction $
-	startingUsualMessages (decodeBS' name) ai si $ do
+	startingUsualMessages (decodeBS name) ai si $ do
 		setGlobalConfig ck val
 		when (needLocalUpdate ck) $
 			setConfig ck (fromConfigValue val)
 		next $ return True
   where
 	ai = ActionItemOther (Just (fromConfigValue val))
-	si = SeekInput [decodeBS' name]
+	si = SeekInput [decodeBS name]
 seek (UnsetConfig ck@(ConfigKey name)) = checkIsGlobalConfig ck $ commandAction $
-	startingUsualMessages (decodeBS' name) ai si $ do
+	startingUsualMessages (decodeBS name) ai si $ do
 		unsetGlobalConfig ck
 		when (needLocalUpdate ck) $
 			unsetConfig ck
 		next $ return True
   where
 	ai = ActionItemOther (Just "unset")
-	si = SeekInput [decodeBS' name]
+	si = SeekInput [decodeBS name]
 seek (GetConfig ck) = checkIsGlobalConfig ck $ commandAction $
 	startingCustomOutput ai $ do
 		getGlobalConfig ck >>= \case

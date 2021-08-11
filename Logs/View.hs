@@ -74,7 +74,7 @@ branchView view
 	| B.null name = Git.Ref branchViewPrefix
 	| otherwise = Git.Ref $ branchViewPrefix <> "/" <> name
   where
-	name = encodeBS' $
+	name = encodeBS $
 		intercalate ";" $ map branchcomp (viewComponents view)
 	branchcomp c
 		| viewVisible c = branchcomp' c

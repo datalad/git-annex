@@ -252,7 +252,7 @@ getAllRefs r = getAllRefs' (fromRawFilePath (localGitDir r) </> "refs")
 getAllRefs' :: FilePath -> IO [Ref]
 getAllRefs' refdir = do
 	let topsegs = length (splitPath refdir) - 1
-	let toref = Ref . encodeBS' . joinPath . drop topsegs . splitPath
+	let toref = Ref . encodeBS . joinPath . drop topsegs . splitPath
 	map toref <$> dirContentsRecursive refdir
 
 explodePackedRefsFile :: Repo -> IO ()
@@ -279,8 +279,8 @@ packedRefsFile r = fromRawFilePath (localGitDir r) </> "packed-refs"
 parsePacked :: String -> Maybe (Sha, Ref)
 parsePacked l = case words l of
 	(sha:ref:[])
-		| isJust (extractSha (encodeBS' sha)) && Ref.legal True ref ->
-			Just (Ref (encodeBS' sha), Ref (encodeBS' ref))
+		| isJust (extractSha (encodeBS sha)) && Ref.legal True ref ->
+			Just (Ref (encodeBS sha), Ref (encodeBS ref))
 	_ -> Nothing
 
 {- git-branch -d cannot be used to remove a branch that is directly
@@ -350,8 +350,8 @@ verifyCommit missing goodcommits commit r
   where
 	parse l = case words l of
 		(commitsha:treesha:[]) -> (,)
-			<$> extractSha (encodeBS' commitsha)
-			<*> extractSha (encodeBS' treesha)
+			<$> extractSha (encodeBS commitsha)
+			<*> extractSha (encodeBS treesha)
 		_ -> Nothing
 	check [] = return True
 	check ((c, t):rest)
@@ -469,7 +469,7 @@ preRepair g = do
   where
 	headfile = localGitDir g P.</> "HEAD"
 	validhead s = "ref: refs/" `isPrefixOf` s
-		|| isJust (extractSha (encodeBS' s))
+		|| isJust (extractSha (encodeBS s))
 
 {- Put it all together. -}
 runRepair :: (Ref -> Bool) -> Bool -> Repo -> IO (Bool, [Branch])

@@ -311,7 +311,7 @@ setupRepo gcryptid r
 			, Param tmpconfig
 			]
 		liftIO $ do
-			void $ Git.Config.changeFile tmpconfig coreGCryptId (encodeBS' gcryptid)
+			void $ Git.Config.changeFile tmpconfig coreGCryptId (encodeBS gcryptid)
 			void $ Git.Config.changeFile tmpconfig denyNonFastForwards (Git.Config.boolConfig' False)
 		ok <- liftIO $ rsync $ opts ++
 			[ Param "--recursive"

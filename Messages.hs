@@ -72,18 +72,18 @@ import qualified Annex
 
 showStart :: String -> RawFilePath -> SeekInput -> Annex ()
 showStart command file si = outputMessage json $
-	encodeBS' command <> " " <> file <> " "
+	encodeBS command <> " " <> file <> " "
   where
 	json = JSON.start command (Just file) Nothing si
 
 showStartKey :: String -> Key -> ActionItem -> SeekInput -> Annex ()
 showStartKey command key ai si = outputMessage json $
-	encodeBS' command <> " " <> actionItemDesc ai <> " "
+	encodeBS command <> " " <> actionItemDesc ai <> " "
   where
 	json = JSON.start command (actionItemFile ai) (Just key) si
 
 showStartOther :: String -> Maybe String -> SeekInput -> Annex ()
-showStartOther command mdesc si = outputMessage json $ encodeBS' $
+showStartOther command mdesc si = outputMessage json $ encodeBS $
 	command ++ (maybe "" (" " ++) mdesc) ++ " "
   where
 	json = JSON.start command Nothing Nothing si
@@ -116,7 +116,7 @@ showEndMessage (StartNoMessage _) = const noop
 showEndMessage (CustomOutput _) = const noop
 
 showNote :: String -> Annex ()
-showNote s = outputMessage (JSON.note s) $ encodeBS' $ "(" ++ s ++ ") "
+showNote s = outputMessage (JSON.note s) $ encodeBS $ "(" ++ s ++ ") "
 
 showAction :: String -> Annex ()
 showAction s = showNote $ s ++ "..."
@@ -131,7 +131,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 			Annex.changeState $ \s -> s { Annex.output = st' }
 		| sideActionBlock st == InBlock = return ()
 		| otherwise = go'
-	go' = outputMessage JSON.none $ encodeBS' $ "(" ++ m ++ "...)\n"
+	go' = outputMessage JSON.none $ encodeBS $ "(" ++ m ++ "...)\n"
 			
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "recording state in git"
@@ -175,7 +175,7 @@ showOutput = unlessM commandProgressDisabled $
 	outputMessage JSON.none "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = outputMessage (JSON.note s) (encodeBS' (formatLongNote s))
+showLongNote s = outputMessage (JSON.note s) (encodeBS (formatLongNote s))
 
 formatLongNote :: String -> String
 formatLongNote s = '\n' : indent s ++ "\n"
@@ -184,7 +184,7 @@ formatLongNote s = '\n' : indent s ++ "\n"
 -- to console, but json object containing the info is emitted immediately.
 showInfo :: String -> Annex ()
 showInfo s = outputMessage' outputJSON (JSON.info s) $
-	encodeBS' (formatLongNote s)
+	encodeBS (formatLongNote s)
 
 showEndOk :: Annex ()
 showEndOk = showEndResult True
