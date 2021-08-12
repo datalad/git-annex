@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2021-08-12T18:42:03Z"
+ content="""
+I've implemented a tailVerify; all that remains to be done is hook
+all special remotes that retrieve to a file up to use it.
+
+That's mostly ones using fileRetriever, which will come down to making
+retrieveChunks use it, probably. Although it may be that a few of them,
+like Remote.Directory, could avoid using it and feed the verifier
+themselves, more efficiently.
+
+There are also a couple of special remotes that don't use fileRetriever or
+retrieveChunks but could also use tailVerify. Looks like only Remote.BitTorrent
+and Remote.Web. But bittorrent is just the kind of thing that tailVerify
+will not support well due to random access. And Remote.Web could feed the
+verifier itself.
+"""]]
