@@ -1,0 +1,132 @@
+### Please describe the problem.
+
+Finally we got what should be a normal "POSIX" NFS mount (no ACL) on a local HPC.  I immediately ventured to test git-annex (and datalad) on that file system. git annex 8.20210803-g99bb214 and git 2.30.2 both coming from conda.
+
+with basic operations -- it felt like it works ok.
+but then when I ran tests while pointing TMPDIR to this location, e.g. `TMPDIR=$PWD git annex test 2>&1 | tee git-annex-noretry+pidlock1-1.log` - `git-annex` is far from a happy camper.
+
+Note: `tmp` path below is actually a `/dartfs/rc/lab/D/DBIC/DBIC/archive/tmp`
+
+<details>
+<summary>Not sure if related or not but git-annex upon init seems to not detect the need for pidlock </summary> 
+
+```shell
+[d31548v@discovery7 tmp]$ ( PS4='[$(date)] > '; set -x; mkdir test; cd test; git init; git annex --debug init; cat .git/config; )
+[Wed Aug 11 16:14:03 EDT 2021] > mkdir test
+[Wed Aug 11 16:14:03 EDT 2021] > cd test
+[Wed Aug 11 16:14:04 EDT 2021] > git init
+Initialized empty Git repository in /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp/test/.git/
+[Wed Aug 11 16:14:04 EDT 2021] > git annex --debug init
+init  [2021-08-11 16:14:04.936362] (Utility.Process) process [10184] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2021-08-11 16:14:04.982236] (Utility.Process) process [10184] done ExitFailure 1
+[2021-08-11 16:14:04.984294] (Utility.Process) process [10185] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--verify","-q","refs/remotes/origin/git-annex"]
+[2021-08-11 16:14:05.019706] (Utility.Process) process [10185] done ExitFailure 1
+[2021-08-11 16:14:05.029391] (Utility.Process) process [10187] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","write-tree"]
+[2021-08-11 16:14:05.118706] (Utility.Process) process [10187] done ExitSuccess
+[2021-08-11 16:14:05.121008] (Utility.Process) process [10189] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","commit-tree","4b825dc642cb6eb9a060e54bf8d69288fbee4904","--no-gpg-sign"]
+[2021-08-11 16:14:05.197601] (Utility.Process) process [10189] done ExitSuccess
+[2021-08-11 16:14:05.218776] (Utility.Process) process [10190] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","update-ref","refs/heads/git-annex","4570bef1d852f540b8bb1bcf7aa778cf48d8743a"]
+[2021-08-11 16:14:05.342053] (Utility.Process) process [10190] done ExitSuccess
+[2021-08-11 16:14:05.380591] (Utility.Process) process [10191] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","config","annex.uuid","4f1069df-9aa9-4e72-92dc-b1f5ac6946d5"]
+[2021-08-11 16:14:05.428772] (Utility.Process) process [10191] done ExitSuccess
+[2021-08-11 16:14:05.432081] (Utility.Process) process [10193] read: git ["config","--null","--list"]
+[2021-08-11 16:14:05.502382] (Utility.Process) process [10193] done ExitSuccess
+[2021-08-11 16:14:05.635239] (Utility.Process) process [10202] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2021-08-11 16:14:05.698023] (Utility.Process) process [10202] done ExitSuccess
+[2021-08-11 16:14:05.699988] (Utility.Process) process [10203] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2021-08-11 16:14:05.734066] (Utility.Process) process [10203] done ExitSuccess
+[2021-08-11 16:14:05.741208] (Utility.Process) process [10204] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..4570bef1d852f540b8bb1bcf7aa778cf48d8743a","--pretty=%H","-n1"]
+[2021-08-11 16:14:05.794383] (Utility.Process) process [10204] done ExitSuccess
+[2021-08-11 16:14:05.827348] (Utility.Process) process [10207] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2021-08-11 16:14:05.832331] (Utility.Process) process [10208] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2021-08-11 16:14:05.912843] (Utility.Process) process [10212] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","config","annex.version","8"]
+[2021-08-11 16:14:06.014334] (Utility.Process) process [10212] done ExitSuccess
+[2021-08-11 16:14:06.017332] (Utility.Process) process [10213] read: git ["config","--null","--list"]
+[2021-08-11 16:14:06.09542] (Utility.Process) process [10213] done ExitSuccess
+[2021-08-11 16:14:06.097328] (Utility.Process) process [10215] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","status","--porcelain"]
+[2021-08-11 16:14:06.199386] (Utility.Process) process [10215] done ExitSuccess
+[2021-08-11 16:14:06.201524] (Utility.Process) process [10217] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","config","filter.annex.smudge","git-annex smudge -- %f"]
+[2021-08-11 16:14:06.259174] (Utility.Process) process [10217] done ExitSuccess
+[2021-08-11 16:14:06.262019] (Utility.Process) process [10218] read: git ["config","--null","--list"]
+[2021-08-11 16:14:06.332769] (Utility.Process) process [10218] done ExitSuccess
+[2021-08-11 16:14:06.334786] (Utility.Process) process [10221] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","config","filter.annex.clean","git-annex smudge --clean -- %f"]
+[2021-08-11 16:14:06.396427] (Utility.Process) process [10221] done ExitSuccess
+[2021-08-11 16:14:06.39987] (Utility.Process) process [10224] read: git ["config","--null","--list"]
+[2021-08-11 16:14:06.454542] (Utility.Process) process [10224] done ExitSuccess
+[2021-08-11 16:14:06.871684] (Utility.Process) process [10228] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2021-08-11 16:14:06.923312] (Utility.Process) process [10228] done ExitSuccess
+[2021-08-11 16:14:06.975588] (Utility.Process) process [10231] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","refs/heads/master"]
+[2021-08-11 16:14:07.015031] (Utility.Process) process [10231] done ExitFailure 1
+[2021-08-11 16:14:07.017599] (Utility.Process) process [10233] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2021-08-11 16:14:07.056731] (Utility.Process) process [10233] done ExitSuccess
+[2021-08-11 16:14:07.059379] (Utility.Process) process [10234] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/master"]
+[2021-08-11 16:14:07.100443] (Utility.Process) process [10234] done ExitFailure 1
+[2021-08-11 16:14:07.102482] (Utility.Process) process [10236] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","checkout","-q","-B","master"]
+[2021-08-11 16:14:07.157509] (Utility.Process) process [10236] done ExitSuccess
+[2021-08-11 16:14:07.208637] (Utility.Process) process [10238] read: uname ["-n"]
+[2021-08-11 16:14:07.209729] (Utility.Process) process [10238] done ExitSuccess
+[2021-08-11 16:14:07.292876] (Annex.Branch) read uuid.log
+[2021-08-11 16:14:07.392149] (Annex.Branch) set uuid.log
+[2021-08-11 16:14:07.393272] (Annex.Branch) read remote.log
+ok
+[2021-08-11 16:14:07.536729] (Utility.Process) process [10244] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","hash-object","-w","--stdin-paths","--no-filters"]
+[2021-08-11 16:14:07.54018] (Utility.Process) process [10245] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","update-index","-z","--index-info"]
+[2021-08-11 16:14:07.760348] (Utility.Process) process [10245] done ExitSuccess
+[2021-08-11 16:14:07.76284] (Utility.Process) process [10246] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2021-08-11 16:14:07.800127] (Utility.Process) process [10246] done ExitSuccess
+(recording state in git...)
+[2021-08-11 16:14:07.805187] (Utility.Process) process [10247] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","write-tree"]
+[2021-08-11 16:14:07.948696] (Utility.Process) process [10247] done ExitSuccess
+[2021-08-11 16:14:07.950889] (Utility.Process) process [10248] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","commit-tree","2ebb8bbc83b47982a995f66975d4265986f005b8","--no-gpg-sign","-p","refs/heads/git-annex"]
+[2021-08-11 16:14:08.022394] (Utility.Process) process [10248] done ExitSuccess
+[2021-08-11 16:14:08.024889] (Utility.Process) process [10252] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","update-ref","refs/heads/git-annex","83fb8ae08e2e0ea030f3ce75aa840d27838859b6"]
+[2021-08-11 16:14:08.172372] (Utility.Process) process [10252] done ExitSuccess
+[2021-08-11 16:14:08.349523] (Utility.Process) process [10207] done ExitSuccess
+[2021-08-11 16:14:08.35006] (Utility.Process) process [10208] done ExitSuccess
+[2021-08-11 16:14:08.352912] (Utility.Process) process [10244] done ExitSuccess
+[Wed Aug 11 16:14:08 EDT 2021] > cat .git/config
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[annex]
+        uuid = 4f1069df-9aa9-4e72-92dc-b1f5ac6946d5
+        version = 8
+[filter "annex"]
+        smudge = git-annex smudge -- %f
+        clean = git-annex smudge --clean -- %f
+
+```
+</details>
+
+
+so I did set it to `1` globally (in `~/.gitconfig`).  Only later discovered that it should be `true` not `1` but it nohow seems affected git-annex operation in the tests.
+
+Full log from tests run is available at [http://www.onerussian.com/tmp/git-annex-noretry+pidlock1-1.log](http://www.onerussian.com/tmp/git-annex-noretry+pidlock1-1.log)
+
+and a common pattern something like
+
+```
+        fsck downloaded object:                          OK (0.02s)
+        retrieveKeyFile resume from 0:                   FAIL
+          Exception: .git/annex/tmp/SHA256E-s1048577--2c30628691d7a7e5b16237fd74efb4bf365db003e19e6fbe78d96c15396819e5.this-is-a-test-key: openFile: permission denied (Permission denied)
+        fsck downloaded object:                          OK (0.02s)
+        retrieveKeyFile resume from 33%:                 FAIL
+          Exception: .git/annex/objects/1X/90/SHA256E-s1048577--2c30628691d7a7e5b16237fd74efb4bf365db003e19e6fbe78d96c15396819e5.this-is-a-test-key/SHA256E-s1048577--2c30628691d7a7e5b16237fd74efb4bf365db003e19e6fbe78d96c15396819e5.this-is-a-test-key: openBinaryFile: does not exist (No such file or directory)
+        fsck downloaded object:                          OK (0.03s)
+        retrieveKeyFile resume from end:                 cp: cannot stat '.git/annex/objects/1X/90/SHA256E-s1048577--2c30628691d7a7e5b16237fd74efb4bf365db003e19e6fbe78d96c15396819e5.this-is-a-test-key/SHA256E-s1048577--2c30628691d7a7e5b16237fd74efb4bf365db003e19e6fbe78d96c15396819e5.this-is-a-test-key': No such file or directory
+FAIL (0.28s)
+          ./Command/TestRemote.hs:292:
+          failed
+```
+
+I thought that may be it is due to running into the path limit, but I could touch a much (twice) longer path no problem and longest filename of 257 characters can be created.
+
+details of the mount with minimal sensoring with XXXs:
+
+```
+/ifs/rc/dartfs/rc on /dartfs/rc type nfs4 (rw,nosuid,relatime,vers=4.0,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=krb5,clientaddr=XXX.XXX.XXX.XXX,local_lock=none,addr=10.1.16.105)
+```
+
+any ideas Joey?  or how to troubleshoot on this beast further?
