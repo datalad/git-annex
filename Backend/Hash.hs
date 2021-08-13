@@ -280,13 +280,19 @@ md5Hasher = mkHasher md5 md5_context
 
 mkIncrementalVerifier :: HashAlgorithm h => Context h -> Key -> IO IncrementalVerifier
 mkIncrementalVerifier ctx key = do
-	v <- newIORef ctx
+	v <- newIORef (Just ctx)
 	return $ IncrementalVerifier
-		{ updateIncremental = modifyIORef' v . flip hashUpdate
-		, finalizeIncremental = do
-			ctx' <- readIORef v
-			let digest = hashFinalize ctx'
-			return $ sameCheckSum key (show digest)
+		{ updateIncremental = \b ->
+			modifyIORef' v $ \case
+				Just ctx' -> Just (hashUpdate ctx' b)
+				Nothing -> Nothing
+		, finalizeIncremental =
+			readIORef v >>= \case
+				Just ctx' -> do
+					let digest = hashFinalize ctx'
+					return $ sameCheckSum key (show digest)
+				Nothing -> return False
+		, failIncremental = writeIORef v Nothing
 		}
 
 {- A varient of the SHA256E backend, for testing that needs special keys

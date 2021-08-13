@@ -50,4 +50,6 @@ data IncrementalVerifier = IncrementalVerifier
 	, finalizeIncremental :: IO Bool
 	-- ^ Called once the full content has been sent, returns true
 	-- if the hash verified.
+	, failIncremental :: IO ()
+	-- ^ Call if the incremental verification needs to fail.
 	}

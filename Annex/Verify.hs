@@ -36,6 +36,7 @@ import Types.Key
 import qualified System.INotify as INotify
 import Control.Concurrent.STM
 import qualified Data.ByteString as S
+import qualified System.FilePath.ByteString as P
 import Data.Time.Clock.POSIX
 #endif
 
@@ -131,13 +132,13 @@ startVerifyKeyContentIncrementally verifyconfig k =
 -- The file does not need to exist yet when this is called. It will wait
 -- for the file to appear before opening it and starting verification.
 --
--- This is not supported for all OSs, and will return False on OS's
--- where it is not supported.
+-- This is not supported for all OSs, and on OS's where it is not
+-- supported, verification will fail.
 --
 -- Note that there are situations where the file may fail to verify despite
 -- having the correct content. For example, when the file is written out
 -- of order, or gets replaced part way through. To deal with such cases,
--- when False is returned, it should not be treated as if the file's
+-- when verification fails, it should not be treated as if the file's
 -- content is known to be incorrect, but instead as an indication that the
 -- file should be verified again, once it's done being written to.
 --
@@ -162,27 +163,22 @@ startVerifyKeyContentIncrementally verifyconfig k =
 -- writer has finished. If there is more work still to do, it returns an IO
 -- action that will complete the work. This way, the caller can display
 -- something appropriate while that is running.
-tailVerify :: IncrementalVerifier -> FilePath -> TMVar () -> IO (Either (IO Bool) Bool)
+tailVerify :: IncrementalVerifier -> RawFilePath -> TMVar () -> IO (Maybe (IO ()))
 #if WITH_INOTIFY
 tailVerify iv f finished = 
-	catchDefaultIO (Right False) $
-		INotify.withINotify $ \i -> do
-			h <- waitforfiletoexist i
-			tryIO (go i h) >>= \case
-				Right r -> return r
-				Left _ -> do
-					maybe noop hClose h
-					return (Right False)
+	tryIO go >>= \case
+		Right r -> return r
+		Left _ -> do
+			failIncremental iv
+			return Nothing
   where
- 	rf = toRawFilePath f
-	d = toRawFilePath (takeDirectory f)
-
-	waitforfiletoexist i = tryIO (openBinaryFile f ReadMode) >>= \case
+ 	f' = fromRawFilePath f
+	waitforfiletoexist i = tryIO (openBinaryFile f' ReadMode) >>= \case
 		Right h -> return (Just h)
 		Left _ -> do
 			hv <- newEmptyTMVarIO
 			wd <- inotifycreate i $
-				tryIO (openBinaryFile f ReadMode) >>= \case
+				tryIO (openBinaryFile f' ReadMode) >>= \case
 					Right h -> 
 						unlessM (atomically $ tryPutTMVar hv h) $
 							hClose h
@@ -200,16 +196,16 @@ tailVerify iv f finished =
 			INotify.removeWatch wd
 			return v
 	
-	inotifycreate i cont = INotify.addWatch i evs d $ \case
+	inotifycreate i cont = INotify.addWatch i evs (P.takeDirectory f) $ \case
 		-- Ignore changes to other files in the directory.
 		INotify.Created { INotify.filePath = fn }
-			| fn /= rf -> noop
+			| fn /= f -> noop
 		INotify.MovedIn { INotify.filePath = fn }
-			| fn /= rf -> noop
+			| fn /= f -> noop
 		INotify.Opened { INotify.maybeFilePath = fn }
-			| fn /= Just rf -> noop
+			| fn /= Just f -> noop
 		INotify.Modified { INotify.maybeFilePath = fn }
-			| fn /= Just rf -> noop
+			| fn /= Just f -> noop
 		_ -> cont
 	  where
 		evs = 
@@ -220,16 +216,27 @@ tailVerify iv f finished =
 			, INotify.Modify
 			]
 	
-	go i (Just h) = do
+	go = INotify.withINotify $ \i -> do
+		h <- waitforfiletoexist i
+		tryIO (go' i h) >>= \case
+			Right r -> return r
+			Left _ -> do
+				maybe noop hClose h
+				failIncremental iv
+				return Nothing
+	
+	go' i (Just h) = do
 		modified <- newEmptyTMVarIO
-		wd <- INotify.addWatch i [INotify.Modify] rf $ \_event ->
+		wd <- INotify.addWatch i [INotify.Modify] f $ \_event ->
 			atomically $ void $ tryPutTMVar modified ()
 		r <- follow h modified
 		INotify.removeWatch wd
 		return r
 	-- File never showed up, but we've been told it's done being
 	-- written to.
-	go _ Nothing = return (Right False)
+	go' _ Nothing = do
+		failIncremental iv
+		return Nothing
 	
 	follow h modified = do
 		b <- S.hGetNonBlocking h chunk
@@ -259,26 +266,28 @@ tailVerify iv f finished =
 		if S.null b
 			then do
 				hClose h
-				Right <$> finalizeIncremental iv
+				return Nothing
 			else do
 				updateIncremental iv b
 				now <- getPOSIXTime
 				if now - starttime > 0.5
-					then return (Left (deferredfinish h))
+					then return $ Just $
+						tryIO (deferredfinish h) >>= \case
+							Right () -> noop
+							Left _ -> failIncremental iv
 					else finish h starttime
 
 	deferredfinish h = do
 		b <- S.hGet h chunk
 		if S.null b
-			then do
-				hClose h
-				finalizeIncremental iv
+			then hClose h
 			else do
 				updateIncremental iv b
 				deferredfinish h
 
 	chunk = 65536
 #else
-tailVerify _ _ _ = return (Right False) -- not supported
+tailVerify iv _ _ = do
+	failIncremental iv
+	return Nothing
 #endif
-
