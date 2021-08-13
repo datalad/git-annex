@@ -193,7 +193,7 @@ tailVerify iv f finished =
 				(Just <$> readTMVar hv)
 					`orElse` 
 				((const Nothing) <$> readTMVar finished)
-			INotify.removeWatch wd
+			void $ tryNonAsync $ INotify.removeWatch wd
 			return v
 	
 	inotifycreate i cont = INotify.addWatch i evs (P.takeDirectory f) $ \case
@@ -231,8 +231,9 @@ tailVerify iv f finished =
 		wd <- INotify.addWatch i [INotify.Modify] f $ \_event ->
 			atomically $ void $ tryPutTMVar modified ()
 		r <- follow h modified
-		INotify.removeWatch wd
+		void $ tryNonAsync $ INotify.removeWatch wd
 		return r
+
 	-- File never showed up, but we've been told it's done being
 	-- written to.
 	go' _ Nothing = do
