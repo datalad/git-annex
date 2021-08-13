@@ -52,4 +52,6 @@ data IncrementalVerifier = IncrementalVerifier
 	-- if the hash verified.
 	, failIncremental :: IO ()
 	-- ^ Call if the incremental verification needs to fail.
+	, descVerify :: String
+	-- ^ A description of what is done to verify the content.
 	}

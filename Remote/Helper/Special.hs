@@ -1,6 +1,6 @@
 {- helpers for special remotes
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -39,6 +39,7 @@ import Annex.Common
 import Annex.SpecialRemote.Config
 import Types.StoreRetrieve
 import Types.Remote
+import Annex.Verify
 import Annex.UUID
 import Config
 import Config.Cost
@@ -54,6 +55,8 @@ import Git.Types
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import Control.Concurrent.STM
+import Control.Concurrent.Async
 
 {- Special remotes don't have a configured url, so Git.Repo does not
  - automatically generate remotes for them. This looks for a different
@@ -101,19 +104,33 @@ fileStorer a k (ByteContent b) m = withTmp k $ \f -> do
 byteStorer :: (Key -> L.ByteString -> MeterUpdate -> Annex ()) -> Storer
 byteStorer a k c m = withBytes c $ \b -> a k b m
 
--- A Retriever that writes the content of a Key to a provided file.
--- It is responsible for updating the progress meter as it retrieves data.
-fileRetriever :: (FilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
-fileRetriever a k m callback = do
-	f <- prepTmp k
-	a (fromRawFilePath f) k m
-	pruneTmpWorkDirBefore f (callback . FileContent . fromRawFilePath)
-
 -- A Retriever that generates a lazy ByteString containing the Key's
 -- content, and passes it to a callback action which will fully consume it
 -- before returning.
-byteRetriever :: (Key -> (L.ByteString -> Annex a) -> Annex a) -> Key -> MeterUpdate -> (ContentSource -> Annex a) -> Annex a
-byteRetriever a k _m callback = a k (callback . ByteContent)
+byteRetriever :: (Key -> (L.ByteString -> Annex a) -> Annex a) -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> (ContentSource -> Annex a) -> Annex a
+byteRetriever a k _m _miv callback = a k (callback . ByteContent)
+
+-- A Retriever that writes the content of a Key to a provided file.
+-- The action is responsible for updating the progress meter as it 
+-- retrieves data. The incremental verifier is updated in the background as
+-- the action writes to the file.
+fileRetriever :: (FilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
+fileRetriever a k m miv callback = do
+	f <- prepTmp k
+	let retrieve = a (fromRawFilePath f) k m
+	case miv of
+		Nothing -> retrieve
+		Just iv -> do
+			finished <- liftIO newEmptyTMVarIO
+			t <- liftIO $ async $ tailVerify iv f finished
+			retrieve
+			liftIO $ atomically $ putTMVar finished ()
+			liftIO (wait t) >>= \case
+				Nothing -> noop
+				Just deferredverify -> do
+					showAction (descVerify iv)
+					liftIO deferredverify
+	pruneTmpWorkDirBefore f (callback . FileContent . fromRawFilePath)
 
 {- The base Remote that is provided to specialRemote needs to have
  - storeKey, retrieveKeyFile, removeKey, and checkPresent methods,

@@ -124,7 +124,7 @@ checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 	exists <- liftIO $ R.doesPathExist file
 	case (exists, fast) of
 		(True, False) -> do
-			showAction "checksum"
+			showAction descChecksum
 			sameCheckSum key 
 				<$> hashFile hash file nullMeterUpdate
 		_ -> return True
@@ -293,7 +293,11 @@ mkIncrementalVerifier ctx key = do
 					return $ sameCheckSum key (show digest)
 				Nothing -> return False
 		, failIncremental = writeIORef v Nothing
+		, descVerify = descChecksum
 		}
+
+descChecksum :: String
+descChecksum = "checksum"
 
 {- A varient of the SHA256E backend, for testing that needs special keys
  - that cannot collide with legitimate keys in the repository.

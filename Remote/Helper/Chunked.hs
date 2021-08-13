@@ -267,8 +267,7 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 		-- Optimisation: Try the unchunked key first, to avoid
 		-- looking in the git-annex branch for chunk counts
 		-- that are likely not there.
-		iv <- startVerifyKeyContentIncrementally vc basek
-		tryNonAsync (getunchunked iv) >>= \case
+		tryNonAsync getunchunked >>= \case
 			Right r -> finalize r
 			Left e -> go (Just e) 
 				=<< chunkKeysOnly u chunkconfig basek
@@ -287,22 +286,20 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 	firstavail (Just e) _ [] = throwM e
 	firstavail pe currsize ([]:ls) = firstavail pe currsize ls
 	firstavail _ currsize ((k:ks):ls)
-		| k == basek = do
-			iv <- startVerifyKeyContentIncrementally vc basek
-			getunchunked iv
-				`catchNonAsync` (\e -> firstavail (Just e) currsize ls)
+		| k == basek = getunchunked
+			`catchNonAsync` (\e -> firstavail (Just e) currsize ls)
 		| otherwise = do
 			let offset = resumeOffset currsize k
 			let p = maybe basep
 				(offsetMeterUpdate basep . toBytesProcessed)
 				offset
 			v <- tryNonAsync $
-				retriever (encryptor k) p $ \content ->
+				retriever (encryptor k) p Nothing $ \content ->
 					bracket (maybe opennew openresume offset) (liftIO . hClose . fst) $ \(h, iv) -> do
-						iv' <- retrieved iv (Just h) p content
+						retrieved iv (Just h) p content
 						let sz = toBytesProcessed $
 							fromMaybe 0 $ fromKey keyChunkSize k
-						getrest p h iv' sz sz ks
+						getrest p h iv sz sz ks
 			case v of
 				Left e
 					| null ls -> throwM e
@@ -313,12 +310,21 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 	getrest p h iv sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
 		liftIO $ p' zeroBytesProcessed
-		iv' <- retriever (encryptor k) p' $ 
+		retriever (encryptor k) p' Nothing $ 
 			retrieved iv (Just h) p'
-		getrest p h iv' sz (addBytesProcessed bytesprocessed sz) ks
+		getrest p h iv sz (addBytesProcessed bytesprocessed sz) ks
 
-	getunchunked iv = retriever (encryptor basek) basep $
-		retrieved iv Nothing basep
+	getunchunked = do
+		iv <- startVerifyKeyContentIncrementally vc basek
+		case enc of
+			Just _ -> retriever (encryptor basek) basep Nothing $
+				retrieved iv Nothing basep
+			-- Not chunked and not encrypted, so ask the
+			-- retriever to incrementally verify when it
+			-- retrieves to a file.
+			Nothing -> retriever (encryptor basek) basep iv $
+				retrieved iv Nothing basep
+		return iv
 
 	opennew = do
 		iv <- startVerifyKeyContentIncrementally vc basek
@@ -365,13 +371,11 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
  - will be provided, and instead the content will be written to the
  - dest file.
  -
+ - The IncrementalVerifier is updated as the file content is read.
+ -
  - Note that when neither chunking nor encryption is used, and the remote
  - provides FileContent, that file only needs to be renamed
  - into place. (And it may even already be in the right place..)
- -
- - The IncrementalVerifier is updated as the file content is read.
- - If it was not able to be updated, due to the file not needing to be read,
- - Nothing will be returned.
  -}
 writeRetrievedContent
 	:: LensGpgEncParams encc
@@ -382,32 +386,25 @@ writeRetrievedContent
 	-> Maybe MeterUpdate
 	-> ContentSource
 	-> Maybe IncrementalVerifier
-	-> Annex (Maybe IncrementalVerifier)
+	-> Annex ()
 writeRetrievedContent dest enc encc mh mp content miv = case (enc, mh, content) of
 	(Nothing, Nothing, FileContent f)
-		| f == dest -> return Nothing
-		| otherwise -> do
-			liftIO $ moveFile f dest
-			return Nothing
+		| f == dest -> noop
+		| otherwise -> liftIO $ moveFile f dest
 	(Just (cipher, _), _, ByteContent b) -> do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		decrypt cmd encc cipher (feedBytes b) $
 			readBytes write
-		return miv
 	(Just (cipher, _), _, FileContent f) -> do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		withBytes content $ \b ->
 			decrypt cmd encc cipher (feedBytes b) $
 				readBytes write
 		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
-		return miv
 	(Nothing, _, FileContent f) -> do
 		withBytes content write
 		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
-		return miv
-	(Nothing, _, ByteContent b) -> do
-		write b
-		return miv
+	(Nothing, _, ByteContent b) -> write b
   where
 	write b = case mh of
 		Just h -> liftIO $ write' b h

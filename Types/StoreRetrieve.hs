@@ -1,6 +1,6 @@
 {- Types for Storer and Retriever actions for remotes.
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ module Types.StoreRetrieve where
 
 import Annex.Common
 import Utility.Metered
+import Types.Backend (IncrementalVerifier)
 
 import qualified Data.ByteString.Lazy as L
 
@@ -29,8 +30,17 @@ type Storer = Key -> ContentSource -> MeterUpdate -> Annex ()
 
 -- Action that retrieves a Key's content from a remote, passing it to a
 -- callback, which will fully consume the content before returning.
+--
 -- Throws exception if key is not present, or remote is not accessible.
-type Retriever = forall a. Key -> MeterUpdate -> (ContentSource -> Annex a) -> Annex a
+--
+-- When it retrieves FileContent, it is responsible for updating the
+-- MeterUpdate. And when the IncrementalVerifier is passed to it,
+-- and it retrieves FileContent, it should feed the content to the
+-- verifier before running the callback. 
+-- This should not be done when it retrieves ByteContent.
+type Retriever = forall a.
+	Key -> MeterUpdate -> Maybe IncrementalVerifier
+		-> (ContentSource -> Annex a) -> Annex a
 
 -- Action that removes a Key's content from a remote.
 -- Succeeds if key is already not present.
