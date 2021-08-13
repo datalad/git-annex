@@ -36,6 +36,7 @@ import Types.Key
 import qualified System.INotify as INotify
 import Control.Concurrent.STM
 import qualified Data.ByteString as S
+import Data.Time.Clock.POSIX
 #endif
 
 data VerifyConfig = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
@@ -130,6 +131,9 @@ startVerifyKeyContentIncrementally verifyconfig k =
 -- The file does not need to exist yet when this is called. It will wait
 -- for the file to appear before opening it and starting verification.
 --
+-- This is not supported for all OSs, and will return False on OS's
+-- where it is not supported.
+--
 -- Note that there are situations where the file may fail to verify despite
 -- having the correct content. For example, when the file is written out
 -- of order, or gets replaced part way through. To deal with such cases,
@@ -137,8 +141,10 @@ startVerifyKeyContentIncrementally verifyconfig k =
 -- content is known to be incorrect, but instead as an indication that the
 -- file should be verified again, once it's done being written to.
 --
--- Also, this is not supported for all OSs, and will return False on OS's
--- where it is not supported.
+-- (It is also possible, in theory, for a file to verify despite having
+-- incorrect content. For that to happen, the file would need to have
+-- the right content when this checks it, but then the content gets
+-- changed later by whatever is writing to the file.)
 --
 -- This should be fairly efficient, reading from the disk cache,
 -- as long as the writer does not get very far ahead of it. However,
@@ -148,11 +154,25 @@ startVerifyKeyContentIncrementally verifyconfig k =
 -- and if the disk is slow, the reader may never catch up to the writer,
 -- and the disk cache may never speed up reads. So this should only be
 -- used when there's not a better way to incrementally verify.
-tailVerify :: IncrementalVerifier -> FilePath -> TMVar () -> IO Bool
+--
+-- If the writer gets far ahead, this can still need to do a significant
+-- amount off work once the writer is finished. That could lead to a long
+-- pause with no indication to the user about what is being done. To deal
+-- with this problem, it will do at most half a second of work after the
+-- writer has finished. If there is more work still to do, it returns an IO
+-- action that will complete the work. This way, the caller can display
+-- something appropriate while that is running.
+tailVerify :: IncrementalVerifier -> FilePath -> TMVar () -> IO (Either (IO Bool) Bool)
 #if WITH_INOTIFY
 tailVerify iv f finished = 
-	catchDefaultIO False $ INotify.withINotify $ \i ->
-		bracket (waitforfiletoexist i) (maybe noop hClose) (go i)
+	catchDefaultIO (Right False) $
+		INotify.withINotify $ \i -> do
+			h <- waitforfiletoexist i
+			tryIO (go i h) >>= \case
+				Right r -> return r
+				Left _ -> do
+					maybe noop hClose h
+					return (Right False)
   where
  	rf = toRawFilePath f
 	d = toRawFilePath (takeDirectory f)
@@ -209,7 +229,7 @@ tailVerify iv f finished =
 		return r
 	-- File never showed up, but we've been told it's done being
 	-- written to.
-	go _ Nothing = return False
+	go _ Nothing = return (Right False)
 	
 	follow h modified = do
 		b <- S.hGetNonBlocking h chunk
@@ -223,26 +243,42 @@ tailVerify iv f finished =
 					((const (follow h modified))
 						<$> takeTMVar modified)
 							`orElse`
-					((const (finish h))
-						<$> readTMVar finished)
+					((const (finish h =<< getPOSIXTime))
+						<$> takeTMVar finished)
 				cont
 			else do
 				updateIncremental iv b
-				follow h modified
+				atomically (tryTakeTMVar finished) >>= \case
+					Nothing -> follow h modified
+					Just () -> finish h =<< getPOSIXTime
 	
 	-- We've been told the file is done being written to, but we
-	-- may not have reached the end of it yet. Read until EOF.
-	finish h = do
+	-- may not have reached the end of it yet.
+	finish h starttime = do
 		b <- S.hGet h chunk
 		if S.null b
-			then finalizeIncremental iv
+			then do
+				hClose h
+				Right <$> finalizeIncremental iv
 			else do
 				updateIncremental iv b
-				finish h
-	
+				now <- getPOSIXTime
+				if now - starttime > 0.5
+					then return (Left (deferredfinish h))
+					else finish h starttime
+
+	deferredfinish h = do
+		b <- S.hGet h chunk
+		if S.null b
+			then do
+				hClose h
+				finalizeIncremental iv
+			else do
+				updateIncremental iv b
+				deferredfinish h
 
 	chunk = 65536
 #else
-tailVerify _ _ _ = return False -- not supported
+tailVerify _ _ _ = return (Right False) -- not supported
 #endif
 
