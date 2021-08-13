@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2021-08-13T20:06:56Z"
+ content="""
+Status update: This is implemented, and seems to work in limited testing.
+
+The directory special remote's Cow probing has a (create, delete, create)
+sequence that prevents incremental hashing from being done. It should be
+possible to make that remote incrementally hash on its own, while copying,
+rather than using tailVerify. That would avoid the problem, and be more
+efficient besides.
+
+The web special remote still needs to be made to do incremental hashing.
+Besides bittorrent, I think it's the only other one that won't do it now.
+
+One thing I don't like: When the incremental checksumming falls behind
+the transfer, it has to catch up at the end, reading the remainder of the
+file. That currently runs in the transfer stage. If concurrency is enabled,
+it's possible for all jobs to be stuck doing that, rather than having any
+actually running transfers, and so fail to saturate bandwidth. This is kind
+of a reversion of a past optimisation that made checksums happen in a separate
+stage to avoid that problem. Although now it only happens when the transfer
+runs at the same speed as the disk (or perhaps when resuming an interrupted
+transfer), otherwise the checksumming won't fall behind. It would be better
+to defer the rest of the incremental checksumming to the transfer stage
+(by returning the action inside Verification and running it when
+the verification is checked), or perhaps switch to the checksum stage
+before doing it.
+"""]]
