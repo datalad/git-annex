@@ -85,6 +85,8 @@ supported repository versions: 8
 upgrade supported from repository versions: 2 3 4 5 6 7
 """]]
 
+This is built with the additional patch mentioned in [[bugs/commit_7550ef9a2_doesn__39__t_compile_on_Windows--patch]].
+
 Windows version 21H1 (build 19043.1165), 64 bit.
 
 ### Please provide any additional information below.
