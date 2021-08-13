@@ -166,19 +166,19 @@ startVerifyKeyContentIncrementally verifyconfig k =
 tailVerify :: IncrementalVerifier -> RawFilePath -> TMVar () -> IO (Maybe (IO ()))
 #if WITH_INOTIFY
 tailVerify iv f finished = 
-	tryIO go >>= \case
+	tryNonAsync go >>= \case
 		Right r -> return r
 		Left _ -> do
 			failIncremental iv
 			return Nothing
   where
  	f' = fromRawFilePath f
-	waitforfiletoexist i = tryIO (openBinaryFile f' ReadMode) >>= \case
+	waitforfiletoexist i = tryNonAsync (openBinaryFile f' ReadMode) >>= \case
 		Right h -> return (Just h)
 		Left _ -> do
 			hv <- newEmptyTMVarIO
 			wd <- inotifycreate i $
-				tryIO (openBinaryFile f' ReadMode) >>= \case
+				tryNonAsync (openBinaryFile f' ReadMode) >>= \case
 					Right h -> 
 						unlessM (atomically $ tryPutTMVar hv h) $
 							hClose h
@@ -219,7 +219,7 @@ tailVerify iv f finished =
 	
 	go = INotify.withINotify $ \i -> do
 		h <- waitforfiletoexist i
-		tryIO (go' i h) >>= \case
+		tryNonAsync (go' i h) >>= \case
 			Right r -> return r
 			Left _ -> do
 				maybe noop hClose h
@@ -274,7 +274,7 @@ tailVerify iv f finished =
 				now <- getPOSIXTime
 				if now - starttime > 0.5
 					then return $ Just $
-						tryIO (deferredfinish h) >>= \case
+						tryNonAsync (deferredfinish h) >>= \case
 							Right () -> noop
 							Left _ -> failIncremental iv
 					else finish h starttime
