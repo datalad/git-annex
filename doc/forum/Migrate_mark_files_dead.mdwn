@@ -1,0 +1,23 @@
+Through several migrations, and migrations leave duplicate files.
+
+The man page warns about this and tells to use `annex unused` to find them.
+I'd usually copy the new files around, drop the old ones and mark the old ones dead,
+but alas, manual things are not always done.
+
+To clean up after sloppy migrations,
+or after deciding that I really want to get rid of the old files,
+I'd like a tool to
+
+* find files that were migrated,
+* do some sanity checks,
+* drop them from all the remotes (with extreme prejudice, as even unused files are usually subject to numcopies), and
+* declare them dead (which can only happen once they're gone from all remotes).
+
+I've written a tool that does all these. It's available at [[migrate-mark-dead.py]];
+see its head for documentation.
+This is a tool for forcibly dropping files,
+so use with the adaequate caution and at your own risk.
+
+Since, I can reclaim my disk space *and* run `git annex fsck --all` with good results again.
+
+--[[chrysn]]
