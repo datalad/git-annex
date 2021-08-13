@@ -199,13 +199,13 @@ tailVerify iv f finished =
 	inotifycreate i cont = INotify.addWatch i evs (P.takeDirectory f) $ \case
 		-- Ignore changes to other files in the directory.
 		INotify.Created { INotify.filePath = fn }
-			| fn /= f -> noop
+			| fn /= basef -> noop
 		INotify.MovedIn { INotify.filePath = fn }
-			| fn /= f -> noop
+			| fn /= basef -> noop
 		INotify.Opened { INotify.maybeFilePath = fn }
-			| fn /= Just f -> noop
+			| fn /= Just basef -> noop
 		INotify.Modified { INotify.maybeFilePath = fn }
-			| fn /= Just f -> noop
+			| fn /= Just basef -> noop
 		_ -> cont
 	  where
 		evs = 
@@ -215,6 +215,7 @@ tailVerify iv f finished =
 			, INotify.Open
 			, INotify.Modify
 			]
+		basef = P.takeFileName f
 	
 	go = INotify.withINotify $ \i -> do
 		h <- waitforfiletoexist i
