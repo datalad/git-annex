@@ -32,9 +32,9 @@ import Annex.WorkerPool
 import Types.WorkerPool
 import Types.Key
 
+import Control.Concurrent.STM
 #if WITH_INOTIFY
 import qualified System.INotify as INotify
-import Control.Concurrent.STM
 import qualified Data.ByteString as S
 import qualified System.FilePath.ByteString as P
 import Data.Time.Clock.POSIX
