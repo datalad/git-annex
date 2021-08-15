@@ -43,7 +43,8 @@ copies are around.
 
 This is not tuned for performance; it tries to avoid any O(n^2) or worse
 behavior, and should complete (or at least produce output) within minutes even
-on a 150000 file, 1000 commit repository.
+on a 150000 file, 1000 commit repository. (The slowest parts being the fsck and
+the enumeration of whereis data take the longest time).
 
 The actual dropping takes quite a while, as each drop and dead are done
 individually. (Some commands have --batch but not for --key). There are no
@@ -201,8 +202,23 @@ if bad_files:
     sys.exit(1)
 print("Checked %d symlinks in HEAD, none of them points to an old hash any more" % files_checked)
 
+print("performing a non-`--all` fsck...")
 subprocess.check_call('git annex fsck --fast --quiet', shell=True)
 print("Checked that the files that *are* in the tree are properly distributed.")
+
+print("Gathering whereis data to decide where to drop from...")
+whereall = subprocess.Popen(['git', 'annex', 'whereis', '--json', '--all'], stdout=subprocess.PIPE)
+hashes_to_kill_remotes = {}
+for line in whereall.stdout:
+    wherethis = json.loads(line)
+    if wherethis['key'] not in hashes_to_kill:
+        continue
+
+    remotes = {None if r['here'] else r['uuid'] for r in wherethis['whereis']}
+    if remotes:
+        hashes_to_kill_remotes[wherethis['key']] = remotes
+wheretodrop = {r or "here" for r in set.union(*hashes_to_kill_remotes.values())}
+print(f"Found f{len(hashes_to_kill_remotes)} migrated hashes still around on remotes {wheretodrop}")
 
 print()
 print("If you want to really drop all of them, enter `force drop and declare them dead` here:")
@@ -215,15 +231,14 @@ try:
     subprocess.check_call(["git", "-c", "annex.commitmessage=updates before running migrate-mark-dead.py", "annex", "merge"])
     annex_no_autocommit = ["git", "-c", "annex.alwayscommit=false", "annex"]
     # Network first, to ensure the password prompts come fast even when most files are dead already
-    for key in hashes_to_kill:
-        whereout = subprocess.run(annex_no_autocommit + ['whereis', '--json', '--key', key], stdout=subprocess.PIPE).stdout
-        wherejson = json.loads(whereout)
-        for remote in wherejson['whereis']:
-            if remote['here']:
+    for (key, remotes) in hashes_to_kill_remotes.items():
+        for r in remotes:
+            if r is None:
                 # Can't be run with `--from here`
                 subprocess.check_call(annex_no_autocommit + ['drop', '--key', key])
             else:
-                subprocess.check_call(annex_no_autocommit + ['drop', '--force', '--key', key, '--from', remote['uuid']])
+                subprocess.check_call(annex_no_autocommit + ['drop', '--force', '--key', key, '--from', r])
+
     for key in hashes_to_kill:
         subprocess.check_call(annex_no_autocommit + ['dead', '--key', key])
 finally:
