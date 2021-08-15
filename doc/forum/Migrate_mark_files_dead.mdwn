@@ -201,15 +201,8 @@ if bad_files:
     sys.exit(1)
 print("Checked %d symlinks in HEAD, none of them points to an old hash any more" % files_checked)
 
-subprocess.check_call('git annex fsck --fast --quiet', shell=True)
-print("Checked that the files that *are* in the tree are properly distributed.")
-
-info = json.loads(subprocess.check_output('git annex info --json', shell=True))
-remotes = [(f['uuid'], f['description']) for f in info['untrusted repositories'] + info['semitrusted repositories'] + info['trusted repositories'] if not f['here']]
-print("Will attempt to drop from these repositories:")
-for (remote, descr) in remotes:
-    print("    ", remote, descr)
-print("     and from here")
+# subprocess.check_call('git annex fsck --fast --quiet', shell=True)
+# print("Checked that the files that *are* in the tree are properly distributed.")
 
 print()
 print("If you want to really drop all of them, enter `force drop and declare them dead` here:")
@@ -221,16 +214,17 @@ if line != "force drop and declare them dead":
 try:
     subprocess.check_call(["git", "-c", "annex.commitmessage=updates before running migrate-mark-dead.py", "annex", "merge"])
     annex_no_autocommit = ["git", "-c", "annex.alwayscommit=false", "annex"]
+    # Network first, to ensure the password prompts come fast even when most files are dead already
     for key in hashes_to_kill:
-        # Can't be run with `--from here`
-        subprocess.check_call(annex_no_autocommit + ['drop', '--key', key])
-        for (remote, remote_name) in remotes:
-            # The '--in' ensures it isn't tried if it's not known to be there
-            try:
-                subprocess.check_call(annex_no_autocommit + ['drop', '--force', '--key', key, '--from', remote, '--in', remote])
-            except subprocess.CalledProcessError:
-                print("Failed to drop from %s (%s), probably because it's not a remote of this system. Continuing and not trying there again; if it's really necessary to drop from there, dead will complain anyway" % (remote, remote_name))
-                remotes = [(r, s) for (r, s) in remotes if r != remote]
+        whereout = subprocess.run(annex_no_autocommit + ['whereis', '--json', '--key', key], stdout=subprocess.PIPE).stdout
+        wherejson = json.loads(whereout)
+        for remote in wherejson['whereis']:
+            if remote['here']:
+                # Can't be run with `--from here`
+                subprocess.check_call(annex_no_autocommit + ['drop', '--key', key])
+            else:
+                subprocess.check_call(annex_no_autocommit + ['drop', '--force', '--key', key, '--from', remote['uuid']])
+    for key in hashes_to_kill:
         subprocess.check_call(annex_no_autocommit + ['dead', '--key', key])
 finally:
     subprocess.check_call(["git", "-c", "annex.commitmessage=ran migrate-mark-dead.py", "annex", "merge"])
