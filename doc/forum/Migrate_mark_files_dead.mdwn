@@ -201,8 +201,8 @@ if bad_files:
     sys.exit(1)
 print("Checked %d symlinks in HEAD, none of them points to an old hash any more" % files_checked)
 
-# subprocess.check_call('git annex fsck --fast --quiet', shell=True)
-# print("Checked that the files that *are* in the tree are properly distributed.")
+subprocess.check_call('git annex fsck --fast --quiet', shell=True)
+print("Checked that the files that *are* in the tree are properly distributed.")
 
 print()
 print("If you want to really drop all of them, enter `force drop and declare them dead` here:")
