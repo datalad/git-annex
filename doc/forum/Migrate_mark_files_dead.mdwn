@@ -42,9 +42,10 @@ but is not accessible; this is a consequence of `dead` not working while known
 copies are around.
 
 This is not tuned for performance; it tries to avoid any O(n^2) or worse
-behavior, and should complete (or at least produce output) within minutes even
-on a 150000 file, 1000 commit repository. (The slowest parts being the fsck and
-the enumeration of whereis data take the longest time).
+behavior, and should complete data acquisition (or at least produce output)
+within minutes even on a 150000 file, 1000 commit repository. (The slowest
+parts being the fsck and the enumeration of whereis data take the longest
+time).
 
 The actual dropping takes quite a while, as each drop and dead are done
 individually. (Some commands have --batch but not for --key). There are no
@@ -214,11 +215,14 @@ for line in whereall.stdout:
     if wherethis['key'] not in hashes_to_kill:
         continue
 
-    remotes = {None if r['here'] else r['uuid'] for r in wherethis['whereis']}
+    remotes = {None if r['here'] else r['uuid'] for r in wherethis['whereis'] + wherethis['untrusted']}
     if remotes:
         hashes_to_kill_remotes[wherethis['key']] = remotes
-wheretodrop = {r or "here" for r in set.union(*hashes_to_kill_remotes.values())}
-print(f"Found f{len(hashes_to_kill_remotes)} migrated hashes still around on remotes {wheretodrop}")
+if hashes_to_kill_remotes:
+    wheretodrop = {r or "here" for r in set.union(*hashes_to_kill_remotes.values())}
+else:
+    wheretodrop = set()
+print(f"Found {len(hashes_to_kill_remotes)} migrated hashes still around on remotes {wheretodrop}")
 
 print()
 print("If you want to really drop all of them, enter `force drop and declare them dead` here:")
@@ -231,16 +235,20 @@ try:
     subprocess.check_call(["git", "-c", "annex.commitmessage=updates before running migrate-mark-dead.py", "annex", "merge"])
     annex_no_autocommit = ["git", "-c", "annex.alwayscommit=false", "annex"]
     # Network first, to ensure the password prompts come fast even when most files are dead already
-    for (key, remotes) in hashes_to_kill_remotes.items():
+    for (i, (key, remotes)) in enumerate(hashes_to_kill_remotes.items()):
         for r in remotes:
             if r is None:
                 # Can't be run with `--from here`
-                subprocess.check_call(annex_no_autocommit + ['drop', '--key', key])
+                subprocess.check_call(annex_no_autocommit + ['drop', '--force', '--key', key])
             else:
                 subprocess.check_call(annex_no_autocommit + ['drop', '--force', '--key', key, '--from', r])
 
-    for key in hashes_to_kill:
+        if (i % 10 == 0):
+            print(f"Dropped {i} ({100 * i/len(hashes_to_kill_remotes):.1f}% of) present hashes")
+    for i, key in enumerate(hashes_to_kill):
         subprocess.check_call(annex_no_autocommit + ['dead', '--key', key])
+        if (i % 100 == 0):
+            print(f"Marked {i} ({100 * i/len(hashes_to_kill):.1f}% of) unused hashes as dead")
 finally:
     subprocess.check_call(["git", "-c", "annex.commitmessage=ran migrate-mark-dead.py", "annex", "merge"])
 ```
