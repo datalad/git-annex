@@ -10,22 +10,15 @@
 module Annex.CopyFile where
 
 import Annex.Common
-import Types.Remote
 import Utility.Metered
 import Utility.CopyFile
 import Utility.FileMode
 import Utility.Touch
 import Types.Backend
-import Annex.Verify
 
 import Control.Concurrent
 import qualified Data.ByteString as S
 import Data.Time.Clock.POSIX
-
--- Copies from src to dest, updating a meter. If the copy finishes
--- successfully, calls a final check action, which must also succeed, or
--- returns false.
-type FileCopier = FilePath -> FilePath -> Key -> MeterUpdate -> Annex Bool -> VerifyConfig -> Annex (Bool, Verification)
 
 -- To avoid the overhead of trying copy-on-write every time, it's tried
 -- once and if it fails, is not tried again.
@@ -53,13 +46,17 @@ tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
 	docopycow = watchFileSize dest meterupdate $
 		copyCoW CopyTimeStamps src dest
 
-{- Copys a file. Uses copy-on-write if it is supported. Otherwise,
- - copies the file itself. If the destination already exists,
- - an interruped copy will resume where it left off.
+data CopyMethod = CopiedCoW | Copied
+
+{- Copies from src to dest, updating a meter. Preserves mode and mtime.
+ - Uses copy-on-write if it is supported. If the the destination already
+ - exists, an interruped copy will resume where it left off.
  -
- - When copy-on-write is used, returns UnVerified, because the content of
- - the file has not been verified to be correct. When the file has to be
- - read to copy it, a hash is calulated at the same time.
+ - The IncrementalVerifier is updated with the content of the file as it's
+ - being copied. But it is not finalized at the end.
+ -
+ - When copy-on-write is used, the IncrementalVerifier is not fed
+ - the content of the file.
  -
  - Note that, when the destination file already exists, it's read both
  - to start calculating the hash, and also to verify that its content is
@@ -68,13 +65,13 @@ tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
  - (eg when isStableKey is false), and doing this avoids getting a
  - corrupted file in such cases.
  -}
-fileCopier :: CopyCoWTried -> FileCopier
+fileCopier :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Annex CopyMethod
 #ifdef mingw32_HOST_OS
-fileCopier _ src dest k meterupdate check verifyconfig = docopy
+fileCopier _ src dest meterupdate iv = docopy
 #else
-fileCopier copycowtried src dest k meterupdate check verifyconfig =
+fileCopier copycowtried src dest meterupdate iv =
 	ifM (liftIO $ tryCopyCoW copycowtried src dest meterupdate)
-		( unVerified check
+		( return CopiedCoW
 		, docopy
 		)
 #endif
@@ -82,16 +79,14 @@ fileCopier copycowtried src dest k meterupdate check verifyconfig =
 	dest' = toRawFilePath dest
 
 	docopy = do
-		iv <- startVerifyKeyContentIncrementally verifyconfig k
-
 		-- The file might have had the write bit removed,
 		-- so make sure we can write to it.
 		void $ liftIO $ tryIO $ allowWrite dest'
 
 		liftIO $ withBinaryFile dest ReadWriteMode $ \hdest ->
 			withBinaryFile src ReadMode $ \hsrc -> do
-				sofar <- compareexisting iv hdest hsrc zeroBytesProcessed
-				docopy' iv hdest hsrc sofar
+				sofar <- compareexisting hdest hsrc zeroBytesProcessed
+				docopy' hdest hsrc sofar
 
 		-- Copy src mode and mtime.
 		mode <- liftIO $ fileMode <$> getFileStatus src
@@ -99,19 +94,9 @@ fileCopier copycowtried src dest k meterupdate check verifyconfig =
 		liftIO $ setFileMode dest mode
 		liftIO $ touch dest' mtime False
 
-		ifM check
-			( case iv of
-				Just x -> ifM (liftIO $ finalizeIncremental x)
-					( return (True, Verified)
-					, do
-						warning "verification of content failed"
-						return (False, UnVerified)
-					)
-				Nothing -> return (True, UnVerified)
-			, return (False, UnVerified)
-			)
+		return Copied
 	
-	docopy' iv hdest hsrc sofar = do
+	docopy' hdest hsrc sofar = do
 		s <- S.hGet hsrc defaultChunkSize
 		if s == S.empty
 			then return ()
@@ -120,12 +105,12 @@ fileCopier copycowtried src dest k meterupdate check verifyconfig =
 				S.hPut hdest s
 				maybe noop (flip updateIncremental s) iv
 				meterupdate sofar'
-				docopy' iv hdest hsrc sofar'
+				docopy' hdest hsrc sofar'
 
 	-- Leaves hdest and hsrc seeked to wherever the two diverge,
 	-- so typically hdest will be seeked to end, and hsrc to the same
 	-- position.
-	compareexisting iv hdest hsrc sofar = do
+	compareexisting hdest hsrc sofar = do
 		s <- S.hGet hdest defaultChunkSize
 		if s == S.empty
 			then return sofar
@@ -136,7 +121,7 @@ fileCopier copycowtried src dest k meterupdate check verifyconfig =
 						maybe noop (flip updateIncremental s) iv
 						let sofar' = addBytesProcessed sofar (S.length s)
 						meterupdate sofar'
-						compareexisting iv hdest hsrc sofar'
+						compareexisting hdest hsrc sofar'
 					else do
 						seekbefore hdest s
 						seekbefore hsrc s'

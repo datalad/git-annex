@@ -191,7 +191,7 @@ storeKeyM d chunkconfig cow k c m =
 			in byteStorer go k c m
 		NoChunks ->
 			let go _k src p = do
-				fileCopierUnVerified cow src tmpf k p
+				void $ fileCopier cow src tmpf p Nothing
 				liftIO $ finalizeStoreGeneric d tmpdir destdir
 			in fileStorer go k c m
 		_ -> 
@@ -204,11 +204,6 @@ storeKeyM d chunkconfig cow k c m =
 	tmpf = fromRawFilePath tmpdir </> fromRawFilePath kf
 	kf = keyFile k
 	destdir = storeDir d k
-
-fileCopierUnVerified :: CopyCoWTried -> FilePath -> FilePath -> Key -> MeterUpdate -> Annex ()
-fileCopierUnVerified cow src dest k p = do
-	(ok, _verification) <- fileCopier cow src dest k p (return True) NoVerify
-	unless ok $ giveup "failed to copy file"
 
 checkDiskSpaceDirectory :: RawFilePath -> Key -> Annex Bool
 checkDiskSpaceDirectory d k = do
@@ -239,7 +234,7 @@ retrieveKeyFileM :: RawFilePath -> ChunkConfig -> CopyCoWTried -> Retriever
 retrieveKeyFileM d (LegacyChunks _) _ = Legacy.retrieve locations d
 retrieveKeyFileM d NoChunks cow = fileRetriever $ \dest k p -> do
 	src <- liftIO $ fromRawFilePath <$> getLocation d k
-	fileCopierUnVerified cow src dest k p
+	void $ fileCopier cow src dest p Nothing
 retrieveKeyFileM d _ _ = byteRetriever $ \k sink ->
 	sink =<< liftIO (L.readFile . fromRawFilePath =<< getLocation d k)
 
@@ -305,17 +300,17 @@ checkPresentGeneric' d check = ifM check
 	)
 
 storeExportM :: RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
-storeExportM d cow src k loc p = do
+storeExportM d cow src _k loc p = do
 	liftIO $ createDirectoryUnder d (P.takeDirectory dest)
 	-- Write via temp file so that checkPresentGeneric will not
 	-- see it until it's fully stored.
 	viaTmp go (fromRawFilePath dest) ()
   where
 	dest = exportPath d loc
-	go tmp () = fileCopierUnVerified cow src tmp k p
+	go tmp () = void $ fileCopier cow src tmp p Nothing
 
 retrieveExportM :: RawFilePath -> CopyCoWTried -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
-retrieveExportM d cow k loc dest p = fileCopierUnVerified cow src dest k p
+retrieveExportM d cow _k loc dest p = void $ fileCopier cow src dest p Nothing
   where
 	src = fromRawFilePath $ exportPath d loc
 
@@ -493,11 +488,11 @@ retrieveExportWithContentIdentifierM dir cow loc cid dest mkkey p =
 		guardSameContentIdentifiers cont cid currcid
 
 storeExportWithContentIdentifierM :: RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
-storeExportWithContentIdentifierM dir cow src k loc overwritablecids p = do
+storeExportWithContentIdentifierM dir cow src _k loc overwritablecids p = do
 	liftIO $ createDirectoryUnder dir (toRawFilePath destdir)
 	withTmpFileIn destdir template $ \tmpf tmph -> do
 		liftIO $ hClose tmph
-		fileCopierUnVerified cow src tmpf k p
+		void $ fileCopier cow src tmpf p Nothing
 		let tmpf' = toRawFilePath tmpf
 		resetAnnexFilePerm tmpf'
 		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf' >>= \case

@@ -29,6 +29,7 @@ import qualified Annex
 import Logs.Presence
 import Annex.Transfer
 import Annex.CopyFile
+import Annex.Verify
 import Annex.UUID
 import qualified Annex.Content
 import qualified Annex.BranchState
@@ -839,6 +840,8 @@ wantHardLink = (annexHardLink <$> Annex.getGitConfig)
 	-- because they can be modified at any time.
 	<&&> (not <$> annexThin <$> Annex.getGitConfig)
 
+type FileCopier = FilePath -> FilePath -> Key -> MeterUpdate -> Annex Bool -> VerifyConfig -> Annex (Bool, Verification)
+
 -- If either the remote or local repository wants to use hard links,
 -- the copier will do so (falling back to copying if a hard link cannot be
 -- made).
@@ -849,7 +852,6 @@ wantHardLink = (annexHardLink <$> Annex.getGitConfig)
 -- copying it.
 mkFileCopier :: Bool -> State -> Annex FileCopier
 mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
-	let copier = fileCopier copycowtried
 	localwanthardlink <- wantHardLink
 	let linker = \src dest -> createLink src dest >> return True
 	if remotewanthardlink || localwanthardlink
@@ -862,6 +864,22 @@ mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
 				, copier src dest k p check verifyconfig
 				)
 		else return copier
+  where
+	copier src dest k p check verifyconfig = do
+		iv <- startVerifyKeyContentIncrementally verifyconfig k
+		fileCopier copycowtried src dest p iv >>= \case
+			Copied -> ifM check
+				( case iv of
+					Just x -> ifM (liftIO $ finalizeIncremental x)
+						( return (True, Verified)
+						, do
+							warning "verification of content failed"
+							return (False, UnVerified)
+						)
+					Nothing -> return (True, UnVerified)
+				, return (False, UnVerified)
+				)
+			CopiedCoW -> unVerified check
 
 {- Normally the UUID of a local repository is checked at startup,
  - but annex-checkuuid config can prevent that. To avoid getting
