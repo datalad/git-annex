@@ -56,7 +56,7 @@ data CopyMethod = CopiedCoW | Copied
  - being copied. But it is not finalized at the end.
  -
  - When copy-on-write is used, the IncrementalVerifier is not fed
- - the content of the file.
+ - the content of the file, and verification using it will fail.
  -
  - Note that, when the destination file already exists, it's read both
  - to start calculating the hash, and also to verify that its content is
@@ -71,7 +71,11 @@ fileCopier _ src dest meterupdate iv = docopy
 #else
 fileCopier copycowtried src dest meterupdate iv =
 	ifM (liftIO $ tryCopyCoW copycowtried src dest meterupdate)
-		( return CopiedCoW
+		( do
+			-- Make sure the incremental verifier fails,
+			-- since we did not feed it.
+			liftIO $ maybe noop failIncremental iv
+			return CopiedCoW
 		, docopy
 		)
 #endif

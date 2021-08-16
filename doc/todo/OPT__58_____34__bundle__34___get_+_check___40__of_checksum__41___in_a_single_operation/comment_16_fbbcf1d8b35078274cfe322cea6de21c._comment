@@ -6,12 +6,10 @@
 The concurrency problem is fixed now.
 
 As well as the web special remote, these do not do incremental hashing
-still: directory, gitlfs, webdav, S3.
-
-The ones that do are: external, adb, gcrypt, hook, rsync
-
-The issue with directory etc is that they open the file
+still: gitlfs, webdav, S3. Problem is, these open the file
 for write. This prevents tailVerify re-opening it for read, because the
 haskell RTS actually does not allowing opening a file for read that it has
-open for write.
+open for write. This problem has already been fixed for directory.
+
+The ones that do are: external, adb, gcrypt, hook, rsync, directory
 """]]

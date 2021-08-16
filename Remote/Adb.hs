@@ -191,7 +191,7 @@ store'' serial dest src canoverwrite = checkAdbInPath False $ do
 retrieve :: AndroidSerial -> AndroidPath -> Retriever
 retrieve serial adir = fileRetriever $ \dest k _p ->
 	let src = androidLocation adir k
-	in retrieve' serial src dest
+	in retrieve' serial src (fromRawFilePath dest)
 
 retrieve' :: AndroidSerial -> AndroidPath -> FilePath -> Annex ()
 retrieve' serial src dest =

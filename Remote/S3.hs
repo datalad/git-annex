@@ -407,13 +407,13 @@ retrieve hv r rs c info = fileRetriever $ \f k p -> withS3Handle hv $ \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
-			Right loc -> retrieveHelper info h loc f p
+			Right loc -> retrieveHelper info h loc (fromRawFilePath f) p
 	Nothing ->
 		getPublicWebUrls' (uuid r) rs info c k >>= \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
-			Right us -> unlessM (withUrlOptions $ downloadUrl k p us f) $
+			Right us -> unlessM (withUrlOptions $ downloadUrl k p us (fromRawFilePath f)) $
 				giveup "failed to download content"
 
 retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Annex ()

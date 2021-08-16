@@ -418,7 +418,8 @@ retrieve' repo r rsyncopts accessmethod
 			sink =<< liftIO (L.readFile $ gCryptLocation repo k)
 	| Git.repoIsSsh repo = if accessShell r
 		then fileRetriever $ \f k p -> do
-			ps <- Ssh.rsyncParamsRemote False r Download k f
+			ps <- Ssh.rsyncParamsRemote False r Download k
+				(fromRawFilePath f)
 				(AssociatedFile Nothing)
 			oh <- mkOutputHandler
 			unlessM (Ssh.rsyncHelper oh (Just p) ps) $

@@ -235,8 +235,8 @@ storeGeneric' o meterupdate basedest populatedest = withRsyncScratchDir $ \tmp -
 			]
 		else return False
 
-retrieve :: RsyncOpts -> FilePath -> Key -> MeterUpdate -> Annex ()
-retrieve o f k p = rsyncRetrieveKey o k f (Just p)
+retrieve :: RsyncOpts -> RawFilePath -> Key -> MeterUpdate -> Annex ()
+retrieve o f k p = rsyncRetrieveKey o k (fromRawFilePath f) (Just p)
 
 retrieveCheap :: RsyncOpts -> Key -> AssociatedFile -> FilePath -> Annex ()
 retrieveCheap o k _af f = ifM (preseedTmp k f)

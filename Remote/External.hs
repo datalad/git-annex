@@ -237,7 +237,7 @@ retrieveKeyFileM :: External -> Retriever
 retrieveKeyFileM external = fileRetriever $ \d k p ->
 	either giveup return =<< go d k p
   where
-	go d k p = handleRequestKey external (\sk -> TRANSFER Download sk d) k (Just p) $ \resp ->
+	go d k p = handleRequestKey external (\sk -> TRANSFER Download sk (fromRawFilePath d)) k (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
 				| k == k' -> result $ Right ()
@@ -810,7 +810,7 @@ checkUrlM external url =
 retrieveUrl :: Retriever
 retrieveUrl = fileRetriever $ \f k p -> do
 	us <- getWebUrls k
-	unlessM (withUrlOptions $ downloadUrl k p us f) $
+	unlessM (withUrlOptions $ downloadUrl k p us (fromRawFilePath f)) $
 		giveup "failed to download content"
 
 checkKeyUrl :: CheckPresent

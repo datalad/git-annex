@@ -20,6 +20,7 @@ module Remote.Helper.Special (
 	fileStorer,
 	byteStorer,
 	fileRetriever,
+	fileRetriever',
 	byteRetriever,
 	storeKeyDummy,
 	retrieveKeyFileDummy,
@@ -115,10 +116,9 @@ byteRetriever a k _m _miv callback = a k (callback . ByteContent)
 -- retrieves data. The incremental verifier is updated in the background as
 -- the action writes to the file, but may not be updated with the entire
 -- content of the file.
-fileRetriever :: (FilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
-fileRetriever a k m miv callback = do
-	f <- prepTmp k
-	let retrieve = a (fromRawFilePath f) k m
+fileRetriever :: (RawFilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
+fileRetriever a = fileRetriever' $ \f k m miv -> do
+	let retrieve = a f k m
 	case miv of
 		Nothing -> retrieve
 		Just iv -> do
@@ -128,6 +128,15 @@ fileRetriever a k m miv callback = do
 				liftIO $ atomically $ putTMVar finished ()
 				liftIO (wait t)
 			retrieve `finally` finishtail
+
+{- A Retriever that writes the content of a Key to a provided file.
+ - The action is responsible for updating the progress meter and the 
+ - incremental verifier as it retrieves data.
+ -}
+fileRetriever' :: (RawFilePath -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()) -> Retriever
+fileRetriever' a k m miv callback = do
+	f <- prepTmp k
+	a f k m miv
 	pruneTmpWorkDirBefore f (callback . FileContent . fromRawFilePath)
 
 {- The base Remote that is provided to specialRemote needs to have

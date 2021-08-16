@@ -162,7 +162,7 @@ store h = fileStorer $ \k src _p -> runHook h "store" k (Just src)
 
 retrieve :: HookName -> Retriever
 retrieve h = fileRetriever $ \d k _p ->
-	unlessM (runHook' h "retrieve" k (Just d) $ return True) $
+	unlessM (runHook' h "retrieve" k (Just (fromRawFilePath d)) $ return True) $
 		giveup "failed to retrieve content"
 
 remove :: HookName -> Remover

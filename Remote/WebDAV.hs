@@ -170,9 +170,9 @@ finalizeStore dav tmp dest = do
 retrieve :: DavHandleVar -> ChunkConfig -> Retriever
 retrieve hv cc = fileRetriever $ \d k p ->
 	withDavHandle hv $ \dav -> case cc of
-		LegacyChunks _ -> retrieveLegacyChunked d k p dav
+		LegacyChunks _ -> retrieveLegacyChunked (fromRawFilePath d) k p dav
 		_ -> liftIO $
-			goDAV dav $ retrieveHelper (keyLocation k) d p
+			goDAV dav $ retrieveHelper (keyLocation k) (fromRawFilePath d) p
 
 retrieveHelper :: DavLocation -> FilePath -> MeterUpdate -> DAVT IO ()
 retrieveHelper loc d p = do
