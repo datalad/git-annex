@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+While running tests on a local HPC with 
+
+```
+(datalad) [discovery7 tmp]$ cat /etc/redhat-release
+CentOS Linux release 7.9.2009 (Core)
+
+(datalad) [discovery7 tmp]$ gpgconf --version
+gpgconf (GnuPG) 2.0.22
+Copyright (C) 2013 Free Software Foundation, Inc.
+
+```
+
+3 tests (also failed in [another more "prolific in fails" run](https://git-annex.branchable.com/bugs/__34__357_out_of_984_tests_failed__34___on_NFS_lustre_mount/) failed due to
+
+```
+(datalad) [d31548v@discovery7 tmp]$ grep -B1 FAIL annex-8.20210803-g99bb214-1.log
+gpgconf: invalid option "--kill"
+FAIL (18.37s)
+--
+gpgconf: invalid option "--kill"
+FAIL (16.43s)
+--
+gpgconf: invalid option "--kill"
+FAIL (17.07s)
+```
+
+Not sure if you would like to do anything on git-annex level (skip those tests on outdated etc)...
+Meanwhile - adding `gnupg >=2.1.1 ` dependency to conda build: https://github.com/conda-forge/git-annex-feedstock/pull/126
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
