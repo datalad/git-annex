@@ -11,7 +11,7 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
   * Special remotes now checksum content while it is being retrieved,
     instead of in a separate pass at the end. This is supported for all
     special remotes on Linux (except for web and bittorrent), and for a
-    few on other OSs (S3, bup, ddar, gcrypt).
+    few on other OSs (bup, ddar, gcrypt, glacier).
 
  -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
 
