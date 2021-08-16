@@ -2,7 +2,7 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -41,6 +41,7 @@ import Types.NumCopies
 import Types.Export
 import Types.Import
 import Types.RemoteConfig
+import Types.Backend (IncrementalVerifier)
 import Config.Cost
 import Utility.Metered
 import Git.Types (RemoteName)
@@ -203,7 +204,9 @@ data Verification
 	| MustVerify
 	-- ^ Content likely to have been altered during transfer,
 	-- verify even if verification is normally disabled
-	deriving (Show)
+	| IncompleteVerify IncrementalVerifier
+	-- ^ Content was partially verified during transfer, but
+	-- the verification is not complete.
 
 unVerified :: Monad m => m a -> m (a, Verification)
 unVerified a = do

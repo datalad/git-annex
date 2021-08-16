@@ -37,7 +37,6 @@ import Control.Concurrent.STM
 import qualified System.INotify as INotify
 import qualified Data.ByteString as S
 import qualified System.FilePath.ByteString as P
-import Data.Time.Clock.POSIX
 #endif
 
 data VerifyConfig = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
@@ -82,22 +81,68 @@ verifyKeyContentPostRetrieval rsp v verification k f = case (rsp, verification) 
 		, return True
 		)
 	(_, MustVerify) -> verify
+	(_, IncompleteVerify _) -> ifM (shouldVerify v)
+		( verify
+		, return True
+		)
   where
-	verify = enteringStage VerifyStage $ verifyKeyContent k f
+	verify = enteringStage VerifyStage $
+		case verification of
+			IncompleteVerify iv -> resumeVerifyKeyContent k f iv
+			_ -> verifyKeyContent k f
 
 verifyKeyContent :: Key -> RawFilePath -> Annex Bool
-verifyKeyContent k f = verifysize <&&> verifycontent
-  where
-	verifysize = case fromKey keySize k of
-		Nothing -> return True
-		Just size -> do
-			size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
-			return (size' == size)
-	verifycontent = Backend.maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
+verifyKeyContent k f = verifyKeySize k f <&&> verifyKeyContent' k f
+
+verifyKeyContent' :: Key -> RawFilePath -> Annex Bool
+verifyKeyContent' k f = 
+	Backend.maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 		Nothing -> return True
 		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return True
 			Just verifier -> verifier k f
+
+resumeVerifyKeyContent :: Key -> RawFilePath -> IncrementalVerifier -> Annex Bool
+resumeVerifyKeyContent k f iv = liftIO (positionIncremental iv) >>= \case
+	Nothing -> fallback
+	Just endpos -> do
+		fsz <- liftIO $ catchDefaultIO 0 $ getFileSize f
+		if fsz < endpos
+			then fallback
+			else case fromKey keySize k of
+				Just size | fsz /= size -> return False
+				_ -> go fsz endpos
+  where
+	fallback = verifyKeyContent k f
+
+	go fsz endpos
+		| fsz == endpos =
+			liftIO $ catchDefaultIO False $
+				finalizeIncremental iv
+		| otherwise = do
+			showAction (descVerify iv)
+			liftIO $ catchDefaultIO False $
+				withBinaryFile (fromRawFilePath f) ReadMode $ \h -> do
+					hSeek h AbsoluteSeek endpos
+					feedincremental h
+					finalizeIncremental iv
+	
+	feedincremental h = do
+		b <- S.hGetSome h chunk
+		if S.null b
+			then return ()
+			else do
+				updateIncremental iv b
+				feedincremental h
+
+	chunk = 65536
+
+verifyKeySize :: Key -> RawFilePath -> Annex Bool
+verifyKeySize k f = case fromKey keySize k of
+	Just size -> do
+		size' <- liftIO $ catchDefaultIO 0 $ getFileSize f
+		return (size' == size)
+	Nothing -> return True
 
 warnUnverifiableInsecure :: Key -> Annex ()
 warnUnverifiableInsecure k = warning $ unwords
@@ -127,7 +172,9 @@ startVerifyKeyContentIncrementally verifyconfig k =
 -- | Reads the file as it grows, and feeds it to the incremental verifier.
 -- 
 -- The TMVar must start out empty, and be filled once whatever is
--- writing to the file finishes.
+-- writing to the file finishes. Once the writer finishes, this returns
+-- quickly. It may not feed the entire content of the file to the
+-- incremental verifier.
 --
 -- The file does not need to exist yet when this is called. It will wait
 -- for the file to appear before opening it and starting verification.
@@ -155,22 +202,12 @@ startVerifyKeyContentIncrementally verifyconfig k =
 -- and if the disk is slow, the reader may never catch up to the writer,
 -- and the disk cache may never speed up reads. So this should only be
 -- used when there's not a better way to incrementally verify.
---
--- If the writer gets far ahead, this can still need to do a significant
--- amount off work once the writer is finished. That could lead to a long
--- pause with no indication to the user about what is being done. To deal
--- with this problem, it will do at most half a second of work after the
--- writer has finished. If there is more work still to do, it returns an IO
--- action that will complete the work. This way, the caller can display
--- something appropriate while that is running.
-tailVerify :: IncrementalVerifier -> RawFilePath -> TMVar () -> IO (Maybe (IO ()))
+tailVerify :: IncrementalVerifier -> RawFilePath -> TMVar () -> IO ()
 #if WITH_INOTIFY
 tailVerify iv f finished = 
 	tryNonAsync go >>= \case
 		Right r -> return r
-		Left _ -> do
-			failIncremental iv
-			return Nothing
+		Left _ -> failIncremental iv
   where
 	-- Watch the directory containing the file, and wait for
 	-- the file to be modified. It's possible that the file already
@@ -196,19 +233,15 @@ tailVerify iv f finished =
 		let stop w = do
 			cleanup w
 			failIncremental iv
-			return Nothing			
 		waitopen modified >>= \case
 			Nothing -> stop wd
 			Just h -> do
 				cleanup wd
 				wf <- inotifyfilechange i signalmodified
 				tryNonAsync (follow h modified) >>= \case
-					Left _ -> do
-						hClose h
-						stop wf
-					Right r -> do
-						cleanup wf
-						return r
+					Left _ -> stop wf
+					Right () -> cleanup wf
+				hClose h
 
 	waitopen modified = do
 		v <- atomically $
@@ -233,47 +266,19 @@ tailVerify iv f finished =
 				-- or until we're told it is done being
 				-- written.
 				cont <- atomically $
-					((const (follow h modified))
+					(const (follow h modified)
 						<$> takeTMVar modified)
 							`orElse`
-					((const (finish h =<< getPOSIXTime))
+					(const (return ())
 						<$> takeTMVar finished)
 				cont
 			else do
 				updateIncremental iv b
 				atomically (tryTakeTMVar finished) >>= \case
 					Nothing -> follow h modified
-					Just () -> finish h =<< getPOSIXTime
-	
-	-- We've been told the file is done being written to, but we
-	-- may not have reached the end of it yet.
-	finish h starttime = do
-		b <- S.hGet h chunk
-		if S.null b
-			then do
-				hClose h
-				return Nothing
-			else do
-				updateIncremental iv b
-				now <- getPOSIXTime
-				if now - starttime > 0.5
-					then return $ Just $
-						tryNonAsync (deferredfinish h) >>= \case
-							Right () -> noop
-							Left _ -> failIncremental iv
-					else finish h starttime
-
-	deferredfinish h = do
-		b <- S.hGet h chunk
-		if S.null b
-			then hClose h
-			else do
-				updateIncremental iv b
-				deferredfinish h
+					Just () -> return ()
 
 	chunk = 65536
 #else
-tailVerify iv _ _ = do
-	failIncremental iv
-	return Nothing
+tailVerify iv _ _ = failIncremental iv
 #endif

@@ -113,7 +113,8 @@ byteRetriever a k _m _miv callback = a k (callback . ByteContent)
 -- A Retriever that writes the content of a Key to a provided file.
 -- The action is responsible for updating the progress meter as it 
 -- retrieves data. The incremental verifier is updated in the background as
--- the action writes to the file.
+-- the action writes to the file, but may not be updated with the entire
+-- content of the file.
 fileRetriever :: (FilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
 fileRetriever a k m miv callback = do
 	f <- prepTmp k
@@ -123,13 +124,10 @@ fileRetriever a k m miv callback = do
 		Just iv -> do
 			finished <- liftIO newEmptyTMVarIO
 			t <- liftIO $ async $ tailVerify iv f finished
-			retrieve
-			liftIO $ atomically $ putTMVar finished ()
-			liftIO (wait t) >>= \case
-				Nothing -> noop
-				Just deferredverify -> do
-					showAction (descVerify iv)
-					liftIO deferredverify
+			let finishtail = do
+				liftIO $ atomically $ putTMVar finished ()
+				liftIO (wait t)
+			retrieve `finally` finishtail
 	pruneTmpWorkDirBefore f (callback . FileContent . fromRawFilePath)
 
 {- The base Remote that is provided to specialRemote needs to have

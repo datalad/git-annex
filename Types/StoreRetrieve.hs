@@ -35,8 +35,8 @@ type Storer = Key -> ContentSource -> MeterUpdate -> Annex ()
 --
 -- When it retrieves FileContent, it is responsible for updating the
 -- MeterUpdate. And when the IncrementalVerifier is passed to it,
--- and it retrieves FileContent, it should feed the content to the
--- verifier before running the callback. 
+-- and it retrieves FileContent, it can feed some or all of the file's
+-- content to the verifier before running the callback.
 -- This should not be done when it retrieves ByteContent.
 type Retriever = forall a.
 	Key -> MeterUpdate -> Maybe IncrementalVerifier

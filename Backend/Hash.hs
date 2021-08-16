@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Backend.Hash (
 	backends,
@@ -280,19 +281,25 @@ md5Hasher = mkHasher md5 md5_context
 
 mkIncrementalVerifier :: HashAlgorithm h => Context h -> Key -> IO IncrementalVerifier
 mkIncrementalVerifier ctx key = do
-	v <- newIORef (Just ctx)
+	v <- newIORef (Just (ctx, 0))
 	return $ IncrementalVerifier
 		{ updateIncremental = \b ->
 			modifyIORef' v $ \case
-				Just ctx' -> Just (hashUpdate ctx' b)
+				(Just (ctx', n)) -> 
+					let !ctx'' = hashUpdate ctx' b
+					    !n' = n + fromIntegral (S.length b)
+					in (Just (ctx'', n'))
 				Nothing -> Nothing
 		, finalizeIncremental =
 			readIORef v >>= \case
-				Just ctx' -> do
+				(Just (ctx', _)) -> do
 					let digest = hashFinalize ctx'
 					return $ sameCheckSum key (show digest)
 				Nothing -> return False
 		, failIncremental = writeIORef v Nothing
+		, positionIncremental = readIORef v >>= \case
+			Just (_, n) -> return (Just n)
+			Nothing -> return Nothing
 		, descVerify = descChecksum
 		}
 

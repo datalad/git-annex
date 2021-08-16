@@ -269,7 +269,7 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 		-- that are likely not there.
 		tryNonAsync getunchunked >>= \case
 			Right r -> finalize r
-			Left e -> go (Just e) 
+			Left e -> go (Just e)
 				=<< chunkKeysOnly u chunkconfig basek
 	| otherwise = go Nothing 
 		=<< chunkKeys u chunkconfig basek
@@ -279,7 +279,8 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 		currsize <- liftIO $ catchMaybeIO $ getFileSize (toRawFilePath dest)
 		let ls' = maybe ls (setupResume ls) currsize
 		if any null ls'
-			then finalize Nothing -- dest is already complete
+			-- dest is already complete
+			then finalize (Right Nothing)
 			else finalize =<< firstavail pe currsize ls'
 
 	firstavail Nothing _ [] = giveup "unable to determine the chunks to use for this remote"
@@ -306,7 +307,7 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 					| otherwise -> firstavail (Just e) currsize ls
 				Right r -> return r
 
-	getrest _ _ iv _ _ [] = return iv
+	getrest _ _ iv _ _ [] = return (Right iv)
 	getrest p h iv sz bytesprocessed (k:ks) = do
 		let p' = offsetMeterUpdate p bytesprocessed
 		liftIO $ p' zeroBytesProcessed
@@ -317,14 +318,21 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 	getunchunked = do
 		iv <- startVerifyKeyContentIncrementally vc basek
 		case enc of
-			Just _ -> retriever (encryptor basek) basep Nothing $
-				retrieved iv Nothing basep
+			Just _ -> do
+				retriever (encryptor basek) basep Nothing $
+					retrieved iv Nothing basep
+				return (Right iv)
 			-- Not chunked and not encrypted, so ask the
 			-- retriever to incrementally verify when it
-			-- retrieves to a file.
-			Nothing -> retriever (encryptor basek) basep iv $
-				retrieved iv Nothing basep
-		return iv
+			-- retrieves to a file. It may not finish
+			-- passing the whole file content to the
+			-- incremental verifier though.
+			Nothing -> do
+				retriever (encryptor basek) basep iv $
+					retrieved iv Nothing basep
+				return $ case iv of
+					Nothing -> Right iv
+					Just iv' -> Left (IncompleteVerify iv')
 
 	opennew = do
 		iv <- startVerifyKeyContentIncrementally vc basek
@@ -357,12 +365,13 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 			| isByteContent content = Just p
 			| otherwise = Nothing
 	
-	finalize Nothing = return UnVerified
-	finalize (Just iv) = 
+	finalize (Right Nothing) = return UnVerified
+	finalize (Right (Just iv)) = 
 		ifM (liftIO $ finalizeIncremental iv)
 			( return Verified
 			, return UnVerified
 			)
+	finalize (Left v) = return v
 
 {- Writes retrieved file content to the provided Handle, decrypting it
  - first if necessary.
