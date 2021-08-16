@@ -182,6 +182,10 @@ startVerifyKeyContentIncrementally verifyconfig k =
 -- This is not supported for all OSs, and on OS's where it is not
 -- supported, verification will fail.
 --
+-- The writer probably needs to be another process. If the file is being
+-- written directly by git-annex, the haskell RTS will prevent opening it
+-- for read at the same time, and verification will fail.
+--
 -- Note that there are situations where the file may fail to verify despite
 -- having the correct content. For example, when the file is written out
 -- of order, or gets replaced part way through. To deal with such cases,
@@ -249,11 +253,22 @@ tailVerify iv f finished =
 				`orElse` 
 			((const Nothing) <$> takeTMVar finished)
 		case v of
-			Just () -> tryNonAsync (openBinaryFile (fromRawFilePath f) ReadMode) >>= \case
-				Right h -> return (Just h)
-				-- Failed to open, wait for next
-				-- modification and try again.
-				Left _ -> waitopen modified
+			Just () -> do
+				r <- tryNonAsync $
+					tryWhenExists (openBinaryFile (fromRawFilePath f) ReadMode) >>= \case
+						Just h -> return (Just h)
+						-- File does not exist, must have been
+						-- deleted. Wait for next modification
+						-- and try again.
+						Nothing -> waitopen modified
+				case r of
+					Right r' -> return r'
+					-- Permission error prevents
+					-- reading, or this same process
+					-- is writing to the file,
+					-- and it cannot be read at the
+					-- same time.
+					Left _ -> return Nothing
 			-- finished without the file being modified
 			Nothing -> return Nothing
 	
