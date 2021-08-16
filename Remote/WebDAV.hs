@@ -1,6 +1,6 @@
 {- WebDAV remotes.
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -28,6 +28,7 @@ import Control.Concurrent.STM hiding (check)
 import Annex.Common
 import Types.Remote
 import Types.Export
+import Types.Backend
 import qualified Git
 import qualified Annex
 import Config
@@ -168,17 +169,20 @@ finalizeStore dav tmp dest = do
 	moveDAV (baseURL dav) tmp dest
 
 retrieve :: DavHandleVar -> ChunkConfig -> Retriever
-retrieve hv cc = fileRetriever $ \d k p ->
+retrieve hv cc = fileRetriever' $ \d k p iv ->
 	withDavHandle hv $ \dav -> case cc of
-		LegacyChunks _ -> retrieveLegacyChunked (fromRawFilePath d) k p dav
-		_ -> liftIO $
-			goDAV dav $ retrieveHelper (keyLocation k) (fromRawFilePath d) p
+		LegacyChunks _ -> do
+			-- Not doing incremental verification for chunks.
+			liftIO $ maybe noop failIncremental iv
+			retrieveLegacyChunked (fromRawFilePath d) k p dav
+		_ -> liftIO $ goDAV dav $
+			retrieveHelper (keyLocation k) (fromRawFilePath d) p iv
 
-retrieveHelper :: DavLocation -> FilePath -> MeterUpdate -> DAVT IO ()
-retrieveHelper loc d p = do
+retrieveHelper :: DavLocation -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> DAVT IO ()
+retrieveHelper loc d p iv = do
 	debugDav $ "retrieve " ++ loc
 	inLocation loc $
-		withContentM $ httpBodyRetriever d p
+		withContentM $ httpBodyRetriever d p iv
 
 remove :: DavHandleVar -> Remover
 remove hv k = withDavHandle hv $ \dav -> liftIO $ goDAV dav $
@@ -217,7 +221,7 @@ storeExportDav hdl f k loc p = case exportLocation loc of
 retrieveExportDav :: DavHandleVar -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
 retrieveExportDav hdl  _k loc d p = case exportLocation loc of
 	Right src -> withDavHandle hdl $ \h -> runExport h $ \_dav ->
-		retrieveHelper src d p
+		retrieveHelper src d p Nothing
 	Left err -> giveup err
 
 checkPresentExportDav :: DavHandleVar -> Remote -> Key -> ExportLocation -> Annex Bool

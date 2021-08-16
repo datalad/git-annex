@@ -1,6 +1,6 @@
 {- helpers for remotes using http
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ module Remote.Helper.Http where
 
 import Annex.Common
 import Types.StoreRetrieve
+import Types.Backend
 import Remote.Helper.Special
 import Utility.Metered
 
@@ -67,9 +68,9 @@ handlePopper numchunks chunksize meterupdate h sink = do
 	target = toBytesProcessed (numchunks * fromIntegral chunksize)
 
 -- Reads the http body and stores it to the specified file, updating the
--- meter as it goes.
-httpBodyRetriever :: FilePath -> MeterUpdate -> Response BodyReader -> IO ()
-httpBodyRetriever dest meterupdate resp
+-- meter and incremental verifier as it goes.
+httpBodyRetriever :: FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Response BodyReader -> IO ()
+httpBodyRetriever dest meterupdate iv resp
 	| responseStatus resp /= ok200 = giveup $ show $ responseStatus resp
 	| otherwise = bracket (openBinaryFile dest WriteMode) hClose (go zeroBytesProcessed)
   where
@@ -82,4 +83,5 @@ httpBodyRetriever dest meterupdate resp
 				let sofar' = addBytesProcessed sofar $ S.length b
 				S.hPut h b
 				meterupdate sofar'
+				maybe noop (flip updateIncremental b) iv
 				go sofar' h
