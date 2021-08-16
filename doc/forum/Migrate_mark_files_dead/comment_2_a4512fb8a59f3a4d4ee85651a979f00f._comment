@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="annex-to-annex"
+ date="2021-08-15T11:47:30Z"
+ content="""
+Thanks for the pointer, I was unaware of that tool. Indeed for local-only repositories, annex-to-annex avoids these troubles altogether. I suppose that with remotes, running annex-to-annex on all of them in a coordinated fashion does too.
+
+IIUC, the annex-to-annex-dropunused tool does similar cleanup to this, provided annex-to-annex was used in the first place. It seems not to mark these files as dead, so a `git annex fsck --all` will from thereon fail.
+"""]]

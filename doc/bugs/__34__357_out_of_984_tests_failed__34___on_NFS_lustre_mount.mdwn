@@ -1,5 +1,7 @@
 ### Please describe the problem.
 
+edit: I said "lustre" but it is isilon which is under.  My wrong/outdated/mixed up knowledge of the system
+
 Finally we got what should be a normal "POSIX" NFS mount (no ACL) on a local HPC.  I immediately ventured to test git-annex (and datalad) on that file system. git annex 8.20210803-g99bb214 and git 2.30.2 both coming from conda.
 
 with basic operations -- it felt like it works ok.

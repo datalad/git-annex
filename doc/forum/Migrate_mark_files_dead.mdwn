@@ -1,0 +1,254 @@
+Through several migrations, and migrations leave duplicate files.
+
+The man page warns about this and tells to use `annex unused` to find them.
+I'd usually copy the new files around, drop the old ones and mark the old ones dead,
+but alas, manual things are not always done.
+
+To clean up after sloppy migrations,
+or after deciding that I really want to get rid of the old files,
+I'd like a tool to
+
+* find files that were migrated,
+* do some sanity checks,
+* drop them from all the remotes (with extreme prejudice, as even unused files are usually subject to numcopies), and
+* declare them dead (which can only happen once they're gone from all remotes).
+
+I've written a tool that does all these. It's available below (copy-paste; attachments seem to be disabled);
+see its head for documentation.
+This is a tool for forcibly dropping files,
+so use with the adaequate caution and at your own risk.
+
+Since, I can reclaim my disk space *and* run `git annex fsck --all` with good results again.
+
+--[[chrysn]]
+
+```python
+#!/usr/bin/env python3
+
+"""
+Perform in sequence, with a stops for confirmation before acting:
+
+* Enumerate files that were replaced with same-sized ones of different hashes;
+  these were probably migrated.
+* Show commits in which these happened. The user should verify these were all migrations.
+* Check that no to-be-dropped file are part of the current HEAD.
+* Run an fsck (without --all, just on the present files) to ensure that no
+  recent migrations created local-only files if local-only doesn't satisfy numcopies.
+* FORCE DROP THEM FROM ALL REMOTES.
+* Mark them dead.
+
+Marking files as dead will stop when a remote is encountered that has a copy
+but is not accessible; this is a consequence of `dead` not working while known
+copies are around.
+
+This is not tuned for performance; it tries to avoid any O(n^2) or worse
+behavior, and should complete data acquisition (or at least produce output)
+within minutes even on a 150000 file, 1000 commit repository. (The slowest
+parts being the fsck and the enumeration of whereis data take the longest
+time).
+
+The actual dropping takes quite a while, as each drop and dead are done
+individually. (Some commands have --batch but not for --key). There are no
+checks to reduce work if files were already declared dead. To avoid cluttering
+the git-annex branch's history, the full run is rolled into a single commit.
+
+Warnings:
+
+Things like this are notoriously hard to run with a backup in place (because
+your backup probably *is* another git-annex from which files will be removed
+here); volume level snapshots can be helpful here, as they allow you to run
+things and evaluate the outcome while retaining a way to roll back.
+
+Use at your own risk.
+"""
+
+import json
+import os.path
+import stat
+import subprocess
+import sys
+from typing import Optional
+
+from dulwich import diff_tree, walk
+from dulwich.repo import Repo
+
+if not __debug__:
+    raise RuntimeError("I'm using asserts for validation here, please don't make me rewrite them to ifs")
+
+if not os.path.exists('.git'):
+    raise RuntimeError("Just to make sure the fsck catches everything, please run in an annex's root")
+
+repo = Repo('.')
+
+def hash_from_link(link: bytes) -> str:
+    """Return the hash of a git-annex link if a link looks like one"""
+    if b'/.git/annex/' not in link:
+        return
+    link = link.decode('utf8') # whoever uses non-UTF8 file extensions won't have my pity
+    link = link.lstrip('./')
+    link = link.removeprefix('git/annex/objects/')
+    if link.count('/') > 1:
+        # newer XX/YY/hash/hash scheme
+        link = link[6:]
+    dirname, _, filename = link.partition('/')
+    assert dirname == filename
+    return filename
+
+def parse_hash(h: str) -> (str, Optional[int], str):
+    """Given a hash, the hash algorithm, the file size if indicated, and the hash value"""
+    if ':' in h: # hoping it never shows up in an extension
+        # old style
+        halg, hval = h.split(':', 1)
+        return (halg, None, hval)
+    halg_params, _, hval = h.partition('--')
+    size = None
+    halg, *params = halg_params.split('-')
+    for p in params:
+        if p[0] == 's':
+            size = int(p[1:])
+        else:
+            raise ValueError("Unknown extension: %s" % p)
+    # hval may need trimming still for extensions
+    return (halg, size, hval)
+
+# Commits in which migrations happened, mapped to set of all reasons found there
+migrating_commits = {}
+
+# Old / migrated hashes that are to be removed
+hashes_to_kill = set()
+
+seen_commits = set()
+new_commits = {repo.head(),}
+while new_commits:
+    current_commits = new_commits
+    seen_commits = seen_commits.union(current_commits)
+    new_commits = set()
+    for c in current_commits:
+        c = repo[c]
+
+        new_commits = new_commits.union(c.parents)
+
+        if len(c.parents) != 1:
+            # Not expecting any migrations in merge commits
+            continue
+
+        for (eold, enew) in diff_tree.walk_trees(repo, repo[c.parents[0]].tree, c.tree, True):
+            if eold.sha == enew.sha:
+                continue
+            if eold.mode != stat.S_IFLNK or enew.mode != stat.S_IFLNK:
+                continue
+            old_full = hash_from_link(repo[eold.sha].data)
+            new_full = hash_from_link(repo[enew.sha].data)
+            if old_full is None or new_full is None:
+                continue # was not a git-annex link
+            old_hash, old_len, old_hashval = parse_hash(old_full)
+            new_hash, new_len, new_hashval = parse_hash(new_full)
+
+            if (old_hash, old_len, old_hashval) == (new_hash, new_len, new_hashval):
+                migration_type = "git annex version upgrade"
+                assert ':' in old_full, "Well what else could it be?"
+                # While they were migrations, git-annex really has made sure
+                # they got carried over; modern git annex operations don't even
+                # work on them any more
+                continue
+            elif (old_hash, old_hashval) == (new_hash, new_hashval) and \
+                    old_len is None and new_len is not None:
+                migration_type = "Length added"
+            elif old_hash != new_hash and \
+                    (old_len is None or old_len == new_len):
+                migration_type = "Hash change from %s to %s" % (old_hash, new_hash)
+            else:
+                print("Spurious migration", old_full, new_full)
+                print((old_hash, old_len, old_hashval))
+                print((new_hash, new_len, new_hashval))
+                raise RuntimeError("Not understanding this migration, exiting")
+
+            assert old_full != new_full, "We don't want to drop still in used keys, and these should have been caught before"
+
+            hashes_to_kill.add(old_full)
+
+            migrating_commits.setdefault(c, set()).add(migration_type)
+
+    new_commits = new_commits.difference(seen_commits)
+
+print("These commits were found to have migrations:\n")
+for (commit, reasons) in sorted(migrating_commits.items(), key=lambda cr: cr[0].commit_time):
+    print("Author:", commit.author.decode('utf8'))
+    print(commit.message.decode('utf8').strip())
+    print("Migrations:", ", ".join(reasons))
+    print()
+
+print("Hashes that were migrated away from: %d" % len(hashes_to_kill))
+
+# a real tree and not a digraph, so easier than the commit walking
+files_checked = 0
+bad_files = []
+trees_to_check = [repo[repo.head()].tree]
+while trees_to_check:
+    old_trees = trees_to_check
+    trees_to_check = []
+    for t in list(old_trees):
+        for item in repo[t].items():
+            if item.mode == stat.S_IFDIR:
+                trees_to_check.append(item.sha)
+            if item.mode == stat.S_IFLNK:
+                link = repo[item.sha].data
+                full = hash_from_link(link)
+                if full in hashes_to_kill:
+                    bad_files.append(item.path)
+                files_checked += 1
+if bad_files:
+    print("Some hashes that have been migrated away from were still around, files with these names:")
+    print(bad_files)
+    sys.exit(1)
+print("Checked %d symlinks in HEAD, none of them points to an old hash any more" % files_checked)
+
+print("performing a non-`--all` fsck...")
+subprocess.check_call('git annex fsck --fast --quiet', shell=True)
+print("Checked that the files that *are* in the tree are properly distributed.")
+
+print("Gathering whereis data to decide where to drop from...")
+whereall = subprocess.Popen(['git', 'annex', 'whereis', '--json', '--all'], stdout=subprocess.PIPE)
+hashes_to_kill_remotes = {}
+for line in whereall.stdout:
+    wherethis = json.loads(line)
+    if wherethis['key'] not in hashes_to_kill:
+        continue
+
+    remotes = {None if r['here'] else r['uuid'] for r in wherethis['whereis'] + wherethis['untrusted']}
+    if remotes:
+        hashes_to_kill_remotes[wherethis['key']] = remotes
+if hashes_to_kill_remotes:
+    wheretodrop = {r or "here" for r in set.union(*hashes_to_kill_remotes.values())}
+else:
+    wheretodrop = set()
+print(f"Found {len(hashes_to_kill_remotes)} migrated hashes still around on remotes {wheretodrop}")
+
+print()
+print("If you want to really drop all of them, enter `force drop and declare them dead` here:")
+line = input()
+if line != "force drop and declare them dead":
+    print("Good choice. (Sorry if you mistyped...)")
+    sys.exit(0)
+
+try:
+    subprocess.check_call(["git", "-c", "annex.commitmessage=updates before running migrate-mark-dead.py", "annex", "merge"])
+    annex_no_autocommit = ["git", "-c", "annex.alwayscommit=false", "annex"]
+    # Network first, to ensure the password prompts come fast even when most files are dead already
+    for (i, (key, remotes)) in enumerate(hashes_to_kill_remotes.items()):
+        for r in remotes:
+            if r is None:
+                # Can't be run with `--from here`
+                subprocess.check_call(annex_no_autocommit + ['drop', '--force', '--key', key])
+            else:
+                subprocess.check_call(annex_no_autocommit + ['drop', '--force', '--key', key, '--from', r])
+
+        if (i % 10 == 0):
+            print(f"Dropped {i} ({100 * i/len(hashes_to_kill_remotes):.1f}% of) present hashes")
+    for i, key in enumerate(hashes_to_kill):
+        subprocess.check_call(annex_no_autocommit + ['dead', '--key', key])
+        if (i % 100 == 0):
+            print(f"Marked {i} ({100 * i/len(hashes_to_kill):.1f}% of) unused hashes as dead")
+finally:
+    subprocess.check_call(["git", "-c", "annex.commitmessage=ran migrate-mark-dead.py", "annex", "merge"])
+```
