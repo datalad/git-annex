@@ -839,6 +839,14 @@ wantHardLink = (annexHardLink <$> Annex.getGitConfig)
 	-- because they can be modified at any time.
 	<&&> (not <$> annexThin <$> Annex.getGitConfig)
 
+-- If either the remote or local repository wants to use hard links,
+-- the copier will do so (falling back to copying if a hard link cannot be
+-- made).
+--
+-- When a hard link is created, returns Verified; the repo being linked
+-- from is implicitly trusted, so no expensive verification needs to be
+-- done. Also returns Verified if the key's content is verified while
+-- copying it.
 mkFileCopier :: Bool -> State -> Annex FileCopier
 mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
 	let copier = fileCopier copycowtried

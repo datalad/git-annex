@@ -25,15 +25,6 @@ import Data.Time.Clock.POSIX
 -- Copies from src to dest, updating a meter. If the copy finishes
 -- successfully, calls a final check action, which must also succeed, or
 -- returns false.
---
--- If either the remote or local repository wants to use hard links,
--- the copier will do so (falling back to copying if a hard link cannot be
--- made).
---
--- When a hard link is created, returns Verified; the repo being linked
--- from is implicitly trusted, so no expensive verification needs to be
--- done. Also returns Verified if the key's content is verified while
--- copying it.
 type FileCopier = FilePath -> FilePath -> Key -> MeterUpdate -> Annex Bool -> VerifyConfig -> Annex (Bool, Verification)
 
 -- To avoid the overhead of trying copy-on-write every time, it's tried
