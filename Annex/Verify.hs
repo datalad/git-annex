@@ -172,73 +172,57 @@ tailVerify iv f finished =
 			failIncremental iv
 			return Nothing
   where
- 	f' = fromRawFilePath f
-	waitforfiletoexist i = tryNonAsync (openBinaryFile f' ReadMode) >>= \case
-		Right h -> return (Just h)
-		Left _ -> do
-			hv <- newEmptyTMVarIO
-			wd <- inotifycreate i $
-				tryNonAsync (openBinaryFile f' ReadMode) >>= \case
-					Right h -> 
-						unlessM (atomically $ tryPutTMVar hv h) $
-							hClose h
-					Left _ -> return ()
-			-- Wait for the file to appear, or for a signal
-			-- that the file is finished being written.
-			--
-			-- The TMVar is left full to prevent the file
-			-- being opened again if the inotify event
-			-- fires more than once.
-			v <- atomically $
-				(Just <$> readTMVar hv)
-					`orElse` 
-				((const Nothing) <$> readTMVar finished)
-			void $ tryNonAsync $ INotify.removeWatch wd
-			return v
-	
-	inotifycreate i cont = INotify.addWatch i evs (P.takeDirectory f) $ \case
-		-- Ignore changes to other files in the directory.
-		INotify.Created { INotify.filePath = fn }
-			| fn /= basef -> noop
-		INotify.MovedIn { INotify.filePath = fn }
-			| fn /= basef -> noop
-		INotify.Opened { INotify.maybeFilePath = fn }
-			| fn /= Just basef -> noop
-		INotify.Modified { INotify.maybeFilePath = fn }
-			| fn /= Just basef -> noop
-		_ -> cont
+	-- Watch the directory containing the file, and wait for
+	-- the file to be modified. It's possible that the file already
+	-- exists before the downloader starts, but it replaces it instead
+	-- of resuming, and waiting for modification deals with such
+	-- situations.
+	inotifydirchange i cont =
+		INotify.addWatch i [INotify.Modify] dir $ \case
+			-- Ignore changes to other files in the directory.
+			INotify.Modified { INotify.maybeFilePath = fn }
+				| fn == Just basef -> cont
+			_ -> noop
 	  where
-		evs = 
-			[ INotify.Create
-			, INotify.MoveIn
-			, INotify.Move
-			, INotify.Open
-			, INotify.Modify
-			]
-		basef = P.takeFileName f
+		(dir, basef) = P.splitFileName f
 	
-	go = INotify.withINotify $ \i -> do
-		h <- waitforfiletoexist i
-		tryNonAsync (go' i h) >>= \case
-			Right r -> return r
-			Left _ -> do
-				maybe noop hClose h
-				failIncremental iv
-				return Nothing
-	
-	go' i (Just h) = do
-		modified <- newEmptyTMVarIO
-		wd <- INotify.addWatch i [INotify.Modify] f $ \_event ->
-			atomically $ void $ tryPutTMVar modified ()
-		r <- follow h modified
-		void $ tryNonAsync $ INotify.removeWatch wd
-		return r
+	inotifyfilechange i = INotify.addWatch i [INotify.Modify] f . const
 
-	-- File never showed up, but we've been told it's done being
-	-- written to.
-	go' _ Nothing = do
-		failIncremental iv
-		return Nothing
+	go = INotify.withINotify $ \i -> do
+		modified <- newEmptyTMVarIO
+		let signalmodified = atomically $ void $ tryPutTMVar modified ()
+		wd <- inotifydirchange i signalmodified
+		let cleanup = void . tryNonAsync . INotify.removeWatch
+		let stop w = do
+			cleanup w
+			failIncremental iv
+			return Nothing			
+		waitopen modified >>= \case
+			Nothing -> stop wd
+			Just h -> do
+				cleanup wd
+				wf <- inotifyfilechange i signalmodified
+				tryNonAsync (follow h modified) >>= \case
+					Left _ -> do
+						hClose h
+						stop wf
+					Right r -> do
+						cleanup wf
+						return r
+
+	waitopen modified = do
+		v <- atomically $
+			(Just <$> takeTMVar modified)
+				`orElse` 
+			((const Nothing) <$> takeTMVar finished)
+		case v of
+			Just () -> tryNonAsync (openBinaryFile (fromRawFilePath f) ReadMode) >>= \case
+				Right h -> return (Just h)
+				-- Failed to open, wait for next
+				-- modification and try again.
+				Left _ -> waitopen modified
+			-- finished without the file being modified
+			Nothing -> return Nothing
 	
 	follow h modified = do
 		b <- S.hGetNonBlocking h chunk
