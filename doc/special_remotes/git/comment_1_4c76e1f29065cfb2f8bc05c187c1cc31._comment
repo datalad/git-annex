@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="matthias.risze@9f2c8f7faed4cac1905d1bf1ee4524d708c13688"
+ nickname="matthias.risze"
+ avatar="http://cdn.libravatar.org/avatar/c9f7f022a1d62c39497b72c56a6a535e"
+ subject="type=git special remote cannot be enabled, no uuid is generated"
+ date="2021-08-16T13:02:04Z"
+ content="""
+Following the instructions here, I cannot enable the remote. The error message is: `git-annex: Unknown remote name.`. I assume this is because git annex does not create a uuid for the type=git special remote, presumably because non is set for the actual git remote (the annex-uuid key does not exist for the existing git remote with the same url). This is the relevant line generated in remote.log: ` autoenable=true location=<ssh-url> name=<name> type=git timestamp=1629118438.628919s`, as you can see there is no uuid at the beginning. Any ideas if this is a bug or if the instructions are outdated?
+"""]]
