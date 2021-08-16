@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="note on `sec=` on the mount"
+ date="2021-08-16T21:38:13Z"
+ content="""
+Just now, while comparing with operation on another mount point (on NFS v3, not 4 though), noted that this mount point is `sec=krb5` (and NFS 3 one is `sec=sys`)... so might be what is contributing here
+"""]]
