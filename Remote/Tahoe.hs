@@ -144,8 +144,8 @@ store rs hdl k _f _p = sendAnnex k noop $ \src ->
 		(giveup "tahoe failed to store content")
 		(\cap -> storeCapability rs k cap)
 
-retrieve :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
-retrieve rs hdl k _f d _p = do
+retrieve :: RemoteStateHandle -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+retrieve rs hdl k _f d _p _ = do
 	go =<< getCapability rs k
 	-- Tahoe verifies the content it retrieves using cryptographically
 	-- secure methods.

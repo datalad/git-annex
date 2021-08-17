@@ -146,8 +146,8 @@ fileRetriever' a k m miv callback = do
  -}
 storeKeyDummy :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 storeKeyDummy _ _ _ = error "missing storeKey implementation"
-retrieveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
-retrieveKeyFileDummy _ _ _ _ = error "missing retrieveKeyFile implementation"
+retrieveKeyFileDummy :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+retrieveKeyFileDummy _ _ _ _ _ = error "missing retrieveKeyFile implementation"
 removeKeyDummy :: Key -> Annex ()
 removeKeyDummy _ = error "missing removeKey implementation"
 checkPresentDummy :: Key -> Annex Bool
@@ -192,7 +192,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
   where
 	encr = baser
 		{ storeKey = \k _f p -> cip >>= storeKeyGen k p
-		, retrieveKeyFile = \k _f d p -> cip >>= retrieveKeyFileGen k d p
+		, retrieveKeyFile = \k _f d p vc -> cip >>= retrieveKeyFileGen k d p vc
 		, retrieveKeyFileCheap = case retrieveKeyFileCheap baser of
 			Nothing -> Nothing
 			Just a
@@ -241,11 +241,9 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 		enck = maybe id snd enc
 
 	-- call retriever to get chunks; decrypt them; stream to dest file
-	retrieveKeyFileGen k dest p enc =
+	retrieveKeyFileGen k dest p vc enc =
 		displayprogress p k Nothing $ \p' ->
-			retrieveChunks retriever
-				(uuid baser)
-				(RemoteVerify baser) 
+			retrieveChunks retriever (uuid baser) vc
 				chunkconfig enck k dest p' enc encr
 	  where
 		enck = maybe id snd enc

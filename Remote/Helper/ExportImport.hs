@@ -171,14 +171,14 @@ adjustExportImport' isexport isimport r rs = do
 		, lockContent = if versioned
 			then lockContent r
 			else Nothing
-		, retrieveKeyFile = \k af dest p ->
+		, retrieveKeyFile = \k af dest p vc ->
 			if isimport
-				then supportversionedretrieve k af dest p $
+				then supportversionedretrieve k af dest p vc $
 					retrieveKeyFileFromImport dbv ciddbv k af dest p
 				else if isexport
-					then supportversionedretrieve k af dest p $
+					then supportversionedretrieve k af dest p vc $
 						retrieveKeyFileFromExport dbv k af dest p
-					else retrieveKeyFile r k af dest p
+					else retrieveKeyFile r k af dest p vc
 		, retrieveKeyFileCheap = if versioned
 			then retrieveKeyFileCheap r
 			else Nothing
@@ -369,9 +369,9 @@ adjustExportImport' isexport isimport r rs = do
 	-- versionedExport remotes have a key/value store, so can use
 	-- the usual retrieveKeyFile, rather than an import/export
 	-- variant. However, fall back to that if retrieveKeyFile fails.
-	supportversionedretrieve k af dest p a
+	supportversionedretrieve k af dest p vc a
 		| versionedExport (exportActions r) =
-			retrieveKeyFile r k af dest p
+			retrieveKeyFile r k af dest p vc
 				`catchNonAsync` const a
 		| otherwise = a
 

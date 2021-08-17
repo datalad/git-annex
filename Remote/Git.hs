@@ -529,16 +529,16 @@ lockKey' repo r st@(State connpool duc _ _ _) key callback
 	failedlock = giveup "can't lock content"
 
 {- Tries to copy a key's content from a remote's annex to a file. -}
-copyFromRemote :: Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
+copyFromRemote :: Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 copyFromRemote = copyFromRemote' False
 
-copyFromRemote' :: Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
-copyFromRemote' forcersync r st key file dest meterupdate = do
+copyFromRemote' :: Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+copyFromRemote' forcersync r st key file dest meterupdate vc = do
 	repo <- getRepo r
-	copyFromRemote'' repo forcersync r st key file dest meterupdate
+	copyFromRemote'' repo forcersync r st key file dest meterupdate vc
 
-copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
-copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest meterupdate
+copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest meterupdate vc
 	| Git.repoIsHttp repo = do
 		gc <- Annex.getGitConfig
 		ok <- Url.withUrlOptionsPromptingCreds $
@@ -555,12 +555,11 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 				let checksuccess = check >>= \case
 					Just err -> giveup err
 					Nothing -> return True
-				let verify = Annex.Content.RemoteVerify r
 				copier <- mkFileCopier hardlink st
 				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
 					file Nothing stdRetry $ \p ->
 						metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
-							copier object dest key p' checksuccess verify
+							copier object dest key p' checksuccess vc
 				if ok
 					then return v
 					else giveup "failed to retrieve content from remote"
@@ -572,9 +571,8 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 				then return v
 				else giveup "failed to retrieve content from remote"
 		else P2PHelper.retrieve
-			(Annex.Content.RemoteVerify r)
 			(\p -> Ssh.runProto r connpool (return (False, UnVerified)) (fallback p))
-			key file dest meterupdate
+			key file dest meterupdate vc
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
   where
 	fallback p = unVerified $ feedprogressback $ \p' -> do
@@ -699,7 +697,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		res <- onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True
 			, runTransfer (Transfer Download u (fromKey id key)) file Nothing stdRetry $ \p -> do
-				let verify = Annex.Content.RemoteVerify r
+				let verify = RemoteVerify r
 				copier <- mkFileCopier hardlink st
 				let rsp = RetrievalAllKeysSecure
 				let checksuccess = liftIO checkio >>= \case

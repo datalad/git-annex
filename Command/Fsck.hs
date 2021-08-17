@@ -199,7 +199,7 @@ performRemote key afile backend numcopies remote =
 			)
 		, return Nothing
 		)
-	getfile' tmp = Remote.retrieveKeyFile remote key (AssociatedFile Nothing) (fromRawFilePath tmp) dummymeter
+	getfile' tmp = Remote.retrieveKeyFile remote key (AssociatedFile Nothing) (fromRawFilePath tmp) dummymeter (RemoteVerify remote)
 	dummymeter _ = noop
 	getcheap tmp = case Remote.retrieveKeyFileCheap remote of
 		Just a -> isRight <$> tryNonAsync (a key afile (fromRawFilePath tmp))

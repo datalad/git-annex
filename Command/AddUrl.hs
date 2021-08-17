@@ -201,7 +201,8 @@ downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd o file $ \ca
 			-- should use to download it.
 			setTempUrl urlkey loguri
 			let downloader = \dest p ->
-				fst <$> Remote.verifiedAction (Remote.retrieveKeyFile r urlkey af dest p)
+				fst <$> Remote.verifiedAction
+					(Remote.retrieveKeyFile r urlkey af dest p (RemoteVerify r))
 			ret <- downloadWith canadd addunlockedmatcher downloader urlkey (Remote.uuid r) loguri file
 			removeTempUrl urlkey
 			return ret

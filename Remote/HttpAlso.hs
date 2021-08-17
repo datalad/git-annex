@@ -113,8 +113,8 @@ httpAlsoSetup _ (Just u) _ c gc = do
 	gitConfigSpecialRemote u c' [("httpalso", "true")]
 	return (c', u)
 
-downloadKey :: Maybe URLString -> LearnedLayout -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
-downloadKey baseurl ll key _af dest p = do
+downloadKey :: Maybe URLString -> LearnedLayout -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+downloadKey baseurl ll key _af dest p _vc = do
 	downloadAction dest p key (keyUrlAction baseurl ll key)
 	return UnVerified
 

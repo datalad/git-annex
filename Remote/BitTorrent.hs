@@ -96,8 +96,8 @@ gen r _ rc gc rs = do
 		, remoteStateHandle = rs
 		}
 
-downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
-downloadKey key _file dest p = do
+downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+downloadKey key _file dest p _ = do
 	get . map (torrentUrlNum . fst . getDownloader) =<< getBitTorrentUrls key
 	-- While bittorrent verifies the hash in the torrent file,
 	-- the torrent file itself is downloaded without verification,

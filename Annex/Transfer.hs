@@ -78,10 +78,11 @@ download r key f d witness = logStatusAfter key $ stallDetection r >>= \case
 	Just StallDetectionDisabled -> go Nothing
 	Just sd -> runTransferrer sd r key f d Download witness
   where
-	go sd = getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) key f $ \dest ->
+	go sd = getViaTmp (Remote.retrievalSecurityPolicy r) vc key f $ \dest ->
 		download' (Remote.uuid r) key f sd d (go' dest) witness
 	go' dest p = verifiedAction $
-		Remote.retrieveKeyFile r key f (fromRawFilePath dest) p
+		Remote.retrieveKeyFile r key f (fromRawFilePath dest) p vc
+	vc = Remote.RemoteVerify r
 
 -- Download, not supporting canceling detected stalls.
 download' :: Observable v => UUID -> Key -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v

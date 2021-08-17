@@ -53,7 +53,8 @@ module Annex.Content (
 	isUnmodifiedCheap,
 	verifyKeyContentPostRetrieval,
 	verifyKeyContent,
-	VerifyConfig(..),
+	VerifyConfig,
+	VerifyConfigA(..),
 	Verification(..),
 	unVerified,
 	withTmpWorkDir,
@@ -83,7 +84,7 @@ import Annex.InodeSentinal
 import Annex.ReplaceFile
 import Annex.AdjustedBranch (adjustedBranchRefresh)
 import Messages.Progress
-import Types.Remote (RetrievalSecurityPolicy(..))
+import Types.Remote (RetrievalSecurityPolicy(..), VerifyConfigA(..))
 import Types.NumCopies
 import Types.Key
 import Types.Transfer

@@ -15,6 +15,7 @@ module Types (
 	RemoteGitConfig(..),
 	Remote,
 	RemoteType,
+	VerifyConfig,
 ) where
 
 import Annex
@@ -27,3 +28,4 @@ import Types.Remote
 type Backend = BackendA Annex
 type Remote = RemoteA Annex
 type RemoteType = RemoteTypeA Annex
+type VerifyConfig = VerifyConfigA Annex

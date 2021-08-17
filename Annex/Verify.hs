@@ -8,7 +8,6 @@
 {-# LANGUAGE CPP #-}
 
 module Annex.Verify (
-	VerifyConfig(..),
 	shouldVerify,
 	verifyKeyContentPostRetrieval,
 	verifyKeyContent,
@@ -24,6 +23,7 @@ module Annex.Verify (
 import Annex.Common
 import qualified Annex
 import qualified Types.Remote
+import Types.Remote (VerifyConfigA(..))
 import qualified Types.Backend
 import Types.Backend (IncrementalVerifier(..))
 import qualified Backend
@@ -38,8 +38,6 @@ import qualified System.INotify as INotify
 import qualified Data.ByteString as S
 import qualified System.FilePath.ByteString as P
 #endif
-
-data VerifyConfig = AlwaysVerify | NoVerify | RemoteVerify Remote | DefaultVerify
 
 shouldVerify :: VerifyConfig -> Annex Bool
 shouldVerify AlwaysVerify = return True

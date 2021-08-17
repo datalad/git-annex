@@ -40,8 +40,8 @@ store runner k af p = do
 			Just False -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
 
-retrieve :: VerifyConfig -> (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
-retrieve verifyconfig runner k af dest p = do
+retrieve :: (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+retrieve runner k af dest p verifyconfig = do
 	iv <- startVerifyKeyContentIncrementally verifyconfig k
 	metered (Just p) k $ \m p' -> 
 		runner p' (P2P.get dest k iv af m p') >>= \case

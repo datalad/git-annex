@@ -81,8 +81,8 @@ gen r _ rc gc rs = do
 		, remoteStateHandle = rs
 		}
 
-downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Verification
-downloadKey key _af dest p = do
+downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+downloadKey key _af dest p _ = do
 	get =<< getWebUrls key
 	return UnVerified
   where

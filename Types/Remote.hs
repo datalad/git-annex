@@ -16,6 +16,7 @@ module Types.Remote
 	, RemoteStateHandle
 	, SetupStage(..)
 	, Availability(..)
+	, VerifyConfigA(..)
 	, Verification(..)
 	, unVerified
 	, RetrievalSecurityPolicy(..)
@@ -95,7 +96,7 @@ data RemoteA a = Remote
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)
 	-- Throws exception on failure.
-	, retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> a Verification
+	, retrieveKeyFile :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfigA a -> a Verification
 	-- Retrieves a key's contents to a tmp file, if it can be done cheaply.
 	-- It's ok to create a symlink or hardlink.
 	-- Throws exception on failure.
@@ -191,6 +192,12 @@ instance Ord (RemoteA a) where
 
 instance ToUUID (RemoteA a) where
 	toUUID = uuid
+
+data VerifyConfigA a
+	= AlwaysVerify
+	| NoVerify
+	| RemoteVerify (RemoteA a)
+	| DefaultVerify
 
 data Verification
 	= UnVerified 
