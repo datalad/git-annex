@@ -283,14 +283,15 @@ props_macs_stable = map (\(desc, mac, result) -> (desc ++ " stable", calcMac mac
 data IncrementalVerifier = IncrementalVerifier
 	{ updateIncremental :: S.ByteString -> IO ()
 	-- ^ Called repeatedly on each peice of the content.
-	, finalizeIncremental :: IO Bool
-	-- ^ Called once the full content has been sent, returns true
-	-- if the hash verified.
-	, failIncremental :: IO ()
-	-- ^ Call if the incremental verification needs to fail.
+	, finalizeIncremental :: IO (Maybe Bool)
+	-- ^ Called once the full content has been sent, returns True
+	-- if the hash verified, False if it did not, and Nothing if
+	-- incremental verification was unable to be done.
+	, unableIncremental :: IO ()
+	-- ^ Call if the incremental verification is unable to be done.
 	, positionIncremental :: IO (Maybe Integer)
 	-- ^ Returns the number of bytes that have been fed to this
-	-- incremental verifier so far. (Nothing if failIncremental was
+	-- incremental verifier so far. (Nothing if unableIncremental was
 	-- called.)
 	, descVerify :: String
 	-- ^ A description of what is done to verify the content.
@@ -311,9 +312,10 @@ mkIncrementalVerifier ctx descverify samechecksum = do
 			readIORef v >>= \case
 				(Just (ctx', _)) -> do
 					let digest = hashFinalize ctx'
-					return $ samechecksum (show digest)
-				Nothing -> return False
-		, failIncremental = writeIORef v Nothing
+					return $ Just $ 
+						samechecksum (show digest)
+				Nothing -> return Nothing
+		, unableIncremental = writeIORef v Nothing
 		, positionIncremental = readIORef v >>= \case
 			Just (_, n) -> return (Just n)
 			Nothing -> return Nothing

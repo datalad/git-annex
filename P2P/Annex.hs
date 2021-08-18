@@ -202,10 +202,12 @@ runLocal runst runner a = case a of
 					
 				runner validitycheck >>= \case
 					Right (Just Valid) -> case incrementalverifier of
-						Just iv -> ifM (liftIO (finalizeIncremental iv) <&&> pure rightsize)
-							( return (True, Verified)
-							, return (False, UnVerified)
-							)
+						Just iv
+							| rightsize -> liftIO (finalizeIncremental iv) >>= \case
+								Nothing -> return (True, UnVerified)
+								Just True -> return (True, Verified)
+								Just False -> return (False, UnVerified)
+							| otherwise -> return (False, UnVerified)
 						Nothing -> return (rightsize, UnVerified)
 					Right (Just Invalid) | l == 0 ->
 						-- Special case, for when

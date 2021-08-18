@@ -173,7 +173,7 @@ retrieve hv cc = fileRetriever' $ \d k p iv ->
 	withDavHandle hv $ \dav -> case cc of
 		LegacyChunks _ -> do
 			-- Not doing incremental verification for chunks.
-			liftIO $ maybe noop failIncremental iv
+			liftIO $ maybe noop unableIncremental iv
 			retrieveLegacyChunked (fromRawFilePath d) k p dav
 		_ -> liftIO $ goDAV dav $
 			retrieveHelper (keyLocation k) (fromRawFilePath d) p iv

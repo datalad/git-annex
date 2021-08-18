@@ -72,9 +72,7 @@ fileCopier _ src dest meterupdate iv = docopy
 fileCopier copycowtried src dest meterupdate iv =
 	ifM (liftIO $ tryCopyCoW copycowtried src dest meterupdate)
 		( do
-			-- Make sure the incremental verifier fails,
-			-- since we did not feed it.
-			liftIO $ maybe noop failIncremental iv
+			liftIO $ maybe noop unableIncremental iv
 			return CopiedCoW
 		, docopy
 		)

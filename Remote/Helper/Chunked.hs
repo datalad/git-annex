@@ -366,11 +366,10 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 			| otherwise = Nothing
 	
 	finalize (Right Nothing) = return UnVerified
-	finalize (Right (Just iv)) = 
-		ifM (liftIO $ finalizeIncremental iv)
-			( return Verified
-			, return UnVerified
-			)
+	finalize (Right (Just iv)) =
+		liftIO (finalizeIncremental iv) >>= \case
+			Just True -> return Verified
+			_ -> return UnVerified
 	finalize (Left v) = return v
 
 {- Writes retrieved file content to the provided Handle, decrypting it

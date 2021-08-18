@@ -633,8 +633,8 @@ saveState nocommit = doSideAction $ do
 
 {- Downloads content from any of a list of urls, displaying a progress
  - meter. -}
-downloadUrl :: Key -> MeterUpdate -> [Url.URLString] -> FilePath -> Url.UrlOptions -> Annex Bool
-downloadUrl k p urls file uo = 
+downloadUrl :: Key -> MeterUpdate -> Maybe IncrementalVerifier -> [Url.URLString] -> FilePath -> Url.UrlOptions -> Annex Bool
+downloadUrl k p iv urls file uo = 
 	-- Poll the file to handle configurations where an external
 	-- download command is used.
 	meteredFile file (Just p) k (go urls Nothing)
@@ -643,7 +643,7 @@ downloadUrl k p urls file uo =
 	-- download.
 	go [] (Just err) = warning err >> return False
 	go [] Nothing = return False
-	go (u:us) _ = Url.download' p u file uo >>= \case
+	go (u:us) _ = Url.download' p iv u file uo >>= \case
 		Right () -> return True
 		Left err -> go us (Just err)
 

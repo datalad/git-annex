@@ -110,17 +110,19 @@ resumeVerifyKeyContent k f iv = liftIO (positionIncremental iv) >>= \case
 			then fallback
 			else case fromKey keySize k of
 				Just size | fsz /= size -> return False
-				_ -> go fsz endpos
+				_ -> go fsz endpos >>= \case
+					Just v -> return v
+					Nothing -> fallback
   where
 	fallback = verifyKeyContent k f
 
 	go fsz endpos
 		| fsz == endpos =
-			liftIO $ catchDefaultIO False $
+			liftIO $ catchDefaultIO (Just False) $
 				finalizeIncremental iv
 		| otherwise = do
 			showAction (descVerify iv)
-			liftIO $ catchDefaultIO False $
+			liftIO $ catchDefaultIO (Just False) $
 				withBinaryFile (fromRawFilePath f) ReadMode $ \h -> do
 					hSeek h AbsoluteSeek endpos
 					feedincremental h
@@ -172,12 +174,13 @@ finishVerifyKeyContentIncrementally :: Maybe IncrementalVerifier -> Annex (Bool,
 finishVerifyKeyContentIncrementally Nothing = 
 	return (True, UnVerified)
 finishVerifyKeyContentIncrementally (Just iv) =
-	ifM (liftIO $ finalizeIncremental iv)
-		( return (True, Verified)
-		, do
+	liftIO (finalizeIncremental iv) >>= \case
+		Just True -> return (True, Verified)
+		Just False -> do
 			warning "verification of content failed"
 			return (False, UnVerified)
-		)
+		-- Incremental verification was not able to be done.
+		Nothing -> return (True, UnVerified)
 
 -- | Reads the file as it grows, and feeds it to the incremental verifier.
 -- 
@@ -190,11 +193,11 @@ finishVerifyKeyContentIncrementally (Just iv) =
 -- for the file to appear before opening it and starting verification.
 --
 -- This is not supported for all OSs, and on OS's where it is not
--- supported, verification will fail.
+-- supported, verification will not happen.
 --
 -- The writer probably needs to be another process. If the file is being
 -- written directly by git-annex, the haskell RTS will prevent opening it
--- for read at the same time, and verification will fail.
+-- for read at the same time, and verification will not happen.
 --
 -- Note that there are situations where the file may fail to verify despite
 -- having the correct content. For example, when the file is written out
@@ -221,7 +224,7 @@ tailVerify :: IncrementalVerifier -> RawFilePath -> TMVar () -> IO ()
 tailVerify iv f finished = 
 	tryNonAsync go >>= \case
 		Right r -> return r
-		Left _ -> failIncremental iv
+		Left _ -> unableIncremental iv
   where
 	-- Watch the directory containing the file, and wait for
 	-- the file to be modified. It's possible that the file already
@@ -246,7 +249,7 @@ tailVerify iv f finished =
 		let cleanup = void . tryNonAsync . INotify.removeWatch
 		let stop w = do
 			cleanup w
-			failIncremental iv
+			unableIncremental iv
 		waitopen modified >>= \case
 			Nothing -> stop wd
 			Just h -> do
@@ -305,5 +308,5 @@ tailVerify iv f finished =
 
 	chunk = 65536
 #else
-tailVerify iv _ _ = failIncremental iv
+tailVerify iv _ _ = unableIncremental iv
 #endif
