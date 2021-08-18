@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="git-annex.branchable.com@78dd096e15e9d37643bf695293cae77fec735698"
+ nickname="git-annex.branchable.com"
+ avatar="http://cdn.libravatar.org/avatar/f9a3a021d4457e45fb899b38ba0aed41"
+ subject="So where are the file stored?"
+ date="2021-08-18T20:19:25Z"
+ content="""
+This is like a 1000ft overview, but doesn't actually say where the files are actually stored or how they're synchronized.
+
+Does one need to setup a samba, sftp, or AWS bucket to contain the large files? Does a clone of the repo full down all of the large files, or just the files in the working directory that's checked out? Are files transferred via direct connection to other repos (ex the same SSH tunnel that git uses, http, etc) or is there a UDP p2p layer like syncthing or bittorrent that might struggle with certain NAT situations?
+
+The sentence \"A file's content can be transferred from one repository to another by git-annex. Which repositories contain a given value is tracked by git-annex (see location tracking).\" makes it sound like the old versions of the large files only exist on computers that checked out those copies. Does this mean old versions of a file might be lost forever if a single clone is deleted and temporarily unavailable if clones that contain those revisions of the file are offline?
+
+Is there a way to ensure that a clone has all copies of all of the files (for example, when using git with a central trusted server)? 
+"""]]
