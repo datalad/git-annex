@@ -645,7 +645,17 @@ downloadUrl k p iv urls file uo =
 	go [] Nothing = return False
 	go (u:us) _ = Url.download' p iv u file uo >>= \case
 		Right () -> return True
-		Left err -> go us (Just err)
+		Left err -> do
+			-- If the incremental verifier was fed anything
+			-- while the download that failed ran, it's unable
+			-- to be used for the other urls.
+			case iv of
+				Just iv' -> 
+					liftIO $ positionIncremental iv' >>= \case
+					Just n | n > 0 -> unableIncremental iv'
+					_ -> noop
+				Nothing -> noop
+			go us (Just err)
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}

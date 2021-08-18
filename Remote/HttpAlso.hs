@@ -126,7 +126,7 @@ downloadAction :: FilePath -> MeterUpdate -> Key -> ((URLString -> Annex (Either
 downloadAction dest p key run =
 	Url.withUrlOptions $ \uo ->
 		meteredFile dest (Just p) key $
-			run (\url -> Url.download' p url dest uo)
+			run (\url -> Url.download' p Nothing url dest uo)
 				>>= either giveup (const (return ()))
 
 checkKey :: Maybe URLString -> LearnedLayout -> Key -> Annex Bool

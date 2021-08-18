@@ -34,6 +34,7 @@ module Annex.Url (
 import Annex.Common
 import qualified Annex
 import qualified Utility.Url as U
+import Utility.Hash (IncrementalVerifier)
 import Utility.IPAddress
 #ifdef WITH_HTTP_CLIENT_RESTRICTED
 import Network.HTTP.Client.Restricted
@@ -172,15 +173,15 @@ checkBoth url expected_size uo =
 		Right r -> return r
 		Left err -> warning err >> return False
 
-download :: MeterUpdate -> U.URLString -> FilePath -> U.UrlOptions -> Annex Bool
-download meterupdate url file uo =
-	liftIO (U.download meterupdate url file uo) >>= \case
+download :: MeterUpdate -> Maybe IncrementalVerifier -> U.URLString -> FilePath -> U.UrlOptions -> Annex Bool
+download meterupdate iv url file uo =
+	liftIO (U.download meterupdate iv url file uo) >>= \case
 		Right () -> return True
 		Left err -> warning err >> return False
 
-download' :: MeterUpdate -> U.URLString -> FilePath -> U.UrlOptions -> Annex (Either String ())
-download' meterupdate url file uo =
-	liftIO (U.download meterupdate url file uo)
+download' :: MeterUpdate -> Maybe IncrementalVerifier -> U.URLString -> FilePath -> U.UrlOptions -> Annex (Either String ())
+download' meterupdate iv url file uo =
+	liftIO (U.download meterupdate iv url file uo)
 
 exists :: U.URLString -> U.UrlOptions -> Annex Bool
 exists url uo = liftIO (U.exists url uo) >>= \case

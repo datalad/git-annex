@@ -413,7 +413,7 @@ retrieve hv r rs c info = fileRetriever $ \f k p -> withS3Handle hv $ \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
-			Right us -> unlessM (withUrlOptions $ downloadUrl k p us (fromRawFilePath f)) $
+			Right us -> unlessM (withUrlOptions $ downloadUrl k p Nothing us (fromRawFilePath f)) $
 				giveup "failed to download content"
 
 retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Annex ()
@@ -426,7 +426,7 @@ retrieveHelper info h loc f p = retrieveHelper' h f p $
 retrieveHelper' :: S3Handle -> FilePath -> MeterUpdate -> S3.GetObject -> Annex ()
 retrieveHelper' h f p req = liftIO $ runResourceT $ do
 	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle h req
-	Url.sinkResponseFile p zeroBytesProcessed f WriteMode rsp
+	Url.sinkResponseFile p Nothing zeroBytesProcessed f WriteMode rsp
 
 remove :: S3HandleVar -> Remote -> S3Info -> Remover
 remove hv r info k = withS3HandleOrFail (uuid r) hv $ \h -> do
@@ -501,7 +501,7 @@ retrieveExportS3 hv r info _k loc f p = do
 		Nothing -> case getPublicUrlMaker info of
 			Just geturl -> either giveup return =<<
 				Url.withUrlOptions
-					(Url.download' p (geturl exportloc) f)
+					(Url.download' p Nothing (geturl exportloc) f)
 			Nothing -> giveup $ needS3Creds (uuid r)
   where
 	exportloc = bucketExportLocation info loc

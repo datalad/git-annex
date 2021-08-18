@@ -292,7 +292,7 @@ tryGitConfigRead autoinit r hasuuid
 		let url = Git.repoLocation r ++ "/config"
 		v <- withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			liftIO $ hClose h
-			Url.download' nullMeterUpdate url tmpfile uo >>= \case
+			Url.download' nullMeterUpdate Nothing url tmpfile uo >>= \case
 				Right () -> pipedconfig Git.Config.ConfigNullList
 					False url "git"
 					[ Param "config"
@@ -540,12 +540,13 @@ copyFromRemote' forcersync r st key file dest meterupdate vc = do
 copyFromRemote'' :: Git.Repo -> Bool -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest meterupdate vc
 	| Git.repoIsHttp repo = do
+		iv <- startVerifyKeyContentIncrementally vc key
 		gc <- Annex.getGitConfig
 		ok <- Url.withUrlOptionsPromptingCreds $
-			Annex.Content.downloadUrl key meterupdate (keyUrls gc repo r key) dest
+			Annex.Content.downloadUrl key meterupdate iv (keyUrls gc repo r key) dest
 		unless ok $
 			giveup "failed to download content"
-		return UnVerified
+		snd <$> finishVerifyKeyContentIncrementally iv
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $ do
 		u <- getUUID
 		hardlink <- wantHardLink

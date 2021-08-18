@@ -1,6 +1,6 @@
 {- Web remote.
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import Remote.Helper.ExportImport
 import qualified Git
 import qualified Git.Construct
 import Annex.Content
+import Annex.Verify
 import Config.Cost
 import Config
 import Logs.Web
@@ -82,19 +83,29 @@ gen r _ rc gc rs = do
 		}
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
-downloadKey key _af dest p _ = do
-	get =<< getWebUrls key
-	return UnVerified
+downloadKey key _af dest p vc = go =<< getWebUrls key
   where
-	get [] = giveup "no known url"
-	get urls = do
-		r <- untilTrue urls $ \u -> do
-			let (u', downloader) = getDownloader u
-			case downloader of
-				YoutubeDownloader -> youtubeDlTo key u' dest p
-				_ -> Url.withUrlOptions $ downloadUrl key p [u'] dest
-		unless r $
-			giveup "download failed"
+	go [] = giveup "no known url"
+	go urls = getM dl urls >>= \case
+		Just v -> return v
+		Nothing -> giveup "download failed"
+
+	dl u = do
+		let (u', downloader) = getDownloader u
+		case downloader of
+			YoutubeDownloader ->
+				ifM (youtubeDlTo key u' dest p)
+					( return (Just UnVerified)
+					, return Nothing
+					)
+			_ -> do
+				iv <- startVerifyKeyContentIncrementally vc key
+				ifM (Url.withUrlOptions $ downloadUrl key p iv [u'] dest)
+					( finishVerifyKeyContentIncrementally iv >>= \case
+						(True, v) -> return (Just v)
+						(False, _) -> return Nothing
+					, return Nothing
+					)
 
 uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 uploadKey _ _ _ = giveup "upload to web not supported"

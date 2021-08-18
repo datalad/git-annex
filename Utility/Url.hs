@@ -1,6 +1,6 @@
 {- Url downloading.
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -53,6 +53,7 @@ import Utility.HttpManagerRestricted
 #endif
 import Utility.IPAddress
 import qualified Utility.RawFilePath as R
+import Utility.Hash (IncrementalVerifier(..))
 
 import Network.URI
 import Network.HTTP.Types
@@ -363,11 +364,11 @@ headRequest r = r
  -
  - When the download fails, returns an error message.
  -}
-download :: MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO (Either String ())
+download :: MeterUpdate -> Maybe IncrementalVerifier -> URLString -> FilePath -> UrlOptions -> IO (Either String ())
 download = download' False
 
-download' :: Bool -> MeterUpdate -> URLString -> FilePath -> UrlOptions -> IO (Either String ())
-download' nocurlerror meterupdate url file uo =
+download' :: Bool -> MeterUpdate -> Maybe IncrementalVerifier -> URLString -> FilePath -> UrlOptions -> IO (Either String ())
+download' nocurlerror meterupdate iv url file uo =
 	catchJust matchHttpException go showhttpexception
 		`catchNonAsync` (dlfailed . show)
   where
@@ -376,7 +377,7 @@ download' nocurlerror meterupdate url file uo =
 			case (urlDownloader uo, parseRequest (show u)) of
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
 					(matchStatusCodeException (== found302))
-					(downloadConduit meterupdate req file uo >> return (Right ()))
+					(downloadConduit meterupdate iv req file uo >> return (Right ()))
 					(followredir r)
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
 					| isfileurl u -> downloadfile u
@@ -404,7 +405,9 @@ download' nocurlerror meterupdate url file uo =
 		HttpExceptionRequest _ other -> show other
 		_ -> show he
 	
-	dlfailed msg = return $ Left $ "download failed: " ++ msg
+	dlfailed msg = do
+		noverification
+		return $ Left $ "download failed: " ++ msg
 
 	basecurlparams = curlParams uo
 		[ if nocurlerror
@@ -416,6 +419,7 @@ download' nocurlerror meterupdate url file uo =
 		]
 
 	downloadcurl rawurl curlparams = do
+		noverification
 		-- curl does not create destination file
 		-- if the url happens to be empty, so pre-create.
 		unlessM (doesFileExist file) $
@@ -429,6 +433,7 @@ download' nocurlerror meterupdate url file uo =
 		downloadcurl rawurl =<< curlRestrictedParams r u defport basecurlparams
 
 	downloadfile u = do
+		noverification
 		let src = unEscapeString (uriPath u)
 		withMeteredFile src meterupdate $
 			L.writeFile file
@@ -446,6 +451,8 @@ download' nocurlerror meterupdate url file uo =
 			Nothing -> throwIO ex
 	followredir _ ex = throwIO ex
 
+	noverification = maybe noop unableIncremental iv
+
 {- Download a perhaps large file using conduit, with auto-resume
  - of incomplete downloads.
  -
@@ -456,8 +463,8 @@ download' nocurlerror meterupdate url file uo =
  - thrown for reasons other than http status codes will still be thrown
  - as usual.)
  -}
-downloadConduit :: MeterUpdate -> Request -> FilePath -> UrlOptions -> IO ()
-downloadConduit meterupdate req file uo =
+downloadConduit :: MeterUpdate -> Maybe IncrementalVerifier -> Request -> FilePath -> UrlOptions -> IO ()
+downloadConduit meterupdate iv req file uo =
 	catchMaybeIO (getFileSize (toRawFilePath file)) >>= \case
 		Just sz | sz > 0 -> resumedownload sz
 		_ -> join $ runResourceT $ do
@@ -504,7 +511,9 @@ downloadConduit meterupdate req file uo =
 					store zeroBytesProcessed WriteMode resp
 					return (return ())
 				else if alreadydownloaded sz resp
-					then return (return ())
+					then do
+						liftIO noverification
+						return (return ())
 					else do
 						rf <- extractFromResourceT (respfailure resp)
 						if responseStatus resp == unauthorized401
@@ -529,13 +538,13 @@ downloadConduit meterupdate req file uo =
 			Nothing -> True
 	
 	store initialp mode resp =
-		sinkResponseFile meterupdate initialp file mode resp
+		sinkResponseFile meterupdate iv initialp file mode resp
 	
 	respfailure = B8.toString . statusMessage . responseStatus
 	
 	retryauthed (ba, signalsuccess) = do
 		r <- tryNonAsync $ downloadConduit
-			meterupdate
+			meterupdate iv
 			(applyBasicAuth' ba req)
 			file
 			(uo { getBasicAuth = noBasicAuth })
@@ -545,32 +554,44 @@ downloadConduit meterupdate req file uo =
 				() <- signalsuccess False
 				throwM e
 	
-{- Sinks a Response's body to a file. The file can either be opened in
- - WriteMode or AppendMode. Updates the meter as data is received.
+	noverification = maybe noop unableIncremental iv
+	
+{- Sinks a Response's body to a file. The file can either be appended to
+ - (AppendMode), or written from the start of the response (WriteMode).
+ - Updates the meter and incremental verifier as data is received,
+ - when not appending.
  -
  - Note that the responseStatus is not checked by this function.
  -}
 sinkResponseFile
 	:: MonadResource m
 	=> MeterUpdate
+	-> Maybe IncrementalVerifier
 	-> BytesProcessed
 	-> FilePath
 	-> IOMode
 	-> Response (ConduitM () B8.ByteString m ())
 	-> m ()
-sinkResponseFile meterupdate initialp file mode resp = do
+sinkResponseFile meterupdate iv initialp file mode resp = do
+	ui <- case (iv, mode) of
+		(Just iv', AppendMode) -> do
+			liftIO $ unableIncremental iv'
+			return (const noop)
+		(Just iv', _) -> return (updateIncremental iv')
+		(Nothing, _) -> return (const noop)
 	(fr, fh) <- allocate (openBinaryFile file mode) hClose
-	runConduit $ responseBody resp .| go initialp fh
+	runConduit $ responseBody resp .| go ui initialp fh
 	release fr
   where
-	go sofar fh = await >>= \case
+	go ui sofar fh = await >>= \case
 		Nothing -> return ()
 		Just bs -> do
 			let sofar' = addBytesProcessed sofar (B.length bs)
 			liftIO $ do
 				void $ meterupdate sofar'
+				() <- ui bs
 				B.hPut fh bs
-			go sofar' fh
+			go ui sofar' fh
 
 {- Downloads at least the specified number of bytes from an url. -}
 downloadPartial :: URLString -> UrlOptions -> Int -> IO (Maybe L.ByteString)

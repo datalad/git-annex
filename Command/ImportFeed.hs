@@ -173,7 +173,7 @@ downloadFeed url
 	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
 	| otherwise = withTmpFile "feed" $ \f h -> do
 		liftIO $ hClose h
-		ifM (Url.withUrlOptions $ Url.download nullMeterUpdate url f)
+		ifM (Url.withUrlOptions $ Url.download nullMeterUpdate Nothing url f)
 			( Just <$> liftIO (readFileStrict f)
 			, return Nothing
 			)

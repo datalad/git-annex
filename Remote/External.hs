@@ -808,9 +808,9 @@ checkUrlM external url =
 	mkmulti (u, s, f) = (u, s, f)
 
 retrieveUrl :: Retriever
-retrieveUrl = fileRetriever $ \f k p -> do
+retrieveUrl = fileRetriever' $ \f k p iv -> do
 	us <- getWebUrls k
-	unlessM (withUrlOptions $ downloadUrl k p us (fromRawFilePath f)) $
+	unlessM (withUrlOptions $ downloadUrl k p iv us (fromRawFilePath f)) $
 		giveup "failed to download content"
 
 checkKeyUrl :: CheckPresent

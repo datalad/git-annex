@@ -5,24 +5,14 @@
  content="""
 The concurrency problem is fixed now.
 
-Directory and webdav now also do incremental hashing.
+Directory and webdav and web now also do incremental hashing.
 
-There seems to have been a reversion in annex.verify handling; 
-I'm seeing directory do incremental hashing even when annex.verify is
-false. Noticed while benchmarking it to see how much incremental hashing
-sped it up. Seems that in Remote.Helper.Special, it uses
-RemoteVerify baser, but when shouldVerify checks that value, it
-sees that Types.Remote.isExportSupported is true. Despite the remote
-not actually being an export remote. Because adjustExportImport gets
-run after that point, I think.. (update: this is fixed)
-
-As well as the web special remote, these do not do incremental hashing
+These do not do incremental hashing
 still: gitlfs, S3, httpalso. Problem is, these open the file
 for write. That prevents tailVerify re-opening it for read, because the
 haskell RTS actually does not allowing opening a file for read that it has
 open for write. The new `fileRetriever\`` can be used instead to fix these,
-but will take some more work. Also, the git remote, when accessing a
-repository over http does not do incremental hashing.
+but will take some more work.
 
 Also, retrieval from export/import special remotes does not do incremental
 hashing (except for versioned ones, which sometimes use retrieveKeyFile).

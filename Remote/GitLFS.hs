@@ -497,7 +497,7 @@ retrieve rs h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload 
 				Nothing -> giveup "unable to parse git-lfs server download url"
 				Just req -> do
 					uo <- getUrlOptions
-					liftIO $ downloadConduit p req (fromRawFilePath dest) uo
+					liftIO $ downloadConduit p Nothing req (fromRawFilePath dest) uo
 
 -- Since git-lfs does not support removing content, nothing needs to be
 -- done to lock content in the remote, except for checking that the content

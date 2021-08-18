@@ -326,8 +326,8 @@ downloadDistributionInfo = do
 	liftIO $ withTmpDir "git-annex.tmp" $ \tmpdir -> do
 		let infof = tmpdir </> "info"
 		let sigf = infof ++ ".sig"
-		ifM (isRight <$> Url.download nullMeterUpdate distributionInfoUrl infof uo
-			<&&> (isRight <$> Url.download nullMeterUpdate distributionInfoSigUrl sigf uo)
+		ifM (isRight <$> Url.download nullMeterUpdate Nothing distributionInfoUrl infof uo
+			<&&> (isRight <$> Url.download nullMeterUpdate Nothing distributionInfoSigUrl sigf uo)
 			<&&> verifyDistributionSig gpgcmd sigf)
 			( parseInfoFile <$> readFileStrict infof
 			, return Nothing

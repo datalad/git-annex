@@ -215,7 +215,7 @@ downloadTorrentFile u = do
 						liftIO $ hClose h
 						resetAnnexFilePerm (toRawFilePath f)
 						ok <- Url.withUrlOptions $ 
-							Url.download nullMeterUpdate u f
+							Url.download nullMeterUpdate Nothing u f
 						when ok $
 							liftIO $ renameFile f (fromRawFilePath torrent)
 						return ok
