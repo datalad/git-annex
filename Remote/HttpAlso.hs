@@ -1,6 +1,6 @@
 {- HttpAlso remote (readonly).
  -
- - Copyright 2020 Joey Hess <id@joeyh.name>
+ - Copyright 2020-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ import Logs.Web
 import Creds
 import Messages.Progress
 import Utility.Metered
+import Annex.Verify
 import qualified Annex.Url as Url
 import Annex.SpecialRemote.Config
 
@@ -114,19 +115,20 @@ httpAlsoSetup _ (Just u) _ c gc = do
 	return (c', u)
 
 downloadKey :: Maybe URLString -> LearnedLayout -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
-downloadKey baseurl ll key _af dest p _vc = do
-	downloadAction dest p key (keyUrlAction baseurl ll key)
-	return UnVerified
+downloadKey baseurl ll key _af dest p vc = do
+	iv <- startVerifyKeyContentIncrementally vc key
+	downloadAction dest p iv key (keyUrlAction baseurl ll key)
+	snd <$> finishVerifyKeyContentIncrementally iv
 
 retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
 retriveExportHttpAlso baseurl key loc dest p = 
-	downloadAction dest p key (exportLocationUrlAction baseurl loc)
+	downloadAction dest p Nothing key (exportLocationUrlAction baseurl loc)
 
-downloadAction :: FilePath -> MeterUpdate -> Key -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
-downloadAction dest p key run =
+downloadAction :: FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Key -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
+downloadAction dest p iv key run =
 	Url.withUrlOptions $ \uo ->
 		meteredFile dest (Just p) key $
-			run (\url -> Url.download' p Nothing url dest uo)
+			run (\url -> Url.download' p iv url dest uo)
 				>>= either giveup (const (return ()))
 
 checkKey :: Maybe URLString -> LearnedLayout -> Key -> Annex Bool

@@ -476,7 +476,7 @@ store rs h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \ca
 						makeSmallAPIRequest . setRequestCheckStatus
 
 retrieve :: RemoteStateHandle -> TVar LFSHandle -> Retriever
-retrieve rs h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload h >>= \case
+retrieve rs h = fileRetriever' $ \dest k p iv -> getLFSEndpoint LFS.RequestDownload h >>= \case
 	Nothing -> giveup "unable to connect to git-lfs endpoint"
 	Just endpoint -> mkDownloadRequest rs k >>= \case
 		Nothing -> giveup "unable to download this object from git-lfs"
@@ -487,9 +487,9 @@ retrieve rs h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload 
 				(tro:_)
 					| LFS.resp_oid tro /= sha256 || LFS.resp_size tro /= size ->
 						giveup "git-lfs server replied with other object than the one we requested"
-					| otherwise -> go dest p tro
+					| otherwise -> go dest p iv tro
   where
-	go dest p tro = case LFS.resp_error tro of
+	go dest p iv tro = case LFS.resp_error tro of
 		Just err -> giveup $ T.unpack $ LFS.respobjerr_message err
 		Nothing -> case LFS.resp_actions tro of
 			Nothing -> giveup "git-lfs server did not provide a way to download this object"
@@ -497,7 +497,7 @@ retrieve rs h = fileRetriever $ \dest k p -> getLFSEndpoint LFS.RequestDownload 
 				Nothing -> giveup "unable to parse git-lfs server download url"
 				Just req -> do
 					uo <- getUrlOptions
-					liftIO $ downloadConduit p Nothing req (fromRawFilePath dest) uo
+					liftIO $ downloadConduit p iv req (fromRawFilePath dest) uo
 
 -- Since git-lfs does not support removing content, nothing needs to be
 -- done to lock content in the remote, except for checking that the content
