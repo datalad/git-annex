@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 6"
+ date="2021-08-18T21:07:11Z"
+ content="""
+    This is like a 1000ft overview, but doesn't actually say where the files are actually stored or how they're synchronized.
+
+It does:
+\"[...] That's a fancy way to say that git-annex stores the actual file content somewhere under .git/annex/. (See [[internals]] for details.)\". <br>
+When using SHA256E hashing (the default), a file will end up for example under `.git/annex/f87/4d5/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+
+    Does one need to setup a samba, sftp, or AWS bucket to contain the large files?
+
+No.
+
+    Does a clone of the repo pull down all of the large files, or just the files in the working directory that's checked out?
+
+No and no. You decide yourself (via [[git-annex-get]]/[[git-annex-drop]]/[[git-annex-copy]]/[[git-annex-move]]) or automated (via `git annex sync --content`/[[git-annex-wanted]]/[[git-annex-preferred-content]]) what large files are stored where. If a file is not present you will just see a broken symlink.
+
+    Are files transferred via direct connection to other repos (ex the same SSH tunnel that git uses, http, etc) or is there a UDP p2p layer like syncthing or bittorrent that might struggle with certain NAT situations?
+
+Yes and no. git-annex is very flexible, it can also communicate via tor.
+
+    The sentence \"A file's content can be transferred from one repository to another by git-annex. Which repositories contain a given value is tracked by git-annex (see location tracking).\" makes it sound like the old versions of the large files only exist on computers that checked out those copies. Does this mean old versions of a file might be lost forever if a single clone is deleted and temporarily unavailable if clones that contain those revisions of the file are offline?
+
+Yes and yes. If you don't copy the file elsewhere (with the commands mentioned above) before deleting the repo, that version is lost.
+
+    Is there a way to ensure that a clone has all copies of all of the files (for example, when using git with a central trusted server)?
+
+`git annex get --all`/`git annex wanted server anything` 
+
+I strongly suggest you to create a throwaway repository and try things out.
+
+"""]]
