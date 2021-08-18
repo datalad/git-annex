@@ -16,6 +16,7 @@ module Annex.Verify (
 	warnUnverifiableInsecure,
 	isVerifiable,
 	startVerifyKeyContentIncrementally,
+	finishVerifyKeyContentIncrementally,
 	IncrementalVerifier(..),
 	tailVerify,
 ) where
@@ -165,6 +166,17 @@ startVerifyKeyContentIncrementally verifyconfig k =
 				Nothing -> return Nothing
 			Nothing -> return Nothing
 		, return Nothing
+		)
+
+finishVerifyKeyContentIncrementally :: Maybe IncrementalVerifier -> Annex (Bool, Verification)
+finishVerifyKeyContentIncrementally Nothing = 
+	return (True, UnVerified)
+finishVerifyKeyContentIncrementally (Just iv) =
+	ifM (liftIO $ finalizeIncremental iv)
+		( return (True, Verified)
+		, do
+			warning "verification of content failed"
+			return (False, UnVerified)
 		)
 
 -- | Reads the file as it grows, and feeds it to the incremental verifier.

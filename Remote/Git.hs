@@ -867,14 +867,7 @@ mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
 		iv <- startVerifyKeyContentIncrementally verifyconfig k
 		fileCopier copycowtried src dest p iv >>= \case
 			Copied -> ifM check
-				( case iv of
-					Just x -> ifM (liftIO $ finalizeIncremental x)
-						( return (True, Verified)
-						, do
-							warning "verification of content failed"
-							return (False, UnVerified)
-						)
-					Nothing -> return (True, UnVerified)
+				( finishVerifyKeyContentIncrementally iv
 				, return (False, UnVerified)
 				)
 			CopiedCoW -> unVerified check
