@@ -10,10 +10,10 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
     git-annex's own progress display.
   * Many special remotes now checksum content while it is being retrieved,
     instead of in a separate pass at the end. This is supported for most
-    special remotes on Linux (except for bittorrent, gitlfs, and S3),
-    and for a few on other OSs (directory, web, webdav, bup, ddar, gcrypt,
-    glacier). Special remotes using chunking or encryption also support
-    it. But exporttree/importtree special remotes do not.
+    special remotes on Linux (except for bittorrent and gitlfs),
+    and for a few on other OSs (directory, web, S3, webdav, bup, ddar,
+    gcrypt, glacier). Special remotes using chunking or encryption also
+    support it. But exporttree/importtree special remotes do not.
 
  -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
 

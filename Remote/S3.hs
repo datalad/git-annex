@@ -60,6 +60,7 @@ import Types.MetaData
 import Types.ProposedAccepted
 import Types.NumCopies
 import Utility.Metered
+import Utility.Hash (IncrementalVerifier)
 import Utility.DataUnits
 import Annex.Content
 import qualified Annex.Url as Url
@@ -401,32 +402,32 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
  - out to the file. Would be better to implement a byteRetriever, but
  - that is difficult. -}
 retrieve :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> Retriever
-retrieve hv r rs c info = fileRetriever $ \f k p -> withS3Handle hv $ \case
+retrieve hv r rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
 	(Just h) -> 
 		eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
-			Right loc -> retrieveHelper info h loc (fromRawFilePath f) p
+			Right loc -> retrieveHelper info h loc (fromRawFilePath f) p iv
 	Nothing ->
 		getPublicWebUrls' (uuid r) rs info c k >>= \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
-			Right us -> unlessM (withUrlOptions $ downloadUrl k p Nothing us (fromRawFilePath f)) $
+			Right us -> unlessM (withUrlOptions $ downloadUrl k p iv us (fromRawFilePath f)) $
 				giveup "failed to download content"
 
-retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Annex ()
-retrieveHelper info h loc f p = retrieveHelper' h f p $
+retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()
+retrieveHelper info h loc f p iv = retrieveHelper' h f p iv $
 	case loc of
 		Left o -> S3.getObject (bucket info) o
 		Right (S3VersionID o vid) -> (S3.getObject (bucket info) o)
 			{ S3.goVersionId = Just vid }
 
-retrieveHelper' :: S3Handle -> FilePath -> MeterUpdate -> S3.GetObject -> Annex ()
-retrieveHelper' h f p req = liftIO $ runResourceT $ do
+retrieveHelper' :: S3Handle -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> S3.GetObject -> Annex ()
+retrieveHelper' h f p iv req = liftIO $ runResourceT $ do
 	S3.GetObjectResponse { S3.gorResponse = rsp } <- sendS3Handle h req
-	Url.sinkResponseFile p Nothing zeroBytesProcessed f WriteMode rsp
+	Url.sinkResponseFile p iv zeroBytesProcessed f WriteMode rsp
 
 remove :: S3HandleVar -> Remote -> S3Info -> Remover
 remove hv r info k = withS3HandleOrFail (uuid r) hv $ \h -> do
@@ -497,7 +498,7 @@ storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
 retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
 retrieveExportS3 hv r info _k loc f p = do
 	withS3Handle hv $ \case
-		Just h -> retrieveHelper info h (Left (T.pack exportloc)) f p
+		Just h -> retrieveHelper info h (Left (T.pack exportloc)) f p Nothing
 		Nothing -> case getPublicUrlMaker info of
 			Just geturl -> either giveup return =<<
 				Url.withUrlOptions
@@ -649,7 +650,7 @@ mkImportableContentsVersioned info = build . groupfiles
 retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
 retrieveExportWithContentIdentifierS3 hv r rs info loc cid dest mkkey p = withS3Handle hv $ \case
 	Just h -> do
-		rewritePreconditionException $ retrieveHelper' h dest p $
+		rewritePreconditionException $ retrieveHelper' h dest p Nothing $
 			limitGetToContentIdentifier cid $
 				S3.getObject (bucket info) o
 		k <- mkkey
