@@ -1,0 +1,12 @@
+It should be possible for `git fetch foo` to work when foo is a special
+remote with importtree=yes. This would have the same effect as running
+`git-annex import --from foo`.
+
+Also `git push foo` when it supports export, would have the same effect as
+running `git annex export --to foo`
+
+It would need `remote.foo.url` to be set to something like `annex::foo`
+which would make fetch and pull run `git-remote-annex`. Currently, special
+remote's don't get an url configured. (`annex::uuid` was my first thought,
+but `annex::foo` avoids repeating the remote's uuid and git-annex can
+look up the uuid from the name) --[[Joey]]
