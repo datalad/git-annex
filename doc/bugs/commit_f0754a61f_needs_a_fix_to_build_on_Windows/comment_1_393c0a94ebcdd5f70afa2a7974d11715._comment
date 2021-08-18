@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="jkniiv@b330fc3a602d36a37a67b2a2d99d4bed3bb653cb"
+ nickname="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/419f2eee8b0c37256488fabcc2737ff2"
+ subject="commit 492036622a6326852c29e23608f3959f63e55685 fixes this"
+ date="2021-08-18T21:10:51Z"
+ content="""
+Commit 492036622 fixes also the Windows build so this bug can be closed. Thank you Joey!
+"""]]
