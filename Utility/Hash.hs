@@ -237,10 +237,6 @@ props_hashes_stable = map (\(desc, hasher, result) -> (desc ++ " stable", hasher
   where
 	foo = L.fromChunks [T.encodeUtf8 $ T.pack "foo"]
 
-{- File names are (client-side) MAC'ed on special remotes.
- - The chosen MAC algorithm needs to be same for all files stored on the
- - remote.
- -}
 data Mac = HmacSha1 | HmacSha224 | HmacSha256 | HmacSha384 | HmacSha512
 	deriving (Eq)
 
