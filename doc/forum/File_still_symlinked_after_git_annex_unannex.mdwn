@@ -1,0 +1,22 @@
+So I'm about 5 minutes into using git-annex and I've already messed it up :-p.
+
+My intent is to get a working `.gitattributes` file that automatically uses annex for `git add` on image files such as RW2 (Panasonic RAW files) and regular git for `git add` on non-image files (especially in this case XMP sidecar files). So I set that up seemingly successfully. I did `git add P1000252.RW2` and it seemed to create a symlink in the annex folder. Then I figured I'd try using it a bit like I do with normal git, unstaging it before committing (note that I've made zero commits so far in this repo). That looked like it worked, at least in terms of `git status` and `git annex status`. However now I'm at a point where the file is untracked in git and a question mark in `git annex status` (presumably untracked as well), yet the file is still a symlink to the annex folder. I ran `git annex unannex` on the file and still it's a symlink.
+
+What I expected was that it would just go back to a regular file in its previous location instead of a symlink. Did I do something wrong? How do I "recover" from this, just manually move the file back in place and change the mode on it? Luckily this repo was just a test with some junk files so recovery of this particular file isn't critical, I just don't want to end up messing up my huge photo library going forward.
+
+Further breaking my brain right now is that on `git init` it used branch `main` and continued showing me as being on branch `main` throughout all this. But `git branch` only showed the branch `git-annex`. So I tried checking out this `git-annex` branch, and it says it switched to the branch. Then I tried checking out `main` again but I get `pathspec 'main' did not match any file(s) known to git`.
+
+Version:
+```
+git-annex version: 8.20210803
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.0 ghc-8.10.4 http-client-0.6.4.1 persistent-sqlite-2.13.0.3 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.1.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+Side note, and maybe this is something you hear a lot and hate hearing, but having the code, docs, and issues on a site like GitLab or GitHub would be a big improvement IMO.

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Austin"
+ avatar="http://cdn.libravatar.org/avatar/5954e64a0ca016dd371f3110f7acd7a9"
+ subject="comment 1"
+ date="2021-08-18T06:28:39Z"
+ content="""
+Naturally not long after I posted I found something that helped: http://git-annex.branchable.com/forum/git_annex_add_crash_and_subsequent_recovery/#comment-4f5af644597a055624009c5bbb9aca3f
+
+Somewhat unintuitively `git add P1000252.RW2` then `git annex unannex P1000252.RW2` got the file back to its previous location.
+
+I'm still feeling odd about the branch situation, but I think it may be this problem: https://git-annex.branchable.com/forum/Is_git-annex_in_a_precarious_state_before_the_initial_commit__63__/
+"""]]
