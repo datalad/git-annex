@@ -11,9 +11,9 @@ module Remote.Helper.Http where
 
 import Annex.Common
 import Types.StoreRetrieve
-import Types.Backend
 import Remote.Helper.Special
 import Utility.Metered
+import Utility.Hash (IncrementalVerifier(..))
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S

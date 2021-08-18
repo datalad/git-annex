@@ -25,9 +25,9 @@ import qualified Annex
 import qualified Types.Remote
 import Types.Remote (VerifyConfigA(..))
 import qualified Types.Backend
-import Types.Backend (IncrementalVerifier(..))
 import qualified Backend
 import Types.Remote (unVerified, Verification(..), RetrievalSecurityPolicy(..))
+import Utility.Hash (IncrementalVerifier(..))
 import Annex.WorkerPool
 import Types.WorkerPool
 import Types.Key

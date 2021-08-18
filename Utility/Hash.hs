@@ -1,4 +1,11 @@
-{- Convenience wrapper around cryptonite's hashing. -}
+{- Convenience wrapper around cryptonite's hashing.
+ -
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
+ -
+ - License: BSD-2-clause
+ -}
+
+{-# LANGUAGE BangPatterns #-}
 
 module Utility.Hash (
 	sha1,
@@ -57,12 +64,15 @@ module Utility.Hash (
 	Mac(..),
 	calcMac,
 	props_macs_stable,
+	IncrementalVerifier(..),
+	mkIncrementalVerifier,
 ) where
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
+import Data.IORef
 import "cryptonite" Crypto.MAC.HMAC hiding (Context)
 import "cryptonite" Crypto.Hash
 
@@ -269,3 +279,43 @@ props_macs_stable = map (\(desc, mac, result) -> (desc ++ " stable", calcMac mac
   where
 	key = T.encodeUtf8 $ T.pack "foo"
 	msg = T.encodeUtf8 $ T.pack "bar"
+
+data IncrementalVerifier = IncrementalVerifier
+	{ updateIncremental :: S.ByteString -> IO ()
+	-- ^ Called repeatedly on each peice of the content.
+	, finalizeIncremental :: IO Bool
+	-- ^ Called once the full content has been sent, returns true
+	-- if the hash verified.
+	, failIncremental :: IO ()
+	-- ^ Call if the incremental verification needs to fail.
+	, positionIncremental :: IO (Maybe Integer)
+	-- ^ Returns the number of bytes that have been fed to this
+	-- incremental verifier so far. (Nothing if failIncremental was
+	-- called.)
+	, descVerify :: String
+	-- ^ A description of what is done to verify the content.
+	}
+
+mkIncrementalVerifier :: HashAlgorithm h => Context h -> String -> (String -> Bool) -> IO IncrementalVerifier
+mkIncrementalVerifier ctx descverify samechecksum = do
+	v <- newIORef (Just (ctx, 0))
+	return $ IncrementalVerifier
+		{ updateIncremental = \b ->
+			modifyIORef' v $ \case
+				(Just (ctx', n)) -> 
+					let !ctx'' = hashUpdate ctx' b
+					    !n' = n + fromIntegral (S.length b)
+					in (Just (ctx'', n'))
+				Nothing -> Nothing
+		, finalizeIncremental =
+			readIORef v >>= \case
+				(Just (ctx', _)) -> do
+					let digest = hashFinalize ctx'
+					return $ samechecksum (show digest)
+				Nothing -> return False
+		, failIncremental = writeIORef v Nothing
+		, positionIncremental = readIORef v >>= \case
+			Just (_, n) -> return (Just n)
+			Nothing -> return Nothing
+		, descVerify = descverify
+		}

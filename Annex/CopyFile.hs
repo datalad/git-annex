@@ -14,7 +14,7 @@ import Utility.Metered
 import Utility.CopyFile
 import Utility.FileMode
 import Utility.Touch
-import Types.Backend
+import Utility.Hash (IncrementalVerifier(..))
 
 import Control.Concurrent
 import qualified Data.ByteString as S

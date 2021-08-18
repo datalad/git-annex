@@ -11,7 +11,7 @@ module Types.StoreRetrieve where
 
 import Annex.Common
 import Utility.Metered
-import Types.Backend (IncrementalVerifier)
+import Utility.Hash (IncrementalVerifier)
 
 import qualified Data.ByteString.Lazy as L
 

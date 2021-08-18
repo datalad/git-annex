@@ -13,8 +13,7 @@ import Types.Key
 import Types.KeySource
 import Utility.Metered
 import Utility.FileSystemEncoding
-
-import Data.ByteString (ByteString)
+import Utility.Hash (IncrementalVerifier)
 
 data BackendA a = Backend
 	{ backendVariety :: KeyVariety
@@ -43,19 +42,3 @@ instance Show (BackendA a) where
 
 instance Eq (BackendA a) where
 	a == b = backendVariety a == backendVariety b
-
-data IncrementalVerifier = IncrementalVerifier
-	{ updateIncremental :: ByteString -> IO ()
-	-- ^ Called repeatedly on each peice of the content.
-	, finalizeIncremental :: IO Bool
-	-- ^ Called once the full content has been sent, returns true
-	-- if the hash verified.
-	, failIncremental :: IO ()
-	-- ^ Call if the incremental verification needs to fail.
-	, positionIncremental :: IO (Maybe Integer)
-	-- ^ Returns the number of bytes that have been fed to this
-	-- incremental verifier so far. (Nothing if failIncremental was
-	-- called.)
-	, descVerify :: String
-	-- ^ A description of what is done to verify the content.
-	}

@@ -6,7 +6,6 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE BangPatterns #-}
 
 module Backend.Hash (
 	backends,
@@ -29,7 +28,6 @@ import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import Control.DeepSeq
 import Control.Exception (evaluate)
-import Data.IORef
 
 data Hash
 	= MD5Hash
@@ -222,7 +220,7 @@ hasher (Blake2sHash hashsize) = blake2sHasher hashsize
 hasher (Blake2spHash hashsize) = blake2spHasher hashsize
 
 mkHasher :: HashAlgorithm h => (L.ByteString -> Digest h) -> Context h -> Hasher
-mkHasher h c = (show . h, mkIncrementalVerifier c)
+mkHasher h c = (show . h, mkIncrementalVerifier c descChecksum . sameCheckSum)
 
 sha2Hasher :: HashSize -> Hasher
 sha2Hasher (HashSize hashsize)
@@ -278,30 +276,6 @@ sha1Hasher = mkHasher sha1 sha1_context
 
 md5Hasher :: Hasher
 md5Hasher = mkHasher md5 md5_context
-
-mkIncrementalVerifier :: HashAlgorithm h => Context h -> Key -> IO IncrementalVerifier
-mkIncrementalVerifier ctx key = do
-	v <- newIORef (Just (ctx, 0))
-	return $ IncrementalVerifier
-		{ updateIncremental = \b ->
-			modifyIORef' v $ \case
-				(Just (ctx', n)) -> 
-					let !ctx'' = hashUpdate ctx' b
-					    !n' = n + fromIntegral (S.length b)
-					in (Just (ctx'', n'))
-				Nothing -> Nothing
-		, finalizeIncremental =
-			readIORef v >>= \case
-				(Just (ctx', _)) -> do
-					let digest = hashFinalize ctx'
-					return $ sameCheckSum key (show digest)
-				Nothing -> return False
-		, failIncremental = writeIORef v Nothing
-		, positionIncremental = readIORef v >>= \case
-			Just (_, n) -> return (Just n)
-			Nothing -> return Nothing
-		, descVerify = descChecksum
-		}
 
 descChecksum :: String
 descChecksum = "checksum"

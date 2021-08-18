@@ -28,7 +28,6 @@ import Control.Concurrent.STM hiding (check)
 import Annex.Common
 import Types.Remote
 import Types.Export
-import Types.Backend
 import qualified Git
 import qualified Annex
 import Config
@@ -41,6 +40,7 @@ import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Creds
 import Utility.Metered
 import Utility.Url (URLString, matchStatusCodeException, matchHttpExceptionContent)
+import Utility.Hash (IncrementalVerifier(..))
 import Annex.UUID
 import Remote.WebDAV.DavLocation
 import Types.ProposedAccepted

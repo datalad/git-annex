@@ -17,9 +17,9 @@ import qualified Utility.SimpleProtocol as Proto
 import Types (Annex)
 import Types.Key
 import Types.UUID
-import Types.Remote (Verification(..))
-import Types.Backend (IncrementalVerifier(..))
 import Types.Transfer
+import Types.Remote (Verification(..))
+import Utility.Hash (IncrementalVerifier(..))
 import Utility.AuthToken
 import Utility.Applicative
 import Utility.PartialPrelude
