@@ -34,9 +34,9 @@ import Types.WorkerPool
 import Types.Key
 
 import Control.Concurrent.STM
+import qualified Data.ByteString as S
 #if WITH_INOTIFY
 import qualified System.INotify as INotify
-import qualified Data.ByteString as S
 import qualified System.FilePath.ByteString as P
 #endif
 
