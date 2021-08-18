@@ -19,6 +19,7 @@ import qualified Data.ByteString.Char8 as C8
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.Attoparsec.ByteString.Char8 (char, anyChar)
 import Data.ByteString.Builder
+import Data.Char
 
 newtype LogInfo = LogInfo { fromLogInfo :: S.ByteString }
 	deriving (Show, Eq, Ord)
@@ -119,8 +120,14 @@ instance Arbitrary LogLine where
 		<*> elements [minBound..maxBound]
 		<*> (LogInfo <$> arbinfo)
 	  where
-		arbinfo = (encodeBS <$> arbitrary) `suchThat`
-			(\b -> C8.notElem '\n' b && C8.notElem '\r' b)
+	  	-- Avoid newline characters, which cannot appear in 
+		-- LogInfo.
+		--
+		-- Avoid non-ascii values because fully arbitrary
+		-- strings may not be encoded using the filesystem
+		-- encoding, which is normally applied to all input.
+		arbinfo = (encodeBS <$> arbitrary `suchThat` all isAscii)
+			`suchThat` (\b -> C8.notElem '\n' b && C8.notElem '\r' b)
 
 prop_parse_build_presence_log :: [LogLine] -> Bool
 prop_parse_build_presence_log l =
