@@ -390,10 +390,7 @@ jobs:
             commitish="${{ matrix.version }}"
           fi
           python -m pip install --upgrade pip
-          pip install git+https://github.com/datalad/datalad@${commitish}
-
-      - name: Install nose et al (just in case!)
-        run: pip install nose vcrpy mock
+          pip install datalad[devel]@git+https://github.com/datalad/datalad@${commitish}
 
       - name: WTF!?
         run: datalad wtf
