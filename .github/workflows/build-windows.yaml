@@ -288,7 +288,7 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        version: [master, maint, release]
+        version: [rf-test-open-files]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -387,7 +387,7 @@ jobs:
             commitish="${{ matrix.version }}"
           fi
           python -m pip install --upgrade pip
-          pip install datalad[devel]@git+https://github.com/datalad/datalad@${commitish}
+          pip install datalad[devel]@git+https://github.com/yarikoptic/datalad@${commitish}
 
       - name: WTF!?
         run: datalad wtf
@@ -396,7 +396,7 @@ jobs:
         run: |
           mkdir -p __testhome__
           cd __testhome__
-          python -m nose -s -v datalad
+          python -m nose -s -v datalad.tests.test_utils
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
