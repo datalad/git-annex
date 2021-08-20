@@ -375,6 +375,7 @@ jobs:
 
       - name: Set up environment
         run: |
+          sudo eatmydata apt-get install exempi
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
 

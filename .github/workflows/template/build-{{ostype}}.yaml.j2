@@ -618,6 +618,9 @@ jobs:
           {% if ostype == "macos" %}
           brew install exempi  # Needed by python-xmp-toolkit
           {% endif %}
+          {% if ostype == "ubuntu" %}
+          sudo eatmydata apt-get install exempi
+          {% endif %}
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
 
