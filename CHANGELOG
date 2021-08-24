@@ -12,6 +12,8 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
     instead of in a separate pass at the end. This is supported for all
     special remotes on Linux (except for bittorrent), and for many
     on other OS's (except for adb, external, gcrypt, hook, and rsync).
+  * unused: Skip the refs/annex/last-index ref that git-annex recently
+    started creating.
 
  -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
 

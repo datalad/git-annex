@@ -241,6 +241,7 @@ withKeysReferencedDiffGitRefs refspec a = do
 	ourbranchend = S.cons (fromIntegral (ord '/')) (Git.fromRef' Annex.Branch.name)
 	ourbranches (_, b) = not (ourbranchend `S.isSuffixOf` b)
 		&& not ("refs/synced/" `S.isPrefixOf` b)
+		&& not ("refs/annex/" `S.isPrefixOf` b)
 		&& not (is_branchView (Git.Ref b))
 	getreflog rs = inRepo $ Git.RefLog.getMulti rs
 
