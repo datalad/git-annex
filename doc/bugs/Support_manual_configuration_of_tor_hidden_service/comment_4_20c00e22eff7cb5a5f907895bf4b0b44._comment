@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-08-24T15:05:10Z"
+ content="""
+Someone wrote a tip explaining how to do it: [[tips/enable_tor_on_nixos]]
+
+It might be that some simple changes to git-annex enabletor could simplify
+the process documented there. An option to control where the torrc file
+is comes to mind.
+"""]]
