@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-08-24T15:54:15Z"
+ content="""
+It already ignores nonzero exit status of that command, since
+old gpg's don't support it.
+
+So, it must not really be the `gpgconf --kill` that is causing the test
+failure.
+
+Please post the actual test failure message.
+"""]]
