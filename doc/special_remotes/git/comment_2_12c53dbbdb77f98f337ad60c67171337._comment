@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-08-24T16:42:27Z"
+ content="""
+This can only be used for git remotes that have an annex-uuid set. All
+special remotes have to have a uuid. git remotes that are hosted on a
+system with git-annex installed get the annex-uuid set up automatically,
+but it won't happen if your special remote is on github or something like
+that. You could `git config remote.foo.annex-uuid $(uuid)` to generate and 
+set a new uuid, I suppose.
+"""]]

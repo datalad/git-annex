@@ -28,3 +28,8 @@ enable the special remote:
 
 	git remote remove tmpremote
 	git annex enableremote myremote
+
+This only works for git repositories that have a git-annex uuid set,
+because git-annex thinks about special remotes in terms of their uuid. So
+it cannot be used with a git remote hosted somewhere that does not have
+git-annex installed.
