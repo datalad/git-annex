@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-08-24T16:47:31Z"
+ content="""
+A change in git-annex 8.20210630 is relevant to this discussion:
+
+	  * Dropping an unused object with drop --unused or dropunused will
+	    mark it as dead, preventing fsck --all from complaining about it
+	    after it's been dropped from all repositories.
+
+So, you should not need to remember to mark files as dead. Just cleaning
+up from the migration once will suffice. Of course, you'll still need to do
+whatever dropping of the unused content from remotes you want to do.
+"""]]
