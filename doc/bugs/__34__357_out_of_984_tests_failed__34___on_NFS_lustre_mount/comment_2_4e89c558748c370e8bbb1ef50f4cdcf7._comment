@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-08-24T16:01:30Z"
+ content="""
+
+The "retrieveKeyFile resume from 0%" test
+starts by writing an empty file with default permissions.
+It then does the download storing to that file.
+
+The permission denied is happening when trying to open that file
+later, to write to it. So this seems like a umask or some other
+kind of permissions problem. Maybe filesystem related in some way,
+if the filesystem is somehow not honoring permissions, but that would
+not be my first or second guess.
+
+The other 2 failures shown do chain on from that
+initial failure, since that test does some things that the
+later tests depend on. Looking through the log, there are several other
+test failures that also seem due to permissions, that all look like this,
+or probably chain from this:
+
+	  add:  FAIL (4.08s)
+	    ./Test/Framework.hs:324:
+	    unable to modify sha1foo
+
+And that error message happens when it's checking that the file
+permissions include the write bit.
+
+So, your next step should be something like:
+
+	umask
+	touch foo
+	ls -l foo
+	echo foo >> foo
+
+I tried with `umask 0222` (new files lack any write bit) but it failed a lot
+earlier, while setting up the test suite. Which seems ok itself given how
+restricted and weird that umask is. If the test suite overrode the umask, it
+would not notice if some actual reasonable umask caused problems. But I'm
+getting ahead of confirmation that it is a umask problem.
+"""]]
