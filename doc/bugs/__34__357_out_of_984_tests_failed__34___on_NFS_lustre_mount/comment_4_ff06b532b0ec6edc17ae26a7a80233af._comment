@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-08-24T18:51:41Z"
+ content="""
+Somehow the write bit is not being set. Since the umask is ok, the next
+most likely thing seems to be NFS either not setting it, or temporarily
+forgetting it's set, or the file somehow being created owned by a different
+user.
+
+Could run: `git-annex test --keep-failures` and then when it gets
+to one of the "unable to modify foo" failures, it will print out the path
+to the repository that it failed in, and you can "ls -l" the path,
+which should include the "foo" file.
+"""]]
