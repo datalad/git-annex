@@ -36,7 +36,7 @@ type MkViewedFile = FilePath -> ViewedFile
  - So, from dir/subdir/file.foo, generate file_%dir%subdir%.foo
  -}
 viewedFileFromReference :: MkViewedFile
-viewedFileFromReference f = concat
+viewedFileFromReference f = concat $
 	[ escape (fromRawFilePath base)
 	, if null dirs then "" else "_%" ++ intercalate "%" (map escape dirs) ++ "%"
 	, escape $ fromRawFilePath $ S.concat extensions
@@ -44,7 +44,13 @@ viewedFileFromReference f = concat
   where
 	(path, basefile) = splitFileName f
 	dirs = filter (/= ".") $ map dropTrailingPathSeparator (splitPath path)
-	(base, extensions) = splitShortExtensions (toRawFilePath basefile)
+	(base, extensions) = splitShortExtensions (toRawFilePath basefile')
+	
+	{- On Windows, if the filename looked like "dir/c:foo" then
+	 - basefile would look like it contains a drive letter, which will
+	 - not work. There cannot really be a filename like that, probably,
+	 - but it prevents the test suite failing. -}
+	(_basedrive, basefile') = splitDrive basefile
 
 	{- To avoid collisions with filenames or directories that contain
 	 - '%', and to allow the original directories to be extracted

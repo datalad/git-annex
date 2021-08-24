@@ -14,6 +14,7 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
     on other OS's (except for adb, external, gcrypt, hook, and rsync).
   * unused: Skip the refs/annex/last-index ref that git-annex recently
     started creating.
+  * Fix test suite failure on Windows.
 
  -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
 
