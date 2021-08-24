@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2021-08-24T18:06:10Z"
+ content="""
+```
+[d31548v@discovery7 _test_]$ umask 
+0022
+[d31548v@discovery7 _test_]$ touch foo
+[d31548v@discovery7 _test_]$ ls -l foo
+-rw-r--r-- 1 d31548v rc-DBIC-bids 0 Aug 24 13:53 foo
+[d31548v@discovery7 _test_]$ echo foo >> foo
+
+```
+
+I blindly think it is somehow due to that `sec=krb5` nfs mount option. didn't try to reproduce the setup \"locally\" (would need all the krb config I guess) to see if I am right on that.
+
+"""]]
