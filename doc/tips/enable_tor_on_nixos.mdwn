@@ -1,0 +1,55 @@
+On NixOS tor is run with a `torrc` directly in `/nix/store`, but `git-annex
+enable-tor` attempts to both read and modify `/etc/tor/torrc`.
+
+This behavior can be accomodated by making a copy:
+
+```sh
+torrc=$( ps -ef | egrep -o '(\S*?torrc)$' )
+
+sudo mkdir -p /etc/tor
+sudo cp $torrc /etc/tor/torrc
+```
+
+This should allow you to run:
+
+```sh
+git-annex enable-tor
+```
+
+without seeing an error, but the edited `torrc` will have no effect so
+git-annex will keep waiting for the hidden service to come online. While it
+does that, check what lines were added:
+
+
+```sh
+diff -u $torrc /etc/tor/torrc
+```
+
+and then add a hidden service to your `configuration.nix`:
+
+```nix
+  # add a service for the repository
+  services.tor.relay.onionServices.git-annex-5e77c94c-5907-4f43-96bf-282ae233b240 = {
+    # this is where git annex configures it, which works fine, but doesn't
+    # actually seem necessary, so it could be left empty
+    path = "/var/lib/tor/tor-annex_1000_5e77c94c-5907-4f43-96bf-282ae233b240";
+
+    # the HiddenServicePort directive requires both tor and git-annex # remotedaemon
+    # to be able to access the socket which is why git annex places it in a separate
+    # directory, but this also needs to be made visible to tor
+    map = [ {
+      port = 12345;
+      target.unix = "/var/lib/tor-annex/1000_5e77c94c-5907-4f43-96bf-282ae233b240/s";
+    } ];
+  };
+
+  # make the sockets directory visible to the otherwise sandboxed tor daemon
+  systemd.services.tor.serviceConfig.BindPaths = [ "/var/lib/tor-annex" ];
+```
+
+Note that without the `BindPaths` the tor daemon will not be able to access the
+sockets and connections will be rejected (can be diagnosed by sending tor a
+`SIGUSR2` to enable debug logging).
+
+You should now be able to run `nixos-rebuild switch` and git-annex will
+detect that the hidden service is running.
