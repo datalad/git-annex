@@ -72,6 +72,10 @@ finds files in the current directory and its subdirectories.
   or otherwise doesn't meet the matching options, an empty line
   will be output instead.
 
+* `--batch-keys`
+
+  This is like `--batch` but the lines read from stdin are parsed as keys.
+
 * `-z`
 
   Makes the `--batch` input be delimited by nulls instead of the usual

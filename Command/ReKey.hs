@@ -33,7 +33,7 @@ data ReKeyOptions = ReKeyOptions
 optParser :: CmdParamsDesc -> Parser ReKeyOptions
 optParser desc = ReKeyOptions
 	<$> cmdParams desc
-	<*> parseBatchOption
+	<*> parseBatchOption False
 
 -- Split on the last space, since a FilePath can contain whitespace,
 -- but a Key very rarely does.

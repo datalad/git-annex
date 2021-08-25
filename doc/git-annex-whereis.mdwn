@@ -26,10 +26,10 @@ received from remotes.
 
 # OPTIONS
 
-* file matching options
+* matching options
   
   The [[git-annex-matching-options]](1)
-  can be used to specify files to act on.
+  can be used to control what to act on.
 
 * `--key=keyname`
 
@@ -53,12 +53,16 @@ received from remotes.
   its information displayed, and repeat.
 
   Note that if the file is not an annexed file, or does not match
-  specified file matching options, an empty line will be
+  specified matching options, an empty line will be
   output instead.
+
+* `--batch-keys`
+
+  This is like `--batch` but the lines read from stdin are parsed as keys.
 
 * `-z`
 
-  Makes the `--batch` input be delimited by nulls instead of the usual
+  Makes batch input be delimited by nulls instead of the usual
   newlines.
 
 * `--json`

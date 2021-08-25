@@ -76,7 +76,7 @@ optParser desc = AddUrlOptions
 		<> help "add a suffix to the filename"
 		))
 	<*> parseDownloadOptions True
-	<*> parseBatchOption
+	<*> parseBatchOption False
 	<*> switch
 		( long "with-files"
 		<> help "parse batch mode lines of the form \"$url $file\""

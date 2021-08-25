@@ -44,7 +44,7 @@ optParser desc = MetaDataOptions
 	<$> cmdParams desc
 	<*> ((Get <$> getopt) <|> (Set <$> some modopts) <|> pure GetAll)
 	<*> optional parseKeyOptions
-	<*> parseBatchOption
+	<*> parseBatchOption False
   where
 	getopt = option (eitherReader (mkMetaField . T.pack))
 		( long "get" <> short 'g' <> metavar paramField

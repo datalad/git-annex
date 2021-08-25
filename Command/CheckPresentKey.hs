@@ -26,7 +26,7 @@ data CheckPresentKeyOptions = CheckPresentKeyOptions
 optParser :: CmdParamsDesc -> Parser CheckPresentKeyOptions
 optParser desc = CheckPresentKeyOptions
 	<$> cmdParams desc
-	<*> parseBatchOption
+	<*> parseBatchOption False
 
 seek :: CheckPresentKeyOptions -> CommandSeek
 seek o = case batchOption o of

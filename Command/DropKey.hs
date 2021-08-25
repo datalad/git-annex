@@ -27,7 +27,7 @@ data DropKeyOptions = DropKeyOptions
 optParser :: CmdParamsDesc -> Parser DropKeyOptions
 optParser desc = DropKeyOptions
 	<$> cmdParams desc
-	<*> parseBatchOption
+	<*> parseBatchOption False
 
 seek :: DropKeyOptions -> CommandSeek
 seek o = do

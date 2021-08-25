@@ -21,7 +21,7 @@ cmd = command "unregisterurl"
 
 seek :: RegisterUrlOptions -> CommandSeek
 seek o = case (batchOption o, keyUrlPairs o) of
-	(Batch fmt, _) -> commandAction $ startMass unregisterUrl fmt
+	(Batch (BatchFormat sep _), _) -> commandAction $ startMass unregisterUrl sep
 	(NoBatch, ps) -> withWords (commandAction . start unregisterUrl) ps
 
 unregisterUrl :: Key -> String -> Annex ()

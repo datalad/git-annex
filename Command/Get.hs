@@ -34,7 +34,7 @@ optParser desc = GetOptions
 	<*> optional (parseRemoteOption <$> parseFromOption)
 	<*> parseAutoOption
 	<*> optional (parseIncompleteOption <|> parseKeyOptions <|> parseFailedTransfersOption)
-	<*> parseBatchOption
+	<*> parseBatchOption True
 
 seek :: GetOptions -> CommandSeek
 seek o = startConcurrency downloadStages $ do
@@ -49,7 +49,7 @@ seek o = startConcurrency downloadStages $ do
 			(commandAction . startKeys from)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (getFiles o)
-		Batch fmt -> batchAnnexedFilesMatching fmt seeker
+		Batch fmt -> batchAnnexed fmt seeker (startKeys from)
   where
 	ww = WarnUnmatchLsFiles
 

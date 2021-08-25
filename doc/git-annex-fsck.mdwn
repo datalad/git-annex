@@ -89,10 +89,10 @@ better format.
 
   Use this option to fsck a specified key.
   
-* file matching options
+* matching options
 
   The [[git-annex-matching-options]](1)
-  can be used to specify files to fsck.
+  can be used to control what to fsck.
 
 * `--jobs=N` `-JN`
 

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-08-25T18:06:29Z"
+ content="""
+I've implemented --batch-keys for the commands: get, drop, move, copy, whereis
+
+That covers everything mentioned here except for dead, but that does not
+support --batch yet, so if batch mode is needed for it, it can just use
+--batch, not --batch-keys. However, after a recent change that makes
+dropping unused keys automatically mark them dead, I suspect there
+will not be a use case for that.
+
+Most of the other commands that use --batch don't make sense to support
+--batch-keys. Eg, add and find can't operate on keys, while 
+fromkey already operates on keys. About the only one that might is 
+rmurl, but it uses a custom batch format so would not be able to use the
+current --batch-keys implementation. If someone needs that or some other
+one, they can open a new todo.
+"""]]

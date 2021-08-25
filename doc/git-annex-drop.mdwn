@@ -87,10 +87,10 @@ Paths of files or directories to drop can be specified.
   Note that this bypasses checking the .gitattributes annex.numcopies
   setting and required content settings.
 
-* file matching options
+* matching options
 
   The [[git-annex-matching-options]](1)
-  can be used to specify files to drop.
+  can be used to specify what to drop.
 
 * `--jobs=N` `-JN`
 
@@ -110,10 +110,17 @@ Paths of files or directories to drop can be specified.
   match specified matching options, or it is not an annexed file,
   a blank line is output in response instead.
 
+* `--batch-keys`
+
+  This is like `--batch` but the lines read from stdin are parsed as keys.
+
+  Note that this bypasses checking the .gitattributes annex.numcopies
+  setting and required content settings.
+
 * `-z`
 
-  Makes the `--batch` input be delimited by nulls instead of the usual
-  newlines.
+  Makes the batch input be delimited by nulls
+  instead of the usual newlines.
 
 * `--json`
 

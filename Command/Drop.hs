@@ -41,7 +41,7 @@ optParser desc = DropOptions
 	<*> optional parseDropFromOption
 	<*> parseAutoOption
 	<*> optional parseKeyOptions
-	<*> parseBatchOption
+	<*> parseBatchOption True
 
 parseDropFromOption :: Parser (DeferredParse Remote)
 parseDropFromOption = parseRemoteOption <$> strOption
@@ -67,11 +67,11 @@ seek o = startConcurrency commandStages $ do
 		, usesLocationLog = True
 		}
 	case batchOption o of
-		Batch fmt -> batchAnnexedFilesMatching fmt seeker
 		NoBatch -> withKeyOptions (keyOptions o) (autoMode o) seeker
 			(commandAction . startKeys o from)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (dropFiles o)
+		Batch fmt -> batchAnnexed fmt seeker (startKeys o from)
   where
 	ww = WarnUnmatchLsFiles
 

@@ -63,10 +63,10 @@ contents. Use [[git-annex-sync]](1) for that.
 
   Operate on files that have recently failed to be transferred.
 
-* file matching options
+* matching options
 
   The [[git-annex-matching-options]](1)
-  can be used to specify files to mirror.
+  can be used to control what to mirror.
 
 * `--json`
 

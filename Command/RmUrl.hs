@@ -25,7 +25,7 @@ data RmUrlOptions = RmUrlOptions
 optParser :: CmdParamsDesc -> Parser RmUrlOptions
 optParser desc = RmUrlOptions
 	<$> cmdParams desc
-	<*> parseBatchOption
+	<*> parseBatchOption False
 
 seek :: RmUrlOptions -> CommandSeek
 seek o = case batchOption o of

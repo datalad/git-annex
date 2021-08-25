@@ -1,6 +1,6 @@
 {- git-annex batch commands
  -
- - Copyright 2015-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,22 +24,42 @@ import Types.Concurrency
 
 data BatchMode = Batch BatchFormat | NoBatch
 
-data BatchFormat = BatchLine | BatchNull
+data BatchFormat = BatchFormat BatchSeparator BatchKeys
 
-parseBatchOption :: Parser BatchMode
-parseBatchOption = go 
+data BatchSeparator = BatchLine | BatchNull
+
+newtype BatchKeys = BatchKeys Bool
+
+parseBatchOption :: Bool -> Parser BatchMode
+parseBatchOption supportbatchkeysoption = go 
 	<$> switch
 		( long "batch"
-		<> help "enable batch mode"
+		<> help batchhelp
 		)
-	<*> switch
+	<*> batchkeysswitch
+	<*> flag BatchLine BatchNull
 		( short 'z'
 		<> help "null delimited batch input"
 		)
   where
-	go True False = Batch BatchLine
- 	go True True = Batch BatchNull
-	go False _ = NoBatch
+	go True False batchseparator = 
+		Batch (BatchFormat batchseparator (BatchKeys False))
+	go _ True batchseparator = 
+		Batch (BatchFormat batchseparator (BatchKeys True))
+	go _ _ _ = NoBatch
+
+	batchhelp = "enable batch mode" ++
+		if supportbatchkeysoption
+			then ", with files input"
+			else ""
+	batchkeyshelp = "enable batch mode, with keys input"
+
+	batchkeysswitch
+		| supportbatchkeysoption = switch
+			( long "batch-keys"
+			<> help batchkeyshelp
+			)
+		| otherwise = pure False
 
 -- A batchable command can run in batch mode, or not.
 -- In batch mode, one line at a time is read, parsed, and a reply output to
@@ -52,7 +72,7 @@ batchable handler parser paramdesc = batchseeker <$> batchparser
   where
 	batchparser = (,,)
 		<$> parser
-		<*> parseBatchOption
+		<*> parseBatchOption False
 		<*> cmdParams paramdesc
 	
 	batchseeker (opts, NoBatch, params) =
@@ -68,7 +88,7 @@ batchable handler parser paramdesc = batchseeker <$> batchparser
 -- mode, exit on bad input.
 batchBadInput :: BatchMode -> Annex ()
 batchBadInput NoBatch = liftIO exitFailure
-batchBadInput (Batch _) = liftIO $ putStrLn ""
+batchBadInput _ = liftIO $ putStrLn ""
 
 -- Reads lines of batch mode input, runs a parser, and passes the result
 -- to the action.
@@ -87,12 +107,12 @@ batchInput fmt parser a = go =<< batchLines fmt
 	parseerr s = giveup $ "Batch input parse failure: " ++ s
 
 batchLines :: BatchFormat -> Annex [String]
-batchLines fmt = do
+batchLines (BatchFormat sep _) = do
 	checkBatchConcurrency
 	enableInteractiveBranchAccess
 	liftIO $ splitter <$> getContents
   where
-	splitter = case fmt of
+	splitter = case sep of
 		BatchLine -> lines
 		BatchNull -> splitc '\0'
 
@@ -116,37 +136,76 @@ batchCommandStart :: CommandStart -> CommandStart
 batchCommandStart a = a >>= \case
 	Just v -> return (Just v)
 	Nothing -> do
-		batchBadInput (Batch BatchLine)
+		batchBadInput (Batch (BatchFormat BatchLine (BatchKeys False)))
 		return Nothing
 
 -- Reads lines of batch input and passes the filepaths to a CommandStart
 -- to handle them.
 --
--- Absolute filepaths are converted to relative, because in non-batch
--- mode, that is done when CmdLine.Seek uses git ls-files.
---
 -- File matching options are checked, and non-matching files skipped.
-batchFilesMatching :: BatchFormat -> ((SeekInput, RawFilePath) -> CommandStart) -> Annex ()
-batchFilesMatching fmt a = do
-	matcher <- getMatcher
-	go $ \si f ->
-		let f' = toRawFilePath f
-		in ifM (matcher $ MatchingFile $ FileInfo f' f' Nothing)
-			( a (si, f')
-			, return Nothing
-			)
-  where
-	go a' = batchInput fmt 
-		(Right . fromRawFilePath <$$> liftIO . relPathCwdToFile . toRawFilePath)
-		(batchCommandAction . uncurry a')
+batchFiles :: BatchFormat -> ((SeekInput, RawFilePath) -> CommandStart) -> Annex ()
+batchFiles fmt a = batchFilesKeys fmt $ \(si, v) -> case v of
+	Right f -> a (si, f)
+	Left _k -> return Nothing
 
-batchAnnexedFilesMatching :: BatchFormat -> AnnexedFileSeeker -> Annex ()
-batchAnnexedFilesMatching fmt seeker = batchFilesMatching fmt $ \(si, bf) ->
-	flip whenAnnexed bf $ \f k -> 
-		case checkContentPresent seeker of
-			Just v -> do
-				present <- inAnnex k
-				if present == v
-					then startAction seeker si f k
-					else return Nothing
-			Nothing -> startAction seeker si f k
+batchFilesKeys :: BatchFormat -> ((SeekInput, Either Key RawFilePath) -> CommandStart) -> Annex ()
+batchFilesKeys fmt a = do
+	matcher <- getMatcher
+	go $ \si v -> case v of
+		Right f -> 
+			let f' = toRawFilePath f
+			in ifM (matcher $ MatchingFile $ FileInfo f' f' Nothing)
+				( a (si, Right f')
+				, return Nothing
+				)
+		Left k -> a (si, Left k)
+  where
+	go a' = batchInput fmt parser (batchCommandAction . uncurry a')
+	parser = case fmt of
+		-- Absolute filepaths are converted to relative,
+		-- because in non-batch mode, that is done when
+		-- CmdLine.Seek uses git ls-files.
+		BatchFormat _ (BatchKeys False) -> 
+			Right . Right . fromRawFilePath 
+				<$$> liftIO . relPathCwdToFile . toRawFilePath
+		BatchFormat _ (BatchKeys True) -> \i ->
+			pure $ case deserializeKey i of
+				Just k -> Right (Left k)
+				Nothing -> Left "not a valid key"
+
+batchAnnexedFiles :: BatchFormat -> AnnexedFileSeeker -> Annex ()
+batchAnnexedFiles fmt seeker = batchAnnexed fmt seeker (const (return Nothing))
+
+-- Reads lines of batch input and passes filepaths to the AnnexedFileSeeker
+-- to handle them. Or, with --batch-keys, passes keys to the keyaction.
+--
+-- Matching options are checked, and non-matching items skipped.
+batchAnnexed :: BatchFormat -> AnnexedFileSeeker -> ((SeekInput, Key, ActionItem) -> CommandStart) -> Annex ()
+batchAnnexed fmt seeker keyaction = do
+	matcher <- getMatcher
+	batchFilesKeys fmt $ \(si, v) ->
+		case v of
+			Right bf -> flip whenAnnexed bf $ \f k ->
+				checkpresent k $
+					startAction seeker si f k
+			Left k -> ifM (matcher (MatchingInfo (mkinfo k)))
+				( checkpresent k $
+					keyaction (si, k, mkActionItem k)
+				, return Nothing)
+  where
+	checkpresent k cont = case checkContentPresent seeker of
+		Just v -> do
+			present <- inAnnex k
+			if present == v
+				then cont
+				else return Nothing
+		Nothing -> cont
+	
+	mkinfo k = ProvidedInfo
+		{ providedFilePath = Nothing
+		, providedKey = Just k
+		, providedFileSize = Nothing
+		, providedMimeType = Nothing
+		, providedMimeEncoding = Nothing
+		, providedLinkType = Nothing
+		}

@@ -35,7 +35,7 @@ data FromKeyOptions = FromKeyOptions
 optParser :: CmdParamsDesc -> Parser FromKeyOptions
 optParser desc = FromKeyOptions
 	<$> cmdParams desc
-	<*> parseBatchOption
+	<*> parseBatchOption False
 
 seek :: FromKeyOptions -> CommandSeek
 seek o = do
@@ -43,7 +43,7 @@ seek o = do
 	case (batchOption o, keyFilePairs o) of
 		(Batch fmt, _) -> seekBatch matcher fmt
 		-- older way of enabling batch input, does not support BatchNull
-		(NoBatch, []) -> seekBatch matcher BatchLine
+		(NoBatch, []) -> seekBatch matcher (BatchFormat BatchLine (BatchKeys False))
 		(NoBatch, ps) -> do
 			force <- Annex.getState Annex.force
 			withPairs (commandAction . start matcher force) ps

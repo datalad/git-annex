@@ -50,7 +50,7 @@ data AddOptions = AddOptions
 optParser :: CmdParamsDesc -> Parser AddOptions
 optParser desc = AddOptions
 	<$> cmdParams desc
-	<*> parseBatchOption
+	<*> parseBatchOption False
 	<*> switch
 		( long "update"
 		<> short 'u'
@@ -95,7 +95,7 @@ seek o = startConcurrency commandStages $ do
 		Batch fmt
 			| updateOnly o ->
 				giveup "--update --batch is not supported"
-			| otherwise -> batchFilesMatching fmt gofile
+			| otherwise -> batchFiles fmt gofile
 		NoBatch -> do
 			-- Avoid git ls-files complaining about files that
 			-- are not known to git yet, since this will add

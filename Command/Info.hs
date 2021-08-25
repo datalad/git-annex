@@ -114,7 +114,7 @@ optParser desc = InfoOptions
 		( long "bytes"
 		<> help "display file sizes in bytes"
 		)
-	<*> parseBatchOption
+	<*> parseBatchOption False
 
 seek :: InfoOptions -> CommandSeek
 seek o = case batchOption o of

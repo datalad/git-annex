@@ -44,7 +44,7 @@ optParser desc = MoveOptions
 	<*> parseFromToHereOptions
 	<*> pure RemoveSafe
 	<*> optional (parseKeyOptions <|> parseFailedTransfersOption)
-	<*> parseBatchOption
+	<*> parseBatchOption True
 
 instance DeferredParseClass MoveOptions where
 	finishParse v = MoveOptions
@@ -61,10 +61,10 @@ seek :: MoveOptions -> CommandSeek
 seek o = startConcurrency stages $ do
 	case batchOption o of
 		NoBatch -> withKeyOptions (keyOptions o) False seeker
-			(commandAction . startKey (fromToOptions o) (removeWhen o))
+			(commandAction . keyaction)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (moveFiles o)
-		Batch fmt -> batchAnnexedFilesMatching fmt seeker
+		Batch fmt -> batchAnnexed fmt seeker keyaction
   where
 	seeker = AnnexedFileSeeker
 		{ startAction = start (fromToOptions o) (removeWhen o)
@@ -78,6 +78,7 @@ seek o = startConcurrency stages $ do
 		Right (FromRemote _) -> downloadStages
 		Right (ToRemote _) -> commandStages
 		Left ToHere -> downloadStages
+	keyaction = startKey (fromToOptions o) (removeWhen o)
 	ww = WarnUnmatchLsFiles
 
 start :: FromToHereOptions -> RemoveWhen -> SeekInput -> RawFilePath -> Key -> CommandStart

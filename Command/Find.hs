@@ -39,7 +39,7 @@ optParser desc = FindOptions
 	<$> cmdParams desc
 	<*> optional parseFormatOption
 	<*> optional parseBranchKeysOption
-	<*> parseBatchOption
+	<*> parseBatchOption False
 
 parseFormatOption :: Parser Utility.Format.Format
 parseFormatOption = 
@@ -69,7 +69,7 @@ seek o = do
 			(commandAction . startKeys o)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (findThese o)
-		Batch fmt -> batchAnnexedFilesMatching fmt seeker
+		Batch fmt -> batchAnnexedFiles fmt seeker
   where
 	ww = WarnUnmatchLsFiles
 

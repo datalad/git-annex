@@ -33,7 +33,7 @@ optParser desc = CopyOptions
 	<*> parseFromToHereOptions
 	<*> optional (parseKeyOptions <|> parseFailedTransfersOption)
 	<*> parseAutoOption
-	<*> parseBatchOption
+	<*> parseBatchOption True
 
 instance DeferredParseClass CopyOptions where
 	finishParse v = CopyOptions
@@ -48,10 +48,10 @@ seek o = startConcurrency commandStages $ do
 	case batchOption o of
 		NoBatch -> withKeyOptions
 			(keyOptions o) (autoMode o) seeker
-			(commandAction . Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever)
+			(commandAction . keyaction)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (copyFiles o)
-		Batch fmt -> batchAnnexedFilesMatching fmt seeker
+		Batch fmt -> batchAnnexed fmt seeker keyaction
   where
 	ww = WarnUnmatchLsFiles
 	
@@ -63,6 +63,7 @@ seek o = startConcurrency commandStages $ do
 			Left ToHere -> Just False
 		, usesLocationLog = True
 		}
+	keyaction = Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever
 
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or

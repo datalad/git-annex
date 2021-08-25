@@ -1,11 +1,12 @@
 # NAME
 
-git-annex-matching-options - specifying files to act on
+git-annex-matching-options - specifying what to act on
 
 # DESCRIPTION
 
 Many git-annex commands support using these options to specify which
-files they act on.
+files they act on. Some of these options can also be used by commands to
+specify which keys they act on.
 
 Arbitrarily complicated expressions can be built using these options.
 For example:
@@ -58,8 +59,8 @@ in either of two repositories.
 
 * `--in=repository`
 
-  Matches only files that git-annex believes have their contents present
-  in a repository. Note that it does not check the repository to verify
+  Matches only when git-annex believes that the content is present in a
+  repository. Note that it does not check the repository to verify
   that it still has the content.
 
   The repository should be specified using the name of a configured remote,
@@ -68,8 +69,8 @@ in either of two repositories.
 
 * `--in=repository@{date}`
 
-  Matches files currently in the work tree whose content was present in
-  the repository on the given date.
+  Matches only when the content was present in a repository on the given
+  date.
 
   The date is specified in the same syntax documented in
   gitrevisions(7). Note that this uses the reflog, so dates far in the
@@ -81,13 +82,13 @@ in either of two repositories.
 
 * `--copies=number`
 
-  Matches only files that git-annex believes to have the specified number
+  Matches only when git-annex believes there are the specified number
   of copies, or more. Note that it does not check remotes to verify that
   the copies still exist.
 
 * `--copies=trustlevel:number`
 
-  Matches only files that git-annex believes have the specified number of
+  Matches only when git-annex believes there are the specified number of
   copies, on remotes with the specified trust level. For example,
   `--copies=trusted:2`
 
@@ -96,14 +97,14 @@ in either of two repositories.
 
 * `--copies=groupname:number`
 
-  Matches only files that git-annex believes have the specified number of
+  Matches only when git-annex believes there are the specified number of
   copies, on remotes in the specified group. For example,
   `--copies=archive:2`
 
 * `--lackingcopies=number`
 
-  Matches only files that git-annex believes need the specified number or 
-  more additional copies to be made in order to satisfy their numcopies
+  Matches only when git-annex beleives that the specified number or 
+  more additional copies to be made in order to satisfy numcopies
   settings.
 
 * `--approxlackingcopies=number`
@@ -113,23 +114,23 @@ in either of two repositories.
 
 * `--inbackend=name`
 
-  Matches only files whose content is stored using the specified key-value
+  Matches only when content is stored using the specified key-value
   backend.
 
 * `--securehash`
 
-  Matches only files whose content is hashed using a cryptographically
+  Matches only when content is hashed using a cryptographically
   secure function. 
 
 * `--inallgroup=groupname`
 
-  Matches only files that git-annex believes are present in all repositories
-  in the specified group.
+  Matches only when git-annex believes content is present in
+  all repositories in the specified group.
 
 * `--smallerthan=size`
 * `--largerthan=size`
 
-  Matches only files whose content is smaller than, or larger than the
+  Matches only when the content is is smaller than, or larger than the
   specified size.
 
   The size can be specified with any commonly used units, for example,
@@ -137,14 +138,14 @@ in either of two repositories.
 
 * `--metadata field=glob`
 
-  Matches only files that have a metadata field attached with a value that
+  Matches only when there is a metadata field attached with a value that
   matches the glob. The values of metadata fields are matched case
   insensitively.
 
 * `--metadata field<number` / `--metadata field>number`
 * `--metadata field<=number` / `--metadata field>=number`
 
-  Matches only files that have a metadata field attached with a value that
+  Matches only when there is a metadata field attached with a value that
   is a number and is less than or greater than the specified number.
 
   (Note that you will need to quote the second parameter to avoid
@@ -152,34 +153,34 @@ in either of two repositories.
 
 * `--want-get`
 
-  Matches files that the preferred content settings for the repository
-  make it want to get. Note that this will match even files that are
-  already present, unless limited with e.g., `--not --in .`
+  Matches only when the preferred content settings for the repository
+  make it want to get content. Note that this will match even when
+  the content is already present, unless limited with e.g., `--not --in .`
 
 * `--want-drop`
 
-  Matches files that the preferred content settings for the repository
-  make it want to drop. Note that this will match even files that have
-  already been dropped, unless limited with e.g., `--in .`
+  Matches only when the preferred content settings for the repository
+  make it want to drop content. Note that this will match even when
+  the content is not present, unless limited with e.g., `--in .`
 
-  Files that this matches will not necessarily be dropped by
+  Things that this matches will not necessarily be dropped by
   `git-annex drop --auto`. This does not check that there are enough copies
   to drop. Also the same content may be used by a file that is not wanted
   to be dropped.
 
 * `--accessedwithin=interval`
 
-  Matches files that were accessed recently, within the specified time
+  Matches when the content was accessed recently, within the specified time
   interval.
   
   The interval can be in the form "5m" or "1h" or "2d" or "1y", or a
   combination such as "1h5m".
 
-  So for example, `--accessedwithin=1d` matches files that have been
+  So for example, `--accessedwithin=1d` matches when the content was
   accessed within the past day.
 
   If the OS or filesystem does not support access times, this will not
-  match any files.
+  match anything.
 
 * `--unlocked`
 
@@ -220,8 +221,8 @@ in either of two repositories.
 
 * `--not`
 
-  Inverts the next matching option. For example, to only act on
-  files with less than 3 copies, use `--not --copies=3`
+  Inverts the next matching option. For example, to match
+  when there are less than 3 copies, use `--not --copies=3`
 
 * `--and`
 

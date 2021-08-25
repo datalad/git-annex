@@ -28,11 +28,12 @@ data RegisterUrlOptions = RegisterUrlOptions
 optParser :: CmdParamsDesc -> Parser RegisterUrlOptions
 optParser desc = RegisterUrlOptions
 	<$> cmdParams desc
-	<*> parseBatchOption
+	<*> parseBatchOption False
 
 seek :: RegisterUrlOptions -> CommandSeek
 seek o = case (batchOption o, keyUrlPairs o) of
-	(Batch fmt, _) -> commandAction $ startMass setUrlPresent fmt
+	(Batch (BatchFormat sep _), _) ->
+		commandAction $ startMass setUrlPresent sep
 	-- older way of enabling batch input, does not support BatchNull
 	(NoBatch, []) -> commandAction $ startMass setUrlPresent BatchLine
 	(NoBatch, ps) -> withWords (commandAction . start setUrlPresent) ps
@@ -46,14 +47,15 @@ start a (keyname:url:[]) =
 	si = SeekInput [keyname, url]
 start _ _ = giveup "specify a key and an url"
 
-startMass :: (Key -> URLString -> Annex ()) -> BatchFormat -> CommandStart
-startMass a fmt = 
+startMass :: (Key -> URLString -> Annex ()) -> BatchSeparator -> CommandStart
+startMass a sep =
 	starting "registerurl" (ActionItemOther (Just "stdin")) (SeekInput []) $
-		performMass a fmt
+		performMass a sep
 
-performMass :: (Key -> URLString -> Annex ()) -> BatchFormat -> CommandPerform
-performMass a fmt = go True =<< map (separate (== ' ')) <$> batchLines fmt
+performMass :: (Key -> URLString -> Annex ()) -> BatchSeparator -> CommandPerform
+performMass a sep = go True =<< map (separate (== ' ')) <$> batchLines fmt
   where
+	fmt = BatchFormat sep (BatchKeys False)
 	go status [] = next $ return status
 	go status ((keyname,u):rest) | not (null keyname) && not (null u) = do
 		let key = keyOpt keyname

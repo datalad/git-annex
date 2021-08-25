@@ -82,10 +82,10 @@ the modified file.
   throughout the files in a directory. This option enables such recursive
   setting.
 
-* file matching options
+* matching options
  
   The [[git-annex-matching-options]](1)
-  can be used to specify files to act on.
+  can be used to control what to act on.
 
 * `--all` `-A`
 
@@ -159,7 +159,7 @@ the modified file.
 
 	{"file":"foo","fields":{"author":[]}}
 
-  Note that file matching options do not affect the files that are
+  Note that matching options do not affect the files that are
   processed when in batch mode.
 
 * Also the [[git-annex-common-options]](1) can be used.

@@ -56,10 +56,10 @@ be specified.
   parallel. (Remotes with lower costs are still preferred over higher cost
   remotes.)
 
-* file matching options
+* matching options
  
   The [[git-annex-matching-options]](1)
-  can be used to specify files to get.
+  can be used to control what to get.
 
 * `--incomplete`
 
@@ -114,9 +114,13 @@ be specified.
   machine-parseable, you may want to use --json in combination with
   --batch.
 
+* `--batch-keys`
+
+  This is like `--batch` but the lines read from stdin are parsed as keys.
+
 * `-z`
 
-  Makes the `--batch` input be delimited by nulls instead of the usual
+  Makes batch input be delimited by nulls instead of the usual
   newlines.
 
 * `--json`

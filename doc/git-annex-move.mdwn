@@ -74,10 +74,10 @@ Paths of files or directories to operate on can be specified.
   already has content. This can be faster, but might skip moving content
   to the remote in some cases.
 
-* file matching options
+* matching options
 
   The [[git-annex-matching-options]](1)
-  can be used to specify files to move.
+  can be used to control what to move.
 
 * `--batch`
 
@@ -93,10 +93,13 @@ Paths of files or directories to operate on can be specified.
   machine-parseable, you may want to use --json in combination with
   --batch.
 
+* `--batch-keys`
+
+  This is like `--batch` but the lines read from stdin are parsed as keys.
+
 * `-z`
 
-  Makes the `--batch` input be delimited by nulls instead of the usual
-  newlines.
+  Makes batch input be delimited by nulls instead of the usual newlines.
 
 * `--json`
 
