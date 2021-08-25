@@ -1,0 +1,74 @@
+### Please describe the problem.
+
+For many collaborative workflows it is desired to provide read-only access to a git-annex repository on a remote ssh host.
+
+But apparently, even if user does have read access to the content, git-annex (shell?) tries to lock the entire remote repository leading to a crash:
+
+[[!format sh """
+lena:/tmp
+$> git clone localhost:/tmp/testroot testroot-clone       
+Cloning into 'testroot-clone'...
+remote: Enumerating objects: 19, done.
+remote: Counting objects: 100% (19/19), done.
+remote: Compressing objects: 100% (16/16), done.
+remote: Total 19 (delta 1), reused 0 (delta 0), pack-reused 0
+Receiving objects: 100% (19/19), done.
+Resolving deltas: 100% (1/1), done.
+
+$> git -C testroot-clone annex get .
+get 123 (from origin...) 
+git-annex: /tmp/testroot/.git/annex: openTempFile: permission denied (Permission denied)
+p2pstdio: 1 failed
+
+  Lost connection (fd:27: hGetChar: end of file)
+
+  Transfer failed
+
+  Unable to access these remotes: origin
+
+  No other repository is known to contain the file.
+failed
+get: 1 failed
+
+"""]]
+
+and original user reported a little different error (I have no access to see the details of that repository):
+
+```
+SENSORED's password:
+[2021-08-25 15:20:24.14821] (Utility.Process) process [2554781] done ExitSuccess
+[2021-08-25 15:20:24.1493] (Utility.Process) process [2555432] chat: ssh ["SENSORED","-S",".git/annex/ssh/SENSORED","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/SENSORED' '--debug' '94ed180c-3f09-4b5b-a4c6-68b3a8acf900' --uuid d3e54e78-143b-4cee-89b6-217439bdb2e3"]
+[2021-08-25 15:20:24.883791] (P2P.IO) [ssh connection Just 2555432] [ThreadId 4] P2P < AUTH-SUCCESS d3e54e78-143b-4cee-89b6-217439bdb2e3
+[2021-08-25 15:20:24.883883] (P2P.IO) [ssh connection Just 2555432] [ThreadId 4] P2P > VERSION 1
+[2021-08-25 15:20:24.904358] (P2P.IO) [ssh connection Just 2555432] [ThreadId 4] P2P < VERSION 1
+[2021-08-25 15:20:24.904441] (P2P.IO) [ssh connection Just 2555432] [ThreadId 4] P2P > GET 0 2635065_20217_2_0.zip MD5E-s229347386--c8ba7095fa69c25cffeeaddf68124ea9.zip
+[2021-08-25 15:20:24.91475] (P2P.IO) [ThreadId 4] P2P < GET 0 2635065_20217_2_0.zip MD5E-s229347386--c8ba7095fa69c25cffeeaddf68124ea9.zip
+git-annex: /SENSORED/.git/annex/keysdb.lck: openFd: permission denied (Permission denied)
+p2pstdio: 1 failed
+
+  Lost connection (fd:22: hGetChar: end of file)
+[2021-08-25 15:20:25.019767] (Utility.Process) process [2555432] done ExitFailure 1
+
+  Transfer failed
+[2021-08-25 15:20:25.02038] (Utility.Process) process [2553967] done ExitSuccess
+[2021-08-25 15:20:25.020634] (Utility.Process) process [2553968] done ExitSuccess
+
+
+...
+```
+
+this severely limits git-annex usability for many collaboration  scenarios. I just wonder how come we did not run into this before...
+
+I guess the git-annex-shell must not lock anything until some write operation is really necessary.
+
+
+### What steps will reproduce the problem?
+
+create a git-annex repo owned by another user, provide permissions for others to read, try to `get` any annexed content via ssh
+
+### What version of git-annex are you using? On what operating system?
+
+8.20210803-g07dcb9c
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
