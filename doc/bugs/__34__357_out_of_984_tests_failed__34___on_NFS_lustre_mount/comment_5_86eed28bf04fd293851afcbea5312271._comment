@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2021-08-25T22:05:06Z"
+ content="""
+```
+[d31548v@discovery7 _test_]$ grep -A1 -m1 'unable to modify foo' git-annex-8.20210803-g99bb214-20210925-1.log
+      unable to modify foo
+    export_import_subdir:                                 ** Preserving repo for failure analysis in .t/tmprepo5
+
+[d31548v@discovery7 _test_]$ ls -la .t/tmprepo5
+total 239
+drwxr-xr-x   4 d31548v rc-DBIC-bids  112 Aug 25 10:59 .
+drwxr-xr-x 205 d31548v rc-DBIC-bids 5525 Aug 25 11:31 ..
+-rw-r--r--   1 d31548v rc-DBIC-bids   19 Aug 25 10:58 bar.c
+drwxr-xr-x   2 d31548v rc-DBIC-bids    0 Aug 25 10:59 dir
+-r--r--r--   1 d31548v rc-DBIC-bids   20 Aug 25 10:58 foo
+drwxr-xr-x   8 d31548v rc-DBIC-bids  296 Aug 25 10:59 .git
+-r--r--r--   1 d31548v rc-DBIC-bids   25 Aug 25 10:58 sha1foo
+```
+"""]]
