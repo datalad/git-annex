@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-08-26T15:06:26Z"
+ content="""
+So confirmed to be actual missing write bits.
+
+I think that the next step is going to be to dig through a `strace -f -s 1024`, 
+of the "resume from 0" file that has the permission denied problem, 
+and of the ".t/tmprepo5/foo" file that is somehow not writable.
+
+Then I can compare with a strace where it does not fail, to see
+if it's doing something different.
+"""]]
