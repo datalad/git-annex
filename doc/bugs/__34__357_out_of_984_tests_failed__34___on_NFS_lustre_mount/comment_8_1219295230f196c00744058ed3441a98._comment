@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2021-08-26T20:18:05Z"
+ content="""
+From the strace of `git-annex test -p export_import_subdir`,
+I have found what I think is the smoking gun:
+
+	21179 stat(".git/annex/othertmp/foo.0/foo", {st_mode=S_IFREG|0444, st_size=20, ...}) = 0
+	21179 chmod(".git/annex/othertmp/foo.0/foo", 0100644) = 0
+	21179 stat(".git/annex/othertmp/foo.0/foo", {st_mode=S_IFREG|0444, st_size=20, ...}) = 0
+	21179 rename(".git/annex/othertmp/foo.0/foo", "./foo") = 0
+
+This seems like proof that NFS is losing the file permissions. chmod 644
+followed immediately by stat showing the mode is still 444, with nothing
+happening in between according to strace.
+
+The full set of operations on that temp file is:
+
+	21179 unlink(".git/annex/othertmp/foo.0/foo") = -1 ENOENT (No such file or directory)
+	21179 vfork( <unfinished ...>
+	21217 execve("/dartfs-hpc/admin/opt/oldopt/git-annex/8.20200522/bin/cp", ["cp", "--reflink=auto", "-a", ".git/annex/objects/Kj/0x/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77", ".git/annex/othertmp/foo.0/foo"], 0x7fff09e296f8 /* 77 vars */ <unfinished ...>
+	21179 <... vfork resumed>)              = 21217
+	21217 stat(".git/annex/othertmp/foo.0/foo", 0x7ffc13f0d430) = -1 ENOENT (No such file or directory)
+	21217 newfstatat(AT_FDCWD, ".git/annex/othertmp/foo.0/foo", 0x7ffc13f0d1b0, 0) = -1 ENOENT (No such file or directory)
+	21217 openat(AT_FDCWD, ".git/annex/othertmp/foo.0/foo", O_WRONLY|O_CREAT|O_EXCL, 0400) = 4
+	21217 fstat(4, {st_mode=S_IFREG|0400, st_size=0, ...}) = 0
+	21217 ioctl(4, BTRFS_IOC_CLONE or FICLONE, 3) = -1 EOPNOTSUPP (Operation not supported)
+	21217 write(4, "annexed file content", 20) = 20
+	21217 utimensat(4, NULL, [{tv_sec=1629996169, tv_nsec=810295000} /* 2021-08-26T12:42:49.810295000-0400 */, {tv_sec=1629996169, tv_nsec=810295000} /* 2021-08-26T12:42:49.810295000-0400 */], 0 <unfinished ...>
+	21217 <... utimensat resumed>)          = 0
+	21217 fchmod(4, 0600)                   = 0
+	21217 fsetxattr(4, "system.nfs4_acl", "\0\0\0\3\0\0\0\0\0\0\0\0\0\26\1\211\0\0\0\6OWNER@\0\0\0\0\0\0\0\0\0\0\0\22\0\211\0\0\0\6GROUP@\0\0\0\0\0\0\0\0\0\0\0\22\0\211\0\0\0\tEVERYONE@\0\0", 80, 0) = 0
+	21217 fchmod(4, 0400)                   = 0
+	21217 fsetxattr(4, "system.posix_acl_access", "\2\0\0\0\1\0\4\0\377\377\377\377\4\0\4\0\377\377\377\377 \0\4\0\377\377\377\377", 28, 0) = -1 EOPNOTSUPP (Operation not supported)
+	21217 fchmod(4, 0100444)                = 0
+	21217 close(4)                          = 0
+	21179 stat(".git/annex/othertmp/foo.0/foo",  <unfinished ...>
+	21179 <... stat resumed>{st_mode=S_IFREG|0444, st_size=20, ...}) = 0
+	21179 stat(".git/annex/othertmp/foo.0/foo", {st_mode=S_IFREG|0444, st_size=20, ...}) = 0
+	21179 chmod(".git/annex/othertmp/foo.0/foo", 0100644) = 0
+	21179 stat(".git/annex/othertmp/foo.0/foo", {st_mode=S_IFREG|0444, st_size=20, ...}) = 0
+	21179 rename(".git/annex/othertmp/foo.0/foo", "./foo") = 0
+
+So, cp -a copies the object file to the temp file, leaving it 444 at the end,
+as it should be since the object file had that mode. And the following
+chmod 644 has no effect.
+
+That `nfs4_acl` seems like it contains effectively the permissions of the file,
+which were 444 at that point. Could that xattr override the later chmod?
+
+It would be worth trying this:
+
+	# use runshell to get the same cp that git-annex uses
+	/dartfs-hpc/admin/opt/oldopt/git-annex/8.20200522/runshell
+	echo bar > bar
+	chmod 444 bar
+	cp --reflink=auto -a bar baz
+	chmod 644 baz
+	ls -l baz
+
+If preserving the `nfs4_acl` is indeed the problem, then a fix in git-annex
+might be possible. (Even though this feels like a NFS bug) 
+Replace `cp -a` with `cp -dR --preserve=mode,ownership,timestamps`
+so omitting the xattr preservation.
+"""]]
