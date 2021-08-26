@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="nothingmuch@486b0e001f63ad0513f9fc6921a31f08832ba22d"
+ nickname="nothingmuch"
+ avatar="http://cdn.libravatar.org/avatar/81912bc5ca02376f99a5ee44531dee27"
+ subject="comment 5"
+ date="2021-08-26T21:19:43Z"
+ content="""
+Yep, I wrote that tip partly to document how to do it and partly to provoke this discussion =)
+
+As a user what I think I would find the most useful is an option like you described (and a related option for specifying the path to the torrc file) which will detect and enable an already configured hidden service, but just prints the configuration you should add instead of adding it itself to torrc. With a third option to manually specify the hidden service address no root privs would be needed either. The last useful thing I can think of is to relax the `socketFile` matching in the code, so that if the repo UUID appears anywhere in the path and the file is accessible, that seems sufficiently unambiguous to me, and when doing this check it would also be helpful to report permission errors clearly.
+
+Such functionality should provide a reasonable UX not only for nix/guix users, but also anyone who is running tor as a user service.
+"""]]
