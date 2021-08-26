@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="jenkin.schibel@286264d9ceb79998aecff0d5d1a4ffe34f8b8421"
+ nickname="jenkin.schibel"
+ avatar="http://cdn.libravatar.org/avatar/692d82fb5c42fc86d97cc44ae0fb61ca"
+ subject="i would like to have this feature revisted, collaberative wiki editing"
+ date="2021-08-26T15:20:56Z"
+ content="""
+i have recently found a use case for a feature like this.
+
+My use case is that i have an annex that hosts and backs up all my familys files.  most of these files are things like pictures.  but some of these are also going to be files that my family and i are actively modifying (i.e a personal wiki)  and whenever we add a new file to the wiki files, it would be nice to have the assistant automatically add and synchronize changes, but it always adds the new ones as locked files, so we have to go in and unlock them.  So i think it would e useful to have a configuration where you give it a list of directories you where you would like git-annex to add the files and any files added to these directories are immediately unlocked  I realize that we could probably just go with the workflow of adding these mostly text files to git instead of git-annex, but i like being able to backup these files to all of the \"special\" backup remotes that i have the other files synchronizing with.
+
+hope this made sense
+"""]]
