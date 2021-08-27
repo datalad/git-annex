@@ -1,6 +1,6 @@
 {- git-annex content ingestion
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -51,8 +51,6 @@ import Annex.AdjustedBranch
 import Annex.FileMatcher
 import qualified Utility.RawFilePath as R
 
-import Control.Exception (IOException)
-
 data LockedDown = LockedDown
 	{ lockDownConfig :: LockDownConfig
 	, keySource :: KeySource
@@ -78,7 +76,8 @@ data LockDownConfig = LockDownConfig
  - against some changes, like deletion or overwrite of the file, and
  - allows lsof checks to be done more efficiently when adding a lot of files.
  -
- - Lockdown can fail if a file gets deleted, and Nothing will be returned.
+ - Lockdown can fail if a file gets deleted, or if it's unable to remove
+ - write permissions, and Nothing will be returned.
  -}
 lockDown :: LockDownConfig -> FilePath -> Annex (Maybe LockedDown)
 lockDown cfg file = either 
@@ -86,8 +85,8 @@ lockDown cfg file = either
 		(return . Just)
 	=<< lockDown' cfg file
 
-lockDown' :: LockDownConfig -> FilePath -> Annex (Either IOException LockedDown)
-lockDown' cfg file = tryIO $ ifM crippledFileSystem
+lockDown' :: LockDownConfig -> FilePath -> Annex (Either SomeException LockedDown)
+lockDown' cfg file = tryNonAsync $ ifM crippledFileSystem
 	( nohardlink
 	, case hardlinkFileTmpDir cfg of
 		Nothing -> nohardlink
@@ -96,7 +95,9 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
   where
 	file' = toRawFilePath file
 
-	nohardlink = withTSDelta $ liftIO . nohardlink'
+	nohardlink = do
+		setperms
+		withTSDelta $ liftIO . nohardlink'
 
 	nohardlink' delta = do
 		cache <- genInodeCache file' delta
@@ -107,8 +108,7 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 			}
 	
 	withhardlink tmpdir = do
-		when (lockingFile cfg) $
-			freezeContent file'
+		setperms
 		withTSDelta $ \delta -> liftIO $ do
 			(tmpfile, h) <- openTempFile (fromRawFilePath tmpdir) $
 				relatedTemplate $ "ingest-" ++ takeFileName file
@@ -125,6 +125,16 @@ lockDown' cfg file = tryIO $ ifM crippledFileSystem
 			, contentLocation = toRawFilePath tmpfile
 			, inodeCache = cache
 			}
+		
+	setperms = when (lockingFile cfg) $ do
+		freezeContent file'
+		checkContentWritePerm file' >>= \case
+			Just False -> giveup $ unwords
+				[ "Unable to remove all write permissions from"
+				, file
+				, "-- perhaps it has an xattr or ACL set."
+				]
+			_ -> return ()
 
 {- Ingests a locked down file into the annex. Updates the work tree and
  - index. -}

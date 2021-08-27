@@ -260,8 +260,9 @@ verifyLocationLog key keystatus ai = do
 			KeyUnlockedThin -> thawContent obj
 			KeyLockedThin -> thawContent obj
 			_ -> freezeContent obj
-		unlessM (isContentWritePermOk obj) $
-			warning $ "** Unable to set correct write mode for " ++ fromRawFilePath obj ++ " ; perhaps you don't own that file"
+		checkContentWritePerm obj >>= \case
+			Nothing -> warning $ "** Unable to set correct write mode for " ++ fromRawFilePath obj ++ " ; perhaps you don't own that file, or perhaps it has an xattr or ACL set"
+			_ -> return ()
 	whenM (liftIO $ R.doesPathExist $ parentDir obj) $
 		freezeContentDir obj
 

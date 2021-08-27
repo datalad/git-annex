@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2021-08-27T17:13:54Z"
+ content="""
+I've also made git-annex add check, after removing write bits,
+if the file still has write bits set. It will refuse to add a file
+when it can't lock it down.
+
+That should avoid the NFS xattr problem in a situation where
+cp -a was used to make a copy that then gets added to the annex.
+"""]]

@@ -16,7 +16,7 @@ module Annex.Perms (
 	noUmask,
 	freezeContent,
 	freezeContent',
-	isContentWritePermOk,
+	checkContentWritePerm,
 	thawContent,
 	thawContent',
 	createContentDir,
@@ -131,6 +131,12 @@ createWorkTreeDirectory dir = do
  - necessary to let other users in the group lock the file. But, in a
  - shared repository, the current user may not be able to change a file
  - owned by another user, so failure to set this mode is ignored.
+ -
+ - Note that, on Linux, xattrs can sometimes prevent removing
+ - certain permissions from a file with chmod. (Maybe some ACLs too?) 
+ - In such a case, this will return with the file still having some mode
+ - it should not normally have. checkContentWritePerm can detect when
+ - that happens with write permissions.
  -}
 freezeContent :: RawFilePath -> Annex ()
 freezeContent file = unlessM crippledFileSystem $
@@ -149,19 +155,34 @@ freezeContent' sr file = do
 		removeModes writeModes .
 		addModes [ownerReadMode]
 
-isContentWritePermOk :: RawFilePath -> Annex Bool
-isContentWritePermOk file = ifM crippledFileSystem
-	( return True
+{- Checks if the write permissions are as freezeContent should set them.
+ -
+ - When the repository is shared, the user may not be able to change
+ - permissions of a file owned by another user. So if the permissions seem
+ - wrong, but the repository is shared, returns Nothing. If the permissions
+ - are wrong otherwise, returns Just False.
+ -}
+checkContentWritePerm :: RawFilePath -> Annex (Maybe Bool)
+checkContentWritePerm file = ifM crippledFileSystem
+	( return (Just True)
 	, withShared go
 	)
   where
-	go GroupShared = want [ownerWriteMode, groupWriteMode]
-	go AllShared = want writeModes
-	go _ = return True
-	want wantmode =
+	go GroupShared = want sharedret 
+		(includemodes [ownerWriteMode, groupWriteMode])
+	go AllShared = want sharedret (includemodes writeModes)
+	go _ = want Just (excludemodes writeModes)
+
+	want mk f =
 		liftIO (catchMaybeIO $ fileMode <$> R.getFileStatus file) >>= return . \case
-			Nothing -> True
-			Just havemode -> havemode == combineModes (havemode:wantmode)
+			Just havemode -> mk (f havemode)
+			Nothing -> mk True
+	
+	includemodes l havemode = havemode == combineModes (havemode:l)
+	excludemodes l havemode = all (\m -> intersectFileModes m havemode == nullFileMode) l
+
+	sharedret True = Just True
+	sharedret False = Nothing
 
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
