@@ -111,3 +111,14 @@ The best fix would be to improve git's smudge/clean interface:
   sending huge files through a pipe.
 
 [[!tag confirmed]]
+
+> Could it use the long-running filter process interface for
+> smudge, but not clean? It could behave like the smudge filter does now,
+> outputting the same pointer git feeds it, and deferring populating the
+> file until later. So large file content would not be sent through the
+> pipe in this case. It seems that the interface's handshake allows
+> it to claim only support for smudge, and not clean, but the docs don't
+> say if git falls back to running the clean filter in that case.
+> 
+> If this was possible, it should speed up git checkout etc which use the
+> smudge filter. --[[Joey]]
