@@ -17,6 +17,8 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
   * Fix test suite failure on Windows.
   * New --batch-keys option added to these commands: 
     get, drop, move, copy, whereis
+  * Added annex.youtube-dl-command config. This can be used to run some
+    forks of youtube-dl.
 
  -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
 

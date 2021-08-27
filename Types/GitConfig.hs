@@ -95,6 +95,7 @@ data GitConfig = GitConfig
 	, annexDebugFilter :: Maybe String
 	, annexWebOptions :: [String]
 	, annexYoutubeDlOptions :: [String]
+	, annexYoutubeDlCommand :: Maybe String
 	, annexAriaTorrentOptions :: [String]
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: GlobalConfigurable (Maybe String)
@@ -180,6 +181,7 @@ extractGitConfig configsource r = GitConfig
 	, annexDebugFilter = getmaybe (annexConfig "debugfilter")
 	, annexWebOptions = getwords (annexConfig "web-options")
 	, annexYoutubeDlOptions = getwords (annexConfig "youtube-dl-options")
+	, annexYoutubeDlCommand = getmaybe (annexConfig "youtube-dl-command")
 	, annexAriaTorrentOptions = getwords (annexConfig "aria-torrent-options")
 	, annexCrippledFileSystem = getbool (annexConfig "crippledfilesystem") False
 	, annexLargeFiles = configurable Nothing $

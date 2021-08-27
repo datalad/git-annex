@@ -1,6 +1,6 @@
 {- youtube-dl integration for git-annex
  -
- - Copyright 2017-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -68,7 +68,7 @@ youtubeDl url workdir p = ifM ipAddressesUnlimited
 
 youtubeDl' :: URLString -> FilePath -> MeterUpdate -> UrlOptions -> Annex (Either String (Maybe FilePath))
 youtubeDl' url workdir p uo
-	| supportedScheme uo url = ifM (liftIO $ inSearchPath "youtube-dl")
+	| supportedScheme uo url = ifM (liftIO . inSearchPath =<< youtubeDlCommand)
 		( runcmd >>= \case
 			Right True -> workdirfiles >>= \case
 				(f:[]) -> return (Right (Just f))
@@ -88,6 +88,7 @@ youtubeDl' url workdir p uo
 	runcmd = youtubeDlMaxSize workdir >>= \case
 		Left msg -> return (Left msg)
 		Right maxsize -> do
+			cmd <- youtubeDlCommand
 			opts <- youtubeDlOpts (dlopts ++ maxsize)
 			oh <- mkOutputHandlerQuiet
 			-- The size is unknown to start. Once youtube-dl
@@ -97,7 +98,7 @@ youtubeDl' url workdir p uo
 			let unknownsize = Nothing :: Maybe FileSize
 			ok <- metered (Just p) unknownsize $ \meter meterupdate ->
 				liftIO $ commandMeter' 
-					parseYoutubeDlProgress oh (Just meter) meterupdate "youtube-dl" opts
+					parseYoutubeDlProgress oh (Just meter) meterupdate cmd opts
 					(\pr -> pr { cwd = Just workdir })
 			return (Right ok)
 	dlopts = 
@@ -181,7 +182,8 @@ youtubeDlCheck' :: URLString -> UrlOptions -> Annex (Either String Bool)
 youtubeDlCheck' url uo
 	| supportedScheme uo url = catchMsgIO $ htmlOnly url False $ do
 		opts <- youtubeDlOpts [ Param url, Param "--simulate" ]
-		liftIO $ snd <$> processTranscript "youtube-dl" (toCommand opts) Nothing
+		cmd <- youtubeDlCommand
+		liftIO $ snd <$> processTranscript cmd (toCommand opts) Nothing
 	| otherwise = return (Right False)
 
 -- Ask youtube-dl for the filename of media in an url.
@@ -218,7 +220,8 @@ youtubeDlFileNameHtmlOnly' url uo
 			, Param "--no-warnings"
 			, Param "--no-playlist"
 			]
-		let p = (proc "youtube-dl" (toCommand opts))
+		cmd <- youtubeDlCommand
+		let p = (proc cmd (toCommand opts))
 			{ std_out = CreatePipe
 			, std_err = CreatePipe
 			}
@@ -244,6 +247,10 @@ youtubeDlOpts :: [CommandParam] -> Annex [CommandParam]
 youtubeDlOpts addopts = do
 	opts <- map Param . annexYoutubeDlOptions <$> Annex.getGitConfig
 	return (opts ++ addopts)
+
+youtubeDlCommand :: Annex String
+youtubeDlCommand = fromMaybe "yooutube-dl" . annexYoutubeDlCommand 
+	<$> Annex.getGitConfig
 
 supportedScheme :: UrlOptions -> URLString -> Bool
 supportedScheme uo url = case parseURIRelaxed url of

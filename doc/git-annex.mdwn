@@ -1657,6 +1657,10 @@ Remotes are configured using these settings in `.git/config`.
   file any options that cause youtube-dl to download more than one file,
   or to store the file anywhere other than the current working directory.
 
+* `annex.youtube-dl-command`
+
+  Command to run for youtube-dl. Default is "youtube-dl".
+
 * `annex.aria-torrent-options`
 
   Options to pass to aria2c when using it to download a torrent.
