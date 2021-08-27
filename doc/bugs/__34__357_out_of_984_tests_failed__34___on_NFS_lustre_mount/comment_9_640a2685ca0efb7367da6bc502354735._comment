@@ -1,0 +1,67 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 9"
+ date="2021-08-27T01:34:18Z"
+ content="""
+not sure if related, but I noticed you said to use `/dartfs-hpc/admin/opt/oldopt/git-annex/8.20200522/runshell` which corresponds to the git-annex I have available upon login, but the tests were ran using git annex installed in a conda env `8.20200502-g55acb2e52` `~/.conda/envs/datalad/bin/git-annex`, which is a \"proper\" (not standalone) build and lacks `runshell`, and I believe would just use system wide `cp`.
+
+# in that /dartfs-hpc/admin/opt/oldopt/git-annex/8.20200522/runshell
+
+```
+(datalad) [d31548v@discovery7 _test_]$ /dartfs-hpc/admin/opt/oldopt/git-annex/8.20200522/runshell
+$ pwd
+/dartfs/rc/lab/D/DBIC/DBIC/inbox/BIDS/_test_
+$ echo bar > bar
+chmod 444 bar
+cp --reflink=auto -a bar baz
+chmod 644 baz
+ls -l baz$ $ $ $ 
+-r--r--r-- 1 d31548v rc-DBIC-bids 4 Aug 26 21:27 baz
+
+```
+
+now outside using default cp -- the same
+
+```shell
+(datalad) [d31548v@discovery7 _test_]$ echo bar > bar
+(datalad) [d31548v@discovery7 _test_]$ chmod 444 bar
+(datalad) [d31548v@discovery7 _test_]$ cp --reflink=auto -a bar baz
+(datalad) [d31548v@discovery7 _test_]$ chmod 644 baz
+(datalad) [d31548v@discovery7 _test_]$ ls -l baz
+-r--r--r-- 1 d31548v rc-DBIC-bids 4 Aug 26 21:29 baz
+```
+
+and indeed we do get a different result, with `w`, if running under a regular `/tmp`:
+
+```
+(datalad) [d31548v@discovery7 tmp]$ pwd
+/tmp
+(datalad) [d31548v@discovery7 tmp]$ echo bar > bar
+(datalad) [d31548v@discovery7 tmp]$ chmod 444 bar
+(datalad) [d31548v@discovery7 tmp]$ cp --reflink=auto -a bar baz
+(datalad) [d31548v@discovery7 tmp]$ chmod 644 baz
+(datalad) [d31548v@discovery7 tmp]$ ls -l baz
+-rw-r--r-- 1 d31548v rc-users 4 Aug 26 21:29 baz
+```
+
+Now, using the alternative to `-a` setting -- retains the `w` in both `runshell` and outside:
+
+```
+(datalad) [d31548v@discovery7 _test_]$ /dartfs-hpc/admin/opt/oldopt/git-annex/8.20200522/runshell
+$ echo bar > bar
+chmod 444 bar
+cp --reflink=auto -dR --preserve=mode,ownership,timestamps bar baz
+chmod 644 baz
+ls -l baz$ $ $ $ 
+-rw-r--r-- 1 d31548v rc-DBIC-bids 4 Aug 26 21:32 baz
+$ 
+(datalad) [d31548v@discovery7 _test_]$ rm -f bar baz
+(datalad) [d31548v@discovery7 _test_]$ echo bar > bar
+(datalad) [d31548v@discovery7 _test_]$ chmod 444 bar
+(datalad) [d31548v@discovery7 _test_]$ cp --reflink=auto -dR --preserve=mode,ownership,timestamps bar baz
+(datalad) [d31548v@discovery7 _test_]$ chmod 644 baz
+(datalad) [d31548v@discovery7 _test_]$ ls -l baz
+-rw-r--r-- 1 d31548v rc-DBIC-bids 4 Aug 26 21:32 baz
+```
+"""]]

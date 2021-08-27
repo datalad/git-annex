@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jkniiv@b330fc3a602d36a37a67b2a2d99d4bed3bb653cb"
+ nickname="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/419f2eee8b0c37256488fabcc2737ff2"
+ subject="it turns out I had to file this as a bug"
+ date="2021-08-27T01:38:29Z"
+ content="""
+@joey I don't know what you mean by scanning in this case but I now have proof that git-annex really is
+doing an extra read pass over the whole file after it's been transferred from one regular remote to the
+other in the case of `sync --content[-of _file_]`. I filed a bug with details:
+[`sync -C` takes longer to get file than `get`](https://git-annex.branchable.com/bugs/__96__sync_-C__96___takes_longer_to_get_file_than___96__get__96__/)
+(btw. I can't seem to be able to make this into a WikiLink as ikiwiki thinks of the underscores of the page name as denoting strong emphasis).
+
+"""]]
