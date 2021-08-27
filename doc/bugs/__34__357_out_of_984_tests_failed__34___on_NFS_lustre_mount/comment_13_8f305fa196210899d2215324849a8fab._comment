@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 13"
+ date="2021-08-27T18:46:39Z"
+ content="""
+Great, thank you, I will test after the next daily build. What would be the easiest way to establish such an xattr enabled NFS setup, so we could tune up [our test on NFS scenarios](https://github.com/datalad/git-annex/blob/master/.github/workflows/build-ubuntu.yaml#L221) to catch any possible future regression?
+"""]]
