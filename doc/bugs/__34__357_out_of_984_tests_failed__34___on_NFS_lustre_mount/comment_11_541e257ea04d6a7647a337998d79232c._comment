@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2021-08-27T16:41:45Z"
+ content="""
+I've made the change to use that option. I think this should clear the test
+suite.
+
+I see that Isilon is a NAS, so some proprietary and broken NFS server
+apparently. Kind of explains why cp -a would do this, because I found
+threads about cp -a preserving NFS xattrs, and people wanted it to,
+presumably for other reasons on less broken NFS servers.
+
+This does raise the question of what might happen if someone copies
+a file themselves with cp -a on this NFS and then git-annex adds the copy.
+Probably git-annex would then be unable to remove the write bit
+from the annex object file. 
+
+For that matter, the same could happen with ACLs. Eg, I was able to
+use setfacl to make this happen:
+
+	joey@darkstar:~>chmod -w foo
+	joey@darkstar:~>setfacl -m g:nogroup:rw foo
+	joey@darkstar:~>ls -l foo
+	-r--rw-r--+ 1 joey joey 0 Aug 27 12:53 foo
+	joey@darkstar:~>chmod -w foo
+	chmod: foo: new permissions are r--rw-r--, not r--r--r--
+	- exit 1
+	joey@darkstar:~>perl -e 'chmod(400)' foo
+	joey@darkstar:~>ls -l foo
+	-r--rw-r--+ 1 joey joey 0 Aug 27 12:53 foo
+
+So git-annex would be unable to clear the write bit, and would not be able
+to effectively lock down the file for all users, eg user nobody can write
+to the file in the above example. There's probably a way to let user joey
+also write to it, but my attempt to do that with an ACL failed.
+
+Perhaps git-annex should clear ACLs when ingesting (and locking) files.
+But perhaps users use ACLs for other purposes that would not prevent
+lockdown, and so they should not be cleared. And as far as internal-use NFS
+xattrs, it doesn't seem wise for git-annex to try to unset them from files
+its ingesting. So I guess I'm going to punt on this broader question,
+if users want to use the ACL rope, it's over there..
+"""]]

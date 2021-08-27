@@ -25,6 +25,7 @@ tests =
 	, testCp "cp_p" "-p"
 	, testCp "cp_preserve_timestamps" "--preserve=timestamps"
 	, testCpReflinkAuto
+	, testCpNoPreserveXattr
 	, TestCase "xargs -0" $ testCmd "xargs_0" "xargs -0 </dev/null"
 	, TestCase "rsync" $ testCmd "rsync" "rsync --version >/dev/null"
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
@@ -61,6 +62,11 @@ testCpReflinkAuto = testCp k "--reflink=auto"
 #endif
   where
 	k = "cp_reflink_supported"
+
+testCpNoPreserveXattr :: TestCase
+testCpNoPreserveXattr = testCp 
+	"cp_no_preserve_xattr_supported" 
+	"--no-preserve=xattr"
 
 getUpgradeLocation :: Test
 getUpgradeLocation = do

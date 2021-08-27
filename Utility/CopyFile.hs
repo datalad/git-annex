@@ -1,6 +1,6 @@
 {- file copying
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -30,6 +30,12 @@ copyMetaDataParams meta = map snd $ filter fst
 		, Param "-p")
 	, (not allmeta && BuildInfo.cp_preserve_timestamps
 		, Param "--preserve=timestamps")
+	-- cp -a may preserve xattrs that have special meaning,
+	-- eg to NFS, and have even been observed to prevent later
+	-- changing the permissions of the file. So prevent preserving
+	-- xattrs.
+	, (allmeta && BuildInfo.cp_a && BuildInfo.cp_no_preserve_xattr_supported
+		, Param "--no-preserve=xattr")
 	]
   where
 	allmeta = meta == CopyAllMetaData
