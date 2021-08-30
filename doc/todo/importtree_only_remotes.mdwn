@@ -7,6 +7,9 @@ for exporttree=yes.
 Few special remotes support that interface, and probably a lot of them 
 just can't; they don't have something that can be used as a ContentIdentifier,
 or lack the necessary atomicity properties to implement it safely.
+(For example, `storeExportWithContentIdentifier` has a list of old
+ContentIdentifiers that are allowed to be overwritten, and requires
+that other content does not get overwritten.)
 
 The external special remote protocol does not support that interface
 yet, due to its complexity and also because noone has requested it.
@@ -60,9 +63,10 @@ What is needed in such an interface?
 listImportableContents is unchanged, and checkPresentImport above
 is identical to checkPresentExport. retrieveImport is very similar
 to retrieveExport, except that the content retrieved is not guaranteed
-to be the same as the content of any key. Actually, it may be identical;
-the only thing that uses retrieveExport forces verification of the content
-retrived since it could have been changed by another writer.
+to be the same as the content of any key. Actually, it may be an identical
+interface; the only thing I can find that uses retrieveExport forces
+verification of the content retrived since it could have been changed by
+another writer.
 
 The similarity with interface that we already have suggests that
 perhaps this does not need changes to Types.Remote to implement.
