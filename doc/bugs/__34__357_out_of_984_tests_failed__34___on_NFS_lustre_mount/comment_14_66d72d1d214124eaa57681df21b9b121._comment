@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2021-08-30T15:59:29Z"
+ content="""
+It seems likely to me that this NFS server is just broken. Why would a
+well-designed NFS server behave this way, rather than letting a chmod
+override the xattr that was set earlier?
+
+I considered filing a bug report on coreutils or something about cp
+preserving the NFS xattr leading to this problem, but since it seems likely
+to be the NFS server on the NAS that is at fault, didn't think that would
+be productive. 
+
+If you did manage to reproduce that behavior with a regular
+linux NFS server, it seems like it would be a grounds for a bug on some
+part of linux..
+"""]]
