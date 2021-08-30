@@ -75,7 +75,7 @@ runReader a = do
 		v <- a (SQL.ReadHandle qh)
 		return (v, st)
 	go DbClosed = do
-		st' <- openDb True DbClosed
+		st' <- openDb False DbClosed
 		v <- case st' of
 			(DbOpen qh) -> a (SQL.ReadHandle qh)
 			_ -> return mempty
@@ -97,7 +97,7 @@ runWriter a = do
 		v <- a (SQL.WriteHandle qh)
 		return (v, st)
 	go st = do
-		st' <- openDb False st
+		st' <- openDb True st
 		v <- case st' of
 			DbOpen qh -> a (SQL.WriteHandle qh)
 			_ -> error "internal"

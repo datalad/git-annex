@@ -24,6 +24,8 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
     servers.
   * add: Detect when xattrs or perhaps ACLs prevent locking down
     a file's content, and fail with an informative message.
+  * Fix support for readonly git remotes.
+    (Reversion in version 8.20210621)
 
  -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
 
