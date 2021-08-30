@@ -75,6 +75,7 @@ import qualified BuildInfo
 import qualified Utility.Format
 import qualified Utility.Verifiable
 import qualified Utility.Process
+import qualified Utility.Process.Transcript
 import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
@@ -309,6 +310,7 @@ unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
+	, testCase "readonly" test_readonly
 	, testCase "ignore deleted files" test_ignore_deleted_files
 	, testCase "metadata" test_metadata
 	, testCase "export_import" test_export_import
@@ -426,6 +428,23 @@ test_add_extras = intmpclonerepo $ do
 		git_annex "unlock" [wormannexedfile] "unlock"
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
+
+test_readonly :: Assertion
+test_readonly =
+	withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
+			pair r1 r2
+			indir r1 $ do
+				git_annex "get" [annexedfile] "get failed in first repo"
+			{- chmod may fail, or not be available, or the
+			 - filesystem not support permissions. -}
+			void $ Utility.Process.Transcript.processTranscript
+				"chmod" ["-R", "-w", r1] Nothing
+			indir r2 $ do
+				git_annex "sync" ["r1", "--no-push"] "sync with readonly repo"
+				git_annex "get" [annexedfile, "--from", "r1"] "get from readonly repo"
+				git "remote" ["rm", "origin"] "remote rm"
+				git_annex "drop" [annexedfile] "drop vs readonly repo"
 
 test_ignore_deleted_files :: Assertion
 test_ignore_deleted_files = intmpclonerepo $ do
@@ -1639,14 +1658,6 @@ test_adjusted_branch_subtree_regression =
 			git_annex "sync" [] "sync"
 			git "checkout" [origbranch] "git checkout"
 			doesFileExist "a/b/x/y" @? ("a/b/x/y missing from master after adjusted branch sync")
-
-{- Set up repos as remotes of each other. -}
-pair :: FilePath -> FilePath -> Assertion
-pair r1 r2 = forM_ [r1, r2] $ \r -> indir r $ do
-	when (r /= r1) $
-		git "remote" ["add", "r1", "../../" ++ r1] "remote add"
-	when (r /= r2) $
-		git "remote" ["add", "r2", "../../" ++ r2] "remote add"
 
 test_map :: Assertion
 test_map = intmpclonerepo $ do

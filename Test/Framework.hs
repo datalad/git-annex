@@ -631,3 +631,12 @@ origBranch :: Types.Annex String
 origBranch = maybe "foo"
 	(Git.Types.fromRef . Git.Ref.base . Annex.AdjustedBranch.fromAdjustedBranch)
 	<$> Annex.inRepo Git.Branch.current
+
+{- Set up repos as remotes of each other. -}
+pair :: FilePath -> FilePath -> Assertion
+pair r1 r2 = forM_ [r1, r2] $ \r -> indir r $ do
+	when (r /= r1) $
+		git "remote" ["add", "r1", "../../" ++ r1] "remote add"
+	when (r /= r2) $
+		git "remote" ["add", "r2", "../../" ++ r2] "remote add"
+
