@@ -1,0 +1,72 @@
+Currently for a special remote to support being configured
+with exporttree=no importtree=yes, it needs to implement the
+ImportActions interface, which uses ContentIdentifiers
+for safety and includes some methods that are only needed
+for exporttree=yes.
+
+Few special remotes support that interface, and probably a lot of them 
+just can't; they don't have something that can be used as a ContentIdentifier,
+or lack the necessary atomicity properties to implement it safely.
+
+The external special remote protocol does not support that interface
+yet, due to its complexity and also because noone has requested it.
+(There is a draft protocol extension for export and import, see 
+<https://git-annex.branchable.com/design/external_special_remote_protocol/export_and_import_appendix/#index2h2>)
+(See also [[todo/add_import_tree_to_external_special_remote_protocol]])
+
+A simpler interface that supoorts only importtree=yes without needing to
+worry about exporttree=yes, could let a lot more special remotes support
+tree import. (For example [[todo/import_tree_from_rsync_special_remote]].)
+
+Such a special remote could be populated in any way by something outside
+git-annex, and `git annex import --from remote` would download the content
+and generate a remote tracking branch. Once imported, other clones could
+use `git annex get` to download files from the special remote.
+
+Bearing in mind that since something is writing to the special remote, any
+file on it could be overwritten at any point, so such a get may download
+the wrong content. (So the remote should have retrievalSecurityPolicy =
+RetrievalVerifiableKeysSecure to make downloads be verified well enough.)
+
+I said this would not use a ContentIdentifier, but it seems it needs some
+simple form of ContentIdentifier, which could be just an mtime.
+Without any ContentIdentifier, it seems that each time 
+`git annex import --from remote` is run, it would need to re-download
+all files from the remote, because it would have no way of knowing
+if it had seen a version of a file before. This ContentIdentifier would
+be used only to avoid re-downloading when importing. It would not be used
+by any other methods. It could even be a dummy value if re-downloading
+every file on import is acceptable.
+
+What is needed in such an interface?
+
+	listImportableContents :: Annex (Maybe (ContentIdentifier, ImportableContents ByteSize))
+	-- Retrieves content from an import location to a file.
+	-- The content retrieved could be anything; it needs to be
+	-- strongly verified if this is used to download a particular Key
+	-- that was at one point stored on the remote, since the content
+	-- of the remote could change at any time.
+	-- (The MeterUpdate does not need to be used if 
+        -- sequentially to the file.)
+	-- Throws exception on failure.
+	retrieveImport :: ImportLocation -> FilePath -> MeterUpdate -> Annex ()
+	-- Checks if anything is present on the remote at the specified
+	-- ImportLocation. It may check the size or other characteristics
+        -- of the Key, but does not need to guarantee that the content on
+        -- the remote is the same as the Key's content.
+        -- Throws an exception if the remote cannot be accessed.
+	checkPresentImport :: Key -> ImportLocation -> Annex Bool
+
+listImportableContents is unchanged, and checkPresentImport above
+is identical to checkPresentExport. retrieveImport is very similar
+to retrieveExport, except that the content retrieved is not guaranteed
+to be the same as the content of any key. Actually, it may be identical;
+the only thing that uses retrieveExport forces verification of the content
+retrived since it could have been changed by another writer.
+
+The similarity with interface that we already have suggests that
+perhaps this does not need changes to Types.Remote to implement.
+It could be done as a Remote.Helper.SimpleImport that takes those
+3 methods and translates them to the current interface.
+Or by complicating Remote.Helper.ExportImport further..
+--[[Joey]]

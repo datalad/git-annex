@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-08-30T18:04:21Z"
+ content="""
+This seems more tractable if a rsync remote supports only importtree=yes
+but not also exporttree=yes.
+
+That would prevent needing to worry about git-annex making changes
+to the remote at the same time it's getting content from it. Any changes
+would be made by something else, and git-annex would only import them.
+
+store/remove would not do anything. checkpresent would perhaps always
+fail.
+"""]]
