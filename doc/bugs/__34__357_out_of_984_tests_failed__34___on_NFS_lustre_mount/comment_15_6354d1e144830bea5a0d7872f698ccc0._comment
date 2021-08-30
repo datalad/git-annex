@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="just an update on my testing"
+ date="2021-08-30T22:17:53Z"
+ content="""
+FWIW, I've tested a debianstadalone build of `8.20210803+git153-g63c2cfd47-1~ndall+1` on that system, and besides 3 fails due to no `--kill` in elderly system wide gpgconf (apparently debian bundle does not come with one) -- it is all clean! (although took nearly a full work day to complete on that filesystem: `3 out of 984 tests failed (18157.38s)`)
+"""]]
