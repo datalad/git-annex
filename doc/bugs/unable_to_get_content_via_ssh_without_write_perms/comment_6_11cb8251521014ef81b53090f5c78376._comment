@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-08-30T18:39:33Z"
+ content="""
+Well I've already fixed their problem AFAICS. Just perhaps not the problem
+you are seeing.
+
+Your script does not reproduce any problem here. Are you running it on NFS
+or something?
+
+Anyway, if you can build current master the improved error message will
+probably help me find the problem.
+"""]]
