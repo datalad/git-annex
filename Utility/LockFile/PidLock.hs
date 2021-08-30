@@ -33,6 +33,7 @@ import Utility.Hash
 import Utility.FileSystemEncoding
 import Utility.Env
 import Utility.Env.Set
+import Utility.Tmp
 import qualified Utility.LockFile.Posix as Posix
 
 import System.IO
@@ -143,7 +144,7 @@ tryLock lockfile = do
   where
 	go abslockfile sidelock = do
 		let abslockfile' = fromRawFilePath abslockfile
-		(tmp, h) <- openTempFile (takeDirectory abslockfile') "locktmp"
+		(tmp, h) <- openTmpFileIn (takeDirectory abslockfile') "locktmp"
 		let tmp' = toRawFilePath tmp
 		setFileMode tmp' (combineModes readModes)
 		hPutStr h . show =<< mkPidLock

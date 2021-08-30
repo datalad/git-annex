@@ -3,11 +3,18 @@
  subject="""comment 3"""
  date="2021-08-30T16:24:52Z"
  content="""
-reversion in [[!commit f46e4c9b7c]], which reversed some logic and made
-database reads be treated as database writes, so they failed on permission
-denied, rather than the right behavior of returning DbUnavailable. Fixed that. 
+keysdb error was a reversion in [[!commit f46e4c9b7c]], which reversed some
+logic and made database reads be treated as database writes, so it failed
+on permission denied, rather than the right behavior of returning
+DbUnavailable when it cannot read or the database does not exist yet. 
+
+Fixed that. It seems to work for me now, both get and drop, and over ssh or
+direct access to the readonly repository.
 
 I have not been able to reproduce the other error involving
 opening a temp file. All I can tell from the message is that it's writing
-to some file in .git/annex via a temp file in the same directory.
+to some file in .git/annex via a temp file in the same directory, but
+I don't know what file it is trying to write. I've made a change that
+will include more information in that error message. So either update
+your build of git-annex, or find a better reproduction recipe for that..
 """]]

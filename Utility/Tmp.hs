@@ -14,6 +14,7 @@ module Utility.Tmp (
 	withTmpFile,
 	withTmpFileIn,
 	relatedTemplate,
+	openTmpFileIn,
 ) where
 
 import System.IO
@@ -21,12 +22,25 @@ import System.FilePath
 import System.Directory
 import Control.Monad.IO.Class
 import System.PosixCompat.Files hiding (removeLink)
+import System.IO.Error
 
 import Utility.Exception
 import Utility.FileSystemEncoding
 import Utility.FileMode
 
 type Template = String
+
+{- This is the same as openTempFile, except when there is an
+ - error, it displays the template as well as the directory,
+ - to help identify what call was responsible.
+ -}
+openTmpFileIn :: FilePath -> String -> IO (FilePath, Handle)
+openTmpFileIn dir template = openTempFile dir template
+	`catchIO` decoraterrror
+  where
+	decoraterrror e = throwM $
+		let loc = ioeGetLocation e ++ " template " ++ template
+		in annotateIOError e loc Nothing Nothing
 
 {- Runs an action like writeFile, writing to a temp file first and
  - then moving it into place. The temp file is stored in the same
@@ -43,7 +57,7 @@ viaTmp a file content = bracketIO setup cleanup use
 	template = relatedTemplate (base ++ ".tmp")
 	setup = do
 		createDirectoryIfMissing True dir
-		openTempFile dir template
+		openTmpFileIn dir template
 	cleanup (tmpfile, h) = do
 		_ <- tryIO $ hClose h
 		tryIO $ removeFile tmpfile
@@ -73,7 +87,7 @@ withTmpFile template a = do
 withTmpFileIn :: (MonadIO m, MonadMask m) => FilePath -> Template -> (FilePath -> Handle -> m a) -> m a
 withTmpFileIn tmpdir template a = bracket create remove use
   where
-	create = liftIO $ openTempFile tmpdir template
+	create = liftIO $ openTmpFileIn tmpdir template
 	remove (name, h) = liftIO $ do
 		hClose h
 		catchBoolIO (removeFile name >> return True)

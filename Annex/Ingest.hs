@@ -110,7 +110,7 @@ lockDown' cfg file = tryNonAsync $ ifM crippledFileSystem
 	withhardlink tmpdir = do
 		setperms
 		withTSDelta $ \delta -> liftIO $ do
-			(tmpfile, h) <- openTempFile (fromRawFilePath tmpdir) $
+			(tmpfile, h) <- openTmpFileIn (fromRawFilePath tmpdir) $
 				relatedTemplate $ "ingest-" ++ takeFileName file
 			hClose h
 			removeWhenExistsWith R.removeLink (toRawFilePath tmpfile)

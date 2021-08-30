@@ -84,6 +84,7 @@ import Annex.Branch.Transitions
 import qualified Annex
 import Annex.Hook
 import Utility.Directory.Stream
+import Utility.Tmp
 import qualified Utility.RawFilePath as R
 
 {- Name of the branch that is used to store git-annex's information. -}
@@ -596,7 +597,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 		mapM_ (removeFile . (dir </>)) stagedfs
 		hClose jlogh
 		removeWhenExistsWith (R.removeLink) (toRawFilePath jlogf)
-	openjlog tmpdir = liftIO $ openTempFile tmpdir "jlog"
+	openjlog tmpdir = liftIO $ openTmpFileIn tmpdir "jlog"
 
 {- This is run after the refs have been merged into the index,
  - but before the result is committed to the branch.
