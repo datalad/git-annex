@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-08-30T16:03:07Z"
+ content="""
+This did used to work, see [[todo/read-only_removable_drives]] which ended
+with it working in 2016.
+
+There is a way to do it that's certian to work: Make a ssh key that logs
+into the host as the user who owns the repository, and lock that ssh key
+down to run git-annex-shell with `GIT_ANNEX_SHELL_READONLY=1
+GIT_ANNEX_SHELL_LIMITED=1`
+
+Still this should be investigated. Since one failure is certianly due to
+the keys database update, it seems likely that's what's changed.
+"""]]
