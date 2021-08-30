@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="reproducer"
+ date="2021-08-30T18:07:05Z"
+ content="""
+> I have not been able to reproduce the other error involving opening a temp file.
+
+if of any help -- output from --debug:
+```
+[2021-08-30 13:59:19.423059134] (Utility.Process) process [2353815] chat: ssh [\"localhost\",\"-S\",\".git/annex/ssh/localhost\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"-T\",\"git-annex-shell 'p2pstdio' '/tmp/testroot' '--debug' 'b438aaf1-df6e-4dcd-8342-6b4c3490ddc2' --uuid e5fb275a-f2d6-45ec-89e0-be9c5737a985\"]
+[2021-08-30 13:59:19.468653141] (P2P.IO) [ssh connection Just 2353815] [ThreadId 4] P2P < AUTH-SUCCESS e5fb275a-f2d6-45ec-89e0-be9c5737a985
+[2021-08-30 13:59:19.468876656] (P2P.IO) [ssh connection Just 2353815] [ThreadId 4] P2P > VERSION 1
+[2021-08-30 13:59:19.469785069] (P2P.IO) [ssh connection Just 2353815] [ThreadId 4] P2P < VERSION 1
+[2021-08-30 13:59:19.470001878] (P2P.IO) [ssh connection Just 2353815] [ThreadId 4] P2P > GET 0 123 MD5E-s4--ba1f2511fc30423bdbb183fe33f3dd0f
+[2021-08-30 13:59:19.470733309] (P2P.IO) [ThreadId 4] P2P < GET 0 123 MD5E-s4--ba1f2511fc30423bdbb183fe33f3dd0f
+git-annex: /tmp/testroot/.git/annex: openTempFile: permission denied (Permission denied)
+
+```
+
+and here is a reproducer which shows me that error using 8.20210803+git133-ga7cf5abf3-1~ndall+1
+
+```
+#!/bin/bash
+
+export PS4='> '
+set -eu
+
+set -x
+
+d=\"$(sudo mktemp -d ${TMPDIR:-/tmp}/ann-XXXXXXX)\"
+dclone=\"$d-clone\"
+
+
+umask 022
+
+sudo git -C $d init
+sudo git -C $d annex init
+sudo bash -c \"echo 123 > $d/123\"
+sudo git -C $d annex add $d/123
+sudo git -C $d commit -m 123
+sudo chmod go+rX -R \"$d\"
+
+git clone \"$d\" \"$dclone\"
+git -C \"$dclone\" annex get .
+
+```
+
+"""]]
