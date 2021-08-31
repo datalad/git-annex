@@ -1,0 +1,43 @@
+ATM `annex get` (in particular '--json --json-error-messages --json-progress') would channel to the user the error from an attempt to get a key from a remote with a message which lacks information about remote and/or specifics of that particular attempt (e.g. which URL was attempted from web remote), e.g.
+
+```
+$> git clone https://github.com/dandisets/000029 && cd 000029
+Cloning into '000029'...
+remote: Enumerating objects: 326, done.
+remote: Counting objects: 100% (326/326), done.
+remote: Compressing objects: 100% (160/160), done.
+remote: Total 326 (delta 137), reused 295 (delta 106), pack-reused 0
+Receiving objects: 100% (326/326), 45.53 KiB | 1.30 MiB/s, done.
+Resolving deltas: 100% (137/137), done.
+dandiset.yaml  sub-RAT123/  sub-anm369962/  sub-anm369963/  sub-anm369964/
+
+$> git update-ref refs/remotes/origin/git-annex b822a8d40ff348a60602f13d0add989bd24e727a  # URLs fixed since then
+
+$> git annex get sub-RAT123                                                                                      
+get sub-RAT123/sub-RAT123.nwb (from web...) 
+
+  download failed: Not Found
+
+ok
+(recording state in git...)
+
+$> git annex version | head -n 1
+git-annex version: 8.20210803+git165-g249d424b8-1~ndall+1
+```
+
+NB. That "download failed: Not Found" is also channeled in that form (without any extra information) among "errors" of `--json-error-messages` (and each progress message within `--json-progress`) 
+
+As such the message is not informative really, and might even be a bit confusing to the user since `get` does `ok` eventually here.
+I think it is useful to channel such information but it should be extended, e.g. in this case could be
+
+```
+  failed to retrieve content from 'web' remote: https://api.dandiarchive.org/api/dandisets/000029/versions/draft/assets/b3675aad-db07-4fd4-9cce-c95f1184e7a3/download/ - Not Found
+```
+
+or alike. Even though considerably longer, it immediately provides feedback from which remote it failed to retrieve, and what was that particular URL.
+
+
+refs in DataLad issues:
+
+- from web remote: ["download failed: Not Found"](https://github.com/datalad/datalad/pull/5936)
+- from ["failed to retrieve content from remote"](https://github.com/datalad/datalad/issues/5750)
