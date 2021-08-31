@@ -1,0 +1,40 @@
+### Please describe the problem.
+
+Since cron build of 20210828
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex/builds/2021/08[master]git
+$> git grep -l 'Unable to remove all write permissions'
+cron-20210828/build-macos.yaml-403-69466103-failed/2_test-annex (crippled-tmp).txt
+cron-20210828/build-macos.yaml-403-69466103-failed/test-annex (crippled-tmp)/8_Run tests.txt
+cron-20210829/build-macos.yaml-404-69466103-failed/2_test-annex (crippled-tmp).txt
+cron-20210829/build-macos.yaml-404-69466103-failed/test-annex (crippled-tmp)/8_Run tests.txt
+cron-20210830/build-macos.yaml-405-69466103-failed/2_test-annex (crippled-tmp).txt
+cron-20210830/build-macos.yaml-405-69466103-failed/test-annex (crippled-tmp)/8_Run tests.txt
+cron-20210831/build-macos.yaml-406-69466103-failed/2_test-annex (crippled-tmp).txt
+cron-20210831/build-macos.yaml-406-69466103-failed/test-annex (crippled-tmp)/8_Run tests.txt
+```
+
+we got two test fails on a crippled FS on Mac (does not happen on linux afaik)
+
+[example CI log](https://github.com/datalad/git-annex/runs/3468283573?check_suite_focus=true)
+
+Both look like
+
+```
+2021-08-31T02:15:42.0758760Z     magic:                                                OK (2.41s)
+2021-08-31T02:15:42.6972710Z     import:                                               FAIL (0.62s)
+2021-08-31T02:15:42.6973680Z       ./Test/Framework.hs:57:
+2021-08-31T02:15:42.6974230Z       import failed (transcript follows)
+2021-08-31T02:15:42.6974760Z       import import1/f
+2021-08-31T02:15:42.6976570Z         Unable to remove all write permissions from /Volumes/crippledfs/importtestvjfjz3/import1/f -- perhaps it has an xattr or ACL set.
+2021-08-31T02:15:42.6977430Z       failed
+2021-08-31T02:15:42.6977830Z       import: 1 failed
+2021-08-31T02:15:44.1985050Z     reinject:                                             OK (1.50s)
+```
+
+[here is the script](https://github.com/datalad/git-annex/blob/master/.github/workflows/tools/setup_crippledfs#L24) to setup such a crippled (FAT32) FS on OSX.
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
