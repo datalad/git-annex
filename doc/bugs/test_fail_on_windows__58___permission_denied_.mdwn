@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+In the recent build of datalad/git-annex (8.20210803+git167-g608593fec) a test failed on Windows
+
+[CI log](https://github.com/datalad/git-annex/runs/3468868101?check_suite_focus=true)
+
+```
+    readonly:                                             FAIL (7.55s)
+      .\\Test\\Framework.hs:57:
+      drop vs readonly repo failed (transcript follows)
+      drop foo 
+      failed
+      git-annex: .git\annex\objects\6cd\e82\SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77\SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77: DeleteFile "\\\\?\\C:\\Users\\runneradmin\\.t\\tmprepo3\\.git\\annex\\objects\\6cd\\e82\\SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77\\SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77": permission denied (Access is denied.)
+      drop: 1 failed
+    ignore deleted files:                                 OK (2.51s)
+```
+
+
+this is the first and only occurrence so far according to
+
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex/builds/2021/08[master]
+$> git grep 'permission denied (Access is denied.)'
+cron-20210831/build-windows.yaml-369-69466103-failed/1_test-annex.txt:2021-08-31T03:47:09.0093593Z ...
+``` 
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
