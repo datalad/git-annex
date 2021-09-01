@@ -431,6 +431,7 @@ test_add_extras = intmpclonerepo $ do
 
 test_readonly :: Assertion
 test_readonly =
+#ifndef mingw32_HOST_OS
 	withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 -> do
 			pair r1 r2
@@ -445,6 +446,11 @@ test_readonly =
 				git_annex "get" [annexedfile, "--from", "r1"] "get from readonly repo"
 				git "remote" ["rm", "origin"] "remote rm"
 				git_annex "drop" [annexedfile] "drop vs readonly repo"
+#else
+	-- This test does not work on Windows, and it doesn't make sense to
+	-- try to support this on Windows anyway.
+	return ()
+#endif
 
 test_ignore_deleted_files :: Assertion
 test_ignore_deleted_files = intmpclonerepo $ do
