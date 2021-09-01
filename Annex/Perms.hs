@@ -17,6 +17,7 @@ module Annex.Perms (
 	freezeContent,
 	freezeContent',
 	checkContentWritePerm,
+	checkContentWritePerm',
 	thawContent,
 	thawContent',
 	createContentDir,
@@ -165,16 +166,18 @@ freezeContent' sr file = do
 checkContentWritePerm :: RawFilePath -> Annex (Maybe Bool)
 checkContentWritePerm file = ifM crippledFileSystem
 	( return (Just True)
-	, withShared go
+	, withShared (\sr -> liftIO (checkContentWritePerm' sr file))
 	)
-  where
-	go GroupShared = want sharedret 
-		(includemodes [ownerWriteMode, groupWriteMode])
-	go AllShared = want sharedret (includemodes writeModes)
-	go _ = want Just (excludemodes writeModes)
 
-	want mk f =
-		liftIO (catchMaybeIO $ fileMode <$> R.getFileStatus file) >>= return . \case
+checkContentWritePerm' :: SharedRepository -> RawFilePath -> IO (Maybe Bool)
+checkContentWritePerm' sr file = case sr of
+	GroupShared -> want sharedret
+		(includemodes [ownerWriteMode, groupWriteMode])
+	AllShared -> want sharedret (includemodes writeModes)
+	_ -> want Just (excludemodes writeModes)
+  where
+	want mk f = catchMaybeIO (fileMode <$> R.getFileStatus file)
+		>>= return . \case
 			Just havemode -> mk (f havemode)
 			Nothing -> mk True
 	

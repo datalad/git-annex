@@ -258,7 +258,7 @@ probeCrippledFileSystem'
 	-> Maybe (RawFilePath -> m ())
 	-> m (Bool, [String])
 #ifdef mingw32_HOST_OS
-probeCrippledFileSystem' _ _ _ = return (True, [])
+probeCrippledFileSystem' _ _ _ _ = return (True, [])
 #else
 probeCrippledFileSystem' tmp freezecontent thawcontent = do
 	let f = tmp P.</> "gaprobe"
@@ -275,18 +275,22 @@ probeCrippledFileSystem' tmp freezecontent thawcontent = do
 		liftIO $ createSymbolicLink f f2
 		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f2)
 		(fromMaybe (liftIO . preventWrite) freezecontent) (toRawFilePath f)
-		-- Should be unable to write to the file, unless
-		-- running as root, but some crippled
-		-- filesystems ignore write bit removals.
-		liftIO $ ifM ((== 0) <$> getRealUserID)
-			( return (False, [])
-			, do
-				r <- catchBoolIO $ do
-					writeFile f "2"
-					return True
-				if r
-					then return (True, ["Filesystem allows writing to files whose write bit is not set."])
-					else return (False, [])
+		-- Should be unable to write to the file (unless
+		-- running as root). But some crippled
+		-- filesystems ignore write bit removals or ignore
+		-- permissions entirely.
+		ifM ((== Just False) <$> liftIO (checkContentWritePerm' UnShared (toRawFilePath f)))
+			( return (True, ["Filesystem does not allow removing write bit from files."])
+			, liftIO $ ifM ((== 0) <$> getRealUserID)
+				( return (False, [])
+				, do
+					r <- catchBoolIO $ do
+						writeFile f "2"
+						return True
+					if r
+						then return (True, ["Filesystem allows writing to files whose write bit is not set."])
+						else return (False, [])
+				)
 			)
 #endif
 
