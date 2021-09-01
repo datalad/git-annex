@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 10"
+ date="2021-09-01T18:05:26Z"
+ content="""
+That issue I encountered using [reproducer](https://git.kitenet.net/index.cgi/git-annex.git/tree/doc/bugs/unable_to_get_content_via_ssh_without_write_perms/comment_5_9e4b82d27ddbb42d74f10a85635590e7._comment) (without ssh; sorry for broken markdown formatting, but can't edit a comment) still reproduces locally (no NFS) using originally reported 8.20210803+git133-ga7cf5abf3 if I reinstall that version, but it does not reproduce using recent 8.20210803+git167-g608593fec , so I guess it was addressed too.
+"""]]
