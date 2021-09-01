@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2021-09-01T16:22:22Z"
+ content="""
+> Is the test suite running as root? Looks like probably yes. 
+
+FWIW, it is a `runner` user  [ref](https://github.com/datalad/git-annex/pull/76/checks?check_run_id=3486443350#step:8:1) (did in a temp [PR](https://github.com/datalad/git-annex/pull/76)) who is not `root` but is part of the `admin` group thus with super privileges indeed (that is why I guess we can also use `hdiutil` directly to mount that crippled FS).
+"""]]
