@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-09-01T15:42:35Z"
+ content="""
+The user does not need to do anything, I have reproduced and fixed their
+problem.
+
+You reported a *different* error message when you tried to reproduce it
+yourself. That is the only thing i do not understand, and why I have,
+repeatedly, been trying to ask you to reproduce that error message again.
+"""]]
