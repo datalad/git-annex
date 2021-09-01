@@ -632,18 +632,20 @@ saveState nocommit = doSideAction $ do
 			Annex.Branch.commit =<< Annex.Branch.commitMessage
 
 {- Downloads content from any of a list of urls, displaying a progress
- - meter. -}
-downloadUrl :: Key -> MeterUpdate -> Maybe IncrementalVerifier -> [Url.URLString] -> FilePath -> Url.UrlOptions -> Annex Bool
-downloadUrl k p iv urls file uo = 
+ - meter.
+ -
+ - Only displays error message if all the urls fail to download.
+ - When listfailedurls is set, lists each url and why it failed.
+ - Otherwise, only displays one error message, from one of the urls
+ - that failed.
+ -}
+downloadUrl :: Bool -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> [Url.URLString] -> FilePath -> Url.UrlOptions -> Annex Bool
+downloadUrl listfailedurls k p iv urls file uo = 
 	-- Poll the file to handle configurations where an external
 	-- download command is used.
-	meteredFile file (Just p) k (go urls Nothing)
+	meteredFile file (Just p) k (go urls [])
   where
-  	-- Display only one error message, if all the urls fail to
-	-- download.
-	go [] (Just err) = warning err >> return False
-	go [] Nothing = return False
-	go (u:us) _ = Url.download' p iv u file uo >>= \case
+	go (u:us) errs = Url.download' p iv u file uo >>= \case
 		Right () -> return True
 		Left err -> do
 			-- If the incremental verifier was fed anything
@@ -655,7 +657,14 @@ downloadUrl k p iv urls file uo =
 					Just n | n > 0 -> unableIncremental iv'
 					_ -> noop
 				Nothing -> noop
-			go us (Just err)
+			go us ((u, err) : errs)
+	go [] [] = return False
+	go [] errs@((_, err):_) = do
+		if listfailedurls
+			then warning $ unlines $ flip map errs $ \(u, err') ->
+				u ++ " " ++ err'
+			else warning err
+		return False
 
 {- Copies a key's content, when present, to a temp file.
  - This is used to speed up some rsyncs. -}

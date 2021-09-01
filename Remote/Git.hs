@@ -543,7 +543,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 		iv <- startVerifyKeyContentIncrementally vc key
 		gc <- Annex.getGitConfig
 		ok <- Url.withUrlOptionsPromptingCreds $
-			Annex.Content.downloadUrl key meterupdate iv (keyUrls gc repo r key) dest
+			Annex.Content.downloadUrl False key meterupdate iv (keyUrls gc repo r key) dest
 		unless ok $
 			giveup "failed to download content"
 		snd <$> finishVerifyKeyContentIncrementally iv

@@ -86,26 +86,30 @@ downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig 
 downloadKey key _af dest p vc = go =<< getWebUrls key
   where
 	go [] = giveup "no known url"
-	go urls = getM dl urls >>= \case
+	go urls = dl (partition (not . isyoutube) (map getDownloader urls)) >>= \case
 		Just v -> return v
-		Nothing -> giveup "download failed"
+		Nothing -> giveup $ unwords
+			[ "downloading from all"
+			, show (length urls)
+			, "known url(s) failed"
+			]
 
-	dl u = do
-		let (u', downloader) = getDownloader u
-		case downloader of
-			YoutubeDownloader ->
-				ifM (youtubeDlTo key u' dest p)
-					( return (Just UnVerified)
-					, return Nothing
-					)
-			_ -> do
-				iv <- startVerifyKeyContentIncrementally vc key
-				ifM (Url.withUrlOptions $ downloadUrl key p iv [u'] dest)
-					( finishVerifyKeyContentIncrementally iv >>= \case
-						(True, v) -> return (Just v)
-						(False, _) -> return Nothing
-					, return Nothing
-					)
+	dl ([], ytus) = flip getM (map fst ytus) $ \u ->
+		ifM (youtubeDlTo key u dest p)
+			( return (Just UnVerified)
+			, return Nothing
+			)
+	dl (us, ytus) = do
+		iv <- startVerifyKeyContentIncrementally vc key
+		ifM (Url.withUrlOptions $ downloadUrl True key p iv (map fst us) dest)
+			( finishVerifyKeyContentIncrementally iv >>= \case
+				(True, v) -> return (Just v)
+				(False, _) -> dl ([], ytus)
+			, dl ([], ytus)
+			)
+
+	isyoutube (_, YoutubeDownloader) = True
+	isyoutube _ = False
 
 uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 uploadKey _ _ _ = giveup "upload to web not supported"

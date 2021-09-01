@@ -26,6 +26,10 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
     a file's content, and fail with an informative message.
   * Fix support for readonly git remotes.
     (Reversion in version 8.20210621)
+  * When downloading urls fail, explain which urls failed for which
+    reasons.
+  * web: Avoid displaying a warning when downloading one url failed
+    but another url later succeeded.
 
  -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
 

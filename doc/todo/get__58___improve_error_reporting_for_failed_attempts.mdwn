@@ -41,3 +41,15 @@ refs in DataLad issues:
 
 - from web remote: ["download failed: Not Found"](https://github.com/datalad/datalad/pull/5936)
 - from ["failed to retrieve content from remote"](https://github.com/datalad/datalad/issues/5750)
+
+> I think this is specific to downloading urls, although it can happen
+> for a few remotes (web, external). There's really no reason to display
+> a download failed message if it successfully downloads a later url.
+> (After all, if it had tried the working url first, it would never display
+> anything about the broken url.)
+> 
+> When all urls fail, it makes sense to display each url and why it failed
+> when using the web (or external) remote, so the user can decide what to
+> do about each of the problems.
+> 
+> [[done]] --[[Joey]] 

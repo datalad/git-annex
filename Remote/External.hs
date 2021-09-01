@@ -810,7 +810,7 @@ checkUrlM external url =
 retrieveUrl :: Retriever
 retrieveUrl = fileRetriever' $ \f k p iv -> do
 	us <- getWebUrls k
-	unlessM (withUrlOptions $ downloadUrl k p iv us (fromRawFilePath f)) $
+	unlessM (withUrlOptions $ downloadUrl True k p iv us (fromRawFilePath f)) $
 		giveup "failed to download content"
 
 checkKeyUrl :: CheckPresent
