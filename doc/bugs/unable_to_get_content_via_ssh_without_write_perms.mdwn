@@ -72,3 +72,5 @@ create a git-annex repo owned by another user, provide permissions for others to
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

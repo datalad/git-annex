@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-09-01T14:32:11Z"
+ content="""
+I'm going to close this, since I was able to replicate and fix one of the
+errors, and was not able to replicate the other one. If the other one
+still happens, follow up with the output of the current version of
+git-annex, as I've requested 3 times now.
+
+There is a test case now that tests the same thing, too. It has passed
+on all the builders. (Except windows. I've learned git-annex cannot support
+readonly repos on Windows, because it has to be able to create lock files
+there.)
+
+(There are still situations where git-annex needs to write to a repo in order to
+use it. The main one is if the it needs to upgrade the repo. I think
+failing in that specific situation is ok, and it fails with an informative
+error message IIRC. It's also possible there's some other situation of some
+kind where the readonly repo is in a state where git-annex wants to write
+to it, but if there is, I can fix it when the situation comes to light.)
+"""]]
