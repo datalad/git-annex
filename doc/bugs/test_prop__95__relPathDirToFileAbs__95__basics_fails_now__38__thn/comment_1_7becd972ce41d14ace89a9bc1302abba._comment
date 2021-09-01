@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-09-01T14:54:56Z"
+ content="""
+Reproduced on Linux using System.FilePath.Windows.
+
+Minimal case is:
+
+	ghci> let p = "\\\\\DLEJ\STXm{u5;4*\EOTKo1"
+	ghci> relPathDirToFileAbs (p </> "bar") p
+	"\\\\\DLEJ\STXm{u5;4*\EOTKo1"
+
+Which should be "bar", but the "normdrive" case in
+relPathDirToFileAbs causes it to not return that.
+
+Ah, that whole value is treated as a "drive letter" due to starting
+with "\\\\" and not containing any path separator.
+
+	ghci> takeDrive p
+	"\\\\\DLEJ\STXm{u5;4*\EOTKo1"
+
+And takeDrive includes the first path separator, which is present in one
+string and not in another. So, it thinks these paths are on
+two different drives, when they are not. And that's the root
+of the problem. normdrive was working around that by taking up until 
+the ':', but there *is* no ':' in this drive letter!
+"""]]

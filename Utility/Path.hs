@@ -187,7 +187,13 @@ relPathDirToFileAbs from to
 	dotdots = replicate (length pfrom - numcommon) ".."
 	numcommon = length common
 #ifdef mingw32_HOST_OS
-	normdrive = map toLower . takeWhile (/= ':') . fromRawFilePath . takeDrive
+	normdrive = map toLower
+		-- Get just the drive letter, removing any leading
+		-- path separator, which takeDrive leaves on the drive
+		-- letter.
+		. dropWhileEnd (isPathSeparator . fromIntegral . ord)
+		. fromRawFilePath 
+		. takeDrive
 #endif
 
 {- Checks if a command is available in PATH.

@@ -49,3 +49,5 @@ Windows version 21H1 (build 19043.1165), 64 bit.
 Git Annex is great. It works with multi-gigabyte backup files (largest around 180GB) via the BLAKE2B160E backend just dandy :)
 
 [[!meta author=jkniiv]]
+
+> [[fixed|done]] --[[Joey]]
