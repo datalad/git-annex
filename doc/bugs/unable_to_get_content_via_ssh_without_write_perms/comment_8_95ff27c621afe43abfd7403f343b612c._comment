@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="clarification"
+ date="2021-09-01T15:39:06Z"
+ content="""
+FWIW, as I have mentioned, the original issue is reported by a user and I have no access to reproduce \"exactly\" myself.  I am still waiting on user to report success/failure while trying with the [8.20210803-165-g249d424b8](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=8.20210803+git165-g249d424b8) \"up-to-date-back-then\" standalone build on the remote ssh server side.  If still fails, I will build even newer standalone and ask to try again.  Great to hear there is a test case now -- thank you!
+"""]]
