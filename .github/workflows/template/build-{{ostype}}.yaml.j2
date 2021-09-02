@@ -381,15 +381,19 @@ jobs:
           fi
 
           case "${{ matrix.flavor }}" in
+            # For git-annex it causes only few temporary directories to be on the crippled FS,
+            # while the main ones produced by git annex test  reside in CWD, for which we use
+            # $HOME
             crippled-tmp)
-              # forces all test repos/paths into the VFAT FS
               export TMPDIR="$CRIPPLEDFS_PATH"
-              ;;
-            crippled-home)
-              export HOME="$CRIPPLEDFS_PATH"
               ;;
             nfs-tmp)
               export TMPDIR=/tmp/nfsmount
+              ;;
+            # Also used as CWD where running the tests, so in effect tests annex operating
+            # on those file systems
+            crippled-home)
+              export HOME="$CRIPPLEDFS_PATH"
               ;;
             nfs-home)
               export HOME=/tmp/nfsmount
