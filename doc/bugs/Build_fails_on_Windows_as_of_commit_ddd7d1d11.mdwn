@@ -2,3 +2,5 @@ As of commit ddd7d1d11, trying to build git-annex on Windows fails due to a func
 
 [[!meta author=jwodder]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
