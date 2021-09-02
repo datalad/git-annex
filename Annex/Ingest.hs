@@ -9,6 +9,7 @@ module Annex.Ingest (
 	LockedDown(..),
 	LockDownConfig(..),
 	lockDown,
+	checkLockedDownWritePerms,
 	ingestAdd,
 	ingestAdd',
 	ingest,
@@ -61,7 +62,9 @@ data LockDownConfig = LockDownConfig
 	{ lockingFile :: Bool
 	-- ^ write bit removed during lock down
 	, hardlinkFileTmpDir :: Maybe RawFilePath
-	-- ^ hard link to temp directory
+	-- ^ hard link to temp directorya
+	, checkWritePerms :: Bool
+	-- ^ check that write perms are successfully removed
 	}
 	deriving (Show)
 
@@ -79,7 +82,7 @@ data LockDownConfig = LockDownConfig
  - Lockdown can fail if a file gets deleted, or if it's unable to remove
  - write permissions, and Nothing will be returned.
  -}
-lockDown :: LockDownConfig -> FilePath -> Annex (Maybe LockedDown)
+lockDown :: LockDownConfig-> FilePath -> Annex (Maybe LockedDown)
 lockDown cfg file = either 
 		(\e -> warning (show e) >> return Nothing)
 		(return . Just)
@@ -128,13 +131,17 @@ lockDown' cfg file = tryNonAsync $ ifM crippledFileSystem
 		
 	setperms = when (lockingFile cfg) $ do
 		freezeContent file'
-		checkContentWritePerm file' >>= \case
-			Just False -> giveup $ unwords
-				[ "Unable to remove all write permissions from"
-				, file
-				, "-- perhaps it has an xattr or ACL set."
-				]
-			_ -> return ()
+		when (checkWritePerms cfg) $
+			maybe noop giveup =<< checkLockedDownWritePerms file' file'
+
+checkLockedDownWritePerms :: RawFilePath -> RawFilePath -> Annex (Maybe String)
+checkLockedDownWritePerms file displayfile = checkContentWritePerm file >>= return . \case
+	Just False -> Just $ unwords
+		[ "Unable to remove all write permissions from"
+		, fromRawFilePath displayfile
+		, "-- perhaps it has an xattr or ACL set."
+		]
+	_ -> Nothing
 
 {- Ingests a locked down file into the annex. Updates the work tree and
  - index. -}

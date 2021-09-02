@@ -22,8 +22,9 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
   * Run cp -a with --no-preserve=xattr, to avoid problems with copied
     xattrs, including them breaking permissions setting on some NFS
     servers.
-  * add: Detect when xattrs or perhaps ACLs prevent locking down
-    a file's content, and fail with an informative message.
+  * add, import: Detect when xattrs or perhaps ACLs prevent removing
+    write permissions from an annexed file, and fail with an informative
+    message.
   * Fix support for readonly git remotes.
     (Reversion in version 8.20210621)
   * When downloading urls fail, explain which urls failed for which

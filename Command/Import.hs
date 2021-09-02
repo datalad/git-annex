@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -200,13 +200,31 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		-- Move or copy the src file to the dest file.
 		-- The dest file is what will be ingested.
 		createWorkTreeDirectory (parentDir destfile)
-		liftIO $ if mode == Duplicate || mode == SkipDuplicates
-			then void $ copyFileExternal CopyAllMetaData 
-				(fromRawFilePath srcfile)
-				(fromRawFilePath destfile)
-			else moveFile 
-				(fromRawFilePath srcfile)
-				(fromRawFilePath destfile)
+		unwind <- liftIO $ if mode == Duplicate || mode == SkipDuplicates
+			then do
+				void $ copyFileExternal CopyAllMetaData 
+					(fromRawFilePath srcfile)
+					(fromRawFilePath destfile)
+				return $ removeWhenExistsWith R.removeLink destfile
+			else do
+				moveFile 
+					(fromRawFilePath srcfile)
+					(fromRawFilePath destfile)
+				return $ moveFile
+					(fromRawFilePath destfile)
+					(fromRawFilePath srcfile)
+		-- Make sure that the dest file has its write permissions
+		-- removed; the src file normally already did, but may
+		-- have imported it from a filesystem that does not allow
+		-- removing write permissions, to a repo on a filesystem
+		-- that does.
+		when (lockingFile (lockDownConfig ld)) $ do
+			freezeContent destfile
+			checkLockedDownWritePerms destfile srcfile >>= \case
+				Just err -> do
+					liftIO unwind
+					giveup err
+				Nothing -> noop
 		-- Get the inode cache of the dest file. It should be
 		-- weakly the same as the originally locked down file's
 		-- inode cache. (Since the file may have been copied,
@@ -249,6 +267,12 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		let cfg = LockDownConfig
 			{ lockingFile = lockingfile
 			, hardlinkFileTmpDir = Nothing
+			-- The write perms of the file may not be able to be
+			-- removed, if it's being imported from a crippled
+			-- filesystem. So lockDown is asked to not check
+			-- the write perms. They will be checked later, after
+			-- the file gets copied into the repository.
+			, checkWritePerms = False
 			}
 		v <- lockDown cfg (fromRawFilePath srcfile)
 		case v of

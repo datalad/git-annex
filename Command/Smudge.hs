@@ -160,6 +160,7 @@ clean file = do
 	cfg = LockDownConfig
 		{ lockingFile = False
 		, hardlinkFileTmpDir = Nothing
+		, checkWritePerms = True
 		}
 
 	-- git diff can run the clean filter on files outside the

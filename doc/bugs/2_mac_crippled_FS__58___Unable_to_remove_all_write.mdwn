@@ -38,3 +38,5 @@ Both look like
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] (provisionally, waiting on test run) --[[Joey]]

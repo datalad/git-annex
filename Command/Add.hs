@@ -188,6 +188,7 @@ perform o file addunlockedmatcher = withOtherTmp $ \tmpdir -> do
 	let cfg = LockDownConfig
 		{ lockingFile = lockingfile
 		, hardlinkFileTmpDir = Just tmpdir
+		, checkWritePerms = True
 		}
 	ld <- lockDown cfg (fromRawFilePath file)
 	let sizer = keySource <$> ld

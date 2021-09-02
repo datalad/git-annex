@@ -265,6 +265,7 @@ handleAdds lockdowndir havelsof largefilematcher delayadd cs = returnWhen (null 
 	let lockdownconfig = LockDownConfig
 		{ lockingFile = False
 		, hardlinkFileTmpDir = Just (toRawFilePath lockdowndir)
+		, checkWritePerms = True
 		}
 	(postponed, toadd) <- partitionEithers
 		<$> safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess
@@ -310,6 +311,7 @@ handleAdds lockdowndir havelsof largefilematcher delayadd cs = returnWhen (null 
 		let cfg = LockDownConfig
 			{ lockingFile = False
 			, hardlinkFileTmpDir = Just (toRawFilePath lockdowndir)
+			, checkWritePerms = True
 			}
 		if M.null m
 			then forM toadd (addannexed' cfg)
