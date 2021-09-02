@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-09-02T16:26:14Z"
+ content="""
+My prior analysis seems right, as far as it running as root would go, but it is
+not running as root. So I missed something.
+
+The test failures are both of `git-annex import`.
+Otherwise locking down files does succeed. The difference with import
+must be that the file located in a directory outside the repository.
+
+Aha... The test suite is being run with TEMPDIR set to the crippled FS,
+but `.t` is in another, non-crippled FS. A very smart idea to test that,
+although I think this import test is the only one that actually uses
+TEMPDIR. (Reading the workflow file, I think it was maybe expected that
+all the tests would run in TEMPDIR, but they don't; `git-annex test`
+writes to `./.t`, other than this one test.
+
+When the import directory is on a crippled FS, and the repo
+is not, it will think the FS is not crippled. Then it fails
+to remove write perms from the file while it is in the import
+directory, and the perm check then fails.
+
+So, I think it should skip the perm check when doing the initial lockdown
+of the file it's going to import.
+"""]]
