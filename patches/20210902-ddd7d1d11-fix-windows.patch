@@ -1,0 +1,13 @@
+diff --git a/Annex/Init.hs b/Annex/Init.hs
+index 30c4f9753..1193e0b24 100644
+--- a/Annex/Init.hs
++++ b/Annex/Init.hs
+@@ -258,7 +258,7 @@ probeCrippledFileSystem'
+ 	-> Maybe (RawFilePath -> m ())
+ 	-> m (Bool, [String])
+ #ifdef mingw32_HOST_OS
+-probeCrippledFileSystem' _ _ _ _ = return (True, [])
++probeCrippledFileSystem' _ _ _ = return (True, [])
+ #else
+ probeCrippledFileSystem' tmp freezecontent thawcontent = do
+ 	let f = tmp P.</> "gaprobe"
