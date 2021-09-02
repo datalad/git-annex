@@ -85,3 +85,5 @@ This then compiled cleanly and completed the test suite ok.
 Git Annex is great. It works quite nicely with my multi-gigabyte backup files (largest around 180GB) via the BLAKE2B160E backend :)
 
 [[!meta author=jkniiv]]
+
+> Thank you! [[done]] --[[Joey]]

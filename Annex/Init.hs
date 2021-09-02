@@ -258,7 +258,7 @@ probeCrippledFileSystem'
 	-> Maybe (RawFilePath -> m ())
 	-> m (Bool, [String])
 #ifdef mingw32_HOST_OS
-probeCrippledFileSystem' _ _ _ _ = return (True, [])
+probeCrippledFileSystem' _ _ _ = return (True, [])
 #else
 probeCrippledFileSystem' tmp freezecontent thawcontent = do
 	let f = tmp P.</> "gaprobe"
