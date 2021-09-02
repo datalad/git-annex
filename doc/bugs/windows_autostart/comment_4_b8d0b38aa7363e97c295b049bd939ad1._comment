@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="scy"
+ avatar="http://cdn.libravatar.org/avatar/f5a8df59fb198cf762f77aa239193e20"
+ subject="comment 4"
+ date="2021-09-02T08:17:02Z"
+ content="""
+I’ve also encountered this problem. Found it weird that git-annex on Windows (according to the installation manual) requires Git for Windows to be installed and then defaults to installing itself into the same directory (`C:\Program Files\Git`). Is this required? Won’t this cause problems when Git for Windows updates? That’s why I installed it to `C:\Program Files\git-annex`, but yeah, the link that gets put into `Startup` apparently doesn’t take the real installation directory into account and just uses a hard-coded path…?
+"""]]
