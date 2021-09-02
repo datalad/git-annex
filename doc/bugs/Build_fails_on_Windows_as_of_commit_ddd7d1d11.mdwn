@@ -1,0 +1,4 @@
+As of commit ddd7d1d11, trying to build git-annex on Windows fails due to a function being defined with too many arguments.  [This patch](https://raw.githubusercontent.com/datalad/git-annex/master/patches/20210902-ddd7d1d11-fix-windows.patch) fixes it.
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]
