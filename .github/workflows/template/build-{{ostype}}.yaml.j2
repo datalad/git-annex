@@ -406,7 +406,10 @@ jobs:
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
 
-          cd $HOME
+          # git annex uses CWD for nearly all the temporary paths
+          # so to end up testing crippled FS we better cd to them,
+          # or otherwise - use "conventional" TMPDIR if defined
+          cd "${TMPDIR:-.}"
           export | grep -e crippledfs || :
 
           timeout 1800 git annex test
