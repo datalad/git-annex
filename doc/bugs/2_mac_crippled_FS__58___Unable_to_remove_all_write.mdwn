@@ -38,6 +38,3 @@ Both look like
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
-
-> [[fixed|done]] (provisionally; can't test running git-annex as root on
-> OSX) --[[Joey]]
