@@ -1,4 +1,4 @@
-git-annex (8.20210804) UNRELEASED; urgency=medium
+git-annex (8.20210903) upstream; urgency=medium
 
   * Deal with clock skew, both forwards and backwards, when logging
     information to the git-annex branch.
@@ -32,7 +32,7 @@ git-annex (8.20210804) UNRELEASED; urgency=medium
   * web: Avoid displaying a warning when downloading one url failed
     but another url later succeeded.
 
- -- Joey Hess <id@joeyh.name>  Tue, 03 Aug 2021 12:22:45 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 03 Sep 2021 12:00:46 -0400
 
 git-annex (8.20210803) upstream; urgency=medium
 
