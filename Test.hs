@@ -378,6 +378,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "directory remote" test_directory_remote
 	, testCase "rsync remote" test_rsync_remote
 	, testCase "bup remote" test_bup_remote
+	, testCase "borg remote" test_borg_remote
 	, testCase "crypto" test_crypto
 	, testCase "preferred content" test_preferred_content
 	, testCase "required_content" test_required_content
@@ -1783,6 +1784,33 @@ test_bup_remote = intmpclonerepo $ when BuildInfo.bup $ do
 	annexed_present annexedfile
 	git_annex "move" [annexedfile, "--from", "foo"] "move --from bup remote"
 	annexed_present annexedfile
+
+test_borg_remote :: Assertion
+test_borg_remote = when BuildInfo.borg $ do
+	borgdirparent <- fromRawFilePath <$> (absPath . toRawFilePath =<< tmprepodir)
+	let borgdir = borgdirparent </> "borgrepo"
+	intmpclonerepo $ do
+		testProcess "borg" ["init", borgdir, "-e", "none"] (== True) "borg init"
+		testProcess "borg" ["create", borgdir++"::backup1", "."] (== True) "borg create"
+
+		git_annex "initremote" (words $ "borg type=borg borgrepo="++borgdir) "initremote"
+		git_annex "sync" ["borg"] "sync borg"
+		git_annex_expectoutput "find" ["--in=borg"] []
+
+		git_annex "get" [annexedfile] "get of file"
+		annexed_present annexedfile
+		git_annex_expectoutput "find" ["--in=borg"] []
+		
+		testProcess "borg" ["create", borgdir++"::backup2", "."] (== True) "borg create"
+		git_annex "sync" ["borg"] "sync borg after getting file"
+		git_annex_expectoutput "find" ["--in=borg"] [annexedfile]
+
+		git "remote" ["rm", "origin"] "remote rm"
+		git_annex_shouldfail "drop" [annexedfile]
+			"drop from borg succeeded, but it should be untrusted by default"
+		git_annex "enableremote" ["borg", "appendonly=yes"] "enableremote appendonly"		
+		git_annex "drop" [annexedfile] "drop from borg (appendonly)"
+		git_annex "get" [annexedfile, "--from=borg"] "get from borg"
 
 -- gpg is not a build dependency, so only test when it's available
 test_crypto :: Assertion

@@ -30,6 +30,7 @@ tests =
 	, TestCase "rsync" $ testCmd "rsync" "rsync --version >/dev/null"
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
+	, TestCase "borg" $ testCmd "borg" "borg --version >/dev/null"
 	, TestCase "nice" $ testCmd "nice" "nice true >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
 	, TestCase "nocache" $ testCmd "nocache" "nocache true >/dev/null"
