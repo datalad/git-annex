@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-09-03T16:07:53Z"
+ content="""
+I see no reason for it to need to preserve xattrs or ACLs.
+I've changed it to disable extracting those.
+"""]]

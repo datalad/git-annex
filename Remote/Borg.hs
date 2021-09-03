@@ -360,6 +360,15 @@ retrieveExportWithContentIdentifierM borgrepo loc _ dest mkk _ = do
 		absborgrepo <- absBorgRepo borgrepo
 		let p = proc "borg" $ toCommand
 			[ Param "extract"
+			-- git-annex object files do not need any
+			-- xattrs or ACLs, and trying to extract
+			-- any that are set from the backup can lead
+			-- to problems when doing a retrieve from a
+			-- different OS than the one where the backup was
+			-- made.
+			, Param "--noxattrs"
+			, Param "--noacls"
+			, Param "--nobsdflags"
 			, Param (borgArchive absborgrepo archivename)
 			, File (fromRawFilePath archivefile)
 			]

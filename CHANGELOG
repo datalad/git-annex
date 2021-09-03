@@ -1,3 +1,10 @@
+git-annex (8.20210904) UNRELEASED; urgency=medium
+
+  * borg: Avoid trying to extract xattrs, ACLS, and bsdflags when
+    retrieving from a borg repository.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 03 Sep 2021 12:02:55 -0400
+
 git-annex (8.20210903) upstream; urgency=medium
 
   * Deal with clock skew, both forwards and backwards, when logging
