@@ -1,0 +1,36 @@
+name: List releases with gh
+
+on:
+  pull_request:
+  push:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  run:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-2016
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: List releases
+        run: gh release list > releases-${{ matrix.os }}.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload file
+        uses: actions/upload-artifact@v2
+        with:
+          name: releases-${{ matrix.os }}
+          path: releases-${{ matrix.os }}.txt
