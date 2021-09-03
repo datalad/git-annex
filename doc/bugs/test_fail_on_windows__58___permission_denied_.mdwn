@@ -28,3 +28,5 @@ cron-20210831/build-windows.yaml-369-69466103-failed/1_test-annex.txt:2021-08-31
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] in [[!commit afdca0aff43747ce985a4caf655e8b3363dea370]] --[[Joey]]
