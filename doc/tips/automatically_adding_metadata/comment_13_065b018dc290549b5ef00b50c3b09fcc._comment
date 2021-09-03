@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Automatically adding metadata can be very slow"""
+ date="2021-09-03T15:36:08Z"
+ content="""
+You could add a config to the script that skips over files larger than a
+certian size.
+
+Or for that matter, the script could be adapted to filter the files
+to only include images/videos, using eg:
+
+	git annex find --mimetype='image/*' --or --mimetype='video/*'
+
+Should be a fairly easy change, patches accepted.
+"""]]
