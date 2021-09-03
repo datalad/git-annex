@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="aurelf"
+ avatar="http://cdn.libravatar.org/avatar/99aa02fcf7f5a1453b1e2528f2f543ac"
+ subject="Automatically adding metadata can be very slow "
+ date="2021-09-03T12:46:06Z"
+ content="""
+Running extract on very large files (system backups) can be too long (killed it after running several hours). 
+In general `extract` seem slow on tar.gz archives. 
+
+I added `timeout 100s` before the tool is called in the pre commit script:
+
+`LC_ALL=C timeout 100s $tool_exec \"./$f\" | ...`
+
+This allows to have the commit to complete in reasonable time, probably loosing some metadata.
+"""]]
