@@ -1,0 +1,58 @@
+### Please describe the problem.
+
+After upgrading Debian Buster to Bullseye (and thus git-annex to 8.20210223-2), two sync `git annex sync --content` jobs have started failing.
+
+One is to an encrypted remote:
+
+    sending incremental file list
+    54c/e47/
+    54c/e47/GPGHMACSHA1--REDACTED/
+    54c/e47/GPGHMACSHA1--REDACTED/GPGHMACSHA1--REDACTED
+    
+             32,768   8%    0.00kB/s    0:00:00
+            375,589 100%  326.94MB/s    0:00:00 (xfr#1, to-chk=0/5)
+    
+    failed
+      content changed while it was being sent
+      content changed while it was being sent
+    git-annex: sync: 1 failed
+
+The content hasn't changed as far as I know.
+
+Another is to another local filesystem (from ext4 to ext4):
+
+```
+  failed to send content to remote                                                                                                                                                            
+  failed to send content to remote                                                                                                                                                            
+  failed to send content to remote                                                                                                                                                            
+To /path/to/remote                                                                                                                                                                  
+   XXXXXXXXX..XXXXXXXXX  git-annex -> synced/git-annex                                                                                                                                        
+   XXXXXXXXX..XXXXXXXXX  master -> synced/master                                                                                                                                              
+git-annex: sync: 884 failed        
+```
+
+In the latter case, `--debug` prints two ExitFailures:
+
+```
+[2021-09-04 13:21:26.943294346] process [2934668] read: cp ["--reflink=always","--preserve=timestamps",".git/annex/objects/gM/mZ/SHA256E-REDACTED.pdf/SHA256E-REDACTED.pdf","/path/to/remote/.git/annex/tmp/SHA256E-REDACTED.pdf"]                                                                                                                                           
+[2021-09-04 13:21:26.944187444] process [2934668] done ExitFailure 1
+<clip>
+2021-09-04 13:21:52.79239764] process [2936730] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","remote","master"]                                                  
+[2021-09-04 13:21:52.808201959] process [2936730] done ExitFailure 1
+```
+
+Manually running that cp command fails with "Permission denied", because the tmp file now exists and has 444 permissions.
+
+### What steps will reproduce the problem?
+
+I haven't tried to reproduce this from a clean repository, but it happens 100 % of the time.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 8.20210223-2 on Debian 11/Bullseye.
+
+### Please provide any additional information below.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+These sync worked fine before upgrade.
