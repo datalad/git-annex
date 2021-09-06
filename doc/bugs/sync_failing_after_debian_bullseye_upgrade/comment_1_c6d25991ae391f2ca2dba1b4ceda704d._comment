@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-09-06T17:59:48Z"
+ content="""
+Upgrade -- these problems are fixed already in version 8.20210803.
+
+I have filed a debian bug report suggesting they backport the fixes.
+"""]]
