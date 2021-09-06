@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-09-06T19:50:02Z"
+ content="""
+The annex.addunlocked config is able to do this, since version 7.20191230.
+It can be set to a [[git-annex-matching-expression]]
+eg "include=wiki/*" would make files in the top-level wiki directory always
+be added unlocked, and other files would be added locked.
+Matching on file extensions etc is also possible.
+"""]]
