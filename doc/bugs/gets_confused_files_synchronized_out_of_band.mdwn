@@ -1,0 +1,206 @@
+### Please describe the problem.
+
+So this happened today: I did a `git-annex sync --content` over a git repository that is *also* (sorry!) synchronized by syncthing. Not the best idea, I know, but I *do* avoid synchronizing the `.git` directory to avoid going completely nuts. This has actually worked surprisingly well so far: I can add stuff in one repository and it trickles to the other either with syncthing (on my ebook reader, which doesn't have git-annex) or git-annex (on my other desktops).
+
+What happened here is that syncthing was faster than git-annex and copied the files over first. For new files, that wasn't much of a problem: git freaked out, but just skipped the files; I didn't get corruption on that front.
+
+For calibre's infamous `metadata.db`, however, it was another story. I ended up in this weird state where it found a conflict on the file, because it is binary:
+
+    warning: Cannot merge binary files: metadata.db (HEAD vs. refs/remotes/origin/master)
+
+So it left a `metadata.variant-1b96.db` file around. But the interesting thing here (and why I open a bug report instead of just moving on) is that the variant is actually *identical* to the other file:
+
+    anarcat@curie:books(master)$ ls -al metadata*db
+    -rw-r--r-- 1 anarcat anarcat 1 696 768 2021-09-07 09:40 metadata.db
+    -rw-r--r-- 1 anarcat anarcat 1 696 768 2021-09-05 21:39 metadata.variant-1b96.db
+    anarcat@curie:books(master)$ diff metadata*db
+    anarcat@curie:books(master)$
+
+Now I understand git-annex wants to be careful about merging binary data, but surely this is a low-hanging fruit that could be figured out?
+
+Similarly, the already present file could be merged as well, but I understand that this is also a hard problem in git itself: it doesn't like dirty work trees... 
+
+And I understand if this entire thing would be closed as "ugh, sorry, this is how git works, #wontfix", of course. :) I'm kind of doing crazy stuff with git-annex all the time and I understand if this won't be fixed, I can deal with the occasional trouble...
+
+### What steps will reproduce the problem?
+
+It's not exactly clear to me how to reproduce this. I think the trick is to:
+
+ 1. create a git-annex repository (A) with some content
+ 2. synchronize it to a new, second repository (B)
+ 3. create a binary file, on repo A
+ 4. synchronize it on repo B, once
+ 5. modify the binary file on repo A
+ 6. copy it by hand, behind git-annex's back, to repo B
+ 7. synchronize both repos again
+
+I suspect you might be able to reproduce the issue without binary files with:
+
+ 1. create a git-annex repository (A) with some content
+ 2. synchronize it to a new, second repository (B)
+ 3. create a new file, on repo A
+ 4. copy it by hand, behind git-annex's back, to repo B
+ 5. synchronize both repos again
+
+### What version of git-annex are you using? On what operating system?
+
+This is git-annex 8.20210223-2 on Debian bullseye, on both ends. Syncthing is running on both ends as well, and on my Kobo Clara HD e-reader.
+
+### Please provide any additional information below.
+
+This is the first crash, which occured under `myrepos` supervision:
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+mr update: /home/anarcat/books
+(recording state in git...)
+[master 29a49c9c48] git-annex in anarcat@curie:~/books
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ rewrite metadata.db (100%)
+commit ok
+remote: Enumerating objects: 103, done.
+remote: Counting objects: 100% (103/103), done.
+remote: Compressing objects: 100% (80/80), done.
+remote: Total 83 (delta 48), reused 0 (delta 0)
+Dépaquetage des objets: 100% (83/83), 11.26 Kio | 23.00 Kio/s, fait.
+Depuis anarc.at:/srv/books
+   2a75cab2ba..b368a4b963  master           -> origin/master
+   3ddac40b17..f59c826035  git-annex        -> origin/git-annex
+   3ddac40b17..b46273adfc  synced/git-annex -> origin/synced/git-annex
+   2a75cab2ba..b368a4b963  synced/master    -> origin/synced/master
+error: Les fichiers suivants non suivis de la copie de travail seraient effacés par la fusion :
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/Medicine for Mountaineering & Other Wilder - James A. Wilkerson.epub
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/cover.jpg
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/metadata.opf
+Veuillez renommer ou effacer ces fichiers avant la fusion.
+Abandon
+error: Les fichiers suivants non suivis de la copie de travail seraient effacés par la fusion :
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/Medicine for Mountaineering & Other Wilder - James A. Wilkerson.epub
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/cover.jpg
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/metadata.opf
+Veuillez renommer ou effacer ces fichiers avant la fusion.
+Abandon
+pull origin failed
+(merging origin/git-annex origin/synced/git-annex into git-annex...)
+(recording state in git...)
+error: Les fichiers suivants non suivis de la copie de travail seraient effacés par la fusion :
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/Medicine for Mountaineering & Other Wilder - James A. Wilkerson.epub
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/cover.jpg
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/metadata.opf
+Veuillez renommer ou effacer ces fichiers avant la fusion.
+Abandon
+error: Les fichiers suivants non suivis de la copie de travail seraient effacés par la fusion :
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/Medicine for Mountaineering & Other Wilder - James A. Wilkerson.epub
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/cover.jpg
+	James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/metadata.opf
+Veuillez renommer ou effacer ces fichiers avant la fusion.
+Abandon
+copy metadata.db (to origin...) ok
+pull origin failed
+(recording state in git...)
+push origin 
+Énumération des objets: 23, fait.
+Décompte des objets: 100% (21/21), fait.
+Compression par delta en utilisant jusqu'à 4 fils d'exécution
+Compression des objets: 100% (15/15), fait.
+Écriture des objets: 100% (15/15), 1.94 Kio | 1.94 Mio/s, fait.
+Total 15 (delta 6), réutilisés 0 (delta 0), réutilisés du pack 0
+remote: PWD: /srv/books/.git
+remote: running git annex merge in /srv/books
+remote: Already up to date.
+remote: calling /srv/books/.git/hooks/calibre-hack
+remote: running /srv/books/.git/hooks/calibre-hack
+remote: fixing perms for calibre
+remote: + chown :media metadata.calibre metadata.db metadata_db_prefs_backup.json
+remote: + chmod g+w metadata.calibre metadata.db metadata_db_prefs_backup.json
+remote: + sudo service calibre-server restart
+To anarc.at:/srv/books
+   b46273adfc..de2a69481a  git-annex -> synced/git-annex
+ ! [rejected]              master -> synced/master (non-fast-forward)
+error: impossible de pousser des références vers 'anarc.at:/srv/books'
+astuce: Les mises à jour ont été rejetées car la pointe de la branche courante est derrière
+astuce: son homologue distant. Extrayez cette branche et intégrez les changements distants
+astuce: (par exemple 'git pull ...') avant de pousser à nouveau.
+To anarc.at:/srv/books ! [rejected]              master -> master (non-fast-forward)error: impossible de pousser des rÃ©fÃ©rences vers 'anarc.at:/srv/books'astuce: Les mises Ã  jour ont Ã©tÃ© rejetÃ©es car la pointe de la branche courante est derriÃ¨reastuce: son homologue distant. IntÃ©grez les changements distants (par exemple 'git pull ...')astuce: avant de pousser Ã  nouveau.astuce: Voir la 'Note Ã  propos des avances rapides' dans 'git push --help' pour plus d'information.push origin 
+  Pushing to origin failed.
+failed
+git-annex: sync: 3 failed
+mr update: command failed
+
+
+# End of transcript or log.
+"""]]
+
+Notice the mojibake in the french. It seems like the `é` characters are getting double-encoded. `LANG=fr_CA.UTF-8`. But that's another story. ;)
+
+Also note that the `metadata.db` here is not yet corrupt. That happened on the second run:
+
+[[!format sh """
+anarcat@curie:books(master)$ git annex sync --content -J2
+Sur la branche master
+Votre branche et 'origin/master' ont divergé,
+et ont 1 et 2 commits différents chacune respectivement.
+  (utilisez "git pull" pour fusionner la branche distante dans la vôtre)
+
+Fichiers non suivis:
+  (utilisez "git add <fichier>..." pour inclure dans ce qui sera validé)
+	.stversions/
+
+aucune modification ajoutée à la validation mais des fichiers non suivis sont présents (utilisez "git add" pour les suivre)
+commit ok
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 5 (delta 3), reused 0 (delta 0)
+Dépaquetage des objets: 100% (5/5), 441 octets | 73.00 Kio/s, fait.
+Depuis anarc.at:/srv/books
+   de2a69481a..f5fc20c433  git-annex  -> origin/git-annex
+warning: Cannot merge binary files: metadata.db (HEAD vs. refs/remotes/origin/master)
+Fusion automatique de metadata.db
+CONFLIT (contenu) : Conflit de fusion dans metadata.db
+La fusion automatique a échoué ; réglez les conflits et validez le résultat.
+pull origin (recording state in git...)
+
+  Merge conflict was automatically resolved; you may want to examine the result.
+[master 01adc3214c] git-annex automatic merge conflict fix
+Déjà à jour.
+ok
+(merging origin/git-annex into git-annex...)
+get James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/cover.jpg (from origin...) ok
+get James A. Wilkerson/Medicine for Mountaineering & Other Wilderness Activities (1583)/Medicine for Mountaineering & Other Wilder - James A. Wilkerson.epub (from origin...) ok
+pull origin ok
+(recording state in git...)
+push origin 
+Énumération des objets: 22, fait.
+Décompte des objets: 100% (22/22), fait.
+Compression par delta en utilisant jusqu'à 4 fils d'exécution
+Compression des objets: 100% (13/13), fait.
+Écriture des objets: 100% (13/13), 2.08 Kio | 2.08 Mio/s, fait.
+Total 13 (delta 7), réutilisés 0 (delta 0), réutilisés du pack 0
+remote: PWD: /srv/books/.git
+remote: running git annex merge in /srv/books
+remote: Updating b368a4b96..01adc3214
+remote: Fast-forward
+remote:  metadata.variant-1b96.db | 1 +
+remote:  1 file changed, 1 insertion(+)
+remote:  create mode 100644 metadata.variant-1b96.db
+remote: running .git//hooks/calibre-hack
+remote: fixing perms for calibre
+remote: + chown :media metadata.calibre metadata.db metadata.variant-1b96.db metadata_db_prefs_backup.json
+remote: + chmod g+w metadata.calibre metadata.db metadata.variant-1b96.db metadata_db_prefs_backup.json
+remote: + sudo service calibre-server restart
+remote: calling /srv/books/.git/hooks/calibre-hack
+remote: running /srv/books/.git/hooks/calibre-hack
+remote: fixing perms for calibre
+remote: + chown :media metadata.calibre metadata.db metadata.variant-1b96.db metadata_db_prefs_backup.json
+remote: + chmod g+w metadata.calibre metadata.db metadata.variant-1b96.db metadata_db_prefs_backup.json
+remote: + sudo service calibre-server restart
+To anarc.at:/srv/books
+   de2a69481a..34a3c2ebf1  git-annex -> synced/git-annex
+push origin ok
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I am a total fan, thanks for your awesome work, as usual. ;) -- [[anarcat]]
