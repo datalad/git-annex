@@ -178,7 +178,7 @@ store' r k b p = go =<< glacierEnv c gc u
 retrieve :: Remote -> Retriever
 retrieve = byteRetriever . retrieve'
 
-retrieve' :: Remote -> Key -> (L.ByteString -> Annex a) -> Annex a
+retrieve' :: forall a. Remote -> Key -> (L.ByteString -> Annex a) -> Annex a
 retrieve' r k sink = go =<< glacierEnv c gc u
   where
 	c = config r
