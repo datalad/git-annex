@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-09-08T15:56:35Z"
+ content="""
+The french output is by git, not git-annex. It looks like the standard
+message about there being a merge conflict. One part of the git
+output is not translated and it happens to be the part that explains
+what is going on.
+
+	warning: Cannot merge binary files: metadata.db (HEAD vs. refs/remotes/origin/master)
+
+So metadata.db is a binary file, so it is not stored in git-annex,
+but is checked directly into git. Or at least it is on one side of
+the merge conflict.
+
+I think that one repository added metadata.db to git-annex, and the other
+added it to directly into git. So then the merge conflict is between
+the binary content of the file and the git-annex symlink. Which is an
+actual merge conflict, even though the content of the file is the same.
+
+That kind of merge conflict is when `git-annex sync` resolves the merge
+conflict with a single `.variant` file for the annexed version along side the
+regular file as stored in git. Which is what your ls showed. 
+You can resolve the merge conflict by either deleting the annexed
+ `.variant` file or renaming it over the file stored in git.
+
+You can avoid this kind of merge conflict by configuring annex.largefiles
+the same in both repositories, so when a file like metadata.db gets added
+separately in each repository, the same annex link will be added.
+
+Or you can set annex.resolvemerge to false for sync to avoid resolving merge
+conflicts, and then just resolve them yourself.
+
+I don't see a bug here, this is all documented.
+"""]]

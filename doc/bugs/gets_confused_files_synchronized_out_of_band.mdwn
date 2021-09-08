@@ -204,3 +204,5 @@ push origin ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I am a total fan, thanks for your awesome work, as usual. ;) -- [[anarcat]]
+
+> [[notabug|done]] --[[Joey]]
