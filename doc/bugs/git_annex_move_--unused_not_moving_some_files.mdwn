@@ -20,7 +20,7 @@ Calibre Library % git annex move --unused -t bims
 Calibre Library %
 ```
 
-Is there anything hat explains this behavior?
+Is there anything that explains this behavior?
 
 ### What steps will reproduce the problem?
 I am not sure how to reproduce this in another repo.
