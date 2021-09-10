@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+`git annex move --unused` is not moving some of the files `git annex unused` reports:
+
+```
+Calibre Library % git annex unused 
+unused . (checking for unused data...) (checking master...) (checking refs/annex/last-index...) 
+  Some annexed data is no longer used by any files:
+    NUMBER  KEY
+    1       SHA256E-s182401--1c42279d1ea477f2a1831a3f7543481e7d5c72cbbeffdd0442918253b4f3ecc9.jpg
+    2       SHA256E-s127374--17bfedf7453382df04a58d9c508d82285970148e49a84c488a728f7f770d8cc3.jpg
+[...]
+    56      SHA256E-s427315--3617fae344fb4fbc825963ee0ddfc5a31f1000c8d1c61ce3955bc16ae625e207.epub
+  (To see where this data was previously used, run: git annex whereused --historical --unused
+  
+  To remove unwanted data: git-annex dropunused NUMBER
+  
+ok
+Calibre Library % git annex move --unused -t bims 
+Calibre Library %
+```
+
+Is there anything hat explains this behavior?
+
+### What steps will reproduce the problem?
+I am not sure how to reproduce this in another repo.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 8.20210803
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Sure, I use it every day for various tasks! Great software!
+
