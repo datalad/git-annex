@@ -5,3 +5,8 @@ parts with HashMap. The uses in AnnexRead especially.
 (Set and HashSet too.)
 
 --[[Joey]]
+
+> Note that HashMap perfomance can degrade if an attacker provides keys
+> that collide. This has been used to DOS aeson parsing. (Which could
+> affect a few parts of git-annex in theory). So if converting to HashMap,
+> need to consider this. --[[Joey]]
