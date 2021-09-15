@@ -1,0 +1,5 @@
+I'm using the version of git-annex in debian bullseye (8.20210223) and a newly
+created repository (v8). When I put a new file into the repository, the assistant
+notices and adds it, but the file is then unlocked. Is there a way to tell the
+assistant to add files in locked mode? This repository is in the "source" group,
+so contents get dropped soon and the pointer files regularly confuse me :)
