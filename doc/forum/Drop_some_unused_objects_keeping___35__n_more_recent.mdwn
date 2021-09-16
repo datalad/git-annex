@@ -1,0 +1,18 @@
+Hello, thanks for all the work in Git-annex! We've been using since 2018 for Integrated Circuits (ASICs) design with a lot of success.
+
+One feature that would help us would be to be able to Drop Unused, but not all Unused.
+In our design flow, every 2 or 3 weeks, we update a collection of Objects, replacing, "overwriting" the objects with newer version.
+So the older becomes Unused.
+
+But we want to keep a certain history depth of Unused. And this cannot be based on dates.
+Because when we stop working on a certain block/module, the Unused Objects can become quite old (like 6 months), but we still want to keep like for example 3x Unused Objects.
+
+Example: we have overwritten 12x times the same Object "module_a.jpg". So we have 11x Unused versions of "module_a.jpg".
+We want to keep the latest and +3x latest Unused. So on total only 8x Unused copies would get Dropped.
+
+Is there a way to do that with Git-annex?
+Or we would need to create a custom script to parse the git-repository, list all the 12x keys of "module_a.jpg", and pick the 8x for Dropping?
+
+Thank you.
+Best regards.
+Davi Castro.
