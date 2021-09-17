@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="gabrielhidasy@c3d26e2c0b3e669d012f06736616088b42ad0dbe"
+ nickname="gabrielhidasy"
+ avatar="http://cdn.libravatar.org/avatar/8ae80704e96034c418e126326da2e7c8"
+ subject="Closing the loop"
+ date="2021-09-17T23:56:46Z"
+ content="""
+The metadata solution worked well, except that my cloud remote is unable to run the assistant to pull files from the desktop, and the assistant in the desktop was not pushing. 
+That is fixed by running ```git annex sync --content cloud``` every few minutes in the desktop.
+"""]]
