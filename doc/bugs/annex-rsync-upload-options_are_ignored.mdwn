@@ -1,5 +1,5 @@
 ### Please describe the problem.
-git-annex doesn't seem to honor the remote.\<name\>.annex-upload-options or annex.rsync-upload-options anymore. The problem seems to be on the server side. I noticed it when upgrading the ancient git-annex on my server from the version in stretch (6.20170101, --bwlimit worked fine with that) to the version in stretch-backports (7.20190129, --bwlimit broken). On the client I'm running bullseye and git-annex version 8.20210223. I then upgraded git-annex on the server to 8.20210903, the rsync-options don't work with that either.
+git-annex doesn't seem to honor the remote.\<name\>.annex-rsync-upload-options or annex.rsync-upload-options anymore. The problem seems to be on the server side. I noticed it when upgrading the ancient git-annex on my server from the version in stretch (6.20170101, --bwlimit worked fine with that) to the version in stretch-backports (7.20190129, --bwlimit broken). On the client I'm running bullseye and git-annex version 8.20210223. I then upgraded git-annex on the server to 8.20210903, the rsync-options don't work with that either.
 
 ### What steps will reproduce the problem?
 
