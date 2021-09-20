@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="weinzwang"
+ avatar="http://cdn.libravatar.org/avatar/e73d7d9e358f3b974d283fb0834cc5d9"
+ subject="comment 2"
+ date="2021-09-16T20:56:29Z"
+ content="""
+Thanks for the hint - this doesn't seem to make any difference though. If I unterstand the manpage correctly, adding files in locked form is the default anyway. I tried it to be sure:
+
+    # git config --get annex.addunlocked
+    false
+
+and restarted the assistant. The behaviour is the same as before, files are added unlocked.
+"""]]

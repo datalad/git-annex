@@ -1,0 +1,9 @@
+The [[walkthrough|https://git-annex.branchable.com/walkthrough/#index3h2]] says:
+
+> Notice that both repos are set up as remotes of one another. This lets either get annexed files from the other. You'll want to do that even if you are using git in a more centralized fashion.
+
+This is not always practical. I use a centralized setup where all of my devices sync (manually) with a bare repo on a server at home over the internet. Clients can access the server but the server cannot access the clients.
+
+Is it safe to use Git Annex in this way? Are there any pitfalls or gotchas I should be aware of? Is this setup any more (or less) risky when using a non-bare central repo?
+
+Thanks for this great piece of software!
