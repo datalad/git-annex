@@ -1,0 +1,60 @@
+### Please describe the problem.
+
+Performance on Windows 10.0.19041 even on small text files is 10+ times slower than Git alone, and seems to have dropped over the past months of (windows, git, or git-annex developments).
+
+
+### What steps will reproduce the problem?
+
+Compare performance of `git add` and `git commit` in a Git repo with vs without `git annex init`.
+
+The observations below have been taken from [this DataLad issue](https://github.com/datalad/datalad/issues/5994). The hardware of the test system is described over there, but only the relative performance is relevant here.
+
+- `git init`: 0.1s
+- `git annex init`: 5.7s
+
+First timing info is the command executed in an annex-repo (after `git annex init`), the second timing is the same command executed in a plain Git repo.
+
+after creating a 3-byte text file:
+
+- `git add file`: 1.9s (0.1s)
+- `git commit file -m msg`: 3.2s (0.1s)
+
+after creating two new 3-byte test files:
+
+- `git add .`: 4.5s (0.1s)
+- `git commit -m msg`: 2.4s (0.1s)
+
+after creating eight more 3-byte text files:
+
+- `git add .`: 13.1s (0.1s)
+- `git commit -m msg`: 1.6 (0.1s)
+
+now adding a 225 MB binary file
+
+- `git add binfiile`: 16s (13s)
+- `git commit -m msg`: 2s (0.2s)
+
+no changes
+
+- `git commit --amend -m msg`: 2s (0.1s)
+
+So it looks as if there is a substantial per-file cost of `add` in an annex repo that is not explained by the underlying Git repo performance.
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+- Windows 10.0.19041
+- Git 2.33.0.windows.2
+- git-annex 8.20210804-g1d3f59a9d
+
+### Please provide any additional information below.
+
+The linked datalad issue has more information on the configuration of the Git installation, but that only seems to affect performance broadly, and not git-annex specifically.
+
+I am reporting this behavior now, because it has worsened since [I last looked into performance on windows](https://github.com/datalad/datalad/issues/5317). It is unclear to me, which developments have led to this (also the windows version has progressed since then). However, even back then, it looked like there is a windows-specific performance issues that cannot be explained by the general handling of crippled filesystems or adjusted branches (comparing performance on an NTFS drive mounted on Debian vs a native windows box).
+
+
+Thanks for git-annex!
+
+[[!tag projects/datalad]]
