@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-09-21T17:22:22Z"
+ content="""
+It is perfectly safe. It can take some additional configuration
+to get the clients sending the objects that the other clients want
+to the server.
+"""]]

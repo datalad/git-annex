@@ -18,5 +18,5 @@ giving the repository a description helps when git-annex talks about it
 later.
 
 Notice that both repos are set up as remotes of one another. This lets
-either get annexed files from the other. You'll want to do that even
-if you are using git in a more centralized fashion.
+either get annexed files from the other. You'll often want to do that
+even when you are using git in a more centralized fashion.
