@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="weinzwang"
+ avatar="http://cdn.libravatar.org/avatar/e73d7d9e358f3b974d283fb0834cc5d9"
+ subject="Should be safe"
+ date="2021-09-21T07:55:57Z"
+ content="""
+I've been using git-annex with very similar setups for many years and never had any problems. I can't say anything about bare repos being more or less risky than non-bare ones, I've been using both on my server. Repos that can't see each other is a very common setup.
+"""]]
