@@ -9,3 +9,6 @@ second when it's running too fast. The way the progress reporting interface
 works, it will probably work to put the delay in there. --[[Joey]]
 
 [[confirmed]]
+
+> Implmentation in progress in the `bwlimit` branch. Seems to work, but see
+> commit message for what still needs to be done. --[[Joey]]
