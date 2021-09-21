@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-09-21T15:35:23Z"
+ content="""
+Interesting, I had not known that ASIC design would involve
+the kind of large files git-annex would be useful for.
+
+I think you may want to use `git annex unused --used-refspec='+refs/heads/*:+HEAD:reflog'  
+That adds all versions that are in the reflog. Then you can
+can configure git to control how much reflog to keep around.
+(See `git-gc` man page`)
+
+The other possibility is a new git-annex feature, `git-annex whereused --unused --historical`  
+After you run `git annex unused`, you can run that to display
+each unused key, along with the git rev where that key was found to be
+used.
+
+The git rev looks like eg "master~4:filename" or "HEAD@{4}:filename".
+It will usually be the most recent use, although it prefers older uses
+that made it into a branch over any revs from the reflog. So you can
+filter for keys with numbers `> 8` or whatever, and get only the older
+versions of files. Then pipe the keys into `git-annex dropkey --batch`.
+
+Improving `git annex unused` to be able to do this kind of filtering itself
+is also a possibility. (See also
+[[forum/Drop__47__move_unused_files_older_than_x]] which was asking
+for a similar kind of thing with a similar response).
+"""]]
