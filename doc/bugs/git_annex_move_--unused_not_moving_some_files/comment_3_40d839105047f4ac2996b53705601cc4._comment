@@ -1,0 +1,62 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-09-21T17:34:08Z"
+ content="""
+I have not been able to reproduce this, it works for me.
+
+	joey@darkstar:~/tmp>git init a1
+	Initialized empty Git repository in /home/joey/tmp/a1/.git/
+	joey@darkstar:~/tmp>cd a1
+	joey@darkstar:~/tmp/a1>git annex init
+	init  ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/a1>date > foo
+	joey@darkstar:~/tmp/a1>date > bar
+	joey@darkstar:~/tmp/a1>git annex add
+	add bar
+	ok
+	add foo
+	ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/a1>git commit -m add
+	[master (root-commit) fdd215f] add
+	 2 files changed, 2 insertions(+)
+	 create mode 120000 bar
+	 create mode 120000 foo
+	joey@darkstar:~/tmp/a1>rm foo
+	joey@darkstar:~/tmp/a1>git commit -a -m rm
+	[master 1f84de1] rm
+	 1 file changed, 1 deletion(-)
+	 delete mode 120000 foo
+	joey@darkstar:~/tmp/a1>git annex unused
+	unused . (checking for unused data...) (checking master...) 
+	  Some annexed data is no longer used by any files:
+	    NUMBER  KEY
+	    1       SHA256E-s30--11de88d41da5962620f4a0590a577710e067d72e0f24220c4a4d2e81d594388a
+	  (To see where this data was previously used, run: git annex whereused --historical --unused
+	  
+	  To remove unwanted data: git-annex dropunused NUMBER
+	  
+	ok
+	joey@darkstar:~/tmp/a1>cd ..
+	joey@darkstar:~/tmp>git clone a1 a2
+	Cloning into 'a2'...
+	done.
+	joey@darkstar:~/tmp>cd a1
+	joey@darkstar:~/tmp/a1>git remote add a2 ../a2
+	joey@darkstar:~/tmp/a1>git annex move --unused --to a2
+	move SHA256E-s30--11de88d41da5962620f4a0590a577710e067d72e0f24220c4a4d2e81d594388a (to a2...) 
+	ok
+
+You did say it's not moving "some files" which suggests maybe it is moving
+other ones? Do you see it move any unused files at all?
+
+Do other commands that use the same --unused option work? Eg, does 
+`git annex whereis --unused` list them?
+
+The only way I can reproduce this behavior is if the remote has
+the same uuid as the current repository. Then any move is a no-op
+and it avoids operating on the files at all, the same as your output shows.
+So it seems possible that could be your real problem.
+"""]]
