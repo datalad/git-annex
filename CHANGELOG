@@ -2,6 +2,8 @@ git-annex (8.20210904) UNRELEASED; urgency=medium
 
   * borg: Avoid trying to extract xattrs, ACLS, and bsdflags when
     retrieving from a borg repository.
+  * Resume where it left off when copying a file to/from a local git remote
+    was interrupted.
 
  -- Joey Hess <id@joeyh.name>  Fri, 03 Sep 2021 12:02:55 -0400
 

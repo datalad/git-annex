@@ -1,0 +1,21 @@
+A copy --to a local git remote that gets interrupted and is run again does
+not resume where it left off, but copies all the data again.
+
+This does not affect git remotes accessed over ssh.
+
+It's kind of hard to notice this, because normally a resume, has to read
+the src file and dest file, in order for incremental verification to
+get started. But it is somewhat slower to do that than it is to re-write
+the dest file from the start. And when annex.verify = false, it's a lot
+slower.
+
+Looks like it's due to copyCoW unlinking the dest file. Since the first
+file copy trues copyCoW to probe if that's supported, that happens.
+And when resuming an interrupted copy, that probe will generally happen
+with the file it was interrupted on.
+
+So, the solution seems like it would be to copyCoW to some other temp file,
+and if it succeeds, rename it to the dest.
+--[[Joey]]
+
+> [[fixed|done]] --[[Joey]]
