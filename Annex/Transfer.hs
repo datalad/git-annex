@@ -20,6 +20,7 @@ module Annex.Transfer (
 	stdRetry,
 	pickRemote,
 	stallDetection,
+	bwLimit,
 ) where
 
 import Annex.Common
@@ -406,3 +407,9 @@ stallDetection r = maybe globalcfg (pure . Just) remotecfg
   where
 	globalcfg = annexStallDetection <$> Annex.getGitConfig
 	remotecfg = remoteAnnexStallDetection $ Remote.gitconfig r
+
+bwLimit :: RemoteGitConfig -> Annex (Maybe BwRate)
+bwLimit gc = maybe globalcfg (pure . Just) remotecfg
+  where
+	globalcfg = annexBwLimit <$> Annex.getGitConfig
+	remotecfg = remoteAnnexBwLimit gc

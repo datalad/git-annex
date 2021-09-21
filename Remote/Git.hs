@@ -550,6 +550,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $ do
 		u <- getUUID
 		hardlink <- wantHardLink
+		bwlimit <- bwLimit (gitconfig r)
 		-- run copy from perspective of remote
 		onLocalFast st $ Annex.Content.prepSendAnnex' key >>= \case
 			Just (object, check) -> do
@@ -559,7 +560,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 				copier <- mkFileCopier hardlink st
 				(ok, v) <- runTransfer (Transfer Download u (fromKey id key))
 					file Nothing stdRetry $ \p ->
-						metered (Just (combineMeterUpdate p meterupdate)) key $ \_ p' -> 
+						metered (Just (combineMeterUpdate p meterupdate)) key bwlimit $ \_ p' -> 
 							copier object dest key p' checksuccess vc
 				if ok
 					then return v
@@ -572,6 +573,7 @@ copyFromRemote'' repo forcersync r st@(State connpool _ _ _ _) key file dest met
 				then return v
 				else giveup "failed to retrieve content from remote"
 		else P2PHelper.retrieve
+			(gitconfig r)
 			(\p -> Ssh.runProto r connpool (return (False, UnVerified)) (fallback p))
 			key file dest meterupdate vc
 	| otherwise = giveup "copying from non-ssh, non-http remote not supported"
@@ -680,7 +682,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsSsh repo = commitOnCleanup repo r st $
-		P2PHelper.store
+		P2PHelper.store (gitconfig r)
 			(Ssh.runProto r connpool (return False) . copyremotefallback)
 			key file meterupdate
 		
@@ -694,6 +696,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		checkio <- Annex.withCurrentState check
 		u <- getUUID
 		hardlink <- wantHardLink
+		bwlimit <- bwLimit (gitconfig r)
 		-- run copy from perspective of remote
 		res <- onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True
@@ -705,7 +708,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 					Just err -> giveup err
 					Nothing -> return True
 				res <- logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file $ \dest ->
-					metered (Just (combineMeterUpdate meterupdate p)) key $ \_ p' -> 
+					metered (Just (combineMeterUpdate meterupdate p)) key bwlimit $ \_ p' -> 
 						copier object (fromRawFilePath dest) key p' checksuccess verify
 				Annex.Content.saveState True
 				return res

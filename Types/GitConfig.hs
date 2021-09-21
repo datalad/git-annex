@@ -124,6 +124,7 @@ data GitConfig = GitConfig
 	, annexForwardRetry :: Maybe Integer
 	, annexRetryDelay :: Maybe Seconds
 	, annexStallDetection :: Maybe StallDetection
+	, annexBwLimit :: Maybe BwRate
 	, annexAllowedUrlSchemes :: S.Set Scheme
 	, annexAllowedIPAddresses :: String
 	, annexAllowUnverifiedDownloads :: Bool
@@ -218,8 +219,11 @@ extractGitConfig configsource r = GitConfig
 	, annexRetryDelay = Seconds
 		<$> getmayberead (annexConfig "retrydelay")
 	, annexStallDetection =
-		either (const Nothing) id . parseStallDetection
+		either (const Nothing) Just . parseStallDetection
 			=<< getmaybe (annexConfig "stalldetection")
+	, annexBwLimit =
+		either (const Nothing) Just . parseBwRate
+			=<< getmaybe (annexConfig "bwlimit")
 	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
 		maybe ["http", "https", "ftp"] words $
 			getmaybe (annexConfig "security.allowed-url-schemes")
@@ -343,6 +347,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexForwardRetry :: Maybe Integer
 	, remoteAnnexRetryDelay :: Maybe Seconds
 	, remoteAnnexStallDetection :: Maybe StallDetection
+	, remoteAnnexBwLimit :: Maybe BwRate
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
 	, remoteAnnexConfigUUID :: Maybe UUID
 
@@ -408,8 +413,11 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexRetryDelay = Seconds
 			<$> getmayberead "retrydelay"
 		, remoteAnnexStallDetection =
-			either (const Nothing) id . parseStallDetection
+			either (const Nothing) Just . parseStallDetection
 				=<< getmaybe "stalldetection"
+		, remoteAnnexBwLimit =
+			either (const Nothing) Just . parseBwRate
+				=<< getmaybe "bwlimit"
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe ("security-allow-unverified-downloads")
 		, remoteAnnexConfigUUID = toUUID <$> getmaybe "config-uuid"

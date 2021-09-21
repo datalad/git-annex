@@ -37,6 +37,7 @@ module Utility.Metered (
 	demeterCommandEnv,
 	avoidProgress,
 	rateLimitMeterUpdate,
+	bwLimitMeterUpdate,
 	Meter,
 	mkMeter,
 	setMeterTotalSize,
@@ -51,6 +52,7 @@ import Utility.Percentage
 import Utility.DataUnits
 import Utility.HumanTime
 import Utility.SimpleProtocol as Proto
+import Utility.ThreadScheduler
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
@@ -379,6 +381,47 @@ rateLimitMeterUpdate delta (Meter totalsizev _ _ _) meterupdate = do
 					putMVar lastupdate now
 					meterupdate n
 				else putMVar lastupdate prev
+
+-- | Bandwidth limiting by inserting a delay at the point that a meter is
+-- updated.
+--
+-- This will only work when the actions that use bandwidth are run in the
+-- same process and thread as the call to the MeterUpdate.
+--
+-- For example, if the desired bandwidth is 100kb/s, and over the past
+-- second, 200kb was sent, then pausing for half a second, and then
+-- running for half a second should result in the desired bandwidth.
+-- But, if after that pause, only 75kb is sent over the next half a
+-- second, then the next pause should be 2/3rds of a second.
+bwLimitMeterUpdate :: ByteSize -> Duration -> MeterUpdate -> IO MeterUpdate
+bwLimitMeterUpdate sz duration meterupdate = do
+	nowtime <- getPOSIXTime
+	lastpause <- newMVar (nowtime, toEnum 0 :: POSIXTime, 0)
+	return $ mu lastpause
+  where
+	mu lastpause n@(BytesProcessed i) = do
+		nowtime <- getPOSIXTime
+		meterupdate n
+		lastv@(prevtime, prevpauselength, previ) <- takeMVar lastpause
+		let timedelta = nowtime - prevtime
+		if timedelta >= durationsecs
+			then do
+				let sz' = i - previ
+				let runtime = timedelta - prevpauselength
+				let pauselength = calcpauselength sz' runtime
+				if pauselength > 0
+					then do
+						unboundDelay (floor (pauselength * fromIntegral oneSecond))
+						putMVar lastpause (nowtime, pauselength, i)
+					else putMVar lastpause lastv
+			else putMVar lastpause lastv
+
+	calcpauselength sz' runtime
+		| sz' > sz && sz' > 0 && runtime > 0 =
+			durationsecs - (fromIntegral sz / fromIntegral sz') * runtime
+		| otherwise = 0
+	
+	durationsecs = fromIntegral (durationSeconds duration)
 
 data Meter = Meter (MVar (Maybe TotalSize)) (MVar MeterState) (MVar String) DisplayMeter
 

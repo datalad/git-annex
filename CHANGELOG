@@ -1,5 +1,7 @@
 git-annex (8.20210904) UNRELEASED; urgency=medium
 
+  * Added annex.bwlimit and remote.name.annex-bwlimit config that works
+    for git remotes and many but not all special remotes.
   * borg: Avoid trying to extract xattrs, ACLS, and bsdflags when
     retrieving from a borg repository.
 

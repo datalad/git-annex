@@ -192,7 +192,7 @@ perform o file addunlockedmatcher = withOtherTmp $ \tmpdir -> do
 		}
 	ld <- lockDown cfg (fromRawFilePath file)
 	let sizer = keySource <$> ld
-	v <- metered Nothing sizer $ \_meter meterupdate ->
+	v <- metered Nothing sizer Nothing $ \_meter meterupdate ->
 		ingestAdd (checkGitIgnoreOption o) meterupdate ld
 	finish v
   where
