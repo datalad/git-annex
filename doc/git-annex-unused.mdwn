@@ -40,6 +40,8 @@ For example, to move all unused data to origin:
   is not in the specified refs (and not used by the index) will then be
   considered unused.
 
+  See REFSPEC FORMAT below for details of the format of this setting.
+
   The git configuration annex.used-refspec can be used to configure
   this in a more permanent fashion.
 
@@ -47,13 +49,17 @@ For example, to move all unused data to origin:
 
 # REFSPEC FORMAT
 
-The refspec format for --used-refspec is a colon-separated list of
-additions and removals of refs. For example:
+The refspec format for --used-refspec and annex.used-refspec is
+a colon-separated list of additions and removals of refs.
+A somewhat contrived example:
 
-	+refs/heads/*:+HEAD^:+refs/tags/*:-refs/tags/old-tag
+	+refs/heads/*:+HEAD^:+refs/tags/*:-refs/tags/old-tag:reflog
 
 This adds all refs/heads/ refs, as well as the previous version
-of HEAD. It also adds all tags, except for old-tag.
+of HEAD. It also adds all tags, except for old-tag. And it adds
+all refs from the reflog.
+
+The default behavior is equivilant to `--used-refspec=+refs/*:+HEAD`
 
 The refspec is processed by starting with an empty set of refs,
 and walking the list in order from left to right.
