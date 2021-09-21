@@ -150,3 +150,4 @@ annex.rsync-download-options "--bwlimit 1024" is ignored as well:
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I've been using git-annex for many years with great success. It's a pleasure to use, I don't know how I ever managed to get by without it!
 
+> Closing as a duplicate of the bwlimit todo. [[done]] --[[Joey]]
