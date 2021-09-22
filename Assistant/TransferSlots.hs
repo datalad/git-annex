@@ -24,7 +24,6 @@ import Assistant.Alert
 import Assistant.Alert.Utility
 import Assistant.Commits
 import Assistant.Drop
-import Annex.Transfer (stallDetection)
 import Types.Transfer
 import Logs.Transfer
 import Logs.Location
@@ -126,7 +125,8 @@ genTransfer t info = case transferRemote info of
 			( do
 				debug [ "Transferring:" , describeTransfer t info ]
 				notifyTransfer
-				sd <- liftAnnex $ stallDetection remote
+				let sd = remoteAnnexStallDetection
+					(Remote.gitconfig remote)
 				return $ Just (t, info, go remote sd)
 			, do
 				debug [ "Skipping unnecessary transfer:",

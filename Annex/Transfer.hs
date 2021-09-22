@@ -19,7 +19,6 @@ module Annex.Transfer (
 	noRetry,
 	stdRetry,
 	pickRemote,
-	stallDetection,
 ) where
 
 import Annex.Common
@@ -55,10 +54,11 @@ import Data.Ord
 
 -- Upload, supporting canceling detected stalls.
 upload :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
-upload r key f d witness = stallDetection r >>= \case
-	Nothing -> go (Just ProbeStallDetection)
-	Just StallDetectionDisabled -> go Nothing
-	Just sd -> runTransferrer sd r key f d Upload witness
+upload r key f d witness = 
+	case remoteAnnexStallDetection (Remote.gitconfig r) of
+		Nothing -> go (Just ProbeStallDetection)
+		Just StallDetectionDisabled -> go Nothing
+		Just sd -> runTransferrer sd r key f d Upload witness
   where
  	go sd = upload' (Remote.uuid r) key f sd d (action . Remote.storeKey r key f) witness
 
@@ -73,10 +73,11 @@ alwaysUpload u key f sd d a _witness = guardHaveUUID u $
 
 -- Download, supporting canceling detected stalls.
 download :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
-download r key f d witness = logStatusAfter key $ stallDetection r >>= \case
-	Nothing -> go (Just ProbeStallDetection)
-	Just StallDetectionDisabled -> go Nothing
-	Just sd -> runTransferrer sd r key f d Download witness
+download r key f d witness = logStatusAfter key $
+	case remoteAnnexStallDetection (Remote.gitconfig r) of
+		Nothing -> go (Just ProbeStallDetection)
+		Just StallDetectionDisabled -> go Nothing
+		Just sd -> runTransferrer sd r key f d Download witness
   where
 	go sd = getViaTmp (Remote.retrievalSecurityPolicy r) vc key f $ \dest ->
 		download' (Remote.uuid r) key f sd d (go' dest) witness
@@ -400,9 +401,3 @@ lessActiveFirst :: M.Map Remote Integer -> Remote -> Remote -> Ordering
 lessActiveFirst active a b
 	| Remote.cost a == Remote.cost b = comparing (`M.lookup` active) a b
 	| otherwise = comparing Remote.cost a b
-
-stallDetection :: Remote -> Annex (Maybe StallDetection)
-stallDetection r = maybe globalcfg (pure . Just) remotecfg
-  where
-	globalcfg = annexStallDetection <$> Annex.getGitConfig
-	remotecfg = remoteAnnexStallDetection $ Remote.gitconfig r
