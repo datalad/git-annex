@@ -123,7 +123,6 @@ data GitConfig = GitConfig
 	, annexRetry :: Maybe Integer
 	, annexForwardRetry :: Maybe Integer
 	, annexRetryDelay :: Maybe Seconds
-	, annexStallDetection :: Maybe StallDetection
 	, annexBwLimit :: Maybe BwRate
 	, annexAllowedUrlSchemes :: S.Set Scheme
 	, annexAllowedIPAddresses :: String
@@ -218,9 +217,6 @@ extractGitConfig configsource r = GitConfig
 	, annexForwardRetry = getmayberead (annexConfig "forward-retry")
 	, annexRetryDelay = Seconds
 		<$> getmayberead (annexConfig "retrydelay")
-	, annexStallDetection =
-		either (const Nothing) Just . parseStallDetection
-			=<< getmaybe (annexConfig "stalldetection")
 	, annexBwLimit =
 		either (const Nothing) Just . parseBwRate
 			=<< getmaybe (annexConfig "bwlimit")
@@ -448,8 +444,10 @@ extractRemoteGitConfig r remotename = do
 	getmaybebool k = Git.Config.isTrueFalse' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe = fmap fromConfigValue . getmaybe'
-	getmaybe' k = mplus (Git.Config.getMaybe (annexConfig k) r)
-		(Git.Config.getMaybe (remoteAnnexConfig remotename k) r)
+	getmaybe' k = 
+		Git.Config.getMaybe (remoteAnnexConfig remotename k) r
+			<|>
+		Git.Config.getMaybe (annexConfig k) r
 	getoptions k = fromMaybe [] $ words <$> getmaybe k
 
 notempty :: Maybe String -> Maybe String	

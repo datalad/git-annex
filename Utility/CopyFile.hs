@@ -56,11 +56,13 @@ copyFileExternal meta src dest = do
 		| otherwise = copyMetaDataParams meta
 
 {- When a filesystem supports CoW (and cp does), uses it to make
- - an efficient copy of a file. Otherwise, returns False. -}
+ - an efficient copy of a file. Otherwise, returns False.
+ -
+ - The dest file must not exist yet, or it will fail to make a CoW copy,
+ - and will return False. -}
 copyCoW :: CopyMetaData -> FilePath -> FilePath -> IO Bool
 copyCoW meta src dest
 	| BuildInfo.cp_reflink_supported = do
-		void $ tryIO $ removeFile dest
 		-- When CoW is not supported, cp will complain to stderr,
 		-- so have to discard its stderr.
 		ok <- catchBoolIO $ withNullHandle $ \nullh ->
