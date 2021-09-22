@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="mike@2d6d71f56ce2a992244350475251df87c26fe351"
+ nickname="mike"
+ avatar="http://cdn.libravatar.org/avatar/183fa439752e2f0c6f39ede658d81050"
+ subject="comment 4"
+ date="2021-09-22T21:18:10Z"
+ content="""
+> You did say it's not moving \"some files\" which suggests maybe it is moving other ones? Do you see it move any unused files at all?
+                                                                                                                        
+It's moving most of it, just not all of them!                                                                           
+                                                                                                                        
+> Do other commands that use the same --unused option work? Eg, does git annex whereis --unused list them?              
+                                                                                                                        
+`git annex whereis --unused` lists the files. `git annex copy --unused -t bims` OTOH does not do anything. I also tried `git annex drop --unused --in=bims` in an attempt to emulate `git annex move --unused -t bims`, but this also does not do anything.                                                                                                            
+                                                                                                                        
+~~~                                                                                                                     
+% git annex whereis --unused                                                                                            
+whereis SHA256E-s24643--167c39a6ca9aacb7d4a111ce58cb65405e9f43e0b0f686108fbbaf201e0561aa.jpg (2 copies)                 
+  ▹‧87f95204-e2d7-41bc-bf24-29c43c4a95d4 -- orange@leguin:~/Calibre Library [here]                                      
+   ▹994901a8-670e-403e-9a72-aff9ce07556a -- bims:/srv/annex/Calibre Library.git [bims]                                  
+[... more files ...]                                                                                                    
+~~~                                                                                                                     
+                                                                                                                        
+> The only way I can reproduce this behavior is if the remote has the same uuid                                         
+> as the current repository. Then any move is a no-op and it avoids operating on                                        
+> the files at all, the same as your output shows. So it seems possible that                                            
+> could be your real problem.                                                                                           
+                                                                                                                        
+I don't think that's the issue: If you look above, `here` and `bims` have different UUIDs. (I also notice the files are already on the `bims` remote.)              
+"""]]
