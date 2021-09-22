@@ -31,5 +31,11 @@ works, it will probably work to put the delay in there. --[[Joey]]
 > I have not done so yet though, and am closing this..
 > --[[Joey]]
 
+> (One other small caveat is that it pauses after each chunk, which means
+> it pauses unncessarily after the last chunk of the file. It doesn't know
+> it's the last chunk, and it would be hard to teach it. And the chunks
+> tend to be 32kb or so, and the pauses a small fraction of a second. So
+> mentioning this only for completeness.) --[[Joey]]
+
 [[done]]
 
