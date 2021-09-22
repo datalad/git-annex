@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-09-22T19:30:15Z"
+ content="""
+I've now implemented remote.name.annex-bwlimit, which works for most
+remotes, and can be used instead of the rsync options for git remotes
+that no longer use rsync.
+"""]]
