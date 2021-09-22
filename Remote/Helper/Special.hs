@@ -261,8 +261,9 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 	chunkconfig = chunkConfig cfg
 
 	displayprogress p k srcfile a
-		| displayProgress cfg =
-			metered (Just p) (KeySizer k (pure (fmap toRawFilePath srcfile))) (const a)
+		| displayProgress cfg = do
+			let bwlimit = remoteAnnexBwLimit (gitconfig baser)
+			metered (Just p) (KeySizer k (pure (fmap toRawFilePath srcfile))) bwlimit (const a)
 		| otherwise = a p
 
 withBytes :: ContentSource -> (L.ByteString -> Annex a) -> Annex a

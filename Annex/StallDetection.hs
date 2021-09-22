@@ -22,7 +22,7 @@ import Control.Monad.IO.Class (MonadIO)
 detectStalls :: (Monad m, MonadIO m) => Maybe StallDetection -> TVar (Maybe BytesProcessed) -> m () -> m ()
 detectStalls Nothing _ _ = noop
 detectStalls (Just StallDetectionDisabled) _ _ = noop
-detectStalls (Just (StallDetection minsz duration)) metervar onstall =
+detectStalls (Just (StallDetection (BwRate minsz duration))) metervar onstall =
 	detectStalls' minsz duration metervar onstall Nothing
 detectStalls (Just ProbeStallDetection) metervar onstall = do
 	-- Only do stall detection once the progress is confirmed to be

@@ -1384,6 +1384,18 @@ Remotes are configured using these settings in `.git/config`.
   When making multiple retries of the same transfer, the delay 
   doubles after each retry. (default 1)
 
+* `remote.<name>.annex-bwlimit`, `annex.bwlimit`
+
+  This can be used to limit how much bandwidth is used for a transfer
+  from or to a remote.
+ 
+  For example, to limit transfers to 1 mebibyte per second:
+  `git config annex.bwlimit "1MiB"`
+  
+  This will work with many remotes, including git remotes, but not
+  for remotes where the transfer is run by a separate program than
+  git-annex. 
+
 * `remote.<name>.annex-stalldetecton`, `annex.stalldetection`
 
   Configuring this lets stalled or too-slow transfers be detected, and

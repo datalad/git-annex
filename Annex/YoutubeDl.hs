@@ -96,7 +96,7 @@ youtubeDl' url workdir p uo
 			-- with the size, which is why it's important the
 			-- meter is passed into commandMeter'
 			let unknownsize = Nothing :: Maybe FileSize
-			ok <- metered (Just p) unknownsize $ \meter meterupdate ->
+			ok <- metered (Just p) unknownsize Nothing $ \meter meterupdate ->
 				liftIO $ commandMeter' 
 					parseYoutubeDlProgress oh (Just meter) meterupdate cmd opts
 					(\pr -> pr { cwd = Just workdir })

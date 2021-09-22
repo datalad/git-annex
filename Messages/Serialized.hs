@@ -68,7 +68,7 @@ relaySerializedOutput getso sendsor meterreport runannex = go Nothing
 			let setclear = const noop
 			-- Display a progress meter while running, until
 			-- the meter ends or a final value is returned.
-			metered' ost setclear Nothing Nothing (runannex showOutput) 
+			metered' ost setclear Nothing Nothing Nothing (runannex showOutput) 
 				(\meter meterupdate -> loop (Just (meter, meterupdate)))
 				>>= \case
 					Right r -> return (Right r)

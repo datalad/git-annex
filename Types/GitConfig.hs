@@ -339,6 +339,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexForwardRetry :: Maybe Integer
 	, remoteAnnexRetryDelay :: Maybe Seconds
 	, remoteAnnexStallDetection :: Maybe StallDetection
+	, remoteAnnexBwLimit :: Maybe BwRate
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
 	, remoteAnnexConfigUUID :: Maybe UUID
 
@@ -404,8 +405,11 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexRetryDelay = Seconds
 			<$> getmayberead "retrydelay"
 		, remoteAnnexStallDetection =
-			either (const Nothing) id . parseStallDetection
+			either (const Nothing) Just . parseStallDetection
 				=<< getmaybe "stalldetection"
+		, remoteAnnexBwLimit = do
+			sz <- readSize dataUnits =<< getmaybe "bwlimit"
+			return (BwRate sz (Duration 1))
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe ("security-allow-unverified-downloads")
 		, remoteAnnexConfigUUID = toUUID <$> getmaybe "config-uuid"

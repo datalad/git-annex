@@ -31,19 +31,21 @@ type ProtoConnRunner c = forall a. P2P.Proto a -> ClosableConnection c -> Annex 
 -- the pool when done.
 type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) -> Annex a
 
-store :: (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
-store runner k af p = do
+store :: RemoteGitConfig -> (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
+store gc runner k af p = do
 	let sizer = KeySizer k (fmap (toRawFilePath . fst) <$> prepSendAnnex k)
-	metered (Just p) sizer $ \_ p' ->
+	let bwlimit = remoteAnnexBwLimit gc
+	metered (Just p) sizer bwlimit $ \_ p' ->
 		runner p' (P2P.put k af p') >>= \case
 			Just True -> return ()
 			Just False -> giveup "Transfer failed"
 			Nothing -> remoteUnavail
 
-retrieve :: (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
-retrieve runner k af dest p verifyconfig = do
+retrieve :: RemoteGitConfig -> (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+retrieve gc runner k af dest p verifyconfig = do
 	iv <- startVerifyKeyContentIncrementally verifyconfig k
-	metered (Just p) k $ \m p' -> 
+	let bwlimit = remoteAnnexBwLimit gc
+	metered (Just p) k bwlimit $ \m p' -> 
 		runner p' (P2P.get dest k iv af m p') >>= \case
 			Just (True, v) -> return v
 			Just (False, _) -> giveup "Transfer failed"

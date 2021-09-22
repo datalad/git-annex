@@ -10,5 +10,26 @@ works, it will probably work to put the delay in there. --[[Joey]]
 
 [[confirmed]]
 
-> Implmentation in progress in the `bwlimit` branch. Seems to work, but see
-> commit message for what still needs to be done. --[[Joey]]
+> Implemented and works well.
+> 
+> A local git remote, when resuming an interrupted
+> transfer, has to hash the file (with default annex.verify settings),
+> and that hashing updates the progress bar, and so the bwlimit can kick
+> in and slow down that initial hashing, before any data copying begins.
+> This seems perhaps ok; if you've bwlimited a local git remote,
+> remote you're wanting to limit disk IO. Only reason it might not be ok
+> is if the intent is to limit IO to the disk containing the remote
+> but not the one containing the annex repo. (This also probably
+> holds for the directory special remote.)
+> 
+> Other remotes, including git over ssh, when resuming don't have that
+> problem. Looks like chunked special remotes narrowly avoid it, just
+> because their implementation choose to not do incremental verification
+> when resuming. It might be worthwhile to differentiate between progress
+> updates for incremental verification setup and for actual transfers, and
+> only rate limit the latter, just to avoid fragility in the code.
+> I have not done so yet though, and am closing this..
+> --[[Joey]]
+
+[[done]]
+

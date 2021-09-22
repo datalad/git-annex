@@ -1,4 +1,4 @@
-{- types for stall detection
+{- types for stall detection and banwdith rates
  -
  - Copyright 2020-2021 Joey Hess <id@joeyh.name>
  -
@@ -13,7 +13,7 @@ import Utility.Misc
 import Git.Config
 
 data StallDetection
-	= StallDetection ByteSize Duration
+	= StallDetection BwRate
 	-- ^ Unless the given number of bytes have been sent over the given
 	-- amount of time, there's a stall.
 	| ProbeStallDetection
@@ -22,21 +22,29 @@ data StallDetection
 	| StallDetectionDisabled
 	deriving (Show)
 
+data BwRate = BwRate ByteSize Duration
+	deriving (Show)
+
 -- Parse eg, "0KiB/60s"
 --
 -- Also, it can be set to "true" (or other git config equivilants)
 -- to enable ProbeStallDetection. 
 -- And "false" (and other git config equivilants) explicitly
 -- disable stall detection.
-parseStallDetection :: String -> Either String (Maybe StallDetection)
+parseStallDetection :: String -> Either String StallDetection
 parseStallDetection s = case isTrueFalse s of
 	Nothing -> do
-		let (bs, ds) = separate (== '/') s
-		b <- maybe 
-			(Left $ "Unable to parse stall detection amount " ++ bs)
-			Right
-			(readSize dataUnits bs)
-		d <- parseDuration ds
-		return (Just (StallDetection b d))
-	Just True -> Right (Just ProbeStallDetection)
-	Just False -> Right (Just StallDetectionDisabled)
+		v <- parseBwRate s
+		Right (StallDetection v)
+	Just True -> Right ProbeStallDetection
+	Just False -> Right StallDetectionDisabled
+
+parseBwRate :: String -> Either String BwRate
+parseBwRate s = do
+	let (bs, ds) = separate (== '/') s
+	b <- maybe 
+		(Left $ "Unable to parse bandwidth amount " ++ bs)
+		Right
+		(readSize dataUnits bs)
+	d <- parseDuration ds
+	Right (BwRate b d)
