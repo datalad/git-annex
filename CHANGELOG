@@ -1,5 +1,8 @@
 git-annex (8.20210904) UNRELEASED; urgency=medium
 
+  * Bug fix: Git configs such as annex.verify were incorrectly overriding
+    per-remote git configs such as remote.name.annex-verify.
+    (Reversion in version 4.20130323)
   * borg: Avoid trying to extract xattrs, ACLS, and bsdflags when
     retrieving from a borg repository.
   * Resume where it left off when copying a file to/from a local git remote

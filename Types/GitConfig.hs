@@ -440,8 +440,10 @@ extractRemoteGitConfig r remotename = do
 	getmaybebool k = Git.Config.isTrueFalse' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe = fmap fromConfigValue . getmaybe'
-	getmaybe' k = mplus (Git.Config.getMaybe (annexConfig k) r)
-		(Git.Config.getMaybe (remoteAnnexConfig remotename k) r)
+	getmaybe' k = 
+		Git.Config.getMaybe (remoteAnnexConfig remotename k) r
+			<|>
+		Git.Config.getMaybe (annexConfig k) r
 	getoptions k = fromMaybe [] $ words <$> getmaybe k
 
 notempty :: Maybe String -> Maybe String	
