@@ -18,7 +18,6 @@ import Messages.Progress
 import Utility.Metered
 import Types.NumCopies
 import Annex.Verify
-import Annex.Transfer
 
 import Control.Concurrent
 
@@ -35,7 +34,7 @@ type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) ->
 store :: RemoteGitConfig -> (MeterUpdate -> ProtoRunner Bool) -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
 store gc runner k af p = do
 	let sizer = KeySizer k (fmap (toRawFilePath . fst) <$> prepSendAnnex k)
-	bwlimit <- bwLimit gc
+	let bwlimit = remoteAnnexBwLimit gc
 	metered (Just p) sizer bwlimit $ \_ p' ->
 		runner p' (P2P.put k af p') >>= \case
 			Just True -> return ()
@@ -45,7 +44,7 @@ store gc runner k af p = do
 retrieve :: RemoteGitConfig -> (MeterUpdate -> ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 retrieve gc runner k af dest p verifyconfig = do
 	iv <- startVerifyKeyContentIncrementally verifyconfig k
-	bwlimit <- bwLimit gc
+	let bwlimit = remoteAnnexBwLimit gc
 	metered (Just p) k bwlimit $ \m p' -> 
 		runner p' (P2P.get dest k iv af m p') >>= \case
 			Just (True, v) -> return v

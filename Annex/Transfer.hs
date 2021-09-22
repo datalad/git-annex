@@ -19,7 +19,6 @@ module Annex.Transfer (
 	noRetry,
 	stdRetry,
 	pickRemote,
-	bwLimit,
 ) where
 
 import Annex.Common
@@ -402,9 +401,3 @@ lessActiveFirst :: M.Map Remote Integer -> Remote -> Remote -> Ordering
 lessActiveFirst active a b
 	| Remote.cost a == Remote.cost b = comparing (`M.lookup` active) a b
 	| otherwise = comparing Remote.cost a b
-
-bwLimit :: RemoteGitConfig -> Annex (Maybe BwRate)
-bwLimit gc = maybe globalcfg (pure . Just) remotecfg
-  where
-	globalcfg = annexBwLimit <$> Annex.getGitConfig
-	remotecfg = remoteAnnexBwLimit gc

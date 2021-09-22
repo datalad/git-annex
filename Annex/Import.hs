@@ -461,7 +461,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 					, providedMimeEncoding = Nothing
 					, providedLinkType = Nothing
 					}
-				bwlimit <- bwLimit (Remote.gitconfig remote)
+				let bwlimit = remoteAnnexBwLimit (Remote.gitconfig remote)
 				islargefile <- checkMatcher' matcher mi mempty
 				metered Nothing sz bwlimit $ const $ if islargefile
 					then doimportlarge importkey cidmap db loc cid sz f
@@ -558,7 +558,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			Left e -> do
 				warning (show e)
 				return Nothing
-		bwlimit <- bwLimit (Remote.gitconfig remote)
+		let bwlimit = remoteAnnexBwLimit (Remote.gitconfig remote)
 		checkDiskSpaceToGet tmpkey Nothing $
 			notifyTransfer Download af $
 				download' (Remote.uuid remote) tmpkey af Nothing stdRetry $ \p ->

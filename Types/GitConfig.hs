@@ -123,7 +123,6 @@ data GitConfig = GitConfig
 	, annexRetry :: Maybe Integer
 	, annexForwardRetry :: Maybe Integer
 	, annexRetryDelay :: Maybe Seconds
-	, annexBwLimit :: Maybe BwRate
 	, annexAllowedUrlSchemes :: S.Set Scheme
 	, annexAllowedIPAddresses :: String
 	, annexAllowUnverifiedDownloads :: Bool
@@ -217,9 +216,6 @@ extractGitConfig configsource r = GitConfig
 	, annexForwardRetry = getmayberead (annexConfig "forward-retry")
 	, annexRetryDelay = Seconds
 		<$> getmayberead (annexConfig "retrydelay")
-	, annexBwLimit =
-		either (const Nothing) Just . parseBwRate
-			=<< getmaybe (annexConfig "bwlimit")
 	, annexAllowedUrlSchemes = S.fromList $ map mkScheme $
 		maybe ["http", "https", "ftp"] words $
 			getmaybe (annexConfig "security.allowed-url-schemes")

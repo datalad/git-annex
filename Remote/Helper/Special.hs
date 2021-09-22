@@ -42,7 +42,6 @@ import Types.StoreRetrieve
 import Types.Remote
 import Annex.Verify
 import Annex.UUID
-import Annex.Transfer
 import Config
 import Config.Cost
 import Utility.Metered
@@ -263,7 +262,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 
 	displayprogress p k srcfile a
 		| displayProgress cfg = do
-			bwlimit <- bwLimit (gitconfig baser)
+			let bwlimit = remoteAnnexBwLimit (gitconfig baser)
 			metered (Just p) (KeySizer k (pure (fmap toRawFilePath srcfile))) bwlimit (const a)
 		| otherwise = a p
 
