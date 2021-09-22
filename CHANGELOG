@@ -1,7 +1,8 @@
 git-annex (8.20210904) UNRELEASED; urgency=medium
 
-  * Added annex.bwlimit and remote.name.annex-bwlimit config that works
-    for git remotes and many but not all special remotes.
+  * Added annex.bwlimit and remote.name.annex-bwlimit config to limit
+    the bandwidth of transfers. It works for git remotes and many
+    but not all special remotes.
   * Bug fix: Git configs such as annex.verify were incorrectly overriding
     per-remote git configs such as remote.name.annex-verify.
     (Reversion in version 4.20130323)

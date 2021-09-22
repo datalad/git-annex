@@ -407,9 +407,9 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexStallDetection =
 			either (const Nothing) Just . parseStallDetection
 				=<< getmaybe "stalldetection"
-		, remoteAnnexBwLimit =
-			either (const Nothing) Just . parseBwRate
-				=<< getmaybe "bwlimit"
+		, remoteAnnexBwLimit = do
+			sz <- readSize dataUnits =<< getmaybe "bwlimit"
+			return (BwRate sz (Duration 1))
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe ("security-allow-unverified-downloads")
 		, remoteAnnexConfigUUID = toUUID <$> getmaybe "config-uuid"

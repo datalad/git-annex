@@ -1389,21 +1389,12 @@ Remotes are configured using these settings in `.git/config`.
   This can be used to limit how much bandwidth is used for a transfer
   from or to a remote.
  
-  For example, to limit transfers to 1 gigabyte per second:
-  `git config annex.bwlimit "1GB/1s"`
-
+  For example, to limit transfers to 1 mebibyte per second:
+  `git config annex.bwlimit "1MiB"`
+  
   This will work with many remotes, including git remotes, but not
   for remotes where the transfer is run by a separate program than
-  git-annex.
-
-  The bandwidth limiting is implemented by pausing when
-  the transfer is running too fast, so it may use more bandwidth
-  than configured before being slowed down, either at the beginning
-  or if the available bandwidth changes while it is running.
-
-  It is different to use "1GB/1s" than "10GB/10s". git-annex will
-  track how much data was transferred over the time period, and then
-  pausing. So usually 1s is the best time period to use.
+  git-annex. 
 
 * `remote.<name>.annex-stalldetecton`, `annex.stalldetection`
 

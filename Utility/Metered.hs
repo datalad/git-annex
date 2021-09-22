@@ -389,39 +389,34 @@ rateLimitMeterUpdate delta (Meter totalsizev _ _ _) meterupdate = do
 -- same process and thread as the call to the MeterUpdate.
 --
 -- For example, if the desired bandwidth is 100kb/s, and over the past
--- second, 200kb was sent, then pausing for half a second, and then
--- running for half a second should result in the desired bandwidth.
--- But, if after that pause, only 75kb is sent over the next half a
--- second, then the next pause should be 2/3rds of a second.
+-- 1/10th of a second, 30kb was sent, then the current bandwidth is
+-- 300kb/s, 3x as fast as desired. So, after getting the next chunk,
+-- pause for twice as long as it took to get it.
 bwLimitMeterUpdate :: ByteSize -> Duration -> MeterUpdate -> IO MeterUpdate
-bwLimitMeterUpdate sz duration meterupdate = do
-	nowtime <- getPOSIXTime
-	lastpause <- newMVar (nowtime, toEnum 0 :: POSIXTime, 0)
-	return $ mu lastpause
-  where
-	mu lastpause n@(BytesProcessed i) = do
+bwLimitMeterUpdate bwlimit duration meterupdate
+	| bwlimit <= 0 = return meterupdate
+	| otherwise = do
 		nowtime <- getPOSIXTime
-		meterupdate n
-		lastv@(prevtime, prevpauselength, previ) <- takeMVar lastpause
-		let timedelta = nowtime - prevtime
-		if timedelta >= durationsecs
-			then do
-				let sz' = i - previ
-				let runtime = timedelta - prevpauselength
-				let pauselength = calcpauselength sz' runtime
-				if pauselength > 0
-					then do
-						unboundDelay (floor (pauselength * fromIntegral oneSecond))
-						putMVar lastpause (nowtime, pauselength, i)
-					else putMVar lastpause lastv
-			else putMVar lastpause lastv
+		mv <- newMVar (nowtime, 0)
+		return (mu mv)
+  where
+	mu mv n@(BytesProcessed i) = do
+		endtime <- getPOSIXTime
+		(starttime, previ) <- takeMVar mv
 
-	calcpauselength sz' runtime
-		| sz' > sz && sz' > 0 && runtime > 0 =
-			durationsecs - (fromIntegral sz / fromIntegral sz') * runtime
-		| otherwise = 0
-	
-	durationsecs = fromIntegral (durationSeconds duration)
+		let runtime = endtime - starttime
+		let currbw = fromIntegral (i - previ) / runtime
+		let pausescale = if currbw > bwlimit'
+			then (currbw / bwlimit') - 1
+			else 0
+		unboundDelay (floor (runtime * pausescale * msecs))
+		meterupdate n
+
+		nowtime <- getPOSIXTime
+		putMVar mv (nowtime, i)
+
+	bwlimit' = fromIntegral (bwlimit * durationSeconds duration) 
+	msecs = fromIntegral oneSecond
 
 data Meter = Meter (MVar (Maybe TotalSize)) (MVar MeterState) (MVar String) DisplayMeter
 
