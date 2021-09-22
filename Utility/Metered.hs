@@ -397,23 +397,27 @@ bwLimitMeterUpdate bwlimit duration meterupdate
 	| bwlimit <= 0 = return meterupdate
 	| otherwise = do
 		nowtime <- getPOSIXTime
-		mv <- newMVar (nowtime, 0)
+		mv <- newMVar (nowtime, Nothing)
 		return (mu mv)
   where
 	mu mv n@(BytesProcessed i) = do
 		endtime <- getPOSIXTime
-		(starttime, previ) <- takeMVar mv
+		(starttime, mprevi) <- takeMVar mv
 
-		let runtime = endtime - starttime
-		let currbw = fromIntegral (i - previ) / runtime
-		let pausescale = if currbw > bwlimit'
-			then (currbw / bwlimit') - 1
-			else 0
-		unboundDelay (floor (runtime * pausescale * msecs))
+		case mprevi of
+			Just previ -> do
+				let runtime = endtime - starttime
+				let currbw = fromIntegral (i - previ) / runtime
+				let pausescale = if currbw > bwlimit'
+					then (currbw / bwlimit') - 1
+					else 0
+				unboundDelay (floor (runtime * pausescale * msecs))
+			Nothing -> return ()
+
 		meterupdate n
 
 		nowtime <- getPOSIXTime
-		putMVar mv (nowtime, i)
+		putMVar mv (nowtime, Just i)
 
 	bwlimit' = fromIntegral (bwlimit * durationSeconds duration) 
 	msecs = fromIntegral oneSecond
