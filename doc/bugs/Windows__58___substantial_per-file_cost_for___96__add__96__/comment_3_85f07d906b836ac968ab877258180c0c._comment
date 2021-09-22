@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-09-22T19:33:58Z"
+ content="""
+Look at the 3 git add results, dividing windows runtime by linux:
+
+	1.9/0.05 = 38.00
+	4.5/0.08 = 56.25
+	13.1/0.36 = 36.39
+
+The middle is slightly an outlier, and it would be better to have more data
+points, but what this says to me is it's probably around 38x more expensive
+on windows than on linux for git-annex smudge --clean to run.
+
+git-annex smudge --clean makes on the order of 3000 syscalls, including
+opening 200 files, execing git 30 times, and statting 400 files. That's
+around 10x as many syscalls as git add makes. And it's run once per file. So
+relatively small differences in syscall performance between windows and
+linux can add up.
+
+I've looked at just this kind of comparisons before, and it has always
+seemed explainable by differences in syscall overhead. I don't
+really see anything in your numbers that says otherwise.
+
+I'm still curious if there's an older version of git-annex that was faster
+(after it stopped using direct mode in v7).
+If I've understood correctly, you don't seem to be saying that there is.
+
+If it's always been this slow, then about all I can think to do to improve
+it is profile git-annex smudge --clean on windows and see if anything other
+than those syscalls is somehow being slow.
+"""]]
