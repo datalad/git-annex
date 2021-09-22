@@ -1,0 +1,68 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Performance stats on crippled Debian NTFS-mount"
+ date="2021-09-22T18:37:10Z"
+ content="""
+I am responding to your comments in an altered order:
+
+> So are the timings in those issues comparable, or is it an apples/oranges comparison with different hardware or OS version? And if the timings between those issues are not comparable, what exactly is this new issue comparing with when it says the performance has worsened?
+
+The timing are comparable insofar as they come from the same hardware and \"same\" OS, but that OS has seen various updates over time, hence cannot be considered constant.
+
+> Each git add has to run a new git annex smudge process. git commit will often run it as well. This is discussed in detail in git smudge clean interface suboptiomal.
+
+Yes, I understand that this is a limitation that is outside the control of git-annex. However, the difference between windows (with implied crippling) and a crippled FS mounted on a proper OS are substantial. Here are a bunch of stats, matching those above.
+
+From https://github.com/datalad/datalad/issues/5317#issuecomment-760767158 a description on how the real windows test system used above relates to my laptop used for the stats below:
+
+> The machine is a little older (1 year older than the machine I used for the stats posted before), but not a cripple (Core i5, two physical cores at 2.6GHz, 8GB RAM, mSATA SSD, uptodate bios from 2019, and an uptodate win10).
+
+Here I am using a Core i7-6500U CPU @ 2.50GHz, 8GB RAM, mSATA SSD (via USB3). git 2.33.0, git annex version 8.20210903:
+
+For convenience, I am putting the values from my original post with the stats computed on windows in *brackets*.
+
+- git init: 0.01s *[0.1s]*
+- git annex init: 0.1s *[5.7s]*
+
+First timing info is the command executed in an annex-repo (after git annex init), the second timing is the same command executed in a plain Git repo.
+
+after creating a 3-byte text file:
+
+- git add file: 0.05s (0.01s) *[1.9s (0.1s)]*
+- git commit file -m msg: 0.08s (0.02s) *[3.2s (0.1s)]*
+
+after creating two new 3-byte test files:
+
+- git add .: 0.08s (0.01s) *[4.5s (0.1s)]*
+- git commit -m msg: 0.04s (0.02s) *[2.4s (0.1s)]*
+
+after creating eight more 3-byte text files:
+
+- git add .: 0.36s (0.01s) *[13.1s (0.1s)]*
+- git commit -m msg: 0.04s (0.01s) *[1.6 (0.1s)]*
+
+now adding a 225 MB binary file
+
+- git add binfiile: 10.8s (10.9s) *[16s (13s)]*
+- git commit -m msg: 1.2s (0.03s) *[2s (0.2s)]*
+
+no changes
+
+- git commit --amend -m msg: 1.3s (0.01s) *[2s (0.1s)]*
+
+
+So taken together, we can clearly see the price that needs to be paid for the smudge filter approach. However, it is nowhere near the penalty paid on the real windows system, both in absolute terms, as well as relative to plain git operations. Critically (for me) the total difference for a `datalad create` amounts to:
+
+- 25s on a crippled NTFS drive on windows
+- 0.9s on a crippled NTFS drive on Debian
+
+(on otherwise fairly comparable hardware).
+
+I think this indicates that something is slower on windows that *cannot* be explained by
+
+- Git generally being slower on Windows
+- git-annex generally being slower when juggling smudge filters and adjusted branches
+- an overall performance difference between my two test machines
+
+"""]]
