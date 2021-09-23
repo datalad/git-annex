@@ -1,0 +1,62 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="v7 v v8 comparison"
+ date="2021-09-23T06:29:30Z"
+ content="""
+> I'm still curious if there's an older version of git-annex that was faster (after it stopped using direct mode in v7). If I've understood correctly, you don't seem to be saying that there is.
+
+Here is some data that seems to support this view.
+
+I dug up another windows box on the higher performance end
+
+- windows 11 (not 10!) build 10.0.22000
+- intel 6-core xeon E-2136 @ 3.3ghz
+- NVMe drive
+
+All stats done with
+
+- git 2.32.0.windows.2
+
+I am reporting two values each, the first for git annex 8.20210715-g7334893d4 and the second for 7.20191107-g8ea269ef7 (the oldest windows build that I could find). Consequently, the first measurement is for a v8 repo, the second for a v7 repo (but no direct mode).
+
+init
+
+- git init: 0.1s / 0.1s
+- git annex init: 3.2s / 3.2s
+
+after creating a 3-byte text file:
+
+- git add file: 1.0s / 0.9s
+- git commit file -m msg: 1.8s / 1.8s
+
+after creating two new 3-byte test files:
+
+- git add .: 1.9s / 1.7s
+- git commit -m msg: 0.9s / 0.9s
+
+(NB: the `add` increase is caused by unique keys, adding a bunch of identical files is the same as adding one file)
+
+after creating eight more 3-byte text files:
+
+- git add .: 6.5s / 6.8s
+- git commit -m msg: 0.9s / 0.9s
+
+now adding a 280 MB binary file
+
+- git add binfiile: 9.8s / 9.9s
+- git commit -m msg: 1.2s / 1.2s
+
+no changes
+
+- git commit --amend -m msg: 1.2s / 1.2s
+
+
+
+
+So there is pretty much no change, and in particular no change attributable to the last ~2 years of git-annex evolution.
+
+However, what remains is that a substantially more capable windows workstation (internal NVMe, faster CPU) comes nowhere near the performance of my 6 year old Debian laptop with an external USB3 drive -- despite having to go through the same smudge filter complications.
+
+I would be grateful, if you could have a look at the windows implementation of `smudge --clean`. Please let me know what kind of contribution could help to push such an effort. Thanks!
+"""]]
