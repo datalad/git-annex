@@ -1,0 +1,77 @@
+### Please describe the problem.
+I have a strange problem with diff driver.
+I wrote a diff driver which normally works, but one of my repo
+it comes up with an error that it can open `.git/annex/objects/SHA256E-s4545--9715...`.
+Indeed there is no such file, the file being not directly under `.git/annex/objects` but under `.git/annex/objects/mz/Px`.
+Also when I examine the file in git its value is `.git/annex/objects/SHA256E-s4545--9715...` but I thought it should have been `.git/annex/objects/mz/PX/SHA256E-s4545--9715...`.
+
+
+### What steps will reproduce the problem?
+
+Just use `git diff HEAD` on my corrupted repo.
+
+
+### What version of git-annex are you using? On what operating system?
+
+Version 7. I don't remember which version was used to create the repo.
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+     ❯ git diff HEAD .                                                                                                                                                                  [20:10:33]
+1:dumps/pages.sql
+2:/tmp/gwSIvM_pages.sql
+3:1bb7ca74a6701b1ea0d4f12ae64cfc3e83e22bad
+4:100644
+5:dumps/pages.sql
+6:0000000000000000000000000000000000000000
+7:100644
+-------          /tmp/gwSIvM_pages.sql-
+head: cannot open '.git/annex/objects/SHA256E-s4542--9715a9ca90cad176f69fb91ed650a02afb2885c96975064d49e85230513c2d9e.sql' for reading: No such file or directory
+--------         $ target
+--
+-- PostgreSQL database dump
+--
+ 
+-- Dumped from database version 13.3
+-- Dumped by pg_dump version 13.3
+ 
+ ❯ cat ~/.local/bin/mydiff.sh                                                                                                                                                       [20:16:07]
+echo 1:$1
+echo 2:$2
+echo 3:$3
+echo 4:$4
+echo 5:$5
+echo 6:$6
+echo 7:$7
+if [ "$5" = "/dev/null" ]
+then
+   echo "NULL"
+   target=$1
+else
+   target=$5
+fi
+#echo $@
+echo "-------          $2-"
+head .git$(cat $2)
+echo "--------         $target"
+head $target
+echo "-------- DIFF"
+#colordiff $1 $2
+
+#git --no-pager diff --color=auto --word-diff --no-ext-diff --no-index "$2" "$target"
+echo diff -d --color=always $2 $target
+#git --no-pager diff --color=auto --no-ext-diff --no-index -U0 "$2" "$5"
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes and it works really well (and my diff driver works on other repos too).
+
+
