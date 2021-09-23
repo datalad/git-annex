@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-09-23T17:22:19Z"
+ content="""
+Thank you for verifying this is not a recent speed reversion.
+
+You could use `git -c filter.annex.clean= add smallfile`
+to avoid the overhead of the smudge filter.
+Using `git annex add --force-small` or `git annex add` with an
+annex.largefiles config will also avoid it.
+
+ghc 8.12 has a new IO manager for windows, which
+I think is likely to be faster. (It avoids the win32 API.) I would
+want to look at that before other windows-specific optimisations.
+The windows build is still using lts-16.27 (ghc 8.8.3), there is not
+yet an lts release with ghc 8.12.
+
+I don't know if there are really any windows-specific optimisations to
+be had in the smudge code other than such low-level stuff.
+"""]]
