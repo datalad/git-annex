@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-09-24T22:21:45Z"
+ content="""
+Here is a time profile, git-annex built with `stack build --profile`
+on linux.
+
+	        Fri Sep 24 18:18 2021 Time and Allocation Profiling Report  (Final)
+	
+	           git-annex +RTS -p -RTS smudge --clean x
+	
+	        total time  =        0.01 secs   (13 ticks @ 1000 us, 1 processor)
+	        total alloc =   1,732,704 bytes  (excludes profiling overheads)
+	
+	COST CENTRE                    MODULE                           SRC                                                    %time %alloc
+	
+	createProcess                  Utility.Process                  Utility/Process.hs:(177,1)-(180,16)                     23.1   16.3
+	MAIN                           MAIN                             <built-in>                                               7.7    1.5
+	>>=.\                          Data.Attoparsec.Internal.Types   Data/Attoparsec/Internal/Types.hs:(148,9)-(149,44)       7.7    0.2
+	searchParser                   Options.Applicative.Common       src/Options/Applicative/Common.hs:(136,1)-(151,40)       7.7    0.9
+	splitPath.f                    System.FilePath.Posix.ByteString System/FilePath/Posix/../Internal.hs:(857,9)-(862,49)    7.7    1.6
+	withCatFileMetaDataHandle      Annex.CatFile                    Annex/CatFile.hs:(86,1)-(89,46)                          7.7    0.0
+	withAltRepo                    Annex.GitOverlay                 Annex/GitOverlay.hs:(107,1)-(124,31)                     7.7    0.1
+	cmdname                        Types.Command                    Types/Command.hs:80:11-17                                7.7    0.1
+	stop                           Utility.CoProcess                Utility/CoProcess.hs:(58,1)-(63,46)                      7.7    0.2
+	relPathCwdToFile               Utility.Path.AbsRel              Utility/Path/AbsRel.hs:(76,1)-(86,36)                    7.7    0.5
+	getEnv                         Utility.Env                      Utility/Env.hs:32:1-18                                   7.7    0.4
+
+Note that the profiler saw a 0.01 second runtime, but actual runtime is more
+like 0.04 seconds (actually 0.08 with this profiling build, but non-profiling
+builds are faster). The rest of the runtime must be linking and RTS startup?
+
+It would be good to get a similar profile on windows for comparison.
+"""]]
