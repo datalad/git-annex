@@ -1,6 +1,6 @@
 {- git cat-file interface
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,9 +10,13 @@
 
 module Git.CatFile (
 	CatFileHandle,
+	CatFileMetaDataHandle,
 	catFileStart,
+	catFileMetaDataStart,
 	catFileStart',
+	catFileMetaDataStart',
 	catFileStop,
+	catFileMetaDataStop,
 	catFile,
 	catFileDetails,
 	catTree,
@@ -55,8 +59,12 @@ import Utility.Tuple
 
 data CatFileHandle = CatFileHandle 
 	{ catFileProcess :: CoProcess.CoProcessHandle
-	, checkFileProcess :: CoProcess.CoProcessHandle
-	, gitRepo :: Repo
+	, catFileGitRepo :: Repo
+	}
+
+data CatFileMetaDataHandle = CatFileMetaDataHandle
+	{ checkFileProcess :: CoProcess.CoProcessHandle
+	, checkFileGitRepo :: Repo
 	}
 
 catFileStart :: Repo -> IO CatFileHandle
@@ -64,22 +72,31 @@ catFileStart = catFileStart' True
 
 catFileStart' :: Bool -> Repo -> IO CatFileHandle
 catFileStart' restartable repo = CatFileHandle
-	<$> startp "--batch"
-	<*> startp ("--batch-check=" ++ batchFormat)
+	<$> startcat restartable repo "--batch"
 	<*> pure repo
-  where
-	startp p = gitCoProcessStart restartable
-		[ Param "cat-file"
-		, Param p
-		] repo
+
+catFileMetaDataStart :: Repo -> IO CatFileMetaDataHandle
+catFileMetaDataStart = catFileMetaDataStart' True
+
+catFileMetaDataStart' :: Bool -> Repo -> IO CatFileMetaDataHandle
+catFileMetaDataStart' restartable repo = CatFileMetaDataHandle
+	<$> startcat restartable repo ("--batch-check=" ++ batchFormat)
+	<*> pure repo
 
 batchFormat :: String
 batchFormat = "%(objectname) %(objecttype) %(objectsize)"
 
+startcat :: Bool -> Repo -> String -> IO CoProcess.CoProcessHandle
+startcat restartable repo p = gitCoProcessStart restartable
+	[ Param "cat-file"
+	, Param p
+	] repo
+
 catFileStop :: CatFileHandle -> IO ()
-catFileStop h = do
-	CoProcess.stop (catFileProcess h)
-	CoProcess.stop (checkFileProcess h)
+catFileStop = CoProcess.stop . catFileProcess
+
+catFileMetaDataStop :: CatFileMetaDataHandle -> IO ()
+catFileMetaDataStop = CoProcess.stop . checkFileProcess
 
 {- Reads a file from a specified branch. -}
 catFile :: CatFileHandle -> Branch -> RawFilePath -> IO L.ByteString
@@ -106,16 +123,16 @@ catObjectDetails h object = query (catFileProcess h) object newlinefallback $ \f
 		Nothing -> error $ "unknown response from git cat-file " ++ show (header, object)
   where
 	-- Slow fallback path for filenames containing newlines.
-	newlinefallback = queryObjectType object (gitRepo h) >>= \case
+	newlinefallback = queryObjectType object (catFileGitRepo h) >>= \case
 		Nothing -> return Nothing
-		Just objtype -> queryContent object (gitRepo h) >>= \case
+		Just objtype -> queryContent object (catFileGitRepo h) >>= \case
 			Nothing -> return Nothing
 			Just content -> do
 				-- only the --batch interface allows getting
 				-- the sha, so have to re-hash the object
 				sha <- hashObject' objtype
 					(flip L.hPut content)
-					(gitRepo h)
+					(catFileGitRepo h)
 				return (Just (content, sha, objtype))
 
 readObjectContent :: Handle -> ParsedResp -> IO L.ByteString
@@ -131,7 +148,7 @@ readObjectContent h (ParsedResp _ _ size) = do
 readObjectContent _ DNE = error "internal"
 
 {- Gets the size and type of an object, without reading its content. -}
-catObjectMetaData :: CatFileHandle -> Ref -> IO (Maybe (Sha, FileSize, ObjectType))
+catObjectMetaData :: CatFileMetaDataHandle -> Ref -> IO (Maybe (Sha, FileSize, ObjectType))
 catObjectMetaData h object = query (checkFileProcess h) object newlinefallback $ \from -> do
 	resp <- S8.hGetLine from
 	case parseResp object resp of
@@ -142,9 +159,9 @@ catObjectMetaData h object = query (checkFileProcess h) object newlinefallback $
   where
 	-- Slow fallback path for filenames containing newlines.
 	newlinefallback = do
-		sha <- Git.Ref.sha object (gitRepo h)
-		sz <- querySize object (gitRepo h)
-		objtype <- queryObjectType object (gitRepo h)
+		sha <- Git.Ref.sha object (checkFileGitRepo h)
+		sz <- querySize object (checkFileGitRepo h)
+		objtype <- queryObjectType object (checkFileGitRepo h)
 		return $ (,,) <$> sha <*> sz <*> objtype
 
 data ParsedResp = ParsedResp Sha ObjectType FileSize | DNE
