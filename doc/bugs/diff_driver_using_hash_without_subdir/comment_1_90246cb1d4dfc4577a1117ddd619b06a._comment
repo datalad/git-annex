@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-09-24T18:17:59Z"
+ content="""
+I think the file in your repo is unlocked. An unlocked file is represented
+in git as a pointer file, the pointer contains "/annex/objects/<key>".
+
+Note that git-annex diffdriver exists to let a diff driver work with
+annexed files. I think you might want to use it. Amusingly
+I forgot about unlocked files in the implementation of it too;
+that got fixed in version 8.20210428.
+"""]]

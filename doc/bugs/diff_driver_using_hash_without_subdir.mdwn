@@ -75,3 +75,4 @@ echo diff -d --color=always $2 $target
 Yes and it works really well (and my diff driver works on other repos too).
 
 
+> [[notabug|done]]
