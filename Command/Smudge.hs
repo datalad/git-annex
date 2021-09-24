@@ -30,6 +30,7 @@ import Annex.InodeSentinal
 import Utility.InodeCache
 import Config.GitConfig
 import qualified Types.Backend
+import qualified Annex.BranchState
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
@@ -87,6 +88,7 @@ smudge file = do
 -- injested content if so. Otherwise, the original content.
 clean :: RawFilePath -> CommandStart
 clean file = do
+	Annex.BranchState.disableUpdate -- optimisation
 	b <- liftIO $ L.hGetContents stdin
 	ifM fileoutsiderepo
 		( liftIO $ L.hPut stdout b

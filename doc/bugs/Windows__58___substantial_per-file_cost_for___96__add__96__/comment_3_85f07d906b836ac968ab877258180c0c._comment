@@ -13,8 +13,8 @@ The middle is slightly an outlier, and it would be better to have more data
 points, but what this says to me is it's probably around 38x more expensive
 on windows than on linux for git-annex smudge --clean to run.
 
-git-annex smudge --clean makes on the order of 3000 syscalls, including
-opening 200 files, execing git 30 times, and statting 400 files. That's
+git-annex smudge --clean makes on the order of 4000 syscalls, including
+opening 200 files, execing git 8 times, and statting 500 files. That's
 around 10x as many syscalls as git add makes. And it's run once per file. So
 relatively small differences in syscall performance between windows and
 linux can add up.
