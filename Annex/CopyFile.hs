@@ -27,18 +27,32 @@ newtype CopyCoWTried = CopyCoWTried (MVar Bool)
 newCopyCoWTried :: IO CopyCoWTried
 newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
 
-{- Copies a file is copy-on-write is supported. Otherwise, returns False. -}
+{- Copies a file is copy-on-write is supported. Otherwise, returns False.
+ -
+ - The destination file must not exist yet, or it will fail to make a CoW copy,
+ - and will return false.
+ -}
 tryCopyCoW :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> IO Bool
 tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
 	-- If multiple threads reach this at the same time, they
 	-- will both try CoW, which is acceptable.
 	ifM (isEmptyMVar copycowtried)
-		( do
-			ok <- docopycow
-			void $ tryPutMVar copycowtried ok
-			return ok
+		-- If dest exists, don't try CoW, since it would
+		-- have to be deleted first.
+		( ifM (doesFileExist dest)
+			( return False
+			, do
+				ok <- docopycow
+				void $ tryPutMVar copycowtried ok
+				return ok
+			)
 		, ifM (readMVar copycowtried)
-			( docopycow
+			( do
+				-- CoW is known to work, so delete
+				-- dest if it exists in order to do a fast
+				-- CoW copy.
+				void $ tryIO $ removeFile dest
+				docopycow
 			, return False
 			)
 		)
