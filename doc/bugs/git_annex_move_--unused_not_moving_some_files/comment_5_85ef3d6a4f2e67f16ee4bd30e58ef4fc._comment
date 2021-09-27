@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-09-27T16:20:19Z"
+ content="""
+Well it's not surprising that `git annex copy -t bims` does nothing when
+the files are in the remote. Although it would normally display 
+each unused key and just say "ok" when it verifies that the remote has the
+content.
+
+But move and drop doing nothing while whereis does is strange. It
+must not be a problem with getting the list of unused keys, since whereis
+works.
+
+You showed `git annex move` not displaying any output, which is what's
+really weird. Does `git annex drop --unused --in bims` display any output?
+What about `git annex copy -t bims`?
+"""]]
