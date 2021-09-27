@@ -89,7 +89,7 @@ runWatcher :: Assistant ()
 runWatcher = do
 	startup <- asIO1 startupScan
 	symlinkssupported <- liftAnnex $ coreSymlinks <$> Annex.getGitConfig
-	addhook <- hook $ onAddUnlocked symlinkssupported
+	addhook <- hook $ onAddFile symlinkssupported
 	delhook <- hook onDel
 	addsymlinkhook <- hook onAddSymlink
 	deldirhook <- hook onDelDir
@@ -194,11 +194,11 @@ runHandler handler file filestatus = void $ do
 shouldRestage :: DaemonStatus -> Bool
 shouldRestage ds = scanComplete ds || forceRestage ds
 
-onAddUnlocked :: Bool -> Handler
-onAddUnlocked symlinkssupported f fs = do
+onAddFile :: Bool -> Handler
+onAddFile symlinkssupported f fs = do
 	mk <- liftIO $ isPointerFile $ toRawFilePath f
 	case mk of
-		Nothing -> onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkssupported f fs
+		Nothing -> onAddFile' contentchanged addassociatedfile addlink samefilestatus symlinkssupported f fs
 		Just k -> addlink f k
   where
 	addassociatedfile key file = 
@@ -222,14 +222,14 @@ onAddUnlocked symlinkssupported f fs = do
 		liftAnnex $ stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
 		madeChange file $ LinkChange (Just key)
 
-onAddUnlocked'
+onAddFile'
 	:: (Key -> FilePath -> Annex ())
 	-> (Key -> FilePath -> Annex ())
 	-> (FilePath -> Key -> Assistant (Maybe Change))
 	-> (Key -> FilePath -> FileStatus -> Annex Bool)
 	-> Bool
 	-> Handler
-onAddUnlocked' contentchanged addassociatedfile addlink samefilestatus symlinkssupported file fs = do
+onAddFile' contentchanged addassociatedfile addlink samefilestatus symlinkssupported file fs = do
 	v <- liftAnnex $ catKeyFile (toRawFilePath file)
 	case (v, fs) of
 		(Just key, Just filestatus) ->
