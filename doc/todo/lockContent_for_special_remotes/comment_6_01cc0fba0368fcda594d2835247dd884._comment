@@ -1,0 +1,61 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-09-27T16:57:48Z"
+ content="""
+Nothing really prevents G from accepting both pushes and merging them,
+resulging in both R1 and R2 being untrusted, but P2 not
+seeing in time that R2 is untrusted.
+
+Nothing prevents G from letting the push from P2 overwrite the branch that
+was earlier pushed from P1.
+
+Nothing assues P1 and P2 that they are actually talking to the same git
+repository and not a split brain situation that normally presents as a
+single git repository.
+
+The above are all maybe unlikely, but it would be hard to rule them all 
+out. A perhaps more likely case is, what if some other process on P2
+happens to pull from G just before P2 modifies the git-annex branch?
+Then P2's push will not fail. That kind of race is probably what I was
+thinking of.
+
+----
+
+Doing locking via another git-annex remote is an interesting idea.
+That would involve having an empty dummy object file for some derived key
+stored in the git-annex remote, and lock that object file.
+
+It seems that, to avoid situations that drop both copies of an
+object stored in 2 such special remotes, dropping the object from the
+special remote would need to entail first dropping the dummy
+object file from the git-annex remote, and only when that succeeds can the
+object be safely dropped from the special remote. And this implies that,
+in order to store the object in the special remote, the dummy object file
+first has to be stored in the git-annex remote.
+
+But operation on the git-annex remote are not atomic with operations on the
+special remote. So I do not think it is possible to avoid all races.
+
+For example, let's have two objects A and B in two special remotes
+(2 copies of the content of the same key) and
+two corresponding dummy objects A' and B' in a git-annex remote.
+You are dropping A, so you first lock B', then remove A', and finally
+remove A. I am dropping B, so I first lock A', then remove B', and finally
+remove B.
+
+Seems safe, right -- either you remove A' before I can lock
+it and my drop fails, or I lock A' before you can remove it, and your drop
+fails. But.. There's a third actor, Mallory. Mallory thinks that A does
+not contain the object yet, and he's going to helpfully fix that.
+He decides he will first store A' in the git-annex remote, then store A.
+
+Then, this sequence of events could occur: 
+
+1. You lock B' and remove A'
+2. Mallory stores A'.
+3. Mallory tries to store A, but it's already present. So he declares success.
+3. You remove A
+4. I lock A' (which mallory helpfully put back in step #2)
+5. I remove B' and then B. Oops, lost the last copy.
+"""]]
