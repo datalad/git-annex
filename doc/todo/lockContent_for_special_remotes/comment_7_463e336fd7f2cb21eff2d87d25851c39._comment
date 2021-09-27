@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-09-27T18:11:49Z"
+ content="""
+It certainly must be possible to use a git-annex remote to handle locking
+for special remotes, after all if you inverted control and had that
+git-annex repository communicating to the user's reposities and telling
+them when to delete from the special remote, that would be race safe.
+
+But it seems that the usual git-annex remote operations are not sufficient
+to do it. It would need some new operations tailored to support it.
+"""]]
