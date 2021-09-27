@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-09-27T16:38:12Z"
+ content="""
+The assistant adds files unlocked because it's intended to work for
+unsophisticated users who would be confused to have the file they saved
+suddenly turn into a symlink. For that matter, even a sophisticated user
+might find reasons to be annoyed at that happening without them doing
+anything.
+
+While it could treat annex.addunlocked not being set to add files unlocked,
+but honor if if it's set, it seems potentially confusing to make unset and
+false have different meanings. Also if annex.addunlocked were set globally,
+there would be no way to put it in the "unset" state in the local repo.
+Maybe it would be better as a separate config setting for the assistant,
+eg `annex.assistant.honor.addunlocked`
+
+I do not think this will be very easy to implement, unfortunately.
+"""]]
