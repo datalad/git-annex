@@ -412,7 +412,7 @@ retrieveExportWithContentIdentifierM dir cow loc cid dest mkkey p =
 	f = exportPath dir loc
 	f' = fromRawFilePath f
 
-	docopy = ifM (tryCopyCoW cow f' dest p)
+	docopy = ifM (liftIO $ tryCopyCoW cow f' dest p)
 		( do
 			k <- mkkey
 			postcheckcow (return k)

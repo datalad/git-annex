@@ -15,8 +15,6 @@ import Utility.CopyFile
 import Utility.FileMode
 import Utility.Touch
 import Utility.Hash (IncrementalVerifier(..))
-import Annex.Tmp
-import Utility.Tmp
 
 import Control.Concurrent
 import qualified Data.ByteString as S
@@ -30,34 +28,23 @@ newCopyCoWTried :: IO CopyCoWTried
 newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
 
 {- Copies a file is copy-on-write is supported. Otherwise, returns False. -}
-tryCopyCoW :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
+tryCopyCoW :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> IO Bool
 tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
 	-- If multiple threads reach this at the same time, they
 	-- will both try CoW, which is acceptable.
-	ifM (liftIO $ isEmptyMVar copycowtried)
+	ifM (isEmptyMVar copycowtried)
 		( do
 			ok <- docopycow
-			void $ liftIO $ tryPutMVar copycowtried ok
+			void $ tryPutMVar copycowtried ok
 			return ok
-		, ifM (liftIO $ readMVar copycowtried)
+		, ifM (readMVar copycowtried)
 			( docopycow
 			, return False
 			)
 		)
   where
-	-- copyCow needs a destination file that does not exist,
-	-- but the dest file might already. So use it with another
-	-- temp file, and if it succeeds, rename it into place. If it fails,
-	-- the dest file is left as-is, to support resuming.
-	docopycow = withOtherTmp $ \othertmp -> liftIO $
-		withTmpFileIn (fromRawFilePath othertmp) (takeFileName dest) $ \tmpdest _h -> do
-			copied <- watchFileSize tmpdest meterupdate $
-				copyCoW CopyTimeStamps src tmpdest
-			if copied
-				then liftIO $ catchBoolIO $ do
-					rename tmpdest dest
-					return True
-				else return False
+	docopycow = watchFileSize dest meterupdate $
+		copyCoW CopyTimeStamps src dest
 
 data CopyMethod = CopiedCoW | Copied
 
@@ -83,7 +70,7 @@ fileCopier :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> Maybe Incre
 fileCopier _ src dest meterupdate iv = docopy
 #else
 fileCopier copycowtried src dest meterupdate iv =
-	ifM (tryCopyCoW copycowtried src dest meterupdate)
+	ifM (liftIO $ tryCopyCoW copycowtried src dest meterupdate)
 		( do
 			liftIO $ maybe noop unableIncremental iv
 			return CopiedCoW
