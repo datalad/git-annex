@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2021-09-28T20:33:00Z"
+ content="""
+	cmdname               Types.Command                      Types\Command.hs:80:11-17                           15.4    0.0
+
+I don't trust this latest profile, because cmdname is a 
+a field of a data structure. There's no code there to take 15% of
+runtime, it's basically following a pointer.
+I think probably the profiler got confused there.
+
+Anyway, `git-annex smudge --clean x < x` is running as fast in that profile
+as it does on linux, and is certainly nowhere near the 1.9s runtime of `git add`
+that this bug report is about. I wonder if it also runs that fast for @mih?
+
+Possibly something else is making git add slow.
+"""]]
