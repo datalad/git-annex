@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2021-09-28T18:13:08Z"
+ content="""
+For future reference, I modified the datalad/git-annex workflow to build on windows
+to do the profiling, here's how the end of that workflow looks:
+
+      - name: Build git-annex
+        run: stack install --profile --no-haddock --extra-include-dirs=$PWD --extra-lib-dirs=$PWD --local-bin-path .
+
+      - name: profile
+        run: |
+          git init profile
+          cd profile
+          PATH=..:$PATH ../git-annex.exe init
+          echo foo > x
+          ../git-annex.exe +RTS -p -RTS smudge --clean x
+          cat git-annex.prof
+"""]]
