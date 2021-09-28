@@ -1,0 +1,69 @@
+[[!comment format=mdwn
+ username="adina.wagner@2a4cac6443aada2bd2a329b8a33f4a7b87cc8eff"
+ nickname="adina.wagner"
+ avatar="http://cdn.libravatar.org/avatar/80b124ad61d6008fa0f6f0b4b0f7c2ef"
+ subject="comment 8"
+ date="2021-09-28T12:53:13Z"
+ content="""
+> It would be good to get a similar profile on windows for comparison.
+
+I tried to create a profile*. Here is what I am seeing on a Windows 10 system, version 2004, OS build 19041.1237:
+
+```
+		Tue Sep 28 14:48 2021 Time and Allocation Profiling Report  (Final)
+
+	   git-annex.exe +RTS -p -RTS smudge --clean x
+
+	total time  =        0.00 secs   (1 ticks @ 1000 us, 1 processor)
+	total alloc =     956,208 bytes  (excludes profiling overheads)
+
+COST CENTRE               MODULE                               SRC                                                         %time %alloc
+
+CAF                       GHC.IO.Handle.FD                     <entire-module>                                             100.0    5.5
+MAIN                      MAIN                                 <built-in>                                                    0.0    1.1
+createProcess             Utility.Process                      Utility\Process.hs:(177,1)-(180,16)                           0.0    8.5
+relPathCwdToFile          Utility.Path.AbsRel                  Utility\Path\AbsRel.hs:(76,1)-(86,36)                         0.0    2.0
+absPath                   Utility.Path.AbsRel                  Utility\Path\AbsRel.hs:(55,1)-(66,45)                         0.0    2.0
+checkForRepo.gitSignature Git.Construct                        Git\Construct.hs:234:9-56                                     0.0    2.1
+parse.sep                 Git.Config                           Git\Config.hs:(163,9)-(165,38)                                0.0    2.8
+needsGitLinkFixup         Annex.Fixup                          Annex\Fixup.hs:(149,1)-(155,34)                               0.0    3.0
+clean                     Command.Smudge                       Command\Smudge.hs:(90,1)-(173,60)                             0.0    3.6
+parseCmd.subcmds          CmdLine                              CmdLine.hs:109:9-64                                           0.0    3.0
+parseCmd.mkcommand        CmdLine                              CmdLine.hs:(110,9)-(113,31)                                   0.0    1.1
+cmds                      CmdLine.GitAnnex                     CmdLine\GitAnnex.hs:(132,1)-(244,9)                           0.0    1.3
+addGitAnnexGlobalOptions  CmdLine.GitAnnex                     CmdLine\GitAnnex.hs:247:1-97                                  0.0    1.6
+splitPath.f.(...)         System.FilePath.Windows.ByteString   System\FilePath\Windows\..\Internal.hs:862:17-49              0.0    1.4
+splitPath.f.(...)         System.FilePath.Windows.ByteString   System\FilePath\Windows\..\Internal.hs:861:17-49              0.0    1.8
+splitPath.f               System.FilePath.Windows.ByteString   System\FilePath\Windows\..\Internal.hs:(857,9)-(862,49)       0.0    1.7
+<>                        Options.Applicative.Builder.Internal src\Options\Applicative\Builder\Internal.hs:(96,3)-(97,47)    0.0    1.7
+stepParser                Options.Applicative.Common           src\Options\Applicative\Common.hs:(187,1)-(194,35)            0.0    3.1
+searchParser              Options.Applicative.Common           src\Options\Applicative\Common.hs:(136,1)-(151,40)            0.0    1.7
+pure                      Options.Applicative.Internal         src\Options\Applicative\Internal.hs:55:3-21                   0.0    1.1
+mplus                     Options.Applicative.Internal         src\Options\Applicative\Internal.hs:(215,3)-(219,52)          0.0    1.0
+>>=                       Options.Applicative.Internal         src\Options\Applicative\Internal.hs:64:3-50                   0.0    1.3
+>>=                       Options.Applicative.Internal         src\Options\Applicative\Internal.hs:(200,3)-(204,54)          0.0    1.2
+encodeChar.go             Codec.Binary.UTF8.String             Codec\Binary\UTF8\String.hs:(52,3)-(67,25)                    0.0    1.0
+encodeChar                Codec.Binary.UTF8.String             Codec\Binary\UTF8\String.hs:(50,1)-(67,25)                    0.0    2.7
+encode                    Codec.Binary.UTF8.String             Codec\Binary\UTF8\String.hs:72:1-29                           0.0    2.3
+unconsB                   Codec.Binary.UTF8.Generic            Codec\Binary\UTF8\Generic.hs:297:1-18                         0.0    1.5
+foldr                     Data.ByteString.UTF8                 Data\ByteString\UTF8.hs:(171,1)-(173,40)                      0.0    1.1
+catch                     Control.Monad.Catch                  src\Control\Monad\Catch.hs:333:3-32                           0.0    1.5
+
+
+                                                                                                                                               
+
+[...]
+```
+
+
+
+
+
+*I'm not familiar with Haskell, and don't 100% understand what you ran, so I'll detail how I created it in case I did something obvious wrong.
+I build git-annex at state b9aa2ce8d1 from source using stack Version 2.7.3, Git revision 7927a3aec32e2b2e5e4fb5be76d0d50eddcc197f x86_64 hpack-0.34.4. It used ghc 8.8.4.
+I ran ``stack build --profile`` to build the executable.
+
+I created an empty git/git annex repository - no files committed to Git or git-annex at all. In this repository, I ran ``git-annex.exe +RTS -p -RTS smudge --clean x`` (as shown in your profile -- as this command didn't return, I just killed it after a few seconds). The profile above is the first section of the resulting ``.prof`` file. 
+
+Hope this helps and was the correct procedure. Let me know if I should repeat any step any differently. Thanks! :)
+"""]]
