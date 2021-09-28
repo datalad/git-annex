@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2021-09-28T21:53:49Z"
+ content="""
+`git add x` takes less than 0.1 seconds run on the github windows CI in a
+git-annex repo.
+
+      - name: profile
+        run: |
+          git init profile
+          cd profile
+          PATH=..:$PATH ../git-annex.exe init
+          echo foo > x
+          date
+          PATH=..:$PATH git add x
+          date
+
+Output:
+
+	ok
+	(recording state in git...)
+	Tue Sep 28 21:51:46 CUT 2021
+	warning: LF will be replaced by CRLF in x.
+	The file will have its original line endings in your working directory
+	Tue Sep 28 21:51:46 CUT 2021
+
+So, whatever made it slow for @mih is not a problem here, and I guess
+not where @adina ran it either.
+"""]]
