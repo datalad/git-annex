@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2021-09-28T18:01:17Z"
+ content="""
+@adina.wagner wonderful, thanks for the second windows profile..
+
+You need to run `git-annex init` first, unsure if you did. And 
+you need to create the file `x`, containing eg "foo", and pipe
+that file to `git-annex smudge --clean x`
+
+I think your profile reflects it being stuck waiting
+for stdin for some time, with the `GHC.IO.Handle.FD` at the top.
+Otherwise, it would probably look more
+like the one I did on window, since createProcess is near the
+top. It would be good to verify that.
+"""]]
