@@ -124,10 +124,14 @@ jobs:
       - name: Create new release
         if: github.event.inputs.commitish != ''
         run: |
+          printf '[DEBUG] INPUT_COMMITISH=%b\n' "$INPUT_COMMITISH"
           if git rev-parse refs/tags/"$INPUT_COMMITISH" &> /dev/null
           then
               echo "[INFO] Building a tag; uploading assets to release ..."
-              if gh release list | grep -q "^$INPUT_COMMITISH\b"
+              echo '[DEBUG] BEGIN gh release list'
+              gh release list | tee releases.txt | cat -v
+              echo '[DEBUG] END gh release list'
+              if grep -q "^$INPUT_COMMITISH\b" releases.txt
               then
                   echo "[INFO] Release already exists; uploading assets"
                   gh release upload "$INPUT_COMMITISH" git-annex[-_]*.*
