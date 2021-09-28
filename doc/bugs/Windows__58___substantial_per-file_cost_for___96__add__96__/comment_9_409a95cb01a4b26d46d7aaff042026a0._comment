@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-09-28T17:09:21Z"
+ content="""
+So most of the time is spent in createProcess. Forking is not slow
+(on linux anyway) so why are 4 createProcess 23% of runtime on linux?
+
+Here is a strace --relative-timestamps on linux, showing a single createProcess
+call, for reading `git config`.
+
+     0.000196 pipe([11, 12])            = 0
+     0.000134 pipe([13, 14])            = 0
+     0.000067 rt_sigprocmask(SIG_BLOCK, [INT], [], 8) = 0
+     0.000074 vfork()                   = 1412528
+     0.000552 close(12)                 = 0
+     0.000058 fcntl(11, F_SETFD, FD_CLOEXEC) = 0
+     0.000095 close(14)                 = 0
+     0.000050 fcntl(13, F_SETFD, FD_CLOEXEC) = 0
+     0.000047 read(13, "", 4)           = 0
+     0.000050 close(13)                 = 0
+     0.000061 rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+     0.000062 futex(0x98336c8, FUTEX_WAKE_PRIVATE, 1) = 1
+     0.000061 futex(0x9833660, FUTEX_WAKE_PRIVATE, 1) = 1
+     0.000066 fcntl(11, F_GETFL)        = 0 (flags O_RDONLY)
+     0.000047 fcntl(11, F_SETFL, O_RDONLY|O_NONBLOCK) = 0
+     0.000073 ioctl(11, TCGETS, 0x7ffc091b0d80) = -1 ENOTTY (Inappropriate ioctl for device)
+
+Total runtime of createProcess above is 1.69 ms. 
+And from the profile on windows, it's taking around 1.7 ms per createProcess.
+
+I'd say that at least 1.32 ms of that is necessary, leaving out the `futex`
+and `rt_sigprocmask` that are probably GHC runtime stuff, and the `ioctl`
+and `read` and `fcntl F_GETFL` which seem unnecessary.
+If those were optimised out, the total `git-annex smudge --clean`
+runtime would speed up by only 10% or so.
+
+Feels like I've reached the end of profiling. Most of the time is being spent
+starting git processes, and it can't be sped up significantly without
+starting fewer git processes.
+
+(I do wish that `git check-attr` could be removed, but it's needed for the
+annex.largefiles .gitattributes support.)
+"""]]

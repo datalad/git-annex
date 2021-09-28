@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2021-09-28T17:57:50Z"
+ content="""
+Since my profiling above shows windows is as fast as linux (though
+probably on faster hardware), one thing I am wondering is if antivirus
+could be slowing it down. I know AV on windows can slow down things like
+writing to files, because it blocks closing the file until it finishes
+scanning. Maybe the github windows CI does not run AV, but your windows
+does, mih?
+"""]]

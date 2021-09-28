@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2021-09-28T16:22:36Z"
+ content="""
+Corresponding time profile on Windows. This was run on a github CI
+instance, so I don't know if the CPU was busy with other tasks.
+
+		Mon Sep 27 22:45 2021 Time and Allocation Profiling Report  (Final)
+	
+		   git-annex.exe +RTS -p -RTS smudge --clean x
+	
+		total time  =        0.02 secs   (22 ticks @ 1000 us, 1 processor)
+		total alloc =   6,753,624 bytes  (excludes profiling overheads)
+	
+	COST CENTRE                    MODULE                     SRC                                                 %time %alloc
+	
+	createProcess                  Utility.Process            Utility\Process.hs:(177,1)-(180,16)                  50.0   18.7
+	openLock.\                     Utility.LockFile.Windows   Utility\LockFile\Windows.hs:(64,17)-(65,76)           4.5    0.0
+	toInodeCache'                  Utility.InodeCache         Utility\InodeCache.hs:(196,1)-(206,34)                4.5    3.0
+	checkSentinalFile.loadoldcache Utility.InodeCache         Utility\InodeCache.hs:(260,9)-(261,83)                4.5    0.3
+	adjustGitEnv                   Git.Env                    Git\Env.hs:(18,1)-(22,7)                              4.5   41.2
+	pipeReadStrict'.go             Git.Command                Git\Command.hs:(80,9)-(85,37)                         4.5    0.1
+	mergeGitConfig                 Types.GitConfig            Types\GitConfig.hs:(284,1)-(299,54)                   4.5    0.0
+	fixupRepo                      Annex.Fixup                Annex\Fixup.hs:(37,1)-(42,31)                         4.5    0.0
+	noCommit                       Command                    Command.hs:56:1-37                                    4.5    0.0
+	getFileSize                    System.PosixCompat.Files   src\System\PosixCompat\Files.hsc:(358,1)-(359,76)     4.5    1.5
+	searchParser                   Options.Applicative.Common src\Options\Applicative\Common.hs:(136,1)-(151,40)    4.5    0.2
+	catch                          Control.Monad.Catch        src\Control\Monad\Catch.hs:333:3-32                   4.5    0.2
+	getFileSize                    Utility.FileSize           Utility\FileSize.hs:37:1-80                           0.0    1.5
+	getFileType                    System.PosixCompat.Files   src\System\PosixCompat\Files.hsc:(350,1)-(355,62)     0.0    2.9
+	getFileStatus                  System.PosixCompat.Files   src\System\PosixCompat\Files.hsc:(312,1)-(337,24)     0.0    6.0
+	unconsB                        Codec.Binary.UTF8.Generic  Codec\Binary\UTF8\Generic.hs:297:1-18                 0.0    1.2
+
+(Whole profile at <https://tmp.joeyh.name/windows-profile>)
+
+What stands out is that createProcess is twice as expensive as linux, and
+fully half the runtime is apparently spent just forking a few processes.
+
+Here are the git processes started and percent of time to start them,
+from the more detailed profiling:
+
+	git config	9%
+	git cat-file	9%
+	git check-attr	4.5%
+	git diff (reconcileStaged)	9%
+	git show-ref (reconcileStaged)	9%
+	git write-tree (reconcileStaged)	9%
+
+(The reconcileStaged stuff only happened because `git init`
+didn't do it -- I forgot to put git-annex in the path the way I ran it
+on the CI builder, and so init didn't do everything it usually would.
+A second run with that fixed had a createProcess percent reduced to 30%,
+though still at around2 0.2s total runtime.)
+
+This is not super slow on the Windows CI, it's competative with Linux,
+though my Linux laptop probably has a slower CPU (1.5ghz).
+"""]]
