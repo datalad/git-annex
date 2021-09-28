@@ -192,6 +192,8 @@ jobs:
           gh release download -R datalad/file-windows -p file-windows-dist.zip
           unzip file-windows-dist.zip
           cp libmagic-1.dll libmagic.dll
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Enable building with magic
         run: |
