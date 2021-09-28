@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="username"
+ avatar="http://cdn.libravatar.org/avatar/3c17ce77d299219a458fc2eff973239a"
+ subject="comment 14"
+ date="2021-09-28T22:56:16Z"
+ content="""
+Inspired by the OP I devised a slightly modified method for cataloguing my optical media library.
+
+The goal is having a main git-annex repo tracking what's on HDD, while adding the optical media as one-time remotes for location tracking and easy future inspection of their contents without having to physically insert the disc in the drive and mounting it.
+
+The current contents of the HDD and the contents of the total set of the optical discs are not a 1:1 match, both have files not present in the other.
+
+Current plan:
+
+1. copy already burnt discs to a directory on disk and create a git-annex repo with the same configuration as the main catalogue repo, using the disc label as description:
+```
+git annex init disc_label && git annex config --set annex.dotfiles true && git config annex.backend MD5 && git config annex.gitaddtoannex false
+```
+
+2. add the optical disc repo as remote in the main repo:
+```
+git remote add CD1 /mnt/CD1/ && git annex sync --no-push -jobs=cpus && git annex sync --cleanup && git remote remove CD1
+```
+
+3. create a branch for easily \"mounting\" each disc with git checkout without needing to
+```git log --oneline | grep disc_label```
+for finding the relevant commit hash:
+```
+git branch CD1 XXXXXXXXXX
+```
+
+4. edit working tree as desired, then override git-annex sync's automatic commit:
+```
+git add . && git commit --quiet --amend --message=\"add CD1\"
+```
+
+5. repeat for other discs
+
+
+The main repo should end up looking like so, each optical disc \"dangling\" from the main branch that tracks the HDD contents:
+
+```
+$ git log --graph --oneline
+*   XXXXXXXXXX (HEAD -> master) add DVD1
+|\  
+| * XXXXXXXXXX (DVD1) DVD1
+*   XXXXXXXXXX  add CD1
+|\  
+| * XXXXXXXXXX (CD1) CD1
+*   XXXXXXXXXX  init
+```
+
+and any file given as argument to ```git annex whereis``` should be easily traceable:
+
+```
+$ git-annex whereis file
+whereis file (4 copies) 
+  	XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX -- HDD [here]
+  	XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX -- CD1
+  	XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX -- DVD1
+  	XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX -- BD1
+ok
+```
+
+Seems good enough for me but considering I can barely wrap my head around all that git and git-annex are capable of I'm posting here hoping for a sanity check that this solution does work as expected and/or suggestions for improvements before fully committing to it.
+"""]]
