@@ -59,7 +59,11 @@ copyFileExternal meta src dest = do
  - an efficient copy of a file. Otherwise, returns False.
  -
  - The dest file must not exist yet, or it will fail to make a CoW copy,
- - and will return False. -}
+ - and will return False.
+ -
+ - Note that in coreutil 9.0, cp uses CoW by default, without needing an
+ - option. This code is only needed to support older versions.
+ -}
 copyCoW :: CopyMetaData -> FilePath -> FilePath -> IO Bool
 copyCoW meta src dest
 	| BuildInfo.cp_reflink_supported = do
