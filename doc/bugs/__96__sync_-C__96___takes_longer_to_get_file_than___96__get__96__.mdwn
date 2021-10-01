@@ -724,3 +724,5 @@ from 159 to 296985).
 Git Annex is great. It works quite nicely with my multi-gigabyte backup files (largest around 180GB) via the BLAKE2B160E backend :)
 
 [[!meta title="windows: sync -C takes longer than get, apparently extra checksum"]] 
+
+> [[fixed|done]] --[[Joey]]

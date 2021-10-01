@@ -809,10 +809,11 @@ syncFile ebloom rs af k = do
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
 	got <- anyM id =<< handleget have inhere
-	putrs <- handleput lack
+	let inhere' = inhere || got
+	putrs <- handleput lack inhere'
 
 	u <- getUUID
-	let locs' = concat [if inhere || got then [u] else [], putrs, locs]
+	let locs' = concat [if inhere' then [u] else [], putrs, locs]
 
 	-- To handle --all, a bloom filter is populated with all the keys
 	-- of files in the working tree in the first pass. On the second
@@ -855,14 +856,15 @@ syncFile ebloom rs af k = do
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| isThirdPartyPopulated r = return False
 		| otherwise = wantSend True (Just k) af (Remote.uuid r)
-	handleput lack = catMaybes <$> ifM (inAnnex k)
-		( forM lack $ \r ->
-			ifM (wantput r <&&> put r)
-				( return (Just (Remote.uuid r))
-				, return Nothing
-				)
-		, return []
-		)
+	handleput lack inhere
+		| inhere = catMaybes <$>
+			( forM lack $ \r ->
+				ifM (wantput r <&&> put r)
+					( return (Just (Remote.uuid r))
+					, return Nothing
+					)
+			)
+		| otherwise = return []
 	put dest = includeCommandAction $ 
 		Command.Move.toStart' dest Command.Move.RemoveNever af k ai si
 
