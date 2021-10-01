@@ -13,6 +13,8 @@ git-annex (8.20210904) UNRELEASED; urgency=medium
     was interrupted.
   * sync --content: Avoid a redundant checksum of a file that was
     incrementally verified, when used on NTFS and perhaps other filesystems.
+  * reinject: Fix crash when reinjecting a file from outside the repository.
+    (Reversion in version 8.20210621)
 
  -- Joey Hess <id@joeyh.name>  Fri, 03 Sep 2021 12:02:55 -0400
 

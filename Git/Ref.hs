@@ -64,17 +64,22 @@ branchRef = underBase "refs/heads"
 
 {- A Ref that can be used to refer to a file in the repository, as staged
  - in the index.
+ - 
+ - If the input file is located outside the repository, returns Nothing.
  -}
-fileRef :: RawFilePath -> IO Ref
-fileRef f = do
+fileRef :: RawFilePath -> Repo -> IO (Maybe Ref)
+fileRef f repo = do
 	-- The filename could be absolute, or contain eg "../repo/file",
 	-- neither of which work in a ref, so convert it to a minimal
 	-- relative path.
 	f' <- relPathCwdToFile f
- 	-- Prefixing the file with ./ makes this work even when in a
-	-- subdirectory of a repo. Eg, ./foo in directory bar refers
-	-- to bar/foo, not to foo in the top of the repository.
-	return $ Ref $ ":./" <> toInternalGitPath f'
+	print ("f'", f', repoPath repo, repoPath repo `dirContains` f')
+	return $ if repoPath repo `dirContains` f'
+ 		-- Prefixing the file with ./ makes this work even when in a
+		-- subdirectory of a repo. Eg, ./foo in directory bar refers
+		-- to bar/foo, not to foo in the top of the repository.
+		then Just $ Ref $ ":./" <> toInternalGitPath f'
+		else Nothing
 
 {- A Ref that can be used to refer to a file in a particular branch. -}
 branchFileRef :: Branch -> RawFilePath -> Ref
@@ -85,11 +90,14 @@ dateRef :: Ref -> RefDate -> Ref
 dateRef r (RefDate d) = Ref $ fromRef' r <> "@" <> encodeBS d
 
 {- A Ref that can be used to refer to a file in the repository as it
- - appears in a given Ref. -}
-fileFromRef :: Ref -> RawFilePath -> IO Ref
-fileFromRef r f = do
-	(Ref fr) <- fileRef f
-	return (Ref (fromRef' r <> fr))
+ - appears in a given Ref. 
+ -
+ - If the file path is located outside the repository, returns Nothing.
+ -}
+fileFromRef :: Ref -> RawFilePath -> Repo -> IO (Maybe Ref)
+fileFromRef r f repo = fileRef f repo >>= return . \case
+	Just (Ref fr) -> Just (Ref (fromRef' r <> fr))
+	Nothing -> Nothing
 
 {- Checks if a ref exists. Note that it must be fully qualified,
  - eg refs/heads/master rather than master. -}

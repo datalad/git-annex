@@ -24,3 +24,5 @@ By means of bisection I have determined that commit 4bf7940d6b912fbf692b268f621e
     git-annex: fd:15: Data.ByteString.hGetLine: end of file
 
 --spwhitton
+
+> [[fixed|done]] --[[Joey]]

@@ -198,11 +198,12 @@ catSymLinkTarget sha = fromInternalGitPath . L.toStrict <$> get
 catKeyFile :: RawFilePath -> Annex (Maybe Key)
 catKeyFile f = ifM (Annex.getState Annex.daemon)
 	( catKeyFileHEAD f
-	, catKey =<< liftIO (Git.Ref.fileRef f)
+	, maybe (pure Nothing) catKey =<< inRepo (Git.Ref.fileRef f)
 	)
 
 catKeyFileHEAD :: RawFilePath -> Annex (Maybe Key)
-catKeyFileHEAD f = catKey =<< liftIO (Git.Ref.fileFromRef Git.Ref.headRef f)
+catKeyFileHEAD f = maybe (pure Nothing) catKey
+	=<< inRepo (Git.Ref.fileFromRef Git.Ref.headRef f)
 
 {- Look in the original branch from whence an adjusted branch is based
  - to find the file. But only when the adjustment hides some files. -}
@@ -215,5 +216,6 @@ catObjectMetaDataHidden = hiddenCat catObjectMetaData
 hiddenCat :: (Ref -> Annex (Maybe a)) -> RawFilePath -> CurrBranch -> Annex (Maybe a)
 hiddenCat a f (Just origbranch, Just adj)
 	| adjustmentHidesFiles adj = 
-		a =<< liftIO (Git.Ref.fileFromRef origbranch f)
+		maybe (pure Nothing) a
+			=<< inRepo (Git.Ref.fileFromRef origbranch f)
 hiddenCat _ _ _ = return Nothing

@@ -105,13 +105,14 @@ clean file = do
 			addingExistingLink file k $ do
 				getMoveRaceRecovery k file
 				liftIO $ L.hPut stdout b
-		Nothing -> do
-			fileref <- liftIO $ Git.Ref.fileRef file
-			indexmeta <- catObjectMetaData fileref
-			oldkey <- case indexmeta of
-				Just (_, sz, _) -> catKey' fileref sz
-				Nothing -> return Nothing
-			go' b indexmeta oldkey
+		Nothing -> inRepo (Git.Ref.fileRef file) >>= \case
+			Just fileref -> do
+				indexmeta <- catObjectMetaData fileref
+				oldkey <- case indexmeta of
+					Just (_, sz, _) -> catKey' fileref sz
+					Nothing -> return Nothing
+				go' b indexmeta oldkey
+			Nothing -> liftIO $ L.hPut stdout b
 	go' b indexmeta oldkey = ifM (shouldAnnex file indexmeta oldkey)
 		( do
 			-- Before git 2.5, failing to consume all stdin here

@@ -71,7 +71,7 @@ repoLocation Repo { location = LocalUnknown dir } = fromRawFilePath dir
 repoLocation Repo { location = Unknown } = error "unknown repoLocation"
 
 {- Path to a repository. For non-bare, this is the worktree, for bare, 
- - it's the gitdit, and for URL repositories, is the path on the remote
+ - it's the gitdir, and for URL repositories, is the path on the remote
  - host. -}
 repoPath :: Repo -> RawFilePath
 repoPath Repo { location = Url u } = toRawFilePath $ unEscapeString $ uriPath u
