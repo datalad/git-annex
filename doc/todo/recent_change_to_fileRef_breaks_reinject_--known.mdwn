@@ -1,0 +1,26 @@
+Hello,
+
+By means of bisection I have determined that commit 4bf7940d6b912fbf692b268f621ebd41ed871125, recently uploaded to Debian after the bullseye freeze, is responsible for breaking the annex-to-annex-reinject script which ships with Git::Annex.  Here is a minimal reproducer of the problem:
+
+    spwhitton@melete:~/tmp>echo foo >bar
+    spwhitton@melete:~/tmp>mkdir annex
+    spwhitton@melete:~/tmp>cp bar annex
+    spwhitton@melete:~/tmp>cd annex
+    spwhitton@melete:~/tmp/annex>git init
+    spwhitton@melete:~/tmp/annex>git annex add bar
+    spwhitton@melete:~/tmp/annex>git annex drop --force bar
+    spwhitton@melete:~/tmp/annex>git annex reinject --known /home/spwhitton/tmp/bar 
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    fatal: './../bar' is outside repository at '/home/spwhitton/tmp/annex'
+    git-annex: fd:15: Data.ByteString.hGetLine: end of file
+
+--spwhitton
