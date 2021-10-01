@@ -95,12 +95,26 @@ upFrom dir
 dirContains :: RawFilePath -> RawFilePath -> Bool
 dirContains a b = a == b
 	|| a' == b'
-	|| (addTrailingPathSeparator a') `B.isPrefixOf` b'
+	|| (a'' `B.isPrefixOf` b' && avoiddotdotb)
 	|| a' == "." && normalise ("." </> b') == b'
   where
 	a' = norm a
+	a'' = addTrailingPathSeparator a'
 	b' = norm b
 	norm = normalise . simplifyPath
+
+	{- This handles the case where a is ".." and b is "../..",
+	 - which is not inside a. Similarly, "../.." does not contain
+	 - "../../../". Due to the use of norm, cases like 
+	 - "../../foo/../../" get converted to eg "../../.." and
+	 - so do not need to be handled specially here.
+	 -
+	 - When this is called, we already know that 
+	 - a'' is a prefix of b', so all that needs to be done is drop
+	 - that prefix, and check if the next path component is ".."
+	 -}
+	avoiddotdotb = not $ any (== "..") $
+		splitPath $ B.drop (B.length a'') b'
 
 {- Given an original list of paths, and an expanded list derived from it,
  - which may be arbitrarily reordered, generates a list of lists, where
