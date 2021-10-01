@@ -96,7 +96,7 @@ dirContains :: RawFilePath -> RawFilePath -> Bool
 dirContains a b = a == b
 	|| a' == b'
 	|| (a'' `B.isPrefixOf` b' && avoiddotdotb)
-	|| a' == "." && normalise ("." </> b') == b'
+	|| a' == "." && normalise ("." </> b') == b' && nodotdot b'
   where
 	a' = norm a
 	a'' = addTrailingPathSeparator a'
@@ -113,8 +113,11 @@ dirContains a b = a == b
 	 - a'' is a prefix of b', so all that needs to be done is drop
 	 - that prefix, and check if the next path component is ".."
 	 -}
-	avoiddotdotb = not $ any (== "..") $
-		splitPath $ B.drop (B.length a'') b'
+	avoiddotdotb = nodotdot $ B.drop (B.length a'') b'
+
+	nodotdot p = all
+		(\s -> dropTrailingPathSeparator s /= "..")
+		(splitPath p)
 
 {- Given an original list of paths, and an expanded list derived from it,
  - which may be arbitrarily reordered, generates a list of lists, where
