@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="alex@f04d0d3c452a2a99b27ccc93c1543bee4a1bf5be"
- nickname="alex"
- avatar="http://cdn.libravatar.org/avatar/9d97e9bcb1cf7680309e37cd69fab408"
- subject="Resuming an interrupted download"
- date="2021-10-01T23:18:33Z"
- content="""
-Is it possible for git annex to resume a download from a special remote as it can for other remotes, rather than starting over entirely? Such as by specifying an offset in `TRANSFER RETRIEVE`?
-"""]]
