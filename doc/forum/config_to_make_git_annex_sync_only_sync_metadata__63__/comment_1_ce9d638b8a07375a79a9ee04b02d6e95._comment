@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-10-03T22:20:37Z"
+ content="""
+The merge commits that git-annex sync still makes with annex.autocommit
+set to false are the same as the merge commits that git pull makes
+(with the addition of merge conflict resolution that annex.resolvemerge
+can prevent).
+
+The idea with annex.synconlyannex is that a user, who has their own
+git workflow already and does not want to change it, can set that and use
+git-annex sync to sync all the git-annex data.
+
+Adding new configurability to git-annex sync is a tarpit: If left unchecked
+it will parameterize every single bit of it. So, having realized this,
+I prefer to only add new configurability only when I have a broad
+use case for it, like the one that led to annex.synconlyannex.
+
+It is easy enough to write a small shell script that syncs only the
+git-annex branch, using appropriately low-level commands:
+
+	#!/bin/sh
+	git fetch origin git-annex
+	git annex merge
+	git push origin git-annex
+"""]]
