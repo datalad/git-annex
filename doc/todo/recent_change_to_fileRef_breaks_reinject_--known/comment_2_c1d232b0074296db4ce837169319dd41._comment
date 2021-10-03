@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ avatar="http://cdn.libravatar.org/avatar/9c3f08f80e67733fd506c353239569eb"
+ subject="comment 2"
+ date="2021-10-02T17:04:02Z"
+ content="""
+Thanks so much for the fix!  It looks like cherry-picking breaks the test suite, so I'll probably just wait for the next release.
+"""]]

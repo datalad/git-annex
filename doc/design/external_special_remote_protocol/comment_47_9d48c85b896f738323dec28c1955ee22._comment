@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="alex@f04d0d3c452a2a99b27ccc93c1543bee4a1bf5be"
+ nickname="alex"
+ avatar="http://cdn.libravatar.org/avatar/9d97e9bcb1cf7680309e37cd69fab408"
+ subject="Resuming an interrupted download"
+ date="2021-10-01T23:27:31Z"
+ content="""
+It would be helpful to allow special remotes to take advantage of git annex's ability to resume interrupted downloads for large files, especially on slow/unreliable connections. One way to implement this would be to allow the special remote to send a message asking git-annex what offset it intends to read at, then write a sparse file with only the needed data. I notice the `testremote` suite includes tests for resuming downloads at an offset, so it is possible no other changes would be needed.
+
+Sparse files could be avoided by allowing the special remote to send a command indicating the offset at which the target file starts.
+
+Does that sound like a reasonable design?
+"""]]
