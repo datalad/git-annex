@@ -1,0 +1,7 @@
+I would like `git annex sync` to only sync `git-annex`'s bookkeeping metadata, and *not* my master branch or file content.
+
+I tried setting `annex.synconlyannex = true` (in `~/.gitconfig`), and was surprised to find that although that disables syncing of my master branch, it *enables* syncing of content.
+
+I can add `--no-content` on the command line, but I'd rather not type that every time. Is there a way to do it purely through `~/.gitconfig`? (Maybe consider it as a feature request?)
+
+(Motivation: I find it jarring when git annex creates git commits on my own branches without asking me. I already set `annex.autocommit = false`, but `git annex sync` will still make merge commits unless I set `annexsynconlyannex = true`.)
