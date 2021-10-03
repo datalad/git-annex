@@ -73,7 +73,6 @@ fileRef f repo = do
 	-- neither of which work in a ref, so convert it to a minimal
 	-- relative path.
 	f' <- relPathCwdToFile f
-	print ("f'", f', repoPath repo, repoPath repo `dirContains` f')
 	return $ if repoPath repo `dirContains` f'
  		-- Prefixing the file with ./ makes this work even when in a
 		-- subdirectory of a repo. Eg, ./foo in directory bar refers
