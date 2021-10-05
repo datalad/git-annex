@@ -23,7 +23,7 @@ jobs:
 
       - name: Push image
         run: |
-          docker login -u yarikoptic --password-stdin <<<"$DOCKER_TOKEN"
+          docker login -u jwodder --password-stdin <<<"$DOCKER_TOKEN"
           docker push dataladtester/buildenv-git-annex-buster
         env:
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
