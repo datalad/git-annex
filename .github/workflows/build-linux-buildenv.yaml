@@ -2,6 +2,8 @@ name: Build Linux buildenv image
 
 on:
   push:
+    branches:
+      - master
     paths:
       - .github/workflows/tools/containers/buildenv-git-annex-buster/*
   pull_request:
