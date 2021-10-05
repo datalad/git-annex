@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="comment 8"
+ date="2021-10-05T22:07:44Z"
+ content="""
+If it's just a matter of storing the whole set of keys present in each individual archive, you might be able to handle it via difference encoding. The whole list for the first archive, then just sets of added/removed for each archive after that.
+
+This adds a runtime cost to getting the whole set for any archive after the first one, but even with a few thousand archives it seems that should be relatively small. (I assume that it's more likely to have huge numbers of items in an archive, than huge numbers of archives in a repository.)
+"""]]
