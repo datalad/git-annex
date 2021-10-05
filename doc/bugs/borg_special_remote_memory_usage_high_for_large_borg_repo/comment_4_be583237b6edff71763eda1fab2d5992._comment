@@ -31,5 +31,13 @@ values:
 	261724 before treeItemsToTree
 	327260 after treeItemsToTree
 
+Also, compare above profile with this (-c) profile:
 
+<img src="https://tmp.joeyh.name/prof2.png">
+
+This shows PINNED is increasing all the way to the end, which seems to
+rule out any of the functions shown in the first profile. 
+
+What the first profile shows running up until the end is export db updates.
+But I tried disabling the db updates and the memory use didn't change.
 """]]
