@@ -1,6 +1,6 @@
 {- git trees
  -
- - Copyright 2016-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -32,12 +32,14 @@ import Git.Command
 import Git.Sha
 import qualified Git.LsTree as LsTree
 import qualified Utility.CoProcess as CoProcess
+import qualified System.FilePath.ByteString as P
 
 import Numeric
 import System.Posix.Types
 import Control.Monad.IO.Class
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as S8
 
 newtype Tree = Tree [TreeContent]
@@ -162,10 +164,10 @@ treeItemsToTree = go M.empty
 			Just (NewSubTree d l) ->
 				go (addsubtree idir m (NewSubTree d (c:l))) is
 			_ ->
-				go (addsubtree idir m (NewSubTree (asTopFilePath (toRawFilePath idir)) [c])) is
+				go (addsubtree idir m (NewSubTree (asTopFilePath idir) [c])) is
 	  where
 		p = gitPath i
-		idir = takeDirectory p
+		idir = P.takeDirectory p
 		c = treeItemToTreeContent i
 
 	addsubtree d m t
@@ -175,10 +177,10 @@ treeItemsToTree = go M.empty
 				Just (NewSubTree d' l) ->
 					let l' = filter (\ti -> gitPath ti /= d) l
 					in addsubtree parent m' (NewSubTree d' (t:l'))
-				_ -> addsubtree parent m' (NewSubTree (asTopFilePath (toRawFilePath parent)) [t])
+				_ -> addsubtree parent m' (NewSubTree (asTopFilePath parent) [t])
 		| otherwise = M.insert d t m
 	  where
-		parent = takeDirectory d
+		parent = P.takeDirectory d
 
 {- Flattens the top N levels of a Tree. -}
 flattenTree :: Int -> Tree -> Tree
@@ -263,9 +265,9 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 		addunderhere' <- liftIO $ mapM (recordSubTree h) addunderhere
 		return (addoldnew l' addunderhere')
 
-	removeset = S.fromList $ map (normalise . gitPath) removefiles
-	removed (TreeBlob f _ _) = S.member (normalise (gitPath f)) removeset
-	removed (TreeCommit f _ _) = S.member (normalise (gitPath f)) removeset
+	removeset = S.fromList $ map (P.normalise . gitPath) removefiles
+	removed (TreeBlob f _ _) = S.member (P.normalise (gitPath f)) removeset
+	removed (TreeCommit f _ _) = S.member (P.normalise (gitPath f)) removeset
 	removed (RecordedSubTree _ _ _) = False
 	removed (NewSubTree _ _) = False
 
@@ -281,7 +283,7 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 					addoldnew' (M.delete k oldm) ns
 				Nothing -> n : addoldnew' oldm ns
 	addoldnew' oldm [] = M.elems oldm
-	mkk = normalise . gitPath
+	mkk = P.normalise . gitPath
 
 {- Grafts subtree into the basetree at the specified location, replacing
  - anything that the basetree already had at that location.
@@ -338,14 +340,14 @@ graftTree' subtree graftloc basetree repo hdl = go basetree subdirs graftdirs
 		| d == graftloc = graftin' []
 		| otherwise = NewSubTree d [graftin' rest]
 
-	subdirs = splitDirectories $ gitPath graftloc
+	subdirs = P.splitDirectories $ gitPath graftloc
 
 	-- For a graftloc of "foo/bar/baz", this generates
 	-- ["foo", "foo/bar", "foo/bar/baz"]
-	graftdirs = map (asTopFilePath . toInternalGitPath . encodeBS) $
+	graftdirs = map (asTopFilePath . toInternalGitPath) $
 		mkpaths [] subdirs
 	mkpaths _ [] = []
-	mkpaths base (d:rest) = (joinPath base </> d) : mkpaths (base ++ [d]) rest
+	mkpaths base (d:rest) = (P.joinPath base P.</> d) : mkpaths (base ++ [d]) rest
 
 {- Assumes the list is ordered, with tree objects coming right before their
  - contents. -}
@@ -374,13 +376,16 @@ extractTree l = case go [] inTopTree l of
 	parseerr = Left
 
 class GitPath t where
-	gitPath :: t -> FilePath
+	gitPath :: t -> RawFilePath
 
-instance GitPath FilePath where
+instance GitPath RawFilePath where
 	gitPath = id
 
+instance GitPath FilePath where
+	gitPath = toRawFilePath
+
 instance GitPath TopFilePath where
-	gitPath = fromRawFilePath . getTopFilePath
+	gitPath = getTopFilePath
 
 instance GitPath TreeItem where
 	gitPath (TreeItem f _ _) = gitPath f
@@ -398,10 +403,10 @@ inTopTree :: GitPath t => t -> Bool
 inTopTree = inTree "."
 
 inTree :: (GitPath t, GitPath f) => t -> f -> Bool
-inTree t f = gitPath t == takeDirectory (gitPath f)
+inTree t f = gitPath t == P.takeDirectory (gitPath f)
 
 beneathSubTree :: (GitPath t, GitPath f) => t -> f -> Bool
-beneathSubTree t f = prefix `isPrefixOf` normalise (gitPath f)
+beneathSubTree t f = prefix `B.isPrefixOf` P.normalise (gitPath f)
   where
 	tp = gitPath t
-	prefix = if null tp then tp else addTrailingPathSeparator (normalise tp)
+	prefix = if B.null tp then tp else P.addTrailingPathSeparator (P.normalise tp)
