@@ -18,12 +18,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build image
-        run: docker build -t dataladtester/buildenv-git-annex-buster .
+        run: docker build -t datalad/buildenv-git-annex-buster .
         working-directory: .github/workflows/tools/containers/buildenv-git-annex-buster
 
       - name: Push image
         run: |
           docker login -u jwodder --password-stdin <<<"$DOCKER_TOKEN"
-          docker push dataladtester/buildenv-git-annex-buster
+          docker push datalad/buildenv-git-annex-buster
         env:
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
