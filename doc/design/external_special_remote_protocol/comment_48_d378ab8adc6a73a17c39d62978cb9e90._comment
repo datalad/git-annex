@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Resuming an interrupted download"""
+ date="2021-10-05T16:01:10Z"
+ content="""
+It's already possible, and in fact very easy to support resuming downloads.
+When the filename that you're asked to download to already exists, you can
+simply check its size and resume downloading to it where
+the previous download left off.
+
+When you send PROGRESS, the value should be the same as the current 
+size of the file. That is always the case really, but the distinction
+between file size and amount you've downloaded only matters when resuming.
+
+Another way to support resuming, when talking to an API that does not,
+is to encourage users of your remote to configure chunking with a small
+enough chunk size. git-annex will then handle resuming by re-starting
+on the last incomplete chunk. In this case, you'll be downloading each
+chunk to a separate file, so you will not need to do anything to support
+resuming.
+
+If a remote does any kind of out of order downloading (like bittorrent
+does), it needs to avoid writing to the file out of order,
+with holes in the middle of it. Such holes would mess up a resume of
+the download of the same object by another remote.
+"""]]
