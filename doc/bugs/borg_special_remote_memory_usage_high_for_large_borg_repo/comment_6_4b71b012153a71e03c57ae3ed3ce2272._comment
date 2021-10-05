@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-10-05T20:53:24Z"
+ content="""
+@tomdhunt so your repo has in the order of 182 million
+items for git-annex to track. I do think that is probably too many to be
+practical even if this memory problem gets resolved. A list of that many
+items is at least 25 gigabytes in size. Add some memory for data structures
+and it's hard to see it working with even your enviable 64 gb. 
+
+This brings me back to the idea of only including one item for each key...  
+Only the item from the most recent archive.
+If the oldest archives always are deleted first, that would never leave a
+key present in the borg repo without git-annex having a record of the
+archive that contained it.
+
+But if you used borg prune to delete some
+intermediate archives, git-annex could no longer know of any existing
+archive that contains a key, so getting from the borg repo would fail,
+until it re-scanned the whole repo.
+git-annex sync could notice when such an intermediate archive
+has been deleted, and trigger the re-scan.
+"""]]
