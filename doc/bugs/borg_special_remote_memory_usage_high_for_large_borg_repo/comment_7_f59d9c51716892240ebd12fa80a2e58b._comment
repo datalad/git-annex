@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-10-05T23:00:18Z"
+ content="""
+I tried converting Ref to use ShortByteString. Memory use did not improve
+and the -hc profile is unchanged. So the pinned memory is not in refs. My
+guess is it must be filenames in the tree then.
+"""]]
