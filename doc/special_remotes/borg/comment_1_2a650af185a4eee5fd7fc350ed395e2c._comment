@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="Memory issues"
+ date="2021-10-03T22:30:04Z"
+ content="""
+When I tried running `git annex sync borg` on a large (~6T) borg repo with many archives, git-annex spun until it used 52G of memory, then got OOM-killed.
+
+I don't know if this is a memory leak or just trying to load too much, but it seems like this is a thing you should be able to do on a machine with 64G of RAM.
+"""]]
