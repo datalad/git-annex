@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-10-05T15:55:27Z"
+ content="""
+I tried making a borg repo with 100 archives of a 1000 object git-annex
+repo. The length of each item was 142 bytes, so all the items should
+need about 15 mb of memory. git-annex sync used half a gigabyte of memory.
+So that's a test case for this bug.
+"""]]
