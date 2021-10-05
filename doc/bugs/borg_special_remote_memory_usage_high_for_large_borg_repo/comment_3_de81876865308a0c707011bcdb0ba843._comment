@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-10-05T17:39:29Z"
+ content="""
+A heap profile shows that the problem is an accumulation of PINNED memory.
+Both the memory used by borg list and by constructing the git tree.
+
+At least the borg list part seems very similar to the problem described here.
+<https://well-typed.com/blog/2020/08/memory-fragmentation/>
+The borg list gets read into a lazy bytestring, then it's split up
+and copied into strict bytestring chunks. But those get bundled
+back up into larger memory allocations as explained there. Then the files
+that are not git-annex objects are filtered out, resulting in memory
+fragmentation.
+
+I tried throwing in some S.copy in the borg list and filter part. Didn't
+help.
+
+I converted ImportLocation to use a ShortByteString, and that solved, 
+or at least improved, the borg list part of the problem. With 20 borg
+archives with 10000 annex objects each, the heap profile which had
+showed around 90 mb, mostly PINNED during that first stage, went down
+to 8 mb, none PINNED. (Although looking at the git-annex process 
+from outside, it still allocated 120 mb or so.)
+
+That leaves the memory use when constructing the git tree.
+Which would also probably affect importtree special remotes,
+when they have a large number of files.
+"""]]

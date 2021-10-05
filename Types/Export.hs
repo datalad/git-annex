@@ -1,6 +1,6 @@
 {- git-annex export types
  -
- - Copyright 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,23 +21,28 @@ import Git.FilePath
 import Utility.Split
 import Utility.FileSystemEncoding
 
+import Data.ByteString.Short as S
 import qualified System.FilePath.Posix as Posix
 import GHC.Generics
 import Control.DeepSeq
 
--- A location on a remote that a key can be exported to.
--- The RawFilePath will be relative to the top of the remote,
--- and uses unix-style path separators.
-newtype ExportLocation = ExportLocation RawFilePath
+-- A location such as a path on a remote, that a key can be exported to.
+-- The path is relative to the top of the remote, and uses unix-style
+-- path separators.
+--
+-- This uses a ShortByteString to avoid problems with ByteString getting
+-- PINNED in memory which caused memory fragmentation and excessive memory
+-- use.
+newtype ExportLocation = ExportLocation S.ShortByteString
 	deriving (Show, Eq, Generic)
 
 instance NFData ExportLocation
 
 mkExportLocation :: RawFilePath -> ExportLocation
-mkExportLocation = ExportLocation . toInternalGitPath
+mkExportLocation = ExportLocation . S.toShort . toInternalGitPath
 
 fromExportLocation :: ExportLocation -> RawFilePath
-fromExportLocation (ExportLocation f) = f
+fromExportLocation (ExportLocation f) = S.fromShort f
 
 newtype ExportDirectory = ExportDirectory RawFilePath
 	deriving (Show, Eq)
@@ -58,4 +63,4 @@ exportDirectories (ExportLocation f) =
 	subs ps (d:ds) = (d:ps) : subs (d:ps) ds
 
 	dirs = map Posix.dropTrailingPathSeparator $
-		dropFromEnd 1 $ Posix.splitPath $ decodeBS f
+		dropFromEnd 1 $ Posix.splitPath $ decodeBS $ S.fromShort f
