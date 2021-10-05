@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-10-05T19:26:49Z"
+ content="""
+I've tried most types of heap profiles and saw only PINNED.
+But a retainer profile (-hr) told more.
+
+<img src="https://tmp.joeyh.name/prof.png">
+
+Note that 8602 is really getImportableContents, and 14913 is importKeys.
+(Found in git-annex.prof which tells the call stack for each set.) 
+
+I think that buildImportTrees's allocation is due to needing to hash
+git-annex symlinks and retain the shas. (mktreeitem) Unless there's also memory
+fragmentation happening there.
+
+treeItemsToTree might be the real problem, but it's hard to see how to 
+improve it. Maybe stop using it and use a temporary index file to build
+up the tree?
+
+Notice that the 30mb spike shown in the profile is only a fraction of the
+300+ mb that run actually grew to consume. Which gets back to PINNED and fragmentation,
+I'm afraid..
+
+Looking at git-annex from outside, I collected these RSS
+values:
+
+	101508 early borg list
+	209704 before mktreeitem
+	261724 before treeItemsToTree
+	327260 after treeItemsToTree
+
+
+"""]]
