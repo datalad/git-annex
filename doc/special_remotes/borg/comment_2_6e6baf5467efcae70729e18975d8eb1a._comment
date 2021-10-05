@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-10-05T15:12:00Z"
+ content="""
+I have opened a bug for that issue,
+[[bugs/borg_special_remote_memory_usage_high_for_large_borg_repo]].
+
+It would be good if you could followup there with details.
+"""]]
