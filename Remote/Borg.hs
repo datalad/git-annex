@@ -162,20 +162,21 @@ borgRepoLocalPath r@(BorgRepo p)
 	| borgLocal r && not (null p) = Just p
 	| otherwise = Nothing
 
-listImportableContentsM :: UUID -> BorgRepo -> ParsedRemoteConfig -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+listImportableContentsM :: UUID -> BorgRepo -> ParsedRemoteConfig -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
 listImportableContentsM u borgrepo c = prompt $ do
 	imported <- getImported u
 	ls <- withborglist (locBorgRepo borgrepo) Nothing formatarchivelist $ \as ->
 		forM (filter (not . S.null) as) $ \archivename ->
-			case M.lookup archivename imported of
-				Just getfast -> return $ Left (archivename, getfast)
-				Nothing -> Right <$>
+			return $ case M.lookup archivename imported of
+				Just getlist -> Left (archivename, getlist)
+				Nothing ->
 					let archive = borgArchive borgrepo archivename
-					in withborglist archive subdir formatfilelist $
+					    getlist = withborglist archive subdir formatfilelist $
 						liftIO . evaluate . force . parsefilelist archivename
+					    in Right (archivename, getlist)
 	if all isLeft ls && M.null (M.difference imported (M.fromList (lefts ls)))
 		then return Nothing -- unchanged since last time, avoid work
-		else Just . mkimportablecontents <$> mapM (either snd pure) ls
+		else Just <$> mkimportablecontents (map (either id id) ls)
   where
 	withborglist what addparam format a = do
 		environ <- liftIO getEnvironment
@@ -210,7 +211,7 @@ listImportableContentsM u borgrepo c = prompt $ do
 	parsefilelist archivename (bsz:f:extra:rest) = case readMaybe (fromRawFilePath bsz) of
 		Nothing -> parsefilelist archivename rest
 		Just sz ->
-			let loc = genImportLocation archivename f
+			let loc = genImportLocation f
 			-- borg list reports hard links as 0 byte files,
 			-- with the extra field set to " link to ".
 			-- When the annex object is a hard link to
@@ -234,12 +235,27 @@ listImportableContentsM u borgrepo c = prompt $ do
 
 	-- importableHistory is not used for retrieval, so is not
 	-- populated with old archives. Instead, a tree of archives
-	-- is constructed, by genImportLocation including the archive
-	-- name in the ImportLocation.
-	mkimportablecontents l = ImportableContents
-		{ importableContents = concat l
-		, importableHistory = []
-		}
+	-- is constructed, with a subtree for each archive.
+	mkimportablecontents [] = return $ ImportableContentsComplete $
+		ImportableContents
+			{ importableContents = []
+			, importableHistory = []
+			}
+	mkimportablecontents (l:ls) = ImportableContentsChunked
+		<$> mkimportablecontentschunk l ls
+		<*> pure []
+	
+	mkimportablecontentschunk (archivename, getlist) rest = do
+		l <- getlist
+		return $ ImportableContentsChunk
+			{ importableContentsSubDir =
+				genImportChunkSubDir archivename
+			, importableContentsSubTree = l
+			, importableContentsNextChunk = case rest of
+				(getlist':rest') -> Just 
+					<$> mkimportablecontentschunk getlist' rest'
+				[] -> return Nothing
+			}
 
 -- We do not need a ContentIdentifier in order to retrieve a file from
 -- borg; the ImportLocation contains all that's needed. So, this is left
@@ -247,15 +263,20 @@ listImportableContentsM u borgrepo c = prompt $ do
 borgContentIdentifier :: ContentIdentifier
 borgContentIdentifier = ContentIdentifier mempty
 
+-- Convert a path file a borg archive to a path that can be used as an 
+-- ImportLocation. The archive name gets used as a subdirectory,
+-- which this path is inside.
+--
 -- Borg does not allow / in the name of an archive, so the archive
 -- name will always be the first directory in the ImportLocation.
 --
--- Paths in a borg archive are always relative, not absolute, so the use of
--- </> to combine the archive name with the path will always work.
-genImportLocation :: BorgArchiveName -> RawFilePath -> ImportLocation
-genImportLocation archivename p  = 
-	ThirdPartyPopulated.mkThirdPartyImportLocation $
-		archivename P.</> p
+-- This scheme also relies on the fact that paths in a borg archive are
+-- always relative, not absolute.
+genImportLocation :: RawFilePath -> RawFilePath
+genImportLocation = fromImportLocation . ThirdPartyPopulated.mkThirdPartyImportLocation
+
+genImportChunkSubDir :: BorgArchiveName -> ImportChunkSubDir
+genImportChunkSubDir = ImportChunkSubDir . fromImportLocation . ThirdPartyPopulated.mkThirdPartyImportLocation
 
 extractImportLocation :: ImportLocation -> (BorgArchiveName, RawFilePath)
 extractImportLocation loc = go $ P.splitDirectories $
@@ -269,7 +290,7 @@ extractImportLocation loc = go $ P.splitDirectories $
 -- last imported tree. And the contents of those archives can be retrieved
 -- by listing the subtree recursively, which will likely be quite a lot
 -- faster than running borg.
-getImported :: UUID -> Annex (M.Map BorgArchiveName (Annex [(ImportLocation, (ContentIdentifier, ByteSize))]))
+getImported :: UUID -> Annex (M.Map BorgArchiveName (Annex [(RawFilePath, (ContentIdentifier, ByteSize))]))
 getImported u = M.unions <$> (mapM go . exportedTreeishes =<< getExport u)
   where
 	go t = M.fromList . mapMaybe mk
@@ -278,21 +299,19 @@ getImported u = M.unions <$> (mapM go . exportedTreeishes =<< getExport u)
 	mk ti
 		| toTreeItemType (LsTree.mode ti) == Just TreeSubtree = Just
 			( getTopFilePath (LsTree.file ti)
-			, getcontents
-				(getTopFilePath (LsTree.file ti))
-				(LsTree.sha ti)
+			, getcontents (LsTree.sha ti)
 			)
 		| otherwise = Nothing
 
-	getcontents archivename t = mapMaybe (mkcontents archivename)
+	getcontents t = mapMaybe mkcontents
 		<$> inRepo (LsTree.lsTreeStrict LsTree.LsTreeRecursive (LsTree.LsTreeLong False) t)
 	
-	mkcontents archivename ti = do
+	mkcontents ti = do
 		let f = ThirdPartyPopulated.fromThirdPartyImportLocation $
 			mkImportLocation $ getTopFilePath $ LsTree.file ti
 		k <- fileKey (P.takeFileName f)
 		return
-			( genImportLocation archivename f
+			( genImportLocation f
 			,
 				( borgContentIdentifier
 				-- defaulting to 0 size is ok, this size

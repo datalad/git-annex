@@ -6,6 +6,8 @@ git-annex (8.20210904) UNRELEASED; urgency=medium
   * Bug fix: Git configs such as annex.verify were incorrectly overriding
     per-remote git configs such as remote.name.annex-verify.
     (Reversion in version 4.20130323)
+  * borg: Significantly improved memory use when a borg repository
+    contains many archives.
   * borg: Avoid trying to extract xattrs, ACLS, and bsdflags when
     retrieving from a borg repository.
   * Sped up git-annex smudge --clean by 25%.
@@ -15,7 +17,6 @@ git-annex (8.20210904) UNRELEASED; urgency=medium
     incrementally verified, when used on NTFS and perhaps other filesystems.
   * reinject: Fix crash when reinjecting a file from outside the repository.
     (Reversion in version 8.20210621)
-  * borg: Some improvements to memory use when importing a lot of archives.
 
  -- Joey Hess <id@joeyh.name>  Fri, 03 Sep 2021 12:02:55 -0400
 

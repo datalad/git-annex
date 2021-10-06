@@ -288,9 +288,10 @@ renameExportM serial adir _k old new = do
 		, File newloc
 		]
 
-listImportableContentsM :: AndroidSerial -> AndroidPath -> Annex (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+listImportableContentsM :: AndroidSerial -> AndroidPath -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
 listImportableContentsM serial adir = adbfind >>= \case
-	Just ls -> return $ Just $ ImportableContents (mapMaybe mk ls) []
+	Just ls -> return $ Just $ ImportableContentsComplete $ 
+		ImportableContents (mapMaybe mk ls) []
 	Nothing -> giveup "adb find failed"
   where
 	adbfind = adbShell serial

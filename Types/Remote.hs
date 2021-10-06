@@ -309,7 +309,7 @@ data ImportActions a = ImportActions
 	--
 	-- Throws exception on failure to access the remote.
 	-- May return Nothing when the remote is unchanged since last time.
-	{ listImportableContents :: a (Maybe (ImportableContents (ContentIdentifier, ByteSize)))
+	{ listImportableContents :: a (Maybe (ImportableContentsChunkable a (ContentIdentifier, ByteSize)))
 	-- Generates a Key (of any type) for the file stored on the
 	-- remote at the ImportLocation. Does not download the file
 	-- from the remote.
@@ -322,7 +322,7 @@ data ImportActions a = ImportActions
 	-- since the ContentIdentifier was generated.
 	--
 	-- When it returns nothing, the file at the ImportLocation 
-	-- not by included in the imported tree.
+	-- will not be included in the imported tree.
 	--
 	-- When the remote is thirdPartyPopulated, this should check if the
 	-- file stored on the remote is the content of an annex object,
