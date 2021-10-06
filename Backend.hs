@@ -33,8 +33,6 @@ import qualified Backend.URL
 import qualified Backend.External
 
 import qualified Data.Map as M
-import qualified Data.ByteString.Short as S (toShort, fromShort)
-import qualified Data.ByteString.Char8 as S8
 
 {- Build-in backends. Does not include externals. -}
 builtinList :: [Backend]
