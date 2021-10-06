@@ -128,7 +128,7 @@ buildKeyData k = byteString (formatKeyVariety (keyVariety k))
 	<> 'm' ?: (integerDec . (\(CTime t) -> fromIntegral t) <$> keyMtime k)
 	<> 'S' ?: (integerDec <$> keyChunkSize k)
 	<> 'C' ?: (integerDec <$> keyChunkNum k)
-	<> sepbefore (sepbefore (byteString (S.fromShort (keyName k))))
+	<> sepbefore (sepbefore (shortByteString (keyName k)))
   where
 	sepbefore s = char7 fieldSep <> s
 	c ?: (Just b) = sepbefore (char7 c <> b)
