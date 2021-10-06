@@ -62,17 +62,9 @@ genKey source meterupdate preferredbackend = do
 	case B.genKey b of
 		Just a -> do
 			k <- a source meterupdate
-			return (makesane k, b)
+			return (k, b)
 		Nothing -> giveup $ "Cannot generate a key for backend " ++
 			decodeBS (formatKeyVariety (B.backendVariety b))
-  where
-	-- keyNames should not contain newline characters.
-	makesane k = alterKey k $ \d -> d
-		{ keyName = S.toShort (S8.map fixbadchar (S.fromShort (fromKey keyName k)))
-		}
-	fixbadchar c
-		| c == '\n' = '_'
-		| otherwise = c
 
 getBackend :: FilePath -> Key -> Annex (Maybe Backend)
 getBackend file k = maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
