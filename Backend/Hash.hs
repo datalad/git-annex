@@ -24,6 +24,7 @@ import Utility.Metered
 import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Short as S (toShort, fromShort)
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import Control.DeepSeq
@@ -106,7 +107,7 @@ keyValue hash source meterupdate = do
 	filesize <- liftIO $ getFileSize file
 	s <- hashFile hash file meterupdate
 	return $ mkKey $ \k -> k
-		{ keyName = encodeBS s
+		{ keyName = S.toShort (encodeBS s)
 		, keyVariety = hashKeyVariety hash (HasExt False)
 		, keySize = Just filesize
 		}
@@ -160,7 +161,7 @@ needsUpgrade :: Key -> Bool
 needsUpgrade key = or
 	[ "\\" `S8.isPrefixOf` keyHash key
 	, S.any (not . validInExtension) (snd $ splitKeyNameExtension key)
-	, not (hasExt (fromKey keyVariety key)) && keyHash key /= fromKey keyName key
+	, not (hasExt (fromKey keyVariety key)) && keyHash key /= S.fromShort (fromKey keyName key)
 	]
 
 trivialMigrate :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
@@ -171,14 +172,14 @@ trivialMigrate' :: Key -> Backend -> AssociatedFile -> Maybe Int -> Maybe Key
 trivialMigrate' oldkey newbackend afile maxextlen
 	{- Fast migration from hashE to hash backend. -}
 	| migratable && hasExt oldvariety = Just $ alterKey oldkey $ \d -> d
-		{ keyName = keyHash oldkey
+		{ keyName = S.toShort (keyHash oldkey)
 		, keyVariety = newvariety
 		}
 	{- Fast migration from hash to hashE backend. -}
 	| migratable && hasExt newvariety = case afile of
 		AssociatedFile Nothing -> Nothing
 		AssociatedFile (Just file) -> Just $ alterKey oldkey $ \d -> d
-			{ keyName = keyHash oldkey 
+			{ keyName = S.toShort $ keyHash oldkey 
 				<> selectExtension maxextlen file
 			, keyVariety = newvariety
 			}
@@ -186,9 +187,9 @@ trivialMigrate' oldkey newbackend afile maxextlen
 	 - non-extension preserving key, with an extension
 	 - in its keyName. -}
 	| newvariety == oldvariety && not (hasExt oldvariety) &&
-		keyHash oldkey /= fromKey keyName oldkey = 
+		keyHash oldkey /= S.fromShort (fromKey keyName oldkey) = 
 			Just $ alterKey oldkey $ \d -> d
-				{ keyName = keyHash oldkey
+				{ keyName = S.toShort (keyHash oldkey)
 				}
 	| otherwise = Nothing
   where

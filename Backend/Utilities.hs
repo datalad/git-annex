@@ -16,6 +16,7 @@ import Types.Key
 import Types.KeySource
 
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Short as S (ShortByteString, toShort)
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 import Data.Char
@@ -25,13 +26,13 @@ import Data.Word
  - If it's not too long, the full string is used as the keyName.
  - Otherwise, it's truncated, and its md5 is prepended to ensure a unique
  - key. -}
-genKeyName :: String -> S.ByteString
+genKeyName :: String -> S.ShortByteString
 genKeyName s
 	-- Avoid making keys longer than the length of a SHA256 checksum.
-	| bytelen > sha256len = encodeBS $
+	| bytelen > sha256len = S.toShort $ encodeBS $
 		truncateFilePath (sha256len - md5len - 1) s' ++ "-" ++ 
 			show (md5 bl)
-	| otherwise = encodeBS s'
+	| otherwise = S.toShort $ encodeBS s'
   where
 	s' = preSanitizeKeyName s
 	bl = encodeBL s
@@ -47,7 +48,7 @@ addE source sethasext k = do
 	maxlen <- annexMaxExtensionLength <$> Annex.getGitConfig
 	let ext = selectExtension maxlen (keyFilename source)
 	return $ alterKey k $ \d -> d
-		{ keyName = keyName d <> ext
+		{ keyName = keyName d <> S.toShort ext
 		, keyVariety = sethasext (keyVariety d)
 		}
 

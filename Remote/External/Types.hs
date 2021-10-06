@@ -60,6 +60,7 @@ import Control.Concurrent.STM
 import Network.URI
 import Data.Char
 import Text.Read
+import qualified Data.ByteString.Short as S (fromShort)
 
 data External = External
 	{ externalType :: ExternalType
@@ -138,7 +139,7 @@ newtype SafeKey = SafeKey Key
 
 mkSafeKey :: Key -> Either String SafeKey
 mkSafeKey k 
-	| any isSpace (decodeBS $ fromKey keyName k) = Left $ concat
+	| any isSpace (decodeBS $ S.fromShort $ fromKey keyName k) = Left $ concat
 		[ "Sorry, this file cannot be stored on an external special remote because its key's name contains a space. "
 		, "To avoid this problem, you can run: git-annex migrate --backend="
 		, decodeBS (formatKeyVariety (fromKey keyVariety k))

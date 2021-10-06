@@ -56,6 +56,7 @@ import Network.HTTP.Types
 import Network.HTTP.Client hiding (port)
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
+import qualified Data.ByteString.Short as S (fromShort)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 import qualified Control.Concurrent.MSemN as MSemN
@@ -374,7 +375,7 @@ extractKeySha256 :: Key -> Maybe LFS.SHA256
 extractKeySha256 k = case fromKey keyVariety k of
 	SHA2Key (HashSize 256) (HasExt hasext)
 		| hasext -> eitherToMaybe $ E.decodeUtf8' (keyHash k)
-		| otherwise -> eitherToMaybe $ E.decodeUtf8' (fromKey keyName k)
+		| otherwise -> eitherToMaybe $ E.decodeUtf8' $ S.fromShort (fromKey keyName k)
 	_ -> Nothing
 
 -- The size of an encrypted key is the size of the input data, but we need

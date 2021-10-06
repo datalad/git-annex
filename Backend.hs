@@ -33,6 +33,7 @@ import qualified Backend.URL
 import qualified Backend.External
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Short as S (toShort, fromShort)
 import qualified Data.ByteString.Char8 as S8
 
 {- Build-in backends. Does not include externals. -}
@@ -67,7 +68,7 @@ genKey source meterupdate preferredbackend = do
   where
 	-- keyNames should not contain newline characters.
 	makesane k = alterKey k $ \d -> d
-		{ keyName = S8.map fixbadchar (fromKey keyName k)
+		{ keyName = S.toShort (S8.map fixbadchar (S.fromShort (fromKey keyName k)))
 		}
 	fixbadchar c
 		| c == '\n' = '_'

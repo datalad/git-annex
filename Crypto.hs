@@ -47,6 +47,7 @@ import Types.Crypto
 import Types.Remote
 import Types.Key
 import Annex.SpecialRemote.Config
+import qualified Data.ByteString.Short as S (toShort)
 
 {- The beginning of a Cipher is used for MAC'ing; the remainder is used
  - as the GPG symmetric encryption passphrase when using the hybrid
@@ -163,7 +164,7 @@ type EncKey = Key -> Key
  - on content. It does need to be repeatable. -}
 encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = mkKey $ \d -> d
-	{ keyName = encodeBS (macWithCipher mac c (serializeKey k))
+	{ keyName = S.toShort $ encodeBS $ macWithCipher mac c (serializeKey k)
 	, keyVariety = OtherKey $
 		encryptedBackendNamePrefix <> encodeBS (showMac mac)
 	}

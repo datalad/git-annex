@@ -10,6 +10,7 @@ module Command.Find where
 import Data.Default
 import qualified Data.Map as M
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Short as S (fromShort)
 import qualified Data.ByteString.Char8 as S8
 
 import Command
@@ -100,7 +101,7 @@ formatVars key (AssociatedFile af) =
 	, ("backend", decodeBS $ formatKeyVariety $ fromKey keyVariety key)
 	, ("bytesize", size show)
 	, ("humansize", size $ roughSize storageUnits True)
-	, ("keyname", decodeBS $ fromKey keyName key)
+	, ("keyname", decodeBS $ S.fromShort $ fromKey keyName key)
 	, ("hashdirlower", fromRawFilePath $ hashDirLower def key)
 	, ("hashdirmixed", fromRawFilePath $ hashDirMixed def key)
 	, ("mtime", whenavail show $ fromKey keyMtime key)

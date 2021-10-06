@@ -20,6 +20,7 @@ import Utility.Metered
 import qualified Utility.SimpleProtocol as Proto
 
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Short as S (toShort, fromShort)
 import qualified Data.Map.Strict as M
 import Data.Char
 import Control.Concurrent
@@ -285,7 +286,7 @@ toProtoKey k = ProtoKey $ alterKey k $ \d -> d
 	-- The extension can be easily removed, because the protocol
 	-- documentation does not allow '.' to be used in the keyName,
 	-- so the first one is the extension.
-	{ keyName = S.takeWhile (/= dot) (keyName d)
+	{ keyName = S.toShort (S.takeWhile (/= dot) (S.fromShort (keyName d)))
 	, keyVariety = setHasExt (HasExt False) (keyVariety d)
 	}
   where

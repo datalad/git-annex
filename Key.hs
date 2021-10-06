@@ -31,6 +31,7 @@ module Key (
 
 import qualified Data.Text as T
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Short as S (toShort, fromShort)
 import qualified Data.Attoparsec.ByteString as A
 
 import Common
@@ -62,7 +63,7 @@ serializeKey :: Key -> String
 serializeKey = decodeBS . serializeKey'
 
 serializeKey' :: Key -> S.ByteString
-serializeKey' = keySerialization
+serializeKey' = S.fromShort . keySerialization
 
 deserializeKey :: String -> Maybe Key
 deserializeKey = deserializeKey' . encodeBS
@@ -72,7 +73,7 @@ deserializeKey' = eitherToMaybe . A.parseOnly keyParser
 
 instance Arbitrary KeyData where
 	arbitrary = Key
-		<$> (encodeBS <$> (listOf1 $ elements $ ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "-_\r\n \t"))
+		<$> (S.toShort . encodeBS <$> (listOf1 $ elements $ ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "-_\r\n \t"))
 		<*> (parseKeyVariety . encodeBS <$> (listOf1 $ elements ['A'..'Z'])) -- BACKEND
 		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
 		<*> ((abs . fromInteger <$>) <$> arbitrary) -- mtime cannot be negative

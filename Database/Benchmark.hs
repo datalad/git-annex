@@ -22,6 +22,7 @@ import Types.Key
 import Utility.DataUnits
 
 import Criterion.Main
+import qualified Data.ByteString.Short as S (toShort)
 import qualified Data.ByteString.Char8 as B8
 import System.Random
 import Control.Concurrent
@@ -87,7 +88,7 @@ populateAssociatedFiles h num = do
 
 keyN :: Integer -> Key
 keyN n = mkKey $ \k -> k
-	{ keyName = B8.pack $ "key" ++ show n
+	{ keyName = S.toShort (B8.pack $ "key" ++ show n)
 	, keyVariety = OtherKey "BENCH"
 	}
 

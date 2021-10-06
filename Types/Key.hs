@@ -29,6 +29,7 @@ module Types.Key (
 ) where
 
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Short as S (ShortByteString, toShort, fromShort)
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Builder
@@ -49,7 +50,7 @@ import Prelude
 {- A Key has a unique name, which is derived from a particular backend,
  - and may contain other optional metadata. -}
 data KeyData = Key
-	{ keyName :: S.ByteString
+	{ keyName :: S.ShortByteString
 	, keyVariety :: KeyVariety
 	, keySize :: Maybe Integer
 	, keyMtime :: Maybe EpochTime
@@ -66,7 +67,7 @@ instance NFData KeyData
  -}
 data Key = MkKey
 	{ keyData :: KeyData
-	, keySerialization :: S.ByteString
+	, keySerialization :: S.ShortByteString
 	} deriving (Show, Generic)
 
 instance Eq Key where
@@ -111,8 +112,8 @@ isKeyPrefix s = [fieldSep, fieldSep] `isInfixOf` s
 fieldSep :: Char
 fieldSep = '-'
 
-mkKeySerialization :: KeyData -> S.ByteString
-mkKeySerialization = L.toStrict
+mkKeySerialization :: KeyData -> S.ShortByteString
+mkKeySerialization = S.toShort . L.toStrict
     	. toLazyByteStringWith (safeStrategy 128 smallChunkSize) L.empty
 	. buildKeyData
 
@@ -127,7 +128,7 @@ buildKeyData k = byteString (formatKeyVariety (keyVariety k))
 	<> 'm' ?: (integerDec . (\(CTime t) -> fromIntegral t) <$> keyMtime k)
 	<> 'S' ?: (integerDec <$> keyChunkSize k)
 	<> 'C' ?: (integerDec <$> keyChunkNum k)
-	<> sepbefore (sepbefore (byteString (keyName k)))
+	<> sepbefore (sepbefore (byteString (S.fromShort (keyName k))))
   where
 	sepbefore s = char7 fieldSep <> s
 	c ?: (Just b) = sepbefore (char7 c <> b)
@@ -156,7 +157,7 @@ keyParser = do
 	if validKeyName v n
 		then 
 			let d = Key
-				{ keyName = n
+				{ keyName = S.toShort n
 				, keyVariety = v
 				, keySize = s
 				, keyMtime = m
@@ -195,7 +196,7 @@ validKeyName kv name
  - keyName minus extension, and the extension (including leading dot).
  -}
 splitKeyNameExtension :: Key -> (S.ByteString, S.ByteString)
-splitKeyNameExtension = splitKeyNameExtension' . keyName . keyData
+splitKeyNameExtension = splitKeyNameExtension' . S.fromShort . keyName . keyData
 
 splitKeyNameExtension' :: S.ByteString -> (S.ByteString, S.ByteString)
 splitKeyNameExtension' keyname = S8.span (/= '.') keyname

@@ -18,6 +18,7 @@ import qualified Types.Remote as Remote
 import Messages
 
 import Data.Maybe
+import qualified Data.ByteString.Short as S (fromShort, toShort)
 
 -- From a sha pointing to the content of a file to the key
 -- to use to export it. When the file is annexed, it's the annexed key.
@@ -39,7 +40,7 @@ exportKey sha = mk <$> catKey sha
 -- only checksum the content.
 gitShaKey :: Git.Sha -> Key
 gitShaKey (Git.Ref s) = mkKey $ \kd -> kd
-	{ keyName = s
+	{ keyName = S.toShort s
 	, keyVariety = OtherKey "GIT"
 	}
 
@@ -47,7 +48,7 @@ gitShaKey (Git.Ref s) = mkKey $ \kd -> kd
 keyGitSha :: Key -> Maybe Git.Sha
 keyGitSha k
 	| fromKey keyVariety k == OtherKey "GIT" =
-		Just (Git.Ref (fromKey keyName k))
+		Just (Git.Ref (S.fromShort (fromKey keyName k)))
 	| otherwise = Nothing
 
 -- Is a key storing a git sha, and not used for an annexed file?

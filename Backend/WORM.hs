@@ -17,6 +17,7 @@ import Utility.Metered
 
 import qualified Data.ByteString.Char8 as S8
 import qualified Utility.RawFilePath as R
+import qualified Data.ByteString.Short as S (toShort, fromShort)
 
 backends :: [Backend]
 backends = [backend]
@@ -53,12 +54,13 @@ keyValue source _ = do
 {- Old WORM keys could contain spaces and carriage returns, 
  - and can be upgraded to remove them. -}
 needsUpgrade :: Key -> Bool
-needsUpgrade key = any (`S8.elem` fromKey keyName key) [' ', '\r']
+needsUpgrade key =
+	any (`S8.elem` S.fromShort (fromKey keyName key)) [' ', '\r']
 
 removeProblemChars :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
 removeProblemChars oldkey newbackend _
 	| migratable = return $ Just $ alterKey oldkey $ \d -> d
-		{ keyName = encodeBS $ reSanitizeKeyName $ decodeBS $ keyName d }
+		{ keyName = S.toShort $ encodeBS $ reSanitizeKeyName $ decodeBS $ S.fromShort $ keyName d }
 	| otherwise = return Nothing
   where
 	migratable = oldvariety == newvariety

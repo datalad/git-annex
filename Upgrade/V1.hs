@@ -12,6 +12,7 @@ import Data.Char
 import Data.Default
 import Data.ByteString.Builder
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Short as S (toShort, fromShort)
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 
@@ -138,7 +139,7 @@ oldlog2key l
   where
 	len = length l - 4
 	k = readKey1 (take len l)
-	sane = (not . S.null $ fromKey keyName k) && (not . S.null $ formatKeyVariety $ fromKey keyVariety k)
+	sane = (not . S.null $ S.fromShort $ fromKey keyName k) && (not . S.null $ formatKeyVariety $ fromKey keyVariety k)
 
 -- WORM backend keys: "WORM:mtime:size:filename"
 -- all the rest: "backend:key"
@@ -150,7 +151,7 @@ readKey1 :: String -> Key
 readKey1 v
 	| mixup = fromJust $ deserializeKey $ intercalate ":" $ Prelude.tail bits
 	| otherwise = mkKey $ \d -> d
-		{ keyName = encodeBS n
+		{ keyName = S.toShort (encodeBS n)
 		, keyVariety = parseKeyVariety (encodeBS b)
 		, keySize = s
 		, keyMtime = t
@@ -175,7 +176,7 @@ showKey1 k = intercalate ":" $ filter (not . null)
 	showifhere Nothing = ""
 	showifhere (Just x) = show x
 	b = decodeBS $ formatKeyVariety v
-	n = fromKey keyName k
+	n = S.fromShort $ fromKey keyName k
 	v = fromKey keyVariety k
 	s = fromKey keySize k
 	t = fromKey keyMtime k
@@ -212,7 +213,7 @@ lookupKey1 file = do
 	  where
 		k = fileKey1 l
 		bname = decodeBS (formatKeyVariety (fromKey keyVariety k))
-		kname = decodeBS (fromKey keyName k)
+		kname = decodeBS (S.fromShort (fromKey keyName k))
 		skip = "skipping " ++ file ++ 
 			" (unknown backend " ++ bname ++ ")"
 
