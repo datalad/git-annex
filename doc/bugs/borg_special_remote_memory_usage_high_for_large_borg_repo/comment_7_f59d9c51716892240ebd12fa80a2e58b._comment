@@ -8,16 +8,4 @@ and the -hc profile is unchanged. So the pinned memory is not in refs.
 
 Also tried converting Key to use ShortByteString. That was a win!
 My 20 borg archive test case is down from 320 mb to 242 mb.
-
-Looking at Command.SyncpullThirdPartyPopulated,
-it calls listContents, which calls borg's listImportableContents,
-and produces an `ImportableContents (ContentIdentifier, ByteSize)`
-then that gets passed through importKeys to produce
-an `ImportableContents (Either Sha Key)`. Probably
-double memory is used while doing that conversion, unless
-the GC manages to free the first one while it's traversed.
-
-If borg's listImportableContents included a Key (which it does
-produce already only to throw away!) that might 
-eliminate the big spike just before treeItemsToTree.
 """]]
