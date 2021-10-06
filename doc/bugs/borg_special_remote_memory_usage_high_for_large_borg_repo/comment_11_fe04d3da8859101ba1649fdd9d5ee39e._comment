@@ -24,16 +24,5 @@ committed.
 For borg, each archive would be a subtree; 500k filenames will fit in memory
 or at least fit better than `365*500k`.
 
-The interface I'm thinking about is something like this:
-
-	data ChunkedImportableContents info
-		= ImportableContentsChunk
-			{ importableContentsRoot :: ImportLocation
-			, importableContentsSubTree :: [(ImportLocation, info)]
-			-- ^ locations are relative to importableContentsRoot
-			, importableContentsContinuation :: Annex (ChunkedImportableContents info)
-			}
-		| ImportableContentsComplete (ImportableContents info)
-
-This is a promising idea!
+This is a promising idea! Started working on it in a `borgchunks` branch.
 """]]
