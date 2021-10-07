@@ -143,7 +143,20 @@ Do the following:
 1. Enable Developer mode in Windows settings so that symlinks can be created without elevated privileges.
 2. Mount the NTFS drive with metadata option. This line can be added in `/etc/fstab`: `C: /mnt/c drvfs metadata,case=dir`. I prefer to also add `uid=1000,gid=1000,fmask=0133,dmask=0022`.
 3. Create an empty directory where your repo will be. Then enable case sensitivity `setfattr -n system.wsl_case_sensitive -v 1 <path>`. This attribute will be automatically and recursively applied to any future subdirectories. If setfattr(1) errs out with permission denied, you can also effect the same change in CMD.EXE / Windows Powershell as admin with `fsutil file setCaseSensitiveInfo <path> enable`. You can check that the setting is enabled with `getfattr -n system.wsl_case_sensitive <path>` under WSL1.
-4. Create the repo however you like. Immediately after `git annex init`, do `git config annex.crippledfilesystem true`. If you set `crippledfilesystem` before init, then git annex will try to enter an adjusted branch and trigger the first bug. If you do not set `crippledfilesystem` after init, you will trigger the second bug when doing `git annex add`.
+4. Create the repo however you like (see steps below for cloning a repo with ssh). Immediately after `git annex init`, do `git config annex.crippledfilesystem true`. If you set `crippledfilesystem` before init, then git annex will try to enter an adjusted branch and trigger the first bug. If you do not set `crippledfilesystem` after init, you will trigger the second bug when doing `git annex add`.
+
+### Cloning a repo with ssh
+
+When cloning a repo with ssh, `git annex init` will fail to enable ssh remotes if `crippledfilesystem` is not set, but you also cannot set it before init. Follow these steps to avoid unrelated history in the `git-annex` branch.
+
+    git clone <sshpath> annex
+    cd annex
+    git branch git-annex origin/git-annex
+    git remote remove origin
+    git annex init
+    git config annex.crippledfilesystem true
+    git remote add origin <sshpath>
+    git annex sync
 
 ### Using symlinks and locked files
 
