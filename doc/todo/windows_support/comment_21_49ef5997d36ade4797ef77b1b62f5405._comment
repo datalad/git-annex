@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="the WSL1 use case"
+ date="2021-10-07T04:12:48Z"
+ content="""
+User asakurareiko added some instructions to this page how to use git-annex in Ubuntu 20 (presumably
+20.04) in WSL1 and I tested them out in my older Ubuntu 18.04 installation and found out that they
+amazingly work although my Windows apps couldn't access any of the files that were still locked.
+Somehow the symlinks were only in a form that only WSL1 and Cygwin/MSYS2/Git Bash could access
+(mind you I have developer mode active and my Windows 10 is also version 21H1 so the environment
+was otherwise similar). An interesting use case nonetheless. I edited the section with my corrections
+ -- I hope asakurareiko doesn't mind. :)
+
+"""]]
