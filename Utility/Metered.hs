@@ -459,12 +459,14 @@ updateMeter (Meter totalsizev sv bv displaymeter) new = do
 -- | Display meter to a Handle.
 displayMeterHandle :: Handle -> RenderMeter -> DisplayMeter
 displayMeterHandle h rendermeter v msize old new = do
+	olds <- takeMVar v
 	let s = rendermeter msize old new
-	olds <- swapMVar v s
+	let padding = replicate (length olds - length s) ' '
+	let s' = s <> padding
+	putMVar v s'
 	-- Avoid writing when the rendered meter has not changed.
-	when (olds /= s) $ do
-		let padding = replicate (length olds - length s) ' '
-		hPutStr h ('\r':s ++ padding)
+	when (olds /= s') $ do
+		hPutStr h ('\r':s')
 		hFlush h
 
 -- | Clear meter displayed by displayMeterHandle. May be called before

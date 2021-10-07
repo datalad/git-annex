@@ -16,6 +16,7 @@ git-annex (8.20210904) UNRELEASED; urgency=medium
   * reinject: Fix crash when reinjecting a file from outside the repository.
     (Reversion in version 8.20210621)
   * borg: Some improvements to memory use when importing a lot of archives.
+  * Avoid cursor jitter when updating progress display.
 
  -- Joey Hess <id@joeyh.name>  Fri, 03 Sep 2021 12:02:55 -0400
 
