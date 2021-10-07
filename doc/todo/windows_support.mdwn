@@ -131,18 +131,18 @@ Seems like this would need Windows 10.
 > > > > But here's a bug about sqlite in WSL:
 > > > > [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]] --[[Joey]]
 
-## Steps for using git-annex on NTFS with WSL1
+## Update Oct 2021: Steps for using git-annex on NTFS with WSL1 (an experimental setup for those adventurous enough)
 
-These steps are tested on Windows 10 21h1 with Ubuntu 20 and are specifically designed to work around these two bugs:
+The following steps are tested on Windows 10 21h1 with Ubuntu 18.04/20.04 and are specifically designed to work around these two bugs:
 
 * [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]]
 * [[bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem]]
 
-I put this line here so that the following lines do not become bullet points.
+Do the following:
 
 1. Enable Developer mode in Windows settings so that symlinks can be created without elevated privileges.
-2. Mount the NTFS drive with metadata option. This line can be added in `/etc/fstab`: `C: /mnt/c drvfs metadata`. I prefer to also add `uid=1000,gid=1000,fmask=0133,dmask=0022`.
-3. Create an empty directory where your repo will be. Then enable case sensitivity `setfattr -n system.wsl_case_sensitive -v 1 <path>`. This attribute will be automatically and recursively applied to any future subdirectories.
+2. Mount the NTFS drive with metadata option. This line can be added in `/etc/fstab`: `C: /mnt/c drvfs metadata,case=dir`. I prefer to also add `uid=1000,gid=1000,fmask=0133,dmask=0022`.
+3. Create an empty directory where your repo will be. Then enable case sensitivity `setfattr -n system.wsl_case_sensitive -v 1 <path>`. This attribute will be automatically and recursively applied to any future subdirectories. If setfattr(1) errs out with permission denied, you can also effect the same change in CMD.EXE / Windows Powershell as admin with `fsutil file setCaseSensitiveInfo <path> enable`. You can check that the setting is enabled with `getfattr -n system.wsl_case_sensitive <path>` under WSL1.
 4. Create the repo however you like. Immediately after `git annex init`, do `git config annex.crippledfilesystem true`. If you set `crippledfilesystem` before init, then git annex will try to enter an adjusted branch and trigger the first bug. If you do not set `crippledfilesystem` after init, you will trigger the second bug when doing `git annex add`.
 
 ### Using symlinks and locked files
