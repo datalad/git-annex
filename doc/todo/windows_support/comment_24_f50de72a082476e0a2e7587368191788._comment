@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="asakurareiko@f3d908c71c009580228b264f63f21c7274df7476"
+ nickname="asakurareiko"
+ avatar="http://cdn.libravatar.org/avatar/a865743e357add9d15081840179ce082"
+ subject="comment 24"
+ date="2021-10-07T16:27:39Z"
+ content="""
+One of the requirements in particular is that the link target must exist. In a freshly cloned repo the link targets do not exist so it's important to recreate the symlinks after you get the annexed files.
+
+NT symlinks must have either file or directory target type. If the link target does not exist at the time when the symlink is created, it's not possible to determine the target type.
+"""]]
