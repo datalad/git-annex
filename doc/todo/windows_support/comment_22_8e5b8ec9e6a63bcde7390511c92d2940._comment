@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="asakurareiko@f3d908c71c009580228b264f63f21c7274df7476"
+ nickname="asakurareiko"
+ avatar="http://cdn.libravatar.org/avatar/a865743e357add9d15081840179ce082"
+ subject="comment 22"
+ date="2021-10-07T06:17:30Z"
+ content="""
+For me I tried git on windows at first but when checking out the working tree after a clone it slowed down so much that it would not complete in a reasonable amount of time. So that's why I decided to try using WSL1.
+
+In my opinion it's not necessary to use `case=dir`. `case=dir` was at one point the default but was removed as the default due to the potential to cause problems with windows programs ([[https://devblogs.microsoft.com/commandline/improved-per-directory-case-sensitivity-support-in-wsl]]). But if you do have `case=dir` then it is not necessary to set the attribute.
+
+If your symlinks are not working, make sure to have deleted and recreated the symlinks after doing `git annex get` and that the NT symlink requirements listed [here](https://github.com/MicrosoftDocs/WSL/releases/tag/17046) have been met. If the symlink target has changed from file to directory or vice versa the symlink also has to be recreated. However there are other reports of symlinks not working despite following these requirements:
+
+* [[https://github.com/microsoft/WSL/issues/353#issuecomment-544857020]] Commenter is using Windows 10 Home 1903. (I'm using Windows 10 Enterprise)
+* [[https://github.com/microsoft/WSL/issues/353#issuecomment-478953190]] Commenter updated to Windows 10 1809 and it stopped working.
+* [[https://github.com/microsoft/WSL/issues/353#issuecomment-478048780]] Commenter mounted with UNC rather than drive letter.
+"""]]
