@@ -1,0 +1,20 @@
+Borg uses an empty ContentIdentifier for everything; it does not need to
+record anything. But that empty value gets stored in the log for each key
+that is stored in borg. This unncessarily bloats the size of the git-annex
+branch, by one content identifier per key stored in borg.
+
+I think that it also slows down importing many archives from borg,
+because for each of them it has to record the content identifier,
+which is always the same, but still results in a db write.
+
+Omitting storing any ContentIdentifier would break code such as
+Remote.Helper.ExportImport's retrieveKeyFileFromImport.
+
+If the borg Remote could indicate with a flag that it does not use
+ContentIdentifiers, then code like that could pass it a null
+ContentIdentifier without needing to read it from the db.
+
+Annex.Import uses getContentIdentifierKeys, but only when it's not
+thirdpartypopulated. So this change would not break that for borg,
+but a clean way to handle that would be to make it also return a null
+ContentIdentifier when the remote has the flag set. --[[Joey]]
