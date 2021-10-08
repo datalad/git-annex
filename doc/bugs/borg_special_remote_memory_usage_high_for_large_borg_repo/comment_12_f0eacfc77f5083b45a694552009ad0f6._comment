@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2021-10-08T17:06:05Z"
+ content="""
+I've fixed this problem, my test case tops out at 160 mb now, and adding more
+archives to the borg repo no longer increases memory use. Memory use is now
+proportional to the number of annexed objects in a borg archive.
+"""]]

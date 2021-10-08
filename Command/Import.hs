@@ -346,7 +346,7 @@ seekRemote remote branch msubdir importcontent ci = do
 
 	fromtrackingbranch a = inRepo $ a (fromRemoteTrackingBranch tb)
 
-listContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> TVar (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize))) -> CommandStart
+listContents :: Remote -> ImportTreeConfig -> CheckGitIgnore -> TVar (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, Remote.ByteSize))) -> CommandStart
 listContents remote importtreeconfig ci tvar = starting "list" ai si $
 	listContents' remote importtreeconfig ci $ \importable -> do
 		liftIO $ atomically $ writeTVar tvar importable
@@ -355,7 +355,7 @@ listContents remote importtreeconfig ci tvar = starting "list" ai si $
 	ai = ActionItemOther (Just (Remote.name remote))
 	si = SeekInput []
 
-listContents' :: Remote -> ImportTreeConfig -> CheckGitIgnore -> (Maybe (ImportableContents (ContentIdentifier, Remote.ByteSize)) -> Annex a) -> Annex a
+listContents' :: Remote -> ImportTreeConfig -> CheckGitIgnore -> (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, Remote.ByteSize)) -> Annex a) -> Annex a
 listContents' remote importtreeconfig ci a = 
 	makeImportMatcher remote >>= \case
 		Right matcher -> tryNonAsync (getImportableContents remote importtreeconfig ci matcher) >>= \case
@@ -368,7 +368,7 @@ listContents' remote importtreeconfig ci a =
 			, err
 			]
 
-commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContents (Either Sha Key) -> CommandStart
+commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContentsChunkable Annex (Either Sha Key) -> CommandStart
 commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig importable =
 	starting "update" ai si $ do
 		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable

@@ -13,6 +13,7 @@ module Git.Tree (
 	getTree,
 	recordTree,
 	recordTree',
+	recordSubTree,
 	TreeItem(..),
 	treeItemsToTree,
 	treeItemToLsTreeItem,
@@ -21,6 +22,7 @@ module Git.Tree (
 	graftTree,
 	graftTree',
 	withMkTreeHandle,
+	MkTreeHandle,
 	treeMode,
 ) where
 

@@ -3,3 +3,5 @@ memory, then got OOM-killed.
 
 I don't know if this is a memory leak or just trying to load too much, but it seems like this is a thing you should be able to do on
 a machine with 64G of RAM.
+
+> [[fixed|done]] --[[Joey]]

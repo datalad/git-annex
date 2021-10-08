@@ -1,6 +1,6 @@
 {- git-annex import types
  -
- - Copyright 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import qualified Data.ByteString as S
 import Data.Char
 import Control.DeepSeq
 import GHC.Generics
+import qualified System.FilePath.Posix.ByteString as Posix
 
 import Types.Export
 import Utility.QuickCheck
@@ -69,3 +70,34 @@ data ImportableContents info = ImportableContents
 	deriving (Show, Generic)
 
 instance NFData info => NFData (ImportableContents info)
+
+{- ImportableContents, but it can be chunked into subtrees to avoid
+ - all needing to fit in memory at the same time. -}
+data ImportableContentsChunkable m info
+	= ImportableContentsComplete (ImportableContents info)
+	-- ^ Used when not chunking
+	| ImportableContentsChunked
+		{ importableContentsChunk :: ImportableContentsChunk m info
+		, importableHistoryComplete :: [ImportableContents info]
+		-- ^ Chunking the history is not supported
+		}
+
+{- A chunk of ImportableContents, which is the entire content of a subtree
+ - of the main tree. Nested subtrees are not allowed. -}
+data ImportableContentsChunk m info = ImportableContentsChunk
+	{ importableContentsSubDir :: ImportChunkSubDir
+	, importableContentsSubTree :: [(RawFilePath, info)]
+	-- ^ locations are relative to importableContentsSubDir
+	, importableContentsNextChunk :: m (Maybe (ImportableContentsChunk m info))
+	-- ^ Continuation to get the next chunk.
+	-- Returns Nothing when there are no more chunks.
+	}
+
+newtype ImportChunkSubDir = ImportChunkSubDir { importChunkSubDir :: RawFilePath }
+
+importableContentsChunkFullLocation
+	:: ImportChunkSubDir
+	-> RawFilePath
+	-> ImportLocation
+importableContentsChunkFullLocation (ImportChunkSubDir root) loc =
+	mkImportLocation $ Posix.combine root loc
