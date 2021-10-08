@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="comment 23"
+ date="2021-10-07T11:36:48Z"
+ content="""
+@asakurareiko: Oh, based on [[https://docs.microsoft.com/en-us/windows/wsl/case-sensitivity#case-sensitivity-options-for-mounting-a-drive-in-wsl-configuration-file]]
+I got the impression that `case=dir` was a prerequisite to make the attribute `system.wsl_case_sensitive`
+work as per the heading \"Default setting: dir for enabling case sensitivity per directory\". I guess
+I was wrong, `case=off` works too. I'll remove `case=dir` it from the instructions once again.
+
+Also the NT symlink requirements are fulfilled in my case simply by way of me having developer mode
+enabled in 21H1 (Windows 10 Pro). I create symlinks all the time with
+\"cmd /c mklink ...\" in Powershell without elevation. Git-annex also creates only relative symlinks
+which was also a requirement in the WSL release news you mentioned. No, this must be one of those
+miscellanous problems mentioned in [[WSL issue 353|https://github.com/microsoft/WSL/issues/353]].
+
+_Edit_: Oh, in fact recreating the symlink after getting the file with `git-annex get` by deleting the symlink
+with rm and then checking it out again with `git checkout -- <file>` seems to allow me to access
+the file in Windows just fine. Interesting. Maybe it's git-annex itself that creates the wrong
+kind of symlink that a later call to plain git can repair. Quite convoluted it seems.
+
+"""]]

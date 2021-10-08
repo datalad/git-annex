@@ -130,3 +130,38 @@ Seems like this would need Windows 10.
 
 > > > > But here's a bug about sqlite in WSL:
 > > > > [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]] --[[Joey]]
+
+## Update Oct 2021: Steps for using git-annex on NTFS with WSL1 (an experimental setup for those adventurous enough)
+
+The following steps are tested on Windows 10 21h1 with Ubuntu 18.04/20.04 and are specifically designed to work around these two bugs:
+
+* [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]]
+* [[bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem]]
+
+Do the following:
+
+1. Enable Developer mode in Windows settings so that symlinks can be created without elevated privileges.
+2. Mount the NTFS drive with metadata option. This line can be added in `/etc/fstab`: `C: /mnt/c drvfs metadata`. I prefer to also add `uid=1000,gid=1000,fmask=0133,dmask=0022`.
+3. Create an empty directory where your repo will be. Then enable case sensitivity `setfattr -n system.wsl_case_sensitive -v 1 <path>`. This attribute will be automatically and recursively applied to any future subdirectories. If setfattr(1) errs out with permission denied, you can also effect the same change in CMD.EXE / Windows Powershell as admin with `fsutil file setCaseSensitiveInfo <path> enable`.[^1] You can check that the setting is enabled with `getfattr -n system.wsl_case_sensitive <path>` under WSL1.
+4. Create the repo however you like (see steps below for cloning a repo with ssh). Immediately after `git annex init`, do `git config annex.crippledfilesystem true`. If you set `crippledfilesystem` before init, then git annex will try to enter an adjusted branch and trigger the first bug. If you do not set `crippledfilesystem` after init, you will trigger the second bug when doing `git annex add`.
+
+[^1]: This works because Administrators usually have Full Control over most files. What Windows actually looks for is "Write attributes", "Create files", "Create folders" and "Delete subfolders and files" permissions on the directory required for changing case-sensitivity. As a regular user (or without UAC) you might not have those permissions by default for instance on external drives, so adjust accordingly. For more info about about the `system.wsl_case_sensitive` attribute see this blog post: [[https://devblogs.microsoft.com/commandline/improved-per-directory-case-sensitivity-support-in-wsl/]]
+
+### Cloning a repo with ssh
+
+When cloning a repo with ssh, `git annex init` will fail to enable ssh remotes if `crippledfilesystem` is not set, but you also cannot set it before init. Follow these steps to avoid unrelated history in the `git-annex` branch.
+
+    git clone <sshpath> annex
+    cd annex
+    git branch git-annex origin/git-annex
+    git remote remove origin
+    git annex init
+    git config annex.crippledfilesystem true
+    git remote add origin <sshpath>
+    git annex sync
+
+### Using symlinks and locked files
+
+* You can now use symlinks and locked files but please remember that locked files can still be overwritten. So make sure to unlock them before you edit them.
+* After you `git annex get` files, the symlinks for those files will still be broken. Recreate the symlinks to fix them. You can make a script or delete them and `git checkout`.
+* It can be difficult to use symlinks on Windows because programs will see the link target rather than the link, which makes it impossible to do things like navigating between files in the same directory or using opened file history. You can unlock the files or access them through another filesystem layer such as SMB.

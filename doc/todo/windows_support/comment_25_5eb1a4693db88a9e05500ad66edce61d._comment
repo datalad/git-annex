@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="comment 25"
+ date="2021-10-07T18:27:19Z"
+ content="""
+> _asakurareiko_: One of the requirements in particular is that the link target must exist. ...
+
+That's useful info. :) Many thanks for your input regarding WSL1 use! For me that opens up new avenues by way of
+borg special remotes (borg support on Windows is very lacking and there are no recent binaries for it).
+I still think git -- and to a lesser extent git-annex -- is performant enough on native Windows, so I'm
+going to continue using it that way for those repos that need to be foolproof and in a supported configuration.
+But for more experimental uses WSL1 still holds quite some promise wrt git-annex. DrvFs is still many times faster
+than 9p of WSL2 *for Windows native files on NTFS* which is an important use case for exchanging data between
+Windows and POSIXland. In fact while WSL2 boots incredibly fast for a Hyper-V virtual machine, in many file-level
+use cases it can't hold candle to the almost seamless nature of WSL1. The latter has its warts in API compatibility
+but in my mind it's quite a undervalued little performer. I hope Microsoft doesn't remove it too soon in favor of WSL2.
+"""]]
