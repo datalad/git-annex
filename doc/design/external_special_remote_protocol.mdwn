@@ -125,12 +125,16 @@ The following requests *must* all be supported by the special remote.
   * `PREPARE-FAILURE ErrorMsg`  
     Sent as a response to PREPARE if the special remote cannot be used.
 * `TRANSFER STORE|RETRIEVE Key File`  
-  Requests the transfer of a key. For STORE, the File is the file to upload;
-  for RETRIEVE the File is where to store the download.  
-  Note that the File should not influence the filename used on the remote.  
-  Note that in some cases, the File may contain whitespace.  
-  It's important that, while a Key is being stored, `CHECKPRESENT`
-  not indicate it's present until all the data has been transferred.  
+  Requests the transfer of a key. This is the main thing a special remote
+  does. For STORE, the File contains the content to upload;
+  for RETRIEVE the File is where to store the content you download.  
+  When retrieving, the File may already exist, if its retieval was
+  interrupted before. That lets the remote resume downloading, if it's able
+  to.  
+  Note that the File should not influence the filename used on the remote;
+  that filename should be based on the Key.  
+  Note that in some cases, the File's name may include whitespace or other
+  special characters.  
   While the transfer is running, the remote can send any number of
   `PROGRESS` messages to indicate its progress. It can also send any of the
   other special remote messages. Once the transfer is done, it finishes by
@@ -140,7 +144,10 @@ The following requests *must* all be supported by the special remote.
   * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
     Indicates the transfer failed.
 * `CHECKPRESENT Key`  
-  Requests the remote to check if a key is present in it.
+  Requests the remote to check if a key is present in it.  
+  It's important that, while a key is being transferred to a remote,
+  `CHECKPRESENT` not indicate it's present in the remote until all
+  the data has been sent.
   * `CHECKPRESENT-SUCCESS Key`  
     Indicates that a key has been positively verified to be present in the
     remote.
@@ -270,13 +277,18 @@ handling a request.
   (git-annex does not send a reply to this message, but may give up if it
   doesn't support the necessary protocol version.)
 * `PROGRESS Int`  
-  Indicates the current progress of the transfer (in bytes). May be repeated
-  any number of times during the transfer process, but it's wasteful to
-  update the progress too frequently. Bear in mind that this is used both
+  Indicates the current progress of the transfer. The Int is the
+  number of bytes from the beginning of the file that have been
+  transferred.  
+  May be repeated any number of times during the transfer
+  process, but it's wasteful to update the progress too frequently.
+  Bear in mind that this is used both
   to display a progress meter for the user, and for annex.stalldetection.
   So, sending an update on each 1% of the file may not be frequent enough,
   as it could appear to be a stall when transferring a large file.  
-  This is highly recommended for STORE. (It is optional but good for RETRIEVE.)  
+  This is highly recommended for STORE.
+  (It is optional but good for RETRIEVE; git-annex will fall back to
+  tracking the size of the file as it grows.)  
   (git-annex does not send a reply to this message.)
 * `DIRHASH Key`  
   Gets a two level hash associated with a Key. Something like "aB/Cd".
@@ -291,7 +303,6 @@ handling a request.
   creating hash directory structures to store Keys in. This is the same
   directory hash that is used by eg, the directory special remote.  
   (git-annex replies with VALUE followed by the value.)  
-  (First supported by git-annex version 6.20160511.)
 * `SETCONFIG Setting Value`  
   Sets one of the special remote's configuration settings.  
   Normally this is sent during INITREMOTE, which allows these settings
