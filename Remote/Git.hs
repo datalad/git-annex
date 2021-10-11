@@ -728,11 +728,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params
-	| Git.repoIsUrl r = do
-		s <- Ssh.git_annex_shell NoConsumeStdin r "fsck" params []
-		return $ case s of
-			Nothing -> return False
-			Just (c, ps) -> batchCommand c ps
+	| Git.repoIsUrl r = return $ return False
 	| otherwise = return $ do
 		program <- programPath
 		r' <- Git.Config.read r
