@@ -21,4 +21,6 @@ can be assumed to be upgraded to 6.20180312, this fallback can be removed.
 It will allows removing a lot of code from git-annex-shell and a lot of
 fallback code from Remote.Git.
 
+> This part is done now. --[[Joey]]
+
 [[!tag confirmed]]

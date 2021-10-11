@@ -1,6 +1,6 @@
 {- git-annex-shell main program
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,16 +20,13 @@ import Remote.GCrypt (getGCryptUUID)
 import P2P.Protocol (ServerMode(..))
 
 import qualified Command.ConfigList
-import qualified Command.InAnnex
-import qualified Command.LockContent
-import qualified Command.DropKey
-import qualified Command.RecvKey
-import qualified Command.SendKey
-import qualified Command.TransferInfo
-import qualified Command.Commit
 import qualified Command.NotifyChanges
 import qualified Command.GCryptSetup
 import qualified Command.P2PStdIO
+import qualified Command.InAnnex
+import qualified Command.RecvKey
+import qualified Command.SendKey
+import qualified Command.DropKey
 
 import qualified Data.Map as M
 
@@ -42,20 +39,17 @@ cmdsMap = M.fromList $ map mk
   where
 	readonlycmds = map addGlobalOptions
 		[ Command.ConfigList.cmd
-		, gitAnnexShellCheck Command.InAnnex.cmd
-		, gitAnnexShellCheck Command.LockContent.cmd
-		, gitAnnexShellCheck Command.SendKey.cmd
-		, gitAnnexShellCheck Command.TransferInfo.cmd
 		, gitAnnexShellCheck Command.NotifyChanges.cmd
 		-- p2pstdio checks the enviroment variables to
 		-- determine the security policy to use
 		, gitAnnexShellCheck Command.P2PStdIO.cmd
+		, gitAnnexShellCheck Command.InAnnex.cmd
+		, gitAnnexShellCheck Command.SendKey.cmd
 		]
 	appendcmds = readonlycmds ++ map addGlobalOptions
 		[ gitAnnexShellCheck Command.RecvKey.cmd
-		, gitAnnexShellCheck Command.Commit.cmd
 		]
-	allcmds = map addGlobalOptions
+	allcmds = appendcmds ++ map addGlobalOptions
 		[ gitAnnexShellCheck Command.DropKey.cmd
 		, Command.GCryptSetup.cmd
 		]
@@ -67,7 +61,7 @@ cmdsFor :: ServerMode -> [Command]
 cmdsFor = fromMaybe [] . flip M.lookup cmdsMap
 
 cmdsList :: [Command]
-cmdsList = concat $ M.elems cmdsMap
+cmdsList = nub $ concat $ M.elems cmdsMap
 
 addGlobalOptions :: Command -> Command
 addGlobalOptions c = c { cmdglobaloptions = globalOptions ++ cmdglobaloptions c }
@@ -166,9 +160,6 @@ parseFields = map (separate (== '='))
 checkField :: (String, String) -> Bool
 checkField (field, val)
 	| field == fieldName remoteUUID = fieldCheck remoteUUID val
-	| field == fieldName associatedFile = fieldCheck associatedFile val
-	| field == fieldName unlocked = fieldCheck unlocked val
-	| field == fieldName direct = fieldCheck direct val
 	| field == fieldName autoInit = fieldCheck autoInit val
 	| otherwise = False
 
