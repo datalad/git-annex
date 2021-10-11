@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2021-10-11T16:07:38Z"
+ content="""
+git-annex now has the ability to import a tree of files from a
+directory special remote, which results in a remote tracking branch, the
+same as you'd have after fetching a git remote.
+
+	git-annex initremote dvd type=directory directory=/path/to/DVD encryption=none importtree=yes
+	git-annex import master --from dvd --no-content
+
+The --no-content option avoids copying files to the local disk, although
+their content still will have to be read to hash them. If you want to
+copy the files from the disk at the same time, omit that option.
+
+After that, you can use the dvd/master branch it created in whatever way
+you desire. Also if you want the discs files to end up in a subdirectory,
+that can be specified when you import, eg "master:dvd" will put the files
+into a dvd/ subdirectory.
+
+Using this with multiple discs would probably work best if there was a way
+to mount each DVD to its own unique location.
+"""]]
