@@ -130,20 +130,14 @@ rsyncHelper oh m params = do
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}
-rsyncParamsRemote :: Bool -> Remote -> Direction -> Key -> FilePath -> AssociatedFile -> Annex [CommandParam]
-rsyncParamsRemote unlocked r direction key file (AssociatedFile afile) = do
+rsyncParamsRemote :: Remote -> Direction -> Key -> FilePath -> Annex [CommandParam]
+rsyncParamsRemote r direction key file = do
 	u <- getUUID
-	let fields = (Fields.remoteUUID, fromUUID u)
-		: (Fields.unlocked, if unlocked then "1" else "")
-		-- Send direct field for unlocked content, for backwards
-		-- compatability.
-		: (Fields.direct, if unlocked then "1" else "")
-		: maybe [] (\f -> [(Fields.associatedFile, fromRawFilePath f)]) afile
 	repo <- getRepo r
 	Just (shellcmd, shellparams) <- git_annex_shell ConsumeStdin repo
 		(if direction == Download then "sendkey" else "recvkey")
 		[ Param $ serializeKey key ]
-		fields
+		[(Fields.remoteUUID, fromUUID u)]
 	-- Convert the ssh command into rsync command line.
 	let eparam = rsyncShell (Param shellcmd:shellparams)
 	o <- rsyncParams r direction
@@ -182,11 +176,6 @@ rsyncParams r direction = do
 		| direction == Download = remoteAnnexRsyncDownloadOptions gc
 		| otherwise = remoteAnnexRsyncUploadOptions gc
 	gc = gitconfig r
-
--- Used by git-annex-shell lockcontent to indicate the content is
--- successfully locked.
-contentLockedMarker :: String
-contentLockedMarker = "OK"
 
 -- A connection over ssh to git-annex shell speaking the P2P protocol.
 type P2PSshConnection = P2P.ClosableConnection
@@ -320,9 +309,9 @@ newStderrHandler errh ph = do
 
 -- Runs a P2P Proto action on a remote when it supports that,
 -- otherwise the fallback action.
-runProto :: Remote -> P2PSshConnectionPool -> Annex a -> Annex a -> P2P.Proto a -> Annex (Maybe a)
-runProto r connpool badproto fallback proto = Just <$>
-	(getP2PSshConnection r connpool >>= maybe fallback go)
+runProto :: Remote -> P2PSshConnectionPool -> Annex a -> P2P.Proto a -> Annex (Maybe a)
+runProto r connpool onerr proto = Just <$>
+	(getP2PSshConnection r connpool >>= maybe onerr go)
   where
 	go c = do
 		(c', v) <- runProtoConn proto c
@@ -330,9 +319,7 @@ runProto r connpool badproto fallback proto = Just <$>
 			Just res -> do
 				liftIO $ storeP2PSshConnection connpool c'
 				return res
-			-- Running the proto failed, either due to a protocol
-			-- error or a network error.
-			Nothing -> badproto
+			Nothing -> onerr
 
 runProtoConn :: P2P.Proto a -> P2PSshConnection -> Annex (P2PSshConnection, Maybe a)
 runProtoConn _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)

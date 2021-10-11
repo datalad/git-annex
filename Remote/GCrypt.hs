@@ -396,8 +396,7 @@ store' repo r rsyncopts accessmethod
 		then fileStorer $ \k f p -> do
 			oh <- mkOutputHandler
 			ok <- Ssh.rsyncHelper oh (Just p)
-				=<< Ssh.rsyncParamsRemote False r Upload k f
-					(AssociatedFile Nothing)
+				=<< Ssh.rsyncParamsRemote r Upload k f
 			unless ok $
 				giveup "rsync failed"
 		else storersync
@@ -418,9 +417,8 @@ retrieve' repo r rsyncopts accessmethod
 			sink =<< liftIO (L.readFile $ gCryptLocation repo k)
 	| Git.repoIsSsh repo = if accessShell r
 		then fileRetriever $ \f k p -> do
-			ps <- Ssh.rsyncParamsRemote False r Download k
+			ps <- Ssh.rsyncParamsRemote r Download k
 				(fromRawFilePath f)
-				(AssociatedFile Nothing)
 			oh <- mkOutputHandler
 			unlessM (Ssh.rsyncHelper oh (Just p) ps) $
 				giveup "rsync failed"

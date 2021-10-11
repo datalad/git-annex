@@ -46,8 +46,7 @@ start (_, key) = do
 fieldTransfer :: Direction -> Key -> (MeterUpdate -> Annex Bool) -> CommandStart
 fieldTransfer direction key a = do
 	fastDebug "Command.SendKey" "transfer start"
-	afile <- AssociatedFile . (fmap toRawFilePath)
-		<$> Fields.getField Fields.associatedFile
+	let afile = AssociatedFile Nothing
 	ok <- maybe (a $ const noop)
 		-- Using noRetry here because we're the sender.
 		(\u -> runner (Transfer direction (toUUID u) (fromKey id key)) afile Nothing noRetry a)

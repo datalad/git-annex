@@ -9,7 +9,6 @@ module CmdLine.GitAnnexShell.Fields where
 
 import Annex.Common
 import qualified Annex
-import Git.FilePath
 
 import Data.Char
 
@@ -26,14 +25,6 @@ remoteUUID :: Field
 remoteUUID = Field "remoteuuid" $
 	-- does it look like a UUID?
 	all (\c -> isAlphaNum c || c == '-')
-
-associatedFile :: Field
-associatedFile = Field "associatedfile" $ \f ->
-	-- is the file a safe relative filename?
-	not (absoluteGitPath (toRawFilePath f)) && not ("../" `isPrefixOf` f)
-
-direct :: Field
-direct = Field "direct" $ \f -> f == "1"
 
 unlocked :: Field
 unlocked = Field "unlocked" $ \f -> f == "1"

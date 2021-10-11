@@ -728,7 +728,6 @@ Executable git-annex
     Command.Benchmark
     Command.CalcKey
     Command.CheckPresentKey
-    Command.Commit
     Command.Config
     Command.ConfigList
     Command.ContentLocation
@@ -768,7 +767,6 @@ Executable git-annex
     Command.Inprogress
     Command.List
     Command.Lock
-    Command.LockContent
     Command.Log
     Command.LookupKey
     Command.Map
@@ -809,7 +807,6 @@ Executable git-annex
     Command.Sync
     Command.Test
     Command.TestRemote
-    Command.TransferInfo
     Command.Transferrer
     Command.TransferKey
     Command.TransferKeys
