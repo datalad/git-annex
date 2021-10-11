@@ -1,0 +1,19 @@
+git-annex 8.20211011 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Added annex.bwlimit and remote.name.annex-bwlimit config to limit
+    the bandwidth of transfers. It works for git remotes and many
+    but not all special remotes.
+  * Bug fix: Git configs such as annex.verify were incorrectly overriding
+    per-remote git configs such as remote.name.annex-verify.
+    (Reversion in version 4.20130323)
+  * borg: Significantly improved memory use when a borg repository
+    contains many archives.
+  * borg: Avoid trying to extract xattrs, ACLS, and bsdflags when
+    retrieving from a borg repository.
+  * Sped up git-annex smudge --clean by 25%.
+  * Resume where it left off when copying a file to/from a local git remote
+    was interrupted.
+  * sync --content: Avoid a redundant checksum of a file that was
+    incrementally verified, when used on NTFS and perhaps other filesystems.
+  * reinject: Fix crash when reinjecting a file from outside the repository.
+    (Reversion in version 8.20210621)
+  * Avoid cursor jitter when updating progress display."""]]
