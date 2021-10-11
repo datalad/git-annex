@@ -148,14 +148,7 @@ openConnection u addr = do
 			authtoken <- fromMaybe nullAuthToken
 				<$> loadP2PRemoteAuthToken addr
 			let proto = P2P.auth myuuid authtoken $
-				-- Before 6.20180312, the protocol server
-				-- had a bug that made negotiating the
-				-- protocol version terminate the
-				-- connection. So, this must stay disabled
-				-- until the old version is not in use
-				-- anywhere.
-				--P2P.negotiateProtocolVersion P2P.maxProtocolVersion
-				return ()
+				P2P.negotiateProtocolVersion P2P.maxProtocolVersion
 			runst <- liftIO $ mkRunState Client
 			res <- liftIO $ runNetProto runst conn proto
 			case res of

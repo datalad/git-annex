@@ -10,6 +10,8 @@ historical bug, the version is not currently negotiated when using the
 protocol over tor. At some point in the future, when all peers can be
 assumed to be upgraded, this should be changed.
 
+> [[done]] --[[Joey]]
+
 ## git-annex-shell fallbacks
 
 When using git-annex-shell p2pio, git-annex assumes that if it exits 1,
@@ -21,6 +23,6 @@ can be assumed to be upgraded to 6.20180312, this fallback can be removed.
 It will allows removing a lot of code from git-annex-shell and a lot of
 fallback code from Remote.Git.
 
-> This part is done now. --[[Joey]]
+> [[done]] --[[Joey]]
 
 [[!tag confirmed]]
