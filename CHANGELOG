@@ -1,4 +1,4 @@
-git-annex (8.20210904) UNRELEASED; urgency=medium
+git-annex (8.20211011) upstream; urgency=medium
 
   * Added annex.bwlimit and remote.name.annex-bwlimit config to limit
     the bandwidth of transfers. It works for git remotes and many
@@ -19,7 +19,7 @@ git-annex (8.20210904) UNRELEASED; urgency=medium
     (Reversion in version 8.20210621)
   * Avoid cursor jitter when updating progress display.
 
- -- Joey Hess <id@joeyh.name>  Fri, 03 Sep 2021 12:02:55 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 11 Oct 2021 12:52:14 -0400
 
 git-annex (8.20210903) upstream; urgency=medium
 
