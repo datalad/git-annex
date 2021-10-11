@@ -42,15 +42,13 @@ transportUsingCmd' cmd params (RemoteRepo r gc) url transporthandle ichan ochan 
 	p = (proc cmd (toCommand params))
 		{ std_in = CreatePipe
 		, std_out = CreatePipe
-		, std_err = CreatePipe
 		}
 
-	go (Just toh) (Just fromh) (Just errh) pid = do
+	go (Just toh) (Just fromh) Nothing pid = do
 		-- Run all threads until one finishes and get the status
 		-- of the first to finish. Cancel the rest.
 		status <- catchDefaultIO (Right ConnectionClosed) $
-			handlestderr errh
-				`race` handlestdout fromh
+				handlestdout fromh
 					`race` handlecontrol
 
 		send (DISCONNECTED url)
@@ -58,7 +56,7 @@ transportUsingCmd' cmd params (RemoteRepo r gc) url transporthandle ichan ochan 
 		hClose fromh
 		void $ waitForProcess pid
 
-		return $ either (either id id) id status
+		return $ either id id status
 	go _ _ _ _ = error "internal"
 
 	send msg = atomically $ writeTChan ochan msg
@@ -88,21 +86,3 @@ transportUsingCmd' cmd params (RemoteRepo r gc) url transporthandle ichan ochan 
 			STOP -> return ConnectionStopping
 			LOSTNET -> return ConnectionStopping
 			_ -> handlecontrol
-
-	-- Old versions of git-annex-shell that do not support
-	-- the notifychanges command will exit with a not very useful
-	-- error message. Detect that error, and avoid reconnecting.
-	-- Propigate all stderr.
-	handlestderr errh = do
-		s <- hGetSomeString errh 1024
-		hPutStr stderr s
-		hFlush stderr
-		if "git-annex-shell: git-shell failed" `isInfixOf` s
-			then do
-				send $ WARNING url $ unwords
-					[ "Remote", Git.repoDescribe r
-					, "needs its git-annex upgraded"
-					, "to 5.20140405 or newer"
-					]
-				return ConnectionStopping
-			else handlestderr errh
