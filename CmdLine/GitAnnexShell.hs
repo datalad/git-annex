@@ -1,6 +1,6 @@
 {- git-annex-shell main program
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -49,7 +49,7 @@ cmdsMap = M.fromList $ map mk
 	appendcmds = readonlycmds ++ map addGlobalOptions
 		[ gitAnnexShellCheck Command.RecvKey.cmd
 		]
-	allcmds = map addGlobalOptions
+	allcmds = appendcmds ++ map addGlobalOptions
 		[ gitAnnexShellCheck Command.DropKey.cmd
 		, Command.GCryptSetup.cmd
 		]
@@ -61,7 +61,7 @@ cmdsFor :: ServerMode -> [Command]
 cmdsFor = fromMaybe [] . flip M.lookup cmdsMap
 
 cmdsList :: [Command]
-cmdsList = concat $ M.elems cmdsMap
+cmdsList = nub $ concat $ M.elems cmdsMap
 
 addGlobalOptions :: Command -> Command
 addGlobalOptions c = c { cmdglobaloptions = globalOptions ++ cmdglobaloptions c }
