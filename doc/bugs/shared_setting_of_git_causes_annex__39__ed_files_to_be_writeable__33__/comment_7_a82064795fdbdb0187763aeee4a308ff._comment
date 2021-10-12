@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-10-12T17:40:51Z"
+ content="""
+I've opened [[todo/v9_changes]] and this can be taken care of if/when a v9
+happens. It's unfortunate I didn't think of this bug when doing v8, so
+hopefully that new todo will remind me about it for v9.
+"""]]
