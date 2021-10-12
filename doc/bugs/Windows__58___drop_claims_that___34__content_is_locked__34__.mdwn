@@ -95,3 +95,5 @@ so it seems to happily create that file.
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]] apparently, reopen if neccessary --[[Joey]]
