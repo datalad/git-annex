@@ -1821,13 +1821,20 @@ test_crypto = do
 	testscheme "pubkey"
   where
 	gpgcmd = Utility.Gpg.mkGpgCmd Nothing
-	testscheme scheme = do
-		abstmp <- fromRawFilePath <$> absPath (toRawFilePath tmpdir)
-		testscheme' scheme abstmp
-	testscheme' scheme abstmp = intmpclonerepo $ do
-		gpgtmp <- (</> "gpgtmp") . fromRawFilePath
-			<$> relPathCwdToFile (toRawFilePath abstmp)
-		createDirectoryIfMissing False gpgtmp
+	testscheme scheme = Utility.Tmp.Dir.withTmpDir "gpgtmp" $ \gpgtmp -> do
+		-- Use the system temp directory as gpg temp directory because 
+		-- it needs to be able to store the agent socket there,
+		-- which can be problimatic when testing some filesystems.
+		absgpgtmp <- fromRawFilePath <$> absPath (toRawFilePath gpgtmp)
+		testscheme' scheme absgpgtmp
+	testscheme' scheme absgpgtmp = intmpclonerepo $ do
+		-- Since gpg uses a unix socket, which is limited to a
+		-- short path, use whichever is shorter of absolute
+		-- or relative path.
+		relgpgtmp <- fromRawFilePath <$> relPathCwdToFile (toRawFilePath absgpgtmp)
+		let gpgtmp = if length relgpgtmp < length absgpgtmp
+			then relgpgtmp 
+			else absgpgtmp
 		Utility.Gpg.testTestHarness gpgtmp gpgcmd
 			@? "test harness self-test failed"
 		void $ Utility.Gpg.testHarness gpgtmp gpgcmd $ do

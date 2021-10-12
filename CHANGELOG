@@ -7,6 +7,8 @@ git-annex (8.20211012) UNRELEASED; urgency=medium
   * Negotiate P2P protocol version with tor remotes, allowing
     use of protocol version 1. This negotiation is not supported
     by versions of git-annex older than 6.20180312.
+  * test: Put gpg temp home directory in system temp directory,
+    not filesystem being tested.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Oct 2021 14:09:13 -0400
 

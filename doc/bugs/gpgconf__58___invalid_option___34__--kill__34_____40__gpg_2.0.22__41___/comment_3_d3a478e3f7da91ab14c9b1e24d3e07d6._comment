@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-10-12T16:42:02Z"
+ content="""
+From the log:
+
+	    crypto:                                               gpgconf: invalid option "--kill"
+	gpgconf: invalid option "--kill"
+	FAIL (22.13s)
+	      ./Test/Framework.hs:57:
+	      copy --to encrypted remote failed (transcript follows)
+	      copy foo (to foo...)
+	      gpg: can't connect to the agent: Invalid value passed to IPC
+	      gpg: problem with the agent: No agent running
+
+That is not really be a problem with gpgconf --kill, but a problem
+talking to gpg-agent.
+
+The same crypto test fails a couple more times in that log, like this:
+
+	    crypto:                                               gpgconf: invalid option "--kill"
+	gpgconf: invalid option "--kill"
+	FAIL (12.00s)
+	      ./Test/Framework.hs:57:
+	      get of file failed (transcript follows)
+	      get foo (not available) 
+	        No other repository is known to contain the file.
+	      failed
+	      get: 1 failed
+
+That is also not a problem with gpgconf --kill, it's actually due to an
+earlier test failure, unrelated to this. That earlier failure was
+the one [the other issue](https://git-annex.branchable.com/bugs/__34__357_out_of_984_tests_failed__34___on_NFS_lustre_mount/)
+was about, which has since been fixed. So we can ignore these I think,
+leaving only the one above as an unexplained failure.
+
+"gpg: can't connect to the agent: Invalid value passed to IPC" could 
+be some kind of gpg bug. I found some other instances of gpg failing that way.
+One involved using --homedir (similar to the test suite's
+use of GNUPGHOME) but on windows.
+<https://lists.gnupg.org/pipermail/gnupg-users/2016-October/056817.html>
+And here's another one, in WSL when apt runs
+gpg. <https://github.com/microsoft/WSL/issues/5125>
+
+Perhaps this is a problem with the location of the gpg agent socket in the
+filesystem that git-annex test is running in. That somehow messes up not
+creation of that socket, but later use of it. It seems that the earlier
+self-test of the test harness did not trigger the problem though, which is
+odd because it sets up a gpg private key and I'd think would use the agent
+too.
+
+In [[!commit b426ff682570d8600dc8025bbcd20aa95819a7e4]] I considered
+putting the gpg directory inside the system temp dir, which would perhaps
+avoid the problem here. I've made that change.
+
+Please test a fresh build on this system again, if you can..
+"""]]
