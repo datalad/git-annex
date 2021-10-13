@@ -184,7 +184,10 @@ expandTilde :: FilePath -> IO FilePath
 #ifdef mingw32_HOST_OS
 expandTilde = return
 #else
-expandTilde = expandt True
+expandTilde p = expandt True p
+	-- If unable to expand a tilde, eg due to a user not existing,
+	-- use the path as given.
+	`catchNonAsync` (const (return p))
   where
 	expandt _ [] = return ""
 	expandt _ ('/':cs) = do
