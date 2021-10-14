@@ -286,9 +286,9 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 	firstavail Nothing _ [] = giveup "unable to determine the chunks to use for this remote"
 	firstavail (Just e) _ [] = throwM e
 	firstavail pe currsize ([]:ls) = firstavail pe currsize ls
-	firstavail _ currsize ((k:ks):ls)
+	firstavail pe currsize ((k:ks):ls)
 		| k == basek = getunchunked
-			`catchNonAsync` (\e -> firstavail (Just e) currsize ls)
+			`catchNonAsync` (\e -> firstavail (Just (pickerr e)) currsize ls)
 		| otherwise = do
 			let offset = resumeOffset currsize k
 			let p = maybe basep
@@ -302,10 +302,15 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 							fromMaybe 0 $ fromKey keyChunkSize k
 						getrest p h iv sz sz ks
 			case v of
-				Left e
-					| null ls -> throwM e
-					| otherwise -> firstavail (Just e) currsize ls
+				Left e -> firstavail (Just (pickerr e)) currsize ls
 				Right r -> return r
+	  where
+		-- Prefer an earlier exception to a later one, because the
+		-- more probable location is tried first and less probable
+		-- ones later.
+		pickerr e = case pe of
+			Just pe' -> pe'
+			Nothing -> e
 
 	getrest _ _ iv _ _ [] = return (Right iv)
 	getrest p h iv sz bytesprocessed (k:ks) = do

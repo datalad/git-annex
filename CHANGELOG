@@ -10,6 +10,10 @@ git-annex (8.20211012) UNRELEASED; urgency=medium
   * test: Put gpg temp home directory in system temp directory,
     not filesystem being tested.
   * Avoid crashing tilde expansion on user who does not exist.
+  * When retrival from a chunked remote fails, display the error that
+    occurred when downloading the chunk, rather than the error that
+    occurred when trying to download the unchunked content, which is less
+    likely to actually be stored in the remote.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Oct 2021 14:09:13 -0400
 

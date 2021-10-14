@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-10-14T16:17:14Z"
+ content="""
+I have added a note to the S3 documentation about `DEEP_ARCHIVE` and the
+glacier special remote.
+
+I have made git-annex display the exception for the more likely chunked 
+location, rather than the less likely unchunked location, when retrieving
+from both locations fails. Although it's still possible for there to be
+situations where the exception if displays is not for the location where
+the content actually is. Eg, if the chunk size of the remote has
+changed over time.
+
+I think that todo is basically talking about the same desire to make the S3
+remote support these glacier-style storage classes, in one way or another, 
+and so I think this bug report can be closed as otherwise a duplicate of it.
+"""]]
