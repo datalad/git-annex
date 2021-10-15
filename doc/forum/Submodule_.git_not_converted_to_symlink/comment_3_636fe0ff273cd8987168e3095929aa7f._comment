@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="athas@60e56fd42a78bbbce444d175865ce4d66ba1a779"
+ nickname="athas"
+ avatar="http://cdn.libravatar.org/avatar/f6ddda1fabf459f90ca590f9499033c4"
+ subject="GitHub Actions"
+ date="2021-10-15T20:53:06Z"
+ content="""
+It appears the `checkout` action on GitHub Actions mangles submodules that use `git-annex`.  The solution is to ask the checkout action to do a deep clone:
+
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive # for git-annex to work.
+        fetch-depth: 0        #
+
+"""]]
