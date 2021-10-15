@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="athas@60e56fd42a78bbbce444d175865ce4d66ba1a779"
+ nickname="athas"
+ avatar="http://cdn.libravatar.org/avatar/f6ddda1fabf459f90ca590f9499033c4"
+ subject="Update"
+ date="2021-10-15T16:37:34Z"
+ content="""
+Ignore the remark about different behaviour on the same machine; I was looking at the wrong thing.
+
+It does appear that GitHub Actions does not correctly fetch the `annex` directory for submodules, which must be the source of the error.
+"""]]
