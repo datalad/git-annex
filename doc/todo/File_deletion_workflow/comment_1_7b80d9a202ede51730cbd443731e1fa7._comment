@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-10-15T16:21:19Z"
+ content="""
+Since this was posted, fsck has stopped complaining about files dropped
+with `dropunused`.
+
+> What's important though is that this workflow doesn't involve manually
+> running magic git annex commands for every deleted file on all possible
+> remotes (especially not hard to reach ones).
+
+If a repository is not accessible, this is difficult to implement.
+
+It seems that the closest we can get to implementing it is
+something like `dropunused`, which can be run in that inaccessible
+repository at some later point when it's accessible, and catch up on
+dropping all the files that have become unwanted while it was inaccessible.
+
+One way to do that without relying on the idea of "unused" would be to tag
+a file with metadata saying its content ought to be deleted from
+everywhere. That is possible to do now, eg:
+
+	git annex metadata --tag deletethis foo
+	git annex drop --all --metadata tag=deletethis --force
+
+That drop can be run in every clone over time to delete all the tagged
+files.
+
+I could imagine formalizing this ad-hoc tag into something standard in
+git-annex. Perhaps similar to how dead files are currently indicated.
+But one problem with it is it may not play well in multiuser
+environments where people have different ideas about what files they want
+to delete all copies of. If two users are using dropunused and have a
+disagreement, they will have 2 different branches, which are forked, and
+neither will step on the other's toes when they run dropunused against
+their branches and drop content that is still used on the other person's
+branch. But a tag like "deletethis" is repository global.
+"""]]
