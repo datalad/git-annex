@@ -5,4 +5,8 @@
  content="""
 The conversion is made when you run `git annex init`, which you have
 apparently not done..
+
+If the git-annex branch were available, it would automatically initialize
+and convert, so you may be on to something if you meant to say it did not
+fetch the git-annex branch.
 """]]
