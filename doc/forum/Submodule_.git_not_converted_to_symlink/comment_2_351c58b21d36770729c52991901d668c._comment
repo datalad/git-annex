@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-10-15T17:49:00Z"
+ content="""
+The conversion is made when you run `git annex init`, which you have
+apparently not done..
+"""]]
