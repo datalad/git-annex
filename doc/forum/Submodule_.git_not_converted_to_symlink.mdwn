@@ -1,0 +1,13 @@
+According to [this page](https://git-annex.branchable.com/submodules/), `git-annex` should automatically convert the `.git` file of submodules into a symlink.  However, I have a repository where on some machines, this doesn't happen.
+
+    $ file .git
+    .git: ASCII text
+
+
+    $ git-annex info
+    git-annex: First run: git-annex init
+
+    $ file .git
+    .git: ASCII text
+
+Even more mysteriously, it works on some *other* checkouts of the repository *on the same machine*.
