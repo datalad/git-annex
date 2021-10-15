@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-10-15T16:45:46Z"
+ content="""
+Mostly people pick on gpg's public key crypto implementation, and mostly
+I think, because public key crypto is easy to pick at. I have not seen
+many such arguments about gpg that seem very convincing to me.
+I see that AGE also implements public key crypto.
+
+The way git-annex uses gpg for encryption=shared does not involve public
+key crypto at all, but uses AES-128, which is about as close as there is
+to a standard for encrypting things. (If you prefer AES-256, gpg can be
+configured to use that instead.)
+
+git-annex already links to an AES implementation for other purposes
+and could probably bypass gpg and use that, but that smells of implementing
+your own crypto. (AES ECB penguin comes to mind.) 
+AGE does not seem to expose any non-public key encryption, 
+so it could not be used for encryption=shared, I think. (Unless perhaps
+the public/private key pair were stored in the repo as the shared
+cipher?)
+
+While encryption=hybrid uses public key crypto, it's only for encrypting
+a cipher file, which then gets used as an AES key. So if encryption=shared
+can't be done with AGE, encryption=hybrid can't either.
+
+That leaves encryption=pubkey and encryption=sharedpubkey, which I
+suppose could have variants implemented using AGE.
+
+I don't like the idea of git-annex supporting more than 2 encryption
+programs, and even 2 seems like 1 too many. Every one will be an ongoing
+cost. It's not clear to me that there's enough of a benefit to support AGE,
+or that it would be the best choice for a +1.
+"""]]
