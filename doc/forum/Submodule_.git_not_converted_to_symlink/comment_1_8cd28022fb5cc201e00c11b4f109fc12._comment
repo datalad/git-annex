@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="athas@60e56fd42a78bbbce444d175865ce4d66ba1a779"
- nickname="athas"
- avatar="http://cdn.libravatar.org/avatar/f6ddda1fabf459f90ca590f9499033c4"
- subject="Update"
- date="2021-10-15T16:13:32Z"
- content="""
-I have found a difference.  The name of the submodule is `futhark-benchmarks`.  On the checkout where `git-annex` works, a directory `.git/modules/futhark-benchmarks/annex` exists.  On the checkout where `git-annex` does not work, this directory is missing.  What could cause it to be lost?  The repository that fails is checked out by Buildbot (and a similar issue occurs on GitHub Actions for that matter).  Maybe they prune things they do not understand, somehow?
-"""]]
