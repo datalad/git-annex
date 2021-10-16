@@ -144,7 +144,9 @@ Do the following:
 
 2. Mount the NTFS drive with metadata option. [`/etc/wsl.conf`](https://docs.microsoft.com/en-us/windows/wsl/wsl-config) can be used or a line such as `C: /mnt/c drvfs metadata` can be added in `/etc/fstab`.
 
-3. Create an empty directory where your repo will be. Then enable case sensitivity `setfattr -n system.wsl_case_sensitive -v 1 <path>`. This attribute will be automatically and recursively applied to any future subdirectories. If setfattr(1) errs out with permission denied, you can also effect the same change in CMD.EXE / Windows Powershell as admin with `fsutil file setCaseSensitiveInfo <path> enable`.[^1] You can check that the setting is enabled with `getfattr -n system.wsl_case_sensitive <path>` under WSL1.
+3. Create an empty directory where your repo will be. Then enable case sensitivity `setfattr -n system.wsl_case_sensitive -v 1 <path>`. This attribute will be inherited by new subdirectories. If setfattr(1) errs out with permission denied, you can also effect the same change in CMD.EXE / Windows Powershell as admin with `fsutil file setCaseSensitiveInfo <path> enable`.[^1] You can check that the setting is enabled with `getfattr -n system.wsl_case_sensitive <path>` under WSL1.
+
+    If you do not have files which may be differ only case, you do not need to set this on the entire repository, only for `.git/annex`. If in addition you have repository [[tuning]] set to use only lowercase hash directories, you do not need to set this at all.
 
 4. Create the repo however you like (see steps below for cloning a repo with ssh). Immediately after `git annex init`, do `git config annex.crippledfilesystem true`. If you set `crippledfilesystem` before init, then git annex will try to enter an adjusted branch and trigger the first bug. If you do not set `crippledfilesystem` after init, you will trigger the second bug when doing `git annex add`.
 
