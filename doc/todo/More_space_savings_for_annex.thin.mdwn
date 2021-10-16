@@ -1,0 +1,11 @@
+Currently with `annex.thin=true`, only one copy will be hardlinked so that duplicate copies do not get silently modified. It would be good to have an option such as `annex.thinmode` for alternative ways of unlocking files, especially for cases when all files need to be kept unlocked.
+
+1. `annex.thinmode=forcehardlink`
+
+    In some cases most of the files in the repository will never be modified, and if a file does need to be modified, the hardlink can be first broken by making a copy. This can save a lot of space if git-annex is also used for file level deduplication.
+
+2. `annex.thinmode=reflink`
+
+    For some copy-on-write filesystems such as BTRFS, reflink copies can be made, such as with `cp --reflink`. This both saves space and also prevents files in .git/annex/objects from being modified.
+
+git-annex-fix can be used to apply these settings to existing repositories.
