@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="username"
+ avatar="http://cdn.libravatar.org/avatar/3c17ce77d299219a458fc2eff973239a"
+ subject="directory special remote"
+ date="2021-10-17T22:15:51Z"
+ content="""
+Thanks for the suggestion.
+I've looked into directory special remotes and using them for the optical media appears to undermine the intent of step 3 in my previous reply, of \"mounting\" each disc using ```git checkout DISC_LABEL```, because the master branch contents are combined with the imported directory special remote contents.
+
+The ```git checkout``` should leave the working directory with an 1:1 copy of the directory tree of the imported disc, except with all files replaced by broken annex symlinks.
+
+But I'm considering the opposite now: using the directory special remote not for the optical discs but for the master branch of the repo instead, the one that tracks the local HDD tree:
+
+    git-annex initremote HDD type=directory directory=/path/to/HDD encryption=none importtree=yes
+
+The local dataset I want to use as the seed for the catalogue has multiple hardlinks so making a git-annex repository directly within it is out of the question as it would lead to duplicated data.
+
+The initial plan to work around that was making a reflink copy of the directory tree, initialising the git-annex repo therein, and regularly update its master branch by replacing the git working directory with a brand new reflink clone and ```git-annex add```'ing it.
+
+If I understood git-annex right, this would imply a full re-read of the whole dataset because of the changed inode numbers of the new reflink clone, despite the contents, filenames, and mtimes of most files being 100% identical.
+
+However, it seems that using a directory special remote would neatly circumvent that (at least until the current HDD dies and I'm forced to ```mkfs``` in the replacement) because git-annex would be smart enough to detect renames by looking at the stable inode and mtime of the moved files.
+
+The local dataset is around 250K files and 4TiB in real size, ballooning to over 8TiB if hardlinked files were counted as copies. The updates (using ```git-annex import master --from HDD --no-content```) to the catalogue master branch would happen with frequency somewhere between monthly to every 2 years.
+
+2 questions:
+
+1. Am I correct in assuming that re-importing a special remote would only read the newly added files and correctly detect all renames and deletions without re-reading, no matter how much time passes between re-imports of the master branch?
+
+2. Are there any downsides (scalability, memory use, etc) to using a directory special remote for this use case instead of a regular git-annex repository?
+"""]]
