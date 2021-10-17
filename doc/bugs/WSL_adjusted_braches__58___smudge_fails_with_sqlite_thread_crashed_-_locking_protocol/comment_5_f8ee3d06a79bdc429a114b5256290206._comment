@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="asakurareiko@f3d908c71c009580228b264f63f21c7274df7476"
+ nickname="asakurareiko"
+ avatar="http://cdn.libravatar.org/avatar/a865743e357add9d15081840179ce082"
+ subject="comment 5"
+ date="2021-10-17T01:14:18Z"
+ content="""
+Since WSL2 has terrible performance with the NTFS volumes already mounted in Windows, consumes more memory, and has higher hardware requirements, I'm still interested in using WSL1. I applied the patch to disable WAL from [this comment](http://git-annex.branchable.com/bugs/crippled_fs___40__pidlock__41___leads_to_git-annex__58___SQLite3_error/#comment-46e7f3e4052eec268ae72ead4afc3cea), however now I get a different sqlite error that happens more often as well.
+
+```
+  failed to commit changes to sqlite database: Just user error (SQLite3 returned ErrorBusy while attempting to perform step: database is locked(after successful open))
+  CallStack (from HasCallStack):
+    error, called at ./Database/Handle.hs:116:26 in main:Database.Handle
+```
+
+Without this patch other than adjusted branches, unlocked files generally do work in WSL1. Sqlite error may occur at the end of commands such as `git annex get/drop` and can be fixed by manually removing .git/index.lock and doing a `git annex add` or `git reset`.
+"""]]
