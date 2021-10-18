@@ -180,11 +180,11 @@ escapeHeader = escapeURIString (\c -> isUnescapedInURI c && c /= ' ')
 getRepoInfo :: RemoteConfig -> Widget
 getRepoInfo c = do
 	uo <- liftAnnex Url.getUrlOptions
-	exists <- liftAnnex $ catchDefaultIO False $ Url.exists url uo
+	urlexists <- liftAnnex $ catchDefaultIO False $ Url.exists url uo
 	[whamlet|
 <a href="#{url}">
   Internet Archive item
-$if (not exists)
+$if (not urlexists)
   <p>
     The page will only be available once some files #
     have been uploaded, and the Internet Archive has processed them.
