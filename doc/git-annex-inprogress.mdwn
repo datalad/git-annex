@@ -13,6 +13,9 @@ it is still being downloaded. It outputs to standard output the
 name of the temporary file that is being used to download the specified
 annexed file.
 
+Nothing will be output when the download is from an encrypted or chunked 
+special remote.
+
 This can sometimes be used to stream a file before it's been fully
 downloaded, for example:
 
