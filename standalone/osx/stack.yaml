@@ -16,7 +16,7 @@ packages:
 - '.'
 extra-deps:
 - IfElse-0.85
-- aws-0.21.1
+- aws-0.21.1@@sha256:5290b819bd425f28c736b93a84955ced145bdb631a26d784d1b952e2e0ddc6b8
 - bloomfilter-2.0.1.0
 - filepath-bytestring-1.4.2.1.6
 - sandi-0.5
