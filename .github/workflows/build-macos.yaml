@@ -81,21 +81,18 @@ jobs:
       - name: Configure build
         run: |
           echo OSX_MAGIC_FILE="$(brew list --verbose libmagic| grep magic.mgc | head -n 1)" >> "$GITHUB_ENV"
-          echo BUILDERCOMMONOPTIONS="--stack-yaml stack.yaml.autobuild" >> "$GITHUB_ENV"
+          echo BUILDERCOMMONOPTIONS="" >> "$GITHUB_ENV"
           echo BUILDER=stack >> "$GITHUB_ENV"
-          echo GHC="stack --stack-yaml stack.yaml.autobuild ghc --" >> "$GITHUB_ENV"
-
-      - name: Set stack.yaml.autobuild
-        run: cat standalone/osx/stack.yaml > stack.yaml.autobuild
+          echo GHC="stack ghc --" >> "$GITHUB_ENV"
 
       - name: stack setup
-        run: stack setup --stack-yaml stack.yaml.autobuild
+        run: stack setup
 
       - name: Enable Stack cache
         uses: actions/cache@v2
         with:
           path: ~/.stack
-          key: cache-stack-macos-${{ hashFiles('stack.yaml.autobuild.lock') }}-${{ hashFiles('git-annex.cabal') }}
+          key: cache-stack-macos-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('git-annex.cabal') }}
           restore-keys: |
             cache-stack-macos-
 
