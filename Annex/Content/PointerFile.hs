@@ -19,7 +19,7 @@ import Utility.InodeCache
 import qualified Utility.RawFilePath as R
 #if ! defined(mingw32_HOST_OS)
 import Utility.Touch
-import System.Posix.Files (modificationTimeHiRes)
+import qualified System.Posix.Files as Posix
 #endif
 
 {- Populates a pointer file with the content of a key. 
@@ -66,7 +66,7 @@ depopulatePointerFile key file = do
 		-- by git in some cases.
 		liftIO $ maybe noop
 			(\t -> touch tmp' t False)
-			(fmap modificationTimeHiRes st)
+			(fmap Posix.modificationTimeHiRes st)
 #endif
 		withTSDelta (liftIO . genInodeCache (toRawFilePath tmp))
 	maybe noop (restagePointerFile (Restage True) file) ic

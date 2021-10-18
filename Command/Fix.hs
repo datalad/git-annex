@@ -21,7 +21,7 @@ import qualified Utility.RawFilePath as R
 
 #if ! defined(mingw32_HOST_OS)
 import Utility.Touch
-import System.Posix.Files
+import qualified System.Posix.Files as Posix
 #endif
 
 cmd :: Command
@@ -94,7 +94,7 @@ fixSymlink :: RawFilePath -> RawFilePath -> CommandPerform
 fixSymlink file link = do
 #if ! defined(mingw32_HOST_OS)
 	-- preserve mtime of symlink
-	mtime <- liftIO $ catchMaybeIO $ modificationTimeHiRes
+	mtime <- liftIO $ catchMaybeIO $ Posix.modificationTimeHiRes
 		<$> R.getSymbolicLinkStatus file
 #endif
 	createWorkTreeDirectory (parentDir file)

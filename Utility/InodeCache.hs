@@ -55,7 +55,7 @@ import Data.Time.Clock.POSIX
 #ifdef mingw32_HOST_OS
 import Data.Word (Word64)
 #else
-import System.Posix.Files
+import qualified System.Posix.Files as Posix
 #endif
 
 data InodeCachePrim = InodeCachePrim FileID FileSize MTime
@@ -200,7 +200,7 @@ toInodeCache' (TSDelta getdelta) f s inode
 #ifdef mingw32_HOST_OS
 		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime (fromRawFilePath f)
 #else
-		let mtime = modificationTimeHiRes s
+		let mtime = Posix.modificationTimeHiRes s
 #endif
 		return $ Just $ InodeCache $ InodeCachePrim inode sz (MTimeHighRes (mtime + highResTime delta))
 	| otherwise = pure Nothing
