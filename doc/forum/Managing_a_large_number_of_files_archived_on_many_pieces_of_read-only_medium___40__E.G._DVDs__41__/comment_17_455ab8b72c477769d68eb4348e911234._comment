@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 17"
+ date="2021-10-18T15:36:06Z"
+ content="""
+>Thanks for the suggestion. I've looked into directory special remotes and using them for the optical media appears to undermine the intent of step 3 in my previous reply, of \"mounting\" each disc using git checkout DISC_LABEL, because the master branch contents are combined with the imported directory special remote contents.
+
+Huh? Of course you can import to a separate branch.
+"""]]
