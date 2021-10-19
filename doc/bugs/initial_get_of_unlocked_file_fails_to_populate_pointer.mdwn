@@ -14,4 +14,32 @@ empty list. So something to do with database write caching.
 
 Somehow, not having init call `scanAnnexedFiles` makes this bug go away.
 
-> [[fixed|done]] --[[Joey]]
+> fixed --[[Joey]]
+
+----
+
+I have reopened this bug, it seems the previous fix was not right.
+See [[!commit b3c4579c7907147a496bdf2c73b42238d8b239d6]] for that
+fix, which had doubts at the time in the commit message. --[[Joey]] 
+
+Here is a test case:
+
+	git init foo
+	cd foo
+	git annex init
+	echo 1 > foo
+	echo 2 > bar
+	echo 3 > baz
+	git annex add
+	git annex unlock
+	git commit -m add
+	cd ..
+	git clone foo bar
+	cd bar
+	git-annex get
+	cat *
+
+This outputs 1 for foo, followed by annex pointer files for files bar and baz.
+
+The previous fix attempt did make foo get populated, before that none
+of the files were populated.
