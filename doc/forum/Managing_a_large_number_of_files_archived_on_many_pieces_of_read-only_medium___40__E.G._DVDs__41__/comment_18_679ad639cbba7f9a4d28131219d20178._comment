@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="username"
+ avatar="http://cdn.libravatar.org/avatar/3c17ce77d299219a458fc2eff973239a"
+ subject="comment 18"
+ date="2021-10-18T19:54:29Z"
+ content="""
+I wasn't clear enough, or maybe I did something wrong when testing the directory special remote.
+
+When using standard git-annex repositories for everything as explained in comment 14 I get this:
+
+```
+$ git log --graph --oneline
+*   5555555555 (HEAD -> master) amended commit 2
+|\  
+| * 4444444444 (DVD1) DVD1
+*   3333333333  amended commit 1
+|\  
+| * 2222222222 (CD1) CD1
+*   1111111111  init
+```
+
+The master branch tracks only the contents of my local HDD (note that in step 4 I edit the working directory to my liking and amend the automatic ```git-annex sync``` commit), and the CD1 branch contains only what's in that disc and nothing else, such that ```git checkout 2222222222``` or ```git checkout CD1``` replaces everything in the working directory with the contents of CD1, similar to mounting the physical disc and browsing its filesystem.
+
+Using the directory special remote, the contents of my master branch are combined with the contents of the special remote, so the same ```git checkout CD1``` command wouldn't replicate exactly what's on CD1, the master branch directory tree would still be present after the branch switch.
+"""]]

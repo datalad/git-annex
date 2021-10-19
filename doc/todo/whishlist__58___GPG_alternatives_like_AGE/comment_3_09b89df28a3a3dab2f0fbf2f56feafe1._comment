@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 3"
+ date="2021-10-19T13:05:50Z"
+ content="""
+> Mostly people pick on gpg's public key crypto implementation, and mostly I think, because public key crypto is easy to pick at. I have not seen many such arguments about gpg that seem very convincing to me.
+
+Ah, this is not about the underlying algorithms and theories. Those are more than sufficient in our pre-quantum world and, as you said, AGE isn't fundamentally different here.
+
+What I'm mostly concerned about is the quality of the implementation; especially the non-functional aspects like speed, UI and simplicity (some of which also have security implications).
+
+> The way git-annex uses gpg for encryption=shared does not involve public key crypto at all, but uses AES-128, which is about as close as there is to a standard for encrypting things.
+
+The actual encryption is done symmetrically but the encryption of the symmetric key is done asymmetrically if I'm not mistaken.
+
+This is not what age aims to replace though, it functions the exact same from a high level AFAIK; just with a different implementation that satisfies different goals from GPG.
+
+> git-annex already links to an AES implementation for other purposes and could probably bypass gpg and use that, but that smells of implementing your own crypto.
+
+That definitely smells of homebrewed crypto. This is why I would love to see something like age used: It's a pre-made, (supposedly) secure, standardised crypto system/library that you can feed files into and it simply gives you encrypted files back. No faffing about with complex key setups or other brilliant UX anno 1999.
+
+> AGE does not seem to expose any non-public key encryption, so it could not be used for encryption=shared, I think. (Unless perhaps the public/private key pair were stored in the repo as the shared cipher?)
+
+I'm not sure I follow, couldn't you just generate an age keypair and simply store that in the repo?
+
+Does the current gpg-based implementation not do it just like that?
+
+> I don't like the idea of git-annex supporting more than 2 encryption programs, and even 2 seems like 1 too many. Every one will be an ongoing cost. It's not clear to me that there's enough of a benefit to support AGE, or that it would be the best choice for a +1.
+
+Me neither and I understand your point but the problem with that approach is that it leaves absolutely no way to migrate away from GPG.
+
+GPG is a complex beast that will likely need replacement within the next decade and age seems like the most obvious alternative for use-cases like git-annex.  
+Only time can tell whether it actually becomes the new file encryption standard but it seems like the most likely candidate right now.
+
+"""]]
