@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-10-19T13:58:24Z"
+ content="""
+Sequoia-PGP could be another contender (OpenPGP in rust). There is a sq
+command line interface that is equivilant to gpg.
+
+It should be able to decrypt objects in repositories encrypted using gpg.
+If that works well, git-annex could support it in parallel with gpg for
+some time, then deprecate the gpg support and eventually remove it. This is
+a more appealing path than supporting multiple encryption tools
+indefinitely.
+
+This issue is a pre-requisite for using sq, although presumably the
+low-level library could be used directly to avoid the issue.
+<https://gitlab.com/sequoia-pgp/sequoia/-/issues/766>
+"""]]
