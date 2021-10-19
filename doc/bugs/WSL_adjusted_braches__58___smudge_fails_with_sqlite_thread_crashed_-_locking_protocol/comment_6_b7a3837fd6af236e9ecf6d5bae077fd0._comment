@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-10-19T16:44:13Z"
+ content="""
+@asakurareiko it makes sense it would fail that way with WAL disabled,
+since the sqlite database cannot support multiple writers then. And
+there are probably several situations where multiple git-annex processes
+end up using the database, even when you are only running a single
+git-annex command at a time.
+
+> Without this patch other than adjusted branches, unlocked files generally do
+> work in WSL1. Sqlite error may occur at the end of commands such as `git annex get/drop`
+
+Sounds like `restagePointerFile`, which tends to run at the
+end of such an operation to handle all the files that have been updated. 
+That runs `git update-index`, which then runs `git-annex smudge`.
+So both the parent and child git-annex process can have the database open
+for write, which WAL mode normally supports, but something in WSL prevents
+it from working right.
+
+Following this theory, I've made `restagePointerFile` close the database
+first. Perhaps that will avoid the problem, at least in those cases. Your
+testing is appreciated.
+"""]]

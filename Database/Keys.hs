@@ -37,7 +37,7 @@ import qualified Annex
 import Annex.LockFile
 import Annex.Content.PointerFile
 import Annex.Content.Presence.LowLevel
-import Annex.Link
+import Annex.Link (Restage(..), maxPointerSz, parseLinkTargetOrPointerLazy)
 import Utility.InodeCache
 import Annex.InodeSentinal
 import Git

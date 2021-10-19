@@ -203,7 +203,12 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 	-- updated index file.
 	runner :: Git.Queue.InternalActionRunner Annex
 	runner = Git.Queue.InternalActionRunner "restagePointerFile" $ \r l -> do
-		liftIO . Database.Keys.Handle.flushDbQueue
+		-- Flush any queued changes to the keys database, so they
+		-- are visible to child processes.
+		-- The database is closed because that may improve behavior
+		-- when run in Windows's WSL1, which has issues with
+		-- multiple writers to SQL databases.
+		liftIO . Database.Keys.Handle.closeDbHandle
 			=<< Annex.getRead Annex.keysdbhandle
 		realindex <- liftIO $ Git.Index.currentIndexFile r
 		let lock = fromRawFilePath (Git.Index.indexFileLock realindex)
