@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 2"
+ date="2021-10-19T12:26:33Z"
+ content="""
+> Since this was posted, fsck has stopped complaining about files dropped with `dropunused`.
+
+Thank you!
+
+> I could imagine formalizing this ad-hoc tag into something standard in git-annex.
+
+This is the best option I think; some sort of flag you can set on a key that marks it as unwanted and propagates via the git-annex branch.
+The actual deletions could then be carried out on the individual repos by using a dedicated command (`dropdeleted`?), by the assistant or perhaps even using `sync --content`. 
+
+The important bit is that it shouldn't be synchronous or depend on the repository being reachable directly though; it should be recorded and propagated asynchronously.  
+E.g. in any tree of repos with assistants running (so, no transitive connections), marking a key as deleted in any one of them should result in the key being deleted from all of them.
+
+> But one problem with it is it may not play well in multiuser environments where people have different ideas about what files they want to delete all copies of.
+
+Ah, I didn't consider that. A recycle bin with tracked files is likely infeasible but an untracked one could still be valuable. That's a topic for another issue though.
+
+"""]]
