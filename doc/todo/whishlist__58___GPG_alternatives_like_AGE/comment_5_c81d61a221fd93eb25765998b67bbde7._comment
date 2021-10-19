@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-10-19T16:33:01Z"
+ content="""
+> I'm not sure I follow, couldn't you just generate an age keypair and simply store that in the repo?
+> 
+> Does the current gpg-based implementation not do it just like that?
+
+No, it uses gpg --symmetric which is much simpler and also likely more
+secure.
+
+As far as gpg's UI complexity, it's a problem to some extent (although every
+one of those options presumably has a user), but notice that a git-annex user
+who uses encryption=shared never has to touch gpg's interface at all.
+This is by design. It's only with encryption=hybrid and pubkey that the user
+is exposed to  the complexities of public key crypto, and I expect that mostly
+users who already are familiar with that and need the inherent complexity of it
+will use those.
+
+> age seems like the most obvious alternative for use-cases like
+> git-annex. Only time can tell whether it actually becomes the new file encryption
+> standard but it seems like the most likely candidate right now.
+
+I don't follow this reasoning; the openpgp standard is a well-established
+standard with many implementations, and so it seems likely that an implementation
+of that standard will be what replaces gpg, if anything.
+
+(It also is possible that gpg eventually ends up being reimplemented using
+something like Sequoia-PGP under the hood to gain the protections from C-level
+security holes, which are certainly a real concern.)
+"""]]
