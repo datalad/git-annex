@@ -64,9 +64,6 @@ flushDbQueue (DQ hdl qvar) = do
  -
  - Queries will not see changes that have been recently queued,
  - so use with care.
- -
- - Also, when the database was opened in MultiWriter mode,
- - queries may not see changes even after flushDbQueue.
  -}
 queryDbQueue :: DbQueue -> SqlPersistM a -> IO a
 queryDbQueue (DQ hdl _) = queryDb hdl

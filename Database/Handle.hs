@@ -45,19 +45,13 @@ type TableName = String
 {- Sqlite only allows a single write to a database at a time; a concurrent
  - write will crash. 
  - 
- - MultiWrter works around this limitation.
- - The downside of using MultiWriter is that after writing a change to the
- - database, the a query using the same DbHandle will not immediately see
- - the change! This is because the change is actually written using a
- - separate database connection, and caching can prevent seeing the change.
- - Also, consider that if multiple processes are writing to a database,
- - you can't rely on seeing values you've just written anyway, as another
- - process may change them.
+ - MultiWrter works around this limitation. It uses additional resources
+ - when writing, because it needs to open the database multiple times. And
+ - writes to the database may block for some time, if other processes are also
+ - writing to it.
  -
  - When a database can only be written to by a single process (enforced by
- - a lock file), use SingleWriter. Changes written to the database will
- - always be immediately visible then. Multiple threads can write; their
- - writes will be serialized.
+ - a lock file), use SingleWriter. (Multiple threads can still write.)
  -}
 data DbConcurrency = SingleWriter | MultiWriter
 
@@ -89,9 +83,6 @@ closeDb (DbHandle _ worker jobs) = do
  - Only one action can be run at a time against a given DbHandle.
  - If called concurrently in the same process, this will block until
  - it is able to run.
- -
- - Note that when the DbHandle was opened in MultiWriter mode, recent
- - writes may not be seen by queryDb.
  -}
 queryDb :: DbHandle -> SqlPersistM a -> IO a
 queryDb (DbHandle _ _ jobs) a = do
@@ -165,7 +156,7 @@ workerThread db tablename jobs = go
 			Right (QueryJob a) -> a >> loop
 			Right (ChangeJob a) -> do
 				a
-				-- Exit this sqlite transaction so the
+				-- Exit this sqlite connection so the
 				-- database gets updated on disk.
 				return True
 			-- Change is run in a separate database connection
@@ -174,7 +165,11 @@ workerThread db tablename jobs = go
 			-- that the write is made to.
 			Right (RobustChangeJob a) -> do
 				liftIO (a (runSqliteRobustly tablename db))
-				loop
+				-- Exit this sqlite connection so the
+				-- change that was just written, using 
+				-- a different db handle, is immediately
+				-- visible to queries.
+				return True
 	
 -- Like runSqlite, but more robust.
 --
