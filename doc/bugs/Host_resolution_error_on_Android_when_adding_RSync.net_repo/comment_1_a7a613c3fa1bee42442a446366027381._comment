@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="gitannexuser2021"
+ avatar="http://cdn.libravatar.org/avatar/e0d5a0aa4ca494b520a971c53865edcd"
+ subject="Still seeing the issue."
+ date="2021-10-19T22:37:44Z"
+ content="""
+I'm using termux to install git-annex on my android. When trying to add Rsync.net repo, the provided hostname cannot be resolved. Adding repo on my laptop (linux) works normally. I'm able to ping the hostname via termux successfully.
+"""]]
