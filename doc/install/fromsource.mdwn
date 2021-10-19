@@ -64,11 +64,11 @@ yielding a less reliable build. Stack also only installs the binary,
 and not other files.)
 
 Note that this build produces a git-annex without the build flags
-XMPP, DBUS, and MagicMime.
+DBUS and MagicMime.
 These optional features require installing additional C libraries.
 To try to build with these features 
 enabled, pass extra parameters when running `stack build`: 
-`--flag git-annex:XMPP --flag git-annex:DBUS --flag git-annex:MagicMime`
+`--flag git-annex:DBUS --flag git-annex:MagicMime`
 
 ## minimal build from source with cabal
 
