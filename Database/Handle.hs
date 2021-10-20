@@ -132,33 +132,29 @@ data Job
 	| CloseJob
 
 workerThread :: T.Text -> TableName -> MVar Job -> IO ()
-workerThread db tablename jobs = go
+workerThread db tablename jobs = newconn
   where
-	go = do
+	newconn = do
 		v <- tryNonAsync (runSqliteRobustly tablename db loop)
 		case v of
 			Left e -> hPutStrLn stderr $
 				"sqlite worker thread crashed: " ++ show e
-			Right True -> go
-			Right False -> return ()
+			Right cont -> cont
 	
-	getjob :: IO (Either BlockedIndefinitelyOnMVar Job)
-	getjob = try $ takeMVar jobs
-
 	loop = do
 		job <- liftIO getjob
 		case job of
 			-- Exception is thrown when the MVar is garbage
 			-- collected, which means the whole DbHandle
 			-- is not used any longer. Shutdown cleanly.
-			Left BlockedIndefinitelyOnMVar -> return False
-			Right CloseJob -> return False
+			Left BlockedIndefinitelyOnMVar -> return (return ())
+			Right CloseJob -> return (return ())
 			Right (QueryJob a) -> a >> loop
 			Right (ChangeJob a) -> do
 				a
 				-- Exit this sqlite connection so the
 				-- database gets updated on disk.
-				return True
+				return newconn
 			-- Change is run in a separate database connection
 			-- since sqlite only supports a single writer at a
 			-- time, and it may crash the database connection
@@ -169,7 +165,10 @@ workerThread db tablename jobs = go
 				-- change that was just written, using 
 				-- a different db handle, is immediately
 				-- visible to queries.
-				return True
+				return newconn
+	
+	getjob :: IO (Either BlockedIndefinitelyOnMVar Job)
+	getjob = try $ takeMVar jobs
 	
 -- Like runSqlite, but more robust.
 --
