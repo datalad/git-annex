@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-10-20T17:15:27Z"
+ content="""
+The crash shows that runSqliteRobustly called `rethrow "while opening
+database connection"`, and I think it was in the "| otherwise" branch
+because the error is not Sqlite.ErrorIO.
+
+So, it may also possibly help to handle Sqlite.ErrorProtocol,
+which seems like what the actual error is from the message.
+Handling it the same as Sqlite.ErrorBusy would make opening the db
+be retried until whatever else had it open closes it, or finishes
+the operation that is causing the problem. On the other hand, 
+that might make git-annex hang until another git-annex process exits,
+which would not be helpful. So perhaps it would be better to handle it
+like Sqlite.ErrorIO is handled, waiting for up to 1/10th of a second.
+But perhaps that would not be enough of a wait.
+
+Anyway, this is a note to myself: If concurrent git-annex processes on Windows
+still have this problem, try catching Sqlite.ErrorProtocol and experiment
+with different ways to handle it.
+"""]]
