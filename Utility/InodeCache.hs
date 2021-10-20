@@ -300,11 +300,6 @@ instance Arbitrary MTime where
                 , (50, MTimeHighRes <$> arbitrary)
 		]
 
-#ifdef mingw32_HOST_OS
-instance Arbitrary FileID where
-	arbitrary = fromIntegral <$> (arbitrary :: Gen Word64)
-#endif
-
 prop_read_show_inodecache :: InodeCache -> Bool
 prop_read_show_inodecache c = case readInodeCache (showInodeCache c) of
 	Nothing -> False
