@@ -134,7 +134,7 @@ openDb forwrite _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKe
 		| otherwise = return DbUnavailable
 	
 	open db = do
-		qh <- liftIO $ H.openDbQueue H.MultiWriter db SQL.containedTable
+		qh <- liftIO $ H.openDbQueue db SQL.containedTable
 		reconcileStaged qh
 		return $ DbOpen qh
 

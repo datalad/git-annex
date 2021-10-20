@@ -89,7 +89,7 @@ openDb = do
 		, liftIO $ runSqlite (T.pack (fromRawFilePath db)) $ void $
 			runMigrationSilent migrateContentIdentifier
 		)
-	h <- liftIO $ H.openDbQueue H.SingleWriter db "content_identifiers"
+	h <- liftIO $ H.openDbQueue db "content_identifiers"
 	return $ ContentIdentifierHandle h
 
 closeDb :: ContentIdentifierHandle -> Annex ()

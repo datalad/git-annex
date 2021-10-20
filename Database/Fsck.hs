@@ -76,7 +76,7 @@ openDb u = do
 		initDb db $ void $
 			runMigrationSilent migrateFsck
 	lockFileCached =<< fromRepo (gitAnnexFsckDbLock u)
-	h <- liftIO $ H.openDbQueue H.MultiWriter db "fscked"
+	h <- liftIO $ H.openDbQueue db "fscked"
 	return $ FsckHandle h u
 
 closeDb :: FsckHandle -> Annex ()

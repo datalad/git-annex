@@ -104,7 +104,7 @@ openDb u = do
 	unlessM (liftIO $ R.doesPathExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateExport
-	h <- liftIO $ H.openDbQueue H.SingleWriter db "exported"
+	h <- liftIO $ H.openDbQueue db "exported"
 	return $ ExportHandle h u
 
 closeDb :: ExportHandle -> Annex ()

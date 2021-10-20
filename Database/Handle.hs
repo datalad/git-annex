@@ -9,7 +9,6 @@
 
 module Database.Handle (
 	DbHandle,
-	DbConcurrency(..),
 	openDb,
 	TableName,
 	queryDb,
@@ -37,40 +36,27 @@ import System.IO
 
 {- A DbHandle is a reference to a worker thread that communicates with
  - the database. It has a MVar which Jobs are submitted to. -}
-data DbHandle = DbHandle DbConcurrency (Async ()) (MVar Job)
+data DbHandle = DbHandle (Async ()) (MVar Job)
 
 {- Name of a table that should exist once the database is initialized. -}
 type TableName = String
 
-{- Sqlite only allows a single write to a database at a time; a concurrent
- - write will crash. 
- - 
- - MultiWrter works around this limitation. It uses additional resources
- - when writing, because it needs to open the database multiple times. And
- - writes to the database may block for some time, if other processes are also
- - writing to it.
- -
- - When a database can only be written to by a single process (enforced by
- - a lock file), use SingleWriter. (Multiple threads can still write.)
- -}
-data DbConcurrency = SingleWriter | MultiWriter
-
 {- Opens the database, but does not perform any migrations. Only use
  - once the database is known to exist and have the right tables. -}
-openDb :: DbConcurrency -> RawFilePath -> TableName -> IO DbHandle
-openDb dbconcurrency db tablename = do
+openDb :: RawFilePath -> TableName -> IO DbHandle
+openDb db tablename = do
 	jobs <- newEmptyMVar
 	worker <- async (workerThread (T.pack (fromRawFilePath db)) tablename jobs)
 	
 	-- work around https://github.com/yesodweb/persistent/issues/474
 	liftIO $ fileEncoding stderr
 
-	return $ DbHandle dbconcurrency worker jobs
+	return $ DbHandle worker jobs
 
 {- This is optional; when the DbHandle gets garbage collected it will
  - auto-close. -}
 closeDb :: DbHandle -> IO ()
-closeDb (DbHandle _ worker jobs) = do
+closeDb (DbHandle worker jobs) = do
 	putMVar jobs CloseJob
 	wait worker
 
@@ -85,7 +71,7 @@ closeDb (DbHandle _ worker jobs) = do
  - it is able to run.
  -}
 queryDb :: DbHandle -> SqlPersistM a -> IO a
-queryDb (DbHandle _ _ jobs) a = do
+queryDb (DbHandle _ jobs) a = do
 	res <- newEmptyMVar
 	putMVar jobs $ QueryJob $
 		liftIO . putMVar res =<< tryNonAsync a
@@ -94,10 +80,9 @@ queryDb (DbHandle _ _ jobs) a = do
 
 {- Writes a change to the database.
  -
- - In MultiWriter mode, writes can fail if another write is happening
- - concurrently. So write failures are caught and retried repeatedly
- - for up to 10 seconds, which should avoid all but the most exceptional
- - problems.
+ - Writes can fail if another write is happening concurrently.
+ - So write failures are caught and retried repeatedly for up to 10
+ - seconds, which should avoid all but the most exceptional problems.
  -}
 commitDb :: DbHandle -> SqlPersistM () -> IO ()
 commitDb h wa = robustly Nothing 100 (commitDb' h wa)
@@ -113,22 +98,15 @@ commitDb h wa = robustly Nothing 100 (commitDb' h wa)
 				robustly (Just e) (n-1) a
 
 commitDb' :: DbHandle -> SqlPersistM () -> IO (Either SomeException ())
-commitDb' (DbHandle MultiWriter _ jobs) a = do
+commitDb' (DbHandle _ jobs) a = do
 	res <- newEmptyMVar
-	putMVar jobs $ RobustChangeJob $ \runner ->
+	putMVar jobs $ ChangeJob $ \runner ->
 		liftIO $ putMVar res =<< tryNonAsync (runner a)
 	takeMVar res
-commitDb' (DbHandle SingleWriter _ jobs) a = do
-	res <- newEmptyMVar
-	putMVar jobs $ ChangeJob $
-		liftIO . putMVar res =<< tryNonAsync a
-	takeMVar res
-		`catchNonAsync` (const $ error "sqlite commit crashed")
 
 data Job
 	= QueryJob (SqlPersistM ())
-	| ChangeJob (SqlPersistM ())
-	| RobustChangeJob ((SqlPersistM () -> IO ()) -> IO ())
+	| ChangeJob ((SqlPersistM () -> IO ()) -> IO ())
 	| CloseJob
 
 workerThread :: T.Text -> TableName -> MVar Job -> IO ()
@@ -150,16 +128,11 @@ workerThread db tablename jobs = newconn
 			Left BlockedIndefinitelyOnMVar -> return (return ())
 			Right CloseJob -> return (return ())
 			Right (QueryJob a) -> a >> loop
-			Right (ChangeJob a) -> do
-				a
-				-- Exit this sqlite connection so the
-				-- database gets updated on disk.
-				return newconn
 			-- Change is run in a separate database connection
 			-- since sqlite only supports a single writer at a
 			-- time, and it may crash the database connection
 			-- that the write is made to.
-			Right (RobustChangeJob a) -> do
+			Right (ChangeJob a) -> do
 				liftIO (a (runSqliteRobustly tablename db))
 				-- Exit this sqlite connection so the
 				-- change that was just written, using 

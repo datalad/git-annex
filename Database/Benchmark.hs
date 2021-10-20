@@ -107,7 +107,7 @@ benchDb :: RawFilePath -> Integer -> Annex BenchDb
 benchDb tmpdir num = do
 	liftIO $ putStrLn $ "setting up database with " ++ show num ++ " items"
 	initDb db SQL.createTables
-	h <- liftIO $ H.openDbQueue H.MultiWriter db SQL.containedTable
+	h <- liftIO $ H.openDbQueue db SQL.containedTable
 	liftIO $ populateAssociatedFiles h num
 	sz <- liftIO $ getFileSize db
 	liftIO $ putStrLn $ "size of database on disk: " ++ 
