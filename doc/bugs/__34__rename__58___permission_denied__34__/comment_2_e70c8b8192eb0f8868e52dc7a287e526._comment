@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-10-20T17:30:24Z"
+ content="""
+These look like very similar problems:
+<https://git-annex.branchable.com/bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem/>
+<https://git-annex.branchable.com/bugs/still_seeing_errors_with_parallel_git-annex-add/>
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-10-20T17:33:03Z"
+ content="""
+This seems to be the same error message as in these 2 bugs:
+
+OSX: <https://git-annex.branchable.com/bugs/__34__rename__58___permission_denied__34__/>
+
+Windows: <https://git-annex.branchable.com/bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem/>
+
+So it would be especially helpful if I could reproduce it on Linux. Is
+anything else needed other than running git-annex add concurrently? And is that
+multiple processes, or with -J? 
+"""]]

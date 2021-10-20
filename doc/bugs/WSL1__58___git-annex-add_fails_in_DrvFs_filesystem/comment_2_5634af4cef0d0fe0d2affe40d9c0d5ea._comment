@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-10-20T17:31:07Z"
+ content="""
+These look like very similar problems:
+<https://git-annex.branchable.com/bugs/__34__rename__58___permission_denied__34__/>
+<https://git-annex.branchable.com/bugs/still_seeing_errors_with_parallel_git-annex-add/>
+"""]]
