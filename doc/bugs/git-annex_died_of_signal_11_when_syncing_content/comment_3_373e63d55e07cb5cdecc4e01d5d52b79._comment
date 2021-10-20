@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-10-20T19:18:17Z"
+ content="""
+Since the vast number of places git-annex runs do not have this problem, I
+don't think we can draw any conclusions about differences between your 2
+machines.
+
+Memory issue still seems like the most likely bet.
+
+Are you able to reproduce the problem repeatedly?
+"""]]
