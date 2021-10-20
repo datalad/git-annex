@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-10-20T18:01:31Z"
+ content="""
+If your filesystem supports reflinks, you should not need to enable
+annex.thin, just let git-annex make copies. It makes the copy
+using `cp --reflink=auto`, so when reflinks are supported, you'll get a
+nice cheap reflink.
+
+WRT annex.thinmode=forcehardlink, this would be something that aimed the
+gun right at the user's foot and then waits for the trigger to be pulled
+by any program that ever might write to a file.
+"""]]
