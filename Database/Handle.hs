@@ -100,13 +100,13 @@ commitDb h wa = robustly Nothing 100 (commitDb' h wa)
 commitDb' :: DbHandle -> SqlPersistM () -> IO (Either SomeException ())
 commitDb' (DbHandle _ jobs) a = do
 	res <- newEmptyMVar
-	putMVar jobs $ ChangeJob $ \runner ->
-		liftIO $ putMVar res =<< tryNonAsync (runner a)
+	putMVar jobs $ ChangeJob $
+		liftIO . putMVar res =<< tryNonAsync a
 	takeMVar res
 
 data Job
 	= QueryJob (SqlPersistM ())
-	| ChangeJob ((SqlPersistM () -> IO ()) -> IO ())
+	| ChangeJob (SqlPersistM ())
 	| CloseJob
 
 workerThread :: T.Text -> TableName -> MVar Job -> IO ()
@@ -128,16 +128,10 @@ workerThread db tablename jobs = newconn
 			Left BlockedIndefinitelyOnMVar -> return (return ())
 			Right CloseJob -> return (return ())
 			Right (QueryJob a) -> a >> loop
-			-- Change is run in a separate database connection
-			-- since sqlite only supports a single writer at a
-			-- time, and it may crash the database connection
-			-- that the write is made to.
 			Right (ChangeJob a) -> do
-				liftIO (a (runSqliteRobustly tablename db))
-				-- Exit this sqlite connection so the
-				-- change that was just written, using 
-				-- a different db handle, is immediately
-				-- visible to queries.
+				a
+				-- Exit the sqlite connection so the
+				-- database gets updated on disk.
 				return newconn
 	
 	getjob :: IO (Either BlockedIndefinitelyOnMVar Job)
