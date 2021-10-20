@@ -1,0 +1,84 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-10-20T18:14:38Z"
+ content="""
+Well, I tried to reproduce this, following your instructions to the extent
+there were clear.
+
+I made a repository, added some files to git, and committed. 
+Then `git rm --cached` the files, and `git-annex add` to add them to
+git-annex, and committed. So master had 2 commits, an older commit
+where the files were in git, and a newer commit where the files are in
+git-annex. The git-annex branch had a couple of commits as well.
+
+Then I cloned:
+
+	git clone --depth 1 localhost:/tmp/path/to/repo clone
+
+In the clone, that made master be a single commit. There was no
+origin/git-annex branch in the clone, like there normally would be
+in a non-shallow clone.
+
+Then I ran `git-annex init; git annex sync`:
+
+	joey@darkstar:/tmp/clone>git annex init
+	init  ok
+	(recording state in git...)
+	joey@darkstar:/tmp/clone>git annex sync
+	commit 
+	On branch master
+	Your branch is up to date with 'origin/master'.
+	
+	nothing to commit, working tree clean
+	ok
+	pull origin 
+	ok
+	push origin 
+	Enumerating objects: 6, done.
+	Counting objects: 100% (6/6), done.
+	Delta compression using up to 4 threads
+	Compressing objects: 100% (3/3), done.
+	Writing objects: 100% (5/5), 450 bytes | 450.00 KiB/s, done.
+	Total 5 (delta 0), reused 0 (delta 0), pack-reused 0
+	To localhost:/tmp/repo
+	 * [new branch]      master -> synced/master
+	 * [new branch]      git-annex -> synced/git-annex
+	ok
+
+At this point, the git-annex branch in the remote repository is not
+destroyed. It contains a merge between the branch that was there before
+the clone and the git-annex branch that was synced from the clone.
+Looks just fine.
+
+In the clone, there is still no origin/git-annex branch, and the git-annex
+branch has only the changes that git-annex committed to it in the clone.
+
+So, the clone still doesn't know that it can get the annexed files from origin.
+But nothing is "destroyed".
+
+This does not seem like the best possible behavior, it would be better if,
+after git-annex sync, it fetched origin/git-annex (either the latest
+commit or all of them) and merged it into the local git-annex branch.
+
+What's going on is, the shallow clone gets remote.origin.fetch set
+to "+refs/heads/master:refs/remotes/origin/master". So, attempting
+to fetch any other branch from origin will always skip creating
+a tracking branch.
+
+All you have to do, then is 
+
+	git config '+refs/heads/*:refs/remotes/origin/*'
+
+That preserves master as a shallow clone, while letting
+the git-annex branch be fetched. Or, alternatively, `git fetch --unshallow`.
+
+Maybe git-annex sync could detect this situation and force fetch 
+the git-annex branch. (eg, git fetch origin git-annex, which does
+actually fetch the refs, followed by manually setting
+origin/git-annex to `FETCH_HEAD`) That would leave workflows using
+`git push` and `git pull` still with the problem. And it might be that
+someone who wants a shallow clone also wants the git-annex branch to be
+cloned shallowly and would object if its full history was fetched by that.
+I have not found a way yet to fetch the git-annex branch shallowly.
+"""]]
