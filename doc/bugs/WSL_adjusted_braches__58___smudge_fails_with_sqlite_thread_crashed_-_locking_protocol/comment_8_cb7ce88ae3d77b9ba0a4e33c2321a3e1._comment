@@ -3,13 +3,22 @@
  subject="""comment 7"""
  date="2021-10-20T17:04:09Z"
  content="""
+@asakurareiko oh excellent news!
+
+Before I saw that it's apparently fixed, I noticed that
 git-annex opened a second connection to the database for writes, in
 addition to the connection it used for reads. That seems likely to be
-involved in whatever locking problem there is on WSL.
+involved in whatever locking problem there is on WSL. While maybe I already
+fixed the main one, the fact that fix works makes me even more suspicious
+about situations where there are multiple database connections.
 
 Commit [[!commit d0ef8303cf8c4f40a1d17bd134af961fd9917ca4]] eliminates that
 second connection. But there's some chance I'll have to revert it.
 
 If you test, please include `git-annex version` output
 so I can make sure you have a version with that change.
+
+I also wonder if this means that running 2 git-annex commands
+simulantaneously will sometimes result in the same sqlite problem, despite
+these fixes.
 """]]
