@@ -1,0 +1,71 @@
+[[!comment format=mdwn
+ username="asakurareiko@f3d908c71c009580228b264f63f21c7274df7476"
+ nickname="asakurareiko"
+ avatar="http://cdn.libravatar.org/avatar/a865743e357add9d15081840179ce082"
+ subject="comment 10"
+ date="2021-10-20T22:54:39Z"
+ content="""
+The error I get previously (before [[!commit 0f38ad9a6]]) with my test case is
+
+```
+init
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+(recording state in git...)
+get a (from origin...)
+ok
+get b (from origin...)
+ok
+(recording state in git...)
+sqlite worker thread crashed: user error (SQLite3 returned ErrorProtocol while attempting to perform prepare \"SELECT null from content limit 1\": locking protocol(while opening database connection))
+git-annex: sqlite query crashed: thread blocked indefinitely in an MVar operation
+CallStack (from HasCallStack):
+  error, called at ./Database/Handle.hs:102:40 in main:Database.Handle
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+sqlite worker thread crashed: user error (SQLite3 returned ErrorProtocol while attempting to perform prepare \"SELECT null from content limit 1\": locking protocol(while opening database connection))
+git-annex: sqlite query crashed: thread blocked indefinitely in an MVar operation
+CallStack (from HasCallStack):
+  error, called at ./Database/Handle.hs:102:40 in main:Database.Handle
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+```
+
+With [[!commit d0ef8303c]], the test case still works, but adjusted branches still have the same error. 
+
+```
+git init
+git annex init
+git config annex.crippledfilesystem true
+echo aaa > a
+cp a b
+git annex add .
+git commit -m .
+git annex adjust --unlock
+```
+
+produces
+
+```
+adjust
+sqlite worker thread crashed: user error (SQLite3 returned ErrorProtocol while attempting to perform prepare \"SELECT null from content limit 1\": locking protocol(while opening database connection))
+git-annex: thread blocked indefinitely in an MVar operation
+error: external filter 'git-annex smudge -- %f' failed 1
+error: external filter 'git-annex smudge -- %f' failed
+sqlite worker thread crashed: user error (SQLite3 returned ErrorProtocol while attempting to perform prepare \"SELECT null from content limit 1\": locking protocol(while opening database connection))
+git-annex: thread blocked indefinitely in an MVar operation
+error: external filter 'git-annex smudge -- %f' failed 1
+error: external filter 'git-annex smudge -- %f' failed
+Switched to branch 'adjusted/master(unlocked)'
+sqlite worker thread crashed: user error (SQLite3 returned ErrorProtocol while attempting to perform prepare \"SELECT null from content limit 1\": locking protocol(while opening database connection))
+git-annex: sqlite query crashed: thread blocked indefinitely in an MVar operation
+CallStack (from HasCallStack):
+  error, called at ./Database/Handle.hs:79:40 in main:Database.Handle
+failed
+adjust: 1 failed
+```
+
+About `git-annex version`, I'm using `make install-home` to do an incremental build but the version does not update.
+"""]]
