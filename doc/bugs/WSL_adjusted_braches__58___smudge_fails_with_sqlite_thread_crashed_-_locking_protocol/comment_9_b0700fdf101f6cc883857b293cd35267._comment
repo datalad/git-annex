@@ -17,7 +17,7 @@ which would not be helpful. So perhaps it would be better to handle it
 like Sqlite.ErrorIO is handled, waiting for up to 1/10th of a second.
 But perhaps that would not be enough of a wait.
 
-Anyway, this is a note to myself: If concurrent git-annex processes on Windows
-still have this problem, try catching Sqlite.ErrorProtocol and experiment
+Anyway, this is a note to myself: If all else fails,
+try catching Sqlite.ErrorProtocol and experiment
 with different ways to handle it.
 """]]

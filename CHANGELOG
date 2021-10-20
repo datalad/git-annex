@@ -17,8 +17,7 @@ git-annex (8.20211012) UNRELEASED; urgency=medium
   * git-annex get when run as the first git-annex command in a new repo
     did not populate all unlocked files.
     (Reversion in version 8.20210621)
-  * Avoid a sqlite crash on Windows SubSystem for Linux (WSL)
-    when entering an adjusted branch.
+  * Avoid a some sqlite crashes on Windows SubSystem for Linux (WSL).
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Oct 2021 14:09:13 -0400
 
