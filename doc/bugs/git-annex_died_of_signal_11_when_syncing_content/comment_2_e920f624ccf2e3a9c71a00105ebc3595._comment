@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="git-annex.visiteur@e9d364191d2ffc1b163c8d9e4c57dbadf58aad8e"
+ nickname="git-annex.visiteur"
+ avatar="http://cdn.libravatar.org/avatar/59640df9d44f100f0bf98c1cbb430037"
+ subject="Same problem with git-annex 8.20210223"
+ date="2021-10-20T19:09:29Z"
+ content="""
+I have exactly the same problem with Debian 11 and git-annex 8.20210223. In kernel.log I can see 
+
+> traps: git-annex[91341] general protection fault ip:3c6be67 sp:7ffd7afd26f8 error:0 in git-annex[400000+3a78000]
+
+I've done a memtest86 on my memory and nothing appended.
+
+Oddly, I have another machin with same versions of OS and git-annex, but it does not reproduce the problem. The bigger difference between the two machines is that machine with problem run on ZFS. Is it possible that the problem comes from that?
+
+"""]]
