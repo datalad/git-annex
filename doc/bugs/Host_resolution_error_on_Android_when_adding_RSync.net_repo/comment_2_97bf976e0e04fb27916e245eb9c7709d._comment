@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-10-20T17:52:23Z"
+ content="""
+This is not limited to rsync.net, other DNS lookups by git-annex also fail.
+
+Without investigating, my strong hunch is that this is because git-annex is
+linked to glibc, and so it expects there to be /etc/nssswitch.conf,
+/etc/resolv.conf, /etc/services etc that glibc uses. And
+some/all of those files are not present on Android. If you were able to set
+up the files, it would probably work.
+"""]]
