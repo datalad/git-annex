@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="git-annex.visiteur@e9d364191d2ffc1b163c8d9e4c57dbadf58aad8e"
+ nickname="git-annex.visiteur"
+ avatar="http://cdn.libravatar.org/avatar/59640df9d44f100f0bf98c1cbb430037"
+ subject="comment 4"
+ date="2021-10-21T08:24:55Z"
+ content="""
+Yes the problem occurs each time I want to do git annex get . on a repository with about 20 000 files. 
+
+As i say, I've perfom memtest86 (several times) and memtester (several times) without any problem. Do you think it could be hardware problem despite these results ?
+
+You suggest using gdb. I get
+
+Thread 1 \"git-annex\" received signal SIGSEGV, Segmentation fault.
+0x0000000003c6be67 in ?? ()
+
+(gdb) backtrace
+
+#0  0x0000000003c6be67 in ?? ()
+#1  0x0000000000000000 in ?? ()
+
+which is not very helpful. Do you have any advices to investigate?
+
+"""]]
