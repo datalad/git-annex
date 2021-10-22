@@ -1,0 +1,32 @@
+The following steps are tested on Windows 10 21h1 and are designed to avoid these two bugs:
+
+* [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]]
+* [[bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem]]
+
+**Setup**
+
+* Enable Developer mode in Windows settings so that symlinks can be created without elevated privileges.
+* Mount the NTFS drive with metadata option. [`/etc/wsl.conf`](https://docs.microsoft.com/en-us/windows/wsl/wsl-config) can be used or a line such as `C: /mnt/c drvfs metadata` can be added in `/etc/fstab`.
+* Create an empty directory for the repo.
+    * With File Explorer go to Properties/Security/Advanced.
+        * Give "Authenticated Users" permission to [“Write attributes”, “Create files”, “Create folders” and “Delete subfolders and files”](https://devblogs.microsoft.com/commandline/improved-per-directory-case-sensitivity-support-in-wsl/) for this folder and subfolders.
+    * Enable case sensitivity with `setfattr -n system.wsl_case_sensitive -v 1 <path>`.
+        * This attribute will be inherited by new subdirectories but will not be automatically recursively applied to existing subdirectories.
+        * Set this attribute to 0 as appropriate if you do not have files that differ only by case, or if you have non-default git-annex [[tuning]].
+        * This attribute can be queried with `getfattr -n system.wsl_case_sensitive <path>`.
+* Initialize the repo.
+    * Set `git config annex.crippledfilesystem true` immediately after `git annex init` to avoid triggering the above two bugs.
+* Open Properties/Security/Advanced for .git/annex/objects.
+    * Deny "Authenticated Users" write permissions for files only and select "Replace all child object permission entries with inheritable permission entries from this object".
+
+** Setup with repo cloned from SSH **
+
+* If you encounter problems with older versions of git-annex.
+    * Create a local git-annex branch from the remote branch.
+    * Remove the origin remote.
+    * Do `git annex init` and other setup.
+    * Add back the origin remote.
+
+** Using symlinks and locked files **
+
+* Symlinks might be broken and can be fixed by recreating them. You can also delete them and do a `git checkout`.
