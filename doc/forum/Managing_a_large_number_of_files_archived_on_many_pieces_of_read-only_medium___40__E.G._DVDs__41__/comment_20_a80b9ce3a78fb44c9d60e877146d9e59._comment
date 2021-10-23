@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="username"
+ avatar="http://cdn.libravatar.org/avatar/3c17ce77d299219a458fc2eff973239a"
+ subject="comment 20"
+ date="2021-10-23T15:53:57Z"
+ content="""
+Aha, that's what I was missing!
+
+I was working under the wrong assumption that the git-annex location tracking was tied in some way to the master branch and that alternate branches required shared history with master to have their contents tracked.
+
+Wholly independent branches for each disc is exactly what I want, thanks Lukey and Joey for your suggestions.
+"""]]
