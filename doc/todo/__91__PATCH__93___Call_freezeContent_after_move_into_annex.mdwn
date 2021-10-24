@@ -1,0 +1,41 @@
+```
+From d863d357d89e7e584755dd09c6af18eedefc9557 Mon Sep 17 00:00:00 2001
+From: Reiko Asakura <asakurareiko@protonmail.ch>
+Date: Sun, 24 Oct 2021 14:44:44 -0400
+Subject: [PATCH] Call freezeContent after move into annex
+
+This change better supports Windows ACL management using
+annex.freezecontent-command and annex.thawcontent-command and matches
+the behaviour of adding an unlocked file.
+
+By calling freezeContent after the file has moved into the annex,
+the file's delete permission can be denied. If the file's delete
+permission is denied before moving into the annex, the file cannot
+be moved or deleted. If the file's delete permission is not denied after
+moving into the annex, it will likely inherit a grant for the delete
+permission which allows it to be deleted irrespective of the permissions
+of the parent directory.
+---
+ Annex/Content.hs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Annex/Content.hs b/Annex/Content.hs
+index da65143ab..3664c6ea2 100644
+--- a/Annex/Content.hs
++++ b/Annex/Content.hs
+@@ -342,10 +342,10 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
+ 	storeobject dest = ifM (liftIO $ R.doesPathExist dest)
+ 		( alreadyhave
+ 		, adjustedBranchRefresh af $ modifyContent dest $ do
+-			freezeContent src
+ 			liftIO $ moveFile
+ 				(fromRawFilePath src)
+ 				(fromRawFilePath dest)
++			freezeContent dest
+ 			g <- Annex.gitRepo 
+ 			fs <- map (`fromTopFilePath` g)
+ 				<$> Database.Keys.getAssociatedFiles key
+-- 
+2.30.2
+
+```
