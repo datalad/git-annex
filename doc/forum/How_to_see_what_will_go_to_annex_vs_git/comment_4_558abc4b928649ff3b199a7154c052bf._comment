@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 4"
+ date="2021-10-24T22:42:35Z"
+ content="""
+Would you consider adding a command like this to `git-annex`? I almost always want to work with untracked files at first, which means using `git add` to add them (because `git-annex` doesn't have an `--unlocked` option afaik). Adding them to git by mistake is not good. And really it's just helpful to know when I have new files, are they going to git or to annex.
+"""]]
