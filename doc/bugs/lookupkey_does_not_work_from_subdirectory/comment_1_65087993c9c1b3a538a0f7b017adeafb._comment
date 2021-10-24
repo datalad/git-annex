@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="asakurareiko@f3d908c71c009580228b264f63f21c7274df7476"
+ nickname="asakurareiko"
+ avatar="http://cdn.libravatar.org/avatar/a865743e357add9d15081840179ce082"
+ subject="comment 1"
+ date="2021-10-24T21:23:56Z"
+ content="""
+Broken since [[!commit 9012fa01877a78542c64f104bd60a80825ce3c86]] where the output became like this
+
+```
+~/test-annex/a$ git annex lookupkey a
+(\"f'\",\"a\",\"..\",False)
+```
+
+
+"""]]
