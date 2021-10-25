@@ -85,6 +85,10 @@ jobs:
           echo BUILDER=stack >> "$GITHUB_ENV"
           echo GHC="stack ghc --" >> "$GITHUB_ENV"
 
+      - name: Enable building with magic
+        run: |
+          perl -pli -e 's/magicmime: false/magicmime: true/' stack.yaml
+
       - name: stack setup
         run: stack setup
 
