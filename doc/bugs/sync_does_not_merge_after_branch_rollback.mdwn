@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+I did an interactive rebase of the git-annex branch and rolled back the remote git-annex branch. Afterwards `git annex sync` did not merge the remote git-annex branch.
+
+### What steps will reproduce the problem?
+
+```
+git init a
+cd a
+git annex init
+git commit -m . --allow-empty
+
+cd ..
+git clone a b
+cd b
+git annex init
+git remote rename origin a
+cd ../a
+git annex fsck
+cd ../b
+git annex sync
+
+git push a :synced/git-annex
+git push -f a 'git-annex^2:git-annex'
+git branch -f git-annex 'git-annex^1'
+git annex sync
+```
+
+After the second sync, `a/git-annex` did not get merged.
+
+### What version of git-annex are you using? On what operating system?
+
+8.20211011 linux
+
