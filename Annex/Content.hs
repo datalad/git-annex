@@ -346,6 +346,9 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
 			liftIO $ moveFile
 				(fromRawFilePath src)
 				(fromRawFilePath dest)
+			-- On Windows the delete permission must be denied only
+			-- after the content has been moved in the annex.
+			freezeContent dest
 			g <- Annex.gitRepo 
 			fs <- map (`fromTopFilePath` g)
 				<$> Database.Keys.getAssociatedFiles key
