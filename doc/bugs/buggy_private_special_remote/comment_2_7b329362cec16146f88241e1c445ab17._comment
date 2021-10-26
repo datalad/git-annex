@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-10-26T16:11:53Z"
+ content="""
+Easily reproduced this, thanks for a great bug report.
+
+What I see after the setup is:
+
+	joey@darkstar:~/tmp/bench2/a>git show git-annex:preferred-content.log
+	5cf4b197-9d7a-4c97-b492-74daf50a17d7 anything timestamp=1635264591.115678237s
+	joey@darkstar:~/tmp/bench2/a>cat .git/annex/journal-private/preferred-content.log
+	5cf4b197-9d7a-4c97-b492-74daf50a17d7 nothing timestamp=1635264500.401941428s
+	d8bcb9f8-2ae2-4e3b-8e7b-fe536a4b53f3 anything timestamp=1635264558.726745148s
+
+Where b is 5cf and the private remote is d8b.
+
+So, it is ignoring the newer log line that is available in the git-annex
+branch, and only loading the older value from the private log, which is only
+included the private log because it was written in passing when the actually
+private information was recorded there.
+
+In fact, when the private log file exists, it only reads it, ignoring
+the log in the git-annex branch. (But not ignoring non-private files
+that are in the journal but have not made it to the branch yet.)
+So even if the private log file only
+included a line for the private remote, it would not see the information
+that's in the git-annex branch.
+
+So, the real root cause is that, when a journal file is available, git-annex
+uses it, rather than reading from the git-annex branch. Normally this is not
+a problem because when journal files are written, the current value from the
+branch is included in them, and anyway the journal gets written to the branch
+fairly quickly and deleted. But the private journal lingers around forever.
+So, it needs to read from the git-annex branch in addition to the private
+journal.
+
+Fixed this. Since the bug did not actually cause the wrong information to
+be written to anywhere, all you need to do to recover is upgrade.
+"""]]

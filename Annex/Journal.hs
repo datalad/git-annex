@@ -89,8 +89,20 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 		withFile tmpfile WriteMode $ \h -> writeJournalHandle h content
 		moveFile tmpfile (fromRawFilePath (jd P.</> jfile))
 
+data JournalledContent
+	= NoJournalledContent
+	| JournalledContent L.ByteString
+	| PossiblyStaleJournalledContent L.ByteString
+	-- ^ This is used when the journalled content may have been 
+	-- supersceded by content in the git-annex branch. The returned
+	-- content should be combined with content from the git-annex branch.
+	-- This is particularly the case when a file is in the private
+	-- journal, which does not get written to the git-annex branch,
+	-- and so the git-annex branch can contain changes to non-private
+	-- information that were made after that journal file was written.
+
 {- Gets any journalled content for a file in the branch. -}
-getJournalFile :: JournalLocked -> GetPrivate -> RawFilePath -> Annex (Maybe L.ByteString)
+getJournalFile :: JournalLocked -> GetPrivate -> RawFilePath -> Annex JournalledContent
 getJournalFile _jl = getJournalFileStale
 
 data GetPrivate = GetPrivate Bool
@@ -106,7 +118,7 @@ data GetPrivate = GetPrivate Bool
  - concurrency or other issues with a lazy read, and the minor loss of
  - laziness doesn't matter much, as the files are not very large.
  -}
-getJournalFileStale :: GetPrivate -> RawFilePath -> Annex (Maybe L.ByteString)
+getJournalFileStale :: GetPrivate -> RawFilePath -> Annex JournalledContent
 getJournalFileStale (GetPrivate getprivate) file = do
 	-- Optimisation to avoid a second MVar access.
 	st <- Annex.getState id
@@ -115,11 +127,19 @@ getJournalFileStale (GetPrivate getprivate) file = do
 		if getprivate && privateUUIDsKnown' st
 		then do
 			x <- getfrom (gitAnnexJournalDir g)
-			y <- getfrom (gitAnnexPrivateJournalDir g)
-			-- This concacenation is the same as happens in a
-			-- merge of two git-annex branches.
-			return (x <> y)
-		else getfrom (gitAnnexJournalDir g)
+			getfrom (gitAnnexPrivateJournalDir g) >>= \case
+				Nothing -> return $ case x of
+					Nothing -> NoJournalledContent
+					Just b -> JournalledContent b
+				Just y -> return $ PossiblyStaleJournalledContent $ case x of
+					Nothing -> y
+					-- This concacenation is the same as
+					-- happens in a merge of two
+					-- git-annex branches.
+					Just x' -> x' <> y
+		else getfrom (gitAnnexJournalDir g) >>= return . \case
+			Nothing -> NoJournalledContent
+			Just b -> JournalledContent b
   where
 	jfile = journalFile file
 	getfrom d = catchMaybeIO $

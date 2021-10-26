@@ -280,8 +280,11 @@ precache file branchcontent = do
 	st <- getState
 	content <- if journalIgnorable st
 		then pure branchcontent
-		else fromMaybe branchcontent
-			<$> getJournalFileStale (GetPrivate True) file
+		else getJournalFileStale (GetPrivate True) file >>= return . \case
+			NoJournalledContent -> branchcontent
+			JournalledContent journalcontent -> journalcontent
+			PossiblyStaleJournalledContent journalcontent ->
+				branchcontent <> journalcontent
 	Annex.BranchState.setCache file content
 
 {- Like get, but does not merge the branch, so the info returned may not
@@ -296,8 +299,11 @@ getLocal' getprivate file = do
 	fastDebug "Annex.Branch" ("read " ++ fromRawFilePath file)
 	go =<< getJournalFileStale getprivate file
   where
-	go (Just journalcontent) = return journalcontent
-	go Nothing = getRef fullname file
+	go NoJournalledContent = getRef fullname file
+	go (JournalledContent journalcontent) = return journalcontent
+	go (PossiblyStaleJournalledContent journalcontent) = do
+		v <- getRef fullname file
+		return (v <> journalcontent)
 
 {- Gets the content of a file as staged in the branch's index. -}
 getStaged :: RawFilePath -> Annex L.ByteString
@@ -813,12 +819,7 @@ overBranchFileContents select go = do
 	buf <- liftIO newEmptyMVar
 	let go' reader = go $ liftIO reader >>= \case
 		Just ((v, f), content) -> do
-			-- Check the journal if it did not get
-			-- committed to the branch
-			content' <- if journalIgnorable st
-				then pure content
-				else maybe content Just 
-					<$> getJournalFileStale (GetPrivate True) f
+			content' <- checkjournal st f content
 			return (Just (v, f, content'))
 		Nothing
 			| journalIgnorable st -> return Nothing
@@ -834,16 +835,36 @@ overBranchFileContents select go = do
 	catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
 		`finally` liftIO (void cleanup)
   where
-	getnext [] = Nothing
-	getnext (f:fs) = case select f of
-		Nothing -> getnext fs
-		Just v -> Just (v, f, fs)
-					
+	-- Check the journal, in case it did not get committed to the branch
+	checkjournal st f branchcontent
+		| journalIgnorable st = return branchcontent
+		| otherwise = getJournalFileStale (GetPrivate True) f >>= return . \case
+			NoJournalledContent -> branchcontent
+			JournalledContent journalledcontent ->
+				Just journalledcontent
+			PossiblyStaleJournalledContent journalledcontent ->
+				Just (fromMaybe mempty branchcontent <> journalledcontent)
+				
 	drain buf fs = case getnext fs of
 		Just (v, f, fs') -> do
 			liftIO $ putMVar buf fs'
-			content <- getJournalFileStale (GetPrivate True) f
+			content <- getJournalFileStale (GetPrivate True) f >>= \case
+				NoJournalledContent -> return Nothing
+				JournalledContent journalledcontent ->
+					return (Just journalledcontent)
+				PossiblyStaleJournalledContent journalledcontent -> do
+					-- This is expensive, but happens
+					-- only when there is a private
+					-- journal file.
+					content <- getRef fullname f
+					return (Just (content <> journalledcontent))
 			return (Just (v, f, content))
 		Nothing -> do
 			liftIO $ putMVar buf []
 			return Nothing
+	
+	getnext [] = Nothing
+	getnext (f:fs) = case select f of
+		Nothing -> getnext fs
+		Just v -> Just (v, f, fs)
+
