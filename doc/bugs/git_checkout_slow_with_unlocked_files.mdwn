@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+git checkout is very slow to checkout unlocked files.
+
+### What steps will reproduce the problem?
+
+Setup:
+
+```
+for i in {1..1000}; do echo $i > $i; done
+git init
+git annex init
+git config annex.addunlocked true
+git annex add .
+git commit -m .
+git annex lock .
+git reset .
+```
+
+Doing a `git checkout .` at this point took about a minute. In comparison doing a `git annex unlock . && git status` took 30 seconds.
+
+### What version of git-annex are you using? On what operating system?
+
+8.20210428 in Linux.
+
+### Please provide any additional information below.
+
+The relevance of this problem is that I tried to go from a lock-adjusted branch to its basis with about 50000 unlocked files with `git checkout`. It was taking longer than expected and there were many warnings about a cosmetic problem and advised me to run `git update-index -q --refresh <path>`. Eventually I deleted the entire working tree, did `git reset --hard` to recreate the unlocked file stubs, locked every file and unlocked them again.

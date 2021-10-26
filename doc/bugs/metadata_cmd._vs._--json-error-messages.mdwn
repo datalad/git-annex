@@ -1,0 +1,6 @@
+(Sorry about the title; I was trying to work within the character limit.)
+
+When invoking `git-annex metadata --batch --json --json-error-messages`, if an error occurs in response to some input — say, because the name of a nonexistent file was supplied (or, in my case, because the name of a file downloaded milliseconds ago in a parallel addurl process was supplied) — then `git-annex metadata` will output "git-annex: not an annexed file: {filepath}" to standard error and immediately exit.  Not only is this in contrast to what it seems `--json-error-messages` should do, but the "exiting immediately" bit is in contrast to my understanding of how batch mode is supposed to work.  Surely this should be fixed?
+
+[[!meta author=jwodder]]
+[[!tag projects/dandi]]

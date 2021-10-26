@@ -1,0 +1,21 @@
+Running `git-annex lookupkey` while in a subdirectory of a git-annex repository does not work, regardless of whether the supplied path is relative to the current directory or the root of the repository.
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+git init
+git-annex init
+git-annex addurl --file latex/lshort.pdf https://tobi.oetiker.ch/lshort/lshort.pdf
+cd latex
+git-annex lookupkey lshort.pdf  # Fails!
+git-annex lookupkey latex/lshort.pdf  # Fails!
+cd ..
+git-annex lookupkey latex/lshort.pdf  # Succeeds
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+
+8.20211011 on macOS 11.6
+
+[[!meta author=jwodder]]
