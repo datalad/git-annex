@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="asakurareiko@f3d908c71c009580228b264f63f21c7274df7476"
+ nickname="asakurareiko"
+ avatar="http://cdn.libravatar.org/avatar/a865743e357add9d15081840179ce082"
+ subject="comment 3"
+ date="2021-10-26T20:13:18Z"
+ content="""
+This problem as it happens in WSL1 is due to calling `withhardlink` in `lockDown'`
+
+
+```
+lockDown' cfg file = tryNonAsync $ ifM crippledFileSystem
+	( nohardlink
+	, case hardlinkFileTmpDir cfg of
+		Nothing -> nohardlink
+		Just tmpdir -> withhardlink tmpdir
+	)
+```
+
+With `nohardlink`, the write bits are removed from the file in the working tree, moved into .git/annex/objects, a symlink is created in a temp dir and moved into the working tree. No problems here.
+
+With `withhardlink`, the write bits are removed from the file in the working tree, hardlinked into a temp dir, moved into .git/annex/objects, a symlink is created in a temp dir and moved into the working tree replacing the original file. However, Windows will not allow you to do this because when the write bits are removed, the file is set to read only and cannot be replaced in this manner. The only way to get around this is to delete the file in the working tree first.
+"""]]
