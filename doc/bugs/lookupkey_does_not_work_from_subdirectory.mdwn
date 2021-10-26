@@ -19,3 +19,5 @@ git-annex lookupkey latex/lshort.pdf  # Succeeds
 8.20211011 on macOS 11.6
 
 [[!meta author=jwodder]]
+
+> [[fixed|done]] --[[Joey]]

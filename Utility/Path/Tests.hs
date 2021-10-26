@@ -14,6 +14,7 @@ module Utility.Path.Tests (
 	prop_upFrom_basics,
 	prop_relPathDirToFileAbs_basics,
 	prop_relPathDirToFileAbs_regressionTest,
+	prop_dirContains_regressionTest,
 ) where
 
 import System.FilePath.ByteString
@@ -62,3 +63,18 @@ prop_relPathDirToFileAbs_regressionTest = same_dir_shortcurcuits_at_difference
 		relPathDirToFileAbs (joinPath [pathSeparator `B.cons` "tmp", "r", "lll", "xxx", "yyy", "18"])
 			(joinPath [pathSeparator `B.cons` "tmp", "r", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"])
 				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]
+
+prop_dirContains_regressionTest :: Bool
+prop_dirContains_regressionTest = and
+	[ not $ dirContains "." ".."
+	, not $ dirContains ".." "../.."
+	, dirContains "." "foo"
+	, dirContains "." "."
+	, dirContains ".." ".."
+	, dirContains "../.." "../.."
+	, dirContains "." "./foo"
+	, dirContains ".." "../foo"
+	, dirContains "../.." "../foo"
+	, dirContains "../.." "../../foo"
+	, not $ dirContains "../.." "../../.."
+	]

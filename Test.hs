@@ -194,6 +194,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 	, testProperty "prop_upFrom_basics" Utility.Path.Tests.prop_upFrom_basics
 	, testProperty "prop_relPathDirToFileAbs_basics" Utility.Path.Tests.prop_relPathDirToFileAbs_basics
 	, testProperty "prop_relPathDirToFileAbs_regressionTest" Utility.Path.Tests.prop_relPathDirToFileAbs_regressionTest
+	, testProperty "prop_dirContains_regressionTest" Utility.Path.Tests.prop_dirContains_regressionTest
 	, testProperty "prop_cost_sane" Config.Cost.prop_cost_sane
 	, testProperty "prop_matcher_sane" Utility.Matcher.prop_matcher_sane
 	, testProperty "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane
