@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-10-27T18:16:06Z"
+ content="""
+You can use `git annex add --force-small/--force-large` to explicitly
+specify.
+
+annex.addunlocked can make git-annex add add annexed files unlocked, 
+although of course git-annex unlock after adding has the same result.
+"""]]
