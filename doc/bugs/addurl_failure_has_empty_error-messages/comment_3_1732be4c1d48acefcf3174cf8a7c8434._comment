@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jwodder"
+ avatar="http://cdn.libravatar.org/avatar/b06e01332c949b895c681cc92934f36a"
+ subject="comment 3"
+ date="2021-10-27T18:19:23Z"
+ content="""
+As to your questions, I am using git-annex 8.20211011 on macOS 11.6.  The problem does not occur when the `--jobs` option is omitted, but that's not viable for the current project we're using git-annex for.
+"""]]
