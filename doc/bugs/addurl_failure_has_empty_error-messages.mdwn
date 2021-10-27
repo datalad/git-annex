@@ -1,0 +1,4 @@
+While running `git-annex addurl --batch --with-files --jobs 10 --json --json-error-messages --json-progress --raw`, I occasionally run into files that fail to download for no discernable reason, and the `"error-messages"` key in the output from the command is an empty list.  This makes it hard to figure out exactly why the download is failing.
+
+[[!meta author=jwodder]]
+[[!tag projects/dandi]]
