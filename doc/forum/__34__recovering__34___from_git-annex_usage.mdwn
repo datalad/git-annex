@@ -1,0 +1,24 @@
+# Past Usage of git-annex
+
+I used to have git(-annex) repositories for different projects and data types...
+so I managed all my images in one repository, movies in an other and so on.
+At some point I had an central Server an moved files to that remote.
+
+So far so easy and good.
+
+# Current Situation
+
+Then there was the time, that I killed my central Server,
+and "lost" access to my files I moved there
+and "lost" also the synchronization path between my laptop and my desktop pc
+
+I have a backup of these remotes (scped to a external hdd), but currently have no
+clue how I teach my local repository that the central Server remote is now
+just a local hdd remote.
+
+Probably I am just confused how I handeled git-annex till now
+
+What would be a best practice to teach an repository that an remote has moved its location?
+And maybe recover my moved files, that are hopefully still somewhere around.
+
+~ Michael
