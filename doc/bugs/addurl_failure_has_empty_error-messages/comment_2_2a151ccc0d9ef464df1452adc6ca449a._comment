@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jwodder"
+ avatar="http://cdn.libravatar.org/avatar/b06e01332c949b895c681cc92934f36a"
+ subject="comment 2"
+ date="2021-10-27T18:16:43Z"
+ content="""
+It appears that the problem occurs whenever one tries to download the same URL to two different paths at the same time.  When this occurs, one of the downloads fails, and though its \"error-messages\" is empty, its \"notes\" field reads, \"transfer already in progress, or unable to take transfer lock\".
+"""]]
