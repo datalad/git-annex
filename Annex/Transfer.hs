@@ -151,6 +151,11 @@ runTransfer' ignorelock t afile stalldetection retrydecider transferaction =
 		createAnnexDirectory $ P.takeDirectory lck
 		tryLockExclusive (Just mode) lck >>= \case
 			Nothing -> return (Nothing, True)
+			-- Since the lock file is removed in cleanup,
+			-- there's a race where different processes
+			-- may have a deleted and a new version of the same
+			-- lock file open. checkSaneLock guards against
+			-- that.
 			Just lockhandle -> ifM (checkSaneLock lck lockhandle)
 				( do
 					createtfile
