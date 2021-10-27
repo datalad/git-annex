@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-10-27T16:23:52Z"
+ content="""
+Is it reproducible with a particular url? Does it only happen with -J?
+
+Version would also be good to know. There were recent relevant 
+changes eg [[!commit 4f42292b13dc5a6664eeb19b5c9d48991eaef292]].
+
+I've spent a while hunting for a code path where it fails without
+displaying a warning, and have not found one. Since the code in addurl
+is structured as return Nothing and hopefully display a warning
+beforehand, rather than as throw an error, it's certianly possible that
+happens.
+"""]]
