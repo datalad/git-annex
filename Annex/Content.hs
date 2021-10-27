@@ -342,12 +342,12 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
 	storeobject dest = ifM (liftIO $ R.doesPathExist dest)
 		( alreadyhave
 		, adjustedBranchRefresh af $ modifyContent dest $ do
-			freezeContent src
 			liftIO $ moveFile
 				(fromRawFilePath src)
 				(fromRawFilePath dest)
-			-- On Windows the delete permission must be denied only
-			-- after the content has been moved in the annex.
+			-- Freeze the object file now that it is in place.
+			-- Waiting until now to freeze it allows for freeze
+			-- hooks that prevent moving the file.
 			freezeContent dest
 			g <- Annex.gitRepo 
 			fs <- map (`fromTopFilePath` g)

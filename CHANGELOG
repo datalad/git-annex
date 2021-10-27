@@ -22,6 +22,11 @@ git-annex (8.20211012) UNRELEASED; urgency=medium
     when annex.private or remote.name.annex-private is set.
   * Fix using lookupkey and info inside a subdirectory.
     (Reversion in version 8.20211011)
+  * Call annex.freezecontent-command on the annex object file only
+    after it has been moved into place in annex/objects/. This allows
+    the hook to freeze the file in ways that prevent moving it, such as
+    removing the Windows delete permission.
+    Thanks, Reiko Asakura.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Oct 2021 14:09:13 -0400
 
