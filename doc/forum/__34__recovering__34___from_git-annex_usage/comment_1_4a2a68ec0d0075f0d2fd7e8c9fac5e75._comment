@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-10-27T16:20:32Z"
+ content="""
+Use `git remote set-url` to change the url of the remote
+that was on the server to the new path on the external hdd.
+"""]]
