@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-10-27T18:19:58Z"
+ content="""
+Interesting, thanks for that analysis.
+
+I don't like the prospect of adding hacks to git-annex on linux to deal
+with infelicities of WSL1. WSL should emulate linux well, and to the
+extent it does not, that seems Microsoft's problem, not mine.
+
+However, I wonder what that analysis implies about the other linked bugs
+with similar error messages, which are on OSX and (probably) Linux.
+
+What could be done to detect this drvfs problem is to add this case to the
+probing that's done for crippled filesystems. Then it would take the
+nohardlink path.
+
+But drvfs is used for /mnt/c/ etc, so that would make most all repos on WSL1 be
+treated as in a crippled filesystem, using unlocked adjusted branches, etc.
+
+Also, I seem to remember using git-annex in WSL1 in /mnt/c/ and git-annex
+add presumably working. So I wonder what has changed.
+"""]]
