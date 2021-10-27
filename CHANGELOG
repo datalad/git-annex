@@ -20,7 +20,7 @@ git-annex (8.20211012) UNRELEASED; urgency=medium
   * Avoid a some sqlite crashes on Windows SubSystem for Linux (WSL).
   * Fix bug that caused stale git-annex branch information to read
     when annex.private or remote.name.annex-private is set.
-  * Fix using lookupkey inside a subdirectory.
+  * Fix using lookupkey and info inside a subdirectory.
     (Reversion in version 8.20211011)
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Oct 2021 14:09:13 -0400
