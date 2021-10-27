@@ -132,7 +132,7 @@ runTransfer' ignorelock t afile stalldetection retrydecider transferaction =
 		(lck, inprogress) <- prep tfile createtfile mode
 		if inprogress && not ignorelock
 			then do
-				showNote "transfer already in progress, or unable to take transfer lock"
+				warning "transfer already in progress, or unable to take transfer lock"
 				return observeFailure
 			else do
 				v <- retry 0 info metervar $

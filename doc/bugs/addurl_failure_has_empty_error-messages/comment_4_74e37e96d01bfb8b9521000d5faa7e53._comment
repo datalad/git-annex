@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-10-27T18:40:48Z"
+ content="""
+Aha, that makes sense! addurl constructs a url-based Key to use while
+downloading, and the key transfer machinery prevents redundant downloads
+of the same Key at the same time.
+
+Arguably, the problem is not where the message gets put, but that
+it fails when adding an url to two different paths.
+
+I have, though, moved that message so it will appear in error-messages.
+"""]]
