@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-10-27T17:02:18Z"
+ content="""
+This kind of thing generally doesn't work because you have not updated
+.git/annex/index, so the next time git-annex updates the git-annex branch
+after that branch has been manually modified, it merges in the contents of
+that index, which tends to roll back the modifications. So I am doubtful
+that whatever you were trying to do would really have worked.
+
+What is happening here is that .git/annex/mergedrefs is used to keep 
+track of refs that have previously been merged into the git-annex branch.
+And it contains the hash of a/git-annex. So, git-annex knows it's merged
+that before and avoids merging it again. But of course, you fooled it by
+forcing the local git-annex branch to back before that merge happened.
+
+If you delete .git/annex/mergedrefs file, it will merge. Or the problem
+will self-correct after some more changes to the git-annex branch happen in
+the a repo, causing a/git-annex to get ahead of the previous merge point.
+
+The mergedrefs file is a speed hack, see
+[[!commit 154c9398309b52789bf15f6f6204cb22b0ffec82]].
+
+I suppose this problem could be avoided by recording the sha of the
+git-annex branch that the mergedrefs were merged into, and ignoring
+mergedrefs if the branch sha is not the same. Although it would then need to
+advance that recorded sha every time it modified the git-annex branch,
+which would be extra work.
+"""]]
