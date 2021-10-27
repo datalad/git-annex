@@ -372,11 +372,21 @@ checkRaw o a
  - a filename. It's not displayed then for output consistency, 
  - but is added to the json when available. -}
 startingAddUrl :: SeekInput -> URLString -> AddUrlOptions -> CommandPerform -> CommandStart
-startingAddUrl si url o p = starting "addurl" (ActionItemOther (Just url)) si $ do
+startingAddUrl si url o p = starting "addurl" ai si $ do
 	case fileOption (downloadOptions o) of
 		Nothing -> noop
 		Just file -> maybeShowJSON $ JSONChunk [("file", file)]
 	p
+  where
+	-- Avoid failure when the same url is downloaded concurrently
+	-- to two different files, by using OnlyActionOn with a key
+	-- based on the url. Note that this may not be the actual key
+	-- that is used for the download; later size information may be
+	-- available and get added to it. That's ok, this is only
+	-- used to prevent two threads running concurrently when that would
+	-- likely fail.
+	ai = OnlyActionOn urlkey (ActionItemOther (Just url))
+	urlkey = Backend.URL.fromUrl url Nothing
 
 showDestinationFile :: FilePath -> Annex ()
 showDestinationFile file = do

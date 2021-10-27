@@ -27,6 +27,8 @@ git-annex (8.20211012) UNRELEASED; urgency=medium
     the hook to freeze the file in ways that prevent moving it, such as
     removing the Windows delete permission.
     Thanks, Reiko Asakura.
+  * addurl: Support adding the same url to multiple files at the same
+    time when using -J with --batch --with-files.
 
  -- Joey Hess <id@joeyh.name>  Mon, 11 Oct 2021 14:09:13 -0400
 

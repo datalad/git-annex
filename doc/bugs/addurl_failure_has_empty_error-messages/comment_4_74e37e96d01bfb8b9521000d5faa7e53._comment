@@ -8,7 +8,7 @@ downloading, and the key transfer machinery prevents redundant downloads
 of the same Key at the same time.
 
 Arguably, the problem is not where the message gets put, but that
-it fails when adding an url to two different paths.
+it fails when adding an url to two different paths at the same time.
 
 I have, though, moved that message so it will appear in error-messages.
 """]]

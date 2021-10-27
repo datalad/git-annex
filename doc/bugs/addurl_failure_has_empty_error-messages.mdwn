@@ -2,3 +2,5 @@ While running `git-annex addurl --batch --with-files --jobs 10 --json --json-err
 
 [[!meta author=jwodder]]
 [[!tag projects/dandi]]
+
+> [[fixed|done]] --[[Joey]]

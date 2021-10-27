@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-10-27T18:56:23Z"
+ content="""
+The best solution I can find is for it to notice when another thread is
+downloading the same url, and wait until it finishes. Then proceed
+with downloading the url for a second time.
+
+It's not very satisfying to re-download. But once the url Key is downloaded,
+it does not keep that url Key populated, but hashes the content and moves
+the content to the final Key. It would be a real complication to
+communicate, across threads, what Key the content ended up at, and have the
+waiting thread use that. And addurl is already complicated well beyond a
+point I am comfortable with.
+
+Also, the content of an url can of course change over time. If I feed
+"$url foo" into git-annex addurl --batch -J10 and then some time
+later, I feed "$url bar", I might expect that file bar gets whatever
+content the url has now, not the content that the url had back when I added
+the same url to file foo. And if I cared about avoiding re-downloading,
+I could add the url to the first file, and then copy the annex link to the
+second file myself.
+
+Implemented this approach.
+"""]]
