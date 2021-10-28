@@ -187,7 +187,7 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        flavor: ["normal", "crippled-tmp", "crippled-home", "nfs-tmp"]
+        flavor: ["normal", "crippled-tmp", "crippled-home", "nfs-home"]
       fail-fast: false
     steps:
       - name: Checkout this repository
