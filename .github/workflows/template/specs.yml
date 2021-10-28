@@ -7,9 +7,8 @@
     DEB_SIGN_KEYID: 13A1093296154584245E0300C98FC49D36DAB17F
     DEB_BUILD_OPTIONS: nocheck
     bbuild_log: git-annex-build.log
-  test_annex_flavors: [normal, crippled-tmp, crippled-home, nfs-tmp]
-    # TODO: Add nfs-home
-    # https://git-annex.branchable.com/bugs/running_tests_on_NFS_HOME_does_not_exit_cleanly__58___gpgtmp/
+  test_annex_flavors: [normal, crippled-tmp, crippled-home, nfs-home]
+    # nfs-tmp was removed/replaced with nfs-home since annex started to use TMPDIR for gpg, and tests started to fail
   artifact_basename: git-annex-debianstandalone-packages
   artifact_install_steps:
     - sudo dpkg -i git-annex*.deb
