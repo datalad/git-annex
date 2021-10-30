@@ -1,0 +1,9 @@
+Hi everybody,
+
+I have an annex repository on an external hard drive. The repository has been corrupted, I think because the hard drive was disconnected when I was syncing the repo. In any case, I have tried fixing it with git-annex-repair. However, the error messages complain about not being able to read from the remote respositories, even when they are available.
+
+One possible issue is that I am trying to repair the hard drive from a different computer than it normally runs on. This means that I had to change the URLs for the remotes before running git-annex-repair. They are now what they should be on the current computer but, like I said, they are not recognized when I run git-annex-repair.
+
+Any thoughts on how to solve this issue? I really appreciate any help. Please let me know if there is more information you need from me.
+
+Thanks very much.
