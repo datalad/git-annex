@@ -1,3 +1,5 @@
 When setting file metadata using `git-annex metadata --batch --json --json-error-messages`, if the "fields" field of an input line is not 100% an object whose values are arrays of strings, then git-annex will silently ignore the "fields" field and act as though the user simply requested the metadata for the given file/key.  It would be more useful if, whenever the input contains a "fields" field that does not match the required schema, git annex treats it as an error.  This would make it easier for users to figure out that they are doing something wrong.
 
 [[!meta author=jwodder]]
+
+> [[fixed|done]] --[[Joey]]

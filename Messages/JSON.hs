@@ -1,6 +1,6 @@
 {- git-annex command-line JSON output and input
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -26,6 +26,7 @@ module Messages.JSON (
 	DualDisp(..),
 	ObjectMap(..),
 	JSONActionItem(..),
+	AddJSONActionItemFields(..),
 ) where
 
 import Control.Applicative
@@ -78,7 +79,7 @@ start command file key si _ = case j of
 		{ itemCommand = Just command
 		, itemKey = key
 		, itemFile = fromRawFilePath <$> file
-		, itemAdded = Nothing
+		, itemFields = Nothing :: Maybe Bool
 		, itemSeekInput = si
 		}
 
@@ -179,19 +180,21 @@ data JSONActionItem a = JSONActionItem
 	{ itemCommand :: Maybe String
 	, itemKey :: Maybe Key
 	, itemFile :: Maybe FilePath
-	, itemAdded :: Maybe a -- for additional fields added by `add`
+	, itemFields :: Maybe a
 	, itemSeekInput :: SeekInput
 	}
 	deriving (Show)
 
-instance ToJSON' (JSONActionItem a) where
+instance ToJSON' a => ToJSON' (JSONActionItem a) where
 	toJSON' i = object $ catMaybes
 		[ Just $ "command" .= itemCommand i
 		, case itemKey i of
 			Just k -> Just $ "key" .= toJSON' k
 			Nothing -> Nothing
 		, Just $ "file" .= toJSON' (itemFile i)
-		-- itemAdded is not included; must be added later by 'add'
+		, case itemFields i of
+			Just f -> Just $ "fields" .= toJSON' f
+			Nothing -> Nothing
 		, Just $ "input" .= fromSeekInput (itemSeekInput i)
 		]
 
@@ -200,8 +203,14 @@ instance FromJSON a => FromJSON (JSONActionItem a) where
 		<$> (v .:? "command")
 		<*> (maybe (return Nothing) parseJSON =<< (v .:? "key"))
 		<*> (v .:? "file")
-		<*> parseadded
+		<*> (v .:? "fields")
 		<*> pure (SeekInput [])
-	  where
-		parseadded = (Just <$> parseJSON (Object v)) <|> return Nothing
 	parseJSON _ = mempty
+
+-- This can be used to populate the "fields" after a JSONActionItem
+-- has already been started.
+newtype AddJSONActionItemFields a = AddJSONActionItemFields a
+	deriving (Show)
+
+instance ToJSON' a => ToJSON' (AddJSONActionItemFields a) where
+	toJSON' (AddJSONActionItemFields a) = object [ ("fields", toJSON' a) ]

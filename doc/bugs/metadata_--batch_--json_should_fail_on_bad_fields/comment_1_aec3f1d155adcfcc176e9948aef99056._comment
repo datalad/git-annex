@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-11-01T17:49:43Z"
+ content="""
+For example with this input:
+
+	{"file":"foo","fields":{"author":[true]}}
+
+It leaves the author field set to whatever it was before.
+
+Fixed.
+"""]]

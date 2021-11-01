@@ -12,7 +12,7 @@ import Annex.MetaData
 import Annex.VectorClock
 import Logs.MetaData
 import Annex.WorkTree
-import Messages.JSON (JSONActionItem(..))
+import Messages.JSON (JSONActionItem(..), AddJSONActionItemFields(..))
 import Types.Messages
 import Utility.Aeson
 import Limit
@@ -125,7 +125,7 @@ perform c o k = case getSet o of
 cleanup :: Key -> CommandCleanup
 cleanup k = do
 	m <- getCurrentMetaData k
-	case toJSON' (MetaDataFields m) of
+	case toJSON' (AddJSONActionItemFields m) of
 		Object o -> maybeShowJSON $ AesonObject o
 		_ -> noop
 	showLongNote $ unlines $ concatMap showmeta $
@@ -135,32 +135,13 @@ cleanup k = do
 	unwrapmeta (f, v) = (fromMetaField f, map fromMetaValue (S.toList v))
 	showmeta (f, vs) = map ((T.unpack f ++ "=") ++) (map decodeBS vs)
 
--- Metadata serialized to JSON in the field named "fields" of
--- a larger object.
-newtype MetaDataFields = MetaDataFields MetaData
-	deriving (Show)
-
-instance ToJSON' MetaDataFields where
-	toJSON' (MetaDataFields m) = object [ (fieldsField, toJSON' m) ]
-
-instance FromJSON MetaDataFields where
-	parseJSON (Object v) = do
-		f <- v .: fieldsField
-		case f of
-			Nothing -> return (MetaDataFields emptyMetaData)
-			Just v' -> MetaDataFields <$> parseJSON v'
-	parseJSON _ = fail "expected an object"
-
-fieldsField :: T.Text
-fieldsField = T.pack "fields"
-
 parseJSONInput :: String -> Annex (Either String (Either RawFilePath Key, MetaData))
 parseJSONInput i = case eitherDecode (BU.fromString i) of
 	Left e -> return (Left e)
 	Right v -> do
-		let m = case itemAdded v of
+		let m = case itemFields v of
 			Nothing -> emptyMetaData
-			Just (MetaDataFields m') -> m'
+			Just m' -> m'
 		case (itemKey v, itemFile v) of
 			(Just k, _) -> return $
 				Right (Right k, m)
