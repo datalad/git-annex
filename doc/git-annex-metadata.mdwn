@@ -133,7 +133,9 @@ the modified file.
   enable `--json` along with `--batch`.
 
   In batch mode, git-annex reads lines from stdin, which contain
-  JSON objects. It replies to each input with an output JSON object.
+  JSON objects. It replies to each input annexed file
+  with an output JSON object. (But if the file is not an annexed file,
+  an empty line will be output.)
 
   The format of the JSON sent to git-annex can be the same as the JSON that
   it outputs. Or, a simplified version. Only the "file" (or "key") field
@@ -158,9 +160,6 @@ the modified file.
   To remove the author of file foo:
 
 	{"file":"foo","fields":{"author":[]}}
-
-  Note that matching options do not affect the files that are
-  processed when in batch mode.
 
 * Also the [[git-annex-common-options]](1) can be used.
 

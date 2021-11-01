@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-11-01T16:27:48Z"
+ content="""
+For consistency with other --batch, I've made it reply with a blank line
+when the input is not an annexed file.
+
+Do note that --json-error-messages cannot cram every possible kind of error
+message into a json object. In particular, errors that occur at startup,
+and not when acting on a particular file or key, do not fit into the json
+schema.
+"""]]

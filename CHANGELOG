@@ -1,3 +1,10 @@
+git-annex (8.20211029) UNRELEASED; urgency=medium
+
+  * metadata --batch: Avoid crashing when a non-annexed file is input,
+    instead output a blank line like other batch commands do.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 01 Nov 2021 13:19:46 -0400
+
 git-annex (8.20211028) upstream; urgency=medium
 
   * Removed support for accessing git remotes that use versions of

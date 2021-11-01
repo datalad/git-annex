@@ -94,7 +94,7 @@ seek o = case batchOption o of
 		JSONOutput _ -> ifM limited
 			( giveup "combining --batch with file matching options is not currently supported"
 			, batchInput fmt parseJSONInput 
-				(commandAction . startBatch)
+				(commandAction . batchCommandStart . startBatch)
 			)
 		_ -> giveup "--batch is currently only supported in --json mode"
 
@@ -176,7 +176,7 @@ startBatch (si, (i, (MetaData m))) = case i of
 		mk <- lookupKey f
 		case mk of
 			Just k -> go k (mkActionItem (k, AssociatedFile (Just f)))
-			Nothing -> giveup $ "not an annexed file: " ++ fromRawFilePath f
+			Nothing -> return Nothing
 	Right k -> go k (mkActionItem k)
   where
 	go k ai = starting "metadata" ai si $ do

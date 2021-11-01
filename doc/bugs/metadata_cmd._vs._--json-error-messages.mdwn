@@ -4,3 +4,5 @@ When invoking `git-annex metadata --batch --json --json-error-messages`, if an e
 
 [[!meta author=jwodder]]
 [[!tag projects/dandi]]
+
+> [[fixed|done]] --[[Joey]]
