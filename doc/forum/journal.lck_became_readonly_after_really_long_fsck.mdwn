@@ -1,0 +1,16 @@
+i recently ran a git annex fsck --all command on my really large backup drive, the check ran all the way through the night, and suddenly it stopped with this error. after getting this error, i tried running a git annex sync, but got the same (read-only file system) error.  does anyone have any insight about how to fix this? Or better yet, what might have happened?
+
+
+    SHA256E-s3586436--8d7effd412a3225663569a481a5d2fc51c9bf321316119656ce287efa00d69c7.m4a (checksum...) ok
+    fsck SHA256E-s502--fa9835b9b4655c834732892eb93a3106cdee52b0b1deabc2912742d05323693b.ini
+    ** No known copies exist of SHA256E-s502--fa9835b9b4655c834732892eb93a3106cdee52b0b1deabc2912742d05323693b.ini
+    (Avoid this check by running: git annex dead --key )   
+    failed
+    fsck SHA256E-s432681--7a504d72fbbd89c2c05603beb7fedff1d89cc38b6b4a9903f5eabf94dc1f840e.JPG (checksum...) ok
+    fsck SHA256E-s3092745--e682bd862da64ad7d3a81b7dd54700e1536057f3c83972b452eba5f40037db6b.JPG (checksum...) ok
+    fsck SHA256E-s306570--d7cab655cb0bbd2de09008888101724d37ceef4060d72ea477cc3cd1d0da20b0.jpg (checksum...) ok
+    fsck SHA256E-s3814174--00bba1e6cb5d8e295a3299a24921044dc3b5a57a86420d65fe796d5505c41aee.mp4 (checksum...) ok
+    fsck SHA256E-s2345012--9530b1b32b3b1198c42aa4919a5b34698cc75adc9abf5b7b8ca02f7962c66a25.MOV (checksum...) ok
+    fsck SHA256E-s42254--cb1ae72d7b3a7bddbf5a93142cc1eed43bb5ceacf8fc3920de7876eafb2ea044.jpg (checksum...) ok
+    fsck SHA256E-s5619907--a190d2f9805d0c9deb1bacead9ce89b895fc21bf7cef38bcf97a3841693e8c8f.ogg (checksum...) ok
+    git-annex: .git/annex/journal.lck: openFd: permission denied (Read-only file system)

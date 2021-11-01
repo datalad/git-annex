@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2021-10-30T16:45:52Z"
+ content="""
+This has nothing to do with git-annex. For some reason your file system went read-only, you have to look at your kernel log (`dmesg`) for more details.
+"""]]
