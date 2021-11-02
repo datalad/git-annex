@@ -1,0 +1,9 @@
+I accidentally ran git annex importfeed without using the "--relaxed" option. This means that I know have a great many files in the annex with keys that look like this:
+
+"URL-s108794401--https://media.blubrry.com/thedi-7c04aebc2e18898889af95c74ab3edf0"
+
+The problem is that these keys seem to encode a size ("s108794401"), and when I attempt to fetch them from their URLs, git annex detects that the size has changed. I'd like to convert all such files to instead use a key without a size. For example:
+
+"URL--https://media.blubrry.com/thedi-7c04aebc2e18898889af95c74ab3edf0"
+
+What's the best way to do this? I tried "git annex migrate ... --backend URL" to no avail.
