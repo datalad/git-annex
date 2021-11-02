@@ -26,3 +26,5 @@ Doing a `git checkout .` at this point took about a minute. In comparison doing 
 ### Please provide any additional information below.
 
 The relevance of this problem is that I tried to go from a lock-adjusted branch to its basis with about 50000 unlocked files with `git checkout`. It was taking longer than expected and there were many warnings about a cosmetic problem and advised me to run `git update-index -q --refresh <path>`. Eventually I deleted the entire working tree, did `git reset --hard` to recreate the unlocked file stubs, locked every file and unlocked them again.
+
+> [[dup|done]] --[[Joey]]

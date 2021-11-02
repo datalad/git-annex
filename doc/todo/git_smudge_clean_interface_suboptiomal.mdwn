@@ -122,3 +122,28 @@ The best fix would be to improve git's smudge/clean interface:
 > 
 > If this was possible, it should speed up git checkout etc which use the
 > smudge filter. --[[Joey]]
+
+> > Tried that, it looks like when the long-running filter process
+> > sends only capability=smudge, and not clean, git add does not
+> > fall back to running filter.annex.clean. So unfortunately,
+> > it's not that easy.
+> >
+> > To proceed down this path, git-annex would need to use
+> > the long-running filter process for clean too. So `git add`
+> > would end up piping the whole content of large files over to git-annex,
+> > which would have to read and discard that data. This would
+> > probably make git-annex twice as slow for large files, although
+> > it would speed up git add of many small files. git-annex add
+> > could be used to work around any speed impact.
+> > 
+> > Or git could be extended
+> > with a capability in the protocol that lets the clean filter read the
+> > file content from disk, rather than having it piped into it. The
+> > long-running filter process protocol does have a design that would let
+> > it be extended that way.
+> >
+> > Or, I suppose git could be changed to run the clean filter when
+> > the long-running process does not support capability=clean. Maybe
+> > that would be more appealing to the git devs. Although since
+> > it currently does not run it, git-annex would need to somehow
+> > detect the old version of git and still work. --[[Joey]]
