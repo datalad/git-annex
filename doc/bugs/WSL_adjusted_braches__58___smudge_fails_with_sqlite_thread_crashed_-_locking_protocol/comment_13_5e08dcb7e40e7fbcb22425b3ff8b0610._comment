@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2021-11-02T19:20:23Z"
+ content="""
+@asakurareiko could you try this patch, and see if it
+fixes some/all of the remaining problems?
+
+	diff --git a/Database/Handle.hs b/Database/Handle.hs
+	index 9eb32b4e2..828c26df4 100644
+	--- a/Database/Handle.hs
+	+++ b/Database/Handle.hs
+	@@ -187,7 +187,7 @@ runSqliteRobustly tablename db a = do
+	 					-- will stop being busy eventually.
+	 					briefdelay
+	 					settle conn retries
+	-				| e == Sqlite.ErrorIO -> do
+	+				| e == Sqlite.ErrorIO || e == Sqlite.ErrorProtocol -> do
+ 						-- Could be a real IO error,
+ 						-- so don't retry indefinitely.
+	 					Sqlite.close conn
+
+If that doesn't work, it's possible this version might somehow work better.
+At least it would be worth a try as well:
+
+	diff --git a/Database/Handle.hs b/Database/Handle.hs
+	index 9eb32b4e2..e146ba675 100644
+	--- a/Database/Handle.hs
+	+++ b/Database/Handle.hs
+	@@ -182,7 +182,7 @@ runSqliteRobustly tablename db a = do
+	 		case r of
+ 				Right _ -> return conn
+	 			Left ex@(Sqlite.SqliteException { Sqlite.seError = e })
+	-				| e == Sqlite.ErrorBusy -> do
+	+				| e == Sqlite.ErrorBusy || e == Sqlite.ErrorProtocol-> do
+	 					-- Wait and retry any number of times; it 
+ 						-- will stop being busy eventually.
+	 					briefdelay
+
+This second one might cause git-annex to get stuck and retry forever though,
+if it doesn't work.
+"""]]
