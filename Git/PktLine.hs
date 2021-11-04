@@ -19,6 +19,9 @@ module Git.PktLine (
 	writePktLine,
 	flushPkt,
 	isFlushPkt,
+	readUntilFlushPkt,
+	readUntilFlushPktOrSize,
+	discardUntilFlushPkt,
 ) where
 
 import System.IO
@@ -115,3 +118,37 @@ flushPkt = PktLine mempty
 
 isFlushPkt :: PktLine -> Bool
 isFlushPkt (PktLine b) = b == mempty
+
+{- Reads PktLines until a flushPkt (or EOF), 
+ - and returns all except the flushPkt -}
+readUntilFlushPkt :: IO [PktLine]
+readUntilFlushPkt = go []
+  where
+	go l = readPktLine stdin >>= \case
+		Just pktline | not (isFlushPkt pktline) -> go (pktline:l)
+		_ -> return (reverse l)
+
+{- Reads PktLines until at least the specified number of bytes have been
+ - read, or until a flushPkt (or EOF). Returns Right if it did read a
+ - flushPkt/EOF, and Left if there is still content leftover that needs to
+ - be read. -}
+readUntilFlushPktOrSize :: Int -> IO (Either [PktLine] [PktLine])
+readUntilFlushPktOrSize = go []
+  where
+	go l n = readPktLine stdin >>= \case
+		Just pktline
+			| isFlushPkt pktline -> return (Right (reverse l))
+			| otherwise -> 
+				let len = B.length (pktLineToByteString pktline)
+				    n' = n - len
+				in if n' <= 0
+					then return (Left (reverse (pktline:l)))
+					else go (pktline:l) n'
+		Nothing -> return (Right (reverse l))
+
+{- Reads PktLines until a flushPkt (or EOF), and throws them away. -}
+discardUntilFlushPkt :: IO ()
+discardUntilFlushPkt = readPktLine stdin >>= \case
+	Just pktline | isFlushPkt pktline -> return ()
+	Nothing -> return ()
+	_ -> discardUntilFlushPkt
