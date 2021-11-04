@@ -1,0 +1,26 @@
+Would you rather that `git checkout` got a lot faster at checking out a lot
+of files, and `git add` got a lot faster at adding a lot of small files, if
+the tradeoff was that `git add` and `git commit -a` got slower at adding
+large files to the annex than they are now?
+
+Being able to make that choice is what I'm working on now. Of course,
+we'd rather it were all fast, but due to 
+[[todo/git_smudge_clean_interface_suboptiomal]], that is not possible
+without improvements to git. But I seem to have a plan that will
+work around enough of the problems to let that choice be made.
+
+Today I've been laying the groundwork, by implementing git's
+pkt-line interface, and the long-running filter process protocol.
+Next step will be to add support for that in `git-annex smudge`,
+so that users who want to can enable it with:
+
+	git config filter.annex.process "git-annex smudge --process"
+
+I can imagine that becoming enabled by default at some point in v9, if most
+users prefer it over the current method. Which would still be available
+by unsetting the config.
+
+----
+
+Today's work was sponsored by Mark Reidenbach
+[on Patreon](https://patreon.com/joeyh)

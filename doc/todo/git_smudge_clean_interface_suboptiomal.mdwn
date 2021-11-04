@@ -135,6 +135,8 @@ The best fix would be to improve git's smudge/clean interface:
 > > probably make git-annex twice as slow for large files, although
 > > it would speed up git add of many small files. git-annex add
 > > could be used to work around any speed impact.
+> > (The long-running-smudge branch has some preliminary work to doing
+> > this.)
 > > 
 > > Or git could be extended
 > > with a capability in the protocol that lets the clean filter read the
