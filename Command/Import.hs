@@ -43,7 +43,7 @@ cmd = notBareRepo $
 	withGlobalOptions opts $
 		command "import" SectionCommon 
 			"add a tree of files to the repository"
-			(paramPaths ++ "|BRANCH[:SUBDIR]")
+			(paramPaths ++ "|BRANCH")
 			(seek <$$> optParser)
   where
 	opts =
