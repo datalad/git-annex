@@ -38,6 +38,19 @@ import Utility.FileSystemEncoding
 newtype PktLine = PktLine B.ByteString
 	deriving (Show)
 
+{- Maximum possible length of the string encoded in PktLine;
+ - the length header takes up 4 bytes.
+ -
+ - While the header can express lengths up to 65535,
+ - git actually does not support packets larger than 65520
+ - (including the header). See "LARGE_PACKET_MAX" in the git source code.
+ -}
+maxPktLineLength :: Int
+maxPktLineLength = 65520 - pktLineHeaderLength
+
+pktLineHeaderLength :: Int
+pktLineHeaderLength = 4
+
 pktLineToByteString :: PktLine -> B.ByteString
 pktLineToByteString (PktLine b) = b
 
@@ -58,11 +71,11 @@ pktLineToString (PktLine b) =
  - there is a protocol error. -}
 readPktLine :: Handle -> IO (Maybe PktLine)
 readPktLine h = do
-	lenb <- B.hGet h 4
-	if B.length lenb < 4
+	lenb <- B.hGet h pktLineHeaderLength
+	if B.length lenb < pktLineHeaderLength
 		then return Nothing
 		else case A8.parseOnly (A8.hexadecimal <* A8.endOfInput) lenb of
-			Right len -> go (len - 4) mempty
+			Right len -> go (len - pktLineHeaderLength) mempty
 			_ -> return Nothing
   where
 	go n b
@@ -99,19 +112,9 @@ writePktLine h (PktLine b)
 		B.hPut h "0000"
 		hFlush h
 	| otherwise = do
-		hPutStr h $ printf "%04x" (B.length b + 4)
+		hPutStr h $ printf "%04x" (B.length b + pktLineHeaderLength)
 		B.hPut h b
 		hFlush h
-
-{- Maximum possible length of the string encoded in PktLine;
- - the length header takes up 4 bytes.
- -
- - While the 4 byte length header can express lengths up to 65535,
- - git actually does not support packets larger than 65520 (including the
- - header). See "LARGE_PACKET_MAX" in the git source code.
- -}
-maxPktLineLength :: Int
-maxPktLineLength = 65520 - 4
 
 flushPkt :: PktLine
 flushPkt = PktLine mempty
