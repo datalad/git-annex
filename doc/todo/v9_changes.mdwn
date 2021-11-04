@@ -11,3 +11,9 @@ could change and if it does, these things could be included.
   core.sharedRepository is set. See <https://git-annex.branchable.com/bugs/shared_setting_of_git_causes_annex__39__ed_files_to_be_writeable__33__/>
 
   Note that windows already uses a separate lock file.
+
+* Possibly enable `git-annex filter-process` by default. If the tradeoffs
+  seem worth it.
+
+  It does not currently incrementally hash, so implementing that first
+  would imporve the tradeoffs.
