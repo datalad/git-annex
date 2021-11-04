@@ -49,7 +49,7 @@ pktLineToString (PktLine b) =
 	let s = decodeBS b
 	in case lastMaybe s of
 		Just '\n' -> beginning s
-		Nothing -> s
+		_ -> s
 
 {- Reads the next PktLine from a Handle. Returns Nothing on EOF or when
  - there is a protocol error. -}
