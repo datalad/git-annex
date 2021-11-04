@@ -221,10 +221,18 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 			let updatetmpindex = do
 				r' <- liftIO $ Git.Env.addGitEnv r Git.Index.indexEnv
 					=<< Git.Index.indexEnvVal (toRawFilePath tmpindex)
-				-- Avoid git warning about CRLF munging.
 				let r'' = r' { gitGlobalOpts = gitGlobalOpts r' ++
+					-- Avoid git warning about CRLF munging.
 					[ Param "-c"
 					, Param $ "core.safecrlf=" ++ boolConfig False
+					-- Avoid using git-annex
+					-- filter-process, because git
+					-- pipes the content of annexed
+					-- files into it; using
+					-- git-annex smudge --clean is
+					-- probably faster.
+					, Param "-c"
+					, Param $ "filter.annex.process="
 					] }
 				runsGitAnnexChildProcessViaGit' r'' $ \r''' ->
 					liftIO $ Git.UpdateIndex.refreshIndex r''' $ \feed ->
