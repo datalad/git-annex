@@ -101,9 +101,14 @@ writePktLine h (PktLine b)
 		hFlush h
 
 {- Maximum possible length of the string encoded in PktLine;
- - the length header takes up 4 bytes. -}
+ - the length header takes up 4 bytes.
+ -
+ - While the 4 byte length header can express lengths up to 65535,
+ - git actually does not support packets larger than 65520 (including the
+ - header). See "LARGE_PACKET_MAX" in the git source code.
+ -}
 maxPktLineLength :: Int
-maxPktLineLength = 65535 - 4
+maxPktLineLength = 65520 - 4
 
 flushPkt :: PktLine
 flushPkt = PktLine mempty

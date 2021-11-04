@@ -58,6 +58,7 @@ tree.
 # SEE ALSO
 
 [[git-annex]](1)
+[[git-annex-filter-process]](1)
 
 # AUTHOR
 

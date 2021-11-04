@@ -113,6 +113,7 @@ import qualified Command.P2P
 import qualified Command.Proxy
 import qualified Command.DiffDriver
 import qualified Command.Smudge
+import qualified Command.FilterProcess
 import qualified Command.Undo
 import qualified Command.Version
 import qualified Command.RemoteDaemon
@@ -226,6 +227,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexGlobalOption
 	, Command.Proxy.cmd
 	, Command.DiffDriver.cmd
 	, Command.Smudge.cmd
+	, Command.FilterProcess.cmd
 	, Command.Undo.cmd
 	, Command.Version.cmd
 	, Command.RemoteDaemon.cmd

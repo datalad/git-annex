@@ -745,6 +745,7 @@ Executable git-annex
     Command.Expire
     Command.Export
     Command.FilterBranch
+    Command.FilterProcess
     Command.Find
     Command.FindRef
     Command.Fix
@@ -871,6 +872,7 @@ Executable git-annex
     Git.FileMode
     Git.FilePath
     Git.Filename
+    Git.FilterProcess
     Git.Fsck
     Git.GCrypt
     Git.HashObject
@@ -882,6 +884,7 @@ Executable git-annex
     Git.LsTree
     Git.Merge
     Git.Objects
+    Git.PktLine
     Git.Queue
     Git.Ref
     Git.RefLog

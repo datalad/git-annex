@@ -4,6 +4,10 @@ git-annex (8.20211029) UNRELEASED; urgency=medium
     instead output a blank line like other batch commands do.
   * metadata --batch --json: Reject input whose "fields" does not consist
     of arrays of strings. Such invalid input used to be silently ignored.
+  * filter-process: New command that can make git add/checkout faster when
+    there are a lot of unlocked annexed files or non-annexed files, but that
+    also makes git add of large annexed files slower. Use it by running:
+    git config filter.annex.process 'git-annex filter-process'
 
  -- Joey Hess <id@joeyh.name>  Mon, 01 Nov 2021 13:19:46 -0400
 

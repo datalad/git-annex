@@ -15,17 +15,18 @@ module Git.FilterProcess (
 	Version(..),
 	Capability(..),
 	readUntilFlushPkt,
+	readUntilFlushPktOrSize,
 	discardUntilFlushPkt,
 	longRunningProcessHandshake,
 	longRunningFilterProcessHandshake,
 	FilterRequest(..),
 	getFilterRequest,
+	respondFilterRequest,
 ) where
 
 import Common
 import Git.PktLine
 
-import System.IO
 import qualified Data.ByteString as B
 
 {- This is a message like "git-filter-client" or "git-filter-server" -}
@@ -84,6 +85,24 @@ readUntilFlushPkt = go []
 	go l = readPktLine stdin >>= \case
 		Just pktline | not (isFlushPkt pktline) -> go (pktline:l)
 		_ -> return (reverse l)
+
+{- Reads PktLines until at least the specified number of bytes have been
+ - read, or until a flushPkt (or EOF). Returns Right if it did read a
+ - flushPkt/EOF, and Left if there is still content leftover that needs to
+ - be read. -}
+readUntilFlushPktOrSize :: Int -> IO (Either [PktLine] [PktLine])
+readUntilFlushPktOrSize = go []
+  where
+	go l n = readPktLine stdin >>= \case
+		Just pktline
+			| isFlushPkt pktline -> return (Right (reverse l))
+			| otherwise -> 
+				let len = B.length (pktLineToByteString pktline)
+				    n' = n - len
+				in if n' <= 0
+					then return (Left (reverse (pktline:l)))
+					else go (pktline:l) n'
+		Nothing -> return (Right (reverse l))
 
 {- Reads PktLines until a flushPkt (or EOF), and throws them away. -}
 discardUntilFlushPkt :: IO ()

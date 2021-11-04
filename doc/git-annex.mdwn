@@ -713,6 +713,13 @@ content from the key-value store.
 
   See [[git-annex-smudge]](1) for details.
 
+* `filter-process`
+
+  An alternative implementation of a git filter driver, that is faster
+  in some situations and slower in others than `git-annex smudge`.
+
+  See [[git-annex-filter-process]](1) for details.
+
 * `findref [ref]`
 
   Lists files in a git ref. (deprecated)

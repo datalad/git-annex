@@ -74,14 +74,18 @@ seek UpdateOption = commandAction update
 smudge :: FilePath -> CommandStart
 smudge file = do
 	b <- liftIO $ L.hGetContents stdin
-	case parseLinkTargetOrPointerLazy b of
-		Nothing -> noop
-		Just k -> do
-			topfile <- inRepo (toTopFilePath (toRawFilePath file))
-			Database.Keys.addAssociatedFile k topfile
-			void $ smudgeLog k topfile
+	smudge' file b
 	liftIO $ L.putStr b
 	stop
+
+-- Handles everything except the IO of the file content.
+smudge' :: FilePath -> L.ByteString -> Annex ()
+smudge' file b = case parseLinkTargetOrPointerLazy b of
+	Nothing -> noop
+	Just k -> do
+		topfile <- inRepo (toTopFilePath (toRawFilePath file))
+		Database.Keys.addAssociatedFile k topfile
+		void $ smudgeLog k topfile
 
 -- Clean filter is fed file content on stdin, decides if a file
 -- should be stored in the annex, and outputs a pointer to its
@@ -90,50 +94,72 @@ clean :: RawFilePath -> CommandStart
 clean file = do
 	Annex.BranchState.disableUpdate -- optimisation
 	b <- liftIO $ L.hGetContents stdin
-	ifM fileoutsiderepo
-		( liftIO $ L.hPut stdout b
-		, do
-			-- Avoid a potential deadlock.
-			Annex.changeState $ \s -> s
-				{ Annex.insmudgecleanfilter = True }
-			go b
-		)
+	let passthrough = liftIO $ L.hPut stdout b
+	-- Before git 2.5, failing to consume all stdin here would
+	-- cause a SIGPIPE and crash it.
+	-- Newer git catches the signal and stops sending, which is
+	-- much faster. (Also, git seems to forget to free memory
+	-- when sending the file, so the less we let it send, the
+	-- less memory it will waste.)
+	let discardreststdin = if Git.BuildVersion.older "2.5"
+		then L.length b `seq` return ()
+		else liftIO $ hClose stdin
+	let emitpointer = liftIO . S.hPut stdout . formatPointer
+	clean' file (parseLinkTargetOrPointerLazy b)
+		passthrough
+		discardreststdin
+		emitpointer
 	stop
   where
-	go b = case parseLinkTargetOrPointerLazy b of
+
+-- Handles everything except the IO of the file content.
+clean'
+	:: RawFilePath
+	-> Maybe Key
+	-- ^ If the content provided by git is an annex pointer,
+	-- this is the key it points to.
+	-> Annex ()
+	-- ^ passthrough: Feed the content provided by git back out to git.
+	-> Annex ()
+	-- ^ discardreststdin: Called when passthrough will not be called,
+	-- this has to take care of reading the content provided by git, or
+	-- otherwise dealing with it.
+	-> (Key -> Annex ())
+	-- ^ emitpointer: Emit a pointer file for the key.
+	-> Annex ()
+clean' file mk passthrough discardreststdin emitpointer =
+	ifM (fileOutsideRepo file)
+		( passthrough
+		, inSmudgeCleanFilter go
+		)
+  where
+
+	go = case mk of
 		Just k -> do
 			addingExistingLink file k $ do
 				getMoveRaceRecovery k file
-				liftIO $ L.hPut stdout b
+				passthrough
 		Nothing -> inRepo (Git.Ref.fileRef file) >>= \case
 			Just fileref -> do
 				indexmeta <- catObjectMetaData fileref
 				oldkey <- case indexmeta of
 					Just (_, sz, _) -> catKey' fileref sz
 					Nothing -> return Nothing
-				go' b indexmeta oldkey
-			Nothing -> liftIO $ L.hPut stdout b
-	go' b indexmeta oldkey = ifM (shouldAnnex file indexmeta oldkey)
+				go' indexmeta oldkey
+			Nothing -> passthrough
+	go' indexmeta oldkey = ifM (shouldAnnex file indexmeta oldkey)
 		( do
-			-- Before git 2.5, failing to consume all stdin here
-			-- would cause a SIGPIPE and crash it.
-			-- Newer git catches the signal and stops sending,
-			-- which is much faster. (Also, git seems to forget
-			-- to free memory when sending the file, so the
-			-- less we let it send, the less memory it will waste.)
-			if Git.BuildVersion.older "2.5"
-				then L.length b `seq` return ()
-				else liftIO $ hClose stdin
+			discardreststdin
 
 			-- Optimization for the case when the file is already
 			-- annexed and is unmodified.
 			case oldkey of
 				Nothing -> doingest Nothing
 				Just ko -> ifM (isUnmodifiedCheap ko file)
-					( liftIO $ emitPointer ko
+					( emitpointer ko
 					, updateingest ko
 					)
-		, liftIO $ L.hPut stdout b
+		, passthrough
 		)
 	
 	-- Use the same backend that was used before, when possible.
@@ -150,7 +176,7 @@ clean file = do
 		-- Can't restage associated files because git add
 		-- runs this and has the index locked.
 		let norestage = Restage False
-		liftIO . emitPointer
+		emitpointer
 			=<< postingest
 			=<< (\ld -> ingest' preferredbackend nullMeterUpdate ld Nothing norestage)
 			=<< lockDown cfg (fromRawFilePath file)
@@ -166,12 +192,22 @@ clean file = do
 		, checkWritePerms = True
 		}
 
-	-- git diff can run the clean filter on files outside the
-	-- repository; can't annex those
-	fileoutsiderepo = do
-	        repopath <- liftIO . absPath =<< fromRepo Git.repoPath
-		filepath <- liftIO $ absPath file
-		return $ not $ dirContains repopath filepath
+-- git diff can run the clean filter on files outside the
+-- repository; can't annex those
+fileOutsideRepo :: RawFilePath -> Annex Bool
+fileOutsideRepo file = do
+        repopath <- liftIO . absPath =<< fromRepo Git.repoPath
+	filepath <- liftIO $ absPath file
+	return $ not $ dirContains repopath filepath
+
+-- Avoid a potential deadlock.
+inSmudgeCleanFilter :: Annex a -> Annex a
+inSmudgeCleanFilter = bracket setup cleanup . const
+  where
+	setup = Annex.changeState $ \s -> s
+		{ Annex.insmudgecleanfilter = True }
+	cleanup () = Annex.changeState $ \s -> s
+		{ Annex.insmudgecleanfilter = False }
 
 -- If annex.largefiles is configured (and not disabled by annex.gitaddtoannex
 -- being set to false), matching files are added to the annex and the rest to
@@ -244,9 +280,6 @@ shouldAnnex file indexmeta moldkey = do
 					else cont
 			_ -> cont
 		_ -> cont
-
-emitPointer :: Key -> IO ()
-emitPointer = S.putStr . formatPointer
 
 -- Recover from a previous race between eg git mv and git-annex get.
 -- That could result in the file remaining a pointer file, while
