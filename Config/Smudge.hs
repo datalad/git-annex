@@ -67,4 +67,5 @@ bypassSmudgeConfig :: [CommandParam]
 bypassSmudgeConfig = map Param
 	[ "-c", "filter.annex.smudge="
 	, "-c", "filter.annex.clean="
+	, "-c", "filter.annex.process="
 	]
