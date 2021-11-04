@@ -16,7 +16,8 @@ to git. git-lfs uses it that way.
 
 The first problem with the interface was that it ran a command once per
 file. This was later fixed by extending it to support long-running filter
-processes, which git-lfs uses.
+processes, which git-lfs uses. git-annex can also use that interface,
+when `git-annex filter-process` is enabled, but it does not by default.
 
 A second problem with the interface, which affects git-lfs AFAIK, is that
 git buffers the output of the smudge filter in memory before updating the
@@ -29,14 +30,13 @@ filter in the usual way, as described below.
 A third problem with the interface is that piping large file contents
 between git and filters is innefficient. Seems this must affect git-lfs
 too, but perhaps it's used on less enourmous data sets than git-annex.
-To avoid the problem, git-annex relies on a not very well documented trick: The
-clean filter is fed a possibly large file on stdin, but when it closes the FD
-without reading. git gets a SIGPIPE and stops reading and sending the
-file. Instead of reading from stdin, git-annex abuses the fact that git
-provides the clean filter with the work tree filename, and reads and cleans
-the file itself, more efficiently. But, this trick only works when the
-long-running filter process interface is not used, so git-annex can't use
-it.
+
+To avoid the problem, `git-annex smudge --clean` relies on a not very well
+documented trick: It is fed a possibly large file on stdin,
+but when it closes the FD without reading. git gets a SIGPIPE and stops
+reading and sending the file. Instead of reading from stdin, git-annex
+abuses the fact that git provides the clean filter with the work tree
+filename, and reads and cleans the file itself, more efficiently.
 
 git-lfs differs from git-annex in that all the large files in the
 repository are usually present in the working tree; it doesn't have a way
@@ -78,13 +78,19 @@ fit.
 
 And here's the consequences of git-annex's workarounds:
 
-* It doesn't use the long-running filter process interface, so `git add`
-  of a lot of files runs the clean filter once per file, which is slower than it
-  could be. Using `git-annex add` avoids this problem.
+* It doesn't use the long-running filter process interface by default, 
+  so `git add` of a lot of files runs `git-annex smudge --clean` once per file,
+  which is slower than it could be. Using `git-annex add` avoids this problem.
+  So does enabling `git-annex filter-process`.
 
 * After a git-annex get/drop or a git checkout or pull that affects a lot
   of files, the clean filter gets run once per file, which is again, slower
-  than ideal.
+  than ideal. Enabling `git-annex filter-process` can speed up git checkout
+  or pull, but not git-annex get/drop.
+
+* When `git-annex filter-process` is enabled, it cannot use the trick
+  described above that `git-annex smudge --clean` uses to avoid git
+  piping the whole content of large files throuh it.
 
 * In a rare situation, git-annex would like to get git to run the clean
   filter, but it cannot because git has the index locked. So, git-annex has
@@ -109,43 +115,3 @@ The best fix would be to improve git's smudge/clean interface:
 
 * Allow clean filter to read work tree files itself, to avoid overhead of
   sending huge files through a pipe.
-
-[[!tag confirmed]]
-
-> Could it use the long-running filter process interface for
-> smudge, but not clean? It could behave like the smudge filter does now,
-> outputting the same pointer git feeds it, and deferring populating the
-> file until later. So large file content would not be sent through the
-> pipe in this case. It seems that the interface's handshake allows
-> it to claim only support for smudge, and not clean, but the docs don't
-> say if git falls back to running the clean filter in that case.
-> 
-> If this was possible, it should speed up git checkout etc which use the
-> smudge filter. --[[Joey]]
-
-> > Tried that, it looks like when the long-running filter process
-> > sends only capability=smudge, and not clean, git add does not
-> > fall back to running filter.annex.clean. So unfortunately,
-> > it's not that easy.
-> >
-> > To proceed down this path, git-annex would need to use
-> > the long-running filter process for clean too. So `git add`
-> > would end up piping the whole content of large files over to git-annex,
-> > which would have to read and discard that data. This would
-> > probably make git-annex twice as slow for large files, although
-> > it would speed up git add of many small files. git-annex add
-> > could be used to work around any speed impact.
-> > (The long-running-smudge branch has some preliminary work to doing
-> > this.)
-> > 
-> > Or git could be extended
-> > with a capability in the protocol that lets the clean filter read the
-> > file content from disk, rather than having it piped into it. The
-> > long-running filter process protocol does have a design that would let
-> > it be extended that way.
-> >
-> > Or, I suppose git could be changed to run the clean filter when
-> > the long-running process does not support capability=clean. Maybe
-> > that would be more appealing to the git devs. Although since
-> > it currently does not run it, git-annex would need to somehow
-> > detect the old version of git and still work. --[[Joey]]
