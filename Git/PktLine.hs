@@ -38,13 +38,9 @@ import Utility.FileSystemEncoding
 newtype PktLine = PktLine B.ByteString
 	deriving (Show)
 
-{- Maximum possible length of the string encoded in PktLine;
- - the length header takes up 4 bytes.
- -
- - While the header can express lengths up to 65535,
- - git actually does not support packets larger than 65520
- - (including the header). See "LARGE_PACKET_MAX" in the git source code.
- -}
+{- Maximum allowed length of the string encoded in PktLine
+ - is slightly shorter than the absolute maximum possible length.
+ - Git does not accept anything longer than this. -}
 maxPktLineLength :: Int
 maxPktLineLength = 65520 - pktLineHeaderLength
 
