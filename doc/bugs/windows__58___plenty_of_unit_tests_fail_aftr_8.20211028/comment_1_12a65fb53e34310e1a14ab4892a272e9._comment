@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="comment 1"
+ date="2021-11-05T10:25:32Z"
+ content="""
+Git bisected this in the Ubuntu VM and found out that \"afe327ac4947d6d32ff888e7485509be03d9baaf is the first bad commit\"
+which I don't quite understand as it's only conditionally disabling the `filter.annex.process` preference.
+
+"""]]
