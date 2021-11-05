@@ -1,0 +1,412 @@
+### Please describe the problem.
+
+I ran the unit tests of 8.20211029-g0983abf59 on Windows and unfortunately got loads of errors.
+The last time I built git-annex was the release version tagged 8.20211028 whose tests gave it
+a clean bill of health. I was going to assess what the changes with the long-running `filter-process`
+functionality would entail on Windows, but alas, no such luck yet. 
+
+### What steps will reproduce the problem?
+
+`stack setup && stack build`. Then copy git-annex.exe to `C:\annx` and in Git Bash say:
+```
+./git-annex.exe test -p 'Unit Tests' 2>&1 | tee git-annex.test--p-Unit_Tests.LOG~102
+```
+Observe a lot of errors.
+
+`test -p QuickCheck` was fine.
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+git-annex version: 8.20211029-g0983abf59
+build flags: Assistant Webapp Pairing TorrentParser Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.0 ghc-8.10.7 http-client-0.7.9 persistent-sqlite-2.13.0.3 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.1.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: mingw32 x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 2 3 4 5 6 7
+"""]]
+
+Windows version 21H1 (build 19043.1288), 64 bit.
+
+### Please provide any additional information below.
+
+[[!format sh """
+jkniiv@AINESIS MINGW64 /c/annx
+$ ./git-annex.exe test -p 'Unit Tests' 2>&1 | tee git-annex.test--p-Unit_Tests.LOG~102
+[...]
+jkniiv@AINESIS MINGW64 /c/annx
+$ cat git-annex.test--p-Unit_Tests.LOG~102
+Tests
+  Unit Tests v8 adjusted unlocked branch
+    add dup:                                              Init Tests
+  init: OK (3.60s)
+  add:  OK (5.49s)
+
+All 2 tests passed (9.09s)
+FAIL (5.07s)
+      .\\Test\\Framework.hs:345:
+      foo failed to look up key
+      Use -p '/Unit Tests/&&/add dup/' to rerun this test only.
+    add extras:                                           OK (4.99s)
+    readonly:                                             OK
+    ignore deleted files:                                 FAIL (4.92s)
+      .\\Test\\Framework.hs:90:
+      unexpected value running find [] -- got: [] expected: ["foo"]
+      Use -p '/Unit Tests/&&/ignore deleted files/' to rerun this test only.
+    metadata:                                             FAIL (7.86s)
+      .\\Test\\Framework.hs:90:
+      unexpected value running find ["--metadata","foo=bar"] -- got: ["foodup"] expected: ["foo","foodup"]
+      Use -p '/Unit Tests/&&/metadata/' to rerun this test only.
+    export_import:                                        FAIL (6.09s)
+      .\\Test\\Framework.hs:345:
+      foo failed to look up key
+      Use -p '/Unit Tests/&&$0=="Tests.Unit Tests v8 adjusted unlocked branch.export_import"' to rerun this test only.
+    export_import_subdir:                                 FAIL (6.10s)
+      .\\Test\\Framework.hs:345:
+      foo failed to look up key
+      Use -p '/Unit Tests/&&/export_import_subdir/' to rerun this test only.
+    shared clone:                                         OK (3.82s)
+    log:                                                  OK (4.18s)
+    view:                                                 OK (6.46s)
+    magic:                                                OK (3.63s)
+    import:                                               OK (11.33s)
+    reinject:                                             FAIL (5.07s)
+      .\\Test\\Framework.hs:345:
+      sha1foo failed to look up key
+      Use -p '/Unit Tests/&&/reinject/' to rerun this test only.
+    unannex (no copy):                                    OK (4.77s)
+    unannex (with copy):                                  FAIL (4.76s)
+      .\\Test\\Framework.hs:345:
+      foo failed to look up key
+      Use -p '/Unit Tests/&&/unannex (with copy)/' to rerun this test only.
+    drop (no remote):                                     FAIL (4.99s)
+      .\\Test\\Framework.hs:57:
+      drop with no known copy of file not allowed failed (transcript follows)
+
+      Use -p '/Unit Tests/&&/drop (no remote)/' to rerun this test only.
+    drop (with remote):                                   FAIL (5.41s)
+      .\\Test\\Framework.hs:345:
+      foo failed to look up key
+      Use -p '/Unit Tests/&&/drop (with remote)/' to rerun this test only.
+    drop (untrusted remote):                              FAIL (5.49s)
+      .\\Test\\Framework.hs:345:
+      foo failed to look up key
+      Use -p '/Unit Tests/&&/drop (untrusted remote)/' to rerun this test only.
+    get:                                                  FAIL (5.78s)
+      .\\Test\\Framework.hs:345:
+      foo failed to look up key
+      Use -p '/Unit Tests/&&$0=="Tests.Unit Tests v8 adjusted unlocked branch.get"' to rerun this test only.
+    get (ssh remote):                                     OK
+    move:                                                 FAIL (6.67s)
+      .\\Test\\Framework.hs:345:
+      foo failed to look up key
+      Use -p '/Unit Tests/&&$0=="Tests.Unit Tests v8 adjusted unlocked branch.move"' to rerun this test only.
+    move (ssh remote):                                    OK
+    move (numcopies):                                     FAIL (3.61s)
+      .\\Test\\Framework.hs:307:
+      checkcontent foo
+      expected: "annexed file content"
+       but got: "/annex/objects/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77\n"
+      Use -p '/Unit Tests/&&/move (numcopies)/' to rerun this test only.
+    copy:                                                 FAIL (4.07s)
+      .\\Test\\Framework.hs:307:
+      checkcontent foo
+      expected: "annexed file content"
+       but got: "/annex/objects/SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77\n"
+      Use -p '/Unit Tests/&&/Unit Tests v8 adjusted unlocked branch.copy/' to rerun this test only.
+    lock:                                                 FAIL (6.19s)
+      .\\Test\\Framework.hs:57:
+      get of file failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&$0=="Tests.Unit Tests v8 adjusted unlocked branch.lock"' to rerun this test only.
+    lock --force:                                         FAIL (4.39s)
+      .\\Test\\Framework.hs:57:
+      get of file failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/lock --force/' to rerun this test only.
+    edit (no pre-commit):                                 FAIL (4.16s)
+      .\\Test\\Framework.hs:57:
+      get of file failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/edit (no pre-commit)/' to rerun this test only.
+    edit (pre-commit):                                    FAIL (4.20s)
+      .\\Test\\Framework.hs:57:
+      get of file failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/edit (pre-commit)/' to rerun this test only.
+    partial commit:                                       FAIL (4.17s)
+      .\\Test\\Framework.hs:57:
+      get of file failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/partial commit/' to rerun this test only.
+    fix:                                                  OK (3.63s)
+    trust:                                                OK (11.79s)
+    fsck (basics):                                        FAIL (5.28s)
+      .\\Test\\Framework.hs:57:
+      fsck failed (transcript follows)
+      fsck foo
+      failed
+      fsck sha1foo ok
+      (recording state in git...)
+        ** No known copies exist of foo
+      fsck: 1 failed
+
+      Use -p '/Unit Tests/&&/fsck (basics)/' to rerun this test only.
+    fsck (bare):                                          FAIL (2.58s)
+      .\\Test\\Framework.hs:57:
+      fsck failed (transcript follows)
+      fsck SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+
+        (Avoid this check by running: git annex dead --key )
+      failed
+      fsck SHA1-s25--ee80d2cec57a3810db83b80e1b320df3a3721ffa ok
+      (recording state in git...)
+        ** No known copies exist of SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+      fsck: 1 failed
+
+      Use -p '/Unit Tests/&&/fsck (bare)/' to rerun this test only.
+    fsck (local untrusted):                               FAIL (4.26s)
+      .\\Test\\Framework.hs:57:
+      get failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/fsck (local untrusted)/' to rerun this test only.
+    fsck (remote untrusted):                              FAIL (4.65s)
+      .\\Test\\Framework.hs:57:
+      get failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/fsck (remote untrusted)/' to rerun this test only.
+    fsck --from remote:                                   FAIL (4.54s)
+      .\\Test\\Framework.hs:57:
+      fsck --from origin failed (transcript follows)
+      fsck foo
+      failed
+      fsck sha1foo
+ok
+      (recording state in git...)
+        ** No known copies exist of foo
+      fsck: 1 failed
+
+      Use -p '/Unit Tests/&&/fsck --from remote/' to rerun this test only.
+    conversion git to annexed:                            OK (6.49s)
+    conversion annexed to git:                            FAIL (4.28s)
+      .\\Test\\Framework.hs:57:
+      get failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/conversion annexed to git/' to rerun this test only.
+    migrate:                                              FAIL (5.36s)
+      .\\Test\\Framework.hs:57:
+      get of file failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&$0=="Tests.Unit Tests v8 adjusted unlocked branch.migrate"' to rerun this test only.
+    migrate (via gitattributes):                          FAIL (5.43s)
+      .\\Test\\Framework.hs:57:
+      get of file failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/migrate (via gitattributes)/' to rerun this test only.
+    unused:                                               FAIL (4.28s)
+      .\\Test\\Framework.hs:57:
+      get of file failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/unused/' to rerun this test only.
+    describe:                                             OK (4.68s)
+    find:                                                 FAIL (4.94s)
+      .\\Test\\Framework.hs:57:
+      get failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/find/' to rerun this test only.
+    merge:                                                OK (4.38s)
+    info:                                                 OK (3.99s)
+    version:                                              OK (3.70s)
+    sync:                                                 FAIL (9.80s)
+      .\\Test\\Framework.hs:57:
+      get failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/Unit Tests v8 adjusted unlocked branch.sync/' to rerun this test only.
+    concurrent get of dup key regression:                 FAIL (4.46s)
+      .\\Test\\Framework.hs:57:
+      concurrent get -J1 with dup failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get foo2 (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 2 failed
+
+      Use -p '/Unit Tests/&&/concurrent get of dup key regression/' to rerun this test only.
+    union merge regression:                               FAIL (12.25s)
+      .\\Test\\Framework.hs:57:
+      get failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/union merge regression/' to rerun this test only.
+    adjusted branch merge regression:                     OK (7.55s)
+    adjusted branch subtree regression:                   OK (13.21s)
+    conflict resolution:                                  FAIL (31.85s)
+      .\\Test\\Framework.hs:90:
+      unexpected value running find ["conflictor.variant-a507","conflictor.variant-75dc"] -- got: [] expected: ["conflictor.variant-a507","conflictor.variant-75dc"]
+      Use -p '/Unit Tests/&&$0=="Tests.Unit Tests v8 adjusted unlocked branch.conflict resolution"' to rerun this test only.
+    conflict resolution (adjusted branch):                FAIL (32.35s)
+      .\\Test\\Framework.hs:90:
+      unexpected value running find ["conflictor.variant-a507","conflictor.variant-75dc"] -- got: [] expected: ["conflictor.variant-a507","conflictor.variant-75dc"]
+      Use -p '/Unit Tests/&&/conflict resolution (adjusted branch)/' to rerun this test only.
+    conflict resolution movein regression:                FAIL (8.76s)
+      .\\Test\\Framework.hs:57:
+      get failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get sha1foo (from origin...)
+ok
+      (recording state in git...)
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/conflict resolution movein regression/' to rerun this test only.
+    conflict resolution (mixed directory and file):       FAIL (26.82s)
+      .\\Test\\Framework.hs:90:
+      unexpected value running find ["conflictor"] -- got: [] expected: ["conflictor/subfile"]
+      Use -p '/Unit Tests/&&/conflict resolution (mixed directory and file)/' to rerun this test only.
+    conflict resolution symlink bit:                      OK
+    conflict resolution (uncommitted local file):         OK (38.69s)
+    conflict resolution (removed file):                   OK (75.56s)
+    conflict resolution (nonannexed file):                OK (50.67s)
+    conflict resolution (nonannexed symlink):             OK (15.13s)
+    conflict resolution (mixed locked and unlocked file): OK (34.19s)
+    map:                                                  OK (11.06s)
+    uninit:                                               FAIL (5.18s)
+      .\\Test\\Framework.hs:57:
+      get failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get sha1foo (from origin...)
+ok
+      (recording state in git...)
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&$0=="Tests.Unit Tests v8 adjusted unlocked branch.uninit"' to rerun this test only.
+    uninit (in git-annex branch):                         OK (8.46s)
+    upgrade:                                              OK (6.81s)
+    whereis:                                              FAIL (4.95s)
+      .\\Test\\Framework.hs:57:
+      whereis on non-present file failed (transcript follows)
+      whereis foo (0 copies) failed
+      whereis: 1 failed
+
+      Use -p '/Unit Tests/&&/whereis/' to rerun this test only.
+    hook remote:                                          OK (5.00s)
+    directory remote:                                     FAIL (6.37s)
+      .\\Test\\Framework.hs:57:
+      get of file failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/directory remote/' to rerun this test only.
+    rsync remote:                                         OK (4.30s)
+    bup remote:                                           OK (4.35s)
+    borg remote:                                          gpg testing not implemented on Windows
+FAIL (19.19s)
+      .\\Test\\Framework.hs:57:
+      get of file failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/borg remote/' to rerun this test only.
+    crypto:                                               OK
+    preferred content:                                    FAIL (5.39s)
+      .\\Test\\Framework.hs:57:
+      get --auto of file with default preferred content failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/preferred content/' to rerun this test only.
+    required_content:                                     FAIL (4.14s)
+      .\\Test\\Framework.hs:57:
+      get failed (transcript follows)
+      get foo (not available)
+        No other repository is known to contain the file.
+      failed
+      get: 1 failed
+
+      Use -p '/Unit Tests/&&/required_content/' to rerun this test only.
+    add subdirs:                                          OK (6.82s)
+    addurl:                                               OK (6.39s)
+
+42 out of 76 tests failed (691.50s)
+  (Failures above could be due to a bug in git-annex, or an incompatibility
+   with utilities, such as git, installed on this system.)
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yeah sure, I'm a believer. :) Using it with my multigigabyte backup files just fine most of the time.
+I'm also building select versions of git-annex for both Windows native and WSL1/2 use following the
+development on master. A fine piece of software it definitely is.
+
+[[!meta title="windows: plenty of unit tests fail after 8.20211028"]]
+[[!meta author=jkniiv]]
