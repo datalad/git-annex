@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-11-08T20:24:15Z"
+ content="""
+It seems that not only does your repository not
+have any commits in master, it also lacks a git-annex branch.
+
+Since `git-annex init` creates the git-annex branch, and git will
+refuse to clone a repo with no master branch, I don't know how you
+could have gotten a repo in this state. 
+(Aside from manually deleting the branch first.)
+
+With a git-annex branch, I see only the unknown HEAD warning,
+but it does succeed.
+"""]]
