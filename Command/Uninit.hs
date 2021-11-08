@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ import Command
 import qualified Annex
 import qualified Git
 import qualified Git.Command
+import qualified Git.Ref
 import qualified Command.Unannex
 import qualified Annex.Branch
 import qualified Annex.Queue
@@ -30,14 +31,18 @@ cmd = addCheck check $
 check :: Annex ()
 check = do
 	b <- current_branch
-	when (b == Annex.Branch.name) $ giveup $
-		"cannot uninit when the " ++ Git.fromRef b ++ " branch is checked out"
+	when (b == Just Annex.Branch.name) $ giveup $
+		"cannot uninit when the " ++ Git.fromRef Annex.Branch.name ++ " branch is checked out"
 	top <- fromRepo Git.repoPath
 	currdir <- liftIO R.getCurrentDirectory
 	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath currdir)) $
 		giveup "can only run uninit from the top of the git repository"
   where
-	current_branch = Git.Ref . encodeBS . Prelude.head . lines . decodeBS <$> revhead
+	current_branch = 
+		ifM (inRepo Git.Ref.headExists)
+			( Just . Git.Ref . encodeBS . Prelude.head . lines . decodeBS <$> revhead
+			, return Nothing
+			)
 	revhead = inRepo $ Git.Command.pipeReadStrict
 		[Param "rev-parse", Param "--abbrev-ref", Param "HEAD"]
 
@@ -93,8 +98,9 @@ finish = do
 	uninitialize
 	-- avoid normal shutdown
 	saveState False
-	inRepo $ Git.Command.run
-		[Param "branch", Param "-D", Param $ Git.fromRef Annex.Branch.name]
+	whenM (inRepo $ Git.Ref.exists Annex.Branch.fullname) $
+		inRepo $ Git.Command.run
+			[Param "branch", Param "-D", Param $ Git.fromRef Annex.Branch.name]
 	liftIO exitSuccess
 
 {- Turn on write bits in all remaining files in the annex directory, in

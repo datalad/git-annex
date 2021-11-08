@@ -8,6 +8,9 @@ git-annex (8.20211029) UNRELEASED; urgency=medium
     there are a lot of unlocked annexed files or non-annexed files, but that
     also makes git add of large annexed files slower. Use it by running:
     git config filter.annex.process 'git-annex filter-process'
+  * uninit: Avoid error message when no commits have been made to the
+    repository yet.
+  * uninit: Avoid error message when there is no git-annex branch.
 
  -- Joey Hess <id@joeyh.name>  Mon, 01 Nov 2021 13:19:46 -0400
 
