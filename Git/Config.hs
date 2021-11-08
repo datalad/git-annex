@@ -241,6 +241,14 @@ fromFile r f = fromPipe r "git"
 	, Param "--list"
 	] ConfigList
 
+{- Changes a git config setting in .git/config. -}
+change :: ConfigKey -> S.ByteString -> Repo -> IO Bool
+change (ConfigKey k) v = Git.Command.runBool
+	[ Param "config"
+	, Param (decodeBS k)
+	, Param (decodeBS v)
+	]
+
 {- Changes a git config setting in the specified config file.
  - (Creates the file if it does not already exist.) -}
 changeFile :: FilePath -> ConfigKey -> S.ByteString -> IO Bool

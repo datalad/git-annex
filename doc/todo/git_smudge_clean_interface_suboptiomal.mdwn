@@ -85,12 +85,17 @@ And here's the consequences of git-annex's workarounds:
 
 * After a git-annex get/drop or a git checkout or pull that affects a lot
   of files, the clean filter gets run once per file, which is again, slower
-  than ideal. Enabling `git-annex filter-process` can speed up git checkout
-  or pull, but not git-annex get/drop.
+  than ideal. Enabling `git-annex filter-process` can speed this up
+  in some cases.
 
 * When `git-annex filter-process` is enabled, it cannot use the trick
   described above that `git-annex smudge --clean` uses to avoid git
-  piping the whole content of large files throuh it.
+  piping the whole content of large files through it. This mainly slows
+  down `git add` when it is being used with an annex.largefiles
+  confguration to add a large file to the annex. (Making filter-process
+  incrementally hash the content git passes to it will mostly avoid
+  this performance problem though it may always be a little bit slower
+  than `git-annex smudge --clean` due to the data piping.)
 
 * In a rare situation, git-annex would like to get git to run the clean
   filter, but it cannot because git has the index locked. So, git-annex has
@@ -115,97 +120,3 @@ The best fix would be to improve git's smudge/clean interface:
 
 * Allow clean filter to read work tree files itself, to avoid overhead of
   sending huge files through a pipe.
-
-----
-
-## benchmarking
-
-Goal is to both characterise how slow this interface makes git-annex,
-and to investigate when enabling filter-process is an improvement, and not.
-
-* git add of 1000 small files (adding to git repository not annex)
-	- no git-annex: 0.2s
-	- git-annex with smudge --clean: 63.3s
-	- git-annex with filter-process enabled: 2.3s
-	This is the obvious win case for filter-process. However, people
-	rarely add large numbers of small files to a git repository at the
-	same time.
-* git add of 1000 small files (adding to annex)
-	- git-annex with smudge --clean: 120.9s
-	- git-annex with filter-process enabled: 28.2s
-	- (git-annex add of 1000 small files, for comparison): 17.2s
-	This is a decent win for filter-process, and would also be somewhat
-	of a win when adding larger files to the annex with git add, though
-	less so because hashing overhead would dominate that.
-* git add of 1 gb file (adding to annex)
-	- git-annex with smudge --clean: 14.5s
-	- git-annex with filter-process enabled: 15.4s
-	This was a surprising result! With filter-process, git feeds
-	the file to git-annex via a pipe, and git-annex also reads it from
-	disk. Probably disk caching helped a lot to avoid this taking
-	longer. (`free` says the disk cache has 1.7gb available)
-	That double read could be avoided with some work to make
-	git-annex hash what it receives from the pipe. I also expected
-	the piping to add more overhead than it seems to have.
-* git checkout of branch with 1000 small annexed files
-	- no git-annex (checking out annex pointer files): 0.1s
-	- git-annex with smudge: 145s
-	- git-annex with filter-process enabled: 13.1s
-	Win for filter-process, but small annexed files are somewhat
-	unusual. See next benchmark.
-* git checkout of branch with 1 gb annexed file
-	- git-annex with smudge: 5.6s
-	- git-annex with filter-process enabled: 11.2s
-	Here filter-process slows it down, and the reason it does
-	is the post-checkout hook runs, which populates the annexed file
-	and restages it in git. The restaging uses filter-process, and git
-	feeds the annexed file contents through the pipe, though git-annex
-	does not need to see that data. So it makes sense that
-	filter-process is about twice as slow as smudge, since with smudge
-	it only has to write the file and does not also read it.
-	With more annexed data being checked out, it should continue to
-	scale like this, with filter-process being 2x as expensive,
-	or perhaps more (if disk cache stops helping).
-	Disabling filter-process during the restaging would improve
-	this case, but unfortunately it does not seem easy to do
-	that (see [[!commit 837025b14f523f9180f82d0cced1e53a8a9b94de]]).
-* git-annex get of 1000 small annexed files
-	- git-annex with smudge: 100.1s
-	- git-annex with filter-process enabled: 39.3s
-	The difference is due to restaging in git needing to pass
-	the annexed files through the filter.
-	Win for filter-process, but small annexed files are somewhat
-	unusual. See next benchmark.
-* git-annex get of a 1 gb annexed file
-	- git-annex with smudge: 21.5s
-	- git-annex with filter-process enabled: 22.8s
-	Transfer time was around 12s, the rest is copying the file
-	to the work tree and restaging overhead. So filter-process
-	is slower because git sends the file content to it over a pipe
-	unncessarily. Less of a loss for filter-process that I expected
-	though, but again disk cache probably helped.
-* git-annex get of two 1 gb annexed files
-	- git-annex with smudge: 42.3s
-	- git-annex with filter-process enabled: 46.7s
-	This shows that filter-process will get progressively worse
-	as the amount of annexed data that git-annex gets goes up.
-	It is not a fast increase, but it will add up. Also disk cache
-	will stop helping at some point.
-
-Benchmark summary:
-
-* filter-process makes `git add` slightly slower for large
-  files that are added to the annex, but not as much as expected (and it can
-  be improved), so overall it's a win for `git add`.
-
-* filter-process makes `git checkout`, `merge`, etc of unlocked annexed files
-  at least twice as slow as the size of annexed data goes up, but it does avoid
-  very slow checkouts when there are a lot of non-annexed or smaller unlocked
-  annexed files. That benefit may be worth the overhead, though it would
-  be good to check the overhead with larger annexed data checkouts to see
-  how it scales.
-
-* filter-process makes `git-annex get` slower as the size of annexed data
-  goes up. Although the time spent actually getting the data will typically
-  dominate (network being slower than disk), so this may be an acceptable
-  tradeoff for many users.

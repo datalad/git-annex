@@ -12,7 +12,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, BangPatterns #-}
+{-# LANGUAGE CPP, BangPatterns, OverloadedStrings #-}
 
 module Annex.Link where
 
@@ -35,6 +35,7 @@ import Utility.FileMode
 import Utility.InodeCache
 import Utility.Tmp.Dir
 import Utility.CopyFile
+import Utility.Tuple
 import qualified Database.Keys.Handle
 import qualified Utility.RawFilePath as R
 
@@ -89,9 +90,9 @@ getAnnexLinkTarget' file coresymlinks = if coresymlinks
 			else 
 				-- If there are any NUL or newline
 				-- characters, or whitespace, we
-				-- certianly don't have a symlink to a
+				-- certainly don't have a symlink to a
 				-- git-annex key.
-				if any (`S8.elem` s) "\0\n\r \t"
+				if any (`S8.elem` s) ("\0\n\r \t" :: [Char])
 					then mempty
 					else s
 
@@ -189,7 +190,7 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 		-- fails on "../../repo/path/file" when cwd is not in the repo 
 		-- being acted on. Avoid these problems with an absolute path.
 		absf <- liftIO $ absPath f
-		Annex.Queue.addInternalAction runner [(absf, isunmodified tsd)]
+		Annex.Queue.addInternalAction runner [(absf, isunmodified tsd, inodeCacheFileSize orig)]
   where
 	isunmodified tsd = genInodeCache f tsd >>= return . \case
 		Nothing -> False
@@ -226,9 +227,9 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 					[ Param "-c"
 					, Param $ "core.safecrlf=" ++ boolConfig False
 					] }
-				runsGitAnnexChildProcessViaGit' r'' $ \r''' ->
+				configfilterprocess l $ runsGitAnnexChildProcessViaGit' r'' $ \r''' ->
 					liftIO $ Git.UpdateIndex.refreshIndex r''' $ \feed ->
-						forM_ l $ \(f', checkunmodified) ->
+						forM_ l $ \(f', checkunmodified, _) ->
 							whenM checkunmodified $
 								feed f'
 			let replaceindex = catchBoolIO $ do
@@ -239,6 +240,49 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 				<&&> liftIO replaceindex
 			unless ok showwarning
 		bracket lockindex unlockindex go
+	
+	{- filter.annex.process configured to use git-annex filter-process
+	 - is sometimes faster and sometimes slower than using
+	 - git-annex smudge. The latter is run once per file, while
+	 - the former has the content of files piped to it.
+	 -}
+	filterprocessfaster l = 
+		let numfiles = genericLength l
+		    sizefiles = sum (map thd3 l)
+		    -- estimates based on benchmarking
+		    estimate_enabled = sizefiles `div` 191739611
+		    estimate_disabled = numfiles `div` 7
+		in estimate_enabled <= estimate_disabled
+	 
+	 {- This disables filter.annex.process if it's set when it would
+	  - probably not be faster to use it. Unfortunately, simply
+	  - passing -c filter.annex.process= also prevents git from
+	  - running the smudge filter, so .git/config has to be modified
+	  - to disable it. The modification is reversed at the end. In
+	  - case this process is terminated early, the next time this
+	  - runs it will take care of reversing the modification.
+	  -}
+	configfilterprocess l = bracket setup cleanup . const
+	  where
+		setup
+			| filterprocessfaster l = return Nothing
+			| otherwise = fromRepo (Git.Config.getMaybe ck) >>= \case
+				Nothing -> return Nothing
+				Just v -> do
+					void $ inRepo (Git.Config.change ckd (fromConfigValue v))
+					void $ inRepo (Git.Config.unset ck)
+					return (Just v)
+		cleanup (Just v) = do
+			void $ inRepo $ Git.Config.change ck (fromConfigValue v)
+			void $ inRepo (Git.Config.unset ckd)
+		cleanup Nothing = fromRepo (Git.Config.getMaybe ckd) >>= \case
+			Nothing -> return ()
+			Just v -> do
+				whenM (isNothing <$> fromRepo (Git.Config.getMaybe ck)) $
+					void $ inRepo (Git.Config.change ck (fromConfigValue v))
+				void $ inRepo (Git.Config.unset ckd)
+		ck = ConfigKey "filter.annex.process"
+		ckd = ConfigKey "filter.annex.process-temp-disabled"
 
 unableToRestage :: Maybe FilePath -> String
 unableToRestage mf = unwords

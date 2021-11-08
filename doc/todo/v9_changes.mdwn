@@ -16,4 +16,4 @@ could change and if it does, these things could be included.
   seem worth it.
 
   It does not currently incrementally hash, so implementing that first
-  would imporve the tradeoffs.
+  would improve the tradeoffs.
