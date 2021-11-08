@@ -1,0 +1,28 @@
+Last Thursday I implemented `git-annex filter-process`, which you
+can try enabling to make commands like `git add` and `git checkout`
+faster when they operate on a lot of files.
+
+	git config filter.annex.process 'git-annex filter-process'
+
+On Friday, I benchmarked it
+and was not surprised to find that it's slower in some cases than the
+old smudge/clean filter interface, and faster in other cases. Still, good
+to see actual numbers (see [[!commit 054c803f8d7cc43eb01fdf6141ab6572373c7d60]]).
+The surprising good news is that it only seems to make `git add` around 10%
+slower when adding a large file (to the annex presumably). Although I
+know I can speed that up, eventually.
+
+Today, I used the benchmark results to build a cost model into git-annex,
+so it knows when it would be faster to have filter.annex.process set or
+unset, and temporarily unsets it when that seems best. It can only
+do that when it's restaging pointer files, but that was the main problem
+with setting filter.annex.process really.
+
+So I'm fairly close to wanting to enable it by default. But will probably
+just wait until whenever v9 happens and do it then. Hopefully some people
+will try it out in the meantime and perhaps I can refine the cost model.
+
+---
+
+This work was sponsored by Jake Vosloo, Graham Spencer, and Dr. Land Raider
+[on Patreon](https://patreon.com/joeyh)
