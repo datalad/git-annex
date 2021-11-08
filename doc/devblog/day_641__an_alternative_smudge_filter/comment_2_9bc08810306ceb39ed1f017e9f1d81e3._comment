@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-11-08T20:21:29Z"
+ content="""
+If you have all locked files, git will never run the smudge/clean filter,
+so its performance will not matter to you. If you have non-annexed files
+in git, it does run the filter on those though, and this will improve
+that case.
+"""]]
