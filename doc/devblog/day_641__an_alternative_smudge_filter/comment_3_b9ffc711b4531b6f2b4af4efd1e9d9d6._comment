@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="clarification re: smudge filter and annex.supportunlocked"
+ date="2021-11-09T18:28:09Z"
+ content="""
+> If you have non-annexed files in git, it does run the filter on those
+
+Not when `annex.supportunlocked=false`, right?   (Of course, that's not the default setting, so the smudge filter changes will still help by default.)
+
+
+"""]]
