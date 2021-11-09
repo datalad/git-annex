@@ -1,0 +1,12 @@
+I'm trying to understand why `git annex adjust` changes any symlinks to pointers. All the "pointer file" contains is the git annex object path with the hash, which the symlink also contains. Is there a reason we can't leave the branch untouched and just change the local configuration to track which files are to be adjusted as locked/unlocked? I imagine with this model, we don't even need an adjust command, and we could simply upgrade the old `lock` and `unlock` commands.
+
+```
+git annex unlock file1 ## Adds file1 to list of files to run the "adjust" smudge/clean filter for. This data could be stored somewhere in .git/annex, but is completely local and does not need to be synced or protected anywhere.
+git annex lock file1 ## Removes file1 from list of files to run the adjust on.
+```
+
+What is the advantage?
+
+For one, we don't have extra branches that are potentially confusing. It also simplifies the user facing surface area which is great to reduce user-causing-bugs.
+
+Thoughts?
