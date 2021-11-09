@@ -114,3 +114,4 @@ copy: 1 failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes, I'm using DataLad for some of my projects and I'm really impressed how it makes use of git-annex to solve many of the tasks that I struggled with pure git before.
 
+[[!tag projects/datalad]]
