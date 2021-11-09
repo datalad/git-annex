@@ -1,0 +1,40 @@
+When `git-annex filter-process` is enabled, `git add` pipes the content of
+files into it, but that's thrown away, and the file is read again by git-annex
+to generate a hash. It would improve performance to hash the content
+provided via the pipe.
+
+When filter-process is not enabled, `git-annex smudge --clean` reads
+the file to hash it, then reads it a second time to copy it into
+.git/annex/objects. When annex.addunlocked is enabled, `git annex add`
+does the same. It would improve performance to read once and copy and
+hash at the same time.
+
+The `incrementalhash` branch has a start at implementing this.
+I lost steam on this branch when I realized that it would need to
+re-implement Annex.Ingest.ingest in order to populate
+.git/annex/objects/. And it's not as simple as writing an object file
+and moving it into place there, because annex.thin means a hard link should
+be made, and if the filesystem supports CoW, that should be used rather
+than writing the file again.
+
+A benchmark showed that `git add` of a 1 gb file 
+is about 5% slower with filter-process enabled than it is 
+with filter-process disabled. That's due to the piping overhead to 
+filter-process ([[todo/git_smudge_clean_interface_suboptiomal]]).
+`git-annex add` with `annex.addunlocked` has similar performance
+as `git add` with filter-process disabled.
+
+`git-annex add` without `annex.addunlocked` is about 25% faster than those,
+and only reads the file once, but it also does not copy the file, so of
+course it's faster, and always will be. 
+
+Probably disk cache helps them a fair amount, unless it's too small.
+So it's not clear how much implementing this would really speed them up.
+
+This does not really affect default configurations.
+Performance is only impacted when annex.addunlocked or 
+annex.largefiles is configured, and in a few cases 
+where an already annexed file is added by `git add` or `git commit -a`.
+
+So is the complication of implementing this worth it? Users who
+need maximum speed can use `git-annex add`.

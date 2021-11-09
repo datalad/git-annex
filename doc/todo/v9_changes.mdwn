@@ -15,5 +15,4 @@ could change and if it does, these things could be included.
 * Possibly enable `git-annex filter-process` by default. If the tradeoffs
   seem worth it.
 
-  It does not currently incrementally hash, so implementing that first
-  would improve the tradeoffs.
+  May want to implement [[incremental_hashing_for_add]] first.

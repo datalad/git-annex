@@ -90,12 +90,12 @@ And here's the consequences of git-annex's workarounds:
 
 * When `git-annex filter-process` is enabled, it cannot use the trick
   described above that `git-annex smudge --clean` uses to avoid git
-  piping the whole content of large files through it. This mainly slows
-  down `git add` when it is being used with an annex.largefiles
-  confguration to add a large file to the annex. (Making filter-process
-  incrementally hash the content git passes to it will mostly avoid
-  this performance problem though it may always be a little bit slower
-  than `git-annex smudge --clean` due to the data piping.)
+  piping the whole content of large files through it. The whole file
+  content has to be read, even when git-annex does not need to see it.
+  This mainly slows down `git add` when it is being used with an
+  annex.largefiles confguration to add a large file to the annex,
+  by about 5%. ([[todo/incremental_hashing_for_add]] would improve
+  performance)
 
 * In a rare situation, git-annex would like to get git to run the clean
   filter, but it cannot because git has the index locked. So, git-annex has
