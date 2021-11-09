@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-11-09T19:55:51Z"
+ content="""
+Thanks @jkniiv, that's good to hear. That is exactly the results I would
+have hoped for for a repository like yours. To speed up the checkout
+of the annexed files in your case will need improvements to git,
+probably. But the crucial thing is it's not gotten worse, and the other
+checkout improved a lot.
+
+I would be curious how you find `git add`'s performance now, if you ever
+use that to add large annexed files.
+"""]]

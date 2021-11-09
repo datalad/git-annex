@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-11-09T19:53:38Z"
+ content="""
+Right, annex.supportunlocked avoids all these performance considerations.
+
+But, it seems possible that enabling filter-process will speed it up enough
+to not need annex.supportunlocked. I'd be interested to know if that works
+for you.
+"""]]
