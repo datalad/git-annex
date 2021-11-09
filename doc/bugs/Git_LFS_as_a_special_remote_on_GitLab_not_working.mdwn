@@ -1,0 +1,116 @@
+### Please describe the problem.
+I tried using GitLab as a `--type git-lfs` special remote. I followed the steps in https://git-annex.branchable.com/tips/storing_data_in_git-lfs/ for both GitHub and GitLab.
+While it worked as described for GitHub I get an error message when trying to push data to GitLab.
+
+### What steps will reproduce the problem?
+[[!format sh """
+# basic repository setup
+mkdir annex
+cd annex
+git init
+git annex init
+
+# create a random binary file
+head -c 100 /dev/urandom >random.bin
+git annex add .
+git commit -a -m added
+
+# set GitHub as a remote (repo exists and is public: https://github.com/iimog/annex)
+git remote add github git@github.com:iimog/annex
+git push --all github
+git annex initremote lfs type=git-lfs encryption=none url=git@github.com:iimog/annex
+git annex copy * --to lfs
+#copy random.bin (to lfs...) 
+#ok                                
+#(recording state in git...)
+
+# set GitLab as a remote (repo exists and is public: https://gitlab.com/iimog/annex)
+git remote add gitlab git@gitlab.com:iimog/annex
+git push --all gitlab
+git annex initremote lfs-gitlab type=git-lfs encryption=none url=git@gitlab.com:iimog/annex
+#
+#  Unable to parse git config from gitlab
+#
+#  Remote gitlab does not have git-annex installed; setting annex-ignore
+#
+#  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote gitlab
+#initremote lfs-gitlab ok
+#(recording state in git...)
+git annex copy * --to lfs-gitlab                                                           
+#copy random.bin (to lfs-gitlab...)
+#<long error message>
+#--> The error in short is a "Bad Request" (details see below)
+
+# Try again after explicitly calling enableremote
+git annex enableremote gitlab                                                              
+#enableremote gitlab ok
+git annex copy * --to lfs-gitlab                                                           
+#copy random.bin (to lfs-gitlab...)
+#<long error message>
+#--> This still results in the same "Bad Request" error
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 8.20210903-ga4d179c
+Ubuntu 20.04.3 LTS
+
+### Please provide any additional information below.
+
+I initially discovered this issue while using DataLad and reported the issue [here](https://github.com/datalad/datalad/issues/6126).
+As suspected by @yarikoptic the issue also exists when using git-annex directly, not through DataLad.
+
+On a self-hosted GitLab instance the following error was found in the server log:
+[[!format sh """
+2021/10/28 21:07:13 [error] 7412#0: *1869253 client sent invalid chunked body while sending request to upstream, client: <...>, server: <...>, request: "PUT /iimog/my-cool-ds2.git/gitlab-lfs/objects/92f711c1799c5aa936c2be297171d08afc19ba97899b57a1f67f2e70486395aa/80547 HTTP/1.1", upstream: "http://unix/var/opt/gitlab/gitlab-workhorse/sockets/socket:/iimog/my-cool-ds2.git/gitlab-lfs/objects/92f711c1799c5aa936c2be297171d08afc19ba97899b57a1f67f2e70486395aa/80547", host: "<...>"
+"""]]
+
+This is the full error message I got when calling `git annex copy * --to lfs-gitlab`:
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$ git annex copy * --to lfs-gitlab
+
+copy random.bin (to lfs-gitlab...) 
+                                  
+  HttpExceptionRequest Request {
+    host                 = "gitlab.com"
+    port                 = 443
+    secure               = True
+    requestHeaders       = [("Authorization","<REDACTED>"),("Content-Type","application/octet-stream"),("Transfer-Encoding","chunked"),("User-Agent","git-annex/8.20210903-ga4d179c")]
+    path                 = "/iimog/annex.git/gitlab-lfs/objects/04b38782b7f5990e090577047fb54b52e9771ba57c1c36e21f4702049adfcfe3/100"
+    queryString          = ""
+    method               = "PUT"
+    proxy                = Nothing
+    rawBody              = False
+    redirectCount        = 10
+    responseTimeout      = ResponseTimeoutDefault
+    requestVersion       = HTTP/1.1
+  }
+   (StatusCodeException (Response {responseStatus = Status {statusCode = 400, statusMessage = "Bad Request"}, responseVersion = HTTP/1.1, responseHeaders = [("Server","cloudflare"),("Date","Tue, 09 Nov 2021 15:03:11 GMT"),("Content-Type","text/html"),("Content-Length","155"),("Connection","close"),("CF-RAY","6ab7ed2afb9fdfcf-FRA")], responseBody = (), responseCookieJar = CJ {expose = []}, responseClose' = ResponseClose}) "<html>\r\n<head><title>400 Bad Request</title></head>\r\n<body>\r\n<center><h1>400 Bad Request</h1></center>\r\n<hr><center>cloudflare</center>\r\n</body>\r\n</html>\r\n")
+                                  
+                                  
+  HttpExceptionRequest Request {
+    host                 = "gitlab.com"
+    port                 = 443
+    secure               = True
+    requestHeaders       = [("Authorization","<REDACTED>"),("Content-Type","application/octet-stream"),("Transfer-Encoding","chunked"),("User-Agent","git-annex/8.20210903-ga4d179c")]
+    path                 = "/iimog/annex.git/gitlab-lfs/objects/04b38782b7f5990e090577047fb54b52e9771ba57c1c36e21f4702049adfcfe3/100"
+    queryString          = ""
+    method               = "PUT"
+    proxy                = Nothing
+    rawBody              = False
+    redirectCount        = 10
+    responseTimeout      = ResponseTimeoutDefault
+    requestVersion       = HTTP/1.1
+  }
+   (StatusCodeException (Response {responseStatus = Status {statusCode = 400, statusMessage = "Bad Request"}, responseVersion = HTTP/1.1, responseHeaders = [("Server","cloudflare"),("Date","Tue, 09 Nov 2021 15:03:12 GMT"),("Content-Type","text/html"),("Content-Length","155"),("Connection","close"),("CF-RAY","6ab7ed2c9a4ad6b5-FRA")], responseBody = (), responseCookieJar = CJ {expose = []}, responseClose' = ResponseClose}) "<html>\r\n<head><title>400 Bad Request</title></head>\r\n<body>\r\n<center><h1>400 Bad Request</h1></center>\r\n<hr><center>cloudflare</center>\r\n</body>\r\n</html>\r\n")
+failed                            
+copy: 1 failed
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Yes, I'm using DataLad for some of my projects and I'm really impressed how it makes use of git-annex to solve many of the tasks that I struggled with pure git before.
+
