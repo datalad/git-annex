@@ -86,7 +86,7 @@ fileCopier _ src dest meterupdate iv = docopy
 fileCopier copycowtried src dest meterupdate iv =
 	ifM (liftIO $ tryCopyCoW copycowtried src dest meterupdate)
 		( do
-			liftIO $ maybe noop unableIncremental iv
+			liftIO $ maybe noop unableIncrementalVerifier iv
 			return CopiedCoW
 		, docopy
 		)
@@ -119,7 +119,7 @@ fileCopier copycowtried src dest meterupdate iv =
 			else do
 				let sofar' = addBytesProcessed sofar (S.length s)
 				S.hPut hdest s
-				maybe noop (flip updateIncremental s) iv
+				maybe noop (flip updateIncrementalVerifier s) iv
 				meterupdate sofar'
 				docopy' hdest hsrc sofar'
 
@@ -134,7 +134,7 @@ fileCopier copycowtried src dest meterupdate iv =
 				s' <- getnoshort (S.length s) hsrc
 				if s == s'
 					then do
-						maybe noop (flip updateIncremental s) iv
+						maybe noop (flip updateIncrementalVerifier s) iv
 						let sofar' = addBytesProcessed sofar (S.length s)
 						meterupdate sofar'
 						compareexisting hdest hsrc sofar'

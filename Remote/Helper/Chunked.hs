@@ -372,7 +372,7 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
 	
 	finalize (Right Nothing) = return UnVerified
 	finalize (Right (Just iv)) =
-		liftIO (finalizeIncremental iv) >>= \case
+		liftIO (finalizeIncrementalVerifier iv) >>= \case
 			Just True -> return Verified
 			_ -> return UnVerified
 	finalize (Left v) = return v
@@ -426,7 +426,7 @@ writeRetrievedContent dest enc encc mh mp content miv = case (enc, mh, content) 
 		Just p -> 
 			let writer = case miv of
 				Just iv -> \s -> do
-					updateIncremental iv s
+					updateIncrementalVerifier iv s
 					S.hPut h s
 				Nothing -> S.hPut h
 			in meteredWrite p writer b

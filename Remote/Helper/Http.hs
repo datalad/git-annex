@@ -83,5 +83,5 @@ httpBodyRetriever dest meterupdate iv resp
 				let sofar' = addBytesProcessed sofar $ S.length b
 				S.hPut h b
 				meterupdate sofar'
-				maybe noop (flip updateIncremental b) iv
+				maybe noop (flip updateIncrementalVerifier b) iv
 				go sofar' h

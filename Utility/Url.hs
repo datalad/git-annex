@@ -451,7 +451,7 @@ download' nocurlerror meterupdate iv url file uo =
 			Nothing -> throwIO ex
 	followredir _ ex = throwIO ex
 
-	noverification = maybe noop unableIncremental iv
+	noverification = maybe noop unableIncrementalVerifier iv
 
 {- Download a perhaps large file using conduit, with auto-resume
  - of incomplete downloads.
@@ -554,7 +554,7 @@ downloadConduit meterupdate iv req file uo =
 				() <- signalsuccess False
 				throwM e
 	
-	noverification = maybe noop unableIncremental iv
+	noverification = maybe noop unableIncrementalVerifier iv
 	
 {- Sinks a Response's body to a file. The file can either be appended to
  - (AppendMode), or written from the start of the response (WriteMode).
@@ -575,9 +575,9 @@ sinkResponseFile
 sinkResponseFile meterupdate iv initialp file mode resp = do
 	ui <- case (iv, mode) of
 		(Just iv', AppendMode) -> do
-			liftIO $ unableIncremental iv'
+			liftIO $ unableIncrementalVerifier iv'
 			return (const noop)
-		(Just iv', _) -> return (updateIncremental iv')
+		(Just iv', _) -> return (updateIncrementalVerifier iv')
 		(Nothing, _) -> return (const noop)
 	(fr, fh) <- allocate (openBinaryFile file mode) hClose
 	runConduit $ responseBody resp .| go ui initialp fh

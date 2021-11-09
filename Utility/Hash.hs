@@ -64,6 +64,8 @@ module Utility.Hash (
 	Mac(..),
 	calcMac,
 	props_macs_stable,
+	IncrementalHasher(..),
+	mkIncrementalHasher,
 	IncrementalVerifier(..),
 	mkIncrementalVerifier,
 ) where
@@ -280,44 +282,62 @@ props_macs_stable = map (\(desc, mac, result) -> (desc ++ " stable", calcMac mac
 	key = T.encodeUtf8 $ T.pack "foo"
 	msg = T.encodeUtf8 $ T.pack "bar"
 
-data IncrementalVerifier = IncrementalVerifier
-	{ updateIncremental :: S.ByteString -> IO ()
+data IncrementalHasher = IncrementalHasher
+	{ updateIncrementalHasher :: S.ByteString -> IO ()
 	-- ^ Called repeatedly on each peice of the content.
-	, finalizeIncremental :: IO (Maybe Bool)
-	-- ^ Called once the full content has been sent, returns True
-	-- if the hash verified, False if it did not, and Nothing if
-	-- incremental verification was unable to be done.
-	, unableIncremental :: IO ()
-	-- ^ Call if the incremental verification is unable to be done.
-	, positionIncremental :: IO (Maybe Integer)
+	, finalizeIncrementalHasher :: IO (Maybe String)
+	-- ^ Called once the full content has been sent, returns
+	-- the hash. (Nothing if unableIncremental was called.)
+	, unableIncrementalHasher :: IO ()
+	-- ^ Call if the incremental hashing is unable to be done.
+	, positionIncrementalHasher :: IO (Maybe Integer)
 	-- ^ Returns the number of bytes that have been fed to this
-	-- incremental verifier so far. (Nothing if unableIncremental was
+	-- incremental hasher so far. (Nothing if unableIncremental was
 	-- called.)
-	, descVerify :: String
-	-- ^ A description of what is done to verify the content.
+	, descIncrementalHasher :: String
 	}
 
-mkIncrementalVerifier :: HashAlgorithm h => Context h -> String -> (String -> Bool) -> IO IncrementalVerifier
-mkIncrementalVerifier ctx descverify samechecksum = do
+mkIncrementalHasher :: HashAlgorithm h => Context h -> String -> IO IncrementalHasher
+mkIncrementalHasher ctx desc = do
 	v <- newIORef (Just (ctx, 0))
-	return $ IncrementalVerifier
-		{ updateIncremental = \b ->
+	return $ IncrementalHasher
+		{ updateIncrementalHasher = \b ->
 			modifyIORef' v $ \case
 				(Just (ctx', n)) -> 
 					let !ctx'' = hashUpdate ctx' b
 					    !n' = n + fromIntegral (S.length b)
 					in (Just (ctx'', n'))
 				Nothing -> Nothing
-		, finalizeIncremental =
+		, finalizeIncrementalHasher =
 			readIORef v >>= \case
 				(Just (ctx', _)) -> do
 					let digest = hashFinalize ctx'
-					return $ Just $ 
-						samechecksum (show digest)
+					return $ Just $ show digest
 				Nothing -> return Nothing
-		, unableIncremental = writeIORef v Nothing
-		, positionIncremental = readIORef v >>= \case
+		, unableIncrementalHasher = writeIORef v Nothing
+		, positionIncrementalHasher = readIORef v >>= \case
 			Just (_, n) -> return (Just n)
 			Nothing -> return Nothing
-		, descVerify = descverify
+		, descIncrementalHasher = desc
+		}
+
+data IncrementalVerifier = IncrementalVerifier
+	{ updateIncrementalVerifier :: S.ByteString -> IO ()
+	, finalizeIncrementalVerifier :: IO (Maybe Bool)
+	, unableIncrementalVerifier :: IO ()
+	, positionIncrementalVerifier :: IO (Maybe Integer)
+	, descIncrementalVerifier :: String
+	}
+
+mkIncrementalVerifier :: HashAlgorithm h => Context h -> String -> (String -> Bool) -> IO IncrementalVerifier
+mkIncrementalVerifier ctx desc samechecksum = do
+	hasher <- mkIncrementalHasher ctx desc
+	return $ IncrementalVerifier
+		{ updateIncrementalVerifier = updateIncrementalHasher hasher
+		, finalizeIncrementalVerifier = 
+			maybe Nothing (Just . samechecksum)
+				<$> finalizeIncrementalHasher hasher
+		, unableIncrementalVerifier = unableIncrementalHasher hasher
+		, positionIncrementalVerifier = positionIncrementalHasher hasher
+		, descIncrementalVerifier = descIncrementalHasher hasher
 		}

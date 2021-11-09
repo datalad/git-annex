@@ -656,8 +656,8 @@ downloadUrl listfailedurls k p iv urls file uo =
 			-- to be used for the other urls.
 			case iv of
 				Just iv' -> 
-					liftIO $ positionIncremental iv' >>= \case
-					Just n | n > 0 -> unableIncremental iv'
+					liftIO $ positionIncrementalVerifier iv' >>= \case
+					Just n | n > 0 -> unableIncrementalVerifier iv'
 					_ -> noop
 				Nothing -> noop
 			go us ((u, err) : errs)

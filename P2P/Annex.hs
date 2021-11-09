@@ -178,7 +178,7 @@ runLocal runst runner a = case a of
 					then defaultChunkSize
 					else fromIntegral n
 				b <- S.hGet h c
-				updateIncremental iv b
+				updateIncrementalVerifier iv b
 				unless (b == S.empty) $
 					go iv (n - fromIntegral (S.length b))
 
@@ -192,7 +192,7 @@ runLocal runst runner a = case a of
 						Nothing -> \c -> S.hPut h c
 						Just iv -> \c -> do
 							S.hPut h c
-							updateIncremental iv c
+							updateIncrementalVerifier iv c
 					meteredWrite p' writechunk b
 				indicatetransferred ti
 
@@ -203,7 +203,7 @@ runLocal runst runner a = case a of
 				runner validitycheck >>= \case
 					Right (Just Valid) -> case incrementalverifier of
 						Just iv
-							| rightsize -> liftIO (finalizeIncremental iv) >>= \case
+							| rightsize -> liftIO (finalizeIncrementalVerifier iv) >>= \case
 								Nothing -> return (True, UnVerified)
 								Just True -> return (True, Verified)
 								Just False -> return (False, UnVerified)

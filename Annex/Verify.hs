@@ -102,7 +102,7 @@ verifyKeyContent' k f =
 			Just verifier -> verifier k f
 
 resumeVerifyKeyContent :: Key -> RawFilePath -> IncrementalVerifier -> Annex Bool
-resumeVerifyKeyContent k f iv = liftIO (positionIncremental iv) >>= \case
+resumeVerifyKeyContent k f iv = liftIO (positionIncrementalVerifier iv) >>= \case
 	Nothing -> fallback
 	Just endpos -> do
 		fsz <- liftIO $ catchDefaultIO 0 $ getFileSize f
@@ -119,21 +119,21 @@ resumeVerifyKeyContent k f iv = liftIO (positionIncremental iv) >>= \case
 	go fsz endpos
 		| fsz == endpos =
 			liftIO $ catchDefaultIO (Just False) $
-				finalizeIncremental iv
+				finalizeIncrementalVerifier iv
 		| otherwise = do
-			showAction (descVerify iv)
+			showAction (descIncrementalVerifier iv)
 			liftIO $ catchDefaultIO (Just False) $
 				withBinaryFile (fromRawFilePath f) ReadMode $ \h -> do
 					hSeek h AbsoluteSeek endpos
 					feedincremental h
-					finalizeIncremental iv
+					finalizeIncrementalVerifier iv
 	
 	feedincremental h = do
 		b <- S.hGetSome h chunk
 		if S.null b
 			then return ()
 			else do
-				updateIncremental iv b
+				updateIncrementalVerifier iv b
 				feedincremental h
 
 	chunk = 65536
@@ -174,7 +174,7 @@ finishVerifyKeyContentIncrementally :: Maybe IncrementalVerifier -> Annex (Bool,
 finishVerifyKeyContentIncrementally Nothing = 
 	return (True, UnVerified)
 finishVerifyKeyContentIncrementally (Just iv) =
-	liftIO (finalizeIncremental iv) >>= \case
+	liftIO (finalizeIncrementalVerifier iv) >>= \case
 		Just True -> return (True, Verified)
 		Just False -> do
 			warning "verification of content failed"
@@ -224,7 +224,7 @@ tailVerify :: IncrementalVerifier -> RawFilePath -> TMVar () -> IO ()
 tailVerify iv f finished = 
 	tryNonAsync go >>= \case
 		Right r -> return r
-		Left _ -> unableIncremental iv
+		Left _ -> unableIncrementalVerifier iv
   where
 	-- Watch the directory containing the file, and wait for
 	-- the file to be modified. It's possible that the file already
@@ -249,7 +249,7 @@ tailVerify iv f finished =
 		let cleanup = void . tryNonAsync . INotify.removeWatch
 		let stop w = do
 			cleanup w
-			unableIncremental iv
+			unableIncrementalVerifier iv
 		waitopen modified >>= \case
 			Nothing -> stop wd
 			Just h -> do
@@ -301,12 +301,12 @@ tailVerify iv f finished =
 						<$> takeTMVar finished)
 				cont
 			else do
-				updateIncremental iv b
+				updateIncrementalVerifier iv b
 				atomically (tryTakeTMVar finished) >>= \case
 					Nothing -> follow h modified
 					Just () -> return ()
 
 	chunk = 65536
 #else
-tailVerify iv _ _ = unableIncremental iv
+tailVerify iv _ _ = unableIncrementalVerifier iv
 #endif
