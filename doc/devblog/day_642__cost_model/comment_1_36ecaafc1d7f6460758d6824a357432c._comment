@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="comment 1"
+ date="2021-11-09T08:48:33Z"
+ content="""
+My first impression of commit [[!commit a0758bdd1002e798f62353efa725ac2972589b96]] with the cost model
+is quite positive as I'm the one with multigigabyte annexed files in his otherwise rather small (by number of files)
+repo and thus I'm affected by the limitations of the filter-process method which pipes all the content of annexed
+files from git to git-annex. Compared to commit [[!commit 837025b14f523f9180f82d0cced1e53a8a9b94de]], which frankly
+for me was unusable in this particular repo with `filter.annex.process` set, the new version behaves rather nicely
+in that a simple test of `time git checkout git-annex` followed by
+`time git checkout 'adjusted/master(hidemissing-unlocked)'` turns out to be faster than using an unoptimised version
+(=8.20211028) without the long-running `filter-process` functionality. Obviously, it's only the first stage,
+i.e. checking out the git-annex branch, that becomes faster by over 50 percentage points but I'll take any improvement
+in my daily git-annex operations. :)
+
+The timings I got are as follows.
+
+* `git checkout git-annex`
+  - unoptimised 8.20211028 / w/o `filter-process`: 103s
+  - commit 837025b14 / w/ `filter-process` enabled: 36s
+  - commit 9d3ce224e / w/ `filter-process` enabled: 37s
+* `git checkout 'adjusted/master(hidemissing-unlocked)'`
+  - unoptimised 8.20211028 / w/o `filter-process`: 49s
+  - commit 837025b14 / w/ `filter-process` enabled: 57 minutes (I had dropped a few files, in reality this would've taken even longer)
+  - commit 9d3ce224e / w/ `filter-process` enabled: 43s
+
+This repo is on Windows (with annex.thin set) and locally has only 13 annexed files on this very drive but the files
+cover some 870 gigabytes worth of system backup images so individual files are definitely on the larger side for
+git-annex.
+
+"""]]
