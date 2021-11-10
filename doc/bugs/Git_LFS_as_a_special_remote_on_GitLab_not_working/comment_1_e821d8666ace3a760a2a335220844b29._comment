@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-11-09T20:09:01Z"
+ content="""
+Let's see.. git-lfs endpoint discovery over ssh works. 
+
+The request to start a transfer works:
+
+	  host                 = "gitlab.com"
+	  path                 = "/joeyh/test.git/info/lfs/objects/batch"
+	...
+	[2021-11-10 12:06:35.409182815] (Remote.GitLFS) Status {statusCode = 200, statusMessage = "OK"}
+
+So it's the actual PUT that fails:
+
+	requestHeaders       = [("Authorization","<REDACTED>"),("Content-Type","application/octet-stream"),("Transfer-Encoding","chunked"),("User-Agent","git-annex/8.20211029-ga5a7d8433")]
+	path                 = "/joeyh/test.git/gitlab-lfs/objects/922d58c647a679e17ee7c30f7de0111b56b90e84129fa3663568b81822a2628a/30"
+
+Seems that the Transfer-Encoding chunked header is the problem.
+That header is provided by the git-lfs endpoint as one to include in
+the PUT (along with the Authorization header), and git-annex dutifully does
+include it. But it seems that does not make the PUT use that
+transfer encoding. And then in the server error, we see 
+"invalid chunked body".
+
+I tried filtering out the Transfer-Encoding header, and that does 
+fix the problem. But I dunno if that's the best fix. Should git-annex support
+Transfer-Encoding chunked?
+
+git-lfs has itself supported Transfer-Encoding chunked since 2015,
+see <https://github.com/git-lfs/git-lfs/issues/385>. That says
+"client may send data via chunked Transfer-Encoding when the server
+explicitly advertises that it's supported". Which is an interesting
+wording -- "may", "supported" -- implying it's not required to use it.
+
+The API docs <https://github.com/git-lfs/git-lfs/blob/main/docs/api/batch.md>
+says the http headers are "Optional hash of String HTTP header key/value
+pairs to apply to the request". I think it means optional as in the
+server may optionally not send any, not necessarily 
+that applying them to the request is optional, but that's not really clear.
+(Surely a header like Authorization is not optional to include.)
+
+If the headers are not optional to include then the API would let the server
+specify any http headers at all, and the client has to send a PUT that includes
+those headers and that complies with them. So Transfer-Encoding deflate would
+need to use that compression method, etc.
+
+But looking at the git-lfs implementation, it only actually handles
+Transfer-Encoding chunked and not other values. I think it may also
+not include other headers than Authorization in the PUT?
+
+It seems possible there are other headers that might cause problems if they are
+blindly copied into the PUT. Content-Encoding is the only other obvious one,
+but who knows what may lurk in some odd corner of a HTTP spec.
+"""]]

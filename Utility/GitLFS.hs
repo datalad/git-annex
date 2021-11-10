@@ -45,6 +45,7 @@ module Utility.GitLFS (
 	-- * Making transfers
 	downloadOperationRequest,
 	uploadOperationRequests,
+	ServerSupportsChunks(..),
 
 	-- * Endpoint discovery
 	Endpoint,
@@ -402,10 +403,10 @@ parseTransferResponse resp = case eitherDecode resp of
 
 -- | Builds a http request to perform a download.
 downloadOperationRequest :: DownloadOperation -> Maybe Request
-downloadOperationRequest = operationParamsRequest . download
+downloadOperationRequest = fmap fst . operationParamsRequest . download
 
 -- | Builds http request to perform an upload. The content to upload is
--- provided in the RequestBody, along with its SHA256 and size.
+-- provided, along with its SHA256 and size.
 --
 -- When the LFS server requested verification, there will be a second
 -- Request that does that; it should be run only after the upload has
@@ -413,8 +414,8 @@ downloadOperationRequest = operationParamsRequest . download
 --
 -- When the LFS server already contains the object, an empty list may be
 -- returned.
-uploadOperationRequests :: UploadOperation -> RequestBody -> SHA256 -> Integer -> Maybe [Request]
-uploadOperationRequests op content oid size = 
+uploadOperationRequests :: UploadOperation -> (ServerSupportsChunks -> RequestBody) -> SHA256 -> Integer -> Maybe [Request]
+uploadOperationRequests op mkcontent oid size = 
 	case (mkdlreq, mkverifyreq) of
 		(Nothing, _) -> Nothing
 		(Just dlreq, Nothing) -> Just [dlreq]
@@ -422,25 +423,40 @@ uploadOperationRequests op content oid size =
   where
 	mkdlreq = mkdlreq'
 		<$> operationParamsRequest (upload op)
-	mkdlreq' r = r
+	mkdlreq' (r, ssc) = r
 		{ method = "PUT"
-		, requestBody = content
+		, requestBody = mkcontent ssc
 		}
 	mkverifyreq = mkverifyreq'
 		<$> (operationParamsRequest =<< verify op)
-	mkverifyreq' r = addLfsJsonHeaders $ r
+	mkverifyreq' (r, _ssc) = addLfsJsonHeaders $ r
 		{ method = "POST"
 		, requestBody = RequestBodyLBS $ encode $
 			Verification oid size
 		}
 
-operationParamsRequest :: OperationParams -> Maybe Request
+-- | When the LFS server indicates that it supports Transfer-Encoding chunked,
+-- this will contain a true value, and the RequestBody provided to
+-- uploadOperationRequests may be created using RequestBodyStreamChunked.
+-- Otherwise, that should be avoided as the server may not support the
+-- chunked encoding.
+newtype ServerSupportsChunks = ServerSupportsChunks Bool
+
+operationParamsRequest :: OperationParams -> Maybe (Request, ServerSupportsChunks)
 operationParamsRequest ps = do
 	r <- parseRequest (T.unpack (href ps))
 	let headers = map convheader $ maybe [] M.toList (header ps)
-	return $ r { requestHeaders = headers }
+	let headers' = filter allowedheader headers
+	let ssc = ServerSupportsChunks $
+		any (== ("Transfer-Encoding", "chunked")) headers
+	return (r { requestHeaders = headers' }, ssc)
   where
 	convheader (k, v) = (CI.mk (E.encodeUtf8 k), E.encodeUtf8 v)
+	-- requestHeaders is not allowed to set Transfer-Encoding or 
+	-- Content-Length; copying those over blindly could request in a
+	-- malformed request.
+	allowedheader (k, _) = k /= "Transfer-Encoding"
+		&& k /= "Content-Length"
 
 type Url = T.Text
 

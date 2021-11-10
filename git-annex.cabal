@@ -419,7 +419,7 @@ Executable git-annex
     Build-Depends: network (< 3.0.0.0), network (>= 2.6.3.0)
 
   if flag(GitLfs)
-    Build-Depends: git-lfs (>= 1.1.0)
+    Build-Depends: git-lfs (>= 1.2.0)
     CPP-Options: -DWITH_GIT_LFS
   else
     Other-Modules: Utility.GitLFS

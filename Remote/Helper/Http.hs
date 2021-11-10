@@ -37,6 +37,12 @@ httpBodyStorer src m = do
 	let streamer sink = withMeteredFile src m $ \b -> byteStringPopper b sink
 	return $ RequestBodyStream (fromInteger size) streamer
 
+-- Like httpBodyStorer, but generates a chunked request body.
+httpBodyStorerChunked :: FilePath -> MeterUpdate -> RequestBody
+httpBodyStorerChunked src m =
+	let streamer sink = withMeteredFile src m $ \b -> byteStringPopper b sink
+	in RequestBodyStreamChunked streamer
+
 byteStringPopper :: L.ByteString -> NeedsPopper () -> IO ()
 byteStringPopper b sink = do
 	mvar <- newMVar $ L.toChunks b

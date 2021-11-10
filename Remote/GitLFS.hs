@@ -457,7 +457,11 @@ store rs h = fileStorer $ \k src p -> getLFSEndpoint LFS.RequestUpload h >>= \ca
 		(req, sha256, size) <- mkUploadRequest rs k src
 		sendTransferRequest req endpoint >>= \case
 			Right resp -> do
-				body <- liftIO $ httpBodyStorer src p
+				let body (LFS.ServerSupportsChunks ssc) =
+					if ssc
+						then httpBodyStorerChunked src p
+						else RequestBodyIO $
+							httpBodyStorer src p
 				forM_ (LFS.objects resp) $
 					send body sha256 size
 			Left err -> giveup err

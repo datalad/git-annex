@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-11-10T17:21:01Z"
+ content="""
+Fixed by not passing through those 2 problem headers. And also made it
+actually used chunked encoding when the server indicates it's supported.
+"""]]
