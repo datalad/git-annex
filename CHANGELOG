@@ -13,6 +13,7 @@ git-annex (8.20211029) UNRELEASED; urgency=medium
   * uninit: Avoid error message when there is no git-annex branch.
   * git-lfs: Fix interoperability with gitlab's implementation of the
     git-lfs protocol, which requests Content-Encoding chunked.
+  * migrate: New --remove-size option.
 
  -- Joey Hess <id@joeyh.name>  Mon, 01 Nov 2021 13:19:46 -0400
 

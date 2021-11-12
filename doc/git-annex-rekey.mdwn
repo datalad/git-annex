@@ -13,6 +13,9 @@ both the file, and the new key to use for it.
 
 Multiple pairs of file and key can be given in a single command line.
 
+Note that, unlike `git-annex migrate`, this does not copy over metadata,
+urls, and other such information from the old to the new key
+
 # OPTIONS
 
 * `--force`
@@ -36,6 +39,8 @@ Multiple pairs of file and key can be given in a single command line.
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-migrate]](1)
 
 # AUTHOR
 

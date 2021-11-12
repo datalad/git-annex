@@ -39,6 +39,18 @@ it's best to run migrate in all of them.
 
 * Also the [[git-annex-common-options]](1) can be used.
 
+* `--remove-size`
+
+  Keys often include the size of their content, which is generally a useful
+  thing. In fact, this command defaults to adding missing size information
+  to keys. With this option, the size information is removed instead.
+
+  One use of this option is to convert URL keys that were added
+  by `git-annex addurl --fast` to ones that would have been added if
+  that command was run with the `--relaxed` option. Eg:
+
+  	git-annex migrate --remove-size --backend=URL somefile
+
 # SEE ALSO
 
 [[git-annex]](1)

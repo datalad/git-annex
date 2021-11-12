@@ -23,20 +23,33 @@ cmd :: Command
 cmd = withGlobalOptions [annexedMatchingOptions] $
 	command "migrate" SectionUtility 
 		"switch data to different backend"
-		paramPaths (withParams seek)
+		paramPaths (seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek = withFilesInGitAnnex ww seeker <=< workTreeItems ww
+data MigrateOptions = MigrateOptions
+	{ migrateThese :: CmdParams
+	, removeSize :: Bool
+	}
+
+optParser :: CmdParamsDesc -> Parser MigrateOptions
+optParser desc = MigrateOptions
+	<$> cmdParams desc
+	<*> switch
+		( long "remove-size"
+		<> help "remove size field from keys"
+		)
+
+seek :: MigrateOptions -> CommandSeek
+seek o = withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
   where
 	ww = WarnUnmatchLsFiles
 	seeker = AnnexedFileSeeker
-		{ startAction = start
+		{ startAction = start o
 		, checkContentPresent = Nothing
 		, usesLocationLog = False
 		}
 
-start :: SeekInput -> RawFilePath -> Key -> CommandStart
-start si file key = do
+start :: MigrateOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o si file key = do
 	forced <- Annex.getState Annex.force
 	v <- Backend.getBackend (fromRawFilePath file) key
 	case v of
@@ -46,9 +59,14 @@ start si file key = do
 			newbackend <- maybe defaultBackend return 
 				=<< chooseBackend file
 			if (newbackend /= oldbackend || upgradableKey oldbackend key || forced) && exists
-				then starting "migrate" (mkActionItem (key, file)) si $
-					perform file key oldbackend newbackend
-				else stop
+				then go False oldbackend newbackend
+				else if removeSize o && exists
+					then go True oldbackend oldbackend
+					else stop
+  where
+	go onlyremovesize oldbackend newbackend =
+		starting "migrate" (mkActionItem (key, file)) si $
+			perform onlyremovesize o file key oldbackend newbackend
 
 {- Checks if a key is upgradable to a newer representation.
  - 
@@ -70,13 +88,14 @@ upgradableKey backend key = isNothing (fromKey keySize key) || backendupgradable
  - data cannot get corrupted after the fsck but before the new key is
  - generated.
  -}
-perform :: RawFilePath -> Key -> Backend -> Backend -> CommandPerform
-perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbackend)
+perform :: Bool -> MigrateOptions -> RawFilePath -> Key -> Backend -> Backend -> CommandPerform
+perform onlyremovesize o file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbackend)
   where
 	go Nothing = stop
 	go (Just (newkey, knowngoodcontent))
-		| knowngoodcontent = finish newkey
-		| otherwise = stopUnless checkcontent $ finish newkey
+		| knowngoodcontent = finish (removesize newkey)
+		| otherwise = stopUnless checkcontent $
+			finish (removesize newkey)
 	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyPresent afile
 	finish newkey = ifM (Command.ReKey.linkKey file oldkey newkey)
 		( do
@@ -89,6 +108,7 @@ perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbacken
 			next $ Command.ReKey.cleanup file newkey
 		, giveup "failed creating link from old to new key"
 		)
+	genkey _ | onlyremovesize = return $ Just (oldkey, False)
 	genkey Nothing = do
 		content <- calcRepo $ gitAnnexLocation oldkey
 		let source = KeySource
@@ -101,4 +121,7 @@ perform file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbacken
 	genkey (Just fm) = fm oldkey newbackend afile >>= \case
 		Just newkey -> return (Just (newkey, True))
 		Nothing -> genkey Nothing
+	removesize k
+		| removeSize o = alterKey k $ \kd -> kd { keySize = Nothing } 
+		| otherwise = k
 	afile = AssociatedFile (Just file)

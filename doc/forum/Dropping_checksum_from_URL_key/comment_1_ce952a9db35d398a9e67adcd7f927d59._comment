@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-11-12T16:10:01Z"
+ content="""
+Migrating to URL will not do anything since they already are url keys.
+
+This could be scripted using `git-annex examinekey` to 
+convert such a key into one without a size, and then using
+`git-annex rekey`, which lets the new key for a file be specified.
+
+However, that command is a low level plumbing command, and does not copy
+over the url list from the old to the new key as migrate does (nor other
+metadata). So you would also have to use `git-annex addurl file url`
+afterwards to add the url, and use `git-annex metadata` if you have
+metadata. Very unergonomic.
+"""]]
