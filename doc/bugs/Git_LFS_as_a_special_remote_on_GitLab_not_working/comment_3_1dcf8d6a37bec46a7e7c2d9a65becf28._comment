@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="iimog@2c22a44141070c04b943932b697818a686859677"
+ nickname="iimog"
+ avatar="http://cdn.libravatar.org/avatar/e6b150bcd25f22fa74abde05e5d6d4eb"
+ subject="It works"
+ date="2021-11-12T08:14:32Z"
+ content="""
+Thank you so much for this. I can confirm that using the latest version, I can push to GitLab LFS with git-annex and it also works when used through DataLad. This opens a whole range of options for me, so thanks a million!
+"""]]
