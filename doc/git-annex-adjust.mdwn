@@ -16,13 +16,18 @@ The adjusted branch will have a name like "adjusted/master(unlocked)".
 Since it's a regular git branch, you can use `git checkout` to switch
 back to the original branch at any time.
 
+This allows changing how annexed files are handled, without making changes
+to a public branch with commands like `git-annex unlock`.
+
 While in the adjusted branch, you can use git-annex and git commands as
 usual. Any commits that you make will initially only be made to the
 adjusted branch. 
 
 To propagate commits from the adjusted branch back to the original branch,
 and to other repositories, as well as to merge in changes from other
-repositories, run `git annex sync`.
+repositories, run `git annex sync`. This will propagate changes that you've
+made such as adding/deleting files, but will not propagate the adjustments
+made by this command.
 
 When in an adjusted branch, using `git merge otherbranch` is often not
 ideal, because merging a non-adjusted branch may lead to unncessary
@@ -116,6 +121,8 @@ and will also propagate commits back to the original branch.
 [[git-annex]](1)
 
 [[git-annex-unlock]](1)
+
+[[git-annex-lock]](1)
 
 [[git-annex-upgrade]](1)
 
