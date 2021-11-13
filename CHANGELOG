@@ -14,6 +14,8 @@ git-annex (8.20211029) UNRELEASED; urgency=medium
   * git-lfs: Fix interoperability with gitlab's implementation of the
     git-lfs protocol, which requests Content-Encoding chunked.
   * migrate: New --remove-size option.
+  * Fix a typo in the name of youtube-dl
+    (reversion introduced in version 8.20210903)
 
  -- Joey Hess <id@joeyh.name>  Mon, 01 Nov 2021 13:19:46 -0400
 

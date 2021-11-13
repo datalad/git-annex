@@ -249,7 +249,7 @@ youtubeDlOpts addopts = do
 	return (opts ++ addopts)
 
 youtubeDlCommand :: Annex String
-youtubeDlCommand = fromMaybe "yooutube-dl" . annexYoutubeDlCommand 
+youtubeDlCommand = fromMaybe "youtube-dl" . annexYoutubeDlCommand 
 	<$> Annex.getGitConfig
 
 supportedScheme :: UrlOptions -> URLString -> Bool
