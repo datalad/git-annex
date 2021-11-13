@@ -271,7 +271,8 @@ performWeb addunlockedmatcher o url file urlinfo = ifAnnexed file addurl geturl
 	addurl = addUrlChecked o url file webUUID $ \k ->
 		ifM (pure (not (rawOption (downloadOptions o))) <&&> youtubeDlSupported url)
 			( return (True, True, setDownloader url YoutubeDownloader)
-			, checkRaw (downloadOptions o) $ return (Url.urlExists urlinfo, Url.urlSize urlinfo == fromKey keySize k, url)
+			, checkRaw Nothing (downloadOptions o) $
+				return (Url.urlExists urlinfo, Url.urlSize urlinfo == fromKey keySize k, url)
 			)
 
 {- Check that the url exists, and has the same size as the key,
@@ -332,7 +333,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 			in ifAnnexed f
 				(alreadyannexed (fromRawFilePath f))
 				(dl f)
-		Left _ -> checkRaw o (normalfinish tmp)
+		Left err -> checkRaw (Just err) o (normalfinish tmp)
 	  where
 		dl dest = withTmpWorkDir mediakey $ \workdir -> do
 			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith R.removeLink)
@@ -346,7 +347,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 								showDestinationFile (fromRawFilePath dest)
 								addWorkTree canadd addunlockedmatcher webUUID mediaurl dest mediakey (Just (toRawFilePath mediafile))
 								return $ Just mediakey
-						Right Nothing -> checkRaw o (normalfinish tmp)
+						Right Nothing -> checkRaw Nothing o (normalfinish tmp)
 						Left msg -> do
 							cleanuptmp
 							warning msg
@@ -363,9 +364,12 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 					warning $ dest ++ " already exists; not overwriting"
 					return Nothing
 	
-checkRaw :: DownloadOptions -> Annex a -> Annex a
-checkRaw o a
-	| noRawOption o = giveup "Unable to use youtube-dl or a special remote and --no-raw was specified."
+checkRaw :: (Maybe String) -> DownloadOptions -> Annex a -> Annex a
+checkRaw failreason o a
+	| noRawOption o = giveup $ "Unable to use youtube-dl or a special remote and --no-raw was specified" ++
+		case failreason of
+			Just msg -> ": " ++ msg
+			Nothing -> ""
 	| otherwise = a
 
 {- The destination file is not known at start time unless the user provided
@@ -487,7 +491,7 @@ nodownloadWeb addunlockedmatcher o url urlinfo file
 		then nomedia
 		else youtubeDlFileName url >>= \case
 			Right mediafile -> usemedia (toRawFilePath mediafile)
-			Left _ -> checkRaw o nomedia
+			Left err -> checkRaw (Just err) o nomedia
 	| otherwise = do
 		warning $ "unable to access url: " ++ url
 		return Nothing
