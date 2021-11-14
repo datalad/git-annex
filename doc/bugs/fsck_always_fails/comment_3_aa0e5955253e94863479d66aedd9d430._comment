@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="contact@ee563aaec1e9de7a4e8d748992963dba79178e9c"
+ nickname="contact"
+ avatar="http://cdn.libravatar.org/avatar/4aa4d7a441bd4e6948fc0012c7229d01"
+ subject="comment 3"
+ date="2021-11-14T18:41:18Z"
+ content="""
+Sorry for the comment spam. It looks like 'Warning: Fscking a repository that is currently marked as dead.' is what was happening here.
+The error message is confusing making it seem like the checksum failed and that the file existed elsewhere, not that there's no copies.
+"""]]
