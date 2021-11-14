@@ -1,0 +1,50 @@
+### Please describe the problem.
+
+All my files added to my archive repo over the past few months seem to fail git annex fsck.
+
+### What steps will reproduce the problem?
+
+- Add a file to the repo
+- Fsck it
+
+### What version of git-annex are you using? On what operating system?
+
+8.20211012-geb95ed486 on Arch Linux directly downloaded from this website
+I was using some older version from 2020 previously
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+    jookia@titan:/data/jookia/archive% head -c1024 /dev/urandom > RANDOM.TEST                          (exited 130) (1 jobs) 05:27
+    jookia@titan:/data/jookia/archive% git annex add RANDOM.TEST                                                    (1 jobs) 05:27
+    add RANDOM.TEST 
+    ok                                
+    (recording state in git...)
+    jookia@titan:/data/jookia/archive% git commit -m RANDOM.TEST                                                    (1 jobs) 05:27
+    [main 2e9f2429018] RANDOM.TEST
+     1 file changed, 1 insertion(+)
+     create mode 120000 RANDOM.TEST
+    jookia@titan:/data/jookia/archive% git annex fsck RANDOM.TEST                                                   (1 jobs) 05:27
+
+      Remote black cannot currently be accessed.
+    Warning: Fscking a repository that is currently marked as dead.
+    fsck RANDOM.TEST (checksum...) 
+      ** No known copies exist of RANDOM.TEST
+      These dead repositories used to have copies
+            e62ad85d-368d-4ea5-a85c-e94598904a50 -- T400 laptop [here]
+    failed
+    (recording state in git...)
+    fsck: 1 failed
+    jookia@titan:/data/jookia/archive% ls -l RANDOM.TEST                                               (exited 130) (1 jobs) 05:28
+    lrwxrwxrwx 1 jookia jookia 194 Nov 15 05:27 RANDOM.TEST -> .git/annex/objects/K4/jV/SHA256E-s1024--0dedc9e7fb3fa053982201c2166fc1265ebd64d41ab91fe1c348c2df46f50167.TEST/SHA256E-s1024--0dedc9e7fb3fa053982201c2166fc1265ebd64d41ab91fe1c348c2df46f50167.TEST
+    jookia@titan:/data/jookia/archive% sha256sum RANDOM.TEST                                                        (1 jobs) 05:28
+    0dedc9e7fb3fa053982201c2166fc1265ebd64d41ab91fe1c348c2df46f50167  RANDOM.TEST
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, I've been using it for years. It's a robust and reliable piece of software. :)
