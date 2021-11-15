@@ -16,6 +16,7 @@ git-annex (8.20211029) UNRELEASED; urgency=medium
   * migrate: New --remove-size option.
   * Fix a typo in the name of youtube-dl
     (reversion introduced in version 8.20210903)
+  * importfeed: Fix a crash when used in a non-unicode locale.
 
  -- Joey Hess <id@joeyh.name>  Mon, 01 Nov 2021 13:19:46 -0400
 

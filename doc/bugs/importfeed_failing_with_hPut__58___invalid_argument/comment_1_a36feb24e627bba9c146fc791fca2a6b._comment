@@ -1,0 +1,60 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-11-15T16:04:31Z"
+ content="""
+To reproduce this, I had to set LANG=C. Using a unicode locale avoids
+the problem.
+
+The `.met` file indicates it's a problem with encoding of metadata
+that is being imported from the feed, and so it must be the
+itemid that is causing the problem.
+
+        <item>
+		...
+                <guid>http://www.manager-tools.com/2014/01/choosing-a-company-work-chapter-7-–-questions/</guid>
+        </item>
+
+A file with the feed edited down to just that item is enough to reproduce it.
+Notice the unicode in the guid "chapter-7-–-questions".
+That ENDASH character is causing the crash.
+
+Also I noticed that the next time it runs, it skips the item, since it got
+far enough to add the file for it and record the url before the metadata itemid
+write crashed it. Explains why it's failing on different items in different runs.
+
+While this looks like one of the old Handle output encoding problems, it is not,
+because a) the itemid is written as a ByteString so encoding does not matter,
+b) those were fixed comprehensively by forcing all handles to use filesystem
+enconding, and c) just printing out the length of the itemid also causes a crash:
+
+	+                 liftIO $ print (L.length (journalableByteString content))
+
+	git-annex: recoverEncode: invalid argument (invalid character)
+
+Looking at what the feed library parses:
+	
+	LANG=C ghci Utility/FileSystemEncoding.hs
+	ghci> Just f <- Text.Feed.Import.parseFeedFromFile "career_tools_podcasts.xml"
+	ghci> Just (_, x) = Text.Feed.Query.getItemId (Text.Feed.Query.feedItems f !! 0)
+	ghci> x
+	"http://www.manager-tools.com/2014/01/choosing-a-company-work-chapter-7-\8211-questions/"
+	ghci> encodeBS (Data.Text.unpack x)
+	"*** Exception: recoverEncode: invalid argument (invalid character)
+
+So the problem is that Text parses the feed as unicode, leading to this
+non-ascii Char that is not encoded using the filesystem encoding
+(which would encode it as "\56546\56448\56467"). 
+And `encodeBS "\8211"` crashes in LANG=C.
+
+Which is a reversion of sorts; before [[!commit fa62c98910]] encodeBS did
+not crash. Although it also didn't round-trip this value properly,
+producing "M" for it. Since this only affects strings that are not input in
+the filesystem encoding, I think the new encodeBS is still ok to use
+generally; I'm not going to revert that commit.
+
+Instead, Text values originating from Feed need to be converted to
+String in some other way, producing a value encoded
+using the filesystem encoding. encodeUtf8 looks like it will
+do the right thing in this case.
+"""]]

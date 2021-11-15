@@ -20,7 +20,9 @@ import Data.Time.Format
 import Data.Time.Calendar
 import Data.Time.LocalTime
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import qualified System.FilePath.ByteString as P
+import qualified Data.ByteString as B
 
 import Command
 import qualified Annex
@@ -161,10 +163,10 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
 	mk i = case getItemEnclosure i of
 		Just (enclosureurl, _, _) ->
 			Just $ ToDownload f u i $ Enclosure $ 
-				T.unpack enclosureurl
+				decodeBS $ fromFeedText enclosureurl
 		Nothing -> case getItemLink i of
 			Just l -> Just $ ToDownload f u i $ 
-				MediaLink $ T.unpack l
+				MediaLink $ decodeBS $ fromFeedText l
 			Nothing -> Nothing
 
 {- Feeds change, so a feed download cannot be resumed. -}
@@ -243,7 +245,7 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 
 	knownitemid = case getItemId (item todownload) of
 		Just (_, itemid) ->
-			S.member (T.unpack itemid) (knownitems cache)
+			S.member (decodeBS $ fromFeedText itemid) (knownitems cache)
 		_ -> False
 
 	rundownload url extension getter = do
@@ -370,7 +372,7 @@ feedFile tmpl i extension = sanitizeLeadingFilePathCharacter $
 		Just pd -> Just $
 			formatTime defaultTimeLocale "%F" pd
 		-- if date cannot be parsed, use the raw string
-		Nothing-> replace "/" "-" . T.unpack
+		Nothing-> replace "/" "-" . decodeBS . fromFeedText
 			<$> getItemPublishDateString itm
 	
 	(itempubyear, itempubmonth, itempubday) = case pubdate of
@@ -401,7 +403,7 @@ minimalMetaData :: ToDownload -> MetaData
 minimalMetaData i = case getItemId (item i) of
 	(Nothing) -> emptyMetaData
 	(Just (_, itemid)) -> MetaData $ M.singleton itemIdField 
-		(S.singleton $ toMetaValue $ encodeBS $ T.unpack itemid)
+		(S.singleton $ toMetaValue $fromFeedText itemid)
 
 {- Extract fields from the feed and item, that are both used as metadata,
  - and to generate the filename. -}
@@ -411,18 +413,18 @@ extractFields i = map (uncurry extractField)
 	, ("itemtitle", [itemtitle])
 	, ("feedauthor", [feedauthor])
 	, ("itemauthor", [itemauthor])
-	, ("itemsummary", [T.unpack <$> getItemSummary (item i)])
-	, ("itemdescription", [T.unpack <$> getItemDescription (item i)])
-	, ("itemrights", [T.unpack <$> getItemRights (item i)])
-	, ("itemid", [T.unpack . snd <$> getItemId (item i)])
+	, ("itemsummary", [decodeBS . fromFeedText <$> getItemSummary (item i)])
+	, ("itemdescription", [decodeBS . fromFeedText <$> getItemDescription (item i)])
+	, ("itemrights", [decodeBS . fromFeedText <$> getItemRights (item i)])
+	, ("itemid", [decodeBS . fromFeedText . snd <$> getItemId (item i)])
 	, ("title", [itemtitle, feedtitle])
 	, ("author", [itemauthor, feedauthor])
 	]
   where
-	feedtitle = Just $ T.unpack $ getFeedTitle $ feed i
-	itemtitle = T.unpack <$> getItemTitle (item i)
-	feedauthor = T.unpack <$> getFeedAuthor (feed i)
-	itemauthor = T.unpack <$> getItemAuthor (item i)
+	feedtitle = Just $ decodeBS $ fromFeedText $ getFeedTitle $ feed i
+	itemtitle = decodeBS . fromFeedText <$> getItemTitle (item i)
+	feedauthor = decodeBS . fromFeedText <$> getFeedAuthor (feed i)
+	itemauthor = decodeBS . fromFeedText <$> getItemAuthor (item i)
 
 itemIdField :: MetaField
 itemIdField = mkMetaFieldUnchecked "itemid"
@@ -478,3 +480,17 @@ clearFeedProblem url =
 
 feedState :: URLString -> Annex RawFilePath
 feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing
+
+{- The feed library parses the feed to Text, and does not use the
+ - filesystem encoding to do it, so when the locale is not unicode
+ - capable, a Text value can still include unicode characters. 
+ -
+ - So, it's not safe to use T.unpack to convert that to a String,
+ - because later use of that String by eg encodeBS will crash
+ - with an encoding error. Use this instad.
+ -
+ - This should not be used on a Text that is read using the
+ - filesystem encoding because it does not reverse that encoding.
+ -}
+fromFeedText :: T.Text -> B.ByteString
+fromFeedText = TE.encodeUtf8

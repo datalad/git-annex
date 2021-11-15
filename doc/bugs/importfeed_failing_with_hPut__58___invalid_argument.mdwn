@@ -69,3 +69,5 @@ $ echo $?
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I've been using git annex for a few years now primarily as a podcatcher. I've also been using it to manage my ebooks and devices. I'm slowly starting to use it for managing my personal (non-text) records and documents.
+
+> [[fixed|done]] --[[Joey]]
