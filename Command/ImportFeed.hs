@@ -78,22 +78,29 @@ seek o = do
 getFeed :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> URLString -> CommandSeek
 getFeed addunlockedmatcher opts cache url = do
 	showStartOther "importfeed" (Just url) (SeekInput [])
-	downloadFeed url >>= \case
-		Nothing -> showEndResult =<< feedProblem url
-			"downloading the feed failed"
-		Just feedcontent -> case parseFeedString feedcontent of
-			Nothing -> debugfeedcontent feedcontent "parsing the feed failed"
-			Just f -> case findDownloads url f of
-				[] -> debugfeedcontent feedcontent "bad feed content; no enclosures to download"
-				l -> do
-					showEndOk
-					ifM (and <$> mapM (performDownload addunlockedmatcher opts cache) l)
-						( clearFeedProblem url
-						, void $ feedProblem url 
-							"problem downloading some item(s) from feed"
-						)
+	withTmpFile "feed" $ \tmpf h -> do
+		liftIO $ hClose h
+		ifM (downloadFeed url tmpf)
+			( go tmpf
+			, showEndResult =<< feedProblem url
+				"downloading the feed failed"
+			)
   where
-	debugfeedcontent feedcontent msg = do
+	-- Use parseFeedFromFile rather than reading the file
+	-- ourselves because it goes out of its way to handle encodings.
+	go tmpf = liftIO (parseFeedFromFile tmpf) >>= \case
+		Nothing -> debugfeedcontent tmpf "parsing the feed failed"
+		Just f -> case findDownloads url f of
+			[] -> debugfeedcontent tmpf "bad feed content; no enclosures to download"
+			l -> do
+				showEndOk
+				ifM (and <$> mapM (performDownload addunlockedmatcher opts cache) l)
+					( clearFeedProblem url
+					, void $ feedProblem url 
+						"problem downloading some item(s) from feed"
+					)
+	debugfeedcontent tmpf msg = do
+		feedcontent <- liftIO $ readFile tmpf
 		fastDebug "Command.ImportFeed" $ unlines
 			[ "start of feed content"
 			, feedcontent
@@ -170,15 +177,11 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
 			Nothing -> Nothing
 
 {- Feeds change, so a feed download cannot be resumed. -}
-downloadFeed :: URLString -> Annex (Maybe String)
-downloadFeed url
+downloadFeed :: URLString -> FilePath -> Annex Bool
+downloadFeed url f
 	| Url.parseURIRelaxed url == Nothing = giveup "invalid feed url"
-	| otherwise = withTmpFile "feed" $ \f h -> do
-		liftIO $ hClose h
-		ifM (Url.withUrlOptions $ Url.download nullMeterUpdate Nothing url f)
-			( Just <$> liftIO (readFileStrict f)
-			, return Nothing
-			)
+	| otherwise = Url.withUrlOptions $
+		Url.download nullMeterUpdate Nothing url f
 
 performDownload :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
 performDownload addunlockedmatcher opts cache todownload = case location todownload of
