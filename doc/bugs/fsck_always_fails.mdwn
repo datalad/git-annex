@@ -48,3 +48,7 @@ I was using some older version from 2020 previously
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, I've been using it for years. It's a robust and reliable piece of software. :)
+
+> This output does not seem unclear. The local repository being fscked is
+> marked as dead, and of course git-annex treats dead repositories as not
+> containing any content. [[done]] --[[Joey]]
