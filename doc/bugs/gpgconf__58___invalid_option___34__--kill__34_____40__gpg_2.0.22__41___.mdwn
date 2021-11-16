@@ -31,3 +31,5 @@ Meanwhile - adding `gnupg >=2.1.1 ` dependency to conda build: https://github.co
 
 [[!meta author=yoh]]
 [[!tag projects/repronim]]
+
+[[!tag moreinfo]]
