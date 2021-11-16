@@ -19,7 +19,7 @@ extra-deps:
 - IfElse-0.85
 - aws-0.22
 - bloomfilter-2.0.1.0
-- git-lfs-1.1.2
+- git-lfs-1.2.0
 - http-client-restricted-0.0.4
 - network-multicast-0.3.2
 - sandi-0.5
