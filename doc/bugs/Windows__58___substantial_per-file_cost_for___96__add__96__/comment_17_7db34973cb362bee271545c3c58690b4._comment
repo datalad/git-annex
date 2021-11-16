@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2021-11-16T16:28:11Z"
+ content="""
+The new `git-annex filter-process` should improve this speed a lot.
+It avoids a new process being started for each file that is added.
+
+git config filter.annex.process 'git-annex filter-process'
+
+That may become the default in v9, or possibly in new v8 repositories.
+
+There is a tradeoff, since `git add` of a large file to the annex gets
+slower when it's enabled. Only about 5% in my benchmarks on linux, but
+maybe more on windows, I don't know.
+"""]]
