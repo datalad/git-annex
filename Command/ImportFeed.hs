@@ -184,8 +184,12 @@ downloadFeed url f
 		Url.download nullMeterUpdate Nothing url f
 
 performDownload :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
-performDownload addunlockedmatcher opts cache todownload = case location todownload of
-	Enclosure url -> checkknown url $
+performDownload = performDownload' False
+
+performDownload' :: Bool -> AddUnlockedMatcher -> ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
+performDownload' started addunlockedmatcher opts cache todownload = case location todownload of
+	Enclosure url -> checkknown url $ do
+		starturl url
 		rundownload url (takeWhile (/= '?') $ takeExtension url) $ \f -> do
 			let f' = fromRawFilePath f
 			r <- Remote.claimingUrl url
@@ -256,28 +260,25 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 			feedFile (template cache) todownload extension
 		case dest of
 			Nothing -> return True
-			Just f -> do
-				showStartOther "addurl" (Just url) (SeekInput [])
-				getter (toRawFilePath f) >>= \case
-					Just ks
-						-- Download problem.
-						| null ks -> do
-							showEndFail
-							checkFeedBroken (feedurl todownload)
-						| otherwise -> do
-							forM_ ks $ \key ->
-								ifM (annexGenMetaData <$> Annex.getGitConfig)
-									( addMetaData key $ extractMetaData todownload
-									, addMetaData key $ minimalMetaData todownload
-									)
-							showEndOk
-							return True
-					-- Was not able to add anything,
-					-- but not because of a download 
-					-- problem.
-					Nothing -> do
+			Just f -> getter (toRawFilePath f) >>= \case
+				Just ks
+					-- Download problem.
+					| null ks -> do
 						showEndFail
-						return False
+						checkFeedBroken (feedurl todownload)
+					| otherwise -> do
+						forM_ ks $ \key ->
+							ifM (annexGenMetaData <$> Annex.getGitConfig)
+								( addMetaData key $ extractMetaData todownload
+								, addMetaData key $ minimalMetaData todownload
+								)
+						showEndOk
+						return True
+				-- Was not able to add anything, but not
+				-- because of a download problem.
+				Nothing -> do
+					showEndFail
+					return False
 
 	{- Find a unique filename to save the url to.
 	 - If the file exists, prefixes it with a number.
@@ -305,9 +306,10 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 			)
 	
 	downloadmedia linkurl mediaurl mediakey
-		| rawOption (downloadOptions opts) = downloadlink
+		| rawOption (downloadOptions opts) = downloadlink False
 		| otherwise = ifM (youtubeDlSupported linkurl)
 			( do
+				starturl linkurl
 				r <- withTmpWorkDir mediakey $ \workdir -> do
 					dl <- youtubeDl linkurl (fromRawFilePath workdir) nullMeterUpdate
 					case dl of
@@ -323,28 +325,33 @@ performDownload addunlockedmatcher opts cache todownload = case location todownl
 						-- youtube-dl didn't support it, so
 						-- download it as if the link were
 						-- an enclosure.
-						Right Nothing -> Just <$> downloadlink
+						Right Nothing -> Just <$> downloadlink True
 						Left msg -> do
 							warning $ linkurl ++ ": " ++ msg
 							return Nothing
 				return (fromMaybe False r)
-			, downloadlink
+			, downloadlink False
 			)
 	  where
-		downloadlink = checkRaw Nothing (downloadOptions opts) $
-			performDownload addunlockedmatcher opts cache todownload
+		downloadlink started' = checkRaw Nothing (downloadOptions opts) $
+			performDownload' started' addunlockedmatcher opts cache todownload
 				{ location = Enclosure linkurl }
 
 	addmediafast linkurl mediaurl mediakey =
 		ifM (pure (not (rawOption (downloadOptions opts)))
 		     <&&> youtubeDlSupported linkurl)
-			( rundownload linkurl ".m" $ \f ->
-				checkCanAdd (downloadOptions opts) f $ \canadd -> do
-					addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey Nothing
-					return (Just [mediakey])
-			, performDownload addunlockedmatcher opts cache todownload
+			( do
+				starturl linkurl
+				rundownload linkurl ".m" $ \f ->
+					checkCanAdd (downloadOptions opts) f $ \canadd -> do
+						addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey Nothing
+						return (Just [mediakey])
+			, performDownload' started addunlockedmatcher opts cache todownload
 				{ location = Enclosure linkurl }
 			)
+
+	starturl u = unless started $
+		showStartOther "addurl" (Just u) (SeekInput [])
 
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
