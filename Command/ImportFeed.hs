@@ -130,7 +130,7 @@ getCache :: Maybe String -> Annex Cache
 getCache opttemplate = ifM (Annex.getState Annex.force)
 	( ret S.empty S.empty
 	, do
-		showStart "importfeed" "checking known urls" (SeekInput [])
+		showStart "importfeed" "gathering known urls" (SeekInput [])
 		(us, is) <- knownItems
 		showEndOk
 		ret (S.fromList us) (S.fromList is)
