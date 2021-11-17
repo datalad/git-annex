@@ -46,7 +46,7 @@ youtubeDlNotAllowedMessage = unwords
 	]
 
 -- Runs youtube-dl in a work directory, to download a single media file
--- from the url. Reutrns the path to the media file in the work directory.
+-- from the url. Returns the path to the media file in the work directory.
 --
 -- Displays a progress meter as youtube-dl downloads.
 --
