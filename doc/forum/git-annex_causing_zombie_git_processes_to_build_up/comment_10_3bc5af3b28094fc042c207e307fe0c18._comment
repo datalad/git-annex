@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2021-11-19T13:30:25Z"
+ content="""
+I have not managed to reproduce it using that script. I let it run for 5
+minutes (and 1 gb transferred).
+
+Since that commit points to stall detection, I hacked the code to
+constantly detect false stalls. But I am still not seeing any zombie git
+processes with that.
+
+If stall detection *is* involved, I'd expect that you would see
+"Transfer seems to have stalled" when reproducing the bug.
+
+Since stall detection could depend on available bandwidth etc, I wonder if
+the script reproduces the bug reliably enough for the bisection to be
+correct. It would be helpful to manually verify the bisection result,
+with a longer test period than the script used. And look for the above
+message when reproducing it.
+"""]]
