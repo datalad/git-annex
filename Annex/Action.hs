@@ -13,7 +13,6 @@ module Annex.Action (
 	startup,
 	shutdown,
 	stopCoProcesses,
-	stopNonConcurrentSafeCoProcesses,
 ) where
 
 import qualified Data.Map as M
@@ -85,14 +84,8 @@ shutdown nocommit = do
 {- Stops all long-running child processes, including git query processes. -}
 stopCoProcesses :: Annex ()
 stopCoProcesses = do
-	stopNonConcurrentSafeCoProcesses
-	emptyTransferrerPool
-
-{- Stops long-running child processes that use handles that are not safe
- - for multiple threads to access at the same time. -}
-stopNonConcurrentSafeCoProcesses :: Annex ()
-stopNonConcurrentSafeCoProcesses = do
 	catFileStop
 	checkAttrStop
 	hashObjectStop
 	checkIgnoreStop
+	emptyTransferrerPool

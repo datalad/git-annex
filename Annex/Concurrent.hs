@@ -101,14 +101,10 @@ dupState = do
 		, Annex.errcounter = 0
 		}
 
-{- Merges the passed AnnexState into the current Annex state.
- - Also closes various handles in it. -}
+{- Merges the passed AnnexState into the current Annex state. -}
 mergeState :: AnnexState -> Annex ()
 mergeState st = do
-	rd <- Annex.getRead id
-	st' <- liftIO $ (fst . snd)
-		<$> run (st, rd) stopNonConcurrentSafeCoProcesses
-	forM_ (M.toList $ Annex.cleanupactions st') $
+	forM_ (M.toList $ Annex.cleanupactions st) $
 		uncurry addCleanupAction
-	Annex.Queue.mergeFrom st'
-	changeState $ \s -> s { errcounter = errcounter s + errcounter st' }
+	Annex.Queue.mergeFrom st
+	changeState $ \s -> s { errcounter = errcounter s + errcounter st }
