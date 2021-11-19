@@ -1,7 +1,7 @@
 git-annex (8.20211118) UNRELEASED; urgency=medium
 
-  * Bugfix: When -J was enabled, getting files leaked a ever-growing
-    number of git cat-file processes.
+  * Bugfix: When -J was enabled, getting files could leak an
+    ever-growing number of git cat-file processes.
   * importfeed: Display url before starting youtube-dl download.
 
  -- Joey Hess <id@joeyh.name>  Wed, 17 Nov 2021 13:18:44 -0400
