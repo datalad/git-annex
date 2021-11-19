@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2021-11-19T16:02:41Z"
+ content="""
+Reproduced the bug. Took laptop entirely offline, then `git-annex get -J5`
+in the repo @yoh provided above. Sometimes it happens immediately,
+sometimes it needs to wait a few minutes for DNS timeouts.
+
+Looks like one leaked git cat-file per time it failed to download in that
+situation.
+
+Should be able to take it from here..
+"""]]
