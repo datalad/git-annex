@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="bisection"
+ date="2021-11-18T02:29:01Z"
+ content="""
+if I bisected it right (didn't doublecheck manually), it is due to [8.20210127-107-gdd39e9e25 AKA 8.20210223~41](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=dd39e9e255a5684824ea75861f48f658eaaba288)
+
+<details>
+<summary>bisection script</summary> 
+
+```
+#!/bin/bash
+
+set -u
+
+u=http://datasets.datalad.org/labs/hasson/narratives/derivatives/fmriprep/.git
+d=/mnt/scrap/tmp/fmriprep
+
+[ -e \"$d\" ] || datalad clone \"$u\" \"$d\"
+cd \"$d\"
+git annex drop --all
+git annex get -J5 . >/dev/null &
+p=$!  # use pstree?
+for i in {1..200}; do # 200 sec seems to be enough
+    np=$(ps auxw | grep $USER | grep '\[git\] <defunct>' | wc -l)
+    echo -n \"$i $np \"
+    if [ $np -gt 10 ]; then { kill $p; exit 1; } fi
+    sleep 1
+done
+kill \"$p\" 
+echo done
+
+
+```
+</details>
+"""]]

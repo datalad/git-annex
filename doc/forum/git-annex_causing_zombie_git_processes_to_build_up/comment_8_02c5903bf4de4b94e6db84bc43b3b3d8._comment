@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="god bless search"
+ date="2021-11-17T21:03:29Z"
+ content="""
+found this issue which was not `done`.
+
+I have ran into it again: on initial occasion I could not even ssh to that host because ~4000 `[git] <defunct>` processes forbid any other process to start according to the policy.
+Updated git-annex to standalone build from conda (8.20211012-geb95ed486), repeated again (on http://datasets.datalad.org/labs/hasson/narratives/derivatives/fmriprep/.git
+) with a plain `git annex get -J5 .` -- had to interrupt it when I saw that reached 1k of those.  Here is dump of annexy config variables so - no retries
+
+```
+(datalad) [d31548v@discovery7 fmriprep]$ git config --list | grep annex
+annex.pidlock=true
+remote.origin.annex-bare=false
+remote.origin.annex-uuid=348d8bd8-1142-4de1-b52e-6b9899faa1d5
+annex.uuid=75d12ed4-e3e4-4ad0-ba7e-ec11538966d2
+annex.version=8
+filter.annex.smudge=git-annex smudge -- %f
+filter.annex.clean=git-annex smudge --clean -- %f
+remote.fcp-indi.annex-s3=true
+remote.fcp-indi.annex-uuid=bf6f56f3-f6b7-4df8-9898-a4226dc71400
+```
+
+I wish Nick_P has shared the script -- I could try to bisect... otherwise someone needs to write one ;-)
+"""]]
