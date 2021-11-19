@@ -22,3 +22,4 @@ parseConcurrency s = Concurrent <$> readish s
 data ConcurrencySetting
 	= ConcurrencyCmdLine Concurrency
 	| ConcurrencyGitConfig Concurrency
+	deriving (Eq)

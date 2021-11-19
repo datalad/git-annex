@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2021-11-19T15:37:43Z"
+ content="""
+I found a case where zombie git processes could be started in theory, 
+but only when git-annex is run without -J. And only a few zombies I think.
+And I couldn't find a code path where it actually happened.
+So not the same as this bug. But it did involve setConcurrency, which 
+the bisected commit also involves (via forkState), so at least shows
+how that could cause a such a problem in theory. Fixed that.
+"""]]

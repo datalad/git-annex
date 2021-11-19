@@ -17,6 +17,7 @@ import qualified Annex.Queue
 import Annex.Action
 import Types.Concurrency
 import Types.CatFileHandles
+import Annex.CatFile
 import Annex.CheckAttr
 import Annex.CheckIgnore
 
@@ -32,18 +33,31 @@ setConcurrency' NonConcurrent f =
 		{ Annex.concurrency = f NonConcurrent
 		}
 setConcurrency' c f = do
-	cfh <- getState Annex.catfilehandles
-	cfh' <- case cfh of
-		CatFileHandlesNonConcurrent _ -> liftIO catFileHandlesPool
-		CatFileHandlesPool _ -> pure cfh
-	cah <- mkConcurrentCheckAttrHandle c
-	cih <- mkConcurrentCheckIgnoreHandle c
-	Annex.changeState $ \s -> s
-		{ Annex.concurrency = f c
-		, Annex.catfilehandles = cfh'
-		, Annex.checkattrhandle = Just cah
-		, Annex.checkignorehandle = Just cih
-		}
+	oldc <- Annex.getState Annex.concurrency
+	case oldc of
+		ConcurrencyCmdLine NonConcurrent -> fromnonconcurrent
+		ConcurrencyGitConfig NonConcurrent -> fromnonconcurrent
+		_
+			| oldc == newc -> return ()
+			| otherwise ->
+				Annex.changeState $ \s -> s
+					{ Annex.concurrency = newc
+					}
+  where
+	newc = f c
+	fromnonconcurrent = do
+		catFileStop
+		checkAttrStop
+		checkIgnoreStop
+		cfh <- liftIO catFileHandlesPool
+		cah <- mkConcurrentCheckAttrHandle c
+		cih <- mkConcurrentCheckIgnoreHandle c
+		Annex.changeState $ \s -> s
+			{ Annex.concurrency = newc
+			, Annex.catfilehandles = cfh
+			, Annex.checkattrhandle = Just cah
+			, Annex.checkignorehandle = Just cih
+			}
 
 {- Allows forking off a thread that uses a copy of the current AnnexState
  - to run an Annex action.
