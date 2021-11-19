@@ -22,4 +22,4 @@ I'm unsure how to debug what is wrong, so seeking guidance.
 
 Tomorrow I'll start to see if I can reproduce with older/newer versions of git-annex.
 
-
+[[!tag forumbug]]
