@@ -1,0 +1,18 @@
+This would be like enabling the annex.tune.objecthashlower=true 
+[[tuning]] when creating a repository, but could be done after the fact,
+eg when a user needs to clone an existing reppsitory to a filesystem
+that has problems with mixed case hash directories.
+
+The adusted branch would simply convert annex links to use lower-case
+hashing, which is easy. But it would also need to enable storing new object
+files in lower-case hash directories, and move any currently stored object
+files to those directories.
+
+How to handle a `git checkout master` then? None of the annex links in
+master would work. Normally the user can leave an adjusted branch that way,
+but if they wanted to leave this one, there would have to be a command
+to move everything back.
+
+Note that, annexLocationsNonBare does fall back to looking for
+hashDirLower, so getting files from a repository with this enabled to
+another repository should work ok. --[[Joey]]
