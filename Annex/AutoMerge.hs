@@ -137,7 +137,7 @@ resolveMerge us them inoverlay = do
 	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
 	srcmap <- if inoverlay
 		then pure M.empty
-		else inodeMap $ pure (map LsFiles.unmergedFile fs, return True)
+		else inodeMap $ pure (concatMap getunmergedfiles fs, return True)
 	(mergedks, mergedfs) <- unzip <$> mapM (resolveMerge' srcmap us them inoverlay) fs
 	let mergedks' = concat mergedks
 	let mergedfs' = catMaybes mergedfs
@@ -160,6 +160,11 @@ resolveMerge us them inoverlay = do
 			cleanConflictCruft mergedks' mergedfs' unstagedmap
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
+  where
+	getunmergedfiles u = catMaybes
+		[ Just (LsFiles.unmergedFile u)
+		, LsFiles.unmergedSiblingFile u
+		]
 
 resolveMerge' :: InodeMap -> Maybe Git.Ref -> Git.Ref -> Bool -> LsFiles.Unmerged -> Annex ([Key], Maybe FilePath)
 resolveMerge' _ Nothing _ _ _ = return ([], Nothing)
@@ -177,7 +182,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				unless inoverlay $
 					unless (islocked LsFiles.valUs) $
 						liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath file)
-			| otherwise -> do
+			| otherwise -> resolveby [keyUs, keyThem] $
 				-- Only resolve using symlink when both
 				-- were locked, otherwise use unlocked
 				-- pointer.
@@ -185,13 +190,12 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				if islocked LsFiles.valUs && islocked LsFiles.valThem
 					then makesymlink keyUs file
 					else makepointer keyUs file (combinedmodes)
-				return ([keyUs, keyThem], Just file)
 		-- Our side is annexed file, other side is not.
 		-- Make the annexed file into a variant file and graft in the
 		-- other file/directory as it was.
 		(Just keyUs, Nothing) -> resolveby [keyUs] $ do
 			graftin them file LsFiles.valThem LsFiles.valThem LsFiles.valUs
-			makevariantannexlink keyUs LsFiles.valUs 
+			makevariantannexlink keyUs LsFiles.valUs
 		-- Our side is not annexed file, other side is.
 		(Nothing, Just keyThem) -> resolveby [keyThem] $ do
 			graftin us file LsFiles.valUs LsFiles.valUs LsFiles.valThem
@@ -200,6 +204,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		(Nothing, Nothing) -> return ([], Nothing)
   where
 	file = fromRawFilePath $ LsFiles.unmergedFile u
+	sibfile = fromRawFilePath <$> LsFiles.unmergedSiblingFile u
 
 	getkey select = 
 		case select (LsFiles.unmergedSha u) of
@@ -256,21 +261,27 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 	graftin b item selectwant selectwant' selectunwant = do
 		Annex.Queue.addUpdateIndex
 			=<< fromRepo (UpdateIndex.lsSubTree b item)
+				
+		let replacefile isexecutable = case selectwant' (LsFiles.unmergedSha u) of
+			Nothing -> noop
+			Just sha -> replaceWorkTreeFile item $ \tmp -> do
+				c <- catObject sha
+				liftIO $ L.writeFile tmp c
+				when isexecutable $
+					liftIO $ void $ tryIO $ 
+						modifyFileMode (toRawFilePath tmp) $
+							addModes executeModes
 
 		-- Update the work tree to reflect the graft.
 		unless inoverlay $ case (selectwant (LsFiles.unmergedTreeItemType u), selectunwant (LsFiles.unmergedTreeItemType u)) of
-			-- Symlinks are never left in work tree when
-			-- there's a conflict with anything else.
-			-- So, when grafting in a symlink, we must create it:
 			(Just TreeSymlink, _) -> do
 				case selectwant' (LsFiles.unmergedSha u) of
 					Nothing -> noop
 					Just sha -> do
 						link <- catSymLinkTarget sha
 						replacewithsymlink item link
-			-- And when grafting in anything else vs a symlink,
-			-- the work tree already contains what we want.
-			(_, Just TreeSymlink) -> noop
+			(Just TreeFile, Just TreeSymlink) -> replacefile False
+			(Just TreeExecutable, Just TreeSymlink) -> replacefile True
 			_ -> ifM (liftIO $ doesDirectoryExist item)
 				-- a conflict between a file and a directory
 				-- leaves the directory, so since a directory
@@ -278,23 +289,24 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 				( noop
 				-- probably a file with conflict markers is
 				-- in the work tree; replace with grafted
-				-- file content
-				, case selectwant' (LsFiles.unmergedSha u) of
-					Nothing -> noop
-					Just sha -> replaceWorkTreeFile item $ \tmp -> do
-						c <- catObject sha
-						liftIO $ L.writeFile tmp c
+				-- file content (this is needed when
+				-- the annexed file is unlocked)
+				, replacefile False
 				)
 	
 	resolveby ks a = do
-		{- Remove conflicted file from index so merge can be resolved. -}
+		{- Remove conflicted file from index so merge can be resolved.
+		 - If there's a sibling conflicted file, remove it too. -}
 		Annex.Queue.addCommand [] "rm"
 			[ Param "--quiet"
 			, Param "-f"
 			, Param "--cached"
 			, Param "--"
 			]
-			[file]
+			(catMaybes [Just file, sibfile])
+		liftIO $ maybe noop
+			(removeWhenExistsWith R.removeLink . toRawFilePath)
+			sibfile
 		void a
 		return (ks, Just file)
 

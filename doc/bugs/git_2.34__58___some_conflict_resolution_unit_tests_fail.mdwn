@@ -137,3 +137,5 @@ I'm also building select versions of git-annex for both Windows native and WSL1/
 development on master. A fine piece of software it definitely is.
 
 [[!meta author=jkniiv]]
+
+> [[fixed|done]] --[[Joey]]

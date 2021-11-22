@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-11-22T17:31:54Z"
+ content="""
+On to the second test failure. When there's a conflict between
+a symlink and a regular file, the ort resolver uses
+the names `foo` and `foo~<ref>`.
+(Again not using stable naming, alas), and
+the files are staged in conflict, one "added by us"
+and the other "added by them".
+
+The old resolver's behavior is to leave a single file
+`foo` in conflict state "both added" and containing the content of the
+file; the content of the symlink is staged as added by them.
+
+git-annex's merge conflict resolution does not deal with this well,
+because it doesn't know those two files are related. So it sees
+a file eg `foo~HEAD` that is in conflict, but the conflict does
+not involve an annexed file. So it does not try to resolve that merge,
+because resolving a merge not involving an annexed file is out of scope.
+
+Ugh. I think something has to be done about this, making the test suite
+use the old resolver is not sufficient because git-annex is supposed to
+recover from this kind of merge conflict.
+
+Bear in mind that a non-annexed file with a name like `foo~HEAD`
+that is in "added by us" state can also happen when a file is modified by
+us, and deleted by them. So resolving such a file by adding it makes a
+decision that git-annex does not want to make about a non-annexed file.
+
+So, it seems that to fix this, git-annex will have to somehow learn
+that `foo` and `foo~<ref>` are the two sides of a merge
+conflict. It would have to base that on the filenames that git uses
+and the fact that one is a symlink and the other is a normal file.
+
+Ok, done..
+"""]]
