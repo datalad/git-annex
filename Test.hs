@@ -64,6 +64,7 @@ import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.Path
 import qualified Annex.VectorClock
+import qualified Annex.VariantFile
 import qualified Annex.AdjustedBranch
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
@@ -1369,12 +1370,11 @@ test_mixed_conflict_resolution = do
 			checkmerge "r2" r2
 	conflictor = "conflictor"
 	subfile = conflictor </> "subfile"
-	variantprefix = conflictor ++ ".variant"
 	checkmerge what d = do
 		doesDirectoryExist (d </> conflictor) 
 			@? (d ++ " conflictor directory missing")
 		l <- getDirectoryContents d
-		let v = filter (variantprefix `isPrefixOf`) l
+		let v = filter (Annex.VariantFile.variantMarker `isInfixOf`) l
 		not (null v)
 			@? (what ++ " conflictor variant file missing in: " ++ show l )
 		length v == 1
