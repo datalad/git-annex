@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+Tests started to exit with 124 in that testing scenario recently, e.g. [see this log](https://github.com/datalad/git-annex/runs/4294679306?check_suite_focus=true#step:7:29) which also available on smaug under `/mnt/datasets/datalad/ci/git-annex/builds/2021/11/cron-20211123` 
+
+started to fail 3 days ago but passed ones between :
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex/builds/2021/11[master]cron-20211123
+$> cd ..
+cron-20211101/  cron-20211103/  cron-20211105/  cron-20211107/  cron-20211109/  cron-20211111/  cron-20211113/  cron-20211115/  cron-20211117/  cron-20211119/  cron-20211121/  cron-20211123/
+cron-20211102/  cron-20211104/  cron-20211106/  cron-20211108/  cron-20211110/  cron-20211112/  cron-20211114/  cron-20211116/  cron-20211118/  cron-20211120/  cron-20211122/  manual-20211117/
+
+$> git grep 'exit code 124'
+cron-20211121/build-ubuntu.yaml-490-280a49ed-failed/4_test-annex (nfs-home).txt:2021-11-21T03:23:49.4599000Z ##[error]Process completed with exit code 124.
+cron-20211121/build-ubuntu.yaml-490-280a49ed-failed/test-annex (nfs-home)/7_Run tests.txt:2021-11-21T03:23:49.4598983Z ##[error]Process completed with exit code 124.
+cron-20211123/build-ubuntu.yaml-492-280a49ed-failed/4_test-annex (nfs-home).txt:2021-11-23T03:27:04.5604733Z ##[error]Process completed with exit code 124.
+cron-20211123/build-ubuntu.yaml-492-280a49ed-failed/test-annex (nfs-home)/7_Run tests.txt:2021-11-23T03:27:04.5604714Z ##[error]Process completed with exit code 124.
+
+$> tail cron-20211122/build-ubuntu.yaml-491-280a49ed-failed/test-annex\ \(nfs-home\)/7_Run\ tests.txt
+2021-11-22T03:11:27.7277096Z     rsync remote:                                         OK (2.96s)
+2021-11-22T03:11:28.6641235Z     bup remote:                                           OK (0.94s)
+2021-11-22T03:11:28.6647373Z     borg remote:                                          OK
+2021-11-22T03:11:40.5680103Z     crypto:                                               OK (11.90s)
+2021-11-22T03:11:44.8147237Z     preferred content:                                    OK (4.24s)
+2021-11-22T03:11:47.0298718Z     required_content:                                     OK (2.22s)
+2021-11-22T03:11:49.3941918Z     add subdirs:                                          OK (2.36s)
+2021-11-22T03:11:50.8879458Z     addurl:                                               OK (1.50s)
+2021-11-22T03:11:50.8880438Z
+2021-11-22T03:11:50.8881162Z All 991 tests passed (978.21s)
+
+```
+
+
+### What version of git-annex are you using? On what operating system?
+
+8.20211118-g5a7f25397  linux ubuntu on github actions
