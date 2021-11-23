@@ -1,0 +1,84 @@
+[[!comment format=mdwn
+ username="m15"
+ avatar="http://cdn.libravatar.org/avatar/a8c5fb405daff5f9c0c15209a3df4a4d"
+ subject="new problem on reinject"
+ date="2021-11-23T00:53:37Z"
+ content="""
+Thanks for the suggestion!
+
+the cause:  `addunlocked=true`, maybe show better error message to help
+- if with `pidlock=true`, message is more brief, even harder to debug
+
+## version
+git-annex version
+```
+git-annex version: 8.20200226
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite
+dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed-1.0.1.0 ghc-8.6.5 http-client-0.5.14 persistent-sqlite-2.9.3 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
+```
+
+## setting
+root/.gitattributes
+```
+* annex.largefiles=(largerthan=700kb)and(not((mimetype=text/*)or(include=*.html)))
+* annex.backend=SHA512E
+* annex.numcopies=2
+```
+
+disk partition type: ext4  (12GB spare space)
+
+### .git/config
+```
+[annex]
+    backend=SHA512E
+    addsmallfiles=true
+    addunlocked=true
+    genmetadata=true
+    alwayscommit=true
+    synccontent=false
+	youtube-dl-options = --no-overwrites ...
+    autocommit = false
+    resolvemerge = false
+[annex \"security\"]
+	# allowed-ip-addresses = all
+[filter \"annex\"]
+	smudge = git-annex smudge -- %f
+	clean = git-annex smudge --clean -- %f
+
+```
+## shell command
+with file `1.mp4` (size 3.1M) existing, run as shell-command in Python
+```
+git-annex addurl --file Move_Dance_20200806_203.m4a https://www.youtube.com/watch?v=VsgpUHUYuJI --relaxed && git-annex reinject 1.mp4 Move_Dance_20200806_203.m4a 
+```
+## output
+```
+addurl https://www.youtube.com/watch?v=VsgpUHUYuJI (to Move_Dance_20200806_203.m4a) ok
+(recording state in git...)
+reinject 1.mp4 ok
+(recording state in git...)
+  English/Move_Dance_20200806_203.m4a failed to generate a key
+git-annex: could not add file to the annex
+CallStack (from HasCallStack):
+  error, called at ./Command/Smudge.hs:141:24 in main:Command.Smudge
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+  English/Move_Dance_20200806_203.m4a failed to generate a key
+git-annex: could not add file to the annex
+CallStack (from HasCallStack):
+  error, called at ./Command/Smudge.hs:141:24 in main:Command.Smudge
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+```
+The result is a file staged for commit to git (not to git-annex).
+
+## Expected
+File added (reinjected) to git-annex as name `English/Move_Dance_20200806_203.m4a`
+
+"""]]
