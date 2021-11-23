@@ -1,3 +1,9 @@
+git-annex (8.20211124) UNRELEASED; urgency=medium
+
+  * Fix build with old versions of feed library.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 23 Nov 2021 15:58:27 -0400
+
 git-annex (8.20211123) upstream; urgency=medium
 
   * Bugfix: When -J was enabled, getting files could leak an

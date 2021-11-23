@@ -7,6 +7,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP #-}
 
 module Command.ImportFeed where
 
@@ -88,7 +89,7 @@ getFeed addunlockedmatcher opts cache url = do
   where
 	-- Use parseFeedFromFile rather than reading the file
 	-- ourselves because it goes out of its way to handle encodings.
-	go tmpf = liftIO (parseFeedFromFile tmpf) >>= \case
+	go tmpf = liftIO (parseFeedFromFile' tmpf) >>= \case
 		Nothing -> debugfeedcontent tmpf "parsing the feed failed"
 		Just f -> case findDownloads url f of
 			[] -> debugfeedcontent tmpf "bad feed content; no enclosures to download"
@@ -108,6 +109,13 @@ getFeed addunlockedmatcher opts cache url = do
 			]
 		showEndResult =<< feedProblem url
 			(msg ++ " (use --debug --debugfilter=ImportFeed to see the feed content that was downloaded)")
+
+parseFeedFromFile' :: FilePath -> IO (Maybe Feed)
+#if MIN_VERSION_feed(1,1,0)
+parseFeedFromFile' = parseFeedFromFile
+#else
+parseFeedFromFile' f = catchMaybeIO (parseFeedFromFile f)
+#endif
 
 data ToDownload = ToDownload
 	{ feed :: Feed
