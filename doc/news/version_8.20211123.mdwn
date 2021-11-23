@@ -1,0 +1,7 @@
+git-annex 8.20211123 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Bugfix: When -J was enabled, getting files could leak an
+    ever-growing number of git cat-file processes.
+  * Support git's new "ort" resolver, which became the default in git 2.34.0,
+    and broke the test suite and automatic merge resolution of a conflict
+    between an annexed file and a non-annexed file.
+  * importfeed: Display url before starting youtube-dl download."""]]
