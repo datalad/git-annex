@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2021-11-23T23:12:47Z"
+ content="""
+I see that. But the entire run was not prohibitively long - just 30m 21s... previous succesful though ran total 22m 14s (see eg [here](https://github.com/datalad/git-annex/runs/4271323847?check_suite_focus=true)) so may be test started to stall?
+"""]]
