@@ -1,0 +1,17 @@
+### Please describe the problem.
+
+happens while running `git annex get -J5 .` on http://datasets.datalad.org/labs/hasson/narratives/derivatives/fmriprep/.git
+
+filesystem is that NFS mounted lustre where I thought we resolved all the issues (spotted by `annex test`, yet to redo)
+
+the entire run has failed with `get: 128 failed`
+
+It is consistent. Tried in another dataset  http://datasets.datalad.org/labs/hasson/narratives/derivatives/freesurfer/.git/ and after one crashed run (kerberos key timeout, leading to other errors), started a new `annex get -J5` for which log in full is http://www.onerussian.com/tmp/annex-get-freesurfer-5.log and which ends with `get: 89 failed` 
+
+
+### What version of git-annex are you using? On what operating system?
+
+conda linux nodep (standalone) build 8.20211012-geb95ed486 and then with another standalone build (debian, extracted on that CentOS) 8.20211117+git14-ge1f38b9dd  
+
+
+
