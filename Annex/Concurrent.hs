@@ -14,7 +14,6 @@ import Annex
 import Annex.Common
 import Annex.Concurrent.Utility
 import qualified Annex.Queue
-import Annex.Action
 import Types.Concurrency
 import Types.CatFileHandles
 import Annex.CatFile
