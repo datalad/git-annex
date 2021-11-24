@@ -1,0 +1,52 @@
+### Please describe the problem.
+Build error 1 during build process of git-annex on alpine 5.15 using GHC 9.0.1.
+
+### What steps will reproduce the problem?
+Build git-annex on alpine 5.15 using following APKBUILD:
+https://github.com/ayakael/aports/blob/testing/git-annex/testing/git-annex/APKBUILD
+
+### What version of git-annex are you using? On what operating system?
+git-annex: 20211123
+os: alpine linux 5.15
+ghc: 9.0.1
+cabal: 3.6.2.0
+
+### Please provide any additional information below.
+I made an attempt of fixing by reverting the first fix attempt done on line 181 by commit 2739adc. It gave the same error, but it is most likely related. I know very little of haskell, thus could not push the debugging further.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+[411 of 670] Compiling Remote.Glacier   ( Remote/Glacier.hs, /var/build/aports/testing/git-annex/src/git-annex-8.20211123/dist-newstyle/build/x86_64-linux/ghc-9.0.1/git-annex-8.20211123/build/git-annex/git-annex-tmp/Remote/Glacier.o, /var/build/aports/testing/git-annex/src/git-annex-8.20211123/dist-newstyle/build/x86_64-linux/ghc-9.0.1/git-annex-8.20211123/build/git-annex/git-annex-tmp/Remote/Glacier.dyn_o )
+
+Remote/Glacier.hs:179:12: error:
+    • Couldn't match type: Key
+                           -> MeterUpdate
+                           -> Maybe Utility.Hash.IncrementalVerifier
+                           -> (ContentSource -> Annex a0)
+                           -> Annex a0
+                     with: forall a.
+                           Key
+                           -> MeterUpdate
+                           -> Maybe Utility.Hash.IncrementalVerifier
+                           -> (ContentSource -> Annex a)
+                           -> Annex a
+      Expected: Remote -> Retriever
+        Actual: Remote
+                -> Key
+                -> MeterUpdate
+                -> Maybe Utility.Hash.IncrementalVerifier
+                -> (ContentSource -> Annex a0)
+                -> Annex a0
+    • In the expression: byteRetriever . retrieve'
+      In an equation for ‘retrieve’: retrieve = byteRetriever . retrieve'
+    |
+179 | retrieve = byteRetriever . retrieve'
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+make: *** [Makefile:58: git-annex] Error 1
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Oh absolutely. This version compiles fine under alpine 5.14, which uses GHC 8.8.4. I've been using this software for many years without major issues, and it's a linchpin of my backup infrastructure. Thanks for the all the good work!
+
