@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Translates to Windows!"
+ date="2021-11-25T07:34:48Z"
+ content="""
+Sorry for being silent for so long. I just got a contemporary machine with windows, such that hardware age should no longer be a concern for any performance comparison.
+
+I did not yet find the time to re-assess this issue in full, but I tried the new filter-process setting with a simple `datalad create` (this only adds a few tiny files, but nevertheless took long, and was the original motivation for this issue). Enabling the new setting reduces the runtime by 25% (from 4.5s to 3.5s on average).
+"""]]
