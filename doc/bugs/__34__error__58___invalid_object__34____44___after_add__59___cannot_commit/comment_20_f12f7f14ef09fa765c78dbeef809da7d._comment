@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 20"
+ date="2021-11-25T19:23:46Z"
+ content="""
+Also ran across this today. All I did was a simple copy of a few files to a remote using a filter. I can provide the index and lck files if needed.
+
+    git-annex version: 8.20211011
+"""]]

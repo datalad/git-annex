@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Even more impact on real systems"
+ date="2021-11-26T14:23:34Z"
+ content="""
+It seems the impact on real systems is even more sever: https://github.com/datalad/datalad/pull/6245#issuecomment-979992551 -- factor 2-3 faster on that particular machine. Maybe consumer systems do some kind of expensive process startup inspection (antivirus?) that bring a swarm of child processes to a crawl.
+"""]]

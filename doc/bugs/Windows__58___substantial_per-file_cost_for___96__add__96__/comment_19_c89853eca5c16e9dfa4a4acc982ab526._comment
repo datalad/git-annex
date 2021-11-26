@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="More statistics"
+ date="2021-11-25T13:09:11Z"
+ content="""
+I looked into the global affect of this switch on a large and versatile set of use cases in the form of the DataLad test suite: https://github.com/datalad/datalad/pull/6245
+
+It is worth keeping in mind that there are only small-size files involved!
+
+The benefit is somewhere between noticeable and remarkable. An overall runtime reduction of 16% with benefits ranging from 5% to 32% depending on the tested functionality.
+
+This will need a bit of further investigation to drill down on the reason for this large variability, but given that the sign is always in the right direction this is really great! Thx much!
+"""]]
