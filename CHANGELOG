@@ -1,6 +1,9 @@
 git-annex (8.20211124) UNRELEASED; urgency=medium
 
   * Fix build with old versions of feed library.
+  * addurl, youtube-dl: When --check-raw prevents downloading an url,
+    still continue with any downloads that come after it, rather than
+    erroring out.
 
  -- Joey Hess <id@joeyh.name>  Tue, 23 Nov 2021 15:58:27 -0400
 

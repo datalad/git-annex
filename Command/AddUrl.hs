@@ -182,7 +182,7 @@ performRemote addunlockedmatcher r o uri file sz = ifAnnexed file adduri geturi
   where
 	loguri = setDownloader uri OtherDownloader
 	adduri = addUrlChecked o loguri file (Remote.uuid r) checkexistssize
-	checkexistssize key = return $ case sz of
+	checkexistssize key = return $ Just $ case sz of
 		Nothing -> (True, True, loguri)
 		Just n -> (True, n == fromMaybe n (fromKey keySize key), loguri)
 	geturi = next $ isJust <$> downloadRemoteFile addunlockedmatcher r (downloadOptions o) uri file sz
@@ -270,31 +270,31 @@ performWeb addunlockedmatcher o url file urlinfo = ifAnnexed file addurl geturl
 	geturl = next $ isJust <$> addUrlFile addunlockedmatcher (downloadOptions o) url urlinfo file
 	addurl = addUrlChecked o url file webUUID $ \k ->
 		ifM (pure (not (rawOption (downloadOptions o))) <&&> youtubeDlSupported url)
-			( return (True, True, setDownloader url YoutubeDownloader)
-			, checkRaw Nothing (downloadOptions o) $
-				return (Url.urlExists urlinfo, Url.urlSize urlinfo == fromKey keySize k, url)
+			( return (Just (True, True, setDownloader url YoutubeDownloader))
+			, checkRaw Nothing (downloadOptions o) Nothing $
+				return (Just (Url.urlExists urlinfo, Url.urlSize urlinfo == fromKey keySize k, url))
 			)
 
 {- Check that the url exists, and has the same size as the key,
  - and add it as an url to the key. -}
-addUrlChecked :: AddUrlOptions -> URLString -> RawFilePath -> UUID -> (Key -> Annex (Bool, Bool, URLString)) -> Key -> CommandPerform
+addUrlChecked :: AddUrlOptions -> URLString -> RawFilePath -> UUID -> (Key -> Annex (Maybe (Bool, Bool, URLString))) -> Key -> CommandPerform
 addUrlChecked o url file u checkexistssize key =
 	ifM ((elem url <$> getUrls key) <&&> (elem u <$> loggedLocations key))
 		( do
 			showDestinationFile (fromRawFilePath file)
 			next $ return True
-		, do
-			(exists, samesize, url') <- checkexistssize key
-			if exists && (samesize || relaxedOption (downloadOptions o))
-				then do
+		, checkexistssize key >>= \case
+			Just (exists, samesize, url')
+				| exists && (samesize || relaxedOption (downloadOptions o)) -> do
 					setUrlPresent key url'
 					logChange key u InfoPresent
 					next $ return True
-				else do
+				| otherwise -> do
 					warning $ "while adding a new url to an already annexed file, " ++ if exists
 						then "url does not have expected file size (use --relaxed to bypass this check) " ++ url
 						else "failed to verify url exists: " ++ url
 					stop
+			Nothing -> stop
 		)
 
 {- Downloads an url (except in fast or relaxed mode) and adds it to the
@@ -333,7 +333,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 			in ifAnnexed f
 				(alreadyannexed (fromRawFilePath f))
 				(dl f)
-		Left err -> checkRaw (Just err) o (normalfinish tmp)
+		Left err -> checkRaw (Just err) o Nothing (normalfinish tmp)
 	  where
 		dl dest = withTmpWorkDir mediakey $ \workdir -> do
 			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith R.removeLink)
@@ -347,7 +347,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 								showDestinationFile (fromRawFilePath dest)
 								addWorkTree canadd addunlockedmatcher webUUID mediaurl dest mediakey (Just (toRawFilePath mediafile))
 								return $ Just mediakey
-						Right Nothing -> checkRaw Nothing o (normalfinish tmp)
+						Right Nothing -> checkRaw Nothing o Nothing (normalfinish tmp)
 						Left msg -> do
 							cleanuptmp
 							warning msg
@@ -364,12 +364,14 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 					warning $ dest ++ " already exists; not overwriting"
 					return Nothing
 	
-checkRaw :: (Maybe String) -> DownloadOptions -> Annex a -> Annex a
-checkRaw failreason o a
-	| noRawOption o = giveup $ "Unable to use youtube-dl or a special remote and --no-raw was specified" ++
-		case failreason of
-			Just msg -> ": " ++ msg
-			Nothing -> ""
+checkRaw :: (Maybe String) -> DownloadOptions -> a -> Annex a -> Annex a
+checkRaw failreason o f a
+	| noRawOption o = do
+		warning $ "Unable to use youtube-dl or a special remote and --no-raw was specified" ++
+			case failreason of
+				Just msg -> ": " ++ msg
+				Nothing -> ""
+		return f
 	| otherwise = a
 
 {- The destination file is not known at start time unless the user provided
@@ -491,7 +493,7 @@ nodownloadWeb addunlockedmatcher o url urlinfo file
 		then nomedia
 		else youtubeDlFileName url >>= \case
 			Right mediafile -> usemedia (toRawFilePath mediafile)
-			Left err -> checkRaw (Just err) o nomedia
+			Left err -> checkRaw (Just err) o Nothing nomedia
 	| otherwise = do
 		warning $ "unable to access url: " ++ url
 		return Nothing

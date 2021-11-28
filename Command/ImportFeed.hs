@@ -202,7 +202,7 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 			let f' = fromRawFilePath f
 			r <- Remote.claimingUrl url
 			if Remote.uuid r == webUUID || rawOption (downloadOptions opts)
-				then checkRaw Nothing (downloadOptions opts) $ do
+				then checkRaw (Just url) (downloadOptions opts) Nothing $ do
 					let dlopts = (downloadOptions opts)
 						-- force using the filename
 						-- chosen here
@@ -341,7 +341,7 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 			, downloadlink False
 			)
 	  where
-		downloadlink started' = checkRaw Nothing (downloadOptions opts) $
+		downloadlink started' = checkRaw (Just linkurl) (downloadOptions opts) False $
 			performDownload' started' addunlockedmatcher opts cache todownload
 				{ location = Enclosure linkurl }
 
