@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-11-29T18:11:30Z"
+ content="""
+I think that this error comes from Utility.LockFile.PidLock.tryLock,
+which has the only getFileStatus involving the pidlock whose exceptions
+are not caught. The file is assumed to exist since it was just created,
+and normally nothing deletes it.
+
+While looking at where this might come from, I refreshed my memory of
+how Lustre can to do insane stuff like having 2 different files with the
+same name in a directory. Which checkInsaneLustre tries to deal with
+by deleting one of them, but since this is all behavior undefined by POSIX,
+maybe that sometimes deletes both of them. Or the file doesn't appear
+after being created for some other POSIX-defying reason.
+
+I've changed it to catch exceptions from that getFileStatus, which will
+test this theory.
+"""]]

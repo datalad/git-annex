@@ -154,14 +154,11 @@ tryLock lockfile = do
 			removeWhenExistsWith removeLink tmp'
 			return Nothing
 		let tooklock st = return $ Just $ LockHandle abslockfile st sidelock
-		ifM (linkToLock sidelock tmp' abslockfile)
-			( do
+		linkToLock sidelock tmp' abslockfile >>= \case
+			Just lckst -> do
 				removeWhenExistsWith removeLink tmp'
-				-- May not have made a hard link, so stat
-				-- the lockfile
-				lckst <- getFileStatus abslockfile
 				tooklock lckst
-			, do
+			Nothing -> do
 				v <- readPidLock abslockfile
 				hn <- getHostName
 				tmpst <- getFileStatus tmp'
@@ -175,7 +172,6 @@ tryLock lockfile = do
 						rename tmp' abslockfile
 						tooklock tmpst
 					_ -> failedlock tmpst
-			)
 
 -- Linux's open(2) man page recommends linking a pid lock into place,
 -- as the most portable atomic operation that will fail if
@@ -187,8 +183,8 @@ tryLock lockfile = do
 --
 -- However, not all filesystems support hard links. So, first probe
 -- to see if they are supported. If not, use open with O_EXCL.
-linkToLock :: SideLockHandle -> RawFilePath -> RawFilePath -> IO Bool
-linkToLock Nothing _ _ = return False
+linkToLock :: SideLockHandle -> RawFilePath -> RawFilePath -> IO (Maybe FileStatus)
+linkToLock Nothing _ _ = return Nothing
 linkToLock (Just _) src dest = do
 	let probe = src <> ".lnk"
 	v <- tryIO $ createLink src probe
@@ -197,10 +193,13 @@ linkToLock (Just _) src dest = do
 		Right _ -> do
 			_ <- tryIO $ createLink src dest
 			ifM (catchBoolIO checklinked)
-				( catchBoolIO $ not <$> checkInsaneLustre dest
-				, return False
+				( ifM (catchBoolIO $ not <$> checkInsaneLustre dest)
+					( catchMaybeIO $ getFileStatus dest
+					, return Nothing
+					)
+				, return Nothing
 				)
-		Left _ -> catchBoolIO $ do
+		Left _ -> catchMaybeIO $ do
 			let setup = do
 				fd <- openFd dest WriteOnly
 					(Just $ combineModes readModes)
@@ -209,7 +208,7 @@ linkToLock (Just _) src dest = do
 			let cleanup = hClose
 			let go h = readFile (fromRawFilePath src) >>= hPutStr h
 			bracket setup cleanup go
-			return True
+			getFileStatus dest
   where
 	checklinked = do
 		x <- getSymbolicLinkStatus src
