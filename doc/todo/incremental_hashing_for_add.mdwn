@@ -17,7 +17,7 @@ and moving it into place there, because annex.thin means a hard link should
 be made, and if the filesystem supports CoW, that should be used rather
 than writing the file again.
 
-A benchmark showed that `git add` of a 1 gb file 
+A benchmark on Linux showed that `git add` of a 1 gb file 
 is about 5% slower with filter-process enabled than it is 
 with filter-process disabled. That's due to the piping overhead to 
 filter-process ([[todo/git_smudge_clean_interface_suboptiomal]]).
