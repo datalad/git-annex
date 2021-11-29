@@ -1,0 +1,449 @@
+[[!comment format=mdwn
+ username="adina.wagner@2a4cac6443aada2bd2a329b8a33f4a7b87cc8eff"
+ nickname="adina.wagner"
+ avatar="http://cdn.libravatar.org/avatar/80b124ad61d6008fa0f6f0b4b0f7c2ef"
+ subject="A few Windows benchmarks"
+ date="2021-11-29T22:17:39Z"
+ content="""
+Following 
+ [https://git-annex.branchable.com/bugs/Windows__58___substantial_per-file_cost_for___96__add__96__/#comment-7e6fd13d8b60d99cbc5e642e1d76f10e](https://git-annex.branchable.com/bugs/Windows__58___substantial_per-file_cost_for___96__add__96__/#comment-7e6fd13d8b60d99cbc5e642e1d76f10e) I've run a few quick benchmarks for ``git add`` with and without the filter.annex.process setting.
+I'm using a Levono Thinkpad T14 with Windows 10 Pro Version 20H2, OS build 19042.1348. It has a AMD Ryzen 7 PRO 4750U with Radeon Graphics 1.70 GHz and 16GB RAM. It ran on battery when I tested this.
+
+<details><summary> Relevant software </summary>
+
+git-annex:
+
+```
+git-annex version: 8.20211117-gc3af94eff
+build flags: Assistant Webapp Pairing TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.0 ghc-8.10.7 http-client-0.7.9 persistent-sqlite-2.13.0.3 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.1.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: mingw32 x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 2 3 4 5 6 7
+```
+
+Git:
+
+```
+git version 2.34.0.windows.1
+cpu: x86_64
+built from commit: 7dad2af5e8ae15d5f1e1ce1980d1d873b9e00cb5
+sizeof-long: 4
+sizeof-size_t: 8
+shell-path: /bin/sh
+feature: fsmonitor--daemon
+```
+
+The machine is pretty much brand new, there is no Antivirus, and very little other software other than git and git-annex. [It is sometimes moody](https://github.com/datalad/datalad/issues/5994#issuecomment-974205491) but today felt fast.
+
+</details>
+
+I created files of different sizes from 1MB to 50GB; added them sequentially into the same repo; on a busy machine running the datalad test suite in the background. There are more timings for \"with config\" because there was an additional global setting I forgot to remove initially, and I only added really large files in a later runs, so I have a few more timings for smaller files.
+
+<details><summary> What I ran </summary>
+
+```
+(sorry for this embarrassing script - I hate windows and have no clue how to use it productively)
+git config --system --unset  filter.annex.process
+git config --list
+git init withoutconfig
+cd withoutconfig
+git annex init 
+fsutil file createnew 1MB 1048576
+fsutil file createnew 100MB 104857600 
+fsutil file createnew 500MB 524288000
+fsutil file createnew 1GB 1073741824
+fsutil file createnew 5GB 5368709120
+fsutil file createnew 10GB 10737418240
+fsutil file createnew 20GB 21474836480
+fsutil file createnew 50GB 53687091200
+ptime git -c annex.largefiles=anything add 1MB
+ptime git -c annex.largefiles=anything add 100MB
+ptime git -c annex.largefiles=anything add 500MB
+ptime git -c annex.largefiles=anything add 1GB
+ptime git -c annex.largefiles=anything add 5GB
+ptime git -c annex.largefiles=anything add 10GB
+ptime git -c annex.largefiles=anything add 20GB
+ptime git -c annex.largefiles=anything add 50GB
+cd ..
+
+rmdir /s withoutconfig
+
+git config --system filter.annex.process \"git-annex filter-process\"
+git config --list
+git init withconfig
+cd withconfig
+git annex init 
+fsutil file createnew 1MB 1048576
+fsutil file createnew 100MB 104857600 
+fsutil file createnew 500MB 524288000
+fsutil file createnew 1GB 1073741824
+fsutil file createnew 5GB 5368709120
+fsutil file createnew 10GB 10737418240
+fsutil file createnew 20GB 21474836480
+fsutil file createnew 50GB 53687091200
+ptime git -c annex.largefiles=anything add 1MB
+ptime git -c annex.largefiles=anything add 100MB
+ptime git -c annex.largefiles=anything add 500MB
+ptime git -c annex.largefiles=anything add 1GB
+ptime git -c annex.largefiles=anything add 5GB
+ptime git -c annex.largefiles=anything add 10GB
+ptime git -c annex.largefiles=anything add 20GB
+ptime git -c annex.largefiles=anything add 50GB
+
+rmdir /s withconfig
+```
+</details>
+
+**without config:**
+
+- 1MB -> 0.969s / 1.027s
+- 100MB -> 1.676s / 1.760s
+- 500MB -> 4.607s / 4.645s
+- 1GB -> 5.473s / 5.834s
+- 5GB -> 29.869s / 26.916s
+- 10GB -> 54.708s / 54.275
+- 20GB -> 104.860s / 105.074s
+- 50GB -> 313.757s / 256.739 s
+
+**with config:**
+
+- 1MB ->  0.316s / 0.302s / 0.068s / 1.012s
+- 100MB -> 1.006s / 0.951s / 1.033s / 1.875s
+- 500MB -> 3.141s / 3.417s / 4.762s / 5.131s
+- 1GB -> 7.257s / 7.11s / 9.610s / 6.053s
+- 5GB ->  34.450s / 36.78 / 4.852s (really no clue why, not a typo) / 34.925s
+- 10GB -> 62.202 / 76.007s
+- 20GB -> 127.382s / 135.851s
+- 50GB -> 374.773 / 350.991s
+
+
+<details><summary> example run protocol </summary>
+
+
+```
+C:\Users\adina\temp\gitannexbenchmarks>git config --system filter.annex.process \"git-annex filter-process\"
+
+C:\Users\adina\temp\gitannexbenchmarks>git config --list
+diff.astextplain.textconv=astextplain
+filter.lfs.clean=git-lfs clean -- %f
+filter.lfs.smudge=git-lfs smudge -- %f
+filter.lfs.process=git-lfs filter-process
+filter.lfs.required=true
+http.sslbackend=openssl
+http.sslcainfo=C:/Program Files/Git/mingw64/ssl/certs/ca-bundle.crt
+core.autocrlf=true
+core.fscache=true
+core.symlinks=true
+pull.rebase=false
+credential.helper=manager-core
+credential.https://dev.azure.com.usehttppath=true
+init.defaultbranch=master
+filter.annex.process=git-annex filter-process
+user.email=adina.wagner@t-online.de
+user.name=Adina Wagner
+hub.oauthtoken=cd2a3bdefd55af090f495e9f36454f73b5a404dc
+alias.co=checkout
+alias.st=status
+core.symlinks=true
+core.fscache=true
+filter.annex.process=git-annex filter-process
+
+C:\Users\adina\temp\gitannexbenchmarks>
+C:\Users\adina\temp\gitannexbenchmarks>git init withconfig
+Initialized empty Git repository in C:/Users/adina/temp/gitannexbenchmarks/withconfig/.git/
+
+C:\Users\adina\temp\gitannexbenchmarks>cd withconfig
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>git annex init
+init
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>fsutil file createnew 1MB 1048576
+File C:\Users\adina\temp\gitannexbenchmarks\withconfig\1MB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>fsutil file createnew 100MB 104857600
+File C:\Users\adina\temp\gitannexbenchmarks\withconfig\100MB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>fsutil file createnew 500MB 524288000
+File C:\Users\adina\temp\gitannexbenchmarks\withconfig\500MB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>fsutil file createnew 1GB 1073741824
+File C:\Users\adina\temp\gitannexbenchmarks\withconfig\1GB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>fsutil file createnew 5GB 5368709120
+File C:\Users\adina\temp\gitannexbenchmarks\withconfig\5GB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>fsutil file createnew 10GB 10737418240
+File C:\Users\adina\temp\gitannexbenchmarks\withconfig\10GB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>fsutil file createnew 20GB 21474836480
+File C:\Users\adina\temp\gitannexbenchmarks\withconfig\20GB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>fsutil file createnew 50GB 53687091200
+File C:\Users\adina\temp\gitannexbenchmarks\withconfig\50GB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>ptime git -c annex.largefiles=anything add 1MB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 1MB ===
+warning: LF will be replaced by CRLF in 1MB.
+The file will have its original line endings in your working directory
+
+Execution time: 1.012 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>ptime git -c annex.largefiles=anything add 100MB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 100MB ===
+warning: LF will be replaced by CRLF in 100MB.
+The file will have its original line endings in your working directory
+
+Execution time: 1.875 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>ptime git -c annex.largefiles=anything add 500MB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 500MB ===
+warning: LF will be replaced by CRLF in 500MB.
+The file will have its original line endings in your working directory
+
+Execution time: 5.131 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>ptime git -c annex.largefiles=anything add 1GB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 1GB ===
+warning: LF will be replaced by CRLF in 1GB.
+The file will have its original line endings in your working directory
+
+Execution time: 6.053 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>ptime git -c annex.largefiles=anything add 5GB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 5GB ===
+warning: LF will be replaced by CRLF in 5GB.
+The file will have its original line endings in your working directory
+
+Execution time: 34.925 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>ptime git -c annex.largefiles=anything add 10GB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 10GB ===
+warning: LF will be replaced by CRLF in 10GB.
+The file will have its original line endings in your working directory
+
+Execution time: 62.202 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>ptime git -c annex.largefiles=anything add 20GB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 20GB ===
+warning: LF will be replaced by CRLF in 20GB.
+The file will have its original line endings in your working directory
+
+Execution time: 127.382 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withconfig>ptime git -c annex.largefiles=anything add 50GB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 50GB ===
+warning: LF will be replaced by CRLF in 50GB.
+The file will have its original line endings in your working directory
+
+Execution time: 374.773 s
+
+
+C:\Users\adina\temp\gitannexbenchmarks>git config --list
+diff.astextplain.textconv=astextplain
+filter.lfs.clean=git-lfs clean -- %f
+filter.lfs.smudge=git-lfs smudge -- %f
+filter.lfs.process=git-lfs filter-process
+filter.lfs.required=true
+http.sslbackend=openssl
+http.sslcainfo=C:/Program Files/Git/mingw64/ssl/certs/ca-bundle.crt
+core.autocrlf=true
+core.fscache=true
+core.symlinks=true
+pull.rebase=false
+credential.helper=manager-core
+credential.https://dev.azure.com.usehttppath=true
+init.defaultbranch=master
+user.email=adina.wagner@t-online.de
+user.name=Adina Wagner
+hub.oauthtoken=cd2a3bdefd55af090f495e9f36454f73b5a404dc
+alias.co=checkout
+alias.st=status
+core.symlinks=true
+core.fscache=true
+
+C:\Users\adina\temp\gitannexbenchmarks>git init withoutconfig
+Initialized empty Git repository in C:/Users/adina/temp/gitannexbenchmarks/withoutconfig/.git/
+
+C:\Users\adina\temp\gitannexbenchmarks>cd withoutconfig
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>git annex init
+init
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>fsutil file createnew 1MB 1048576
+File C:\Users\adina\temp\gitannexbenchmarks\withoutconfig\1MB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>fsutil file createnew 100MB 104857600
+File C:\Users\adina\temp\gitannexbenchmarks\withoutconfig\100MB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>fsutil file createnew 500MB 524288000
+File C:\Users\adina\temp\gitannexbenchmarks\withoutconfig\500MB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>fsutil file createnew 1GB 1073741824
+File C:\Users\adina\temp\gitannexbenchmarks\withoutconfig\1GB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>fsutil file createnew 5GB 5368709120
+File C:\Users\adina\temp\gitannexbenchmarks\withoutconfig\5GB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>fsutil file createnew 10GB 10737418240
+File C:\Users\adina\temp\gitannexbenchmarks\withoutconfig\10GB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>fsutil file createnew 20GB 21474836480
+File C:\Users\adina\temp\gitannexbenchmarks\withoutconfig\20GB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>fsutil file createnew 50GB 53687091200
+File C:\Users\adina\temp\gitannexbenchmarks\withoutconfig\50GB is created
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>ptime git -c annex.largefiles=anything add 1MB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 1MB ===
+warning: LF will be replaced by CRLF in 1MB.
+The file will have its original line endings in your working directory
+
+Execution time: 1.027 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>ptime git -c annex.largefiles=anything add 100MB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 100MB ===
+warning: LF will be replaced by CRLF in 100MB.
+The file will have its original line endings in your working directory
+
+Execution time: 1.760 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>ptime git -c annex.largefiles=anything add 500MB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 500MB ===
+warning: LF will be replaced by CRLF in 500MB.
+The file will have its original line endings in your working directory
+
+Execution time: 4.645 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>ptime git -c annex.largefiles=anything add 1GB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 1GB ===
+warning: LF will be replaced by CRLF in 1GB.
+The file will have its original line endings in your working directory
+
+Execution time: 5.834 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>ptime git -c annex.largefiles=anything add 5GB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 5GB ===
+warning: LF will be replaced by CRLF in 5GB.
+The file will have its original line endings in your working directory
+
+Execution time: 26.916 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>ptime git -c annex.largefiles=anything add 10GB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 10GB ===
+warning: LF will be replaced by CRLF in 10GB.
+The file will have its original line endings in your working directory
+
+Execution time: 54.275 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>ptime git -c annex.largefiles=anything add 20GB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 20GB ===
+warning: LF will be replaced by CRLF in 20GB.
+The file will have its original line endings in your working directory
+
+Execution time: 105.074 s
+
+C:\Users\adina\temp\gitannexbenchmarks\withoutconfig>ptime git -c annex.largefiles=anything add 50GB
+
+ptime 1.0 for Win32, Freeware - http://www.pc-tools.net/
+Copyright(C) 2002, Jem Berkes <jberkes@pc-tools.net>
+
+===  git -c annex.largefiles=anything add 50GB ===
+warning: LF will be replaced by CRLF in 50GB.
+The file will have its original line endings in your working directory
+
+Execution time: 256.739 s
+
+```
+</details>
+
+Hope this is helpful.
+"""]]
