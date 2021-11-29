@@ -27,3 +27,4 @@ git annex from Debian :
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 It’s only a bug on what git-annex display. It does the asked work: the file are correctly exported where I look for them.
 
+> [[fixed|done]] --[[Joey]]

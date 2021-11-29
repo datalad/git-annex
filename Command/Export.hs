@@ -275,11 +275,20 @@ startExport r db cvar allfilledvar ti = do
 	af = AssociatedFile (Just f)
 	ai = ActionItemTreeFile f
 	si = SeekInput []
-	notrecordedpresent ek = (||)
-		<$> liftIO (notElem loc <$> getExportedLocation db ek)
-		-- If content was removed from the remote, the export db
-		-- will still list it, so also check location tracking.
-		<*> (notElem (uuid r) <$> loggedLocations ek)
+	notrecordedpresent ek = 
+		ifM  (liftIO $ notElem loc <$> getExportedLocation db ek)
+			( return True
+			-- When content was lost from the remote and
+			-- a fsck noticed that, the export db will still
+			-- list it as present in the remote. So also check 
+			-- location tracking. 
+			-- However, git sha keys do not have their locations
+			-- tracked, and fsck doesn't check them, so not
+			-- for those.
+			, if isGitShaKey ek
+				then return False
+				else notElem (uuid r) <$> loggedLocations ek
+			)
 
 performExport :: Remote -> ExportHandle -> Key -> AssociatedFile -> Sha -> ExportLocation -> MVar AllFilled -> CommandPerform
 performExport r db ek af contentsha loc allfilledvar = do

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-11-29T17:32:33Z"
+ content="""
+I think that the most likely reason for this to happen is if the 
+particular file is not checked into git-annex, but into git.
+
+Since files stored in git are small, re-uploading them is not likely to be
+very expensive.
+
+However, I found a way to prevent it doing so. So this is fixed assuming
+I guessed right about the cause of it for you.
+"""]]
