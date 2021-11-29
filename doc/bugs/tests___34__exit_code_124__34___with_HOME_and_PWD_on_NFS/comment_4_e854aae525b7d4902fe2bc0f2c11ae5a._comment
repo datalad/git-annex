@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-11-29T16:57:32Z"
+ content="""
+The successful test log you linked to does have the "migrate" 
+tests in it. Those tests are not new.
+
+Is the test suite being run under a timeout?
+"""]]
