@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 21"""
+ date="2021-11-29T17:17:29Z"
+ content="""
+@mih I've been pondering enabling filter.annex.process by default in new
+repositories in Windows or generally. (Enabling it in existing repositories
+kind of needs a new major version so an upgrade can set it, although introducing
+repository minor versions is also a possibility.)
+
+Enabling it earlier in datalad is fine by me, more experience with it being
+used would be good.
+
+It would also be useful to get some benchmarks of `git add` when 
+large files are added to the annex (eg `git -c annex.largefiles=anything
+add`). As I said, that suffers around 5% on performance on Linux, at least
+when the files are small enough to still mostly fit in disk cache (1 gb on
+a 4 gb system with some web browsers etc running). It may be
+that Windows will pay a higher price. I don't have real Windows machines
+to run such a benchmark on myself. Please post any such benchmarks
+to [[todo/incremental_hashing_for_add]].
+"""]]
