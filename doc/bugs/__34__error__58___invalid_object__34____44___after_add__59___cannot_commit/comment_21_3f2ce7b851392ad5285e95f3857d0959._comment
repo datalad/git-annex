@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 21"""
+ date="2021-11-29T17:09:33Z"
+ content="""
+This seems to be a not entirely uncommon git failure.
+[google search](https://www.google.com/search?client=firefox-b-1-d&q=git+error%3A+invalid+object+100644+)
+has tens of thousands of hits that look like this and do not involve
+git-annex.
+
+One commenter in <https://stackoverflow.com/questions/14448326/git-commit-stopped-working-error-building-trees>
+said it was a permissions problem.
+
+Disconnecting a drive before all of git's changes have been written to it
+seem like the other likely way.
+"""]]
