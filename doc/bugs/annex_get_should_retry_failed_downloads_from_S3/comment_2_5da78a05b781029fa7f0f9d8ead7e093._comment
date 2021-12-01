@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-12-01T17:05:14Z"
+ content="""
+What's happening is Utility.LockFile.PidLock.tryLock
+calls trySideLock and in these failure cases,
+that returns Nothing, because another thread also happens to
+have taken the sidelock. 
+
+Due to the concurrency, the pid lock file always already exists, so
+linkToLock fails. When it is able to take the side lock, it treats this as
+a stale pid lock file situation, and takes over the pid lock.
+
+(This could also affect other locks than transfer locks, potentially.)
+
+One way to solve it would be to use a LockPool instead to take the side
+lock. Then multiple concurrent threads could all lock the side lock.
+
+Or, it could special case when the pid in the pid lock file is the same as
+the current pid, and handle it in the lock file take over code.
+
+----
+
+Now, annex.pidlock is supposed to be a big top-level lock, which is used
+instead of the fine-grained locking. What if 2 threads are each wanting
+to take a lock before operating on the same resource? If either of the
+solutions above is implemented, then both threads will "succeed" at locking
+even though it's a shared pidlock. Which could result in any undefined
+behavior.
+
+And, in all the cases where it does *not* fail to take the transfer lock,
+but instead takes over the pid lock, we're perilously close to such a thing
+happening! The only reason it's not a problem, in the case of transfers
+is that OnlyActionOn is used and prevents two threads transferring the same
+key. (Also used for dropping etc.)
+
+But this makes me worry that using annex.pidlock with concurrency enabled
+is flirting with disaster, and perhaps it should refuse to use concurrency
+to avoid such potential problems. Unless there's a way to avoid them
+entirely.
+
+Hmm.. Normally all locking in git-annex uses LockPool, which
+handles inter-process locking. If LockPool is used, one of those 2 threads
+will win at the lock and the other one will wait for it. But,
+Annex.LockPool.PosixOrPid.tryPidLock/pidLock do not use LockPool
+for fine-grained locking when pid locking is enabled.
+
+So, I think it's potentially buggy in the unsafe direction of letting
+2 threads "lock" the same resource, as well as in the safe direction of
+sometimes unncessarily failing. Both need to be fixed.
+
+I am leaning toward a process only taking the pid lock once and holding it
+until exit, with LockPool used to make that thread safe. And add fine grained
+locking using LockPool when doing pid locking.
+"""]]
