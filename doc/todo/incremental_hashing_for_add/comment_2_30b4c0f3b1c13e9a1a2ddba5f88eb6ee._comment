@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-12-01T16:59:50Z"
+ content="""
+Thanks @adina.wagner that is very useful. Seems reliable enough despite the
+other workload, to say that the overhead on Windows is around 14%-33%.
+Interesting that the worst case is with the smallest file.
+"""]]
