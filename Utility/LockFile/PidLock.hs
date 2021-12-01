@@ -1,6 +1,6 @@
 {- pid-based lock files
  -
- - Copyright 2015-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -11,6 +11,8 @@ module Utility.LockFile.PidLock (
 	LockHandle,
 	tryLock,
 	waitLock,
+	waitedLock,
+	alreadyLocked,
 	dropLock,
 	LockStatus(..),
 	getLockStatus,
@@ -149,8 +151,8 @@ tryLock lockfile = do
 		setFileMode tmp' (combineModes readModes)
 		hPutStr h . show =<< mkPidLock
 		hClose h
-		let failedlock st = do
-			dropLock $ LockHandle tmp' st sidelock
+		let failedlock = do
+			dropSideLock sidelock
 			removeWhenExistsWith removeLink tmp'
 			return Nothing
 		let tooklock st = return $ Just $ LockHandle abslockfile st sidelock
@@ -171,7 +173,7 @@ tryLock lockfile = do
 						-- stale, and can take it over.
 						rename tmp' abslockfile
 						tooklock tmpst
-					_ -> failedlock tmpst
+					_ -> failedlock
 
 -- Linux's open(2) man page recommends linking a pid lock into place,
 -- as the most portable atomic operation that will fail if
@@ -254,8 +256,8 @@ checkInsaneLustre dest = do
 --
 -- After the first second waiting, runs the callback to display a message,
 -- so the user knows why it's stalled.
-waitLock :: MonadIO m => Seconds -> LockFile -> (String -> m ()) -> m LockHandle
-waitLock (Seconds timeout) lockfile displaymessage = go timeout
+waitLock :: MonadIO m => Seconds -> LockFile -> (String -> m ()) -> (Bool -> IO ()) -> m LockHandle
+waitLock (Seconds timeout) lockfile displaymessage sem = go timeout
   where
 	go n
 		| n > 0 = liftIO (tryLock lockfile) >>= \case
@@ -264,10 +266,25 @@ waitLock (Seconds timeout) lockfile displaymessage = go timeout
 					displaymessage $ "waiting for pid lock file " ++ fromRawFilePath lockfile ++ " which is held by another process (or may be stale)"
 				liftIO $ threadDelaySeconds (Seconds 1)
 				go (pred n)
-			Just lckh -> return lckh
+			Just lckh -> do
+				liftIO $ sem True
+				return lckh
 		| otherwise = do
-			displaymessage $ show timeout ++ " second timeout exceeded while waiting for pid lock file " ++ fromRawFilePath lockfile
-			giveup $ "Gave up waiting for pid lock file " ++ fromRawFilePath lockfile
+			liftIO $ sem False
+			waitedLock (Seconds timeout) lockfile displaymessage
+
+waitedLock :: MonadIO m => Seconds -> LockFile -> (String -> m ()) -> m LockHandle
+waitedLock (Seconds timeout) lockfile displaymessage = do
+	displaymessage $ show timeout ++ " second timeout exceeded while waiting for pid lock file " ++ fromRawFilePath lockfile
+	giveup $ "Gave up waiting for pid lock file " ++ fromRawFilePath lockfile
+
+-- | Use when the pid lock has already been taken by another thread of the
+-- same process, or perhaps is in the process of being taken.
+alreadyLocked :: MonadIO m => LockFile -> m LockHandle
+alreadyLocked lockfile = liftIO $ do
+	abslockfile <- absPath lockfile
+	st <- getFileStatus abslockfile
+	return $ LockHandle abslockfile st Nothing
 
 dropLock :: LockHandle -> IO ()
 dropLock (LockHandle lockfile _ sidelock) = do

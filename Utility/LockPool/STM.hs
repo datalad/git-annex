@@ -1,6 +1,6 @@
 {- STM implementation of lock pools.
  -
- - Copyright 2015-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -11,6 +11,8 @@ module Utility.LockPool.STM (
 	LockFile,
 	LockMode(..),
 	LockHandle,
+	FirstLock(..),
+	FirstLockSemVal(..),
 	waitTakeLock,
 	tryTakeLock,
 	getLockStatus,
@@ -27,8 +29,6 @@ import qualified Data.Map.Strict as M
 import Control.Concurrent.STM
 import Control.Exception
 import Control.Monad
-import Control.Applicative
-import Prelude
 
 type LockFile = RawFilePath
 
@@ -39,9 +39,20 @@ data LockMode = LockExclusive | LockShared
 -- closed.
 type LockHandle = TMVar (LockPool, LockFile, CloseLockFile)
 
+-- When a shared lock is taken, this will only be true for the first
+-- process, not subsequent processes. The first process should
+-- fill the FirstLockSem after doing any IO actions to finish lock setup
+-- and subsequent processes can block on that getting filled to know
+-- when the lock is fully set up.
+data FirstLock = FirstLock Bool FirstLockSem
+
+type FirstLockSem = TMVar FirstLockSemVal
+
+data FirstLockSemVal = FirstLockSemWaited Bool | FirstLockSemTried Bool
+
 type LockCount = Integer
 
-data LockStatus = LockStatus LockMode LockCount
+data LockStatus = LockStatus LockMode LockCount FirstLockSem
 
 type CloseLockFile = IO ()
 
@@ -62,24 +73,30 @@ lockPool = unsafePerformIO (newTMVarIO M.empty)
 -- the same shared lock should not be blocked on the exclusive lock.
 -- Keeping the whole Map in a TMVar accomplishes this, at the expense of
 -- sometimes retrying after unrelated changes in the map.
-waitTakeLock :: LockPool -> LockFile -> LockMode -> STM LockHandle
+waitTakeLock :: LockPool -> LockFile -> LockMode -> STM (LockHandle, FirstLock)
 waitTakeLock pool file mode = maybe retry return =<< tryTakeLock pool file mode
 
 -- Avoids blocking if another thread is holding a conflicting lock.
-tryTakeLock :: LockPool -> LockFile -> LockMode -> STM (Maybe LockHandle)
+tryTakeLock :: LockPool -> LockFile -> LockMode -> STM (Maybe (LockHandle, FirstLock))
 tryTakeLock pool file mode = do
 	m <- takeTMVar pool
-	let success v = do
+	let success firstlock v = do
 		putTMVar pool (M.insert file v m)
-		Just <$> newTMVar (pool, file, noop)
+		tmv <- newTMVar (pool, file, noop)
+		return (Just (tmv, firstlock))
 	case M.lookup file m of
-		Just (LockStatus mode' n)
-			| mode == LockShared && mode' == LockShared ->
-				success $ LockStatus mode (succ n)
+		Just (LockStatus mode' n firstlocksem)
+			| mode == LockShared && mode' == LockShared -> do
+				fl@(FirstLock _ firstlocksem') <- if n == 0
+					then FirstLock True <$> newEmptyTMVar
+					else pure (FirstLock False firstlocksem)
+				success fl $ LockStatus mode (succ n) firstlocksem'
 			| n > 0 -> do
 				putTMVar pool m
 				return Nothing
-		_ -> success $ LockStatus mode 1
+		_ -> do
+			firstlocksem <- newEmptyTMVar
+			success (FirstLock True firstlocksem) $ LockStatus mode 1 firstlocksem
 
 -- Call after waitTakeLock or tryTakeLock, to register a CloseLockFile
 -- action to run when releasing the lock.
@@ -101,7 +118,7 @@ getLockStatus pool file getdefault checker = do
 	v <- atomically $ do
 		m <- takeTMVar pool
 		let threadlocked = case M.lookup file m of
-			Just (LockStatus _ n) | n > 0 -> True
+			Just (LockStatus _ n _) | n > 0 -> True
 			_ -> False
 		if threadlocked
 			then do
@@ -125,10 +142,10 @@ releaseLock h = go =<< atomically (tryTakeTMVar h)
 		(m, lastuser) <- atomically $ do
 			m <- takeTMVar pool
 			return $ case M.lookup file m of
-				Just (LockStatus mode n)
+				Just (LockStatus mode n firstlocksem)
 					| n == 1 -> (M.delete file m, True)
 					| otherwise ->
-						(M.insert file (LockStatus mode (pred n)) m, False)
+						(M.insert file (LockStatus mode (pred n) firstlocksem) m, False)
 				Nothing -> (m, True)
 		() <- when lastuser closelockfile
 		atomically $ putTMVar pool m

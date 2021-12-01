@@ -52,33 +52,33 @@ makeLockHandle
 	:: (MonadIO m, MonadMask m)
 	=> P.LockPool
 	-> LockFile
-	-> (P.LockPool -> LockFile -> STM P.LockHandle)
-	-> (LockFile -> m FileLockOps)
+	-> (P.LockPool -> LockFile -> STM (P.LockHandle, P.FirstLock))
+	-> (LockFile -> P.FirstLock -> m FileLockOps)
 	-> m LockHandle
 makeLockHandle pool file pa fa = bracketOnError setup cleanup go
   where
 	setup = debugLocks $ liftIO $ atomically (pa pool file)
-	cleanup ph = debugLocks $ liftIO $ P.releaseLock ph
-	go ph = liftIO . mkLockHandle ph =<< fa file
+	cleanup (ph, _) = debugLocks $ liftIO $ P.releaseLock ph
+	go (ph, firstlock) = liftIO . mkLockHandle ph =<< fa file firstlock
 
 tryMakeLockHandle
 	:: (MonadIO m, MonadMask m)
 	=> P.LockPool
 	-> LockFile
-	-> (P.LockPool -> LockFile -> STM (Maybe P.LockHandle))
-	-> (LockFile -> m (Maybe FileLockOps))
+	-> (P.LockPool -> LockFile -> STM (Maybe (P.LockHandle, P.FirstLock)))
+	-> (LockFile -> P.FirstLock -> m (Maybe FileLockOps))
 	-> m (Maybe LockHandle)
 tryMakeLockHandle pool file pa fa = bracketOnError setup cleanup go
   where
 	setup = liftIO $ atomically (pa pool file)
 	cleanup Nothing = return ()
-	cleanup (Just ph) = liftIO $ P.releaseLock ph
+	cleanup (Just (ph, _)) = liftIO $ P.releaseLock ph
 	go Nothing = return Nothing
-	go (Just ph) = do
-		mfo <- fa file
+	go (Just (ph, firstlock)) = do
+		mfo <- fa file firstlock
 		case mfo of
 			Nothing -> do
-				liftIO $ cleanup (Just ph)
+				liftIO $ cleanup (Just (ph, firstlock))
 				return Nothing
 			Just fo -> liftIO $ Just <$> mkLockHandle ph fo
 
@@ -86,4 +86,4 @@ mkLockHandle :: P.LockHandle -> FileLockOps -> IO LockHandle
 mkLockHandle ph fo = do
 	atomically $ P.registerCloseLockFile ph (fDropLock fo)
 	return $ LockHandle ph fo
-	
+

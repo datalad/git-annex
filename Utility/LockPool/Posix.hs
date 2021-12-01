@@ -35,25 +35,25 @@ import Prelude
 lockShared :: Maybe FileMode -> LockFile -> IO LockHandle
 lockShared mode file = makeLockHandle P.lockPool file
 	(\p f -> P.waitTakeLock p f LockShared)
-	(\f -> mk <$> F.lockShared mode f)
+	(\f _ -> mk <$> F.lockShared mode f)
 
 -- Takes an exclusive lock, blocking until the lock is available.
 lockExclusive :: Maybe FileMode -> LockFile -> IO LockHandle
 lockExclusive mode file = makeLockHandle P.lockPool file
 	(\p f -> P.waitTakeLock p f LockExclusive)
-	(\f -> mk <$> F.lockExclusive mode f)
+	(\f _ -> mk <$> F.lockExclusive mode f)
 
 -- Tries to take a shared lock, but does not block.
 tryLockShared :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
 tryLockShared mode file = tryMakeLockHandle P.lockPool file
 	(\p f -> P.tryTakeLock p f LockShared)
-	(\f -> fmap mk <$> F.tryLockShared mode f)
+	(\f _ -> fmap mk <$> F.tryLockShared mode f)
 
 -- Tries to take an exclusive lock, but does not block.
 tryLockExclusive :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
 tryLockExclusive mode file = tryMakeLockHandle P.lockPool file
 	(\p f -> P.tryTakeLock p f LockExclusive)
-	(\f -> fmap mk <$> F.tryLockExclusive mode f)
+	(\f _ -> fmap mk <$> F.tryLockExclusive mode f)
 
 -- Returns Nothing when the file doesn't exist, for cases where
 -- that is different from it not being locked.

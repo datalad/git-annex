@@ -7,6 +7,8 @@ git-annex (8.20211124) UNRELEASED; urgency=medium
   * export: Avoid unncessarily re-exporting non-annexed files that were
     already exported.
   * Fix locking bug introduced in version 8.20200814.
+  * Fix locking problems when annex.pidlock is set and concurrency is
+    enabled eg with -J.
 
  -- Joey Hess <id@joeyh.name>  Tue, 23 Nov 2021 15:58:27 -0400
 

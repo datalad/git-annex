@@ -1,6 +1,6 @@
 {- Pid locks, using lock pools.
  -
- - Copyright 2015-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -26,7 +26,9 @@ import Utility.ThreadScheduler
 
 import System.IO
 import System.Posix
+import Control.Concurrent.STM
 import Data.Maybe
+import Control.Monad
 import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Control.Applicative
@@ -43,13 +45,35 @@ waitLock timeout file displaymessage = makeLockHandle P.lockPool file
 	-- LockShared for STM lock, because a pid lock can be the top-level
 	-- lock with various other STM level locks gated behind it.
 	(\p f -> P.waitTakeLock p f LockShared)
-	(\f -> mk <$> F.waitLock timeout f displaymessage)
+	(\f (P.FirstLock firstlock firstlocksem) -> mk 
+		<$> if firstlock
+			then F.waitLock timeout f displaymessage $
+				void . atomically . tryPutTMVar firstlocksem . P.FirstLockSemWaited
+			else liftIO (atomically $ readTMVar firstlocksem) >>= \case
+				P.FirstLockSemWaited True -> F.alreadyLocked f
+				P.FirstLockSemTried True -> F.alreadyLocked f
+				P.FirstLockSemWaited False -> F.waitedLock timeout f displaymessage
+				P.FirstLockSemTried False -> F.waitLock timeout f displaymessage $
+					void . atomically . tryPutTMVar firstlocksem . P.FirstLockSemWaited
+	)
 
 -- Tries to take a pid lock, but does not block.
 tryLock :: LockFile -> IO (Maybe LockHandle)
 tryLock file = tryMakeLockHandle P.lockPool file
 	(\p f -> P.tryTakeLock p f LockShared)
-	(\f -> fmap mk <$> F.tryLock f)
+	(\f (P.FirstLock firstlock firstlocksem) -> fmap mk
+		<$> if firstlock
+			then do
+				lh <- F.tryLock f
+				void $ atomically $ tryPutTMVar firstlocksem 
+					(P.FirstLockSemTried (isJust lh))
+				return lh
+			else liftIO (atomically $ readTMVar firstlocksem) >>= \case
+					P.FirstLockSemWaited True -> Just <$> F.alreadyLocked f
+					P.FirstLockSemTried True -> Just <$> F.alreadyLocked f
+					P.FirstLockSemWaited False -> return Nothing
+					P.FirstLockSemTried False -> return Nothing
+	)
 
 checkLocked :: LockFile -> IO (Maybe Bool)
 checkLocked file = P.getLockStatus P.lockPool file

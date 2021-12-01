@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-12-01T20:25:18Z"
+ content="""
+I've fixed the transfer locking problem. Also drop -J did sometimes fail
+due to a similar locking problem and should be fixed.
+
+Still want to add the fine-grained STM locking when doing pid locking,
+as discussed above.
+"""]]
