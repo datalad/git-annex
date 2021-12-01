@@ -122,15 +122,15 @@ releaseLock :: LockHandle -> IO ()
 releaseLock h = go =<< atomically (tryTakeTMVar h)
   where
 	go (Just (pool, file, closelockfile)) = do
-		m <- atomically $ do
+		(m, lastuser) <- atomically $ do
 			m <- takeTMVar pool
 			return $ case M.lookup file m of
 				Just (LockStatus mode n)
-					| n == 1 -> (M.delete file m)
+					| n == 1 -> (M.delete file m, True)
 					| otherwise ->
-						(M.insert file (LockStatus mode (pred n)) m)
-				Nothing -> m
-		() <- closelockfile
+						(M.insert file (LockStatus mode (pred n)) m, False)
+				Nothing -> (m, True)
+		() <- when lastuser closelockfile
 		atomically $ putTMVar pool m
 	-- The LockHandle was already closed.
 	go Nothing = return ()
