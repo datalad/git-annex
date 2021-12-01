@@ -1,0 +1,58 @@
+### Please describe the problem.
+
+IMHO `git -c annex.retry=5 annex get -J...` should do its really best (up to 5 times per file) to obtain content.
+It is really not pragmatic to demand looping on top of such a call to ensure that eventually we do get all content.
+
+Possibly relevant older issues/todos I ran into:
+- [https://git-annex.branchable.com/forum/is_there_a_way_to_automatically_retry_when_special_remotes_fail__63__/](https://git-annex.branchable.com/forum/is_there_a_way_to_automatically_retry_when_special_remotes_fail__63__/)
+- [https://git-annex.branchable.com/todo/more_extensive_retries_to_mask_transient_failures/](https://git-annex.branchable.com/todo/more_extensive_retries_to_mask_transient_failures/)
+
+
+### What steps will reproduce the problem?
+
+I have cloned `http://datasets.datalad.org/labs/hasson/narratives/derivatives/freesurfer/.git` and did `git annex get -J5 . 2>&1 | tee /tmp/annex-get-freesurfer-patched-annex-1.log` whenever 
+
+```
+[d31548v@discovery7 freesurfer]$ git config annex.retry
+3
+```
+
+that log file is available from http://www.onerussian.com/tmp/annex-get-freesurfer-patched-annex-1.log . That call ended with `get: 2948 failed`.
+
+I have dumped the output of `annex list` into [a file](http://www.onerussian.com/tmp/annex-get-freesurfer-patched-annex-1-listafter.out) and now ran
+
+```
+grep '^_' /tmp/annex-get-freesurfer-patched-annex-1-listafter.out | awk '{print $2;}' | xargs git -c annex.retry=10 annex --debug get -J5 2>&1 | tee /tmp/annex-get-freesurfer-patched-annex-1-getabsent.log
+```
+
+log for which is at [http://www.onerussian.com/tmp/annex-get-freesurfer-patched-annex-1-getabsent.log](http://www.onerussian.com/tmp/annex-get-freesurfer-patched-annex-1-getabsent.log)
+
+and which finished with `get: 130 failed` -- so clearly those original failures were not real inability to fetch content.
+
+### What version of git-annex are you using? On what operating system?
+
+
+```
+[d31548v@discovery7 git-annexes]$ git annex version
+git-annex version: 8.20211123+git21-ga6699be79-1~ndall+1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+```
+
+and this is on that "fancy" NFS mounted isilon on a local HPC (a "POSIX" mount this time).
+
+```
+[d31548v@discovery7 freesurfer]$ git config annex.pidlock
+true
+```
+
+per my setting in `~/.gitconfig` (which also has `annex.retry = 3`)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+
