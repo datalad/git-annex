@@ -53,4 +53,9 @@ sometimes unncessarily failing. Both need to be fixed.
 I am leaning toward a process only taking the pid lock once and holding it
 until exit, with LockPool used to make that thread safe. And add fine grained
 locking using LockPool when doing pid locking.
+
+Utility.LockPool.PidLock does use a LockPool for the pid lock
+already, but with LockShared, which seems rather pointless since it will never make
+any thread block and multiple threads can still try to make the pid lock
+file at the same time.
 """]]
