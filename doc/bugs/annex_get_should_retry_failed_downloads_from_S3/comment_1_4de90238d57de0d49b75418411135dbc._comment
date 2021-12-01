@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-12-01T16:39:05Z"
+ content="""
+It seems that every failure in that log is preceeded by "transfer already
+in progress, or unable to take transfer lock".
+
+It does not make sense to retry in such a case because the transfer will
+probably still be in progress so the retry would fail.
+
+So I don't think this really involves retrying (which certianly supports
+S3). The question is why are several transfers failing this way.
+My suspicion would be something to do with pid locking.
+
+And indeed, I can reproduce the same behavior in a local repo getting from
+another local repo, once I set annex.pidlock.
+"""]]
