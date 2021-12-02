@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2021-12-02T13:05:55Z"
+ content="""
+Just a note that I believe locking changes broke windows build, can see log [here](https://github.com/datalad/git-annex/runs/4390439197?check_suite_focus=true#step:18:205)
+"""]]
