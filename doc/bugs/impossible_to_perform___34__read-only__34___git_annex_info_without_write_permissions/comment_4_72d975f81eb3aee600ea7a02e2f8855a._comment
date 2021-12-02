@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="automate + extend"
+ date="2021-12-02T20:34:55Z"
+ content="""
+- is there a chance for that option/mode of operation to get auto enabled whenever encountering \"read-only\" situation?  could inform user on stderr that no merge is happening etc
+- could other \"read only\" commands be fixed up to allow for such a mode of operation?  I tried on 'wanted' and it didn't help fully:
+
+```
+[d31548v@discovery7 1076_spacetop]$ git annex wanted here
+git-annex: /dartfs/rc/lab/D/DBIC/DBIC/archive/BIDS/Wager/Wager/1076_spacetop/.git/annex: openTempFile template locktmp: permission denied (Permission denied)
+git-annex: /dartfs/rc/lab/D/DBIC/DBIC/archive/BIDS/Wager/Wager/1076_spacetop/.git/annex: openTempFile template locktmp: permission denied (Permission denied)
+[d31548v@discovery7 1076_spacetop]$ git  -c annex.merge-annex-branches=false annex wanted here
+
+git-annex: /dartfs/rc/lab/D/DBIC/DBIC/archive/BIDS/Wager/Wager/1076_spacetop/.git/annex: openTempFile template locktmp: permission denied (Permission denied)
+[d31548v@discovery7 1076_spacetop]$ git annex version | head -n 1
+git-annex version: 8.20211117+git14-ge1f38b9dd-1~ndall+1
+
+```
+
+"""]]
