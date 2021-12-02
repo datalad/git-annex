@@ -1,0 +1,29 @@
+### Please describe the problem.
+
+previously reported and partially addressed in [here](https://git-annex.branchable.com/bugs/impossible_to_perform___34__read-only__34___git_annex_info_without_write_permissions/)
+
+
+### What steps will reproduce the problem?
+
+try any presumably read-only annex operation (whereis, wanted, etc) on a repository where you have no write permissions.
+
+` -c annex.merge-annex-branches=false ` configuration switch was introduced to allow for running `whereis` in "read-only" mode.  But it requires user knowhow and good memory.
+It is also inconsistent with how `git` behaves in that it doesn't require any extra option and just handles it automagically/gracefully.
+
+If git-annex could automagically switch to such mode when encountering read-only repository, may be announcing that on stderr, that would make life so much easier.
+
+Also it seems that some commands are not even fully support it:
+
+```
+[d31548v@discovery7 1076_spacetop]$ git annex wanted here
+git-annex: /dartfs/rc/lab/D/DBIC/DBIC/archive/BIDS/Wager/Wager/1076_spacetop/.git/annex: openTempFile template locktmp: permission denied (Permission denied)
+git-annex: /dartfs/rc/lab/D/DBIC/DBIC/archive/BIDS/Wager/Wager/1076_spacetop/.git/annex: openTempFile template locktmp: permission denied (Permission denied)
+[d31548v@discovery7 1076_spacetop]$ git  -c annex.merge-annex-branches=false annex wanted here
+
+git-annex: /dartfs/rc/lab/D/DBIC/DBIC/archive/BIDS/Wager/Wager/1076_spacetop/.git/annex: openTempFile template locktmp: permission denied (Permission denied)
+[d31548v@discovery7 1076_spacetop]$ git annex version | head -n 1
+git-annex version: 8.20211117+git14-ge1f38b9dd-1~ndall+1
+```
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
