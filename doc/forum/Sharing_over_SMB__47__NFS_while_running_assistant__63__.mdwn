@@ -1,0 +1,15 @@
+I have a large collection of media files (music, tv shows, movies, random things I've recorded from television and converted from VHS, random videos from the internet that I've saved) that are stored safely on my TrueNAS box. I've been toying with the idea of importing them into git-annex - I am already using annex for other things, and it's great. :-)
+
+
+Currently, the TrueNAS machine shares these files out over the network as Samba and NFS shares. There's a couple of subdirs that get modified frequently by the likes of Sonarr and Radarr downloading stuff from Usenet - these are running on a Windows machine, which has the shares mounted via Samba. I would like to have git-annex deal with these files, but I have concerns around how (a) the shares would work, (b) how to deal with autonomous file changes from the likes of Radarr and (c) any potential corruption issues stemming from the two.
+
+I did a small scale test where I created a jail on my TrueNAS box, mounted the shared drive and created a test subdirectory and filled it with 40GBs of exemplar data. After importing this data into annex, I found that running annex assistant in the jail and modifying the directory (over the Samba share from the machine that runs Sonarr/Radarr) seemed to work well enough - in that there was a commit corresponding to whatever changed without me intervening. This seems ok, and even viewing the media over the Samba share on a Windows machine (to my surprise) worked fine - it didn't even care or seem to notice that the files were now technically stored as symlinks.
+
+I was happy to see this largely go ok, so my plan is (right now) to simply create a couple of different annexes using the existing file trees and continue as normal (no changes to how shares work, or to Sonarr or Radarr). To deal with Sonarr and Radarr's changes to the files, I'd run an annex assistant in the jail for each of the folders to make the commits automatically as the machine makes changes to files over the Samba share.
+
+Is this a terrible idea? What sort of issues am I likely to have?
+
+
+
+
+
