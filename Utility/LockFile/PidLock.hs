@@ -279,7 +279,7 @@ waitedLock (Seconds timeout) lockfile displaymessage = do
 	giveup $ "Gave up waiting for pid lock file " ++ fromRawFilePath lockfile
 
 -- | Use when the pid lock has already been taken by another thread of the
--- same process, or perhaps is in the process of being taken.
+-- same process.
 alreadyLocked :: MonadIO m => LockFile -> m LockHandle
 alreadyLocked lockfile = liftIO $ do
 	abslockfile <- absPath lockfile
