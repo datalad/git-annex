@@ -10,6 +10,7 @@ module Utility.LockPool.PidLock (
 	LockHandle,
 	waitLock,
 	tryLock,
+	tryLock',
 	checkLocked,
 	getLockStatus,
 	LockStatus(..),
@@ -34,34 +35,72 @@ import Control.Monad.IO.Class
 import Control.Applicative
 import Prelude
 
--- Takes a pid lock, blocking until the lock is available or the timeout.
+-- Does locking using a pid lock, blocking until the lock is available
+-- or the timeout.
+--
+-- There are two levels of locks. A STM lock is used to handle
+-- fine-grained locking amoung threads, locking a specific lockfile,
+-- but only in memory. The pid lock handles locking between processes.
+--
+-- The Seconds is how long to delay if the pid lock is held by another
+-- process.
 waitLock
 	:: (MonadIO m, MonadMask m)
-	=> Seconds
-	-> LockFile
+	=> LockFile
+	-> LockMode
+	-> Seconds
+	-> F.PidLockFile
 	-> (String -> m ())
 	-> m LockHandle
-waitLock timeout file displaymessage = makeLockHandle P.lockPool file
-	-- LockShared for STM lock, because a pid lock can be the top-level
-	-- lock with various other STM level locks gated behind it.
-	(\p f -> P.waitTakeLock p f LockShared)
-	(\f (P.FirstLock firstlock firstlocksem) -> mk 
-		<$> if firstlock
-			then F.waitLock timeout f displaymessage $
-				void . atomically . tryPutTMVar firstlocksem . P.FirstLockSemWaited
-			else liftIO (atomically $ readTMVar firstlocksem) >>= \case
-				P.FirstLockSemWaited True -> F.alreadyLocked f
-				P.FirstLockSemTried True -> F.alreadyLocked f
-				P.FirstLockSemWaited False -> F.waitedLock timeout f displaymessage
-				P.FirstLockSemTried False -> F.waitLock timeout f displaymessage $
+waitLock stmlockfile lockmode timeout pidlockfile displaymessage = do
+	sl@(LockHandle ph _) <- takestmlock
+	pl <- takepidlock
+	-- When the STM lock gets dropped, also drop the pid lock.
+	liftIO $ atomically $
+		P.registerPostReleaseLock ph (dropLock pl)
+	return sl
+  where
+	takestmlock = makeLockHandle P.lockPool stmlockfile
+		(\p f -> P.waitTakeLock p f lockmode)
+		(\_ _ -> pure stmonlyflo)
+	takepidlock = makeLockHandle P.lockPool pidlockfile
+		-- LockShared because multiple threads can share the pid lock;
+		-- it remains locked until all threads using it drop
+		-- their locks.
+		(\p f -> P.waitTakeLock p f LockShared)
+		(\f (P.FirstLock firstlock firstlocksem) -> mkflo
+			<$> if firstlock
+				then F.waitLock timeout f displaymessage $
 					void . atomically . tryPutTMVar firstlocksem . P.FirstLockSemWaited
-	)
+				else liftIO (atomically $ readTMVar firstlocksem) >>= \case
+					P.FirstLockSemWaited True -> F.alreadyLocked f
+					P.FirstLockSemTried True -> F.alreadyLocked f
+					P.FirstLockSemWaited False -> F.waitedLock timeout f displaymessage
+					P.FirstLockSemTried False -> F.waitLock timeout f displaymessage $
+						void . atomically . tryPutTMVar firstlocksem . P.FirstLockSemWaited
+		)
 
 -- Tries to take a pid lock, but does not block.
-tryLock :: LockFile -> IO (Maybe LockHandle)
-tryLock file = tryMakeLockHandle P.lockPool file
+tryLock :: LockFile -> LockMode -> F.PidLockFile -> IO (Maybe LockHandle)
+tryLock stmlockfile lockmode pidlockfile = takestmlock >>= \case
+	Just (sl@(LockHandle ph _)) -> tryLock' pidlockfile >>= \case
+		Just pl -> do
+			liftIO $ atomically $
+				P.registerPostReleaseLock ph (dropLock pl)
+			return (Just sl)
+		Nothing -> do
+			dropLock sl
+			return Nothing
+	Nothing -> return Nothing
+  where
+	takestmlock = tryMakeLockHandle P.lockPool stmlockfile
+		(\p f -> P.tryTakeLock p f lockmode)
+		(\_ _ -> pure (Just stmonlyflo))
+
+tryLock' :: F.PidLockFile -> IO (Maybe LockHandle)
+tryLock' pidlockfile = tryMakeLockHandle P.lockPool pidlockfile
 	(\p f -> P.tryTakeLock p f LockShared)
-	(\f (P.FirstLock firstlock firstlocksem) -> fmap mk
+	(\f (P.FirstLock firstlock firstlocksem) -> fmap mkflo
 		<$> if firstlock
 			then do
 				lh <- F.tryLock f
@@ -85,8 +124,14 @@ getLockStatus file = P.getLockStatus P.lockPool file
 	(StatusLockedBy <$> getProcessID)
 	(F.getLockStatus file)
 
-mk :: F.LockHandle -> FileLockOps
-mk h = FileLockOps
+mkflo :: F.LockHandle -> FileLockOps
+mkflo h = FileLockOps
 	{ fDropLock = F.dropLock h
 	, fCheckSaneLock = \f -> F.checkSaneLock f h
+	}
+		
+stmonlyflo :: FileLockOps
+stmonlyflo = FileLockOps
+	{ fDropLock = return ()
+	, fCheckSaneLock = const (return True)
 	}

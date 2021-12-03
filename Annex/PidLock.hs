@@ -1,6 +1,6 @@
 {- Pid locking support.
  -
- - Copyright 2014-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -53,7 +53,7 @@ pidLockChildProcess cmd ps f a = do
 			cleanup
 			(go gonopidlock p pidlock)
   where
-  	setup pidlock = PidP.tryLock pidlock
+  	setup pidlock = PidP.tryLock' pidlock
 
 	cleanup (Just h) = dropLock h
 	cleanup Nothing = return ()
@@ -83,7 +83,7 @@ runsGitAnnexChildProcessViaGit a = pidLockFile >>= \case
 	Nothing -> a
 	Just pidlock -> bracket (setup pidlock) cleanup (go pidlock)
   where
-	setup pidlock = liftIO $ PidP.tryLock pidlock
+	setup pidlock = liftIO $ PidP.tryLock' pidlock
 	
 	cleanup (Just h) = liftIO $ dropLock h
 	cleanup Nothing = return ()
@@ -112,7 +112,7 @@ runsGitAnnexChildProcessViaGit' r a = pidLockFile >>= \case
 	Nothing -> liftIO $ a r
 	Just pidlock -> liftIO $ bracket (setup pidlock) cleanup (go pidlock)
   where
-	setup pidlock = PidP.tryLock pidlock
+	setup pidlock = PidP.tryLock' pidlock
 	
 	cleanup (Just h) = dropLock h
 	cleanup Nothing = return ()

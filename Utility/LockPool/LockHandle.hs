@@ -8,7 +8,7 @@
 {-# LANGUAGE CPP #-}
 
 module Utility.LockPool.LockHandle (
-	LockHandle,
+	LockHandle(..),
 	FileLockOps(..),
 	dropLock,
 #ifndef mingw32_HOST_OS
@@ -86,4 +86,3 @@ mkLockHandle :: P.LockHandle -> FileLockOps -> IO LockHandle
 mkLockHandle ph fo = do
 	atomically $ P.registerCloseLockFile ph (fDropLock fo)
 	return $ LockHandle ph fo
-

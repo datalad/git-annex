@@ -8,6 +8,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Utility.LockFile.PidLock (
+	PidLockFile,
 	LockHandle,
 	tryLock,
 	waitLock,
@@ -53,13 +54,13 @@ import System.FilePath
 import Control.Applicative
 import Prelude
 
-type LockFile = RawFilePath
+type PidLockFile = RawFilePath
 
 data LockHandle
-	= LockHandle LockFile FileStatus SideLockHandle
+	= LockHandle PidLockFile FileStatus SideLockHandle
 	| ParentLocked
 
-type SideLockHandle = Maybe (LockFile, Posix.LockHandle)
+type SideLockHandle = Maybe (RawFilePath, Posix.LockHandle)
 
 data PidLock = PidLock
 	{ lockingPid :: ProcessID
@@ -72,13 +73,13 @@ mkPidLock = PidLock
 	<$> getProcessID
 	<*> getHostName
 
-readPidLock :: LockFile -> IO (Maybe PidLock)
+readPidLock :: PidLockFile -> IO (Maybe PidLock)
 readPidLock lockfile = (readish =<<)
 	<$> catchMaybeIO (readFile (fromRawFilePath lockfile))
 
 -- To avoid races when taking over a stale pid lock, a side lock is used.
 -- This is a regular posix exclusive lock.
-trySideLock :: LockFile -> (SideLockHandle -> IO a) -> IO a
+trySideLock :: PidLockFile -> (SideLockHandle -> IO a) -> IO a
 trySideLock lockfile a = do
 	sidelock <- sideLockFile lockfile
 	mlck <- catchDefaultIO Nothing $ 
@@ -113,7 +114,7 @@ dropSideLock (Just (f, h)) = do
 -- The side lock is put in /dev/shm. This will work on most any
 -- Linux system, even if its whole root filesystem doesn't support posix
 -- locks. /tmp is used as a fallback.
-sideLockFile :: LockFile -> IO LockFile
+sideLockFile :: PidLockFile -> IO RawFilePath
 sideLockFile lockfile = do
 	f <- fromRawFilePath <$> absPath lockfile
 	let base = intercalate "_" (splitDirectories (makeRelative "/" f))
@@ -136,7 +137,7 @@ sideLockFile lockfile = do
 --
 -- If a parent process is holding the lock, determined by a
 -- "PIDLOCK_lockfile" environment variable, does not block either.
-tryLock :: LockFile -> IO (Maybe LockHandle)
+tryLock :: PidLockFile -> IO (Maybe LockHandle)
 tryLock lockfile = do
 	abslockfile <- absPath lockfile
 	lockenv <- pidLockEnv abslockfile
@@ -256,7 +257,7 @@ checkInsaneLustre dest = do
 --
 -- After the first second waiting, runs the callback to display a message,
 -- so the user knows why it's stalled.
-waitLock :: MonadIO m => Seconds -> LockFile -> (String -> m ()) -> (Bool -> IO ()) -> m LockHandle
+waitLock :: MonadIO m => Seconds -> PidLockFile -> (String -> m ()) -> (Bool -> IO ()) -> m LockHandle
 waitLock (Seconds timeout) lockfile displaymessage sem = go timeout
   where
 	go n
@@ -273,14 +274,14 @@ waitLock (Seconds timeout) lockfile displaymessage sem = go timeout
 			liftIO $ sem False
 			waitedLock (Seconds timeout) lockfile displaymessage
 
-waitedLock :: MonadIO m => Seconds -> LockFile -> (String -> m ()) -> m LockHandle
+waitedLock :: MonadIO m => Seconds -> PidLockFile -> (String -> m ()) -> m LockHandle
 waitedLock (Seconds timeout) lockfile displaymessage = do
 	displaymessage $ show timeout ++ " second timeout exceeded while waiting for pid lock file " ++ fromRawFilePath lockfile
 	giveup $ "Gave up waiting for pid lock file " ++ fromRawFilePath lockfile
 
 -- | Use when the pid lock has already been taken by another thread of the
 -- same process, or perhaps is in the process of being taken.
-alreadyLocked :: MonadIO m => LockFile -> m LockHandle
+alreadyLocked :: MonadIO m => PidLockFile -> m LockHandle
 alreadyLocked lockfile = liftIO $ do
 	abslockfile <- absPath lockfile
 	st <- getFileStatus abslockfile
@@ -294,10 +295,10 @@ dropLock (LockHandle lockfile _ sidelock) = do
 	removeWhenExistsWith removeLink lockfile
 dropLock ParentLocked = return ()
 
-getLockStatus :: LockFile -> IO LockStatus
+getLockStatus :: PidLockFile -> IO LockStatus
 getLockStatus = maybe StatusUnLocked (StatusLockedBy . lockingPid) <$$> readPidLock
 
-checkLocked :: LockFile -> IO (Maybe Bool)
+checkLocked :: PidLockFile -> IO (Maybe Bool)
 checkLocked lockfile = conv <$> getLockStatus lockfile
   where
 	conv (StatusLockedBy _) = Just True
@@ -305,7 +306,7 @@ checkLocked lockfile = conv <$> getLockStatus lockfile
 
 -- Checks that the lock file still exists, and is the same file that was
 -- locked to get the LockHandle.
-checkSaneLock :: LockFile -> LockHandle -> IO Bool
+checkSaneLock :: PidLockFile -> LockHandle -> IO Bool
 checkSaneLock lockfile (LockHandle _ st _) = 
 	go =<< catchMaybeIO (getFileStatus lockfile)
   where
