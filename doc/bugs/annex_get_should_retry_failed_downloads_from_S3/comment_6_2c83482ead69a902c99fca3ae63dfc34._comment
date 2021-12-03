@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-12-03T20:37:18Z"
+ content="""
+I noticed that there is a FD leak when pidlock is enabled.
+About 1 file in 10 that is processed,
+there is a handle to ".git/annex/pidlock.lck" that is left open.
+This is not a regression caused by my fix above, bug is in older git-annex
+too.
+
+Also, I have the fine-grained locking implemented in the pidlockfinegrained
+branch now, but am waiting to merge it for testing and to resolve the above
+problem first.
+"""]]
