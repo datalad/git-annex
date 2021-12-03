@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2021-12-03T21:41:53Z"
+ content="""
+Great - thank you! FWIW I gave `8.20211123+git32-g9c0f3d1de-1~ndall+1_amd64` build a test run on that system, and it performed nicely (did get all files in my limited `get -J5` attempt on that dataset).  Will be waiting for the ultimate solution to try.
+"""]]
