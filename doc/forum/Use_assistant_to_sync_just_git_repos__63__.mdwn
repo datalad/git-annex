@@ -1,0 +1,11 @@
+Hi,
+
+So lately I've been using git-annex to sync repos with only markdown files for Obsidian. Running `git annex sync --no-content` works well for this. But I have to remember when I've updated my Obsidian files on one system and make sure to sync to other repos.
+
+Could I use the assistant for this? For repos with annexed files, I've always preferred to manually manage my repos, so I've never used the assistant.
+
+Ideally, as I commit changes, it tries to sync them to other systems, and if those systems are offline (my MBP is closed for example and the ssh connection therefore times out), nothing explodes.
+
+Is this possible? Is it possible with a half dozen similar repos? Can a single agent do this or do I need to start one for each repo?
+
+Thanks!
