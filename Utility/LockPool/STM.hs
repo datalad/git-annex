@@ -29,7 +29,6 @@ import System.FilePath.ByteString (RawFilePath)
 import qualified Data.Map.Strict as M
 import Control.Concurrent.STM
 import Control.Exception
-import Control.Monad
 
 type LockFile = RawFilePath
 
@@ -142,8 +141,8 @@ getLockStatus pool file getdefault checker = do
 		Nothing -> getdefault
 		Just restore -> bracket_ (return ()) restore checker
 
--- Only runs action to close underlying lock file when this is the last
--- user of the lock, and when the lock has not already been closed.
+-- Releases the lock. When it is a shared lock, it may remain locked by
+-- other LockHandles.
 --
 -- Note that the lock pool is left empty while the CloseLockFile action
 -- is run, to avoid race with another thread trying to open the same lock
@@ -153,16 +152,16 @@ releaseLock :: LockHandle -> IO ()
 releaseLock h = go =<< atomically (tryTakeTMVar h)
   where
 	go (Just (pool, file, closelockfile, postreleaselock)) = do
-		(m, lastuser) <- atomically $ do
+		m <- atomically $ do
 			m <- takeTMVar pool
 			return $ case M.lookup file m of
 				Just (LockStatus mode n firstlocksem)
-					| n == 1 -> (M.delete file m, True)
+					| n == 1 -> (M.delete file m)
 					| otherwise ->
-						(M.insert file (LockStatus mode (pred n) firstlocksem) m, False)
-				Nothing -> (m, True)
-		when lastuser closelockfile
+						(M.insert file (LockStatus mode (pred n) firstlocksem) m)
+				Nothing -> m
+		() <- closelockfile
 		atomically $ putTMVar pool m
-		when lastuser postreleaselock
+		postreleaselock
 	-- The LockHandle was already closed.
 	go Nothing = return ()

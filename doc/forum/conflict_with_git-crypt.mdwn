@@ -1,0 +1,3 @@
+[git-crypt](https://www.agwa.name/projects/git-crypt/) is executed as a filter for secrets specified in `.gitattributes` files. However, git-annex initialization results in `* filter=annex` being added to `$GIT_DIR/info/attributes`, which [has the highest precedence](https://www.git-scm.com/docs/gitattributes#_description), ultimately causing any git-crypt filtering to be bypassed.
+
+Is there a recommended workaround for this? Thanks!

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2021-12-03T22:35:16Z"
+ content="""
+Unfortunately the more I dig into pid locking, the more deep problems I'm
+finding..
+
+When the pid lock's LockHandle is dropped, it drops the pid lock, and that
+happens even if there is another LockHandle for the pid lock, which is
+possble since it's a shared lock. So the pid lock may go away despite
+a thread is still operating as if it is present. I think probably the pid
+lock needs to stop using the LockPool and use a single LockHandle, which is
+ref counted.
+
+`getLockStatus` and `checkSaneLock` look at the status of the pid lock,
+but not yet at the fine-grained STM lock status. And as implemented,
+I think they never worked at all, since they check for posix locks on the
+pid lock file.
+"""]]
