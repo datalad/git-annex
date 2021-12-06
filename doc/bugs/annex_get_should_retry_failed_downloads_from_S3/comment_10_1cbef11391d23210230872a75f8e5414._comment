@@ -5,12 +5,4 @@
  content="""
 Update: All problems noted above are fixed, fine-grained locking is merged, 
 and it seems to work well!
-
-Except for this, which I have not gotten to. It may not actually matter, but
-worth looking at to be sure: 
-
-`getLockStatus` and `checkSaneLock` look at the status of the pid lock,
-but not yet at the fine-grained STM lock status. And as implemented,
-I think they never worked at all, since they check for posix locks on the
-pid lock file.
 """]]
