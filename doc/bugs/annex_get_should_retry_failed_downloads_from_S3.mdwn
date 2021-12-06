@@ -58,3 +58,5 @@ per my setting in `~/.gitconfig` (which also has `annex.retry = 3`)
 
 
 [[!meta title="annex.pidlock can cause git-annex get -J to fail to take transfer lock"]]
+
+> [[done]] --[[Joey]] 
