@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-12-06T16:36:45Z"
+ content="""
+Unfortunately, [[!commit 66b2536ea0aa5c88f5b744eeace3322a8a4a10b6]]
+broke shared locking when pid locks are not used, causing a FD leak,
+and had to be reverted. Which further breaks concurrent pid locking. 
+
+At this point, when -J is used with pidlock, it may drop the lock but
+still think it has it held internally. Comment #7 found another way that
+could happen, and the conclusion is that the pid lock must migrate away
+from using the lock pool.
+"""]]
