@@ -274,7 +274,7 @@ waitLock (Seconds timeout) lockfile displaymessage sem = go timeout
 			liftIO $ sem False
 			waitedLock (Seconds timeout) lockfile displaymessage
 
-waitedLock :: MonadIO m => Seconds -> PidLockFile -> (String -> m ()) -> m LockHandle
+waitedLock :: MonadIO m => Seconds -> PidLockFile -> (String -> m ()) -> m a
 waitedLock (Seconds timeout) lockfile displaymessage = do
 	displaymessage $ show timeout ++ " second timeout exceeded while waiting for pid lock file " ++ fromRawFilePath lockfile
 	giveup $ "Gave up waiting for pid lock file " ++ fromRawFilePath lockfile

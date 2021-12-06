@@ -1,6 +1,6 @@
 {- Handles for lock pools.
  -
- - Copyright 2015-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -25,7 +25,6 @@ import Utility.DebugLocks
 import Control.Concurrent.STM
 import Control.Monad.Catch
 import Control.Monad.IO.Class (liftIO, MonadIO)
-import Control.Applicative
 import Prelude
 
 data LockHandle = LockHandle P.LockHandle FileLockOps
@@ -53,21 +52,24 @@ makeLockHandle
 	=> P.LockPool
 	-> LockFile
 	-> (P.LockPool -> LockFile -> STM (P.LockHandle, P.FirstLock))
-	-> (LockFile -> P.FirstLock -> m FileLockOps)
-	-> m LockHandle
+	-> (LockFile -> P.FirstLock -> m (FileLockOps, t))
+	-> m (LockHandle, t)
 makeLockHandle pool file pa fa = bracketOnError setup cleanup go
   where
 	setup = debugLocks $ liftIO $ atomically (pa pool file)
 	cleanup (ph, _) = debugLocks $ liftIO $ P.releaseLock ph
-	go (ph, firstlock) = liftIO . mkLockHandle ph =<< fa file firstlock
+	go (ph, firstlock) = do
+		(flo, t) <- fa file firstlock
+		h <- liftIO $ mkLockHandle ph flo
+		return (h, t)
 
 tryMakeLockHandle
 	:: (MonadIO m, MonadMask m)
 	=> P.LockPool
 	-> LockFile
 	-> (P.LockPool -> LockFile -> STM (Maybe (P.LockHandle, P.FirstLock)))
-	-> (LockFile -> P.FirstLock -> m (Maybe FileLockOps))
-	-> m (Maybe LockHandle)
+	-> (LockFile -> P.FirstLock -> m (Maybe (FileLockOps, t)))
+	-> m (Maybe (LockHandle, t))
 tryMakeLockHandle pool file pa fa = bracketOnError setup cleanup go
   where
 	setup = liftIO $ atomically (pa pool file)
@@ -80,7 +82,9 @@ tryMakeLockHandle pool file pa fa = bracketOnError setup cleanup go
 			Nothing -> do
 				liftIO $ cleanup (Just (ph, firstlock))
 				return Nothing
-			Just fo -> liftIO $ Just <$> mkLockHandle ph fo
+			Just (fo, t) -> do
+				h <- liftIO $ mkLockHandle ph fo
+				return (Just (h, t))
 
 mkLockHandle :: P.LockHandle -> FileLockOps -> IO LockHandle
 mkLockHandle ph fo = do

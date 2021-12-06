@@ -53,7 +53,7 @@ pidLockChildProcess cmd ps f a = do
 			cleanup
 			(go gonopidlock p pidlock)
   where
-  	setup pidlock = PidP.tryLock' pidlock
+  	setup pidlock = fmap fst <$> PidP.tryLock' pidlock
 
 	cleanup (Just h) = dropLock h
 	cleanup Nothing = return ()
@@ -83,7 +83,7 @@ runsGitAnnexChildProcessViaGit a = pidLockFile >>= \case
 	Nothing -> a
 	Just pidlock -> bracket (setup pidlock) cleanup (go pidlock)
   where
-	setup pidlock = liftIO $ PidP.tryLock' pidlock
+	setup pidlock = liftIO $ fmap fst <$> PidP.tryLock' pidlock
 	
 	cleanup (Just h) = liftIO $ dropLock h
 	cleanup Nothing = return ()
@@ -112,7 +112,7 @@ runsGitAnnexChildProcessViaGit' r a = pidLockFile >>= \case
 	Nothing -> liftIO $ a r
 	Just pidlock -> liftIO $ bracket (setup pidlock) cleanup (go pidlock)
   where
-	setup pidlock = PidP.tryLock' pidlock
+	setup pidlock = fmap fst <$> PidP.tryLock' pidlock
 	
 	cleanup (Just h) = dropLock h
 	cleanup Nothing = return ()

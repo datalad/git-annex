@@ -33,25 +33,25 @@ import Prelude
 
 -- Takes a shared lock, blocking until the lock is available.
 lockShared :: Maybe FileMode -> LockFile -> IO LockHandle
-lockShared mode file = makeLockHandle P.lockPool file
+lockShared mode file = fst <$> makeLockHandle P.lockPool file
 	(\p f -> P.waitTakeLock p f LockShared)
 	(\f _ -> mk <$> F.lockShared mode f)
 
 -- Takes an exclusive lock, blocking until the lock is available.
 lockExclusive :: Maybe FileMode -> LockFile -> IO LockHandle
-lockExclusive mode file = makeLockHandle P.lockPool file
+lockExclusive mode file = fst <$> makeLockHandle P.lockPool file
 	(\p f -> P.waitTakeLock p f LockExclusive)
 	(\f _ -> mk <$> F.lockExclusive mode f)
 
 -- Tries to take a shared lock, but does not block.
 tryLockShared :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
-tryLockShared mode file = tryMakeLockHandle P.lockPool file
+tryLockShared mode file = fmap fst <$> tryMakeLockHandle P.lockPool file
 	(\p f -> P.tryTakeLock p f LockShared)
 	(\f _ -> fmap mk <$> F.tryLockShared mode f)
 
 -- Tries to take an exclusive lock, but does not block.
 tryLockExclusive :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
-tryLockExclusive mode file = tryMakeLockHandle P.lockPool file
+tryLockExclusive mode file = fmap fst <$> tryMakeLockHandle P.lockPool file
 	(\p f -> P.tryTakeLock p f LockExclusive)
 	(\f _ -> fmap mk <$> F.tryLockExclusive mode f)
 
@@ -67,8 +67,8 @@ getLockStatus file = P.getLockStatus P.lockPool file
 	(StatusLockedBy <$> getProcessID)
 	(F.getLockStatus file)
 
-mk :: F.LockHandle -> FileLockOps
-mk h = FileLockOps
+mk :: F.LockHandle -> (FileLockOps, ())
+mk h = (FileLockOps
 	{ fDropLock = F.dropLock h
 	, fCheckSaneLock = \f -> F.checkSaneLock f h
-	}
+	}, ())
