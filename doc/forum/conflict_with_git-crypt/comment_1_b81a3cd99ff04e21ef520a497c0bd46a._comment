@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-12-07T16:55:51Z"
+ content="""
+I guess this is about them both setting the filter attribute.
+
+git-annex does not write to .git/info/attributes after
+`git-annex init` so you can move the filter=annex line from there to
+another file, or change the line to only match on some files not `*`,
+or even delete it, if you want to.
+"""]]
