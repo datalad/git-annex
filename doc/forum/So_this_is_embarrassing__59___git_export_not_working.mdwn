@@ -1,0 +1,243 @@
+Always worked before, doesn't work now. I just get this.
+
+```
+git annex export master --to film-depot --verbose
+export film-depot .gitattributes ok
+export film-depot .gitignore ok
+export film-depot 00-GIT-ANNEX ok
+export film-depot README.md ok
+(recording state in git...)
+```
+
+Previously I had 99 movie files that would export to my external drive. Now no dice.
+
+```
+[2021-12-06 22:22:25.524608] (Utility.Process) process [72333] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2021-12-06 22:22:25.529718] (Utility.Process) process [72333] done ExitSuccess
+[2021-12-06 22:22:25.530949] (Utility.Process) process [72334] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2021-12-06 22:22:25.536689] (Utility.Process) process [72334] done ExitSuccess
+[2021-12-06 22:22:25.537822] (Utility.Process) process [72335] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..59ceb4035e85ed634375596e4a44c5b3ad300652","--pretty=%H","-n1"]
+[2021-12-06 22:22:25.5423] (Utility.Process) process [72335] done ExitSuccess
+[2021-12-06 22:22:25.5431] (Utility.Process) process [72336] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..8c7c4c0941afc7d9a05294dad06414fd0333eba9","--pretty=%H","-n1"]
+[2021-12-06 22:22:25.549488] (Utility.Process) process [72336] done ExitSuccess
+[2021-12-06 22:22:25.550436] (Utility.Process) process [72337] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..f442bffc235f879ec4fb31dfcbf89b3ac778b520","--pretty=%H","-n1"]
+[2021-12-06 22:22:25.5569] (Utility.Process) process [72337] done ExitSuccess
+[2021-12-06 22:22:25.557738] (Utility.Process) process [72338] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..eb25a989c75c43bc36c99c4ccf28ef17123a1f5e","--pretty=%H","-n1"]
+[2021-12-06 22:22:25.566045] (Utility.Process) process [72338] done ExitSuccess
+[2021-12-06 22:22:25.56697] (Utility.Process) process [72339] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..6eda2fa9081d65baf6758e608fad471fd0e9dc3e","--pretty=%H","-n1"]
+[2021-12-06 22:22:25.576185] (Utility.Process) process [72339] done ExitSuccess
+[2021-12-06 22:22:25.577034] (Utility.Process) process [72340] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..89670c26510137760b55e0cc3b8378968e9f7b01","--pretty=%H","-n1"]
+[2021-12-06 22:22:25.584382] (Utility.Process) process [72340] done ExitSuccess
+[2021-12-06 22:22:25.591735] (Utility.Process) process [72341] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2021-12-06 22:22:25.592642] (Utility.Process) process [72342] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2021-12-06 22:22:25.597233] (Utility.Process) process [72343] read: git ["config","--null","--list"]
+[2021-12-06 22:22:25.600309] (Utility.Process) process [72343] done ExitSuccess
+[2021-12-06 22:22:25.601475] (Utility.Process) process [72344] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","rev-parse","--verify","--quiet","master:"]
+[2021-12-06 22:22:25.604843] (Utility.Process) process [72344] done ExitSuccess
+[2021-12-06 22:22:25.607159] (Utility.Process) process [72345] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","mktree","--batch","-z"]
+[2021-12-06 22:22:25.607845] (Utility.Process) process [72346] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-tree","--full-tree","-z","-r","-t","--","bf9aa984fda078c0f7e2ae3f416f7366a1bd6906"]
+[2021-12-06 22:22:25.613684] (Utility.Process) process [72346] done ExitSuccess
+[2021-12-06 22:22:25.613994] (Utility.Process) process [72345] done ExitSuccess
+[2021-12-06 22:22:25.615026] (Utility.Process) process [72347] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/master"]
+[2021-12-06 22:22:25.62044] (Utility.Process) process [72347] done ExitSuccess
+[2021-12-06 22:22:25.625281] (Annex.Branch) read export.log
+[2021-12-06 22:22:25.626277] (Annex.Branch) set export.log
+[2021-12-06 22:22:25.627203] (Utility.Process) process [72348] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2021-12-06 22:22:25.632737] (Utility.Process) process [72348] done ExitSuccess
+[2021-12-06 22:22:25.633737] (Utility.Process) process [72349] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","rev-parse","--verify","--quiet","59ceb4035e85ed634375596e4a44c5b3ad300652:"]
+[2021-12-06 22:22:25.637618] (Utility.Process) process [72349] done ExitSuccess
+[2021-12-06 22:22:25.63843] (Utility.Process) process [72350] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","mktree","--batch","-z"]
+[2021-12-06 22:22:25.639126] (Utility.Process) process [72351] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-tree","--full-tree","-z","-t","--","ba3ecb9e4da6ac71d242696ed0d48d2fcaa45e05"]
+[2021-12-06 22:22:25.643712] (Utility.Process) process [72351] done ExitSuccess
+[2021-12-06 22:22:25.65106] (Utility.Process) process [72350] done ExitSuccess
+[2021-12-06 22:22:25.651934] (Utility.Process) process [72352] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","commit-tree","d1d9c03e2594032e2e01eec9965d978406ea910d","--no-gpg-sign","-p","59ceb4035e85ed634375596e4a44c5b3ad300652"]
+[2021-12-06 22:22:25.657279] (Utility.Process) process [72352] done ExitSuccess
+[2021-12-06 22:22:25.658145] (Utility.Process) process [72353] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","commit-tree","ba3ecb9e4da6ac71d242696ed0d48d2fcaa45e05","--no-gpg-sign","-p","e0c16268cb18fdcb965f08c1257e43de24c577dd"]
+[2021-12-06 22:22:25.663939] (Utility.Process) process [72353] done ExitSuccess
+[2021-12-06 22:22:25.664818] (Utility.Process) process [72354] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","update-ref","refs/heads/git-annex","c89b7490febb74f3224165fab88e4eb14f05b37a"]
+[2021-12-06 22:22:25.670076] (Utility.Process) process [72354] done ExitSuccess
+[2021-12-06 22:22:25.671381] (Utility.Process) process [72355] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","diff-tree","-z","--raw","--no-renames","-l0","-r","bf9aa984fda078c0f7e2ae3f416f7366a1bd6906","bf9aa984fda078c0f7e2ae3f416f7366a1bd6906","--"]
+[2021-12-06 22:22:25.67517] (Utility.Process) process [72355] done ExitSuccess
+[2021-12-06 22:22:25.67536] (Annex.Branch) read export.log
+[2021-12-06 22:22:25.675925] (Annex.Branch) set export.log
+[2021-12-06 22:22:25.676667] (Utility.Process) process [72356] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-tree","--full-tree","-z","-r","--","bf9aa984fda078c0f7e2ae3f416f7366a1bd6906"]
+[2021-12-06 22:22:25.681325] (Utility.Process) process [72357] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2021-12-06 22:22:25.68243] (Utility.Process) process [72358] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2021-12-06 22:22:25.686724] (Annex.Branch) read b24/e7d/GIT--06be486d36bd2b4cb8314b7084dca8b7252f7199.log
+export film-depot .gitattributes ok
+[2021-12-06 22:22:25.687565] (Annex.Branch) read 8eb/f8d/GIT--e43b0f988953ae3a84b00331d0ccf5f7d51cb3cf.log
+export film-depot .gitignore ok
+[2021-12-06 22:22:25.688064] (Annex.Branch) read 80f/4f8/GIT--e69de29bb2d1d6434b8b29ae775ad8c2e48c5391.log
+export film-depot 00-GIT-ANNEX ok
+[2021-12-06 22:22:25.688591] (Annex.Branch) read 087/1f9/WORM-s1116285116-m1593796806--A,32Beautiful,32Mind,32,402001,41,321080p.mkv.log
+[2021-12-06 22:22:25.689105] (Annex.Branch) read b6a/0bf/WORM-s1037772729-m1595036949--Alien,32,401979,41,32720p.mkv.log
+[2021-12-06 22:22:25.689592] (Annex.Branch) read fc1/47e/WORM-s2584124634-m1593818075--Aliens,32,401986,41,32SE,321080p.mp4.log
+[2021-12-06 22:22:25.690021] (Annex.Branch) read c32/8d4/WORM-s1598749320-m1589682846--American,32Pie,32,401999,41,321080p.mp4.log
+[2021-12-06 22:22:25.69048] (Annex.Branch) read c61/d77/WORM-s2118257276-m1525912572--American,32Pie,32II,32,402001,41,32720p.mp4.log
+[2021-12-06 22:22:25.691044] (Annex.Branch) read a91/0bf/WORM-s2117183986-m1571443864--American,32Pie,32Wedding,32,402003,41,321080p.mp4.log
+[2021-12-06 22:22:25.69149] (Annex.Branch) read 6e0/e37/WORM-s2524668661-m1636382981--Armageddon,32,401998,41,321080p.mp4.log
+[2021-12-06 22:22:25.692829] (Annex.Branch) read e65/e2a/WORM-s2049268430-m1634226615--Avengers,,,32Age,32of,32Ultron,32,402015,41,321080p.mp4.log
+[2021-12-06 22:22:25.693395] (Annex.Branch) read 0dc/df0/WORM-s1175417895-m1555550689--Avengers,,,32Infinity,32War,32,402018,41.mkv.log
+[2021-12-06 22:22:25.697988] (Annex.Branch) read a08/5cc/WORM-s1073479115-m1536010249--Avengers,,,32The,32,402012,41,32720p.mkv.log
+[2021-12-06 22:22:25.698657] (Annex.Branch) read ae6/34b/WORM-s1942991012-m1595715198--Back,32to,32the,32Future,32,401985,41,321080p.mp4.log
+[2021-12-06 22:22:25.699122] (Annex.Branch) read 9a6/a47/WORM-s2108282730-m1636257924--Beverly,32Hills,32Cop,322,32,401987,41,321080p.mp4.log
+[2021-12-06 22:22:25.699818] (Annex.Branch) read 7cb/426/WORM-s1785804434-m1636253231--Beverly,32Hills,32Cop,32III,32,401994,41,321080p.mp4.log
+[2021-12-06 22:22:25.700452] (Annex.Branch) read d14/a70/WORM-s2036895920-m1595715206--Black,32Hawk,32Down,32,402001,41,321080p.mp4.log
+[2021-12-06 22:22:25.700903] (Annex.Branch) read bc1/18b/WORM-s2620361196-m1526994937--Contact,32,401997,41,321080p.mp4.log
+[2021-12-06 22:22:25.701508] (Annex.Branch) read 2de/e6b/WORM-s1937651408-m1595715213--Crimson,32Tide,32,401995,41,321080p.mp4.log
+[2021-12-06 22:22:25.70195] (Annex.Branch) read f38/990/WORM-s2211439503-m1595715222--Die,32Hard,32,401988,41,321080p.mp4.log
+[2021-12-06 22:22:25.702438] (Annex.Branch) read 95c/68d/WORM-s902398239-m1530225214--Doctor,32Strange,32,402016,41,32720p.mp4.log
+[2021-12-06 22:22:25.703064] (Annex.Branch) read 137/b62/WORM-s1768193827-m1563842861--Edge,32of,32Tomorrow,32,402014,41,321080p.mp4.log
+[2021-12-06 22:22:25.703694] (Annex.Branch) read a03/fcb/WORM-s1917114368-m1560119371--Enders,32Game,32,402013,41.avi.log
+[2021-12-06 22:22:25.7043] (Annex.Branch) read e1b/f67/WORM-s1828312956-m1586061932--Enemy,32at,32the,32Gates,32,402001,41,321080p.mkv.log
+[2021-12-06 22:22:25.704724] (Annex.Branch) read c9d/3b1/WORM-s2706201822-m1586047240--Enemy,32of,32the,32State,32,401998,41,321080p.mp4.log
+[2021-12-06 22:22:25.705143] (Annex.Branch) read 930/182/WORM-s848757174-m1518370060--Field,32of,32Dreams,32,401989,41.mp4.log
+[2021-12-06 22:22:25.705724] (Annex.Branch) read afa/30f/WORM-s2104549496-m1595715258--Fifth,32Element,,,32The,32,401997,41,321080p.mp4.log
+[2021-12-06 22:22:25.706178] (Annex.Branch) read 551/6ba/WORM-s1339997270-m1636253775--Final,32Fantasy,32The,32Spirits,32Within,32,402001,41,321080p.mkv.log
+[2021-12-06 22:22:25.706805] (Annex.Branch) read 91d/c72/WORM-s2237782219-m1613505958--First,32Knight,32,401995,41,321080p.mp4.log
+[2021-12-06 22:22:25.707349] (Annex.Branch) read ddc/080/WORM-s2637057735-m1542757748--Fugitive,,,32The,32,401993,41,32720p.mkv.log
+[2021-12-06 22:22:25.707983] (Annex.Branch) read 152/91b/WORM-s2342003785-m1518370156--Galaxy,32Quest,32,401999,41.mkv.log
+[2021-12-06 22:22:25.708543] (Annex.Branch) read e7a/984/WORM-s1756467527-m1595109447--Ghostbusters,32,401984,41,321080p.mp4.log
+[2021-12-06 22:22:25.708988] (Annex.Branch) read 0e8/ff6/WORM-s3933229071-m1602373090--Gladiator,32,402000,41,321080p.mkv.log
+[2021-12-06 22:22:25.709365] (Annex.Branch) read 87a/3d3/WORM-s1690337749-m1636382985--Groundhog,32Day,32,401993,41,321080p.mp4.log
+[2021-12-06 22:22:25.709988] (Annex.Branch) read 3bd/e70/WORM-s2046008512-m1555550686--Harry,32Brown,32,402009,41,321080p.mp4.log
+[2021-12-06 22:22:25.710588] (Annex.Branch) read 972/247/WORM-s1073833682-m1584242874--Hart,39s,32War,32,402002,41,32720p.mp4.log
+[2021-12-06 22:22:25.711033] (Annex.Branch) read a95/4ec/WORM-s790627159-m1518370226--Hunt,32for,32Red,32October,,,32The.mkv.log
+[2021-12-06 22:22:25.711609] (Annex.Branch) read d45/158/WORM-s1048990304-m1636829207--In,32the,32Heat,32of,32the,32Night,32,401967,41,32720p.mkv.log
+[2021-12-06 22:22:25.712203] (Annex.Branch) read 0f6/7f5/WORM-s2479265386-m1595715232--Inception,32,402010,41,321080p.mp4.log
+[2021-12-06 22:22:25.712624] (Annex.Branch) read b9f/faa/WORM-s1855071446-m1525796911--Independence,32Day,32,401996,41.mp4.log
+[2021-12-06 22:22:25.713269] (Annex.Branch) read bb9/0bf/WORM-s2123742199-m1595715241--Indiana,32Jones,32and,32the,32L-86e667a21adfdf59df66cde8e3c653de.log
+[2021-12-06 22:22:25.713841] (Annex.Branch) read 7d3/b92/WORM-s1832093728-m1634098515--Indiana,32Jones,32and,32the,32Raiders,32of,32the,32Lost,32Ark,32,401981,41,321080p.mp4.log
+[2021-12-06 22:22:25.714393] (Annex.Branch) read 7fe/c79/WORM-s3384564503-m1636826013--Inglourious,32Basterds,32,402009,41,321080p.mkv.log
+[2021-12-06 22:22:25.714964] (Annex.Branch) read 1b1/94b/WORM-s2640394877-m1598221200--Insider,,,32The,32,401999,41,321080p.mp4.log
+[2021-12-06 22:22:25.715363] (Annex.Branch) read 496/2db/WORM-s2431697820-m1636258658--Interstellar,32,402014,41,321080p.mp4.log
+[2021-12-06 22:22:25.716042] (Annex.Branch) read ec2/268/WORM-s1282009570-m1518370381--Iron,32Man.mkv.log
+[2021-12-06 22:22:25.716841] (Annex.Branch) read d9c/575/WORM-s2280602670-m1596874458--Kelly,39s,32Heroes,32,401970,41,321080p.mp4.log
+[2021-12-06 22:22:25.7175] (Annex.Branch) read fb8/a6a/WORM-s1532588342-m1518370430--King,32Author.mkv.log
+[2021-12-06 22:22:25.71824] (Annex.Branch) read 1e8/0c4/WORM-s2362174469-m1596874396--L.A.,32Confidential,32,401997,41,321080p.mp4.log
+[2021-12-06 22:22:25.718719] (Annex.Branch) read bdf/208/WORM-s2580319882-m1597519936--Last,32Samurai,,,32The,32,402003,41,321080p.mp4.log
+[2021-12-06 22:22:25.719159] (Annex.Branch) read c83/4b8/WORM-s2200470144-m1518370504--Last,32of,32the,32Mohicans,,,32-3e3f78ef1cecfd2d87dd70a706077bfb.log
+[2021-12-06 22:22:25.719718] (Annex.Branch) read 7ca/016/WORM-s1615545853-m1597087605--Lethal,32Weapon,32,401987,41,321080p.mp4.log
+[2021-12-06 22:22:25.720106] (Annex.Branch) read fbe/3b4/WORM-s1041661875-m1636833567--Lethal,32Weapon,322,32,401989,41,32720p.mkv.log
+[2021-12-06 22:22:25.720762] (Annex.Branch) read bfb/f3d/WORM-s832138999-m1536079832--Letters,32From,32Iwo,32Jima,32,402006,41,32720p.mkv.log
+[2021-12-06 22:22:25.721395] (Annex.Branch) read e18/c6d/WORM-s2246486055-m1523923497--Lord,32Of,32The,32Rings,,,32The-8d99f15c7937db1ce3c48c84d452f106.log
+[2021-12-06 22:22:25.721973] (Annex.Branch) read d9e/f96/WORM-s3806431573-m1524068665--Lord,32of,32the,32Rings,,,32The-a01e8f7ccb49401f72481cac93bbce95.log
+[2021-12-06 22:22:25.722584] (Annex.Branch) read bfa/477/WORM-s2248342870-m1524067831--Lord,32Of,32The,32Rings,,,32The-dddba4061a1be729c40b94630b22efb3.log
+[2021-12-06 22:22:25.723152] (Annex.Branch) read 911/69b/WORM-s2173429952-m1597087612--Manchurian,32Candidate,,,32The,32,402004,41,321080p.mp4.log
+[2021-12-06 22:22:25.723603] (Annex.Branch) read ab2/50d/WORM-s2538513668-m1518370740--Mask,32of,32Zorro,,,32The.mp4.log
+[2021-12-06 22:22:25.724229] (Annex.Branch) read ab8/84c/WORM-s1990201957-m1563568759--Oblivion,32,402013,41,321080p.mp4.log
+[2021-12-06 22:22:25.724791] (Annex.Branch) read fe2/13e/WORM-s865388563-m1518370822--Office,32Space.mkv.log
+[2021-12-06 22:22:25.725374] (Annex.Branch) read b86/aa5/WORM-s2144329193-m1636914388--Pirates,32of,32the,32Caribbean,-e8703135133e2788f38446549a5159ef.log
+[2021-12-06 22:22:25.725957] (Annex.Branch) read efa/8d7/WORM-s1185325919-m1518868254--Postman,,,32The,32,401997,41.mp4.log
+[2021-12-06 22:22:25.72656] (Annex.Branch) read 87d/859/WORM-s2059690008-m1585382324--Prestige,,,32The,32,402006,41,321080p.mkv.log
+[2021-12-06 22:22:25.726965] (Annex.Branch) read 41e/61a/GIT--9ec57d0596ccb70cfd6255cb85d89d00fce5a43a.log
+export film-depot README.md ok
+[2021-12-06 22:22:25.727519] (Annex.Branch) read 68f/38d/WORM-s948100504-m1574090603--Regarding,32Henry,32,401991,41,32720p.mp4.log
+[2021-12-06 22:22:25.727919] (Annex.Branch) read 817/23b/WORM-s878672153-m1574033361--Risky,32Business,32,401983,41,32720p.mp4.log
+[2021-12-06 22:22:25.72833] (Annex.Branch) read 1da/bbf/WORM-s1231862861-m1518370935--Rock,,,32The.mkv.log
+[2021-12-06 22:22:25.728893] (Annex.Branch) read f32/87e/WORM-s1816321857-m1598221210--Rocketeer,,,32The,32,401991,41,321080p.mp4.log
+[2021-12-06 22:22:25.729545] (Annex.Branch) read f5c/cbf/WORM-s2787891812-m1630883712--Rogue,32One,32A,32Star,32Wars,32Story,32,402016,41,321080p.mkv.log
+[2021-12-06 22:22:25.730174] (Annex.Branch) read dc3/69b/WORM-s1544737178-m1524572776--Serenity,32,402005,41,32720p.mp4.log
+[2021-12-06 22:22:25.730906] (Annex.Branch) read 831/8c8/WORM-s2384387600-m1598221224--Shawshank,32Redemption,,,32The,32,401994,41,321080p.mp4.log
+[2021-12-06 22:22:25.731345] (Annex.Branch) read e8f/5db/WORM-s1979737445-m1584227786--Sneakers,32,401992,41,321080p.mp4.log
+[2021-12-06 22:22:25.732205] (Annex.Branch) read 234/d7a/WORM-s3665537220-m1634232478--Star,32Trek,32II,32The,32Wrath,32of,32Khan,32,401982,41,321080p.mkv.log
+[2021-12-06 22:22:25.733026] (Annex.Branch) read cc6/1f9/WORM-s1853412510-m1638068017--Star,32Trek,32III,32The,32Search,32for,32Spock,32,401984,41,321080p.mkv.log
+[2021-12-06 22:22:25.733609] (Annex.Branch) read 23e/96e/WORM-s2133269783-m1638593594--Star,32Trek,32IV,32The,32Voyage,32Home,32,401986,41,321080p.mkv.log
+[2021-12-06 22:22:25.734223] (Annex.Branch) read 95e/21c/WORM-s2313033711-m1638593604--Star,32Trek,32The,32Motion,32Picture,32,401979,41,321080p.mkv.log
+[2021-12-06 22:22:25.734777] (Annex.Branch) read 998/5e9/WORM-s1632505949-m1638593600--Star,32Trek,32V,32The,32Final,32Frontier,32,401989,41,321080p.mkv.log
+[2021-12-06 22:22:25.735323] (Annex.Branch) read 57c/f2d/WORM-s1725216326-m1638593601--Star,32Trek,32VI,32The,32Undiscovered,32Country,32,401991,41,321080p.mkv.log
+[2021-12-06 22:22:25.735905] (Annex.Branch) read 786/e15/WORM-s2297779450-m1603679910--Stargate,32,401994,41,32720p.mkv.log
+[2021-12-06 22:22:25.73647] (Annex.Branch) read 393/ea3/WORM-s2168164654-m1601834448--Starship,32Troopers,32,401997,41,321080p.mp4.log
+[2021-12-06 22:22:25.736868] (Annex.Branch) read 532/60a/WORM-s2312036493-m1582511386--Terminator,322,,,32Judgment,32Day,32,401991,41,321080p.mkv.log
+[2021-12-06 22:22:25.737335] (Annex.Branch) read d47/eb9/WORM-s1824450643-m1601834456--Terminator,323,,,32Rise,32of,32-84776e11fa5dc1fb1fecfe410230caa5.log
+[2021-12-06 22:22:25.737736] (Annex.Branch) read c74/c2a/WORM-s1499960820-m1636255738--Terminator,32Genisys,32,402015,41,321080p.mp4.log
+[2021-12-06 22:22:25.738318] (Annex.Branch) read 31c/59e/WORM-s1426550835-m1599521599--Terminator,,,32The,32,401984,41,321080p.mkv.log
+[2021-12-06 22:22:25.738713] (Annex.Branch) read d81/d11/WORM-s2506262160-m1637273233--The,32Matrix,32,401999,41,321080p.mp4.log
+[2021-12-06 22:22:25.739251] (Annex.Branch) read 531/658/WORM-s1203158836-m1518370785--Mummy,,,32The.mkv.log
+[2021-12-06 22:22:25.73977] (Annex.Branch) read 0b3/5e4/WORM-s1945784875-m1518370865--Patriot,,,32The.mkv.log
+[2021-12-06 22:22:25.740366] (Annex.Branch) read 0f3/e1c/WORM-s1938608286-m1599511452--Three,32Kings,32,401999,41,321080p.mp4.log
+[2021-12-06 22:22:25.74077] (Annex.Branch) read f38/7ec/WORM-s1463832198-m1518371391--Three,32Musketeers,,,32The,32,401993,41.avi.log
+[2021-12-06 22:22:25.741289] (Annex.Branch) read b7b/e4c/WORM-s2041175346-m1601834465--Training,32Day,32,402001,41,321080p.mp4.log
+[2021-12-06 22:22:25.741684] (Annex.Branch) read 289/8d3/WORM-s2094454430-m1601834475--Tron,32Legacy,32,402010,41,321080p.mp4.log
+[2021-12-06 22:22:25.742067] (Annex.Branch) read 960/971/WORM-s5853485850-m1638199114--Underworld,32,402003,41,321080p.mkv.log
+[2021-12-06 22:22:25.742606] (Annex.Branch) read af1/ce9/WORM-s1720391416-m1586034793--Untouchables,,,32The,32,401987,41,321080p.mkv.log
+[2021-12-06 22:22:25.743017] (Annex.Branch) read 239/3b9/WORM-s1827306623-m1563582252--Valkyrie,32,402008,41,321080p.mp4.log
+[2021-12-06 22:22:25.743606] (Annex.Branch) read 148/196/WORM-s1836438038-m1584843373--WarGames,32,401983,41,321080p.mp4.log
+[2021-12-06 22:22:25.743988] (Annex.Branch) read a18/b70/WORM-s1481063951-m1518371518--Watchmen,,,32The.mkv.log
+[2021-12-06 22:22:25.744522] (Annex.Branch) read 01c/42b/WORM-s2648951821-m1584890677--Where,32Eagles,32Dare,32,401968,41,321080p.mp4.log
+[2021-12-06 22:22:25.744909] (Annex.Branch) read 531/f42/WORM-s2173033800-m1584848357--Willow,32,401988,41,321080p.mp4.log
+[2021-12-06 22:22:25.745316] (Annex.Branch) read e2b/244/WORM-s1151346022-m1574909969--Witness,32,401985,41,32720p.mkv.log
+[2021-12-06 22:22:25.745758] (Annex.Branch) read 044/bea/WORM-s1077510790-m1476055956--X-Men,,,32Apocalypse,32,402016,41.mkv.log
+[2021-12-06 22:22:25.7463] (Annex.Branch) read 04d/db6/WORM-s1618758250-m1520576862--X-Men,,,32Days,32Of,32Future,32Past,32,402014,41.mkv.log
+[2021-12-06 22:22:25.746896] (Annex.Branch) read 1e7/136/WORM-s1656445231-m1530398504--X-Men,,,32Last,32Stand,,,32The,32,402006,41,32720p.mkv.log
+[2021-12-06 22:22:25.74734] (Utility.Process) process [72356] done ExitSuccess
+[2021-12-06 22:22:25.74821] (Utility.Process) process [72359] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/remotes/film-depot/master"]
+[2021-12-06 22:22:25.75349] (Utility.Process) process [72359] done ExitSuccess
+[2021-12-06 22:22:25.754349] (Utility.Process) process [72360] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/remotes/film-depot/master","--full-history","--no-abbrev","--format=%T %H %P"]
+[2021-12-06 22:22:25.758299] (Utility.Process) process [72360] done ExitFailure (-13)
+[2021-12-06 22:22:25.759069] (Utility.Process) process [72361] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","update-ref","refs/remotes/film-depot/master","9d18fec41a08dbcd0377a792d987be7c158fedbc"]
+[2021-12-06 22:22:25.762365] (Utility.Process) process [72361] done ExitSuccess
+[2021-12-06 22:22:25.769741] (Utility.Process) process [72362] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","hash-object","-w","--stdin-paths","--no-filters"]
+[2021-12-06 22:22:25.770564] (Utility.Process) process [72363] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","update-index","-z","--index-info"]
+[2021-12-06 22:22:25.777266] (Utility.Process) process [72363] done ExitSuccess
+[2021-12-06 22:22:25.778167] (Utility.Process) process [72364] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2021-12-06 22:22:25.783594] (Utility.Process) process [72364] done ExitSuccess
+(recording state in git...)
+[2021-12-06 22:22:25.78468] (Utility.Process) process [72365] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","write-tree"]
+[2021-12-06 22:22:25.791959] (Utility.Process) process [72365] done ExitSuccess
+[2021-12-06 22:22:25.792898] (Utility.Process) process [72366] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","commit-tree","e5e18bf030c0e281b800e7b033c6132564bfff31","--no-gpg-sign","-p","refs/heads/git-annex"]
+[2021-12-06 22:22:25.798507] (Utility.Process) process [72366] done ExitSuccess
+[2021-12-06 22:22:25.79938] (Utility.Process) process [72367] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","update-ref","refs/heads/git-annex","429f678d58abe674707f99a1d45d586c125fb3cd"]
+[2021-12-06 22:22:25.804332] (Utility.Process) process [72367] done ExitSuccess
+[2021-12-06 22:22:25.805644] (Utility.Process) process [72357] done ExitSuccess
+[2021-12-06 22:22:25.805969] (Utility.Process) process [72358] done ExitSuccess
+[2021-12-06 22:22:25.806327] (Utility.Process) process [72341] done ExitSuccess
+[2021-12-06 22:22:25.80658] (Utility.Process) process [72342] done ExitSuccess
+[2021-12-06 22:22:25.807287] (Utility.Process) process [72362] done ExitSuccess
+```
+
+```
+git annex find . --in here | wc -l
+      99
+```
+
+This seems to work, but is not what I've done in the past.
+
+```
+gcp -v -r -L *.mkv *.avi *.mp4 /Volumes/WDCGREEN/films
+```
+
+I don't understand why this no longer works.
+
+```
+[remote "film-depot"]
+	annex-directory = /Volumes/WDCGREEN/films
+	annex-uuid = 59db1192-02ff-440a-86d4-xxxx
+	annex-ignore = false
+	skipFetchAll = true
+```
+
+```
+git annex info
+trusted repositories: 0
+semitrusted repositories: 7
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	06c02460-42ec-4834-8f07-xxx -- [mini]
+ 	45e3416d-d142-4aee-b041-xxx -- [quorra]
+ 	5922636d-02d1-4c4c-aae7-xxx -- MBP
+ 	59db1192-02ff-440a-86d4-xxx -- [film-depot]
+ 	b6234538-c1ba-4f90-bbbf-xxx -- WD-1TB-USB [here]
+```
+
+
+```
+git-annex version: 8.20210803
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.0 ghc-8.10.5 http-client-0.7.8 persistent-sqlite-2.13.0.3 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.1.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: darwin x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+```
