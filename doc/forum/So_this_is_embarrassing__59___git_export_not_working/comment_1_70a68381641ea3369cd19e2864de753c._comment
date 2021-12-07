@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-12-07T17:01:34Z"
+ content="""
+If you have already exported a file to a special remote, doing an export
+again will skip that same file and not display anything[1]. So without you
+showing me anything else, it looks like that is what the situation is, and
+nothing is wrong. If you think something is wrong, you'll need to explain
+in more detail what it is.
+
+----
+
+[1] Except sometimes for file that are checked into git and not git-annex, 
+which explains why only .gitignore and README and such are displated.
+"""]]
