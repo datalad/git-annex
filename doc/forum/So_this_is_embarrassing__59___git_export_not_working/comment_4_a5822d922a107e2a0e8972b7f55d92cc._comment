@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-12-08T16:42:47Z"
+ content="""
+Your use of `git-annex sync --no-content` doesn't make much sense,
+of course that will not cause it to export any content because you told it
+not to. Also there is configuration needed for git-annex sync to export
+a branch to a remote and you have not shown that you performed such
+configuration, and the output of the command seems to indicate you have
+not.
+
+Your `git annex export master --to film-depot` seems to have behaved
+correctly, since the content of some files were not present it was not able
+to export those. Running `git annex get` and then re-running that command
+will make update the export with the missing files. I have tested that.
+"""]]
