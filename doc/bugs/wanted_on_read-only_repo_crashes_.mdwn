@@ -1,0 +1,58 @@
+### Please describe the problem.
+
+follow up on this particular issue from [https://git-annex.branchable.com/bugs/merge-annex-branches__61__false_-_automate_and_extend/#comment-5d414fbc11cff204b9bcc93685e3bbcb](https://git-annex.branchable.com/bugs/merge-annex-branches__61__false_-_automate_and_extend/#comment-5d414fbc11cff204b9bcc93685e3bbcb) . 
+
+### What steps will reproduce the problem?
+
+Couldn't reproduce on original machine/repo since that one was updated and same error does not appear any longer.  
+
+So did from scratch on some arbitrary repo but caught another "problem" (or not -- for you to decide) that `annex` would crash if I did not init it yet:
+
+
+```shell
+lena:/tmp
+$> umask 022
+1 28194.....................................:Wed 08 Dec 2021 01:49:40 PM EST:.
+lena:/tmp
+$> git clone http://datasets.datalad.org/repronim/containers/.git
+Cloning into 'containers'...
+remote: Enumerating objects: 6123, done.
+remote: Counting objects: 100% (6123/6123), done.
+remote: Compressing objects: 100% (3691/3691), done.
+remote: Total 6123 (delta 3353), reused 2747 (delta 1502)
+Receiving objects: 100% (6123/6123), 609.01 KiB | 4.61 MiB/s, done.
+Resolving deltas: 100% (3353/3353), done.
+1 28195.....................................:Wed 08 Dec 2021 01:49:43 PM EST:.
+lena:/tmp
+$> cd containers 
+LICENSE  README.md  artwork/  binds/  images/  licenses/  scripts/  travis/
+1 28196.....................................:Wed 08 Dec 2021 01:49:46 PM EST:.
+(git)lena:/tmp/containers[master]
+$> git update-ref refs/remotes/origin/git-annex refs/remotes/origin/git-annex^
+1 28197.....................................:Wed 08 Dec 2021 01:49:53 PM EST:.
+(git)lena:/tmp/containers[master]
+$> sudo -u nobody git -c annex.merge-annex-branches=false annex wanted here   
+fatal: cannot lock ref 'refs/heads/git-annex': Unable to create '/tmp/containers/.git/refs/heads/git-annex.lock': Permission denied
+error: could not lock config file .git/config: Permission denied
+git-annex: git [Param "config",Param "user.name",Param "nobody"] failed
+CallStack (from HasCallStack):
+  error, called at ./Git/Command.hs:42:17 in main:Git.Command
+1 28198 ->1.....................................:Wed 08 Dec 2021 01:49:58 PM EST:.
+(git)lena:/tmp/containers[master]git
+$> sudo -u nobody git annex wanted here         
+fatal: cannot lock ref 'refs/heads/git-annex': Unable to create '/tmp/containers/.git/refs/heads/git-annex.lock': Permission denied
+error: could not lock config file .git/config: Permission denied
+git-annex: git [Param "config",Param "user.name",Param "nobody"] failed
+CallStack (from HasCallStack):
+  error, called at ./Git/Command.hs:42:17 in main:Git.Command
+1 28199 ->1.....................................:Wed 08 Dec 2021 01:50:07 PM EST:.
+(git)lena:/tmp/containers[master]git
+$> git annex version
+git-annex version: 8.20211123
+...
+```
+
+the issue is different from original but still might be worth addressing one way or another (e.g. by providing a specific informative message that it was not yet init-ed)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
