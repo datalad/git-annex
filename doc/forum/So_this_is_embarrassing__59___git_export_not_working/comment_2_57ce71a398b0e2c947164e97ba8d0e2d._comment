@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="jasonb@ab4484d9961a46440958fa1a528e0fc435599057"
+ nickname="jasonb"
+ avatar="http://cdn.libravatar.org/avatar/c7330f4da122c671b935fc1d58bb02b1"
+ subject="comment 2"
+ date="2021-12-08T00:46:39Z"
+ content="""
+Oh, so in my haste to complete the task, I `rm -Rf *` the target directory, and when the files still didn't copy, and just ran `cp`. I don't know if I still have output to that effect, though. But I did have quite a few files with new names, so I was puzzled that those files were not copied because no files with those names or hashes had ever been exported to this annex remote.
+
+I don't know if there is some local database or log of what git annex thinks is on a special remote that I can paste to demonstrate the discrepancy?
+
+Thanks.
+"""]]
