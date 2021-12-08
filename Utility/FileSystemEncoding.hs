@@ -86,10 +86,10 @@ encodeBL = L8.fromString
 
 decodeBS :: S.ByteString -> FilePath
 #ifndef mingw32_HOST_OS
--- This is a copy of code from System.FilePath.Internal.decodeFilePath.
--- However, older versions of that library truncated at NUL, which this
--- must not do, because it may end up used on something other than a unix
--- filepath.
+-- This does the same thing as System.FilePath.ByteString.decodeFilePath,
+-- with an identical implementation. However, older versions of that library
+-- truncated at NUL, which this must not do, because it may end up used on
+-- something other than a unix filepath.
 {-# NOINLINE decodeBS #-}
 decodeBS b = unsafePerformIO $ do
 	enc <- Encoding.getFileSystemEncoding
@@ -100,10 +100,10 @@ decodeBS = S8.toString
 
 encodeBS :: FilePath -> S.ByteString
 #ifndef mingw32_HOST_OS
--- This is a copy of code from System.FilePath.Internal.encodeFilePath.
--- However, older versions of that library truncated at NUL, which this
--- must not do, because it may end up used on something other than a unix
--- filepath.
+-- This does the same thing as System.FilePath.ByteString.encodeFilePath,
+-- with an identical implementation. However, older versions of that library
+-- truncated at NUL, which this must not do, because it may end up used on
+-- something other than a unix filepath.
 {-# NOINLINE encodeBS #-}
 encodeBS f = unsafePerformIO $ do
 	enc <- Encoding.getFileSystemEncoding
