@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-12-08T17:21:42Z"
+ content="""
+Firstly, you're overstating the problem. This does not affect queries in
+all read-only repositories. If the read-only repository does not have any
+remote git-annex branches that have not been merged into the local
+branch, the query will succeed. Only when there is such an unmerged branch
+will there be a permission error when it merges the annex branch.
+
+So, if you eg use `git anenx sync`, you would never end up in a situation
+where annex.merge-annex-branches is needed, because the remote git-annex
+branches are always merged by it.
+
+Setting annex.merge-annex-branches false manually is one thing,
+you know you are changing its behavior. Setting it implicitly due to
+permissions is another thing, what would result in git-annex query commands
+changing their behavior based on permissions. The previously linked thread
+discussed and rejected that idea, and rightly so.
+
+What I would be willing to do would be to have git-annex detect when it
+cannot merge remote annex branches, and skip the merging, and instead when
+querying the value of a file from the git-annex branch, also query the
+values from the unmerged remote branches, and combine them in memory the
+same as if a merge had been done. This would make git-annex query
+operations slower in this unusual situation, but they would always
+have the same result as if it was able to perform the merge.
+"""]]

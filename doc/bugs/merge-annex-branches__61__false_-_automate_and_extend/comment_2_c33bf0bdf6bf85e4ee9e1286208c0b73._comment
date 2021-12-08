@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-12-08T17:38:54Z"
+ content="""
+I have not been able to reproduce the 
+`git -c annex.merge-annex-branches=false annex wanted here`
+problem. You apparently have annex.pidlock set since
+"locktmp" is used when doing pid locks, but despite setting that and having
+an unmerged remote git-annex branch, this is as close as I can get:
+
+	nobody@darkstar:/tmp/yyy$ git-annex wanted here
+	git-annex: /tmp/yyy/.git/annex: openTempFile template locktmp: permission denied (Permission denied)
+	wanted: 1 failed
+	nobody@darkstar:/tmp/yyy$ git -c annex.merge-annex-branches=false annex wanted here
+
+	nobody@darkstar:/tmp/yyy$
+
+Anyway, this is an entirely different problem and should be in its own bug
+report, once you determine how to reproduce it..
+"""]]
