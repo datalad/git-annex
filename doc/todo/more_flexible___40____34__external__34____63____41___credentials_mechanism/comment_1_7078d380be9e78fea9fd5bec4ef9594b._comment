@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-12-08T16:48:15Z"
+ content="""
+But git-annex does allow for multiple special remotes of the same type
+that need different creds. At least for S3, when you run `git-annex
+initremote` it copies the env var values into a file, so you only need to
+have the env var set when running initremote, and all subsequent use of
+the remote will use the value it cached (unless you keep the env vars set,
+then it does use the env var).
+
+And there is a UI to prompt the user for the creds:
+
+	joey@darkstar:/tmp/foo>git annex initremote s3 type=S3  encryption=none
+	initremote s3 (checking bucket...)
+	  Set both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to use S3
+	git-annex: No S3 credentials configured
+	failed
+
+Perhaps initremote of S3/glacier/webdav remotes could query git credential when
+the env vars are not set. Those are the only 3 built-in remotes that use the
+env var creds system actually.
+
+Fundamentally, what kind of authentication information a special remote needs
+depends on the service it's talking to, and there is a very large scope
+of possibilities, not only the simple username+password that git credential
+is designed for. Even S3 has a third possible credential that
+is sometimes needed and would not fit into git credential (`AWS_SESSION_TOKEN`).
+Other remotes such a borg don't even use git-annex to handle credentials,
+but run a program that prompts for whatever it needs, or rely on
+other stored data like ssh keys. A remote could just as well need a hardware
+token, or one time password, or biometric id, whatever. So git-annex
+has to leave authentication up to the remotes to prompt for in whatever
+way makes sense for them, aside from the simple username+password case.
+"""]]
