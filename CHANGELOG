@@ -8,6 +8,7 @@ git-annex (8.20211124) UNRELEASED; urgency=medium
     already exported.
   * Fix locking problems when annex.pidlock is set and concurrency is
     enabled eg with -J.
+  * Fix build with ghc 9.0.1
 
  -- Joey Hess <id@joeyh.name>  Tue, 23 Nov 2021 15:58:27 -0400
 

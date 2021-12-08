@@ -50,3 +50,4 @@ make: *** [Makefile:58: git-annex] Error 1
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Oh absolutely. This version compiles fine under alpine 5.14, which uses GHC 8.8.4. I've been using this software for many years without major issues, and it's a linchpin of my backup infrastructure. Thanks for the all the good work!
 
+> [[fixed|done]] --[[Joey]]
