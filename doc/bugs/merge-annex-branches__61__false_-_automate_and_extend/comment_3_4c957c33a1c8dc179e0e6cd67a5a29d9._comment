@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2021-12-08T18:56:51Z"
+ content="""
++1 on the idea of \"combine them in memory the same as if a merge had been done.\" -- sounds great to me, even though indeed might cost some performance.  I would assume that with `annex.merge-annex-branches=false` such operation would be skipped, and then read-only operations would operate on current, possibly lacking some merges git-annex branch
+
+re \"wanted\": tried on the same repository, but it was updated so its git-annex branch is now up to date with the remote one... For now just managed to unravel a more of a UX issue: [https://git-annex.branchable.com/bugs/wanted_on_read-only_repo_crashes_/?updated](https://git-annex.branchable.com/bugs/wanted_on_read-only_repo_crashes_/?updated)
+"""]]
