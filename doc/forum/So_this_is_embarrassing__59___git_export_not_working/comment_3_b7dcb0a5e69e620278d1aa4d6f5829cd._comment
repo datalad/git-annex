@@ -1,0 +1,79 @@
+[[!comment format=mdwn
+ username="jasonb@ab4484d9961a46440958fa1a528e0fc435599057"
+ nickname="jasonb"
+ avatar="http://cdn.libravatar.org/avatar/c7330f4da122c671b935fc1d58bb02b1"
+ subject="comment 3"
+ date="2021-12-08T16:25:31Z"
+ content="""
+```
+git annex sync --no-content --no-push --no-pull
+commit
+On branch master
+nothing to commit, working tree clean
+ok
+
+git log -n3
+commit 9d18fec41a08dbcd0377a792d987be7c158fedbc (HEAD -> master, film-depot/master, MBP/synced/master, MBP/master, synced/master)
+```
+
+Originally, it seemed to work and exported the files that I expected; What confused me is there were not in the directory on the export target.
+
+```
+git annex export master --to film-depot
+export film-depot .gitattributes ok
+export film-depot .gitignore ok
+export film-depot 00-GIT-ANNEX ok
+export film-depot American Pie 2 (2001) 720p.mp4 ok
+export film-depot Armageddon (1998) 1080p.mp4 (not available) failed
+export film-depot Avengers, Age of Ultron (2015) 1080p.mp4 ok
+export film-depot Beverly Hills Cop 2 (1987) 1080p.mp4 (not available) failed
+export film-depot Beverly Hills Cop III (1994) 1080p.mp4 (not available) failed
+export film-depot Final Fantasy The Spirits Within (2001) 1080p.mkv (not available) failed
+export film-depot Groundhog Day (1993) 1080p.mp4 (not available) failed
+export film-depot In the Heat of the Night (1967) 720p.mkv ok
+export film-depot Indiana Jones and the Raiders of the Lost Ark (1981) 1080p.mp4
+ok
+export film-depot Inglourious Basterds (2009) 1080p.mkv
+ok
+export film-depot Interstellar (2014) 1080p.mp4 (not available) failed
+export film-depot King Arthur (2004).mkv ok
+export film-depot Last of the Mohicans, The (1992).mkv ok
+export film-depot Lethal Weapon 2 (1989) 720p.mkv
+ok
+export film-depot Pirates of the Caribbean Curse of the Black Pearl (2003) 1080p.mp4
+ok
+export film-depot README.md ok
+export film-depot Rock, The (1996).mkv ok
+export film-depot Rogue One A Star Wars Story (2016) 1080p.mkv
+ok
+export film-depot Star Trek II The Wrath of Khan (1982) 1080p.mkv
+ok
+export film-depot Star Trek III The Search for Spock (1984) 1080p.mkv
+ok
+export film-depot Star Trek IV The Voyage Home (1986) 1080p.mkv
+ok
+export film-depot Star Trek The Motion Picture (1979) 1080p.mkv
+ok
+export film-depot Star Trek V The Final Frontier (1989) 1080p.mkv
+ok
+export film-depot Star Trek VI The Undiscovered Country (1991) 1080p.mkv
+ok
+export film-depot Terminator Genisys (2015) 1080p.mp4 (not available) failed
+export film-depot The Matrix (1999) 1080p.mp4
+ok
+export film-depot The Mummy (1999).mkv ok
+export film-depot The Patriot (2000).mkv ok
+export film-depot Underworld (2003) 1080p.mkv
+ok
+(recording state in git...)
+export: 7 failed
+```
+
+So I went and recovered those files from another annex that had them, and re-ran the export. No errors.
+
+But also, it didn't export the files that it couldn't find; It's like after the first failed attempt, that was it. Even with the files present, it did not export them.
+
+So that's what led to the `rm -Rf` and finally the `cp`.
+
+Maybe I can reset it all by reinitializing the export remote somehow?
+"""]]
