@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-12-08T19:19:38Z"
+ content="""
+Seems this breakage is due to https://github.com/ghc-proposals/ghc-proposals/blob/master/proposals/0287-simplify-subsumption.rst
+
+Fixed it.
+"""]]
