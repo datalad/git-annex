@@ -5,7 +5,7 @@ One default repo.<br>
 One .thin repo.<br>
 Synching using sync and get.<br>
 <br>
-The fat repo holds the versioned changes of the file. <br>
+The fat repo retains all the historical versions of the file. <br>
 The thin repo holds only the newest version of the file. <br>
 <br>
 Can edit / sync both ways and the above two statements remain true.<br>
