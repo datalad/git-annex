@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-12-09T19:37:35Z"
+ content="""
+That does not help diagnose your problem, does it? All is says is that the
+problem somehow involves password protected ssh keys. But ssh is what deals
+with those.
+
+You have to show that the problem is actually caused by git-annex, not by ssh,
+before I can really do anything about it. The obvious way to do that is
+to run the command as I suggested. 
+"""]]

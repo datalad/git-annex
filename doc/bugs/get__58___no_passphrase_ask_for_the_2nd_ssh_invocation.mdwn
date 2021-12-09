@@ -56,3 +56,5 @@ Windows, 8.20211124-ga8ff96864
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+[[!tag moreinfo]]
