@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="jasonb@ab4484d9961a46440958fa1a528e0fc435599057"
+ nickname="jasonb"
+ avatar="http://cdn.libravatar.org/avatar/c7330f4da122c671b935fc1d58bb02b1"
+ subject="comment 5"
+ date="2021-12-09T16:20:48Z"
+ content="""
+Yes, once I saw those errors, I went back and did a `get annex copy --from <remote>` and recovered them. But what happened after that it seems I can't provide evidence of is running `git annex export ...` did not export the recovered files. It puzzlingly showed output that it was copying the files.
+
+(The `git annex sync --no-content` was because I've gotten used to running that for other repos where not doing that will copy files into a repo where I intentionally need them dropped. In this case, the goal was just to make sure the git branches properly reflected any file adds, deletes, and renames.)
+
+But on the target device, there was no evidence that the files were there. I ran an `ls` and they weren't present. I can't fathom why. But further attempts to export the files were unsuccessful. It seems you can't re-export files that already were copied. But they were nonetheless absent. I suppose this sounds fantastical, and somehow it is probably user error.
+
+And this is the remote definition.
+
+```
+[remote \"film-depot\"]
+	annex-directory = /Volumes/WDCGREEN/films
+	annex-uuid = 59db1192-02ff-440a-86d4-xxxx
+	skipFetchAll = true
+	annex-ignore = false
+```
+
+In any case, I'd successfully done exports here in the past, and had the files appear at the destination. So I'm doing something wrong, somehow.
+
+Can I just \"reset\" the export remote and start over again fresh?
+
+Thanks.
+"""]]
