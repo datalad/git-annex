@@ -126,7 +126,7 @@ jobs:
           gpg --import .github/workflows/tools/datalad-builder-key.asc
 
       - name: Get the git-annex build environment container
-        run: chronic singularity pull --name buildenv.sif shub://datalad/datalad-extensions:buildenv-git-annex-buster
+        run: chronic singularity pull --name buildenv.sif docker://datalad/buildenv-git-annex-buster
         working-directory: /tmp
 
       - name: Build source packages
@@ -154,21 +154,22 @@ jobs:
       - name: Configure build
         run: |
           echo OSX_MAGIC_FILE="$(brew list --verbose libmagic| grep magic.mgc | head -n 1)" >> "$GITHUB_ENV"
-          echo BUILDERCOMMONOPTIONS="--stack-yaml stack.yaml.autobuild" >> "$GITHUB_ENV"
+          echo BUILDERCOMMONOPTIONS="" >> "$GITHUB_ENV"
           echo BUILDER=stack >> "$GITHUB_ENV"
-          echo GHC="stack --stack-yaml stack.yaml.autobuild ghc --" >> "$GITHUB_ENV"
+          echo GHC="stack ghc --" >> "$GITHUB_ENV"
 
-      - name: Set stack.yaml.autobuild
-        run: cat standalone/osx/stack.yaml > stack.yaml.autobuild
+      - name: Enable building with magic
+        run: |
+          perl -pli -e 's/magicmime: false/magicmime: true/' stack.yaml
 
       - name: stack setup
-        run: stack setup --stack-yaml stack.yaml.autobuild
+        run: stack setup
 
       - name: Enable Stack cache
         uses: actions/cache@v2
         with:
           path: ~/.stack
-          key: cache-stack-macos-${{ hashFiles('stack.yaml.autobuild.lock') }}-${{ hashFiles('git-annex.cabal') }}
+          key: cache-stack-macos-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('git-annex.cabal') }}
           restore-keys: |
             cache-stack-macos-
 
@@ -189,12 +190,11 @@ jobs:
     {% elif ostype == "windows" %}
       - name: Download and "install" libmagic for windows
         run: |
-          export TARGET_REPO=datalad/file-windows
-          export TARGET_WORKFLOW=build.yml
-          export GITHUB_TOKEN="${{ secrets.datalad_github_token }}"
-          .github/workflows/tools/download-latest-artifact
-          cp download/* .
+          gh release download -R datalad/file-windows -p file-windows-dist.zip
+          unzip file-windows-dist.zip
           cp libmagic-1.dll libmagic.dll
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Enable building with magic
         run: |
@@ -255,10 +255,14 @@ jobs:
       - name: Create new release
         if: github.event.inputs.commitish != ''
         run: |
+          printf '[DEBUG] INPUT_COMMITISH=%b\n' "$INPUT_COMMITISH"
           if git rev-parse refs/tags/"$INPUT_COMMITISH" &> /dev/null
           then
               echo "[INFO] Building a tag; uploading assets to release ..."
-              if gh release list | grep -q "^$INPUT_COMMITISH\b"
+              echo '[DEBUG] BEGIN gh release list'
+              gh release list | tee releases.txt | cat -v
+              echo '[DEBUG] END gh release list'
+              if grep -q "^$INPUT_COMMITISH\b" releases.txt
               then
                   echo "[INFO] Release already exists; uploading assets"
                   gh release upload "$INPUT_COMMITISH" git-annex[-_]*.*
@@ -381,15 +385,19 @@ jobs:
           fi
 
           case "${{ matrix.flavor }}" in
+            # For git-annex it causes only few temporary directories to be on the crippled FS,
+            # while the main ones produced by git annex test  reside in CWD, for which we use
+            # $HOME
             crippled-tmp)
-              # forces all test repos/paths into the VFAT FS
               export TMPDIR="$CRIPPLEDFS_PATH"
-              ;;
-            crippled-home)
-              export HOME="$CRIPPLEDFS_PATH"
               ;;
             nfs-tmp)
               export TMPDIR=/tmp/nfsmount
+              ;;
+            # Also used as CWD where running the tests, so in effect tests annex operating
+            # on those file systems
+            crippled-home)
+              export HOME="$CRIPPLEDFS_PATH"
               ;;
             nfs-home)
               export HOME=/tmp/nfsmount

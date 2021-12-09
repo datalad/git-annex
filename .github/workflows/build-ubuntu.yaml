@@ -96,7 +96,7 @@ jobs:
           gpg --import .github/workflows/tools/datalad-builder-key.asc
 
       - name: Get the git-annex build environment container
-        run: chronic singularity pull --name buildenv.sif shub://datalad/datalad-extensions:buildenv-git-annex-buster
+        run: chronic singularity pull --name buildenv.sif docker://datalad/buildenv-git-annex-buster
         working-directory: /tmp
 
       - name: Build source packages
@@ -131,10 +131,14 @@ jobs:
       - name: Create new release
         if: github.event.inputs.commitish != ''
         run: |
+          printf '[DEBUG] INPUT_COMMITISH=%b\n' "$INPUT_COMMITISH"
           if git rev-parse refs/tags/"$INPUT_COMMITISH" &> /dev/null
           then
               echo "[INFO] Building a tag; uploading assets to release ..."
-              if gh release list | grep -q "^$INPUT_COMMITISH\b"
+              echo '[DEBUG] BEGIN gh release list'
+              gh release list | tee releases.txt | cat -v
+              echo '[DEBUG] END gh release list'
+              if grep -q "^$INPUT_COMMITISH\b" releases.txt
               then
                   echo "[INFO] Release already exists; uploading assets"
                   gh release upload "$INPUT_COMMITISH" git-annex[-_]*.*
@@ -183,7 +187,7 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        flavor: ["normal", "crippled-tmp", "crippled-home", "nfs-tmp"]
+        flavor: ["normal", "crippled-tmp", "crippled-home", "nfs-home"]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -227,15 +231,19 @@ jobs:
           fi
 
           case "${{ matrix.flavor }}" in
+            # For git-annex it causes only few temporary directories to be on the crippled FS,
+            # while the main ones produced by git annex test  reside in CWD, for which we use
+            # $HOME
             crippled-tmp)
-              # forces all test repos/paths into the VFAT FS
               export TMPDIR="$CRIPPLEDFS_PATH"
-              ;;
-            crippled-home)
-              export HOME="$CRIPPLEDFS_PATH"
               ;;
             nfs-tmp)
               export TMPDIR=/tmp/nfsmount
+              ;;
+            # Also used as CWD where running the tests, so in effect tests annex operating
+            # on those file systems
+            crippled-home)
+              export HOME="$CRIPPLEDFS_PATH"
               ;;
             nfs-home)
               export HOME=/tmp/nfsmount

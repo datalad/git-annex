@@ -1,0 +1,29 @@
+name: Build Linux buildenv image
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - .github/workflows/tools/containers/buildenv-git-annex-buster/*
+  pull_request:
+    paths:
+      - .github/workflows/tools/containers/buildenv-git-annex-buster/*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
+      - name: Build image
+        run: docker build -t datalad/buildenv-git-annex-buster .
+        working-directory: .github/workflows/tools/containers/buildenv-git-annex-buster
+
+      - name: Push image
+        run: |
+          docker login -u jwodder --password-stdin <<<"$DOCKER_TOKEN"
+          docker push datalad/buildenv-git-annex-buster
+        env:
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
