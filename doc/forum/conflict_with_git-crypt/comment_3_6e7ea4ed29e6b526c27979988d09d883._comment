@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-12-09T17:40:05Z"
+ content="""
+So both are setting the "filter" attribute. And trying 
+`git check-attr filter my_secret` it outputs "git-crypt"
+with the configuration you show, but with git-annex's .git/info/attributes,
+it outputs "annex".
+
+       When deciding what attributes are assigned to a path, Git consults
+       $GIT_DIR/info/attributes file (which has the highest precedence),
+       .gitattributes file in the same directory as the path in question, and
+       its parent directories up to the toplevel of the work tree (the further
+       the directory that contains .gitattributes is from the path in
+       question, the lower its precedence). Finally global and system-wide
+       files are considered (they have the lowest precedence).
+
+So by "highest precedence" it means it stops when it finds the attribute
+in that file. Unfortunate, but I kind of see why they would do that,
+since .git/info/attributes is a way to locally override .gitattributes
+files in the repo.
+
+git-annex could write to .gitattributes, but it feels cleaner to not
+need to modify the contents of the git repo in order to use the
+current version of git-annex with it.
+"""]]
