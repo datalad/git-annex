@@ -39,7 +39,7 @@ runBool params repo = assertLocal repo $
 run :: [CommandParam] -> Repo -> IO ()
 run params repo = assertLocal repo $
 	unlessM (runBool params repo) $
-		error $ "git " ++ show params ++ " failed"
+		giveup $ "git " ++ show params ++ " failed"
 
 {- Runs git and forces it to be quiet, throwing an error if it fails. -}
 runQuiet :: [CommandParam] -> Repo -> IO ()

@@ -68,7 +68,7 @@ safeForLsFiles r = isNothing (remoteName r)
 guardSafeForLsFiles :: Repo -> IO a -> IO a
 guardSafeForLsFiles r a
 	| safeForLsFiles r = a
-	| otherwise = error $ "git ls-files is unsafe to run on repository " ++ repoDescribe r
+	| otherwise = giveup $ "git ls-files is unsafe to run on repository " ++ repoDescribe r
 
 data Options = ErrorUnmatch
 

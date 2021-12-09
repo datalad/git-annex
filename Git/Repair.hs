@@ -114,7 +114,7 @@ retrieveMissingObjects missing referencerepo r
 	| not (foundBroken missing) = return missing
 	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
 		unlessM (boolSystem "git" [Param "init", File tmpdir]) $
-			error $ "failed to create temp repository in " ++ tmpdir
+			giveup $ "failed to create temp repository in " ++ tmpdir
 		tmpr <- Config.read =<< Construct.fromPath (toRawFilePath tmpdir)
 		let repoconfig r' = fromRawFilePath (localGitDir r' P.</> "config")
 		whenM (doesFileExist (repoconfig r)) $
