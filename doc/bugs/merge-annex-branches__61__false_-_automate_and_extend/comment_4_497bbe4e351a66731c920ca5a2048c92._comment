@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2021-12-09T18:38:54Z"
+ content="""
+Yes, it seems like annex.merge-annex-branches=false should prevent it
+looking at unmerged sibling branches. Since it would be effectively
+doing an in-memory merge.
+"""]]
