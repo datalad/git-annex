@@ -200,7 +200,10 @@ ensureInitialized = getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM autoInitializeAllowed
 		( do
-			initialize True Nothing Nothing
+			tryNonAsync (initialize True Nothing Nothing) >>= \case
+				Right () -> noop
+				Left e -> giveup $ show e ++ "\n" ++
+					"git-annex: automatic initialization failed due to above problems"
 			autoEnableSpecialRemotes
 		, giveup "First run: git-annex init"
 		)

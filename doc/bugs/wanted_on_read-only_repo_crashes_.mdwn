@@ -56,3 +56,6 @@ the issue is different from original but still might be worth addressing one way
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> added a note that the errors were encountered during autonit
+> [[fixed|done]] --[[Joey]]
