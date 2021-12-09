@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="alt"
+ subject="comment 2"
+ date="2021-12-08T20:01:33Z"
+ content="""
+Thank you for your explanation! 
+
+Removing `* filter=annex` altogether causes problems when the repo has unlocked files, but removing it from `.git/info/attributes` and adding a `.gitattributes` file with the following contents at the repository root seems to allow both git-crypt and git-annex to work without issue:
+
+```
+* filter=annex
+my_secret filter=git-crypt diff=git-crypt
+```
+
+"""]]
