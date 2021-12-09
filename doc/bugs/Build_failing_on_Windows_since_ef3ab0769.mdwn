@@ -72,3 +72,5 @@ Utility\LockPool\Windows.hs:38:18: error:
 
 [[!meta author=jwodder]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
