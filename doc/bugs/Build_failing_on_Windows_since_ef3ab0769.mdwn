@@ -1,0 +1,74 @@
+Due to the type change of `tryMakeLockHandle` in commit ef3ab0769, compilation of git-annex is currently failing on Windows with the below error.  I am unsure of the best way to fix it.
+
+[[!format txt """
+Utility\LockPool\Windows.hs:25:19: error:
+    * Couldn't match type `(LockHandle, t1)' with `LockHandle'
+      Expected type: IO (Maybe LockHandle)
+        Actual type: IO (Maybe (LockHandle, t1))
+    * In the expression:
+        tryMakeLockHandle
+          P.lockPool file (\ p f -> P.tryTakeLock p f LockShared)
+          (\ f _ -> fmap mk <$> F.lockShared f)
+      In an equation for `lockShared':
+          lockShared file
+            = tryMakeLockHandle
+                P.lockPool file (\ p f -> P.tryTakeLock p f LockShared)
+                (\ f _ -> fmap mk <$> F.lockShared f)
+   |
+25 | lockShared file = tryMakeLockHandle P.lockPool file
+
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^...
+
+Utility\LockPool\Windows.hs:27:18: error:
+    * Couldn't match type `FileLockOps' with `(FileLockOps, t1)'
+      Expected type: IO (Maybe (FileLockOps, t1))
+        Actual type: IO (Maybe FileLockOps)
+    * In the expression: fmap mk <$> F.lockShared f
+      In the fourth argument of `tryMakeLockHandle', namely
+        `(\ f _ -> fmap mk <$> F.lockShared f)'
+      In the expression:
+        tryMakeLockHandle
+          P.lockPool file (\ p f -> P.tryTakeLock p f LockShared)
+          (\ f _ -> fmap mk <$> F.lockShared f)
+   |
+27 |         (\f _ -> fmap mk <$> F.lockShared f)
+
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Utility\LockPool\Windows.hs:36:22: error:
+    * Couldn't match type `(LockHandle, t0)' with `LockHandle'
+      Expected type: IO (Maybe LockHandle)
+        Actual type: IO (Maybe (LockHandle, t0))
+    * In the expression:
+        tryMakeLockHandle
+          P.lockPool file (\ p f -> P.tryTakeLock p f LockExclusive)
+          (\ f _ -> fmap mk <$> F.lockExclusive f)
+      In an equation for `lockExclusive':
+          lockExclusive file
+            = tryMakeLockHandle
+                P.lockPool file (\ p f -> P.tryTakeLock p f LockExclusive)
+                (\ f _ -> fmap mk <$> F.lockExclusive f)
+   |
+36 | lockExclusive file = tryMakeLockHandle P.lockPool file
+
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^...
+
+Utility\LockPool\Windows.hs:38:18: error:
+    * Couldn't match type `FileLockOps' with `(FileLockOps, t0)'
+      Expected type: IO (Maybe (FileLockOps, t0))
+        Actual type: IO (Maybe FileLockOps)
+    * In the expression: fmap mk <$> F.lockExclusive f
+      In the fourth argument of `tryMakeLockHandle', namely
+        `(\ f _ -> fmap mk <$> F.lockExclusive f)'
+      In the expression:
+        tryMakeLockHandle
+          P.lockPool file (\ p f -> P.tryTakeLock p f LockExclusive)
+          (\ f _ -> fmap mk <$> F.lockExclusive f)
+   |
+38 |         (\f _ -> fmap mk <$> F.lockExclusive f)
+
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""]]
+
+[[!meta author=jwodder]]
+[[!tag projects/datalad]]
