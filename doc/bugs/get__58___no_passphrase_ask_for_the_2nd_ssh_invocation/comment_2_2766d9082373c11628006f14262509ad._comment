@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2021-12-09T19:10:57Z"
+ content="""
+quick one, and I don't have --debug output, but if we use an ssh key without any passphrase, all goes well.
+"""]]
