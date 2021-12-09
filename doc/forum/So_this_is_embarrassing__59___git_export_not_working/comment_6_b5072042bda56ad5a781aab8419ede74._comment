@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-12-09T17:55:31Z"
+ content="""
+You can run `git annex fsck --from film-depot` and it will notice any files
+that are somehow missing, and re-running the export will then upload those
+missing files again.
+
+I do not see any way that it could say it was exporting files to the remote
+and then the files did not get stored there, but it reported success. It
+seems most likely that you somehow deleted those files after the fact.
+"""]]
