@@ -37,8 +37,8 @@ import Data.Time.Clock.POSIX
  -
  - Also, can generate new metadata, if configured to do so.
  -}
-genMetaData :: Key -> RawFilePath -> FileStatus -> Annex ()
-genMetaData key file status = do
+genMetaData :: Key -> RawFilePath -> Maybe POSIXTime -> Annex ()
+genMetaData key file mmtime = do
 	catKeyFileHEAD file >>= \case
 		Nothing -> noop
 		Just oldkey ->
@@ -47,11 +47,14 @@ genMetaData key file status = do
 			-- preserve any metadata already on key.
 			whenM (copyMetaData oldkey key <&&> (not <$> onlydatemeta oldkey)) $
 				warncopied
-	whenM (annexGenMetaData <$> Annex.getGitConfig) $ do
-		old <- getCurrentMetaData key
-		addMetaData key (dateMetaData mtime old)
+	whenM (annexGenMetaData <$> Annex.getGitConfig) $
+		case mmtime of
+			Just mtime -> do
+				old <- getCurrentMetaData key
+				addMetaData key $
+					dateMetaData (posixSecondsToUTCTime mtime) old
+			Nothing -> noop
   where
-	mtime = posixSecondsToUTCTime $ realToFrac $ modificationTime status
 	warncopied = warning $ 
 		"Copied metadata from old version of " ++ fromRawFilePath file ++ " to new version. " ++ 
 		"If you don't want this copied metadata, run: git annex metadata --remove-all " ++ fromRawFilePath file

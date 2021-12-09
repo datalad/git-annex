@@ -184,18 +184,17 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 	ms <- liftIO $ catchMaybeIO $ R.getFileStatus src
 	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta src) ms
 	case (mcache, inodeCache source) of
-		(_, Nothing) -> go k mcache ms
-		(Just newc, Just c) | compareStrong c newc -> go k mcache ms
+		(_, Nothing) -> go k mcache
+		(Just newc, Just c) | compareStrong c newc -> go k mcache
 		_ -> failure "changed while it was being added"
   where
-	go key mcache (Just s)
-		| lockingFile cfg = golocked key mcache s
-		| otherwise = gounlocked key mcache s
-	go _ _ Nothing = failure "failed to generate a key"
+	go key mcache
+		| lockingFile cfg = golocked key mcache
+		| otherwise = gounlocked key mcache
 
-	golocked key mcache s =
+	golocked key mcache =
 		tryNonAsync (moveAnnex key naf (contentLocation source)) >>= \case
-			Right True -> success key mcache s		
+			Right True -> success key mcache
 			Right False -> giveup "failed to add content to annex"
 			Left e -> restoreFile (keyFilename source) key e
 
@@ -205,7 +204,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 	-- file, so provide it nothing.
 	naf = AssociatedFile Nothing
 
-	gounlocked key (Just cache) s = do
+	gounlocked key (Just cache) = do
 		-- Remove temp directory hard link first because
 		-- linkToAnnex falls back to copying if a file
 		-- already has a hard link.
@@ -215,11 +214,11 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 			LinkAnnexFailed -> failure "failed to link to annex"
 			lar -> do
 				finishIngestUnlocked' key source restage (Just lar)
-				success key (Just cache) s
-	gounlocked _ _ _ = failure "failed statting file"
+				success key (Just cache)
+	gounlocked _ _ = failure "failed statting file"
 
-	success k mcache s = do
-		genMetaData k (keyFilename source) s
+	success k mcache = do
+		genMetaData k (keyFilename source) (fmap inodeCacheToMtime mcache)
 		return (Just k, mcache)
 
 	failure msg = do
