@@ -1,0 +1,58 @@
+### Please describe the problem.
+
+On a user Windows machine, we get an odd issue of being unable to `annex get` a file from an ssh remote ([https://gin.g-node.org/yarikoptic/test-annex](https://gin.g-node.org/yarikoptic/test-annex)) while using an ssh key with a passphrase.  The reason seems to be that 2nd invocation of `ssh` by git-annex does not result in the prompt for the passphrase.
+
+I failed to reproduce locally in Windows VM machine.  In my case (probably different setup of ssh etc), I 1). get passphrase prompt via external gui window (not in the same terminal); 2). do get 2nd prompt as well.
+
+[Here you can get a full log](http://www.onerussian.com/tmp/test-annex-output-windows-ssh-passphrase-20211209.txt) where you can see passphrase prompt for initial clone, then within `get` once and not after 2nd ssh call
+
+
+```
+$> grep -1 -e passphrase -e faile -e 'ssh ' test-annex-output-windows-ssh-passphrase-20211209.txt
+Cloning into 'test-annex'...
+Enter passphrase for key '/c/Users/mvdmlab/.ssh/id_rsa':
+remote: Enumerating objects: 58, done.
+--
+# manually added to grep output for more consistent extract
+(NWB) PS D:\NWB\test_annex> cd .\test-annex\
+
+
+(NWB) PS D:\NWB\test_annex\test-annex> git annex --debug get annexed  
+--
+
+  Disabling ssh connection caching.
+[2021-12-09 10:41:16.7006865] (Utility.Process) process [14232] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","config","annex.sshcaching","false"]
+--
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+[2021-12-09 10:41:21.819308] (Utility.Process) process [9560] read: ssh ["git@gin.g-node.org","-n","-T","git-annex-shell 'configlist' '/yarikoptic/test-annex' '--debug'"]
+Enter passphrase for key '/c/Users/mvdmlab/.ssh/id_rsa':
+[2021-12-09 10:41:32.8083061] (Utility.Process) process [9560] done ExitSuccess
+--
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+[2021-12-09 10:41:32.8443384] (Utility.Process) process [2248] chat: ssh ["git@gin.g-node.org","-T","git-annex-shell 'p2pstdio' '/yarikoptic/test-annex' '--debug' 'dfff8737-36e2-4a1c-8206-bca071a5294d' --uuid 2a0fa804-1bd6-4298-aa55-4dc2d250eeac"]
+[2021-12-09 10:41:34.1335084] (Utility.Process) process [2248] done ExitFailure 255
+
+  Transfer failed
+
+--
+  No other repository is known to contain the file.
+failed
+[2021-12-09 10:41:34.1405139] (Utility.Process) process [14104] done ExitSuccess
+--
+[2021-12-09 10:41:34.1475217] (Utility.Process) process [500] done ExitSuccess
+get: 1 failed
+
+```
+
+### What version of git-annex are you using? On what operating system?
+
+Windows, 8.20211124-ga8ff96864
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
