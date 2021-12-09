@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2021-12-09T19:06:47Z"
+ content="""
+@m15 I am finding it very hard to understand your comment. Also, you are
+commenting on a bug report that was closed a large number of months ago.
+
+It would perhaps be a good idea to file a new bug report, and explain more
+clearly how I can reproduce that problem.
+"""]]
