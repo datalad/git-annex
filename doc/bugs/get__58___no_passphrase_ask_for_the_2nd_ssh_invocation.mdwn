@@ -13,6 +13,12 @@ Cloning into 'test-annex'...
 Enter passphrase for key '/c/Users/mvdmlab/.ssh/id_rsa':
 remote: Enumerating objects: 58, done.
 --
+# manually added to grep output for more consistent extract
+(NWB) PS D:\NWB\test_annex> cd .\test-annex\
+
+
+(NWB) PS D:\NWB\test_annex\test-annex> git annex --debug get annexed  
+--
 
   Disabling ssh connection caching.
 [2021-12-09 10:41:16.7006865] (Utility.Process) process [14232] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","config","annex.sshcaching","false"]
