@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-12-09T18:48:41Z"
+ content="""
+I do not think that git-annex is doing anything there that prevents ssh
+from asking for a password. Ie, it's not setting BatchMode=true,
+which it does do when it wants to prevent ssh from prompting for a
+password. That is done only when ssh connection caching is supported,
+which it's not on Windows.
+
+It's running `ssh git@gin.g-node.org -T "git-annex-shell 'p2pstdio' '/yarikoptic/test-annex' '--debug' 'dfff8737-36e2-4a1c-8206-bca071a5294d' --uuid 2a0fa804-1bd6-4298-aa55-4dc2d250eeac"`
+and that somehow fails, and the failure is at the ssh level (ssh exit status
+255 means a ssh error). This might not involve a password at all. For
+whatever reason ssh is failing without displaying any error message.
+
+It could be something as simple as this ssh not supporting -T. Or 
+just being broken in whatever way ssh on windows might be broken.
+
+My suggestion is, run the ssh command yourself, and see if it exits
+255, if so proceed to debugging ssh..
+"""]]
