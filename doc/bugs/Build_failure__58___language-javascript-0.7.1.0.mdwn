@@ -1,12 +1,8 @@
 ### Please describe the problem.
 
-Building the latest version from source, whatever method I use eventually fails on the language-javascript-0.7.1.0 dependency. The error (stack output):
+Building the latest version from source, whatever method I use eventually fails on the language-javascript-0.7.1.0 dependency. The error (stack output) below.
 
-language-javascript              > Configuring language-javascript-0.7.1.0...
-language-javascript              > build
-language-javascript              > Preprocessing library for language-javascript-0.7.1.0..
-language-javascript              > happy: src/Language/JavaScript/Parser/Grammar7.y: hGetContents: invalid argument (invalid byte sequence)
-unordered-containers             > [6 of 9] Compiling Data.HashSet.Internal
+
 
 ### What steps will reproduce the problem?
 
@@ -24,6 +20,10 @@ git master (tag 8.20211123 has the same issue)
 # If you can, paste a complete transcript of the problem occurring here.
 # If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
 
+language-javascript              > Configuring language-javascript-0.7.1.0...
+language-javascript              > build
+language-javascript              > Preprocessing library for language-javascript-0.7.1.0..
+language-javascript              > happy: src/Language/JavaScript/Parser/Grammar7.y: hGetContents: invalid argument (invalid byte sequence)
 
 # End of transcript or log.
 """]]
