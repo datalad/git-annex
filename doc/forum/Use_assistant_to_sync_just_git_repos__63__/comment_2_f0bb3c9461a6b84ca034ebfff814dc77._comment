@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jasonb@ab4484d9961a46440958fa1a528e0fc435599057"
+ nickname="jasonb"
+ avatar="http://cdn.libravatar.org/avatar/c7330f4da122c671b935fc1d58bb02b1"
+ subject="comment 2"
+ date="2021-12-12T02:49:28Z"
+ content="""
+Is it possible to configure it to sync only, and not auto-commit? Making a few changes to a markdown file in Obsidian, I see a commit each time I press CTRL-S; I tend to save often, so this creates quite a few commits.
+
+Thanks!
+"""]]
