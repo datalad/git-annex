@@ -31,3 +31,6 @@ language-javascript              > happy: src/Language/JavaScript/Parser/Grammar
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, it's wonderful.
+
+> Upstream bug is <https://github.com/simonmar/happy/issues/157>  
+> and this cannot be fixed in git-annex, so [[done]] --[[Joey]]
