@@ -3,5 +3,5 @@
  subject="""comment 3"""
  date="2021-12-13T16:47:45Z"
  content="""
-Set annex.autocommit
+Set annex.autocommit to false.
 """]]
