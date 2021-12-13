@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-12-13T16:41:26Z"
+ content="""
+What is the exit status of ssh when you run that?
+
+That would normally print out the AUTH-SUCCESS and block waiting for input
+from stdin.  Your transcript seems to show it closing immediately after that
+output, unless perhaps you sent it a ctrl-d.
+
+So perhaps stdin is not getting connected through the `ssh -T`,
+or something could be failing on the remote end.
+"""]]
