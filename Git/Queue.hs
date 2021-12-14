@@ -97,7 +97,7 @@ defaultLimit :: Int
 defaultLimit = 10240
 
 {- How close together in seconds changes to the queue have to be happening
- - in order for it to keep accumulate actions, rather than running actions
+ - in order for it to keep accumulating actions, rather than running actions
  - immediately. -}
 defaultTimelimit :: NominalDiffTime
 defaultTimelimit = 60 * 5
