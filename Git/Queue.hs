@@ -169,11 +169,16 @@ updateQueue :: MonadIO m => Action m -> (Action m -> Bool) -> Int -> Queue m -> 
 updateQueue !action different sizeincrease q repo = do
 	now <- liftIO getPOSIXTime
 	if now - (_lastchanged q) > _timelimit q
-		then flush (mk q) repo
-		else if null (filter different (M.elems (items q)))
-			then return $ mk (q { _lastchanged = now })
-			else mk <$> flush q repo
+		then if isdifferent
+			then do
+				q' <- flush q repo
+				flush (mk q') repo
+			else flush (mk q) repo
+		else if isdifferent
+			then mk <$> flush q repo
+			else return $ mk (q { _lastchanged = now })
   where
+	isdifferent = not (null (filter different (M.elems (items q))))
 	mk q' = newq
 	  where		
 		!newq = q'
