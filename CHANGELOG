@@ -11,6 +11,9 @@ git-annex (8.20211124) UNRELEASED; urgency=medium
   * Fix build with ghc 9.0.1
   * Improve error message display when autoinit fails due to eg, a
     permissions problem.
+  * Improve git command queue flushing so that eg, addurl of several
+    large files that take time to download will update the index for each
+    file, rather than deferring the index updates to the end.
 
  -- Joey Hess <id@joeyh.name>  Tue, 23 Nov 2021 15:58:27 -0400
 

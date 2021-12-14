@@ -10,6 +10,7 @@
 module Git.Queue (
 	Queue,
 	new,
+	defaultTimelimit,
 	addCommand,
 	addUpdateIndex,
 	addInternalAction,
@@ -28,6 +29,8 @@ import qualified Git.UpdateIndex
 
 import qualified Data.Map.Strict as M
 import Control.Monad.IO.Class
+import Data.Time.Clock
+import Data.Time.Clock.POSIX
 
 {- Queable actions that can be performed in a git repository. -}
 data Action m
@@ -76,6 +79,8 @@ actionKey InternalAction { getRunner = InternalActionRunner s _ } = InternalActi
 data Queue m = Queue
 	{ size :: Int
 	, _limit :: Int
+	, _timelimit :: NominalDiffTime
+	, _lastchanged :: POSIXTime
 	, items :: M.Map ActionKey (Action m)
 	}
 
@@ -91,9 +96,21 @@ data Queue m = Queue
 defaultLimit :: Int
 defaultLimit = 10240
 
+{- How close together in seconds changes to the queue have to be happening
+ - in order for it to keep accumulate actions, rather than running actions
+ - immediately. -}
+defaultTimelimit :: NominalDiffTime
+defaultTimelimit = 60 * 5
+
 {- Constructor for empty queue. -}
-new :: Maybe Int -> Queue m
-new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
+new :: Maybe Int -> Maybe NominalDiffTime -> IO (Queue m)
+new lim tlim = do
+	now <- getPOSIXTime
+	return $ Queue 0
+		(fromMaybe defaultLimit lim)
+		(fromMaybe defaultTimelimit tlim)
+		now
+		M.empty
 
 {- Adds an git command to the queue.
  -
@@ -139,15 +156,25 @@ addUpdateIndex streamer q repo =
 	different (UpdateIndexAction _) = False
 	different _ = True
 
-{- Updates or adds an action in the queue. If the queue already contains a
- - different action, it will be flushed; this is to ensure that conflicting
- - actions, like add and rm, are run in the right order.-}
+{- Updates or adds an action in the queue.
+ -
+ - If the queue already contains a different action, it will be flushed
+ - before adding the action; this is to ensure that conflicting actions,
+ - like add and rm, are run in the right order.
+ -
+ - If the queue's time limit has been exceeded, it will also be flushed,
+ - and the action will be run right away.
+ -}
 updateQueue :: MonadIO m => Action m -> (Action m -> Bool) -> Int -> Queue m -> Repo -> m (Queue m)
-updateQueue !action different sizeincrease q repo
-	| null (filter different (M.elems (items q))) = return $ go q
-	| otherwise = go <$> flush q repo
+updateQueue !action different sizeincrease q repo = do
+	now <- liftIO getPOSIXTime
+	if now - (_lastchanged q) > _timelimit q
+		then flush (mk q) repo
+		else if null (filter different (M.elems (items q)))
+			then return $ mk (q { _lastchanged = now })
+			else mk <$> flush q repo
   where
-	go q' = newq
+	mk q' = newq
 	  where		
 		!newq = q'
 			{ size = newsize
@@ -175,17 +202,19 @@ merge :: Queue m -> Queue m -> Queue m
 merge origq newq = origq
 	{ size = size origq + size newq
 	, items = M.unionWith combineNewOld (items newq) (items origq)
+	, _lastchanged = max (_lastchanged origq) (_lastchanged newq)
 	}
 
 {- Is a queue large enough that it should be flushed? -}
 full :: Queue m -> Bool
-full (Queue cur lim  _) = cur >= lim
+full (Queue cur lim _ _ _) = cur >= lim
 
 {- Runs a queue on a git repository. -}
 flush :: MonadIO m => Queue m -> Repo -> m (Queue m)
-flush (Queue _ lim m) repo = do
+flush (Queue _ lim tlim _ m) repo = do
 	forM_ (M.elems m) $ runAction repo
-	return $ Queue 0 lim M.empty
+	now <- liftIO getPOSIXTime
+	return $ Queue 0 lim tlim now M.empty
 
 {- Runs an Action on a list of files in a git repository.
  -
