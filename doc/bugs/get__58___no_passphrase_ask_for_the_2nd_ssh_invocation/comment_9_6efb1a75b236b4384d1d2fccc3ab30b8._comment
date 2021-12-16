@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-12-16T19:21:31Z"
+ content="""
+Thank you. So standard input is not getting connected through the ssh to
+git-annex-shell, it appears.
+
+Could you try the same command with without the -T option, and see if it
+allows you to interact with it? Eg, after it says "AUTH-SUCCESS", see if
+you can enter "test" and if it replies to that.
+"""]]
