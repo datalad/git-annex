@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="manishofyore@b68d21cd485417e84ea87876a9064f82714a08a1"
+ nickname="manishofyore"
+ avatar="http://cdn.libravatar.org/avatar/1250b23630e3f754368ceaf56cb8be9d"
+ subject="comment 10"
+ date="2021-12-16T19:35:02Z"
+ content="""
+By not getting through to the shell, do you mean the absence of a prompt?
+In any case here's a screenshot of the command with and without '-T'. 
+I first press 'Enter' once and see that Error message and 
+then I type 'test' and press enter. Then I press Ctrl + C 
+to exit and try the next command without '-T'. And the same result!
+
+https://github.com/vandermeerlab/data-formats/blob/master/debug/Output2.png
+"""]]
