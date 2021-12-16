@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="jasonb@ab4484d9961a46440958fa1a528e0fc435599057"
+ nickname="jasonb"
+ avatar="http://cdn.libravatar.org/avatar/c7330f4da122c671b935fc1d58bb02b1"
+ subject="comment 4"
+ date="2021-12-16T23:41:55Z"
+ content="""
+That's fantastic. I'm working on an init script and a launchd configuration for OS X that I can post once it's working. It's more of an experiment, but someone else might find it useful to customize.
+
+Thanks.
+"""]]
