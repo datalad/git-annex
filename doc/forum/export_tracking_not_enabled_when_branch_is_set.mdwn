@@ -1,0 +1,30 @@
+currently i am running into an issue when trying to export to my android device using the adb special remote, basically git annex won't export files to it after listing and importing them because it does not think the tracking branch is set, even though it is (ga is an alias i have for "git annex")
+
+
+    git remote
+    moto
+    motoE5
+    seagate2tb
+    seagate5tb
+    shouseServer
+    ga sync --content moto
+    commit
+    On branch master
+    Your branch is ahead of 'seagate5tb/master' by 12 commits.
+      (use "git push" to publish your local commits)
+
+    nothing added to commit but untracked files present (use "git add" to track)
+    ok
+    list moto ok
+    update refs/remotes/moto/master ok
+    Not updating export to moto to reflect changes to the tree, because export tracking is not enabled.  (Set remote.moto.annex-tracking-branch to enable it.)
+
+but when i run    
+
+    git config remote.moto.annex-tracking-branch
+
+i get a result because i have it set
+
+    master:devices/motoE5
+
+this seems to be a bug, but i wanted to make sure i wasn't doing something wrong before submitting a bug report.
