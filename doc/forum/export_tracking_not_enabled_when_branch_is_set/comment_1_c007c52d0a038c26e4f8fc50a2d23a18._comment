@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2021-12-22T16:56:18Z"
+ content="""
+I think I see how this could happen. seekExportContent
+checks if remoteAnnexTrackingBranch is set. If it is, 
+it tries to list the tree for that branch, and also gets
+the export commit for that branch. If either of those actions fail, it
+displays the message you saw, the same as if remoteAnnexTrackingBranch
+had not been set.
+
+Hmm, I think the most likely reason is that master:devices/motoE5
+does not exist yet, so it fails to list the tree for it.
+
+If so, doing a single time `git-annex import --from moto master:devices/motoE5` 
+would probably make sync work.
+
+At least the message needs to be improved. It may also be that something
+needs to be done to prevent needing to run git-annex import before sync
+will work, or the documentation better document that you need to do it,
+or the message suggest doing it when this happens.
+
+I do notice that in the [[git-annex-import]] man page, the example
+does a single time `git-annex import` of the branch before setting the
+git config and using sync.
+
+I've promoted this thread to a bug report.
+"""]]

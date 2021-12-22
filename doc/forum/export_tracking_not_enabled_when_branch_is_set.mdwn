@@ -28,3 +28,5 @@ i get a result because i have it set
     master:devices/motoE5
 
 this seems to be a bug, but i wanted to make sure i wasn't doing something wrong before submitting a bug report.
+
+[[!tag forumbug]]
