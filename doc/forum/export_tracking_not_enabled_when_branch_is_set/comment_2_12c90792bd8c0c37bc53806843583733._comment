@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2021-12-23T17:45:07Z"
+ content="""
+> Hmm, I think the most likely reason is that master:devices/motoE5
+> does not exist yet, so it fails to list the tree for it.
+
+Seems it is not that. I tried it and following
+[[tips/android_sync_with_adb]] works, and that tip
+has initremote followed by configuring annex-tracking-branch,
+followed by git-annex sync.
+
+Aha! I was able to reproduce it by following that tip, but only
+configure the remote with exporttree=yes, while leaving off the
+importtree=yes.
+
+	git init foo
+	cd foo
+	git-annex init
+	git-annex initremote d type=directory directory=../d encryption=none exporttree=yes
+	git config remote.d.annex-tracking-branch master:d
+	touch foo
+	git annex add foo
+	git-annex sync --content d
+
+So the problem is that it is unable to read the export commit for the
+tracking branch, because it has not imported from the remote.
+
+First running `git-annex export` does work around this problem.
+"""]]
