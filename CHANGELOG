@@ -14,6 +14,9 @@ git-annex (8.20211124) UNRELEASED; urgency=medium
   * Improve git command queue flushing so that eg, addurl of several
     large files that take time to download will update the index for each
     file, rather than deferring the index updates to the end.
+  * sync: Better error message when unable to export to a remote because
+    remote.name.annex-tracking-branch is configured to a ref that does not
+    exist.
 
  -- Joey Hess <id@joeyh.name>  Tue, 23 Nov 2021 15:58:27 -0400
 

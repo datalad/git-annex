@@ -888,7 +888,7 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 			Export.closeDb
 			(\db -> Export.writeLockDbWhile db (go' r db))
 	go' r db = case remoteAnnexTrackingBranch (Remote.gitconfig r) of
-		Nothing -> nontracking r db
+		Nothing -> cannotupdateexport r db Nothing
 		Just b -> do
 			mtree <- inRepo $ Git.Ref.tree b
 			mtbcommitsha <- Command.Export.getExportCommit r b
@@ -897,33 +897,41 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 					filteredtree <- Command.Export.filterExport r tree
 					Command.Export.changeExport r db filteredtree
 					Command.Export.fillExport r db filteredtree mtbcommitsha
-				_ -> nontracking r db
+				_ -> cannotupdateexport r db (Just b)
 	
-	nontracking r db = do
+	cannotupdateexport r db mtb = do
 		exported <- getExport (Remote.uuid r)
-		maybe noop (warnnontracking r exported) currbranch
-		nontrackingfillexport r db (exportedTreeishes exported) Nothing
+		maybe noop (warncannotupdateexport r mtb exported) currbranch
+		fillexistingexport r db (exportedTreeishes exported) Nothing
 	
-	warnnontracking r exported currb = inRepo (Git.Ref.tree currb) >>= \case
-		Just currt | not (any (== currt) (exportedTreeishes exported)) ->
-			showLongNote $ unwords
-				[ "Not updating export to " ++ Remote.name r
-				, "to reflect changes to the tree, because export"
-				, "tracking is not enabled. "
-				, "(Set " ++ gitconfig ++ " to enable it.)"
-				]
-		_ -> noop
+	warncannotupdateexport r mtb exported currb = case mtb of
+		Nothing -> inRepo (Git.Ref.tree currb) >>= \case
+			Just currt | not (any (== currt) (exportedTreeishes exported)) ->
+				showLongNote $ unwords
+					[ notupdating
+					, "to reflect changes to the tree, because export"
+					, "tracking is not enabled. "
+					, "(Set " ++ gitconfig ++ " to enable it.)"
+					]
+			_ -> noop
+		Just b -> showLongNote $ unwords
+			[ notupdating
+			, "because " ++ Git.fromRef b ++ "does not exist."
+			, "(As configured by " ++ gitconfig ++ ")"
+			]
 	  where
 		gitconfig = show (remoteAnnexConfig r "tracking-branch")
+		notupdating = "Not updating export to " ++ Remote.name r
 
-	nontrackingfillexport _ _ [] _ = return False
-	nontrackingfillexport r db (tree:[]) mtbcommitsha = do
+	fillexistingexport _ _ [] _ = return False
+	fillexistingexport r db (tree:[]) mtbcommitsha = do
 		-- The tree was already filtered when it was exported, so
 		-- does not need be be filtered again now, when we're only
-		-- filling in any files that did not get transferred.
+		-- filling in any files that did not get transferred
+		-- to the existing exported tree.
 		let filteredtree = Command.Export.ExportFiltered tree
 		Command.Export.fillExport r db filteredtree mtbcommitsha
-	nontrackingfillexport r _ _ _ = do
+	fillexistingexport r _ _ _ = do
 		warnExportImportConflict r
 		return False
 

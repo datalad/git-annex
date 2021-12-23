@@ -3,16 +3,8 @@
  subject="""comment 2"""
  date="2021-12-23T17:45:07Z"
  content="""
-> Hmm, I think the most likely reason is that master:devices/motoE5
-> does not exist yet, so it fails to list the tree for it.
-
-Seems it is not that. I tried it and following
-[[tips/android_sync_with_adb]] works, and that tip
-has initremote followed by configuring annex-tracking-branch,
-followed by git-annex sync.
-
-Aha! I was able to reproduce it by following that tip, but only
-configure the remote with exporttree=yes, while leaving off the
+Aha! I was able to reproduce it by following [[tips/android_sync_with_adb]],
+but only configure the remote with exporttree=yes, while leaving off the
 importtree=yes.
 
 	git init foo
@@ -24,8 +16,17 @@ importtree=yes.
 	git annex add foo
 	git-annex sync --content d
 
-So the problem is that it is unable to read the export commit for the
-tracking branch, because it has not imported from the remote.
+Alternatively -- and I think this is probably what you did -- do include
+importtree=yes, but the special remote is actually empty, it does not
+include any files to import yet. And the directory you have configured to
+export does not exist in your repository.
 
-First running `git-annex export` does work around this problem.
+In both these cases, the export fails because it is unable to determine what
+to export to the remote, because the current branch does not contain the
+subdirectory that it's configured to export.
+
+I have fixed the warning message in this case, and the thing to do is just to
+create the subdirectory you configured it to export, and git add files to it.
+Or, in your case, you could put a file on the android device, which it would
+then import, and so get the subdirectory populated that way.
 """]]
