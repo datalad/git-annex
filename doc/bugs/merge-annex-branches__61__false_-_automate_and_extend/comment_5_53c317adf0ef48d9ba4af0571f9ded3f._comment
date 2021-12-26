@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2021-12-26T18:06:26Z"
+ content="""
+I have this mostly implemented, in the `readonly-annex-merge` branch.
+It seems to work well. Eg:
+
+	joey@darkstar:/tmp/a2>/usr/bin/git-annex whereis xxx
+	git-annex: .git/annex/journal.lck: openFd: permission denied (Permission denied)
+	- exit 1
+	joey@darkstar:/tmp/a2>~/bin/git-annex whereis xxx
+	whereis xxx (1 copy)
+	  	2a4e4ab8-6bc0-484b-aa4c-e54053cf1d87 -- joey@darkstar:/tmp/a1 [origin]
+	ok
+
+One sticking point is transitions. When a remote git-annex branch has a
+transition in it, and the transition has not yet been applied to the local
+branch and/or other remote git-annex branches, then as this is currently
+implemented, the transition will not be applied when doing the in-memory
+merge.
+
+Since the only transitions so far forget old history and dead remotes,
+it's not a major effect. It would only mean that some additional information
+about a dead remote would be displayed, or that `git-annex log` would
+display more history.
+
+Also, there are a couple of other things that look at the git-annex branch
+in a way that break the invariant when there are unmerged branches.
+`git-annex log` itself does. And Annex.Branch.files only sees log files
+in the local git-annex branch, not files that are in unmerged branches.
+
+These things break the invariant I am shooting for, that git-annex
+commands will behave the same whether they are in this readonly mode or
+not. They will need to be addressed before this is merged..
+"""]]
