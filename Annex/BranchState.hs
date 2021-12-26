@@ -2,7 +2,7 @@
  -
  - Runtime state about the git-annex branch, and a small cache.
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import Annex.Common
 import Types.BranchState
 import qualified Annex
 import Logs
+import qualified Git
 
 import qualified Data.ByteString.Lazy as L
 
@@ -30,29 +31,47 @@ checkIndexOnce a = unlessM (indexChecked <$> getState) $ do
 	a
 	changeState $ \s -> s { indexChecked = True }
 
+data UpdateMade 
+	= UpdateMade
+		{ refsWereMerged :: Bool
+		, journalClean :: Bool
+		}
+	| UpdateFailedPermissions
+		{ refsUnmerged :: [Git.Sha]
+		}
+
 {- Runs an action to update the branch, if it's not been updated before
  - in this run of git-annex. 
- -
- - The action should return True if anything that was in the journal
- - before got staged (or if the journal was empty). That lets an opmisation
- - be done: The journal then does not need to be checked going forward,
- - until new information gets written to it.
  -
  - When interactive access is enabled, the journal is always checked when
  - reading values from the branch, and so this does not need to update
  - the branch.
+ -
+ - When the action leaves the journal clean, by staging anything that
+ - was in it, an optimisation is enabled: The journal does not need to
+ - be checked going forward, until new information gets written to it.
+ -
+ - When the action is unable to update the branch due to a permissions
+ - problem, 
  -}
-runUpdateOnce :: Annex Bool -> Annex BranchState
-runUpdateOnce a = do
+runUpdateOnce :: Annex UpdateMade -> Annex BranchState
+runUpdateOnce update = do
 	st <- getState
 	if branchUpdated st || needInteractiveAccess st
 		then return st
 		else do
-			journalstaged <- a
-			let stf = \st' -> st'
-				{ branchUpdated = True
-				, journalIgnorable = journalstaged 
-				}
+			um <- update
+			let stf = case um of
+				UpdateMade {} -> \st' -> st'
+					{ branchUpdated = True
+					, journalIgnorable = journalClean um
+					}
+				UpdateFailedPermissions {} -> \st' -> st'
+					{ branchUpdated = True
+					, journalIgnorable = False
+					, unmergedRefs = refsUnmerged um
+					, cachedFileContents = []
+					}
 			changeState stf
 			return (stf st)
 
@@ -98,13 +117,13 @@ setCache file content = changeState $ \s -> s
 		| length l < logFilesToCache = (file, content) : l
 		| otherwise = (file, content) : Prelude.init l
 
-getCache :: RawFilePath -> Annex (Maybe L.ByteString)
-getCache file = (\st -> go (cachedFileContents st) st) <$> getState
+getCache :: RawFilePath -> BranchState -> Maybe L.ByteString
+getCache file state = go (cachedFileContents state)
   where
-	go [] _ = Nothing
-	go ((f,c):rest) state
+	go [] = Nothing
+	go ((f,c):rest)
 		| f == file && not (needInteractiveAccess state) = Just c
-		| otherwise = go rest state
+		| otherwise = go rest
 
 invalidateCache :: Annex ()
 invalidateCache = changeState $ \s -> s { cachedFileContents = [] }

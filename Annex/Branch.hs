@@ -141,16 +141,11 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 {- Ensures that the branch and index are up-to-date; should be
  - called before data is read from it. Runs only once per git-annex run. -}
 update :: Annex BranchState
-update = runUpdateOnce $ journalClean <$$> updateTo =<< siblingBranches
+update = runUpdateOnce $ updateTo =<< siblingBranches
 
 {- Forces an update even if one has already been run. -}
 forceUpdate :: Annex UpdateMade
 forceUpdate = updateTo =<< siblingBranches
-
-data UpdateMade = UpdateMade
-	{ refsWereMerged :: Bool
-	, journalClean :: Bool
-	}
 
 {- Merges the specified Refs into the index, if they have any changes not
  - already in it. The Branch names are only used in the commit message;
@@ -167,8 +162,6 @@ data UpdateMade = UpdateMade
  -
  - Also handles performing any Transitions that have not yet been
  - performed, in either the local branch, or the Refs.
- -
- - Returns True if any refs were merged in, False otherwise.
  -}
 updateTo :: [(Git.Sha, Git.Branch)] -> Annex UpdateMade
 updateTo pairs = ifM (annexMergeAnnexBranches <$> Annex.getGitConfig)
@@ -180,7 +173,6 @@ updateTo' :: [(Git.Sha, Git.Branch)] -> Annex UpdateMade
 updateTo' pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
-	dirty <- journalDirty gitAnnexJournalDir
 	ignoredrefs <- getIgnoredRefs
 	let unignoredrefs = excludeset ignoredrefs pairs
 	tomerge <- if null unignoredrefs
@@ -188,42 +180,50 @@ updateTo' pairs = do
 		else do
 			mergedrefs <- getMergedRefs
 			filterM isnewer (excludeset mergedrefs unignoredrefs)
-	journalcleaned <- if null tomerge
-		{- Even when no refs need to be merged, the index
-		 - may still be updated if the branch has gotten ahead 
-		 - of the index, or just if the journal is dirty. -}
-		then ifM (needUpdateIndex branchref)
-			( lockJournal $ \jl -> do
-				forceUpdateIndex jl branchref
-				{- When there are journalled changes
-				 - as well as the branch being updated,
-				 - a commit needs to be done. -}
-				when dirty $
-					go branchref dirty [] jl
-				return True
-			, if dirty
-				then ifM (annexAlwaysCommit <$> Annex.getGitConfig)
-					( do
-						lockJournal $ go branchref dirty []
-						return True
-					, return False
-					)
-				else return True
-			)
-		else do
-			lockJournal $ go branchref dirty tomerge
-			return True
-	journalclean <- if journalcleaned
-		then not <$> privateUUIDsKnown
-		else pure False
-	return $ UpdateMade
-		{ refsWereMerged = not (null tomerge)
-		, journalClean = journalclean 
-		}
+	{- In a read-only repository, catching permission denied lets
+	 - query operations still work, although they will need to do
+	 - additional work since the refs are not merged. -}
+	catchPermissionDenied
+		(const (return (UpdateFailedPermissions (branchref : map fst tomerge))))
+		(go branchref tomerge)
   where
 	excludeset s = filter (\(r, _) -> S.notMember r s)
 	isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
-	go branchref dirty tomerge jl = stagejournalwhen dirty jl $ do
+	go branchref tomerge = do
+		dirty <- journalDirty gitAnnexJournalDir
+		journalcleaned <- if null tomerge
+			{- Even when no refs need to be merged, the index
+			 - may still be updated if the branch has gotten ahead 
+			 - of the index, or just if the journal is dirty. -}
+			then ifM (needUpdateIndex branchref)
+				( lockJournal $ \jl -> do
+					forceUpdateIndex jl branchref
+					{- When there are journalled changes
+					 - as well as the branch being updated,
+					 - a commit needs to be done. -}
+					when dirty $
+						go' branchref dirty [] jl
+					return True
+				, if dirty
+					then ifM (annexAlwaysCommit <$> Annex.getGitConfig)
+						( lockJournal $ \jl -> do
+							go' branchref dirty [] jl
+							return True
+						, return False
+						)
+					else return True
+				)
+			else lockJournal $ \jl -> do
+				go' branchref dirty tomerge jl
+				return True
+		journalclean <- if journalcleaned
+			then not <$> privateUUIDsKnown
+			else pure False
+		return $ UpdateMade
+			{ refsWereMerged = not (null tomerge)
+			, journalClean = journalclean 
+			}
+	go' branchref dirty tomerge jl = stagejournalwhen dirty jl $ do
 		let (refs, branches) = unzip tomerge
 		merge_desc <- if null tomerge
 			then commitMessage
@@ -254,22 +254,33 @@ updateTo' pairs = do
 		| otherwise = withIndex a
 
 {- Gets the content of a file, which may be in the journal, or in the index
- - (and committed to the branch).
+ - (and committed to the branch). 
+ -
+ - Returns an empty string if the file doesn't exist yet.
  - 
  - Updates the branch if necessary, to ensure the most up-to-date available
- - content is returned.
- -
- - Returns an empty string if the file doesn't exist yet. -}
+ - content is returned. When permissions prevent updating the branch,
+ - reads the content from the journal, plus the branch, plus all unmerged
+ - refs.
+ -}
 get :: RawFilePath -> Annex L.ByteString
-get file = getCache file >>= \case
-	Just content -> return content
-	Nothing -> do
-		st <- update
-		content <- if journalIgnorable st
-			then getRef fullname file
-			else getLocal file
-		setCache file content
-		return content
+get file = do
+	st <- update
+	case getCache file st of
+		Just content -> return content
+		Nothing -> do
+			content <- if journalIgnorable st
+				then getRef fullname file
+				else if null (unmergedRefs st) 
+					then getLocal file
+					else unmergedbranchfallback (unmergedRefs st)
+			setCache file content
+			return content
+  where
+	unmergedbranchfallback refs = do
+		l <- getLocal file
+		bs <- forM refs $ \ref -> getRef ref file
+		return (l <> mconcat bs)
 
 {- Used to cache the value of a file, which has been read from the branch
  - using some optimised method. The journal has to be checked, in case
@@ -285,7 +296,7 @@ precache file branchcontent = do
 			JournalledContent journalcontent -> journalcontent
 			PossiblyStaleJournalledContent journalcontent ->
 				branchcontent <> journalcontent
-	Annex.BranchState.setCache file content
+	setCache file content
 
 {- Like get, but does not merge the branch, so the info returned may not
  - reflect changes in remotes.
@@ -452,7 +463,7 @@ commitIndex' jl branchref message basemessage retrynum parents = do
 
 {- Lists all files on the branch. including ones in the journal
  - that have not been committed yet. There may be duplicates in the list. -}
-files :: Annex ([RawFilePath], IO Bool)
+tfiles :: Annex ([RawFilePath], IO Bool)
 files = do
 	_  <- update
 	(bfs, cleanup) <- branchFiles

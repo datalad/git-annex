@@ -225,8 +225,9 @@ manualPull currentbranch remotes = do
 				, return $ Just r
 				)
 		else return Nothing
-	haddiverged <- Annex.Branch.refsWereMerged
-		<$> liftAnnex Annex.Branch.forceUpdate
+	haddiverged <- liftAnnex Annex.Branch.forceUpdate >>= return . \case
+		u@(Annex.Branch.UpdateMade {}) -> Annex.Branch.refsWereMerged u
+		(Annex.Branch.UpdateFailedPermissions {}) -> True
 	forM_ remotes $ \r ->
 		liftAnnex $ Command.Sync.mergeRemote r
 			currentbranch mc def

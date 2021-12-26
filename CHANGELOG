@@ -17,6 +17,10 @@ git-annex (8.20211124) UNRELEASED; urgency=medium
   * sync: Better error message when unable to export to a remote because
     remote.name.annex-tracking-branch is configured to a ref that does not
     exist.
+  * Improved support for using git-annex in a read-only repository,
+    git-annex branch information from remotes that cannot be merged into
+    the git-annex branch will now not crash it, but will be merged in
+    memory.
 
  -- Joey Hess <id@joeyh.name>  Tue, 23 Nov 2021 15:58:27 -0400
 
