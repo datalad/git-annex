@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="jasonb@ab4484d9961a46440958fa1a528e0fc435599057"
+ nickname="jasonb"
+ avatar="http://cdn.libravatar.org/avatar/c7330f4da122c671b935fc1d58bb02b1"
+ subject="comment 5"
+ date="2021-12-27T18:51:14Z"
+ content="""
+For anyone that finds this in the future, on OS X you can setup the agent to run at login with a launchd script similar to the following:
+
+```
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
+<dict>
+  <key>Label</key>
+  <string>com.example.gitannexassistant</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/git-annex</string>
+    <string>assistant</string>
+    <string>--autostart</string>
+  </array>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin</string>
+  </dict>
+
+  <key>Nice</key>
+  <integer>1</integer>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StandardErrorPath</key>
+  <string>/tmp/gitannexassistant.err</string>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/gitannexassistant.out</string>
+</dict>
+</plist>
+```
+
+You'll need to put it into:
+
+`~/Library/LaunchAgents/com.example.gitannexassistant.plist`
+
+And load it with `launchctl load ~/Library/LaunchAgents/com.example.gitannexassistant.plist`
+
+But don't forget to populate `~/.config/git-annex/autostart` with each repo, one per line.
+
+Enjoy!
+"""]]
