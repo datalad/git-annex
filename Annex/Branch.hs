@@ -20,6 +20,7 @@ module Annex.Branch (
 	updateTo,
 	get,
 	getHistorical,
+	getUnmergedRefs,
 	RegardingUUID(..),
 	change,
 	maybeChange,
@@ -280,6 +281,12 @@ get file = do
 		l <- getLocal file
 		bs <- forM refs $ \ref -> getRef ref file
 		return (l <> mconcat bs)
+
+{- When the git-annex branch is unable to be updated due to permissions,
+ - and there are other git-annex branches that have not been merged into
+ - it, this gets the refs of those branches. -}
+getUnmergedRefs :: Annex [Git.Ref]
+getUnmergedRefs = unmergedRefs <$> update
 
 {- Used to cache the value of a file, which has been read from the branch
  - using some optimised method. The journal has to be checked, in case

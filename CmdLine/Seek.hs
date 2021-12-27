@@ -361,13 +361,14 @@ seekFilteredKeys seeker listfs = do
 				(process mi ofeeder mdfeeder mdcloser False l)
 			mdprocessertid <- liftIO . async =<< forkState
 				(mdprocess mi mdreader ofeeder ocloser)
-			if usesLocationLog seeker || matcherNeedsLocationLog mi
-				then catObjectStream g $ \lfeeder lcloser lreader -> do
+			ifM (precachell mi)
+				( catObjectStream g $ \lfeeder lcloser lreader -> do
 					precachertid <- liftIO . async =<< forkState
 						(precacher mi config oreader lfeeder lcloser)
 					precachefinisher mi lreader checktimelimit
 					join (liftIO (wait precachertid))
-				else finisher mi oreader checktimelimit
+				, finisher mi oreader checktimelimit
+				)
 			join (liftIO (wait mdprocessertid))
 			join (liftIO (wait processertid))
 	liftIO $ void cleanup
@@ -466,6 +467,16 @@ seekFilteredKeys seeker listfs = do
 				mdprocess mi mdreader ofeeder ocloser
 		Just _ -> mdprocess mi mdreader ofeeder ocloser
 		Nothing -> liftIO $ void ocloser
+
+	-- Precache location logs if it will speed things up.
+	--
+	-- When there are git-annex branches that are not able to be
+	-- merged, the precaching is disabled, since it only looks at the
+	-- git-annex branch and not at those.
+	precachell mi
+		| usesLocationLog seeker || matcherNeedsLocationLog mi =
+			null <$> Annex.Branch.getUnmergedRefs
+		| otherwise = pure False
 
 seekHelper :: (a -> RawFilePath) -> WarnUnmatchWhen -> ([LsFiles.Options] -> [RawFilePath] -> Git.Repo -> IO ([a], IO Bool)) -> WorkTreeItems -> Annex ([(SeekInput, a)], IO Bool)
 seekHelper c ww a (WorkTreeItems l) = do
