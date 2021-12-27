@@ -282,7 +282,9 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 				keyaction Nothing (SeekInput [], k, mkActionItem k)
 				go reader
 			Nothing -> return ()
-		Annex.Branch.overBranchFileContents getk go
+		Annex.Branch.overBranchFileContents getk go >>= \case
+			Just r -> return r
+			Nothing -> giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents operating on all keys. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
 
 	runkeyaction getks = do
 		keyaction <- mkkeyaction

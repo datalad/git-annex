@@ -1061,8 +1061,13 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   are automatically merged into the local git-annex branch, so that
   git-annex has the most up-to-date possible knowledge.
 
-  To avoid that merging, set this to "false". This can be useful
-  particularly when you don't have write permission to the repository.
+  To avoid that merging, set this to "false". 
+
+  This can be useful particularly when you don't have write permission
+  to the repository. While git-annex is mostly able to work in a read-only
+  repository with unmerged git-annex branches, some things do not work,
+  and when it does work it will be slower due to needing to look at each of
+  the unmerged branches.
 
 * `annex.private`
 

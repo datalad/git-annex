@@ -820,13 +820,32 @@ rememberTreeishLocked treeish graftpoint jl = do
  - The action is passed a callback that it can repeatedly call to read
  - the next file and its contents. When there are no more files, the
  - callback will return Nothing.
+ -
+ - In some cases the callback may return the same file more than once,
+ - with different content. This happens rarely, only when the journal
+ - contains additional information, and the last version of the
+ - file it returns is the most current one.
+ -
+ - In a read-only repository that has other git-annex branches that have
+ - not been merged in, returns Nothing, because it's not possible to
+ - efficiently handle that.
  -}
 overBranchFileContents
 	:: (RawFilePath -> Maybe v)
 	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
-	-> Annex a
+	-> Annex (Maybe a)
 overBranchFileContents select go = do
 	st <- update
+	if not (null (unmergedRefs st))
+		then return Nothing
+		else Just <$> overBranchFileContents' select go st
+
+overBranchFileContents'
+	:: (RawFilePath -> Maybe v)
+	-> (Annex (Maybe (v, RawFilePath, Maybe L.ByteString)) -> Annex a)
+	-> BranchState
+	-> Annex a
+overBranchFileContents' select go st = do
 	g <- Annex.gitRepo
 	(l, cleanup) <- inRepo $ Git.LsTree.lsTree
 		Git.LsTree.LsTreeRecursive
@@ -836,7 +855,7 @@ overBranchFileContents select go = do
 	buf <- liftIO newEmptyMVar
 	let go' reader = go $ liftIO reader >>= \case
 		Just ((v, f), content) -> do
-			content' <- checkjournal st f content
+			content' <- checkjournal f content
 			return (Just (v, f, content'))
 		Nothing
 			| journalIgnorable st -> return Nothing
@@ -853,7 +872,7 @@ overBranchFileContents select go = do
 		`finally` liftIO (void cleanup)
   where
 	-- Check the journal, in case it did not get committed to the branch
-	checkjournal st f branchcontent
+	checkjournal f branchcontent
 		| journalIgnorable st = return branchcontent
 		| otherwise = getJournalFileStale (GetPrivate True) f >>= return . \case
 			NoJournalledContent -> branchcontent

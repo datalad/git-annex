@@ -150,7 +150,9 @@ getCache opttemplate = ifM (Annex.getState Annex.force)
 {- Scan all url logs and metadata logs in the branch and find urls
  - and ItemIds that are already known. -}
 knownItems :: Annex ([URLString], [ItemId])
-knownItems = Annex.Branch.overBranchFileContents select (go [] [])
+knownItems = Annex.Branch.overBranchFileContents select (go [] []) >>= \case
+		Just r -> return r
+		Nothing -> giveup "This repository is read-only."
   where
 	select f
 		| isUrlLog f = Just ()
