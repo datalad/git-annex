@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012, 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -82,22 +82,25 @@ optParser desc = LogOptions
 	mkpassthru n v = [Param ("--" ++ n), Param v]
 
 seek :: LogOptions -> CommandSeek
-seek o = do
-	m <- Remote.uuidDescriptions
-	zone <- liftIO getCurrentTimeZone
-	let outputter = mkOutputter m zone o
-	let seeker = AnnexedFileSeeker
-		{ startAction = start o outputter
-		, checkContentPresent = Nothing
-		-- the way this uses the location log would not be helped
-		-- by precaching the current value
-		, usesLocationLog = False
-		}
-	case (logFiles o, allOption o) of
-		(fs, False) -> withFilesInGitAnnex ww seeker
-			=<< workTreeItems ww fs
-		([], True) -> commandAction (startAll o outputter)
-		(_, True) -> giveup "Cannot specify both files and --all"
+seek o = ifM (null <$> Annex.Branch.getUnmergedRefs)
+	( do
+		m <- Remote.uuidDescriptions
+		zone <- liftIO getCurrentTimeZone
+		let outputter = mkOutputter m zone o
+		let seeker = AnnexedFileSeeker
+			{ startAction = start o outputter
+			, checkContentPresent = Nothing
+			-- the way this uses the location log would not be
+			-- helped by precaching the current value
+			, usesLocationLog = False
+			}
+		case (logFiles o, allOption o) of
+			(fs, False) -> withFilesInGitAnnex ww seeker
+				=<< workTreeItems ww fs
+			([], True) -> commandAction (startAll o outputter)
+			(_, True) -> giveup "Cannot specify both files and --all"
+	, giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents displaying location log changes. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
+	)
   where
 	ww = WarnUnmatchLsFiles
 
