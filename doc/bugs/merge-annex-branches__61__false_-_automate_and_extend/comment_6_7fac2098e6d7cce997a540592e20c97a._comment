@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2021-12-27T17:38:49Z"
+ content="""
+Current list of items that need to be fixed before this is mergeable:
+
+- When there is a transition in one of the remote git-annex branches
+  that has not yet been applied to the local or other git-annex branches.
+  Transitions are not handled.
+- `git-annex log` runs git log on the git-annex branch, and so
+  it will not be able to show information coming from the other, not yet
+  merged branches.
+- Annex.Branch.files only looks at files in the git-annex branch and not
+  unmerged branches. This affects git-annex info output.
+- Annex.Branch.hs.overBranchFileContents ditto. Affects --all and
+  also importfeed (but importfeed cannot work in a read-only repo
+  anyway).
+- CmdLine.Seek.seekFilteredKeys when precaching location logs.
+  Note use of Annex.Branch.fullname
+- Database.ContentIdentifier.needsUpdateFromLog and updateFromLog
+- (skip) `--in=repository@{date}` uses loggedLocationsHistorical which uses
+  Annex.Branch.getHistorical, which does not look at unmerged branches.
+  But perhaps this is ok.. This uses the reflog, so when used to query
+  eg files that were present in the past, it means ones that the local
+  git-annex branch thought were present; other git-annex branches
+  may have had a different opinion but it will not show those.
+  And another way to look at it, the result for this will be the same
+  before and after merging those branches.
+"""]]
