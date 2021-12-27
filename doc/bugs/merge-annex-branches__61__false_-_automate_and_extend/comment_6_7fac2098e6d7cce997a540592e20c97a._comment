@@ -8,17 +8,26 @@ Current list of items that need to be fixed before this is mergeable:
 - When there is a transition in one of the remote git-annex branches
   that has not yet been applied to the local or other git-annex branches.
   Transitions are not handled.
-- `git-annex log` runs git log on the git-annex branch, and so
+- (fixed) `git-annex log` runs git log on the git-annex branch, and so
   it will not be able to show information coming from the other, not yet
-  merged branches.
-- Annex.Branch.files only looks at files in the git-annex branch and not
-  unmerged branches. This affects git-annex info output.
-- Annex.Branch.hs.overBranchFileContents ditto. Affects --all and
+  merged branches. Fixed by making it error out in that situation.
+- (fixed) Annex.Branch.files only looks at files in the git-annex branch and not
+  unmerged branches. This affects git-annex info output when displaying
+  info for a remote or a uuid. Fixed by making info display "not available"
+  in that situation. Not ideal, it is a small difference in output compared
+  to when the repository is not read-only.
+- (fixed) Annex.Branch.hs.overBranchFileContents ditto. Affects --all and
   also importfeed (but importfeed cannot work in a read-only repo
-  anyway).
-- CmdLine.Seek.seekFilteredKeys when precaching location logs.
-  Note use of Annex.Branch.fullname
-- Database.ContentIdentifier.needsUpdateFromLog and updateFromLog
+  anyway). Fixed by making --all throw an error when there are unmerged
+  branches.
+- (fixed) CmdLine.Seek.seekFilteredKeys when precaching location logs.
+  Note use of Annex.Branch.fullname. Fixed by avoiding precaching
+  when there are unmerged git-annex branches. This fix will make some
+  things slower in a read-only repo.
+- (skip) Database.ContentIdentifier.needsUpdateFromLog and updateFromLog access
+  the branch manually and would not see unmerged branches. But updateFromLog
+  writes to the db so won't run in a readonly repo anyway, and so it seems
+  this can be skipped.
 - (skip) `--in=repository@{date}` uses loggedLocationsHistorical which uses
   Annex.Branch.getHistorical, which does not look at unmerged branches.
   But perhaps this is ok.. This uses the reflog, so when used to query
