@@ -27,7 +27,6 @@ module Annex.Branch (
 	createMessage,
 	commit,
 	forceCommit,
-	getBranch,
 	files,
 	rememberTreeish,
 	performTransitions,
@@ -184,7 +183,7 @@ updateTo' pairs = do
 	 - query operations still work, although they will need to do
 	 - additional work since the refs are not merged. -}
 	catchPermissionDenied
-		(const (return (UpdateFailedPermissions (branchref : map fst tomerge))))
+		(const (return (UpdateFailedPermissions (map fst tomerge))))
 		(go branchref tomerge)
   where
 	excludeset s = filter (\(r, _) -> S.notMember r s)
@@ -463,7 +462,7 @@ commitIndex' jl branchref message basemessage retrynum parents = do
 
 {- Lists all files on the branch. including ones in the journal
  - that have not been committed yet. There may be duplicates in the list. -}
-tfiles :: Annex ([RawFilePath], IO Bool)
+files :: Annex ([RawFilePath], IO Bool)
 files = do
 	_  <- update
 	(bfs, cleanup) <- branchFiles
