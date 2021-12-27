@@ -53,14 +53,14 @@ removeRemote uuid = do
  - in keys in the current branch.
  -}
 removableRemote :: UrlRenderer -> UUID -> Assistant ()
-removableRemote urlrenderer uuid = do
-	keys <- getkeys
-	if null keys
-		then finishRemovingRemote urlrenderer uuid
-		else do
+removableRemote urlrenderer uuid = getkeys >>= \case
+	Just keys
+		| null keys -> finishRemovingRemote urlrenderer uuid
+		| otherwise -> do
 			r <- fromMaybe (error "unknown remote")
 				<$> liftAnnex (Remote.remoteFromUUID uuid)
 			mapM_ (queueremaining r) keys
+	Nothing -> noop
   where
 	queueremaining r k = 
 		queueTransferWhenSmall "remaining object in unwanted remote"

@@ -468,16 +468,28 @@ commitIndex' jl branchref message basemessage retrynum parents = do
 		commitIndex' jl committedref racemessage basemessage retrynum' [committedref]
 
 {- Lists all files on the branch. including ones in the journal
- - that have not been committed yet. There may be duplicates in the list. -}
-files :: Annex ([RawFilePath], IO Bool)
+ - that have not been committed yet. 
+ -
+ - There may be duplicates in the list, when the journal has files that
+ - have not been written to the branch yet.
+ - 
+ - In a read-only repository that has other git-annex branches that have
+ - not been merged in, returns Nothing, because it's not possible to
+ - efficiently handle that.
+ -}
+files :: Annex (Maybe ([RawFilePath], IO Bool))
 files = do
-	_  <- update
-	(bfs, cleanup) <- branchFiles
-	-- ++ forces the content of the first list to be buffered in
-	-- memory, so use journalledFiles, which should be much smaller
-	-- most of the time. branchFiles will stream as the list is consumed.
-	l <- (++) <$> journalledFiles <*> pure bfs
-	return (l, cleanup)
+	st <- update
+        if not (null (unmergedRefs st))
+		then return Nothing
+		else do
+			(bfs, cleanup) <- branchFiles
+			-- ++ forces the content of the first list to be
+			-- buffered in memory, so use journalledFiles,
+			-- which should be much smaller most of the time.
+			-- branchFiles will stream as the list is consumed.
+			l <- (++) <$> journalledFiles <*> pure bfs
+			return (Just (l, cleanup))
 
 {- Lists all files currently in the journal. There may be duplicates in
  - the list when using a private journal. -}

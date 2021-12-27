@@ -137,15 +137,17 @@ finishCheck (Unchecked a) = a
  -
  - Keys that have been marked as dead are not included.
  -}
-loggedKeys :: Annex ([Unchecked Key], IO Bool)
+loggedKeys :: Annex (Maybe ([Unchecked Key], IO Bool))
 loggedKeys = loggedKeys' (not <$$> checkDead)
 
-loggedKeys' :: (Key -> Annex Bool) -> Annex ([Unchecked Key], IO Bool)
+loggedKeys' :: (Key -> Annex Bool) -> Annex (Maybe ([Unchecked Key], IO Bool))
 loggedKeys' check = do
 	config <- Annex.getGitConfig
-	(bfs, cleanup) <- Annex.Branch.files
-	let l = mapMaybe (defercheck <$$> locationLogFileKey config) bfs
-	return (l, cleanup)
+	Annex.Branch.files >>= \case
+		Nothing -> return Nothing
+		Just (bfs, cleanup) -> do
+			let l = mapMaybe (defercheck <$$> locationLogFileKey config) bfs
+			return (Just (l, cleanup))
   where
 	defercheck k = Unchecked $ ifM (check k)
 		( return (Just k)
@@ -157,14 +159,15 @@ loggedKeys' check = do
  -
  - This does not stream well; use loggedKeysFor' for lazy streaming.
  -}
-loggedKeysFor :: UUID -> Annex [Key]
-loggedKeysFor u = do
-	(l, cleanup) <- loggedKeysFor' u
-	l' <- catMaybes <$> mapM finishCheck l
-	liftIO $ void cleanup
-	return l'
+loggedKeysFor :: UUID -> Annex (Maybe [Key])
+loggedKeysFor u = loggedKeysFor' u >>= \case
+	Nothing -> return Nothing
+	Just (l, cleanup) -> do
+		l' <- catMaybes <$> mapM finishCheck l
+		liftIO $ void cleanup
+		return (Just l')
 
-loggedKeysFor' :: UUID -> Annex ([Unchecked Key], IO Bool)
+loggedKeysFor' :: UUID -> Annex (Maybe ([Unchecked Key], IO Bool))
 loggedKeysFor' u = loggedKeys' isthere
   where
 	isthere k = do

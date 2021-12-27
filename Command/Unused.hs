@@ -101,7 +101,9 @@ checkRemoteUnused remotename refspec = go =<< Remote.nameToUUID remotename
 		r <- Remote.byUUID u
 		_ <- check "" (remoteUnusedMsg r remotename) (remoteunused u) 0
 		next $ return True
-	remoteunused u = excludeReferenced refspec =<< loggedKeysFor u
+	remoteunused u = loggedKeysFor u >>= \case
+		Just ks -> excludeReferenced refspec ks
+		Nothing -> giveup "This repository is read-only."
 
 check :: FilePath -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
 check file msg a c = do

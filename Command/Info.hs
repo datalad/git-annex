@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -370,13 +370,17 @@ local_annex_size = simpleStat "local annex size" $
 
 -- "remote" is in the name for JSON backwards-compatibility
 repo_annex_keys :: UUID -> Stat
-repo_annex_keys u = stat "remote annex keys" $ json show $
-	countKeys <$> cachedRemoteData u
+repo_annex_keys u = stat "remote annex keys" $ \d ->
+	cachedRemoteData u >>= \case
+		Right rd -> json show (pure (countKeys rd)) d
+		Left n-> json id (pure n) d
 
 -- "remote" is in the name for JSON backwards-compatibility
 repo_annex_size :: UUID -> Stat
 repo_annex_size u = simpleStat "remote annex size" $
-	showSizeKeys =<< cachedRemoteData u
+	cachedRemoteData u >>= \case
+		Right d -> showSizeKeys d
+		Left n -> pure n
 
 known_annex_files :: Bool -> Stat
 known_annex_files isworktree = 
@@ -524,20 +528,22 @@ cachedPresentData = do
 			put s { presentData = Just v }
 			return v
 
-cachedRemoteData :: UUID -> StatState KeyInfo
+cachedRemoteData :: UUID -> StatState (Either String KeyInfo)
 cachedRemoteData u = do
 	s <- get
 	case M.lookup u (repoData s) of
-		Just v -> return v
+		Just v -> return (Right v)
 		Nothing -> do
 			let combinedata d uk = finishCheck uk >>= \case
 				Nothing -> return d
 				Just k -> return $ addKey k d
-			(ks, cleanup) <- lift $ loggedKeysFor' u
-			v <- lift $ foldM combinedata emptyKeyInfo ks
-			liftIO $ void cleanup
-			put s { repoData = M.insert u v (repoData s) }
-			return v
+			lift (loggedKeysFor' u) >>= \case
+				Just (ks, cleanup) -> do
+					v <- lift $ foldM combinedata emptyKeyInfo ks
+					liftIO $ void cleanup
+					put s { repoData = M.insert u v (repoData s) }
+					return (Right v)
+				Nothing -> return (Left "not available in this read-only repository with unmerged git-annex branches")
 
 cachedReferencedData :: StatState KeyInfo
 cachedReferencedData = do
