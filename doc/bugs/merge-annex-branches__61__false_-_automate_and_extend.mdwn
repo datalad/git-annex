@@ -27,3 +27,5 @@ git-annex version: 8.20211117+git14-ge1f38b9dd-1~ndall+1
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]] --[[Joey]]
