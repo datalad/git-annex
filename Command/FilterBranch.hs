@@ -12,7 +12,8 @@ module Command.FilterBranch where
 import Command
 import qualified Annex
 import qualified Annex.Branch
-import Annex.Branch.Transitions (filterBranch, FileTransition(..))
+import Annex.Branch.Transitions
+import Types.Transitions
 import Annex.HashObject
 import Annex.Tmp
 import Annex.SpecialRemote.Config

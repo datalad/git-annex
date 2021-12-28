@@ -3,9 +3,11 @@
  subject="""comment 6"""
  date="2021-12-27T17:38:49Z"
  content="""
+Update: Completed and merged!
+
 Current list of items that need to be fixed before this is mergeable:
 
-- When there is a transition in one of the remote git-annex branches
+- (fixed) When there is a transition in one of the remote git-annex branches
   that has not yet been applied to the local or other git-annex branches.
   Transitions are not handled.
 - (fixed) `git-annex log` runs git log on the git-annex branch, and so

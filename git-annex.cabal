@@ -1052,6 +1052,7 @@ Executable git-annex
     Types.Transfer
     Types.Transferrer
     Types.TransferrerPool
+    Types.Transitions
     Types.TrustLevel
     Types.UUID
     Types.UrlContents

@@ -104,8 +104,7 @@ recordTransitions :: (RawFilePath -> (L.ByteString -> Builder) -> Annex ()) -> T
 recordTransitions changer t = changer transitionsLog $
 	buildTransitions . S.union t . parseTransitionsStrictly "local"
 
-getRefTransitions :: Git.Ref -> Annex (Git.Ref, Transitions)
-getRefTransitions ref = do
-	ts <- parseTransitionsStrictly (fromRef ref)
+getRefTransitions :: Git.Ref -> Annex Transitions
+getRefTransitions ref = 
+	parseTransitionsStrictly (fromRef ref) 
 		<$> catFile ref transitionsLog
-	return (ref, ts)

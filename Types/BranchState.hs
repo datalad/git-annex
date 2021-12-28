@@ -9,6 +9,7 @@ module Types.BranchState where
 
 import Common
 import qualified Git
+import Types.Transitions
 
 import qualified Data.ByteString.Lazy as L
 
@@ -25,6 +26,9 @@ data BranchState = BranchState
 	-- ^ when the branch was not able to be updated due to permissions,
 	-- these other git refs contain unmerged information and need to be
 	-- queried, along with the index and the journal.
+	, unhandledTransitions :: [TransitionCalculator]
+	-- ^ when the branch was not able to be updated due to permissions,
+	-- this is transitions that need to be applied when making queries.
 	, cachedFileContents :: [(RawFilePath, L.ByteString)]
 	-- ^ contents of a few files recently read from the branch
 	, needInteractiveAccess :: Bool
@@ -35,4 +39,4 @@ data BranchState = BranchState
 	}
 
 startBranchState :: BranchState
-startBranchState = BranchState False False False [] [] False
+startBranchState = BranchState False False False [] [] [] False

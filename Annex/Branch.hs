@@ -80,6 +80,7 @@ import Logs.Remote.Pure
 import Logs.Export.Pure
 import Logs.Difference.Pure
 import qualified Annex.Queue
+import Types.Transitions
 import Annex.Branch.Transitions
 import qualified Annex
 import Annex.Hook
@@ -184,11 +185,13 @@ updateTo' pairs = do
 	 - query operations still work, although they will need to do
 	 - additional work since the refs are not merged. -}
 	catchPermissionDenied
-		(const (return (UpdateFailedPermissions (map fst tomerge))))
+		(const (updatefailedperms tomerge))
 		(go branchref tomerge)
   where
 	excludeset s = filter (\(r, _) -> S.notMember r s)
+
 	isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
+
 	go branchref tomerge = do
 		dirty <- journalDirty gitAnnexJournalDir
 		journalcleaned <- if null tomerge
@@ -223,6 +226,7 @@ updateTo' pairs = do
 			{ refsWereMerged = not (null tomerge)
 			, journalClean = journalclean 
 			}
+	
 	go' branchref dirty tomerge jl = stagejournalwhen dirty jl $ do
 		let (refs, branches) = unzip tomerge
 		merge_desc <- if null tomerge
@@ -248,9 +252,36 @@ updateTo' pairs = do
 			)
 		addMergedRefs tomerge
 		invalidateCache
+	
 	stagejournalwhen dirty jl a
 		| dirty = stageJournal jl a
 		| otherwise = withIndex a
+	
+	-- Preparing for read-only branch access with unmerged remote refs.
+	updatefailedperms tomerge = do
+		let refs = map fst tomerge
+		-- Gather any transitions that are new to either the
+		-- local branch or a remote ref, which will need to be
+		-- applied on the fly.
+		localts <- getLocalTransitions
+		remotets <- mapM getRefTransitions refs
+		ts <- if all (localts ==) remotets
+			then return []
+			else 
+				let tcs = mapMaybe getTransitionCalculator $
+					knownTransitionList $
+						combineTransitions (localts:remotets)
+				in if null tcs
+					then return []
+					else do
+						config <- Annex.getGitConfig
+						trustmap <- calcTrustMap <$> getStaged trustLog
+						remoteconfigmap <- calcRemoteConfigMap <$> getStaged remoteLog
+						return $ map (\c -> c trustmap remoteconfigmap config) tcs
+		return $ UpdateFailedPermissions 
+			{ refsUnmerged = refs
+			, newTransitions = ts
+			}
 
 {- Gets the content of a file, which may be in the journal, or in the index
  - (and committed to the branch). 
@@ -258,9 +289,12 @@ updateTo' pairs = do
  - Returns an empty string if the file doesn't exist yet.
  - 
  - Updates the branch if necessary, to ensure the most up-to-date available
- - content is returned. When permissions prevent updating the branch,
- - reads the content from the journal, plus the branch, plus all unmerged
- - refs.
+ - content is returned. 
+ -
+ - When permissions prevented updating the branch, reads the content from the
+ - journal, plus the branch, plus all unmerged refs. In this case, any
+ - transitions that have not been applied to all refs will be applied on
+ - the fly.
  -}
 get :: RawFilePath -> Annex L.ByteString
 get file = do
@@ -272,14 +306,25 @@ get file = do
 				then getRef fullname file
 				else if null (unmergedRefs st) 
 					then getLocal file
-					else unmergedbranchfallback (unmergedRefs st)
+					else unmergedbranchfallback st
 			setCache file content
 			return content
   where
-	unmergedbranchfallback refs = do
+	unmergedbranchfallback st = do
 		l <- getLocal file
-		bs <- forM refs $ \ref -> getRef ref file
-		return (l <> mconcat bs)
+		bs <- forM (unmergedRefs st) $ \ref -> getRef ref file
+		let content = l <> mconcat bs
+		return $ applytransitions (unhandledTransitions st) content
+	applytransitions [] content = content
+	applytransitions (changer:rest) content = case changer file content of
+		PreserveFile -> applytransitions rest content
+		ChangeFile builder -> do
+			let content' = toLazyByteString builder
+			if L.null content'
+				-- File is deleted, can't run any other
+				-- transitions on it.
+				then content'
+				else applytransitions rest content'
 
 {- When the git-annex branch is unable to be updated due to permissions,
  - and there are other git-annex branches that have not been merged into
@@ -656,11 +701,11 @@ getLocalTransitions =
  -}
 handleTransitions :: JournalLocked -> Transitions -> [Git.Ref] -> Annex Bool
 handleTransitions jl localts refs = do
-	m <- M.fromList <$> mapM getRefTransitions refs
-	let remotets = M.elems m
+	remotets <- mapM getRefTransitions refs
 	if all (localts ==) remotets
 		then return False
 		else do
+			let m = M.fromList (zip refs remotets)
 			let allts = combineTransitions (localts:remotets)
 			let (transitionedrefs, untransitionedrefs) =
 				partition (\r -> M.lookup r m == Just allts) refs

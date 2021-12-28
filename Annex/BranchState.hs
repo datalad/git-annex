@@ -11,6 +11,7 @@ module Annex.BranchState where
 
 import Annex.Common
 import Types.BranchState
+import Types.Transitions
 import qualified Annex
 import Logs
 import qualified Git
@@ -38,6 +39,7 @@ data UpdateMade
 		}
 	| UpdateFailedPermissions
 		{ refsUnmerged :: [Git.Sha]
+		, newTransitions :: [TransitionCalculator]
 		}
 
 {- Runs an action to update the branch, if it's not been updated before
@@ -70,6 +72,7 @@ runUpdateOnce update = do
 					{ branchUpdated = True
 					, journalIgnorable = False
 					, unmergedRefs = refsUnmerged um
+					, unhandledTransitions = newTransitions um
 					, cachedFileContents = []
 					}
 			changeState stf

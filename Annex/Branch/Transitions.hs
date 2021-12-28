@@ -6,7 +6,6 @@
  -}
 
 module Annex.Branch.Transitions (
-	FileTransition(..),
 	getTransitionCalculator,
 	filterBranch,
 ) where
@@ -23,23 +22,17 @@ import Types.TrustLevel
 import Types.UUID
 import Types.MetaData
 import Types.Remote
+import Types.Transitions
 import Types.GitConfig (GitConfig)
 import Types.ProposedAccepted
 import Annex.SpecialRemote.Config
 
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
 import Data.ByteString.Builder
 
-data FileTransition
-	= ChangeFile Builder
-	| PreserveFile
-
-type TransitionCalculator = GitConfig -> RawFilePath -> L.ByteString -> FileTransition
-
-getTransitionCalculator :: Transition -> Maybe (TrustMap -> M.Map UUID RemoteConfig -> TransitionCalculator)
+getTransitionCalculator :: Transition -> Maybe (TrustMap -> M.Map UUID RemoteConfig -> GitConfig -> TransitionCalculator)
 getTransitionCalculator ForgetGitHistory = Nothing
 getTransitionCalculator ForgetDeadRemotes = Just dropDead
 
@@ -55,7 +48,7 @@ getTransitionCalculator ForgetDeadRemotes = Just dropDead
 -- the latter uuid, that also needs to be removed. The sameas-uuid
 -- is not removed from the remote log, for the same reason the trust log
 -- is not changed.
-dropDead :: TrustMap -> M.Map UUID RemoteConfig -> TransitionCalculator
+dropDead :: TrustMap -> M.Map UUID RemoteConfig -> GitConfig -> TransitionCalculator
 dropDead trustmap remoteconfigmap gc f content
 	| f == trustLog = PreserveFile
 	| f == remoteLog = ChangeFile $
@@ -78,7 +71,7 @@ dropDead trustmap remoteconfigmap gc f content
 		| otherwise = l
 	minimizesameasdead' c = M.restrictKeys c (S.singleton sameasUUIDField)
 
-filterBranch :: (UUID -> Bool) -> TransitionCalculator
+filterBranch :: (UUID -> Bool) -> GitConfig -> TransitionCalculator
 filterBranch wantuuid gc f content = case getLogVariety gc f of
 	Just OldUUIDBasedLog -> ChangeFile $
 		UUIDBased.buildLogOld byteString $
