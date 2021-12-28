@@ -7,7 +7,7 @@
  - done that is listed in the remote branch by checking that the local
  - branch contains the same transition, with the same or newer start time.
  -
- - Copyright 2013-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,9 @@ module Logs.Transitions where
 import Annex.Common
 import Annex.VectorClock
 import Logs.Line
+import qualified Git
+import Git.Types (fromRef)
+import Annex.CatFile
 
 import qualified Data.Set as S
 import Data.Either
@@ -100,3 +103,9 @@ knownTransitionList = nub . rights . map transition . S.elems
 recordTransitions :: (RawFilePath -> (L.ByteString -> Builder) -> Annex ()) -> Transitions -> Annex ()
 recordTransitions changer t = changer transitionsLog $
 	buildTransitions . S.union t . parseTransitionsStrictly "local"
+
+getRefTransitions :: Git.Ref -> Annex (Git.Ref, Transitions)
+getRefTransitions ref = do
+	ts <- parseTransitionsStrictly (fromRef ref)
+		<$> catFile ref transitionsLog
+	return (ref, ts)

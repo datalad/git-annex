@@ -230,8 +230,7 @@ updateTo' pairs = do
 			else return $ "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
 				" into " ++ fromRef name
-		localtransitions <- parseTransitionsStrictly "local"
-			<$> getLocal transitionsLog
+		localtransitions <- getLocalTransitions
 		unless (null tomerge) $ do
 			showSideAction merge_desc
 			mapM_ checkBranchDifferences refs
@@ -634,6 +633,11 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 		removeWhenExistsWith (R.removeLink) (toRawFilePath jlogf)
 	openjlog tmpdir = liftIO $ openTmpFileIn tmpdir "jlog"
 
+getLocalTransitions :: Annex Transitions
+getLocalTransitions = 
+	parseTransitionsStrictly "local"
+		<$> getLocal transitionsLog
+
 {- This is run after the refs have been merged into the index,
  - but before the result is committed to the branch.
  - (Which is why it's passed the contents of the local branches's
@@ -652,7 +656,7 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
  -}
 handleTransitions :: JournalLocked -> Transitions -> [Git.Ref] -> Annex Bool
 handleTransitions jl localts refs = do
-	m <- M.fromList <$> mapM getreftransition refs
+	m <- M.fromList <$> mapM getRefTransitions refs
 	let remotets = M.elems m
 	if all (localts ==) remotets
 		then return False
@@ -663,11 +667,6 @@ handleTransitions jl localts refs = do
 			performTransitionsLocked jl allts (localts /= allts) transitionedrefs
 			ignoreRefs untransitionedrefs
 			return True
-  where
-	getreftransition ref = do
-		ts <- parseTransitionsStrictly "remote"
-			<$> catFile ref transitionsLog
-		return (ref, ts)
 
 {- Performs the specified transitions on the contents of the index file,
  - commits it to the branch, or creates a new branch.
