@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="very much appreciated"
+ date="2021-12-29T17:20:29Z"
+ content="""
+Bravo! Readonly annex merge support seems to mostly work on Windows, too, which frankly surprised me a bit. I was under
+the impression that Windows was kind of a lost cause at times and no readonly-type support would be forthcoming on this
+platform. :D So colour me surprised when `wanted`, `whereis` and `log` worked just like that. Only `info` gave me
+trouble when I targeted a directory or file with it:
+
+[[!format sh \"\"\"
+B:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v21H1) . B [adjusted/master(unlocked)]> git annex info C4A845FD48C3E1A9-00-00.mrimg
+file: C4A845FD48C3E1A9-00-00.mrimg
+size: 184.64 gigabytes
+key: BLAKE2B160E-s184642714873--e802cd1a09bf66dc07959b4935116fe1fb5d39a7.mrimg
+present: sqlite worker thread crashed: user error (SQLite3 returned ErrorCan'tOpen while attempting to perform prepare \"SELECT null from content limit 1\": unable to open database file(while opening database connection))
+git-annex: sqlite query crashed: thread blocked indefinitely in an MVar operation
+CallStack (from HasCallStack):
+  error, called at .\Database\Handle.hs:79:40 in main:Database.Handle
+\"\"\"]]
+
+An argumentless `info` works just fine:
+
+[[!format sh \"\"\"
+B:\Reflect-varmistukset\Jarkon ThinkPad T450s (Win10 v21H1) . B [adjusted/master(unlocked)]> git annex info
+trusted repositories: 0
+semitrusted repositories: 8
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        3362df51-1789-4471-96a0-d2267ada6aa4 -- Reflect-varmistukset [origin]
+        46a41e47-45c8-4a86-b348-db0c4cfb18f3 -- Reflect-varmistukset [reflect-varm-k-levy]
+        489cdd9b-d71f-4a62-a48a-0279ec6f2245 -- Reflect-varm-ylivuoto1 [here]
+        dc778e0b-c470-4c69-960f-29cbfebd5bb9 -- jkniiv@AINESIS:K:\Reflect-varmistukset
+        ed923fc2-f2d9-46a6-813d-a0799d735d5c -- Reflect-varmistukset
+        fd6945cc-15db-406c-8653-31f1351e5051 -- Reflect-varmistukset
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 305.55 gigabytes (+1 megabyte reserved)
+local annex keys: 1
+local annex size: 184.64 gigabytes
+annexed files in working tree: 73
+size of annexed files in working tree: 3.02 terabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage:
+        BLAKE2B160E: 64
+        MD5E: 9
+\"\"\"]]
+
+Should I file a bug, Joey? Or do you still think this is hardly worth pursuing? :)
+
+"""]]
