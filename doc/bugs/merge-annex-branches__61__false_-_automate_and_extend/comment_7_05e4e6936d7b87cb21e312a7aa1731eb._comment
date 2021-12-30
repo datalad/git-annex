@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="thank you!"
+ date="2021-12-29T02:00:48Z"
+ content="""
+woohoo ! Great to see such productive holidays! ;)  I will give it a try as soon as I can and I guess we should then add some unittests within datalad for typical readonly operations within CI (we already \"abuse\" `sudo` in a few spots for similar needs).
+"""]]
