@@ -76,7 +76,6 @@ import qualified BuildInfo
 import qualified Utility.Format
 import qualified Utility.Verifiable
 import qualified Utility.Process
-import qualified Utility.Process.Transcript
 import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
@@ -312,7 +311,7 @@ unitTests :: String -> TestTree
 unitTests note = testGroup ("Unit Tests " ++ note)
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
-	, testCase "readonly" test_readonly
+	, testCase "readonly remote" test_readonly_remote
 	, testCase "ignore deleted files" test_ignore_deleted_files
 	, testCase "metadata" test_metadata
 	, testCase "export_import" test_export_import
@@ -432,18 +431,15 @@ test_add_extras = intmpclonerepo $ do
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
 
-test_readonly :: Assertion
-test_readonly =
+test_readonly_remote :: Assertion
+test_readonly_remote =
 #ifndef mingw32_HOST_OS
 	withtmpclonerepo $ \r1 ->
 		withtmpclonerepo $ \r2 -> do
 			pair r1 r2
 			indir r1 $ do
 				git_annex "get" [annexedfile] "get failed in first repo"
-			{- chmod may fail, or not be available, or the
-			 - filesystem not support permissions. -}
-			void $ Utility.Process.Transcript.processTranscript
-				"chmod" ["-R", "-w", r1] Nothing
+			make_readonly r1
 			indir r2 $ do
 				git_annex "sync" ["r1", "--no-push"] "sync with readonly repo"
 				git_annex "get" [annexedfile, "--from", "r1"] "get from readonly repo"
@@ -469,6 +465,9 @@ test_metadata = intmpclonerepo $ do
 	git_annex "metadata" ["-s", "foo=bar", annexedfile] "set metadata"
 	git_annex_expectoutput "find" ["--metadata", "foo=bar"] [annexedfile]
 	git_annex_expectoutput "find" ["--metadata", "foo=other"] []
+	readonly_query $ do
+		git_annex_expectoutput "find" ["--metadata", "foo=bar"] [annexedfile]
+		git_annex_expectoutput "find" ["--metadata", "foo=other"] []
 	writecontent annexedfiledup $ content annexedfiledup
 	add_annex annexedfiledup "add of second file with same content failed"
 	annexed_present annexedfiledup
@@ -1139,10 +1138,12 @@ test_find :: Assertion
 test_find = intmpclonerepo $ do
 	annexed_notpresent annexedfile
 	git_annex_expectoutput "find" [] []
+	readonly_query $ git_annex_expectoutput "find" [] []
 	git_annex "get" [annexedfile] "get"
 	annexed_present annexedfile
 	annexed_notpresent sha1annexedfile
 	git_annex_expectoutput "find" [] [annexedfile]
+	readonly_query $ git_annex_expectoutput "find" [] [annexedfile]
 	git_annex_expectoutput "find" ["--exclude", annexedfile, "--and", "--exclude", sha1annexedfile] []
 	git_annex_expectoutput "find" ["--include", annexedfile] [annexedfile]
 	git_annex_expectoutput "find" ["--not", "--in", "origin"] []
@@ -1164,14 +1165,19 @@ test_merge = intmpclonerepo $
 
 test_info :: Assertion
 test_info = intmpclonerepo $ do
-	json <- BU8.fromString <$> git_annex_output "info" ["--json"]
-	case Utility.Aeson.eitherDecode json :: Either String Utility.Aeson.Value of
-		Right _ -> return ()
-		Left e -> assertFailure e
+	isjson
+	readonly_query isjson
+  where
+	isjson = do
+		json <- BU8.fromString <$> git_annex_output "info" ["--json"]
+		case Utility.Aeson.eitherDecode json :: Either String Utility.Aeson.Value of
+			Right _ -> return ()
+			Left e -> assertFailure e
 
 test_version :: Assertion
-test_version = intmpclonerepo $
+test_version = intmpclonerepo $ do
 	git_annex "version" [] "version"
+	readonly_query $ git_annex "version" [] "readonly version"
 
 test_sync :: Assertion
 test_sync = intmpclonerepo $ do
@@ -1697,11 +1703,15 @@ test_whereis :: Assertion
 test_whereis = intmpclonerepo $ do
 	annexed_notpresent annexedfile
 	git_annex "whereis" [annexedfile] "whereis on non-present file"
+	readonly_query $ 
+		git_annex "whereis" [annexedfile] "readonly whereis on non-present file"
 	git_annex "untrust" ["origin"] "untrust"
 	git_annex_shouldfail "whereis" [annexedfile] "whereis should exit nonzero on non-present file only present in untrusted repo"
 	git_annex "get" [annexedfile] "get"
 	annexed_present annexedfile
 	git_annex "whereis" [annexedfile] "whereis on present file"
+	readonly_query $
+		git_annex "whereis" [annexedfile] "readonly whereis on present file"
 
 test_hook_remote :: Assertion
 test_hook_remote = intmpclonerepo $ do

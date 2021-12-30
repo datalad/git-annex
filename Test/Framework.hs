@@ -1,6 +1,6 @@
 {- git-annex test suite framework
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -640,3 +640,24 @@ pair r1 r2 = forM_ [r1, r2] $ \r -> indir r $ do
 	when (r /= r2) $
 		git "remote" ["add", "r2", "../../" ++ r2] "remote add"
 
+
+{- Runs a query in the current repository, but first makes the repository
+ - read-only. The write bit is added back at the end, so when possible, 
+ - include multiple tests within a single call for efficiency. -}
+readonly_query :: Assertion -> Assertion
+readonly_query = bracket_ (make_readonly ".") (make_writeable ".")
+	
+{- Not guaranteed to do anything: 
+ - chmod may fail, or not be available, or the filesystem not support
+ - permissions. -}
+make_readonly :: FilePath -> IO ()
+make_readonly d = void $
+	Utility.Process.Transcript.processTranscript
+		"chmod" ["-R", "-w", d] Nothing
+
+{- The write bit is added back for the current user, but not for other
+ - users, even though make_readonly removes any other user's write bits. -}
+make_writeable :: FilePath -> IO ()
+make_writeable d = void $
+	Utility.Process.Transcript.processTranscript
+		"chmod" ["-R", "u+w", d] Nothing
