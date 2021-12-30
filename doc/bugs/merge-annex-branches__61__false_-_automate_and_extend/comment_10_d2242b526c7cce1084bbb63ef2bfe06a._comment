@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2021-12-30T16:43:10Z"
+ content="""
+@yoh I'm also planning to extend git-annex's test suite with checks that
+some of the basic queries work in readonly repos.
+"""]]

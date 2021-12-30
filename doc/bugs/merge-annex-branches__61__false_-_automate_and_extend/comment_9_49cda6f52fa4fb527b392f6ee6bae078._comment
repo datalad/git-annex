@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2021-12-30T16:34:03Z"
+ content="""
+@jkniiv that may somehow be windows-specific, if opening a sqlite database
+on windows in order to only query it needs write access.
+
+I did try this on linux with an unlocked file and it did not crash, but the
+file was already present in the database. I also tried with the keysdb
+deleted, and it still worked. I'm sure that there are situations though
+where the database is not updated where it will try to populate it before
+querying it, which will fail when it cannot write.
+
+It would be worth filing new bug reports for such issues. Although
+when write access is unavoidable, I might just have to close them.
+"""]]
