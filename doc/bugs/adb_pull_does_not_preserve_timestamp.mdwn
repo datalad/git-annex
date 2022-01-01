@@ -1,0 +1,44 @@
+### Please describe the problem.
+Adb special remote does not preserve remote timestamp on "import".
+Therefore files downloaded several days ago lose their real mtime when transferred to PC,
+and from that moment onward files on android will have mtime different from stored in annex/symlinks.
+
+But all files already present in PC repo -- during "export" correctly propagate their mtime to android.
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+git annex initremote android type=adb androiddirectory=/storage/0000-0000/books encryption=none exporttree=yes importtree=yes
+git config remote.android.annex-sync false
+git config remote.android.annex-tracking-branch main
+git annex export main --to android
+# ADD: download some "file" through android into "books"
+git annex sync --content android
+stat -c%y "file"
+Modify: 2022-01-01 20:51:11.487603199 +0200
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 8.20211118-g23ee48898
+ArchLinux 5.15.12-arch1-1
+
+### Please provide any additional information below.
+Most likely can be fixed by:
+
+[[!format diff """
+--- i/Remote/Adb.hs
++++ w/Remote/Adb.hs
+@@ -202,6 +202,7 @@ retrieve' serial src dest =
+                showOutput -- make way for adb pull output
+                liftIO $ boolSystem "adb" $ mkAdbCommand serial
+                        [ Param "pull"
++                      , Param "-a"
+                        , File $ fromAndroidPath src
+                        , File dest
+                        ]
+"""]]
+
+### Have you had any luck using git-annex before?
+
+Nice work fixing earlier notorious bug, it made the ADB special remote usable for me at least in PC -> android direction! :)  
+[[https://git-annex.branchable.com/forum/Mixed_content_repos_with_import_and_export/#comment-764ac971faf756140055333649ffb94c]]
