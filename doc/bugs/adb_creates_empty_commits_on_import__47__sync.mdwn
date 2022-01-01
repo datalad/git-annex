@@ -1,0 +1,39 @@
+### Please describe the problem.
+
+Adb special remote on both "import" and "sync" commands creates empty commits in "main" branch,
+even if files hadn't changed  in either remote or local repo.
+
+This clutters history of "main" branch (which is mostly manually curated),
+and hides commits actually introducing added/deleted files amongst the clutter.
+
+Moreover, this behavior differs from expectations: "sync" with proper remote never created empty commits in "main" branch.
+
+## What steps will reproduce the problem?
+
+Setup adb import/export, like here: 
+[[https://git-annex.branchable.com/forum/Mixed_content_repos_with_import_and_export/#comment-764ac971faf756140055333649ffb94c]].
+
+Repetition of "git annex sync --content" introduces new empty commits without proper reason.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 8.20211118-g23ee48898
+
+
+### Please provide any additional information below.
+
+Example of "main" branch history cluttered by empty commits:
+
+[[!format txt """
+*   2022-01-01 bb23200 remote tracking branch                                       (android/main) [annex]
+|\
+* | 2022-01-01 42b8111 remote tracking branch                                       (HEAD -> main, synced/main) [annex]
+|\|
+| * 2022-01-01 223f5f7 import from android                                          [annex]
+* | 2022-01-01 f5b5f0a remote tracking branch                                       [annex]
+|\|
+* | 2022-01-01 2a6177e remote tracking branch                                       [annex]
+|\|
+| * 2022-01-01 7ef4649 import from android                                          [annex]
+"""]]
+
+
