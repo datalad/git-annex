@@ -106,12 +106,14 @@ otool appbase installedbins replacement_libs libmap = do
 		-- _inflateValidate symbol. So, avoid bundling libz unless
 		-- this incompatability is resolved.
 		&& not ("libz." `isInfixOf` s)
-	lib_present s = ifM (isJust <$> catchMaybeIO (getSymbolicLinkStatus s))
-		( return True
-		, do
-			hPutStrLn stderr $ "note: skipping library that is not present on disk: " ++ s
-			return False
-		)
+	lib_present s
+		| "@rpath" `isInfixOf` s = return True
+		| otherwise = ifM (isJust <$> catchMaybeIO (getSymbolicLinkStatus s))
+			( return True
+			, do
+				hPutStrLn stderr $ "note: skipping library that is not present on disk: " ++ s
+				return False
+			)
 	process c [] rls m = return (nub $ concat c, rls, m)
 	process c (file:rest) rls m = do
 		_ <- boolSystem "chmod" [Param "755", File file]
