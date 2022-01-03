@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-01-03T17:32:34Z"
+ content="""
+I guess you mean commits like "import from foo",
+or perhaps "remote tracking branch". Not adb-specific at all.
+
+The "remote tracking branch" commits are merge commits, so cannot be
+avoided, even though they don't make any apparent changes.
+
+It mostly does manage to avoid making the "import from" commits
+when there is no difference from the previous commit.
+The only case I know of where it does not is in the initial import,
+if the branch was exported first, and then imported. I see an empty 
+"import from" then. Subsequent imports, when there are no changes to the
+tree, do not make a new commit.
+
+Of course, you can rebase out any of these commits if you want to.
+"""]]
