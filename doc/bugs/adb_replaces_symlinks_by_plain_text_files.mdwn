@@ -26,3 +26,5 @@ Don't do anything if they are the same.
 Replace symlink by actual file if they differ.
 
 [[!meta title="export then import replaces non-annex symlinks by plain text files"]]
+
+> [[fixed|done]] by skipping syminks. --[[Joey]]

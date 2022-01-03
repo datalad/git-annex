@@ -479,7 +479,8 @@ removeEmptyDirectories r db loc ks
 newtype ExportFiltered t = ExportFiltered t
 
 -- | Filters the tree to annexed files that are preferred content of the
--- remote, and also including non-annexed files, but not submodules.
+-- remote, and also including non-annexed files, but not submodules or
+-- non-annexed symlinks.
 --
 -- A log is written with tree items that were filtered out, so they can
 -- be added back in when importing from the remote.
@@ -505,16 +506,27 @@ filterExport r tree = logExportExcluded (uuid r) $ \logwriter -> do
 		case toTreeItemType mode of
 			-- Don't export submodule entries.
 			Just TreeSubmodule -> excluded
-			_ -> case mmatcher of
-				Nothing -> return (Just ti)
-				Just matcher -> catKey sha >>= \case
-					Just k -> checkmatcher matcher k
-					-- Always export non-annexed files.
-					Nothing -> return (Just ti)
+			Just TreeSymlink -> checkkey True
+			_ -> checkkey False
 	  where
 		excluded = do
 			() <- liftIO $ logwriter ti
 			return Nothing
+
+		checkkey issymlink =
+			case mmatcher of
+				Nothing
+					| issymlink -> catKey sha >>= \case
+						Just _ -> return (Just ti)
+						Nothing
+							| issymlink -> excluded
+							| otherwise -> return (Just ti)
+					| otherwise -> return (Just ti)
+				Just matcher -> catKey sha >>= \case
+					Just k -> checkmatcher matcher k
+					Nothing
+						| issymlink -> excluded
+						| otherwise -> return (Just ti)
 
 		checkmatcher matcher k = do
 			let mi = MatchingInfo $ ProvidedInfo

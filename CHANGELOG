@@ -1,3 +1,11 @@
+git-annex (8.20211232) UNRELEASED; urgency=medium
+
+  * export: When a non-annexed symlink is in the tree to be exported, skip it.
+  * import: When the previously exported tree contained a non-annexed symlink,
+    preserve it in the imported tree so it does not get deleted.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 03 Jan 2022 14:01:14 -0400
+
 git-annex (8.20211231) upstream; urgency=medium
 
   * Improved support for using git-annex in a read-only repository,
