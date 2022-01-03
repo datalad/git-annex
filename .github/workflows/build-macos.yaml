@@ -177,11 +177,13 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex:
-    runs-on: macos-10.15
+    runs-on: ${{ matrix.os }}
     needs: build-package
     strategy:
       matrix:
         flavor: ["normal", "crippled-tmp"]
+        os: [macos-10.15]
+        include: [{"flavor": "normal", "os": "macos-latest"}]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -193,7 +195,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             macOS \
-            "test-annex (${{ matrix.flavor }})" \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             pending
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -270,7 +272,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             macOS \
-            "test-annex (${{ matrix.flavor }})" \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -287,81 +289,7 @@ jobs:
           to: ${{ secrets.NOTIFY_RECIPIENT }}
           subject: '[${{ github.repository }}] Scheduled tests of macOS build failed!'
           body: |
-            The tests for a scheduled build of git-annex for macOS (flavor: ${{ matrix.flavor }}) failed!
-
-            See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
-
-  test-annex-next-os:
-    runs-on: macos-latest
-    needs: build-package
-    steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v2
-
-      - name: Create pending PR status
-        if: github.event.inputs.pr != ''
-        run: |
-          .github/workflows/tools/set-pr-status \
-            "${{ github.event.inputs.pr }}" \
-            macOS \
-            test-annex-next-os \
-            pending
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download git-annex package
-        uses: actions/download-artifact@v2
-        with:
-          name: git-annex-macos-dmg_${{ needs.build-package.outputs.build-version }}
-
-      - name: Install git-annex package
-        run: |
-          hdiutil attach git-annex_*.dmg
-          rsync -a /Volumes/git-annex/git-annex.app /Applications/
-          hdiutil detach /Volumes/git-annex/
-          echo /Applications/git-annex.app/Contents/MacOS >> "$GITHUB_PATH"
-
-      - name: Install coreutils (for timeout)
-        run: brew install coreutils
-
-      - name: Print git-annex version
-        run: git annex version
-
-      - name: Run tests
-        run: |
-          # Do it after we possibly setup HOME
-          git config --global user.email "test@github.land"
-          git config --global user.name "GitHub Almighty"
-
-          cd $HOME
-          export | grep -e crippledfs || :
-
-          timeout 1800 git annex test
-
-      - name: Set final PR status
-        if: always() && github.event.inputs.pr != ''
-        run: |
-          .github/workflows/tools/set-pr-status \
-            "${{ github.event.inputs.pr }}" \
-            macOS \
-            test-annex-next-os \
-            "${{ job.status }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Send e-mail on failed scheduled run
-        if: "failure() && github.event_name == 'schedule'"
-        uses: dawidd6/action-send-mail@v2
-        with:
-          server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
-          server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
-          username: ${{ secrets.NOTIFY_SMTP_USERNAME }}
-          password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
-          from: GitHub Actions Notifications
-          to: ${{ secrets.NOTIFY_RECIPIENT }}
-          subject: '[${{ github.repository }}] Scheduled tests of macOS build failed!'
-          body: |
-            The tests for a scheduled build of git-annex for macOS failed!
+            The tests for a scheduled build of git-annex for macOS (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 

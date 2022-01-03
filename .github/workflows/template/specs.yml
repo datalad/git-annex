@@ -24,6 +24,9 @@
     # TODO: Add "crippled-home" back in once
     # <https://git-annex.branchable.com/bugs/gets_stuck_in_Remote_Tests___40____63____41___while_running_on_OSX_with_HOME_on_crippled_FS/?updated>
     # is fixed
+  test_annex_include:
+    - flavor: normal
+      os: macos-latest
   artifact_basename: git-annex-macos-dmg
   artifact_install_steps:
     - hdiutil attach git-annex_*.dmg
