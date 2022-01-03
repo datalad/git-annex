@@ -454,6 +454,81 @@ jobs:
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
+{% if ostype == "macos" %}
+  test-annex-next-os:
+    runs-on: macos-latest
+    needs: build-package
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
+      - name: Create pending PR status
+        if: github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            {{osname}} \
+            test-annex-next-os \
+            pending
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download git-annex package
+        uses: actions/download-artifact@v2
+        with:
+          name: {{artifact_basename}}_${{ needs.build-package.outputs.build-version }}
+
+      - name: Install git-annex package
+        run: |
+          {% for step in artifact_install_steps %}
+          {{step}}
+          {% endfor %}
+
+      - name: Install coreutils (for timeout)
+        run: brew install coreutils
+
+      - name: Print git-annex version
+        run: git annex version
+
+      - name: Run tests
+        run: |
+          # Do it after we possibly setup HOME
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
+
+          cd $HOME
+          export | grep -e crippledfs || :
+
+          timeout 1800 git annex test
+
+      - name: Set final PR status
+        if: always() && github.event.inputs.pr != ''
+        run: |
+          .github/workflows/tools/set-pr-status \
+            "${{ github.event.inputs.pr }}" \
+            {{osname}} \
+            test-annex-next-os \
+            "${{ job.status }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send e-mail on failed scheduled run
+        if: "failure() && github.event_name == 'schedule'"
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
+          server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
+          username: ${{ secrets.NOTIFY_SMTP_USERNAME }}
+          password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
+          from: GitHub Actions Notifications
+          to: ${{ secrets.NOTIFY_RECIPIENT }}
+          subject: '[${{ github.repository }}] Scheduled tests of {{osname}} build failed!'
+          body: |
+            The tests for a scheduled build of git-annex for {{osname}} failed!
+
+            See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
+
+{% endif %}
 {% if ostype == "ubuntu" or ostype == "macos" %}
   test-annex-more:
     runs-on: {{runs_on}}
