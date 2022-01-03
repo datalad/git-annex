@@ -274,11 +274,7 @@ openP2PSshConnection r connpool = do
 			_ -> do
 				(cclosed, exitcode) <- closeP2PSshConnection c
 				-- ssh exits 255 when unable to connect to
-				-- server. Return a closed connection in
-				-- this case, to avoid the fallback action
-				-- being run instead, which would mean a
-				-- second connection attempt to this server
-				-- that is down.
+				-- server.
 				if exitcode == Just (ExitFailure 255)
 					then return (Just cclosed)
 					else do
