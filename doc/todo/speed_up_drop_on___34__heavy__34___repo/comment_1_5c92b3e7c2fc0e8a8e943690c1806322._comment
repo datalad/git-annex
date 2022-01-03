@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2022-01-03T20:03:38Z"
+ content="""
+FWIW: Re-running with -J3 right away made git-annex 200% CPU busy while --debug was showing
+
+```
+[2022-01-03 14:59:56.323517] (Command.Drop) Dropping from here proof: Just (SafeDropProof (NumCopies 1) (MinCopies 1) [RecentlyVerifiedCopy UUID \"00000000-0000-0000-0000-000000000001\"] (Just (ContentRemovalLock (MkKey {keyData = Key {keyName = \"c7e4ea78ccd5486983b9185b22cc67fa1f96df84630ae23e6bb2b63f3726f0d9.h5\", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 147972754129, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = \"SHA256E-s147972754129--c7e4ea78ccd5486983b9185b22cc67fa1f96df84630ae23e6bb2b63f3726f0d9.h5\"}))))
+[2022-01-03 14:59:56.347374] (Command.Drop) Dropping from here proof: Just (SafeDropProof (NumCopies 1) (MinCopies 1) [RecentlyVerifiedCopy UUID \"00000000-0000-0000-0000-000000000001\"] (Just (ContentRemovalLock (MkKey {keyData = Key {keyName = \"c658b317bf9bf35a8dc69eaff18899c7db5336d5b230ba8fbad88bd702344f6c.h5\", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 79593126729, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = \"SHA256E-s79593126729--c658b317bf9bf35a8dc69eaff18899c7db5336d5b230ba8fbad88bd702344f6c.h5\"}))))
+```
+
+-J2 makes it 100% busy .  -J1 - only 2% CPU and in D state.
+"""]]
