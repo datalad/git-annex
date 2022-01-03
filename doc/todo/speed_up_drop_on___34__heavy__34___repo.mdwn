@@ -1,0 +1,38 @@
+On [this monster repo](https://github.com/dandisets/000108.git) with only 2290 files in worktree covering 168.57TB, it spends many seconds for each key drop
+
+Here running serially with `--debug` I see
+
+```
+[2022-01-03 13:07:53.229582] (Command.Drop) Dropping from here proof: Just (SafeDropProof (NumCopies 1) (MinCopies 1) [RecentlyVerifiedCopy UUID "00000000-0000-0000-0000-000000000001"] (Just (ContentRemovalLock (MkKey {keyData = Key {keyName = "32376dfb94d171b1b51c0829d4071fee14be0bbde6f270d2c102312851fbdfb3.h5", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 45210151184, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s45210151184--32376dfb94d171b1b51c0829d4071fee14be0bbde6f270d2c102312851fbdfb3.h5"}))))
+[2022-01-03 13:08:02.026986] (Annex.Branch) read 381/7a1/SHA256E-s45210151184--32376dfb94d171b1b51c0829d4071fee14be0bbde6f270d2c102312851fbdfb3.h5.log
+[2022-01-03 13:08:02.058449] (Annex.Branch) set 381/7a1/SHA256E-s45210151184--32376dfb94d171b1b51c0829d4071fee14be0bbde6f270d2c102312851fbdfb3.h5.log
+```
+
+so took 8 seconds to come out from "Dropping" to the next one... and I think time it takes grows with every next file, here is a sample for some one after a few:
+
+```
+[2022-01-03 13:10:12.39011] (Command.Drop) Dropping from here proof: Just (SafeDropProof (NumCopies 1) (MinCopies 1) [RecentlyVerifiedCopy UUID "00000000-0000-0000-0000-000000000001"] (Just (ContentRemovalLock (MkKey {keyData = Key {keyName = "ee77e5c090543ab2128961cec827d1d07aa955ad60aa6843331ffdfc5fa2eeaf.h5", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 97264091411, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s97264091411--ee77e5c090543ab2128961cec827d1d07aa955ad60aa6843331ffdfc5fa2eeaf.h5"}))))
+[2022-01-03 13:10:37.962407] (Annex.Branch) read 47a/7fa/SHA256E-s97264091411--ee77e5c090543ab2128961cec827d1d07aa955ad60aa6843331ffdfc5fa2eeaf.h5.log
+[2022-01-03 13:10:37.982222] (Annex.Branch) set 47a/7fa/SHA256E-s97264091411--ee77e5c090543ab2128961cec827d1d07aa955ad60aa6843331ffdfc5fa2eeaf.h5.log
+
+```
+which is 25 seconds... then 40 ... although some go quickly
+
+```
+[2022-01-03 13:12:02.61183] (Command.Drop) Dropping from here proof: Just (SafeDropProof (NumCopies 1) (MinCopies 1) [RecentlyVerifiedCopy UUID "00000000-0000-0000-0000-000000000001"] (Just (ContentRemovalLock (MkKey {keyData = Key {keyName = "3a7397803d7af7ffaf323bd9b34f06e2e2b743c0687d911cd04352e6851e193f.h5", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 18094051444, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s18094051444--3a7397803d7af7ffaf323bd9b34f06e2e2b743c0687d911cd04352e6851e193f.h5"}))))
+[2022-01-03 13:12:04.213675] (Annex.Branch) read 4a1/f2c/SHA256E-s18094051444--3a7397803d7af7ffaf323bd9b34f06e2e2b743c0687d911cd04352e6851e193f.h5.log
+[2022-01-03 13:12:04.231074] (Annex.Branch) set 4a1/f2c/SHA256E-s18094051444--3a7397803d7af7ffaf323bd9b34f06e2e2b743c0687d911cd04352e6851e193f.h5.log
+```
+
+well -- filesystem (BTRFS) was busy doing its maintenance meanwhile (had to free up space), but still -- quite long wait times.  I interrupted that `drop`, waited for filesystem to settle down, repeated for some files -- still quite a long time, e.g.
+
+```
+[2022-01-03 14:58:09.411661] (Command.Drop) Dropping from here proof: Just (SafeDropProof (NumCopies 1) (MinCopies 1) [RecentlyVerifiedCopy UUID "00000000-0000-0000-0000-000000000001"] (Just (ContentRemovalLock (MkKey {keyData = Key {keyName = "3b0d2deef0223146e6edec86b7b96521349def252e9e26c25b46fc18067350ad.h5", keyVariety = SHA2Key (HashSize 256) (HasExt True), keySize = Just 25859843418, keyMtime = Nothing, keyChunkSize = Nothing, keyChunkNum = Nothing}, keySerialization = "SHA256E-s25859843418--3b0d2deef0223146e6edec86b7b96521349def252e9e26c25b46fc18067350ad.h5"}))))
+[2022-01-03 14:58:18.857103] (Annex.Branch) read 4e4/a95/SHA256E-s25859843418--3b0d2deef0223146e6edec86b7b96521349def252e9e26c25b46fc18067350ad.h5.log
+```
+
+NB not sure if related, prior long run with `-J3` was also getting CPU busy which made little sense to me for `drop`.  I will monitor CPU consumption in the next attempt.
+
+git annex 8.20211028-g1c76278
+
+[here is a full log](http://www.onerussian.com/tmp/long-drop-20220103-1.log).
