@@ -1,6 +1,6 @@
 {- OSX library copier
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ import Control.Monad
 import Control.Monad.IfElse
 import Data.List
 import Control.Applicative
+import System.Posix.Files
 import Prelude
 
 import Utility.PartialPrelude
@@ -105,10 +106,17 @@ otool appbase installedbins replacement_libs libmap = do
 		-- _inflateValidate symbol. So, avoid bundling libz unless
 		-- this incompatability is resolved.
 		&& not ("libz." `isInfixOf` s)
+	lib_present s = ifM (isJust <$> catchMaybeIO (getSymbolicLinkStatus s))
+		( return True
+		, do
+			hPutStrLn stderr $ "note: skipping library that is not present on disk: " ++ s
+			return False
+		)
 	process c [] rls m = return (nub $ concat c, rls, m)
 	process c (file:rest) rls m = do
 		_ <- boolSystem "chmod" [Param "755", File file]
-		libs <- filter want . parseOtool
+		libs <- filterM lib_present
+			=<< filter want . parseOtool
 			<$> readProcess "otool" ["-L", file]
 		expanded_libs <- expand_rpath installedbins libs replacement_libs file
 		let rls' = nub $ rls ++ (zip libs expanded_libs)
