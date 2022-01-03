@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-01-03T17:48:38Z"
+ content="""
+Git does not preserve timestamps. So this is kind of out of scope.
+
+While git-annex will sometimes preserve timestamps when it's easy to do so,
+there are no guarantees. Most special remotes do not preserve any
+timestamps in either direction.
+
+It might be that `adb pull -a` would fix this. But that also preserves
+the permissions, and pulling in random permissions for annex object files
+could lead to arbitrary breakage (imagine a suid executable for example).
+So it would need to clear the permissions. The complexity does not seem
+worth trying to support a thing that is generally out of scope.
+"""]]

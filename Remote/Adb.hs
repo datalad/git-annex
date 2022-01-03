@@ -202,6 +202,7 @@ retrieve' serial src dest =
 		showOutput -- make way for adb pull output
 		liftIO $ boolSystem "adb" $ mkAdbCommand serial
 			[ Param "pull"
+			, Param "-a"
 			, File $ fromAndroidPath src
 			, File dest
 			]
