@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2022-01-03T16:22:05Z"
+ content="""
+Ok, you've ruled out my theory about -T, and stdin is being connected up
+through ssh correctly it looks like.
+
+One other thing to try would be to enable ssh verbose debugging,
+by running: `git config annex.ssh-options "-v -v -v"`  
+And perhaps that will give a clue.
+
+But I think the signs are pointing to you needing to change something
+about your ssh installation on Windows. Perhaps a different version of ssh
+for Windows would support the GUI password prompt. Normally, ssh comes
+from Git for Windows, which bundles a ssh, and I think that one does
+support the GUI prompt. Do you have some other ssh build installed?
+"""]]
