@@ -408,6 +408,17 @@ jobs:
       - name: WTF!?
         run: datalad wtf
 
+      - name: Checkout datalad
+        uses: actions/checkout@v2
+        with:
+          repository: datalad/datalad
+          path: datalad
+          fetch-depth: 1
+
+      - name: Set up test SSH certs
+        run: bash tools/ci/deploy_datalad-rootca
+        working-directory: datalad
+
       - name: Run datalad tests
         run: |
           mkdir -p __testhome__
