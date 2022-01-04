@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="amerlyq+annex@12121d70a602f094228689a0a24d348d478a8af1"
+ nickname="amerlyq+annex"
+ avatar="http://cdn.libravatar.org/avatar/3d63c9f436b45570d45bd003e468cbd3"
+ subject="comment 2"
+ date="2022-01-04T13:41:03Z"
+ content="""
+> I guess you mean commits like \"import from foo\", or perhaps \"remote tracking branch\". Not adb-specific at all.
+
+Yes. 
+
+* First \"import from foo\" commit is OK, but second was empty -- and false-positive, because there were no changes on android.
+* Consequently, first \"remote tracking branch\" is OK to merge histories, but all next are empty -- and useless, because there is no changes in \"android/main\" branch.
+---
+> The \"remote tracking branch\" commits are merge commits, so cannot be avoided, even though they don't make any apparent changes.
+
+Can't we simply... don't do them? Skip? Revert? Fast-forward?
+
+I don't mind this history hell inside git-annex branch, but cluttering \"main\" branch... is something else.
+After first merge of unrelated histories -- we don't really need another merge commit unless new changes where introduced during import, do we?
+---
+> Of course, you can rebase out any of these commits if you want to.
+
+Theoretically yes, practically no. If I run \"git annex sync\" -- this history will be propagated to all my connected in that moment devices -- PC, laptop, NAS, remote VPS, and maybe HDD.
+Rebasing and cleaning up them after that -- impractical.
+
+---
+> It mostly does manage to avoid making the \"import from\" commits when there is no difference from the previous commit.
+> Subsequent imports, when there are no changes to the tree, do not make a new commit.
+
+It seems this does not work as described.
+
+You depend on CID (size, modificiation time, and inode) when doing comparisons.
+
+1) Most likely this issue is related to https://git-annex.branchable.com/bugs/adb_pull_does_not_preserve_timestamp/ ,
+that results in a different mtime on remote and on PC when you \"import\" new files.
+
+Then each time you do \"import\" -- git-annex detect changes by mtime and creates commit, but it's empty because content hadn't actually changed.
+
+2) Alternative *heisenbug* is the time skew between what android \"sdcard\" virtual filesystem reports and what it actually transfers. Probability is too low, though :)
+
+---
+P.S. I'm not sure if it's a separate bug or related to \"mtime\" too (scenario (1) or even (2)), but:
+
+* if I create a new repo and do \"export\" multiple times in a row into empty folder -- it works OK.
+* But on the next day when I'm trying to \"export\" again -- it reports error \"unsafe to overwrite file //failed\"
+
+But I had no changes in either repo or in android folder. And it worked multiple times in a row the day before!
+"""]]
