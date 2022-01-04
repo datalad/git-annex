@@ -31,4 +31,4 @@ this seems to be a bug, but i wanted to make sure i wasn't doing something wrong
 
 [[!tag forumbug]]
 
-> [[done]] --[[Joey]]
+> [[bugs/done]] --[[Joey]]
