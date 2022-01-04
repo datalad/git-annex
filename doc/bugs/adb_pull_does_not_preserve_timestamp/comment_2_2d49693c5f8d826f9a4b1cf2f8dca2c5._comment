@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="amerlyq+annex@12121d70a602f094228689a0a24d348d478a8af1"
+ nickname="amerlyq+annex"
+ avatar="http://cdn.libravatar.org/avatar/3d63c9f436b45570d45bd003e468cbd3"
+ subject="comment 2"
+ date="2022-01-04T12:55:14Z"
+ content="""
+> Git does not preserve timestamps. So this is kind of out of scope.
+
+Yes, git does not, but PC filesystem *does*.
+And when you annex files -- git-annex copies file own mtime to its symlink.
+Therefore you can *sort* and *seek* files based on the date of your first *acquaintance* (downloading) instead of the date of batch-sync.
+
+> pulling in random permissions for annex object files could lead to arbitrary breakage (imagine a suid executable for example). 
+> So it would need to clear the permissions.
+
+I don't see a reason to sync any native executables with Android phone for usual mediafile-centered workflow with usual /storage location.
+Moreover, suid is of no concern for years due to virtual filesystem used in Android, which simply does not support suid or exec anyway:
+
+    /data/media on /storage/emulated type sdcardfs (rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,multiuser,mask=6,derive_gid,default_normal,reserved=20MB)
+    /mnt/media_rw/0000-0000 on /storage/0000-0000 type sdcardfs (rw,nosuid,nodev,noexec,noatime,fsuid=1023,fsgid=1023,gid=1015,mask=6)
+
+> The complexity does not seem worth trying to support a thing that is generally out of scope.
+
+Consider next workflow:
+
+* android folder /Downloads (or even whole /emulated) is actively filled by many apps -- and used as \"source\" for git-annex
+* once a week I use \"adb import\" to move everything present in folder/android to PC and sort it on PC -- using comfortable tools 
+* usually things downloaded on the same day are somehow related to each other -- therefore sorting them much easier if presorted by date first, and then by filetype
+* some files are moved to \"archive of misc references/2022-01-XX\" -- because they are not important enough to spend time thinking about them further, but good to backtrack when needed
+* other important files are usually moved to respective contexts -- work/home/projects/leisure/etc. -- by keeping them inside their \"2022-01-XX\" folder to easily refer to other tasks I did on that day in those contexts.
+* after that some contexts (which have separate git-annex) are \"exported\" back to android to have immediate access -- e.g. filtered repos for \"leisure\", \"books\" -- which contain only most important and most recent entries.
+
+If adb does not preserve timestamps -- you lose \"date\" information, and core of the workflow crumbles to dust.
+And you can't use (name, size, mtime) as kind of UID for sync too.
+
+To support this workflow I used rsync+adbfs, but it's a pain due to  how you can't simply and efficiently rsync from phone into annex symlinks and back and be done with it.
+Moreover it's a separate different step, which could be eliminated if \"git annex sync\" properly worked with adb remote.
+"""]]
