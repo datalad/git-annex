@@ -24,7 +24,7 @@ env:
 
 jobs:
   build-package:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
@@ -177,11 +177,13 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex:
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
     needs: build-package
     strategy:
       matrix:
         flavor: ["normal", "crippled-tmp"]
+        os: [macos-10.15]
+        include: [{"flavor": "normal", "os": "macos-latest"}]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -193,7 +195,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             macOS \
-            "test-annex (${{ matrix.flavor }})" \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             pending
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -270,7 +272,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             macOS \
-            "test-annex (${{ matrix.flavor }})" \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -287,12 +289,12 @@ jobs:
           to: ${{ secrets.NOTIFY_RECIPIENT }}
           subject: '[${{ github.repository }}] Scheduled tests of macOS build failed!'
           body: |
-            The tests for a scheduled build of git-annex for macOS (flavor: ${{ matrix.flavor }}) failed!
+            The tests for a scheduled build of git-annex for macOS (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex-more:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     needs: build-package
     steps:
       - name: Checkout this repository
@@ -345,7 +347,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-datalad:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     needs: build-package
     strategy:
       matrix:

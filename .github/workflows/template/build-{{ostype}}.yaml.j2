@@ -307,13 +307,20 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex:
-    runs-on: {{runs_on}}
-    needs: build-package
   {% if test_annex_flavors %}
+    runs-on: ${{ matrix.os }}
+    needs: build-package
     strategy:
       matrix:
         flavor: {{test_annex_flavors|tojson}}
+        os: [{{runs_on}}]
+      {% if test_annex_include %}
+        include: {{test_annex_include|tojson}}
+      {% endif %}
       fail-fast: false
+  {% else %}
+    runs-on: {{runs_on}}
+    needs: build-package
   {% endif %}
     steps:
       - name: Checkout this repository
@@ -326,7 +333,7 @@ jobs:
             "${{ github.event.inputs.pr }}" \
             {{osname}} \
             {% if test_annex_flavors %}
-            "test-annex (${{ matrix.flavor }})" \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             {% else %}
             test-annex \
             {% endif %}
@@ -426,7 +433,7 @@ jobs:
             "${{ github.event.inputs.pr }}" \
             {{osname}} \
             {% if test_annex_flavors %}
-            "test-annex (${{ matrix.flavor }})" \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             {% else %}
             test-annex \
             {% endif %}
@@ -447,7 +454,7 @@ jobs:
           subject: '[${{ github.repository }}] Scheduled tests of {{osname}} build failed!'
           body: |
           {% if test_annex_flavors %}
-            The tests for a scheduled build of git-annex for {{osname}} (flavor: ${{ matrix.flavor }}) failed!
+            The tests for a scheduled build of git-annex for {{osname}} (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
           {% else %}
             The tests for a scheduled build of git-annex for {{osname}} failed!
           {% endif %}

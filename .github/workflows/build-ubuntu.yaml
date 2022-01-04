@@ -183,11 +183,12 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     needs: build-package
     strategy:
       matrix:
         flavor: ["normal", "crippled-tmp", "crippled-home", "nfs-home"]
+        os: [ubuntu-latest]
       fail-fast: false
     steps:
       - name: Checkout this repository
@@ -199,7 +200,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             Ubuntu \
-            "test-annex (${{ matrix.flavor }})" \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             pending
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -270,7 +271,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             Ubuntu \
-            "test-annex (${{ matrix.flavor }})" \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -287,7 +288,7 @@ jobs:
           to: ${{ secrets.NOTIFY_RECIPIENT }}
           subject: '[${{ github.repository }}] Scheduled tests of Ubuntu build failed!'
           body: |
-            The tests for a scheduled build of git-annex for Ubuntu (flavor: ${{ matrix.flavor }}) failed!
+            The tests for a scheduled build of git-annex for Ubuntu (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
