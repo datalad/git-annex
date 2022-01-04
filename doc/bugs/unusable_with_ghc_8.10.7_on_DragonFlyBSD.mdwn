@@ -42,3 +42,5 @@ Digging into it further with dfly people over IRC, it's been discovered:
 Has anyone tried git-annex with ghc 8.10.7 on a different OS?
 
 I tried to figure out why `.git/annex/index` was not being created, but I had some trouble figuring out which line of code is supposed to create it. If someone could point me there I could do some further debugging to see why it isn't created.
+
+> [[done]] --[[Joey]]
