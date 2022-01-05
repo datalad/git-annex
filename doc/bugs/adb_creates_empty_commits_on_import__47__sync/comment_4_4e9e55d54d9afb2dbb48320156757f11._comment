@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-01-05T16:32:50Z"
+ content="""
+> Now, if Android is varying the mtime it reports for files [...]
+
+I do not think this idea of mine can cause it. I tried, using a directory
+special remote, touching a file in the remote after having already imported
+it once. This resulted in git-annex sync importing the same file again, but
+since the content was the same it built the same tree it had before, and
+noticed this and avoided making an empty commit.
+
+On the merge commits, importing creates one, and exporting creates one.
+So sync creates two. Also, if you export and then merge the remote tracking
+branch (a fast-forward merge), and then export again, 
+it makes another merge commit. So any number can be stacked up that way.
+
+See [[!commit 1503b86a14865ce300ebb9c4d96315eeb254d0b8]]
+(and subsequent [[!commit 2bd0e07ed83db39907f0c824854d68c1a8ba77ac]]
+and [[!commit a32f31235a67d572d989ad9e344efe11d78774a5]] where this was
+introduced. This stuff makes my head hurt, and getting it wrong leads to
+broken merges from the remote tracking branch...
+"""]]
