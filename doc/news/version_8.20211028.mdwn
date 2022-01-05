@@ -28,3 +28,8 @@ git-annex 8.20211028 released with [[!toggle text="these changes"]]
   * Avoid crashing tilde expansion on user who does not exist.
   * test: Put gpg temp home directory in system temp directory,
     not filesystem being tested."""]]
+
+News for 8.20211028: 
+
+This version of git-annex removes support for communicating with git-annex
+remotes that have version 6.20180312 or older installed.
