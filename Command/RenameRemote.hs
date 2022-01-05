@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -28,19 +28,20 @@ seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start ps@(oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \case
-	Just (u, cfg, mcu) -> Annex.SpecialRemote.findExisting newname >>= \case
-		Just _ -> giveup $ "The name " ++ newname ++ " is already used by a special remote."
-		Nothing -> go u cfg mcu
+	((u, cfg, mcu):[]) -> Annex.SpecialRemote.findExisting newname >>= \case
+		[] -> go u cfg mcu
+		_ -> giveup $ "The name " ++ newname ++ " is already used by a special remote."
 	-- Support lookup by uuid or description as well as remote name,
 	-- as a fallback when there is nothing with the name in the
 	-- special remote log.
-	Nothing -> Remote.nameToUUID' oldname >>= \case
+	[] -> Remote.nameToUUID' oldname >>= \case
 		Left e -> giveup e
 		Right u -> do
 			m <- Logs.Remote.remoteConfigMap
 			case M.lookup u m of
 				Nothing -> giveup "That is not a special remote."
 				Just cfg -> go u cfg Nothing
+	_ -> giveup $ "There are multiple special remotes named " ++ oldname ++ ". Provide instead the uuid or description of the remote to rename."
   where
 	ai = ActionItemOther Nothing
 	si = SeekInput ps

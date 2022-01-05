@@ -30,10 +30,10 @@ import qualified Data.Map as M
  -
  - Remotes that are not dead come first in the list
  - when a name appears multiple times. -}
-findExisting :: RemoteName -> Annex (Maybe (UUID, RemoteConfig, Maybe (ConfigFrom UUID)))
+findExisting :: RemoteName -> Annex [(UUID, RemoteConfig, Maybe (ConfigFrom UUID))]
 findExisting name = do
 	(a, b) <- findExisting' name
-	return (headMaybe (a++b))
+	return (a++b)
 
 {- Dead remotes with the name are in the second list, all others in the
  - first list. -}

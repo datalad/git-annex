@@ -3,7 +3,7 @@ git-annex (8.20211232) UNRELEASED; urgency=medium
   * export: When a non-annexed symlink is in the tree to be exported, skip it.
   * import: When the previously exported tree contained a non-annexed symlink,
     preserve it in the imported tree so it does not get deleted.
-  * enableremote: Better handling of the unusual case where
+  * enableremote, renameremote: Better handling of the unusual case where
     multiple special remotes have been initialized with the same name.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Jan 2022 14:01:14 -0400

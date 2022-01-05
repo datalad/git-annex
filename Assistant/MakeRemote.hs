@@ -55,9 +55,9 @@ makeRsyncRemote :: RemoteName -> String -> Annex String
 makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go =<< Annex.SpecialRemote.findExisting name
   where
-	go Nothing = setupSpecialRemote name Rsync.remote config Nothing
+	go [] = setupSpecialRemote name Rsync.remote config Nothing
 		(Nothing, R.Init, Annex.SpecialRemote.newConfig name Nothing mempty mempty) Nothing
-	go (Just (u, c, mcu)) = setupSpecialRemote name Rsync.remote config Nothing
+	go ((u, c, mcu):_) = setupSpecialRemote name Rsync.remote config Nothing
 		(Just u, R.Enable c, c) mcu
 	config = M.fromList
 		[ (encryptionField, Proposed "shared")
@@ -86,16 +86,16 @@ initSpecialRemote name remotetype mcreds config = go 0
 	go n = do
 		let fullname = if n == 0  then name else name ++ show n
 		Annex.SpecialRemote.findExisting fullname >>= \case
-			Nothing -> setupSpecialRemote fullname remotetype config mcreds
+			[] -> setupSpecialRemote fullname remotetype config mcreds
 				(Nothing, R.Init, Annex.SpecialRemote.newConfig fullname Nothing mempty mempty) Nothing
-			Just _ -> go (n + 1)
+			_ -> go (n + 1)
 
 {- Enables an existing special remote. -}
 enableSpecialRemote :: SpecialRemoteMaker
 enableSpecialRemote name remotetype mcreds config =
 	Annex.SpecialRemote.findExisting name >>= \case
-		Nothing -> error $ "Cannot find a special remote named " ++ name
-		Just (u, c, mcu) -> setupSpecialRemote' False name remotetype config mcreds (Just u, R.Enable c, c) mcu
+		[] -> error $ "Cannot find a special remote named " ++ name
+		((u, c, mcu):_) -> setupSpecialRemote' False name remotetype config mcreds (Just u, R.Enable c, c) mcu
 
 setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.SetupStage, R.RemoteConfig) -> Maybe (Annex.SpecialRemote.ConfigFrom UUID) -> Annex RemoteName
 setupSpecialRemote = setupSpecialRemote' True

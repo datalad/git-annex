@@ -64,7 +64,7 @@ seek o = withWords (commandAction . (start o)) (cmdparams o)
 
 start :: InitRemoteOptions -> [String] -> CommandStart
 start _ [] = giveup "Specify a name for the remote."
-start o (name:ws) = ifM (isJust <$> findExisting name)
+start o (name:ws) = ifM (not . null <$> findExisting name)
 	( giveup $ "There is already a special remote named \"" ++ name ++
 		"\". (Use enableremote to enable an existing special remote.)"
 	, ifM (isJust <$> Remote.byNameOnly name)
