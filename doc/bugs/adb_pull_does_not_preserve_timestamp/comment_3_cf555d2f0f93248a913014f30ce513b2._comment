@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-01-05T16:07:09Z"
+ content="""
+But you would have the same problem with that workflow if you were
+checking the files into a git repository not using git-annex, 
+and pulling from that repository. 
+
+For that metter, you would have the same problem with that workflow if
+you were running `git-annex add` and using `git-annex get`
+to transfer over a ssh connection.
+
+The mere fact that it might be possible to support that particular workflow
+with adb or some other type of remote does not mean that it's a bug for
+git-annex not to support it. Or that it's a good idea to complicate
+git-annex to partially support it.
+
+> And when you annex files -- git-annex copies file own mtime to its symlink
+
+That's entirely different. When you run `git add` on a file, the file's
+mtime is left unchanged. It follows that, when you `git-annex add` a file,
+the mtime of the file (now a symlink) should also be unchanged. That's
+entirely unrelated to remotes.
+"""]]
