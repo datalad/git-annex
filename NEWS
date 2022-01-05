@@ -1,3 +1,10 @@
+git-annex (8.20211028) UNRELEASED; urgency=medium
+
+  This version of git-annex removes support for communicating with git-annex
+  remotes that have version 6.20180312 or older installed.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 05 Jan 2022 10:09:11 -0400
+
 git-annex (8.20200523) upstream; urgency=medium
 
   Transition notice: Commands like `git-annex get foo*` silently skip over
