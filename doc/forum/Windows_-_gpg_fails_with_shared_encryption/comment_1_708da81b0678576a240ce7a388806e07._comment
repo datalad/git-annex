@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-01-05T19:44:24Z"
+ content="""
+The shared encryption key is what git-annex passes to gpg as
+"C:\\Users\\REDACTED\\AppData\\Local\\Temp\\gpg8159".
+
+From the other forum thread,
+[[Failing_to_get_files_from_rclone_special_remote]], 
+you had many special remotes that somehow existed with
+the same name.
+
+There's a big question mark over how you even got into that state.
+initremote does not let two special remotes with the same name be created
+in the same repository so normally it would be rather hard to accomplish
+once, let alone multiple times. Without understanding more, it's hard for
+me to guess what has happened.
+
+It also might be some problem with your gpg on windows. 
+googling for "gpg: decryption failed: Bad session key" seems to find that
+the problem is split between the wrong encryption key and some kind of gpg
+bugs.
+
+If you still have the data, would deleting that special remote and starting
+over with setting up a new one (with a different name!) be an option?
+"""]]
