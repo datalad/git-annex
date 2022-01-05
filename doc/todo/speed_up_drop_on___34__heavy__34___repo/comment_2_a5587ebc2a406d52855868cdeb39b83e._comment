@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-01-05T16:59:08Z"
+ content="""
+Well, this could be anything that it happens to do in some situation to
+actually drop the file. That's what happens in the interval there.
+
+Are the files unlocked? It might be running git to update the index,
+which can take a long time.
+
+Is annex.secure-erase-command set? Such a command can take a long time.
+
+Otherwise, strace ...
+"""]]
