@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-01-05T17:53:35Z"
+ content="""
+Easier option, with a newish version of git-annex:
+
+	git-annex renameremote e7e3e2b7-40e7-4b10-83f6-bb5425f33d6d pcloud_annex
+	git-annex enableremote pcloud_annex
+"""]]
