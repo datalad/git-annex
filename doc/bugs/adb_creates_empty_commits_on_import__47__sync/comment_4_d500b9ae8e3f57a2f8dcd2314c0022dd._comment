@@ -1,0 +1,73 @@
+[[!comment format=mdwn
+ username="amerlyq"
+ avatar="http://cdn.libravatar.org/avatar/3d63c9f436b45570d45bd003e468cbd3"
+ subject="comment 4"
+ date="2022-01-05T15:46:07Z"
+ content="""
+> I do not thik your CID analysis is correct.
+
+Yes, sorry, you are right. You only use \"find -exec stat\" to get remote CID.
+
+> Please show me how to get more than one \"import from foo\" commit that is empty, starting from a new remote.
+
+Hm, it really looks like *heisenbug* as I can't reproduce it stably and immediately.
+Usually issue arises after some indeterminate time had passed. 
+Dunno what action could trigger it, as all of them look unrelated and improbable: phone reboot, system reboot, cold file cache, NTP skew...
+
+When I wrap everything into the script which completes in 10 sec -- there is no problem.
+But after several days -- import creates new empty commit and export refuses to overwrite existing file.
+
+I read something kind of similar months ago: https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1631854.html
+
+---
+
+Let's focus on empty \"remote tracking branch\" merge commits for now.
+At least until I find how to reproduce empty \"import from foo\" too.
+
+Can we avoid new empty merge commits if \"import\" was done first?
+
+    #!/usr/bin/env bash
+    set -o errexit -o errtrace -o noclobber -o noglob -o nounset -o pipefail
+
+    adb shell \"rm -rf /storage/0000-0000/ttt\"
+
+    cd /tmp
+    test -d ttt && find ttt -not -writable -exec chmod +w -- {} +
+    rm -rf ttt
+    mkdir ttt
+
+    cd ttt
+    git init .
+    git config --local init.defaultBranch main
+    git config --local user.name annex
+    git config --local user.email test
+
+    git annex init test
+    git annex config --set annex.largefiles 'not mimetype=text/*'
+
+    # git commit --allow-empty -m init
+    echo hello > README.rst
+    git add README.rst
+    git commit -m init
+
+    mkdir new old
+    for f in old/1 old/2 new/3 new/4; do (head -c100 /dev/zero;echo $f) > $f; done
+    git annex add
+    git commit -m annex
+
+    git annex initremote android type=adb androiddirectory=/storage/0000-0000/ttt encryption=none exporttree=yes importtree=yes
+    git config --local remote.android.annex-sync false
+
+    echo
+    git config remote.android.annex-tracking-branch main
+    for _ in {0..6}; do git annex sync --no-commit --content android; done
+
+    echo
+    find . -name .git -prune -o -xtype f -exec stat -c '%s %Y %i %n' {} +
+    echo
+    adb shell \"find /storage/0000-0000/ttt -type f -exec stat -c '%s %Y %i %n' {} +\"
+
+    echo
+    git -c color.ui=no --no-pager log --topo-order --oneline --patch --decorate --graph main
+
+"""]]
