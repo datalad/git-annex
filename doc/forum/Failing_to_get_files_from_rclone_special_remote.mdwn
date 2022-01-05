@@ -1,0 +1,104 @@
+Hi! Thanks for your time, and please let me know if this is an rclone special remote-specific question that I should be asking elsewhere.
+
+I very likely may be _fundamentally_ misconfiguring something since I'm a git-annex beginner (although a git veteran)
+
+I'm trying to make a system to sync Ableton projects and their corresponding samples between my band's computers.
+
+So far I have Computer A with a repo and git annex with the local file contents.
+
+From here, I've pushed the repository itself to github and the contents to an rclone special remote hosted on pCloud.
+
+```
+% git annex list
+here
+|github
+||web
+|||bittorrent
+||||pcloud_test_annex
+|||||
+X___X Samples/Recorded/1-Audio 0001 [2021-12-08 093649].aif
+X___X Samples/Recorded/1-Audio 0004 [2021-12-08 092222].aif
+X___X Samples/Recorded/1-Audio 0005 [2021-12-08 092402].aif
+...
+
+
+% git remote -v
+github	git@github.com:branch-pcloud.git (fetch)
+github	git@github.com:branch-pcloud.git (push)
+pcloud_test_annex
+```
+
+On computer B, I tried to clone the github repo and pull the pCloud data down, but I can't manage to get it to work.
+
+```
+$ git annex get 'Samples/Recorded/1-Audio 0001 [2021-12-08 093649].aif'
+get Samples/Recorded/1-Audio 0001 [2021-12-08 093649].aif (not available)
+  Maybe enable some of these special remotes (git annex initremote ...):
+        e7e3e2b7-40e7-4b10-83f6-bb5425f33d6d -- pcloud_test_annex
+  Maybe add some of these git remotes (git remote add ...):
+        bab5704a-562e-43eb-8bbb-71f181f043e8 -- bl@compy_A:~/test_project
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get: 1 failed
+```
+
+Okay, well github (origin) won't have it, so I'll try to enable the special remote:
+
+```
+$ git annex enableremote pcloud_test_annex
+enableremote pcloud_test_annex ok
+(recording state in git...)
+```
+
+But it doesn't help. I get the same error afterwards.
+
+Here's something that's probably bad: on computer B, there's a whole lot of git annex remotes:
+
+```
+$ git annex info
+trusted repositories: 0
+semitrusted repositories: 8
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        2e771318-83eb-4beb-85f4-567896b0e835 -- [pcloud_test_annex]
+        32c6a55a-3879-4a67-beb9-d7e4d1624cc4 -- bl@compy_B:~/Music\mine\test_project [here]
+        69acaaf2-e58b-463d-a578-e2418df5c6b0 -- pcloud_test_annex
+        bab5704a-562e-43eb-8bbb-71f181f043e8 -- bl@compy_A:~/test_project
+        e7e3e2b7-40e7-4b10-83f6-bb5425f33d6d -- pcloud_test_annex
+        ebca6ee8-1baa-4a47-ae85-0a5b65db73f6 -- pcloud_test_annex
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 152.39 gigabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 18
+size of annexed files in working tree: 688.91 megabytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage:
+        SHA256E: 18
+```
+
+After some investigation, one of these is actually the right one (I think)!
+
+```
+$ git annex info e7e3e2b7-40e7-4b10-83f6-bb5425f33d6d
+uuid: e7e3e2b7-40e7-4b10-83f6-bb5425f33d6d
+description: pcloud_test_annex
+trust: semitrusted
+remote annex keys: 18
+remote annex size: 688.91 megabytes
+```
+
+But I can't figure out how to configure computer B's repository to access it:
+
+```
+$ git annex info e7e3e2b7-40e7-4b10-83f6-bb5425f33d6d
+uuid: e7e3e2b7-40e7-4b10-83f6-bb5425f33d6d
+description: pcloud_test_annex
+trust: semitrusted
+remote annex keys: 18
+remote annex size: 688.91 megabytes
+```
+
+How can I get other computers to pull the contents from pCloud (rclone)?
