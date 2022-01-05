@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-01-05T19:24:50Z"
+ content="""
+Thanks for verifying. If decryption is failing, I'd guess you somehow
+picked the wrong one to enable. The encryption information is included in
+the remote's configuration, which could otherwise be close enough that it's
+able to get files from the remote, but then fail to decrypt them.
+
+Also FWIW, I'm pushing some changes that improve `git-annex enableremote`
+in this situation, so it does not choose a random remote to enable.
+"""]]
