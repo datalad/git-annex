@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-01-05T16:19:05Z"
+ content="""
+So you have several remotes with the same name, probably all but
+this one you want to use were false starts or created by accident.
+
+In this unusual situation, `git-annex enableremote` picks one more or less at
+random.
+
+(Normally this is prevented by `git-annex initremote`, which won't use a
+name that already exists, but initializing remotes with the same name in
+different clones and merging is one way it could happen.)
+
+What you can do instead is specify the uuid or description of the remote.
+Eg:
+
+	git-annex enableremote e7e3e2b7-40e7-4b10-83f6-bb5425f33d6d
+
+The other thing you can do if you want is to mark all the other
+uuids with this name as dead, and then tell git-annex to forget about dead
+remotes. Doing this will leave only the one that you did not mark as dead,
+so enableremote by name will do what you want.
+
+	git-annex dead ebca6ee8-1baa-4a47-ae85-0a5b65db73f6
+	git-annex dead 69acaaf2-e58b-463d-a578-e2418df5c6b0
+	git-annex dead 2e771318-83eb-4beb-85f4-567896b0e835
+	git-annex forget --drop-dead
+"""]]
