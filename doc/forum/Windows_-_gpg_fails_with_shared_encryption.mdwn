@@ -1,0 +1,82 @@
+I have an rclone special remote that I can get my Windows computer to see, but it seems to be messing up actually getting the file:
+
+By the looks of it, either the temp file that GPG uses doesn't get made, or it gets made but with incorrect contents:
+
+```
+$ git annex get --debug 'Samples/Recorded/1-Audio 0001 [2021-12-08 093649].aif'
+[2022-01-05 14:22:52.4414076] (Utility.Process) process [8196] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2022-01-05 14:22:52.4594467] (Utility.Process) process [8196] done ExitSuccess
+[2022-01-05 14:22:52.4615933] (Utility.Process) process [16468] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","refs/heads/main"]
+[2022-01-05 14:22:52.4934873] (Utility.Process) process [16468] done ExitSuccess
+[2022-01-05 14:22:52.4974156] (Utility.Process) process [16656] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","--stage","-z","--","Samples/Recorded/1-Audio 0001 [2021-12-08 093649].aif"]
+[2022-01-05 14:22:52.5004149] (Utility.Process) process [3996] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2022-01-05 14:22:52.5035735] (Utility.Process) process [17168] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2022-01-05 14:22:52.5243346] (Utility.Process) process [17136] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+get Samples/Recorded/1-Audio 0001 [2021-12-08 093649].aif [2022-01-05 14:22:52.5593587] (Utility.Process) process [22208] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2022-01-05 14:22:52.5862972] (Utility.Process) process [22208] done ExitSuccess
+[2022-01-05 14:22:52.5902901] (Utility.Process) process [18248] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2022-01-05 14:22:52.610443] (Utility.Process) process [18248] done ExitSuccess
+[2022-01-05 14:22:52.6143883] (Utility.Process) process [19620] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..3671f1ffc7c0744725c504a01fc8a67fa4539a4a","--pretty=%H","-n1"]
+[2022-01-05 14:22:52.6462441] (Utility.Process) process [19620] done ExitSuccess
+[2022-01-05 14:22:52.6482446] (Utility.Process) process [20716] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..3cf61e8a81a8ee97dbfbdf0a86323380e0bc942a","--pretty=%H","-n1"]
+[2022-01-05 14:22:52.6822859] (Utility.Process) process [20716] done ExitSuccess
+[2022-01-05 14:22:52.6910388] (Utility.Process) process [16484] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","hash-object","-w","--stdin-paths","--no-filters"]
+[2022-01-05 14:22:52.7008252] (Utility.Process) process [6724] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2022-01-05 14:22:52.7066723] (Utility.Process) process [12884] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","update-index","-z","--index-info"]
+[2022-01-05 14:22:52.7106744] (Utility.Process) process [17688] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","refs/heads/git-annex","--"]
+[2022-01-05 14:22:52.7624402] (Utility.Process) process [17688] done ExitSuccess
+[2022-01-05 14:22:52.7678167] (Utility.Process) process [12884] done ExitSuccess
+(from pcloud_annex...)
+[2022-01-05 14:22:52.8412254] (Utility.Process) process [18812] chat: bash ["C:\\Users\\REDACTED\\Documents\\Mine\\programs\\bin\\git-annex-remote-rclone"]
+[2022-01-05 14:22:52.9153659] (Annex.ExternalAddonProcess) bash[1] --> VERSION 1
+[2022-01-05 14:22:52.9155845] (Annex.ExternalAddonProcess) bash[1] <-- EXTENSIONS INFO GETGITREMOTENAME ASYNC
+[2022-01-05 14:22:52.9155845] (Annex.ExternalAddonProcess) bash[1] --> UNSUPPORTED-REQUEST
+[2022-01-05 14:22:52.9155845] (Annex.ExternalAddonProcess) bash[1] <-- PREPARE
+[2022-01-05 14:22:52.9155845] (Annex.ExternalAddonProcess) bash[1] --> GETCONFIG prefix
+[2022-01-05 14:22:52.9155845] (Annex.ExternalAddonProcess) bash[1] <-- VALUE test_annex
+[2022-01-05 14:22:53.0371658] (Annex.ExternalAddonProcess) bash[1] --> GETCONFIG target
+[2022-01-05 14:22:53.0371658] (Annex.ExternalAddonProcess) bash[1] <-- VALUE pcloud_test_annex
+[2022-01-05 14:22:53.1413009] (Annex.ExternalAddonProcess) bash[1] --> GETCONFIG rclone_layout
+[2022-01-05 14:22:53.1413009] (Annex.ExternalAddonProcess) bash[1] <-- VALUE lower
+[2022-01-05 14:22:53.2805175] (Annex.ExternalAddonProcess) bash[1] --> PREPARE-SUCCESS
+[2022-01-05 14:22:53.2805175] (Annex.ExternalAddonProcess) bash[1] <-- TRANSFER RETRIEVE GPGHMACSHA512--ceb25ebd86f4098b366419fbed8fc388e421cc38429ce2da09688b1ba4575333cea33b1920455c2d4b4dfc28a1d7027d91be028f059322b10d1d9a0731adbedb .git\annex\tmp\GPGHMACSHA512--ceb25ebd86f4098b366419fbed8fc388e421cc38429ce2da09688b1ba4575333cea33b1920455c2d4b4dfc28a1d7027d91be028f059322b10d1d9a0731adbedb
+[2022-01-05 14:22:53.2805175] (Annex.ExternalAddonProcess) bash[1] --> DIRHASH-LOWER GPGHMACSHA512--ceb25ebd86f4098b366419fbed8fc388e421cc38429ce2da09688b1ba4575333cea33b1920455c2d4b4dfc28a1d7027d91be028f059322b10d1d9a0731adbedb
+[2022-01-05 14:22:53.2805175] (Annex.ExternalAddonProcess) bash[1] <-- VALUE 34d\c20\
+[2022-01-05 14:23:01.8937568] (Annex.ExternalAddonProcess) bash[1] --> TRANSFER-SUCCESS RETRIEVE GPGHMACSHA512--ceb25ebd86f4098b366419fbed8fc388e421cc38429ce2da09688b1ba4575333cea33b1920455c2d4b4dfc28a1d7027d91be028f059322b10d1d9a0731adbedb
+[2022-01-05 14:23:01.9017536] (Utility.Process) process [5260] chat: gpg ["--quiet","--trust-model","always","--batch","--passphrase-file","C:\\Users\\REDACTED\\AppData\\Local\\Temp\\gpg8159","--decrypt"]
+gpg: decryption failed: Bad session key
+[2022-01-05 14:23:02.2915591] (Utility.Process) process [5260] done ExitFailure 2
+[2022-01-05 14:23:02.2915591] (Annex.ExternalAddonProcess) bash[1] <-- TRANSFER RETRIEVE GPGHMACSHA512--952a317030848a0bcc83728f8fdba124b24763f32395b48481c1ac4f1645067be126ec1711008a14cfd62920284cc34e4a0f12d0617826c402b632dafc31578e .git\annex\tmp\GPGHMACSHA512--952a317030848a0bcc83728f8fdba124b24763f32395b48481c1ac4f1645067be126ec1711008a14cfd62920284cc34e4a0f12d0617826c402b632dafc31578e
+[2022-01-05 14:23:02.2925835] (Annex.ExternalAddonProcess) bash[1] --> DIRHASH-LOWER GPGHMACSHA512--952a317030848a0bcc83728f8fdba124b24763f32395b48481c1ac4f1645067be126ec1711008a14cfd62920284cc34e4a0f12d0617826c402b632dafc31578e
+[2022-01-05 14:23:02.2925835] (Annex.ExternalAddonProcess) bash[1] <-- VALUE da7\9eb\
+2022/01/05 14:23:03 ERROR : : error reading source directory: directory not found
+2022/01/05 14:23:03 ERROR : Attempt 1/3 failed with 1 errors and: directory not found
+2022/01/05 14:23:03 ERROR : : error reading source directory: directory not found
+2022/01/05 14:23:03 ERROR : Attempt 2/3 failed with 1 errors and: directory not found
+2022/01/05 14:23:04 ERROR : : error reading source directory: directory not found
+2022/01/05 14:23:04 ERROR : Attempt 3/3 failed with 1 errors and: directory not found
+2022/01/05 14:23:04 Failed to copy: directory not found
+[2022-01-05 14:23:04.1235177] (Annex.ExternalAddonProcess) bash[1] --> TRANSFER-FAILURE RETRIEVE GPGHMACSHA512--952a317030848a0bcc83728f8fdba124b24763f32395b48481c1ac4f1645067be126ec1711008a14cfd62920284cc34e4a0f12d0617826c402b632dafc31578e
+
+  user error (gpg ["--quiet","--trust-model","always","--batch","--passphrase-file","C:\\Users\\REDACTED\\AppData\\Local\\Temp\\gpg8159","--decrypt"] exited 2)
+
+  Unable to access these remotes: pcloud_annex
+
+  Maybe add some of these git remotes (git remote add ...):
+        bab5704a-562e-43eb-8bbb-71f181f043e8 -- BandName@computer-a:~/Splice/Christmas Steve Vocals
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+[2022-01-05 14:23:04.1457308] (Utility.Process) process [17136] done ExitSuccess
+[2022-01-05 14:23:04.1457308] (Utility.Process) process [17168] done ExitSuccess
+[2022-01-05 14:23:04.1466597] (Utility.Process) process [3996] done ExitSuccess
+[2022-01-05 14:23:04.1466597] (Utility.Process) process [16656] done ExitSuccess
+[2022-01-05 14:23:04.1576581] (Utility.Process) process [18812] done ExitSuccess
+[2022-01-05 14:23:04.1740489] (Utility.Process) process [6724] done ExitSuccess
+[2022-01-05 14:23:04.188721] (Utility.Process) process [16484] done ExitSuccess
+get: 1 failed
+```
+
+I don't know how to proceed. As I understand it, shared encryption shares a key between the git repos. What file stores the shared encryption key so I could see if it's the same in both places?
+
+Is there anything else obviously dumb I'm doing?
