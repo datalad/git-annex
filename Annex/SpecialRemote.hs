@@ -1,6 +1,6 @@
 {- git-annex special remote configuration
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -25,16 +25,22 @@ import qualified Types.Remote as Remote
 import Git.Types (RemoteName)
 
 import qualified Data.Map as M
-import Data.Ord
 
 {- See if there's an existing special remote with this name.
  -
- - Prefer remotes that are not dead when a name appears multiple times. -}
+ - Remotes that are not dead come first in the list
+ - when a name appears multiple times. -}
 findExisting :: RemoteName -> Annex (Maybe (UUID, RemoteConfig, Maybe (ConfigFrom UUID)))
 findExisting name = do
+	(a, b) <- findExisting' name
+	return (headMaybe (a++b))
+
+{- Dead remotes with the name are in the second list, all others in the
+ - first list. -}
+findExisting' :: RemoteName -> Annex ([(UUID, RemoteConfig, Maybe (ConfigFrom UUID))], [(UUID, RemoteConfig, Maybe (ConfigFrom UUID))])
+findExisting' name = do
 	t <- trustMap
-	headMaybe
-		. sortBy (comparing $ \(u, _, _) -> Down $ M.lookup u t)
+	partition (\(u, _, _) -> M.lookup u t /= Just DeadTrusted)
 		. findByRemoteConfig (\c -> lookupName c == Just name)
 		<$> Logs.Remote.remoteConfigMap
 

@@ -43,8 +43,13 @@ start [] = unknownNameError "Specify the remote to enable."
 start (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
   where
 	matchingname r = Git.remoteName r == Just name
-	go [] = startSpecialRemote name (Logs.Remote.keyValToConfig Proposed rest)
-		=<< SpecialRemote.findExisting name
+	go [] = 
+		let use = startSpecialRemote name (Logs.Remote.keyValToConfig Proposed rest)
+		in SpecialRemote.findExisting' name >>= \case
+			-- enable dead remote only when there is no
+			-- other remote with the same name
+			([], l) -> use l
+			(l, _) -> use l
 	go (r:_) = do
 		-- This could be either a normal git remote or a special
 		-- remote that has an url (eg gcrypt).
@@ -69,16 +74,16 @@ startNormalRemote name restparams r
 	ai = ActionItemOther (Just name)
 	si = SeekInput [name]
 
-startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> Maybe (UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID)) -> CommandStart
-startSpecialRemote name config Nothing = do
+startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> [(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> CommandStart
+startSpecialRemote name config [] = do
 	m <- SpecialRemote.specialRemoteMap
 	confm <- Logs.Remote.remoteConfigMap
 	Remote.nameToUUID' name >>= \case
 		Right u | u `M.member` m ->
 			startSpecialRemote name config $
-				Just (u, fromMaybe M.empty (M.lookup u confm), Nothing)
+				[(u, fromMaybe M.empty (M.lookup u confm), Nothing)]
 		_ -> unknownNameError "Unknown remote name."
-startSpecialRemote name config (Just (u, c, mcu)) =
+startSpecialRemote name config ((u, c, mcu):[]) =
 	starting "enableremote" ai si $ do
 		let fullconfig = config `M.union` c	
 		t <- either giveup return (SpecialRemote.findType fullconfig)
@@ -89,6 +94,8 @@ startSpecialRemote name config (Just (u, c, mcu)) =
   where
 	ai = ActionItemOther (Just name)
 	si = SeekInput [name]
+startSpecialRemote _ _ _ =
+	giveup "Multiple remotes have that name. Either use git-annex renameremote to rename them, or specify the uuid of the remote to enable."
 
 performSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> R.RemoteConfig -> RemoteGitConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandPerform
 performSpecialRemote t u oldc c gc mcu = do
