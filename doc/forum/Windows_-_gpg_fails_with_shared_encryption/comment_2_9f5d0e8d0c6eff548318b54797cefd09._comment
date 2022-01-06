@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="arekmenner@f0f5403c5cbc803fedaf860e3a6f839a41075e3b"
+ nickname="arekmenner"
+ avatar="http://cdn.libravatar.org/avatar/ec065e4a23146814e887fdcd16a1ee44"
+ subject="reply"
+ date="2022-01-06T15:13:15Z"
+ content="""
+Very much so. I'll try to start this whole computer from a clean setup and we'll see where we get from there.
+
+My guess at what happened was it was a combination of interleaved inits/enables in desperation. In particular, any time a \"get\" failed it asked me to \"enableremote\" which I tried several times.
+"""]]
