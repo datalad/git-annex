@@ -1,7 +1,8 @@
-git-annex allows managing files with git, without checking the file
-contents into git. While that may seem paradoxical, it is useful when
-dealing with files larger than git can currently easily handle, whether due
-to limitations in memory, time, or disk space.
+git-annex allows managing large files with git, without storing the file
+contents in git. It can sync, backup, and archive your data, offline
+and online. Checksums and encryption keep your data safe and secure. Bring
+the power and distributed nature of git to bear on your large files with
+git-annex.
 
 [[!img assistant/thumbnail.png link=assistant align=right]]
 git-annex is designed for git users who love the command line.

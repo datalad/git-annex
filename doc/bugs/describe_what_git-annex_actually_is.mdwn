@@ -10,3 +10,5 @@ The second sentence does not really help to explain the tool, for me it sounds a
 > It enables managing files larger than git can easily handle, whether due to limitations in memory, time, or disk space.
 
 Still not optimal, but feels a little more precise
+
+> [[done]] --[[Joey]]
