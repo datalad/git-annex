@@ -1,0 +1,62 @@
+[[!comment format=mdwn
+ username="lell"
+ avatar="http://cdn.libravatar.org/avatar/4c4138a71d069e290240a3a12367fabe"
+ subject="Propagation is different between &quot;annex adjust&quot; and &quot;annex sync&quot;"
+ date="2022-01-07T10:21:46Z"
+ content="""
+Adjusted branches are important to my data science project, because my programs cannot deal with the read-only symlinks to annex'ed files.
+
+But I find this command confusing, especially that
+
+1. Calling on an unlocked adjusted branch, \"git annex adjust --unlock\" propagates commits back to the master branch differently than \"git annex sync --no-push --no-pull --no-content\" does. 
+
+2. I can't find a way to \"un-adjust\" a branch without resorting to lower-level git commands.
+
+## Problem 1:
+
+Say I have done `git annex adjust --unlock` and then have done more commits. The history now looks like this: 
+
+    * My new commit 2  (HEAD -> adjusted/master(unlocked))
+    * My new commit 1  (HEAD -> adjusted/master(unlocked))
+    * git-annex adjusted branch
+    * Last old commit (master, basis/adjusted/master(unlocked))
+    * Previous commits
+
+If I execute now `git annex adjust --unlock` again, the commits are propagated back to the original branch, 
+but my HEAD is still on the original adjusted branch. So both the master branch and my adjusted branch grow over time which clutters the history and is confusing.
+
+    *     My new commit 2  (master)
+    | *   My new commit 2  (HEAD -> adjusted/master(unlocked))
+    * |   My new commit 1
+    | *   My new commit 1
+    | *   git-annex adjusted branch
+    |/
+    * Last old commit (basis/adjusted/master(unlocked))
+    * Previous commits
+
+On the other hand, if I do `git annex sync --no-push --no-pull --no-content`, the commits are propagated back to master, and a new adjusted branch is created on top of that:
+
+    * git-annex adjusted branch (HEAD -> adjusted/master(unlocked))
+    *     My new commit 2  (master, basis/adjusted/master(unlocked))
+    *     My new commit 1
+    | *   My new commit 2  [abandoned old adjusted branch]
+    | *   My new commit 1
+    | *   git-annex adjusted branch
+    |/
+    * Last old commit
+    * Previous commits
+
+This behaviour makes much more sense to me! Why does it take the modified `sync` command to do this? Why is this not done as well when re-calling `annex adjust --unlock`? The sync command seems a counter-intuitive place to do this, using the `adjust` command would be far more intuitive for me and I think also for other users.
+
+
+## Problem 2
+
+I see no easy way of \"un-adjusting\" an adjusted branch. Currently I do
+
+    git sync --no-push --no-pull --no-content
+    git checkout master
+    git branch -D \"adjusted/master(unlock)\" 
+    git branch -D \"refs/basis/adjusted/master(unlock)\"
+
+That's a lot of text for the inverse operation of `git annex adjust --unlock` and also I have to take care myself to not forget and loose commits I did on the adjusted branch. Did I miss an easier way? If not, I think it would be a great addition. 
+"""]]
