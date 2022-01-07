@@ -115,3 +115,6 @@ Both servers are debian.
 I've been using git annex for years now, some periods more intensively than others. The only data I've lost I can only blame on my own stupidity, even after a terminal disk failure I managed to recover almost everything with a reinject. I'm still using it entirely cli though, no assistants or gui for me.
 
 [[!meta title="corrupted tmp file can prevent getting an object"]]
+
+> [[fixed|done]] (the related issue that I discovered in comment #1
+> specifically) --[[Joey]]

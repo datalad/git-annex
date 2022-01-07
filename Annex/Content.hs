@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ module Annex.Content (
 	RetrievalSecurityPolicy(..),
 	getViaTmp,
 	getViaTmpFromDisk,
+	verificationOfContentFailed,
 	checkDiskSpaceToGet,
 	checkSecureHashes,
 	prepTmp,
@@ -222,7 +223,6 @@ getViaTmpFromDisk rsp v key af action = checkallowed $ do
 	tmpfile <- prepTmp key
 	resuming <- liftIO $ R.doesPathExist tmpfile
 	(ok, verification) <- action tmpfile
-	liftIO $ print ok
 	-- When the temp file already had content, we don't know if
 	-- that content is good or not, so only trust if it the action
 	-- Verified it in passing. Otherwise, force verification even
@@ -236,16 +236,7 @@ getViaTmpFromDisk rsp v key af action = checkallowed $ do
 		then ifM (verifyKeyContentPostRetrieval rsp v verification' key tmpfile)
 			( pruneTmpWorkDirBefore tmpfile (moveAnnex key af)
 			, do
-				warning "verification of content failed"
-				-- The bad content is not retained, because
-				-- a retry should not try to resume from it
-				-- since it's apparently corrupted.
-				-- Also, the bad content could be any data,
-				-- including perhaps the content of another
-				-- file than the one that was requested,
-				-- and so it's best not to keep it on disk.
-				pruneTmpWorkDirBefore tmpfile
-					(liftIO . removeWhenExistsWith R.removeLink)
+				verificationOfContentFailed tmpfile
 				return False
 			)
 		-- On transfer failure, the tmp file is left behind, in case
@@ -263,6 +254,24 @@ getViaTmpFromDisk rsp v key af action = checkallowed $ do
 				, warnUnverifiableInsecure key >> return False
 				)
 			)
+
+{- When the content of a file that was successfully transferred from a remote
+ - fails to verify, use this to display a message so the user knows why it
+ - failed, and to clean up the corrupted content.
+ -
+ - The bad content is not retained, because the transfer of it succeeded.
+ - So it's not incomplete and a resume using it will not work. While
+ - some protocols like rsync could recover such a bad content file,
+ - they are assumed to not write out bad data to a file in the first place.
+ - Most protocols, including the P2P protocol, pick up downloads where they
+ - left off, and so if the bad content were not deleted, repeated downloads
+ - would continue to fail.
+ -}
+verificationOfContentFailed :: RawFilePath -> Annex ()
+verificationOfContentFailed tmpfile = do
+	warning "Verification of content failed"
+	pruneTmpWorkDirBefore tmpfile
+		(liftIO . removeWhenExistsWith R.removeLink)
 
 {- Checks if there is enough free disk space to download a key
  - to its temp file.

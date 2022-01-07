@@ -1,6 +1,6 @@
 {- P2P protocol, Annex implementation
  -
- - Copyright 2016-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -206,7 +206,9 @@ runLocal runst runner a = case a of
 							| rightsize -> liftIO (finalizeIncrementalVerifier iv) >>= \case
 								Nothing -> return (True, UnVerified)
 								Just True -> return (True, Verified)
-								Just False -> return (False, UnVerified)
+								Just False -> do
+									verificationOfContentFailed (toRawFilePath dest)
+									return (False, UnVerified)
 							| otherwise -> return (False, UnVerified)
 						Nothing -> return (rightsize, UnVerified)
 					Right (Just Invalid) | l == 0 ->

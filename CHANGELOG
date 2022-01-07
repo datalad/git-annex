@@ -5,10 +5,10 @@ git-annex (8.20211232) UNRELEASED; urgency=medium
     preserve it in the imported tree so it does not get deleted.
   * enableremote, renameremote: Better handling of the unusual case where
     multiple special remotes have been initialized with the same name.
-  * Recover from over the wire errors when downloading from remotes,
-    by deleting the object file when verification of it fails. This allows
-    the next attempt at a download to succeed, rather than using the same
-    content and failing again.
+  * Recover from corrupted content being received from a git remote,
+    by deleting the temporary file when it fails to verify. This prevents
+    a retry from failing again. 
+    (reversion introduced in version 8.20210903)
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Jan 2022 14:01:14 -0400
 

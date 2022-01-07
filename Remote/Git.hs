@@ -30,6 +30,7 @@ import Logs.Presence
 import Annex.Transfer
 import Annex.CopyFile
 import Annex.Verify
+import Annex.Content (verificationOfContentFailed)
 import Annex.UUID
 import qualified Annex.Content
 import qualified Annex.BranchState
@@ -706,7 +707,9 @@ mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
 			ifM (liftIO (catchBoolIO (linker src dest)))
 				( ifM check
 					( return (True, Verified)
-					, return (False, UnVerified)
+					, do
+						verificationOfContentFailed (toRawFilePath dest)
+						return (False, UnVerified)
 					)
 				, copier src dest k p check verifyconfig
 				)
@@ -717,7 +720,9 @@ mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
 		fileCopier copycowtried src dest p iv >>= \case
 			Copied -> ifM check
 				( finishVerifyKeyContentIncrementally iv
-				, return (False, UnVerified)
+				, do
+					verificationOfContentFailed (toRawFilePath dest)
+					return (False, UnVerified)
 				)
 			CopiedCoW -> unVerified check
 
