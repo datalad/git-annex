@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-01-07T16:03:13Z"
+ content="""
+@lell this is a man page, it's really not a place to file bug reports
+or discuss in detail complicated scenarios. 
+
+Please use [[bugs]] and [[forum]] for such things.
+
+Comments are open on this page
+in case someone has a suggestion to improve this documentation, not for
+general discussion about the feature.
+"""]]
