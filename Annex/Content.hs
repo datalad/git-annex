@@ -222,6 +222,7 @@ getViaTmpFromDisk rsp v key af action = checkallowed $ do
 	tmpfile <- prepTmp key
 	resuming <- liftIO $ R.doesPathExist tmpfile
 	(ok, verification) <- action tmpfile
+	liftIO $ print ok
 	-- When the temp file already had content, we don't know if
 	-- that content is good or not, so only trust if it the action
 	-- Verified it in passing. Otherwise, force verification even
