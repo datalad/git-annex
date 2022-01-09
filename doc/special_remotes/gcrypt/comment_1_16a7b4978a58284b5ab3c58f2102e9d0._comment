@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="aaron"
+ avatar="http://cdn.libravatar.org/avatar/8a07e2f7af4bbf1bfcb48bbc53e00747"
+ subject="How does the gcrypt type compare to the rsync special remote"
+ date="2022-01-09T05:31:34Z"
+ content="""
+For systems (such as rsync.net) that allow us to use both rsync and git-annex, which is the better option?  I noticed that the default for rsync.net was this type (gcrypt), does it provide additional capabilities or perform slightly better than the [rsync version](https://git-annex.branchable.com/special_remotes/rsync/)?
+"""]]
