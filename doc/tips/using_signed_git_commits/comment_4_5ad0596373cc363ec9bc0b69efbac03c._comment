@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-01-11T17:02:59Z"
+ content="""
+Are we still concerned about this? Well, git has a workaround for SHA1's
+insecurity and will eventually change hashes. There are plenty of other
+reasons to want to sign git commits, certianly.
+
+The webapp bypasses gpg signing because it commits automatically and
+potentially frequently, and depending on how gpg handles password
+prompting, that could flood the user with repeated password prompts.
+But you can change this default with the `annex.allowsign` configuration.
+
+(Commits to the git-annex branch are also not signed by default, for similar
+reasons. Also, the risks of SHA1 collisions involving the git-annex branch
+seem small to nonexistant, since that branch only records bookeeping
+information git-annex cares about, and a small amount of configuration.
+git-annex does not use data from that branch in any way that would let
+an untrusted person who modified the branch do anything malicious.)
+"""]]
