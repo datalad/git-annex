@@ -1069,6 +1069,7 @@ Executable git-annex
     Upgrade.V5.Direct
     Upgrade.V6
     Upgrade.V7
+    Upgrade.V8
     Utility.Aeson
     Utility.Android
     Utility.Applicative

@@ -26,6 +26,7 @@ import qualified Upgrade.V4
 import qualified Upgrade.V5
 import qualified Upgrade.V6
 import qualified Upgrade.V7
+import qualified Upgrade.V8
 
 import qualified Data.Map as M
 
@@ -96,6 +97,7 @@ upgrade automatic destversion = do
 	up (RepoVersion 5) = Upgrade.V5.upgrade automatic
 	up (RepoVersion 6) = Upgrade.V6.upgrade automatic
 	up (RepoVersion 7) = Upgrade.V7.upgrade automatic
+	up (RepoVersion 8) = Upgrade.V8.upgrade automatic
 	up _ = return True
 
 	-- Upgrade local remotes by running git-annex upgrade in them.
