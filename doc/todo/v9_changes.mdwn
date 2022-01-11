@@ -12,6 +12,8 @@ could change and if it does, these things could be included.
 
   Note that windows already uses a separate lock file.
 
+  This is implemented in git branch `v9-locking`.
+
 * Possibly enable `git-annex filter-process` by default. If the tradeoffs
   seem worth it.
 
