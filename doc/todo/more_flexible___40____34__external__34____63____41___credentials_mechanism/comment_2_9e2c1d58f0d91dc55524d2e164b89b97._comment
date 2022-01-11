@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-01-11T16:19:09Z"
+ content="""
+> That also relates to software relying on git-annex, such as datalad, as it somehow needs to know/discover that underlying call to git-annex apparently needs some credentials to be passed via env vars
+
+Since `git-annex initremote` displays an error message when it needs
+creds, does datalad not forward that error message to the user?
+
+There seems to be a significant disconnect between what you're describing
+and what I've seen of and know of creds usage in git-annex. Gonna need more
+information.
+"""]]
