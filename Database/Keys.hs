@@ -49,6 +49,7 @@ import Git.Sha
 import Git.CatFile
 import Git.Branch (writeTreeQuiet, update')
 import qualified Git.Ref
+import qualified Git.Config
 import Config.Smudge
 import qualified Utility.RawFilePath as R
 
@@ -154,11 +155,23 @@ addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile k f
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: Key -> Annex [TopFilePath]
-getAssociatedFiles = runReaderIO . SQL.getAssociatedFiles
+getAssociatedFiles k = emptyWhenBare $ runReaderIO $ SQL.getAssociatedFiles k
+
+{- Queries for associated files never return anything when in a bare
+ - repository, since without a work tree there can be no associated files. 
+ -
+ - Normally the keys database is not even populated with associated files 
+ - in a bare repository, but it might happen if a non-bare repo got
+ - converted to bare. -}
+emptyWhenBare :: Annex [a] -> Annex [a]
+emptyWhenBare a = ifM (Git.Config.isBare <$> gitRepo)
+	( return []
+	, a
+	)
 
 {- Include a known associated file along with any recorded in the database. -}
 getAssociatedFilesIncluding :: AssociatedFile -> Key -> Annex [RawFilePath]
-getAssociatedFilesIncluding afile k = do
+getAssociatedFilesIncluding afile k = emptyWhenBare $ do
 	g <- Annex.gitRepo
 	l <- map (`fromTopFilePath` g) <$> getAssociatedFiles k
 	return $ case afile of
@@ -168,7 +181,7 @@ getAssociatedFilesIncluding afile k = do
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
 getAssociatedKey :: TopFilePath -> Annex [Key]
-getAssociatedKey = runReaderIO . SQL.getAssociatedKey
+getAssociatedKey f = emptyWhenBare $ runReaderIO $ SQL.getAssociatedKey f
 
 removeAssociatedFile :: Key -> TopFilePath -> Annex ()
 removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile k
@@ -233,7 +246,7 @@ isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
  - is an associated file.
  -}
 reconcileStaged :: H.DbQueue -> Annex ()
-reconcileStaged qh = do
+reconcileStaged qh = unlessM (Git.Config.isBare <$> gitRepo) $ do
 	gitindex <- inRepo currentIndexFile
 	indexcache <- fromRawFilePath <$> fromRepo gitAnnexKeysDbIndexCache
 	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
