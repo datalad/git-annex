@@ -24,6 +24,7 @@ import Annex.Content.Presence.LowLevel
 import Annex.Common
 import qualified Annex
 import Annex.LockPool
+import Annex.Version
 import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.InodeCache
@@ -115,13 +116,19 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 			)
 #endif
 
-{- Windows has to use a separate lock file from the content, since
- - locking the actual content file would interfere with the user's
- - use of it. -}
 contentLockFile :: Key -> Annex (Maybe RawFilePath)
 #ifndef mingw32_HOST_OS
-contentLockFile _ = pure Nothing
+{- Older versions of git-annex locked content files themselves, but newer
+ - versions use a separate lock file, to better support repos shared
+ - amoung users in eg a group. -}
+contentLockFile key = ifM (versionNeedsWritableContentFiles <$> getVersion)
+	( pure Nothing
+	, Just <$> calcRepo (gitAnnexContentLock key)
+	)
 #else
+{- Windows always has to use a separate lock file from the content, since
+ - locking the actual content file would interfere with the user's
+ - use of it. -}
 contentLockFile key = Just <$> calcRepo (gitAnnexContentLock key)
 #endif
 

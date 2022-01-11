@@ -115,8 +115,8 @@ lockContentShared key a = lockContentUsing lock key notpresent $
   where
 	notpresent = giveup $ "failed to lock content: not present"
 #ifndef mingw32_HOST_OS
-	lock contentfile Nothing = tryLockShared Nothing contentfile
 	lock _ (Just lockfile) = posixLocker tryLockShared lockfile
+	lock contentfile Nothing = tryLockShared Nothing contentfile
 #else
 	lock = winLocker lockShared
 #endif
@@ -126,21 +126,25 @@ lockContentShared key a = lockContentUsing lock key notpresent $
  -
  - If locking fails, throws an exception rather than running the action.
  -
- - But, if locking fails because the the content is not present, runs the
- - fallback action instead.
+ - If locking fails because the the content is not present, runs the
+ - fallback action instead. However, the content is not guaranteed to be
+ - present when this succeeds.
  -}
 lockContentForRemoval :: Key -> Annex a -> (ContentRemovalLock -> Annex a) -> Annex a
 lockContentForRemoval key fallback a = lockContentUsing lock key fallback $ 
 	a (ContentRemovalLock key)
   where
 #ifndef mingw32_HOST_OS
-	{- Since content files are stored with the write bit disabled, have
-	 - to fiddle with permissions to open for an exclusive lock. -}
-	lock contentfile Nothing = bracket_
-		(thawContent contentfile)
-		(freezeContent contentfile)
-		(tryLockExclusive Nothing contentfile)
 	lock _ (Just lockfile) = posixLocker tryLockExclusive lockfile
+	{- No lock file, so the content file itself is locked. 
+	 - Since content files are stored with the write bit
+	 - disabled, have to fiddle with permissions to open
+	 - for an exclusive lock. -}
+	lock contentfile Nothing = 
+		bracket_
+			(thawContent contentfile)
+			(freezeContent contentfile)
+			(tryLockExclusive Nothing contentfile)
 #else
 	lock = winLocker lockExclusive
 #endif
@@ -170,7 +174,7 @@ winLocker _ _ Nothing = return Nothing
 {- The fallback action is run if the ContentLocker throws an IO exception
  - and the content is not present. It's not guaranteed to always run when
  - the content is not present, because the content file is not always
- - the file that is locked eg on Windows a different file is locked. -}
+ - the file that is locked. -}
 lockContentUsing :: ContentLocker -> Key -> Annex a -> Annex a -> Annex a
 lockContentUsing locker key fallback a = do
 	contentfile <- calcRepo (gitAnnexLocation key)
