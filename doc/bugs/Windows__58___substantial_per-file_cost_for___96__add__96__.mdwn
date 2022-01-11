@@ -58,3 +58,5 @@ I am reporting this behavior now, because it has worsened since [I last looked i
 Thanks for git-annex!
 
 [[!tag projects/datalad]]
+
+> [[fixed|done]] (enable filter.annex.process) --[[Joey]]

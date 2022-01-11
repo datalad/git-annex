@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 22"""
+ date="2022-01-11T17:24:49Z"
+ content="""
+Enabling filter.annex.process in new repositories would unfortunately
+break using that repository with an older version of git-annex before that
+was added to it. So it seems that `git-annex init` cannot do it for
+annex.version 8 and will need to wait for v9.
+
+Of course, if you are sure users of a repository will not be using an old
+version of git-annex, it's fine to enable it.
+
+I'm going to close this bug now, since [[todo/v9_changes]] is open to get it
+enabled by default in v9.
+"""]]
