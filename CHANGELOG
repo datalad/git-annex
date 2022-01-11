@@ -9,6 +9,7 @@ git-annex (8.20211232) UNRELEASED; urgency=medium
     by deleting the temporary file when it fails to verify. This prevents
     a retry from failing again. 
     (reversion introduced in version 8.20210903)
+  * adb: Added ignorefinderror configuration parameter.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Jan 2022 14:01:14 -0400
 

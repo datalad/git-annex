@@ -43,6 +43,8 @@ remote = specialRemoteType $ RemoteType
 			(FieldDesc "location on the Android device where the files are stored")
 		, optionalStringParser androidserialField
 			(FieldDesc "sometimes needed to specify which Android device to use")
+		, yesNoParser ignorefinderrorField (Just False)
+			(FieldDesc "ignore adb find errors")
 		]
 	, setup = adbSetup
 	, exportSupported = exportIsSupported
@@ -55,6 +57,10 @@ androiddirectoryField = Accepted "androiddirectory"
 
 androidserialField :: RemoteConfigField
 androidserialField = Accepted "androidserial"
+
+ignorefinderrorField :: RemoteConfigField
+ignorefinderrorField = Accepted "ignorefinderror"
+
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
@@ -83,7 +89,7 @@ gen r u rc gc rs = do
 			, renameExport = renameExportM serial adir
 			}
 		, importActions = ImportActions
-			{ listImportableContents = listImportableContentsM serial adir
+			{ listImportableContents = listImportableContentsM serial adir c
 			, importKey = Nothing
 			, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM serial adir
 			, storeExportWithContentIdentifier = storeExportWithContentIdentifierM serial adir
@@ -289,13 +295,13 @@ renameExportM serial adir _k old new = do
 		, File newloc
 		]
 
-listImportableContentsM :: AndroidSerial -> AndroidPath -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
-listImportableContentsM serial adir = adbfind >>= \case
+listImportableContentsM :: AndroidSerial -> AndroidPath -> ParsedRemoteConfig -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
+listImportableContentsM serial adir c = adbfind >>= \case
 	Just ls -> return $ Just $ ImportableContentsComplete $ 
 		ImportableContents (mapMaybe mk ls) []
 	Nothing -> giveup "adb find failed"
   where
-	adbfind = adbShell serial
+	adbfind = adbShell' serial
 		[ Param "find"
 		-- trailing slash is needed, or android's find command
 		-- won't recurse into the directory
@@ -304,7 +310,10 @@ listImportableContentsM serial adir = adbfind >>= \case
 		, Param "-exec", Param "stat"
 		, Param "-c", Param statformat
 		, Param "{}", Param "+"
-		]
+		] 
+		(if ignorefinderror then "|| true" else "")
+
+	ignorefinderror = fromMaybe False (getRemoteConfigValue ignorefinderrorField c)
 
 	statformat = adbStatFormat ++ "\t%n"
 
@@ -390,8 +399,11 @@ enumerateAdbConnected = checkAdbInPath [] $ liftIO $
 --
 -- Any stdout from the command is returned, separated into lines.
 adbShell :: AndroidSerial -> [CommandParam] -> Annex (Maybe [String])
-adbShell serial cmd = adbShellRaw serial $
-	unwords $ map shellEscape (toCommand cmd)
+adbShell serial cmd = adbShell' serial cmd ""
+
+adbShell' :: AndroidSerial -> [CommandParam] -> String -> Annex (Maybe [String])
+adbShell' serial cmd extra = adbShellRaw serial $
+	(unwords $ map shellEscape (toCommand cmd)) ++ extra
 
 adbShellBool :: AndroidSerial -> [CommandParam] -> Annex Bool
 adbShellBool serial cmd =
