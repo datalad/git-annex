@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="comment 2"
+ date="2022-01-09T05:45:35Z"
+ content="""
+The gcrypt special remote is for use with the git-remote-gcrypt protocol for making encrypted git remotes. The rsync special remote can also encrypt the files it stores, but it's not related to git-remote-gcrypt; it just puts files in a plain directory tree using rsync.
+
+If you want to keep a repository remote (not a special remote) on your rsync.net host, and want it to be encrypted, then you can use git-remote-gcrypt and use this special remote so that the data is all together. If you're not using git-remote-gcrypt, then the rsync special remote is what you want.
+"""]]

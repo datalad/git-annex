@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="aaron"
+ avatar="http://cdn.libravatar.org/avatar/8a07e2f7af4bbf1bfcb48bbc53e00747"
+ subject="comment 3"
+ date="2022-01-09T08:36:34Z"
+ content="""
+@tomdhunt, Are you saying that the difference is the rsync remote only contains the files and the actual history stuff from git isn't tracked in it while the git-remote-gcrypt one also tracks history because it is a bare git repo?
+
+Additionally, I just started trying out the grcrypt version on rsync.net and it seems to use a slightly different initialization when compared to the others.  I've made some progress, but I am still not quite able to make it work, it seems that I'm having issues initializing the bare remote when I do it via the terminal.  If I don't try to create a bare and push it the first commit completely fails, I seem to be able to make more progress by creating a bare, pushing it, and then adding it (but it still fails).  This is what I have got to so far:
+
+```bash
+user@localhost:$ sudo chown <rsync.net user>:<rsync.net user> -R
+user@localhost:$ git init --bare shared=group test_repo.git
+user@localhost:$ sudo rsync -vrSP test_repo.git <rsync.net user>@<server>:annex
+user@localhost:$ git annex initremote \"<some_userful_name>\" type=gcrypt gitrepo=<rsync.net user>@<server>:annex chunk=1MiB keyid=<key_id> encryption=shared mac=HMACSHA512 autoenable=true
+```
+
+The error message that I get:
+
+```bash
+user@localhost:$ git annex sync
+commit 
+On branch master
+
+Initial commit
+
+nothing to commit (create/copy files and use \"git add\" to track)
+ok
+pull <rsync.net server> 
+gcrypt: Decrypting manifest
+gpg: selecting card failed: No such device
+gpg: Signature made Sun 09 Jan 2022 08:26:18 AM GMT
+gpg:                using EDDSA key <key>
+gpg: Good signature from \"<key comment>\" [ultimate]
+
+merge: refs/remotes/<remote name>/master - not something we can merge
+
+merge: refs/remotes/<remote name>/synced/master - not something we can merge
+failed
+sync: 1 failed
+
+```
+
+It also looks like this method fails to add `gcrypt-participants = <key>` and `gcrypt-signingkey = <key>` to the `.git/config` file like webapp does.
+
+Furthermore, when I use the `git annex webapp` to generate the repo, it does something that seems to be even more different (and successfully creates the bare repo by itself), specifically the URL looks something like this:
+
+```bash
+url = gcrypt::<rsync.net user>@git-annex-.<country>.2D<server_subname?>.2E<server_name>.2E<server_domain>-<rsync.net user>_22_annex:annex/
+```
+
+It seems to be encoding some of the characters to make a URL?  Is there another web API that we can interact with?
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="aaron"
+ avatar="http://cdn.libravatar.org/avatar/8a07e2f7af4bbf1bfcb48bbc53e00747"
+ subject="Not auto-signing commits with webapp (and possible assistant)"
+ date="2022-01-09T04:29:26Z"
+ content="""
+Are we still concerned about this (and does this still apply if we are using encrypted remotes?)?  I do have my normal git stuff configured to use GPG signing because I like the concept, but noticed that when running `git annex webapp` the automated commits seemed to bypass my normal global git config and not add a signature.
+"""]]

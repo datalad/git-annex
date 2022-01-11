@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="amerlyq"
+ avatar="http://cdn.libravatar.org/avatar/3d63c9f436b45570d45bd003e468cbd3"
+ subject="comment 6"
+ date="2022-01-08T14:15:55Z"
+ content="""
+> open to being argued out of my current position
+
+Ok, let's continue :)
+
+> same problem:
+
+> * checking the files into a git repository not using git-annex, and pulling from that repository.
+
+> * running git-annex add and using git-annex get to transfer over a ssh connection.
+
+> * [not supporting] workflow with adb or some other type of remote [is not a bug]
+
+I distinguish ADB from all other types of remotes -- because it's the actual *source* of new files -- not yet processed by user manually.
+And what you mentioned above -- are scenarios occuring on full-fledged work system, not on half-baked android phone.
+
+When you sync Laptop with PC -- you must add files either on Laptop or on PC into git-annex first.
+Therefore you have an opportunity to do something with files first e.g. sort them into the folders by date,
+before adding them into git and losing that mtime information (which at that point is still useful, but not necessary).
+
+When you sync PC with any \"backup\" remote -- they are pushed/pulled *after* files were added to git-annex.
+I.e. none of them adds new files, which user never seen before -- and process only \"existing\" ones.
+
+But when you use ADB (or maybe Directory too -- however I still don't have a usecase for that) -- new files are added to ADB
+directly, avoiding user intervention. Because it's a pain to sort them on the phone immeditely without proper tools and scripts.
+And one of the purposes of using git-annex here -- is to fetch them to PC to sort properly on big screen.
+But fetching them without \"pull -a\" looses the necessary information.
+It's not that big of a problem for DCIM folder, as files contain dates in filenames, but it's an issue for Downloads (and separate folders of each chat app).
+
+Therefore yes, ADB is different, it's involved into different workflow, and therefore deserves different treatment.
+
+---
+
+> when you git-annex add a file, the mtime of the file (now a symlink) should also be unchanged
+Ok, that's a different original reason. Agreed.
+
+Still, it has a nice consequence of preserving mtime for files already present on PC.
+
+And it allows me to scan whole filesystem and dump metadata into a separate file (e.g. \"find -printf \"%T@ %P\n\"),
+to preserve the information \"when I first seen/downloaded that file\" for the future.
+
+And it's very important information (at least for me), because it's easier to remember and link related things occuring in a similar timespan,
+than to sort files by types and then fruitlessly trying to link those fragmented and sparse datasets inside my head after several months or years.
+"""]]

@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="amerlyq"
+ avatar="http://cdn.libravatar.org/avatar/3d63c9f436b45570d45bd003e468cbd3"
+ subject="comment 6"
+ date="2022-01-08T14:32:11Z"
+ content="""
+Now, if Android is varying the mtime it reports for files [...]
+
+> I tried, using a directory special remote, touching a file in the remote after having already imported it once.
+
+Hm, I think I will enable debug logging for awhile, and will try to catch more info for my heisenbug.
+It may take weeks though, so simply know that no activity in this issue does not mean I had abandoned it.
+I will explicitly state so, if it will ever be a case.
+
+> On the merge commits, importing creates one, and exporting creates one. So sync creates two.
+> Also, if you export and then merge the remote tracking branch (a fast-forward merge), and then export again, it makes another merge commit. 
+
+Yes, and I hoped for a fast and dirty fix -- check diff before merge -- and if it's empty -- don't do that useless merge commit.
+It will unblock my primary workflow to start using ADB in full, as I stop fearing to trash my history on all my remotes (as I mentioned \"rebase\" won't help due to how \"git annex sync\" works).
+But maybe on empty commits still better to print something into debug logs or in warnings -- so the original bug still could be tracked and I continued searching for root cause.
+
+> See 1503b86a14865ce300ebb9c4d96315eeb254d0b8 (and subsequent 2bd0e07ed83db39907f0c824854d68c1a8ba77ac and a32f31235a67d572d989ad9e344efe11d78774a5 where this was introduced. This stuff makes my head hurt, and getting it wrong leads to broken merges from the remote tracking branch...
+
+I skimmed through those diffs, and I may say my head huts too :)
+And I will need to look more into surrounding code to understand them in full.
+Still I will return to them again after some debug logs were collected.
+
+Until then -- is it possible to do what I mentioned above -- \"check diff before merge -- and don't merge if it's empty\" ?
+"""]]
