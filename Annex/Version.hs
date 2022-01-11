@@ -1,6 +1,6 @@
 {- git-annex repository versioning
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -54,3 +54,8 @@ setVersion (RepoVersion v) = setConfig versionField (show v)
 
 removeVersion :: Annex ()
 removeVersion = unsetConfig versionField
+
+versionNeedsWritableContentFiles :: Maybe RepoVersion -> Bool
+versionNeedsWritableContentFiles (Just v) 
+	| v >= RepoVersion 9 = False
+versionNeedsWritableContentFiles _ = True

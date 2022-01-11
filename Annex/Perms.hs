@@ -32,6 +32,8 @@ import Utility.FileMode
 import Git
 import Git.ConfigTypes
 import qualified Annex
+import Annex.Version
+import Types.RepoVersion
 import Config
 import Utility.Directory.Create
 import qualified Utility.RawFilePath as R
@@ -127,11 +129,14 @@ createWorkTreeDirectory dir = do
 {- Normally, blocks writing to an annexed file, and modifies file
  - permissions to allow reading it.
  -
- - When core.sharedRepository is set, the write bits are not removed from
- - the file, but instead the appropriate group write bits are set. This is
- - necessary to let other users in the group lock the file. But, in a
- - shared repository, the current user may not be able to change a file
- - owned by another user, so failure to set this mode is ignored.
+ - Before v9, when core.sharedRepository is set, the write bits are not
+ - removed from the file, but instead the appropriate group write bits
+ - are set. This is necessary to let other users in the group lock the file.
+ - v9 improved this by using separate lock files, so the content file does
+ - not need to be writable when using it.
+ -
+ - In a shared repository, the current user may not be able to change
+ - a file owned by another user, so failure to change modes is ignored.
  -
  - Note that, on Linux, xattrs can sometimes prevent removing
  - certain permissions from a file with chmod. (Maybe some ACLs too?) 
@@ -148,13 +153,27 @@ freezeContent' sr file = do
 	go sr
 	freezeHook file
   where
-	go GroupShared = liftIO $ void $ tryIO $ modifyFileMode file $
-		addModes [ownerReadMode, groupReadMode, ownerWriteMode, groupWriteMode]
-	go AllShared = liftIO $ void $ tryIO $ modifyFileMode file $
-		addModes (readModes ++ writeModes)
-	go _ = liftIO $ modifyFileMode file $
+	go GroupShared = ifM (versionNeedsWritableContentFiles <$> getVersion)
+		( liftIO $ ignoresharederr $ modmode $ addModes
+			[ownerReadMode, groupReadMode, ownerWriteMode, groupWriteMode]
+		, liftIO $ ignoresharederr $
+			nowriteadd [ownerReadMode, groupReadMode]
+		)
+	go AllShared = ifM (versionNeedsWritableContentFiles <$> getVersion)
+		( liftIO $ ignoresharederr $ modmode $ addModes
+			(readModes ++ writeModes)
+		, liftIO $ ignoresharederr $ 
+			nowriteadd readModes
+		)
+	go _ = liftIO $ nowriteadd [ownerReadMode]
+
+	ignoresharederr = void . tryIO
+
+	modmode = modifyFileMode file
+
+	nowriteadd readmodes = modmode $ 
 		removeModes writeModes .
-		addModes [ownerReadMode]
+		addModes readmodes
 
 {- Checks if the write permissions are as freezeContent should set them.
  -
@@ -166,14 +185,21 @@ freezeContent' sr file = do
 checkContentWritePerm :: RawFilePath -> Annex (Maybe Bool)
 checkContentWritePerm file = ifM crippledFileSystem
 	( return (Just True)
-	, withShared (\sr -> liftIO (checkContentWritePerm' sr file))
+	, do
+		rv <- getVersion
+		withShared (\sr -> liftIO (checkContentWritePerm' sr file rv))
 	)
 
-checkContentWritePerm' :: SharedRepository -> RawFilePath -> IO (Maybe Bool)
-checkContentWritePerm' sr file = case sr of
-	GroupShared -> want sharedret
-		(includemodes [ownerWriteMode, groupWriteMode])
-	AllShared -> want sharedret (includemodes writeModes)
+checkContentWritePerm' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -> IO (Maybe Bool)
+checkContentWritePerm' sr file rv = case sr of
+	GroupShared
+		| versionNeedsWritableContentFiles rv -> want sharedret
+			(includemodes [ownerWriteMode, groupWriteMode])
+		| otherwise -> want sharedret (excludemodes writeModes)
+	AllShared
+		| versionNeedsWritableContentFiles rv -> 
+			want sharedret (includemodes writeModes)
+		| otherwise -> want sharedret (excludemodes writeModes)
 	_ -> want Just (excludemodes writeModes)
   where
 	want mk f = catchMaybeIO (fileMode <$> R.getFileStatus file)

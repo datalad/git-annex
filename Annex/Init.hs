@@ -282,7 +282,7 @@ probeCrippledFileSystem' tmp freezecontent thawcontent = do
 		-- running as root). But some crippled
 		-- filesystems ignore write bit removals or ignore
 		-- permissions entirely.
-		ifM ((== Just False) <$> liftIO (checkContentWritePerm' UnShared (toRawFilePath f)))
+		ifM ((== Just False) <$> liftIO (checkContentWritePerm' UnShared (toRawFilePath f) Nothing))
 			( return (True, ["Filesystem does not allow removing write bit from files."])
 			, liftIO $ ifM ((== 0) <$> getRealUserID)
 				( return (False, [])
