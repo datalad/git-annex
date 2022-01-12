@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2022-01-12T19:14:10Z"
+ content="""
+This would almost work:
+
+Continue taking a shared lock of the content
+file when locking to prevent dropping. That does not need write access,
+only an exclusive lock does, so the content file can have its write bit
+removed. Also lock the new lock file, with a shared lock to prevent
+dropping, or an exclusive when dropping.
+
+The old git-annex version, when dropping, will fail to exclusively lock the
+content file, either because it's not writable, or because of a shared
+lock intended to prevent dropping. So a git-annex drop that was in progress
+may start to fail, but it will not lose any data.
+
+Problem: The old git-annex version, when locking to prevent dropping
+(eg git-annex move --from remote),
+will take the shared lock of the content file. If the new git-annex version
+is locking to drop, it will also take the shared lock of the content file,
+followed by the exlusive lock of the new lock file. So the old git-annex will
+not be able to prevent the new git-annex from dropping.
+"""]]
