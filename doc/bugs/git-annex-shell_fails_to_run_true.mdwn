@@ -162,3 +162,5 @@ Key part above:
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I'm a long time git-annex user (early adopter, even?) and git-annex is generally serving my uses very well, both as a backup and archival system. The encryption features, however, are a bit more obscure than my tolerance level right now. Thankfully, there is the [[special_remotes/borg/]] I'm thinking of using to replace all this complexity in the future... 
+
+-- [[done]], problem was with a configuration in the gcrypt remote sandbox. -- [[anarcat]]
