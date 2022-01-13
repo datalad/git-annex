@@ -236,8 +236,9 @@ lockContentUsing locker sharedlock key fallback a = do
 #endif
 
 	cleanuplockfile lockfile = modifyContent lockfile $
-		void $ liftIO $ tryIO $
+		void $ liftIO $ tryIO $ do
 			removeWhenExistsWith R.removeLink lockfile
+			cleanObjectDirs lockfile
 
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
@@ -574,12 +575,15 @@ cleanObjectLoc key cleaner = do
 	file <- calcRepo (gitAnnexLocation key)
 	void $ tryIO $ thawContentDir file
 	cleaner
-	liftIO $ removeparents file (3 :: Int)
+	liftIO $ cleanObjectDirs file
+
+cleanObjectDirs :: RawFilePath -> IO ()
+cleanObjectDirs = go (3 :: Int)
   where
-	removeparents _ 0 = noop
-	removeparents file n = do
+	go 0 _ = noop
+	go n file = do
 		let dir = parentDir file
-		maybe noop (const $ removeparents dir (n-1))
+		maybe noop (const $ go (n-1) dir)
 			<=< catchMaybeIO $ removeDirectory (fromRawFilePath dir)
 
 {- Removes a key's file from .git/annex/objects/ -}
