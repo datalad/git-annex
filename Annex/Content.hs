@@ -109,7 +109,7 @@ import qualified System.FilePath.ByteString as P
  - rather than running the action.
  -}
 lockContentShared :: Key -> (VerifiedCopy -> Annex a) -> Annex a
-lockContentShared key a = lockContentUsing lock key notpresent $
+lockContentShared key a = lockContentUsing lock True key notpresent $
 	ifM (inAnnex key)
 		( do
 			u <- getUUID
@@ -135,7 +135,7 @@ lockContentShared key a = lockContentUsing lock key notpresent $
  - present when this succeeds.
  -}
 lockContentForRemoval :: Key -> Annex a -> (ContentRemovalLock -> Annex a) -> Annex a
-lockContentForRemoval key fallback a = lockContentUsing lock key fallback $ 
+lockContentForRemoval key fallback a = lockContentUsing lock False key fallback $ 
 	a (ContentRemovalLock key)
   where
 #ifndef mingw32_HOST_OS
@@ -179,21 +179,32 @@ winLocker _ _ Nothing = return Nothing
  - and the content is not present. It's not guaranteed to always run when
  - the content is not present, because the content file is not always
  - the file that is locked. -}
-lockContentUsing :: ContentLocker -> Key -> Annex a -> Annex a -> Annex a
-lockContentUsing locker key fallback a = do
+lockContentUsing :: ContentLocker -> Bool -> Key -> Annex a -> Annex a -> Annex a
+lockContentUsing locker sharedlock key fallback a = do
 	contentfile <- calcRepo (gitAnnexLocation key)
-	lockfile <- contentLockFile key
+	mlockfile <- contentLockFile key
 	bracket
-		(lock contentfile lockfile)
-		(either (const noop) (unlock lockfile))
+		(lock contentfile mlockfile)
+		(either (const noop) (unlock mlockfile))
 		go
   where
 	alreadylocked = giveup "content is locked"
 	failedtolock e = giveup $ "failed to lock content: " ++ show e
 
-	lock contentfile lockfile = tryIO $
-		maybe alreadylocked return 
-			=<< locker contentfile lockfile
+	lock contentfile mlockfile = tryIO $
+		locker contentfile mlockfile >>= \case
+			Nothing -> alreadylocked
+			Just h
+#ifndef mingw32_HOST_OS
+				| sharedlock -> case mlockfile of
+					Nothing -> return h
+					Just lockfile ->
+						ifM (checkSaneLock lockfile h)
+							( return h
+							, alreadylocked
+							)
+#endif
+				| otherwise -> 	return h
 	
 	go (Right _) = a
 	go (Left e) = ifM (inAnnex key)
@@ -203,11 +214,23 @@ lockContentUsing locker key fallback a = do
 
 #ifndef mingw32_HOST_OS
 	unlock mlockfile lck = do
-		maybe noop cleanuplockfile mlockfile
+		-- When we took a shared lock, another process might
+		-- have also, and so the lock file cannot be deleted.
+		-- But when we took an exclusive lock to drop content,
+		-- no other process can have the file locked, so it's ok to
+		-- delete it. For this deletion to be fully safe against
+		-- races (eg, the other process opened the lock file right
+		-- before it was deleted, and locks it after it is deleted),
+		-- checkSaneLock has to be used for shared locks.
+		when (not sharedlock) $
+			maybe noop cleanuplockfile mlockfile
 		liftIO $ dropLock lck
 #else
 	unlock mlockfile lck = do
-		-- Can't delete a locked file on Windows
+		-- Can't delete a locked file on Windows,
+		-- so close our lock first. If there are other shared
+		-- locks, they will prevent the file deletion from
+		-- happening.
 		liftIO $ dropLock lck
 		maybe noop cleanuplockfile mlockfile
 #endif
