@@ -1,6 +1,6 @@
 {- git-annex file permissions
  -
- - Copyright 2012-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ module Annex.Perms (
 	noUmask,
 	freezeContent,
 	freezeContent',
+	freezeContent'',
 	checkContentWritePerm,
 	checkContentWritePerm',
 	thawContent,
@@ -149,22 +150,23 @@ freezeContent file = unlessM crippledFileSystem $
 	withShared $ \sr -> freezeContent' sr file
 
 freezeContent' :: SharedRepository -> RawFilePath -> Annex ()
-freezeContent' sr file = do
+freezeContent' sr file = freezeContent'' sr file =<< getVersion
+
+freezeContent'' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -> Annex ()
+freezeContent'' sr file rv = do
 	go sr
 	freezeHook file
   where
-	go GroupShared = ifM (versionNeedsWritableContentFiles <$> getVersion)
-		( liftIO $ ignoresharederr $ modmode $ addModes
+	go GroupShared = if versionNeedsWritableContentFiles rv
+		then liftIO $ ignoresharederr $ modmode $ addModes
 			[ownerReadMode, groupReadMode, ownerWriteMode, groupWriteMode]
-		, liftIO $ ignoresharederr $
+		else liftIO $ ignoresharederr $
 			nowriteadd [ownerReadMode, groupReadMode]
-		)
-	go AllShared = ifM (versionNeedsWritableContentFiles <$> getVersion)
-		( liftIO $ ignoresharederr $ modmode $ addModes
+	go AllShared = if versionNeedsWritableContentFiles rv
+		then liftIO $ ignoresharederr $ modmode $ addModes
 			(readModes ++ writeModes)
-		, liftIO $ ignoresharederr $ 
+		else liftIO $ ignoresharederr $ 
 			nowriteadd readModes
-		)
 	go _ = liftIO $ nowriteadd [ownerReadMode]
 
 	ignoresharederr = void . tryIO
