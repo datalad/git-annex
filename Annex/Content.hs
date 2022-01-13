@@ -59,6 +59,10 @@ module Annex.Content (
 	Verification(..),
 	unVerified,
 	withTmpWorkDir,
+	KeyStatus(..),
+	isKeyUnlockedThin,
+	getKeyStatus,
+	getKeyFileStatus,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -794,3 +798,40 @@ exclude [] _ = [] -- optimisation
 exclude smaller larger = S.toList $ remove larger $ S.fromList smaller
   where
 	remove a b = foldl (flip S.delete) b a
+
+data KeyStatus
+	= KeyMissing
+	| KeyPresent
+	| KeyUnlockedThin
+	-- ^ An annex.thin worktree file is hard linked to the object.
+	| KeyLockedThin
+	-- ^ The object has hard links, but the file being fscked
+	-- is not the one that hard links to it.
+	deriving (Show)
+
+isKeyUnlockedThin :: KeyStatus -> Bool
+isKeyUnlockedThin KeyUnlockedThin = True
+isKeyUnlockedThin KeyLockedThin = False
+isKeyUnlockedThin KeyPresent = False
+isKeyUnlockedThin KeyMissing = False
+
+getKeyStatus :: Key -> Annex KeyStatus
+getKeyStatus key = catchDefaultIO KeyMissing $ do
+	afs <- not . null <$> Database.Keys.getAssociatedFiles key
+	obj <- calcRepo (gitAnnexLocation key)
+	multilink <- ((> 1) . linkCount <$> liftIO (R.getFileStatus obj))
+	return $ if multilink && afs
+		then KeyUnlockedThin
+		else KeyPresent
+
+getKeyFileStatus :: Key -> FilePath -> Annex KeyStatus
+getKeyFileStatus key file = do
+	s <- getKeyStatus key
+	case s of
+		KeyUnlockedThin -> catchDefaultIO KeyUnlockedThin $
+			ifM (isJust <$> isAnnexLink (toRawFilePath file))
+				( return KeyLockedThin
+				, return KeyUnlockedThin
+				)
+		_ -> return s
+

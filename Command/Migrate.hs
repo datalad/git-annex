@@ -96,7 +96,7 @@ perform onlyremovesize o file oldkey oldbackend newbackend = go =<< genkey (fast
 		| knowngoodcontent = finish (removesize newkey)
 		| otherwise = stopUnless checkcontent $
 			finish (removesize newkey)
-	checkcontent = Command.Fsck.checkBackend oldbackend oldkey Command.Fsck.KeyPresent afile
+	checkcontent = Command.Fsck.checkBackend oldbackend oldkey KeyPresent afile
 	finish newkey = ifM (Command.ReKey.linkKey file oldkey newkey)
 		( do
 			_ <- copyMetaData oldkey newkey
