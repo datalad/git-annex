@@ -122,8 +122,8 @@ contentLockFile :: Key -> Annex (Maybe RawFilePath)
  - versions use a separate lock file, to better support repos shared
  - amoung users in eg a group. -}
 contentLockFile key = ifM (versionNeedsWritableContentFiles <$> getVersion)
-	( Just <$> calcRepo (gitAnnexContentLock key)
-	, pure Nothing
+	( pure Nothing
+	, Just <$> calcRepo (gitAnnexContentLock key)
 	)
 #else
 {- Windows always has to use a separate lock file from the content, since
