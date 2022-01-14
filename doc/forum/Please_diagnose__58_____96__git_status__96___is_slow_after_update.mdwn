@@ -1,0 +1,74 @@
+Hi, if anyone can suggest some steps to take to diagnose a sudden performance problem in my git-annex repo, I'd appreciate it.
+
+I have been using git annex for several years on this same repo and performance has never been a problem.
+I recently did a OS update of all my packages (arch linux), which updated git annex, and now performance is really bad whenever I run `git status` or `git commit` in the repo (performance is fine in git repos without git annex). For an example of how bad the performance is, I first noticed the problem when trying to make a commit, and I waited 20 minutes before cancelling with Ctrl+C. The update took me from package version "8.20210310-16" to "8.20210803-63". After noticing the problem I updated again to package version "8.20210803-81", since I was hoping there might be a fix in the most recent version, but that didn't resolve it. Those versions might be specific to arch linux, so if that's the case and anybody needs the true versions let me know and I can try to figure out which git-annex commit they are at.
+
+To try to get a sense of what is going on, I started by running `GIT_TRACE_PERFORMANCE=1 git commit`. There seems to be one command that git is running that has a non-trivial time difference between other commands, and its
+
+    18:14:31.968248 trace.c:487             performance: 247.576906378 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)'
+
+The time difference between this command and the next is over 1 second, and it seems that `git commit` is running this type of command many times. I posted a sample of the full output below.
+
+When searching the web for that git command, I came across this conversation: https://git-annex.branchable.com/todo/speed_up_git_annex_sync_--content_--all/
+
+Could that be related to my issue?
+
+What should I do next to figure out what the problem is?
+ 
+I posted the output of `git annex version` and `git annex info` below in case that is helpful.
+
+Thanks!
+
+----------
+
+`git annex version`:
+
+    git-annex version: 8.20210803-g9cae7c5bb
+    build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+    dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.0 ghc-9.0.2 http-client-0.7.9 persistent-sqlite-2.13.0.3 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.1.2
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+    operating system: linux x86_64
+    supported repository versions: 8
+    upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+    local repository version: 8
+
+
+`git annex info` (omitting repository info):
+
+    available local disk space: 146.18 gigabytes (+1 megabyte reserved)
+    local annex keys: 2120
+    local annex size: 2.59 gigabytes
+    annexed files in working tree: 1945
+    size of annexed files in working tree: 2.55 gigabytes
+    bloom filter size: 32 mebibytes (0.4% full)
+    backend usage:
+            SHA256E: 1945
+
+
+sample of the output of `GIT_TRACE_PERFORMANCE=1 git commit`:
+
+    18:14:31.949865 trace.c:487             performance: 0.031945775 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)' --buffer
+    18:14:31.950372 trace.c:487             performance: 0.031692879 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs cat-file '--batch=%(objectname) %(objecttype) %(objectsize)' --buffer
+    18:14:31.963858 trace.c:487             performance: 0.007070777 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs hash-object --stdin-paths --no-filters
+    18:14:31.967006 trace.c:487             performance: 247.578879398 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+    18:14:31.968248 trace.c:487             performance: 247.576906378 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)'
+    18:14:33.217226 trace.c:487             performance: 0.000427304 s: git command: git config --null --list
+    18:14:33.244772 read-cache.c:2398       performance: 0.011644939 s:  read cache .git/index
+    18:14:33.245219 read-cache.c:2398       performance: 0.001136355 s:  read cache .git/index
+    18:14:33.263160 trace.c:487             performance: 0.001024382 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs show-ref --hash refs/annex/last-index
+    18:14:33.274091 read-cache.c:2398       performance: 0.001037856 s:  read cache .git/index
+    18:14:33.284793 unpack-trees.c:1802     performance: 0.000024725 s:    traverse_trees
+    18:14:33.284872 unpack-trees.c:418      performance: 0.000001050 s:    check_updates
+    18:14:33.284917 unpack-trees.c:1892     performance: 0.000349269 s:   unpack_trees
+    18:14:33.289148 diff-lib.c:629          performance: 0.004585392 s:  diff-index
+    18:14:33.289220 trace.c:487             performance: 0.017392572 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs -c filter.annex.smudge= -c filter.annex.clean= -c diff.external= diff d62ecb841c32ff0d62df4f8ca7cb0567616cf415 --staged --raw -z --no-abbrev -G/annex/objects/ --no-renames --ignore-submodules=all --no-ext-diff
+    18:14:33.294517 trace.c:487             performance: 0.025457813 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)' --buffer
+    18:14:33.297215 trace.c:487             performance: 0.024423869 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs cat-file '--batch=%(objectname) %(objecttype) %(objectsize)' --buffer
+    18:14:33.303299 trace.c:487             performance: 0.000746262 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs hash-object --stdin-paths --no-filters
+    18:14:33.305448 trace.c:487             performance: 0.076031969 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+    18:14:33.308580 trace.c:487             performance: 0.075975445 s: git command: git --git-dir=.git --work-tree=. --literal-pathspecs cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)'
+    18:14:34.537129 trace.c:487             performance: 0.000424618 s: git command: git config --null --list
+    18:14:34.570720 read-cache.c:2398       performance: 0.008743858 s:  read cache .git/index
+    18:14:34.573279 read-cache.c:2398       performance: 0.001075431 s:  read cache .git/index
+    
