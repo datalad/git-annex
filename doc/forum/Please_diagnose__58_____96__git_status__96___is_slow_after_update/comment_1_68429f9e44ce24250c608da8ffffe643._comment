@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="ainohzoa"
+ avatar="http://cdn.libravatar.org/avatar/0d6a2dbd95f6c4f410cc41d32beaebe9"
+ subject="Now it's working normally again"
+ date="2022-01-14T21:10:13Z"
+ content="""
+After running a `git status` today (the first time running it was slow as usual) the problem seems to have gone away. Perhaps it just needed to rebuild some kind of cache or something. I believe that I had waited for a `git status` command to completely finish before, so maybe it takes several tries to resolve this performance problem? Or possibly I'm misremembering and I never actually waited for the `git status` command to fully finish. I'm baffled by this, but happy that it's back to normal. I'll post an update if the problem comes back. 
+"""]]
