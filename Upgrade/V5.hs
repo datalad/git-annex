@@ -10,6 +10,7 @@
 module Upgrade.V5 where
 
 import Annex.Common
+import Types.Upgrade
 import Config
 import Config.Smudge
 import Annex.InodeSentinal
@@ -36,7 +37,7 @@ import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
 
-upgrade :: Bool -> Annex Bool
+upgrade :: Bool -> Annex UpgradeResult
 upgrade automatic = flip catchNonAsync onexception $ do
 	unless automatic $
 		showAction "v5 to v6"
@@ -55,11 +56,11 @@ upgrade automatic = flip catchNonAsync onexception $ do
 	-- use direct mode may not have created it.
 	unlessM isDirect $
 		createInodeSentinalFile True
-	return True
+	return UpgradeSuccess
   where
 	onexception e = do
 		warning $ "caught exception: " ++ show e
-		return False
+		return UpgradeFailed
 
 -- git before 2.22 would OOM running git status on a large file.
 --

@@ -8,14 +8,15 @@
 module Upgrade.V6 where
 
 import Annex.Common
+import Types.Upgrade
 import Config
 import Annex.Hook
 
-upgrade :: Bool -> Annex Bool
+upgrade :: Bool -> Annex UpgradeResult
 upgrade automatic = do
 	unless automatic $
 		showAction "v6 to v7"
 	unlessM isBareRepo $ do
 		hookWrite postCheckoutHook
 		hookWrite postMergeHook
-	return True
+	return UpgradeSuccess

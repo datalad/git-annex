@@ -19,19 +19,19 @@ import qualified Annex
 import qualified Data.Map as M
 
 defaultVersion :: RepoVersion
-defaultVersion = RepoVersion 8
+defaultVersion = RepoVersion 10
 
 latestVersion :: RepoVersion
-latestVersion = RepoVersion 9
+latestVersion = RepoVersion 10
 
 supportedVersions :: [RepoVersion]
-supportedVersions = map RepoVersion [8, 9]
+supportedVersions = map RepoVersion [8, 9, 10]
 
 upgradeableVersions :: [RepoVersion]
 #ifndef mingw32_HOST_OS
-upgradeableVersions = map RepoVersion [0..8]
+upgradeableVersions = map RepoVersion [0..10]
 #else
-upgradeableVersions = map RepoVersion [2..8]
+upgradeableVersions = map RepoVersion [2..10]
 #endif
 
 autoUpgradeableVersions :: M.Map RepoVersion RepoVersion
@@ -41,6 +41,8 @@ autoUpgradeableVersions = M.fromList
 	, (RepoVersion 5, latestVersion)
 	, (RepoVersion 6, latestVersion)
 	, (RepoVersion 7, latestVersion)
+	, (RepoVersion 8, latestVersion) 
+	, (RepoVersion 9, latestVersion) 
 	]
 
 versionField :: ConfigKey
@@ -57,5 +59,5 @@ removeVersion = unsetConfig versionField
 
 versionNeedsWritableContentFiles :: Maybe RepoVersion -> Bool
 versionNeedsWritableContentFiles (Just v) 
-	| v >= RepoVersion 9 = False
+	| v >= RepoVersion 10 = False
 versionNeedsWritableContentFiles _ = True

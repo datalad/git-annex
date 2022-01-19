@@ -1055,6 +1055,7 @@ Executable git-annex
     Types.Transitions
     Types.TrustLevel
     Types.UUID
+    Types.Upgrade
     Types.UrlContents
     Types.VectorClock
     Types.View
@@ -1070,6 +1071,7 @@ Executable git-annex
     Upgrade.V6
     Upgrade.V7
     Upgrade.V8
+    Upgrade.V9
     Utility.Aeson
     Utility.Android
     Utility.Applicative

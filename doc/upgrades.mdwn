@@ -49,6 +49,24 @@ the upgrade would need to be run in a copy of the repository.
 
 The upgrade events, so far:
 
+## v9 -> v10 (git-annex version 10.x)
+
+v10 repositories change a fundamental part of how git-annex does locking.
+
+v9 repositories are automatically upgraded to v10, but with a delay.
+The upgrade happens one year after the repository was upgraded to v9.
+This delay is because it would not be safe to upgrade to v10 if a
+git-annex process version 8.x was still running. Waiting a year makes
+it very unlikely that such a process is still running.
+
+## v8 -> v9 (git-annex version 10.x)
+
+v8 repositories are automatically upgraded to v9.
+
+Starting in v9, upgrades to a repository are prevented while another
+git-annex command is running. That is needed for the v10 repository
+upgrade to be performed safely.
+
 ## v7 -> v8 (git-annex version 8.x)
 
 v7 repositories are automatically upgraded to v8.

@@ -8,37 +8,25 @@
 module Upgrade.V8 where
 
 import Annex.Common
-import Annex.Content
-import Annex.Perms
-import Git.ConfigTypes
-import Types.RepoVersion
+import Types.Upgrade
+import Utility.Daemon
 
-upgrade :: Bool -> Annex Bool
+upgrade :: Bool -> Annex UpgradeResult
 upgrade automatic = do
-	unless automatic $
-		showAction "v8 to v9"
+	-- Skip running when git-annex assistant (or watch) is running,
+	-- because these are long-running daemons that could conceivably
+	-- run for an entire year, and so still be running when the v10
+	-- upgrade happens. If the assistant then tried to drop a file
+	-- after the v10 upgrade, it would use the wrong content file
+	-- locking, which could lead to data loss. The remotedaemon does
+	-- not drop content, so will not block the upgrade.
+	pidfile <- fromRepo gitAnnexPidFile
+	liftIO (checkDaemon (fromRawFilePath pidfile)) >>= \case
+		Just _pid
+			| automatic -> return UpgradeDeferred
+			| otherwise -> giveup "Cannot upgrade to v9 when git-annex assistant or watch daemon is running."
+		Nothing -> do
+			unless automatic $
+				showAction "v8 to v9"
 
-	{- When core.sharedRepository is set, object files
-	 - used to have their write bits set. That can now be removed,
-	 - if the user the upgrade is running as has permission to remove
-	 - it. (Otherwise, a later fsck will fix up the permissions.) -}
-	withShared $ \sr -> case sr of
-		GroupShared -> removewrite sr
-		AllShared -> removewrite sr
-		_ -> return ()
-
-	return True
-  where
-	newver = Just (RepoVersion 9)
-
-	removewrite sr = do
-		ks <- listKeys InAnnex
-		forM_ ks $ \k -> do
-			obj <- calcRepo (gitAnnexLocation k)
-			keystatus <- getKeyStatus k
-			case keystatus of
-				KeyPresent -> void $ tryIO $
-					freezeContent'' sr obj newver
-				KeyUnlockedThin -> return ()
-				KeyLockedThin -> return ()
-				KeyMissing -> return ()
+			return UpgradeSuccess

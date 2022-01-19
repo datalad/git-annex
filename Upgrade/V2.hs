@@ -8,6 +8,7 @@
 module Upgrade.V2 where
 
 import Annex.Common
+import Types.Upgrade
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
@@ -38,7 +39,7 @@ olddir g
  - * Remove stuff that used to be needed in .gitattributes.
  - * Commit changes.
  -}
-upgrade :: Annex Bool
+upgrade :: Annex UpgradeResult
 upgrade = do
 	showAction "v2 to v3"
 	bare <- fromRepo Git.repoIsLocalBare
@@ -63,7 +64,7 @@ upgrade = do
 
 	unless bare push
 
-	return True
+	return UpgradeSuccess
 
 locationLogs :: Annex [(Key, FilePath)]
 locationLogs = do

@@ -1,6 +1,6 @@
 {- git-annex upgrade support
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@
 module Upgrade where
 
 import Annex.Common
+import Types.Upgrade
 import qualified Annex
 import qualified Git
 import Config
@@ -27,6 +28,7 @@ import qualified Upgrade.V5
 import qualified Upgrade.V6
 import qualified Upgrade.V7
 import qualified Upgrade.V8
+import qualified Upgrade.V9
 
 import qualified Data.Map as M
 
@@ -63,25 +65,27 @@ needsUpgrade v
 
 upgrade :: Bool -> RepoVersion -> Annex Bool
 upgrade automatic destversion = do
-	upgraded <- go =<< getVersion
-	when upgraded
-		postupgrade
+	(upgraded, newversion) <- go =<< getVersion
+	when upgraded $
+		postupgrade newversion
 	return upgraded
   where
 	go (Just v)
-		| v >= destversion = return True
+		| v >= destversion = return (True, Just v)
 		| otherwise = ifM upgradingRemote
 			( upgraderemote
-			, ifM (up v)
-				( go (Just (RepoVersion (fromRepoVersion v + 1)))
-				, return False
-				)
+			, up v >>= \case
+				UpgradeSuccess -> go (Just (incrversion v) )
+				UpgradeFailed -> return (False, Just v)
+				UpgradeDeferred -> return (True, Just v)
 			)
-	go _ = return True
+	go Nothing = return (True, Nothing)
 
-	postupgrade = ifM upgradingRemote
+	incrversion v = RepoVersion (fromRepoVersion v + 1)
+
+	postupgrade newversion = ifM upgradingRemote
 		( reloadConfig
-		, setVersion destversion
+		, maybe noop setVersion newversion
 		)
 
 #ifndef mingw32_HOST_OS
@@ -98,7 +102,8 @@ upgrade automatic destversion = do
 	up (RepoVersion 6) = Upgrade.V6.upgrade automatic
 	up (RepoVersion 7) = Upgrade.V7.upgrade automatic
 	up (RepoVersion 8) = Upgrade.V8.upgrade automatic
-	up _ = return True
+	up (RepoVersion 9) = Upgrade.V9.upgrade automatic
+	up _ = return UpgradeDeferred
 
 	-- Upgrade local remotes by running git-annex upgrade in them.
 	-- This avoids complicating the upgrade code by needing to handle
@@ -111,8 +116,8 @@ upgrade automatic destversion = do
 			]
 			(\p -> p { cwd = Just rp })
 			(\_ _ _ pid -> waitForProcess pid >>= return . \case
-				ExitSuccess -> True
-				_ -> False
+				ExitSuccess -> (True, Nothing)
+				_ -> (False, Nothing)
 			)
 
 upgradingRemote :: Annex Bool

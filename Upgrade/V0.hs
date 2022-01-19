@@ -8,10 +8,11 @@
 module Upgrade.V0 where
 
 import Annex.Common
+import Types.Upgrade
 import Annex.Content
 import qualified Upgrade.V1
 
-upgrade :: Annex Bool
+upgrade :: Annex UpgradeResult
 upgrade = do
 	showAction "v0 to v1"
 

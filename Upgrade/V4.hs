@@ -8,8 +8,9 @@
 module Upgrade.V4 where
 
 import Annex.Common
+import Types.Upgrade
 
 {- Was only used for direct mode upgrade. v4 to v5 indirect update is a no-op,
  - and direct mode is no longer supported, so nothing needs to be done. -}
-upgrade :: Bool -> Annex Bool
-upgrade _automatic = return True
+upgrade :: Bool -> Annex UpgradeResult
+upgrade _automatic = return UpgradeSuccess

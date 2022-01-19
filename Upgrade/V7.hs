@@ -12,6 +12,7 @@ module Upgrade.V7 where
 
 import qualified Annex
 import Annex.Common
+import Types.Upgrade
 import Annex.CatFile
 import qualified Database.Keys
 import qualified Database.Keys.SQL
@@ -23,7 +24,7 @@ import qualified Utility.RawFilePath as R
 
 import qualified System.FilePath.ByteString as P
 
-upgrade :: Bool -> Annex Bool
+upgrade :: Bool -> Annex UpgradeResult
 upgrade automatic = do
 	unless automatic $
 		showAction "v7 to v8"
@@ -54,7 +55,7 @@ upgrade automatic = do
 	
 	updateSmudgeFilter
 
-	return True
+	return UpgradeSuccess
 
 gitAnnexKeysDbOld :: Git.Repo -> RawFilePath
 gitAnnexKeysDbOld r = gitAnnexDir r P.</> "keys"

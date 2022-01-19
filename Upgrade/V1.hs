@@ -17,6 +17,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 
 import Annex.Common
+import Types.Upgrade
 import Annex.Content
 import Annex.Link
 import Annex.Perms
@@ -53,7 +54,7 @@ import qualified Upgrade.V2
 -- Something similar to the migrate subcommand could be used,
 -- and users could then run that at their leisure.
 
-upgrade :: Annex Bool
+upgrade :: Annex UpgradeResult
 upgrade = do
 	showAction "v1 to v2"
 	
