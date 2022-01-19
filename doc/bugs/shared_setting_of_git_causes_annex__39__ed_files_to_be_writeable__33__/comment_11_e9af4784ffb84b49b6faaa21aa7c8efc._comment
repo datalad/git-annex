@@ -5,22 +5,23 @@
  content="""
 This is going to need two repository version bumps:
 
-v9: Add the upgrade lock file, and all git-annex processes take a shared
-lock to avoid the repository being upgraded out from under them. 
-Upgrade is skipped when assistant is running.
+v9:  Add the upgrade lock file, and all git-annex processes take a shared
+lock to avoid the repository being upgraded out from under them.
 
 v10: Skipped until the upgrade lock file is of a certain age. Take upgrade
-lock before increasing annex.version.
+lock before upgrading.
+
 In v10, stop locking content files and lock separate lock files.
 
-This way, an old version of git-annex cannot be used in the v9 repository,
-and so the v10 upgrade only needs to worry about any git-annex processes
-that were started in v8.
-
-The age could be eg 1 month, which assumes that no old git-annex process
-like `git-annex move --to remote` is still running after that long.
+The age could be eg 1 month, which assumes that no pre-v9 git-annex
+process like `git-annex move --to remote` is still running after that long.
 Of course, that is still an assumption, but it can be pushed out as long as
-it takes to feel comfortable with it. Maybe 1 year?
+it takes to feel comfortable with it. Maybe 1 year? The only disadvantage
+really is that any v11 upgrade would also get deferred.
+
+Since the assistant can possibly run for longer than a year without
+restarting, the v10 upgrade would need to be skipped when the assistant is
+running.
 
 `git-annex upgrade --version=10` could be available to speed up that
 upgrade. The user would be responsible for making sure there are no such

@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2022-01-19T19:55:10Z"
+ content="""
+What kind of locking is needed for the v10 upgrade? Everything else is in
+place now, but the actual locking is TBD.
+
+My plan above calls for a way to detect if another git-annex process
+(v9 or above) is running in the repo. That will be hard to implement
+though.. 
+
+It might cause problems with annex.pidlock, if every git-annex
+process starts taking a shared lock, because pidlock does not support
+shared locks, so only 1 git-annex process will be able to run, perhaps in
+situations where multiples can run now even with pidlocking because no
+locking is needed.
+
+Also, the existing locking machinery runs in the Annex monad, but such a
+lock needs to be implemented in Annex.hs itself, so that would be a
+recursive dep. And, it would add overhead to every git-annex process.
+(A small amount.)
+
+Alternatively, there could be a top-level lock file that is held shared
+whenever locking content files. And the v10 upgrade takes an exclusive
+lock. But this seems to fail when a v9 process is running -- if it blocks
+on the shared lock for the v10 upgrade, it would still go on the lock in v9
+mode in the now v10 repository.
+"""]]
