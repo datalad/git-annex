@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -44,6 +44,8 @@ module Annex.Locations (
 	gitAnnexFsckDbDirOld,
 	gitAnnexFsckDbLock,
 	gitAnnexFsckResultsLog,
+	gitAnnexUpgradeLog,
+	gitAnnexUpgradeLock,
 	gitAnnexSmudgeLog,
 	gitAnnexSmudgeLock,
 	gitAnnexMoveLog,
@@ -344,6 +346,13 @@ gitAnnexFsckDbLock u r = gitAnnexFsckDir u r P.</> "fsck.lck"
 gitAnnexFsckResultsLog :: UUID -> Git.Repo -> RawFilePath
 gitAnnexFsckResultsLog u r = 
 	gitAnnexDir r P.</> "fsckresults" P.</> fromUUID u
+
+{- .git/annex/upgrade.log is used to record repository version upgrades. -}
+gitAnnexUpgradeLog :: Git.Repo -> RawFilePath
+gitAnnexUpgradeLog r = gitAnnexDir r P.</> "upgrade.log"
+
+gitAnnexUpgradeLock :: Git.Repo -> RawFilePath
+gitAnnexUpgradeLock r = gitAnnexDir r P.</> "upgrade.lck"
 
 {- .git/annex/smudge.log is used to log smudges worktree files that need to
  - be updated. -}

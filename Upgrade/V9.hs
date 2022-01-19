@@ -13,9 +13,41 @@ import Annex.Content
 import Annex.Perms
 import Git.ConfigTypes
 import Types.RepoVersion
+import Logs.Upgrade
+import Utility.Daemon
+
+import Data.Time.Clock.POSIX
 
 upgrade :: Bool -> Annex UpgradeResult
-upgrade automatic = do
+upgrade automatic
+	| automatic = do
+		-- For automatic upgrade, wait until a year after the v9
+		-- upgrade. This is to give time for any old processes
+		-- that were running before the v9 upgrade to finish.
+		-- Such old processes lock content using the old method,
+		-- and it is not safe for such to still be running after
+		-- this upgrade.
+		timeOfUpgrade (RepoVersion 9) >>= \case
+			Nothing -> performUpgrade automatic
+			Just t -> do
+				now <- liftIO getPOSIXTime
+				if now - 365*24*60*60 > t
+					then return UpgradeDeferred
+					else checkassistantrunning $
+						performUpgrade automatic
+	| otherwise = performUpgrade automatic
+  where
+	-- Skip upgrade when git-annex assistant (or watch) is running,
+	-- because these are long-running daemons that could conceivably
+	-- run for an entire year.
+	checkassistantrunning a = do
+		pidfile <- fromRepo gitAnnexPidFile
+		liftIO (checkDaemon (fromRawFilePath pidfile)) >>= \case
+			Just _pid -> return UpgradeDeferred
+			Nothing -> a
+
+performUpgrade :: Bool -> Annex UpgradeResult
+performUpgrade automatic = do
 	unless automatic $
 		showAction "v9 to v10"
 

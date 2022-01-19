@@ -943,6 +943,7 @@ Executable git-annex
     Logs.UUID
     Logs.UUIDBased
     Logs.Unused
+    Logs.Upgrade
     Logs.View
     Logs.Web
     Messages

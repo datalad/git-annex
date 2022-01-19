@@ -17,6 +17,7 @@ import Config
 import Annex.Path
 import Annex.Version
 import Types.RepoVersion
+import Logs.Upgrade
 #ifndef mingw32_HOST_OS
 import qualified Upgrade.V0
 import qualified Upgrade.V1
@@ -31,6 +32,7 @@ import qualified Upgrade.V8
 import qualified Upgrade.V9
 
 import qualified Data.Map as M
+import Data.Time.Clock.POSIX
 
 checkUpgrade :: RepoVersion -> Annex ()
 checkUpgrade = maybe noop giveup <=< needsUpgrade
@@ -85,7 +87,7 @@ upgrade automatic destversion = do
 
 	postupgrade newversion = ifM upgradingRemote
 		( reloadConfig
-		, maybe noop setVersion newversion
+		, maybe noop upgradedto newversion
 		)
 
 #ifndef mingw32_HOST_OS
@@ -119,6 +121,10 @@ upgrade automatic destversion = do
 				ExitSuccess -> (True, Nothing)
 				_ -> (False, Nothing)
 			)
+
+	upgradedto v = do
+		setVersion v
+		writeUpgradeLog v =<< liftIO getPOSIXTime
 
 upgradingRemote :: Annex Bool
 upgradingRemote = isJust <$> fromRepo Git.remoteName
