@@ -1,0 +1,132 @@
+Under very particular conditions a `git annex drop --force --all` fails in a bare repository on windows with:
+
+```
+git-annex: .\annex\objects\3f7\4a3\XDLRA--refs\XDLRA--refs: DeleteFile "\\\\?\\<BASEDIR>\\<REPODIR>\\annex\\objects\\3f7\\4a3\\XDLRA--refs\\XDLRA--refs": permission denied (Access is denied.)
+```
+
+(`<BASEDIR>` and `<REPODIR>` are put by me to improve readability here and below).
+
+The key reported as "access denied" is in fact present and has the "read-only" flag set.
+
+What makes this strange is that I can reliably trigger this error, or avoid it, with small differences in the command sequence -- differences that, to me, should not impact the ability to drop a key.
+
+Below I am posting two complete command sequences (and the diff between them) for triggering and not triggering the error.
+I edited the logs to make all matching paths uniform, for readability again. The logs are produced by the same unittest under the same runtime conditions. Both logs start by initializing a git repo in a previously non-existing directory. In both cases a `type=directory` special remote is initialized, but once with `exporttree=yes` and once without. The only other difference is that in the `exporttree=yes` case a custom tree is written to the repository (without creating a commit or advancing a branch), and a "fake" `export.log` record is created that claims that this custom tree was exported from "here" to the initialized directory special remote (this change is committed to the git-annex branch). Afterwards the sequence is identical again.
+
+The failure occurs in the simple case, *without* the fake-export, and only on windows. Both scenarios work on linux and macos.
+
+I am using git annex version 8.20211117-gc3af94eff and git version 2.34.1.windows.1 on an up-to-date win10 box. But I am also seeing this behavior on a windows appveyor CI runner (windows 10.0.17763) with 2.33.1.windows.1.
+
+### Please provide any additional information below.
+
+[[!format sh """
+
+# drop-failure
+
+[DBG] Initialize empty Git repository at '<BASEDIR>\<REPODIR>' ['--bare']
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-C', '<BASEDIR>\\<REPODIR>', 'init', '--bare'] (cwd=<BASEDIR>\<REPODIR>)
+[DBG] Run ['git', 'config', '-z', '-l', '--show-origin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'config', 'annex.private', 'true'] (cwd=<BASEDIR>\<REPODIR>)
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'init'] (cwd=<BASEDIR>\<REPODIR>)
+[Level 11] stderr|   Detected a filesystem without fifo support.
+[Level 11] stderr|   Disabling ssh connection caching.
+[Level 11] stderr|   Detected a crippled filesystem.
+[DBG] Run ['git', 'config', '-z', '-l', '--show-origin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'annex', 'version', '--raw'] (cwd=None) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'initremote', 'origin', 'type=directory', 'directory=C:\\REMOTE', 'encryption=none', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'config', '-z', '-l', '--show-origin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'cat-file', 'blob', 'git-annex:remote.log'] (cwd=<BASEDIR>\<REPODIR>)
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'fsck', '-f', 'origin', '--fast', '--key', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'drop', '--force', '--key', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'get', '--key', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'contentlocation', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'drop', '--force', '--all', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 1
+fatal: CommandError(CommandError: '"git" "-c" "diff.ignoreSubmodules=none" "annex" "drop" "--force" "--all" "-c" "annex.dotfiles=true"' failed with exitcode 1 under <BASEDIR>\<REPODIR> [out: 'drop XDLRA--refs
+failed
+drop XDLRA--refs
+failed'] [err: 'git-annex: .\annex\objects\3f7\4a3\XDLRA--refs\XDLRA--refs: DeleteFile "\\\\?\\<BASEDIR>\\<REPODIR>\\annex\\objects\\3f7\\4a3\\XDLRA--refs\\XDLRA--refs": permission denied (Access is denied.)
+git-annex: .\annex\objects\3f7\4a3\XDLRA--refs\XDLRA--refs: DeleteFile "\\\\?\\<BASEDIR>\\<REPODIR>\\annex\\objects\\3f7\\4a3\\XDLRA--refs\\XDLRA--refs": permission denied (Access is denied.)
+drop: 2 failed'])
+
+# drop-success / exporttree=yes
+
+[DBG] Initialize empty Git repository at '<BASEDIR>\<REPODIR>' ['--bare']
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', '-C', '<BASEDIR>\\<REPODIR>', 'init', '--bare'] (cwd=<BASEDIR>\<REPODIR>)
+[DBG] Run ['git', 'config', '-z', '-l', '--show-origin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'config', 'annex.private', 'true'] (cwd=<BASEDIR>\<REPODIR>)
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'init'] (cwd=<BASEDIR>\<REPODIR>)
+[Level 11] stderr|   Detected a filesystem without fifo support.
+[Level 11] stderr|   Disabling ssh connection caching.
+[Level 11] stderr|   Detected a crippled filesystem.
+[DBG] Run ['git', 'config', '-z', '-l', '--show-origin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'annex', 'version', '--raw'] (cwd=None) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'initremote', 'origin', 'type=directory', 'directory=C:\\REMOTE', 'encryption=none', 'exporttree=yes', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'config', '-z', '-l', '--show-origin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'hash-object', '-w', '--stdin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'update-index', '--add', '--cacheinfo', '120000', 'a4725c5396b9e1abbb67ad1531b30ba5902ccf02', '.datalad/dotgit/refs'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'hash-object', '-w', '--stdin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'update-index', '--add', '--cacheinfo', '120000', '6e67546efb8b9f1a0ded02f07221586c6a93f292', '.datalad/dotgit/repo.zip'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'write-tree'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'hash-object', '-w', '--stdin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'read-tree', 'git-annex'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'update-index', '--add', '--cacheinfo', '100644', '8db4da90bf1b3cd4e9d0b6d079532696e71c1998', 'export.log'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'write-tree'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', 'commit-tree', '-m', 'Fake export', '-p', 'git-annex', '0c8af6e758e0d66d3d0d041c7f3f73f79f0dcab9'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'update-ref', 'refs/heads/git-annex', '9dbd3377a4cca0cded93986a83bb025a0ac15b66'] (cwd=<BASEDIR>\<REPODIR>)
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'cat-file', 'blob', 'git-annex:remote.log'] (cwd=<BASEDIR>\<REPODIR>)
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'fsck', '-f', 'origin', '--fast', '--key', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'drop', '--force', '--key', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'get', '--key', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'contentlocation', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'drop', '--force', '--all', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+[DATALAD-ANNEX] drop XDLRA--refs ok
+
+"""]]
+
+And here is the diff between the two sequences  (failure(-) vs success(+)
+
+[[!format diff """
+
+--- annex_remote.txt    2022-01-19 21:25:57.025990250 +0100
++++ export_remote.txt   2022-01-19 21:29:57.262464761 +0100
+@@ -8,17 +8,23 @@
+ [Level 11] stderr|   Detected a crippled filesystem.
+ [DBG] Run ['git', 'config', '-z', '-l', '--show-origin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+ [DBG] Run ['git', 'annex', 'version', '--raw'] (cwd=None) Finished with status 0
+-[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'initremote', 'origin', 'type=directory', 'directory=C:\\REMOTE', 'encryption=none', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'initremote', 'origin', 'type=directory', 'directory=C:\\REMOTE', 'encryption=none', 'exporttree=yes', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+ [DBG] Run ['git', 'config', '-z', '-l', '--show-origin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', 'hash-object', '-w', '--stdin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', 'update-index', '--add', '--cacheinfo', '120000', 'a4725c5396b9e1abbb67ad1531b30ba5902ccf02', '.datalad/dotgit/refs'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', 'hash-object', '-w', '--stdin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', 'update-index', '--add', '--cacheinfo', '120000', '6e67546efb8b9f1a0ded02f07221586c6a93f292', '.datalad/dotgit/repo.zip'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', 'write-tree'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', 'hash-object', '-w', '--stdin'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', 'read-tree', 'git-annex'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', 'update-index', '--add', '--cacheinfo', '100644', '8db4da90bf1b3cd4e9d0b6d079532696e71c1998', 'export.log'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', 'write-tree'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', 'commit-tree', '-m', 'Fake export', '-p', 'git-annex', '0c8af6e758e0d66d3d0d041c7f3f73f79f0dcab9'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'update-ref', 'refs/heads/git-annex', '9dbd3377a4cca0cded93986a83bb025a0ac15b66'] (cwd=<BASEDIR>\<REPODIR>)
+ [DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'cat-file', 'blob', 'git-annex:remote.log'] (cwd=<BASEDIR>\<REPODIR>)
+ [DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'fsck', '-f', 'origin', '--fast', '--key', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+ [DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'drop', '--force', '--key', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+ [DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'get', '--key', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+ [DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'contentlocation', 'XDLRA--refs', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
+-[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'drop', '--force', '--all', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 1
+-fatal: CommandError(CommandError: '"git" "-c" "diff.ignoreSubmodules=none" "annex" "drop" "--force" "--all" "-c" "annex.dotfiles=true"' failed with exitcode 1 under <BASEDIR>\<REPODIR> [out: 'drop XDLRA--refs
+-failed
+-drop XDLRA--refs
+-failed'] [err: 'git-annex: .\annex\objects\3f7\4a3\XDLRA--refs\XDLRA--refs: DeleteFile "\\\\?\\<BASEDIR>\\<REPODIR>\\annex\\objects\\3f7\\4a3\\XDLRA--refs\\XDLRA--refs": permission denied (Access is denied.)
+-git-annex: .\annex\objects\3f7\4a3\XDLRA--refs\XDLRA--refs: DeleteFile "\\\\?\\<BASEDIR>\\<REPODIR>\\annex\\objects\\3f7\\4a3\\XDLRA--refs\\XDLRA--refs": permission denied (Access is denied.)
+-drop: 2 failed'])
++[DBG] Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'drop', '--force', '--all', '-c', 'annex.dotfiles=true'] (cwd=<BASEDIR>\<REPODIR>) Finished with status 0
++[DATALAD-ANNEX] drop XDLRA--refs ok
+
+
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+This observation comes from an effort to implement a git-remote-helper that uses git-annex to enable fetch/push to and from any location that can be reached by any special remote. The fact that git-annex can be used to build things like this is just crazy cool! Thx much!
+
+[[!tag projects/datalad]]
