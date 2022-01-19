@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="nested git repositories are git submodules"
+ date="2022-01-14T13:02:36Z"
+ content="""
+Using nested git repositories is well possible; if they are checked in they are called submodules, otherwise they just sit there unadded.
+
+Apart from some [[odd quirx you never run into in normal operation|bugs/creating dot-git-as-symlink workaround drops worktree configuration from submodules]], submodules work fine also with git-annex.
+"""]]

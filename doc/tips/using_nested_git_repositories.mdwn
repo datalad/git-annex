@@ -1,0 +1,7 @@
+Using nested git repositories in git is not possible and thus this also applies to git-annex. However, here is a good workaround that I found:
+
+Rename the `.git` directory of the nested repo to `dotgit` (or similar), `git annex add` it and then create a symbolic link from `.git` to `dotgit`. It's important that the link is created only after the nested repo has been `git annex add`'ed. Also, the link needs to be created manually on each clone. Finally you'll need to hide the `dotgit` directory from the nested repo itself by adding `/dotgit` to `dotgit/info/exclude`.
+
+    mv nested/.git nested/dotgit; echo "/dotgit" >>nested/dotgit/info/exclude
+    git annex add nested; git commit -m "add nested"
+    cd nested; ln -s dotgit .git # needs to be done on every clone
