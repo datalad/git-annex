@@ -38,7 +38,7 @@ needsUpgrade v
 	| v `elem` supportedVersions = ok
 	| otherwise = case M.lookup v autoUpgradeableVersions of
 		Nothing
-			| v `elem` upgradableVersions ->
+			| v `elem` upgradeableVersions ->
 				err "Upgrade this repository: git-annex upgrade"
 			| otherwise ->
 				err "Upgrade git-annex."

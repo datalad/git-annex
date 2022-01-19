@@ -66,7 +66,7 @@ showPackageVersion = do
 	vinfo "supported repository versions" $
 		verlist supportedVersions
 	vinfo "upgrade supported from repository versions" $
-		verlist upgradableVersions
+		verlist upgradeableVersions
   where
 	verlist = unwords . map showRepoVersion
 

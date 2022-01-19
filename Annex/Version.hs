@@ -27,11 +27,11 @@ latestVersion = RepoVersion 9
 supportedVersions :: [RepoVersion]
 supportedVersions = map RepoVersion [8, 9]
 
-upgradableVersions :: [RepoVersion]
+upgradeableVersions :: [RepoVersion]
 #ifndef mingw32_HOST_OS
-upgradableVersions = map RepoVersion [0..8]
+upgradeableVersions = map RepoVersion [0..8]
 #else
-upgradableVersions = map RepoVersion [2..8]
+upgradeableVersions = map RepoVersion [2..8]
 #endif
 
 autoUpgradeableVersions :: M.Map RepoVersion RepoVersion
