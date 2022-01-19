@@ -18,4 +18,5 @@ conda linux nodep (standalone) build 8.20211012-geb95ed486 and then with another
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
-[[!tag moreinfo]]
+> [[done]] provisionally, followup if further testing shows otherwise
+> --[[Joey]]

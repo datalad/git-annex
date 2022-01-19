@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-01-19T15:51:17Z"
+ content="""
+I agree, submodules are the usual way to nest git repositories, and will
+more or less just work with git-annex.
+
+I think that the author of this tip is wanting to version control the
+contents of `.git` itself. Eg, to version control `.git/config` and 
+`.git/hooks/`.
+
+One problem with this approach is that when the outer repository has
+"dotgit/annex/objects/` files added to it, running `git-annex drop` inside
+the nested git repository will drop the content, but the outer repository
+will still contain a copy too. You would have to use `git-annex unused`
+to eventually clean up those copies. And it stores 2 copies of every
+annexed file to use it this way.
+"""]]

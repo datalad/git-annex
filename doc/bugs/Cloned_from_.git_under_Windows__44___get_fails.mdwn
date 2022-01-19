@@ -1,0 +1,292 @@
+### Please describe the problem.
+
+Under Windows (not tested in Unix), if an annex is cloned from the .git directory, git annex get fails and is different to cloning from workdir
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+shaddy@COMPUTER-W10 U:\Temp
+> git annex version
+git-annex version: 8.20211118-g2e2d35869
+build flags: Assistant Webapp Pairing TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.0 ghc-8.10.7 http-client-0.7.9 persistent-sqlite-2.13.0.3 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.1.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: mingw32 x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 2 3 4 5 6 7
+
+shaddy@COMPUTER-W10 U:\Temp
+> dir
+ Volume in drive U has no label.
+ Volume Serial Number is D684-6493
+
+ Directory of U:\Temp
+
+13/01/2022  01:42 PM    <DIR>          .
+13/01/2022  01:42 PM    <DIR>          ..
+10/04/2020  07:36 PM        14,572,000 vc_redist.x64.exe
+               1 File(s)     14,572,000 bytes
+               2 Dir(s)  21,238,497,280 bytes free
+
+shaddy@COMPUTER-W10 U:\Temp
+> git init --separate-git-dir separategitmaster.git separategitmaster
+Initialized empty Git repository in U:/Temp/separategitmaster.git/
+
+shaddy@COMPUTER-W10 U:\Temp
+> cd separategitmaster
+
+shaddy@COMPUTER-W10 U:\Temp\separategitmaster
+> git annex init master
+init master
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+
+shaddy@COMPUTER-W10 U:\Temp\separategitmaster
+> copy ..\vc_redist.x64.exe .
+        1 file(s) copied.
+
+shaddy@COMPUTER-W10 U:\Temp\separategitmaster
+> git annex add vc_redist.x64.exe
+add vc_redist.x64.exe
+ok
+(recording state in git...)
+
+shaddy@COMPUTER-W10 U:\Temp\separategitmaster
+> git commit -m vc_redist.x64.exe
+[adjusted/master(unlocked) a32d7ba] vc_redist.x64.exe
+ 1 file changed, 1 insertion(+)
+ create mode 100755 vc_redist.x64.exe
+
+shaddy@COMPUTER-W10 U:\Temp\separategitmaster
+> cd ..
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitslave
+> REM note, cloning from workdir, not .git
+
+shaddy@COMPUTER-W10 U:\Temp
+> git clone separategitmaster separategitslave
+Cloning into 'separategitslave'...
+done.
+
+shaddy@COMPUTER-W10 U:\Temp
+> cd separategitslave
+
+shaddy@COMPUTER-W10 U:\Temp\separategitslave
+> dir
+ Volume in drive U has no label.
+ Volume Serial Number is D684-6493
+
+ Directory of U:\Temp\separategitslave
+
+13/01/2022  01:45 PM    <DIR>          .
+13/01/2022  01:45 PM    <DIR>          ..
+13/01/2022  01:45 PM               108 vc_redist.x64.exe
+               1 File(s)            108 bytes
+               2 Dir(s)  21,209,219,072 bytes free
+
+shaddy@COMPUTER-W10 U:\Temp\separategitslave
+> git config user.name "Shaddy Baddah"
+
+shaddy@COMPUTER-W10 U:\Temp\separategitslave
+> git annex init slave
+init slave
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+ok
+(recording state in git...)
+
+shaddy@COMPUTER-W10 U:\Temp\separategitslave
+> git annex sync
+commit
+On branch adjusted/master(unlocked)
+Your branch is up to date with 'origin/adjusted/master(unlocked)'.
+
+nothing to commit, working tree clean
+ok
+pull origin
+ok
+push origin
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (6/6), 718 bytes | 359.00 KiB/s, done.
+Total 6 (delta 0), reused 0 (delta 0), pack-reused 0
+To U:/Temp/separategitmaster
+ * [new branch]      master -> synced/master
+ * [new branch]      git-annex -> synced/git-annex
+ok
+
+shaddy@COMPUTER-W10 U:\Temp\separategitslave
+> git annex get vc_redist.x64.exe
+get vc_redist.x64.exe (from origin...)
+ok
+(recording state in git...)
+
+shaddy@COMPUTER-W10 U:\Temp\separategitslave
+> REM All ok. But now lets clone from the .git dir
+
+shaddy@COMPUTER-W10 U:\Temp\separategitslave
+> cd ..
+
+shaddy@COMPUTER-W10 U:\Temp
+> git init --separate-git-dir separatetake2gitmaster.git separatetake2gitmaster
+Initialized empty Git repository in U:/Temp/separatetake2gitmaster.git/
+
+shaddy@COMPUTER-W10 U:\Temp
+> cd separatetake2gitmaster
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitmaster
+> git annex init master
+init master
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitmaster
+> copy ..\vc_redist.x64.exe .
+        1 file(s) copied.
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitmaster
+> git annex add vc_redist.x64.exe
+add vc_redist.x64.exe
+ok
+(recording state in git...)
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitmaster
+> git commit -m vc_redist.x64.exe
+git-annex.exe: .\vc_redist.x64.exe: DeleteFile "\\\\?\\U:\\Temp\\separatetake2gitmaster\\vc_redist.x64.exe": permission denied (The process cannot access the file because it is being used by another process.)
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+[adjusted/master(unlocked) 50bb6c7] vc_redist.x64.exe
+ 1 file changed, 1 insertion(+)
+ create mode 100755 vc_redist.x64.exe
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitmaster
+> REM unfortunate Windows gotcha, but I believe it doesnt effect the scenario
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitmaster
+> dir
+ Volume in drive U has no label.
+ Volume Serial Number is D684-6493
+
+ Directory of U:\Temp\separatetake2gitmaster
+
+13/01/2022  01:47 PM    <DIR>          .
+13/01/2022  01:47 PM    <DIR>          ..
+10/04/2020  07:36 PM        14,572,000 vc_redist.x64.exe
+               1 File(s)     14,572,000 bytes
+               2 Dir(s)  21,149,949,952 bytes free
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitmaster
+> cd ..\
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitmaster
+> REM cloning from the .git this time
+
+shaddy@COMPUTER-W10 U:\Temp
+> git clone separatetake2gitmaster.git separatetake2gitslave
+Cloning into 'separatetake2gitslave'...
+done.
+
+shaddy@COMPUTER-W10 U:\Temp
+> cd separatetake2gitslave
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitslave
+> git annex init slave
+init slave
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+ok
+(recording state in git...)
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitslave
+> dir
+ Volume in drive U has no label.
+ Volume Serial Number is D684-6493
+
+ Directory of U:\Temp\separatetake2gitslave
+
+13/01/2022  01:48 PM    <DIR>          .
+13/01/2022  01:48 PM    <DIR>          ..
+13/01/2022  01:48 PM               108 vc_redist.x64.exe
+               1 File(s)            108 bytes
+               2 Dir(s)  21,149,868,032 bytes free
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitslave
+> git annex sync
+commit
+On branch adjusted/master(unlocked)
+Your branch is up to date with 'origin/adjusted/master(unlocked)'.
+
+nothing to commit, working tree clean
+ok
+pull origin
+ok
+push origin
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (5/5), done.
+Writing objects: 100% (6/6), 719 bytes | 719.00 KiB/s, done.
+Total 6 (delta 0), reused 0 (delta 0), pack-reused 0
+To U:/Temp/separatetake2gitmaster.git
+ * [new branch]      master -> synced/master
+ * [new branch]      git-annex -> synced/git-annex
+ok
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitslave
+> git annex get vc_redist.x64.exe
+get vc_redist.x64.exe
+  Unable to access these remotes: origin
+
+  No other repository is known to contain the file.
+failed
+get: 1 failed
+
+shaddy@COMPUTER-W10 U:\Temp\separatetake2gitslave
+> REM this is a confusing situation and repeatable
+# End of transcript or log.
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+shaddy@COMPUTER-W10 U:\Temp
+> git annex version
+git-annex version: 8.20211118-g2e2d35869
+
+### Please provide any additional information below.
+
+[[!format sh """
+Note, in my example, I'm using a .git directory that has been "separated" from its workdir.
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes. Git annex is very good. I acknowledge that the way I use it can be unconventional.
