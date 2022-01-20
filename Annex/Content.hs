@@ -243,8 +243,8 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 						cleanuplockfile lockfile
 					liftIO $ dropLock h
 		-- We have an exclusive lock, so no other process can have
-		-- the file locked, and so it's safe to remove it, as long
-		-- as all attempts to lock the file use checkSaneLock.
+		-- the lock file locked, and so it's safe to remove it, as 
+		-- long as all lock attempts use checkSaneLock.
 		_ -> do
 			maybe noop cleanuplockfile mlockfile
 			liftIO $ dropLock lck
@@ -258,10 +258,10 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 		maybe noop cleanuplockfile mlockfile
 #endif
 
-	cleanuplockfile lockfile = modifyContent lockfile $
-		void $ liftIO $ tryIO $ do
-			removeWhenExistsWith R.removeLink lockfile
-			cleanObjectDirs lockfile
+	cleanuplockfile lockfile = void $ tryNonAsync $ do
+		thawContentDir lockfile
+		liftIO $ removeWhenExistsWith R.removeLink lockfile
+		liftIO $ cleanObjectDirs lockfile
 
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
