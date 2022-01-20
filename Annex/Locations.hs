@@ -20,6 +20,7 @@ module Annex.Locations (
 	gitAnnexLink,
 	gitAnnexLinkCanonical,
 	gitAnnexContentLock,
+	gitAnnexContentLockLock,
 	gitAnnexInodeSentinal,
 	gitAnnexInodeSentinalCache,
 	annexLocationsBare,
@@ -238,6 +239,11 @@ gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
 gitAnnexContentLock key r config = do
 	loc <- gitAnnexLocation key r config
 	return $ loc <> ".lck"
+
+{- Lock that is held when taking the gitAnnexContentLock to support the v10
+ - upgrade. -}
+gitAnnexContentLockLock :: Git.Repo -> RawFilePath
+gitAnnexContentLockLock r = gitAnnexDir r P.</> "content.lck"
 
 gitAnnexInodeSentinal :: Git.Repo -> RawFilePath
 gitAnnexInodeSentinal r = gitAnnexDir r P.</> "sentinal"

@@ -9,7 +9,6 @@ module Upgrade.V8 where
 
 import Annex.Common
 import Types.Upgrade
-import Utility.Daemon
 
 upgrade :: Bool -> Annex UpgradeResult
 upgrade automatic = do

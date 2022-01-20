@@ -188,9 +188,8 @@ winLocker _ _ Nothing = (return Nothing, Nothing)
  - the content is not present, because the content file is not always
  - the file that is locked. -}
 lockContentUsing :: ContentLocker -> Key -> Annex a -> Annex a -> Annex a
-lockContentUsing contentlocker key fallback a = do
+lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlockfile -> do
 	contentfile <- calcRepo (gitAnnexLocation key)
-	mlockfile <- contentLockFile key
 	let (locker, sharedtoexclusive) = contentlocker contentfile mlockfile
 	bracket
 		(lock locker mlockfile)

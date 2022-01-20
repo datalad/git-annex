@@ -26,4 +26,11 @@ whenever locking content files. And the v10 upgrade takes an exclusive
 lock. But this seems to fail when a v9 process is running -- if it blocks
 on the shared lock for the v10 upgrade, it would still go on the lock in v9
 mode in the now v10 repository.
+
+Update: That problem can be avoided by re-reading the git config
+to check if v10 was enabled, once it has taken the shared lock.
+That will mean that v9 repos do a little bit more work when locking content
+and dropping. For efficiency, use an InodeCache and only re-read when it's changed.
+This will need the v10 upgrade to set annex.version while it is still
+holding the exclusive lock.
 """]]

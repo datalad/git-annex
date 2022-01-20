@@ -1,6 +1,6 @@
 {- git-annex object content presence
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,14 +17,16 @@ module Annex.Content.Presence (
 	isUnmodified,
 	isUnmodified',
 	isUnmodifiedCheap,
-	contentLockFile,
+	withContentLockFile,
 ) where
 
 import Annex.Content.Presence.LowLevel
 import Annex.Common
 import qualified Annex
 import Annex.LockPool
+import Annex.LockFile
 import Annex.Version
+import Types.RepoVersion
 import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.InodeCache
@@ -77,7 +79,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 	is_unlocked = Just True
 	is_missing = Just False
 
-	go contentfile = flip checklock contentfile =<< contentLockFile key
+	go contentfile = withContentLockFile key $ flip checklock contentfile
 
 #ifndef mingw32_HOST_OS
 	checklock Nothing contentfile = checkOr is_missing contentfile
@@ -116,20 +118,36 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 			)
 #endif
 
-contentLockFile :: Key -> Annex (Maybe RawFilePath)
+{- Runs an action with the lock file to use to lock a key's content.
+ - When the content file itself should be locked, runs the action with
+ - Nothing.
+ -
+ - In v9 and below, while the action is running, a shared lock is held of the
+ - gitAnnexContentLockLock. That prevents the v10 upgrade, which changes how
+ - content locking works, from running at the same time as content is locked
+ - using the old method.
+ -}
+withContentLockFile :: Key -> (Maybe RawFilePath -> Annex a) -> Annex a
+withContentLockFile k a = do
+	v <- getVersion
+	let go = contentLockFile k v >>= a
+	if versionNeedsWritableContentFiles v
+		then withSharedLock gitAnnexContentLockLock go
+		else go
+
+contentLockFile :: Key -> Maybe RepoVersion -> Annex (Maybe RawFilePath)
 #ifndef mingw32_HOST_OS
 {- Older versions of git-annex locked content files themselves, but newer
  - versions use a separate lock file, to better support repos shared
  - amoung users in eg a group. -}
-contentLockFile key = ifM (versionNeedsWritableContentFiles <$> getVersion)
-	( pure Nothing
-	, Just <$> calcRepo (gitAnnexContentLock key)
-	)
+contentLockFile key v
+	| versionNeedsWritableContentFiles v = pure Nothing
+	| otherwise = Just <$> calcRepo (gitAnnexContentLock key)
 #else
 {- Windows always has to use a separate lock file from the content, since
  - locking the actual content file would interfere with the user's
  - use of it. -}
-contentLockFile key = Just <$> calcRepo (gitAnnexContentLock key)
+contentLockFile key _ = Just <$> calcRepo (gitAnnexContentLock key)
 #endif
 
 {- Performs an action, passing it the location to use for a key's content. -}
