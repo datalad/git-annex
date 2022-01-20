@@ -8,6 +8,7 @@
 module Upgrade.V9 where
 
 import Annex.Common
+import qualified Annex
 import Types.Upgrade
 import Annex.Content
 import Annex.Perms
@@ -22,31 +23,43 @@ import Data.Time.Clock.POSIX
 
 upgrade :: Bool -> Annex UpgradeResult
 upgrade automatic
-	| automatic = do
-		{- For automatic upgrade, wait until a year after the v9
-		 - upgrade. This is to give time for any old processes
-		 - that were running before the v9 upgrade to finish.
-		 - Such old processes lock content using the old method,
-		 - and it is not safe for such to still be running after
-		 - this upgrade. -}
-		timeOfUpgrade (RepoVersion 9) >>= \case
-			Nothing -> performUpgrade automatic
-			Just t -> do
-				now <- liftIO getPOSIXTime
-				if now - 365*24*60*60 > t
-					then return UpgradeDeferred
-					else checkassistantrunning $
-						performUpgrade automatic
-	| otherwise = performUpgrade automatic
+	| automatic = ifM oldprocessesdanger
+		( return UpgradeDeferred
+		, performUpgrade automatic
+		)
+	| otherwise = ifM (oldprocessesdanger <&&> (not <$> Annex.getState Annex.force))
+		( giveup $ unlines unsafeupgrade
+		, performUpgrade automatic
+		)
   where
+	{- Wait until a year after the v9 upgrade, to give time for
+	 - any old processes that were running before the v9 upgrade
+	 - to finish. Such old processes lock content using the old method,
+	 - and it is not safe for such to still be running after
+	 - this upgrade. -}
+	oldprocessesdanger = timeOfUpgrade (RepoVersion 9) >>= \case
+		Nothing -> pure True
+		Just t -> do
+			now <- liftIO getPOSIXTime
+			if now - 365*24*60*60 > t
+				then return True
+				else not <$> assistantrunning
+
 	{- Skip upgrade when git-annex assistant (or watch) is running,
 	 - because these are long-running daemons that could conceivably
 	 - run for an entire year and so predate the v9 upgrade. -}
-	checkassistantrunning a = do
+	assistantrunning = do
 		pidfile <- fromRepo gitAnnexPidFile
-		liftIO (checkDaemon (fromRawFilePath pidfile)) >>= \case
-			Just _pid -> return UpgradeDeferred
-			Nothing -> a
+		isJust <$> liftIO (checkDaemon (fromRawFilePath pidfile))
+	
+	unsafeupgrade =
+		[ "Not upgrading from v9 to v10, because there may be git-annex"
+		, "processes running that predate the v9 upgrade. Upgrading with"
+		, "such processes running could lead to data loss. This upgrade"
+		, "will be deferred until one year after the v9 upgrade to make"
+		, "sure there are no such old processes running."
+		, "(Use --force to upgrade immediately.)"
+		]
 
 performUpgrade :: Bool -> Annex UpgradeResult
 performUpgrade automatic = do
