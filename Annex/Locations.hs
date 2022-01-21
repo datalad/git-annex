@@ -241,9 +241,15 @@ gitAnnexContentLock key r config = do
 	return $ loc <> ".lck"
 
 {- Lock that is held when taking the gitAnnexContentLock to support the v10
- - upgrade. -}
+ - upgrade.
+ -
+ - This uses the gitAnnexInodeSentinal file, because it needs to be a file
+ - that exists in the repository, even when it's an old v8 repository that
+ - is mounted read-only. The gitAnnexInodeSentinal is created by git-annex
+ - init, so should already exist.
+ -}
 gitAnnexContentLockLock :: Git.Repo -> RawFilePath
-gitAnnexContentLockLock r = gitAnnexDir r P.</> "content.lck"
+gitAnnexContentLockLock = gitAnnexInodeSentinal
 
 gitAnnexInodeSentinal :: Git.Repo -> RawFilePath
 gitAnnexInodeSentinal r = gitAnnexDir r P.</> "sentinal"
