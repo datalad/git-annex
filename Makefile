@@ -130,7 +130,7 @@ mans: Build/MakeMans
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.
 docs: mans
-	@if [ -n "`which ikiwiki`" ]; then \
+	@if command -v ikiwiki; then \
 		LC_ALL=C TZ=UTC ikiwiki doc html -v --wikiname git-annex \
 			--plugin=goodstuff \
 			--no-usedirs --disable-plugin=openid --plugin=sidebar \
