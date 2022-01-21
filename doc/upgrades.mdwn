@@ -61,11 +61,11 @@ it very unlikely that such a process is still running.
 
 ## v8 -> v9 (git-annex version 10.x)
 
-v8 repositories are automatically upgraded to v9.
+v8 repositories are not yet automatically upgraded to v9.
 
-Starting in v9, upgrades to a repository are prevented while another
-git-annex command is running. That is needed for the v10 repository
-upgrade to be performed safely.
+v9 is a stepping stone to the v10 upgrade. By adding this intermediate
+version, old versions of git-annex that only support v8 will not be able to
+start new processes in the repository after the v9 upgrade.
 
 ## v7 -> v8 (git-annex version 8.x)
 
