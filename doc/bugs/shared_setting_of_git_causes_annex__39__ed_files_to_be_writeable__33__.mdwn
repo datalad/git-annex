@@ -29,3 +29,4 @@ I guess I need to annex fsck tons of repositories now :-/
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
 
+> [[fixed|done]] in git-annex v10. --[[Joey]]

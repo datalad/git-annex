@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2022-01-21T16:59:49Z"
+ content="""
+v10 is implemented, so upgrade your affected repositories to it to get the
+fix.
+"""]]
