@@ -1,5 +1,14 @@
-git-annex (8.20211232) UNRELEASED; urgency=medium
+git-annex (10.20220121) UNRELEASED; urgency=medium
 
+  * New v10 repository version (with v9 as a stepping-stone to it).
+    v8 remains the default version for now.
+  * In v10, object files are locked using separate lock files. This allows
+    the object files to be kept non-writable even in repositories where
+    core.sharedRepository is set.
+  * The v10 upgrade will happen automatically, one year after the v9
+    upgrade, in order to allow time for any old git-annex processes that
+    are not aware of the locking change to finish. Or git-annex upgrade
+    can be used to upgrade to v10 immediately.
   * export: When a non-annexed symlink is in the tree to be exported, skip it.
   * import: When the previously exported tree contained a non-annexed symlink,
     preserve it in the imported tree so it does not get deleted.
