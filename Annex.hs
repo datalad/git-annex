@@ -154,6 +154,7 @@ data AnnexState = AnnexState
 	, gitconfigadjustment :: (GitConfig -> GitConfig)
 	, gitconfigoverride :: [String]
 	, gitremotes :: Maybe [Git.Repo]
+	, gitconfiginodecache :: Maybe InodeCache
 	, backend :: Maybe (BackendA Annex)
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, output :: MessageState
@@ -214,6 +215,7 @@ newAnnexState c r = do
 		, gitconfigadjustment = id
 		, gitconfigoverride = []
 		, gitremotes = Nothing
+		, gitconfiginodecache = Nothing
 		, backend = Nothing
 		, remotes = []
 		, output = o

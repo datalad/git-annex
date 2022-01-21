@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Content.Presence (
 	inAnnex,
@@ -31,10 +32,14 @@ import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.InodeCache
 import qualified Utility.RawFilePath as R
+import qualified Git
+import Config
 
 #ifdef mingw32_HOST_OS
 import Annex.Perms
 #endif
+
+import qualified System.FilePath.ByteString as P
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -130,10 +135,29 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 withContentLockFile :: Key -> (Maybe RawFilePath -> Annex a) -> Annex a
 withContentLockFile k a = do
 	v <- getVersion
-	let go = contentLockFile k v >>= a
 	if versionNeedsWritableContentFiles v
-		then withSharedLock gitAnnexContentLockLock go
-		else go
+		then withSharedLock gitAnnexContentLockLock $ do
+			{- While the lock is held, check to see if the git
+			 - config has changed, and reload it if so. This
+			 - updates the annex.version after the v10 upgrade,
+			 - so that a process that started in a v9 repository
+			 - will switch over to v10 content lock files at the
+			 - right time. -}
+			gitdir <- fromRepo Git.localGitDir
+			let gitconfig = gitdir P.</> "config"
+			ic <- withTSDelta (liftIO . genInodeCache gitconfig)
+			oldic <- Annex.getState Annex.gitconfiginodecache
+			v' <- if fromMaybe False (compareStrong <$> ic <*> oldic)
+				then pure v
+				else do
+					Annex.changeState $ \s -> 
+						s { Annex.gitconfiginodecache = ic }
+					reloadConfig
+					getVersion
+			go (v')
+		else (go v)
+  where
+	go v = contentLockFile k v >>= a
 
 contentLockFile :: Key -> Maybe RepoVersion -> Annex (Maybe RawFilePath)
 #ifndef mingw32_HOST_OS
