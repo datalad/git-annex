@@ -17,7 +17,8 @@ to git. git-lfs uses it that way.
 The first problem with the interface was that it ran a command once per
 file. This was later fixed by extending it to support long-running filter
 processes, which git-lfs uses. git-annex can also use that interface,
-when `git-annex filter-process` is enabled, but it does not by default.
+when `git-annex filter-process` is enabled. That is the case in v9
+repositories and above.
 
 A second problem with the interface, which affects git-lfs AFAIK, is that
 git buffers the output of the smudge filter in memory before updating the
@@ -81,12 +82,12 @@ And here's the consequences of git-annex's workarounds:
 * It doesn't use the long-running filter process interface by default, 
   so `git add` of a lot of files runs `git-annex smudge --clean` once per file,
   which is slower than it could be. Using `git-annex add` avoids this problem.
-  So does enabling `git-annex filter-process`.
+  So does enabling `git-annex filter-process`, which is default in v9.
 
 * After a git-annex get/drop or a git checkout or pull that affects a lot
   of files, the clean filter gets run once per file, which is again, slower
   than ideal. Enabling `git-annex filter-process` can speed this up
-  in some cases.
+  in some cases, and is default in v9.
 
 * When `git-annex filter-process` is enabled, it cannot use the trick
   described above that `git-annex smudge --clean` uses to avoid git

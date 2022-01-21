@@ -1,6 +1,6 @@
 {- Git smudge filter configuration
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ import qualified Git.Command
 import Git.Types
 import Config
 import Utility.Directory.Create
+import Annex.Version
 
 import qualified System.FilePath.ByteString as P
 
@@ -32,6 +33,8 @@ configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
 
 	setConfig (ConfigKey "filter.annex.smudge") "git-annex smudge -- %f"
 	setConfig (ConfigKey "filter.annex.clean") "git-annex smudge --clean -- %f"
+	whenM (versionSupportsFilterProcess <$> getVersion)
+		configureSmudgeFilterProcess
 	lf <- Annex.fromRepo Git.attributesLocal
 	gf <- Annex.fromRepo Git.attributes
 	lfs <- readattr lf
@@ -42,6 +45,10 @@ configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
 		writeFile (fromRawFilePath lf) (lfs ++ "\n" ++ unlines stdattr)
   where
 	readattr = liftIO . catchDefaultIO "" . readFileStrict . fromRawFilePath
+
+configureSmudgeFilterProcess :: Annex ()
+configureSmudgeFilterProcess =
+	setConfig (ConfigKey "filter.annex.process") "git-annex filter-process"
 
 stdattr :: [String]
 stdattr =

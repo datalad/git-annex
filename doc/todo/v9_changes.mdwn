@@ -18,3 +18,5 @@ could change and if it does, these things could be included.
   seem worth it.
 
   May want to implement [[incremental_hashing_for_add]] first.
+
+[[done]] --[[Joey]]

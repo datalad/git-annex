@@ -57,6 +57,11 @@ setVersion (RepoVersion v) = setConfig versionField (show v)
 removeVersion :: Annex ()
 removeVersion = unsetConfig versionField
 
+versionSupportsFilterProcess :: Maybe RepoVersion -> Bool
+versionSupportsFilterProcess (Just v) 
+	| v >= RepoVersion 9 = True
+versionSupportsFilterProcess _ = False
+
 versionNeedsWritableContentFiles :: Maybe RepoVersion -> Bool
 versionNeedsWritableContentFiles (Just v) 
 	| v >= RepoVersion 10 = False

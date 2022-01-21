@@ -9,10 +9,13 @@ module Upgrade.V8 where
 
 import Annex.Common
 import Types.Upgrade
+import Config.Smudge
 
 upgrade :: Bool -> Annex UpgradeResult
 upgrade automatic = do
 	unless automatic $
 		showAction "v8 to v9"
+
+	configureSmudgeFilterProcess
 
 	return UpgradeSuccess

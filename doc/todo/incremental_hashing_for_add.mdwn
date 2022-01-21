@@ -1,7 +1,7 @@
-When `git-annex filter-process` is enabled, `git add` pipes the content of
-files into it, but that's thrown away, and the file is read again by git-annex
-to generate a hash. It would improve performance to hash the content
-provided via the pipe.
+When `git-annex filter-process` is enabled (v9 and above), `git add` pipes
+the content of files into it, but that's thrown away, and the file is read
+again by git-annex to generate a hash. It would improve performance to hash
+the content provided via the pipe.
 
 When filter-process is not enabled, `git-annex smudge --clean` reads
 the file to hash it, then reads it a second time to copy it into
