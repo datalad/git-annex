@@ -9,9 +9,9 @@ git-annex (10.20220121) UNRELEASED; urgency=medium
     upgrade, in order to allow time for any old git-annex processes that
     are not aware of the locking change to finish. Or git-annex upgrade
     can be used to upgrade to v10 immediately.
-  * In v9, set filter.annex.process. This makes git add/checkout faster when
-    there are a lot of unlocked annexed files or non-annexed files, but can
-    also makes git add of large files to the annex somewhat slower.
+  * In v9 upgrade, set filter.annex.process. This makes git add/checkout faster
+    when there are a lot of unlocked annexed files or non-annexed files, but can
+    also make git add of large files to the annex somewhat slower.
     If this tradeoff does not work for your use case, you can still unset
     filter.annex.process.
   * export: When a non-annexed symlink is in the tree to be exported, skip it.
