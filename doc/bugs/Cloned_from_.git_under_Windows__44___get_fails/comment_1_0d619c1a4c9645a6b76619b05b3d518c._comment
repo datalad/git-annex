@@ -13,5 +13,5 @@ this situation, and it would complicate it significantly to do so.
 
 I do not see any good reason to use a non-bare git directory as if it is a
 bare repository. Not good enough for me to spend days complicating
-git-annex's code for anyway.
+git-annex's code for anyway. Is there a good reason you are doing that?
 """]]
