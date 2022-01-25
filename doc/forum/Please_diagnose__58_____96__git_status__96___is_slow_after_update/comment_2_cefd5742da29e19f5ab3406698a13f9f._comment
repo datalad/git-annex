@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-01-25T16:36:20Z"
+ content="""
+git can sometimes get into a situation where it is unsure about the status
+of working tree files, and when those files are not git-annex symlinks but
+either unlocked git-annex files or regular files checked into git, it needs
+to run `git-annex smudge` once per file. That can take a long time when it
+somehow needs to check many files.
+
+This kind of slowdown is largely avoided by setting:
+
+	git config filter.annex.process 'git-annex filter-process'
+
+Which will be handled automatically by a future upgrade.
+"""]]
