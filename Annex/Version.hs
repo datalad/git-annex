@@ -36,13 +36,13 @@ upgradeableVersions = map RepoVersion [2..10]
 
 autoUpgradeableVersions :: M.Map RepoVersion RepoVersion
 autoUpgradeableVersions = M.fromList
-	[ (RepoVersion 3, latestVersion)
-	, (RepoVersion 4, latestVersion)
-	, (RepoVersion 5, latestVersion)
-	, (RepoVersion 6, latestVersion)
-	, (RepoVersion 7, latestVersion)
-	, (RepoVersion 8, latestVersion) 
-	, (RepoVersion 9, latestVersion) 
+	[ (RepoVersion 3, defaultVersion)
+	, (RepoVersion 4, defaultVersion)
+	, (RepoVersion 5, defaultVersion)
+	, (RepoVersion 6, defaultVersion)
+	, (RepoVersion 7, defaultVersion)
+	, (RepoVersion 8, defaultVersion)
+	, (RepoVersion 9, defaultVersion)
 	]
 
 versionField :: ConfigKey
