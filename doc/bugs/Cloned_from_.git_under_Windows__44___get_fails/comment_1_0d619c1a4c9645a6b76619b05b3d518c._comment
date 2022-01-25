@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-01-25T16:42:36Z"
+ content="""
+I can reproduce this on linux.
+
+It's getting confused by a url pointing to a git directory that has
+core.bare=false.
+
+git-annex's RepoLocation data type does not have a way to represent
+this situation, and it would complicate it significantly to do so.
+
+I do not see any good reason to use a non-bare git directory as if it is a
+bare repository. Not good enough for me to spend days complicating
+git-annex's code for anyway.
+"""]]
