@@ -1,0 +1,1 @@
+I would like to update to the most recent version of git-annex with anaconda3, as I believe some recent changes will fix a bugs I'm dealing with. But it seems the most recent version available with anaconda is  8.20211123 (https://anaconda.org/conda-forge/git-annex). How can I get a more recent version?
