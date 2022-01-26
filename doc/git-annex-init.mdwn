@@ -45,8 +45,8 @@ to the user who tries to run git-annex init.
   Force the repository to be initialized using a different annex.version
   than the current default.
 
-  When the version given is one that automatically upgrades to a newer
-  version, it will automatically use the newer version instead.
+  When the version given is not supported, but can be automatically
+  upgraded to a newer version, it will use the newer version instead.
 
 * --autoenable
 
