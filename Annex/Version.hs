@@ -42,7 +42,7 @@ autoUpgradeableVersions = M.fromList
 	, (RepoVersion 6, defaultVersion)
 	, (RepoVersion 7, defaultVersion)
 	, (RepoVersion 8, defaultVersion)
-	, (RepoVersion 9, defaultVersion)
+	, (RepoVersion 9, latestVersion)
 	]
 
 versionField :: ConfigKey
