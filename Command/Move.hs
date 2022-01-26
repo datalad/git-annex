@@ -64,7 +64,8 @@ seek o = startConcurrency stages $ do
 			(commandAction . keyaction)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (moveFiles o)
-		Batch fmt -> batchAnnexed fmt seeker keyaction
+		Batch fmt -> batchOnly (keyOptions o) (moveFiles o) $
+			batchAnnexed fmt seeker keyaction
   where
 	seeker = AnnexedFileSeeker
 		{ startAction = start (fromToOptions o) (removeWhen o)

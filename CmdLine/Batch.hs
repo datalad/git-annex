@@ -77,8 +77,9 @@ batchable handler parser paramdesc = batchseeker <$> batchparser
 	
 	batchseeker (opts, NoBatch, params) =
 		mapM_ (\p -> go NoBatch opts (SeekInput [p], p)) params
-	batchseeker (opts, batchmode@(Batch fmt), _) = 
-		batchInput fmt (pure . Right) (go batchmode opts)
+	batchseeker (opts, batchmode@(Batch fmt), params) = 
+		batchOnly Nothing params $
+			batchInput fmt (pure . Right) (go batchmode opts)
 
 	go batchmode opts (si, p) =
 		unlessM (handler opts si p) $
@@ -209,3 +210,8 @@ batchAnnexed fmt seeker keyaction = do
 		, providedMimeEncoding = Nothing
 		, providedLinkType = Nothing
 		}
+
+batchOnly :: Maybe KeyOptions -> CmdParams -> Annex () -> Annex ()
+batchOnly Nothing [] a = a
+batchOnly _ _ _ = giveup "Cannot combine batch option with file or key options"
+

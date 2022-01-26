@@ -32,7 +32,7 @@ optParser desc = RegisterUrlOptions
 
 seek :: RegisterUrlOptions -> CommandSeek
 seek o = case (batchOption o, keyUrlPairs o) of
-	(Batch (BatchFormat sep _), _) ->
+	(Batch (BatchFormat sep _), _) -> batchOnly Nothing (keyUrlPairs o) $
 		commandAction $ startMass setUrlPresent sep
 	-- older way of enabling batch input, does not support BatchNull
 	(NoBatch, []) -> commandAction $ startMass setUrlPresent BatchLine

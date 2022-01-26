@@ -95,7 +95,8 @@ seek o = startConcurrency commandStages $ do
 		Batch fmt
 			| updateOnly o ->
 				giveup "--update --batch is not supported"
-			| otherwise -> batchFiles fmt gofile
+			| otherwise -> batchOnly Nothing (addThese o) $
+				batchFiles fmt gofile
 		NoBatch -> do
 			-- Avoid git ls-files complaining about files that
 			-- are not known to git yet, since this will add

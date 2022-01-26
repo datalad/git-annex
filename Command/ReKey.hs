@@ -50,8 +50,9 @@ batchParser s = case separate (== ' ') (reverse s) of
 
 seek :: ReKeyOptions -> CommandSeek
 seek o = case batchOption o of
-	Batch fmt -> batchInput fmt batchParser
-		(batchCommandAction . uncurry start)
+	Batch fmt -> batchOnly Nothing (reKeyThese o) $
+		batchInput fmt batchParser
+			(batchCommandAction . uncurry start)
 	NoBatch -> withPairs 
 		(\(si, p) -> commandAction (start si (parsekey p))) 
 		(reKeyThese o)

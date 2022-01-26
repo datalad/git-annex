@@ -93,8 +93,9 @@ seek o = case batchOption o of
 	Batch fmt -> withMessageState $ \s -> case outputType s of
 		JSONOutput _ -> ifM limited
 			( giveup "combining --batch with file matching options is not currently supported"
-			, batchInput fmt parseJSONInput 
-				(commandAction . batchCommandStart . startBatch)
+			, batchOnly (keyOptions o) (forFiles o) $
+				batchInput fmt parseJSONInput 
+					(commandAction . batchCommandStart . startBatch)
 			)
 		_ -> giveup "--batch is currently only supported in --json mode"
 

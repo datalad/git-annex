@@ -49,7 +49,8 @@ seek o = startConcurrency downloadStages $ do
 			(commandAction . startKeys from)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (getFiles o)
-		Batch fmt -> batchAnnexed fmt seeker (startKeys from)
+		Batch fmt -> batchOnly (keyOptions o) (getFiles o) $
+			batchAnnexed fmt seeker (startKeys from)
   where
 	ww = WarnUnmatchLsFiles
 

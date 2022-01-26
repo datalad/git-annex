@@ -26,6 +26,8 @@ git-annex (10.20220121) UNRELEASED; urgency=medium
   * adb: Added ignorefinderror configuration parameter.
   * Avoid crashing when run in a bare git repo that somehow contains an
     index file.
+  * Reject combinations of --batch (or --batch-keys) with options like
+    --all or --key or with filenames.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Jan 2022 14:01:14 -0400
 

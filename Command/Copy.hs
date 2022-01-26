@@ -51,7 +51,8 @@ seek o = startConcurrency commandStages $ do
 			(commandAction . keyaction)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (copyFiles o)
-		Batch fmt -> batchAnnexed fmt seeker keyaction
+		Batch fmt -> batchOnly (keyOptions o) (copyFiles o) $
+			batchAnnexed fmt seeker keyaction
   where
 	ww = WarnUnmatchLsFiles
 	

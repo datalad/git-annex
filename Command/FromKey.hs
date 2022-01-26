@@ -41,7 +41,8 @@ seek :: FromKeyOptions -> CommandSeek
 seek o = do
 	matcher <- addUnlockedMatcher
 	case (batchOption o, keyFilePairs o) of
-		(Batch fmt, _) -> seekBatch matcher fmt
+		(Batch fmt, _) -> batchOnly Nothing (keyFilePairs o) $
+			seekBatch matcher fmt
 		-- older way of enabling batch input, does not support BatchNull
 		(NoBatch, []) -> seekBatch matcher (BatchFormat BatchLine (BatchKeys False))
 		(NoBatch, ps) -> do

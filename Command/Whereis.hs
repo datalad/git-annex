@@ -62,7 +62,8 @@ seek o = do
 				(commandAction . startKeys o m)
 				(withFilesInGitAnnex ww seeker)
 				=<< workTreeItems ww (whereisFiles o)
-		Batch fmt -> batchAnnexed fmt seeker (startKeys o m)
+		Batch fmt -> batchOnly (keyOptions o) (whereisFiles o) $
+			batchAnnexed fmt seeker (startKeys o m)
   where
 	ww = WarnUnmatchLsFiles
 
