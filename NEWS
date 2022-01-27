@@ -1,4 +1,4 @@
-git-annex (8.20211028) UNRELEASED; urgency=medium
+git-annex (8.20211028) upstream; urgency=medium
 
   This version of git-annex removes support for communicating with git-annex
   remotes that have version 6.20180312 or older installed.
