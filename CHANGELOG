@@ -1,4 +1,4 @@
-git-annex (10.20220121) UNRELEASED; urgency=medium
+git-annex (10.20220127) upstream; urgency=medium
 
   * New v10 repository version (with v9 as a stepping-stone to it).
     v8 remains the default version for now.
@@ -29,7 +29,7 @@ git-annex (10.20220121) UNRELEASED; urgency=medium
   * Reject combinations of --batch (or --batch-keys) with options like
     --all or --key or with filenames.
 
- -- Joey Hess <id@joeyh.name>  Mon, 03 Jan 2022 14:01:14 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 27 Jan 2022 13:25:19 -0400
 
 git-annex (8.20211231) upstream; urgency=medium
 
