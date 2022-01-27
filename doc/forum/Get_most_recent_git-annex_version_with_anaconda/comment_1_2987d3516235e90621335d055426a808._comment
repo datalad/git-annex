@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-01-27T16:56:12Z"
+ content="""
+They seem pretty good at keeping it up-to-date. May have missed the last
+release of 2021 which was on new year's eve.
+
+I think that this is the source for the conda forge builds and so would be
+where you can contact them: <https://github.com/conda-forge/git-annex-feedstock>
+"""]]
