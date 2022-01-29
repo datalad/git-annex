@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="amerlyq"
+ avatar="http://cdn.libravatar.org/avatar/3d63c9f436b45570d45bd003e468cbd3"
+ subject="comment 7"
+ date="2022-01-29T15:59:31Z"
+ content="""
+> * if I create a new repo and do \"export\" multiple times in a row into empty folder -- it works OK.
+> * But on the next day when I'm trying to \"export\" again -- it reports error \"unsafe to overwrite file //failed\"
+
+I somewhat narrowed down the issue.
+Error \"unsafe to overwrite file\" only appears for plaint text files (and symlinks) committed to .git itself.
+This error only appears after several exports and some time passes (still can't catch conditions).
+
+Current hypothesis is that empty commits in history are related to these plain text files.
+@joey, do you have any thoughts?
+"""]]
