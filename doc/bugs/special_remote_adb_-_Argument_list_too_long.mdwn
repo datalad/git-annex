@@ -52,3 +52,5 @@ local repository version: 8
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 This is the first time I've tried it. However, when I restricted the path to /sdcard/DCIM or /sdcard/Music, I didn't have any problems. I could use some assistance regarding how to "copy" a file from one path to another inside an annex. It appears that I could try to resolve and then symlink to the same file, or maybe unlock, copy, and commit both copies of the file. E.g. I'd like to have a copy of the music from my primary "annex/Music" into the "annex/android/Music" tree, then "git rm" the file from "annex/android/Music" when I'm done with it.
+
+> [[fixed|done]] --[[Joey]]

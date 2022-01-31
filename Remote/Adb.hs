@@ -307,11 +307,15 @@ listImportableContentsM serial adir c = adbfind >>= \case
 		-- won't recurse into the directory
 		, File $ fromAndroidPath adir ++ "/"
 		, Param "-type", Param "f"
-		, Param "-exec", Param "stat"
-		, Param "-c", Param statformat
-		, Param "{}", Param "+"
+		, Param "-printf", Param "%p\\0"
 		] 
-		(if ignorefinderror then "|| true" else "")
+		(\s -> concat
+			[ "set -o pipefail; "
+			, s
+			, "| xargs -0 stat -c " ++ shellEscape statformat ++ " --"
+			, if ignorefinderror then " || true" else ""
+			]
+		)
 
 	ignorefinderror = fromMaybe False (getRemoteConfigValue ignorefinderrorField c)
 
@@ -399,11 +403,11 @@ enumerateAdbConnected = checkAdbInPath [] $ liftIO $
 --
 -- Any stdout from the command is returned, separated into lines.
 adbShell :: AndroidSerial -> [CommandParam] -> Annex (Maybe [String])
-adbShell serial cmd = adbShell' serial cmd ""
+adbShell serial cmd = adbShell' serial cmd id
 
-adbShell' :: AndroidSerial -> [CommandParam] -> String -> Annex (Maybe [String])
-adbShell' serial cmd extra = adbShellRaw serial $
-	(unwords $ map shellEscape (toCommand cmd)) ++ extra
+adbShell' :: AndroidSerial -> [CommandParam] -> (String -> String) -> Annex (Maybe [String])
+adbShell' serial cmd f = adbShellRaw serial $
+	f (unwords $ map shellEscape (toCommand cmd))
 
 adbShellBool :: AndroidSerial -> [CommandParam] -> Annex Bool
 adbShellBool serial cmd =
