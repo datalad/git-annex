@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2022-01-31T16:26:55Z"
+ content="""
+Well that message suggests that the CID of the file appears to have
+changed. But I investigated the changed CID theory back in comment #4 and
+could not get it to produce an empty commit.
+
+The file being not annexed might be a clue.
+
+If it happens with a symlink, that would certianly be a clue. But
+git-annex avoids exporting symlinks to special remotes now, so it would be
+worth upgrading to the most recent release to avoid the old behavior with
+them.
+"""]]
