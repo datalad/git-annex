@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-01-31T17:21:01Z"
+ content="""
+Re-running `git-annex adjust` when you're already in that adjusted branch
+avoids pulling any changes from the original branch into the branch. It
+only propagates changes you've made back over to the original branch.
+
+Running `git-annex sync` pulls in changes from the original branch before
+propagating commits. That pull happens to result in the git history shape you
+like.
+
+Re-running `git-annex adjust` really only became much of a thing at all
+to support `--hide-missing` and `--unlock-present`, which both make an
+adjusted branch that may need to be updated even without pulling from the
+original branch. I don't think it has much utility in an `--unlock`
+branch. The man page says to use `git-annex sync` before mentioning
+re-running it.
+
+As far as un-adjusting goes, it's basically a matter of `git checkout` of
+the original branch, which is easy enough. The rest of your commands
+involve propagating changes from it back to the original branch, which
+it seems to me someone may or may not want to do, depending on what
+happened to their adjusted branch. I suppose that deleting the basis branch
+ref does argue in favor of making a git-annex command to handle this,
+but it seems to me all that ref is going to do when not deleted is cause a
+small number of git objects to not get gc'd later in an unusual
+circumstance (when the original branch gets rebased).
+"""]]
