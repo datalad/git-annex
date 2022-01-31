@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-01-31T17:37:14Z"
+ content="""
+I was looking at the conda forge, and was surprised at the sheer number of
+downloads of git-annex from there --  211,462!
+
+I suspect that counts each successive upgrade as a download as well, and
+perhaps some users are using containers that get rebuilt etc, so maybe it
+needs to be divided by 10 or 100 to get the number of users. Still, this is
+a sizeable number of downloads.
+
+Thanks, Ilya, for making this available!
+"""]]
