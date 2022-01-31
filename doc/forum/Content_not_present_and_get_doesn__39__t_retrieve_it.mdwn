@@ -1,0 +1,7 @@
+Looking for some guidance as I'm not currently producing any error messages to guide me.  I keep a copy of an annex on my laptop and on two separate external hard drives such that each hard drive holds all the content of the annex.  However, there are files with content on drive 2, which I can't get onto drive 1.  When I run $git annex get .  or $git annex sync "drive2" --content  the content of the files is not transferred, not even attempted.  My impression is that git annex believes the content is already present, but is somehow disconnected from whatever is showing in the repository.   
+
+
+I don't know if this is relevant or not, but I recently transitioned from running windows to linux.  During that process I was getting pre-commit hook errors.  Following advice from online, I deleted .git/hooks/pre-commit to (presumably) regenerate those hooks.  I also got a post-merge hook error just before the behavior above started happening.  However, I'm unable to produce that error now.  The only thing I could find online about the post-merge error was here https://stackoverflow.com/questions/3563904/git-hook-post-merge-error-cannot-run which seems relevant, but I wasn't able to make out what I need to do to resolve my issue.  
+
+Any help will be appreciated. Thanks!
+
