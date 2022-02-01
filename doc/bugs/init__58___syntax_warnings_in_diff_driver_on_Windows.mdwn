@@ -1,0 +1,121 @@
+### Please describe the problem.
+Git-for-Windows comes with custom diff drivers (see [https://github.com/git-for-windows/build-extra/blob/main/git-extra/gitattributes](https://github.com/git-for-windows/build-extra/blob/main/git-extra/gitattributes); [https://github.com/git-for-windows/build-extra/blob/main/git-extra/astextplain](https://github.com/git-for-windows/build-extra/blob/main/git-extra/astextplain)) that are meant to improve the diff display for a variety of file types.
+When cloning a repository where such file types are annexed, a subsequent ``git annex init`` will cause the diff drivers to run and fail, emitting the warnings and errors of the tools used within the diff driver.
+For example, the ``astextplain`` diff driver for PDFs uses ``pdftotext -layout -enc UTF-8 "$1" - | sed "s/(\^M$)|(^\^L)//"`` and emits the following during a ``git annex init`` in a repository with annexed PDFs:
+
+```
+Updating files: 100% (10/10), done.
+Switched to branch 'adjusted/master(unlocked)'
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+[...] one for each PDF
+```
+
+I have filed a feature request with Git for Windows to maybe parametrize the tools with a ``--quiet`` or equivalent flag, such that these warnings do not bubble up: [https://github.com/git-for-windows/git/issues/3673](https://github.com/git-for-windows/git/issues/3673).
+However, the question came up whether git annex internal calls could instead be parametrized differently, and I wanted to file this companion issue to hopefully figure out which place - if any - would be the right one for a fix.
+
+> [Quote from a response to the linked issue] "On a different note though, why is git annex init running a git diff here with external diff drivers on files it knows aren't the types of files git would expect to be there? Would it show an actual diff to the user here with other types of annexed files/on a different filesystem? Or is it trying to generate some diff for scripted use? If it's trying to do the latter, it should probably at least use --no-textconv there."
+
+### What steps will reproduce the problem?
+
+On a Windows system using Git for Windows, run:
+
+```sh
+git clone git@github.com:datalad-datasets/machinelearning-books.git
+cd machinelearning-books
+git annex init
+```
+
+The output looks like this:
+
+```sh
+datalads@bnbdatalad MINGW64 ~/machinelearning-books (master)
+$ git annex init
+init
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+starting fsmonitor-daemon in 'C:/Users/datalads/machinelearning-books'
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Updating files: 100% (10/10), done.
+Switched to branch 'adjusted/master(unlocked)'
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+Syntax Warning: May not be a PDF file (continuing anyway)
+Syntax Error: Couldn't read xref table
+Syntax Warning: PDF file is damaged - attempting to reconstruct xref table...
+Syntax Error: Couldn't find trailer dictionary
+Syntax Error: Couldn't read xref table
+
+  Unable to parse git config from origin
+
+  Remote origin does not have git-annex installed; setting annex-ignore
+
+  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote origin
+ok
+(recording state in git...)
+```
+
+### What version of git-annex are you using? On what operating system?
+
+In this particular report, git-annex version: 8.20211029-g438e5b56a on Windows 11 Professional [Version 10.0.22000.434].
+
+### Please provide any additional information below.
+
+There is a companion issue in datalad at [https://github.com/datalad/datalad/issues/6301](https://github.com/datalad/datalad/issues/6301) where I originally recorded this observation, and some other people's additional thoughts about the matter.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Git-annex is amazing. I use it daily. A lot of science is made possible by this tool.
