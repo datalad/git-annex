@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-02-01T17:28:29Z"
+ content="""
+What version of git-annex are you using?
+
+I suggest you run "git-annex fsck" passing it the name of the file your are
+having problems with. Show what, if anything, it outputs.
+"""]]
