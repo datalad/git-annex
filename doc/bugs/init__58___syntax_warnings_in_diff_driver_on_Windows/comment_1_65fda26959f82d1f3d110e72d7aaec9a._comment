@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-02-01T17:30:46Z"
+ content="""
+Hmm, it seems to me that when git-annex runs git diff, it passes
+--no-ext-diff, which ought to disable any external diff drivers.
+
+Ah, so this is really about the .gitattributes textconv,
+which enables the same thing in a different way that 
+the other option doesn't disable. 
+Ok, I'll add --no-textconv as well.
+"""]]

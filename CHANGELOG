@@ -1,6 +1,7 @@
 git-annex (10.20220128) UNRELEASED; urgency=medium
 
   * adb: Avoid find failing with "Argument list too long"
+  * Pass --no-textconv when running git diff internally.
 
  -- Joey Hess <id@joeyh.name>  Mon, 31 Jan 2022 13:14:42 -0400
 

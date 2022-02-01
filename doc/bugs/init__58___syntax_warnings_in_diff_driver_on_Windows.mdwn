@@ -119,3 +119,7 @@ There is a companion issue in datalad at [https://github.com/datalad/datalad/iss
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Git-annex is amazing. I use it daily. A lot of science is made possible by this tool.
+
+> [[fixed|done]] --[[Joey]]
+
+[[!tag projects/datalad]]

@@ -342,6 +342,9 @@ reconcileStaged qh = unlessM (Git.Config.isBare <$> gitRepo) $ do
 		, Param "--no-renames"
 		-- Avoid other complications.
 		, Param "--ignore-submodules=all"
+		-- Avoid using external textconv command, which would be slow
+		-- and possibly wrong.
+		, Param "--no-textconv"
 		, Param "--no-ext-diff"
 		]
 	
