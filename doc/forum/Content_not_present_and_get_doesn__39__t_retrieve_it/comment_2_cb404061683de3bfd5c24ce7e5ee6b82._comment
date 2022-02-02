@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jwrauch"
+ avatar="http://cdn.libravatar.org/avatar/0e83010187ef0c8c587e0c99e2ca5474"
+ subject="comment 2"
+ date="2022-02-02T20:48:56Z"
+ content="""
+Hi, thanks! That was just what I was looking for.  I haven't had to use that command before but it looks pretty useful.  I ended up running on the entire annex and found files that needed \"fixing\" I wasn't even aware of. Do you recommend periodically running this just to make sure everything checks out, or should I only run it when I discover a problem?  
+
+For some of the files, it claims that no known copies exist and there is not .git/annex/bad directory.  Is that game over for those files? (Only a handful, so not the end of the world, but would be nice to recover them.)
+"""]]
