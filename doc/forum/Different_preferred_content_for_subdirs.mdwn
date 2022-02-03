@@ -1,0 +1,13 @@
+I have annex with a subdir documents/ where I set numcopies to 4 using .gitattributes.  I have a bunch of special remotes in an archive group with `(not (copies=archive:2)) or lackingcopies=1` as preferred content expression.
+
+Now, this directory has over 1000 documents in it.  When I run `git annex sync --content`, git annex will try to drop 1000 documents from 5 archive remotes (one by one) since the files are not wanted (copies > 2) BUT it will conclude it can't because I need at least 4 copies.
+
+This creates incredible amount of churn to the point remotes start to rate-limit me because it takes hours to resolve a single sync.
+
+I tried to mess around with `include` and `exclude` but I can't make it work.  Is this even possible?  For example, I tried
+
+    (include="documents/*" and (not (copies=archive:4))) or (exclude="documents/*" and (not (copies=archive:2)))
+
+Now, I would interpret this as "all the files in documents/ with less than 4 copies in archive OR all the files not in documents/ and less than two copies".  But with this expression (and many similar variants) it always tries to drop the 4+ copy files.
+
+Thanks!
