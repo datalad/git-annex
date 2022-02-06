@@ -1,0 +1,26 @@
+I am not having any luck throwing away historical data using `git annex forget`. According to the manpage "the forgetfulness will automatically propagate out", but what I observe is that the old metadata is merged right back into the branch with the truncated metadata:
+
+```
+$ git annex forget --force --drop-dead
+$ git annex sync B3
+$ git log --branches --remotes --oneline --graph
+*   e7cf462ada (B3/synced/git-annex, B3/git-annex, git-annex) merging B3/git-annex into git-annex
+|\  
+| * 7f8b737a01 update
+* | 41bef1e3db merging B3/git-annex into git-annex
+|\| 
+| * 383a53bf9a update
+| *   2607574ed0 merging B3/git-annex into git-annex
+| |\  
+| | * dc46f334c9 update
+| * | c4c25c52a7 new branch for transition ["forget git history","forget dead remotes"]
+|  /  
+* / d3a1042f9e new branch for transition ["forget git history","forget dead remotes"]
+ /
+ |
+(here comes all of the old history)
+```
+
+What else do I have to do to make this happen?
+
+Thanks for your support! -- Jonas
