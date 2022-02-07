@@ -11,5 +11,6 @@ the drive.
 `git-annex fsck` only mentions `.git/annex/bad/` when it discovers that a
 file's content on disk has gotten corrupted. It then moves it to that
 directory, and mentions that it has. So this makes me think your drive must
-have data corruption.
+have data corruption. This is only a guess, since you unfortunately did not
+paste the output, like I asked for..
 """]]
