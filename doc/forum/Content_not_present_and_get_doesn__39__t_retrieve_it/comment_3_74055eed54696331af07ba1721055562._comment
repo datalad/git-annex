@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-02-07T16:28:49Z"
+ content="""
+You should not need to fsck regularly. The question is, what happened to
+make those files that git-annex thinks are present go missing. One
+possible way would be if there was an actual data corruption of files on
+the drive.
+
+`git-annex fsck` only mentions `.git/annex/bad/` when it discovers that a
+file's content on disk has gotten corrupted. It then moves it to that
+directory, and mentions that it has. So this makes me think your drive must
+have data corruption.
+"""]]
