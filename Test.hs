@@ -360,6 +360,7 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "union merge regression" test_union_merge_regression
 	, testCase "adjusted branch merge regression" test_adjusted_branch_merge_regression
 	, testCase "adjusted branch subtree regression" test_adjusted_branch_subtree_regression
+	, testCase "transition propagation" test_transition_propagation_reversion
 	, testCase "conflict resolution" test_conflict_resolution
 	, testCase "conflict resolution (adjusted branch)" test_conflict_resolution_adjusted_branch
 	, testCase "conflict resolution movein regression" test_conflict_resolution_movein_regression
@@ -2051,3 +2052,38 @@ test_export_import_subdir = intmpclonerepo $ do
 		-- Make sure that import did not import the file to the top
 		-- of the repo.
 		checkdoesnotexist annexedfile
+
+test_transition_propagation_reversion :: Assertion
+test_transition_propagation_reversion =
+	withtmpclonerepo $ \r1 ->
+		withtmpclonerepo $ \r2 -> do
+			pair r1 r2
+			indir r1 $ do
+				disconnectOrigin
+				writecontent wormannexedfile $ content wormannexedfile
+				git_annex "add" [wormannexedfile, "--backend=WORM"] "add"
+				git_annex "sync" [] "sync"
+			indir r2 $ do
+				disconnectOrigin
+				git_annex "sync" [] "sync"
+			indir r1 $ do
+				git_annex "sync" [] "sync"
+			indir r2 $ do
+				git_annex "get" [wormannexedfile] "get"
+				git_annex "drop" [wormannexedfile] "drop"
+				git_annex "get" [wormannexedfile] "get"
+				git_annex "drop" [wormannexedfile] "drop"
+			indir r1 $ do
+				git_annex "drop" ["--force", wormannexedfile] "drop"
+				git_annex "sync" [] "sync"
+				git_annex "forget" ["--force"] "forget"
+				git_annex "sync" [] "sync"
+				emptylog
+			indir r2 $ do
+				git_annex "sync" [] "sync"
+				emptylog
+			indir r1 $ do
+				git_annex "sync" [] "sync"
+				emptylog
+  where
+	emptylog = git_annex_expectoutput "log" [wormannexedfile] []
