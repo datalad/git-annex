@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-02-07T16:16:37Z"
+ content="""
+This is a closed bug report and your comment is offtopic. But yes, the sha1
+of "123\n" is what you said it is. I suggest you ask about basics of
+hashing elsewhere though.
+"""]]
