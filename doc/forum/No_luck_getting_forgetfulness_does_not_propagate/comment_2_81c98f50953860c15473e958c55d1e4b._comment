@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-02-07T16:43:26Z"
+ content="""
+I'm sure this used to work, but I've confirmed it no longer does
+and opened a bug report [[sync_does_not_propagate_forgetfulness]]
+
+Update: The bug I found is fixed. I'm fairly sure it caused the problem you
+saw as well, although I have not tried to reproduce your exact situation.
+
+Once you upgrade to the next release of git-annex (or tomorrow's daily
+build), you will need to re-run the git-annex forget command, and then it
+should propagate that new forgetting properly.
+"""]]

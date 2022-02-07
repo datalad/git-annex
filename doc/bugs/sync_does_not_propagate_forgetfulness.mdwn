@@ -31,3 +31,5 @@ Reproduction script:
 	git-annex log foo
 
 --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]

@@ -25,6 +25,7 @@ import Annex.CatFile
 
 import qualified Data.Set as S
 import Data.Either
+import Data.Char
 import Data.ByteString (ByteString)
 import Data.ByteString.Builder
 import qualified Data.ByteString.Lazy as L
@@ -82,7 +83,7 @@ parseTransitionsStrictly source b =
 
 transitionLineParser :: A.Parser TransitionLine
 transitionLineParser = do
-	t <- (parsetransition <$> A.takeByteString)
+	t <- parsetransition <$> A.takeTill (== sp)
 	_ <- A8.char ' '
 	c <- vectorClockParser
 	return $ TransitionLine c t
@@ -90,6 +91,7 @@ transitionLineParser = do
 	parsetransition b = case readish (decodeBS b) of
 		Just t -> Right t
 		Nothing -> Left b
+	sp = fromIntegral (ord ' ')
 
 combineTransitions :: [Transitions] -> Transitions
 combineTransitions = S.unions
