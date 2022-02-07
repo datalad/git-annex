@@ -1,0 +1,12 @@
+When annex.numcopies is 4, and there are only 4 copies of a file,
+`git-annex drop` behaves like this:
+
+	drop me (locking a2...) (locking a3...) (locking a4...) (unsafe)
+	  Could only verify the existence of 3 out of 4 necessary copies
+
+That is unncessary work, because the drop cannot possibly succeed when
+there are not more than numcopies. It should be able to skip locking the
+content on remotes and immediately fail. 
+
+A user reported a situation where this happened to a lot of files and
+caused rate limiting and slowed down git-annex sync. --[[Joey]]
