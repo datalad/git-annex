@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-02-08T17:06:02Z"
+ content="""
+> When I run `git annex sync --content`, git annex will try to drop 1000
+> documents from 5 archive remotes (one by one) since the files are not
+> wanted (copies > 2) BUT it will conclude it can't because I need at least
+> 4 copies.
+
+I have not been able to reproduce that. There is code that should prevent
+`git-annex sync --content` from doing any work when there are not enough
+other copies for a drop to succeed. 
+
+Here is my test:
+
+	joey@darkstar:/tmp/a>git config annex.numcopies 4
+	joey@darkstar:/tmp/a>git-annex wanted a2 'exclude=*'
+	wanted a2 ok
+	joey@darkstar:/tmp/a>git-annex whereis me
+	whereis me (4 copies)
+	  	6a56d49c-3a9c-4ac6-9137-4d2752b79a9c -- joey@darkstar:/tmp/a4 [a4]
+	   	91960e05-5f2e-4c20-b979-db5df3e8b296 -- joey@darkstar:/tmp/a3 [a3]
+	   	cdc2c29a-12c8-45a0-8289-d00124a1794c -- joey@darkstar:/tmp/a [here]
+	   	e3abed2b-c65b-4e6e-86ac-d527bdb6ca4a -- joey@darkstar:/tmp/a2 [a2]
+	ok
+	joey@darkstar:/tmp/a>git-annex sync --content --no-pull --no-push
+	commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	joey@darkstar:/tmp/a>git config annex.numcopies 3
+	joey@darkstar:/tmp/a>git-annex sync --content --no-pull --no-push
+	commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	drop a2 me (locking a3...) (locking a4...) ok
+	(recording state in git...)
+
+While `git-annex drop` does do excess work in this situation, I've
+concluded that's ok because the user is explicitly asking it to try to
+drop. But `git-annex sync` does not seem to do excess work when the drop
+cannot succeed.
+
+If you can show otherwise, please do...
+"""]]
