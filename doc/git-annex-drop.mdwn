@@ -45,7 +45,8 @@ Paths of files or directories to drop can be specified.
 * `--auto`
 
   Rather than trying to drop all specified files, drop only those that
-  are not preferred content of the repository.
+  are not preferred content of the repository, and avoid trying to drop
+  files when there are not enough other copies for the drop to be possible.
   See [[git-annex-preferred-content]](1)
 
 * `--force`
