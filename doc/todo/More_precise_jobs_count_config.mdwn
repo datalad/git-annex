@@ -1,0 +1,7 @@
+There is `annex.jobs` to configure job count globally but the need for parallelisation varies greatly for me.
+
+For example, sync should do its git commands with as many remotes in parallel as it can to minimise sync runtime but copy, move, fsck etc. on a local slow hard drive should only do one or two files at a time.
+
+Could there be a way to be more precise with how much parallelisation you want by default?
+
+Maybe for each sub-command or resource access pattern.
