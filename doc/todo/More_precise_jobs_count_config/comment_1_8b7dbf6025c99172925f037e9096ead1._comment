@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-02-08T17:13:13Z"
+ content="""
+It could be helpful to have some kind of git config, similar to
+remote.name.annex-cost, that categorizes remotes by what amount of
+concurrency is desirable when accessing them.
+
+But then the kind of access can also matter, eg git pull from a ssh remote
+might as well be run concurrently with all other ssh remote pulls,
+but not so when downloading annex objects from ssh remotes.
+
+There is also the problem that what action will be taken on a particular file
+is up to the command, but the amount of concurrency to use has to be
+determined before running that command on that file. Eg, git-annex get
+might use a slow hard drive, or a fast ssd that benefits from
+concurrency. We don't know until that code runs, but we have to decide how
+many threads to spawn before hand.
+"""]]
