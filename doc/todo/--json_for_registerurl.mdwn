@@ -1,0 +1,6 @@
+(and `--json-error-messages`?) to provide more formalized machine readable serialization.
+
+(weak) motivation: [https://github.com/datalad/datalad/issues/6431](datalad/issues/6431)
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
