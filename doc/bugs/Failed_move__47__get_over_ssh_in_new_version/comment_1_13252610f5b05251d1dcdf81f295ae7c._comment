@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-02-10T19:42:35Z"
+ content="""
+From the NEWS file:
+
+	git-annex (8.20211028) upstream; urgency=medium
+	
+	  This version of git-annex removes support for communicating with git-annex
+	  remotes that have version 6.20180312 or older installed.
+
+So you will need to upgrade your remote.
+
+I'm leaving this bug report open because it currently fails without
+explaining why, and it would be good to indicate that the remote is too old
+if possible. (I am not, however, unsure if it's actually possible to do
+that.)
+"""]]
