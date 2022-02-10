@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+Spotted today in https://github.com/datalad/git-annex/runs/5135259845?check_suite_focus=true
+
+```
+    export_import_subdir:                                 FAIL (0.88s)
+      ./Test/Framework.hs:57:
+      import of subdir failed (transcript follows)
+      list foo ok
+```
+
+and looked through the logs for jan and feb:
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex[master]builds/2022
+$> git -C 01 grep 'export_import_subdir:                             .*FAIL'
+cron-20220127/build-ubuntu.yaml-556-85dd9355-failed/1_test-annex (normal, ubuntu-latest).txt:2022-01-27T02:55:39.3579843Z     export_import_subdir:                                 FAIL (0.88s)
+cron-20220127/build-ubuntu.yaml-556-85dd9355-failed/test-annex (normal, ubuntu-latest)/7_Run tests.txt:2022-01-27T02:55:39.3579807Z     export_import_subdir:                                 FAIL (0.88s)
+cron-20220129/build-ubuntu.yaml-559-85dd9355-failed/1_test-annex (normal, ubuntu-latest).txt:2022-01-29T02:54:18.7490762Z     export_import_subdir:                                 FAIL (0.77s)
+cron-20220129/build-ubuntu.yaml-559-85dd9355-failed/test-annex (normal, ubuntu-latest)/7_Run tests.txt:2022-01-29T02:54:18.7490729Z     export_import_subdir:                                 FAIL (0.77s)
+manual-20220127/build-ubuntu.yaml-557-85dd9355-failed/1_test-annex (normal, ubuntu-latest).txt:2022-01-27T20:19:09.6297697Z     export_import_subdir:                                 FAIL (1.24s)
+manual-20220127/build-ubuntu.yaml-557-85dd9355-failed/test-annex (normal, ubuntu-latest)/7_Run tests.txt:2022-01-27T20:19:09.6297656Z     export_import_subdir:                                 FAIL (1.24s)
+
+$> git -C 02 grep 'export_import_subdir:                             .*FAIL'
+cron-20220202/build-ubuntu.yaml-563-85dd9355-failed/1_test-annex (normal, ubuntu-latest).txt:2022-02-02T02:55:00.5579720Z     export_import_subdir:                                 FAIL (0.74s)
+cron-20220202/build-ubuntu.yaml-563-85dd9355-failed/test-annex (normal, ubuntu-latest)/7_Run tests.txt:2022-02-02T02:55:00.5579682Z     export_import_subdir:                                 FAIL (0.74s)
+cron-20220207/build-ubuntu.yaml-568-85dd9355-failed/1_test-annex (normal, ubuntu-latest).txt:2022-02-07T02:59:10.1650377Z     export_import_subdir:                                 FAIL (1.00s)
+cron-20220207/build-ubuntu.yaml-568-85dd9355-failed/test-annex (normal, ubuntu-latest)/7_Run tests.txt:2022-02-07T02:59:10.1650337Z     export_import_subdir:                                 FAIL (1.00s)
+cron-20220210/build-ubuntu.yaml-571-85dd9355-failed/2_test-annex (crippled-tmp, ubuntu-latest).txt:2022-02-10T02:58:30.1065871Z     export_import_subdir:                                 FAIL (0.88s)
+cron-20220210/build-ubuntu.yaml-571-85dd9355-failed/test-annex (crippled-tmp, ubuntu-latest)/7_Run tests.txt:2022-02-10T02:58:30.1065811Z     export_import_subdir:                                 FAIL (0.88s)
+```
+
+so it fails only some times and primarily in normal, not crippled-tmp setup.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
