@@ -23,6 +23,7 @@ env:
   LANG: C
   DEB_SIGN_KEYID: 13A1093296154584245E0300C98FC49D36DAB17F
   DEB_BUILD_OPTIONS: nocheck
+  GIT_ASKPASS: True
   bbuild_log: git-annex-build.log
 
 jobs:
@@ -259,6 +260,7 @@ jobs:
           # Do it after we possibly setup HOME
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
+          git config --global core.askPass ""
 
           cd $HOME
           export | grep -e crippledfs || :
