@@ -420,6 +420,7 @@ jobs:
           # Do it after we possibly setup HOME
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
+          git config --global core.askPass ""
 
           cd $HOME
           export | grep -e crippledfs || :
