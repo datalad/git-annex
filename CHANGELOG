@@ -4,6 +4,9 @@ git-annex (10.20220128) UNRELEASED; urgency=medium
   * Pass --no-textconv when running git diff internally.
   * Fix git-annex forget propagation between repositories.
     (reversion introduced in version 7.20190122)
+  * registerurl, unregisterurl: Improved output when reading from stdin
+    to be more like other batch commands.
+  * registerurl, unregisterurl: Added --json and --json-error-messages options.
 
  -- Joey Hess <id@joeyh.name>  Mon, 31 Jan 2022 13:14:42 -0400
 

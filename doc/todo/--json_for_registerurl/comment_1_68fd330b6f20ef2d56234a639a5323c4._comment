@@ -14,7 +14,8 @@ a behavior change. Urk.
 
 Aside from crashing if an invalid key is provided,
 or perhaps some other exceptional error, there are no real ways it could
-fail so --json-error-messages is unlikely to be useful.
+fail so --json-error-messages is unlikely to be useful. But adding --json
+always adds it anyway.
 
 (unregisterurl has the same interface and mostly same implementation,
 and so same problems as registerurl.)

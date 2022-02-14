@@ -4,3 +4,11 @@
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> Added --json and --json-error-messages. Note that this did change the 
+> --batch output in a way that could possibly break something that expected
+> the old output to never change. I think it's acceptable to break that
+> because there has never been a guarantee of unchanging output format
+> except with --batch for most commands.
+> 
+> [[done]] --[[Joey]]

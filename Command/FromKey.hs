@@ -86,12 +86,15 @@ start matcher force (si, (keyname, file)) = do
 -- the uri scheme, to see if it looks like the prefix of a key. This relies
 -- on key backend names never containing a ':'.
 keyOpt :: String -> Key
-keyOpt s = case parseURI s of
+keyOpt = either giveup id . keyOpt'
+
+keyOpt' :: String -> Either String Key
+keyOpt' s = case parseURI s of
 	Just u | not (isKeyPrefix (uriScheme u)) ->
-		Backend.URL.fromUrl s Nothing
+		Right $ Backend.URL.fromUrl s Nothing
 	_ -> case deserializeKey s of
-		Just k -> k
-		Nothing -> giveup $ "bad key/url " ++ s
+		Just k -> Right k
+		Nothing -> Left $ "bad key/url " ++ s
 
 perform :: AddUnlockedMatcher -> Key -> RawFilePath -> CommandPerform
 perform matcher key file = lookupKeyNotHidden file >>= \case

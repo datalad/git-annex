@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2015-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,18 +11,18 @@ module Command.UnregisterUrl where
 
 import Command
 import Logs.Web
-import Command.RegisterUrl (start, startMass, optParser, RegisterUrlOptions(..))
+import Command.RegisterUrl (seekBatch, start, optParser, RegisterUrlOptions(..))
 
 cmd :: Command
-cmd = command "unregisterurl"
+cmd = withGlobalOptions [jsonOptions] $ command "unregisterurl"
 	SectionPlumbing "unregisters an url for a key"
 	(paramPair paramKey paramUrl)
 	(seek <$$> optParser)
 
 seek :: RegisterUrlOptions -> CommandSeek
 seek o = case (batchOption o, keyUrlPairs o) of
-	(Batch (BatchFormat sep _), _) -> commandAction $ startMass unregisterUrl sep
-	(NoBatch, ps) -> withWords (commandAction . start unregisterUrl) ps
+	(Batch fmt, _) -> seekBatch unregisterUrl o fmt
+	(NoBatch, ps) -> commandAction (start unregisterUrl ps)
 
 unregisterUrl :: Key -> String -> Annex ()
 unregisterUrl key url = do

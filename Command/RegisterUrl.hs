@@ -1,21 +1,19 @@
 {- git-annex command
  -
- - Copyright 2015-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
-
-{-# LANGUAGE BangPatterns #-}
 
 module Command.RegisterUrl where
 
 import Command
 import Logs.Web
-import Command.FromKey (keyOpt)
+import Command.FromKey (keyOpt, keyOpt')
 import qualified Remote
 
 cmd :: Command
-cmd = command "registerurl"
+cmd = withGlobalOptions [jsonOptions] $ command "registerurl"
 	SectionPlumbing "registers an url for a key"
 	(paramPair paramKey paramUrl)
 	(seek <$$> optParser)
@@ -32,45 +30,39 @@ optParser desc = RegisterUrlOptions
 
 seek :: RegisterUrlOptions -> CommandSeek
 seek o = case (batchOption o, keyUrlPairs o) of
-	(Batch (BatchFormat sep _), _) -> batchOnly Nothing (keyUrlPairs o) $
-		commandAction $ startMass setUrlPresent sep
+	(Batch fmt, _) -> seekBatch setUrlPresent o fmt
 	-- older way of enabling batch input, does not support BatchNull
-	(NoBatch, []) -> commandAction $ startMass setUrlPresent BatchLine
-	(NoBatch, ps) -> withWords (commandAction . start setUrlPresent) ps
+	(NoBatch, []) -> seekBatch setUrlPresent o (BatchFormat BatchLine (BatchKeys False))
+	(NoBatch, ps) -> commandAction (start setUrlPresent ps)
+
+seekBatch :: (Key -> URLString -> Annex ()) -> RegisterUrlOptions -> BatchFormat -> CommandSeek
+seekBatch a o fmt = batchOnly Nothing (keyUrlPairs o) $
+	batchInput fmt (pure . parsebatch) $
+		batchCommandAction . start' a
+  where
+	parsebatch l = 
+		let (keyname, u) = separate (== ' ') l
+		in if null u
+			then Left "no url provided"
+			else case keyOpt' keyname of
+				Left e -> Left e
+				Right k -> Right (k, u)
 
 start :: (Key -> URLString -> Annex ()) -> [String] -> CommandStart
-start a (keyname:url:[]) = 
-	starting "registerurl" ai si $
-		perform a (keyOpt keyname) url
+start a (keyname:url:[]) = start' a (si, (keyOpt keyname, url))
   where
-	ai = ActionItemOther (Just url)
 	si = SeekInput [keyname, url]
 start _ _ = giveup "specify a key and an url"
 
-startMass :: (Key -> URLString -> Annex ()) -> BatchSeparator -> CommandStart
-startMass a sep =
-	starting "registerurl" (ActionItemOther (Just "stdin")) (SeekInput []) $
-		performMass a sep
-
-performMass :: (Key -> URLString -> Annex ()) -> BatchSeparator -> CommandPerform
-performMass a sep = go True =<< map (separate (== ' ')) <$> batchLines fmt
+start' :: (Key -> URLString -> Annex ()) -> (SeekInput, (Key, URLString)) -> CommandStart
+start' a (si, (key, url)) =
+	starting "registerurl" ai si $
+		perform a key url
   where
-	fmt = BatchFormat sep (BatchKeys False)
-	go status [] = next $ return status
-	go status ((keyname,u):rest) | not (null keyname) && not (null u) = do
-		let key = keyOpt keyname
-		ok <- perform' a key u
-		let !status' = status && ok
-		go status' rest
-	go _ _ = giveup "Expected pairs of key and url on stdin, but got something else."
+	ai = ActionItemOther (Just url)
 
 perform :: (Key -> URLString -> Annex ()) -> Key -> URLString -> CommandPerform
 perform a key url = do
-	ok <- perform' a key url
-	next $ return ok
-
-perform' :: (Key -> URLString -> Annex ()) -> Key -> URLString -> Annex Bool
-perform' a key url = do
 	r <- Remote.claimingUrl url
 	a key (setDownloader' url r)
-	return True
+	next $ return True
