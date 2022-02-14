@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-02-14T16:26:52Z"
+ content="""
+The particular batch output format is not specified for this, and it's
+rather ad-hoc. I think this is the only --batch that is treated all as a
+single action with "registerurl (stdin)" at start and only one "ok" at the
+end of all the batched input. That was inherited from the non-batch
+behavior. Implementing --batch --json would need a second, redundant
+implementation that treats each batch input as its own action. Only using
+that for --json would be weird, but using it for --batch generally would be
+a behavior change. Urk.
+
+Aside from crashing if an invalid key is provided,
+or perhaps some other exceptional error, there are no real ways it could
+fail so --json-error-messages is unlikely to be useful.
+
+(unregisterurl has the same interface and mostly same implementation,
+and so same problems as registerurl.)
+"""]]
