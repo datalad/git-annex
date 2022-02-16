@@ -252,6 +252,35 @@ jobs:
             git-annex[-_]*.*
             dist/build-version
 
+    {% if clients %}
+      - name: Clone datalad/git-annex-ci-client-jobs
+        uses: actions/checkout@v2
+        with:
+          repository: datalad/git-annex-ci-client-jobs
+          fetch-depth: 1
+          path: client-jobs
+          token: ${{ secrets.CLIENT_JOBS_GITHUB_TOKEN }}
+
+      - name: Push installer to datalad/git-annex-ci-client-jobs
+        run: |
+          git checkout --orphan build
+          git rm -rf .
+          cp -i ../{{installer_glob}} .
+          git add {{installer_glob}}
+          buildno="${{ github.run_number }}"
+          git commit -m "Installer artifact from build $buildno"
+          git ls-remote --heads origin "build-*" | cut -f2 | cut -d/ -f3- > builds.txt
+          for clientid in {{clients|join(" ")}}
+          do branch_name="build-$clientid-$buildno"
+             if ! grep -Fqx "$branch_name" builds.txt
+             then git branch "$branch_name" build
+                  git push origin "$branch_name"
+             else echo "[INFO] Branch $branch_name already exists; leaving alone"
+             fi
+          done
+        working-directory: client-jobs
+
+    {% endif %}
       - name: Create new release
         if: github.event.inputs.commitish != ''
         run: |

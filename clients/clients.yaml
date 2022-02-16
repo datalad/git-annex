@@ -1,0 +1,16 @@
+ndoli:
+  tests:
+    git-annex-home: |
+      set -ex
+      mkdir -p "$HOME/git-annex-ci/$BUILDNO"
+      cd "$HOME/git-annex-ci/$BUILDNO"
+      git annex version
+      timeout 1800 git annex test
+
+    git-annex-tmp: |
+      set -ex
+      cd /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp
+      mkdir -p "$BUILDNO"
+      cd "$BUILDNO"
+      git annex version
+      timeout 1800 git annex test
