@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="ycp@f118e050dc106530b9cf62ead031e05eef7b1687"
+ nickname="ycp"
+ avatar="http://cdn.libravatar.org/avatar/5cac8fe093b20b23a05c1a54841dfe47"
+ subject="I have the same problem"
+ date="2022-02-16T08:03:05Z"
+ content="""
+Both local and remote git annex has version 10.20220127-ge6e60b644.
+
+Initially both my local and remote repos had version 8.  I used `git annex upgrade` to upgrade them to 9 then 10, but the problem persisted.
+
+I tried running the `git-annex-shell p2pstdio` command in the server shell after sshing in and it worked.
+I also tried a different git-annex-shell command (configlist) remotely from local with `ssh -T`, and it worked too.
+
+But when I do p2pstdio remotely with `ssh -T` I get
+
+```
+fatal: Run with no arguments or with -c cmd
+git-annex-shell: git-shell failed
+```
+
+"""]]
