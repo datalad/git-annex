@@ -1,0 +1,28 @@
+Hi, I need some client/server version advice. I've been keeping a git-annex repo for many years. It's currently centralized on a CentOS Linux release 7.9.2009 server, /usr/bin/git-annex is version **5.20140221** and has git 2.25.0 server-side. My new client machine is Debian testing Linux, where /usr/bin/git-annex is version **8.20211123**, and has git 2.35.1 client-side
+
+```
+server$ /usr/bin/git-annex version
+git-annex version: 5.20140221
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+```
+
+The /usr/bin/git clone command works fine ("Your branch is up to date with 'origin/master'."). But when I run **/usr/bin/git annex sync --content** (just like I do on other machines), I get a few errors like the following:
+
+```
+nothing to commit, working tree clean
+ok
+pull origin 
+ok
+get readme.md (from origin...) 
+  Transfer failed
+  Unable to access these remotes: origin
+  Maybe add some of these git remotes (git remote add ...):
+        0edb4d98-3f58-4114-be5d-2d7b5cb574d2 -- me@othermachine:~/people/me/awesome/code
+failed
+```
+
+It is not easy to install git-annex version 5 on the client, and if possible I'd rather not run such an old version. Should I expect a version 8 client to interoperate with a grand old version 5 repo with git-annex 5 on the server ?
+
+Thanks, Keith
