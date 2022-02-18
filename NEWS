@@ -1,3 +1,12 @@
+git-annex (10.20220218) upstream; urgency=medium
+
+  Transition notice: Commands like `git-annex get foo*` have changed to error
+  out when some of files are not checked into the repository. To get back the
+  previous behavior of silently skipping unknown files, use git config
+  to set annex.skipunknown to true.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 18 Feb 2022 13:12:21 -0400
+
 git-annex (8.20211028) upstream; urgency=medium
 
   This version of git-annex removes support for communicating with git-annex

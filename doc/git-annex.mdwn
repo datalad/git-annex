@@ -836,9 +836,7 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
   Set to false to make it an error for commands like "git-annex get"
   to be asked to operate on files that are not checked into git.
-
-  The default is currently true, but is planned to change to false in a
-  release in 2022.
+  (This is the default in recent versions of git-annex.)
 
   Note that, when annex.skipunknown is false, a command like "git-annex get ."
   will fail if no files in the current directory are checked into git,

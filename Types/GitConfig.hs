@@ -233,7 +233,7 @@ extractGitConfig configsource r = GitConfig
 	, annexCommitMode = if getbool (annexConfig "allowsign") False
 		then ManualCommit
 		else AutomaticCommit
-	, annexSkipUnknown = getbool (annexConfig "skipunknown") True
+	, annexSkipUnknown = getbool (annexConfig "skipunknown") False
 	, annexAdjustedBranchRefresh = fromMaybe
 		-- parse as bool if it's not a number
 		(if getbool "adjustedbranchrefresh" False then 1 else 0)

@@ -1,5 +1,8 @@
 git-annex (10.20220128) UNRELEASED; urgency=medium
 
+  * annex.skipunknown now defaults to false, so commands like
+    `git annex get foo*` will not silently skip over files/dirs that are
+    not checked into git.
   * adb: Avoid find failing with "Argument list too long"
   * Pass --no-textconv when running git diff internally.
   * Fix git-annex forget propagation between repositories.
