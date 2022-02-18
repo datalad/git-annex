@@ -1,16 +1,18 @@
 ndoli:
   tests:
     git-annex-home: |
-      set -ex
+      set -exu
       mkdir -p "$HOME/git-annex-ci/$BUILDNO"
+      trap 'cd "$HOME/git-annex-ci" && rm -rf "$BUILDNO"' EXIT
       cd "$HOME/git-annex-ci/$BUILDNO"
       git annex version
       timeout 1800 git annex test
 
     git-annex-tmp: |
-      set -ex
+      set -exu
       cd /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp
       mkdir -p "$BUILDNO"
+      trap 'cd /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp && rm -rf "$BUILDNO"' EXIT
       cd "$BUILDNO"
       git annex version
       timeout 1800 git annex test
