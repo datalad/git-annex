@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,8 @@ import Annex.Content
 import Annex.Perms
 import Annex.Link
 import Annex.ReplaceFile
+import Annex.InodeSentinal
+import Utility.InodeCache
 import Git.FilePath
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
@@ -47,7 +49,7 @@ start si file key = ifM (isJust <$> isAnnexLink file)
 perform :: RawFilePath -> Key -> CommandPerform
 perform dest key = do
 	destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus dest
-	replaceWorkTreeFile (fromRawFilePath dest) $ \tmp ->
+	destic <- replaceWorkTreeFile (fromRawFilePath dest) $ \tmp -> do
 		ifM (inAnnex key)
 			( do
 				r <- linkFromAnnex' key (toRawFilePath tmp) destmode
@@ -57,10 +59,12 @@ perform dest key = do
 					LinkAnnexFailed -> error "unlock failed"
 			, liftIO $ writePointerFile (toRawFilePath tmp) key destmode
 			)
-	next $ cleanup dest key destmode
+		withTSDelta (liftIO . genInodeCache (toRawFilePath tmp))
+	next $ cleanup dest destic key destmode
 
-cleanup ::  RawFilePath -> Key -> Maybe FileMode -> CommandCleanup
-cleanup dest key destmode = do
+cleanup :: RawFilePath -> Maybe InodeCache -> Key -> Maybe FileMode -> CommandCleanup
+cleanup dest destic key destmode = do
 	stagePointerFile dest destmode =<< hashPointerFile key
+	maybe noop (restagePointerFile (Restage True) dest) destic
 	Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath dest)
 	return True
