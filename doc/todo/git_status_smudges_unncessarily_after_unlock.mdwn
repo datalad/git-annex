@@ -27,10 +27,13 @@ commit -a`). Afterwards, `git status` then smudged it again, unsure why!
 > slowed git-annex unlock. But git status did then avoid doing any more
 > smudgeing. It seems that each call to restagePointerFile is running
 > git update-index, so still one git-annex smudge per file, rather
-> than combining several together.
+> than combining several together. In a v8 repo, the same amount of work
+> is done either way. In v9+, this is actually slower than before when the
+> files are small.
 > 
-> That's because restagePointerFile uses the git queue, and unlock 
+> restagePointerFile was running git update-index once per file 
+> because restagePointerFile uses the git queue, and unlock 
 > also queues a git add or something, so the queue isn't able to built
 > up because two dissimilar things are being queued. This seems an
 > unncessary behavior; it could queue up all the git adds and then
-> run restagePointerFile after them all.
+> run restagePointerFile after them all. Implemented that, and [[done]]! --[[Joey]]

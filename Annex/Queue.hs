@@ -9,7 +9,7 @@
 
 module Annex.Queue (
 	addCommand,
-	addInternalAction,
+	addFlushAction,
 	addUpdateIndex,
 	flush,
 	flushWhenFull,
@@ -31,11 +31,11 @@ addCommand commonparams command params files = do
 	store =<< flushWhenFull =<<
 		(Git.Queue.addCommand commonparams command params files q =<< gitRepo)
 
-addInternalAction :: Git.Queue.InternalActionRunner Annex -> [(RawFilePath, IO Bool, FileSize)] -> Annex ()
-addInternalAction runner files = do
+addFlushAction :: Git.Queue.FlushActionRunner Annex -> [(RawFilePath, IO Bool, FileSize)] -> Annex ()
+addFlushAction runner files = do
 	q <- get
 	store =<< flushWhenFull =<<
-		(Git.Queue.addInternalAction runner files q =<< gitRepo)
+		(Git.Queue.addFlushAction runner files q =<< gitRepo)
 
 {- Adds an update-index stream to the queue. -}
 addUpdateIndex :: Git.UpdateIndex.Streamer -> Annex ()

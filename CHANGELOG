@@ -10,6 +10,7 @@ git-annex (10.20220128) UNRELEASED; urgency=medium
   * registerurl, unregisterurl: Improved output when reading from stdin
     to be more like other batch commands.
   * registerurl, unregisterurl: Added --json and --json-error-messages options.
+  * Avoid git status taking a long time after git-annex unlock of many files.
 
  -- Joey Hess <id@joeyh.name>  Mon, 31 Jan 2022 13:14:42 -0400
 

@@ -1,6 +1,6 @@
 {- git repository command queue
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,8 +13,8 @@ module Git.Queue (
 	defaultTimelimit,
 	addCommand,
 	addUpdateIndex,
-	addInternalAction,
-	InternalActionRunner(..),
+	addFlushAction,
+	FlushActionRunner(..),
 	size,
 	full,
 	flush,
@@ -48,30 +48,34 @@ data Action m
 		-- ^ parameters that come after the git subcommand
 		, getFiles :: [CommandParam]
 		} 
-	{- An internal action to run, on a list of files that can be added
-	 - to as the queue grows. -}
-	| InternalAction
-		{ getRunner :: InternalActionRunner m
-		, getInternalFiles :: [(RawFilePath, IO Bool, FileSize)]
+	{- A FlushAction can be added along with CommandActions or
+	 - UpdateIndexActions, and when the queue later gets flushed,
+	 - those will be run before the FlushAction is. -}
+	| FlushAction
+		{ getFlushActionRunner :: FlushActionRunner m
+		, getFlushActionFiles :: [(RawFilePath, IO Bool, FileSize)]
 		}
 
-{- The String must be unique for each internal action. -}
-data InternalActionRunner m = InternalActionRunner String (Repo -> [(RawFilePath, IO Bool, FileSize)] -> m ())
+{- The String must be unique for each flush action. -}
+data FlushActionRunner m = FlushActionRunner String (Repo -> [(RawFilePath, IO Bool, FileSize)] -> m ())
 
-instance Eq (InternalActionRunner m) where
-	InternalActionRunner s1 _ == InternalActionRunner s2 _ = s1 == s2
+instance Eq (FlushActionRunner m) where
+	FlushActionRunner s1 _ == FlushActionRunner s2 _ = s1 == s2
 
-{- A key that can uniquely represent an action in a Map. -}
+{- A key that can uniquely represent an action in a Map.
+ -
+ - The ordering controls what order the actions are run in when flushing
+ - the queue. -}
 data ActionKey
 	= UpdateIndexActionKey
 	| CommandActionKey [CommandParam] String [CommandParam]
-	| InternalActionKey String
+	| FlushActionKey String
 	deriving (Eq, Ord)
 
 actionKey :: Action m -> ActionKey
 actionKey (UpdateIndexAction _) = UpdateIndexActionKey
 actionKey CommandAction { getCommonParams = c, getSubcommand = s, getParams = p } = CommandActionKey c s p
-actionKey InternalAction { getRunner = InternalActionRunner s _ } = InternalActionKey s
+actionKey FlushAction { getFlushActionRunner = FlushActionRunner s _ } = FlushActionKey s
 
 {- A queue of actions to perform (in any order) on a git repository,
  - with lists of files to perform them on. This allows coalescing 
@@ -120,7 +124,7 @@ new lim tlim = do
  -}
 addCommand :: MonadIO m => [CommandParam] -> String -> [CommandParam] -> [FilePath] -> Queue m -> Repo -> m (Queue m)
 addCommand commonparams subcommand params files q repo =
-	updateQueue action different (length files) q repo
+	updateQueue action conflicting (length files) q repo
   where
 	action = CommandAction
 		{ getCommonParams = commonparams
@@ -129,36 +133,37 @@ addCommand commonparams subcommand params files q repo =
 		, getFiles = map File files
 		}
 	
-	different (CommandAction { getSubcommand = s }) = s /= subcommand
-	different _ = True
+	conflicting (CommandAction { getSubcommand = s }) = s /= subcommand
+	conflicting (FlushAction {}) = False
+	conflicting _ = True
 
-{- Adds an internal action to the queue. -}
-addInternalAction :: MonadIO m => InternalActionRunner m -> [(RawFilePath, IO Bool, FileSize)] -> Queue m -> Repo -> m (Queue m)
-addInternalAction runner files q repo =
-	updateQueue action different (length files) q repo
+{- Adds an flush action to the queue. This can co-exist with anything else
+ - that gets added to the queue, and when the queue is eventually flushed,
+ - it will be run after the other things in the queue. -}
+addFlushAction :: MonadIO m => FlushActionRunner m -> [(RawFilePath, IO Bool, FileSize)] -> Queue m -> Repo -> m (Queue m)
+addFlushAction runner files q repo =
+	updateQueue action (const False) (length files) q repo
   where
-	action = InternalAction
-		{ getRunner = runner
-		, getInternalFiles = files
+	action = FlushAction
+		{ getFlushActionRunner = runner
+		, getFlushActionFiles = files
 		}
-	
-	different (InternalAction { getRunner = r }) = r /= runner
-	different _ = True
 
 {- Adds an update-index streamer to the queue. -}
 addUpdateIndex :: MonadIO m => Git.UpdateIndex.Streamer -> Queue m -> Repo -> m (Queue m)
 addUpdateIndex streamer q repo =
-	updateQueue action different 1 q repo
+	updateQueue action conflicting 1 q repo
   where
 	-- the list is built in reverse order
 	action = UpdateIndexAction [streamer]
 
-	different (UpdateIndexAction _) = False
-	different _ = True
+	conflicting (UpdateIndexAction _) = False
+	conflicting (FlushAction {}) = False
+	conflicting _ = True
 
 {- Updates or adds an action in the queue.
  -
- - If the queue already contains a different action, it will be flushed
+ - If the queue already contains a conflicting action, it will be flushed
  - before adding the action; this is to ensure that conflicting actions,
  - like add and rm, are run in the right order.
  -
@@ -166,19 +171,19 @@ addUpdateIndex streamer q repo =
  - and the action will be run right away.
  -}
 updateQueue :: MonadIO m => Action m -> (Action m -> Bool) -> Int -> Queue m -> Repo -> m (Queue m)
-updateQueue !action different sizeincrease q repo = do
+updateQueue !action conflicting sizeincrease q repo = do
 	now <- liftIO getPOSIXTime
 	if now - (_lastchanged q) > _timelimit q
-		then if isdifferent
+		then if isconflicting
 			then do
 				q' <- flush q repo
 				flush (mk q') repo
 			else flush (mk q) repo
-		else if isdifferent
+		else if isconflicting
 			then mk <$> flush q repo
 			else return $ mk (q { _lastchanged = now })
   where
-	isdifferent = not (null (filter different (M.elems (items q))))
+	isconflicting = not (null (filter conflicting (M.elems (items q))))
 	mk q' = newq
 	  where		
 		!newq = q'
@@ -196,8 +201,8 @@ combineNewOld (CommandAction _cps1 _sc1 _ps1 fs1) (CommandAction cps2 sc2 ps2 fs
 	CommandAction cps2 sc2 ps2 (fs1++fs2)
 combineNewOld (UpdateIndexAction s1) (UpdateIndexAction s2) =
 	UpdateIndexAction (s1++s2)
-combineNewOld (InternalAction _r1 fs1) (InternalAction r2 fs2) =
-	InternalAction r2 (fs1++fs2)
+combineNewOld (FlushAction _r1 fs1) (FlushAction r2 fs2) =
+	FlushAction r2 (fs1++fs2)
 combineNewOld anew _aold = anew
 
 {- Merges the contents of the second queue into the first.
@@ -257,6 +262,6 @@ runAction repo action@(CommandAction {}) = liftIO $ do
 		forceSuccessProcess p pid
 	go _ _ _ _ _ = error "internal"
 #endif
-runAction repo action@(InternalAction {}) =
-	let InternalActionRunner _ runner = getRunner action
-	in runner repo (getInternalFiles action)
+runAction repo action@(FlushAction {}) =
+	let FlushActionRunner _ runner = getFlushActionRunner action
+	in runner repo (getFlushActionFiles action)

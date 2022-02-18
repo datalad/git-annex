@@ -8,17 +8,6 @@ git annex filter-process
 
 # DESCRIPTION
 
-By default, `git-annex smudge` is used as the git filter driver.
-This is an alternative way to accomplish the same thing, using git's
-long-running filter process interface.
-
-To enable using this, run:
-
-	git config filter.annex.process 'git-annex filter-process'
-
-There will be no visible difference in behavior between enabling this and
-not, besides changes in speed and memory use when using git.
-
 When this is not enabled, each file that git wants to filter involves
 starting up a new `git-annex smudge` process. Starting many such processes
 for many files can be slow, and can make commands like `git checkout` and
@@ -28,9 +17,24 @@ non-annexed files do slow it down.)
 
 On the other hand when this is enabled, `git add` of a large file does an
 unncessary extra read of the file, and pipes its contents into git-annex.
-So if you enable this, it will be faster to use `git-annex add` to add
+So when this is enabled, it will be faster to use `git-annex add` to add
 large files to the annex, rather than `git add`. Other commands that
 add files, like `git commit -a`, are also impacted by this.
+
+This is used by default in git-annex repositories v9 and above, while
+v8 repositories use `git-annex smudge` for backwards compatability with
+older versions of git-annex.
+
+To enable this in a v8 repository, run:
+
+	git config filter.annex.process 'git-annex filter-process'
+
+To disable it, you can just unset the config:
+
+	git config --unset filter.annex.process
+
+There will be no visible difference in behavior between enabling this and
+not, besides changes in speed and memory use when using git.
 
 # OPTIONS
 

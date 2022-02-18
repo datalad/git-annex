@@ -190,7 +190,7 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 		-- fails on "../../repo/path/file" when cwd is not in the repo 
 		-- being acted on. Avoid these problems with an absolute path.
 		absf <- liftIO $ absPath f
-		Annex.Queue.addInternalAction runner [(absf, isunmodified tsd, inodeCacheFileSize orig)]
+		Annex.Queue.addFlushAction runner [(absf, isunmodified tsd, inodeCacheFileSize orig)]
   where
 	isunmodified tsd = genInodeCache f tsd >>= return . \case
 		Nothing -> False
@@ -202,8 +202,8 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 	-- on all still-unmodified files, using a copy of the index file,
 	-- to bypass the lock. Then replace the old index file with the new
 	-- updated index file.
-	runner :: Git.Queue.InternalActionRunner Annex
-	runner = Git.Queue.InternalActionRunner "restagePointerFile" $ \r l -> do
+	runner :: Git.Queue.FlushActionRunner Annex
+	runner = Git.Queue.FlushActionRunner "restagePointerFile" $ \r l -> do
 		-- Flush any queued changes to the keys database, so they
 		-- are visible to child processes.
 		-- The database is closed because that may improve behavior
