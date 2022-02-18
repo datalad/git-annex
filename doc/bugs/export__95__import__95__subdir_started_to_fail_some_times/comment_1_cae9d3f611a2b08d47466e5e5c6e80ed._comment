@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-02-18T16:20:10Z"
+ content="""
+This is odd because the test suite says
+that "git-annex import" failed, but its
+output "list foo ok" seems to indicate it succeeded.
+(There is no other output apparently.)
+
+commitRemote outputs "update" when it starts, so it apparently
+never got that far. Seems to leave a failure in importKeys
+that somehow crashes it without an error message.
+
+I can't think of a way that git-annex could crash without an error message,
+unless it was an external problem eg a SIGEGV or OOM killer or something like
+that.
+"""]]
