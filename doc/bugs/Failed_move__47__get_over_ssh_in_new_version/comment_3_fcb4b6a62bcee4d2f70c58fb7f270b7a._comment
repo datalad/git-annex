@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-02-18T15:58:51Z"
+ content="""
+@ycp it is very possible that you also have an older version of git-annex
+installed on the server, in such a way that the newer version is in PATH
+when you log in interactively, but the older version is when you log in
+non-interactively.
+
+See <https://git-annex.branchable.com/tips/get_git-annex-shell_into_PATH/>
+
+Note that "Run with no arguments or with -c cmd" is not a git-annex
+message. It is a message output by git-shell, eg:
+
+> git-shell -c p2pstdio foo
+> fatal: Run with no arguments or with -c cmd
+
+This probably means that git-annex-shell, not understanding the "p2pstdio"
+command, has passed it on to git-shell, which failed like that. Which hints
+very strongly that you do indeed have an old git-annex-shell in PATH at
+that point.
+"""]]
