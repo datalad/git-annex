@@ -1,0 +1,74 @@
+If an unlocked (as known to annex) file is dropped locally, it is still present on the file system as a regular file. So git-annex unaware tool could happily append to it without realizing that it is changing a file which contains no data, but rather a git link of git-annex.  Then `git commit` would silently (!!!) commit such a change.
+
+<details>
+<summary>here is a reproducer</summary> 
+
+```shell
+#!/bin/bash
+
+cd "$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)"
+set -eu
+
+git init
+git annex init
+
+set -x
+git annex addurl --file 123 http://onerussian.com/tmp/123
+git annex unlock 123 
+git commit -m 'commit 123 unlocked' 123
+
+git annex drop 123
+cat 123
+
+# git annex knows that the content is gone!
+git annex list
+
+echo "more crap" >> 123
+git commit -m 'Added crap' 123
+
+# how probable it is that the user DOES want gitlink on top of that file?
+cat 123
+git show
+
+```
+</details>
+
+which with git-annex `10.20220127+git47-g9f9b1488e-1~ndall+1` produces
+
+```
+...
++ git annex list
+here
+|web
+||bittorrent
+|||
+_X_ 123
++ echo 'more crap'
++ git commit -m 'Added crap' 123
+[master fdcea88] Added crap
+ 1 file changed, 1 insertion(+)
++ cat 123
+/annex/objects/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b
+more crap
++ git show
+commit fdcea88dcfcaf823eebfe78734f30b81531240a8 (HEAD -> master)
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Fri Feb 18 14:43:32 2022 -0500
+
+    Added crap
+
+diff --git a/123 b/123
+index 1c0106d..ef5ca34 100644
+--- a/123
++++ b/123
+@@ -1 +1,2 @@
+ /annex/objects/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b
++more crap
+```
+
+although could be considered a user error, I feel that also git annex could add a guard that while smudging if file was not locally present, beginning of the content is the previous git link, something went awry and at least issuing some warning (if possible) could be due and help prevent some data loss where expected to grow file would be trimmed and previous content possibly dropped.
+
+may be situation is even more "dire" because git-annex still considers this file "annexed" (according to `git annex list`) although not present locally.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
