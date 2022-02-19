@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="xloem"
+ avatar="http://cdn.libravatar.org/avatar/b8c087f7c5e6a9358748f0727c077f3b"
+ subject="comment 12"
+ date="2022-02-19T07:50:53Z"
+ content="""
+addendum: note that filecoin itself is not permanent, the server needs to keep recreating deals for the data. a permanent solution would be something like arweave, a permastorage blockchain with tools, which is one of the solutions i found in the ethereum storage docs.
+"""]]
