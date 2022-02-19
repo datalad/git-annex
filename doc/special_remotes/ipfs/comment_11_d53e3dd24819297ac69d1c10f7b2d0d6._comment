@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="xloem"
+ avatar="http://cdn.libravatar.org/avatar/b8c087f7c5e6a9358748f0727c077f3b"
+ subject="free dweb storage services"
+ date="2022-02-19T07:47:07Z"
+ content="""
+ipfs appears to be running some free storages for large files on ipfs backed by filecoin.
+https://nft.storage/ and htps://web3.storage/ are both presently ostensibly free and permanent and have cli interfaces to upload to them.
+"""]]
