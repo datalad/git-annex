@@ -61,3 +61,5 @@ no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
 and I do not think it should report `124` as unlocked.  Or is there some `find` way to search only for "truly unlocked" files?
+
+> [[notabug|done]] --[[Joey]]
