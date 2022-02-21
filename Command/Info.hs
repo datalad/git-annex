@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -132,7 +132,6 @@ start o ps = do
 
 globalInfo :: InfoOptions -> Annex ()
 globalInfo o = do
-	disallowMatchingOptions
 	u <- getUUID
 	whenM ((==) DeadTrusted <$> lookupTrust u) $
 		earlyWarning "Warning: This repository is currently marked as dead."
@@ -145,7 +144,6 @@ itemInfo :: InfoOptions -> (SeekInput, String) -> Annex ()
 itemInfo o (si, p) = ifM (isdir p)
 	( dirInfo o p si
 	, do
-		disallowMatchingOptions
 		v <- Remote.byName' p
 		case v of
 			Right r -> remoteInfo o r si
@@ -167,10 +165,6 @@ noInfo s si = do
 	showStart "info" (encodeBS s) si
 	showNote $ "not a directory or an annexed file or a treeish or a remote or a uuid"
 	showEndFail
-
-disallowMatchingOptions :: Annex ()
-disallowMatchingOptions = whenM Limit.limited $
-	giveup "File matching options can only be used when getting info on a directory."
 
 dirInfo :: InfoOptions -> FilePath -> SeekInput -> Annex ()
 dirInfo o dir si = showCustom (unwords ["info", dir]) si $ do
@@ -197,9 +191,13 @@ treeishInfo o t si = do
 	tostats = map (\s -> s t)
 
 fileInfo :: InfoOptions -> FilePath -> SeekInput -> Key -> Annex ()
-fileInfo o file si k = showCustom (unwords ["info", file]) si $ do
-	evalStateT (mapM_ showStat (file_stats file k)) (emptyStatInfo o)
-	return True
+fileInfo o file si k = do
+	matcher <- Limit.getMatcher
+	let file' = toRawFilePath file
+	whenM (matcher $ MatchingFile $ FileInfo file' file' (Just k)) $
+		showCustom (unwords ["info", file]) si $ do
+			evalStateT (mapM_ showStat (file_stats file k)) (emptyStatInfo o)
+			return True
 
 remoteInfo :: InfoOptions -> Remote -> SeekInput -> Annex ()
 remoteInfo o r si = showCustom (unwords ["info", Remote.name r]) si $ do
@@ -404,7 +402,7 @@ bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir
 
 key_size :: Key -> Stat
-key_size k = simpleStat "size" $ showSizeKeys $ foldKeys [k]
+key_size k = simpleStat "size" $ showSizeKeys $ addKey k emptyKeyInfo
 
 key_name :: Key -> Stat
 key_name k = simpleStat "key" $ pure $ serializeKey k
@@ -525,7 +523,9 @@ cachedPresentData = do
 	case presentData s of
 		Just v -> return v
 		Nothing -> do
-			v <- foldKeys <$> lift (listKeys InAnnex)
+			matcher <- lift getKeyOnlyMatcher
+			v <- foldl' (flip addKey) emptyKeyInfo
+				<$> lift (listKeys' InAnnex (matchOnKey matcher))
 			put s { presentData = Just v }
 			return v
 
@@ -535,9 +535,13 @@ cachedRemoteData u = do
 	case M.lookup u (repoData s) of
 		Just v -> return (Right v)
 		Nothing -> do
+			matcher <- lift getKeyOnlyMatcher
 			let combinedata d uk = finishCheck uk >>= \case
 				Nothing -> return d
-				Just k -> return $ addKey k d
+				Just k -> ifM (matchOnKey matcher k)
+					( return (addKey k d)
+					, return d
+					)
 			lift (loggedKeysFor' u) >>= \case
 				Just (ks, cleanup) -> do
 					v <- lift $ foldM combinedata emptyKeyInfo ks
@@ -552,8 +556,13 @@ cachedReferencedData = do
 	case referencedData s of
 		Just v -> return v
 		Nothing -> do
+			matcher <- lift getKeyOnlyMatcher
+			let combinedata k _f d = ifM (matchOnKey matcher k)
+				( return (addKey k d)
+				, return d
+				)
 			!v <- lift $ Command.Unused.withKeysReferenced
-				emptyKeyInfo addKey
+				emptyKeyInfo combinedata
 			put s { referencedData = Just v }
 			return v
 
@@ -596,11 +605,16 @@ getDirStatInfo o dir = do
 getTreeStatInfo :: InfoOptions -> Git.Ref -> Annex (Maybe StatInfo)
 getTreeStatInfo o r = do
 	fast <- Annex.getState Annex.fast
+	-- git lstree filenames start with a leading "./" that prevents
+	-- matching, and also things like --include are supposed to
+	-- match relative to the current directory, which does not make
+	-- sense when matching against files in some arbitrary tree.
+	matcher <- getKeyOnlyMatcher
 	(ls, cleanup) <- inRepo $ LsTree.lsTree
 		LsTree.LsTreeRecursive
 		(LsTree.LsTreeLong False)
 		r
-	(presentdata, referenceddata, repodata) <- go fast ls initial
+	(presentdata, referenceddata, repodata) <- go fast matcher ls initial
 	ifM (liftIO cleanup)
 		( return $ Just $
 			StatInfo (Just presentdata) (Just referenceddata) repodata Nothing o
@@ -608,32 +622,31 @@ getTreeStatInfo o r = do
 		)
   where
 	initial = (emptyKeyInfo, emptyKeyInfo, M.empty)
-	go _ [] vs = return vs
-	go fast (l:ls) vs@(presentdata, referenceddata, repodata) = do
-		mk <- catKey (LsTree.sha l)
-		case mk of
-			Nothing -> go fast ls vs
-			Just key -> do
-				!presentdata' <- ifM (inAnnex key)
-					( return $ addKey key presentdata
-					, return presentdata
-					)
-				let !referenceddata' = addKey key referenceddata
-				!repodata' <- if fast
-					then return repodata
-					else do
-						locs <- Remote.keyLocations key
-						return (updateRepoData key locs repodata)
-				go fast ls $! (presentdata', referenceddata', repodata')
+	go _ _ [] vs = return vs
+	go fast matcher (l:ls) vs@(presentdata, referenceddata, repodata) =
+		catKey (LsTree.sha l) >>= \case
+			Nothing -> go fast matcher ls vs
+			Just key -> ifM (matchOnKey matcher key)
+				( do
+					!presentdata' <- ifM (inAnnex key)
+						( return $ addKey key presentdata
+						, return presentdata
+						)
+					let !referenceddata' = addKey key referenceddata
+					!repodata' <- if fast
+						then return repodata
+						else do
+							locs <- Remote.keyLocations key
+							return (updateRepoData key locs repodata)
+					go fast matcher ls $! (presentdata', referenceddata', repodata')
+				, go fast matcher ls vs
+				)
 
 emptyKeyInfo :: KeyInfo
 emptyKeyInfo = KeyInfo 0 0 0 M.empty
 
 emptyNumCopiesStats :: NumCopiesStats
 emptyNumCopiesStats = NumCopiesStats M.empty
-
-foldKeys :: [Key] -> KeyInfo
-foldKeys = foldl' (flip addKey) emptyKeyInfo
 
 addKey :: Key -> KeyInfo -> KeyInfo
 addKey key (KeyInfo count size unknownsize backends) =
@@ -700,3 +713,20 @@ mkSizer = ifM (bytesOption . infoOptions <$> get)
 	( return (const $ const show)
 	, return roughSize
 	)
+			
+getKeyOnlyMatcher :: Annex (MatchInfo -> Annex Bool)
+getKeyOnlyMatcher = do
+	whenM (Limit.introspect matchNeedsFileName) $ do
+		warning "File matching options cannot be applied when getting this info."
+		giveup "Unable to continue."
+	Limit.getMatcher
+
+matchOnKey :: (MatchInfo -> Annex Bool) -> Key -> Annex Bool
+matchOnKey matcher k = matcher $ MatchingInfo $ ProvidedInfo
+	{ providedFilePath = Nothing
+	, providedKey = Just k
+	, providedFileSize = Nothing
+	, providedMimeType = Nothing
+	, providedMimeEncoding = Nothing
+	, providedLinkType = Nothing
+	}

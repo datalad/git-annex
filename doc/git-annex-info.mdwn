@@ -11,9 +11,9 @@ git annex info `[directory|file|treeish|remote|description|uuid ...]`
 Displays statistics and other information for the specified item,
 which can be a directory, or a file, or a treeish, or a remote,
 or the description or uuid of a repository.
-  
+
 When no item is specified, displays statistics and information
-for the local repository and all known annexed files.
+for the local repository and all annexed content.
 
 # OPTIONS
 
@@ -45,11 +45,10 @@ for the local repository and all known annexed files.
   Makes the `--batch` input be delimited by nulls instead of the usual
   newlines.
 
-* file matching options
+* matching options
 
-  When a directory is specified, the [[git-annex-matching-options]](1)
-  can be used to select the files in the directory that are included
-  in the statistics.
+  The [[git-annex-matching-options]](1) can be used to select what
+  to include in the statistics.
 
 * Also the [[git-annex-common-options]](1) can be used.
 

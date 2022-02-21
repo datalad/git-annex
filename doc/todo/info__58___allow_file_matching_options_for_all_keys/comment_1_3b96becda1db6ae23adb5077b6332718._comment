@@ -12,6 +12,8 @@ where used, but now `matchNeedsFileName` is available and it could only
 reject those.
 
 So this can be implemented by making cachedPresentData
-and cachedRemoteData get the matcher, check if it's
+and cachedRemoteData (etc) get the matcher, check if it's
 the right kind and apply it to the keys.
+
+done
 """]]

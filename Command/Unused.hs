@@ -183,12 +183,10 @@ excludeReferenced refspec ks = runbloomfilter withKeysReferencedM ks
 	runfilter a l = a l
 	runbloomfilter a = runfilter $ \l -> bloomFilter l <$> genBloomFilter a
 
-{- Given an initial value, folds it with each key referenced by
- - files in the working tree. -}
-withKeysReferenced :: v -> (Key -> v -> v) -> Annex v
-withKeysReferenced initial a = withKeysReferenced' Nothing initial folda
-  where
-	folda k _ v = return $ a k v
+{- Given an initial value, accumulates the value over each key
+ - referenced by files in the working tree. -}
+withKeysReferenced :: v -> (Key -> RawFilePath -> v -> Annex v) -> Annex v
+withKeysReferenced initial = withKeysReferenced' Nothing initial
 
 {- Runs an action on each referenced key in the working tree. -}
 withKeysReferencedM :: (Key -> Annex ()) -> Annex ()

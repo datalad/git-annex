@@ -43,6 +43,7 @@ module Annex.Content (
 	moveBad,
 	KeyLocation(..),
 	listKeys,
+	listKeys',
 	saveState,
 	downloadUrl,
 	preseedTmp,
@@ -653,22 +654,26 @@ data KeyLocation = InAnnex | InAnywhere
  - .git/annex/objects, whether or not the content is present.
  -}
 listKeys :: KeyLocation -> Annex [Key]
-listKeys keyloc = do
+listKeys keyloc = listKeys' keyloc (const (pure True))
+
+{- Due to use of unsafeInterleaveIO, the passed filter action
+ - will be run in a copy of the Annex state, so any changes it
+ - makes to the state will not be preserved. -}
+listKeys' :: KeyLocation -> (Key -> Annex Bool) -> Annex [Key]
+listKeys' keyloc want = do
 	dir <- fromRepo gitAnnexObjectDir
-	{- In order to run Annex monad actions within unsafeInterleaveIO,
-	 - the current state is taken and reused. No changes made to this
-	 - state will be preserved. 
-	 -}
 	s <- Annex.getState id
+	r <- Annex.getRead id
 	depth <- gitAnnexLocationDepth <$> Annex.getGitConfig
-	liftIO $ walk s depth (fromRawFilePath dir)
+	liftIO $ walk (s, r) depth (fromRawFilePath dir)
   where
 	walk s depth dir = do
 		contents <- catchDefaultIO [] (dirContents dir)
 		if depth < 2
 			then do
-				contents' <- filterM (present s) contents
-				let keys = mapMaybe (fileKey . P.takeFileName . toRawFilePath) contents'
+				contents' <- filterM present contents
+				keys <- filterM (Annex.eval s . want) $
+					mapMaybe (fileKey . P.takeFileName . toRawFilePath) contents'
 				continue keys []
 			else do
 				let deeper = walk s (depth - 1)
@@ -683,8 +688,8 @@ listKeys keyloc = do
 		InAnywhere -> True
 		_ -> False
 
-	present _ _ | inanywhere = pure True
-	present _ d = presentInAnnex d
+	present _ | inanywhere = pure True
+	present d = presentInAnnex d
 
 	presentInAnnex = doesFileExist . contentfile
 	contentfile d = d </> takeFileName d
