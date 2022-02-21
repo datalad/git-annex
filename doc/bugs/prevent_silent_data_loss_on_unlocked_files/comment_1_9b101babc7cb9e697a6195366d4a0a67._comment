@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-02-21T19:01:29Z"
+ content="""
+Actually, the format of pointer files allows
+additional content to be present after the key and a newline.
+
+That is to allow for future expansion. Note that git-lfs does the same and
+IIRC puts something additional in there, perhaps including a comment like
+"This file's content is not present; this is only a pointer."
+
+So, appending to the link file keeps it a working link,
+ just a link with more crap at the end:
+
+	joey@darkstar:/tmp/aaaa>echo "more crap" >> g
+	joey@darkstar:/tmp/aaaa>cat g
+	/annex/objects/SHA256E-s14135--d1e433edea357dde79276fcfd63bacb93f2c2b4bf869ab976ee83a66e5506e16
+	more crap
+	joey@darkstar:/tmp/aaaa>git-annex whereis g
+	whereis g (1 copy)
+	  	00000000-0000-0000-0000-000000000001 -- web
+	
+	  web: http://google.com/
+	ok
+
+So how is this data loss? The annexed content is still available;
+git-annex get will still work. The content you appended to 
+the link file didn't go where you intended it to, but it is checked
+into git too.
+
+If git-annex warned about this when smudging a file, it would still 
+get added to git; it can't prevent that. And the warning would mess
+with any intentional use of this.
+"""]]
