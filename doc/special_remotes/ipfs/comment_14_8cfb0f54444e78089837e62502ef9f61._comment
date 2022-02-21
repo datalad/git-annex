@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2022-02-21T19:53:58Z"
+ content="""
+<https://nft.storage/terms/> claims this is limited to NFTs and not other
+data. (Whatever that means; why can't I mint a NFT for a nice gpg encrypted
+blob?)
+
+I also doubt it actually will store anything for longer than the current
+NFT mania; the terms have a loophole that allow them to provide 90 days
+notice before ending the service.
+
+It does have an API if someone wants to build a special remote and use it
+for general data storage. But that's out of scope for this IPFS special
+remote AFAICS.
+"""]]
