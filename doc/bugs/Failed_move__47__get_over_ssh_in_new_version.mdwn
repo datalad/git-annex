@@ -93,3 +93,5 @@ remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav tahoe 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, everything worked perfectly (using git-annex since at least 2 years).
+
+[[!meta title="improve unclear error message when used with too old git-annex-shell"]]
