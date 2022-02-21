@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2022-02-21T21:46:14Z"
+ content="""
+> So how is this data loss? The annexed content is still available; git-annex get will still work. The content you appended to the link file didn't go where you intended it to, but it is checked into git too.
+
+;-) hm, well, indeed - data will not be lost per se. But data will \"spread out\" (some under git-annex, some as some ignored content in the git link file), and indeed the history of modifications would still be there in git history thus keeping it possible to reconstruct the ultimate intended file content (would be especially fun exercise for a user if there were modifications to both git-annex'ed version of the file and `git` committed git linked text portion of the file). I could come up with some obscure scenario (force dropped annexed content of some prior state of annexed file because I have a newer one) where recovering ultimate original order of such \"spread outs\" would make it impossible though.
+
+> And the warning would mess with any intentional use of this.
+
+Is there really any intentional use of this? if not, then IMHO UX would be better if such use would be prevented (error out) rather than allowed since could lead to the confusion and requiring quite an archaeological expedition to recover data in originally intended \"all annexed in one file\". If there is an intended use, then I guess indeed there is no way for users to shoot themselves in the foot?
+"""]]
