@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-02-22T15:48:20Z"
+ content="""
+If it errored, git would ignore the failure and still add the file
+content to git.
+
+One thing that could be done is to come up with some kind of format for the
+lines after the annex link in the pointer file, to be used in whatever
+future expansion might happen. Then it could warn if there is data there
+not matching that format. And then add the file to the annex, to at least
+keep that data out of the git repository.
+"""]]
