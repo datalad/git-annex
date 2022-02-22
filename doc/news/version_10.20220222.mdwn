@@ -1,0 +1,15 @@
+git-annex 10.20220222 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * annex.skipunknown now defaults to false, so commands like
+    `git annex get foo*` will not silently skip over files/dirs that are
+    not checked into git.
+  * info: Allow using matching options in more situations. File matching
+    options like --include will be rejected in situations where there is
+    no filename to match against.
+  * adb: Avoid find failing with "Argument list too long"
+  * Fix git-annex forget propagation between repositories.
+    (reversion introduced in version 7.20190122)
+  * registerurl, unregisterurl: Improved output when reading from stdin
+    to be more like other batch commands.
+  * registerurl, unregisterurl: Added --json and --json-error-messages options.
+  * Avoid git status taking a long time after git-annex unlock of many files.
+  * Pass --no-textconv when running git diff internally."""]]
