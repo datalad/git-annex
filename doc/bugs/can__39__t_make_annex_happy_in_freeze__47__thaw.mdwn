@@ -1,0 +1,174 @@
+### Please describe the problem.
+
+Finally got to try [https://git-annex.branchable.com/todo/lockdown_hooks/](https://git-annex.branchable.com/todo/lockdown_hooks/) solution to avoid adjusted branches on local HPC which uses ACLs on some (but not all) partitions/etc.
+
+For the use-case at hands I figured how to "freeze" and "thaw" to be done via `nfs4_{s,g}etfacl`.  Here are my two scripts which also dump debug output to stderr
+
+<details>
+<summary>freeze-content -- adds "D::EVERYONE@:wadTN" at index 1</summary> 
+
+```shell
+#!/bin/bash
+
+set -eu
+
+{
+echo "D: freezing [$@] while under `pwd`"
+ls -ld "$@"
+# Cumbersome and buggy -- I found no other way to just say "remove write bits"
+#nfs4_getfacl "$@" | sed -e 's,:r[^:]*$,:rxtncy,g' | nfs4_setfacl -S- "$@"
+
+# This should be first and thus preventing any changes to that path
+# 'thaw'ing would just remove that rule
+nfs4_setfacl -a D::EVERYONE@:wadTN 1 "$@"
+echo "D: finished freezing ok. Current ACL:"
+nfs4_getfacl "$@"
+} >&2
+```
+</details>
+
+
+<details>
+<summary>thaw-content -- removes that ACL</summary> 
+
+```shell
+#!/bin/bash
+
+set -eu
+
+echo "unlocking [$@] while under `pwd`" >&2
+#nfs4_getfacl "$@" | sed -e 's,:r[^:]*$,:rxtncy,g' | nfs4_setfacl -S- "$@"
+nfs4_setfacl -x D::EVERYONE@:wadTN "$@"
+echo "finished locking ok. ACL:" >&2
+nfs4_getfacl "$@" >&1
+```
+</details>
+
+
+and I verified that it does work as expected/desired:
+
+<details>
+<summary>on a directory</summary> 
+
+```shell
+(git-annex) [d31548v@discovery7 tmp]$ mkdir testdir && ~/bin-annex/freeze-content testdir
+D: freezing [testdir] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp
+drwxrwx--- 2 d31548v rc-CANlab-admin 0 Feb 23 15:48 testdir
+D: finished freezing ok. Current ACL:
+
+# file: testdir
+D::EVERYONE@:wadTN
+A::OWNER@:rwadxtTnNcy
+A:fdi:OWNER@:rwadxtTnNcy
+A:fd:GROUP@:rwaDdxtTnNcCoy
+A:fdg:rc-CANlab@KIEWIT.DARTMOUTH.EDU:rxtncy
+(git-annex) [d31548v@discovery7 tmp]$ touch testdir/123
+touch: cannot touch 'testdir/123': Permission denied
+(git-annex) [d31548v@discovery7 tmp]$ rm -rf testdir
+rm: cannot remove 'testdir': Permission denied
+(git-annex) [d31548v@discovery7 tmp]$ ~/bin-annex/thaw-content testdir && rm -rf testdir
+unlocking [testdir] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp
+finished locking ok. ACL:
+
+# file: testdir
+A::OWNER@:rwadxtTnNcy
+A:fdi:OWNER@:rwadxtTnNcy
+A:fd:GROUP@:rwaDdxtTnNcCoy
+A:fdg:rc-CANlab@KIEWIT.DARTMOUTH.EDU:rxtncy
+(git-annex) [d31548v@discovery7 tmp]$ ls -ld testdir
+ls: cannot access testdir: No such file or directory
+
+```
+</details>
+
+
+<details>
+<summary>and a file</summary> 
+
+```shell
+(git-annex) [d31548v@discovery7 tmp]$ touch testfile && ~/bin-annex/freeze-content testfile
+D: freezing [testfile] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp
+-rwxrwx--- 1 d31548v rc-CANlab-admin 0 Feb 23 15:49 testfile
+D: finished freezing ok. Current ACL:
+
+# file: testfile
+D::EVERYONE@:wadTN
+A::OWNER@:rwadxtTnNcy
+A::GROUP@:rwadxtTnNcCoy
+A:g:rc-CANlab@KIEWIT.DARTMOUTH.EDU:rxtncy
+(git-annex) [d31548v@discovery7 tmp]$ echo 123 >> testfile
+bash: testfile: Permission denied
+(git-annex) [d31548v@discovery7 tmp]$ rm testfile
+rm: remove write-protected regular empty file 'testfile'? y
+rm: cannot remove 'testfile': Permission denied
+(git-annex) [d31548v@discovery7 tmp]$ ~/bin-annex/thaw-content testfile && rm -rf testfile
+unlocking [testfile] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp
+finished locking ok. ACL:
+
+# file: testfile
+A::OWNER@:rwadxtTnNcy
+A::GROUP@:rwadxtTnNcCoy
+A:g:rc-CANlab@KIEWIT.DARTMOUTH.EDU:rxtncy
+(git-annex) [d31548v@discovery7 tmp]$ ls -ld testfile
+ls: cannot access testfile: No such file or directory
+
+```
+</details>
+
+
+But that still dissatisfies `git-annex` (10.20220127-gf616630):
+
+```shell
+(git-annex) [d31548v@discovery7 tmp]$ d=repo; chmod +r -R "$d" ; rm -rf "$d"; mkdir -p "$d" && cd $d && git init && git -c annex.freezecontent-command="$HOME/bin-annex/freeze-content %path" -c annex.thawcontent-command="$HOME/bin-annex/thaw-content %path" annex init   
+chmod: cannot access 'repo': No such file or directory
+Initialized empty Git repository in /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/repo/.git/
+init  D: freezing [.git/annex/misctmp/gaprobe] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/repo
+-rwxrwx--- 1 d31548v rc-CANlab-admin 0 Feb 23 15:51 .git/annex/misctmp/gaprobe
+D: finished freezing ok. Current ACL:
+
+# file: .git/annex/misctmp/gaprobe
+D::EVERYONE@:wadTN
+A::OWNER@:rwadxtTnNcy
+A::GROUP@:rwadxtTnNcCoy
+A:g:rc-CANlab@KIEWIT.DARTMOUTH.EDU:rxtncy
+unlocking [.git/annex/misctmp/gaprobe] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/repo
+finished locking ok. ACL:
+
+# file: .git/annex/misctmp/gaprobe
+A::OWNER@:rwadxtTnNcy
+A::GROUP@:rwadxtTnNcCoy
+A:g:rc-CANlab@KIEWIT.DARTMOUTH.EDU:rxtncy
+
+  Filesystem does not allow removing write bit from files.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+```
+
+may be it is because at POSIX level write bits are still there? e.g. here is with the file
+
+```shell
+(git-annex) [d31548v@discovery7 repo]$ touch testfile && ~/bin-annex/freeze-content testfile && ls -l testfile                                         
+D: freezing [testfile] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/repo
+-rwxrwx--- 1 d31548v rc-CANlab-admin 0 Feb 23 15:51 testfile
+D: finished freezing ok. Current ACL:
+
+# file: testfile
+D::EVERYONE@:wadTN
+A::OWNER@:rwadxtTnNcy
+A::GROUP@:rwadxtTnNcCoy
+A:g:rc-CANlab@KIEWIT.DARTMOUTH.EDU:rxtncy
+-rwxrwx--- 1 d31548v rc-CANlab-admin 0 Feb 23 15:51 testfile
+```
+
+filing as a bug since I think I satisfied all desires of git-annex for ensuring that target path is frozen, but it is still not satisfied
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
