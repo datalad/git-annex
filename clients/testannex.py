@@ -169,10 +169,11 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
         if result_branch in remote_results:
             log.warning(
                 "Both build branch %r and result branch %r found on remote;"
-                " skipping job",
+                " deleting build branch and skipping job",
                 build_branch,
                 result_branch,
             )
+            jobrepo.run("push", "origin", f":refs/heads/{build_branch}")
             continue
         log.info("Running tests for build %d", buildno)
         jobrepo.run(
