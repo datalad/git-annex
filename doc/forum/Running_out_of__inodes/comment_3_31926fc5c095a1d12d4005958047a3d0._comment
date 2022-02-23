@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="inodes of git vs. git-annex"
+ date="2022-02-23T12:18:54Z"
+ content="""
+An observation I've just made cleaning up after a surprising (to me back then, not to the reader seeing the context here) \"disk full\" condition on a half-empty disk:
+
+On my system it was not git-annex's objects and symlinks (with its mere several thousand inodes) but git (with millions of them) that filled up the system during `git gc`.
+
+Running `git prune` helped me get out of the immediate situation, but any `git gc` filled up the disk again. This appears to be a general problem when repacking large git repositories in some states (producing 8M files intermediately). In the end, I resorted to moving .git/objects to a dedicated btrfs partition (which doesn't suffer from inode exhaustion).
+
+An alternative could be forgetting history, this should also help getting down the number of git objects.
+"""]]
