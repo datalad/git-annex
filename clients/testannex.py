@@ -8,7 +8,7 @@ import shlex
 import subprocess
 import sys
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import Any, Dict, Iterator, Optional, Union
+from typing import Any, Dict, Iterator, List, Optional, Union
 
 import click
 from click_loglevel import LogLevel
@@ -79,6 +79,31 @@ class GitRepo:
         kwargs.setdefault("cwd", self.path)
         return readcmd("git", *args, **kwargs)
 
+    def readlines(self, *args: Union[str, Path], **kwargs: Any) -> List[str]:
+        return self.read(*args, **kwargs).splitlines()
+
+    def ls_branches(self, pattern: Optional[str]) -> List[str]:
+        cmd = ["branch", "--format=%(refname:short)"]
+        if pattern is not None:
+            cmd.append("--list")
+            cmd.append(pattern)
+        return self.readlines(*cmd)
+
+    def ls_remote_branches(
+        self, remote: str = "origin", pattern: Optional[str] = None
+    ) -> List[str]:
+        heads: List[str] = []
+        cmd = ["ls-remote", "--heads", remote]
+        if pattern is not None:
+            cmd.append(pattern)
+        prefix = "refs/heads/"
+        for line in self.readlines(*cmd):
+            ref = line.strip().partition("\t")[2]
+            if ref.startswith(prefix):
+                ref = ref[len(prefix) :]
+            heads.append(ref)
+        return heads
+
 
 @click.command()
 @click.option(
@@ -126,12 +151,12 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
         "origin",
         f"+refs/heads/build-{clientid}-*:refs/remotes/origin/build-{clientid}-*",
     )
-    builds = jobrepo.read(
+    builds = jobrepo.readlines(
         "for-each-ref",
         "--format",
         "%(refname:lstrip=3)",
         f"refs/remotes/origin/build-{clientid}-*",
-    ).splitlines()
+    )
     if not builds:
         log.info("No jobs for %s", clientid)
         return
@@ -183,9 +208,17 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
         log.info("Saving & pushing results ...")
         msg = f"[{status}] Tested git-annex build {buildno} ({passes}/{total} tests passed)"
         jobrepo.run("commit", "-m", msg)
-        jobrepo.run("push", "origin", result_branch)
+        jobrepo.run("push", "--set-upstream", "origin", result_branch)
         jobrepo.run("branch", "-D", build_branch)
         jobrepo.run("push", "origin", f":refs/heads/{build_branch}")
+
+    log.info("Cleaning up repo ...")
+    local_results = jobrepo.ls_branches(f"result-{clientid}-*")
+    remote_results = jobrepo.ls_remote_branches("origin", f"result-{clientid}-*")
+    for branch in set(local_results) - set(remote_results):
+        jobrepo.run("branch", "-D", branch)
+        jobrepo.run("branch", "-D", "-r", f"origin/{branch}")
+    jobrepo.run("gc")
 
     if failed_jobs:
         log.error("%d/%d jobs failed!", failed_jobs, total_jobs)
