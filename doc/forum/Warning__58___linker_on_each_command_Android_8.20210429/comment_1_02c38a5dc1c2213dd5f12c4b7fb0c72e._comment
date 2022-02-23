@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-02-23T15:21:12Z"
+ content="""
+I notice this warning is mentioned here:
+<https://github.com/termux/proot-distro/blob/master/README.md>
+
+git-annex does use proot on android, that is necessary for some locking
+system calls to work, which Android for some reason blocks otherwise.
+"""]]
