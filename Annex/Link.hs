@@ -7,7 +7,7 @@
  -
  - Pointer files are used instead of symlinks for unlocked files.
  -
- - Copyright 2013-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -297,11 +297,21 @@ unableToRestage mf = unwords
 
 {- Parses a symlink target or a pointer file to a Key. -}
 parseLinkTargetOrPointer :: S.ByteString -> Maybe Key
-parseLinkTargetOrPointer = parseLinkTarget . S8.takeWhile (not . lineend)
+parseLinkTargetOrPointer = go . S8.takeWhile (not . lineend)
   where
+	go l
+		| isLinkToAnnex l = fileKey $ snd $ S8.breakEnd pathsep l
+		| otherwise = Nothing
+	
 	lineend '\n' = True
 	lineend '\r' = True
 	lineend _ = False
+	
+	pathsep '/' = True
+#ifdef mingw32_HOST_OS
+	pathsep '\\' = True
+#endif
+	pathsep _ = False
 
 {- Avoid looking at more of the lazy ByteString than necessary since it
  - could be reading from a large file that is not a pointer file. -}
@@ -309,18 +319,6 @@ parseLinkTargetOrPointerLazy :: L.ByteString -> Maybe Key
 parseLinkTargetOrPointerLazy b = 
 	let b' = L.take (fromIntegral maxPointerSz) b
 	in parseLinkTargetOrPointer (L.toStrict b')
-
-{- Parses a symlink target to a Key. -}
-parseLinkTarget :: S.ByteString -> Maybe Key
-parseLinkTarget l
-	| isLinkToAnnex l = fileKey $ snd $ S8.breakEnd pathsep l
-	| otherwise = Nothing
-  where
-	pathsep '/' = True
-#ifdef mingw32_HOST_OS
-	pathsep '\\' = True
-#endif
-	pathsep _ = False
 
 formatPointer :: Key -> S.ByteString
 formatPointer k = prefix <> keyFile k <> nl

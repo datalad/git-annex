@@ -265,7 +265,7 @@ onAddFile' contentchanged addassociatedfile addlink samefilestatus symlinkssuppo
 			case linktarget of
 				Nothing -> a
 				Just lt -> do
-					case parseLinkTarget lt of
+					case parseLinkTargetOrPointer lt of
 						Nothing -> noop
 						Just key -> liftAnnex $
 							addassociatedfile key file
