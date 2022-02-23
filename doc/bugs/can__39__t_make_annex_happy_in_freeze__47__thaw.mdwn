@@ -172,3 +172,6 @@ filing as a bug since I think I satisfied all desires of git-annex for ensuring 
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+
+edit 1:  I thought that may be "Locking down a directory only needs to do the equivilant of removing its write bit, does not need to lockdown the files within it." from [lockdown_hooks](https://git-annex.branchable.com/todo/lockdown_hooks/) does not really "work", so I added `-R` to above nfs4_facl calls, but seems the effect is the same -- annex doesn' like me :-/
