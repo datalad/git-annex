@@ -134,7 +134,7 @@ jobs:
           repository: datalad/git-annex-ci-client-jobs
           fetch-depth: 1
           path: client-jobs
-          token: ${{ secrets.CLIENT_JOBS_GITHUB_TOKEN }}
+          ssh-key: ${{ secrets.CLIENT_JOBS_SSH_KEY }}
 
       - name: Push installer to datalad/git-annex-ci-client-jobs
         run: |
