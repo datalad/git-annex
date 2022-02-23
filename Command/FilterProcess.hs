@@ -83,7 +83,7 @@ clean file = do
 	-- hash the content provided by git, but Backend does not currently
 	-- have an interface to do so.
 	Command.Smudge.clean' (toRawFilePath file)
-		(parseLinkTargetOrPointer b)
+		(parseLinkTargetOrPointer' b)
 		passthrough
 		discardreststdin
 		emitpointer

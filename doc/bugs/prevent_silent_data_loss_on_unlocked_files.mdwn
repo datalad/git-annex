@@ -72,3 +72,5 @@ may be situation is even more "dire" because git-annex still considers this file
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] (at least as far as it can be fixed) --[[Joey]]

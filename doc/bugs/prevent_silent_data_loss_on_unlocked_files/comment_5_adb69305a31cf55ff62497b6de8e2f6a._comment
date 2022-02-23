@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-02-23T19:13:25Z"
+ content="""
+	joey@darkstar:/tmp/r>git add xx
+	git-annex: The file "xx" looks like git-annex pointer file that has had other content appended to it
+
+I think this is as far as git-annex can do toward preventing foot shooting here.
+"""]]

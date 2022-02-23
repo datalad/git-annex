@@ -305,13 +305,20 @@ unableToRestage mf = unwords
  - valid pointer file.
  -}
 parseLinkTargetOrPointer :: S.ByteString -> Maybe Key
-parseLinkTargetOrPointer b
-	| S.length b <= maxValidPointerSz =
-		let (firstline, rest) = S8.span (/= '\n') b
-		in case parsekey $ droptrailing '\r' firstline of
-			Just k | restvalid (dropleading '\n' rest) -> Just k
-			_ -> Nothing
-	| otherwise = Nothing
+parseLinkTargetOrPointer = either (const Nothing) id
+	. parseLinkTargetOrPointer'
+
+data InvalidAppendedPointerFile = InvalidAppendedPointerFile
+
+parseLinkTargetOrPointer' :: S.ByteString -> Either InvalidAppendedPointerFile (Maybe Key)
+parseLinkTargetOrPointer' b = 
+	let (firstline, rest) = S8.span (/= '\n') b
+	in case parsekey $ droptrailing '\r' firstline of
+		Just k
+			| S.length b > maxValidPointerSz -> Left InvalidAppendedPointerFile
+			| restvalid (dropleading '\n' rest) -> Right (Just k)
+			| otherwise -> Left InvalidAppendedPointerFile
+		Nothing -> Right Nothing
   where
 	parsekey l
 		| isLinkToAnnex l = fileKey $ snd $ S8.breakEnd pathsep l
@@ -344,9 +351,13 @@ parseLinkTargetOrPointer b
 {- Avoid looking at more of the lazy ByteString than necessary since it
  - could be reading from a large file that is not a pointer file. -}
 parseLinkTargetOrPointerLazy :: L.ByteString -> Maybe Key
-parseLinkTargetOrPointerLazy b = 
+parseLinkTargetOrPointerLazy = either (const Nothing) id
+	. parseLinkTargetOrPointerLazy'
+
+parseLinkTargetOrPointerLazy' :: L.ByteString -> Either InvalidAppendedPointerFile (Maybe Key)
+parseLinkTargetOrPointerLazy' b = 
 	let b' = L.take (fromIntegral maxPointerSz) b
-	in parseLinkTargetOrPointer (L.toStrict b')
+	in parseLinkTargetOrPointer' (L.toStrict b')
 
 formatPointer :: Key -> S.ByteString
 formatPointer k = prefix <> keyFile k <> nl

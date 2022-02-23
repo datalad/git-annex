@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2015-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -105,7 +105,7 @@ clean file = do
 		then L.length b `seq` return ()
 		else liftIO $ hClose stdin
 	let emitpointer = liftIO . S.hPut stdout . formatPointer
-	clean' file (parseLinkTargetOrPointerLazy b)
+	clean' file (parseLinkTargetOrPointerLazy' b)
 		passthrough
 		discardreststdin
 		emitpointer
@@ -115,7 +115,7 @@ clean file = do
 -- Handles everything except the IO of the file content.
 clean'
 	:: RawFilePath
-	-> Maybe Key
+	-> Either InvalidAppendedPointerFile (Maybe Key)
 	-- ^ If the content provided by git is an annex pointer,
 	-- this is the key it points to.
 	-> Annex ()
@@ -135,19 +135,26 @@ clean' file mk passthrough discardreststdin emitpointer =
   where
 
 	go = case mk of
-		Just k -> do
+		Right (Just k) -> do
 			addingExistingLink file k $ do
 				getMoveRaceRecovery k file
 				passthrough
-		Nothing -> inRepo (Git.Ref.fileRef file) >>= \case
-			Just fileref -> do
-				indexmeta <- catObjectMetaData fileref
-				oldkey <- case indexmeta of
-					Just (_, sz, _) -> catKey' fileref sz
-					Nothing -> return Nothing
-				go' indexmeta oldkey
-			Nothing -> passthrough
-	go' indexmeta oldkey = ifM (shouldAnnex file indexmeta oldkey)
+		Right Nothing -> notpointer
+		Left InvalidAppendedPointerFile -> do
+			toplevelWarning False $
+				"The file \"" ++ fromRawFilePath file ++ "\" looks like git-annex pointer file that has had other content appended to it"
+			notpointer
+
+	notpointer = inRepo (Git.Ref.fileRef file) >>= \case
+		Just fileref -> do
+			indexmeta <- catObjectMetaData fileref
+			oldkey <- case indexmeta of
+				Just (_, sz, _) -> catKey' fileref sz
+				Nothing -> return Nothing
+			notpointer' indexmeta oldkey
+		Nothing -> passthrough
+	
+	notpointer' indexmeta oldkey = ifM (shouldAnnex file indexmeta oldkey)
 		( do
 			discardreststdin
 
