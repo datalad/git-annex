@@ -447,7 +447,7 @@ reconcileStaged qh = unlessM (Git.Config.isBare <$> gitRepo) $ do
 	  where
 		procthread mdreader catfeeder = mdreader >>= \case
 			Just (ka, Just (sha, size, _type))
-				| size < maxPointerSz -> do
+				| size < fromIntegral maxPointerSz -> do
 					() <- catfeeder (ka, sha)
 					procthread mdreader catfeeder
 			Just _ -> procthread mdreader catfeeder

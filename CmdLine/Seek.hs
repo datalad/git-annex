@@ -464,7 +464,7 @@ seekFilteredKeys seeker listfs = do
 
 	mdprocess mi mdreader ofeeder ocloser = liftIO mdreader >>= \case
 		Just ((si, f), Just (sha, size, _type))
-			| size < maxPointerSz -> do
+			| size < fromIntegral maxPointerSz -> do
 				feedmatches mi ofeeder si f sha
 				mdprocess mi mdreader ofeeder ocloser
 		Just _ -> mdprocess mi mdreader ofeeder ocloser

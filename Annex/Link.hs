@@ -82,10 +82,10 @@ getAnnexLinkTarget' file coresymlinks = if coresymlinks
 	probesymlink = R.readSymbolicLink file
 
 	probefilecontent = withFile (fromRawFilePath file) ReadMode $ \h -> do
-		s <- S.hGet h unpaddedMaxPointerSz
+		s <- S.hGet h maxSymlinkSz
 		-- If we got the full amount, the file is too large
 		-- to be a symlink target.
-		return $ if S.length s == unpaddedMaxPointerSz
+		return $ if S.length s == maxSymlinkSz
 			then mempty
 			else 
 				-- If there are any NUL or newline
@@ -331,13 +331,13 @@ formatPointer k = prefix <> keyFile k <> nl
  - memory when reading files that may be pointers.
  -
  - 8192 bytes is plenty for a pointer to a key. This adds some additional
- - padding to allow for any pointer files that might have
- - lines after the key explaining what the file is used for. -}
-maxPointerSz :: Integer
+ - padding to allow for pointer files that have lines of additional data
+ - after the key. -}
+maxPointerSz :: Int
 maxPointerSz = 81920
 
-unpaddedMaxPointerSz :: Int
-unpaddedMaxPointerSz = 8192
+maxSymlinkSz :: Int
+maxSymlinkSz = 8192
 
 {- Checks if a worktree file is a pointer to a key.
  -
@@ -367,7 +367,7 @@ isPointerFile f = catchDefaultIO Nothing $
   where
 	checkcontentfollowssymlinks = 
 		withFile (fromRawFilePath f) ReadMode readhandle
-	readhandle h = parseLinkTargetOrPointer <$> S.hGet h unpaddedMaxPointerSz
+	readhandle h = parseLinkTargetOrPointer <$> S.hGet h maxPointerSz
 
 {- Checks a symlink target or pointer file first line to see if it
  - appears to point to annexed content.

@@ -162,7 +162,7 @@ catKey' ref sz
 	-- Avoid catting large files, that cannot be symlinks or
 	-- pointer files, which would require buffering their
 	-- content in memory, as well as a lot of IO.
-	| sz <= maxPointerSz =
+	| sz <= fromIntegral maxPointerSz =
 		parseLinkTargetOrPointer . L.toStrict <$> catObject ref
 catKey' _ _ = return Nothing
 

@@ -62,7 +62,7 @@ clean file = do
 	let conv b l = (B.concat (map pktLineToByteString l), b)
 	(b, readcomplete) <- 
 		either (conv False) (conv True)
-			<$> liftIO (readUntilFlushPktOrSize unpaddedMaxPointerSz)
+			<$> liftIO (readUntilFlushPktOrSize maxPointerSz)
 	
 	let passthrough
 		| readcomplete = liftIO $ respondFilterRequest b
