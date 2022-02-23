@@ -163,9 +163,18 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
 
     failed_jobs = 0
     total_jobs = 0
+    remote_results = set(jobrepo.ls_remote_branches("origin", f"result-{clientid}-*"))
     for buildno, build_branch in sorted((int(b.split("-")[-1]), b) for b in builds):
-        log.info("Running tests for build %d", buildno)
         result_branch = f"result-{clientid}-{buildno}"
+        if result_branch in remote_results:
+            log.warning(
+                "Both build branch %r and result branch %r found on remote;"
+                " skipping job",
+                build_branch,
+                result_branch,
+            )
+            continue
+        log.info("Running tests for build %d", buildno)
         jobrepo.run(
             "checkout",
             "-f",
@@ -211,11 +220,11 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
         jobrepo.run("push", "--set-upstream", "origin", result_branch)
         jobrepo.run("branch", "-D", build_branch)
         jobrepo.run("push", "origin", f":refs/heads/{build_branch}")
+        remote_results.add(result_branch)
 
     log.info("Cleaning up repo ...")
-    local_results = jobrepo.ls_branches(f"result-{clientid}-*")
-    remote_results = jobrepo.ls_remote_branches("origin", f"result-{clientid}-*")
-    for branch in set(local_results) - set(remote_results):
+    local_results = set(jobrepo.ls_branches(f"result-{clientid}-*"))
+    for branch in local_results - remote_results:
         jobrepo.run("branch", "-D", branch)
         jobrepo.run("branch", "-D", "-r", f"origin/{branch}")
     jobrepo.run("gc")
