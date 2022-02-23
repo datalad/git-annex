@@ -1,0 +1,25 @@
+A pointer file is one of two ways that an annex object can be checked into
+git. The other is a symbolic link pointing to a file in the
+.git/annex/objects/ directory.
+
+A pointer file starts with "/annex/objects/", which is followed
+by the key (see [[key_format]]). (In some situations a pointer file
+might instead contain the content of a symlink target.)
+
+Pointer files usually have a newline after the key. This is not required.
+A carriage return followed by a newline is also accepted, as is end of file.
+
+After that, there is usually nothing more in a pointer file, but git-annex
+does support pointer files with additional text on subsequent lines.
+
+Every such subsequent line has to contain "/annex/" somewhere in it,
+and end in a newline. Otherwise it not considered to be a valid pointer file.
+
+The maximum size of a pointer file is 32 kb. If it is any longer, it is not
+considered to be a valid pointer file.
+
+The possibility exists that a pointer file is in a working tree,
+representing an annex object that is not present, and something appends
+data onto it accidentally. The limitation that each line of a valid
+pointer file contains "/annex/" and that it cannot be larger than 32kb
+let such a situation be detected.

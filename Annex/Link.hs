@@ -295,17 +295,45 @@ unableToRestage mf = unwords
 	, "git update-index -q --refresh " ++ fromMaybe "<file>" mf
 	]
 
-{- Parses a symlink target or a pointer file to a Key. -}
+{- Parses a symlink target or a pointer file to a Key.
+ -
+ - Makes sure that the pointer file is valid, including not being longer
+ - than the maximum allowed size of a valid pointer file, and that any
+ - subsequent lines after the first contain the validPointerLineTag.
+ - If a valid pointer file gets some other data appended to it, it should
+ - never be considered valid, unless that data happened to itself be a
+ - valid pointer file.
+ -}
 parseLinkTargetOrPointer :: S.ByteString -> Maybe Key
-parseLinkTargetOrPointer = go . S8.takeWhile (not . lineend)
+parseLinkTargetOrPointer b
+	| S.length b <= maxValidPointerSz =
+		let (firstline, rest) = S8.span (/= '\n') b
+		in case parsekey $ droptrailing '\r' firstline of
+			Just k | restvalid (dropleading '\n' rest) -> Just k
+			_ -> Nothing
+	| otherwise = Nothing
   where
-	go l
+	parsekey l
 		| isLinkToAnnex l = fileKey $ snd $ S8.breakEnd pathsep l
 		| otherwise = Nothing
+
+	restvalid r
+		| S.null r = True
+		| otherwise = 
+			let (l, r') = S8.span (/= '\n') r
+			in validPointerLineTag `S.isInfixOf` l
+				&& (not (S8.null r') && S8.head r' == '\n')
+				&& restvalid (S8.tail r')
+
+	dropleading c l
+		| S.null l = l
+		| S8.head l == c = S8.tail l
+		| otherwise = l
 	
-	lineend '\n' = True
-	lineend '\r' = True
-	lineend _ = False
+	droptrailing c l
+		| S.null l = l
+		| S8.last l == c = S8.init l
+		| otherwise = l
 	
 	pathsep '/' = True
 #ifdef mingw32_HOST_OS
@@ -332,9 +360,17 @@ formatPointer k = prefix <> keyFile k <> nl
  -
  - 8192 bytes is plenty for a pointer to a key. This adds some additional
  - padding to allow for pointer files that have lines of additional data
- - after the key. -}
+ - after the key.
+ -
+ - One additional byte is used to detect when a valid pointer file
+ - got something else appended to it.
+ -}
 maxPointerSz :: Int
-maxPointerSz = 81920
+maxPointerSz = maxValidPointerSz + 1
+
+{- Maximum size of a valid pointer files is 32kb. -}
+maxValidPointerSz :: Int
+maxValidPointerSz = 32768
 
 maxSymlinkSz :: Int
 maxSymlinkSz = 8192
@@ -387,3 +423,7 @@ isLinkToAnnex s = p `S.isInfixOf` s
 #ifdef mingw32_HOST_OS
 	p' = toInternalGitPath p
 #endif
+
+{- String that must appear on every line of a valid pointer file. -}
+validPointerLineTag :: S.ByteString
+validPointerLineTag = "/annex/"

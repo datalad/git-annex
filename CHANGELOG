@@ -1,3 +1,12 @@
+git-annex (10.20220223) UNRELEASED; urgency=medium
+
+  * Detect when an unlocked file whose content is not present has gotten
+    some other content appended to it, and avoid treating it as a pointer
+    file, so that appended content will not be checked into git, but will
+    be annexed like any other file.
+
+ -- Joey Hess <id@joeyh.name>  Wed, 23 Feb 2022 14:14:09 -0400
+
 git-annex (10.20220222) upstream; urgency=medium
 
   * annex.skipunknown now defaults to false, so commands like

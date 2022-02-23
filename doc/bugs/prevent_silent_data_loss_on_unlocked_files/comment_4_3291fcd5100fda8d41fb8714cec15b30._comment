@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-02-23T16:45:24Z"
+ content="""
+I've now specified a format in [[internals/pointer_file]], which is
+designed to allow detecting accidental appends. 
+
+And git-annex will now treat a pointer file that has been appeneded to as
+not a pointer file any longer.
+
+So, for example:
+
+	joey@darkstar:/tmp/r>echo oops >> foo
+	joey@darkstar:/tmp/r>cat foo
+	/annex/objects/SHA256E-s14169--bdcf6188db530bc3af79c898208ce2a56df6197f59b3872b03613a248ac8faf4
+	oops
+	joey@darkstar:/tmp/r>git add foo
+	joey@darkstar:/tmp/r>git diff --cached foo | tail -n 2
+	-/annex/objects/SHA256E-s14169--bdcf6188db530bc3af79c898208ce2a56df6197f59b3872b03613a248ac8faf4
+	+/annex/objects/SHA256E-s101--b7da3d6b0ad2f6a2a263e783e59efb60f2520f03bb36cea35a556a684b0d5c9d
+
+Since the file is not a valid pointer file after being appended to, 
+git add does what it would do with any file, in this case adding the
+content to the annex.
+
+So at least it keeps the possibly large appeneded content out of git now.
+I think that's the most important thing. Detecting and warning about
+pointer files that are not valid due to appends should be easy from here.
+"""]]
