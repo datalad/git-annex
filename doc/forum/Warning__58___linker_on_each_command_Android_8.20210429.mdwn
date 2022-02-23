@@ -4,7 +4,8 @@ Recently (about 2 or 3 weeks ago) each 'git annex <command>' in Termux for Andro
 
 `WARNING: linker: Warning: failed to find generated linker configuration from "/linkerconfig/ld.config.txt"`
 
-The amount of warnings depends on the command, e.g.
+The amount of warnings depends on the command:
+
 * `$ git annex --version` --> 2 warnings
 * `git annex status` --> 3 warnings
 * `$ git annex sync origin` --> 80 warnings
