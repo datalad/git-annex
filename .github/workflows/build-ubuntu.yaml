@@ -138,6 +138,7 @@ jobs:
 
       - name: Push installer to datalad/git-annex-ci-client-jobs
         run: |
+          set -ex -o pipefail
           git checkout --orphan build
           git rm -rf .
           cp -i ../git-annex*.deb .
@@ -145,12 +146,16 @@ jobs:
           buildno="${{ github.run_number }}"
           git commit -m "Installer artifact from build $buildno"
           git ls-remote --heads origin "build-*" | cut -f2 | cut -d/ -f3- > builds.txt
+          git ls-remote --heads origin "result-*" | cut -f2 | cut -d/ -f3- > results.txt
           for clientid in ndoli
-          do branch_name="build-$clientid-$buildno"
-             if ! grep -Fqx "$branch_name" builds.txt
-             then git branch "$branch_name" build
-                  git push origin "$branch_name"
-             else echo "[INFO] Branch $branch_name already exists; leaving alone"
+          do build_branch="build-$clientid-$buildno"
+             result_branch="result-$clientid-$buildno"
+             if grep -Fqx "$result_branch" results.txt
+             then echo "[INFO] Result branch $result_branch already exists; not creating build branch"
+             elif grep -Fqx "$build_branch" builds.txt
+             then echo "[INFO] Build branch $build_branch already exists; leaving alone"
+             else git branch "$build_branch" build
+                  git push origin "$build_branch"
              fi
           done
         working-directory: client-jobs
