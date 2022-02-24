@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-02-24T16:28:16Z"
+ content="""
+git-annex runs inside proot on android, so each time it (or the git bundled
+with it) is shipped, proot prints this warning.
+"""]]
