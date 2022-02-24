@@ -6,6 +6,9 @@ git-annex (10.20220223) UNRELEASED; urgency=medium
     be annexed like any other file.
   * smudge: Warn when encountering a pointer file that has other content
     appended to it.
+  * When annex.freezecontent-command is set, and the filesystem does not
+    support removing write bits, avoid treating it as a crippled
+    filesystem.
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Feb 2022 14:14:09 -0400
 

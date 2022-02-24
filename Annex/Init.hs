@@ -251,6 +251,7 @@ probeCrippledFileSystem = withEventuallyCleanedOtherTmp $ \tmp -> do
 	(r, warnings) <- probeCrippledFileSystem' tmp
 		(Just (freezeContent' UnShared))
 		(Just (thawContent' UnShared))
+		=<< hasFreezeHook
 	mapM_ warning warnings
 	return r
 
@@ -259,11 +260,12 @@ probeCrippledFileSystem'
 	=> RawFilePath
 	-> Maybe (RawFilePath -> m ())
 	-> Maybe (RawFilePath -> m ())
+	-> Bool
 	-> m (Bool, [String])
 #ifdef mingw32_HOST_OS
-probeCrippledFileSystem' _ _ _ = return (True, [])
+probeCrippledFileSystem' _ _ _ _ = return (True, [])
 #else
-probeCrippledFileSystem' tmp freezecontent thawcontent = do
+probeCrippledFileSystem' tmp freezecontent thawcontent hasfreezehook = do
 	let f = tmp P.</> "gaprobe"
 	let f' = fromRawFilePath f
 	liftIO $ writeFile f' ""
@@ -282,7 +284,7 @@ probeCrippledFileSystem' tmp freezecontent thawcontent = do
 		-- running as root). But some crippled
 		-- filesystems ignore write bit removals or ignore
 		-- permissions entirely.
-		ifM ((== Just False) <$> liftIO (checkContentWritePerm' UnShared (toRawFilePath f) Nothing))
+		ifM ((== Just False) <$> liftIO (checkContentWritePerm' UnShared (toRawFilePath f) Nothing hasfreezehook))
 			( return (True, ["Filesystem does not allow removing write bit from files."])
 			, liftIO $ ifM ((== 0) <$> getRealUserID)
 				( return (False, [])

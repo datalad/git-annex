@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-02-24T17:24:55Z"
+ content="""
+Fixed it to ignore remaining write perms when annex.freezecontent-command
+is set.
+"""]]

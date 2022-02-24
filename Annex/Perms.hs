@@ -26,6 +26,7 @@ module Annex.Perms (
 	thawContentDir,
 	modifyContent,
 	withShared,
+	hasFreezeHook,
 ) where
 
 import Annex.Common
@@ -183,26 +184,35 @@ freezeContent'' sr file rv = do
  - permissions of a file owned by another user. So if the permissions seem
  - wrong, but the repository is shared, returns Nothing. If the permissions
  - are wrong otherwise, returns Just False.
+ -
+ - When there is a freeze hook, it may prevent write in some way other than
+ - permissions. One use of a freeze hook is when the filesystem does not
+ - support removing write permissions, so when there is such a hook
+ - write permissions are ignored.
  -}
 checkContentWritePerm :: RawFilePath -> Annex (Maybe Bool)
 checkContentWritePerm file = ifM crippledFileSystem
 	( return (Just True)
 	, do
 		rv <- getVersion
-		withShared (\sr -> liftIO (checkContentWritePerm' sr file rv))
+		hasfreezehook <- hasFreezeHook
+		withShared $ \sr -> liftIO $
+			checkContentWritePerm' sr file rv hasfreezehook
 	)
 
-checkContentWritePerm' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -> IO (Maybe Bool)
-checkContentWritePerm' sr file rv = case sr of
-	GroupShared
-		| versionNeedsWritableContentFiles rv -> want sharedret
-			(includemodes [ownerWriteMode, groupWriteMode])
-		| otherwise -> want sharedret (excludemodes writeModes)
-	AllShared
-		| versionNeedsWritableContentFiles rv -> 
-			want sharedret (includemodes writeModes)
-		| otherwise -> want sharedret (excludemodes writeModes)
-	_ -> want Just (excludemodes writeModes)
+checkContentWritePerm' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -> Bool -> IO (Maybe Bool)
+checkContentWritePerm' sr file rv hasfreezehook
+	| hasfreezehook = return (Just True)
+	| otherwise = case sr of
+		GroupShared
+			| versionNeedsWritableContentFiles rv -> want sharedret
+				(includemodes [ownerWriteMode, groupWriteMode])
+			| otherwise -> want sharedret (excludemodes writeModes)
+		AllShared
+			| versionNeedsWritableContentFiles rv -> 
+				want sharedret (includemodes writeModes)
+			| otherwise -> want sharedret (excludemodes writeModes)
+		_ -> want Just (excludemodes writeModes)
   where
 	want mk f = catchMaybeIO (fileMode <$> R.getFileStatus file)
 		>>= return . \case
@@ -279,6 +289,9 @@ modifyContent f a = do
 	v <- tryNonAsync a
 	freezeContentDir f
 	either throwM return v
+
+hasFreezeHook :: Annex Bool
+hasFreezeHook = isJust . annexFreezeContentCommand <$> Annex.getGitConfig
 
 freezeHook :: RawFilePath -> Annex ()
 freezeHook p = maybe noop go =<< annexFreezeContentCommand <$> Annex.getGitConfig

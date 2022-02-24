@@ -145,7 +145,7 @@ runner opts
 		ensuretmpdir
 		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem'
 			(toRawFilePath tmpdir)
-			Nothing Nothing
+			Nothing Nothing False
 		adjustedbranchok <- Annex.AdjustedBranch.isGitVersionSupported
 		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem adjustedbranchok opts) of
 			Nothing -> error "No tests found!?"
