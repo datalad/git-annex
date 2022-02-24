@@ -631,15 +631,16 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
   where
 	-- Check associated pointer file for modifications, and reset if
 	-- it's unmodified.
-	resetpointer file = ifM (isUnmodified key file)
-		( adjustedBranchRefresh (AssociatedFile (Just file)) $
-			depopulatePointerFile key file
-		-- Modified file, so leave it alone.
-		-- If it was a hard link to the annex object,
-		-- that object might have been frozen as part of the
-		-- removal process, so thaw it.
-		, void $ tryIO $ thawContent file
-		)
+	resetpointer file = unlessM (liftIO $ isSymbolicLink <$> getSymbolicLinkStatus (fromRawFilePath file)) $
+		ifM (isUnmodified key file)
+			( adjustedBranchRefresh (AssociatedFile (Just file)) $
+				depopulatePointerFile key file
+			-- Modified file, so leave it alone.
+			-- If it was a hard link to the annex object,
+			-- that object might have been frozen as part of the
+			-- removal process, so thaw it.
+			, void $ tryIO $ thawContent file
+			)
 
 {- Moves a key out of .git/annex/objects/ into .git/annex/bad, and
  - returns the file it was moved to. -}

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-02-24T18:13:20Z"
+ content="""
+	[2022-02-24 13:50:11.885644532] (Annex.Perms) thawing content ./foo
+
+This turns out to be due to removeAnnex's resetpointer.
+It was not intended to run on symlinks. I've fixed this too.
+"""]]
