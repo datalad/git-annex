@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-02-24T16:34:51Z"
+ content="""
+Looks like, while init does run the freeze hook in its test,
+as well as trying to remove the write bits (which it always does, freeze
+hook or no freeze hook), it still checks if the file's write permissions
+got removed.
+
+I think that, in order to support filesystems where chmod -w has no effect,
+init should skip looking at perms when there is a freeze hook. It can
+still check that freezing prevents writing to a file.
+"""]]
