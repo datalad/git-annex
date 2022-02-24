@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-02-24T17:07:19Z"
+ content="""
+I think that this issue with drop freezing the content needs to be treated
+as a separate bug. There also may be a good reason for it to do it, I have
+not looked into that yet.
+"""]]

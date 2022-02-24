@@ -9,6 +9,11 @@ hook or no freeze hook), it still checks if the file's write permissions
 got removed.
 
 I think that, in order to support filesystems where chmod -w has no effect,
-init should skip looking at perms when there is a freeze hook. It can
+init should skip looking at write perms when there is a freeze hook. It can
 still check that freezing prevents writing to a file.
+
+Hmm, init uses checkContentWritePerm to see if the write permission is
+removed. That is also used by fsck, and when ingesting a file. So even if
+it were fixed in init, those would still be problems. This really needs to
+be fixed in checkContentWritePerm.
 """]]
