@@ -144,7 +144,9 @@ jobs:
           cp -i ../git-annex*.deb .
           git add git-annex*.deb
           buildno="${{ github.run_number }}"
-          git commit -m "Installer artifact from build $buildno"
+          git commit \
+            --gpg-sign=13A1093296154584245E0300C98FC49D36DAB17F \
+            -m "Installer artifact from build $buildno"
           git ls-remote --heads origin "build-*" | cut -f2 | cut -d/ -f3- > builds.txt
           git ls-remote --heads origin "result-*" | cut -f2 | cut -d/ -f3- > results.txt
           for clientid in ndoli
