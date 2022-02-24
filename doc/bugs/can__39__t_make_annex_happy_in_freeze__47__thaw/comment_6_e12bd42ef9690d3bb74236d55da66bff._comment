@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-02-24T17:30:07Z"
+ content="""
+I've added --debug output for both freezing and thawing. 
+
+The behavior will vary between v8 and v10 because of changes to locking; in v8
+it has to thaw the content file before it can lock it, and then it will freeze
+it back after locking and before removing it.
+
+In v8 drop looks like:
+
+	[2022-02-24 13:51:01.946411104] (Annex.Perms) thawing content .git/annex/objects/p9/5Q/SHA256E-s30--afdc07f1ee36cca8648193709de3a8bbd7abf1ce9ff23538284d01dee4d9cf63/SHA256E-s30--afdc07f1ee36cca8648193709de3a8bbd7abf1ce9ff23538284d01dee4d9cf63
+	[2022-02-24 13:51:01.947501102] (Annex.Perms) freezing content .git/annex/objects/p9/5Q/SHA256E-s30--afdc07f1ee36cca8648193709de3a8bbd7abf1ce9ff23538284d01dee4d9cf63/SHA256E-s30--afdc07f1ee36cca8648193709de3a8bbd7abf1ce9ff23538284d01dee4d9cf63
+	[2022-02-24 13:51:01.966185222] (Annex.Perms) thawing content directory .git/annex/objects/p9/5Q/SHA256E-s30--afdc07f1ee36cca8648193709de3a8bbd7abf1ce9ff23538284d01dee4d9cf63
+	[2022-02-24 13:51:01.967659691] (Annex.Perms) thawing content ./foo
+
+In v10 drop looks like:
+
+	[2022-02-24 13:50:11.863585194] (Annex.Perms) freezing content directory .git/annex/objects/p9/5Q/SHA256E-s30--afdc07f1ee36cca8648193709de3a8bbd7abf1ce9ff23538284d01dee4d9cf63
+	[2022-02-24 13:50:11.883859034] (Annex.Perms) thawing content directory .git/annex/objects/p9/5Q/SHA256E-s30--afdc07f1ee36cca8648193709de3a8bbd7abf1ce9ff23538284d01dee4d9cf63
+	[2022-02-24 13:50:11.885644532] (Annex.Perms) thawing content ./foo
+	[2022-02-24 13:50:11.887090539] (Annex.Perms) thawing content directory .git/annex/objects/p9/5Q/SHA256E-s30--afdc07f1ee36cca8648193709de3a8bbd7abf1ce9ff23538284d01dee4d9cf63
+
+So that's more or less as I expected (aside from the thawing of the worktree symlink foo
+which is kind of weird). 
+
+You said "drop freezes thawn key file before thawing key dir" and yes, that's the v8 behavior
+shown above. 
+
+The reason is safety: If it left the content file thawed after taking the posix
+lock of it, but then turned out to be unable to remove it (could not lock
+enough other copies of the object in other repos), it would then need to
+re-freeze it since it failed to drop it. But waiting until that point to
+re-freeze it would leave a perhaps long stretch of time where it was thawed and
+vulnerable to being written to. And also if it were interrupted before it could
+re-freeze it would leave it thawed until fsck finally noticed and fixed the
+problem. So I don't feel what it's doing is wrong with respect to thawing
+and then freezing in v8.
+
+Notice that, in v10, it thaws the content directory, but never directly thaws
+the content file. So if the content file remaining frozen prevents removing it,
+that would also affect v10.
+
+This does complicate freeze hooks that do things that prevent removal
+of the file, rather than just preventing write to the file. Of course
+those are two different permissions in classical unix permissions, but
+not necessarily with your ACLs or with immutability bits etc.
+
+So, I think that what git-annex ought to do is, when there's a thaw
+hook, thaw the content file just before unlinking it.
+
+Implemented that. Should solve your second problem.
+"""]]

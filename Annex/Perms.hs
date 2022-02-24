@@ -29,6 +29,7 @@ module Annex.Perms (
 	modifyContent,
 	withShared,
 	hasFreezeHook,
+	hasThawHook,
 ) where
 
 import Annex.Common
@@ -300,6 +301,9 @@ modifyContent f a = do
 
 hasFreezeHook :: Annex Bool
 hasFreezeHook = isJust . annexFreezeContentCommand <$> Annex.getGitConfig
+
+hasThawHook :: Annex Bool
+hasThawHook = isJust . annexThawContentCommand <$> Annex.getGitConfig
 
 freezeHook :: RawFilePath -> Annex ()
 freezeHook p = maybe noop go =<< annexFreezeContentCommand <$> Annex.getGitConfig

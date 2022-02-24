@@ -598,6 +598,14 @@ cleanObjectLoc :: Key -> Annex () -> Annex ()
 cleanObjectLoc key cleaner = do
 	file <- calcRepo (gitAnnexLocation key)
 	void $ tryIO $ thawContentDir file
+	{- Thawing is not necessary when the file was frozen only
+	 - by removing write perms. But if there is a thaw hook, it may do
+	 - something else that is necessary to allow the file to be
+	 - deleted. 
+	 -}
+	whenM hasThawHook $
+		void $ tryIO $ thawContent file
+		
 	cleaner
 	liftIO $ cleanObjectDirs file
 
