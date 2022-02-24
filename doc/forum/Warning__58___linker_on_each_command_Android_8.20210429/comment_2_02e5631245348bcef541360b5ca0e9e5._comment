@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="moortgat-pick"
+ avatar="http://cdn.libravatar.org/avatar/4abd6c7dedbeec25547cc4a7b26f702a"
+ subject="comment 2"
+ date="2022-02-24T09:41:44Z"
+ content="""
+Good catch, this was also mentioned by the termux community. As i understood it, proot is used for installing things in termux. However, the warnings occur during runtime in git-annex. Could proot still be the cause?
+"""]]
