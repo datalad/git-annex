@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.Perms (
 	FileMode,
 	setAnnexFilePerm,
@@ -155,6 +157,7 @@ freezeContent' sr file = freezeContent'' sr file =<< getVersion
 
 freezeContent'' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -> Annex ()
 freezeContent'' sr file rv = do
+	fastDebug "Annex.Perms" ("freezing content " ++ fromRawFilePath file)
 	go sr
 	freezeHook file
   where
@@ -231,7 +234,9 @@ thawContent :: RawFilePath -> Annex ()
 thawContent file = withShared $ \sr -> thawContent' sr file
 
 thawContent' :: SharedRepository -> RawFilePath -> Annex ()
-thawContent' sr file = thawPerms (go sr) (thawHook file)
+thawContent' sr file = do
+	fastDebug "Annex.Perms" ("thawing content " ++ fromRawFilePath file)
+	thawPerms (go sr) (thawHook file)
   where
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead file
 	go AllShared = liftIO $ void $ tryIO $ groupWriteRead file
@@ -254,6 +259,7 @@ thawPerms a hook = ifM crippledFileSystem
  -}
 freezeContentDir :: RawFilePath -> Annex ()
 freezeContentDir file = unlessM crippledFileSystem $ do
+	fastDebug "Annex.Perms" ("freezing content directory " ++ fromRawFilePath dir)
 	withShared go
 	freezeHook dir
   where
@@ -263,7 +269,9 @@ freezeContentDir file = unlessM crippledFileSystem $ do
 	go _ = liftIO $ preventWrite dir
 
 thawContentDir :: RawFilePath -> Annex ()
-thawContentDir file = thawPerms (liftIO $ allowWrite dir) (thawHook dir)
+thawContentDir file = do
+	fastDebug "Annex.Perms" ("thawing content directory " ++ fromRawFilePath dir)
+	thawPerms (liftIO $ allowWrite dir) (thawHook dir)
   where
 	dir = parentDir file
 
