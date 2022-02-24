@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="approach which somewhat works"
+ date="2022-02-24T02:20:15Z"
+ content="""
+ok, if instead I do use more fragile version where I do adjust `A:` ACLs instead of just adding the `D:`
+
+<details>
+<summary>here are the two commands to freeze/thaw</summary> 
+
+```shell
+
+nfs4_getfacl \"$@\" | sed -e 's,:rwadxtTnN,:rxtn,g' | nfs4_setfacl -S- \"$@\"
+
+
+nfs4_getfacl \"$@\" | sed -e 's,:rxtn,:rwadxtTnN,g' | nfs4_setfacl -S- \"$@\"
+
+
+```
+</details>
+
+then  I do get `ls -l` reporting that write bit is not set, and `git annex` seems to be happy then... heh.  So I guess some recipe like this could be used , but I still would prefer to avoid needing in-place changes of such \"detailed\" permissions listings in those ACLs.
+"""]]
