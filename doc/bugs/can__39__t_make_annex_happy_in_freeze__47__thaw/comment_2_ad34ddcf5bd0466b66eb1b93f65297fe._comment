@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="for some reason `drop` freezes thawn key file before thawing key dir"
+ date="2022-02-24T03:21:54Z"
+ content="""
+which results in permission denied on removal of the key (annex  10.20220127-gf616630) -- why should it freeze the key if it is about to be dropped?
+
+```
+(git-annex) [d31548v@discovery7 ds000001]$ git annex get sub-02/anat
+get sub-02/anat/sub-02_T1w.nii.gz (from s3-PUBLIC...) 
+
+thawing [.git/annex/objects/K0/1M/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+D: freezing [.git/annex/objects/K0/1M/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+D: freezing [.git/annex/objects/K0/1M/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+ok
+get sub-02/anat/sub-02_inplaneT2.nii.gz (from s3-PUBLIC...) 
+
+thawing [.git/annex/objects/49/7G/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+D: freezing [.git/annex/objects/49/7G/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+D: freezing [.git/annex/objects/49/7G/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+ok
+(recording state in git...)
+(git-annex) [d31548v@discovery7 ds000001]$ git annex drop sub-02/anat
+drop sub-02/anat/sub-02_T1w.nii.gz thawing [.git/annex/objects/K0/1M/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+D: freezing [.git/annex/objects/K0/1M/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+thawing [.git/annex/objects/K0/1M/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+
+git-annex: .git/annex/objects/K0/1M/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz/MD5E-s5736750--4ba3ad9eaa54aab87d97fa0d60b576ad.nii.gz: removeLink: permission denied (Permission denied)
+failed
+drop sub-02/anat/sub-02_inplaneT2.nii.gz thawing [.git/annex/objects/49/7G/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+D: freezing [.git/annex/objects/49/7G/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+thawing [.git/annex/objects/49/7G/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz] while under /dartfs-hpc/rc/lab/C/CANlab/labdata/data/tmp/ds000001
+
+git-annex: .git/annex/objects/49/7G/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz/MD5E-s718835--da6846d3f0a6c0fe29bb1bf22c796354.nii.gz: removeLink: permission denied (Permission denied)
+failed
+drop: 2 failed
+```
+
+as a workaround I added `-R` to my thawing script so thawing of keydir re-thaws the key as well, but that doesn't feel right.
+
+edit: interestingly, `drop` also thaws the file in index (e.g. `./sub-02/anat/sub-02_inplaneT2.nii.gz` in my case) -- why does it in \"indirect\" mode? hm...
+"""]]
