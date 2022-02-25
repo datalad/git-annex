@@ -33,7 +33,7 @@ class Test:
             with (result_dir / f"{self.name}.log").open("wb") as fp:
                 r = runcmd(
                     self.shell,
-                    script,
+                    script.name,
                     stdout=fp,
                     stderr=subprocess.PIPE,
                     check=False,
@@ -53,7 +53,7 @@ class Client(BaseModel):
     tests: Dict[str, str]
 
     def get_tests(self) -> Iterator[Test]:
-        for name, body in self.tests:
+        for name, body in self.tests.items():
             yield Test(name=name, shell=self.shell, body=body)
 
 
@@ -179,7 +179,7 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
 
         log.info("Verifying signature of %s ...", build_branch)
         try:
-            jobrepo.run("verify-commit", build_branch)
+            jobrepo.run("verify-commit", f"origin/{build_branch}")
         except subprocess.CalledProcessError:
             log.error("Commit signature failed verification!")
             failed_jobs += 1
@@ -200,7 +200,6 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
             "-f",
             "-B",
             build_branch,
-            "--track",
             f"refs/remotes/origin/{build_branch}",
         )
         (debpkg,) = jobdir.glob("*.deb")
