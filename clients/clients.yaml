@@ -3,7 +3,7 @@ ndoli:
     git-annex-home: |
       set -exu
       mkdir -p "$HOME/git-annex-ci/$BUILDNO"
-      trap 'cd "$HOME/git-annex-ci" && rm -rf "$BUILDNO"' EXIT
+      trap 'cd "$HOME/git-annex-ci" && chmod -R +w "$BUILDNO" && rm -rf "$BUILDNO"' EXIT
       cd "$HOME/git-annex-ci/$BUILDNO"
       git annex version
       timeout 3600 git annex test
@@ -12,7 +12,7 @@ ndoli:
       set -exu
       cd /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp
       mkdir -p "$BUILDNO"
-      trap 'cd /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp && rm -rf "$BUILDNO"' EXIT
+      trap 'cd /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp && chmod -R +w "$BUILDNO" && rm -rf "$BUILDNO"' EXIT
       cd "$BUILDNO"
       git annex version
       timeout 3600 git annex test
