@@ -1,0 +1,22 @@
+### Please describe the problem.
+
+Recent git-annex release [triggered a number of datalad test fails](https://github.com/datalad/datalad/issues/6492).
+
+One of them is attempted to workaround in [datalad/pull/6510](https://github.com/datalad/datalad/pull/6510) is due to the fact that `annex find` did not only change its output (which seems to ignore having `--json --json-error-messages` and not providing json records with errors) but also not even exiting no longer with non-0 exit code:
+
+```
+(git-annex)lena:/tmp/testds[master]
+$> git annex find --copies 0 --json --json-error-messages qwdqwd csdc
+error: pathspec 'qwdqwd' did not match any file(s) known to git
+error: pathspec 'csdc' did not match any file(s) known to git
+Did you forget to 'git add'?
+
+$> echo $?
+0
+
+$> git annex version
+git-annex version: 10.20220222+git23-g51c528980-1~ndall+1
+```
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
