@@ -36,7 +36,7 @@ class Test:
                     self.shell,
                     script.name,
                     stdout=fp,
-                    stderr=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
                     check=False,
                     **kwargs,
                 )
@@ -254,7 +254,7 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
 
     if failed_jobs:
         log.error("%d/%d jobs failed!", failed_jobs, total_jobs)
-        sys.exit(0)
+        sys.exit(1)
     else:
         log.info("All jobs passed!")
 
