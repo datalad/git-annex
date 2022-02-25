@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns, PackageImports #-}
 
 module Utility.Hash (
 	sha1,

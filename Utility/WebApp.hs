@@ -5,7 +5,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE OverloadedStrings, CPP, RankNTypes #-}
+{-# LANGUAGE OverloadedStrings, CPP, RankNTypes, PackageImports #-}
 
 module Utility.WebApp (
 	browserProc,

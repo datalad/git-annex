@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, PackageImports #-}
 
 module Annex.View where
 

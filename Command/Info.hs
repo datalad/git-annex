@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns, DeriveDataTypeable #-}
+{-# LANGUAGE BangPatterns, DeriveDataTypeable, PackageImports #-}
 
 module Command.Info where
 

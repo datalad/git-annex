@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE FlexibleContexts, ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts, ScopedTypeVariables, PackageImports #-}
 
 module Remote.Helper.Encryptable (
 	EncryptionIsSetup,

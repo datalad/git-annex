@@ -383,7 +383,7 @@ Executable git-annex
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
   Default-Language: Haskell2010
-  Default-Extensions: PackageImports, LambdaCase
+  Default-Extensions: LambdaCase
   Other-Extensions: TemplateHaskell
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded

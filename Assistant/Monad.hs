@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE GeneralizedNewtypeDeriving, MultiParamTypeClasses #-}
+{-# LANGUAGE PackageImports #-}
 
 module Assistant.Monad (
 	Assistant,

@@ -5,6 +5,8 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE PackageImports #-}
+
 module Utility.AuthToken (
 	AuthToken,
 	toAuthToken,

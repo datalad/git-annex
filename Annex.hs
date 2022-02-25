@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE GeneralizedNewtypeDeriving, BangPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, BangPatterns, PackageImports #-}
 
 module Annex (
 	Annex,

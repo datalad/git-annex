@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, DeriveFunctor #-}
+{-# LANGUAGE RankNTypes, DeriveFunctor, PackageImports #-}
 
 module Command.TestRemote where
 
