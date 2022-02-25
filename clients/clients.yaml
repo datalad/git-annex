@@ -6,7 +6,7 @@ ndoli:
       trap 'cd "$HOME/git-annex-ci" && rm -rf "$BUILDNO"' EXIT
       cd "$HOME/git-annex-ci/$BUILDNO"
       git annex version
-      timeout 1800 git annex test
+      timeout 3600 git annex test
 
     git-annex-tmp: |
       set -exu
@@ -15,4 +15,4 @@ ndoli:
       trap 'cd /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp && rm -rf "$BUILDNO"' EXIT
       cd "$BUILDNO"
       git annex version
-      timeout 1800 git annex test
+      timeout 3600 git annex test
