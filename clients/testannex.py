@@ -139,12 +139,16 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
     if not client.tests:
         raise click.UsageError(f"No tests configured for client {clientid}")
 
+    jobrepo = GitRepo(jobdir)
     if not jobdir.exists():
         log.info("Job directory does not exist; cloning repo")
         jobdir.mkdir(parents=True, exist_ok=True)
         runcmd("git", "clone", "--single-branch", JOB_REPOSITORY, jobdir)
+    else:
+        log.info("Updating master branch of job repo")
+        jobrepo.run("checkout", "master")
+        jobrepo.run("pull", "origin", "master")
 
-    jobrepo = GitRepo(jobdir)
     log.info("Fetching jobs ...")
     jobrepo.run(
         "fetch",
