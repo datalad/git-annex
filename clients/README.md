@@ -52,13 +52,20 @@ Setting up a New Client
     - Create a Python virtual environment in this directory in the clone and
       install the packages listed in `requirements.txt` in it
 
+        - Alternatively, create a conda environment named "`testannex`" using
+          the `environment.yml` file in this directory
+
     - Create a cronjob with a command of the form:
 
-            cd /path/to/clone && chronic flock -n -E 0 .lock venv/bin/python testannex.py CLIENTID /path/to/job/dir
+            cd /path/to/clone/clients && chronic flock -n -E 0 .lock venv/bin/python testannex.py CLIENTID /path/to/job/dir
 
       where `CLIENTID` is replaced by the ID of the client and
       `/path/to/job/dir` is replaced by the path to the location at which to
       clone the jobs repository.
+
+        - Alternatively, if using Conda:
+
+                cd /path/to/clone/clients && chronic flock -n -E 0 .lock ./testannex.sh CLIENTID /path/to/job/dir
 
 
 `clients.yaml` Format
