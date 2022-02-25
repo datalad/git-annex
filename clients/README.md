@@ -44,6 +44,8 @@ Setting up a New Client
 
 - On the client:
 
+    - Configure a name & e-mail in Git
+
     - Clone this repository.  Passing `--single-branch` is recommended so as
       not to include the mirror of git-annex's repository.
 
