@@ -16,6 +16,7 @@ from pydantic import BaseModel, parse_obj_as
 from ruamel.yaml import YAML
 
 JOB_REPOSITORY = "git@github.com:datalad/git-annex-ci-client-jobs.git"
+RESULT_WORKFLOW = ".github/workflows/handle-result.yaml"
 
 log = logging.getLogger("testannex")
 
@@ -213,6 +214,10 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
                 runcmd("ar", "-x", debpkg, cwd=unpack_dir)
                 runcmd("tar", "-C", install_dir, "-xzf", "data.tar.gz", cwd=unpack_dir)
             jobrepo.run("checkout", "-f", "--orphan", result_branch)
+            # The result workflow needs to be on the branch in order for the
+            # workflow to be triggered when pushed to GitHub:
+            jobrepo.run("checkout", "master", RESULT_WORKFLOW)
+            jobrepo.run("add", RESULT_WORKFLOW)
             jobrepo.run("rm", "-f", debpkg.name)
             env = dict(os.environ)
             env["PATH"] = f"{os.path.join(install_dir, 'usr', 'bin')}:{env['PATH']}"
