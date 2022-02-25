@@ -47,6 +47,8 @@ Setting up a New Client
     - Clone this repository.  Passing `--single-branch` is recommended so as
       not to include the mirror of git-annex's repository.
 
+    - Import `.github/workflows/tools/datalad-builder-key.asc` into GPG
+
     - Create a Python virtual environment in this directory in the clone and
       install the packages listed in `requirements.txt` in it
 

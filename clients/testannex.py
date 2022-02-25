@@ -175,6 +175,25 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
             )
             jobrepo.run("push", "origin", f":refs/heads/{build_branch}")
             continue
+        total_jobs += 1
+
+        log.info("Verifying signature of %s ...", build_branch)
+        try:
+            jobrepo.run("verify-commit", build_branch)
+        except subprocess.CalledProcessError:
+            log.error("Commit signature failed verification!")
+            failed_jobs += 1
+            invalid_branch = f"invalid-{clientid}-{buildno}"
+            log.info("Renaming remote branch to %s", invalid_branch)
+            jobrepo.run(
+                "push",
+                "origin",
+                f"origin/{build_branch}:refs/heads/{invalid_branch}",
+                f":refs/heads/{build_branch}",
+            )
+            jobrepo.run("branch", "-D", "-r", f"origin/{invalid_branch}")
+            continue
+
         log.info("Running tests for build %d", buildno)
         jobrepo.run(
             "checkout",
@@ -214,7 +233,6 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
         else:
             log.info("All tests passed!")
             status = "PASS"
-        total_jobs += 1
         log.info("Saving & pushing results ...")
         msg = f"[{status}] Tested git-annex build {buildno} ({passes}/{total} tests passed)"
         jobrepo.run("commit", "-m", msg)
