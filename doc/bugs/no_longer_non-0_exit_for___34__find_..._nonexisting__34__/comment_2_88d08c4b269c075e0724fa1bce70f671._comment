@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-02-28T16:11:46Z"
+ content="""
+Also, the docs for annex.skipunknown say that a command should exit nonzero
+if all files in a directory are not checked into git, but it does not
+behave that way either. It seems that it needs to propagate a nonzero exit
+status of git-ls-files at least for that, if not for also the handling of
+files that do not exist.
+"""]]
