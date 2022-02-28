@@ -20,3 +20,5 @@ git-annex version: 10.20220222+git23-g51c528980-1~ndall+1
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

@@ -77,13 +77,13 @@ withFilesInGitAnnexNonRecursive ww needforce a (WorkTreeItems l) = ifM (Annex.ge
 		(fs, cleanup) <- inRepo $ LsFiles.inRepoDetails os [toRawFilePath p]
 		r <- case fs of
 			[f] -> do
-				void $ liftIO $ cleanup
+				propagateLsFilesError cleanup
 				fst <$> getfiles ((SeekInput [p], f):c) ps
 			[] -> do
-				void $ liftIO $ cleanup
+				propagateLsFilesError cleanup
 				fst <$> getfiles c ps
 			_ -> do
-				void $ liftIO $ cleanup
+				propagateLsFilesError cleanup
 				giveup needforce
 		return (r, pure True)
 withFilesInGitAnnexNonRecursive _ _ _ NoWorkTreeItems = noop
@@ -321,7 +321,7 @@ seekFiltered prefilter a listfs = do
 	checktimelimit <- mkCheckTimeLimit
 	(fs, cleanup) <- listfs
 	go matcher checktimelimit fs
-	liftIO $ void cleanup
+	propagateLsFilesError cleanup
   where
 	go _ _ [] = return ()
 	go matcher checktimelimit (v@(_si, f):rest) = checktimelimit noop $ do
@@ -373,7 +373,7 @@ seekFilteredKeys seeker listfs = do
 				)
 			join (liftIO (wait mdprocessertid))
 			join (liftIO (wait processertid))
-	liftIO $ void cleanup
+	propagateLsFilesError cleanup
   where
 	finisher mi oreader checktimelimit = liftIO oreader >>= \case
 		Just ((si, f), content) -> checktimelimit (liftIO discard) $ do
@@ -618,3 +618,8 @@ mkCheckTimeLimit = Annex.getState Annex.timelimit >>= \case
 				cleanup
 				liftIO $ exitWith $ ExitFailure 101
 			else a
+
+propagateLsFilesError :: IO Bool -> Annex ()
+propagateLsFilesError cleanup =
+	unlessM (liftIO cleanup) $
+		Annex.incError

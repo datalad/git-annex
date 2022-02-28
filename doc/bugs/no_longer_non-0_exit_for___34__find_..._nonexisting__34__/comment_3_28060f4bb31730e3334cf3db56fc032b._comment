@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-02-28T16:32:08Z"
+ content="""
+I've fixed it to propagate the non-zero exit status from git ls-files.
+
+The git ls-files message still goes to stderr, not to
+--json-error-messages, the same as any stderr output by a git command
+that git-annex runs. And this is actually not a behavior change;
+the old git-annex output of "not found" did not get included in
+--json-error-messages either:
+
+	joey@darkstar:/tmp/mmm>/usr/bin/git-annex drop dne foo --json --json-error-messages
+	git-annex: dne not found
+	{"command":"drop","wanted":[],"note":"unsafe\nCould only verify the existence of 0 out of 1 necessary copy\n(Use --force to override this check, or adjust numcopies.)","success":false,"input":["foo"],"key":"SHA256E-s3--98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4","error-messages":[],"file":"foo/bar"}
+	drop: 2 failed
+
+Bear in mind that --json-error-messages
+is about errors encountered while processing a particular file that it
+outputs a json record for. This error comes before it starts processing any
+particular file. Also, of course, error messages output by git commands
+are never included in --json-error-messages.
+
+I think it might be a good idea to add an actual API for detecting when
+there is this kind of problem, so datalad does not have to parse
+error messages (which could easily change). But that would need to be a
+separate discussion.
+"""]]

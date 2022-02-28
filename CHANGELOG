@@ -12,6 +12,9 @@ git-annex (10.20220223) UNRELEASED; urgency=medium
   * Run annex.thawcontent-command before deleting an object file,
     in case annex.freezecontent-command did something that would prevent
     deletion.
+  * Propagate nonzero exit status from git ls-files when a specified
+    file does not exist, or a specified directory does not contain
+    any files checked into git.
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Feb 2022 14:14:09 -0400
 
