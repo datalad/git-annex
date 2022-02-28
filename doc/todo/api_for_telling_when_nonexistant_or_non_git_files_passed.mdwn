@@ -1,0 +1,13 @@
+As seen in <https://github.com/datalad/datalad/pull/6510> datalad
+is having to parse error messages to determine when nonexistant
+filenames were passed to git-annex. It would be better if there was some
+kind of API that it could use, since error messages can (and have) changed.
+
+What would this API look like? It seems it could not be a special
+exit status of git-annex, because exit status 101 is already allocated
+for indicating when things like --size-limit and --time-limit have caused
+it to skip processing certian files.
+
+Perhaps something like `--json-error-unmatch` which would make it output
+an additional line with a JSON record indicating that git ls-files
+--error-unmatch had errored out.

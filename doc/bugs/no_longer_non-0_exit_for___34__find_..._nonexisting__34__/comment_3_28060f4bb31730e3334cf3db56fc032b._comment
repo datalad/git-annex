@@ -25,5 +25,6 @@ are never included in --json-error-messages.
 I think it might be a good idea to add an actual API for detecting when
 there is this kind of problem, so datalad does not have to parse
 error messages (which could easily change). But that would need to be a
-separate discussion.
+separate discussion. I've opened
+[[todo/api_for_telling_when_nonexistant_or_non_git_files_passed]] for that.
 """]]
