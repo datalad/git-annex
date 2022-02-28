@@ -1896,11 +1896,12 @@ effect.
 
 # EXIT STATUS
 
-git-annex, when called as a git subcommand, may return exit codes 0 or 1
-for success or failures, or, more rarely, 127 or 128 for certain very
-specific failures.  git-annex itself should return 0 on success and 1 on
-failure, unless the `--size-limit` or `--time-limit` option is hit, in
-which case it return exit code 101.
+git-annex itself will exit 0 on success and 1 on failure, unless 
+the `--size-limit` or `--time-limit` option is hit, in 
+which case it exits 101. 
+
+A few git-annex subcommands have other exit statuses used to indicate
+specific problems, which are documented on their individual man pages.
 
 # ENVIRONMENT
 
