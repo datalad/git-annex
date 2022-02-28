@@ -244,7 +244,7 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
         log.info("Saving & pushing results ...")
         msg = f"[{status}] Tested git-annex build {buildno} ({passes}/{total} tests passed)"
         jobrepo.run("commit", "-m", msg)
-        jobrepo.run("push", "--set-upstream", "origin", result_branch)
+        jobrepo.run("push", "origin", result_branch)
         jobrepo.run("branch", "-D", build_branch)
         jobrepo.run("push", "origin", f":refs/heads/{build_branch}")
         remote_results.add(result_branch)
@@ -253,7 +253,9 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
     local_results = set(jobrepo.ls_branches(f"result-{clientid}-*"))
     for branch in local_results - remote_results:
         jobrepo.run("branch", "-D", branch)
-        jobrepo.run("branch", "-D", "-r", f"origin/{branch}")
+        # It appears that `git push origin result-*` doesn't create a branch
+        # under origin/ when in a "single branch" clone
+        #jobrepo.run("branch", "-D", "-r", f"origin/{branch}")
     jobrepo.run("gc")
 
     if failed_jobs:
