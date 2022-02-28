@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="anamyk"
+ avatar="http://cdn.libravatar.org/avatar/2604c4a7a2c85eaab0fb26adda0f0c35"
+ subject="comment 4"
+ date="2022-02-28T18:13:29Z"
+ content="""
+I have the same issue.
+
+@joey Does 'shipped' mean only upon git-annex installation on termux or each time I run a command? 
+Because I do get this warning several times during runtime, each time I run a git annex command.
+
+It helps to pinpoint the error to proot, but on their [git](https://github.com/termux/proot-distro) they talk about this warning occurring only during installation, not several time during use. 
+
+I tried:
+1. installing proot specifically in termux with `pkg install proot-distro`: -> installed two new packages, but warning still there
+2. new git annex install on termux:
+    - `$ pkg up`
+    - `$ source git-annex-install`
+    - saw the aforementioned linker warning once
+    - when e.g. using `$ git annex sync origin` the warning still shows up 
+
+Next steps to try:
+1. new termux install on android
+2. try older termux version 
+
+Any other tips/ideas how to fix this?
+"""]]
