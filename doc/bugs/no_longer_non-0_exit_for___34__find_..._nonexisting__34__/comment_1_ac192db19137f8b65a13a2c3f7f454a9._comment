@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-02-28T16:07:31Z"
+ content="""
+This is the annex.skipunknown transition so you can set that to true to get
+back the previous behavior.
+
+However, I do not think that was intended to result in this behavior when
+the specified files do not exist at all, it was only supposed to make it
+skip files that exist but are not checked into git. So this does seem like
+a bug.
+"""]]
