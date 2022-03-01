@@ -4,36 +4,20 @@
  date="2022-03-01T18:06:32Z"
  content="""
 Since you mentioned standalone builds, I suspect you are running
-something like: "git-annex.linux/git-annex test"
+something like: "cd git-annex.linux; ./git-annex test"
 
 I have verified that is much much slower than running git-annex not
-from the standalone build.
+from the standalone build. On the order of 1+ hours vs 5 minutes.
 
-It seems that every time the test suite runs git, it does it via runshell,
-and repeated calls to runshell take time since it has to re-set up the
-standalone environment. This does not happen when the test suite runs
-git-annex; I've verified that its use of programPath results in
-git-annex.linux/bin/git-annex being run, which avoids the runshell
-overhead. 
+There is a simple workaround, run "git-annex.linux/git-annex"
+from somewhere outside the standalone build. That will make it much faster.
+Here it takes about 5 minutes.
 
-It looks like the problem is that PATH ends up
-containing "git-annex.linux:git-annex.linux/bin", and so it runs
-the runshell wrapped git. That happens due to setTestMode, which
-appends the current directory to the PATH.
-
-Now, I doubt there would be a real benefit to testing using the standalone
-build, running ./git-annex in the tree where you built it, unless the
-standalone build is made on a system other than the system where the test
-is run. 
-
-But still this repeated runshell is excessive. And should be able to be
-fixed easily now that I've understood it.
-
-However: The main thing I know that will speed up git-annex test generally
-is to parallelize its tests. Which can be done, but needs tasty-1.2. That
-finally made it into debian stable, so it should be able to depend on it
-now. I would not be surprised if it can be sped up 10x that way, because tests
-often have to wait one or more seconds after writing a file due to time
-stamp issues etc. I have created a `paralleltest` branch with a start on
-that, not yet working.
+With that said, there's still a lot of room to speed up git-annex
+test, and the main thing would probably be to parallelize its tests.
+Which can be done, but needs tasty-1.2. That finally made it into debian
+stable, so it should be able to depend on it now. I would not be surprised
+if it can be sped up 10x that way, because tests often have to wait one or
+more seconds after writing a file due to time stamp issues etc.
+I have created a `paralleltest` branch with a start on that, not yet working.
 """]]
