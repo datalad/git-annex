@@ -468,10 +468,12 @@ setTestMode :: TestMode -> IO ()
 setTestMode testmode = do
 	currdir <- getCurrentDirectory
 	p <- Utility.Env.getEnvDefault "PATH" ""
+	pp <- Annex.Path.programPath
 
 	mapM_ (\(var, val) -> Utility.Env.Set.setEnv var val True)
-		-- Ensure that the just-built git annex is used.
-		[ ("PATH", currdir ++ [searchPathSeparator] ++ p)
+		-- Ensure that the same git-annex binary that is running
+		-- git-annex test is at the front of the PATH.
+		[ ("PATH", takeDirectory pp ++ [searchPathSeparator] ++ p)
 		, ("TOPDIR", currdir)
 		-- Avoid git complaining if it cannot determine the user's
 		-- email address, or exploding if it doesn't know the user's

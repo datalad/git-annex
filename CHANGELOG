@@ -15,6 +15,8 @@ git-annex (10.20220223) UNRELEASED; urgency=medium
   * Propagate nonzero exit status from git ls-files when a specified
     file does not exist, or a specified directory does not contain
     any files checked into git.
+  * Avoid git-annex test being very slow when run from within the
+    standalone linux tarball or OSX app.
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Feb 2022 14:14:09 -0400
 
