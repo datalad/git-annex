@@ -39,6 +39,9 @@ Setting up a New Client
 - Add an entry to `clients.yaml` for the client containing one or more tests
   (See "`clients.yaml` Format" below)
 
+- Regenerate the `build-*.yaml` workflows by running `make -C
+  .github/workflows/template`
+
 - Set up permissions for the client to be able to pull from & write to
   datalad/git-annex-ci-client-jobs
 
