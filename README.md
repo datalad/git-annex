@@ -20,3 +20,4 @@ configuration and associated scripts.
 | Client | Test Status |
 | --- | --- |
 | ndoli | ![Overall test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/ndoli.svg) ![git-annex-home test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/ndoli/git-annex-home.svg) ![git-annex-tmp test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/ndoli/git-annex-tmp.svg) |
+| smaug | ![Overall test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/smaug.svg) ![git-annex test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/smaug/git-annex.svg) |
