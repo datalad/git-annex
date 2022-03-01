@@ -1,0 +1,4 @@
+click >= 8.0
+click-loglevel ~= 0.2
+pydantic ~= 1.9
+ruamel.yaml ~= 0.15

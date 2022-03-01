@@ -1,0 +1,24 @@
+ndoli:
+  tests:
+    git-annex-home: |
+      set -eux
+      source testlib.sh
+      workdir_base "$HOME/git-annex-ci"
+      git annex version
+      timeout 7200 git annex test
+
+    git-annex-tmp: |
+      set -eux
+      source testlib.sh
+      workdir_base /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp
+      git annex version
+      timeout 7200 git annex test
+
+smaug:
+  tests:
+    git-annex: |
+      set -eux
+      source testlib.sh
+      workdir_base /mnt/datasets/datalad/git-annex-build-client
+      git annex version
+      timeout 3600 git annex test

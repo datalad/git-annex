@@ -252,6 +252,49 @@ jobs:
             git-annex[-_]*.*
             dist/build-version
 
+    {% if clients %}
+      {% if ostype != "ubuntu" %}
+      - name: Import GPG key
+        run: |
+          # private key for signing - comes from secrets
+          echo '${{ secrets.datalad_builder_gpgkey }}' | gpg --import
+
+      {% endif %}
+      - name: Clone datalad/git-annex-ci-client-jobs
+        uses: actions/checkout@v2
+        with:
+          repository: datalad/git-annex-ci-client-jobs
+          fetch-depth: 1
+          path: client-jobs
+          ssh-key: ${{ secrets.CLIENT_JOBS_SSH_KEY }}
+
+      - name: Push installer to datalad/git-annex-ci-client-jobs
+        run: |
+          set -ex -o pipefail
+          git checkout --orphan build
+          git rm -rf .
+          cp -i ../{{installer_glob}} .
+          git add {{installer_glob}}
+          buildno="${{ github.run_number }}"
+          git commit \
+            --gpg-sign=13A1093296154584245E0300C98FC49D36DAB17F \
+            -m "Installer artifact from build $buildno"
+          git ls-remote --heads origin "build-*" | cut -f2 | cut -d/ -f3- > builds.txt
+          git ls-remote --heads origin "result-*" | cut -f2 | cut -d/ -f3- > results.txt
+          for clientid in {{clients|join(" ")}}
+          do build_branch="build-$clientid-$buildno"
+             result_branch="result-$clientid-$buildno"
+             if grep -Fqx "$result_branch" results.txt
+             then echo "[INFO] Result branch $result_branch already exists; not creating build branch"
+             elif grep -Fqx "$build_branch" builds.txt
+             then echo "[INFO] Build branch $build_branch already exists; leaving alone"
+             else git branch "$build_branch" build
+                  git push origin "$build_branch"
+             fi
+          done
+        working-directory: client-jobs
+
+    {% endif %}
       - name: Create new release
         if: github.event.inputs.commitish != ''
         run: |
