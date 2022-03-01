@@ -1,18 +1,24 @@
 ndoli:
   tests:
     git-annex-home: |
-      set -exu
-      mkdir -p "$HOME/git-annex-ci/$BUILDNO"
-      trap 'cd "$HOME/git-annex-ci" && chmod -R +w "$BUILDNO" && rm -rf "$BUILDNO"' EXIT
-      cd "$HOME/git-annex-ci/$BUILDNO"
+      set -eux
+      source testlib.sh
+      workdir_base "$HOME/git-annex-ci"
       git annex version
       timeout 7200 git annex test
 
     git-annex-tmp: |
-      set -exu
-      cd /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp
-      mkdir -p "$BUILDNO"
-      trap 'cd /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp && chmod -R +w "$BUILDNO" && rm -rf "$BUILDNO"' EXIT
-      cd "$BUILDNO"
+      set -eux
+      source testlib.sh
+      workdir_base /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp
       git annex version
       timeout 7200 git annex test
+
+smaug:
+  tests:
+    git-annex: |
+      set -eux
+      source testlib.sh
+      workdir_base /mnt/datasets/datalad/git-annex-build-client
+      git annex version
+      timeout 3600 git annex test
