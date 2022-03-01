@@ -597,8 +597,6 @@ test_unannex_withcopy = intmpclonerepo $ do
 	annexed_present annexedfile
 	git_annex "unannex" [annexedfile, sha1annexedfile] "unannex"
 	unannexed annexedfile
-	git_annex "unannex" [annexedfile] "unannex on non-annexed file"
-	unannexed annexedfile
 	git_annex "unannex" [ingitfile] "unannex ingitfile should be no-op"
 	unannexed ingitfile
 
