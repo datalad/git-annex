@@ -34,7 +34,6 @@ import qualified Data.Map as M
 import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy as L
 #if MIN_VERSION_aeson(2,0,0)
-import qualified Data.Aeson.Key as AK
 import qualified Data.Aeson.KeyMap as HM
 #else
 import qualified Data.HashMap.Strict as HM
@@ -132,13 +131,7 @@ add v (Just (o, e)) = case j of
 	j = case v of
 		AesonObject ao -> Object ao
 		JSONChunk l -> object $ map mkPair l
-	mkPair (s, d) =
-		(
-#if MIN_VERSION_aeson(2,0,0)
-		  AK.fromText $
-#endif
-		  packString s
-		, toJSON' d)
+	mkPair (s, d) = (textKey (packString s), toJSON' d)
 add _ Nothing = Nothing
 
 complete :: JSONChunk v -> JSONBuilder
@@ -184,13 +177,7 @@ data ObjectMap a = ObjectMap { fromObjectMap :: M.Map String a }
 instance ToJSON' a => ToJSON' (ObjectMap a) where
 	toJSON' (ObjectMap m) = object $ map go $ M.toList m
 	  where
-		go (k, v) =
-			(
-#if MIN_VERSION_aeson(2,0,0)
-			  AK.fromText $
-#endif
-			  packString k
-			, toJSON' v)
+		go (k, v) = (textKey (packString k), toJSON' v)
 
 -- An item that a git-annex command acts on, and displays a JSON object about.
 data JSONActionItem a = JSONActionItem

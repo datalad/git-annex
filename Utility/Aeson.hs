@@ -15,11 +15,15 @@ module Utility.Aeson (
 	encode,
 	packString,
 	packByteString,
+	textKey,
 ) where
 
 import Data.Aeson as X hiding (ToJSON, toJSON, encode, Key)
 import Data.Aeson hiding (encode)
 import qualified Data.Aeson
+#if MIN_VERSION_aeson(2,0,0)
+import qualified Data.Aeson.Key as AK
+#endif
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
@@ -67,6 +71,14 @@ packString :: String -> T.Text
 packString s = case T.decodeUtf8' (encodeBS s) of
 	Right t -> t
 	Left _ -> T.pack s
+
+#if MIN_VERSION_aeson(2,0,0)
+textKey :: T.Text -> AK.Key
+textKey = AK.fromText
+#else
+textKey :: T.Text -> T.Text
+textKey = id
+#endif
 
 -- | The same as packString . decodeBS, but more efficient in the usual
 -- case.

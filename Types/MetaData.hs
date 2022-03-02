@@ -7,7 +7,6 @@
 
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE CPP #-}
 
 module Types.MetaData (
 	MetaData(..),
@@ -52,9 +51,6 @@ import Utility.QuickCheck
 import Utility.Aeson
 import Types.UUID
 
-#if MIN_VERSION_aeson(2,0,0)
-import qualified Data.Aeson.Key as AK
-#endif
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 import qualified Data.Set as S
@@ -71,13 +67,7 @@ newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
 instance ToJSON' MetaData where
 	toJSON' (MetaData m) = object $ map go (M.toList m)
 	  where
-		go (MetaField f, s) =
-			(
-#if MIN_VERSION_aeson(2,0,0)
-			  AK.fromText $
-#endif
-			  CI.original f
-			, toJSON' s)
+		go (MetaField f, s) = (textKey (CI.original f), toJSON' s)
 
 instance FromJSON MetaData where
 	parseJSON (Object o) = do
