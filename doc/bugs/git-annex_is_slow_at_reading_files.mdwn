@@ -1,0 +1,54 @@
+### Please describe the problem.
+
+Any time git-annex reads a file (and presumably hashes it), it is about half as fast as just reading the file or `sha256sum`ing it on my hardware.
+
+The repo I'm reading from is inside a btrfs on top of an HDD but the same happens in a btrfs image inside a tmpfs and inside a tmpfs directly, just to a lesser degree as there is no IO or filesystem overhead.
+
+My CPU is pretty slow but reading a 1.7GiB file normally or even checksumming it is about an order of magnitude faster:
+
+|Command|Time|
+|:--|--:|
+|`git-annex fsck file`| 21s |
+|`sha256sum file`| 5s |
+|`cat file > /dev/null`| 2s |
+
+(Tested inside a btrfs image in tmpfs with same settings (compress etc.))
+
+This also happens on `add`, `copy`, `get` etc. but it's even worse there because of higher IO overhead which results in average speeds of ~70MiB/s.  
+I'm currently in the process of transferring a few terabytes worth from multiple relatively slower drives onto one very fast drive and would like to parallelise the transfer. Unfortunately though, this issue seems to scale anti-proportionally with the level of parallelism. If I'd get 70MiB/s from each drive individually at `-J1`, I'd get ~35MiB/s from both at `-J2`.
+
+I had to resort to `rsync`ing the objects dirs manually as that's faster than any method of git-annex-internal transfers.
+
+### What steps will reproduce the problem?
+
+Compare runtime of `git-annex fsck` vs. `sha256sum` and `cat`.
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 10.20220127
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.0 ghc-8.10.7 http-client-0.6.4.1 persistent-sqlite-2.13.1.0 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 8
+```
+
+NixOS 21.11
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
