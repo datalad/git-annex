@@ -446,7 +446,7 @@ transfer_list = stat desc $ nojson $ lift $ do
 		, maybe (fromUUID $ transferUUID t) Remote.name $
 			M.lookup (transferUUID t) uuidmap
 		]
-	jsonify t i = object $
+	jsonify t i = object $ map (\(k, v) -> (textKey (packString k), v)) $
 		[ ("transfer", toJSON' (formatDirection (transferDirection t)))
 		, ("key", toJSON' (transferKey t))
 		, ("file", toJSON' (fromRawFilePath <$> afile))
