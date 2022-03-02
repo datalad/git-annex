@@ -6,9 +6,11 @@ The repo I'm reading from is inside a btrfs on top of an HDD but the same happen
 
 My CPU is pretty slow but reading a 1.7GiB file normally or even checksumming it is about an order of magnitude faster:
 
-`git-annex fsck file`: 21s
-`sha256sum file`: 5s
-`cat file > /dev/null`: 2s
+|Command|Time|
+|:--|--:|
+|`git-annex fsck file`| 21s |
+|`sha256sum file`| 5s |
+|`cat file > /dev/null`| 2s |
 
 (Tested inside a btrfs image in tmpfs with same settings (compress etc.))
 
