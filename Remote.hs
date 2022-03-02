@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, CPP #-}
 
 module Remote (
 	Remote,
@@ -63,6 +63,9 @@ module Remote (
 
 import Data.Ord
 import Data.String
+#if MIN_VERSION_aeson(2,0,0)
+import qualified Data.Aeson.Key as AK
+#endif
 import qualified Data.Map as M
 import qualified Data.Vector as V
 
@@ -239,11 +242,17 @@ prettyPrintUUIDsWith optfield header descm showval uuidvals = do
 			Nothing -> s
 			Just val -> val ++ ": " ++ s
 	jsonify hereu (u, optval) = object $ catMaybes
-		[ Just (packString "uuid", toJSON' (fromUUID u :: String))
-		, Just (packString "description", toJSON' $ finddescription u)
-		, Just (packString "here", toJSON' $ hereu == u)
+		[ Just ("uuid", toJSON' (fromUUID u :: String))
+		, Just ("description", toJSON' $ finddescription u)
+		, Just ("here", toJSON' $ hereu == u)
 		, case (optfield, optval) of
-			(Just field, Just val) -> Just (packString field, toJSON' val)
+			(Just field, Just val) -> Just
+				(
+#if MIN_VERSION_aeson(2,0,0)
+				  AK.fromText $
+#endif
+				  packString field
+				, toJSON' val)
 			_ -> Nothing
 		]
 

@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings, GADTs #-}
+{-# LANGUAGE OverloadedStrings, GADTs, CPP #-}
 
 module Messages.JSON (
 	JSONBuilder,
@@ -33,7 +33,12 @@ import Control.Applicative
 import qualified Data.Map as M
 import qualified Data.Vector as V
 import qualified Data.ByteString.Lazy as L
+#if MIN_VERSION_aeson(2,0,0)
+import qualified Data.Aeson.Key as AK
+import qualified Data.Aeson.KeyMap as HM
+#else
 import qualified Data.HashMap.Strict as HM
+#endif
 import System.IO
 import System.IO.Unsafe (unsafePerformIO)
 import Control.Concurrent
@@ -94,7 +99,7 @@ finalize o = addErrorMessage [] o
 
 addErrorMessage :: [String] -> Object -> Object
 addErrorMessage msg o =
-	HM.insertWith combinearray "error-messages" v o
+	HM.unionWith combinearray (HM.singleton "error-messages" v) o
   where
 	combinearray (Array new) (Array old) = Array (old <> new)
 	combinearray new _old = new
@@ -102,7 +107,7 @@ addErrorMessage msg o =
 
 note :: String -> JSONBuilder
 note _ Nothing = Nothing
-note s (Just (o, e)) = Just (HM.insertWith combinelines "note" (toJSON' s) o, e)
+note s (Just (o, e)) = Just (HM.unionWith combinelines (HM.singleton "note" (toJSON' s)) o, e)
   where
 	combinelines (String new) (String old) =
 		String (old <> "\n" <> new)
@@ -127,7 +132,13 @@ add v (Just (o, e)) = case j of
 	j = case v of
 		AesonObject ao -> Object ao
 		JSONChunk l -> object $ map mkPair l
-	mkPair (s, d) = (packString s, toJSON' d)
+	mkPair (s, d) =
+		(
+#if MIN_VERSION_aeson(2,0,0)
+		  AK.fromText $
+#endif
+		  packString s
+		, toJSON' d)
 add _ Nothing = Nothing
 
 complete :: JSONChunk v -> JSONBuilder
@@ -173,7 +184,13 @@ data ObjectMap a = ObjectMap { fromObjectMap :: M.Map String a }
 instance ToJSON' a => ToJSON' (ObjectMap a) where
 	toJSON' (ObjectMap m) = object $ map go $ M.toList m
 	  where
-		go (k, v) = (packString k, toJSON' v)
+		go (k, v) =
+			(
+#if MIN_VERSION_aeson(2,0,0)
+			  AK.fromText $
+#endif
+			  packString k
+			, toJSON' v)
 
 -- An item that a git-annex command acts on, and displays a JSON object about.
 data JSONActionItem a = JSONActionItem

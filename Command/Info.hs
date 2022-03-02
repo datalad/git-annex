@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns, DeriveDataTypeable, PackageImports #-}
+{-# LANGUAGE BangPatterns, DeriveDataTypeable, PackageImports, OverloadedStrings #-}
 
 module Command.Info where
 
@@ -446,7 +446,7 @@ transfer_list = stat desc $ nojson $ lift $ do
 		, maybe (fromUUID $ transferUUID t) Remote.name $
 			M.lookup (transferUUID t) uuidmap
 		]
-	jsonify t i = object $ map (\(k, v) -> (packString k, v)) $
+	jsonify t i = object $
 		[ ("transfer", toJSON' (formatDirection (transferDirection t)))
 		, ("key", toJSON' (transferKey t))
 		, ("file", toJSON' (fromRawFilePath <$> afile))

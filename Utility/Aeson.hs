@@ -7,7 +7,7 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances, CPP #-}
 
 module Utility.Aeson (
 	module X,
@@ -17,7 +17,7 @@ module Utility.Aeson (
 	packByteString,
 ) where
 
-import Data.Aeson as X hiding (ToJSON, toJSON, encode)
+import Data.Aeson as X hiding (ToJSON, toJSON, encode, Key)
 import Data.Aeson hiding (encode)
 import qualified Data.Aeson
 import qualified Data.Text as T
