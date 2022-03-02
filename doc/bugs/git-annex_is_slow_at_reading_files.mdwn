@@ -12,7 +12,7 @@ My CPU is pretty slow but reading a 1.7GiB file normally or even checksumming it
 
 (Tested inside a btrfs image in tmpfs with same settings (compress etc.))
 
-This also happens on `copy`, `get` etc. but it's even worse there because of higher IO overhead which results in average speeds of ~70MiB/s.  
+This also happens on `add`, `copy`, `get` etc. but it's even worse there because of higher IO overhead which results in average speeds of ~70MiB/s.  
 I'm currently in the process of transferring a few terabytes worth from multiple relatively slower drives onto one very fast drive and would like to parallelise the transfer. Unfortunately though, this issue seems to scale anti-proportionally with the level of parallelism. If I'd get 70MiB/s from each drive individually at `-J1`, I'd get ~35MiB/s from both at `-J2`.
 
 I had to resort to `rsync`ing the objects dirs manually as that's faster than any method of git-annex-internal transfers.
