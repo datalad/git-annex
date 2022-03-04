@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 2"
+ date="2022-03-04T20:27:30Z"
+ content="""
+Setting up locked-down ssh keys may seem trivial to you since you've thoroughly investigated the topic for implementing them for the assistant's pairing mechanism but I'm pretty sure your average git-annex user doesn't know how to do that or would do it wrong. I certainly wouldn't trust myself doing that on my own.
+
+Support for pairing on the CLI via P2P was implemented not too long ago (which is great!) but I'd like to stick with regular IP as it's more efficient and I've got my network set up for remote access pretty well already.
+"""]]
