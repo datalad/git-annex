@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 1"
+ date="2022-03-04T14:16:53Z"
+ content="""
+To expand on this, results from my more powerful machine reading a 14G file (all in tmpfs):
+
+|Command|Time|
+|:--|--:|
+|`git-annex fsck file`| 45s |
+|`sha256sum file`| 7s |
+|`cat file > /dev/null`| 1s |
+
+(5800X with dual channel quad rank 3600MT/s CL16 RAM)
+"""]]
