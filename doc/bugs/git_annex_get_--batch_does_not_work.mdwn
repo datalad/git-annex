@@ -23,3 +23,5 @@ I use it on Debian 11
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 YES! Git annex is a wonderful tool! I use it for synchronising TB of data
+
+> [[notabug|done]] --[[Joey]]
