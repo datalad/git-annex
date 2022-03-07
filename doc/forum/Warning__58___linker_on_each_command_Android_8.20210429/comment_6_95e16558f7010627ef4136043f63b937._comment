@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 6"
+ date="2022-03-05T21:46:22Z"
+ content="""
+Try nix-on-droid. It also uses proot (for everything actually) but Nix has an entirely different linking model to traditional distributions.
+
+Just open `nix-shell -p git git-annex` or add those two to your `environment.packages` in `~/.config/nixpkgs/nix-on-droid.nix` and then `nix-on-droid switch`. (Using `nix-env` is also possible but I wouldn't recommend it.)
+"""]]
