@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-03-07T19:09:17Z"
+ content="""
+Cannot reproduce that:
+
+	joey@darkstar:/tmp/rr>/usr/bin/time git-annex fsck bigfile 
+	fsck bigfile (checksum...) ok
+	(recording state in git...)
+	10.08user 0.35system 0:10.40elapsed 100%CPU (0avgtext+0avgdata 43500maxresident)k
+	joey@darkstar:/tmp/rr>/usr/bin/time sha256sum bigfile
+	7219108977be820830169fc13fded5000e9db329fab4e687fc14236f932d4060  bigfile
+	11.00user 0.28system 0:11.29elapsed 99%CPU (0avgtext+0avgdata 1956maxresident)k
+	120inputs+0outputs (2major+105minor)pagefaults 0swaps
+
+(1 gb file; tmpfs)
+
+git-annex simply uses
+[cryptonite](https://hackage.haskell.org/package/cryptonite) for hashing.
+Which is a thin wrapper around C code, and contains optimised routines for
+some processors, generally copied from the reference C implementations.
+
+The block size is 32 kb. This can be changed in Utility/Metered.hs 
+in defaultChunkSize.
+"""]]
