@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2022-03-07T19:20:33Z"
+ content="""
+@tomdhunt yes:
+
+	git config --unset filter.annex.smudge
+	git config --unset filter.annex.clean
+
+But, it seems likely that `git add` would not be slow if you upgraded
+the repository version to v9 instead. Most scenarios where it is slow
+have been fixed in that version.
+
+	git-annex upgrade --version=9
+"""]]
