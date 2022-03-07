@@ -57,12 +57,12 @@ dev:
 git-annex: tmp/configure-stamp
 	$(BUILDER) build $(BUILDERCOMMONOPTIONS) $(BUILDEROPTIONS)
 	@if [ "$(BUILDER)" = stack ]; then \
-		ln -sf $$(stack path $(BUILDERCOMMONOPTIONS) --dist-dir)/build/git-annex/git-annex git-annex; \
+		ln -f $$(stack path $(BUILDERCOMMONOPTIONS) --dist-dir)/build/git-annex/git-annex git-annex; \
 	else \
 		if [ -d dist-newstyle ]; then \
-			ln -sf $$(cabal exec -- sh -c 'command -v git-annex') git-annex; \
+			ln -f $$(cabal exec -- sh -c 'command -v git-annex') git-annex; \
 		else \
-			ln -sf dist/build/git-annex/git-annex git-annex; \
+			ln -f dist/build/git-annex/git-annex git-annex; \
 		fi; \
 	fi
 
