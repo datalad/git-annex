@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nowkixide"
+ avatar="http://cdn.libravatar.org/avatar/6268f09b18a71aafa3ad68ecd8a20d50"
+ subject="Works fine"
+ date="2022-03-07T12:07:54Z"
+ content="""
+`brew install --build-from-source git-annex` took around 25 minutes on M1 Pro (10 core) and passed `git annex test`.
+"""]]
