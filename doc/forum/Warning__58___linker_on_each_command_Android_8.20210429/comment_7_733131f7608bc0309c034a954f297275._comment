@@ -5,6 +5,12 @@
  content="""
 @Atemu great tip! I had seen nix-on-droid and wondered about it.
 
-Perhaps this would be worth documenting in [[Android]] as an alternative to
-termux.
+I have added some instructions based on your comment
+to [[/Android]].
+
+Looks like `git-annex webapp` does not work in nix-on-droid,
+because it cannot open a web page. Perhaps there is some way to
+do that; on termux git-annex uses xdg-open, but I tried it on nix-on-droid
+and it does not work. For now I documented nix-on-droid as an alternative
+for users who want to use git-annex at the command line.
 """]]

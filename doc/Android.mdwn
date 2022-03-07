@@ -1,6 +1,7 @@
-git-annex is available for Android inside Termux. This includes the 
-[[git-annex assistant|/assistant]], for easy syncing between your Android
-and other devices. You do not need to root your Android to use git-annex.
+git-annex is available for Android inside Termux or Nix-On-Droid.
+This includes the [[git-annex assistant|/assistant]], for easy
+syncing between your Android and other devices. You do not need
+to root your Android to use git-annex.
 
 (Alternatively, rather than installing git-annex on your Android device,
 git-annex can run on your computer and use `adb` to pull and push changes
@@ -9,7 +10,7 @@ on using git-annex that way.)
 
 [[!toc ]]
 
-## Installation
+## Installation (Termux)
 
 First, install [Termux](https://termux.com/). This is an Android app that can
 run some Linux software in a terminal, including git-annex.
@@ -21,9 +22,24 @@ to install it. Paste these commands into Termux:
 	wget https://git-annex.branchable.com/install/Android/git-annex-install
 	source git-annex-install
 
-## Starting git-annex
+## Installation (Nix-On-Droid)
 
-To start git-annex, just run "git annex webapp" inside Termux.
+Installing git-annex using
+[Nix-On-Droid](https://github.com/t184256/nix-on-droid) is recommended
+for more advanced users who want to use git-annex at the command line.
+The git-annex webapp does not currently work in Nix-On-Droid.
+
+To enter a shell with git-annex available to use,
+run inside Nix-On-Droid: `nix-shell -p git git-annex`
+
+To avoid needing to do that every time you start Nix-On-Droid,
+you can add git and git-annex to your `environment.packages` in 
+`~/.config/nixpkgs/nix-on-droid.nix` and then run 
+`nix-on-droid switch`
+
+## Starting git-annex assistant
+
+Just run "git-annex webapp" inside Termux.
 A browser window will open with the git-annex interface.
 
 [[!img webapp.png alt="git-annex webapp"]]
@@ -31,8 +47,8 @@ A browser window will open with the git-annex interface.
 ## Closing and reopening the webapp
 
 The webapp does not need to be left open after you've set up your
-repository. As long as Termux is left open, git-annex will
-remain running and sync your files.
+repository. As long as Termux (or Nix-On-Droid) is left open, git-annex 
+will remain running and sync your files.
 
 ## Starting at power on
 
@@ -44,11 +60,11 @@ set up in the webapp.
 ## Using the command line
 
 If you prefer to use `git-annex` at the command line, you can do so inside
-Termux. Here we'll make a repository for photos:
+Termux or Nix-On-Droid. Here we'll make a repository for photos:
 
         cd ~/storage/dcim
         git init
-        git annex init
+        git-annex init
 
 You can go on to set up a ssh remote pointing to a server, and sync
 your files to and from it.
@@ -56,6 +72,6 @@ your files to and from it.
 And so on. Most ways you would use git-annex on a Linux system work fairly
 well in the Termux environment.
 
-## Upgrading
+## Upgrading (Termux)
 
 To upgrade to a new git-annex release, just run `git-annex-install` again.
