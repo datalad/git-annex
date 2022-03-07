@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-03-07T16:09:41Z"
+ content="""
+@Atemu great tip! I had seen nix-on-droid and wondered about it.
+
+Perhaps this would be worth documenting in [[Android]] as an alternative to
+termux.
+"""]]
