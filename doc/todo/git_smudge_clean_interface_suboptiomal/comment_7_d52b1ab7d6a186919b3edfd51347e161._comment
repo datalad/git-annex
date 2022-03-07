@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="comment 7"
+ date="2022-03-07T18:27:38Z"
+ content="""
+If you're dealing with a repository where you never intend to use unlocked files at all, does it work to just disable the smudge filter entirely?
+
+I'm currently running into the speed issues on `git add`, but I don't have any use for unlocked files in this particular use case, so I'd be happy just to turn off that whole step.
+"""]]
