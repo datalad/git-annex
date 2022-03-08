@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2022-03-08T17:44:05Z"
+ content="""
+`Build/Configure.hs` probes for supported cp options,
+and could be extended to try gcp.
+"""]]
