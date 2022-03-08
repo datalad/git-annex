@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-03-08T16:26:55Z"
+ content="""
+Awesome that you were able to reproduce it in cryptonite and file that. 
+Thank you!
+
+I'm inclined to close this, because it seems unlikely there will be a fix
+for it in git-annex. One fix that would be possible here is for
+git-annex to use the exteneral sha256sum command. But, that would prevent
+git-annex from displaying progress while hashing, which is why it moved
+away from it in the first place.
+
+Of course, you could also try using a different kind of hash that is
+faster for new content.
+"""]]
