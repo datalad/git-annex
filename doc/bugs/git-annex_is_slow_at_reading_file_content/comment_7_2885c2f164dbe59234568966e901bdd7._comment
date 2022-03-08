@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-03-08T17:47:37Z"
+ content="""
+I don't know of anything else in the haskell space that is likely to be
+better, cryptonite is basically the standard library for this. There is
+certianly precident in it for using optimised instructions, like SSE.
+"""]]
