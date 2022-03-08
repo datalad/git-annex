@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="anamyk"
+ avatar="http://cdn.libravatar.org/avatar/2604c4a7a2c85eaab0fb26adda0f0c35"
+ subject="comment 8"
+ date="2022-03-08T07:49:38Z"
+ content="""
+Thank you for the tip @Atemu. I will try that out.  
+
+In the meantime (and since [termux-proot-distro-devs say the warning is harmless](https://github.com/termux/proot-distro/blob/master/README.md#known-issues)), I managed to filter out only the aforementioned \"WARNING: linker:\"... from the cli output:  
+`$ git annex <command> 2> >(grep -v \"WARNING: linker:\" >&2)`  
+or as an alias in shellrc   
+`alias ga = 'git annex $1 2> >(grep -n \"WARNING: linker:\" >&2)'`
+"""]]
