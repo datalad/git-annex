@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 4"
+ date="2022-03-08T11:56:42Z"
+ content="""
+I found the issue, cryptonite doesn't make use of SHA instructions which both of my machines have. I'm going to open an issue upstream.
+
+Is there an alternative crypto library that can make use of these perhaps? The speedup/efficiency gain is **>5x** on my 5800X.
+"""]]
