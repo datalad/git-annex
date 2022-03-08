@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="anamyk"
+ avatar="http://cdn.libravatar.org/avatar/2604c4a7a2c85eaab0fb26adda0f0c35"
+ subject="comment 9"
+ date="2022-03-08T08:11:16Z"
+ content="""
+FYI I raised an issue over on [termux-proot-github](https://github.com/termux/proot-distro/issues/201) some suggested to run proot in isolated mode. But I dont know how to do that using git annex, since in cli I never acutually come in contact with the `proot` commands. But maybe that give some more inside.
+"""]]
