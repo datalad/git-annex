@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 12"
+ date="2022-03-09T12:07:45Z"
+ content="""
+Problem is that in our Nix sandbox, `cp` is always coreutils' while on the actual system, it might be macOS'. 
+
+It'd be nice to have a way to declare what binary to use (with absolute path or just binary name) for `cp` and the like, that way we can get rid of our runtime wrapper that puts coreutils in git-annex' PATH in anticipation of features that rely on GNU coreutils.
+"""]]
