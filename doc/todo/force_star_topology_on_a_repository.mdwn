@@ -1,0 +1,27 @@
+# What is a star-topology
+
+Basically having only one remote with `private = false` (the default) setting and having all other machines with `private = true`.
+
+In this setup, all users and clones have to pull from the central `private = false` remote, and they can't get/copy/sync directly between each other.
+
+In exchange, the situation is easy to understand, easy to explain to non-technical people and easy to automate in a team where people who are not interested in git also have to participate.  Also, the content of the `git-annex` branch stays very simple and therefore gives way to easier debugging/hacking.
+
+In some sense, you can call this git-annex stupidified back to git-lfs levels, but if you think about it, it's still a lot better, e.g. you can manage partial clones easily (by just not downloading the files that you are not interested in with `git annex get`), and you also get the symlinks way of life without any git filters, which is honestly simply better than git-lfs.
+
+# Difficulties implementing a star-topology
+
+The only problem with this, is that it's hard to enforce it, because to keep your `git-annex` branch completely clean even in face of novice users, you have to ensure that EVERYBODY, ALWAYS, ON ALL THEIR MACHINES issue a `git config annex.private true` command first, before starting to play around with git-annex based on tutorials/forums/email-threads/etc.  In practice, this is not possible.
+
+# Feature request
+
+I would like to have an `uuid-allowlist.log` file in the root folder of the `git-annex` branch, that if exists, is always read during startup of `git-annex` for any operation that operates on the branch, and every line contains exactly one UUID.
+
+If any output file is written anywhere into the `git-annex` branch (trusted.log, uuid.log, remote.log, and also every file, e.g. xxx/yyy/SHA256E-...), this list is always consulted and if during writing the file `git-annex` wants to write a non-allowlisted UUID for any reason, then it immediately stops with an error message, without committing to the branch.  Of course, if we can make the check sooner, e.g. before adding it to the index of annex, that is even better.
+
+This of course should work for all SSH git remotes, but also for all special remotes, if the UUID is allowlisted.
+
+If there is no `uuid-allowlist.log` file found, then nothing should change compared to the current implementation.
+
+# UI
+
+Regarding the UI, I don't care too much, for me it's even good enough if it's implemented as an expert feature, and when I start the repository, I have to create the `git-annex` branch by hand the first time and add this file.
