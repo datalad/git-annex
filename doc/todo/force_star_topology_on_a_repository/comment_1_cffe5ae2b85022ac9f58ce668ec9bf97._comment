@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-03-10T17:11:59Z"
+ content="""
+It seems to me that making annex.private a global
+configuration that can be set with `git-annex config` and overridden
+locally with .git/config on the repository you want to record
+to the git-annex branch would have the same effects.
+
+While a user could override it in their clone with .git/config, 
+they could also use a version of git-annex that ignores your
+uuid-allowlist.log.
+
+Also, uuid-allowlist.log would imply that merging two git-annex
+branches could fail, if one of them referred to uuids that are not
+allowed in another one. Since git-annex does such merges in the backend,
+that would mean that git-annex could just start failing without any
+apparent reason why or anything for the user to do to fix it. I would
+not want to support the bug reports that would result from that.
+"""]]
