@@ -165,9 +165,8 @@ ingredients =
 
 tests :: Bool -> Bool -> TestOptions -> TestTree
 tests crippledfilesystem adjustedbranchok opts = 
-	testGroup "Tests" $ properties 
-		: withTestMode remotetestmode Nothing testRemotes
-		: map (\(d, te) -> withTestMode te (Just initTests) (unitTests d)) testmodes
+	testGroup "Tests" $
+		map (\(d, te) -> withTestMode te (Just initTests) (unitTests d)) testmodes
   where
 	testmodes = catMaybes
 		[ canadjust ("v8 adjusted unlocked branch", (testMode opts (RepoVersion 8)) { adjustedUnlockedBranch = True })
