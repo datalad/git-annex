@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="ErrGe"
+ avatar="http://cdn.libravatar.org/avatar/37423d3bfd69af2cda23d194ec74f991"
+ subject="comment 2"
+ date="2022-03-11T02:23:20Z"
+ content="""
+Thank you for reading and replying to my feature request.
+
+I agree with most of what you have said, and I agree that making `annex.private` `git-annex config`urable is 99% of my feature request.
+
+I wrote the rest of the text, because I actually had a case, while testing this star topology thing where an uuid crept into the git-annex branch and it was coming from testing a special remote with rclone and not being careful enough with it.  So, I think the global `annex.private` variable somehow also has to support special remotes and then there has to be a way to opt-out the one special remote, that is the real center of the star topology.
+"""]]
