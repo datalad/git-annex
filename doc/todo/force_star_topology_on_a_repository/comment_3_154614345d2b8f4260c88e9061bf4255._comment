@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="ErrGe"
+ avatar="http://cdn.libravatar.org/avatar/37423d3bfd69af2cda23d194ec74f991"
+ subject="comment 3"
+ date="2022-03-11T02:26:56Z"
+ content="""
+Just one addition to my previous comment: I agree with the notion, that this is under no circumstances a security or a kindergarten feature.  So if someone intentionally overrides it, then of course, that's the fact of life, and I have to handle those team members in other social ways, not via technological overengineering.  So if the final proposal provides a way to protect against accidental git clones and accidental special remotes both, then I'm good.  It only has to protect against accidents, not against malice.
+"""]]
