@@ -252,7 +252,7 @@ testDirectoryRemote = testRemote True "directory" $ \remotename -> do
 		, "directory=remotedir"
 		, "encryption=none"
 		] "init"
-			
+
 testRemote :: Bool -> String -> (String -> IO ()) -> TestTree
 testRemote testvariants remotetype setupremote = 
 	withResource newEmptyTMVarIO (const noop) $ \getv -> 
