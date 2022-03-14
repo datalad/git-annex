@@ -15,16 +15,12 @@ import Test.Framework
 import Options.Applicative.Types
 
 import Test.Tasty
-import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
-import Test.Tasty.Ingredients.Rerun
-import Test.Tasty.Options
 import Options.Applicative (switch, long, help, internal)
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.UTF8 as BU8
-import System.Environment
 import Control.Concurrent.STM hiding (check)
 
 import Common
@@ -60,12 +56,9 @@ import qualified Config.Cost
 import qualified Crypto
 import qualified Database.Keys
 import qualified Annex.WorkTree
-import qualified Annex.Init
 import qualified Annex.CatFile
-import qualified Annex.Path
 import qualified Annex.VectorClock
 import qualified Annex.VariantFile
-import qualified Annex.AdjustedBranch
 import qualified Annex.View
 import qualified Annex.View.ViewedFile
 import qualified Logs.View
@@ -78,8 +71,6 @@ import qualified Utility.Verifiable
 import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Utility.InodeCache
-import qualified Utility.Env
-import qualified Utility.Env.Set
 import qualified Utility.Matcher
 import qualified Utility.Hash
 import qualified Utility.Scheduled
@@ -99,7 +90,7 @@ import qualified Utility.Gpg
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> snd tastyParser
+	<$> snd (tastyParser (tests False True mempty))
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
@@ -110,62 +101,12 @@ optParser = TestOptions
 		)
 	<*> cmdParams "non-options are for internal use only"
 
-tastyParser :: ([String], Parser Test.Tasty.Options.OptionSet)
-#if MIN_VERSION_tasty(1,3,0)
-tastyParser = go
-#else
-tastyParser = ([], go)
-#endif
-  where
- 	go = suiteOptionParser ingredients (tests False True mempty)
-
 runner :: TestOptions -> IO ()
-runner opts
-	| fakeSsh opts = runFakeSsh (internalData opts)
-	| otherwise = runsubprocesstests =<< Utility.Env.getEnv subenv
-  where
-	-- Run git-annex test in a subprocess, so that any files
-	-- it may open will be closed before running finalCleanup.
-	-- This should prevent most failures to clean up after the test
-	-- suite.
-	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
-	runsubprocesstests Nothing = do
-		let warnings = fst tastyParser
-		unless (null warnings) $ do
-			hPutStrLn stderr "warnings from tasty:"
-			mapM_ (hPutStrLn stderr) warnings
-		pp <- Annex.Path.programPath
-		Utility.Env.Set.setEnv subenv "1" True
-		ps <- getArgs
-		exitcode <- withCreateProcess (proc pp ps) $
-			\_ _ _ pid -> waitForProcess pid
-		unless (keepFailuresOption opts) finalCleanup
-		exitWith exitcode
-	runsubprocesstests (Just _) = isolateGitConfig $ do
-		ensuretmpdir
-		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem'
-			(toRawFilePath tmpdir)
-			Nothing Nothing False
-		adjustedbranchok <- Annex.AdjustedBranch.isGitVersionSupported
-		case tryIngredients ingredients (tastyOptionSet opts) (tests crippledfilesystem adjustedbranchok opts) of
-			Nothing -> error "No tests found!?"
-			Just act -> ifM act
-				( exitSuccess
-				, do
-					putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
-					putStrLn "   with utilities, such as git, installed on this system.)"
-					exitFailure
-				)
+runner opts = parallelTestRunner opts tests
 
-ingredients :: [Ingredient]
-ingredients =
-	[ listingTests
-	, rerunningTests [consoleTestReporter]
-	]
-
-tests :: Bool -> Bool -> TestOptions -> TestTree
+tests :: Bool -> Bool -> TestOptions -> [TestTree]
 tests crippledfilesystem adjustedbranchok opts = 
-	testGroup "Tests" $ properties 
+	properties 
 		: withTestMode remotetestmode Nothing testRemotes
 		: map (\(d, te) -> withTestMode te (Just initTests) (unitTests d)) testmodes
   where
@@ -1228,11 +1169,11 @@ test_union_merge_regression =
 			withtmpclonerepo $ \r3 -> do
 				forM_ [r1, r2, r3] $ \r -> indir r $ do
 					when (r /= r1) $
-						git "remote" ["add", "r1", "../../" ++ r1] "remote add"
+						git "remote" ["add", "r1", "../" ++ r1] "remote add"
 					when (r /= r2) $
-						git "remote" ["add", "r2", "../../" ++ r2] "remote add"
+						git "remote" ["add", "r2", "../" ++ r2] "remote add"
 					when (r /= r3) $
-						git "remote" ["add", "r3", "../../" ++ r3] "remote add"
+						git "remote" ["add", "r3", "../" ++ r3] "remote add"
 					git_annex "get" [annexedfile] "get"
 					git "remote" ["rm", "origin"] "remote rm"
 				forM_ [r3, r2, r1] $ \r -> indir r $

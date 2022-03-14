@@ -1,6 +1,6 @@
 {- git-annex test suite framework
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,7 +12,13 @@ module Test.Framework where
 import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
+import Test.Tasty.Options
+import Test.Tasty.Ingredients.Rerun
+import Options.Applicative.Types
 import Control.Concurrent
+import Control.Concurrent.Async
+import System.Environment (getArgs)
 
 import Common
 import Types.Test
@@ -39,6 +45,7 @@ import qualified Annex.Link
 import qualified Annex.Path
 import qualified Annex.Action
 import qualified Annex.AdjustedBranch
+import qualified Annex.Init
 import qualified Utility.Process
 import qualified Utility.Process.Transcript
 import qualified Utility.Env
@@ -166,7 +173,7 @@ indir dir a = do
 	-- any type of error and change back to currdir before
 	-- rethrowing.
 	r <- bracket_
-		(changeToTmpDir dir)
+		(changeToTopDir dir)
 		(setCurrentDirectory currdir)
 		(tryNonAsync a)
 	case r of
@@ -179,7 +186,6 @@ adjustedbranchsupported repo = indir repo $ Annex.AdjustedBranch.isGitVersionSup
 setuprepo :: FilePath -> IO FilePath
 setuprepo dir = do
 	cleanup dir
-	ensuretmpdir
 	git "init" ["-q", dir] "git init"
 	configrepo dir
 	return dir
@@ -199,7 +205,6 @@ newCloneRepoConfig = CloneRepoConfig
 clonerepo :: FilePath -> FilePath -> CloneRepoConfig -> IO FilePath
 clonerepo old new cfg = do
 	cleanup new
-	ensuretmpdir
 	let cloneparams = catMaybes
 		[ Just "-q"
 		, if bareClone cfg then Just "--bare" else Nothing
@@ -236,11 +241,11 @@ configrepo dir = indir dir $ do
 	git "config" ["annex.largefiles", "exclude=" ++ ingitfile]
 		"git config annex.largefiles"
 
-ensuretmpdir :: IO ()
-ensuretmpdir = do
-	e <- doesDirectoryExist tmpdir
+ensuredir :: FilePath -> IO ()
+ensuredir d = do
+	e <- doesDirectoryExist d
 	unless e $
-		createDirectory tmpdir
+		createDirectory d
 	
 {- Prevent global git configs from affecting the test suite. -}
 isolateGitConfig :: IO a -> IO a
@@ -508,8 +513,8 @@ setupTestMode = do
 		git "commit" ["--allow-empty", "-m", "empty"] "git commit failed"
 		git_annex "adjust" ["--unlock"] "git annex adjust failed"
 
-changeToTmpDir :: FilePath -> IO ()
-changeToTmpDir t = do
+changeToTopDir :: FilePath -> IO ()
+changeToTopDir t = do
 	topdir <- Utility.Env.getEnvDefault "TOPDIR" (error "TOPDIR not set")
 	setCurrentDirectory $ topdir ++ "/" ++ t
 
@@ -527,7 +532,7 @@ newmainrepodir :: IO FilePath
 newmainrepodir = go (0 :: Int)
   where
 	go n = do
-		let d = tmpdir </> "main" ++ show n
+		let d = "main" ++ show n
 		ifM (doesDirectoryExist d)
 			( go $ n + 1
 			, do
@@ -539,7 +544,7 @@ tmprepodir :: IO FilePath
 tmprepodir = go (0 :: Int)
   where
 	go n = do
-		let d = tmpdir </> "tmprepo" ++ show n
+		let d = "tmprepo" ++ show n
 		ifM (doesDirectoryExist d)
 			( go $ n + 1
 			, return d
@@ -638,9 +643,9 @@ origBranch = maybe "foo"
 pair :: FilePath -> FilePath -> Assertion
 pair r1 r2 = forM_ [r1, r2] $ \r -> indir r $ do
 	when (r /= r1) $
-		git "remote" ["add", "r1", "../../" ++ r1] "remote add"
+		git "remote" ["add", "r1", "../" ++ r1] "remote add"
 	when (r /= r2) $
-		git "remote" ["add", "r2", "../../" ++ r2] "remote add"
+		git "remote" ["add", "r2", "../" ++ r2] "remote add"
 
 
 {- Runs a query in the current repository, but first makes the repository
@@ -663,3 +668,92 @@ make_writeable :: FilePath -> IO ()
 make_writeable d = void $
 	Utility.Process.Transcript.processTranscript
 		"chmod" ["-R", "u+w", d] Nothing
+
+{- Tests each TestTree in parallel, and exits with succcess/failure.
+ -
+ - Tasty supports parallel tests, but this does not use it, because
+ - many tests need to be run in test repos, and chdir would not be 
+ - thread safe. Instead, this starts one child process for each TestTree.
+ -
+ - An added benefit of using child processes is that any files they may
+ - leave open are closed before finalCleanup is run at the end. This
+ - prevents some failures to clean up after the test suite.
+ -}
+parallelTestRunner :: TestOptions -> (Bool -> Bool -> TestOptions -> [TestTree]) -> IO ()
+parallelTestRunner opts mkts
+	| fakeSsh opts = runFakeSsh (internalData opts)
+	| otherwise = go =<< Utility.Env.getEnv subenv
+  where
+	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
+	go Nothing = do
+		ensuredir tmpdir
+		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem'
+			(toRawFilePath tmpdir)
+			Nothing Nothing False
+		adjustedbranchok <- Annex.AdjustedBranch.isGitVersionSupported
+		let ts = mkts crippledfilesystem adjustedbranchok opts
+		let warnings = fst (tastyParser ts)
+		unless (null warnings) $ do
+			hPutStrLn stderr "warnings from tasty:"
+			mapM_ (hPutStrLn stderr) warnings
+		environ <- Utility.Env.getEnvironment
+		ps <- getArgs
+		pp <- Annex.Path.programPath
+		exitcodes <- forConcurrently [1..length ts] $ \n -> do
+			let subdir = tmpdir </> show n
+			ensuredir subdir
+			let p = (proc pp ps)
+				{ env = Just ((subenv, show (n, crippledfilesystem, adjustedbranchok)):environ)
+				, cwd = Just subdir
+				}
+			withCreateProcess p $
+				\_ _ _ pid -> waitForProcess pid
+		unless (keepFailuresOption opts) finalCleanup
+		if all (== ExitSuccess) exitcodes
+			then exitSuccess
+			else case (filter (/= ExitFailure 1) exitcodes) of
+				[] -> do
+					putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
+					putStrLn "   with utilities, such as git, installed on this system.)"
+					exitFailure
+				v -> do
+					putStrLn $ "  Test subprocesses exited with unexpected exit codes: " ++ show v
+					exitFailure
+	go (Just subenvval) = case readish subenvval of
+		Nothing -> error ("Bad " ++ subenv)
+		Just (n, crippledfilesystem, adjustedbranchok) -> isolateGitConfig $ do
+			let ts = mkts crippledfilesystem adjustedbranchok opts
+			let t = topLevelTestGroup 
+				-- This group is needed to avoid what
+				-- seems to be a tasty bug which causes a
+				-- segfault.
+				[ testGroup "Tasty" 
+					[ testProperty "tasty self-check" True
+					]
+				, ts !! (n - 1)
+				]
+			case tryIngredients ingredients (tastyOptionSet opts) t of
+				Nothing -> error "No tests found!?"
+				Just act -> ifM act
+					( exitSuccess
+					, exitFailure
+							)
+
+topLevelTestGroup :: [TestTree] -> TestTree
+topLevelTestGroup = testGroup "Tests"
+
+tastyParser :: [TestTree] -> ([String], Parser Test.Tasty.Options.OptionSet)
+#if MIN_VERSION_tasty(1,3,0)
+tastyParser ts = go
+#else
+tastyParser ts = ([], go)
+#endif
+  where
+ 	go = suiteOptionParser ingredients (topLevelTestGroup ts)
+
+ingredients :: [Ingredient]
+ingredients =
+	[ listingTests
+	, rerunningTests [consoleTestReporter]
+	]
+
