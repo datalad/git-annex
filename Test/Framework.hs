@@ -679,11 +679,12 @@ make_writeable d = void $
  - leave open are closed before finalCleanup is run at the end. This
  - prevents some failures to clean up after the test suite.
  -}
-parallelTestRunner :: TestOptions -> (Bool -> Bool -> TestOptions -> [TestTree]) -> IO ()
+parallelTestRunner :: TestOptions -> (Int -> Bool -> Bool -> TestOptions -> [TestTree]) -> IO ()
 parallelTestRunner opts mkts
 	| fakeSsh opts = runFakeSsh (internalData opts)
 	| otherwise = go =<< Utility.Env.getEnv subenv
   where
+	numparts = 1
 	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
 	go Nothing = do
 		ensuredir tmpdir
@@ -691,7 +692,7 @@ parallelTestRunner opts mkts
 			(toRawFilePath tmpdir)
 			Nothing Nothing False
 		adjustedbranchok <- Annex.AdjustedBranch.isGitVersionSupported
-		let ts = mkts crippledfilesystem adjustedbranchok opts
+		let ts = mkts numparts crippledfilesystem adjustedbranchok opts
 		let warnings = fst (tastyParser ts)
 		unless (null warnings) $ do
 			hPutStrLn stderr "warnings from tasty:"
@@ -722,7 +723,7 @@ parallelTestRunner opts mkts
 	go (Just subenvval) = case readish subenvval of
 		Nothing -> error ("Bad " ++ subenv)
 		Just (n, crippledfilesystem, adjustedbranchok) -> isolateGitConfig $ do
-			let ts = mkts crippledfilesystem adjustedbranchok opts
+			let ts = mkts numparts crippledfilesystem adjustedbranchok opts
 			let t = topLevelTestGroup 
 				-- This group is needed to avoid what
 				-- seems to be a tasty bug which causes a

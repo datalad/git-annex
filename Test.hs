@@ -90,7 +90,7 @@ import qualified Utility.Gpg
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> snd (tastyParser (tests False True mempty))
+	<$> snd (tastyParser (tests 1 False True mempty))
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
@@ -104,11 +104,11 @@ optParser = TestOptions
 runner :: TestOptions -> IO ()
 runner opts = parallelTestRunner opts tests
 
-tests :: Bool -> Bool -> TestOptions -> [TestTree]
-tests crippledfilesystem adjustedbranchok opts = 
+tests :: Int -> Bool -> Bool -> TestOptions -> [TestTree]
+tests n crippledfilesystem adjustedbranchok opts = 
 	properties 
 		: withTestMode remotetestmode Nothing testRemotes
-		: map (\(d, te) -> withTestMode te (Just initTests) (unitTests d)) testmodes
+		: concatMap mkunittests testmodes
   where
 	testmodes = catMaybes
 		[ canadjust ("v8 adjusted unlocked branch", (testMode opts (RepoVersion 8)) { adjustedUnlockedBranch = True })
@@ -122,6 +122,9 @@ tests crippledfilesystem adjustedbranchok opts =
 	canadjust v
 		| adjustedbranchok = Just v
 		| otherwise = Nothing
+	mkunittests (d, te) = map 
+		(\uts -> withTestMode te (Just initTests) uts)
+		(unitTests d n)
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
@@ -248,8 +251,8 @@ initTests = testGroup "Init Tests"
 	, testCase "add" test_add
 	]
 
-unitTests :: String -> TestTree
-unitTests note = testGroup ("Unit Tests " ++ note)
+unitTests :: String -> Int -> [TestTree]
+unitTests note numparts = map (testGroup ("Unit Tests " ++ note)) $ sep
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
 	, testCase "readonly remote" test_readonly_remote
@@ -328,6 +331,11 @@ unitTests note = testGroup ("Unit Tests " ++ note)
 	, testCase "add subdirs" test_add_subdirs
 	, testCase "addurl" test_addurl
 	]
+  where
+	sep = sep' (replicate numparts [])
+	sep' (p:ps) (l:ls) = sep' (ps++[l:p]) ls
+	sep' ps [] = ps
+	sep' [] _ = []
 
 -- this test case creates the main repo
 test_init :: Assertion
