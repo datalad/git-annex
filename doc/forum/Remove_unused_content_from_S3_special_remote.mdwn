@@ -1,0 +1,11 @@
+I've made a small mess of things and hoping I could get some advice to clean things up.
+
+I was experimenting with using a special remote (backblaze over s3). I had it synced to a repo, working fine, but then I wanted to re-use the bucket for another repo (and I removed the annex-uuid file so I can re-init -- I realize now that there is a better way).
+
+I'm in a situation now where the bucket has: 
+  - all the content for my current repo
+  - content from my previous repo (unencrypted, but unwanted by me)
+
+Is there a way to tell git-annex to "remove all files/keys from the special remote that aren't in my current repo"?
+
+I tried "git annex unused --from=backblaze", but this finds nothing.
