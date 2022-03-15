@@ -725,9 +725,8 @@ parallelTestRunner opts mkts
 		Just (n, crippledfilesystem, adjustedbranchok) -> isolateGitConfig $ do
 			let ts = mkts numparts crippledfilesystem adjustedbranchok opts
 			let t = topLevelTestGroup 
-				-- This group is needed to avoid what
-				-- seems to be a tasty bug which causes a
-				-- segfault.
+				-- Work around this strange issue
+				-- https://github.com/UnkindPartition/tasty/issues/326
 				[ testGroup "Tasty" 
 					[ testProperty "tasty self-check" True
 					]
