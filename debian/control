@@ -70,6 +70,7 @@ Build-Depends:
 	libghc-tasty-hunit-dev,
 	libghc-tasty-quickcheck-dev,
 	libghc-tasty-rerun-dev,
+	libghc-ansi-terminal-dev,
 	libghc-optparse-applicative-dev (>= 0.11.0),
 	libghc-torrent-dev,
 	libghc-concurrent-output-dev,

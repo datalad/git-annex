@@ -15,10 +15,13 @@ import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 import Test.Tasty.Options
 import Test.Tasty.Ingredients.Rerun
+import Test.Tasty.Ingredients.ConsoleReporter
 import Options.Applicative.Types
 import Control.Concurrent
 import Control.Concurrent.Async
 import System.Environment (getArgs)
+import System.Console.Concurrent
+import System.Console.ANSI
 
 import Common
 import Types.Test
@@ -495,7 +498,7 @@ setTestMode testmode = do
 		, ("GIT_ANNEX_USE_GIT_SSH", "1")
 		, ("TESTMODE", show testmode)
 		]
-
+				
 runFakeSsh :: [String] -> IO ()
 runFakeSsh ("-n":ps) = runFakeSsh ps
 runFakeSsh (_host:cmd:[]) =
@@ -698,17 +701,21 @@ parallelTestRunner opts mkts
 			hPutStrLn stderr "warnings from tasty:"
 			mapM_ (hPutStrLn stderr) warnings
 		environ <- Utility.Env.getEnvironment
-		ps <- getArgs
+		args <- getArgs
 		pp <- Annex.Path.programPath
-		exitcodes <- forConcurrently [1..length ts] $ \n -> do
+		termcolor <- hSupportsANSIColor stdout
+		let ps = if useColor (lookupOption (tastyOptionSet opts)) termcolor
+			then "--color=always":args
+			else "--color=never":args
+		exitcodes <- withConcurrentOutput $ forConcurrently [1..length ts] $ \n -> do
 			let subdir = tmpdir </> show n
 			ensuredir subdir
 			let p = (proc pp ps)
 				{ env = Just ((subenv, show (n, crippledfilesystem, adjustedbranchok)):environ)
 				, cwd = Just subdir
 				}
-			withCreateProcess p $
-				\_ _ _ pid -> waitForProcess pid
+			(_, _, _, pid) <- createProcessConcurrent p
+			waitForProcess pid
 		unless (keepFailuresOption opts) finalCleanup
 		if all (== ExitSuccess) exitcodes
 			then exitSuccess
@@ -732,6 +739,7 @@ parallelTestRunner opts mkts
 					]
 				, ts !! (n - 1)
 				]
+			installSignalHandlers
 			case tryIngredients ingredients (tastyOptionSet opts) t of
 				Nothing -> error "No tests found!?"
 				Just act -> ifM act
