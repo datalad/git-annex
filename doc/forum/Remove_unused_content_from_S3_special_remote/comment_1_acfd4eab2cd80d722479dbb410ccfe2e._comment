@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-03-16T19:08:41Z"
+ content="""
+There is not a way to do that using only git-annex.
+
+If the new S3 remote is encrypted and the old one was unencrypted,
+you can easily tell which files in the bucket are encrypted and not based
+on their names and delete those. The encrypted files have names starting
+with "GPGHMAC"
+
+If the new S3 remote is not encrypted, you can generate a list of all
+the keys that are expected to be in it like this:
+
+	git-annex whereis --all --in dir --format='${hashdirlower}${key}\n' | sort > wanted
+
+If you then use some S3 tool to generate a list of all the files in the
+bucket, and put that list in a file named "all", you can then use
+`comm` to find the files that are in "all" that are not in "wanted":
+
+	sort all > all-sorted
+	comm -1 -3 wanted all-sorted
+
+Then you can use some S3 tool to delete the other files.
+"""]]
