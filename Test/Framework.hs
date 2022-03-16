@@ -19,12 +19,15 @@ import Test.Tasty.Ingredients.ConsoleReporter
 import Options.Applicative.Types
 import Control.Concurrent
 import Control.Concurrent.Async
+import Control.Concurrent.STM
 import System.Environment (getArgs)
 import System.Console.Concurrent
 import System.Console.ANSI
+import GHC.Conc
 
 import Common
 import Types.Test
+import Types.Concurrency
 
 import qualified Annex
 import qualified Annex.UUID
@@ -676,13 +679,35 @@ make_writeable d = void $
  - prevents some failures to clean up after the test suite.
  -}
 parallelTestRunner :: TestOptions -> (Int -> Bool -> Bool -> TestOptions -> [TestTree]) -> IO ()
-parallelTestRunner opts mkts
+parallelTestRunner opts mkts = do
+	numjobs <- case concurrentJobs opts of
+		Just NonConcurrent -> pure 1
+		Just (Concurrent n) -> pure n
+		Just ConcurrentPerCpu -> getNumProcessors
+		Nothing -> getNumProcessors
+	parallelTestRunner' numjobs opts mkts
+
+parallelTestRunner' :: Int -> TestOptions -> (Int -> Bool -> Bool -> TestOptions -> [TestTree]) -> IO ()
+parallelTestRunner' numjobs opts mkts
 	| fakeSsh opts = runFakeSsh (internalData opts)
 	| otherwise = go =<< Utility.Env.getEnv subenv
   where
-	numparts = 1
 	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
-	go Nothing = do
+	-- Make more parts than there are jobs, because some parts
+	-- are larger, and this allows the smaller parts to be packed
+	-- in more efficiently, speeding up the test suite overall.
+	numparts = numjobs * 2
+	worker rs nvar a = do
+		(n, m) <- atomically $ do
+			(n, m) <- readTVar nvar
+			writeTVar nvar (n+1, m)
+			return (n, m)
+		if n > m
+			then return rs
+			else do
+				r <- a n
+				worker (r:rs) nvar a
+	go Nothing = withConcurrentOutput $ do
 		ensuredir tmpdir
 		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem'
 			(toRawFilePath tmpdir)
@@ -700,7 +725,7 @@ parallelTestRunner opts mkts
 		let ps = if useColor (lookupOption (tastyOptionSet opts)) termcolor
 			then "--color=always":args
 			else "--color=never":args
-		exitcodes <- withConcurrentOutput $ forConcurrently [1..length ts] $ \n -> do
+		let runone n = do
 			let subdir = tmpdir </> show n
 			ensuredir subdir
 			let p = (proc pp ps)
@@ -708,11 +733,21 @@ parallelTestRunner opts mkts
 				, cwd = Just subdir
 				}
 			(_, _, _, pid) <- createProcessConcurrent p
-			waitForProcess pid
+			ret <- waitForProcess pid
+			-- Work around this strange issue
+			-- https://github.com/UnkindPartition/tasty/issues/326
+			-- when other workaround does not work.
+			if ret == ExitFailure (-11)
+				then runone n
+				else return ret
+		nvar <- newTVarIO (1, length ts)
+		exitcodes <- forConcurrently [1..numjobs] $ \_ -> 
+			worker [] nvar runone
+		let exitcodes' = concat exitcodes
 		unless (keepFailuresOption opts) finalCleanup
-		if all (== ExitSuccess) exitcodes
+		if all (== ExitSuccess) exitcodes'
 			then exitSuccess
-			else case (filter (/= ExitFailure 1) exitcodes) of
+			else case (filter (/= ExitFailure 1) exitcodes') of
 				[] -> do
 					putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
 					putStrLn "   with utilities, such as git, installed on this system.)"
@@ -732,7 +767,6 @@ parallelTestRunner opts mkts
 					]
 				, ts !! (n - 1)
 				]
-			installSignalHandlers
 			case tryIngredients ingredients (tastyOptionSet opts) t of
 				Nothing -> error "No tests found!?"
 				Just act -> ifM act

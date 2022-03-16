@@ -11,13 +11,14 @@ module Test where
 
 import Types.Test
 import Types.RepoVersion
+import Types.Concurrency
 import Test.Framework
 import Options.Applicative.Types
 
 import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
-import Options.Applicative (switch, long, help, internal)
+import Options.Applicative (switch, long, short, help, internal, maybeReader, option)
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.UTF8 as BU8
@@ -90,7 +91,7 @@ import qualified Utility.Gpg
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> snd (tastyParser (tests 1 False True mempty))
+	<$> snd (tastyParser (tests 1 False True (TestOptions mempty False False Nothing mempty)))
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
@@ -99,6 +100,11 @@ optParser = TestOptions
 		( long "fakessh"
 		<> internal
 		)
+	<*> optional (option (maybeReader parseConcurrency)
+		( long "jobs"
+		<> short 'J'
+		<> help "number of concurrent jobs"
+		))
 	<*> cmdParams "non-options are for internal use only"
 
 runner :: TestOptions -> IO ()

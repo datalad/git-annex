@@ -19,6 +19,8 @@ git-annex (10.20220223) UNRELEASED; urgency=medium
     standalone linux tarball or OSX app.
   * Fix build with aeson 2.0.
     Thanks, sternenseemann for the patch.
+  * test: Runs tests in parallel to speed up the test suite.
+  * test: Added --jobs option.
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Feb 2022 14:14:09 -0400
 
