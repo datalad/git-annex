@@ -1,0 +1,177 @@
+### Please describe the problem.
+
+When unlocking an annexed file and also adding a matching `annex.largefiles=nothing` entry to `.gitattributes`, leaves the file modified after committing both.
+This seems to happen only recently. Observed on macOS VM with recent annex in DataLad's CI builds. Same situation comes out clean on other machines (with not as recent git-annex). Moreover it appears to be a race condition, since with the reproducer below it happens almost always, but sometimes it does end up with a clean repository.
+
+Note, that the issue is less about what exactly should happen to that file. git-annex-add reports it's adding it to the git repository and that's fine. If git-annex was to say: "Hey, that's stupid" - that too would probably be fine. What seems wrong either way is a modified file right after committing this file, plus the fact that we didn't observe this with earlier annex versions.
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+mkdir testrepo
+cd testrepo
+git init
+git annex init
+echo "**/.git* annex.largfiles=nothing" > .gitattributes
+git annex add .gitattributes
+echo "something" > somefile
+git annex add -c annex.dotfiles=true -- .gitattributes somefile
+git commit -m "to annex"
+ls -la
+git status
+#----------Setup done-----------------
+git annex unlock somefile
+echo "* annex.largefiles=nothing" >> .gitattributes
+git annex add -c annex.dotfiles=true -- .gitattributes somefile
+git commit -m "adding to git" .gitattributes somefile
+git status  # <- this will (most of the time) show a modified `somefile`
+"""]]
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+[[!format sh """
+> git annex version
+git-annex version: 10.20220222
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.0 ghc-8.10.7 http-client-0.7.11 persistent-sqlite-2.13.1.0 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: darwin x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 8
+> git --version
+git version 2.35.1
+"""]]
+
+
+### Please provide any additional information below.
+
+On the said system the reproducer script above gives:
+
+[[!format sh """
+++ mkdir testrepo
+++ cd testrepo
+++ git init
+Initialized empty Git repository in /Users/appveyor/projects/testrepo/.git/
+++ git annex init
+init  ok
+(recording state in git...)
+++ echo '**/.git* annex.largfiles=nothing'
+++ git annex add .gitattributes
+add .gitattributes (non-large file; adding content to git repository) ok
+(recording state in git...)
+++ echo something
+++ git annex add -c annex.dotfiles=true -- .gitattributes somefile
+add somefile
+ok
+(recording state in git...)
+++ git commit -m 'to annex'
+[master (root-commit) fd4307e] to annex
+ 2 files changed, 2 insertions(+)
+ create mode 100644 .gitattributes
+ create mode 120000 somefile
+++ ls -la
+total 8
+drwxr-xr-x   5 appveyor  staff  160 Mar 16 04:36 .
+drwxr-xr-x   5 appveyor  staff  160 Mar 16 04:36 ..
+drwxr-xr-x  13 appveyor  staff  416 Mar 16 04:36 .git
+-rw-r--r--   1 appveyor  staff   33 Mar 16 04:36 .gitattributes
+lrwxr-xr-x   1 appveyor  staff  180 Mar 16 04:36 somefile -> .git/annex/objects/gG/2m/SHA256E-s10--4bc453b53cb3d914b45f4b250294236adba2c0e09ff6f03793949e7e39fd4cc1/SHA256E-s10--4bc453b53cb3d914b45f4b250294236adba2c0e09ff6f03793949e7e39fd4cc1
+++ git status
+On branch master
+nothing to commit, working tree clean
+++ git annex unlock somefile
+unlock somefile ok
+(recording state in git...)
+++ echo '* annex.largefiles=nothing'
+++ git annex add -c annex.dotfiles=true -- .gitattributes somefile
+add .gitattributes (non-large file; adding content to git repository) ok
+add somefile (non-large file; adding content to git repository) ok
+(recording state in git...)
+++ git commit -m 'adding to git' .gitattributes somefile
+[master 9a6e407] adding to git
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+ rewrite somefile (100%)
+ mode change 120000 => 100644
+++ git status
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   somefile
+"""]]
+
+Whereas on a different machine it looks like this:
+
+
+[[!format sh """
++ mkdir testrepo
++ cd testrepo
++ git init
+Initialized empty Git repository in /tmp/testrepo/.git/
++ git annex init
+init  ok
+(recording state in git...)
++ echo **/.git* annex.largfiles=nothing
++ git annex add .gitattributes
+add .gitattributes (non-large file; adding content to git repository) ok
+(recording state in git...)
++ echo something
++ git annex add -c annex.dotfiles=true -- .gitattributes somefile
+add somefile 
+ok                                
+(recording state in git...)
++ git commit -m to annex
+[master (root-commit) 408fed5] to annex
+ 2 files changed, 2 insertions(+)
+ create mode 100644 .gitattributes
+ create mode 120000 somefile
++ ls -la
+total 36
+drwxr-xr-x  3 ben  ben   4096 Mar 16 10:39 .
+drwxrwxrwt 29 root root 20480 Mar 16 10:39 ..
+drwxr-xr-x  9 ben  ben   4096 Mar 16 10:39 .git
+-rw-r--r--  1 ben  ben     33 Mar 16 10:39 .gitattributes
+lrwxrwxrwx  1 ben  ben    180 Mar 16 10:39 somefile -> .git/annex/objects/gG/2m/SHA256E-s10--4bc453b53cb3d914b45f4b250294236adba2c0e09ff6f03793949e7e39fd4cc1/SHA256E-s10--4bc453b53cb3d914b45f4b250294236adba2c0e09ff6f03793949e7e39fd4cc1
++ git status
+On branch master
+nothing to commit, working tree clean
++ git annex unlock somefile
+unlock somefile ok
+(recording state in git...)
++ echo * annex.largefiles=nothing
++ git annex add -c annex.dotfiles=true -- .gitattributes somefile
+add .gitattributes (non-large file; adding content to git repository) ok
+add somefile (non-large file; adding content to git repository) ok
+(recording state in git...)
++ git commit -m adding to git .gitattributes somefile
+[master 865efeb] adding to git
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+ rewrite somefile (100%)
+ mode change 120000 => 100644
++ git status
+On branch master
+nothing to commit, working tree clean
++ git annex version
+git-annex version: 8.20211123
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+local repository version: 8
++ git --version
+git version 2.34.1
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Lots! I love git-annex!
+
+[[!meta author=bpoldrack]]
+[[!tag projects/datalad]]
