@@ -172,3 +172,6 @@ git version 2.34.1
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Lots! I love git-annex!
+
+[[!meta author=bpoldrack]]
+[[!tag projects/datalad]]
