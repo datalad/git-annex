@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Gus"
+ avatar="http://cdn.libravatar.org/avatar/665626c67ab3ee7e842183f6f659e120"
+ subject="I have seen this"
+ date="2022-03-16T16:10:51Z"
+ content="""
+`git-annex sync` has been very slow on one of my repositories the last few times I ran it. An operation that used to run in well less than a minute (via USB 2.0) was now taking upwards of one hour. I do have many files there that are not being tracked by git.
+
+I followed *ainohzoa*'s description to confirm I was seeing the same issue and tried the process that worked for them: running `git status` twice. Although it took a few hours to complete, things went back to normal after that. Thank you, *ainohzoa*.
+"""]]
