@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="FWIW a detail"
+ date="2022-03-16T14:38:45Z"
+ content="""
+I believe our corresponding test in datalad started to fail on this date:
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex/builds/2022/02[master]git
+$> git grep 'test_partial_unlocked.*FAIL' | head -n 1
+cron-20220219/build-macos.yaml-595-85dd9355-failed/1_test-datalad (master).txt:2022-02-19T02:37:34.9834050Z datalad.core.local.tests.test_save.test_partial_unlocked ... FAIL
+```
+which had git-annex-macos-dmg_10.20220127+git57-gb481ec273_x64 -- so that or some commit shortly before likely introduced that regression
+"""]]
