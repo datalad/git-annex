@@ -107,8 +107,8 @@ runner opts = parallelTestRunner opts tests
 tests :: Int -> Bool -> Bool -> TestOptions -> [TestTree]
 tests n crippledfilesystem adjustedbranchok opts = 
 	properties 
-		: withTestMode remotetestmode Nothing testRemotes
-		: concatMap mkunittests testmodes
+		: withTestMode remotetestmode testRemotes
+		: concatMap mkrepotests testmodes
   where
 	testmodes = catMaybes
 		[ canadjust ("v8 adjusted unlocked branch", (testMode opts (RepoVersion 8)) { adjustedUnlockedBranch = True })
@@ -122,9 +122,9 @@ tests n crippledfilesystem adjustedbranchok opts =
 	canadjust v
 		| adjustedbranchok = Just v
 		| otherwise = Nothing
-	mkunittests (d, te) = map 
-		(\uts -> withTestMode te (Just initTests) uts)
-		(unitTests d n)
+	mkrepotests (d, te) = map 
+		(\uts -> withTestMode te uts)
+		(repoTests d n)
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
@@ -244,15 +244,15 @@ testRemote testvariants remotetype setupremote =
 		desckeysize sz = descas ("key size " ++ show sz)
 
 {- These tests set up the test environment, but also test some basic parts
- - of git-annex. They are always run before the unitTests. -}
+ - of git-annex. They are always run before the repoTests. -}
 initTests :: TestTree
 initTests = testGroup "Init Tests"
 	[ testCase "init" test_init
 	, testCase "add" test_add
 	]
 
-unitTests :: String -> Int -> [TestTree]
-unitTests note numparts = map (testGroup ("Unit Tests " ++ note)) $ sep
+repoTests :: String -> Int -> [TestTree]
+repoTests note numparts = map mk $ sep
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
 	, testCase "readonly remote" test_readonly_remote
@@ -332,6 +332,9 @@ unitTests note numparts = map (testGroup ("Unit Tests " ++ note)) $ sep
 	, testCase "addurl" test_addurl
 	]
   where
+	mk l = testGroup groupname (initTests : map adddep l)
+	adddep = Test.Tasty.after AllSucceed (groupname ++ ".Init Tests")
+	groupname = "Repo Tests " ++ note
 	sep = sep' (replicate numparts [])
 	sep' (p:ps) (l:ls) = sep' (ps++[l:p]) ls
 	sep' ps [] = ps
