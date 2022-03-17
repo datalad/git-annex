@@ -2,7 +2,7 @@
 The version of git-annex available on OpenBSD is quite old.
 I've tried building a more recent version with cabal install git-annex, but this also failed. I guess these tools are also rather old.
 Unfortunately I have zero experience with Haskell and only mediocre OpenBSD skills. 
-I'm hoping somewone can pick this up and build a more up-to-date version.
+I'm hoping someone can pick this up and build a more up-to-date version.
 
 - git-annex-8.20210223p1
 - cabal-install-3.4.0.0p2
