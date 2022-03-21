@@ -29,3 +29,5 @@ Have I misunderstood the protocol or is this a bug?
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I use git-annex successfully constantly and have done for years. :-) First time writing a special external remote, though.
+
+> [[notabug|done]] --[[Joey]]
