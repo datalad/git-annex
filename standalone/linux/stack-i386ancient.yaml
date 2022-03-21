@@ -18,8 +18,8 @@ extra-deps:
 - IfElse-0.85
 - aws-0.21.1
 - bloomfilter-2.0.1.0
-- tasty-1.1.0.4
-- tasty-rerun-1.1.13
+- tasty-1.2
+- tasty-rerun-1.1.14
 - torrent-10000.1.1
 - sandi-0.5
 - http-client-0.5.14
