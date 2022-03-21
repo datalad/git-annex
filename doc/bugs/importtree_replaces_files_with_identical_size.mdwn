@@ -61,3 +61,5 @@ Unfortunately, I don't have the output of git-annex anymore. However, the used c
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I've been successfully using git-annex to manage the growing collection of photos I take for several years now. Synchronizing the collection across several disks while files are renamed and some disks are only rarely synchronized and some contain only a subset of the photos wouldn't have been possible without git-annex. Also, using git-annex gives me the safety that the original photos will never be modified. There is nothing better than using git-annex to verify that all photos have been copied unmodified from a memory card before wiping it.
+
+> [[fixed|done]] --[[Joey]]

@@ -21,6 +21,13 @@ git-annex (10.20220223) UNRELEASED; urgency=medium
     Thanks, sternenseemann for the patch.
   * test: Runs tests in parallel to speed up the test suite.
   * test: Added --jobs option.
+  * Directory special remotes with importtree=yes have changed to once more 
+    take inodes into account. This will cause extra work when importing
+    from a directory on a FAT filesystem that changes inodes on every
+    mount. To avoid that extra work, set ignoreinodes=yes when initializing
+    a new directory special remote, or change the configuration of your
+    existing remote:
+      git-annex enableremote foo ignoreinodes=yes
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Feb 2022 14:14:09 -0400
 

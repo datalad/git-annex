@@ -39,6 +39,14 @@ remote:
   by [[git-annex-import]]. It will not be usable as a general-purpose
   special remote.
 
+* `ignoreinodes` - Usually when importing, the inode numbers
+  of files are used to detect when files have changed. Since some
+  filesystems generate new inode numbers each time they are mounted,
+  that can lead to extra work being done. Setting this to "yes" will
+  ignore the inode numbers and so avoid that extra work.
+  This should not be used when the filesystem has stable inode numbers,
+  as it does risk confusing two files that have the same size and mtime.
+
 Setup example:
 
 	# git annex initremote usbdrive type=directory directory=/media/usbdrive/ encryption=none

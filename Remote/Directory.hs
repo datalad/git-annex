@@ -1,6 +1,6 @@
 {- A "remote" that is just a filesystem directory.
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -54,6 +54,8 @@ remote = specialRemoteType $ RemoteType
 	, configParser = mkRemoteConfigParser
 		[ optionalStringParser directoryField
 			(FieldDesc "(required) where the special remote stores data")
+		, yesNoParser ignoreinodesField (Just False)
+			(FieldDesc "ignore inodes when importing/exporting")
 		]
 	, setup = directorySetup
 	, exportSupported = exportIsSupported
@@ -64,12 +66,17 @@ remote = specialRemoteType $ RemoteType
 directoryField :: RemoteConfigField
 directoryField = Accepted "directory"
 
+ignoreinodesField :: RemoteConfigField
+ignoreinodesField = Accepted "ignoreinodes"
+
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc cheapRemoteCost
 	let chunkconfig = getChunkConfig c
 	cow <- liftIO newCopyCoWTried
+	let ii = IgnoreInodes $ fromMaybe True $
+		getRemoteConfigValue ignoreinodesField c
 	return $ Just $ specialRemote c
 		(storeKeyM dir chunkconfig cow)
 		(retrieveKeyFileM dir chunkconfig cow)
@@ -99,15 +106,15 @@ gen r u rc gc rs = do
 				, renameExport = renameExportM dir
 				}
 			, importActions = ImportActions
-				{ listImportableContents = listImportableContentsM dir
-				, importKey = Just (importKeyM dir)
-				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM dir cow
-				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM dir cow
-				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM dir
+				{ listImportableContents = listImportableContentsM ii dir
+				, importKey = Just (importKeyM ii dir)
+				, retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierM ii dir cow
+				, storeExportWithContentIdentifier = storeExportWithContentIdentifierM ii dir cow
+				, removeExportWithContentIdentifier = removeExportWithContentIdentifierM ii dir
 				-- Not needed because removeExportWithContentIdentifier
 				-- auto-removes empty directories.
 				, removeExportDirectoryWhenEmpty = Nothing
-				, checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierM dir
+				, checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierM ii dir
 				}
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
@@ -351,8 +358,8 @@ removeExportLocation topdir loc =
 			mkExportLocation loc'
 		in go (upFrom loc') =<< tryIO (removeDirectory p)
 
-listImportableContentsM :: RawFilePath -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
-listImportableContentsM dir = liftIO $ do
+listImportableContentsM :: IgnoreInodes -> RawFilePath -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
+listImportableContentsM ii dir = liftIO $ do
 	l <- dirContentsRecursive (fromRawFilePath dir)
 	l' <- mapM (go . toRawFilePath) l
 	return $ Just $ ImportableContentsComplete $
@@ -360,41 +367,38 @@ listImportableContentsM dir = liftIO $ do
   where
 	go f = do
 		st <- R.getFileStatus f
-		mkContentIdentifier f st >>= \case
+		mkContentIdentifier ii f st >>= \case
 			Nothing -> return Nothing
 			Just cid -> do
 				relf <- relPathDirToFile dir f
 				sz <- getFileSize' f st
 				return $ Just (mkImportLocation relf, (cid, sz))
 
--- Make a ContentIdentifier that contains the size and mtime of the file.
+newtype IgnoreInodes = IgnoreInodes Bool
+
+-- Make a ContentIdentifier that contains the size and mtime of the file,
+-- and also normally the inode, unless ignoreinodes=yes.
+--
 -- If the file is not a regular file, this will return Nothing.
---
--- The inode is zeroed because often this is used for import from a
--- FAT filesystem, whose inodes change each time it's mounted, and
--- including inodes would cause repeated re-hashing of files, and
--- bloat the git-annex branch with changes to content identifier logs.
---
--- This does mean that swaps of two files with the same size and
--- mtime won't be noticed, nor will modifications to files that
--- preserve the size and mtime. Both very unlikely so acceptable.
-mkContentIdentifier :: RawFilePath -> FileStatus -> IO (Maybe ContentIdentifier)
-mkContentIdentifier f st =
-	fmap (ContentIdentifier . encodeBS . showInodeCache)
-		<$> toInodeCache' noTSDelta f st 0
+mkContentIdentifier :: IgnoreInodes -> RawFilePath -> FileStatus -> IO (Maybe ContentIdentifier)
+mkContentIdentifier (IgnoreInodes ii) f st =
+	liftIO $ fmap (ContentIdentifier . encodeBS . showInodeCache)
+		<$> if ii
+			then toInodeCache' noTSDelta f st 0
+			else toInodeCache noTSDelta f st
 
 guardSameContentIdentifiers :: a -> ContentIdentifier -> Maybe ContentIdentifier -> a
 guardSameContentIdentifiers cont old new
 	| new == Just old = cont
 	| otherwise = giveup "file content has changed"
 
-importKeyM :: RawFilePath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
-importKeyM dir loc cid sz p = do
+importKeyM :: IgnoreInodes -> RawFilePath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
+importKeyM ii dir loc cid sz p = do
 	backend <- chooseBackend f
 	unsizedk <- fst <$> genKey ks p backend
 	let k = alterKey unsizedk $ \kd -> kd
 		{ keySize = keySize kd <|> Just sz }
-	currcid <- liftIO $ mkContentIdentifier absf
+	currcid <- liftIO $ mkContentIdentifier ii absf
 		=<< R.getFileStatus absf
 	guardSameContentIdentifiers (return (Just k)) cid currcid
   where
@@ -406,8 +410,8 @@ importKeyM dir loc cid sz p = do
 		, inodeCache = Nothing
 		}
 
-retrieveExportWithContentIdentifierM :: RawFilePath -> CopyCoWTried -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
-retrieveExportWithContentIdentifierM dir cow loc cid dest mkkey p = 
+retrieveExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
+retrieveExportWithContentIdentifierM ii dir cow loc cid dest mkkey p = 
 	precheck docopy
   where
 	f = exportPath dir loc
@@ -449,7 +453,7 @@ retrieveExportWithContentIdentifierM dir cow loc cid dest mkkey p =
 	-- Check before copy, to avoid expensive copy of wrong file
 	-- content.
 	precheck cont = guardSameContentIdentifiers cont cid
-		=<< liftIO . mkContentIdentifier f
+		=<< liftIO . mkContentIdentifier ii f
 		=<< liftIO (R.getFileStatus f)
 
 	-- Check after copy, in case the file was changed while it was
@@ -470,7 +474,7 @@ retrieveExportWithContentIdentifierM dir cow loc cid dest mkkey p =
 #else
 	postchecknoncow cont = do
 #endif
-		currcid <- liftIO $ mkContentIdentifier f
+		currcid <- liftIO $ mkContentIdentifier ii f
 #ifndef mingw32_HOST_OS
 			=<< getFdStatus fd
 #else
@@ -484,22 +488,22 @@ retrieveExportWithContentIdentifierM dir cow loc cid dest mkkey p =
 	-- the modified version was copied CoW, and then the file was
 	-- restored to the original content before this check.
 	postcheckcow cont = do
-		currcid <- liftIO $ mkContentIdentifier f
+		currcid <- liftIO $ mkContentIdentifier ii f
 			=<< R.getFileStatus f
 		guardSameContentIdentifiers cont cid currcid
 
-storeExportWithContentIdentifierM :: RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
-storeExportWithContentIdentifierM dir cow src _k loc overwritablecids p = do
+storeExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
+storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
 	liftIO $ createDirectoryUnder dir (toRawFilePath destdir)
 	withTmpFileIn destdir template $ \tmpf tmph -> do
 		liftIO $ hClose tmph
 		void $ fileCopier cow src tmpf p Nothing
 		let tmpf' = toRawFilePath tmpf
 		resetAnnexFilePerm tmpf'
-		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier tmpf' >>= \case
+		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier ii tmpf' >>= \case
 			Nothing -> giveup "unable to generate content identifier"
 			Just newcid -> do
-				checkExportContent dir loc
+				checkExportContent ii dir loc
 					overwritablecids
 					(giveup "unsafe to overwrite file")
 					(const $ liftIO $ rename tmpf dest)
@@ -509,16 +513,16 @@ storeExportWithContentIdentifierM dir cow src _k loc overwritablecids p = do
 	(destdir, base) = splitFileName dest
 	template = relatedTemplate (base ++ ".tmp")
 
-removeExportWithContentIdentifierM :: RawFilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex ()
-removeExportWithContentIdentifierM dir k loc removeablecids =
-	checkExportContent dir loc removeablecids (giveup "unsafe to remove modified file") $ \case
+removeExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex ()
+removeExportWithContentIdentifierM ii dir k loc removeablecids =
+	checkExportContent ii dir loc removeablecids (giveup "unsafe to remove modified file") $ \case
 		DoesNotExist -> return ()
 		KnownContentIdentifier -> removeExportM dir k loc
 
-checkPresentExportWithContentIdentifierM :: RawFilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
-checkPresentExportWithContentIdentifierM dir _k loc knowncids =
+checkPresentExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
+checkPresentExportWithContentIdentifierM ii dir _k loc knowncids =
 	checkPresentGeneric' dir $
-		checkExportContent dir loc knowncids (return False) $ \case
+		checkExportContent ii dir loc knowncids (return False) $ \case
 			DoesNotExist -> return False
 			KnownContentIdentifier -> return True
 
@@ -539,12 +543,12 @@ data CheckResult = DoesNotExist | KnownContentIdentifier
 --
 -- So, it suffices to check if the destination file's current
 -- content is known, and immediately run the callback.
-checkExportContent :: RawFilePath -> ExportLocation -> [ContentIdentifier] -> Annex a -> (CheckResult -> Annex a) -> Annex a
-checkExportContent dir loc knowncids unsafe callback = 
+checkExportContent :: IgnoreInodes -> RawFilePath -> ExportLocation -> [ContentIdentifier] -> Annex a -> (CheckResult -> Annex a) -> Annex a
+checkExportContent ii dir loc knowncids unsafe callback = 
 	tryWhenExists (liftIO $ R.getFileStatus dest) >>= \case
 		Just destst
 			| not (isRegularFile destst) -> unsafe
-			| otherwise -> catchDefaultIO Nothing (liftIO $ mkContentIdentifier dest destst) >>= \case
+			| otherwise -> catchDefaultIO Nothing (liftIO $ mkContentIdentifier ii dest destst) >>= \case
 				Just destcid
 					| destcid `elem` knowncids -> callback KnownContentIdentifier
 					-- dest exists with other content
