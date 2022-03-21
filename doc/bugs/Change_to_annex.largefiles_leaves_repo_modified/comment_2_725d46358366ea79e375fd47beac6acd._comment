@@ -1,0 +1,77 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-03-21T17:33:28Z"
+ content="""
+Isolated to [[!commit c68f52c6a25ebd8a12f4572da53fbba827d682aa]]
+
+Since that commit is only a speed improvement, it can be reverted, which
+does avoid the problem.
+
+But I don't really see a bug in that commit either. It only causes
+git to smudge the file when it's unlocked, rather than at some later
+point. The result should be the same either way. Except, of course,
+that you're varying the annex.largefiles config, so when git smudges
+the file later, it sees a different result than when it smudges the file
+while unlock is running.
+
+I think that the actually surprising thing here is that 
+`git-annex add somefile` re-adds the file (adding it to git per the new
+annex.largefiles configuration). The file is in typechange state at that
+point but is not modified, so it does not need to be re-added at all.
+But add seeks `withUnmodifiedUnlockedPointers` which finds files in
+typechange state.
+
+So git-annex add decides to add the file to git even though it was
+previously added to the annex. At that point, I'd expect `git add` would
+update the index and replace the smudged content with the unsmudged
+content. However, it actually does not!
+Looking at `git ls-files  --stage` before and after git-annex add,
+the annex pointer content remains staged:
+
+	100644 bf1114c25db2833499838552f3fa69635fcc1292 0	somefile
+	add .gitattributes (non-large file; adding content to git repository) ok
+	add somefile (non-large file; adding content to git repository) ok
+	(recording state in git...)
+	100644 bf1114c25db2833499838552f3fa69635fcc1292 0	somefile
+
+The only reason that git commit goes on to commit the non-annexed
+content is because you pass somefile to it, so it re-adds somefile
+at that point, which runs the smudge filter, which passes the content
+through.
+
+And that's why git status then sees the file as modified -- 
+the index has the annex pointer still staged in it, which is different
+from what got committed.
+
+So, probably this same thing could happen in another situation, even if
+the change to git-annex unlock were reverted. Eg, if something else
+caused git smudge to run just after unlock, before the annex.largefiles
+config got changed.
+
+Why is `git add` not updating the index? Presumably because the inode
+and mtime have not changed, so it does not think it needs to. Even though
+it's being run with the smudge filter disabled, and so sees a different
+hash than the one in the index. I think a case could be made for this
+being a bug in `git add`. Although maybe the `--renormalize` option
+is intended to handle this kind of situation.
+
+The documented way for a user to change a file from being stored in git-annex
+to git is to first `git rm --cached` and then `git annex add --force-small`.
+Which avoids that `git add` behavior.
+
+I tracked git-annex add's behavior here back to 
+[[!commit 2743224658cee33657ad30653ff97de2363366c6]].
+Which addressed an old bug, filed by Kyle, which can be seen at
+[[!commit 5567496518]]. So it was intentional that unlocking a file
+and then `git annex add` should lock it, for consistency with v5
+and for consistency with unlocking a file
+and then modifying it, and then `git annex add`. I am actually a bit
+surprised at this behavior, but it was intended to handle locking files,
+not adding files to git.
+
+So, I think it would be fine for `git-annex add` to skip over a typechanged
+file when it would be added to git rather than to the annex. 
+
+I've implemented that, and it does fix this bug.
+"""]]

@@ -78,16 +78,18 @@ seek o = startConcurrency commandStages $ do
 	largematcher <- largeFilesMatcher
 	addunlockedmatcher <- addUnlockedMatcher
 	annexdotfiles <- getGitConfigVal annexDotFiles 
-	let gofile (si, file) = case largeFilesOverride o of
+	let gofile includingsmall (si, file) = case largeFilesOverride o of
 		Nothing -> 
 			ifM (pure (annexdotfiles || not (dotfile file))
 				<&&> (checkFileMatcher largematcher file 
 				<||> Annex.getState Annex.force))
 				( start o si file addunlockedmatcher
-				, ifM (annexAddSmallFiles <$> Annex.getGitConfig)
-					( startSmall o si file
-					, stop
-					)
+				, if includingsmall
+					then ifM (annexAddSmallFiles <$> Annex.getGitConfig)
+						( startSmall o si file
+						, stop
+						)
+					else stop
 				)
 		Just True -> start o si file addunlockedmatcher
 		Just False -> startSmallOverridden o si file
@@ -96,7 +98,7 @@ seek o = startConcurrency commandStages $ do
 			| updateOnly o ->
 				giveup "--update --batch is not supported"
 			| otherwise -> batchOnly Nothing (addThese o) $
-				batchFiles fmt gofile
+				batchFiles fmt (gofile True)
 		NoBatch -> do
 			-- Avoid git ls-files complaining about files that
 			-- are not known to git yet, since this will add
@@ -104,11 +106,14 @@ seek o = startConcurrency commandStages $ do
 			-- problems, like files that don't exist.
 			let ww = WarnUnmatchWorkTreeItems
 			l <- workTreeItems ww (addThese o)
-			let go a = a ww (commandAction . gofile) l
+			let go b a = a ww (commandAction . gofile b) l
 			unless (updateOnly o) $
-				go (withFilesNotInGit (checkGitIgnoreOption o))
-			go withFilesMaybeModified
-			go withUnmodifiedUnlockedPointers
+				go True (withFilesNotInGit (checkGitIgnoreOption o))
+			go True withFilesMaybeModified
+			-- Convert newly unlocked files back to locked files,
+			-- same as a modified unlocked file would get
+			-- locked when added.
+			go False withUnmodifiedUnlockedPointers
 
 {- Pass file off to git-add. -}
 startSmall :: AddOptions -> SeekInput -> RawFilePath -> CommandStart

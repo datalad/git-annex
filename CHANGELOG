@@ -28,6 +28,13 @@ git-annex (10.20220223) UNRELEASED; urgency=medium
     a new directory special remote, or change the configuration of your
     existing remote:
       git-annex enableremote foo ignoreinodes=yes
+  * add: Avoid unncessarily converting a newly unlocked file to be stored
+    in git when it is not modified, even when annex.largefiles does not
+    match it.
+  * The above change to add fixes a reversion in version 10.20220222,
+    where git-annex unlock followed by git-annex add, followed by git
+    commit file could result in git thinking the file was modified
+    after the commit.
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Feb 2022 14:14:09 -0400
 

@@ -175,3 +175,5 @@ Lots! I love git-annex!
 
 [[!meta author=bpoldrack]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
