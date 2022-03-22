@@ -37,6 +37,7 @@ git-annex (10.20220223) UNRELEASED; urgency=medium
   * test: Added --jobs option.
   * Removed vendored copy of http-client-restricted, and removed the
     HttpClientRestricted build flag that avoided that dependency.
+  * Removed the NetworkBSD build flag.
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Feb 2022 14:14:09 -0400
 

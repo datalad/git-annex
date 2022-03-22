@@ -284,10 +284,6 @@ Flag DebugLocks
 Flag Dbus
   Description: Enable dbus support
 
-Flag NetworkBSD
-  Description: Build with network-3.0 which split out network-bsd
-  Default: True
-
 Flag GitLfs
   Description: Build with git-lfs library (rather than vendored copy)
   Default: True
@@ -377,7 +373,9 @@ Executable git-annex
    tasty-rerun,
    ansi-terminal >= 0.9,
    aws (>= 0.20),
-   DAV (>= 1.0)
+   DAV (>= 1.0),
+   network (>= 3.0.0.0),
+   network-bsd
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
   Default-Language: Haskell2010
@@ -410,11 +408,6 @@ Executable git-annex
       silently (>= 1.2.5.1)
   else
     Build-Depends: unix (>= 2.7.2)
-
-  if flag(NetworkBSD)
-    Build-Depends: network-bsd, network (>= 3.0.0.0)
-  else
-    Build-Depends: network (< 3.0.0.0), network (>= 2.6.3.0)
 
   if flag(GitLfs)
     Build-Depends: git-lfs (>= 1.2.0)
