@@ -11,7 +11,6 @@ flags:
     benchmark: false
     networkbsd: true
     gitlfs: true
-    httpclientrestricted: true
 packages:
 - '.'
 extra-deps:

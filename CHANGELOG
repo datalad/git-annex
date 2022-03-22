@@ -35,6 +35,8 @@ git-annex (10.20220223) UNRELEASED; urgency=medium
     standalone linux tarball or OSX app.
   * test: Runs tests in parallel to speed up the test suite.
   * test: Added --jobs option.
+  * Removed vendored copy of http-client-restricted, and removed the
+    HttpClientRestricted build flag that avoided that dependency.
 
  -- Joey Hess <id@joeyh.name>  Wed, 23 Feb 2022 14:14:09 -0400
 

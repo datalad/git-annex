@@ -9,7 +9,6 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE CPP #-}
 
 module Utility.Url (
 	newManager,
@@ -46,11 +45,7 @@ module Utility.Url (
 import Common
 import Utility.Debug
 import Utility.Metered
-#ifdef WITH_HTTP_CLIENT_RESTRICTED
 import Network.HTTP.Client.Restricted
-#else
-import Utility.HttpManagerRestricted
-#endif
 import Utility.IPAddress
 import qualified Utility.RawFilePath as R
 import Utility.Hash (IncrementalVerifier(..))

@@ -11,7 +11,6 @@ flags:
     benchmark: true
     networkbsd: true
     gitlfs: true
-    httpclientrestricted: true
 packages:
 - '.'
 resolver: lts-18.13

@@ -56,6 +56,7 @@ Build-Depends:
 	libghc-case-insensitive-dev,
 	libghc-http-types-dev,
 	libghc-http-conduit-dev,
+	libghc-http-client-restricted-dev,
 	libghc-blaze-builder-dev,
 	libghc-crypto-api-dev,
 	libghc-network-multicast-dev,
