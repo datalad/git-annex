@@ -1,4 +1,4 @@
-git-annex (10.20220223) UNRELEASED; urgency=medium
+git-annex (10.20220322) upstream; urgency=medium
 
   * Directory special remotes with importtree=yes have changed to once more 
     take inodes into account. This will cause extra work when importing
@@ -39,7 +39,7 @@ git-annex (10.20220223) UNRELEASED; urgency=medium
     HttpClientRestricted build flag that avoided that dependency.
   * Removed the NetworkBSD build flag.
 
- -- Joey Hess <id@joeyh.name>  Wed, 23 Feb 2022 14:14:09 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 22 Mar 2022 13:56:12 -0400
 
 git-annex (10.20220222) upstream; urgency=medium
 
