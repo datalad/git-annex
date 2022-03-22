@@ -49,7 +49,8 @@ prop_relPathDirToFileAbs_basics pt = and
 	p = pathSeparator `B.cons` relf
 	-- Make the input a relative path. On windows, make sure it does
 	-- not contain anything that looks like a drive letter.
-	relf = B.filter (not . skipchar) $ B.dropWhile isPathSeparator $
+	relf = B.dropWhile isPathSeparator $
+		B.filter (not . skipchar) $
 		toRawFilePath (fromTestableFilePath pt)
 	skipchar b = b == (fromIntegral (ord ':'))
 

@@ -51,3 +51,5 @@ Windows 10 version 21H2 (build 19044.1586), 64 bit.
 Git Annex is great. I use it several times a week with my multigigabyte backups, where it gives structure to my image-based backup routines, so you could say I'm a believer. :)
 
 [[!meta author=jkniiv]]
+
+> [[fixed|done]] --[[Joey]]
