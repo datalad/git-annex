@@ -339,7 +339,12 @@ repoTests note numparts = map mk $ sep
 	]
   where
 	mk l = testGroup groupname (initTests : map adddep l)
+#ifdef MIN_VERSION_tasty(1,2)
 	adddep = Test.Tasty.after AllSucceed (groupname ++ ".Init Tests")
+#else
+#warning tasty is too old to support limiting or rerunning tests
+	adddep = id
+#endif
 	groupname = "Repo Tests " ++ note
 	sep = sep' (replicate numparts [])
 	sep' (p:ps) (l:ls) = sep' (ps++[l:p]) ls
