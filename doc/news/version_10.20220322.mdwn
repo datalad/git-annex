@@ -1,0 +1,39 @@
+git-annex 10.20220322 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Directory special remotes with importtree=yes have changed to once more
+    take inodes into account. This will cause extra work when importing
+    from a directory on a FAT filesystem that changes inodes on every
+    mount. To avoid that extra work, set ignoreinodes=yes when initializing
+    a new directory special remote, or change the configuration of your
+    existing remote:
+      git-annex enableremote foo ignoreinodes=yes
+  * add: Avoid unncessarily converting a newly unlocked file to be stored
+    in git when it is not modified, even when annex.largefiles does not
+    match it.
+  * The above change to add fixes a reversion in version 10.20220222,
+    where git-annex unlock followed by git-annex add, followed by git
+    commit file could result in git thinking the file was modified
+    after the commit.
+  * Detect when an unlocked file whose content is not present has gotten
+    some other content appended to it, and avoid treating it as a pointer
+    file, so that appended content will not be checked into git, but will
+    be annexed like any other file.
+  * smudge: Warn when encountering a pointer file that has other content
+    appended to it.
+  * When annex.freezecontent-command is set, and the filesystem does not
+    support removing write bits, avoid treating it as a crippled
+    filesystem.
+  * Run annex.thawcontent-command before deleting an object file,
+    in case annex.freezecontent-command did something that would prevent
+    deletion.
+  * Fix propagation of nonzero exit status from git ls-files when a specified
+    file does not exist, or a specified directory does not contain
+    any files checked into git.
+  * Fix build with aeson 2.0.
+    Thanks, sternenseemann for the patch.
+  * Avoid git-annex test being very slow when run from within the
+    standalone linux tarball or OSX app.
+  * test: Runs tests in parallel to speed up the test suite.
+  * test: Added --jobs option.
+  * Removed vendored copy of http-client-restricted, and removed the
+    HttpClientRestricted build flag that avoided that dependency.
+  * Removed the NetworkBSD build flag."""]]
