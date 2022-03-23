@@ -15,7 +15,7 @@ RUN set -ex; \
     export DEBIAN_FRONTEND=noninteractive; \
     apt-get build-dep -y -q git-annex-standalone; \
     # Needed additional build-depends which might have not yet in "released" version
-    apt-get install -y libghc-criterion-dev; \
+    apt-get install -y libghc-criterion-dev libghc-http-client-restricted-dev; \
     # Needed additional tools
     apt-get install -y devscripts quilt; \
     # Some helper utilities just in case
