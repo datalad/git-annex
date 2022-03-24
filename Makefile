@@ -52,7 +52,7 @@ dev:
 		--enable-executable-dynamic --enable-profiling
 	mkdir -p tmp
 	touch tmp/configure-stamp
-	$(MAKE) git-annex
+	$(MAKE) git-annex tags
 
 git-annex: tmp/configure-stamp
 	$(BUILDER) build $(BUILDERCOMMONOPTIONS) $(BUILDEROPTIONS)
@@ -110,19 +110,8 @@ test: git-annex git-annex-shell
 retest: git-annex
 	./git-annex test --rerun-update --rerun-filter failures
 
-# tags file for vim
 tags:
-	@$(MAKE) --quiet hothasktags HOTHASKTAGS_OPT= TAGFILE=tags
-
-# https://github.com/luqui/hothasktags/issues/18
-HOTHASKTAGS_ARGS=-XLambdaCase -XPackageImports --cpp
-
-hothasktags:
-	@if ! cabal exec hothasktags -- $(HOTHASKTAGS_OPT) $(HOTHASKTAGS_ARGS) \
-		$$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v dist/ | grep -v /doc/ | egrep '\.hs$$') 2>/dev/null \
-			| sort > $(TAGFILE); then \
-		echo "** hothasktags failed"; \
-	fi
+	hasktags . -c || true
 
 mans: Build/MakeMans
 	./Build/MakeMans
@@ -148,7 +137,7 @@ docs: mans
 clean:
 	if [ "$(BUILDER)" != ./Setup ] && [ "$(BUILDER)" != cabal ]; then $(BUILDER) clean; fi
 	rm -rf tmp dist dist-newstyle git-annex $(mans) configure  *.tix .hpc \
-		doc/.ikiwiki html dist tags TAGS Build/SysConfig Build/Version \
+		doc/.ikiwiki html dist tags Build/SysConfig Build/Version \
 		Setup Build/InstallDesktopFile Build/Standalone \
 		Build/DistributionUpdate Build/BuildVersion Build/MakeMans \
 		git-annex-shell git-union-merge .tasty-rerun-log
