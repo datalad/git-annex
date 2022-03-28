@@ -7,6 +7,7 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[Ubuntu]]            | `apt-get install git-annex`
 &nbsp;&nbsp;[[Fedora]]            | `yum install git-annex`
 &nbsp;&nbsp;[[ArchLinux]]         | `pacman -S git-annex`
+&nbsp;&nbsp;[[AlpineLinux]]       | `apk add git-annex`
 &nbsp;&nbsp;[[NixOS]]             | `nix-env -i git-annex`
 &nbsp;&nbsp;[[Gentoo]]            | `emerge git-annex`
 &nbsp;&nbsp;[[Guix]]              | `guix package -i git-annex`
