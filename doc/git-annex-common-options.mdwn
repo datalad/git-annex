@@ -59,13 +59,9 @@ Most of these options are accepted by all git-annex commands.
 
   Overrides the numcopies setting.
 
-  Note that setting numcopies to 0 is very unsafe.
-
 * `--mincopies=n`
 
   Overrides the mincopies setting.
-
-  Note that setting mincopies to 0 is very unsafe.
 
 * `--time-limit=time`
 

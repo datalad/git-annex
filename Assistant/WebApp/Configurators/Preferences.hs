@@ -85,7 +85,7 @@ getPrefs = PrefsForm
 storePrefs :: PrefsForm -> Annex ()
 storePrefs p = do
 	setConfig (annexConfig "diskreserve") (T.unpack $ diskReserve p)
-	setGlobalNumCopies (NumCopies $ numCopies p)
+	setGlobalNumCopies (configuredNumCopies $ numCopies p)
 	unsetConfig (annexConfig "numcopies") -- deprecated
 	setConfig (annexConfig "autoupgrade") (fromAutoUpgrade $ autoUpgrade p)
 	unlessM ((==) <$> pure (autoStart p) <*> inAutoStartFile) $ do

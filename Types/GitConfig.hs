@@ -148,7 +148,8 @@ extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
 extractGitConfig configsource r = GitConfig
 	{ annexVersion = RepoVersion <$> getmayberead (annexConfig "version")
 	, annexUUID = hereuuid
-	, annexNumCopies = NumCopies <$> getmayberead (annexConfig "numcopies")
+	, annexNumCopies = configuredNumCopies
+		<$> getmayberead (annexConfig "numcopies")
 	, annexDiskReserve = fromMaybe onemegabyte $
 		readSize dataUnits =<< getmaybe (annexConfig "diskreserve")
 	, annexDirect = getbool (annexConfig "direct") False

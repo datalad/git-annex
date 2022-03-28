@@ -517,8 +517,8 @@ checkKeyNumCopies key afile numcopies = do
 	locs <- loggedLocations key
 	(untrustedlocations, otherlocations) <- trustPartition UnTrusted locs
 	(deadlocations, safelocations) <- trustPartition DeadTrusted otherlocations
-	let present = NumCopies (length safelocations)
-	if present < numcopies
+	let present = length safelocations
+	if present < fromNumCopies numcopies
 		then ifM (pure (not hasafile) <&&> checkDead key)
 			( do
 				showLongNote $ "This key is dead, skipping."
@@ -527,21 +527,21 @@ checkKeyNumCopies key afile numcopies = do
 				untrusted <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
 				dead <- Remote.prettyPrintUUIDs "dead" deadlocations
 				warning $ missingNote desc present numcopies untrusted dead
-				when (fromNumCopies present == 0 && not hasafile) $
+				when (present == 0 && not hasafile) $
 					showLongNote "(Avoid this check by running: git annex dead --key )"
 				return False
 			)
 		else return True
 
-missingNote :: String -> NumCopies -> NumCopies -> String -> String -> String
-missingNote file (NumCopies 0) _ [] dead = 
+missingNote :: String -> Int -> NumCopies -> String -> String -> String
+missingNote file 0 _ [] dead = 
 		"** No known copies exist of " ++ file ++ honorDead dead
-missingNote file (NumCopies 0) _ untrusted dead =
+missingNote file 0 _ untrusted dead =
 		"Only these untrusted locations may have copies of " ++ file ++
 		"\n" ++ untrusted ++
 		"Back it up to trusted locations with git-annex copy." ++ honorDead dead
 missingNote file present needed [] _ =
-		"Only " ++ show (fromNumCopies present) ++ " of " ++ show (fromNumCopies needed) ++ 
+		"Only " ++ show present ++ " of " ++ show (fromNumCopies needed) ++ 
 		" trustworthy copies exist of " ++ file ++
 		"\nBack it up with git-annex copy."
 missingNote file present needed untrusted dead = 

@@ -315,7 +315,7 @@ parseCfg defcfg = go [] defcfg . lines
 			in Right $ cfg { cfgGlobalConfigs = m }
 		| setting == "numcopies" = case readish val of
 			Nothing -> Left "parse error (expected an integer)"
-			Just n -> Right $ cfg { cfgNumCopies = Just (NumCopies n) }
+			Just n -> Right $ cfg { cfgNumCopies = Just (configuredNumCopies n) }
 		| otherwise = badval "setting" setting
 	  where
 		u = toUUID f

@@ -43,10 +43,10 @@ import qualified Control.Monad.Catch as M
 import Data.Typeable
 
 defaultNumCopies :: NumCopies
-defaultNumCopies = NumCopies 1
+defaultNumCopies = configuredNumCopies 1
 
 defaultMinCopies :: MinCopies
-defaultMinCopies = MinCopies 1
+defaultMinCopies = configuredMinCopies 1
 
 fromSourcesOr :: v -> [Annex (Maybe v)] -> Annex v
 fromSourcesOr v = fromMaybe v <$$> getM id
@@ -178,8 +178,8 @@ getNumMinCopiesAttr :: RawFilePath  -> Annex (Maybe NumCopies, Maybe MinCopies)
 getNumMinCopiesAttr file =
 	checkAttrs ["annex.numcopies", "annex.mincopies"] file >>= \case
 		(n:m:[]) -> return
-			( NumCopies <$> readish n
-			, MinCopies <$> readish m
+			( configuredNumCopies <$> readish n
+			, configuredMinCopies <$> readish m
 			)
 		_ -> error "internal"
 
@@ -197,8 +197,8 @@ numCopiesCheck file key vs = do
 
 numCopiesCheck' :: RawFilePath -> (Int -> Int -> v) -> [UUID] -> Annex v
 numCopiesCheck' file vs have = do
-	NumCopies needed <- fst <$> getFileNumMinCopies file
-	return $ length have `vs` needed
+	needed <- fst <$> getFileNumMinCopies file
+	return $ length have `vs` fromNumCopies needed
 
 data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
 	deriving (Ord, Eq)

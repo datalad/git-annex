@@ -100,8 +100,8 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 		)
 	]
   where
-	setnumcopies n = Annex.changeState $ \s -> s { Annex.forcenumcopies = Just $ NumCopies n }
-	setmincopies n = Annex.changeState $ \s -> s { Annex.forcemincopies = Just $ MinCopies n }
+	setnumcopies n = Annex.changeState $ \s -> s { Annex.forcenumcopies = Just $ configuredNumCopies n }
+	setmincopies n = Annex.changeState $ \s -> s { Annex.forcemincopies = Just $ configuredMinCopies n }
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
 	setgitconfig v = Annex.addGitConfigOverride v
 	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }

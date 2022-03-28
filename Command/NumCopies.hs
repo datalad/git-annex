@@ -8,7 +8,6 @@
 module Command.NumCopies where
 
 import Command
-import qualified Annex
 import Annex.NumCopies
 
 cmd :: Command
@@ -28,11 +27,8 @@ start' setting _ startset [s] = case readish s of
 	Nothing -> giveup $ "Bad number: " ++ s
 	Just n
 		| n > 0 -> startset n
-		| n == 0 -> ifM (Annex.getState Annex.force)
-			( startset n
-			, giveup $ "Setting " ++ setting ++ " to 0 is very unsafe. You will lose data! If you really want to do that, specify --force."
-			)
-		| otherwise -> giveup "Number cannot be negative!"
+		| n == 0 -> giveup $ "Cannot set " ++ setting ++ " to 0."
+		| otherwise -> giveup $ setting ++ " cannot be negative!"
 start' _ _ _ _ = giveup "Specify a single number."
 
 startGet :: CommandStart
@@ -50,7 +46,7 @@ startGet = startingCustomOutput (ActionItemOther Nothing) $ next $ do
 
 startSet :: Int -> CommandStart
 startSet n = startingUsualMessages "numcopies" ai si $ do
-	setGlobalNumCopies $ NumCopies n
+	setGlobalNumCopies $ configuredNumCopies n
 	next $ return True
   where
 	ai = ActionItemOther (Just $ show n)

@@ -1,14 +1,16 @@
 {- git-annex numcopies types
  -
- - Copyright 2014-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Types.NumCopies (
-	NumCopies(..),
+	NumCopies,
+	configuredNumCopies,
 	fromNumCopies,
-	MinCopies(..),
+	MinCopies,
+	configuredMinCopies,
 	fromMinCopies,
 	VerifiedCopy(..),
 	checkVerifiedCopy,
@@ -38,11 +40,23 @@ import Control.Monad
 newtype NumCopies = NumCopies Int
 	deriving (Ord, Eq, Show)
 
+-- Smart constructor; prevent configuring numcopies to 0 which would
+-- cause data loss.
+configuredNumCopies :: Int -> NumCopies
+configuredNumCopies n
+	| n > 0 = NumCopies n
+	| otherwise = NumCopies 1
+
 fromNumCopies :: NumCopies -> Int
 fromNumCopies (NumCopies n) = n
 
 newtype MinCopies = MinCopies Int
 	deriving (Ord, Eq, Show)
+
+configuredMinCopies :: Int -> MinCopies
+configuredMinCopies n
+	| n > 0 = MinCopies n
+	| otherwise = MinCopies 1
 
 fromMinCopies :: MinCopies -> Int
 fromMinCopies (MinCopies n) = n

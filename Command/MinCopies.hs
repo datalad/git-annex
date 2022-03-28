@@ -32,7 +32,7 @@ startGet = startingCustomOutput (ActionItemOther Nothing) $ next $ do
 
 startSet :: Int -> CommandStart
 startSet n = startingUsualMessages "mincopies" ai si $ do
-	setGlobalMinCopies $ MinCopies n
+	setGlobalMinCopies $ configuredMinCopies n
 	next $ return True
   where
 	ai = ActionItemOther (Just $ show n)

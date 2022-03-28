@@ -24,12 +24,12 @@ import Logs
 import Logs.SingleValue
 
 instance SingleValueSerializable NumCopies where
-	serialize (NumCopies n) = encodeBS (show n)
-	deserialize = NumCopies <$$> readish . decodeBS
+	serialize = encodeBS . show . fromNumCopies
+	deserialize = configuredNumCopies <$$> readish . decodeBS
 
 instance SingleValueSerializable MinCopies where
-	serialize (MinCopies n) = encodeBS (show n)
-	deserialize = MinCopies <$$> readish . decodeBS
+	serialize = encodeBS . show . fromMinCopies
+	deserialize = configuredMinCopies <$$> readish . decodeBS
 
 setGlobalNumCopies :: NumCopies -> Annex ()
 setGlobalNumCopies new = do

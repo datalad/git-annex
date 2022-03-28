@@ -397,7 +397,7 @@ limitLackingCopies approx want = case readish want of
 	Nothing -> Left "bad value for number of lacking copies"
   where
 	go mi needed notpresent key = do
-		NumCopies numcopies <- if approx
+		numcopies <- if approx
 			then approxNumCopies
 			else case mi of
 				MatchingFile fi -> getGlobalFileNumCopies $
@@ -406,7 +406,7 @@ limitLackingCopies approx want = case readish want of
 				MatchingUserInfo {} -> approxNumCopies
 		us <- filter (`S.notMember` notpresent)
 			<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
-		return $ numcopies - length us >= needed
+		return $ fromNumCopies numcopies - length us >= needed
 	approxNumCopies = fromMaybe defaultNumCopies <$> getGlobalNumCopies
 
 {- Match keys that are unused.

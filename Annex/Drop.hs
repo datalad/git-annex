@@ -70,10 +70,10 @@ handleDropsFrom locs rs reason fromhere key afile si preverified runner = do
 	 - will surely fail.
 	 -}
 	checkcopies (have, numcopies, mincopies, _untrusted) Nothing =
-		NumCopies have > numcopies && MinCopies have > mincopies
+		have > fromNumCopies numcopies && have > fromMinCopies mincopies
 	checkcopies (have, numcopies, mincopies, untrusted) (Just u)
-		| S.member u untrusted = NumCopies have >= numcopies && MinCopies have >= mincopies
-		| otherwise = NumCopies have > numcopies && MinCopies have > mincopies
+		| S.member u untrusted = have >= fromNumCopies numcopies && have >= fromMinCopies mincopies
+		| otherwise = have > fromNumCopies numcopies && have > fromMinCopies mincopies
 	
 	decrcopies (have, numcopies, mincopies, untrusted) Nothing =
 		(have - 1, numcopies, mincopies, untrusted)

@@ -932,8 +932,6 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   never been configured, and when there's no annex.numcopies setting in the
   .gitattributes file.
 
-  Note that setting numcopies to 0 is very unsafe.
-
 * `annex.genmetadata`
 
   Set this to `true` to make git-annex automatically generate some metadata
@@ -1880,8 +1878,6 @@ for flac files:
 
 	*.wav annex.numcopies=2
 	*.flac annex.numcopies=3
-
-Note that setting numcopies or mincopies to 0 is very unsafe.
 
 These settings are honored by git-annex whenever it's operating on a
 matching file. However, when using --all, --unused, or --key to specify

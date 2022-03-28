@@ -252,7 +252,7 @@ checkDropAuto automode mremote afile key a =
 			uuid <- getUUID
 			let remoteuuid = fromMaybe uuid $ Remote.uuid <$> mremote
 			locs' <- trustExclude UnTrusted $ filter (/= remoteuuid) locs
-			if NumCopies (length locs') >= numcopies
+			if length locs' >= fromNumCopies numcopies
 				then a numcopies mincopies
 				else stop
 		| otherwise = a numcopies mincopies
