@@ -22,6 +22,7 @@ jobs:
         working-directory: .github/workflows/tools/containers/buildenv-git-annex-buster
 
       - name: Push image
+        if: github.ref_name == 'master'
         run: |
           docker login -u jwodder --password-stdin <<<"$DOCKER_TOKEN"
           docker push datalad/buildenv-git-annex-buster
