@@ -6,9 +6,11 @@ on:
       - master
     paths:
       - .github/workflows/tools/containers/buildenv-git-annex-buster/*
+      - .github/workflows/build-linux-buildenv.yaml
   pull_request:
     paths:
       - .github/workflows/tools/containers/buildenv-git-annex-buster/*
+      - .github/workflows/build-linux-buildenv.yaml
 
 jobs:
   build:
