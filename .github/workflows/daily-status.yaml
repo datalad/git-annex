@@ -1,0 +1,42 @@
+name: Daily Status E-Mail
+
+on:
+  schedule:
+    - cron: '0 23 * * *'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '^3.8'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip 'pip-run!=8.4' wheel
+
+      - name: Generate e-mail content
+        id: content
+        run: |
+          subject="$(python -m pip-run -q -- .github/workflows/tools/daily-status.py)"
+          echo "::set-output name=subject::$subject"
+        env:
+          GITHUB_TOKEN: ${{ secrets.DATALAD_GITHUB_TOKEN }}
+
+      - name: Send e-mail
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
+          server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
+          username: ${{ secrets.NOTIFY_SMTP_USERNAME }}
+          password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
+          from: GitHub Actions Notifications
+          to: ${{ secrets.DAILY_STATUS_RECIPIENTS }}
+          subject: ${{ steps.content.outputs.subject }}
+          html_body: file://body.html
+
+# vim:set sts=2:
