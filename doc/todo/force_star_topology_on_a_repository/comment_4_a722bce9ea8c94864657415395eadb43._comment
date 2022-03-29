@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-03-29T18:06:51Z"
+ content="""
+`git-annex initremote --private` is the equivilant of annex.private for a
+special remote, and sets remote.name.annex-private.
+
+And remote.name.annex-private can also be set to avoid recording anything
+about a git-annex remote.
+
+Setting annex.private with `git config` does not affect the remotes.
+Which for many use cases of annex.private, is a good thing.
+
+`git-annex config` settings should have the same effect as if the 
+corresponding `git config` were set. So `git-annex config` of annex.private
+is not quite the right thing, since that would not set
+remote.name.annex-private.
+
+So, I think you were somewhat on the right track, that there needs to be a
+list of uuids of repositories that are not private. And then all other
+repositories would behave the same as if annex.private were set for them,
+when git-annex is running on them or using them as a remote.
+
+Concretely, this could look like `git-annex config --set annex.privateexcept "uuid1 uuid2"`
+
+Implementation would just involve the two places that currently
+check annexPrivateRepos also checking that.
+
+One small problem with this idea is, if you want to add a new non-private
+repository or special remote after setting that git-annex config, you would
+need to run `git-annex config` to add it to the list first. Otherwise,
+information about it won't get recorded publically when it's initialized.
+So you would need to generate a uuid by hand, then update the list, then
+run `git-annex reinit` with that uuid, or `git-annex initremote` with the
+`uuid=` parameter.
+"""]]

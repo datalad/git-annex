@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-03-29T18:43:11Z"
+ content="""
+What happens if someone sets this git-annex config, but the repo is also
+used by someone else, who does not want to honor that, and wants to have
+their own group of git-annex repos that work together as usual? 
+
+This is a reasonable difference of opinion to have, and this kind of
+disagreement needs to be considered when adding a `git-annex config`
+setting.
+
+Usually, `git-annex config` settings can be overridden by
+`git config`. So there would need to be a annex.privateexcept
+git config as well.
+"""]]
