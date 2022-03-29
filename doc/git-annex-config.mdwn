@@ -31,23 +31,23 @@ looks for these.
 
 * `annex.largefiles`
 
-   Used to configure which files are large enough to be added to the annex.
-   It is an expression that matches the large files, eg
-   "`include=*.mp3 or largerthan(500kb)`".
-   See [[git-annex-matching-expression]](1) for details on the syntax.
+  Used to configure which files are large enough to be added to the annex.
+  It is an expression that matches the large files, eg
+  "`include=*.mp3 or largerthan(500kb)`".
+  See [[git-annex-matching-expression]](1) for details on the syntax.
 
-   This sets a default, which can be overridden by annex.largefiles
-   attributes in `.gitattributes` files, or by `git config`.
+  This sets a default, which can be overridden by annex.largefiles
+  attributes in `.gitattributes` files, or by `git config`.
 
 * `annex.dotfiles`
 
-   Normally, dotfiles are assumed to be files like .gitignore,
-   whose content should always be part of the git repository, so 
-   they will not be added to the annex. Setting annex.dotfiles to true
-   makes dotfiles be added to the annex the same as any other file. 
+  Normally, dotfiles are assumed to be files like .gitignore,
+  whose content should always be part of the git repository, so 
+  they will not be added to the annex. Setting annex.dotfiles to true
+  makes dotfiles be added to the annex the same as any other file. 
 
-   This sets a default, which can be overridden by annex.dotfiles
-   in `git config`.
+  This sets a default, which can be overridden by annex.dotfiles
+  in `git config`.
 
 * `annex.addunlocked`
 
@@ -66,6 +66,9 @@ looks for these.
 
   Set to false to prevent the `git-annex assistant` and `git-annex sync`
   from automatically committing changes to files in the repository.
+   
+  This sets a default, which can be overridden by annex.autocommit
+  in `git config`.
 
 * `annex.resolvemerge`
 
@@ -73,15 +76,24 @@ looks for these.
   being automatically resolved by the `git-annex assitant`,
   `git-annex sync`, `git-annex merge`, and the `git-annex post-receive`
   hook.
+   
+  This sets a default, which can be overridden by annex.resolvemerge
+  in `git config`.
 
 * `annex.synccontent`
 
   Set to true to make git-annex sync default to syncing annexed content.
+  
+  This sets a default, which can be overridden by annex.synccontent
+  in `git config`.
 
 * `annex.synconlyannex`
 
   Set to true to make git-annex sync default to only sync the git-annex
   branch and annexed content.
+  
+  This sets a default, which can be overridden by annex.synconlyannex
+  in `git config`.
 
 * `annex.securehashesonly`
 
