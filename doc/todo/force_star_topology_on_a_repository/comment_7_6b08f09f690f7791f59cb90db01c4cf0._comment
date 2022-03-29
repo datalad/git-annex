@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-03-29T21:49:26Z"
+ content="""
+But.. Using filter-branch like that seems like it would lead to a series of
+commits when no changes are really being made. 
+
+Consider a clone that has a git-annex branch with commit A.
+It pushes it to origin, which runs it through filter-branch,
+yeilding B. Then the clone pulls B, and git-annex merges B into A,
+yielding A'. If A contained nothing that got filtered out, A' and A
+have the same tree, but in any case they will be different commits.
+Then A' gets pushed, yielding B', and the clone pulls B', resulting in A'',
+and so on.
+
+A solution to that would be to check, after filtering, if the tree
+sha is the same as the local git-annex branch currently has, or had
+at a point in the recent past. If so, it can avoid updating the git-annex 
+branch at all, since no new information was received. 
+
+I think that would work both when there was nothing that got filtered out,
+and when there was. The only problem with it might be that since
+origin/git-annex would not be updated after a push, a subsequent push would
+waste a little bandwidth re-sending the local git-annex branch again.
+"""]]

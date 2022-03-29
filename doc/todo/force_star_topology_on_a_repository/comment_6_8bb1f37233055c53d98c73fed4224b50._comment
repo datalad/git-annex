@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-03-29T21:23:09Z"
+ content="""
+An alternative way to get the same result would be for your centralized git
+repository to have a hook that filters unwanted uuids out of git-annex
+branch pushes.
+
+To do the filtering, you could use git-annex filter-branch.
+
+	git-annex filter-branch --all --include-key-information-for=$uuid \
+		--include-global-config --include-repo-config-for=$uuid
+
+That reads the current git-annex branch and outputs the hash of a filtered
+commit.
+
+For example, as a post-receive hook:
+
+	#!/bin/sh
+	uuid=06ba602a-afa8-11ec-a6b9-87c2c2ae9296
+	ref=$(git-annex filter-branch --all --include-key-information-for=$uuid \
+		--include-global-config --include-repo-config-for=$uuid)
+	git update-ref refs/heads/git-annex $ref
+	# Necessary since the git-annex branch has been changed
+	rm .git/annex/index
+
+This post-receive hook is suboptimal because there is a period of time
+before it finishes filtering where a pull will see the unfiltered git-annex
+branch. Although maybe that would be ok, since a later push of that
+information back would get filtered again.
+
+It would be better to use a git hook that let the information be filtered
+before it became active. Looking at githooks(5), the proc-receive hook may
+be able to do that. Not sure. To be used by such a hook, git-annex
+filter-branch would still need to see the information in a git-annex
+branch, so it might need to be run in a lightweight clone of the
+repository. Or, it might be possible to improve git-annex filter-branch
+to be able to filter a ref other than the git-annex branch.
+"""]]
