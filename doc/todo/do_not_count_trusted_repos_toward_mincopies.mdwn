@@ -18,4 +18,39 @@ content in the meantime, it risks data loss.
 So, is it worth breaking an existing, but unsafe use case, in order to make
 it easier to use trust safely?
 
+Without an answer to that question, one approach would be to add an
+ultimatelytrusted level, which behaves like trusted does now. The
+serialization of ultimatelytrusted would be what is used for trusted now,
+so existing trusted repositories would convert to it, and no behavior would
+change. The new trusted would use a different serialization, which old
+versions of git-annex would be unable to parse, but parsing defaults to
+semitrusted, so old versions of git-annex would behave safely.
+
+Then after some amount of time, users can be polled to see if they
+need ultimatelytrusted, and if not it can be deprecated and eventually be
+changed to be the same as new trusted. Or, a gitconfig can be added that
+makes ultimatelytrusted behave the same as trusted.
+
+That seems like a reasonable plan.
+
+(I thought about just adding a gitconfig now to control which behavior
+to use for trusted, but that would not be safe, if a user expects the new
+trusted behavior, they could `git-annex trust` a repo, but then later
+the gitconfig gets unset, or is not set in a clone.)
+
+----
+
+A complication with implementation: Currently when checking if a drop is safe,
+trusted repositories result in a TrustedCopy, and are not checked. And it
+checks other repositories until it has enough other evidence that the drop
+is safe. But now it would need to check some trusted repositories,
+while providing TrustedCopy for ones that it has not checked.
+
+One way to deal with that is, check trusted repositories in amoung the
+rest (in cost order). If content is present, add a LockedCopy or
+a RecentlyVerifiedCopy to the evidence. If the content is not present,
+add nothing to the evidence (or could add TrustedCopy, but there seems 
+no benefit to doing that). If the repository cannot be accessed, add
+a TrustedCopy to the evidence.
+
 --[[Joey]]
