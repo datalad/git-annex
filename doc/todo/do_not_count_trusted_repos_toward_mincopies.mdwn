@@ -1,0 +1,21 @@
+Currently, setting a repo to trusted can result in data loss if content
+gets removed from that repo. For this reason, --trust has been disabled,
+and `git-annex trust` needs --force.
+
+My idea for a better way to handle this is to make trusted repos that
+cannot be checked not count toward satisfying mincopies. So while trusting
+a repository would let numcopies be violated still, it would avoid data
+loss. That would be enough to bring back --trust and not need --force.
+
+Aside from preventing data loss in some situations, the impact of this
+behavior change would be that dropping content would fail in some
+situations where it used to work. Specifically, when a trusted repo
+contains content, but is not accessible, and no other accessible repo
+contains the content. That has been a valid use of trusted repos, but it's
+also obviously an unsafe one -- if that trusted repo has dropped the
+content in the meantime, it risks data loss.
+
+So, is it worth breaking an existing, but unsafe use case, in order to make
+it easier to use trust safely?
+
+--[[Joey]]
