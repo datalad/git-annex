@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2022-03-30T16:55:25Z"
+ content="""
+If you want to use cabal to
+build git-annex, you need to follow the instructions. Specifically,
+[[install/fromsource]] which has a cabal section, which documents using
+"-magicmime" specifically to avoid such a build failure.
+"""]]
