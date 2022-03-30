@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/2098ac7f-d1c7-413d-8a8a-b7d0d7704ea3"
+ nickname="John Johnson"
+ avatar="http://cdn.libravatar.org/avatar/c8c5edfe8807402d0aa97d66ebbe3bb3710278666cbc5284c0a9ed41db1001e3"
+ subject="No bueno"
+ date="2022-03-29T22:29:21Z"
+ content="""
+Not working for me.
+Cabal runs for a while, then it error out complaining about magic and c libraries for magic.
+I can't find any source of this magic.
+I've installed Haskell-stack, and a lot of other things I'll never use.
+I just need git-annex :-)
+
+"""]]
