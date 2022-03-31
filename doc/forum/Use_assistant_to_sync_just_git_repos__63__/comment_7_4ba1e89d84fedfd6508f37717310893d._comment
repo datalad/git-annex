@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-03-31T16:59:13Z"
+ content="""
+@Atemu would have been a good idea to file a bug about that.
+
+I think the assistant would probably eventually get around to pushing a
+commit that you made with annex.autocommit=false, but it did not promptly
+notice such commits and push them.
+
+I've made a small change that does make it promptly push commits that
+were made to the current branch.
+"""]]

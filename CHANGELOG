@@ -4,6 +4,8 @@ git-annex (10.20220323) UNRELEASED; urgency=medium
     or by git-annex numcopies or by --numcopies, since that
     configuration would make git-annex easily lose data. 
     Same for mincopies.
+  * assistant: When annex.autocommit is set, notice commits that
+    the user makes manually, and push them out to remotes promptly.
 
  -- Joey Hess <id@joeyh.name>  Mon, 28 Mar 2022 14:46:10 -0400
 

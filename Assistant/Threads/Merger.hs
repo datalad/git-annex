@@ -1,6 +1,6 @@
 {- git-annex assistant git merge thread
  -
- - Copyright 2012-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,6 +17,7 @@ import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import Utility.Directory.Create
 import Annex.CurrentBranch
+import Assistant.Commits
 import qualified Annex
 import qualified Annex.Branch
 import qualified Git
@@ -83,7 +84,7 @@ onChange file
 	mergecurrent =
 		mergecurrent' =<< liftAnnex getCurrentBranch
 	mergecurrent' currbranch@(Just b, _)
-		| changedbranch `isRelatedTo` b =
+		| changedbranch `isRelatedTo` b = do
 			whenM (liftAnnex $ inRepo $ Git.Branch.changed b changedbranch) $ do
 				debug
 					[ "merging", Git.fromRef changedbranch
@@ -99,6 +100,12 @@ onChange file
 						def
 						cmode
 						changedbranch
+			recordCommit
+		| changedbranch == b =
+			-- Record commit so the pusher pushes it out.
+			-- This makes sure pushes happen when
+			-- annex.autocommit=false
+			recordCommit
 	mergecurrent' _ = noop
 
 {- Is the first branch a synced branch or remote tracking branch related
