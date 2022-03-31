@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 1"
+ date="2022-03-31T10:39:28Z"
+ content="""
+Perhaps there could be a way to manually \"lock\" a remote into append-only permanently such that all repos perceive it as locked and therefore trust it to keep its content.
+
+Obviously this isn't as good of a trust as having it connected directly and actively locking it at runtime but it's the best you could do for cold storage. (Btw, does git-annex check whether the content to be dropped is actually present in the repos it locked?)
+
+The append-only repo would only be allowed to unlock itself and drop content again when all other (unlocked?) repos ack'd the unlock (or via `--force`).
+"""]]
