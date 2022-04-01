@@ -1,0 +1,17 @@
+Follow-up to https://git-annex.branchable.com/forum/Use_assistant_to_sync_just_git_repos__63__/#comment-88286ff5bb273eda1d731ac91197cb37
+
+Currently, the annex.autocommit controls 3 things:
+
+1. assistant automatically committing
+2. assistant automatically syncing committs to other repos
+3. sync committing when invoked
+
+As of ff6b36c706efe1a63f121e57e45776f5f6628163 it no longer affects 2\. but that also means there's no way to control 2\. :/
+
+The autocommit option should only configure whether the assistant automatically adds and commits new files and changes. Perhaps it should be namespaced to make its function more obvious: `annex.assistant.autocommit`
+
+Additionally, there should be two more options to control the other two. `annex.assistant.autosync` and `annex.sync.commit` perhaps.
+
+Making the new options namespaced would also allow the old option to retain its current function; enabling all three.
+
+I've got multiple use-cases for git-annex where I cannot use the assistant because these finer-grained options don't exist.
