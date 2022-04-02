@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="amerlyq"
+ avatar="http://cdn.libravatar.org/avatar/3d63c9f436b45570d45bd003e468cbd3"
+ subject="TL;DR"
+ date="2022-04-02T14:13:48Z"
+ content="""
+@joey can we change android remote to use \"pull -a\" at least \"for now\"?
+
+Let's try doing it in Linux Kernel or ZeroMQ way: enable/disable feature and wait for new bugreports.
+And if new bugreports were critical -- revert feature back.
+After all we can't predict everything from the get go.
+
+I wish to preserve file original mtime (date of download) at least \"somewhere\" (e.g. manually dump find/CID into textual file).
+But doing \"annex pull\" from android remote loses this information completely.
+And this feature is critical for me -- unless some evidence will appear that having this feature more detrimental than not.
+
+Concerns about SUID and other permissions are ungrounded, 
+because Android virtual driver for /sdcard uses only 644/755 by design.
+But instead of speculating -- we may simply wait for new bugreports.
+
+@joey, what do you say? 
+Let's experiment and gather results from wider audience?
+"""]]
