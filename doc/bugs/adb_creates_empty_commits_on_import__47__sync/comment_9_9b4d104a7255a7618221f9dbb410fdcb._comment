@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="amerlyq"
+ avatar="http://cdn.libravatar.org/avatar/3d63c9f436b45570d45bd003e468cbd3"
+ subject="Inode rotation on android /sdcard"
+ date="2022-04-02T14:00:44Z"
+ content="""
+@joey I had found out the root cause of the bug !
+CID really changes between different days.
+
+Basically, on android /sdcard internal user memory (and /storage/* mounted SDCard) are not exposed directly, but through virtual flash driver.
+And this driver REGULARLY increments inode for ALL files in FS, around once per day on average (but I spotted once per several days, and several times a day too).
+For example same file had 3 different inodes over the week: 323733 -> 338757 -> 364584 -> ... -> 426292.
+I dunno why it rotates regularly or after some events -- but truth is *inode is not reliable* as CID on android.
+
+In that case -- can we change CID for android remote to (mtime, name) only?
+"""]]
