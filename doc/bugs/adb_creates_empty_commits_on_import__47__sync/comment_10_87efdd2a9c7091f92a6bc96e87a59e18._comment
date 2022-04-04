@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2022-04-04T16:03:06Z"
+ content="""
+Well, a change to the inode would change the CID, but what I saw back in
+comment #4 was that a change to the CID when the file content did not
+actually change, did not result in an empty commit. So I still don't
+understand how you are getting empty commits here.
+
+I also don't think all android devices do that, because such a change of
+the inode will mean it needs to re-download the file, and I do not see
+periodic re-downloads of files when syncing with my own android phone.
+"""]]
