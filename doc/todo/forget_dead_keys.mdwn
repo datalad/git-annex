@@ -17,3 +17,11 @@ reference to that tree, until some other tree is exported that deletes that
 file. So this is a not very likely, but possible, way for the git-annex
 branch to still mention a dead key after --drop-dead. Could rewrite the
 tree as well, but now it's getting complicated indeed.
+
+> Let's leave out the idea that all references to the dead key get
+> scrubbed from the branch. In any case a key is probably referred to in
+> the master branch too.
+> 
+> It's still useful to implement this, just to reduce branch size.
+
+[[!tag confirmed]]

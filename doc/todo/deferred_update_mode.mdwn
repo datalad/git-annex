@@ -33,3 +33,10 @@ What about just making `git-annex sync --content` try to get the content of
 all files before updating the work tree? (The assistant would need changes
 too; it would need to queue all the downloads and trigger a work tree
 update once all the downloads have been tried.)
+
+> `git-annex adjust --hide-missing` implements this. The assistant
+> does not support it yet, and there's a todo for that,
+> [[todo/assistant_support_hide-missing]]
+> 
+> So, closing this as there's a path forward in that other todo. [[done]]
+> --[[Joey]]

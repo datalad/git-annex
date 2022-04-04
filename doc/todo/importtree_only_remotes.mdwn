@@ -74,3 +74,5 @@ It could be done as a Remote.Helper.SimpleImport that takes those
 3 methods and translates them to the current interface.
 Or by complicating Remote.Helper.ExportImport further..
 --[[Joey]]
+
+[[!tag confirmed]]

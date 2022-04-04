@@ -1,0 +1,107 @@
+There are often requests to add various git-annex gitconfig settings 
+to git-annex-config. Probably, if every such request were implemented
+indesciminately, almost all settings would end up added to it. But adding
+settings to git-annex-config can be an imposition on users who don't want
+to have to override unusual settings. 
+
+git's own gitconfigs cannot be set by git-annex-config, and git users do
+not seem to be clamoring for ways to set gitconfigs across all clones of a
+repo. Instead, git users probably use a variety of ways to manage the same
+thing, all of which also work for git-annex configs too.
+
+So, git-annex-config, though it started out for good reasons, risks
+becoming a slippery slope toward an inconsistent mess. To avoid that,
+a clear criteria is needed for when it's appropriate to add a new setting
+to it.
+
+----
+
+It's worth considering gitattributes, since they also set somewhat
+repo-global configs. (Though less global since they can change in branch.)
+git-annex uses gitattributes some too, though less so.
+
+One good thing about gitattributes is that it applies the attribute to a
+set of files, and so it only makes sense for things that are related
+to individual files. So there is a gitattribute that controls how 3-way
+merging of a file happens, but not a gitattribute that controls whether
+git commits are gpg signed.
+
+git-annex-config does not have such a scope limiter currently.
+
+----
+
+The settings that git-annex-config supports are, in the order they were
+added:
+
+* annex.autocommit  
+  This was suggested because someone had a problem of cloning a repo
+  where annex.autocommit was usually set, but forgetting to set it,
+  resulting in an unwanted commit. This does not seem like a good
+  justification, couldn't someone run `git commit -a` accidentially
+  and have the same result?
+* annex.synccontent  
+  This was made a global because there is a hope for `git-annex sync
+  --content` to perhaps eventually because the default, and this lets
+  users get ahead of that. But that is not really a good justification
+  because if that behavior change did happen, there could be a transition
+  period where `git-annex sync` warned that its behavior was going to
+  change, which would give users an opportunity to choose the behavior
+  they want, and configure it locally.
+* annex.securehashesonly  
+  This is a global because a user who is relying on cryptographically
+  secure hashes for their security should not need to remember to set
+  the config in each new clone of the repo. Also, their collaborators
+  should not need to remember to set the config to avoid committing
+  things that do not use secure hashes, which would result in a mess
+  that would be painful to get out of. I do think this needs to be a
+  global.
+* annex.resolvemerge  
+  This is a global because, when git-annex's automatic merge conflict
+  resulution is not appropriate for a repository, it needs to be disabled
+  globally, since one can happen in any clone and would result in the wrong
+  thing being commited by git-annex.
+* annex.largefiles  
+  This is a global because it was already a (semi-)global in .gitattributes
+  files, but the syntax of those files made more complex expressions
+  hard to use in them. And so also putting the config here avoids that
+  problem and does not make it more global. This seems reasonable.
+* annex.addunlocked  
+  This would be suitable for a gitattribute, since it applies to an
+  individual file. But, like annex.largefiles, the syntax of .gitattributes
+  files makes more complex expressions a problem in them. So, it was added
+  to git-annex-config instead.
+* annex.dotfiles  
+  One reason this was made a global is probably that there was a large
+  amount of user complaint about git-annex add's handing of dotfiles,
+  with no one choice that would avoid it, but it did seem that each repo
+  probably had a choice that would satisfy the users of that repo.  
+  Besides being sick of navigating that maze of complaints, the only
+  other justification for it being a global seems to be that setting
+  annex.dotfiles works with annex.largfiles to control which particular
+  dotfiles to add to the annex (when users for some reason care),
+  and annex.largefiles is a global.
+* annex.synconlyannex  
+  I don't see a justification for this being global.
+
+At this point, we do seem to be a ways down a slippery slope. I started
+pushing back at adding them in 2020, and so no more have been added.
+--[[Joey]]
+
+---
+
+Looking at the settings that were added and why, here are some possible
+criteria that could be extracted from that:
+
+1. The config is for behavior that needs to happen in every clone of the
+   repository, to avoid situations where varying the config would lead
+   to difficult to resolve situations (annex.securehashesonly)  
+2. The config is something that would be suitable for .gitattributes,
+   but limitations of .gitattributes makes it convenient to have another way
+   to set it globally (when not actually targeting specific files).
+   (annex.largefiles, annex.addunlocked, annex.dotfiles)
+
+Things like annex.autocommit do not meet criteria #1, because it's
+easy to fix up a git commit history to remove an unwanted commit. 
+Does annex.resolvemerge meet criteria #1? --[[Joey]]
+
+[[!tag confirmed]]

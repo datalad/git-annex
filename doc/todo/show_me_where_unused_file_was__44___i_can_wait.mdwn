@@ -5,3 +5,5 @@ i have used this oneliner so far, but it's ugly and painful, especially since `g
     git annex unused 2>&1 | grep '^  *[0-9][0-9]*' | sed 's/^ *[0-9][0-9]* *//' | xargs -I'{}' git log --oneline --stat -S'{}' -1
 
 any way to do this more easily? --[[anarcat]]
+
+> [[done]]; use `git-annex whereused --unused` --[[Joey]]

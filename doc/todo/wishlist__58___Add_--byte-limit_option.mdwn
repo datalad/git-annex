@@ -12,3 +12,5 @@ accomplish this, but it's a bit cumbersome and also not a very precise
 way to specify the amount I want to copy/move/get. The last example 
 would also be a useful command to limit the traffic when I'm connecting 
 via mobile – get as much as possible, but don't blow the mobile quota.
+
+> [[done]] as --size-limit --[[Joey]]

@@ -10,3 +10,8 @@ which would make fetch and pull run `git-remote-annex`. Currently, special
 remote's don't get an url configured. (`annex::uuid` was my first thought,
 but `annex::foo` avoids repeating the remote's uuid and git-annex can
 look up the uuid from the name) --[[Joey]]
+
+> While this seems possible, I wonder if it's a good idea. It seems, that,
+> the justify the added code and new executable (or symlink to git-annex),
+> there would need to be a real benefit. Is it enough benefit to unify
+> import/export with pull/push? Is it really a benefit at al? --[[Joey]]
