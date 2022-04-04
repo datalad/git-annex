@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-04-04T18:26:00Z"
+ content="""
+Using location tracking for this seems to trade off the time to contact the
+remote and check presence with bloat of the git repository. This does not
+strike me as a good tradeoff. If I were going to implement this, I suppose
+I'd store the information in sqlite instead.
+
+I'm not clear what the use case or benefit of this would be?
+"""]]
