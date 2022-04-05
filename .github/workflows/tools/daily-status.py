@@ -206,14 +206,19 @@ def main():
                 r = s.get(run.artifacts_url)
                 r.raise_for_status()
                 (artifact,) = r.json()["artifacts"]
-                artifact_url = artifact["archive_download_url"]
                 client_statuses.append(
                     ClientStatus(
                         client_id=m[1],
                         build_id=int(m[2]),
                         timestamp=dt,
-                        artifact_url=artifact_url,
-                        tests=get_client_test_outcomes(s, artifact_url),
+                        artifact_url=(
+                            f"https://github.com/{CLIENTS_REPO}/suites"
+                            f"/{run.raw_data['check_suite_id']}/artifacts"
+                            f"/{artifact['id']}"
+                        ),
+                        tests=get_client_test_outcomes(
+                            s, artifact["archive_download_url"]
+                        ),
                     )
                 )
             else:
