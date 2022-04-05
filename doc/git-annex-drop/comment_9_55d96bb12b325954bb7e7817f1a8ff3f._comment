@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2022-04-05T17:43:24Z"
+ content="""
+@yarikoptic --in --copies etc are documented in 
+[[git-annex-matching-options]] which this page does link to.
+"""]]
