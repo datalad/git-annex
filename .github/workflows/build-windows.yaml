@@ -24,7 +24,7 @@ env:
 
 jobs:
   build-package:
-    runs-on: windows-2016
+    runs-on: windows-2019
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
@@ -206,7 +206,7 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex:
-    runs-on: windows-2016
+    runs-on: windows-2019
     needs: build-package
     steps:
       - name: Checkout this repository
@@ -287,7 +287,7 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-datalad:
-    runs-on: windows-2016
+    runs-on: windows-2019
     needs: build-package
     strategy:
       matrix:

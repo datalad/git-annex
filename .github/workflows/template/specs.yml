@@ -41,7 +41,7 @@
 - ostype: windows
   osname: Windows
   cron_hour: '03'
-  runs_on: windows-2016
+  runs_on: windows-2019
   env:
     LANG: C.utf-8
   test_annex_flavors: []
