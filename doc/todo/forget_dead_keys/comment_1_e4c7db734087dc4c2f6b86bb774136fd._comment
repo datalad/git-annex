@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-04-05T18:39:44Z"
+ content="""
+Took a look at implementing this, and found a challenging problem.
+A TransitionCalculator for this would need a way to check if a given key is
+dead. Which means that the TransitionCalculator would need to run in Annex,
+and read the location log for the key in order to decide whether to keep
+a log file associated with that key.
+
+That would make this transition be a lot slower to calculate than
+transitions are now -- currently transitions only need the content of the
+file they are acting on, and information that can be looked up before
+starting like the TrustMap. This new transition would be doing a lot of
+git-annex branch queries.
+
+The other problem is that, if a key is dead, the location log for it ought
+to be removed by the transition. But then calculating transitions for other
+log files associated with that key would not be able to read the location
+log to know it's dead. 
+
+Just caching in memory what dead keys have had their location logs removed
+would not necessarily be enough either -- if a clone added information to a
+log file associated with a dead key, then on merge from that clone, if
+the transition is re-run it would no longer know that the key was dead.
+"""]]
