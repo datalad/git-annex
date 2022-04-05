@@ -32,6 +32,8 @@ git to push the branch to any git repositories not running git-annex.)
 
 [[git-annex]](1)
 
+[[git-annex-dead]](1)
+
 [[git-annex-filter-branch]](1)
 
 # AUTHOR
