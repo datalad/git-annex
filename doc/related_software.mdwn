@@ -57,4 +57,8 @@ designed to interoperate with it.
 
 * [Git::Annex](https://metacpan.org/release/Git-Annex) is a Perl interface to git-annex, including a script `git annex reviewunused` for interactively processing git-annex-unused output
 
+* [easy-git-annex](https://www.npmjs.com/package/easy-git-annex) is a 
+  TypeScript interface to git-annex (and git) commands. It can also be used
+  by JavaScript.
+
 See also [[not]] for software that is *not* related to git-annex, but similar.
