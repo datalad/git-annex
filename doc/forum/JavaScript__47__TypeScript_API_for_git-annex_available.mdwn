@@ -1,0 +1,13 @@
+Hello,
+
+I just released easy-git-annex v2.0.0. It is a wrapper over the Git and git-annex command lines. It is written in TypeScript and can also be used by JavaScript.
+
+The package is available from https://www.npmjs.com/package/easy-git-annex.
+
+The source repository is https://github.com/jstritch/easy-git-annex.
+
+If you find a problem or want to request a new feature, please create an issue at the repository. The Discussions section is for questions, show and tell, and other relevant subjects.
+
+I hope this package helps the git-annex community.
+
+John
