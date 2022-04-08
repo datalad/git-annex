@@ -166,7 +166,7 @@ def main():
         for wfname in WORKFLOWS:
             wf = wfrepo.get_workflow(wfname)
             for run in wf.get_runs():
-                if run.status != "completed":
+                if run.status != "completed" or run.event != "schedule":
                     continue
                 dt = ensure_aware(run.created_at)
                 if dt <= cutoff:

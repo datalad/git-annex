@@ -255,12 +255,14 @@ jobs:
     {% if clients %}
       {% if ostype != "ubuntu" %}
       - name: Import GPG key
+        if: github.event_name == 'schedule'
         run: |
           # private key for signing - comes from secrets
           echo '${{ secrets.datalad_builder_gpgkey }}' | gpg --import
 
       {% endif %}
       - name: Clone datalad/git-annex-ci-client-jobs
+        if: github.event_name == 'schedule'
         uses: actions/checkout@v2
         with:
           repository: datalad/git-annex-ci-client-jobs
@@ -269,6 +271,7 @@ jobs:
           ssh-key: ${{ secrets.CLIENT_JOBS_SSH_KEY }}
 
       - name: Push installer to datalad/git-annex-ci-client-jobs
+        if: github.event_name == 'schedule'
         run: |
           set -ex -o pipefail
           git checkout --orphan build
