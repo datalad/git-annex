@@ -53,7 +53,6 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install eatmydata
           sudo eatmydata apt-get install singularity-container gnupg moreutils strace
-          echo "just a touch to trigger workflow"
 
       - name: Determine git-annex ref to build
         run: |
@@ -130,6 +129,7 @@ jobs:
             dist/build-version
 
       - name: Clone datalad/git-annex-ci-client-jobs
+        if: github.event_name == 'schedule'
         uses: actions/checkout@v2
         with:
           repository: datalad/git-annex-ci-client-jobs
@@ -138,6 +138,7 @@ jobs:
           ssh-key: ${{ secrets.CLIENT_JOBS_SSH_KEY }}
 
       - name: Push installer to datalad/git-annex-ci-client-jobs
+        if: github.event_name == 'schedule'
         run: |
           set -ex -o pipefail
           git checkout --orphan build
