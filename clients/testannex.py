@@ -129,7 +129,7 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
     GitRepo(this_script.parent).run("-c", "pull.rebase=false", "pull", "origin", "master")
     if this_script.stat().st_mtime_ns > mtime:
         log.info("This script was modified; restarting ...")
-        os.execv(sys.executable, __file__, *sys.argv[1:])
+        os.execl(sys.executable, __file__, *sys.argv[1:])
 
     cfg = parse_clients()
     try:
