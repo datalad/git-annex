@@ -1,0 +1,11 @@
+Download speed is displayed in bytes/second, but in some situations, it
+would be better to use bits/second, eg Mbps and Kbps rather than MiB/s and
+KiB/s.
+
+I noticed this now that I have an internet connection that is
+capable of 150-200 Mbps, but varies widely (satellite). While I could think
+of that as 19-25 MiB/s those are less round numbers and harder to remember
+and match up with the other bandwidth displays.
+
+This might make sense as a per-remote configurable value. Allowing
+using MiB/s for a hard drive and Mbps for a network remote. --[[Joey]]
