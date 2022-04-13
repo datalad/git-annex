@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="lh"
+ avatar="http://cdn.libravatar.org/avatar/d31bade008d7da493d9bfb37d68fd825"
+ subject="Improving on the WORM situation"
+ date="2022-04-13T22:19:40Z"
+ content="""
+What do you think about a new backend? There are some hash functions out there that aren't necessarily cryptographically secure but are more performant and certainly better than metadata checks at deduplication.
+
+Modern filesystems like BTRFS implement checksumming at the filesystem level for both data and metadata to detect (but not repair, not without some sort of parity data or mirroring) bitrot. Based on BTRFS's nice [checksumming overview](https://btrfs.readthedocs.io/en/latest/Checksumming.html), maybe CRC32C or xxHash would be good options? Their benchmarks suggest they're 60× and 40× faster than SHA256, respectively. According to the [benchmark source](https://kdave.github.io/selecting-hash-for-btrfs/), xxHash offers improved collision resistance over CRC32C, but the latter is more accessible on legacy systems (not much of a concern for git-annex, I think, given this would be a new, opt-in feature anyway). Since those benchmarks, the latest version, [XXH3](https://github.com/Cyan4973/xxHash), has received a stable release, and is apparently able to keep pace with RAM sequential read.
+
+I was even thinking there could be an option to tap into filesystem checksumming, but BTRFS does this at the block level or after compression[¹](https://unix.stackexchange.com/a/411289), so that's off the table.
+
+Please let me know if this is the right place for this, or if I should've opened a forum post.
+"""]]
