@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="lh"
+ avatar="http://cdn.libravatar.org/avatar/d31bade008d7da493d9bfb37d68fd825"
+ subject="Discrepancy between `git add` and `git annex add` when annex.largefiles is set"
+ date="2022-04-13T23:15:25Z"
+ content="""
+> Once you've told git-annex what files are large, both git annex add and git add/git commit -a will add the large files to the annex and the small files to git.
+
+I have a repo where I have run:
+    git annex config --set annex.largefiles '(mimeencoding=binary and not mimetype=inode/symlink) or mimeencoding=unknown-8bit'
+
+My git-annex package is built with support for MIME detection. It works for other files. But I have noticed that for certain files, `git add` does not add them to the annex. I have verified the MIME type and encoding with `file` so that I could check `git annex matchexpression`, and it matches. What might be happening here?
+"""]]
