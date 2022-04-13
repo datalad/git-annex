@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="lh"
+ avatar="http://cdn.libravatar.org/avatar/d31bade008d7da493d9bfb37d68fd825"
+ subject="recording state in git"
+ date="2022-04-13T23:56:09Z"
+ content="""
+Why does git-annex-add record state in Git? This means if you change your mind before committing and unannex some files, those files are still left in the annex. Semantically, this makes git-annex-add feel more like a commit operation, which is confusing given the name.
+
+Furthermore, to forcibly drop these files, you have to take the output `git annex whereused --unused --historical` and compare it against the output of `git annex unused` to get a list of files that don't show up anywhere in the history. This is rather cumbersome for dropping files you never committed.
+
+Couldn't the `git-annex` branch use the index, like git itself, so unannexing wouldn't leave you with extraneous files?
+
+I get the safety perspective, but I feel like that's what `git commit` (and a hypothetical `git annex commit`) should be for. The staging area is useful to verify you're actually committing what you want. I know I'm probably a decade late here, but I'd be interested to hear your thoughts, anyway. It seems weird to deviate from git here.
+"""]]
