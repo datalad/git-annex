@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="lell"
+ avatar="http://cdn.libravatar.org/avatar/4c4138a71d069e290240a3a12367fabe"
+ subject="comment 4"
+ date="2022-04-15T12:05:19Z"
+ content="""
+> Also as far as the priority of this goes, I think that the number of dotdirs that
+> contain files that get version controlled at all is probably quite small, excluding
+> version controlling of HOME.
+
+I think this assessment changes with the advent of containers. I use git-annex to version-control a research computation which runs inside a container. The folder is mounted as the home directory in that container, so python modules, self-compiled software etc. go into .local, configuration of tools goes into .config, etc. All of these are not annexed but inflate the repository size and might lead to inadverent sharing of information. It makes git-annexes behaviour difficult to explain to others with this exception of dotfile handling. Why can't git-annex just handle the `.git` folder differently and for all others just annex or not as set in the largefile rules?
+"""]]
