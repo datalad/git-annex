@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="lh"
+ avatar="http://cdn.libravatar.org/avatar/d31bade008d7da493d9bfb37d68fd825"
+ subject="The man page export seems to be broken"
+ date="2022-04-15T12:26:20Z"
+ content="""
+When I rebuild the man pages on my system, this one has an error. Maybe there's a formatting issue?
+"""]]
