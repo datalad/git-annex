@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2022-04-19T15:56:05Z"
+ content="""
+@lh it builds for me and the man page looks ok.
+I suggest you file a bug report with the details about your problem.
+"""]]
