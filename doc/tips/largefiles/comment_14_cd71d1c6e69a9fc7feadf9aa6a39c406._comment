@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2022-04-19T16:03:49Z"
+ content="""
+@lh two possibilities are:
+
+1. When `git add` is run, git-annex does some additional checks to detect
+   things like a file that was checked into git before but has been
+   renamed, and will avoid annexing such a file even when annex.largefiles
+   says to.
+2. Perhaps `git add` is finding some other git-annex
+   version that behaves differently. Seems unlikely, but possible.
+"""]]
