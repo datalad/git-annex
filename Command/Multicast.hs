@@ -152,7 +152,7 @@ send ups fs = do
 				let ps =
 					-- Force client authentication.
 					[ Param "-c"
-					, Param "-Y", Param "aes256-cbc"
+					, Param "-Y", Param "aes256-gcm"
 					, Param "-h", Param "sha512"
 					-- Picked ecdh_ecdsa for perfect forward secrecy,
 					-- and because a EC key exchange algorithm is

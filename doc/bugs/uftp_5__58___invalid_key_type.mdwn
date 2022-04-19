@@ -49,3 +49,7 @@ ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Of course! I'm using it to track assets in an infrastructure repository
+
+> I've changed it to use aes256-gcm. I have not verified if there
+> is other breakage from the new version, so file a bug if you find any.
+> [[done]] --[[Joey]]

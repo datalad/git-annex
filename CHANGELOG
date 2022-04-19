@@ -6,6 +6,8 @@ git-annex (10.20220323) UNRELEASED; urgency=medium
     Same for mincopies.
   * assistant: When annex.autocommit is set, notice commits that
     the user makes manually, and push them out to remotes promptly.
+  * multicast: Support uftp 5.0 by switching from aes256-cbc to
+    aes256-gcm.
 
  -- Joey Hess <id@joeyh.name>  Mon, 28 Mar 2022 14:46:10 -0400
 
