@@ -1,0 +1,37 @@
+Notice that the problem is due to the fact that the remote name has spaces. I have only tested it with adb special remote, but since it is a `git` error It will likely happen with any remote.
+
+Sorry I you don't consider this a bug or if it is documented somewhere and I haven't read it.
+
+### Please describe the problem.
+following [Android sync tip](https://git-annex.branchable.com/tips/android_sync_with_adb/), It fails with 
+
+```
+update refs/remotes/Redmi Note 8/master fatal: update_ref failed for ref'refs/remotes/Redmi Note 8/master': refuse to update ref with bad name 'refs/remotes/Redmi Note 8/master'
+
+git-annex: git [Param "update-ref",Param "refs/remotes/Redmi Note 8/master",Param "389056e22b21972da562d1f1c5ce7af2447523b7"] failed
+CallStack (from HasCallStack):
+  error, called at ./Git/Command.hs:42:17 in main:Git.Command
+failed
+```
+
+The error happens after executing `git annex sync --content "Redmi Note 8"` and pulling all files. 
+
+### What steps will reproduce the problem?
+Once you have conected to an adb special remote (probably any remote can trigger the error) run the following
+
+```bash
+#                        |- Notice the space
+git-annex initremote "Bad Remote" type=adb androiddirectory=/sdcard encryption=none exporttree=yes importtree=yes
+git config "remote.Bad Remote.annex-tracking-branch" master:android
+git annex sync --content "Bad Remote"
+```
+
+It will download the content and fail afterwards
+
+### What version of git-annex are you using? On what operating system?
+- git-annex version 8.20200226
+- OS: Ubuntu 20.04.3 LTS
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+I am not an experienced user but after using non-space-remotes-names I've been able to sync my phone with no major problems following the documentation in this page. So great work!
+
