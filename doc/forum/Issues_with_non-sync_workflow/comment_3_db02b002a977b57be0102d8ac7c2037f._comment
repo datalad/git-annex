@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="lh"
+ avatar="http://cdn.libravatar.org/avatar/d31bade008d7da493d9bfb37d68fd825"
+ subject="comment 3"
+ date="2022-04-19T18:40:57Z"
+ content="""
+If I had set annex.alwayscommit=false, would that make resetting the worktree potentially dangerous if I hadn't merged yet?
+"""]]
