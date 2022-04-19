@@ -263,11 +263,7 @@ isolateGitConfig a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
 	a
 
 removeDirectoryForCleanup :: FilePath -> IO ()
-#if MIN_VERSION_directory(1,2,7)
 removeDirectoryForCleanup = removePathForcibly
-#else
-removeDirectoryForCleanup = removeDirectoryRecursive
-#endif
 
 cleanup :: FilePath -> IO ()
 cleanup dir = whenM (doesDirectoryExist dir) $ do
@@ -743,18 +739,16 @@ parallelTestRunner' numjobs opts mkts
 		nvar <- newTVarIO (1, length ts)
 		exitcodes <- forConcurrently [1..numjobs] $ \_ -> 
 			worker [] nvar runone
-		let exitcodes' = concat exitcodes
 		unless (keepFailuresOption opts) finalCleanup
-		if all (== ExitSuccess) exitcodes'
-			then exitSuccess
-			else case (filter (/= ExitFailure 1) exitcodes') of
-				[] -> do
-					putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
-					putStrLn "   with utilities, such as git, installed on this system.)"
-					exitFailure
-				v -> do
-					putStrLn $ "  Test subprocesses exited with unexpected exit codes: " ++ show v
-					exitFailure
+		case nub (concat exitcodes) of
+			[ExitSuccess] -> exitSuccess
+			[ExitFailure 1] -> do
+				putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
+				putStrLn "   with utilities, such as git, installed on this system.)"
+				exitFailure
+			v -> do
+				putStrLn $ "  Test subprocesses exited with unexpected exit codes: " ++ show (concat exitcodes)
+				exitFailure
 	go (Just subenvval) = case readish subenvval of
 		Nothing -> error ("Bad " ++ subenv)
 		Just (n, crippledfilesystem, adjustedbranchok) -> isolateGitConfig $ do
