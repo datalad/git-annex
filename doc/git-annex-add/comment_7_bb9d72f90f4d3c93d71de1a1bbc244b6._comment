@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-04-19T16:09:12Z"
+ content="""
+@lh I don't feel this man page's comment section is the place to discuss
+this in detail. But suffice to say that even if add behaved the way you
+suggest, any other git-annex command can commit the accumulated changes
+to the git-annex branch at any time. So the change would not guarantee
+the behavior you hope for.
+
+But, you can set annex.alwayscommit to false and run `git-annex merge`
+when you do want to commit changes to the git-annex branch.
+"""]]
