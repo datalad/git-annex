@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2022-04-19T14:40:17Z"
+ content="""
+noticed something related to only these runs seems to me -- an odd/confusing message:
+
+```
+cron-20220405/build-ubuntu.yaml-646-67bae4b2-failed/4_test-annex (nfs-home, ubuntu-latest).txt:2022-04-05T03:10:55.6974698Z   Test subprocesses exited with unexpected exit codes: [ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess]
+```
+
+didn't do count -- may be it is \"unexpected\" in that there is 1 missing ExitSuccess? or what is unexpected otherwise?  A cleaner report would be appreciated.
+"""]]
