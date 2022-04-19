@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-04-19T16:49:26Z"
+ content="""
+That is a *very* strange message! Because the list is all
+ExitSuccess, but before the code to check that message can run,
+it checks that the list is not `all (== ExitSuccess)`
+
+It should not be possible for a list without an ExitFailure in it to
+get past that check. And it certainly does not normally.
+
+And looking at the log, one of the tests *did* fail:
+
+	    crypto:                                   FAIL
+	      Exception: /tmp/gpgtmpSgOEyq/2/S.gpg-agent.ssh: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:getSymbolicLinkStatus: does not exist (No such file or directory)
+
+So there must have been an `ExitFailure 1` in the list, even though it
+somehow ends up displaying as containing all `ExitSuccess`. Almost as if
+the content of the list changed. But it cannot, barring a bug in the
+haskell runtime..
+
+As far as the cause of that failure, it should be fixable by using 
+removePathForcibly rather than removeDirectoryRecursive in removeTmpDir.
+I've made that change.
+"""]]

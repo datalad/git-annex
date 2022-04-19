@@ -1,6 +1,6 @@
 {- Temporary directories
  -
- - Copyright 2010-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -63,8 +63,17 @@ removeTmpDir tmpdir = liftIO $ whenM (doesDirectoryExist tmpdir) $ do
 	-- after a process has just written to it and exited.
 	-- Because it's crap, presumably. So, ignore failure
 	-- to delete the temp directory.
-	_ <- tryIO $ removeDirectoryRecursive tmpdir
+	_ <- tryIO $ go tmpdir
 	return ()
 #else
-	removeDirectoryRecursive tmpdir
+	go tmpdir
+#endif
+  where
+  	-- Use removePathForcibly when available, to avoid crashing
+	-- if some other process is removing files in the directory at the
+	-- same time.
+#if MIN_VERSION_directory(1,2,7)
+	go = removePathForcibly
+#else
+	go = removeDirectoryRecursive
 #endif

@@ -264,7 +264,7 @@ isolateGitConfig a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
 
 removeDirectoryForCleanup :: FilePath -> IO ()
 #if MIN_VERSION_directory(1,2,7)
- removeDirectoryForCleanup = removePathForcibly
+removeDirectoryForCleanup = removePathForcibly
 #else
 removeDirectoryForCleanup = removeDirectoryRecursive
 #endif
