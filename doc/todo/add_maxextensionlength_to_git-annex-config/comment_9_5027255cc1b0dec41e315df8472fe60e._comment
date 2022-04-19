@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2022-04-19T16:42:16Z"
+ content="""
+Well, maxextensionlength does at least have some connection to the
+filename, which does point at it being somewhat suitable for
+gitattributes. Eg, you might want to allow files with one long extension
+to include it all, but not others.
+
+The current implementation uses a single git check-attr process which
+reports on all 4 currently supported git-annex attributes for every query.
+So adding a new attribute also slows down queries for all the rest by some
+amount. To quantify that, I did a benchmark, modifiying git-annex to 
+request (but ignore) an additional attribute. git-annex add of 10000
+small files did not slow down by any measurable amount due to that change.
+(1:53.78 before the change and 1:52.00 afterwards actually, so the
+difference is lost in the noise)
+
+An attribute does impose more overhead than git-annex
+config though, since it has to be queried for every file rather than one
+time. I benchmarked the overhead of checking annex.maxextensionlength
+once per file added, over 10000 files. It slowed down by around 5%.
+
+git-annex add already queries the annex.largefiles attribute once per file.
+So, if it could also query annex.maxextensionlength at the same time, 
+it would be free to support the attribute. And then I'd certianly be in
+favor of it. This would need some nontrivial refactoring of the code.
+"""]]
