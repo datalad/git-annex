@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+Today's build testing of git-annex failed on NFS: https://github.com/datalad/git-annex/runs/6058121542?check_suite_focus=true  with 
+
+```
+$> grep -3 FAIL 29.txt
+2022-04-18T03:22:09.5662927Z       init:                                   OK (0.37s)
+2022-04-18T03:22:09.5663500Z       add:                                    OK (1.07s)
+2022-04-18T03:22:09.5663802Z     addurl:                                   OK (1.17s)
+2022-04-18T03:22:09.5664100Z     crypto:                                   FAIL
+2022-04-18T03:22:09.5665565Z       Exception: /tmp/gpgtmpSgOEyq/2/S.gpg-agent.ssh: removeDirectoryRecursive:removeContentsRecursive:removePathRecursive:removeContentsRecursive:removePathRecursive:getSymbolicLinkStatus: does not exist (No such file or directory)
+2022-04-18T03:22:09.5666237Z     directory remote:                         OK (2.14s)
+2022-04-18T03:22:09.5666709Z     uninit (in git-annex branch):             OK (0.79s)
+```
+
+
+it seems to start happening (sometimes, not always) only recently (no FAILs in month 03):
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex/builds/2022/04[master]git
+$> git grep 'crypto: *FAIL' -- cron*
+cron-20220405/build-ubuntu.yaml-646-67bae4b2-failed/4_test-annex (nfs-home, ubuntu-latest).txt:2022-04-05T03:05:37.7854544Z     crypto:                                   FAIL
+cron-20220405/build-ubuntu.yaml-646-67bae4b2-failed/test-annex (nfs-home, ubuntu-latest)/7_Run tests.txt:2022-04-05T03:05:37.7854508Z     crypto:                                   FAIL
+cron-20220408/build-ubuntu.yaml-652-3e846b0e-failed/4_test-annex (nfs-home, ubuntu-latest).txt:2022-04-08T03:18:02.5454711Z     crypto:                                   FAIL
+cron-20220408/build-ubuntu.yaml-652-3e846b0e-failed/test-annex (nfs-home, ubuntu-latest)/7_Run tests.txt:2022-04-08T03:18:02.5454672Z     crypto:                                   FAIL
+cron-20220411/build-ubuntu.yaml-658-333680cf-failed/4_test-annex (nfs-home, ubuntu-latest).txt:2022-04-11T03:23:00.6339271Z     crypto:                                   FAIL
+cron-20220411/build-ubuntu.yaml-658-333680cf-failed/test-annex (nfs-home, ubuntu-latest)/7_Run tests.txt:2022-04-11T03:23:00.6339267Z     crypto:                                   FAIL
+cron-20220414/build-ubuntu.yaml-661-0346631d-failed/4_test-annex (nfs-home, ubuntu-latest).txt:2022-04-14T03:17:48.5929540Z     crypto:                                   FAIL
+cron-20220414/build-ubuntu.yaml-661-0346631d-failed/test-annex (nfs-home, ubuntu-latest)/7_Run tests.txt:2022-04-14T03:17:48.5929536Z     crypto:                                   FAIL
+cron-20220418/build-ubuntu.yaml-665-0346631d-failed/4_test-annex (nfs-home, ubuntu-latest).txt:2022-04-18T03:22:09.5664100Z     crypto:                                   FAIL
+cron-20220418/build-ubuntu.yaml-665-0346631d-failed/test-annex (nfs-home, ubuntu-latest)/7_Run tests.txt:2022-04-18T03:22:09.5664096Z     crypto:                                   FAIL
+```
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
