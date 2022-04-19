@@ -746,7 +746,7 @@ parallelTestRunner' numjobs opts mkts
 				putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
 				putStrLn "   with utilities, such as git, installed on this system.)"
 				exitFailure
-			v -> do
+			_ -> do
 				putStrLn $ "  Test subprocesses exited with unexpected exit codes: " ++ show (concat exitcodes)
 				exitFailure
 	go (Just subenvval) = case readish subenvval of
