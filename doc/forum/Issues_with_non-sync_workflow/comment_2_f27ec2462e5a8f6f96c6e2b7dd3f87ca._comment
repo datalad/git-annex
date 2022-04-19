@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="lh"
+ avatar="http://cdn.libravatar.org/avatar/d31bade008d7da493d9bfb37d68fd825"
+ subject="comment 2"
+ date="2022-04-19T18:15:53Z"
+ content="""
+But the worktree won't confuse git-annex in any way, right?
+
+If that's the case, I guess I'll just remember to hard reset the worktree every time I want to work with it. As long as git-annex doesn't ever leave things uncommitted on its branch, that should be fine.
+"""]]
