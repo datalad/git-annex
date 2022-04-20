@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="datamanager"
+ avatar="http://cdn.libravatar.org/avatar/7d4ca7c5e571d4740ef072b83a746c12"
+ subject="I had to come out of the rabbit hole"
+ date="2022-04-20T15:28:13Z"
+ content="""
+After diving that rabbit hole, I got stuck: it looks like the project's application is not yet verified, and I can't use my own application because google doesn't like it's redirect URI. That's a bummer. 
+"""]]
