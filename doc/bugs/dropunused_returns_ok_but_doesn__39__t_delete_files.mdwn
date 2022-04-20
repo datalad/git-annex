@@ -1,0 +1,54 @@
+### Please describe the problem.
+I deleted a lot of files with "git rm" and now have the problem that I cannot delete the file-contents with annex dropunused.
+"git annex unused" shows correctly the files, then I delete them with "git annex dropunsed 1-1000" and the command
+returns Sucess/OK. When I go back to "git annex unused" all files are still there, altough they should have been deleted. 
+
+
+### What version of git-annex are you using? On what operating system?
+Debian 11 Bullseye; git-annex version: 10.20220322-1~ndall+1 
+
+### Please provide any additional information below.
+
+[[!format sh """
+# git annex unused
+unused . (checking for unused data...) (checking master...)
+  Some annexed data is no longer used by any files:
+    NUMBER  KEY
+    1       SHA256E-s38888--42db1349c507d96722d2a506921dbc1a90a0a278828db732c9f1971eb9cfb70c.pyc
+    2       SHA256E-s22918--093c4494596c7441d2cc6ee90efdd98463e7b830fa5030b2a081b05b559db3bc.pyc
+    3       SHA256E-s12896--8c2c167031e59888aea1af627705d4005b41a80b433bce4f1e751f9a6e5dc149.pyc
+    4       SHA256E-s63363--dbb7bdd1512300464f0116a79ab970f26f82bb6dd71236c8ab3d58bb591a473f.pyc
+    ....
+
+  (To see where this data was previously used, run: git annex whereused --historical --unused
+
+  To remove unwanted data: git-annex dropunused NUMBER
+
+ok
+
+#git annex dropunused 1-1600 --force
+dropunused 1 ok
+dropunused 2 ok
+dropunused 3 ok
+dropunused 4 ok
+...
+
+# git annex unused
+unused . (checking for unused data...) (checking master...)
+  Some annexed data is no longer used by any files:
+    NUMBER  KEY
+    1       SHA256E-s38888--42db1349c507d96722d2a506921dbc1a90a0a278828db732c9f1971eb9cfb70c.pyc
+    2       SHA256E-s22918--093c4494596c7441d2cc6ee90efdd98463e7b830fa5030b2a081b05b559db3bc.pyc
+    3       SHA256E-s12896--8c2c167031e59888aea1af627705d4005b41a80b433bce4f1e751f9a6e5dc149.pyc
+    4       SHA256E-s63363--dbb7bdd1512300464f0116a79ab970f26f82bb6dd71236c8ab3d58bb591a473f.pyc
+    ....
+
+  (To see where this data was previously used, run: git annex whereused --historical --unused
+
+  To remove unwanted data: git-annex dropunused NUMBER
+
+ok
+
+"""]]
+
+
