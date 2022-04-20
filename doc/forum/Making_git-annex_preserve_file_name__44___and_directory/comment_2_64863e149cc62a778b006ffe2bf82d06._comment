@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="datamanager"
+ avatar="http://cdn.libravatar.org/avatar/7d4ca7c5e571d4740ef072b83a746c12"
+ subject="re: See git-annex-export. "
+ date="2022-04-20T14:47:59Z"
+ content="""
+Thank you! 
+
+I'm assuming that since [rclone-special remotes aren't explicitly stated to support exporttree](https://git-annex.branchable.com/tips/using_Google_Drive/) that I should use [git-annex-remote-googledrive](https://github.com/Lykos153/git-annex-remote-googledrive) instead, correct? 
+"""]]
