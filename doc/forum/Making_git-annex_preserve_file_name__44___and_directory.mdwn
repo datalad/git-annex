@@ -1,0 +1,10 @@
+Hello,
+I have recordings of skype meetings with my teammates, all stored in google-drive. I can link to them just fine, but I thought it might be interesting to have git-annex manage them. 
+
+The problem is that I have to share these recordings with team mates. I therefore can't send them the hashed, and encrypted file. 
+
+For example, if I have a file at `attachments/video.mkv`, I want to be able to store it on google-drive at `annexed-attachments/video.mkv`. I thought that [backends](https://git-annex.branchable.com/backends/) might hold the answer, but I don't think so anymore.
+
+Even a point in the right direction would be appreciated. 
+
+
