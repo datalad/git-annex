@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="lh"
+ avatar="http://cdn.libravatar.org/avatar/d31bade008d7da493d9bfb37d68fd825"
+ subject="comment 15"
+ date="2022-04-21T01:18:21Z"
+ content="""
+@joey Thanks. I don't think 2 is even possible since I just installed git-annex. 1 seems likely. I'm guessing that could occur if I previously ran `git annex add` with a different `annex.largefiles` that caused some files to be added (though not committed) via git rather than git-annex? That's roughly the scenario I was in.
+"""]]
