@@ -1,0 +1,46 @@
+Hello,
+
+I am currently testing out git-annex (git-annex version: 10.20220223-ge37f0f227)*. I like it a lot, but have one question,
+(I'll try to keep it succinct)
+
+Sample setup:
+
+- main repo (untrusted, manual group) --> Small drive, contains only currently needed files.
+- multiple remote archive repo's (trusted, archive group) --> (two for this test)
+- numcopies=2
+
+So far works as expected (two copies created in archives)
+
+Situation: I replace a couple of the oldest archive drives each year. (or one may fail)
+
+- drive to remove is marked dead + unwanted (as per the tips/help)
+- new drive is added (clone repo etc.)
+- fsck correctly identifies files as missing a copy, files locally available are copied to the new archive, other files are however not copied from another archive drive (which is connected and availabe).
+
+  doing:
+
+	- git annex copy --auto --from=data2
+	- git annex copy --auto --to=data4	// (this part is prolly not needed with assistant)
+
+  does work, but does an unnecessary copy to the main repo first, also note that in the real situation this drive won't be large enough to keep all the files, so would need a lot of to-and-fro'ing (and also needs cleanup afterwards).
+  
+I solved it** (for now) by converting the archives from raw to full repo's + adding the other archive to its remotes so a direct copy can be done (ie. git annex copy --auto / sync --content directly from the archive drive).
+- tedious but doable.
+
+
+Maybe I'm missing something? or I am doing it wrong? :-)
+If not: it would be nice if this worked irrespective of files being available locally, or to be able to do:
+	
+- git annex copy --auto --from=data2 --to=data4
+
+this way the separate archives do not need to be converted, and everything can be done from the central repo.
+(I prefer the archives being raw repo's, they shouldn't be messed with)
+
+Suggestions?
+
+Thanks
+KachoOji
+
+
+"* upgraded from v8 from debian repo
+ ** You could also clone the drive (dd), but that won't work if it failed.
