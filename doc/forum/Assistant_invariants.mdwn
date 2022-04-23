@@ -1,0 +1,20 @@
+I think I might have a wrong mental model about what the annex assistant is really doing and I want to clarify some things.
+
+I have a simple setup, everything was set up with the web app.
+
+* `Desktop`: repository mode, paired locally with Laptop, paired with web server remote `Server`
+* `Laptop`: manual mode, paired locally with Desktop, paired with web server remote `Server`
+* `Server`: transfer client
+
+The intention is that `Desktop` always holds all the files, `Laptop` has some files on-demand, and `Server` is only used for transfer.
+
+After the initial setup configuration, I restarted and used the `git annex assistant` on both `Desktop` and `Laptop` (instead of `git annex webapp`).
+Here are the things that I assumed would happen in this setup.
+
+* There won't be any traffic to the `Server` as long as `Desktop` and `Laptop` are reachable, i.e. in the same network.
+  * I first started pairing `Desktop` and `Laptop` locally. With both in sync, I added the `Server` remote to `Laptop` first, and then I already saw files transferred to `Server`, which I did not expect. 
+* After adding files to `Desktop`, eventually, all metadata would appear on `Laptop`, but never the content as long as I don't manually add it via `git annex add`
+* After adding files to `Laptop`, content would be synced to `Desktop`. The added content on `Laptop` would never be replaced with symlinks, because there is nothing to sync. The latest version is already there.
+* After dropping files from `Laptop`, the content would stay gone until I re-add it.
+
+All my assumptions are immediately violated, so I assume I got them wrong. Is my assistant setup correct for the things that I intend to do?
