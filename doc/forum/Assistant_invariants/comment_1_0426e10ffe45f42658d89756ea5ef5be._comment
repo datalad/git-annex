@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Albert"
+ avatar="http://cdn.libravatar.org/avatar/79aaf48dabedd7cd96a9117685fbe2cc"
+ subject="Clarification Example"
+ date="2022-04-23T12:10:36Z"
+ content="""
+Small example for
+
+> After adding files to Laptop, content would be synced to Desktop. The added content on Laptop would never be replaced with symlinks, because there is nothing to sync. The latest version is already there.
+
+I added a `script.sh` file and some resources to `Laptop`. After it synced to `Desktop`, I executed `script.sh`. The content of `script.sh` did not change, but right now the `script.sh` file became a symlink. I assume this symlink will not be replaced, because `Laptop` is in manual mode. Is some metadata change of the file causing syncing again? Access time metadata or some other internal file system metadata that I don't know about? 
+"""]]
