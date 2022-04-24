@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Albert"
+ avatar="http://cdn.libravatar.org/avatar/79aaf48dabedd7cd96a9117685fbe2cc"
+ subject="Duplicate Files"
+ date="2022-04-24T14:13:46Z"
+ content="""
+Ok, so I think I understand now where all of my problems come from.
+
+On adding new content in `Desktop`, if some files are duplicates of already available content on `Laptop`, those will not be symlinks on `Laptop`.
+When I dropped files from `Laptop`, the duplicate files in other folders, which I did not intend to drop, got also removed. I re-added them, and observed that the files I dropped came back again. Obviously, because they are the same duplicate files.
+
+Very confusing behavior, at least until I understood how duplicate files are handled and the interaction with git annex drop/get + manual mode. Is there maybe some command that drops files from a folder, that **only exist in that folder**?
+"""]]
