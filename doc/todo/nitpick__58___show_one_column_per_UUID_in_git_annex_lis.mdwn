@@ -1,0 +1,13 @@
+Hi Joey
+
+Thanks for an amazing tool!
+
+I have a minor nitpick regarding git annex list output when using "alternative" git remotes for the same repository.
+
+My use case: I have a several devices which can be accessed either remotely via a ssh jump host, or locally via a 192.168.x.x address (git remotes like deviceN-local, deviceN-remote). This means I have two remotes for every unique repo. As git annex list outputs one column of Xs per remote, this means I have duplicates in there for every device, which causes the list to be very wide and hard to read with more than a couple of remotes (I have 8 unique=16 remotes in one repo).
+
+
+Would it be possible to get git annex list to (optionally) output one column per unique remote/UUID, e.g. by taking the name of the lowest cost remote with each UUID? This could be behind a flag, e.g. --unique-repos or similar.
+
+Best,
+KM
