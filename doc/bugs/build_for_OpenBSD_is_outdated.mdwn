@@ -12,3 +12,5 @@ I'm hoping someone can pick this up and build a more up-to-date version.
 I've used it extensively during my time at university to keep track of materials and assignments. It ever let me down.
 Unfortunately I later lost the data due to multiple corrupted external disks and backup drives with LUKS where I didn't remember the password. Luckily I had no use for it anymore anyway.
 I'm hoping to use it again, this time in an effort to disconnect.
+
+> [[done]] --[[Joey]] 
