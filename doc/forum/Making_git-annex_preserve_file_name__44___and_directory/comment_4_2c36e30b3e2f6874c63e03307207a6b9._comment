@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-05-02T18:35:56Z"
+ content="""
+See this issue:
+<https://github.com/DanielDent/git-annex-remote-rclone/issues/35>
+
+That also has some discussion about git-annex-remote-googledrive 
+seeming to not be allowed by google and how to get around that problem.
+"""]]

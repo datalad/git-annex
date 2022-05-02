@@ -2,8 +2,6 @@ For publishing content from a git-annex repository, it would be useful to
 be able to export a tree of files to a special remote, using the filenames
 and content from the tree.
 
-(See also [[todo/export]] and [[todo/dumb, unsafe, human-readable_backend]])
-
 Note that this document was written with the assumption that only git-annex
 is writing to the special remote. But
 [[importing_trees_from_special_remotes]] invalidates that assumption,
