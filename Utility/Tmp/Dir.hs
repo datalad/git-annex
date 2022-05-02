@@ -69,11 +69,4 @@ removeTmpDir tmpdir = liftIO $ whenM (doesDirectoryExist tmpdir) $ do
 	go tmpdir
 #endif
   where
-  	-- Use removePathForcibly when available, to avoid crashing
-	-- if some other process is removing files in the directory at the
-	-- same time.
-#if MIN_VERSION_directory(1,2,7)
-	go = removePathForcibly
-#else
 	go = removeDirectoryRecursive
-#endif

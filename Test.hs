@@ -1794,7 +1794,12 @@ test_crypto = do
 		-- it needs to be able to store the agent socket there,
 		-- which can be problimatic when testing some filesystems.
 		absgpgtmp <- fromRawFilePath <$> absPath (toRawFilePath gpgtmp)
-		testscheme' scheme absgpgtmp
+		res <- testscheme' scheme absgpgtmp
+		-- gpg may still be running and would prevent
+		-- removeDirectoryRecursive from succeeding, so
+		-- force removal of the temp directory.
+		liftIO $ removeDirectoryForCleanup gpgtmp
+		return res
 	testscheme' scheme absgpgtmp = intmpclonerepo $ do
 		-- Since gpg uses a unix socket, which is limited to a
 		-- short path, use whichever is shorter of absolute
