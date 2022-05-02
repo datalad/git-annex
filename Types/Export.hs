@@ -21,7 +21,7 @@ import Git.FilePath
 import Utility.Split
 import Utility.FileSystemEncoding
 
-import Data.ByteString.Short as S
+import qualified Data.ByteString.Short as S
 import qualified System.FilePath.Posix as Posix
 import GHC.Generics
 import Control.DeepSeq
