@@ -744,8 +744,8 @@ parallelTestRunner' numjobs opts mkts
 		exitcodes <- forConcurrently [1..numjobs] $ \_ -> 
 			worker [] nvar runone
 		unless (keepFailuresOption opts) finalCleanup
-		case nub (concat exitcodes) of
-			[ExitSuccess] -> exitSuccess
+		case nub (filter (/= ExitSuccess) (concat exitcodes)) of
+			[] -> exitSuccess
 			[ExitFailure 1] -> do
 				putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
 				putStrLn "   with utilities, such as git, installed on this system.)"

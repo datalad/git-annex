@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-05-02T17:57:21Z"
+ content="""
+Noticed this:
+	
+	Test subprocesses exited with unexpected exit codes: [ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitFailure 1,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess]
+
+In this test run: <https://github.com/datalad/git-annex/runs/6251550145?check_suite_focus=true>
+
+There was a test failure indeed there, which was another bug that
+is now fixed. But notice the `ExitFailure 1` in the list of exit codes.
+
+The code around handing exit codes has changed from before, and still had a bug,
+because a list with `ExitFailure 1` will cause that message, incorrectly.
+(Now fixed that.)
+
+But, this seems to show that it's no longer hiding the actual problem
+exit code when a test fails, which it was somehow apparently doing before.
+So I think this bug can be closed as fully fixed now.
+"""]]
