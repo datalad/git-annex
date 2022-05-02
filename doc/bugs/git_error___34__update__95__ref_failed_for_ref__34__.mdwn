@@ -35,3 +35,4 @@ It will download the content and fail afterwards
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I am not an experienced user but after using non-space-remotes-names I've been able to sync my phone with no major problems following the documentation in this page. So great work!
 
+[[!meta title="importtree remote with spaces in its name causes ref update failure with unncessarily ugly message; could fail earlier with a better message"]]

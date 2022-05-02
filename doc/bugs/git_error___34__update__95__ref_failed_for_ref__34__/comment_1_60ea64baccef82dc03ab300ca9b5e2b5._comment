@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-05-02T18:29:05Z"
+ content="""
+This is similar to configuring git with a remote that has spaces in its
+name:
+
+	joey@darkstar:/tmp/z>git remote add "My Remote" ../x
+	fatal: 'My Remote' is not a valid remote name
+
+Or configuring a remote.foo.fetch with spaces in the name of the rev:
+
+	joey@darkstar:/tmp/y>git config remote.origin.fetch
+	+refs/heads/*:refs/remotes/Redmi Note 8/*
+	joey@darkstar:/tmp/y>git fetch origin
+	fatal: invalid refspec '+refs/heads/*:refs/remotes/Redmi Note 8/*'
+
+Importing from a special remote with importtree=yes is equivilant from
+pulling from a git remote, and needs to update a branch with a similar
+name as origin/master. And with a remote name with spaces, there is
+no legal branch name that will work.
+
+So, this has to fail. It could fail earlier, or with a better error
+message.
+"""]]
