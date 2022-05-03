@@ -16,7 +16,8 @@ module Remote.Rsync (
 	withRsyncScratchDir,
 	rsyncRemoteConfigs,
 	genRsyncOpts,
-	RsyncOpts
+	RsyncOpts,
+	probeRsyncProtectsArgs,
 ) where
 
 import Annex.Common
@@ -36,6 +37,7 @@ import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
 import Utility.CopyFile
+import Utility.Process.Transcript
 import Messages.Progress
 import Utility.Metered
 import Types.Transfer
@@ -74,7 +76,8 @@ gen r u rc gc rs = do
 	cst <- remoteCost gc expensiveRemoteCost
 	(transport, url) <- rsyncTransport gc $
 		fromMaybe (giveup "missing rsyncurl") $ remoteAnnexRsyncUrl gc
-	let o = genRsyncOpts c gc transport url
+	protectsargs <- liftIO probeRsyncProtectsArgs
+	let o = genRsyncOpts protectsargs c gc transport url
 	let islocal = rsyncUrlIsPath $ rsyncUrl o
 	return $ Just $ specialRemote c
 		(fileStorer $ store o)
@@ -124,6 +127,18 @@ gen r u rc gc rs = do
 			, remoteStateHandle = rs
 			}
 
+-- | Since 3.2.4, rsync protects filenames from being exposed to the shell.
+newtype RsyncProtectsArgs = RsyncProtectsArgs Bool
+
+probeRsyncProtectsArgs :: IO RsyncProtectsArgs
+probeRsyncProtectsArgs = do
+	(helpoutput, _) <- processTranscript "rsync" ["--help"] Nothing
+	-- The --old-args option was added to disable the new arg
+	-- protection, so use it to detect when that feature is supported
+	-- by rsync, rather than parsing versions.
+	return (RsyncProtectsArgs $ "--old-args" `isInfixOf` helpoutput)
+
+
 -- Things used by genRsyncOpts
 rsyncRemoteConfigs :: [RemoteConfigFieldParser]
 rsyncRemoteConfigs = 
@@ -131,15 +146,17 @@ rsyncRemoteConfigs =
 		(FieldDesc "set to no to avoid usual shell escaping (not recommended)")
 	]
 
-genRsyncOpts :: ParsedRemoteConfig -> RemoteGitConfig -> Annex [CommandParam] -> RsyncUrl -> RsyncOpts
-genRsyncOpts c gc transport url = RsyncOpts
+genRsyncOpts :: RsyncProtectsArgs -> ParsedRemoteConfig -> RemoteGitConfig -> Annex [CommandParam] -> RsyncUrl -> RsyncOpts
+genRsyncOpts (RsyncProtectsArgs protectsargs) c gc transport url = RsyncOpts
 	{ rsyncUrl = url
 	, rsyncOptions = appendtransport $ opts []
 	, rsyncUploadOptions = appendtransport $
 		opts (remoteAnnexRsyncUploadOptions gc)
 	, rsyncDownloadOptions = appendtransport $
 		opts (remoteAnnexRsyncDownloadOptions gc)
-	, rsyncShellEscape = fromMaybe True (getRemoteConfigValue shellEscapeField c)
+	, rsyncShellEscape = if protectsargs
+		then False
+		else fromMaybe True (getRemoteConfigValue shellEscapeField c)
 	}
   where
 	appendtransport l = (++ l) <$> transport

@@ -11,6 +11,9 @@ git-annex (10.20220323) UNRELEASED; urgency=medium
   * Fix test failure on NFS when cleaning up gpg temp directory.
   * Fix a build failure with ghc 9.2.2.
     Thanks, gnezdo for the patch.
+  * rsync 3.2.4 broke backwards-compatability by preventing exposing
+    filenames to the shell. Made the rsync and gcrypt special remotes
+    detect this and disable shellescape. Closes: #1010397
 
  -- Joey Hess <id@joeyh.name>  Mon, 28 Mar 2022 14:46:10 -0400
 
