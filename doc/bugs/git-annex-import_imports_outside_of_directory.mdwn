@@ -25,3 +25,5 @@ Linux ctchpcpx163.merck.com 3.10.0-1160.6.1.el7.x86_64 #1 SMP Tue Nov 17 13:59:1
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 That I use it enough to run into corner-case issues shows its continued usefulness :)
+
+[[!meta title="git-annex import follows symlinks"]]
