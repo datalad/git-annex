@@ -45,4 +45,4 @@ The bug is very easy to reproduce. This happens in a bigger repository of mine, 
 
 Using it daily, with small-sized repositories.
 
-
+> [[fixed|done]] --[[Joey]] 

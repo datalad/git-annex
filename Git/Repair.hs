@@ -325,7 +325,11 @@ findUncorruptedCommit missing goodcommits branch r = do
  - the commit. Also adds to a set of commit shas that have been verified to
  - be good, which can be passed into subsequent calls to avoid
  - redundant work when eg, chasing down branches to find the first
- - uncorrupted commit. -}
+ - uncorrupted commit.
+ -
+ - When the sha is not a commit but some other git object, returns
+ - true, but does not add it to the set.
+ -}
 verifyCommit :: MissingObjects -> GoodCommits -> Sha -> Repo -> IO (Bool, GoodCommits)
 verifyCommit missing goodcommits commit r
 	| checkGoodCommit commit goodcommits = return (True, goodcommits)
@@ -337,16 +341,23 @@ verifyCommit missing goodcommits commit r
 			, Param (fromRef commit)
 			] r
 		let committrees = map (parse . decodeBL) ls
-		if any isNothing committrees || null committrees
-			then do
-				void cleanup
-				return (False, goodcommits)
-			else do
-				let cts = catMaybes committrees
-				ifM (cleanup <&&> check cts)
-					( return (True, addGoodCommits (map fst cts) goodcommits)
-					, return (False, goodcommits)
-					)
+		-- git log on an object that is not a commit will
+		-- succeed without any output
+		if null committrees
+			then ifM cleanup
+				( return (True, goodcommits)
+				, return (False, goodcommits)
+				)
+			else if any isNothing committrees
+				then do
+					void cleanup
+					return (False, goodcommits)
+				else do
+					let cts = catMaybes committrees
+					ifM (cleanup <&&> check cts)
+						( return (True, addGoodCommits (map fst cts) goodcommits)
+						, return (False, goodcommits)
+						)
   where
 	parse l = case words l of
 		(commitsha:treesha:[]) -> (,)
