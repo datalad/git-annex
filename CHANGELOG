@@ -1,4 +1,4 @@
-git-annex (10.20220404) upstream; urgency=medium
+git-annex (10.20220504) upstream; urgency=medium
 
   * Ignore annex.numcopies set to 0 in gitattributes or git config,
     or by git-annex numcopies or by --numcopies, since that
