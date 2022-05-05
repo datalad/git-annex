@@ -1,0 +1,20 @@
+[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-05-05T14:50:13Z"
+ content="""
+Is your git-annex built with support for mime type 
+detection? Post the output of `git-annex version`
+
+I don't think it's possible that a filename can affect this.
+I'd only believe that if you showed me the same content in a file without a
+cryllic filename being treated differently.
+
+Also, when I try feeding all the data into `git-annex matchexpression`,
+it behaves as expected:
+
+	joey@darkstar:~/lib/tmp> if git-annex matchexpression --file=привет.jpg --size=100 --mimeencoding=binary --largefiles 'mimeencoding=binary and largerthan=0'; then echo match; fi
+	match
+
+You could try the same command to see if your git-annex behaves differently.
+"""]]
