@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="it is still there"
+ date="2022-05-05T20:22:13Z"
+ content="""
+each month is a submodule, so the most recent one seems to be from 2 weeks ago
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex[master]builds/2022
+$> git -C 05 grep 'export_import_subdir:.*FAIL'
+
+$> git -C 04 grep 'export_import_subdir:.*FAIL'
+cron-20220424/build-ubuntu.yaml-671-0346631d-failed/1_test-annex (normal, ubuntu-latest).txt:2022-04-24T03:08:45.8548538Z     export_import_subdir:                  FAIL (1.16s)
+cron-20220424/build-ubuntu.yaml-671-0346631d-failed/test-annex (normal, ubuntu-latest)/7_Run tests.txt:2022-04-24T03:08:45.8548535Z     export_import_subdir:                  FAIL (1.16s)
+git -C 04 grep 'export_import_subdir:.*FAIL'  5.08s user 2.04s system 369% cpu 1.927 total
+```
+
+and there were a few in march (do with `-C 03`)
+"""]]
