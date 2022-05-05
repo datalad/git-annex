@@ -1,0 +1,41 @@
+### Please describe the problem.
+
+Mimeencoding detection doesn't work for files with Cyrillic filenaes.
+
+### What steps will reproduce the problem?
+
+I have
+
+```
+git annex config --set annex.largefiles 'mimeencoding=binary and largerthan=0'
+```
+
+So I expect all binary files to be annexed.
+
+But I have some jpg file with Cyrillic letters in filename: привет.jpg
+
+```
+$ file --mime-encoding привет.jpg
+привет.jpg: binary
+
+$ git annex add привет.jpg --verbose
+add привет.jpg (non-large file; adding content to git repository) ok
+(recording state in git...)
+
+$ mv привет.jpg hello.jpg
+
+$ git annex add hello.jpg --verbose
+add hello.jpg
+ok
+(recording state in git...)
+```
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 10.20220223-g8f6b52b77
+
+Windows 11
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I just started using it and I love it. I like it more than git LFS
