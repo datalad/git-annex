@@ -295,4 +295,4 @@ parseYoutubeDlProgress = go [] . reverse . progresschunks
 
 	parsebytes = readSize units . takeWhile (not . isSpace)
 
-	units = memoryUnits ++ storageUnits
+	units = committeeUnits ++ storageUnits

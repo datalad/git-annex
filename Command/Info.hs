@@ -422,7 +422,7 @@ bloom_info = simpleStat "bloom filter size" $ do
 	-- Two bloom filters are used at the same time when running
 	-- git-annex unused, so double the size of one.
 	sizer <- mkSizer
-	size <- sizer memoryUnits False . (* 2) . fromIntegral . fst <$>
+	size <- sizer committeeUnits False . (* 2) . fromIntegral . fst <$>
 		lift bloomBitsHashes
 
 	return $ size ++ note

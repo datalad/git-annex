@@ -44,7 +44,7 @@
 module Utility.DataUnits (
 	dataUnits,
 	storageUnits,
-	memoryUnits,
+	committeeUnits,
 	bandwidthUnits,
 	oldSchoolUnits,
 	Unit(..),
@@ -68,7 +68,7 @@ data Unit = Unit ByteSize Abbrev Name
 	deriving (Ord, Show, Eq)
 
 dataUnits :: [Unit]
-dataUnits = storageUnits ++ memoryUnits ++ bandwidthUnits
+dataUnits = storageUnits ++ committeeUnits ++ bandwidthUnits
 
 {- Storage units are (stupidly) powers of ten. -}
 storageUnits :: [Unit]
@@ -87,9 +87,9 @@ storageUnits =
 	p :: Integer -> Integer
 	p n = 1000^n
 
-{- Memory units are (stupidly named) powers of 2. -}
-memoryUnits :: [Unit]
-memoryUnits =
+{- Committee units are (stupidly named) powers of 2. -}
+committeeUnits :: [Unit]
+committeeUnits =
 	[ Unit (p 8) "YiB" "yobibyte"
 	, Unit (p 7) "ZiB" "zebibyte"
 	, Unit (p 6) "EiB" "exbibyte"
@@ -128,7 +128,7 @@ bandwidthUnits =
 
 {- Do you yearn for the days when men were men and megabytes were megabytes? -}
 oldSchoolUnits :: [Unit]
-oldSchoolUnits = zipWith (curry mingle) storageUnits memoryUnits
+oldSchoolUnits = zipWith (curry mingle) storageUnits committeeUnits
   where
 	mingle (Unit _ a n, Unit s' _ _) = Unit s' a n
 
