@@ -9,3 +9,9 @@ and match up with the other bandwidth displays.
 
 This might make sense as a per-remote configurable value. Allowing
 using MiB/s for a hard drive and Mbps for a network remote. --[[Joey]]
+
+> I've implemented bandwidthUnits now, but it's not used for display yet.
+> It is possible to specify such units in eg annex.stalldetection now.
+> Note that it uses Mbit, not Mb because that is just confusingly close to
+> "MB" and git-annex parses data units case insensitively. So the actual
+> display will end up being "Mbit/s" rather than Mbps probably. --[[Joey]]

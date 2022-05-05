@@ -1,3 +1,13 @@
+git-annex (10.20220505) UNRELEASED; urgency=medium
+
+  * Added support for "megabit" and related bandwidth units
+    in annex.stalldetection and everywhere else that git-annex parses
+    data units. Note that the short form is "Mbit" not "Mb" because
+    that differs from "MB" only in case, and git-annex parses units
+    case-insensitively.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 05 May 2022 15:08:07 -0400
+
 git-annex (10.20220504) upstream; urgency=medium
 
   * Ignore annex.numcopies set to 0 in gitattributes or git config,

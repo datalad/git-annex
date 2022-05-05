@@ -1,6 +1,6 @@
 {- data size display and parsing
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -
@@ -22,12 +22,18 @@
  -
  - So, a committee was formed. And it arrived at a committee-like decision,
  - which satisfied noone, confused everyone, and made the world an uglier
- - place. As with all committees, this was meh.
+ - place. As with all committees, this was meh. Or in this case, "mib".
  -
  - And the drive manufacturers happily continued selling drives that are
  - increasingly smaller than you'd expect, if you don't count on your
  - fingers. But that are increasingly too big for anyone to much notice.
  - This caused me to need git-annex.
+ -
+ - Meanwhile, over in telecommunications land, they were using entirely
+ - different units that differ only in capitalization sometimes.
+ - (At one point this convinced me that it was a good idea to buy an ISDN
+ - line because 128 kb/s sounded really fast! But it was really only 128
+ - kbit/s...)
  -
  - Thus, I use units here that I loathe. Because if I didn't, people would
  - be confused that their drives seem the wrong size, and other people would
@@ -62,7 +68,7 @@ data Unit = Unit ByteSize Abbrev Name
 	deriving (Ord, Show, Eq)
 
 dataUnits :: [Unit]
-dataUnits = storageUnits ++ memoryUnits
+dataUnits = storageUnits ++ memoryUnits ++ bandwidthUnits
 
 {- Storage units are (stupidly) powers of ten. -}
 storageUnits :: [Unit]
@@ -75,7 +81,7 @@ storageUnits =
 	, Unit (p 3) "GB" "gigabyte"
 	, Unit (p 2) "MB" "megabyte"
 	, Unit (p 1) "kB" "kilobyte" -- weird capitalization thanks to committe
-	, Unit (p 0) "B" "byte"
+	, Unit 1 "B" "byte"
 	]
   where
 	p :: Integer -> Integer
@@ -92,15 +98,33 @@ memoryUnits =
 	, Unit (p 3) "GiB" "gibibyte"
 	, Unit (p 2) "MiB" "mebibyte"
 	, Unit (p 1) "KiB" "kibibyte"
-	, Unit (p 0) "B" "byte"
+	, Unit 1 "B" "byte"
 	]
   where
 	p :: Integer -> Integer
 	p n = 2^(n*10)
 
-{- Bandwidth units are only measured in bits if you're some crazy telco. -}
+{- Bandwidth units are (stupidly) measured in bits, not bytes, and are
+ - (also stupidly) powers of ten. 
+ -
+ - While it's fairly common for "Mb", "Gb" etc to be used, that differs
+ - from "MB", "GB", etc only in case, and readSize is case-insensitive.
+ - So "Mbit", "Gbit" etc are used instead to avoid parsing ambiguity.
+ -}
 bandwidthUnits :: [Unit]
-bandwidthUnits = error "stop trying to rip people off"
+bandwidthUnits =
+	[ Unit (p 8) "Ybit" "yottabit"
+	, Unit (p 7) "Zbit" "zettabit"
+	, Unit (p 6) "Ebit" "exabit"
+	, Unit (p 5) "Pbit" "petabit"
+	, Unit (p 4) "Tbit" "terabit"
+	, Unit (p 3) "Gbit" "gigabit"
+	, Unit (p 2) "Mbit" "megabit"
+	, Unit (p 1) "kbit" "kilobit" -- weird capitalization thanks to committe
+	]
+  where
+	p :: Integer -> Integer
+	p n = (1000^n) `div` 8
 
 {- Do you yearn for the days when men were men and megabytes were megabytes? -}
 oldSchoolUnits :: [Unit]
