@@ -1,0 +1,60 @@
+### Please describe the problem.
+
+Somewhat too late for our current usecase since older git-annex would not know about it, but I think could be generalized into adding a configuration variable right away for **any** automated migration. E.g. there is no variable to prevent autoupgrades of the repos (e.g. from v5 to the next one etc), but AFAIK there is none for automated conversion" into `adjusted/master(unlocked)` mode.  
+
+Rationale: With thaw/freeze commands we now can use git-annex in indirect (default) mode on our HPC. But that requires a recent version of git-annex.  User might have some other (older) version of git-annex available system-wide by default, and if the user forgets to switch to new version of git-annex before using it, it might trigger git-annex to realize that it operates on crippled FS, and since not knowing about thaw/freeze -- it just migrates repository to adjusted, which is very undesired. 
+
+
+### What steps will reproduce the problem?
+
+here is a demo of older git-annex going back to adjusted branch mode... yet to discover how else we could have migrated without directly invoking `git annex init`:
+
+```
+[d31548v@discovery7 d31548v]$ mkdir repo
+[d31548v@discovery7 d31548v]$ cd repo
+[d31548v@discovery7 repo]$ git init
+Initialized empty Git repository in /dartfs/rc/lab/D/DBIC/DBIC/d31548v/repo/.git/
+[d31548v@discovery7 repo]$ git config --add annex.thawcontent-command "$HOME/bin-annex/thaw-content %path"
+[d31548v@discovery7 repo]$ git config --add annex.freezecontent-command "$HOME/bin-annex/freeze-content %path"
+[d31548v@discovery7 repo]$ git annex init
+init  ok
+(recording state in git...)
+[d31548v@discovery7 repo]$ echo 123 > 123
+[d31548v@discovery7 repo]$ git annex add 123
+add 123 
+ok                                
+(recording state in git...)
+git comm[d31548v@discovery7 repo]$ git commit -m 'added 123 in indirect mode' 123
+[master (root-commit) 3ceb200] added 123 in indirect mode
+ 1 file changed, 1 insertion(+)
+ create mode 120000 123
+[d31548v@discovery7 repo]$ ls -ld 123
+lrwxr-x--- 1 d31548v rc-DBIC 178 May  6 11:19 123 -> .git/annex/objects/G6/qW/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b
+[d31548v@discovery7 repo]$ ls -l .git/annex/objects
+total 3
+drwxr-x--- 3 d31548v rc-DBIC 20 May  6 11:19 G6
+[d31548v@discovery7 repo]$ export PATH=/opt/bin:$PATH
+[d31548v@discovery7 repo]$ git annex version | head -n 1
+git-annex version: 8.20200502-g55acb2e52
+[d31548v@discovery7 repo]$ git annex drop 123
+drop 123 
+git-annex: failed to lock content: .git/annex/objects/G6/qW/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b: openFd: permission denied (Permission denied)
+failed
+git-annex: drop: 1 failed
+[d31548v@discovery7 repo]$ git annex init
+init  
+  Filesystem allows writing to files whose write bit is not set.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+(scanning for unlocked files...)
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+```
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
