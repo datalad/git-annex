@@ -393,7 +393,7 @@ jobs:
           pip install git+https://github.com/datalad/datalad@${commitish}
 
       - name: Install nose et al (just in case!)
-        run: pip install nose vcrpy mock
+        run: pip install nose pytest vcrpy mock
 
       - name: WTF!?
         run: datalad wtf
@@ -402,7 +402,12 @@ jobs:
         run: |
           mkdir -p __testhome__
           cd __testhome__
-          python -m nose -s -v datalad
+          # TODO: remove conditioning after 0.17.0 release
+          if [ "${{ matrix.version }}" = "master" ]; then
+            python -m pytest -s -v --pyargs datalad
+          else
+            python -m nose -s -v datalad
+          fi
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
