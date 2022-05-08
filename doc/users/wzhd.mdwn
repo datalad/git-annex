@@ -1,0 +1,1 @@
+Learned some Haskell because of git-annex and propellor
