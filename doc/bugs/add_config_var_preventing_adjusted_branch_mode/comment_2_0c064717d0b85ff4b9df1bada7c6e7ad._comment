@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-05-09T15:13:39Z"
+ content="""
+It might be worth preventing `git-annex init` when in an existing, already
+initalized repo from entering an adjusted branch. But re-running `git-annex
+init` generally re-does initialization, except for generating a new UUID
+and description. If a repo has been moved to a crippled filesystem,
+I think it would be reasonable for a user to expect re-running git-annex
+init will react to that. (Which can also involve setting annex.pidlock or
+disabling annex.sshcaching.)
+"""]]
