@@ -715,7 +715,7 @@ mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
   where
 	copier src dest k p check verifyconfig = do
 		iv <- startVerifyKeyContentIncrementally verifyconfig k
-		fileCopier copycowtried src dest p iv >>= \case
+		liftIO (fileCopier copycowtried src dest p iv) >>= \case
 			Copied -> ifM check
 				( finishVerifyKeyContentIncrementally iv
 				, do

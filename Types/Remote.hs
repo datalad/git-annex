@@ -346,10 +346,11 @@ data ImportActions a = ImportActions
 		-> ContentIdentifier
 		-- file to write content to
 		-> FilePath
-		-- callback that generates a key from the downloaded content
-		-> a Key
+		-- Either the key, or when it's not yet known, a callback
+		-- that generates a key from the downloaded content.
+		-> Either Key (a Key)
 		-> MeterUpdate
-		-> a Key
+		-> a (Key, Verification)
 	-- Exports content to an ExportLocation, and returns the
 	-- ContentIdentifier corresponding to the content it stored.
 	--

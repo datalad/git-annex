@@ -360,8 +360,7 @@ adjustExportImport' isexport isimport r rs = do
 		getkeycids ciddbv k >>= \case
 			(cid:_) -> do
 				l <- getfirstexportloc dbv k
-				void $ retrieveExportWithContentIdentifier (importActions r) l cid dest (pure k) p
-				return UnVerified
+				snd <$> retrieveExportWithContentIdentifier (importActions r) l cid dest (Left k) p
 			-- In case a content identifier is somehow missing,
 			-- try this instead.
 			[] -> if isexport

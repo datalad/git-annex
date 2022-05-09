@@ -1,6 +1,6 @@
 {- Copying files.
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -79,40 +79,47 @@ data CopyMethod = CopiedCoW | Copied
  - (eg when isStableKey is false), and doing this avoids getting a
  - corrupted file in such cases.
  -}
-fileCopier :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Annex CopyMethod
+fileCopier :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> IO CopyMethod
 #ifdef mingw32_HOST_OS
 fileCopier _ src dest meterupdate iv = docopy
 #else
 fileCopier copycowtried src dest meterupdate iv =
-	ifM (liftIO $ tryCopyCoW copycowtried src dest meterupdate)
+	ifM (tryCopyCoW copycowtried src dest meterupdate)
 		( do
-			liftIO $ maybe noop unableIncrementalVerifier iv
+			maybe noop unableIncrementalVerifier iv
 			return CopiedCoW
 		, docopy
 		)
 #endif
   where
-	dest' = toRawFilePath dest
-
 	docopy = do
 		-- The file might have had the write bit removed,
 		-- so make sure we can write to it.
-		void $ liftIO $ tryIO $ allowWrite dest'
+		void $ tryIO $ allowWrite dest'
 
-		liftIO $ withBinaryFile dest ReadWriteMode $ \hdest ->
-			withBinaryFile src ReadMode $ \hsrc -> do
-				sofar <- compareexisting hdest hsrc zeroBytesProcessed
-				docopy' hdest hsrc sofar
-
+		withBinaryFile src ReadMode $ \hsrc ->
+			fileContentCopier hsrc dest meterupdate iv
+		
 		-- Copy src mode and mtime.
-		mode <- liftIO $ fileMode <$> getFileStatus src
-		mtime <- liftIO $ utcTimeToPOSIXSeconds <$> getModificationTime src
-		liftIO $ setFileMode dest mode
-		liftIO $ touch dest' mtime False
+		mode <- fileMode <$> getFileStatus src
+		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime src
+		setFileMode dest mode
+		touch dest' mtime False
 
 		return Copied
 	
-	docopy' hdest hsrc sofar = do
+	dest' = toRawFilePath dest
+
+{- Copies content from a handle to a destination file. Does not
+ - use copy-on-write, and does not copy file mode and mtime.
+ -}
+fileContentCopier :: Handle -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> IO ()
+fileContentCopier hsrc dest meterupdate iv =
+	withBinaryFile dest ReadWriteMode $ \hdest -> do
+		sofar <- compareexisting hdest zeroBytesProcessed
+		docopy hdest sofar
+  where
+	docopy hdest sofar = do
 		s <- S.hGet hsrc defaultChunkSize
 		if s == S.empty
 			then return ()
@@ -121,12 +128,12 @@ fileCopier copycowtried src dest meterupdate iv =
 				S.hPut hdest s
 				maybe noop (flip updateIncrementalVerifier s) iv
 				meterupdate sofar'
-				docopy' hdest hsrc sofar'
+				docopy hdest sofar'
 
 	-- Leaves hdest and hsrc seeked to wherever the two diverge,
 	-- so typically hdest will be seeked to end, and hsrc to the same
 	-- position.
-	compareexisting hdest hsrc sofar = do
+	compareexisting hdest sofar = do
 		s <- S.hGet hdest defaultChunkSize
 		if s == S.empty
 			then return sofar
@@ -137,7 +144,7 @@ fileCopier copycowtried src dest meterupdate iv =
 						maybe noop (flip updateIncrementalVerifier s) iv
 						let sofar' = addBytesProcessed sofar (S.length s)
 						meterupdate sofar'
-						compareexisting hdest hsrc sofar'
+						compareexisting hdest sofar'
 					else do
 						seekbefore hdest s
 						seekbefore hsrc s'

@@ -198,9 +198,9 @@ storeKeyM d chunkconfig cow k c m =
 				(fromRawFilePath destdir)
 			in byteStorer go k c m
 		NoChunks ->
-			let go _k src p = do
+			let go _k src p = liftIO $ do
 				void $ fileCopier cow src tmpf p Nothing
-				liftIO $ finalizeStoreGeneric d tmpdir destdir
+				finalizeStoreGeneric d tmpdir destdir
 			in fileStorer go k c m
 		_ -> 
 			let go _k b p = liftIO $ do
@@ -242,7 +242,7 @@ retrieveKeyFileM :: RawFilePath -> ChunkConfig -> CopyCoWTried -> Retriever
 retrieveKeyFileM d (LegacyChunks _) _ = Legacy.retrieve locations d
 retrieveKeyFileM d NoChunks cow = fileRetriever' $ \dest k p iv -> do
 	src <- liftIO $ fromRawFilePath <$> getLocation d k
-	void $ fileCopier cow src (fromRawFilePath dest) p iv
+	void $ liftIO $ fileCopier cow src (fromRawFilePath dest) p iv
 retrieveKeyFileM d _ _ = byteRetriever $ \k sink ->
 	sink =<< liftIO (L.readFile . fromRawFilePath =<< getLocation d k)
 
@@ -315,12 +315,12 @@ storeExportM d cow src _k loc p = do
 	viaTmp go (fromRawFilePath dest) ()
   where
 	dest = exportPath d loc
-	go tmp () = void $ fileCopier cow src tmp p Nothing
+	go tmp () = void $ liftIO $ fileCopier cow src tmp p Nothing
 
 retrieveExportM :: RawFilePath -> CopyCoWTried -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
 retrieveExportM d cow k loc dest p = 
 	verifyKeyContentIncrementally AlwaysVerify k $ \iv -> 
-		void $ fileCopier cow src dest p iv
+		void $ liftIO $ fileCopier cow src dest p iv
   where
 	src = fromRawFilePath $ exportPath d loc
 
@@ -413,25 +413,31 @@ importKeyM ii dir loc cid sz p = do
 		, inodeCache = Nothing
 		}
 
-retrieveExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
-retrieveExportWithContentIdentifierM ii dir cow loc cid dest mkkey p = 
-	precheck docopy
+retrieveExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> ExportLocation -> ContentIdentifier -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
+retrieveExportWithContentIdentifierM ii dir cow loc cid dest gk p =
+	case gk of
+		Right mkkey -> do
+			go Nothing
+			k <- mkkey
+			return (k, UnVerified)
+		Left k -> do
+			v <- verifyKeyContentIncrementally DefaultVerify k go
+			return (k, v)
   where
 	f = exportPath dir loc
 	f' = fromRawFilePath f
+	
+	go iv = precheck (docopy iv)
 
-	docopy = ifM (liftIO $ tryCopyCoW cow f' dest p)
-		( do
-			k <- mkkey
-			postcheckcow (return k)
-		, docopynoncow
+	docopy iv = ifM (liftIO $ tryCopyCoW cow f' dest p)
+		( postcheckcow (liftIO $ maybe noop unableIncrementalVerifier iv)
+		, docopynoncow iv
 		)
 
-	docopynoncow = do
+	docopynoncow iv = do
 #ifndef mingw32_HOST_OS
 		let open = do
-			-- Need a duplicate fd for the post check, since
-			-- hGetContentsMetered closes its handle.
+			-- Need a duplicate fd for the post check.
 			fd <- openFd f' ReadOnly Nothing defaultFileFlags
 			dupfd <- dup fd
 			h <- fdToHandle fd
@@ -445,12 +451,11 @@ retrieveExportWithContentIdentifierM ii dir cow loc cid dest mkkey p =
 		let close = hClose
 		bracketIO open close $ \h -> do
 #endif
-			liftIO $ hGetContentsMetered h p >>= L.writeFile dest
-			k <- mkkey
+			liftIO $ fileContentCopier h dest p iv
 #ifndef mingw32_HOST_OS
-			postchecknoncow dupfd (return k)
+			postchecknoncow dupfd (return ())
 #else
-			postchecknoncow (return k)
+			postchecknoncow (return ())
 #endif
 	
 	-- Check before copy, to avoid expensive copy of wrong file
@@ -500,7 +505,7 @@ storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
 	liftIO $ createDirectoryUnder dir (toRawFilePath destdir)
 	withTmpFileIn destdir template $ \tmpf tmph -> do
 		liftIO $ hClose tmph
-		void $ fileCopier cow src tmpf p Nothing
+		void $ liftIO $ fileCopier cow src tmpf p Nothing
 		let tmpf' = toRawFilePath tmpf
 		resetAnnexFilePerm tmpf'
 		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier ii tmpf' >>= \case

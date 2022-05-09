@@ -6,4 +6,6 @@
 Update: incremental hashing is also now done for all export remotes.
 Only import (and export+import) remotes don't support incremental hashing
 now.
+
+Update 2: Now also done for import remotes. All done!
 """]]

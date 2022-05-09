@@ -29,6 +29,7 @@ import Utility.Metered
 import Logs.Export
 import qualified Remote.Helper.ThirdPartyPopulated as ThirdPartyPopulated
 import Utility.Env
+import Annex.Verify
 
 import Data.Either
 import Text.Read
@@ -370,10 +371,20 @@ checkPresentExportWithContentIdentifierM borgrepo _ loc _ = prompt $ liftIO $ do
 			, giveup $ "Unable to access borg repository " ++ locBorgRepo borgrepo
 			)
 
-retrieveExportWithContentIdentifierM :: BorgRepo -> ImportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
-retrieveExportWithContentIdentifierM borgrepo loc _ dest mkk _ = do
+retrieveExportWithContentIdentifierM :: BorgRepo -> ImportLocation -> ContentIdentifier -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
+retrieveExportWithContentIdentifierM borgrepo loc _ dest gk _ = do
 	showOutput
-	prompt $ withOtherTmp $ \othertmp -> liftIO $ do
+	case gk of
+		Right mkkey -> do
+			go
+			k <- mkkey
+			return (k, UnVerified)
+		Left k -> do
+			v <- verifyKeyContentIncrementally DefaultVerify k 
+				(\iv -> tailVerify iv (toRawFilePath dest) go)
+			return (k, v)
+  where
+	go = prompt $ withOtherTmp $ \othertmp -> liftIO $ do
 		-- borgrepo could be relative, and borg has to be run
 		-- in the temp directory to get it to write there
 		absborgrepo <- absBorgRepo borgrepo
@@ -398,6 +409,5 @@ retrieveExportWithContentIdentifierM borgrepo loc _ dest mkk _ = do
 		-- combine with </>
 		moveFile (fromRawFilePath othertmp </> fromRawFilePath archivefile) dest
 		removeDirectoryRecursive (fromRawFilePath othertmp)
-	mkk
-  where
+
 	(archivename, archivefile) = extractImportLocation loc

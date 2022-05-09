@@ -5,6 +5,9 @@ git-annex (10.20220505) UNRELEASED; urgency=medium
     data units. Note that the short form is "Mbit" not "Mb" because
     that differs from "MB" only in case, and git-annex parses units
     case-insensitively.
+  * Special remotes using exporttree=yes and/or importtree=yes now
+    checksum content while it is being retrieved, instead of in a separate
+    pass at the end.
 
  -- Joey Hess <id@joeyh.name>  Thu, 05 May 2022 15:08:07 -0400
 

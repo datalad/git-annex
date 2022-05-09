@@ -649,22 +649,31 @@ mkImportableContentsVersioned info = build . groupfiles
 		| otherwise =
 			i : removemostrecent mtime rest
 
-retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> ExportLocation -> ContentIdentifier -> FilePath -> Annex Key -> MeterUpdate -> Annex Key
-retrieveExportWithContentIdentifierS3 hv r rs info loc cid dest mkkey p = withS3Handle hv $ \case
-	Just h -> do
-		rewritePreconditionException $ retrieveHelper' h dest p Nothing $
-			limitGetToContentIdentifier cid $
-				S3.getObject (bucket info) o
-		k <- mkkey
-		case extractContentIdentifier cid o of
-			Right vid -> do
-				vids <- getS3VersionID rs k
-				unless (vid `elem` map Just vids) $
-					setS3VersionID info rs k vid
-			Left _ -> noop
-		return k
-	Nothing -> giveup $ needS3Creds (uuid r)
+retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> ExportLocation -> ContentIdentifier -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
+retrieveExportWithContentIdentifierS3 hv r rs info loc cid dest gk p =
+	case gk of
+		Right _mkkey -> do
+			k <- go Nothing
+			return (k, UnVerified)
+		Left k -> do
+			v <- verifyKeyContentIncrementally DefaultVerify k 
+				(void . go)
+			return (k, v)
   where
+	go iv = withS3Handle hv $ \case
+		Just h -> do
+			rewritePreconditionException $ retrieveHelper' h dest p iv $
+				limitGetToContentIdentifier cid $
+					S3.getObject (bucket info) o
+			k <- either return id gk
+			case extractContentIdentifier cid o of
+				Right vid -> do
+					vids <- getS3VersionID rs k
+					unless (vid `elem` map Just vids) $
+						setS3VersionID info rs k vid
+				Left _ -> noop
+			return k
+		Nothing -> giveup $ needS3Creds (uuid r)
 	o = T.pack $ bucketExportLocation info loc
 
 {- Catch exception getObject returns when a precondition is not met,

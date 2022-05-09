@@ -597,14 +597,14 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		getcontent k = do
 			let af = AssociatedFile (Just f)
 			let downloader p' tmpfile = do
-				k' <- Remote.retrieveExportWithContentIdentifier
+				_ <- Remote.retrieveExportWithContentIdentifier
 					ia loc cid (fromRawFilePath tmpfile)
-					(pure k)
+					(Left k)
 					(combineMeterUpdate p' p)
-				ok <- moveAnnex k' af tmpfile
+				ok <- moveAnnex k af tmpfile
 				when ok $
 					logStatus k InfoPresent
-				return (Just (k', ok))
+				return (Just (k, ok))
 			checkDiskSpaceToGet k Nothing $
 				notifyTransfer Download af $
 					download' (Remote.uuid remote) k af Nothing stdRetry $ \p' ->
@@ -615,9 +615,9 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	-- need to retrieve this file.
 	doimportsmall cidmap db loc cid sz p = do
 		let downloader tmpfile = do
-			k <- Remote.retrieveExportWithContentIdentifier
+			(k, _) <- Remote.retrieveExportWithContentIdentifier
 				ia loc cid (fromRawFilePath tmpfile)
-				(mkkey tmpfile)
+				(Right (mkkey tmpfile))
 				p
 			case keyGitSha k of
 				Just sha -> do
@@ -638,9 +638,9 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	dodownload cidmap db (loc, (cid, sz)) f matcher = do
 		let af = AssociatedFile (Just f)
 		let downloader tmpfile p = do
-			k <- Remote.retrieveExportWithContentIdentifier
+			(k, _) <- Remote.retrieveExportWithContentIdentifier
 				ia loc cid (fromRawFilePath tmpfile)
-				(mkkey tmpfile)
+				(Right (mkkey tmpfile))
 				p
 			case keyGitSha k of
 				Nothing -> do
