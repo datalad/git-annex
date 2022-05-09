@@ -704,7 +704,7 @@ jobs:
       - name: WTF!?
         run: datalad wtf
 
-    {% if ostype == "ubuntu" %}
+      # needed for ssh certs under ubuntu and tox.ini everywhere
       - name: Checkout datalad
         uses: actions/checkout@v2
         with:
@@ -712,6 +712,7 @@ jobs:
           path: datalad
           fetch-depth: 1
 
+    {% if ostype == "ubuntu" %}
       - name: Set up test SSH certs
         run: bash tools/ci/deploy_datalad-rootca
         working-directory: datalad
