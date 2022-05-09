@@ -349,8 +349,10 @@ adjustExportImport' isexport isimport r rs = do
 	retrieveKeyFileFromExport dbv k _af dest p = ifM (isVerifiable k)
 		( do
 			l <- getfirstexportloc dbv k
-			retrieveExport (exportActions r) k l dest p
-			return MustVerify
+			retrieveExport (exportActions r) k l dest p >>= return . \case
+				UnVerified -> MustVerify
+				IncompleteVerify iv -> MustFinishIncompleteVerify iv
+				v -> v
 		, giveup $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"
 		)
 	

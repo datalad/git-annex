@@ -316,8 +316,10 @@ storeExportM o src _k loc meterupdate =
 	basedest = fromRawFilePath (fromExportLocation loc)
 	populatedest = liftIO . createLinkOrCopy src
 
-retrieveExportM :: RsyncOpts -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
-retrieveExportM o _k loc dest p = rsyncRetrieve o [rsyncurl] dest (Just p)
+retrieveExportM :: RsyncOpts -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
+retrieveExportM o _k loc dest p = do
+	rsyncRetrieve o [rsyncurl] dest (Just p)
+	return UnVerified
   where
 	rsyncurl = mkRsyncUrl o (fromRawFilePath (fromExportLocation loc))
 

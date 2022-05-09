@@ -495,7 +495,7 @@ storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
 		setS3VersionID info rs k mvid
 		return (metag, mvid)
 
-retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
+retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
 retrieveExportS3 hv r info _k loc f p = do
 	withS3Handle hv $ \case
 		Just h -> retrieveHelper info h (Left (T.pack exportloc)) f p Nothing
@@ -504,6 +504,7 @@ retrieveExportS3 hv r info _k loc f p = do
 				Url.withUrlOptions
 					(Url.download' p Nothing (geturl exportloc) f)
 			Nothing -> giveup $ needS3Creds (uuid r)
+	return UnVerified
   where
 	exportloc = bucketExportLocation info loc
 

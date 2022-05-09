@@ -255,8 +255,10 @@ storeExportM serial adir src _k loc _p =
   where
 	dest = androidExportLocation adir loc
 
-retrieveExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
-retrieveExportM serial adir _k loc dest _p = retrieve' serial src dest
+retrieveExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
+retrieveExportM serial adir _k loc dest _p = do
+	retrieve' serial src dest
+	return UnVerified
   where
 	src = androidExportLocation adir loc
 

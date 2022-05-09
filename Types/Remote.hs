@@ -208,12 +208,15 @@ data Verification
 	-- again. The verification does not need to use a
 	-- cryptographically secure hash, but the hash does need to
 	-- have preimage resistance.
-	| MustVerify
-	-- ^ Content likely to have been altered during transfer,
-	-- verify even if verification is normally disabled
 	| IncompleteVerify IncrementalVerifier
 	-- ^ Content was partially verified during transfer, but
 	-- the verification is not complete.
+	| MustVerify
+	-- ^ Content likely to have been altered during transfer,
+	-- verify even if verification is normally disabled
+	| MustFinishIncompleteVerify IncrementalVerifier
+	-- ^ Content likely to have been altered during transfer,
+	-- finish verification even if verification is normally disabled.
 
 unVerified :: Monad m => m a -> m (a, Verification)
 unVerified a = do
@@ -262,7 +265,7 @@ data ExportActions a = ExportActions
 	-- (The MeterUpdate does not need to be used if it writes
 	-- sequentially to the file.)
 	-- Throws exception on failure.
-	, retrieveExport :: Key -> ExportLocation -> FilePath -> MeterUpdate -> a ()
+	, retrieveExport :: Key -> ExportLocation -> FilePath -> MeterUpdate -> a Verification
 	-- Removes an exported file (succeeds if the contents are not present)
 	-- Can throw exception if unable to access remote, or if remote
 	-- refuses to remove the content.

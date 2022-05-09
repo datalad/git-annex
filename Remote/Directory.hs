@@ -316,8 +316,10 @@ storeExportM d cow src _k loc p = do
 	dest = exportPath d loc
 	go tmp () = void $ fileCopier cow src tmp p Nothing
 
-retrieveExportM :: RawFilePath -> CopyCoWTried -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
-retrieveExportM d cow _k loc dest p = void $ fileCopier cow src dest p Nothing
+retrieveExportM :: RawFilePath -> CopyCoWTried -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
+retrieveExportM d cow _k loc dest p = do
+	void $ fileCopier cow src dest p Nothing
+	return UnVerified
   where
 	src = fromRawFilePath $ exportPath d loc
 

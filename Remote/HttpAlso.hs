@@ -120,9 +120,10 @@ downloadKey baseurl ll key _af dest p vc = do
 	downloadAction dest p iv key (keyUrlAction baseurl ll key)
 	snd <$> finishVerifyKeyContentIncrementally iv
 
-retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
-retriveExportHttpAlso baseurl key loc dest p = 
+retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
+retriveExportHttpAlso baseurl key loc dest p = do
 	downloadAction dest p Nothing key (exportLocationUrlAction baseurl loc)
+	return UnVerified
 
 downloadAction :: FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Key -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
 downloadAction dest p iv key run =

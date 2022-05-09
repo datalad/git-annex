@@ -291,8 +291,10 @@ storeExportM external f k loc p = either giveup return =<< go
 		_ -> Nothing
 	req sk = TRANSFEREXPORT Upload sk f
 
-retrieveExportM :: External -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
-retrieveExportM external k loc d p = either giveup return =<< go
+retrieveExportM :: External -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
+retrieveExportM external k loc d p = do
+	either giveup return =<< go
+	return UnVerified
   where
 	go = handleRequestExport external loc req k (Just p) $ \resp -> case resp of
 		TRANSFER_SUCCESS Download k'

@@ -79,15 +79,19 @@ verifyKeyContentPostRetrieval rsp v verification k f = case (rsp, verification) 
 		( verify
 		, return True
 		)
-	(_, MustVerify) -> verify
 	(_, IncompleteVerify _) -> ifM (shouldVerify v)
 		( verify
 		, return True
 		)
+	(_, MustVerify) -> verify
+	(_, MustFinishIncompleteVerify _) -> verify
   where
 	verify = enteringStage VerifyStage $
 		case verification of
-			IncompleteVerify iv -> resumeVerifyKeyContent k f iv
+			IncompleteVerify iv -> 
+				resumeVerifyKeyContent k f iv
+			MustFinishIncompleteVerify iv -> 
+				resumeVerifyKeyContent k f iv
 			_ -> verifyKeyContent k f
 
 verifyKeyContent :: Key -> RawFilePath -> Annex Bool

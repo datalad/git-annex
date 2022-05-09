@@ -218,10 +218,11 @@ storeExportDav hdl f k loc p = case exportLocation loc of
 		storeHelper dav (exportTmpLocation loc k) dest reqbody
 	Left err -> giveup err
 
-retrieveExportDav :: DavHandleVar -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex ()
+retrieveExportDav :: DavHandleVar -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
 retrieveExportDav hdl  _k loc d p = case exportLocation loc of
-	Right src -> withDavHandle hdl $ \h -> runExport h $ \_dav ->
+	Right src -> withDavHandle hdl $ \h -> runExport h $ \_dav -> do
 		retrieveHelper src d p Nothing
+		return UnVerified
 	Left err -> giveup err
 
 checkPresentExportDav :: DavHandleVar -> Remote -> Key -> ExportLocation -> Annex Bool
