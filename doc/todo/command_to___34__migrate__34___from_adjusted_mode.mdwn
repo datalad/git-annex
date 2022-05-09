@@ -1,2 +1,5 @@
 A somewhat follow up to https://git-annex.branchable.com/bugs/add_config_var_preventing_adjusted_branch_mode/ where we ended up in adjusted branch mode and want to get back to original indirect mode using the thaw/freeze commands.
 Checking out `master` branch is not sufficient since `.git/annex/objects` uses different layout I guess to ensure that symlinks do not jeopardize actual annex storage on systems without read-only protection.  But we need some command to migrate .git/annex/objects layout. May be it is already there and I just failed to find 
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
