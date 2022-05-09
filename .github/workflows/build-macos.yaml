@@ -404,16 +404,29 @@ jobs:
           pip install git+https://github.com/datalad/datalad@${commitish}
 
       - name: Install nose et al (just in case!)
-        run: pip install nose vcrpy mock
+        run: pip install nose pytest vcrpy mock
 
       - name: WTF!?
         run: datalad wtf
+
+      # needed for ssh certs under ubuntu and tox.ini everywhere
+      - name: Checkout datalad
+        uses: actions/checkout@v2
+        with:
+          repository: datalad/datalad
+          path: datalad
+          fetch-depth: 1
 
       - name: Run datalad tests
         run: |
           mkdir -p __testhome__
           cd __testhome__
-          python -m nose -s -v datalad
+          # TODO: remove conditioning after 0.17.0 release
+          if [ "${{ matrix.version }}" = "master" ]; then
+            python -m pytest -c ../datalad/tox.ini -s -v --pyargs datalad
+          else
+            python -m nose -s -v datalad
+          fi
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
