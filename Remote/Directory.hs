@@ -36,6 +36,7 @@ import Annex.CopyFile
 import Annex.Content
 import Annex.Perms
 import Annex.UUID
+import Annex.Verify
 import Backend
 import Types.KeySource
 import Types.ProposedAccepted
@@ -317,9 +318,9 @@ storeExportM d cow src _k loc p = do
 	go tmp () = void $ fileCopier cow src tmp p Nothing
 
 retrieveExportM :: RawFilePath -> CopyCoWTried -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
-retrieveExportM d cow _k loc dest p = do
-	void $ fileCopier cow src dest p Nothing
-	return UnVerified
+retrieveExportM d cow k loc dest p = 
+	verifyKeyContentIncrementally AlwaysVerify k $ \iv -> 
+		void $ fileCopier cow src dest p iv
   where
 	src = fromRawFilePath $ exportPath d loc
 

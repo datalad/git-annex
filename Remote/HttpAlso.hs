@@ -116,14 +116,13 @@ httpAlsoSetup _ (Just u) _ c gc = do
 
 downloadKey :: Maybe URLString -> LearnedLayout -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 downloadKey baseurl ll key _af dest p vc = do
-	iv <- startVerifyKeyContentIncrementally vc key
-	downloadAction dest p iv key (keyUrlAction baseurl ll key)
-	snd <$> finishVerifyKeyContentIncrementally iv
+	verifyKeyContentIncrementally vc key $ \iv ->
+		downloadAction dest p iv key (keyUrlAction baseurl ll key)
 
 retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
 retriveExportHttpAlso baseurl key loc dest p = do
-	downloadAction dest p Nothing key (exportLocationUrlAction baseurl loc)
-	return UnVerified
+	verifyKeyContentIncrementally AlwaysVerify key $ \iv ->
+		downloadAction dest p iv key (exportLocationUrlAction baseurl loc)
 
 downloadAction :: FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Key -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
 downloadAction dest p iv key run =

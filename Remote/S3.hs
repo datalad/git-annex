@@ -60,13 +60,13 @@ import Types.MetaData
 import Types.ProposedAccepted
 import Types.NumCopies
 import Utility.Metered
-import Utility.Hash (IncrementalVerifier)
 import Utility.DataUnits
 import Annex.Content
 import qualified Annex.Url as Url
 import Utility.Url (extractFromResourceT)
 import Annex.Url (getUrlOptions, withUrlOptions, UrlOptions(..))
 import Utility.Env
+import Annex.Verify
 
 type BucketName = String
 type BucketObject = String
@@ -496,15 +496,14 @@ storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
 		return (metag, mvid)
 
 retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
-retrieveExportS3 hv r info _k loc f p = do
+retrieveExportS3 hv r info k loc f p = verifyKeyContentIncrementally AlwaysVerify k $ \iv ->
 	withS3Handle hv $ \case
-		Just h -> retrieveHelper info h (Left (T.pack exportloc)) f p Nothing
+		Just h -> retrieveHelper info h (Left (T.pack exportloc)) f p iv
 		Nothing -> case getPublicUrlMaker info of
 			Just geturl -> either giveup return =<<
 				Url.withUrlOptions
-					(Url.download' p Nothing (geturl exportloc) f)
+					(Url.download' p iv (geturl exportloc) f)
 			Nothing -> giveup $ needS3Creds (uuid r)
-	return UnVerified
   where
 	exportloc = bucketExportLocation info loc
 

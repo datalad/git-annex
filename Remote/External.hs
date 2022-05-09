@@ -1,6 +1,6 @@
 {- External special remote interface.
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -37,6 +37,7 @@ import Config.Cost
 import Annex.Content
 import Annex.Url
 import Annex.UUID
+import Annex.Verify
 import Creds
 
 import Control.Concurrent.STM
@@ -292,9 +293,10 @@ storeExportM external f k loc p = either giveup return =<< go
 	req sk = TRANSFEREXPORT Upload sk f
 
 retrieveExportM :: External -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
-retrieveExportM external k loc d p = do
-	either giveup return =<< go
-	return UnVerified
+retrieveExportM external k loc dest p = do
+	verifyKeyContentIncrementally AlwaysVerify k $ \iv ->
+		tailVerify iv (toRawFilePath dest) $
+			either giveup return =<< go
   where
 	go = handleRequestExport external loc req k (Just p) $ \resp -> case resp of
 		TRANSFER_SUCCESS Download k'
@@ -304,7 +306,7 @@ retrieveExportM external k loc d p = do
 		UNSUPPORTED_REQUEST ->
 			result $ Left "TRANSFEREXPORT not implemented by external special remote"
 		_ -> Nothing
-	req sk = TRANSFEREXPORT Download sk d
+	req sk = TRANSFEREXPORT Download sk dest
 
 checkPresentExportM :: External -> Key -> ExportLocation -> Annex Bool
 checkPresentExportM external k loc = either giveup id <$> go

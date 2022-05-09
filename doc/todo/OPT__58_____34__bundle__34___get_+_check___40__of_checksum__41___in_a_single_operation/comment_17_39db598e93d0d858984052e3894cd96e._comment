@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2022-05-09T17:48:31Z"
+ content="""
+Update: incremental hashing is also now done for all export remotes.
+Only import (and export+import) remotes don't support incremental hashing
+now.
+"""]]

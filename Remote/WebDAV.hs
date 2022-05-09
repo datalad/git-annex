@@ -40,7 +40,7 @@ import qualified Remote.Helper.Chunked.Legacy as Legacy
 import Creds
 import Utility.Metered
 import Utility.Url (URLString, matchStatusCodeException, matchHttpExceptionContent)
-import Utility.Hash (IncrementalVerifier(..))
+import Annex.Verify
 import Annex.UUID
 import Remote.WebDAV.DavLocation
 import Types.ProposedAccepted
@@ -219,10 +219,10 @@ storeExportDav hdl f k loc p = case exportLocation loc of
 	Left err -> giveup err
 
 retrieveExportDav :: DavHandleVar -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
-retrieveExportDav hdl  _k loc d p = case exportLocation loc of
-	Right src -> withDavHandle hdl $ \h -> runExport h $ \_dav -> do
-		retrieveHelper src d p Nothing
-		return UnVerified
+retrieveExportDav hdl  k loc d p = case exportLocation loc of
+	Right src -> verifyKeyContentIncrementally AlwaysVerify k  $ \iv ->
+		withDavHandle hdl $ \h -> runExport h $ \_dav ->
+			retrieveHelper src d p iv
 	Left err -> giveup err
 
 checkPresentExportDav :: DavHandleVar -> Remote -> Key -> ExportLocation -> Annex Bool

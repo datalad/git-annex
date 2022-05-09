@@ -46,6 +46,7 @@ import Annex.DirHashes
 import Utility.Tmp.Dir
 import Utility.SshHost
 import Annex.SpecialRemote.Config
+import Annex.Verify
 
 import qualified Data.Map as M
 
@@ -317,9 +318,10 @@ storeExportM o src _k loc meterupdate =
 	populatedest = liftIO . createLinkOrCopy src
 
 retrieveExportM :: RsyncOpts -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
-retrieveExportM o _k loc dest p = do
-	rsyncRetrieve o [rsyncurl] dest (Just p)
-	return UnVerified
+retrieveExportM o k loc dest p =
+	verifyKeyContentIncrementally AlwaysVerify k $ \iv ->
+		tailVerify iv (toRawFilePath dest) $
+			rsyncRetrieve o [rsyncurl] dest (Just p)
   where
 	rsyncurl = mkRsyncUrl o (fromRawFilePath (fromExportLocation loc))
 

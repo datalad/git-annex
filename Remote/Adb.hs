@@ -1,6 +1,6 @@
 {- Remote on Android device accessed using adb.
  -
- - Copyright 2018-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2018-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,6 +22,7 @@ import Annex.UUID
 import Utility.Metered
 import Types.ProposedAccepted
 import Annex.SpecialRemote.Config
+import Annex.Verify
 
 import qualified Data.Map as M
 import qualified System.FilePath.Posix as Posix
@@ -256,9 +257,10 @@ storeExportM serial adir src _k loc _p =
 	dest = androidExportLocation adir loc
 
 retrieveExportM :: AndroidSerial -> AndroidPath -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
-retrieveExportM serial adir _k loc dest _p = do
-	retrieve' serial src dest
-	return UnVerified
+retrieveExportM serial adir k loc dest _p = 
+	verifyKeyContentIncrementally AlwaysVerify k $ \iv ->
+		tailVerify iv (toRawFilePath dest) $
+			retrieve' serial src dest
   where
 	src = androidExportLocation adir loc
 

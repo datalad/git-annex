@@ -1,6 +1,6 @@
 {- verification
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,6 +17,7 @@ module Annex.Verify (
 	isVerifiable,
 	startVerifyKeyContentIncrementally,
 	finishVerifyKeyContentIncrementally,
+	verifyKeyContentIncrementally,
 	IncrementalVerifier(..),
 	tailVerify,
 ) where
@@ -34,6 +35,7 @@ import Types.WorkerPool
 import Types.Key
 
 import Control.Concurrent.STM
+import Control.Concurrent.Async
 import qualified Data.ByteString as S
 #if WITH_INOTIFY
 import qualified System.INotify as INotify
@@ -186,12 +188,17 @@ finishVerifyKeyContentIncrementally (Just iv) =
 		-- Incremental verification was not able to be done.
 		Nothing -> return (True, UnVerified)
 
--- | Reads the file as it grows, and feeds it to the incremental verifier.
+verifyKeyContentIncrementally :: VerifyConfig -> Key -> (Maybe IncrementalVerifier -> Annex ()) -> Annex Verification
+verifyKeyContentIncrementally verifyconfig k a = do
+	miv <- startVerifyKeyContentIncrementally verifyconfig k
+	a miv
+	snd <$> finishVerifyKeyContentIncrementally miv
+
+-- | Runs a writer action that retrieves to a file. In another thread,
+-- reads the file as it grows, and feeds it to the incremental verifier.
 -- 
--- The TMVar must start out empty, and be filled once whatever is
--- writing to the file finishes. Once the writer finishes, this returns
--- quickly. It may not feed the entire content of the file to the
--- incremental verifier.
+-- Once the writer finishes, this returns quickly. It may not feed
+-- the entire content of the file to the incremental verifier.
 --
 -- The file does not need to exist yet when this is called. It will wait
 -- for the file to appear before opening it and starting verification.
@@ -223,9 +230,19 @@ finishVerifyKeyContentIncrementally (Just iv) =
 -- and if the disk is slow, the reader may never catch up to the writer,
 -- and the disk cache may never speed up reads. So this should only be
 -- used when there's not a better way to incrementally verify.
-tailVerify :: IncrementalVerifier -> RawFilePath -> TMVar () -> IO ()
+tailVerify :: Maybe IncrementalVerifier -> RawFilePath -> Annex a -> Annex a
+tailVerify (Just iv) f writer = do
+	finished <- liftIO newEmptyTMVarIO
+	t <- liftIO $ async $ tailVerify' iv f finished
+	let finishtail = do
+		liftIO $ atomically $ putTMVar finished ()
+		liftIO (wait t)
+	writer `finally` finishtail
+tailVerify Nothing _ writer = writer
+
+tailVerify' :: IncrementalVerifier -> RawFilePath -> TMVar () -> IO ()
 #if WITH_INOTIFY
-tailVerify iv f finished = 
+tailVerify' iv f finished = 
 	tryNonAsync go >>= \case
 		Right r -> return r
 		Left _ -> unableIncrementalVerifier iv
@@ -312,5 +329,5 @@ tailVerify iv f finished =
 
 	chunk = 65536
 #else
-tailVerify iv _ _ = unableIncrementalVerifier iv
+tailVerify' iv _ _ = unableIncrementalVerifier iv
 #endif

@@ -491,14 +491,12 @@ copyFromRemote r st key file dest meterupdate vc = do
 
 copyFromRemote'' :: Git.Repo -> Remote -> State -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
-	| Git.repoIsHttp repo = do
-		iv <- startVerifyKeyContentIncrementally vc key
+	| Git.repoIsHttp repo = verifyKeyContentIncrementally vc key $ \iv -> do
 		gc <- Annex.getGitConfig
 		ok <- Url.withUrlOptionsPromptingCreds $
 			Annex.Content.downloadUrl False key meterupdate iv (keyUrls gc repo r key) dest
 		unless ok $
 			giveup "failed to download content"
-		snd <$> finishVerifyKeyContentIncrementally iv
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $ do
 		u <- getUUID
 		hardlink <- wantHardLink

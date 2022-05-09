@@ -56,8 +56,6 @@ import Git.Types
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-import Control.Concurrent.STM
-import Control.Concurrent.Async
 
 {- Special remotes don't have a configured url, so Git.Repo does not
  - automatically generate remotes for them. This looks for a different
@@ -117,17 +115,9 @@ byteRetriever a k _m _miv callback = a k (callback . ByteContent)
 -- the action writes to the file, but may not be updated with the entire
 -- content of the file.
 fileRetriever :: (RawFilePath -> Key -> MeterUpdate -> Annex ()) -> Retriever
-fileRetriever a = fileRetriever' $ \f k m miv -> do
+fileRetriever a = fileRetriever' $ \f k m miv -> 
 	let retrieve = a f k m
-	case miv of
-		Nothing -> retrieve
-		Just iv -> do
-			finished <- liftIO newEmptyTMVarIO
-			t <- liftIO $ async $ tailVerify iv f finished
-			let finishtail = do
-				liftIO $ atomically $ putTMVar finished ()
-				liftIO (wait t)
-			retrieve `finally` finishtail
+	in tailVerify miv f retrieve
 
 {- A Retriever that writes the content of a Key to a provided file.
  - The action is responsible for updating the progress meter and the 
