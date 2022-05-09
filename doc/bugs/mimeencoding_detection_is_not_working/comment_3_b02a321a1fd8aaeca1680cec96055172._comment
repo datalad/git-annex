@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-05-09T15:21:59Z"
+ content="""
+Thanks, I think you must be right that there is some form of mojibake
+involved here, that is preventing cryllic filenames being sent through
+to libmagic, but only on Windows.
+
+[[todo/windows_support]] talks about filename encoding problems on windows,
+and this is probably one of those.
+"""]]
