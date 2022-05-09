@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="lh"
+ avatar="http://cdn.libravatar.org/avatar/d31bade008d7da493d9bfb37d68fd825"
+ subject="comment 4"
+ date="2022-05-09T19:18:01Z"
+ content="""
+Still curious about how `annex.alwayscommit=false` tracks modifications and whether mucking with a `git-annex` worktree could cause data loss with this option enabled.
+"""]]
