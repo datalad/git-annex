@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="hm..."
+ date="2022-05-09T19:10:10Z"
+ content="""
+I will need to figure out/try to reproduce how user ended up with .git/annex/objects in xxx/yyy instead of xx/yy layout...
+"""]]
