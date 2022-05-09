@@ -1,5 +1,9 @@
 git-annex (10.20220505) UNRELEASED; urgency=medium
 
+  * Special remotes with importtree=yes or exporttree=yes are once again
+    treated as untrusted, since files stored in them can be deleted or
+    modified at any time.
+    (Fixes a reversion in 8.20201129)
   * Added support for "megabit" and related bandwidth units
     in annex.stalldetection and everywhere else that git-annex parses
     data units. Note that the short form is "Mbit" not "Mb" because

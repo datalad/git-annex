@@ -216,7 +216,7 @@ adjustExportImport' isexport isimport r rs = do
 		, untrustworthy =
 			if versioned || thirdPartyPopulated (remotetype r)
 				then untrustworthy r
-				else False
+				else True
 		-- git-annex testremote cannot be used to test
 		-- import/export since it stores keys.
 		, mkUnavailable = return Nothing
