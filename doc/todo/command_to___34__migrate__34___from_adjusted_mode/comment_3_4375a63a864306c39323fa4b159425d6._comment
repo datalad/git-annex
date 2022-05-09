@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-05-09T19:54:35Z"
+ content="""
+Ok, so the object location usually used in bare repositories.. 
+
+One way that could happen is if core.symlinks=false and
+annex.crippledfilesystem=true. Then it does use the bare form of object
+filenames, which is kind of ok since it's not going to be using symlinks in
+that repository.
+
+Also, before 2016, git-annex used those names whenever annex.crippledfilesystem=true,
+no matter what core.symlinks was set to. So if the files are that old..
+
+This does seem to point to there needing to be a way to migrate the object
+files in a repository to the right names. It might be a reasonable thing
+for git-annex fsck to do, when it sees a symlink to an object file that
+is in the other location.
+"""]]
