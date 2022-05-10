@@ -31,8 +31,8 @@ fsck could lock the object file for drop, and then rather than removeing it,
 move it to a holding location. Then it could move the object file
 into the right place the same as `get` does. This should avoid the race.
 Interrupting fsck at the wrong time would leave the object file in this
-holding location though. If it used `.git/annex/tmp`, normal commands
-like `git-annex get` would recover from an interrupted fsck, though
-they would need to do some work to rehash the tmp file. Re-running
-fsck would need to also recover from an interrupted fsck.
+holding location though. Re-running fsck would need to recover from this
+situation. Putting it in `.git/annex/tmp/` might make sense, although
+`git-annex get` does not necessarily recover when the object file is
+located there.
 """]]
