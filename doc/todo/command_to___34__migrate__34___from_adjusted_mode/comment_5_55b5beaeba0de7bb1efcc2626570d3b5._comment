@@ -4,14 +4,35 @@
  date="2022-05-10T16:56:47Z"
  content="""
 As well as moving the object file, fsck will need to move any other associated
-files. It may as well move the whole object directory.
+files, including the object lock file. It may as well move the whole
+object directory.
 
 Locking is a concern for implementing this in fsck. There
 would be a race where another process that is locking the object file
 sees the object file in the old location, so tries to lock it in the old
-location, but by then the object file has been moved. Seems this could
-result in it making a separate lock file in the old object directory (v9+),
-or might even create the object file when trying to lock it (pre v9).
+location, but by then the object file has been moved.
 
-Only making fsck do the move in v9+ solves half of that.
+Experimentally: In v10, moving the object file after it has checked its
+location in preparation for locking for drop results in it making a
+separate lock file in the old object directory. That lock file remains after
+the drop succeeds. In v8/v9, it seems to not create the object
+file when trying to lock it. (Based on reading the code, I though perhaps
+it would!) In v8-v10, moving the object directory in the race when it's locking
+content in place causes the lock to fail; it does not create any lock file
+or object file. 
+
+So, v10 post drop lock file cleanup is the problem. Or at least one
+problem, there could be other points in the race than the one I tested
+that have other behavior. This seems like an ugly race to insert fsck into
+the middle of; it would be much preferable if fsck could somehow avoid
+such races when moving the object directory. But how?
+
+fsck could lock the object file for drop, and then rather than removeing it,
+move it to a holding location. Then it could move the object file
+into the right place the same as `get` does. This should avoid the race.
+Interrupting fsck at the wrong time would leave the object file in this
+holding location though. If it used `.git/annex/tmp`, normal commands
+like `git-annex get` would recover from an interrupted fsck, though
+they would need to do some work to rehash the tmp file. Re-running
+fsck would need to also recover from an interrupted fsck.
 """]]
