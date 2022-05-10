@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-05-10T16:56:47Z"
+ content="""
+As well as moving the object file, fsck will need to move any other associated
+files. It may as well move the whole object directory.
+
+Locking is a concern for implementing this in fsck. There
+would be a race where another process that is locking the object file
+sees the object file in the old location, so tries to lock it in the old
+location, but by then the object file has been moved. Seems this could
+result in it making a separate lock file in the old object directory (v9+),
+or might even create the object file when trying to lock it (pre v9).
+
+Only making fsck do the move in v9+ solves half of that.
+"""]]

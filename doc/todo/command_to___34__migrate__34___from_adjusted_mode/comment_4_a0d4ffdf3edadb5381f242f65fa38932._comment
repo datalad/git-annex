@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-05-10T16:37:21Z"
+ content="""
+The rationalle for using the bare object layout when on a crippled
+filesystem was given in [[!commit f1b0a4b404ed835f1c4a27a92352180be8564f8a]].
+Basically it may be more portable. Not a strong rationalle at all, as the
+later change to not do it when symlinks are supported shows. But
+I don't think worth changing at this point.
+
+So teaching fsck to move object files to the preferred location seems the
+best way. It will also deal with the situation where a bare repository gets
+converted by the user into a non-bare repo.
+"""]]

@@ -10,7 +10,9 @@ annex.crippledfilesystem=true. Then it does use the bare form of object
 filenames, which is kind of ok since it's not going to be using symlinks in
 that repository.
 
-Also, before 2016, git-annex used those names whenever annex.crippledfilesystem=true,
+Also, before 2016
+([[commit 2d00523609def535588b693a00d4092768e1c3c6]]), 
+git-annex used those names whenever annex.crippledfilesystem=true,
 no matter what core.symlinks was set to. So if the files are that old..
 
 This does seem to point to there needing to be a way to migrate the object
