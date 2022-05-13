@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="shell helper"
+ date="2022-05-13T16:51:22Z"
+ content="""
+FWIW made this shell helper to migrate all keys into desired layout: [https://raw.githubusercontent.com/datalad/datalad/maint/tools/convert-git-annex-layout](https://raw.githubusercontent.com/datalad/datalad/maint/tools/convert-git-annex-layout)
+"""]]
