@@ -89,6 +89,7 @@ import Annex.UUID
 import Annex.InodeSentinal
 import Annex.ReplaceFile
 import Annex.AdjustedBranch (adjustedBranchRefresh)
+import Annex.DirHashes
 import Messages.Progress
 import Types.Remote (RetrievalSecurityPolicy(..), VerifyConfigA(..))
 import Types.NumCopies
@@ -262,7 +263,7 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 	cleanuplockfile lockfile = void $ tryNonAsync $ do
 		thawContentDir lockfile
 		liftIO $ removeWhenExistsWith R.removeLink lockfile
-		liftIO $ cleanObjectDirs lockfile
+		cleanObjectDirs lockfile
 
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
@@ -607,15 +608,17 @@ cleanObjectLoc key cleaner = do
 		void $ tryIO $ thawContent file
 		
 	cleaner
-	liftIO $ cleanObjectDirs file
+	cleanObjectDirs file
 
-cleanObjectDirs :: RawFilePath -> IO ()
-cleanObjectDirs = go (3 :: Int)
+cleanObjectDirs :: RawFilePath -> Annex ()
+cleanObjectDirs f = do
+	HashLevels n <- objectHashLevels <$> Annex.getGitConfig
+	liftIO $ go f (succ n)
   where
-	go 0 _ = noop
-	go n file = do
+	go _ 0 = noop
+	go file n = do
 		let dir = parentDir file
-		maybe noop (const $ go (n-1) dir)
+		maybe noop (const $ go dir (n-1))
 			<=< catchMaybeIO $ removeDirectory (fromRawFilePath dir)
 
 {- Removes a key's file from .git/annex/objects/ -}
