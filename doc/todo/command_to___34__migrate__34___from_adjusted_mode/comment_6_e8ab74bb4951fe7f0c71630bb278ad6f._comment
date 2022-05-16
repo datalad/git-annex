@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-05-16T15:24:43Z"
+ content="""
+If fsck locks the content for removal, then moves it to the preferred
+location, how is that any different from git-annex first dropping content
+and then very quickly retrieving another copy and storing it in the other
+location? The only difference is timing, but things like being suspended
+and resumed can affect timing.
+
+So, if there is a problem with fsck doing that, there would also be a more
+general problem, that could occur in other circumstances, even if only
+rarely.
+
+One way to see the general problem happen would be to have two processes
+trying to drop the same object. One process finds the object location, then
+stalls. Meanwhile, the second process drops the object. Then the first
+process resumes, and locks for removal. Per comment #5 this will result in
+a dangling lock file in the object directory. I have not managed to get
+this to happen yet though.
+
+A fix for the general problem is to make it not create the
+object directory when opening the object lock file. So I've made that
+change.
+"""]]

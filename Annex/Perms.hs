@@ -26,7 +26,8 @@ module Annex.Perms (
 	createContentDir,
 	freezeContentDir,
 	thawContentDir,
-	modifyContent,
+	modifyContentDir,
+	modifyContentDirWhenExists,
 	withShared,
 	hasFreezeHook,
 	hasThawHook,
@@ -290,11 +291,20 @@ createContentDir dest = do
 	dir = parentDir dest
 
 {- Creates the content directory for a file if it doesn't already exist,
- - or thaws it if it does, then runs an action to modify the file, and
- - finally, freezes the content directory. -}
-modifyContent :: RawFilePath -> Annex a -> Annex a
-modifyContent f a = do
+ - or thaws it if it does, then runs an action to modify a file in the
+ - directory, and finally, freezes the content directory. -}
+modifyContentDir :: RawFilePath -> Annex a -> Annex a
+modifyContentDir f a = do
 	createContentDir f -- also thaws it
+	v <- tryNonAsync a
+	freezeContentDir f
+	either throwM return v
+
+{- Like modifyContentDir, but avoids creating the content directory if it
+ - ddoes not already exist. In that case, the action will probably fail. -}
+modifyContentDirWhenExists :: RawFilePath -> Annex a -> Annex a
+modifyContentDirWhenExists f a = do
+	thawContentDir f
 	v <- tryNonAsync a
 	freezeContentDir f
 	either throwM return v

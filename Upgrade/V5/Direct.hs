@@ -97,7 +97,7 @@ associatedFilesRelative key = do
 removeAssociatedFiles :: Key -> Annex ()
 removeAssociatedFiles key = do
 	mapping <- calcRepo $ gitAnnexMapping key
-	modifyContent mapping $
+	modifyContentDir mapping $
 		liftIO $ removeWhenExistsWith R.removeLink mapping
 
 {- Checks if a file in the tree, associated with a key, has not been modified.
@@ -124,7 +124,7 @@ recordedInodeCache key = withInodeCacheFile key $ \f ->
 {- Removes an inode cache. -}
 removeInodeCache :: Key -> Annex ()
 removeInodeCache key = withInodeCacheFile key $ \f ->
-	modifyContent f $
+	modifyContentDir f $
 		liftIO $ removeWhenExistsWith R.removeLink f
 
 withInodeCacheFile :: Key -> (RawFilePath -> Annex a) -> Annex a

@@ -112,7 +112,7 @@ inAnnexSafe key = inAnnex' (fromMaybe True) (Just False) go key
 	 - remove the lock file to clean up after ourselves. -}
 	checklock (Just lockfile) contentfile =
 		ifM (liftIO $ doesFileExist (fromRawFilePath contentfile))
-			( modifyContent lockfile $ liftIO $
+			( modifyContentDirWhenExists lockfile $ liftIO $
 				lockShared lockfile >>= \case
 					Nothing -> return is_locked
 					Just lockhandle -> do

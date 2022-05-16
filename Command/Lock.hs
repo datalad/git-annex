@@ -77,13 +77,13 @@ perform file key = do
 	breakhardlink obj = whenM (catchBoolIO $ (> 1) . linkCount <$> liftIO (R.getFileStatus obj)) $ do
 		mfc <- withTSDelta (liftIO . genInodeCache file)
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
-			modifyContent obj $ replaceGitAnnexDirFile (fromRawFilePath obj) $ \tmp -> do
+			modifyContentDir obj $ replaceGitAnnexDirFile (fromRawFilePath obj) $ \tmp -> do
 				unlessM (checkedCopyFile key obj (toRawFilePath tmp) Nothing) $
 					giveup "unable to lock file"
 			Database.Keys.storeInodeCaches key [obj]
 
 	-- Try to repopulate obj from an unmodified associated file.
-	repopulate obj = modifyContent obj $ do
+	repopulate obj = modifyContentDir obj $ do
 		g <- Annex.gitRepo
 		fs <- map (`fromTopFilePath` g)
 			<$> Database.Keys.getAssociatedFiles key

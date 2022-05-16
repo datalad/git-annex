@@ -169,13 +169,13 @@ type ContentLocker = RawFilePath -> Maybe LockFile -> (Annex (Maybe LockHandle),
 posixLocker :: (Maybe FileMode -> LockFile -> Annex (Maybe LockHandle)) -> LockFile -> Annex (Maybe LockHandle)
 posixLocker takelock lockfile = do
 	mode <- annexFileMode
-	modifyContent lockfile $
+	modifyContentDirWhenExists lockfile $
 		takelock (Just mode) lockfile
 #else
 winLocker :: (LockFile -> IO (Maybe LockHandle)) -> ContentLocker
 winLocker takelock _ (Just lockfile) = 
 	let lck = do
-		modifyContent lockfile $
+		modifyContentDirWhenExists lockfile $
 			void $ liftIO $ tryIO $
 				writeFile (fromRawFilePath lockfile) ""
 		liftIO $ takelock lockfile
@@ -407,7 +407,7 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
   where
 	storeobject dest = ifM (liftIO $ R.doesPathExist dest)
 		( alreadyhave
-		, adjustedBranchRefresh af $ modifyContent dest $ do
+		, adjustedBranchRefresh af $ modifyContentDir dest $ do
 			liftIO $ moveFile
 				(fromRawFilePath src)
 				(fromRawFilePath dest)
@@ -452,7 +452,7 @@ linkToAnnex :: Key -> RawFilePath -> Maybe InodeCache -> Annex LinkAnnexResult
 linkToAnnex key src srcic = ifM (checkSecureHashes' key)
 	( do
 		dest <- calcRepo (gitAnnexLocation key)
-		modifyContent dest $ linkAnnex To key src srcic dest Nothing
+		modifyContentDir dest $ linkAnnex To key src srcic dest Nothing
 	, return LinkAnnexFailed
 	)
 
@@ -528,7 +528,7 @@ linkAnnex fromto key src (Just srcic) dest destmode =
 unlinkAnnex :: Key -> Annex ()
 unlinkAnnex key = do
 	obj <- calcRepo (gitAnnexLocation key)
-	modifyContent obj $ do
+	modifyContentDir obj $ do
 		secureErase obj
 		liftIO $ removeWhenExistsWith R.removeLink obj
 
