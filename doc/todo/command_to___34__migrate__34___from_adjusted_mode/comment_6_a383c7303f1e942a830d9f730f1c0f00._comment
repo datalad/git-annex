@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2022-05-13T15:12:29Z"
+ content="""
+I guess fsck could just lock the entire repo for its duration forbidding any operation?  I would love to be able to migrate the layout also on \"older\" versions of repo/annex without upgrading all the way to 10.  Meanwhile I think I am doomed to write a little helper to do those renames (once, and hopefully never ever again... I might even protect myself by making those top xxx known to me now non-writable at the level of ACL, so the attempt to migrate would lead to an error) 
+"""]]

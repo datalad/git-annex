@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="wzhd"
+ avatar="http://cdn.libravatar.org/avatar/1795a91af84f4243a3bf0974bc8d79fe"
+ subject="Using fuse"
+ date="2022-05-14T03:10:18Z"
+ content="""
+Wrote a bare minimum [fuse fs](https://codeberg.org/wzhd/annexize/) so that du-like utilities like ncdu, gt5, gdu can be used.
+
+It reads each symlink target, try to get a number after `SHA256E-s`, and pretends it's regular file with that size. `git-annex add`ed files don't need to be locally available.
+
+Files can be deleted but no other operations are implemented.
+"""]]

@@ -1,0 +1,421 @@
+[[!comment format=mdwn
+ username="nick.guenther@e418ed3c763dff37995c2ed5da4232a7c6cee0a9"
+ nickname="nick.guenther"
+ avatar="http://cdn.libravatar.org/avatar/9e85c6ca61c3f877fef4f91c2bf6e278"
+ subject="How to disable lockdown in bare repos?"
+ date="2022-05-15T21:30:50Z"
+ content="""
+I've set up a project server for my team with annexes in most repos. I'm using [gitolite](https://gitolite.com) with its [git-annex-shell](https://github.com/sitaramc/gitolite/blob/master/src/commands/git-annex-shell) plugin. It's been going well for a year, and my team finds git-annex very useful for managing our large projects, so we have a large debt to you for that :)
+
+## Problem
+
+But when my users delete repos, the repos aren't fully deleted because any `annex/objects/*/*/SHA256-*/SHA256-*` file is locked down.
+
+
+### Gitolite
+
+For example:
+
+<details><summary><code>test-git-annex-write</code></summary>
+
+```
+
+test-gitea-annex-write() {
+REPO=$1; shift
+
+
+(set -e; cd $(mktemp -d)
+  git init
+  echo '# testing' > README.md && git add README.md && git commit -m \"Initial commit\"
+  git annex init
+  dd if=/dev/urandom of=large.bin bs=1M count=16 && git annex add large.bin && git commit -m \"Annex a file\"
+
+  git remote add origin \"$REPO\"
+  git config annex.jobs 1
+  git annex sync --content origin
+  git annex sync --content origin  # it only uploads the branch, but doesn't upload content, if I only do this once
+)
+}
+```
+
+</details>
+
+<details><summary>Create+Upload: <code>test-gitea-annex-write git@data:datasets/test-jank.git</code></summary>
+
+```
+$ test-gitea-annex-write git@data:datasets/test-jank.git
+Initialized empty Git repository in /tmp/tmp.ak87a0yp1e/.git/
+[master (root-commit) 0a7be36] Initial commit
+ 1 file changed, 1 insertion(+)
+ create mode 100644 README.md
+init  ok
+(recording state in git...)
+16+0 records in
+16+0 records out
+16777216 bytes (17 MB, 16 MiB) copied, 0.0608327 s, 276 MB/s
+add large.bin 
+ok                                
+(recording state in git...)
+[master 4a55ea5] Annex a file
+ 1 file changed, 1 insertion(+)
+ create mode 120000 large.bin
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+
+  Unable to parse git config from origin
+FATAL: autocreate denied
+
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+  annex.sshcaching is not set to true
+
+  Unable to parse git config from origin
+FATAL: autocreate denied
+
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+On branch master
+nothing to commit, working tree clean
+commit ok
+pull origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+FATAL: autocreate denied
+
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+ok
+push origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint:   git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint:   git branch -m <name>
+Initialized empty Git repository in /srv/git/repositories/datasets/test-jank.git/
+ok
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+On branch master
+nothing to commit, working tree clean
+commit ok
+pull origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+ok
+copy large.bin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+(to origin...) ok
+pull origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+ok
+(recording state in git...)
+push origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+ok
+```
+
+</details>
+
+<details><summary>Delete the repo</summary>
+
+```
+$ ssh git@data D unlock datasets/test-jank
+'datasets/test-jank' is now unlocked
+$ ssh git@data D rm datasets/test-jank
+rm: cannot remove 'datasets/test-jank.git/annex/objects/968/4c0/SHA256E-s16777216--9d8ccb3ebe399a8f6801cde009e03a867151ea4e4bc609848abbd29dd335688f.bin/SHA256E-s16777216--9d8ccb3ebe399a8f6801cde009e03a867151ea4e4bc609848abbd29dd335688f.bin': Permission denied
+'datasets/test-jank' is now gone!
+```
+
+</details>
+
+Notice the \"Permission denied\" error -- but gitolite *thinks* its work is done:
+
+```
+$ ssh git@data info | grep test-jank
+$
+```
+
+but if I try to recreate the same repo, it fails:
+
+<details><summary><code>test-gitea-annex-write git@data:datasets/test-jank.git</code></summary>
+
+```
+$ test-gitea-annex-write git@data:datasets/test-jank.git
+Initialized empty Git repository in /tmp/tmp.IBSNFKRgRg/.git/
+[master (root-commit) e11344b] Initial commit
+ 1 file changed, 1 insertion(+)
+ create mode 100644 README.md
+init  ok
+(recording state in git...)
+16+0 records in
+16+0 records out
+16777216 bytes (17 MB, 16 MiB) copied, 0.0631523 s, 266 MB/s
+add large.bin 
+ok                                
+(recording state in git...)
+[master 0cedc5c] Annex a file
+ 1 file changed, 1 insertion(+)
+ create mode 120000 large.bin
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+
+  Unable to parse git config from origin
+FATAL: R any datasets/test-jank nguenther DENIED by fallthru
+(or you mis-spelled the reponame)
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+
+  Unable to parse git config from origin
+FATAL: R any datasets/test-jank nguenther DENIED by fallthru
+(or you mis-spelled the reponame)
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+On branch master
+nothing to commit, working tree clean
+commit ok
+pull origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+FATAL: R any datasets/test-jank nguenther DENIED by fallthru
+(or you mis-spelled the reponame)
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+ok
+push origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+FATAL: W any datasets/test-jank nguenther DENIED by fallthru
+(or you mis-spelled the reponame)
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+FATAL: W any datasets/test-jank nguenther DENIED by fallthru
+(or you mis-spelled the reponame)
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+  Pushing to origin failed.
+failed
+sync: 1 failed
+```
+
+</details>
+
+Because of course if I log in on the server I can see:
+
+```
+git@data:~/repositories/datasets$ tree test-jank.git/
+test-jank.git/
+└── annex
+    └── objects
+        └── 968
+            └── 4c0
+                └── SHA256E-s16777216--9d8ccb3ebe399a8f6801cde009e03a867151ea4e4bc609848abbd29dd335688f.bin
+                    └── SHA256E-s16777216--9d8ccb3ebe399a8f6801cde009e03a867151ea4e4bc609848abbd29dd335688f.bin
+
+5 directories, 1 file
+```
+
+
+### Gitea
+
+I've been [porting `git-annex-shell`](https://github.com/neuropoly/gitea/pull/1/) into [Gitea](https://gitea.io/) as well to get a more familiar UI for my team, and I have discovered the exact same problem there: if `test-git-annex-write` to my test instance, then delete that repo, Gitea dutifully reports
+
+> The repository has been deleted.
+
+but if I then try to recreate it balks with
+
+> Files already exist for this repository. Either adopt them or delete them.
+
+## Solutions
+
+There doesn't seem to be much benefit to lockdown in a bare repo: there's no checkout that might corrupt the content. Plus in my case there's gitolite/gitea in the way which is an extra layer of protection against direct modification.  So could **lockdown be turned off**?
+
+I'd like it best if you detected when you're run in a bare repo and skipped the freezing and thawing steps. But I'd also just be able to work with a config setting (`git config --global annex.lockdown false`?).
+
+#### Workaround #1
+
+In the meantime, so far I have found one workaround: I can misuse [`annex.freezecontent-command`](https://git-annex.branchable.com/todo/lockdown_hooks/):
+
+```
+ssh root@data
+su -l git
+git config --global annex.freezecontent-command \"chmod -R +w %path\"
+```
+
+<details><summary>Example</summary>
+
+```
+$ test-gitea-annex-write git@data:datasets/test-jank3
+Initialized empty Git repository in /tmp/tmp.I9wno7oZXg/.git/
+[master (root-commit) 4f47840] Initial commit
+ 1 file changed, 1 insertion(+)
+ create mode 100644 README.md
+init  ok
+(recording state in git...)
+16+0 records in
+16+0 records out
+16388608 bytes (16.2 MB, 16.0 MiB) copied, 0.0313028 s, 268 MB/s
+add large.bin 
+ok                                
+(recording state in git...)
+[master 27e4c8c] Annex a file
+ 1 file changed, 1 insertion(+)
+ create mode 120000 large.bin
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+
+  Unable to parse git config from origin
+FATAL: autocreate denied
+
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+  annex.sshcaching is not set to true
+
+  Unable to parse git config from origin
+FATAL: autocreate denied
+
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+On branch master
+nothing to commit, working tree clean
+commit ok
+pull origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+FATAL: autocreate denied
+
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+ok
+push origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint:   git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint:   git branch -m <name>
+Initialized empty Git repository in /srv/git/repositories/datasets/test-jank3.git/
+ok
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+On branch master
+nothing to commit, working tree clean
+commit ok
+pull origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+ok
+copy large.bin 
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+  annex.sshcaching is not set to true
+(to origin...) ok
+pull origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+ok
+(recording state in git...)
+push origin 
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+ok
+$ ssh git@data D unlock datasets/test-jank3
+'datasets/test-jank3' is now unlocked
+$ ssh git@data D rm datasets/test-jank3
+'datasets/test-jank3' is now gone!
+```
+
+(notice it doesn't give any error this time)
+
+</details>
+
+But this only works with a relatively new git-annex; I haven't looked up when this went in, but I know 8.20210223, from barely a year ago, doesn't have this feature, while 10.20220322 does. And also it's very much a workaround: it immediately undoes the work git-annex does, which will cause unnecessary disk I/O.
+
+Here's an upgrade to this workaround, that limits the effect to bare repos (though the only repos ever created by the remote `git` user should be bare):
+
+```
+git config --global annex.freezecontent-command 'sh -c '\"'\"'[ \"$(git config core.bare)\" = \"true\" ] && chmod -R +w %path'\"'\"
+```
+
+
+#### Workaround #2
+
+The advice above says to
+
+>  (The only bad consequence of this is that `rm -rf .git` doesn't work unless you first run `chmod -R +w .git`)
+
+so another solution would be to patch gitolite/gitea's `rm` subroutines to be git-annex aware, i.e. to run `chmod -R +w` before doing anything else.
+
+That looks more feasible for me to do in gitea, where git-annex support is turning out to need a whole bunch of patches scattered across the codebase, but it's a lot less appealing to do in gitolite where git-annex support is currently contained in one very elegant file.
+"""]]
