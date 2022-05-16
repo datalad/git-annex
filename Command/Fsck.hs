@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,9 +16,11 @@ import qualified Remote
 import qualified Types.Backend
 import qualified Backend
 import Annex.Content
+import Annex.Content.Presence
 import Annex.Content.Presence.LowLevel
 import Annex.Perms
 import Annex.Link
+import Annex.Version
 import Logs.Location
 import Logs.Trust
 import Logs.Activity
@@ -134,6 +136,7 @@ perform key file backend numcopies = do
 	check
 		-- order matters
 		[ fixLink key file
+		, fixObjectLocation key
 		, verifyLocationLog key keystatus ai
 		, verifyRequiredContent key ai
 		, verifyAssociatedFiles key keystatus file
@@ -242,6 +245,58 @@ fixLink key file = do
 			liftIO $ R.removeLink file
 			addAnnexLink want file
 		| otherwise = noop
+
+{- A repository that supports symlinks and is not bare may have in the past
+ - been bare, or not supported symlinks. If so, the object may be located
+ - in a directory other than the one where annex symlinks point to. Moves
+ - the object in that case.
+ -
+ - Also if a repository has been converted to bare, or moved to a crippled
+ - filesystem not supporting symlinks, the object file will be moved
+ - to the other location.
+ -}
+fixObjectLocation :: Key -> Annex Bool
+fixObjectLocation key = do
+#ifdef mingw32_HOST_OS
+	-- Windows does not allow locked files to be renamed, but annex
+	-- links are also not used on Windows.
+	return True
+#else
+	loc <- calcRepo (gitAnnexLocation key)
+	idealloc <- calcRepo (gitAnnexLocation' (const (pure True)) key)
+	if loc == idealloc
+		then return True
+		else ifM (liftIO $ R.doesPathExist loc)
+			( moveobjdir loc idealloc
+				`catchNonAsync` \_e -> return True
+			, return True
+			)
+  where
+	moveobjdir src dest = do
+		let srcdir = parentDir src
+		let destdir = parentDir dest
+		showNote "normalizing object location"
+		-- When the content file is moved, it will
+		-- appear to other processes as if it has been removed.
+		-- That should never happen to a process that has used
+		-- lockContentShared, so avoid it by locking the content
+		-- for removal, although it's not really being removed.
+		lockContentForRemoval key (return True) $ \_lck -> do
+			-- Thaw the content directory to allow renaming it.
+			thawContentDir src
+			createAnnexDirectory (parentDir destdir)
+			liftIO $ renameDirectory
+				(fromRawFilePath srcdir)
+				(fromRawFilePath destdir)
+			-- Since the directory was moved, lockContentForRemoval
+			-- will not be able to remove the lock file it
+			-- made. So, remove the lock file here.
+			mlockfile <- contentLockFile key =<< getVersion
+			liftIO $ maybe noop (removeWhenExistsWith R.removeLink) mlockfile
+			freezeContentDir dest
+			cleanObjectDirs src
+			return True
+#endif
 
 {- Checks that the location log reflects the current status of the key,
  - in this repository only. -}

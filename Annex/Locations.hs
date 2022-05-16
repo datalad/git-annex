@@ -16,6 +16,7 @@ module Annex.Locations (
 	objectDir,
 	objectDir',
 	gitAnnexLocation,
+	gitAnnexLocation',
 	gitAnnexLocationDepth,
 	gitAnnexLink,
 	gitAnnexLinkCanonical,
@@ -172,14 +173,17 @@ gitAnnexLocationDepth config = hashlevels + 1
  - be stored.
  -}
 gitAnnexLocation :: Key -> Git.Repo -> GitConfig -> IO RawFilePath
-gitAnnexLocation key r config = gitAnnexLocation' key r config
+gitAnnexLocation = gitAnnexLocation' R.doesPathExist
+
+gitAnnexLocation' :: (RawFilePath -> IO Bool) -> Key -> Git.Repo -> GitConfig -> IO RawFilePath
+gitAnnexLocation' checker key r config = gitAnnexLocation'' key r config
 	(annexCrippledFileSystem config)
 	(coreSymlinks config)
-	R.doesPathExist
+	checker
 	(Git.localGitDir r)
 
-gitAnnexLocation' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (RawFilePath -> IO Bool) -> RawFilePath -> IO RawFilePath
-gitAnnexLocation' key r config crippled symlinkssupported checker gitdir
+gitAnnexLocation'' :: Key -> Git.Repo -> GitConfig -> Bool -> Bool -> (RawFilePath -> IO Bool) -> RawFilePath -> IO RawFilePath
+gitAnnexLocation'' key r config crippled symlinkssupported checker gitdir
 	{- Bare repositories default to hashDirLower for new
 	 - content, as it's more portable. But check all locations. -}
 	| Git.repoIsLocalBare r = checkall annexLocationsBare
@@ -207,7 +211,7 @@ gitAnnexLink file key r config = do
 	currdir <- R.getCurrentDirectory
 	let absfile = absNormPathUnix currdir file
 	let gitdir = getgitdir currdir
-	loc <- gitAnnexLocation' key r config False False (\_ -> return True) gitdir
+	loc <- gitAnnexLocation'' key r config False False (\_ -> return True) gitdir
 	toInternalGitPath <$> relPathDirToFile (parentDir absfile) loc
   where
 	getgitdir currdir

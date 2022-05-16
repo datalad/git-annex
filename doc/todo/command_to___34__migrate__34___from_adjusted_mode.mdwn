@@ -5,3 +5,5 @@ Checking out `master` branch is not sufficient since `.git/annex/objects` uses d
 [[!tag projects/datalad]]
 
 [[!meta title="command to migrate object files from hashdirlower to hashdirmixed"]]
+
+> [[fixed|done]] --[[Joey]]

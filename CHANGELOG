@@ -12,6 +12,8 @@ git-annex (10.20220505) UNRELEASED; urgency=medium
   * Special remotes using exporttree=yes and/or importtree=yes now
     checksum content while it is being retrieved, instead of in a separate
     pass at the end.
+  * fsck: Fix situations where the annex object file is stored in a
+    directory structure other than where annex symlinks point to.
 
  -- Joey Hess <id@joeyh.name>  Thu, 05 May 2022 15:08:07 -0400
 

@@ -19,6 +19,7 @@ module Annex.Content.Presence (
 	isUnmodified',
 	isUnmodifiedCheap,
 	withContentLockFile,
+	contentLockFile,
 ) where
 
 import Annex.Content.Presence.LowLevel

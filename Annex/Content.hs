@@ -64,6 +64,7 @@ module Annex.Content (
 	isKeyUnlockedThin,
 	getKeyStatus,
 	getKeyFileStatus,
+	cleanObjectDirs,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -610,6 +611,11 @@ cleanObjectLoc key cleaner = do
 	cleaner
 	cleanObjectDirs file
 
+{- Given a filename inside the object directory, tries to remove the object
+ - directory, as well as the object hash directories.
+ - 
+ - Does nothing if the object directory is not empty, and does not
+ - throw an exception if it's unable to remove a directory. -}
 cleanObjectDirs :: RawFilePath -> Annex ()
 cleanObjectDirs f = do
 	HashLevels n <- objectHashLevels <$> Annex.getGitConfig
@@ -619,7 +625,8 @@ cleanObjectDirs f = do
 	go file n = do
 		let dir = parentDir file
 		maybe noop (const $ go dir (n-1))
-			<=< catchMaybeIO $ removeDirectory (fromRawFilePath dir)
+			<=< catchMaybeIO $ tryWhenExists $
+				removeDirectory (fromRawFilePath dir)
 
 {- Removes a key's file from .git/annex/objects/ -}
 removeAnnex :: ContentRemovalLock -> Annex ()
