@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="MatusGoljer1"
+ avatar="http://cdn.libravatar.org/avatar/8152eed1d594c570563ed46e7fd8356f"
+ subject="comment 3"
+ date="2022-05-16T23:37:55Z"
+ content="""
+Hey Joey, thanks for the response.  The syntax without \" was a big surprise!  Removing the quotes seems to make things work as expected.
+
+Plus it seems a big problem was also an incompatibility of the rclone special remote helper and recent rclone update where they changed some output formats and the helper was reporting incorrect results.  There is a bunch of forks with various fixes, it's a shame the original author disappeared.
+
+Thank you so much for your work on git annex!
+Matus.
+"""]]
