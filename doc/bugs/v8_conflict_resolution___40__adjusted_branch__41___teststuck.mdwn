@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+today's build/git-annex test on smaug failed testing due to running out of time (3600 seconds were given):
+
+```
++ source testlib.sh
++ workdir_base /mnt/datasets/datalad/git-annex-build-client
++ WORKDIR_BASE=/mnt/datasets/datalad/git-annex-build-client
++ mkdir -p /mnt/datasets/datalad/git-annex-build-client/698
++ trap 'cd "$WORKDIR_BASE" && chmod -R +w "$BUILDNO" && rm -rf "$BUILDNO"' EXIT
++ cd /mnt/datasets/datalad/git-annex-build-client/698
++ git annex version
+git-annex version: 10.20220504+git37-g514f50e5b-1~ndall+1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
++ timeout 3600 git annex test
+Tests
+  Tasty
+    tasty self-check:                       
+...
+All 6 tests passed (115.95s)
+Tests
+  Tasty
+    tasty self-check:                      OK
+      +++ OK, passed 1 test.
+  Repo Tests v8 adjusted unlocked branch
+    Init Tests
+      init:                                OK (3.21s)
+      add:                                 OK (11.10s)
+    conflict resolution (adjusted branch): + cd /mnt/datasets/datalad/git-annex-build-client
++ chmod -R +w 698
++ rm -rf 698
+```
+
+didn't happen before AFAIK:
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/05[master]git
+$> git grep 'conflict resolution (adj' | grep -v OK
+result-smaug-698/handle-result.yaml-122-ffec0fe3-success/result-smaug-698/git-annex.log:    conflict resolution (adjusted branch): + cd /mnt/datasets/datalad/git-annex-build-client
+```
+
+and was ok on subsequent run:
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/05[master]git
+$> git grep 'conflict resolution (adj' result-smaug-699 
+result-smaug-699/handle-result.yaml-123-3c5c350a-success/result-smaug-699/git-annex.log:    conflict resolution (adjusted branch): OK (65.14s)
+result-smaug-699/handle-result.yaml-123-3c5c350a-success/result-smaug-699/git-annex.log:    conflict resolution (adjusted branch): OK (38.77s)
+result-smaug-699/handle-result.yaml-123-3c5c350a-success/result-smaug-699/git-annex.log:    conflict resolution (adjusted branch): OK (51.34s)
+```
+
+I don't know if that was somehow a fluke that may be testing of git-annex is in  general close to an hour on smaug, or it was too busy -- but unlikely.  I am adding Elapsed time reporting https://github.com/datalad/git-annex/pull/126
