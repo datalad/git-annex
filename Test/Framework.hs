@@ -12,7 +12,6 @@ module Test.Framework where
 import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
-import Test.Tasty.QuickCheck
 import Test.Tasty.Options
 import Test.Tasty.Ingredients.Rerun
 import Test.Tasty.Ingredients.ConsoleReporter
@@ -765,13 +764,7 @@ parallelTestRunner' numjobs opts mkts
 				, cwd = Just subdir
 				}
 			(_, _, _, pid) <- createProcessConcurrent p
-			ret <- waitForProcess pid
-			-- Work around this strange issue
-			-- https://github.com/UnkindPartition/tasty/issues/326
-			-- when other workaround does not work.
-			if ret == ExitFailure (-11)
-				then runone n
-				else return ret
+			waitForProcess pid
 		nvar <- newTVarIO (1, length ts)
 		exitcodes <- forConcurrently [1..numjobs] $ \_ -> 
 			worker [] nvar runone
@@ -787,22 +780,15 @@ parallelTestRunner' numjobs opts mkts
 				exitFailure
 	go (Just subenvval) = case readish subenvval of
 		Nothing -> error ("Bad " ++ subenv)
-		Just (n, crippledfilesystem, adjustedbranchok) -> isolateGitConfig $ do
+		Just (n, crippledfilesystem, adjustedbranchok) -> setTestEnv $ do
 			let ts = mkts numparts crippledfilesystem adjustedbranchok opts
-			let t = topLevelTestGroup 
-				-- Work around this strange issue
-				-- https://github.com/UnkindPartition/tasty/issues/326
-				[ testGroup "Tasty" 
-					[ testProperty "tasty self-check" True
-					]
-				, ts !! (n - 1)
-				]
+			let t = topLevelTestGroup [ ts !! (n - 1) ]
 			case tryIngredients ingredients (tastyOptionSet opts) t of
 				Nothing -> error "No tests found!?"
 				Just act -> ifM act
 					( exitSuccess
 					, exitFailure
-							)
+					)
 
 topLevelTestGroup :: [TestTree] -> TestTree
 topLevelTestGroup = testGroup "Tests"
