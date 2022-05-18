@@ -55,3 +55,6 @@ result-smaug-699/handle-result.yaml-123-3c5c350a-success/result-smaug-699/git-an
 ```
 
 I don't know if that was somehow a fluke that may be testing of git-annex is in  general close to an hour on smaug, or it was too busy -- but unlikely.  I am adding Elapsed time reporting https://github.com/datalad/git-annex/pull/126
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
