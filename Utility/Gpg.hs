@@ -1,6 +1,6 @@
 {- gpg interface
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -16,6 +16,7 @@ module Utility.Gpg (
 	pkEncTo,
 	stdEncryptionParams,
 	pipeStrict,
+	pipeStrict',
 	feedRead,
 	feedRead',
 	findPubKeys,
@@ -28,7 +29,6 @@ module Utility.Gpg (
 	testKeyId,
 #ifndef mingw32_HOST_OS
 	testHarness,
-	testTestHarness,
 	checkEncryptionFile,
 	checkEncryptionStream,
 #endif
@@ -40,7 +40,6 @@ import qualified BuildInfo
 import System.Posix.Types
 import System.Posix.IO
 import Utility.Env
-import Utility.Env.Set
 import Utility.FileMode
 #else
 import Utility.Tmp
@@ -110,10 +109,15 @@ stdEncryptionParams symmetric = enc symmetric ++
 
 {- Runs gpg with some params and returns its stdout, strictly. -}
 readStrict :: GpgCmd -> [CommandParam] -> IO String
-readStrict (GpgCmd cmd) params = do
+readStrict c p = readStrict' c p Nothing
+
+readStrict' :: GpgCmd -> [CommandParam] -> Maybe [(String, String)] -> IO String
+readStrict' (GpgCmd cmd) params environ = do
 	params' <- stdParams params
 	let p = (proc cmd params')
-		{ std_out = CreatePipe }
+		{ std_out = CreatePipe
+		, env = environ
+		}
 	withCreateProcess p (go p)
   where
 	go p _ (Just hout) _ pid = do
@@ -124,11 +128,15 @@ readStrict (GpgCmd cmd) params = do
 {- Runs gpg, piping an input value to it, and returning its stdout,
  - strictly. -}
 pipeStrict :: GpgCmd -> [CommandParam] -> String -> IO String
-pipeStrict (GpgCmd cmd) params input = do
+pipeStrict c p i = pipeStrict' c p Nothing i
+
+pipeStrict' :: GpgCmd -> [CommandParam] -> Maybe [(String, String)] -> String -> IO String
+pipeStrict' (GpgCmd cmd) params environ input = do
 	params' <- stdParams params
 	let p = (proc cmd params')
 		{ std_in = CreatePipe
 		, std_out = CreatePipe
+		, env = environ
 		}
 	withCreateProcess p (go p)
   where
@@ -208,11 +216,14 @@ feedRead' (GpgCmd cmd) params feeder reader = do
  - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of
  - GnuPG's manpage.) -}
 findPubKeys :: GpgCmd -> String -> IO KeyIds
-findPubKeys cmd for
+findPubKeys cmd = findPubKeys' cmd Nothing
+
+findPubKeys' :: GpgCmd -> Maybe [(String, String)] -> String -> IO KeyIds
+findPubKeys' cmd environ for
 	-- pass forced subkey through as-is rather than
 	-- looking up the master key.
 	| isForcedSubKey for = return $ KeyIds [for]
-	| otherwise = KeyIds . parse . lines <$> readStrict cmd params
+	| otherwise = KeyIds . parse . lines <$> readStrict' cmd params environ
   where
 	params = [Param "--with-colons", Param "--list-public-keys", Param for]
 	parse = mapMaybe (keyIdField . splitc ':')
@@ -410,7 +421,7 @@ keyBlock public ls = unlines
  - perhaps related to the agent socket), the action is not run, and Nothing
  - is returned.
  -}
-testHarness :: FilePath -> GpgCmd -> IO a -> IO (Maybe a)
+testHarness :: FilePath -> GpgCmd -> ([(String, String)] -> IO a) -> IO (Maybe a)
 testHarness tmpdir cmd a = ifM (inSearchPath (unGpgCmd cmd))
 	( bracket (eitherToMaybe <$> tryNonAsync setup) cleanup go
 	, return Nothing
@@ -419,30 +430,30 @@ testHarness tmpdir cmd a = ifM (inSearchPath (unGpgCmd cmd))
 	var = "GNUPGHOME"
 
 	setup = do
-		orig <- getEnv var
 		subdir <- makenewdir (1 :: Integer)
+		origenviron <- getEnvironment
+		let environ = addEntry var subdir origenviron
 		-- gpg is picky about permissions on its home dir
 		liftIO $ void $ tryIO $ modifyFileMode (toRawFilePath subdir) $
 			removeModes $ otherGroupModes
-		setEnv var subdir True
 		-- For some reason, recent gpg needs a trustdb to be set up.
-		_ <- pipeStrict cmd [Param "--trust-model", Param "auto", Param "--update-trustdb"] []
-		_ <- pipeStrict cmd [Param "--import", Param "-q"] $ unlines
+		_ <- pipeStrict' cmd [Param "--trust-model", Param "auto", Param "--update-trustdb"] (Just environ) []
+		_ <- pipeStrict' cmd [Param "--import", Param "-q"] (Just environ) $ unlines
 			[testSecretKey, testKey]
-		return orig
+		return environ
 		
-	cleanup (Just (Just v)) = stopgpgagent >> setEnv var v True
-	cleanup (Just Nothing) = stopgpgagent >> unsetEnv var
-	cleanup Nothing = stopgpgagent
+	cleanup Nothing = return ()
+	cleanup (Just environ) = stopgpgagent environ
 
 	-- Recent versions of gpg automatically start gpg-agent, or perhaps
 	-- other daemons. Stop them when done. This only affects
 	-- daemons started for the GNUPGHOME that was used.
 	-- Older gpg may not support this, so ignore failure.
-	stopgpgagent = whenM (inSearchPath "gpgconf") $
-		void $ boolSystem "gpgconf" [Param "--kill", Param "all"]
+	stopgpgagent environ = whenM (inSearchPath "gpgconf") $
+		void $ boolSystemEnv "gpgconf" [Param "--kill", Param "all"]
+			(Just environ) 
 
-	go (Just _) = Just <$> a
+	go (Just environ) = Just <$> a environ
 	go Nothing = return Nothing
 
         makenewdir n = do
@@ -451,24 +462,15 @@ testHarness tmpdir cmd a = ifM (inSearchPath (unGpgCmd cmd))
 			createDirectory subdir
 			return subdir
 
-{- Tests the test harness. -}
-testTestHarness :: FilePath -> GpgCmd -> IO Bool
-testTestHarness tmpdir cmd =
-	testHarness tmpdir cmd (findPubKeys cmd testKeyId) >>= \case
-		Nothing -> do
-			hPutStrLn stderr "unable to test gpg, setting up the test harness did not succeed"
-			return True
-		Just keys -> return $ KeyIds [testKeyId] == keys
-
-checkEncryptionFile :: GpgCmd -> FilePath -> Maybe KeyIds -> IO Bool
-checkEncryptionFile cmd filename keys =
-	checkGpgPackets cmd keys =<< readStrict cmd params
+checkEncryptionFile :: GpgCmd -> Maybe [(String, String)] -> FilePath -> Maybe KeyIds -> IO Bool
+checkEncryptionFile cmd environ filename keys =
+	checkGpgPackets cmd environ keys =<< readStrict' cmd params environ
   where
 	params = [Param "--list-packets", Param "--list-only", File filename]
 
-checkEncryptionStream :: GpgCmd -> String -> Maybe KeyIds -> IO Bool
-checkEncryptionStream cmd stream keys =
-	checkGpgPackets cmd keys =<< pipeStrict cmd params stream
+checkEncryptionStream :: GpgCmd -> Maybe [(String, String)] -> String -> Maybe KeyIds -> IO Bool
+checkEncryptionStream cmd environ stream keys =
+	checkGpgPackets cmd environ keys =<< pipeStrict' cmd params environ stream
   where
 	params = [Param "--list-packets", Param "--list-only"]
 
@@ -476,8 +478,8 @@ checkEncryptionStream cmd stream keys =
  - symmetrically encrypted (keys is Nothing), or encrypted to some
  - public key(s).
  - /!\ The key needs to be in the keyring! -}
-checkGpgPackets :: GpgCmd -> Maybe KeyIds -> String -> IO Bool
-checkGpgPackets cmd keys str = do
+checkGpgPackets :: GpgCmd -> Maybe [(String, String)] -> Maybe KeyIds -> String -> IO Bool
+checkGpgPackets cmd environ keys str = do
 	let (asym,sym) = partition (pubkeyEncPacket `isPrefixOf`) $
 			filter (\l' -> pubkeyEncPacket `isPrefixOf` l' ||
 				symkeyEncPacket `isPrefixOf` l') $
@@ -488,7 +490,7 @@ checkGpgPackets cmd keys str = do
 		(Just (KeyIds ks), ls, []) -> do
 			-- Find the master key associated with the
 			-- encryption subkey.
-			ks' <- concat <$> mapM (keyIds <$$> findPubKeys cmd)
+			ks' <- concat <$> mapM (keyIds <$$> findPubKeys' cmd environ)
 					[ k | k:"keyid":_ <- map (reverse . words) ls ]
 			return $ sort (nub ks) == sort (nub ks')
 		_ -> return False

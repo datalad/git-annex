@@ -3,7 +3,7 @@
  - Currently using gpg; could later be modified to support different
  - crypto backends if neccessary.
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,7 +22,8 @@ module Crypto (
 	genSharedCipher,
 	genSharedPubKeyCipher,
 	updateCipherKeyIds,
-	decryptCipher,		
+	decryptCipher,
+	decryptCipher',
 	encryptKey,
 	isEncKey,
 	feedFile,
@@ -147,10 +148,13 @@ encryptCipher cmd c cip variant (KeyIds ks) = do
 
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: LensGpgEncParams c => Gpg.GpgCmd -> c -> StorableCipher -> IO Cipher
-decryptCipher _ _ (SharedCipher t) = return $ Cipher t
-decryptCipher _ _ (SharedPubKeyCipher t _) = return $ MacOnlyCipher t
-decryptCipher cmd c (EncryptedCipher t variant _) =
-	mkCipher <$> Gpg.pipeStrict cmd params t
+decryptCipher cmd c cip = decryptCipher' cmd Nothing c cip
+
+decryptCipher' :: LensGpgEncParams c => Gpg.GpgCmd -> Maybe [(String, String)] -> c -> StorableCipher -> IO Cipher
+decryptCipher' _ _ _ (SharedCipher t) = return $ Cipher t
+decryptCipher' _ _ _ (SharedPubKeyCipher t _) = return $ MacOnlyCipher t
+decryptCipher' cmd environ c (EncryptedCipher t variant _) =
+	mkCipher <$> Gpg.pipeStrict' cmd params environ t
   where
 	mkCipher = case variant of
 		Hybrid -> Cipher

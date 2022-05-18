@@ -1643,7 +1643,7 @@ test_uninit = intmpclonerepo $ do
 	git_annex "get" [] "get"
 	annexed_present annexedfile
 	-- any exit status is accepted; does abnormal exit
-	git_annex' (const True) "uninit" [] "uninit"
+	git_annex'' (const True) "uninit" [] Nothing "uninit"
 	checkregularfile annexedfile
 	doesDirectoryExist ".git" @? ".git vanished in uninit"
 
@@ -1758,8 +1758,8 @@ test_borg_remote = when BuildInfo.borg $ do
 	borgdirparent <- fromRawFilePath <$> (absPath . toRawFilePath =<< tmprepodir)
 	let borgdir = borgdirparent </> "borgrepo"
 	intmpclonerepo $ do
-		testProcess "borg" ["init", borgdir, "-e", "none"] (== True) "borg init"
-		testProcess "borg" ["create", borgdir++"::backup1", "."] (== True) "borg create"
+		testProcess "borg" ["init", borgdir, "-e", "none"] Nothing (== True) "borg init"
+		testProcess "borg" ["create", borgdir++"::backup1", "."] Nothing (== True) "borg create"
 
 		git_annex "initremote" (words $ "borg type=borg borgrepo="++borgdir) "initremote"
 		git_annex "sync" ["borg"] "sync borg"
@@ -1769,7 +1769,7 @@ test_borg_remote = when BuildInfo.borg $ do
 		annexed_present annexedfile
 		git_annex_expectoutput "find" ["--in=borg"] []
 		
-		testProcess "borg" ["create", borgdir++"::backup2", "."] (== True) "borg create"
+		testProcess "borg" ["create", borgdir++"::backup2", "."] Nothing (== True) "borg create"
 		git_annex "sync" ["borg"] "sync borg after getting file"
 		git_annex_expectoutput "find" ["--in=borg"] [annexedfile]
 
@@ -1808,9 +1808,7 @@ test_crypto = do
 		let gpgtmp = if length relgpgtmp < length absgpgtmp
 			then relgpgtmp 
 			else absgpgtmp
-		Utility.Gpg.testTestHarness gpgtmp gpgcmd
-			@? "test harness self-test failed"
-		void $ Utility.Gpg.testHarness gpgtmp gpgcmd $ do
+		void $ Utility.Gpg.testHarness gpgtmp gpgcmd $ \environ -> do
 			createDirectory "dir"
 			let initps =
 				[ "foo"
@@ -1821,13 +1819,13 @@ test_crypto = do
 				] ++ if scheme `elem` ["hybrid","pubkey"]
 					then ["keyid=" ++ Utility.Gpg.testKeyId]
 					else []
-			git_annex "initremote" initps "initremote"
-			git_annex_shouldfail "initremote" initps "initremote should not work when run twice in a row"
-			git_annex "enableremote" initps "enableremote"
-			git_annex "enableremote" initps "enableremote when run twice in a row"
-			git_annex "get" [annexedfile] "get of file"
+			git_annex' "initremote" initps (Just environ) "initremote"
+			git_annex_shouldfail' "initremote" initps (Just environ) "initremote should not work when run twice in a row"
+			git_annex' "enableremote" initps (Just environ) "enableremote"
+			git_annex' "enableremote" initps (Just environ) "enableremote when run twice in a row"
+			git_annex' "get" [annexedfile] (Just environ) "get of file"
 			annexed_present annexedfile
-			git_annex "copy" [annexedfile, "--to", "foo"] "copy --to encrypted remote"
+			git_annex' "copy" [annexedfile, "--to", "foo"] (Just environ) "copy --to encrypted remote"
 			(c,k) <- annexeval $ do
 				uuid <- Remote.nameToUUID "foo"
 				rs <- Logs.Remote.readRemoteLog
@@ -1836,18 +1834,18 @@ test_crypto = do
 			let key = if scheme `elem` ["hybrid","pubkey"]
 					then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]
 					else Nothing
-			testEncryptedRemote scheme key c [k] @? "invalid crypto setup"
+			testEncryptedRemote environ scheme key c [k] @? "invalid crypto setup"
 	
 			annexed_present annexedfile
-			git_annex "drop" [annexedfile, "--numcopies=2"] "drop"
+			git_annex' "drop" [annexedfile, "--numcopies=2"] (Just environ) "drop"
 			annexed_notpresent annexedfile
-			git_annex "move" [annexedfile, "--from", "foo"] "move --from encrypted remote"
+			git_annex' "move" [annexedfile, "--from", "foo"] (Just environ) "move --from encrypted remote"
 			annexed_present annexedfile
-			git_annex_shouldfail "drop" [annexedfile, "--numcopies=2"] "drop should not be allowed with numcopies=2"
+			git_annex_shouldfail' "drop" [annexedfile, "--numcopies=2"] (Just environ) "drop should not be allowed with numcopies=2"
 			annexed_present annexedfile
 	{- Ensure the configuration complies with the encryption scheme, and
 	 - that all keys are encrypted properly for the given directory remote. -}
-	testEncryptedRemote scheme ks c keys = case Remote.Helper.Encryptable.extractCipher pc of
+	testEncryptedRemote environ scheme ks c keys = case Remote.Helper.Encryptable.extractCipher pc of
 		Just cip@Crypto.SharedCipher{} | scheme == "shared" && isNothing ks ->
 			checkKeys cip Nothing
 		Just cip@(Crypto.EncryptedCipher encipher v ks')
@@ -1860,18 +1858,18 @@ test_crypto = do
 		keysMatch (Utility.Gpg.KeyIds ks') =
 			maybe False (\(Utility.Gpg.KeyIds ks2) ->
 					sort (nub ks2) == sort (nub ks')) ks
-		checkCipher encipher = Utility.Gpg.checkEncryptionStream gpgcmd encipher . Just
+		checkCipher encipher = Utility.Gpg.checkEncryptionStream gpgcmd (Just environ) encipher . Just
 		checkScheme Types.Crypto.Hybrid = scheme == "hybrid"
 		checkScheme Types.Crypto.PubKey = scheme == "pubkey"
 		checkKeys cip mvariant = do
 			dummycfg <- Types.GitConfig.dummyRemoteGitConfig
 			let encparams = (Types.Remote.ParsedRemoteConfig mempty mempty, dummycfg)
-			cipher <- Crypto.decryptCipher gpgcmd encparams cip
+			cipher <- Crypto.decryptCipher' gpgcmd (Just environ) encparams cip
 			files <- filterM doesFileExist $
 				map ("dir" </>) $ concatMap (serializeKeys cipher) keys
 			return (not $ null files) <&&> allM (checkFile mvariant) files
 		checkFile mvariant filename =
-			Utility.Gpg.checkEncryptionFile gpgcmd filename $
+			Utility.Gpg.checkEncryptionFile gpgcmd (Just environ) filename $
 				if mvariant == Just Types.Crypto.PubKey then ks else Nothing
 		serializeKeys cipher = map fromRawFilePath . 
 			Annex.Locations.keyPaths .

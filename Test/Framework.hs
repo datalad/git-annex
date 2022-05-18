@@ -64,32 +64,40 @@ import qualified Command.Uninit
 
 -- Run a process. The output and stderr is captured, and is only
 -- displayed if the process does not return the expected value.
-testProcess :: String -> [String] -> (Bool -> Bool) -> String -> Assertion
-testProcess command params expectedret faildesc = do
-	(transcript, ret) <- Utility.Process.Transcript.processTranscript command params Nothing
+testProcess :: String -> [String] -> Maybe [(String, String)] -> (Bool -> Bool) -> String -> Assertion
+testProcess command params environ expectedret faildesc = do
+	let p = (proc command params) { env = environ }
+	(transcript, ret) <- Utility.Process.Transcript.processTranscript' p Nothing
 	(expectedret ret) @? (faildesc ++ " failed (transcript follows)\n" ++ transcript)
 
 -- Run git. (Do not use to run git-annex as the one being tested
 -- may not be in path.)
 git :: String -> [String] -> String -> Assertion
-git command params = testProcess "git" (command:params) (== True)
+git command params = testProcess "git" (command:params) Nothing (== True)
 
 -- For when git is expected to fail.
 git_shouldfail :: String -> [String] -> String -> Assertion
-git_shouldfail command params = testProcess "git" (command:params) (== False)
+git_shouldfail command params = testProcess "git" (command:params) Nothing (== False)
 
 -- Run git-annex.
 git_annex :: String -> [String] -> String -> Assertion
-git_annex = git_annex' (== True)
+git_annex command params faildesc = git_annex' command params Nothing faildesc
+
+-- Runs git-annex with some environment.
+git_annex' :: String -> [String] -> Maybe [(String, String)] -> String -> Assertion
+git_annex' = git_annex'' (== True)
 
 -- For when git-annex is expected to fail.
 git_annex_shouldfail :: String -> [String] -> String -> Assertion
-git_annex_shouldfail = git_annex' (== False)
+git_annex_shouldfail command params faildesc = git_annex_shouldfail' command params Nothing faildesc
 
-git_annex' :: (Bool -> Bool) -> String -> [String] -> String -> Assertion
-git_annex' expectedret command params faildesc = do
+git_annex_shouldfail' :: String -> [String] -> Maybe [(String, String)] -> String -> Assertion
+git_annex_shouldfail' = git_annex'' (== False)
+
+git_annex'' :: (Bool -> Bool) -> String -> [String] -> Maybe [(String, String)] -> String -> Assertion
+git_annex'' expectedret command params environ faildesc = do
 	pp <- Annex.Path.programPath
-	testProcess pp (command:params) expectedret faildesc
+	testProcess pp (command:params) environ expectedret faildesc
 
 {- Runs git-annex and returns its standard output. -}
 git_annex_output :: String -> [String] -> IO String
