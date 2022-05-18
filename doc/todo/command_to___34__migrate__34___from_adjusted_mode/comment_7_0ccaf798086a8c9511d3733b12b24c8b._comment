@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-05-16T19:17:34Z"
+ content="""
+Made `git-annex fsck` move the object files to the preferred location for
+the repository type. 
+
+You can run it with --fast and it should solve your problem. I'm still not
+certain what circumstance led to you having the problem, but unless I hear
+back I'll assume it was something like an old version of git-annex. So will
+close this bug with this as the fix..
+"""]]
