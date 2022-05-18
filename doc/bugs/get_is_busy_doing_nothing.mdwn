@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+spotted that our backup job, running git-annex 10.20220322-g7b64dea, had not exited for a number of days. In htop I see:
+
+
+```
+ 381205 dandi      20   0  169M  4276  4272 S  0.0  0.0  0:05.15 │                    └─ python -m tools.backups2datalad -l DEBUG -J 5 --target /mnt/backup/dandi/dandisets populate dandi-dandisets-dropbox
+ 389485 dandi      20   0 1026G 1140M 16208 S 171.  1.8     155h │                       └─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389486 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 17:33.20 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389488 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 22:07.69 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389490 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 24:49.46 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389494 dandi      20   0 10636  1968  1964 S  0.0  0.0  0:00.00 │                          ├─ git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+ 389496 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 13:41.26 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389497 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 10:47.33 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389498 dandi      20   0 1026G 1140M 16208 S 43.1  1.8 36h53:20 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389499 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 27:15.88 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389500 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 32:34.61 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389501 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 25:05.81 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389506 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 26:42.46 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389507 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 28:43.57 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389510 dandi      20   0 10636  1976  1972 S  0.0  0.0  0:00.02 │                          ├─ git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+ 389511 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 20:59.64 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389512 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 25:06.37 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389513 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 33:52.81 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389514 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 29:43.56 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389516 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 23:44.52 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389517 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 17:07.65 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389519 dandi      20   0 1026G 1140M 16208 S 43.1  1.8 36h16:00 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389520 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 18:49.32 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389521 dandi      20   0 1026G 1140M 16208 S  0.0  1.8  0:00.02 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389522 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 18:45.09 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389524 dandi      20   0 1026G 1140M 16208 S 41.8  1.8 36h32:16 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389528 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 20:00.35 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389556 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 24:22.72 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 389759 dandi      20   0 1026G 1140M 16208 S  0.0  1.8  0:00.04 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 390392 dandi      20   0 1026G 1140M 16208 S 42.5  1.8 37h16:15 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 391588 dandi      20   0 1026G 1140M 16208 S  0.0  1.8 20:03.40 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 394739 dandi      20   0 1026G 1140M 16208 S  0.0  1.8  0:00.00 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 441349 dandi      20   0 1026G 1140M 16208 S  0.0  1.8  9:46.65 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+ 444725 dandi      20   0 1026G 1140M 16208 S  0.0  1.8  7:42.72 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+1910907 dandi      20   0 1026G 1140M 16208 S  0.0  1.8  0:00.00 │                          ├─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+2277116 dandi      20   0 1026G 1140M 16208 S  0.0  1.8  0:00.00 │                          └─ git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+
+```
+
+relevant open files in that git repo:
+
+```
+(dandisets) dandi@drogon:/mnt/backup/dandi/dandisets/000233$ lsof -p 389485 | grep 000
+lsof: WARNING: can't stat() btrfs file system /mnt/backup/docker/btrfs
+      Output information may be incomplete.
+git-annex 389485 dandi  cwd       DIR      0,40         266  88559549 /mnt/backup/dandi/dandisets/000233
+git-annex 389485 dandi  mem       REG       9,0       93000   3146348 /lib/x86_64-linux-gnu/libresolv-2.31.so
+git-annex 389485 dandi  mem-r     REG      0,35             118071211 /mnt/backup/dandi/dandisets/000233/.git/annex/keysdb/db-shm (path dev=0,40)
+git-annex 389485 dandi   29u      REG      0,40      139264  88559612 /mnt/backup/dandi/dandisets/000233/.git/annex/keysdb/db
+git-annex 389485 dandi   30u      REG      0,40           0 117504617 /mnt/backup/dandi/dandisets/000233/.git/annex/transfer/download/00000000-0000-0000-0000-000000000001/lck.SHA256E-s124312933165--d769cd7cbec2012515085d63eee594299d7411500c0bb9c13d10c0cd68d5ddce.nwb
+git-annex 389485 dandi   32u      REG      0,40           0 118071210 /mnt/backup/dandi/dandisets/000233/.git/annex/keysdb/db-wal
+git-annex 389485 dandi   34u      REG      0,40       32768 118071211 /mnt/backup/dandi/dandisets/000233/.git/annex/keysdb/db-shm
+git-annex 389485 dandi   50w      REG      0,40 47012344309 117504625 /mnt/backup/dandi/dandisets/000233/.git/annex/tmp/SHA256E-s124312933165--d769cd7cbec2012515085d63eee594299d7411500c0bb9c13d10c0cd68d5ddce.nwb
+```
+
+That key is available from:
+
+```
+(dandisets) dandi@drogon:/mnt/backup/dandi/dandisets/000233$ git annex whereis --key SHA256E-s124312933165--d769cd7cbec2012515085d63eee594299d7411500c0bb9c13d10c0cd68d5ddce.nwb
+whereis SHA256E-s124312933165--d769cd7cbec2012515085d63eee594299d7411500c0bb9c13d10c0cd68d5ddce.nwb (1 copy) 
+        00000000-0000-0000-0000-000000000001 -- web
+
+  web: https://api.dandiarchive.org/api/assets/5304ce04-3a87-400c-a484-aa889156a505/download/
+  web: https://dandiarchive.s3.amazonaws.com/blobs/c84/640/c846401f-10bf-452f-b26a-82e3d905556c?versionId=naDNt0WozdY8oi6M9L6MGhfsvnRuW6RJ
+ok
+```
+where the first one is redirect to the second one. And I think it had not progressed from that 47012344309 size in quite awhile (will check again in an hour).
+
+I would have expected it to fail may be (and possibly `retry` if annex.retry) but not really get stuck.
+
+Is there any diagnostic information I should collect to help troubleshooting the issue, or could I just kill/restart that process?
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
