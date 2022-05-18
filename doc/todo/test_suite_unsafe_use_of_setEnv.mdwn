@@ -19,4 +19,4 @@ There is also Utility.Gpg.testHarness, which sets GNUPGHOME. It seems that
 instead, every place that git-annex is run inside the gpg test harness
 would need to add GNUPGHOME to the environment of the git-annex process.
 
-> Fixed this part to not setEnv. --[[Joey]]
+> [[fixed|done]] --[[Joey]] 

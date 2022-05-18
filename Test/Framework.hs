@@ -24,6 +24,7 @@ import System.Environment (getArgs)
 import System.Console.Concurrent
 import System.Console.ANSI
 import GHC.Conc
+import System.IO.Unsafe (unsafePerformIO)
 
 import Common
 import Types.Test
@@ -260,14 +261,42 @@ ensuredir d = do
 	e <- doesDirectoryExist d
 	unless e $
 		createDirectory d
-	
-{- Prevent global git configs from affecting the test suite. -}
-isolateGitConfig :: IO a -> IO a
-isolateGitConfig a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
+
+{- This is the only place in the test suite that can use setEnv.
+ - Using it elsewhere can conflict with tasty's use of getEnv, which can
+ - happen concurrently with a test case running, and would be a problem
+ - since setEnv is not thread safe. This is run before tasty. -}
+setTestEnv :: IO a -> IO a
+setTestEnv a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
 	tmphomeabs <- fromRawFilePath <$> absPath (toRawFilePath tmphome)
+	{- Prevent global git configs from affecting the test suite. -}
 	Utility.Env.Set.setEnv "HOME" tmphomeabs True
 	Utility.Env.Set.setEnv "XDG_CONFIG_HOME" tmphomeabs True
 	Utility.Env.Set.setEnv "GIT_CONFIG_NOSYSTEM" "1" True
+	
+	-- Ensure that the same git-annex binary that is running
+	-- git-annex test is at the front of the PATH.
+	p <- Utility.Env.getEnvDefault "PATH" ""
+	pp <- Annex.Path.programPath
+	Utility.Env.Set.setEnv "PATH" (takeDirectory pp ++ [searchPathSeparator] ++ p) True
+	
+	-- Avoid git complaining if it cannot determine the user's
+	-- email address, or exploding if it doesn't know the user's name.
+	Utility.Env.Set.setEnv "GIT_AUTHOR_EMAIL" "test@example.com" True
+	Utility.Env.Set.setEnv "GIT_AUTHOR_NAME" "git-annex test" True
+	Utility.Env.Set.setEnv "GIT_COMMITTER_EMAIL" "test@example.com" True
+	Utility.Env.Set.setEnv "GIT_COMMITTER_NAME" "git-annex test" True
+	-- force gpg into batch mode for the tests
+	Utility.Env.Set.setEnv "GPG_BATCH" "1" True
+	-- Make git and git-annex access ssh remotes on the local
+	-- filesystem, without using ssh at all.
+	Utility.Env.Set.setEnv "GIT_SSH_COMMAND" "git-annex test --fakessh --" True
+	Utility.Env.Set.setEnv "GIT_ANNEX_USE_GIT_SSH" "1" True
+
+	-- Record top directory.
+	currdir <- getCurrentDirectory
+	Utility.Env.Set.setEnv "TOPDIR" currdir True
+	
 	a
 
 removeDirectoryForCleanup :: FilePath -> IO ()
@@ -455,7 +484,7 @@ data TestMode = TestMode
 	, adjustedUnlockedBranch :: Bool
 	, annexVersion :: Types.RepoVersion.RepoVersion
 	, keepFailures :: Bool
-	} deriving (Read, Show)
+	} deriving (Show)
 
 testMode :: TestOptions -> Types.RepoVersion.RepoVersion -> TestMode
 testMode opts v = TestMode
@@ -471,47 +500,32 @@ hasUnlockedFiles m = unlockedFiles m || adjustedUnlockedBranch m
 withTestMode :: TestMode -> TestTree -> TestTree
 withTestMode testmode = withResource prepare release . const
   where
-	prepare = do
-		setTestMode testmode
-		setmainrepodir =<< newmainrepodir
+	prepare = setTestMode testmode
 	release _ = noop
+
+{- The current test mode is stored here while a test is running.
+ -
+ - Only one test can be running at a time by a process; running a
+ - test also involves chdir into a test repository.
+ -}
+{-# NOINLINE currentTestMode #-}
+currentTestMode :: TMVar TestMode
+currentTestMode = unsafePerformIO newEmptyTMVarIO
+
+currentMainRepoDir :: TMVar FilePath
+currentMainRepoDir = unsafePerformIO newEmptyTMVarIO
 
 setTestMode :: TestMode -> IO ()
 setTestMode testmode = do
-	currdir <- getCurrentDirectory
-	p <- Utility.Env.getEnvDefault "PATH" ""
-	pp <- Annex.Path.programPath
-
-	mapM_ (\(var, val) -> Utility.Env.Set.setEnv var val True)
-		-- Ensure that the same git-annex binary that is running
-		-- git-annex test is at the front of the PATH.
-		[ ("PATH", takeDirectory pp ++ [searchPathSeparator] ++ p)
-		, ("TOPDIR", currdir)
-		-- Avoid git complaining if it cannot determine the user's
-		-- email address, or exploding if it doesn't know the user's
-		-- name.
-		, ("GIT_AUTHOR_EMAIL", "test@example.com")
-		, ("GIT_AUTHOR_NAME", "git-annex test")
-		, ("GIT_COMMITTER_EMAIL", "test@example.com")
-		, ("GIT_COMMITTER_NAME", "git-annex test")
-		-- force gpg into batch mode for the tests
-		, ("GPG_BATCH", "1")
-		-- Make git and git-annex access ssh remotes on the local
-		-- filesystem, without using ssh at all.
-		, ("GIT_SSH_COMMAND", "git-annex test --fakessh --")
-		, ("GIT_ANNEX_USE_GIT_SSH", "1")
-		, ("TESTMODE", show testmode)
-		]
-				
-runFakeSsh :: [String] -> IO ()
-runFakeSsh ("-n":ps) = runFakeSsh ps
-runFakeSsh (_host:cmd:[]) =
-	withCreateProcess (shell cmd) $
-		\_ _ _ pid -> exitWith =<< waitForProcess pid
-runFakeSsh ps = error $ "fake ssh option parse error: " ++ show ps
+	atomically $ do
+		_ <- tryTakeTMVar currentTestMode
+		putTMVar currentTestMode testmode
+	setmainrepodir =<< newmainrepodir
 
 getTestMode :: IO TestMode
-getTestMode = Prelude.read <$> Utility.Env.getEnvDefault "TESTMODE" ""
+getTestMode = atomically (tryReadTMVar currentTestMode) >>= \case
+	Just tm -> return tm
+	Nothing -> error "getTestMode without setTestMode"
 
 setupTestMode :: IO ()
 setupTestMode = do
@@ -528,12 +542,15 @@ changeToTopDir t = do
 tmpdir :: String
 tmpdir = ".t"
 
-mainrepodir :: IO FilePath
-mainrepodir = Utility.Env.getEnvDefault "MAINREPODIR"
-	(giveup "MAINREPODIR not set")
-
 setmainrepodir :: FilePath -> IO ()
-setmainrepodir d = Utility.Env.Set.setEnv "MAINREPODIR" d True
+setmainrepodir mrd = atomically $ do
+	_ <- tryTakeTMVar currentMainRepoDir
+	putTMVar currentMainRepoDir mrd
+
+mainrepodir :: IO FilePath
+mainrepodir = atomically (tryReadTMVar currentMainRepoDir) >>= \case
+	Just tm -> return tm
+	Nothing -> error "mainrepodir without setmainrepodir"
 
 newmainrepodir :: IO FilePath
 newmainrepodir = go (0 :: Int)
@@ -675,6 +692,13 @@ make_writeable :: FilePath -> IO ()
 make_writeable d = void $
 	Utility.Process.Transcript.processTranscript
 		"chmod" ["-R", "u+w", d] Nothing
+
+runFakeSsh :: [String] -> IO ()
+runFakeSsh ("-n":ps) = runFakeSsh ps
+runFakeSsh (_host:cmd:[]) =
+	withCreateProcess (shell cmd) $
+		\_ _ _ pid -> exitWith =<< waitForProcess pid
+runFakeSsh ps = error $ "fake ssh option parse error: " ++ show ps
 
 {- Tests each TestTree in parallel, and exits with succcess/failure.
  -
