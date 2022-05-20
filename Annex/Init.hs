@@ -68,7 +68,7 @@ import Control.Concurrent.Async
 #endif
 
 checkInitializeAllowed :: Annex a -> Annex a
-checkInitializeAllowed a = noAnnexFileContent' >>= \case
+checkInitializeAllowed a = guardSafeToUseRepo $ noAnnexFileContent' >>= \case
 	Nothing -> a
 	Just noannexmsg -> do
 		warning "Initialization prevented by .noannex file (remove the file to override)"
@@ -216,7 +216,7 @@ objectDirNotPresent :: Annex Bool
 objectDirNotPresent = do
 	d <- fromRawFilePath <$> fromRepo gitAnnexObjectDir
 	exists <- liftIO $ doesDirectoryExist d
-	when exists $
+	when exists $ guardSafeToUseRepo $
 		giveup $ unwords $ 
 			[ "This repository is not initialized for use"
 			, "by git-annex, but " ++ d ++ " exists,"
@@ -227,6 +227,21 @@ objectDirNotPresent = do
 			, "to initialize with a new uuid."
 			]
 	return (not exists)
+
+guardSafeToUseRepo :: Annex a -> Annex a
+guardSafeToUseRepo a = do
+	repopath <- fromRepo Git.repoPath
+	ifM (inRepo Git.Config.checkRepoConfigInaccessible)
+		( giveup $ unlines $
+			[ "Git refuses to operate in this repository,"
+			, "probably because it is owned by someone else."
+			, ""
+			-- This mirrors git's wording.
+			, "To add an exception for this directory, call:"
+			, "\tgit config --global --add safe.directory " ++ fromRawFilePath repopath
+			]
+		, a
+		)
 
 {- Initialize if it can do so automatically. Avoids failing if it cannot.
  -

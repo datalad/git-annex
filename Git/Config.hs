@@ -1,6 +1,6 @@
 {- git repository configuration handling
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,6 +22,7 @@ import Git.Types
 import qualified Git.Command
 import qualified Git.Construct
 import Utility.UserInfo
+import Utility.Process.Transcript
 
 {- Returns a single git config setting, or a fallback value if not set. -}
 get :: ConfigKey -> ConfigValue -> Repo -> ConfigValue
@@ -273,3 +274,19 @@ unset ck@(ConfigKey k) r = ifM (Git.Command.runBool ps r)
 	)
   where
 	ps = [Param "config", Param "--unset-all", Param (decodeBS k)]
+
+{- git "fixed" CVE-2022-24765 by preventing git-config from
+ - listing per-repo configs when the repo is not owned by
+ - the current user. Detect if this fix is in effect for the
+ - repo.
+ -}
+checkRepoConfigInaccessible :: Repo -> IO Bool
+checkRepoConfigInaccessible r = do
+	-- Cannot use gitCommandLine here because specifying --git-dir
+	-- will bypass the git security check.
+	let p = (proc "git" ["config", "--local", "--list"])
+		{ cwd = Just (fromRawFilePath (repoPath r))
+		, env = gitEnv r
+		}
+	(_out, ok) <- processTranscript' p Nothing
+	return (not ok)

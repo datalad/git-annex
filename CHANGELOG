@@ -14,6 +14,11 @@ git-annex (10.20220505) UNRELEASED; urgency=medium
     pass at the end.
   * fsck: Fix situations where the annex object file is stored in a
     directory structure other than where annex symlinks point to.
+  * Deal with git's recent changes to fix CVE-2022-24765, which prevent
+    using git in a repository owned by someone else.
+  * Improve an error message displayed in that situation.
+  * Prevent git-annex init incorrectly reinitializing the repository in
+    that situation.
 
  -- Joey Hess <id@joeyh.name>  Thu, 05 May 2022 15:08:07 -0400
 
