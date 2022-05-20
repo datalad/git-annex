@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: How to disable lockdown in bare repos?"""
+ date="2022-05-20T17:08:29Z"
+ content="""
+I think that the annex.freezecontent-command approach is fine. The hook
+runs after git-annex changes permissions, and it can add them back if you
+want. It is supported since 8.20210630
+
+I agree it would be better if gitolite could be modified to only set the
+write bits before deleting the repository. It seems to me that gitolite
+demonstratably has a bug, because you show it fail to delete everything but
+apparently behave as if it succeeded. Perhaps setting the write bits 
+could be justified to the gitolite developers as a way to make it more robust
+when removing a repository, in case some permission problem prevents deleting
+the content of a directory.
+"""]]
