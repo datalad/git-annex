@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="nick.guenther@e418ed3c763dff37995c2ed5da4232a7c6cee0a9"
+ nickname="nick.guenther"
+ avatar="http://cdn.libravatar.org/avatar/9e85c6ca61c3f877fef4f91c2bf6e278"
+ subject="comment 5"
+ date="2022-05-20T18:09:45Z"
+ content="""
+Thanks for your time and your advice, joey. We'll stick with the hook for now then.
+
+I realized I didn't include versions: on my gitolite server I have git-annex 10.20220504. However, that's only because I hacked the environment up so I could use the [conda-forge](https://anaconda.org/conda-forge/git-annex) build as the system git-annex. Because the version in Ubuntu 22.04 is 8.20210223.
+
+That's not really a stable way to run a system, so I am leaning towards reverting and just living with the bug for a while.
+"""]]
