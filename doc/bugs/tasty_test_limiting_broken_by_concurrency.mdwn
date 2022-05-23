@@ -1,0 +1,14 @@
+The changes to make `git-annex test` concurrent have
+broken using eg `git-annex test -p 'concurrent get of dup key regression'`
+
+The problem is that tasty is being run with a subset of tests in each
+runner, so most of them don't know about the test they're being limited to
+perform.
+
+There either needs to be a way to disable concurrency (eg, run all tests
+in one runner with -J1), or the code detect when tasty is limited, and
+automatically disable concurrency.
+
+Also, it looks like the repo setup test is not being run, even though it's
+supposed to be a dependency of the test it was limited to.
+--[[Joey]]

@@ -177,7 +177,7 @@ posixLocker takelock lockfile = do
 winLocker :: (LockFile -> IO (Maybe LockHandle)) -> ContentLocker
 winLocker takelock _ (Just lockfile) = 
 	let lck = do
-		modifyContentDirWhenExists lockfile $
+		modifyContentDir lockfile $
 			void $ liftIO $ tryIO $
 				writeFile (fromRawFilePath lockfile) ""
 		liftIO $ takelock lockfile
