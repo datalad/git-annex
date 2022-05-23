@@ -19,6 +19,8 @@ git-annex (10.20220505) UNRELEASED; urgency=medium
   * Improve an error message displayed in that situation.
   * Prevent git-annex init incorrectly reinitializing the repository in
     that situation.
+  * test: When limiting tests to run with -p, work around tasty limitation
+    by automatically including dependent tests.
 
  -- Joey Hess <id@joeyh.name>  Thu, 05 May 2022 15:08:07 -0400
 

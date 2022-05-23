@@ -252,7 +252,7 @@ testRemote testvariants remotetype setupremote =
 {- These tests set up the test environment, but also test some basic parts
  - of git-annex. They are always run before the repoTests. -}
 initTests :: TestTree
-initTests = testGroup "Init Tests"
+initTests = testGroup initTestsName
 	[ testCase "init" test_init
 	, testCase "add" test_add
 	]
@@ -339,7 +339,7 @@ repoTests note numparts = map mk $ sep
 	]
   where
 	mk l = testGroup groupname (initTests : map adddep l)
-	adddep = Test.Tasty.after AllSucceed (groupname ++ ".Init Tests")
+	adddep = Test.Tasty.after AllSucceed (groupname ++ "." ++ initTestsName)
 	groupname = "Repo Tests " ++ note
 	sep = sep' (replicate numparts [])
 	sep' (p:ps) (l:ls) = sep' (ps++[l:p]) ls

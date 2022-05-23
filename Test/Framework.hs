@@ -15,6 +15,7 @@ import Test.Tasty.HUnit
 import Test.Tasty.Options
 import Test.Tasty.Ingredients.Rerun
 import Test.Tasty.Ingredients.ConsoleReporter
+import qualified Test.Tasty.Patterns.Types as TP
 import Options.Applicative.Types
 import Control.Concurrent
 import Control.Concurrent.Async
@@ -724,10 +725,12 @@ parallelTestRunner' numjobs opts mkts
 	| otherwise = go =<< Utility.Env.getEnv subenv
   where
 	subenv = "GIT_ANNEX_TEST_SUBPROCESS"
+
 	-- Make more parts than there are jobs, because some parts
 	-- are larger, and this allows the smaller parts to be packed
 	-- in more efficiently, speeding up the test suite overall.
 	numparts = numjobs * 2
+
 	worker rs nvar a = do
 		(n, m) <- atomically $ do
 			(n, m) <- readTVar nvar
@@ -738,6 +741,7 @@ parallelTestRunner' numjobs opts mkts
 			else do
 				r <- a n
 				worker (r:rs) nvar a
+	
 	go Nothing = withConcurrentOutput $ do
 		ensuredir tmpdir
 		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem'
@@ -753,7 +757,7 @@ parallelTestRunner' numjobs opts mkts
 		args <- getArgs
 		pp <- Annex.Path.programPath
 		termcolor <- hSupportsANSIColor stdout
-		let ps = if useColor (lookupOption (tastyOptionSet opts)) termcolor
+		let ps = if useColor (lookupOption tastyopts) termcolor
 			then "--color=always":args
 			else "--color=never":args
 		let runone n = do
@@ -783,15 +787,28 @@ parallelTestRunner' numjobs opts mkts
 		Just (n, crippledfilesystem, adjustedbranchok) -> setTestEnv $ do
 			let ts = mkts numparts crippledfilesystem adjustedbranchok opts
 			let t = topLevelTestGroup [ ts !! (n - 1) ]
-			case tryIngredients ingredients (tastyOptionSet opts) t of
+			case tryIngredients ingredients tastyopts t of
 				Nothing -> error "No tests found!?"
 				Just act -> ifM act
 					( exitSuccess
 					, exitFailure
 					)
+	
+	tastyopts = case lookupOption (tastyOptionSet opts) of
+		-- Work around limitation of tasty; when tests to run
+		-- are limited to a pattern, it does not include their
+		-- dependencies. So, add another pattern including the
+		-- init tests, which are a dependency of most tests.
+		TestPattern (Just p) -> 
+			setOption (TestPattern (Just (TP.Or p (TP.ERE initTestsName))))
+				(tastyOptionSet opts)
+		TestPattern Nothing -> tastyOptionSet opts
 
 topLevelTestGroup :: [TestTree] -> TestTree
 topLevelTestGroup = testGroup "Tests"
+
+initTestsName :: String
+initTestsName = "Init Tests"
 
 tastyParser :: [TestTree] -> ([String], Parser Test.Tasty.Options.OptionSet)
 #if MIN_VERSION_tasty(1,3,0)
