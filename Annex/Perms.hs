@@ -301,7 +301,7 @@ modifyContentDir f a = do
 	either throwM return v
 
 {- Like modifyContentDir, but avoids creating the content directory if it
- - ddoes not already exist. In that case, the action will probably fail. -}
+ - does not already exist. In that case, the action will probably fail. -}
 modifyContentDirWhenExists :: RawFilePath -> Annex a -> Annex a
 modifyContentDirWhenExists f a = do
 	thawContentDir f
