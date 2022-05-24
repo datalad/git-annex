@@ -1,0 +1,84 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2022-05-24T21:05:03Z"
+ content="""
+I should have looked above in that stderr where interesting part begins with possibly relevant extra complaints:
+
+```
+    52  2022-05-20T19:27:59-0400 [INFO    ] backups2datalad Downloading files for Dandiset 000026
+    53  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS10_stain-NeuN_chunk-04_SPIM.ome.tif (from web...) 
+    54    failed to commit changes to sqlite database: Just SQLite3 returned ErrorBusy while attempting to perform step: database is locked
+    55    CallStack (from HasCallStack):
+    56      error, called at ./Database/Handle.hs:91:26 in main:Database.Handle
+    57  (Delaying 1s before retrying....)
+    58  ok
+    59  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS10_stain-NeuN_chunk-02_SPIM.ome.tif (from web...) 
+    60    thread blocked indefinitely in an MVar operation
+    61  (Delaying 1s before retrying....)
+    62  ok
+    63  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS12_stain-Calretinin_chunk-00_SPIM.ome.tif (from web...) 
+    64    thread blocked indefinitely in an MVar operation
+    65  (Delaying 1s before retrying....)
+    66  ok
+    67  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS12_stain-NeuN_chunk-01_SPIM.ome.tif (from web...) 
+    68    thread blocked indefinitely in an MVar operation
+    69  (Delaying 1s before retrying....)
+    70  ok
+    71  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS12_stain-Nuclei_chunk-01_SPIM.ome.tif (from web...) 
+    72    thread blocked indefinitely in an MVar operation
+    73  (Delaying 1s before retrying....)
+    74  ok
+    75  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS12_stain-Nuclei_chunk-05_SPIM.ome.tif (from web...) 
+    76    failed to commit changes to sqlite database: Just SQLite3 returned ErrorBusy while attempting to perform step: database is locked
+    77    CallStack (from HasCallStack):
+    78      error, called at ./Database/Handle.hs:91:26 in main:Database.Handle
+    79  (Delaying 1s before retrying....)
+    80  ok
+    81  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS12_stain-Nuclei_chunk-06_SPIM.ome.tif (from web...) 
+    82    thread blocked indefinitely in an MVar operation
+    83  (Delaying 1s before retrying....)
+    84  ok
+    85  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS13_stain-NeuN_chunk-02_SPIM.ome.tif (from web...) 
+    86    thread blocked indefinitely in an MVar operation
+    87  (Delaying 1s before retrying....)
+    88  ok
+    89  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS14_stain-Calretinin_chunk-01_SPIM.ome.tif (from web...) 
+    90    thread blocked indefinitely in an MVar operation
+    91  (Delaying 1s before retrying....)
+    92  ok
+    93  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS13_stain-Nuclei_chunk-05_SPIM.ome.tif (from web...) 
+    94    thread blocked indefinitely in an MVar operation
+    95  (Delaying 1s before retrying....)
+    96  ok
+    97  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS14_stain-NeuN_chunk-07_SPIM.ome.tif (from web...) 
+    98    thread blocked indefinitely in an MVar operation
+    99  (Delaying 1s before retrying....)
+   100  ok
+   101  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS13_stain-Nuclei_chunk-08_SPIM.ome.tif (from web...) 
+   102    thread blocked indefinitely in an MVar operation
+   103  (Delaying 1s before retrying....)
+   104  ok
+   105  get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-BrocaAreaS14_stain-NeuN_chunk-10_SPIM.ome.tif (from web...) 
+   106    thread blocked indefinitely in an MVar operation
+   107  (Delaying 1s before retrying....)
+```
+
+`strace -f -p 1683786` ends with
+
+```
+[pid 1683799] <... sched_yield resumed>) = 0
+[pid 1683798] sched_yield( <unfinished ...>
+[pid 1683810] futex(0x7fd5cc000c08, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+[pid 1683803] futex(0x7fd5c0000be8, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+[pid 1683799] futex(0x5b180ec, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+[pid 1683798] <... sched_yield resumed>) = 0
+[pid 1683798] futex(0x7fd5d8000bec, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+[pid 1683787] <... read resumed>\"\1\0\0\0\0\0\0\0\", 8) = 8
+[pid 1683787] futex(0x4a4844c, FUTEX_WAIT_PRIVATE, 0, NULL
+```
+
+I will now interrupt that process to \"proceed\", knowing what to do next time would be helpful
+
+"""]]
