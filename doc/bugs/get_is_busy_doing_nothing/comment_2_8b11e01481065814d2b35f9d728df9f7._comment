@@ -1,0 +1,61 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2022-05-24T20:35:58Z"
+ content="""
+FWIW, I have added 
+```
+(base) dandi@drogon:/mnt/backup/dandi/dandisets$ git config  annex.stalldetection
+1KB/120s
+```
+and I see 4 days old (now it is `Tue 24 May 2022 04:34:33 PM EDT`)
+
+```
+dandi    1682561  0.0  0.1 173328 73808 ?        S    May20   0:02                 python -m tools.backups2datalad -l DEBUG -J 5 --target /mnt/backup/dandi/dandisets populate dandi-dandisets-dropbox
+dandi    1683786  0.0  0.0 1075306796 61632 ?    Sl   May20   2:49                   git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+dandi    1683813  0.4  0.0 1074200772 46872 ?    Sl   May20  26:18                     /home/dandi/miniconda3/envs/dandisets/bin/git-annex transferrer -c annex.retry=3
+dandi    1683820  0.0  0.0 109896  2504 ?        S    May20   0:00                       git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+dandi    1683819  0.4  0.0 1074200772 48152 ?    Sl   May20  24:56                     /home/dandi/miniconda3/envs/dandisets/bin/git-annex transferrer -c annex.retry=3
+dandi    1683826  0.0  0.0 109896  2320 ?        S    May20   0:00                       git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+dandi    1683830  0.4  0.0 1074200772 47092 ?    Sl   May20  26:27                     /home/dandi/miniconda3/envs/dandisets/bin/git-annex transferrer -c annex.retry=3
+dandi    1683843  0.0  0.0 109896  2288 ?        S    May20   0:00                       git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+dandi    1683846  0.4  0.0 1074200804 47932 ?    Sl   May20  25:12                     /home/dandi/miniconda3/envs/dandisets/bin/git-annex transferrer -c annex.retry=3
+dandi    1683852  0.0  0.0 109896  2460 ?        S    May20   0:00                       git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+dandi    1683863  0.0  0.0 1074127072 47300 ?    Sl   May20   0:26                     /home/dandi/miniconda3/envs/dandisets/bin/git-annex transferrer -c annex.retry=3
+dandi    1683869  0.0  0.0 109896  3244 ?        S    May20   0:00                       git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+```
+which smells like stuck... looking at open files, I see the stderr to be redirected and looking into it:
+
+```
+(base) dandi@drogon:/mnt/backup/dandi/dandisets$ tail /mnt/backup/dandi/dandisets/.git/tmp/stderr
+(Delaying 1s before retrying....)
+ok
+get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-MotorCortexS08_stain-Calretinin_chunk-00_SPIM.ome.tif (from web...) 
+  thread blocked indefinitely in an MVar operation
+(Delaying 1s before retrying....)
+ok
+get rawdata/sub-I46/ses-SPIM/micr/sub-I46_ses-SPIM_sample-MotorCortexS08_stain-Nuclei_chunk-05_SPIM.ome.tif (from web...) 
+  thread blocked indefinitely in an MVar operation
+(Delaying 1s before retrying....)
+ok
+```
+
+and I do not think that file saw any updates (`tail -f ` is silent):
+
+```
+(base) dandi@drogon:/mnt/backup/dandi/dandisets$ stat /mnt/backup/dandi/dandisets/.git/tmp/stderr
+  File: /mnt/backup/dandi/dandisets/.git/tmp/stderr
+  Size: 28944     	Blocks: 64         IO Block: 4096   regular file
+Device: 28h/40d	Inode: 34338261    Links: 1
+Access: (0644/-rw-r--r--)  Uid: ( 1001/   dandi)   Gid: ( 1015/   dandi)
+Access: 2021-12-16 17:10:51.838720227 -0500
+Modify: 2022-05-20 21:10:19.383226789 -0400
+Change: 2022-05-20 21:10:19.383226789 -0400
+ Birth: 2021-12-16 17:10:51.838720227 -0500
+```
+
+NB I got a bit surprised that we dump to such possibly shared stderr file, but it is done within `tools/backups2datalad-cron` which we guard with flock to not run more than 1 instance so it is ok.
+
+Would you recommend to look at anything specific or may be `thread blocked indefinitely in an MVar operation` is giving ideas? (FTR: I believe the annex is `10.20220322-g7b64dea`)
+"""]]
