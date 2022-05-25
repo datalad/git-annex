@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 9"
+ date="2022-05-25T12:22:58Z"
+ content="""
+Upstream does not seem interested in improving performance. Are there alternative libraries that could be used instead?
+
+Would it be possible to use OpenSSL somehow perhaps?
+
+AFAICT git-annex hooks into the hashing routine for things like progress monitoring. Perhaps those could be re-architected to work with an external \"black box\" library or process?
+"""]]
