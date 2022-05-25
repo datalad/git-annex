@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-05-25T16:49:30Z"
+ content="""
+Concurrent writes to sqlite (in WAL mode) can fail, 
+but git-annex deals with that by retrying 100 times (once every 0.1 seconds).
+So apparently other writes kept making it fail, or the database is somehow
+stuck locked.
+
+I think that the MVar blocking happens as a consequence of the sqlite
+write failing and is not worth investigating separately, probably.
+
+What filesystem is this happening on?
+"""]]

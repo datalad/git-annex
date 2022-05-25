@@ -79,3 +79,5 @@ Is there any diagnostic information I should collect to help troubleshooting the
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+[[!meta title="SQLite3 returned ErrorBusy while attempting to perform step: database is locked"]]
