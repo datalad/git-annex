@@ -1,4 +1,4 @@
-git-annex (10.20220505) UNRELEASED; urgency=medium
+git-annex (10.20220525) upstream; urgency=medium
 
   * Special remotes with importtree=yes or exporttree=yes are once again
     treated as untrusted, since files stored in them can be deleted or
@@ -22,7 +22,7 @@ git-annex (10.20220505) UNRELEASED; urgency=medium
   * test: When limiting tests to run with -p, work around tasty limitation
     by automatically including dependent tests.
 
- -- Joey Hess <id@joeyh.name>  Thu, 05 May 2022 15:08:07 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 25 May 2022 13:44:46 -0400
 
 git-annex (10.20220504) upstream; urgency=medium
 
