@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-05-31T16:40:25Z"
+ content="""
+This certianly looks like a file handle leak in git-annex filter-process..
+
+A workaround for you would be to run:
+
+	git config --unset filter.annex.process
+
+I have tried to reproduce this. I made a repository with 10000 files,
+all annexed and unlocked. I upgraded it to repository version 9. I checked
+out a commit where all the files were not present yet, and then checked out
+a commit that had all the files present. It did not fail, and also I never
+saw it having more than a few files open.
+
+So there must be something else about your repository that is needed to
+reproduce this..
+
+(Weirdly, signal 15 is SIGTERM, so I don't know what would have caused it to
+receive that signal unless it was ctrl-c'd.)
+"""]]
