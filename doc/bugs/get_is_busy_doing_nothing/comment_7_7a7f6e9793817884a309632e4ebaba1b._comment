@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-05-31T17:16:26Z"
+ content="""
+It seems that sqlite on BTRFS is somewhat problimatic performance-wise. 
+See this blog post from Colin Walters where firefox was periodically
+freezing due to sqlite, and apparently the database file was highly fragmented.
+<https://blog.verbum.org/2020/07/14/on-btrfs/>
+
+Mounting with nodatacow or autodefrag may help, or 
+`chattr +C .git/annex/keysdb/db`
+
+Possibly being slow could explain the ErrorBusy: If there are somehow
+two processes writing to the database and one is being slow, then
+the other one could get ErrorBusy repeatedly for the 10 seconds it takes
+git-annex to give up.
+"""]]
