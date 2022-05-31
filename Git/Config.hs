@@ -23,6 +23,7 @@ import qualified Git.Command
 import qualified Git.Construct
 import Utility.UserInfo
 import Utility.Process.Transcript
+import Utility.Debug
 
 {- Returns a single git config setting, or a fallback value if not set. -}
 get :: ConfigKey -> ConfigValue -> Repo -> ConfigValue
@@ -288,5 +289,9 @@ checkRepoConfigInaccessible r = do
 		{ cwd = Just (fromRawFilePath (repoPath r))
 		, env = gitEnv r
 		}
-	(_out, ok) <- processTranscript' p Nothing
-	return (not ok)
+	(out, ok) <- processTranscript' p Nothing
+	if not ok
+		then do
+			debug (DebugSource "Git.Config") ("config output: " ++ out)
+			return True
+		else return False
