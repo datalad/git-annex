@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 9"
+ date="2022-05-31T19:17:05Z"
+ content="""
+interesting!  For some (only some) repos chattr didn't work
+
+```
+(base) dandi@drogon:/mnt/backup/dandi/dandisets$ chattr +C */.git/annex/keysdb/db
+chattr: Invalid argument while setting flags on 000008/.git/annex/keysdb/db
+chattr: Invalid argument while setting flags on 000019/.git/annex/keysdb/db
+...
+```
+
+and that is I guess because they already have 
+
+```
+(base) dandi@drogon:/mnt/backup/dandi/dandisets$ lsattr 000228/.git/annex/keysdb/db
+---------------------m 000228/.git/annex/keysdb/db
+
+(base) dandi@drogon:/mnt/backup/dandi/dandisets$ lsattr -l  000228/.git/annex/keysdb/db
+000228/.git/annex/keysdb/db  Dont_Compress
+```
+
+and I don't recall setting that attr for those some.  Does `git-annex` do that since some time recently or in the past? 
+
+PS `chattr +C` seems to have no effect on `keysdb/db`:
+
+```
+(base) dandi@drogon:/mnt/backup/dandi/dandisets$ chattr +C 000246/.git/annex/keysdb/db
+(base) dandi@drogon:/mnt/backup/dandi/dandisets$ lsattr 000246/.git/annex/keysdb/db
+---------------------- 000246/.git/annex/keysdb/db
+(base) dandi@drogon:/mnt/backup/dandi/dandisets$ file 000246/.git/annex/keysdb/db
+000246/.git/annex/keysdb/db: SQLite 3.x database, last written using SQLite version 3033000
+```
+
+but it does add it for e.g. `000246/.git/annex/keysdb.lck` ... heh heh odd
+
+"""]]
