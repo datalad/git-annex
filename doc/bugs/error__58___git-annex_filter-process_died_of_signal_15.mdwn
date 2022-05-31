@@ -81,6 +81,7 @@ Total 375565 (delta 215701), reused 364628 (delta 207259), pack-reused 0
 
 I'm trying to recover from a mess caused by creating a new remote repository, making it shallow to save space, and updating it by mounting it on a local system with sshfs, etc.   That caused an unintended rebase messing things up, e.g., git log shows most of the commits vanished (merged?).   So I was trying to go back to an earlier, good, commit.  However that requires changing, basically, everything.  And that seems to be too big a change for git annex to process.
 
+FWIW, I'm not using lfs.
 
 
 ### Please provide any additional information below.
