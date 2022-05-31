@@ -21,3 +21,5 @@ index 0a50878eb..63d79bde9 100644
        Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
        CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
        Other-Modules: Utility.DBus
+
+[[!tag moreinfo]]
