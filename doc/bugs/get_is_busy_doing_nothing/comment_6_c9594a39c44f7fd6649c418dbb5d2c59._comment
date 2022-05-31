@@ -1,0 +1,97 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="another/different? stall"
+ date="2022-05-26T14:31:33Z"
+ content="""
+next one stalled at the end at
+```
+get sub-dt15/sub-dt15_ses-dt15_6705um_200213_091923_ecephys.nwb (from web...) ok
+get sub-bruce/sub-bruce_ses-bruce_0um_210115_155615_ecephys.nwb (from web...) ok
+get sub-bruce/sub-bruce_ses-bruce_0um_210110_171041_ecephys.nwb (from web...) ok
+get sub-ros/sub-ros_ses-ros_210320_091833_ecephys.nwb (from web...) ok
+(recording state in git...)
+
+```
+with recent `gets` not complaining about being unable to lock, only some longer before did, e.g.
+
+```
+get sub-CGM49/sub-CGM49_ses-CGM49_512um_210227_093748_ecephys.nwb (from web...)
+  failed to commit changes to sqlite database: Just SQLite3 returned ErrorBusy while attempting to perform step: database is locked
+  CallStack (from HasCallStack):
+    error, called at ./Database/Handle.hs:91:26 in main:Database.Handle
+(Delaying 1s before retrying....)
+
+44%   9.58 GiB         57 MiB/s 3m36s
+get sub-CGM52/sub-CGM52_ses-CGM52_0um_210216_144320_ecephys.nwb (from web...)
+```
+
+```
+dandi    2013903  0.0  0.0   5492     0 pts/1    S+   May25   0:00       flock -E 0 -e -n /home/dandi/.run/backup2datalad-cron.lock bash -c /mnt/backup/dandi/dandisets/tools/backups2datalad-cron
+dandi    2013904  0.0  0.0   7024  1892 pts/1    S+   May25   0:00         /bin/bash /mnt/backup/dandi/dandisets/tools/backups2datalad-cron
+dandi    2013933  0.0  0.0   7024  1520 pts/1    S+   May25   0:00           /bin/bash /mnt/backup/dandi/dandisets/tools/backups2datalad-cron
+dandi    2113421  0.0  0.0 321448  3140 pts/1    S+   May25   0:04             python -m tools.backups2datalad -l DEBUG -J 5 --target /mnt/backup/dandi/dandisets populate dandi-dandisets-dropbox
+dandi    2151114  0.8  0.0 1075306800 32416 pts/1 Sl+ May25   9:39               git-annex get -c annex.retry=3 --jobs 5 --from=web --not --in dandi-dandisets-dropbox --and --not --in here
+dandi    2151142 11.6  0.0 1074200808 37352 pts/1 Sl  May25 138:50                 /home/dandi/miniconda3/envs/dandisets/bin/git-annex transferrer -c annex.retry=3
+dandi    2151170  0.0  0.0  10640  1260 pts/1    S    May25   0:00                   git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+dandi    2151143 12.9  0.0 1074200808 36384 pts/1 Sl  May25 153:23                 /home/dandi/miniconda3/envs/dandisets/bin/git-annex transferrer -c annex.retry=3
+dandi    2151158  0.0  0.0  10640  1256 pts/1    S    May25   0:00                   git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+dandi    2151147 12.7  0.0 1074127044 35308 pts/1 Sl  May25 150:49                 /home/dandi/miniconda3/envs/dandisets/bin/git-annex transferrer -c annex.retry=3
+dandi    2151160  0.0  0.0  10640  1232 pts/1    S    May25   0:00                   git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+dandi    2151148 16.3  0.0 1074200776 35596 pts/1 Sl  May25 193:42                 /home/dandi/miniconda3/envs/dandisets/bin/git-annex transferrer -c annex.retry=3
+dandi    2151168  0.0  0.0  10640  1336 pts/1    S    May25   0:00                   git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+dandi    2151161 13.0  0.0 1074200808 32060 pts/1 Sl  May25 155:15                 /home/dandi/miniconda3/envs/dandisets/bin/git-annex transferrer -c annex.retry=3
+dandi    2151177  0.0  0.0  10640  1096 pts/1    S    May25   0:00                   git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.retry=3 cat-file --batch
+```
+
+strace end is 
+
+```
+[pid 2151125] sched_yield( <unfinished ...>
+[pid 2151129] <... sched_yield resumed>) = 0
+[pid 2151125] <... sched_yield resumed>) = 0
+[pid 2151129] sched_yield()             = 0
+[pid 2151125] sched_yield( <unfinished ...>
+[pid 2151129] sched_yield( <unfinished ...>
+[pid 2151125] <... sched_yield resumed>) = 0
+[pid 2151129] <... sched_yield resumed>) = 0
+[pid 2151137] rt_sigprocmask(SIG_SETMASK, [],  <unfinished ...>
+[pid 2151126] sched_yield( <unfinished ...>
+[pid 2151137] <... rt_sigprocmask resumed>NULL, 8) = 0
+[pid 2151129] sched_yield( <unfinished ...>
+[pid 2151125] sched_yield( <unfinished ...>
+[pid 2151137] futex(0x7fe75c000be8, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+[pid 2151129] <... sched_yield resumed>) = 0
+[pid 2151125] <... sched_yield resumed>) = 0
+[pid 2151129] futex(0x7fe740000be8, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+[pid 2151125] futex(0x52eae6c, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+[pid 2151126] <... sched_yield resumed>) = 0
+[pid 2151126] futex(0x52eb068, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+[pid 2151115] <... read resumed>\"\1\0\0\0\0\0\0\0\", 8) = 8
+[pid 2151115] futex(0x4a4844c, FUTEX_WAIT_PRIVATE, 0, NULL^Cstrace: Process 2151114 detached
+strace: Process 2151115 detached
+ <detached ...>
+strace: Process 2151116 detached
+strace: Process 2151117 detached
+strace: Process 2151119 detached
+strace: Process 2151124 detached
+strace: Process 2151125 detached
+strace: Process 2151126 detached
+strace: Process 2151127 detached
+strace: Process 2151128 detached
+strace: Process 2151129 detached
+strace: Process 2151132 detached
+strace: Process 2151133 detached
+strace: Process 2151136 detached
+strace: Process 2151137 detached
+strace: Process 2151138 detached
+strace: Process 2151139 detached
+strace: Process 2151140 detached
+strace: Process 2677004 detached
+strace: Process 2925046 detached
+strace: Process 3026979 detached
+strace: Process 3027102 detached
+```
+
+I have now killed that `get` process and restarted our backup beastie (should now get to `copy` those `get`ed files into backup)
+"""]]

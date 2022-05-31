@@ -1,0 +1,5 @@
+The update for version 10.20220525 says:
+
+>Special remotes with importtree=yes or exporttree=yes are once again treated as untrusted, since files stored in them can be deleted or modified at any time.
+
+Even in an S3 special remote with versioning enabled?

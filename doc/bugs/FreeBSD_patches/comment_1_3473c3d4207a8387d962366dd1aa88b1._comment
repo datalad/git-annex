@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="7thyearold@339ab97e59cee5c85e14df94a5059f251a143e65"
+ nickname="7thyearold"
+ avatar="http://cdn.libravatar.org/avatar/bec2e77ce4d1f264936115aa20c6b194"
+ subject="comment 1"
+ date="2022-05-30T09:52:11Z"
+ content="""
+```diff
+diff --git a/git-annex.cabal b/git-annex.cabal
+index 0a50878eb..63d79bde9 100644
+--- a/git-annex.cabal
++++ b/git-annex.cabal
+@@ -396,8 +396,7 @@ Executable git-annex
+     GHC-Options: -O0
+ 
+   -- Avoid linking with unused dynamic libaries.
+-  -- (Only tested on Linux).
+-  if os(Linux)
++  if os(Linux) || os(freebsd)
+     GHC-Options: -optl-Wl,--as-needed
+ 
+   if (os(windows))
+@@ -517,7 +516,7 @@ Executable git-annex
+             Other-Modules: Utility.DirWatcher.Kqueue
+ 
+   if flag(Dbus)
+-    if (os(linux))
++    if os(linux) || os(freebsd)
+       Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)
+       CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
+       Other-Modules: Utility.DBus
+```
+"""]]

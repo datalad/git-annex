@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="What filesystem is this happening on?"
+ date="2022-05-25T21:09:38Z"
+ content="""
+BTRFS
+
+```
+/dev/mapper/vg_backup-lv_backup on /mnt/backup type btrfs (rw,noatime,compress=lzo,space_cache=v2,subvolid=5,subvol=/,x-systemd.mount-timeout=30m)
+
+```
+
+over LVM over mdadm raid6 arrays ;)
+"""]]
