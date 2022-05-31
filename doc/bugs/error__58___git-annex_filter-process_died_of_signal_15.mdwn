@@ -18,6 +18,7 @@ fatal: the remote end hung up unexpectedly
 ### What steps will reproduce the problem?
 
 git checkout
+on a really big commit.
 
 ### What version of git-annex are you using? On what operating system?
 
@@ -38,9 +39,9 @@ upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
 local repository version: 9
 
 % uname -a                                  
-Linux p73 5.15.0-33-generic #34-Ubuntu SMP Wed May 18 13:34:26 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux
+Linux  5.15.0-33-generic #34-Ubuntu SMP Wed May 18 13:34:26 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux
 
-% cat /etc/os-release                       p73:~/git/web, 5:30AM
+% cat /etc/os-release                       
 PRETTY_NAME="Ubuntu 22.04 LTS"
 NAME="Ubuntu"
 VERSION_ID="22.04"
@@ -78,7 +79,7 @@ Total 375565 (delta 215701), reused 364628 (delta 207259), pack-reused 0
 73.38s real  97.69s user  4.93s system  139% 0,0 socket  13753 mem git gc
 
 
-
+I'm trying to recover from a mess caused by creating a new remote repository, making it shallow to save space, and updating it by mounting it on a local system with sshfs, etc.   That caused an unintended rebase messing things up, e.g., git log shows most of the commits vanished (merged?).   So I was trying to go back to an earlier, good, commit.  However that requires changing, basically, everything.  And that seems to be too big a change for git annex to process.
 
 
 
