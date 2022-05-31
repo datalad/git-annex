@@ -229,19 +229,20 @@ objectDirNotPresent = do
 	return (not exists)
 
 guardSafeToUseRepo :: Annex a -> Annex a
-guardSafeToUseRepo a = do
-	repopath <- fromRepo Git.repoPath
-	ifM (inRepo Git.Config.checkRepoConfigInaccessible)
-		( giveup $ unlines $
+guardSafeToUseRepo a = ifM (inRepo Git.Config.checkRepoConfigInaccessible)
+	( do
+		repopath <- fromRepo Git.repoPath
+		p <- liftIO $ absPath repopath
+		giveup $ unlines $
 			[ "Git refuses to operate in this repository,"
 			, "probably because it is owned by someone else."
 			, ""
 			-- This mirrors git's wording.
 			, "To add an exception for this directory, call:"
-			, "\tgit config --global --add safe.directory " ++ fromRawFilePath repopath
+			, "\tgit config --global --add safe.directory " ++ fromRawFilePath p
 			]
-		, a
-		)
+	, a
+	)
 
 {- Initialize if it can do so automatically. Avoids failing if it cannot.
  -
