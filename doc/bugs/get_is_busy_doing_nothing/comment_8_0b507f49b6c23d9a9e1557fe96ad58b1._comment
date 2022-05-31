@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2022-05-31T19:07:59Z"
+ content="""
+Hi Joey -- thanks for digging all that up!  On my laptop I also use BTRFS (on top of dm encrypted volume) and always thought to check why `notmuch new` running at the end of offlineimap for me at times holds the entire laptop \"stalled\" for a few seconds.  I think you gave me the answer!  Following [this article](https://wiki.tnonline.net/w/Btrfs/Defrag) and defragmented `.glass` files under `~/Maildir/.notmuch/xapian` . Let's see now in the long run if I encounter similar stalling ;)
+
+But I am not yet entirely sure if it really answers the \"total stall\" situation -- slow should still work.
+
+FWIW -- I have checked in two repositories which were mentioned in this issue, in one (000233) the `keysdb/db` was ok -- just 30 refs, but the 000026 (a heavy beast ;)) had 2994:
+
+```
+drogon:/mnt/backup/dandi/dandisets/000026/.git/annex# /usr/sbin/compsize keysdb/db 
+Processed 1 file, 2643 regular extents (2994 refs), 0 inline.
+Type       Perc     Disk Usage   Uncompressed Referenced  
+TOTAL       98%       20M          20M          14M       
+none       100%       19M          19M          13M       
+lzo         46%      352K         752K         400K 
+```
+FWIW I defraged it into 1 ref.  And then did the `chattr +C` on all repos I have there so far.  Let's see if that anyhow helps.
+
+PS Have been using BTRFS on that server and smaug for almost 10 years now and had thousands of git annex repos... I guess these particular ones are pushing some limits  ;)
+"""]]
