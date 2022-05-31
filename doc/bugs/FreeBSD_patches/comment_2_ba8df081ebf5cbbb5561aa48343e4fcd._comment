@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-05-31T17:07:27Z"
+ content="""
+Have you actually verified that git-annex on freebsd, when compiled with
+dbus support, is able to use it for anything? It expects to be speaking
+to udisks2 to get notifications of things being mounted, and to
+network-manager or wicd or systemd-networkd to get noticiations of
+networking changes. I don't know if any of those are used on freebsd.
+
+I have applied the --as-needed patch
+
+In general, when sending patches, you really need to provide an explanation
+of why the change is the right change to make..
+"""]]
