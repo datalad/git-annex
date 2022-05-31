@@ -396,8 +396,7 @@ Executable git-annex
     GHC-Options: -O0
 
   -- Avoid linking with unused dynamic libaries.
-  -- (Only tested on Linux).
-  if os(Linux)
+  if os(linux) || os(freebsd)
     GHC-Options: -optl-Wl,--as-needed
 
   if (os(windows))
