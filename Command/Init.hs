@@ -25,6 +25,7 @@ data InitOptions = InitOptions
 	{ initDesc :: String
 	, initVersion :: Maybe RepoVersion
 	, autoEnableOnly :: Bool
+	, noAutoEnable :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser InitOptions
@@ -37,6 +38,10 @@ optParser desc = InitOptions
 	<*> switch
 		( long "autoenable"
 		<> help "only enable special remotes configured with autoenable=true"
+		)
+	<*> switch
+		( long "no-autoenable"
+		<> help "do not enable special remotes configured with autoenable=true"
 		)
 
 parseRepoVersion :: MonadFail m => String -> m RepoVersion
@@ -73,7 +78,8 @@ perform os = do
 	initialize False
 		(if null (initDesc os) then Nothing else Just (initDesc os))
 		(initVersion os)
-	Annex.SpecialRemote.autoEnable
+	unless (noAutoEnable os)
+		Annex.SpecialRemote.autoEnable
 	next $ return True
 
 performAutoEnableOnly :: CommandPerform

@@ -48,10 +48,14 @@ to the user who tries to run git-annex init.
   When the version given is not supported, but can be automatically
   upgraded to a newer version, it will use the newer version instead.
 
-* --autoenable
+* `--autoenable`
 
   Only enable any special remotes that were configured with
   autoenable=true, do not otherwise initialize anything.
+
+* `--no-autoenable`
+
+  Do not enable special remotes that were configured with autoenable=true.
 
 * Also the [[git-annex-common-options]](1) can be used.
 
