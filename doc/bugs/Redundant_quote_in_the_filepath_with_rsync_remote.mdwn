@@ -31,7 +31,7 @@ To figure out if it was really just the mangled path, I have added a symlink to 
 
 Now the git annex get fails with
 
-    rsync: [sender] link_stat "/home/user/drive/Annex/t/eec/656/'GPGHMACSHA1--addf78b2c59182e951d16ce90e03900cfe15dc7c/GPGHMACSHA1--addf78b2c59182e951d16ce90e03900cfe15dc7c'" failed: No such file or directory (2)
+    rsync: [sender] link_stat "/home/user/drive/Annex/t/eec/656/'GPGHMACSHA1--addf78b2c59182e951d16ce90e03900cfe15dc7d/GPGHMACSHA1--addf78b2c59182e951d16ce90e03900cfe15dc7d'" failed: No such file or directory (2)
     rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1835) [Receiver=3.2.4]
     rsync: [Receiver] write error: Broken pipe (32)
 
