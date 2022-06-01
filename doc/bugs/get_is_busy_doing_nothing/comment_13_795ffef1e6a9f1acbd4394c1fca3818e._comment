@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2022-06-01T16:43:42Z"
+ content="""
+I tried modifying git-annex to throw ErrorBusy whenever it wrote to the
+sqlite database, to see how much of the behavior that could reproduce.
+
+That led to 10 second delays due to retrying, and the "failed to commit
+changes to sqlite database: Just SQLite3 returned ErrorBusy" message.
+
+But, it did not cause the "thread blocked indefinitely in an MVar
+operation". Which makes me wonder if that is caused by sqlite use
+elsewhere, perhaps in a read operation rather than a write.
+
+I did try making reads throw ErrorBusy, and it didn't reproduce the MVar
+problem either, instead "sqlite query crashed: SQLite3 returned ErrorBusy".
+"""]]
