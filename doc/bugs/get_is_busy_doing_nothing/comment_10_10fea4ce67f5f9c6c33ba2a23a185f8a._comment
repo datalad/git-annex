@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 10"
+ date="2022-06-01T05:27:21Z"
+ content="""
+You can set NOCOW only on emtpy files. e.g.
+
+    mv db db.tmp
+    touch db
+    chattr +C db
+    cat db.tmp >db
+    rm -f db.tmp
+"""]]
