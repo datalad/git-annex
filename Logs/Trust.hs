@@ -1,6 +1,6 @@
 {- git-annex trust log
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,6 +14,7 @@ module Logs.Trust (
 	trustPartition,
 	trustExclude,
 	lookupTrust,
+	lookupTrust',
 	trustMapLoad,
 ) where
 
@@ -37,7 +38,10 @@ trustGet level = M.keys . M.filter (== level) <$> trustMap
 
 {- Returns the TrustLevel of a given repo UUID. -}
 lookupTrust :: UUID -> Annex TrustLevel
-lookupTrust u = (fromMaybe def . M.lookup u) <$> trustMap
+lookupTrust u = lookupTrust' u <$> trustMap
+
+lookupTrust' :: UUID -> TrustMap -> TrustLevel
+lookupTrust' u m = fromMaybe def $ M.lookup u m
 
 {- Partitions a list of UUIDs to those matching a TrustLevel and not. -}
 trustPartition :: TrustLevel -> [UUID] -> Annex ([UUID], [UUID])

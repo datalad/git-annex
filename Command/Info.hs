@@ -22,6 +22,7 @@ import qualified Git
 import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
+import qualified Annex.SpecialRemote as SpecialRemote
 import Utility.DataUnits
 import Utility.DiskFree
 import Annex.Content
@@ -105,6 +106,7 @@ data InfoOptions = InfoOptions
 	{ infoFor :: CmdParams
 	, bytesOption :: Bool
 	, batchOption :: BatchMode
+	, autoenableOption :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser InfoOptions
@@ -115,6 +117,10 @@ optParser desc = InfoOptions
 		<> help "display file sizes in bytes"
 		)
 	<*> parseBatchOption False
+	<*> switch
+		( long "autoenable"
+		<> help "list special remotes that are configured to autoenable"
+		)
 
 seek :: InfoOptions -> CommandSeek
 seek o = case batchOption o of
@@ -124,7 +130,9 @@ seek o = case batchOption o of
 
 start :: InfoOptions -> [String] -> CommandStart
 start o [] = do
-	globalInfo o
+	if autoenableOption o
+		then autoenableInfo
+		else globalInfo o
 	stop
 start o ps = do
 	mapM_ (\p -> itemInfo o (SeekInput [p], p)) ps
@@ -139,6 +147,19 @@ globalInfo o = do
 	showCustom "info" (SeekInput []) $ do
 		evalStateT (mapM_ showStat stats) (emptyStatInfo o)
 		return True
+
+autoenableInfo :: Annex ()
+autoenableInfo = showCustom "info" (SeekInput []) $ do
+	m <- SpecialRemote.specialRemoteNameMap
+		<$> SpecialRemote.autoEnableable
+	descm <- M.unionWith Remote.addName
+		<$> uuidDescMap
+		<*> pure (M.map toUUIDDesc m)
+	s <- Remote.prettyPrintUUIDsDescs
+		"autoenable special remotes"
+		descm (M.keys m)
+	showRaw (encodeBS s)
+	return True
 
 itemInfo :: InfoOptions -> (SeekInput, String) -> Annex ()
 itemInfo o (si, p) = ifM (isdir p)

@@ -1,6 +1,7 @@
 git-annex (10.20220526) UNRELEASED; urgency=medium
 
   * init: Added --no-autoenable option.
+  * info: Added --autoenable option.
 
  -- Joey Hess <id@joeyh.name>  Wed, 01 Jun 2022 13:23:05 -0400
 

@@ -63,7 +63,10 @@ newConfig name sameas fromuser m = case sameas of
 specialRemoteMap :: Annex (M.Map UUID RemoteName)
 specialRemoteMap = do
 	m <- Logs.Remote.remoteConfigMap
-	return $ M.fromList $ mapMaybe go (M.toList m)
+	return $ specialRemoteNameMap m
+
+specialRemoteNameMap :: M.Map UUID RemoteConfig -> M.Map UUID RemoteName
+specialRemoteNameMap = M.fromList . mapMaybe go . M.toList
   where
 	go (u, c) = case lookupName c of
 		Nothing -> Nothing
@@ -85,14 +88,14 @@ findType config = maybe unspecified (specified . fromProposedAccepted) $
 
 autoEnable :: Annex ()
 autoEnable = do
-	remotemap <- M.filter configured <$> remoteConfigMap
+	m <- autoEnableable
 	enabled <- getenabledremotes
-	forM_ (M.toList remotemap) $ \(cu, c) -> unless (cu `M.member` enabled) $ do
+	forM_ (M.toList m) $ \(cu, c) -> unless (cu `M.member` enabled) $ do
 		let u = case findSameasUUID c of
 			Just (Sameas u') -> u'
 			Nothing -> cu
 		case (lookupName c, findType c) of
-			(Just name, Right t) -> whenM (canenable u) $ do
+			(Just name, Right t) -> do
 				showSideAction $ "Auto enabling special remote " ++ name
 				dummycfg <- liftIO dummyRemoteGitConfig
 				tryNonAsync (setup t (AutoEnable c) (Just u) Nothing c dummycfg) >>= \case
@@ -102,13 +105,25 @@ autoEnable = do
 							setConfig (remoteAnnexConfig c "config-uuid") (fromUUID cu)
 			_ -> return ()
   where
-	configured rc = fromMaybe False $
-		trueFalseParser' . fromProposedAccepted
-			=<< M.lookup autoEnableField rc
-	canenable u = (/= DeadTrusted) <$> lookupTrust u
 	getenabledremotes = M.fromList
 		. map (\r -> (getcu r, r))
 		<$> remoteList
 	getcu r = fromMaybe
 		(Remote.uuid r)
 		(remoteAnnexConfigUUID (Remote.gitconfig r))
+
+autoEnableable :: Annex (M.Map UUID RemoteConfig)
+autoEnableable = do
+	tm <- trustMap
+	(M.filterWithKey (notdead tm) . M.filter configured)
+		<$> remoteConfigMap
+  where
+	configured c = fromMaybe False $
+		trueFalseParser' . fromProposedAccepted
+			=<< M.lookup autoEnableField c
+	notdead tm cu c = 
+		let u = case findSameasUUID c of
+			Just (Sameas u') -> u'
+			Nothing -> cu
+		in lookupTrust' u tm /= DeadTrusted
+

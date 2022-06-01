@@ -45,6 +45,11 @@ for the local repository and all annexed content.
   Makes the `--batch` input be delimited by nulls instead of the usual
   newlines.
 
+* `--autoenable`
+
+  Display a list of special remotes that have been configured to
+  autoenable.  
+
 * matching options
 
   The [[git-annex-matching-options]](1) can be used to select what
