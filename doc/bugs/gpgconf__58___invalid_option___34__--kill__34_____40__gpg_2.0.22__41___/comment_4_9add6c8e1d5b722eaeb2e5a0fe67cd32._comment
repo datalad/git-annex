@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-06-02T16:23:44Z"
+ content="""
+Any chance you can try to reproduce this with a recent build of git-annex?
+"""]]
