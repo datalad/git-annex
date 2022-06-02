@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-06-02T16:09:03Z"
+ content="""
+There is now a later failure:
+
+	cron-20220527/build-ubuntu.yaml-710-90215d4e-failed/2_test-annex (crippled-tmp, ubuntu-latest).txt:2022-05-27T03:27:10.4794513Z     export_import_subdir:                  FAIL (1.04s)
+	cron-20220527/build-ubuntu.yaml-710-90215d4e-failed/test-annex (crippled-tmp, ubuntu-latest)/7_Run tests.txt:2022-05-27T03:27:10.4794510Z     export_import_subdir:                  FAIL (1.04s)
+
+Which was git-annex version 10.20220525+git3-gf69c6a360. Unfortunately
+that means that the fix for [[todo/test_suite_unsafe_use_of_setEnv]]
+did not fix this.
+
+Also, the failures go back to before test suite parellization.
+"""]]
