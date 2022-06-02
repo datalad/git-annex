@@ -58,3 +58,5 @@ I don't know if that was somehow a fluke that may be testing of git-annex is in 
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]] hopefully... --[[Joey]]
