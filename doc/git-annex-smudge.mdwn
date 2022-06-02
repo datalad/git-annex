@@ -39,7 +39,6 @@ is normally configured when a repository is initialized, with the following
 contents:
 
 	* filter=annex
-	.* !filter
 
 The smudge filter does not provide git with the content of annexed files,
 because that would be slow and triggers memory leaks in git. Instead,
