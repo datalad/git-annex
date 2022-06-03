@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-06-03T18:00:16Z"
+ content="""
+Ok, that is behaving as expected then, it ignores failure to support older
+gpgs. Going to close this.
+"""]]
