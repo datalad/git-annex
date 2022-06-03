@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 14"
+ date="2022-06-03T16:42:38Z"
+ content="""
+ok, none of those 3 jobs returned, I have a good number (>40) of git* related processes \"running\", see [screenshot](http://www.onerussian.com/tmp/git-annexes-stuck-1.png) .
+I will keep it in this \"state\" for possible introspection for another hour, and if no immediate ideas on what to look at, I will kill/update git-annex (from that `10.20220322-g7b64dea`) and restart jobs.
+
+FWIW, I have git config annex.stalldetection 1KB/120s
+
+"""]]
