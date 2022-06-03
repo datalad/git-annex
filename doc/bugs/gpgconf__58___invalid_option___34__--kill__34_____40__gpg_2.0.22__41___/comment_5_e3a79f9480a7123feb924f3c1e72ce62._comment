@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="still reports about invalid option but doesn't fail"
+ date="2022-06-03T01:36:38Z"
+ content="""
+so I should try with outdated gpgconf on some older CentOS? ..already done - we do run annex tests daily on ndoli (part of discovery) now  and apparently: tests passed, but it did have those reports
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/06[master]git
+$> tail result-ndoli-715/handle-result.yaml-154-7a381a8a-success/result-ndoli-715/git-annex-tmp.rc          
+0
+
+$> tail result-ndoli-715/handle-result.yaml-154-7a381a8a-success/result-ndoli-715/git-annex-tmp.log 
+gpgconf: invalid option \"--kill\"
+gpgconf: invalid option \"--kill\"
+gpgconf: invalid option \"--kill\"
+gpgconf: invalid option \"--kill\"
+gpgconf: invalid option \"--kill\"
++ echo 'Elapsed time: 3278 seconds'
+Elapsed time: 3278 seconds
++ cd /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp
++ chmod -R +w 715
++ rm -rf 715
+```
+"""]]

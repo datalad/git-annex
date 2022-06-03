@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="defending BTRFS"
+ date="2022-06-02T18:43:02Z"
+ content="""
+FWIW, may be just as a defender of BTRFS decided to share a \"terminal shot\" of screens from drogon -- you can see how busy it is (`top` and `dstat` at the bottom) downloading (>= 100MBps) and reading (70MBps) and saving (>200MBps) while there is a good number of parallel processes which have a number of parallel git-annex processes:
+[screenshot](http://www.onerussian.com/tmp/busy-drogon-MVar-operation.png)
+
+and I don't know how well any other file system would have held up ;) 
+"""]]

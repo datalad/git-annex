@@ -1,0 +1,5 @@
+I got a new laptop the other day. To set it up, I just cloned the home directory from my desktop.
+As part of that, I have a git annex repository that now has all the content, but still thinks it is
+my desktop. 
+What is the right way to convert it into a unique repository?
+I changed the annex uuid in the config file, but I am not sure if that is correct or sufficient.
