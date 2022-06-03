@@ -19,6 +19,7 @@ module Database.Handle (
 
 import Utility.Exception
 import Utility.FileSystemEncoding
+import Utility.DebugLocks
 
 import Database.Persist.Sqlite
 import qualified Database.Sqlite as Sqlite
@@ -57,7 +58,7 @@ openDb db tablename = do
  - auto-close. -}
 closeDb :: DbHandle -> IO ()
 closeDb (DbHandle worker jobs) = do
-	putMVar jobs CloseJob
+	debugLocks $ putMVar jobs CloseJob
 	wait worker
 
 {- Makes a query using the DbHandle. This should not be used to make
@@ -74,8 +75,8 @@ queryDb :: DbHandle -> SqlPersistM a -> IO a
 queryDb (DbHandle _ jobs) a = do
 	res <- newEmptyMVar
 	putMVar jobs $ QueryJob $
-		liftIO . putMVar res =<< tryNonAsync a
-	(either throwIO return =<< takeMVar res)
+		debugLocks $ liftIO . putMVar res =<< tryNonAsync a
+	debugLocks $ (either throwIO return =<< takeMVar res)
 		`catchNonAsync` (\e -> error $ "sqlite query crashed: " ++ show e)
 
 {- Writes a change to the database.
@@ -101,8 +102,8 @@ commitDb' :: DbHandle -> SqlPersistM () -> IO (Either SomeException ())
 commitDb' (DbHandle _ jobs) a = do
 	res <- newEmptyMVar
 	putMVar jobs $ ChangeJob $
-		liftIO . putMVar res =<< tryNonAsync a
-	takeMVar res
+		debugLocks $ liftIO . putMVar res =<< tryNonAsync a
+	debugLocks $ takeMVar res
 
 data Job
 	= QueryJob (SqlPersistM ())

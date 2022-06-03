@@ -16,6 +16,7 @@ module Database.Keys.Handle (
 
 import qualified Database.Queue as H
 import Utility.Exception
+import Utility.DebugLocks
 
 import Control.Concurrent
 import Control.Monad.IO.Class (liftIO, MonadIO)
@@ -42,16 +43,16 @@ withDbState
 	-> (DbState -> m (v, DbState))
 	-> m v
 withDbState (DbHandle mvar) a = do
-	st <- liftIO $ takeMVar mvar
-	go st `onException` (liftIO $ putMVar mvar st)
+	st <- liftIO $ debugLocks $ takeMVar mvar
+	go st `onException` (liftIO $ debugLocks $ putMVar mvar st)
   where
 	go st = do
 		(v, st') <- a st
-		liftIO $ putMVar mvar st'
+		liftIO $ debugLocks $ putMVar mvar st'
 		return v
 
 flushDbQueue :: DbHandle -> IO ()
-flushDbQueue (DbHandle mvar) = go =<< readMVar mvar
+flushDbQueue (DbHandle mvar) = go =<< debugLocks (readMVar mvar)
   where
 	go (DbOpen qh) = H.flushDbQueue qh
 	go _ = return ()

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2022-06-03T17:52:12Z"
+ content="""
+To hopefully find out what MVar operation is blocking, I have added lock
+debugging instrumentation to all database calls. This will need a special
+build of git-annex with the DebugLocks build flag enabled. 
+
+I have made a standalone tarball built that way available here:
+<https://downloads.kitenet.net/git-annex/linux/debuglocks/>
+
+It should display a backtrace on stderr when the MVar deadlock happens.
+"""]]

@@ -19,6 +19,7 @@ module Database.Queue (
 
 import Utility.Monad
 import Utility.RawFilePath
+import Utility.DebugLocks
 import Database.Handle
 
 import Database.Persist.Sqlite
@@ -51,12 +52,12 @@ closeDbQueue h@(DQ hdl _) = do
 {- Blocks until all queued changes have been written to the database. -}
 flushDbQueue :: DbQueue -> IO ()
 flushDbQueue (DQ hdl qvar) = do
-	q@(Queue sz _ qa) <- takeMVar qvar
+	q@(Queue sz _ qa) <- debugLocks $ takeMVar qvar
 	if sz > 0
 		then do
 			commitDb hdl qa
-			putMVar qvar =<< emptyQueue
-		else putMVar qvar q
+			debugLocks $ putMVar qvar =<< emptyQueue
+		else debugLocks $ putMVar qvar q
 
 {- Makes a query using the DbQueue's database connection.
  - This should not be used to make changes to the database!
@@ -95,10 +96,10 @@ queueDb
 	-> SqlPersistM ()
 	-> IO ()
 queueDb (DQ hdl qvar) commitchecker a = do
-	Queue sz lastcommittime qa <- takeMVar qvar
+	Queue sz lastcommittime qa <- debugLocks $ takeMVar qvar
 	let !sz' = sz + 1
 	let qa' = qa >> a
-	let enqueue = putMVar qvar
+	let enqueue = debugLocks . putMVar qvar
 	ifM (commitchecker sz' lastcommittime)
 		( do
 			r <- commitDb' hdl qa'

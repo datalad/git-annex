@@ -35,7 +35,7 @@ install-home:
 tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then $(GHC) --make Setup; fi
 	if [ "$(BUILDER)" != stack ]; then \
-		$(BUILDER) configure $(BUILDERCOMMONOPTIONS) --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
+		$(BUILDER) configure -f debuglocks $(BUILDERCOMMONOPTIONS) --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
 	else \
 		$(BUILDER) setup $(BUILDERCOMMONOPTIONS); \
 	fi
