@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2022-06-03T01:40:17Z"
+ content="""
+FWIW indeed seems that all tests passed in reasonable time on smaug since I have added reporting of elapsed time:
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex-ci-client-jobs[master]builds/2022
+$> git submodule foreach \"git grep '^Elapsed time: [0-9]' | grep smaug || :\"
+Entering '02'
+Entering '03'
+Entering '04'
+Entering '05'
+result-smaug-700/handle-result.yaml-125-88838e79-success/result-smaug-700/git-annex.log:Elapsed time: 437 seconds
+result-smaug-701/handle-result.yaml-127-0b187de0-success/result-smaug-701/git-annex.log:Elapsed time: 404 seconds
+result-smaug-702/handle-result.yaml-129-d31f0988-success/result-smaug-702/git-annex.log:Elapsed time: 406 seconds
+result-smaug-703/handle-result.yaml-131-92d8565a-success/result-smaug-703/git-annex.log:Elapsed time: 496 seconds
+result-smaug-704/handle-result.yaml-133-25ffc5f5-success/result-smaug-704/git-annex.log:Elapsed time: 432 seconds
+result-smaug-705/handle-result.yaml-135-8d90e5e7-success/result-smaug-705/git-annex.log:Elapsed time: 411 seconds
+result-smaug-706/handle-result.yaml-137-b47dd77c-success/result-smaug-706/git-annex.log:Elapsed time: 427 seconds
+result-smaug-707/handle-result.yaml-139-ee5bee3b-success/result-smaug-707/git-annex.log:Elapsed time: 563 seconds
+result-smaug-709/handle-result.yaml-141-4dda2de6-success/result-smaug-709/git-annex.log:Elapsed time: 419 seconds
+result-smaug-710/handle-result.yaml-143-7df269b8-success/result-smaug-710/git-annex.log:Elapsed time: 442 seconds
+result-smaug-711/handle-result.yaml-145-206b0f6a-success/result-smaug-711/git-annex.log:Elapsed time: 414 seconds
+result-smaug-712/handle-result.yaml-147-fc2e89a9-success/result-smaug-712/git-annex.log:Elapsed time: 577 seconds
+result-smaug-713/handle-result.yaml-149-e633d635-success/result-smaug-713/git-annex.log:Elapsed time: 448 seconds
+result-smaug-714/handle-result.yaml-151-5156c589-success/result-smaug-714/git-annex.log:Elapsed time: 429 seconds
+Entering '06'
+result-smaug-715/handle-result.yaml-153-daa2f773-success/result-smaug-715/git-annex.log:Elapsed time: 411 seconds
+result-smaug-716/handle-result.yaml-155-5e82d554-success/result-smaug-716/git-annex.log:Elapsed time: 645 seconds
+```
+"""]]
