@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: comment 16"""
+ date="2022-06-06T16:20:55Z"
+ content="""
+@Atemu, that seems like at least a plausible theory, that disk write
+pressure (eg from getting annex objects) is causing sqlite writes to take a
+long time. Increasing the wait time from the current 10 seconds would make
+sense if that's what's happening.
+
+The somewhat weird thing is that, with a single git-annex process, no
+matter the number of jobs, it only has a single database handle open,
+and so it should not be possible for one write to still be happening when
+a second write happens. Unless, of course, sqlite is doing something behind
+my back, like finishing the write in a separate thread? Or, of course,
+there might be a second process that has somehow not been visible..
+
+So, I've added some debugging of when it commits to the database. 
+@yarik, please get an updated build with commit
+5da1a785086910c32559a46f9110779d765af0cd,
+and try after setting:
+
+	git config annex.debug true
+	git config annex.debugfilter Database.Handle
+
+This should tell us if there are somehow multiple writers at the same time,
+and also will tell us the timing of how long it is taking to commit to the
+db.
+"""]]
