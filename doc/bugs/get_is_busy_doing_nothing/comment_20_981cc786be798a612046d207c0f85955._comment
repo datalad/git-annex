@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 20"""
+ date="2022-06-06T16:12:53Z"
+ content="""
+It does occur to me that one "solution" might be to have flushDbQueue
+not rethrow the exception, and just re-enqueue the write. Then, if a write
+fails in the middle of a long git-annex command, it will just queue up
+sqlite changes until later. And hopefully whatever is preventing writing to
+the database at that time would later resolve itself. At shutdown, it would
+need to make sure to flush the remaining queue and not ignore a write
+failure then.
+
+That has the potential problem that, if the write keeps failing, it might
+end up buffering a large number of writes in memory, and since the queue
+would be full, it would be trying to write every time. So it would both use
+an ever-growing amount of memory, and be slowed down by the write attempts.
+
+Still, it does give it something better to do while the write is failing
+than sleeping and retrying, eg to do the rest of the work it's been asked
+to do.
+"""]]
