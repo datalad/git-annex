@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 18"
+ date="2022-06-06T14:50:16Z"
+ content="""
+> I have made a standalone tarball built that way available here: https://downloads.kitenet.net/git-annex/linux/debuglocks/
+> It should display a backtrace on stderr when the MVar deadlock happens.
+
+jinxing helped ... thought I thought to complain that I don't see any traceback but apparently it is due to `-J5` (I guess) and lines being ovrewritten, but I managed to `Ctrl-s` at a point showing
+
+```
+get 0/0/0/3/5/50 (from web...)
+MVar deadlock detected CallStack (from HasCallStack):
+  debugLocks, called at ./Database/Queue.hs:55:30 in main:Database.Queue
+  thread blocked indefinitely in an MVar operation
+(Delaying 1s before retrying....)
+```
+
+which when I let it go became smth like
+
+```
+get 0/0/0/3/0/98 (from web...)
+  thread blocked indefinitely in an MVar operation
+(Delaying 1s before retrying....)
+ok
+get 0/0/0/3/1/111 (from web...) ok
+```
+
+and reconfirmed for those in screenlog I quickly collected:
+
+```
+(base) dandi@drogon:~$ grep debugLocks screenlog.3
+  debugLocks, called at ./Database/Queue.hs:55:30 in main:Database.Queue
+  debugLocks, called at ./Database/Queue.hs:55:30 in main:Database.Queue
+  debugLocks, called at ./Database/Queue.hs:55:30 in main:Database.Queue
+  debugLocks, called at ./Database/Queue.hs:55:30 in main:Database.Queue
+  debugLocks, called at ./Database/Queue.hs:55:30 in main:Database.Queue
+```
+
+"""]]
