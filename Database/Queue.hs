@@ -1,6 +1,6 @@
 {- Persistent sqlite database queues
  -
- - Copyright 2015 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ module Database.Queue (
 import Utility.Monad
 import Utility.RawFilePath
 import Utility.DebugLocks
+import Utility.Exception
 import Database.Handle
 
 import Database.Persist.Sqlite
@@ -54,9 +55,11 @@ flushDbQueue :: DbQueue -> IO ()
 flushDbQueue (DQ hdl qvar) = do
 	q@(Queue sz _ qa) <- debugLocks $ takeMVar qvar
 	if sz > 0
-		then do
-			commitDb hdl qa
-			debugLocks $ putMVar qvar =<< emptyQueue
+		then tryNonAsync (commitDb hdl qa) >>= \case
+			Right () -> debugLocks $ putMVar qvar =<< emptyQueue
+			Left e -> do
+				debugLocks $ putMVar qvar q
+				throwM e
 		else debugLocks $ putMVar qvar q
 
 {- Makes a query using the DbQueue's database connection.

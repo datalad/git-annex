@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2022-06-06T15:55:15Z"
+ content="""
+So in flushDbQueue, which is waiting for all queued writes to complete.
+When the write failed with an exception, a previous flushDbQueue
+would have left the queue's MVar empty.
+
+So, now I understand how the original problem can lead to this MVar
+problem. And I've fixed that part of it. Now a write failing this way will
+refill the queue with what it failed to write. So it will try to write it
+again later.
+
+This flushDbQueue probably also explains the hang at
+"recording state in git" since there is also a final flushDbQueue at that
+point, and I guess it fails to detect a deadlock at that point so just
+hangs forever. So my fix should also avoid that.
+
+None of which means this is fixed, really, just the fallout from the
+write timeout problem will be less severe now.
+"""]]
