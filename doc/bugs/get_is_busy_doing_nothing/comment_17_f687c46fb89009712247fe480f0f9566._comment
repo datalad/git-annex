@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 17"
+ date="2022-06-06T14:00:05Z"
+ content="""
+FWIW4Joey:
+
+> I have made a standalone tarball built that way available here: https://downloads.kitenet.net/git-annex/linux/debuglocks/
+
+I have tried that version.  Placing similar load I just got some `move`s to fail ([our issue+idea to just call multiple times](https://github.com/dandi/dandisets/issues/176)) and some other oddities (not new, yet to figure out) but overall  -- I have not spotted similar MVar messages :-/ (filing a comment to \"jinx\" it, rerunning again -- seeing some `get`'s going ;))
+
+4Atemu:
+
+>  I'm not aware of other means of measuring fragmentation
+
+isn't https://github.com/kilobyte/compsize the one reporting number of fragments, thus degree of fragmentation?  As I summarized in [comment above](http://git-annex.branchable.com/bugs/get_is_busy_doing_nothing/#comment-9c647c8d9837d46e45675de30ebfeefc) I have used it + `btrfs fi defrag`.
+
+> It might be worth looking into the timings of git annex get's write operations using iostat --human 1.
+
+well -- it confirms that there is \"write silence\" for a while followed by a burst, e.g.:
+
+```
+Device             tps    kB_read/s    kB_wrtn/s    kB_dscd/s    kB_read    kB_wrtn    kB_dscd
+dm-0             50.00       800.0k         0.0k         0.0k     800.0k       0.0k       0.0k
+dm-0              9.00       144.0k         0.0k         0.0k     144.0k       0.0k       0.0k
+dm-0              0.00         0.0k         0.0k         0.0k       0.0k       0.0k       0.0k
+dm-0              0.00         0.0k         0.0k         0.0k       0.0k       0.0k       0.0k
+dm-0              0.00         0.0k         0.0k         0.0k       0.0k       0.0k       0.0k
+dm-0              0.00         0.0k         0.0k         0.0k       0.0k       0.0k       0.0k
+dm-0              0.00         0.0k         0.0k         0.0k       0.0k       0.0k       0.0k
+dm-0             17.00         0.0k       207.3M         0.0k       0.0k     207.3M       0.0k
+dm-0             50.00         4.0M       319.9M         0.0k       4.0M     319.9M       0.0k
+dm-0            111.00        12.6M       365.8M         0.0k      12.6M     365.8M       0.0k
+dm-0             99.00         2.9M       685.5M         0.0k       2.9M     685.5M       0.0k
+dm-0            107.00         1.6M        10.4M         0.0k       1.6M      10.4M       0.0k
+dm-0            236.00         3.7M         0.0k         0.0k       3.7M       0.0k       0.0k
+dm-0            330.00         5.2M         0.0k         0.0k       5.2M       0.0k       0.0k
+dm-0            323.00         5.0M         0.0k         0.0k       5.0M       0.0k       0.0k
+```
+"""]]

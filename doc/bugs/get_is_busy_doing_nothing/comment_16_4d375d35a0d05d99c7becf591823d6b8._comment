@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 16"
+ date="2022-06-05T12:55:04Z"
+ content="""
+Nodatacow is not an option. It disables most safetly guarentees of btrfs (also w.r.t. RAID I believe) and is essentially a hack. As pointed out, it's also difficult to enable retroactively.
+
+Autodefrag is fundamentally broken and might result in overall worse performance. Also not an option.
+
+If a file is highly fragmented (which it might not be, amount of extents isn't an accurate representation fragmentation on btrfs), the correct measure is to `btrfs filesystem defragment` it.  
+If git-annex db fragmentation really is a common problem on btrfs (again, you'd have to do actual performance tests, I'm not aware of other means of measuring fragmentation), perhaps an automatic defrag similar to git's automatic gc would be appropriate. Keys DB files range in the Megabytes IME, so re-writing them every now and then shouldn't be a huge load.
+
+A file's fragmentation on-disk also shouldn't cause issues on DB writes because btrfs is CoW; new writes don't go where the old data was. It can only impact read performance.  
+Free space fragmentation might impact write performance but that's not something a userspace program can or should solve. @yarikoptic try `btrfs balance start -dusage=10`.
+
+I'm not sure I understand the situation 100% but poor DB write performance with hangouts and stalls can also be caused by long filesystem commits.  
+Writing a ton of file data to the filesystem only puts it in the cache and it gets written later. When that \"later\" occurs (usually after 30s), as I understand it, all of that data (potentially megabytes-gigabytes) needs to be written to disk *before* a DB's synchronous write returns.  
+
+This is essentially what git-annex does when getting data from a remote; it \"writes\" a file's data while downloading (without committing, so no disk activity whatsoever) and then does a syncs at the end (lots of disk activity) before starting the next download. A DB commit at the end can take for as long as (up to) 30s worth of transferred data takes to write. With a fast source/pipe, that could potentially be a lot of data.  
+Btrfs itself also has issues with insane commit times under some conditions (dedup especially), compounding the issue.
+
+It might be worth looking into the timings of `git annex get`'s write operations using `iostat --human 1`.
+
+"""]]
