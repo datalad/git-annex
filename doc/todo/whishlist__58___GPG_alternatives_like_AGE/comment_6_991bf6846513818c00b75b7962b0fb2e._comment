@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="aurelia@b44312a63326710de6cea9c43290e5debbd55607"
+ nickname="aurelia"
+ avatar="http://cdn.libravatar.org/avatar/818bf579caf9992f9123bd9b58321b2b"
+ subject="comment 6"
+ date="2022-06-06T12:38:26Z"
+ content="""
+The biggest reason to use age over PGP seems to be in the simplicity / attack surface. It deliberately does not include options to combat complexity and insecure configurations. It also has a lot less baggage and complexity than PGP: obscure packet-based format, web of trust, subkeys - age does a single thing, and it does it well. I do have a use case for hybrid encryption, but I'd rather not touch GPG ever again if I don't need to. Just the squabble about importing keys without identities makes me want to stay far far away. Age keys handle like SSH keys, so if you have a strategy for those age fits into your workflow very easily.
+
+Age also supports passphrase derived keys now, so the \"shared\" use case is covered.
+
+
+"""]]
