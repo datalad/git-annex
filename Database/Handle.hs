@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies, FlexibleContexts, OverloadedStrings #-}
 
 module Database.Handle (
 	DbHandle,
@@ -19,6 +19,7 @@ module Database.Handle (
 
 import Utility.Exception
 import Utility.FileSystemEncoding
+import Utility.Debug
 import Utility.DebugLocks
 
 import Database.Persist.Sqlite
@@ -100,10 +101,16 @@ commitDb h wa = robustly Nothing 100 (commitDb' h wa)
 
 commitDb' :: DbHandle -> SqlPersistM () -> IO (Either SomeException ())
 commitDb' (DbHandle _ jobs) a = do
+	debug "Database.Handle" "commitDb start"
 	res <- newEmptyMVar
 	putMVar jobs $ ChangeJob $
 		debugLocks $ liftIO . putMVar res =<< tryNonAsync a
-	debugLocks $ takeMVar res
+	r <- debugLocks $ takeMVar res
+	case r of
+		Right () -> debug "Database.Handle" "commitDb done"
+		Left e -> debug "Database.Handle" ("commitDb failed: " ++ show e)
+
+	return r
 
 data Job
 	= QueryJob (SqlPersistM ())
