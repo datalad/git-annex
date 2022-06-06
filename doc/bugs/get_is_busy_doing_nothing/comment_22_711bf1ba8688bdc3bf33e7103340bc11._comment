@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 22"
+ date="2022-06-06T17:22:41Z"
+ content="""
+> So, I've added some debugging of when it commits to the database. @yarik, please get an updated build with commit 5da1a785086910c32559a46f9110779d765af0cd,
+
+it doesn't need custom build with DebugLocks right?  Then I will \"wait\" for daily build of datalad/git-annex to happen and test then... meanwhile also running `git clone https://github.com/dandizarrs/4ea5a47f-10d6-48a7-8c1e-ce6ce511f9a7; cd 4ea5a47f-10d6-48a7-8c1e-ce6ce511f9a7; git annex get -J25 . ` on smaug to see if reproduces there (but it is not busy IO so most likely would finish without whining; boosted to -J25 to \"make it harder\"). `smaug` is also BTRFS although underlying storage is setup differently (no LVM)
+
+"""]]
