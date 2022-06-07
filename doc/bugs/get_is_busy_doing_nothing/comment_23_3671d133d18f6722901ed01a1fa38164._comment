@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 23"
+ date="2022-06-07T12:07:29Z"
+ content="""
+> isn't https://github.com/kilobyte/compsize the one reporting number of fragments, thus degree of fragmentation?
+
+It is reporting the number of extents, just like `filefrag` does.
+
+Non-CoW filesystems overwrite data in-place, so there is never a need to create new fragments for (pre-allocated) in-file writes. New extents are only created when the free space at the file's location doesn't allow for further expansion and fragmentation is required.
+
+\# of extents is therefore indicative of fragmentation in non-CoW filesystems but this does not hold true in CoW filesystems like btrfs. If you wrote 1M to the first half of a 2M file and then 1M to the latter, you'll have 2 1M extents that might be right behind each other on-disk due to CoW.
+
+With transparent compression in the mix, this gets even worse because extent size caps out at 128K. A 1M incompressible file will have 8 extents/\"fragments\" at minimum despite its data possibly being layed out fully sequentially.
+
+> there is \"write silence\" for a while followed by a burst
+
+Does this burst occur at the same time the DB times out?
+
+If you take a look at `top`/`iotop`, which threads are using CPU time and writing? Look out for btrfs-transacti and btrfs-endio-wri.
+
+> disk write pressure (eg from getting annex objects) is causing sqlite writes to take a long time.
+
+The problem isn't exactly that. Sure, write activity will make DB operations take longer (larger queue -> higher latency) but this effect should stay within reasonable bounds. I think that the actual big problem is that the object writes are buffered and not written until they hit a deadline after which they *must* be written ASAP. I believe in such a situation, any other write operation must wait until those dirty pages are committed and a commit can take quite a while in btrfs due to integrity guarantees.
+
+I think it'd be better to avoid these dirty page deadline commits, start writing out data sooner (ideally immediately) and block the source if the target can't keep up.  
+IMO there's not much point in letting the target seem to \"write\" at a higher speed than it can actually take in a case of sequential writes like git-annex' object transfer. It'll only lead to wasted memory and erratic IO. (I guess a small buffer (something that could be flushed in a few seconds) could be helpful in smoothing over a little variance.)
+
+"""]]
