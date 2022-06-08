@@ -1,0 +1,68 @@
+### Please describe the problem.
+
+
+[original question raised by John](https://github.com/dandi/dandisets/issues/139#issuecomment-1149948239) which lead me to the goose chase.
+
+Following reproducer
+
+```
+#!/bin/bash
+
+cd "$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)"
+set -eux
+
+git init --bare remote
+( cd remote; git annex init; cat config )
+rpath=$PWD/remote
+
+git init repo
+cd repo
+git annex init
+echo 'This is test text.' > file.txt
+git add file.txt
+git commit -m Init file.txt
+
+git remote add --fetch remote-git $rpath
+
+# without this -- there is no annex-uuid for  remote -- git-annex branch is not getting merged
+git annex info
+
+cat .git/config
+
+# but this still fails
+git annex initremote testremote type=git location=$rpath autoenable=true
+
+```
+
+ends with
+
+```
+[remote "remote-git"]
+	url = /home/yoh/.tmp/dl-VjO0aSF/remote
+	fetch = +refs/heads/*:refs/remotes/remote-git/*
+	annex-uuid = afdc6d54-cd6d-4a20-b639-a639f9c7ef09
++ git annex initremote testremote type=git location=/home/yoh/.tmp/dl-VjO0aSF/remote autoenable=true
+initremote testremote 
+git-annex: could not find existing git remote with specified location
+failed
+initremote: 1 failed
+
+```
+
+so
+
+- error "could not find existing git remote with specified location" seems not descriptive of the underlying problem since location matches the url. Underlying issue is still not clear why we can't initremote
+- as you could see in the script - need `annex info` to have annex-uuid populated and looking at [code ](https://git.kitenet.net/index.cgi/git-annex.git/tree/Remote/Git.hs?id=af0d854460c28230dc682faa7c6daf3d96698cb6#n110) comment -- it requires UUID to be known. If not known -- ideally should be a dedicated error message ("remote blah found but lacks uuid, check if remote is annex")
+- IMHO should not need manual `annex info` to merge git-annex branch
+
+
+### What steps will reproduce the problem?
+
+above
+
+### What version of git-annex are you using? On what operating system?
+
+10.20220504
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
