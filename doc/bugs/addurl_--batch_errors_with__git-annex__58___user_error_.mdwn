@@ -1,0 +1,71 @@
+### Please describe the problem.
+
+
+original report [https://github.com/dandi/dandisets/issues/168](https://github.com/dandi/dandisets/issues/168)
+
+- likely to happen due to dealing with lots of non-large files
+- happens only for non-large .json files (due to `* annex.largefiles=((mimeencoding=binary)and(largerthan=0))`)
+
+- our log for a sample file looks like
+
+```
+(base) dandi@drogon:/mnt/backup/dandi/dandisets/000108/.git/dandi/logs$ grep 'sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json' sync-20220608125450Z-1944539.log
+2022-06-08T09:34:27-0400 [INFO    ] backups2datalad sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json: Syncing
+2022-06-08T09:34:27-0400 [INFO    ] backups2datalad sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json: Not in dataset; will add
+2022-06-08T09:34:27-0400 [DEBUG   ] backups2datalad sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json: Fetching bucket URL
+2022-06-08T09:34:27-0400 [DEBUG   ] backups2datalad sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json: About to query S3
+2022-06-08T09:34:28-0400 [DEBUG   ] backups2datalad sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json: Got bucket URL
+2022-06-08T09:34:28-0400 [INFO    ] backups2datalad sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json: File is text; sending off for download from https://dandiarchive.s3.amazonaws.com/blobs/4a8/75e/4a875eb7-ab7c-4d54-b962-671b7c35a9d6?versionId=5dwackcdjuYtMeNZUh23k0rIpU7tRqbn
+2022-06-08T09:34:28-0400 [INFO    ] backups2datalad sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json: Downloading from https://dandiarchive.s3.amazonaws.com/blobs/4a8/75e/4a875eb7-ab7c-4d54-b962-671b7c35a9d6?versionId=5dwackcdjuYtMeNZUh23k0rIpU7tRqbn
+2022-06-08T09:34:28-0400 [TRACE   ] backups2datalad Sending to addurl command: 'https://dandiarchive.s3.amazonaws.com/blobs/4a8/75e/4a875eb7-ab7c-4d54-b962-671b7c35a9d6?versionId=5dwackcdjuYtMeNZUh23k0rIpU7tRqbn sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json\n'
+2022-06-08T09:34:28-0400 [TRACE   ] backups2datalad Decoded line from addurl command: '{"command":"addurl","note":"to sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json\\nnon-large file; adding content to git repository","success":false,"input":["https://dandiarchive.s3.amazonaws.com/blobs/4a8/75e/4a875eb7-ab7c-4d54-b962-671b7c35a9d6?versionId=5dwackcdjuYtMeNZUh23k0rIpU7tRqbn sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json"],"error-messages":["git-annex: user error (xargs [\\"-0\\",\\"git\\",\\"--git-dir=.git\\",\\"--work-tree=.\\",\\"--literal-pathspecs\\",\\"-c\\",\\"filter.annex.smudge=\\",\\"-c\\",\\"filter.annex.clean=\\",\\"-c\\",\\"filter.annex.process=\\",\\"add\\",\\"-f\\",\\"--\\"] exited 123)"],"file":"sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json"}\n'
+2022-06-08T09:34:28-0400 [ERROR   ] backups2datalad sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json: download failed: git-annex: user error (xargs ["-0","git","--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","add","-f","--"] exited 123)
+
+```
+
+- that file is downloaded but not added to git (according to git status)
+- dedicated `git add` on that file after proceeds fine
+
+<details>
+<summary>seems to happen for some files more than for the others (grepping across logs across multiple runs) -- 38 different files failed, some up to 4 times</summary> 
+
+```shell
+(base) dandi@drogon:/mnt/backup/dandi/dandisets/000108/.git/dandi/logs$ awk '{print $5;}' < /tmp/108-download-fails.log | sort | uniq -c  | sort -n | nl | tail
+    29        2 sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-LEC_run-1_chunk-7_SPIM.json:
+    30        2 sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-1_SPIM.json:
+    31        2 sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-5_SPIM.json:
+    32        2 sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-YO_run-1_chunk-6_SPIM.json:
+    33        2 sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-YO_run-1_chunk-7_SPIM.json:
+    34        2 sub-MITU01/ses-20220315h17m32s36/micr/sub-MITU01_ses-20220315h17m32s36_sample-25_stain-NN_run-1_chunk-1_SPIM.json:
+    35        2 sub-MITU01/ses-20220315h17m32s36/micr/sub-MITU01_ses-20220315h17m32s36_sample-25_stain-NN_run-1_chunk-7_SPIM.json:
+    36        3 sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-LEC_run-1_chunk-4_SPIM.json:
+    37        4 sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-6_SPIM.json:
+    38        4 sub-MITU01/ses-20220311h10m19s37/micr/sub-MITU01_ses-20220311h10m19s37_sample-22_stain-NN_run-1_chunk-7_SPIM.json:
+```
+</details>
+
+- ATM there is about 3k of staged "new file" .json files and 4 not staged (those errors)
+- invocation was `git-annex addurl --batch --with-files --jobs 5 --json --json-error-messages --json-progress --raw`
+
+### What steps will reproduce the problem?
+
+haven't tried to create reproducer yet.  may be I could just grep log for all those addurls and provide text file to feed annex addurls..
+
+### What version of git-annex are you using? On what operating system?
+
+`10.20220525+git57-ge796080f3-1~ndall+1` before that was some other recent -- same problem
+
+```
+(base) dandi@drogon:/mnt/backup/dandi/dandisets/000108$ /home/dandi/git-annexes/10.20220525+git57-ge796080f3-1~ndall+1/usr/lib/git-annex.linux/git --version
+git version 2.30.2
+(base) dandi@drogon:/mnt/backup/dandi/dandisets/000108$ /home/dandi/git-annexes/10.20220525+git57-ge796080f3-1~ndall+1/usr/lib/git-annex.linux/git-annex version
+git-annex version: 10.20220525+git57-ge796080f3-1~ndall+1
+...
+```
+
+
+Please advise on how to debug or share ideas on what could lead to it or what to try.
+
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
