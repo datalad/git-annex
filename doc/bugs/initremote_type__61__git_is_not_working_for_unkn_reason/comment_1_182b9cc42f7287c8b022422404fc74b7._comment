@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-06-08T16:55:50Z"
+ content="""
+Hmm, I think this only works for ssh:// urls currently.
+
+Even the ssh url form host:/path does not work, because it gets
+normalized to a ssh:// url.
+
+The implementation does not support non-url's at all; the provided location
+is treated as an url (`Git.Url location`). And even if it were treated as a
+path, the path gets normalized to a relative path and an absolute path (or
+differently relavatized path) would not work.
+
+Using paths with this is rather problematic too, because if the repo is
+cloned to another machine, it would not find the repo at the recorded path.
+Similarly, relative paths are also problimatic. But it may as well support
+them to the extent it can.
+
+I think this needs changes to the core Git data structure, to store the
+original, unmodified git.remote.path. Or a different interface than the
+current, one that accepts any repo location and probes it to find the uuid.
+The latter idea seems better because it simplifies the UI rather than
+complicating the internal representation.
+"""]]
