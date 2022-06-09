@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="comment 2"
+ date="2022-06-09T02:32:18Z"
+ content="""
+Wouldn't it be possible to support (absolute) file:// urls, eg. something similar to
+`file:///home/jkniiv/test-VEfBrTZ/remote2`? In my mind they feel like a reasonable approximation
+of ssh:// urls and could be useful for getting a feel for git special remotes before setting
+up a bare git-repo/annex on an ssh-server. I know they are not the same thing implementation wise
+but I feel that being able to try this feature out on a least-effort basis would be useful
+from a pedagogical standpoint.
+"""]]
