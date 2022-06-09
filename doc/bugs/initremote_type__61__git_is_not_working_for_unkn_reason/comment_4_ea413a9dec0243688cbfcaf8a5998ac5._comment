@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-06-09T17:28:19Z"
+ content="""
+Re file:// urls, it does now work to use them in location=. I don't know if
+I'd consider using them any better than absolute paths though. YMMV.
+"""]]
