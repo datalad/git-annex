@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -150,6 +150,7 @@ toPerform dest removewhen key afile fastcheck isthere = do
 				then finish deststartedwithcopy $
 					Remote.logStatus dest key InfoPresent
 				else do
+					logMoveCleanup deststartedwithcopy
 					when fastcheck $
 						warning "This could have failed because --fast is enabled."
 					stop
@@ -162,10 +163,11 @@ toPerform dest removewhen key afile fastcheck isthere = do
 	finish deststartedwithcopy setpresentremote = case removewhen of
 		RemoveNever -> do
 			setpresentremote
+			logMoveCleanup deststartedwithcopy
 			next $ return True
 		RemoveSafe -> lockContentForRemoval key lockfailed $ \contentlock -> do
 			srcuuid <- getUUID
-			willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile >>= \case
+			r <- willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile >>= \case
 				DropAllowed -> drophere setpresentremote contentlock "moved"
 				DropCheckNumCopies -> do
 					(numcopies, mincopies) <- getSafestNumMinCopies afile key
@@ -176,6 +178,8 @@ toPerform dest removewhen key afile fastcheck isthere = do
 						 (drophere setpresentremote contentlock . showproof)
 						 (faileddrophere setpresentremote)
 				DropWorse -> faileddrophere setpresentremote
+			logMoveCleanup deststartedwithcopy
+			return r
 	showproof proof = "proof: " ++ show proof
 	drophere setpresentremote contentlock reason = do
 		fastDebug "Command.Move" $ unwords
@@ -240,35 +244,42 @@ fromPerform src removewhen key afile = do
 	get = notifyTransfer Download afile $
 		download src key afile stdRetry
 	
-	dispatch _ _ False = stop -- failed
-	dispatch RemoveNever _ True = next $ return True -- copy complete
+	dispatch _ deststartedwithcopy False = do
+		logMoveCleanup deststartedwithcopy
+		stop -- copy failed
+	dispatch RemoveNever deststartedwithcopy True = do
+		logMoveCleanup deststartedwithcopy
+		next $ return True -- copy complete
 	dispatch RemoveSafe deststartedwithcopy True = lockContentShared key $ \_lck -> do
 		destuuid <- getUUID
 		willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile >>= \case
-			DropAllowed -> dropremote "moved"
+			DropAllowed -> dropremote deststartedwithcopy "moved"
 			DropCheckNumCopies -> do
 				(numcopies, mincopies) <- getSafestNumMinCopies afile key
 				(tocheck, verified) <- verifiableCopies key [Remote.uuid src]
 				verifyEnoughCopiesToDrop "" key Nothing numcopies mincopies [Remote.uuid src] verified
-					tocheck (dropremote . showproof) faileddropremote
-			DropWorse -> faileddropremote		
+					tocheck (dropremote deststartedwithcopy . showproof) (faileddropremote deststartedwithcopy)
+			DropWorse -> faileddropremote deststartedwithcopy
 	
 	srcuuid = Remote.uuid src
 	
 	showproof proof = "proof: " ++ show proof
 	
-	dropremote reason = do
+	dropremote deststartedwithcopy reason = do
 		fastDebug "Command.Move" $ unwords
 			[ "Dropping from remote"
 			, show src
 			, "(" ++ reason ++ ")"
 			]
 		ok <- Remote.action (Remote.removeKey src key)
+		when ok $
+			logMoveCleanup deststartedwithcopy
 		next $ Command.Drop.cleanupRemote key src (Command.Drop.DroppingUnused False) ok
 	
-	faileddropremote = do
+	faileddropremote deststartedwithcopy = do
 		showLongNote "(Use --force to override this check, or adjust numcopies.)"
 		showLongNote $ "Content not dropped from " ++ Remote.name src ++ "."
+		logMoveCleanup deststartedwithcopy
 		next $ return False
 
 {- Moves (or copies) the content of an annexed file from reachable remotes
@@ -312,7 +323,7 @@ toHereStart removewhen afile key ai si =
  - repository already had a copy of the file before the move began.
  -}
 willDropMakeItWorse :: UUID -> UUID -> DestStartedWithCopy -> Key -> AssociatedFile -> Annex DropCheck
-willDropMakeItWorse srcuuid destuuid (DestStartedWithCopy deststartedwithcopy) key afile =
+willDropMakeItWorse srcuuid destuuid (DestStartedWithCopy deststartedwithcopy _) key afile =
 	ifM (Command.Drop.checkRequiredContent (Command.Drop.PreferredContentChecked False) srcuuid key afile)
 		( if deststartedwithcopy
 			then unlessforced DropCheckNumCopies
@@ -334,10 +345,18 @@ willDropMakeItWorse srcuuid destuuid (DestStartedWithCopy deststartedwithcopy) k
 
 data DropCheck = DropWorse | DropAllowed | DropCheckNumCopies
 
-newtype DestStartedWithCopy = DestStartedWithCopy Bool
+data DestStartedWithCopy = DestStartedWithCopy Bool (Annex ())
+
+{- This should be called once the move has succeeded, or if it failed
+ - without doing anything. It should not be called if the move transferred
+ - the content but failed to drop due to eg a network error. In such a
+ - case, the move can be restarted later, so the move log should be
+ - preserved. -}
+logMoveCleanup :: DestStartedWithCopy -> Annex ()
+logMoveCleanup (DestStartedWithCopy _ a) = a
 
 {- Runs an action that performs a move, and logs the move, allowing an
- - interrupted move to be restarted later.
+ - failed or interrupted move to be re-done later.
  -
  - This deals with the situation where dest did not start with a copy,
  - but the move downloaded it, and was then interrupted before dropping
@@ -346,7 +365,7 @@ newtype DestStartedWithCopy = DestStartedWithCopy Bool
  - DestStartedWithCopy, this avoids that annoyance.
  -}
 logMove :: UUID -> UUID -> Bool -> Key -> (DestStartedWithCopy -> Annex a) -> Annex a
-logMove srcuuid destuuid deststartedwithcopy key a = bracket setup cleanup go
+logMove srcuuid destuuid deststartedwithcopy key a = go =<< setup
   where
 	logline = L.fromStrict $ B8.unwords
 		[ fromUUID srcuuid
@@ -378,8 +397,9 @@ logMove srcuuid destuuid deststartedwithcopy key a = bracket setup cleanup go
 			wasnocopy <- checkLogFile (fromRawFilePath logf) gitAnnexMoveLock
 				(== logline)
 			if wasnocopy
-				then go' False
-				else go' deststartedwithcopy
-		| otherwise = go' deststartedwithcopy
+				then go' logf False
+				else go' logf deststartedwithcopy
+		| otherwise = go' logf deststartedwithcopy
 
-	go' = a . DestStartedWithCopy
+	go' logf deststartedwithcopy' = a $
+		DestStartedWithCopy deststartedwithcopy' (cleanup logf)

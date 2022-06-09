@@ -10,3 +10,5 @@ let the drop succeed.
 The problem is that logMove runs its cleanup action in this case.
 So the move.log gets the record of the move cleaned from it. It seems that
 the cleanup action should avoid doing that when the move failed. --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]
