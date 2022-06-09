@@ -23,3 +23,4 @@ That however, is substantially more complex than looking at the exit code -- giv
 99.9% are just splendid. Wondering here whether this particular consequence of the change was intentional and avoidable?
 
 
+> [[notabug|done]] --[[Joey]]
