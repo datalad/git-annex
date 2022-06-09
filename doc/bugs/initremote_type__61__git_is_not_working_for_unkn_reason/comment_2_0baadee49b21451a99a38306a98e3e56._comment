@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-06-09T17:04:23Z"
+ content="""
+Implemented probing of the uuid of the repo location. Which may change
+how you use this feature. Although the old roundabout method of having an
+existing git remote and running initremote with the same location will
+work too, it's not neccessary to do that anymore.
+"""]]

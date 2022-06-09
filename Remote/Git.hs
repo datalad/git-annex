@@ -107,11 +107,11 @@ list autoinit = do
 				Git.Construct.remoteNamed n $
 					Git.Construct.fromRemoteLocation (Git.fromConfigValue url) g
 
-{- Git remotes are normally set up using standard git command, not
+{- Git remotes are normally set up using standard git commands, not
  - git-annex initremote and enableremote.
  -
- - For initremote, the git remote must already be set up, and have a uuid.
- - Initremote simply remembers its location.
+ - For initremote, probe the location to find the uuid.
+ - and set up a git remote.
  -
  - enableremote simply sets up a git remote using the stored location.
  - No attempt is made to make the remote be accessible via ssh key setup,
@@ -119,17 +119,16 @@ list autoinit = do
  -}
 gitSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 gitSetup Init mu _ c _ = do
-	let location = fromMaybe (giveup "Specify location=url") $
-		Url.parseURIRelaxed . fromProposedAccepted
-			=<< M.lookup locationField c
-	rs <- Annex.getGitRemotes
-	u <- case filter (\r -> Git.location r == Git.Url location) rs of
-		[r] -> getRepoUUID r
-		[] -> giveup "could not find existing git remote with specified location"
-		_ -> giveup "found multiple git remotes with specified location"
-	if isNothing mu || mu == Just u
-		then return (c, u)
-		else error "git remote did not have specified uuid"
+	let location = maybe (giveup "Specify location=url") fromProposedAccepted $
+		M.lookup locationField c
+	r <- inRepo $ Git.Construct.fromRemoteLocation location
+	r' <- tryGitConfigRead False r False
+	let u = getUncachedUUID r'
+	if u == NoUUID
+		then gitveup "git repository does not have an annex uuid"
+		else if isNothing mu || mu == Just u
+			then enableRemote (Just u) c
+			else giveup "git repository does not have specified uuid"
 gitSetup (Enable _) mu _ c _ = enableRemote mu c
 gitSetup (AutoEnable _) mu _ c _ = enableRemote mu c
 
@@ -142,7 +141,7 @@ enableRemote (Just u) c = do
 		, Param $ maybe (giveup "no location") fromProposedAccepted (M.lookup locationField c)
 		]
 	return (c, u)
-enableRemote Nothing _ = error "unable to enable git remote with no specified uuid"
+enableRemote Nothing _ = giveup "unable to enable git remote with no specified uuid"
 
 {- It's assumed to be cheap to read the config of non-URL remotes, so this is
  - done each time git-annex is run in a way that uses remotes, unless

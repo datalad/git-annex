@@ -2,6 +2,10 @@ git-annex (10.20220526) UNRELEASED; urgency=medium
 
   * init: Added --no-autoenable option.
   * info: Added --autoenable option.
+  * initremote: Improve handling of type=git special remotes.
+    The location value no longer needs to match the url of an existing
+    git remote, and locations not using ssh:// will work now, including
+    both paths and host:/path
 
  -- Joey Hess <id@joeyh.name>  Wed, 01 Jun 2022 13:23:05 -0400
 
