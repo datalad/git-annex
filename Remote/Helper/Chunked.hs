@@ -554,7 +554,7 @@ chunkKeys' onlychunks u chunkconfig k = do
 			Nothing -> l
 			Just keysz -> 
 				let (d, m) = keysz `divMod` fromIntegral chunksz
-				    chunkcount = d + if m == 0 then 0 else 1
+				    chunkcount = max 1 (d + if m == 0 then 0 else 1)
  				    v = (FixedSizeChunks chunksz, chunkcount)
 				in if v `elem` recorded
 					then l

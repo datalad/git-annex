@@ -6,6 +6,9 @@ git-annex (10.20220526) UNRELEASED; urgency=medium
     The location value no longer needs to match the url of an existing
     git remote, and locations not using ssh:// will work now, including
     both paths and host:/path
+  * Fix retrival of an empty file that is stored in a special remote with 
+    chunking enabled.
+    (Fixes a reversion in 8.20201103)
 
  -- Joey Hess <id@joeyh.name>  Wed, 01 Jun 2022 13:23:05 -0400
 

@@ -86,3 +86,5 @@ so I do not think it is an issue of the remote (which might also have some size 
 
 
 tried both 8.20211123 and  10.20220504 from debian 
+
+> [[fixed|done]] --[[Joey]]
