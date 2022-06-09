@@ -125,7 +125,7 @@ gitSetup Init mu _ c _ = do
 	r' <- tryGitConfigRead False r False
 	let u = getUncachedUUID r'
 	if u == NoUUID
-		then gitveup "git repository does not have an annex uuid"
+		then giveup "git repository does not have an annex uuid"
 		else if isNothing mu || mu == Just u
 			then enableRemote (Just u) c
 			else giveup "git repository does not have specified uuid"
