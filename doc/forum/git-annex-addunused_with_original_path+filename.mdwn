@@ -1,0 +1,11 @@
+I lost/misplaced some files on two disks (about 5000+7000 files), which are now showing up as unused files.
+
+"git annex whereused --historical --unused" shows the original paths and filenames. 
+these are however not retained when restoring via "git-annex-addunused"
+
+Is there a way/option to restore these to the original paths + filenames?
+I don't see myself renaming all these files manually...*
+
+\* I have a backup, but that leaves a small window for dataloss as the disks are full, so I must dropunused first. So I would prefer a addunused if possible (will also be faster I presume).
+
+Thanks
