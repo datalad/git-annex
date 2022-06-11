@@ -1,0 +1,55 @@
+Git-annex is able to create trees that are a perspective of the "real" tree via adjustment and metadata-driven views. 
+
+It would be useful if git-annex was also able to create trees that are the same as the main branch but only include a subset of the files; decided based on internal and external metadata.
+
+Use-cases:
+
+* Only check out subtitles in a specific language to reduce clutter
+* Only check out movies in one format
+* Only check out images with a certain metadata tag
+* Only check out files that are present
+
+Some of these are already possible but would require manual metadata tagging or would result in a totally different tree. This can be confusing to both users and software.
+
+UX examples:
+
+```
+$ ls Movies/
+movie.mkv movie.iso movie.mp4 movie.en_US.ass movie.de_DE.ass
+$ git annex filterview include=*.mkv
+$ ls Movies/
+movie.mkv
+$ git annex filterview include=*.mp4 or include=*.enUS.ass
+$ ls Movies/
+movie.mp4 movie.en_US.ass
+$ git annex filterview reset
+$ ls Movies/
+movie.mkv movie.iso movie.mp4 movie.en_US.ass movie.de_DE.ass
+$ git annex get Movies
+$ git annex filterview in=here
+$ ls Movies/
+movie.mkv movie.iso movie.mp4 movie.en_US.ass movie.de_DE.ass
+$ git annex drop Movies/*.ass
+$ ls Movies/
+movie.mkv movie.iso movie.mp4
+$ ls Photos/Cats/
+very_cute.jpg awwwww.jpg :3.jpg
+$ git annex filterview year=2022
+$ ls Photos/Cats/
+very_cute.jpg :3.jpg
+```
+
+Discussion points:
+
+* Should filters be additive or replace the old one?
+* Should it be possible to apply a filter to just a subtree?
+
+***
+
+Another useful feature that is tangentially related would be something like this:
+
+```
+$ git annex filterview root=Movies/
+$ ls
+movie.mkv movie.iso movie.mp4 movie.en_US.ass movie.de_DE.ass
+```
