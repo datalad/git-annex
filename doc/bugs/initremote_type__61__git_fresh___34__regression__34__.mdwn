@@ -1,0 +1,20 @@
+Our test started to fail on 20220610 daily tests, with smth like
+
+```
+2022-06-10T05:51:16.5860150Z >               **results,
+2022-06-10T05:51:16.5860330Z             )
+2022-06-10T05:51:16.5861310Z E           datalad.runner.exception.CommandError: CommandError: 'git -c diff.ignoreSubmodules=none annex initremote fresh-sr type=git location=http://127.0.0.1:50821/ autoenable=true -c annex.dotfiles=true' failed with exitcode 1 under /private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/datalad_temp_test_as_common_datasourceerpclil1 [out: 'initremote fresh-sr 
+2022-06-10T05:51:16.5861910Z E           
+2022-06-10T05:51:16.5862300Z E           failed'] [err: 'http://127.0.0.1:50821//config download failed: File not found
+2022-06-10T05:51:16.5862730Z E           git-annex: git repository does not have an annex uuid
+2022-06-10T05:51:16.5863040Z E           initremote: 1 failed']
+2022-06-10T05:51:16.5863180Z 
+2022-06-10T05:51:16.5863540Z ../../../../hostedtoolcache/Python/3.7.13/x64/lib/python3.7/site-packages/datalad/runner/runner.py:205: CommandError
+
+```
+most likely due to  [10.20220525-64-g14584e7a3](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=14584e7a384be87e2fd613ef93a8393d91c0842f) "initremote type=git probe uuid" .
+
+yet to unravel details/change in behavior, but since changelog entry says only about "Improve handling of type=git special remotes" I would not expect negative change in the behavior. Joey -- anything immediate comes to mind?
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
