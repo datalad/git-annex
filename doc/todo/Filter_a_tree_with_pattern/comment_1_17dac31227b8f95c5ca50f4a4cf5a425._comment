@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-06-13T17:39:41Z"
+ content="""
+Most of this can be done with either `git-annex adjust --hide-missing` or views. 
+
+The only thing that cannot is limiting files to those matching a glob,
+though views can limit files to the contents of directories.
+
+Unfortunately, adjusted branches and views don't compose. There is a todo
+about that, [[todo/unify_adjust_with_view]]. I think that is what you're
+looking for, or very close.
+"""]]
