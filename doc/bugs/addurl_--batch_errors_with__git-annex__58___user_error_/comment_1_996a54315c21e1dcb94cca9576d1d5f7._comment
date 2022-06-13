@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-06-13T17:14:42Z"
+ content="""
+Well, this is a case where `git add` is failing for some reason. It seems
+very likely that it output some error message to stderr, so I'd look for
+that in the log. It's not clear to me if your grep would show that.
+
+If `git add` was silent on stderr, then I'd move on to thinking it must
+have crashed  (or have a weird bug). The 123 exit code is from xargs and
+only indicates that `git add` exited nonzero, so we don't know what the
+actual exit code was. But it seems that `git add` did not die of a
+segfault; it if had the exit code from xargs would be 125.
+
+Since git-annex is batching up some number of files and sending them all to
+a single `git add`, the files that come last would fail to be added if any
+earlier file somehow caused `git add` to give up. So that could explain why
+it happens more often for some files.
+"""]]
