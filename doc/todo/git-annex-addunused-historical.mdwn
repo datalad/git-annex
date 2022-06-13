@@ -1,0 +1,7 @@
+`git-annex addunused` could have a --historical option that adds back to
+the last-seen filename, like whereused does.
+
+Something would need to be done to handle the case where several unused
+keys use the same filename, or a file by that name already exists. Probably
+the simplest thing would be to add the key to the end of the filename.
+--[[Joey]]
