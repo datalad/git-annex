@@ -123,8 +123,7 @@ cleanup file newkey = do
 	ifM (isJust <$> isAnnexLink file)
 		( do
 			-- Update symlink to use the new key.
-			liftIO $ removeFile (fromRawFilePath file)
-			addLink (CheckGitIgnore False) file newkey Nothing
+			addSymlink file newkey Nothing
 		, do
 			mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 			liftIO $ whenM (isJust <$> isPointerFile file) $

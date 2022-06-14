@@ -476,13 +476,13 @@ addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 		maybeShowJSON $ JSONChunk [("key", serializeKey key)]
 		setUrlPresent key url
 		logChange key u InfoPresent
-		ifM (addAnnexedFile noci addunlockedmatcher file key mtmp)
+		ifM (addAnnexedFile addunlockedmatcher file key mtmp)
 			( do
 				when (isJust mtmp) $
 					logStatus key InfoPresent
 			, maybe noop (\tmp -> pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith R.removeLink)) mtmp
 			)
-	
+
 	-- git does not need to check ignores, because that has already
 	-- been done, as witnessed by the CannAddFile.
 	noci = CheckGitIgnore False

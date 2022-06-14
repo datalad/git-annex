@@ -60,8 +60,7 @@ start si file key = ifM (isJust <$> isAnnexLink file)
 perform :: RawFilePath -> Key -> CommandPerform
 perform file key = do
 	lockdown =<< calcRepo (gitAnnexLocation key)
-	addLink (CheckGitIgnore False) file key
-		=<< withTSDelta (liftIO . genInodeCache file)
+	addSymlink file key =<< withTSDelta (liftIO . genInodeCache file)
 	next $ return True
   where
 	lockdown obj = do

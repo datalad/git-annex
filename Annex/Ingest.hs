@@ -1,6 +1,6 @@
 {- git-annex content ingestion
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,7 +16,6 @@ module Annex.Ingest (
 	ingest',
 	finishIngestUnlocked,
 	cleanOldKeys,
-	addLink,
 	addSymlink,
 	makeLink,
 	addUnlocked,
@@ -38,7 +37,6 @@ import Annex.CurrentBranch
 import Annex.CheckIgnore
 import Logs.Location
 import qualified Annex
-import qualified Annex.Queue
 import qualified Database.Keys
 import Config
 import Utility.InodeCache
@@ -315,30 +313,7 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
   where
 	file' = fromRawFilePath file
 
-{- Creates the symlink to the annexed content, and stages it in git.
- -
- - As long as the filesystem supports symlinks, we use
- - git add, rather than directly staging the symlink to git.
- - Using git add is best because it allows the queuing to work
- - and is faster (staging the symlink runs hash-object commands each time).
- - Also, using git add allows it to skip gitignored files, unless forced
- - to include them.
- -
- - FIXME: Using git add opens a race where the file can be changed
- - before git adds it, causing a large file to be added directly to git.
- - addSymlink avoids that, but does not check git ignore. Things need to
- - be converted to use it, first checking git ignore themselves.
- -}
-addLink :: CheckGitIgnore -> RawFilePath -> Key -> Maybe InodeCache -> Annex ()
-addLink ci file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
-	( do
-		_ <- makeLink file key mcache
-		ps <- gitAddParams ci
-		Annex.Queue.addCommand [] "add" (ps++[Param "--"])
-			[fromRawFilePath file]
-	, addSymlink file key mcache
-	)
-
+{- Creates the symlink to the annexed content, and stages it in git. -}
 addSymlink :: RawFilePath -> Key -> Maybe InodeCache -> Annex ()
 addSymlink file key mcache = do
 	linktarget <- makeLink file key mcache
@@ -384,8 +359,8 @@ addUnlocked matcher mi contentpresent =
  -
  - When the content of the key is not accepted into the annex, returns False.
  -}
-addAnnexedFile :: CheckGitIgnore -> AddUnlockedMatcher -> RawFilePath -> Key -> Maybe RawFilePath -> Annex Bool
-addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi (isJust mtmp))
+addAnnexedFile :: AddUnlockedMatcher -> RawFilePath -> Key -> Maybe RawFilePath -> Annex Bool
+addAnnexedFile matcher file key mtmp = ifM (addUnlocked matcher mi (isJust mtmp))
 	( do
 		mode <- maybe
 			(pure Nothing)
@@ -403,7 +378,7 @@ addAnnexedFile ci matcher file key mtmp = ifM (addUnlocked matcher mi (isJust mt
 				, writepointer mode >> return True
 				)
 	, do
-		addLink ci file key Nothing
+		addSymlink file key Nothing
 		case mtmp of
 			Just tmp -> moveAnnex key af tmp
 			Nothing -> return True

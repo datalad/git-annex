@@ -13,10 +13,10 @@ git-annex (10.20220526) UNRELEASED; urgency=medium
     content, but where dropping failed due to eg a network problem, 
     in cases where numcopies checks prevented the resumed
     move from dropping the object from the source repository.
-  * add, fix: When several files are being added, replacing an annex symlink
-    of a file that was already processed with a new large file could
-    sometimes cause that large file to be added to git. 
-    These races have been fixed.
+  * add, fix, lock, rekey: When several files were being processed, 
+    replacing an annex symlink of a file that was already processed
+    with a new large file could sometimes cause that large file to be
+    added to git. These races have been fixed.
   * add --batch: Fix handling of a file that is skipped due to being
     gitignored.
 

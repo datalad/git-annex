@@ -30,9 +30,7 @@ start = startUnused "addunused" perform
 perform :: Key -> CommandPerform
 perform key = next $ do
 	logStatus key InfoPresent
-	-- Ignore the usual git ignores because the user has explictly
-	-- asked to add these files.
-	addLink (CheckGitIgnore False) file key Nothing
+	addSymlink file key Nothing
 	return True
   where
 	file = "unused." <> keyFile key

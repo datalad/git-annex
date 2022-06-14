@@ -33,9 +33,7 @@ Since adding a file to the annex also involves locking it down and
 detecting modifications made while generating the key, update-index is
 sufficient.
 
-> Update: This is done for `git-annex add`, using addSymlink. But addLink
-> is still in use elsewhere, and those other users might also be subject to
-> similar races.
+> Update: This is fixed.
 
 When it's adding a file unlocked, it already stages the pointer file using
 update-index instead so there is no overwrite problem there.
@@ -55,6 +53,5 @@ added to the annex after all. Test case for this:
 Unsure how to fix this case yet? Maybe it needs to cache the inode,
 hash the file content, then verifiy the inode did not change during
 hashing, and then also use update-index.
-
 
 --[[Joey]]
