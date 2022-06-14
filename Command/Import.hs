@@ -246,7 +246,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 				}
 			}
 		ifM (checkFileMatcher largematcher destfile)
-			( ingestAdd' (checkGitIgnoreOption o) nullMeterUpdate (Just ld') (Just k)
+			( ingestAdd' nullMeterUpdate (Just ld') (Just k)
 				>>= maybe
 					stop
 					(\addedk -> next $ Command.Add.cleanup addedk True)

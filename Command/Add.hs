@@ -24,6 +24,7 @@ import Config.Smudge
 import Utility.OptParse
 import Utility.InodeCache
 import Annex.InodeSentinal
+import Annex.CheckIgnore
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
@@ -98,7 +99,11 @@ seek o = startConcurrency commandStages $ do
 			| updateOnly o ->
 				giveup "--update --batch is not supported"
 			| otherwise -> batchOnly Nothing (addThese o) $
-				batchFiles fmt (gofile True)
+				batchFiles fmt $ \v@(_si, file) -> 
+					ifM (checkIgnored (checkGitIgnoreOption o) file)
+						( stop
+						, gofile True v
+						)
 		NoBatch -> do
 			-- Avoid git ls-files complaining about files that
 			-- are not known to git yet, since this will add
@@ -169,7 +174,7 @@ start o si file addunlockedmatcher = do
 				starting "add" (ActionItemTreeFile file) si $
 					if isSymbolicLink s
 						then next $ addFile Small (checkGitIgnoreOption o) file
-						else perform o file addunlockedmatcher
+						else perform file addunlockedmatcher
 	addpresent key = 
 		liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
 			Just s | isSymbolicLink s -> fixuplink key
@@ -186,8 +191,8 @@ start o si file addunlockedmatcher = do
 				Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
 				next $ addFile Large (checkGitIgnoreOption o) file
 
-perform :: AddOptions -> RawFilePath -> AddUnlockedMatcher -> CommandPerform
-perform o file addunlockedmatcher = withOtherTmp $ \tmpdir -> do
+perform :: RawFilePath -> AddUnlockedMatcher -> CommandPerform
+perform file addunlockedmatcher = withOtherTmp $ \tmpdir -> do
 	lockingfile <- not <$> addUnlocked addunlockedmatcher
 		(MatchingFile (FileInfo file file Nothing))
 		True
@@ -199,7 +204,7 @@ perform o file addunlockedmatcher = withOtherTmp $ \tmpdir -> do
 	ld <- lockDown cfg (fromRawFilePath file)
 	let sizer = keySource <$> ld
 	v <- metered Nothing sizer Nothing $ \_meter meterupdate ->
-		ingestAdd (checkGitIgnoreOption o) meterupdate ld
+		ingestAdd meterupdate ld
 	finish v
   where
 	finish (Just key) = next $ cleanup key True

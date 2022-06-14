@@ -145,19 +145,19 @@ checkLockedDownWritePerms file displayfile = checkContentWritePerm file >>= retu
 
 {- Ingests a locked down file into the annex. Updates the work tree and
  - index. -}
-ingestAdd :: CheckGitIgnore -> MeterUpdate -> Maybe LockedDown -> Annex (Maybe Key)
-ingestAdd ci meterupdate ld = ingestAdd' ci meterupdate ld Nothing
+ingestAdd :: MeterUpdate -> Maybe LockedDown -> Annex (Maybe Key)
+ingestAdd meterupdate ld = ingestAdd' meterupdate ld Nothing
 
-ingestAdd' :: CheckGitIgnore -> MeterUpdate -> Maybe LockedDown -> Maybe Key -> Annex (Maybe Key)
-ingestAdd' _ _ Nothing _ = return Nothing
-ingestAdd' ci meterupdate ld@(Just (LockedDown cfg source)) mk = do
+ingestAdd' :: MeterUpdate -> Maybe LockedDown -> Maybe Key -> Annex (Maybe Key)
+ingestAdd' _ Nothing _ = return Nothing
+ingestAdd' meterupdate ld@(Just (LockedDown cfg source)) mk = do
 	(mk', mic) <- ingest meterupdate ld mk
 	case mk' of
 		Nothing -> return Nothing
 		Just k -> do
 			let f = keyFilename source
 			if lockingFile cfg
-				then addLink ci f k mic
+				then addSymlink f k mic
 				else do
 					mode <- liftIO $ catchMaybeIO $
 						fileMode <$> R.getFileStatus (contentLocation source)
@@ -322,6 +322,11 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
  - and is faster (staging the symlink runs hash-object commands each time).
  - Also, using git add allows it to skip gitignored files, unless forced
  - to include them.
+ -
+ - FIXME: Using git add opens a race where the file can be changed
+ - before git adds it, causing a large file to be added directly to git.
+ - addSymlink avoids that, but does not check git ignore. Things need to
+ - be converted to use it, first checking git ignore themselves.
  -}
 addLink :: CheckGitIgnore -> RawFilePath -> Key -> Maybe InodeCache -> Annex ()
 addLink ci file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
@@ -330,10 +335,13 @@ addLink ci file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 		ps <- gitAddParams ci
 		Annex.Queue.addCommand [] "add" (ps++[Param "--"])
 			[fromRawFilePath file]
-	, do
-		l <- makeLink file key mcache
-		addAnnexLink l file
+	, addSymlink file key mcache
 	)
+
+addSymlink :: RawFilePath -> Key -> Maybe InodeCache -> Annex ()
+addSymlink file key mcache = do
+	l <- makeLink file key mcache
+	addAnnexLink l file
 
 {- Parameters to pass to git add, forcing addition of ignored files.
  -
