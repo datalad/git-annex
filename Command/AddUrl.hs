@@ -453,6 +453,7 @@ addWorkTree :: CanAddFile -> AddUnlockedMatcher -> UUID -> URLString -> RawFileP
 addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 	Nothing -> go
 	Just tmp -> do
+		s <- liftIO $ R.getSymbolicLinkStatus tmp
 		-- Move to final location for large file check.
 		pruneTmpWorkDirBefore tmp $ \_ -> do
 			createWorkTreeDirectory (P.takeDirectory file)
@@ -470,7 +471,7 @@ addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 					(fromRawFilePath file)
 					(fromRawFilePath tmp)
 				go
-			else void $ Command.Add.addSmall noci file
+			else void $ Command.Add.addSmall file s
   where
 	go = do
 		maybeShowJSON $ JSONChunk [("key", serializeKey key)]
@@ -482,10 +483,6 @@ addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 					logStatus key InfoPresent
 			, maybe noop (\tmp -> pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith R.removeLink)) mtmp
 			)
-
-	-- git does not need to check ignores, because that has already
-	-- been done, as witnessed by the CannAddFile.
-	noci = CheckGitIgnore False
 
 nodownloadWeb :: AddUnlockedMatcher -> DownloadOptions -> URLString -> Url.UrlInfo -> RawFilePath -> Annex (Maybe Key)
 nodownloadWeb addunlockedmatcher o url urlinfo file

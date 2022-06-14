@@ -50,8 +50,10 @@ added to the annex after all. Test case for this:
 	git-annex add
 	git diff --cached 1
 
-Unsure how to fix this case yet? Maybe it needs to cache the inode,
+Guess it needs to cache the inode,
 hash the file content, then verifiy the inode did not change during
 hashing, and then also use update-index.
+
+> [[done]]
 
 --[[Joey]]

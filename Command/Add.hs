@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,15 +17,19 @@ import qualified Database.Keys
 import Annex.FileMatcher
 import Annex.Link
 import Annex.Tmp
+import Annex.HashObject
 import Messages.Progress
 import Git.FilePath
+import Git.Types
+import Git.UpdateIndex
 import Config.GitConfig
-import Config.Smudge
 import Utility.OptParse
 import Utility.InodeCache
 import Annex.InodeSentinal
 import Annex.CheckIgnore
 import qualified Utility.RawFilePath as R
+
+import System.PosixCompat.Files
 
 cmd :: Command
 cmd = notBareRepo $ 
@@ -80,20 +84,21 @@ seek o = startConcurrency commandStages $ do
 	addunlockedmatcher <- addUnlockedMatcher
 	annexdotfiles <- getGitConfigVal annexDotFiles 
 	let gofile includingsmall (si, file) = case largeFilesOverride o of
-		Nothing -> 
+		Nothing -> do
+			s <- liftIO $ R.getSymbolicLinkStatus file
 			ifM (pure (annexdotfiles || not (dotfile file))
 				<&&> (checkFileMatcher largematcher file 
 				<||> Annex.getState Annex.force))
-				( start o si file addunlockedmatcher
+				( start si file addunlockedmatcher
 				, if includingsmall
 					then ifM (annexAddSmallFiles <$> Annex.getGitConfig)
-						( startSmall o si file
+						( startSmall si file s
 						, stop
 						)
 					else stop
 				)
-		Just True -> start o si file addunlockedmatcher
-		Just False -> startSmallOverridden o si file
+		Just True -> start si file addunlockedmatcher
+		Just False -> startSmallOverridden si file
 	case batchOption o of
 		Batch fmt
 			| updateOnly o ->
@@ -121,64 +126,84 @@ seek o = startConcurrency commandStages $ do
 			go False withUnmodifiedUnlockedPointers
 
 {- Pass file off to git-add. -}
-startSmall :: AddOptions -> SeekInput -> RawFilePath -> CommandStart
-startSmall o si file =
+startSmall :: SeekInput -> RawFilePath -> FileStatus -> CommandStart
+startSmall si file s =
 	starting "add" (ActionItemTreeFile file) si $
-		next $ addSmall (checkGitIgnoreOption o) file
+		next $ addSmall file s
 
-addSmall :: CheckGitIgnore -> RawFilePath -> Annex Bool
-addSmall ci file = do
+addSmall :: RawFilePath -> FileStatus -> Annex Bool
+addSmall file s = do
 	showNote "non-large file; adding content to git repository"
-	addFile Small ci file
+	addFile Small file s
 
-startSmallOverridden :: AddOptions -> SeekInput -> RawFilePath -> CommandStart
-startSmallOverridden o si file = 
-	starting "add" (ActionItemTreeFile file) si $ next $ do
-		showNote "adding content to git repository"
-		addFile Small (checkGitIgnoreOption o) file
+startSmallOverridden :: SeekInput -> RawFilePath -> CommandStart
+startSmallOverridden si file = 
+	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
+		Just s -> starting "add" (ActionItemTreeFile file) si $ next $ do
+			
+			showNote "adding content to git repository"
+			addFile Small file s
+		Nothing -> stop
 
 data SmallOrLarge = Small | Large
 
-addFile :: SmallOrLarge -> CheckGitIgnore -> RawFilePath -> Annex Bool
-addFile smallorlarge ci file = do
-	ps <- gitAddParams ci
-	cps <- case smallorlarge of
-		-- In case the file is being converted from an annexed file
-		-- to be stored in git, remove the cached inode, so that
-		-- if the smudge clean filter later runs on the file,
-		-- it will not remember it was annexed.
-		--
-		-- The use of bypassSmudgeConfig prevents the smudge
-		-- filter from being run. So the changes to the database
-		-- can be queued up and not flushed to disk immediately.
-		Small -> do
-			maybe noop Database.Keys.removeInodeCache
-				=<< withTSDelta (liftIO . genInodeCache file)
-			return bypassSmudgeConfig
-		Large -> return []
-	Annex.Queue.addCommand cps "add" (ps++[Param "--"])
-		[fromRawFilePath file]
-	return True
-
-start :: AddOptions -> SeekInput -> RawFilePath -> AddUnlockedMatcher -> CommandStart
-start o si file addunlockedmatcher = do
-	mk <- liftIO $ isPointerFile file
-	maybe go fixuppointer mk
+addFile :: SmallOrLarge -> RawFilePath -> FileStatus -> Annex Bool
+addFile smallorlarge file s = do
+	sha <- if isSymbolicLink s
+		then hashBlob =<< liftIO (R.readSymbolicLink file)
+		else if isRegularFile s
+			then hashFile file
+			else giveup $ fromRawFilePath file ++ " is not a regular file"
+	let treetype = if isSymbolicLink s
+		then TreeSymlink
+		else if intersectFileModes ownerExecuteMode (fileMode s) /= 0
+			then TreeExecutable
+			else TreeFile
+	s' <- liftIO $ catchMaybeIO $ R.getSymbolicLinkStatus file
+	if maybe True (changed s) s'
+		then do
+			warning $ fromRawFilePath file ++ " changed while it was being added"
+			return False
+		else do
+			case smallorlarge of
+				-- In case the file is being converted from 
+				-- an annexed file to be stored in git,
+				-- remove the cached inode, so that if the
+				-- smudge clean filter later runs on the file,
+				-- it will not remember it was annexed.
+				Small -> maybe noop Database.Keys.removeInodeCache
+					=<< withTSDelta (liftIO . genInodeCache file)
+				Large -> noop
+			Annex.Queue.addUpdateIndex =<<
+				inRepo (stageFile sha treetype (fromRawFilePath file))
+			return True
   where
-	go = ifAnnexed file addpresent add
-	add = liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
+	changed a b =
+		deviceID a /= deviceID b ||
+		fileID a /= fileID b ||
+		fileSize a /= fileSize b ||
+		modificationTime a /= modificationTime b ||
+		isRegularFile a /= isRegularFile b ||
+		isSymbolicLink a /= isSymbolicLink b
+
+start :: SeekInput -> RawFilePath -> AddUnlockedMatcher -> CommandStart
+start si file addunlockedmatcher = 
+	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
 		Nothing -> stop
-		Just s 
+		Just s
 			| not (isRegularFile s) && not (isSymbolicLink s) -> stop
-			| otherwise -> 
-				starting "add" (ActionItemTreeFile file) si $
-					if isSymbolicLink s
-						then next $ addFile Small (checkGitIgnoreOption o) file
-						else perform file addunlockedmatcher
-	addpresent key = 
-		liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
-			Just s | isSymbolicLink s -> fixuplink key
-			_ -> add
+			| otherwise -> do
+				mk <- liftIO $ isPointerFile file
+				maybe (go s) (fixuppointer s) mk
+  where
+	go s = ifAnnexed file (addpresent s) (add s)
+	add s = starting "add" (ActionItemTreeFile file) si $
+		if isSymbolicLink s
+			then next $ addFile Small file s
+			else perform file addunlockedmatcher
+	addpresent s key
+		| isSymbolicLink s = fixuplink key
+		| otherwise = add s
 	fixuplink key = 
 		starting "add" (ActionItemTreeFile file) si $
 			addingExistingLink file key $
@@ -194,11 +219,11 @@ start o si file addunlockedmatcher = do
 							liftIO $ moveFile tmpf (fromRawFilePath file)
 							next $ return True
 						)
-	fixuppointer key =
+	fixuppointer s key =
 		starting "add" (ActionItemTreeFile file) si $
 			addingExistingLink file key $ do
 				Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
-				next $ addFile Large (checkGitIgnoreOption o) file
+				next $ addFile Large file s
 
 perform :: RawFilePath -> AddUnlockedMatcher -> CommandPerform
 perform file addunlockedmatcher = withOtherTmp $ \tmpdir -> do

@@ -229,7 +229,8 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		-- weakly the same as the originally locked down file's
 		-- inode cache. (Since the file may have been copied,
 		-- its inodes may not be the same.)
-		newcache <- withTSDelta $ liftIO . genInodeCache destfile
+		s <- liftIO $ R.getSymbolicLinkStatus destfile
+		newcache <- withTSDelta $ \d -> liftIO $ toInodeCache d destfile s
 		let unchanged = case (newcache, inodeCache (keySource ld)) of
 			(_, Nothing) -> True
 			(Just newc, Just c) | compareWeak c newc -> True
@@ -250,7 +251,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 				>>= maybe
 					stop
 					(\addedk -> next $ Command.Add.cleanup addedk True)
-			, next $ Command.Add.addSmall (checkGitIgnoreOption o) destfile
+			, next $ Command.Add.addSmall destfile s
 			)
 	notoverwriting why = do
 		warning $ "not overwriting existing " ++ fromRawFilePath destfile ++ " " ++ why

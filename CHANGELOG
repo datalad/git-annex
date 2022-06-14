@@ -17,6 +17,9 @@ git-annex (10.20220526) UNRELEASED; urgency=medium
     replacing an annex symlink of a file that was already processed
     with a new large file could sometimes cause that large file to be
     added to git. These races have been fixed.
+  * add: Also fix a similar race that could cause a large file be added
+    to git when a small file was modified or overwritten while it was
+    being added.
   * add --batch: Fix handling of a file that is skipped due to being
     gitignored.
 
