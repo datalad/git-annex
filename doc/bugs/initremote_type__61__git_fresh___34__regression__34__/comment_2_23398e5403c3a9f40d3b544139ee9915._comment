@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-06-14T15:51:57Z"
+ content="""
+The change that broke your test uses the exact same url uuid detection code
+that git-annex usually uses. So if you were using an url without .git
+before, it seems like it would have failed to detect a uuid after enabling
+the special remote.
+
+If that reasoning does not hold, I'm going to need a test case to
+understand why. Unfortunately, your test case is hard for me to
+understand what it's doing. 
+
+I can't even get git to clone a non-bare git repo served over plain http
+without using .git in the url, so don't understand how your test case is
+doing that.
+
+When I manually make a git remote with a http url without .git
+(which git cannot pull from),
+I see the git-annex uuid detection code failing, as I would expect:
+
+	git remote add test http://localhost/~joey/tmp/foo/
+	git config annex.security.allowed-ip-addresses all
+	git-annex info
+	
+	  Remote test not usable by git-annex; setting annex-ignore
+	
+	  http://localhost/~joey/tmp/foo//config download failed: Not Found
+
+And the initremote behavior is consistent with that:
+
+	git-annex initremote bar type=git location=http://localhost/~joey/tmp/foo/
+	initremote bar
+	  http://localhost/~joey/tmp/foo//config download failed: Not Found
+	
+	git-annex: git repository does not have an annex uuid
+	failed
+
+(It's worth noting that the change was made to handle another datalad use
+case, [[[initremote_type__61__git_is_not_working_for_unkn_reason]].
+I'd consider that use case unusual, and marginally worth supporting.
+I could of course revert the change, but then I'd have to close that
+bug as wontfix.)
+"""]]
