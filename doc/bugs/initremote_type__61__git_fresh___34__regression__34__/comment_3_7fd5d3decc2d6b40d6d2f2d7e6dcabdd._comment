@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="hold it... ;)"
+ date="2022-06-14T18:47:24Z"
+ content="""
+Thank you Joey!  I will try to gain better insight into our dance in that test of ours. I am also curious how it worked before that it doesn't work now.  FWIW with `datalad clone` we do try URL as is, and then also with `/.git` to make users' life easier and so they could just e.g. `datalad clone https://datasets.datalad.org`.
+"""]]
