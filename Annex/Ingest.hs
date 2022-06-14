@@ -17,6 +17,7 @@ module Annex.Ingest (
 	finishIngestUnlocked,
 	cleanOldKeys,
 	addLink,
+	addSymlink,
 	makeLink,
 	addUnlocked,
 	CheckGitIgnore(..),

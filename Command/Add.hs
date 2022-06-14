@@ -181,10 +181,19 @@ start o si file addunlockedmatcher = do
 			_ -> add
 	fixuplink key = 
 		starting "add" (ActionItemTreeFile file) si $
-			addingExistingLink file key $ do
-				liftIO $ removeFile (fromRawFilePath file)
-				addLink (checkGitIgnoreOption o) file key Nothing
-				next $ cleanup key =<< inAnnex key
+			addingExistingLink file key $
+				withOtherTmp $ \tmp -> do
+					let tmpf = fromRawFilePath tmp </> fromRawFilePath file
+					liftIO $ moveFile (fromRawFilePath file) tmpf
+					ifM (isSymbolicLink <$> liftIO (getSymbolicLinkStatus tmpf))
+						( do
+							liftIO $ removeFile tmpf
+							addSymlink file key Nothing
+							next $ cleanup key =<< inAnnex key
+						, do
+							liftIO $ moveFile tmpf (fromRawFilePath file)
+							next $ return True
+						)
 	fixuppointer key =
 		starting "add" (ActionItemTreeFile file) si $
 			addingExistingLink file key $ do
