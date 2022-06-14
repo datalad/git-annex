@@ -15,7 +15,7 @@ import qualified Annex
 import Annex.ReplaceFile
 import Annex.Content
 import Annex.Perms
-import qualified Annex.Queue
+import Annex.Link
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 
@@ -103,9 +103,5 @@ fixSymlink file link = do
 #if ! defined(mingw32_HOST_OS)
 	liftIO $ maybe noop (\t -> touch file t False) mtime
 #endif
-	next $ cleanupSymlink (fromRawFilePath file)
-
-cleanupSymlink :: FilePath -> CommandCleanup
-cleanupSymlink file = do
-	Annex.Queue.addCommand [] "add" [Param "--force", Param "--"] [file]
-	return True
+	stageSymlink file =<< hashSymlink link
+	next $ return True
