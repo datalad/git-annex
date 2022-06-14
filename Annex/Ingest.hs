@@ -341,8 +341,8 @@ addLink ci file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 
 addSymlink :: RawFilePath -> Key -> Maybe InodeCache -> Annex ()
 addSymlink file key mcache = do
-	l <- makeLink file key mcache
-	addAnnexLink l file
+	linktarget <- makeLink file key mcache
+	stageSymlink file =<< hashSymlink linktarget
 
 {- Parameters to pass to git add, forcing addition of ignored files.
  -
