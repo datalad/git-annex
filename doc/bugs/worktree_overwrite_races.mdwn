@@ -15,3 +15,18 @@ Better would probably be for replaceWorkTreeFile to be provided with a
 InodeCache of the content of the worktree file that is ok to replace.
 Then it can move the file to a temp directory, check that it's still
 unmodified, and replace it. --[[Joey]]
+
+> On second thought, I remember that I investigated git's behavior before
+> when a checkout or pull is updating the worktree and a file is changed.
+> git does not avoid races, and can overwrite user modifications. Last time
+> I looked at this, I remember I decided that if git did that, it was ok
+> for git-annex to also.
+> 
+> The difference with [[add_overwrite_race]] is it caused the wrong thing
+> to get added to git, which is a problem that `git add` does not have
+> (probably). And git-annex already took steps to deal with writes that
+> happened in the middle of a `git-annex add`. So it made sense to fix
+> those problems. But extending it to this broader case is not necessary, I
+> think. 
+> 
+> [[done]] --[[Joey]]
