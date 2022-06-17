@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="arshitha"
+ avatar="http://cdn.libravatar.org/avatar/53bc5fe931c24a0e454a567f559618da"
+ subject="comment 2"
+ date="2022-06-17T09:44:28Z"
+ content="""
+This command worked for me `brew install --build-from-source git-annex`
+
+`brew install git-annex` gave me the following error on macOS Big Sur v11.5.2 (MacBook Air (M1 2020))
+
+```bash
+Error: git-annex: no bottle available!
+You can try to install from source with:
+  brew install --build-from-source git-annex
+Please note building from source is unsupported. You will encounter build
+failures with some formulae. If you experience any issues please create pull
+requests instead of asking for help on Homebrew's GitHub, Twitter or any other
+official channels.
+```
+"""]]
