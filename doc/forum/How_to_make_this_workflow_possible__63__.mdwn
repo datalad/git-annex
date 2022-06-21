@@ -1,0 +1,22 @@
+I have recently discovered git-annex and I'm interested in using it to manage my photo archive of about 10 years of raw photos. My existing workflow has worked well, but I'm trying to figure out how to automate it using git-annex. The archive is mirrored across 5-7 different external harddrives, each with a redundant copy of the entire archive (or as much as it can store since each drive capacity varies)
+
+Current workflow:
+
+1. Rename and organize photos on laptop
+2. Copy renamed photos to any two of the external harddrives
+  2a. if the two harddrives are out sync, resync the harddrives
+3. Use laptop as local cache for editing
+  3a. If photo is unavailable on laptop, plug in an external drive and create a local copy of desired photos.
+4. Resync laptop with external drives (this copies XMP sidecars to external harddrives and they will eventually propagate to other drives)
+
+I can get pretty close to this workflow git-annex except for one quirk.
+
+1. have a laptop repository in git-annex. Commit renamed raw photos in git-annex.
+2. Each harddrive have a git-annex repo and sync with laptop repo. The one caveat here is `git annex sync --content --no-pull` seems to ignore the no-pull option and tries to redownload all the raw files back to the laptop. How to do a one-way sync (laptop -> remote only with content)?
+3. XMP sidecars that are produced are tracked in regular git
+4. Try to sync with any available remote (this is the part I can't seem to figure out. I wish git-annex could be detect and try to to push to all available remotes instead me having to track which remotes are available). 
+`git annex [copy|move]` have the `--to=here` option which will copy/move files from remotes to local repo. It would be exceptionally useful to have a `--to=reachable` option to send files to any reachable remote instead of having to copy/moves to each remote individually.
+
+Things I need to figure out, but can't seem to grasp
+1. How to do a one-way sync? Or better yet, since each external drive needs to sync with any other reachable drive, can I exclude the laptop repo from the sync? The laptop repo is only a temporary staging area + local cache.
+2. If sync isn't the solution, how do move/copy to all reachable remotes instead of one-by-one?
