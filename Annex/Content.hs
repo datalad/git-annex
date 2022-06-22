@@ -898,12 +898,12 @@ getKeyStatus key = catchDefaultIO KeyMissing $ do
 		then KeyUnlockedThin
 		else KeyPresent
 
-getKeyFileStatus :: Key -> FilePath -> Annex KeyStatus
+getKeyFileStatus :: Key -> RawFilePath -> Annex KeyStatus
 getKeyFileStatus key file = do
 	s <- getKeyStatus key
 	case s of
 		KeyUnlockedThin -> catchDefaultIO KeyUnlockedThin $
-			ifM (isJust <$> isAnnexLink (toRawFilePath file))
+			ifM (isJust <$> isAnnexLink file)
 				( return KeyLockedThin
 				, return KeyUnlockedThin
 				)

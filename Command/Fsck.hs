@@ -132,7 +132,7 @@ start from inc si file key = Backend.getBackend (fromRawFilePath file) key >>= \
 
 perform :: Key -> RawFilePath -> Backend -> NumCopies -> Annex Bool
 perform key file backend numcopies = do
-	keystatus <- getKeyFileStatus key (fromRawFilePath file)
+	keystatus <- getKeyFileStatus key file
 	check
 		-- order matters
 		[ fixLink key file

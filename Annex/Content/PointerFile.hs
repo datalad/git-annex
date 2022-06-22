@@ -68,5 +68,5 @@ depopulatePointerFile key file = do
 			(\t -> touch tmp' t False)
 			(fmap Posix.modificationTimeHiRes st)
 #endif
-		withTSDelta (liftIO . genInodeCache (toRawFilePath tmp))
+		withTSDelta (liftIO . genInodeCache tmp')
 	maybe noop (restagePointerFile (Restage True) file) ic
