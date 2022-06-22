@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 2"
+ date="2022-06-22T12:34:45Z"
+ content="""
+My main use-case is actually the glob patterns; the first two use-cases. The other ones would just come as a bonus thanks to git-annex-matching-expressions.
+
+"""]]
