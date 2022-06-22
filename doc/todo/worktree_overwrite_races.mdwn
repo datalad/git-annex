@@ -1,0 +1,34 @@
+Similar to [[bugs/add_overwrite_race]], several callers of
+replaceWorkTreeFile are susceptable to a race. They do some check of the
+current content of the file, and then they call that to replace it with
+something else. But in between, the file could be overwritten with other
+content. And that content then gets overwritten.
+
+This is probably not a bug, because `git checkout` actually has the same
+problem, IIRC. And if git does that, it's ok for git-annex to also.
+
+Still, this affects several git-annex commands, and it would be better to
+avoid it. To avoid it, replaceWorkTreeFile could be provided with a
+Maybe FileStatus of the content that was in the worktree that is ok to
+overwrite. Then atomically swap the current worktree file and the new 
+file, and afterwards check if the old worktree file is unmodifified,
+moving it back if it is modified.
+
+(Note that, this will not help with situations where the worktree file
+is opened for append, but gets replaced by git-annex before being written
+to. A later write will be to a deleted file.)
+
+The atomic swap would need a call to `renameat2()` with
+`RENAME_EXCHANGE`. There does not seem to be a binding for that
+in any haskell library. Also, it is linux-specific, though may also
+have reached freebsd?
+
+Hmm, but even this could lead to file corruption. Suppose that a process
+is opening the worktree file for append, writing a byte, closing it, and
+repeating. The bytes are `[1,2,3,...]`. The worktree file
+has 1 appended to it. Then renameat2 swaps the files. The new file gets
+2 appended to it. The worktree file was modified, so is moved back into
+place. It gets 3 appended to it. So the worktree file ends up containing
+`1,3`.
+
+So, perhaps there is really no good solution to this. --[[Joey]]
