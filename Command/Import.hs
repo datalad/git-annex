@@ -207,12 +207,8 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 					(fromRawFilePath destfile)
 				return $ removeWhenExistsWith R.removeLink destfile
 			else do
-				moveFile 
-					(fromRawFilePath srcfile)
-					(fromRawFilePath destfile)
-				return $ moveFile
-					(fromRawFilePath destfile)
-					(fromRawFilePath srcfile)
+				moveFile srcfile destfile
+				return $ moveFile destfile srcfile
 		-- Make sure that the dest file has its write permissions
 		-- removed; the src file normally already did, but may
 		-- have imported it from a filesystem that does not allow

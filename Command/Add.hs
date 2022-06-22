@@ -28,6 +28,7 @@ import Utility.InodeCache
 import Annex.InodeSentinal
 import Annex.CheckIgnore
 import qualified Utility.RawFilePath as R
+import qualified System.FilePath.ByteString as P
 
 import System.PosixCompat.Files
 
@@ -208,15 +209,15 @@ start si file addunlockedmatcher =
 		starting "add" (ActionItemTreeFile file) si $
 			addingExistingLink file key $
 				withOtherTmp $ \tmp -> do
-					let tmpf = fromRawFilePath tmp </> fromRawFilePath file
-					liftIO $ moveFile (fromRawFilePath file) tmpf
-					ifM (isSymbolicLink <$> liftIO (getSymbolicLinkStatus tmpf))
+					let tmpf = tmp P.</> file
+					liftIO $ moveFile file tmpf
+					ifM (isSymbolicLink <$> liftIO (R.getSymbolicLinkStatus tmpf))
 						( do
-							liftIO $ removeFile tmpf
+							liftIO $ R.removeLink tmpf
 							addSymlink file key Nothing
 							next $ cleanup key =<< inAnnex key
 						, do
-							liftIO $ moveFile tmpf (fromRawFilePath file)
+							liftIO $ moveFile tmpf file
 							next $ return True
 						)
 	fixuppointer s key =

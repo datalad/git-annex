@@ -407,7 +407,7 @@ retrieveExportWithContentIdentifierM borgrepo loc _ dest gk _ = do
 		forceSuccessProcess p pid
 		-- Filepaths in borg archives are relative, so it's ok to
 		-- combine with </>
-		moveFile (fromRawFilePath othertmp </> fromRawFilePath archivefile) dest
+		moveFile (othertmp P.</> archivefile) (toRawFilePath dest)
 		removeDirectoryRecursive (fromRawFilePath othertmp)
 
 	(archivename, archivefile) = extractImportLocation loc

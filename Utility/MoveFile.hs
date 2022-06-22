@@ -14,8 +14,7 @@ module Utility.MoveFile (
 ) where
 
 import Control.Monad
-import System.FilePath
-import System.PosixCompat.Files hiding (removeLink)
+import System.PosixCompat.Files (isDirectory)
 import System.IO.Error
 import Prelude
 
@@ -28,17 +27,19 @@ import Utility.SystemDirectory
 import Utility.Tmp
 import Utility.Exception
 import Utility.Monad
+import Utility.FileSystemEncoding
+import qualified Utility.RawFilePath as R
 
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
-moveFile :: FilePath -> FilePath -> IO ()
-moveFile src dest = tryIO (rename src dest) >>= onrename
+moveFile :: RawFilePath -> RawFilePath -> IO ()
+moveFile src dest = tryIO (R.rename src dest) >>= onrename
   where
 	onrename (Right _) = noop
 	onrename (Left e)
 		| isPermissionError e = rethrow
 		| isDoesNotExistError e = rethrow
-		| otherwise = viaTmp mv dest ()
+		| otherwise = viaTmp mv (fromRawFilePath dest) ()
 	  where
 		rethrow = throwM e
 
@@ -46,16 +47,20 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 			-- copyFile is likely not as optimised as
 			-- the mv command, so we'll use the command.
 			--
-			-- But, while Windows has a "mv", it does not seem very
-			-- reliable, so use copyFile there.
+			-- But, while Windows has a "mv", it does not
+			-- seem very reliable, so use copyFile there.
 #ifndef mingw32_HOST_OS	
 			-- If dest is a directory, mv would move the file
 			-- into it, which is not desired.
 			whenM (isdir dest) rethrow
-			ok <- boolSystem "mv" [Param "-f", Param src, Param tmp]
+			ok <- boolSystem "mv"
+				[ Param "-f"
+				, Param (fromRawFilePath src)
+				, Param tmp
+				]
 			let e' = e
 #else
-			r <- tryIO $ copyFile src tmp
+			r <- tryIO $ copyFile (fromRawFilePath src) tmp
 			let (ok, e') = case r of
 				Left err -> (False, err)
 				Right _ -> (True, e)
@@ -67,7 +72,7 @@ moveFile src dest = tryIO (rename src dest) >>= onrename
 
 #ifndef mingw32_HOST_OS	
 	isdir f = do
-		r <- tryIO $ getFileStatus f
+		r <- tryIO $ R.getFileStatus f
 		case r of
 			(Left _) -> return False
 			(Right s) -> return $ isDirectory s

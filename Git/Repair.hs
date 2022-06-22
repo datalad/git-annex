@@ -95,7 +95,7 @@ explodePacks r = go =<< listPackFiles r
 			let dest = objectsDir r P.</> f
 			createDirectoryIfMissing True
 				(fromRawFilePath (parentDir dest))
-			moveFile objfile (fromRawFilePath dest)
+			moveFile (toRawFilePath objfile) dest
 		forM_ packs $ \packfile -> do
 			let f = toRawFilePath packfile
 			removeWhenExistsWith R.removeLink f

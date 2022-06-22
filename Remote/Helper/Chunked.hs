@@ -403,7 +403,7 @@ writeRetrievedContent
 writeRetrievedContent dest enc encc mh mp content miv = case (enc, mh, content) of
 	(Nothing, Nothing, FileContent f)
 		| f == dest -> noop
-		| otherwise -> liftIO $ moveFile f dest
+		| otherwise -> liftIO $ moveFile (toRawFilePath f) (toRawFilePath dest)
 	(Just (cipher, _), _, ByteContent b) -> do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		decrypt cmd encc cipher (feedBytes b) $

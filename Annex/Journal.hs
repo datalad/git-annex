@@ -84,10 +84,11 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 	createAnnexDirectory jd
 	-- journal file is written atomically
 	let jfile = journalFile file
-	let tmpfile = fromRawFilePath (tmp P.</> jfile)
+	let tmpfile = tmp P.</> jfile
 	liftIO $ do
-		withFile tmpfile WriteMode $ \h -> writeJournalHandle h content
-		moveFile tmpfile (fromRawFilePath (jd P.</> jfile))
+		withFile (fromRawFilePath tmpfile) WriteMode $ \h ->
+			writeJournalHandle h content
+		moveFile tmpfile (jd P.</> jfile)
 
 data JournalledContent
 	= NoJournalledContent

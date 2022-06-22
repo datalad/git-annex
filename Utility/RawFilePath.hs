@@ -27,6 +27,7 @@ module Utility.RawFilePath (
 	getCurrentDirectory,
 	createDirectory,
 	setFileMode,
+	rename,
 ) where
 
 #ifndef mingw32_HOST_OS
@@ -87,4 +88,7 @@ createDirectory = D.createDirectory . fromRawFilePath
 
 setFileMode :: RawFilePath -> FileMode -> IO () 
 setFileMode = F.setFileMode . fromRawFilePath
+
+rename :: RawFilePath -> RawFilePath -> IO ()
+rename a b = F.rename (fromRawFilePath a) (fromRawFilePath b)
 #endif

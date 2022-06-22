@@ -613,7 +613,7 @@ honorDead dead
 badContent :: Key -> Annex String
 badContent key = do
 	dest <- moveBad key
-	return $ "moved to " ++ dest
+	return $ "moved to " ++ fromRawFilePath dest
 
 {- Bad content is dropped from the remote. We have downloaded a copy
  - from the remote to a temp file already (in some cases, it's just a
@@ -633,7 +633,7 @@ badContentRemote remote localcopy key = do
 				ifM (isSymbolicLink <$> R.getSymbolicLinkStatus localcopy)
 					( copyFileExternal CopyTimeStamps (fromRawFilePath localcopy) destbad'
 					, do
-						moveFile (fromRawFilePath localcopy) destbad'
+						moveFile localcopy destbad
 						return True
 					)
 		)

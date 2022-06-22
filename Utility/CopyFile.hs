@@ -14,6 +14,7 @@ module Utility.CopyFile (
 
 import Common
 import qualified BuildInfo
+import qualified Utility.RawFilePath as R
 
 data CopyMetaData 
 	-- Copy timestamps when possible, but no other metadata, and
@@ -86,10 +87,10 @@ copyCoW meta src dest
 
 {- Create a hard link if the filesystem allows it, and fall back to copying
  - the file. -}
-createLinkOrCopy :: FilePath -> FilePath -> IO Bool
+createLinkOrCopy :: RawFilePath -> RawFilePath -> IO Bool
 createLinkOrCopy src dest = go `catchIO` const fallback
   where
 	go = do
-		createLink src dest
+		R.createLink src dest
 		return True
-	fallback = copyFileExternal CopyAllMetaData src dest
+	fallback = copyFileExternal CopyAllMetaData (fromRawFilePath src) (fromRawFilePath dest)

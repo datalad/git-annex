@@ -410,9 +410,7 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
 	storeobject dest = ifM (liftIO $ R.doesPathExist dest)
 		( alreadyhave
 		, adjustedBranchRefresh af $ modifyContentDir dest $ do
-			liftIO $ moveFile
-				(fromRawFilePath src)
-				(fromRawFilePath dest)
+			liftIO $ moveFile src dest
 			-- Freeze the object file now that it is in place.
 			-- Waiting until now to freeze it allows for freeze
 			-- hooks that prevent moving the file.
@@ -654,17 +652,16 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
 
 {- Moves a key out of .git/annex/objects/ into .git/annex/bad, and
  - returns the file it was moved to. -}
-moveBad :: Key -> Annex FilePath
+moveBad :: Key -> Annex RawFilePath
 moveBad key = do
 	src <- calcRepo (gitAnnexLocation key)
 	bad <- fromRepo gitAnnexBadDir
 	let dest = bad P.</> P.takeFileName src
-	let dest' = fromRawFilePath dest
 	createAnnexDirectory (parentDir dest)
 	cleanObjectLoc key $
-		liftIO $ moveFile (fromRawFilePath src) dest'
+		liftIO $ moveFile src dest
 	logStatus key InfoMissing
-	return dest'
+	return dest
 
 data KeyLocation = InAnnex | InAnywhere
 

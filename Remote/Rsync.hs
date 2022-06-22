@@ -226,7 +226,7 @@ store o k src meterupdate = storeGeneric o meterupdate basedest populatedest
 		then do
 			rename src dest
 			return True
-		else createLinkOrCopy src dest
+		else createLinkOrCopy (toRawFilePath src) (toRawFilePath dest)
 	{- If the key being sent is encrypted or chunked, the file
 	 - containing its content is a temp file, and so can be
 	 - renamed into place. Otherwise, the file is the annexed
@@ -315,7 +315,7 @@ storeExportM o src _k loc meterupdate =
 	storeGeneric o meterupdate basedest populatedest
   where
 	basedest = fromRawFilePath (fromExportLocation loc)
-	populatedest = liftIO . createLinkOrCopy src
+	populatedest = liftIO . createLinkOrCopy (toRawFilePath src) . toRawFilePath
 
 retrieveExportM :: RsyncOpts -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
 retrieveExportM o k loc dest p =

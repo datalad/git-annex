@@ -75,13 +75,13 @@ replaceFile' createdirectory file checkres action = withOtherTmp $ \othertmpdir 
 		let tmpfile = tmpdir </> basetmp
 		r <- action tmpfile
 		when (checkres r) $
-			replaceFileFrom tmpfile file createdirectory
+			replaceFileFrom (toRawFilePath tmpfile) (toRawFilePath file) createdirectory
 		return r
 
-replaceFileFrom :: FilePath -> FilePath -> (RawFilePath -> Annex ()) -> Annex ()
+replaceFileFrom :: RawFilePath -> RawFilePath -> (RawFilePath -> Annex ()) -> Annex ()
 replaceFileFrom src dest createdirectory = go `catchIO` fallback
   where
 	go = liftIO $ moveFile src dest
 	fallback _ = do
-		createdirectory (parentDir (toRawFilePath dest))
+		createdirectory (parentDir dest)
 		go

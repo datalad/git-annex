@@ -38,7 +38,7 @@ perform file key = do
 	ok <- getViaTmp RetrievalAllKeysSecure DefaultVerify key (AssociatedFile Nothing) $ \dest -> unVerified $
 		if dest /= file
 			then liftIO $ catchBoolIO $ do
-				moveFile (fromRawFilePath file) (fromRawFilePath dest)
+				moveFile file dest
 				return True
 		else return True
 	if ok

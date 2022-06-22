@@ -82,15 +82,14 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 				refs <- liftIO $ dirContentsRecursive $
 					git_dir' </> "refs"
 				let refs' = (git_dir' </> "packed-refs") : refs
-				liftIO $ forM_ refs' $ \src ->
+				liftIO $ forM_ refs' $ \src -> do
+					let src' = toRawFilePath src
 					whenM (doesFileExist src) $ do
-						dest <- relPathDirToFile git_dir
-							(toRawFilePath src)
+						dest <- relPathDirToFile git_dir src'
 						let dest' = toRawFilePath tmpgit P.</> dest
 						createDirectoryUnder git_dir
 							(P.takeDirectory dest')
-						void $ createLinkOrCopy src
-							(fromRawFilePath dest')
+						void $ createLinkOrCopy src' dest'
 				-- This reset makes git merge not care
 				-- that the work tree is empty; otherwise
 				-- it will think that all the files have

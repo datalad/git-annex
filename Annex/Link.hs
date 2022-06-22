@@ -218,10 +218,10 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 		    showwarning = warning $ unableToRestage Nothing
 		    go Nothing = showwarning
 		    go (Just _) = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex" $ \tmpdir -> do
-			let tmpindex = tmpdir </> "index"
+			let tmpindex = toRawFilePath (tmpdir </> "index")
 			let updatetmpindex = do
 				r' <- liftIO $ Git.Env.addGitEnv r Git.Index.indexEnv
-					=<< Git.Index.indexEnvVal (toRawFilePath tmpindex)
+					=<< Git.Index.indexEnvVal tmpindex
 				-- Avoid git warning about CRLF munging.
 				let r'' = r' { gitGlobalOpts = gitGlobalOpts r' ++
 					[ Param "-c"
@@ -233,9 +233,9 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 							whenM checkunmodified $
 								feed f'
 			let replaceindex = catchBoolIO $ do
-				moveFile tmpindex (fromRawFilePath realindex)
+				moveFile tmpindex realindex
 				return True
-			ok <- liftIO (createLinkOrCopy (fromRawFilePath realindex) tmpindex)
+			ok <- liftIO (createLinkOrCopy realindex tmpindex)
 				<&&> updatetmpindex
 				<&&> liftIO replaceindex
 			unless ok showwarning
