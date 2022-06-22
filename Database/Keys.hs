@@ -337,7 +337,7 @@ reconcileStaged qh = unlessM (Git.Config.isBare <$> gitRepo) $ do
 		-- a non-pointer file will match this. This is only a
 		-- prefilter so that's ok.
 		, Param $ "-G" ++ fromRawFilePath (toInternalGitPath $
-			P.pathSeparator `S.cons` objectDir')
+			P.pathSeparator `S.cons` objectDir)
 		-- Disable rename detection.
 		, Param "--no-renames"
 		-- Avoid other complications.

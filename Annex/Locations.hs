@@ -14,7 +14,6 @@ module Annex.Locations (
 	keyPath,
 	annexDir,
 	objectDir,
-	objectDir',
 	gitAnnexLocation,
 	gitAnnexLocation',
 	gitAnnexLocationDepth,
@@ -133,11 +132,8 @@ annexDir = P.addTrailingPathSeparator "annex"
 
 {- The directory git annex uses for locally available object content,
  - relative to the .git directory -}
-objectDir :: FilePath
-objectDir = fromRawFilePath objectDir'
-
-objectDir' :: RawFilePath
-objectDir' = P.addTrailingPathSeparator $ annexDir P.</> "objects"
+objectDir :: RawFilePath
+objectDir = P.addTrailingPathSeparator $ annexDir P.</> "objects"
 
 {- Annexed file's possible locations relative to the .git directory
  - in a non-bare repository.
@@ -155,7 +151,7 @@ annexLocationsBare config key =
 	map (annexLocation config key) [hashDirLower, hashDirMixed]
 
 annexLocation :: GitConfig -> Key -> (HashLevels -> Hasher) -> RawFilePath
-annexLocation config key hasher = objectDir' P.</> keyPath key (hasher $ objectHashLevels config)
+annexLocation config key hasher = objectDir P.</> keyPath key (hasher $ objectHashLevels config)
 
 {- Number of subdirectories from the gitAnnexObjectDir
  - to the gitAnnexLocation. -}
@@ -268,7 +264,7 @@ gitAnnexDir r = P.addTrailingPathSeparator $ Git.localGitDir r P.</> annexDir
 {- The part of the annex directory where file contents are stored. -}
 gitAnnexObjectDir :: Git.Repo -> RawFilePath
 gitAnnexObjectDir r = P.addTrailingPathSeparator $
-	Git.localGitDir r P.</> objectDir'
+	Git.localGitDir r P.</> objectDir
 
 {- .git/annex/tmp/ is used for temp files for key's contents -}
 gitAnnexTmpObjectDir :: Git.Repo -> RawFilePath
