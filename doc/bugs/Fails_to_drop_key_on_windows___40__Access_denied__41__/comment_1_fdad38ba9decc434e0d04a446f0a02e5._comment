@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-06-22T16:42:25Z"
+ content="""
+I tried to construct a test case that I can from from these transcripts.
+
+	key=XDLRA--refs
+	mkdir $base/repo
+	cd $base/repo
+	git -c diff.ignoreSubmodules=none -C $base/repo init --bare
+	git config -z -l --show-origin
+	git -c diff.ignoreSubmodules=none config annex.private true
+	git -c diff.ignoreSubmodules=none annex init
+	git config -z -l --show-origin
+	git annex version --raw
+	git -c diff.ignoreSubmodules=none annex initremote origin type=directory directory=$remote encryption=none -c annex.dotfiles=true
+	git config -z -l --show-origin
+	git -c diff.ignoreSubmodules=none cat-file blob git-annex:remote.log
+	git -c diff.ignoreSubmodules=none annex fsck -f origin --fast --key $key -c annex.dotfiles=true
+	git -c diff.ignoreSubmodules=none annex drop --force --key $key -c annex.dotfiles=true
+	git -c diff.ignoreSubmodules=none annex get --key $key -c annex.dotfiles=true
+	git -c diff.ignoreSubmodules=none annex contentlocation $key -c annex.dotfiles=true
+	git -c diff.ignoreSubmodules=none annex drop --force --all -c annex.dotfiles=true
+
+Now, this would normally fail at the fsck step, since no object file exists for
+XDLRA--refs. I suppose that you must have pre-populated the special remote with
+it, somehow, and left that part out. The fsck would then learn that the object
+does exist there.
+
+It seems to me that how you prepopulated it might be a crucial detail, since
+that object file gets copied from the special remote and perhaps something to
+do with its permissions etc are what is later preventing deleting the copy.
+
+You're also using an external backend for whatever reason, and it would
+simplify the test case if that external backend were not needed and it just
+used a built-in backend. Using key=WORM--refs seems like it should behave the
+same, unless your external backend is doing something very strange. If the
+external backend is necessary to reproduce it, I will need some kind of minimal
+version of it.
+
+So, I've tried pre-populating the file in the remote like this:
+
+	mkdir -p $remote/06b/f75/WORM--refs
+	echo hi > $remote/06b/f75/WORM--refs/WORM--refs
+
+With that, I've gotten as far as getting the test case to succeed on linux.
+
+But I don't think it's worth the bother of getting a windows environment set up
+and running these commands on it, without first knowing how you prepopulated
+the special remote with the object file.
+"""]]
