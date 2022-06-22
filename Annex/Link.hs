@@ -147,7 +147,7 @@ stagePointerFile file mode sha =
 writePointerFile :: RawFilePath -> Key -> Maybe FileMode -> IO ()
 writePointerFile file k mode = do
 	S.writeFile (fromRawFilePath file) (formatPointer k)
-	maybe noop (setFileMode $ fromRawFilePath file) mode
+	maybe noop (R.setFileMode file) mode
 
 newtype Restage = Restage Bool
 
