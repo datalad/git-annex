@@ -4,9 +4,8 @@ file, and then they call that to replace it with something else. But in
 between, the file could be overwritten with other content. And that content
 then gets replaced, which is not expected behavior.
 
-Some other commands may modify the worktree without using it (oops)
-and also be susceptable to a race. `git-annex fix` in fixSymlink, for example,
-checks if the file is a symlink, and then deletes and recreates it.
+(Some other commands may modify the worktree without using it (oops)
+and also be susceptable to a race?)
 
 [[!commit 5ef79125ad0eddd5467b6bec451fdcdbd748b96f]] fixed one of these
 races, but not in an ideal way.

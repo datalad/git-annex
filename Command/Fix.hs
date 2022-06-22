@@ -97,11 +97,11 @@ fixSymlink file link = do
 	mtime <- liftIO $ catchMaybeIO $ Posix.modificationTimeHiRes
 		<$> R.getSymbolicLinkStatus file
 #endif
-	createWorkTreeDirectory (parentDir file)
-	liftIO $ R.removeLink file
-	liftIO $ R.createSymbolicLink link file
+	replaceWorkTreeFile (fromRawFilePath file) $ \tmpfile -> do
+		let tmpfile' = toRawFilePath tmpfile
+		liftIO $ R.createSymbolicLink link tmpfile'
 #if ! defined(mingw32_HOST_OS)
-	liftIO $ maybe noop (\t -> touch file t False) mtime
+		liftIO $ maybe noop (\t -> touch tmpfile' t False) mtime
 #endif
 	stageSymlink file =<< hashSymlink link
 	next $ return True
