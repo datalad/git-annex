@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 1"
+ date="2022-06-22T12:24:21Z"
+ content="""
+> The one caveat here is `git annex sync --content --no-pull` seems to ignore the no-pull option and tries to redownload all the raw files back to the laptop. How to do a one-way sync (laptop -> remote only with content)?
+
+AFAICT, pull only concerns `git` actions, not `git-annex` actions like transferring content.
+
+What your laptop's repo tries to copy depends on what content it wants and numcopies.  
+
+The latter probably isn't your problem since you should have at least 2 copies of everything distributed over the drives.  
+The former should ideally be solved with a proper customised groups setup but you can also set a wanted expression or use the built-in groups which is probably your best option. Your laptop's repo should be set to `client` or `manual`.
+
+See https://git-annex.branchable.com/git-annex-preferred-content/ and https://git-annex.branchable.com/preferred_content/standard_groups/
+
+> XMP sidecars that are produced are tracked in regular git
+
+Have you set `annex.largefiles` to anything? 
+
+Sidecar files are just XML AFAICT, so a filter that would only add files with binary mimeencoding to annex would exclude these and add them to regular git.
+
+If you haven't touched that setting (double check with `git config`), that's a bug.
+
+> Try to sync with any available remote (this is the part I can't seem to figure out. I wish git-annex could be detect and try to to push to all available remotes instead me having to track which remotes are available). 
+> `git annex [copy|move]` have the `--to=here` option which will copy/move files from remotes to local repo. It would be exceptionally useful to have a `--to=reachable` option to send files to any reachable remote instead of having to copy/moves to each remote individually.
+
+By default, sync syncs with *all* available remotes. 
+
+How exactly are your repo's remotes set up?
+
+What does it to when syncing that you don't want it to?
+
+"""]]
