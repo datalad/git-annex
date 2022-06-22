@@ -641,7 +641,7 @@ removeAnnex (ContentRemovalLock key) = withObjectLoc key $ \file ->
   where
 	-- Check associated pointer file for modifications, and reset if
 	-- it's unmodified.
-	resetpointer file = unlessM (liftIO $ isSymbolicLink <$> getSymbolicLinkStatus (fromRawFilePath file)) $
+	resetpointer file = unlessM (liftIO $ isSymbolicLink <$> R.getSymbolicLinkStatus file) $
 		ifM (isUnmodified key file)
 			( adjustedBranchRefresh (AssociatedFile (Just file)) $
 				depopulatePointerFile key file
