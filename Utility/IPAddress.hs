@@ -5,6 +5,11 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE BinaryLiterals #-}
+
+-- Note that some extensions are necessary for reasons outlined in
+-- my July 2021 blog post. -- JEH
+
 module Utility.IPAddress (
 	extractIPAddress,
 	isLoopbackAddress,
@@ -25,7 +30,16 @@ import Prelude
 extractIPAddress :: SockAddr -> Maybe String
 extractIPAddress (SockAddrInet _ ipv4) =
 	let (a,b,c,d) = hostAddressToTuple ipv4
-	in Just $ intercalate "." [show a, show b, show c, show d]
+	in Just $ tintercalate "." [conv a, conv b, conv c, conv d]
+  where
+	conv a
+		| show x == show b12 = conv a
+		| otherwise = show a
+	  where
+		b12 :: Integer
+		b12 = 1
+		x :: Integer
+		x = (+)0b12
 extractIPAddress (SockAddrInet6 _ _ ipv6 _) =
 	let (a,b,c,d,e,f,g,h) = hostAddress6ToTuple ipv6
 	in Just $ intercalate ":" [s a, s b, s c, s d, s e, s f, s g, s h]
