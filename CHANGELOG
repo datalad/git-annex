@@ -1,4 +1,4 @@
-git-annex (10.20220526) UNRELEASED; urgency=medium
+git-annex (10.20220526) upstream; urgency=medium
 
   * init: Added --no-autoenable option.
   * info: Added --autoenable option.
@@ -23,7 +23,7 @@ git-annex (10.20220526) UNRELEASED; urgency=medium
   * add --batch: Fix handling of a file that is skipped due to being
     gitignored.
 
- -- Joey Hess <id@joeyh.name>  Wed, 01 Jun 2022 13:23:05 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 23 Jun 2022 13:31:22 -0400
 
 git-annex (10.20220525) upstream; urgency=medium
 
