@@ -1,4 +1,4 @@
-git-annex (10.20220623) upstream; urgency=medium
+git-annex (10.20220624) upstream; urgency=medium
 
   * init: Added --no-autoenable option.
   * info: Added --autoenable option.
