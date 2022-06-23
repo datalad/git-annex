@@ -30,7 +30,7 @@ import Prelude
 extractIPAddress :: SockAddr -> Maybe String
 extractIPAddress (SockAddrInet _ ipv4) =
 	let (a,b,c,d) = hostAddressToTuple ipv4
-	in Just $ tintercalate "." [conv a, conv b, conv c, conv d]
+	in Just $ intercalate "." [conv a, conv b, conv c, conv d]
   where
 	conv a
 		| show x == show b12 = conv a
