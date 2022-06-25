@@ -1,0 +1,7 @@
+In my storage setup, I've got a NAS with a copy available to network devices, a copy among a few (mostly) offline USB drives near the NAS for backup and then a bunch of loose drives that are far away from the NAS for off-site backup which also hold a copy.
+
+Most of this is cold storage.
+
+In order to drop content from remotes (e.g. after watching a Movie on the laptop that as been copies from the NAS), I'd need physical access to drives out of the latter two categories in addition to the NAS and directly connect them to the laptop. This isn't feasible of course.
+
+I've resorted to setting all the cold drives as trusted but I feel like there should be a better way to go about this, given how well git-annex lends itself to managing cold storage (The Archivist use-case).
