@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="Still useful"
+ date="2022-06-25T16:36:38Z"
+ content="""
+Implementing a hard limit concurrently isn't feasible but only providing a best-effort target size would still be useful.
+
+It should fully work in all non-concurrent use-cases which are the majority in my case.
+
+This would also open up the possibility of allowing me to know which drive I need to plug in when there is new data to be backed up because git-annex would know how much a repo is able to store and how much it currently holds.  
+This obviously isn't perfect either (there might be other data on that drive; other annex repos or entirely untracked data for example) but it'd still be good enough to make a manual decision on for me.
+"""]]
