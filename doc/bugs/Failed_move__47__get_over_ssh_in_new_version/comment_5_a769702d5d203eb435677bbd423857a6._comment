@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Soxofaan"
+ avatar="http://cdn.libravatar.org/avatar/2083c64f7bc36bfd8809f15f0036ade1"
+ subject="Same problem"
+ date="2022-06-26T21:53:39Z"
+ content="""
+Same problem here: on my synology NAS I'm stuck at git-annex version 6.20161212  (later releases fail to run) and I recently (blindly) updated git-annex on my macbook with homebrew to 10.20220624 (I don't remember what previous version was installed).
+
+Because upgrading git-annex at the NAS-side is not an option at the moment, I had to downgrade git-annex locally to 8.20211011. This was quite a challenge unfortunately, and I documented it [on my blog](https://www.stefaanlippens.net/git-annex-homebrew-version-woes.html) (in case anybody else might face the same uphill battle)
+"""]]
