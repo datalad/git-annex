@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-06-28T16:25:34Z"
+ content="""
+I'm sorry this caused you that trouble. But 6.20161212 is really extremely
+old, and supporting the quirks of old versions of git-annex forever in
+current versions is not something I want to take on.
+"""]]
