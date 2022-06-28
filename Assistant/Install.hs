@@ -184,7 +184,6 @@ cleanEnvironment = clean <$> getEnvironment
 	clean environ
 		| null vars = Nothing
 		| otherwise = Just $ catMaybes $ map (restoreorig environ) environ
-		| otherwise = Nothing
 	  where
 		vars = words $ fromMaybe "" $
 			lookup "GIT_ANNEX_STANDLONE_ENV" environ
