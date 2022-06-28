@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-06-28T16:08:38Z"
+ content="""
+This is what [[todo/do_not_count_trusted_repos_toward_mincopies]] is kind
+of about; setting a repo to trusted right now is a promise that you won't
+delete data from it, or will be careful when you do to sync that fact to
+everywhere. If that todo got implemented, you could set all the offline
+drives to trusted and git-annex drop would only need to verify 1 copy is
+present on an online drive.
+
+What I do right now is use trusted for cold storage and never drop
+anything from it except in cases where I want to get rid of all copies of
+some file.
+"""]]

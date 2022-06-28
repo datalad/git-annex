@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-06-28T16:13:05Z"
+ content="""
+Perhaps it would be better to leave trusted working as it does now, and
+introduce a new intermediate trust level. It could be called eg, "offline".
+
+An offline repo would count toward numcopies when not available, but 
+would only count toward mincopies if it happened to be available at the
+time.
+
+It might then be that there's no real need for the less safe trusted,
+and users could be polled and it deprecated if so.
+
+(This might also be a good opportunity to improve the "semitrust" name,
+which would not make much sense if the list was untrust, semitrust,
+offline, trust. "normal" perhaps. Would need to still accept the old name
+for back-compat of course.)
+"""]]
