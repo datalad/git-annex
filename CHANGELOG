@@ -1,3 +1,9 @@
+git-annex (10.20220625) UNRELEASED; urgency=medium
+
+  * stack.yaml: Updated to lts-19.13
+
+ -- Joey Hess <id@joeyh.name>  Tue, 28 Jun 2022 14:49:17 -0400
+
 git-annex (10.20220624) upstream; urgency=medium
 
   * init: Added --no-autoenable option.
