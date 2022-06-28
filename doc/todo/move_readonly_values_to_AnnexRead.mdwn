@@ -4,4 +4,5 @@ anything that never needs to be modified while git-annex is running can be
 moved to AnnexRead for a performance win and also to make clean how it's
 used. --[[Joey]]
 
-Many things have been moved, but there are certainly others that can be.
+> [[done]]; all AnnexState fields have been checked and all that can be
+> made readonly are. --[[Joey]]

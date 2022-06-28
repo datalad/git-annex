@@ -78,7 +78,7 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 		<> help "override git configuration setting"
 		<> hidden
 		)
-	, globalOption (setAnnexState . setuseragent) $ strOption
+	, globalOption setuseragent $ strOption
 		( long "user-agent" <> metavar paramName
 		<> help "override default User-Agent"
 		<> hidden
@@ -88,12 +88,12 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 		<> help "deprecated, does not trust Amazon Glacier inventory"
 		<> hidden
 		)
-	, globalFlag (setAnnexState $ setdesktopnotify mkNotifyFinish)
+	, globalFlag (setdesktopnotify mkNotifyFinish)
 		( long "notify-finish"
 		<> help "show desktop notification after transfer finishes"
 		<> hidden
 		)
-	, globalFlag (setAnnexState $ setdesktopnotify mkNotifyStart)
+	, globalFlag (setdesktopnotify mkNotifyStart)
 		( long "notify-start"
 		<> help "show desktop notification after transfer starts"
 		<> hidden
@@ -102,9 +102,9 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
   where
 	setnumcopies n = setAnnexRead $ \rd -> rd { Annex.forcenumcopies = Just $ configuredNumCopies n }
 	setmincopies n = setAnnexRead $ \rd -> rd { Annex.forcemincopies = Just $ configuredMinCopies n }
-	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
+	setuseragent v = setAnnexRead $ \rd -> rd { Annex.useragent = Just v }
+	setdesktopnotify v = setAnnexRead $ \rd -> rd { Annex.desktopnotify = Annex.desktopnotify rd <> v }
 	setgitconfig v = Annex.addGitConfigOverride v
-	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }
 
 {- Parser that accepts all non-option params. -}
 cmdParams :: CmdParamsDesc -> Parser CmdParams

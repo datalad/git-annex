@@ -126,6 +126,8 @@ data AnnexRead = AnnexRead
 	, forcenumcopies :: Maybe NumCopies
 	, forcemincopies :: Maybe MinCopies
 	, forcebackend :: Maybe String
+	, useragent :: Maybe String
+	, desktopnotify :: DesktopNotify
 	}
 
 newAnnexRead :: GitConfig -> IO AnnexRead
@@ -152,6 +154,8 @@ newAnnexRead c = do
 		, forcebackend = Nothing
 		, forcenumcopies = Nothing
 		, forcemincopies = Nothing
+		, useragent = Nothing
+		, desktopnotify = mempty
 		}
 
 -- Values that can change while running an Annex action.
@@ -190,14 +194,12 @@ data AnnexState = AnnexState
 	, fields :: M.Map String String
 	, cleanupactions :: M.Map CleanupAction (Annex ())
 	, sentinalstatus :: Maybe SentinalStatus
-	, useragent :: Maybe String
 	, errcounter :: Integer
 	, skippedfiles :: Bool
 	, adjustedbranchrefreshcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
 	, tempurls :: M.Map Key URLString
 	, existinghooks :: M.Map Git.Hook.Hook Bool
-	, desktopnotify :: DesktopNotify
 	, workers :: Maybe (TMVar (WorkerPool (AnnexState, AnnexRead)))
 	, cachedcurrentbranch :: (Maybe (Maybe Git.Branch, Maybe Adjustment))
 	, cachedgitenv :: Maybe (AltIndexFile, FilePath, [(String, String)])
@@ -245,14 +247,12 @@ newAnnexState c r = do
 		, fields = M.empty
 		, cleanupactions = M.empty
 		, sentinalstatus = Nothing
-		, useragent = Nothing
 		, errcounter = 0
 		, skippedfiles = False
 		, adjustedbranchrefreshcounter = 0
 		, unusedkeys = Nothing
 		, tempurls = M.empty
 		, existinghooks = M.empty
-		, desktopnotify = mempty
 		, workers = Nothing
 		, cachedcurrentbranch = Nothing
 		, cachedgitenv = Nothing

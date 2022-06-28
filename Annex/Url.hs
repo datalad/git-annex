@@ -48,7 +48,7 @@ defaultUserAgent :: U.UserAgent
 defaultUserAgent = "git-annex/" ++ BuildInfo.packageversion
 
 getUserAgent :: Annex U.UserAgent
-getUserAgent = Annex.getState $ 
+getUserAgent = Annex.getRead $ 
 	fromMaybe defaultUserAgent . Annex.useragent
 
 getUrlOptions :: Annex U.UrlOptions
