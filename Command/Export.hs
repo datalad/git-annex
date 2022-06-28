@@ -518,9 +518,7 @@ filterExport r tree = logExportExcluded (uuid r) $ \logwriter -> do
 				Nothing
 					| issymlink -> catKey sha >>= \case
 						Just _ -> return (Just ti)
-						Nothing
-							| issymlink -> excluded
-							| otherwise -> return (Just ti)
+						Nothing -> excluded
 					| otherwise -> return (Just ti)
 				Just matcher -> catKey sha >>= \case
 					Just k -> checkmatcher matcher k
