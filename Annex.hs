@@ -19,10 +19,8 @@ module Annex (
 	getState,
 	changeState,
 	withState,
-	setFlag,
 	setField,
 	setOutput,
-	getFlag,
 	getField,
 	addCleanupAction,
 	gitRepo,
@@ -189,7 +187,6 @@ data AnnexState = AnnexState
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
 	, lockcache :: LockCache
-	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	, cleanupactions :: M.Map CleanupAction (Annex ())
 	, sentinalstatus :: Maybe SentinalStatus
@@ -245,7 +242,6 @@ newAnnexState c r = do
 		, trustmap = Nothing
 		, groupmap = Nothing
 		, lockcache = M.empty
-		, flags = M.empty
 		, fields = M.empty
 		, cleanupactions = M.empty
 		, sentinalstatus = Nothing
@@ -327,11 +323,6 @@ withState modifier = do
 	mvar <- fst <$> ask
 	liftIO $ modifyMVar mvar modifier
 
-{- Sets a flag to True -}
-setFlag :: String -> Annex ()
-setFlag flag = changeState $ \st ->
-	st { flags = M.insert flag True $ flags st }
-
 {- Sets a field to a value -}
 setField :: String -> String -> Annex ()
 setField field value = changeState $ \st ->
@@ -347,10 +338,6 @@ setOutput :: OutputType -> Annex ()
 setOutput o = changeState $ \st ->
 	let m = output st
 	in st { output = m { outputType = adjustOutputType (outputType m) o } }
-
-{- Checks if a flag was set. -}
-getFlag :: String -> Annex Bool
-getFlag flag = fromMaybe False . M.lookup flag <$> getState flags
 
 {- Gets the value of a field. -}
 getField :: String -> Annex (Maybe String)
