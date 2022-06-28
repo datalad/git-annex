@@ -118,7 +118,7 @@ toStart removewhen afile key ai si dest = do
 
 toStart' :: Remote -> RemoveWhen -> AssociatedFile -> Key -> ActionItem -> SeekInput -> CommandStart
 toStart' dest removewhen afile key ai si = do
-	fast <- Annex.getState Annex.fast
+	fast <- Annex.getRead Annex.fast
 	if fast && removewhen == RemoveNever
 		then ifM (expectedPresent dest key)
 			( stop
@@ -334,7 +334,7 @@ willDropMakeItWorse srcuuid destuuid (DestStartedWithCopy deststartedwithcopy _)
 		, unlessforced DropWorse
 		)
   where
-	unlessforced r = ifM (Annex.getState Annex.force)
+	unlessforced r = ifM (Annex.getRead Annex.force)
 		( return DropAllowed
 		, return r
 		)

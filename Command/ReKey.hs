@@ -75,7 +75,7 @@ perform file oldkey newkey = do
 	ifM (inAnnex oldkey) 
 		( unlessM (linkKey file oldkey newkey) $
 			giveup "failed creating link from old to new key"
-		, unlessM (Annex.getState Annex.force) $
+		, unlessM (Annex.getRead Annex.force) $
 			giveup $ fromRawFilePath file ++ " is not available (use --force to override)"
 		)
 	next $ cleanup file newkey

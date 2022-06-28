@@ -33,7 +33,7 @@ trustCommand c level = withWords (commandAction . start)
 		starting c (ActionItemOther (Just name)) si (perform name u)
 	perform name uuid = do
 		when (level >= Trusted) $
-			unlessM (Annex.getState Annex.force) $
+			unlessM (Annex.getRead Annex.force) $
 				giveup $ trustedNeedsForce name
 		trustSet uuid level
 		when (level == DeadTrusted) $

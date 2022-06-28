@@ -96,7 +96,7 @@ seek o = startConcurrency commandStages $ do
 	db <- openDb (uuid r)
 	writeLockDbWhile db $ do
 		changeExport r db tree
-		unlessM (Annex.getState Annex.fast) $ do
+		unlessM (Annex.getRead Annex.fast) $ do
 			void $ fillExport r db tree mtbcommitsha
 	closeDb db
 

@@ -238,7 +238,7 @@ uuidInfo o u si = showCustom (unwords ["info", fromUUID u]) si $ do
 
 selStats :: [Stat] -> [Stat] -> Annex [Stat]
 selStats fast_stats slow_stats = do
-	fast <- Annex.getState Annex.fast
+	fast <- Annex.getRead Annex.fast
 	return $ if fast
 		then fast_stats
 		else fast_stats ++ slow_stats
@@ -597,7 +597,7 @@ cachedRepoData = repoData <$> get
 
 getDirStatInfo :: InfoOptions -> FilePath -> Annex StatInfo
 getDirStatInfo o dir = do
-	fast <- Annex.getState Annex.fast
+	fast <- Annex.getRead Annex.fast
 	matcher <- Limit.getMatcher
 	(presentdata, referenceddata, numcopiesstats, repodata) <-
 		Command.Unused.withKeysFilesReferencedIn dir initial
@@ -625,7 +625,7 @@ getDirStatInfo o dir = do
 
 getTreeStatInfo :: InfoOptions -> Git.Ref -> Annex (Maybe StatInfo)
 getTreeStatInfo o r = do
-	fast <- Annex.getState Annex.fast
+	fast <- Annex.getRead Annex.fast
 	-- git lstree filenames start with a leading "./" that prevents
 	-- matching, and also things like --include are supposed to
 	-- match relative to the current directory, which does not make

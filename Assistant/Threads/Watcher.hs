@@ -57,7 +57,7 @@ checkCanWatch
 	| canWatch = do
 #ifndef mingw32_HOST_OS
 		liftIO Lsof.setup
-		unlessM (liftIO (inSearchPath "lsof") <||> Annex.getState Annex.force)
+		unlessM (liftIO (inSearchPath "lsof") <||> Annex.getRead Annex.force)
 			needLsof
 #else
 		noop

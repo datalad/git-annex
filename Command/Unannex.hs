@@ -26,24 +26,24 @@ cmd = withGlobalOptions [annexedMatchingOptions] $
 		paramPaths (withParams seek)
 
 seek :: CmdParams -> CommandSeek
-seek ps = withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
+seek ps = withFilesInGitAnnex ww (seeker False) =<< workTreeItems ww ps
   where
 	ww = WarnUnmatchLsFiles
 
-seeker :: AnnexedFileSeeker
-seeker = AnnexedFileSeeker
-	{ startAction = start
+seeker :: Bool -> AnnexedFileSeeker
+seeker fast = AnnexedFileSeeker
+	{ startAction = start fast
 	, checkContentPresent = Just True
 	, usesLocationLog = False
 	}
 
-start :: SeekInput -> RawFilePath -> Key -> CommandStart
-start si file key = 
+start :: Bool -> SeekInput -> RawFilePath -> Key -> CommandStart
+start fast si file key = 
 	starting "unannex" (mkActionItem (key, file)) si $
-		perform file key
+		perform fast file key
 
-perform :: RawFilePath -> Key -> CommandPerform
-perform file key = do
+perform :: Bool -> RawFilePath -> Key -> CommandPerform
+perform fast file key = do
 	Annex.Queue.addCommand [] "rm"
 		[ Param "--cached"
 		, Param "--force"
@@ -58,7 +58,7 @@ perform file key = do
 		-- (cached in git).
 		Just key' -> do
 			cleanupdb
-			next $ cleanup file key'
+			next $ cleanup fast file key'
 		-- If the file is unlocked, it can be unmodified or not and
 		-- does not need to be replaced either way.
 		Nothing -> do
@@ -71,11 +71,11 @@ perform file key = do
 		maybe noop Database.Keys.removeInodeCache
 			=<< withTSDelta (liftIO . genInodeCache file)
 
-cleanup :: RawFilePath -> Key -> CommandCleanup
-cleanup file key = do
+cleanup :: Bool -> RawFilePath -> Key -> CommandCleanup
+cleanup fast file key = do
 	liftIO $ removeFile (fromRawFilePath file)
 	src <- calcRepo (gitAnnexLocation key)
-	ifM (Annex.getState Annex.fast)
+	ifM (pure fast <||> Annex.getRead Annex.fast)
 		( do
 			-- Only make a hard link if the annexed file does not
 			-- already have other hard links pointing at it. This

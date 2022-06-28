@@ -195,7 +195,7 @@ performRemote key afile backend numcopies remote =
 	getfile tmp = ifM (checkDiskSpace (Just (P.takeDirectory tmp)) key 0 True)
 		( ifM (getcheap tmp)
 			( return (Just (Right UnVerified))
-			, ifM (Annex.getState Annex.fast)
+			, ifM (Annex.getRead Annex.fast)
 				( return Nothing
 				, Just <$> tryNonAsync (getfile' tmp)
 				)

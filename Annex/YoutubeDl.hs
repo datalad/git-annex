@@ -118,7 +118,7 @@ youtubeDl' url workdir p uo
 -- and any files in the workdir that it may have partially downloaded
 -- before.
 youtubeDlMaxSize :: FilePath -> Annex (Either String [CommandParam])
-youtubeDlMaxSize workdir = ifM (Annex.getState Annex.force)
+youtubeDlMaxSize workdir = ifM (Annex.getRead Annex.force)
 	( return $ Right []
 	, liftIO (getDiskFree workdir) >>= \case
 		Just have -> do

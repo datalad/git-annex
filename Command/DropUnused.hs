@@ -53,7 +53,7 @@ perform from numcopies mincopies key = case from of
 	Nothing -> ifM (inAnnex key)
 		( droplocal
 		, ifM (objectFileExists key)
-			( ifM (Annex.getState Annex.force)
+			( ifM (Annex.getRead Annex.force)
 				( droplocal
 				, do
 					warning "Annexed object has been modified and dropping it would probably lose the only copy. Run this command with --force if you want to drop it anyway."

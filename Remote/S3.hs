@@ -312,7 +312,7 @@ s3Setup'  ss u mcreds c gc
 		use archiveconfig pc' info
 	
 	checkexportimportsafe c' info =
-		unlessM (Annex.getState Annex.force) $
+		unlessM (Annex.getRead Annex.force) $
 			checkexportimportsafe' c' info
 	checkexportimportsafe' c' info
 		| versioning info = return ()

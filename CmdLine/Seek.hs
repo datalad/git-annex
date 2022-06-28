@@ -64,7 +64,7 @@ withFilesInGitAnnex ww a l = seekFilteredKeys a $
 	seekHelper fst3 ww LsFiles.inRepoDetails l
 
 withFilesInGitAnnexNonRecursive :: WarnUnmatchWhen -> String -> AnnexedFileSeeker -> WorkTreeItems -> CommandSeek
-withFilesInGitAnnexNonRecursive ww needforce a (WorkTreeItems l) = ifM (Annex.getState Annex.force)
+withFilesInGitAnnexNonRecursive ww needforce a (WorkTreeItems l) = ifM (Annex.getRead Annex.force)
 	( withFilesInGitAnnex ww a (WorkTreeItems l)
 	, if null l
 		then giveup needforce
@@ -90,7 +90,7 @@ withFilesInGitAnnexNonRecursive _ _ _ NoWorkTreeItems = noop
 
 withFilesNotInGit :: CheckGitIgnore -> WarnUnmatchWhen -> ((SeekInput, RawFilePath) -> CommandSeek) -> WorkTreeItems -> CommandSeek
 withFilesNotInGit (CheckGitIgnore ci) ww a l = do
-	force <- Annex.getState Annex.force
+	force <- Annex.getRead Annex.force
 	let include_ignored = force || not ci
 	seekFiltered (const (pure True)) a $
 		seekHelper id ww (const $ LsFiles.notInRepo [] include_ignored) l

@@ -107,7 +107,7 @@ checkDiskSpace destdir key = checkDiskSpace' (fromMaybe 1 (fromKey keySize key))
 {- Allows specifying the size of the key, if it's known, which is useful
  - as not all keys know their size. -}
 checkDiskSpace' :: Integer -> Maybe RawFilePath -> Key -> Integer -> Bool -> Annex Bool
-checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getState Annex.force)
+checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getRead Annex.force)
 	( return True
 	, do
 		-- We can't get inprogress and free at the same

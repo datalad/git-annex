@@ -89,7 +89,7 @@ seek o = startConcurrency commandStages $ do
 			s <- liftIO $ R.getSymbolicLinkStatus file
 			ifM (pure (annexdotfiles || not (dotfile file))
 				<&&> (checkFileMatcher largematcher file 
-				<||> Annex.getState Annex.force))
+				<||> Annex.getRead Annex.force))
 				( start si file addunlockedmatcher
 				, if includingsmall
 					then ifM (annexAddSmallFiles <$> Annex.getGitConfig)

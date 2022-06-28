@@ -173,13 +173,13 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 					Nothing -> importfilechecked ld k
 					Just s
 						| isDirectory s -> notoverwriting "(is a directory)"
-						| isSymbolicLink s -> ifM (Annex.getState Annex.force)
+						| isSymbolicLink s -> ifM (Annex.getRead Annex.force)
 							( do
 								liftIO $ removeWhenExistsWith R.removeLink destfile
 								importfilechecked ld k
 							, notoverwriting "(is a symlink)"
 							)
-						| otherwise -> ifM (Annex.getState Annex.force)
+						| otherwise -> ifM (Annex.getRead Annex.force)
 							( do
 								liftIO $ removeWhenExistsWith R.removeLink destfile
 								importfilechecked ld k

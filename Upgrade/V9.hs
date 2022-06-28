@@ -27,7 +27,7 @@ upgrade automatic
 		( return UpgradeDeferred
 		, performUpgrade automatic
 		)
-	| otherwise = ifM (oldprocessesdanger <&&> (not <$> Annex.getState Annex.force))
+	| otherwise = ifM (oldprocessesdanger <&&> (not <$> Annex.getRead Annex.force))
 		( do
 			warning $ unlines unsafeupgrade
 			return UpgradeDeferred

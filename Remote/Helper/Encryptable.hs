@@ -197,7 +197,7 @@ encryptionSetup c gc = do
 		cipher <- liftIO a
 		showNote (describeCipher cipher)
 		return (storeCipher cipher c', EncryptionIsSetup)
-	highRandomQuality = ifM (Annex.getState Annex.fast)
+	highRandomQuality = ifM (Annex.getRead Annex.fast)
 		( return False
 		, case parseHighRandomQuality (fromProposedAccepted <$> M.lookup highRandomQualityField c) of
 			Left err -> giveup err

@@ -4,9 +4,4 @@ anything that never needs to be modified while git-annex is running can be
 moved to AnnexRead for a performance win and also to make clean how it's
 used. --[[Joey]]
 
-The easy things have been moved now, but some things like Annex.force and
-Annex.fast and Annex.getGitConfig would be good to move. Moving those would
-involve running argument processing outside the Annex monad. The main
-reason argument processing runs in the Annex monad is to set those values,
-but there may be other reasons too, so this will be a large set of changes
-that need to all happen together. --[[Joey]]
+Many things have been moved, but there are certainly others that can be.

@@ -135,7 +135,7 @@ data Cache = Cache
 	}
 
 getCache :: Maybe String -> Annex Cache
-getCache opttemplate = ifM (Annex.getState Annex.force)
+getCache opttemplate = ifM (Annex.getRead Annex.force)
 	( ret S.empty S.empty
 	, do
 		showStart "importfeed" "gathering known urls" (SeekInput [])
@@ -246,12 +246,12 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 		-- to avoid adding it a second time.
 		let quviurl = setDownloader linkurl QuviDownloader
 		checkknown mediaurl $ checkknown quviurl $
-			ifM (Annex.getState Annex.fast <||> pure (relaxedOption (downloadOptions opts)))
+			ifM (Annex.getRead Annex.fast <||> pure (relaxedOption (downloadOptions opts)))
 				( addmediafast linkurl mediaurl mediakey
 				, downloadmedia linkurl mediaurl mediakey
 				)
   where
-	forced = Annex.getState Annex.force
+	forced = Annex.getRead Annex.force
 
 	{- Avoids downloading any items that are already known to be
 	 - associated with a file in the annex, unless forced. -}

@@ -31,7 +31,7 @@ optParser desc = DropKeyOptions
 
 seek :: DropKeyOptions -> CommandSeek
 seek o = do
-	unlessM (Annex.getState Annex.force) $
+	unlessM (Annex.getRead Annex.force) $
 		giveup "dropkey can cause data loss; use --force if you're sure you want to do this"
 	case batchOption o of
 		NoBatch -> withKeys (commandAction . start) (toDrop o)

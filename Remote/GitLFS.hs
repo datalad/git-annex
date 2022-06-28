@@ -149,7 +149,7 @@ mySetup ss mu _ c gc = do
 	(c', _encsetup) <- encryptionSetup c gc
 	pc <- either giveup return . parseRemoteConfig c' =<< configParser remote c'
 	let failinitunlessforced msg = case ss of
-		Init -> unlessM (Annex.getState Annex.force) (giveup msg)
+		Init -> unlessM (Annex.getRead Annex.force) (giveup msg)
 		Enable _ -> noop
 		AutoEnable _ -> noop
 	case (isEncrypted pc, Git.GCrypt.urlPrefix `isPrefixOf` url) of

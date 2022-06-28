@@ -191,7 +191,7 @@ downloadRemoteFile :: AddUnlockedMatcher -> Remote -> DownloadOptions -> URLStri
 downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd o file $ \canadd -> do
 	let urlkey = Backend.URL.fromUrl uri sz
 	createWorkTreeDirectory (parentDir file)
-	ifM (Annex.getState Annex.fast <||> pure (relaxedOption o))
+	ifM (Annex.getRead Annex.fast <||> pure (relaxedOption o))
 		( do
 			addWorkTree canadd addunlockedmatcher (Remote.uuid r) loguri file urlkey Nothing
 			return (Just urlkey)
@@ -305,7 +305,7 @@ addUrlChecked o url file u checkexistssize key =
  -}
 addUrlFile :: AddUnlockedMatcher -> DownloadOptions -> URLString -> Url.UrlInfo -> RawFilePath -> Annex (Maybe Key)
 addUrlFile addunlockedmatcher o url urlinfo file =
-	ifM (Annex.getState Annex.fast <||> pure (relaxedOption o))
+	ifM (Annex.getRead Annex.fast <||> pure (relaxedOption o))
 		( nodownloadWeb addunlockedmatcher o url urlinfo file
 		, downloadWeb addunlockedmatcher o url urlinfo file
 		)

@@ -50,7 +50,7 @@ seek o = withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
 
 start :: MigrateOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
 start o si file key = do
-	forced <- Annex.getState Annex.force
+	forced <- Annex.getRead Annex.force
 	v <- Backend.getBackend (fromRawFilePath file) key
 	case v of
 		Nothing -> stop

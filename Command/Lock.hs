@@ -50,7 +50,7 @@ start si file key = ifM (isJust <$> isAnnexLink file)
 	go Nothing = 
 		ifM (isUnmodified key file)
 			( cont
-			, ifM (Annex.getState Annex.force)
+			, ifM (Annex.getRead Annex.force)
 				( cont
 				, errorModified
 				)

@@ -74,7 +74,7 @@ seek = commandAction . start
 
 start :: TestRemoteOptions -> CommandStart
 start o = starting "testremote" (ActionItemOther (Just (testRemote o))) si $ do
-	fast <- Annex.getState Annex.fast
+	fast <- Annex.getRead Annex.fast
 	cache <- liftIO newRemoteVariantCache
 	r <- either giveup (disableExportTree cache)
 		=<< Remote.byName' (testRemote o)

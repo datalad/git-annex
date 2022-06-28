@@ -120,7 +120,7 @@ keyValueE hash source meterupdate =
 
 checkKeyChecksum :: Hash -> Key -> RawFilePath -> Annex Bool
 checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
-	fast <- Annex.getState Annex.fast
+	fast <- Annex.getRead Annex.fast
 	exists <- liftIO $ R.doesPathExist file
 	case (exists, fast) of
 		(True, False) -> do

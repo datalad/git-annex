@@ -207,7 +207,7 @@ enterAdjustedBranch adj = inRepo Git.Branch.current >>= \case
 	go currbranch = do
 		let origbranch = fromAdjustedBranch currbranch
 		let adjbranch = adjBranch $ originalToAdjusted origbranch adj
-		ifM (inRepo (Git.Ref.exists adjbranch) <&&> (not <$> Annex.getState Annex.force))
+		ifM (inRepo (Git.Ref.exists adjbranch) <&&> (not <$> Annex.getRead Annex.force))
 			( do
 				mapM_ (warning . unwords)
 					[ [ "adjusted branch"

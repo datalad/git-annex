@@ -25,7 +25,7 @@ newtype CheckGitIgnore = CheckGitIgnore Bool
 checkIgnored :: CheckGitIgnore -> RawFilePath -> Annex Bool
 checkIgnored (CheckGitIgnore False) _ = pure False
 checkIgnored (CheckGitIgnore True) file =
-	ifM (Annex.getState Annex.force)
+	ifM (Annex.getRead Annex.force)
 		( pure False
 		, withCheckIgnoreHandle $ \h -> liftIO $ Git.checkIgnored h file
 		)

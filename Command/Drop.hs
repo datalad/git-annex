@@ -201,7 +201,7 @@ doDrop
 	-> (Maybe SafeDropProof -> CommandPerform, CommandPerform)
 	-> CommandPerform
 doDrop pcc dropfrom contentlock key afile numcopies mincopies skip preverified check (dropaction, nodropaction) = 
-	ifM (Annex.getState Annex.force)
+	ifM (Annex.getRead Annex.force)
 		( dropaction Nothing
 		, ifM (checkRequiredContent pcc dropfrom key afile)
 			( verifyEnoughCopiesToDrop nolocmsg key 

@@ -123,6 +123,11 @@ data AnnexRead = AnnexRead
 	, debugenabled :: Bool
 	, debugselector :: DebugSelector
 	, ciphers :: TMVar (M.Map StorableCipher Cipher)
+	, fast :: Bool
+	, force :: Bool
+	, forcenumcopies :: Maybe NumCopies
+	, forcemincopies :: Maybe MinCopies
+	, forcebackend :: Maybe String
 	}
 
 newAnnexRead :: GitConfig -> IO AnnexRead
@@ -144,6 +149,11 @@ newAnnexRead c = do
 		, debugenabled = annexDebug c
 		, debugselector = debugSelectorFromGitConfig c
 		, ciphers = cm
+		, fast = False
+		, force = False
+		, forcebackend = Nothing
+		, forcenumcopies = Nothing
+		, forcemincopies = Nothing
 		}
 
 -- Values that can change while running an Annex action.
@@ -159,8 +169,6 @@ data AnnexState = AnnexState
 	, remotes :: [Types.Remote.RemoteA Annex]
 	, output :: MessageState
 	, concurrency :: ConcurrencySetting
-	, force :: Bool
-	, fast :: Bool
 	, daemon :: Bool
 	, branchstate :: BranchState
 	, repoqueue :: Maybe (Git.Queue.Queue Annex)
@@ -168,11 +176,8 @@ data AnnexState = AnnexState
 	, hashobjecthandle :: Maybe HashObjectHandle
 	, checkattrhandle :: Maybe (ResourcePool CheckAttrHandle)
 	, checkignorehandle :: Maybe (ResourcePool CheckIgnoreHandle)
-	, forcebackend :: Maybe String
 	, globalnumcopies :: Maybe NumCopies
 	, globalmincopies :: Maybe MinCopies
-	, forcenumcopies :: Maybe NumCopies
-	, forcemincopies :: Maybe MinCopies
 	, limit :: ExpandableMatcher Annex
 	, timelimit :: Maybe (Duration, POSIXTime)
 	, sizelimit :: Maybe (TVar Integer)
@@ -220,8 +225,6 @@ newAnnexState c r = do
 		, remotes = []
 		, output = o
 		, concurrency = ConcurrencyCmdLine NonConcurrent
-		, force = False
-		, fast = False
 		, daemon = False
 		, branchstate = startBranchState
 		, repoqueue = Nothing
@@ -229,11 +232,8 @@ newAnnexState c r = do
 		, hashobjecthandle = Nothing
 		, checkattrhandle = Nothing
 		, checkignorehandle = Nothing
-		, forcebackend = Nothing
 		, globalnumcopies = Nothing
 		, globalmincopies = Nothing
-		, forcenumcopies = Nothing
-		, forcemincopies = Nothing
 		, limit = BuildingMatcher []
 		, timelimit = Nothing
 		, sizelimit = Nothing

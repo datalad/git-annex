@@ -45,12 +45,12 @@ import Annex.Concurrent
 -- although not always used.
 gitAnnexGlobalOptions :: [GlobalOption]
 gitAnnexGlobalOptions = commonGlobalOptions ++
-	[ globalOption (setAnnexState . setnumcopies) $ option auto
+	[ globalOption setnumcopies $ option auto
 		( long "numcopies" <> short 'N' <> metavar paramNumber
 		<> help "override desired number of copies"
 		<> hidden
 		)
-	, globalOption (setAnnexState . setmincopies) $ option auto
+	, globalOption setmincopies $ option auto
 		( long "mincopies" <> short 'N' <> metavar paramNumber
 		<> help "override minimum number of copies"
 		<> hidden
@@ -100,8 +100,8 @@ gitAnnexGlobalOptions = commonGlobalOptions ++
 		)
 	]
   where
-	setnumcopies n = Annex.changeState $ \s -> s { Annex.forcenumcopies = Just $ configuredNumCopies n }
-	setmincopies n = Annex.changeState $ \s -> s { Annex.forcemincopies = Just $ configuredMinCopies n }
+	setnumcopies n = setAnnexRead $ \rd -> rd { Annex.forcenumcopies = Just $ configuredNumCopies n }
+	setmincopies n = setAnnexRead $ \rd -> rd { Annex.forcemincopies = Just $ configuredMinCopies n }
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
 	setgitconfig v = Annex.addGitConfigOverride v
 	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }

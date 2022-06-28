@@ -325,7 +325,7 @@ addSymlink file key mcache = do
  - checked in, CheckGitIgnore True has no effect.
  -}
 gitAddParams :: CheckGitIgnore -> Annex [CommandParam]
-gitAddParams (CheckGitIgnore True) = ifM (Annex.getState Annex.force)
+gitAddParams (CheckGitIgnore True) = ifM (Annex.getRead Annex.force)
 	( return [Param "-f"]
 	, return []
 	)

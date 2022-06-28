@@ -40,7 +40,7 @@ start o = starting "forget" ai si $ do
 	let ts = if dropDead o
 		then addTransition c ForgetDeadRemotes basets
 		else basets
-	perform ts =<< Annex.getState Annex.force
+	perform ts =<< Annex.getRead Annex.force
   where
 	ai = ActionItemOther (Just (fromRef Branch.name))
 	si = SeekInput []

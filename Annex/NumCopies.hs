@@ -57,11 +57,11 @@ deprecatedNumCopies = annexNumCopies <$> Annex.getGitConfig
 
 {- Value forced on the command line by --numcopies. -}
 getForcedNumCopies :: Annex (Maybe NumCopies)
-getForcedNumCopies = Annex.getState Annex.forcenumcopies
+getForcedNumCopies = Annex.getRead Annex.forcenumcopies
 
 {- Value forced on the command line by --mincopies. -}
 getForcedMinCopies :: Annex (Maybe MinCopies)
-getForcedMinCopies = Annex.getState Annex.forcemincopies
+getForcedMinCopies = Annex.getRead Annex.forcemincopies
 
 {- NumCopies value from any of the non-.gitattributes configuration
  - sources. -}

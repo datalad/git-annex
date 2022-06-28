@@ -324,7 +324,7 @@ syncRemotes ps = do
 
 syncRemotes' :: [String] -> [Remote] -> Annex [Remote]
 syncRemotes' ps available = 
-	ifM (Annex.getState Annex.fast) ( fastest <$> wanted , wanted )
+	ifM (Annex.getRead Annex.fast) ( fastest <$> wanted , wanted )
   where
 	wanted
 		| null ps = filterM good (concat $ Remote.byCost available)

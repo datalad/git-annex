@@ -46,7 +46,7 @@ seek o = do
 		-- older way of enabling batch input, does not support BatchNull
 		(NoBatch, []) -> seekBatch matcher (BatchFormat BatchLine (BatchKeys False))
 		(NoBatch, ps) -> do
-			force <- Annex.getState Annex.force
+			force <- Annex.getRead Annex.force
 			withPairs (commandAction . start matcher force) ps
 
 seekBatch :: AddUnlockedMatcher -> BatchFormat -> CommandSeek

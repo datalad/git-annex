@@ -25,12 +25,12 @@ import Annex.Debug
 -- Global options accepted by both git-annex and git-annex-shell sub-commands.
 commonGlobalOptions :: [GlobalOption]
 commonGlobalOptions =
-	[ globalFlag (setAnnexState $ setforce True)
+	[ globalFlag (setforce True)
 		( long "force" 
 		<> help "allow actions that may lose annexed data"
 		<> hidden
 		)
-	, globalFlag (setAnnexState $ setfast True)
+	, globalFlag (setfast True)
 		( long "fast" <> short 'F'
 		<> help "avoid slow operations"
 		<> hidden
@@ -67,12 +67,12 @@ commonGlobalOptions =
 		)
 	]
   where
-	setforce v = Annex.changeState $ \s -> s { Annex.force = v }
+	setforce v = setAnnexRead $ \rd -> rd { Annex.force = v }
 
-	setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
+	setfast v = setAnnexRead $ \rd -> rd { Annex.fast = v }
 
-	setforcebackend v = setAnnexState $
-		Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
+	setforcebackend v = setAnnexRead $ 
+		\rd -> rd { Annex.forcebackend = Just v }
 	
 	setdebug v = mconcat
 		[ setAnnexRead $ \rd -> rd { Annex.debugenabled = v }

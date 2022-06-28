@@ -8,7 +8,6 @@
 module Command.Uninit where
 
 import Command
-import qualified Annex
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
@@ -54,8 +53,7 @@ seek ps = do
 		WarnUnmatchWorkTreeItems 
 		(\(_, f) -> commandAction $ whenAnnexed (startCheckIncomplete . fromRawFilePath) f)
 		l
-	Annex.changeState $ \s -> s { Annex.fast = True }
-	withFilesInGitAnnex ww Command.Unannex.seeker l
+	withFilesInGitAnnex ww (Command.Unannex.seeker True) l
 	finish
   where
 	ww = WarnUnmatchLsFiles

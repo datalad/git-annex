@@ -44,7 +44,7 @@ defaultBackend = maybe cache return =<< Annex.getState Annex.backend
   where
 	cache = do
 		n <- maybe (annexBackend <$> Annex.getGitConfig) (return . Just)
-			=<< Annex.getState Annex.forcebackend
+			=<< Annex.getRead Annex.forcebackend
 		b <- case n of
 			Just name | valid name -> lookupname name
 			_ -> pure (Prelude.head builtinList)
@@ -79,7 +79,7 @@ unknownBackendVarietyMessage v =
  - That can be configured on a per-file basis in the gitattributes file,
  - or forced with --backend. -}
 chooseBackend :: RawFilePath -> Annex (Maybe Backend)
-chooseBackend f = Annex.getState Annex.forcebackend >>= go
+chooseBackend f = Annex.getRead Annex.forcebackend >>= go
   where
 	go Nothing = maybeLookupBackendVariety . parseKeyVariety . encodeBS
 		=<< checkAttr "annex.backend" f

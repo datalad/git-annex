@@ -77,7 +77,7 @@ start o = do
 
 checkUnused :: RefSpec -> CommandPerform
 checkUnused refspec = chain 0
-	[ check "" unusedMsg $ findunused =<< Annex.getState Annex.fast
+	[ check "" unusedMsg $ findunused =<< Annex.getRead Annex.fast
 	, check "bad" staleBadMsg $ staleKeysPrune gitAnnexBadDir False
 	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpObjectDir True
 	]

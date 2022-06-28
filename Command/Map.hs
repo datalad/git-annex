@@ -52,7 +52,7 @@ start = startingNoMessage (ActionItemOther Nothing) $ do
 
 	liftIO $ writeFile file (drawMap rs trustmap umap)
 	next $
-		ifM (Annex.getState Annex.fast)
+		ifM (Annex.getRead Annex.fast)
 			( runViewer file []
 			, runViewer file
 	 			[ ("xdot", [File file])
