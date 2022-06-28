@@ -45,6 +45,7 @@ import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Char
 import Data.Ord
+import Data.Kind
 import qualified Text.Hamlet as Hamlet
 
 data RepositoryPath = RepositoryPath Text
@@ -54,7 +55,7 @@ data RepositoryPath = RepositoryPath Text
  -
  - Validates that the path entered is not empty, and is a safe value
  - to use as a repository. -}
-repositoryPathField :: forall (m :: * -> *). (MonadIO m, HandlerSite m ~ WebApp) => Bool -> Field m Text
+repositoryPathField :: forall (m :: Type -> Type). (MonadIO m, HandlerSite m ~ WebApp) => Bool -> Field m Text
 repositoryPathField autofocus = Field
 	{ fieldParse = \l _ -> parse l
 	, fieldEnctype = UrlEncoded
