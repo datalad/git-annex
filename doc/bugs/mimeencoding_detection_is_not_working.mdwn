@@ -39,3 +39,5 @@ Windows 11
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I just started using it and I love it. I like it more than git LFS
+
+[[!meta title="mimeencoding detection is not working on windows"]]
