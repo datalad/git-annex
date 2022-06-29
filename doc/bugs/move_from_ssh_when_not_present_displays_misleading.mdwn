@@ -16,3 +16,20 @@ that was still present.)
 
 IIRC there was a clear message displayed before git-annex-shell p2pstdio 
 got implemented. --[[Joey]]
+
+> Still a problem with 10.20220625, although the messages are
+> different and perhaps improved a bit:
+> 
+> 	move a (from b...) 
+> 
+>	  Transfer failed
+	failed
+> 	(from b...) 
+> 
+>	  Transfer failed
+> 	failed
+> 	(from b...) 
+> 
+>	  Transfer failed
+> 	failed
+> 	move: 3 failed
