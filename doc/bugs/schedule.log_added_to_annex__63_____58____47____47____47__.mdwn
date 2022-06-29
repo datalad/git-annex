@@ -53,3 +53,6 @@ Considering my two other issues »WHICH LOSE DATA«, I can only conclude it’s 
 
 * https://git-annex.branchable.com/bugs/Data_loss_when_copying_files_with_running_assistant/
 * https://git-annex.branchable.com/bugs/Infinite_loop_when_synchronizing_between_many_machines/
+
+> I guess this was fixed in the intervening time. With no way to reproduce
+> it, it's hard to tell. [[done]] --[[Joey]]
