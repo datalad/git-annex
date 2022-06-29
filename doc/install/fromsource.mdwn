@@ -83,8 +83,8 @@ to be broken from time to time.
 
 Get the git-annex source code, and inside the source tree, run:
 
-	cabal install -j -f"-assistant -webapp -webdav -pairing -dbus -magicmime" --only-dependencies
-	cabal configure -f"-assistant -webapp -webdav -pairing -dbus -magicmime"
+	cabal install -j -f"-assistant -webapp -pairing -dbus -magicmime" --only-dependencies
+	cabal configure -f"-assistant -webapp -pairing -dbus -magicmime"
 	cabal build -j
 
 To install the program and all associated files system-wide
