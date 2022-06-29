@@ -13,3 +13,6 @@ Just running 'git annex fsck --from remote --quiet' on some special remote with 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git annex is very efficient to sync my usb key, laptops and servers together.
+
+> [[fixed|done]]. Sorry for the 4 year delay, seems I missed this bug
+> report. --[[Joey]]

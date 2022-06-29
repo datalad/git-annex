@@ -164,7 +164,7 @@ performRemote key afile backend numcopies remote =
 			Nothing -> go True Nothing
 			Just (Right verification) -> go True (Just (tmpfile, verification))
 			Just (Left _) -> do
-				warning "failed to download file from remote"
+				warning (decodeBS (actionItemDesc ai) ++ ": failed to download file from remote")
 				void $ go True Nothing
 				return False
 	dispatch (Right False) = go False Nothing
