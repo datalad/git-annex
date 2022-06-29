@@ -22,7 +22,7 @@ import Git.FilePath
 import qualified Utility.RawFilePath as R
 	
 cmd :: Command
-cmd = withGlobalOptions [jsonOptions, annexedMatchingOptions] $
+cmd = withAnnexOptions [jsonOptions, annexedMatchingOptions] $
 	command "lock" SectionCommon
 		"undo unlock command"
 		paramPaths (withParams seek)

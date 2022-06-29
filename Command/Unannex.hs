@@ -20,7 +20,7 @@ import Git.FilePath
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
-cmd = withGlobalOptions [annexedMatchingOptions] $
+cmd = withAnnexOptions [annexedMatchingOptions] $
 	command "unannex" SectionUtility
 		"undo accidental add command"
 		paramPaths (withParams seek)

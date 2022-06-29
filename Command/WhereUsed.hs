@@ -24,7 +24,7 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 
 cmd :: Command
-cmd = noCommit $ withGlobalOptions [annexedMatchingOptions] $
+cmd = noCommit $ withAnnexOptions [annexedMatchingOptions] $
 	command "whereused" SectionQuery
 		"lists repositories that have file content"
 		paramNothing (seek <$$> optParser)

@@ -44,7 +44,7 @@ import qualified Data.Map as M
 import Control.Concurrent
 
 cmd :: Command
-cmd = withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption] $
+cmd = withAnnexOptions [jobsOption, jsonOptions, jsonProgressOption] $
 	command "export" SectionCommon
 		"export a tree of files to a special remote"
 		paramTreeish (seek <$$> optParser)

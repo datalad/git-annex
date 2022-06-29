@@ -83,7 +83,7 @@ import qualified Data.ByteString as S
 import Data.Char
 
 cmd :: Command
-cmd = withGlobalOptions [jobsOption] $
+cmd = withAnnexOptions [jobsOption, backendOption] $
 	command "sync" SectionCommon 
 		"synchronize local repository with remotes"
 		(paramRepeating paramRemote) (seek <--< optParser)

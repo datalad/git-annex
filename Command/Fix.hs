@@ -25,7 +25,7 @@ import qualified System.Posix.Files as Posix
 #endif
 
 cmd :: Command
-cmd = noCommit $ withGlobalOptions [annexedMatchingOptions] $
+cmd = noCommit $ withAnnexOptions [annexedMatchingOptions] $
 	command "fix" SectionMaintenance
 		"fix up links to annexed content"
 		paramPaths (withParams seek)

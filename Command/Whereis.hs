@@ -23,7 +23,7 @@ import qualified Data.Map as M
 import qualified Data.Vector as V
 
 cmd :: Command
-cmd = noCommit $ withGlobalOptions [jsonOptions, annexedMatchingOptions] $
+cmd = noCommit $ withAnnexOptions [jsonOptions, annexedMatchingOptions] $
 	command "whereis" SectionQuery
 		"lists repositories that have file content"
 		paramPaths (seek <$$> optParser)

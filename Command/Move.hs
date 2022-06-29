@@ -25,7 +25,7 @@ import qualified Data.ByteString.Char8 as B8
 import qualified Data.ByteString.Lazy as L
 
 cmd :: Command
-cmd = withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption, annexedMatchingOptions] $
+cmd = withAnnexOptions [jobsOption, jsonOptions, jsonProgressOption, annexedMatchingOptions] $
 	command "move" SectionCommon
 		"move content of files to/from another repository"
 		paramPaths (seek <--< optParser)

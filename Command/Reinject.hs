@@ -16,10 +16,11 @@ import Utility.Metered
 import qualified Git
 
 cmd :: Command
-cmd = command "reinject" SectionUtility 
-	"inject content of file back into annex"
-	(paramRepeating (paramPair "SRC" "DEST"))
-	(seek <$$> optParser)
+cmd = withAnnexOptions [backendOption] $
+	command "reinject" SectionUtility 
+		"inject content of file back into annex"
+		(paramRepeating (paramPair "SRC" "DEST"))
+		(seek <$$> optParser)
 
 data ReinjectOptions = ReinjectOptions
 	{ params :: CmdParams

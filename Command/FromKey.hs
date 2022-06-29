@@ -22,7 +22,7 @@ import Git.FilePath
 import Network.URI
 
 cmd :: Command
-cmd = notBareRepo $ withGlobalOptions [jsonOptions] $
+cmd = notBareRepo $ withAnnexOptions [jsonOptions] $
 	command "fromkey" SectionPlumbing "adds a file using a specific key"
 		(paramRepeating (paramPair paramKey paramPath))
 		(seek <$$> optParser)

@@ -14,7 +14,7 @@ import Logs.Web
 import Command.RegisterUrl (seekBatch, start, optParser, RegisterUrlOptions(..))
 
 cmd :: Command
-cmd = withGlobalOptions [jsonOptions] $ command "unregisterurl"
+cmd = withAnnexOptions [jsonOptions] $ command "unregisterurl"
 	SectionPlumbing "unregisters an url for a key"
 	(paramPair paramKey paramUrl)
 	(seek <$$> optParser)

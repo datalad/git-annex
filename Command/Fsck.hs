@@ -51,7 +51,7 @@ import Data.Either
 import qualified System.FilePath.ByteString as P
 
 cmd :: Command
-cmd = withGlobalOptions [jobsOption, jsonOptions, annexedMatchingOptions] $
+cmd = withAnnexOptions [jobsOption, jsonOptions, annexedMatchingOptions] $
 	command "fsck" SectionMaintenance
 		"find and fix problems"
 		paramPaths (seek <$$> optParser)

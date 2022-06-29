@@ -38,20 +38,20 @@ instance DeferredParseClass (Maybe (DeferredParse a)) where
 instance DeferredParseClass [DeferredParse a] where
 	finishParse v = mapM finishParse v
 
-type GlobalOption = Parser GlobalSetter
+type AnnexOption = Parser AnnexSetter
 
--- Used for global options that can modify Annex state by running
+-- Used for options that can modify Annex state by running
 -- an arbitrary action in it, and can also set up AnnexRead.
-data GlobalSetter = GlobalSetter
+data AnnexSetter = AnnexSetter
 	{ annexStateSetter :: Annex ()
 	, annexReadSetter :: AnnexRead -> AnnexRead
 	}
 
-instance Sem.Semigroup GlobalSetter where
-	a <> b = GlobalSetter
+instance Sem.Semigroup AnnexSetter where
+	a <> b = AnnexSetter
 		{ annexStateSetter = annexStateSetter a >> annexStateSetter b
 		, annexReadSetter = annexReadSetter b . annexReadSetter a
 		}
 
-instance Monoid GlobalSetter where
-	mempty = GlobalSetter (return ()) id
+instance Monoid AnnexSetter where
+	mempty = AnnexSetter (return ()) id

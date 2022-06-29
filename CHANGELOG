@@ -3,6 +3,8 @@ git-annex (10.20220625) UNRELEASED; urgency=medium
   * Improve handling of parallelization with -J when copying content
     from/to a git remote that is a local path.
   * stack.yaml: Updated to lts-19.13
+  * --backend is no longer a global option, and is only accepted by
+    commands that actually need it.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Jun 2022 14:49:17 -0400
 

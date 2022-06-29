@@ -14,10 +14,11 @@ import Utility.Metered
 
 cmd :: Command
 cmd = noCommit $ noMessages $ dontCheck repoExists $
-	command "calckey" SectionPlumbing 
-		"calulate key for a file"
-		(paramRepeating paramFile)
-		(batchable run (pure ()))
+	withAnnexOptions [backendOption] $
+		command "calckey" SectionPlumbing 
+			"calulate key for a file"
+			(paramRepeating paramFile)
+			(batchable run (pure ()))
 
 run :: () -> SeekInput -> String -> Annex Bool
 run _ _ file = tryNonAsync (genKey ks nullMeterUpdate Nothing) >>= \case

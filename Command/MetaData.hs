@@ -25,7 +25,7 @@ import qualified Data.ByteString.Lazy.UTF8 as BU
 import Control.Concurrent
 
 cmd :: Command
-cmd = withGlobalOptions [jsonOptions, annexedMatchingOptions] $ 
+cmd = withAnnexOptions [jsonOptions, annexedMatchingOptions] $ 
 	command "metadata" SectionMetaData
 		"sets or gets metadata of a file"
 		paramPaths (seek <$$> optParser)

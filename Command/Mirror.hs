@@ -17,7 +17,7 @@ import Annex.NumCopies
 import Types.Transfer
 
 cmd :: Command
-cmd = withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption, annexedMatchingOptions] $
+cmd = withAnnexOptions [jobsOption, jsonOptions, jsonProgressOption, annexedMatchingOptions] $
 	command "mirror" SectionCommon 
 		"mirror content of files to/from another repository"
 		paramPaths (seek <--< optParser)

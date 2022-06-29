@@ -167,6 +167,11 @@ have the same value as the currently checked out branch.
   resolution. It can also be disabled by setting `annex.resolvemerge`
   to false.
 
+* `--backend`
+
+  Specifies which key-value backend to use when adding files, 
+  or when importing from a special remote. 
+
 * `--cleanup`
 
   Removes the local and remote `synced/` branches, which were created

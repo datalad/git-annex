@@ -21,12 +21,12 @@ import qualified Utility.Format
 import Utility.DataUnits
 
 cmd :: Command
-cmd = notBareRepo $ withGlobalOptions [annexedMatchingOptions] $ mkCommand $
+cmd = notBareRepo $ withAnnexOptions [annexedMatchingOptions] $ mkCommand $
 	command "find" SectionQuery "lists available files"
 		paramPaths (seek <$$> optParser)
 
 mkCommand :: Command -> Command
-mkCommand = noCommit . noMessages . withGlobalOptions [jsonOptions]
+mkCommand = noCommit . noMessages . withAnnexOptions [jsonOptions]
 
 data FindOptions = FindOptions
 	{ findThese :: CmdParams

@@ -40,14 +40,15 @@ import Control.Concurrent.STM
 
 cmd :: Command
 cmd = notBareRepo $
-	withGlobalOptions opts $
+	withAnnexOptions opts $
 		command "import" SectionCommon 
 			"add a tree of files to the repository"
 			(paramPaths ++ "|BRANCH")
 			(seek <$$> optParser)
   where
 	opts =
-		[ jobsOption
+		[ backendOption
+		, jobsOption
 		, jsonOptions
 		, jsonProgressOption
 		-- These options are only used when importing from a

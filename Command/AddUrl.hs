@@ -37,7 +37,7 @@ import Network.URI
 import qualified System.FilePath.ByteString as P
 
 cmd :: Command
-cmd = notBareRepo $ withGlobalOptions [jobsOption, jsonOptions, jsonProgressOption] $
+cmd = notBareRepo $ withAnnexOptions [jobsOption, jsonOptions, jsonProgressOption] $
 	command "addurl" SectionCommon "add urls to annex"
 		(paramRepeating paramUrl) (seek <$$> optParser)
 

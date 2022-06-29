@@ -22,7 +22,7 @@ import Annex.Wanted
 import Annex.Notification
 
 cmd :: Command
-cmd = withGlobalOptions [jobsOption, jsonOptions, annexedMatchingOptions] $
+cmd = withAnnexOptions [jobsOption, jsonOptions, annexedMatchingOptions] $
 	command "drop" SectionCommon
 		"remove content of files from repository"
 		paramPaths (seek <$$> optParser)

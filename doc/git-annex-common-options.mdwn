@@ -108,13 +108,6 @@ Most of these options are accepted by all git-annex commands.
   but now will not do so, because it could lead to data loss,
   and data loss is now only enabled when using the `--force` option.
 
-* `--backend=name`
-
-  Specifies which key-value backend to use. This can be used when
-  adding a file to the annex, or migrating a file. Once files
-  are in the annex, their backend is known and this option is not
-  necessary.
-
 * `--user-agent=value`
 
   Overrides the User-Agent to use when downloading files from the web.

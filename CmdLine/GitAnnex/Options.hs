@@ -34,66 +34,66 @@ import qualified Limit
 import qualified Limit.Wanted
 import CmdLine.Option
 import CmdLine.Usage
-import CmdLine.GlobalSetter
+import CmdLine.AnnexSetter
 import qualified Backend
 import qualified Types.Backend as Backend
 import Utility.HumanTime
 import Utility.DataUnits
 import Annex.Concurrent
 
--- Global options that are accepted by all git-annex sub-commands,
+-- Options that are accepted by all git-annex sub-commands,
 -- although not always used.
-gitAnnexGlobalOptions :: [GlobalOption]
-gitAnnexGlobalOptions = commonGlobalOptions ++
-	[ globalOption setnumcopies $ option auto
+gitAnnexCommonOptions :: [AnnexOption]
+gitAnnexCommonOptions = commonOptions ++
+	[ annexOption setnumcopies $ option auto
 		( long "numcopies" <> short 'N' <> metavar paramNumber
 		<> help "override desired number of copies"
 		<> hidden
 		)
-	, globalOption setmincopies $ option auto
+	, annexOption setmincopies $ option auto
 		( long "mincopies" <> short 'N' <> metavar paramNumber
 		<> help "override minimum number of copies"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Remote.forceTrust Trusted) $ strOption
+	, annexOption (setAnnexState . Remote.forceTrust Trusted) $ strOption
 		( long "trust" <> metavar paramRemote
 		<> help "deprecated, does not override trust setting"
 		<> hidden
 		<> completeRemotes
 		)
-	, globalOption (setAnnexState . Remote.forceTrust SemiTrusted) $ strOption
+	, annexOption (setAnnexState . Remote.forceTrust SemiTrusted) $ strOption
 		( long "semitrust" <> metavar paramRemote
 		<> help "override trust setting back to default"
 		<> hidden
 		<> completeRemotes
 		)
-	, globalOption (setAnnexState . Remote.forceTrust UnTrusted) $ strOption
+	, annexOption (setAnnexState . Remote.forceTrust UnTrusted) $ strOption
 		( long "untrust" <> metavar paramRemote
 		<> help "override trust setting to untrusted"
 		<> hidden
 		<> completeRemotes
 		)
-	, globalOption (setAnnexState . setgitconfig) $ strOption
+	, annexOption (setAnnexState . setgitconfig) $ strOption
 		( long "config" <> short 'c' <> metavar "NAME=VALUE"
 		<> help "override git configuration setting"
 		<> hidden
 		)
-	, globalOption setuseragent $ strOption
+	, annexOption setuseragent $ strOption
 		( long "user-agent" <> metavar paramName
 		<> help "override default User-Agent"
 		<> hidden
 		)
-	, globalFlag (setAnnexState $ toplevelWarning False "--trust-glacier no longer has any effect")
+	, annexFlag (setAnnexState $ toplevelWarning False "--trust-glacier no longer has any effect")
 		( long "trust-glacier"
 		<> help "deprecated, does not trust Amazon Glacier inventory"
 		<> hidden
 		)
-	, globalFlag (setdesktopnotify mkNotifyFinish)
+	, annexFlag (setdesktopnotify mkNotifyFinish)
 		( long "notify-finish"
 		<> help "show desktop notification after transfer finishes"
 		<> hidden
 		)
-	, globalFlag (setdesktopnotify mkNotifyStart)
+	, annexFlag (setdesktopnotify mkNotifyStart)
 		( long "notify-start"
 		<> help "show desktop notification after transfer starts"
 		<> hidden
@@ -229,7 +229,7 @@ parseKey :: MonadFail m => String -> m Key
 parseKey = maybe (Fail.fail "invalid key") return . deserializeKey
 
 -- Options to match properties of annexed files.
-annexedMatchingOptions :: [GlobalOption]
+annexedMatchingOptions :: [AnnexOption]
 annexedMatchingOptions = concat
 	[ keyMatchingOptions'
 	, fileMatchingOptions' Limit.LimitAnnexFiles
@@ -239,86 +239,86 @@ annexedMatchingOptions = concat
 	]
 
 -- Matching options that can operate on keys as well as files.
-keyMatchingOptions :: [GlobalOption]
+keyMatchingOptions :: [AnnexOption]
 keyMatchingOptions = keyMatchingOptions' ++ combiningOptions ++ timeLimitOption ++ sizeLimitOption
 
-keyMatchingOptions' :: [GlobalOption]
+keyMatchingOptions' :: [AnnexOption]
 keyMatchingOptions' = 
-	[ globalOption (setAnnexState . Limit.addIn) $ strOption
+	[ annexOption (setAnnexState . Limit.addIn) $ strOption
 		( long "in" <> short 'i' <> metavar paramRemote
 		<> help "match files present in a remote"
 		<> hidden
 		<> completeRemotes
 		)
-	, globalOption (setAnnexState . Limit.addCopies) $ strOption
+	, annexOption (setAnnexState . Limit.addCopies) $ strOption
 		( long "copies" <> short 'C' <> metavar paramRemote
 		<> help "skip files with fewer copies"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addLackingCopies False) $ strOption
+	, annexOption (setAnnexState . Limit.addLackingCopies False) $ strOption
 		( long "lackingcopies" <> metavar paramNumber
 		<> help "match files that need more copies"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addLackingCopies True) $ strOption
+	, annexOption (setAnnexState . Limit.addLackingCopies True) $ strOption
 		( long "approxlackingcopies" <> metavar paramNumber
 		<> help "match files that need more copies (faster)"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addInBackend) $ strOption
+	, annexOption (setAnnexState . Limit.addInBackend) $ strOption
 		( long "inbackend" <> short 'B' <> metavar paramName
 		<> help "match files using a key-value backend"
 		<> hidden
 		<> completeBackends
 		)
-	, globalFlag (setAnnexState Limit.addSecureHash)
+	, annexFlag (setAnnexState Limit.addSecureHash)
 		( long "securehash"
 		<> help "match files using a cryptographically secure hash"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addInAllGroup) $ strOption
+	, annexOption (setAnnexState . Limit.addInAllGroup) $ strOption
 		( long "inallgroup" <> metavar paramGroup
 		<> help "match files present in all remotes in a group"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addMetaData) $ strOption
+	, annexOption (setAnnexState . Limit.addMetaData) $ strOption
 		( long "metadata" <> metavar "FIELD=VALUE"
 		<> help "match files with attached metadata"
 		<> hidden
 		)
-	, globalFlag (setAnnexState Limit.Wanted.addWantGet)
+	, annexFlag (setAnnexState Limit.Wanted.addWantGet)
 		( long "want-get"
 		<> help "match files the repository wants to get"
 		<> hidden
 		)
-	, globalFlag (setAnnexState Limit.Wanted.addWantDrop)
+	, annexFlag (setAnnexState Limit.Wanted.addWantDrop)
 		( long "want-drop"
 		<> help "match files the repository wants to drop"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addAccessedWithin) $
+	, annexOption (setAnnexState . Limit.addAccessedWithin) $
 		option (eitherReader parseDuration)
 			( long "accessedwithin"
 			<> metavar paramTime
 			<> help "match files accessed within a time interval"
 			<> hidden
 			)
-	, globalOption (setAnnexState . Limit.addMimeType) $ strOption
+	, annexOption (setAnnexState . Limit.addMimeType) $ strOption
 		( long "mimetype" <> metavar paramGlob
 		<> help "match files by mime type"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addMimeEncoding) $ strOption
+	, annexOption (setAnnexState . Limit.addMimeEncoding) $ strOption
 		( long "mimeencoding" <> metavar paramGlob
 		<> help "match files by mime encoding"
 		<> hidden
 		)
-	, globalFlag (setAnnexState Limit.addUnlocked)
+	, annexFlag (setAnnexState Limit.addUnlocked)
 		( long "unlocked"
 		<> help "match files that are unlocked"
 		<> hidden
 		)
-	, globalFlag (setAnnexState Limit.addLocked)
+	, annexFlag (setAnnexState Limit.addLocked)
 		( long "locked"
 		<> help "match files that are locked"
 		<> hidden
@@ -326,44 +326,44 @@ keyMatchingOptions' =
 	]
 
 -- Options to match files which may not yet be annexed.
-fileMatchingOptions :: Limit.LimitBy -> [GlobalOption]
+fileMatchingOptions :: Limit.LimitBy -> [AnnexOption]
 fileMatchingOptions lb = fileMatchingOptions' lb ++ combiningOptions ++ timeLimitOption
 
-fileMatchingOptions' :: Limit.LimitBy -> [GlobalOption]
+fileMatchingOptions' :: Limit.LimitBy -> [AnnexOption]
 fileMatchingOptions' lb =
-	[ globalOption (setAnnexState . Limit.addExclude) $ strOption
+	[ annexOption (setAnnexState . Limit.addExclude) $ strOption
 		( long "exclude" <> short 'x' <> metavar paramGlob
 		<> help "skip files matching the glob pattern"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addInclude) $ strOption
+	, annexOption (setAnnexState . Limit.addInclude) $ strOption
 		( long "include" <> short 'I' <> metavar paramGlob
 		<> help "limit to files matching the glob pattern"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addExcludeSameContent) $ strOption
+	, annexOption (setAnnexState . Limit.addExcludeSameContent) $ strOption
 		( long "excludesamecontent" <> short 'x' <> metavar paramGlob
 		<> help "skip files whose content is the same as another file matching the glob pattern"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addIncludeSameContent) $ strOption
+	, annexOption (setAnnexState . Limit.addIncludeSameContent) $ strOption
 		( long "includesamecontent" <> short 'I' <> metavar paramGlob
 		<> help "limit to files whose content is the same as another file matching the glob pattern"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addLargerThan lb) $ strOption
+	, annexOption (setAnnexState . Limit.addLargerThan lb) $ strOption
 		( long "largerthan" <> metavar paramSize
 		<> help "match files larger than a size"
 		<> hidden
 		)
-	, globalOption (setAnnexState . Limit.addSmallerThan lb) $ strOption
+	, annexOption (setAnnexState . Limit.addSmallerThan lb) $ strOption
 		( long "smallerthan" <> metavar paramSize
 		<> help "match files smaller than a size"
 		<> hidden
 		)
 	]
 
-combiningOptions :: [GlobalOption]
+combiningOptions :: [AnnexOption]
 combiningOptions = 
 	[ longopt "not" "negate next option"
 	, longopt "and" "both previous and next option must match"
@@ -372,19 +372,19 @@ combiningOptions =
 	, shortopt ')' "close group of options"
 	]
   where
-	longopt o h = globalFlag (setAnnexState $ Limit.addSyntaxToken o)
+	longopt o h = annexFlag (setAnnexState $ Limit.addSyntaxToken o)
 		( long o <> help h <> hidden )
-	shortopt o h = globalFlag (setAnnexState $ Limit.addSyntaxToken [o])
+	shortopt o h = annexFlag (setAnnexState $ Limit.addSyntaxToken [o])
 		( short o <> help h <> hidden )
 
-jsonOptions :: [GlobalOption]
+jsonOptions :: [AnnexOption]
 jsonOptions = 
-	[ globalFlag (setAnnexState $ Annex.setOutput (JSONOutput stdjsonoptions))
+	[ annexFlag (setAnnexState $ Annex.setOutput (JSONOutput stdjsonoptions))
 		( long "json" <> short 'j'
 		<> help "enable JSON output"
 		<> hidden
 		)
-	, globalFlag (setAnnexState $ Annex.setOutput (JSONOutput jsonerrormessagesoptions))
+	, annexFlag (setAnnexState $ Annex.setOutput (JSONOutput jsonerrormessagesoptions))
 		( long "json-error-messages"
 		<> help "include error messages in JSON"
 		<> hidden
@@ -397,9 +397,9 @@ jsonOptions =
 		}
 	jsonerrormessagesoptions = stdjsonoptions { jsonErrorMessages = True }
 
-jsonProgressOption :: [GlobalOption]
+jsonProgressOption :: [AnnexOption]
 jsonProgressOption = 
-	[ globalFlag (setAnnexState $ Annex.setOutput (JSONOutput jsonoptions))
+	[ annexFlag (setAnnexState $ Annex.setOutput (JSONOutput jsonoptions))
 		( long "json-progress"
 		<> help "include progress in JSON output"
 		<> hidden
@@ -413,9 +413,9 @@ jsonProgressOption =
 
 -- Note that a command that adds this option should wrap its seek
 -- action in `allowConcurrentOutput`.
-jobsOption :: [GlobalOption]
+jobsOption :: [AnnexOption]
 jobsOption = 
-	[ globalOption (setAnnexState . setConcurrency . ConcurrencyCmdLine) $ 
+	[ annexOption (setAnnexState . setConcurrency . ConcurrencyCmdLine) $ 
 		option (maybeReader parseConcurrency)
 			( long "jobs" <> short 'J' 
 			<> metavar (paramNumber `paramOr` "cpus")
@@ -424,9 +424,9 @@ jobsOption =
 			)
 	]
 
-timeLimitOption :: [GlobalOption]
+timeLimitOption :: [AnnexOption]
 timeLimitOption = 
-	[ globalOption settimelimit $ option (eitherReader parseDuration)
+	[ annexOption settimelimit $ option (eitherReader parseDuration)
 		( long "time-limit" <> short 'T' <> metavar paramTime
 		<> help "stop after the specified amount of time"
 		<> hidden
@@ -438,9 +438,9 @@ timeLimitOption =
 		let cutoff = start + durationToPOSIXTime duration
 		Annex.changeState $ \s -> s { Annex.timelimit = Just (duration, cutoff) }
 
-sizeLimitOption :: [GlobalOption]
+sizeLimitOption :: [AnnexOption]
 sizeLimitOption =
-	[ globalOption setsizelimit $ option (maybeReader (readSize dataUnits))
+	[ annexOption setsizelimit $ option (maybeReader (readSize dataUnits))
 		( long "size-limit" <> metavar paramSize
 		<> help "total size of annexed files to process"
 		<> hidden
@@ -450,6 +450,18 @@ sizeLimitOption =
 	setsizelimit n = setAnnexState $ do
 		v <- liftIO $ newTVarIO n
 		Annex.changeState $ \s -> s { Annex.sizelimit = Just v }
+	
+backendOption :: [AnnexOption]
+backendOption = 
+	[ annexOption setforcebackend $ strOption
+		( long "backend" <> short 'b' <> metavar paramName
+		<> help "specify key-value backend to use"
+		<> hidden
+		)
+	]
+  where
+	setforcebackend v = setAnnexRead $ 
+		\rd -> rd { Annex.forcebackend = Just v }
 
 data DaemonOptions = DaemonOptions
 	{ foregroundDaemonOption :: Bool

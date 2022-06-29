@@ -20,7 +20,7 @@ import qualified Data.ByteString as B
 
 cmd :: Command
 cmd = noCommit $ noMessages $ dontCheck repoExists $ 
-	withGlobalOptions [jsonOptions] $
+	withAnnexOptions [jsonOptions] $
 		command "examinekey" SectionPlumbing 
 			"prints information from a key"
 			(paramRepeating paramKey)

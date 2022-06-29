@@ -11,8 +11,7 @@ module CmdLine.Option where
 
 import Options.Applicative
 
-import CmdLine.Usage
-import CmdLine.GlobalSetter
+import CmdLine.AnnexSetter
 import qualified Annex
 import Types.Messages
 import Types.DeferredParse
@@ -22,47 +21,42 @@ import Git.Config
 import Utility.FileSystemEncoding
 import Annex.Debug
 
--- Global options accepted by both git-annex and git-annex-shell sub-commands.
-commonGlobalOptions :: [GlobalOption]
-commonGlobalOptions =
-	[ globalFlag (setforce True)
+-- Options accepted by both git-annex and git-annex-shell sub-commands.
+commonOptions :: [AnnexOption]
+commonOptions =
+	[ annexFlag (setforce True)
 		( long "force" 
 		<> help "allow actions that may lose annexed data"
 		<> hidden
 		)
-	, globalFlag (setfast True)
+	, annexFlag (setfast True)
 		( long "fast" <> short 'F'
 		<> help "avoid slow operations"
 		<> hidden
 		)
-	, globalFlag (setAnnexState $ Annex.setOutput QuietOutput)
+	, annexFlag (setAnnexState $ Annex.setOutput QuietOutput)
 		( long "quiet" <> short 'q'
 		<> help "avoid verbose output"
 		<> hidden
 		)
-	, globalFlag (setAnnexState $ Annex.setOutput NormalOutput)
+	, annexFlag (setAnnexState $ Annex.setOutput NormalOutput)
 		( long "verbose" <> short 'v'
 		<> help "allow verbose output (default)"
 		<> hidden
 		)
-	, globalFlag (setdebug True)
+	, annexFlag (setdebug True)
 		( long "debug" <> short 'd'
 		<> help "show debug messages"
 		<> hidden
 		)
-	, globalFlag (setdebug False)
+	, annexFlag (setdebug False)
 		( long "no-debug"
 		<> help "don't show debug messages"
 		<> hidden
 		)
-	, globalOption setdebugfilter $ strOption
+	, annexOption setdebugfilter $ strOption
 		( long "debugfilter" <> metavar "NAME[,NAME..]"
 		<> help "show debug messages coming from a module"
-		<> hidden
-		)
-	, globalOption setforcebackend $ strOption
-		( long "backend" <> short 'b' <> metavar paramName
-		<> help "specify key-value backend to use"
 		<> hidden
 		)
 	]
@@ -71,9 +65,6 @@ commonGlobalOptions =
 
 	setfast v = setAnnexRead $ \rd -> rd { Annex.fast = v }
 
-	setforcebackend v = setAnnexRead $ 
-		\rd -> rd { Annex.forcebackend = Just v }
-	
 	setdebug v = mconcat
 		[ setAnnexRead $ \rd -> rd { Annex.debugenabled = v }
 		-- Also set in git config so it will be passed on to any

@@ -18,7 +18,7 @@ import CmdLine.Seek as ReExported
 import CmdLine.Usage as ReExported
 import CmdLine.Action as ReExported
 import CmdLine.Option as ReExported
-import CmdLine.GlobalSetter as ReExported
+import CmdLine.AnnexSetter as ReExported
 import CmdLine.GitAnnex.Options as ReExported
 import CmdLine.Batch as ReExported
 import Options.Applicative as ReExported hiding (command)
@@ -69,9 +69,9 @@ noMessages c = c { cmdnomessages = True }
 noRepo :: (String -> Parser (IO ())) -> Command -> Command
 noRepo a c = c { cmdnorepo = Just (a (cmdparamdesc c)) }
 
-{- Adds global options to a command. -}
-withGlobalOptions :: [[GlobalOption]] -> Command -> Command
-withGlobalOptions os c = c { cmdglobaloptions = cmdglobaloptions c ++ concat os }
+{- Adds Annex options to a command. -}
+withAnnexOptions :: [[AnnexOption]] -> Command -> Command
+withAnnexOptions os c = c { cmdannexoptions = cmdannexoptions c ++ concat os }
 
 {- For start stage to indicate what will be done. -}
 starting:: MkActionItem actionitem => String -> actionitem -> SeekInput -> CommandPerform -> CommandStart

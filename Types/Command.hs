@@ -87,8 +87,8 @@ data Command = Command
 	-- ^ command line parser
 	, cmdinfomod :: forall a. InfoMod a
 	-- ^ command-specific modifier for ParserInfo
-	, cmdglobaloptions :: [GlobalOption]
-	-- ^ additional global options
+	, cmdannexoptions :: [AnnexOption]
+	-- ^ additional options not parsed by the CommandParser
 	, cmdnorepo :: Maybe (Parser (IO ()))
 	-- ^used when not in a repo
 	}

@@ -699,7 +699,7 @@ Executable git-annex
     CmdLine.GitAnnexShell
     CmdLine.GitAnnexShell.Checks
     CmdLine.GitAnnexShell.Fields
-    CmdLine.GlobalSetter
+    CmdLine.AnnexSetter
     CmdLine.Option
     CmdLine.GitRemoteTorAnnex
     CmdLine.Seek

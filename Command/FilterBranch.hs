@@ -36,7 +36,7 @@ import Data.ByteString.Builder
 import qualified System.FilePath.ByteString as P
 
 cmd :: Command
-cmd = noMessages $ withGlobalOptions [annexedMatchingOptions] $ 
+cmd = noMessages $ withAnnexOptions [annexedMatchingOptions] $ 
 	command "filter-branch" SectionMaintenance 
 		"filter information from the git-annex branch"
 		paramPaths (seek <$$> optParser)

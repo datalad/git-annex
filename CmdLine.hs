@@ -53,14 +53,14 @@ dispatch' subcommandname args fuzzy cmds allargs allcmds fields getgitrepo progn
   where
 	go (Right g) = do
 		g' <- Git.Config.read g
-		(cmd, seek, globalsetter) <- parsewith False cmdparser
+		(cmd, seek, annexsetter) <- parsewith False cmdparser
 			(\a -> a (Just g'))
 			O.handleParseResult
-		state <- applyAnnexReadSetter globalsetter <$> Annex.new g'
+		state <- applyAnnexReadSetter annexsetter <$> Annex.new g'
 		Annex.eval state $ do
 			checkEnvironment
 			forM_ fields $ uncurry Annex.setField
-			prepRunCommand cmd globalsetter
+			prepRunCommand cmd annexsetter
 			startup
 			performCommandAction True cmd seek $
 				shutdown $ cmdnocommit cmd
@@ -101,7 +101,7 @@ dispatch' subcommandname args fuzzy cmds allargs allcmds fields getgitrepo progn
 			Just n -> n:args
 
 {- Parses command line, selecting one of the commands from the list. -}
-parseCmd :: String -> String -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v, GlobalSetter)
+parseCmd :: String -> String -> CmdParams -> [Command] -> (Command -> O.Parser v) -> O.ParserResult (Command, v, AnnexSetter)
 parseCmd progname progdesc allargs allcmds getparser = 
 	O.execParserPure (O.prefs O.idm) pinfo allargs
   where
@@ -114,7 +114,7 @@ parseCmd progname progdesc allargs allcmds getparser =
 	mkparser c = (,,) 
 		<$> pure c
 		<*> getparser c
-		<*> parserGlobalOptions (cmdglobaloptions c)
+		<*> parserAnnexOptions (cmdannexoptions c)
 	synopsis n d = n ++ " - " ++ d
 	intro = mconcat $ concatMap (\l -> [H.text l, H.line])
 		(synopsis progname progdesc : commandList allcmds)
@@ -141,14 +141,14 @@ subCmdName argv = (name, args)
 		| "-" `isPrefixOf` a = findname as (a:c)
 		| otherwise = (Just a, reverse c ++ as)
 
--- | Note that the GlobalSetter must have already had its annexReadSetter
+-- | Note that the AnnexSetter must have already had its annexReadSetter
 -- applied before entering the Annex monad to run this; that cannot be
 -- changed while running in the Annex monad.
-prepRunCommand :: Command -> GlobalSetter -> Annex ()
-prepRunCommand cmd globalsetter = do
+prepRunCommand :: Command -> AnnexSetter -> Annex ()
+prepRunCommand cmd annexsetter = do
 	when (cmdnomessages cmd) $
 		Annex.setOutput QuietOutput
-	annexStateSetter globalsetter
+	annexStateSetter annexsetter
 	whenM (Annex.getRead Annex.debugenabled) $
 		enableDebugOutput
 
@@ -186,7 +186,7 @@ mkAddonCommand p subcommandname = Command
 	, cmdparamdesc = "[PARAMS]"
 	, cmdsection = SectionAddOn
 	, cmddesc = "addon command"
-	, cmdglobaloptions = []
+	, cmdannexoptions = []
 	, cmdinfomod = O.forwardOptions
 	, cmdparser = parse
 	, cmdnorepo = Just parse

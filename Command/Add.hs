@@ -34,12 +34,13 @@ import System.PosixCompat.Files
 
 cmd :: Command
 cmd = notBareRepo $ 
-	withGlobalOptions opts $
+	withAnnexOptions opts $
 		command "add" SectionCommon "add files to annex"
 			paramPaths (seek <$$> optParser)
   where
 	opts =
-		[ jobsOption
+		[ backendOption
+		, jobsOption
 		, jsonOptions
 		, jsonProgressOption
 		, fileMatchingOptions LimitDiskFiles

@@ -130,7 +130,7 @@ import qualified Command.TestRemote
 import qualified Command.Benchmark
 
 cmds :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [Command]
-cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexGlobalOptions $
+cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOptions $
 	[ Command.Help.cmd
 	, Command.Add.cmd
 	, Command.Get.cmd
@@ -245,8 +245,8 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexGlobalOption
 		mkbenchmarkgenerator $ cmds testoptparser testrunner (\_ _ -> return noop)
 	]
 
-addGitAnnexGlobalOptions :: Command -> Command
-addGitAnnexGlobalOptions c = c { cmdglobaloptions = gitAnnexGlobalOptions ++ cmdglobaloptions c }
+addGitAnnexCommonOptions :: Command -> Command
+addGitAnnexCommonOptions c = c { cmdannexoptions = gitAnnexCommonOptions ++ cmdannexoptions c }
 
 run :: Parser TestOptions -> TestRunner -> MkBenchmarkGenerator -> [String] -> IO ()
 run testoptparser testrunner mkbenchmarkgenerator args = go envmodes

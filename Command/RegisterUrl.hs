@@ -13,7 +13,7 @@ import Command.FromKey (keyOpt, keyOpt')
 import qualified Remote
 
 cmd :: Command
-cmd = withGlobalOptions [jsonOptions] $ command "registerurl"
+cmd = withAnnexOptions [jsonOptions] $ command "registerurl"
 	SectionPlumbing "registers an url for a key"
 	(paramPair paramKey paramUrl)
 	(seek <$$> optParser)

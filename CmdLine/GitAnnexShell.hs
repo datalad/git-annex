@@ -11,7 +11,7 @@ import Annex.Common
 import qualified Git.Construct
 import qualified Git.Config
 import CmdLine
-import CmdLine.GlobalSetter
+import CmdLine.AnnexSetter
 import Command
 import Annex.UUID
 import CmdLine.GitAnnexShell.Checks
@@ -37,7 +37,7 @@ cmdsMap = M.fromList $ map mk
 	, (ServeReadWrite, allcmds)
 	]
   where
-	readonlycmds = map addGlobalOptions
+	readonlycmds = map addAnnexOptions
 		[ Command.ConfigList.cmd
 		, gitAnnexShellCheck Command.NotifyChanges.cmd
 		-- p2pstdio checks the enviroment variables to
@@ -46,10 +46,10 @@ cmdsMap = M.fromList $ map mk
 		, gitAnnexShellCheck Command.InAnnex.cmd
 		, gitAnnexShellCheck Command.SendKey.cmd
 		]
-	appendcmds = readonlycmds ++ map addGlobalOptions
+	appendcmds = readonlycmds ++ map addAnnexOptions
 		[ gitAnnexShellCheck Command.RecvKey.cmd
 		]
-	allcmds = appendcmds ++ map addGlobalOptions
+	allcmds = appendcmds ++ map addAnnexOptions
 		[ gitAnnexShellCheck Command.DropKey.cmd
 		, Command.GCryptSetup.cmd
 		]
@@ -63,16 +63,16 @@ cmdsFor = fromMaybe [] . flip M.lookup cmdsMap
 cmdsList :: [Command]
 cmdsList = nub $ concat $ M.elems cmdsMap
 
-addGlobalOptions :: Command -> Command
-addGlobalOptions c = c { cmdglobaloptions = globalOptions ++ cmdglobaloptions c }
+addAnnexOptions :: Command -> Command
+addAnnexOptions c = c { cmdannexoptions = commonShellOptions ++ cmdannexoptions c }
 
-globalOptions :: [GlobalOption]
-globalOptions = 
-	globalOption (setAnnexState . checkUUID) (strOption
+commonShellOptions :: [AnnexOption]
+commonShellOptions = 
+	annexOption (setAnnexState . checkUUID) (strOption
 		( long "uuid" <> metavar paramUUID
 		<> help "local repository uuid"
 		))
-	: commonGlobalOptions
+	: commonOptions
   where
 	checkUUID expected = getUUID >>= check
 	  where

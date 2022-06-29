@@ -22,7 +22,7 @@ import Git.Types (RemoteName)
 import Utility.Tuple
 
 cmd :: Command
-cmd = noCommit $ withGlobalOptions [annexedMatchingOptions] $
+cmd = noCommit $ withAnnexOptions [annexedMatchingOptions] $
 	command "list" SectionQuery 
 		"show which remotes contain files"
 		paramPaths (seek <$$> optParser)
