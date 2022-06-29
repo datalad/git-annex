@@ -24,3 +24,13 @@ would make sense to.)
 
 git-annex version: 8.20201103 --[[Joey]]
 
+> Reproduced with 10.20220625. 3 100 mb files and copy to a local git repo.
+> Also, `copy --from` and `get` do have the problem, at least they do now.
+> --[[Joey]]
+
+> The problem is that Remote.Git.onLocal uses a MVar for the remote state,
+> and the copy runs in that. So while one copy is running, the rest block.
+> So fixing this will need a pool of local remote states.
+> --[[Joey]]
+
+>> [[fixed|done]] --[[Joey]]
