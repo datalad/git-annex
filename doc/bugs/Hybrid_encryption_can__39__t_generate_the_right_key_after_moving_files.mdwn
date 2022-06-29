@@ -113,3 +113,6 @@ git-annex: fsck: 1 failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yeah, it works great most of the time, and it was working great on the amazon remote before I tried to pull these migration shenanigans.
+
+> Closing this since there has been no response for information for 5
+> years. [[done]] --[[Joey]]
