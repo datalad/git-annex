@@ -22,3 +22,5 @@ Result:
 The problem is easy to fix, I think, by choosing a different naming convention. I'm not sure how to deal with legacy-named branches going forward, though.
 
 Thank you very much for making git-annex available, much appreciated.
+
+> I disagree that this needs fixing, so [[wontfix]] --[[Joey]]
