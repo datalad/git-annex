@@ -13,3 +13,8 @@ Run adjust --unlock with very large files.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes I have! I've used it manage lots of video editing disks before, and am now migrating several slightly different copies of 15TB sized documentary footage from random USB3 disks and LTO tapes to a RAID server with BTRFS.
+
+> Yay, this got fixed some time ago, by making the smudge filter not output
+> the file content at all, but instead the link, and having a git hook
+> later run git-annex to populate the files, which it does use reflink for
+> when possible. [[done]] --[[Joey]]
