@@ -46,3 +46,4 @@ local repository version: 8
 I am using it since v5 and only v5 for repos like more 100k filecount and size ~800GB. Worked perfectly on Linux desktop, android, phone, tab, raspberry. The greatest sync tool I ever had. I am a little bit worried about the upgrade to v8 from v5 now :) 
 
 
+> seems like this was a mistake not a bug, so [[done]] --[[Joey]]
