@@ -36,3 +36,5 @@ Version 6.20170520 on Mac OS 10.13.4.
 
 Today is my first day trying it out!  It's fabulous so far, but I'm at the beginning of the learning curve.
 
+> Yay, git-annex proxy is deprecated and just passes through to git, since
+> direct mode was eliminated. [[done]] --[[Joey]]
