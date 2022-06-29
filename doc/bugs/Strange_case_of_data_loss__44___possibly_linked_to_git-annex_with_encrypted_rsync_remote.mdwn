@@ -53,3 +53,9 @@ caused this behavior? Or is there any other realistic explanation for this? In
 case this is an existing bug, is there any other evidence I can gather?
 Needless to say, the lesson here is to run `git annex fsck` regularly even if
 you have offsite backups...
+
+> My diagnosis is that the file got corrupted before it was copied to disk2
+> and disk3. What repository they reached them via does not matter much.
+> And indeed, 5 year old git-annex didn't verify the content of
+> files it transferred to/from a remote. Current git-annex does, so I guess 
+> this is [[done]]. --[[Joey]]
