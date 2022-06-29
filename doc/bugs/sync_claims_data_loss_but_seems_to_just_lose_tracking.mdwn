@@ -213,3 +213,6 @@ To /Users/olaf/tmp/git-annex/play/bug-play/source
 
 Yes.  Love it.  Donated.  Have been using it for years.  Recommend it and get(/force) my collaborators to use it.  ;-)
 
+> Since this bug involved direct mode, and direct mode was known to be
+> rather buggy and has been removed, I think it's best to close it.
+> [[done]] --[[Joey]]
