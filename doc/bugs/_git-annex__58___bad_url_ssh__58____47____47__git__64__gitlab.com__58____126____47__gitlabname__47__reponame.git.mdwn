@@ -31,3 +31,6 @@ An encrypted remote is added to a working git annex repository (mind ":~/" in th
 
 # End of transcript or log.
 """]]
+
+> Fixed in [[!commit 2aa4fab62a69bb3fb5073d571d8ec110a61a144e]]
+> [[done]] --[[Joey]]
