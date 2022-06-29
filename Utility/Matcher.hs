@@ -34,6 +34,8 @@ module Utility.Matcher (
 
 import Common
 
+import Data.Kind
+
 {- A Token can be an Operation of an arbitrary type, or one of a few
  - predefined peices of syntax. -}
 data Token op = Operation op | And | Or | Not | Open | Close
@@ -136,7 +138,7 @@ matchM m v = matchMrun m $ \o -> o v
 {- More generic running of a monadic Matcher, with full control over running
  - of Operations. Mostly useful in order to match on more than one
  - parameter. -}
-matchMrun :: forall o (m :: * -> *). Monad m => Matcher o -> (o -> m Bool) -> m Bool
+matchMrun :: forall o (m :: Type -> Type). Monad m => Matcher o -> (o -> m Bool) -> m Bool
 matchMrun m run = go m
   where
 	go MAny = return True

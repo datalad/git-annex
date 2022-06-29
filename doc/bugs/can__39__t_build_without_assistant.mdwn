@@ -30,3 +30,10 @@ I don't know haskell, but try to make optional building of Assistant, see [patch
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Yes, use it for several years and have approx 100G repo with 10k+ files. Works fine.
 
+> You had the webapp flag enabled and the assistant disabled. 
+> That does not make sense; the assistant is part of the webapp.
+> That explains why it failed to build. Disabling both webapp and assistant
+> works, or only webapp and not assistant. 
+> 
+> Ok, fixed it to not build the webapp when the assistant flag is disabled.
+> [done]] --[[Joey]] 

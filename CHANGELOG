@@ -5,6 +5,8 @@ git-annex (10.20220625) UNRELEASED; urgency=medium
   * stack.yaml: Updated to lts-19.13
   * --backend is no longer a global option, and is only accepted by
     commands that actually need it.
+  * Fix building with the Assistant build flag disabled but the Webapp
+    build flag enabled.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Jun 2022 14:49:17 -0400
 
