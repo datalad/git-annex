@@ -11,3 +11,7 @@ git-annex 6.20170101 on Debian stretch (from debian archives)
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I'm using (and enjoying) it a lot :)
+
+> Seems like my comment is reasonable, so no change to git-annex is needed.
+> I would be open to being convinced otherwise though... [[wontfix|done]]
+> for now. --[[Joey]]
