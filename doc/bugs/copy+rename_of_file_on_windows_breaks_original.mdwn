@@ -46,3 +46,4 @@ Test image used in this bug report: https://wallpapercave.com/wp/wp8215486.jpg
 I'm really loving git-annex. I've been reading up and I'm more than halfway through the devlog and I'm hoping to use git-annex for a lot and a long while. Mostly, I'm expecting to use it on Linux systems, but I'd love to be able to rely on it on my (Windows) work laptop as well. Thanks for looking at my report!
 
 [[!meta title="assistant on windows misses copy+rename of file"]]
+[[done]]
