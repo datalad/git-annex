@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+FTBFS for two days (this error matches only on linux, didn't check others why they are red in https://github.com/datalad/git-annex):
+
+```
+2022-06-29T03:25:00.4893455Z E: build failed
+2022-06-29T03:25:00.4894450Z I: the tail of the log
+2022-06-29T03:25:00.4903612Z [310 of 677] Compiling Creds            ( Creds.hs, dist/build/git-annex/git-annex-tmp/Creds.o )
+2022-06-29T03:25:00.4908788Z [311 of 677] Compiling Remote.Helper.AWS ( Remote/Helper/AWS.hs, dist/build/git-annex/git-annex-tmp/Remote/Helper/AWS.o )
+2022-06-29T03:25:00.4910166Z [312 of 677] Compiling P2P.Address      ( P2P/Address.hs, dist/build/git-annex/git-annex-tmp/P2P/Address.o )
+2022-06-29T03:25:00.4911450Z [313 of 677] Compiling P2P.Auth         ( P2P/Auth.hs, dist/build/git-annex/git-annex-tmp/P2P/Auth.o )
+2022-06-29T03:25:00.4912850Z [314 of 677] Compiling Annex.Notification ( Annex/Notification.hs, dist/build/git-annex/git-annex-tmp/Annex/Notification.o )
+2022-06-29T03:25:00.4913599Z 
+2022-06-29T03:25:00.4913895Z Annex/Notification.hs:37:42: error:
+2022-06-29T03:25:00.4914739Z     * Couldn't match type `Annex.AnnexState' with `Annex.AnnexRead'
+2022-06-29T03:25:00.4915686Z       Expected type: Annex.AnnexState -> DesktopNotify
+2022-06-29T03:25:00.4916569Z         Actual type: Annex.AnnexRead -> DesktopNotify
+2022-06-29T03:25:00.4917418Z     * In the first argument of `Annex.getState', namely
+2022-06-29T03:25:00.4918159Z         `Annex.desktopnotify'
+2022-06-29T03:25:00.4918842Z       In a stmt of a 'do' block:
+2022-06-29T03:25:00.4919609Z         wanted <- Annex.getState Annex.desktopnotify
+2022-06-29T03:25:00.4920362Z       In the expression:
+2022-06-29T03:25:00.4921081Z         do wanted <- Annex.getState Annex.desktopnotify
+2022-06-29T03:25:00.4921878Z            if (notifyStart wanted || notifyFinish wanted) then
+2022-06-29T03:25:00.4922815Z                do client <- liftIO DBus.Client.connectSession
+2022-06-29T03:25:00.4923576Z                   ....
+2022-06-29T03:25:00.4924147Z            else
+2022-06-29T03:25:00.4924729Z                a NotifyWitness
+2022-06-29T03:25:00.4925310Z    |
+2022-06-29T03:25:00.4926060Z 37 |                 wanted <- Annex.getState Annex.desktopnotify
+2022-06-29T03:25:00.4926916Z    |                                          ^^^^^^^^^^^^^^^^^^^
+2022-06-29T03:25:00.4927396Z 
+2022-06-29T03:25:00.4927702Z Annex/Notification.hs:60:34: error:
+2022-06-29T03:25:00.4928555Z     * Couldn't match type `Annex.AnnexState' with `Annex.AnnexRead'
+2022-06-29T03:25:00.4929502Z       Expected type: Annex.AnnexState -> DesktopNotify
+2022-06-29T03:25:00.4930367Z         Actual type: Annex.AnnexRead -> DesktopNotify
+2022-06-29T03:25:00.4931212Z     * In the first argument of `Annex.getState', namely
+2022-06-29T03:25:00.4931962Z         `Annex.desktopnotify'
+2022-06-29T03:25:00.4935814Z       In a stmt of a 'do' block:
+2022-06-29T03:25:00.4936937Z         wanted <- Annex.getState Annex.desktopnotify
+2022-06-29T03:25:00.4937934Z       In the expression:
+2022-06-29T03:25:00.4938808Z         do wanted <- Annex.getState Annex.desktopnotify
+2022-06-29T03:25:00.4939703Z            when (notifyFinish wanted)
+2022-06-29T03:25:00.4940467Z              $ liftIO
+2022-06-29T03:25:00.4941336Z                  $ do client <- DBus.Client.connectSession
+2022-06-29T03:25:00.4942492Z                       void $ Notify.notify client (droppedNote ok (fromRawFilePath f))
+2022-06-29T03:25:00.4943446Z    |
+2022-06-29T03:25:00.4944547Z 60 |         wanted <- Annex.getState Annex.desktopnotify
+2022-06-29T03:25:00.4945576Z    |                                  ^^^^^^^^^^^^^^^^^^^
+2022-06-29T03:25:00.4946531Z make[3]: *** [Makefile:58: git-annex] Error 1
+
+```
+
+full log at https://github.com/datalad/git-annex/runs/7124197096?check_suite_focus=true or on smaug on `/mnt/datasets/datalad/ci/git-annex/builds/2022/06/cron-20220629/build-ubuntu.yaml-744-90215d4e-failed/1_build-package (1).txt`
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
