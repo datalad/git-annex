@@ -1,0 +1,27 @@
+### Please describe the problem.
+
+Our 
+due to [10.20220624-27-gb223988e2](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=b223988e22931cf2243ae14289d22ef4e70e51f2) :
+
+```
+    remove --backend from global options
+    
+    --backend is no longer a global option, and is only accepted by commands
+    that actually need it.
+
+```
+
+well, our tests on OSX started to fail in 
+
+
+```shell
+2022-06-30T05:53:21.6356200Z E           datalad.runner.exception.CommandError: CommandError: 'git -c diff.ignoreSubmodules=none annex addurl --backend SHA1 --file=remotefile2 http://127.0.0.1:52474/remotefile --json --json-error-messages --json-progress -c annex.dotfiles=true' failed with exitcode 1 under /private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/datalad_temp_tree_test_AnnexRepo_backend_optionhe08bgd0 [info keys: stdout_json] [err: 'Invalid option `--backend'
+
+```
+
+so we are not using it as a global option.  This functionality was already released in DataLad and I would appreciate if support for it was returned in git-annex so  we could avoid coming up with an alternative way to do the same thing.
+
+Sample logs could be found at https://github.com/datalad/git-annex/runs/7123868190?check_suite_focus=true or `/mnt/datasets/datalad/ci/git-annex/builds/2022/06/cron-20220630/build-macos.yaml-740-90215d4e-failed/1_test-datalad (master).txt` on smaug
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
