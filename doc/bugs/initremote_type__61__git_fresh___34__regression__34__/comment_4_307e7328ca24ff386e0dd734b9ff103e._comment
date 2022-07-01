@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="mystery resolved"
+ date="2022-07-01T19:19:30Z"
+ content="""
+Ok, resolved mystery for myself:
+
+> So if you were using an url without .git before, it seems like it would have failed to detect a uuid after enabling the special remote.
+
+yes -- if `initremote` failed to detect uuid it
+
+- didn't exit with non-0 (i.e. initremote call succeeded, our code passed through)
+- produced a \"funky\" looking remotes.log entry without UUID:
+
+```shell
+(git-annex)lena:~/.tmp/datalad_temp_test_as_common_datasourcek5ozqwqd[dl-test-branch]git-annex
+$> git show git-annex:remote.log
+ autoenable=true location=http://127.0.0.1:41311/ name=fresh-sr type=git timestamp=1656702874.867345813s
+0392395d-c1a2-4791-ba6a-e932f1392c34 autoenable=true location=http://127.0.0.1:41311/.git name=mike2 type=git timestamp=165670282
+```
+
+and our test was working before because apparently we had that type=git remote already added with the correct (with `.git`) url (as you can see above) so as long as initremote didn't crash, we were \"happy\" ;)  a little more info could be found in [our datalad issue](https://github.com/datalad/datalad/issues/6779)
+"""]]
