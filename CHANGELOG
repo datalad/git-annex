@@ -6,6 +6,8 @@ git-annex (10.20220625) UNRELEASED; urgency=medium
     commands that actually need it.
   * Fix building with the Assistant build flag disabled but the Webapp
     build flag enabled.
+  * add: Fix reversion when adding an annex link that has been moved to
+    another directory. (Introduced in version 10.20220624)
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Jun 2022 14:49:17 -0400
 

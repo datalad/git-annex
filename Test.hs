@@ -82,6 +82,7 @@ import qualified Utility.Tmp.Dir
 import qualified Utility.FileSystemEncoding
 import qualified Utility.Aeson
 import qualified Utility.CopyFile
+import qualified Utility.MoveFile
 import qualified Types.Remote
 #ifndef mingw32_HOST_OS
 import qualified Remote.Helper.Encryptable
@@ -261,6 +262,7 @@ repoTests :: String -> Int -> [TestTree]
 repoTests note numparts = map mk $ sep
 	[ testCase "add dup" test_add_dup
 	, testCase "add extras" test_add_extras
+	, testCase "add moved link" test_add_moved
 	, testCase "readonly remote" test_readonly_remote
 	, testCase "ignore deleted files" test_ignore_deleted_files
 	, testCase "metadata" test_metadata
@@ -389,6 +391,17 @@ test_add_extras = intmpclonerepo $ do
 		git_annex "unlock" [wormannexedfile] "unlock"
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
+
+test_add_moved :: Assertion
+test_add_moved = intmpclonerepo $ do
+	git_annex "get" [annexedfile] "get failed"
+	annexed_present annexedfile
+	createDirectory subdir
+	Utility.MoveFile.moveFile (toRawFilePath annexedfile) (toRawFilePath subfile)
+	git_annex "add" [subdir] "add of moved annexed file"
+  where
+	subdir = "subdir"
+	subfile = subdir </> "file"
 
 test_readonly_remote :: Assertion
 test_readonly_remote =

@@ -44,3 +44,5 @@ As this is such a basic operation, I am still wondering how come it is not caugh
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]], with a test case added for this edge case. --[[Joey]]

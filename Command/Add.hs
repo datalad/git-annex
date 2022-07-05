@@ -210,7 +210,7 @@ start si file addunlockedmatcher =
 		starting "add" (ActionItemTreeFile file) si $
 			addingExistingLink file key $
 				withOtherTmp $ \tmp -> do
-					let tmpf = tmp P.</> file
+					let tmpf = tmp P.</> P.takeFileName file
 					liftIO $ moveFile file tmpf
 					ifM (isSymbolicLink <$> liftIO (R.getSymbolicLinkStatus tmpf))
 						( do
