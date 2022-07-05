@@ -1,0 +1,46 @@
+### Please describe the problem.
+
+originally filed/investigated in [DataLad #6778](https://github.com/datalad/datalad/issues/6778).
+
+<details>
+<summary>Following reproducer which simply git annex adds  a moved to subdirectory annexed file</summary> 
+
+```bash
+#!/bin/bash
+
+cd "$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)"
+set -eu
+
+git init
+git annex init
+
+echo 123 > 123
+git annex add 123
+git commit -m 'commit 123'
+
+mkdir sub
+mv 123 sub
+git annex add sub/123
+git commit -m 'committing moved'
+
+```
+</details>
+
+crashes with
+
+```
+[master (root-commit) 30d904b] commit 123
+ 1 file changed, 1 insertion(+)
+ create mode 120000 123
+add sub/123 
+git-annex: sub/123: rename: does not exist (No such file or directory)
+failed
+add: 1 failed
+```
+
+with recent (after 10.20220525+git96-gf259be7f3, full range for when bug introduced AFAIK is 10.20220525+git81-g8916c818b..10.20220525+git96-gf259be7f3) git-annex
+
+As this is such a basic operation, I am still wondering how come it is not caught by git-annex tests and only 1 of our datalad tests managed to pick this up!
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
