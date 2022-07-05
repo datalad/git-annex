@@ -1,0 +1,90 @@
+[[!comment format=mdwn
+ username="nick.guenther@e418ed3c763dff37995c2ed5da4232a7c6cee0a9"
+ nickname="nick.guenther"
+ avatar="http://cdn.libravatar.org/avatar/9e85c6ca61c3f877fef4f91c2bf6e278"
+ subject="ACL deprecation vs public=yes "
+ date="2022-07-05T18:20:50Z"
+ content="""
+Amazon has [deprecated ACLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html)
+
+> A majority of modern use cases in Amazon S3 no longer require the use of ACLs, and we recommend that you disable ACLs except in unusual circumstances where you need to control access for each object individually. With Object Ownership, you can disable ACLs and rely on policies for access control. When you disable ACLs, you can easily maintain a bucket with objects uploaded by different AWS accounts. You, as the bucket owner, own all the objects in the bucket and can manage access to them using policies.
+
+They are encouraging everyone to [migrate to bucket policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-ownership-migrating-acls-prerequisites.html) instead.
+
+## Implementation
+
+I've done this for a bucket I run. I wrote and attached this Bucket Policy to it:
+
+```
+{
+    \"Version\": \"2012-10-17\",
+    \"Statement\": [
+        {
+            \"Effect\": \"Allow\",
+            \"Principal\": \"*\",
+            \"Action\": \"s3:GetObject\",
+            \"Resource\": [
+                \"arn:aws:s3:::BUCKET-NAME\",
+                \"arn:aws:s3:::BUCKET-NAME/*\"
+            ]
+        }
+    ]
+}
+```
+
+I had to reset the ACLs on that bucket to the default:
+
+* Bucket owner (your AWS account):
+  * Objects:
+    - List
+    - Write
+  * Bucket ACL:
+    - Read
+    - Write
+
+and with that set Amazon let me also set
+
+* Object ownership: Bucket owner enforced
+
+
+## git-annex incompatibility
+
+But, attempting to use the new setup failed:
+
+```
+$ git annex copy --to amazon what.nii.gz 
+copy what.nii.gz (checking amazon...) (to amazon...) 
+41%   8.15 MiB         20 MiB/s 0s
+  S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = \"Bad Request\"}, s3ErrorCode = \"AccessControlListNotSupported\", s3ErrorMessage = \"The bucket does not allow ACLs\", s3ErrorResource = Nothing, s3ErrorHostId = Just \"a6+ieujj4z3Z4P8ooA306DdbGAoxWDiXd6O2ZwjdfapGnuOGPyL5/WQ4UBEytR80FG+5b6xdlsM=\", s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+
+32%   6.43 MiB         16 MiB/s 0s 
+  S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = \"Bad Request\"}, s3ErrorCode = \"AccessControlListNotSupported\", s3ErrorMessage = \"The bucket does not allow ACLs\", s3ErrorResource = Nothing, s3ErrorHostId = Just \"bFOgMomROCOes9yI6HZHysQGoZaTbsPI5b7rHjcTI0wA8Yx5Dm1JOky9BvXvpcXxzY1kVt48FRQ=\", s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+
+37%   7.37 MiB         21 MiB/s 0s 
+  S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = \"Bad Request\"}, s3ErrorCode = \"AccessControlListNotSupported\", s3ErrorMessage = \"The bucket does not allow ACLs\", s3ErrorResource = Nothing, s3ErrorHostId = Just \"hqd4HRNk5yp3tKJ6yMhcECEpCjBw8qB6oTpKF3PaOsYFeVG0C+dGI06xq3zgmvnPoFUttI040sY=\", s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+
+39%   7.81 MiB         21 MiB/s 0s 
+  S3Error {s3StatusCode = Status {statusCode = 400, statusMessage = \"Bad Request\"}, s3ErrorCode = \"AccessControlListNotSupported\", s3ErrorMessage = \"The bucket does not allow ACLs\", s3ErrorResource = Nothing, s3ErrorHostId = Just \"7m7wwG5woSPmICIuXr9QnBOEjUikuyzHSebMLuaNyZMc2Ki2vaqKpU9U+GOTYmR/NzFjOeyxngk=\", s3ErrorAccessKeyId = Nothing, s3ErrorStringToSign = Nothing, s3ErrorBucket = Nothing, s3ErrorEndpointRaw = Nothing, s3ErrorEndpoint = Nothing}
+failed
+git-annex: copy: 1 failed
+```
+
+## Workaround
+
+However, this fixed it:
+
+```
+$ git annex enableremote amazon public=no
+enableremote amazon ok
+(recording state in git...)
+$ git annex copy --to amazon what.nii.gz 
+copy what.nii.gz (checking amazon...) (to amazon...) 
+ok                                
+```
+
+
+## Feature Request
+
+- If public=yes, instead of trying to set an ACL, first try `HEAD` on the newly uploaded object without using the `AWS_ACCESS_KEY`. Only if that fails, fall over to trying to set an ACL. And if you get `AccessControlListNotSupported` (i.e. the error due to `BucketOwnerEnforced`), then give a warning that the bucket policy is not configured for public access.
+- Update the docs here to explain how to set up a public bucket policy as recommended by Amazon, and that `public=yes` will _either_ try to confirm that the bucket policy is public, or will fallback to using ACLs.
+"""]]
