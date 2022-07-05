@@ -55,3 +55,5 @@ full log at https://github.com/datalad/git-annex/runs/7124197096?check_suite_foc
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] earlier today --[[Joey]]
