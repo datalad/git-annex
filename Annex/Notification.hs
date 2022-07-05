@@ -34,7 +34,7 @@ notifyTransfer :: Transferrable t => Observable v => Direction -> t -> (NotifyWi
 notifyTransfer direction t a = case descTransfrerrable t of
 	Nothing -> a NotifyWitness
 	Just desc -> do
-		wanted <- Annex.getState Annex.desktopnotify
+		wanted <- Annex.getRead Annex.desktopnotify
 		if (notifyStart wanted || notifyFinish wanted)
 			then do
 				client <- liftIO DBus.Client.connectSession
@@ -57,7 +57,7 @@ notifyDrop :: AssociatedFile -> Bool -> Annex ()
 notifyDrop (AssociatedFile Nothing) _ = noop
 #ifdef WITH_DBUS_NOTIFICATIONS
 notifyDrop (AssociatedFile (Just f)) ok = do
-	wanted <- Annex.getState Annex.desktopnotify
+	wanted <- Annex.getRead Annex.desktopnotify
 	when (notifyFinish wanted) $ liftIO $ do
 		client <- DBus.Client.connectSession
 		void $ Notify.notify client (droppedNote ok (fromRawFilePath f))
