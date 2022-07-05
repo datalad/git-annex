@@ -51,7 +51,7 @@ import qualified Annex.Branch
 import Logs
 
 cmd :: Command
-cmd = notBareRepo $
+cmd = notBareRepo $ withAnnexOptions [backendOption] $
 	command "importfeed" SectionCommon "import files from podcast feeds"
 		(paramRepeating paramUrl) (seek <$$> optParser)
 

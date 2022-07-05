@@ -25,3 +25,5 @@ Sample logs could be found at https://github.com/datalad/git-annex/runs/71238681
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

@@ -102,6 +102,10 @@ resulting in the new url being downloaded to such a filename.
   url to a file that would be ignored. This makes such files be added
   despite any ignores.
 
+* `--backend`
+
+  Specifies which key-value backend to use.
+
 * Also the [[git-annex-common-options]](1) can be used.
 
 # SEE ALSO
