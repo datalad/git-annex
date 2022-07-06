@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+I am running `testremote` on a windows CI system to test a special remote implementation for dataverse.org. I run into this error:
+
+```
+git-annex: MoveFileEx "C:\\DLTMP\\ran2133" Just ".git\\annex\\objects\\f76\\373\\SHA256E-s1048576--813fea02438e9569e6222f802958fcd89bee742d06ffe9aabe27fd940ef01196.this-is-a-test-key\\SHA256E-s1048576--813fea02438e9569e6222f802958fcd89bee742d06ffe9aabe27fd940ef01196.this-is-a-test-key": does not exist (The system cannot find the path specified.)
+```
+
+I suspect this could be a path-length issue (the system reports a max length of 285, and the relative path given above is already 230 chars.
+
+I thought to run `git annex testremote --backend=MD5E` instead, to shorten the key length, but this options is not honored (enough), the error showing a SHA256 key remains the same.
+
+`testremote` man page says "Also the git-annex-common-options(1) can be used." and `--backend` is explicitly listed in the help output, hence I assumed this should work.
+
+
+### What steps will reproduce the problem?
+
+It happens when running the https://github.com/datalad/datalad-dataverse tests on a windows appveyor worker. Running on a crippled FS is not enough to trigger the initial `testremote` error, it only happens on windows proper. However, I assume that `--backend` not having the effect that I assumed it should have, is not platform specific.
+
+Here is a demo test log: https://ci.appveyor.com/project/mih/datalad-dataverse/builds/44079592/job/b38woai0ekmq7bn5#L856
+
+The corresponding datalad issue is https://github.com/datalad/datalad-dataverse/issues/127
+
+
+### What version of git-annex are you using? On what operating system?
+
+CI used
+
+- annex: 8.20211117-gc3af94eff
+- git: 2.37.0.windows.1
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+All the time! Sorry to mostly show up when there is an issue!
