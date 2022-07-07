@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-07-07T16:10:12Z"
+ content="""
+Aha! That funky remote.log was caused by a historical bad type in 
+git-annex: UUID has a NoUUID value, and when it probed for the UUID, it
+did not check if it got NoUUID, which serializes to "". Really fixing that
+is hard, I've tried a couple of times. 
+
+Anyway, the new behavior is not buggy, so closing.
+"""]]

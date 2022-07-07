@@ -18,3 +18,5 @@ yet to unravel details/change in behavior, but since changelog entry says only a
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[notabug|done]] --[[Joey]]
