@@ -2,7 +2,9 @@ Hi,
   After a long time, and having a fresh machine, I cloned a repo I've been using without problems. When I try to get the content of some files, I get the following error:
 
 > git annex get  im/fixed_regions/melanomas/melanomas_mp/ejemplo18/mean_bounds.png
+
 get im/fixed_regions/melanomas/melanomas_mp/ejemplo18/mean_bounds.png (from origin...) 
+
 git-annex-shell: Action blocked by GIT_ANNEX_SHELL_LIMITED
 
 I've checked that the file is present in the origin remote. I'm sure it is a pretty silly thing, but it's been a while since I used git-annex.
