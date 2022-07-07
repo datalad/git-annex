@@ -1,0 +1,21 @@
+I don't know if this is a git thing, or a git annex thing, but it's weird.
+
+After I add a bunch of files to the annex (and there are many more local files not yet added), `git status` is slow. That's not really a surprise. It shows the `refresh index` calculation as usual.
+
+I run it a second time, and I get the exact same result:
+
+```
+% time git status
+Refresh index: 100% (2997/2997), done.
+<snip>
+
+git status  38.64s user 42.08s system 80% cpu 1:39.95 total
+```
+
+I run it a third time and it's _instant_.
+
+This happens reliably. Two slow runs, and then a fast run.
+
+I don't love the initial slow run, but it makes sense, so I can live with it. The second slow run doesn't make sense to me though. Is there any way to avoid it? I guess I would expect the first slow run to refresh the index and speed up subsequent runs.
+
+- @pat
