@@ -20,7 +20,7 @@ I don't love the initial slow run, but it makes sense, so I can live with it. Th
 
 It seems like a similar symptom to [git keeps refreshing index](https://git-annex.branchable.com/bugs/git_keeps_refreshing_index/).
 
-I am using git and git-annex installed via homebrew on macOS 10.15.7
+I am using git and git-annex installed via homebrew on macOS 10.15.7. I have `annex.addunlocked` set to true.
 
 ```
 git version 2.37.0
