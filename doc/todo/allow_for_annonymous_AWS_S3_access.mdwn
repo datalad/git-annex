@@ -1,0 +1,18 @@
+Should be possible for any public bucket which allows for annonymous access.  ATM git-annex demands AWS credentials for importtree on such public bucket
+
+```shell
+(dandisets) dandi@drogon:/mnt/backup/dandi/tmp/dandisets/test-importtree-s3$ git annex  initremote s3-origin type=S3 importtree=yes encryption=none autoenable=true bucket=dandiarchive fileprefix=zarr-checksums/2ac71edb-738c-40ac-bd8c-8ca985adaa12/            initremote s3-origin (checking bucket...)
+  Set both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to use S3
+
+git-annex: No S3 credentials configured
+failed
+initremote: 1 failed
+
+(dandisets) dandi@drogon:/mnt/backup/dandi/tmp/dandisets/test-importtree-s3$ git annex version
+git-annex version: 10.20220525-gf1fdc90
+```
+
+in my searches information on "anonymous access to S3" is scarce, but in DataLad we rely on old-ish version of `boto` library which does it for us, more info/pointers [eg here on SO](https://stackoverflow.com/questions/34865927/can-i-use-boto3-anonymously) 
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]

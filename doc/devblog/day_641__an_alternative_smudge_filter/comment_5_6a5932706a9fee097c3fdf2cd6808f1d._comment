@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="nick.guenther@e418ed3c763dff37995c2ed5da4232a7c6cee0a9"
+ nickname="nick.guenther"
+ avatar="http://cdn.libravatar.org/avatar/9e85c6ca61c3f877fef4f91c2bf6e278"
+ subject="comment 5"
+ date="2022-07-06T05:04:07Z"
+ content="""
+Until this is ready, at the moment, I got around the slowness [by setting](https://github.com/neuropoly/intranet.neuro.polymtl.ca/blob/d5c320c/geek-tips/git-annex.md#new-repo)
+
+```
+cat > .gitattributes <<EOF
+*.mkv   filter=anex annex.largefiles=anything
+*.mp3   filter=anex annex.largefiles=anything
+EOF
+```
+
+This way the file size is ignored and instead git makes the decision for me based on file extension. This is much faster than running every file through `git annex smudge`. I'
+
+I might end up sticking with this even if you use the faster filter API.
+"""]]
