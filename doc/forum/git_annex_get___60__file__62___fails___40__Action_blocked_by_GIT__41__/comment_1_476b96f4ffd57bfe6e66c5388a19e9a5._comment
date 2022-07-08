@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-07-08T14:34:04Z"
+ content="""
+It seems that on the remote host there is something that sets
+the `GIT_ANNEX_SHELL_LIMITED` environment variable.
+
+That would not itself be enough to cause this problem normally.
+So I suspect that the remote host also has a very old
+version of git-annex installed on it. One that does not support
+that `git-annex shell p2pstdio` command. So it applies that environment
+variable when it would not normally apply.
+
+The solution then is to upgrade the remote host's git-annex to version
+6.20180228 or newer, which will support that command.
+"""]]
