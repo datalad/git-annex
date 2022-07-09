@@ -47,7 +47,7 @@ But according to Joey that is undesirable for a lockfile implementation (.\Utili
  
 ```
 
-So what to do when the authors of module Win32 pull the rug from under you? Should we perhaps weave
+So what to do when the authors of package Win32 pull the rug from under you? Should we perhaps weave
 our own tiny c_CreateFile API with FFI, or, could we do without it and use one of the implementations
 using Windows LockFileEx, for instance the one by my compatriot: <https://hackage.haskell.org/package/lukko>
 
