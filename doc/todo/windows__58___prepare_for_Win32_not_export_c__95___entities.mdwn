@@ -52,4 +52,4 @@ our own tiny c_CreateFile API with FFI, or, could we do without it and use one o
 using Windows LockFileEx, for instance the one by my compatriot: <https://hackage.haskell.org/package/lukko>
 
 [[!meta title="windows: prepare for System.Win32.File not exporting c_ entities"]]
-[[!meta author=jkniiv]
+[[!meta author=jkniiv]]
