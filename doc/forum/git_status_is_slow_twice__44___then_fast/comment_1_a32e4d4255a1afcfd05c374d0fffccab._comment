@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 1"
+ date="2022-07-09T00:40:23Z"
+ content="""
+Alright I did some reading and experimenting, and it turns out it's the unlocked files. When I use locked files by defaults, git status is as fast as it usually is. I don't fully understand it, but it seems that something about smudging is slow.
+
+Anyway, I can use locked files for most of my stuff, and unlocked files for only active projects.
+"""]]
