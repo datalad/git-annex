@@ -421,12 +421,7 @@ jobs:
         run: |
           mkdir -p __testhome__
           cd __testhome__
-          # TODO: remove conditioning after 0.17.0 release
-          if [ "${{ matrix.version }}" = "master" ]; then
-            python -m pytest -c ../datalad/tox.ini -s -v --pyargs datalad
-          else
-            python -m nose -s -v datalad
-          fi
+          python -m pytest -c ../datalad/tox.ini -s -v --pyargs datalad
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
