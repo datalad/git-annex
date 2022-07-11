@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2022-07-11T22:19:08Z"
+ content="""
+uff... ran into similar problem and since error is not really suggesting a reason for such odd behavior needed to search it up. In my case it was git-annex `10.20220624-1~ndall+1` which comes with `git` `2.30.2` and system-wide I have `2.35.1`.  Need to remember such a wisdom by heart unless may be the standalone build could somehow alert/complain into my face
+"""]]
