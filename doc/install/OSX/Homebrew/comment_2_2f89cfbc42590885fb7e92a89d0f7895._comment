@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/986de9e060699ae70ff7c31342393adc"
+ subject="Man pages not included when installing via homebrew"
+ date="2022-07-11T17:30:42Z"
+ content="""
+It seems that for me at least, OSX installations performed with `brew install git-annex` do not include man pages, e.g., if I subsequently run `man git-annex` I get the error `No manual entry for git-annex`. This isn't an enormous bother as I can instead browse documentation as needed on the website, but it's a headache when I'm working offline and even when not it can be irksome to have to leave the terminal.
+
+Below I've pasted the [relevant lines](https://github.com/Homebrew/homebrew-core/blob/0362892918d8e1c8d0b38c962e26a872e8612e71/Formula/git-annex.rb#L22-L27) that govern how homebrew performs the installation (or in practice, how the \"bottle\" is built as part of a CI process, and which bottle is typically \"poured\" by end users rather than compiling locally). 
+
+```
+  def install
+    system \"cabal\", \"v2-update\"
+    system \"cabal\", \"v2-install\", *std_cabal_v2_args,
+                    \"--flags=+S3\"
+    bin.install_symlink \"git-annex\" => \"git-annex-shell\"
+  end
+```
+
+Notably, it uses `cabal` to do the installation, but it doesn't quite follow any of the cabal-related patterns currently outlined on the [\"installing from source\" documentation](https://git-annex.branchable.com/install/fromsource/). I inspected the bottle that homebrew downloads, and indeed it contains just a handful of files that do not include the man pages, i.e.:
+
+```
+.
+├── CHANGELOG
+├── COPYRIGHT
+├── NEWS
+├── README
+├── bin
+│   ├── git-annex
+│   └── git-annex-shell -> git-annex
+├── homebrew.git-annex.service
+└── homebrew.mxcl.git-annex.plist
+
+1 directory, 8 files
+```
+
+Is there an easy tweak to the cabal-based installation that homebrew currently uses to do its bottling that would include man pages, or would it be a potentially significant undertaking that would require an appreciably different build approach?
+"""]]
