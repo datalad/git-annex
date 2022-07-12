@@ -16,4 +16,4 @@ it might need to update a pointer file. Eg, when `git annex get` is run.
 Avoiding using the keys db when annex.supportunlocked=false in all such
 cases in order to avoid the scan would be effectively the same complexity
 as continuing to support v5 repos, which I've NAKed before.
-""]]
+"""]]

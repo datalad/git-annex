@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-07-12T20:34:02Z"
+ content="""
+Notice that it says "scanning for annexed files", not "unlocked files"
+anymore.
+
+The reason it's slower is explained by [[!commit 428c91606b]].
+And that was necessary to fix the bad, longstanding bug
+[[bugs/indeterminite_preferred_content_state_for_duplicated_file]].
+It has to scan every annexed file, not only the unlocked ones,
+in order to collect the data to not have that bug.
+
+And the scan got optimised as well as possible, I think, at the time,
+see the old issue you filed @yoh, 
+<https://git-annex.branchable.com/todo/Avoid_lengthy___34__Scanning_for_unlocked_files_...__34__/>
+"""]]
