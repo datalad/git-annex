@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+I was trying to see/measure effect from using `annex.supportunlocked` to overcome significant IO due to `git annex init` while working on some glorious collection of thousands of git-annex repos with thousands of files in them.  But I came to realization that it seems that the setting is of no effect (I still see "scanning for unlocked, timing is the same) and that prior version of git-annex is **considerably** faster:
+
+```
+$> builtin cd /tmp; rm -rf 6e387cd5-fa41-495a-928e-49a0c0b0a35f; git clone https://github.com/dandizarrs/6e387cd5-fa41-495a-928e-49a0c0b0a35f >&/dev/null && cd 6e387cd5-fa41-495a-928e-49a0c0b0a35f && time git annex init; git annex version | head -n 1
+0/  1/  2/  3/  4/  5/  6/
+init  (scanning for annexed files...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+  https://github.com/dandizarrs/6e387cd5-fa41-495a-928e-49a0c0b0a35f/config download failed: Not Found
+ok
+(recording state in git...)
+git annex init  10.23s user 1.48s system 109% cpu 10.701 total
+git-annex version: 10.20220624-g769be12
+```
+
+and with that config `annex.supportunlocked` set before `annex init`:
+
+```
+$> builtin cd /tmp; rm -rf 6e387cd5-fa41-495a-928e-49a0c0b0a35f; git clone https://github.com/dandizarrs/6e387cd5-fa41-495a-928e-49a0c0b0a35f >&/dev/null && cd 6e387cd5-fa41-495a-928e-49a0c0b0a35f && git config annex.supportunlocked false && time git annex init; git annex version | head -n 1
+0/  1/  2/  3/  4/  5/  6/
+init  (scanning for annexed files...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+  https://github.com/dandizarrs/6e387cd5-fa41-495a-928e-49a0c0b0a35f/config download failed: Not Found
+ok
+(recording state in git...)
+git annex init  9.94s user 1.22s system 109% cpu 10.219 total
+git-annex version: 10.20220624-g769be12
+```
+
+so took over 10 seconds (conda env built version) whenever if I use some 1.5 years old (neurodebian standalone) version -- only under 3 seconds:
+
+```
+$> builtin cd /tmp; rm -rf 6e387cd5-fa41-495a-928e-49a0c0b0a35f; git clone https://github.com/dandizarrs/6e387cd5-fa41-495a-928e-49a0c0b0a35f >&/dev/null && cd 6e387cd5-fa41-495a-928e-49a0c0b0a35f && time git annex init; git annex version | head -n 1
+0/  1/  2/  3/  4/  5/  6/
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+ok
+(recording state in git...)
+git annex init  1.57s user 0.66s system 103% cpu 2.149 total
+git-annex version: 8.20210223-1~ndall+1
+```
+
+while even "scanning for unlocked files".
+
+Since difference is quite substantial I have decided to file this issue.
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
+
