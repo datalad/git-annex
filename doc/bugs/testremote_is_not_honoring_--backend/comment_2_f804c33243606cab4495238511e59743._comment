@@ -16,7 +16,7 @@ possible WORM key could be used by real data.
 It would be possible to add support for --backend=MD5 and have it reject
 other backends. But this does not strike me as solving the real problem.
 
-Also, in [[bugs/tests_fail_on_windows__58___retrieveKeyFile_resume]]
+Also, in [[bugs/tests_fail_on_windows:_retrieveKeyFile_resume]]
 I ran into this same problem, when `git-annex test` was ran, and
 worked around it by disabling that part of the test suite on windows.
 If this is fixed, it would be worth re-enabling that, although it may have
