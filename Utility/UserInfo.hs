@@ -21,7 +21,7 @@ import Utility.Data
 import Control.Applicative
 #endif
 
-import System.PosixCompat
+import System.PosixCompat.User
 import Prelude
 
 {- Current user's home directory.

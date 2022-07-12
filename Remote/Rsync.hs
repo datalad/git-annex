@@ -47,6 +47,7 @@ import Utility.Tmp.Dir
 import Utility.SshHost
 import Annex.SpecialRemote.Config
 import Annex.Verify
+import qualified Utility.RawFilePath as R
 
 import qualified Data.Map as M
 
@@ -224,7 +225,7 @@ store o k src meterupdate = storeGeneric o meterupdate basedest populatedest
 	basedest = fromRawFilePath $ Prelude.head (keyPaths k)
 	populatedest dest = liftIO $ if canrename
 		then do
-			rename src dest
+			R.rename (toRawFilePath src) (toRawFilePath dest)
 			return True
 		else createLinkOrCopy (toRawFilePath src) (toRawFilePath dest)
 	{- If the key being sent is encrypted or chunked, the file

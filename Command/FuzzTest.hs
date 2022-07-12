@@ -181,11 +181,11 @@ runFuzzAction (FuzzAdd (FuzzFile f)) = do
 runFuzzAction (FuzzDelete (FuzzFile f)) = liftIO $
 	removeWhenExistsWith R.removeLink (toRawFilePath f)
 runFuzzAction (FuzzMove (FuzzFile src) (FuzzFile dest)) = liftIO $
-	rename src dest
+	R.rename (toRawFilePath src) (toRawFilePath dest)
 runFuzzAction (FuzzDeleteDir (FuzzDir d)) = liftIO $
 	removeDirectoryRecursive d
 runFuzzAction (FuzzMoveDir (FuzzDir src) (FuzzDir dest)) = liftIO $
-	rename src dest
+	R.rename (toRawFilePath src) (toRawFilePath dest)
 runFuzzAction (FuzzPause d) = randomDelay d
 
 genFuzzAction :: Annex FuzzAction

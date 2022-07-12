@@ -18,6 +18,7 @@ module Utility.LogFile (
 ) where
 
 import Common
+import Utility.RawFilePath
 
 #ifndef mingw32_HOST_OS
 import System.Posix.Types
@@ -36,7 +37,7 @@ rotateLog logfile = go 0
 		| num > maxLogs = return ()
 		| otherwise = whenM (doesFileExist currfile) $ do
 			go (num + 1)
-			rename currfile nextfile
+			rename (toRawFilePath currfile) (toRawFilePath nextfile)
 	  where
 		currfile = filename num
 		nextfile = filename (num + 1)

@@ -294,10 +294,11 @@ source-repository head
 
 custom-setup
   Setup-Depends: base (>= 4.11.1.0), split, unix-compat, 
-    filepath, exceptions, bytestring, directory, IfElse, data-default,
+    filepath, exceptions, bytestring, IfElse, data-default,
     filepath-bytestring (>= 1.4.2.1.4),
     process (>= 1.6.3),
     time (>= 1.5.0),
+    directory (>= 1.2.7.0),
     async, utf8-string, transformers, Cabal
 
 Executable git-annex
@@ -319,7 +320,7 @@ Executable git-annex
    unix-compat (>= 0.5),
    SafeSemaphore,
    async,
-   directory (>= 1.2),
+   directory (>= 1.2.7.0),
    disk-free-space,
    filepath,
    filepath-bytestring (>= 1.4.2.1.1),

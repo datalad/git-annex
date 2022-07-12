@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-07-12T16:50:16Z"
+ content="""
+Actually testremote will not accept --backend in current master, since that
+is no longer a global option and is accepted only by commands that can
+actually use it.
+
+testremote cannot support an arbitrary backend here, because it needs to
+generate a test key that cannot possibly be used for real data. The only
+backend that has a way implemented to do that is SHA256. It would not,
+for example, be possible to make the WORM backend support that, since every
+possible WORM key could be used by real data.
+
+It would be possible to add support for --backend=MD5 and have it reject
+other backends. But this does not strike me as solving the real problem.
+
+Also, in [[bugs/tests_fail_on_windows__58___retrieveKeyFile_resume]]
+I ran into this same problem, when `git-annex test` was ran, and
+worked around it by disabling that part of the test suite on windows.
+If this is fixed, it would be worth re-enabling that, although it may have
+also been failing for other reasons on windows.
+"""]]

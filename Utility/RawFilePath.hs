@@ -89,6 +89,8 @@ createDirectory = D.createDirectory . fromRawFilePath
 setFileMode :: RawFilePath -> FileMode -> IO () 
 setFileMode = F.setFileMode . fromRawFilePath
 
+{- Using renamePath rather than the rename provided in unix-compat
+ - because of this bug https://github.com/jacobstanley/unix-compat/issues/56-}
 rename :: RawFilePath -> RawFilePath -> IO ()
-rename a b = F.rename (fromRawFilePath a) (fromRawFilePath b)
+rename a b = D.renamePath (fromRawFilePath a) (fromRawFilePath b)
 #endif

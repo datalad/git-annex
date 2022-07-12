@@ -514,11 +514,11 @@ storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
 				checkExportContent ii dir loc
 					overwritablecids
 					(giveup "unsafe to overwrite file")
-					(const $ liftIO $ rename tmpf dest)
+					(const $ liftIO $ R.rename tmpf' dest)
 				return newcid
   where
-	dest = fromRawFilePath $ exportPath dir loc
-	(destdir, base) = splitFileName dest
+	dest = exportPath dir loc
+	(destdir, base) = splitFileName (fromRawFilePath dest)
 	template = relatedTemplate (base ++ ".tmp")
 
 removeExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> Key -> ExportLocation -> [ContentIdentifier] -> Annex ()

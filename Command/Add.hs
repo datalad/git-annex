@@ -30,7 +30,7 @@ import Annex.CheckIgnore
 import qualified Utility.RawFilePath as R
 import qualified System.FilePath.ByteString as P
 
-import System.PosixCompat.Files
+import System.PosixCompat.Files (fileSize)
 
 cmd :: Command
 cmd = notBareRepo $ 

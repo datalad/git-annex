@@ -216,7 +216,7 @@ storeReceived f = do
 		Just k -> void $ logStatusAfter k $
 			getViaTmpFromDisk RetrievalVerifiableKeysSecure AlwaysVerify k (AssociatedFile Nothing) $ \dest -> unVerified $
 				liftIO $ catchBoolIO $ do
-					rename f (fromRawFilePath dest)
+					R.rename (toRawFilePath f) dest
 					return True
 
 -- Under Windows, uftp uses key containers, which are not files on the

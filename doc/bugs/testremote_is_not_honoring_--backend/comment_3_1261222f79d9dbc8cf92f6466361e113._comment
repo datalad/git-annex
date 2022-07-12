@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-07-12T17:42:51Z"
+ content="""
+ghc's IO manager tries to support Windows long paths by normalizing to
+an UNC-style path in many system calls. However, when git-annex calls
+rename, on windows that ends up in Win32's moveFileEx (via unix-compat),
+and that does not do UNC-style normalization. And given the description of
+the Win32 package, I think it's intended to pass data directly through
+to the API without anything fancy.
+
+System.Directory.renamePath could be used instead of Win32. 
+While it still uses Win32 moveFileEx, it first does an UNC-style
+normalization. Filed an issue:
+<https://github.com/jacobstanley/unix-compat/issues/56>
+
+Rather than waiting for that to be fixed, I've made git-annex
+use System.Directory.renamePath instead itself. But I don't know
+if it will be enough to make testremote work, or if it will fall over
+on a later operation on the same too-long path.
+getFileStatus/getSymbolicLinkStatus seem like the main things in
+unix-compat that would still be a problem.
+"""]]

@@ -45,7 +45,7 @@ initDb db migration = do
 	setAnnexFilePerm tmpdb
 	liftIO $ do
 		void $ tryIO $ removeDirectoryRecursive (fromRawFilePath dbdir)
-		rename (fromRawFilePath tmpdbdir) (fromRawFilePath dbdir)
+		R.rename tmpdbdir dbdir
 
 {- Make sure that the database uses WAL mode, to prevent readers
  - from blocking writers, and prevent a writer from blocking readers.

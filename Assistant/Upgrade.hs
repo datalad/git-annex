@@ -207,13 +207,13 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			unless tarok $
 				error $ "failed to untar " ++ distributionfile
 			sanitycheck $ tmpdir </> installBase
-			installby rename newdir (tmpdir </> installBase)
+			installby R.rename newdir (tmpdir </> installBase)
 		let deleteold = do
 			deleteFromManifest olddir
 			makeorigsymlink olddir
 		return (newdir </> "git-annex", deleteold)
 	installby a dstdir srcdir =
-		mapM_ (\x -> a x (dstdir </> takeFileName x))
+		mapM_ (\x -> a (toRawFilePath x) (toRawFilePath (dstdir </> takeFileName x)))
 			=<< dirContents srcdir
 #endif
 	sanitycheck dir = 
