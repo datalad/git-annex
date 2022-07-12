@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2022-07-12T19:12:24Z"
+ content="""
+@Dan I would not be surprised if cabal v2-install 
+does not support installing man pages like the old
+v1-install does. When I tried it, it seemed not to.
+
+The Makefile has an `install-mans` target
+that could be used instead. There are several other things
+that `make install` does that cabal cannot, including installing
+completions files, so system integrators (like homebrew) 
+should probably use it when they can.
+"""]]
