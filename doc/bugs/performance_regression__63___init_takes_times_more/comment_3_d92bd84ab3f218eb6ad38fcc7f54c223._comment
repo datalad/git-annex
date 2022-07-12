@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-07-12T20:51:05Z"
+ content="""
+The last time I worked on optimising this, 
+in [[todo/speed_up_keys_db_update_with_git_streaming]],
+it looked like writing to sqlite was probably a large part of the remaining
+time. Processing 100k new files took 41 seconds, and processing 100k
+removed files took only 17 seconds. And the only difference as far as what
+git-annex is doing in those cases is adding to sqlite vs removing from
+sqlite.
+
+[This comment](https://git-annex.branchable.com/todo/Avoid_lengthy___34__Scanning_for_unlocked_files_...__34__/#comment-5d4037307a3e66304cc0e8ce137e1693)
+suggests using multi-value sqlite inserts as perhaps a way to speed it up.
+Perhaps.
+"""]]
