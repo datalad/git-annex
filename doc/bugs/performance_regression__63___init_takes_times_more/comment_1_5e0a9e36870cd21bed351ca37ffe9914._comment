@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2022-07-12T20:47:22Z"
+ content="""
+FTR, on the target server where I spotted that long running `annex init` process, and which is likely to be a bit \"overloaded\" ATM bottlenecking in IO, timing is quite sad
+
+```
+(dandisets) dandi@drogon:/mnt/backup/dandi/tmp$ builtin cd /mnt/backup/dandi/tmp; rm -rf 6e387cd5-fa41-495a-928e-49a0c0b0a35f; git clone https://github.com/dandizarrs/6e387cd5-fa41-495a-928e-49a0c0b0a35f >&/dev/null && cd 6e387cd5-fa41-495a-928e-49a0c0b0a35f && git config annex.supportunlocked false && time git annex init; git annex version | head -n 1
+init  (scanning for annexed files...)
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+  https://github.com/dandizarrs/6e387cd5-fa41-495a-928e-49a0c0b0a35f/config download failed: Not Found
+ok
+(recording state in git...)
+
+real	23m53.851s
+user	0m14.184s
+sys	0m13.692s
+git-annex version: 10.20220525-gf1fdc90
+```
+so it took 23m... but since user/sys are not as bad I guess it is indeed due to IO bottlenecking...
+"""]]
