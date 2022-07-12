@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="Basil_Peace"
+ avatar="http://cdn.libravatar.org/avatar/f59bd5c8401a86f90f98836dec27eeca"
+ subject="Still problems"
+ date="2022-07-12T01:28:10Z"
+ content="""
+I have the same error. Fresh git 2.37.0 and git-annex 10.20220526.
+
+Looks like adding `c:\Program Files\Git\usr\bin` to `PATH` can fix the issue for me.
+
+IIRC, Git for Windows asks during installation whether to add all tools to the PATH or just the main ones.
+And I prefer just the main tools, since I have separate iconv, GPG etc. installations.
+
+Is there any reason why git-annex is installed in Git dir? Why doesn't it use its own?
+If separate dir is not an option then I propose to add to `git-annex.cmd`:
+
+```
+@echo off
+setlocal
+set PATH=%~dp0..\usr\bin;%PATH%
+```
+
+`git annex` still won't work, but `git-annex` will.
+"""]]
