@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-07-13T21:24:51Z"
+ content="""
+It probably goes without saying, but that patch should never reach a
+production system's git-annex. It will break repositories that it's used in
+for anything except testing this one thing.
+"""]]
