@@ -439,7 +439,7 @@ createMessage = fromMaybe "branch created" . annexCommitMessage <$> Annex.getGit
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
-commit = whenM (journalDirty gitAnnexJournalDir) . tforceCommit
+commit = whenM (journalDirty gitAnnexJournalDir) . forceCommit
 
 {- Commits the current index to the branch even without any journalled
  - changes. -}
