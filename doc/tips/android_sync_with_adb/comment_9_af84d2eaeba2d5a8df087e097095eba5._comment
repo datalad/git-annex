@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2022-07-13T18:57:13Z"
+ content="""
+@g, when you have a problem like this, don't post a comment to a random
+place. File a bug report! 
+
+In this case, someone else has filed a bug: [[bugs/adb_remote_fails_to_import_treeish]]
+"""]]
