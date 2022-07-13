@@ -162,7 +162,9 @@ respondFilterRequest b = do
 	send b' = 
 		let (pktline, rest) = encodePktLine b'
 		in do
-			writePktLine stdout pktline
+			if isFlushPkt pktline
+				then return ()
+				else writePktLine stdout pktline
 			case rest of
 				Just b'' -> send b''
 				Nothing -> writePktLine stdout flushPkt

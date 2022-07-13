@@ -8,6 +8,8 @@ git-annex (10.20220625) UNRELEASED; urgency=medium
     build flag enabled.
   * add: Fix reversion when adding an annex link that has been moved to
     another directory. (Introduced in version 10.20220624)
+  * filter-process: Fix a bug involving handling of empty files,
+    that caused git to kill git-annex filter-process.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Jun 2022 14:49:17 -0400
 
