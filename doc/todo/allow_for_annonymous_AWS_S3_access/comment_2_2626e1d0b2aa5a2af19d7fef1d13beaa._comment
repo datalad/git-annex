@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2022-07-13T20:05:34Z"
+ content="""
+> Do you have a sample bucket that does allow anonymous access, not only to individual files, but to listing the content of the bucket?
+
+doesn't that `dandiarchive` allows for listing?  if not, also try `fcp-indi`. Also, if looking for a small one, checkout our test one `datalad-test0-versioned` - I think it is fully public.  At least for fcp-indi and datalad-test0-versioned query like `curl -v https://s3.amazonaws.com/fcp-indi/` works and seems to list it
+"""]]
