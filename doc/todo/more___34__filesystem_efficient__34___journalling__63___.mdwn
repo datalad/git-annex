@@ -1,0 +1,37 @@
+ATM the `.git/annex/journal` is a flat dump of files.  In our DANDI use case where we create git-annex repos possibly with hundred thousand entries (without content being downloaded) it seems that process(es) (we run a number in parallel) are quite slow.  Could be attributed to slow-ish filesystem not tuned for that purpose (will try resolving by moving to SDD, [issue in dandisets](https://github.com/dandi/dandisets/issues/222)), but also may be because `.git/annex/journal` accumulates those hundred thousands of files in a flat listing:
+
+```
+(base) dandi@drogon:/proc/1006503/cwd/.git$ ls -l /mnt/backup/dandi/partial-zarrs/c870fffc-0631-403c-884c-8e72e0ea0ff6/.git/annex/journal | nl | tail
+142544  -rw-r--r-- 1 dandi dandi      58 Jul 13 10:07 fff_b65_MD5E-s1508088--cb779895508c24d25eef3aafc846ba7c.log
+142545  -rw-r--r-- 1 dandi dandi     273 Jul 13 10:07 fff_b65_MD5E-s1508088--cb779895508c24d25eef3aafc846ba7c.log.web
+142546  -rw-r--r-- 1 dandi dandi      58 Jul 13 11:47 fff_b93_MD5E-s1581690--45d0e91e6641c1d0a27bcaf59e92cb5b.log
+142547  -rw-r--r-- 1 dandi dandi     273 Jul 13 11:47 fff_b93_MD5E-s1581690--45d0e91e6641c1d0a27bcaf59e92cb5b.log.web
+142548  -rw-r--r-- 1 dandi dandi      57 Jul 13 10:20 fff_bdf_MD5E-s869056--7d2874f3997f3625f37bee0ea01daaf0.log
+142549  -rw-r--r-- 1 dandi dandi     277 Jul 13 10:20 fff_bdf_MD5E-s869056--7d2874f3997f3625f37bee0ea01daaf0.log.web
+142550  -rw-r--r-- 1 dandi dandi      58 Jul 13 10:45 fff_c6e_MD5E-s2258--8758b6c839dd5f77e187a692093321f1.log
+142551  -rw-r--r-- 1 dandi dandi     273 Jul 13 10:45 fff_c6e_MD5E-s2258--8758b6c839dd5f77e187a692093321f1.log.web
+142552  -rw-r--r-- 1 dandi dandi      57 Jul 13 11:09 fff_d36_MD5E-s133521--d7856d85429f13faca9cbc26f0b391f4.log
+142553  -rw-r--r-- 1 dandi dandi     271 Jul 13 11:09 fff_d36_MD5E-s133521--d7856d85429f13faca9cbc26f0b391f4.log.web
+```
+
+so I wondered if may be there would be some benefit from making journal directory also (optionally is ok) be carry those leading directories, so that `fff_d36_MD5E-s133521--d7856d85429f13faca9cbc26f0b391f4.log.web` would become `fff/d36/MD5E-s133521--d7856d85429f13faca9cbc26f0b391f4.log.web` .  Not sure if would be of any benefit, might even be the opposite since would need even more inodes and then logic to clean up whenever any given file is removed.
+
+Or may be there could be some mode which "forces" journal to be processed whenever it reaches some specific size (e.g. 10k entries)?
+
+FWIW, here is a list of processes involved here:
+
+```shell
+(base) dandi@drogon:/proc/1006503/cwd/.git$ fuser -v /mnt/backup/dandi/partial-zarrs/c870fffc-0631-403c-884c-8e72e0ea0ff6/ 2>&1 | awk '/\.\.c/{print $2;}'   | while read p; do ps -p $p -u | grep -v USER; done
+dandi    2540282  0.2  0.0 1074052896 23268 pts/14 Sl+ 10:07   0:17 git-annex examinekey --batch --migrate-to-backend=MD5E
+dandi    2540289  0.4  0.0 1074053052 40428 pts/14 Sl+ 10:07   0:33 git-annex whereis --batch-keys --json --json-error-messages
+dandi    2540299  0.1  0.0  10640  4660 pts/14   S+   10:07   0:09 git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+dandi    2540300  0.7  0.0 1074053052 53652 pts/14 Sl+ 10:07   0:59 git-annex fromkey --force --batch --json --json-error-messages
+dandi    2540310  0.0  0.0  10640  4332 pts/14   S+   10:07   0:00 git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+dandi    2540313  0.2  0.0  10684  4296 pts/14   S+   10:07   0:19 git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+dandi    2540314 18.7  0.1 1074126764 76184 pts/14 Sl+ 10:07  23:35 git-annex registerurl --batch --json --json-error-messages
+dandi    2540322  0.3  0.0  10640  4336 pts/14   S+   10:07   0:30 git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+dandi    2540323  0.3  0.0   6888  3388 pts/14   S+   10:07   0:26 /bin/bash /usr/bin/git-annex-remote-rclone
+```
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
