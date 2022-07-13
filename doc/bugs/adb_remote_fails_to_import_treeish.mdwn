@@ -72,3 +72,4 @@ http://git-annex.branchable.com/tips/android_sync_with_adb/#comment-88511cef6861
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 git annex has been great so far, aside from some pitfalls on some of the more advanced features, i have been using it to manage my files using all kinds of special and non special remotes very solidly for 2 years now.
 
+> [[fixed|done]] --[[Joey]]

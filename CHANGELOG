@@ -10,6 +10,11 @@ git-annex (10.20220625) UNRELEASED; urgency=medium
     another directory. (Introduced in version 10.20220624)
   * filter-process: Fix a bug involving handling of empty files,
     that caused git to kill git-annex filter-process.
+  * adb: Added configuration setting oldandroid=true to avoid using
+    find -printf, which was first supported in Android around 2019-2020.
+    This may need to be enabled for old android devices that used to work
+    without it being set, since version 10.20220222 started using 
+    find -printf.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Jun 2022 14:49:17 -0400
 

@@ -32,6 +32,11 @@ the adb remote.
   by [[git-annex-import]]. When set in combination with exporttree,
   this lets files be imported from it, and changes exported back to it.
 
+* `oldandroid` - Set to "yes" if your Android device is too old
+  to support `find -printf`. Enabling this will make importing slower.
+  If you see an error like "bad arg '-printf'", you can enable this
+  option, by running eg: `git-annex enableremote android oldandroid=yes`
+
 * `ignorefinderror` - Set to "yes" to ignore errors when running "adb find"
   on the Android device. This can be useful eg, if some subdirectories are
   not readable, to let it import the other things that are readable.

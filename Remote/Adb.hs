@@ -46,6 +46,8 @@ remote = specialRemoteType $ RemoteType
 			(FieldDesc "sometimes needed to specify which Android device to use")
 		, yesNoParser ignorefinderrorField (Just False)
 			(FieldDesc "ignore adb find errors")
+		, yesNoParser oldandroidField (Just False)
+			(FieldDesc "support old versions of android (slower)")
 		]
 	, setup = adbSetup
 	, exportSupported = exportIsSupported
@@ -62,6 +64,8 @@ androidserialField = Accepted "androidserial"
 ignorefinderrorField :: RemoteConfigField
 ignorefinderrorField = Accepted "ignorefinderror"
 
+oldandroidField :: RemoteConfigField
+oldandroidField = Accepted "oldandroid"
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
@@ -305,25 +309,43 @@ listImportableContentsM serial adir c = adbfind >>= \case
 		ImportableContents (mapMaybe mk ls) []
 	Nothing -> giveup "adb find failed"
   where
-	adbfind = adbShell' serial
+	adbfind = adbShell' serial findparams
+		(\s -> if oldandroid
+			then s ++ ignorefinderrorsh
+			else concat
+				[ "set -o pipefail; "
+				, s
+				, "| xargs -0 stat -c " ++ shellEscape statformat ++ " --"
+				, ignorefinderrorsh
+				]
+		)
+	
+	findparams =
 		[ Param "find"
 		-- trailing slash is needed, or android's find command
 		-- won't recurse into the directory
 		, File $ fromAndroidPath adir ++ "/"
 		, Param "-type", Param "f"
-		, Param "-printf", Param "%p\\0"
-		] 
-		(\s -> concat
-			[ "set -o pipefail; "
-			, s
-			, "| xargs -0 stat -c " ++ shellEscape statformat ++ " --"
-			, if ignorefinderror then " || true" else ""
-			]
-		)
+		] ++ if oldandroid
+			then 
+				[ Param "-exec"
+				, Param "stat"
+				, Param "-c"
+				, Param statformat
+				, Param "{}"
+				, Param ";"
+				]
+			else 
+				[ Param "-printf"
+				, Param "%p\\0"
+				]
 
 	ignorefinderror = fromMaybe False (getRemoteConfigValue ignorefinderrorField c)
+	oldandroid = fromMaybe False (getRemoteConfigValue oldandroidField c)
 
 	statformat = adbStatFormat ++ "\t%n"
+
+	ignorefinderrorsh = if ignorefinderror then " || true" else ""
 
 	mk ('S':'T':'\t':l) =
 		let (stat, fn) = separate (== '\t') l
