@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-07-13T16:15:10Z"
+ content="""
+I see that repo's master branch has only 86k files in it. On my laptop,
+`git-annex init --no-autoenable` takes 24 seconds, and is mostly CPU bound.
+(Autoenabling adds another 6 seconds to that.)
+
+A local `git clone` of the repo, by the way, takes 7 seconds; so git-annex
+init is 4x as slow as clone.
+
+After stubbing out sqlite writes, `git-annex init --no-autoenable` took
+6 seconds. (2 seconds of that is building up the database write queue.) 
+This is consistent with my earlier benchmarking that sqlite
+writes are most of the work here. If you would like to try to reproduce
+that on the slow machine to see how much of the overhead is sqlite writes,
+here is a quick and dirty patch:
+
+	diff --git a/Database/Queue.hs b/Database/Queue.hs
+	index f4882d2fa..2fbd522f6 100644
+	--- a/Database/Queue.hs
+	+++ b/Database/Queue.hs
+	@@ -55,7 +55,7 @@ flushDbQueue :: DbQueue -> IO ()
+	 flushDbQueue (DQ hdl qvar) = do
+	 	q@(Queue sz _ qa) <- debugLocks $ takeMVar qvar
+	 	if sz > 0
+	-		then tryNonAsync (commitDb hdl qa) >>= \case
+	+		then tryNonAsync (pure ()) >>= \case
+	 			Right () -> debugLocks $ putMVar qvar =<< emptyQueue
+	 			Left e -> do
+	 				debugLocks $ putMVar qvar q
+	@@ -105,7 +105,7 @@ queueDb (DQ hdl qvar) commitchecker a = do
+	 	let enqueue = debugLocks . putMVar qvar
+	 	ifM (commitchecker sz' lastcommittime)
+	 		( do
+	-			r <- commitDb' hdl qa'
+	+			r <- pure (Right ()) -- commitDb' hdl qa'
+	 			case r of
+	 				Left _ -> enqueue $ Queue sz' lastcommittime qa'
+	 				Right _ -> enqueue =<< emptyQueue
+"""]]
