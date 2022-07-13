@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-07-13T17:09:59Z"
+ content="""
+Is this the same machine that is 60x slower than my laptop at `git-annex
+init`?
+
+Is catting a single file from the journal measurably
+slower when the directory has so many files in it vs a small number?
+
+200k files in a directory does not produce a measurable slow down at reading a
+random file for me:
+
+	root@darkstar:/home/joey/tmp/d>ls -1 |wc -l
+	200000
+	root@darkstar:/home/joey/tmp/d>sync; echo 3 > /proc/sys/vm/drop_caches
+	root@darkstar:/home/joey/tmp/d>/usr/bin/time cat 99999
+	99999
+	0.00user 0.00system 0:00.00elapsed 66%CPU (0avgtext+0avgdata 1868maxresident)k
+
+At 2 million files, that cat is still running in 0s here. Writing to a new
+file and overwriting an existing file also are still very fast.
+
+It does take around 3 seconds to list the contents of the directory (37 seconds
+with 2 million files), but the only time git-annex does that is when it commits
+the journal, which is done only once per command.
+
+Committing the journal more frequently to keep the number of files down would
+mean more commits to the git-annex branch. Also committing has overhead, and
+probably more overhead than listing a directory with a lot of files in it has.
+
+What might be worth considering is periodically staging the journal to the
+annex index file without immediately committing it (still making one commit at
+the end). That seems like it would probably be safe to do, although I have not
+fully analized it. But I'm not convinced it would be an optmisation; it would
+mean repeatedly re-writing the index file, which gets expensive.
+"""]]
