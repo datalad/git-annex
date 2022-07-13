@@ -26,3 +26,6 @@ what exactly does it want from me for AWS4-HMAC-SHA256 ?  here is how those secr
 $ echo AWS_ACCESS_KEY_ID=$(awk '/^access_key/{print $3}' ~/.s3cfg-dandi-backup) AWS_SECRET_ACCESS_KEY=$(awk '/^secret_key/{print $3}' ~/.s3cfg-dandi-backup) | tr 'a-z0-9' '?-?'
 AWS_ACCESS_KEY_ID=AKIA?GIMZPVVE??Y?NKH AWS_SECRET_ACCESS_KEY=/??U??TV?LH?L???KZJ??RF?G???Y+?S??????LM
 ```
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-07-13T17:46:54Z"
+ content="""
+That seems to be Signature Version 4. Try adding this to the initremote: signature=v4
+
+Some AWS regions need V4, others still work with V2, which is what it used
+by default. I have not seen the default US region require V4 before.
+Could be something about your AWS access key that needs v4?
+"""]]

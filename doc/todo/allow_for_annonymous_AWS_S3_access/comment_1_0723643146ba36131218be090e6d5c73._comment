@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-07-13T18:16:57Z"
+ content="""
+I've checked and the haskell aws library does not currently support this.
+Since the library currently needs a maintainer, I have not filed an issue
+to implement this.
+
+It might be possible to work around it, by using s3SignQuery with a dummy
+credentials, and then modifying the SignedQuery that it returns to remove
+the authentication headers. Or by bypassing s3SignQuery and constructing
+a SignedQuery that is not actually signed.
+
+Do you have a sample bucket that does allow anonymous access, not only
+to individual files, but to listing the content of the bucket?
+"""]]
