@@ -1,0 +1,36 @@
+From a7f66ebe015bda67ff5fc3a67c25f8b2d2d047bb Mon Sep 17 00:00:00 2001
+From: Yaroslav Halchenko <debian@onerussian.com>
+Date: Wed, 13 Jul 2022 15:24:05 -0400
+Subject: [PATCH] TEMP: disable sqlite writes
+
+from https://git-annex.branchable.com/bugs/performance_regression__63___init_takes_times_more/#comment-afd0a83555ad20ed2889d8908812e0ee
+to see if the are the ones to blame on drogon
+---
+ Database/Queue.hs | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Database/Queue.hs b/Database/Queue.hs
+index f4882d2fa..2fbd522f6 100644
+--- a/Database/Queue.hs
++++ b/Database/Queue.hs
+@@ -55,7 +55,7 @@ flushDbQueue :: DbQueue -> IO ()
+ flushDbQueue (DQ hdl qvar) = do
+ 	q@(Queue sz _ qa) <- debugLocks $ takeMVar qvar
+ 	if sz > 0
+-		then tryNonAsync (commitDb hdl qa) >>= \case
++		then tryNonAsync (pure ()) >>= \case
+ 			Right () -> debugLocks $ putMVar qvar =<< emptyQueue
+ 			Left e -> do
+ 				debugLocks $ putMVar qvar q
+@@ -105,7 +105,7 @@ queueDb (DQ hdl qvar) commitchecker a = do
+ 	let enqueue = debugLocks . putMVar qvar
+ 	ifM (commitchecker sz' lastcommittime)
+ 		( do
+-			r <- commitDb' hdl qa'
++			r <- pure (Right ()) -- commitDb' hdl qa'
+ 			case r of
+ 				Left _ -> enqueue $ Queue sz' lastcommittime qa'
+ 				Right _ -> enqueue =<< emptyQueue
+-- 
+2.35.1
+
