@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2022-07-13T19:27:05Z"
+ content="""
+submitted a PR with that patch [datalad/git-annex/pull/128](https://github.com/datalad/git-annex/pull/128/files) to get a build to try (I don't remember if we archive such PR builds on smaug...)
+"""]]

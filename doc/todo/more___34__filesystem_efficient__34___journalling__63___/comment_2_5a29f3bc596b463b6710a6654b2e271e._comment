@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2022-07-13T19:04:40Z"
+ content="""
+> Is this the same machine that is 60x slower than my laptop at git-annex init?
+
+FWIW: most likely (IIRC I have reported from that machine - drogon, and another one - falkor  in the past few days with some timing results across different issues/etc).
+
+
+"""]]
