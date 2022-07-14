@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-07-14T15:17:41Z"
+ content="""
+You have not ruled out the flat directory structure being a problem,
+if your system has different performance than mine. It would be good if you
+could try the simple test I showed there to check if reading/writing a file
+to a large directory is indeed a problem.
+
+Anyway, nice observation here; growing such a large log file
+one line at a time with rewrites is of course gonna be slow.
+That would be a nice optimisation target.
+
+(Also the redundant mkdir/stat/etc on every write are not helping
+performance. git-annex never rmdirs the journal, so those should be able to
+easily be eliminated by only doing a mkdir when a write fails due to the
+journal directory not existing.)
+"""]]

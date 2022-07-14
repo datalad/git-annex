@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-07-14T15:23:04Z"
+ content="""
+@yoh is your use of registerurl typically going to add all the urls for a
+given key in succession, and then move on to the next key? Or are the keys
+randomly distributed?
+
+It sounds like it's more randomly distributed, if you're walking a tree and
+adding each file you encounter, and some of them have the same content so
+the same url and key.
+
+If it was not randomly distributed, a nice optimisation would be for
+registerurl to buffer urls as long as the key is the same, and then do a
+single write for that key of all the urls. But it can't really buffer like
+that if it's randomly distributed; the buffer could use a large amount of
+memory then.
+
+----
+
+Simply appending would be a nice optimisation, but setUrlPresent currently
+compacts the log after adding the new url to it. That handles the case
+where the url was already in the log, so it does not get logged twice.
+Compacting here is not strictly necessary (the log is also compacted when
+its queried), but committing a log file with many copies of the same url
+would slow down later accesses of the log file.
+
+So it needs to check before appending if the url is already in the log
+(with the same or newer vector clock). This would still be worth doing,
+it avoids the repeated rewrites. But there would still be the overhead
+of rereading the file each time.
+
+Hmm... git-annex could cache the last journal file it wrote, and only use
+that cache to check if line it's writing is already in the file before
+appending to the file. Using the cache this way seems like it could avoid
+needing to invalidate the cache when some other process modifies the
+journal file. There are two cases:
+
+1. The other process removes the line that was already in the file, which
+   is being logged a second time. In this case the line stays removed.
+   This is the same as if the other process had waited until after the
+   second time and removed it then, and so I think this is ok.
+2. The other process adds the same line itself. This is unlikely due to
+   vector clocks, but it could happen. In this case, the file gets two
+   copies of the same line, which is a little innefficient but does not
+   change any behavior.
+
+Unfortunately, with random distrubution, as discussed above, that caching
+would not help since git-annex can't cache every log for every key.
+
+Anyway, writes are the more expensive thing, so it's still worth
+implementing appending, even if it still needs to read the log file
+first.
+"""]]
