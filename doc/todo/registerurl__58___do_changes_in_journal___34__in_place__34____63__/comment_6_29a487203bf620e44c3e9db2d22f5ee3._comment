@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-07-14T17:45:31Z"
+ content="""
+@yarikoptic ok, please check and, if you can do that, 
+I'll implement the buffering of urls for a key.
+
+It looks like appending is not feasible..
+
+Only other approach I can think of would be to have a switch that makes
+git-annex buffer branch writes in memory, rather than using the journal,
+and commit at the end, or when the buffer got too large.
+"""]]

@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-07-14T17:07:59Z"
+ content="""
+Writing to the journal is currently atomic. And git-annex does take
+advantage of that atomicity, by not locking the journal when it's reading
+from it in some cases, the most used of which is Annex.Branch.get.
+
+But, it's not guaranteed that an append is atomic. A short enough append
+may be, but how short may vary, and it's not well defined. Here is an
+example of a short write append that gets interrupted in the middle by a
+kill signal: <https://bugzilla.kernel.org/show_bug.cgi?id=55651>
+
+> Unfortunately as far as I can determine, in the POSIX and Linux
+> standards, there is no way to work around this new behavior.
+> There's no way to ensure that some amount of data no matter now small,
+> even just two bytes, are written out to a file as an atomic transfer
+> (either aborted and no bytes written or is completely written out.)
+
+So appending would need more locking of the journal, which would add
+some overhead to everything. And especially would hurt concurrency.
+
+Also, the journal is currently crash-safe. Even if there's a sudden
+power loss, the write either completed or didn't happen. Appending
+would lose that nice property.
+"""]]
