@@ -10,7 +10,8 @@ to implement this.
 It might be possible to work around it, by using s3SignQuery with a dummy
 credentials, and then modifying the SignedQuery that it returns to remove
 the authentication headers. Or by bypassing s3SignQuery and constructing
-a SignedQuery that is not actually signed.
+a SignedQuery that is not actually signed. Update: No, it's not possible,
+because s3SignQuery is used internally in aws.
 
 Do you have a sample bucket that does allow anonymous access, not only
 to individual files, but to listing the content of the bucket?

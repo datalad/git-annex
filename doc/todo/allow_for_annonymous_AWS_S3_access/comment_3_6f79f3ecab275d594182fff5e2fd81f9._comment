@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-07-14T18:49:59Z"
+ content="""
+Ok, I hacked up the aws library to omit the authentication headers, and
+provided git-annex with dummy AWS credentials. I was able to import 
+from datalad-test0-versioned after a small fix to git-annex.
+
+Here's the patch I used. This is certianly not upstreamable as-is, but
+is a nice proof of concept.
+
+	diff -ur aws-0.22/Aws/S3/Core.hs aws/Aws/S3/Core.hs
+	--- aws-0.22/Aws/S3/Core.hs	2001-09-08 21:46:40.000000000 -0400
+	+++ aws/Aws/S3/Core.hs	2022-07-14 14:39:33.277075769 -0400
+	@@ -230,7 +230,7 @@
+	       , sqStringToSign = stringToSign
+	       }
+	     where
+	-      amzHeaders = merge $ sortBy (compare `on` fst) (s3QAmzHeaders ++ (fmap (\(k, v) -> (CI.mk k, v)) iamTok))
+	+      amzHeaders = merge $ sortBy (compare `on` fst) s3QAmzHeaders
+	           where merge (x1@(k1,v1):x2@(k2,v2):xs) | k1 == k2  = merge ((k1, B8.intercalate "," [v1, v2]) : xs)
+	                                                  | otherwise = x1 : merge (x2 : xs)
+	                 merge xs = xs
+	@@ -264,8 +264,6 @@
+	              (False, ti') -> ti'
+	              (True, AbsoluteTimestamp time) -> AbsoluteExpires $ s3DefaultExpiry `addUTCTime` time
+	              (True, AbsoluteExpires time) -> AbsoluteExpires time
+	-      sig = signature signatureCredentials HmacSHA1 stringToSign
+	-      iamTok = maybe [] (\x -> [("x-amz-security-token", x)]) (iamToken signatureCredentials)
+	       stringToSign = Blaze.toByteString . mconcat . intersperse (Blaze8.fromChar '\n') . concat  $
+	                        [[Blaze.copyByteString $ httpMethod s3QMethod]
+	                        , [maybe mempty (Blaze.copyByteString . Base64.encode . ByteArray.convert) s3QContentMd5]
+	@@ -278,13 +276,10 @@
+	                        ]
+	           where amzHeader (k, v) = Blaze.copyByteString (CI.foldedCase k) `mappend` Blaze8.fromChar ':' `mappend` Blaze.copyByteString v
+	       (authorization, authQuery) = case ti of
+	-                                 AbsoluteTimestamp _ -> (Just $ return $ B.concat ["AWS ", accessKeyID signatureCredentials, ":", sig], [])
+	+                                 AbsoluteTimestamp _ -> (Nothing, [])
+	                                  AbsoluteExpires time -> (Nothing, HTTP.toQuery $ makeAuthQuery time)
+	       makeAuthQuery time
+	-          = [("Expires" :: B8.ByteString, fmtTimeEpochSeconds time)
+	-            , ("AWSAccessKeyId", accessKeyID signatureCredentials)
+	-            , ("SignatureMethod", "HmacSHA256")
+	-            , ("Signature", sig)] ++ iamTok
+	+          = [("Expires" :: B8.ByteString, fmtTimeEpochSeconds time)]
+	 s3SignQuery S3Query{..} S3Configuration{ s3SignVersion = S3SignV4 signpayload, .. } sd@SignatureData{..}
+	     = SignedQuery
+	     { sqMethod = s3QMethod
+"""]]
