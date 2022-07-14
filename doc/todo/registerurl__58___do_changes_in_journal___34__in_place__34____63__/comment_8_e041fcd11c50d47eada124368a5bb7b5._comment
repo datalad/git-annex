@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2022-07-14T19:50:30Z"
+ content="""
+I think that CoW and append could indeed speed it up. An append on a CoW
+filesystem should be able to keep the original file without copying it, and
+just add a new block for the append to the other file. I did a quick test
+on btrfs, starting with a 100 mb file, making a cp --reflink, and
+appending to it. All operations were less than 10 ms.
+
+----
+
+The buffering in memory would be while the process was running, then it
+would commit it to the git-annex branch. So if no other process needs to
+see that data while the process is running, you'd be ok.
+"""]]
