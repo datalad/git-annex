@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2022-07-14T17:00:40Z"
+ content="""
+here are some timings although I think you are right that it should not be any major effect. most likely my slow system is due to [another issue with registerurl](https://git-annex.branchable.com/todo/registerurl__58___do_changes_in_journal___34__in_place__34____63__/#comment-85131966a882ff24431566d146b5634b). But here are some timings showing that it is ok (23ms) to cat 1MB file, and list those 173k files in 17 seconds
+
+```
+root@drogon:/mnt/backup/dandi/partial-zarrs/db99e810-3bcf-434f-89cb-ae7476224607/.git/annex/journal# time cat 5a4_81f_MD5E-s560--82188063b1988362cc3050918f493320.log.web >/dev/null
+
+real    0m0.023s
+user    0m0.001s
+sys     0m0.001s
+root@drogon:/mnt/backup/dandi/partial-zarrs/db99e810-3bcf-434f-89cb-ae7476224607/.git/annex/journal# time cat 5a4_81f_MD5E-s560--82188063b1988362cc3050918f493320.log.web >/dev/null
+
+real    0m0.001s
+user    0m0.001s
+sys     0m0.000s
+root@drogon:/mnt/backup/dandi/partial-zarrs/db99e810-3bcf-434f-89cb-ae7476224607/.git/annex/journal# time /bin/ls -1 | wc -l
+173882
+
+real    0m17.103s
+user    0m0.535s
+sys     0m0.173s
+root@drogon:/mnt/backup/dandi/partial-zarrs/db99e810-3bcf-434f-89cb-ae7476224607/.git/annex/journal# time touch 1
+
+real    0m0.005s
+user    0m0.001s
+sys     0m0.000s
+root@drogon:/mnt/backup/dandi/partial-zarrs/db99e810-3bcf-434f-89cb-ae7476224607/.git/annex/journal# time bash -c 'echo 2 >> 1'
+
+real    0m0.132s
+user    0m0.017s
+sys     0m0.010s
+root@drogon:/mnt/backup/dandi/partial-zarrs/db99e810-3bcf-434f-89cb-ae7476224607/.git/annex/journal# time rm 1
+
+real    0m0.015s
+user    0m0.001s
+sys     0m0.000s
+
+# repeated ls
+root@drogon:/mnt/backup/dandi/partial-zarrs/db99e810-3bcf-434f-89cb-ae7476224607/.git/annex/journal# time /bin/ls -1 | wc -l
+177908
+
+real    0m0.789s
+user    0m0.577s
+sys     0m0.067s
+root@drogon:/mnt/backup/dandi/partial-zarrs/db99e810-3bcf-434f-89cb-ae7476224607/.git/annex/journal# time /bin/ls -1 | wc -l
+177978
+
+real    0m1.074s
+user    0m0.547s
+sys     0m0.077s
+
+```
+
+so if registerurl and others do not list that folder indeed until the point when journal is committed, should be all good
+"""]]
