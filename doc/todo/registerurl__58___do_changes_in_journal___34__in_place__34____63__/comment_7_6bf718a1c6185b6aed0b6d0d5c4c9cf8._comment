@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2022-07-14T19:42:58Z"
+ content="""
+> @yarikoptic ok, please check and, if you can do that, I'll implement the buffering of urls for a key.
+
+[apparently (according to John)](https://github.com/dandi/dandisets/issues/225#issuecomment-1184674717) it would require us to prefetch entire listing of the bucket instead of starting to work on the obtained information as soon as first page comes in. So, \"no free lunch\" again.
+
+Re append: I wonder if it would anyhow be faster, at least for me, if append was done through `cp --reflink=auto` of that file first into `othertmp/`, append there, and then `mv`...   most likely not or not as much as worth it.
+
+Operating (optionally) a journal in memory (if I got \"git-annex buffer branch writes in memory\" correctly) sounds like a possible cool speedup overall but not sure how that could work across multiple git-annex instances. 
+"""]]
