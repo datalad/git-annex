@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2022-07-14T17:54:20Z"
+ content="""
+That was fixed in [[!commit 1b680d330b902e01bbe01e3e7dc1bde2fe512c0b]]
+"""]]
