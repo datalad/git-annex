@@ -777,9 +777,11 @@ genBucket c gc u = do
  -
  - Note that IA buckets can only created by having a file
  - stored in them. So this also takes care of that.
+ -
+ - Not done for import/export buckets.
  -}
 writeUUIDFile :: ParsedRemoteConfig -> UUID -> S3Info -> S3Handle -> Annex ()
-writeUUIDFile c u info h = do
+writeUUIDFile c u info h = unless (exportTree c || importTree c) $ do
 	v <- checkUUIDFile c u info h
 	case v of
 		Right True -> noop
@@ -794,15 +796,19 @@ writeUUIDFile c u info h = do
 	mkobject = putObject info file (RequestBodyLBS uuidb)
 
 {- Checks if the UUID file exists in the bucket
- - and has the specified UUID already. -}
+ - and has the specified UUID already.
+ -
+ - Not done for import/export buckets. -}
 checkUUIDFile :: ParsedRemoteConfig -> UUID -> S3Info -> S3Handle -> Annex (Either SomeException Bool)
-checkUUIDFile c u info h = tryNonAsync $ liftIO $ runResourceT $ do
-	resp <- tryS3 $ sendS3Handle h (S3.getObject (bucket info) file)
-	case resp of
-		Left _ -> return False
-		Right r -> do
-			v <- AWS.loadToMemory r
-			extractFromResourceT (check v)
+checkUUIDFile c u info h 
+	| exportTree c || importTree c = pure (Right False)
+	| otherwise = tryNonAsync $ liftIO $ runResourceT $ do
+		resp <- tryS3 $ sendS3Handle h (S3.getObject (bucket info) file)
+		case resp of
+			Left _ -> return False
+			Right r -> do
+				v <- AWS.loadToMemory r
+				extractFromResourceT (check v)
   where
 	check (S3.GetObjectMemoryResponse _meta rsp) =
 		responseStatus rsp == ok200 && responseBody rsp == uuidb
