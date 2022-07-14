@@ -27,3 +27,5 @@ May be changes to those .web files in journal could be done "in place" by append
 may be there is a way to "stagger" those --batch additions somehow so all thousands of URLs are added in a single "run" thus having a single "copy/move" and locking/stat'ing syscalls?
 
 PS More information could be found at [dandisets/issues/225](https://github.com/dandi/dandisets/issues/225 )
+
+[[!tag projects/dandi]]

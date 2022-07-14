@@ -81,14 +81,16 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 		( return gitAnnexPrivateJournalDir
 		, return gitAnnexJournalDir
 		)
-	createAnnexDirectory jd
 	-- journal file is written atomically
 	let jfile = journalFile file
 	let tmpfile = tmp P.</> jfile
-	liftIO $ do
+	let write = liftIO $ do
 		withFile (fromRawFilePath tmpfile) WriteMode $ \h ->
 			writeJournalHandle h content
 		moveFile tmpfile (jd P.</> jfile)
+	-- avoid overhead of creating the journal directory when it already
+	-- exists
+	write `catchIO` (const (createAnnexDirectory jd >> write))
 
 data JournalledContent
 	= NoJournalledContent

@@ -9,9 +9,10 @@ randomly distributed?
 
 It sounds like it's more randomly distributed, if you're walking a tree and
 adding each file you encounter, and some of them have the same content so
-the same url and key.
+the same key.
 
-If it was not randomly distributed, a nice optimisation would be for
+But your stace shows repeated writes for the same key, so maybe they bunch
+up? If it was not randomly distributed, a nice optimisation would be for
 registerurl to buffer urls as long as the key is the same, and then do a
 single write for that key of all the urls. But it can't really buffer like
 that if it's randomly distributed; the buffer could use a large amount of

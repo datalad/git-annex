@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-07-14T16:16:35Z"
+ content="""
+I've optimised away the repeated mkdir of the journal.
+
+Probably not a big win in this particular edge case, but a nice general
+win..
+"""]]
