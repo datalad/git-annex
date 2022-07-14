@@ -35,3 +35,5 @@ dandi    2540323  0.3  0.0   6888  3388 pts/14   S+   10:07   0:26 /bin/bash /us
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> [[notabug|done]], as confirmed by yarikoptic --[[Joey]]
