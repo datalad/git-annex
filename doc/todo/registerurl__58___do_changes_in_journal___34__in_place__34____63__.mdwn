@@ -1,0 +1,29 @@
+Tracing "slow performance" of our git-annex'ification of zarr archives in [dandisets](https://github.com/dandi/dandisets/). Initially I thought that may be a [flat directory structure of the journal](https://git-annex.branchable.com/todo/more___34__filesystem_efficient__34___journalling__63___/) is a culprit but Joey showed that it is unlikely the case.
+
+I think that part of the heavy IO/CPU of `git-annex registerurl --batch --json --json-error-messages` call comes from the fact that some files in those zarr trees are identical through hierarchy, leading to over 8k URLs to be added for that annex key.  In turn, according to strace, I think that git-annex to update listing of urls for a key first creates a copy of prior version of .web under `othertmp/` and then moves it over under journal location, e.g.
+
+```
+$> grep journal registerurl-3644019.log | head
+3644019 openat(AT_FDCWD, ".git/annex/journal.lck", O_RDWR|O_CREAT, 0666) = 11
+3644019 openat(AT_FDCWD, ".git/annex/journal/5a4_81f_MD5E-s560--82188063b1988362cc3050918f493320.log", O_RDONLY|O_NOCTTY|O_NONBLOCK <unfinished ...>
+3644019 openat(AT_FDCWD, ".git/annex/journal/5a4_81f_MD5E-s560--82188063b1988362cc3050918f493320.log.web", O_RDONLY|O_NOCTTY|O_NONBLOCK <unfinished ...>
+3644019 openat(AT_FDCWD, ".git/annex/journal.lck", O_RDWR|O_CREAT, 0666) = 11
+3644019 openat(AT_FDCWD, ".git/annex/journal/5a4_81f_MD5E-s560--82188063b1988362cc3050918f493320.log.web", O_RDONLY|O_NOCTTY|O_NONBLOCK) = 16
+3644019 mkdir(".git/annex/journal", 0777) = -1 EEXIST (File exists)
+3644019 stat(".git/annex/journal", {st_mode=S_IFDIR|S_ISGID|0755, st_size=24299080, ...}) = 0
+3644019 rename(".git/annex/othertmp/5a4_81f_MD5E-s560--82188063b1988362cc3050918f493320.log.web", ".git/annex/journal/5a4_81f_MD5E-s560--82188063b1988362cc3050918f493320.log.web") = 0
+3644019 openat(AT_FDCWD, ".git/annex/journal.lck", O_RDWR|O_CREAT, 0666) = 11
+3644019 openat(AT_FDCWD, ".git/annex/journal/5a4_81f_MD5E-s560--82188063b1988362cc3050918f493320.log", O_RDONLY|O_NOCTTY|O_NONBLOCK) = 16
+```
+ 
+and that file/key eventually grows into 1MB in size. So for 8k URLs it would take about 4000MBs = 4GB of write IO to produce such growing file while adding those 8k URLs.
+
+Full strace output for those few seconds could be found [here](http://www.onerussian.com/tmp/registerurl-3644019.log).
+
+I wonder how we/git-annex could improve its performance for such cases?
+
+May be changes to those .web files in journal could be done "in place" by appending to those files, without needing to copy/move?
+
+may be there is a way to "stagger" those --batch additions somehow so all thousands of URLs are added in a single "run" thus having a single "copy/move" and locking/stat'ing syscalls?
+
+PS More information could be found at [dandisets/issues/225](https://github.com/dandi/dandisets/issues/225 )
