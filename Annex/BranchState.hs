@@ -54,7 +54,7 @@ data UpdateMade
  - be checked going forward, until new information gets written to it.
  -
  - When the action is unable to update the branch due to a permissions
- - problem, 
+ - problem, the journal is still read every time.
  -}
 runUpdateOnce :: Annex UpdateMade -> Annex BranchState
 runUpdateOnce update = do
