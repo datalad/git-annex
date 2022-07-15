@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2022-07-15T15:50:00Z"
+ content="""
+Ran `git-annex whereis --quiet` over 10000 annexed files. With journal
+locking on read, it took 11.71 seconds. Without journal locking, 
+it took 11.73 seconds. No speed difference.
+
+And strace showed why: This only opened the journal directory once, noticed
+it was empty, and skipped ever trying to read any files from it! If there
+are files, it stages them and still manages to not need to read from the
+journal after that. Nice optimisation from earlier this year. :-)
+
+I thought that --batch commands would still check the journal files,
+but surprisingly, they don't seem to. That was a bug:
+[[bugs/batch_commands_miss_journalled_changes_made_while_running]]
+
+After fixing that, I benchmarked feeding 10000 filenames into `git-annex
+whereis --batch`. With journal locking on read, it took 18.43 seconds. 
+Without journal locking, it took 17.22 seconds. Before that bug fix, 
+with or without journal locking, it took 16.59 seconds.
+
+So, if the slow down caused by journal locking on read is a problem for
+anyone, a mode could be added that makes --batch not check the journal for
+changes made after the command started. That would make it run as fast as
+before that bug fix.
+
+There might be other commands than --batch commands, that both read and
+write git-annex branch data, and so end up checking the journal on every
+read, since writing invalidates the above optimisation. Not sure what
+commands that would be, maybe `git-annex drop`? Anyway, such commands are
+probably doing more expensive things than locking the journal; they're not
+query commands.
+
+That makes me ok with adding the locking on read, if needed for append.
+(Or similar added overheads to journal reads.)
+For now, I've committed it to the `append` branch.
+"""]]
