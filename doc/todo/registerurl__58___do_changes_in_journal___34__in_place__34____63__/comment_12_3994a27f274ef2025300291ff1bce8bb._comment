@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 12"
+ date="2022-07-15T19:33:50Z"
+ content="""
+> It will not see that data, and might make its own divergent changes, that get committed to the branch. 
+
+FWIW, not sure when/if I would use that mode then fearing for introducing some inconsistencies. Or do you see legit use case (like mine) where it should be safe?
+"""]]
