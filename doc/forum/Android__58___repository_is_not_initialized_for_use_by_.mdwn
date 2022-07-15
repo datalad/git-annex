@@ -1,0 +1,22 @@
+I've been using git-annex in android/termux (pixel 3a, android 12 rooted) for a while to manage multiple repositories in command line (no assistant here). So far so good. I upgraded termux packages one day and troubles began: all repositories now throw the following errors for all kind of git-annex commands:
+
+```
+$ git annex status
+git-annex: This repository is not initialized for use by git-annex, but .git/annex/objects/ exists, which indicates this repository was used by git-annex before, and may have lost its annex.uuid and annex.version configs. Either set back missing configs, or run git-annex init to initialize with a new uuid.
+error: external filter 'git-annex smudge --clean -- %f' failed 1
+error: external filter 'git-annex smudge --clean -- %f' failed
+```
+
+Note I filter out the recurring error "WARNING: linker: Warning: failed to find generated linker configuration from ..." for clarity.
+git version: 2.36.1
+git annex version: 10.20220121
+
+- Funny thing #1: "git config -l" shows the uuid is correctly set.
+
+- Funny thing #2: I installed nix-on-droid with git (2.33.3) and git-annex (8.20211028) and ... I have the same error (?!?).
+
+- Funny thing #3: when I clone a repository from scratch, "git annex init" never completes. When interrupted, then "git annex status" never completes...
+
+- Funny thing #4: git alone works very well, in both git-annex'ed repos or plain git ones.
+
+If you have any idea of something to check/change/update/try, I'll be happy to report the results.
