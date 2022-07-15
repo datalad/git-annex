@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-07-15T15:11:34Z"
+ content="""
+Upgrade your git-annex to a newer version. I suspect you will get a
+different error message, perhaps along the lines of:
+
+	Git refuses to operate in this repository, probably because it is owned by someone else.
+
+(Although that would not explain why git-annex init might hang.)
+"""]]
