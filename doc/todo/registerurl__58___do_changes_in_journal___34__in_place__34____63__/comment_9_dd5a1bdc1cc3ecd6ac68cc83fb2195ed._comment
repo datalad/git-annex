@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2022-07-15T15:05:32Z"
+ content="""
+Rather than buffering in memory, it could buffer to a temporary journal,
+and merge that with the main journal at the end. That would let it append
+in place without worrying about locking, and memory use would not matter
+either. In the common case, files could just be moved from the temp journal
+to the main journal, which would be cheap.
+
+Same as buffering in memory, this would change the normal behavior where
+other processes can see the changes made by a --batch process while it's
+running. So it would need to be a non-default mode.
+
+I think though, that before implementing any of these things, I should
+first benchmark how much overhead there would be in locking the journal
+around read operations.
+"""]]
