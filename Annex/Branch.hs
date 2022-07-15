@@ -234,7 +234,7 @@ updateTo' pairs = do
 			else return $ "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
 				" into " ++ fromRef name
-		localtransitions <- getLocalTransitions
+		localtransitions <- getLocalTransitions jl
 		unless (null tomerge) $ do
 			showSideAction merge_desc
 			mapM_ checkBranchDifferences refs
@@ -263,7 +263,7 @@ updateTo' pairs = do
 		-- Gather any transitions that are new to either the
 		-- local branch or a remote ref, which will need to be
 		-- applied on the fly.
-		localts <- getLocalTransitions
+		localts <- lockJournal getLocalTransitions
 		remotets <- mapM getRefTransitions refs
 		ts <- if all (localts ==) remotets
 			then return []
@@ -305,13 +305,14 @@ get file = do
 			content <- if journalIgnorable st
 				then getRef fullname file
 				else if null (unmergedRefs st) 
-					then getLocal file
+					then lockJournal $ 
+						\jl -> getLocal jl file
 					else unmergedbranchfallback st
 			setCache file content
 			return content
   where
 	unmergedbranchfallback st = do
-		l <- getLocal file
+		l <- lockJournal $ \jl -> getLocal jl file
 		bs <- forM (unmergedRefs st) $ \ref -> getRef ref file
 		let content = l <> mconcat bs
 		return $ applytransitions (unhandledTransitions st) content
@@ -341,7 +342,7 @@ precache file branchcontent = do
 	st <- getState
 	content <- if journalIgnorable st
 		then pure branchcontent
-		else getJournalFileStale (GetPrivate True) file >>= return . \case
+		else lockJournal $ \jl -> getJournalFile jl (GetPrivate True) file >>= return . \case
 			NoJournalledContent -> branchcontent
 			JournalledContent journalcontent -> journalcontent
 			PossiblyStaleJournalledContent journalcontent ->
@@ -352,13 +353,13 @@ precache file branchcontent = do
  - reflect changes in remotes.
  - (Changing the value this returns, and then merging is always the
  - same as using get, and then changing its value.) -}
-getLocal :: RawFilePath -> Annex L.ByteString
-getLocal = getLocal' (GetPrivate True)
+getLocal :: JournalLocked -> RawFilePath -> Annex L.ByteString
+getLocal jl = getLocal' jl (GetPrivate True)
 
-getLocal' :: GetPrivate -> RawFilePath -> Annex L.ByteString
-getLocal' getprivate file = do
+getLocal' :: JournalLocked -> GetPrivate -> RawFilePath -> Annex L.ByteString
+getLocal' jl getprivate file = do
 	fastDebug "Annex.Branch" ("read " ++ fromRawFilePath file)
-	go =<< getJournalFileStale getprivate file
+	go =<< getJournalFile jl getprivate file
   where
 	go NoJournalledContent = getRef fullname file
 	go (JournalledContent journalcontent) = return journalcontent
@@ -392,12 +393,12 @@ getRef ref file = withIndex $ catFile ref file
  - modifes the current content of the file on the branch.
  -}
 change :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> content) -> Annex ()
-change ru file f = lockJournal $ \jl -> f <$> getToChange ru file >>= set jl ru file
+change ru file f = lockJournal $ \jl -> f <$> getToChange jl ru file >>= set jl ru file
 
 {- Applies a function which can modify the content of a file, or not. -}
 maybeChange :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> Maybe content) -> Annex ()
 maybeChange ru file f = lockJournal $ \jl -> do
-	v <- getToChange ru file
+	v <- getToChange jl ru file
 	case f v of
 		Just jv ->
 			let b = journalableByteString jv
@@ -405,8 +406,8 @@ maybeChange ru file f = lockJournal $ \jl -> do
 		_ -> noop
 
 {- Only get private information when the RegardingUUID is itself private. -}
-getToChange :: RegardingUUID -> RawFilePath -> Annex L.ByteString
-getToChange ru f = flip getLocal' f . GetPrivate =<< regardingPrivateUUID ru
+getToChange :: JournalLocked -> RegardingUUID -> RawFilePath -> Annex L.ByteString
+getToChange jl ru f = flip (getLocal' jl) f . GetPrivate =<< regardingPrivateUUID ru
 
 {- Records new content of a file into the journal.
  -
@@ -678,10 +679,10 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 		removeWhenExistsWith (R.removeLink) (toRawFilePath jlogf)
 	openjlog tmpdir = liftIO $ openTmpFileIn tmpdir "jlog"
 
-getLocalTransitions :: Annex Transitions
-getLocalTransitions = 
+getLocalTransitions :: JournalLocked -> Annex Transitions
+getLocalTransitions jl = 
 	parseTransitionsStrictly "local"
-		<$> getLocal transitionsLog
+		<$> getLocal jl transitionsLog
 
 {- This is run after the refs have been merged into the index,
  - but before the result is committed to the branch.
@@ -930,7 +931,7 @@ overBranchFileContents' select go st = do
 	-- Check the journal, in case it did not get committed to the branch
 	checkjournal f branchcontent
 		| journalIgnorable st = return branchcontent
-		| otherwise = getJournalFileStale (GetPrivate True) f >>= return . \case
+		| otherwise = lockJournal $ \jl -> getJournalFile jl (GetPrivate True) f >>= return . \case
 			NoJournalledContent -> branchcontent
 			JournalledContent journalledcontent ->
 				Just journalledcontent
@@ -940,7 +941,7 @@ overBranchFileContents' select go st = do
 	drain buf fs = case getnext fs of
 		Just (v, f, fs') -> do
 			liftIO $ putMVar buf fs'
-			content <- getJournalFileStale (GetPrivate True) f >>= \case
+			content <- lockJournal $ \jl -> getJournalFile jl (GetPrivate True) f >>= \case
 				NoJournalledContent -> return Nothing
 				JournalledContent journalledcontent ->
 					return (Just journalledcontent)
