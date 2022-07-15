@@ -17,6 +17,8 @@ git-annex (10.20220625) UNRELEASED; urgency=medium
     find -printf.
   * S3: Avoid writing or checking the uuid file in the S3 bucket when
     importtree=yes or exporttree=yes.
+  * Fix a reversion that prevented --batch commands (and the assistant)
+    from noticing data written to the journal by other commands.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Jun 2022 14:49:17 -0400
 

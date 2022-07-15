@@ -2,7 +2,7 @@
  -
  - Runtime state about the git-annex branch, and a small cache.
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -92,9 +92,9 @@ journalChanged = do
 	-- so avoid an unnecessary write to the MVar that changeState
 	-- would do.
 	--
-	-- This assumes that another thread is not changing journalIgnorable
+	-- This assumes that another thread is not setting journalIgnorable
 	-- at the same time, but since runUpdateOnce is the only
-	-- thing that changes it, and it only runs once, that
+	-- thing that sets it, and it only runs once, that
 	-- should not happen.
 	st <- getState 
 	when (journalIgnorable st) $
@@ -109,8 +109,10 @@ journalChanged = do
  - will be seen.
  -}
 enableInteractiveBranchAccess :: Annex ()
-enableInteractiveBranchAccess = changeState $
-	\s -> s { needInteractiveAccess = True }
+enableInteractiveBranchAccess = changeState $ \s -> s 
+	{ needInteractiveAccess = True
+	, journalIgnorable = False
+	}
 
 setCache :: RawFilePath -> L.ByteString -> Annex ()
 setCache file content = changeState $ \s -> s
