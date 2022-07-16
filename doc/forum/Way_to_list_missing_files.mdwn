@@ -1,0 +1,1 @@
+Is there a way to have git-annex list missing files / broken links within a repository? This seems like it would be a common thing to want to do, and I feel like I've done it before, but I can find nothing about this anywhere. It may just be that I'm not searching using the right terminology.
