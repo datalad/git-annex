@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: comment 12"""
+ date="2022-07-18T18:40:20Z"
+ content="""
+@yarikoptic, the new git-annex would resolve the insonsistency the next
+time it ran. Only when annex.alwayscommit=false would there be any time
+window where the old git-annex missed something written by git-annex
+process that ran before the one that got interrupted. This does not seem
+like a large problem.
+"""]]

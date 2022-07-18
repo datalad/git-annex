@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2022-07-18T18:01:09Z"
+ content="""
+The `append` branch has basic appending implemented, but it's not yet
+done atomically.
+
+For benchmarking, I'm using this command.
+
+	perl -e 'for (1..'$ITER') { print "WORM--foo http://example.com/$_\n" }' | /usr/bin/time git-annex registerurl --batch
+
+ITER=2000  
+Old: 52s  
+Appending:  28s  
+Appending without reading old value: 2s
+
+ITER=4000  
+Old: 190s  
+Appending:  111s  
+Appending without reading old value: 5s
+
+
+So an improvement of 50%. But remains nonlinear even when appending,
+because it needs to read the existing log file each time to determine if it
+can append, or if it needs to compact it. (Disk cache didn't work as well
+as I had hoped.)
+
+What this suggests to me is that it would be good to also add a mode that
+blindly appends without compacting. Or, possibly, to blindly append,
+but then compact the journalled file before committing it to the git-annex
+branch.
+"""]]
