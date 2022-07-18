@@ -1,0 +1,73 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2022-07-15T17:58:27Z"
+ content="""
+The remaining problem with appending is crash safety. If an append is
+not atomic, a journal file could end up having a truncated line written to
+it.
+
+That seems unlikely, but see the bugzilla page above; it can happen on a
+kill signal at least.
+
+So, can append somehow be made atomic? How about this:
+
+Make `.git/annex/journal-append/` which contains append files,
+that are the same as journal files, but in the process of being appended.
+And make it also contain size files, which contain a number, the size of
+the append file before anything got appended to it.
+
+Then, to append to a journal file:
+
+1. When the journal file exists, and the append file does not,
+   move the journal file to the append file.
+2. When the journal file does not exist and the append file does,
+   truncate it to the size in the size file. (If the size file does not
+   exist, skip truncating.)
+3. When the journal and append file both exist, truncate the append file,
+   and add the journal file's content to what is going to be appended.
+   (This is in case an old git-annex wrote a new value to the
+   journal file, not knowing about the append file.)
+2. Write the current size of the append file to the size file.
+3. Append to the append file.
+4. Move the append file back to the journal file.
+5. Delete the size file.
+
+When reading journalled files, it would need to also check the append
+file, and only read the recorded size. When both the append file and the
+journal file exist, it would read both and combine them. This change would 
+slow down reads slightly, though as seen in comment #10, mostly only for
+--batch commands.
+
+(It may not be necessary to lock on read actually. It can check for the
+append file and read the size file. If a write is happening at the
+same time, the size file may not exist yet, or may have been deleted
+already. In either case, reading the whole append file is ok.
+Should be possible to make this race-safe without locking.)
+
+When staging the journal, it would need to first handle any interrupted
+appends, by checking if any append files exist.
+
+1. Truncate the append file to the value in the size file
+2. Read the value of the file from the branch.
+3. Append the value of the file from the branch to the append file.
+   (This is to handle a case with old git-annex having written
+   divergent data to the branch, see below.)
+4. Move the append file back to the journal.
+5. Delete the size file.
+
+----
+
+When a new git-annex is doing an append and an old git-annex is also in use,
+the old git-annex will not see files in the journal that are in the process
+of being appended to. So it might use out of date information for queries.
+When it's making a write, it always did first read with the journal locked,
+so it will block until the append is complete. So it will not use out of
+date information for writes.
+
+Only when something was written to the journal, but not committed to the
+branch, and then an append happened but got interruped will the old
+git-annex miss data. It will not see that data, and might make its own
+divergent changes, that get committed to the branch. The new git-annex
+will need to deal with this when handling interrupted appends.
+"""]]
