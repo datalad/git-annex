@@ -414,7 +414,7 @@ data ChangeOrAppend t = Change t | Append t
  -}
 changeOrAppend :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> ChangeOrAppend content) -> Annex ()
 changeOrAppend ru file f = lockJournal $ \jl -> do
-	oldc <- getToChange jl ru file
+	oldc <- getToChange ru file
 	case f oldc of
 		Change newc -> set jl ru file newc
 		Append toappend -> append jl ru file oldc toappend
