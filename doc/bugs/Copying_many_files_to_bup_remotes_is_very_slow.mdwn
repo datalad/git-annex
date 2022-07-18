@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+Copying many files (thousands) to a bup remote is *very* slow. <1MiB/s slow.
+
+When evaluating multiple options for compressed deduplicated storage, I tried storing my documents repo that has 1.35 gigabytes split across 1265 local annex keys.
+
+This is how long it took (tmpfs -> bup in tmpfs):
+
+```
+* J1
+  real    72m19.684s
+  user    63m8.171s
+  sys     12m10.564s
+* J2
+  copy: 3 failed
+
+  real    37m1.465s
+  user    66m24.674s
+  sys     11m48.973s
+* J4
+  copy: 17 failed
+
+  real    22m36.806s
+  user    75m21.566s
+  sys     12m54.847s
+```
+
+(Failures due to https://git-annex.branchable.com/bugs/bup_often_errors_out_when_-J___62___1/)
+ 
+
+### What steps will reproduce the problem?
+
+```
+$ cd /tmp
+$ wget http://sun.aei.polsl.pl/~sdeor/corpus/silesia.zip
+$ unzip silesia.zip
+$ cd silesia
+$ git init
+$ git annex init
+$ git annex add
+$ git commit -m "silesia corpus"
+$ git annex initremote bup type=bup bupdir=/tmp/bup
+$ time git annex copy --to bup -J4
+```
+
+Will be decently fast: 12s on my machine (~17MB/s).
+
+Now do the same but untar+rm mozilla, samba and xml before adding.
+
+On my machine, it now took **34 minutes**; 210MiB/24min ~= 0.1MiB/s.
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 10.20220624
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.11 persistent-sqlite-2.13.1.0 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: darwin aarch64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 8
+```
+
+(Same happens on Linux)
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+

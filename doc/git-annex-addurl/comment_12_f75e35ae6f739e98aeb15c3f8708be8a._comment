@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="checksums and addurl --fast"
+ date="2022-07-18T16:01:41Z"
+ content="""
+>Is the hash ever recorded for these files?  If you were to drop and re-download the file, would git-annex accept a different file?
+
+Hash is not recorded, but file size is.   You can disable the size check with `--relaxed`. See [[tips/using_the_web_as_a_special_remote]].
+After [[`git-annex-get`|git-annex-get]]ting the file, you can use [[`git-annex-migrate`|git-annex-migrate]] to record it under a new checksum-based hash, then use [[`git-annex-unused`|git-annex-unused]] to find and remove the old key.
+
+Sometimes you can get the hash without downloading the file, e.g. if the hash is stored next to the file at `http://my/file.md5`, or if the file is stored in the Google Cloud. Then you can use the plumbing commands [[`git-annex-registerurl`|git-annex-registerurl]] to associate the checksum-based key with the URL, and [[`git-annex-setpresentkey`|git-annex-setpresentkey]] to record the key's presence in the (web) remote.
+
+Related discussion: [[todo/alternate_keys_for_same_content]]
+"""]]
