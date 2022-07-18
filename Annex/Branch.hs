@@ -425,7 +425,7 @@ changeOrAppend ru file f = lockJournal $ \jl ->
 	checkCanAppendJournalFile jl ru file >>= \case
 		Just appendable -> ifM (annexAlwaysCompact <$> Annex.getGitConfig)
 			( do
-				oldc <- getToChange ru file
+				oldc <- getToChange jl ru file
 				case f oldc of
 					Change newc -> set jl ru file newc
 					Append toappend -> append jl file appendable toappend
@@ -438,7 +438,7 @@ changeOrAppend ru file f = lockJournal $ \jl ->
 				Append toappend -> append jl file appendable toappend
 			)
 		Nothing -> do
-			oldc <- getToChange ru file
+			oldc <- getToChange jl ru file
 			case f oldc of
 				Change newc -> set jl ru file newc
 				-- Journal file does not exist yet, so
