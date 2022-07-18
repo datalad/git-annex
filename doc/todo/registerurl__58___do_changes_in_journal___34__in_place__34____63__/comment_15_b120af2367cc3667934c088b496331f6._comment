@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 15"
+ date="2022-07-18T19:23:01Z"
+ content="""
+I was not thinking about interrupts but more about running `whereis` and the `registerurl --batch` at the same time -- i.e. would `whereis` have up-to-date information about the most recent `registerurl` added url?  Although may be in our particular case that particular `whereis + registerurl` would not be used.
+"""]]
