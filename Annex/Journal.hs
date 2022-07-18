@@ -84,13 +84,12 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 	-- journal file is written atomically
 	let jfile = journalFile file
 	let tmpfile = tmp P.</> jfile
-	let write = liftIO $ do
-		withFile (fromRawFilePath tmpfile) WriteMode $ \h ->
-			writeJournalHandle h content
-		moveFile tmpfile (jd P.</> jfile)
+	liftIO $ withFile (fromRawFilePath tmpfile) WriteMode $ \h ->
+		writeJournalHandle h content
+	let mv = liftIO $ moveFile tmpfile (jd P.</> jfile)
 	-- avoid overhead of creating the journal directory when it already
 	-- exists
-	write `catchIO` (const (createAnnexDirectory jd >> write))
+	mv `catchIO` (const (createAnnexDirectory jd >> mv))
 
 {- Appends content to a journal file.
  -
