@@ -92,6 +92,23 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 	-- exists
 	write `catchIO` (const (createAnnexDirectory jd >> write))
 
+{- Appends content to a journal file. 
+ -
+ - TODO: Inefficient! -}
+appendJournalFile :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> L.ByteString -> content -> Annex ()
+appendJournalFile _jl ru file oldcontent toappend = withOtherTmp $ \tmp -> do
+	jd <- fromRepo =<< ifM (regardingPrivateUUID ru)
+		( return gitAnnexPrivateJournalDir
+		, return gitAnnexJournalDir
+		)
+	let jfile = journalFile file
+	let tmpfile = tmp P.</> jfile
+	let write = liftIO $ do
+		withFile (fromRawFilePath tmpfile) WriteMode $ \h -> do
+			writeJournalHandle h oldcontent
+			writeJournalHandle h toappend
+	write `catchIO` (const (createAnnexDirectory jd >> write))
+
 data JournalledContent
 	= NoJournalledContent
 	| JournalledContent L.ByteString

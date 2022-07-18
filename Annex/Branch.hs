@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,8 @@ module Annex.Branch (
 	getUnmergedRefs,
 	RegardingUUID(..),
 	change,
+	ChangeOrAppend(..),
+	changeOrAppend,
 	maybeChange,
 	commitMessage,
 	createMessage,
@@ -48,7 +50,7 @@ import Control.Concurrent (threadDelay)
 import Control.Concurrent.MVar
 import qualified System.FilePath.ByteString as P
 
-import Annex.Common
+import Annex.Common hiding (append)
 import Types.BranchState
 import Annex.BranchState
 import Annex.Journal
@@ -405,6 +407,19 @@ maybeChange ru file f = lockJournal $ \jl -> do
 			in when (v /= b) $ set jl ru file b
 		_ -> noop
 
+data ChangeOrAppend t = Change t | Append t
+
+{- Applies a function that can either modify the content of the file,
+ - or append to the file. Appending can be more efficient when several
+ - lines are written to a file in succession.
+ -}
+changeOrAppend :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> ChangeOrAppend content) -> Annex ()
+changeOrAppend ru file f = lockJournal $ \jl -> do
+	oldc <- getToChange jl ru file
+	case f oldc of
+		Change newc -> set jl ru file newc
+		Append toappend -> append jl ru file oldc toappend
+
 {- Only get private information when the RegardingUUID is itself private. -}
 getToChange :: JournalLocked -> RegardingUUID -> RawFilePath -> Annex L.ByteString
 getToChange jl ru f = flip (getLocal' jl) f . GetPrivate =<< regardingPrivateUUID ru
@@ -427,6 +442,20 @@ set jl ru f c = do
 	-- evaluating a Journalable Builder twice, which is not very
 	-- efficient. Instead, assume that it's not common to need to read
 	-- a log file immediately after writing it.
+	invalidateCache
+
+{- Appends content to the journal file.
+ -
+ - The ByteString is the content that the file had before appending.
+ - It is either the content of the journal file or the content from the
+ - branch. When the journal file does not exist yet, this content is
+ - written to it before appending.
+ -}
+append :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> L.ByteString -> content -> Annex ()
+append jl ru f oldc toappend = do
+	journalChanged
+	appendJournalFile jl ru f oldc toappend
+	fastDebug "Annex.Branch" ("append " ++ fromRawFilePath f)
 	invalidateCache
 
 {- Commit message used when making a commit of whatever data has changed

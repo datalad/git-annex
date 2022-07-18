@@ -6,7 +6,7 @@
  - A line of the log will look like: "date N INFO"
  - Where N=1 when the INFO is present, 0 otherwise.
  - 
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -35,10 +35,13 @@ addLog ru file logstatus loginfo =
 
 addLog' :: Annex.Branch.RegardingUUID -> RawFilePath -> LogStatus -> LogInfo -> CandidateVectorClock -> Annex ()
 addLog' ru file logstatus loginfo c = 
-	Annex.Branch.change ru file $ \b ->
+	Annex.Branch.changeOrAppend ru file $ \b ->
 		let old = parseLog b
 		    line = genLine logstatus loginfo c old
-		in buildLog $ compactLog (line : old)
+		in if isNewInfo line old
+			then Annex.Branch.Append $ buildLog [line]
+			else Annex.Branch.Change $ buildLog $
+				compactLog (line : old)
 
 {- When a LogLine already exists with the same status and info, but an
  - older timestamp, that LogLine is preserved, rather than updating the log
