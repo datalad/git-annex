@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 2"
+ date="2022-07-17T20:41:51Z"
+ content="""
+I'm using the latest git-annex version available for arm64 on android already. I checked both the stable build and the autobuild, both point to the same archive with git-annex 10.20220121-g0bcb94487
+
+I upgraded git to the latest revision available in termux base packages, namely git 2.37.1. It did not change anything.
+"""]]

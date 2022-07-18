@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="Hashes for files added via addurl"
+ date="2022-07-16T20:12:20Z"
+ content="""
+If you add a file to your repo first via `addurl --fast`, it writes the filename as a symlink to a file that incorporates the URL, rather than the file hash. This is expected, since git-annex can't know the file hash until it's actually downloaded the file.
+
+If you then `git annex get` that file, it downloads the file to the path that uses the URL. Is the hash ever recorded for these files? If you were to drop and re-download the file, would git-annex accept a different file?
+"""]]
