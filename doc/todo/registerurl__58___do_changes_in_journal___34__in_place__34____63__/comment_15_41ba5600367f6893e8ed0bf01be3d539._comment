@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2022-07-18T20:53:29Z"
+ content="""
+Added the mode that appends without first reading. Enable with
+`-c annex.alwayscompact=false`. 
+
+Now some real speed on the benchmark!
+
+ITER=2000  
+Appending, annex.alwayscompact=false:  2.6s
+
+ITER=4000  
+Appending, annex.alwayscompact=false:  2.8s
+
+ITER=8000  
+Appending, annex.alwayscompact=false:  3.14s
+
+I think annex.alwayscompact=false will be ok for what you're doing
+in this case. It's probably not a good idea to set it generally,
+although worst case is bloat of the git-annex branch causing slow reads
+from it.
+
+An example of when not to use it is, if you have annex.alwayscommit=false
+and annex.alwayscompact=false, and you run git-annex get followed by
+git-annex drop, the location log will be larger than it needs to be. Which
+does not cause any problem except for slow reads from the git-annex branch,
+and will be cleared up by the first update of that log when
+annex.alwayscompact=true.
+
+Still need to implement the atomic appending.
+"""]]
