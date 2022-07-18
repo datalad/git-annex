@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2022-07-18T20:56:48Z"
+ content="""
+whereis would have up-to-date information, except when it was the old
+git-annex that does not understand atomic appends. Then there would be
+a narrow window, during each atomic append, where it would not see any of the
+changes that registerurl had written to the log file, and would instead see
+an old value from the git-annex branch.
+
+Hmm. Maybe that is a problem. I dunno.
+"""]]

@@ -13,12 +13,10 @@ For benchmarking, I'm using this command.
 ITER=2000  
 Old: 52s  
 Appending:  28s  
-Appending without reading old value: 2s
 
 ITER=4000  
 Old: 190s  
 Appending:  111s  
-Appending without reading old value: 5s
 
 
 So an improvement of 50%. But remains nonlinear even when appending,
