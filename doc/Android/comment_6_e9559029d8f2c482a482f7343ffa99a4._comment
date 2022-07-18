@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="cehteh"
+ avatar="http://cdn.libravatar.org/avatar/8ff07aa39d4d817cf3af3e717f41ab1a"
+ subject="comment 6"
+ date="2022-07-18T13:19:43Z"
+ content="""
+starting `git annex webapp` fails for me with (Android 12, CalyxOS):
+
+```
+CANNOT LINK EXECUTABLE \"/system/bin/app_process\": library \"libnativeloader.so\" not found: needed by main executable
+failed to start web browser
+```
+
+The webapp still runs and I can connect the browser by copypaste the link.
+
+instead trying to open the browser natively i have a bit more success with Termux:API by
+
+    termux-open-url 'http://127.0.0.1:42005/?auth=...
+
+This seems to be the right thing to do, unfortunally for some unknown reason it fails sometimes too, but I think thats an issue
+within termux which may become fixed eventually.
+"""]]
