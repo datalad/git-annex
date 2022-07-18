@@ -411,13 +411,39 @@ data ChangeOrAppend t = Change t | Append t
 {- Applies a function that can either modify the content of the file,
  - or append to the file. Appending can be more efficient when several
  - lines are written to a file in succession.
+ -
+ - When annex.alwayscompact=false, the function is not passed the content
+ - of the journal file when the journal file already exists, and whatever
+ - value it provides is always appended to the journal file. That avoids
+ - reading the journal file, and so can be faster when many lines are being
+ - written to it. The information that is recorded will be effectively the
+ - same, only obsolate log lines will not get compacted.
  -}
 changeOrAppend :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> ChangeOrAppend content) -> Annex ()
-changeOrAppend ru file f = lockJournal $ \jl -> do
-	oldc <- getToChange ru file
-	case f oldc of
-		Change newc -> set jl ru file newc
-		Append toappend -> append jl ru file oldc toappend
+changeOrAppend ru file f = lockJournal $ \jl ->
+	checkCanAppendJournalFile jl ru file >>= \case
+		Just appendable -> ifM (annexAlwaysCompact <$> Annex.getGitConfig)
+			( do
+				oldc <- getToChange ru file
+				case f oldc of
+					Change newc -> set jl ru file newc
+					Append toappend -> append jl file appendable toappend
+			, case f mempty of
+				-- Append even though a change was
+				-- requested; since mempty was passed in,
+				-- the lines requested to change are
+				-- minimized.
+				Change newc -> append jl file appendable newc
+				Append toappend -> append jl file appendable toappend
+			)
+		Nothing -> do
+			oldc <- getToChange ru file
+			case f oldc of
+				Change newc -> set jl ru file newc
+				-- Journal file does not exist yet, so
+				-- cannot append and have to write it all.
+				Append toappend -> set jl ru file $
+					oldc <> journalableByteString toappend
 
 {- Only get private information when the RegardingUUID is itself private. -}
 getToChange :: RegardingUUID -> RawFilePath -> Annex L.ByteString
@@ -443,17 +469,11 @@ set jl ru f c = do
 	-- a log file immediately after writing it.
 	invalidateCache
 
-{- Appends content to the journal file.
- -
- - The ByteString is the content that the file had before appending.
- - It is either the content of the journal file or the content from the
- - branch. When the journal file does not exist yet, this content is
- - written to it before appending.
- -}
-append :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> L.ByteString -> content -> Annex ()
-append jl ru f oldc toappend = do
+{- Appends content to the journal file. -}
+append :: Journalable content => JournalLocked -> RawFilePath -> AppendableJournalFile -> content -> Annex ()
+append jl f appendable toappend = do
 	journalChanged
-	appendJournalFile jl ru f oldc toappend
+	appendJournalFile jl appendable toappend
 	fastDebug "Annex.Branch" ("append " ++ fromRawFilePath f)
 	invalidateCache
 

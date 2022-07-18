@@ -19,6 +19,8 @@ git-annex (10.20220625) UNRELEASED; urgency=medium
     importtree=yes or exporttree=yes.
   * Fix a reversion that prevented --batch commands (and the assistant)
     from noticing data written to the journal by other commands.
+  * Added annex.alwayscompact setting which can be unset to speed up
+    writes to the git-annex branch in some cases.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Jun 2022 14:49:17 -0400
 

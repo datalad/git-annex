@@ -4,7 +4,7 @@
  - git-annex branch. Among other things, it ensures that if git-annex is
  - interrupted, its recorded data is not lost.
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ import Annex.Perms
 import Annex.Tmp
 import Annex.LockFile
 import Utility.Directory.Stream
+import qualified Utility.RawFilePath as R
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
@@ -91,27 +92,30 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 	-- exists
 	mv `catchIO` (const (createAnnexDirectory jd >> mv))
 
-{- Appends content to a journal file.
- -
- - The oldcontent is whatever is in the git-annex branch.
- - When the journal file does not yet exist, the oldcontent
- - is first written to the journal file.
- -
- - TODO: Unsafe! Does not append atomically. -}
-appendJournalFile :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> L.ByteString -> content -> Annex ()
-appendJournalFile _jl ru file oldcontent toappend = do
+newtype AppendableJournalFile = AppendableJournalFile (RawFilePath, RawFilePath)
+
+{- If the journal file does not exist, it cannot be appended to, because
+ - that would overwrite whatever content the file has in the git-annex
+ - branch. -}
+checkCanAppendJournalFile :: JournalLocked -> RegardingUUID -> RawFilePath -> Annex (Maybe AppendableJournalFile)
+checkCanAppendJournalFile _jl ru file = do
 	jd <- fromRepo =<< ifM (regardingPrivateUUID ru)
 		( return gitAnnexPrivateJournalDir
 		, return gitAnnexJournalDir
 		)
-	let jfile = fromRawFilePath $ jd P.</> journalFile file
-	let write = liftIO $ ifM (doesFileExist jfile)
-		( withFile jfile AppendMode $ \h ->
-			writeJournalHandle h toappend
-		, withFile jfile WriteMode $ \h -> do
-			writeJournalHandle h oldcontent
-			writeJournalHandle h toappend
+	let jfile = jd P.</> journalFile file
+	ifM (liftIO $ R.doesPathExist jfile)
+		( return (Just (AppendableJournalFile (jd, jfile)))
+		, return Nothing
 		)
+
+{- Appends content to an existing journal file.
+ -
+ - TODO: Unsafe! Does not append atomically. -}
+appendJournalFile :: Journalable content => JournalLocked -> AppendableJournalFile -> content -> Annex ()
+appendJournalFile _jl (AppendableJournalFile (jd, jfile)) content = do
+	let write = liftIO $ withFile (fromRawFilePath jfile) AppendMode $ \h ->
+		writeJournalHandle h content
 	write `catchIO` (const (createAnnexDirectory jd >> write))
 
 data JournalledContent
