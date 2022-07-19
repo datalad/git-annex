@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 20"
+ date="2022-07-19T21:29:02Z"
+ content="""
+is there some housekeeping command (`annex fsck` or `annex repack`? ;) ) we could run after an extensive `git annex registerurl -c annex.alwayscompact=false ` and friends to potentiall re-compact all the .log etc files in git-annex branch?
+"""]]
