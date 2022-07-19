@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 18"""
+ date="2022-07-19T18:28:15Z"
+ content="""
+This could be repository version 11, but there is unfortunately not a way to
+guarantee that an old git-annex process from before the repository upgrade
+is not still running and getting confused. The `v9-v10` upgrade waits an
+entire year to ensure no such processes are left, and a similar wait would
+be needed here.
+
+Still, you could force upgrade the repositories that you need to be fast right
+away, or initialize new repositories at the new repository version. Since
+most people are not hit by this kind of performance problem, waiting a
+while before it's available everywhere is not a problem.
+"""]]

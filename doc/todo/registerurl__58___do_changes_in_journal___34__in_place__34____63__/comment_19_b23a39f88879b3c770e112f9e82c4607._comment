@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 19"""
+ date="2022-07-19T18:38:33Z"
+ content="""
+If we don't need to worry about breaking an old git-annex process, thanks
+to an upgrade process that makes sure there are not any, a simpler and
+faster method for atomic appends is as follows:
+
+On upgrade, add a trailing NUL to all existing journal files.
+
+When writing to a journal file, use a temp file that is renamed into place
+atomically like now, but add a trailing NUL to it.
+
+When appending to a journal file first read the last byte.
+If it's a trailing NUL, write the current size of the journal file to the size
+file. Then rewind back before the NUL and append to there, followed
+by a trailing NUL. Then delete the size file.
+
+On append, if the last byte is not a trailing NUL, read the size file,
+and seek to that size, so discarding a previous partial append. Then
+proceed to append to it, write the trailing NUL, and delete the size file.
+
+When reading from a journal file, discard the trailing NUL. If there is no
+trailing NUL, a partial append has been detected. Get the size from the
+size file, and read only that much of the journal file, to discard the
+partial append.
+
+Reading may not need the journal lock, if it can otherwise recover from
+races with append. Treating an append that is still in progress as an
+interrupted append is fine for the purposes of reading. And
+when there's no trailing NUL and it reads the size
+file, the append may have finished and so deleted the size file. If so,
+retry the read of the journal file, and look again for a trailing NUL.
+"""]]
