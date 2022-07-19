@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 20"""
+ date="2022-07-19T22:03:07Z"
+ content="""
+Oh, even simpler -- let the journal assume that all the files are a series of
+lines. Which they always will be, I'm sure. Then:
+
+When appending to a journal file, first read the last byte.
+If it's not a newline, then seek back to the previous newline, to discard
+a previous interrupted append.
+
+When reading from a journal file, similarly check the last byte and if not a
+newline, discard back to the previous newline.
+
+Reading would not need any locking either. A read that happened while an
+append was in progress and read an incomplete line would discard it.
+
+Old versions of git-annex would not get confused by NULs with this method,
+the format of the branch files is not changed. So it's significantly safer,
+but not fully since old git-annex versions would not deal well with an
+interrupted append. So it would still be good to upgrade the repo version
+in a way that prevents an old git-annex process from lingering around.
+"""]]
