@@ -236,7 +236,7 @@ updateTo' pairs = do
 			else return $ "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
 				" into " ++ fromRef name
-		localtransitions <- getLocalTransitions jl
+		localtransitions <- getLocalTransitions
 		unless (null tomerge) $ do
 			showSideAction merge_desc
 			mapM_ checkBranchDifferences refs
@@ -265,7 +265,7 @@ updateTo' pairs = do
 		-- Gather any transitions that are new to either the
 		-- local branch or a remote ref, which will need to be
 		-- applied on the fly.
-		localts <- lockJournal getLocalTransitions
+		localts <- getLocalTransitions
 		remotets <- mapM getRefTransitions refs
 		ts <- if all (localts ==) remotets
 			then return []
@@ -307,14 +307,13 @@ get file = do
 			content <- if journalIgnorable st
 				then getRef fullname file
 				else if null (unmergedRefs st) 
-					then lockJournal $ 
-						\jl -> getLocal jl file
+					then getLocal file
 					else unmergedbranchfallback st
 			setCache file content
 			return content
   where
 	unmergedbranchfallback st = do
-		l <- lockJournal $ \jl -> getLocal jl file
+		l <- getLocal file
 		bs <- forM (unmergedRefs st) $ \ref -> getRef ref file
 		let content = l <> mconcat bs
 		return $ applytransitions (unhandledTransitions st) content
@@ -344,7 +343,7 @@ precache file branchcontent = do
 	st <- getState
 	content <- if journalIgnorable st
 		then pure branchcontent
-		else lockJournal $ \jl -> getJournalFile jl (GetPrivate True) file >>= return . \case
+		else getJournalFileStale (GetPrivate True) file >>= return . \case
 			NoJournalledContent -> branchcontent
 			JournalledContent journalcontent -> journalcontent
 			PossiblyStaleJournalledContent journalcontent ->
@@ -355,13 +354,13 @@ precache file branchcontent = do
  - reflect changes in remotes.
  - (Changing the value this returns, and then merging is always the
  - same as using get, and then changing its value.) -}
-getLocal :: JournalLocked -> RawFilePath -> Annex L.ByteString
-getLocal jl = getLocal' jl (GetPrivate True)
+getLocal :: RawFilePath -> Annex L.ByteString
+getLocal = getLocal' (GetPrivate True)
 
-getLocal' :: JournalLocked -> GetPrivate -> RawFilePath -> Annex L.ByteString
-getLocal' jl getprivate file = do
+getLocal' :: GetPrivate -> RawFilePath -> Annex L.ByteString
+getLocal' getprivate file = do
 	fastDebug "Annex.Branch" ("read " ++ fromRawFilePath file)
-	go =<< getJournalFile jl getprivate file
+	go =<< getJournalFileStale getprivate file
   where
 	go NoJournalledContent = getRef fullname file
 	go (JournalledContent journalcontent) = return journalcontent
@@ -395,12 +394,12 @@ getRef ref file = withIndex $ catFile ref file
  - modifes the current content of the file on the branch.
  -}
 change :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> content) -> Annex ()
-change ru file f = lockJournal $ \jl -> f <$> getToChange jl ru file >>= set jl ru file
+change ru file f = lockJournal $ \jl -> f <$> getToChange ru file >>= set jl ru file
 
 {- Applies a function which can modify the content of a file, or not. -}
 maybeChange :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> Maybe content) -> Annex ()
 maybeChange ru file f = lockJournal $ \jl -> do
-	v <- getToChange jl ru file
+	v <- getToChange ru file
 	case f v of
 		Just jv ->
 			let b = journalableByteString jv
@@ -425,7 +424,7 @@ changeOrAppend ru file f = lockJournal $ \jl ->
 	checkCanAppendJournalFile jl ru file >>= \case
 		Just appendable -> ifM (annexAlwaysCompact <$> Annex.getGitConfig)
 			( do
-				oldc <- getToChange jl ru file
+				oldc <- getToChange ru file
 				case f oldc of
 					Change newc -> set jl ru file newc
 					Append toappend -> append jl file appendable toappend
@@ -438,7 +437,7 @@ changeOrAppend ru file f = lockJournal $ \jl ->
 				Append toappend -> append jl file appendable toappend
 			)
 		Nothing -> do
-			oldc <- getToChange jl ru file
+			oldc <- getToChange ru file
 			case f oldc of
 				Change newc -> set jl ru file newc
 				-- Journal file does not exist yet, so
@@ -447,8 +446,8 @@ changeOrAppend ru file f = lockJournal $ \jl ->
 					oldc <> journalableByteString toappend
 
 {- Only get private information when the RegardingUUID is itself private. -}
-getToChange :: JournalLocked -> RegardingUUID -> RawFilePath -> Annex L.ByteString
-getToChange jl ru f = flip (getLocal' jl) f . GetPrivate =<< regardingPrivateUUID ru
+getToChange :: RegardingUUID -> RawFilePath -> Annex L.ByteString
+getToChange ru f = flip getLocal' f . GetPrivate =<< regardingPrivateUUID ru
 
 {- Records new content of a file into the journal.
  -
@@ -728,10 +727,10 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 		removeWhenExistsWith (R.removeLink) (toRawFilePath jlogf)
 	openjlog tmpdir = liftIO $ openTmpFileIn tmpdir "jlog"
 
-getLocalTransitions :: JournalLocked -> Annex Transitions
-getLocalTransitions jl = 
+getLocalTransitions :: Annex Transitions
+getLocalTransitions = 
 	parseTransitionsStrictly "local"
-		<$> getLocal jl transitionsLog
+		<$> getLocal transitionsLog
 
 {- This is run after the refs have been merged into the index,
  - but before the result is committed to the branch.
@@ -980,7 +979,7 @@ overBranchFileContents' select go st = do
 	-- Check the journal, in case it did not get committed to the branch
 	checkjournal f branchcontent
 		| journalIgnorable st = return branchcontent
-		| otherwise = lockJournal $ \jl -> getJournalFile jl (GetPrivate True) f >>= return . \case
+		| otherwise = getJournalFileStale (GetPrivate True) f >>= return . \case
 			NoJournalledContent -> branchcontent
 			JournalledContent journalledcontent ->
 				Just journalledcontent
@@ -990,7 +989,7 @@ overBranchFileContents' select go st = do
 	drain buf fs = case getnext fs of
 		Just (v, f, fs') -> do
 			liftIO $ putMVar buf fs'
-			content <- lockJournal $ \jl -> getJournalFile jl (GetPrivate True) f >>= \case
+			content <- getJournalFileStale (GetPrivate True) f >>= \case
 				NoJournalledContent -> return Nothing
 				JournalledContent journalledcontent ->
 					return (Just journalledcontent)
