@@ -418,6 +418,12 @@ data ChangeOrAppend t = Change t | Append t
  - reading the journal file, and so can be faster when many lines are being
  - written to it. The information that is recorded will be effectively the
  - same, only obsolate log lines will not get compacted.
+ -
+ - Currently, only appends when annex.alwayscompact=false. That is to
+ - avoid appending when an older version of git-annex is also in use in the
+ - same repository. An interrupted append could leave the journal file in a
+ - state that would confuse the older version. This is planned to be
+ - changed in a future repository version.
  -}
 changeOrAppend :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> ChangeOrAppend content) -> Annex ()
 changeOrAppend ru file f = lockJournal $ \jl ->
@@ -427,7 +433,12 @@ changeOrAppend ru file f = lockJournal $ \jl ->
 				oldc <- getToChange ru file
 				case f oldc of
 					Change newc -> set jl ru file newc
-					Append toappend -> append jl file appendable toappend
+					Append toappend -> 
+						set jl ru file $
+							oldc <> journalableByteString toappend
+						-- Use this instead in v11
+						-- or whatever.
+						-- append jl file appendable toappend
 			, case f mempty of
 				-- Append even though a change was
 				-- requested; since mempty was passed in,
