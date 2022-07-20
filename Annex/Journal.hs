@@ -4,12 +4,16 @@
  - git-annex branch. Among other things, it ensures that if git-annex is
  - interrupted, its recorded data is not lost.
  -
+ - All files in the journal must be a series of lines separated by
+ - newlines.
+ -
  - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 
 module Annex.Journal where
 
@@ -72,9 +76,9 @@ privateUUIDsKnown' = not . S.null . annexPrivateRepos . Annex.gitconfig
  - Using the journal, rather than immediatly staging content to the index
  - avoids git needing to rewrite the index after every change.
  - 
- - The file in the journal is updated atomically, which allows
- - getJournalFileStale to always return a consistent journal file
- - content, although possibly not the most current one.
+ - The file in the journal is updated atomically. This avoids an
+ - interrupted write truncating information that was earlier read from the
+ - file, and so losing data.
  -}
 setJournalFile :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> content -> Annex ()
 setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
@@ -111,10 +115,28 @@ checkCanAppendJournalFile _jl ru file = do
 
 {- Appends content to an existing journal file.
  -
- - TODO: Unsafe! Does not append atomically. -}
+ - Appends are not necessarily atomic, though short appends often are.
+ - So, when this is interrupted, it can leave only part of the content
+ - written to the file. To deal with that situation, both this and
+ - getJournalFileStale check if the file ends with a newline, and if
+ - not discard the incomplete line.
+ -
+ - Due to the lack of atomicity, this should not be used when multiple
+ - lines need to be written to the file as an atomic unit.
+ -}
 appendJournalFile :: Journalable content => JournalLocked -> AppendableJournalFile -> content -> Annex ()
 appendJournalFile _jl (AppendableJournalFile (jd, jfile)) content = do
-	let write = liftIO $ withFile (fromRawFilePath jfile) AppendMode $ \h ->
+	let write = liftIO $ withFile (fromRawFilePath jfile) ReadWriteMode $ \h -> do
+		sz <- hFileSize h
+		when (sz /= 0) $ do
+			hSeek h SeekFromEnd (-1)
+			lastchar <- B.hGet h 1
+			unless (lastchar == "\n") $ do
+				hSeek h AbsoluteSeek 0
+				goodpart <- L.length . discardIncompleteAppend
+					<$> L.hGet h (fromIntegral sz)
+				hSetFileSize h (fromIntegral goodpart)
+				hSeek h SeekFromEnd 0
 		writeJournalHandle h content
 	write `catchIO` (const (createAnnexDirectory jd >> write))
 
@@ -137,15 +159,17 @@ getJournalFile _jl = getJournalFileStale
 data GetPrivate = GetPrivate Bool
 
 {- Without locking, this is not guaranteed to be the most recent
- - version of the file in the journal, so should not be used as a basis for
- - changes.
+ - content of the file in the journal, so should not be used as a basis for
+ - making changes to the file.
  -
  - The file is read strictly so that its content can safely be fed into
- - an operation that modifies the file. While setJournalFile doesn't
- - write directly to journal files and so probably avoids problems with
- - writing to the same file that's being read, but there could be
- - concurrency or other issues with a lazy read, and the minor loss of
- - laziness doesn't matter much, as the files are not very large.
+ - an operation that modifies the file (when getJournalFile calls this). 
+ - The minor loss of laziness doesn't matter much, as the files are not
+ - very large.
+ -
+ - To recover from an append of a line that is interrupted part way through
+ - (or is in progress when this is called), if the file content does not end
+ - with a newline, it is truncated back to the previous newline.
  -}
 getJournalFileStale :: GetPrivate -> RawFilePath -> Annex JournalledContent
 getJournalFileStale (GetPrivate getprivate) file = do
@@ -172,7 +196,22 @@ getJournalFileStale (GetPrivate getprivate) file = do
   where
 	jfile = journalFile file
 	getfrom d = catchMaybeIO $
-		L.fromStrict <$> B.readFile (fromRawFilePath (d P.</> jfile))
+		discardIncompleteAppend 
+			<$> L.readFile (fromRawFilePath (d P.</> jfile))
+
+-- Note that this forces read of the whole lazy bytestring.
+discardIncompleteAppend :: L.ByteString -> L.ByteString
+discardIncompleteAppend v
+	| L.null v = v
+	| L.last v == nl = v
+	| otherwise = dropwhileend (/= nl) v
+  where
+	nl = fromIntegral (ord '\n')
+#if MIN_VERSION_bytestring(0,11,2)
+	dropwhileend = L.dropWhileEnd
+#else
+	dropwhileend p = L.reverse . L.dropWhile p . L.reverse
+#endif
 
 {- List of existing journal files in a journal directory, but without locking,
  - may miss new ones just being added, or may have false positives if the

@@ -1045,7 +1045,7 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   can speed up operations that populate the git-annex branch with a lot
   of data. However, when used with operations that overwrite old values in
   the git-annex branch, that may cause the git-annex branch to use more disk
-  space, or slow down reading data from it.
+  space, and so slow down reading data from it.
 
   An example of a command that can be sped up by using 
   `-c annex.alwayscompact=false` is `git-annex registerurl --batch`,
