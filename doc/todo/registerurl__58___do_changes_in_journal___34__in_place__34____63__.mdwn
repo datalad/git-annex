@@ -29,3 +29,5 @@ may be there is a way to "stagger" those --batch additions somehow so all thousa
 PS More information could be found at [dandisets/issues/225](https://github.com/dandi/dandisets/issues/225 )
 
 [[!tag projects/dandi]]
+
+> [[fixed|done]], see my last comment for what you need to do. --[[Joey]]

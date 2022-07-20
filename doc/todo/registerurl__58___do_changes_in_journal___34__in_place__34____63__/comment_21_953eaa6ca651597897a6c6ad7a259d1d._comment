@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 21"""
+ date="2022-07-20T17:24:25Z"
+ content="""
+I've finished implementing appending.
+
+In order to avoid stacking up a year-long v10-v12 upgrade behind the current 
+v8-v10 upgrade, appending will for now only be done when
+annex.alwayscompact=false. ([[todo/v11_changes]] has been made to remind
+me to revisit this later.)
+
+That config is necessary for optimal speed in your situation anyway.
+
+You should avoid setting annex.alwayscompact=false if there is an older
+git-annex also installed on the machine, that could be run in the
+repository at the same time as a git-annex process that is doing appends.
+Otherwise, you do risk the old process seeing partial/interrupted appends
+and getting confused.
+"""]]
