@@ -6,6 +6,10 @@
 @yarikoptic let's discuss such a hypothetical command in another todo if
 you turn out to need it.
 
-If you have a way to avoid feeding redundant data into git-annex
-registerurl, you won't need it.
+If you have a way to avoid feeding too much redundant data into git-annex
+registerurl, you won't need it. I guess that the 8k redundant urls would
+not be enough to be a problem, since it would only slow down reading a bit.
+
+If you had a cron job that was adding the same url 8k times every run, so
+accumulating an growing number over time, then such a command would be useful.
 """]]
