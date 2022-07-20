@@ -1038,6 +1038,24 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   This works well in combination with annex.alwayscommit=false,
   to gather up a set of changes and commit them with a message you specify.
 
+* `annex.alwayscompact`
+
+  By default, git-annex compacts data it records in the git-annex branch.
+  Setting this to false avoids doing that compaction in some cases, which
+  can speed up operations that populate the git-annex branch with a lot
+  of data. However, when used with operations that overwrite old values in
+  the git-annex branch, that may cause the git-annex branch to use more disk
+  space, and so slow down reading data from it.
+
+  An example of a command that can be sped up by using 
+  `-c annex.alwayscompact=false` is `git-annex registerurl --batch`,
+  when adding a large number of urls to the same key.
+
+  This option was first supported by git-annex version 10.20220724.
+  It is not entirely safe to set this option in a repository that may also
+  be used by an older version of git-annex at the same time as a version
+  that supports this option.
+
 * `annex.allowsign`
 
   By default git-annex avoids gpg signing commits that it makes when

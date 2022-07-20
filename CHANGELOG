@@ -1,4 +1,4 @@
-git-annex (10.20220625) UNRELEASED; urgency=medium
+git-annex (10.20220724) UNRELEASED; urgency=medium
 
   * Improve handling of parallelization with -J when copying content
     from/to a git remote that is a local path.
@@ -19,6 +19,9 @@ git-annex (10.20220625) UNRELEASED; urgency=medium
     importtree=yes or exporttree=yes.
   * Fix a reversion that prevented --batch commands (and the assistant)
     from noticing data written to the journal by other commands.
+  * Added annex.alwayscompact setting which can be unset to speed up
+    writes to the git-annex branch in some cases. See its documentation
+    for important notes on when it's appropariate to use.
 
  -- Joey Hess <id@joeyh.name>  Tue, 28 Jun 2022 14:49:17 -0400
 

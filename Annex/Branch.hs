@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,8 @@ module Annex.Branch (
 	getUnmergedRefs,
 	RegardingUUID(..),
 	change,
+	ChangeOrAppend(..),
+	changeOrAppend,
 	maybeChange,
 	commitMessage,
 	createMessage,
@@ -48,7 +50,7 @@ import Control.Concurrent (threadDelay)
 import Control.Concurrent.MVar
 import qualified System.FilePath.ByteString as P
 
-import Annex.Common
+import Annex.Common hiding (append)
 import Types.BranchState
 import Annex.BranchState
 import Annex.Journal
@@ -404,6 +406,56 @@ maybeChange ru file f = lockJournal $ \jl -> do
 			in when (v /= b) $ set jl ru file b
 		_ -> noop
 
+data ChangeOrAppend t = Change t | Append t
+
+{- Applies a function that can either modify the content of the file,
+ - or append to the file. Appending can be more efficient when several
+ - lines are written to a file in succession.
+ -
+ - When annex.alwayscompact=false, the function is not passed the content
+ - of the journal file when the journal file already exists, and whatever
+ - value it provides is always appended to the journal file. That avoids
+ - reading the journal file, and so can be faster when many lines are being
+ - written to it. The information that is recorded will be effectively the
+ - same, only obsolate log lines will not get compacted.
+ -
+ - Currently, only appends when annex.alwayscompact=false. That is to
+ - avoid appending when an older version of git-annex is also in use in the
+ - same repository. An interrupted append could leave the journal file in a
+ - state that would confuse the older version. This is planned to be
+ - changed in a future repository version.
+ -}
+changeOrAppend :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> ChangeOrAppend content) -> Annex ()
+changeOrAppend ru file f = lockJournal $ \jl ->
+	checkCanAppendJournalFile jl ru file >>= \case
+		Just appendable -> ifM (annexAlwaysCompact <$> Annex.getGitConfig)
+			( do
+				oldc <- getToChange ru file
+				case f oldc of
+					Change newc -> set jl ru file newc
+					Append toappend -> 
+						set jl ru file $
+							oldc <> journalableByteString toappend
+						-- Use this instead in v11
+						-- or whatever.
+						-- append jl file appendable toappend
+			, case f mempty of
+				-- Append even though a change was
+				-- requested; since mempty was passed in,
+				-- the lines requested to change are
+				-- minimized.
+				Change newc -> append jl file appendable newc
+				Append toappend -> append jl file appendable toappend
+			)
+		Nothing -> do
+			oldc <- getToChange ru file
+			case f oldc of
+				Change newc -> set jl ru file newc
+				-- Journal file does not exist yet, so
+				-- cannot append and have to write it all.
+				Append toappend -> set jl ru file $
+					oldc <> journalableByteString toappend
+
 {- Only get private information when the RegardingUUID is itself private. -}
 getToChange :: RegardingUUID -> RawFilePath -> Annex L.ByteString
 getToChange ru f = flip getLocal' f . GetPrivate =<< regardingPrivateUUID ru
@@ -426,6 +478,14 @@ set jl ru f c = do
 	-- evaluating a Journalable Builder twice, which is not very
 	-- efficient. Instead, assume that it's not common to need to read
 	-- a log file immediately after writing it.
+	invalidateCache
+
+{- Appends content to the journal file. -}
+append :: Journalable content => JournalLocked -> RawFilePath -> AppendableJournalFile -> content -> Annex ()
+append jl f appendable toappend = do
+	journalChanged
+	appendJournalFile jl appendable toappend
+	fastDebug "Annex.Branch" ("append " ++ fromRawFilePath f)
 	invalidateCache
 
 {- Commit message used when making a commit of whatever data has changed

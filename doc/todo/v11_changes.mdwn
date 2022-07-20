@@ -1,0 +1,12 @@
+This is a todo for collecting changes that could lead to a v11 repository
+version.
+
+* Append to journal files even when annex.alwayscompact=true.
+  This can make it a lot faster in some cases.
+  See note in Annex.Branch.changeOrAppend.
+
+  It's important that this only happen when no git-annex version
+  older than 10.20220724 can plausibly be running in a repository
+  after upgrading to the repo version that enables this. Depending on the
+  timing of v11, this may need to be put in a v12 upgrade that is delayed
+  some amount of time (eg 1 year) after v11.

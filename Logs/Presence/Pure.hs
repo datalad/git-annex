@@ -1,6 +1,6 @@
 {- git-annex presence log, pure operations
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -90,6 +90,12 @@ mapLog = M.elems
 
 logMap :: [LogLine] -> LogMap
 logMap = foldr insertNewerLogLine M.empty
+
+{- Check if the info of the given line is not in the list of LogLines. -}
+isNewInfo :: LogLine -> [LogLine] -> Bool
+isNewInfo l old = not (any issame old)
+  where
+	issame l' = info l' == info l
 
 insertBetter :: (LogLine -> Bool) -> LogLine -> LogMap -> Maybe LogMap
 insertBetter betterthan l m

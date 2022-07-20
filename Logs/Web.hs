@@ -57,7 +57,11 @@ getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`)
 
 setUrlPresent :: Key -> URLString -> Annex ()
 setUrlPresent key url = do
-	us <- getUrls key
+	-- Avoid reading the url log when not compacting, for speed.
+	us <- ifM (annexAlwaysCompact <$> Annex.getGitConfig)
+		( getUrls key
+		, pure mempty
+		)
 	unless (url `elem` us) $ do
 		config <- Annex.getGitConfig
 		addLog (Annex.Branch.RegardingUUID []) (urlLogFile config key)
