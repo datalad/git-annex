@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 24"
+ date="2022-07-21T14:03:56Z"
+ content="""
+Thank you Joey -- we will give it a shot soonish! (may be we should somehow add \"conda\" devel builds to datalad/git-annex repo ;) ). Possibly unnecessary question just for myself to feel better ;) :
+
+> When appending to a journal file, first read the last byte. If it's not a newline, then seek back to the previous newline, to discard a previous interrupted append.
+
+isn't it racy between \"first read the last byte.\" and then \"If\"? i.e. if some process dumps/flushes more into that file interim, wouldn't you potentially end up with some garbled line? (or there is a lock)
+"""]]
