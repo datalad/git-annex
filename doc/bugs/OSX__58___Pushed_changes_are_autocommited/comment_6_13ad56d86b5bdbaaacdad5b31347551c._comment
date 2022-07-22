@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 6"
+ date="2022-07-22T23:47:19Z"
+ content="""
+Sadly, this is still an issue on the current master (e1de941b2c7a881ec690d7abafdd1e8915cee9a6).
+
+I tried using kqueue instead of FsEvents but that resulted in the same behaviour.
+
+If anybody needs an OSX machine for testing, https://github.com/kholia/OSX-KVM works well.
+"""]]
