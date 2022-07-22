@@ -47,3 +47,9 @@ init: 1 failed
 Yes ! git-annex is my goto tool for file storage.
 
 
+> [[done]]; this is a bug in git and will have to be fixed there.
+> (git-annex could work around it by making sure the index file
+> exists before calling write-tree, but I don't think it makes sense to
+> work around a segfault bug like that, at least not unless it gets
+> into some stable release of an OS...)
+> --[[Joey]]
