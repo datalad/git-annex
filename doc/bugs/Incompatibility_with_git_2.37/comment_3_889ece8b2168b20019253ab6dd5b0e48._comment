@@ -12,6 +12,5 @@ Probably `git update-index`, since that's what looks at the config.
 waits for it to exit. So I don't understand what would have the index still
 locked.
 
-I wonder if this is related to some other config also being set, such as
-core.fsmonitor.
+I've reproduced it, setting core.untrackedCache.
 """]]
