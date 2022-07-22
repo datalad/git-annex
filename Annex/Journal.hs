@@ -196,8 +196,8 @@ getJournalFileStale (GetPrivate getprivate) file = do
   where
 	jfile = journalFile file
 	getfrom d = catchMaybeIO $
-		discardIncompleteAppend 
-			<$> L.readFile (fromRawFilePath (d P.</> jfile))
+		discardIncompleteAppend . L.fromStrict
+			<$> B.readFile (fromRawFilePath (d P.</> jfile))
 
 -- Note that this forces read of the whole lazy bytestring.
 discardIncompleteAppend :: L.ByteString -> L.ByteString
