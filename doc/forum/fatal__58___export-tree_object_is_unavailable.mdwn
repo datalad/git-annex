@@ -1,0 +1,15 @@
+Hello !
+
+I'm having a little issue with one of my annexes. Not sure how I got to this point, I might have reset the master branch in one of the repositories to undo changes at some point.
+
+```
+❯ git annex sync
+(merging origin/synced/git-annex into git-annex...)
+(recording state in git...)
+fatal: entry 'export.tree' object 92ab3e13460c6c7a6e9f19484d1808f22eab0077 is unavailable
+git-annex: fd:17: hClose: resource vanished (Broken pipe)
+```
+
+There is indeed an entry in git-annex:export.log with that checksum. I don't really care about the export, since its to a remote I don't use anymore. But I'm not sure how to make my annex usable again. Marking the remote as dead does not help. I've considered editing all the git-annex:export.log in all the repositories to remove the offending line, but that's quite some work and I'm not sure if that's enough or if I might do more damage.
+
+Any ideas ?
