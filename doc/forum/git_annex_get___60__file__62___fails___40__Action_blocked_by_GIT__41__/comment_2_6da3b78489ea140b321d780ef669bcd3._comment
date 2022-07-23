@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="drunken_sapo"
+ avatar="http://cdn.libravatar.org/avatar/95a4912e969b86df221626188ecc8f94"
+ subject="Confirmed your suspiction"
+ date="2022-07-23T02:28:18Z"
+ content="""
+Hi Joey, thanks for your tip and sorry for the delay in answering! I got stalled by other projects
+
+Here is how the landscape looks like:
+1) On the local machine:
+git-annex version: 10.20220526-gc6b112108
+2) On the remote machine:
+git-annex version: 6.20180227
+
+I will upgrade and let you know how it goes!
+Thanks so much again!
+"""]]
