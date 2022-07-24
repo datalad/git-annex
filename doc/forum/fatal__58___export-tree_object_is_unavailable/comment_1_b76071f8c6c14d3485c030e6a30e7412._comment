@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="arnaud@c1d1cc612a3921dc06a417301be08a3e125478c4"
+ nickname="arnaud"
+ avatar="http://cdn.libravatar.org/avatar/c0defbf54541c499f6c0464588fc2ad0"
+ subject="comment 1"
+ date="2022-07-24T16:16:35Z"
+ content="""
+I just tried using `git write-tree` to write a random tree, then renamed it to match the missing objects name... and my annex is now syncing. I thought git would complain about having a file with the sha1 not matching the contents, but so far so good. I'm pretty sure `git fsck` is not going to likei it. Hopefully I've not broken anything.
+"""]]
