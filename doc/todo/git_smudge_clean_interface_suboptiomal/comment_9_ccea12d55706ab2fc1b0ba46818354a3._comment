@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 9"
+ date="2022-07-24T16:52:33Z"
+ content="""
+FWIW, [in dandisets/000026](https://github.com/dandi/dandisets/issues/229#issuecomment-1192971292) I provide provide some timings on committing files renames. Overall rough: pure git (no git-annex) - 1 sec, v8 - 1500 minutes, v9 - 1 minute.  The question is, since v9 is not default, how well was it tested/used in real life?  
+"""]]
