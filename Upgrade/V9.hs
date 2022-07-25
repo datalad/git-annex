@@ -43,9 +43,9 @@ upgrade automatic
 		Nothing -> pure True
 		Just t -> do
 			now <- liftIO getPOSIXTime
-			if now - 365*24*60*60 > t
+			if now < t + 365*24*60*60
 				then return True
-				else not <$> assistantrunning
+				else assistantrunning
 
 	{- Skip upgrade when git-annex assistant (or watch) is running,
 	 - because these are long-running daemons that could conceivably
