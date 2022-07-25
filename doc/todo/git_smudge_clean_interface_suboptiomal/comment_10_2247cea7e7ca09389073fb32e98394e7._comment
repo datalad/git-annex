@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2022-07-25T16:27:36Z"
+ content="""
+Well, there has been one bug noticed in v9 so far, it happens to be fixed
+in the upcoming release, and it only affected an edge case involving empty
+files.
+
+I'm not waiting to make v9 the default because of a lack of testing.
+There were some complaints that v8 became the default too
+quickly and caused problems when a mixture of git-annex versions was in
+use, and so it made sense to slow down the upgrade speed.
+
+Anyway, you can enable the speedup in v8 repositories:
+
+	git config filter.annex.process "git-annex filter-process"
+"""]]
