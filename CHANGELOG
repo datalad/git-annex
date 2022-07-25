@@ -1,29 +1,29 @@
-git-annex (10.20220724) UNRELEASED; urgency=medium
+git-annex (10.20220724) upstream; urgency=medium
 
-  * Improve handling of parallelization with -J when copying content
-    from/to a git remote that is a local path.
-  * --backend is no longer a global option, and is only accepted by
-    commands that actually need it.
-  * Fix building with the Assistant build flag disabled but the Webapp
-    build flag enabled.
-  * add: Fix reversion when adding an annex link that has been moved to
-    another directory. (Introduced in version 10.20220624)
   * filter-process: Fix a bug involving handling of empty files,
     that caused git to kill git-annex filter-process.
+  * add: Fix reversion when adding an annex link that has been moved to
+    another directory. (Introduced in version 10.20220624)
+  * Added annex.alwayscompact setting which can be unset to speed up
+    writes to the git-annex branch in some cases. See its documentation
+    for important notes on when it's appropariate to use.
   * adb: Added configuration setting oldandroid=true to avoid using
     find -printf, which was first supported in Android around 2019-2020.
     This may need to be enabled for old android devices that used to work
     without it being set, since version 10.20220222 started using 
     find -printf.
+  * --backend is no longer a global option, and is only accepted by
+    commands that actually need it.
+  * Improve handling of parallelization with -J when copying content
+    from/to a git remote that is a local path.
   * S3: Avoid writing or checking the uuid file in the S3 bucket when
     importtree=yes or exporttree=yes.
   * Fix a reversion that prevented --batch commands (and the assistant)
     from noticing data written to the journal by other commands.
-  * Added annex.alwayscompact setting which can be unset to speed up
-    writes to the git-annex branch in some cases. See its documentation
-    for important notes on when it's appropariate to use.
+  * Fix building with the Assistant build flag disabled but the Webapp
+    build flag enabled.
 
- -- Joey Hess <id@joeyh.name>  Tue, 28 Jun 2022 14:49:17 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 25 Jul 2022 12:55:38 -0400
 
 git-annex (10.20220624) upstream; urgency=medium
 
