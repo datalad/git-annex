@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-07-25T16:40:50Z"
+ content="""
+Etags are intended to help http clients with caching. It would
+not be considered much of a problem if a web server only returned the same
+Etag for a little while and then generated a new one later, since clients
+only cache so long anyway. But then git-annex would treat the file as no
+longer present on the website.
+
+Apache uses the inode, size, and mtime for its Etag generation. So just
+moving a website to a different drive would change the Etag.
+"""]]
