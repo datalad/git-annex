@@ -12,5 +12,5 @@ But, it seems likely that `git add` would not be slow if you upgraded
 the repository version to v9 instead. Most scenarios where it is slow
 have been fixed in that version.
 
-	git-annex upgrade --version=9
+	git-annex upgrade
 """]]

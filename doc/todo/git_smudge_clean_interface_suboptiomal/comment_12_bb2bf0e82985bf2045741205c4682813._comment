@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2022-07-25T20:29:11Z"
+ content="""
+v10 only differs in a locking mechanic, anyway I'm using it myself so.
+
+`git-annex upgrade` will go from v8 to v9, no --version needed.
+"""]]
