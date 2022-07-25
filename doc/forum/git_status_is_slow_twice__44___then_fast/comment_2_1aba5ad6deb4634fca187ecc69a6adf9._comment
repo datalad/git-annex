@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-07-25T16:53:34Z"
+ content="""
+I don't know why git would re-run the slow operation twice before caching
+the result for the third time.
+
+But, yes, smudging is slow in repository v8. If you upgrade to v9 it should
+be significantly faster.
+"""]]
