@@ -631,9 +631,9 @@ genIndex g = Git.UpdateIndex.streamUpdateIndex g
 mergeIndex :: JournalLocked -> [Git.Ref] -> Annex ()
 mergeIndex jl branches = do
 	prepareModifyIndex jl
-	hashhandle <- hashObjectHandle
-	withCatFileHandle $ \ch ->
-		inRepo $ \g -> Git.UnionMerge.mergeIndex hashhandle ch g branches
+	withHashObjectHandle $ \hashhandle ->
+		withCatFileHandle $ \ch ->
+			inRepo $ \g -> Git.UnionMerge.mergeIndex hashhandle ch g branches
 
 {- Removes any stale git lock file, to avoid git falling over when
  - updating the index.
@@ -709,10 +709,10 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
 	(jlogf, jlogh) <- openjlog (fromRawFilePath tmpdir)
-	h <- hashObjectHandle
-	withJournalHandle gitAnnexJournalDir $ \jh ->
-		Git.UpdateIndex.streamUpdateIndex g
-			[genstream dir h jh jlogh]
+	withHashObjectHandle $ \h ->
+		withJournalHandle gitAnnexJournalDir $ \jh ->
+			Git.UpdateIndex.streamUpdateIndex g
+				[genstream dir h jh jlogh]
 	commitindex
 	liftIO $ cleanup (fromRawFilePath dir) jlogh jlogf
   where

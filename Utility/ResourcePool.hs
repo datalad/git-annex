@@ -34,7 +34,7 @@ mkResourcePool maxsz = liftIO $
 		<*> newTVarIO []
 
 {- When there will not be multiple threads that may 
- - may concurrently try to use it, using this is more
+ - concurrently try to use it, using this is more
  - efficient than mkResourcePool.
  -}
 mkResourcePoolNonConcurrent :: (MonadMask m, MonadIO m) => m r -> m (ResourcePool r)

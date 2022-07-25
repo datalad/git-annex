@@ -43,3 +43,6 @@ which might be ok but still wonder why they are just sleeping there in more than
 [[!tag projects/dandi]]
 
 
+> [[done]]; this is now handled like other git helper processes
+> and will be capped to the maximum of the number of jobs or cpu cores,
+> and in practice usually fewer than that will be started. --[[Joey]]

@@ -175,7 +175,7 @@ data AnnexState = AnnexState
 	, branchstate :: BranchState
 	, repoqueue :: Maybe (Git.Queue.Queue Annex)
 	, catfilehandles :: CatFileHandles
-	, hashobjecthandle :: Maybe HashObjectHandle
+	, hashobjecthandle :: Maybe (ResourcePool HashObjectHandle)
 	, checkattrhandle :: Maybe (ResourcePool CheckAttrHandle)
 	, checkignorehandle :: Maybe (ResourcePool CheckIgnoreHandle)
 	, globalnumcopies :: Maybe NumCopies

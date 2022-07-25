@@ -1,6 +1,6 @@
 {- git-annex concurrent state
  -
- - Copyright 2015-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ import Types.Concurrency
 import Types.CatFileHandles
 import Annex.CatFile
 import Annex.CheckAttr
+import Annex.HashObject
 import Annex.CheckIgnore
 
 import qualified Data.Map as M
@@ -47,14 +48,17 @@ setConcurrency' c f = do
 	fromnonconcurrent = do
 		catFileStop
 		checkAttrStop
+		hashObjectStop
 		checkIgnoreStop
 		cfh <- liftIO catFileHandlesPool
 		cah <- mkConcurrentCheckAttrHandle c
+		hoh <- mkConcurrentHashObjectHandle c
 		cih <- mkConcurrentCheckIgnoreHandle c
 		Annex.changeState $ \s -> s
 			{ Annex.concurrency = newc
 			, Annex.catfilehandles = cfh
 			, Annex.checkattrhandle = Just cah
+			, Annex.hashobjecthandle = Just hoh
 			, Annex.checkignorehandle = Just cih
 			}
 
