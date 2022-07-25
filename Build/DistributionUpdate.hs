@@ -193,7 +193,7 @@ signFile f = do
 		, Param "--detach-sign"
 		, File f
 		]
-	liftIO $ rename (f ++ ".asc") (f ++ ".sig")
+	liftIO $ R.rename (toRawFilePath (f ++ ".asc")) (toRawFilePath (f ++ ".sig"))
 	void $ inRepo $ runBool [Param "add", File (f ++ ".sig")]
 
 -- clamscan should handle unpacking archives, but did not in my
