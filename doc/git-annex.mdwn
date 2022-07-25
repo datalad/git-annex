@@ -1181,13 +1181,18 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
 * `annex.autoupgraderepository`
 
-  When an old git-annex repository version has become deprecated,
+  When an old git-annex repository version is no longer supported,
   git-annex will normally automatically upgrade the repository to
-  the new version.
+  the new version. It may also sometimes upgrade from an old repository
+  version that is still supported but that is not as good as a later
+  version.
 
   If this is set to false, git-annex won't automatically upgrade the
-  repository. Instead it will exit with an error message. You can run
-  `git annex upgrade` yourself when you are ready to upgrade the
+  repository. If the repository version is not supported, git-annex
+  will instead exit with an error message. If it is still supported,
+  git-annex will continue to work.
+
+  You can run `git annex upgrade` yourself when you are ready to upgrade the
   repository.
 
 * `annex.crippledfilesystem`

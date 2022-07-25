@@ -39,7 +39,12 @@ checkUpgrade = maybe noop giveup <=< needsUpgrade
 
 needsUpgrade :: RepoVersion -> Annex (Maybe String)
 needsUpgrade v
-	| v `elem` supportedVersions = ok
+	| v `elem` supportedVersions = case M.lookup v autoUpgradeableVersions of
+		Just newv | newv /= v -> ifM (annexAutoUpgradeRepository <$> Annex.getGitConfig)
+			( runupgrade newv
+			, ok
+			)
+		_ -> ok
 	| otherwise = case M.lookup v autoUpgradeableVersions of
 		Nothing
 			| v `elem` upgradeableVersions ->
@@ -47,10 +52,7 @@ needsUpgrade v
 			| otherwise ->
 				err "Upgrade git-annex."
 		Just newv -> ifM (annexAutoUpgradeRepository <$> Annex.getGitConfig)
-			( tryNonAsync (upgrade True newv) >>= \case
-				Right True -> ok
-				Right False -> err "Automatic upgrade failed!"
-				Left ex -> err $ "Automatic upgrade exception! " ++ show ex
+			( runupgrade newv
 			, err "Automatic upgrade is disabled by annex.autoupgraderepository configuration. To upgrade this repository: git-annex upgrade"
 			)
   where
@@ -63,7 +65,13 @@ needsUpgrade v
 			, show (fromRepoVersion v) ++ "."
 			, msg
 			]
+	
 	ok = return Nothing
+
+	runupgrade newv = tryNonAsync (upgrade True newv) >>= \case
+		Right True -> ok
+		Right False -> err "Automatic upgrade failed!"
+		Left ex -> err $ "Automatic upgrade exception! " ++ show ex
 
 upgrade :: Bool -> RepoVersion -> Annex Bool
 upgrade automatic destversion = do

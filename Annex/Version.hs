@@ -19,7 +19,7 @@ import qualified Annex
 import qualified Data.Map as M
 
 defaultVersion :: RepoVersion
-defaultVersion = RepoVersion 8
+defaultVersion = RepoVersion 10
 
 latestVersion :: RepoVersion
 latestVersion = RepoVersion 10
@@ -42,7 +42,7 @@ autoUpgradeableVersions = M.fromList
 	, (RepoVersion 6, defaultVersion)
 	, (RepoVersion 7, defaultVersion)
 	, (RepoVersion 8, defaultVersion)
-	, (RepoVersion 9, latestVersion)
+	, (RepoVersion 9, defaultVersion)
 	]
 
 versionField :: ConfigKey

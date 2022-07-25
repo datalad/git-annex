@@ -1,3 +1,12 @@
+git-annex (10.20220725) UNRELEASED; urgency=medium
+
+  * v8 repositories automatically upgrade to v9, which will in turn
+    automatically upgrade to v10 in a year's time.
+    To avoid this upgrade, you can set annex.autoupgraderepository to false.
+  * Use v10 by default for new repositories.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 25 Jul 2022 15:35:45 -0400
+
 git-annex (10.20220724) upstream; urgency=medium
 
   * filter-process: Fix a bug involving handling of empty files,

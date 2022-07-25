@@ -61,11 +61,14 @@ it very unlikely that such a process is still running.
 
 ## v8 -> v9 (git-annex version 10.x)
 
-v8 repositories are not yet automatically upgraded to v9.
+v8 repositories are automatically upgraded to v9.
 
 v9 is a stepping stone to the v10 upgrade. By adding this intermediate
 version, old versions of git-annex that only support v8 will not be able to
 start new processes in the repository after the v9 upgrade.
+
+v9 also enables using `git-annex filter-process`. This can significantly
+speed up git operations involving unlocked files.
 
 ## v7 -> v8 (git-annex version 8.x)
 
@@ -95,7 +98,7 @@ dotfiles to git by default, unless annex.dotfiles is set to true.
 v6 repositories are automatically upgraded to v7.
 
 The only difference between v6 and v7 is that some additional git hooks
-were added in v7. See below for details about what's new in v6/v7.
+were added in v7.
 
 ## v5 -> v6 (git-annex version 6.x)
 
