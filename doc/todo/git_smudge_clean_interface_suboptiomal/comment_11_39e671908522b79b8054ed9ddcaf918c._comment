@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 11"
+ date="2022-07-25T19:03:42Z"
+ content="""
+What about v10? ;-)  FWIW, [I added a test run for DataLad](https://github.com/datalad/datalad/pull/6881) to operate on v10 by default --  remains green.
+
+> `git-annex upgrade --version=9`
+
+FWIW 10.20220624-g769be12 seems to not have `--version` for `upgrade` and I see nothing
+
+> `git config filter.annex.process \"git-annex filter-process\"`
+
+cool -- seems to work (as commit took only 3m on that slow box).  I will go this route for now.
+"""]]

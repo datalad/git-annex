@@ -1,0 +1,45 @@
+### Please describe the problem.
+
+May be not a problem per se, but decided to check if expected. Following [this advise](http://git-annex.branchable.com/todo/git_smudge_clean_interface_suboptiomal/#comment-65f848510d8684bf65c6698f68b700dd) I have `git config filter.annex.process "git-annex filter-process"` in that git-annex repo and now observe following tree (in htop) of processes:
+
+```
+3799768 dandi      20   0 1025G  191M 40616 S  6.6  0.3  0:31.87 │                 │     ├─ git-annex addurl --batch --with-files --jobs 5 --json --json-error-messages --json-progress --raw
+3799796 dandi      20   0  191M  5088  4680 S  0.0  0.0  0:00.01 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+3805272 dandi      20   0  6892  3420  2992 S  0.0  0.0  0:00.27 │                 │     │  ├─ /bin/bash /usr/bin/git-annex-remote-rclone
+3805640 dandi      20   0 20432 13032  4024 S  0.0  0.0  0:02.82 │                 │     │  ├─ git --git-dir=.git --work-tree=. check-ignore -z --stdin --verbose --non-matching
+3805646 dandi      20   0 20432 13044  4036 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs check-attr -z --stdin annex.backend annex.largefiles annex.numcopies annex.mincopies --
+3805650 dandi      20   0 31900  4064  3816 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3805685 dandi      20   0 30144  4000  3752 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3805704 dandi      20   0 30144 16076 15792 S  0.0  0.0  0:00.01 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3805705 dandi      20   0 30144  3976  3728 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3805717 dandi      20   0 30144 15968 15680 S  0.0  0.0  0:00.01 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3805781 dandi      20   0 30144  3980  3724 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3805786 dandi      20   0 30144  4068  3820 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3805807 dandi      20   0 30144 16028 15744 S  0.0  0.0  0:00.02 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3805808 dandi      20   0 30144  3884  3636 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3805828 dandi      20   0 30144  4008  3764 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3805848 dandi      20   0 20432 13104  4092 S  0.0  0.0  0:00.04 │                 │     │  ├─ git --git-dir=.git --work-tree=. check-ignore -z --stdin --verbose --non-matching
+3805852 dandi      20   0 20432 12948  3940 S  0.0  0.0  0:00.02 │                 │     │  ├─ git --git-dir=.git --work-tree=. check-ignore -z --stdin --verbose --non-matching
+3805865 dandi      20   0 20432 13032  4024 S  0.0  0.0  0:00.02 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs check-attr -z --stdin annex.backend annex.largefiles annex.numcopies annex.mincopies --
+3806054 dandi      20   0 30144  4004  3752 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3806066 dandi      20   0 45216  5108  4700 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+3806067 dandi      20   0 30144  3888  3640 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3806068 dandi      20   0 30144 16032 15748 S  0.0  0.0  0:00.01 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3806095 dandi      20   0 30144  4060  3816 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3806104 dandi      20   0 20432 12928  3916 S  0.0  0.0  0:00.06 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs check-attr -z --stdin annex.backend annex.largefiles annex.numcopies annex.mincopies --
+3806110 dandi      20   0 30144 15944 15660 S  0.0  0.0  0:00.02 │                 │     │  └─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+3804258 dandi      20   0 1024G 44336 37772 S  0.0  0.1  0:00.04 │                 │     ├─ git-annex addurl --batch --with-files --jobs 5 --json --json-error-messages --json-progress --raw
+3804277 dandi      20   0 40844  5124  4740 S  0.0  0.0  0:00.00 │                 │     │  └─ git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+3805399 dandi      20   0 1024G 23508 20844 S  0.0  0.0  0:00.61 │                 │     ├─ git-annex examinekey --batch --migrate-to-backend=SHA256E
+3805493 dandi      20   0 1024G 36516 26184 S  0.0  0.1  0:01.51 │                 │     ├─ git-annex fromkey --force --batch --json --json-error-messages
+3805503 dandi      20   0 25788  5120  4712 S  0.0  0.0  0:00.00 │                 │     │  ├─ git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+3805510 dandi      20   0 12472  3984  3732 S  0.0  0.0  0:00.05 │                 │     │  └─ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+```
+
+which might be ok but still wonder why they are just sleeping there in more than one per `--jobs` number quantities. git annex 10.20220624-g769be12
+
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
+
+
