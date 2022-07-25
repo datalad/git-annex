@@ -67,10 +67,11 @@ needsUpgrade v
 
 upgrade :: Bool -> RepoVersion -> Annex Bool
 upgrade automatic destversion = do
-	(upgraded, newversion) <- go =<< getVersion
-	when upgraded $
+	startversion <- getVersion
+	(ok, newversion) <- go startversion
+	when (ok && newversion /= startversion) $
 		postupgrade newversion
-	return upgraded
+	return ok
   where
 	go (Just v)
 		| v >= destversion = return (True, Just v)
