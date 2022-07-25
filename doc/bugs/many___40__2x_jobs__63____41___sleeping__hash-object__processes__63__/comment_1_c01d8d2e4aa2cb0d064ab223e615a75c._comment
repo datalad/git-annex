@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-07-25T20:37:55Z"
+ content="""
+I was able to reproduce this by feeding 10 urls into git-annex addurl
+-J5 and got 7 hash-object processes running.
+
+filter.annex.process has nothing to do with this. I reproduced the behavior
+without it set.
+
+Seems like a simple concurrency issue, where each thread potentially starts
+its own hash-object handle, and there can be around 2x as many threads
+started as the -J number due to job stages. Annex.Concurrent sets up pools of
+handles for other similar git processes, but not hash-object.
+"""]]
