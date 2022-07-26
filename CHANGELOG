@@ -6,6 +6,7 @@ git-annex (10.20220725) UNRELEASED; urgency=medium
   * Use v10 by default for new repositories.
   * Avoid starting an unncessary number of git hash-object processes when 
     concurrency is enabled.
+  * stack.yaml: Updated to lts-19.16
 
  -- Joey Hess <id@joeyh.name>  Mon, 25 Jul 2022 15:35:45 -0400
 
