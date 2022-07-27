@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/986de9e060699ae70ff7c31342393adc"
+ subject="Confirming all annexed files exist elsewhere?"
+ date="2022-07-27T16:35:21Z"
+ content="""
+I'm preparing to recycle an aging laptop that has a few git-annex repos on it. I'd like to confirm that anything in its annex(es) exist in at least one other place and want to confirm what I'm doing to check this makes sense. 
+
+At first glance, it seems like the appropriate way to do this is with `git annex find --in here --not --copies=2` (where the latter predicate should be equal to testing for copies strictly less than 2).
+Since I have recently `git annex sync`-ed, this doesn't turn up anything.
+
+However, if I understand everything correctly, this *only* checks files that are reachable from my current working tree.
+Thus, if there are a bunch of files in my (not currently checked out) `dev` branch that are *not* in my corktree, then this query will not discover them.
+I can get them to be considered with `git annex find --in here --not --copies=2 --branch dev`.
+I could manually (or script) a loop over all of my branches and repeat `git annex find --in here --not --copies=2 --branch ${branch}` to check all of my branches.
+However, this will only check the tips.
+Suppose there's a file that previously existed (solely) in my master branch, but at some point it was `git rm`-ed. Then unless I specify using `--branch` a TREEISH that has that file, it will not be considered.
+
+As a result, it seems like the safest thing for me to do is to instead run `git annex whereis --all --in here --not --copies=2` in order to identify keys corresponding to files that are (a) locally available but where (b) the number of copies is not 2 or greater (i.e., it is here and only here). 
+I suppose I could also just plunge ahead with `git annex copy --to ${remote} --all --in here --not --copies=2`, but it's reassuring to be able to run the query and see what would need to get moved (as well as to see the query come back empty before I wipe the hard drive).
+
+Is this an appropriate use of `git annex whereis`, or is there a way that I can use `git annex find` to accomplish this? I see discussion above regarding the lack of `--all` support for `git annex find` Perhaps this is all a roundabout way of asking that `--all` be supported in `git annex find`
+"""]]
