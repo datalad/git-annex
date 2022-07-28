@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="Dan"
+ avatar="http://cdn.libravatar.org/avatar/986de9e060699ae70ff7c31342393adc"
+ subject="Re: Confirming all annexed files exist elsewhere?"
+ date="2022-07-28T23:20:03Z"
+ content="""
+Thanks Joey and Ilya for the nigh simultaneous untrust then fsck suggestion. 
+I was able to get everything squared away using the `whereis` approach as a sort of poor man's dry run, then running the copy command I described, and then using my `whereis` again to convince myself that nothing was left behind, although I imagine I'm not the first one to be retiring a repo and so hopefully these comments will be of use to future users.
+
+While my particular problem is solved, I just wanted to add some additional input RE adding `--all` to find.
+I appreciate that Joey thinks that `find` is about \"listing files, not keys\" (and if anyone's opinion here is authoritative, it should be his), but this was not my expectation as a user (although I would agree it was called `findfiles` or something like that), so I just wanted to share my experience trying to accomplish this task.
+
+Given what I understand of `git-annex`, my instinct was to reach for a command that would let me use the powerful matching options against all known keys, so I looked over the list of commands to try to identify something that would do this.
+Right away, `find` leapt out as the natural candidate, but I couldn't get it to work how I wanted, so the next obvious choice was `list`, but that also didn't work.
+It was only when I looked at the this wiki page for `find` and saw discussion of adding support for `--all` that I started searching for commands that *did* accept `--all`, and I stumbled upon `whereis`, but this required a fair deal of detective work on my part.
+
+FWIW, `whereis` is, IMHO, just as much about listing files at particular paths as `find` is (the documentation for both describes the argument as `[path ...]`; it only typically talks about keys when `--all` is passed, and so `whereis` taking `--all` when `find` does not seems unbalanced given that `whereis` seems like a tool that would be built on top of `find`.
+I think there's a similar asymmetry with `list` since it's described as being \"similar to `git annex whereis` but a more compact display.\"
+
+Now that the `--all` genie is somewhat out of the bottle it might be too late for this, but I wonder if a `findkeys` command would help fill this need while obviating the need for `--all` being passed to most other commands.
+It would be unequivocally about finding keys and not files, and its output could be say a list of keys delimited by newlines (or perhaps optionally null's to make it play nice with commands that accept `-z`).
+If the user wanted to know more about the keys that matched their query, the output of this command could then be piped to `whereis`, `examinekey`, and other commands that support the `--batch` and/or `-z` option.
+Of course, instead of defining a new command, this functionality could be absorbed into `find --all`.
+
+I realize that I can accomplish precisely what I describe above with e.g., `git annex whereis --all --format='${key}\n'`, which is great now that I know it's possible under `whereis`, but as a new user I would expect to find this functionality in `find` (which helpfully already supports `--format=`)  before I thought to check `whereis`.
+"""]]
