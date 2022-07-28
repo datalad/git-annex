@@ -153,20 +153,42 @@ in either of two repositories.
 
 * `--want-get`
 
-  Matches only when the preferred content settings for the repository
+  Matches only when the preferred content settings for the local repository
   make it want to get content. Note that this will match even when
-  the content is already present, unless limited with e.g., `--not --in .`
+  the content is already present, unless limited with e.g., `--not --in=here`
 
 * `--want-drop`
 
-  Matches only when the preferred content settings for the repository
+  Matches only when the preferred content settings for the local repository
   make it want to drop content. Note that this will match even when
-  the content is not present, unless limited with e.g., `--in .`
+  the content is not present, unless limited with e.g., `--not --in=here`
 
   Things that this matches will not necessarily be dropped by
   `git-annex drop --auto`. This does not check that there are enough copies
   to drop. Also the same content may be used by a file that is not wanted
   to be dropped.
+
+* `--want-get-by=repository`
+
+  Matches only when the preferred content settings for the specified 
+  repository make it want to get content. Note that this will match even when
+  the content is already present in that repository, unless limited with e.g.,
+  `--not --in=repository`
+
+  The repository should be specified using the name of a configured remote,
+  or the UUID or description of a repository. `--want-get-by=here`
+  is the same as `--want-get`.
+
+* `--want-drop-by=repository`
+
+  Matches only when the preferred content settings for the specificed
+  repository make it want to drop content. Note that this will match
+  even when the content is not present, unless limited with e.g., 
+  `--not --in=repository`
+ 
+  The repository should be specified using the name of a configured remote,
+  or the UUID or description of a repository. `--want-drop-by=here`
+  is the same as `--want-drop`.
 
 * `--accessedwithin=interval`
 

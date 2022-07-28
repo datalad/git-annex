@@ -212,7 +212,7 @@ shouldTransfer t info
 	| transferDirection t == Upload = case transferRemote info of
 		Nothing -> return False
 		Just r -> notinremote r
-			<&&> wantSend True (Just key) file (Remote.uuid r)
+			<&&> wantGetBy True (Just key) file (Remote.uuid r)
 	| otherwise = return False
   where
 	key = transferKey t

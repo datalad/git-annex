@@ -7,6 +7,7 @@ git-annex (10.20220725) UNRELEASED; urgency=medium
   * Avoid starting an unncessary number of git hash-object processes when 
     concurrency is enabled.
   * stack.yaml: Updated to lts-19.16
+  * Added new matching options --want-get-by and --want-drop-by.
 
  -- Joey Hess <id@joeyh.name>  Mon, 25 Jul 2022 15:35:45 -0400
 

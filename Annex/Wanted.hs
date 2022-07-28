@@ -22,8 +22,8 @@ wantGet :: Bool -> Maybe Key -> AssociatedFile -> Annex Bool
 wantGet d key file = isPreferredContent Nothing S.empty key file d
 
 {- Check if a file is preferred content for a repository. -}
-wantSend :: Bool -> Maybe Key -> AssociatedFile -> UUID -> Annex Bool
-wantSend d key file to = isPreferredContent (Just to) S.empty key file d
+wantGetBy :: Bool -> Maybe Key -> AssociatedFile -> UUID -> Annex Bool
+wantGetBy d key file to = isPreferredContent (Just to) S.empty key file d
 
 {- Check if a file is not preferred or required content, and can be
  - dropped. When a UUID is provided, checks for that repository.

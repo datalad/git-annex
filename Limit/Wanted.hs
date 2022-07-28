@@ -12,14 +12,27 @@ import Annex.Wanted
 import Limit
 import Types.FileMatcher
 import Logs.PreferredContent
+import qualified Remote
 
 addWantGet :: Annex ()
 addWantGet = addPreferredContentLimit $
 	checkWant $ wantGet False Nothing
 
+addWantGetBy :: String -> Annex ()
+addWantGetBy name = do
+	u <- Remote.nameToUUID name
+	addPreferredContentLimit $ checkWant $ \af ->
+		wantGetBy False Nothing af u
+
 addWantDrop :: Annex ()
-addWantDrop = addPreferredContentLimit $
-	checkWant $ \af -> wantDrop False Nothing Nothing af (Just [])
+addWantDrop = addPreferredContentLimit $ checkWant $ \af ->
+	wantDrop False Nothing Nothing af (Just [])
+
+addWantDropBy :: String -> Annex ()
+addWantDropBy name = do
+	u <- Remote.nameToUUID name
+	addPreferredContentLimit $ checkWant $ \af ->
+		wantDrop False (Just u) Nothing af (Just [])
 
 addPreferredContentLimit :: (MatchInfo -> Annex Bool) -> Annex ()
 addPreferredContentLimit a = do

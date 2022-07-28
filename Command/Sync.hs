@@ -855,7 +855,7 @@ syncFile ebloom rs af k = do
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| isThirdPartyPopulated r = return False
-		| otherwise = wantSend True (Just k) af (Remote.uuid r)
+		| otherwise = wantGetBy True (Just k) af (Remote.uuid r)
 	handleput lack inhere
 		| inhere = catMaybes <$>
 			( forM lack $ \r ->

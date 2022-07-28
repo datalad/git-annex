@@ -82,5 +82,5 @@ start o si file key = stopUnless shouldCopy $
 		Right (FromRemote _) -> checkwantget
 		Left ToHere -> checkwantget
 			
-	checkwantsend = wantSend False (Just key) (AssociatedFile (Just file))
+	checkwantsend = wantGetBy False (Just key) (AssociatedFile (Just file))
 	checkwantget = wantGet False (Just key) (AssociatedFile (Just file))

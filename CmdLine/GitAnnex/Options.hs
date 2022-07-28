@@ -288,12 +288,23 @@ keyMatchingOptions' =
 		)
 	, annexFlag (setAnnexState Limit.Wanted.addWantGet)
 		( long "want-get"
-		<> help "match files the repository wants to get"
+		<> help "match files the local repository wants to get"
 		<> hidden
+		)
+	, annexOption (setAnnexState . Limit.Wanted.addWantGetBy) $ strOption
+		( long "want-get-by" <> metavar paramRemote
+		<> help "match files the specified repository wants to get"
+		<> hidden
+		<> completeRemotes
 		)
 	, annexFlag (setAnnexState Limit.Wanted.addWantDrop)
 		( long "want-drop"
-		<> help "match files the repository wants to drop"
+		<> help "match files the local repository wants to drop"
+		<> hidden
+		)
+	, annexOption (setAnnexState . Limit.Wanted.addWantDropBy) $ strOption
+		( long "want-drop-by" <> metavar paramRemote
+		<> help "match files the specified repository wants to drop"
 		<> hidden
 		)
 	, annexOption (setAnnexState . Limit.addAccessedWithin) $

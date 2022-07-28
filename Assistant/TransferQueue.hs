@@ -88,7 +88,7 @@ queueTransfersMatching matching reason schedule k f direction
 		 - already have it. -}
 		| otherwise = do
 			s <- locs
-			filterM (wantSend True (Just k) f . Remote.uuid) $
+			filterM (wantGetBy True (Just k) f . Remote.uuid) $
 				filter (\r -> not (inset s r || Remote.readonly r))
 					(syncDataRemotes st)
 	  where
