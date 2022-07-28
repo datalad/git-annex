@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-07-28T16:03:32Z"
+ content="""
+Does Android have a /bin/bash, which is in the shebang of that script? 
+You might want to try running `termux-fix-shebang` on 
+git-annex-remote-rclone, or otherwise modify it to use a shell that is
+available.
+
+You can modify git-annex.linux/runshell to change how it runs proot. The
+call to proot is right down at the end of it.
+"""]]
