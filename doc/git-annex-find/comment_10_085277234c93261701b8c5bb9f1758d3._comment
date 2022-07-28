@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="Re: &quot;Confirming all annexed files exist elsewhere?&quot;"
+ date="2022-07-28T17:40:19Z"
+ content="""
+Could you [[`git-annex-untrust`|git-annex-untrust]] the laptop repo, do a [[`git-annex-sync`|git-annex-sync]], then [[`git-annex-fsck`|git-annex-fsck]] to check that the files have enough trusted copies (as set in your `numcopies` setting)?
+
+"""]]
