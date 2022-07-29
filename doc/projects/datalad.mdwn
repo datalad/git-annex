@@ -17,7 +17,7 @@ My bugs
 =======
 
 [[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and
-(author(mih) or author(ben) or or author(kyle) or tagged(projects/datalad))" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist template=buglist]]
+(author(mih) or author(ben) or author(kyle) or tagged(projects/datalad))" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist template=buglist]]
 
 
 
