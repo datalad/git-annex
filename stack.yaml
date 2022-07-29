@@ -22,5 +22,3 @@ extra-deps:
 - network-multicast-0.3.2
 - sandi-0.5
 - torrent-10000.1.1
-explicit-setup-deps:
-  git-annex: true

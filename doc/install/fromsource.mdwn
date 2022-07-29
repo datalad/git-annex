@@ -41,7 +41,7 @@ and avoids build failures due to fast-changing haskell libraries.
 First, [install stack](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md)
 On Debian:
 
-	sudo apt-get install haskell-stack zlib1g-dev libtinfo-dev
+	sudo apt-get install haskell-stack zlib1g-dev
 
 Get the git-annex source code, and inside the source tree run:
 
