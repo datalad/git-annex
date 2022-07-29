@@ -122,7 +122,10 @@ repoExists :: CommandCheck
 repoExists = CommandCheck 0 ensureInitialized
 
 notBareRepo :: Command -> Command
-notBareRepo = addCheck $ whenM (fromRepo Git.repoIsLocalBare) $
+notBareRepo = addCheck checkNotBareRepo
+
+checkNotBareRepo :: Annex ()
+checkNotBareRepo = whenM (fromRepo Git.repoIsLocalBare) $
 	giveup "You cannot run this command in a bare repository."
 
 noDaemonRunning :: Command -> Command

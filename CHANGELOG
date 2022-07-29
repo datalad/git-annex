@@ -8,6 +8,8 @@ git-annex (10.20220725) UNRELEASED; urgency=medium
     concurrency is enabled.
   * stack.yaml: Updated to lts-19.16
   * Added new matching options --want-get-by and --want-drop-by.
+  * Allow find --branch to be used in a bare repository, the same as
+    the deprecated findref can be.
 
  -- Joey Hess <id@joeyh.name>  Mon, 25 Jul 2022 15:35:45 -0400
 

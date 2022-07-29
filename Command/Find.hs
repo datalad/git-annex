@@ -21,7 +21,7 @@ import qualified Utility.Format
 import Utility.DataUnits
 
 cmd :: Command
-cmd = notBareRepo $ withAnnexOptions [annexedMatchingOptions] $ mkCommand $
+cmd = withAnnexOptions [annexedMatchingOptions] $ mkCommand $
 	command "find" SectionQuery "lists available files"
 		paramPaths (seek <$$> optParser)
 
@@ -55,6 +55,8 @@ parseFormatOption =
 
 seek :: FindOptions -> CommandSeek
 seek o = do
+	unless (isJust (keyOptions o)) $
+		checkNotBareRepo
 	islimited <- limited
 	let seeker = AnnexedFileSeeker
 		{ startAction = start o
