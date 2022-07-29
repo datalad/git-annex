@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2022-07-29T16:34:56Z"
+ content="""
+The reason I think that `git-annex find` is limited to operating on files
+is because it is analagous to the `find` command. It would violate least
+surprise to some extent for it to operate on keys. `git-annex whereis` has
+no such expectation.
+"""]]
