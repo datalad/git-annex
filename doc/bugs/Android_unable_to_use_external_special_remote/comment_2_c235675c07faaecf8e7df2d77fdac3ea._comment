@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="ceramic_glass"
+ avatar="http://cdn.libravatar.org/avatar/adc8ffa8bf5b777008b1fb2083df1cf0"
+ subject="comment 2"
+ date="2022-07-29T08:08:32Z"
+ content="""
+No luck with that I'm afraid, still getting the same error. I figured out the `runshell` bit, but I can run `proot git-annex-remote-rclone` with no problems, so I don't think that's the issue.
+"""]]
