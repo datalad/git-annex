@@ -1,0 +1,10 @@
+This is the git-annex wiki page for the user jkniiv aka. Jarkko Kniivilä.
+
+I'm a gen-X Windows/Linux geek from Hämeenlinna, Finland (the EU), who has been using git-annex on and off
+for a few years now but only since late 2019 or so in earnest. I finally found a use case with managing the
+relatively huge files that are the backup images of my laptops. I also tend to add whole external hdds into
+their respective annexes (with an annex.largefiles setting at 1 megabytes) then cloning those to my laptops
+secondary drive E: (on an ssd) without getting the annex objects and thus keeping a rudimentary catalog of my
+offline files always at hand.
+
+In a past life I used to be a systems specialist (Linux servers and FOSS) for an internet consultancy.
