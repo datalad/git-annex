@@ -48,11 +48,12 @@ lockExclusive = openLock fILE_SHARE_NONE
  -
  - Will fail if the file is already open with an incompatible ShareMode.
  - Note that this may happen if an unrelated process, such as a virus
- - scanner, even looks at the file. See http://support.microsoft.com/kb/316609
+ - scanner, even looks at the file. See Microsoft KnowledgeBase article 316609
  -
  - Note that createFile busy-waits to try to avoid failing when some other
- - process briefly has a file open. But that would make checking locks
- - much more expensive, so is not done here. Thus, the use of c_CreateFile.
+ - process briefly has a file open. But that would make this busy-wait
+ - whenever the file is actually locked, for a rather long period of time. 
+ - Thus, the use of c_CreateFile.
  -
  - Also, passing Nothing for SECURITY_ATTRIBUTES ensures that the lock file
  - is not inherited by any child process.
