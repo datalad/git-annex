@@ -53,3 +53,5 @@ using Windows LockFileEx, for instance the one by my compatriot: <https://hackag
 
 [[!meta title="windows: prepare for System.Win32.File not exporting c_ entities"]]
 [[!meta author=jkniiv]]
+
+> [[fixed|done]] --[[Joey]]

@@ -1,11 +1,11 @@
 {- Windows lock files
  -
- - Copyright 2014,2021 Joey Hess <id@joeyh.name>
+ - Copyright 2014,2022 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, CPP #-}
 
 module Utility.LockFile.Windows (
 	lockShared,
@@ -61,12 +61,21 @@ lockExclusive = openLock fILE_SHARE_NONE
 openLock :: ShareMode -> LockFile -> IO (Maybe LockHandle)
 openLock sharemode f = do
 	f' <- convertToNativeNamespace f
+#if MIN_VERSION_win32(2,13,3)
+	r <- tryNonAsync $ createFile_NoRetry f' gENERIC_READ sharemode 
+		security_attributes oPEN_ALWAYS fILE_ATTRIBUTE_NORMAL
+		(maybePtr Nothing)
+	return $ case r of
+		Left _ -> Nothing
+		Right h -> Just h
+#else
 	h <- withTString (fromRawFilePath f') $ \c_f ->
 		c_CreateFile c_f gENERIC_READ sharemode security_attributes
 			oPEN_ALWAYS fILE_ATTRIBUTE_NORMAL (maybePtr Nothing)
 	return $ if h == iNVALID_HANDLE_VALUE
 		then Nothing
 		else Just h
+#endif
   where
 	security_attributes = maybePtr Nothing
 
