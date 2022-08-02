@@ -1,6 +1,6 @@
 I've added an
-[[external_special_remote_protocol/export_and_import_appendix]]
-to the [[external_special_remote_protocol]] which documents how
+[[design/external_special_remote_protocol/export_and_import_appendix]]
+to the [[design/external_special_remote_protocol]] which documents how
 the protocol might be extended to allow for importing from external special
 remotes.
 
