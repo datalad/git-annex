@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 10"
+ date="2022-08-01T18:51:59Z"
+ content="""
+didn't have time yet to look at that :-/ as for \"where\"
+
+- don't even know myself now how to lookup for those older github actions runs on github interface;
+
+- they all are fetched to smaug within con/tinuous archive of build logs/artifacts. So for this PR:
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex/builds/2022/07[master]
+$> /usr/bin/find pr-128/build-ubuntu.yaml-7* -iname *deb
+pr-128/build-ubuntu.yaml-761-ebf2f1b0-failed/git-annex-debianstandalone-packages_10.20220624+git120-gc3df38dd1_amd64/git-annex-standalone_10.20220624+git120-gc3df38dd1-1~ndall+1_amd64.deb
+
+```
+"""]]

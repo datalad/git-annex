@@ -18,7 +18,7 @@ without publishing the whole thing.
 Other ways to avoid publishing information from a git-annex branch,
 or remove information from it include [[git-annex-forget]](1), the 
 `annex.private` git config, and the `--private` option to
-[[git-annex-initremote](1). Those are much easier to use, but this
+[[git-annex-initremote]](1). Those are much easier to use, but this
 provides full control for those who need it.
 
 With no options, no information at all will be included from the git-annex

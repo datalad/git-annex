@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 11"
+ date="2022-08-01T18:55:38Z"
+ content="""
+figured out some what to lookup on github
+- go to Actions for the entire repo
+- [filter only for pull requests:](https://github.com/datalad/git-annex/actions?query=event%3Apull_request)
+- select [most recent one for that PR and architecture](https://github.com/datalad/git-annex/actions/runs/2672648689)
+- build artifacts are at the bottom of that page
+"""]]
