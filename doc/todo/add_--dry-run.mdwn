@@ -1,0 +1,24 @@
+Previous discussion which touched upon it was [7 years ago](https://git-annex.branchable.com/todo/wishlist__58___--dry-run_option_for_all_commands/) (unless I missed some) where part of the response was 
+
+> I don't see the benefit to justify this work. git annex add is entirely predictable; it's very similar to git add. Which itself lacks a dry-run option. 
+
+Oh well:
+
+```
+$> git add --help | grep -e '-n, --dry' -A1
+       -n, --dry-run
+           Don’t actually add the file(s), just show if they exist and/or will be ignored.
+
+```
+and users [submit requests against DataLad](https://github.com/datalad/datalad/issues/6909) to be able to discover what file would go to git and which to git-annex. Also would be useful to know if to git-annex -- would it be locked or unlocked?  Someone else might even want to discover what would be the annex key if it would go into annex, but so far I do not think it is within our desired use-case and it might be too lengthy to compute the key checksum etc.
+
+As for 
+
+> And like git add, you can certianly undo the effects of git annex add.
+
+
+well -- unless there was a version staged already you don't want to loose etc.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+ 
