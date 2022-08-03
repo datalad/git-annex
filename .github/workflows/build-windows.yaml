@@ -109,7 +109,7 @@ jobs:
         run: stack --version
 
       - name: stack setup
-        run: stack setup
+        run: stack --verbose setup
 
       # At this point, stack.yaml.lock exists, so we can activate the cache
 
