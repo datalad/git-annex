@@ -106,6 +106,12 @@ stop = return Nothing
 stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
 stopUnless c a = ifM c ( a , stop )
 
+{- When doing a dry run, avoid actually performing the action, but pretend
+ - that it succeeded. -}
+skipWhenDryRun :: DryRun -> CommandPerform -> CommandPerform
+skipWhenDryRun (DryRun False) a = a
+skipWhenDryRun (DryRun True) _ = next $ return True
+
 {- When acting on a failed transfer, stops unless it was in the specified
  - direction. -}
 checkFailedTransferDirection :: ActionItem -> Direction -> Annex (Maybe a) -> Annex (Maybe a)

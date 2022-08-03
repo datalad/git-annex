@@ -52,6 +52,7 @@ data AddOptions = AddOptions
 	, updateOnly :: Bool
 	, largeFilesOverride :: Maybe Bool
 	, checkGitIgnoreOption :: CheckGitIgnore
+	, dryRunOption :: DryRun
 	}
 
 optParser :: CmdParamsDesc -> Parser AddOptions
@@ -65,6 +66,7 @@ optParser desc = AddOptions
 		)
 	<*> (parseforcelarge <|> parseforcesmall)
 	<*> checkGitIgnoreSwitch
+	<*> parseDryRunOption
   where
 	parseforcelarge = flag Nothing (Just True)
 		( long "force-large"
@@ -91,16 +93,16 @@ seek o = startConcurrency commandStages $ do
 			ifM (pure (annexdotfiles || not (dotfile file))
 				<&&> (checkFileMatcher largematcher file 
 				<||> Annex.getRead Annex.force))
-				( start si file addunlockedmatcher
+				( start dr si file addunlockedmatcher
 				, if includingsmall
 					then ifM (annexAddSmallFiles <$> Annex.getGitConfig)
-						( startSmall si file s
+						( startSmall dr si file s
 						, stop
 						)
 					else stop
 				)
-		Just True -> start si file addunlockedmatcher
-		Just False -> startSmallOverridden si file
+		Just True -> start dr si file addunlockedmatcher
+		Just False -> startSmallOverridden dr si file
 	case batchOption o of
 		Batch fmt
 			| updateOnly o ->
@@ -126,25 +128,26 @@ seek o = startConcurrency commandStages $ do
 			-- same as a modified unlocked file would get
 			-- locked when added.
 			go False withUnmodifiedUnlockedPointers
+  where
+	dr = dryRunOption o
 
 {- Pass file off to git-add. -}
-startSmall :: SeekInput -> RawFilePath -> FileStatus -> CommandStart
-startSmall si file s =
+startSmall :: DryRun -> SeekInput -> RawFilePath -> FileStatus -> CommandStart
+startSmall dr si file s =
 	starting "add" (ActionItemTreeFile file) si $
-		next $ addSmall file s
+		addSmall dr file s
 
-addSmall :: RawFilePath -> FileStatus -> Annex Bool
-addSmall file s = do
+addSmall :: DryRun -> RawFilePath -> FileStatus -> CommandPerform
+addSmall dr file s = do
 	showNote "non-large file; adding content to git repository"
-	addFile Small file s
+	skipWhenDryRun dr $ next $ addFile Small file s
 
-startSmallOverridden :: SeekInput -> RawFilePath -> CommandStart
-startSmallOverridden si file = 
+startSmallOverridden :: DryRun -> SeekInput -> RawFilePath -> CommandStart
+startSmallOverridden dr si file = 
 	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
-		Just s -> starting "add" (ActionItemTreeFile file) si $ next $ do
-			
+		Just s -> starting "add" (ActionItemTreeFile file) si $ do
 			showNote "adding content to git repository"
-			addFile Small file s
+			skipWhenDryRun dr $ next $ addFile Small file s
 		Nothing -> stop
 
 data SmallOrLarge = Small | Large
@@ -188,8 +191,8 @@ addFile smallorlarge file s = do
 		isRegularFile a /= isRegularFile b ||
 		isSymbolicLink a /= isSymbolicLink b
 
-start :: SeekInput -> RawFilePath -> AddUnlockedMatcher -> CommandStart
-start si file addunlockedmatcher = 
+start :: DryRun -> SeekInput -> RawFilePath -> AddUnlockedMatcher -> CommandStart
+start dr si file addunlockedmatcher = 
 	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
 		Nothing -> stop
 		Just s
@@ -200,16 +203,17 @@ start si file addunlockedmatcher =
   where
 	go s = ifAnnexed file (addpresent s) (add s)
 	add s = starting "add" (ActionItemTreeFile file) si $
-		if isSymbolicLink s
-			then next $ addFile Small file s
-			else perform file addunlockedmatcher
+		skipWhenDryRun dr $
+			if isSymbolicLink s
+				then next $ addFile Small file s
+				else perform file addunlockedmatcher
 	addpresent s key
 		| isSymbolicLink s = fixuplink key
 		| otherwise = add s
 	fixuplink key = 
 		starting "add" (ActionItemTreeFile file) si $
 			addingExistingLink file key $
-				withOtherTmp $ \tmp -> do
+				skipWhenDryRun dr $ withOtherTmp $ \tmp -> do
 					let tmpf = tmp P.</> P.takeFileName file
 					liftIO $ moveFile file tmpf
 					ifM (isSymbolicLink <$> liftIO (R.getSymbolicLinkStatus tmpf))
@@ -223,9 +227,10 @@ start si file addunlockedmatcher =
 						)
 	fixuppointer s key =
 		starting "add" (ActionItemTreeFile file) si $
-			addingExistingLink file key $ do
-				Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
-				next $ addFile Large file s
+			addingExistingLink file key $
+				skipWhenDryRun dr $ do
+					Database.Keys.addAssociatedFile key =<< inRepo (toTopFilePath file)
+					next $ addFile Large file s
 
 perform :: RawFilePath -> AddUnlockedMatcher -> CommandPerform
 perform file addunlockedmatcher = withOtherTmp $ \tmpdir -> do

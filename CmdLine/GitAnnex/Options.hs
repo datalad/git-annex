@@ -128,6 +128,12 @@ parseUUIDOption :: String -> DeferredParse UUID
 parseUUIDOption = DeferredParse
 	. (Remote.nameToUUID)
 
+parseDryRunOption :: Parser DryRun
+parseDryRunOption = DryRun <$> switch
+	( long "dry-run"
+	<> help "don't make changes, but show what would be done"
+	)
+
 -- | From or To a remote.
 data FromToOptions
 	= FromRemote (DeferredParse Remote)

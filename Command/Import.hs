@@ -248,7 +248,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 				>>= maybe
 					stop
 					(\addedk -> next $ Command.Add.cleanup addedk True)
-			, next $ Command.Add.addSmall destfile s
+			, Command.Add.addSmall (DryRun False) destfile s
 			)
 	notoverwriting why = do
 		warning $ "not overwriting existing " ++ fromRawFilePath destfile ++ " " ++ why

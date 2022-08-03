@@ -133,3 +133,6 @@ descSection SectionUtility = "Utility commands"
 descSection SectionPlumbing = "Plumbing commands"
 descSection SectionTesting = "Testing commands"
 descSection SectionAddOn = "Addon commands"
+
+newtype DryRun = DryRun Bool
+	deriving (Show)

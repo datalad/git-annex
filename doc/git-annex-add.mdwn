@@ -77,6 +77,10 @@ annexed content, and other symlinks.
   Like `git add --update`, this does not add new files, but any updates
   to tracked files will be added to the index.
 
+* `--dry-run`
+
+  Output what would be done for each file, but avoid making any changes.
+
 * `--json`
 
   Enable JSON output. This is intended to be parsed by programs that use

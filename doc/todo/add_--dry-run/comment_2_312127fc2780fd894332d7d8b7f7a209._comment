@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-08-03T14:53:35Z"
+ content="""
+Implemented `git-annex add --dry-run`.
+
+As noted it does not let you tell if a file would be added locked or unlocked
+since `git-annex add` output is the same either way.
+
+Also when JSON output is enabled, `git-annex add` usually outputs the key,
+but with `--dry-run`, it does not. Generating the key would involve locking
+down the file, and by that point the command is making changes to the
+filesystem. Use `git-annex calckey` instead.
+
+Implementation was not as simple as making CommandPerform a no-op. Some parts
+of CommandPerform actions needed to be run when doing a dry-run, in order for
+addingExistingLink to display its warning, and for showNote to display the
+very information that the user is interested in seeing from --dry-run.
+
+A cleaner implementation would probably involve moving those actions out of
+CommandPerform, perhaps by splitting CommandPerform into two parts.
+Which would be a lot of work and still failure prone. That is why I don't
+think it's a good idea to add --dry-run to very many commands.
+"""]]

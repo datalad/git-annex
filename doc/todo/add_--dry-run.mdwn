@@ -21,4 +21,5 @@ well -- unless there was a version staged already you don't want to loose etc.
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
- 
+
+> [[done]] joey
