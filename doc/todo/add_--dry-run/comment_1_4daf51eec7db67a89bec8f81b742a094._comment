@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-08-03T13:54:44Z"
+ content="""
+That old todo was about adding --dry-run to all git-annex commands.
+That would be infeasible as discussed there. I'm willing to consider adding
+it to specific commands like `git-annex add` or maybe `git-annex drop`.
+
+It's certianly possible to use `git-annex matchexpression` to check if a
+file matches an annex.largefiles or annex.addunlocked expression. But I think
+you're probably not looking for a machine-parseable way to do it.
+(It would not be appropriate for `--dry-run` output to be machine-parseable
+either.)
+
+While `git-annex add` does report when it adds a file to git rather than
+the annex, it does not currently have any output difference at all for
+locked vs unlocked adds. I don't think I would want to change that
+either. If add does not do what the user wants WRT locked/unlocked, they
+can just use `git-annex lock` or `git-annex unlock` to get to the desired
+state.
+
+> > And like git add, you can certianly undo the effects of git annex add.
+> 
+> well -- unless there was a version staged already you don't want to loose etc.
+
+That does not make sense. Why would --dry-run help you avoid such a mistake?
+It's not going to tell you that you have a previous staged version
+that would be overwritten. If you're concerned about that happening, commit
+first.
+"""]]
