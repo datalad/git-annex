@@ -133,6 +133,11 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 		fromMaybe (error $ "failed to create " ++ fromRef name)
 			<$> branchsha
 	go False = withIndex' True $ do
+		-- Create the index file. This is not necessary,
+		-- except to avoid a bug in git that causes
+		-- git write-tree to segfault when the index file does not
+		-- exist.
+		inRepo $ flip Git.UpdateIndex.streamUpdateIndex []
 		cmode <- annexCommitMode <$> Annex.getGitConfig
 		cmessage <- createMessage
 		inRepo $ Git.Branch.commitAlways cmode cmessage fullname []
