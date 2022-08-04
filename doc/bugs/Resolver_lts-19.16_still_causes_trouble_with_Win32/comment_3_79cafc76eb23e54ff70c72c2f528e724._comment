@@ -13,6 +13,6 @@ on linux. But I don't like putting it in there regardless, and needing
 to downgrade the other dependencies for it is also suboptimal.
 
 I'll revert the stack.yaml change again, and it seems we'll need to wait for
-[[todo/windows__58___prepare_for_Win32_not_export_c__95___entities]]
+[[todo/windows:_prepare_for_Win32_not_export_c_entities]]
 to be fixed before updating it.
 """]]
