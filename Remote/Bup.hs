@@ -155,22 +155,19 @@ bupSplitParams r buprepo k src =
 
 store :: Remote -> BupRepo -> Storer
 store r buprepo = byteStorer $ \k b p -> do
-	showOutput -- make way for bup output
-	quiet <- commandProgressDisabled
 	liftIO $ withNullHandle $ \nullh ->
 		let params = bupSplitParams r buprepo k []
 		    cmd = (proc "bup" (toCommand params))
-			{ std_in = CreatePipe }
-		    cmd' = if quiet
-			then cmd 
-				{ std_out = UseHandle nullh
-				, std_err = UseHandle nullh
-				}
-			else cmd
+			{ std_in = CreatePipe
+			, std_out = UseHandle nullh
+			-- bup split is noisy to stderr even with the -q
+			-- option.
+			, std_err = UseHandle nullh
+			}
 		    feeder = \h -> do
 			meteredWrite p (S.hPut h) b
 			hClose h
-		in withCreateProcess cmd' (go feeder cmd')
+		in withCreateProcess cmd (go feeder cmd)
   where
 	go feeder p (Just h) _ _ pid =
 		forceSuccessProcess p pid
