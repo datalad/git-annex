@@ -14,6 +14,7 @@ git-annex (10.20220725) UNRELEASED; urgency=medium
   * Work around bug in git 2.37 that causes a segfault
     when when core.untrackedCache is set, and broke git-annex init.
   * Improve output when storing to bup.
+  * When bup split fails, display its stderr.
 
  -- Joey Hess <id@joeyh.name>  Mon, 25 Jul 2022 15:35:45 -0400
 

@@ -31,6 +31,7 @@ module Utility.Process (
 	stdoutHandle,
 	stderrHandle,
 	processHandle,
+	showCmd,
 	devNull,
 ) where
 

@@ -1,6 +1,6 @@
 {- Using bup as a remote.
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.UTF8 (fromString)
+import Control.Concurrent.Async
 
 import Annex.Common
 import qualified Annex
@@ -160,19 +161,26 @@ store r buprepo = byteStorer $ \k b p -> do
 		    cmd = (proc "bup" (toCommand params))
 			{ std_in = CreatePipe
 			, std_out = UseHandle nullh
-			-- bup split is noisy to stderr even with the -q
-			-- option.
-			, std_err = UseHandle nullh
+			, std_err = CreatePipe
 			}
 		    feeder = \h -> do
 			meteredWrite p (S.hPut h) b
 			hClose h
 		in withCreateProcess cmd (go feeder cmd)
   where
-	go feeder p (Just h) _ _ pid =
-		forceSuccessProcess p pid
-			`after`
-		feeder h
+	go feeder p (Just inh) _ (Just errh) pid = do
+		-- bup split is noisy to stderr even with the -q
+		-- option. But when bup fails, the stderr needs
+		-- to be displayed.
+		(feedresult, erroutput) <- tryNonAsync (feeder inh)
+			`concurrently` hGetContentsStrict errh
+		waitForProcess pid >>= \case
+			ExitSuccess -> case feedresult of
+				Right () -> return ()
+				Left e -> throwM e
+			ExitFailure n -> giveup $ 
+				showCmd p ++ " exited " ++ show n ++
+					" (stderr output: " ++ erroutput ++ ")"
 	go _ _ _ _ _ _ = error "internal"
 
 retrieve :: BupRepo -> Retriever
