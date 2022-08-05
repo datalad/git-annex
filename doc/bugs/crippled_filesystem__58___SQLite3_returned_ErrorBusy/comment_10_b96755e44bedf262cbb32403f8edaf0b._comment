@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2022-08-05T18:42:34Z"
+ content="""
+Another way this could be dealt with is to move the sqlite databases to
+a local filesystem.
+
+Since git-annex only ever uses them for caching information from git, it
+can rebuild them, so even a tempfs would work. And it would also be ok if
+two git-annex processes accessing the same repo used different sqlite
+databases, since they would both build up the same information.
+(Even if they were on different computers using a network filesystem.)
+
+This could be done with a git config. And perhaps get `git-annex init`
+to somehow probe for this problem and set the git config. Although, what
+path would it set it to?
+
+(Note that gitAnnexKeysDbIndexCache would also need to be moved since it
+contains information about the content of a sqlite database.)
+"""]]
