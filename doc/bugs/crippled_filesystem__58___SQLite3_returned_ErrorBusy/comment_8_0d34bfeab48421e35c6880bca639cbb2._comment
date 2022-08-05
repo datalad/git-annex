@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2022-08-05T16:17:09Z"
+ content="""
+We have got user of cifs filesystem mount [reprorting](https://github.com/datalad/datalad/issues/6917#issuecomment-1206358866) that setting pidlock didn't help while using git-annex 10.20220504-g35cafb7 and cifs mount with options 
+
+```
+type cifs (rw,relatime,vers=default,sec=krb5,cache=strict,multiuser,uid=164445,noforceuid,gid=100513,noforcegid,addr=172.19
+```
+
+Please advise to how to troubleshoot such situation.
+
+NB I might later try similarish cifs mount of our local HPC which I believe might expose it similarly.
+"""]]
