@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2022-08-05T18:05:45Z"
+ content="""
+@yoh Mounting the cifs filesystem with nobrl should avoid the problem.
+To make that safe, you *also* need to set annex.pidlock.
+
+Setting annex.pidlock on its own will not help.
+
+I don't think that git-annex can be changed in any way that makes sqlite
+work on this filesystem in its default state. What I discussed in comment
+#7 seems like the only feasible improvement to git-annex and would only
+help the user learn about the mount option.
+"""]]
