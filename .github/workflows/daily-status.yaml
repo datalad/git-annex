@@ -2,7 +2,7 @@ name: Daily Status E-Mail
 
 on:
   schedule:
-    - cron: '0 23 * * *'
+    - cron: '5 23 * * *'
 
 jobs:
   update:
