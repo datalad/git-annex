@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="aurelia@b44312a63326710de6cea9c43290e5debbd55607"
+ nickname="aurelia"
+ avatar="http://cdn.libravatar.org/avatar/818bf579caf9992f9123bd9b58321b2b"
+ subject="comment 16"
+ date="2022-08-07T10:28:09Z"
+ content="""
+turns out that if you get into the habit of writing rsync remotes like rclone remotes, git annex breaks
+
+I had a SSH config entry with the name `annex` and set the rsync URL to `annex:`. The works for moving content in, but fsck and get will fail and undo the content tracking.
+"""]]
