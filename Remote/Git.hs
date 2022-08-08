@@ -407,10 +407,9 @@ inAnnex' repo rmt st@(State connpool duc _ _ _) key
   where
 	checkhttp = do
 		gc <- Annex.getGitConfig
-		ifM (Url.withUrlOptionsPromptingCreds $ \uo -> anyM (\u -> Url.checkBoth u (fromKey keySize key) uo) (keyUrls gc repo rmt key))
-			( return True
-			, giveup "not found"
-			)
+		Url.withUrlOptionsPromptingCreds $ \uo -> 
+			anyM (\u -> Url.checkBoth u (fromKey keySize key) uo)
+				(keyUrls gc repo rmt key)
 	checkremote = P2PHelper.checkpresent (Ssh.runProto rmt connpool (cantCheck rmt)) key
 	checklocal = ifM duc
 		( guardUsable repo (cantCheck repo) $
