@@ -7,8 +7,8 @@ Looks like bup-midx is at fault, and that makes sense; it converts git pack
 files into "midx" files, so is reading and deleting pack files. So it seems
 likely that two of those running at the same time would fail like this.
 
-I'm going to post to bup's mailing list (its github repo does not have
-issues turned on).
+I've posted to bup's mailing list about this:
+<https://groups.google.com/g/bup-list/c/SJg6rQ2XWy8>
 
 git-annex may need to work around this by only running one bup-split at a
 time.
