@@ -5,13 +5,14 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, OverloadedStrings #-}
 
 module Remote.Bup (remote) where
 
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
+import qualified System.FilePath.ByteString as P
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Control.Concurrent.Async
 
@@ -35,6 +36,8 @@ import Utility.Hash
 import Utility.UserInfo
 import Annex.UUID
 import Annex.Ssh
+import Annex.LockFile
+import Annex.Perms
 import Utility.Metered
 import Types.ProposedAccepted
 
@@ -155,7 +158,7 @@ bupSplitParams r buprepo k src =
 		(os ++ [Param "-q", Param "-n", Param (bupRef k)] ++ src)
 
 store :: Remote -> BupRepo -> Storer
-store r buprepo = byteStorer $ \k b p -> do
+store r buprepo = byteStorer $ \k b p -> lockBup r $ do
 	liftIO $ withNullHandle $ \nullh ->
 		let params = bupSplitParams r buprepo k []
 		    cmd = (proc "bup" (toCommand params))
@@ -182,6 +185,17 @@ store r buprepo = byteStorer $ \k b p -> do
 				showCmd p ++ " exited " ++ show n ++
 					" (stderr output: " ++ erroutput ++ ")"
 	go _ _ _ _ _ _ = error "internal"
+
+{- Bup is not concurrency safe, so use a lock file to prevent more than
+ - one process from running. -}
+lockBup :: Remote -> Annex a -> Annex a
+lockBup r a = do
+	dir <- fromRepo gitAnnexRemotesDir
+	unlessM (liftIO $ doesDirectoryExist (fromRawFilePath dir)) $
+		createAnnexDirectory dir
+	let remoteid = fromUUID (uuid r)
+	let lck = dir P.</> remoteid <> ".lck"
+	withExclusiveLock (const lck) a
 
 retrieve :: BupRepo -> Retriever
 retrieve buprepo = byteRetriever $ \k sink -> do

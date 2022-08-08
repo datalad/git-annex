@@ -15,6 +15,8 @@ git-annex (10.20220725) UNRELEASED; urgency=medium
     when when core.untrackedCache is set, and broke git-annex init.
   * Improve output when storing to bup.
   * When bup split fails, display its stderr.
+  * Avoid running multiple bup split processes concurrently, since
+    bup is not concurrency safe.
 
  -- Joey Hess <id@joeyh.name>  Mon, 25 Jul 2022 15:35:45 -0400
 
