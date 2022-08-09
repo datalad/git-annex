@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-08-09T17:19:56Z"
+ content="""
+For future reference, I was able to run the test suite by cloning datalad,
+and settup up the virtualenv like in the README, except then running "pip
+install ." in the datalad directory.
+
+I reproduced the datalad test failure. Then I wrapped git-annex with a
+script that logs the paramters it was run with. It seems the test is 
+running git-annex addurl, not git-annex add at all. So maybe that commit
+broke addurl?
+"""]]
