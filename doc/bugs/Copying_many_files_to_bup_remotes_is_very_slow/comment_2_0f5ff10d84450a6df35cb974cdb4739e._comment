@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 2"
+ date="2022-08-09T06:14:05Z"
+ content="""
+Agreed.
+
+I see two potential ways to improve performance:
+
+* Batching:
+  Bup can split multiple files at once. If it's given 10, 20, 100 files at a time, the per-split overhead matters less. Batching is something git-annex might need to learn sooner or later anyways because file transfer generally doesn't scale well currently (bup's slowness just exacerbates the problem).
+* Bup index+save:
+  Use the same pattern as Borg. Back up the whole git-annex repo at a time and selectively restore in order to `get`. Not sure this would be a great idea but it should improve performance in my use-case (copy everything).
+"""]]
