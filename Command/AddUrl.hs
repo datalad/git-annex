@@ -476,7 +476,8 @@ addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 					(fromRawFilePath file)
 					(fromRawFilePath tmp)
 				go
-			else void $ Command.Add.addSmall (DryRun False) file s
+			else Command.Add.addSmall (DryRun False) file s
+				>>= maybe noop void
   where
 	go = do
 		maybeShowJSON $ JSONChunk [("key", serializeKey key)]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-08-09T17:35:46Z"
+ content="""
+Found the bug.. it is in the change to Command.AddUrl. Since addSmall
+changed to a CommandPerform, `void $ Command.Add.addSmall ...` only
+now runs the first part of it, but not the action that returns that
+actually adds the file to git! The `void` causes that to get thrown
+away. Easily fixed.
+"""]]
