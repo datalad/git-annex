@@ -113,7 +113,7 @@ gen r u rc gc rs = do
 		}
 	return $ Just $ specialRemote' specialcfg c
 		(store this buprepo)
-		(retrieve buprepo)
+		(retrieve this buprepo)
 		(remove buprepo)
 		(checkKey bupr')
 		this
@@ -158,7 +158,7 @@ bupSplitParams r buprepo k src =
 		(os ++ [Param "-q", Param "-n", Param (bupRef k)] ++ src)
 
 store :: Remote -> BupRepo -> Storer
-store r buprepo = byteStorer $ \k b p -> lockBup r $ do
+store r buprepo = byteStorer $ \k b p -> lockBup True r $ do
 	liftIO $ withNullHandle $ \nullh ->
 		let params = bupSplitParams r buprepo k []
 		    cmd = (proc "bup" (toCommand params))
@@ -186,30 +186,19 @@ store r buprepo = byteStorer $ \k b p -> lockBup r $ do
 					" (stderr output: " ++ erroutput ++ ")"
 	go _ _ _ _ _ _ = error "internal"
 
-{- Bup is not concurrency safe, so use a lock file to prevent more than
- - one process from running. -}
-lockBup :: Remote -> Annex a -> Annex a
-lockBup r a = do
-	dir <- fromRepo gitAnnexRemotesDir
-	unlessM (liftIO $ doesDirectoryExist (fromRawFilePath dir)) $
-		createAnnexDirectory dir
-	let remoteid = fromUUID (uuid r)
-	let lck = dir P.</> remoteid <> ".lck"
-	withExclusiveLock (const lck) a
-
-retrieve :: BupRepo -> Retriever
-retrieve buprepo = byteRetriever $ \k sink -> do
+retrieve :: Remote -> BupRepo -> Retriever
+retrieve r buprepo = byteRetriever $ \k sink -> lockBup True r $ do
 	let params = bupParams "join" buprepo [Param $ bupRef k]
 	let p = (proc "bup" (toCommand params))
 		{ std_out = CreatePipe }
 	bracketIO (createProcess p) cleanupProcess (go sink p)
   where
 	go sink p (_, Just h, _, pid) = do
-		r <- sink =<< liftIO (L.hGetContents h)
+		v <- sink =<< liftIO (L.hGetContents h)
 		liftIO $ do
 			hClose h
 			forceSuccessProcess p pid
-		return r
+		return v
 	go _ _ _ = error "internal"
 
 {- Cannot revert having stored a key in bup, but at least the data for the
@@ -336,3 +325,16 @@ bupRef k
 
 bupLocal :: BupRepo -> Bool
 bupLocal = notElem ':'
+
+{- Bup is not concurrency safe, so use a lock file. Only one writer process
+ - should run at a time; multiple readers may run if no writer is running. -}
+lockBup :: Bool -> Remote -> Annex a -> Annex a
+lockBup writer r a = do
+	dir <- fromRepo gitAnnexRemotesDir
+	unlessM (liftIO $ doesDirectoryExist (fromRawFilePath dir)) $
+		createAnnexDirectory dir
+	let remoteid = fromUUID (uuid r)
+	let lck = dir P.</> remoteid <> ".lck"
+	if writer
+		then withExclusiveLock (const lck) a
+		else withSharedLock (const lck) a
