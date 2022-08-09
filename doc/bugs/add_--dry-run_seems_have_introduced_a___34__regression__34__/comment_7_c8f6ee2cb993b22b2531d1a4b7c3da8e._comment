@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2022-08-09T19:12:40Z"
+ content="""
+BTW -- well done on:
+
+> For future reference, I was able to run the test suite by cloning datalad, and settup up the virtualenv like in the README, except then running \"pip install .\" in the datalad directory.
+
+FTR: There is also [CONTRIBUTING.md](https://github.com/datalad/datalad/blob/HEAD/CONTRIBUTING.md#development-environment) with more \"development oriented\" instructions for installation etc.  Might come handy.
+"""]]
