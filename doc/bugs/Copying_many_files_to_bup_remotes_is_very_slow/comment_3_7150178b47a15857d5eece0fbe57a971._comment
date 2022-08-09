@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-08-09T16:28:16Z"
+ content="""
+While `bup split` can run on multiple files at once, it concacenates the
+files together and stores a single object. That is not useful for git-annex.
+
+Using the borg pattern with bup is a good idea.
+"""]]
