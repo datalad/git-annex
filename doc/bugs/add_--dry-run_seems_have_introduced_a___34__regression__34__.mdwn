@@ -1,0 +1,61 @@
+### Please describe the problem.
+
+Our datalad tests started to fail on 04 Aug 2022  build of git-annex.  `git bisect` brought me to the [10.20220724-56-g3a513cfe7](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=3a513cfe73ed873aeeabbc17d2c458b62dd4198c) change which added `--dry-run` to `annex add`.  The "regression" manifests in that we end up with a file not added/committed.  Unfortunately I do not have yet more details or git-annex minimal reproducer.
+
+Meanwhile - the full log from running `DATALAD_LOG_OUTPUTS=1 DATALAD_LOG_LEVEL=DEBUG python -m pytest -s -v datalad/local/tests/test_add_archive_content.py::test_add_archive_content `
+
+[http://www.onerussian.com/tmp/test_add_archive_content-fail.log](http://www.onerussian.com/tmp/test_add_archive_content-fail.log)
+
+and it has
+
+
+```shell
+$> grep '2/1_f.txt\>' /tmp/test_add_archive_content-fail.log                                                                                                                                       
+[DEBUG] Adding /home/yoh/.tmp/datalad_temp_test_add_archive_contentxyf002ii/2/1_f.txt to annex pointing to dl+archive:MD5E-s151--eb922c8b7151d0c53f56e03c10bb0e70.tar.gz#path=1/1+f.txt&size=8 and with options ['-c', 'annex.largefiles=exclude=*.txt'] 
+[DEBUG] File /home/yoh/.tmp/datalad_temp_test_add_archive_contentxyf002ii/2/1_f.txt was added to git, not adding url 
+first = '2/1_f.txt'
+E           AssertionError: assert '2/1_f.txt' in ['.datalad/.gitattributes', '.datalad/config', '.gitattributes', '1/1 f-1.1.txt', '1/1 f-1.2.txt', '1/1 f-1.txt', ...]
+DEBUG    datalad.local.add_archive_content:add_archive_content.py:609 Adding /home/yoh/.tmp/datalad_temp_test_add_archive_contentxyf002ii/2/1_f.txt to annex pointing to dl+archive:MD5E-s151--eb922c8b7151d0c53f56e03c10bb0e70.tar.gz#path=1/1+f.txt&size=8 and with options ['-c', 'annex.largefiles=exclude=*.txt']
+DEBUG    datalad.local.add_archive_content:add_archive_content.py:627 File /home/yoh/.tmp/datalad_temp_test_add_archive_contentxyf002ii/2/1_f.txt was added to git, not adding url
+```
+
+so git-annex seems reported that it was added to `git` but if we stop in (another run) at that point and look at the repo we see that it was not added:
+
+```
+$> DATALAD_TESTS_TEMP_KEEP=1 DATALAD_LOG_OUTPUTS=1 DATALAD_LOG_LEVEL=DEBUG python -m pytest -s -v --pdb datalad/local/tests/test_add_archive_content.py::test_add_archive_content
+...
+DEBUG    datalad.runner.runner:runner.py:171 Run ['git', '-c', 'diff.ignoreSubmodules=none', 'annex', 'addurl', '-c', 'annex.largefiles=exclude=*.txt', '--with-files', '--json', '--json-error-messages', '--batch'] (protocol_class=BatchedCommandProtocol) (cwd=/home/yoh/.tmp/datalad_temp_test_add_archive_content0r8qsr6l)
+DEBUG    datalad.local.add_archive_content:add_archive_content.py:627 File /home/yoh/.tmp/datalad_temp_test_add_archive_content0r8qsr6l/2/1_f.txt was added to git, not adding url
+INFO     datalad.local.add_archive_content:log.py:431 Files to extract 0 
+DEBUG    datalad.local.add_archive_content:add_archive_content.py:506 Skipping 1/d/1d since contains d pattern
+DEBUG    datalad.local.add_archive_content:add_archive_content.py:641 Removing the original archive 1.tar.gz
+...
+
+```
+
+and if we go to that folder -- we see that `2/` was not added to git:
+
+```
+(git-annex)lena:~/.tmp/datalad_temp_test_add_archive_content0r8qsr6l[dl-test-branch]
+$> git status
+On branch dl-test-branch
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	2/
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+$> ls 2/
+1_f.txt
+
+$> ls .git/annex/journal/
+# came out empty, FWIW
+```
+
+Versions: annexremote=1.6.0 boto=2.49.0 cmd:7z=16.02 cmd:annex=10.20220724+git77-ga24ae0814-1~ndall+1 cmd:bundled-git=2.30.2 cmd:git=2.30.2 cmd:ssh=9.0p1 cmd:system-git=2.35.1 cmd:system-ssh=9.0p1 datalad=0.17.2+75.g3bc853bb2 exifread=3.0.0 humanize=4.2.3 iso8601=1.0.2 keyring=23.6.0 keyrings.alt=UNKNOWN msgpack=1.0.4 mutagen=1.45.1 platformdirs=2.5.2 requests=2.28.1 tqdm=4.64.0
+
+I will try to dig deeper some time later, unless you Joey immediately see what could be a culprit or recommend something specific to try
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+
