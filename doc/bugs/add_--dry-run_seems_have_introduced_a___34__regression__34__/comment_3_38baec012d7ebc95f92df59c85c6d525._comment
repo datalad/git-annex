@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-08-09T17:22:52Z"
+ content="""
+In particular, the test runs:
+
+	git-annex addurl -c annex.largefiles=exclude=*.txt --with-files --json --json-error-messages --batch
+
+It never runs git-annex add.
+"""]]
