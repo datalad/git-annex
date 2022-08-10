@@ -12,7 +12,7 @@ git-annex (10.20220725) UNRELEASED; urgency=medium
     the deprecated findref can be.
   * add --dry-run: New option. 
   * Work around bug in git 2.37 that causes a segfault
-    when when core.untrackedCache is set, and broke git-annex init.
+    when core.untrackedCache is set, which broke git-annex init.
   * Improve output when storing to bup.
   * When bup split fails, display its stderr.
   * Avoid running multiple bup split processes concurrently, since
