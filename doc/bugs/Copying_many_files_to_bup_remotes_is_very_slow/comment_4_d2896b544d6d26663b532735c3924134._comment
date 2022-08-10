@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 4"
+ date="2022-08-10T12:35:27Z"
+ content="""
+Indeed it does. I assumed it'd concatenate the files internally for efficiency but is still able to output them separately later but that is not the case. I guess you could store the offsets externally and skip/seek but that'd be inefficient. 
+Perhaps bup could add an option for batching multiple singular-file splits in one invocation to avoid overhead.
+
+Alternatively, git-annex could index+save using excludes. That could be quite complicated (especially tracking which object exists inside which batches) but it could work.
+"""]]
