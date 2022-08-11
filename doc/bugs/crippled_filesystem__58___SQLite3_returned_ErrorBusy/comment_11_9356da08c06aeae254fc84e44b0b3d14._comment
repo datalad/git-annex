@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2022-08-11T21:15:29Z"
+ content="""
+I have mostly implemented an annex.dbdir to relocate the sqlite databases.
+It's in the `dbdir` branch until I get it fully working.
+"""]]
