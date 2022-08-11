@@ -1,0 +1,7 @@
+Hi, is there a quick way to implement a 'wget --mirror' like behaviour with git-annex?
+
+I.e., I'd like to clone an entire website and adding it with original urls to my annex.
+
+I've tried 'git-annex addurl http://website.tld' only, but of course it downloads a single page, it does not descend recursively.
+
+Thanks
