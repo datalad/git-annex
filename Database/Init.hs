@@ -10,6 +10,7 @@
 module Database.Init where
 
 import Annex.Common
+import qualified Annex
 import Annex.Perms
 import Utility.FileMode
 import Utility.Directory.Create
@@ -34,7 +35,10 @@ initDb db migration = do
 	let tmpdbdir = dbdir <> ".tmp"
 	let tmpdb = tmpdbdir P.</> "db"
 	let tdb = T.pack (fromRawFilePath tmpdb)
-	top <- parentDir <$> fromRepo gitAnnexDir
+	gc <- Annex.getGitConfig
+	top <- case annexDbDir gc of
+		Just topdbdir -> pure $ parentDir $ topdbdir
+		Nothing -> parentDir <$> fromRepo gitAnnexDir
 	liftIO $ do
 		createDirectoryUnder top tmpdbdir
 		runSqliteInfo (enableWAL tdb) migration

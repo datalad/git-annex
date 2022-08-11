@@ -1,6 +1,6 @@
 {- git-annex log files
  -
- - Copyright 2018-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2018-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,7 +20,6 @@ import Annex.Common
 import Annex.Perms
 import Annex.LockFile
 import Annex.ReplaceFile
-import qualified Git
 import Utility.Tmp
 
 import qualified Data.ByteString.Lazy as L
@@ -51,7 +50,7 @@ withLogHandle f a = do
 
 -- | Appends a line to a log file, first locking it to prevent
 -- concurrent writers.
-appendLogFile :: RawFilePath -> (Git.Repo -> RawFilePath) -> L.ByteString -> Annex ()
+appendLogFile :: RawFilePath -> RawFilePath -> L.ByteString -> Annex ()
 appendLogFile f lck c = 
 	createDirWhenNeeded f $
 		withExclusiveLock lck $ do
@@ -69,7 +68,7 @@ appendLogFile f lck c =
 --
 -- The file is locked to prevent concurrent writers, and it is written
 -- atomically.
-modifyLogFile :: RawFilePath -> (Git.Repo -> RawFilePath) -> ([L.ByteString] -> [L.ByteString]) -> Annex ()
+modifyLogFile :: RawFilePath -> RawFilePath -> ([L.ByteString] -> [L.ByteString]) -> Annex ()
 modifyLogFile f lck modf = withExclusiveLock lck $ do
 	ls <- liftIO $ fromMaybe []
 		<$> tryWhenExists (L8.lines <$> L.readFile f')
@@ -89,7 +88,7 @@ modifyLogFile f lck modf = withExclusiveLock lck $ do
 -- action is concurrently modifying the file. It does not lock the file,
 -- for speed, but instead relies on the fact that a log file usually
 -- ends in a newline.
-checkLogFile :: FilePath -> (Git.Repo -> RawFilePath) -> (L.ByteString -> Bool) -> Annex Bool
+checkLogFile :: FilePath -> RawFilePath -> (L.ByteString -> Bool) -> Annex Bool
 checkLogFile f lck matchf = withExclusiveLock lck $ bracket setup cleanup go
   where
 	setup = liftIO $ tryWhenExists $ openFile f ReadMode
@@ -123,7 +122,7 @@ fullLines = go []
 -- 
 -- Locking is used to prevent writes to to the log file while this
 -- is running.
-streamLogFile :: FilePath -> (Git.Repo -> RawFilePath) -> (String -> Annex ()) -> Annex ()
+streamLogFile :: FilePath -> RawFilePath -> (String -> Annex ()) -> Annex ()
 streamLogFile f lck a = withExclusiveLock lck $ bracketOnError setup cleanup go
   where
 	setup = liftIO $ tryWhenExists $ openFile f ReadMode 

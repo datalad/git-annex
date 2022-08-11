@@ -19,7 +19,8 @@ import qualified Data.ByteString.Lazy as L
 smudgeLog :: Key -> TopFilePath -> Annex ()
 smudgeLog k f = do
 	logf <- fromRepo gitAnnexSmudgeLog
-	appendLogFile logf gitAnnexSmudgeLock $ L.fromStrict $
+	lckf <- fromRepo gitAnnexSmudgeLock
+	appendLogFile logf lckf $ L.fromStrict $
 		serializeKey' k <> " " <> getTopFilePath f
 
 -- | Streams all smudged files, and then empties the log at the end.
@@ -32,7 +33,8 @@ smudgeLog k f = do
 streamSmudged :: (Key -> TopFilePath -> Annex ()) -> Annex ()
 streamSmudged a = do
 	logf <- fromRepo gitAnnexSmudgeLog
-	streamLogFile (fromRawFilePath logf) gitAnnexSmudgeLock $ \l -> 
+	lckf <- fromRepo gitAnnexSmudgeLock
+	streamLogFile (fromRawFilePath logf) lckf $ \l -> 
 		case parse l of
 			Nothing -> noop
 			Just (k, f) -> a k f

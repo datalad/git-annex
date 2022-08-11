@@ -27,7 +27,7 @@ withOtherTmp a = do
 	Annex.addCleanupAction OtherTmpCleanup cleanupOtherTmp
 	tmpdir <- fromRepo gitAnnexTmpOtherDir
 	tmplck <- fromRepo gitAnnexTmpOtherLock
-	withSharedLock (const tmplck) $ do
+	withSharedLock tmplck $ do
 		void $ createAnnexDirectory tmpdir
 		a tmpdir
 
@@ -56,7 +56,7 @@ withEventuallyCleanedOtherTmp = bracket setup cleanup
 cleanupOtherTmp :: Annex ()
 cleanupOtherTmp = do
 	tmplck <- fromRepo gitAnnexTmpOtherLock
-	void $ tryIO $ tryExclusiveLock (const tmplck) $ do
+	void $ tryIO $ tryExclusiveLock tmplck $ do
 		tmpdir <- fromRawFilePath <$> fromRepo gitAnnexTmpOtherDir
 		void $ liftIO $ tryIO $ removeDirectoryRecursive tmpdir
 		oldtmp <- fromRawFilePath <$> fromRepo gitAnnexTmpOtherDirOld

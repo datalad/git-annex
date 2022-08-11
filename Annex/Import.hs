@@ -412,8 +412,10 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		| importcontent = a
 		| otherwise = reuseVectorClockWhile a
 
-	withciddb = withExclusiveLock gitAnnexContentIdentifierLock .
-		bracket CIDDb.openDb CIDDb.closeDb
+	withciddb a = do
+		cidlck <- calcRepo' gitAnnexContentIdentifierLock
+		withExclusiveLock cidlck $
+			bracket CIDDb.openDb CIDDb.closeDb a
 
 	run cidmap importing db = do
 		largematcher <- largeFilesMatcher

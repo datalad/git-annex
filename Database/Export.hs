@@ -99,7 +99,7 @@ ExportTreeCurrent
  -}
 openDb :: UUID -> Annex ExportHandle
 openDb u = do
-	dbdir <- fromRepo (gitAnnexExportDbDir u)
+	dbdir <- calcRepo' (gitAnnexExportDbDir u)
 	let db = dbdir P.</> "db"
 	unlessM (liftIO $ R.doesPathExist db) $ do
 		initDb db $ void $
@@ -263,8 +263,9 @@ updateExportDb = runExportDiffUpdater $ mkExportDiffUpdater removeold addnew
  -}
 writeLockDbWhile :: ExportHandle -> Annex a -> Annex a
 writeLockDbWhile db@(ExportHandle _ u) a = do
-	updatelck <- takeExclusiveLock (gitAnnexExportUpdateLock u)
-	withExclusiveLock (gitAnnexExportLock u) $ do
+	updatelck <- takeExclusiveLock =<< calcRepo' (gitAnnexExportUpdateLock u)
+	exlck <- calcRepo' (gitAnnexExportLock u)
+	withExclusiveLock exlck $ do
 		bracket_ (setup updatelck) cleanup a
   where
 	setup updatelck = do
@@ -285,15 +286,17 @@ data ExportUpdateResult = ExportUpdateSuccess | ExportUpdateConflict
  - not. Either way, it will block until the update is complete.
  -}
 updateExportTreeFromLog :: ExportHandle -> Annex ExportUpdateResult
-updateExportTreeFromLog db@(ExportHandle _ u) =
+updateExportTreeFromLog db@(ExportHandle _ u) = do
 	-- If another process or thread is performing the update,
 	-- this will block until it's done.
-	withExclusiveLock (gitAnnexExportUpdateLock u) $ do
+	exlck <- calcRepo' (gitAnnexExportUpdateLock u)
+	withExclusiveLock exlck $ do
+		lck <- calcRepo' (gitAnnexExportLock u)
 		-- If the database is locked by something else,
 		-- this will not run the update. But, in that case,
 		-- writeLockDbWhile is running, and has already
 		-- completed the update, so we don't need to do anything.
-		mr <- tryExclusiveLock (gitAnnexExportLock u) $
+		mr <- tryExclusiveLock lck $
 			updateExportTreeFromLog' db
 		case mr of
 			Just r -> return r

@@ -118,15 +118,17 @@ runWriterIO a = runWriter (liftIO . a)
 openDb :: Bool -> DbState -> Annex DbState
 openDb _ st@(DbOpen _) = return st
 openDb False DbUnavailable = return DbUnavailable
-openDb forwrite _ = catchPermissionDenied permerr $ withExclusiveLock gitAnnexKeysDbLock $ do
-	dbdir <- fromRepo gitAnnexKeysDb
-	let db = dbdir P.</> "db"
-	dbexists <- liftIO $ R.doesPathExist db
-	case dbexists of
-		True -> open db
-		False -> do
-			initDb db SQL.createTables
-			open db
+openDb forwrite _ = do
+	lck <- calcRepo' gitAnnexKeysDbLock
+	catchPermissionDenied permerr $ withExclusiveLock lck $ do
+		dbdir <- calcRepo' gitAnnexKeysDbDir
+		let db = dbdir P.</> "db"
+		dbexists <- liftIO $ R.doesPathExist db
+		case dbexists of
+			True -> open db
+			False -> do
+				initDb db SQL.createTables
+				open db
   where
 	-- If permissions don't allow opening the database, and it's being
 	-- opened for read, treat it as if it does not exist.
@@ -248,7 +250,7 @@ isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
 reconcileStaged :: H.DbQueue -> Annex ()
 reconcileStaged qh = unlessM (Git.Config.isBare <$> gitRepo) $ do
 	gitindex <- inRepo currentIndexFile
-	indexcache <- fromRawFilePath <$> fromRepo gitAnnexKeysDbIndexCache
+	indexcache <- fromRawFilePath <$> calcRepo' gitAnnexKeysDbIndexCache
 	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
 		Just cur -> readindexcache indexcache >>= \case
 			Nothing -> go cur indexcache =<< getindextree

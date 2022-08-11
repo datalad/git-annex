@@ -245,7 +245,8 @@ adjustExportImport' isexport isimport r rs = do
 			oldcids <- liftIO $ concat
 				<$> mapM (ContentIdentifier.getContentIdentifiers db rs) oldks
 			newcid <- storeExportWithContentIdentifier (importActions r) f k loc oldcids p
-			withExclusiveLock gitAnnexContentIdentifierLock $ do
+			cidlck <- calcRepo' gitAnnexContentIdentifierLock
+			withExclusiveLock cidlck $ do
 				liftIO $ ContentIdentifier.recordContentIdentifier db rs newcid k
 				liftIO $ ContentIdentifier.flushDbQueue db
 			recordContentIdentifier rs newcid k
@@ -280,8 +281,10 @@ adjustExportImport' isexport isimport r rs = do
 				( do
 					db <- ContentIdentifier.openDb
 					ContentIdentifier.needsUpdateFromLog db >>= \case
-						Just v -> withExclusiveLock gitAnnexContentIdentifierLock $
-							ContentIdentifier.updateFromLog db v
+						Just v -> do
+							cidlck <- calcRepo' gitAnnexContentIdentifierLock 
+							withExclusiveLock cidlck $
+								ContentIdentifier.updateFromLog db v
 						Nothing -> noop
 					liftIO $ atomically $ putTMVar dbtv db
 					return db
