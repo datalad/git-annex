@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-08-11T17:54:16Z"
+ content="""
+There is not, but if you can find a way to get wget or something to
+generate a list of urls and the files it downloaded them to, you can
+feed that into `git-annex addurl --batch` to teach git-annex what the urls
+are.
+
+There is a subsystem in git-annex that could in theory be used for this,
+[[git-annex-import]] can import trees of files from a special remote.
+
+But the complexity of mirroring a website makes me think I would not want
+to try to support it in the web special remote. I mean, just look at how
+many options wget has that you might use to control how the mirroring
+works.
+
+Other special remotes can support importing from specific types of websites
+though. Currently this is limited to built-in special remotes, such as S3,
+but it would be possible to expand it to support external special remotes
+as well. See [[todo/importtree_only_remotes]] for discussion about doing
+that.
+"""]]
