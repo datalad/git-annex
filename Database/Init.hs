@@ -38,7 +38,7 @@ initDb db migration = do
 	gc <- Annex.getGitConfig
 	top <- parentDir <$> fromRepo gitAnnexDir
 	let tops = case annexDbDir gc of
-		Just topdbdir -> [top, parentDir topdbdir]
+		Just topdbdir -> [top, parentDir (parentDir topdbdir)]
 		Nothing -> [top]
 	liftIO $ do
 		createDirectoryUnder tops tmpdbdir

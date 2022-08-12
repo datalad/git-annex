@@ -114,7 +114,7 @@ createAnnexDirectory dir = do
 	top <- parentDir <$> fromRepo gitAnnexDir
 	tops <- annexDbDir <$> Annex.getGitConfig >>= return . \case
 		Nothing -> [top]
-		Just dbdir -> [top, parentDir dbdir]
+		Just dbdir -> [top, parentDir (parentDir dbdir)]
 	createDirectoryUnder' tops dir createdir
   where
 	createdir p = do

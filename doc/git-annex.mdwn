@@ -1237,6 +1237,10 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   that sqlite needs, and setting this to a directory on another filesystem
   can work around such a problem.
 
+  This can safely be set to the same directory in the configuration of
+  multiple repositories; each repository will use a subdirectory for its
+  sqlite database.
+
 * `annex.cachecreds`
 
   When "true" (the default), git-annex will cache credentials used to
