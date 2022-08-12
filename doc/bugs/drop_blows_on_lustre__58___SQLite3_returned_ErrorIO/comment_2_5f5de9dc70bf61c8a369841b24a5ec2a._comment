@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-08-12T17:27:25Z"
+ content="""
+It's now possible to set annex.dbdir to a directory on some other
+filesystem than one containing the repository, where sqlite works better.
+
+Unsure yet if it would be safe to set annex.dbdir to a local directory,
+and have the git-annex repository on a networked filesystem that is
+accessed from multiple clients. Each client will have its own set of sqlite
+databases, and will maintain them as best it can.
+"""]]

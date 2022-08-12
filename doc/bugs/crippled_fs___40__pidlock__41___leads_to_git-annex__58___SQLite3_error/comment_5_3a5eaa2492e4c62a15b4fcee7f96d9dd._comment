@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-08-12T17:24:16Z"
+ content="""
+It's now possible to set annex.dbdir to a directory on some other
+filesystem than one containing the repository, where sqlite works better.
+"""]]

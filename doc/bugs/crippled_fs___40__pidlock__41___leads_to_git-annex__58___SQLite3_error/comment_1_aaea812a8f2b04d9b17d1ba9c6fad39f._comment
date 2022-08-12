@@ -7,7 +7,7 @@ This is sqlite failing to do its own internal locking which I'll bet is
 some elaborate and fine-grained locking indeed.
 
 Essentially the same problem as
-[[drop_blows_on_lustre__58___SQLite3_returned_ErrorIO]]
+<https://git-annex.branchable.com/bugs/drop_blows_on_lustre__58___SQLite3_returned_ErrorIO/>
 (And also the main problem using git-annex on Windows in WSL.)
 
 Not a great deal I can do about this, because the locking is in sqlite.
