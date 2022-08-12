@@ -40,7 +40,7 @@ initDb db migration = do
 		Just topdbdir -> pure $ parentDir $ topdbdir
 		Nothing -> parentDir <$> fromRepo gitAnnexDir
 	liftIO $ do
-		createDirectoryUnder top tmpdbdir
+		createDirectoryUnder [top] tmpdbdir
 		runSqliteInfo (enableWAL tdb) migration
 	setAnnexDirPerm tmpdbdir
 	-- Work around sqlite bug that prevents it from honoring

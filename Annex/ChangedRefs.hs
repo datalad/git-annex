@@ -83,7 +83,7 @@ watchChangedRefs = do
 	g <- gitRepo
 	let gittop = Git.localGitDir g
 	let refdir = gittop P.</> "refs"
-	liftIO $ createDirectoryUnder gittop refdir
+	liftIO $ createDirectoryUnder [gittop] refdir
 
 	let notifyhook = Just $ notifyHook chan
 	let hooks = mkWatchHooks

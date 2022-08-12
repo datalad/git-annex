@@ -112,7 +112,7 @@ annexFileMode = withShared $ return . go
 createAnnexDirectory :: RawFilePath -> Annex ()
 createAnnexDirectory dir = do
 	top <- parentDir <$> fromRepo gitAnnexDir
-	createDirectoryUnder' top dir createdir
+	createDirectoryUnder' [top] dir createdir
   where
 	createdir p = do
 		liftIO $ R.createDirectory p
@@ -126,7 +126,7 @@ createAnnexDirectory dir = do
 createWorkTreeDirectory :: RawFilePath -> Annex ()
 createWorkTreeDirectory dir = do
 	fromRepo repoWorkTree >>= liftIO . \case
-		Just wt -> createDirectoryUnder wt dir
+		Just wt -> createDirectoryUnder [wt] dir
 		-- Should never happen, but let whatever tries to write
 		-- to the directory be what throws an exception, as that
 		-- will be clearer than an exception from here.

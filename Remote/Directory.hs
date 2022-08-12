@@ -182,7 +182,7 @@ storeKeyM :: RawFilePath -> ChunkConfig -> CopyCoWTried -> Storer
 storeKeyM d chunkconfig cow k c m = 
 	ifM (checkDiskSpaceDirectory d k)
 		( do
-			void $ liftIO $ tryIO $ createDirectoryUnder d tmpdir
+			void $ liftIO $ tryIO $ createDirectoryUnder [d] tmpdir
 			store
 		, giveup "Not enough free disk space."
 		)
@@ -229,7 +229,7 @@ checkDiskSpaceDirectory d k = do
 finalizeStoreGeneric :: RawFilePath -> RawFilePath -> RawFilePath -> IO ()
 finalizeStoreGeneric d tmp dest = do
 	removeDirGeneric (fromRawFilePath d) dest'
-	createDirectoryUnder d (parentDir dest)
+	createDirectoryUnder [d] (parentDir dest)
 	renameDirectory (fromRawFilePath tmp) dest'
 	-- may fail on some filesystems
 	void $ tryIO $ do
@@ -309,7 +309,7 @@ checkPresentGeneric' d check = ifM check
 
 storeExportM :: RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex ()
 storeExportM d cow src _k loc p = do
-	liftIO $ createDirectoryUnder d (P.takeDirectory dest)
+	liftIO $ createDirectoryUnder [d] (P.takeDirectory dest)
 	-- Write via temp file so that checkPresentGeneric will not
 	-- see it until it's fully stored.
 	viaTmp go (fromRawFilePath dest) ()
@@ -337,7 +337,7 @@ checkPresentExportM d _k loc =
 
 renameExportM :: RawFilePath -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
 renameExportM d _k oldloc newloc = liftIO $ do
-	createDirectoryUnder d (P.takeDirectory dest)
+	createDirectoryUnder [d] (P.takeDirectory dest)
 	renameFile (fromRawFilePath src) (fromRawFilePath dest)
 	removeExportLocation d oldloc
 	return (Just ())
@@ -502,7 +502,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cid dest gk p =
 
 storeExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
-	liftIO $ createDirectoryUnder dir (toRawFilePath destdir)
+	liftIO $ createDirectoryUnder [dir] (toRawFilePath destdir)
 	withTmpFileIn destdir template $ \tmpf tmph -> do
 		liftIO $ hClose tmph
 		void $ liftIO $ fileCopier cow src tmpf p Nothing

@@ -87,7 +87,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 					whenM (doesFileExist src) $ do
 						dest <- relPathDirToFile git_dir src'
 						let dest' = toRawFilePath tmpgit P.</> dest
-						createDirectoryUnder git_dir
+						createDirectoryUnder [git_dir]
 							(P.takeDirectory dest')
 						void $ createLinkOrCopy src' dest'
 				-- This reset makes git merge not care
@@ -115,7 +115,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 		setup = do
 			whenM (doesDirectoryExist d) $
 				removeDirectoryRecursive d
-			createDirectoryUnder git_dir (toRawFilePath d)
+			createDirectoryUnder [git_dir] (toRawFilePath d)
 		cleanup _ = removeDirectoryRecursive d
 
 	{- A merge commit has been made between the basisbranch and 

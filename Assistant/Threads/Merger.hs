@@ -34,7 +34,7 @@ mergeThread = namedThread "Merger" $ do
 	g <- liftAnnex gitRepo
 	let gitd = Git.localGitDir g
 	let dir = gitd P.</> "refs"
-	liftIO $ createDirectoryUnder gitd dir
+	liftIO $ createDirectoryUnder [gitd] dir
 	let hook a = Just <$> asIO2 (runHandler a)
 	changehook <- hook onChange
 	errhook <- hook onErr
