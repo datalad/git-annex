@@ -106,13 +106,16 @@ annexFileMode = withShared $ return . go
 	go _ = stdFileMode
 	sharedmode = combineModes groupSharedModes
 
-{- Creates a directory inside the gitAnnexDir, creating any parent
- - directories up to and including the gitAnnexDir.
+{- Creates a directory inside the gitAnnexDir (or possibly the dbdir), 
+ - creating any parent directories up to and including the gitAnnexDir.
  - Makes directories with appropriate permissions. -}
 createAnnexDirectory :: RawFilePath -> Annex ()
 createAnnexDirectory dir = do
 	top <- parentDir <$> fromRepo gitAnnexDir
-	createDirectoryUnder' [top] dir createdir
+	tops <- annexDbDir <$> Annex.getGitConfig >>= return . \case
+		Nothing -> [top]
+		Just dbdir -> [top, parentDir dbdir]
+	createDirectoryUnder' tops dir createdir
   where
 	createdir p = do
 		liftIO $ R.createDirectory p

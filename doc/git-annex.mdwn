@@ -1230,7 +1230,7 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
 * `annex.dbdir`
 
-  Set to a directory where git-annex should store its sqlite databases.
+  The directory where git-annex should store its sqlite databases.
   The default location is inside `.git/annex/`. 
 
   Certian filesystems, such as cifs, may not support locking operations

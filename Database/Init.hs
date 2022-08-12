@@ -36,11 +36,12 @@ initDb db migration = do
 	let tmpdb = tmpdbdir P.</> "db"
 	let tdb = T.pack (fromRawFilePath tmpdb)
 	gc <- Annex.getGitConfig
-	top <- case annexDbDir gc of
-		Just topdbdir -> pure $ parentDir $ topdbdir
-		Nothing -> parentDir <$> fromRepo gitAnnexDir
+	top <- parentDir <$> fromRepo gitAnnexDir
+	let tops = case annexDbDir gc of
+		Just topdbdir -> [top, parentDir topdbdir]
+		Nothing -> [top]
 	liftIO $ do
-		createDirectoryUnder [top] tmpdbdir
+		createDirectoryUnder tops tmpdbdir
 		runSqliteInfo (enableWAL tdb) migration
 	setAnnexDirPerm tmpdbdir
 	-- Work around sqlite bug that prevents it from honoring
