@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2022-08-12T17:07:51Z"
+ content="""
+annex.dbdir is now implemented.
+
+This issue remains open because `git-annex init` ought to probe to
+determine when sqlite cannot be used on the repository's filesystem.
+I don't think it could itself set annex.dbdir to work around the
+problem, because what would it set it to? But it could explain the problem
+to the user and suggest that they set it.
+"""]]
