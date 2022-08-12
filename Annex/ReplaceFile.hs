@@ -33,7 +33,7 @@ replaceGitAnnexDirFile = replaceFile createAnnexDirectory
 replaceGitDirFile :: FilePath -> (FilePath -> Annex a) -> Annex a
 replaceGitDirFile = replaceFile $ \dir -> do
 	top <- fromRepo localGitDir
-	liftIO $ createDirectoryUnder top dir
+	liftIO $ createDirectoryUnder [top] dir
 
 {- replaceFile on a worktree file. -}
 replaceWorkTreeFile :: FilePath -> (FilePath -> Annex a) -> Annex a

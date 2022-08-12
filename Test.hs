@@ -817,7 +817,7 @@ test_lock_force = intmpclonerepo $ do
 		Database.Keys.removeInodeCaches k
 		Database.Keys.closeDb
 		liftIO . removeWhenExistsWith R.removeLink
-			=<< Annex.fromRepo Annex.Locations.gitAnnexKeysDbIndexCache
+			=<< Annex.calcRepo' Annex.Locations.gitAnnexKeysDbIndexCache
 	writecontent annexedfile "test_lock_force content"
 	git_annex_shouldfail "lock" [annexedfile] "lock of modified file should not be allowed"
 	git_annex "lock" ["--force", annexedfile] "lock --force of modified file"

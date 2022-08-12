@@ -336,5 +336,5 @@ lockBup writer r a = do
 	let remoteid = fromUUID (uuid r)
 	let lck = dir P.</> remoteid <> ".lck"
 	if writer
-		then withExclusiveLock (const lck) a
-		else withSharedLock (const lck) a
+		then withExclusiveLock lck a
+		else withSharedLock lck a

@@ -281,4 +281,6 @@ data JournalLocked = ProduceJournalLocked
 {- Runs an action that modifies the journal, using locking to avoid
  - contention with other git-annex processes. -}
 lockJournal :: (JournalLocked -> Annex a) -> Annex a
-lockJournal a = withExclusiveLock gitAnnexJournalLock $ a ProduceJournalLocked
+lockJournal a = do
+	lck <- fromRepo gitAnnexJournalLock
+	withExclusiveLock lck $ a ProduceJournalLocked

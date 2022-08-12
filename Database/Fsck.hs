@@ -60,29 +60,31 @@ Fscked
  - or unknown behavior.
  -}
 newPass :: UUID -> Annex Bool
-newPass u = isJust <$> tryExclusiveLock (gitAnnexFsckDbLock u) go
+newPass u = do
+	lck <- calcRepo' (gitAnnexFsckDbLock u)
+	isJust <$> tryExclusiveLock lck go
   where
 	go = do
-		removedb =<< fromRepo (gitAnnexFsckDbDir u)
-		removedb =<< fromRepo (gitAnnexFsckDbDirOld u)
+		removedb =<< calcRepo' (gitAnnexFsckDbDir u)
+		removedb =<< calcRepo' (gitAnnexFsckDbDirOld u)
 	removedb = liftIO . void . tryIO . removeDirectoryRecursive . fromRawFilePath
 
 {- Opens the database, creating it if it doesn't exist yet. -}
 openDb :: UUID -> Annex FsckHandle
 openDb u = do
-	dbdir <- fromRepo (gitAnnexFsckDbDir u)
+	dbdir <- calcRepo' (gitAnnexFsckDbDir u)
 	let db = dbdir P.</> "db"
 	unlessM (liftIO $ R.doesPathExist db) $ do
 		initDb db $ void $
 			runMigrationSilent migrateFsck
-	lockFileCached =<< fromRepo (gitAnnexFsckDbLock u)
+	lockFileCached =<< calcRepo' (gitAnnexFsckDbLock u)
 	h <- liftIO $ H.openDbQueue db "fscked"
 	return $ FsckHandle h u
 
 closeDb :: FsckHandle -> Annex ()
 closeDb (FsckHandle h u) = do
 	liftIO $ H.closeDbQueue h
-	unlockFile =<< fromRepo (gitAnnexFsckDbLock u)
+	unlockFile =<< calcRepo' (gitAnnexFsckDbLock u)
 
 addDb :: FsckHandle -> Key -> IO ()
 addDb (FsckHandle h _) k = H.queueDb h checkcommit $

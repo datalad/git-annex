@@ -24,8 +24,9 @@ import Data.Time.Clock.POSIX
 
 writeUpgradeLog :: RepoVersion -> POSIXTime-> Annex ()
 writeUpgradeLog v t = do
-	logfile <- fromRepo gitAnnexUpgradeLog
-	appendLogFile logfile gitAnnexUpgradeLock $ encodeBL $
+	logf <- fromRepo gitAnnexUpgradeLog
+	lckf <- fromRepo gitAnnexUpgradeLock
+	appendLogFile logf lckf $ encodeBL $
 		show (fromRepoVersion v) ++ " " ++ show t
 
 readUpgradeLog :: Annex [(RepoVersion, POSIXTime)]

@@ -79,7 +79,7 @@ storeLegacyChunked' meterupdate chunksize (d:dests) bs c = do
 storeHelper :: FilePath -> (RawFilePath -> RawFilePath -> IO ()) -> Key -> ([FilePath] -> IO [FilePath]) -> FilePath -> FilePath -> IO ()
 storeHelper repotop finalizer key storer tmpdir destdir = do
 	void $ liftIO $ tryIO $ createDirectoryUnder
-		(toRawFilePath repotop)
+		[toRawFilePath repotop]
 		(toRawFilePath tmpdir)
 	Legacy.storeChunks key tmpdir destdir storer recorder (legacyFinalizer finalizer)
   where

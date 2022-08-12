@@ -27,6 +27,7 @@ module Annex (
 	inRepo,
 	fromRepo,
 	calcRepo,
+	calcRepo',
 	getGitConfig,
 	overrideGitConfig,
 	changeGitRepo,
@@ -360,6 +361,11 @@ calcRepo :: (Git.Repo -> GitConfig -> IO a) -> Annex a
 calcRepo a = do
 	s <- getState id
 	liftIO $ a (repo s) (gitconfig s)
+
+calcRepo' :: (Git.Repo -> GitConfig -> a) -> Annex a
+calcRepo' f = do
+	s <- getState id
+	pure $ f (repo s) (gitconfig s)
 
 {- Gets the GitConfig settings. -}
 getGitConfig :: Annex GitConfig

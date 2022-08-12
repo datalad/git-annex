@@ -71,7 +71,8 @@ performUpgrade automatic = do
 	
 	{- Take a lock to ensure that there are no other git-annex
 	 - processes running that are using the old content locking method. -}
-	withExclusiveLock gitAnnexContentLockLock $ do
+	lck <- fromRepo gitAnnexContentLockLock
+	withExclusiveLock lck $ do
 		{- When core.sharedRepository is set, object files
 		 - used to have their write bits set. That can now be
 		 - removed, if the user the upgrade is running as has

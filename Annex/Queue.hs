@@ -65,9 +65,11 @@ flush = do
  - git locking files. So, only one queue is allowed to flush at a time.
  -}
 flush' :: Git.Queue.Queue Annex -> Annex (Git.Queue.Queue Annex)
-flush' q = withExclusiveLock gitAnnexGitQueueLock $ do
-	showStoringStateAction
-	Git.Queue.flush q =<< gitRepo
+flush' q = do
+	lck <- fromRepo gitAnnexGitQueueLock
+	withExclusiveLock lck $ do
+		showStoringStateAction
+		Git.Queue.flush q =<< gitRepo
 
 {- Gets the size of the queue. -}
 size :: Annex Int

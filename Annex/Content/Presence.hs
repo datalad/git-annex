@@ -137,7 +137,7 @@ withContentLockFile :: Key -> (Maybe RawFilePath -> Annex a) -> Annex a
 withContentLockFile k a = do
 	v <- getVersion
 	if versionNeedsWritableContentFiles v
-		then withSharedLock gitAnnexContentLockLock $ do
+		then fromRepo gitAnnexContentLockLock >>= \lck -> withSharedLock lck $ do
 			{- While the lock is held, check to see if the git
 			 - config has changed, and reload it if so. This
 			 - updates the annex.version after the v10 upgrade,
@@ -156,7 +156,7 @@ withContentLockFile k a = do
 					reloadConfig
 					getVersion
 			go (v')
-		else (go v)
+		else go v
   where
 	go v = contentLockFile k v >>= a
 

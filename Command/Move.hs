@@ -375,12 +375,14 @@ logMove srcuuid destuuid deststartedwithcopy key a = go =<< setup
 
 	setup = do
 		logf <- fromRepo gitAnnexMoveLog
+		lckf <- fromRepo gitAnnexMoveLock
 		-- Only log when there was no copy.
 		unless deststartedwithcopy $
-			appendLogFile logf gitAnnexMoveLock logline
+			appendLogFile logf lckf logline
 		return logf
 
 	cleanup logf = do
+		lck <- fromRepo gitAnnexMoveLock
 		-- This buffers the log file content in memory.
 		-- The log file length is limited to the number of
 		-- concurrent jobs, times the number of times a move
@@ -388,13 +390,14 @@ logMove srcuuid destuuid deststartedwithcopy key a = go =<< setup
 		-- That could grow without bounds given enough time,
 		-- so the log is also truncated to the most recent
 		-- 100 items.
-		modifyLogFile logf gitAnnexMoveLock
+		modifyLogFile logf lck
 			(filter (/= logline) . reverse . take 100 . reverse)
 
 	go logf
 		-- Only need to check log when there is a copy.
 		| deststartedwithcopy = do
-			wasnocopy <- checkLogFile (fromRawFilePath logf) gitAnnexMoveLock
+			lck <- fromRepo gitAnnexMoveLock
+			wasnocopy <- checkLogFile (fromRawFilePath logf) lck
 				(== logline)
 			if wasnocopy
 				then go' logf False

@@ -1228,6 +1228,15 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   file system. This timeout prevents git-annex waiting forever in such a
   situation.
 
+* `annex.dbdir`
+
+  The directory where git-annex should store its sqlite databases.
+  The default location is inside `.git/annex/`. 
+
+  Certian filesystems, such as cifs, may not support locking operations
+  that sqlite needs, and setting this to a directory on another filesystem
+  can work around such a problem.
+
 * `annex.cachecreds`
 
   When "true" (the default), git-annex will cache credentials used to

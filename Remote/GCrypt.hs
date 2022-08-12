@@ -388,7 +388,7 @@ store' repo r rsyncopts accessmethod
 	| not $ Git.repoIsUrl repo = 
 		byteStorer $ \k b p -> guardUsable repo (giveup "cannot access remote") $ liftIO $ do
 			let tmpdir = Git.repoPath repo P.</> "tmp" P.</> keyFile k
-			void $ tryIO $ createDirectoryUnder (Git.repoPath repo) tmpdir
+			void $ tryIO $ createDirectoryUnder [Git.repoPath repo] tmpdir
 			let tmpf = tmpdir P.</> keyFile k
 			meteredWriteFile p (fromRawFilePath tmpf) b
 			let destdir = parentDir $ toRawFilePath $ gCryptLocation repo k

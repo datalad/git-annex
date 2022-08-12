@@ -37,7 +37,7 @@ module Annex.Locations (
 	gitAnnexBadDir,
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
-	gitAnnexKeysDb,
+	gitAnnexKeysDbDir,
 	gitAnnexKeysDbLock,
 	gitAnnexKeysDbIndexCache,
 	gitAnnexFsckState,
@@ -321,38 +321,42 @@ gitAnnexUnusedLog :: RawFilePath -> Git.Repo -> RawFilePath
 gitAnnexUnusedLog prefix r = gitAnnexDir r P.</> (prefix <> "unused")
 
 {- .git/annex/keysdb/ contains a database of information about keys. -}
-gitAnnexKeysDb :: Git.Repo -> RawFilePath
-gitAnnexKeysDb r = gitAnnexDir r P.</> "keysdb"
+gitAnnexKeysDbDir :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexKeysDbDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "keysdb"
 
 {- Lock file for the keys database. -}
-gitAnnexKeysDbLock :: Git.Repo -> RawFilePath
-gitAnnexKeysDbLock r = gitAnnexKeysDb r <> ".lck"
+gitAnnexKeysDbLock :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexKeysDbLock r c = gitAnnexKeysDbDir r c <> ".lck"
 
 {- Contains the stat of the last index file that was
  - reconciled with the keys database. -}
-gitAnnexKeysDbIndexCache :: Git.Repo -> RawFilePath
-gitAnnexKeysDbIndexCache r = gitAnnexKeysDb r <> ".cache"
+gitAnnexKeysDbIndexCache :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexKeysDbIndexCache r c = gitAnnexKeysDbDir r c <> ".cache"
 
 {- .git/annex/fsck/uuid/ is used to store information about incremental
  - fscks. -}
-gitAnnexFsckDir :: UUID -> Git.Repo -> RawFilePath
-gitAnnexFsckDir u r = gitAnnexDir r P.</> "fsck" P.</> fromUUID u
+gitAnnexFsckDir :: UUID -> Git.Repo -> Maybe GitConfig -> RawFilePath
+gitAnnexFsckDir u r mc = case annexDbDir =<< mc of
+	Nothing -> go (gitAnnexDir r)
+	Just d -> go d
+  where
+	go d = d P.</> "fsck" P.</> fromUUID u
 
 {- used to store information about incremental fscks. -}
 gitAnnexFsckState :: UUID -> Git.Repo -> RawFilePath
-gitAnnexFsckState u r = gitAnnexFsckDir u r P.</> "state"
+gitAnnexFsckState u r = gitAnnexFsckDir u r Nothing P.</> "state"
 
 {- Directory containing database used to record fsck info. -}
-gitAnnexFsckDbDir :: UUID -> Git.Repo -> RawFilePath
-gitAnnexFsckDbDir u r = gitAnnexFsckDir u r P.</> "fsckdb"
+gitAnnexFsckDbDir :: UUID -> Git.Repo -> GitConfig -> RawFilePath
+gitAnnexFsckDbDir u r c = gitAnnexFsckDir u r (Just c) P.</> "fsckdb"
 
 {- Directory containing old database used to record fsck info. -}
-gitAnnexFsckDbDirOld :: UUID -> Git.Repo -> RawFilePath
-gitAnnexFsckDbDirOld u r = gitAnnexFsckDir u r P.</> "db"
+gitAnnexFsckDbDirOld :: UUID -> Git.Repo -> GitConfig -> RawFilePath
+gitAnnexFsckDbDirOld u r c = gitAnnexFsckDir u r (Just c) P.</> "db"
 
 {- Lock file for the fsck database. -}
-gitAnnexFsckDbLock :: UUID -> Git.Repo -> RawFilePath
-gitAnnexFsckDbLock u r = gitAnnexFsckDir u r P.</> "fsck.lck"
+gitAnnexFsckDbLock :: UUID -> Git.Repo -> GitConfig -> RawFilePath
+gitAnnexFsckDbLock u r c = gitAnnexFsckDir u r (Just c) P.</> "fsck.lck"
 
 {- .git/annex/fsckresults/uuid is used to store results of git fscks -}
 gitAnnexFsckResultsLog :: UUID -> Git.Repo -> RawFilePath
@@ -384,20 +388,22 @@ gitAnnexMoveLock r = gitAnnexDir r P.</> "move.lck"
 
 {- .git/annex/export/ is used to store information about
  - exports to special remotes. -}
-gitAnnexExportDir :: Git.Repo -> RawFilePath
-gitAnnexExportDir r = gitAnnexDir r P.</> "export"
+gitAnnexExportDir :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexExportDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "export"
 
 {- Directory containing database used to record export info. -}
-gitAnnexExportDbDir :: UUID -> Git.Repo -> RawFilePath
-gitAnnexExportDbDir u r = gitAnnexExportDir r P.</> fromUUID u P.</> "exportdb"
+gitAnnexExportDbDir :: UUID -> Git.Repo -> GitConfig -> RawFilePath
+gitAnnexExportDbDir u r c = 
+	gitAnnexExportDir r c P.</> fromUUID u P.</> "exportdb"
 
-{- Lock file for export state for a special remote. -}
-gitAnnexExportLock :: UUID -> Git.Repo -> RawFilePath
-gitAnnexExportLock u r = gitAnnexExportDbDir u r <> ".lck"
+{- Lock file for export database. -}
+gitAnnexExportLock :: UUID -> Git.Repo -> GitConfig -> RawFilePath
+gitAnnexExportLock u r c = gitAnnexExportDbDir u r c <> ".lck"
 
-{- Lock file for updating the export state for a special remote. -}
-gitAnnexExportUpdateLock :: UUID -> Git.Repo -> RawFilePath
-gitAnnexExportUpdateLock u r = gitAnnexExportDbDir u r <> ".upl"
+{- Lock file for updating the export database with information from the
+ - repository. -}
+gitAnnexExportUpdateLock :: UUID -> Git.Repo -> GitConfig -> RawFilePath
+gitAnnexExportUpdateLock u r c = gitAnnexExportDbDir u r c <> ".upl"
 
 {- Log file used to keep track of files that were in the tree exported to a
  - remote, but were excluded by its preferred content settings. -}
@@ -409,12 +415,13 @@ gitAnnexExportExcludeLog u r = gitAnnexDir r P.</> "export.ex" P.</> fromUUID u
  - (This used to be "cid", but a problem with the database caused it to
  - need to be rebuilt with a new name.)
  -}
-gitAnnexContentIdentifierDbDir :: Git.Repo -> RawFilePath
-gitAnnexContentIdentifierDbDir r = gitAnnexDir r P.</> "cidsdb"
+gitAnnexContentIdentifierDbDir :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexContentIdentifierDbDir r c =
+	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "cidsdb"
 
 {- Lock file for writing to the content id database. -}
-gitAnnexContentIdentifierLock :: Git.Repo -> RawFilePath
-gitAnnexContentIdentifierLock r = gitAnnexContentIdentifierDbDir r <> ".lck"
+gitAnnexContentIdentifierLock :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexContentIdentifierLock r c = gitAnnexContentIdentifierDbDir r c <> ".lck"
 
 {- .git/annex/schedulestate is used to store information about when
  - scheduled jobs were last run. -}

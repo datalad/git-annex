@@ -37,17 +37,17 @@ upgrade automatic = do
 	-- The old content identifier database is deleted here, but the
 	-- new database is not populated. It will be automatically
 	-- populated from the git-annex branch the next time it is used.
-	removeOldDb gitAnnexContentIdentifierDbDirOld
+	removeOldDb . fromRawFilePath =<< fromRepo gitAnnexContentIdentifierDbDirOld
 	liftIO . removeWhenExistsWith R.removeLink
 		=<< fromRepo gitAnnexContentIdentifierLockOld
 
 	-- The export databases are deleted here. The new databases
 	-- will be populated by the next thing that needs them, the same
 	-- way as they would be in a fresh clone.
-	removeOldDb gitAnnexExportDir
+	removeOldDb . fromRawFilePath =<< calcRepo' gitAnnexExportDir
 
 	populateKeysDb
-	removeOldDb gitAnnexKeysDbOld
+	removeOldDb . fromRawFilePath =<< fromRepo gitAnnexKeysDbOld
 	liftIO . removeWhenExistsWith R.removeLink
 		=<< fromRepo gitAnnexKeysDbIndexCacheOld
 	liftIO . removeWhenExistsWith R.removeLink
@@ -72,9 +72,8 @@ gitAnnexContentIdentifierDbDirOld r = gitAnnexDir r P.</> "cids"
 gitAnnexContentIdentifierLockOld :: Git.Repo -> RawFilePath
 gitAnnexContentIdentifierLockOld r = gitAnnexContentIdentifierDbDirOld r <> ".lck"
 
-removeOldDb :: (Git.Repo -> RawFilePath) -> Annex ()
-removeOldDb getdb = do
-	db <- fromRawFilePath <$> fromRepo getdb
+removeOldDb :: FilePath -> Annex ()
+removeOldDb db =
 	whenM (liftIO $ doesDirectoryExist db) $ do
 		v <- liftIO $ tryNonAsync $
 #if MIN_VERSION_directory(1,2,7)

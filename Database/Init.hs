@@ -10,6 +10,7 @@
 module Database.Init where
 
 import Annex.Common
+import qualified Annex
 import Annex.Perms
 import Utility.FileMode
 import Utility.Directory.Create
@@ -34,9 +35,13 @@ initDb db migration = do
 	let tmpdbdir = dbdir <> ".tmp"
 	let tmpdb = tmpdbdir P.</> "db"
 	let tdb = T.pack (fromRawFilePath tmpdb)
+	gc <- Annex.getGitConfig
 	top <- parentDir <$> fromRepo gitAnnexDir
+	let tops = case annexDbDir gc of
+		Just topdbdir -> [top, parentDir topdbdir]
+		Nothing -> [top]
 	liftIO $ do
-		createDirectoryUnder top tmpdbdir
+		createDirectoryUnder tops tmpdbdir
 		runSqliteInfo (enableWAL tdb) migration
 	setAnnexDirPerm tmpdbdir
 	-- Work around sqlite bug that prevents it from honoring

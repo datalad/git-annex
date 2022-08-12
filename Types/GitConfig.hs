@@ -119,6 +119,7 @@ data GitConfig = GitConfig
 	, annexVerify :: Bool
 	, annexPidLock :: Bool
 	, annexPidLockTimeout :: Seconds
+	, annexDbDir :: Maybe RawFilePath
 	, annexAddUnlocked :: GlobalConfigurable (Maybe String)
 	, annexSecureHashesOnly :: Bool
 	, annexRetry :: Maybe Integer
@@ -212,6 +213,7 @@ extractGitConfig configsource r = GitConfig
 	, annexPidLock = getbool (annexConfig "pidlock") False
 	, annexPidLockTimeout = Seconds $ fromMaybe 300 $
 		getmayberead (annexConfig "pidlocktimeout")
+	, annexDbDir = toRawFilePath <$> getmaybe (annexConfig "dbdir")
 	, annexAddUnlocked = configurable Nothing $
 		fmap Just $ getmaybe (annexConfig "addunlocked")
 	, annexSecureHashesOnly = getbool (annexConfig "securehashesonly") False
