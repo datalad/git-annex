@@ -1,0 +1,2 @@
+I am looking to add a uri of files on my institution's HPC cluster to my local git annex with the git annex addurl command. I am able to get transfers over http working, but want to know if other protocols such as sftp or rsync are also available.
+What is your advice for accessing files from HPC systems for which the files are not in a remote annex (due to other limitations).
