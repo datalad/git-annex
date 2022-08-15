@@ -242,3 +242,5 @@ This is my collegue (the failing part) git repository configuration:
 Oh yes, I'm using git-annex since many many years ago and it's my preferred storage solution, I really love it!
 
 **Kudos** Joey!
+
+> [[fixed|done]], I think, see my comment --[[Joey]]
