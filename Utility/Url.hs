@@ -1,6 +1,6 @@
 {- Url downloading.
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -40,6 +40,7 @@ module Utility.Url (
 	noBasicAuth,
 	applyBasicAuth',
 	extractFromResourceT,
+	conduitUrlSchemes,
 ) where
 
 import Common
@@ -111,9 +112,12 @@ defUrlOptions = UrlOptions
 	<*> pure (DownloadWithConduit (DownloadWithCurlRestricted mempty))
 	<*> pure id
 	<*> newManager tlsManagerSettings
-	<*> pure (S.fromList $ map mkScheme ["http", "https", "ftp"])
+	<*> pure conduitUrlSchemes
 	<*> pure Nothing
 	<*> pure noBasicAuth
+
+conduitUrlSchemes :: S.Set Scheme
+conduitUrlSchemes = S.fromList $ map mkScheme ["http", "https", "ftp"]
 
 mkUrlOptions :: Maybe UserAgent -> Headers -> UrlDownloader -> Manager -> S.Set Scheme -> Maybe (URI -> String) -> GetBasicAuth -> UrlOptions
 mkUrlOptions defuseragent reqheaders urldownloader =

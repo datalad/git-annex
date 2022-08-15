@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-08-15T15:46:40Z"
+ content="""
+git-annex can be used with any url scheme that curl supports, but you have to
+configure it to allow using it. See the documentation 
+of annex.security.allowed-url-schemes in the git-annex man page.
+
+You will also have to set annex.security.allowed-ip-addresses
+to "all".
+
+It seems that even with both settings, git-annex still avoids using curl
+for unsupported url schemes, unless you also set annex.web-options
+to some option used by curl. That forces it to use curl. I set it to
+"--netrc". You will probably need to use that option anyway since I think
+curl needs configuration in a netrc file to authenticate for sftp.
+
+(I feel that it's a bug that annex.web-options needs to be set to make it
+use curl, and I've fixed that in master.)
+"""]]

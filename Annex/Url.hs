@@ -1,7 +1,7 @@
 {- Url downloading, with git-annex user agent and configured http
  - headers, security restrictions, etc.
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -43,6 +43,7 @@ import Network.Socket
 import Network.HTTP.Client
 import Network.HTTP.Client.TLS
 import Text.Read
+import qualified Data.Set as S
 
 defaultUserAgent :: U.UserAgent
 defaultUserAgent = "git-annex/" ++ BuildInfo.packageversion
@@ -78,7 +79,8 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 	checkallowedaddr = words . annexAllowedIPAddresses <$> Annex.getGitConfig >>= \case
 		["all"] -> do
 			curlopts <- map Param . annexWebOptions <$> Annex.getGitConfig
-			let urldownloader = if null curlopts
+			allowedurlschemes <- annexAllowedUrlSchemes <$> Annex.getGitConfig
+			let urldownloader = if null curlopts && not (any (`S.member` U.conduitUrlSchemes) allowedurlschemes)
 				then U.DownloadWithConduit $
 					U.DownloadWithCurlRestricted mempty
 				else U.DownloadWithCurl curlopts
