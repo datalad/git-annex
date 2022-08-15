@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-08-15T16:23:30Z"
+ content="""
+
+	git-annex migrate --remove-size --backend=WORM foo
+	git-annex addurl --fast --file=foo https://www.youtube.com/...
+
+The migrate step makes git-annex stop caring about what the hash or
+size of the file is, so it will accept whatever gets downloaded from
+youtube.
+ """]]
