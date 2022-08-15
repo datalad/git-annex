@@ -1,0 +1,24 @@
+I've gotten back into the habit of recording my gameplay sessions again. However, because my screen resolution hasn't gotten smaller, the recordings are quite large and I don't need to store them in full quality forever, so my idea was it to upload them to YouTube as unlisted videos rather than doing my usual duplication.
+
+How can I map this use-case to git-annex?
+
+I will have one local "full" copy on a hard drive somewhere and some extracted audio tracks.
+
+Then there is a YT copy which only has the game sound without mine or other people's voices in it for privacy reasons.
+
+I want the flow like this:
+
+1. Record on my PC
+2. Add to Annex on PC and git-annex transfer from PC to NAS or store recording on the NAS directly
+4. NAS automatically uploads the recording
+5. NAS automatically splits out the audio Streams and adds them to Annex
+
+Obviously, I'll need some custom scripts here for most of this but what would I do in case of a restore?
+
+I can get the videos via yt-dlp but they will have different content because YT reprocesses the video, so reinjecting isn't an option.
+
+Would addurl be an option somehow? It directly maps a YT video to a key which would allow me to download that instead of the original file in case it was lost but is it possible to make it consider the original file an instance of the URL somehow eventhough it was never downloaded from there?
+
+Would a custom backend make sense here?
+
+Would love to hear what you think how I could best approach this.
