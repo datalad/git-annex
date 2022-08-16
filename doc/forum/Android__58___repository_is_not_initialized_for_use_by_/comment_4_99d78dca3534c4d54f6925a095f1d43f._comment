@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-08-16T16:03:57Z"
+ content="""
+Aha, that is a useful clue about what's going on here!
+
+Since those smudge commands are run by git, it may be that git is doing
+something to the environment or cwd that prevents git-annex from reading
+the git config.
+
+Also, you have git installed in termux, but git-annex includes its
+own copy of git in its distribution. So it may be that the termux git is
+somehow causing this problem, but the one included in git-annex does not.
+
+Can you try running: 
+
+	cd git-annex.linux
+	./runshell
+
+And then see if the problem occurs when you use git-annex from within the
+shell that starts?
+"""]]
