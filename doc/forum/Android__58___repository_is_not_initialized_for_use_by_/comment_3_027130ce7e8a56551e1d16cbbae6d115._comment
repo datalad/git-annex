@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="oliv5"
+ avatar="http://cdn.libravatar.org/avatar/d7f0d33c51583bbd8578e4f1f9f8cf4b"
+ subject="comment 3"
+ date="2022-08-16T14:55:44Z"
+ content="""
+For those who face the same issue, here is a workaround: in git config, I force the annex.uuid and annex.version of the smudge & clean filter commands.
+
+in .git/config, from this:
+
+```
+[filter \"annex\"]
+  smudge = git-annex smudge -- %f
+  clean = git-annex smudge --clean -- %f
+```
+
+I go to:
+
+```
+[filter \"annex\"]
+  smudge = git -c annex.version=8 -c annex.uuid=<the repo uuid> annex smudge -- %f
+  clean = git -c annex.version=8 -c annex.uuid=<the repo uuid> annex smudge --clean -- %f
+```
+
+You can get the repo uuid in the same file.
+
+This is it !
+
+I don't know though why the git-annex filter command is not able to read the .git/config file to retrieve this information by itself (?!).
+"""]]
