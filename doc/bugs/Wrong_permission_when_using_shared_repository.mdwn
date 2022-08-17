@@ -64,3 +64,5 @@ My motivation here is the following: I want to use the git-annex as an (external
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I have used git-annex in a single-user scenario yet. So far it works like a charm. I need more time to learn to get a hold of all functions but this is okay.
+
+> [[done]] in v10 --[[Joey]]
