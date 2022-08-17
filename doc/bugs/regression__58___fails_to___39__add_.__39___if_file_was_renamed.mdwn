@@ -43,3 +43,7 @@ git-annex: file: getSymbolicLinkStatus: does not exist (No such file or director
 ```
 
 I am a little surprised that it is only datalad-crawler, not datalad or git-annex, unittests pick up on this :-/
+
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
