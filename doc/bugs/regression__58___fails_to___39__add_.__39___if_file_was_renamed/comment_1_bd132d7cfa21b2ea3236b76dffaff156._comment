@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2022-08-17T19:55:45Z"
+ content="""
+bisected to [10.20220525-96-gf259be7f3 AKA 10.20220624~22](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=f259be7f39d6c1746b6b809f15b9a227624a0cd8)
+"""]]
