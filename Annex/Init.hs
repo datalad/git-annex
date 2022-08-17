@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -27,6 +27,7 @@ import qualified Git.Objects
 import Git.Types (fromConfigValue)
 import Git.ConfigTypes (SharedRepository(..))
 import qualified Annex.Branch
+import qualified Database.Fsck
 import Logs.UUID
 import Logs.Trust.Basic
 import Logs.Config
@@ -69,7 +70,9 @@ import Control.Concurrent.Async
 
 checkInitializeAllowed :: Annex a -> Annex a
 checkInitializeAllowed a = guardSafeToUseRepo $ noAnnexFileContent' >>= \case
-	Nothing -> a
+	Nothing -> do
+		checkSqliteWorks
+		a
 	Just noannexmsg -> do
 		warning "Initialization prevented by .noannex file (remove the file to override)"
 		unless (null noannexmsg) $
@@ -390,6 +393,21 @@ checkFifoSupport = unlessM probeFifoSupport $ do
 	warning "Detected a filesystem without fifo support."
 	warning "Disabling ssh connection caching."
 	setConfig (annexConfig "sshcaching") (Git.Config.boolConfig False)
+
+{- Sqlite needs the filesystem to support range locking. Some like CIFS
+ - do not, which will cause sqlite to fail with ErrorBusy. -}
+checkSqliteWorks :: Annex ()
+checkSqliteWorks = do
+	u <- getUUID
+	tryNonAsync (Database.Fsck.openDb u >>= Database.Fsck.closeDb) >>= \case
+		Right () -> return ()
+		Left e -> do
+			showLongNote $ "Detected a filesystem where Sqlite does not work."
+			showLongNote $ "(" ++ show e ++ ")"
+			showLongNote $ "To work around this problem, you can set annex.dbdir " ++
+				"to a directory on another filesystem."
+			showLongNote $ "For example: git config annex.dbdir $HOME/cache/git-annex"
+			giveup "Not initialized."
 
 checkSharedClone :: Annex Bool
 checkSharedClone = inRepo Git.Objects.isSharedClone

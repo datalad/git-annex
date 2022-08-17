@@ -86,3 +86,5 @@ add file1 ok
 When initializing the repo with v5 git-annex (git annex init --version=5 test), then the legacy direct mode is used and file addition works well.
 
 [[!tag projects/datalad]]
+
+> [[done]] --[[Joey]]

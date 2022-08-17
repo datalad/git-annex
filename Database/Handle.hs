@@ -123,7 +123,7 @@ workerThread db tablename jobs = newconn
 	newconn = do
 		v <- tryNonAsync (runSqliteRobustly tablename db loop)
 		case v of
-			Left e -> hPutStrLn stderr $
+			Left e -> giveup $
 				"sqlite worker thread crashed: " ++ show e
 			Right cont -> cont
 	
