@@ -1,0 +1,45 @@
+### Please describe the problem.
+
+It was introduced somewhere between `10.20220322-1~ndall+1` to `10.20220724-1~ndall+1` ( I will try to bisect now) and started to cause datalad-crawler tests to fail with that upgrade, see [crawler issue](https://github.com/datalad/datalad-crawler/issues/124). Here is the situation in the nutshell:
+
+```
+(git-annex)lena:~/.tmp/datalad_temp_test_balsa_extract_meta6ro1j8gw[incoming-processed]git
+$> git status
+On branch incoming-processed
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+
+Changes to be committed:
+	new file:   .datalad/crawl/statuses/incoming.json
+	new file:   .datalad/meta/balsa.json
+	new file:   _files/dir1/file2.nii
+	new file:   _files/file1.nii
+	new file:   dir1/file2.nii
+	new file:   file1.nii
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	deleted:    _files/dir1/file2.nii
+	deleted:    _files/file1.nii
+
+$> /usr/lib/git-annex.linux/git annex add .                                  
+git-annex: _files/dir1/file2.nii: getSymbolicLinkStatus: does not exist (No such file or directory)
+
+```
+
+here is a minimal reproducer
+
+```shell
+$> ( export PATH=/usr/lib/git-annex.linux/:$PATH; chmod +w -R /tmp/repo || : ; rm -rf /tmp/repo; mkdir /tmp/repo; cd /tmp/repo; git init; git annex init; touch file; git annex add file; rm file; git annex add .; echo $?)
+Initialized empty Git repository in /tmp/repo/.git/
+init  ok
+(recording state in git...)
+add file 
+ok
+(recording state in git...)
+git-annex: file: getSymbolicLinkStatus: does not exist (No such file or directory)
+1
+```
+
+I am a little surprised that it is only datalad-crawler, not datalad or git-annex, unittests pick up on this :-/
