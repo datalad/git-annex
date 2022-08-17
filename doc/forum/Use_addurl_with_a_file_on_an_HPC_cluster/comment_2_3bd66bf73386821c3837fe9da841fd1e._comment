@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="DavidD"
+ avatar="http://cdn.libravatar.org/avatar/9e7cced3eede4bf75fb932bfdd4f8847"
+ subject="comment 2"
+ date="2022-08-17T19:03:19Z"
+ content="""
+I am really quite new to git annex (but am excited to familiarize myself with it!), so I don't know how to modify settings. I've tried this:
+$ git annex config --set annex.security.allowed-ip-addresses \"all\"
+git-annex: annex.security.allowed-ip-addresses is not a configuration setting that can be stored in the git-annex branch
+
+I am also having a difficult time parsing through the webpage to find the documentation on the allowed-url-schemes setting.
+"""]]
