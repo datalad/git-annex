@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-08-19T16:56:13Z"
+ content="""
+WORM keys don't check the content of the file with a hash. That is the
+point of using them here.
+"""]]
