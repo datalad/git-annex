@@ -10,6 +10,6 @@ unmounted and remounted for some reason in between the two steps of the
 import would explain the behavior.
 
 Note that I've opened 
-[[todo/import_tree_from_FAT_does_unncessary_work_due_to_inode_instability]]
+[[todo/import_tree_from_FAT_does_unnecessary_work_due_to_inode_instability]]
 after thinking of some other consequences of this.
 """]]

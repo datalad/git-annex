@@ -54,7 +54,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	nochangestomerge = return $ return True
 
 	{- Since the adjusted branch changes files, merging tomerge
-	 - directly into it would likely result in unncessary merge
+	 - directly into it would likely result in unnecessary merge
 	 - conflicts. To avoid those conflicts, instead merge tomerge into
 	 - updatedorig. The result of the merge can the be
 	 - adjusted to yield the final adjusted branch.

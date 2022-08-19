@@ -3,7 +3,7 @@ repository it's running in. That's been optimised some before, but
 not entirely eliminated; it's just too useful to have that information
 always available inside git-annex. But it turned out that it was doing more work
 than needed for many commands, by checking the git config of local remotes.
-Thas caused unncessary spin up of removable drives, or automount timeouts,
+Thas caused unnecessary spin up of removable drives, or automount timeouts,
 or generally more work than needed when running commands like `git annex
 find` and even tab completing git-annex. That's fixed now, so it
 avoids checking the git config of remotes except when running commands that

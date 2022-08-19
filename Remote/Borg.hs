@@ -223,7 +223,7 @@ listImportableContentsM u borgrepo c = prompt $ do
 			    (reqsz, retsz) = case extra of
 				" link to " -> (Nothing, fromMaybe sz . fromKey keySize)
 				_ -> (Just sz, const sz)
-			-- This does a little unncessary work to parse the 
+			-- This does a little unnecessary work to parse the 
 			-- key, which is then thrown away. But, it lets the
 			-- file list be shrank down to only the ones that are
 			-- importable keys, so avoids needing to buffer all

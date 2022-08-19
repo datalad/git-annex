@@ -35,5 +35,5 @@ commit -a`). Afterwards, `git status` then smudged it again, unsure why!
 > because restagePointerFile uses the git queue, and unlock 
 > also queues a git add or something, so the queue isn't able to built
 > up because two dissimilar things are being queued. This seems an
-> unncessary behavior; it could queue up all the git adds and then
+> unnecessary behavior; it could queue up all the git adds and then
 > run restagePointerFile after them all. Implemented that, and [[done]]! --[[Joey]]

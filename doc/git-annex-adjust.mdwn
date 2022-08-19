@@ -30,7 +30,7 @@ made such as adding/deleting files, but will not propagate the adjustments
 made by this command.
 
 When in an adjusted branch, using `git merge otherbranch` is often not
-ideal, because merging a non-adjusted branch may lead to unncessary
+ideal, because merging a non-adjusted branch may lead to unnecessary
 merge conflicts, or add files in non-adjusted form. To avoid those
 problems, use `git annex merge otherbranch`.
 

@@ -140,7 +140,7 @@ isInodeKnown i s = readDb (isJust <$> selectFirst q [])
 		| sentinalInodesChanged s =
 			-- Note that this select is intentionally not
 			-- indexed. Normally, the inodes have not changed,
-			-- and it would be unncessary work to maintain
+			-- and it would be unnecessary work to maintain
 			-- indexes for the unusual case.
 			[ ContentFilesize ==. inodeCacheToFileSize i
 			, ContentMtime >=. tmin

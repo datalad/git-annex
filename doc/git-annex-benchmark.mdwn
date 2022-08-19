@@ -46,7 +46,7 @@ instead of a command. N is the number of items to benchmark.
 
 The output of the commands being benchmarked goes to standard output and
 standard error as usual. It's often a good idea to use --quiet to avoid
-unncessary output, unless the generation of that output is part of what
+unnecessary output, unless the generation of that output is part of what
 you want to benchmark.
 
 The benchmark report is output to standard output by default, although

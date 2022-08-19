@@ -1,6 +1,6 @@
 Well, I had to rethink how merges into adjusted branches should be handled.
 The old method often led to unnecessary merge conflicts. My new approach
-should always avoid unncessary merge conflicts, but it's quite a trick.
+should always avoid unnecessary merge conflicts, but it's quite a trick.
 
 To merge origin/master into adjusted/master, it first merges origin/master
 into master. But, since adjusted/master is checked out, it has to do the

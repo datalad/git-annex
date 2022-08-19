@@ -143,7 +143,7 @@ adjustExportImport' isexport isimport r rs = do
 			else importUnsupported
 		, storeKey = \k af p ->
 			-- Storing a key on an export could be implemented,
-			-- but it would perform unncessary work
+			-- but it would perform unnecessary work
 			-- when another repository has already stored the
 			-- key, and the local repository does not know
 			-- about it. To avoid unnecessary costs, don't do it.

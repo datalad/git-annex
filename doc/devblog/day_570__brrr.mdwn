@@ -11,7 +11,7 @@ I got sidetracked with how S3 prepares a handle to the server. That didn't
 work as well as it might have; most of the time each request to the remote
 actually prepared a new handle, rather than reusing a single handle. Though
 the http connection to the server did get reused, that still caused a lot
-of unncessary work. I fixed that, and the fix also allowed me to
+of unnecessary work. I fixed that, and the fix also allowed me to
 restructure export actions in the way I need for progress bars.
 
 I've ran out of time to finish adding the missing progress bars today, so

@@ -1487,7 +1487,7 @@ Remotes are configured using these settings in `.git/config`.
   Setting annex-checkuuid to false will prevent it from checking the uuid 
   at startup (although the uuid is still verified before making any
   changes to the remote repository). This may be useful to set to prevent
-  unncessary spin-up or automounting of a drive.
+  unnecessary spin-up or automounting of a drive.
 
 * `remote.<name>.annex-trustlevel`
 

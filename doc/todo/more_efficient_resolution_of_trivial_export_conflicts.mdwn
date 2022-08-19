@@ -1,7 +1,7 @@
 Export conflicts happen whenever two repos export different trees 
 to the same special remote.
 
-Some conflicts that seem trivial currently involve unncessary unexporting
+Some conflicts that seem trivial currently involve unnecessary unexporting
 and re-uploading in their resolution.
 
 For example, if A exports a tree containing `[foo]`, and B exports a tree

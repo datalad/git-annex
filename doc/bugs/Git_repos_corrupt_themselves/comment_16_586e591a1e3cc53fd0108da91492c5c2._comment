@@ -15,5 +15,5 @@ Fixed that. Which leaves 2 open questions:
 
 Although the answer to the second question doesn't matter much if the
 data loss bug is fixed -- if there's a problem of some kind causing
-unncessary repairs, it would only be some excess CPU load.
+unnecessary repairs, it would only be some excess CPU load.
 """]]

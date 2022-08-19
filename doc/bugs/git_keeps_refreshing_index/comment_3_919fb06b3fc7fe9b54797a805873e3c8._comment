@@ -20,7 +20,7 @@ so it re-smudges the work tree file unncessarily.
 I have not been able to find a number of files to drop that replicates
 the bug report. When a lot of files are dropped, it starts taking
 sufficiently long to update the index file that it ends up with a newer
-timestamp, which avoids the unncessary additional smudging. The worse
+timestamp, which avoids the unnecessary additional smudging. The worse
 case I have found here is dropping 9 files causes all 9 to get re-smudged,
 but that's not enough to get git to use the progress display.
 """]]

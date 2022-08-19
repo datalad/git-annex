@@ -355,7 +355,7 @@ shellOrRsync r ashell arsync
  -
  - (For shared encryption, gcrypt's default behavior is used.)
  -
- - Also, sets gcrypt-publish-participants to avoid unncessary gpg
+ - Also, sets gcrypt-publish-participants to avoid unnecessary gpg
  - passphrase prompts.
  -}
 setGcryptEncryption :: ParsedRemoteConfig -> String -> Annex ()

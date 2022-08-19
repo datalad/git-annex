@@ -7,7 +7,7 @@ dumb, and potentially inneficient:
 2. After each file transfer (upload or download), a git sync
    is done to all the remotes, to update location log information.
 
-## unncessary transfers
+## unnecessary transfers
 
 There are network toplogies where #1 is massively inneficient.
 For example:
@@ -27,7 +27,7 @@ LAN to laptopC.
 (The more common case with no laptopC happens to work efficiently.
 So does the case where laptopA is paired with laptopC.)
 
-## unncessary syncing
+## unnecessary syncing
 
 Less importantly, the constant git syncing after each transfer is rather a
 lot of work, and prevents collecting multiple presence changes to the git-annex 
@@ -50,7 +50,7 @@ necessary, and defer it.
 ## mapping
 
 Mapping the repository network has the potential to get git-annex the
-information it needs to avoid unnecessary transfers and/or unncessary
+information it needs to avoid unnecessary transfers and/or unnecessary
 syncing.
 
 Mapping the network can reuse code in `git annex map`. Once the map is

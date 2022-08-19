@@ -12,6 +12,6 @@ to apply `not (copies=archive:4)`.
 I am kind of surprised that the original situation would lead to any churn
 though. It seems like, since it knows there are at most 3, copies, and 4
 copies are required, it should be able to skip trying to drop at all.
-Instead it does unncessary work. Filed a bug,
+Instead it does unnecessary work. Filed a bug,
 [[bugs/unnecessary_work_when_drop_cannot_possibly_succeed]].
 """]]

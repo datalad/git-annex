@@ -8,5 +8,5 @@ more times than necessary. Also was able to avoid updating the git-annex
 branch, which eliminates several calls to git (depending on the number of
 remotes). On Linux, this made it 25% faster. Might be more on Windows.
 
-Rest of the strace looks clean, nothing else stands out as unncessary.
+Rest of the strace looks clean, nothing else stands out as unnecessary.
 """]]

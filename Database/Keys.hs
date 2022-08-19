@@ -226,7 +226,7 @@ isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
  - This is run with a lock held, so only one process can be running this at
  - a time.
  -
- - To avoid unncessary work, the index file is statted, and if it's not
+ - To avoid unnecessary work, the index file is statted, and if it's not
  - changed since last time this was run, nothing is done.
  -
  - A tree is generated from the index, and the diff between that tree

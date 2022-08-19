@@ -15,7 +15,7 @@ files it received to other remotes, and to do that it needs to check if
 their content is present. Which is normally inexpensive, so not a problem.
 
 It so happens that sync calls inAnnex even when
-there are no other remotes to send the content to. Which is unncessary, and
+there are no other remotes to send the content to. Which is unnecessary, and
 avoiding that could be used to fix this problem. But there would still be a
 problem if there were some other remote that the content ought to be sent to,
 if it still called inAnnex in that case. Maybe it's possible to avoid it calling

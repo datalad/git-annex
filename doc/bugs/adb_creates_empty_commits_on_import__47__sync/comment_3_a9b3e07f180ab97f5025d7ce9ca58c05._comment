@@ -14,5 +14,5 @@ the timestamps of anything in the git repo.
 
 Now, if Android is varying the mtime it reports for files, so resulting in
 a changed CID, it may be that would cause an import of content it had already 
-imported before, and maybe that leads to the unncessary commit.
+imported before, and maybe that leads to the unnecessary commit.
 """]]

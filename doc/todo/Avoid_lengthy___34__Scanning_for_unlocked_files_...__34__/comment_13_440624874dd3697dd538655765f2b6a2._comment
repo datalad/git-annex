@@ -3,7 +3,7 @@
  subject="""comment 13"""
  date="2021-05-31T18:40:59Z"
  content="""
-There was an unncessary check of the current time per sql insert, removing
+There was an unnecessary check of the current time per sql insert, removing
 that sped it up by 3 seconds in my benchmark.
 
 Also tried increasing the number of inserts per sqlite transaction from 1k

@@ -67,7 +67,7 @@ be decrypted by the added keys. Probably this can be done by setting
 `GCRYPT_FULL_REPACK` and doing a forced push of branches.
 
 git-annex will set `remote.<name>`gcrypt-publish-participants` when setting
-up a repository that uses gcrypt. This is done to avoid unncessary gpg
+up a repository that uses gcrypt. This is done to avoid unnecessary gpg
 passphrase prompts, but it does publish the gpg keyids that can decrypt the
 repository. Unset it if you need to obscure that.
 

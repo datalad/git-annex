@@ -16,7 +16,7 @@ annexed files do not make `git checkout` slow, but unlocked files and
 non-annexed files do slow it down.)
 
 On the other hand when this is enabled, `git add` of a large file does an
-unncessary extra read of the file, and pipes its contents into git-annex.
+unnecessary extra read of the file, and pipes its contents into git-annex.
 So when this is enabled, it will be faster to use `git-annex add` to add
 large files to the annex, rather than `git add`. Other commands that
 add files, like `git commit -a`, are also impacted by this.

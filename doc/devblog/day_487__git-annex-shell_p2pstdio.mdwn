@@ -4,7 +4,7 @@ this.
 
 The only complication was that git-annex-shell has a readonly mode,
 so the protocol server needed modifications to support that.
-Well, there's also some innefficiency around unncessary verification
+Well, there's also some innefficiency around unnecessary verification
 of transferred content in some cases, which will probably need extensions
 to the P2P protocol later.
 

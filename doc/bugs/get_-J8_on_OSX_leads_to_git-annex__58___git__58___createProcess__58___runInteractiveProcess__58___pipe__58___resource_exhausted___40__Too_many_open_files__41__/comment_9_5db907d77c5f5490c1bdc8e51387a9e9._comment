@@ -23,5 +23,5 @@ Thinking about this over the weekend, I had two ideas:
   Seems likely that only 2 or 3 in the cat-file pool will
   maximise concurrency, because it's not a major bottleneck most of the
   time, and when it is the actual bottleneck is probably disk IO and so
-  won't be helped by more (and likely more only increase unncessary seeks).
+  won't be helped by more (and likely more only increase unnecessary seeks).
 """]]

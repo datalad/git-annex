@@ -11,7 +11,7 @@ Essentially the same problem as
 (And also the main problem using git-annex on Windows in WSL.)
 
 Not a great deal I can do about this, because the locking is in sqlite.
-That other bug has some thoughts about avoiding unncessary use of sqlite
+That other bug has some thoughts about avoiding unnecessary use of sqlite
 or moving the databases to some other filesystem.
 
 It may be that not enabling WAL mode on the database would change sqlite's

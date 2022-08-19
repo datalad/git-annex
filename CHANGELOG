@@ -4,7 +4,7 @@ git-annex (10.20220725) UNRELEASED; urgency=medium
     automatically upgrade to v10 in a year's time.
     To avoid this upgrade, you can set annex.autoupgraderepository to false.
   * Use v10 by default for new repositories.
-  * Avoid starting an unncessary number of git hash-object processes when 
+  * Avoid starting an unnecessary number of git hash-object processes when 
     concurrency is enabled.
   * stack.yaml: Updated to lts-19.16
   * Added new matching options --want-get-by and --want-drop-by.
@@ -411,7 +411,7 @@ git-annex (8.20210803) upstream; urgency=medium
 
 git-annex (8.20210714) upstream; urgency=medium
 
-  * assistant: Avoid unncessary git repository repair in a situation where
+  * assistant: Avoid unnecessary git repository repair in a situation where
     git fsck gets confused about a commit that is made while it's running.
   * addurl: Avoid crashing when used on beegfs.
   * --debug output goes to stderr again, not stdout.
@@ -652,7 +652,7 @@ git-annex (8.20210127) upstream; urgency=medium
     Thanks, Grond for the patch.
   * Avoid crashing when there are remotes using unparseable urls.
     Including the non-standard URI form that git-remote-gcrypt uses for rsync.
-  * Directory special remotes with importtree=yes now avoid unncessary
+  * Directory special remotes with importtree=yes now avoid unnecessary
     hashing when inodes of files have changed, as happens whenever a FAT
     filesystem gets remounted.
   * Fix a bug that prevented git-annex init from working in a submodule.
@@ -2359,7 +2359,7 @@ git-annex (6.20180112) upstream; urgency=medium
     remotes, which used to cause eg, spin-up of removable drives.
   * Added remote.<name>.annex-checkuuid config, which can be set to false
     to disable the default checking of the uuid of remotes that point to
-    directories. This can be useful to avoid unncessary drive spin-ups and
+    directories. This can be useful to avoid unnecessary drive spin-ups and
     automounting.
   * git-annex.cabal: Add back custom-setup stanza, so cabal new-build works.
   * git-annex.cabal: Removed the testsuite build flag; test suite is always
@@ -2623,7 +2623,7 @@ git-annex (6.20170510) unstable; urgency=medium
   * version: Added "dependency versions" line.
   * Keys marked as dead are now skipped by --all.
   * annex.backend is the new name for what was annex.backends, and takes
-    a single key-value backend, rather than the unncessary and confusing
+    a single key-value backend, rather than the unnecessary and confusing
     list. The old option still works if set.
 
  -- Joey Hess <id@joeyh.name>  Wed, 10 May 2017 15:05:22 -0400
@@ -2901,7 +2901,7 @@ git-annex (6.20161111) unstable; urgency=medium
   * S3: Support the special case endpoint needed for the cn-north-1 region.
   * Webapp: Don't list the Frankfurt S3 region, as this (and some other new
     regions) need V4 authorization which the aws library does not yet use.
-  * reinject --known: Avoid second, unncessary checksum of file.
+  * reinject --known: Avoid second, unnecessary checksum of file.
   * OSX: Remove RPATHs from git-annex binary, which are not needed,
     slow down startup, and break the OSX Sierra linker.
   * webapp: Explicitly avoid checking for auth in static subsite
@@ -2982,7 +2982,7 @@ git-annex (6.20160923) unstable; urgency=medium
 
   * Rate limit console progress display updates to 10 per second.
     Was updating as frequently as changes were reported, up to hundreds of
-    times per second, which used unncessary bandwidth when running git-annex
+    times per second, which used unnecessary bandwidth when running git-annex
     over ssh etc.
   * Make --json and --quiet work when used with -J.
     Previously, -J override the other options.
@@ -3639,7 +3639,7 @@ git-annex (5.20151019) unstable; urgency=medium
   * copy --auto was checking the wrong repo's preferred content.
     (--from was checking what --to should, and vice-versa.)
     Fixed this bug, which was introduced in version 5.20150727.
-  * Avoid unncessary write to the location log when a file is unlocked
+  * Avoid unnecessary write to the location log when a file is unlocked
     and then added back with unchanged content.
   * S3: Fix support for using https.
   * Avoid displaying network transport warning when a ssh remote
@@ -4580,7 +4580,7 @@ git-annex (5.20140717) unstable; urgency=high
   * sync: Fix git sync with local git remotes even when they don't have an
     annex.uuid set. (The assistant already did so.)
   * Set gcrypt-publish-participants when setting up a gcrypt repository,
-    to avoid unncessary passphrase prompts.
+    to avoid unnecessary passphrase prompts.
     This is a security/usability tradeoff. To avoid exposing the gpg key
     ids who can decrypt the repository, users can unset
     gcrypt-publish-participants.
@@ -4602,7 +4602,7 @@ git-annex (5.20140709) unstable; urgency=medium
   * Fix git version that supported --no-gpg-sign.
   * Fix bug in automatic merge conflict resolution, when one side is an
     annexed symlink, and the other side is a non-annexed symlink.
-  * Really fix bug that caused the assistant to make many unncessary
+  * Really fix bug that caused the assistant to make many unnecessary
     empty merge commits.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 15:28:03 -0400
@@ -4610,7 +4610,7 @@ git-annex (5.20140709) unstable; urgency=medium
 git-annex (5.20140707) unstable; urgency=medium
 
   * assistant: Fix bug, introduced in last release, that caused the assistant
-    to make many unncessary empty merge commits.
+    to make many unnecessary empty merge commits.
   * assistant: Fix one-way assistant->assistant sync in direct mode.
   * Fix bug in annex.queuesize calculation that caused much more
     queue flushing than necessary.
@@ -4738,7 +4738,7 @@ git-annex (5.20140421) unstable; urgency=medium
     connections.
   * Improve handling of monthly/yearly scheduling.
   * Avoid depending on shakespeare except for when building the webapp.
-  * uninit: Avoid making unncessary copies of files.
+  * uninit: Avoid making unnecessary copies of files.
   * info: Allow use in a repository where annex.uuid is not set.
   * reinit: New command that can initialize a new repository using
     the configuration of a previously known repository.
@@ -5573,7 +5573,7 @@ git-annex (4.20130802) unstable; urgency=low
   * importfeed can be used to import files from podcast feeds.
   * webapp: When setting up a dedicated ssh key to access the annex
     on a host, set IdentitiesOnly to prevent the ssh-agent from forcing
-    use of a different ssh key. That could result in unncessary password
+    use of a different ssh key. That could result in unnecessary password
     prompts, or prevent git-annex-shell from being run on the remote host.
   * webapp: Improve handling of remotes whose setup has stalled.
   * Add status message to XMPP presence tag, to identify to others that
@@ -5748,7 +5748,7 @@ git-annex (4.20130621) unstable; urgency=low
 git-annex (4.20130601) unstable; urgency=medium
 
   * XMPP: Git push over xmpp made much more robust.
-  * XMPP: Avoid redundant and unncessary pushes. Note that this breaks
+  * XMPP: Avoid redundant and unnecessary pushes. Note that this breaks
     compatibility with previous versions of git-annex, which will refuse
     to accept any XMPP pushes from this version.
   * XMPP: Send pings and use them to detect when contact with the server
@@ -6066,7 +6066,7 @@ git-annex (4.20130314) unstable; urgency=low
     combines all their changes into a single commit.
   * assistant: Fix ~/.ssh/git-annex-shell wrapper to work when the
     ssh key does not force a command.
-  * assistant: Be smarter about avoiding unncessary transfers.
+  * assistant: Be smarter about avoiding unnecessary transfers.
 
   * webapp: Work around bug in Warp's slowloris attack prevention code,
     that caused regular browsers to stall when they reuse a connection

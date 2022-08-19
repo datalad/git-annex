@@ -7,7 +7,7 @@ For details of the older todo, including some timings with and without
 prelinking, see [[!commit c4229be9a7a2318ef71b9ae433bc14bf604c9caf]].
 
 A ghc bug, since fixed, was causing it to look in IIRC, thousands of
-unncessary directories per library. This todo, by contrast, complains about
+unnecessary directories per library. This todo, by contrast, complains about
 less than 100 extra lookups total.
 
 The way you run the shim does not put the bundled git in PATH. That kind of

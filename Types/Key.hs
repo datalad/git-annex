@@ -71,7 +71,7 @@ data Key = MkKey
 	} deriving (Show, Generic)
 
 instance Eq Key where
-	-- comparing the serialization would be unncessary work
+	-- comparing the serialization would be unnecessary work
 	a == b = keyData a == keyData b
 
 instance Ord Key where
