@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-08-19T16:57:42Z"
+ content="""
+The documentation about these git config settings is in the
+main [[git-annex]] man page in the CONFIGURATION section.
+"""]]
