@@ -105,7 +105,8 @@ the tree of files on the remote, even when importing into a subdirectory.
 
 When run with a path, `git annex import` **moves** files from somewhere outside
 the git working copy, and adds them to the annex. In contrast to importing 
-from a special directory remote, imported files are **deleted from the given path**.
+from a special directory remote, imported files are **deleted from the given
+path**.
 
 This is a legacy interface. It is still supported, but please consider
 switching to importing from a directory special remote instead, using the
@@ -131,6 +132,11 @@ including the default SHA256E, only one copy of the data will be stored.)
 Several options can be used to adjust handling of duplicate files, see
 `--duplicate`, `--deduplicate`, `--skip-duplicates`, `--clean-duplicates`,
 and `--reinject-duplicates` documentation below.
+
+symbolic links in the directory being imported are skipped to avoid
+accidentially importing things outside the directory that import was ran
+on. The directory that import is run on can, however inself be a symbolic
+link, and that symbolic link will be followed.
 
 # OPTIONS FOR IMPORTING FROM A DIRECTORY
 

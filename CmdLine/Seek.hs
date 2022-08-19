@@ -113,7 +113,7 @@ withPathContents a params = do
 		( map (\f -> 
 			let f' = toRawFilePath f
 			in (f', P.makeRelative (P.takeDirectory (P.dropTrailingPathSeparator p')) f'))
-			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) True p
+			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) False p
 		, return [(p', P.takeFileName p')]
 		)
 	  where

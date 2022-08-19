@@ -363,7 +363,7 @@ removeExportLocation topdir loc =
 
 listImportableContentsM :: IgnoreInodes -> RawFilePath -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
 listImportableContentsM ii dir = liftIO $ do
-	l <- dirContentsRecursive (fromRawFilePath dir)
+	l <- dirContentsRecursiveSkipping (const False) False (fromRawFilePath dir)
 	l' <- mapM (go . toRawFilePath) l
 	return $ Just $ ImportableContentsComplete $
 		ImportableContents (catMaybes l') []

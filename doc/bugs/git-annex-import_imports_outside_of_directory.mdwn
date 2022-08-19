@@ -27,3 +27,5 @@ Linux ctchpcpx163.merck.com 3.10.0-1160.6.1.el7.x86_64 #1 SMP Tue Nov 17 13:59:1
 That I use it enough to run into corner-case issues shows its continued usefulness :)
 
 [[!meta title="git-annex import follows symlinks"]]
+
+> [[fixed|done]] --[[Joey]]
