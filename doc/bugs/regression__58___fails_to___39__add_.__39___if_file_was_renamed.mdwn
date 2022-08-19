@@ -47,3 +47,5 @@ I am a little surprised that it is only datalad-crawler, not datalad or git-anne
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]

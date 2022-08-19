@@ -399,6 +399,8 @@ test_add_moved = intmpclonerepo $ do
 	createDirectory subdir
 	Utility.MoveFile.moveFile (toRawFilePath annexedfile) (toRawFilePath subfile)
 	git_annex "add" [subdir] "add of moved annexed file"
+	git "mv" [sha1annexedfile, sha1annexedfile ++ ".renamed"] "git mv"
+	git_annex "add" [] "add does not fail on deleted file after move"
   where
 	subdir = "subdir"
 	subfile = subdir </> "file"

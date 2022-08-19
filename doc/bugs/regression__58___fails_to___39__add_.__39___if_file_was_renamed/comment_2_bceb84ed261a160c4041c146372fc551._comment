@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-08-19T16:39:11Z"
+ content="""
+Fixed this.
+
+The test suite does test add of renamed files, but just barely missed it
+since it ran git-annex add of the destination file only.
+Added a test case for this.
+"""]]

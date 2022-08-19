@@ -23,6 +23,8 @@ git-annex (10.20220725) UNRELEASED; urgency=medium
   * Use curl when annex.security.allowed-url-schemes includes an url
     scheme not supported by git-annex internally, as long as
     annex.security.allowed-ip-addresses is configured to allow using curl.
+  * Fix a regression in 10.20220624 that caused git-annex add to crash
+    when there was an unstaged deletion.
 
  -- Joey Hess <id@joeyh.name>  Mon, 25 Jul 2022 15:35:45 -0400
 

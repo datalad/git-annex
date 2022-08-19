@@ -88,19 +88,17 @@ seek o = startConcurrency commandStages $ do
 	addunlockedmatcher <- addUnlockedMatcher
 	annexdotfiles <- getGitConfigVal annexDotFiles 
 	let gofile includingsmall (si, file) = case largeFilesOverride o of
-		Nothing -> do
-			s <- liftIO $ R.getSymbolicLinkStatus file
-			ifM (pure (annexdotfiles || not (dotfile file))
-				<&&> (checkFileMatcher largematcher file 
-				<||> Annex.getRead Annex.force))
-				( start dr si file addunlockedmatcher
-				, if includingsmall
-					then ifM (annexAddSmallFiles <$> Annex.getGitConfig)
-						( startSmall dr si file s
-						, stop
-						)
-					else stop
-				)
+		Nothing -> ifM (pure (annexdotfiles || not (dotfile file))
+			<&&> (checkFileMatcher largematcher file 
+			<||> Annex.getRead Annex.force))
+			( start dr si file addunlockedmatcher
+			, if includingsmall
+				then ifM (annexAddSmallFiles <$> Annex.getGitConfig)
+					( startSmall dr si file
+					, stop
+					)
+				else stop
+			)
 		Just True -> start dr si file addunlockedmatcher
 		Just False -> startSmallOverridden dr si file
 	case batchOption o of
@@ -132,10 +130,13 @@ seek o = startConcurrency commandStages $ do
 	dr = dryRunOption o
 
 {- Pass file off to git-add. -}
-startSmall :: DryRun -> SeekInput -> RawFilePath -> FileStatus -> CommandStart
-startSmall dr si file s =
-	starting "add" (ActionItemTreeFile file) si $
-		addSmall dr file s
+startSmall :: DryRun -> SeekInput -> RawFilePath -> CommandStart
+startSmall dr si file =
+	liftIO (catchMaybeIO $ R.getSymbolicLinkStatus file) >>= \case
+		Just s -> 
+			starting "add" (ActionItemTreeFile file) si $
+				addSmall dr file s
+		Nothing -> stop
 
 addSmall :: DryRun -> RawFilePath -> FileStatus -> CommandPerform
 addSmall dr file s = do
