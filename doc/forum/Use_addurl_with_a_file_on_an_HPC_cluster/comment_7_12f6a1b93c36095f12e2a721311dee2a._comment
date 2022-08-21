@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="addurl and authentication"
+ date="2022-08-21T21:13:56Z"
+ content="""
+This comment from the same page might help: \"wget by default consults ~/.netrc where you could specify your account information (man netrc for more detail)\".
+"""]]
