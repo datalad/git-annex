@@ -1,34 +1,34 @@
-git-annex (10.20220725) UNRELEASED; urgency=medium
+git-annex (10.20220822) upstream; urgency=medium
 
-  * v8 repositories automatically upgrade to v9, which will in turn
+  * v8 repositories now automatically upgrade to v9, which will in turn
     automatically upgrade to v10 in a year's time.
     To avoid this upgrade, you can set annex.autoupgraderepository to false.
-  * Use v10 by default for new repositories.
-  * Avoid starting an unnecessary number of git hash-object processes when 
-    concurrency is enabled.
-  * stack.yaml: Updated to lts-19.16
+  * Now uses v10 by default for new repositories.
+  * Fix a regression in 10.20220624 that caused git-annex add to crash
+    when there was an unstaged deletion.
   * Added new matching options --want-get-by and --want-drop-by.
   * Allow find --branch to be used in a bare repository, the same as
     the deprecated findref can be.
   * add --dry-run: New option. 
+  * import: Avoid following symbolic links inside directories being
+    imported.
   * Work around bug in git 2.37 that causes a segfault
     when core.untrackedCache is set, which broke git-annex init.
-  * Improve output when storing to bup.
-  * When bup split fails, display its stderr.
-  * Avoid running multiple bup split processes concurrently, since
-    bup is not concurrency safe.
   * Added annex.dbdir config which can be used to move sqlite databases
     to a different filesystem than the git-annex repo, when the repo is on
     a filesystem that sqlite does not work well in.
   * Use curl when annex.security.allowed-url-schemes includes an url
     scheme not supported by git-annex internally, as long as
     annex.security.allowed-ip-addresses is configured to allow using curl.
-  * Fix a regression in 10.20220624 that caused git-annex add to crash
-    when there was an unstaged deletion.
-  * import: Avoid following symbolic links inside directories being
-    imported.
+  * Improve output when storing to bup.
+  * When bup split fails, display its stderr.
+  * Avoid running multiple bup split processes concurrently, since
+    bup is not concurrency safe.
+  * Avoid starting an unnecessary number of git hash-object processes when 
+    concurrency is enabled.
+  * stack.yaml: Updated to lts-19.16
 
- -- Joey Hess <id@joeyh.name>  Mon, 25 Jul 2022 15:35:45 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 22 Aug 2022 11:56:06 -0400
 
 git-annex (10.20220724) upstream; urgency=medium
 
