@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="DavidD"
+ avatar="http://cdn.libravatar.org/avatar/9e7cced3eede4bf75fb932bfdd4f8847"
+ subject="comment 9"
+ date="2022-08-22T17:54:19Z"
+ content="""
+I'd prefer not to have my credentials stored in plain text.
+
+When I run curl with the \"--user my_username\" key-value pair, it requests my password for the server. Does git-annex allow this authentication request from curl to be passed to the user and returned so that the password isn't stored anywhere on disk?
+"""]]
