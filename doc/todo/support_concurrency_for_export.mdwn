@@ -1,4 +1,0 @@
-Making git-annex export support -J should be doable and could speed up
-exports a lot with some remotes. --[[Joey]]
-
-[[done]]

@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="git-annex.branchable.com@79d6855760f61f7fbe0a401b45d8c791ef49b500"
- nickname="git-annex.branchable.com"
- avatar="http://cdn.libravatar.org/avatar/4bf61f9feda20e8b4fc09d52ee48af39"
- subject="comment 1"
- date="2018-09-14T16:42:59Z"
- content="""
-It turns out that rsync.net silently changed the (absolute) path to my user's home directory and the path in .git/config was thus incorrect.
-"""]]

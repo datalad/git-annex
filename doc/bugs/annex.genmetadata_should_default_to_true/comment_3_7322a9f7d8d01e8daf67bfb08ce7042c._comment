@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="CandyAngel"
- avatar="http://cdn.libravatar.org/avatar/15c0aade8bec5bf004f939dd73cf9ed8"
- subject="comment 3"
- date="2018-04-05T15:45:52Z"
- content="""
-As far as I am aware, git-annex doesn't store *any* information about any files (including their content!) without fairly explicit instruction to do so.. this would be exception to that general behaviour.
-"""]]

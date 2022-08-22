@@ -1,5 +1,0 @@
-Sometimes a borg backup contains several git-annex repos. Then pointing
-git-annex at the whole thing will find objects not belonging to the current
-repo. To avoid this, add subdir= config.
-
-[[done]] --[[Joey]]

@@ -1,7 +1,0 @@
-In the standalone build of git-annex, the runshell script caches locale info in a directory the name of which is based on the full path to the script:
-<http://source.git-annex.branchable.com/?p=source.git;a=blob;f=standalone/linux/skel/runshell;h=32849e3f8df85e9d260498539f147d0cbe96889a;hb=HEAD#l131>
-When the full path is too long, this fails with the error "filename too long".
-
-Also, if the locale info is specific to the standalone environment, maybe it could be built as part of the process that creates the standalone package, rather than built on-the-fly and cached in the user's home dir?
-
-> [[fixed|done]] --[[Joey]]
