@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="DavidD"
+ avatar="http://cdn.libravatar.org/avatar/9e7cced3eede4bf75fb932bfdd4f8847"
+ subject="comment 6"
+ date="2022-08-19T20:07:49Z"
+ content="""
+However, I have just noticed that my user authentication gets stored in git annex (which I would like to avoid). I came across this comment in a tip from quite a number of years ago (https://git-annex.branchable.com/tips/using_the_web_as_a_special_remote/) which stated that \"If you want to protect the password from being exposed to anyone who gets a clone of the repository, just download manually, and then git annex add the file.\" Is this still the case?
+"""]]
