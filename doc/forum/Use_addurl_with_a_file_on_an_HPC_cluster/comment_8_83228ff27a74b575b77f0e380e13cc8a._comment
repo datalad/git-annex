@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2022-08-22T15:52:19Z"
+ content="""
+If you pass an url to `git-annex addurl` that contains authentication data,
+it will be stored like any other url.
+"""]]
