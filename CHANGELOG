@@ -26,7 +26,6 @@ git-annex (10.20220822) upstream; urgency=medium
     bup is not concurrency safe.
   * Avoid starting an unnecessary number of git hash-object processes when 
     concurrency is enabled.
-  * stack.yaml: Updated to lts-19.16
 
  -- Joey Hess <id@joeyh.name>  Mon, 22 Aug 2022 11:56:06 -0400
 
