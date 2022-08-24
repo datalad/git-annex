@@ -1,0 +1,6 @@
+`--batch` was added to `annex add` 6 years ago but only now we got to add usage of it in datalad (PR: [5722](https://github.com/datalad/datalad/pull/5722)). Unfortunately on the initial attempt we got tests failing and looking into it I found that its behavior differs from non-batched `annex add` when given directories. That is described in the [original issue in Implementation notes](https://git-annex.branchable.com/todo/--batch_for_add/) as "made it not recurse into directories".  Unfortunately, such a limitation forbids consistent use of `annex add --batch` as drop-in replacement for plain `annex add` without reimplementing git-annex logic on treating dotdirs etc to decide which files actually should be added to git-annex or not.
+
+For that reason I think it would be great if `add --batch` would gain the "super-power" to be able to handle directories as well.
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
