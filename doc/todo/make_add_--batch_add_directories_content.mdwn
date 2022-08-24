@@ -2,5 +2,43 @@
 
 For that reason I think it would be great if `add --batch` would gain the "super-power" to be able to handle directories as well.
 
+edit: I forgot to add my lovely reproducer to show inconsistency "just in case":
+
+```
+$> bash annex-add-batch-dir.sh
+> set -eu
+>> mktemp -d /home/yoh/.tmp/dl-XXXXXXX
+> cd /home/yoh/.tmp/dl-zmItF0C
+> git init
+Initialized empty Git repository in /home/yoh/.tmp/dl-zmItF0C/.git/
+> git annex init
+init  ok
+(recording state in git...)
+> mkdir d-cmd d-batch
+> touch d-cmd/file d-batch/file
+> git annex add d-cmd
+add d-cmd/file 
+ok
+(recording state in git...)
+> echo d-batch
+> git annex add --batch
+
+> git status
+On branch master
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+	new file:   d-cmd/file
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	d-batch/
+
+```
+
+so `annex add` and `annex add --batch` behave differently on folder paths.
+
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
