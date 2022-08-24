@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-08-24T17:01:17Z"
+ content="""
+This error message is from xml-conduit, which is used by aws
+to parse a response from the S3 server. It seems that response is probably
+malformed XML.
+
+What S3 server is this using?
+
+You may be able to get more information about the http request and response
+by using the --debug flag.
+"""]]
