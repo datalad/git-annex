@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-08-24T17:05:50Z"
+ content="""
+Like the man page for this command says, it's best to make a new remote for
+testing purposes, not use a production one.
+
+I think that a simple improvement to it would be for it to generate the
+same test keys every time. Then if it failed once or was interrupted or
+the remote was buggy, once that got fixed the same command could be run
+again, and would clean up the test keys that were earlier stored on the
+remote.
+
+It's generating random data and a key from that,
+but a predictable random data would not impair the test really.
+Although testExportTree currently starts with a test that might fail
+if the key is already present in the remote.
+"""]]
