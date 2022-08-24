@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-08-24T17:15:06Z"
+ content="""
+Problem with that idea: testremote makes variants of the remote with
+shared encryption enabled. So the content being stored on the remote is not
+only random, but is encrypted with a random key. It would have to
+initialize the encrypted remote with a fixed encryption key. This would
+need some significant changes to accomplish.
+"""]]
