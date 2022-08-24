@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 9"
+ date="2022-08-24T19:26:59Z"
+ content="""
+FWIW, for now in the [WiP PR at DataLad level](https://github.com/datalad/datalad/pull/6977/files#diff-ef96911487cac414f5a9ea27374ac1d75ffcc45289a9e1ec69157da6fcf1ad56R1744) I would even just go back to non-batch mode if I discover the directory being provided. In most typical invocations through top-level datalad interfaces we already do `ls-files` etc to first identify the files given the user-provided list of paths, so I do not expect that code to see directories that often ;-) 
+"""]]
