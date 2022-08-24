@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2022-08-24T18:35:25Z"
+ content="""
+> It seems to me that it's not hard to recurse directories yourself, and so it's better to offload the need to do that onto users of --batch, rather than making them deal with increased parsing complexity.
+
+reflecting on my initial argument for this feature: is there git-annex interface to announce which paths for a folder git-annex would consider to be added (in case of `add`) or dropped (in relation to comment that `drop` cannot do that either)?  without that IMHO it is unfair to require client to somehow duplicate logic of git-annex on what files/paths it would consider for that specific operation.
+"""]]
