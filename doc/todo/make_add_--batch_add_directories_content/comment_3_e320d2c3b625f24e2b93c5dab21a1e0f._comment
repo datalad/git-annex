@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-08-24T17:26:57Z"
+ content="""
+Even in --json mode there would be difficulties. Consider the case of an
+empty directory or a directory that is all gitignored. 
+If you tried to read a response after sending such a directory, and it did
+not output anything, you'd block.
+"""]]
