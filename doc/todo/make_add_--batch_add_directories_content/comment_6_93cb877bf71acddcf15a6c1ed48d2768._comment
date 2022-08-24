@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2022-08-24T18:40:10Z"
+ content="""
+ok, I am doomed to retract the \"unfairness\" argument since now there is `annex add --dry-run`, so something like
+
+```
+git annex add --dry-run --json d-batch | jq '.file' | sed -e \"s,\\",,g\" | git annex add --batch
+```
+
+would work.
+"""]]
