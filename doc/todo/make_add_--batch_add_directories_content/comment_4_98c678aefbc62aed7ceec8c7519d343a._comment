@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2022-08-24T18:32:53Z"
+ content="""
+I wish we were talking about a \"new functionality\" (as if in times of adding `add --batch`) -- then may be `--json` output could introduce some new semantic for `add --json` to respond with smth like
+
+```
+{\"command\":\"add\",\"success\":true,\"input\":[\"directory/\"],\"error-messages\":[],\"file\": []}
+
+```
+
+thus signaling with `\"file\": []` that no files were added for that `input`. For the files which were added, it would provide one response per file (cannot populate \"file\" since can be too long)
+"""]]
