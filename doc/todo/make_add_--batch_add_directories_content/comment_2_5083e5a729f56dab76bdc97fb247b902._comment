@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-08-24T17:19:02Z"
+ content="""
+The reason it does not recurse is that would make the number of lines/json
+records of output vary depending on the number of files in the directory.
+Which would complicate parsing git-annex's output.
+
+`git-annex add` is not actually special here. You can't
+pass a directory to `git-annex drop --batch` either.
+
+It seems to me that it's not hard to recurse directories yourself, and so
+it's better to offload the need to do that onto users of --batch, rather
+than making them deal with increased parsing complexity.
+"""]]
