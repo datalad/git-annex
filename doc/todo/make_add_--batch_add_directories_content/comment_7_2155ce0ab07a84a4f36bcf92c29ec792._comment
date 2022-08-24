@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-08-24T19:01:55Z"
+ content="""
+I do think there is value in the simplicity of the current json, even if a
+"better" one could be constructed if we did not need to worry about
+backwards compatability. A new JSON object that was only seen when
+recursing a directory would need to be documented, otherwise a JSON user
+would be likely to only implement support for the JSON objects they did see.
+"""]]

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: comment 5"""
+ date="2022-08-24T19:06:20Z"
+ content="""
+git-annex uses git plumbing to handle this, so it's easy to do very close
+to the same thing:
+
+For most git-annex commands except `add`, you can get a list of files
+with `git ls-files --cached`. That will include annexed files and other
+files, but of course commands like `drop` will skip the non-annexed files
+and that can be handled with the existing `--batch` interface.
+
+For `add`, use `git ls-files --others --exclude-standard`
+
+(For `add`, it also looks at `git ls-files --modified`, but you only need
+that if you want to add files that got modified.)
+"""]]
