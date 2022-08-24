@@ -309,5 +309,5 @@ git-annex-shell: <stdin>: hGetChar: end of file
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I had tons of luck using git-annex. I am a non-programmer person and I could easily get the hang of it. At the moment I am using it for my podcast production.
 I can cut and export now from every available computer in my home. I have a central server on my LAN and git-annex also helps me to back up every episode.
-My next goal is to use it fpr my personal documents like scans of invoices, letter and so on. I think an archive repo will help me with this. So I can have all the stuff in one big folder.
-Thanks for inventing such a nice tool.cat 
+My next goal is to use it for my personal documents like scans of invoices, letter and so on. I think an archive repo will help me with this. So I can have all the stuff in one big folder.
+Thanks for inventing such a nice tool
