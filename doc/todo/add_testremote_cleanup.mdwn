@@ -1,0 +1,1 @@
+If [[`git-annex-testremote`|git-annex-testremote]] fails midway for some reason, it leaves many files on the remote that were used for the test.  Maybe, add a command to clean up / drop these files?  Or can an existing command do that?
