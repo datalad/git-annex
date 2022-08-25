@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="copying to S3: partsize/chunking"
+ date="2022-08-25T17:45:48Z"
+ content="""
+Re-enabling the remote with `partsize=1GiB` seems to fix the issue.  Maybe, make that the default for S3?
+
+Are there reasons to use `chunk` in addition to `partsize`, or does `partsize` obviate the need for chunking?
+
+"""]]
