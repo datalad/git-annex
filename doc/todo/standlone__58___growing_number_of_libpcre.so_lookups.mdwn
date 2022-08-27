@@ -1,0 +1,51 @@
+standalone build is known to be slower than "proper" one and one of the reasons we identified in the past was result in excessive lookups for dynamic libraries due to all the shims and LD* tuneups iirc. So we added a test for `git annex init` to not exceed 130 lookups for `libpcre.*so` [here](https://github.com/datalad/git-annex/blob/41b4226d7ac740f3844a9dedced75993b69af74a/.github/workflows/template/build-%7B%7Bostype%7D%7D.yaml.j2#L546). Well, today that test failed with 131. It seems that number of those lookups was growing
+
+<details>
+<summary>was about 110 in Jan</summary> 
+
+```shell
+(git)smaug:/mnt/datasets/datalad/ci/git-annex/builds/2022/01[master]git
+$> git grep '> test .* -lt 130' | grep ubuntu.*Seek
+cron-20220104/build-ubuntu.yaml-532-280a49ed-success/test-annex-more/6_Seek of dynlibs.txt:2022-01-04T02:59:06.2777397Z > test 109 -lt 130
+cron-20220105/build-ubuntu.yaml-534-d2f63758-success/test-annex-more/6_Seek of dynlibs.txt:2022-01-05T02:59:31.3381111Z > test 110 -lt 130
+...
+```
+</details>
+
+and was in >120 in Aug:
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex/builds/2022/08[master]git
+$> git grep '> test .* -lt 130' | grep ubuntu.*Seek
+cron-20220801/build-ubuntu.yaml-780-841b46fb-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-01T03:34:08.8366192Z > test 122 -lt 130
+cron-20220802/build-ubuntu.yaml-781-841b46fb-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-02T03:35:33.8514595Z > test 120 -lt 130
+cron-20220803/build-ubuntu.yaml-782-841b46fb-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-03T03:32:27.6511541Z > test 124 -lt 130
+cron-20220804/build-ubuntu.yaml-783-841b46fb-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-04T03:27:48.0776987Z > test 120 -lt 130
+cron-20220805/build-ubuntu.yaml-784-841b46fb-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-05T03:31:10.4380896Z > test 126 -lt 130
+cron-20220806/build-ubuntu.yaml-785-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-06T03:18:23.3003314Z > test 128 -lt 130
+cron-20220807/build-ubuntu.yaml-786-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-07T03:22:13.8922352Z > test 127 -lt 130
+cron-20220808/build-ubuntu.yaml-787-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-08T03:27:25.2816456Z > test 126 -lt 130
+cron-20220809/build-ubuntu.yaml-788-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-09T03:29:40.2487978Z > test 127 -lt 130
+cron-20220810/build-ubuntu.yaml-789-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-10T03:10:28.9067625Z > test 126 -lt 130
+cron-20220811/build-ubuntu.yaml-790-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-11T03:20:27.1936625Z > test 127 -lt 130
+cron-20220812/build-ubuntu.yaml-791-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-12T03:25:42.9069031Z > test 127 -lt 130
+cron-20220813/build-ubuntu.yaml-792-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-13T03:19:17.5307096Z > test 124 -lt 130
+cron-20220814/build-ubuntu.yaml-793-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-14T03:28:08.1891666Z > test 128 -lt 130
+cron-20220815/build-ubuntu.yaml-794-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-15T03:36:22.6735643Z > test 127 -lt 130
+cron-20220816/build-ubuntu.yaml-795-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-16T03:31:06.9664034Z > test 127 -lt 130
+cron-20220817/build-ubuntu.yaml-797-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-17T03:34:55.5031993Z > test 128 -lt 130
+cron-20220818/build-ubuntu.yaml-798-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-18T03:34:18.7936294Z > test 128 -lt 130
+cron-20220819/build-ubuntu.yaml-800-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-19T03:31:21.6241453Z > test 126 -lt 130
+cron-20220820/build-ubuntu.yaml-801-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-20T03:28:08.2721924Z > test 126 -lt 130
+cron-20220821/build-ubuntu.yaml-802-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-21T03:29:24.9739245Z > test 125 -lt 130
+cron-20220822/build-ubuntu.yaml-803-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-22T03:34:06.7771514Z > test 126 -lt 130
+cron-20220823/build-ubuntu.yaml-805-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-23T03:35:41.5831076Z > test 127 -lt 130
+cron-20220824/build-ubuntu.yaml-806-41b4226d-success/test-annex-more/6_Seek of dynlibs.txt:2022-08-24T03:41:06.5345006Z > test 126 -lt 130
+cron-20220825/build-ubuntu.yaml-807-41b4226d-success/test-annex-more/6_Seek of dynlibs.txt:2022-08-25T03:36:47.4347632Z > test 125 -lt 130
+cron-20220826/build-ubuntu.yaml-808-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-26T03:39:23.5398288Z > test 131 -lt 130
+manual-20220822/build-ubuntu.yaml-804-41b4226d-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-22T18:16:44.8256532Z > test 129 -lt 130
+pr-132/build-ubuntu.yaml-796-e482990a-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-16T19:03:13.1484274Z > test 128 -lt 130
+pr-55/build-ubuntu.yaml-799-32886238-failed/test-annex-more/6_Seek of dynlibs.txt:2022-08-18T18:11:38.9535820Z > test 127 -lt 130
+```
+
+anything to be done or should we just raise the bar to 140 in that test?
