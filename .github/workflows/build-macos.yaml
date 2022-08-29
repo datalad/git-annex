@@ -333,7 +333,7 @@ jobs:
           liblookups=
           PS4='> '; set -x
           test $(nfailed version "libpcre.*so") -lt 5
-          test $(nfailed init "libpcre.*so") -lt 130
+          test $(nfailed init "libpcre.*so") -lt 140
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
