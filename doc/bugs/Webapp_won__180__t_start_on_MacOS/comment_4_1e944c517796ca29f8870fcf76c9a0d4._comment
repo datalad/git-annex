@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-08-29T17:56:55Z"
+ content="""
+git-annex can be built without support for `git-annex webapp`,
+and it seems that your updated build was configured that way.
+
+This might be a mistake in the homebrew git-annex build,
+or they might have disabled building with the webapp for some reason.
+
+But, I suspect what caused this is a problem with a new version of cabal.
+When I build git-annex (on linux) with cabal 3.4.1.0 and ghc 9.0.2,
+it builds without the webapp. This is even though the webapp is supposed
+to be build by default. Even `cabal configure -fWebapp`
+does not cause it to build the webapp.
+"""]]
