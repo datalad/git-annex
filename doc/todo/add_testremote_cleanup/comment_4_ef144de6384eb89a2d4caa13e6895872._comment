@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-08-29T16:44:20Z"
+ content="""
+The keys used by testremote never reach the git-annex branch, so there is
+not a way to list them.
+
+What would work is to make testremote record the keys it stores to a log
+file, and then it could clean up ones from previous runs.
+"""]]
