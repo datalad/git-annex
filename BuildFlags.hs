@@ -24,7 +24,7 @@ buildFlags = filter (not . null)
 #ifdef WITH_WEBAPP
 	, "Webapp"
 #else
-#warning Building without the webapp. You probably need to install Yesod..
+#warning Building without the webapp.
 #endif
 #ifdef WITH_PAIRING
 	, "Pairing"
@@ -51,6 +51,9 @@ buildFlags = filter (not . null)
 #endif
 #ifdef WITH_MAGICMIME
 	, "MagicMime"
+#endif
+#ifdef WITH_BENCHMARK
+	, "Benchmark"
 #endif
 #ifdef DEBUGLOCKS
 	, "DebugLocks"
