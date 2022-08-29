@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="testremote cleanup"
+ date="2022-08-29T18:09:24Z"
+ content="""
+>What would work is to make testremote record the keys it stores to a log file, and then it could clean up ones from previous runs.
+
+Yes -- I thought to suggest that but was thinking of a file the user has to deal with, which is clumsy.  But I think you're suggesting a file somewhere under `.git/annex`, which would be a clean solution.
+"""]]
