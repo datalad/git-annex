@@ -9,6 +9,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Init (
+	checkInitializeAllowed,
 	ensureInitialized,
 	autoInitialize,
 	isInitialized,
@@ -68,11 +69,13 @@ import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async
 #endif
 
-checkInitializeAllowed :: Annex a -> Annex a
+data InitializeAllowed = InitializeAllowed
+
+checkInitializeAllowed :: (InitializeAllowed -> Annex a) -> Annex a
 checkInitializeAllowed a = guardSafeToUseRepo $ noAnnexFileContent' >>= \case
 	Nothing -> do
 		checkSqliteWorks
-		a
+		a InitializeAllowed
 	Just noannexmsg -> do
 		warning "Initialization prevented by .noannex file (remove the file to override)"
 		unless (null noannexmsg) $
@@ -100,7 +103,7 @@ genDescription Nothing = do
 		Left _ -> [hostname, ":", reldir]
 
 initialize :: Bool -> Maybe String -> Maybe RepoVersion -> Annex ()
-initialize autoinit mdescription mversion = checkInitializeAllowed $ do
+initialize autoinit mdescription mversion = checkInitializeAllowed $ \initallowed -> do
 	{- Has to come before any commits are made as the shared
 	 - clone heuristic expects no local objects. -}
 	sharedclone <- checkSharedClone
@@ -110,7 +113,7 @@ initialize autoinit mdescription mversion = checkInitializeAllowed $ do
 	ensureCommit $ Annex.Branch.create
 
 	prepUUID
-	initialize' autoinit mversion
+	initialize' autoinit mversion initallowed
 	
 	initSharedClone sharedclone
 	
@@ -122,8 +125,8 @@ initialize autoinit mdescription mversion = checkInitializeAllowed $ do
 
 -- Everything except for uuid setup, shared clone setup, and initial
 -- description.
-initialize' :: Bool -> Maybe RepoVersion -> Annex ()
-initialize' autoinit mversion = checkInitializeAllowed $ do
+initialize' :: Bool -> Maybe RepoVersion -> InitializeAllowed -> Annex ()
+initialize' autoinit mversion _initallowed = do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem

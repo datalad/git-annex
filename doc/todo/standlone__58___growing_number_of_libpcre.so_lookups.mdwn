@@ -49,3 +49,5 @@ pr-55/build-ubuntu.yaml-799-32886238-failed/test-annex-more/6_Seek of dynlibs.tx
 ```
 
 anything to be done or should we just raise the bar to 140 in that test?
+
+[[!tag projects/datalad]]
