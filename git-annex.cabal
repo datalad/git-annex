@@ -256,10 +256,8 @@ Extra-Source-Files:
   Utility/libkqueue.h
 
 Flag Assistant
-  Description: Enable git-annex assistant and watch command
-
-Flag Webapp
-  Description: Enable git-annex webapp
+  Description: Enable git-annex assistant, webapp, and watch command
+  Default: True
 
 Flag Pairing
   Description: Enable pairing
@@ -376,7 +374,21 @@ Executable git-annex
    aws (>= 0.20),
    DAV (>= 1.0),
    network (>= 3.0.0.0),
-   network-bsd
+   network-bsd,
+   mountpoints,
+   yesod (>= 1.4.3), 
+   yesod-static (>= 1.5.1),
+   yesod-form (>= 1.4.8),
+   yesod-core (>= 1.6.0),
+   path-pieces (>= 0.2.1),
+   warp (>= 3.2.8),
+   warp-tls (>= 3.2.2),
+   wai,
+   wai-extra,
+   blaze-builder,
+   clientsession,
+   template-haskell,
+   shakespeare (>= 2.0.11)
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
   Default-Language: Haskell2010
@@ -416,8 +428,7 @@ Executable git-annex
     Other-Modules: Utility.GitLFS
   
   if flag(Assistant) && ! os(solaris) && ! os(gnu)
-    Build-Depends: mountpoints
-    CPP-Options: -DWITH_ASSISTANT
+    CPP-Options: -DWITH_ASSISTANT -DWITH_WEBAPP
     Other-Modules:
       Assistant
       Assistant.Alert
@@ -436,6 +447,7 @@ Executable git-annex
       Assistant.Install.AutoStart
       Assistant.Install.Menu
       Assistant.MakeRemote
+      Assistant.MakeRepo
       Assistant.Monad
       Assistant.NamedThread
       Assistant.Pairing
@@ -458,6 +470,7 @@ Executable git-annex
       Assistant.Threads.Merger
       Assistant.Threads.MountWatcher
       Assistant.Threads.NetWatcher
+      Assistant.Threads.PairListener
       Assistant.Threads.ProblemFixer
       Assistant.Threads.Pusher
       Assistant.Threads.RemoteControl
@@ -469,6 +482,7 @@ Executable git-annex
       Assistant.Threads.UpgradeWatcher
       Assistant.Threads.Upgrader
       Assistant.Threads.Watcher
+      Assistant.Threads.WebApp
       Assistant.TransferQueue
       Assistant.TransferSlots
       Assistant.Types.Alert
@@ -489,11 +503,44 @@ Executable git-annex
       Assistant.Types.UrlRenderer
       Assistant.Unused
       Assistant.Upgrade
+      Assistant.WebApp
+      Assistant.WebApp.Common
+      Assistant.WebApp.Configurators
+      Assistant.WebApp.Configurators.AWS
+      Assistant.WebApp.Configurators.Delete
+      Assistant.WebApp.Configurators.Edit
+      Assistant.WebApp.Configurators.Fsck
+      Assistant.WebApp.Configurators.IA
+      Assistant.WebApp.Configurators.Local
+      Assistant.WebApp.Configurators.Pairing
+      Assistant.WebApp.Configurators.Preferences
+      Assistant.WebApp.Configurators.Ssh
+      Assistant.WebApp.Configurators.Unused
+      Assistant.WebApp.Configurators.Upgrade
+      Assistant.WebApp.Configurators.WebDAV
+      Assistant.WebApp.Control
+      Assistant.WebApp.DashBoard
+      Assistant.WebApp.Documentation
+      Assistant.WebApp.Form
+      Assistant.WebApp.Gpg
+      Assistant.WebApp.MakeRemote
+      Assistant.WebApp.Notifications
+      Assistant.WebApp.OtherRepos
+      Assistant.WebApp.Page
+      Assistant.WebApp.Pairing
+      Assistant.WebApp.Repair
+      Assistant.WebApp.RepoId
+      Assistant.WebApp.RepoList
+      Assistant.WebApp.SideBar
+      Assistant.WebApp.Types
       Command.Assistant
       Command.Watch
+      Command.WebApp
       Utility.Mounts
       Utility.OSX
-
+      Utility.Yesod
+      Utility.WebApp
+    
     if os(linux)
       Build-Depends: hinotify (>= 0.3.10)
       CPP-Options: -DWITH_INOTIFY
@@ -516,60 +563,6 @@ Executable git-annex
             Includes: Utility/libkqueue.h
             Other-Modules: Utility.DirWatcher.Kqueue
   
-    if flag(Webapp)
-      Build-Depends:
-       yesod (>= 1.4.3), 
-       yesod-static (>= 1.5.1),
-       yesod-form (>= 1.4.8),
-       yesod-core (>= 1.6.0),
-       path-pieces (>= 0.2.1),
-       warp (>= 3.2.8),
-       warp-tls (>= 3.2.2),
-       wai,
-       wai-extra,
-       blaze-builder,
-       clientsession,
-       template-haskell,
-       shakespeare (>= 2.0.11)
-      CPP-Options: -DWITH_WEBAPP
-      Other-Modules:
-        Command.WebApp
-        Assistant.Threads.WebApp
-        Assistant.Threads.PairListener
-        Assistant.WebApp
-        Assistant.WebApp.Common
-        Assistant.WebApp.Configurators
-        Assistant.WebApp.Configurators.AWS
-        Assistant.WebApp.Configurators.Delete
-        Assistant.WebApp.Configurators.Edit
-        Assistant.WebApp.Configurators.Fsck
-        Assistant.WebApp.Configurators.IA
-        Assistant.WebApp.Configurators.Local
-        Assistant.WebApp.Configurators.Pairing
-        Assistant.WebApp.Configurators.Preferences
-        Assistant.WebApp.Configurators.Ssh
-        Assistant.WebApp.Configurators.Unused
-        Assistant.WebApp.Configurators.Upgrade
-        Assistant.WebApp.Configurators.WebDAV
-        Assistant.WebApp.Control
-        Assistant.WebApp.DashBoard
-        Assistant.WebApp.Documentation
-        Assistant.WebApp.Form
-        Assistant.WebApp.Gpg
-        Assistant.WebApp.MakeRemote
-        Assistant.WebApp.Notifications
-        Assistant.WebApp.OtherRepos
-        Assistant.WebApp.Page
-        Assistant.WebApp.Pairing
-        Assistant.WebApp.Repair
-        Assistant.WebApp.RepoId
-        Assistant.WebApp.RepoList
-        Assistant.WebApp.SideBar
-        Assistant.WebApp.Types
-        Assistant.MakeRepo
-        Utility.Yesod
-        Utility.WebApp
-
   if flag(Dbus)
     if (os(linux))
       Build-Depends: dbus (>= 0.10.7), fdo-notify (>= 0.3)

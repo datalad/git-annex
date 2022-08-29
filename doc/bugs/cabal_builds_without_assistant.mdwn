@@ -10,3 +10,5 @@ I tried moving the build-depends out of the `if flag(Assistant)` section
 to the main build-depends section. It was able to install all the build
 depends, so it's not some dependency issue making it decide to turn off
 that build flag. --[[Joey]]
+
+> [[fixed|done]] by moving the dependencies into the main block. --[[Joey]]

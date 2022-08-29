@@ -311,3 +311,5 @@ I had tons of luck using git-annex. I am a non-programmer person and I could eas
 I can cut and export now from every available computer in my home. I have a central server on my LAN and git-annex also helps me to back up every episode.
 My next goal is to use it for my personal documents like scans of invoices, letter and so on. I think an archive repo will help me with this. So I can have all the stuff in one big folder.
 Thanks for inventing such a nice tool
+
+> [[fixed|done]] --[[Joey]]
