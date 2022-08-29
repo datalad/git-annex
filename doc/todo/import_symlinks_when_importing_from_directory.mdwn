@@ -1,0 +1,12 @@
+Following up on [[bugs/git-annex-import_imports_outside_of_directory]] (posting as a todo since the original bug was fixed):
+
+When [[`git-annex-import`|git-annex-import]] imports from a directory remote, if the tree being imported contains symlinks, import these symlinks into git as normal git symlinks.
+This way, the internal structure of the imported git tree mirrors the internal structure of the original tree, as it does when you archive the tree with `tar` or copy it with `cp -r`.
+If a tree gets imported with symlinks omitted, tools that expect files with specific names in specific subfolders may fail, if symlinks were used to meet these expectations in the original tree.
+
+At least, relative symlinks pointing into the tree being imported should be preserved.  This is the most common scenario; any reason not to include these?
+
+Absolute symlinks pointing into the tree being imported should be turned into relative symlinks to the same target, so that they still work in the repo's checkouts.
+
+Absolute symlinks pointing outside the tree are a harder case.  I would still suggest importing these as git symlinks, pointing to the same absolute target path.
+As long as the repo is checked out into a filesystem where the same absolute paths are mounted, the links will work.  That's a common scenario when all repo users use the same compute cluster with a shared filesystem.
