@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-08-30T17:19:35Z"
+ content="""
+Had an idea: ld-linux.so hardcodes some search paths like 
+x86_64-linux-gnu/glibc-hwcaps/x86-64-v2/ and x86_64-linux-gnu/x86_64/.
+There is no way to prevent it doing that short of a recompile. And no way
+to make it use a custom ld.so.cache either.
+
+But.. If those directories are made symlinks back to x86_64-linux-gnu, then
+it will find the library in the first path it looks in, every time!
+
+On my laptop, it searches x86_64-linux-gnu/glibc-hwcaps/x86-64-v2/ first,
+but this will vary depending on the hardware capabilities. I made that a
+symlink, and that reduces the number of ENOENT by some 300 when running
+git-annex init. And reduces the libpcre opens back down to 35.
+"""]]
