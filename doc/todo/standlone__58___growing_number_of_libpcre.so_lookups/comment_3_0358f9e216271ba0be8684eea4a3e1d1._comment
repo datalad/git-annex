@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2022-08-29T20:46:12Z"
+ content="""
+> Anyway, I think you should just raise the bar in your test..
+
+ok, did in [datalad/git-annex/commit/e26581b6](http://github.com/datalad/git-annex/commit/e26581b6a2e18c7b32034b94c16b43eee77a20eb)
+"""]]
