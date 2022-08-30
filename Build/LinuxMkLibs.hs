@@ -14,6 +14,7 @@ import Data.List
 import System.Posix.Files
 import Control.Monad.IfElse
 import Control.Applicative
+import qualified System.Info
 import Prelude
 
 import Utility.LinuxMkLibs
@@ -82,8 +83,56 @@ consolidateUsrLib top libdirs = go [] libdirs
 				unless (dirCruft f) $
 					unlessM (doesDirectoryExist src) $
 						renameFile src dst
+			symlinkHwCapDirs top d
 			go c rest
 		_ -> go (x:c) rest
+
+{- The linker looks for optimised versions of libraries depending on the
+ - hardware capabilities. That causes a lot of extra work searching for
+ - libraries, so to avoid it, make symlinks from the hwcap directories
+ - to the libdir. This way, the linker will find a library the first place
+ - it happens to look for it.
+ -}
+symlinkHwCapDirs :: FilePath -> FilePath -> IO ()
+symlinkHwCapDirs top libdir = forM_ hwcapdirs $ \d ->
+	unlessM (doesDirectoryExist (top ++ libdir </> d)) $ do
+		createDirectoryIfMissing True (top ++ libdir </> takeDirectory d)
+		link <- relPathDirToFile
+			(toRawFilePath (top ++ takeDirectory (libdir </> d)))
+			(toRawFilePath (top ++ libdir))
+		let link' = case fromRawFilePath link of
+			"" -> "."
+			l -> l
+		createSymbolicLink link' (top ++ libdir </> d)
+  where
+	hwcapdirs = case System.Info.arch of
+		"x86_64" -> 
+			-- See glibc's sysdeps/x86_64/dl-hwcaps-subdirs.c 
+			-- for list of subarchitecture directories.
+			[ "glibc-hwcaps/x86-64-v2"
+			, "glibc-hwcaps/x86-64-v3"
+			, "glibc-hwcaps/x86-64-v4"
+			-- The linker later checks these, and will check
+			-- them when none of the above subarchitectures
+			-- are supported by the processor, so make them
+			-- just in case.
+			, "tls/x86_64"
+			, "x86_64"
+			]
+		"i386" ->
+			[ "tls/i686"
+			[ "tls/i586"
+			, "i686"
+			,
+			"i586"
+			]
+		"arm" ->
+			-- Probably not complete, only what I have
+			-- observed.
+			[ "tls/v7l"
+			, "v7l"
+			]
+		_ -> []
 
 {- Installs a linker shim script around a binary.
  -

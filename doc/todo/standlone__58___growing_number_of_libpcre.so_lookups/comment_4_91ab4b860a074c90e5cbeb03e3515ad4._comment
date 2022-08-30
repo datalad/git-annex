@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-08-30T19:14:50Z"
+ content="""
+Implemented that idea now, so you may want to drop your test
+back down to 40 or 50.
+
+So far it's only implemented for amd64, i386, and arm. Other architectures
+might also have such directories that could be symlinked, I have not
+investigated.
+"""]]
