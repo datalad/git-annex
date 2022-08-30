@@ -4,7 +4,8 @@
  date="2022-08-30T19:14:50Z"
  content="""
 Implemented that idea now, so you may want to drop your test
-back down to 40 or 50.
+back down to 40 or 50. Or even better, make the test only look at the
+number of ENOENT opens of libpcre.. which should be 0 now.
 
 So far it's only implemented for amd64, i386, and arm. Other architectures
 might also have such directories that could be symlinked, I have not
