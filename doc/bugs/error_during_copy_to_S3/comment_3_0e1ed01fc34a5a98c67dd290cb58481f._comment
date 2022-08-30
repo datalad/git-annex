@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-08-30T16:46:41Z"
+ content="""
+Is this remote configured with chunk? (`git-annex info
+s3_dssi-bioinfo-shlyakhi_sccrispr-data`)
+
+Either chunk or partsize should work. partsize is disabled by default
+because there are a lot of S3 implementations besides AWS, that may not
+support it.
+
+Generally, it's probably better to use partsize rather than chunk if the S3
+server supports it.
+"""]]
