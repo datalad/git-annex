@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="howto importfeed youtube playlists (not entire channels)"
+ date="2022-09-01T19:26:20Z"
+ content="""
+e.g. channel [https://www.youtube.com/channel/UCzLPuKXYJxfwK6Vg7zuqjZQ](https://www.youtube.com/channel/UCzLPuKXYJxfwK6Vg7zuqjZQ) has [two playlists](https://www.youtube.com/channel/UCzLPuKXYJxfwK6Vg7zuqjZQ/playlists), e.g. one pointed to by [https://www.youtube.com/playlist?list=PLIa3r7AIaTikMGfiZlIuArLujETxVfOKP](https://www.youtube.com/playlist?list=PLIa3r7AIaTikMGfiZlIuArLujETxVfOKP).  I had a question \"What would be the importfeed url for that one?\".  Google into [this youtube video](https://www.youtube.com/watch?v=WmbPhkW8PHQ) and the fun is that it is the same approach but need `playlist_id` instead of `channel_id` in the `https://www.youtube.com/playlist?<query>` URL.  My immediate problem was that it fetched only last videos... will need to resort to [manual treat](http://git-annex.branchable.com/forum/importfeed_does_not_work_with_youtube_anymore/#comment-e8e0862d6c52de0e9ce61403cdfb1189) or alike to feed the rest
+"""]]
