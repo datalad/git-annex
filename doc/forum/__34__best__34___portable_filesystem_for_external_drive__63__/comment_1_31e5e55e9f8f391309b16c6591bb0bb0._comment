@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="I don't think there is one"
+ date="2022-09-02T02:04:29Z"
+ content="""
+Firstly, I don't think there is an agreement on what proper file permissions mean on local filesystems
+across OSes. Without a central authority what one denies the other can easily allow thus bypassing
+permissions. So basically you are semantically only left with permission \"hints\" or \"suggestions\"
+-- this file is to be treated read only, that file is supposed to be executable and so on -- that is, without
+any reference to a common user/group authority.
+
+AFAIK, there's some cross-platform support for symlinks on say NTFS, at least between linux
+and windows. The problem is that NTFS symlinks are *typed* -- they are either directory or file
+symlinks and while git on windows can restore symlinks (with core.symlinks = true) post-checkout
+(for instance with `git restore`), it can't seem to be able to decide which kind it needs *during*
+checkout, so it simply places symlink contents as regular files at first and declares them modified.
+
+Considering that git's own handling of symlinks is lackluster on Windows, it's no wonder that Joey hasn't
+been very enthusiastic about adding the support for the regular indirect locked mode there.
+E.g., I'll refer you to this archived todo in Google's cache for context: <https://webcache.googleusercontent.com/search?q=cache:Bu24xB2MR94J:https://git-annex.branchable.com/todo/utilising_the_mklink_command_on_windows_to_utilise_symlinks_and_therefore_indirect_mode_on_windows/>
+
+As for locking, Joey can probably expand on that subject.
+
+All in all there are several obstacles to working with checked out files across platforms. As far as I can tell
+the only cross-platform format is a bare remote with permissive file modes which is of course a bit inconvenient
+for day-to-day work because usually you need that checked out worktree somewhere for your apps to operate on.
+"""]]
