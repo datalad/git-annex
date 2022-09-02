@@ -53,6 +53,7 @@ Here are specific instructions for using git-annex with various services:
 * [[Mega|tips/megaannex]]
 * [[Microsoft Azure Blob Storage|rclone]]
 * [[Microsoft OneDrive|rclone]]
+* [NNCP](https://git.sr.ht/~ehmry/git-annex-remote-nncp)
 * [[OpenDrive|rclone]]
 * [[Openstack Swift / Rackspace cloud files / Memset Memstore|rclone]]
 * [[OwnCloud|tips/owncloudannex]]
