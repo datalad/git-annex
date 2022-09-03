@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ avatar="http://cdn.libravatar.org/avatar/090740822c9dcdb39ffe506b890981b4"
+ subject="comment 3"
+ date="2022-09-03T23:26:27Z"
+ content="""
+Forgot to mention - I'm on ZFS, which while it is a CoW filesystem, doesn't support cp --reflink.  For various reasons, a migration to ZFS or btrfs isn't very practical for me.
+"""]]
