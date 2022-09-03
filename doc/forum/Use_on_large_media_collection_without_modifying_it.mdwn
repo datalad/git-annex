@@ -25,7 +25,7 @@ So here's what I've looked into so far.  All of these are run with `git annex ad
 
 Incidentally, I mentioned timestamps and didn't say how I'll preserve them for the archive drives.  I can use mtree from Debian's mtree-netbsd package and do something like this on the source directory:
 
-`mtree -c -R nlink,uid,gid,mode  -p `pwd` -X <(echo './.git') > /tmp/spec`
+`mtree -c -R nlink,uid,gid,mode  -p /PATH/TO/REPO -X <(echo './.git') > /tmp/spec`
 
 And on the destination, restore the timestamps with:
 
