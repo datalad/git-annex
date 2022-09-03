@@ -1,0 +1,33 @@
+Hi everyone,
+
+I want to lay out a couple of use cases here.
+
+I have several large (1 TB +) media collections.  Some are often mounted read-only.  Others are very sensitive to changes -- I definitely don't want to risk anything that might munge timestamps, etc.  So my requirements are:
+
+1. Must not modify the files in the existing collection in any way. No changing timestamps, no converting them to hard or sym links, etc.
+2. Must not store an additional copy of the data locally (I don't have space for that)
+3. Must be able to handle the data store being read-only mounted (.git can be read-write)
+
+I want to use this for, in order of importance:
+
+1. Archival to external USB drives.  Currently I do this with rsync and it's a real mess figuring out what's where and what to do when a drive fills up.
+2. Being able to easily selectively copy some of the files to a laptop or Linux-using tablet for offline viewing
+3. Being able to queue up files to add from a laptop/tablet
+
+I'm not worried about the .git directory itself; I can bind-mount the existing store to be a subdirectory under a git-annex repo, so that would be fine.
+
+So here's what I've looked into so far.  All of these are run with `git annex adjust --unlock` (or the assistant, which does the same thing):
+
+- A directory remote with importtree=yes would work well for use case #1.  However, since the rsync backend doesn't support importtree, it would be challenging for #2 (I guess I could make it work via sshfs, but that gets a bit nasty)
+- I tried bind-mounting the existing data under a git-annex repo to use that as the source.  This does work; however, presumably because it can't hard link the files into .git/annex, it results in doubling the storage space requirements for the data.  That's not usable for me.
+- I thought about maybe adding git-annex directly to an existing directory.  That risks changing things about it (since it is necessarily read-write to git-annex).  I'm not really comfortable with that yet.
+
+Incidentally, I mentioned timestamps and didn't say how I'll preserve them for the archive drives.  I can use mtree from Debian's mtree-netbsd package and do something like this on the source directory:
+
+`mtree -c -R nlink,uid,gid,mode  -p `pwd` -X <(echo './.git') > /tmp/spec`
+
+And on the destination, restore the timestamps with:
+
+`mtree -t -U -e < /tmp/spec`
+
+I imagine some clever hooks would let me do this automatically, but I don't really feel the need for that.  I think this is easier, for me, than the discussion at [[todo/does_not_preserve_timestamps]].
