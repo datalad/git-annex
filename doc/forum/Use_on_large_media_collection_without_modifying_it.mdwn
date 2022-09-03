@@ -20,6 +20,7 @@ So here's what I've looked into so far.  All of these are run with `git annex ad
 
 - A directory remote with importtree=yes would work well for use case #1.  However, since the rsync backend doesn't support importtree, it would be challenging for #2 (I guess I could make it work via sshfs, but that gets a bit nasty)
 - I tried bind-mounting the existing data under a git-annex repo to use that as the source.  This does work; however, presumably because it can't hard link the files into .git/annex, it results in doubling the storage space requirements for the data.  That's not usable for me.
+- I thought maybe a transport repo would help.  So I could have, basically, `source->transport<->laptop` and `source->transport->archive`.  The problem here is that git-annex can't copy directly from source to laptop or archive in this scenario without duplicating the data in transport.  So I still can't just use get from the laptop to get things unless I use 2x the space, which again, I don't want to do.
 - I thought about maybe adding git-annex directly to an existing directory.  That risks changing things about it (since it is necessarily read-write to git-annex).  I'm not really comfortable with that yet.
 
 Incidentally, I mentioned timestamps and didn't say how I'll preserve them for the archive drives.  I can use mtree from Debian's mtree-netbsd package and do something like this on the source directory:
