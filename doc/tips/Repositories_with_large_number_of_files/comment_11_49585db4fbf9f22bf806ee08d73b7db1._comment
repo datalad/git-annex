@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ avatar="http://cdn.libravatar.org/avatar/090740822c9dcdb39ffe506b890981b4"
+ subject="comment 11"
+ date="2022-09-04T22:31:14Z"
+ content="""
+I'm trying to use a repo consisting of about 150,000 photos/videos.  I tried all the tipes here as well as the ones at [[/forum /__34__git_annex_sync__34___synced_after_8_hours]] and the time is still quite poor.  I don't know if using the special remote directory with importtree=yes hurts; I don't think it should.  The problem seems to be largely CPU-bound and RAM-bound; syncs can use many GB of RAM and a large amount of CPU time (even when there is no evident hashing of source files).  --jobs=10 hasn't caused much evident parallelization.  Changing the git index type, repacking, etc. rocketed through almost instantly and made no evident change.  I'd be very interested in ideas here, because at this rate, a sync that is a no-op has been running for 15 minutes just sitting there after \"list source ok\".  I'll let it run and see what it does.
+
+If it makes a difference, this is an unlocked repo (via git annex adjust --unlocked), not running assistant.  There are no directories with excessive numbers of photos.  The underlying filesystem is ZFS.
+"""]]
