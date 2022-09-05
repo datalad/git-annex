@@ -54,7 +54,7 @@ In a companion directory, .dtrash/files, 24 out of 719 files exhibited this issu
 
 I have not yet seen it outside .dtrash, but it will be many hours until this get process completes fully, as it needs to copy about 1TB of data.
 
-In case you are wondering if there is a race condition with .dtrash: no.  The only application that writes to it isn't running, and the last time a file was modified in there was over a year ago.
+In case you are wondering if there is a race condition with .dtrash: no.  The only application that writes to it isn't running, and the last time a file was modified in there was over a year ago.  Also the content of the .info files is just JSON and a corresponding filename embedded in them, so it is very clear that the files on the filesystem are correct and the calculated checksums at issue here were never correct.
 
 ### What steps will reproduce the problem?
 
