@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ avatar="http://cdn.libravatar.org/avatar/090740822c9dcdb39ffe506b890981b4"
+ subject="comment 15"
+ date="2022-09-05T23:57:01Z"
+ content="""
+Hi Joey,
+
+Thanks for this!  I may be missing some important detail here...
+
+So what I'm seeing is that it says \"list source\" and then stats every file in the importdir location.  That makes sense, and goes through in a minute or two.
+
+Then it sits at 100% CPU for an hour or two, reading a lot from the cidsdb, but not opening, stating, or reading from any other file.
+
+Maybe it checksummed something while I wasn't watching, but generally while I'm watching at least, I don't see it actually checksumming every file on every call to import.
+
+So is it building the tree object that's slow here?  And, since it doesn't store mtime, how does it detect changes?
+
+Thanks again for your patience with all these questions as I dive back into git-annex!
+"""]]
