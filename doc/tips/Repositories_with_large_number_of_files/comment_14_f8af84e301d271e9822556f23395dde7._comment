@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2022-09-05T18:09:59Z"
+ content="""
+Importing a large tree from a special remote does have a price. git-annex
+has to list the files, check to see if these are files it
+has imported before (that is the cid lookup), and also has to feed 
+the files and sha1s to git to build a tree object. Only once it's built
+the tree object can it see that no files have changed and it has nothing
+to do.
+
+That is always going to be slower than making a git repository in the
+directory and running git-annex add there. Because in that case, git can
+use the index to quickly tell what files are modified or new, and skip the
+unchanged files.
+
+Bear in mind that the directory special remote is not the only special
+remote that supports importing, and so the import interface has to be
+general enough to support others. So it can't use the filesystem level
+tricks that git is able to use with its index.
+"""]]
