@@ -72,7 +72,7 @@ moveFile src dest = tryIO (R.rename src dest) >>= onrename
 
 #ifndef mingw32_HOST_OS	
 	isdir f = do
-		r <- tryIO $ R.getFileStatus f
+		r <- tryIO $ R.getSymbolicLinkStatus f
 		case r of
 			(Left _) -> return False
 			(Right s) -> return $ isDirectory s

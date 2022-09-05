@@ -218,8 +218,8 @@ checkDiskSpaceDirectory d k = do
 	annexdir <- fromRepo gitAnnexObjectDir
 	samefilesystem <- liftIO $ catchDefaultIO False $ 
 		(\a b -> deviceID a == deviceID b)
-			<$> R.getFileStatus d
-			<*> R.getFileStatus annexdir
+			<$> R.getSymbolicLinkStatus d
+			<*> R.getSymbolicLinkStatus annexdir
 	checkDiskSpace (Just d) k 0 samefilesystem
 
 {- Passed a temp directory that contains the files that should be placed
@@ -369,7 +369,7 @@ listImportableContentsM ii dir = liftIO $ do
 		ImportableContents (catMaybes l') []
   where
 	go f = do
-		st <- R.getFileStatus f
+		st <- R.getSymbolicLinkStatus f
 		mkContentIdentifier ii f st >>= \case
 			Nothing -> return Nothing
 			Just cid -> do
@@ -402,7 +402,7 @@ importKeyM ii dir loc cid sz p = do
 	let k = alterKey unsizedk $ \kd -> kd
 		{ keySize = keySize kd <|> Just sz }
 	currcid <- liftIO $ mkContentIdentifier ii absf
-		=<< R.getFileStatus absf
+		=<< R.getSymbolicLinkStatus absf
 	guardSameContentIdentifiers (return (Just k)) cid currcid
   where
 	f = fromExportLocation loc
@@ -462,7 +462,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cid dest gk p =
 	-- content.
 	precheck cont = guardSameContentIdentifiers cont cid
 		=<< liftIO . mkContentIdentifier ii f
-		=<< liftIO (R.getFileStatus f)
+		=<< liftIO (R.getSymbolicLinkStatus f)
 
 	-- Check after copy, in case the file was changed while it was
 	-- being copied.
@@ -486,7 +486,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cid dest gk p =
 #ifndef mingw32_HOST_OS
 			=<< getFdStatus fd
 #else
-			=<< R.getFileStatus f
+			=<< R.getSymbolicLinkStatus f
 #endif
 		guardSameContentIdentifiers cont cid currcid
 
@@ -497,7 +497,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cid dest gk p =
 	-- restored to the original content before this check.
 	postcheckcow cont = do
 		currcid <- liftIO $ mkContentIdentifier ii f
-			=<< R.getFileStatus f
+			=<< R.getSymbolicLinkStatus f
 		guardSameContentIdentifiers cont cid currcid
 
 storeExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
@@ -508,7 +508,7 @@ storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
 		void $ liftIO $ fileCopier cow src tmpf p Nothing
 		let tmpf' = toRawFilePath tmpf
 		resetAnnexFilePerm tmpf'
-		liftIO (getFileStatus tmpf) >>= liftIO . mkContentIdentifier ii tmpf' >>= \case
+		liftIO (getSymbolicLinkStatus tmpf) >>= liftIO . mkContentIdentifier ii tmpf' >>= \case
 			Nothing -> giveup "unable to generate content identifier"
 			Just newcid -> do
 				checkExportContent ii dir loc
@@ -553,7 +553,7 @@ data CheckResult = DoesNotExist | KnownContentIdentifier
 -- content is known, and immediately run the callback.
 checkExportContent :: IgnoreInodes -> RawFilePath -> ExportLocation -> [ContentIdentifier] -> Annex a -> (CheckResult -> Annex a) -> Annex a
 checkExportContent ii dir loc knowncids unsafe callback = 
-	tryWhenExists (liftIO $ R.getFileStatus dest) >>= \case
+	tryWhenExists (liftIO $ R.getSymbolicLinkStatus dest) >>= \case
 		Just destst
 			| not (isRegularFile destst) -> unsafe
 			| otherwise -> catchDefaultIO Nothing (liftIO $ mkContentIdentifier ii dest destst) >>= \case

@@ -109,6 +109,10 @@ withPathContents a params = do
 			a f
 		go matcher checktimelimit ps fs		
 	
+	-- Using getFileStatus not getSymbolicLinkStatus because it should
+	-- fail if the path that the user provided is a broken symlink,
+	-- the same as it fails if the path that the user provided does not
+	-- exist.
 	get p = ifM (isDirectory <$> getFileStatus p)
 		( map (\f -> 
 			let f' = toRawFilePath f

@@ -156,7 +156,7 @@ hookPath script repo = do
 #if mingw32_HOST_OS
 	isexecutable f = doesFileExist f
 #else
-	isexecutable f = isExecutable . fileMode <$> getFileStatus f
+	isexecutable f = isExecutable . fileMode <$> getSymbolicLinkStatus f
 #endif
 
 {- Makes the path to a local Repo be relative to the cwd. -}

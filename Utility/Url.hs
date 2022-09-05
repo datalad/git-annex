@@ -313,7 +313,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 
 	existsfile u = do
 		let f = toRawFilePath (unEscapeString (uriPath u))
-		s <- catchMaybeIO $ R.getFileStatus f
+		s <- catchMaybeIO $ R.getSymbolicLinkStatus f
 		case s of
 			Just stat -> do
 				sz <- getFileSize' f stat

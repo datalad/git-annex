@@ -572,7 +572,7 @@ addAccessedWithin duration = do
   where
 	check now k = inAnnexCheck k $ \f ->
 		liftIO $ catchDefaultIO False $ do
-			s <- R.getFileStatus f
+			s <- R.getSymbolicLinkStatus f
 			let accessed = realToFrac (accessTime s)
 			let delta = now - accessed
 			return $ delta <= secs

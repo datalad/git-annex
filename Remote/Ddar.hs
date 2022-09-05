@@ -184,7 +184,8 @@ remove ddarrepo key = do
 ddarDirectoryExists :: DdarRepo -> Annex (Either String Bool)
 ddarDirectoryExists ddarrepo
 	| ddarLocal ddarrepo = do
-		maybeStatus <- liftIO $ tryJust (guard . isDoesNotExistError) $ getFileStatus $ ddarRepoLocation ddarrepo
+		maybeStatus <- liftIO $ tryJust (guard . isDoesNotExistError) $
+			getSymbolicLinkStatus $ ddarRepoLocation ddarrepo
 		return $ case maybeStatus of
 			Left _ -> Right False
 			Right status -> Right $ isDirectory status

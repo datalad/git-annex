@@ -187,7 +187,7 @@ readInodeCache s = case words s of
 
 genInodeCache :: RawFilePath -> TSDelta -> IO (Maybe InodeCache)
 genInodeCache f delta = catchDefaultIO Nothing $
-	toInodeCache delta f =<< R.getFileStatus f
+	toInodeCache delta f =<< R.getSymbolicLinkStatus f
 
 toInodeCache :: TSDelta -> RawFilePath -> FileStatus -> IO (Maybe InodeCache)
 toInodeCache d f s = toInodeCache' d f s (fileID s)
