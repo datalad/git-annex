@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ avatar="http://cdn.libravatar.org/avatar/090740822c9dcdb39ffe506b890981b4"
+ subject="comment 2"
+ date="2022-09-03T22:45:42Z"
+ content="""
+Thank you for these thoughts!
+
+I should have mentioned that I intend the USB drives to often live offsite, so they would be disconnected.  You are quite correct, though, that if they are onsite I could think of them as the sort of \"hub\" repository and do everything from them like that.
+
+Doing the enableremote for the special directory remote on the laptop does require it to be mounted as a filesystem there, hence my mention of sshfs.  That can work but is a bit clunky.
+"""]]

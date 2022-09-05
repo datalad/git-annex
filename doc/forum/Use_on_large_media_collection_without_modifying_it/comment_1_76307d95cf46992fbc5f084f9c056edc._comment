@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2022-09-03T21:32:29Z"
+ content="""
+First of all you really want to look into/migrate to reflink-capable filesystems like XFS or btrfs. 
+
+I don't know why you'd need to use the rsync special-remote for case #2. You create git-annex repos on your usb drive,
+add the existing collection as a directory special-remote with `--import-tree` and import everything. Then you clone the
+repo to your laptop and can `git annex sync/get/copy` from the usb drive however you like. I think you can even `git annex enableremote` the
+import special-remote on your laptop, and then git-annex will get files directly from it. Heck, you could even `git annex import --no-content`
+and only have the file metadata imported, but none of the content actually stored in git-annex and then you can selectively `git annex get` files directly from the special-remote.
+
+Also, you may want to set `git annex config --set annex.dotfiles true` on each of you repos. All of these options are documented in the [[git-annex]] manpage (also look at the [[git-annex-config]] manpage).
+"""]]

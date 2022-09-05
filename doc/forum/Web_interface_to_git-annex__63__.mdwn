@@ -1,0 +1,5 @@
+Is there currently such a thing as a Web interface for viewing files in a git-annex repository, and being able to carry out git-annex operations like get/drop?
+
+There are several different Web-based file browsers available, which work fine on a git-annex repo but don't let you do annex operations. I could also run a generic WebDAV server and client, but that has the same problem.
+
+The eventual use case is to expose the interface behind an HTTPS reverse proxy that will handle authentication, so no authentication functionality is needed.

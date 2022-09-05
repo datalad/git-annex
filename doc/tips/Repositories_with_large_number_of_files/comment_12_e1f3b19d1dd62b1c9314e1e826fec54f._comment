@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ avatar="http://cdn.libravatar.org/avatar/090740822c9dcdb39ffe506b890981b4"
+ subject="comment 12"
+ date="2022-09-05T01:01:59Z"
+ content="""
+To expand: this took about 2 hours to run.  A git annex sync from another git annex repo is a lot faster (a minute or so).  It is the directory remote that's so slow.  Examining with strace and lsof, I don't believe this is chechsumming.  In fact, it seems to be mostly continuous reading from cidsdb/db, which is only 49MB in size and therefore certainly cached.  The process is entirely CPU-bound.
+"""]]

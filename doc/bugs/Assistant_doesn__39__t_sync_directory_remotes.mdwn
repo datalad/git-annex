@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+I have set up a repository with assistant.  Then, within it, I ran:
+
+```
+git annex initremote source type=directory directory=... importtree=yes encryption=none
+git annex enableremote source type=directory directory=...
+git config remote.source.annex-readonly true
+git config remote.source.annex-tracking-branch main:data
+git annex import main:data --from source
+```
+
+At this point, git annex sync will (usually) sync this.
+
+### What steps will reproduce the problem?
+
+There are two problems.
+
+1. The assistant will never sync this, no matter what I do.  I can request a manual sync of either the repo or the remote, and neither does anything.
+2. It appears that the assistant is creating a locking race with the CLI.  For instance, I got `fatal: Unable to create '.git/index.lock': .git/index.lock: openFd: already exists (File exists)` with one run of `git annex sync`, but the run of it before and after worked fine.
+
+When there isn't a race with `git annex sync`, it behaves as desired.
+
+### What version of git-annex are you using? On what operating system?
+
+8.20210223-2 on Debian bullseye.
+
+### Please provide any additional information below.
+
+I will probably disable assistant 
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm pretty excited about using this approach to help archive some photos and such!
