@@ -121,10 +121,9 @@ symlinkHwCapDirs top libdir = forM_ hwcapdirs $ \d ->
 			]
 		"i386" ->
 			[ "tls/i686"
-			[ "tls/i586"
+			, "tls/i586"
 			, "i686"
-			,
-			"i586"
+			, "i586"
 			]
 		"arm" ->
 			-- Probably not complete, only what I have
