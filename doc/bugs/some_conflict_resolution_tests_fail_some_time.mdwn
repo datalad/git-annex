@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+once in a while we have those two tests failing in daily testing of git-annex on ndoli under tmp.  The test configuration is "prescribed" [here](https://github.com/datalad/git-annex/blob/master/clients/clients.yaml#L10) but overall -- we run `git annex test` under POSIX partition on that host.  As a result we get sometimes (not daily!)
+
+```
+❯ grep FAIL git-annex-tmp.log
+    conflict resolution (removed file): FAIL (1003.88s)
+    conflict resolution (mixed directory and file): FAIL (1380.03s)
+❯ grep -3 FAIL git-annex-tmp.log
+    Init Tests
+      init:                             OK (56.99s)
+      add:                              OK (127.60s)
+    conflict resolution (removed file): FAIL (1003.88s)
+      ./Test/Framework.hs:72:
+      sync failed (transcript follows)
+      commit 
+--
+    Init Tests
+      init:                                         OK (44.72s)
+      add:                                          OK (136.98s)
+    conflict resolution (mixed directory and file): FAIL (1380.03s)
+      ./Test/Framework.hs:72:
+      sync in mixed conflict failed (transcript follows)
+      commit 
+```
+
+and among clients it happens only on ndoli and only rarely:
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex-ci-client-jobs[master]builds/2022
+$> datalad foreach-dataset -J0 -s git grep 'conflict resolution.*FAIL'
+foreach-dataset(error): /mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/02 (dataset) [CommandError: 'git grep 'conflict resolution.*FAIL'' failed with exitcode 1 under /mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/02]
+result-ndoli-629/handle-result.yaml-30-52d367ab-success/result-ndoli-629/git-annex-tmp.log:    conflict resolution: FAIL (565.53s)
+foreach-dataset(ok): /mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/03 (dataset)
+foreach-dataset(error): /mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/04 (dataset) [CommandError: 'git grep 'conflict resolution.*FAIL'' failed with exitcode 1 under /mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/04]
+result-ndoli-684/handle-result.yaml-102-394daed9-success/result-ndoli-684/git-annex-tmp.log:    conflict resolution (nonannexed file): FAIL (715.11s)
+foreach-dataset(ok): /mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/05 (dataset)
+result-ndoli-719/handle-result.yaml-162-09b2e6d0-success/result-ndoli-719/git-annex-tmp.log:    conflict resolution (mixed directory and file): FAIL (741.11s)
+result-ndoli-741/handle-result.yaml-204-97aee562-success/result-ndoli-741/git-annex-tmp.log:    conflict resolution (nonannexed file): FAIL (775.03s)
+foreach-dataset(ok): /mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/06 (dataset)
+result-ndoli-770/handle-result.yaml-244-2fbd8878-success/result-ndoli-770/git-annex-tmp.log:    conflict resolution (nonannexed symlink): FAIL (339.79s)
+result-ndoli-778/handle-result.yaml-258-a5ab40e5-success/result-ndoli-778/git-annex-tmp.log:    conflict resolution (removed file): FAIL (917.26s)
+foreach-dataset(ok): /mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/07 (dataset)
+result-ndoli-785/handle-result.yaml-272-e409ca97-success/result-ndoli-785/git-annex-tmp.log:    conflict resolution (mixed directory and file): FAIL (954.74s)
+result-ndoli-786/handle-result.yaml-274-ff6d0e55-success/result-ndoli-786/git-annex-tmp.log:    conflict resolution (mixed directory and file): FAIL (770.95s)
+result-ndoli-788/handle-result.yaml-278-310c87a2-success/result-ndoli-788/git-annex-tmp.log:    conflict resolution (nonannexed file): FAIL (438.90s)
+result-ndoli-788/handle-result.yaml-278-310c87a2-success/result-ndoli-788/git-annex-tmp.log:    conflict resolution (nonannexed symlink): FAIL (441.32s)
+result-ndoli-788/handle-result.yaml-278-310c87a2-success/result-ndoli-788/git-annex-tmp.log:    conflict resolution (mixed directory and file): FAIL (526.07s)
+result-ndoli-788/handle-result.yaml-278-310c87a2-success/result-ndoli-788/git-annex-tmp.log:    conflict resolution movein regression: FAIL (691.90s)
+result-ndoli-802/handle-result.yaml-302-f1034ff8-success/result-ndoli-802/git-annex-tmp.log:    conflict resolution (mixed directory and file): FAIL (811.06s)
+foreach-dataset(ok): /mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/08 (dataset)
+result-ndoli-820/handle-result.yaml-324-d9b34ab5-success/result-ndoli-820/git-annex-tmp.log:    conflict resolution (removed file): FAIL (1003.88s)
+result-ndoli-820/handle-result.yaml-324-d9b34ab5-success/result-ndoli-820/git-annex-tmp.log:    conflict resolution (mixed directory and file): FAIL (1380.03s)
+foreach-dataset(ok): /mnt/datasets/datalad/ci/git-annex-ci-client-jobs/builds/2022/09 (dataset)
+action summary:
+  foreach-dataset (error: 2, ok: 6)
+```
