@@ -1,0 +1,13 @@
+I'm working on setting things up for making archives on both hard drives and possibly optical media.  I want them readable without needing to have Linux or git-annex, so I'm going to be using NTFS (for HDDs) and UDF (for optical).  So I'm using adjust --unlocked everywhere.  I don't want anything mucking with the source data; making hard links, tweaking timestamps, etc.
+
+Additionally, timestamps are highly relevant for me to preserve.
+
+Initially I thought I might be able to use the directory remote with importdirectory, but I ran into a lot of performance problems with my 150,000-file setup, as well as the bug at [[/bugs/Files_recorded_with_other_file__39__s_checksums/]].  So I'm trying to work without the special remote at all, which seems to be much more performant and, I suspect, less buggy.
+
+So now I'm thinking of having a repo on each drive, and rsyncing the content to it.  I can easily enough exclude .git.  Then I git annex add, git annex sync, and I think I've got what I need.
+
+The question is, why, with unlocked mode, do we have to have the files also stored in .git/annex?  Of course, most (though not all) files will be hardlinked to them.  But as we know, when we modify a file, it invalidates its checksum, so I'm not really seeing what this adds.
+
+If we didn't have to do this, I could just add git-annex to the source repo itself, secure in the notion that if I only push out from there, it will never modify anything there at all.  Then I could just pull elsewhere.
+
+On the targets, I guess it doesn't hurt too much since it's hardlinked.
