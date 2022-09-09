@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="HiDefender"
+ avatar="http://cdn.libravatar.org/avatar/da26f59fad0edc71a2615149155b42ab"
+ subject="Using git-annex on NTFS with WSL2"
+ date="2022-09-09T19:24:56Z"
+ content="""
+Is there a guide on using git-annex with WSL2?
+
+For my use case I don't even need symlinks (e.g. $ git config annex.addunlocked true ).
+"""]]
