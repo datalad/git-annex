@@ -201,8 +201,8 @@ getInitializedVersion = do
  -
  - Checks repository version and handles upgrades too.
  -}
-ensureInitialized :: Annex ()
-ensureInitialized = getInitializedVersion >>= maybe needsinit checkUpgrade
+ensureInitialized :: Annex [Remote] -> Annex ()
+ensureInitialized remotelist = getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM autoInitializeAllowed
 		( do
@@ -210,7 +210,7 @@ ensureInitialized = getInitializedVersion >>= maybe needsinit checkUpgrade
 				Right () -> noop
 				Left e -> giveup $ show e ++ "\n" ++
 					"git-annex: automatic initialization failed due to above problems"
-			autoEnableSpecialRemotes
+			autoEnableSpecialRemotes remotelist
 		, giveup "First run: git-annex init"
 		)
 
@@ -254,13 +254,13 @@ guardSafeToUseRepo a = ifM (inRepo Git.Config.checkRepoConfigInaccessible)
  -
  - Checks repository version and handles upgrades too.
  -}
-autoInitialize :: Annex ()
-autoInitialize = getInitializedVersion >>= maybe needsinit checkUpgrade
+autoInitialize :: Annex [Remote] -> Annex ()
+autoInitialize remotelist = getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit =
 		whenM (initializeAllowed <&&> autoInitializeAllowed) $ do
 			initialize True Nothing Nothing
-			autoEnableSpecialRemotes
+			autoEnableSpecialRemotes remotelist
 
 {- Checks if a repository is initialized. Does not check version for ugrade. -}
 isInitialized :: Annex Bool
@@ -440,9 +440,17 @@ fixupUnusualReposAfterInit = do
 {- Try to enable any special remotes that are configured to do so.
  - 
  - The enabling is done in a child process to avoid it using stdio.
+ -
+ - The remotelist should be Remote.List.remoteList, which cannot
+ - be imported here due to a dependency loop.
  -}
-autoEnableSpecialRemotes :: Annex ()
-autoEnableSpecialRemotes = do
+autoEnableSpecialRemotes :: Annex [Remote] -> Annex ()
+autoEnableSpecialRemotes remotelist = do
+	-- Get all existing git remotes to probe for their uuid here,
+	-- so it is not done inside the child process. Doing it in there
+	-- could result in password prompts for http credentials,
+	-- which would then not end up cached in this process's state.
+	_ <- remotelist
 	rp <- fromRawFilePath <$> fromRepo Git.repoPath
 	withNullHandle $ \nullh -> gitAnnexChildProcess "init"
 		[ Param "--autoenable" ]

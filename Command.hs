@@ -28,6 +28,7 @@ import Utility.Daemon
 import Types.Transfer
 import Types.ActionItem
 import Types.WorkerPool as ReExported
+import Remote.List
 
 {- Generates a normal Command -}
 command :: String -> CommandSection -> String -> CmdParamsDesc -> (CmdParamsDesc -> CommandParser) -> Command
@@ -125,7 +126,7 @@ commonChecks :: [CommandCheck]
 commonChecks = [repoExists]
 
 repoExists :: CommandCheck
-repoExists = CommandCheck 0 ensureInitialized
+repoExists = CommandCheck 0 (ensureInitialized remoteList)
 
 notBareRepo :: Command -> Command
 notBareRepo = addCheck checkNotBareRepo

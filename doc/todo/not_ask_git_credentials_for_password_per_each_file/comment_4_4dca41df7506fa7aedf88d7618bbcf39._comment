@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-09-09T18:39:06Z"
+ content="""
+Fixed the autoinit case.
+
+I'm going to close this as done, despite the cases mentioned above where
+subprocesses might redundantly prompt for the credentials. 
+
+Another reason
+to not worry about those is that `git-annex sync` runs `git fetch` and `git
+push` (more than once), so there will be several password prompts there.
+So when git-annex runs a git-annex subprocess, it follows it's just as ok
+for it to do its own password prompts as it is for a git subprocess to do
+so. The solution to either is certianly to enable git's credential cache.
+So the scope of this todo has to be limited to prompting done by a single
+git-annex process.
+"""]]
