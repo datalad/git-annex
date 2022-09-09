@@ -147,6 +147,10 @@ withUrlOptions a = a =<< getUrlOptions
 
 -- When downloading an url, if authentication is needed, uses
 -- git-credential to prompt for username and password.
+--
+-- Note that, when the downloader is curl, it will not use git-credential.
+-- If the user wants to, they can configure curl to use a netrc file that
+-- handles authentication.
 withUrlOptionsPromptingCreds :: (U.UrlOptions -> Annex a) -> Annex a
 withUrlOptionsPromptingCreds a = do
 	g <- Annex.gitRepo
@@ -156,12 +160,6 @@ withUrlOptionsPromptingCreds a = do
 	a $ uo
 		{ U.getBasicAuth = \u -> prompter $
 			getBasicAuthFromCredential g cc u
-		-- Can't download with curl and handle basic auth,
-		-- so make sure it uses conduit.
-		, U.urlDownloader = case U.urlDownloader uo of
-			U.DownloadWithCurl _ -> U.DownloadWithConduit $
-				U.DownloadWithCurlRestricted mempty
-			v -> v
 		}
 
 checkBoth :: U.URLString -> Maybe Integer -> U.UrlOptions -> Annex Bool
