@@ -98,3 +98,5 @@ git config annex.diskreserve 100M
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
+> [[done]] since this has pretty strongly been confirmed to be a bug that
+> was already fixed in a newer git-annex version. --[[Joey]] 
