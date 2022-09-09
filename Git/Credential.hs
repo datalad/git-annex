@@ -1,18 +1,24 @@
 {- git credential interface
  -
- - Copyright 2019-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE OverloadedStrings #-}
 
 module Git.Credential where
 
 import Common
 import Git
+import Git.Types
 import Git.Command
+import qualified Git.Config as Config
 import Utility.Url
 
 import qualified Data.Map as M
+import Network.URI
+import Control.Concurrent.STM
 
 data Credential = Credential { fromCredential :: M.Map String String }
 
@@ -27,20 +33,33 @@ credentialBasicAuth cred = BasicAuth
 	<$> credentialUsername cred
 	<*> credentialPassword cred
 
-getBasicAuthFromCredential :: Repo -> GetBasicAuth
-getBasicAuthFromCredential r u = do
-	c <- getUrlCredential u r
-	case credentialBasicAuth c of
-		Just ba -> return $ Just (ba, signalsuccess c)
-		Nothing -> do
-			signalsuccess c False
-			return Nothing
+getBasicAuthFromCredential :: Repo -> TMVar CredentialCache -> GetBasicAuth
+getBasicAuthFromCredential r ccv u = do
+	(CredentialCache cc) <- atomically $ readTMVar ccv
+	case mkCredentialBaseURL r u of
+		Just bu -> case M.lookup bu cc of
+			Just c -> go (const noop) c
+			Nothing -> do
+				let storeincache = \c -> atomically $ do
+					(CredentialCache cc') <- takeTMVar ccv
+					putTMVar ccv (CredentialCache (M.insert bu c cc'))
+				go storeincache =<< getUrlCredential u r
+		Nothing -> go (const noop) =<< getUrlCredential u r
   where
-	signalsuccess c True = approveUrlCredential c r
-	signalsuccess c False = rejectUrlCredential c r
+	go storeincache c =
+		case credentialBasicAuth c of
+			Just ba -> return $ Just (ba, signalsuccess)
+			Nothing -> do
+				signalsuccess False
+				return Nothing
+	  where
+		signalsuccess True = do
+			() <- storeincache c
+			approveUrlCredential c r
+		signalsuccess False = rejectUrlCredential c r
 
--- | This may prompt the user for login information, or get cached login
--- information.
+-- | This may prompt the user for the credential, or get a cached
+-- credential from git.
 getUrlCredential :: URLString -> Repo -> IO Credential
 getUrlCredential = runCredential "fill" . urlCredential
 
@@ -79,3 +98,28 @@ parseCredential = Credential . M.fromList . map go . lines
 	go l = case break (== '=') l of
 		(k, _:v) -> (k, v)
 		(k, []) -> (k, "")
+
+-- This is not the cache used by git, but is an in-process cache, 
+-- allowing a process to avoid prompting repeatedly when accessing related
+-- urls even when git is not configured to cache credentials.
+data CredentialCache = CredentialCache (M.Map CredentialBaseURL Credential)
+
+-- An url with the uriPath empty when credential.useHttpPath is false.
+--
+-- When credential.useHttpPath is true, no caching is done, since each 
+-- distinct url would need a different credential to be cached, which
+-- could cause the CredentialCache to use a lot of memory. Presumably,
+-- when credential.useHttpPath is false, one Credential is cached
+-- for each git repo accessed, and there are a reasonably small number of
+-- those, so the cache will not grow too large.
+data CredentialBaseURL = CredentialBaseURL URI
+	deriving (Show, Eq, Ord)
+
+mkCredentialBaseURL :: Repo -> URLString -> Maybe CredentialBaseURL
+mkCredentialBaseURL r s = do
+	u <- parseURI s
+	let usehttppath = fromMaybe False $ Config.isTrueFalse' $
+		Config.get (ConfigKey "credential.useHttpPath") (ConfigValue "") r
+	if usehttppath
+		then Nothing
+		else Just $ CredentialBaseURL $ u { uriPath = "" }

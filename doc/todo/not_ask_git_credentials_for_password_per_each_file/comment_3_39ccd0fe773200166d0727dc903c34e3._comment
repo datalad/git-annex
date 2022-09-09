@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-09-09T18:11:28Z"
+ content="""
+I've implemented this, and a get of multiple files will prompt once.
+
+However, there is one case where the password is prompted twice.
+In a freshly cloned repo, where you have not run `git-annex init` manually,
+`git-annex get foo` will prompt twice.
+
+That is because autoinit causes `git-annex init --autoenable` to be run,
+and that infortunately probes for the UUID of the http remote, 
+which needs the password. Since the cache is necessarily only for a single
+process, that subprocess adds an additional prompt.
+
+There might also be other cases where git-annex starts
+subprocesses, that legitimately each need to prompt once for the password.
+I expect that, when `git-annex transferrer` is used 
+(due to annex.stalldetection being configured), and -J is used,
+each transferrer process will end up prompting once for the password.
+
+I don't think it makes sense to convert this from a simple in-process cache
+to a cache that is shared amoung all subprocesses. That would reimplement
+what `git-credential-cache` already does. And if you need that,
+you can just enable it.
+
+But I would like to fix the autoinit case to not prompt twice, and am
+leaving this open for now to do that.
+"""]]

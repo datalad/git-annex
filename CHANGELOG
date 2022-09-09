@@ -5,6 +5,9 @@ git-annex (10.20220823) UNRELEASED; urgency=medium
   * Optimise linker in linux standalone tarballs.
   * Fix crash importing from a directory special remote that contains
     a broken symlink.
+  * When accessing a git remote over http needs a git credential
+    prompt for a password, cache it for the lifetime of the git-annex
+    process, rather than repeatedly prompting.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Aug 2022 15:03:04 -0400
 

@@ -152,9 +152,10 @@ withUrlOptionsPromptingCreds a = do
 	g <- Annex.gitRepo
 	uo <- getUrlOptions
 	prompter <- mkPrompter
+	cc <- Annex.getRead Annex.gitcredentialcache
 	a $ uo
 		{ U.getBasicAuth = \u -> prompter $
-			getBasicAuthFromCredential g u
+			getBasicAuthFromCredential g cc u
 		-- Can't download with curl and handle basic auth,
 		-- so make sure it uses conduit.
 		, U.urlDownloader = case U.urlDownloader uo of

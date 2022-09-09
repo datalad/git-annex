@@ -81,6 +81,7 @@ import Utility.InodeCache
 import Utility.Url
 import Utility.ResourcePool
 import Utility.HumanTime
+import Git.Credential (CredentialCache(..))
 
 import "mtl" Control.Monad.Reader
 import Control.Concurrent
@@ -129,6 +130,7 @@ data AnnexRead = AnnexRead
 	, forcebackend :: Maybe String
 	, useragent :: Maybe String
 	, desktopnotify :: DesktopNotify
+	, gitcredentialcache :: TMVar CredentialCache
 	}
 
 newAnnexRead :: GitConfig -> IO AnnexRead
@@ -140,6 +142,7 @@ newAnnexRead c = do
 	si <- newTVarIO M.empty
 	tp <- newTransferrerPool
 	cm <- newTMVarIO M.empty
+	cc <- newTMVarIO (CredentialCache M.empty)
 	return $ AnnexRead
 		{ activekeys = emptyactivekeys
 		, activeremotes = emptyactiveremotes
@@ -157,6 +160,7 @@ newAnnexRead c = do
 		, forcemincopies = Nothing
 		, useragent = Nothing
 		, desktopnotify = mempty
+		, gitcredentialcache = cc
 		}
 
 -- Values that can change while running an Annex action.
