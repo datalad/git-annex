@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-09-09T18:54:08Z"
+ content="""
+Suppose git-annex did behave that way. Now suppose that you ran:
+
+	git config annex.largefiles 'include=*'
+	git add largefile
+	git commit -m 'added a large file to git-annex (unlocked)'
+	git stash
+
+Then git would have deleted the only copy of largefile, which
+was the one stored in the working tree. You would have lost data.
+The hard links, annoying as they are, avoid this problem.
+
+> But as we know, when we modify a file, it invalidates its checksum
+
+Right, and if you're going to be running things that open and modify
+files, then it is not safe to set annex.thin. 
+"echo foo > largefile" will modify the file and lose the original version.
+
+The difference is that you have to run something that does usually
+modify the file to lose data (with annex.thin set). 
+Running a git command that is normally entirely safe will not lose data.
+
+So the user of annex.thin only needs to keep in mind that some things that
+would usually modify a file will lose the previous version of it,
+unless they've copied it to another remote. They don't have to live in fear
+of running a command that is usually safe and reversable and that causing
+data loss.
+"""]]
