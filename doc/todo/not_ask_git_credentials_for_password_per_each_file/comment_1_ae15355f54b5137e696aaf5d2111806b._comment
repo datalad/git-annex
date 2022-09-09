@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-09-09T16:02:29Z"
+ content="""
+Is this a git-lfs special remote, or a git remote with an annex/objects
+directory? Probably does not matter, but also is unclear.
+
+`git credential` is doing the prompting here, and it supports caching, if
+you choose to enable that, by eg `git config credential.helper cache`.
+
+It feels redundant to add another layer of caching to git's existing cache.
+On the other hand, I suppose that `git pull` can make multiple http accesses
+and reuse the same credential for them, so that's kind of a precedent for
+caching during the lifetime of the process.
+"""]]
