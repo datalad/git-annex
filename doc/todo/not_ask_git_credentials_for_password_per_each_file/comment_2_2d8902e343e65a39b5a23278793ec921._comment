@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-09-09T16:37:04Z"
+ content="""
+Seems that the git-lfs special remote already implements something like
+this. When discovering the LFS endpoint, it checks if a credential is
+needed, and that credential is included in the endpoint, so will be used
+for all requests, and it only prompts once.
+
+So it's only the git remote when accessing annex/objects over http that
+prompts repeatedly for credentials.
+"""]]
