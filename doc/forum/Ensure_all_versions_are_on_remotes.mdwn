@@ -1,0 +1,36 @@
+I thought I was getting the hang of annex, but have run into a bit of a problem. I could use some help ensuring that everything ends up in the right place.
+
+Specifically, it seems like sync does a lot more than push and pull files - that it might actually try to drop things from remotes (at least with the -a) command.
+
+I have two machines I work on, and two special remotes (S3/wasabi) that should have everything that's ever been annexed, including old versions of files.
+
+If I `git annex sync -a -A` then it will pull all versions locally as well. So I think I may have to separate the get and copy commands? Though that gets a bit slower since it seems to enumerate every file for every version.
+
+Here's what I'm doing so far:
+
+
+```
+git annex config --set annex.synccontent false   # sync -A still seems to send content, which I think is okay
+git annex config --set annex.synconlyannex true
+git annex config --set annex.autocommit false
+
+git annex group wasabi-east wasabi
+git annex group wasabi-west wasabi
+git annex groupwanted wasabi anything
+git annex required wasabi-east groupwanted
+git annex required wasabi-west groupwanted
+
+git annex group machine1 active
+git annex group machine2 active
+git annex groupwanted anything
+
+# from machine1
+git annex sync -a origin machine2 wasabi-east wasabi-west
+git annex get -a
+for remote in "wasabi-east wasabi-west"
+do
+  git annex copy -q -A -t $remote
+done
+```
+
+I think that's what I need to do? I don't think I can use `git annex sync -a -A wasabi-east wasabi-west` because I don't want to pull old versions to my local machine.
