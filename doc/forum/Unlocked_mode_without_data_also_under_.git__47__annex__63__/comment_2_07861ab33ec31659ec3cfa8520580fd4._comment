@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ avatar="http://cdn.libravatar.org/avatar/090740822c9dcdb39ffe506b890981b4"
+ subject="comment 2"
+ date="2022-09-10T00:32:57Z"
+ content="""
+In my case, I really don't care about losing the old version of a file.  I have ZFS snapshots and backups to take care of that. I do use thin, and that particular issue doesn't really bother me.  I wounder if a \"superthin\" where there is no hardlinking into .git/annex at all would be possible?  I'm aware that, yes, that could make previous versions unavailable and so forth.
+"""]]
