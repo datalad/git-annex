@@ -2,7 +2,7 @@ I thought I was getting the hang of annex, but have run into a bit of a problem.
 
 Specifically, it seems like sync does a lot more than push and pull files - that it might actually try to drop things from remotes (at least with the -a) command.
 
-I have two machines I work on, and two special remotes (S3/wasabi) that should have everything that's ever been annexed, including old versions of files.
+I have two machines I work on, and should only have active content. I have two special remotes (S3/wasabi) that should have everything that's ever been annexed, including old versions of files.
 
 If I `git annex sync -a -A` then it will pull all versions locally as well. So I think I may have to separate the get and copy commands? Though that gets a bit slower since it seems to enumerate every file for every version.
 
