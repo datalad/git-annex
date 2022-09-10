@@ -1,0 +1,22 @@
+At some point in testing I did a `drop --force` and have no more copies of these files.
+
+When I run `get -A` I get a report that they can't be found, which makes sense. So, I don't need git annex telling me that every time.
+
+I tried `git annex dead -- SHA256E-s70539--3da7e5e584997ad3f8c5cc995025cffb4f0521763bd75be3c8f5e20e2811a0b7.RPP` and it says "ok" but they still show up in `get -A`.
+
+How can I make annex forget these keys ever existed?
+
+---
+
+$ git annex get -A
+get SHA256E-s70539--3da7e5e584997ad3f8c5cc995025cffb4f0521763bd75be3c8f5e20e2811a0b7.RPP (not available) 
+  No other repository is known to contain the file.
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get SHA256E-s37042--f1eb72f5f17174741dfb7bc67c4d9ec9c58f60e12be5c05df39ac35477343d96.RPP (not available) 
+  No other repository is known to contain the file.
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get: 2 failed
