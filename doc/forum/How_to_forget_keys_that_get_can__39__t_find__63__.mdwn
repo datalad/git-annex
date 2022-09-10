@@ -2,7 +2,7 @@ At some point in testing I did a `drop --force` and have no more copies of these
 
 When I run `get -A` I get a report that they can't be found, which makes sense. So, I don't need git annex telling me that every time.
 
-I tried `git annex dead -- SHA256E-s70539--3da7e5e584997ad3f8c5cc995025cffb4f0521763bd75be3c8f5e20e2811a0b7.RPP` and it says "ok" but they still show up in `get -A`.
+I tried `git annex dead --key SHA256E-s70539--3da7e5e584997ad3f8c5cc995025cffb4f0521763bd75be3c8f5e20e2811a0b7.RPP` and it says "ok" but they still show up in `get -A`.
 
 How can I make annex forget these keys ever existed?
 
