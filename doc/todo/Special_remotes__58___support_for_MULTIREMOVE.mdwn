@@ -1,0 +1,3 @@
+Currently, when we use small chunks for large files, `git annex drop` can take a long time on external remotes. One possible solution seems to be that we batch multiple REMOVEs in a single call to the special remote so that it can be optimized by it if needed.
+
+This is still not ideal, but seems reasonably safe and easy to do. Thoughts?
