@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="many small files"
+ date="2022-09-13T17:20:45Z"
+ content="""
+>we rarely have use cases where we have a gajillion small files that directly need to be accessible
+
+Scientific datasets often do have many small files, e.g. the results of computing something for many subsets of data under many combinations of parameter settings.
+The files need to be directly accessible so that downstream analysis tools can read them.
+
+"""]]

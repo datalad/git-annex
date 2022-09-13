@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2022-09-13T18:02:35Z"
+ content="""
+> Are both running on the same machine?
+
+
+no. This one -- `ndoli` server. [the other one](https://git-annex.branchable.com/bugs/export__95__import__95__subdir_started_to_fail_some_times/) seems to fail on github actions of [datalad/git-annex](https://github.com/datalad/git-annex) itself.
+"""]]
