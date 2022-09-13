@@ -38,6 +38,9 @@ received from remotes.
 * `--all` `-A`
 
   Show whereis information for all known keys.
+  
+  (Except for keys that have been marked as dead,
+  see [[git-annex-dead]](1).)
 
 * `--branch=ref`
 
