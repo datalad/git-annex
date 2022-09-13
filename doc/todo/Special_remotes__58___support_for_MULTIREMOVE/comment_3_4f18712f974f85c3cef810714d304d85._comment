@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="prancewit"
+ avatar="http://cdn.libravatar.org/avatar/f6cc165b68a5cca3311f9a1cd7fd027c"
+ subject="My current use case"
+ date="2022-09-13T19:45:23Z"
+ content="""
+Thanks for the response, Joey.
+
+Let me start by providing more details the use case where I noticed this slowness.
+
+I was using a slow remote with a lot of chunks. I stopped the upload and wanted to do a cleanup of the uploaded chunks. That's when I noticed that git-annex was requesting a removal of each chunk individually, even ones that never actually got uploaded.
+
+In this particular case, I could \"preload\" the data since I knew which chunks were valid and which ones weren't to make it faster (though I actually just waited it out)
+
+Also, like you mentioned, this MULTIREMOVE is most useful for this specific case so a more generic solution will definitely be much better.
+"""]]
