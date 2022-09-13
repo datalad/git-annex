@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 1"
+ date="2022-09-13T09:53:45Z"
+ content="""
+The [`unused` preferred content expression](https://git-annex.branchable.com/git-annex-preferred-content/) is probably what you're looking for.
+
+As for your second problem, add your client repositories to a group aswell and make them only want `present`, `approxlackingcopies=1` or something along those lines. That will stop `sync --content` from trying to pull down everything.
+"""]]
