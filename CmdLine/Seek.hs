@@ -27,6 +27,7 @@ import CmdLine.GitAnnex.Options
 import CmdLine.Action
 import Logs
 import Logs.Unused
+import Logs.Location
 import Types.Transfer
 import Logs.Transfer
 import Types.Link
@@ -283,7 +284,8 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		let go reader = reader >>= \case
 			Just (k, f, content) -> checktimelimit (discard reader) $ do
 				maybe noop (Annex.Branch.precache f) content
-				keyaction Nothing (SeekInput [], k, mkActionItem k)
+				unlessM (checkDead k) $
+					keyaction Nothing (SeekInput [], k, mkActionItem k)
 				go reader
 			Nothing -> return ()
 		Annex.Branch.overBranchFileContents getk go >>= \case

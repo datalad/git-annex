@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-09-13T18:21:13Z"
+ content="""
+This was a reversion. 
+
+In 2017,  [[!commit bcf276655c04f36e021f091240ed2dc8211924fd]]
+made --all skip dead keys, by modifying loggedKeys.
+
+But, then the implementation of --all changed to not use loggedKeys
+in [[!commit d010ab04be5a8d74fe85a2fa27a853784d1f9009]].
+
+I've fixed this!
+"""]]

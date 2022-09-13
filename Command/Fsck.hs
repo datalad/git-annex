@@ -574,7 +574,7 @@ checkKeyNumCopies key afile numcopies = do
 	(deadlocations, safelocations) <- trustPartition DeadTrusted otherlocations
 	let present = length safelocations
 	if present < fromNumCopies numcopies
-		then ifM (pure (not hasafile) <&&> checkDead key)
+		then ifM (checkDead key)
 			( do
 				showLongNote $ "This key is dead, skipping."
 				return True
