@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="prancewit"
+ avatar="http://cdn.libravatar.org/avatar/f6cc165b68a5cca3311f9a1cd7fd027c"
+ subject="comment 6"
+ date="2022-09-13T11:19:53Z"
+ content="""
+This is probably waaaaay too late but I wanted to chime in with my 2 cents to the question from Joey.
+
+My personal preference would be to optimize for large files as opposed to many small files. My reasoning is that we can work around the many small files being slow issue by tar-ing them. This is also IMO usually the better option (at least for me) since we rarely have use cases where we have a gajillion small files that directly need to be accessible.
+
+"""]]
