@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-09-13T18:40:02Z"
+ content="""
+`sync --content` will certianly remove files from a repository when
+the preferred content settings for that repository indicate it should
+not contain that content.
+
+When you use `sync --all`, a preferred content setting like
+`"include=*"` or `"exclude=*"` will only ever match files in the current
+working tree, not past versions of files. 
+
+So, if the remote has such a preferred content expression, `sync --all
+--content` will remove the past versions of files from it.
+
+The way to avoid this behavior is to use a preferred content expression
+that does not match on the filename. Eg, `"anything"`. Or don't set a
+preferred content expression in the first place.
+"""]]
