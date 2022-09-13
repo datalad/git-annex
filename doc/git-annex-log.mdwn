@@ -46,7 +46,7 @@ false, information may not have been committed to the branch yet.
 
 * `--all` `-A`
 
-  Shows location log changes to all files, with the most recent changes first.
+  Shows location log changes to all content, with the most recent changes first.
   In this mode, the names of files are not available and keys are displayed
   instead.
 
