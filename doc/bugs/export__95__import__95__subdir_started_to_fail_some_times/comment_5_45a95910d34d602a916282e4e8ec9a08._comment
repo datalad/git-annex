@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-09-13T17:19:46Z"
+ content="""
+See also [[bugs/some_conflict_resolution_tests_fail_some_time]]
+which has a similar apparent crash in the middle of a git-annex command w/o
+an error.
+"""]]

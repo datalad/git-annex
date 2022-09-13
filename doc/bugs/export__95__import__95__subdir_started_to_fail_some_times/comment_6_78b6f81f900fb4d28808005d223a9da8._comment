@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-09-13T17:21:54Z"
+ content="""
+Occurs to me that it could be that a bug in processTranscript is preventing
+the test framework from showing all the output of a git-annex command
+when it has exited unsuccessfully.
+
+In both this and the other seemingly similar bug, the transcript ends after
+a line of output, with another expected line of output not showing up.
+
+Since processTranscript uses hGetLineUntilExitOrEOF, a bug in that
+could mean it stops reading buffered output between lines like that.
+
+But, I have not been able to find such a bug in hGetLineUntilExitOrEOF
+so far. By either trying a process that buffers multiline output before
+exiting, or by inspection. And even if it were buggy, something would still
+be making the `git-annex import` command fail unexpectedly.
+"""]]
