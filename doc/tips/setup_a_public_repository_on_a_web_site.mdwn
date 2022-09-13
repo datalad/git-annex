@@ -19,7 +19,7 @@ Here's how I set it up. --[[Joey]]
    work, `git update-server-info` needs to get run on the server after
    commits or pushes to it. The git `post-update` hook will take care of
    this, you just need to enable the hook on the server.
-   `chmod +x .git/hooks/post-update`
+   `mv .git/hooks/post-update.sample .git/hooks/post-update`
 7. `git annex add; git commit -m added`
 8. Make sure users can still download files from the site directly.
 9. Instruct advanced users to clone a http url that ends with the "/.git/"
