@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-09-13T16:52:30Z"
+ content="""
+Locking is not a concern. git-annex can lock files on a FAT
+filesystem as well as on any other. (Network filesystems tend to be the
+ones with problems with locking.) Lacking permissions do mean that a `rm -rf`
+is more likely to delete annex objects, but a removable drive has a real
+risk of accidentially being reformatted, or physically damaged, and you can
+untrust it if any of those risks are too large.
+
+I do think that a bare repo on a removable drive can work well,
+if the point of the drive is to sneakernet data back and forth, or offload
+storage. Keep your local clone on the best available filesystem the OS
+provides and work in there. Used in this way, FAT is no worse than S3.
+"""]]
