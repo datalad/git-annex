@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-09-13T16:26:06Z"
+ content="""
+I don't know that the above comment is really a good idea for an external
+remote to try to implement. Needing to know about chunk keys is not too
+bad, but it also relies on details of git-annex's implementation.
+
+But it seems worth considering possibilities
+like that, since this extension would only be used in such a relative
+corner case.
+
+Or possibly considering ways to generalize the idea to be usable in more
+cases..
+
+Along those lines, it occurs to me that the async extension to the
+protocol is somewhat similar, since git-annex can ask the external remote
+to do several things at the same time. Removals of chunk keys are not
+currently run concurrently, but they could be. An external remote could
+then gather together some number of concurrent remove requests and perform
+them all in a single API call (or whatever).
+
+But how would the external remote know when it's seen all the remove
+requests for chunks of a key? It seems like it would need to use a
+heuristic, like no new requests in some amount of time means git-annex is
+waiting on it to remove everything it's been requested to remove.
+
+So it might be that a protocol extension would be useful, some way for
+git-annex to indicate that it is blocked waiting on current requests to
+finish. That seems more general purpose than a MULTIREMOVE extension.
+For example, git-annex could also send it when retrieving chunks.
+(Although retrieving chunks is also not currently done concurrently.)
+
+(There's also a question of how many concurrent removals of chunk
+keys it would make sense for git-annex to request at the same time. It
+could request removing all chunks concurrently but if the special
+remote needs to do much work or use resources for each request, that
+might not be good. It would probably be more natural to use something
+based on -J.)
+"""]]
