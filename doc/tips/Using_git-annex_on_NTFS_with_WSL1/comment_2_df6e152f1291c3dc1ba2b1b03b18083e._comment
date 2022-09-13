@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Using git-annex on NTFS with WSL2"""
+ date="2022-09-13T19:00:44Z"
+ content="""
+I have not had the chance to try WSL2, but I think that git-annex should
+work on it more or less without any issues or anything special.
+
+When the repository is on a filesystem that either does not support
+symlinks, or where you will also want to be able to access files in the
+repository from Windows outside of WSL2 without the complication of
+symlinks, it does make sense to avoid locked files. 
+`git-annex adjust --unlock` is a good way to make that be the
+case for all the files in the repository.
+"""]]
