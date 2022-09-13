@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2022-09-13T18:15:19Z"
+ content="""
+This has been implemented for a while, see [[day_642__cost_model]]
+for how I got around the dilemma. Upgrade to repository v9 to use it.
+"""]]
