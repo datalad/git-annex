@@ -22,7 +22,7 @@ git annex required wasabi-west groupwanted
 
 git annex group machine1 active
 git annex group machine2 active
-git annex groupwanted anything
+git annex groupwanted active anything
 
 # from machine1
 git annex sync -a origin machine2 wasabi-east wasabi-west
