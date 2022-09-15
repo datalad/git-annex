@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2017 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -75,6 +75,7 @@ data Cfg = Cfg
 	, cfgScheduleMap :: M.Map UUID [ScheduledActivity]
 	, cfgGlobalConfigs :: M.Map ConfigKey ConfigValue
 	, cfgNumCopies :: Maybe NumCopies
+	, cfgMinCopies :: Maybe MinCopies
 	}
 
 getCfg :: Annex Cfg
@@ -87,6 +88,7 @@ getCfg = Cfg
 	<*> scheduleMap
 	<*> loadGlobalConfig
 	<*> getGlobalNumCopies
+	<*> getGlobalMinCopies
 
 setCfg :: Cfg -> Cfg -> Annex ()
 setCfg curcfg newcfg = do
@@ -99,6 +101,7 @@ setCfg curcfg newcfg = do
 	mapM_ (uncurry scheduleSet) $ M.toList $ cfgScheduleMap diff
 	mapM_ (uncurry setGlobalConfig) $ M.toList $ cfgGlobalConfigs diff
 	maybe noop setGlobalNumCopies $ cfgNumCopies diff
+	maybe noop setGlobalMinCopies $ cfgMinCopies diff
 
 {- Default config has all the keys from the input config, but with their
  - default values. -}
@@ -112,6 +115,7 @@ defCfg curcfg = Cfg
 	, cfgScheduleMap = mapdef $ cfgScheduleMap curcfg
 	, cfgGlobalConfigs = mapdef $ cfgGlobalConfigs curcfg
 	, cfgNumCopies = Nothing
+	, cfgMinCopies = Nothing
 	}
   where
 	mapdef :: forall k v. Default v => M.Map k v -> M.Map k v
@@ -127,6 +131,7 @@ diffCfg curcfg newcfg = Cfg
 	, cfgScheduleMap = diff cfgScheduleMap
 	, cfgGlobalConfigs = diff cfgGlobalConfigs
 	, cfgNumCopies = cfgNumCopies newcfg
+	, cfgMinCopies = cfgMinCopies newcfg
 	}
   where
 	diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
@@ -236,6 +241,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 	numcopies =
 		[ com "Numcopies configuration"
 		, line' "numcopies" (show . fromNumCopies <$> cfgNumCopies cfg)
+		, line' "mincopies" (show . fromMinCopies <$> cfgMinCopies cfg)
 		]
 	
 settings :: Ord v => Cfg -> UUIDDescMap -> (Cfg -> M.Map UUID v) -> [String] -> ((v, UUID) -> [String]) -> (UUID -> [String]) -> [String]
@@ -316,6 +322,9 @@ parseCfg defcfg = go [] defcfg . lines
 		| setting == "numcopies" = case readish val of
 			Nothing -> Left "parse error (expected an integer)"
 			Just n -> Right $ cfg { cfgNumCopies = Just (configuredNumCopies n) }
+		| setting == "mincopies" = case readish val of
+			Nothing -> Left "parse error (expected an integer)"
+			Just n -> Right $ cfg { cfgMinCopies = Just (configuredMinCopies n) }
 		| otherwise = badval "setting" setting
 	  where
 		u = toUUID f
