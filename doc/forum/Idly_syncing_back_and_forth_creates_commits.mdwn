@@ -1,0 +1,7 @@
+Say I have a git annex repository with one regular remote.  The status of both remotes is clean.
+
+If I run `git annex sync` in the main remote, it will not create any commits.
+
+However, running sync alternatively in both remotes will keep creating regular and merge commits.
+
+I wonder if it would be possible to avoid this behavior.
