@@ -1,0 +1,96 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-09-15T16:41:44Z"
+ content="""
+I think what's needed is essentially a way for the external remote, when it
+gets a request, to ask git-annex, "is there anything else I could do
+at the same time?"
+
+This way the external remote can build up a list of requests of whatever
+size makes sense for it. And when git-annex answers "no, nothing else",
+the external remote knows that it needs to process the current list it has
+built up; git-annex is blocked waiting on the response.
+
+That seems to capture what is needed in the simplest way possible
+(aside from just implementing a special purpose MULTIREMOVE that is!)
+
+At the protocol level, it could look something like this:
+
+	REMOVE keya
+	ANY-MOREa
+	REMOVE keyb
+	ANY-MORE
+	REMOVE keyc
+	ANY-MORE
+	NO-MORE
+	REMOVE-SUCCESS keya
+	REMOVE-FAILURE keyb permission denied somehow
+	REMOVE-SUCCESS keyc
+
+But, implementation of that is not generic. removeKey sends REMOVE and
+waits for a `REMOVE-SUCCESS/FAILURE`. So it would need to handle the
+ANY-MORE by sending the next key. So, removeKey would need to be changed to
+take a list of keys, and return a list of results. Which seems
+unsatisfying, since it's the same change that would be needed to implement
+MULTIREMOVE. Any other actions would also need to be changed to take lists
+in order to support ANY-MORE.
+
+What if it were only used with the async protocol? Then it could look
+like this:
+
+	J 1 REMOVE keya
+	J 1 ANY-MORE
+	J 2 REMOVE keyb
+	J 1 SENT-MORE 2
+	J 2 ANY-MORE
+	J 3 REMOVE keyc
+	J 2 SENT-MORE 3
+	J 3 ANY-MORE
+	J 3 NO-MORE
+	J 1 REMOVE-SUCCESS keya
+	J 2 REMOVE-FAILURE keyb permission denied somehow
+	J 3 REMOVE-SUCCESS keyc
+
+This is more complicated due to using the async protocol. And also
+it's complicating what the remote needs to do, because it has to parse the
+SENT-MORE to find the job number that the next request was sent to.
+(Needed since there could be other, unrelated jobs being started at the
+same time.)
+
+The advantage is, it should be possible to implement that in git-annex
+without changing removeKey but only handleRequestKey. That will need a
+TVar that contains related requests. To handle ANY-MORE, it can get the
+next item from the TVar, start a thread to run it, and send the job
+number in SENT-MORE.
+
+A separate function `runMulti` can then discover that TVar somehow,
+and call removeKey with the first key, populating the TVar with
+the rest, etc. Resulting in a list of removeKey responses.
+
+Would each call to removeKey need to have the TVar be passed
+to it? Maybe not.. It seems to me that it would be ok to use the same TVar
+for all removeKeys for the same external remote, even ones that are
+handling different jobs. Eg, when git-annex -J2 is dropping two different
+keys, which each has a set of chunk keys, it's ok for the external remote to
+collect a set of keys to remove that combines both sets of chunk keys. It's
+even a win, because it lets the special remote batch more actions together!
+
+And this is generalized; it could support checkPresent and storeKey and 
+retrieveKeyFile, by using a separate TVar for each.
+Doing those operations on chunks would need further
+changes to use `runMulti`. 
+
+It might even be possible to get an external remote to 
+remote bundle together 10 checkPresent calls when handling
+`git-annex drop -J10` (for example). Which would allow for a 
+nice speedup even when not using chunks. This would I suppose need an
+equivilant `runSingle` that's used when calling checkPresent? Something
+like that.
+
+(I'm not sure how `runMulti` would discover the TVar to use
+for a given action and remote. Implementing that does not seem
+straightforward. One way, though hopefully not the only way, would
+be to make removeKey return a tuple of the TVar and an action that
+actually handles the removal.)
+"""]]
