@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-09-15T16:27:54Z"
+ content="""
+Ah, oops..  I was thinking about BTRFS..
+
+However, getting back to the original motivation of jgoerzen to
+request this, it seems to come down to making a hard link being seen as
+"mucking with the source data". That seems like a very weak reason to make
+such a very large change to git-annex, that would only be safe in a
+small and poorly defined set of circumstances.
+
+And it would be a large change, because currently git-annex can broadly
+assume that any time a .git/annex/objects/ file exists, the content
+is present in the repository. Every place that makes that assumption
+would need to instead check if any of the known work tree files that use
+the object are populated with the content (or at least are not annex
+pointer files).
+
+(jgoerzen also mentions timestamps, but git-annex preserves those
+when ingesting files. Of course timestamp data is not recorded in the git
+repository unless you use some other tool to do so.)
+"""]]
