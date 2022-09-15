@@ -1,0 +1,116 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-09-15T18:31:04Z"
+ content="""
+I think I've set up what you wanted.. And I think enroute I started
+to understand the problem you were having.
+
+Both of the wasabis want all content whether it's unused or not. So I left
+their preferred and required content settings unchanged since that's the
+default. ("anything" would have the same effect). To make the local repository
+want to not hang onto unused content I used:
+
+	git-annex wanted here 'include=*'
+
+With that, `git-annex sync --content --all wasabi-east` would copy an
+unused key to wasabi-east. But then it would drop it from the local
+repository. So a subsequent sync with wasabi-west was not able
+to send a copy to there, because it's already been removed from the local
+repo. I think perhaps that is the problem you were having?
+
+A workaround is to sync with both at once, like you have been doing:
+
+	joey@darkstar:~/tmp/bench/foo>git-annex sync --content --all wasabi-west wasabi-east
+	commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	copy SHA256E-s30--4b03bc898384c2cf2861327108e988ba56d839b831e743d87b066cc4a5a7f487 (to wasabi-west...) 
+	ok                                
+	copy SHA256E-s30--4b03bc898384c2cf2861327108e988ba56d839b831e743d87b066cc4a5a7f487 (to wasabi-east...) 
+	ok                                
+	drop SHA256E-s30--4b03bc898384c2cf2861327108e988ba56d839b831e743d87b066cc4a5a7f487 ok
+	(recording state in git...)
+
+But if you forget to sync with both at the same time, or if one of them
+is unreachable, you can end up with only one of them having a copy.
+Not great.
+
+To avoid that problem, I set numcopies, to force there to be 2 copies
+at all times:
+
+	joey@darkstar:~/tmp/bench/foo>git-annex numcopies 2
+	numcopies 2 ok
+
+Now syncing with one of the wasabi remotes keeps the unused content locally
+present:
+
+	joey@darkstar:~/tmp/bench/foo>git-annex sync --content wasabi-east --all
+	commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	copy SHA256E-s30--906a7a36a37e2ffcee8164da8d7275a7fc1d775b3a9c040771725c9f1e4a9222 (to wasabi-east...) 
+	ok                                
+
+Once the content reaches the other wasabi remote too, it can drop the local copy:
+
+	joey@darkstar:~/tmp/bench/foo>git-annex sync --content wasabi-west --all
+	commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	copy SHA256E-s30--906a7a36a37e2ffcee8164da8d7275a7fc1d775b3a9c040771725c9f1e4a9222 (to wasabi-west...) 
+	ok                                
+	drop SHA256E-s30--906a7a36a37e2ffcee8164da8d7275a7fc1d775b3a9c040771725c9f1e4a9222 ok
+
+But you also have two repositories that you work in. That complicates things
+a bit. Let's bring repository bar into the picture:
+
+	joey@darkstar:~/tmp/bench/bar>git-annex wanted here 'include=*'
+	wanted here ok
+
+Now, when there's a file that is on foo and bar and wasabi-east,
+syncing with wasabi-west will copy it to there. But what if the file
+gets deleted, and we sync with wasabi-east before syncing with wasabi-west?
+
+	joey@darkstar:~/tmp/bench/bar>git-annex get myfile
+	get myfile (from wasabi-east...) 
+	ok                                
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench/bar>git-annex whereis myfile
+	whereis myfile (3 copies) 
+	  	948c3bc7-91ce-4a2e-880d-a5e614c8f0e1 -- [foo]
+	   	db04e144-c10a-4ed2-a557-f3fd6d5410c3 -- bar [here]
+	   	fc4dbe84-ddd5-4bc3-b9c5-f5262df528a3 -- [wasabi-east]
+	joey@darkstar:~/tmp/bench/bar>git rm myfile 
+	rm 'myfile'
+	joey@darkstar:~/tmp/bench/bar>git commit -m removed
+	[master e8cb8fe] removed
+	joey@darkstar:~/tmp/bench/bar>git-annex sync --content wasabi-east --all
+	commit 
+	On branch master
+	Your branch is ahead of 'origin/master' by 1 commit.
+	  (use "git push" to publish your local commits)
+	
+	nothing to commit, working tree clean
+	ok
+	drop SHA256E-s30--a8ae034d9371c80258e9d2e0fd436c6974a839dd42c220792f4cac8f597de3d1 ok
+
+It dropped it because there are enough copies that it could. Now a sync with
+wasabi-west from bar won't send the content to it, since bar no longer has it.
+Since foo still has a copy, syncing with wasabi-west on foo will move it to
+there still. But this is perhaps suboptimal.
+
+A better configuration, that avoids that problem, but is more complicated 
+follows:
+
+	git-annex group wasabi-east collector
+	git-annex group wasabi-west collector
+	git-annex wanted foo 'include=* or not inallgroup=collector'
+	git-annex wanted bar 'include=* or not inallgroup=collector'
+
+This forces the work repositories to hang onto unused keys until
+they reach all the collector repositories.
+"""]]
