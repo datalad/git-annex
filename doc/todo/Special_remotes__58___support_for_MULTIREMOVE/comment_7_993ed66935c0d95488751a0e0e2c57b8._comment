@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-09-16T16:27:58Z"
+ content="""
+> I'm not sure if there are use-cases where this additional information is useful to the remote
+
+It would be useful when the actions transfer content, since the remote
+could look at the key sizes and accumulate a reasonable amount of data
+for it to handle in one operation.
+
+>> This is more complicated
+
+By that I meant, it's more complicated for the poor author of the external
+special remote, who has to learn about the async protocol.
+
+But not using the async protocol will always have the problem I discussed
+in comment #5, since the implementation in git-annex is always
+to send a command like REMOVE and wait for a response like REMOVE-SUCCESS.
+Using the async protocol lets it keep that implementation simple, by
+multiplexing the multiple removes into different jobs, which when
+demultiplexed look the same as a single remove looks now.
+"""]]
