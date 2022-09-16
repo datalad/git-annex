@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2022-09-16T16:57:36Z"
+ content="""
+git-annex doesn't prompt for passwords for files downloaded from the web,
+and it only stores the password if it's included in the url given to it. 
+
+So if you don't want to store the password in the git repository, storing
+it in an outside file like the netrc file seems like the only way.
+
+I wonder if the web special remote is a good fit for what you're doing at
+all. It's not intended for authenticated access, but for access to files on
+the public web. It may be that you would be better off using a
+special-purpose remote that handles the downloads and passwords in whatever
+way makes sense for the HPC cluster. See [[special_remotes/external]].
+"""]]
