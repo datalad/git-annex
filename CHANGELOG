@@ -8,8 +8,7 @@ git-annex (10.20220823) UNRELEASED; urgency=medium
   * When accessing a git remote over http needs a git credential
     prompt for a password, cache it for the lifetime of the git-annex
     process, rather than repeatedly prompting.
-  * Use curl for downloads from git remotes when annex.url-options
-    and other git configs are set.
+  * Use curl for downloads from git remotes when annex.url-options is set.
   * Fix a reversion that made dead keys not be skipped when operating on
     all keys via --all or in a bare repo.
     (Introduced in version 8.20200720)
