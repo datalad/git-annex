@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="eph@6377f195575d4a04abc70f20e0b00dffcc597d00"
+ nickname="eph"
+ avatar="http://cdn.libravatar.org/avatar/81a297ec8f90be36b16e5f530aea0719"
+ subject="comment 2"
+ date="2022-09-16T09:30:43Z"
+ content="""
+I did not configure any special remotes.  The only ones that are shown by `git annex info` are `web` and `bittorrent`, but I believe that this is the default.  Are these the culprit?
+"""]]
