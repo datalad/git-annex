@@ -32,6 +32,7 @@ module Utility.InodeCache (
 	inodeCacheToMtime,
 	inodeCacheToEpochTime,
 	inodeCacheEpochTimeRange,
+	replaceInode,
 
 	SentinalFile(..),
 	SentinalStatus(..),
@@ -124,6 +125,10 @@ inodeCacheEpochTimeRange :: InodeCache -> (EpochTime, EpochTime)
 inodeCacheEpochTimeRange i =
 	let t = inodeCacheToEpochTime i
 	in (t-1, t+1)
+
+replaceInode :: FileID -> InodeCache -> InodeCache
+replaceInode inode (InodeCache (InodeCachePrim _ sz mtime)) =
+	InodeCache (InodeCachePrim inode sz mtime)
 
 {- For backwards compatability, support low-res mtime with no
  - fractional seconds. -}

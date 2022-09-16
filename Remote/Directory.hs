@@ -390,10 +390,24 @@ mkContentIdentifier (IgnoreInodes ii) f st =
 			then toInodeCache' noTSDelta f st 0
 			else toInodeCache noTSDelta f st
 
+-- Since ignoreinodes can be changed by enableremote, and since previous
+-- versions of git-annex ignored inodes by default, treat two content
+-- idenfiers as the same if they differ only by one having the inode
+-- ignored.
 guardSameContentIdentifiers :: a -> ContentIdentifier -> Maybe ContentIdentifier -> a
-guardSameContentIdentifiers cont old new
-	| new == Just old = cont
+guardSameContentIdentifiers _ _ Nothing = giveup "file not found"
+guardSameContentIdentifiers cont old (Just new)
+	| new == old = cont
+	| ignoreinode new == old = cont
+	| new == ignoreinode old = cont
 	| otherwise = giveup "file content has changed"
+  where
+	ignoreinode cid@(ContentIdentifier b) = 
+		case readInodeCache (decodeBS b) of
+			Nothing -> cid
+			Just ic -> 
+				let ic' = replaceInode 0 ic
+				in ContentIdentifier (encodeBS (showInodeCache ic'))
 
 importKeyM :: IgnoreInodes -> RawFilePath -> ExportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> Annex (Maybe Key)
 importKeyM ii dir loc cid sz p = do
