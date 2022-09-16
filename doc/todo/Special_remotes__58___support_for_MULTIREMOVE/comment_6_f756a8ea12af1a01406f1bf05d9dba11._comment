@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="prancewit"
+ avatar="http://cdn.libravatar.org/avatar/f6cc165b68a5cca3311f9a1cd7fd027c"
+ subject="comment 6"
+ date="2022-09-16T08:39:08Z"
+ content="""
+I love these ideas Joey. Couple of comments.
+
+> I think what's needed is essentially a way for the external remote, when it gets a request, to ask git-annex, \"is there anything else I could do at the same time?\"
+
+100% agreed. ANY-MORE is super generic and will be useful in all case. There's a simpler but slightly less generic option too. Instead of git-annex asking the remote after every action, it could instead ask first about the number of actions the remote wants. Something like,
+
+```
+git-annex -- remote
+-> REMOVE-COUNT
+<- REMOVE-COUNT 3
+-> REMOVE keya
+-> REMOVE keyb
+-> REMOVE keyc
+<- REMOVE-SUCCESS keya
+<- REMOVE-FAILURE keyb permission denied somehow
+<- REMOVE-SUCCESS keyc
+-> REMOVE-COUNT
+<- REMOVE-COUNT 3
+.
+.
+.
+```
+
+What we primarily lose here is that the remote does not have any information about the current action to base the decision on, and is instead a generic decision based on the action type (For instance, the remote could ask for 100 REMOVEs at a time, but only 10 ADDs). I'm not sure if there are use-cases where this additional information is useful to the remote, since remotes are typically \"dumb\" (What I mean is that by design the remotes typically doesn't understand the intent behind the action, they just need to know which file to add/remove/delete etc).
+
+
+> This is more complicated due to using the async protocol. And also it's complicating what the remote needs to do, because it has to parse the SENT-MORE to find the job number that the next request was sent to. (Needed since there could be other, unrelated jobs being started at the same time.)
+
+I'm assuming you mean that it is difficult to batch related operations in a single job due to implementation details in git-annex. However, just in case I'm misunderstanding that, I'd like to see if there's a good way for us to batch all related operations in one job instead of splitting them across jobs. My main argument for this case would be that if we send related keys/operations to multiple jobs, the only performance benefit we get is in IO with git-annex. This might be worth losing for the simplicity in which each job is guaranteed to get all related keys/operations. Maybe something like,
+
+```
+git-annex -- remote
+-> J 1 REMOVE-COUNT
+-> J 2 REMOVE-COUNT
+<- J 1 REMOVE-COUNT 3
+<- J 2 REMOVE-COUNT 3
+-> J 1 REMOVE keya
+-> J 1 REMOVE keyb
+-> J 1 REMOVE keyc
+-> J 2 REMOVE keyd
+<- J 1 REMOVE-SUCCESS keya
+<- J 1 REMOVE-FAILURE keyb permission denied somehow
+-> J 2 REMOVE keye
+-> J 2 REMOVE keyf
+<- J 1 REMOVE-SUCCESS keyc
+<- J 2 REMOVE-SUCCESS keyd
+<- J 2 REMOVE-SUCCESS keye
+<- J 2 REMOVE-SUCCESS keyf
+```
+
+It could potentially have slightly less performance (For instance, all keys might belong to one batch, so we are effectively single threaded), but the simplicity seems useful. I'm not super clear on the haskell/git-annex implementation which might be why I'm not understanding this.
+"""]]
