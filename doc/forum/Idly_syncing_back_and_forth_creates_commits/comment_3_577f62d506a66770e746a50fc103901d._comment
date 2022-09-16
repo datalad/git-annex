@@ -1,0 +1,110 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-09-16T16:40:02Z"
+ content="""
+The built in web and bittorrent special remotes are not at fault.
+
+I don't know what is causing this, but am interested in finding out.
+I have not seen this behavior in a long time. Back when git-annex had
+direct mode, it did sometimes behave this way, IIRC, but that was a long
+time ago. What version of git-annex are you using?
+
+It would be helpful if you could show an example of this happening,
+with details about what the commits look like and what the output
+is of `git-annex sync` when they are created.
+
+When I try this, it doesn't happen:
+
+	joey@darkstar:~/tmp/bench/bar>cd ../foo
+	joey@darkstar:~/tmp/bench/foo>git-annex sync
+	commit
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	pull bar
+	ok
+	joey@darkstar:~/tmp/bench/foo>cd ../bar
+	joey@darkstar:~/tmp/bench/bar>git-annex sync
+	commit
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	pull foo
+	ok
+	joey@darkstar:~/tmp/bench/bar>cd ../foo
+	joey@darkstar:~/tmp/bench/foo>git-annex sync
+	commit
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	pull bar
+	ok
+	joey@darkstar:~/tmp/bench/foo>cd ../bar
+	joey@darkstar:~/tmp/bench/bar>git-annex sync
+	commit
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	pull foo
+	ok
+
+After making a change, it quickly settles down:
+
+	joey@darkstar:~/tmp/bench/bar>date > new
+	joey@darkstar:~/tmp/bench/bar>git-annex add
+	add new 
+	ok                                
+	(recording state in git...)
+	gijoey@darkstar:~/tmp/bench/bar>git-annex sync
+	commit 
+	[master f9e0940] git-annex in bar
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 new
+	ok
+	pull foo 
+	ok
+	push foo 
+	Enumerating objects: 16, done.
+	Counting objects: 100% (16/16), done.
+	Delta compression using up to 4 threads
+	Compressing objects: 100% (8/8), done.
+	Writing objects: 100% (11/11), 969 bytes | 484.00 KiB/s, done.
+	Total 11 (delta 3), reused 0 (delta 0), pack-reused 0
+	To ../foo
+	   eeaea21..4127372  git-annex -> synced/git-annex
+	   e8cb8fe..f9e0940  master -> synced/master
+	ok
+	joey@darkstar:~/tmp/bench/bar>cd ../foo
+	joey@darkstar:~/tmp/bench/foo>git-annex sync
+	commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	merge synced/master 
+	Updating e8cb8fe..f9e0940
+	Fast-forward
+	 new | 1 +
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 new
+	ok
+	pull bar 
+	From ../bar
+	   a5cd9dd..4127372  git-annex     -> bar/git-annex
+	   e8cb8fe..f9e0940  master        -> bar/master
+	   e8cb8fe..f9e0940  synced/master -> bar/synced/master
+	ok
+	joey@darkstar:~/tmp/bench/foo>cd ../bar
+	joey@darkstar:~/tmp/bench/bar>git-annex sync
+	commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	pull foo 
+	From ../foo
+	   e8cb8fe..f9e0940  master     -> foo/master
+	ok
+
+Making different changes in the two repositories at the same time similarly
+settles down quickly, after one merge commit.
+"""]]
