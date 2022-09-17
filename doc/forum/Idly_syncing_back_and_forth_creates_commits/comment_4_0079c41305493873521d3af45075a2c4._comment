@@ -1,0 +1,277 @@
+[[!comment format=mdwn
+ username="eph@6377f195575d4a04abc70f20e0b00dffcc597d00"
+ nickname="eph"
+ avatar="http://cdn.libravatar.org/avatar/81a297ec8f90be36b16e5f530aea0719"
+ subject="comment 4"
+ date="2022-09-17T21:19:13Z"
+ content="""
+Hi joey,
+
+thanks for looking into this.  I am using git-annex from Debian stable.  No special configuration.  The following complete log demonstrates what I mean.  I only edited my real name and email address out from the git log.
+
+```
+cwg@drac:/tmp% git annex version
+git-annex version: 8.20210223
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+cwg@drac:/tmp% git init a
+Initialized empty Git repository in /tmp/a/.git/
+cwg@drac:/tmp% cd a
+cwg@drac:/tmp/a% git annex init
+init  (scanning for unlocked files...)
+ok
+(recording state in git...)
+cwg@drac:/tmp/a% seq 10 >foo
+cwg@drac:/tmp/a% git annex add foo
+add foo
+ok
+(recording state in git...)
+cwg@drac:/tmp/a% git commit -am 'add foo'
+[main (root-commit) f551362] add foo
+ 1 file changed, 1 insertion(+)
+ create mode 120000 foo
+cwg@drac:/tmp/a% cd ..
+cwg@drac:/tmp% git clone a b
+Cloning into 'b'...
+done.
+cwg@drac:/tmp% cd b
+cwg@drac:/tmp/b% git annex init
+init  (merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+ok
+(recording state in git...)
+cwg@drac:/tmp/b% seq 20 >bar
+cwg@drac:/tmp/b% git annex add bar
+add bar
+ok
+(recording state in git...)
+cwg@drac:/tmp/b% git commit -am 'add bar'
+[main d064d80] add bar
+ 1 file changed, 1 insertion(+)
+ create mode 120000 bar
+cwg@drac:/tmp/b% git annex copy --to origin bar
+copy bar (to origin...)
+ok
+(recording state in git...)
+cwg@drac:/tmp/b% git annex sync
+commit
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use \"git push\" to publish your local commits)
+
+nothing to commit, working tree clean
+ok
+pull origin
+remote: Enumerating objects: 6, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 5 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (5/5), 496 bytes | 496.00 KiB/s, done.
+From /tmp/a
+   728f1f6..d8ad263  git-annex  -> origin/git-annex
+ok
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+push origin
+Enumerating objects: 32, done.
+Counting objects: 100% (31/31), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (20/20), done.
+Writing objects: 100% (24/24), 2.21 KiB | 1.10 MiB/s, done.
+Total 24 (delta 6), reused 0 (delta 0), pack-reused 0
+To /tmp/a
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      main -> synced/main
+ok
+cwg@drac:/tmp/b% cd ../a
+cwg@drac:/tmp/a% git annex sync
+commit
+On branch main
+nothing to commit, working tree clean
+ok
+merge synced/main
+Merge made by the 'recursive' strategy.
+ bar | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 bar
+ok
+cwg@drac:/tmp/a% cd -
+/tmp/b
+cwg@drac:/tmp/b% git annex sync
+commit
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use \"git push\" to publish your local commits)
+
+nothing to commit, working tree clean
+ok
+pull origin
+remote: Enumerating objects: 1, done.
+remote: Counting objects: 100% (1/1), done.
+remote: Total 1 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (1/1), 223 bytes | 223.00 KiB/s, done.
+From /tmp/a
+   f551362..df99aad  main        -> origin/main
+   d064d80..df99aad  synced/main -> origin/synced/main
+
+Already up to date!
+Merge made by the 'recursive' strategy.
+
+Already up to date.
+ok
+push origin
+Enumerating objects: 1, done.
+Counting objects: 100% (1/1), done.
+Writing objects: 100% (1/1), 248 bytes | 248.00 KiB/s, done.
+Total 1 (delta 0), reused 0 (delta 0), pack-reused 0
+To /tmp/a
+   df99aad..9baa35b  main -> synced/main
+ok
+cwg@drac:/tmp/b% cd -
+/tmp/a
+cwg@drac:/tmp/a% git annex sync
+commit
+On branch main
+nothing to commit, working tree clean
+ok
+merge synced/main
+Already up to date!
+Merge made by the 'recursive' strategy.
+ok
+cwg@drac:/tmp/a% cd -
+/tmp/b
+cwg@drac:/tmp/b% git annex sync
+commit
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use \"git push\" to publish your local commits)
+
+nothing to commit, working tree clean
+ok
+pull origin
+remote: Enumerating objects: 1, done.
+remote: Counting objects: 100% (1/1), done.
+remote: Total 1 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (1/1), 219 bytes | 219.00 KiB/s, done.
+From /tmp/a
+   df99aad..c89cab6  main        -> origin/main
+   9baa35b..c89cab6  synced/main -> origin/synced/main
+
+Already up to date!
+Merge made by the 'recursive' strategy.
+
+Already up to date.
+ok
+push origin
+Enumerating objects: 1, done.
+Counting objects: 100% (1/1), done.
+Writing objects: 100% (1/1), 249 bytes | 249.00 KiB/s, done.
+Total 1 (delta 0), reused 0 (delta 0), pack-reused 0
+To /tmp/a
+   c89cab6..fe3e4ec  main -> synced/main
+ok
+cwg@drac:/tmp/b% cd -
+/tmp/a
+cwg@drac:/tmp/a% git annex sync
+commit
+On branch main
+nothing to commit, working tree clean
+ok
+merge synced/main
+Already up to date!
+Merge made by the 'recursive' strategy.
+ok
+cwg@drac:/tmp/a% cd -
+/tmp/b
+cwg@drac:/tmp/b% git annex sync
+commit
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use \"git push\" to publish your local commits)
+
+nothing to commit, working tree clean
+ok
+pull origin
+remote: Enumerating objects: 1, done.
+remote: Counting objects: 100% (1/1), done.
+remote: Total 1 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (1/1), 221 bytes | 221.00 KiB/s, done.
+From /tmp/a
+   c89cab6..4a018a6  main        -> origin/main
+   fe3e4ec..4a018a6  synced/main -> origin/synced/main
+
+Already up to date!
+Merge made by the 'recursive' strategy.
+
+Already up to date.
+ok
+push origin
+Enumerating objects: 1, done.
+Counting objects: 100% (1/1), done.
+Writing objects: 100% (1/1), 247 bytes | 247.00 KiB/s, done.
+Total 1 (delta 0), reused 0 (delta 0), pack-reused 0
+To /tmp/a
+   4a018a6..8a29705  main -> synced/main
+ok
+cwg@drac:/tmp/b% git log --graph
+*   commit 8a29705a4d1ccb3d2e08284198ac27d974144cee (HEAD -> main, origin/synced/main, synced/main)
+|\  Merge: fe3e4ec 4a018a6
+| | Author: cwg@drac
+| | Date:   Sat Sep 17 23:07:58 2022 +0200
+| |
+| |     Merge remote-tracking branch 'refs/remotes/origin/main'
+| |
+| *   commit 4a018a641d75f0d385399c97bc8ec220b25de252 (origin/main, origin/HEAD)
+| |\  Merge: c89cab6 fe3e4ec
+| |/  Author: cwg@drac
+|/|   Date:   Sat Sep 17 23:07:54 2022 +0200
+| |
+| |       Merge branch 'refs/heads/synced/main'
+| |
+* | commit fe3e4ec39d818b97a666ebeffeb68f026145493e
+|\| Merge: 9baa35b c89cab6
+| | Author: cwg@drac
+| | Date:   Sat Sep 17 23:07:47 2022 +0200
+| |
+| |     Merge remote-tracking branch 'refs/remotes/origin/main'
+| |
+| *   commit c89cab61a76e4488f1c979ba1d7ba0f9c9756e68
+| |\  Merge: df99aad 9baa35b
+| |/  Author: cwg@drac
+|/|   Date:   Sat Sep 17 23:07:40 2022 +0200
+| |
+| |       Merge branch 'refs/heads/synced/main'
+| |
+* | commit 9baa35b4a28cd0f4002a90ea4670a21896b1e5a0
+|\| Merge: d064d80 df99aad
+| | Author: cwg@drac
+| | Date:   Sat Sep 17 23:07:32 2022 +0200
+| |
+| |     Merge remote-tracking branch 'refs/remotes/origin/main'
+| |
+| *   commit df99aad6ba5b4ce375834f909519561b4feaaac1
+| |\  Merge: f551362 d064d80
+| |/  Author: cwg@drac
+|/|   Date:   Sat Sep 17 23:07:16 2022 +0200
+| |
+| |       Merge branch 'refs/heads/synced/main'
+| |
+* | commit d064d809e24868543c6609757750a6dc9cd58274
+|/  Author: cwg@drac
+|   Date:   Sat Sep 17 23:06:15 2022 +0200
+|
+|       add bar
+|
+* commit f55136210ce7844a21a415ba0154d136fd15508f
+  Author: cwg@drac
+  Date:   Sat Sep 17 23:05:09 2022 +0200
+
+      add foo
+```
+"""]]
