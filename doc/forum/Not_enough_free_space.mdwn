@@ -1,0 +1,41 @@
+Hello. git-annex has been working fine for me for quite some time. But at this moment it has left me in a pickle.
+
+One of my remotes appears to have decided to move to an unlocked state. It is located on an ext4 filesystem and after I ran `git-annex sync` it started replacing broken symlinks with small text files and non-broken symlinks with a copy of the file it was pointing to. I did create a _different_ repository that, for technical reasons, needed to run entirely in the unlocked mode. It seems this setting has propagated to this repository?
+
+The repository seems to have filled my entire filesystem. I already moved everything else I had (before I noticed this was a serious problem) and git-annex kept expanding.
+
+From `git-annex info`:
+
+```
+available local disk space: 8.77 megabytes (+1 megabyte reserved)
+local annex size: 1.76 terabytes
+size of annexed files in working tree: 5.1 terabytes
+```
+
+My hard disk is _not_ 5 TB in size, it is 2 TB and is already full! With git-annex! I really need to scale back the ambitions of this repository.
+
+The contents of `.git/annex/transfer` were removed. All operations I tried ended up with multiple messages like
+
+```
+  not enough free space, need 1.03 GB more (use --force to override this check or adjust annex.diskreserve)
+[2022-09-18 12:53:58.539936066] (Annex.InodeSentinal) /mnt/hotswap/annex/projects/mujka/export-testrun-004.avi inode cache empty
+```
+
+and then hanging. I recall an sqlite error message also complaining about lack of space, but I don't see it now.
+
+I tried to move some files from the `annex/object` store temporarily as to provide some additional breathing room (hoping that git-annex would not notice they were gone, but I had copies in other repositories), and tried to lock files again or move content elsewhere. The newly freed space was gobbled up and my attempted operation was ignored. So those were a few steps taken backwards.
+
+The version information is below, if it helps.
+```
+git-annex version: 10.20220822-gfa94d41c1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.30 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.13.1 persistent-sqlite-2.13.0.4 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+I am now reaching a point where I don't know what to do. I think I ran out of good ideas on how to keep this repository under control. Nuking it _is_ a possibility, but if this happens to another repository, I'm in trouble. So I'm reaching out to more knowledgeable people to help me figure out what is going on and how to address it nicely. Please help me. Thank you.
