@@ -26,6 +26,7 @@ and then hanging. I recall an sqlite error message also complaining about lack o
 I tried to move some files from the `annex/object` store temporarily as to provide some additional breathing room (hoping that git-annex would not notice they were gone, but I had copies in other repositories), and tried to lock files again or move content elsewhere. The newly freed space was gobbled up and my attempted operation was ignored. So those were a few steps taken backwards.
 
 The version information is below, if it helps.
+
 ```
 git-annex version: 10.20220822-gfa94d41c1
 build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
