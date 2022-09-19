@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jgoerzen"
+ avatar="http://cdn.libravatar.org/avatar/090740822c9dcdb39ffe506b890981b4"
+ subject="comment 6"
+ date="2022-09-19T14:49:02Z"
+ content="""
+I understand what you're saying here, and at this point this is probably not super relevant due to the large change it would represent, but just thought I'd further clarify the use case....
+
+I, in some cases, use hard links fairly intentionally.  \"This file is both a photo and a record of something; let me show it in both places.\"  I don't want things hardlinked together that previously weren't, and don't want existing hardlinks broken.  Now this is for my daily use; for long-term archiving, it isn't all that important.  So I don't want hard links being adjusted on the source, but don't care so much about the destination (at least so long as broken hardlinks don't result in excessive increases in storage space requirements; but my main area where that would occur has 10s of millions of files, so won't be using git-annex for other reasons.)
+
+Also in some cases, I have a read-only directory (whether from NFS mount or something else).  It is easy enough to mount a .git onto it, via a bind-mount or anything else, but trying to modify the actual content of course wouldn't work.
+
+Anyhow, thanks for the conversation!
+"""]]
