@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="Gus"
+ avatar="http://cdn.libravatar.org/avatar/665626c67ab3ee7e842183f6f659e120"
+ subject="comment 2"
+ date="2022-09-19T13:49:15Z"
+ content="""
+Thank you for your suggestions, Lukey.
+
+The log does not explicitly indicate any lock/unlock operation, but it does show that there were only merge/sync actions on the remote recently, and one of them (likely the last one) may have something to do with it. So I think that may be the best way to go.
+
+The `annex.thin` config setting seems quite clever, also.
+
+How would I disable the smudge/clean filters? That would prevent the update of the files outside of the git object storage, and the repository would be in a state similar to that of a bare repository -- am I understanding it correctly? Also seems like a fine answer.
+
+Finally, it seems to me that the locked/unlocked state of a file is propagated outside of a repository. I wish that was more explicit in the documentation, as I took file unlocking as a replacement for a _direct mode_ repository, since _only one_ of my repositories needs to interact with software that does not follow symbolic links.
+
+I think there is a way to disable the _push_ from a repository. I read about it somewhere. This seems like a necessity now.
+"""]]
