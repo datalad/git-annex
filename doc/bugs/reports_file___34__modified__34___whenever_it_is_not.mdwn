@@ -1,0 +1,92 @@
+### Please describe the problem.
+
+git status reports having staged changes and no changes from index
+
+```shell
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git status
+On branch draft
+Your branch is up to date with 'github/draft'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   .dandi/assets.json
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git annex status
+M ./.dandi/assets.json
+```
+
+although git shows no diff and sha256 checksum corresponds to the key:
+
+```shell
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git diff --cached
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git show -- .dandi/assets.json
+commit b859efed7ddb2ff31cc26168f40676c572d2798f (HEAD -> draft, github/draft, github/HEAD)
+Author: DANDI User <info@dandiarchive.org>
+Date:   Fri Sep 16 22:22:29 2022 +0000
+
+    [backups2datalad] 66 files added
+
+diff --git a/.dandi/assets.json b/.dandi/assets.json
+index d3ef95e1ee..62fe372810 100644
+--- a/.dandi/assets.json
++++ b/.dandi/assets.json
+@@ -1 +1 @@
+-/annex/objects/SHA256E-s69400783--8b576786d3926ab0e84809b4131cdc5a8f631674d378afa343e7dcd84f011c90.json
++/annex/objects/SHA256E-s69507227--6a0a91c4158d316ab8ad9bd8ebf7579b9c3c579e1035c48134246b6a5d2f6f14.json
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ sha256sum .dandi/assets.json
+6a0a91c4158d316ab8ad9bd8ebf7579b9c3c579e1035c48134246b6a5d2f6f14  .dandi/assets.json
+```
+
+I think may be the tricky part is that I have it of 
+
+```
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git config annex.version
+10
+```
+
+although I thought that we kept it at 8 but I have user wider config setting
+
+```
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git config filter.annex.process
+git-annex filter-process
+```
+
+I was recommended to speed up operations while avoiding upgrade to  10, but I guess running most recent version once lead to the upgrade since all the other repos are still at 8 as I thought it would be
+
+```
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ grep -h '\<version =' ../*/.git/config | sort | uniq -c
+      1         version = 10
+    186         version = 8
+```
+
+having it reported modified causes our script which does sanity check to operate only on clean repo to fail.
+
+`git reset --hard` seems mitigated that
+
+```
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git reset --hard
+HEAD is now at b859efed7d [backups2datalad] 66 files added
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git status
+On branch draft
+Your branch is up to date with 'github/draft'.
+
+nothing to commit, working tree clean
+```
+
+all.  I will now rerun our script and see in what state I would end up (although, once again, I ended up in version 10 of the repo already, so may be behavior would be different). 
+
+### What steps will reproduce the problem?
+
+I think I get it after I `annex move` and then `annex get` that file back. Just for my own reference -- git-annex repo is result of the https://github.com/dandi/dandisets/blob/draft/tools/backups2datalad-update-cron 
+
+
+### What version of git-annex are you using? On what operating system?
+
+10.20220822-g84f1875 (conda build), originally observed on earlier 10.20220724-ge30d846
+
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
