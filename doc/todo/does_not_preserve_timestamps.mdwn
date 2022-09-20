@@ -14,3 +14,5 @@ Downloaded binary package dated 13/09/2014 amd64 Ubuntu 14.04.
 Files are in sync. For example, I move a file from a directory to my synced annex directory. It contains timestamp of 01/01/2010 for example. Once the file gets transferred to the remote computer, it gets current time, for example 20/09/2014 rather than keeping 01/01/2010. 
 
 All computers are linux based, ext4 filesystems. File transfers are done through shared encryption rsync remote.
+
+> [[wontfix|done]] --[[Joey]]
