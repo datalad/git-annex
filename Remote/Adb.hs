@@ -360,8 +360,8 @@ listImportableContentsM serial adir c = adbfind >>= \case
 -- connection is resonably fast, it's probably as good as
 -- git's handling of similar situations with files being modified while
 -- it's updating the working tree for a merge.
-retrieveExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> ExportLocation -> ContentIdentifier -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
-retrieveExportWithContentIdentifierM serial adir loc cid dest gk _p = do
+retrieveExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> ExportLocation -> [ContentIdentifier] -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
+retrieveExportWithContentIdentifierM serial adir loc cids dest gk _p = do
 	case gk of
 		Right mkkey -> do
 			go
@@ -374,9 +374,10 @@ retrieveExportWithContentIdentifierM serial adir loc cid dest gk _p = do
   where
 	go = do
 		retrieve' serial src dest
-		currcid <- getExportContentIdentifier serial adir loc
-		when (currcid /= Right (Just cid)) $
-			giveup "the file on the android device has changed"
+		getExportContentIdentifier serial adir loc >>= \case
+			Right (Just currcid)
+				| any (currcid ==) cids -> return ()
+			_ -> giveup "the file on the android device has changed"
 	src = androidExportLocation adir loc
 
 storeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier

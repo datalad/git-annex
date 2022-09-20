@@ -371,7 +371,7 @@ checkPresentExportWithContentIdentifierM borgrepo _ loc _ = prompt $ liftIO $ do
 			, giveup $ "Unable to access borg repository " ++ locBorgRepo borgrepo
 			)
 
-retrieveExportWithContentIdentifierM :: BorgRepo -> ImportLocation -> ContentIdentifier -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
+retrieveExportWithContentIdentifierM :: BorgRepo -> ImportLocation -> [ContentIdentifier] -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
 retrieveExportWithContentIdentifierM borgrepo loc _ dest gk _ = do
 	showOutput
 	case gk of

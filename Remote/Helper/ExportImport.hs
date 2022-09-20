@@ -359,14 +359,15 @@ adjustExportImport' isexport isimport r rs = do
 		, giveup $ "exported content cannot be verified due to using the " ++ decodeBS (formatKeyVariety (fromKey keyVariety k)) ++ " backend"
 		)
 	
-	retrieveKeyFileFromImport dbv ciddbv k af dest p =
-		getkeycids ciddbv k >>= \case
-			(cid:_) -> do
+	retrieveKeyFileFromImport dbv ciddbv k af dest p = do
+		cids <- getkeycids ciddbv k
+		if not (null cids)
+			then do
 				l <- getfirstexportloc dbv k
-				snd <$> retrieveExportWithContentIdentifier (importActions r) l cid dest (Left k) p
+				snd <$> retrieveExportWithContentIdentifier (importActions r) l cids dest (Left k) p
 			-- In case a content identifier is somehow missing,
 			-- try this instead.
-			[] -> if isexport
+			else if isexport
 				then retrieveKeyFileFromExport dbv k af dest p
 				else giveup "no content identifier is recorded, unable to retrieve"
 	

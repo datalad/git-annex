@@ -649,8 +649,8 @@ mkImportableContentsVersioned info = build . groupfiles
 		| otherwise =
 			i : removemostrecent mtime rest
 
-retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> ExportLocation -> ContentIdentifier -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
-retrieveExportWithContentIdentifierS3 hv r rs info loc cid dest gk p =
+retrieveExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> ExportLocation -> [ContentIdentifier] -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
+retrieveExportWithContentIdentifierS3 hv r rs info loc (cid:_) dest gk p =
 	case gk of
 		Right _mkkey -> do
 			k <- go Nothing
@@ -675,6 +675,7 @@ retrieveExportWithContentIdentifierS3 hv r rs info loc cid dest gk p =
 			return k
 		Nothing -> giveup $ needS3Creds (uuid r)
 	o = T.pack $ bucketExportLocation info loc
+retrieveExportWithContentIdentifierS3 _ _ _ _ _ [] _ _ _ = giveup "missing content identifier"
 
 {- Catch exception getObject returns when a precondition is not met,
  - and replace with a more understandable message for the user. -}

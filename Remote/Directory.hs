@@ -394,12 +394,12 @@ mkContentIdentifier (IgnoreInodes ii) f st =
 -- versions of git-annex ignored inodes by default, treat two content
 -- idenfiers as the same if they differ only by one having the inode
 -- ignored.
-guardSameContentIdentifiers :: a -> ContentIdentifier -> Maybe ContentIdentifier -> a
+guardSameContentIdentifiers :: a -> [ContentIdentifier] -> Maybe ContentIdentifier -> a
 guardSameContentIdentifiers _ _ Nothing = giveup "file not found"
-guardSameContentIdentifiers cont old (Just new)
-	| new == old = cont
-	| ignoreinode new == old = cont
-	| new == ignoreinode old = cont
+guardSameContentIdentifiers cont olds (Just new)
+	| any (new ==) olds = cont
+	| any (ignoreinode new ==) olds = cont
+	| any (\old -> new == ignoreinode old) olds = cont
 	| otherwise = giveup "file content has changed"
   where
 	ignoreinode cid@(ContentIdentifier b) = 
@@ -417,7 +417,7 @@ importKeyM ii dir loc cid sz p = do
 		{ keySize = keySize kd <|> Just sz }
 	currcid <- liftIO $ mkContentIdentifier ii absf
 		=<< R.getSymbolicLinkStatus absf
-	guardSameContentIdentifiers (return (Just k)) cid currcid
+	guardSameContentIdentifiers (return (Just k)) [cid] currcid
   where
 	f = fromExportLocation loc
 	absf = dir P.</> f
@@ -427,8 +427,8 @@ importKeyM ii dir loc cid sz p = do
 		, inodeCache = Nothing
 		}
 
-retrieveExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> ExportLocation -> ContentIdentifier -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
-retrieveExportWithContentIdentifierM ii dir cow loc cid dest gk p =
+retrieveExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> ExportLocation -> [ContentIdentifier] -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)
+retrieveExportWithContentIdentifierM ii dir cow loc cids dest gk p =
 	case gk of
 		Right mkkey -> do
 			go Nothing
@@ -474,7 +474,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cid dest gk p =
 	
 	-- Check before copy, to avoid expensive copy of wrong file
 	-- content.
-	precheck cont = guardSameContentIdentifiers cont cid
+	precheck cont = guardSameContentIdentifiers cont cids
 		=<< liftIO . mkContentIdentifier ii f
 		=<< liftIO (R.getSymbolicLinkStatus f)
 
@@ -502,7 +502,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cid dest gk p =
 #else
 			=<< R.getSymbolicLinkStatus f
 #endif
-		guardSameContentIdentifiers cont cid currcid
+		guardSameContentIdentifiers cont cids currcid
 
 	-- When copy-on-write was done, cannot check the handle that was
 	-- copied from, but such a copy should run very fast, so
@@ -512,7 +512,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cid dest gk p =
 	postcheckcow cont = do
 		currcid <- liftIO $ mkContentIdentifier ii f
 			=<< R.getSymbolicLinkStatus f
-		guardSameContentIdentifiers cont cid currcid
+		guardSameContentIdentifiers cont cids currcid
 
 storeExportWithContentIdentifierM :: IgnoreInodes -> RawFilePath -> CopyCoWTried -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do

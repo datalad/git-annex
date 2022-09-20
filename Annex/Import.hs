@@ -600,7 +600,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			let af = AssociatedFile (Just f)
 			let downloader p' tmpfile = do
 				_ <- Remote.retrieveExportWithContentIdentifier
-					ia loc cid (fromRawFilePath tmpfile)
+					ia loc [cid] (fromRawFilePath tmpfile)
 					(Left k)
 					(combineMeterUpdate p' p)
 				ok <- moveAnnex k af tmpfile
@@ -618,7 +618,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	doimportsmall cidmap db loc cid sz p = do
 		let downloader tmpfile = do
 			(k, _) <- Remote.retrieveExportWithContentIdentifier
-				ia loc cid (fromRawFilePath tmpfile)
+				ia loc [cid] (fromRawFilePath tmpfile)
 				(Right (mkkey tmpfile))
 				p
 			case keyGitSha k of
@@ -641,7 +641,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		let af = AssociatedFile (Just f)
 		let downloader tmpfile p = do
 			(k, _) <- Remote.retrieveExportWithContentIdentifier
-				ia loc cid (fromRawFilePath tmpfile)
+				ia loc [cid] (fromRawFilePath tmpfile)
 				(Right (mkkey tmpfile))
 				p
 			case keyGitSha k of

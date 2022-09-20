@@ -334,7 +334,7 @@ data ImportActions a = ImportActions
 	-- Throws exception on failure to access the remote.
 	, importKey :: Maybe (ImportLocation -> ContentIdentifier -> ByteSize -> MeterUpdate -> a (Maybe Key))
 	-- Retrieves a file from the remote. Ensures that the file
-	-- it retrieves has the requested ContentIdentifier.
+	-- it retrieves has one of the requested ContentIdentifiers.
 	--
 	-- This has to be used rather than retrieveExport
 	-- when a special remote supports imports, since files on such a
@@ -343,7 +343,7 @@ data ImportActions a = ImportActions
 	-- Throws exception on failure.
 	, retrieveExportWithContentIdentifier 
 		:: ExportLocation
-		-> ContentIdentifier
+		-> [ContentIdentifier]
 		-- file to write content to
 		-> FilePath
 		-- Either the key, or when it's not yet known, a callback
