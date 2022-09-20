@@ -50,3 +50,5 @@ Original conversation was at [[/bugs/Files_recorded_with_other_file__39__s_check
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes!  I used it for awhile with the assistant to sync a lot of files.
+
+> [[fixed|done]] --[[Joey]]
