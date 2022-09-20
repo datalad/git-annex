@@ -1,0 +1,175 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-09-20T15:53:54Z"
+ content="""
+I can't reproduce that behavior with either the current git-annex
+head, or with git-annex 8.20210223, running the same sequence of commands.
+
+I think that you have git configured not to do fast-forward merges. If you
+compare your transcipt with mine (below), your has "Merge made by the
+'recursive' strategy" where mine has a Fast-forward.
+
+The fast-forwards cause there to be no remaining differences between
+the repos, while making a merge commit means there is always a remaining
+change. Presumably, git would behave the same if you were manually
+doing git pulls and pushes, rather than using git-annex sync.
+
+Probably you have merge.ff set to false, or some similar configuration.
+
+	$ cat ~/sh
+	#!/bin/sh
+	git annex version
+	chmod +w -R a b
+	rm -rf a b
+	git init a
+	cd a
+	git annex init
+	seq 10 > foo
+	git annex add foo
+	git commit -am 'add foo'
+	cd ..
+	git clone a b
+	cd b
+	git annex init
+	seq 20 > bar
+	git annex add bar
+	git commit -am 'add bar'
+	git annex copy --to origin bar
+	git annex sync
+	cd ../a
+	git annex sync
+	cd ../b
+	git annex sync
+	cd ../a
+	git annex sync
+	cd ../b
+	git annex sync
+	cd ../a
+	git annex sync
+	cd ../b
+	git annex sync
+	git log --graph
+	$ sh ~/sh
+	git-annex version: 8.20210128-g5e5829a8d
+	build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+	dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+	key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+	remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+	operating system: linux x86_64
+	supported repository versions: 8
+	upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+	Initialized empty Git repository in /home/joey/tmp/git-annex.linux/bench/a/.git/
+	init  (scanning for unlocked files...)
+	ok
+	(recording state in git...)
+	add foo 
+	ok                                
+	(recording state in git...)
+	[master (root-commit) 9a73c26] add foo
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 foo
+	Cloning into 'b'...
+	done.
+	init  (merging origin/git-annex into git-annex...)
+	(recording state in git...)
+	(scanning for unlocked files...)
+	ok
+	(recording state in git...)
+	add bar 
+	ok                                
+	(recording state in git...)
+	[master d7d507b] add bar
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 bar
+	copy bar (to origin...) 
+	ok                                
+	(recording state in git...)
+	commit 
+	On branch master
+	Your branch is ahead of 'origin/master' by 1 commit.
+	  (use "git push" to publish your local commits)
+	
+	nothing to commit, working tree clean
+	ok
+	pull origin 
+	remote: Enumerating objects: 6, done.
+	remote: Counting objects: 100% (6/6), done.
+	remote: Compressing objects: 100% (4/4), done.
+	remote: Total 5 (delta 0), reused 0 (delta 0), pack-reused 0
+	Unpacking objects: 100% (5/5), 487 bytes | 81.00 KiB/s, done.
+	From /home/joey/tmp/git-annex.linux/bench/a
+	   4153d9e..c70f135  git-annex  -> origin/git-annex
+	ok
+	(merging origin/git-annex into git-annex...)
+	(recording state in git...)
+	push origin 
+	Enumerating objects: 32, done.
+	Counting objects: 100% (31/31), done.
+	Delta compression using up to 4 threads
+	Compressing objects: 100% (20/20), done.
+	Writing objects: 100% (24/24), 2.23 KiB | 2.23 MiB/s, done.
+	Total 24 (delta 5), reused 0 (delta 0), pack-reused 0
+	To /home/joey/tmp/git-annex.linux/bench/a
+	 * [new branch]      git-annex -> synced/git-annex
+	 * [new branch]      master -> synced/master
+	ok
+	commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	merge synced/master 
+	Updating 9a73c26..d7d507b
+	Fast-forward
+	 bar | 1 +
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 bar
+	ok
+	commit 
+	On branch master
+	Your branch is ahead of 'origin/master' by 1 commit.
+	  (use "git push" to publish your local commits)
+	
+	nothing to commit, working tree clean
+	ok
+	pull origin 
+	From /home/joey/tmp/git-annex.linux/bench/a
+	   9a73c26..d7d507b  master     -> origin/master
+	ok
+	commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	commit 
+	On branch master
+	Your branch is up to date with 'origin/master'.
+	
+	nothing to commit, working tree clean
+	ok
+	pull origin 
+	ok
+	commit 
+	On branch master
+	nothing to commit, working tree clean
+	ok
+	commit 
+	On branch master
+	Your branch is up to date with 'origin/master'.
+	
+	nothing to commit, working tree clean
+	ok
+	pull origin 
+	ok
+	* commit d7d507b48282c7496063b7fda83eb3b3add12bb9 (HEAD -> master, origin/synced/master, origin/master, origin/HEAD, synced/master)
+	| Author: Joey Hess <joeyh@joeyh.name>
+	| Date:   Tue Sep 20 12:08:37 2022 -0400
+	| 
+	|     add bar
+	| 
+	* commit 9a73c269c77ca51c72a9730364907e32fa7a4b1d
+	  Author: Joey Hess <joeyh@joeyh.name>
+	  Date:   Tue Sep 20 12:08:36 2022 -0400
+	  
+	      add foo
+
+"""]]
