@@ -327,11 +327,6 @@ adjustExportImport' isexport isimport r rs = do
 		db <- getexportdb dbv
 		liftIO $ Export.getExportTree db k
 	
-	getfirstexportloc dbv k = do
-		getexportlocs dbv k >>= \case
-			[] -> giveup "unknown export location"
-			(l:_) -> return l
-	
 	getexportlocs dbv k = do
 		db <- getexportdb dbv
 		liftIO $ Export.getExportTree db k >>= \case
@@ -340,6 +335,15 @@ adjustExportImport' isexport isimport r rs = do
 				, return []
 				)
 			ls -> return ls
+	
+	tryexportlocs dbv k a = 
+		go Nothing =<< getexportlocs dbv k
+	  where
+		go Nothing [] = giveup "unknown export location"
+		go (Just ex) [] = throwM ex
+		go _ (l:ls) = tryNonAsync (a l) >>= \case
+			Right v -> return v
+			Left e -> go (Just e) ls
 		
 	getkeycids ciddbv k = do
 		db <- getciddb ciddbv
@@ -350,9 +354,8 @@ adjustExportImport' isexport isimport r rs = do
 	-- have replaced with content not of the requested key, the content
 	-- has to be strongly verified.
 	retrieveKeyFileFromExport dbv k _af dest p = ifM (isVerifiable k)
-		( do
-			l <- getfirstexportloc dbv k
-			retrieveExport (exportActions r) k l dest p >>= return . \case
+		( tryexportlocs dbv k $ \loc -> 
+			retrieveExport (exportActions r) k loc dest p >>= return . \case
 				UnVerified -> MustVerify
 				IncompleteVerify iv -> MustFinishIncompleteVerify iv
 				v -> v
@@ -362,9 +365,8 @@ adjustExportImport' isexport isimport r rs = do
 	retrieveKeyFileFromImport dbv ciddbv k af dest p = do
 		cids <- getkeycids ciddbv k
 		if not (null cids)
-			then do
-				l <- getfirstexportloc dbv k
-				snd <$> retrieveExportWithContentIdentifier (importActions r) l cids dest (Left k) p
+			then tryexportlocs dbv k $ \loc ->
+				snd <$> retrieveExportWithContentIdentifier (importActions r) loc cids dest (Left k) p
 			-- In case a content identifier is somehow missing,
 			-- try this instead.
 			else if isexport
