@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2022-09-20T22:50:46Z"
+ content="""
+interesting idea. May be my invocation is still incomplete (no host or datacenter) but with the following one I am still queried for the credentials:
+
+```
+git annex initremote s3-origin type=S3 importtree=yes encryption=none autoenable=true bucket=dandiarchive fileprefix=zarr-checksums/2ac71edb-738c-40ac-bd8c-8ca985adaa12/ public=yes publicurl=https://dandiarchive.s3.amazonaws.com/ signature=v4 storageclass=STANDARD port=443
+```
+
+or may be whenever you ran `initremote` you did have those credential variables exported already? ;)
+"""]]
