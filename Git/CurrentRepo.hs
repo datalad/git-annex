@@ -1,6 +1,6 @@
 {- The current git repository.
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -80,9 +80,10 @@ get = do
 			, worktree = Just curr
 			}
 		r <- Git.Config.read $ newFrom loc
-		return $ if Git.Config.isBare r
-			then r { location = (location r) { worktree = Nothing } }
-			else r
+		let r' = r { gitDirSpecifiedExplicitly = True }
+		return $ if Git.Config.isBare r'
+			then r' { location = (location r) { worktree = Nothing } }
+			else r'
 	configure Nothing Nothing = giveup "Not in a git repository."
 
 	addworktree w r = changelocation r $ Local

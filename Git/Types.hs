@@ -51,6 +51,8 @@ data Repo = Repo
 	, gitEnvOverridesGitDir :: Bool
 	-- global options to pass to git when running git commands
 	, gitGlobalOpts :: [CommandParam]
+	-- True only when --git-dir or GIT_DIR was used
+	, gitDirSpecifiedExplicitly :: Bool
 	} deriving (Show, Eq, Ord)
 
 newtype ConfigKey = ConfigKey S.ByteString

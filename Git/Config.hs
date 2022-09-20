@@ -282,16 +282,20 @@ unset ck@(ConfigKey k) r = ifM (Git.Command.runBool ps r)
  - repo.
  -}
 checkRepoConfigInaccessible :: Repo -> IO Bool
-checkRepoConfigInaccessible r = do
-	-- Cannot use gitCommandLine here because specifying --git-dir
-	-- will bypass the git security check.
-	let p = (proc "git" ["config", "--local", "--list"])
-		{ cwd = Just (fromRawFilePath (repoPath r))
-		, env = gitEnv r
-		}
-	(out, ok) <- processTranscript' p Nothing
-	if not ok
-		then do
-			debug (DebugSource "Git.Config") ("config output: " ++ out)
-			return True
-		else return False
+checkRepoConfigInaccessible r
+	-- When --git-dir or GIT_DIR is used to specify the git
+	-- directory, git does not check for CVE-2022-24765.
+	| gitDirSpecifiedExplicitly r = return False
+	| otherwise = do
+		-- Cannot use gitCommandLine here because specifying --git-dir
+		-- will bypass the git security check.
+		let p = (proc "git" ["config", "--local", "--list"])
+			{ cwd = Just (fromRawFilePath (repoPath r))
+			, env = gitEnv r
+			}
+		(out, ok) <- processTranscript' p Nothing
+		if not ok
+			then do
+				debug (DebugSource "Git.Config") ("config output: " ++ out)
+				return True
+			else return False

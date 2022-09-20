@@ -277,5 +277,6 @@ newFrom l = Repo
 	, gitEnv = Nothing
 	, gitEnvOverridesGitDir = False
 	, gitGlobalOpts = []
+	, gitDirSpecifiedExplicitly = False
 	}
 
