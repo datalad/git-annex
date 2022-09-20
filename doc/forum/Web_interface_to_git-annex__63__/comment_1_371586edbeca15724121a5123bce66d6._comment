@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-09-20T18:04:32Z"
+ content="""
+I don't know of such a thing that is explicitly web-based.
+
+See [[tips/file_manager_integration]] for how to set up
+several file managers to be able to do get/drop. I don't see any reason
+some web-based file manager couldn't have similar hooks to the ones used
+there.
+"""]]
