@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-09-20T17:43:18Z"
+ content="""
+Since unlocking makes a change to a file that git can commit,
+you can certianly find the commit that made this change if you look hard
+enough. Probably not one of the merge commits themselves, but one of the
+commits that was merged. I'd maybe try `git log -u` on a file that I know
+has otherwise not changed for a while. When the diff shows
+that the mode of the file has changed from 120000 to 100644,
+that's the change from a locked symlink to an unlocked file.
+
+To disable the smudge/clean filters, edit `.git/config`
+and delete the block of config under `[filter "annex"]`
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-09-20T17:37:53Z"
+ content="""
+I think that the documentation of [[git-annex-unlock]] is pretty clear
+about this:
+
+       Unlocking a file changes how it is stored in the git repository
+       (from a symlink to a pointer file), so this command will make
+       a change that you can commit.
+
+To get the equivilant of the old direct mode, where files are unlocked in
+one repository without affecting other clones, use `git-annex adjust --unlock`.
+"""]]
