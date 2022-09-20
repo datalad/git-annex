@@ -1,0 +1,133 @@
+Does git-annex support **uploading** over HTTP? I learned how to set up a public (anonymous, download-only) HTTP remote -- a regular git remote, **not** a special remote -- by following [[tips/setup_a_public_repository_on_a_web_site/]]. Now I also want private repos (so, non-anonymous downloads), and, for completeness, uploads.
+
+I know those Apache-based instructions don't cover those cases. I'm working on extending them. I've [ported those instructions into Gitea](https://github.com/neuropoly/gitea/pull/1), and now I can `git clone` with both gitea's SSH and HTTP URLs and `git annex get` works, and permissions are enforced on private repos.
+
+So I've got non-anonymous downloads covered. But how do I make `git annex sync --content` (or equivalently, `git annex copy --to origin`) upload when the remote is an HTTP URL? Does it know how? I've experimented and haven't been able to get it to work, but neither does it give me a clear error rejecting my attempt.
+
+
+```
+[kousu@nigiri CANDICE-fMRI-]$ git config annex.debug true
+[kousu@nigiri CANDICE-fMRI-]$ git annex copy --to origin
+[2022-05-08 02:52:23.217458919] (Utility.Process) process [28036] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2022-05-08 02:52:23.219000083] (Utility.Process) process [28036] done ExitSuccess
+[2022-05-08 02:52:23.219516464] (Utility.Process) process [28037] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2022-05-08 02:52:23.221135085] (Utility.Process) process [28037] done ExitSuccess
+[2022-05-08 02:52:23.22179462] (Utility.Process) process [28038] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..6c3b23ed5b89e73fdb170e4dfb3dc4f7324acd87","--pretty=%H","-n1"]
+[2022-05-08 02:52:23.224259745] (Utility.Process) process [28038] done ExitSuccess
+[2022-05-08 02:52:23.225976282] (Utility.Process) process [28039] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2022-05-08 02:52:23.228332152] (Utility.Process) process [28040] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--stage","-z","--error-unmatch","--"]
+[2022-05-08 02:52:23.229159541] (Utility.Process) process [28041] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2022-05-08 02:52:23.22958377] (Utility.Process) process [28042] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2022-05-08 02:52:23.230213916] (Utility.Process) process [28039] done ExitSuccess
+[2022-05-08 02:52:23.231313697] (Utility.Process) process [28043] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[...]
+copy sub-BAN04/anat/sub-BAN02_T1w.nii.gz [2022-05-08 02:52:53.078448893] (Utility.Url) Request {
+  host                 = "data.praxisinstitute.org.dev.neuropoly.org"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding",""),("User-Agent","git-annex/10.20220322-g959beeea9")]
+  path                 = "/UofC/CANDICE-fMRI-.git/annex/objects/433/2b9/SHA256E-s6677912--29be5e1eef0d3b5fcd6817999c9055f6c088d58b37c7c09bb87c440fb8037c81.nii.gz/SHA256E-s6677912--29be5e1eef0d3b5fcd6817999c9055f6c088d58b37c7c09bb87c440fb8037c81.nii.gz"
+  queryString          = ""
+  method               = "HEAD"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2022-05-08 02:52:53.16577961] (Utility.Process) process [28097] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","credential","fill"]
+Username for 'https://data.praxisinstitute.org.dev.neuropoly.org': kousu
+Password for 'https://kousu@data.praxisinstitute.org.dev.neuropoly.org': 
+[2022-05-08 02:52:56.868778349] (Utility.Process) process [28097] done ExitSuccess
+[2022-05-08 02:52:56.869119387] (Utility.Url) Request {
+  host                 = "data.praxisinstitute.org.dev.neuropoly.org"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding",""),("Authorization","<REDACTED>"),("User-Agent","git-annex/10.20220322-g959beeea9")]
+  path                 = "/UofC/CANDICE-fMRI-.git/annex/objects/433/2b9/SHA256E-s6677912--29be5e1eef0d3b5fcd6817999c9055f6c088d58b37c7c09bb87c440fb8037c81.nii.gz/SHA256E-s6677912--29be5e1eef0d3b5fcd6817999c9055f6c088d58b37c7c09bb87c440fb8037c81.nii.gz"
+  queryString          = ""
+  method               = "HEAD"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2022-05-08 02:52:56.954725712] (Utility.Process) process [28098] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","credential","reject"]
+[2022-05-08 02:52:56.956656836] (Utility.Process) process [28098] done ExitSuccess
+[2022-05-08 02:52:56.957140664] (Utility.Url) Request {
+  host                 = "data.praxisinstitute.org.dev.neuropoly.org"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding",""),("User-Agent","git-annex/10.20220322-g959beeea9")]
+  path                 = "/UofC/CANDICE-fMRI-.git/annex/objects/93/kp/SHA256E-s6677912--29be5e1eef0d3b5fcd6817999c9055f6c088d58b37c7c09bb87c440fb8037c81.nii.gz/SHA256E-s6677912--29be5e1eef0d3b5fcd6817999c9055f6c088d58b37c7c09bb87c440fb8037c81.nii.gz"
+  queryString          = ""
+  method               = "HEAD"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2022-05-08 02:52:57.041148655] (Utility.Process) process [28099] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","credential","fill"]
+Username for 'https://data.praxisinstitute.org.dev.neuropoly.org': kousu
+Password for 'https://kousu@data.praxisinstitute.org.dev.neuropoly.org': 
+[2022-05-08 02:53:00.095495453] (Utility.Process) process [28099] done ExitSuccess
+[2022-05-08 02:53:00.095774849] (Utility.Url) Request {
+  host                 = "data.praxisinstitute.org.dev.neuropoly.org"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding",""),("Authorization","<REDACTED>"),("User-Agent","git-annex/10.20220322-g959beeea9")]
+  path                 = "/UofC/CANDICE-fMRI-.git/annex/objects/93/kp/SHA256E-s6677912--29be5e1eef0d3b5fcd6817999c9055f6c088d58b37c7c09bb87c440fb8037c81.nii.gz/SHA256E-s6677912--29be5e1eef0d3b5fcd6817999c9055f6c088d58b37c7c09bb87c440fb8037c81.nii.gz"
+  queryString          = ""
+  method               = "HEAD"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2022-05-08 02:53:00.183376947] (Utility.Process) process [28100] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","credential","reject"]
+[2022-05-08 02:53:00.18501078] (Utility.Process) process [28100] done ExitSuccess
+(not found) failed
+[2022-05-08 02:53:00.185253039] (Utility.Process) process [28043] done ExitSuccess
+[2022-05-08 02:53:00.185356286] (Utility.Process) process [28042] done ExitSuccess
+[2022-05-08 02:53:00.185460462] (Utility.Process) process [28041] done ExitSuccess
+[2022-05-08 02:53:00.185552806] (Utility.Process) process [28040] done ExitSuccess
+copy: 4 failed
+```
+
+I observe that `git-annex` issues a HEAD request to find out of the file already exists (presumably, checking if it needs to be uploaded), hits the authwall, asks for and reissues the HEAD request with credentials, which _successfully_ gets a 404 -- I know by watching the server logs -- but then it says "(not found) failed". Then it reissues the same two requests for the hashdirmixed ([[internals/hashing]]) variant of the URLs.
+
+Why is it issuing a HEAD at all if it's not going to try to later send a PUT or a POST?
+
+I'm posting this in `forum` because I can't tell if this is a `bug` or a `wishlist` item. Is git-annex supposed to be able to upload over HTTP or not? It can upload to S3, why not to regular HTTP remotes? Would you be interested in exploring this feature if it doesn't yet exist?
+
+<details><summary>version</summary>
+
+```
+[kousu@nigiri ~]$ git annex version
+git-annex version: 10.20220504-g4e4c44ed8
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.30 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.11 persistent-sqlite-2.13.0.3 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+```
+
+</details>
+
+
+My motivation for HTTP uploads is that I want my users to be able to do everything using only one credential; special remotes imply adding an extra credential, and ssh remotes mean managing ssh keys. I know maybe it's less safe, but getting people to adopt this technology is already difficult due to the number of nearly identical but incompatible apps, and asking them to manage extra credentials is often the final breaking point. If I can say "just make up one password" it'll go down easier. Hopefully you can give me a clear answer about if this is/isn't/will/won't be a thing, and then I will know where to focus my efforts next :)
+
+Thanks!
