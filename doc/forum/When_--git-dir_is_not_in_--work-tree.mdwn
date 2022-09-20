@@ -1,0 +1,108 @@
+
+First of all: Thank you **VERY** much for `git-annex`, it's awesome.
+
+I am running into a weird problem where `git-annex init` complains that `Git refuses to operate in this repository` (in turn because `--local can only be used inside a git repository`) in a setup with separated `--git-dir` and `--work-tree` (a pretty usual scenario for managing one's dotfiles with a hidden bare git repository checked out to `$HOME`):
+
+## Environment
+
+I am running Manjaro/Arch Linux. For reproducibility, here is a Docker setup:
+
+```Dockerfile
+FROM archlinux
+
+RUN pacman -Syu --noconfirm git-annex
+```
+
+```bash
+sudo docker build -t archlinux-with-git-annex .
+```
+
+## `git-annex` works in a normal setup
+
+```bash
+sudo docker run --rm archlinux-with-git-annex sh -xc 'git config --global init.defaultBranch main;mkdir repo;cd repo;git init;git config user.email me@example.com;git config user.name Me;git annex init'
+```
+
+```bash
++ git config --global init.defaultBranch main
++ mkdir repo
++ cd repo
++ git init
+Initialized empty Git repository in /repo/.git/
++ git config user.email me@example.com
++ git config user.name Me
++ git annex init
+init  ok
+(recording state in git...)
+```
+
+## `git-annex init` fails when separating `--git-dir` and `--work-tree`
+
+```bash
+sudo docker run --rm archlinux-with-git-annex sh -xc '
+    cd
+    git annex version
+    git config --global init.defaultBranch main
+    function mygit (){ git --git-dir="$HOME/.dotfiles" --work-tree="$HOME" $@; }
+    mygit init
+    mygit annex init
+    git config --global --add safe.directory $HOME
+    GIT_TRACE=1 mygit annex init --debug
+    '
+```
+
+```bash
++ cd
++ git annex version
+git-annex version: 10.20220822-gfa94d41c1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.30 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.13.1 persistent-sqlite-2.13.0.4 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
++ git config --global init.defaultBranch main
++ mygit init
++ git --git-dir=/root/.dotfiles --work-tree=/root init
+Initialized empty Git repository in /root/.dotfiles/
++ mygit annex init
++ git --git-dir=/root/.dotfiles --work-tree=/root annex init
+init  
+failed
+git-annex: Git refuses to operate in this repository,
+probably because it is owned by someone else.
+
+To add an exception for this directory, call:
+        git config --global --add safe.directory /root
+
+init: 1 failed
++ git config --global --add safe.directory /root
++ GIT_TRACE=1
++ mygit annex init --debug
++ git --git-dir=/root/.dotfiles --work-tree=/root annex init --debug
+12:04:10.518062 git.c:749               trace: exec: git-annex init --debug
+12:04:10.518089 run-command.c:654       trace: run_command: git-annex init --debug
+12:04:10.754502 git.c:460               trace: built-in: git config --null --list
+init  [2022-09-20 12:04:10.756872773] (Utility.Process) process [32] read: git ["config","--local","--list"]
+[2022-09-20 12:04:10.76296344] (Utility.Process) process [32] done ExitFailure 128
+[2022-09-20 12:04:10.763551946] (Git.Config) config output: 12:04:10.758714 git.c:460               trace: built-in: git config --local --list
+fatal: --local can only be used inside a git repository
+
+
+git-annex: Git refuses to operate in this repository,
+probably because it is owned by someone else.
+
+To add an exception for this directory, call:
+        git config --global --add safe.directory /root
+
+failed
+init: 1 failed
+```
+
+
+The `probably because it is owned by someone else.` is obviously not the problem here. Also not the `safe.directory` thing. Setting it to `*` also doesn't help.
+
+I wonder why `git` complains that `--local can only be used inside a git repository`. Sounds like `git-annex` executes `git` in the wrong place when specifying `--git-dir` and/or `--work-tree` or it doesn't propagate it correctly.
+
+Any ideas?
