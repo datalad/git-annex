@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-09-20T18:08:29Z"
+ content="""
+Simpler test case:
+
+	joey@darkstar:~/src/git-annex>cd /tmp
+	joey@darkstar:/tmp>mkdir foo
+	joey@darkstar:/tmp>cd foo
+	joey@darkstar:/tmp/foo>git --git-dir=`pwd`/.dotfiles --work-tree=`pwd` init
+	Initialized empty Git repository in /tmp/foo/.dotfiles/
+	joey@darkstar:/tmp/foo>git --git-dir=`pwd`/.dotfiles --work-tree=`pwd` annex init
+	init  
+	git-annex: Git refuses to operate in this repository,
+	probably because it is owned by someone else.
+	
+	To add an exception for this directory, call:
+		git config --global --add safe.directory /tmp/foo
+	
+	failed
+
+Anything like this is clearly a bug.
+And this forum is not the place to file bug reports. Doing so risks
+it being forgotten about because who is going to go back and check old
+forum threads to see if they were a bug that didn't get fixed?
+
+Here, I opened a bug report: [[bugs/When_--git-dir_is_not_in_--work-tree]]
+"""]]
