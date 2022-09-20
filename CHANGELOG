@@ -17,7 +17,7 @@ git-annex (10.20220823) UNRELEASED; urgency=medium
     ignoreinode setting has been changed. When getting a file from such a
     remote, accept the content that would have been accepted with the
     previous ignoreinode setting.
-  * directory, adb: Fixed a bug when importtree=yes, and multiple files
+  * directory, adb: Fixed a bug with importtree=yes and multiple files
     in the special remote have the same content, that caused it to
     refuse to get a file from the special remote, incorrectly complaining
     that it had changed, due to only accepting the inode+mtime of one file
