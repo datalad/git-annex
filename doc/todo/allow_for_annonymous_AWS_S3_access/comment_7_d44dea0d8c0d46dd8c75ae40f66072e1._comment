@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-09-21T17:01:18Z"
+ content="""
+@nick.guenther importtree needs a way to list the files stored in a bucket,
+and doing that involves using the S3 API.
+
+In the case of your remote, it knows what files are stored in the
+bucket, since git-annex stored them there previously.
+"""]]
