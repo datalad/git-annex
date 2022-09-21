@@ -1,0 +1,17 @@
+As seen in [[forum/Not_enough_free_space]], pulling
+a commit that unlocks a lot of large files whose content is present in the
+repository can result in an unexpected doubling of the disk space used by
+git-annex.
+
+annex.diskreserve avoids that using up the entire disk, but it's not
+uncommon for users to not have it set, and the 1 mb default can easily
+be eaten up by other non-object uses of disk.
+
+Perhaps 1 mb is too small for the default for annex.diskreserve. Even
+10 or 100 mb would leave a lot more margin for other minor uses of disk space.
+
+Perhaps there could be another config like annex.diskreserve but that
+applies only to populating unlocked files. It could default to some larger
+size, like 1 gb. Probably most users are not going to want to populate
+unlocked files when their disk space gets that low. Although, the same
+could be argued about just getting files. --[[Joey]]

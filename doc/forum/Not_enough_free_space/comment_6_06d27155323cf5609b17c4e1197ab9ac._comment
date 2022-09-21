@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-09-21T17:42:44Z"
+ content="""
+Gus, did you manage to recover from the situation?
+
+I did some experimenting to see what it looks like when this happens.
+Here I am in a filesystem with 76 mb free, and annex.diskreserve is set to
+75 mb. The "big" file is 100 mb in size:
+
+	joey@darkstar:~/mnt/r2>git pull
+	remote: Enumerating objects: 5, done.
+	remote: Counting objects: 100% (5/5), done.
+	remote: Compressing objects: 100% (3/3), done.
+	remote: Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+	Unpacking objects: 100% (3/3), 328 bytes | 328.00 KiB/s, done.
+	From /home/joey/tmp/bench/r
+	   2dc7cd3..3699920  master     -> origin/master
+	Updating 2dc7cd3..3699920
+	Fast-forward
+	 big | 2 +-
+	 1 file changed, 1 insertion(+), 1 deletion(-)
+	 mode change 120000 => 100644 big
+	  not enough free space, need 100.99 MB more (use --force to override this check or adjust annex.diskreserve)
+	  not enough free space, need 101 MB more (use --force to override this check or adjust annex.diskreserve)
+	git-annex: unable to populate worktree file ./big
+	  not enough free space, need 101.02 MB more (use --force to override this check or adjust annex.diskreserve)
+	git-annex: git status will show big to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git update-index -q --refresh big
+	  not enough free space, need 101.02 MB more (use --force to override this check or adjust annex.diskreserve)
+	git-annex: git status will show big to be modified, since content availability has changed and git-annex was unable to update the index. This is only a cosmetic problem affecting git status; git add, git commit, etc won't be affected. To fix the git status display, you can run: git update-index -q --refresh big
+
+So git-annex avoids filling up the entire disk in this situation
+when annex.diskreserve is configured. I suppose that you don't have
+it configured, so it defaulted to only 1 mb -- and then other
+things than unlocked files used up that remaining space.
+
+I've opened to todo that would have avoided the worst of
+your experience:
+[[todo/prevent_pulling_unlocked_files_using_all_disk_space_by_default]].
+"""]]
