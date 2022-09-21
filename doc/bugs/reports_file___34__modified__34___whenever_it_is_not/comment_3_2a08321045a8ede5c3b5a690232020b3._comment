@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2022-09-21T18:49:06Z"
+ content="""
+the workaround you suggest elsewhere for \"cosmetic\" problem works here too
+
+```
+(dandisets) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git status
+On branch draft
+Your branch is up to date with 'github/draft'.
+
+Changes not staged for commit:
+  (use \"git add <file>...\" to update what will be committed)
+  (use \"git restore <file>...\" to discard changes in working directory)
+        modified:   .dandi/assets.json
+
+no changes added to commit (use \"git add\" and/or \"git commit -a\")
+(dandisets) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git update-index -q --refresh .dandi/assets.json
+(dandisets) dandi@drogon:/mnt/backup/dandi/dandisets/000026$ git status
+On branch draft
+Your branch is up to date with 'github/draft'.
+
+nothing to commit, working tree clean
+
+```
+
+but since we are relying on output from `status`, it is not just a \"cosmetic\" issue. IMHO if such `update-index` is needed, it should have been done by git-annex automagically somehow/sometime.
+"""]]
