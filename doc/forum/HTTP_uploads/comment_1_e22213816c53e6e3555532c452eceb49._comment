@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-09-21T17:17:48Z"
+ content="""
+To upload over HTTP, there needs to be some HTTP endpoint accepting the
+upload. There is no "one true way" to upload a file to a HTTP server. There
+are several HTTP-based protocols that can be used for uploads 
+that git-annex supports, including common standards like
+[[special_remotes/webdav]] and
+[[special_remotes/S3]], and less common standards like
+[[special_remotes/git-lfs]].
+
+git-lfs is notable in that it can be used with a regular git remote, that
+happens to implement the git-lfs endpoint. No special remote needed. 
+You can use git-annex to upload to a git-lfs remote. One way to serve
+such a remote would be using gitlab.
+
+I don't want to add some additional git-annex specific HTTP-based protocol. I
+could see possibly adding support for uploading to git remotes using webdav,
+much the same as uploading to git-lfs remotes is handled now. But it does not
+seem common to have a webdav server that accepts uploads to the url of your git
+repository. Not like it's very common for git-lfs to be supported in a git
+repo, when using github or gitlab. It might be more common for a git repo to be
+hosted on S3, so maybe uploads to http remotes via S3 would make sense. But
+that still seems like a niche configuration.
+
+The reason you see HEADs is that before sending content to a remote,
+git-annex checks if the remote already contains it. It knows how to do that
+check for a HTTP remote, which it needs to be able to do for other reasons.
+So it gets that far before failing. (Doing the check also means that if the
+content had been copied to the HTTP remote in the meantime, 
+`git-annex copy --to` would actually succeed. So it's not entirely useless.)
+
+Note that, with the current version of git-annex, you get a different, and
+much better error message:
+
+	copy foo (to origin...)
+	  copying to non-ssh repo not supported
+	failed
+"""]]
