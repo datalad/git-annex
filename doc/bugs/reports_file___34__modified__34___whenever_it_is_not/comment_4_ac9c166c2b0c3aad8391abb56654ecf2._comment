@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-09-21T19:19:08Z"
+ content="""
+So you can reproduce this? I am pretty sure it's not as simple as a drop
+followed by a get, so more information about reproducing it seems crucial.
+
+I assume you are *not* seeing the "This is only a cosmetic problem affecting git status"
+message?
+
+I expect that running `git update-index --refresh .dandi/assets.json`  
+will fix git status. Can you confirm?
+
+The only way I know of that this can happen without the message is if a
+drop or a get is still running, or gets interrupted after it
+gets an unlocked file, but before it finishes. One of the last things
+git-annex does is restage the unlocked files.
+
+Short of that, it seems like it would have to be a bug that prevents
+restagePointerFile from working. Which might not be a bug in git-annex,
+if the problem involves git's handling of timestamps in the index, for
+example. (Which is known to have some odd behaviors.)
+
+(git-annex could be improved to do the
+restaging later when interrupted and possibly after such a bug.
+But there's no way to make it recover in `git status`, because
+git doesn't run it in this situation.)
+"""]]
