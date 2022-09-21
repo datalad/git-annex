@@ -13,9 +13,9 @@ I expect that running `git update-index --refresh .dandi/assets.json`
 will fix git status. Can you confirm?
 
 The only way I know of that this can happen without the message is if a
-drop or a get is still running, or gets interrupted after it
-gets an unlocked file, but before it finishes. One of the last things
-git-annex does is restage the unlocked files.
+drop or a get is still running, or gets interrupted. One of the last things
+git-annex before exiting is restage all the unlocked files that it has
+updated.
 
 Short of that, it seems like it would have to be a bug that prevents
 restagePointerFile from working. Which might not be a bug in git-annex,
