@@ -9,6 +9,7 @@ be eaten up by other non-object uses of disk.
 
 Perhaps 1 mb is too small for the default for annex.diskreserve. Even
 10 or 100 mb would leave a lot more margin for other minor uses of disk space.
+(Update: increased default to 100 mb)
 
 Perhaps there could be another config like annex.diskreserve but that
 applies only to populating unlocked files. It could default to some larger

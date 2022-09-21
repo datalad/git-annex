@@ -153,7 +153,7 @@ extractGitConfig configsource r = GitConfig
 	, annexUUID = hereuuid
 	, annexNumCopies = configuredNumCopies
 		<$> getmayberead (annexConfig "numcopies")
-	, annexDiskReserve = fromMaybe onemegabyte $
+	, annexDiskReserve = fromMaybe (onemegabyte * 100) $
 		readSize dataUnits =<< getmaybe (annexConfig "diskreserve")
 	, annexDirect = getbool (annexConfig "direct") False
 	, annexBackend = maybe
