@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="nick.guenther@e418ed3c763dff37995c2ed5da4232a7c6cee0a9"
+ nickname="nick.guenther"
+ avatar="http://cdn.libravatar.org/avatar/9e85c6ca61c3f877fef4f91c2bf6e278"
+ subject="comment 5"
+ date="2022-09-20T21:30:51Z"
+ content="""
+We are hosting two datasets on S3 that allows anonymous downloads: https://github.com/spine-generic/data-multi-subject, https://github.com/spine-generic/data-single-subject.
+
+You can try it right now:
+
+```
+p115628@joplin:~/datasets/t$ git clone https://github.com/spine-generic/data-multi-subject
+Clonage dans 'data-multi-subject'...
+remote: Enumerating objects: 123344, done.
+remote: Counting objects: 100% (26796/26796), done.
+remote: Compressing objects: 100% (19491/19491), done.
+remote: Total 123344 (delta 6052), reused 25545 (delta 5941), pack-reused 96548
+Réception d'objets: 100% (123344/123344), 15.50 Mio | 8.48 Mio/s, fait.
+Résolution des deltas: 100% (46253/46253), fait.
+p115628@joplin:~/datasets/t$ cd data-multi-subject/
+p115628@joplin:~/datasets/t/data-multi-subject$ git annex get
+(merging origin/git-annex into git-annex...)
+(recording state in git...)
+(scanning for unlocked files...)
+get derivatives/labels/sub-amu01/anat/sub-amu01_T1w_labels-disc-manual.nii.gz (from amazon...) 
+
+(checksum...) ok                  
+get derivatives/labels/sub-amu01/anat/sub-amu01_T1w_seg-manual.nii.gz (from amazon...) 
+
+(checksum...) ok                  
+get derivatives/labels/sub-amu01/anat/sub-amu01_T2star_seg-manual.nii.gz (from amazon...) 
+
+(checksum...) ok                  
+get derivatives/labels/sub-amu01/anat/sub-amu01_T2w_labels-disc-manual.nii.gz (from amazon...) 
+
+[...]
+```
+
+
+The trick was simply to set `public=yes` and `publicurl` when running `initremote`. The final config I have stored is
+
+```
+5a5447a8-a9b8-49bc-8276-01a62632b502 autoenable=true bucket=data-multi-subject---spine-generic---neuropoly datacenter=ca-central-1 encryption=none host=s3.ca-central-1.amazonaws.com name=amazon port=443 public=yes publicurl=https://data-multi-subject---spine-generic---neuropoly.s3.ca-central-1.amazonaws.com signature=v4 storageclass=STANDARD type=S3 timestamp=1661783824.374956s
+```
+
+
+Why would `importtree` behave so differently?
+"""]]
