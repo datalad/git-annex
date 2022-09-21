@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2022-09-21T22:06:49Z"
+ content="""
+Seems likely that the --time-limit option, when combined with -J,
+could result in git-annex exiting before a worker thread gets a chance to
+call stagePointerFile. I have not verified this, and it would be unlikely
+to result in the same file being affected reproducibly.
+"""]]
