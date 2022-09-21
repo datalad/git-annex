@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-09-21T17:05:51Z"
+ content="""
+Is .dandi/assets.json an unlocked file?
+
+`git diff --cached` seems like the wrong thing to run, because
+that would show changes that you have staged for commit.
+This change is one that has not been staged for commit.
+So `git diff` should show it.
+"""]]
