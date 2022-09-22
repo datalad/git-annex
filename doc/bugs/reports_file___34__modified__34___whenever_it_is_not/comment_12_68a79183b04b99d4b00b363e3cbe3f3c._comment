@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2022-09-22T17:40:57Z"
+ content="""
+So, `git-annex transferrer`, after downloading the content, does handle
+populating pointer files. So it calls restagePointerFile to register a cleanup
+action.
+
+Whatever is making that process exit 1 must be preventing the cleanup
+action from being run. And I think what that is, is that its stdout handle
+gets closed at the same time its stdin handle is closed. I tried running
+`git-annex transferrer` manually and feeding it a transfer request on
+stdin. After its stdin was closed, it proceeded to send 
+`"om (recording state in git...)\n"` to stdout, and that would fail
+with stdout already closed.
+
+Worse, I suspect there's another problem.. When a stall actually
+is detected, git-annex kills the `git-annex transferrer` process that has
+stalled. But suppose that process has already successfully downloaded some
+content and populated pointer files. Killing it would prevent it from
+running restagePointerFile on those. It seems that to solve this,
+it would need to communicate back to the parent what pointer files need to
+be restaged. (Which would also solve the exit 1 problem, although not
+necessarily in the best way.)
+
+Also, I think that multiple processes running the restagePointerFile
+cleanup action at the same time can be a problem, because one will
+lock the index and the rest will fail to restage. Not what's happening
+here, but with -J, there would be multiple `git-annex transferrer`
+processes doing that at the same time at the end.
+"""]]
