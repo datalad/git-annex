@@ -466,13 +466,16 @@ jobs:
           # Do it after we possibly setup HOME
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
+          test_opts=( )
 
           case "${{ matrix.flavor }}" in
             # For git-annex it causes only few temporary directories to be on the crippled FS,
             # while the main ones produced by git annex test  reside in CWD, for which we use
             # $HOME
             custom-config1)
-              git config --global annex.stalldetection "1KB/120s";;
+              git config --global annex.stalldetection "1KB/120s"
+              test_opts=( --test-git-config $HOME/.gitconfig )
+              ;;
             *)
               ;;
           esac
@@ -480,7 +483,7 @@ jobs:
           cd $HOME
           export | grep -e crippledfs || :
 
-          timeout 1800 git annex test
+          timeout 1800 git annex test "${test_opts[@]}"
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
