@@ -3,12 +3,10 @@
  subject="""comment 9"""
  date="2022-09-22T17:04:35Z"
  content="""
-Thanks for the --debug. It shows that git-annex is asking git to refresh the index,
-although from this we can't see for sure if it fed the name of the file in on stdin or not:
+Thanks for the --debug. It shows that git-annex is not running 
+`git update-index --refresh` at all.
 
-	[2022-09-21 21:30:03.77319] (Utility.Process) process [3968453] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"update-index\",\"-z\",\"--index-info\"]
-
-The other thing that seems maybe relevant is that the transfer happens in a `git-annex transferrer` process.
+And it shows that the transfer happens in a `git-annex transferrer` process.
 So, I think you have annex.stalldetection set.
 
 	[2022-09-21 21:29:59.931525] (Utility.Process) process [3968203] chat: /home/dandi/miniconda3/envs/dandisets/bin/git-annex [\"transferrer\",\"-c\",\"annex.debug=true\"]
