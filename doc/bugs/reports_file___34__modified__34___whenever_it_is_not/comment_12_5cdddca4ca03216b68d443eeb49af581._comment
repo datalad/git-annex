@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 12"
+ date="2022-09-22T18:14:15Z"
+ content="""
+Adding a matrix run where I initiated a custom config settings to our [datalad/git-annex](https://github.com/datalad/git-annex/pull/133) CI run.  Let's see how that goes.  May be some other interesting config settings to add there? e.g. retries etc?  or global `~/.gitconfig` is not used/mocked away during tests? (e.g. we do that in datalad, so I had to trick that in [PR against datalad](https://github.com/datalad/datalad/pull/7056) to test against this setting being set)
+"""]]
