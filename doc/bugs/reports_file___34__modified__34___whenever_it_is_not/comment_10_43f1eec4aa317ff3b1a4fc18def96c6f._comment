@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 10"
+ date="2022-09-22T17:34:35Z"
+ content="""
+damn, I should have shared my config!  I also do have `annex.stalldetection` set!
+
+```
+[annex]
+	stalldetection = 1KB/120s
+```
+
+never thought it might be related.  We should look into having some matrix test run with such config set.
+"""]]
