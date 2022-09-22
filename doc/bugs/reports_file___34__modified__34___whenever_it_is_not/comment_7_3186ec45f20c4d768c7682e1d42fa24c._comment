@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2022-09-22T01:33:24Z"
+ content="""
+sorry I have not mentioned your [earlier comment 4](http://git-annex.branchable.com/bugs/reports_file___34__modified__34___whenever_it_is_not/#comment-ca0281ff580c91c40e429fbbb71a3791) but my clarification above I think gives the answers to your questions ;)
+
+<details>
+<summary>FWIW here is the get --debug output </summary> 
+
+```shell
+[2022-09-21 21:29:59.904218] (Utility.Process) process [3968193] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"ls-files\",\"--stage\",\"-z\",\"--error-unmatch\",\"--\",\".dandi/assets.json\"]
+[2022-09-21 21:29:59.904725] (Utility.Process) process [3968194] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2022-09-21 21:29:59.905645] (Utility.Process) process [3968195] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2022-09-21 21:29:59.906012] (Utility.Process) process [3968196] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"git-annex\"]
+[2022-09-21 21:29:59.907578] (Utility.Process) process [3968196] done ExitSuccess
+[2022-09-21 21:29:59.907891] (Utility.Process) process [3968197] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2022-09-21 21:29:59.913611] (Utility.Process) process [3968197] done ExitSuccess
+[2022-09-21 21:29:59.914676] (Utility.Process) process [3968198] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"log\",\"refs/heads/git-annex..5f5efa8544ff02c9261dd1590425dcea37a55526\",\"--pretty=%H\",\"-n1\"]
+[2022-09-21 21:29:59.916707] (Utility.Process) process [3968198] done ExitSuccess
+[2022-09-21 21:29:59.916968] (Utility.Process) process [3968199] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"log\",\"refs/heads/git-annex..18497e6e9cab7754a85256416c361fee36ba65b2\",\"--pretty=%H\",\"-n1\"]
+[2022-09-21 21:29:59.918722] (Utility.Process) process [3968199] done ExitSuccess
+[2022-09-21 21:29:59.919069] (Utility.Process) process [3968200] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+get .dandi/assets.json [2022-09-21 21:29:59.921463] (Utility.Process) process [3968202] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch\"]
+(from dandi-dandisets-dropbox...) [2022-09-21 21:29:59.931525] (Utility.Process) process [3968203] chat: /home/dandi/miniconda3/envs/dandisets/bin/git-annex [\"transferrer\",\"-c\",\"annex.debug=true\"]
+[2022-09-21 21:29:59.93162] (Annex.TransferrerPool) > d rdandi-dandisets-dropbox SHA256E-s69507227--6a0a91c4158d316ab8ad9bd8ebf7579b9c3c579e1035c48134246b6a5d2f6f14.json .dandi/assets.json
+[2022-09-21 21:29:59.942599] (Annex.TransferrerPool) < opb
+
+[2022-09-21 21:29:59.942718] (Annex.TransferrerPool) < ops 69507227
+[2022-09-21 21:30:03.103409] (Annex.TransferrerPool) < ope
+[2022-09-21 21:30:03.103539] (Annex.TransferrerPool) < om (checksum...) 
+(checksum...) [2022-09-21 21:30:03.768599] (Annex.TransferrerPool) < t
+[2022-09-21 21:30:03.768843] (Annex.Branch) read 6e0/a70/SHA256E-s69507227--6a0a91c4158d316ab8ad9bd8ebf7579b9c3c579e1035c48134246b6a5d2f6f14.json.log
+[2022-09-21 21:30:03.770259] (Annex.Branch) set 6e0/a70/SHA256E-s69507227--6a0a91c4158d316ab8ad9bd8ebf7579b9c3c579e1035c48134246b6a5d2f6f14.json.log
+ok
+[2022-09-21 21:30:03.770361] (Utility.Process) process [3968200] done ExitSuccess
+[2022-09-21 21:30:03.770425] (Utility.Process) process [3968195] done ExitSuccess
+[2022-09-21 21:30:03.770484] (Utility.Process) process [3968194] done ExitSuccess
+[2022-09-21 21:30:03.770531] (Utility.Process) process [3968193] done ExitSuccess
+[2022-09-21 21:30:03.771187] (Utility.Process) process [3968452] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+[2022-09-21 21:30:03.77319] (Utility.Process) process [3968453] feed: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"update-index\",\"-z\",\"--index-info\"]
+[2022-09-21 21:30:04.063182] (Utility.Process) process [3968453] done ExitSuccess
+[2022-09-21 21:30:04.063779] (Utility.Process) process [3968463] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2022-09-21 21:30:04.065352] (Utility.Process) process [3968463] done ExitSuccess
+(recording state in git...)
+[2022-09-21 21:30:04.06587] (Utility.Process) process [3968464] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"write-tree\"]
+[2022-09-21 21:30:04.407935] (Utility.Process) process [3968464] done ExitSuccess
+[2022-09-21 21:30:04.408528] (Utility.Process) process [3968468] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"commit-tree\",\"56c62dcc21145201f9454a2dd6e75cc37f072ee4\",\"--no-gpg-sign\",\"-p\",\"refs/heads/git-annex\"]
+[2022-09-21 21:30:04.410591] (Utility.Process) process [3968468] done ExitSuccess
+[2022-09-21 21:30:04.413623] (Utility.Process) process [3968469] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"update-ref\",\"refs/heads/git-annex\",\"c3a1f9208649b47621b1424b055bd9871aa2fc79\"]
+[2022-09-21 21:30:04.415318] (Utility.Process) process [3968469] done ExitSuccess
+[2022-09-21 21:30:04.416301] (Utility.Process) process [3968202] done ExitSuccess
+[2022-09-21 21:30:04.416574] (Utility.Process) process [3968452] done ExitSuccess
+[2022-09-21 21:30:06.373343] (Utility.Process) process [3968203] done ExitFailure 1
+```
+</details>
+"""]]
