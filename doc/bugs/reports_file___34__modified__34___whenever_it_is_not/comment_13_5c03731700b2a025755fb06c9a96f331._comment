@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2022-09-22T18:16:22Z"
+ content="""
+Avoided the early stdout handle close, and that did fix this bug as
+reported.
+
+The related problems I identified in comment #12 are still unfixed, so
+leaving this open for now.
+
+I think what ought to be done to wrap this up is make restagePointerFile
+record the files that need to be restaged in a log file. Then at shutdown,
+git-annex can read the log file, and restage everything listed in it.
+This will solve multiple problems:
+
+* When a previous git-annex process was interrupted after a get/drop of an
+  unlocked file, the file will be in the log, so git-annex can notice
+  that and handle the restaging.
+* When a stalled `git-annex transferrer` is killed, the parent git-annex
+  will read the log and handle the restaging that it was not able to do.
+* When multiple processes are trying to restage files at the same time,
+  an exclusive lock can be used to make only one of them run, and it can
+  handle restaging the files that the others have recorded in the log too.
+* As a bonus, in the situations where git-annex is legitimately unable to
+  restage files, it can still record them to be restaged later. And the
+  "only a cosmetic problem" message can tell the user to run a single
+  simple git-annex command, rather than a complicated 
+  `git update-index` command per file.
+"""]]

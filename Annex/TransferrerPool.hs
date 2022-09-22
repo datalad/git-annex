@@ -217,9 +217,15 @@ mkTransferrer signalactonsvar (RunTransferrer program params batchmaker) = do
 		, transferrerWrite = writeh
 		, transferrerHandle = ph
 		, transferrerShutdown = do
-			hClose readh
+			-- The transferrer may write to stdout
+			-- as it's shutting down, so don't close
+			-- the readh right away. Instead, drain
+			-- anything sent to it.
+			drainer <- async $ void $ hGetContents readh
 			hClose writeh
 			void $ waitForProcess ph
+			wait drainer
+			hClose readh
 			unregistersignalprop
 		}
 
