@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2022-09-22T17:02:04Z"
+ content="""
+I've fixed the issue I found with --timestamp combined with -J. Which I do
+think could have resulted in the same kind of problem. But you've shown
+that is not the cause in your case..
+"""]]
