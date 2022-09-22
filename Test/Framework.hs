@@ -169,7 +169,7 @@ withtmpclonerepo' cfg a = do
 	case r of
 		Right () -> return ()
 		Left e -> do
-			whenM (keepFailures <$> getTestMode) $
+			whenM (keepFailuresOption . testOptions <$> getTestMode) $
 				putStrLn $ "** Preserving repo for failure analysis in " ++ clone
 			throwM e
 
@@ -255,6 +255,13 @@ configrepo dir = indir dir $ do
 	-- tell git-annex to not annex the ingitfile
 	git "config" ["annex.largefiles", "exclude=" ++ ingitfile]
 		"git config annex.largefiles"
+	-- set any additional git configs the user wants to test with
+	gc <- testGitConfig . testOptions <$> getTestMode
+	forM_ gc $ \case
+		(Git.Types.ConfigKey k, Git.Types.ConfigValue v) -> 
+			git "config" [decodeBS k, decodeBS v]
+				"git config from test options"
+		(Git.Types.ConfigKey _, Git.Types.NoConfigValue) -> noop
 
 ensuredir :: FilePath -> IO ()
 ensuredir d = do
@@ -483,15 +490,15 @@ data TestMode = TestMode
 	{ unlockedFiles :: Bool
 	, adjustedUnlockedBranch :: Bool
 	, annexVersion :: Types.RepoVersion.RepoVersion
-	, keepFailures :: Bool
-	} deriving (Show)
+	, testOptions :: TestOptions
+	}
 
 testMode :: TestOptions -> Types.RepoVersion.RepoVersion -> TestMode
 testMode opts v = TestMode
 	{ unlockedFiles = False
 	, adjustedUnlockedBranch = False
 	, annexVersion = v
-	, keepFailures = keepFailuresOption opts
+	, testOptions = opts
 	}
 
 hasUnlockedFiles :: TestMode -> Bool

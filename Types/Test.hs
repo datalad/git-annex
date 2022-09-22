@@ -11,12 +11,14 @@ import Test.Tasty.Options
 
 import Types.Concurrency
 import Types.Command
+import Git.Types
 
 data TestOptions = TestOptions
 	{ tastyOptionSet :: OptionSet
 	, keepFailuresOption :: Bool
 	, fakeSsh :: Bool
 	, concurrentJobs :: Maybe Concurrency
+	, testGitConfig :: [(ConfigKey, ConfigValue)]
 	, internalData :: CmdParams
 	}
 

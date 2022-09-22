@@ -30,6 +30,20 @@ framework. Pass --help for details about those.
   When there are test failures, leave the `.t` directory populated with
   repositories that demonstate the failures, for later analysis.
 
+* `--test-git-config name=value`
+
+  The test suite prevents git from reading any git configuration files.
+  Usually it is a good idea to run the test suite with a standard 
+  git configuration. However, this option can be useful to see what
+  effect a git configuration setting has on the test suite. 
+
+  Some configuration settings will break the test suite, in ways that are
+  due to a bug in git-annex. But it is possible that changing a
+  configuration can find a legitimate bug in git-annex.
+
+  One valid use of this is to change a git configuration to a value that
+  is planned to be the new default in a future version of git.
+
 # SEE ALSO
 
 [[git-annex]](1)

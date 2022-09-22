@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 oey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,12 +13,12 @@ import Types.Test
 import Types.RepoVersion
 import Types.Concurrency
 import Test.Framework
-import Options.Applicative.Types
 
 import Test.Tasty
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
-import Options.Applicative (switch, long, short, help, internal, maybeReader, option)
+import Options.Applicative.Types
+import Options.Applicative (switch, long, short, help, internal, maybeReader, option, metavar)
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy.UTF8 as BU8
@@ -92,7 +92,7 @@ import qualified Utility.Gpg
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> snd (tastyParser (tests 1 False True (TestOptions mempty False False Nothing mempty)))
+	<$> snd (tastyParser (tests 1 False True (TestOptions mempty False False Nothing mempty mempty)))
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
@@ -106,7 +106,19 @@ optParser = TestOptions
 		<> short 'J'
 		<> help "number of concurrent jobs"
 		))
+	<*> many (option (maybeReader parseconfigvalue)
+		( long "test-git-config"
+		<> help "run tests with a git config set"
+		<> metavar "NAME=VALUE"
+		))
 	<*> cmdParams "non-options are for internal use only"
+  where
+	parseconfigvalue s = case break (== '=') s of
+		(_, []) -> Nothing
+		(k, v) -> Just 
+			( Git.Types.ConfigKey (encodeBS k)
+			, Git.Types.ConfigValue (encodeBS (drop 1 v))
+			)
 
 runner :: TestOptions -> IO ()
 runner opts = parallelTestRunner opts tests
