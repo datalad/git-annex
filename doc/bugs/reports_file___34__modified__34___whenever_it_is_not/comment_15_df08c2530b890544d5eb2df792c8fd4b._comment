@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2022-09-22T18:42:06Z"
+ content="""
+@yarikoptic oh, `git-annex test` does prevent global gitconfig from
+influeencing the tests. So your matrix test won't work if you're
+running `git-annex test` in it. If you're running other git-annex commands
+in datalad's test suite, it would work though.
+
+I've opened [[todo/specify_gitconfig_for_test_suite]].
+"""]]

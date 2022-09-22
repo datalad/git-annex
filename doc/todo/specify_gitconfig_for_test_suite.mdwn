@@ -1,0 +1,5 @@
+`git-annex test` prevents ~/.gitconfig or /etc/gitconfig from being read.
+
+It would sometimes be useful to test git-annex with a given git config set.
+Although some might break the test suite, others might expose actual bugs
+in git-annex. --[[Joey]]
