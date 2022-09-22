@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="Gus"
+ avatar="http://cdn.libravatar.org/avatar/665626c67ab3ee7e842183f6f659e120"
+ subject="comment 7"
+ date="2022-09-21T22:30:20Z"
+ content="""
+Greeting, joey. I have not. I am waiting for some quiet free time in which I am well rested, to reduce the possibility of messing things up more. :-)
+
+In the meantime, I am seeing, in my `.git/config`:
+
+```
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+        diskreserve = 1000MB
+```
+
+I think that reserve is for _git_, not _git-annex_. I may as well start setting that variable. I am using git-annex, in part, because I need to have my stuff spread across multiple media.
+
+Looking at your example output, I am getting a less helpful result. Possibly due to what you explain. However I am concerned with the possibility of your \"to do\" is being too specific. Detecting free disk space is not easy (I also use BTRFS, so I know that!). Maybe transferring / growing more than X GB it would print a warning (that would not interfere with automatic usage)? Or easily rollback that last incomplete file to ensure the metadata and other files write cleanly. Certainly you know better than me what works and what is needed.
+
+By the way, if anyone would be interested in writing a book on git-annex, with all these nice tips, I would buy a copy! (I am also willing to provide feedback for a WIP)
+
+Finally, I would also like to add that, looking once more at the log I can see the file mode change, as you said. I now have confirmation that the suspected _sync_ caused this problem.
+
+Thank you once again for all your help.
+"""]]
