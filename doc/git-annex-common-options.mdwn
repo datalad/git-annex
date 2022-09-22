@@ -68,8 +68,10 @@ Most of these options are accepted by all git-annex commands.
   Limits how long a git-annex command runs. The time can be something
   like "5h", or "30m" or even "45s" or "10d".
 
-  Note that git-annex may continue running a little past the specified
-  time limit, in order to finish processing a file.
+  Note that git-annex may continue running for some time past the specified
+  time limit, in order to finish processing files it started before the
+  time limit was reached. That and a cleaner shutdown are the differences
+  between using this option and a command like `timeout(1)`.
 
   When the time limit prevents git-annex from doing all it
   was asked to, it will exit with a special code, 101.

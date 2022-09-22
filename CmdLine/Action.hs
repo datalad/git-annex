@@ -32,8 +32,8 @@ import qualified System.Console.Regions as Regions
 {- Runs a command, starting with the check stage, and then
  - the seek stage. Finishes by running the continuation.
  -
- - Can exit when there was a problem or when files were skipped.
- - Also shows a count of any failures when that is enabled.
+ - Can exit when there was a problem or when a time or size limit was
+ - reached. Also shows a count of any failures when that is enabled.
  -}
 performCommandAction :: Bool -> Command -> CommandSeek -> Annex () -> Annex ()
 performCommandAction canexit (Command { cmdcheck = c, cmdname = name }) seek cont = do
@@ -43,19 +43,19 @@ performCommandAction canexit (Command { cmdcheck = c, cmdname = name }) seek con
 	finishCommandActions
 	cont
 	st <- Annex.getState id
-	when canexit $ liftIO $ case (Annex.errcounter st, Annex.skippedfiles st) of
+	when canexit $ liftIO $ case (Annex.errcounter st, Annex.reachedlimit st) of
 		(0, False) -> noop
 		(errcnt, False) -> do
 			showerrcount errcnt
 			exitWith $ ExitFailure 1
-		(0, True) -> exitskipped
+		(0, True) -> exitreachedlimit
 		(errcnt, True) -> do
 			showerrcount errcnt
-			exitskipped
+			exitreachedlimit
   where
 	showerrcount cnt = hPutStrLn stderr $
 		name ++ ": " ++ show cnt ++ " failed"
-	exitskipped = exitWith $ ExitFailure 101
+	exitreachedlimit = exitWith $ ExitFailure 101
 
 commandActions :: [CommandStart] -> Annex ()
 commandActions = mapM_ commandAction
@@ -328,7 +328,7 @@ checkSizeLimit (Just sizelimitvar) startmsg a =
 			Nothing -> do
 				fsz <- catchMaybeIO $ withObjectLoc k $
 					liftIO . getFileSize
-				maybe skipped go fsz
+				maybe reachedlimit go fsz
 		Nothing -> a
   where
 	go sz = do
@@ -342,6 +342,6 @@ checkSizeLimit (Just sizelimitvar) startmsg a =
 				else return False
 		if fits 
 			then a
-			else skipped
+			else reachedlimit
 	
-	skipped = Annex.changeState $ \s -> s { Annex.skippedfiles = True }
+	reachedlimit = Annex.changeState $ \s -> s { Annex.reachedlimit = True }

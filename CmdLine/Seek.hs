@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -41,7 +41,6 @@ import Annex.Link
 import Annex.InodeSentinal
 import Annex.Concurrent
 import Annex.CheckIgnore
-import Annex.Action
 import qualified Annex.Branch
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
@@ -49,6 +48,7 @@ import Utility.Tuple
 import Utility.HumanTime
 
 import Control.Concurrent.Async
+import Control.Concurrent.STM
 import System.Posix.Types
 import Data.IORef
 import Data.Time.Clock.POSIX
@@ -610,20 +610,25 @@ notSymlink :: RawFilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> R.getSymbolicLinkStatus f
 
 {- Returns an action that, when there's a time limit, can be used
- - to check it before processing a file. The first action is run when over the
- - time limit, otherwise the second action is run. -}
+ - to check it before processing a file. The first action is run when
+ - over the time limit, otherwise the second action is run one time to
+ - clean up. -}
 mkCheckTimeLimit :: Annex (Annex () -> Annex () -> Annex ())
 mkCheckTimeLimit = Annex.getState Annex.timelimit >>= \case
 	Nothing -> return $ \_ a -> a
-	Just (duration, cutoff) -> return $ \cleanup a -> do
-		now <- liftIO getPOSIXTime
-		if now > cutoff
-			then do
-				warning $ "Time limit (" ++ fromDuration duration ++ ") reached! Shutting down..."
-				shutdown True
-				cleanup
-				liftIO $ exitWith $ ExitFailure 101
-			else a
+	Just (duration, cutoff) -> do
+		warningshownv <- liftIO $ newTVarIO False
+		return $ \cleanup a -> do
+			now <- liftIO getPOSIXTime
+			if now > cutoff
+				then do
+					warningshown <- liftIO $ atomically $
+						swapTVar warningshownv True
+					unless warningshown $ do
+						Annex.changeState $ \s -> s { Annex.reachedlimit = True }
+						warning $ "Time limit (" ++ fromDuration duration ++ ") reached! Shutting down..."
+						cleanup
+				else a
 
 propagateLsFilesError :: IO Bool -> Annex ()
 propagateLsFilesError cleanup =

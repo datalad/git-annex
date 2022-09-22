@@ -200,7 +200,7 @@ data AnnexState = AnnexState
 	, cleanupactions :: M.Map CleanupAction (Annex ())
 	, sentinalstatus :: Maybe SentinalStatus
 	, errcounter :: Integer
-	, skippedfiles :: Bool
+	, reachedlimit :: Bool
 	, adjustedbranchrefreshcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
 	, tempurls :: M.Map Key URLString
@@ -253,7 +253,7 @@ newAnnexState c r = do
 		, cleanupactions = M.empty
 		, sentinalstatus = Nothing
 		, errcounter = 0
-		, skippedfiles = False
+		, reachedlimit = False
 		, adjustedbranchrefreshcounter = 0
 		, unusedkeys = Nothing
 		, tempurls = M.empty
