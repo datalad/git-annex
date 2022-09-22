@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2022-09-22T17:38:45Z"
+ content="""
+Yeah, a whole git-annex test run with stalldetection set would have found
+this bug. Which seems a bit heavy-weight for the test suite to try as a
+separate pass by default. But then again, stalldetection does significantly
+change how git-annex operates since it has to fork off child processes that
+it can kill when they stall.
+"""]]
