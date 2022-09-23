@@ -396,8 +396,7 @@ logMove srcuuid destuuid deststartedwithcopy key a = go =<< setup
 	go logf
 		-- Only need to check log when there is a copy.
 		| deststartedwithcopy = do
-			lck <- fromRepo gitAnnexMoveLock
-			wasnocopy <- checkLogFile (fromRawFilePath logf) lck
+			wasnocopy <- checkLogFile (fromRawFilePath logf)
 				(== logline)
 			if wasnocopy
 				then go' logf False

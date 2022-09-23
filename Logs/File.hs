@@ -88,8 +88,8 @@ modifyLogFile f lck modf = withExclusiveLock lck $ do
 -- action is concurrently modifying the file. It does not lock the file,
 -- for speed, but instead relies on the fact that a log file usually
 -- ends in a newline.
-checkLogFile :: FilePath -> RawFilePath -> (L.ByteString -> Bool) -> Annex Bool
-checkLogFile f lck matchf = withExclusiveLock lck $ bracket setup cleanup go
+checkLogFile :: FilePath -> (L.ByteString -> Bool) -> Annex Bool
+checkLogFile f matchf = bracket setup cleanup go
   where
 	setup = liftIO $ tryWhenExists $ openFile f ReadMode
 	cleanup Nothing = noop
