@@ -217,36 +217,21 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 	liftIO . Database.Keys.Handle.closeDbHandle
 		=<< Annex.getRead Annex.keysdbhandle
 	realindex <- liftIO $ Git.Index.currentIndexFile r
-	numsz@(numfiles, _) <- calcRestageLog (0, 0) $ \(_f, ic) (numfiles, sizefiles) ->
-		(numfiles+1, sizefiles + inodeCacheFileSize ic)
+	numsz@(numfiles, _) <- calcnumsz
 	let lock = fromRawFilePath (Git.Index.indexFileLock realindex)
 	    lockindex = liftIO $ catchMaybeIO $ Git.LockFile.openLock' lock
 	    unlockindex = liftIO . maybe noop Git.LockFile.closeLock
 	    showwarning = warning $ unableToRestage Nothing
 	    go Nothing = showwarning
-	    go (Just _) = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex" $ \tmpdir -> do
+	    go (Just _) = withtmpdir $ \tmpdir -> do
 		tsd <- getTSDelta 
 		let tmpindex = toRawFilePath (tmpdir </> "index")
-		let replaceindex = liftIO $
-			moveFile tmpindex realindex
+		let replaceindex = liftIO $ moveFile tmpindex realindex
 		let updatetmpindex = do
 			r' <- liftIO $ Git.Env.addGitEnv r Git.Index.indexEnv
 				=<< Git.Index.indexEnvVal tmpindex
-			-- Avoid git warning about CRLF munging.
-			let r'' = r' { gitGlobalOpts = gitGlobalOpts r' ++
-				[ Param "-c"
-				, Param $ "core.safecrlf=" ++ boolConfig False
-				] }
-			configfilterprocess numsz $ runsGitAnnexChildProcessViaGit' r'' $ \r''' ->
-				Git.UpdateIndex.refreshIndex r''' $ \feeder -> do
-					let atend = do
-						-- wait for index write
-						liftIO $ feeder Nothing
-						replaceindex
-					streamRestageLog atend $ \topf ic -> do
-						let f = fromTopFilePath topf r'''
-						liftIO $ whenM (isunmodified tsd f ic) $
-							feedupdateindex f feeder
+			configfilterprocess numsz $
+				runupdateindex tsd r' replaceindex
 			return True
 		ok <- liftIO (createLinkOrCopy realindex tmpindex)
 			<&&> catchBoolIO updatetmpindex
@@ -254,10 +239,30 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 	when (numfiles > 0) $
 		bracket lockindex unlockindex go
   where
+	withtmpdir = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex"
+
 	isunmodified tsd f orig = 
 		genInodeCache f tsd >>= return . \case
 			Nothing -> False
 			Just new -> compareStrong orig new
+			
+	{- Avoid git warning about CRLF munging -}
+	avoidcrlfwarning r' = r' { gitGlobalOpts = gitGlobalOpts r' ++
+		[ Param "-c"
+		, Param $ "core.safecrlf=" ++ boolConfig False
+		] }
+			
+	runupdateindex tsd r' replaceindex = 
+		runsGitAnnexChildProcessViaGit' (avoidcrlfwarning r') $ \r'' ->
+			Git.UpdateIndex.refreshIndex r'' $ \feeder -> do
+				let atend = do
+					-- wait for index write
+					liftIO $ feeder Nothing
+					replaceindex
+				streamRestageLog atend $ \topf ic -> do
+					let f = fromTopFilePath topf r''
+					liftIO $ whenM (isunmodified tsd f ic) $
+						feedupdateindex f feeder
 	
 	{- update-index is documented as picky about "./file" and it
 	 - fails on "../../repo/path/file" when cwd is not in the repo 
@@ -266,6 +271,9 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 	feedupdateindex f feeder = do
 		absf <- absPath f
 		feeder (Just absf)
+	
+	calcnumsz = calcRestageLog (0, 0) $ \(_f, ic) (numfiles, sizefiles) ->
+		(numfiles+1, sizefiles + inodeCacheFileSize ic)
 
 	{- filter.annex.process configured to use git-annex filter-process
 	 - is sometimes faster and sometimes slower than using
