@@ -708,8 +708,8 @@ content from the key-value store.
 * `smudge`
 
   This command lets git-annex be used as a git filter driver, allowing
-  annexed files in the git repository to be unlocked at all times, instead
-  of being symlinks.
+  annexed files in the git repository to be unlocked regular files instead
+  of symlinks.
 
   See [[git-annex-smudge]](1) for details.
 
@@ -719,6 +719,12 @@ content from the key-value store.
   in some situations and slower in others than `git-annex smudge`.
 
   See [[git-annex-filter-process]](1) for details.
+
+* `restage`
+  
+  Restages unlocked files in the git index.
+
+  See [[git-annex-restage]](1) for details.
 
 * `findref [ref]`
 

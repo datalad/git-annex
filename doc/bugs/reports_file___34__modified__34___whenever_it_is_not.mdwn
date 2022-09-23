@@ -91,4 +91,6 @@ I think I get it after I `annex move` and then `annex get` that file back. Just 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
 
-> [[!meta title="annex.stalldetection prevents git-annex get from restaging unlocked files"]]
+[[!meta title="annex.stalldetection prevents git-annex get from restaging unlocked files"]]
+
+> [[fixed|done]] --[[Joey]]

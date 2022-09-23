@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""status update"""
+ date="2022-09-23T19:57:38Z"
+ content="""
+I've implemented the log file. The stalled transferrer case is now handled.
+This bug is fixed.
+
+As to a few other cases I considered in comments upthread:
+
+When a get/drop was interrupted before it could restage, 
+the next get/drop will cause the necessary restaging for the 
+interrupted process to happen. However, this doesn't help if there's
+nothing left to get/drop. Should git-annex always run restagePointerFiles
+on shutdown? That would make any git-annex command handle the restaging.
+But it doesn't seem right for query commands to do potentially a lot of
+work to handle this case. Anyway, I don't think this needs to be dealt
+with in this bug report.
+
+When multiple processes try to restage at the same time, one will
+restage everything that all of them logged. The others will still display a
+warning to the user that they couldn't restage. It would be hard to avoid
+displaying that warning, since it does need to warn when it was
+unable to restage because git has the index locked at the time. Anyway,
+I think it's ok to display the message despite the files having been
+restaged, because it's the same as a later git-annex process handling the
+restaging. (It does seem like two transferrers belonging to the same parent
+could collide in this way, and one display the warning, which isn't great..)
+
+I also implemented a "git-annex restage" command that
+is an easier way to restage in the cases where git-annex is not able
+to do it itself.
+"""]]

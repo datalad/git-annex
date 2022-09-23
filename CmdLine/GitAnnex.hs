@@ -1,6 +1,6 @@
 {- git-annex main program
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -114,6 +114,7 @@ import qualified Command.Proxy
 import qualified Command.DiffDriver
 import qualified Command.Smudge
 import qualified Command.FilterProcess
+import qualified Command.Restage
 import qualified Command.Undo
 import qualified Command.Version
 import qualified Command.RemoteDaemon
@@ -228,6 +229,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.DiffDriver.cmd
 	, Command.Smudge.cmd
 	, Command.FilterProcess.cmd
+	, Command.Restage.cmd
 	, Command.Undo.cmd
 	, Command.Version.cmd
 	, Command.RemoteDaemon.cmd

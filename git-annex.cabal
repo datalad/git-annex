@@ -775,6 +775,7 @@ Executable git-annex
     Command.Repair
     Command.Required
     Command.ResolveMerge
+    Command.Restage
     Command.RmUrl
     Command.Schedule
     Command.Semitrust

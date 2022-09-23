@@ -316,7 +316,7 @@ unableToRestage mf = unwords
 	, "This is only a cosmetic problem affecting git status; git add,"
 	, "git commit, etc won't be affected."
 	, "To fix the git status display, you can run:"
-	, "git update-index -q --refresh " ++ fromMaybe "<file>" mf
+	, "git-annex restage"
 	]
 
 {- Parses a symlink target or a pointer file to a Key.
