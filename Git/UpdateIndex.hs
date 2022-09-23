@@ -1,6 +1,6 @@
 {- git-update-index library
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -136,8 +136,11 @@ indexPath :: TopFilePath -> InternalGitPath
 indexPath = toInternalGitPath . getTopFilePath
 
 {- Refreshes the index, by checking file stat information.  -}
-refreshIndex :: Repo -> ((RawFilePath -> IO ()) -> IO ()) -> IO Bool
-refreshIndex repo feeder = withCreateProcess p go
+refreshIndex :: (MonadIO m, MonadMask m) => Repo -> ((RawFilePath -> IO ()) -> m ()) -> m Bool
+refreshIndex repo feeder = bracket
+	(liftIO $ createProcess p)
+	(liftIO . cleanupProcess)
+	go
   where
 	params = 
 		[ Param "update-index"
@@ -150,10 +153,10 @@ refreshIndex repo feeder = withCreateProcess p go
 	p = (gitCreateProcess params repo)
 		{ std_in = CreatePipe }
 
-	go (Just h) _ _ pid = do
+	go (Just h, _, _, pid) = do
 		feeder $ \f ->
 			S.hPut h (S.snoc f 0)
-		hFlush h
-		hClose h
-		checkSuccessProcess pid
-	go _ _ _ _ = error "internal"
+		liftIO $ hFlush h
+		liftIO $ hClose h
+		liftIO $ checkSuccessProcess pid
+	go _ = error "internal"
