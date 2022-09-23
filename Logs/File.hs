@@ -14,6 +14,7 @@ module Logs.File (
 	modifyLogFile,
 	streamLogFile,
 	checkLogFile,
+	calcLogFile,
 ) where
 
 import Annex.Common
@@ -98,6 +99,25 @@ checkLogFile f matchf = bracket setup cleanup go
 	go (Just h) = do
 		!r <- liftIO (any matchf . fullLines <$> L.hGetContents h)
 		return r
+
+-- | Folds a function over lines of a log file to calculate a value.
+--
+-- This can safely be used while appendLogFile or any atomic
+-- action is concurrently modifying the file. It does not lock the file,
+-- for speed, but instead relies on the fact that a log file usually
+-- ends in a newline.
+calcLogFile :: FilePath -> t -> (L.ByteString -> t -> t) -> Annex t
+calcLogFile f start update = bracket setup cleanup go
+  where
+	setup = liftIO $ tryWhenExists $ openFile f ReadMode
+	cleanup Nothing = noop
+	cleanup (Just h) = liftIO $ hClose h
+	go Nothing = return start
+	go (Just h) = go' start =<< liftIO (fullLines <$> L.hGetContents h)
+	go' v [] = return v
+	go' v (l:ls) = do
+		let !v' = update l v
+		go' v' ls
 
 -- | Gets only the lines that end in a newline. If the last part of a file
 -- does not, it's assumed to be a new line being logged that is incomplete,

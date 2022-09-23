@@ -106,11 +106,15 @@ runsGitAnnexChildProcessViaGit a = pidLockFile >>= \case
 runsGitAnnexChildProcessViaGit a = a
 #endif
 
-runsGitAnnexChildProcessViaGit' :: Git.Repo -> (Git.Repo -> IO a) -> Annex a
+{- Like runsGitAnnexChildProcessViaGit, but the Annex state is not
+ - modified. Instead the input Repo's state is modified to set the 
+ - necessary env var when git is run in that Repo.
+ -}
+runsGitAnnexChildProcessViaGit' :: Git.Repo -> (Git.Repo -> Annex a) -> Annex a
 #ifndef mingw32_HOST_OS
 runsGitAnnexChildProcessViaGit' r a = pidLockFile >>= \case
-	Nothing -> liftIO $ a r
-	Just pidlock -> liftIO $ bracket (setup pidlock) cleanup (go pidlock)
+	Nothing -> a r
+	Just pidlock -> bracketIO (setup pidlock) cleanup (go pidlock)
   where
 	setup pidlock = fmap fst <$> PidP.tryLock' pidlock
 	
@@ -119,8 +123,8 @@ runsGitAnnexChildProcessViaGit' r a = pidLockFile >>= \case
 	
 	go _ Nothing = a r
 	go pidlock (Just _h) = do
-		v <- PidF.pidLockEnv pidlock
-		r' <- addGitEnv r v PidF.pidLockEnvValue
+		v <- liftIO $ PidF.pidLockEnv pidlock
+		r' <- liftIO $ addGitEnv r v PidF.pidLockEnvValue
 		a r'
 #else
 runsGitAnnexChildProcessViaGit' r a = liftIO $ a r

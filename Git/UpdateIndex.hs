@@ -135,8 +135,13 @@ stageDiffTreeItem d = case toTreeItemType (Diff.dstmode d) of
 indexPath :: TopFilePath -> InternalGitPath
 indexPath = toInternalGitPath . getTopFilePath
 
-{- Refreshes the index, by checking file stat information.  -}
-refreshIndex :: (MonadIO m, MonadMask m) => Repo -> ((RawFilePath -> IO ()) -> m ()) -> m Bool
+{- Refreshes the index, by checking file stat information.
+ -
+ - The action is passed a callback that it can use to send filenames to
+ - update-index. Sending Nothing will wait for update-index to finish
+ - updating the index.
+ -}
+refreshIndex :: (MonadIO m, MonadMask m) => Repo -> ((Maybe RawFilePath -> IO ()) -> m ()) -> m ()
 refreshIndex repo feeder = bracket
 	(liftIO $ createProcess p)
 	(liftIO . cleanupProcess)
@@ -154,9 +159,12 @@ refreshIndex repo feeder = bracket
 		{ std_in = CreatePipe }
 
 	go (Just h, _, _, pid) = do
-		feeder $ \f ->
-			S.hPut h (S.snoc f 0)
-		liftIO $ hFlush h
-		liftIO $ hClose h
-		liftIO $ checkSuccessProcess pid
+		let closer = do
+			hFlush h
+			hClose h
+			forceSuccessProcess p pid
+		feeder $ \case
+			Just f -> S.hPut h (S.snoc f 0)
+			Nothing -> closer
+		liftIO $ closer
 	go _ = error "internal"

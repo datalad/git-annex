@@ -49,6 +49,8 @@ module Annex.Locations (
 	gitAnnexUpgradeLock,
 	gitAnnexSmudgeLog,
 	gitAnnexSmudgeLock,
+	gitAnnexRestageLog,
+	gitAnnexRestageLock,
 	gitAnnexMoveLog,
 	gitAnnexMoveLock,
 	gitAnnexExportDir,
@@ -370,13 +372,21 @@ gitAnnexUpgradeLog r = gitAnnexDir r P.</> "upgrade.log"
 gitAnnexUpgradeLock :: Git.Repo -> RawFilePath
 gitAnnexUpgradeLock r = gitAnnexDir r P.</> "upgrade.lck"
 
-{- .git/annex/smudge.log is used to log smudges worktree files that need to
+{- .git/annex/smudge.log is used to log smudged worktree files that need to
  - be updated. -}
 gitAnnexSmudgeLog :: Git.Repo -> RawFilePath
 gitAnnexSmudgeLog r = gitAnnexDir r P.</> "smudge.log"
 
 gitAnnexSmudgeLock :: Git.Repo -> RawFilePath
 gitAnnexSmudgeLock r = gitAnnexDir r P.</> "smudge.lck"
+
+{- .git/annex/restage.log is used to log worktree files that need to be
+ - restaged in git -}
+gitAnnexRestageLog :: Git.Repo -> RawFilePath
+gitAnnexRestageLog r = gitAnnexDir r P.</> "restage.log"
+
+gitAnnexRestageLock :: Git.Repo -> RawFilePath
+gitAnnexRestageLock r = gitAnnexDir r P.</> "restage.lck"
 
 {- .git/annex/move.log is used to log moves that are in progress,
  - to better support resuming an interrupted move. -}

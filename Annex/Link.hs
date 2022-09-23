@@ -25,6 +25,7 @@ import qualified Git.Index
 import qualified Git.LockFile
 import qualified Git.Env
 import qualified Git
+import Logs.Restage
 import Git.Types
 import Git.FilePath
 import Git.Config
@@ -35,7 +36,6 @@ import Utility.FileMode
 import Utility.InodeCache
 import Utility.Tmp.Dir
 import Utility.CopyFile
-import Utility.Tuple
 import qualified Database.Keys.Handle
 import qualified Utility.RawFilePath as R
 
@@ -155,6 +155,10 @@ newtype Restage = Restage Bool
  - when content is added/removed, to prevent git status from showing
  - it as modified.
  -
+ - The InodeCache is for the worktree file. It is used to detect when
+ - the worktree file is changed by something else before git update-index
+ - gets to look at it.
+ -
  - Asks git to refresh its index information for the file.
  - That in turn runs the clean filter on the file; when the clean
  - filter produces the same pointer that was in the index before, git
@@ -165,46 +169,46 @@ newtype Restage = Restage Bool
  - that. So it's safe to call at any time and any situation.
  -
  - If the index is known to be locked (eg, git add has run git-annex),
- - that would fail. Restage False will prevent the index being updated.
- - Will display a message to help the user understand why
- - the file will appear to be modified.
+ - that would fail. Restage False will prevent the index being updated,
+ - and will store it in the restage log. Displays a message to help the
+ - user understand why the file will appear to be modified.
  -
  - This uses the git queue, so the update is not performed immediately,
- - and this can be run multiple times cheaply.
- -
- - The InodeCache is for the worktree file. It is used to detect when
- - the worktree file is changed by something else before git update-index
- - gets to look at it.
+ - and this can be run multiple times cheaply. Using the git queue also
+ - prevents building up too large a number of updates when many files
+ - are being processed. It's also recorded in the restage log so that,
+ - if the process is interrupted before the git queue is fulushed, the
+ - restage will be taken care of later.
  -}
 restagePointerFile :: Restage -> RawFilePath -> InodeCache -> Annex ()
 restagePointerFile (Restage False) f orig = do
+	flip writeRestageLog orig =<< inRepo (toTopFilePath f)
 	toplevelWarning True $ unableToRestage $ Just $ fromRawFilePath f
-restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
+restagePointerFile (Restage True) f orig = do
+	flip writeRestageLog orig =<< inRepo (toTopFilePath f)
 	-- Avoid refreshing the index if run by the
 	-- smudge clean filter, because git uses that when
 	-- it's already refreshing the index, probably because
 	-- this very action is running. Running it again would likely
 	-- deadlock.
-	unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
-		-- update-index is documented as picky about "./file" and it
-		-- fails on "../../repo/path/file" when cwd is not in the repo 
-		-- being acted on. Avoid these problems with an absolute path.
-		absf <- liftIO $ absPath f
-		Annex.Queue.addFlushAction restagePointerFileRunner
-			[(absf, isunmodified tsd, inodeCacheFileSize orig)]
-  where
-	isunmodified tsd = genInodeCache f tsd >>= return . \case
-		Nothing -> False
-		Just new -> compareStrong orig new
+	unlessM (Annex.getState Annex.insmudgecleanfilter) $
+		Annex.Queue.addFlushAction restagePointerFileRunner [f]
 
+restagePointerFileRunner :: Git.Queue.FlushActionRunner Annex
+restagePointerFileRunner = 
+	Git.Queue.FlushActionRunner "restagePointerFiles" $ \r _fs ->
+		restagePointerFiles r
+
+-- Restage all files in the restage log that have not been modified.
+--
 -- Other changes to the files may have been staged before this
 -- gets a chance to run. To avoid a race with any staging of
 -- changes, first lock the index file. Then run git update-index
 -- on all still-unmodified files, using a copy of the index file,
 -- to bypass the lock. Then replace the old index file with the new
 -- updated index file.
-restagePointerFileRunner :: Git.Queue.FlushActionRunner Annex
-restagePointerFileRunner = Git.Queue.FlushActionRunner "restagePointerFile" $ \r l -> do
+restagePointerFiles :: Git.Repo -> Annex ()
+restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 	-- Flush any queued changes to the keys database, so they
 	-- are visible to child processes.
 	-- The database is closed because that may improve behavior
@@ -219,7 +223,10 @@ restagePointerFileRunner = Git.Queue.FlushActionRunner "restagePointerFile" $ \r
 	    showwarning = warning $ unableToRestage Nothing
 	    go Nothing = showwarning
 	    go (Just _) = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex" $ \tmpdir -> do
+		tsd <- getTSDelta 
 		let tmpindex = toRawFilePath (tmpdir </> "index")
+		let replaceindex = liftIO $
+			moveFile tmpindex realindex
 		let updatetmpindex = do
 			r' <- liftIO $ Git.Env.addGitEnv r Git.Index.indexEnv
 				=<< Git.Index.indexEnvVal tmpindex
@@ -228,30 +235,45 @@ restagePointerFileRunner = Git.Queue.FlushActionRunner "restagePointerFile" $ \r
 				[ Param "-c"
 				, Param $ "core.safecrlf=" ++ boolConfig False
 				] }
-			configfilterprocess l $ runsGitAnnexChildProcessViaGit' r'' $ \r''' ->
-				liftIO $ Git.UpdateIndex.refreshIndex r''' $ \feed ->
-					forM_ l $ \(f', checkunmodified, _) ->
-						whenM checkunmodified $
-							feed f'
-		let replaceindex = catchBoolIO $ do
-			moveFile tmpindex realindex
+			numsz <- calcRestageLog (0, 0) $ \(_f, ic) (numfiles, sizefiles) ->
+				(numfiles+1, sizefiles + inodeCacheFileSize ic)
+			configfilterprocess numsz $ runsGitAnnexChildProcessViaGit' r'' $ \r''' ->
+				Git.UpdateIndex.refreshIndex r''' $ \feeder -> do
+					let atend = do
+						-- wait for index write
+						liftIO $ feeder Nothing
+						replaceindex
+					streamRestageLog atend $ \topf ic -> do
+						let f = fromTopFilePath topf r'''
+						liftIO $ whenM (isunmodified tsd f ic) $
+							feedupdateindex f feeder
 			return True
 		ok <- liftIO (createLinkOrCopy realindex tmpindex)
-			<&&> updatetmpindex
-			<&&> liftIO replaceindex
+			<&&> catchBoolIO updatetmpindex
 		unless ok showwarning
 	bracket lockindex unlockindex go
   where
+	isunmodified tsd f orig = 
+		genInodeCache f tsd >>= return . \case
+			Nothing -> False
+			Just new -> compareStrong orig new
+	
+	{- update-index is documented as picky about "./file" and it
+	 - fails on "../../repo/path/file" when cwd is not in the repo 
+	 - being acted on. Avoid these problems with an absolute path.
+	 -}
+	feedupdateindex f feeder = do
+		absf <- absPath f
+		feeder (Just absf)
+
 	{- filter.annex.process configured to use git-annex filter-process
 	 - is sometimes faster and sometimes slower than using
 	 - git-annex smudge. The latter is run once per file, while
 	 - the former has the content of files piped to it.
 	 -}
-	filterprocessfaster l = 
-		let numfiles = genericLength l
-		    sizefiles = sum (map thd3 l)
-		    -- estimates based on benchmarking
-		    estimate_enabled = sizefiles `div` 191739611
+	filterprocessfaster :: (Integer, FileSize) -> Bool
+	filterprocessfaster (numfiles, sizefiles) = 
+		let estimate_enabled = sizefiles `div` 191739611
 		    estimate_disabled = numfiles `div` 7
 		in estimate_enabled <= estimate_disabled
 	 
@@ -263,10 +285,10 @@ restagePointerFileRunner = Git.Queue.FlushActionRunner "restagePointerFile" $ \r
 	  - case this process is terminated early, the next time this
 	  - runs it will take care of reversing the modification.
 	  -}
-	configfilterprocess l = bracket setup cleanup . const
+	configfilterprocess numsz = bracket setup cleanup . const
 	  where
 		setup
-			| filterprocessfaster l = return Nothing
+			| filterprocessfaster numsz = return Nothing
 			| otherwise = fromRepo (Git.Config.getMaybe ck) >>= \case
 				Nothing -> return Nothing
 				Just v -> do
