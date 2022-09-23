@@ -217,6 +217,8 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 	liftIO . Database.Keys.Handle.closeDbHandle
 		=<< Annex.getRead Annex.keysdbhandle
 	realindex <- liftIO $ Git.Index.currentIndexFile r
+	numsz@(numfiles, _) <- calcRestageLog (0, 0) $ \(_f, ic) (numfiles, sizefiles) ->
+		(numfiles+1, sizefiles + inodeCacheFileSize ic)
 	let lock = fromRawFilePath (Git.Index.indexFileLock realindex)
 	    lockindex = liftIO $ catchMaybeIO $ Git.LockFile.openLock' lock
 	    unlockindex = liftIO . maybe noop Git.LockFile.closeLock
@@ -235,8 +237,6 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 				[ Param "-c"
 				, Param $ "core.safecrlf=" ++ boolConfig False
 				] }
-			numsz <- calcRestageLog (0, 0) $ \(_f, ic) (numfiles, sizefiles) ->
-				(numfiles+1, sizefiles + inodeCacheFileSize ic)
 			configfilterprocess numsz $ runsGitAnnexChildProcessViaGit' r'' $ \r''' ->
 				Git.UpdateIndex.refreshIndex r''' $ \feeder -> do
 					let atend = do
@@ -251,7 +251,8 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 		ok <- liftIO (createLinkOrCopy realindex tmpindex)
 			<&&> catchBoolIO updatetmpindex
 		unless ok showwarning
-	bracket lockindex unlockindex go
+	when (numfiles > 0) $
+		bracket lockindex unlockindex go
   where
 	isunmodified tsd f orig = 
 		genInodeCache f tsd >>= return . \case

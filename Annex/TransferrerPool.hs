@@ -1,6 +1,6 @@
 {- A pool of "git-annex transferrer" processes
  -
- - Copyright 2013-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,6 +22,7 @@ import Types.CleanupActions
 import Messages.Serialized
 import Annex.Path
 import Annex.StallDetection
+import Annex.Link
 import Utility.Batch
 import Utility.Metered
 import qualified Utility.SimpleProtocol as Proto
@@ -286,3 +287,10 @@ emptyTransferrerPool = do
 	liftIO $ forM_ pool $ \case
 		TransferrerPoolItem (Just t) _ -> transferrerShutdown t
 		TransferrerPoolItem Nothing _ -> noop
+	-- Transferrers usually restage pointer files themselves,
+	-- but when killTransferrer is used, a transferrer may have
+	-- pointer files it has not gotten around to restaging yet.
+	-- So, restage pointer files here in clean up from such killed
+	-- transferrers.
+	unless (null pool) $
+		restagePointerFiles =<< Annex.gitRepo
