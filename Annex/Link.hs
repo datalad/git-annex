@@ -177,7 +177,7 @@ newtype Restage = Restage Bool
  - gets to look at it.
  -}
 restagePointerFile :: Restage -> RawFilePath -> InodeCache -> Annex ()
-restagePointerFile (Restage False) f _ =
+restagePointerFile (Restage False) f orig = do
 	toplevelWarning True $ unableToRestage $ Just $ fromRawFilePath f
 restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 	-- Avoid refreshing the index if run by the
@@ -190,57 +190,58 @@ restagePointerFile (Restage True) f orig = withTSDelta $ \tsd ->
 		-- fails on "../../repo/path/file" when cwd is not in the repo 
 		-- being acted on. Avoid these problems with an absolute path.
 		absf <- liftIO $ absPath f
-		Annex.Queue.addFlushAction runner [(absf, isunmodified tsd, inodeCacheFileSize orig)]
+		Annex.Queue.addFlushAction restagePointerFileRunner
+			[(absf, isunmodified tsd, inodeCacheFileSize orig)]
   where
 	isunmodified tsd = genInodeCache f tsd >>= return . \case
 		Nothing -> False
 		Just new -> compareStrong orig new
 
-	-- Other changes to the files may have been staged before this
-	-- gets a chance to run. To avoid a race with any staging of
-	-- changes, first lock the index file. Then run git update-index
-	-- on all still-unmodified files, using a copy of the index file,
-	-- to bypass the lock. Then replace the old index file with the new
-	-- updated index file.
-	runner :: Git.Queue.FlushActionRunner Annex
-	runner = Git.Queue.FlushActionRunner "restagePointerFile" $ \r l -> do
-		-- Flush any queued changes to the keys database, so they
-		-- are visible to child processes.
-		-- The database is closed because that may improve behavior
-		-- when run in Windows's WSL1, which has issues with
-		-- multiple writers to SQL databases.
-		liftIO . Database.Keys.Handle.closeDbHandle
-			=<< Annex.getRead Annex.keysdbhandle
-		realindex <- liftIO $ Git.Index.currentIndexFile r
-		let lock = fromRawFilePath (Git.Index.indexFileLock realindex)
-		    lockindex = liftIO $ catchMaybeIO $ Git.LockFile.openLock' lock
-		    unlockindex = liftIO . maybe noop Git.LockFile.closeLock
-		    showwarning = warning $ unableToRestage Nothing
-		    go Nothing = showwarning
-		    go (Just _) = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex" $ \tmpdir -> do
-			let tmpindex = toRawFilePath (tmpdir </> "index")
-			let updatetmpindex = do
-				r' <- liftIO $ Git.Env.addGitEnv r Git.Index.indexEnv
-					=<< Git.Index.indexEnvVal tmpindex
-				-- Avoid git warning about CRLF munging.
-				let r'' = r' { gitGlobalOpts = gitGlobalOpts r' ++
-					[ Param "-c"
-					, Param $ "core.safecrlf=" ++ boolConfig False
-					] }
-				configfilterprocess l $ runsGitAnnexChildProcessViaGit' r'' $ \r''' ->
-					liftIO $ Git.UpdateIndex.refreshIndex r''' $ \feed ->
-						forM_ l $ \(f', checkunmodified, _) ->
-							whenM checkunmodified $
-								feed f'
-			let replaceindex = catchBoolIO $ do
-				moveFile tmpindex realindex
-				return True
-			ok <- liftIO (createLinkOrCopy realindex tmpindex)
-				<&&> updatetmpindex
-				<&&> liftIO replaceindex
-			unless ok showwarning
-		bracket lockindex unlockindex go
-	
+-- Other changes to the files may have been staged before this
+-- gets a chance to run. To avoid a race with any staging of
+-- changes, first lock the index file. Then run git update-index
+-- on all still-unmodified files, using a copy of the index file,
+-- to bypass the lock. Then replace the old index file with the new
+-- updated index file.
+restagePointerFileRunner :: Git.Queue.FlushActionRunner Annex
+restagePointerFileRunner = Git.Queue.FlushActionRunner "restagePointerFile" $ \r l -> do
+	-- Flush any queued changes to the keys database, so they
+	-- are visible to child processes.
+	-- The database is closed because that may improve behavior
+	-- when run in Windows's WSL1, which has issues with
+	-- multiple writers to SQL databases.
+	liftIO . Database.Keys.Handle.closeDbHandle
+		=<< Annex.getRead Annex.keysdbhandle
+	realindex <- liftIO $ Git.Index.currentIndexFile r
+	let lock = fromRawFilePath (Git.Index.indexFileLock realindex)
+	    lockindex = liftIO $ catchMaybeIO $ Git.LockFile.openLock' lock
+	    unlockindex = liftIO . maybe noop Git.LockFile.closeLock
+	    showwarning = warning $ unableToRestage Nothing
+	    go Nothing = showwarning
+	    go (Just _) = withTmpDirIn (fromRawFilePath $ Git.localGitDir r) "annexindex" $ \tmpdir -> do
+		let tmpindex = toRawFilePath (tmpdir </> "index")
+		let updatetmpindex = do
+			r' <- liftIO $ Git.Env.addGitEnv r Git.Index.indexEnv
+				=<< Git.Index.indexEnvVal tmpindex
+			-- Avoid git warning about CRLF munging.
+			let r'' = r' { gitGlobalOpts = gitGlobalOpts r' ++
+				[ Param "-c"
+				, Param $ "core.safecrlf=" ++ boolConfig False
+				] }
+			configfilterprocess l $ runsGitAnnexChildProcessViaGit' r'' $ \r''' ->
+				liftIO $ Git.UpdateIndex.refreshIndex r''' $ \feed ->
+					forM_ l $ \(f', checkunmodified, _) ->
+						whenM checkunmodified $
+							feed f'
+		let replaceindex = catchBoolIO $ do
+			moveFile tmpindex realindex
+			return True
+		ok <- liftIO (createLinkOrCopy realindex tmpindex)
+			<&&> updatetmpindex
+			<&&> liftIO replaceindex
+		unless ok showwarning
+	bracket lockindex unlockindex go
+  where
 	{- filter.annex.process configured to use git-annex filter-process
 	 - is sometimes faster and sometimes slower than using
 	 - git-annex smudge. The latter is run once per file, while
