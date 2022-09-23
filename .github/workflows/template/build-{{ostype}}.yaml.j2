@@ -473,8 +473,7 @@ jobs:
             # while the main ones produced by git annex test  reside in CWD, for which we use
             # $HOME
             custom-config1)
-              git config --global annex.stalldetection "1KB/120s"
-              test_opts=( --test-git-config $HOME/.gitconfig )
+              test_opts=( --test-git-config annex.stalldetection=1KB/120s )
               ;;
             *)
               ;;
