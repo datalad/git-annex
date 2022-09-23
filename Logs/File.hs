@@ -113,25 +113,30 @@ fullLines = go []
 			let (l, b') = L.splitAt n b
 			in go (l:c) (L.drop 1 b')
 
--- | Streams lines from a log file, and then empties the file at the end.
+-- | Streams lines from a log file, passing each line to the processor,
+-- and then empties the file at the end.
 --
--- If the action is interrupted or throws an exception, the log file is
+-- If the processor is interrupted or throws an exception, the log file is
 -- left unchanged.
 --
--- Does nothing if the log file does not exist.
+-- There is also a finalizer, that is run once all lines have been
+-- streamed. It is run even if the log file does not exist. If the
+-- finalizer throws an exception, the log file is left unchanged.
 -- 
 -- Locking is used to prevent writes to to the log file while this
 -- is running.
-streamLogFile :: FilePath -> RawFilePath -> (String -> Annex ()) -> Annex ()
-streamLogFile f lck a = withExclusiveLock lck $ bracketOnError setup cleanup go
+streamLogFile :: FilePath -> RawFilePath -> Annex () -> (String -> Annex ()) -> Annex ()
+streamLogFile f lck finalizer processor = 
+	withExclusiveLock lck $ bracketOnError setup cleanup go
   where
 	setup = liftIO $ tryWhenExists $ openFile f ReadMode 
 	cleanup Nothing = noop
 	cleanup (Just h) = liftIO $ hClose h
-	go Nothing = noop
+	go Nothing = finalizer
 	go (Just h) = do
-		mapM_ a =<< liftIO (lines <$> hGetContents h)
+		mapM_ processor =<< liftIO (lines <$> hGetContents h)
 		liftIO $ hClose h
+		finalizer
 		liftIO $ writeFile f ""
 		setAnnexFilePerm (toRawFilePath f)
 
