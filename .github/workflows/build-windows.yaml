@@ -206,8 +206,13 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex:
-    runs-on: windows-2019
+    runs-on: ${{ matrix.os }}
     needs: build-package
+    strategy:
+      matrix:
+        flavor: ["normal", "custom-config1"]
+        os: [windows-2019]
+      fail-fast: false
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v2
@@ -218,7 +223,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             Windows \
-            test-annex \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             pending
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -253,11 +258,23 @@ jobs:
           # Do it after we possibly setup HOME
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
+          test_opts=( )
+
+          case "${{ matrix.flavor }}" in
+            # For git-annex it causes only few temporary directories to be on the crippled FS,
+            # while the main ones produced by git annex test  reside in CWD, for which we use
+            # $HOME
+            custom-config1)
+              test_opts=( --test-git-config annex.stalldetection=1KB/120s )
+              ;;
+            *)
+              ;;
+          esac
 
           cd $HOME
           export | grep -e crippledfs || :
 
-          timeout 1800 git annex test
+          timeout 1800 git annex test "${test_opts[@]:-}"
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
@@ -265,7 +282,7 @@ jobs:
           .github/workflows/tools/set-pr-status \
             "${{ github.event.inputs.pr }}" \
             Windows \
-            test-annex \
+            "test-annex (${{ matrix.flavor }}, ${{ matrix.os }})" \
             "${{ job.status }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -282,7 +299,7 @@ jobs:
           to: ${{ secrets.NOTIFY_RECIPIENT }}
           subject: '[${{ github.repository }}] Scheduled tests of Windows build failed!'
           body: |
-            The tests for a scheduled build of git-annex for Windows failed!
+            The tests for a scheduled build of git-annex for Windows (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
