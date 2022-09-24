@@ -13,48 +13,54 @@ The following steps are tested on Windows 10 21h1 with Ubuntu 20 and are designe
     * If the repository is created by cloning, create local git-annex branch from the remote branch and remove the origin remote before `git annex init`.
     * Set `git config annex.crippledfilesystem true` immediately after `git annex init`.
     * Add the origin remote back if it was previously removed.
-* Safety of locked files will require these settings and scripts
+* Safety of locked files will require these settings and scripts and the patch below.
+    * `git config annex.freezecontent-command 'wsl-freezecontent %path'`
     * `git config annex.thawcontent-command 'wsl-thawcontent %path'`
 
-            #!/usr/bin/env bash
+```
+#!/usr/bin/env bash
 
-            if [ -f "$1" ]; then
-                PERM='(DE,WD,AD)'
-            elif [ -d "$1" ]; then
-                PERM='(DE,DC,WD,AD)'
-            else
-                exit 0
-            fi
+if [ -f "$1" ]; then
+	if \[[ "$1" == *.git/annex/objects/* ]]; then
+		PERM='(DE,WD,AD)'
+	else
+		PERM='(WD,AD)'
+	fi
+elif [ -d "$1" ]; then
+	PERM='(DE,DC,WD,AD)'
+else
+	exit 0
+fi
 
-            OUTPUT="$(icacls.exe "$(wslpath -w "$1")" /grant "Authenticated Users:$PERM")"
+OUTPUT="$(icacls.exe "$(wslpath -w "$1")" /deny "Authenticated Users:$PERM")"
 
-            if [ "$?" -ne 0 ]; then
-                echo "$OUTPUT"
-                exit 1
-            fi
+if [ "$?" -ne 0 ]; then
+	echo "$OUTPUT"
+	exit 1
+fi
 
-    * `git config annex.freezecontent-command 'wsl-freezecontent %path'`
+```
 
-            #!/usr/bin/env bash
 
-            if [ -f "$1" ]; then
-                if \[[ "$1" == *.git/annex/objects/* ]]; then
-                    PERM='(DE,WD,AD)'
-                else
-                    PERM='(WD,AD)'
-                fi
-            elif [ -d "$1" ]; then
-                PERM='(DE,DC,WD,AD)'
-            else
-                exit 0
-            fi
+```
+#!/usr/bin/env bash
 
-            OUTPUT="$(icacls.exe "$(wslpath -w "$1")" /deny "Authenticated Users:$PERM")"
+if [ -f "$1" ]; then
+	PERM='(DE,WD,AD)'
+elif [ -d "$1" ]; then
+	PERM='(DE,DC,WD,AD)'
+else
+	exit 0
+fi
 
-            if [ "$?" -ne 0 ]; then
-                echo "$OUTPUT"
-                exit 1
-            fi
+OUTPUT="$(icacls.exe "$(wslpath -w "$1")" /grant "Authenticated Users:$PERM")"
+
+if [ "$?" -ne 0 ]; then
+	echo "$OUTPUT"
+	exit 1
+fi
+
+```
 
 ** Patches **
 
@@ -188,21 +194,23 @@ index 39853c894..2d66c1461 100644
 
 * Symlinks are invalid in Windows if created before the target file exists, such as after `git annex add` or `git annex get`. This can be fixed by recreating them with any method, such as delete them and `git checkout`. Below is a sample script.
 
-		#!/usr/bin/env python3
+```
+#!/usr/bin/env python3
 
-		import pathlib
-		import os
+import pathlib
+import os
 
-		def do(p):
-			for c in list(p.iterdir()):
-				if c.is_symlink() and c.resolve().exists():
-					target = os.readlink(c) # use readlink here to get the relative link path
-					c.unlink()
-					c.symlink_to(target)
-				elif c.is_dir() and c.name != '.git':
-					do(c)
+def do(p):
+	for c in list(p.iterdir()):
+		if c.is_symlink() and c.resolve().exists():
+			target = os.readlink(c) # use readlink here to get the relative link path
+			c.unlink()
+			c.symlink_to(target)
+		elif c.is_dir() and c.name != '.git':
+			do(c)
 
-		do(pathlib.Path('.'))
+do(pathlib.Path('.'))
+```
 
 * Sometimes there will SQLite errors using multiple jobs but retrying will work most of the time.
 
