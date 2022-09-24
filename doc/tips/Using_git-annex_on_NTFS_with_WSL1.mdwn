@@ -56,6 +56,134 @@ The following steps are tested on Windows 10 21h1 with Ubuntu 20 and are designe
                 exit 1
             fi
 
+** Patches **
+
+This patch allows permissions and freeze/thaw hooks to run on a crippled file system.
+
+```
+From 7f3da0dda841bf73645809d3919cff2a37cb21de Mon Sep 17 00:00:00 2001
+From: Reiko Asakura <asakurareiko@protonmail.ch>
+Date: Sat, 23 Oct 2021 17:14:27 -0400
+Subject: [PATCH 2/2] Allow perms on crippled filesystem
+
+---
+ Annex/Perms.hs | 22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
+
+diff --git a/Annex/Perms.hs b/Annex/Perms.hs
+index 6681da7e0..e0c323d05 100644
+--- a/Annex/Perms.hs
++++ b/Annex/Perms.hs
+@@ -61,7 +61,7 @@ setAnnexPerm :: Bool -> RawFilePath -> Annex ()
+ setAnnexPerm = setAnnexPerm' Nothing
+ 
+ setAnnexPerm' :: Maybe ([FileMode] -> FileMode -> FileMode) -> Bool -> RawFilePath -> Annex ()
+-setAnnexPerm' modef isdir file = unlessM crippledFileSystem $
++setAnnexPerm' modef isdir file =
+ 	withShared $ liftIO . go
+   where
+ 	go GroupShared = void $ tryIO $ modifyFileMode file $ modef' $
+@@ -89,7 +89,7 @@ resetAnnexFilePerm = resetAnnexPerm False
+  - usual modes.
+  -}
+ resetAnnexPerm :: Bool -> RawFilePath -> Annex ()
+-resetAnnexPerm isdir file = unlessM crippledFileSystem $ do
++resetAnnexPerm isdir file = do
+ 	defmode <- liftIO defaultFileMode
+ 	let modef moremodes _oldmode = addModes moremodes defmode
+ 	setAnnexPerm' (Just modef) isdir file
+@@ -154,7 +154,7 @@ createWorkTreeDirectory dir = do
+  - that happens with write permissions.
+  -}
+ freezeContent :: RawFilePath -> Annex ()
+-freezeContent file = unlessM crippledFileSystem $
++freezeContent file =
+ 	withShared $ \sr -> freezeContent' sr file
+ 
+ freezeContent' :: SharedRepository -> RawFilePath -> Annex ()
+@@ -199,14 +199,12 @@ freezeContent'' sr file rv = do
+  - write permissions are ignored.
+  -}
+ checkContentWritePerm :: RawFilePath -> Annex (Maybe Bool)
+-checkContentWritePerm file = ifM crippledFileSystem
+-	( return (Just True)
+-	, do
++checkContentWritePerm file =
++	do
+ 		rv <- getVersion
+ 		hasfreezehook <- hasFreezeHook
+ 		withShared $ \sr -> liftIO $
+ 			checkContentWritePerm' sr file rv hasfreezehook
+-	)
+ 
+ checkContentWritePerm' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -> Bool -> IO (Maybe Bool)
+ checkContentWritePerm' sr file rv hasfreezehook
+@@ -252,10 +250,8 @@ thawContent' sr file = do
+  - crippled filesystem, the file may be frozen, so try to thaw its
+  - permissions. -}
+ thawPerms :: Annex () -> Annex () -> Annex ()
+-thawPerms a hook = ifM crippledFileSystem
+-	( void (tryNonAsync a)
+-	, hook >> a
+-	)
++thawPerms a hook =
++	hook >> a
+ 
+ {- Blocks writing to the directory an annexed file is in, to prevent the
+  - file accidentally being deleted. However, if core.sharedRepository
+@@ -263,7 +259,7 @@ thawPerms a hook = ifM crippledFileSystem
+  - file.
+  -}
+ freezeContentDir :: RawFilePath -> Annex ()
+-freezeContentDir file = unlessM crippledFileSystem $ do
++freezeContentDir file = do
+ 	fastDebug "Annex.Perms" ("freezing content directory " ++ fromRawFilePath dir)
+ 	withShared go
+ 	freezeHook dir
+@@ -287,7 +283,7 @@ createContentDir dest = do
+ 	unlessM (liftIO $ R.doesPathExist dir) $
+ 		createAnnexDirectory dir 
+ 	-- might have already existed with restricted perms
+-	unlessM crippledFileSystem $ do
++	do
+ 		thawHook dir
+ 		liftIO $ allowWrite dir
+   where
+-- 
+2.30.2
+
+```
+
+This patch allows `git annex fix` on a crippled file system.
+
+```
+From 65fe6e362dfbf2f54c8da5ca17c59af26de5ff83 Mon Sep 17 00:00:00 2001
+From: Reiko Asakura <asakurareiko@protonmail.ch>
+Date: Sat, 23 Oct 2021 17:13:50 -0400
+Subject: [PATCH 1/2] Allow git-annex fix on crippled filesystem
+
+---
+ Command/Fix.hs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Command/Fix.hs b/Command/Fix.hs
+index 39853c894..2d66c1461 100644
+--- a/Command/Fix.hs
++++ b/Command/Fix.hs
+@@ -31,7 +31,7 @@ cmd = noCommit $ withAnnexOptions [annexedMatchingOptions] $
+ 		paramPaths (withParams seek)
+ 
+ seek :: CmdParams -> CommandSeek
+-seek ps = unlessM crippledFileSystem $
++seek ps =
+ 	withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
+   where
+ 	ww = WarnUnmatchLsFiles
+-- 
+2.30.2
+
+```
+
 ** Usage tips **
 
 * Symlinks are invalid in Windows if created before the target file exists, such as after `git annex add` or `git annex get`. This can be fixed by recreating them with any method, such as delete them and `git checkout`. Below is a sample script.
