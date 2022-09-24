@@ -2,7 +2,7 @@
 attempting to the use feature which allows me to connect to a friends remote repository results in failure, in which i have tested using multiple methods
 
 ### What steps will reproduce the problem?
-#### webapp
+#### WEBAPP
 * open the webapp
 * add repository
 * choose "share with a friend"
@@ -26,10 +26,10 @@ attempting to the use feature which allows me to connect to a friends remote rep
 ### Please provide any additional information below.
 
 ### external dependency version info
-git annex: using git annex found in nixos repositories
-python version: attempted both python3 and python2.7
-magic-wormhole version: attempted both 0.12.0 under python3, and version 0.10.0 under python2.7
-tor version information: Tor version 0.4.7.10.
+* git annex: using git annex found in nixos repositories
+* python version: attempted both python3 and python2.7
+* magic-wormhole version: attempted both 0.12.0 under python3, and version 0.10.0 under python2.7
+* tor version information: Tor version 0.4.7.10.
 Tor is running on Linux with Libevent 2.1.12-stable, OpenSSL 1.1.1q, Zlib 1.2.12, Liblzma 5.2.5, Libzstd 1.5.2 and Glibc 2.34 as libc.
 Tor compiled with GCC version 11.3.0
 
@@ -37,10 +37,9 @@ Tor compiled with GCC version 11.3.0
 ### transcript
 
 [[!format sh """
-# If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
 
 #### WEBAPP
+##### error output after following steps as described above
 
 Failed to enable tor
 
