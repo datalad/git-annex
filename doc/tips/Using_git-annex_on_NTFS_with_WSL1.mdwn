@@ -1,32 +1,85 @@
-The following steps are tested on Windows 10 21h1 and are designed to avoid these two bugs:
+The following steps are tested on Windows 10 21h1 with Ubuntu 20 and are designed to allow use of the annexed files through both WSL and Windows.
 
-* [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]]
-* [[bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem]]
+** Limitations **
+
+* The repository must be created with `annex.tune.objecthashlower=true`.
+* `git annex adjust --unlock` will not work. Unlocked files will work most of the time. Avoid `annex.addunlocked=true` because it is likely to not work.
 
 **Setup**
 
 * Enable Developer mode in Windows settings so that symlinks can be created without elevated privileges.
 * Mount the NTFS drive with metadata option. [`/etc/wsl.conf`](https://docs.microsoft.com/en-us/windows/wsl/wsl-config) can be used or a line such as `C: /mnt/c drvfs metadata` can be added in `/etc/fstab`.
-* Create an empty directory for the repo.
-    * With File Explorer go to Properties/Security/Advanced.
-        * Give "Authenticated Users" permission to [“Write attributes”, “Create files”, “Create folders” and “Delete subfolders and files”](https://devblogs.microsoft.com/commandline/improved-per-directory-case-sensitivity-support-in-wsl/) for this folder and subfolders.
-    * Enable case sensitivity with `setfattr -n system.wsl_case_sensitive -v 1 <path>`.
-        * This attribute will be inherited by new subdirectories but will not be automatically recursively applied to existing subdirectories.
-        * Set this attribute to 0 as appropriate if you do not have files that differ only by case, or if you have non-default git-annex [[tuning]].
-        * This attribute can be queried with `getfattr -n system.wsl_case_sensitive <path>`.
 * Initialize the repo.
-    * Set `git config annex.crippledfilesystem true` immediately after `git annex init` to avoid triggering the above two bugs.
-* Open Properties/Security/Advanced for .git/annex/objects.
-    * Deny "Authenticated Users" write permissions for files only and select "Replace all child object permission entries with inheritable permission entries from this object".
+    * If the repository is created by cloning, create local git-annex branch from the remote branch and remove the origin remote before `git annex init`.
+    * Set `git config annex.crippledfilesystem true` immediately after `git annex init`.
+    * Add the origin remote back if it was previously removed.
+* Safety of locked files will require these settings and scripts
+    * `git config annex.thawcontent-command 'wsl-thawcontent %path'`
 
-** Setup with repo cloned from SSH **
+            #!/usr/bin/env bash
 
-* If you encounter problems with older versions of git-annex.
-    * Create a local git-annex branch from the remote branch.
-    * Remove the origin remote.
-    * Do `git annex init` and other setup.
-    * Add back the origin remote.
+            if [ -f "$1" ]; then
+                PERM='(DE,WD,AD)'
+            elif [ -d "$1" ]; then
+                PERM='(DE,DC,WD,AD)'
+            else
+                exit 0
+            fi
 
-** Using symlinks and locked files **
+            OUTPUT="$(icacls.exe "$(wslpath -w "$1")" /grant "Authenticated Users:$PERM")"
 
-* Symlinks might be broken and can be fixed by recreating them. You can also delete them and do a `git checkout`.
+            if [ "$?" -ne 0 ]; then
+                echo "$OUTPUT"
+                exit 1
+            fi
+
+    * `git config annex.freezecontent-command 'wsl-freezecontent %path'`
+
+            #!/usr/bin/env bash
+
+            if [ -f "$1" ]; then
+                if \[[ "$1" == *.git/annex/objects/* ]]; then
+                    PERM='(DE,WD,AD)'
+                else
+                    PERM='(WD,AD)'
+                fi
+            elif [ -d "$1" ]; then
+                PERM='(DE,DC,WD,AD)'
+            else
+                exit 0
+            fi
+
+            OUTPUT="$(icacls.exe "$(wslpath -w "$1")" /deny "Authenticated Users:$PERM")"
+
+            if [ "$?" -ne 0 ]; then
+                echo "$OUTPUT"
+                exit 1
+            fi
+
+** Usage tips **
+
+* Symlinks are invalid in Windows if created before the target file exists, such as after `git annex add` or `git annex get`. This can be fixed by recreating them with any method, such as delete them and `git checkout`. Below is a sample script.
+
+		#!/usr/bin/env python3
+
+		import pathlib
+		import os
+
+		def do(p):
+			for c in list(p.iterdir()):
+				if c.is_symlink() and c.resolve().exists():
+					target = os.readlink(c) # use readlink here to get the relative link path
+					c.unlink()
+					c.symlink_to(target)
+				elif c.is_dir() and c.name != '.git':
+					do(c)
+
+		do(pathlib.Path('.'))
+
+* Sometimes there will SQLite errors using multiple jobs but retrying will work most of the time.
+
+** Related bugs **
+
+* [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]]
+* [[bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem]]
+* [[bugs/problems_with_SSH_and_relative_paths]]
