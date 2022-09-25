@@ -154,7 +154,7 @@ createWorkTreeDirectory dir = do
  - that happens with write permissions.
  -}
 freezeContent :: RawFilePath -> Annex ()
-freezeContent file = unlessM crippledFileSystem $
+freezeContent file =
 	withShared $ \sr -> freezeContent' sr file
 
 freezeContent' :: SharedRepository -> RawFilePath -> Annex ()
@@ -163,7 +163,7 @@ freezeContent' sr file = freezeContent'' sr file =<< getVersion
 freezeContent'' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -> Annex ()
 freezeContent'' sr file rv = do
 	fastDebug "Annex.Perms" ("freezing content " ++ fromRawFilePath file)
-	go sr
+	unlessM crippledFileSystem $ go sr
 	freezeHook file
   where
 	go GroupShared = if versionNeedsWritableContentFiles rv
@@ -253,7 +253,7 @@ thawContent' sr file = do
  - permissions. -}
 thawPerms :: Annex () -> Annex () -> Annex ()
 thawPerms a hook = ifM crippledFileSystem
-	( void (tryNonAsync a)
+	( hook >> void (tryNonAsync a)
 	, hook >> a
 	)
 
@@ -263,9 +263,9 @@ thawPerms a hook = ifM crippledFileSystem
  - file.
  -}
 freezeContentDir :: RawFilePath -> Annex ()
-freezeContentDir file = unlessM crippledFileSystem $ do
+freezeContentDir file = do
 	fastDebug "Annex.Perms" ("freezing content directory " ++ fromRawFilePath dir)
-	withShared go
+	unlessM crippledFileSystem $ withShared go
 	freezeHook dir
   where
 	dir = parentDir file
@@ -287,9 +287,9 @@ createContentDir dest = do
 	unlessM (liftIO $ R.doesPathExist dir) $
 		createAnnexDirectory dir 
 	-- might have already existed with restricted perms
-	unlessM crippledFileSystem $ do
+	do
 		thawHook dir
-		liftIO $ allowWrite dir
+		unlessM crippledFileSystem $ liftIO $ allowWrite dir
   where
 	dir = parentDir dest
 
