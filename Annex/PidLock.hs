@@ -127,5 +127,5 @@ runsGitAnnexChildProcessViaGit' r a = pidLockFile >>= \case
 		r' <- liftIO $ addGitEnv r v PidF.pidLockEnvValue
 		a r'
 #else
-runsGitAnnexChildProcessViaGit' r a = liftIO $ a r
+runsGitAnnexChildProcessViaGit' r a = a r
 #endif
