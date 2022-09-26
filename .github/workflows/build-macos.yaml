@@ -181,7 +181,7 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        flavor: ["normal", "crippled-tmp"]
+        flavor: ["normal", "crippled-tmp", "custom-config1"]
         os: [macos-10.15]
         include: [{"flavor": "normal", "os": "macos-latest"}]
       fail-fast: false
@@ -250,7 +250,7 @@ jobs:
             nfs-home)
               export HOME=/tmp/nfsmount
               ;;
-            normal)
+            normal|custom-config1)
               ;;
             *)
               echo "Unknown flavor ${{ matrix.flavor }}"
@@ -260,11 +260,23 @@ jobs:
           # Do it after we possibly setup HOME
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
+          test_opts=( )
+
+          case "${{ matrix.flavor }}" in
+            # For git-annex it causes only few temporary directories to be on the crippled FS,
+            # while the main ones produced by git annex test  reside in CWD, for which we use
+            # $HOME
+            custom-config1)
+              test_opts=( --test-git-config annex.stalldetection=1KB/120s )
+              ;;
+            *)
+              ;;
+          esac
 
           cd $HOME
           export | grep -e crippledfs || :
 
-          timeout 1800 git annex test
+          timeout 1800 git annex test "${test_opts[@]:-}"
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
