@@ -57,6 +57,8 @@ it's best to run migrate in all of them.
 
 [[git-annex-upgrade]](1)
 
+[[git-annex-backend]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>

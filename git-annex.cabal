@@ -46,6 +46,7 @@ Extra-Source-Files:
   doc/git-annex-addurl.mdwn
   doc/git-annex-adjust.mdwn
   doc/git-annex-assistant.mdwn
+  doc/git-annex-backends.mdwn
   doc/git-annex-calckey.mdwn
   doc/git-annex-checkpresentkey.mdwn
   doc/git-annex-config.mdwn
@@ -109,6 +110,7 @@ Extra-Source-Files:
   doc/git-annex-renameremote.mdwn
   doc/git-annex-repair.mdwn
   doc/git-annex-required.mdwn
+  doc/git-annex-restage.mdwn
   doc/git-annex-resolvemerge.mdwn
   doc/git-annex-rmurl.mdwn
   doc/git-annex-schedule.mdwn

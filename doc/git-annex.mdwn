@@ -792,7 +792,8 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 * `annex.backend`
 
   Name of the default key-value backend to use when adding new files
-  to the repository.
+  to the repository. See [[git-annex-backends]](1) for information about
+  available backends.
 
   This is overridden by annex annex.backend configuration in the
   .gitattributes files, and by the --backend option.
@@ -1908,7 +1909,9 @@ Remotes are configured using these settings in `.git/config`.
 The key-value backend used when adding a new file to the annex can be
 configured on a per-file-type basis via `.gitattributes` files. In the file,
 the `annex.backend` attribute can be set to the name of the backend to
-use. For example, this here's how to use the WORM backend by default,
+use. (See [[git-annex-backends]](1) for information about
+available backends.)
+For example, this here's how to use the WORM backend by default,
 but the SHA256E backend for ogg files:
 
 	* annex.backend=WORM

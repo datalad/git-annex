@@ -1,10 +1,8 @@
-When a file is annexed, a [[key|internals/key_format]] is generated from
-its content and/or filesystem metadata. The file checked into git symlinks
-to the key. This key can later be used to retrieve the file's content (its
-value).
-
-Multiple key-value backends are supported, and a single repository
-can use different ones for different files. 
+The "backend" in git-annex specifies how a key is generated from a file's
+content and/or filesystem metadata. Most backends are different kinds of
+hashes. A single repository can use different backends for different files.
+The [[key|internals/key_format]] includes the backend that is used for that
+key.
 
 ## configuring which backend to use
 
@@ -47,7 +45,8 @@ in `.gitattributes`:
   platforms.
 * `BLAKE2S160`, `BLAKE2S224`, `BLAKE2S256`
   `BLAKE2S160E`, `BLAKE2S224E`, `BLAKE2S256E`
-  -- Fast [Blake2 hash](https://blake2.net/) variants optimised for 32 bit
+  -- Fas:w
+  t [Blake2 hash](https://blake2.net/) variants optimised for 32 bit
   platforms.
 * `BLAKE2BP512`, `BLAKE2BP512E`
   -- Fast [Blake2 hash](https://blake2.net/) variants optimised for
@@ -74,7 +73,7 @@ content of an annexed file remains unchanged.
   URL; for long URLs, part of the URL may be represented by a checksum.
   The URL key may contain `&` characters; be sure to quote the key if
   passing it to a shell script.  The URL-backend key is distinct from URLs/URIs
-  that may be attached to a key (from any backend) indicating the key's location
+  that may be attached to a key (using any backend) indicating the key's location
   on the web or in one of [[special_remotes]].
 * `GIT` -- This is used internally by git-annex when exporting trees
   containing files stored in git, rather than git-annex. It represents a
@@ -110,5 +109,3 @@ for [[security_reasons|security/CVE-2018-10857_and_CVE-2018-10859]].
 Note that the various 512 and 384 length hashes result in long paths,
 which are known to not work on Windows. If interoperability on Windows is a
 concern, avoid those.
-
-See also: [[git-annex-examinekey]]

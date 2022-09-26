@@ -99,10 +99,12 @@ elsewhere to allow removing it).
   Like lackingcopies, but does not look at .gitattributes annex.numcopies
   settings. This makes it significantly faster.
 
-* `inbackend=name`
+* `inbackend=backendname`
 
   Matches only files whose content is stored using the specified key-value
   backend.
+
+  See [[git-annex-backends]](1) for information about available backends.
 
 * `securehash`
 
