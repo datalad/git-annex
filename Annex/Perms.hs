@@ -287,9 +287,8 @@ createContentDir dest = do
 	unlessM (liftIO $ R.doesPathExist dir) $
 		createAnnexDirectory dir 
 	-- might have already existed with restricted perms
-	do
-		thawHook dir
-		unlessM crippledFileSystem $ liftIO $ allowWrite dir
+	thawHook dir
+	unlessM crippledFileSystem $ liftIO $ allowWrite dir
   where
 	dir = parentDir dest
 
