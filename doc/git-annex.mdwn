@@ -1279,6 +1279,9 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   In the command line, %path is replaced with the file or directory to
   operate on.
 
+  (When annex.crippledfilesystem is set, git-annex will not try to
+  remove/restore the write bit, but it will still run these hooks.)
+
 * `annex.tune.objecthash1`, `annex.tune.objecthashlower`, `annex.tune.branchhash1`
 
   These can be passed to `git annex init` to tune the repository.
