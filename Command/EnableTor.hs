@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,6 +22,8 @@ import P2P.IO
 import qualified P2P.Protocol as P2P
 import Utility.ThreadScheduler
 import RemoteDaemon.Transport.Tor
+import Git.Types
+import Config
 
 import Control.Concurrent.Async
 import qualified Network.Socket as S
@@ -70,6 +72,15 @@ start _os = do
 #endif
   where
 	go userid = do
+		-- Usually git will refuse to read local configs of a git
+		-- repo belonging to another user. But in this case, the
+		-- user wants this command, run as root, to operate on
+		-- their repo. Behave as if --git-dir had been used to
+		-- specify that the git directory is intended to be used.
+		Annex.adjustGitRepo $ \r -> return $ r
+			{ gitDirSpecifiedExplicitly = True }
+		reloadConfig
+
 		uuid <- getUUID
 		when (uuid == NoUUID) $
 			giveup "This can only be run in a git-annex repository."

@@ -38,6 +38,7 @@ git-annex (10.20220823) UNRELEASED; urgency=medium
   * Run annex.freezecontent-command and annex.thawcontent-command
     when on a crippled filesystem.
     Thanks, Reiko Asakura
+  * enable-tor: Fix breakage caused by git's fix for CVE-2022-24765.
   * Let GIT_DIR and --git-dir override git's protection against operating
     in a repository owned by another user.
 
