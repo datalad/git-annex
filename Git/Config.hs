@@ -57,12 +57,20 @@ reRead r = read' $ r
 read' :: Repo -> IO Repo
 read' repo = go repo
   where
-	go Repo { location = Local { gitdir = d } } = git_config d
-	go Repo { location = LocalUnknown d } = git_config d
+	go Repo { location = Local { gitdir = d } } = git_config True d
+	go Repo { location = LocalUnknown d } = git_config False d
 	go _ = assertLocal repo $ error "internal"
-	git_config d = withCreateProcess p (git_config' p)
+	git_config isgitdir d = withCreateProcess p (git_config' p)
 	  where
-		params = ["config", "--null", "--list"]
+		params = 
+			-- Passing --git-dir changes git's behavior
+			-- when run in a repository belonging to another
+			-- user. When a gitdir is known, pass that in order
+			-- to get the local git config.
+			(if isgitdir && gitDirSpecifiedExplicitly repo
+				then ["--git-dir=."]
+				else [])
+			++ ["config", "--null", "--list"]
 		p = (proc "git" params)
 			{ cwd = Just (fromRawFilePath d)
 			, env = gitEnv repo

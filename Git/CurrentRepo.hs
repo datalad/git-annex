@@ -79,11 +79,11 @@ get = do
 			{ gitdir = absd
 			, worktree = Just curr
 			}
-		r <- Git.Config.read $ newFrom loc
-		let r' = r { gitDirSpecifiedExplicitly = True }
-		return $ if Git.Config.isBare r'
-			then r' { location = (location r) { worktree = Nothing } }
-			else r'
+		r <- Git.Config.read $ (newFrom loc)
+			{ gitDirSpecifiedExplicitly = True }
+		return $ if Git.Config.isBare r
+			then r { location = (location r) { worktree = Nothing } }
+			else r
 	configure Nothing Nothing = giveup "Not in a git repository."
 
 	addworktree w r = changelocation r $ Local

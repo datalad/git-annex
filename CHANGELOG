@@ -38,6 +38,8 @@ git-annex (10.20220823) UNRELEASED; urgency=medium
   * Run annex.freezecontent-command and annex.thawcontent-command
     when on a crippled filesystem.
     Thanks, Reiko Asakura
+  * Let GIT_DIR and --git-dir override git's protection against operating
+    in a repository owned by another user.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Aug 2022 15:03:04 -0400
 
