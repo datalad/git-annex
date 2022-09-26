@@ -78,3 +78,5 @@ p2p: 1 failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git annex has been awesome so far in helping track and backup my data, also for allowing me to output podcasts/audiobooks to a small mp3 player, as well as ebooks and pdfs to a kindle paper ewhite, which has made using my ereader no longer an inconvinient endeavour 
+
+> [[fixed|done]] --[[Joey]]

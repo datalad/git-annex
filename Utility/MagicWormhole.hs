@@ -119,7 +119,7 @@ sendFile f (CodeObserver observer) ps = do
 			(findcode ph herr)
 		return (inout || inerr)
   where
-	p = wormHoleProcess (Param "send" : ps ++ [File f])
+	p = wormHoleProcess (ps ++ [Param "send", File f])
 	findcode ph h = findcode' =<< getwords ph h []
 	findcode' [] = return False
 	findcode' (w:ws) = case mkCode w of
@@ -140,12 +140,12 @@ receiveFile f (CodeProducer producer) ps = runWormHoleProcess p $ \hin _hout _he
 	hFlush hin
 	return True
   where
-	p = wormHoleProcess $
+	p = wormHoleProcess $ ps ++
 		[ Param "receive"
 		, Param "--accept-file"
 		, Param "--output-file"
 		, File f
-		] ++ ps
+		]
 
 wormHoleProcess :: WormHoleParams -> CreateProcess
 wormHoleProcess = proc "wormhole" . toCommand
