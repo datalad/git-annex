@@ -1,32 +1,221 @@
-The following steps are tested on Windows 10 21h1 and are designed to avoid these two bugs:
+The following steps are tested on Windows 10 21h1 with Ubuntu 20 and are designed to allow use of the annexed files through both WSL and Windows.
 
-* [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]]
-* [[bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem]]
+** Limitations **
+
+* The repository must be created with `annex.tune.objecthashlower=true`.
+* `git annex adjust --unlock` will not work. Unlocked files will work most of the time. Avoid `annex.addunlocked=true` because it is likely to not work.
 
 **Setup**
 
 * Enable Developer mode in Windows settings so that symlinks can be created without elevated privileges.
 * Mount the NTFS drive with metadata option. [`/etc/wsl.conf`](https://docs.microsoft.com/en-us/windows/wsl/wsl-config) can be used or a line such as `C: /mnt/c drvfs metadata` can be added in `/etc/fstab`.
-* Create an empty directory for the repo.
-    * With File Explorer go to Properties/Security/Advanced.
-        * Give "Authenticated Users" permission to [“Write attributes”, “Create files”, “Create folders” and “Delete subfolders and files”](https://devblogs.microsoft.com/commandline/improved-per-directory-case-sensitivity-support-in-wsl/) for this folder and subfolders.
-    * Enable case sensitivity with `setfattr -n system.wsl_case_sensitive -v 1 <path>`.
-        * This attribute will be inherited by new subdirectories but will not be automatically recursively applied to existing subdirectories.
-        * Set this attribute to 0 as appropriate if you do not have files that differ only by case, or if you have non-default git-annex [[tuning]].
-        * This attribute can be queried with `getfattr -n system.wsl_case_sensitive <path>`.
 * Initialize the repo.
-    * Set `git config annex.crippledfilesystem true` immediately after `git annex init` to avoid triggering the above two bugs.
-* Open Properties/Security/Advanced for .git/annex/objects.
-    * Deny "Authenticated Users" write permissions for files only and select "Replace all child object permission entries with inheritable permission entries from this object".
+    * If the repository is created by cloning, create local git-annex branch from the remote branch and remove the origin remote before `git annex init`.
+    * Set `git config annex.crippledfilesystem true` immediately after `git annex init`.
+    * Add the origin remote back if it was previously removed.
+* Safety of locked files will require these settings and scripts and the patch below.
+    * `git config annex.freezecontent-command 'wsl-freezecontent %path'`
+    * `git config annex.thawcontent-command 'wsl-thawcontent %path'`
 
-** Setup with repo cloned from SSH **
+```
+#!/usr/bin/env bash
 
-* If you encounter problems with older versions of git-annex.
-    * Create a local git-annex branch from the remote branch.
-    * Remove the origin remote.
-    * Do `git annex init` and other setup.
-    * Add back the origin remote.
+if [ -f "$1" ]; then
+	if \[[ "$1" == *.git/annex/objects/* ]]; then
+		PERM='(DE,WD,AD)'
+	else
+		PERM='(WD,AD)'
+	fi
+elif [ -d "$1" ]; then
+	PERM='(DE,DC,WD,AD)'
+else
+	exit 0
+fi
 
-** Using symlinks and locked files **
+OUTPUT="$(icacls.exe "$(wslpath -w "$1")" /deny "Authenticated Users:$PERM")"
 
-* Symlinks might be broken and can be fixed by recreating them. You can also delete them and do a `git checkout`.
+if [ "$?" -ne 0 ]; then
+	echo "$OUTPUT"
+	exit 1
+fi
+
+```
+
+
+```
+#!/usr/bin/env bash
+
+if [ -f "$1" ]; then
+	PERM='(DE,WD,AD)'
+elif [ -d "$1" ]; then
+	PERM='(DE,DC,WD,AD)'
+else
+	exit 0
+fi
+
+OUTPUT="$(icacls.exe "$(wslpath -w "$1")" /grant "Authenticated Users:$PERM")"
+
+if [ "$?" -ne 0 ]; then
+	echo "$OUTPUT"
+	exit 1
+fi
+
+```
+
+** Patches **
+
+This patch allows permissions and freeze/thaw hooks to run on a crippled file system.
+
+```
+From 7f3da0dda841bf73645809d3919cff2a37cb21de Mon Sep 17 00:00:00 2001
+From: Reiko Asakura <asakurareiko@protonmail.ch>
+Date: Sat, 23 Oct 2021 17:14:27 -0400
+Subject: [PATCH 2/2] Allow perms on crippled filesystem
+
+---
+ Annex/Perms.hs | 22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
+
+diff --git a/Annex/Perms.hs b/Annex/Perms.hs
+index 6681da7e0..e0c323d05 100644
+--- a/Annex/Perms.hs
++++ b/Annex/Perms.hs
+@@ -61,7 +61,7 @@ setAnnexPerm :: Bool -> RawFilePath -> Annex ()
+ setAnnexPerm = setAnnexPerm' Nothing
+ 
+ setAnnexPerm' :: Maybe ([FileMode] -> FileMode -> FileMode) -> Bool -> RawFilePath -> Annex ()
+-setAnnexPerm' modef isdir file = unlessM crippledFileSystem $
++setAnnexPerm' modef isdir file =
+ 	withShared $ liftIO . go
+   where
+ 	go GroupShared = void $ tryIO $ modifyFileMode file $ modef' $
+@@ -89,7 +89,7 @@ resetAnnexFilePerm = resetAnnexPerm False
+  - usual modes.
+  -}
+ resetAnnexPerm :: Bool -> RawFilePath -> Annex ()
+-resetAnnexPerm isdir file = unlessM crippledFileSystem $ do
++resetAnnexPerm isdir file = do
+ 	defmode <- liftIO defaultFileMode
+ 	let modef moremodes _oldmode = addModes moremodes defmode
+ 	setAnnexPerm' (Just modef) isdir file
+@@ -154,7 +154,7 @@ createWorkTreeDirectory dir = do
+  - that happens with write permissions.
+  -}
+ freezeContent :: RawFilePath -> Annex ()
+-freezeContent file = unlessM crippledFileSystem $
++freezeContent file =
+ 	withShared $ \sr -> freezeContent' sr file
+ 
+ freezeContent' :: SharedRepository -> RawFilePath -> Annex ()
+@@ -199,14 +199,12 @@ freezeContent'' sr file rv = do
+  - write permissions are ignored.
+  -}
+ checkContentWritePerm :: RawFilePath -> Annex (Maybe Bool)
+-checkContentWritePerm file = ifM crippledFileSystem
+-	( return (Just True)
+-	, do
++checkContentWritePerm file =
++	do
+ 		rv <- getVersion
+ 		hasfreezehook <- hasFreezeHook
+ 		withShared $ \sr -> liftIO $
+ 			checkContentWritePerm' sr file rv hasfreezehook
+-	)
+ 
+ checkContentWritePerm' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -> Bool -> IO (Maybe Bool)
+ checkContentWritePerm' sr file rv hasfreezehook
+@@ -252,10 +250,8 @@ thawContent' sr file = do
+  - crippled filesystem, the file may be frozen, so try to thaw its
+  - permissions. -}
+ thawPerms :: Annex () -> Annex () -> Annex ()
+-thawPerms a hook = ifM crippledFileSystem
+-	( void (tryNonAsync a)
+-	, hook >> a
+-	)
++thawPerms a hook =
++	hook >> a
+ 
+ {- Blocks writing to the directory an annexed file is in, to prevent the
+  - file accidentally being deleted. However, if core.sharedRepository
+@@ -263,7 +259,7 @@ thawPerms a hook = ifM crippledFileSystem
+  - file.
+  -}
+ freezeContentDir :: RawFilePath -> Annex ()
+-freezeContentDir file = unlessM crippledFileSystem $ do
++freezeContentDir file = do
+ 	fastDebug "Annex.Perms" ("freezing content directory " ++ fromRawFilePath dir)
+ 	withShared go
+ 	freezeHook dir
+@@ -287,7 +283,7 @@ createContentDir dest = do
+ 	unlessM (liftIO $ R.doesPathExist dir) $
+ 		createAnnexDirectory dir 
+ 	-- might have already existed with restricted perms
+-	unlessM crippledFileSystem $ do
++	do
+ 		thawHook dir
+ 		liftIO $ allowWrite dir
+   where
+-- 
+2.30.2
+
+```
+
+This patch allows `git annex fix` on a crippled file system.
+
+```
+From 65fe6e362dfbf2f54c8da5ca17c59af26de5ff83 Mon Sep 17 00:00:00 2001
+From: Reiko Asakura <asakurareiko@protonmail.ch>
+Date: Sat, 23 Oct 2021 17:13:50 -0400
+Subject: [PATCH 1/2] Allow git-annex fix on crippled filesystem
+
+---
+ Command/Fix.hs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Command/Fix.hs b/Command/Fix.hs
+index 39853c894..2d66c1461 100644
+--- a/Command/Fix.hs
++++ b/Command/Fix.hs
+@@ -31,7 +31,7 @@ cmd = noCommit $ withAnnexOptions [annexedMatchingOptions] $
+ 		paramPaths (withParams seek)
+ 
+ seek :: CmdParams -> CommandSeek
+-seek ps = unlessM crippledFileSystem $
++seek ps =
+ 	withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
+   where
+ 	ww = WarnUnmatchLsFiles
+-- 
+2.30.2
+
+```
+
+** Usage tips **
+
+* Symlinks are invalid in Windows if created before the target file exists, such as after `git annex add` or `git annex get`. This can be fixed by recreating them with any method, such as delete them and `git checkout`. Below is a sample script.
+
+```
+#!/usr/bin/env python3
+
+import pathlib
+import os
+
+def do(p):
+	for c in list(p.iterdir()):
+		if c.is_symlink() and c.resolve().exists():
+			target = os.readlink(c) # use readlink here to get the relative link path
+			c.unlink()
+			c.symlink_to(target)
+		elif c.is_dir() and c.name != '.git':
+			do(c)
+
+do(pathlib.Path('.'))
+```
+
+* Sometimes there will SQLite errors using multiple jobs but retrying will work most of the time.
+
+** Related bugs **
+
+* [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]]
+* [[bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem]]
+* [[bugs/problems_with_SSH_and_relative_paths]]

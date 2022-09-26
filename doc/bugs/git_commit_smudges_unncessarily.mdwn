@@ -18,3 +18,5 @@ Through bisection, the problem was found to be introduced in [[!commit 428c91606
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex has worked wonderfully for managing my files across different machines and cloud storage services.
+
+[[done]]
