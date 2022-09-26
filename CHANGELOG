@@ -1,5 +1,7 @@
 git-annex (10.20220823) UNRELEASED; urgency=medium
 
+  * Fix a bug in the last release that caused v8 repositories to upgrade
+    immediately to v10, rather than taking the scheduled 1 year to do so.
   * annex.diskreserve default increased from 1 mb to 100 mb.
   * Include the assistant and webapp when building with cabal 3.4.1.0.
   * Merged the webapp build flag into the assistant build flag.
