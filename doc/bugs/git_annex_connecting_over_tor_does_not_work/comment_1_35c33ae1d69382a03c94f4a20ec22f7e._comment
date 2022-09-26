@@ -10,8 +10,4 @@ I can reproduce this by running eg:
 	joey@darkstar:~/tmp/torrepo>su -c "git-annex --debug enable-tor 1000"
 	Password:
 	git-annex: This can only be run in a git-annex repository.
-
-This was broken by git's security fix for CVE-2022-24765. Now when the root
-process tries to run `git config --list`, git does not display the local
-.git/config, because it is owned by another user.
 """]]
