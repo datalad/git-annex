@@ -120,16 +120,21 @@ sendFile f (CodeObserver observer) ps = do
 		return (inout || inerr)
   where
 	p = wormHoleProcess (ps ++ [Param "send", File f])
-	findcode ph h = findcode' =<< getwords ph h []
+	findcode ph h = hGetLineUntilExitOrEOF ph h >>= \case
+		Nothing -> return False
+		Just l -> ifM (findcode' (words l))
+			( drain ph h >> return True
+			, findcode ph h
+			)
 	findcode' [] = return False
 	findcode' (w:ws) = case mkCode w of
 		Just code -> do
 			_ <- tryPutMVar observer code
 			return True
 		Nothing -> findcode' ws
-	getwords ph h c = hGetLineUntilExitOrEOF ph h >>= \case
-		Nothing -> return $ concatMap words $ reverse c
-		Just l -> getwords ph h (l:c)
+	drain ph h = hGetLineUntilExitOrEOF ph h >>= \case
+		Just _ -> drain ph h
+		Nothing -> return ()
 
 -- | Receives a file. Once the receive is under way, the Code will be
 -- read from the CodeProducer, and fed to wormhole on stdin.
