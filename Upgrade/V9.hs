@@ -40,13 +40,12 @@ upgrade automatic
 	 - and it is not safe for such to still be running after
 	 - this upgrade. -}
 	oldprocessesdanger = timeOfUpgrade (RepoVersion 9) >>= \case
+		Nothing -> pure True
 		Just t -> do
 			now <- liftIO getPOSIXTime
 			if now < t + 365*24*60*60
 				then return True
 				else assistantrunning
-		-- Initialized at v9, so no old process danger exists.
-		Nothing -> return False
 
 	{- Skip upgrade when git-annex assistant (or watch) is running,
 	 - because these are long-running daemons that could conceivably
