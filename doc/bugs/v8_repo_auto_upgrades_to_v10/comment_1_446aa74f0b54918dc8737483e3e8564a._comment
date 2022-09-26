@@ -8,7 +8,7 @@ which was included in version 10.20220822.
 
 I've reverted the commit as a first step. This means repos initialized
 at v9 will never autoupgrade to v10, which will need to be fixed
-somehow.
+somehow. (Update: Fixed that now.)
 
 Gonna need to make a git-annex release ASAP to get this fix out there.
 """]]

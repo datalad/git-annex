@@ -74,30 +74,23 @@ needsUpgrade v
 		Left ex -> err $ "Automatic upgrade exception! " ++ show ex
 
 upgrade :: Bool -> RepoVersion -> Annex Bool
-upgrade automatic destversion = do
-	startversion <- getVersion
-	(ok, newversion) <- go startversion
-	when (ok && newversion /= startversion) $
-		postupgrade newversion
-	return ok
+upgrade automatic destversion = go =<< getVersion
   where
 	go (Just v)
-		| v >= destversion = return (True, Just v)
+		| v >= destversion = return True
 		| otherwise = ifM upgradingRemote
 			( upgraderemote
 			, up v >>= \case
-				UpgradeSuccess -> go (Just (incrversion v) )
-				UpgradeFailed -> return (False, Just v)
-				UpgradeDeferred -> return (True, Just v)
+				UpgradeSuccess -> do
+					let v' = incrversion v
+					upgradedto v'
+					go (Just v')
+				UpgradeFailed -> return False
+				UpgradeDeferred -> return True
 			)
-	go Nothing = return (True, Nothing)
+	go Nothing = return True
 
 	incrversion v = RepoVersion (fromRepoVersion v + 1)
-
-	postupgrade newversion = ifM upgradingRemote
-		( reloadConfig
-		, maybe noop upgradedto newversion
-		)
 
 #ifndef mingw32_HOST_OS
 	up (RepoVersion 0) = Upgrade.V0.upgrade
@@ -121,15 +114,18 @@ upgrade automatic destversion = do
 	-- upgrading a git repo other than the current repo.
 	upgraderemote = do
 		rp <- fromRawFilePath <$> fromRepo Git.repoPath
-		gitAnnexChildProcess "upgrade"
+		ok <- gitAnnexChildProcess "upgrade"
 			[ Param "--quiet"
 			, Param "--autoonly"
 			]
 			(\p -> p { cwd = Just rp })
 			(\_ _ _ pid -> waitForProcess pid >>= return . \case
-				ExitSuccess -> (True, Nothing)
-				_ -> (False, Nothing)
+				ExitSuccess -> True
+				_ -> False
 			)
+		when ok
+			reloadConfig
+		return ok
 
 	upgradedto v = do
 		setVersion v
