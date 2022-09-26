@@ -1,4 +1,4 @@
-git-annex (10.20220823) UNRELEASED; urgency=medium
+git-annex (10.20220927) UNRELEASED; urgency=medium
 
   * Fix a bug in the last release that caused v8 repositories to upgrade
     immediately to v10, rather than taking the scheduled 1 year to do so.
@@ -43,6 +43,7 @@ git-annex (10.20220823) UNRELEASED; urgency=medium
     in a repository owned by another user.
   * p2p: Pass wormhole the --appid option before the receive/send command,
     as it does not accept that option after the command
+  * Support "inbackend" in preferred content expressions.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Aug 2022 15:03:04 -0400
 

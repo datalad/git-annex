@@ -180,7 +180,7 @@ preferredContentKeyedTokens pcd =
 	, ValueToken "copies" (usev limitCopies)
 	, ValueToken "lackingcopies" (usev $ limitLackingCopies False)
 	, ValueToken "approxlackingcopies" (usev $ limitLackingCopies True)
-	, ValueToken "inbacked" (usev limitInBackend)
+	, ValueToken "inbackend" (usev limitInBackend)
 	, ValueToken "metadata" (usev limitMetaData)
 	, ValueToken "inallgroup" (usev $ limitInAllGroup $ getGroupMap pcd)
 	] ++ commonKeyedTokens
