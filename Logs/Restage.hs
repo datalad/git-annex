@@ -45,11 +45,11 @@ streamRestageLog finalizer processor = do
 			Nothing -> noop
 
 calcRestageLog :: t -> ((TopFilePath, InodeCache) -> t -> t) -> Annex t
-calcRestageLog start proc = do
+calcRestageLog start update = do
 	logf <- fromRepo gitAnnexRestageLog
 	calcLogFile (fromRawFilePath logf) start $ \l v -> 
 		case parseRestageLog (decodeBL l) of
-			Just pl -> proc pl v
+			Just pl -> update pl v
 			Nothing -> v
 
 formatRestageLog :: TopFilePath -> InodeCache -> S.ByteString
