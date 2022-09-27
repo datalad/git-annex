@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="kdm9"
+ avatar="http://cdn.libravatar.org/avatar/b7b736335a0e9944a8169a582eb4c43d"
+ subject="comment 3"
+ date="2022-09-27T18:40:40Z"
+ content="""
+Thanks for that Joey, I'll upgrade to today's release and let you know if the problem persists. Regarding filter-process, I think I was unclear: it stalls *during* filter-process, not *because of* filter-process. I gather filter-process gets stuck waiting for a lock. 
+"""]]
