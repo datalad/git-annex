@@ -42,7 +42,7 @@ The arm autobuilder runs daily (sun permitting), and is hosted by [[Joey]].
 
 * arm: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/armel/))
 
-The arm64 autobuilder runs only intermittently. [[Better hosting needed.|todo/arm64_autobuilder]].
+The arm64 autobuilder runs only intermittently. Better hosting needed.
 
 * arm64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-arm64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/arm64/))
 
