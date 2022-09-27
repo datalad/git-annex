@@ -1,0 +1,45 @@
+git-annex 10.20220927 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Fix a bug in the last release that caused v8 repositories to upgrade
+    immediately to v10, rather than taking the scheduled 1 year to do so.
+  * annex.diskreserve default increased from 1 mb to 100 mb.
+  * Include the assistant and webapp when building with cabal 3.4.1.0.
+  * Merged the webapp build flag into the assistant build flag.
+  * Optimise linker in linux standalone tarballs.
+  * Fix crash importing from a directory special remote that contains
+    a broken symlink.
+  * When accessing a git remote over http needs a git credential
+    prompt for a password, cache it for the lifetime of the git-annex
+    process, rather than repeatedly prompting.
+  * Use curl for downloads from git remotes when annex.url-options is set.
+  * Fix a reversion that made dead keys not be skipped when operating on
+    all keys via --all or in a bare repo.
+    (Introduced in version 8.20200720)
+  * vicfg: Include mincopies configuration.
+  * Improve handling of directory special remotes with importtree=yes whose
+    ignoreinode setting has been changed. When getting a file from such a
+    remote, accept the content that would have been accepted with the
+    previous ignoreinode setting.
+  * directory, adb: Fixed a bug with importtree=yes and multiple files
+    in the special remote have the same content, that caused it to
+    refuse to get a file from the special remote, incorrectly complaining
+    that it had changed, due to only accepting the inode+mtime of one file
+    (that was since modified or deleted) and not accepting the inode+mtime
+    of other duplicate files.
+  * Fix a reversion that prevented git-annex from working in a
+    repository when --git-dir or GIT\_DIR is specified to relocate the git
+    directory to somewhere else.
+    (Introduced in version 10.20220525)
+  * Improved handling of --time-limit when combined with -J
+  * Fix updating git index file after getting an unlocked file
+    when annex.stalldetection is set.
+  * restage: New git-annex command, handles restaging unlocked files.
+  * test: Added --test-with-git-config option.
+  * Run annex.freezecontent-command and annex.thawcontent-command
+    when on a crippled filesystem.
+    Thanks, Reiko Asakura
+  * enable-tor: Fix breakage caused by git's fix for CVE-2022-24765.
+  * Let GIT\_DIR and --git-dir override git's protection against operating
+    in a repository owned by another user.
+  * p2p: Pass wormhole the --appid option before the receive/send command,
+    as it does not accept that option after the command
+  * Support "inbackend" in preferred content expressions."""]]
