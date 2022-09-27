@@ -1,13 +1,18 @@
 [[!comment format=mdwn
  username="joey"
- subject="""comment 3"""
+ subject="""comment 4"""
  date="2022-09-27T18:54:32Z"
  content="""
 FWIW, I don't see this problem in a v10 repo on ext4. I set annex.pidlock in
 case it being set somehow causes a locking problem.
 
-Try running a command like this, in a repo where it hangs, to debug at what
+Try running this, in a repo where it hangs, to debug at what
 point in the git-annex filter-process it is hanging.
 
 	GIT_TRACE_PACKET=1 GIT_TRACE=1 git status
+
+Then try disabling filter-process and confirm if it hangs or not:
+
+	git config --unset filter.annex.process
+	git status
 """]]
