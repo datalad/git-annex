@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-09-27T18:21:12Z"
+ content="""
+If filter-process is the problem, it does not make sense that repo v9
+v9 would not have the problem, because v9 enables filter-process.
+If v9 is ok and only v10 has the problem then it must have something to
+do with the locking changes in v10.
+
+Also, you can upgrade to v9/v10 and still disable git-annex filter-process,
+by running this after the upgrade:
+
+	git config --unset filter.annex.process
+
+(Note that git-annex had a bug that caused v9 to upgrade to v10
+without waiting the year it was supposed to. That bug is why your v9 repo
+upgraded. That was fixed in today's git-annex release.)
+"""]]
