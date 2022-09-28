@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 5"
+ date="2022-09-28T08:40:11Z"
+ content="""
+Thanks for looking into this, and explaining. Your final configuration makes sense to me... I can't say I fully understand why, but I need `-a` otherwise the local repo will get all versions, leaving me with a bunch of unused keys. So my command is `git annex sync -a -A wasabi-east wasabi-west`. I took the other machine out of the sync because sometimes it's offline and I don't want to wait around for an SSH timeout.
+
+I have tested that if I force drop a key from `wasabi-east`, that sync command will get the key from `wasabi-west`, and then copy it to `wasabi-east`. It doesn't automatically drop it locally, I have to do `git annex drop --unused` - but that's not a big deal.
+
+I would just like to be confident that the wasabi remotes are a lockbox for any keys added to my annex. So... I think it works? :)  I'll keep using it and report back if I run into any weirdness.
+"""]]
