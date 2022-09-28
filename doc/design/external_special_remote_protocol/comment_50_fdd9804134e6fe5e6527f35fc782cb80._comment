@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jeroen"
+ avatar="http://cdn.libravatar.org/avatar/72187d05d3414dc8e5766c5575a2d255"
+ subject="DIRHASH ending in slash?"
+ date="2022-09-28T11:58:56Z"
+ content="""
+DIRHASH-LOWER (and I assume the other DIRHASH commands as well) seem to respond with a path ending with a slash. So `VALUE abc/def/` instead of the `VALUE abc/def` example mentioned. `git-annex-remote-rclone` actually assumes the response ends with a slash. Is this indeed what git-annex guarantees? If so, it should probably be documented in this specification.
+"""]]
