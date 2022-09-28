@@ -276,7 +276,7 @@ jobs:
           cd $HOME
           export | grep -e crippledfs || :
 
-          timeout 1800 git annex test "${test_opts[@]:-}"
+          timeout 3600 git annex test "${test_opts[@]:-}"
 
       - name: Set final PR status
         if: always() && github.event.inputs.pr != ''
