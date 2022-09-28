@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="kdm9"
+ avatar="http://cdn.libravatar.org/avatar/b7b736335a0e9944a8169a582eb4c43d"
+ subject="comment 5"
+ date="2022-09-28T12:55:49Z"
+ content="""
+So I think I have this issue completely wrong, apologies.
+
+
+The problem recurred again today, on a v8 repo, and with yesterday's release of git-annex. There is definitely a problem with locking, but it can't be due to the changes in version 10.
+
+To debug further, I removed only some files at a time from the .git/annex directory. The offending files were the keysdb (I did `rm -rf keysdb*`, so I'm not sure which of the specific files were the offenders).
+
+I'll keep you posted as I debug it further, but I thought I should let you know immediately that my original diagnosis was wrong.
+"""]]
