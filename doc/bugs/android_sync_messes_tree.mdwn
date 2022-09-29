@@ -1,0 +1,39 @@
+### Please describe the problem.
+
+Hi,
+
+I'm trying to sync some files to my Android phone using the adb special remote.
+
+Of course, I have a complicated 'wanted' expression: I want new files matching a query be exported automatically on 'sync' and files added on the phone be imported automatically. I also want the files I manually export to the phone to stay where they are.
+
+I'm still debugging my 'wanted' expression,
+I run 'git annex sync --content',
+notice it isn't syncing the right files,
+ctrl+C.
+
+My worktree is left in a weird state: All the files are moved or removed.
+It seems git-annex made the worktree into the desired shape for syncing. However, it did that with my main worktree, which is annoying.
+
+To recover from that, 'git reset --hard' works but I also need to do 'git add' then 'git annex fix'.
+
+Is here a reason to use the main worktree instead of a temporary directory to do that ?
+
+Also, it makes a branch 'android/master' which seems weird. First, it doesn't look like 'master' at all, a cryptic name would be better.
+This branch isn't supposed to be pushed anywhere and generates tons of conflicts every time, I don't think it should do a branch at all.
+Why not rebuild the desired tree into a temporary directory without storing it in git in any way ?
+
+### What steps will reproduce the problem?
+
+Have an 'adb' remote with 'annex-tracking-branch' set to a subdirectory, 'master:subdirectory'.
+Kill the process while it is syncing files.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 10.20220504
+Android Debug Bridge version 1.0.41 (31.0.3p1-android-tools)
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I've been using git-annex for a year and it has been awesome for me ! I'm trusting it more and more and that's why I'm trying new things with it.
+
+Thanks a lot for the awesome work !
