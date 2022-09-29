@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="jules@a6ba859eba6f59bd980f294741b1ad9b7624552a"
+ nickname="jules"
+ avatar="http://cdn.libravatar.org/avatar/a751e2ef9129dfaf6c68a0d762e5db60"
+ subject="mess up commited to my branch"
+ date="2022-09-29T09:26:05Z"
+ content="""
+I noticed that even when the syncing finishes. Worse than that, the 'android/master' branch is merged into 'master'.
+The removed files are brought back during the merge, but the moved files are committed.
+
+I definitely don't want git annex to touch my master branch. I have 'autocommit = false', 'synconlyannex = true' and 'alwayscommit = false'. I take care of merging and pushing the 'git-annex' branch myself.
+
+Perhaps I'm not using git-annex right ?
+"""]]
