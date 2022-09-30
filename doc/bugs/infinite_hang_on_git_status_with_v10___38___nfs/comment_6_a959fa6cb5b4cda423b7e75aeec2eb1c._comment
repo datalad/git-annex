@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2022-09-30T17:34:34Z"
+ content="""
+Thanks for confirming my feeling that something about the bug as reported
+was not quite right.
+
+It it was keysdb.cache or keysdb.lck, then it might be a locking problem in
+git-annex.
+
+But it seems more likely it was `keysdb/*`.. And that is a sqlite database.
+And if sqlite has problems with its internal locking that don't work on
+your filesystem, it would be hard to fix that in git-annex. Not using
+sqlite or switching the database from WAL mode to non-WAL mode are about
+all git-annex could do and both would be major undertakings.
+
+A recently added feature to git-annex is the annex.dbdir git config.
+That can be set to a directory on another filesystem, and git-annex will
+store all its sqlite databases in that directory. I think this option is
+your best chance of avoiding the problem.
+"""]]
