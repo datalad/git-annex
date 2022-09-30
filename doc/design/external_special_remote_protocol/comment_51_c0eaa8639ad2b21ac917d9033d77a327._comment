@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: DIRHASH ending in slash?"""
+ date="2022-09-30T17:31:25Z"
+ content="""
+Hmm, so it does. This would not have been my choice for ideal behavior, but
+I don't want to break things that depend on it now. 
+So I've updated the documentation.
+"""]]
