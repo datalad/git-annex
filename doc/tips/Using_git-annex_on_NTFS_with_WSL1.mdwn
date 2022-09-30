@@ -9,10 +9,10 @@ The following steps are tested on Windows 10 21h1 with Ubuntu 20 and are designe
 
 * Enable Developer mode in Windows settings so that symlinks can be created without elevated privileges.
 * Mount the NTFS drive with metadata option. [`/etc/wsl.conf`](https://docs.microsoft.com/en-us/windows/wsl/wsl-config) can be used or a line such as `C: /mnt/c drvfs metadata` can be added in `/etc/fstab`.
-* Initialize the repo.
-    * If the repository is created by cloning, create local git-annex branch from the remote branch and remove the origin remote before `git annex init`.
-    * Set `git config annex.crippledfilesystem true` immediately after `git annex init`.
-    * Add the origin remote back if it was previously removed.
+* Follow these steps in order when creating a new repository.
+    * `git config annex.sshcaching false`
+    * `git annex init`
+    * git-annex should not detect the filesystem as crippled but now set `git config annex.crippledfilesystem true`
 * Safety of locked files will require these settings and scripts and the patch below.
     * `git config annex.freezecontent-command 'wsl-freezecontent %path'`
     * `git config annex.thawcontent-command 'wsl-thawcontent %path'`
@@ -105,7 +105,7 @@ index 39853c894..2d66c1461 100644
 
 ** Usage tips **
 
-* Symlinks are invalid in Windows if created before the target file exists, such as after `git annex add` or `git annex get`. This can be fixed by recreating them with any method, such as delete them and `git checkout`.
+* WSL1 will not create symlinks that work in Windows if created before the target file exists, such as after `git annex add` or `git annex get`. This can be fixed by recreating them with any method, such as delete them and `git checkout`.
 
 <details>
 <summary>Sample script to recreate all symlinks under the current directory</summary>
