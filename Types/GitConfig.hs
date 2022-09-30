@@ -265,7 +265,7 @@ extractGitConfig configsource r = GitConfig
 			| otherwise = Nothing
 		  in mapMaybe get (M.toList (Git.config r))
 		]
-	, annexAdviceNoSshCaching = getbool (annexConfig "adviceNoSshCaching") True
+	, annexAdviceNoSshCaching = getbool (annexConfig "advicenosshcaching") True
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
