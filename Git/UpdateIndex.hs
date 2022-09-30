@@ -160,7 +160,6 @@ refreshIndex repo feeder = bracket
 
 	go (Just h, _, _, pid) = do
 		let closer = do
-			hFlush h
 			hClose h
 			forceSuccessProcess p pid
 		feeder $ \case

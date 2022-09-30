@@ -1,3 +1,10 @@
+git-annex (10.20220928) UNRELEASED; urgency=medium
+
+  * Avoid displaying warning about git-annex restage needing to be run
+    in situations where it does not.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 30 Sep 2022 13:54:23 -0400
+
 git-annex (10.20220927) upstream; urgency=medium
 
   * Fix a bug in the last release that caused v8 repositories to upgrade

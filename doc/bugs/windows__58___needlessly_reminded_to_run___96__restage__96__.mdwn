@@ -178,3 +178,5 @@ Git Annex is great. I use it several times a week with my multigigabyte backups,
 Big thanks, Joey!
 
 [[!meta author=jkniiv]]
+
+> [[fixed|done]] --[[Joey]]
