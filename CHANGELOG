@@ -2,6 +2,8 @@ git-annex (10.20220928) UNRELEASED; urgency=medium
 
   * Avoid displaying warning about git-annex restage needing to be run
     in situations where it does not.
+  * Fix the annex.adviceNoSshCaching config, which has never worked.
+    Thanks, Reiko Asakura
 
  -- Joey Hess <id@joeyh.name>  Fri, 30 Sep 2022 13:54:23 -0400
 
