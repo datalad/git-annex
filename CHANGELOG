@@ -1,11 +1,11 @@
-git-annex (10.20220928) UNRELEASED; urgency=medium
+git-annex (10.20221003) upstream; urgency=medium
 
   * Avoid displaying warning about git-annex restage needing to be run
     in situations where it does not.
   * Fix the annex.adviceNoSshCaching config, which has never worked.
     Thanks, Reiko Asakura
 
- -- Joey Hess <id@joeyh.name>  Fri, 30 Sep 2022 13:54:23 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 03 Oct 2022 12:38:48 -0400
 
 git-annex (10.20220927) upstream; urgency=medium
 
