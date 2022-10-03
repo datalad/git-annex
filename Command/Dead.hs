@@ -16,7 +16,7 @@ import Git.Types
 
 cmd :: Command
 cmd = command "dead" SectionSetup "hide a lost repository or key"
-	(paramRepeating paramRemote) (seek <$$> optParser)
+	(paramRepeating paramRepository) (seek <$$> optParser)
 
 data DeadOptions = DeadRemotes [RemoteName] | DeadKeys [Key]
 

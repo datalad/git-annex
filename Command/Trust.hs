@@ -18,7 +18,7 @@ import qualified Data.Set as S
 
 cmd :: Command
 cmd = command "trust" SectionSetup "trust a repository"
-	(paramRepeating paramRemote) (withParams seek)
+	(paramRepeating paramRepository) (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = trustCommand "trust" Trusted
