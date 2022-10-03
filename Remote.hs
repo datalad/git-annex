@@ -144,7 +144,7 @@ byNameWithUUID = checkuuid <=< byName
 		| otherwise = return $ Just r
 
 byName' :: RemoteName -> Annex (Either String Remote)
-byName' "" = return $ Left "no remote specified"
+byName' "" = return $ Left "no repository name specified"
 byName' n = go . filter matching <$> remoteList
   where
 	go [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
