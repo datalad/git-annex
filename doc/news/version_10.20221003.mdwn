@@ -1,0 +1,5 @@
+git-annex 10.20221003 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Avoid displaying warning about git-annex restage needing to be run
+    in situations where it does not.
+  * Fix the annex.adviceNoSshCaching config, which has never worked.
+    Thanks, Reiko Asakura"""]]
