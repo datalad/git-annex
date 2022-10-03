@@ -9,3 +9,5 @@ I would be ok with `git-annex dead ""` doing that, perhaps, but when
 no parameters are given, it constructs the empty string itself, which is a bug.
 
 Found this in <https://bugs.debian.org/855648> --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]

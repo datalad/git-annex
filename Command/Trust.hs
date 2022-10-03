@@ -24,12 +24,12 @@ seek :: CmdParams -> CommandSeek
 seek = trustCommand "trust" Trusted
 
 trustCommand :: String -> TrustLevel -> CmdParams -> CommandSeek
-trustCommand c level = withWords (commandAction . start)
+trustCommand _ _ [] = giveup "no repository name specified"
+trustCommand c level ps = withStrings (commandAction . start) ps
   where
-	start ws = do
-		let name = unwords ws
+	start name = do
 		u <- Remote.nameToUUID name
-		let si = SeekInput ws
+		let si = SeekInput [name]
 		starting c (ActionItemOther (Just name)) si (perform name u)
 	perform name uuid = do
 		when (level >= Trusted) $
