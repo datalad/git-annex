@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-10-04T16:44:54Z"
+ content="""
+I'm quite sure that syncing with a extporttree=yes special remote does not
+alter the working tree or the usual index beyond the sync command's usual
+commit of any staged changes. It writes the tree using `git mktree` 
+and `git commit-tree`.
+
+I have tried to reproduce this, without any luck. I used a directory
+special remote not adb, but that should not possibly change anything.
+
+	joey@darkstar:~/tmp/bench/ar>git-annex initremote directory type=directory directory=../d encryption=none exporttree=yes importtree=yes
+	joey@darkstar:~/tmp/bench/ar>git config remote.directory.annex-tracking-branch master:subdirectory
+	joey@darkstar:~/tmp/bench/ar>dd if=/dev/urandom of=subdirectory/bigfile2 bs=1M count=100
+	joey@darkstar:~/tmp/bench/ar>git-annex add subdirectory/bigfile2
+
+	joey@darkstar:~/tmp/bench/ar>git-annex sync --content
+	commit 
+	[master 159757a] git-annex in joey@darkstar:~/tmp/bench/ar
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 subdirectory/bigfile2
+	ok
+	list directory ok
+	update refs/remotes/directory/master ok
+	
+	Merge made by the 'ort' strategy.
+	export directory bigfile2 ^C
+	- exit 130
+	joey@darkstar:~/tmp/bench/ar>git st
+	On branch master
+	nothing to commit, working tree clean
+	joey@darkstar:~/tmp/bench/ar>ls
+	foo@  subdirectory/
+
+Also, I don't understand what you mean by this:
+
+	This branch isn't supposed to be pushed anywhere and generates tons of conflicts every time
+
+What do these conflicts look like? When do they happen?
+
+Please show a transcript of the problem happening. Ideally starting with a
+fresh git repository and showing all steps you used to set it up.
+"""]]
