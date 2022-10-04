@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="jules@a6ba859eba6f59bd980f294741b1ad9b7624552a"
+ nickname="jules"
+ avatar="http://cdn.libravatar.org/avatar/a751e2ef9129dfaf6c68a0d762e5db60"
+ subject="comment 5"
+ date="2022-10-04T17:59:53Z"
+ content="""
+Yes, I did change the 'annex-tracking-branch' in the way you described. I was trying various values and I guess I expected git-annex not to keep any state after I interrupted the transfer (a few files were transfered).
+
+I suspect the merge conflicts (on the android/master branch) were a combination of interrupting the process and changing the config back and forth. I think I could see them because my git config (name, email) is temporarily broken if the worktree is changed, which interrupted the committing.
+
+I would expect git-annex to remember what happened only if it completed. In the case of adb, transfer is pretty slow and it's not likely to ever terminate (if I didn't meant to sync that many files, I won't wait days for it to complete).
+The impacted files were all the files to be synced, only a fraction of which was actually synced.
+
+"""]]
