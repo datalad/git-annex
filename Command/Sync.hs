@@ -916,7 +916,7 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 			_ -> noop
 		Just b -> showLongNote $ unwords
 			[ notupdating
-			, "because " ++ Git.fromRef b ++ "does not exist."
+			, "because " ++ Git.fromRef b ++ " does not exist."
 			, "(As configured by " ++ gitconfig ++ ")"
 			]
 	  where
