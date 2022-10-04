@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-10-04T17:21:44Z"
+ content="""
+The reason that happens is that the remote tracking branch has a tree with
+"subdirectory/bigfile" and "foo" in it. The new tree imported from the
+remote, after changing annex-tracking-branch, has "bigfile" in it. So the
+result is the same as if a regular git remote used to contain that old
+tree, and has been updated to the new tree. `git merge` with a remote where
+that has happened naturally updates master to move "subdirectory/bigfile"
+to "bigfile" and to delete "foo".
+
+I think this does beg the question of how to safely change
+annex-tracking-branch. One way is to sync, change it, sync again. Then
+revert the commit that imports from the remote. That gets the tree back
+into the state it was before, and then syncing again will update the
+remote.
+
+Perhaps git-annex should detect when the annex-tracking-branch config
+has changed, and somehow handle this better, or just refuse to sync?
+"""]]

@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-10-04T17:13:21Z"
+ content="""
+Here's my suspicion: You started with annex-tracking-branch set to
+some value, and synced. Then you changed it to some other value and synced
+again.
+
+For example, if you start with it set to master:subdirectory, then
+change it to master, this happens on the subsequent sync:
+
+	list directory ok
+	update refs/remotes/directory/master ok
+	
+	Updating d946446..8dd4a6f
+	Fast-forward
+	 bigfile                           | 1 +
+	 foo                               | 1 -
+	 subdirectory/bigfile              | 1 -
+
+So, files not in subdirectory get removed, and everything in subdirectory
+is moved out of it and into the top of the tree.
+
+Does this behavior make sense? I am not sure, but by changing 
+annex-tracking-branch, you have certianlly ripped the rug out from under
+git-annex. And that seems to more or less match what you are describing.
+
+(Nothing to do with being interrupted, and no merge conflicts though.)
+"""]]
