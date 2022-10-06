@@ -88,12 +88,6 @@ jobs:
       - name: Adjust changelog generation script to use original branch
         run: sed -i -e "s,HEAD,$BUILD_COMMIT,g" debian/create-standalone-changelog
 
-      - name: Import GPG keys
-        run: |
-          # private key for signing - comes from secrets
-          echo '${{ secrets.datalad_builder_gpgkey }}' | gpg --import
-          # public key for verification
-          gpg --import .github/workflows/tools/datalad-builder-key.asc
 
       - name: Get the git-annex build environment container
         run: chronic singularity pull --name buildenv.sif docker://datalad/buildenv-git-annex-buster
@@ -107,7 +101,7 @@ jobs:
       - name: Build binary package from the source package
         run: |
           if ! singularity exec /tmp/buildenv.sif \
-               bash -c 'set -x; export LANG=C; dpkg-source -x *.dsc git-annex-source && cd git-annex-source && dpkg-buildpackage -b' >| "${bbuild_log}" 2>&1; then
+               bash -c 'set -x; export LANG=C; dpkg-source -x *.dsc git-annex-source && cd git-annex-source && dpkg-buildpackage -b -uc -us' >| "${bbuild_log}" 2>&1; then
                  echo "E: build failed"
                  echo "I: the tail of the log"
                  tail -n 50 "${bbuild_log}"
