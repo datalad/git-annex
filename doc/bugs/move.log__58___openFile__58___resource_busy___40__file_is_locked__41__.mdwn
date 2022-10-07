@@ -1,0 +1,42 @@
+### Please describe the problem.
+
+From [https://github.com/DanielDent/git-annex-remote-rclone/pull/57](https://github.com/DanielDent/git-annex-remote-rclone/pull/57), where we use that rclone special remote for backup of DANDI data to dropbox
+
+Seems like a test sometimes fails on Mac OS with:
+
+```
++ git-annex copy -J5 --quiet . --to GA-rclone-CI
+git-annex: .git/annex/move.log: openFile: resource busy (file is locked)
+copy: 1 failed
+Error: Process completed with exit code 1.
+```
+
+indeed so far seemed to happen only on Mac
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex-remote-rclone[master]2022
+$> datalad foreach-dataset git grep 'file is locked'
+foreach-dataset(error): /mnt/datasets/datalad/ci/git-annex-remote-rclone (dataset) [CommandError: 'git grep 'file is locked'' failed with exitcode 1 under /mnt/datasets/datalad/ci/git-annex-remote-rclone]
+03/cron/20221003T064418/da57e9a/github-Tests-144-failed/9_test (macos-latest, v1.53.3).txt:2022-10-03T06:47:44.4978580Z git-annex: .git/annex/move.log: openFile: resource busy (file is locked)
+03/cron/20221003T064418/da57e9a/github-Tests-144-failed/test (macos-latest, v1.53.3)/9_tests.txt:2022-10-03T06:47:44.4978530Z git-annex: .git/annex/move.log: openFile: resource busy (file is locked)
+03/push/master/1d0d3ce/github-Tests-146-failed/10_test (macos-latest, v1.33).txt:2022-10-03T23:35:41.8464390Z git-annex: .git/annex/move.log: openFile: resource busy (file is locked)
+03/push/master/1d0d3ce/github-Tests-146-failed/9_test (macos-latest, v1.53.3).txt:2022-10-03T23:37:44.0652500Z git-annex: .git/annex/move.log: openFile: resource busy (file is locked)
+03/push/master/1d0d3ce/github-Tests-146-failed/test (macos-latest, v1.33)/9_tests.txt:2022-10-03T23:35:41.8463970Z git-annex: .git/annex/move.log: openFile: resource busy (file is locked)
+03/push/master/1d0d3ce/github-Tests-146-failed/test (macos-latest, v1.53.3)/9_tests.txt:2022-10-03T23:37:44.0652360Z git-annex: .git/annex/move.log: openFile: resource busy (file is locked)
+foreach-dataset(ok): /mnt/datasets/datalad/ci/git-annex-remote-rclone/2022/10 (dataset)
+foreach-dataset(error): /mnt/datasets/datalad/ci/git-annex-remote-rclone/2022/06 (dataset) [CommandError: 'git grep 'file is locked'' failed with exitcode 1 under /mnt/datasets/datalad/ci/git-annex-remote-rclone/2022/06]
+foreach-dataset(error): /mnt/datasets/datalad/ci/git-annex-remote-rclone/2022/07 (dataset) [CommandError: 'git grep 'file is locked'' failed with exitcode 1 under /mnt/datasets/datalad/ci/git-annex-remote-rclone/2022/07]
+foreach-dataset(error): /mnt/datasets/datalad/ci/git-annex-remote-rclone/2022/09 (dataset) [CommandError: 'git grep 'file is locked'' failed with exitcode 1 under /mnt/datasets/datalad/ci/git-annex-remote-rclone/2022/09]
+foreach-dataset(error): /mnt/datasets/datalad/ci/git-annex-remote-rclone/2022/08 (dataset) [CommandError: 'git grep 'file is locked'' failed with exitcode 1 under /mnt/datasets/datalad/ci/git-annex-remote-rclone/2022/08]
+```
+
+### What steps will reproduce the problem?
+
+no minimal reproducer yet but happens as part of [this test "script"](https://github.com/DanielDent/git-annex-remote-rclone/blob/master/tests/all-in-one.sh)
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 10.20220927
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
