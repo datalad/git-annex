@@ -89,6 +89,7 @@ jobs:
         run: sed -i -e "s,HEAD,$BUILD_COMMIT,g" debian/create-standalone-changelog
 
       - name: Import GPG keys
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
         run: |
           # private key for signing - comes from secrets
           echo '${{ secrets.datalad_builder_gpgkey }}' | gpg --import
@@ -106,8 +107,13 @@ jobs:
 
       - name: Build binary package from the source package
         run: |
+          sign="${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}"
+          if [ "x$sign" = xtrue ]
+          then opts=
+          else opts='-uc -us'
+          fi
           if ! singularity exec /tmp/buildenv.sif \
-               bash -c 'set -x; export LANG=C; dpkg-source -x *.dsc git-annex-source && cd git-annex-source && dpkg-buildpackage -b' >| "${bbuild_log}" 2>&1; then
+               bash -c "set -x; export LANG=C; dpkg-source -x *.dsc git-annex-source && cd git-annex-source && dpkg-buildpackage -b $opts" >| "${bbuild_log}" 2>&1; then
                  echo "E: build failed"
                  echo "I: the tail of the log"
                  tail -n 50 "${bbuild_log}"
