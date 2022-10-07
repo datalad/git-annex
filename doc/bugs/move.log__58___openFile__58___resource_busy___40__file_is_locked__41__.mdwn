@@ -40,3 +40,5 @@ git-annex version: 10.20220927
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> Presumed [[fixed|done]]; please followup if I'm wrong. --[[Joey]]

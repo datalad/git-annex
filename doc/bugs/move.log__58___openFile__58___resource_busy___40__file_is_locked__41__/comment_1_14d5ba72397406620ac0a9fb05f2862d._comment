@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-10-07T16:44:04Z"
+ content="""
+I doubt this is really OSX specific. This must be two threads running logMove
+at the same time, that end up trying to both write or one write and one
+read at the same time. That causes the haskell RTS to fail this way.
+
+Since it does use a lock file when writing and appending to the log file,
+I think it must be the call to checkLogFile that is failing. That avoids
+taking the lock, for performance reasons. The performace gain is pretty
+minimal though, taking the lock is not much. Only when modifyLogFile
+is called at the same time might it need to block on the file being
+rewritten, but the file only ever has 100 items, so that never takes long
+either.
+
+So, I have added locking to checkLogFile (and to calcLogFile though it's
+not used here, just because it has the same problem). That should fix it,
+though we'll need to wait on the test to know for sure. I'm going to close
+this, as I'm pretty sure though..
+"""]]

@@ -47,7 +47,8 @@ streamRestageLog finalizer processor = do
 calcRestageLog :: t -> ((TopFilePath, InodeCache) -> t -> t) -> Annex t
 calcRestageLog start update = do
 	logf <- fromRepo gitAnnexRestageLog
-	calcLogFile (fromRawFilePath logf) start $ \l v -> 
+	lckf <- fromRepo gitAnnexRestageLock
+	calcLogFile logf lckf start $ \l v -> 
 		case parseRestageLog (decodeBL l) of
 			Just pl -> update pl v
 			Nothing -> v

@@ -84,54 +84,32 @@ modifyLogFile f lck modf = withExclusiveLock lck $ do
 		setAnnexFilePerm (toRawFilePath lf)
 
 -- | Checks the content of a log file to see if any line matches.
---
--- This can safely be used while appendLogFile or any atomic
--- action is concurrently modifying the file. It does not lock the file,
--- for speed, but instead relies on the fact that a log file usually
--- ends in a newline.
-checkLogFile :: FilePath -> (L.ByteString -> Bool) -> Annex Bool
-checkLogFile f matchf = bracket setup cleanup go
+checkLogFile :: RawFilePath -> RawFilePath -> (L.ByteString -> Bool) -> Annex Bool
+checkLogFile f lck matchf = withSharedLock lck $ bracket setup cleanup go
   where
-	setup = liftIO $ tryWhenExists $ openFile f ReadMode
+	setup = liftIO $ tryWhenExists $ openFile f' ReadMode
 	cleanup Nothing = noop
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = return False
 	go (Just h) = do
-		!r <- liftIO (any matchf . fullLines <$> L.hGetContents h)
+		!r <- liftIO (any matchf . L8.lines <$> L.hGetContents h)
 		return r
+	f' = fromRawFilePath f
 
 -- | Folds a function over lines of a log file to calculate a value.
---
--- This can safely be used while appendLogFile or any atomic
--- action is concurrently modifying the file. It does not lock the file,
--- for speed, but instead relies on the fact that a log file usually
--- ends in a newline.
-calcLogFile :: FilePath -> t -> (L.ByteString -> t -> t) -> Annex t
-calcLogFile f start update = bracket setup cleanup go
+calcLogFile :: RawFilePath -> RawFilePath -> t -> (L.ByteString -> t -> t) -> Annex t
+calcLogFile f lck start update = withSharedLock lck $ bracket setup cleanup go
   where
-	setup = liftIO $ tryWhenExists $ openFile f ReadMode
+	setup = liftIO $ tryWhenExists $ openFile f' ReadMode
 	cleanup Nothing = noop
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = return start
-	go (Just h) = go' start =<< liftIO (fullLines <$> L.hGetContents h)
+	go (Just h) = go' start =<< liftIO (L8.lines <$> L.hGetContents h)
 	go' v [] = return v
 	go' v (l:ls) = do
 		let !v' = update l v
 		go' v' ls
-
--- | Gets only the lines that end in a newline. If the last part of a file
--- does not, it's assumed to be a new line being logged that is incomplete,
--- and is omitted.
---
--- Unlike lines, this does not collapse repeated newlines etc.
-fullLines :: L.ByteString -> [L.ByteString]
-fullLines = go []
-  where
-	go c b = case L8.elemIndex '\n' b of
-		Nothing -> reverse c
-		Just n ->
-			let (l, b') = L.splitAt n b
-			in go (l:c) (L.drop 1 b')
+	f' = fromRawFilePath f
 
 -- | Streams lines from a log file, passing each line to the processor,
 -- and then empties the file at the end.
