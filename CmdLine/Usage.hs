@@ -60,8 +60,8 @@ paramNumRange :: String
 paramNumRange = "NUM|RANGE"
 paramRemote :: String
 paramRemote = "REMOTE"
-paramRemote :: String
-paramRemote = "REPOSITORY"
+paramRepository :: String
+paramRepository = "REPOSITORY"
 paramField :: String
 paramField = "FIELD"
 paramGlob :: String

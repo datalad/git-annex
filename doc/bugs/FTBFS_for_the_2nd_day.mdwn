@@ -23,3 +23,5 @@ CmdLine/Usage.hs:64:1: error:
 ```
 
 on Debian, didn't check if other systems are anyhow different, will bounce report with pointers just in case.
+
+> [[fixed|done]] --[[Joey]]
