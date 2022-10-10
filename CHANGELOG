@@ -6,6 +6,9 @@ git-annex (10.20221004) UNRELEASED; urgency=medium
     do not operate on a repository that has an empty name.
   * move: Fix openFile crash with -J
     (Fixes a reversion in 8.20201103)
+  * S3: Support signature=anonymous to access a S3 bucket anonymously.
+    This can be used, for example, with importtree=yes to import from
+    a public bucket.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Oct 2022 13:36:42 -0400
 

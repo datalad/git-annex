@@ -1,6 +1,6 @@
 {- S3 remotes
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -156,7 +156,9 @@ requeststyleField = Accepted "requeststyle"
 signatureField :: RemoteConfigField
 signatureField = Accepted "signature"
 
-newtype SignatureVersion = SignatureVersion Int
+data SignatureVersion 
+	= SignatureVersion Int
+	| Anonymous
 
 signatureVersionParser :: RemoteConfigField -> FieldDesc -> RemoteConfigFieldParser
 signatureVersionParser f fd =
@@ -165,9 +167,16 @@ signatureVersionParser f fd =
   where
 	go "v2" = Just (SignatureVersion 2)
 	go "v4" = Just (SignatureVersion 4)
+	go "anonymous" = Just Anonymous
 	go _ = Nothing
 
 	defver = SignatureVersion 2
+
+isAnonymous :: ParsedRemoteConfig -> Bool
+isAnonymous c = 
+	case getRemoteConfigValue signatureField c of
+		Just Anonymous -> True
+		_ -> False
 
 portField :: RemoteConfigField
 portField = Accepted "port"
@@ -272,7 +281,9 @@ s3Setup'  ss u mcreds c gc
 		(c', encsetup) <- encryptionSetup (c `M.union` defaults) gc
 		pc <- either giveup return . parseRemoteConfig c'
 			=<< configParser remote c'
-		c'' <- setRemoteCredPair ss encsetup pc gc (AWS.creds u) mcreds
+		c'' <- if isAnonymous pc
+			then pure c'
+			else setRemoteCredPair ss encsetup pc gc (AWS.creds u) mcreds
 		pc' <- either giveup return . parseRemoteConfig c''
 			=<< configParser remote c''
 		info <- extractS3Info pc'
@@ -286,7 +297,9 @@ s3Setup'  ss u mcreds c gc
 		showNote "Internet Archive mode"
 		pc <- either giveup return . parseRemoteConfig c
 			=<< configParser remote c
-		c' <- setRemoteCredPair ss noEncryptionUsed pc gc (AWS.creds u) mcreds
+		c' <- if isAnonymous pc
+			then pure c
+			else setRemoteCredPair ss noEncryptionUsed pc gc (AWS.creds u) mcreds
 		-- Ensure user enters a valid bucket name, since
 		-- this determines the name of the archive.org item.
 		let validbucket = replace " " "-" $ map toLower $
@@ -841,17 +854,20 @@ type S3HandleVar = TVar (Either (Annex (Maybe S3Handle)) (Maybe S3Handle))
 {- Prepares a S3Handle for later use. Does not connect to S3 or do anything
  - else expensive. -}
 mkS3HandleVar :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex S3HandleVar
-mkS3HandleVar c gc u = liftIO $ newTVarIO $ Left $ do
-	mcreds <- getRemoteCredPair c gc (AWS.creds u)
-	case mcreds of
-		Just creds -> do
-			awscreds <- liftIO $ genCredentials creds
-			let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper Nothing
-			ou <- getUrlOptions
-			return $ Just $ S3Handle (httpManager ou) awscfg s3cfg
-		Nothing -> return Nothing
+mkS3HandleVar c gc u = liftIO $ newTVarIO $ Left $
+	if isAnonymous c
+		then go =<< liftIO AWS.anonymousCredentials
+		else do
+			mcreds <- getRemoteCredPair c gc (AWS.creds u)
+			case mcreds of
+				Just creds -> go =<< liftIO (genCredentials creds)
+				Nothing -> return Nothing
   where
 	s3cfg = s3Configuration c
+	go awscreds = do
+		let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper Nothing
+		ou <- getUrlOptions
+		return $ Just $ S3Handle (httpManager ou) awscfg s3cfg
 
 withS3Handle :: S3HandleVar -> (Maybe S3Handle -> Annex a) -> Annex a
 withS3Handle hv a = liftIO (readTVarIO hv) >>= \case
