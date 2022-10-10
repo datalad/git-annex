@@ -33,7 +33,6 @@ import Network.HTTP.Types
 import Network.URI
 import Control.Monad.Trans.Resource
 import Control.Monad.Catch
-import Data.IORef
 import Control.Concurrent.STM (atomically)
 import Control.Concurrent.STM.TVar
 import Data.Maybe
@@ -1071,11 +1070,10 @@ genericPublicUrl baseurl p =
 	skipescape c = isUnescapedInURIComponent c
 
 genCredentials :: CredPair -> IO AWS.Credentials
-genCredentials (keyid, secret) = AWS.Credentials
-	<$> pure (tobs keyid)
-	<*> pure (tobs secret)
-	<*> newIORef []
-	<*> (fmap tobs <$> getEnv "AWS_SESSION_TOKEN")
+genCredentials (keyid, secret) = do
+	cr <- AWS.makeCredentials (tobs keyid) (tobs secret)
+	tk <- fmap tobs <$> getEnv "AWS_SESSION_TOKEN"
+	return (cr { AWS.iamToken = tk })
   where
 	tobs = T.encodeUtf8 . T.pack
 
