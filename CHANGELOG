@@ -6,8 +6,10 @@ git-annex (10.20221004) UNRELEASED; urgency=medium
     do not operate on a repository that has an empty name.
   * move: Fix openFile crash with -J
     (Fixes a reversion in 8.20201103)
-  * S3: Speed up importing from a large bucket when fileprefix= is set
+  * S3: Speed up importing from a large bucket when fileprefix= is set,
     by only asking for files under the prefix.
+  * When importing from versioned remotes, fix tracking of the content
+    of deleted files.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Oct 2022 13:36:42 -0400
 

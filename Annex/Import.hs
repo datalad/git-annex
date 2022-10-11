@@ -184,10 +184,13 @@ recordImportTree remote importtreeconfig importable = do
 				unlessM (stillpresent db oldkey) $
 					logChange oldkey (Remote.uuid remote) InfoMissing
 			_ -> noop
-		db <- Export.openDb (Remote.uuid remote)
-		forM_ (exportedTreeishes oldexport) $ \oldtree ->
-			Export.runExportDiffUpdater updater db oldtree finaltree
-		Export.closeDb db
+		-- When the remote is versioned, it still contains keys
+		-- that are not present in the new tree.
+		unless (Remote.versionedExport (Remote.exportActions remote)) $ do
+			db <- Export.openDb (Remote.uuid remote)
+			forM_ (exportedTreeishes oldexport) $ \oldtree ->
+				Export.runExportDiffUpdater updater db oldtree finaltree
+			Export.closeDb db
 
 buildImportCommit' :: Remote -> ImportCommitConfig -> Maybe Sha -> History Sha -> Annex (Maybe Sha)
 buildImportCommit' remote importcommitconfig mtrackingcommit imported@(History ti _) =

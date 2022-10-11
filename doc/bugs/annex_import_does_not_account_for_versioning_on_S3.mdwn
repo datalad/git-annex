@@ -13,3 +13,4 @@ Observed with several versions from 8-10 on linux. As laid out above, I strongly
 
 Lots. I love git-annex.
 
+> [[fixed|done]] --[[Joey]]

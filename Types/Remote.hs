@@ -270,9 +270,10 @@ data ExportActions a = ExportActions
 	-- Can throw exception if unable to access remote, or if remote
 	-- refuses to remove the content.
 	, removeExport :: Key -> ExportLocation -> a ()
-	-- Set when the content of a Key stored in the remote to an
-	-- ExportLocation and then removed with removeExport remains
-	-- accessible to retrieveKeyFile and checkPresent.
+	-- Set when the remote is versioned, so once a Key is stored
+	-- to an ExportLocation, a subsequent deletion of that
+	-- ExportLocation leaves the key still accessible to retrieveKeyFile
+	-- and checkPresent.
 	, versionedExport :: Bool
 	-- Removes an exported directory. Typically the directory will be
 	-- empty, but it could possibly contain files or other directories,
