@@ -130,9 +130,9 @@ tests n crippledfilesystem adjustedbranchok opts =
 		: concatMap mkrepotests testmodes
   where
 	testmodes = catMaybes
-		[ canadjust ("v8 adjusted unlocked branch", (testMode opts (RepoVersion 8)) { adjustedUnlockedBranch = True })
-		, unlesscrippled ("v8 unlocked", (testMode opts (RepoVersion 8)) { unlockedFiles = True })
-		, unlesscrippled ("v8 locked", testMode opts (RepoVersion 8))
+		[ canadjust ("v10 adjusted unlocked branch", (testMode opts (RepoVersion 10)) { adjustedUnlockedBranch = True })
+		, unlesscrippled ("v10 unlocked", (testMode opts (RepoVersion 10)) { unlockedFiles = True })
+		, unlesscrippled ("v10 locked", testMode opts (RepoVersion 10))
 		]
 	remotetestmode = testMode opts (RepoVersion 8)
 	unlesscrippled v
