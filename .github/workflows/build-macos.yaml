@@ -71,7 +71,7 @@ jobs:
           version="$(git describe "$BUILD_COMMIT" | sed -e 's/-/+git/')"
           arch=x64
           echo "Building $version"
-          echo "::set-output name=version::${version}_$arch"
+          echo "version=${version}_$arch" >> "$GITHUB_OUTPUT"
 
       - name: Apply local patches
         run: .github/workflows/tools/apply-patches patches

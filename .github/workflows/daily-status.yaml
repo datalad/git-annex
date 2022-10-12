@@ -23,7 +23,7 @@ jobs:
         id: content
         run: |
           subject="$(python -m pip-run -q -- .github/workflows/tools/daily-status.py)"
-          echo "::set-output name=subject::$subject"
+          echo "subject=$subject" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.DATALAD_GITHUB_TOKEN }}
 
