@@ -33,7 +33,7 @@ jobs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -62,7 +62,7 @@ jobs:
 
     {% elif ostype == "windows" %}
       - name: Setup Haskell
-        uses: actions/setup-haskell@v1.1.3
+        uses: haskell/actions/setup@v2
         with:
           enable-stack: true
           stack-no-global: true
@@ -172,7 +172,7 @@ jobs:
         run: stack setup
 
       - name: Enable Stack cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.stack
           key: cache-stack-macos-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('git-annex.cabal') }}
@@ -220,7 +220,7 @@ jobs:
       # At this point, stack.yaml.lock exists, so we can activate the cache
 
       - name: Enable Stack cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: 'C:\sr\snapshots'
           key: cache-stack-windows-${{ hashFiles('stack.yaml.lock') }}-${{ hashFiles('git-annex.cabal') }}
@@ -251,7 +251,7 @@ jobs:
 
     {% endif %}
       - name: Upload packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: {{artifact_basename}}_${{ steps.build-version.outputs.version }}
           path: |
@@ -269,7 +269,7 @@ jobs:
       {% endif %}
       - name: Clone datalad/git-annex-ci-client-jobs
         if: github.event_name == 'schedule'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: datalad/git-annex-ci-client-jobs
           fetch-depth: 1
@@ -344,7 +344,7 @@ jobs:
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
-        uses: dawidd6/action-send-mail@v2
+        uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -376,7 +376,7 @@ jobs:
   {% endif %}
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -394,7 +394,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: {{artifact_basename}}_${{ needs.build-package.outputs.build-version }}
 
@@ -507,7 +507,7 @@ jobs:
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
-        uses: dawidd6/action-send-mail@v2
+        uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -531,7 +531,7 @@ jobs:
     needs: build-package
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -545,7 +545,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: {{artifact_basename}}_${{ needs.build-package.outputs.build-version }}
 
@@ -592,7 +592,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -606,7 +606,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: {{artifact_basename}}_${{ needs.build-package.outputs.build-version }}
 
@@ -701,7 +701,7 @@ jobs:
           git config --global user.name "GitHub Almighty"
 
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
 
@@ -724,7 +724,7 @@ jobs:
 
       # needed for ssh certs under ubuntu and tox.ini everywhere
       - name: Checkout datalad
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: datalad/datalad
           path: datalad
