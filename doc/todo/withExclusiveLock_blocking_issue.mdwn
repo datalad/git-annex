@@ -1,0 +1,20 @@
+Some parts of git-annex use withExclusiveLock or otherwise wait for an
+exclusive lock and hold it while performing an operation. Now consider what
+happens if the git-annex process is suspended. Another git-annex process
+that is running and that blocks on the same lock will stall forever, until
+the git-annex process is resumed.
+
+These time windows tend to be small, but may not always be.
+
+Would it be better for the second git-annex process, rather than hanging
+indefinitely, to try to take the lock a few times over a few seconds, and
+then error out? The risk with doing that is, when 2 concurrent git-annex
+processes are running and taking the locks repeatedly, one might get
+unlucky, fail to take the lock, and error out, when waiting a little longer
+would have succeeded, because the other process is not holding the lock all
+the time.
+
+Is there any better way git-annex could handle this? Is it a significant
+problem at all? I don't think I've ever seen it happen, but I rarely ^Z
+git-annex either. How do other programs handle this, if at all?
+--[[Joey]]
