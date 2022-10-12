@@ -15,6 +15,7 @@ module Database.Keys.Handle (
 ) where
 
 import qualified Database.Queue as H
+import Database.Keys.Tables
 import Utility.Exception
 import Utility.DebugLocks
 
@@ -29,7 +30,7 @@ newtype DbHandle = DbHandle (MVar DbState)
 
 -- The database can be closed or open, but it also may have been
 -- tried to open (for read) and didn't exist yet or is not readable.
-data DbState = DbClosed | DbOpen H.DbQueue | DbUnavailable
+data DbState = DbClosed | DbOpen (H.DbQueue, DbTablesChanged) | DbUnavailable
 
 newDbHandle :: IO DbHandle
 newDbHandle = DbHandle <$> newMVar DbClosed
@@ -52,15 +53,17 @@ withDbState (DbHandle mvar) a = do
 		return v
 
 flushDbQueue :: DbHandle -> IO ()
-flushDbQueue (DbHandle mvar) = go =<< debugLocks (readMVar mvar)
+flushDbQueue h = withDbState h go
   where
-	go (DbOpen qh) = H.flushDbQueue qh
-	go _ = return ()
+	go (DbOpen (qh, _)) = do
+		H.flushDbQueue qh
+		return ((), DbOpen (qh, mempty))
+	go st = return ((), st)
 
 closeDbHandle :: DbHandle -> IO ()
 closeDbHandle h = withDbState h go
   where
-	go (DbOpen qh) = do
+	go (DbOpen (qh, _)) = do
 		H.closeDbQueue qh
 		return ((), DbClosed)
 	go st = return ((), st)

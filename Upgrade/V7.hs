@@ -16,6 +16,7 @@ import Types.Upgrade
 import Annex.CatFile
 import qualified Database.Keys
 import qualified Database.Keys.SQL
+import Database.Keys.Tables
 import qualified Git.LsFiles as LsFiles
 import qualified Git
 import Git.FilePath
@@ -114,8 +115,9 @@ populateKeysDb = unlessM isBareRepo $ do
 				Nothing -> noop
 				Just k -> do
 					topf <- inRepo $ toTopFilePath $ toRawFilePath f
-					Database.Keys.runWriter $ \h -> liftIO $ do
+					Database.Keys.runWriter AssociatedTable $ \h -> liftIO $
 						Database.Keys.SQL.addAssociatedFile k topf h
+					Database.Keys.runWriter ContentTable $ \h -> liftIO $
 						Database.Keys.SQL.addInodeCaches k [ic] h
 	liftIO $ void cleanup
 	Database.Keys.closeDb

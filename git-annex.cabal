@@ -830,6 +830,7 @@ Executable git-annex
     Database.Init
     Database.Keys
     Database.Keys.Handle
+    Database.Keys.Tables
     Database.Keys.SQL
     Database.Queue
     Database.Types

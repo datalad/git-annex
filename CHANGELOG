@@ -1,5 +1,7 @@
 git-annex (10.20221004) UNRELEASED; urgency=medium
 
+  * Doubled the speed of git-annex drop when operating on many files,
+    and of git-annex get when operating on many tiny files.
   * trust, untrust, semitrust, dead: Fix behavior when provided with
     multiple repositories to operate on.
   * trust, untrust, semitrust, dead: When provided with no parameters,

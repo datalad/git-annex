@@ -53,15 +53,6 @@ whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 ifAnnexed :: RawFilePath -> (Key -> Annex a) -> Annex a -> Annex a
 ifAnnexed file yes no = maybe no yes =<< lookupKey file
 
-{- Find all annexed files and update the keys database for them.
- - 
- - Normally the keys database is updated incrementally when it's being
- - opened, and changes are noticed. Calling this explicitly allows
- - running the update at an earlier point.
- -
- - All that needs to be done is to open the database,
- - that will result in Database.Keys.reconcileStaged
- - running, and doing the work.
- -}
+{- Find all annexed files and update the keys database for them. -}
 scanAnnexedFiles :: Annex ()
-scanAnnexedFiles = Database.Keys.runWriter (const noop)
+scanAnnexedFiles = Database.Keys.updateDatabase
