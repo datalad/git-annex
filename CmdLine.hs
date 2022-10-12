@@ -63,7 +63,7 @@ dispatch' subcommandname args fuzzy cmds allargs allcmds fields getgitrepo progn
 			prepRunCommand cmd annexsetter
 			startup
 			performCommandAction True cmd seek $
-				shutdown $ cmdnocommit cmd
+				quiesce $ cmdnocommit cmd
 	go (Left norepo) = do
 		let ingitrepo = \a -> a =<< Git.Config.global
 		-- Parse command line with full cmdparser first,

@@ -17,6 +17,7 @@ import Utility.AuthToken
 import Annex.UUID
 import P2P.Address
 import P2P.Auth
+import Annex.Action
 
 run :: [String] -> IO ()
 run (_remotename:address:[]) = forever $
@@ -59,6 +60,8 @@ connectService address port service = do
 		g <- Annex.gitRepo
 		conn <- liftIO $ connectPeer g (TorAnnex address port)
 		runst <- liftIO $ mkRunState Client
-		liftIO $ runNetProto runst conn $ auth myuuid authtoken noop >>= \case
+		r <- liftIO $ runNetProto runst conn $ auth myuuid authtoken noop >>= \case
 			Just _theiruuid -> connect service stdin stdout
 			Nothing -> giveup $ "authentication failed, perhaps you need to set " ++ p2pAuthTokenEnv
+		quiesce False
+		return r

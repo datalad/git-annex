@@ -718,7 +718,7 @@ listKeys' keyloc want = do
 saveState :: Bool -> Annex ()
 saveState nocommit = doSideAction $ do
 	Annex.Queue.flush
-	Database.Keys.closeDb
+	Database.Keys.flushDb
 	unless nocommit $
 		whenM (annexAlwaysCommit <$> Annex.getGitConfig) $
 			Annex.Branch.commit =<< Annex.Branch.commitMessage

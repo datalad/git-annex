@@ -30,6 +30,7 @@ import qualified Annex
 import Config.Files.AutoStart
 import Upgrade
 import Annex.Version
+import Annex.Action
 import Utility.Android
 
 import Control.Concurrent
@@ -126,8 +127,10 @@ startNoRepo o = go =<< liftIO (filterM doesDirectoryExist =<< readAutoStartFile)
 			Right state -> void $ Annex.eval state $ do
 				whenM (fromRepo Git.repoIsLocalBare) $
 					giveup $ d ++ " is a bare git repository, cannot run the webapp in it"
-				callCommandAction $
+				r <- callCommandAction $
 					start' False o
+				quiesce False
+				return r
 
 cannotStartIn :: FilePath -> String -> IO ()
 cannotStartIn d reason = warningIO $ "unable to start webapp in repository " ++ d ++ ": " ++ reason

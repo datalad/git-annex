@@ -1,6 +1,6 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@
 module Database.Keys (
 	DbHandle,
 	closeDb,
+	flushDb,
 	addAssociatedFile,
 	getAssociatedFiles,
 	getAssociatedFilesIncluding,
@@ -143,13 +144,15 @@ openDb forwrite _ = do
 
 {- Closes the database if it was open. Any writes will be flushed to it.
  -
- - This does not normally need to be called; the database will auto-close
- - when the handle is garbage collected. However, this can be used to
- - force a re-read of the database, in case another process has written
- - data to it.
+ - This does not prevent further use of the database; it will be re-opened
+ - as necessary.
  -}
 closeDb :: Annex ()
 closeDb = liftIO . closeDbHandle =<< Annex.getRead Annex.keysdbhandle
+
+{- Flushes any queued writes to the database. -}
+flushDb :: Annex ()
+flushDb = liftIO . flushDbQueue =<< Annex.getRead Annex.keysdbhandle
 
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
 addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile k f

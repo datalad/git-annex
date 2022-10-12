@@ -355,7 +355,8 @@ tryGitConfigRead autoinit r hasuuid
 					":"  ++ show e
 			Annex.getState Annex.repo
 		s <- newLocal r
-		liftIO $ Annex.eval s $ check `finally` stopCoProcesses
+		liftIO $ Annex.eval s $ check
+			`finally` quiesce True
 		
 	failedreadlocalconfig = do
 		unless hasuuid $ case Git.remoteName r of
@@ -449,7 +450,6 @@ dropKey' repo r st@(State connpool duc _ _ _) key
 					Annex.Content.lockContentForRemoval key cleanup $ \lock -> do
 						Annex.Content.removeAnnex lock
 						cleanup
-					Annex.Content.saveState True
 		, giveup "remote does not have expected annex.uuid value"
 		)
 	| Git.repoIsHttp repo = giveup "dropping from http remote not supported"
@@ -577,11 +577,9 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 				let checksuccess = liftIO checkio >>= \case
 					Just err -> giveup err
 					Nothing -> return True
-				res <- logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file $ \dest ->
+				logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key bwlimit $ \_ p' -> 
 						copier object (fromRawFilePath dest) key p' checksuccess verify
-				Annex.Content.saveState True
-				return res
 			)
 		unless res $
 			giveup "failed to send content to remote"
@@ -606,7 +604,7 @@ repairRemote r a = return $ do
 	Annex.eval s $ do
 		Annex.BranchState.disableUpdate
 		ensureInitialized (pure [])
-		a `finally` stopCoProcesses
+		a `finally` quiesce True
 
 data LocalRemoteAnnex = LocalRemoteAnnex Git.Repo (MVar [(Annex.AnnexState, Annex.AnnexRead)])
 
@@ -618,8 +616,8 @@ mkLocalRemoteAnnex repo = LocalRemoteAnnex repo <$> liftIO (newMVar [])
 {- Runs an action from the perspective of a local remote.
  -
  - The AnnexState is cached for speed and to avoid resource leaks.
- - However, coprocesses are stopped after each call to avoid git
- - processes hanging around on removable media.
+ - However, it is quiesced after each call to avoid git processes
+ - hanging around on removable media.
  -
  - The remote will be automatically initialized/upgraded first,
  - when possible.
@@ -655,7 +653,7 @@ onLocal' (LocalRemoteAnnex repo mv) a = liftIO (takeMVar mv) >>= \case
 	go ((st, rd), a') = do
 		curro <- Annex.getState Annex.output
 		let act = Annex.run (st { Annex.output = curro }, rd) $
-			a' `finally` stopCoProcesses
+			a' `finally` quiesce True
 		(ret, (st', _rd)) <- liftIO $ act `onException` cache (st, rd)
 		liftIO $ cache (st', rd)
 		return ret
