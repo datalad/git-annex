@@ -3,7 +3,7 @@ The following steps are tested on Windows 10 21h1 with Ubuntu 20 and are designe
 ** Limitations **
 
 * The repository must be created with `annex.tune.objecthashlower=true`.
-* `git annex adjust --unlock` will not work. Unlocked files will work most of the time. Avoid `annex.addunlocked=true` because it is likely to not work.
+* `git annex adjust --unlock` will not work. Avoid `annex.addunlocked=true` and do not add multiple unlocked files to the index.
 
 **Setup**
 
@@ -13,7 +13,7 @@ The following steps are tested on Windows 10 21h1 with Ubuntu 20 and are designe
     * `git config annex.sshcaching false`
     * `git annex init`
     * git-annex should not detect the filesystem as crippled but now set `git config annex.crippledfilesystem true`
-* Safety of locked files will require these settings and scripts and the patch below.
+* Safety of locked files will require these settings and scripts.
     * `git config annex.freezecontent-command 'wsl-freezecontent %path'`
     * `git config annex.thawcontent-command 'wsl-thawcontent %path'`
 
@@ -71,8 +71,123 @@ fi
 
 ** Patches **
 
+These patches may introduce problems when there are multiple independent processes writing to the repository. Use at your own risk.
+
 <details>
-<summary>This patch allows `git annex fix` on a crippled file system.</summary>
+<summary>Create symlink to annexed objects in-place. The add, addunused, lock, and rekey commands will create symlinks in-place instead of in a temporary directory.</summary>
+
+```
+From d871289d22d2e86cb62776841343baf6c0f83484 Mon Sep 17 00:00:00 2001
+From: Reiko Asakura <asakurareiko@protonmail.ch>
+Date: Wed, 12 Oct 2022 17:13:55 -0400
+Subject: [PATCH 2/3] Create symlink to annexed objects in-place
+
+---
+ Annex/Ingest.hs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Annex/Ingest.hs b/Annex/Ingest.hs
+index 89dc8acea..ec35fb15d 100644
+--- a/Annex/Ingest.hs
++++ b/Annex/Ingest.hs
+@@ -301,7 +301,7 @@ restoreFile file key e = do
+ makeLink :: RawFilePath -> Key -> Maybe InodeCache -> Annex LinkTarget
+ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
+ 	l <- calcRepo $ gitAnnexLink file key
+-	replaceWorkTreeFile file' $ makeAnnexLink l . toRawFilePath
++	makeAnnexLink l file
+ 
+ 	-- touch symlink to have same time as the original file,
+ 	-- as provided in the InodeCache
+-- 
+2.30.2
+
+```
+</details>
+
+<details>
+<summary>Recreate symlinks after remote transfer. The copy, move, get, sync commands will recreate the symlink after transferring the file from a remote.</summary>
+
+```
+From 82ea0ffb02fbc5e4003a466a216c8d1030b7d70a Mon Sep 17 00:00:00 2001
+From: Reiko Asakura <asakurareiko@protonmail.ch>
+Date: Wed, 12 Oct 2022 19:10:07 -0400
+Subject: [PATCH 3/3] Recreate symlinks after remote transfer
+
+---
+ Annex/Link.hs   | 7 +++++++
+ Command/Get.hs  | 3 ++-
+ Command/Move.hs | 3 ++-
+ 3 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/Annex/Link.hs b/Annex/Link.hs
+index 1a344d07e..e0f172d1d 100644
+--- a/Annex/Link.hs
++++ b/Annex/Link.hs
+@@ -96,6 +96,13 @@ getAnnexLinkTarget' file coresymlinks = if coresymlinks
+ 					then mempty
+ 					else s
+ 
++relinkAssociatedFile :: AssociatedFile -> Bool -> Annex ()
++relinkAssociatedFile (AssociatedFile (Just file)) True =
++	getAnnexLinkTarget file >>= \case
++		Just target -> makeAnnexLink target file
++		_ -> noop
++relinkAssociatedFile _ _ = noop
++
+ makeAnnexLink :: LinkTarget -> RawFilePath -> Annex ()
+ makeAnnexLink = makeGitLink
+ 
+diff --git a/Command/Get.hs b/Command/Get.hs
+index a25fd8bf1..e16362f79 100644
+--- a/Command/Get.hs
++++ b/Command/Get.hs
+@@ -12,6 +12,7 @@ import qualified Remote
+ import Annex.Transfer
+ import Annex.NumCopies
+ import Annex.Wanted
++import Annex.Link
+ import qualified Command.Move
+ 
+ cmd :: Command
+@@ -95,7 +96,7 @@ getKey' key afile = dispatch
+ 		showNote "not available"
+ 		showlocs []
+ 		return False
+-	dispatch remotes = notifyTransfer Download afile $ \witness -> do
++	dispatch remotes = observe (relinkAssociatedFile afile) $ notifyTransfer Download afile $ \witness -> do
+ 		ok <- pickRemote remotes $ \r -> ifM (probablyPresent r)
+ 			( docopy r witness
+ 			, return False
+diff --git a/Command/Move.hs b/Command/Move.hs
+index 55fed5c37..d733a7cbb 100644
+--- a/Command/Move.hs
++++ b/Command/Move.hs
+@@ -20,6 +20,7 @@ import Logs.Presence
+ import Logs.Trust
+ import Logs.File
+ import Annex.NumCopies
++import Annex.Link
+ 
+ import qualified Data.ByteString.Char8 as B8
+ import qualified Data.ByteString.Lazy as L
+@@ -241,7 +242,7 @@ fromPerform src removewhen key afile = do
+ 			then dispatch removewhen deststartedwithcopy True
+ 			else dispatch removewhen deststartedwithcopy =<< get
+   where
+-	get = notifyTransfer Download afile $
++	get = observe (relinkAssociatedFile afile) $ notifyTransfer Download afile $
+ 		download src key afile stdRetry
+ 	
+ 	dispatch _ deststartedwithcopy False = do
+-- 
+2.30.2
+
+```
+</details>
+
+<details>
+<summary>Allow git-annex fix on crippled filesystem</summary>
 
 ```
 From 65fe6e362dfbf2f54c8da5ca17c59af26de5ff83 Mon Sep 17 00:00:00 2001
@@ -105,7 +220,7 @@ index 39853c894..2d66c1461 100644
 
 ** Usage tips **
 
-* WSL1 will not create symlinks that work in Windows if created before the target file exists, such as after `git annex add` or `git annex get`. This can be fixed by recreating them with any method, such as delete them and `git checkout`.
+* WSL1 will not create symlinks that work in Windows if created before the target file exists. This can be fixed by recreating them with any method, such as delete them and `git checkout`. Also see the above patches to make git-annex automatically recreate symlinks.
 
 <details>
 <summary>Sample script to recreate all symlinks under the current directory</summary>
@@ -129,10 +244,7 @@ do(pathlib.Path('.'))
 ```
 </details>
 
-* Sometimes there will SQLite errors using multiple jobs but retrying will work most of the time.
-
 ** Related bugs **
 
 * [[bugs/WSL_adjusted_braches__58___smudge_fails_with_sqlite_thread_crashed_-_locking_protocol]]
 * [[bugs/WSL1__58___git-annex-add_fails_in_DrvFs_filesystem]]
-* [[bugs/problems_with_SSH_and_relative_paths]]
