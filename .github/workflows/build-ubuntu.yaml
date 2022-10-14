@@ -32,7 +32,7 @@ jobs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -127,7 +127,7 @@ jobs:
         if: "!contains(env.DEB_BUILD_OPTIONS, 'nocheck')"
 
       - name: Upload packages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: git-annex-debianstandalone-packages_${{ steps.build-version.outputs.version }}
           path: |
@@ -136,7 +136,7 @@ jobs:
 
       - name: Clone datalad/git-annex-ci-client-jobs
         if: github.event_name == 'schedule'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: datalad/git-annex-ci-client-jobs
           fetch-depth: 1
@@ -210,7 +210,7 @@ jobs:
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
-        uses: dawidd6/action-send-mail@v2
+        uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -234,7 +234,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -248,7 +248,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: git-annex-debianstandalone-packages_${{ needs.build-package.outputs.build-version }}
 
@@ -332,7 +332,7 @@ jobs:
 
       - name: Send e-mail on failed scheduled run
         if: "failure() && github.event_name == 'schedule'"
-        uses: dawidd6/action-send-mail@v2
+        uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
           server_port: ${{ secrets.NOTIFY_SMTP_PORT }}
@@ -351,7 +351,7 @@ jobs:
     needs: build-package
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -365,7 +365,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: git-annex-debianstandalone-packages_${{ needs.build-package.outputs.build-version }}
 
@@ -405,7 +405,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -419,7 +419,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: git-annex-debianstandalone-packages_${{ needs.build-package.outputs.build-version }}
 
@@ -442,7 +442,7 @@ jobs:
           git config --global user.name "GitHub Almighty"
 
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
 
@@ -465,7 +465,7 @@ jobs:
 
       # needed for ssh certs under ubuntu and tox.ini everywhere
       - name: Checkout datalad
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: datalad/datalad
           path: datalad
