@@ -1,0 +1,22 @@
+Hi,
+
+I've setup a remote on Github with LFS enabled. Running `git-annex sync --content` failed to push on the main branch :
+```
+pull lfstest 
+From github.com:myuser/myremote
+ * branch            HEAD       -> FETCH_HEAD
+ok
+push lfstest 
+Everything up-to-date
+To github.com:myuser/myremote.git
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'github.com:myuser/myremote.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+ok
+```
+Is this an expected behaviour ? Is it possible to correct the push failure ?
+
+Thans in advance
