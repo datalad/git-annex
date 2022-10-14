@@ -1,6 +1,7 @@
 Hi,
 
 I've setup a remote on Github with LFS enabled. Running `git-annex sync --content` failed to push on the main branch :
+
 ```
 pull lfstest 
 From github.com:myuser/myremote
@@ -19,4 +20,4 @@ ok
 ```
 Is this an expected behaviour ? Is it possible to correct the push failure ?
 
-Thans in advance
+Thansk in advance
