@@ -12,6 +12,7 @@ git-annex (10.20221004) UNRELEASED; urgency=medium
     by only asking for files under the prefix.
   * When importing from versioned remotes, fix tracking of the content
     of deleted files.
+  * More robust handling of ErrorBusy when writing to sqlite databases.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Oct 2022 13:36:42 -0400
 

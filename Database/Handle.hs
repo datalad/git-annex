@@ -82,22 +82,20 @@ queryDb (DbHandle _ jobs) a = do
 
 {- Writes a change to the database.
  -
- - Writes can fail if another write is happening concurrently.
- - So write failures are caught and retried repeatedly for up to 10
- - seconds, which should avoid all but the most exceptional problems.
+ - Writes can fail when another write is happening concurrently.
+ - So write failures are caught and retried repeatedly.
  -}
 commitDb :: DbHandle -> SqlPersistM () -> IO ()
-commitDb h wa = robustly Nothing 100 (commitDb' h wa)
+commitDb h wa = robustly (commitDb' h wa)
   where
-	robustly :: Maybe SomeException -> Int -> IO (Either SomeException ()) -> IO ()
-	robustly e 0 _ = error $ "failed to commit changes to sqlite database: " ++ show e
-	robustly _ n a = do
+	robustly :: IO (Either SomeException ()) -> IO ()
+	robustly a = do
 		r <- a
 		case r of
 			Right _ -> return ()
-			Left e -> do
+			Left _ -> do
 				threadDelay 100000 -- 1/10th second
-				robustly (Just e) (n-1) a
+				robustly a
 
 commitDb' :: DbHandle -> SqlPersistM () -> IO (Either SomeException ())
 commitDb' (DbHandle _ jobs) a = do
