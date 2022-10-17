@@ -148,8 +148,8 @@ workerThread db tablename jobs = newconn
 -- Like runSqlite, but more robust.
 --
 -- New database connections can sometimes take a while to become usable.
--- This may be due to WAL mode recovering after a crash, or perhaps a bug
--- like described in blob 500f777a6ab6c45ca5f9790e0a63575f8e3cb88f.
+-- This may be due to WAL mode recovering after a crash, or perhaps a
+-- situation like described in blob 500f777a6ab6c45ca5f9790e0a63575f8e3cb88f.
 -- So, loop until a select succeeds; once one succeeds the connection will
 -- stay usable.
 --
