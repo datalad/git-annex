@@ -13,6 +13,8 @@ git-annex (10.20221004) UNRELEASED; urgency=medium
   * When importing from versioned remotes, fix tracking of the content
     of deleted files.
   * More robust handling of ErrorBusy when writing to sqlite databases.
+  * Avoid hanging when a suspended git-annex process is keeping a sqlite
+    database locked.
 
  -- Joey Hess <id@joeyh.name>  Mon, 03 Oct 2022 13:36:42 -0400
 

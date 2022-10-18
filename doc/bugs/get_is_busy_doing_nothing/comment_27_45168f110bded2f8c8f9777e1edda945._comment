@@ -3,34 +3,11 @@
  subject="""comment 27"""
  date="2022-10-17T18:49:47Z"
  content="""
-[[todo/withExclusiveLock_blocking_issue]] does not have to be solved for
-every other lock in git-annex first. Since the sqlite database lock would
-be a new lock file, it could use the mtime update method described in there
-without backwards compatibility issues.
+I've made it retry as long as necessary on ErrorBusy, while also noticing
+when another process is suspended and has the sqlite database locked,
+and avoiding retrying forever in that situation.
 
-ErrorBusy can also occur when opening a new database connection for read,
-but it retries that as often as necessary. Which does mean that suspending
-git-annex at just the wrong time can already cause other git-annex
-processes to stall forever waiting to read from the database. 
-
-So, in a way, it would be ok for write to also retry each time it gets
-ErrorBusy, rather than the current limited number of retries. If that does
-cause git-annex to block when another git-annex process is suspended, it
-would not be a new behavior.
-
-Also, the mtime file method described in
-[[todo/withExclusiveLock_blocking_issue]] could be used without a lock file
-in order to detect when a suspended process is causing ErrorBusy. And can
-avoid that situation for both writes and reads.
-
-So, plan: 
-
-1. Retry forever on ErrorBusy when writing to sqlite database.
-   (I've made this change now... So I think probably this bug can't
-   occur any longer.)
-2. While running opensettle and ChangeJob, have a background thread that 
-   periodically updates a mtime file.
-3. If ErrorBusy is received repeatedly for some amount of time,
-   check the mtime file. If it's not being updated, give up, since
-   a suspended git-annex process apparently has the sqlite database locked.
+This seems to be as far as I can take this bug report, I don't know
+100% for sure if I've fixed it, but git-annex's behavior should certainly
+be improved.
 """]]
