@@ -9,6 +9,7 @@ RUN echo 'Acquire::http::Dl-Limit "1000";' >| /etc/apt/apt.conf.d/20snapshots \
     && echo 'Acquire::Retries "5";' >> /etc/apt/apt.conf.d/20snapshots
 
 RUN set -ex; \
+    apt update; apt install neurodebian-freeze; \
     nd_freeze 20220327; \
     sed -i -e 's,^#deb-src,deb-src,g' /etc/apt/sources.list.d/neurodebian.sources.list; \
     apt-get update -qq; \
