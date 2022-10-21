@@ -29,7 +29,7 @@ do
     # applied in reverse
     if git apply -R --check "$patchfile"
     then
-        if [ "x$event" = "xpull_request" ]
+        if [ "$event" = "pull_request" ]
         then echo "[ERROR] $patchfile is already applied upstream."
              exit 1
         fi
@@ -54,7 +54,7 @@ do
     elif git apply "$patchfile"
     then echo "[INFO] Patch applied cleanly"
     else
-        if [ "x$event" = "xpull_request" ]
+        if [ "$event" = "pull_request" ]
         then echo "[ERROR] $patchfile failed to apply."
              exit 1
         fi
