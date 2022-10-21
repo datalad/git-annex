@@ -10,6 +10,7 @@ function api_query {
 }
 
 patches_dir="$1"
+event="$2"
 
 if [ ! -d "$patches_dir" ]
 then
@@ -28,6 +29,10 @@ do
     # applied in reverse
     if git apply -R --check "$patchfile"
     then
+        if [ "$event" = "pull_request" ]
+        then echo "[ERROR] $patchfile is already applied upstream."
+             exit 1
+        fi
         echo "[INFO] $patchfile is already applied.  Creating PR to remove."
         branch_name="rmpatch/$(basename "$patchfile" .patch)"
         if api_query "/repos/$GITHUB_REPOSITORY/branches/$branch_name" > /dev/null
@@ -49,7 +54,11 @@ do
     elif git apply "$patchfile"
     then echo "[INFO] Patch applied cleanly"
     else
-        echo "[ERROR] Patch failed to apply; creating issue"
+        if [ "$event" = "pull_request" ]
+        then echo "[ERROR] $patchfile failed to apply."
+             exit 1
+        fi
+        echo "[ERROR] $patchfile failed to apply; creating issue"
         issue_title="Patch $(basename "$patchfile") fails to apply"
         if api_query "/repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100&sort=created&direction=desc" | jq -e --arg title "$issue_title" 'any(.[].title; . == $title)'
         then
