@@ -74,7 +74,8 @@ jobs:
           echo "version=${version}_$arch" >> "$GITHUB_OUTPUT"
 
       - name: Apply local patches
-        run: .github/workflows/tools/apply-patches patches
+        run: |
+          .github/workflows/tools/apply-patches patches ${{ github.event_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
