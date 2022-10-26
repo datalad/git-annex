@@ -1,6 +1,6 @@
 {- git-annex program path
  -
- - Copyright 2013-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ module Annex.Path (
 	gitAnnexChildProcess,
 	gitAnnexChildProcessParams,
 	gitAnnexDaemonizeParams,
+	cleanStandaloneEnvironment,
 ) where
 
 import Annex.Common
@@ -19,7 +20,7 @@ import Utility.Env
 import Annex.PidLock
 import qualified Annex
 
-import System.Environment (getExecutablePath, getArgs)
+import System.Environment (getExecutablePath, getArgs, getProgName)
 
 {- A fully qualified path to the currently running git-annex program.
  - 
@@ -29,13 +30,16 @@ import System.Environment (getExecutablePath, getArgs)
  - or searching for the command name in PATH.
  -
  - The standalone build runs git-annex via ld.so, and defeats
- - getExecutablePath. It sets GIT_ANNEX_PROGRAMPATH to the correct path
- - to the wrapper script to use.
+ - getExecutablePath. It sets GIT_ANNEX_DIR to the location of the
+ - standalone build directory, and there are wrapper scripts for git-annex
+ - and git-annex-shell in that directory.
  -}
 programPath :: IO FilePath
-programPath = go =<< getEnv "GIT_ANNEX_PROGRAMPATH"
+programPath = go =<< getEnv "GIT_ANNEX_DIR"
   where
-	go (Just p) = return p
+	go (Just dir) = do
+		name <- getProgName
+		return (dir </> name)
 	go Nothing = do
 		exe <- getExecutablePath
 		p <- if isAbsolute exe
@@ -97,3 +101,25 @@ gitAnnexDaemonizeParams = do
 	-- Get every parameter git-annex was run with.
 	ps <- liftIO getArgs
 	return (map Param ps ++ cps)
+
+{- Returns a cleaned up environment that lacks path and other settings
+ - used to make the standalone builds use their bundled libraries and programs.
+ - Useful when calling programs not included in the standalone builds.
+ -
+ - For a non-standalone build, returns Nothing.
+ -}
+cleanStandaloneEnvironment :: IO (Maybe [(String, String)])
+cleanStandaloneEnvironment = clean <$> getEnvironment
+  where
+	clean environ
+		| null vars = Nothing
+		| otherwise = Just $ catMaybes $ map (restoreorig environ) environ
+	  where
+		vars = words $ fromMaybe "" $
+			lookup "GIT_ANNEX_STANDLONE_ENV" environ
+		restoreorig oldenviron p@(k, _v)
+			| k `elem` vars = case lookup ("ORIG_" ++ k) oldenviron of
+				(Just v')
+					| not (null v') -> Just (k, v')
+				_ -> Nothing
+			| otherwise = Just p

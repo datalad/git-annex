@@ -22,6 +22,7 @@ import Utility.WebApp
 import Utility.Daemon (checkDaemon)
 import Utility.UserInfo
 import Annex.Init
+import Annex.Path
 import qualified Git
 import Git.Types (fromConfigValue)
 import qualified Git.Config
@@ -222,7 +223,7 @@ openBrowser' mcmd htmlshim realurl outh errh =
 #endif
 		hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
 		hFlush stdout
-		environ <- cleanEnvironment
+		environ <- cleanStandaloneEnvironment
 		let p' = p
 			{ env = environ
 			, std_out = maybe Inherit UseHandle outh

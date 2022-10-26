@@ -171,25 +171,3 @@ installFileManagerHooks program = unlessM osAndroid $ do
 #else
 installFileManagerHooks _ = noop
 #endif
-
-{- Returns a cleaned up environment that lacks settings used to make the
- - standalone builds use their bundled libraries and programs.
- - Useful when calling programs not included in the standalone builds.
- -
- - For a non-standalone build, returns Nothing.
- -}
-cleanEnvironment :: IO (Maybe [(String, String)])
-cleanEnvironment = clean <$> getEnvironment
-  where
-	clean environ
-		| null vars = Nothing
-		| otherwise = Just $ catMaybes $ map (restoreorig environ) environ
-	  where
-		vars = words $ fromMaybe "" $
-			lookup "GIT_ANNEX_STANDLONE_ENV" environ
-		restoreorig oldenviron p@(k, _v)
-			| k `elem` vars = case lookup ("ORIG_" ++ k) oldenviron of
-				(Just v')
-					| not (null v') -> Just (k, v')
-				_ -> Nothing
-			| otherwise = Just p
