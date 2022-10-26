@@ -35,3 +35,5 @@ git-annex 10.20221003, provided by datalad/git-annex, on Microsoft Windows Serve
 This affects a hobby project of mine – "gamdam", implemented in [Python](https://github.com/jwodder/gamdam) and [Rust](https://github.com/jwodder/gamdam-rust) — that interacts with git-annex.
 
 [[!meta author=jwodder]]
+
+> [[fixed|done]], see my comments --[[Joey]]

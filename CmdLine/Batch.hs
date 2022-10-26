@@ -186,7 +186,7 @@ batchAnnexed fmt seeker keyaction = do
 	matcher <- getMatcher
 	batchFilesKeys fmt $ \(si, v) ->
 		case v of
-			Right f -> lookupKey f >>= \case
+			Right f -> lookupKeyStaged f >>= \case
 				Nothing -> return Nothing
 				Just k -> checkpresent k $
 					startAction seeker si f k

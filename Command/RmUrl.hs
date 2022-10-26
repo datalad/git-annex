@@ -47,7 +47,7 @@ batchParser s = case separate (== ' ') (reverse s) of
 			return $ Right (f', reverse ru)
 
 start :: (SeekInput, (FilePath, URLString)) -> CommandStart
-start (si, (file, url)) = lookupKey file' >>= \case
+start (si, (file, url)) = lookupKeyStaged file' >>= \case
 	Nothing -> stop
 	Just key -> do
 		let ai = mkActionItem (key, AssociatedFile (Just file'))

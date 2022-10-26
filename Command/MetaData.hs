@@ -155,7 +155,7 @@ parseJSONInput i = case eitherDecode (BU.fromString i) of
 startBatch :: (SeekInput, (Either RawFilePath Key, MetaData)) -> CommandStart
 startBatch (si, (i, (MetaData m))) = case i of
 	Left f -> do
-		mk <- lookupKey f
+		mk <- lookupKeyStaged f
 		case mk of
 			Just k -> go k (mkActionItem (k, AssociatedFile (Just f)))
 			Nothing -> return Nothing
