@@ -18,6 +18,7 @@ import qualified Database.Keys
 import Annex.Content
 import Annex.Init
 import Annex.CheckIgnore
+import Annex.WorkTree
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
 
@@ -50,13 +51,17 @@ seek ps = do
 	l <- workTreeItems ww ps
 	withFilesNotInGit
 		(CheckGitIgnore False)
-		WarnUnmatchWorkTreeItems 
-		(\(_, f) -> commandAction $ whenAnnexed (startCheckIncomplete . fromRawFilePath) f)
+		WarnUnmatchWorkTreeItems
+		checksymlinks
 		l
 	withFilesInGitAnnex ww (Command.Unannex.seeker True) l
 	finish
   where
 	ww = WarnUnmatchLsFiles
+	checksymlinks (_, f) = 
+		commandAction $ lookupKey f >>= \case
+			Nothing -> stop
+			Just k -> startCheckIncomplete (fromRawFilePath f) k
 
 {- git annex symlinks that are not checked into git could be left by an
  - interrupted add. -}

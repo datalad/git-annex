@@ -16,6 +16,7 @@ import Annex.Perms
 import Annex.ReplaceFile
 import Logs.Location
 import Annex.InodeSentinal
+import Annex.WorkTree
 import Utility.InodeCache
 import qualified Utility.RawFilePath as R
 
@@ -61,7 +62,9 @@ seek o = case batchOption o of
 		(toRawFilePath file, fromMaybe (giveup "bad key") (deserializeKey skey))
 
 start :: SeekInput -> (RawFilePath, Key) -> CommandStart
-start si (file, newkey) = ifAnnexed file go stop
+start si (file, newkey) = lookupKey file >>= \case
+	Just k -> go k
+	Nothing -> stop
   where
 	go oldkey
 		| oldkey == newkey = stop

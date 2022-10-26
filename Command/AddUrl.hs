@@ -20,6 +20,7 @@ import Annex.Ingest
 import Annex.CheckIgnore
 import Annex.Perms
 import Annex.UUID
+import Annex.WorkTree
 import Annex.YoutubeDl
 import Annex.UntrustedFilePath
 import Logs.Web
@@ -183,7 +184,9 @@ startRemote addunlockedmatcher r o si file uri sz = do
 		performRemote addunlockedmatcher r o uri (toRawFilePath file') sz
 
 performRemote :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> URLString -> RawFilePath -> Maybe Integer -> CommandPerform
-performRemote addunlockedmatcher r o uri file sz = ifAnnexed file adduri geturi
+performRemote addunlockedmatcher r o uri file sz = lookupKey file >>= \case
+	Just k -> adduri k
+	Nothing -> geturi
   where
 	loguri = setDownloader uri OtherDownloader
 	adduri = addUrlChecked o loguri file (Remote.uuid r) checkexistssize
@@ -270,7 +273,9 @@ checkPreserveFileNameSecurity f = do
 			]
 
 performWeb :: AddUnlockedMatcher -> AddUrlOptions -> URLString -> RawFilePath -> Url.UrlInfo -> CommandPerform
-performWeb addunlockedmatcher o url file urlinfo = ifAnnexed file addurl geturl
+performWeb addunlockedmatcher o url file urlinfo = lookupKey file >>= \case
+	Just k -> addurl k
+	Nothing -> geturl
   where
 	geturl = next $ isJust <$> addUrlFile addunlockedmatcher (downloadOptions o) url urlinfo file
 	addurl = addUrlChecked o url file webUUID $ \k ->
@@ -335,9 +340,9 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	tryyoutubedl tmp = youtubeDlFileNameHtmlOnly url >>= \case
 		Right mediafile -> 
 			let f = youtubeDlDestFile o file (toRawFilePath mediafile)
-			in ifAnnexed f
-				(alreadyannexed (fromRawFilePath f))
-				(dl f)
+			in lookupKey f >>= \case
+				Just k -> alreadyannexed (fromRawFilePath f) k
+				Nothing -> dl f
 		Left err -> checkRaw (Just err) o Nothing (normalfinish tmp)
 	  where
 		dl dest = withTmpWorkDir mediakey $ \workdir -> do

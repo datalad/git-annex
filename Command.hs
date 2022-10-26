@@ -11,7 +11,6 @@ module Command (
 ) where
 
 import Annex.Common as ReExported
-import Annex.WorkTree as ReExported (whenAnnexed, ifAnnexed)
 import Types.Command as ReExported
 import Types.DeferredParse as ReExported
 import CmdLine.Seek as ReExported

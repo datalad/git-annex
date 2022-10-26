@@ -13,6 +13,7 @@ import Annex.Content
 import Backend
 import Types.KeySource
 import Utility.Metered
+import Annex.WorkTree
 import qualified Git
 
 cmd :: Command
@@ -45,9 +46,9 @@ startSrcDest :: [FilePath] -> CommandStart
 startSrcDest ps@(src:dest:[])
 	| src == dest = stop
 	| otherwise = notAnnexed src' $
-		ifAnnexed (toRawFilePath dest) 
-			go
-			(giveup $ src ++ " is not an annexed file")
+		lookupKey (toRawFilePath dest) >>= \case
+			Just k -> go k
+			Nothing -> giveup $ src ++ " is not an annexed file"
   where
 	src' = toRawFilePath src
 	go key = starting "reinject" ai si $
@@ -79,9 +80,9 @@ notAnnexed :: RawFilePath -> CommandStart -> CommandStart
 notAnnexed src a = 
 	ifM (fromRepo Git.repoIsLocalBare)
 		( a
-		, ifAnnexed src
-			(giveup $ "cannot used annexed file as src: " ++ fromRawFilePath src)
-			a
+		, lookupKey src >>= \case
+			Just _ -> giveup $ "cannot used annexed file as src: " ++ fromRawFilePath src
+			Nothing -> a
 		)
 
 perform :: RawFilePath -> Key -> CommandPerform
