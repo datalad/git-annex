@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-10-31T16:09:12Z"
+ content="""
+Indeed, you will need to use `git-annex sync --allow-unrelated-histories`
+now in that situation. I have updated the tip.
+"""]]

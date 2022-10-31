@@ -49,9 +49,11 @@ This should display something like:
 
 Once you are sure things went on okay, you can synchronise this with `marcos`:
 
-    git annex sync
+    git annex sync --allow-unrelated-histories
 
-This will push the metadata information to marcos, so it knows which files are available on `angela`. From there on, you can freely get and move files between the two repos!
+This will push the metadata information to marcos, so it knows which files
+are available on `angela`. From there on, you can freely get and move files
+between the two repos!
 
 Importing files from a third directory
 --------------------------------------
@@ -61,7 +63,7 @@ Say that some files on `angela` are actually spread out outside of the `~/mp3` d
     cd ~/mp3
     git annex import ~/music/
 
-(!) Be careful that `~/music` is not a git-annex repository, or this will [[destroy it!|bugs/git annex import destroys a fellow git annex repository]].
+(!) Be careful that `~/music` is not a git-annex repository.
 
 Deleting deleted files
 ----------------------
@@ -73,7 +75,3 @@ It is quite possible some files were removed (or renamed!) on `marcos` but not o
 This will show files that are on `angela` and not on `marcos`. They could be new files that were only added on `angela`, so be careful! A manual analysis is necessary, but let's say you are certain those files are not relevant anymore, you can delete them from `angela`:
 
     git annex drop <file>
-
-If the file is a renamed or modified version from the original, you may need to use `--force`, but be careful! If you delete the wrong file, it will be lost forever!
-
-> (!) Maybe this wouldn't happen with [[direct mode]] and an fsck? --[[anarcat]]
