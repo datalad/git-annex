@@ -24,7 +24,7 @@ import Annex.Content
 import Annex.WorkTree
 import Git.Command
 import qualified Utility.RawFilePath as R
-import Annex.Actions
+import Annex.Action
 
 import Data.Time.Clock
 import Data.Char
@@ -70,8 +70,9 @@ main = do
 	state <- Annex.new =<< Git.Construct.fromPath (toRawFilePath ".")
 	ood <- Annex.eval state $ do
 		buildrpms topdir updated
-		makeinfos updated version
+		is <- makeinfos updated version
 		quiesce False
+		return is
 	syncToArchiveOrg
 	unless (null ood) $
 		error $ "Some info files are out of date: " ++ show (map fst ood)
