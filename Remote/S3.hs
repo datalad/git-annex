@@ -415,19 +415,20 @@ storeHelper info h magic f object p = liftIO $ case partSize info of
  - that is difficult. -}
 retrieve :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> Retriever
 retrieve hv r rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
-	(Just h) -> 
+	Right h -> 
 		eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
 			Right loc -> retrieveHelper info h loc (fromRawFilePath f) p iv
-	Nothing ->
+	Left S3HandleNeedCreds ->
 		getPublicWebUrls' (uuid r) rs info c k >>= \case
 			Left failreason -> do
 				warning failreason
 				giveup "cannot download content"
 			Right us -> unlessM (withUrlOptions $ downloadUrl False k p iv us (fromRawFilePath f)) $
 				giveup "failed to download content"
+	Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
 
 retrieveHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Annex ()
 retrieveHelper info h loc f p iv = retrieveHelper' h f p iv $
@@ -462,12 +463,12 @@ lockContentS3 hv r rs c info
 
 checkKey :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> S3Info -> CheckPresent
 checkKey hv r rs c info k = withS3Handle hv $ \case
-	Just h -> eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
+	Right h -> eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
 		Left failreason -> do
 			warning failreason
 			giveup "cannot check content"
 		Right loc -> checkKeyHelper info h loc
-	Nothing ->
+	Left S3HandleNeedCreds ->
 		getPublicWebUrls' (uuid r) rs info c k >>= \case
 			Left failreason -> do
 				warning failreason
@@ -476,6 +477,7 @@ checkKey hv r rs c info k = withS3Handle hv $ \case
 				let check u = withUrlOptions $ 
 					Url.checkBoth u (fromKey keySize k)
 				anyM check us
+	Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
 
 checkKeyHelper :: S3Info -> S3Handle -> (Either S3.Object S3VersionID) -> Annex Bool
 checkKeyHelper info h loc = checkKeyHelper' info h o limit
@@ -498,8 +500,8 @@ storeExportS3 hv r rs info magic f k loc p = void $ storeExportS3' hv r rs info 
 
 storeExportS3' :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Maybe Magic -> FilePath -> Key -> ExportLocation -> MeterUpdate -> Annex (Maybe S3Etag, Maybe S3VersionID)
 storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
-	Just h -> go h
-	Nothing -> giveup $ needS3Creds (uuid r)
+	Right h -> go h
+	Left pr -> giveupS3HandleProblem pr (uuid r)
   where
 	go h = do
 		let o = T.pack $ bucketExportLocation info loc
@@ -510,45 +512,45 @@ storeExportS3' hv r rs info magic f k loc p = withS3Handle hv $ \case
 retrieveExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
 retrieveExportS3 hv r info k loc f p = verifyKeyContentIncrementally AlwaysVerify k $ \iv ->
 	withS3Handle hv $ \case
-		Just h -> retrieveHelper info h (Left (T.pack exportloc)) f p iv
-		Nothing -> case getPublicUrlMaker info of
+		Right h -> retrieveHelper info h (Left (T.pack exportloc)) f p iv
+		Left S3HandleNeedCreds -> case getPublicUrlMaker info of
 			Just geturl -> either giveup return =<<
 				Url.withUrlOptions
 					(Url.download' p iv (geturl exportloc) f)
 			Nothing -> giveup $ needS3Creds (uuid r)
+		Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
   where
 	exportloc = bucketExportLocation info loc
 
 removeExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> Annex ()
 removeExportS3 hv r rs info k loc = withS3Handle hv $ \case
-	Just h -> do
+	Right h -> do
 		checkVersioning info rs k
 		liftIO $ runResourceT $ do
 			S3.DeleteObjectResponse <- sendS3Handle h $
 				S3.DeleteObject (T.pack $ bucketExportLocation info loc) (bucket info)
 			return ()
-	Nothing -> giveup $ needS3Creds (uuid r)
+	Left p -> giveupS3HandleProblem p (uuid r)
   where
 
 checkPresentExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
 checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
-	Just h -> checkKeyHelper info h (Left (T.pack $ bucketExportLocation info loc))
-	Nothing -> case getPublicUrlMaker info of
+	Right h -> checkKeyHelper info h (Left (T.pack $ bucketExportLocation info loc))
+	Left S3HandleNeedCreds -> case getPublicUrlMaker info of
 		Just geturl -> withUrlOptions $
 			Url.checkBoth (geturl $ bucketExportLocation info loc) (fromKey keySize k)
-		Nothing -> do
-			warning $ needS3Creds (uuid r)
-			giveup "No S3 credentials configured"
+		Nothing -> giveupS3HandleProblem S3HandleNeedCreds (uuid r)
+	Left S3HandleAnonymousOldAws -> giveupS3HandleProblem S3HandleAnonymousOldAws (uuid r)
 
 -- S3 has no move primitive; copy and delete.
 renameExportS3 :: S3HandleVar -> Remote -> RemoteStateHandle -> S3Info -> Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
 renameExportS3 hv r rs info k src dest = Just <$> go
   where
 	go = withS3Handle hv $ \case
-		Just h -> do
+		Right h -> do
 			checkVersioning info rs k
 			go' h
-		Nothing -> giveup $ needS3Creds (uuid r)
+		Left p -> giveupS3HandleProblem p (uuid r)
 	
 	go' h = liftIO $ runResourceT $ do
 		let co = S3.copyObject (bucket info) dstobject
@@ -564,8 +566,8 @@ renameExportS3 hv r rs info k src dest = Just <$> go
 listImportableContentsS3 :: S3HandleVar -> Remote -> S3Info -> ParsedRemoteConfig -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
 listImportableContentsS3 hv r info c =
 	withS3Handle hv $ \case
-		Nothing -> giveup $ needS3Creds (uuid r)
-		Just h -> Just <$> go h
+		Right h -> Just <$> go h
+		Left p -> giveupS3HandleProblem p (uuid r)
   where
 	go h = do
 		ic <- liftIO $ runResourceT $ extractFromResourceT =<< startlist h
@@ -678,7 +680,7 @@ retrieveExportWithContentIdentifierS3 hv r rs info loc (cid:_) dest gk p =
 			return (k, v)
   where
 	go iv = withS3Handle hv $ \case
-		Just h -> do
+		Right h -> do
 			rewritePreconditionException $ retrieveHelper' h dest p iv $
 				limitGetToContentIdentifier cid $
 					S3.getObject (bucket info) o
@@ -690,7 +692,7 @@ retrieveExportWithContentIdentifierS3 hv r rs info loc (cid:_) dest gk p =
 						setS3VersionID info rs k vid
 				Left _ -> noop
 			return k
-		Nothing -> giveup $ needS3Creds (uuid r)
+		Left p -> giveupS3HandleProblem p (uuid r)
 	o = T.pack $ bucketExportLocation info loc
 retrieveExportWithContentIdentifierS3 _ _ _ _ _ [] _ _ _ = giveup "missing content identifier"
 
@@ -739,12 +741,9 @@ removeExportWithContentIdentifierS3 hv r rs info k loc _removeablecids =
 
 checkPresentExportWithContentIdentifierS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> [ContentIdentifier] -> Annex Bool
 checkPresentExportWithContentIdentifierS3 hv r info _k loc knowncids =
-	withS3Handle hv $ \case
-		Just h -> flip anyM knowncids $
+	withS3HandleOrFail (uuid r) hv $ \h ->
+		flip anyM knowncids $
 			checkKeyHelper' info h o . limitHeadToContentIdentifier
-		Nothing -> do
-			warning $ needS3Creds (uuid r)
-			giveup "No S3 credentials configured"
   where
 	o = T.pack $ bucketExportLocation info loc
 
@@ -854,27 +853,43 @@ sendS3Handle
 	-> ResourceT IO a
 sendS3Handle h r = AWS.pureAws (hawscfg h) (hs3cfg h) (hmanager h) r
 
-type S3HandleVar = TVar (Either (Annex (Maybe S3Handle)) (Maybe S3Handle))
+type S3HandleVar = TVar (Either (Annex (Either S3HandleProblem S3Handle)) (Either S3HandleProblem S3Handle))
+
+data S3HandleProblem
+	= S3HandleNeedCreds
+	| S3HandleAnonymousOldAws
+
+giveupS3HandleProblem :: S3HandleProblem -> UUID -> Annex a
+giveupS3HandleProblem S3HandleNeedCreds u = do
+	warning $ needS3Creds u
+	giveup "No S3 credentials configured"
+giveupS3HandleProblem S3HandleAnonymousOldAws _ =
+	giveup "This S3 special remote is configured with signature=anonymous, but git-annex is buit with too old a version of the aws library to support that."
 
 {- Prepares a S3Handle for later use. Does not connect to S3 or do anything
  - else expensive. -}
 mkS3HandleVar :: ParsedRemoteConfig -> RemoteGitConfig -> UUID -> Annex S3HandleVar
 mkS3HandleVar c gc u = liftIO $ newTVarIO $ Left $
 	if isAnonymous c
-		then go =<< liftIO AWS.anonymousCredentials
+		then 
+#if MIN_VERSION_aws(0,23,0)
+			go =<< liftIO AWS.anonymousCredentials
+#else
+			return (Left S3HandleAnonymousOldAws)
+#endif
 		else do
 			mcreds <- getRemoteCredPair c gc (AWS.creds u)
 			case mcreds of
 				Just creds -> go =<< liftIO (genCredentials creds)
-				Nothing -> return Nothing
+				Nothing -> return (Left S3HandleNeedCreds)
   where
 	s3cfg = s3Configuration c
 	go awscreds = do
 		let awscfg = AWS.Configuration AWS.Timestamp awscreds debugMapper Nothing
 		ou <- getUrlOptions
-		return $ Just $ S3Handle (httpManager ou) awscfg s3cfg
+		return $ Right $ S3Handle (httpManager ou) awscfg s3cfg
 
-withS3Handle :: S3HandleVar -> (Maybe S3Handle -> Annex a) -> Annex a
+withS3Handle :: S3HandleVar -> (Either S3HandleProblem S3Handle -> Annex a) -> Annex a
 withS3Handle hv a = liftIO (readTVarIO hv) >>= \case
 	Right hdl -> a hdl
 	Left mkhdl -> do
@@ -884,10 +899,8 @@ withS3Handle hv a = liftIO (readTVarIO hv) >>= \case
 
 withS3HandleOrFail :: UUID -> S3HandleVar -> (S3Handle -> Annex a) -> Annex a
 withS3HandleOrFail u hv a = withS3Handle hv $ \case
-	Just hdl -> a hdl
-	Nothing -> do
-		warning $ needS3Creds u
-		giveup "No S3 credentials configured"
+	Right hdl -> a hdl
+	Left p -> giveupS3HandleProblem p u
 
 needS3Creds :: UUID -> String
 needS3Creds u = missingCredPairFor "S3" (AWS.creds u)
