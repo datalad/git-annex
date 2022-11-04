@@ -16,3 +16,5 @@ in my searches information on "anonymous access to S3" is scarce, but in DataLad
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> [[fixed|done]] --[[Joey]]
