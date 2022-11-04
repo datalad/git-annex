@@ -287,12 +287,8 @@ run (st, rd) a = do
 run' :: MVar AnnexState -> AnnexRead -> Annex a -> IO (a, (AnnexState, AnnexRead))
 run' mvar rd a = do
 	r <- runReaderT (runAnnex a) (mvar, rd)
-		`onException` (flush rd)
-	flush rd
 	st <- takeMVar mvar
 	return (r, (st, rd))
-  where
-	flush = Keys.flushDbQueue . keysdbhandle
 
 {- Performs an action in the Annex monad from a starting state, 
  - and throws away the changed state. -}

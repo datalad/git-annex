@@ -1,6 +1,6 @@
 {- Persistent sqlite database handles.
  -
- - Copyright 2015-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import Utility.Exception
 import Utility.FileSystemEncoding
 import Utility.Debug
 import Utility.DebugLocks
+import Utility.InodeCache
 
 import Database.Persist.Sqlite
 import qualified Database.Sqlite as Sqlite
@@ -38,7 +39,7 @@ import System.IO
 
 {- A DbHandle is a reference to a worker thread that communicates with
  - the database. It has a MVar which Jobs are submitted to. -}
-data DbHandle = DbHandle (Async ()) (MVar Job)
+data DbHandle = DbHandle RawFilePath (Async ()) (MVar Job)
 
 {- Name of a table that should exist once the database is initialized. -}
 type TableName = String
@@ -48,17 +49,17 @@ type TableName = String
 openDb :: RawFilePath -> TableName -> IO DbHandle
 openDb db tablename = do
 	jobs <- newEmptyMVar
-	worker <- async (workerThread (T.pack (fromRawFilePath db)) tablename jobs)
+	worker <- async (workerThread db tablename jobs)
 	
 	-- work around https://github.com/yesodweb/persistent/issues/474
 	liftIO $ fileEncoding stderr
 
-	return $ DbHandle worker jobs
+	return $ DbHandle db worker jobs
 
 {- This is optional; when the DbHandle gets garbage collected it will
  - auto-close. -}
 closeDb :: DbHandle -> IO ()
-closeDb (DbHandle worker jobs) = do
+closeDb (DbHandle _db worker jobs) = do
 	debugLocks $ putMVar jobs CloseJob
 	wait worker
 
@@ -73,7 +74,7 @@ closeDb (DbHandle worker jobs) = do
  - it is able to run.
  -}
 queryDb :: DbHandle -> SqlPersistM a -> IO a
-queryDb (DbHandle _ jobs) a = do
+queryDb (DbHandle _db _ jobs) a = do
 	res <- newEmptyMVar
 	putMVar jobs $ QueryJob $
 		debugLocks $ liftIO . putMVar res =<< tryNonAsync a
@@ -82,25 +83,32 @@ queryDb (DbHandle _ jobs) a = do
 
 {- Writes a change to the database.
  -
- - Writes can fail if another write is happening concurrently.
- - So write failures are caught and retried repeatedly for up to 10
- - seconds, which should avoid all but the most exceptional problems.
+ - Writes can fail when another write is happening concurrently.
+ - So write failures are caught and retried.
+ -
+ - Retries repeatedly for up to 60 seconds. Part that point, it continues
+ - retrying only if the database shows signs of being modified by another
+ - process at least once each 30 seconds.
  -}
 commitDb :: DbHandle -> SqlPersistM () -> IO ()
-commitDb h wa = robustly Nothing 100 (commitDb' h wa)
+commitDb h@(DbHandle db _ _) wa = 
+	robustly (commitDb' h wa) maxretries emptyDatabaseInodeCache
   where
-	robustly :: Maybe SomeException -> Int -> IO (Either SomeException ()) -> IO ()
-	robustly e 0 _ = error $ "failed to commit changes to sqlite database: " ++ show e
-	robustly _ n a = do
+	robustly a retries ic = do
 		r <- a
 		case r of
 			Right _ -> return ()
-			Left e -> do
-				threadDelay 100000 -- 1/10th second
-				robustly (Just e) (n-1) a
+			Left err -> do
+				threadDelay briefdelay
+				retryHelper "write to" err maxretries db retries ic $ 
+					robustly a
+	
+	briefdelay = 100000 -- 1/10th second
+
+	maxretries = 300 :: Int -- 30 seconds of briefdelay
 
 commitDb' :: DbHandle -> SqlPersistM () -> IO (Either SomeException ())
-commitDb' (DbHandle _ jobs) a = do
+commitDb' (DbHandle _ _ jobs) a = do
 	debug "Database.Handle" "commitDb start"
 	res <- newEmptyMVar
 	putMVar jobs $ ChangeJob $
@@ -117,7 +125,7 @@ data Job
 	| ChangeJob (SqlPersistM ())
 	| CloseJob
 
-workerThread :: T.Text -> TableName -> MVar Job -> IO ()
+workerThread :: RawFilePath -> TableName -> MVar Job -> IO ()
 workerThread db tablename jobs = newconn
   where
 	newconn = do
@@ -144,45 +152,47 @@ workerThread db tablename jobs = newconn
 	
 	getjob :: IO (Either BlockedIndefinitelyOnMVar Job)
 	getjob = try $ takeMVar jobs
-	
--- Like runSqlite, but more robust.
---
--- New database connections can sometimes take a while to become usable.
--- This may be due to WAL mode recovering after a crash, or perhaps a bug
--- like described in blob 500f777a6ab6c45ca5f9790e0a63575f8e3cb88f.
--- So, loop until a select succeeds; once one succeeds the connection will
--- stay usable.
---
--- And sqlite sometimes throws ErrorIO when there's not really an IO problem,
--- but perhaps just a short read(). That's caught and retried several times.
-runSqliteRobustly :: TableName -> T.Text -> (SqlPersistM a) -> IO a
+
+{- Like runSqlite, but more robust.
+ -
+ - New database connections can sometimes take a while to become usable,
+ - and selects will fail with ErrorBusy in the meantime. This may be due to
+ - WAL mode recovering after a crash, or a concurrent writer.
+ - So, wait until a select succeeds; once one succeeds the connection will
+ - stay usable.
+ -
+ - Also sqlite sometimes throws ErrorIO when there's not really an IO
+ - problem, but perhaps just a short read(). So also retry on ErrorIO.
+ -
+ - Retries repeatedly for up to 60 seconds. Part that point, it continues
+ - retrying only if the database shows signs of being modified by another
+ - process at least once each 30 seconds.
+ -}
+runSqliteRobustly :: TableName -> RawFilePath -> (SqlPersistM a) -> IO a
 runSqliteRobustly tablename db a = do
-	conn <- opensettle maxretries
-	go conn maxretries
+	conn <- opensettle maxretries emptyDatabaseInodeCache
+	go conn maxretries emptyDatabaseInodeCache
   where
-	maxretries = 100 :: Int
-	
-	rethrow msg e = throwIO $ userError $ show e ++ "(" ++ msg ++ ")"
-	
-	go conn retries = do
+	go conn retries ic = do
 		r <- try $ runResourceT $ runNoLoggingT $
-			withSqlConnRobustly (wrapConnection conn) $
+			withSqlConnRobustly db (wrapConnection conn) $
 				runSqlConn a
 		case r of
 			Right v -> return v
 			Left ex@(Sqlite.SqliteException { Sqlite.seError = e })
-				| e == Sqlite.ErrorIO ->
-					let retries' = retries - 1
-					in if retries' < 1
-						then rethrow "after successful open" ex
-						else go conn retries'
-				| otherwise -> rethrow "after successful open" ex
+				| e == Sqlite.ErrorIO -> do
+					briefdelay
+					retryHelper "access" ex maxretries db retries ic $
+						go conn
+				| otherwise -> rethrow $ errmsg "after successful open" ex
 	
-	opensettle retries = do
-		conn <- Sqlite.open db
-		settle conn retries
+	opensettle retries ic = do
+		conn <- Sqlite.open tdb
+		settle conn retries ic
 
-	settle conn retries = do
+	tdb = T.pack (fromRawFilePath db)
+
+	settle conn retries ic = do
 		r <- try $ do
 			stmt <- Sqlite.prepare conn nullselect
 			void $ Sqlite.step stmt
@@ -190,26 +200,26 @@ runSqliteRobustly tablename db a = do
 		case r of
 			Right _ -> return conn
 			Left ex@(Sqlite.SqliteException { Sqlite.seError = e })
-				| e == Sqlite.ErrorBusy -> do
-					-- Wait and retry any number of times; it 
-					-- will stop being busy eventually.
+				| e == Sqlite.ErrorBusy || e == Sqlite.ErrorIO -> do
+					when (e == Sqlite.ErrorIO) $
+						Sqlite.close conn
 					briefdelay
-					settle conn retries
-				| e == Sqlite.ErrorIO -> do
-					-- Could be a real IO error,
-					-- so don't retry indefinitely.
-					Sqlite.close conn
-					briefdelay
-					let retries' = retries - 1
-					if retries' < 1
-						then rethrow "while opening database connection" ex
-						else opensettle retries'
-				| otherwise -> rethrow "while opening database connection" ex
+					retryHelper "open" ex maxretries db retries ic $
+						if e == Sqlite.ErrorIO
+							then opensettle
+							else settle conn
+				| otherwise -> rethrow $ errmsg "while opening database connection" ex
 	
 	-- This should succeed for any table.
 	nullselect = T.pack $ "SELECT null from " ++ tablename ++ " limit 1"
 
 	briefdelay = threadDelay 1000 -- 1/1000th second
+	
+	maxretries = 30000 :: Int -- 30 seconds of briefdelays
+	
+	rethrow = throwIO . userError
+
+	errmsg msg e = show e ++ "(" ++ msg ++ ")"
 
 -- Like withSqlConn, but more robust.
 withSqlConnRobustly
@@ -219,45 +229,99 @@ withSqlConnRobustly
 		, BaseBackend backend ~ SqlBackend
 		, BackendCompatible SqlBackend backend
 	    )
-	=> (LogFunc -> IO backend)
+	=> RawFilePath
+	-> (LogFunc -> IO backend)
 	-> (backend -> m a)
 	-> m a
-withSqlConnRobustly open f = do
+withSqlConnRobustly db open f = do
 	logFunc <- askLoggerIO
 	withRunInIO $ \run -> bracket
 		(open logFunc)
-		closeRobustly
+		(closeRobustly db)
 		(run . f)
 
--- Sqlite can throw ErrorBusy while closing a database; this catches
--- the exception and retries.
+{- Sqlite can throw ErrorBusy while closing a database; this catches
+ - the exception and retries.
+ -
+ - Retries repeatedly for up to 60 seconds. Part that point, it continues
+ - retrying only if the database shows signs of being modified by another
+ - process at least once each 30 seconds.
+ -}
 closeRobustly
 	:: (IsPersistBackend backend
 		, BaseBackend backend ~ SqlBackend
 		, BackendCompatible SqlBackend backend
 	   )
-	=> backend
+	=> RawFilePath
+	-> backend
 	-> IO ()
-closeRobustly conn = go maxretries briefdelay
+closeRobustly db conn = go maxretries emptyDatabaseInodeCache
   where
-	briefdelay = 1000 -- 1/1000th second
-
-	-- Try up to 14 times; with the delay doubling each time,
-	-- the maximum delay before giving up is 16 seconds.
-	maxretries = 14 :: Int
-
-	go retries delay = do
+	go retries ic = do
 		r <- try $ close' conn
 		case r of
 			Right () -> return ()
 			Left ex@(Sqlite.SqliteException { Sqlite.seError = e })
 				| e == Sqlite.ErrorBusy -> do
-					threadDelay delay
-					let delay' = delay * 2
-					let retries' = retries - 1
-					if retries' < 1
-						then rethrow "while closing database connection" ex
-						else go retries' delay'
-				| otherwise -> rethrow "while closing database connection" ex
+					threadDelay briefdelay
+					retryHelper "close" ex maxretries db retries ic go
+				| otherwise -> rethrow $ errmsg "while closing database connection" ex
 	
-	rethrow msg e = throwIO $ userError $ show e ++ "(" ++ msg ++ ")"
+	briefdelay = 1000 -- 1/1000th second
+	
+	maxretries = 30000 :: Int -- 30 seconds of briefdelays
+	
+	rethrow = throwIO . userError
+
+	errmsg msg e = show e ++ "(" ++ msg ++ ")"
+
+{- Retries a sqlite action repeatedly, but not forever. Detects situations
+ - when another git-annex process is suspended and has the database locked,
+ - and eventually gives up. The retries is the current number of retries
+ - that are left. The maxretries is how many retries to make each time
+ - the database is seen to have been modified by some other process.
+ -}
+retryHelper
+	:: Show err 
+	=> String
+	-> err
+	-> Int
+	-> RawFilePath
+	-> Int
+	-> DatabaseInodeCache
+	-> (Int -> DatabaseInodeCache -> IO a)
+	-> IO a
+retryHelper action err maxretries db retries ic a = do
+	let retries' = retries - 1
+	if retries' < 1
+		then do
+			ic' <- getDatabaseInodeCache db
+			if isDatabaseModified ic ic'
+				then a maxretries ic'
+				else giveup (databaseAccessStalledMsg action db err)
+		else a retries' ic
+
+databaseAccessStalledMsg :: Show err => String -> RawFilePath -> err -> String
+databaseAccessStalledMsg action db err =
+	"Repeatedly unable to " ++ action ++ " sqlite database " ++ fromRawFilePath db 
+		++ ": " ++ show err ++ ". "
+		++ "Perhaps another git-annex process is suspended and is "
+		++ "keeping this database locked?"
+
+data DatabaseInodeCache = DatabaseInodeCache (Maybe InodeCache) (Maybe InodeCache)
+
+emptyDatabaseInodeCache :: DatabaseInodeCache
+emptyDatabaseInodeCache = DatabaseInodeCache Nothing Nothing
+
+getDatabaseInodeCache :: RawFilePath -> IO DatabaseInodeCache
+getDatabaseInodeCache db = DatabaseInodeCache
+	<$> genInodeCache db noTSDelta
+	<*> genInodeCache (db <> "-wal") noTSDelta
+
+isDatabaseModified :: DatabaseInodeCache -> DatabaseInodeCache -> Bool
+isDatabaseModified (DatabaseInodeCache a1 b1) (DatabaseInodeCache a2 b2) = 
+	ismodified a1 a2 || ismodified b1 b2
+  where
+	ismodified (Just a) (Just b) = not (compareStrong a b)
+	ismodified Nothing Nothing = False
+	ismodified _ _ = True

@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 25"""
+ date="2022-10-11T17:17:13Z"
+ content="""
+Revisiting this, I don't understand why the htop at the top of this page
+lists so many `git-annex get` processes. They all seem to be children
+of a single parent `git-annex get` process. But `git-annex get` does
+not fork children like those. I wonder if perhaps those child
+processes were forked() to do something else, but somehow hung before
+they could exec?!
+
+By comment #2,  annex.stalldetection  is enabled, so `git-annex get`
+runs 5 `git-annex transferrer` processes. Each of those can write to the
+database, so concurrent sqlite writes can happen. So, my "re: comment 16"
+comment was off-base in thinking there was a single git-annex process.
+And so, I don't think the debug info requested in that comment is needed.
+
+Also, it turns out that the database queue is being flushed after every
+file it gets, which is causing a sqlite write per file. So there are a 
+lot of sqlite writes happening, which probably makes this issue much more
+likely to occur, on systems with slow enough disk IO that it does occur. 
+Especially if the files are relatively small. 
+
+The reason for the queue flush is partly that Annex.run forces a queue
+flush after every action. That could, I think be avoided. That was only
+done to make sure the queue is flushed before the program exits, which 
+should be able to be handled in a different way. But also,
+the queue has to be flushed before reading from the database in order
+for the read to see current information. In the `git-annex get` case,
+it queues a change to the inode cache, and then reads the associated
+files. To avoid that, it would need to keep track of the two different
+tables in the keys db, and flush the queue only when querying a table
+that a write had been queued to. That would be worth doing
+just to generally speed up `git-annex get`. A quick benchmark shows
+a get of 1000 small files that takes 17s will only take 12s once that's
+done. And that's on a fast SSD, probably much more on a hard drive!
+
+So I don't have a full solution, but speeding git-annex up significantly and
+also making whatever the problem in this bug is probably much less likely
+to occur is a good next step..
+"""]]

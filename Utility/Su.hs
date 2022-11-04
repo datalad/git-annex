@@ -57,9 +57,9 @@ describePasswordPrompt' :: Maybe SuCommand -> Maybe String
 describePasswordPrompt' (Just (SuCommand p _ _)) = describePasswordPrompt p
 describePasswordPrompt' Nothing = Nothing
 
-runSuCommand :: (Maybe SuCommand) -> IO Bool
-runSuCommand (Just (SuCommand _ cmd ps)) = boolSystem cmd ps
-runSuCommand Nothing = return False
+runSuCommand :: (Maybe SuCommand) -> Maybe [(String, String)] -> IO Bool
+runSuCommand (Just (SuCommand _ cmd ps)) environ = boolSystemEnv cmd ps environ
+runSuCommand Nothing _ = return False
 
 -- Generates a SuCommand that runs a command as root, fairly portably.
 --

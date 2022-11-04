@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2022-10-10T21:04:49Z"
+ content="""
+I've finished the work on aws, which is in
+<https://github.com/aristidb/aws/pull/281> and I hope will be merged soon.
+
+git-annex now has a branch `anons3` that implements this, when
+the S3 remote is configured with signature=anonymous.
+
+	$ git-annex initremote s3-origin type=S3 importtree=yes encryption=none bucket=dandiarchive fileprefix=zarr-checksums/2ac71edb-738c-40ac-bd8c-8ca985adaa12/  signature=anonymous
+	initremote s3-origin (checking bucket...) ok
+	(recording state in git...)
+	$ git-annex import master --from s3-origin
+	list s3-origin ok
+	import s3-origin .checksum 
+	ok                                
+	import s3-origin 0/.checksum 
+	ok                                
+	import s3-origin 0/0/.checksum 
+	ok
+	^C
+
+Also, I've fixed it to only list files in the fileprefix, which
+sped up the listing a *lot* in this bucket with many other files..
+"""]]

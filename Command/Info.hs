@@ -28,6 +28,7 @@ import Utility.DiskFree
 import Annex.Content
 import Annex.UUID
 import Annex.CatFile
+import Annex.WorkTree
 import Logs.UUID
 import Logs.Trust
 import Logs.Location
@@ -174,9 +175,9 @@ itemInfo o (si, p) = ifM (isdir p)
 					Right u -> uuidInfo o u si
 					Left _ -> do
 						relp <- liftIO $ relPathCwdToFile (toRawFilePath p)
-						ifAnnexed relp
-							(fileInfo o (fromRawFilePath relp) si)
-							(treeishInfo o p si)
+						lookupKey relp >>= \case
+							Just k -> fileInfo o (fromRawFilePath relp) si k
+							Nothing -> treeishInfo o p si
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)

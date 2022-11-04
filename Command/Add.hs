@@ -18,6 +18,7 @@ import Annex.FileMatcher
 import Annex.Link
 import Annex.Tmp
 import Annex.HashObject
+import Annex.WorkTree
 import Messages.Progress
 import Git.FilePath
 import Git.Types
@@ -202,7 +203,9 @@ start dr si file addunlockedmatcher =
 				mk <- liftIO $ isPointerFile file
 				maybe (go s) (fixuppointer s) mk
   where
-	go s = ifAnnexed file (addpresent s) (add s)
+	go s = lookupKey file >>= \case
+		Just k -> addpresent s k
+		Nothing -> add s
 	add s = starting "add" (ActionItemTreeFile file) si $
 		skipWhenDryRun dr $
 			if isSymbolicLink s

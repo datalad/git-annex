@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-10-17T16:28:48Z"
+ content="""
+This doesn't involve LFS at all, it's a regular git branch being pushed in
+the regular way. So you can certianly solve the problem with some
+combination of `git pull`, `git merge`, and `git push`.
+
+That said, I don't know why `git-annex sync` didn't work in your situation.
+I created some test git-lfs repos on github and never saw any difficulty
+syncing with them.
+"""]]

@@ -50,6 +50,7 @@ import Config.DynamicConfig
 import Annex.Path
 import Annex.Wanted
 import Annex.Content
+import Annex.WorkTree
 import Command.Get (getKey')
 import qualified Command.Move
 import qualified Command.Export
@@ -765,7 +766,10 @@ seekSyncContent o rs currbranch = do
 			seekHelper fst3 ww LsFiles.inRepoDetails l
 
 	seekincludinghidden origbranch mvar l bloomfeeder =
-		seekFiltered (const (pure True)) (\(si, f) -> ifAnnexed f (commandAction . gofile bloomfeeder mvar si f) noop) $
+		let filterer = \(si, f) -> lookupKey f >>= \case
+			Just k -> (commandAction $ gofile bloomfeeder mvar si f k)
+			Nothing -> noop
+		in seekFiltered (const (pure True)) filterer $
 			seekHelper id ww (LsFiles.inRepoOrBranch origbranch) l 
 
 	ww = WarnUnmatchLsFiles

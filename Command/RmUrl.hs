@@ -9,6 +9,7 @@ module Command.RmUrl where
 
 import Command
 import Logs.Web
+import Annex.WorkTree
 
 cmd :: Command
 cmd = notBareRepo $
@@ -46,10 +47,12 @@ batchParser s = case separate (== ' ') (reverse s) of
 			return $ Right (f', reverse ru)
 
 start :: (SeekInput, (FilePath, URLString)) -> CommandStart
-start (si, (file, url)) = flip whenAnnexed file' $ \_ key -> do
-	let ai = mkActionItem (key, AssociatedFile (Just file'))
-	starting "rmurl" ai si $
-		next $ cleanup url key
+start (si, (file, url)) = lookupKeyStaged file' >>= \case
+	Nothing -> stop
+	Just key -> do
+		let ai = mkActionItem (key, AssociatedFile (Just file'))
+		starting "rmurl" ai si $
+			next $ cleanup url key
   where
 	file' = toRawFilePath file
 

@@ -49,7 +49,7 @@ inDir dir a = do
 	state <- Annex.new
 		=<< Git.Config.read
 		=<< Git.Construct.fromPath (toRawFilePath dir)
-	Annex.eval state $ a `finally` stopCoProcesses
+	Annex.eval state $ a `finally` quiesce True
 
 {- Creates a new repository, and returns its UUID. -}
 initRepo :: Bool -> Bool -> FilePath -> Maybe String -> Maybe StandardGroup -> IO UUID

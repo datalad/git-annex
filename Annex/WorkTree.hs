@@ -1,6 +1,6 @@
 {- git-annex worktree files
  -
- - Copyright 2013-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -14,7 +14,7 @@ import Annex.CurrentBranch
 import qualified Database.Keys
 
 {- Looks up the key corresponding to an annexed file in the work tree,
- - by examining what the file links to.
+ - by examining what the symlink points to.
  -
  - An unlocked file will not have a link on disk, so fall back to
  - looking for a pointer to a key in git.
@@ -31,6 +31,16 @@ lookupKey = lookupKey' catkeyfile
 			, catKeyFileHidden file =<< getCurrentBranch
 			)
 
+{- Like lookupKey, but only looks at files staged in git, not at unstaged
+ - changes in the work tree. This means it's slower, but it also has
+ - consistently the same behavior for locked files as for unlocked files.
+ -}
+lookupKeyStaged :: RawFilePath -> Annex (Maybe Key)
+lookupKeyStaged file = catKeyFile file >>= \case
+	Just k -> return (Just k)
+	Nothing -> catKeyFileHidden file =<< getCurrentBranch
+
+{- Like lookupKey, but does not find keys for hidden files. -}
 lookupKeyNotHidden :: RawFilePath -> Annex (Maybe Key)
 lookupKeyNotHidden = lookupKey' catkeyfile
   where
@@ -45,23 +55,6 @@ lookupKey' catkeyfile file = isAnnexLink file >>= \case
 	Just key -> return (Just key)
 	Nothing -> catkeyfile file
 
-{- Modifies an action to only act on files that are already annexed,
- - and passes the key on to it. -}
-whenAnnexed :: (RawFilePath -> Key -> Annex (Maybe a)) -> RawFilePath -> Annex (Maybe a)
-whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
-
-ifAnnexed :: RawFilePath -> (Key -> Annex a) -> Annex a -> Annex a
-ifAnnexed file yes no = maybe no yes =<< lookupKey file
-
-{- Find all annexed files and update the keys database for them.
- - 
- - Normally the keys database is updated incrementally when it's being
- - opened, and changes are noticed. Calling this explicitly allows
- - running the update at an earlier point.
- -
- - All that needs to be done is to open the database,
- - that will result in Database.Keys.reconcileStaged
- - running, and doing the work.
- -}
+{- Find all annexed files and update the keys database for them. -}
 scanAnnexedFiles :: Annex ()
-scanAnnexedFiles = Database.Keys.runWriter (const noop)
+scanAnnexedFiles = Database.Keys.updateDatabase

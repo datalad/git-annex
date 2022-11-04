@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="Stefan"
+ avatar="http://cdn.libravatar.org/avatar/1474db4b030b82320e3bd5e899ef2bad"
+ subject="This guide fails with &quot;fatal: refusing to merge unrelated histories&quot;"
+ date="2022-10-29T10:28:18Z"
+ content="""
+This no longer works, here is a MWE to copy-paste (uses /tmp/{A,B}):
+
+```
+mkdir /tmp/A && touch /tmp/A/bigfile
+mkdir /tmp/B && touch /tmp/B/bigfile
+cd /tmp/A
+git init
+git annex init
+git annex add .
+git commit -m \"git annex yay\"
+cd /tmp/B
+git init
+git remote add A /tmp/A
+git fetch A
+git annex info # this should display the two repos
+git annex add .
+git annex whereis
+git annex sync
+```
+
+This fails with
+
+```
+commit 
+[main (root-commit) e9435bf] git-annex in stefan@notebook:/tmp/B
+ 1 file changed, 1 insertion(+)
+ create mode 120000 bigfile
+ok
+pull A 
+
+fatal: refusing to merge unrelated histories
+failed
+push A 
+Enumerating objects: 19, done.
+Counting objects: 100% (19/19), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (11/11), done.
+Writing objects: 100% (14/14), 1.37 KiB | 1.37 MiB/s, done.
+Total 14 (delta 2), reused 0 (delta 0), pack-reused 0
+To /tmp/A
+ * [new branch]      main -> synced/main
+ * [new branch]      git-annex -> synced/git-annex
+To /tmp/A
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to '/tmp/A'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+ok
+sync: 1 failed
+```
+"""]]

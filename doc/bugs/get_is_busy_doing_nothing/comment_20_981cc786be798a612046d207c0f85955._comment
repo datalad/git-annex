@@ -19,4 +19,10 @@ an ever-growing amount of memory, and be slowed down by the write attempts.
 Still, it does give it something better to do while the write is failing
 than sleeping and retrying, eg to do the rest of the work it's been asked
 to do.
+
+(Update: Reads from a database first call flushDbQueue, and it would
+not be safe for that to return without actually writing to the database,
+since the read would then see possible stale information. It turns
+out that `git-annex get` does do a database read per file (getAssociatedFiles).
+So it seems this approach will not work.)
 """]]

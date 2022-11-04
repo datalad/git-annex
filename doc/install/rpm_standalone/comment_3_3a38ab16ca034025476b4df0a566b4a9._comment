@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="xloem"
+ avatar="http://cdn.libravatar.org/avatar/b8c087f7c5e6a9358748f0727c077f3b"
+ subject="ipfs"
+ date="2022-10-31T13:36:51Z"
+ content="""
+It would be nice if the rpm or repository included auxiliarity scripts such as git-annex-remote-ipfs so that these would get installed/uninstalled/upgraded alongside the main project.
+"""]]

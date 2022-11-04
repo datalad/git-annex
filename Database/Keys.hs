@@ -1,6 +1,6 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@
 module Database.Keys (
 	DbHandle,
 	closeDb,
+	flushDb,
 	addAssociatedFile,
 	getAssociatedFiles,
 	getAssociatedFilesIncluding,
@@ -24,11 +25,13 @@ module Database.Keys (
 	removeInodeCache,
 	isInodeKnown,
 	runWriter,
+	updateDatabase,
 ) where
 
 import qualified Database.Keys.SQL as SQL
 import Database.Types
 import Database.Keys.Handle
+import Database.Keys.Tables
 import qualified Database.Queue as H
 import Database.Init
 import Annex.Locations
@@ -63,49 +66,53 @@ import Control.Concurrent.Async
  - If the database is already open, any writes are flushed to it, to ensure
  - consistency.
  -
- - Any queued writes will be flushed before the read.
+ - Any queued writes to the table will be flushed before the read.
  -}
-runReader :: Monoid v => (SQL.ReadHandle -> Annex v) -> Annex v
-runReader a = do
+runReader :: Monoid v => DbTable -> (SQL.ReadHandle -> Annex v) -> Annex v
+runReader t a = do
 	h <- Annex.getRead Annex.keysdbhandle
 	withDbState h go
   where
 	go DbUnavailable = return (mempty, DbUnavailable)
-	go st@(DbOpen qh) = do
-		liftIO $ H.flushDbQueue qh
+	go (DbOpen (qh, tableschanged)) = do
+		tableschanged' <- if isDbTableChanged tableschanged t
+			then do
+				liftIO $ H.flushDbQueue qh
+				return mempty
+			else return tableschanged
 		v <- a (SQL.ReadHandle qh)
-		return (v, st)
+		return (v, DbOpen (qh, tableschanged'))
 	go DbClosed = do
-		st' <- openDb False DbClosed
-		v <- case st' of
-			(DbOpen qh) -> a (SQL.ReadHandle qh)
+		st <- openDb False DbClosed
+		v <- case st of
+			(DbOpen (qh, _)) -> a (SQL.ReadHandle qh)
 			_ -> return mempty
-		return (v, st')
+		return (v, st)
 
-runReaderIO :: Monoid v => (SQL.ReadHandle -> IO v) -> Annex v
-runReaderIO a = runReader (liftIO . a)
+runReaderIO :: Monoid v => DbTable -> (SQL.ReadHandle -> IO v) -> Annex v
+runReaderIO t a = runReader t (liftIO . a)
 
 {- Runs an action that writes to the database. Typically this is used to
  - queue changes, which will be flushed at a later point.
  -
  - The database is created if it doesn't exist yet. -}
-runWriter :: (SQL.WriteHandle -> Annex ()) -> Annex ()
-runWriter a = do
+runWriter :: DbTable -> (SQL.WriteHandle -> Annex ()) -> Annex ()
+runWriter t a = do
 	h <- Annex.getRead Annex.keysdbhandle
 	withDbState h go
   where
-	go st@(DbOpen qh) = do
+	go (DbOpen (qh, tableschanged)) = do
 		v <- a (SQL.WriteHandle qh)
-		return (v, st)
+		return (v, DbOpen (qh, addDbTable tableschanged t))
 	go st = do
 		st' <- openDb True st
 		v <- case st' of
-			DbOpen qh -> a (SQL.WriteHandle qh)
+			DbOpen (qh, _) -> a (SQL.WriteHandle qh)
 			_ -> error "internal"
 		return (v, st')
 
-runWriterIO :: (SQL.WriteHandle -> IO ()) -> Annex ()
-runWriterIO a = runWriter (liftIO . a)
+runWriterIO :: DbTable -> (SQL.WriteHandle -> IO ()) -> Annex ()
+runWriterIO t a = runWriter t (liftIO . a)
 
 {- Opens the database, creating it if it doesn't exist yet.
  -
@@ -138,26 +145,29 @@ openDb forwrite _ = do
 	
 	open db = do
 		qh <- liftIO $ H.openDbQueue db SQL.containedTable
-		reconcileStaged qh
-		return $ DbOpen qh
+		tc <- reconcileStaged qh
+		return $ DbOpen (qh, tc)
 
 {- Closes the database if it was open. Any writes will be flushed to it.
  -
- - This does not normally need to be called; the database will auto-close
- - when the handle is garbage collected. However, this can be used to
- - force a re-read of the database, in case another process has written
- - data to it.
+ - This does not prevent further use of the database; it will be re-opened
+ - as necessary.
  -}
 closeDb :: Annex ()
 closeDb = liftIO . closeDbHandle =<< Annex.getRead Annex.keysdbhandle
 
+{- Flushes any queued writes to the database. -}
+flushDb :: Annex ()
+flushDb = liftIO . flushDbQueue =<< Annex.getRead Annex.keysdbhandle
+
 addAssociatedFile :: Key -> TopFilePath -> Annex ()
-addAssociatedFile k f = runWriterIO $ SQL.addAssociatedFile k f
+addAssociatedFile k f = runWriterIO AssociatedTable $ SQL.addAssociatedFile k f
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: Key -> Annex [TopFilePath]
-getAssociatedFiles k = emptyWhenBare $ runReaderIO $ SQL.getAssociatedFiles k
+getAssociatedFiles k = emptyWhenBare $ runReaderIO AssociatedTable $
+	SQL.getAssociatedFiles k
 
 {- Queries for associated files never return anything when in a bare
  - repository, since without a work tree there can be no associated files. 
@@ -183,10 +193,12 @@ getAssociatedFilesIncluding afile k = emptyWhenBare $ do
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none but the database doesn't enforce that.) -}
 getAssociatedKey :: TopFilePath -> Annex [Key]
-getAssociatedKey f = emptyWhenBare $ runReaderIO $ SQL.getAssociatedKey f
+getAssociatedKey f = emptyWhenBare $ runReaderIO AssociatedTable $
+	SQL.getAssociatedKey f
 
 removeAssociatedFile :: Key -> TopFilePath -> Annex ()
-removeAssociatedFile k = runWriterIO . SQL.removeAssociatedFile k
+removeAssociatedFile k = runWriterIO AssociatedTable .
+	SQL.removeAssociatedFile k
 
 {- Stats the files, and stores their InodeCaches. -}
 storeInodeCaches :: Key -> [RawFilePath] -> Annex ()
@@ -195,7 +207,7 @@ storeInodeCaches k fs = withTSDelta $ \d ->
 		=<< liftIO (mapM (\f -> genInodeCache f d) fs)
 
 addInodeCaches :: Key -> [InodeCache] -> Annex ()
-addInodeCaches k is = runWriterIO $ SQL.addInodeCaches k is
+addInodeCaches k is = runWriterIO ContentTable $ SQL.addInodeCaches k is
 
 {- A key may have multiple InodeCaches; one for the annex object, and one
  - for each pointer file that is a copy of it.
@@ -207,18 +219,19 @@ addInodeCaches k is = runWriterIO $ SQL.addInodeCaches k is
  - for pointer files, but none recorded for the annex object.
  -}
 getInodeCaches :: Key -> Annex [InodeCache]
-getInodeCaches = runReaderIO . SQL.getInodeCaches
+getInodeCaches = runReaderIO ContentTable . SQL.getInodeCaches
 
 {- Remove all inodes cached for a key. -}
 removeInodeCaches :: Key -> Annex ()
-removeInodeCaches = runWriterIO . SQL.removeInodeCaches
+removeInodeCaches = runWriterIO ContentTable . SQL.removeInodeCaches
 
 {- Remove cached inodes, for any key. -}
 removeInodeCache :: InodeCache -> Annex ()
-removeInodeCache = runWriterIO . SQL.removeInodeCache
+removeInodeCache = runWriterIO ContentTable . SQL.removeInodeCache
 
 isInodeKnown :: InodeCache -> SentinalStatus -> Annex Bool
-isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
+isInodeKnown i s = or <$> runReaderIO ContentTable 
+	((:[]) <$$> SQL.isInodeKnown i s)
 
 {- Looks at staged changes to annexed files, and updates the keys database,
  - so that its information is consistent with the state of the repository.
@@ -247,18 +260,21 @@ isInodeKnown i s = or <$> runReaderIO ((:[]) <$$> SQL.isInodeKnown i s)
  - So when using getAssociatedFiles, have to make sure the file still
  - is an associated file.
  -}
-reconcileStaged :: H.DbQueue -> Annex ()
-reconcileStaged qh = unlessM (Git.Config.isBare <$> gitRepo) $ do
-	gitindex <- inRepo currentIndexFile
-	indexcache <- fromRawFilePath <$> calcRepo' gitAnnexKeysDbIndexCache
-	withTSDelta (liftIO . genInodeCache gitindex) >>= \case
-		Just cur -> readindexcache indexcache >>= \case
-			Nothing -> go cur indexcache =<< getindextree
-			Just prev -> ifM (compareInodeCaches prev cur)
-				( noop
-				, go cur indexcache =<< getindextree
-				)
-		Nothing -> noop
+reconcileStaged :: H.DbQueue -> Annex DbTablesChanged
+reconcileStaged qh = ifM (Git.Config.isBare <$> gitRepo)
+	( return mempty
+	, do
+		gitindex <- inRepo currentIndexFile
+		indexcache <- fromRawFilePath <$> calcRepo' gitAnnexKeysDbIndexCache
+		withTSDelta (liftIO . genInodeCache gitindex) >>= \case
+			Just cur -> readindexcache indexcache >>= \case
+				Nothing -> go cur indexcache =<< getindextree
+				Just prev -> ifM (compareInodeCaches prev cur)
+					( return mempty
+					, go cur indexcache =<< getindextree
+					)
+			Nothing -> return mempty
+	)
   where
 	lastindexref = Ref "refs/annex/last-index"
 
@@ -283,6 +299,7 @@ reconcileStaged qh = unlessM (Git.Config.isBare <$> gitRepo) $ do
 			-- against next time.
 			inRepo $ update' lastindexref newtree
 			fastDebug "Database.Keys" "reconcileStaged end"
+		return (DbTablesChanged True True)
 	-- git write-tree will fail if the index is locked or when there is
 	-- a merge conflict. To get up-to-date with the current index, 
 	-- diff --staged with the old index tree. The current index tree
@@ -304,6 +321,7 @@ reconcileStaged qh = unlessM (Git.Config.isBare <$> gitRepo) $ do
 				void $ updatetodiff g Nothing "--staged"
 					(procmergeconflictdiff mdfeeder)
 		fastDebug "Database.Keys" "reconcileStaged end"
+		return (DbTablesChanged True True)
 	
 	updatetodiff g old new processor = do
 		(l, cleanup) <- pipeNullSplit' (diff old new) g
@@ -479,3 +497,9 @@ reconcileStaged qh = unlessM (Git.Config.isBare <$> gitRepo) $ do
 	largediff :: Int
 	largediff = 1000
 
+{- Normally the keys database is updated incrementally when opened,
+ - by reconcileStaged. Calling this explicitly allows running the
+ - update at an earlier point.
+ -}
+updateDatabase :: Annex ()
+updateDatabase = runWriter ContentTable (const noop)

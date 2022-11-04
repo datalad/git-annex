@@ -1,0 +1,83 @@
+Some parts of git-annex wait for an exclusive lock, and once they take it,
+hold it while performing an operation. Now consider what happens if the
+git-annex process is suspended. Another git-annex process that is running
+and that waits to take the same exclusive lock (or a shared lock of the
+same file) will stall forever, until the git-annex process is resumed.
+
+These time windows tend to be small, but may not always be.
+
+Is there any better way git-annex could handle this? Is it a significant
+problem at all? I don't think I've ever seen it happen, but I rarely ^Z
+git-annex either. How do other programs handle this, if at all?
+--[[Joey]]
+
+----
+
+Would it be better for the second git-annex process, rather than hanging
+indefinitely, to timeout after a few seconds?
+
+But how many seconds? What if the system is under heavy load?
+
+> What could be done is, update the lock's file's mtime after successfully
+> taking the lock. Then, as long as the mtime is advancing, some other
+> process is actively using it, and it's ok for our process to wait
+> longer.
+> 
+> (Updating the mtime would be a problem when locking annex object files
+> in v9 and earlier. Luckily, that locking is not done with a blocking
+> lock anyway.)
+
+> If the lock file's mtime is being checked, the process that is
+> blocking with the lock held could periodically update the mtime.
+> A background thread could manage that. If that's done every ten seconds,
+> then an mtime more than 20 seconds old indicates that the lock is
+> held by a suspended process. So git-annex would stall for up to 20-30
+> seconds before erroring out when a lock is held by a suspended process.
+> That seems acceptible, it doesn't need to deal with this situation
+> instantly, it just needs to not block indefinitely. And updating the
+> mtime every 10 seconds should not be too much IO.
+> 
+> When an old version of git-annex has the lock held, it won't be updating
+> the mtime. So if it takes longer than 10 seconds to do the operation with
+> the lock held, a new version may complain that it's suspended when it's
+> really not. This could be avoided by checking what process holds the
+> lock, and whether it's suspended. But probably 10 seconds is enough
+> time for all the operations git-annex takes a blocking lock for
+> currently to finish, and if so we don't need to worry about this situation?
+> 
+> >  Unfortunately not: importKeys takes an exclusive lock and holds it while
+> > downloading all the content! This seems like a bug though, because it can
+> > cause other git-annex processes that are eg storing content in a remote
+> > to block for a long time.
+> > 
+> > Another one is Database.Export.writeLockDbWhile, which takes an
+> > exclusive lock while running eg, Command.Export.changeExport,
+> > which may sometimes need to do a lot of work.
+> >
+> > Another one is Annex.Queue.flush, which probably mostly runs in under
+> > 10 seconds, but maybe not always, and when annex.queuesize is changed,
+> > could surely take longer.
+> 
+> To avoid problems when old git-annex's are also being used, it could
+> update and check the mtime of a different file than the lock file.
+> 
+> Start by trying to take the lock for up to 10 seconds. If it takes the
+> lock, create the mtime file and start a thread that updates the mtime 
+> every 10 seconds until the lock is closed, and delete the mtime file
+> before closing the lock handle. 
+> 
+> When it times out taking the lock, if the mtime file does not exist, an
+> old git-annex has the lock; if the mtime file does exist, then check
+> if its timestamp has advanced; if not then a new git-annex has the lock
+> and is suspended and it can error out.
+> 
+> Oops: There's a race in the method above; a timeout may occur
+> right when the other process has taken the lock, but has not updated
+> the mtime file yet. Then that process would incorrectly be treated
+> as an old git-annex process.
+> 
+> So: To support old git-annex, it seems it will need to check, when the
+> lock is held, what process has the lock. And then check if that process
+> is suspended or not. Which means looking in /proc. Ugh.
+> 
+> Or: Change to checking lock mtimes only in git-annex v11..

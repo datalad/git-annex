@@ -150,6 +150,13 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
     Indicates that `IMPORTKEY` can be used.
   * `IMPORTKEYSUPPORTED-FAILURE`  
     Indicates that `IMPORTKEY` cannot be used.
+ * `VERSIONED`
+  Used to check if the special remote is versioned.
+  Note that this request may be made before or after `PREPARE`.
+  * `ISVERSIONED`  
+    Indicates that the remote is versioned.
+  * `NOTVERSIONED`  
+    Indicates that the remote is not versioned.
 * `LISTIMPORTABLECONTENTS`  
   Used to get a list of all the files that are stored in the special 
   remote. A block of responses
@@ -170,6 +177,8 @@ support a request, it can reply with `UNSUPPORTED-REQUEST`.
     be nested multiple levels deep.  
     This should only be used when the remote supports using
     "TRANSFER RECEIVE Key" to retrieve historical versions of files.
+    And, it should only be used when the remote replies `ISVERSIONED`
+    to the `VERSIONED` message.
   * `END`  
     Indicates the end of a block of responses.
 * `LOCATION Name`  

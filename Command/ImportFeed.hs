@@ -40,6 +40,7 @@ import Command.AddUrl (addUrlFile, downloadRemoteFile, parseDownloadOptions, Dow
 import Annex.UUID
 import Backend.URL (fromUrl)
 import Annex.Content
+import Annex.WorkTree
 import Annex.YoutubeDl
 import Types.MetaData
 import Logs.MetaData
@@ -297,7 +298,9 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 	 - to be re-downloaded. -}
 	makeunique url n file = ifM alreadyexists
 		( ifM forced
-			( ifAnnexed (toRawFilePath f) checksameurl tryanother
+			( lookupKey (toRawFilePath f) >>= \case
+				Just k -> checksameurl k
+				Nothing -> tryanother
 			, tryanother
 			)
 		, return $ Just f

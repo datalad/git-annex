@@ -225,7 +225,7 @@ gen r u rc gc rs = do
 				, renameExport = renameExportS3 hdl this rs info
 				}
 			, importActions = ImportActions
-                                { listImportableContents = listImportableContentsS3 hdl this info
+                                { listImportableContents = listImportableContentsS3 hdl this info c
 				, importKey = Nothing
                                 , retrieveExportWithContentIdentifier = retrieveExportWithContentIdentifierS3 hdl this rs info
                                 , storeExportWithContentIdentifier = storeExportWithContentIdentifierS3 hdl this rs info magic
@@ -561,8 +561,8 @@ renameExportS3 hv r rs info k src dest = Just <$> go
 	srcobject = T.pack $ bucketExportLocation info src
 	dstobject = T.pack $ bucketExportLocation info dest
 
-listImportableContentsS3 :: S3HandleVar -> Remote -> S3Info -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
-listImportableContentsS3 hv r info =
+listImportableContentsS3 :: S3HandleVar -> Remote -> S3Info -> ParsedRemoteConfig -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
+listImportableContentsS3 hv r info c =
 	withS3Handle hv $ \case
 		Nothing -> giveup $ needS3Creds (uuid r)
 		Just h -> Just <$> go h
@@ -571,6 +571,8 @@ listImportableContentsS3 hv r info =
 		ic <- liftIO $ runResourceT $ extractFromResourceT =<< startlist h
 		return (ImportableContentsComplete ic)
 
+	fileprefix = T.pack <$> getRemoteConfigValue fileprefixField c
+
 	startlist h
 		| versioning info = do
 			rsp <- sendS3Handle h $ 
@@ -578,7 +580,8 @@ listImportableContentsS3 hv r info =
 			continuelistversioned h [] rsp
 		| otherwise = do
 			rsp <- sendS3Handle h $ 
-				S3.getBucket (bucket info)
+				(S3.getBucket (bucket info))
+					{ S3.gbPrefix = fileprefix }
 			continuelistunversioned h [] rsp
 
 	continuelistunversioned h l rsp
@@ -586,6 +589,7 @@ listImportableContentsS3 hv r info =
 			rsp' <- sendS3Handle h $
 				(S3.getBucket (bucket info))
 					{ S3.gbMarker = S3.gbrNextMarker rsp
+					, S3.gbPrefix = fileprefix
 					}
 			continuelistunversioned h (rsp:l) rsp'
 		| otherwise = return $
@@ -597,6 +601,7 @@ listImportableContentsS3 hv r info =
 				(S3.getBucketObjectVersions (bucket info))
 					{ S3.gbovKeyMarker = S3.gbovrNextKeyMarker rsp
 					, S3.gbovVersionIdMarker = S3.gbovrNextVersionIdMarker rsp
+					, S3.gbovPrefix = fileprefix
 					}
 			continuelistversioned h (rsp:l) rsp'
 		| otherwise = return $

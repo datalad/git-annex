@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 26"""
+ date="2022-10-12T19:34:05Z"
+ content="""
+I've avoided the excessive sqlite database writes. Which doubled the speed
+of git-annex in some circumstances, wow!
+
+@yoh see if it still happens once you upgrade to a git-annex
+with [[!commit 6fbd337e34cd62881ed5e21616e9c00d7bf35378]].
+
+It would be possible for git-annex to do its own locking around writes
+to the sqlite database. That would surely avoid any problem that sqlite might
+have that would cause ErrorBusy. I want to think some about 
+[[todo/withExclusiveLock_blocking_issue]] first.
+"""]]

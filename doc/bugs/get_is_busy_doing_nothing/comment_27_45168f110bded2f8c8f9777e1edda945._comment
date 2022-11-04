@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 27"""
+ date="2022-10-17T18:49:47Z"
+ content="""
+I've made it retry as long as necessary on ErrorBusy, while also noticing
+when another process is suspended and has the sqlite database locked,
+and avoiding retrying forever in that situation.
+
+This seems to be as far as I can take this bug report, I don't know
+100% for sure if I've fixed it, but git-annex's behavior should certainly
+be improved.
+"""]]

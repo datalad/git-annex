@@ -31,9 +31,7 @@ start (_, key) = fieldTransfer Download key $ \_p -> do
 	ifM (getViaTmp rsp DefaultVerify key (AssociatedFile Nothing) go)
 		( do
 			logStatus key InfoPresent
-			-- forcibly quit after receiving one key,
-			-- and shutdown cleanly
-			_ <- shutdown True
+			_ <- quiesce True
 			return True
 		, return False
 		)

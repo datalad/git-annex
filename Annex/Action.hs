@@ -1,6 +1,6 @@
 {- git-annex actions
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,7 +11,7 @@ module Annex.Action (
 	action,
 	verifiedAction,
 	startup,
-	shutdown,
+	quiesce,
 	stopCoProcesses,
 ) where
 
@@ -25,6 +25,7 @@ import Annex.CheckAttr
 import Annex.HashObject
 import Annex.CheckIgnore
 import Annex.TransferrerPool
+import qualified Database.Keys
 
 import Control.Concurrent.STM
 #ifndef mingw32_HOST_OS
@@ -74,12 +75,25 @@ startup = do
        return ()
 #endif
 
-{- Cleanup actions. -}
-shutdown :: Bool -> Annex ()
-shutdown nocommit = do
+{- Rn all cleanup actions, save all state, stop all long-running child
+ - processes.
+ -
+ - This can be run repeatedly with other Annex actions run in between,
+ - but usually it is run only once at the end.
+ -
+ - When passed True, avoids making any commits to the git-annex branch,
+ - leaving changes in the journal for later commit.
+ -}
+quiesce :: Bool -> Annex ()
+quiesce nocommit = do
+	cas <- Annex.withState $ \st -> return 
+		( st { Annex.cleanupactions = mempty }
+		, Annex.cleanupactions st
+		)
+	sequence_ (M.elems cas)
 	saveState nocommit
-	sequence_ =<< M.elems <$> Annex.getState Annex.cleanupactions
 	stopCoProcesses
+	Database.Keys.closeDb
 
 {- Stops all long-running child processes, including git query processes. -}
 stopCoProcesses :: Annex ()

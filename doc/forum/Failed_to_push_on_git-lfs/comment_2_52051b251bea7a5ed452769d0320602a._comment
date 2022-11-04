@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="AlexPraga"
+ avatar="http://cdn.libravatar.org/avatar/7c4e10fd352b81279b405f9f5337cdb7"
+ subject="comment 2"
+ date="2022-10-22T15:12:26Z"
+ content="""
+Thanks for answering. I managed to correct it with force-pushing it : `git push lfs main -f`.
+Not sure why it did not work before but it seems to be working now.
+"""]]

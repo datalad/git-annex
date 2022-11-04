@@ -60,9 +60,10 @@ start _os = do
 			gitannex <- liftIO programPath
 			let ps = [Param (cmdname cmd), Param (show curruserid)]
 			sucommand <- liftIO $ mkSuCommand gitannex ps
+			cleanenv <- liftIO $ cleanStandaloneEnvironment
 			maybe noop showLongNote
 				(describePasswordPrompt' sucommand)
-			ifM (liftIO $ runSuCommand sucommand)
+			ifM (liftIO $ runSuCommand sucommand cleanenv)
 				( next checkHiddenService
 				, giveup $ unwords $
 					[ "Failed to run as root:" , gitannex ] ++ toCommand ps
