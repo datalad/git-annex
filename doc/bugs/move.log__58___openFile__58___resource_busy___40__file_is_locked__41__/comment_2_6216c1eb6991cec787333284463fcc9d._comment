@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2022-11-04T12:41:47Z"
+ content="""
+ok, did the archaeologic expedition to figure when fixed -- was  fixed in [10.20221003-19-g4a42c6909 AKA 10.20221103~28](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=4a42c69092a03cce7b31b79b862e59c9842ced77) , brew still (well -- we are just 1 day post release! ;)) has 10.20221003 so in testing git-annex-remote-rclone we keep getting hit but hopefully it would go away soon with update of git-annex in brew.
+"""]]
