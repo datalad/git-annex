@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-11-07T17:07:52Z"
+ content="""
+I wondered if running the add and init tests once per worker was causing
+a diminishing returns at higher -J levels. Since at -J16, each worker runs
+the add and init tests followed by only 2 or 3 other tests, the time spent
+on the add and init tests becomes more and more significant.
+
+Timings from my laptop (with 4 cores):
+
+	-J16    250 seconds
+	-J8     212 seconds
+	-J4     214 seconds
+        -J2     307 seconds
+
+So a small diminishing returns at -J16.
+
+After some improvements:
+
+	-J16    223 seconds
+	-J8     218 seconds
+	-J4     214 seconds
+
+That won't solve smaug being so overloaded though.
+If anything, it will just make it get to some other test before it times out..
+"""]]

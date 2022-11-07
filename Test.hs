@@ -355,7 +355,15 @@ repoTests note numparts = map mk $ sep
 	mk l = testGroup groupname (initTests : map adddep l)
 	adddep = Test.Tasty.after AllSucceed (groupname ++ "." ++ initTestsName)
 	groupname = "Repo Tests " ++ note
-	sep = sep' (replicate numparts [])
+	sep l = 
+		-- Avoid separating into parts that contain less than
+		-- 5 tests each. Since the tests depend on the
+		-- initTests, this avoids spending too much work running
+		-- the initTests once per part.
+		let numparts' = if length l `div` numparts > 5
+			then numparts
+			else length l `div` 5
+		in sep' (replicate numparts' []) l
 	sep' (p:ps) (l:ls) = sep' (ps++[l:p]) ls
 	sep' ps [] = ps
 	sep' [] _ = []
