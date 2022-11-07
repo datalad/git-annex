@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-11-07T16:32:15Z"
+ content="""
+I notice that just the init test is taking 346 seconds to run. Then the add
+test is taking 499 seconds. Those are both tests that do very little work,
+and here run in 1s or so. The only thing "wrong" with the conflict resolution tests
+may be that they do 10x as much work.
+
+In the same log, the quickcheck tests, which are entirely CPU bound, ran at normal
+speed. So probably it's disk IO slowing the other tests down.
+
+Also, `result-smaug-900/handle-result.yaml-437-402e214e-success/result-smaug-900/git-annex.log`
+times out on another test. So I'm sure the problem is not a specific test stalling.
+
+And in `result-smaug-899/handle-result.yaml-435-3e89687a-success/result-smaug-899/git-annex.log`,
+it succeeds in 856 seconds. That still seems slow, my laptop can run it in 250 seconds
+with 4 cores (even when using -J16). That makes me think that the IO load (or whatever)
+on smaug is varying and slowing down the test by different amounts.
+
+Smaug has 16 cores. The test suite automatically parallelizes, so there
+will be 16 worker processes. But each worker process has to itself 
+run the init and add tests, which are prereqs for most other tests. So those
+tests are being run 16 times. Which just by itself, at the 346 and 499 second
+run times, will take more than an hour. Also if disk IO is starved, a lot
+of workers is only going to thrash it more.
+
+So `git-annex test -J1` or so seems like a good idea.
+
+It might also be better to not have a single timeout for the whole
+test suite, but time out if it stalls for long enough without generating new
+output.
+"""]]
