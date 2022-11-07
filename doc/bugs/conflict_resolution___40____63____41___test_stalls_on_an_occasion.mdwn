@@ -1,0 +1,40 @@
+### Please describe the problem.
+
+In a daily testing of git-annex on client systems, on `smaug` we observed tests stalling and being eventually killed once in a while consistently at `conflict resolution (mixed locked and unlocked file):` step:
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex-ci-client-jobs[master]builds/2022
+$> datalad foreach-dataset --o-s relpath git grep 'Elapsed time: 3600 seconds'
+06/result-smaug-720/handle-result.yaml-164-4355efb7-success/result-smaug-720/git-annex.log:    conflict resolution (nonannexed symlink): + echo 'Elapsed time: 3600 seconds'                                                                                       
+06/result-smaug-720/handle-result.yaml-164-4355efb7-success/result-smaug-720/git-annex.log:Elapsed time: 3600 seconds
+11/result-smaug-900/handle-result.yaml-437-402e214e-success/result-smaug-900/git-annex.log:        present False:                                   + echo 'Elapsed time: 3600 seconds'                                                                            
+11/result-smaug-900/handle-result.yaml-437-402e214e-success/result-smaug-900/git-annex.log:Elapsed time: 3600 seconds
+08/result-smaug-787/handle-result.yaml-276-ca542974-success/result-smaug-787/git-annex.log:    conflict resolution (nonannexed symlink): + echo 'Elapsed time: 3600 seconds'                                                                                       
+08/result-smaug-787/handle-result.yaml-276-ca542974-success/result-smaug-787/git-annex.log:Elapsed time: 3600 seconds
+10/result-smaug-853/handle-result.yaml-373-7e7a9411-success/result-smaug-853/git-annex.log:    conflict resolution (mixed locked and unlocked file): + echo 'Elapsed time: 3600 seconds'                                                                           
+10/result-smaug-853/handle-result.yaml-373-7e7a9411-success/result-smaug-853/git-annex.log:Elapsed time: 3600 seconds
+10/result-smaug-854/handle-result.yaml-375-d95326d3-success/result-smaug-854/git-annex.log:    conflict resolution (nonannexed symlink): + echo 'Elapsed time: 3600 seconds'
+10/result-smaug-854/handle-result.yaml-375-d95326d3-success/result-smaug-854/git-annex.log:Elapsed time: 3600 seconds
+```
+
+so far seemed to happen only on smaug among "test clients". 
+
+### What version of git-annex are you using? On what operating system?
+
+in above `grep` the versions are:
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex-ci-client-jobs[master]builds/2022
+$> datalad foreach-dataset --o-s relpath git grep -l 'Elapsed time: 3600 seconds' | xargs grep '^git-annex version:' | sort -n
+06/result-smaug-720/handle-result.yaml-164-4355efb7-success/result-smaug-720/git-annex.log:git-annex version: 10.20220525+git47-g4bf796225-1~ndall+1
+08/result-smaug-787/handle-result.yaml-276-ca542974-success/result-smaug-787/git-annex.log:git-annex version: 10.20220724+git77-ga24ae0814-1~ndall+1
+10/result-smaug-853/handle-result.yaml-373-7e7a9411-success/result-smaug-853/git-annex.log:git-annex version: 10.20220927+git27-g82dab0749-1~ndall+1
+10/result-smaug-854/handle-result.yaml-375-d95326d3-success/result-smaug-854/git-annex.log:git-annex version: 10.20220927+git27-g82dab0749-1~ndall+1
+11/result-smaug-900/handle-result.yaml-437-402e214e-success/result-smaug-900/git-annex.log:git-annex version: 10.20221103+git9-gad7dfdb37-1~ndall+1
+```
+
+full logs are available on smaug at the paths listed above
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
+
