@@ -23,3 +23,5 @@ I imagine an optional upgrade to a new key format for chunks, such that they had
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yesterday I recovered a bricked phone by accessing flash partitions I had backed up with git-annex. I deleted them locally by accident, by git-annex cobbled many of them together from remotes. The ones it didn't find still had their hashes preserved in the repository, and I was able to compare with hashes on the device and reconstructed all but one. The one I didn't reconstruct is regenerateable.
+
+> [[notabug|done]] --[[Joey]]
