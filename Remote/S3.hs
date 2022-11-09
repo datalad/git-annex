@@ -531,7 +531,6 @@ removeExportS3 hv r rs info k loc = withS3Handle hv $ \case
 				S3.DeleteObject (T.pack $ bucketExportLocation info loc) (bucket info)
 			return ()
 	Left p -> giveupS3HandleProblem p (uuid r)
-  where
 
 checkPresentExportS3 :: S3HandleVar -> Remote -> S3Info -> Key -> ExportLocation -> Annex Bool
 checkPresentExportS3 hv r info k loc = withS3Handle hv $ \case
