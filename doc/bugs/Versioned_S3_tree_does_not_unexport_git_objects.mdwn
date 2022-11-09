@@ -395,3 +395,5 @@ ok
 Thank you for all your work making this wonderful tool!
 
 [[!meta title="export tree bug when two files with the same content both should be removed"]]
+
+> [[fixed|done]] --[[Joey]]

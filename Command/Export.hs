@@ -149,23 +149,24 @@ changeExport r db (ExportFiltered new) = do
 		[] -> updateExportTree db emptyTree new
 		[oldtreesha] -> do
 			diffmap <- mkDiffMap oldtreesha new db
-			let seekdiffmap a = commandActions $ 
-				map a (M.toList diffmap)
+			let seekdiffmap a = mapM_ a (M.toList diffmap)
 			-- Rename old files to temp, or delete.
-			seekdiffmap $ \(ek, (moldf, mnewf)) -> do
-				case (moldf, mnewf) of
-					(Just oldf, Just _newf) ->
+			let deleteoldf = \ek oldf -> commandAction $
+				startUnexport' r db oldf ek
+			seekdiffmap $ \case
+				(ek, (oldf:oldfs, _newf:_)) -> do
+					commandAction $
 						startMoveToTempName r db oldf ek
-					(Just oldf, Nothing) ->
-						startUnexport' r db oldf ek
-					_ -> stop
+					forM_ oldfs (deleteoldf ek)
+				(ek, (oldfs, [])) ->
+					forM_ oldfs (deleteoldf ek)
+				(_ek, ([], _)) -> noop
 			waitForAllRunningCommandActions
 			-- Rename from temp to new files.
-			seekdiffmap $ \(ek, (moldf, mnewf)) ->
-				case (moldf, mnewf) of
-					(Just _oldf, Just newf) ->
-						startMoveFromTempName r db ek newf
-					_ -> stop
+			seekdiffmap $ \case
+				(ek, (_oldf:_, newf:_)) -> commandAction $
+					startMoveFromTempName r db ek newf
+				_ -> noop
 			waitForAllRunningCommandActions
 		ts -> do
 			warning "Resolving export conflict.."
@@ -204,7 +205,7 @@ changeExport r db (ExportFiltered new) = do
 		void $ liftIO cleanup
 
 -- Map of old and new filenames for each changed Key in a diff.
-type DiffMap = M.Map Key (Maybe TopFilePath, Maybe TopFilePath)
+type DiffMap = M.Map Key ([TopFilePath], [TopFilePath])
 
 mkDiffMap :: Git.Ref -> Git.Ref -> ExportHandle -> Annex DiffMap
 mkDiffMap old new db = do
@@ -213,14 +214,14 @@ mkDiffMap old new db = do
 	void $ liftIO cleanup
 	return diffmap
   where
-	combinedm (srca, dsta) (srcb, dstb) = (srca <|> srcb, dsta <|> dstb)
+	combinedm (srca, dsta) (srcb, dstb) = (srca ++ srcb, dsta ++ dstb)
 	mkdm i = do
 		srcek <- getek (Git.DiffTree.srcsha i)
 		dstek <- getek (Git.DiffTree.dstsha i)
 		updateExportTree' db srcek dstek i
 		return $ catMaybes
-			[ (, (Just (Git.DiffTree.file i), Nothing)) <$> srcek
-			, (, (Nothing, Just (Git.DiffTree.file i))) <$> dstek
+			[ (, ([Git.DiffTree.file i], [])) <$> srcek
+			, (, ([], [Git.DiffTree.file i])) <$> dstek
 			]
 	getek sha
 		| sha `elem` nullShas = return Nothing
