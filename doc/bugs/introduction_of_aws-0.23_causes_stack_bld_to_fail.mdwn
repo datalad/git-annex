@@ -49,3 +49,5 @@ Sure, I use it several times a week with my multigigabyte backups, where it give
 
 [[!meta author=jkniiv]]
 [[!meta title="introduction of aws-0.23 causes stack build to fail"]]
+
+> [[fixed|done]] --[[Joey]]
