@@ -1,9 +1,10 @@
-git-annex (10.20221104) upstream; urgency=medium
+git-annex (10.20221104) UNRELEASED; urgency=medium
 
   * S3: Support signature=anonymous to access a S3 bucket anonymously.
     This can be used, for example, with importtree=yes to import from
     a public bucket.
     This feature needs git-annex to be built with aws-0.23.
+  * stack.yaml: Updated to lts-19.32 
  
  -- Joey Hess <id@joeyh.name>  Thu, 03 Nov 2022 14:07:31 -0400
 

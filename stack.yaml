@@ -11,17 +11,14 @@ flags:
     gitlfs: true
 packages:
 - '.'
-resolver: lts-18.13
+resolver: lts-19.32
 extra-deps:
 - IfElse-0.85
-- aws-0.22
+- aws-0.23
 - bloomfilter-2.0.1.0
 - git-lfs-1.2.0
-- http-client-restricted-0.0.4
+- http-client-restricted-0.0.5
 - network-multicast-0.3.2
 - sandi-0.5
 - torrent-10000.1.1
-- base16-bytestring-0.1.1.7
-- base64-bytestring-1.0.0.3
-- bencode-0.6.1.1
-- http-client-0.7.9
+- Win32-2.13.4.0
