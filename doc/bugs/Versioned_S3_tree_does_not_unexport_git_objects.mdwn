@@ -393,3 +393,5 @@ ok
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Thank you for all your work making this wonderful tool!
+
+[[!meta title="export tree sometimes does not delete removed git files"]]
