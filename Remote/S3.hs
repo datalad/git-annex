@@ -691,7 +691,7 @@ retrieveExportWithContentIdentifierS3 hv r rs info loc (cid:_) dest gk p =
 						setS3VersionID info rs k vid
 				Left _ -> noop
 			return k
-		Left p -> giveupS3HandleProblem p (uuid r)
+		Left pr -> giveupS3HandleProblem pr (uuid r)
 	o = T.pack $ bucketExportLocation info loc
 retrieveExportWithContentIdentifierS3 _ _ _ _ _ [] _ _ _ = giveup "missing content identifier"
 
