@@ -1,0 +1,38 @@
+Through no fault of Git Annex's, my drive lost power in the middle of a `git annex add`, and seems to have experienced corruption.
+
+(If it matters, here's the log of what was happening when the drive powered off:)
+
+```
+# [...snip...]
+add disk/DCIM/101_FUJI/DSCF3929.MOV
+ok
+add disk/DCIM/101_FUJI/DSCF3930.MOV
+ok
+add disk/DCIM/101_FUJI/DSCF3931.MOV
+0%    31.98 KiB        67 MiB/s 5s
+git-annex: ../.git/annex/othertmp/ingest-DSCF3931423025-19.MOV: hGetBuf: hardware fault (Input/output error)
+failed
+fatal: not a git repository: '../.git'
+fatal: unable to access '../.git/config': Input/output error
+git-annex: ../.git/annex: createDirectory: hardware fault (Input/output error)
+```
+
+
+Right after it happened, I tried to check on the data and got this error:
+
+```
+$ git annex fsck                                                    
+fatal: /media/foo/bar/.git/annex/index: index file open failed: Structure needs cleaning                                                                                                   
+git-annex: fd:13: hPutBuf: resource vanished (Broken pipe)
+```
+
+I fixed this (I hope) with an `fsck` of the drive (not a `git fsck` or `git annex fsck` - an actual `fsck` to repair the filesystem). Now I want to check that everything's okay with the data, and I run:
+
+```
+$ git annex fsck
+git-annex: .git/annex/othertmp: createDirectory: already exists (File exists)
+```
+
+How can I get past this error?
+
+Thanks!!
