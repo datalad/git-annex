@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="amindfv@97236fbaab6048ce6805b2737b27dd7f1cd51da4"
+ nickname="amindfv"
+ avatar="http://cdn.libravatar.org/avatar/a82f30bc12d79fee2d142021af8e9aa0"
+ subject="comment 1"
+ date="2022-11-10T21:29:33Z"
+ content="""
+If it matters for the answer, the data I was in the middle of `git annex add`-ing is replaceable. I.e. I'd be perfectly happy to bring my repo back to the state before the `add` and simply copy the data over again and then `add` it again.
+
+Also my version is 8.20210223
+
+"""]]
