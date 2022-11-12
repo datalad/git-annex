@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="pat"
+ avatar="http://cdn.libravatar.org/avatar/6b552550673a6a6df3b33364076f8ea8"
+ subject="comment 1"
+ date="2022-11-12T02:50:07Z"
+ content="""
+I guess I can `git annex sync --content && git annex get --auto` to make sure I get the content I want. Although at that point, it's probably better to do `git annex sync && git annex get --auto && git annex drop --auto`. I was expecting `sync` to handle the auto get/drop - which it usually does. But it silently passes even when it doesn't get the wanted content.
+
+Perhaps I should think of `sync` as a \"best effort\" mode? That is, it will download available content, but I shouldn't rely on it to download all wanted content - `get` is the job for that.
+"""]]
