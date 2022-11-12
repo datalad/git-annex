@@ -1,0 +1,14 @@
+I find that it's possible for a repo to not get the content that it wants to have. It happens if the repo only points to remotes that don't have the content.
+
+`git annex get` will fail:
+
+    $ git annex get --want-get
+    get foo (not available) 
+      Maybe add some of these git remotes (git remote add ...):
+      	6ac12bd5-b585-4884-b0fe-a48fdc1b6365 -- b
+    failed
+    get: 1 failed
+
+But `git annex sync --content` passes, despite not getting any of the wanted content.
+
+Is there a way to make `git annex sync --content` error if it can't fetch wanted content, the way `git annex get` does?
