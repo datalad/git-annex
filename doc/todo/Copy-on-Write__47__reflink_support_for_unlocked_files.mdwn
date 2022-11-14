@@ -1,0 +1,1 @@
+Some filesystems, like BTRFS or ZFS have copy on write support, which means that if files are copied in a special way they share sectors until one of the files is edited. Implementing support would make files take up less space if they are in unlocked mode and not significantly edited.

@@ -1,0 +1,3 @@
+While going through the docs, I found that `sync --cleanup` will remove the `synced/*` branches after completing a sync.
+
+Is there any reason why it would be a bad idea to use that flag as a default for my own use. I like the clean aspect of not having those branches around, but I don't know if there's a good reason why I would want to keep them.
