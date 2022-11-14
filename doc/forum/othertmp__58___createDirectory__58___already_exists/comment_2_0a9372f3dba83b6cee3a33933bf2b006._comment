@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-11-14T17:14:51Z"
+ content="""
+Seems that your `.git/annex/othertmp` has somehow became a file.
+git-annex expects it to be a directory, or to not exist, but when it's
+a file, git-annex doesn't understand what is happening and so can fail this
+way.
+
+It's probably safe to delete a `.git/annex/othertmp` file,
+although since you had disk corruption, 
+you might want to take a backup of it first.
+"""]]
