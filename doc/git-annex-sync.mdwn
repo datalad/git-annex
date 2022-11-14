@@ -175,7 +175,8 @@ have the same value as the currently checked out branch.
 * `--cleanup`
 
   Removes the local and remote `synced/` branches, which were created
-  and pushed by `git-annex sync`.
+  and pushed by `git-annex sync`. This option prevents all other syncing
+  activities.
 
   This can come in handy when you've synced a change to remotes and now
   want to reset your master branch back before that change. So you
