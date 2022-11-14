@@ -108,7 +108,7 @@ detail in [[todo/git_smudge_clean_interface_suboptiomal]].)
 ## using less disk space
 
 Unlocked files are handy, but they have one significant disadvantage
-compared with locked files: They use more disk space.
+compared with locked files: On most filesystems, they use more disk space.
 
 While only one copy of a locked file has to be stored, often
 two copies of an unlocked file are stored on disk. One copy is in
@@ -119,7 +119,10 @@ The reason for that second copy is to preserve the old version of the file,
 when you modify the unlocked file in the work tree. Being able to access
 old versions of files is an important part of git after all!
 
-That's a good safe default. But there are ways to use git-annex that
+(Some filesystems including btrfs and xfs support reflinks, and on those,
+the extra copy is a reflink, and takes up no additional space.)
+
+So two copies is a good safe default. But there are ways to use git-annex that
 make the second copy not be worth keeping:
 
 * When you're using git-annex to sync the current version of files across
