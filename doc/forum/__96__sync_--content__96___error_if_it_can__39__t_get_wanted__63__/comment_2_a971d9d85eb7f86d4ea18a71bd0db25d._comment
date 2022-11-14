@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-11-14T17:01:37Z"
+ content="""
+The rationelle for this difference is that 
+with `git-annex get` you are explicitly asking it to get
+the specified files (or all files), while with `git-annex sync --content`
+you are asking it to make the local and remote be in sync with respect to
+whether they contain the content or not. When neither local nor remote
+contains the content, they are still in sync.. 
+"""]]
