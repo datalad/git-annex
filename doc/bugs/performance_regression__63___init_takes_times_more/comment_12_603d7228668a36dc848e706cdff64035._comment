@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 12"""
+ date="2022-11-17T17:43:27Z"
+ content="""
+With --debug, it shows when it enters and leaves commitDb.
+
+commitDb is run around 70 times in this repository. Making it queue
+more changes into each commitDb, so it runs an order of magnitude fewer,
+did speed it up by around 1 second (from 24).
+
+Summing up the time spent in commitDb according to --debug, it is around 6.5
+seconds, out of the 24 second run. That is close to the actual time sqlite is
+taking.
+
+But per my comment above, with commitDb stubbed out, the whole run takes
+only 6 seconds. (I've re-verified that to be sure.) Why is it so much faster then?
+After doing some profiling and looking at flame graphs, I think it comes 
+down to allocations:
+
+(For future reference, here is a flame graph measuring runtimes
+of unmodified git-annex:  <https://tmp.joeyh.name/git-annex-flame-1.svg>  
+Shows the majority of time in commitDb as expected, and that it's due to 
+addAssociatedFile. The resulting upsert spends about 1/4th of its time reading
+and 3/4 writing. All unsurprising.. But also a sizable amount of time is
+spent in GC, and in IDLE, whatever that is.)
+
+Without it stubbed out:
+
+        total alloc = 6,385,408,240 bytes  (excludes profiling overheads)
+
+With it stubbed out:
+
+        total alloc = 1,714,898,200 bytes  (excludes profiling overheads)
+
+Here is a flame graph measuring allocations, not runtime, of unmodified git-annex:  
+https://tmp.joeyh.name/git-annex-flame-3.svg>  
+By far the main allocation is by mkSqlBackend, which is surprising because
+that represents a database handle. Why would it need to spend tons of memory
+making database handles?
+
+Starting to think this could be a bug in persistent or persistent-sqlite. I've
+tried disabling the lowlevel persistent parts of Database.Handle in case there
+was a bug in there, and using persistent more typically, but that didn't change
+the mkSqlBackend allocations. Next step might be a simpler test case.
+
+OTOH, it may be that the way that persistent uses the SqlBackend as a dictionary
+of functions, that calls to individual functions in it confuse the profiler,
+and allocation done to build SQL statements is being misattributed?
+"""]]

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2022-11-17T20:20:16Z"
+ content="""
+An idea from looking at the flame graphs, is that if
+reconcileStaged knew it was run on an empty keys db (or was doing a full
+scan of the tree, not an incremental updte), it could avoid doing the
+upsert, and do a blind insert instead.
+
+This will need some care to be implemented safely... 
+
+I benchmarked it, and using insertUnique is no faster, but using insert is.
+This would be a 15% speed up.
+"""]]
