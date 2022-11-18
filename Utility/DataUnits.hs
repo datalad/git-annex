@@ -73,7 +73,9 @@ dataUnits = storageUnits ++ committeeUnits ++ bandwidthUnits
 {- Storage units are (stupidly) powers of ten. -}
 storageUnits :: [Unit]
 storageUnits =
-	[ Unit (p 8) "YB" "yottabyte"
+	[ Unit (p 10) "QB" "quettabyte"
+	, Unit (p 9) "RB" "ronnabyte"
+	, Unit (p 8) "YB" "yottabyte"
 	, Unit (p 7) "ZB" "zettabyte"
 	, Unit (p 6) "EB" "exabyte"
 	, Unit (p 5) "PB" "petabyte"
