@@ -47,7 +47,7 @@ findOrGenUUID = do
 		else ifM (Annex.Branch.hasSibling <||> (isJust <$> Fields.getField Fields.autoInit))
 			( do
 				liftIO checkNotReadOnly
-				initialize True Nothing Nothing
+				initialize Nothing Nothing
 				getUUID
 			, return NoUUID
 			)

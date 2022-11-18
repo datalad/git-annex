@@ -5,4 +5,15 @@
  content="""
 Implemented the two optimisations discussed above, and init in that
 repository dropped from 24 seconds to 19 seconds, a 21% speedup.
+
+I think that's as fast as reconcileStaged is likely to get without
+some deep optimisation of the persistent library.
+
+Then I realized that `git-annex init` does not really need to scan for
+associated files. That can be done later, when running a command that needs
+to access the keys database. Indeed, when git-annex is used in a clone of
+an annexed repo without explicitly running `git-annex init`, that's what
+it already did. I've implemented that, so now `git-annex init` takes 3
+seconds or so. The price will be paid later, the first time running a
+`git-annex add` or `git-annex unlock` or `git-annex get`.
 """]]

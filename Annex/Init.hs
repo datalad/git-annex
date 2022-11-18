@@ -37,7 +37,6 @@ import Types.RepoVersion
 import Annex.Version
 import Annex.Difference
 import Annex.UUID
-import Annex.WorkTree
 import Annex.Fixup
 import Annex.Path
 import Config
@@ -102,8 +101,8 @@ genDescription Nothing = do
 		Right username -> [username, at, hostname, ":", reldir]
 		Left _ -> [hostname, ":", reldir]
 
-initialize :: Bool -> Maybe String -> Maybe RepoVersion -> Annex ()
-initialize autoinit mdescription mversion = checkInitializeAllowed $ \initallowed -> do
+initialize :: Maybe String -> Maybe RepoVersion -> Annex ()
+initialize mdescription mversion = checkInitializeAllowed $ \initallowed -> do
 	{- Has to come before any commits are made as the shared
 	 - clone heuristic expects no local objects. -}
 	sharedclone <- checkSharedClone
@@ -113,7 +112,7 @@ initialize autoinit mdescription mversion = checkInitializeAllowed $ \initallowe
 	ensureCommit $ Annex.Branch.create
 
 	prepUUID
-	initialize' autoinit mversion initallowed
+	initialize' mversion initallowed
 	
 	initSharedClone sharedclone
 	
@@ -125,8 +124,8 @@ initialize autoinit mdescription mversion = checkInitializeAllowed $ \initallowe
 
 -- Everything except for uuid setup, shared clone setup, and initial
 -- description.
-initialize' :: Bool -> Maybe RepoVersion -> InitializeAllowed -> Annex ()
-initialize' autoinit mversion _initallowed = do
+initialize' :: Maybe RepoVersion -> InitializeAllowed -> Annex ()
+initialize' mversion _initallowed = do
 	checkLockSupport
 	checkFifoSupport
 	checkCrippledFileSystem
@@ -143,8 +142,6 @@ initialize' autoinit mversion _initallowed = do
 	unlessM isBareRepo $ do
 		hookWrite postCheckoutHook
 		hookWrite postMergeHook
-		unless autoinit $
-			scanAnnexedFiles
 
 	AdjustedBranch.checkAdjustedClone >>= \case
 		AdjustedBranch.InAdjustedClone -> return ()
@@ -206,7 +203,7 @@ ensureInitialized remotelist = getInitializedVersion >>= maybe needsinit checkUp
   where
 	needsinit = ifM autoInitializeAllowed
 		( do
-			tryNonAsync (initialize True Nothing Nothing) >>= \case
+			tryNonAsync (initialize Nothing Nothing) >>= \case
 				Right () -> noop
 				Left e -> giveup $ show e ++ "\n" ++
 					"git-annex: automatic initialization failed due to above problems"
@@ -259,7 +256,7 @@ autoInitialize remotelist = getInitializedVersion >>= maybe needsinit checkUpgra
   where
 	needsinit =
 		whenM (initializeAllowed <&&> autoInitializeAllowed) $ do
-			initialize True Nothing Nothing
+			initialize Nothing Nothing
 			autoEnableSpecialRemotes remotelist
 
 {- Checks if a repository is initialized. Does not check version for ugrade. -}

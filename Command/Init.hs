@@ -75,7 +75,7 @@ perform os = do
 			Just v | v /= wantversion ->
 				giveup $ "This repository is already a initialized with version " ++ show (fromRepoVersion v) ++ ", not changing to requested version."
 			_ -> noop
-	initialize False
+	initialize
 		(if null (initDesc os) then Nothing else Just (initDesc os))
 		(initVersion os)
 	unless (noAutoEnable os)
