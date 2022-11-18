@@ -1,0 +1,65 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 15"""
+ date="2022-11-18T19:37:46Z"
+ content="""
+I wrote a standalone test program that uses persistant-sqlite to populate a
+database with the same data. It runs in 4.12 seconds. Which is sufficiently
+close to the 6 seconds I measured before for actual sqlite runtime in
+git-annex init.
+
+So, reconcileStaged is not slow only due to persistent-sqlite overhead, but
+something else. Weird!
+
+However, I also dumped the database to a sql script. Running that script
+with sqlite3 takes only 2.39 seconds. So, persistent-sqlite does have some
+performance overhead. My suspicion from profiling is that it's due to
+conversion between data types. First it builts up a Text containing a SQL
+statement (and not using a Builder). Then it uses encodeUtf8 on it to get
+a ByteString, and then it uses useAsCString. So there are 2 or 3 copies
+of the input data, which takes time and increases the allocations.
+
+The test program:
+
+	{-# LANGUAGE EmptyDataDecls             #-}
+	{-# LANGUAGE FlexibleContexts           #-}
+	{-# LANGUAGE GADTs                      #-}
+	{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+	{-# LANGUAGE MultiParamTypeClasses      #-}
+	{-# LANGUAGE OverloadedStrings          #-}
+	{-# LANGUAGE QuasiQuotes                #-}
+	{-# LANGUAGE TemplateHaskell            #-}
+	{-# LANGUAGE TypeFamilies               #-}
+	{-# LANGUAGE DerivingStrategies #-}
+	{-# LANGUAGE StandaloneDeriving #-}
+	{-# LANGUAGE UndecidableInstances #-}
+	{-# LANGUAGE DataKinds #-}
+	{-# LANGUAGE FlexibleInstances #-}
+	{-# LANGUAGE BangPatterns #-}
+	import           Control.Monad.IO.Class  (liftIO)
+	import           Database.Persist
+	import           Database.Persist.Sqlite
+	import           Database.Persist.TH
+	import           Data.Text
+	import           Data.Text.IO
+	import Control.Monad
+	
+	share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
+	Val
+	    foo Text
+	    bar Text
+	    FooBarIndex foo bar
+	    BarFooIndex bar foo
+	|]
+	
+	main :: IO ()
+	main = runSqlite "sqlitedb" $ do
+	    runMigration migrateAll
+	    forM_ [1..(172156/2)] $ \x -> do
+	    	f <- liftIO Data.Text.IO.getLine
+	    	b <- liftIO Data.Text.IO.getLine
+	    	_ <- insert $ Val f b
+		return ()
+
+(Feed on stdin a series of pairs of lines of key and filename.)
+"""]]
