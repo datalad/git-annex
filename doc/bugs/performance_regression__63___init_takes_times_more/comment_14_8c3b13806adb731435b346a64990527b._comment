@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2022-11-18T17:26:03Z"
+ content="""
+Implemented the two optimisations discussed above, and init in that
+repository dropped from 24 seconds to 19 seconds, a 21% speedup.
+"""]]

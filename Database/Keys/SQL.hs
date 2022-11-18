@@ -73,8 +73,8 @@ newtype WriteHandle = WriteHandle H.DbQueue
 queueDb :: SqlPersistM () -> WriteHandle -> IO ()
 queueDb a (WriteHandle h) = H.queueDb h checkcommit a
   where
-	-- commit queue after 1000 changes
-	checkcommit sz _lastcommittime = pure (sz > 1000)
+	-- commit queue after 10000 changes
+	checkcommit sz _lastcommittime = pure (sz > 10000)
 
 -- Insert the associated file.
 -- When the file was associated with a different key before,

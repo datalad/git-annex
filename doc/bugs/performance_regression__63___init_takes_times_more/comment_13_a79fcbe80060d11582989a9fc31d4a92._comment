@@ -12,6 +12,4 @@ This will need some care to be implemented safely...
 
 I benchmarked it, and using insertUnique is no faster, but using insert is.
 This would be a 15% speed up.
-
-Update: Implemented this optimisation.
 """]]

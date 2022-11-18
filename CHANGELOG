@@ -1,7 +1,7 @@
 git-annex (10.20221105) UNRELEASED; urgency=medium
 
   * Support quettabyte and yottabyte.
-  * Sped up the initial scanning for annexed files by 15%.
+  * Sped up the initial scanning for annexed files by 21%.
 
  -- Joey Hess <id@joeyh.name>  Fri, 18 Nov 2022 12:58:06 -0400
 
