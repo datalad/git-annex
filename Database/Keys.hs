@@ -132,10 +132,10 @@ openDb forwrite _ = do
 		let db = dbdir P.</> "db"
 		dbexists <- liftIO $ R.doesPathExist db
 		case dbexists of
-			True -> open db
+			True -> open db False
 			False -> do
 				initDb db SQL.createTables
-				open db
+				open db True
   where
 	-- If permissions don't allow opening the database, and it's being
 	-- opened for read, treat it as if it does not exist.
@@ -143,9 +143,9 @@ openDb forwrite _ = do
 		| forwrite = throwM e
 		| otherwise = return DbUnavailable
 	
-	open db = do
+	open db dbisnew = do
 		qh <- liftIO $ H.openDbQueue db SQL.containedTable
-		tc <- reconcileStaged qh
+		tc <- reconcileStaged dbisnew qh
 		return $ DbOpen (qh, tc)
 
 {- Closes the database if it was open. Any writes will be flushed to it.
@@ -260,8 +260,8 @@ isInodeKnown i s = or <$> runReaderIO ContentTable
  - So when using getAssociatedFiles, have to make sure the file still
  - is an associated file.
  -}
-reconcileStaged :: H.DbQueue -> Annex DbTablesChanged
-reconcileStaged qh = ifM (Git.Config.isBare <$> gitRepo)
+reconcileStaged :: Bool -> H.DbQueue -> Annex DbTablesChanged
+reconcileStaged dbisnew qh = ifM (Git.Config.isBare <$> gitRepo)
 	( return mempty
 	, do
 		gitindex <- inRepo currentIndexFile
@@ -384,7 +384,7 @@ reconcileStaged qh = ifM (Git.Config.isBare <$> gitRepo)
 						Nothing -> return False
 				send mdfeeder (Ref dstsha) $ \case
 					Just key -> do
-						liftIO $ SQL.addAssociatedFile key
+						liftIO $ addassociatedfile key
 							(asTopFilePath file)
 							(SQL.WriteHandle qh)
 						when (dstmode /= fmtTreeItemType TreeSymlink) $
@@ -496,6 +496,18 @@ reconcileStaged qh = ifM (Git.Config.isBare <$> gitRepo)
 	-- takes less than half a second, so that seems about right.
 	largediff :: Int
 	largediff = 1000
+
+	-- When the database is known to have been newly created and empty
+	-- before reconcileStaged started, it is more efficient to use 
+	-- newAssociatedFile. It's safe to use it here because this is run
+	-- with a lock held that blocks any other process that opens the
+	-- database, and when the database is newly created, there is no
+	-- existing process that has it open already. And it's not possible
+	-- for reconcileStaged to call this twice on the same filename with
+	-- two different keys.
+	addassociatedfile
+		| dbisnew = SQL.newAssociatedFile
+		| otherwise = SQL.addAssociatedFile
 
 {- Normally the keys database is updated incrementally when opened,
  - by reconcileStaged. Calling this explicitly allows running the

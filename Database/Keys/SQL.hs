@@ -1,6 +1,6 @@
 {- Sqlite database of information about Keys
  -
- - Copyright 2015-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -85,6 +85,15 @@ addAssociatedFile k f = queueDb $
 		(FileKeyIndex af k)
 		(Associated k af)
 		[AssociatedFile =. af, AssociatedKey =. k]
+  where
+	af = SFilePath (getTopFilePath f)
+
+-- Faster than addAssociatedFile, but only safe to use when the file
+-- was not associated with a different key before, as it does not delete
+-- any old key.
+newAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
+newAssociatedFile k f = queueDb $
+	void $ insert $ Associated k af
   where
 	af = SFilePath (getTopFilePath f)
 
