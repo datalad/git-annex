@@ -13,11 +13,8 @@ something else. Weird!
 
 However, I also dumped the database to a sql script. Running that script
 with sqlite3 takes only 2.39 seconds. So, persistent-sqlite does have some
-performance overhead. My suspicion from profiling is that it's due to
-conversion between data types. First it builts up a Text containing a SQL
-statement (and not using a Builder). Then it uses encodeUtf8 on it to get
-a ByteString, and then it uses useAsCString. So there are 2 or 3 copies
-of the input data, which takes time and increases the allocations.
+performance overhead. Opened an issue: 
+<https://github.com/yesodweb/persistent/issues/1441>
 
 The test program:
 
