@@ -7,3 +7,5 @@ The biggest problem is that there is no auto option, but in theory it’s possib
 I can try to code something, although I am not that proficient in Haskell, or run test code if needed on macOS 12. 
 
 -- Lena Wildervanck
+
+> [[dup|done]] --[[Joey]] 
