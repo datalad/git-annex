@@ -265,8 +265,10 @@ supportedScheme uo url = case parseURIRelaxed url of
 		_ -> allowedScheme uo u
 
 {- Strategy: Look for chunks prefixed with \r, which look approximately
- - like this:
+ - like this for youtube-dl:
  - "ESC[K[download]  26.6% of 60.22MiB at 254.69MiB/s ETA 00:00"
+ - or for yt-dlp, like this:
+ - "\r[download]   1.8% of    1.14GiB at    1.04MiB/s ETA 18:23"
  - Look at the number before "% of " and the number and unit after,
  - to determine the number of bytes.
  -}
@@ -292,8 +294,11 @@ parseYoutubeDlProgress = go [] . reverse . progresschunks
 	calc percent total = round (percent * fromIntegral total / 100)
 
 	parsepercent :: String -> Maybe Double
-	parsepercent = readMaybe . reverse . takeWhile (not . isSpace) . reverse
+	parsepercent = readMaybe 
+		. reverse . takeWhile (not . isSpace) . reverse
+		. dropWhile isSpace 
 
-	parsebytes = readSize units . takeWhile (not . isSpace)
+	parsebytes = readSize units . takeWhile (not . isSpace) 
+		. dropWhile isSpace
 
 	units = committeeUnits ++ storageUnits

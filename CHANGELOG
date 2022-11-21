@@ -5,6 +5,7 @@ git-annex (10.20221105) UNRELEASED; urgency=medium
   * init: Avoid scanning for annexed files, which can be lengthy in a
     large repository. Instead that scan is done on demand.
   * When youtube-dl is not available in PATH, use yt-dlp instead.
+  * Support parsing yt-dpl output to display download progress.
 
  -- Joey Hess <id@joeyh.name>  Fri, 18 Nov 2022 12:58:06 -0400
 
