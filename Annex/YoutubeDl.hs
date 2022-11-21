@@ -249,8 +249,9 @@ youtubeDlOpts addopts = do
 	return (opts ++ addopts)
 
 youtubeDlCommand :: Annex String
-youtubeDlCommand = fromMaybe "youtube-dl" . annexYoutubeDlCommand 
-	<$> Annex.getGitConfig
+youtubeDlCommand = annexYoutubeDlCommand <$> Annex.getGitConfig >>= \case
+	Just c -> pure c
+	Nothing -> fromMaybe "yt-dlp" <$> liftIO (searchPath "youtube-dl")
 
 supportedScheme :: UrlOptions -> URLString -> Bool
 supportedScheme uo url = case parseURIRelaxed url of

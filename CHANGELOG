@@ -4,6 +4,7 @@ git-annex (10.20221105) UNRELEASED; urgency=medium
   * Sped up the initial scan for annexed files by 21%.
   * init: Avoid scanning for annexed files, which can be lengthy in a
     large repository. Instead that scan is done on demand.
+  * When youtube-dl is not available in PATH, use yt-dlp instead.
 
  -- Joey Hess <id@joeyh.name>  Fri, 18 Nov 2022 12:58:06 -0400
 

@@ -111,7 +111,7 @@ Recommends:
 	lsof,
 	gnupg,
 	bind9-host,
-	youtube-dl,
+	yt-dlp,
 	git-remote-gcrypt (>= 0.20130908-6),
 	nocache,
 	aria2,
