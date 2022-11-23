@@ -1,0 +1,45 @@
+### Please describe the problem.
+
+I got a new server for the repronim project (welcome `typhon` to the family of `smaug`, `drogon`, and `falkor`).  Wanted to redo https://www.datalad.org/test_fs_analysis.html benchmarking.  Added `git annex test` call to see how its time would vary across file systems etc.
+
+My surprise was that my script never exited.
+
+Current ps tree is  (yeah, running as `root`, likely will reinstall the thing anyways fully after I am done benchmarking)
+
+```
+root      185696  0.0  0.0  62536 54768 pts/1    S+   Nov15   2:56           python test_fs.py benchmark
+root     3655423  0.0  0.0   2484   516 pts/1    S+   Nov18   0:00             /bin/sh -c cd test9; git annex test
+root     3655424  0.0  0.0   9728  3340 pts/1    S+   Nov18   0:00               git annex test
+root     3655425  0.0  0.0 1076293924 28360 pts/1 Sl+ Nov18   0:00                 /usr/bin/git-annex test
+root     3696268  0.2  0.0 1074196636 41932 pts/1 Sl+ Nov18  13:14                   /usr/bin/git-annex --color=never test
+root     3710526  0.0  0.0 1074122856 44736 pts/1 Sl+ Nov18   0:00                     /usr/bin/git-annex move --to origin foo
+root     3710593  0.0  0.0      0     0 pts/1    Z+   Nov18   0:00                       [git] <defunct>
+root     3710594  0.0  0.0      0     0 pts/1    Z+   Nov18   0:00                       [git] <defunct>
+root     3710595  0.0  0.0      0     0 pts/1    Z+   Nov18   0:00                       [git] <defunct>
+root     3710596  0.0  0.0      0     0 pts/1    Z+   Nov18   0:00                       [git] <defunct>
+root     3710597  0.0  0.0   2484   516 pts/1    S+   Nov18   0:00                       sh -c git-annex test --fakessh -- 'localhost' 'git-annex-shell '"'"'p2pstdio'"'"' '"'"'/mnt/test/test9/.t/75/main0'"'"' '"'"'6129b8ec-34af-47d1-b7e6-3c4fcc0d33e3'"'"' --uuid c129397d-8209-40ea-8347-16a8c3fe69de'
+root     3710598  0.0  0.0 1074048960 20408 pts/1 Sl+ Nov18   0:00                         git-annex test --fakessh -- localhost git-annex-shell 'p2pstdio' '/mnt/test/test9/.t/75/main0' '6129b8ec-34af-47d1-b7e6-3c4fcc0d33e3' --uuid c129397d-8209-40ea-8347-16a8c3fe69de
+root     3710604  0.0  0.0   2484   580 pts/1    S+   Nov18   0:00                           /bin/sh -c git-annex-shell 'p2pstdio' '/mnt/test/test9/.t/75/main0' '6129b8ec-34af-47d1-b7e6-3c4fcc0d33e3' --uuid c129397d-8209-40ea-8347-16a8c3fe69de
+root     3710605  0.0  0.0 1074122860 18948 pts/1 Sl+ Nov18   2:39                             git-annex-shell p2pstdio /mnt/test/test9/.t/75/main0 6129b8ec-34af-47d1-b7e6-3c4fcc0d33e3 --uuid c129397d-8209-40ea-8347-16a8c3fe69de
+
+``` 
+
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 10.20221003
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+
+```
+
+any ideas? need access to troubleshoot?
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
