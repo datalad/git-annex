@@ -65,11 +65,20 @@ import qualified Command.Uninit
 
 -- Run a process. The output and stderr is captured, and is only
 -- displayed if the process does not return the expected value.
+--
+-- In debug mode, the output is allowed to pass through.
 testProcess :: String -> [String] -> Maybe [(String, String)] -> (Bool -> Bool) -> String -> Assertion
 testProcess command params environ expectedret faildesc = do
 	let p = (proc command params) { env = environ }
-	(transcript, ret) <- Utility.Process.Transcript.processTranscript' p Nothing
-	(expectedret ret) @? (faildesc ++ " failed (transcript follows)\n" ++ transcript)
+	debug <- testDebug . testOptions <$> getTestMode
+	if debug
+		then do
+			ret <- withCreateProcess p $ \_ _ _ pid ->
+				waitForProcess pid
+			(expectedret (ret == ExitSuccess)) @? (faildesc ++ " failed")
+		else do
+			(transcript, ret) <- Utility.Process.Transcript.processTranscript' p Nothing
+			(expectedret ret) @? (faildesc ++ " failed (transcript follows)\n" ++ transcript)
 
 -- Run git. (Do not use to run git-annex as the one being tested
 -- may not be in path.)
@@ -98,7 +107,11 @@ git_annex_shouldfail' = git_annex'' (== False)
 git_annex'' :: (Bool -> Bool) -> String -> [String] -> Maybe [(String, String)] -> String -> Assertion
 git_annex'' expectedret command params environ faildesc = do
 	pp <- Annex.Path.programPath
-	testProcess pp (command:params) environ expectedret faildesc
+	debug <- testDebug . testOptions <$> getTestMode
+	let params' = if debug
+		then "--debug":params
+		else params
+	testProcess pp (command:params') environ expectedret faildesc
 
 {- Runs git-annex and returns its standard output. -}
 git_annex_output :: String -> [String] -> IO String

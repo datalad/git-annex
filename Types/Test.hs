@@ -19,6 +19,7 @@ data TestOptions = TestOptions
 	, fakeSsh :: Bool
 	, concurrentJobs :: Maybe Concurrency
 	, testGitConfig :: [(ConfigKey, ConfigValue)]
+	, testDebug :: Bool
 	, internalData :: CmdParams
 	}
 

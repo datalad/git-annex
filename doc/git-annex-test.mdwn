@@ -44,6 +44,16 @@ framework. Pass --help for details about those.
   One valid use of this is to change a git configuration to a value that
   is planned to be the new default in a future version of git.
 
+* `--test-debug`
+
+  Normally output of commands run by the test suite is hidden, so even
+  when annex.debug or --debug is enabled, it will not be displayed.
+  This option makes the full output of commands run by the test suite be
+  displayed. It also makes the test suite run git-annex with --debug.
+
+  It's a good idea to use `-J1` in combinaton with this, otherwise
+  the output of concurrent tests will be mixed together.
+
 # SEE ALSO
 
 [[git-annex]](1)

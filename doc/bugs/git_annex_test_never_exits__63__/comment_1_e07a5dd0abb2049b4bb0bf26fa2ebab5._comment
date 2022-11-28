@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-11-28T18:11:41Z"
+ content="""
+Seems like the test it is stuck in is "move (ssh remote)".
+
+Is this replicable?
+
+I wonder if `test_fs.py` is doing something that causes the problem.
+There is some complexity in there. Maybe it's happening on one
+particular FS.
+
+If it happens when not run by `test_fs.py`, it would be useful to get a
+debug log, because I think that seeing the P2P protocol dump would help
+explain what has happened.
+
+There was not a good way to get the test suite to output a full debug
+log, so I had to implement one. With an updated build of git-annex,
+you can use:
+
+	git-annex test -J1 --test-debug
+
+Here's the expected output of that section of the test suite, when it
+is working properly:
+
+	move foo [2022-11-28 14:54:11.10011679] (Utility.Process) process [390399] chat: sh ["-c","git-annex test --fakessh -- 'localhost' 'git-annex-shell '\"'\"'p2pstdio'\"'\"' '\"'\"'/home/joey/src/git-annex/.t/3/main1'\"'\"' '\"'\"'--debug'\"'\"' '\"'\"'c76e0406-38ea-413e-9fb0-56cc32847734'\"'\"' --uuid 000c7285-ec19-4c15-9c67-4dd4b7c74775'"]
+	[2022-11-28 14:54:11.129754519] (P2P.IO) [ThreadId 4] P2P > AUTH-SUCCESS 000c7285-ec19-4c15-9c67-4dd4b7c74775
+	[2022-11-28 14:54:11.130259741] (P2P.IO) [ssh connection Just 390399] [ThreadId 4] P2P < AUTH-SUCCESS 000c7285-ec19-4c15-9c67-4dd4b7c74775
+	[2022-11-28 14:54:11.13041388] (P2P.IO) [ssh connection Just 390399] [ThreadId 4] P2P > VERSION 1
+	[2022-11-28 14:54:11.130680315] (P2P.IO) [ThreadId 4] P2P < VERSION 1
+	[2022-11-28 14:54:11.13087982] (P2P.IO) [ThreadId 4] P2P > VERSION 1
+	[2022-11-28 14:54:11.131127415] (P2P.IO) [ssh connection Just 390399] [ThreadId 4] P2P < VERSION 1
+	[2022-11-28 14:54:11.131262307] (P2P.IO) [ssh connection Just 390399] [ThreadId 4] P2P > CHECKPRESENT SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+	[2022-11-28 14:54:11.131679501] (P2P.IO) [ThreadId 4] P2P < CHECKPRESENT SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+	[2022-11-28 14:54:11.132388822] (P2P.IO) [ThreadId 4] P2P > FAILURE
+	[2022-11-28 14:54:11.13261351] (P2P.IO) [ssh connection Just 390399] [ThreadId 4] P2P < FAILURE
+	(to origin...) 
+	[2022-11-28 14:54:11.135583194] (P2P.IO) [ssh connection Just 390399] [ThreadId 4] P2P > PUT foo SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+	[2022-11-28 14:54:11.136134981] (P2P.IO) [ThreadId 4] P2P < PUT foo SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77
+	[2022-11-28 14:54:11.136824468] (P2P.IO) [ThreadId 4] P2P > PUT-FROM 0
+	[2022-11-28 14:54:11.137123219] (P2P.IO) [ssh connection Just 390399] [ThreadId 4] P2P < PUT-FROM 0
+	...
+	[2022-11-28 14:54:11.148194515] (P2P.IO) [ssh connection Just 390399] [ThreadId 4] P2P > DATA 20
+	[2022-11-28 14:54:11.148414855] (P2P.IO) [ThreadId 4] P2P < DATA 20
+	[2022-11-28 14:54:11.148739395] (P2P.IO) [ssh connection Just 390399] [ThreadId 4] P2P > VALID
+	^M100%  20 B              2 KiB/s 0s[2022-11-28 14:54:11.152428942] (P2P.IO) [ThreadId 4] P2P < VALID
+	...
+	[2022-11-28 14:54:11.177599567] (P2P.IO) [ThreadId 4] P2P > SUCCESS
+	[2022-11-28 14:54:11.177858296] (P2P.IO) [ssh connection Just 390399] [ThreadId 4] P2P < SUCCESS
+"""]]

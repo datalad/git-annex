@@ -92,7 +92,7 @@ import qualified Utility.Gpg
 
 optParser :: Parser TestOptions
 optParser = TestOptions
-	<$> snd (tastyParser (tests 1 False True (TestOptions mempty False False Nothing mempty mempty)))
+	<$> snd (tastyParser (tests 1 False True (TestOptions mempty False False Nothing mempty False mempty)))
 	<*> switch
 		( long "keep-failures"
 		<> help "preserve repositories on test failure"
@@ -111,6 +111,10 @@ optParser = TestOptions
 		<> help "run tests with a git config set"
 		<> metavar "NAME=VALUE"
 		))
+	<*> switch
+		( long "test-debug"
+		<> help "show debug messages for commands run by test suite"
+		)
 	<*> cmdParams "non-options are for internal use only"
   where
 	parseconfigvalue s = case break (== '=') s of
