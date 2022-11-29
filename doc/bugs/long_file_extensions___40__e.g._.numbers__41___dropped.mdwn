@@ -29,3 +29,5 @@ local repository version: 10
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git annex makes me so happy. As I had mentioned in a previous post some years ago, it solves problems that I have not anticipated and teaches me new concepts that I then apply across my work. Thank you so much Joey! :bow:
+
+> [[notabug|done]] --[[Joey]]
