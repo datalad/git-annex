@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-11-29T21:45:15Z"
+ content="""
+I examined this situation on the machine. I had to ctrl-z the process to
+get a shell. 
+
+Then I checked what the stdin of 3710605 was, and it was still 
+open, and was a pipe from 3710526. So that's why the p2pstdio process 
+was still running; that pipe should be closed when the parent git-annex
+is done, but the parent was apparently stuck on something.
+
+Then I straced 3710605 but it was suspended (oops). So I ran `fg`. This
+somehow unstuck everything! The test suite finished up very fast.
+
+Here is what it output for the test that had gotten stuck:
+
+	Tests
+	  Repo Tests v8 unlocked
+	    Init Tests
+	      init:            OK (2.54s)
+	      add:             OK (5.48s)
+	    move (ssh remote): FAIL (958561.16s)
+	      ./Test/Framework.hs:398:
+	      bad content in location log for foo key SHA256E-s20--e394a389d787383843decc5d3d99b6d184ffa5fddeec23b911f9ee7fc8b9ea77 uuid UUID "c129397d-8209-40ea-8347-16a8c3fe69de"
+	      expected: True
+	       but got: False
+
+That seems like it must come from here in the test suite:
+
+        git_annex "move" ["--to", "origin", annexedfile] "move --to of file"
+        inmainrepo $ annexed_present annexedfile
+
+So it seems that the content was moved back to origin successfully
+(`annexed_present` checks that the object file is present before checking
+the location log), but that the location log didn't get updated. Need
+to check if that update would have been done by the `p2pstdio` process
+or the `move` process.
+
+Why would a SIGCONT have unstuck it I wonder?
+
+I have re-ran the command to see if the bug replicates..
+"""]]
