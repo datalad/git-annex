@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Spellbind8200"
+ avatar="http://cdn.libravatar.org/avatar/ca9df5665bccf2918715685e2ec40a09"
+ subject="Found unlock"
+ date="2022-11-29T09:05:43Z"
+ content="""
+Nvm, i just read detailed documentation on \" git annex adjust --unlock\" and that does seem to do the trick. 
+"""]]
