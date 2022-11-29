@@ -1,0 +1,5 @@
+I recently started using this awesome tool for backing up and location tracking personal data across multiple laptops, servers and usb drives. I want to create a simple backup archive on bunch of usb hdds so my family can have access to this data without having to learn any tool or me being around.
+
+I am able to do "rsync -PavLh" from my annex to usb drive and create a full simple backup. However, i lose location tracking with that since git-annex won't know what files are already copied. How do i prepare a simple exFat or NTFS usb with all data clearly visible without sim links or anything so that anyone can use it?
+
+Is it good idea to just create an annex on ntfs drive and then mark it unlocked before disconnecting? That way, however, connects that ntfs drive to a windows machine, they can just see directories without symlink shenanigans. Any other alternative? Any way to always mark a repo unlocked?
