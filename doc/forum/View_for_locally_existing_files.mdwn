@@ -1,0 +1,8 @@
+Hi,
+
+Is there a way to make a "view" that only shows me files that are locally existing (meaning: where the binary is present in the repo I am working on)?
+
+I had a look at documentation and the forum but I did not find anything fitting (I honestly assume that I overlooked it somewhere). To me views, vfilter and such do not appear to meet my needs since they are only working on metadata.
+
+Why do I need this?
+I am starting to manage my music collection with git annex. On most devices I only have a fraction of the globally available collection. I would like to see only those symlinks that actually lead to binary files. This way I would not to confuse music players with broken symlinks and know at a glance what I can actually listen to right now.
