@@ -14,7 +14,7 @@ pip install git+https://gitlab.com/nobodyinperson/git-annex-metadata-edit
 ## ✨ Features
 
 - Operate on multiple files (recursively)
-- overwrite a metadata field
+- overwrite/remove a metadata field
 - add/remove specific values from a field in one go
 
 ## 📟 📹 Screencast
