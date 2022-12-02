@@ -1,6 +1,6 @@
 This is a patch that seems to work for my personal use.
 BLAKE3 does support variable lengths, but my code does not implement support for anything other than 256-bit (32-byte) digests.
-I'm familiar enough with the codebase to be sure whether adding variable length support later is a backwards compatibility hazard or not.
+I'm not familiar enough with the codebase to be sure whether adding variable length support later is a backwards compatibility hazard or not.
 
 [[!format patch """
 From efa115d94d1a5a52574d5760c6e951ed3c518667 Mon Sep 17 00:00:00 2001
