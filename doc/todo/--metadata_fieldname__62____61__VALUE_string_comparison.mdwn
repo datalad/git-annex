@@ -87,7 +87,7 @@ file6
 file7
 file8
 file9
-⬆⬆⬆ This should only output file8 and file9 ⬆⬆⬆
+⬆⬆⬆ This should only output file4 through file8 ⬆⬆⬆
 ```
 
 Yann / @nobodyinperson
