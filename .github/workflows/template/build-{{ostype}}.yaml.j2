@@ -56,17 +56,15 @@ jobs:
           sudo apt-get install eatmydata
           sudo eatmydata apt-get install gnupg moreutils strace
 
-      - name: Build & install Singularity
+      - name: Install Singularity
         run: |
-          sudo eatmydata apt-get install -y dh-autoreconf libarchive-dev
-          git clone https://github.com/sylabs/singularity.git /tmp/singularity
-          cd /tmp/singularity
-          git checkout 2.6.1
-          sed -i -e '/^AM_INIT_AUTOMAKE$/d' configure.ac
-          ./autogen.sh
-          ./configure --prefix=/usr/local
-          make
-          sudo make install
+          release="$(curl -fsSL https://api.github.com/repos/sylabs/singularity/releases/latest | jq -r .tag_name)"
+          codename="$(lsb_release -cs)"
+          arch="$(dpkg --print-architecture)"
+          cd /tmp
+          wget -O singularity-ce.deb https://github.com/sylabs/singularity/releases/download/$release/singularity-ce_${release#v}-${codename}_$arch.deb
+          sudo dpkg -i singularity-ce.deb
+          sudo apt-get install -f
 
     {% elif ostype == "macos" %}
       - name: Set up system
