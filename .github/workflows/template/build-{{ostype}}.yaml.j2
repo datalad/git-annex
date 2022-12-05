@@ -620,16 +620,23 @@ jobs:
           {{step}}
           {% endfor %}
 
-    {% if ostype == "ubuntu" %}
-    {# TODO: return for macos! https://github.com/datalad/git-annex/issues/42
-      {% if ostype == "ubuntu"  or ostype == "macos" %} #}
+    {% if ostype == "ubuntu"  or ostype == "macos" %}
       - name: Set up SSH target
         shell: bash
         run: |
           {% if ostype == "macos" %}
           # coreutils provides a readlink that supports `-f`
           brew install coreutils docker docker-machine
-          docker-machine --github-api-token="${{ secrets.GITHUB_TOKEN }}" create --driver virtualbox default
+
+          # <https://github.com/actions/virtual-environments/issues/4431>
+          brew uninstall virtualbox
+          cd "$(brew --repo homebrew/cask)"
+          git checkout 8670a72380c57c606d6582b645421e31dad2eee2
+          brew install --cask virtualbox
+
+          mkdir -p ~/.docker/machine/cache
+          wget -O ~/.docker/machine/cache/boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso
+          docker-machine --native-ssh create --driver virtualbox default
           eval "$(docker-machine env default)"
           export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
           {% endif %}
@@ -637,8 +644,7 @@ jobs:
             https://raw.githubusercontent.com/datalad/datalad/master/tools/ci/prep-travis-forssh.sh \
             | bash
           echo DATALAD_TESTS_SSH=1 >> "$GITHUB_ENV"
-
-   {% elif ostype == "windows" %}
+    {% elif ostype == "windows" %}
       - name: Define test host alias
         shell: cmd
         run: |
@@ -697,6 +703,8 @@ jobs:
         run: |
           {% if ostype == "macos" %}
           brew install exempi  # Needed by python-xmp-toolkit
+          mkdir -p /private/tmp/DLTMP
+          echo TMPDIR=/private/tmp/DLTMP >> "$GITHUB_ENV"
           {% endif %}
           git config --global user.email "test@github.land"
           git config --global user.name "GitHub Almighty"
