@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-12-05T17:48:52Z"
+ content="""
+The rerun did not get stuck. So it's not something directly the fault 
+of the script running `git-annex test`, I think.
+"""]]
