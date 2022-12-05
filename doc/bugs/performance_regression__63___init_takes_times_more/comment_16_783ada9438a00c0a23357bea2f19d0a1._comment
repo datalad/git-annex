@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 16"""
+ date="2022-12-05T17:29:11Z"
+ content="""
+<https://github.com/yesodweb/persistent/issues/1441> is having some useful
+discussion. There are changes that would speed it up 2x. The best path may
+be improving sqlite to optimise `insert_`.
+"""]]
