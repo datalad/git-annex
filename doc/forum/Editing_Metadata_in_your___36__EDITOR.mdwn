@@ -1,0 +1,26 @@
+Hey everyone,
+
+I made a Python script that launches your `$EDITOR` (or `$VISUAL`) to conveniently edit git-annex metadata.
+
+Code is [on Gitlab](https://gitlab.com/nobodyinperson/git-annex-metadata-edit).
+
+## 📥 Installation
+
+```bash
+# Installation
+pip install git+https://gitlab.com/nobodyinperson/git-annex-metadata-edit
+```
+
+## ✨ Features
+
+- Operate on multiple files (recursively)
+- overwrite/remove a metadata field
+- add/remove specific values from a field in one go
+
+## 📟 📹 Screencast
+
+[![asciicast](https://asciinema.org/a/541576.svg)](https://asciinema.org/a/541576?autoplay=1)
+
+Cheers, 👍
+
+Yann

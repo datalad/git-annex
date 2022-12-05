@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2022-11-29T22:25:42Z"
+ content="""
+> I have re-ran the command to see if the bug replicates..
+
+note: it was considerable amount of time (days?) for it to take there ;)  I made a copy `test_fs_testonly.py` where I removed all other \"benchmarks\" prior running `annex test` -- might get there faster if works so feel free to interrupt and rerun that one.  That code is old (circa 2014 ;)) , and I should do some face lift but haven't had a chance yet :-/
+"""]]
