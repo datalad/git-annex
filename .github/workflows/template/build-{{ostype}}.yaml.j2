@@ -54,7 +54,19 @@ jobs:
           bash <(wget -q -O- http://neuro.debian.net/_files/neurodebian-travis.sh)
           sudo apt-get update -qq
           sudo apt-get install eatmydata
-          sudo eatmydata apt-get install singularity-container gnupg moreutils strace
+          sudo eatmydata apt-get install gnupg moreutils strace
+
+      - name: Install Singularity
+        run: |
+          # use if decide to get most recent release of singularity
+          # release="$(curl -fsSL https://api.github.com/repos/sylabs/singularity/releases/latest | jq -r .tag_name)"
+          release="v3.10.4"
+          codename="$(lsb_release -cs)"
+          arch="$(dpkg --print-architecture)"
+          cd /tmp
+          wget -O singularity-ce.deb https://github.com/sylabs/singularity/releases/download/$release/singularity-ce_${release#v}-${codename}_$arch.deb
+          sudo dpkg -i singularity-ce.deb
+          sudo apt-get install -f
 
     {% elif ostype == "macos" %}
       - name: Set up system
