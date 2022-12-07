@@ -2,8 +2,8 @@
 
 When I hit **Add Internet Archive item**, I get:
 
-Internal Server Error
-Unexpected parameters: x-amz-interactive-priority x-amz-mediatype
+Internal Server Error  
+Unexpected parameters: x-amz-interactive-priority x-amz-mediatype  
 git-annex version 8.20210223
 
 
@@ -18,7 +18,7 @@ Choose **Internet Archive**
 
 On the _Adding an Internet Archive item_ page, enter access key, secret key
 
-choose Media Type software
+choose Media Type software  
 Item Name: commons-software
 
 Hit **Add Internet Archive item**
