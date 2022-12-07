@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2022-12-07T20:55:35Z"
+ content="""
+Oh interesting, the same process has restage.lck open twice.
+
+	lrwx------ 1 joey joey 64 Dec  7 14:20 /proc/1710650/fd/12 -> /home/joey/tmp/.t/3/main0/.git/annex/restage.lck
+	lrwx------ 1 joey joey 64 Dec  7 16:53 /proc/1710650/fd/16 -> /home/joey/tmp/.t/3/main0/.git/annex/restage.lck
+
+There are other processes that have the same restage.lck open too. 
+In the process tree below, pid 1710382 does, and so does pid 1710483.
+
+	1710368 pts/8    S+     0:00 sh -c git-annex test --fakessh -- 'localhost' 'git-annex-shell '"'"'p2pstdio'"'"' '"'"'/home/joey/tmp/.t/3/main0'"'"' '"'"'6e958d13-c3cb-4c78-a360-e14308368520'"'"' --uuid 3a4d8ec8-3f33-4b80-bd67-119b1c65fc88'
+	1710369 pts/8    Sl+    0:00  \_ git-annex test --fakessh -- localhost git-annex-shell 'p2pstdio' '/home/joey/tmp/.t/3/main0' '6e958d13-c3cb-4c78-a360-e14308368520' --uuid 3a4d8ec8-3f33-4b80-bd67-119b1c65fc88
+	1710380 pts/8    S+     0:00      \_ /bin/sh -c git-annex-shell 'p2pstdio' '/home/joey/tmp/.t/3/main0' '6e958d13-c3cb-4c78-a360-e14308368520' --uuid 3a4d8ec8-3f33-4b80-bd67-119b1c65fc88
+	1710382 pts/8    Sl+    0:00          \_ git-annex-shell p2pstdio /home/joey/tmp/.t/3/main0 6e958d13-c3cb-4c78-a360-e14308368520 --uuid 3a4d8ec8-3f33-4b80-bd67-119b1c65fc88
+	1710411 pts/8    S+     0:00              \_ git --git-dir=/home/joey/tmp/.t/3/main0/.git --work-tree=/home/joey/tmp/.t/3/main0 --literal-pathspecs cat-file --batch
+	1710476 pts/8    S+     0:00              \_ git --git-dir=/home/joey/tmp/.t/3/main0/.git --work-tree=/home/joey/tmp/.t/3/main0 --literal-pathspecs -c core.safecrlf=false update-index -q --refresh -z --stdin
+	1710479 pts/8    S+     0:00                  \_ /bin/sh -c git-annex filter-process git-annex filter-process
+	1710483 pts/8    Sl+    0:21                      \_ git-annex filter-process
+	1710504 pts/8    S+     0:00                          \_ git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+	1710506 pts/8    S+     0:00                          \_ git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+	1710533 pts/8    S+     0:00                          \_ git --git-dir=.git --work-tree=. --literal-pathspecs hash-object -w --stdin-paths --no-filters
+	1710540 pts/8    S+     0:00                          \_ git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+
+    64 Dec  7 17:01 /proc/1710382/fd/13 -> /home/joey/tmp/.t/3/main0/.git/annex/restage.lck
+    64 Dec  7 16:53 /proc/1710483/fd/11 -> /home/joey/tmp/.t/3/main0/.git/annex/restage.lck
+    64 Dec  7 16:53 /proc/1710483/fd/19 -> /home/joey/tmp/.t/3/main0/.git/annex/restage.lck
+
+(Strange that pid 1710368 is not a child process of the main git-annex test
+run. I'm unsure why that happens. )
+
+Stracing 1710483, it is also stuck on `fcntl F_SETLKW`.
+This looks like it may be the main deadlock, because the parent is waiting on
+`git update-index`, which is waiting on `git-annex filter-process`, which is
+stuck waiting to take the lock... which its parent is holding!
+
+(There are also several other process trees, running `git-annex test --fakessh`,
+that have gotten deparented from the main test run, and are hanging around.
+Those also have restage.lck open, though in their cases it is a since-deleted
+file.)
+
+I think this is a bug in restagePointerFiles, which uses 
+streamRestageLog while refreshIndex is running.
+The restage.log was added 2 months ago, in
+[[!commit 6a3bd283b8af53f810982e002e435c0d7c040c59]].
+
+I suspect that `git-annex filter-process` is running populatePointerFile via
+Command.Smudge.getMoveRaceRecovery, which needs to write to the restage.log.
+That would explain why the deadlock only happens sometimes, because it
+involves a race that triggers that code.
+
+Reading the whole
+restage.log into memory first would probably avoid the bug, but is not ideal.
+"""]]
