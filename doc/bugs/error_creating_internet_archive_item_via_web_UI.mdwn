@@ -27,6 +27,8 @@ Hit **Add Internet Archive item**
 
 git-annex version 8.20210223
 
+linux (ubuntu)
+
 ### Please provide any additional information below.
 
 [[!format sh """
