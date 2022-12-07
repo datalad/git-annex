@@ -3,5 +3,15 @@
  subject="""comment 6"""
  date="2022-12-07T16:36:44Z"
  content="""
-Search me. :-/
+Well, a specific filesystem or mount option that the script sets up, for
+example. 
+
+Or if it's something of that kind, it's also intermittent.
+
+This will limit the test suite to only running the that test:
+
+	git-annex test --pattern '/move (ssh remote)/ && /Repo Tests v8 unlocked/'
+
+I have that repeating locally in a loop, in case it's just something that
+happens every 1000 test runs or something like that.
 """]]
