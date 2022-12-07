@@ -1,0 +1,114 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2022-12-07T18:19:19Z"
+ content="""
+Very good news! Reproduced the hang on kite, after 500 iterations of test
+suite.
+
+	All 0 tests passed (0.01s)
+	Tests
+	  Repo Tests v10 adjusted unlocked branch
+	    Init Tests
+	      init:            OK (0.44s)
+	      add:             OK (0.81s)
+	    move (ssh remote):
+
+strace of the `git-annex move` process:
+
+	joey@kite:~/tmp>strace  -p 1710605 -f
+	strace: Process 1710605 attached with 6 threads
+	[pid 1710671] futex(0x7fab6801c398, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+	[pid 1710614] futex(0x5a21968, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+	[pid 1710613] restart_syscall(<... resuming interrupted read ...> <unfinished ...>
+	[pid 1710611] futex(0x4868648, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+	[pid 1710610] futex(0x4868648, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+	[pid 1710605] futex(0x5a2164c, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+	[pid 1710611] <... futex resumed>)      = 0
+	[pid 1710610] <... futex resumed>)      = -1 EAGAIN (Resource temporarily unavailable)
+	[pid 1710611] epoll_wait(3,  <unfinished ...>
+	[pid 1710610] futex(0x48685e0, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+	[pid 1710611] <... epoll_wait resumed>[], 64, 0) = 0
+	[pid 1710610] <... futex resumed>)      = 0
+	[pid 1710611] epoll_wait(3,  <unfinished ...>
+	[pid 1710610] read(10,  <unfinished ...>
+	[pid 1710611] <... epoll_wait resumed>[], 64, 0) = 0
+	[pid 1710610] <... read resumed>"\344\16\0\0\0\0\0\0", 8) = 8
+	[pid 1710611] epoll_wait(3,  <unfinished ...>
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] write(9, "\377\0\0\0\0\0\0\0", 8 <unfinished ...>
+	[pid 1710613] <... restart_syscall resumed>) = 1
+	[pid 1710610] <... write resumed>)      = 8
+	[pid 1710613] read(9,  <unfinished ...>
+	[pid 1710610] read(10,  <unfinished ...>
+	[pid 1710613] <... read resumed>"\377\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710613] futex(0x5a21968, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
+	[pid 1710614] <... futex resumed>)      = 0
+	[pid 1710613] <... futex resumed>)      = 1
+	[pid 1710613] poll([{fd=7, events=POLLIN}, {fd=9, events=POLLIN}], 2, -1 <unfinished ...>
+	[pid 1710614] futex(0x5a21970, FUTEX_WAKE_PRIVATE, 1) = 0
+	[pid 1710614] sched_getaffinity(0, 128, [0, 1]) = 8
+	[pid 1710614] rt_sigprocmask(SIG_BLOCK, [HUP INT QUIT TERM CONT TSTP], [], 8) = 0
+	[pid 1710610] <... read resumed>"\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] read(10,  <unfinished ...>
+	[pid 1710614] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+	[pid 1710614] futex(0x5a2196c, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+	[pid 1710610] <... read resumed>"\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710610] futex(0x486864c, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, FUTEX_BITSET_MATCH_ANY
+
+Strace of the child:
+
+	joey@kite:~/tmp>strace  -p 1710650 -f
+	strace: Process 1710650 attached with 6 threads
+	[pid 1710658] futex(0x51ef9ec, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+	[pid 1710655] futex(0x51ef7ec, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+	[pid 1710653] read(10,  <unfinished ...>
+	[pid 1710650] fcntl(12, F_SETLKW, {l_type=F_WRLCK, l_whence=SEEK_SET, l_start=0, l_len=0} <unfinished ...>
+	[pid 1710673] futex(0x7f6ec001c3e8, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+	[pid 1710657] futex(0x7f6ed0000bf8, FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 0, NULL, FUTEX_BITSET_MATCH_ANY <unfinished ...>
+	[pid 1710653] <... read resumed>"\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+	[pid 1710653] read(10, "\1\0\0\0\0\0\0\0", 8) = 8
+
+Which looks like it's blocked on taking a lock of
+`/home/joey/tmp/.t/3/main0/.git/annex/restage.lck`
+"""]]
