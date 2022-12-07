@@ -749,7 +749,12 @@ parallelTestRunner' numjobs opts mkts
 	-- Make more parts than there are jobs, because some parts
 	-- are larger, and this allows the smaller parts to be packed
 	-- in more efficiently, speeding up the test suite overall.
-	numparts = numjobs * 2
+	--
+	-- When there is a pattern, splitting into parts will cause
+	-- extra work.
+	numparts = if haspattern
+		then 1
+		else numjobs * 2
 
 	worker rs nvar a = do
 		(n, m) <- atomically $ do
@@ -814,15 +819,16 @@ parallelTestRunner' numjobs opts mkts
 					, exitFailure
 					)
 	
-	tastyopts = case lookupOption (tastyOptionSet opts) of
+	(haspattern, tastyopts) = case lookupOption (tastyOptionSet opts) of
 		-- Work around limitation of tasty; when tests to run
 		-- are limited to a pattern, it does not include their
 		-- dependencies. So, add another pattern including the
 		-- init tests, which are a dependency of most tests.
 		TestPattern (Just p) -> 
-			setOption (TestPattern (Just (TP.Or p (TP.ERE initTestsName))))
-				(tastyOptionSet opts)
-		TestPattern Nothing -> tastyOptionSet opts
+			(True, setOption (TestPattern (Just (TP.Or p (TP.ERE initTestsName))))
+				(tastyOptionSet opts))
+		TestPattern Nothing ->
+			(False, tastyOptionSet opts)
 
 topLevelTestGroup :: [TestTree] -> TestTree
 topLevelTestGroup = testGroup "Tests"

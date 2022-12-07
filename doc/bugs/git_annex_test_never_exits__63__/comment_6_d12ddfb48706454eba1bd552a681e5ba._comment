@@ -14,4 +14,6 @@ This will limit the test suite to only running the that test:
 
 I have that repeating locally in a loop, in case it's just something that
 happens every 1000 test runs or something like that.
+
+(I've patched git-annex to speed up the above command 400%.)
 """]]
