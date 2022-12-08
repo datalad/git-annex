@@ -13,9 +13,11 @@ import Annex.Common
 import Git.FilePath
 import Logs.File
 import Utility.InodeCache
+import Annex.LockFile
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
+import qualified Utility.RawFilePath as R
 
 -- | Log a file whose pointer needs to be restaged in git.
 -- The content of the file may not be a pointer, if it is populated with
@@ -27,31 +29,61 @@ writeRestageLog f ic = do
 	lckf <- fromRepo gitAnnexRestageLock
 	appendLogFile logf lckf $ L.fromStrict $ formatRestageLog f ic
 
--- | Streams the content of the restage log, and then empties the log at
--- the end.
+-- | Streams the content of the restage log.
+--
+-- First, the content of the log file is moved to the restage.old file.
+-- If that file already exists, the content is appended, otherwise it's
+-- renamed to that.
+--
+-- The log file is kept locked during that, but the lock is then
+-- released. The processor may do something that itself needs to take the
+-- lock, so it's important that the lock not be held while running it.
+--
+-- The content of restage.old file is then streamed to the processor, 
+-- and then the finalizer is run, ending with emptying restage.old.
 --
 -- If the processor or finalizer is interrupted or throws an exception,
--- the log file is left unchanged.
---
--- Locking is used to prevent new items being added to the log while this
--- is running.
+-- restage.old is left populated to be processed later.
 streamRestageLog :: Annex () -> (TopFilePath -> InodeCache -> Annex ()) -> Annex ()
 streamRestageLog finalizer processor = do
 	logf <- fromRepo gitAnnexRestageLog
+	oldf <- fromRepo gitAnnexRestageLogOld
+	let oldf' = fromRawFilePath oldf
 	lckf <- fromRepo gitAnnexRestageLock
-	streamLogFile (fromRawFilePath logf) lckf finalizer $ \l -> 
+	
+	withExclusiveLock lckf $ liftIO $
+		whenM (R.doesPathExist logf) $
+			ifM (R.doesPathExist oldf)
+				( do
+					h <- openFile oldf' AppendMode
+					hPutStr h =<< readFile (fromRawFilePath logf)
+					hClose h
+					liftIO $ removeWhenExistsWith R.removeLink logf
+				, moveFile logf oldf
+				)
+
+	streamLogFileUnsafe oldf' finalizer $ \l -> 
 		case parseRestageLog l of
 			Just (f, ic) -> processor f ic
 			Nothing -> noop
+	
+	liftIO $ removeWhenExistsWith R.removeLink oldf
 
+-- | Calculate over both the current restage log, and also over the old
+-- one if it had started to be processed but did not get finished due
+-- to an interruption.
 calcRestageLog :: t -> ((TopFilePath, InodeCache) -> t -> t) -> Annex t
 calcRestageLog start update = do
 	logf <- fromRepo gitAnnexRestageLog
+	oldf <- fromRepo gitAnnexRestageLogOld
 	lckf <- fromRepo gitAnnexRestageLock
-	calcLogFile logf lckf start $ \l v -> 
-		case parseRestageLog (decodeBL l) of
-			Just pl -> update pl v
-			Nothing -> v
+	withSharedLock lckf $ do
+		mid <- calcLogFileUnsafe logf start process
+		calcLogFileUnsafe oldf mid process
+  where
+	process l v = case parseRestageLog (decodeBL l) of
+		Just pl -> update pl v
+		Nothing -> v
 
 formatRestageLog :: TopFilePath -> InodeCache -> S.ByteString
 formatRestageLog f ic = encodeBS (showInodeCache ic) <> ":" <> getTopFilePath f

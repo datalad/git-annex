@@ -13,8 +13,10 @@ module Logs.File (
 	appendLogFile,
 	modifyLogFile,
 	streamLogFile,
+	streamLogFileUnsafe,
 	checkLogFile,
 	calcLogFile,
+	calcLogFileUnsafe,
 ) where
 
 import Annex.Common
@@ -98,7 +100,12 @@ checkLogFile f lck matchf = withSharedLock lck $ bracket setup cleanup go
 
 -- | Folds a function over lines of a log file to calculate a value.
 calcLogFile :: RawFilePath -> RawFilePath -> t -> (L.ByteString -> t -> t) -> Annex t
-calcLogFile f lck start update = withSharedLock lck $ bracket setup cleanup go
+calcLogFile f lck start update =
+	withSharedLock lck $ calcLogFileUnsafe f start update
+
+-- | Unsafe version that does not do locking.
+calcLogFileUnsafe :: RawFilePath -> t -> (L.ByteString -> t -> t) -> Annex t
+calcLogFileUnsafe f start update = bracket setup cleanup go
   where
 	setup = liftIO $ tryWhenExists $ openFile f' ReadMode
 	cleanup Nothing = noop
@@ -125,7 +132,15 @@ calcLogFile f lck start update = withSharedLock lck $ bracket setup cleanup go
 -- is running.
 streamLogFile :: FilePath -> RawFilePath -> Annex () -> (String -> Annex ()) -> Annex ()
 streamLogFile f lck finalizer processor = 
-	withExclusiveLock lck $ bracketOnError setup cleanup go
+	withExclusiveLock lck $ do
+		streamLogFileUnsafe f finalizer processor
+		liftIO $ writeFile f ""
+		setAnnexFilePerm (toRawFilePath f)
+
+-- Unsafe version that does not do locking, and does not empty the file
+-- at the end.
+streamLogFileUnsafe :: FilePath -> Annex () -> (String -> Annex ()) -> Annex ()
+streamLogFileUnsafe f finalizer processor = bracketOnError setup cleanup go
   where
 	setup = liftIO $ tryWhenExists $ openFile f ReadMode 
 	cleanup Nothing = noop
@@ -135,8 +150,6 @@ streamLogFile f lck finalizer processor =
 		mapM_ processor =<< liftIO (lines <$> hGetContents h)
 		liftIO $ hClose h
 		finalizer
-		liftIO $ writeFile f ""
-		setAnnexFilePerm (toRawFilePath f)
 
 createDirWhenNeeded :: RawFilePath -> Annex () -> Annex ()
 createDirWhenNeeded f a = a `catchNonAsync` \_e -> do

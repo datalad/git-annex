@@ -7,6 +7,8 @@ git-annex (10.20221105) UNRELEASED; urgency=medium
   * When youtube-dl is not available in PATH, use yt-dlp instead.
   * Support parsing yt-dpl output to display download progress.
   * test: Add --test-debug option.
+  * Fix a hang that occasionally occurred during commands such as move.
+    (A bug introduced in 10.20220927)
 
  -- Joey Hess <id@joeyh.name>  Fri, 18 Nov 2022 12:58:06 -0400
 

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2022-12-08T18:07:47Z"
+ content="""
+I've developed a fix. Gonna re-run the reproducer long enough to be sure
+the bug is squashed..
+"""]]

@@ -50,6 +50,7 @@ module Annex.Locations (
 	gitAnnexSmudgeLog,
 	gitAnnexSmudgeLock,
 	gitAnnexRestageLog,
+	gitAnnexRestageLogOld,
 	gitAnnexRestageLock,
 	gitAnnexMoveLog,
 	gitAnnexMoveLock,
@@ -384,6 +385,10 @@ gitAnnexSmudgeLock r = gitAnnexDir r P.</> "smudge.lck"
  - restaged in git -}
 gitAnnexRestageLog :: Git.Repo -> RawFilePath
 gitAnnexRestageLog r = gitAnnexDir r P.</> "restage.log"
+
+{- .git/annex/restage.old is used while restaging files in git -}
+gitAnnexRestageLogOld :: Git.Repo -> RawFilePath
+gitAnnexRestageLogOld r = gitAnnexDir r P.</> "restage.old"
 
 gitAnnexRestageLock :: Git.Repo -> RawFilePath
 gitAnnexRestageLock r = gitAnnexDir r P.</> "restage.lck"
