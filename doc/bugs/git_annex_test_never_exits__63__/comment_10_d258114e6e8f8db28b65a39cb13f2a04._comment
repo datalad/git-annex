@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2022-12-09T16:16:10Z"
+ content="""
+The retest seemed to hang again, but I'm not sure I was testing the right
+binary. Running it again.
+
+This patch exposes when the lock is held and so illustrates the bug
+reliably and quickly:
+
+	diff --git a/Command/Smudge.hs b/Command/Smudge.hs
+	index a5d8871998..cf6e2973f8 100644
+	--- a/Command/Smudge.hs
+	+++ b/Command/Smudge.hs
+	@@ -127,7 +129,8 @@ clean'
+	 	-> (Key -> Annex ())
+	 	-- ^ emitpointer: Emit a pointer file for the key.
+	 	-> Annex ()
+	-clean' file mk passthrough discardreststdin emitpointer =
+	+clean' file mk passthrough discardreststdin emitpointer = do
+	+	calcRestageLog () (\_ _ -> ())
+ 		ifM (fileOutsideRepo file)
+	 		( passthrough
+	 		, inSmudgeCleanFilter go
+
+With that patch, the unfixed git-annex hangs immediately. With
+my fix, it does not hang, which seems to show I fixed it correctly..
+"""]]
