@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="ah.nikfal@ad3e37b2c18d5aea546f662a0ba95796d0ef33ed"
+ nickname="ah.nikfal"
+ avatar="http://cdn.libravatar.org/avatar/0705936f3b4b8300018ce0ab62a114e5"
+ subject="How to use git-annex-backend-XFOO"
+ date="2022-12-09T12:58:57Z"
+ content="""
+After creating git-annex-backend-XFOO, how should I use this file? Where should I put this file?
+"""]]
