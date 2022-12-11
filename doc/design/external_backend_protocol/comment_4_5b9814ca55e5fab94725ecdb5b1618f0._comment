@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Ilya_Shlyakhter"
+ avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
+ subject="installing custom backend scripts "
+ date="2022-12-11T19:22:17Z"
+ content="""
+>After creating git-annex-backend-XFOO, how should I use this file? Where should I put this file?
+
+Put it somewhere in your PATH.  Make sure the script it executable.
+
+Just for curiosity, what hashing scheme does your custom backend implement?
+
+"""]]
