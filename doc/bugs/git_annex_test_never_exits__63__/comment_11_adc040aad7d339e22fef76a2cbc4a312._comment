@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2022-12-10T16:02:15Z"
+ content="""
+Got a clean test run with the right binary for sure, and I've confirmed
+this bug is really fixed. Test ran 20k iterations successfully.
+"""]]
