@@ -1,0 +1,21 @@
+I ran `git annex upgrade` in some datalad super dataset (produced by heudiconv with reproin heuristic layout), and then (after it didn't return for ages)  in the process tree saw that it goes to subdatasets (git submodules) to check on the status
+
+```
+```
+bids     38757  0.0  0.0 1074049444 11552 pts/2 Sl+ 17:14   0:00             /usr/lib/git-annex.linux/exe/git-annex --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git-annex/git-annex upgrade
+bids     38787  0.0  0.0  10316  1980 pts/2    S+   17:14   0:00               /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
+bids     38790  0.0  0.0  11156  2204 pts/2    S+   17:14   0:00               /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs status --porcelain
+bids     49130  0.0  0.0  11156  2192 pts/2    S+   17:43   0:00                 /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git status --porcelain=2
+bids     49139  0.0  0.0  11156  2192 pts/2    S+   17:43   0:00                   /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git status --porcelain=2
+bids     49162  0.8  0.0 1047612 11840 pts/2   Sl+  17:44   0:07                     /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git status --porcelain=2
+bids     15704  0.0  0.0   2404   376 pts/2    S+   17:59   0:00                       /bin/sh -c git-annex smudge --clean -- 'sub-sid001830/func/sub-sid001830_task-viewing_acq-638tr_run-06_bold.json' git-annex smudge --clean -- 'sub-sid001830/func/sub-sid001830_task-viewing_acq-638tr_run-06_bold.json'
+bids     15705  2.0  0.0 1074123208 7608 pts/2 Rl+  17:59   0:00                         /usr/lib/git-annex.linux/exe/git-annex --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git-annex/git-annex smudge --clean -- sub-sid001830/func/sub-sid001830_task-viewing_acq-638tr_run-06_bold.json
+bids     15711  1.0  0.0  13452  3632 pts/2    S+   17:59   0:00                           /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch-check=%(objectname) %(objecttype) %(objectsize)
+
+```
+
+I guess it could have used some flavor of `--ignore-submodules` with its invocation of `status` -- couldn't it?
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
+
