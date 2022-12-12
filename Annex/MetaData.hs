@@ -104,15 +104,17 @@ parseMetaDataMatcher p = (,)
 	(f, op_v) = break (`elem` "=<>") p
 	matcher = case op_v of
 		('=':v) -> checkglob v
-		('<':'=':v) -> checkcmp (<=) v
-		('<':v) -> checkcmp (<) v
-		('>':'=':v) -> checkcmp (>=) v
-		('>':v) -> checkcmp (>) v
+		('<':'=':v) -> checkcmp (<=) (<=) v
+		('<':v) -> checkcmp (<) (<) v
+		('>':'=':v) -> checkcmp (>=) (>=) v
+		('>':v) -> checkcmp (>) (>) v
 		_ -> checkglob ""
 	checkglob v =
 		let cglob = compileGlob v CaseInsensative (GlobFilePath False)
 		in matchGlob cglob . decodeBS . fromMetaValue
-	checkcmp cmp v v' = case (doubleval v, doubleval (decodeBS (fromMetaValue v'))) of
-		(Just d, Just d') -> d' `cmp` d
-		_ -> False
+	checkcmp cmp cmp' v mv' = 
+		let v' = decodeBS (fromMetaValue mv')
+		in case (doubleval v, doubleval v') of
+			(Just d, Just d') -> d' `cmp` d
+			_ -> v' `cmp'` v
 	doubleval v = readish v :: Maybe Double

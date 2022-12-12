@@ -142,11 +142,15 @@ in either of two repositories.
   matches the glob. The values of metadata fields are matched case
   insensitively.
 
-* `--metadata field<number` / `--metadata field>number`
-* `--metadata field<=number` / `--metadata field>=number`
+* `--metadata field<value` / `--metadata field>value`
+* `--metadata field<=value` / `--metadata field>=value`
 
-  Matches only when there is a metadata field attached with a value that
-  is a number and is less than or greater than the specified number.
+  Matches only when there is a metadata field attached with a value
+  that is less then or greater than the specified value, respectively.
+
+  When both values are numbers, the comparison is done numerically.
+  When one value is not a number, the values are instead compared
+  lexicographically.
 
   (Note that you will need to quote the second parameter to avoid
   the shell doing redirection.)
