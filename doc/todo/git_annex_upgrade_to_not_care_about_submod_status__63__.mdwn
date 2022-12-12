@@ -1,7 +1,6 @@
 I ran `git annex upgrade` in some datalad super dataset (produced by heudiconv with reproin heuristic layout), and then (after it didn't return for ages)  in the process tree saw that it goes to subdatasets (git submodules) to check on the status
 
 ```
-```
 bids     38757  0.0  0.0 1074049444 11552 pts/2 Sl+ 17:14   0:00             /usr/lib/git-annex.linux/exe/git-annex --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git-annex/git-annex upgrade
 bids     38787  0.0  0.0  10316  1980 pts/2    S+   17:14   0:00               /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs cat-file --batch
 bids     38790  0.0  0.0  11156  2204 pts/2    S+   17:14   0:00               /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs status --porcelain
