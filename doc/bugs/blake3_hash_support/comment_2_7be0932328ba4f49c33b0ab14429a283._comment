@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-12-12T16:22:17Z"
+ content="""
+Thanks for the patch.
+
+I do think it would make sense to include "256" in the name of the backend,
+unless BLAKE3 recommends against using other lengths for some good reason.
+
+As for accepting this patch, the added dependency makes it harder. This
+would require distributions like Debian add the blake3 package. If
+cryptonite included it, that would be much easier -- though it would still 
+need ifdefs to support the old versions of crytonite for some time.
+
+Going the current route with adding a blake3 depdenency would need to start
+with it as a build flag..
+"""]]
