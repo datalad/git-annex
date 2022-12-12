@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+in datalad/git-annex builds/tests we started to observe `git annex test` to exit non-0 with e.g. (first instance we captured in the logs:)
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex/builds/2022/12[master]git
+$> git grep 'codes.*ExitFailure'
+cron-20221208/build-ubuntu.yaml-937-499cc771-failed/4_test-annex (nfs-home, ubuntu-latest).txt:2022-12-08T03:22:17.8706324Z   Test subprocesses exited with unexpected exit codes: [ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitSuccess,ExitFailure (-6)]
+```
+
+it is not clear what actual test exited with fail, since no match for `FAIL` in that log.  It would have been really nice if there was some kind of a summary over failed tests at the end of the run of `git annex test` so there is no need to scroll/grep to see what actually failed.  (pytest provide such summaries in python world -- very convenient)
+
+that was
+
+```
+$> grep 'annex version: ' cron-20221208/build-ubuntu.yaml-937-499cc771-failed/4_test-annex\ \(nfs-home,\ ubuntu-latest\).txt | head     
+2022-12-08T03:12:16.1390286Z git-annex version: 10.20221103+git99-g56699a774-1~ndall+1
+```
+
+such errorring is regular since then:
+
+```
+$> git grep -l 'codes.*ExitFailure' | grep cron-.*failed/[0-9]
+cron-20221208/build-ubuntu.yaml-937-499cc771-failed/4_test-annex (nfs-home, ubuntu-latest).txt
+cron-20221209/build-ubuntu.yaml-938-499cc771-failed/1_test-annex (normal, ubuntu-latest).txt
+cron-20221209/build-ubuntu.yaml-938-499cc771-failed/3_test-annex (crippled-home, ubuntu-latest).txt
+cron-20221209/build-ubuntu.yaml-938-499cc771-failed/4_test-annex (nfs-home, ubuntu-latest).txt
+cron-20221210/build-ubuntu.yaml-939-499cc771-failed/4_test-annex (nfs-home, ubuntu-latest).txt
+cron-20221211/build-ubuntu.yaml-940-499cc771-failed/4_test-annex (nfs-home, ubuntu-latest).txt
+cron-20221212/build-ubuntu.yaml-942-499cc771-failed/4_test-annex (nfs-home, ubuntu-latest).txt
+```
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
