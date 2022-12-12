@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="ah.nikfal@ad3e37b2c18d5aea546f662a0ba95796d0ef33ed"
+ nickname="ah.nikfal"
+ avatar="http://cdn.libravatar.org/avatar/0705936f3b4b8300018ce0ab62a114e5"
+ subject="xxHash as the backend"
+ date="2022-12-12T08:21:35Z"
+ content="""
+I'm trying to use xxHash as the backend.
+Just one side issue. There isn't any repo for git-annex in github? So we could easily create issues and discuss about relevant problems.
+"""]]
