@@ -1,0 +1,17 @@
+Hi everyone,
+
+Just wanted to ask how to handle the following situation:
+
+- shared computer, everyone has an unprivileged, non-sudoer account and logs in via ssh for example or JupyterHub (unprivileged terminal, no `sudo` possible from there).
+- shared directory (everyone in same group, all files owned by group, sticky bit, file owner varies)
+- git-annex repository on this shared directory
+
+Problem: git-annex operations fail depending on who the owner of the files is. As git-annex needs to `chmod` files (which is only possible as owner of the file), this is a problem. 
+
+A partial solution I've employed right now is to sudo-allow one specific command that recursively sets themselves as owner for the shared directory (including the git-annex repo). This however only works when `sudo` is working, which is not the case from JupyterHub...
+
+Any other ideas? (Except ditching the shared folder...)
+
+Cheers,
+
+Yann
