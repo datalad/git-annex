@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="why othertmp to be on the same file system?"
+ date="2022-12-13T14:15:28Z"
+ content="""
+Joey, you said
+
+> .git/annex/othertmp has to be on the same filesystem as the work tree and git repository.
+
+is that for atomic/quick renames important for adjusted branch unlocked mode?  asking because in datalad we have that \"wreckless\" mode where we symlink an entire `.git/annex` from original clone to e.g. have quick throw away clone to access the data and possibly even without modifying state of any annexed key.
+
+Or how else are we stepping on the shovel here?
+"""]]
