@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2022-12-14T19:39:38Z"
+ content="""
+I see there is a `--list` command to list benchmarks but it just \"errored out\" with 
+
+```
+❯ git annex benchmark --list
+Missing: COMMAND
+
+Usage: git-annex COMMAND
+  git-annex - benchmarking
+... here comes long list of all commands ...
+```
+
+of which that short `Usage:` help seems to be wrong (I did give the command) but I wonder what would be the invocation of `annex benchmark` if I were to run a collection of benchmarks to compare different filesystems, like I did in the past in [https://www.datalad.org/test_fs_analysis.html](https://www.datalad.org/test_fs_analysis.html)?
+
+FWIW git-annex version 10.20220724 (same with 10.20221003)
+"""]]
