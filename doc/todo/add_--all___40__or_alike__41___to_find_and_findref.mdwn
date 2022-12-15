@@ -1,0 +1,8 @@
+Original discussion and need is within [datalad/issues/7038](https://github.com/datalad/datalad/issues/7038) -- we had been using `annex find` and `annex findref` with `--copies 0` to simply force those two commands to return information for all keys used in the current tree, regardless of their local presence.
+
+Unfortunately as that issue shows, adding `--copies 0` results in significant run time penalty over a run without it, or some different invocation with similar (albeit not as generic, since would miss keys without size) `--largerthan -1`.
+
+I found no other way to make `find` (or `findref`) to do what is needed. So I felt that may be it does need some additional option, or may be some special ad-hoc value for some of the possible "fast" expressions (like `--largerthan idonotcare`).
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
