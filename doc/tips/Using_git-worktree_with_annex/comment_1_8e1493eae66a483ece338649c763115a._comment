@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ avatar="http://christian.amsuess.com/avatar/c6c0d57d63ac88f3541522c4b21198c3c7169a665a2f2d733b4f78670322ffdc"
+ subject="worktrees vs. bare repositories"
+ date="2022-12-15T13:33:23Z"
+ content="""
+Note that while bare repos can have worktrees in git, the combination is not really supported in git-annex; as a result,
+
+* `git annex add` doesn't work (\"You cannot run this command in a bare repository.\") and
+* `git annex fix` would change all object links from two-character (`../.git/annex/objects/KP/4p/SHA256...`) to three-character (`../.git/annex/objects/7e3/613/SHA256...`) names.
+"""]]
