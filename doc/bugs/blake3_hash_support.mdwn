@@ -3,13 +3,19 @@ BLAKE3 does support variable lengths, but my code does not implement support for
 I'm not familiar enough with the codebase to be sure whether adding variable length support later is a backwards compatibility hazard or not.
 
 [[!format patch """
-From efa115d94d1a5a52574d5760c6e951ed3c518667 Mon Sep 17 00:00:00 2001
+From 8d32a64130a1f51545d3bac0d1c537056a9777de Mon Sep 17 00:00:00 2001
 From: edef <edef@edef.eu>
 Date: Fri, 2 Dec 2022 12:16:44 +0000
-Subject: [PATCH] support BLAKE3
+Subject: [PATCH v2] support BLAKE3
 
 This uses the blake3 package from Hackage, since cryptonite does not
 have BLAKE3 support yet.
+---
+ Backend/Hash.hs | 29 +++++++++++++++++++++++++++++
+ Types/Key.hs    |  6 ++++++
+ git-annex.cabal |  1 +
+ stack.yaml      |  1 +
+ 4 files changed, 37 insertions(+)
 
 diff --git a/Backend/Hash.hs b/Backend/Hash.hs
 index 550d8fc6c..809a82599 100644
@@ -96,7 +102,7 @@ index 550d8fc6c..809a82599 100644
  sha1Hasher = mkHasher sha1 sha1_context
  
 diff --git a/Types/Key.hs b/Types/Key.hs
-index 271723982..ea71f85ed 100644
+index 271723982..43f64a74d 100644
 --- a/Types/Key.hs
 +++ b/Types/Key.hs
 @@ -214,6 +214,7 @@ data KeyVariety
@@ -127,7 +133,7 @@ index 271723982..ea71f85ed 100644
  	Blake2bpKey sz e -> adde e (addsz sz "BLAKE2BP")
  	Blake2sKey sz e -> adde e (addsz sz "BLAKE2S")
  	Blake2spKey sz e -> adde e (addsz sz "BLAKE2SP")
-+	Blake3Key e -> adde e "BLAKE3"
++	Blake3Key e -> adde e "BLAKE3_256"
  	SHA1Key e -> adde e "SHA1"
  	MD5Key e -> adde e "MD5"
  	WORMKey -> "WORM"
@@ -135,13 +141,13 @@ index 271723982..ea71f85ed 100644
  parseKeyVariety "BLAKE2SP224E" = Blake2spKey (HashSize 224) (HasExt True)
  parseKeyVariety "BLAKE2SP256"  = Blake2spKey (HashSize 256) (HasExt False)
  parseKeyVariety "BLAKE2SP256E" = Blake2spKey (HashSize 256) (HasExt True)
-+parseKeyVariety "BLAKE3"       = Blake3Key (HasExt False)
-+parseKeyVariety "BLAKE3E"      = Blake3Key (HasExt True)
++parseKeyVariety "BLAKE3_256"   = Blake3Key (HasExt False)
++parseKeyVariety "BLAKE3_256E"  = Blake3Key (HasExt True)
  parseKeyVariety "SHA1"         = SHA1Key (HasExt False)
  parseKeyVariety "SHA1E"        = SHA1Key (HasExt True)
  parseKeyVariety "MD5"          = MD5Key (HasExt False)
 diff --git a/git-annex.cabal b/git-annex.cabal
-index cd58a4ca3..7c251e33b 100644
+index eb9b68cbc..30614e156 100644
 --- a/git-annex.cabal
 +++ b/git-annex.cabal
 @@ -362,6 +362,7 @@ Executable git-annex
