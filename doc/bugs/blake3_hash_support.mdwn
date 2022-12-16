@@ -3,10 +3,10 @@ BLAKE3 does support variable lengths, but my code does not implement support for
 I'm not familiar enough with the codebase to be sure whether adding variable length support later is a backwards compatibility hazard or not.
 
 [[!format patch """
-From 8d32a64130a1f51545d3bac0d1c537056a9777de Mon Sep 17 00:00:00 2001
+From a661bf0ba954b86909fa2f6b58727294068ac082 Mon Sep 17 00:00:00 2001
 From: edef <edef@edef.eu>
 Date: Fri, 2 Dec 2022 12:16:44 +0000
-Subject: [PATCH v2] support BLAKE3
+Subject: [PATCH v3 1/2] support BLAKE3
 
 This uses the blake3 package from Hackage, since cryptonite does not
 have BLAKE3 support yet.
@@ -167,4 +167,211 @@ index 7dbfb657a..936ee841b 100644
  - bencode-0.6.1.1
  - http-client-0.7.9
 +- blake3-0.2@sha256:d1146b9a51ccfbb0532780778b6d016a614e3d44c05d8c1923dde9a8be869045,2448
+"""]]
+
+[[!format patch """
+From 9385299c5d9d7862ec2768ef57cab1fb7f59695d Mon Sep 17 00:00:00 2001
+From: edef <edef@edef.eu>
+Date: Fri, 16 Dec 2022 14:37:53 +0000
+Subject: [PATCH v3 2/2] make BLAKE3 support optional
+
+This sticks it behind a build flag, since not all distros ship the
+blake3 package.
+---
+ Backend/Hash.hs | 19 +++++++++++++++++--
+ Types/Key.hs    | 11 +++++++++++
+ git-annex.cabal |  9 ++++++++-
+ 3 files changed, 36 insertions(+), 3 deletions(-)
+
+diff --git a/Backend/Hash.hs b/Backend/Hash.hs
+index 809a82599..4e9a75725 100644
+--- a/Backend/Hash.hs
++++ b/Backend/Hash.hs
+@@ -5,6 +5,7 @@
+  - Licensed under the GNU AGPL version 3 or higher.
+  -}
+ 
++{-# LANGUAGE CPP #-}
+ {-# LANGUAGE OverloadedStrings #-}
+ 
+ module Backend.Hash (
+@@ -27,11 +28,13 @@ import qualified Data.ByteString as S
+ import qualified Data.ByteString.Short as S (toShort, fromShort)
+ import qualified Data.ByteString.Char8 as S8
+ import qualified Data.ByteString.Lazy as L
+-import Data.IORef
+-import Control.Arrow
+ import Control.DeepSeq
+ import Control.Exception (evaluate)
++#ifdef WITH_BLAKE3
++import Data.IORef
++import Control.Arrow
+ import qualified BLAKE3
++#endif
+ 
+ data Hash
+ 	= MD5Hash
+@@ -43,7 +46,9 @@ data Hash
+ 	| Blake2bpHash HashSize
+ 	| Blake2sHash HashSize
+ 	| Blake2spHash HashSize
++#ifdef WITH_BLAKE3
+ 	| Blake3Hash
++#endif
+ 
+ cryptographicallySecure :: Hash -> Bool
+ cryptographicallySecure (SHA2Hash _) = True
+@@ -53,7 +58,9 @@ cryptographicallySecure (Blake2bHash _) = True
+ cryptographicallySecure (Blake2bpHash _) = True
+ cryptographicallySecure (Blake2sHash _) = True
+ cryptographicallySecure (Blake2spHash _) = True
++#ifdef WITH_BLAKE3
+ cryptographicallySecure Blake3Hash = True
++#endif
+ cryptographicallySecure SHA1Hash = False
+ cryptographicallySecure MD5Hash = False
+ 
+@@ -68,7 +75,9 @@ hashes = concat
+ 	, map (Blake2bpHash . HashSize) [512]
+ 	, map (Blake2sHash . HashSize) [256, 160, 224]
+ 	, map (Blake2spHash . HashSize) [256, 224]
++#ifdef WITH_BLAKE3
+ 	, [Blake3Hash]
++#endif
+ 	, [SHA1Hash]
+ 	, [MD5Hash]
+ 	]
+@@ -105,7 +114,9 @@ hashKeyVariety (Blake2bHash size) he = Blake2bKey size he
+ hashKeyVariety (Blake2bpHash size) he = Blake2bpKey size he
+ hashKeyVariety (Blake2sHash size) he = Blake2sKey size he
+ hashKeyVariety (Blake2spHash size) he = Blake2spKey size he
++#ifdef WITH_BLAKE3
+ hashKeyVariety Blake3Hash he = Blake3Key he
++#endif
+ 
+ {- A key is a hash of its contents. -}
+ keyValue :: Hash -> KeySource -> MeterUpdate -> Annex Key
+@@ -226,7 +237,9 @@ hasher (Blake2bHash hashsize) = blake2bHasher hashsize
+ hasher (Blake2bpHash hashsize) = blake2bpHasher hashsize
+ hasher (Blake2sHash hashsize) = blake2sHasher hashsize
+ hasher (Blake2spHash hashsize) = blake2spHasher hashsize
++#ifdef WITH_BLAKE3
+ hasher Blake3Hash = blake3Hasher
++#endif
+ 
+ mkHasher :: HashAlgorithm h => (L.ByteString -> Digest h) -> Context h -> Hasher
+ mkHasher h c = (show . h, mkIncrementalVerifier c descChecksum . sameCheckSum)
+@@ -280,6 +293,7 @@ blake2spHasher (HashSize hashsize)
+ 	| hashsize == 224 = mkHasher blake2sp_224 blake2sp_224_context
+ 	| otherwise = error $ "unsupported BLAKE2SP size " ++ show hashsize
+ 
++#ifdef WITH_BLAKE3
+ blake3Hasher :: Hasher
+ blake3Hasher = (hash, incremental) where
+ 	finalize :: BLAKE3.Hasher -> BLAKE3.Digest BLAKE3.DEFAULT_DIGEST_LEN
+@@ -300,6 +314,7 @@ blake3Hasher = (hash, incremental) where
+ 			, positionIncrementalVerifier = fmap snd <$> readIORef v
+ 			, descIncrementalVerifier = descChecksum
+ 			}
++#endif
+ 
+ sha1Hasher :: Hasher
+ sha1Hasher = mkHasher sha1 sha1_context
+diff --git a/Types/Key.hs b/Types/Key.hs
+index 43f64a74d..806bdc034 100644
+--- a/Types/Key.hs
++++ b/Types/Key.hs
+@@ -5,6 +5,7 @@
+  - Licensed under the GNU AGPL version 3 or higher.
+  -}
+ 
++{-# LANGUAGE CPP #-}
+ {-# LANGUAGE OverloadedStrings, DeriveGeneric #-}
+ 
+ module Types.Key (
+@@ -214,7 +215,9 @@ data KeyVariety
+ 	| Blake2bpKey HashSize HasExt
+ 	| Blake2sKey HashSize HasExt
+ 	| Blake2spKey HashSize HasExt
++#ifdef WITH_BLAKE3
+ 	| Blake3Key HasExt
++#endif
+ 	| SHA1Key HasExt
+ 	| MD5Key HasExt
+ 	| WORMKey
+@@ -248,7 +251,9 @@ hasExt (Blake2bKey _ (HasExt b)) = b
+ hasExt (Blake2bpKey _ (HasExt b)) = b
+ hasExt (Blake2sKey _ (HasExt b)) = b
+ hasExt (Blake2spKey _ (HasExt b)) = b
++#ifdef WITH_BLAKE3
+ hasExt (Blake3Key (HasExt b)) = b
++#endif
+ hasExt (SHA1Key (HasExt b)) = b
+ hasExt (MD5Key (HasExt b)) = b
+ hasExt WORMKey = False
+@@ -264,7 +269,9 @@ sameExceptExt (Blake2bKey sz1 _) (Blake2bKey sz2 _) = sz1 == sz2
+ sameExceptExt (Blake2bpKey sz1 _) (Blake2bpKey sz2 _) = sz1 == sz2
+ sameExceptExt (Blake2sKey sz1 _) (Blake2sKey sz2 _) = sz1 == sz2
+ sameExceptExt (Blake2spKey sz1 _) (Blake2spKey sz2 _) = sz1 == sz2
++#ifdef WITH_BLAKE3
+ sameExceptExt (Blake3Key _) (Blake3Key _) = True
++#endif
+ sameExceptExt (SHA1Key _) (SHA1Key _) = True
+ sameExceptExt (MD5Key _) (MD5Key _) = True
+ sameExceptExt _ _ = False
+@@ -278,7 +285,9 @@ formatKeyVariety v = case v of
+ 	Blake2bpKey sz e -> adde e (addsz sz "BLAKE2BP")
+ 	Blake2sKey sz e -> adde e (addsz sz "BLAKE2S")
+ 	Blake2spKey sz e -> adde e (addsz sz "BLAKE2SP")
++#ifdef WITH_BLAKE3
+ 	Blake3Key e -> adde e "BLAKE3_256"
++#endif
+ 	SHA1Key e -> adde e "SHA1"
+ 	MD5Key e -> adde e "MD5"
+ 	WORMKey -> "WORM"
+@@ -341,8 +350,10 @@ parseKeyVariety "BLAKE2SP224"  = Blake2spKey (HashSize 224) (HasExt False)
+ parseKeyVariety "BLAKE2SP224E" = Blake2spKey (HashSize 224) (HasExt True)
+ parseKeyVariety "BLAKE2SP256"  = Blake2spKey (HashSize 256) (HasExt False)
+ parseKeyVariety "BLAKE2SP256E" = Blake2spKey (HashSize 256) (HasExt True)
++#ifdef WITH_BLAKE3
+ parseKeyVariety "BLAKE3_256"   = Blake3Key (HasExt False)
+ parseKeyVariety "BLAKE3_256E"  = Blake3Key (HasExt True)
++#endif
+ parseKeyVariety "SHA1"         = SHA1Key (HasExt False)
+ parseKeyVariety "SHA1E"        = SHA1Key (HasExt True)
+ parseKeyVariety "MD5"          = MD5Key (HasExt False)
+diff --git a/git-annex.cabal b/git-annex.cabal
+index 30614e156..0778948fb 100644
+--- a/git-annex.cabal
++++ b/git-annex.cabal
+@@ -288,6 +288,10 @@ Flag GitLfs
+   Description: Build with git-lfs library (rather than vendored copy)
+   Default: True
+ 
++Flag Blake3
++  Description: Enable blake3 support
++  Default: True
++
+ source-repository head
+   type: git
+   location: git://git-annex.branchable.com/
+@@ -362,7 +366,6 @@ Executable git-annex
+    securemem,
+    crypto-api,
+    cryptonite (>= 0.23),
+-   blake3,
+    memory,
+    deepseq,
+    split,
+@@ -572,6 +575,10 @@ Executable git-annex
+       CPP-Options: -DWITH_DBUS -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
+       Other-Modules: Utility.DBus
+ 
++  if flag(Blake3)
++    Build-Depends: blake3
++    CPP-Options: -DWITH_BLAKE3
++
+   if flag(Pairing)
+     Build-Depends: network-multicast, network-info
+     CPP-Options: -DWITH_PAIRING
 """]]

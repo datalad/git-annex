@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="edef"
+ subject="""comment 3"""
+ date="2022-12-16T13:53:04Z"
+ content="""
+> I do think it would make sense to include "256" in the name of the backend,
+> unless BLAKE3 recommends against using other lengths for some good reason.
+
+Done.
+
+> Going the current route with adding a blake3 depdenency would need to start
+> with it as a build flag..
+
+I've added a followup patch that makes blake3 into a build flag. I'm
+happy to roll with that for now, if that gets code merged. I'm not
+particularly satisfied by the existing BLAKE3 libraries for Haskell,
+so I might opt to roll a nicer one with proper parallelism when I have
+some time to spare.
+
+It appears that some flags switch between a vendored library copy and
+an external dependency (namely, the git-lfs flag), maybe that's an
+alternative option for the interim?
+"""]]
