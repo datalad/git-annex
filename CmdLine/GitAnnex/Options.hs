@@ -378,6 +378,16 @@ fileMatchingOptions' lb =
 		<> help "match files smaller than a size"
 		<> hidden
 		)
+	, annexFlag (setAnnexState Limit.addAnything)
+		( long "anything"
+		<> help "match all files"
+		<> hidden
+		)
+	, annexFlag (setAnnexState Limit.addNothing)
+		( long "nothing"
+		<> help "don't match any files"
+		<> hidden
+		)
 	]
 
 combiningOptions :: [AnnexOption]

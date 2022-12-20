@@ -6,3 +6,5 @@ I found no other way to make `find` (or `findref`) to do what is needed. So I fe
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]]; added --anything (and --nothing). --[[Joey]]

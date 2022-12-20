@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -431,6 +431,10 @@ limitUnused = MatchFiles
 	
 	isunused k = S.member k <$> unusedKeys
 
+{- Adds a limit that matches anything. -}
+addAnything :: Annex ()
+addAnything = addLimit (Right limitAnything)
+
 {- Limit that matches any version of any file or key. -}
 limitAnything :: MatchFiles Annex
 limitAnything = MatchFiles
@@ -440,6 +444,10 @@ limitAnything = MatchFiles
 	, matchNeedsKey = False
 	, matchNeedsLocationLog = False
 	}
+
+{- Adds a limit that never matches. -}
+addNothing :: Annex ()
+addNothing = addLimit (Right limitNothing)
 
 {- Limit that never matches. -}
 limitNothing :: MatchFiles Annex

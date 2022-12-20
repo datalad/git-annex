@@ -245,6 +245,15 @@ in either of two repositories.
   This is only available to use when git-annex was built with the
   MagicMime build flag.
 
+* `--anything`
+
+  Always matches. One way this can be useful is `git-annex find --anything`
+  will list all annexed files, whether their content is present or not.
+
+* `--nothing`
+
+  Never matches. (Same as `--not --anything`)
+
 * `--not`
 
   Inverts the next matching option. For example, to match

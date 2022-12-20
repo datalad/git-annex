@@ -22,7 +22,7 @@ finds files in the current directory and its subdirectories.
   currently present. Specifying any of the matching options will override
   this default behavior.
 
-  To list all annexed files, present or not, specify `--include "*"`.
+  To list all annexed files, present or not, specify `--anything`.
 
   To list annexed files whose content is not present, specify `--not --in=here`
 

@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-12-20T19:21:34Z"
+ content="""
+Using --copies necessarily loads up the location tracking log for
+each file, which does add overhead.
+
+Any other matching option that matches everything will work just as well
+for you. I think that `git-annex find --include='*'` is the best thing
+currently available. Indeed, the git-annex-find man page suggests to use
+that. The only overhead is an unncessary glob match, which
+should be almost unmeasurable.
+
+It does seem like it might be worth adding --anything that simply matches
+anything. Preferred content expressions already support "anything". And
+`git-annex find --anything` makes sense and is easier to type.
+
+But, you'll probably be better off using `--include='*'` since it works
+with older versions of git-annex.
+
+(--all is the wrong name for such an option since it already has another
+meaning, although I don't think it makes sense for `git-annex find` to
+support --all, it has certianly been requested before by people who want to
+generalize that existing meaning..)
+"""]]
