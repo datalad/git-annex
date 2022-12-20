@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-12-20T18:20:01Z"
+ content="""
+That --list turns out to come from the criterion library, and you can
+actually use it but only if you provide the mandatory "-- command"
+parameters too. For example:
+
+	git-annex benchmark --list -- version
+	version
+
+That's not useful at all, since all if can list is the same benchmark you
+provide on input. But this is a consequence of supporting other criterion
+options like --iters and --csv that can be useful.
+
+`git-annex benchmark` does not use a canned set of benchmarks; it
+benchmarks a git-annex subcommand or subcommands that you specify.
+"""]]
