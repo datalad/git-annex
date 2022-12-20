@@ -29,7 +29,11 @@ configureSmudgeFilter = unlessM (fromRepo Git.repoIsLocalBare) $ do
 	-- unexpected changes when the file is checked into git or annex
 	-- counter to the annex.largefiles configuration.
 	-- Avoid that problem by running git status now.
-	inRepo $ Git.Command.runQuiet [Param "status", Param "--porcelain"]
+	inRepo $ Git.Command.runQuiet
+		[ Param "status"
+		, Param "--porcelain"
+		, Param "--ignore-submodules"
+		]
 
 	setConfig (ConfigKey "filter.annex.smudge") "git-annex smudge -- %f"
 	setConfig (ConfigKey "filter.annex.clean") "git-annex smudge --clean -- %f"

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-12-20T19:48:52Z"
+ content="""
+This happens on upgrade from a v5 repository, which calls 
+configureSmudgeFilter. [[!commit 401a79675ba2f125545ec9ec77376cb4b965fa4a]]
+explains why it needs to run status there.
+
+So, it will indeed be ok to pass --ignore-submodules, since each submodule
+that is a git-annex repository will get upgraded in its own time, 
+and will run configureSmudgeFilter then.
+"""]]
