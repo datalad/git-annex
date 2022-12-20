@@ -217,7 +217,7 @@ downloadTorrentFile u = do
 						ok <- Url.withUrlOptions $ 
 							Url.download nullMeterUpdate Nothing u f
 						when ok $
-							liftIO $ renameFile f (fromRawFilePath torrent)
+							liftIO $ moveFile (toRawFilePath f) torrent
 						return ok
 		)
 
@@ -228,7 +228,7 @@ downloadMagnetLink u metadir dest = ifM download
 			<$> dirContents metadir
 		case ts of
 			(t:[]) -> do
-				renameFile t dest
+				moveFile (toRawFilePath t) (toRawFilePath dest)
 				return True
 			_ -> return False
 	, return False
@@ -256,7 +256,7 @@ downloadTorrentContent k u dest filenum p = do
 		showOutput
 		ifM (download torrent downloaddir <&&> liftIO (doesFileExist dlf))
 			( do
-				liftIO $ renameFile dlf dest
+				liftIO $ moveFile (toRawFilePath dlf) (toRawFilePath dest)
 				-- The downloaddir is not removed here,
 				-- so if aria downloaded parts of other
 				-- files, and this is called again, it will

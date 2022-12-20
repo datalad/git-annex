@@ -3,6 +3,9 @@ git-annex (10.20221213) UNRELEASED; urgency=medium
   * Change --metadata comparisons < > <= and >= to fall back to
     lexicographical comparisons when one or both values being compared
     are not numbers.
+  * Improve handling of some .git/annex/ subdirectories being on other
+    filesystems, in the bittorrent special remote, and youtube-dl
+    integration, and git-annex addurl.
 
  -- Joey Hess <id@joeyh.name>  Mon, 12 Dec 2022 13:04:54 -0400
 

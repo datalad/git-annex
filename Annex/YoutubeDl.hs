@@ -144,7 +144,7 @@ youtubeDlTo key url dest p = do
 	res <- withTmpWorkDir key $ \workdir ->
 		youtubeDl url (fromRawFilePath workdir) p >>= \case
 			Right (Just mediafile) -> do
-				liftIO $ renameFile mediafile dest
+				liftIO $ moveFile (toRawFilePath mediafile) (toRawFilePath dest)
 				return (Just True)
 			Right Nothing -> return (Just False)
 			Left msg -> do

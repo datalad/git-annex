@@ -467,9 +467,7 @@ addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 		-- Move to final location for large file check.
 		pruneTmpWorkDirBefore tmp $ \_ -> do
 			createWorkTreeDirectory (P.takeDirectory file)
-			liftIO $ renameFile 
-				(fromRawFilePath tmp)
-				(fromRawFilePath file)
+			liftIO $ moveFile tmp file
 		largematcher <- largeFilesMatcher
 		large <- checkFileMatcher largematcher file
 		if large
@@ -477,9 +475,7 @@ addWorkTree _ addunlockedmatcher u url file key mtmp = case mtmp of
 				-- Move back to tmp because addAnnexedFile
 				-- needs the file in a different location
 				-- than the work tree file.
-				liftIO $ renameFile
-					(fromRawFilePath file)
-					(fromRawFilePath tmp)
+				liftIO $ moveFile file tmp
 				go
 			else Command.Add.addSmall (DryRun False) file s
 				>>= maybe noop void

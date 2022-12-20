@@ -28,10 +28,6 @@ This directory contains partially transferred objects.
 
 This is a temp directory for miscellaneous other temp files.
 
-While .git/annex/objects and .git/annex/tmp can be put on different
-filesystems if desired, .git/annex/othertmp 
-has to be on the same filesystem as the work tree and git repository.
-
 ### `.git/annex/bad/`
 
 git-annex fsck puts any bad objects it finds in here.

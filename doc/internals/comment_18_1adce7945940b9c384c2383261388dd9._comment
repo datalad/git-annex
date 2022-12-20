@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""re: why othertmp to be on the same file system?"""
+ date="2022-12-20T18:39:35Z"
+ content="""
+I've audited the code and the only place I could find where it did not work
+to have othertmp on a different filesystem is in the bittorrent special
+remote when it downloads a torrent file. But that also failed when
+`.git/annex/tmp` was on a different filesystem! (Since it was moving between
+the two directories.) I've fixed that.
+
+It's still best to keep things on the same filesystem because
+cross-filesystem moves can be expensive and it sometimes falls back to less
+ideal behavior in other ways too when operating across filesystems. Also
+of course, you avoid being the one who gets to find and report breakage
+like the above..
+"""]]
