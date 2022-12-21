@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="When a weird 'no space left on device' error appears"
+ date="2022-12-21T16:46:44Z"
+ content="""
+When you run into weird `no space left on device` errors although there clearly **is** enough room on your disk while running `git annex repair`, it probably means that your `/tmp` is too small (You can verify with `watch -n0 df -h` or just `df -h`). You can instruct `git annex repair` to use a different directory for intermediate storage via the `TMPDIR` environment variable:
+
+```bash
+mkdir /path/to/dir/with/enough/space
+TMPDIR=/path/to/dir/with/enough/space git annex repair
+# Now that new dir is used and the 'no space left on device' error should disappear
+```
+
+Might be worth adding a note for `TMPDIR` to the `git annex repair` manpage, @joey?
+"""]]
