@@ -1,0 +1,11 @@
+Hi git-annexers,
+
+The git-annex website has two articles on encryption: https://git-annex.branchable.com/encryption/ and https://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt/?
+
+What is the difference between "vanilla" git-annex encryption and the workflow described in the "fully encrypted git repositories with gcrypt" guide?
+
+I'm having a hard time figuring out whether one is more secure than the other. Or when I'd want to use one vs. the other.
+
+Can anyone help shed some light?
+
+Thank you.
