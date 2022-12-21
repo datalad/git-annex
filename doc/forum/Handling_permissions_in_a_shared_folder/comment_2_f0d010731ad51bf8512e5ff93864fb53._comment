@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 2"
+ date="2022-12-21T09:32:58Z"
+ content="""
+Thanks, I'll try that. Though I wonder how this would solve the \"only file owners can chmod files to remove write permissions\" problem, which git-annex does to protect the files.
+"""]]
