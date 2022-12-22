@@ -11,6 +11,8 @@ git-annex (10.20221213) UNRELEASED; urgency=medium
     This is slightly faster and clearer than --include=* or --exclude=*
   * Speed up git-annex upgrade (from v5) and init in a repository that has
     submodules.
+  * Added libgcc_s.so.1 to the linux standalone build so pthread_cancel
+    will work.
 
  -- Joey Hess <id@joeyh.name>  Mon, 12 Dec 2022 13:04:54 -0400
 

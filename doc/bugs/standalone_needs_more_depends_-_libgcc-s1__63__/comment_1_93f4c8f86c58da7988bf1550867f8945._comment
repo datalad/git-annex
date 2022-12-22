@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-12-22T18:38:32Z"
+ content="""
+I'm a bit surprised git-annex is using `pthread_cancel`, since `strings`
+does not show it contains that symbol. Perhaps one of the other pthread
+symbols it uses ends up calling that.
+
+It does seem though from the message that it's git-annex and not a program
+it runs that is core dumping on this. Also I checked, and the rclone you 
+installed is a statically linked binary so I would not expect it to use
+`libgcc_s.so`. And  And git-annex-remote-rclone is a bash script, and bash
+doesn't use pthreads.
+
+(I do think that, in general, using the git-annex standalone tarball and
+then trying to run additional programs besides git-annex inside it is not
+going to always work well. Standalone interposes its own versions of libraries,
+which may not work with the other programs. There is already a todo about that, 
+[[todo/restore_original_environment_when_running_external_special_remotes_from_standalone_git-annex__63__]].)
+
+I've added `libgcc_s.so.1` to the standalone build.
+"""]]

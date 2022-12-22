@@ -64,12 +64,16 @@ parseLdd = mapMaybe (getlib . dropWhile isSpace) . lines
   where
 	getlib l = headMaybe . words =<< lastMaybe (split " => " l)
 
-{- Get all glibc libs.
+{- Get all glibc libs, and also libgcc_s
  -
  - XXX Debian specific. -}
 glibcLibs :: IO [FilePath]
-glibcLibs = lines <$> readProcess "sh"
-	["-c", "dpkg -L libc6:$(dpkg --print-architecture) | egrep '\\.so' | grep -v /gconv/ | grep -v ld.so.conf | grep -v sotruss-lib"]
+glibcLibs = do
+	ls <- lines <$> readProcess "sh"
+		["-c", "dpkg -L libc6:$(dpkg --print-architecture) | egrep '\\.so' | grep -v /gconv/ | grep -v ld.so.conf | grep -v sotruss-lib"]
+	ls2 <- lines <$> readProcess "sh"
+		["-c", "dpkg -L libgcc-s1:$(dpkg --print-architecture) | egrep '\\.so'"]
+	return (ls++ls2)
 
 {- Get gblibc's gconv libs, which are handled specially.. -}
 gconvLibs :: IO [FilePath]

@@ -146,7 +146,7 @@ clean:
 
 Build/InstallDesktopFile: Build/InstallDesktopFile.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
-Build/Standalone: Build/Standalone.hs tmp/configure-stamp
+Build/Standalone: Build/Standalone.hs Build/LinuxMkLibs.hs Utility/LinuxMkLibs.hs tmp/configure-stamp
 	$(GHC) --make $@ -Wall -fno-warn-tabs
 Build/BuildVersion: Build/BuildVersion.hs
 	$(GHC) --make $@ -Wall -fno-warn-tabs
