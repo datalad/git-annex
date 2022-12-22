@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2022-12-22T19:20:12Z"
+ content="""
+`ExitFailure (-6)` says something went badly wrong. That is not a specific
+test failing, it's an entire test runner crashing. Apparently with SIGABRT,
+so something found a reason to `abort()`. git-annex does not do that,
+probably it was glibc that did.
+
+Looking in the log...
+
+	2022-12-08T03:13:27.8289753Z libgcc_s.so.1 must be installed for pthread_cancel to work
+
+Oho! Same as [[bugs/standalone_needs_more_depends_-_libgcc-s1__63__]]
+then it seems. I've fixed that earlier today, so try with an updated
+standalone build.
+"""]]
