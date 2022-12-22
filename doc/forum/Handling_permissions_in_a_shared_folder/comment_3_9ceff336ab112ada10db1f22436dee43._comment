@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 3"
+ date="2022-12-21T19:26:02Z"
+ content="""
+`git init --shared` seems to work so far, thanks! Still wondering why though. git annex also seems to not remove the write bit anymore, or at least only for 'everyone', so `o-w` or something. 🤷
+"""]]

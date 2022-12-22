@@ -1,0 +1,70 @@
+### Please describe the problem.
+
+NB can't change the title since it is not about depends since libgcc-s1 is essential... so most likely some  LD_LIBRARY_PATH manipulation is in place or smth like that.
+
+[Testing of git-annex-remote-rclone on ubuntu-20.04 crashed](https://github.com/DanielDent/git-annex-remote-rclone/actions/runs/3750292044/jobs/6370225718) with
+
+```
++ git-annex copy -J5 --quiet . --to GA-rclone-CI
+libgcc_s.so.1 must be installed for pthread_cancel to work
+/home/runner/work/git-annex-remote-rclone/git-annex-remote-rclone/tests/all-in-one.sh: line 124:  3066 Aborted                 (core dumped) git-annex copy -J5 --quiet . --to GA-rclone-CI
+Error: Process completed with exit code 134.
+```
+
+installation of git annex
+
+```
+Run datalad-installer --sudo ok git-annex -m datalad/git-annex:release
+2022-12-21T15:10:30+0000 [INFO    ] datalad_installer Writing environment modifications to /tmp/dl-env-j8s29if7.sh
+2022-12-21T15:10:30+0000 [INFO    ] datalad_installer Installing git-annex via datalad/git-annex:release
+2022-12-21T15:10:30+0000 [INFO    ] datalad_installer Version: None
+2022-12-21T15:10:30+0000 [INFO    ] datalad_installer Downloading https://github.com/datalad/git-annex/releases/download/10.20221212/git-annex-standalone_10.20221212-1.ndall%2B1_amd64.deb
+2022-12-21T15:10:33+0000 [INFO    ] datalad_installer Running: sudo dpkg -i /tmp/tmpah14ch03/git-annex-standalone_10.20221212-1.ndall+1_amd64.deb
+Selecting previously unselected package git-annex-standalone.
+(Reading database ... 236921 files and directories currently installed.)
+Preparing to unpack .../git-annex-standalone_10.20221212-1.ndall+1_amd64.deb ...
+Unpacking git-annex-standalone (10.20221212-1~ndall+1) ...
+Setting up git-annex-standalone (10.20221212-1~ndall+1) ...
+Processing triggers for mailcap (3.70+nmu1ubuntu1) ...
+Processing triggers for hicolor-icon-theme (0.17-2) ...
+Processing triggers for man-db (2.10.2-1) ...
+2022-12-21T15:10:35+0000 [INFO    ] datalad_installer git-annex is now installed at /usr/bin/git-annex
+```
+
+or may be that is an issue with `rclone`? in this case it was
+
+```
+Run datalad-installer --sudo ok rclone=v1.59.2 -m downloads.rclone.org
+2022-12-21T15:10:35+0000 [INFO    ] datalad_installer Writing environment modifications to /tmp/dl-env-aon5z6_f.sh
+2022-12-21T15:10:35+0000 [INFO    ] datalad_installer Installing rclone from downloads.rclone.org
+2022-12-21T15:10:35+0000 [INFO    ] datalad_installer Version: v1.59.2
+2022-12-21T15:10:35+0000 [INFO    ] datalad_installer Bin dir: /usr/local/bin
+2022-12-21T15:10:35+0000 [INFO    ] datalad_installer Man dir: None
+2022-12-21T15:10:35+0000 [INFO    ] datalad_installer Downloading https://downloads.rclone.org/v1.59.2/rclone-v1.59.2-linux-amd64.zip
+2022-12-21T15:10:38+0000 [INFO    ] datalad_installer Moving /tmp/tmp75sde__c/rclone-v1.59.2-linux-amd64/rclone to /usr/local/bin/rclone
+2022-12-21T15:10:38+0000 [INFO    ] datalad_installer rclone is now installed at /usr/local/bin/rclone
+```
+
+I have tried to reproduce locally with exactly those installations of rclone and git-annex but not getting the same problem :-/
+
+I have also ran with `--debug` and got 
+```
+[2022-12-21 17:20:10.056928113] (Utility.Process) process [11603] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","commit-tree","c95a5c849daca7183eefc28c360942104d01e900","--no-gpg-sign","-p","refs/heads/git-annex"]
+[2022-12-21 17:20:10.060448661] (Utility.Process) process [11603] done ExitSuccess
+[2022-12-21 17:20:10.060806165] (Utility.Process) process [11604] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","update-ref","refs/heads/git-annex","248cef615747c4aba64fbb475b0a03c8d2a78b27"]
+[2022-12-21 17:20:10.063957208] (Utility.Process) process [11604] done ExitSuccess
+[2022-12-21 17:20:10.066005436] (Utility.Process) process [11127] done ExitSuccess
+[2022-12-21 17:20:10.066266539] (Utility.Process) process [11114] done ExitSuccess
+[2022-12-21 17:20:10.066702845] (Utility.Process) process [11126] done ExitSuccess
+[2022-12-21 17:20:10.067107151] (Utility.Process) process [11125] done ExitSuccess
+[2022-12-21 17:20:10.067357854] (Utility.Process) process [11599] done ExitSuccess
+libgcc_s.so.1 must be installed for pthread_cancel to work
+/home/runner/work/git-annex-remote-rclone/git-annex-remote-rclone/tests/all-in-one.sh: line 125: 11083 Aborted                 (core dumped) git-annex drop -J5 --debug .
+Error: Process completed with exit code 134.
+```
+in https://github.com/DanielDent/git-annex-remote-rclone/actions/runs/3751417971/jobs/6372374929 .
+
+Any ideas Joey? 
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
