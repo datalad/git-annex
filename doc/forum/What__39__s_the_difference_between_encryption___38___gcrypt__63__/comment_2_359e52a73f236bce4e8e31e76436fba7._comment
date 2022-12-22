@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="alvseth"
+ avatar="http://cdn.libravatar.org/avatar/4618511682dacfd6835c3e843b4e97a0"
+ subject="re: re: the difference between encryption and gcrypt"
+ date="2022-12-22T23:22:33Z"
+ content="""
+> git-annex encryption encrypts only the file contents stored in the remotes, but not the filenames or the commit history; gcrypt encrypts these latter parts.
+
+For maximum security, should I use both? Or does gcrypt also encrypt file contents?
+"""]]
