@@ -26,6 +26,7 @@ import qualified Data.Text as T
 import Data.Time.Calendar
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
+import Text.Read
 
 {- Adds metadata for a file that has just been ingested into the
  - annex, but has not yet been committed to git.
@@ -117,4 +118,4 @@ parseMetaDataMatcher p = (,)
 		in case (doubleval v, doubleval v') of
 			(Just d, Just d') -> d' `cmp` d
 			_ -> v' `cmp'` v
-	doubleval v = readish v :: Maybe Double
+	doubleval v = readMaybe v :: Maybe Double
