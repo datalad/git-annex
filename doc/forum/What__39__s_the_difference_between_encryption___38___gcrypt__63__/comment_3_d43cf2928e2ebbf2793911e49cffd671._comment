@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2022-12-26T17:10:24Z"
+ content="""
+When a remote is a git repository that supports git-annex,
+using a gcrypt special remote encrypts both the git repository and file
+contents.
+
+Other special remotes only store annexed file contents, not git
+repositories, so using encryption= with those is sufficient to encrypt
+their full contents.
+"""]]
