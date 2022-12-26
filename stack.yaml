@@ -8,7 +8,6 @@ flags:
     dbus: false
     debuglocks: false
     benchmark: true
-    gitlfs: true
 packages:
 - '.'
 resolver: nightly-2023-08-01
