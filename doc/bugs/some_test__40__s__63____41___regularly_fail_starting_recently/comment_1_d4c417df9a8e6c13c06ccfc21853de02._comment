@@ -12,7 +12,7 @@ Looking in the log...
 
 	2022-12-08T03:13:27.8289753Z libgcc_s.so.1 must be installed for pthread_cancel to work
 
-Oho! Same as [[bugs/standalone_needs_more_depends_-_libgcc-s1__63__]]
+Oho! Same as <https://git-annex.branchable.com/bugs/standalone_needs_more_depends_-_libgcc-s1__63__/>
 then it seems. I've fixed that earlier today, so try with an updated
 standalone build.
 """]]
