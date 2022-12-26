@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-12-26T17:17:08Z"
+ content="""
+git-annex repository version 10 improves that, it is able to remove the
+write bit in a shared repository. `git-annex upgrade` can upgrade your
+repo, if you have git-annex version 10.
+"""]]
