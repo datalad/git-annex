@@ -13,3 +13,5 @@ Ubuntu 20.04.2 LTS (Focal Fossa)
 
 git-annex version: 8.20210224-gf951847c6 (kitenet: SHA256E-s51232145--1e57d2e334cffdb3c3874785cfba4f6d5fc521808d0b1deef4fb68160dd88d48.tar.gz)
 
+> [[done]] via incremental checksum while downloading, for nearly all
+> remotes. --[[Joey]]
