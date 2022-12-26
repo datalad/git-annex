@@ -45,8 +45,7 @@ in `.gitattributes`:
   platforms.
 * `BLAKE2S160`, `BLAKE2S224`, `BLAKE2S256`
   `BLAKE2S160E`, `BLAKE2S224E`, `BLAKE2S256E`
-  -- Fas:w
-  t [Blake2 hash](https://blake2.net/) variants optimised for 32 bit
+  -- Fast [Blake2 hash](https://blake2.net/) variants optimised for 32 bit
   platforms.
 * `BLAKE2BP512`, `BLAKE2BP512E`
   -- Fast [Blake2 hash](https://blake2.net/) variants optimised for
