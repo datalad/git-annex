@@ -56,7 +56,9 @@ jobs:
 
       - name: Install Singularity
         run: |
-          release="$(curl -fsSL https://api.github.com/repos/sylabs/singularity/releases/latest | jq -r .tag_name)"
+          # use if decide to get most recent release of singularity
+          # release="$(curl -fsSL https://api.github.com/repos/sylabs/singularity/releases/latest | jq -r .tag_name)"
+          release="v3.10.4"
           codename="$(lsb_release -cs)"
           arch="$(dpkg --print-architecture)"
           cd /tmp
