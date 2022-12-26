@@ -43,10 +43,6 @@ Copyright: 2019 Joey Hess <id@joeyh.name>
            2007-2015 Bryan O'Sullivan
 License: BSD-3-clause
 
-Files: Utility/GitLFS.hs
-Copyright: © 2019 Joey Hess <id@joeyh.name>
-License: AGPL-3+
-
 Files: Utility/*
 Copyright: 2012-2022 Joey Hess <id@joeyh.name>
 License: BSD-2-clause
