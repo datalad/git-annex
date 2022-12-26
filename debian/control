@@ -80,6 +80,7 @@ Build-Depends:
 	libghc-magic-dev,
 	libghc-socks-dev,
 	libghc-vector-dev,
+	libghc-unliftio-core-dev,
 	libghc-filepath-bytestring-dev,
 	libghc-criterion-dev,
 	lsof [linux-any],
