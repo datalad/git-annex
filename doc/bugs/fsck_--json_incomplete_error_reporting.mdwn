@@ -50,3 +50,4 @@ local repository version: 10
 
 Yes! Git annex is amazing and is managing over 10 TB of data across 5 git annexes and around 10 hard drives. No data loss this entire time -- over 8 years.
 
+> [[notabug|done]]; see my comment --[[Joey]]
