@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2022-12-26T19:10:04Z"
+ content="""
+<https://github.com/yesodweb/persistent/issues/1441> got fixed in 
+persistent-2.14.4.1. git-annex will get that speed improvement when it's
+built with that version. I'd anticipate it improving from 19 seconds
+to around 16 seconds.
+
+(I further opened <https://github.com/yesodweb/persistent/issues/1457>
+that would speed up some other parts of git-annex if implemented.)
+
+---
+
+The only reason to leave this bug open is that reconcileStaged is still
+somehow slower than only the persistent-sqlite overhead can explain.
+"""]]

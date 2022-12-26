@@ -93,7 +93,7 @@ addAssociatedFile k f = queueDb $
 -- any old key.
 newAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
 newAssociatedFile k f = queueDb $
-	void $ insert $ Associated k af
+	insert_ $ Associated k af
   where
 	af = SFilePath (getTopFilePath f)
 
