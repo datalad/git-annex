@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2022-12-26T19:04:15Z"
+ content="""
+	joey@smaug:/mnt/datasets/datalad/ci/git-annex/builds/2022/12>git grep -l 'codes.*ExitFailure' | grep cron-.*failed/[0-9]|tail -n 5
+	cron-20221220/build-ubuntu.yaml-951-bdbc3088-failed/4_test-annex (nfs-home, ubuntu-latest).txt
+	cron-20221221/build-ubuntu.yaml-952-bdbc3088-failed/4_test-annex (nfs-home, ubuntu-latest).txt
+	cron-20221222/build-ubuntu.yaml-953-bdbc3088-failed/1_test-annex (normal, ubuntu-latest).txt
+	cron-20221222/build-ubuntu.yaml-953-bdbc3088-failed/3_test-annex (crippled-home, ubuntu-latest).txt
+	cron-20221222/build-ubuntu.yaml-953-bdbc3088-failed/4_test-annex (nfs-home, ubuntu-latest).txt
+
+Has subsequently succeeded 3 days in a row. So my fix on the 22nd worked. Closing this.
+"""]]
