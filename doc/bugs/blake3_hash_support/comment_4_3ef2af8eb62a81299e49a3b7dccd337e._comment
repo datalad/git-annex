@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2022-12-26T16:26:45Z"
+ content="""
+I've only vendored libraries that I developed myself,
+that made sense to split out of git-annex. I don't want to get into
+vendoring other stuff here. But I think a build flag is ok, it does not
+need vendoring.
+
+Looking at the code, I suspect that updateIncrementalVerifier
+might have a space leak. It does not force the S.length to be evaluated.
+And BLAKE3.update might also be lazy, I am not sure?
+Compare with the very similar code in mkIncrementalHasher,
+which is careful to force the length and also the hash update.
+
+Also I would prefer not to use Control.Arrow just because I'm not
+idiomatically familiar with it. Not that `***` is very complicated,
+but it obfuscates the code slightly for me.
+
+So, I would be happier if that part of the code were changed to just
+spell it all out and force everything like mkIncrementalHasher does.
+(Or if mkIncrementalHasher were generalized so that it could reuse its
+code. Looks doable by parameterizing hashUpdate and hashFinalize.)
+
+Also doc/backends.mdwn will need to be updated.
+
+The rest of the code looks good and I'm ready to merge it once the above
+are addressed.
+"""]]
