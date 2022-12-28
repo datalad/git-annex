@@ -1,0 +1,70 @@
+### Please describe the problem.
+
+Had some datalad command failing at either `annex add` or `commit` and tried to reproduce with minimal example but failed, overall:  if config is set to use
+
+```
+❯ git config  annex.dbdir
+/tmp/cache/git-annex
+```
+
+and leading `/tmp/cache` does not exist then in some (e.g. whatever happens during `git pull --ff-only`):
+
+```
+❯ git pull --ff-only
+...
+ create mode 100644 cron-20221228/build-windows.yaml-896-ef8b9610-success/test-datalad (release)/8_Install.txt
+ create mode 100644 cron-20221228/build-windows.yaml-896-ef8b9610-success/test-datalad (release)/9_Configure service.txt
+git-annex: /tmp/cache/git-annex: createDirectory: does not exist (No such file or directory)
+
+❯ git annex version
+git-annex version: 10.20221003
+```
+
+or could be even more fun:
+
+```
+❯ git pull --ff-only
+You are not currently on a branch.
+Please specify which branch you want to merge with.
+See git-pull(1) for details.
+
+    git pull <remote> <branch>
+
+❯ git co master
+Previous HEAD position was 3855af5 [tinuous] 20 logs added
+Switched to branch 'master'
+Your branch is up to date with 'origin/master'.
+git-annex: /tmp/cache/git-annex: createDirectory: does not exist (No such file or directory)
+❯ echo $?
+1
+❯ git co master
+git-annex: /tmp/cache/git-annex: createDirectory: does not exist (No such file or directory)
+error: packet write failed: Broken pipe
+error: external filter 'git-annex filter-process' failed
+git-annex: /tmp/cache/git-annex: createDirectory: does not exist (No such file or directory)
+error: external filter 'git-annex filter-process' failed
+git-annex: /tmp/cache/git-annex: createDirectory: does not exist (No such file or directory)
+error: packet write failed: Broken pipe
+error: external filter 'git-annex filter-process' failed
+git-annex: /tmp/cache/git-annex: createDirectory: does not exist (No such file or directory)
+error: external filter 'git-annex filter-process' failed
+git-annex: /tmp/cache/git-annex: createDirectory: does not exist (No such file or directory)
+error: packet write failed: Broken pipe
+error: external filter 'git-annex filter-process' failed
+git-annex: /tmp/cache/git-annex: createDirectory: does not exist (No such file or directory)
+error: packet write failed: Broken pipe
+error: external filter 'git-annex filter-process' failed
+... pressed Ctrl-C
+```
+
+and if I precreate leading one -- seems to be feeling ok
+
+```
+❯ mkdir /tmp/cache
+❯ git co master
+Already on 'master'
+Your branch is up to date with 'origin/master'.
+```
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
