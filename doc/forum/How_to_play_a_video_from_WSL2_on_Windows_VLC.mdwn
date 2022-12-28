@@ -1,0 +1,17 @@
+I was trying to check out the videos in the downloads repository associated with this project, but I don't know how to get them to play.
+
+In WSL2, I ran:
+
+```
+git clone https://downloads.kitenet.net/.git
+cd downloads.kitenet.net
+git annex get ./videos/git-annex/git-annex-assistant-intro.mp4
+```
+
+The download was successful, but trying to play the video using VLC on Windows resulted in the following error:
+
+```
+VLC is unable to open the MRL 'file://wsl.localhost/Ubuntu-20.04/home/username/annex/downloads.kitenet.net/videos/git-annex/git-annex-assistant-intro.mp4'.
+```
+
+I suppose this is because VLC doesn't know what to do with the symlink, but I don't know how to deal with the problem.
