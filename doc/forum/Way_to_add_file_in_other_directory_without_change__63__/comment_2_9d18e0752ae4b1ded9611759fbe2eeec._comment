@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="acadx0@9d7ca00c5a85a700a7209ab4fc2505189ded1aa3"
+ nickname="acadx0"
+ avatar="http://cdn.libravatar.org/avatar/b108d0f7ce179702be9003ca890a0131"
+ subject="try 2"
+ date="2023-01-01T04:00:54Z"
+ content="""
+Okay I got git annex addurl file:/// working with this config.
+
+```
+[annex \"security\"]
+	allowed-url-schemes = http https file
+	allowed-http-addresses = all
+```
+
+But it copies the file to local directory, is there a way to make it 
+just calculate checksum without copying(downloading) it?
+
+Or if there's just alternative way please let me know.
+"""]]
