@@ -1,0 +1,14 @@
+Hi, 
+I am trying to use annex, but couldn't find a way. It will be very
+helpful if anyone can help.
+
+I have NAS mounted on specific directory /mnt/nas/ 
+Suppose whole directory in it is READ-ONLY and keep the file, structure as it is now.
+
+I want to "annex add" files in that directory like 
+git annex addurl file:///mnt/nas/a.mp4 
+
+But it seems addurl is only for http/https and "directory special remote" have to change the whole structure of the directory.
+Is there any alternative I can try?
+
+Thanks.
