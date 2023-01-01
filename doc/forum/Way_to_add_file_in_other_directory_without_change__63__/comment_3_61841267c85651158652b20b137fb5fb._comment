@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="acadx0@9d7ca00c5a85a700a7209ab4fc2505189ded1aa3"
+ nickname="acadx0"
+ avatar="http://cdn.libravatar.org/avatar/b108d0f7ce179702be9003ca890a0131"
+ subject="hmm"
+ date="2023-01-01T16:49:37Z"
+ content="""
+thanks, but It seems git annex import is just same as 
+
+```
+cd ~/annex/
+cp /mnt/nas/FILE FILE
+git annex add FILE
+
+or
+
+git annex addurl file:///mnt/nas/FILE
+```
+
+Is there a way to avoid copying file when trying to add file in annex repository, but do all the required operations like checksum calculation (as it is already accessible in local filesystem through nas)
+"""]]
