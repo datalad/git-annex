@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-01-02T18:54:55Z"
+ content="""
+This is a job for a directory special remote with importtree=yes
+
+	git-annex initremote nas type=directory directory=/mnt/nas encryption=none importtree=yes
+	git-annex import master --from nas --no-content
+	git merge --allow-unrelated-histories nas/master
+
+As shown this will merge all files in /mnt/nas into your master branch,
+without downloading the content. You can `git-annex get` files from there
+later. It's also possible to import the files into a subdirectory, see
+[[git-annex-import]]. 
+
+If you want to only add a single file, you can replace the 
+`git merge` with something else, or configure the preferred content
+expression of the remote to only match that file.
+"""]]
