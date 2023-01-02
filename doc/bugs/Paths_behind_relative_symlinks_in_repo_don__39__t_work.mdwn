@@ -1,0 +1,119 @@
+### Please describe the problem.
+
+Except for `git annex info` many (all?) other git-annex file-based commands seem to have a problem with paths behind relative symlinks to *directories* in the repository. Using the 'full' tracked-by-git or absolute path works. I guess git-annex relies on git for determining if a file is tracked and git itself fails to 'see' files behind relative symlinks to dirs in the repo as well.
+
+### What steps will reproduce the problem?
+
+Run this script:
+
+[[!format sh """
+#!/bin/sh
+export LC_ALL=C
+chmod +w -R git-annex-link
+rm -rf git-annex-link
+mkdir git-annex-link
+cd git-annex-link
+(
+git init
+git config commit.gpgsign false
+git annex init
+# make folder structure with some files
+mkdir -p level1/level2
+for f in level1/file level1/level2/file;do echo "$f" > "$f";done
+ln -rsf level1 link-to-level1
+ln -rsf level1/level2 link-to-level2
+git annex add --force-large
+git commit -m "Add files"
+) >/dev/null 2>/dev/null
+echo;(set -x;tree);echo;echo
+echo "Test results:"
+for cmd in info metadata get lookupkey whereis list fix;do
+    for file in level1/file level1/level2/file link-to-level1/file link-to-level2/file;do
+        printf "git annex %10s %20s %s\n" $cmd $file "$(git annex $cmd $file 2>/dev/null >/dev/null && echo -n ok || echo -n fail)"
+    done
+done
+echo;echo "The error is: "
+(set -x;git annex get link-to-level1/file)
+"""]]
+
+Output:
+
+```
+
++ tree
+.
+|-- level1
+|   |-- file -> ../.git/annex/objects/P7/z4/SHA256E-s12--17313e162321955543c4644ea8e1accc8d3039a9e0a9224429f26bafafe0d1b6/SHA256E-s12--17313e162321955543c4644ea8e1accc8d3039a9e0a9224429f26bafafe0d1b6
+|   `-- level2
+|       `-- file -> ../../.git/annex/objects/24/K3/SHA256E-s19--633195e34fd1e133557ece8767e268a0ebd9e4caedad4776bab4470c60a84439/SHA256E-s19--633195e34fd1e133557ece8767e268a0ebd9e4caedad4776bab4470c60a84439
+|-- link-to-level1 -> level1
+`-- link-to-level2 -> level1/level2
+
+4 directories, 2 files
+
+
+Test results:
+git annex       info          level1/file ok
+git annex       info   level1/level2/file ok
+git annex       info  link-to-level1/file ok
+git annex       info  link-to-level2/file ok
+git annex   metadata          level1/file ok
+git annex   metadata   level1/level2/file ok
+git annex   metadata  link-to-level1/file fail
+git annex   metadata  link-to-level2/file fail
+git annex        get          level1/file ok
+git annex        get   level1/level2/file ok
+git annex        get  link-to-level1/file fail
+git annex        get  link-to-level2/file fail
+git annex  lookupkey          level1/file ok
+git annex  lookupkey   level1/level2/file ok
+git annex  lookupkey  link-to-level1/file fail
+git annex  lookupkey  link-to-level2/file fail
+git annex    whereis          level1/file ok
+git annex    whereis   level1/level2/file ok
+git annex    whereis  link-to-level1/file fail
+git annex    whereis  link-to-level2/file fail
+git annex       list          level1/file ok
+git annex       list   level1/level2/file ok
+git annex       list  link-to-level1/file fail
+git annex       list  link-to-level2/file fail
+git annex        fix          level1/file ok
+git annex        fix   level1/level2/file ok
+git annex        fix  link-to-level1/file fail
+git annex        fix  link-to-level2/file fail
+
+The error is: 
++ git annex get link-to-level1/file
+error: pathspec 'link-to-level1/file' did not match any file(s) known to git
+Did you forget to 'git add'?
+get: 1 failed
+```
+
+
+### What version of git-annex are you using? On what operating system?
+
+```
+❯ inxi
+CPU: 8-core AMD Ryzen 7 5800H with Radeon Graphics (-MT MCP-)
+speed/min/max: 1450/1200/4462 MHz Kernel: 6.1.1-1-MANJARO x86_64 Up: 4h 23m
+Mem: 4370.6/13832.0 MiB (31.6%) Storage: 953.87 GiB (40.9% used) Procs: 376
+Shell: fish inxi: 3.3.24
+❯ git annex version
+git-annex version: 10.20221212-gab11fd70e
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22.1 bloomfilter-2.0.1.0 cryptonite-0.30 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.13.1 persistent-sqlite-2.13.1.0 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+```
+
+
+### Please provide any additional information below.
+
+I came across this while developing my [`thunar-plugins`](https://pypi.org/project/thunar-plugins/1.0.0/) Python package for git-annex integration in XFCE's Thunar file manager. It is easily [worked around there by resolving all links before handing them to git-annex](https://gitlab.com/nobodyinperson/thunar-plugins/-/blob/de5d273106b79a5f397962c2fb3124943bdd03f7/thunar_plugins/menus/git_annex.py#L133-144). However having git-annex handle this situation natively would be nice, e.g. by also first resolving paths it gets handed. 
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, `git-annex` is absolutely awesome, 🎉 'finding' it was one of my highlights of 2022 😉!
