@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-01-02T19:14:25Z"
+ content="""
+I took a look at why it does this, and it's because git-annex takes a lot
+of care to avoid doing things like creating /mnt/repo/.git/ when /mnt is not
+mounted. To the directory creating code, the parent directory of 
+annex.dbdir is treated as an alternate top-level directory, which it can
+only create subdirectories of, but not create itself. So the directory
+creating code would need to become somewhat more complicated to support
+the possibility of creating parent directories of one but not of the other.
+
+Maybe the prospect of such complexity is coloring my thinking, but it seems
+like similar concerns about mount points may affect annex.dbdir. After all,
+the point of it is to provide a path on some other filesystem. When
+that filesystem is not currently mounted, it would be better for it to
+error out like this than to create a directory structure inside its mount
+point.
+"""]]
