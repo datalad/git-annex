@@ -1,0 +1,30 @@
+When using --notify-start or --notify-finish with many files that are able
+to be downloaded quickly, the desktop notifications can cover the whole
+screen (in xfce at least).
+
+It's possible to update a desktop notification to contain some new
+information. That's done when a transfer is finished, to update the start
+notification. Also, if the notification has been closed, updating causes it
+to re-display.
+
+So, it would be possible to reuse desktop notifications, so only one is
+displayed, and it runs through all the files that are being processed.
+
+When only --notify-start or --notify-finish is used, the notification would
+show the last thing started or finished. When both are used, the
+finish notification would be quickly overwritten by the next thing started.
+That seems ok?
+
+The complication to this is jobs. With -J, it seems like it ought to
+display one notification per transfer thread, so the user knows git-annex
+is working on multiple things. Implementing that would need some way to get
+the notification handle associated with a given Transferrer. As the code is
+structured, notifyTransfer is run before the Transferrer that will be used
+is known. So this would need some refactoring.
+
+Maybe that complexity is unwarranted though? Desktip notifications only are
+displayed for a short amount of time (again on xfce). So if a long-duration
+download is run, the notification will appear for a short time, and then
+vanish while it continues downloading. So the user is not likely to see
+notifications for all the -J jobs that are running be displayed at the same
+time. So reusing a single notification does not seem much worse? --[[Joey]]
