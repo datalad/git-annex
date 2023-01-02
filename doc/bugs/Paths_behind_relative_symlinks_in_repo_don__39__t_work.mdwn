@@ -114,6 +114,10 @@ upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
 
 I came across this while developing my [`thunar-plugins`](https://pypi.org/project/thunar-plugins/1.0.0/) Python package for git-annex integration in XFCE's Thunar file manager. It is easily [worked around there by resolving all links before handing them to git-annex](https://gitlab.com/nobodyinperson/thunar-plugins/-/blob/de5d273106b79a5f397962c2fb3124943bdd03f7/thunar_plugins/menus/git_annex.py#L133-144). However having git-annex handle this situation natively would be nice, e.g. by also first resolving paths it gets handed. 
 
+One motivation for such relative symlinks to directories somewhere in the repository is to make **shortcuts** to some deeply nested folders.
+
+Links to *files* (not directories) get converted to links to the annex, so not a problem there.
+
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, `git-annex` is absolutely awesome, 🎉 'finding' it was one of my highlights of 2022 😉!
