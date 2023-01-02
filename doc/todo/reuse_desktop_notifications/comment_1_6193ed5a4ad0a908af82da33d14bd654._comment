@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 1"
+ date="2023-01-02T21:58:25Z"
+ content="""
+I'd consider a single 'persistent' notification for git-annex sufficient. When a transfer starts/finishes the notification is updated. Maybe show a configurable amount of last items (`git config annex.notification-max-items` with a default of 5 or so). `-J` Worker threads would just add to that notification, I don't see a need for one notification per worker thread (that can easily go up to another 16 with `--jobs=cpus` on modern CPUs, filling the screen again 🙃).
+"""]]
