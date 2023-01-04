@@ -7,6 +7,7 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE CPP #-}
 
 module Remote.GitLFS (remote, gen, configKnownUrl) where
 
@@ -43,7 +44,12 @@ import Logs.Remote
 import Logs.RemoteState
 import qualified Git.Config
 
+#ifdef WITH_GIT_LFS
 import qualified Network.GitLFS as LFS
+#else
+import qualified Utility.GitLFS as LFS
+#endif
+
 import Control.Concurrent.STM
 import Data.String
 import Network.HTTP.Types

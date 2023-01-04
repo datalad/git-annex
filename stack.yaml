@@ -8,6 +8,7 @@ flags:
     dbus: false
     debuglocks: false
     benchmark: true
+    gitlfs: true
 packages:
 - '.'
 resolver: lts-18.13

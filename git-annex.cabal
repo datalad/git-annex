@@ -284,6 +284,10 @@ Flag DebugLocks
 Flag Dbus
   Description: Enable dbus support
 
+Flag GitLfs
+  Description: Build with git-lfs library (rather than vendored copy)
+  Default: True
+
 source-repository head
   type: git
   location: git://git-annex.branchable.com/
@@ -386,8 +390,7 @@ Executable git-annex
    blaze-builder,
    clientsession,
    template-haskell,
-   shakespeare (>= 2.0.11),
-   git-lfs (>= 1.2.0)
+   shakespeare (>= 2.0.11)
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
   Default-Language: Haskell2010
@@ -420,6 +423,12 @@ Executable git-annex
   else
     Build-Depends: unix (>= 2.7.2)
 
+  if flag(GitLfs)
+    Build-Depends: git-lfs (>= 1.2.0)
+    CPP-Options: -DWITH_GIT_LFS
+  else
+    Other-Modules: Utility.GitLFS
+  
   if flag(Assistant) && ! os(solaris) && ! os(gnu)
     CPP-Options: -DWITH_ASSISTANT -DWITH_WEBAPP
     Other-Modules:

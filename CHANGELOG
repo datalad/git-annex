@@ -13,7 +13,6 @@ git-annex (10.20221213) UNRELEASED; urgency=medium
     submodules.
   * Added libgcc_s.so.1 to the linux standalone build so pthread_cancel
     will work.
-  * Removed the vendored git-lfs and the GitLfs build flag.
   * Speed up initial scanning for annexed files when built
     with persistent-2.14.4.1
 

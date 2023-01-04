@@ -8,6 +8,7 @@ flags:
     dbus: false
     debuglocks: false
     benchmark: false
+    gitlfs: true
 packages:
 - '.'
 extra-deps:

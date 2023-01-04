@@ -82,7 +82,6 @@ Build-Depends:
 	libghc-vector-dev,
 	libghc-unliftio-core-dev,
 	libghc-filepath-bytestring-dev,
-	libghc-git-lfs-dev (>= 1.2.0),
 	libghc-criterion-dev,
 	lsof [linux-any],
 	ikiwiki,
