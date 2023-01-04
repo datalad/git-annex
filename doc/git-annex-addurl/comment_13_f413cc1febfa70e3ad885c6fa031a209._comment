@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="matthias.risze@9f2c8f7faed4cac1905d1bf1ee4524d708c13688"
+ nickname="matthias.risze"
+ avatar="http://cdn.libravatar.org/avatar/c9f7f022a1d62c39497b72c56a6a535e"
+ subject="Limitations on allowed characters in and length of URLs"
+ date="2023-01-04T11:56:35Z"
+ content="""
+Are there any limitations on which characters are allowed in an URL, and on how long an URL can be? I am working on a special remote which kind of abuses this feature by saving information about how to get the file in the URL with a specific scheme. For now it seems like I can use URLs of the form `scheme:<arbitrary json>`, but I am not sure if this might become an issue later. I could also encode the data with base64 or something similar, in which case size limitations would still be relevant; if there are any. Although, the json variant has the added benefit of being much more easily readable in whereis output.
+"""]]
