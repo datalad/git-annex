@@ -21,6 +21,6 @@ DANDI: Distributed Archives for Neurophysiology Data Integration is a platform f
 <details>
 <summary>Done</summary>
 
-[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and tagged(projects/dandi)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
+[[!inline pages="(bugs/* or projects/dandi/bugs-done/*) and !bugs/done and link(bugs/done) and tagged(projects/dandi)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
 
 </details>
