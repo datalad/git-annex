@@ -21,6 +21,6 @@ The center for Reproducible Neuroimaging computation develops standards and tool
 <details>
 <summary>Done</summary>
 
-[[!inline pages="(bugs/* or projects/repronim/bugs-done/*) and !bugs/done and link(bugs/done) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
+[[!inline pages="((bugs/* and !bugs/done and link(bugs/done)) or projects/repronim/bugs-done/*) and tagged(projects/repronim)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
 
 </details>
