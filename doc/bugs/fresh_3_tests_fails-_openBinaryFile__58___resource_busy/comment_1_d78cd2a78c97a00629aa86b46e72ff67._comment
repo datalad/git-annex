@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2021-04-20T15:10:59Z"
- content="""
-Indeed it was, file handle left open. Fixed.
-"""]]

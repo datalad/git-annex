@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2021-05-12T16:23:02Z"
- content="""
-This is already supported by whereis (and quite a lot of other commands) 
-with the --branch option, which is documented to support a treeish.
-"""]]

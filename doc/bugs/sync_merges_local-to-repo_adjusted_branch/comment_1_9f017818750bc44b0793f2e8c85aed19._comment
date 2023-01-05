@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Lukey"
- avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
- subject="comment 1"
- date="2021-05-03T10:26:35Z"
- content="""
-Hmm, from the output above, it is just updating the remote-tracking branch. So it shouldn't affect the local `adjusted/master(hidemissing)` branch at all.
-"""]]

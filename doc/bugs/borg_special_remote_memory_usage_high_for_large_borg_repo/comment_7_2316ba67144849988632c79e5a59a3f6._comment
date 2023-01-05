@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="tomdhunt"
- avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
- subject="comment 7"
- date="2021-10-05T21:30:03Z"
- content="""
-Yeah, I'm not familiar with the internal architecture but both borg and git-annex handle this dataset fine on their own, so it seems that the intersection between the two should also be doable.
-"""]]

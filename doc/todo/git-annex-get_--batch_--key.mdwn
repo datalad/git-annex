@@ -1,3 +1,0 @@
-Can git-annex-get be extended so that "git-annex-get --batch --key" fetches the keys (rather than filenames) given in the input?
-
-> [[done]] --[[Joey]]

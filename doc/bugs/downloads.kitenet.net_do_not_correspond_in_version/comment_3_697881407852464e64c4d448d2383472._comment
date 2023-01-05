@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Ilya_Shlyakhter"
- avatar="http://cdn.libravatar.org/avatar/1647044369aa7747829c38b9dcc84df0"
- subject="standalone build version vs standard release version"
- date="2021-08-09T17:28:31Z"
- content="""
-Sorry if I'm being dense here, but the version mismatch issue also [[affects|forum/standalone_tarballs_for_specific_versions]] the [[conda build|install/conda]], so I want to better understand the underlying issue.  What makes it necessary for the standalone version to be built from a different git commit than the standard version?  If \"The two commits are whitespace changes and the commit that increased the version number\", could these commits be made before the official release is tagged?
-"""]]

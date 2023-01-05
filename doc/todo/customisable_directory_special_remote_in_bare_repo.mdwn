@@ -1,7 +1,0 @@
-AFAICT, the `annex/` subdir in a bare annex repo is the exact same layout as a directory special remote.
-
-It'd be very useful if its parameters could be customised just like an actual directory special remote to allow for e.g. encrypted and/or chunked storage. I have a use-case where this could significantly simplify things.
-
-An interesting side-effect of this would be a tweakable location for a bare repo's storage which could be used to separate metadata and data (i.e. git repo on SSD for fast syncs and actual data on an HDD).
-
-> [[rejected|done]] --[[Joey]]

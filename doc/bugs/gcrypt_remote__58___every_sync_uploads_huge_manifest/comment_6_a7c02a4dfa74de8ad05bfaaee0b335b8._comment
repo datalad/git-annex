@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="woffs"
- avatar="http://cdn.libravatar.org/avatar/198790d74209efe4896fd4cfc37ec2a6"
- subject="comment 6"
- date="2017-04-06T08:28:06Z"
- content="""
-I was wrong. git-annex-sync DOES pull/push to the gcrypt rsync remote. So seems fine. Thank you. :)
-"""]]

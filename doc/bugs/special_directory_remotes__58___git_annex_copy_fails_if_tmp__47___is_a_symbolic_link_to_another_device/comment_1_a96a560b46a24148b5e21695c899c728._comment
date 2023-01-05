@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="TroisSinges"
- avatar="http://cdn.libravatar.org/avatar/43f6eb327d2da6cb5bc6d55740e1ed78"
- subject="comment 1"
- date="2018-11-23T07:33:55Z"
- content="""
-Found [this bug](https://github.com/commercialhaskell/hindent/issues/170) in another tool, I think it's the same root cause.
-"""]]

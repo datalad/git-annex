@@ -1,5 +1,0 @@
-When you want to dead a file in your checkout, you can only do so via the key of the file. You can find the corresponding key with a bit of bash like this: `git annex dead --key $(basename $(readlink file))` but that shouldn't be necessary IMO.
-
-It'd be a lot better if you could just dead files like this: `git annex dead --file file` or even like this: `git annex dead --file file1 file2 file3 otherfiles.*` (or maybe even like this: `git annex dead --file file1 file2 --key $key1 $key2`).
-
-> [[done]] in another way --[[Joey]]

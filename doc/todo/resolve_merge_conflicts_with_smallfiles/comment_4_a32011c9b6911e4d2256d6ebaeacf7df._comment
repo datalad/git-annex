@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 4"""
- date="2021-06-25T16:12:02Z"
- content="""
-I have no interest in continung a feature added for the assistant down a
-road to making source code files that are checked into git be handled in
-some other way when merging.
-"""]]

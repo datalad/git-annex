@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://launchpad.net/~r0lf"
- nickname="r0lf"
- avatar="http://cdn.libravatar.org/avatar/aa82122557e706df7ba83bd1983eb79ef1ba2e51350217850176d4f9a1bb2bc0"
- subject="comment 1"
- date="2021-04-26T12:22:43Z"
- content="""
-I was unable to verify the problem with the latest standalone package.  Neither a freshly created annex nor the one created in focal gave any problems when tested with fsck.
-"""]]

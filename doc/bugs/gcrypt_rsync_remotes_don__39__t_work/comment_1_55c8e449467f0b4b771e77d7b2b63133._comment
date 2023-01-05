@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="andrew"
- avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
- subject="comment 1"
- date="2018-11-01T12:02:59Z"
- content="""
-I was [never able to get relative path's to my repo working with the gcrypt remote and rsync](http://git-annex.branchable.com/bugs/gcrypt_remote__58___every_sync_uploads_huge_manifest/#comment-9aebc8b168c58568c668f91bd6b19d11). Have you tried entering an absolute path instead of just `repo`?
-
-"""]]

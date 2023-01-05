@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="derobert"
- avatar="http://cdn.libravatar.org/avatar/05b48b72766177b3b0a6ff4afdb70790"
- subject="comment 1"
- date="2019-05-16T08:12:45Z"
- content="""
-Did you try `git-annex info «remote»` (where «remote» could be the name or the UUID).
-"""]]

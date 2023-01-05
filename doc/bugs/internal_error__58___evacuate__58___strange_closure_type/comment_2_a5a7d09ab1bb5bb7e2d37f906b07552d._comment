@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2021-05-12T17:53:04Z"
- content="""
-This might also affect git-annex remotedaemon, although it's running ok in
-my tests. However, that could only be due to luck.
-"""]]

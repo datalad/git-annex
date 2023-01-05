@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="andrew"
- avatar="http://cdn.libravatar.org/avatar/acc0ece1eedf07dd9631e7d7d343c435"
- subject="gcrypt, git-annex and rsync requires absolute path"
- date="2017-12-05T13:49:42Z"
- content="""
-I struggled to get git-annex sync working for some time with gcrypt and the rsync transport protocol. It turns out I was using a relative path to my repo instead of an absolute path. In my .git/config with a url like this: `gcrypt::rsync://username@servername:relative-path-to-git-repo` where relative path is relative to my user's home directory, git push would work fine, but git-annex sync would complain it couldn't find the repository. Changing my url to an absolute path like `gcrypt::rsync://username@servername:absolute-path-to-git-repo` now allows both git-annex sync and git push to work. Andrew.
-"""]]

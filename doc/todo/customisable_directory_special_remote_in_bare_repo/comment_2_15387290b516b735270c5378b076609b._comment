@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Atemu"
- avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
- subject="comment 2"
- date="2021-05-26T07:11:20Z"
- content="""
-The problem is that I need this repo to stay a remote from the eyes of all other repos; I need to be able to get files from and add new ones to it. I just want its storage back-end to work a little differently so that it fits my use-case.
-"""]]

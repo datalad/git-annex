@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="tomdhunt"
- avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
- subject="comment 3"
- date="2021-10-05T19:08:23Z"
- content="""
-The repo in question is my daily backup repository. It keeps an archive for each day going back a year or so, so on order of hundreds of archives. The underlying data is about 8TB, but it only changes small amounts, so the whole borg repo is also about 8TB. Each archive has a git-annex folder in it. (I specified the subdir option to point directly to the folder.) The annex has many small files; total number of keys is about 500k.
-"""]]

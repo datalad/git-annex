@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 2"""
- date="2019-02-07T19:21:31Z"
- content="""
-Also, "error: unable to create file" is an error message from git, not
-git-annex. And it seems like a perfectly fine error message for the
-situation.
-"""]]

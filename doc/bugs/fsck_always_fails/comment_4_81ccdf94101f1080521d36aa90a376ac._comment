@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="Lukey"
- avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
- subject="comment 4"
- date="2021-11-14T20:11:35Z"
- content="""
-Well, you somehow marked the repo you're working in as dead. Usually you only mark a repo that is irretrievably lost (due to drive failure for example) as dead so git-annex knows that none of the data in it exists anymore and doesn't count it as a copy anymore. That's exactly what you're seeing here.
-"""]]

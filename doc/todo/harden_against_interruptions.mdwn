@@ -1,8 +1,0 @@
-From [another thread](https://git-annex.branchable.com/todo/add_option_to_use_sqlite__39__s_synchronous__61__OFF/#comment-dbc9fdf5fd6d73f3e628bfe94b2a43a2):
-
->Quite possible there are situations where it fails to recover the lost information and does something annoying. But like I said, such situations can already happen 
-
-Maybe, there are some simple ways to harden git-annex against possible weirdness following abrupt interruptions?   E.g. using flag files to detect when a prior operation got interrupted,
-and rebuilding the sqlite dbs from git data.  Or tagging sqlite records with the timestamp of their creation, and not using the data if the relevant worktree files got modified since then.
-
-> [[closing|done]] per comment --[[Joey]]

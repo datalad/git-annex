@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 1"""
- date="2019-01-22T15:54:03Z"
- content="""
-Have you tried just constricting MD5E keys without the size value?
-git-annex still supports keys from before v2 repo version that did not
-include size, so I'd guess it would work ok.
-"""]]
