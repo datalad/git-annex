@@ -1,9 +1,3 @@
 Joey blogs about his work here on a semi-daily basis.
 
-[[!sidebar content="""
-[[!calendar type="month" pages="page(devblog/*)"]]
-[[!calendar type="month" month="-1" pages="page(devblog/*)"]]
-[[!calendar type="month" month="-2" pages="page(devblog/*)"]]
-"""]]
-
 [[!inline pages="page(devblog/*)" show=0]]
