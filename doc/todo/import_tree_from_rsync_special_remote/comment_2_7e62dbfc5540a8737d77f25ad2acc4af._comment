@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="importtree readonly remote folder?"
+ date="2023-01-06T14:21:35Z"
+ content="""
+I have ran into the same \"desire\" I think: to be able to `import` the read-only (to me) tree of DICOMs from a remote server reachable over ssh, and so that later on those who have a clone of the repository and have access to that server could easily `annex get` necessary load.  Am I right in my importtree-ignorant thinking that if `rsync` special remote supports `importtree` mode -- it would also work fine when I have only read-only access to the remote folder?
+"""]]
