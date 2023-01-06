@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="satra"
+ avatar="http://cdn.libravatar.org/avatar/d3afc58453bc273dc015254e1d9581b3"
+ subject="use list order for cost"
+ date="2023-01-06T19:36:07Z"
+ content="""
+as a starting point is order an implicit notion of cost? so could having s3 before dandi achieve the expected outcome. try s3 first then try api?
+"""]]
