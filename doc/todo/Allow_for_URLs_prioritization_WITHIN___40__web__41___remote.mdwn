@@ -1,0 +1,32 @@
+Per our brief discussion ATM git-annex allows to prioritize URLs only by assigning them to be handled by different special remotes and having different costs for those different remotes.
+
+This doesn't allow for e.g. prioritization within built-in special "web" remote which is the most frequent use case. Our use case:
+
+
+```
+(base) dandi@drogon:/mnt/backup/dandi/dandizarrs/ea8c43c7-757e-4653-8e4a-a6d356120836$ git annex whereis 0/0/0/3/6/169
+(recording state in git...)
+whereis 0/0/0/3/6/169 (2 copies)
+        00000000-0000-0000-0000-000000000001 -- web
+        86da9d10-da54-4371-8d6f-7559c6a236f5 -- dandi@drogon:/mnt/backup/dandi/dandizarrs/ea8c43c7-757e-4653-8e4a-a6d356120836 [here]
+
+  web: https://api.dandiarchive.org/api/zarr/ea8c43c7-757e-4653-8e4a-a6d356120836.zarr/0/0/0/3/6/169
+  web: https://dandiarchive.s3.amazonaws.com/zarr/ea8c43c7-757e-4653-8e4a-a6d356120836/0/0/0/3/6/169?versionId=h3qb0rOswsssHxEdfN8QAWUMoVhddQrY
+ok
+
+```
+
+where we have API-server based URL -- we do not want to access unless really really needed (would be the slowest, would bring load to the server etc), and then direct access to public bucket -- fastest (unless some other local remote has it even better).
+
+Joey envisioned potentially being able to assign priorities via e.g.
+
+    git-annex enableremote web url-priority-1=s3.amazonaws.com/ url-prority-2=/api.dandiarchive.org/
+
+but I also wondered if there could just be some way to provide costs (or adjustments to costs) for different URLs so they all become considered while considering costs across remotes?
+
+E.g. may be I have a URL which is fast (s3 bucket), then I have bunch of average regular remotes with decent speed (e.g. dropbox etc), and then URL to some slow archive (API server). Both urls are served by `web` remote, and there would be no way to "order" all data access schemes/remotes in the optimal sequence of costs unless different URLs could have different costs considered along with different remotes.
+
+PS somehow I have some odd memory of seeing some config option to provide git-annex a script which would output cost given a URL... I disliked that approach since it would require me to code the script, and thus didn't use it. Did I dream it up? 
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
