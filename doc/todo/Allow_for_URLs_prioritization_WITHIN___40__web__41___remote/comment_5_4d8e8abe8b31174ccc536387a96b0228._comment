@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2023-01-09T22:04:11Z"
+ content="""
+> Because when getting a file, the main web special remote is tried before this high-cost slowhost one, and will use any url, including slowhost.com urls.
+
+can't I just give the entire `web` remote the highest cost so it is then considered last by default and all the prior \"*web\" remotes with custom costs for fast/slow would be considered in their \"weighted\" fashion?
+"""]]
