@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-01-09T20:48:18Z"
+ content="""
+I've implemented support for multiple web special remotes, 
+and have added configurations urlinclude= and urlexclude=
+(both case-insensitive globs).
+
+Example use:
+
+	git-annex initremote --sameas=web fastweb type=web urlinclude='*//fasthost.com/*' autoenable=true
+	git config remote.fastweb.annex-cost 150
+
+And then `git-annex get --from fasthost` will only use urls on that host,
+not any other urls. `git-annex get --from web` will still use any urls.
+The cost of 150 makes `git-annex get` use fasthost before web.
+
+That's enough to handle the example you gave, just use
+`urlinclude='*//dandiarchive.s3.amazonaws.com/*'
+
+---
+
+But, I don't think this is quite sufficient. Because it should also be
+possible to deprioritize urls. And there's not a good way to yet.
+
+In particular, this doesn't work:
+
+	git-annex initremote --sameas=web slowweb type=web urlinclude='*//slowhost.com/*' autoenable=true
+	git config remote.slowhost.annex-cost 300
+
+Because when getting a file, the main web special remote is tried before
+this high-cost slowhost one, and will use any url, including
+slowhost.com urls.
+
+Now you can instead do this:
+
+        git-annex initremote --sameas=web fastweb type=web urlexclude='*//slowhost.com/*' autoenable=true
+        git config remote.fasthost.annex-cost 150
+
+But when there's a second slow host, that approach falls down, because you
+can't specify urlexclude= twice. And even if you could, there would be a
+distributed configs merging issue same as discussed in comment #3.
+
+I think what's needed is for the main web special remote to notice that a
+web remote such as fastweb or slowweb exists, and automatically exclude
+from using the urls that other web remote is configured to use. Which
+will be a little bit tricky to implent, but seems doable.
+"""]]

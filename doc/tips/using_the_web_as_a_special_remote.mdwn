@@ -1,3 +1,7 @@
+[[!toc ]]
+
+## basic use
+
 The web can be used as a [[special_remote|special_remotes]] too.
 
 	# git annex addurl http://example.com/video.mpeg
@@ -48,7 +52,7 @@ You can also attach urls to any file already in the annex:
   	00000000-0000-0000-0000-000000000001 -- web
    	27a9510c-760a-11e1-b9a0-c731d2b77df9 -- here
 
-## configuring filenames
+## configuring addurl filenames
 
 By default, `addurl` will generate a filename for you. You can use
 `--file=` to specify the filename to use.
@@ -115,3 +119,25 @@ to work.
 ## podcasts
 
 This is done using `git annex importfeed`. See [[downloading podcasts]].
+
+## configuring which url is used when there are several
+
+An annexed file can have content at multiple urls that git-annex knows
+about, and git-annex may use any of those urls for downloading a file.
+
+If some urls are especially fast, you might want to configure
+which urls git-annex prefers to use first. To accomplish that,
+you can create additional remotes, that are web special remotes, and are
+configured to only use the fast urls. Then it's simply a matter of
+configuring the cost of those remotes.
+
+For example, suppose that you want to prioritize using urls on "fasthost.com".
+
+    git-annex initremote --sameas=web fasthost type=web urlinclude='*//fasthost.com/*'
+    git config remote.fasthost.annex-cost 150
+
+Now, `git-annex get` of a file that is on both fasthost.com and another url
+will prefer to use the fasthost special remote, rather than the web special
+remote (which has a higher cost of 200), and so will use the fasthost.com
+url. If that url is not available, it will fall back to the web special
+remote, and use the other url.

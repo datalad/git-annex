@@ -9,6 +9,8 @@ module Remote.Web (remote, getWebUrls) where
 
 import Annex.Common
 import Types.Remote
+import Types.ProposedAccepted
+import Types.Creds
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import qualified Git
@@ -20,22 +22,35 @@ import Config
 import Logs.Web
 import Annex.UUID
 import Utility.Metered
+import Utility.Glob
 import qualified Annex.Url as Url
 import Annex.YoutubeDl
 import Annex.SpecialRemote.Config
-import Types.Creds
 
 remote :: RemoteType
 remote = RemoteType
 	{ typename = "web"
 	, enumerate = list
 	, generate = gen
-	, configParser = mkRemoteConfigParser []
+	, configParser = mkRemoteConfigParser
+		[ optionalStringParser urlincludeField
+			(FieldDesc "only use urls matching this glob")
+		, optionalStringParser urlexcludeField
+			(FieldDesc "don't use urls that match this glob")
+		]
 	, setup = setupInstance
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	, thirdPartyPopulated = False
 	}
+
+urlincludeField :: RemoteConfigField
+urlincludeField = Accepted "urlinclude"
+
+urlexcludeField :: RemoteConfigField
+urlexcludeField = Accepted "urlexclude"
+
+data UrlIncludeExclude = UrlIncludeExclude (Maybe Glob) (Maybe Glob)
 
 -- The web remote always exists.
 -- (If the web should cease to exist, remove this module and redistribute
@@ -56,19 +71,22 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle 
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc expensiveRemoteCost
+	let urlincludeexclude = UrlIncludeExclude
+		(getglob c urlincludeField)
+		( getglob c urlexcludeField)
 	return $ Just Remote
 		{ uuid = if u == NoUUID then webUUID else u
 		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = uploadKey
-		, retrieveKeyFile = downloadKey
+		, retrieveKeyFile = downloadKey urlincludeexclude
 		, retrieveKeyFileCheap = Nothing
 		-- HttpManagerRestricted is used here, so this is
 		-- secure.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
-		, removeKey = dropKey
+		, removeKey = dropKey urlincludeexclude
 		, lockContent = Nothing
-		, checkPresent = checkKey
+		, checkPresent = checkKey urlincludeexclude
 		, checkPresentCheap = False
 		, exportActions = exportUnsupported
 		, importActions = importUnsupported
@@ -93,15 +111,20 @@ gen r u rc gc rs = do
 		, checkUrl = Nothing
 		, remoteStateHandle = rs
 		}
+  where
+	getglob c f = do
+		glob <- getRemoteConfigValue f c
+		Just $ compileGlob glob CaseInsensative (GlobFilePath False)
 
 setupInstance :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-setupInstance ss mu _ c gc = do
+setupInstance _ mu _ c _ = do
 	u <- maybe (liftIO genUUID) return mu
 	gitConfigSpecialRemote u c [("web", "true")]
 	return (c, u)
 
-downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
-downloadKey key _af dest p vc = go =<< getWebUrls key
+downloadKey :: UrlIncludeExclude -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
+downloadKey urlincludeexclude key _af dest p vc = 
+	go =<< getWebUrls' urlincludeexclude key
   where
 	go [] = giveup "no known url"
 	go urls = dl (partition (not . isyoutube) (map getDownloader urls)) >>= \case
@@ -132,12 +155,12 @@ downloadKey key _af dest p vc = go =<< getWebUrls key
 uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 uploadKey _ _ _ = giveup "upload to web not supported"
 
-dropKey :: Key -> Annex ()
-dropKey k = mapM_ (setUrlMissing k) =<< getWebUrls k
+dropKey :: UrlIncludeExclude -> Key -> Annex ()
+dropKey urlincludeexclude k = mapM_ (setUrlMissing k) =<< getWebUrls' urlincludeexclude k
 
-checkKey :: Key -> Annex Bool
-checkKey key = do
-	us <- getWebUrls key
+checkKey :: UrlIncludeExclude -> Key -> Annex Bool
+checkKey urlincludeexclude key = do
+	us <- getWebUrls' urlincludeexclude key
 	if null us
 		then return False
 		else either giveup return =<< checkKey' key us
@@ -157,7 +180,18 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 			_ -> firsthit rest r a
 
 getWebUrls :: Key -> Annex [URLString]
-getWebUrls key = filter supported <$> getUrls key
+getWebUrls key = getWebUrls' (UrlIncludeExclude Nothing Nothing) key
+
+getWebUrls' :: UrlIncludeExclude -> Key -> Annex [URLString]
+getWebUrls' (UrlIncludeExclude minclude mexclude) key = 
+	filter supported <$> getUrls key
   where
-	supported u = snd (getDownloader u) 
+	supported u = supporteddownloader u && isincluded u && notexcluded u
+	supporteddownloader u = snd (getDownloader u) 
 		`elem` [WebDownloader, YoutubeDownloader]
+	isincluded u = case minclude of
+		Nothing -> True
+		Just glob -> matchGlob glob u
+	notexcluded u = case mexclude of
+		Nothing -> True
+		Just glob -> not (matchGlob glob u)

@@ -12,3 +12,16 @@ This special remote uses urls on the web as the source for content.
 There are several other ways http can be used to download annexed objects,
 including a git remote accessible by http, S3 with a `publicurl` configured,
 and the [[httpalso]] special remote.
+
+## configuration
+
+These parameters can be passed to `git annex initremote` or
+`git-annex enableremote` to configure a web remote:
+
+* `urlinclude` - Only use urls that match the specified glob.  
+  For example, `urlinclude="https://s3.amazonaws.com/*"`  
+  Note: Globs are matched case-insensitively.
+* `urlexclude` - Don't use urls that match the specified glob.  
+  For example, to prohibit http urls, but allow https,
+  use `urlexclude="http:*"`  
+  Note: Globs are matched case-insensitively.

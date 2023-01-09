@@ -19,6 +19,7 @@ git-annex (10.20221213) UNRELEASED; urgency=medium
     in addition to the default web special remote. When --sameas=web is used,
     these provide additional names for the web special remote, and may
     also have their own additional configuration and cost.
+  * web: Add urlinclude and urlexclude configuration settings.
 
  -- Joey Hess <id@joeyh.name>  Mon, 12 Dec 2022 13:04:54 -0400
 
