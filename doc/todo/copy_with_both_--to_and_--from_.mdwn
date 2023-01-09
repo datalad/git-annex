@@ -1,0 +1,16 @@
+We are 
+- creating git-annex repositories by minting annex keys based on metadata (size, filename extension, checksum) which we share on  https://github.com/dandisets/ and https://github.com/dandizarrs .
+- back them up as a tandem of `annex get` following by `annex move --to=backup` commands.
+
+That results 
+- temporarily first fully populate those datasets (could be TBs in size)
+- for every annexed key to have two commits to adjust the state of that key in git-annex branch -- first to announce local availability and then that it moved to another remote
+
+Ideally I would have loved if I could just say something like `git annex copy --from=someremote --to=backup .` or even better just smth like `git annex copy --auto-get --to=backup . ` and ensure that 
+- we get the file before moving it to backup
+- we do not bother recording in git-annex that the file ever existed locally
+
+NB may be some `annex sync` would do that magic?
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
