@@ -1,6 +1,6 @@
 {- Web remote.
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,6 +9,7 @@ module Remote.Web (remote, getWebUrls) where
 
 import Annex.Common
 import Types.Remote
+import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import qualified Git
 import qualified Git.Construct
@@ -22,6 +23,7 @@ import Utility.Metered
 import qualified Annex.Url as Url
 import Annex.YoutubeDl
 import Annex.SpecialRemote.Config
+import Types.Creds
 
 remote :: RemoteType
 remote = RemoteType
@@ -29,26 +31,33 @@ remote = RemoteType
 	, enumerate = list
 	, generate = gen
 	, configParser = mkRemoteConfigParser []
-	, setup = error "not supported"
+	, setup = setupInstance
 	, exportSupported = exportUnsupported
 	, importSupported = importUnsupported
 	, thirdPartyPopulated = False
 	}
 
--- There is only one web remote, and it always exists.
+-- The web remote always exists.
 -- (If the web should cease to exist, remove this module and redistribute
 -- a new release to the survivors by carrier pigeon.)
+--
+-- There may also be other instances of the web remote, which can be
+-- limited to accessing particular urls, and have different costs.
 list :: Bool -> Annex [Git.Repo]
 list _autoinit = do
 	r <- liftIO $ Git.Construct.remoteNamed "web" (pure Git.Construct.fromUnknown)
-	return [r]
+	others <- findSpecialRemotes "web"
+	-- List the main one last, this makes its name be used instead
+	-- of the other names when git-annex is referring to content on the
+	-- web.
+	return (others++[r])
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r _ rc gc rs = do
+gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ Just Remote
-		{ uuid = webUUID
+		{ uuid = if u == NoUUID then webUUID else u
 		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = uploadKey
@@ -77,10 +86,19 @@ gen r _ rc gc rs = do
 		, remotetype = remote
 		, mkUnavailable = return Nothing
 		, getInfo = return []
-		, claimUrl = Nothing -- implicitly claims all urls
+		-- claimingUrl makes the web special remote claim
+		-- urls that are not claimed by other remotes,
+		-- so no need to claim anything here.
+		, claimUrl = Nothing
 		, checkUrl = Nothing
 		, remoteStateHandle = rs
 		}
+
+setupInstance :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+setupInstance ss mu _ c gc = do
+	u <- maybe (liftIO genUUID) return mu
+	gitConfigSpecialRemote u c [("web", "true")]
+	return (c, u)
 
 downloadKey :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 downloadKey key _af dest p vc = go =<< getWebUrls key

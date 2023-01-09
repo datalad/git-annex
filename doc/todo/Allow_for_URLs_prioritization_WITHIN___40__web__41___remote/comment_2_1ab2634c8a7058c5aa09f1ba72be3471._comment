@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-01-09T18:25:56Z"
+ content="""
+It does happen to try the urls in the order listed in the log file.
+
+With that said, the order of lines in files in the git-annex branch is
+not guaranteed to be preserved when eg, merging..
+"""]]

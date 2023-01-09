@@ -15,6 +15,10 @@ git-annex (10.20221213) UNRELEASED; urgency=medium
     will work.
   * Speed up initial scanning for annexed files when built
     with persistent-2.14.4.1
+  * Allow initremote of additional special remotes with type=web,
+    in addition to the default web special remote. When --sameas=web is used,
+    these provide additional names for the web special remote, and may
+    also have their own additional configuration and cost.
 
  -- Joey Hess <id@joeyh.name>  Mon, 12 Dec 2022 13:04:54 -0400
 

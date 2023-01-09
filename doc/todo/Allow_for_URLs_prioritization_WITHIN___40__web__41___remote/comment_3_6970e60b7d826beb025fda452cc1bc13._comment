@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-01-09T18:27:36Z"
+ content="""
+See previous discussion in the since-closed todo 
+[[assign_costs_per_URL_or_better_repo-wide_(regexes)]].
+
+In that I suggested using --sameas, and yarikoptic thought the datalad
+special remote could use that to be used to handle urls and do its own
+prioritization. I suppose that probably didn't get done in datalad.
+
+But I do like the idea of using --sameas. It avoids several problems
+with providing "url-priority-N=" configs to the web special remote:
+
+* Two clones could have url-priority-1 set to different values, and merging
+  the remote.log would lose one of them.
+* It may be that one group of urls is slow from repo A, but fast from repo
+  B. So there needs to be a local override, and we already have that
+  for remote costs.
+* Using --sameas means that cost configs can be used, rather than
+  adding a separate config that's essentially for the same thing.
+
+So, what if it were possible to initremote versions of the web special
+remote that were limited to particular urls, and skipped over any other
+urls:
+
+	git-annex initremote --sameas web s3public type=web urllimit=s3.amazonaws.com/ autoenable=true
+	git config remote.s3public.annex-cost 150
+
+	git-annex initremote --sameas web dandiapi type=web urllimit=/api.dandiarchive.org/ autoenable=true
+	git config remote.dandiapi.annex-cost 250
+
+As well as adding the urllimit= config, that would need the web special
+remote to allow initremote of other instances of it. Currently, that will
+fail:
+
+	git-annex initremote --sameas web web2 type=web autoenable=true
+	git-annex: not supported
+	CallStack (from HasCallStack):
+	  error, called at ./Remote/Web.hs:32:19 in main:Remote.Web
+	failed
+	initremote: 1 failed
+
+Which is not ideal when it comes to using autoenable=true because using
+a current git-annex after this gets implemented would try to autoenable
+the remote, and display all that. Compare with how autoenable handles
+remote types it does not know -- it silently skips them. This could be avoided
+by using something other than type=web for these.
+"""]]
