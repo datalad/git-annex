@@ -26,6 +26,9 @@ import Utility.Glob
 import qualified Annex.Url as Url
 import Annex.YoutubeDl
 import Annex.SpecialRemote.Config
+import Logs.Remote
+
+import qualified Data.Map as M
 
 remote :: RemoteType
 remote = RemoteType
@@ -43,14 +46,6 @@ remote = RemoteType
 	, importSupported = importUnsupported
 	, thirdPartyPopulated = False
 	}
-
-urlincludeField :: RemoteConfigField
-urlincludeField = Accepted "urlinclude"
-
-urlexcludeField :: RemoteConfigField
-urlexcludeField = Accepted "urlexclude"
-
-data UrlIncludeExclude = UrlIncludeExclude (Maybe Glob) (Maybe Glob)
 
 -- The web remote always exists.
 -- (If the web should cease to exist, remove this module and redistribute
@@ -71,9 +66,7 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle 
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	cst <- remoteCost gc expensiveRemoteCost
-	let urlincludeexclude = UrlIncludeExclude
-		(getglob c urlincludeField)
-		( getglob c urlexcludeField)
+ 	urlincludeexclude <- mkUrlIncludeExclude c
 	return $ Just Remote
 		{ uuid = if u == NoUUID then webUUID else u
 		, cost = cst
@@ -111,10 +104,6 @@ gen r u rc gc rs = do
 		, checkUrl = Nothing
 		, remoteStateHandle = rs
 		}
-  where
-	getglob c f = do
-		glob <- getRemoteConfigValue f c
-		Just $ compileGlob glob CaseInsensative (GlobFilePath False)
 
 setupInstance :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 setupInstance _ mu _ c _ = do
@@ -180,18 +169,66 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 			_ -> firsthit rest r a
 
 getWebUrls :: Key -> Annex [URLString]
-getWebUrls key = getWebUrls' (UrlIncludeExclude Nothing Nothing) key
+getWebUrls key = getWebUrls' alwaysInclude key
 
 getWebUrls' :: UrlIncludeExclude -> Key -> Annex [URLString]
-getWebUrls' (UrlIncludeExclude minclude mexclude) key = 
+getWebUrls' urlincludeexclude key = 
 	filter supported <$> getUrls key
   where
-	supported u = supporteddownloader u && isincluded u && notexcluded u
+	supported u = supporteddownloader u 
+		&& checkUrlIncludeExclude urlincludeexclude u
 	supporteddownloader u = snd (getDownloader u) 
 		`elem` [WebDownloader, YoutubeDownloader]
-	isincluded u = case minclude of
-		Nothing -> True
-		Just glob -> matchGlob glob u
-	notexcluded u = case mexclude of
-		Nothing -> True
-		Just glob -> not (matchGlob glob u)
+
+urlincludeField :: RemoteConfigField
+urlincludeField = Accepted "urlinclude"
+
+urlexcludeField :: RemoteConfigField
+urlexcludeField = Accepted "urlexclude"
+
+data UrlIncludeExclude = UrlIncludeExclude
+	{ checkUrlIncludeExclude :: URLString -> Bool
+	}
+
+alwaysInclude :: UrlIncludeExclude
+alwaysInclude = UrlIncludeExclude { checkUrlIncludeExclude = const True }
+
+mkUrlIncludeExclude :: ParsedRemoteConfig -> Annex UrlIncludeExclude
+mkUrlIncludeExclude = go fallback
+  where
+	go b pc = case (getglob urlincludeField pc, getglob urlexcludeField pc) of
+		(Nothing, Nothing) -> b
+		(minclude, mexclude) -> mk minclude mexclude
+
+	getglob f pc = do
+		glob <- getRemoteConfigValue f pc
+		Just $ compileGlob glob CaseInsensative (GlobFilePath False)
+	
+	mk minclude mexclude = pure $ UrlIncludeExclude
+			{ checkUrlIncludeExclude = \u -> and
+				[ case minclude of
+					Just glob -> matchGlob glob u
+					Nothing -> True
+				, case mexclude of
+					Nothing -> True
+					Just glob -> not (matchGlob glob u)
+				]
+			}
+
+	-- When nothing to include or exclude is specified, only include
+	-- urls that are not explicitly included by other web special remotes.
+	fallback = do
+		rcs <- M.elems . M.filter iswebremote <$> remoteConfigMap
+		l <- forM rcs $ \rc ->
+			parsedRemoteConfig remote rc
+				>>= go (pure neverinclude)
+		liftIO $ print ("fallback", l)
+		pure $ UrlIncludeExclude
+			{ checkUrlIncludeExclude = \u ->
+				not (any (\c -> checkUrlIncludeExclude c u) l)
+			}
+	
+	iswebremote rc = (fromProposedAccepted <$> M.lookup typeField rc)
+		== Just (typename remote)
+
+	neverinclude = UrlIncludeExclude { checkUrlIncludeExclude = const False }

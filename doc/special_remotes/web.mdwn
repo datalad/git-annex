@@ -20,8 +20,23 @@ These parameters can be passed to `git annex initremote` or
 
 * `urlinclude` - Only use urls that match the specified glob.  
   For example, `urlinclude="https://s3.amazonaws.com/*"`  
-  Note: Globs are matched case-insensitively.
 * `urlexclude` - Don't use urls that match the specified glob.  
   For example, to prohibit http urls, but allow https,
   use `urlexclude="http:*"`  
-  Note: Globs are matched case-insensitively.
+  
+Globs are matched case-insensitively.
+
+When there are multiple special remotes of type web, and some are not
+configured with `urlinclude` and/or `urlexclude`, those will avoid using
+urls that are matched by the configuration of other web remotes.
+
+For example, this creates a second web special remote named "slowweb" that
+is only used for urls on one host, and that has a higher cost than the
+"web" special remote. With this configuration, `git-annex get` will first
+try to get the file from the "web" special remote, which will avoid
+using any urls that match slowweb's urlinclude. Only if the content 
+can't be downloaded from "web" (or some other remote) will it fall back
+to downloading from slowweb.
+
+    git-annex initremote --sameas=web slowweb type=web urlinclude='*//slowhost.com/*'
+    git config remote.slowweb.cost 300

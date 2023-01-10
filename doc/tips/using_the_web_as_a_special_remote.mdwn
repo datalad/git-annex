@@ -125,11 +125,11 @@ This is done using `git annex importfeed`. See [[downloading podcasts]].
 An annexed file can have content at multiple urls that git-annex knows
 about, and git-annex may use any of those urls for downloading a file.
 
-If some urls are especially fast, you might want to configure
-which urls git-annex prefers to use first. To accomplish that,
-you can create additional remotes, that are web special remotes, and are
-configured to only use the fast urls. Then it's simply a matter of
-configuring the cost of those remotes.
+If some urls are especially fast, or especially slow, you might want to
+configure which urls git-annex prefers to use first, or should only use as
+a last resory. To accomplish that, you can create additional remotes, that
+are web special remotes, and are configured to only be used for some urls.
+Then it's simply a matter of configuring the cost of those remotes.
 
 For example, suppose that you want to prioritize using urls on "fasthost.com".
 
@@ -141,3 +141,16 @@ will prefer to use the fasthost special remote, rather than the web special
 remote (which has a higher cost of 200), and so will use the fasthost.com
 url. If that url is not available, it will fall back to the web special
 remote, and use the other url.
+
+Suppose that you want to avoid using urls on "slowhost.com", except
+as a last resort.
+    
+    git-annex initremote --sameas=web slowhost type=web urlinclude='*//slowhost.com/*'
+    git config remote.slowhost.annex-cost 300
+
+Now, `git-annex get` of a file that is on both slowhost.com and another url
+will first try the fasthost remote. If fasthost does not support the url,
+it will next try the regular "web" remote. Which will avoid using
+urls that are used by the configuration of either fasthost or slowhost.
+Finally, if it's unable to get the file from some other url, it will
+use the slowhost remote to get it from the slow url.

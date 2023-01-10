@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2023-01-10T18:43:38Z"
+ content="""
+I think this todo is not fully done yet, because every web special
+remote that is split out this way still needs to have its cost
+configured in each clone.
+
+So this seems to be pointing to needing a global way to configure
+the  default cost of a special remote, similar to `git-annex config`.
+Local configs would of course need to override that.
+
+One way that might make sense is to add a cost=N setting to all special
+remotes. Then when generating the Remote, it can just look at the value
+set there, and use that for Remote.cost. Simple and efficient too.
+
+(That assumes that only special remotes should have their default cost
+be configurable, not git repositories. Which seems right, since
+the same git repo can have different costs depending on whether it's
+accessed locally or remotely, etc.)
+"""]]

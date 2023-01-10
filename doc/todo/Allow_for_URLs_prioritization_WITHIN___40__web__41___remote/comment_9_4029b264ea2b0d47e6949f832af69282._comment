@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2023-01-10T18:41:09Z"
+ content="""
+100-some lines of code later, I got deprioritizing urls working well.
+Eg:
+
+	git-annex initremote --sameas=web slowweb type=web urlinclude='*//slowhost.com/*'
+	git config remote.slowweb.annex-cost 300
+
+Now when the regular "web" special remote is asked to get a file,
+it will skip any urls that match the urlinclude of other web remotes.
+So, it won't use the slowhost.com urls, leaving those for slowweb to later
+use if necessary.
+"""]]
