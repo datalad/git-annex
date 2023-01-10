@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2023-01-10T15:43:50Z"
+ content="""
+Older versions of git-annex will fail with the error shown in comment #3
+when trying to enable the second instance of the web remote.
+
+When autoenabling, it won't be a fatal error, but the ugly error message
+will still be shown.
+"""]]

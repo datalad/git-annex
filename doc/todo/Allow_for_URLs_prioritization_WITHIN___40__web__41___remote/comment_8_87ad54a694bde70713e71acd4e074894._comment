@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2023-01-10T15:45:03Z"
+ content="""
+Setting default web to higher cost than the other web remotes doesn't avoid
+this problem: If you have a bunch of urls on different sites that are an
+averge speed, and one site that is slow, you'd have to make a new web remote
+for each individual site, and for each new site.
+"""]]
