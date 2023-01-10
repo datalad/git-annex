@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="{copy,move} with both --to and --from would be great!"
+ date="2023-01-10T09:38:39Z"
+ content="""
+That would indeed be awesome! However I guess the current implementation wouldn't support streaming files without caching them in their entirety.
+"""]]
