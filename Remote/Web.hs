@@ -65,7 +65,7 @@ list _autoinit = do
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
-	cst <- remoteCost gc expensiveRemoteCost
+	cst <- remoteCost gc c expensiveRemoteCost
  	urlincludeexclude <- mkUrlIncludeExclude c
 	return $ Just Remote
 		{ uuid = if u == NoUUID then webUUID else u
@@ -222,7 +222,6 @@ mkUrlIncludeExclude = go fallback
 		l <- forM rcs $ \rc ->
 			parsedRemoteConfig remote rc
 				>>= go (pure neverinclude)
-		liftIO $ print ("fallback", l)
 		pure $ UrlIncludeExclude
 			{ checkUrlIncludeExclude = \u ->
 				not (any (\c -> checkUrlIncludeExclude c u) l)
