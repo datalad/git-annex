@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 12"
+ date="2023-01-12T20:48:47Z"
+ content="""
+Great, thanks!  Should I also `urlexclude` that URL somehow from regular web remote so it is not considered by `web` remote with lower cost?  
+or for each url you would first see which remotes handle it and choose the one with highest cost for that url to be considered?
+"""]]
