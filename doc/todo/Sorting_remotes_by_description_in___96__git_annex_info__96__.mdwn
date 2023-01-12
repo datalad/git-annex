@@ -1,0 +1,5 @@
+Hey joey,
+
+How about sorting the remotes in `git annex info` by their description instead of their UUID (which is effectively a random order)? Would make for a better overview IMO.
+
+Cheers, Yann
