@@ -1,6 +1,6 @@
 {- git-annex special remote configuration
  -
- - Copyright 2019-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,9 +17,11 @@ import Types.UUID
 import Types.ProposedAccepted
 import Types.RemoteConfig
 import Types.GitConfig
+import Config.Cost
 
 import qualified Data.Map as M
 import qualified Data.Set as S
+import Text.Read
 import Data.Typeable
 import GHC.Stack
 
@@ -55,6 +57,9 @@ typeField = Accepted "type"
 
 autoEnableField :: RemoteConfigField
 autoEnableField = Accepted "autoenable"
+
+costField :: RemoteConfigField
+costField = Accepted "cost"
 
 encryptionField :: RemoteConfigField
 encryptionField = Accepted "encryption"
@@ -106,6 +111,8 @@ commonFieldParsers =
 		(FieldDesc "type of special remote")
 	, trueFalseParser autoEnableField (Just False)
 		(FieldDesc "automatically enable special remote")
+	, costParser costField
+		(FieldDesc "default cost of this special remote")
 	, yesNoParser exportTreeField (Just False)
 		(FieldDesc "export trees of files to this remote")
 	, yesNoParser importTreeField (Just False)
@@ -251,6 +258,13 @@ trueFalseParser' :: String -> Maybe Bool
 trueFalseParser' "true" = Just True
 trueFalseParser' "false" = Just False
 trueFalseParser' _ = Nothing
+
+costParser :: RemoteConfigField -> FieldDesc -> RemoteConfigFieldParser
+costParser f fd = genParser readcost f Nothing fd
+	(Just (ValueDesc "a number"))
+  where
+	readcost :: String -> Maybe Cost
+	readcost = readMaybe
 
 genParser
 	:: Typeable t

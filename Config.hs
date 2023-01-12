@@ -1,6 +1,6 @@
 {- Git configuration
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -24,7 +24,9 @@ import Config.Cost
 import Config.DynamicConfig
 import Types.Availability
 import Types.GitConfig
+import Types.RemoteConfig
 import Git.Types
+import Annex.SpecialRemote.Config
 
 {- Looks up a setting in git config. This is not as efficient as using the
  - GitConfig type. -}
@@ -51,14 +53,17 @@ reloadConfig = Annex.changeGitRepo =<< inRepo Git.Config.reRead
 unsetConfig :: ConfigKey -> Annex ()
 unsetConfig key = void $ inRepo $ Git.Config.unset key
 
-{- Calculates cost for a remote. Either the specific default, or as configured 
- - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
- - is set and prints a number, that is used. -}
-remoteCost :: RemoteGitConfig -> Cost -> Annex Cost
-remoteCost c d = fromMaybe d <$> remoteCost' c
+{- Gets cost for a remote. As configured by
+ - remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
+ - is set and prints a number, that is used. If neither is set,
+ - using the cost field from the ParsedRemoteConfig, and if it is not set,
+ - the specified default. -}
+remoteCost :: RemoteGitConfig -> ParsedRemoteConfig -> Cost -> Annex Cost
+remoteCost gc pc d = fromMaybe d <$> remoteCost' gc pc
 
-remoteCost' :: RemoteGitConfig -> Annex (Maybe Cost)
-remoteCost' = liftIO . getDynamicConfig . remoteAnnexCost
+remoteCost' :: RemoteGitConfig -> ParsedRemoteConfig -> Annex (Maybe Cost)
+remoteCost' gc pc = maybe (getRemoteConfigValue costField pc) Just
+	<$> liftIO (getDynamicConfig $ remoteAnnexCost gc)
 
 setRemoteCost :: Git.Repo -> Cost -> Annex ()
 setRemoteCost r c = setConfig (remoteAnnexConfig r "cost") (show c)

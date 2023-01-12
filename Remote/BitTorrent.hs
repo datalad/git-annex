@@ -60,8 +60,8 @@ list _autoinit = do
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r _ rc gc rs = do
-	cst <- remoteCost gc expensiveRemoteCost
 	c <- parsedRemoteConfig remote rc
+	cst <- remoteCost gc c expensiveRemoteCost
 	return $ Just Remote
 		{ uuid = bitTorrentUUID
 		, cost = cst

@@ -73,7 +73,7 @@ ignoreinodesField = Accepted "ignoreinodes"
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
-	cst <- remoteCost gc cheapRemoteCost
+	cst <- remoteCost gc c cheapRemoteCost
 	let chunkconfig = getChunkConfig c
 	cow <- liftIO newCopyCoWTried
 	let ii = IgnoreInodes $ fromMaybe True $

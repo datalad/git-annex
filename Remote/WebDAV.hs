@@ -72,7 +72,7 @@ gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	new
 		<$> pure c
-		<*> remoteCost gc expensiveRemoteCost
+		<*> remoteCost gc c expensiveRemoteCost
 		<*> mkDavHandleVar c gc u
   where
 	new c cst hdl = Just $ specialRemote c

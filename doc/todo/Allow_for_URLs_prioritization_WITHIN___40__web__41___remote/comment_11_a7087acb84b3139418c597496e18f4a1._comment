@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2023-01-12T17:38:38Z"
+ content="""
+Went ahead and implememented cost=, so now all you need is:
+
+	git-annex initremote --sameas=web dandiapi type=web urlinclude='*//api.dandiarchive.org/*' cost=300
+"""]]

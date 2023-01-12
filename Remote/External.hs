@@ -67,7 +67,7 @@ gen r u rc gc rs
 	-- readonly mode only downloads urls; does not use external program
 	| externaltype == "readonly" = do
 		c <- parsedRemoteConfig remote rc
-		cst <- remoteCost gc expensiveRemoteCost
+		cst <- remoteCost gc c expensiveRemoteCost
 		let rmt = mk c cst GloballyAvailable
 			Nothing
 			(externalInfo externaltype)
@@ -86,7 +86,7 @@ gen r u rc gc rs
 		external <- newExternal externaltype (Just u) c (Just gc)
 			(Git.remoteName r) (Just rs)
 		Annex.addCleanupAction (RemoteCleanup u) $ stopExternal external
-		cst <- getCost external r gc
+		cst <- getCost external r gc c
 		avail <- getAvailability external r gc
 		exportsupported <- if exportTree c
 			then checkExportSupported' external
@@ -755,9 +755,9 @@ respErrorMessage req err
 {- Caches the cost in the git config to avoid needing to start up an
  - external special remote every time time just to ask it what its
  - cost is. -}
-getCost :: External -> Git.Repo -> RemoteGitConfig -> Annex Cost
-getCost external r gc =
-	(go =<< remoteCost' gc) `catchNonAsync` const (pure defcst)
+getCost :: External -> Git.Repo -> RemoteGitConfig -> ParsedRemoteConfig -> Annex Cost
+getCost external r gc pc =
+	(go =<< remoteCost' gc pc) `catchNonAsync` const (pure defcst)
   where
 	go (Just c) = return c
 	go Nothing = do

@@ -50,7 +50,7 @@ urlField = Accepted "url"
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
-	cst <- remoteCost gc expensiveRemoteCost
+	cst <- remoteCost gc c expensiveRemoteCost
 	let url = getRemoteConfigValue urlField c
 	ll <- liftIO newLearnedLayout
 	return $ Just $ this url ll c cst

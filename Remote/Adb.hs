@@ -15,6 +15,7 @@ import Types.Creds
 import Types.Export
 import Types.Import
 import qualified Git
+import Config
 import Config.Cost
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
@@ -70,11 +71,12 @@ oldandroidField = Accepted "oldandroid"
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
+	-- adb operates over USB or wifi, so is not as cheap
+	-- as local, but not too expensive
+	cst <- remoteCost gc c semiExpensiveRemoteCost
 	let this = Remote
 		{ uuid = u
-		-- adb operates over USB or wifi, so is not as cheap
-		-- as local, but not too expensive
-		, cost = semiExpensiveRemoteCost
+		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = storeKeyDummy
 		, retrieveKeyFile = retrieveKeyFileDummy

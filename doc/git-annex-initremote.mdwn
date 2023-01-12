@@ -106,6 +106,12 @@ want to use `git annex renameremote`.
   when the special remote does not need anything special to be done to get
   it enabled.
 
+* `cost`
+
+  Specify this to override the default cost of the special remote.
+  This configuration can be overridden by the local git config,
+  eg remote.name.annex-cost.
+
 * `uuid`
 
   Normally, git-annex initremote generates a new UUID for the new special

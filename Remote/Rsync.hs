@@ -75,7 +75,7 @@ rsyncUrlField = Accepted "rsyncurl"
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
-	cst <- remoteCost gc expensiveRemoteCost
+	cst <- remoteCost gc c expensiveRemoteCost
 	(transport, url) <- rsyncTransport gc $
 		fromMaybe (giveup "missing rsyncurl") $ remoteAnnexRsyncUrl gc
 	protectsargs <- liftIO probeRsyncProtectsArgs

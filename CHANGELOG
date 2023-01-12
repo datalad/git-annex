@@ -20,6 +20,8 @@ git-annex (10.20221213) UNRELEASED; urgency=medium
     these provide additional names for the web special remote, and may
     also have their own additional configuration and cost.
   * web: Add urlinclude and urlexclude configuration settings.
+  * Added an optional cost= configuration to all special remotes.
+  * adb: Support the remote.name.cost and remote.name.cost-command configs.
 
  -- Joey Hess <id@joeyh.name>  Mon, 12 Dec 2022 13:04:54 -0400
 

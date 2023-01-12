@@ -93,7 +93,7 @@ gen r u rc gc rs = do
 		else pure r
 	sem <- liftIO $ MSemN.new 1
 	h <- liftIO $ newTVarIO $ LFSHandle Nothing Nothing sem r' gc
-	cst <- remoteCost gc expensiveRemoteCost
+	cst <- remoteCost gc c expensiveRemoteCost
 	let specialcfg = (specialRemoteCfg c)
 		-- chunking would not improve git-lfs
 		{ chunkConfig = NoChunks

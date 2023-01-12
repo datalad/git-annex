@@ -65,7 +65,7 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle 
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	bupr <- liftIO $ bup2GitRemote buprepo
-	cst <- remoteCost gc $
+	cst <- remoteCost gc c $
 		if bupLocal buprepo
 			then nearlyCheapRemoteCost
 			else expensiveRemoteCost

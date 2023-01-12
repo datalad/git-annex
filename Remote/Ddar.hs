@@ -55,7 +55,7 @@ ddarrepoField = Accepted "ddarrepo"
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
-	cst <- remoteCost gc $
+	cst <- remoteCost gc c $
 		if ddarLocal ddarrepo
 			then nearlyCheapRemoteCost
 			else expensiveRemoteCost

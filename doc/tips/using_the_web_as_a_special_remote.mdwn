@@ -128,13 +128,12 @@ about, and git-annex may use any of those urls for downloading a file.
 If some urls are especially fast, or especially slow, you might want to
 configure which urls git-annex prefers to use first, or should only use as
 a last resory. To accomplish that, you can create additional remotes, that
-are web special remotes, and are configured to only be used for some urls.
-Then it's simply a matter of configuring the cost of those remotes.
+are web special remotes, and are configured to only be used for some urls,
+and have a different cost than the web special remote.
 
 For example, suppose that you want to prioritize using urls on "fasthost.com".
 
-    git-annex initremote --sameas=web fasthost type=web urlinclude='*//fasthost.com/*'
-    git config remote.fasthost.annex-cost 150
+    git-annex initremote --sameas=web fasthost type=web urlinclude='*//fasthost.com/*' cost=150
 
 Now, `git-annex get` of a file that is on both fasthost.com and another url
 will prefer to use the fasthost special remote, rather than the web special
@@ -145,8 +144,7 @@ remote, and use the other url.
 Suppose that you want to avoid using urls on "slowhost.com", except
 as a last resort.
     
-    git-annex initremote --sameas=web slowhost type=web urlinclude='*//slowhost.com/*'
-    git config remote.slowhost.annex-cost 300
+    git-annex initremote --sameas=web slowhost type=web urlinclude='*//slowhost.com/*' cost=300
 
 Now, `git-annex get` of a file that is on both slowhost.com and another url
 will first try the fasthost remote. If fasthost does not support the url,

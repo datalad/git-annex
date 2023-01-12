@@ -48,7 +48,7 @@ chainGen :: P2PAddress -> Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig ->
 chainGen addr r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
 	connpool <- mkConnectionPool
-	cst <- remoteCost gc veryExpensiveRemoteCost
+	cst <- remoteCost gc c veryExpensiveRemoteCost
 	let protorunner = runProto u addr connpool
 	let withconn = withConnection u addr connpool
 	let this = Remote 

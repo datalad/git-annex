@@ -50,7 +50,7 @@ hooktypeField = Accepted "hooktype"
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
-	cst <- remoteCost gc expensiveRemoteCost
+	cst <- remoteCost gc c expensiveRemoteCost
 	return $ Just $ specialRemote c
 		(store hooktype)
 		(retrieve hooktype)

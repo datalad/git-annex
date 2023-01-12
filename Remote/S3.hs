@@ -187,7 +187,7 @@ mungekeysField = Accepted "mungekeys"
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
-	cst <- remoteCost gc expensiveRemoteCost
+	cst <- remoteCost gc c expensiveRemoteCost
 	info <- extractS3Info c
 	hdl <- mkS3HandleVar c gc u
 	magic <- liftIO initMagicMime

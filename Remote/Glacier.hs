@@ -63,9 +63,10 @@ fileprefixField :: RemoteConfigField
 fileprefixField = Accepted "fileprefix"
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u rc gc rs = new 
-	<$> parsedRemoteConfig remote rc
-	<*> remoteCost gc veryExpensiveRemoteCost
+gen r u rc gc rs = do
+	c <- parsedRemoteConfig remote rc
+	cst <- remoteCost gc c veryExpensiveRemoteCost
+	return (new c cst)
   where
 	new c cst = Just $ specialRemote' specialcfg c
 		(store this)

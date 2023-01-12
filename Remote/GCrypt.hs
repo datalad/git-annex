@@ -127,8 +127,10 @@ gen baser u rc gc rs = do
 
 gen' :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen' r u c gc rs = do
-	cst <- remoteCost gc $
-		if repoCheap r then nearlyCheapRemoteCost else expensiveRemoteCost
+	cst <- remoteCost gc c $
+		if repoCheap r
+			then nearlyCheapRemoteCost
+			else expensiveRemoteCost
 	let (rsynctransport, rsyncurl, accessmethod) = rsyncTransportToObjects r gc
 	protectsargs <- liftIO Remote.Rsync.probeRsyncProtectsArgs
 	let rsyncopts = Remote.Rsync.genRsyncOpts protectsargs c gc rsynctransport rsyncurl

@@ -174,7 +174,7 @@ gen r u rc gc rs
 		Nothing -> do
 			st <- mkState r u gc
 			c <- parsedRemoteConfig remote rc
-			go st c <$> remoteCost gc defcst
+			go st c <$> remoteCost gc c defcst
 		Just addr -> Remote.P2P.chainGen addr r u rc gc rs
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
