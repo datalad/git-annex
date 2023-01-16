@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-01-16T17:10:22Z"
+ content="""
+This would complicate the special remote protocol with something that
+probably could only be used by the directory special remote.
+
+The unclearness about what to do about absolute symlinks suggests
+that different people might have very different opinions
+about what good behavior might be as well.
+
+I am not liking the benefit to complexity ratio of this.
+"""]]
