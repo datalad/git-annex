@@ -4,3 +4,9 @@ Having a few old repos with terabytes of data on various disks, I would just tos
 
 
 -- Richard
+
+> One of those was fixed by improvements to git-annex, the other
+> is not something that a command like the mooted one would be able to
+> safely do since it has to happen at repository init time.
+> 
+> [[wontfix|done]] --[[Joey]]
