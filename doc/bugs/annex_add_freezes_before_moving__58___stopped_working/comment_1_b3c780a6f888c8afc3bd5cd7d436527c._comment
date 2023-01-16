@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-01-16T19:56:10Z"
+ content="""
+Could your script be changed to not remove the `d` flag when freezing
+the file, but instead when freezing the directory, remove the `d` flag from the
+file then? (And restore the file's `d` flag when thawing the directory.)
+
+That seems like it would avoid the problem since as you say,
+git-annex freezes the directory after moving the file into it. And freezing
+the directory is logically what you are doing really.
+
+But, you would need to convert .git/annex/objects/xx/yy/KEY to
+.git/annex/objects/xx/yy/KEY/KEY to get the name of the file,
+which is a bit grubbing into git-annex internals I suppose.
+
+git-annex has a good reason to want to prevent modifications to the file
+before moving it: It has to hash it before knowing where to move it to, and
+it would like to avoid the file getting modified while it is being hashed.
+(Though of course it will recover if that does happen.) So I would not want
+to skip the permission setting part of the pre-move freeze. What I suppose
+it could do is only set the permissions at that point, and defer running
+the freeze hook until after moving the file.
+
+(I checked and Comand.Import also has a `freezeContent` that comes
+before a file is moved and would need to be changed. 
+Rest of the calls look ok.)
+"""]]
