@@ -28,3 +28,11 @@ Is 'unused' a good name? 'clean' and 'autoclean' would make more sense, imo. 'cl
 > Nah, `git annex unused/dropunused` already exist.  --[[Joey]] 
 
 >> OK, in that case forget what I said. No idea about your internal policy, but feel free to delete this part of the page, then. -- RichiH
+
+
+---
+
+Revisiting old todos, I noticed this and 
+[[todo/wishlist: `git annex drop --relaxed`]]
+are basically the same idea. So gonna
+close this as a dup. [[done]] --[[Joey]]
