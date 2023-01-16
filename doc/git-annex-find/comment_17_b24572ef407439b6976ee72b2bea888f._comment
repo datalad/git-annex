@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2023-01-16T19:18:15Z"
+ content="""
+Reminder that this is a man page, and place to maybe ask for clarification
+about that documentation. It is not a place to post feature requests.
+
+[[todo]] would be a good place to talk about a `git-annex findkeys`.
+"""]]
