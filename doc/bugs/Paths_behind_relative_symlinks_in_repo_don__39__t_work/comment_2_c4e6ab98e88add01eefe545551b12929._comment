@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-01-16T18:56:42Z"
+ content="""
+git-annex actually has very similar behavior to git. Consider from your example:
+
+	joey@darkstar:~/tmp/xx/git-annex-link>git annex get link-to-level1/file
+	error: pathspec 'link-to-level1/file' did not match any file(s) known to git
+	Did you forget to 'git add'?
+	get: 1 failed
+	
+Compare to:
+
+	joey@darkstar:~/tmp/xx/git-annex-link>git rm link-to-level1/file
+	fatal: pathspec 'link-to-level1/file' did not match any files
+
+If anything, it seems that the bug is in `git-annex info` for behaving 
+differently in this case when run on a file behind a symlink.
+
+Also this is not a problem if you `cd` to the symlink and then run commands
+operating on relative files.
+"""]]
