@@ -16,3 +16,6 @@ It's worth noting that such changes could happen alongside the current commands 
 has recently gone through a similar process to simplify the semantics of some of its commands. I'd ask for such changes to be considered.
 
 Daven
+
+> [[wontfix|done]] at least for the listed things, for reasons explained
+> in my comment below. --[[Joey]]
