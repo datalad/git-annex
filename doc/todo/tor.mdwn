@@ -22,3 +22,7 @@ Eventually:
 * Discovery of nodes on same LAN, and direct connection to them.
 * Make `git annex map` show a peer's remotes?  
   Would it be surprising if peers can learn this information?
+
+> While the above "eventually" todo list is not implemented, the main
+> todo has been implemented for a long time. I think if users need
+> such things, they should be in separate todos. So, [[done]] --[[Joey]]
