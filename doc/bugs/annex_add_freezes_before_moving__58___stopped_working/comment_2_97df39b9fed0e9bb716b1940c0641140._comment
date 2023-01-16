@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2023-01-16T21:27:12Z"
+ content="""
+hm, good point on freezing before checksumming... and indeed I also dislike a little the need to make freeze/thawing very annex-specific as to freeze/thaw file(s) under `KEY/`.
+Before going that way, I think, I also should re-try my initial attempt [described here](https://git-annex.branchable.com/projects/datalad/bugs-done/can__39__t_make_annex_happy_in_freeze__47__thaw/) of adding/removing explicit  `D::EVERYONE@:wadTN`, which was not possible back in those times but should work now. Even though that approach probably would not resolve this particular issue, should make it a little cleaner.
+
+NB still not sure what change rendered prior working setup not working. Need to make testing of those helpers run daily on that system as part of the client testing of datalad/git-annex
+"""]]
