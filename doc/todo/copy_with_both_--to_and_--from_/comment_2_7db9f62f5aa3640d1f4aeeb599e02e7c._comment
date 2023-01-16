@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-01-16T17:02:37Z"
+ content="""
+See [[todo/transitive_transfers]] for past discussion of this kind of
+feature (and why supporting streaming would complicate git-annex significantly
+for typically little gain).
+
+The extra commits to the git-annex branch can be avoided by
+annex.alwayscommit=false
+
+I wonder to what extent alternating getting a file with sending it on
+(and dropping it) would meet the use case? Are some files so large a single
+file cannot fit in local storage at all?
+"""]]
