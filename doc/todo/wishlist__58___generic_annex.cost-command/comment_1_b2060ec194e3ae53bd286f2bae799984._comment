@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-01-16T18:11:25Z"
+ content="""
+Then remote.name.annex-cost-command and annex.cost-command would not be
+able to be set to the same value with the same result. That is an asymmetry
+that no other pair of remote.name.foo and annex.foo have. 
+
+I think it's better to avoid such asymmetry.
+
+(Also the idea of different costs for different files is right out,
+that would make it sloooow.)
+"""]]
