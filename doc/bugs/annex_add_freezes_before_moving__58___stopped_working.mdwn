@@ -1,0 +1,70 @@
+### Please describe the problem.
+
+git-annex freezes the file to be moved under .git/annex/objects before moving, but freezing of the file could make it unmovable (at least that is what happens to us now on discovery although that did not happen before, not yet sure what has changed).
+
+Here is what happens on a sample repo:
+
+```
+[d31548v@ndoli derivatives]$ mkdir test; cd test; git init; git annex init; touch 123; git annex add --debug 123
+Initialized empty Git repository in /dartfs-hpc/rc/lab/C/CANlab/labdata/data/WASABI/derivatives/test/.git/
+init  ok
+(recording state in git...)
+[2023-01-16 12:17:34.428880032] (Utility.Process) process [15018] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2023-01-16 12:17:34.472934882] (Utility.Process) process [15018] done ExitSuccess
+[2023-01-16 12:17:34.474468798] (Utility.Process) process [15019] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2023-01-16 12:17:34.520392371] (Utility.Process) process [15019] done ExitSuccess
+[2023-01-16 12:17:34.523255323] (Utility.Process) process [15020] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..d54f4272ddecfccbc2b80f85aa10fc0c1182a8bd","--pretty=%H","-n1"]
+[2023-01-16 12:17:34.574881634] (Utility.Process) process [15020] done ExitSuccess
+[2023-01-16 12:17:34.58416992] (Utility.Process) process [15021] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2023-01-16 12:17:34.631862153] (Utility.Process) process [15022] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2023-01-16 12:17:34.669579382] (Utility.Process) process [15022] done ExitSuccess
+[2023-01-16 12:17:34.6712721] (Utility.Process) process [15023] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","refs/heads/master"]
+[2023-01-16 12:17:34.715405595] (Utility.Process) process [15023] done ExitFailure 1
+[2023-01-16 12:17:34.718334524] (Utility.Process) process [15024] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","-z","--others","--exclude-standard","--","123"]
+[2023-01-16 12:17:34.76320148] (Utility.Process) process [15025] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","check-attr","-z","--stdin","annex.backend","annex.largefiles","annex.numcopies","annex.mincopies","--"]
+[2023-01-16 12:17:34.809269539] (Utility.Process) process [15026] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+add 123 [2023-01-16 12:17:34.848893304] (Utility.Process) process [15027] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2023-01-16 12:17:34.883573286] (Utility.Process) process [15027] done ExitSuccess
+[2023-01-16 12:17:34.885621822] (Utility.Process) process [15028] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","refs/heads/master"]
+[2023-01-16 12:17:34.920147829] (Utility.Process) process [15028] done ExitFailure 1
+[2023-01-16 12:17:34.922913861] (Utility.Process) process [15029] call: sh ["-c","/dartfs-hpc/rc/home/j/f003z4j/bin-annex/freeze-content '123'"]
+[2023-01-16 12:17:34.954774083] (Utility.Process) process [15029] done ExitSuccess
+
+[2023-01-16 12:17:34.987464314] (Utility.Process) process [15034] call: sh ["-c","/dartfs-hpc/rc/home/j/f003z4j/bin-annex/thaw-content '.git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'"]
+[2023-01-16 12:17:35.025118709] (Utility.Process) process [15034] done ExitSuccess
+[2023-01-16 12:17:35.031067944] (Utility.Process) process [15039] call: sh ["-c","/dartfs-hpc/rc/home/j/f003z4j/bin-annex/freeze-content '.git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'"]
+[2023-01-16 12:17:35.065740268] (Utility.Process) process [15039] done ExitSuccess
+
+git-annex: .git/annex/othertmp/ingest-12315012-0: rename: permission denied (Permission denied)
+failed
+[2023-01-16 12:17:35.073776498] (Utility.Process) process [15024] done ExitSuccess
+[2023-01-16 12:17:35.074875132] (Utility.Process) process [15044] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","-z","--modified","--","123"]
+[2023-01-16 12:17:35.108396621] (Utility.Process) process [15044] done ExitSuccess
+[2023-01-16 12:17:35.109700932] (Utility.Process) process [15045] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","diff","--name-only","--diff-filter=T","-z","--cached","--","123"]
+[2023-01-16 12:17:35.147595321] (Utility.Process) process [15045] done ExitSuccess
+[2023-01-16 12:17:35.159897061] (Utility.Process) process [15021] done ExitSuccess
+[2023-01-16 12:17:35.160360662] (Utility.Process) process [15026] done ExitSuccess
+[2023-01-16 12:17:35.160730269] (Utility.Process) process [15025] done ExitSuccess
+add: 1 failed
+[d31548v@ndoli test]$ nfs4_getfacl 
+123   .git/ 
+[d31548v@ndoli test]$ nfs4_getfacl 123
+
+# file: 123
+A::OWNER@:rxtncy
+A::GROUP@:rxtncCoy
+A:g:rc-CANlab-wasabi@KIEWIT.DARTMOUTH.EDU:rxtncy
+```
+
+So -- git-annex first freezes the to be annexed file, and then moves it into thawed up key directory, which it then freezes.  That seems to no longer work for us.
+
+Currently we get our run to error because our freezing script rightfully removes `d` flag, which [according to docs](https://www.osc.edu/book/export/html/4523) is for "delete the file/directory" permissions -- we wanted to prevent deletion of the file.  And so far it seems I have failed to tune up containing directory's ACL in such a way that I would be forbidden to remove a file from under it if file has `d` permission.  So it might be a divergence from POSIX system behavior where ability to remove file solely relies on directory's permission?
+
+if that is the case, and if I do not find ACL setting which would forbid removal of a file based on directory's permissions, could annex then
+
+- delay freezing of the file containing the data until it actually moves the file into .git/annex/objects location?
+
+To me such behavior might make a little more sense that current assumption that filesystem allows to have frozen file to be moved.
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
