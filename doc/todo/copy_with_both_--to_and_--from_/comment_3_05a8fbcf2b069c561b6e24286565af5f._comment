@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2023-01-16T21:43:40Z"
+ content="""
+FWIW -- alternating is fine, all my files should be able to fit on the drive individually (but not all at once) while doing some number of them in parallel.  **BUT** in some use cases (e.g. AWS) - drive IO could be slower than network IO (it was the use case which inspired me to complain to get checksumming done inbound with downloading). So, if stored locally, it has potential to become much slower.  But I am not sure if that would be feasible anyhow to establish generic pipe-ing between various remotes.
+"""]]
