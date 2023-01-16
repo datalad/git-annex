@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-01-16T17:48:04Z"
+ content="""
+This never got followed up on, but there is no queue currently.
+
+I dunno, this feels like something that can be implemented outside of
+git-annex with a cron job or what have you.
+"""]]
