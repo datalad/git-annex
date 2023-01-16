@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 14"""
+ date="2023-01-16T19:09:35Z"
+ content="""
+@matthias.risze length is not an issue. You should avoid characters that
+are not usually in urls, particularly whitespace and newline.
+
+It seems to me though that your special remote would perhaps
+be better served by using the SETSTATE and GETSTATE commands
+(see [[design/external_special_remote_protocol]])
+"""]]
