@@ -43,28 +43,26 @@ optParser desc = FindOptions
 	<*> parseBatchOption False
 
 parseFormatOption :: Parser Utility.Format.Format
-parseFormatOption = 
+parseFormatOption = parseFormatOption' "${file}\0"
+
+parseFormatOption' :: String -> Parser Utility.Format.Format
+parseFormatOption' print0format = 
 	option (Utility.Format.gen <$> str)
 		( long "format" <> metavar paramFormat
 		<> help "control format of output"
 		)
-	<|> flag' (Utility.Format.gen "${file}\0")
+	<|> flag' (Utility.Format.gen print0format)
 		( long "print0"
-		<> help "output filenames terminated with nulls"
+		<> help "use nulls to separate output rather than lines"
 		)
 
 seek :: FindOptions -> CommandSeek
 seek o = do
 	unless (isJust (keyOptions o)) $
 		checkNotBareRepo
-	islimited <- limited
-	let seeker = AnnexedFileSeeker
+	seeker <- contentPresentUnlessLimited $ AnnexedFileSeeker
 		{ startAction = start o
-		-- only files with content present are shown, unless
-		-- the user has requested others via a limit
-		, checkContentPresent = if islimited
-			then Nothing
-			else Just True
+		, checkContentPresent = Nothing
 		, usesLocationLog = False
 		}
 	case batchOption o of
@@ -76,6 +74,17 @@ seek o = do
 			batchAnnexedFiles fmt seeker
   where
 	ww = WarnUnmatchLsFiles
+
+-- Default to needing content to be present, but if the user specified a
+-- limit, content does not need to be present.
+contentPresentUnlessLimited :: AnnexedFileSeeker -> Annex AnnexedFileSeeker
+contentPresentUnlessLimited s = do
+	islimited <- limited
+	return $ s
+		{ checkContentPresent = if islimited
+			then Nothing
+			else Just True
+		}
 
 start :: FindOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
 start o _ file key = startingCustomOutput key $ do

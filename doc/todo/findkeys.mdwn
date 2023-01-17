@@ -3,7 +3,7 @@ all keys in the repository, or all known keys.
 
 [[git-annex-find]] has a long comment section with users wanting some way
 to do this, but I am strongly of the opinion that `git-annex find` should
-list files, not keys, like `find(1)` does. See my comments there.
+list files, not keys, like `find(1)` does.
 --[[Joey]]
 
 findkeys could support --format like find, but without `${file}`, and
@@ -11,13 +11,10 @@ findkeys could support --format like find, but without `${file}`, and
 useful? The other options wouldn't apply to it, except for matching options
 like --in that can operate on keys.
 
-Seems that some users are looking for a way to list all keys known to
-git-annex, while other users are looking for a way to list only keys
-present in the local repo. If it defaults to listing all known keys,
---in=here can be used to get the other behavior. OTOH, `git-annex find`
-defaults to listing only files that are present, so it would be
-a little inconsistent for findkeys to default to listing all keys.
-I think I prefer the inconsistency over needing a different option than
---in=here though. --[[Joey]]
+Like `git-annex find`, findkeys should default to listing only keys
+whose content is present. But when an option like --in=remote
+or --anything is used, it should, like find, not be limited to that.
 
 [[!tag projects/dandi]]
+
+> [[done]]! --[[Joey]]

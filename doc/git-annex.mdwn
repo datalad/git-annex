@@ -487,6 +487,12 @@ content from the key-value store.
 
   See [[git-annex-inprogress]](1) for details.
 
+* `findkeys`
+
+  Similar to `git-annex find`, but operating on keys.
+
+  See [[git-annex-findkeys]](1) for details.
+
 # METADATA COMMANDS
 
 * `metadata [path ...]`

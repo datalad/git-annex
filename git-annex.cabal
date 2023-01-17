@@ -67,6 +67,7 @@ Extra-Source-Files:
   doc/git-annex-export.mdwn
   doc/git-annex-filter-branch.mdwn
   doc/git-annex-find.mdwn
+  doc/git-annex-findkeys.mdwn
   doc/git-annex-findref.mdwn
   doc/git-annex-fix.mdwn
   doc/git-annex-forget.mdwn
@@ -727,6 +728,7 @@ Executable git-annex
     Command.FilterBranch
     Command.FilterProcess
     Command.Find
+    Command.FindKeys
     Command.FindRef
     Command.Fix
     Command.Forget

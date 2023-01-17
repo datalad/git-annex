@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="disteph@02005197c6b0e3d92255823d62c08dbe6d7a4d52"
- nickname="disteph"
- avatar="http://cdn.libravatar.org/avatar/a12e6e0852d5a1985b8684b17202561c"
- subject="--all ?"
- date="2018-10-15T23:57:27Z"
- content="""
-It would be awesome if there was the same --all option, and if the command produced something in bare repos, just like with the move / copy commands. At the moment for instance, it seems running git annex find on a bare repo returns nothing. There would be the question of the output format, but I guess one key per line is the obvious format one wants. I personally would want to run git annex find before a git annex move/copy, as a kind of dry-run, i.e. just to see the list of keys that will be transferred.
-"""]]

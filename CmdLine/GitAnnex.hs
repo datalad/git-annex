@@ -70,6 +70,7 @@ import qualified Command.PreCommit
 import qualified Command.PostReceive
 import qualified Command.FilterBranch
 import qualified Command.Find
+import qualified Command.FindKeys
 import qualified Command.FindRef
 import qualified Command.Whereis
 import qualified Command.WhereUsed
@@ -208,6 +209,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.AddUnused.cmd
 	, Command.FilterBranch.cmd
 	, Command.Find.cmd
+	, Command.FindKeys.cmd
 	, Command.FindRef.cmd
 	, Command.Whereis.cmd
 	, Command.WhereUsed.cmd

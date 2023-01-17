@@ -239,15 +239,23 @@ annexedMatchingOptions :: [AnnexOption]
 annexedMatchingOptions = concat
 	[ keyMatchingOptions'
 	, fileMatchingOptions' Limit.LimitAnnexFiles
+	, anythingNothingOptions
 	, combiningOptions
 	, timeLimitOption
 	, sizeLimitOption
 	]
 
--- Matching options that can operate on keys as well as files.
+-- Options to match properties of keys.
 keyMatchingOptions :: [AnnexOption]
-keyMatchingOptions = keyMatchingOptions' ++ combiningOptions ++ timeLimitOption ++ sizeLimitOption
+keyMatchingOptions = concat
+	[ keyMatchingOptions'
+	, anythingNothingOptions
+	, combiningOptions 
+	, timeLimitOption 
+	, sizeLimitOption
+	]
 
+-- Matching options that can operate on keys as well as files.
 keyMatchingOptions' :: [AnnexOption]
 keyMatchingOptions' = 
 	[ annexOption (setAnnexState . Limit.addIn) $ strOption
@@ -378,7 +386,11 @@ fileMatchingOptions' lb =
 		<> help "match files smaller than a size"
 		<> hidden
 		)
-	, annexFlag (setAnnexState Limit.addAnything)
+	]
+
+anythingNothingOptions :: [AnnexOption]
+anythingNothingOptions =
+	[ annexFlag (setAnnexState Limit.addAnything)
 		( long "anything"
 		<> help "match all files"
 		<> hidden

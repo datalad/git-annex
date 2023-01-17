@@ -85,7 +85,7 @@ finds files in the current directory and its subdirectories.
 
 [[git-annex-whereis]](1)
 
-[[git-annex-list]](1)
+[[git-annex-findkeys]](1)
 
 # AUTHOR
 
