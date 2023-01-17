@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-01-17T16:59:22Z"
+ content="""
+On the idea of only removing the write permissions before checksumming and
+running the freeze hook later, it occurs to me that on some systems, write
+perms are inneffective, but the freeze hook is able to more effectively
+prevent writing.
+
+Actually, the immutable bit on linux is a good example of this. If a
+process has the file open for write when `git-annex add` is run, removing
+the write bit will not prevent modifications to the file happening during
+checksumming. But `chattr +i` actually causes further writes to that handle
+to fail with EPERM. So if someone is able to use chattr and sets up a hook,
+they get better prevention of an unlikely but possible scenario, where
+a write to a file done during checksumming is not detectable by git-annex.
+
+(Unlikely because the file mtime also has to get reset back to what it was
+before, and the file size can't change. A process would have to really
+go out of its way to defeat git-annex, but still one *could*.)
+"""]]
