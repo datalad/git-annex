@@ -234,7 +234,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 	bare <- fromRepo Git.repoIsLocalBare
 	when (auto && bare) $
 		giveup "Cannot use --auto in a bare repository"
-	case (noworktreeitems, ko) of
+	case (nospecifiedworktreeitems, ko) of
 		(True, Nothing)
 			| bare -> nofilename $ noauto runallkeys
 			| otherwise -> fallbackaction worktreeitems
@@ -260,7 +260,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 		, a
 		)
 
-	noworktreeitems = case worktreeitems of
+	nospecifiedworktreeitems = case worktreeitems of
 		WorkTreeItems [] -> True
 		WorkTreeItems _ -> False
 		NoWorkTreeItems -> False
