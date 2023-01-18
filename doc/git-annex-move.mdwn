@@ -68,12 +68,6 @@ Paths of files or directories to operate on can be specified.
 
   Use this option to move a specified key.
 
-* `--fast`
-
-  When moving content to a remote, avoid a round trip to check if the remote
-  already has content. This can be faster, but might skip moving content
-  to the remote in some cases.
-
 * matching options
 
   The [[git-annex-matching-options]](1)
