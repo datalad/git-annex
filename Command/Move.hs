@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -32,7 +32,7 @@ cmd = withAnnexOptions [jobsOption, jsonOptions, jsonProgressOption, annexedMatc
 
 data MoveOptions = MoveOptions
 	{ moveFiles :: CmdParams
-	, fromToOptions :: FromToHereOptions
+	, fromToOptions :: Maybe FromToHereOptions
 	, removeWhen :: RemoveWhen
 	, keyOptions :: Maybe KeyOptions
 	, batchOption :: BatchMode
@@ -49,7 +49,8 @@ optParser desc = MoveOptions
 instance DeferredParseClass MoveOptions where
 	finishParse v = MoveOptions
 		<$> pure (moveFiles v)
-		<*> finishParse (fromToOptions v)
+		<*> maybe (pure Nothing) (Just <$$> finishParse)
+			(fromToOptions v)
 		<*> pure (removeWhen v)
 		<*> pure (keyOptions v)
 		<*> pure (batchOption v)
@@ -58,7 +59,12 @@ data RemoveWhen = RemoveSafe | RemoveNever
 	deriving (Show, Eq)
 
 seek :: MoveOptions -> CommandSeek
-seek o = startConcurrency stages $ do
+seek o = case fromToOptions o of
+	Just fto -> seek' o fto
+	Nothing -> giveup "Specify --from or --to"
+
+seek' :: MoveOptions -> FromToHereOptions -> CommandSeek
+seek' o fto = startConcurrency stages $ do
 	case batchOption o of
 		NoBatch -> withKeyOptions (keyOptions o) False seeker
 			(commandAction . keyaction)
@@ -68,18 +74,20 @@ seek o = startConcurrency stages $ do
 			batchAnnexed fmt seeker keyaction
   where
 	seeker = AnnexedFileSeeker
-		{ startAction = start (fromToOptions o) (removeWhen o)
-		, checkContentPresent = case fromToOptions o of
-			Right (FromRemote _) -> Nothing
-			Right (ToRemote _) -> Just True
-			Left ToHere -> Nothing
+		{ startAction = start fto (removeWhen o)
+		, checkContentPresent = case fto of
+			FromOrToRemote (FromRemote _) -> Nothing
+			FromOrToRemote (ToRemote _) -> Just True
+			ToHere -> Nothing
+			FromRemoteToRemote _ _ -> Nothing
 		, usesLocationLog = True
 		}
-	stages = case fromToOptions o of
-		Right (FromRemote _) -> downloadStages
-		Right (ToRemote _) -> commandStages
-		Left ToHere -> downloadStages
-	keyaction = startKey (fromToOptions o) (removeWhen o)
+	stages = case fto of
+		FromOrToRemote (FromRemote _) -> downloadStages
+		FromOrToRemote (ToRemote _) -> commandStages
+		ToHere -> downloadStages
+		FromRemoteToRemote _ _ -> commandStages
+	keyaction = startKey fto (removeWhen o)
 	ww = WarnUnmatchLsFiles
 
 start :: FromToHereOptions -> RemoveWhen -> SeekInput -> RawFilePath -> Key -> CommandStart
@@ -95,13 +103,13 @@ startKey fromto removewhen (si, k, ai) =
 start' :: FromToHereOptions -> RemoveWhen -> AssociatedFile -> SeekInput -> Key -> ActionItem -> CommandStart
 start' fromto removewhen afile si key ai =
 	case fromto of
-		Right (FromRemote src) ->
+		FromOrToRemote (FromRemote src) ->
 			checkFailedTransferDirection ai Download $
 				fromStart removewhen afile key ai si =<< getParsed src
-		Right (ToRemote dest) ->
+		FromOrToRemote (ToRemote dest) ->
 			checkFailedTransferDirection ai Upload $
 				toStart removewhen afile key ai si =<< getParsed dest
-		Left ToHere ->
+		ToHere ->
 			checkFailedTransferDirection ai Download $
 				toHereStart removewhen afile key ai si
 

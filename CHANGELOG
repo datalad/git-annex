@@ -23,6 +23,8 @@ git-annex (10.20221213) UNRELEASED; urgency=medium
   * Added an optional cost= configuration to all special remotes.
   * adb: Support the remote.name.cost and remote.name.cost-command configs.
   * findkeys: New command, very similar to git-annex find but operating on keys.
+  * move, copy: Support combining --from and --to in order to move/copy
+    the content of files that are in one remote to another remote.
 
  -- Joey Hess <id@joeyh.name>  Mon, 12 Dec 2022 13:04:54 -0400
 

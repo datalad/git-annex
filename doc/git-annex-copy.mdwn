@@ -32,6 +32,13 @@ Paths of files or directories to operate on can be specified.
   Copy the content of files from all reachable remotes to the local
   repository.
 
+* `--from=remote1 --to=remote2`
+
+  Copy the content of files that are in remote1 to remote2. Does not change
+  what is stored in the local repository.
+
+  Note: This may need to store an intermediate copy of the content on disk.
+
 * `--jobs=N` `-JN`
 
   Enables parallel transfers with up to the specified number of jobs
