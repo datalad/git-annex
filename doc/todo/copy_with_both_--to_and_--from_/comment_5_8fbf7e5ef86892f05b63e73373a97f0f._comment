@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-01-18T16:44:11Z"
+ content="""
+When there is already a local copy of a file, 
+there are two different ways that `git-annex move --from foo --to bar`
+could behave:
+
+* Drop it from foo, copy it to bar, drop it from local
+* Drop it from foo, copy it to bar
+
+Also, when there is a local copy, but foo does not have a copy, there are
+two possible behaviors:
+
+* Copy it to bar, drop it from local
+* Do nothing, since foo does not have a copy.
+
+Picking the first choice makes the behavior always be the same as
+`git-annex move --from foo; git-annex move --to bar`, except using less
+disk space.
+
+Picking the second choice in both situations makes this a move that behaves
+much as if the local repository is not involved at all (besides temporarily
+storing the content as necessary for the transfers).
+
+If `git-annex copy` also gets the feature, the choice made for move should
+probably also affect it. 
+
+Following the first path would result in
+`git-annex copy --from foo --to bar` being equivilant to
+`git-annex copy --from foo; git-annex copy --to bar`. This would not be a
+useful new feature because the local repo would end up containing all the
+content.
+
+Following the second path would mean that, when foo has a copy but there
+is no local copy, it would copy from foo, copy to bar, and drop the
+intermediate local copy. And when there is a local copy, but foo does not
+have a copy, it would do nothing.
+
+---
+
+Which is the better choice? The second is more complicated, but it adds
+a genuine new capability, rather than only a disk space optimisation.
+
+If the second is implemented but the user wants the first behavior
+instead, they can first `git-annex move --from foo --to bar`
+followed by `git-annex move --to bar`, and the result will be the same.
+
+The second will be more complicated to implement, since it will sometimes
+need to use a temp file to store the object content (when the local repo
+does not contain a copy of the content).
+"""]]
