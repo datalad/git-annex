@@ -1,0 +1,26 @@
+Hey Joey,
+
+If I understand correctly, the default content expression (when it's empty, e.g. after a `git annex init` or `git clone ...;git annex sync`) is currently apparently `anything`. This means that a `git annex sync --content` (or just `git annex sync` if `git config --set annex.synccontent true`) will fetch all files.
+
+It would be very handy if there was something like:
+
+[[!format  bash """
+git annex config --set annex.defaultwanted ...
+git annex config --set annex.defaultgroup ...
+git annex config --set annex.defaultgroupwanted ...
+git annex config --set annex.defaultrequired ...
+
+# and the corresponding git variant for user-overriding
+git config [--global|--system] annex.defaultwanted ...
+git config [--global|--system] annex.defaultgroup ...
+git config [--global|--system] annex.defaultgroupwanted ...
+git config [--global|--system] annex.defaultrequired ...
+"""]]
+
+These defaults would be applied when `git annex` initializes a repository (i.e. gives it a `annex.uuid`, e.g. `git annex init` or `git annex sync` of a fresh clone of a repo with annex).
+
+I like my annexed/datalad repos (mostly research data next to analysis code for collaboration) to have `annex.synccontent = true` so people can just do (`datalad save`/`git annex add`) `git annex sync` and be sure afterwards everything is in order and safe. However as the default `wanted` is `anything` (apparently), they also get all files they probably don't want if they don't to `git annex wanted . present` manually (and manual boilerplate config and extra steps is always something that's nice to automate). Something like `git annex config --set annex.defaultwanted present` would solve this.
+
+Thanks again very much for git-annex, I love it! 💛
+
+Yann
