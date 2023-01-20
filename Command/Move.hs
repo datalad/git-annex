@@ -112,6 +112,10 @@ start' fromto removewhen afile si key ai =
 		ToHere ->
 			checkFailedTransferDirection ai Download $
 				toHereStart removewhen afile key ai si
+		FromRemoteToRemote src dest -> do
+			src' <- getParsed src
+			dest' <- getParsed dest
+			fromToStart removewhen afile key ai si src' dest'
 
 describeMoveAction :: RemoveWhen -> String
 describeMoveAction RemoveNever = "copy"
@@ -304,6 +308,67 @@ toHereStart removewhen afile key ai si =
 				starting (describeMoveAction removewhen) ai si $
 					fromPerform r removewhen key afile
 		next $ return True
+
+fromToStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> SeekInput -> Remote -> Remote -> CommandStart
+fromToStart removewhen afile key ai si src dest = do
+	if Remote.uuid src == Remote.uuid dest
+		then stop
+		else do
+			u <- getUUID
+			if u == Remote.uuid src
+				then toStart removewhen afile key ai si dest
+				else if u == Remote.uuid dest
+					then fromStart removewhen afile key ai si src
+					else stopUnless (fromOk src key) $
+						starting (describeMoveAction removewhen) (OnlyActionOn key ai) si $
+							fromToPerform src dest removewhen key afile
+
+{- If there is a local copy, transfer it to the dest, and drop from the src.
+ - Otherwise, download a copy from the dest, populating the local annex
+ - copy, but not updating location logs. Then transfer that to the dest,
+ - drop the local copy, and finally drop from the src.
+ -
+ - Using a regular download of the local copy, rather than download to
+ - some other file makes resuming an interruped download work as usual,
+ - and simplifies implementation. It does mean that, if git-annex get of
+ - the same content is being run at the same time, it will see that
+ - the local copy exists, but then it would get deleted. To avoid that
+ - unexpected behavior, check the location log before dropping the local
+ - copy, and if it has been updated (by another process) to say that the
+ - content is present locally, skip dropping the local copy. 
+ - 
+ - (That leaves a small race, where the other process updates the location
+ - log after we check it. And another where the other process sees the
+ - local copy exists just before we drop it.)
+ -
+ - The other complication of this approach is that the temporary local
+ - copy could be seen by another process that uses it as one of the
+ - necessary copies when dropping from somewhere else. To avoid the number
+ - of copies being reduced in such a situation, lock the local copy for
+ - drop before downloading it (v10) or immediately after download
+ - (v9 or older).
+ -}
+fromToPerform :: Remote -> Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
+fromToPerform src dest removewhen key afile = do
+	present <- inAnnex key
+	if present
+		then do
+			showAction $ "to " ++ Remote.name dest
+			sendlocaltodest
+			dropfromsrc
+			error "TODO"
+		else do
+			showAction $ "from " ++ Remote.name src
+			downloadsrctotemp
+			sendtemptodest
+			dropfromsrc
+			showAction $ "to " ++ Remote.name dest
+			error "TODO"
+  where
+	sendlocaltodest = error "TODO"
+	downloadsrctotemp = error "TODO"
+	sendtemptodest = error "TODO"
+	dropfromsrc = error "TODO"
 
 {- The goal of this command is to allow the user maximum freedom to move
  - files as they like, while avoiding making bad situations any worse

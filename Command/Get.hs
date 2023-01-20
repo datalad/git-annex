@@ -115,5 +115,7 @@ getKey' key afile = dispatch
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
 	docopy r witness = do
+		liftIO $ print "read line"
+		void $ liftIO $ getLine
 		showAction $ "from " ++ Remote.name r
 		download r key afile stdRetry witness
