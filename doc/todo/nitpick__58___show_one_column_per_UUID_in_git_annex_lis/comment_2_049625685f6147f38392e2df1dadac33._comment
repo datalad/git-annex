@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 2"
+ date="2023-01-23T22:55:10Z"
+ content="""
++1 for `--unique-repos` and a config `annex.listuniquerepos` as I have the same setup as OP. `git annex list` is a very compact view that can't always be swapped for the verbose `git annex whereis`.
+"""]]
