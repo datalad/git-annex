@@ -139,7 +139,8 @@ lockContentShared key a = lockContentUsing lock key notpresent $
  -
  - If locking fails, throws an exception rather than running the action.
  -
- - If locking fails because the the content is not present, runs the
+ - When the content file itself is used as the lock file, 
+ - and locking fails because the the content is not present, runs the
  - fallback action instead. However, the content is not guaranteed to be
  - present when this succeeds.
  -}

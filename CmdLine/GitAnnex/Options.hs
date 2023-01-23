@@ -1,6 +1,6 @@
 {- git-annex command-line option parsing
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -134,7 +134,7 @@ parseDryRunOption = DryRun <$> switch
 	<> help "don't make changes, but show what would be done"
 	)
 
--- | From or To a remote.
+-- | From or To a remote but not both.
 data FromToOptions
 	= FromRemote (DeferredParse Remote)
 	| ToRemote (DeferredParse Remote)
@@ -162,23 +162,34 @@ parseToOption = strOption
 	<> completeRemotes
 	)
 
--- | Like FromToOptions, but with a special --to=here
-type FromToHereOptions = Either ToHere FromToOptions
+-- | From or to a remote, or both, or a special --to=here
+data FromToHereOptions 
+	= FromOrToRemote FromToOptions
+	| ToHere
+	| FromRemoteToRemote (DeferredParse Remote) (DeferredParse Remote)
 
-data ToHere = ToHere
-
-parseFromToHereOptions :: Parser FromToHereOptions
-parseFromToHereOptions = parsefrom <|> parseto
+parseFromToHereOptions :: Parser (Maybe FromToHereOptions)
+parseFromToHereOptions = go
+	<$> optional parseFromOption
+	<*> optional parseToOption
   where
-	parsefrom = Right . FromRemote . parseRemoteOption <$> parseFromOption
-	parseto = herespecialcase <$> parseToOption
-	  where
-		herespecialcase "here" = Left ToHere
-		herespecialcase "." = Left ToHere
-		herespecialcase n = Right $ ToRemote $ parseRemoteOption n
+	go (Just from) (Just to) = Just $ FromRemoteToRemote
+		(parseRemoteOption from)
+		(parseRemoteOption to)
+	go (Just from) Nothing = Just $ FromOrToRemote
+		(FromRemote $ parseRemoteOption from)
+	go Nothing (Just to) = Just $ case to of
+		"here" -> ToHere
+		"." -> ToHere
+		_ -> FromOrToRemote $ ToRemote $ parseRemoteOption to
+	go Nothing Nothing = Nothing
 
 instance DeferredParseClass FromToHereOptions where
-	finishParse = either (pure . Left) (Right <$$> finishParse)
+	finishParse (FromOrToRemote v) = FromOrToRemote <$> finishParse v
+	finishParse ToHere = pure ToHere
+	finishParse (FromRemoteToRemote v1 v2) = FromRemoteToRemote
+		<$> finishParse v1
+		<*> finishParse v2
 
 -- Options for acting on keys, rather than work tree files.
 data KeyOptions

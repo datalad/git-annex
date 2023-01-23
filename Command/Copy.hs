@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,7 +21,7 @@ cmd = withAnnexOptions [jobsOption, jsonOptions, jsonProgressOption, annexedMatc
 
 data CopyOptions = CopyOptions
 	{ copyFiles :: CmdParams
-	, fromToOptions :: FromToHereOptions
+	, fromToOptions :: Maybe FromToHereOptions
 	, keyOptions :: Maybe KeyOptions
 	, autoMode :: Bool
 	, batchOption :: BatchMode
@@ -38,13 +38,19 @@ optParser desc = CopyOptions
 instance DeferredParseClass CopyOptions where
 	finishParse v = CopyOptions
 		<$> pure (copyFiles v)
-		<*> finishParse (fromToOptions v)
+		<*> maybe (pure Nothing) (Just <$$> finishParse)
+			(fromToOptions v)
 		<*> pure (keyOptions v)
 		<*> pure (autoMode v)
 		<*> pure (batchOption v)
 
 seek :: CopyOptions -> CommandSeek
-seek o = startConcurrency commandStages $ do
+seek o = case fromToOptions o of
+	Just fto -> seek' o fto
+	Nothing -> giveup "Specify --from or --to"
+
+seek' :: CopyOptions -> FromToHereOptions -> CommandSeek
+seek' o fto = startConcurrency commandStages $ do
 	case batchOption o of
 		NoBatch -> withKeyOptions
 			(keyOptions o) (autoMode o) seeker
@@ -57,30 +63,33 @@ seek o = startConcurrency commandStages $ do
 	ww = WarnUnmatchLsFiles
 	
 	seeker = AnnexedFileSeeker
-		{ startAction = start o
-		, checkContentPresent = case fromToOptions o of
-			Right (FromRemote _) -> Just False
-			Right (ToRemote _) -> Just True
-			Left ToHere -> Just False
+		{ startAction = start o fto
+		, checkContentPresent = case fto of
+			FromOrToRemote (FromRemote _) -> Just False
+			FromOrToRemote (ToRemote _) -> Just True
+			ToHere -> Just False
+			FromRemoteToRemote _ _ -> Just False
 		, usesLocationLog = True
 		}
-	keyaction = Command.Move.startKey (fromToOptions o) Command.Move.RemoveNever
+	keyaction = Command.Move.startKey fto Command.Move.RemoveNever
 
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or
  - sending non-preferred content. -}
-start :: CopyOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
-start o si file key = stopUnless shouldCopy $ 
-	Command.Move.start (fromToOptions o) Command.Move.RemoveNever si file key
+start :: CopyOptions -> FromToHereOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o fto si file key = stopUnless shouldCopy $ 
+	Command.Move.start fto Command.Move.RemoveNever si file key
   where
 	shouldCopy
 		| autoMode o = want <||> numCopiesCheck file key (<)
 		| otherwise = return True
-	want = case fromToOptions o of
-		Right (ToRemote dest) ->
+	want = case fto of
+		FromOrToRemote (ToRemote dest) ->
 			(Remote.uuid <$> getParsed dest) >>= checkwantsend
-		Right (FromRemote _) -> checkwantget
-		Left ToHere -> checkwantget
+		FromOrToRemote (FromRemote _) -> checkwantget
+		ToHere -> checkwantget
+		FromRemoteToRemote _ dest ->
+			(Remote.uuid <$> getParsed dest) >>= checkwantsend
 			
 	checkwantsend = wantGetBy False (Just key) (AssociatedFile (Just file))
 	checkwantget = wantGet False (Just key) (AssociatedFile (Just file))

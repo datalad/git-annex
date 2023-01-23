@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2023-01-23T21:45:37Z"
+ content="""
+I did implement this using the second path described in comment #5.
+
+And it does download the content to the local annex, and then after
+sending it to the destination remote, will drop the local content
+(unless it was already present). So running it concurrent with
+`git-annex get` may leave local files present or not, depending on which
+process gets to a file first.
+"""]]
