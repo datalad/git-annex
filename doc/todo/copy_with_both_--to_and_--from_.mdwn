@@ -14,3 +14,5 @@ NB may be some `annex sync` would do that magic?
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> [[implemented|done]] --[[Joey]]
