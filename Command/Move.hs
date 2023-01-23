@@ -245,8 +245,12 @@ fromOk src key
 
 fromPerform :: Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
 fromPerform src removewhen key afile = do
-	showAction $ "from " ++ Remote.name src
 	present <- inAnnex key
+	fromPerform' present src removewhen key afile
+
+fromPerform' :: Bool -> Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
+fromPerform' present src removewhen key afile = do
+	showAction $ "from " ++ Remote.name src
 	destuuid <- getUUID
 	logMove srcuuid destuuid present key $ \deststartedwithcopy ->
 		if present
@@ -323,14 +327,15 @@ fromToStart removewhen afile key ai si src dest = do
 						starting (describeMoveAction removewhen) (OnlyActionOn key ai) si $
 							fromToPerform src dest removewhen key afile
 
-{- If there is a local copy, transfer it to the dest, and drop from the src.
+{- When there is a local copy, transfer it to the dest, and drop from the src.
+ -
  - Otherwise, download a copy from the dest, populating the local annex
  - copy, but not updating location logs. Then transfer that to the dest,
  - drop the local copy, and finally drop from the src.
  -
  - Using a regular download of the local copy, rather than download to
  - some other file makes resuming an interruped download work as usual,
- - and simplifies implementation. It does mean that, if git-annex get of
+ - and simplifies implementation. It does mean that, if `git-annex get` of
  - the same content is being run at the same time, it will see that
  - the local copy exists, but then it would get deleted. To avoid that
  - unexpected behavior, check the location log before dropping the local
@@ -339,24 +344,22 @@ fromToStart removewhen afile key ai si src dest = do
  - 
  - (That leaves a small race, where the other process updates the location
  - log after we check it. And another where the other process sees the
- - local copy exists just before we drop it.)
+ - local copy exists just before we drop it. In either case the resulting
+ - behavior is similar to `git-annex move --to` being run concurrently 
+ - with `git-annex get`.)
  -
  - The other complication of this approach is that the temporary local
  - copy could be seen by another process that uses it as one of the
  - necessary copies when dropping from somewhere else. To avoid the number
- - of copies being reduced in such a situation, lock the local copy for
- - drop before downloading it (v10) or immediately after download
- - (v9 or older).
+ - of copies being reduced in such a situation (or the local copy not being
+ - able to be safely dropped), lock the local copy for drop before
+ - downloading it (v10) or immediately after download (v9 or older).
  -}
 fromToPerform :: Remote -> Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
 fromToPerform src dest removewhen key afile = do
 	present <- inAnnex key
 	if present
-		then do
-			showAction $ "to " ++ Remote.name dest
-			sendlocaltodest
-			dropfromsrc
-			error "TODO"
+		then gopresent
 		else do
 			showAction $ "from " ++ Remote.name src
 			downloadsrctotemp
@@ -369,6 +372,17 @@ fromToPerform src dest removewhen key afile = do
 	downloadsrctotemp = error "TODO"
 	sendtemptodest = error "TODO"
 	dropfromsrc = error "TODO"
+
+	gopresent = do
+		haskey <- Remote.hasKey dest key
+		toPerform dest RemoveNever key afile False haskey >>= \case
+			Just cleanup -> fromPerform' True src removewhen key afile >>= \case
+				Just cleanup' -> return $ Just $ do
+					ok <- cleanup
+					ok' <- cleanup'
+					return (ok && ok')
+				Nothing -> return $ Just cleanup
+			Nothing -> return Nothing
 
 {- The goal of this command is to allow the user maximum freedom to move
  - files as they like, while avoiding making bad situations any worse
