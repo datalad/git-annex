@@ -24,7 +24,12 @@ mostly less. Although there are two small races that I have not been able
 to resolve yet, which would result in `git-annex move --from --to`, when
 run concurrently with a `git-annex get` type process, result in the local
 copy not being present at the end (see [[!commit a46c385aec2584419330c5dbb571c19ceb92f6fb]]).
-That would be surprising behavior, but also unlikely to happen. This approach
-also has the problem that, when the file is unlocked, the unlocked file would
-get populated after downloading the content, which would be unncessary work.
+That would be surprising behavior, but also unlikely to happen. 
+(And perhaps not too surprising, since running `git-annex move --to`
+concurrently with `git-annex get` can of course result in the local copy
+not being present at the end..)
+
+The latter approach also has the problem that, when the file is unlocked, the
+unlocked file would get populated after downloading the content, which would be
+unncessary work.
 """]]
