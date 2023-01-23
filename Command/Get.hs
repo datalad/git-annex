@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010, 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import Annex.Transfer
 import Annex.NumCopies
 import Annex.Wanted
 import qualified Command.Move
+import Logs.Location
 
 cmd :: Command
 cmd = withAnnexOptions [jobsOption, jsonOptions, jsonProgressOption, annexedMatchingOptions] $ 
@@ -115,7 +116,6 @@ getKey' key afile = dispatch
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
 	docopy r witness = do
-		liftIO $ print "read line"
-		void $ liftIO $ getLine
 		showAction $ "from " ++ Remote.name r
-		download r key afile stdRetry witness
+		logStatusAfter key $
+			download r key afile stdRetry witness

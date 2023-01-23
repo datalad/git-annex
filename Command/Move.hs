@@ -19,6 +19,7 @@ import Annex.Transfer
 import Logs.Presence
 import Logs.Trust
 import Logs.File
+import Logs.Location
 import Annex.NumCopies
 
 import qualified Data.ByteString.Char8 as B8
@@ -258,7 +259,8 @@ fromPerform' present src removewhen key afile = do
 			else dispatch removewhen deststartedwithcopy =<< get
   where
 	get = notifyTransfer Download afile $
-		download src key afile stdRetry
+		logStatusAfter key .
+			download src key afile stdRetry
 	
 	dispatch _ deststartedwithcopy False = do
 		logMoveCleanup deststartedwithcopy

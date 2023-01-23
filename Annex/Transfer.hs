@@ -29,7 +29,6 @@ import Annex.Notification as X
 import Annex.Content
 import Annex.Perms
 import Annex.Action
-import Logs.Location
 import Utility.Metered
 import Utility.ThreadScheduler
 import Annex.LockPool
@@ -73,7 +72,7 @@ alwaysUpload u key f sd d a _witness = guardHaveUUID u $
 
 -- Download, supporting canceling detected stalls.
 download :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
-download r key f d witness = logStatusAfter key $
+download r key f d witness = 
 	case remoteAnnexStallDetection (Remote.gitconfig r) of
 		Nothing -> go (Just ProbeStallDetection)
 		Just StallDetectionDisabled -> go Nothing
