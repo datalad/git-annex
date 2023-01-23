@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2023-01-23T22:06:32Z"
+ content="""
+`git-annex copy --from foo --to bar` is implemented now (and move too).
+
+But it does need to download a copy of each file in turn, before uploading
+it. Then the local copy can be deleted. Without streaming, that's the best
+that can be done. And I think it's probably good enough for most uses.
+
+So this todo is only about streaming now.
+"""]]
