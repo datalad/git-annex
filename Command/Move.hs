@@ -432,9 +432,10 @@ fromToPerform src dest removewhen key afile = do
 
 	todest mcontentlock removewhen' = toPerform' mcontentlock dest removewhen' key afile False
 
-	dropfromsrc adjusttocheck = 
-		logMove (Remote.uuid src) (Remote.uuid dest) True key $ \deststartedwithcopy ->
+	dropfromsrc adjusttocheck = case removewhen of
+		RemoveSafe -> logMove (Remote.uuid src) (Remote.uuid dest) True key $ \deststartedwithcopy ->
 			fromDrop src (Remote.uuid dest) deststartedwithcopy key afile adjusttocheck
+		RemoveNever -> next (return True)
 
 	combinecleanups a b = a >>= \case
 		Just cleanupa -> b True >>= \case
