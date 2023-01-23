@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2023-01-20T15:11:50Z"
+ content="""
+I've started on an implementation of this, in the `fromto` branch.
+
+Downloading to a local temp file has some complications which make me want
+to avoid it is possible. For one thing, these temp files would have to
+somehow get cleaned up after an interrupted move. For another, two
+concurrent move processes from different remotes to different remotes would
+need to either use separate temp files (wasting disk space) or locking so
+only one uses the temp file at one time. The existing code in
+Annex.Transfer would have to be parameterized with the temp file to use,
+but then the transfer log/lock files that are used by that code would be
+problematic. So perhaps that Annex.Transfer code could not be reused, but
+then it would need to independeantly deal with resuming, locking, and stall
+detection.
+
+So, I'm considering downloading --from the remote as usual, populating the
+local annex with the content, sending that --to the remote, and then
+dropping the local copy. That has its own complications, but they seem
+mostly less. Although there are two small races that I have not been able
+to resolve yet, which would result in `git-annex move --from --to`, when
+run concurrently with a `git-annex get` type process, result in the local
+copy not being present at the end (see [[!commit a46c385aec2584419330c5dbb571c19ceb92f6fb]]).
+That would be surprising behavior, but also unlikely to happen. 
+(And perhaps not too surprising, since running `git-annex move --to`
+concurrently with `git-annex get` can of course result in the local copy
+not being present at the end..)
+
+The latter approach also has the problem that, when the file is unlocked, the
+unlocked file would get populated after downloading the content, which would be
+unncessary work.
+"""]]
