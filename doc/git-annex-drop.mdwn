@@ -1,4 +1,4 @@
-#a NAME
+# NAME
 
 git-annex drop - remove content of files from repository
 
