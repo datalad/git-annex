@@ -247,43 +247,53 @@ fromOk src key
 fromPerform :: Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
 fromPerform src removewhen key afile = do
 	present <- inAnnex key
-	fromPerform' present src removewhen key afile
+	finish <- fromPerform' present True src key afile
+	finish removewhen
 
-fromPerform' :: Bool -> Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
-fromPerform' present src removewhen key afile = do
+fromPerform' :: Bool -> Bool -> Remote -> Key -> AssociatedFile -> Annex (RemoveWhen -> CommandPerform)
+fromPerform' present updatelocationlog src key afile = do
 	showAction $ "from " ++ Remote.name src
 	destuuid <- getUUID
-	logMove srcuuid destuuid present key $ \deststartedwithcopy ->
+	logMove (Remote.uuid src) destuuid present key $ \deststartedwithcopy ->
 		if present
-			then dispatch removewhen deststartedwithcopy True
-			else dispatch removewhen deststartedwithcopy =<< get
+			then return $ finish deststartedwithcopy True
+			else do
+				got <- get
+				return $ finish deststartedwithcopy got
   where
 	get = notifyTransfer Download afile $
-		logStatusAfter key .
+		logdownload .
 			download src key afile stdRetry
 	
-	dispatch _ deststartedwithcopy False = do
+	logdownload a
+		| updatelocationlog = logStatusAfter key a
+		| otherwise = a
+
+	finish deststartedwithcopy False _ = do
 		logMoveCleanup deststartedwithcopy
 		stop -- copy failed
-	dispatch RemoveNever deststartedwithcopy True = do
+	finish deststartedwithcopy True RemoveNever = do
 		logMoveCleanup deststartedwithcopy
 		next $ return True -- copy complete
-	dispatch RemoveSafe deststartedwithcopy True = lockContentShared key $ \_lck -> do
+	finish deststartedwithcopy True RemoveSafe = do
 		destuuid <- getUUID
-		willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile >>= \case
-			DropAllowed -> dropremote deststartedwithcopy "moved"
-			DropCheckNumCopies -> do
-				(numcopies, mincopies) <- getSafestNumMinCopies afile key
-				(tocheck, verified) <- verifiableCopies key [Remote.uuid src]
-				verifyEnoughCopiesToDrop "" key Nothing numcopies mincopies [Remote.uuid src] verified
-					tocheck (dropremote deststartedwithcopy . showproof) (faileddropremote deststartedwithcopy)
-			DropWorse -> faileddropremote deststartedwithcopy
-	
-	srcuuid = Remote.uuid src
-	
+		lockContentShared key $ \_lck ->
+			fromDrop src destuuid deststartedwithcopy key afile id
+
+fromDrop :: Remote -> UUID -> DestStartedWithCopy -> Key -> AssociatedFile -> ([UnVerifiedCopy] -> [UnVerifiedCopy])-> CommandPerform
+fromDrop src destuuid deststartedwithcopy key afile adjusttocheck =
+	willDropMakeItWorse (Remote.uuid src) destuuid deststartedwithcopy key afile >>= \case
+		DropAllowed -> dropremote "moved"
+		DropCheckNumCopies -> do
+			(numcopies, mincopies) <- getSafestNumMinCopies afile key
+			(tocheck, verified) <- verifiableCopies key [Remote.uuid src]
+			verifyEnoughCopiesToDrop "" key Nothing numcopies mincopies [Remote.uuid src] verified
+				(adjusttocheck tocheck) (dropremote . showproof) faileddropremote
+		DropWorse -> faileddropremote
+  where
 	showproof proof = "proof: " ++ show proof
-	
-	dropremote deststartedwithcopy reason = do
+
+	dropremote reason = do
 		fastDebug "Command.Move" $ unwords
 			[ "Dropping from remote"
 			, show src
@@ -293,8 +303,8 @@ fromPerform' present src removewhen key afile = do
 		when ok $
 			logMoveCleanup deststartedwithcopy
 		next $ Command.Drop.cleanupRemote key src (Command.Drop.DroppingUnused False) ok
-	
-	faileddropremote deststartedwithcopy = do
+
+	faileddropremote = do
 		showLongNote "(Use --force to override this check, or adjust numcopies.)"
 		showLongNote $ "Content not dropped from " ++ Remote.name src ++ "."
 		logMoveCleanup deststartedwithcopy
@@ -331,6 +341,8 @@ fromToStart removewhen afile key ai si src dest = do
 
 {- When there is a local copy, transfer it to the dest, and drop from the src.
  -
+ - When the dest has a copy, drop it from the src.
+ -
  - Otherwise, download a copy from the dest, populating the local annex
  - copy, but not updating location logs. Then transfer that to the dest,
  - drop the local copy, and finally drop from the src.
@@ -358,32 +370,70 @@ fromToStart removewhen afile key ai si src dest = do
  - downloading it (v10) or immediately after download (v9 or older).
  -}
 fromToPerform :: Remote -> Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
-fromToPerform src dest removewhen key afile = do
-	present <- inAnnex key
-	if present
-		then gopresent
-		else do
-			showAction $ "from " ++ Remote.name src
-			downloadsrctotemp
-			sendtemptodest
-			dropfromsrc
-			showAction $ "to " ++ Remote.name dest
-			error "TODO"
+fromToPerform src dest removewhen key afile = go =<< inAnnex key
   where
-	sendlocaltodest = error "TODO"
-	downloadsrctotemp = error "TODO"
-	sendtemptodest = error "TODO"
-	dropfromsrc = error "TODO"
-
-	gopresent = do
+	go True = do
 		haskey <- Remote.hasKey dest key
-		toPerform dest RemoveNever key afile False haskey >>= \case
-			Just cleanup -> fromPerform' True src removewhen key afile >>= \case
-				Just cleanup' -> return $ Just $ do
-					ok <- cleanup
-					ok' <- cleanup'
-					return (ok && ok')
-				Nothing -> return $ Just cleanup
+		-- Prepare to drop from src later. Doing this first
+		-- makes "from src" be shown consistently before
+		-- "to dest"
+		dropsrc <- fromsrc True
+		combinecleanups 
+			-- Send to dest, preserve local copy.
+			(todest RemoveNever haskey)
+			(\senttodest -> if senttodest
+				then dropsrc removewhen
+				else stop
+			)
+	go False = do
+		haskey <- Remote.hasKey dest key
+		case haskey of
+                	Left err -> do                   
+				showNote err       
+				stop
+			Right True -> do
+				showAction $ "from " ++ Remote.name src
+				showAction $ "to " ++ Remote.name dest
+				-- Drop from src, checking copies including
+				-- the one already in dest.
+				dropfromsrc id
+			Right False -> do
+				-- Get local copy from src, defer dropping
+				-- from src until later.
+				cleanupfromsrc <- fromsrc False
+				combinecleanups
+					-- Send to dest and remove local copy.
+					(todest RemoveSafe haskey)
+					(\senttodest ->
+						-- Drop from src, checking
+						-- copies including dest.
+						combinecleanups
+							(cleanupfromsrc RemoveNever)
+							(\_ -> if senttodest
+								then dropfromsrc (\l -> UnVerifiedRemote dest : l)
+								else stop
+							)
+					)
+
+	fromsrc present = fromPerform' present False src key afile
+
+	todest removewhen' = toPerform dest removewhen' key afile False
+
+	dropfromsrc adjusttocheck = 
+		logMove (Remote.uuid src) (Remote.uuid dest) True key $ \deststartedwithcopy ->
+			fromDrop src (Remote.uuid dest) deststartedwithcopy key afile adjusttocheck
+
+	combinecleanups a b = a >>= \case
+		Just cleanupa -> b True >>= \case
+			Just cleanupb -> return $ Just $ do
+				oka <- cleanupa
+				okb <- cleanupb
+				return (oka && okb)
+			Nothing -> return (Just cleanupa)
+		Nothing -> b False >>= \case
+			Just cleanupb -> return $ Just $ do
+				void cleanupb
+				return False
 			Nothing -> return Nothing
 
 {- The goal of this command is to allow the user maximum freedom to move
@@ -395,9 +445,10 @@ fromToPerform src dest removewhen key afile = do
  - repository reduces the number of copies, and should fail if
  - that would violate numcopies settings.
  -
- - On the other hand, when the destination repository does not already
- - have a copy of a file, it can be dropped without making numcopies
- - worse, so the move is allowed even if numcopies is not met.
+ - On the other hand, when the destination repository did not start
+ - with a copy of a file, it can be dropped from the source without
+ - making numcopies worse, so the move is allowed even if numcopies
+ - is not met.
  -
  - Similarly, a file can move from an untrusted repository to another
  - untrusted repository, even if that is the only copy of the file.
