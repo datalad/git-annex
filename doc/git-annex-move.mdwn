@@ -31,9 +31,12 @@ Paths of files or directories to operate on can be specified.
 * `--from=remote1 --to=remote2`
 
   Move the content of files that are in remote1 to remote2. Does not change
-  what is stored in the local repository. 
+  what is stored in the local repository.
 
-  Note: This may need to store an intermediate copy of the content on disk.
+  This is implemented by first downloading the content from remote1 to the
+  local repository (if not already present), then sending it to remote2, and
+  then deleting the content from the local repository (if it was not present
+  to start with).
 
 * `--force`
 

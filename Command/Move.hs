@@ -149,7 +149,10 @@ expectedPresent dest key = do
 	return $ dest `elem` remotes
 
 toPerform :: Remote -> RemoveWhen -> Key -> AssociatedFile -> Bool -> Either String Bool -> CommandPerform
-toPerform dest removewhen key afile fastcheck isthere = do
+toPerform = toPerform' Nothing
+
+toPerform' :: Maybe ContentRemovalLock -> Remote -> RemoveWhen -> Key -> AssociatedFile -> Bool -> Either String Bool -> CommandPerform
+toPerform' mcontentlock dest removewhen key afile fastcheck isthere = do
 	srcuuid <- getUUID
 	case isthere of
 		Left err -> do
@@ -178,7 +181,7 @@ toPerform dest removewhen key afile fastcheck isthere = do
 			setpresentremote
 			logMoveCleanup deststartedwithcopy
 			next $ return True
-		RemoveSafe -> lockContentForRemoval key lockfailed $ \contentlock -> do
+		RemoveSafe -> lockcontentforremoval $ \contentlock -> do
 			srcuuid <- getUUID
 			r <- willDropMakeItWorse srcuuid destuuid deststartedwithcopy key afile >>= \case
 				DropAllowed -> drophere setpresentremote contentlock "moved"
@@ -212,6 +215,10 @@ toPerform dest removewhen key afile fastcheck isthere = do
 		next $ do
 			() <- setpresentremote
 			return False
+	
+	lockcontentforremoval a = case mcontentlock of
+		Nothing -> lockContentForRemoval key lockfailed a
+		Just contentlock -> a contentlock
 	
 	-- This occurs when, for example, two files are being dropped
 	-- and have the same content. The seek stage checks if the content
@@ -350,29 +357,26 @@ fromToStart removewhen afile key ai si src dest = do
  - Using a regular download of the local copy, rather than download to
  - some other file makes resuming an interruped download work as usual,
  - and simplifies implementation. It does mean that, if `git-annex get` of
- - the same content is being run at the same time, it will see that
- - the local copy exists, but then it would get deleted. To avoid that
- - unexpected behavior, check the location log before dropping the local
- - copy, and if it has been updated (by another process) to say that the
- - content is present locally, skip dropping the local copy. 
- - 
- - (That leaves a small race, where the other process updates the location
- - log after we check it. And another where the other process sees the
- - local copy exists just before we drop it. In either case the resulting
- - behavior is similar to `git-annex move --to` being run concurrently 
- - with `git-annex get`.)
- -
- - The other complication of this approach is that the temporary local
- - copy could be seen by another process that uses it as one of the
- - necessary copies when dropping from somewhere else. To avoid the number
- - of copies being reduced in such a situation (or the local copy not being
- - able to be safely dropped), lock the local copy for drop before
- - downloading it (v10) or immediately after download (v9 or older).
+ - the same content is being run at the same time as this move, the content
+ - may end up locally present, or not. This is similar to the behavior 
+ - when running `git-annex move --to` concurrently with git-annex get.
  -}
 fromToPerform :: Remote -> Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
-fromToPerform src dest removewhen key afile = go =<< inAnnex key
+fromToPerform src dest removewhen key afile = do
+	hereuuid <- getUUID
+	loggedpresent <- any (== hereuuid)
+		<$> loggedLocations key
+	ispresent <- inAnnex key
+	go ispresent loggedpresent
   where
-	go True = do
+	-- The content is present, and is logged as present, so it
+	-- can be sent to dest and dropped from src.
+	--
+	-- When resuming an interrupted move --from --to, where the content
+	-- was not present but got downloaded from src, it will not be
+	-- logged present, and so this won't be used. Instead, the local
+	-- content will get dropped after being copied to dest.
+	go True True = do
 		haskey <- Remote.hasKey dest key
 		-- Prepare to drop from src later. Doing this first
 		-- makes "from src" be shown consistently before
@@ -380,12 +384,12 @@ fromToPerform src dest removewhen key afile = go =<< inAnnex key
 		dropsrc <- fromsrc True
 		combinecleanups 
 			-- Send to dest, preserve local copy.
-			(todest RemoveNever haskey)
+			(todest Nothing RemoveNever haskey)
 			(\senttodest -> if senttodest
 				then dropsrc removewhen
 				else stop
 			)
-	go False = do
+	go ispresent _loggedpresent = do
 		haskey <- Remote.hasKey dest key
 		case haskey of
                 	Left err -> do                   
@@ -399,25 +403,34 @@ fromToPerform src dest removewhen key afile = go =<< inAnnex key
 				dropfromsrc id
 			Right False -> do
 				-- Get local copy from src, defer dropping
-				-- from src until later.
-				cleanupfromsrc <- fromsrc False
-				combinecleanups
-					-- Send to dest and remove local copy.
-					(todest RemoveSafe haskey)
-					(\senttodest ->
-						-- Drop from src, checking
-						-- copies including dest.
-						combinecleanups
-							(cleanupfromsrc RemoveNever)
-							(\_ -> if senttodest
-								then dropfromsrc (\l -> UnVerifiedRemote dest : l)
-								else stop
-							)
-					)
+				-- from src until later. Note that fromsrc
+				-- does not update the location log.
+				cleanupfromsrc <- if ispresent
+					then return $ const $ next (return True)
+					else fromsrc False
+				-- Lock the local copy for removal early,
+				-- to avoid other processes relying on it
+				-- as a copy, and removing other copies
+				-- (such as the one in src), that prevents
+				-- dropping the local copy later.
+				lockContentForRemoval key stop $ \contentlock ->
+					combinecleanups
+						-- Send to dest and remove local copy.
+						(todest (Just contentlock) RemoveSafe haskey)
+						(\senttodest ->
+							-- Drop from src, checking
+							-- copies including dest.
+							combinecleanups
+								(cleanupfromsrc RemoveNever)
+								(\_ -> if senttodest
+									then dropfromsrc (\l -> UnVerifiedRemote dest : l)
+									else stop
+								)
+						)
 
 	fromsrc present = fromPerform' present False src key afile
 
-	todest removewhen' = toPerform dest removewhen' key afile False
+	todest mcontentlock removewhen' = toPerform' mcontentlock dest removewhen' key afile False
 
 	dropfromsrc adjusttocheck = 
 		logMove (Remote.uuid src) (Remote.uuid dest) True key $ \deststartedwithcopy ->
