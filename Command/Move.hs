@@ -65,7 +65,7 @@ seek o = case fromToOptions o of
 	Nothing -> giveup "Specify --from or --to"
 
 seek' :: MoveOptions -> FromToHereOptions -> CommandSeek
-seek' o fto = startConcurrency stages $ do
+seek' o fto = startConcurrency (stages fto) $ do
 	case batchOption o of
 		NoBatch -> withKeyOptions (keyOptions o) False seeker
 			(commandAction . keyaction)
@@ -83,13 +83,14 @@ seek' o fto = startConcurrency stages $ do
 			FromRemoteToRemote _ _ -> Nothing
 		, usesLocationLog = True
 		}
-	stages = case fto of
-		FromOrToRemote (FromRemote _) -> transferStages
-		FromOrToRemote (ToRemote _) -> commandStages
-		ToHere -> transferStages
-		FromRemoteToRemote _ _ -> transferStages
 	keyaction = startKey fto (removeWhen o)
 	ww = WarnUnmatchLsFiles
+
+stages :: FromToHereOptions -> UsedStages
+stages (FromOrToRemote (FromRemote _)) = transferStages
+stages (FromOrToRemote (ToRemote _)) = commandStages
+stages ToHere = transferStages
+stages (FromRemoteToRemote _ _) = transferStages
 
 start :: FromToHereOptions -> RemoveWhen -> SeekInput -> RawFilePath -> Key -> CommandStart
 start fromto removewhen si f k = start' fromto removewhen afile si k ai
