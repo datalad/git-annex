@@ -1,11 +1,13 @@
 {- Worker thread pool.
  -
- - Copyright 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 module Types.WorkerPool where
+
+import Types.Direction
 
 import Control.Concurrent
 import Control.Concurrent.Async
@@ -49,7 +51,7 @@ data WorkerStage
 	-- ^ Running a CommandPerform action.
 	| CleanupStage
 	-- ^ Running a CommandCleanup action.
-	| TransferStage
+	| TransferStage Direction
 	-- ^ Transferring content to or from a remote.
 	| VerifyStage
 	-- ^ Verifying content, eg by calculating a checksum.
@@ -82,15 +84,24 @@ commandStages = UsedStages
 	, stageSet = S.fromList [PerformStage, CleanupStage]
 	}
 
--- | When a command is downloading content, it can use this instead.
--- Downloads are often bottlenecked on the network or another disk
--- than the one containing the repository, while verification bottlenecks
--- on the disk containing the repository or on the CPU. So, run the
--- transfer and verify stage separately.
-downloadStages :: UsedStages
-downloadStages = UsedStages
-	{ initialStage = TransferStage
-	, stageSet = S.fromList [TransferStage, VerifyStage]
+-- | This is mostly useful for downloads, not for uploads. A download
+-- is often bottlenecked on the network or another disk than the one
+-- containing the repository. When verification is not done incrementally,
+-- it bottlenecks on the disk containing the repository or on the CPU.
+-- So it makes sense to run the download and verify stages separately.
+-- 
+-- For uploads, there is no separate verify step to this is less likely
+-- to be useful than commandStages. However, a separate stage is provided
+-- for Uploads. That can be useful when a command downloads from one remote
+-- (eg using the network) and uploads to another remote (eg using a disk).
+transferStages :: UsedStages
+transferStages = UsedStages
+	{ initialStage = TransferStage Download
+	, stageSet = S.fromList
+		[ TransferStage Download
+		, TransferStage Upload
+		, VerifyStage
+		]
 	}
 
 workerStage :: Worker t -> WorkerStage

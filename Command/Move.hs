@@ -84,10 +84,10 @@ seek' o fto = startConcurrency stages $ do
 		, usesLocationLog = True
 		}
 	stages = case fto of
-		FromOrToRemote (FromRemote _) -> downloadStages
+		FromOrToRemote (FromRemote _) -> transferStages
 		FromOrToRemote (ToRemote _) -> commandStages
-		ToHere -> downloadStages
-		FromRemoteToRemote _ _ -> commandStages
+		ToHere -> transferStages
+		FromRemoteToRemote _ _ -> transferStages
 	keyaction = startKey fto (removeWhen o)
 	ww = WarnUnmatchLsFiles
 

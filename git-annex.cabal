@@ -1009,6 +1009,7 @@ Executable git-annex
     Types.DeferredParse
     Types.DesktopNotify
     Types.Difference
+    Types.Direction
     Types.Distribution
     Types.Export
     Types.FileMatcher

@@ -55,6 +55,9 @@ Paths of files or directories to operate on can be specified.
 
   Setting this to "cpus" will run one job per CPU core.
 
+  Note that when using --from with --to, twice this many jobs will
+  run at once, evenly split between the two remotes.
+
 * `--all` `-A`
 
   Rather than specifying a filename or path to move, this option can be

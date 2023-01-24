@@ -50,7 +50,7 @@ seek o = case fromToOptions o of
 	Nothing -> giveup "Specify --from or --to"
 
 seek' :: CopyOptions -> FromToHereOptions -> CommandSeek
-seek' o fto = startConcurrency commandStages $ do
+seek' o fto = startConcurrend stages $ do
 	case batchOption o of
 		NoBatch -> withKeyOptions
 			(keyOptions o) (autoMode o) seeker
@@ -72,6 +72,12 @@ seek' o fto = startConcurrency commandStages $ do
 		, usesLocationLog = True
 		}
 	keyaction = Command.Move.startKey fto Command.Move.RemoveNever
+
+	stages = case fto of
+		FromOrToRemote (FromRemote _) -> commandStages
+		FromOrToRemote (ToRemote _) -> commandStages
+		ToHere -> commandStages
+		FromRemoteToRemote _ _ -> transferStages
 
 {- A copy is just a move that does not delete the source file.
  - However, auto mode avoids unnecessary copies, and avoids getting or

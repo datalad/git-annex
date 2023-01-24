@@ -48,7 +48,7 @@ seek o = startConcurrency stages $
 		=<< workTreeItems ww (mirrorFiles o)
   where
 	stages = case fromToOptions o of
-		FromRemote _ -> downloadStages
+		FromRemote _ -> transferStages
 		ToRemote _ -> commandStages
 	ww = WarnUnmatchLsFiles
 	seeker = AnnexedFileSeeker

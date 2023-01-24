@@ -5,20 +5,22 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Types.Transfer where
+module Types.Transfer (
+	module Types.Transfer,
+	module Types.Direction
+) where
 
 import Types
 import Types.Remote (Verification(..))
 import Types.Key
+import Types.Direction
 import Utility.PID
 import Utility.QuickCheck
 import Utility.Url
 import Utility.FileSystemEncoding
 
-import qualified Data.ByteString as B
 import Data.Time.Clock.POSIX
 import Control.Concurrent
 import Control.Applicative
@@ -54,18 +56,6 @@ data TransferInfo = TransferInfo
 
 stubTransferInfo :: TransferInfo
 stubTransferInfo = TransferInfo Nothing Nothing Nothing Nothing Nothing (AssociatedFile Nothing) False
-
-data Direction = Upload | Download
-	deriving (Eq, Ord, Show, Read)
-
-formatDirection :: Direction -> B.ByteString
-formatDirection Upload = "upload"
-formatDirection Download = "download"
-
-parseDirection :: String -> Maybe Direction
-parseDirection "upload" = Just Upload
-parseDirection "download" = Just Download
-parseDirection _ = Nothing
 
 instance Arbitrary TransferInfo where
 	arbitrary = TransferInfo

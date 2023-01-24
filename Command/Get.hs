@@ -38,7 +38,7 @@ optParser desc = GetOptions
 	<*> parseBatchOption True
 
 seek :: GetOptions -> CommandSeek
-seek o = startConcurrency downloadStages $ do
+seek o = startConcurrency transferStages $ do
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (getFrom o)
 	let seeker = AnnexedFileSeeker
 		{ startAction = start o from

@@ -120,7 +120,7 @@ alwaysRunTransfer = runTransfer' True
 
 runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 runTransfer' ignorelock t afile stalldetection retrydecider transferaction =
-	enteringStage TransferStage $
+	enteringStage (TransferStage (transferDirection t)) $
 		debugLocks $
 			preCheckSecureHashes (transferKey t) go
   where
@@ -244,7 +244,7 @@ runTransferrer
 	-> NotifyWitness
 	-> Annex Bool
 runTransferrer sd r k afile retrydecider direction _witness =
-	enteringStage TransferStage $ preCheckSecureHashes k $ do
+	enteringStage (TransferStage direction) $ preCheckSecureHashes k $ do
 		info <- liftIO $ startTransferInfo afile
 		go 0 info
   where
