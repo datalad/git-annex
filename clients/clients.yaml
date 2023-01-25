@@ -5,14 +5,14 @@ ndoli:
       source testlib.sh
       workdir_base "$HOME/git-annex-client/work"
       git annex version
-      timeout 7200 git annex test -J5
+      timeout 7200 git annex test -J5 | ts -s
 
     git-annex-tmp: |
       set -eux
       source testlib.sh
       workdir_base /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp
       git annex version
-      timeout 7200 git annex test -J5
+      timeout 7200 git annex test -J5 | ts -s
 
 smaug:
   tests:
@@ -21,4 +21,4 @@ smaug:
       source testlib.sh
       workdir_base /mnt/datasets/datalad/git-annex-build-client
       git annex version
-      timeout 3600 git annex test -J5
+      timeout 3600 git annex test -J5 | ts -s
