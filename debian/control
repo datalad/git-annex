@@ -9,7 +9,6 @@ Build-Depends:
 	libghc-split-dev,
 	libghc-data-default-dev,
 	libghc-hslogger-dev,
-	libghc-pcre-light-dev,
 	libghc-cryptonite-dev,
 	libghc-memory-dev,
 	libghc-deepseq-dev,
@@ -71,6 +70,7 @@ Build-Depends:
 	libghc-tasty-hunit-dev,
 	libghc-tasty-quickcheck-dev,
 	libghc-tasty-rerun-dev,
+	libghc-cabal-dev,
 	libghc-ansi-terminal-dev,
 	libghc-optparse-applicative-dev (>= 0.11.0),
 	libghc-torrent-dev,
@@ -125,6 +125,7 @@ Suggests:
 	tahoe-lafs,
 	libnss-mdns,
 	uftp,
+	yt-dlp,
 Breaks: datalad (< 0.12.3~)
 Description: manage files with git, without checking their contents into git
  git-annex allows managing large files with git, without storing the file 
