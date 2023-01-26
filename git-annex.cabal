@@ -300,7 +300,7 @@ custom-setup
     process (>= 1.6.3),
     time (>= 1.5.0),
     directory (>= 1.2.7.0),
-    async, utf8-string, transformers, Cabal
+    async, utf8-string, transformers, Cabal (< 4.0)
 
 Executable git-annex
   Main-Is: git-annex.hs
