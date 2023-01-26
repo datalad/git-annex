@@ -72,7 +72,7 @@ glibcLibs = do
 	ls <- lines <$> readProcess "sh"
 		["-c", "dpkg -L libc6:$(dpkg --print-architecture) | egrep '\\.so' | grep -v /gconv/ | grep -v ld.so.conf | grep -v sotruss-lib"]
 	ls2 <- lines <$> readProcess "sh"
-		["-c", "dpkg -L libgcc-s1:$(dpkg --print-architecture) | egrep '\\.so'"]
+		["-c", "(dpkg -L libgcc-s1:$(dpkg --print-architecture 2>/dev/null) || dpkg -L libgcc1:$(dpkg --print-architecture)) | egrep '\\.so'"]
 	return (ls++ls2)
 
 {- Get gblibc's gconv libs, which are handled specially.. -}
