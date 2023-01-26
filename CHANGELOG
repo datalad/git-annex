@@ -1,4 +1,4 @@
-git-annex (10.20221213) UNRELEASED; urgency=medium
+git-annex (10.20230126) upstream; urgency=medium
 
   * Change --metadata comparisons < > <= and >= to fall back to
     lexicographical comparisons when one or both values being compared
@@ -27,7 +27,7 @@ git-annex (10.20221213) UNRELEASED; urgency=medium
   * move, copy: Support combining --from and --to, which will send content
     from one remote across to another remote.
 
- -- Joey Hess <id@joeyh.name>  Mon, 12 Dec 2022 13:04:54 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 26 Jan 2023 15:26:22 -0400
 
 git-annex (10.20221212) upstream; urgency=medium
 
