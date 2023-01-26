@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="aca"
+ avatar="http://cdn.libravatar.org/avatar/b108d0f7ce179702be9003ca890a0131"
+ subject="thanks"
+ date="2023-01-25T14:01:08Z"
+ content="""
+Thanks joey. This is almost close to what I wanted. 
+But I wanted to naviagate and open the file without \"annex get\" the content.
+When I add file in this way, dead symbolic link is created and it would end like  
+
+```
+a.mp4 -> .git/annex/objects/w6/X8/***.mp4/***.mp4
+```
+
+It would be great if it can be something like this
+
+```
+a.mp4 -> .git/annex/objects/w6/X8/***.mp4/***.mp4 -> /mnt/nas/a.mp4
+```
+
+It might not be proper feature, just asking if it's possible or alternative way for doing this.
+
+Or
+
+Is there way to get the original directory of the file? Something like this  
+```
+$ git annex {somecommand} a.mp4 # Output: /mnt/nas/a.mp4
+```
+
+I couldn't find a way to do this with `whereis`. If it's possible I could just write custom xdg-open command. 
+
+"""]]
