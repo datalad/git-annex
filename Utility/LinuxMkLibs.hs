@@ -1,13 +1,16 @@
 {- Linux library copier and binary shimmer
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2023 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
+{-# Language LambdaCase #-}
+
 module Utility.LinuxMkLibs (
 	installLib,
 	parseLdd,
+	runLdd,
 	glibcLibs,
 	gconvLibs,
 	inTop,
@@ -21,6 +24,8 @@ import Utility.Path
 import Utility.Path.AbsRel
 import Utility.Split
 import Utility.FileSystemEncoding
+import Utility.Env
+import Utility.Exception
 
 import Data.Maybe
 import System.FilePath
@@ -63,6 +68,19 @@ parseLdd :: String -> [FilePath]
 parseLdd = mapMaybe (getlib . dropWhile isSpace) . lines
   where
 	getlib l = headMaybe . words =<< lastMaybe (split " => " l)
+	
+runLdd :: [String] -> IO [FilePath]
+runLdd exes = concat <$> mapM go exes
+  where
+	go exe = tryNonAsync (readProcess "ldd" [exe]) >>= \case
+		Right o -> return (parseLdd o)
+		-- ldd for some reason segfaults when run in an arm64
+		-- chroot on an amd64 host, on a binary produced by ghc.
+		-- But asking ldd to trace loaded objects works.
+		Left _e -> do
+			environ <- getEnvironment
+			let environ' =("LD_TRACE_LOADED_OBJECTS","1"):environ
+			parseLdd <$> readProcessEnv exe [] (Just environ')
 
 {- Get all glibc libs, and also libgcc_s
  -

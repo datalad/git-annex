@@ -31,7 +31,7 @@ mklibs :: FilePath -> a -> IO Bool
 mklibs top _installedbins = do
 	fs <- dirContentsRecursive top
 	exes <- filterM checkExe fs
-	libs <- parseLdd <$> readProcess "ldd" exes
+	libs <- runLdd exes
 	
 	glibclibs <- glibcLibs
 	let libs' = nub $ libs ++ glibclibs
