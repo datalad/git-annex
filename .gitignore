@@ -25,6 +25,7 @@ dist-newstyle
 cabal.project.local
 cabal.project.local~*
 result
+git-annex-build-deps*
 # Sandboxed builds
 cabal-dev
 .cabal-sandbox
