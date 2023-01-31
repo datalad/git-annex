@@ -60,9 +60,8 @@ regionInfo service = map (\(t, r) -> (t, fromServiceRegion r)) $
 		, ("Asia Pacific (Tokyo)", [BothRegion "ap-northeast-1"])
 		, ("Asia Pacific (Sydney)", [S3Region "ap-southeast-2"])
 		, ("South America (São Paulo)", [S3Region "sa-east-1"])
-		-- These need signature V4 support, which has not landed in
-		-- the aws library.
-		-- See https://github.com/aristidb/aws/pull/199
+		-- These need signature V4 to be used, and currently v2 is
+		-- the default, so to add these would need other changes.
 		-- , ("EU (Frankfurt)", [BothRegion "eu-central-1"])
 		-- , ("Asia Pacific (Seoul)", [S3Region "ap-northeast-2"])
 		-- , ("Asia Pacific (Mumbai)", [S3Region "ap-south-1"])
