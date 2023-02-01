@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="markus.l2ll@17cbf3ea36ca05f481e573fd58be50dce9bf8ef9"
+ nickname="markus.l2ll"
+ avatar="http://cdn.libravatar.org/avatar/31c9e7cad2fba31ae36e793e957fb026"
+ subject="same error, same fix"
+ date="2023-02-01T06:44:20Z"
+ content="""
+Got the same error today, added some files (git annex add .) then tried to commit and got:
+
+error: invalid object 100644 88e4306546e6d62a10fb79506d06bcf6492d3934 for '000/c75/SHA256E-s200678--f0fd2056044082bc8c0e03edb93fbcc745627b6e638c4e2f4263fbb0a1fa0cce.SDT.log'
+fatal: git-write-tree: error building trees
+.git-annex-wrapped: failed to read sha from git write-tree
+CallStack (from HasCallStack):
+  error, called at ./Git/Sha.hs:23:15 in main:Git.Sha
+
+Doing a `rm .git/annex/index.lck` fixed it.
+"""]]
