@@ -1,0 +1,13 @@
+Hey joey,
+
+👀 Views are **really** cool, thanks again for this great idea. It makes managing the metadata of annexed files really fun as you can just drag files around and create, rename or delete folders.
+
+What would make it perfect is if there was a possibility to optionally add unmatched files to a view, e.g. into a specially-named folder (like `unmatched`, `___unmatched___` or `?????` or even configurable). Otherwise, unmatched files are not accessible from the view, so they can't be sorted into metadata from there.
+
+Currently this is possible by default-setting the field you want to view with `git annex metadata --force --set 'myfield?=???'`. Then, these objects will appear in the `???` folder with `git annex view myfield='*'`. But that forcefully adds a value to the field, which might not be desired.
+
+What do you think? Is something like `git annex view --show-unmatched '???'` worth it?
+
+Thanks again for git-annex, I love it, it's so versatile... 💛
+
+Yann
