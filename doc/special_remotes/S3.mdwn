@@ -34,9 +34,12 @@ the S3 remote.
   Think carefully about who can access your repository before using
   embedcreds without gpg encryption.
 
-* `datacenter` - Defaults to "US". Other values include "EU" (which is EU/Ireland),
-  "us-west-1", "us-west-2", "ap-southeast-1", "ap-southeast-2", and
-  "sa-east-1".
+* `datacenter` - Specifies which Amazon datacenter
+  to use for the bucket. Defaults to "US". Other values include "EU"
+  (which is EU/Ireland), "us-west-1", "us-west-2", "ap-southeast-1",
+  "ap-southeast-2", and "sa-east-1". See Amazon's documentation for a
+  complete list. Configuring this is equivilant to configuring both
+  `host` and `region`.
 
 * `storageclass` - Default is "STANDARD".  
   Consult S3 provider documentation for pricing details and available
@@ -62,6 +65,10 @@ the S3 remote.
 
 * `host` - Specify in order to use a different, S3 compatable
   service.
+
+* `region` - Specify the region to use. Only makes sense to use when
+  you also set `host`.
+  (Requires a git-annex built with aws-0.24.)
 
 * `protocol` - Either "http" (the default) or "https". Setting
   protocol=https implies port=443. 

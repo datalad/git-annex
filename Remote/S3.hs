@@ -1,6 +1,6 @@
 {- S3 remotes
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -83,6 +83,8 @@ remote = specialRemoteType $ RemoteType
 				(FieldDesc "S3 server hostname (default is Amazon S3)")
 			, optionalStringParser datacenterField
 				(FieldDesc "S3 datacenter to use (US, EU, us-west-1, ..)")
+			, optionalStringParser regionField
+				(FieldDesc "S3 region to use")
 			, optionalStringParser partsizeField
 				(FieldDesc "part size for multipart upload (eg 1GiB)")
 			, optionalStringParser storageclassField
@@ -128,6 +130,9 @@ hostField = Accepted "host"
 
 datacenterField :: RemoteConfigField
 datacenterField = Accepted "datacenter"
+
+regionField :: RemoteConfigField
+regionField = Accepted "region"
 
 partsizeField :: RemoteConfigField
 partsizeField = Accepted "partsize"
@@ -914,6 +919,7 @@ s3Configuration c = cfg
 	}
   where
 	h = fromJust $ getRemoteConfigValue hostField c
+	r = encodeBS <$> getRemoteConfigValue regionField c
 	datacenter = fromJust $ getRemoteConfigValue datacenterField c
 	-- When the default S3 host is configured, connect directly to
 	-- the S3 endpoint for the configured datacenter.
@@ -948,8 +954,14 @@ s3Configuration c = cfg
 			| otherwise -> AWS.HTTP
 	cfg = case getRemoteConfigValue signatureField c of
 		Just (SignatureVersion 4) -> 
-			S3.s3v4 proto endpoint False S3.SignWithEffort
-		_ -> S3.s3 proto endpoint False
+			(S3.s3v4 proto endpoint False S3.SignWithEffort)
+#if MIN_VERSION_aws(0,24,0)
+				{ S3.s3Region = r }
+#endif
+		_ -> (S3.s3 proto endpoint False)
+#if MIN_VERSION_aws(0,24,0)
+				{ S3.s3Region = r }
+#endif
 
 data S3Info = S3Info
 	{ bucket :: S3.Bucket
@@ -964,6 +976,7 @@ data S3Info = S3Info
 	, public :: Bool
 	, publicurl :: Maybe URLString
 	, host :: Maybe String
+	, region :: Maybe String
 	}
 
 extractS3Info :: ParsedRemoteConfig -> Annex S3Info
@@ -987,6 +1000,7 @@ extractS3Info c = do
 			getRemoteConfigValue publicField c
 		, publicurl = getRemoteConfigValue publicurlField c
 		, host = getRemoteConfigValue hostField c
+		, region = getRemoteConfigValue regionField c
 		}
 
 putObject :: S3Info -> T.Text -> RequestBody -> S3.PutObject
@@ -1126,7 +1140,12 @@ debugMapper level t = forward "Remote.S3" (T.unpack t)
 s3Info :: ParsedRemoteConfig -> S3Info -> [(String, String)]
 s3Info c info = catMaybes
 	[ Just ("bucket", fromMaybe "unknown" (getBucketName c))
-	, Just ("endpoint", w82s (BS.unpack (S3.s3Endpoint s3c)))
+	, Just ("endpoint", decodeBS (S3.s3Endpoint s3c))
+#if MIN_VERSION_aws(0,24,0)
+	, case S3.s3Region s3c of
+		Nothing -> Nothing
+		Just r -> Just ("region", decodeBS r)
+#endif
 	, Just ("port", show (S3.s3Port s3c))
 	, Just ("protocol", map toLower (show (S3.s3Protocol s3c)))
 	, Just ("storage class", showstorageclass (getStorageClass c))

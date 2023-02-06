@@ -28,3 +28,6 @@ Fedora Silverblue 37 / git-annex-10.20221212-1.fc37.x86_64
 Yes, many years ago - now trying to get it up and running with my self-hosted S3 endpoint.
 
 [1]: https://garagehq.deuxfleurs.fr/
+
+> [[fixed|done]] although it needs git-annex to be built against 
+> a not yet released version of aws. --[[Joey]]
