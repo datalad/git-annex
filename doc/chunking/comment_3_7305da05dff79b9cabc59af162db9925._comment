@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="MatusGoljer1"
+ avatar="http://cdn.libravatar.org/avatar/8152eed1d594c570563ed46e7fd8356f"
+ subject="comment 3"
+ date="2023-02-06T19:30:02Z"
+ content="""
+I always use this
+
+    git show git-annex:remote.log
+
+to print the current configurations of all remotes.   It should have all the arguments you passed to `initremote` or `enableremote`.  If there is a better way, I would also like to know.
+
+(the git command prints the content of the file `remote.log` from branch `git-annex`)
+"""]]
