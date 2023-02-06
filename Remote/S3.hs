@@ -919,7 +919,6 @@ s3Configuration c = cfg
 	}
   where
 	h = fromJust $ getRemoteConfigValue hostField c
-	r = encodeBS <$> getRemoteConfigValue regionField c
 	datacenter = fromJust $ getRemoteConfigValue datacenterField c
 	-- When the default S3 host is configured, connect directly to
 	-- the S3 endpoint for the configured datacenter.
@@ -961,6 +960,8 @@ s3Configuration c = cfg
 		_ -> (S3.s3 proto endpoint False)
 #if MIN_VERSION_aws(0,24,0)
 				{ S3.s3Region = r }
+	
+	r = encodeBS <$> getRemoteConfigValue regionField c
 #endif
 
 data S3Info = S3Info
