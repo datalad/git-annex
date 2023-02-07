@@ -32,9 +32,7 @@ directory in the view, while `foo/=*` will preserve the
 subdirectories of the foo directory in the view.
 
 To enter a view containing only files that lack a given metadata
-field or tag, specify field!=value or !tag. Globs can also be used here,
-so `field!="*"` will enter a view containing only files that do not have
-the field set to any value.
+field or tag, specify field!=value or !tag.
 
 # OPTIONS
 
