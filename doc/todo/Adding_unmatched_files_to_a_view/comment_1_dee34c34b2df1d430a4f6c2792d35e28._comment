@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-02-07T16:44:08Z"
+content="""
+The existing support for "field!=value" kind of hints at a direction for
+this. If that supported globs (which it does not despite some now fixed docs
+saying it did), you could imagine this as a view where you want both files
+with an author and files without:
+
+	git-annex view author=* author!=*
+
+Although, it seems "!=*" would be somehow special, because "author!=Joey"
+would not mean that you want to put everything not authored by me in the
+no-author directory! So perhaps using glob syntax for this is not the right
+choice.
+
+How about:
+
+	git-annex view author?=*
+
+Where the '?' means make a directory for files that don't have the field
+set at all. So "author?=Joey" makes one directory for files authored by me,
+and one directory for files with no author; and all files with other
+authors are not included in the view.
+
+('field?=glob' also seems a good choice because it rhymes with 
+`git-annex metadata --set field?=value`)
+
+----
+
+I was going to say it seems better to avoid having any special directory
+name if possible, and just put files that lack a field in the parent
+directory that contains the directories for values of that field. But,
+thinking that through, I found a big problem with it. Consider this:
+
+	git-annex view author=* author!=* year=* year!=*
+
+If a file has a year set but no author, it would need to be left in the top
+directory in this view. But then if it were moved to author/, it would
+have an author but no year, and git-annex would have to remove the year
+that was set. Because it can't differentiate that from a file that was in
+author/year/ and got moved to author/ in order to remove the year.
+
+Using a special directory name for unset does avoid that problem.
+
+The name would have to be configurable, since any value might be a valid
+valid for some type of metadata out there. I'd probably lean toward a
+default like '_' just because it avoids defaulting to an English word, and
+a name like '?' seems like asking for trouble with unsafe shell
+globbing.
+"""]]
