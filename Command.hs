@@ -66,7 +66,7 @@ noMessages c = c { cmdnomessages = True }
 
 {- Adds a fallback action to a command, that will be run if it's used
  - outside a git repository. -}
-noRepo :: (String -> Parser (IO ())) -> Command -> Command
+noRepo :: (CmdParamsDesc -> Parser (IO ())) -> Command -> Command
 noRepo a c = c { cmdnorepo = Just (a (cmdparamdesc c)) }
 
 {- Adds Annex options to a command. -}

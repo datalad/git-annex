@@ -10,14 +10,13 @@ module Command.VAdd where
 import Command
 import qualified Annex
 import Annex.View
-import Command.View (checkoutViewBranch)
+import Command.View (checkoutViewBranch, paramView)
 
 cmd :: Command
 cmd = notBareRepo $
 	command "vadd" SectionMetaData 
 		"add subdirs to current view"
-		(paramRepeating "FIELD=GLOB")
-		(withParams seek)
+		paramView (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)

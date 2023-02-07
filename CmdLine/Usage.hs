@@ -32,16 +32,12 @@ commandList cmds = concatMap go [minBound..]
 	cmdline c = concat
 		[ cmdname c
 		, namepad (cmdname c)
-		, cmdparamdesc c
-		, descpad (cmdparamdesc c)
 		, cmddesc c
 		]
 	pad n s = replicate (n - length s) ' '
 	namepad = pad $ longest cmdname + 1
-	descpad = pad $ longest cmdparamdesc + 2
 	longest f = foldl max 0 $ map (length . f) cmds
 	scmds = sort cmds
-
 
 {- Descriptions of params used in usage messages. -}
 paramPaths :: String

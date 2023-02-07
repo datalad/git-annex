@@ -78,7 +78,7 @@ perform view = do
 	next $ checkoutViewBranch view applyView
 
 paramView :: String
-paramView = paramRepeating "FIELD=VALUE"
+paramView = paramRepeating "TAG FIELD=GLOB ?TAG FIELD?=GLOB FIELD!=VALUE"
 
 mkView :: [String] -> Annex View
 mkView ps = go =<< inRepo Git.Branch.current
