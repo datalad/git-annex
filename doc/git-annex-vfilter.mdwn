@@ -4,7 +4,7 @@ git-annex vfilter - filter current view
 
 # SYNOPSIS
 
-git annex vfilter `[tag ...] [field=value ...] [!tag ...] [field!=value ...]`
+git annex vfilter `[tag ...] [field=value ...] [?tag ...] [field?=glob] [!tag ...] [field!=value ...]`
 
 # DESCRIPTION
 

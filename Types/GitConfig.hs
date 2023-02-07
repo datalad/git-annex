@@ -43,6 +43,7 @@ import Types.Difference
 import Types.RefSpec
 import Types.RepoVersion
 import Types.StallDetection
+import Types.View
 import Config.DynamicConfig
 import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
@@ -145,6 +146,7 @@ data GitConfig = GitConfig
 	, mergeDirectoryRenames :: Maybe String
 	, annexPrivateRepos :: S.Set UUID
 	, annexAdviceNoSshCaching :: Bool
+	, annexViewUnsetDirectory :: ViewUnset
 	}
 
 extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
@@ -266,6 +268,8 @@ extractGitConfig configsource r = GitConfig
 		  in mapMaybe get (M.toList (Git.config r))
 		]
 	, annexAdviceNoSshCaching = getbool (annexConfig "advicenosshcaching") True
+	, annexViewUnsetDirectory = ViewUnset $ fromMaybe "_" $
+		getmaybe (annexConfig "viewunsetdirectory")
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k

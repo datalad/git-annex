@@ -11,3 +11,5 @@ What do you think? Is something like `git annex view --show-unmatched '???'` wor
 Thanks again for git-annex, I love it, it's so versatile... 💛
 
 Yann
+
+> [[fixed|done]] --[[Joey]]

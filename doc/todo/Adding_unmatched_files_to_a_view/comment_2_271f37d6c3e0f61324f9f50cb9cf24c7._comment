@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-02-07T20:19:29Z"
+ content="""
+Implemented this! Using the "field?=*" syntax described.
+With the directory configurable by annex.viewunsetdirectory
+"""]]

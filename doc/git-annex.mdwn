@@ -506,7 +506,7 @@ content from the key-value store.
 
   See [[git-annex-metadata]](1) for details.
 
-* `view [tag ...] [field=value ...] [field=glob ...] [!tag ...] [field!=value ...]`
+* `view [tag ...] [field=value ...] [field=glob ...] [?tag ...] [field?=glob] [!tag ...] [field!=value ...]`
 
   Uses metadata to build a view branch of the files in the current branch,
   and checks out the view branch. Only files in the current branch whose
@@ -1176,6 +1176,12 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
   To configure the behavior in all clones of the repository,
   this can be set in [[git-annex-config]](1).
+
+* `annex.viewunsetdirectory`
+
+  This configures the name of a directory that is used in a view to contain
+  files that do not have metadata set. The default name for the directory 
+  is `"_"`. See [[git-annex-view]](1) for details.
 
 * `annex.debug`
 

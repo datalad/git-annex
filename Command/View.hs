@@ -8,6 +8,7 @@
 module Command.View where
 
 import Command
+import qualified Annex
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
@@ -83,8 +84,10 @@ mkView :: [String] -> Annex View
 mkView ps = go =<< inRepo Git.Branch.current
   where
 	go Nothing = giveup "not on any branch!"
-	go (Just b) = return $ fst $ refineView (View b []) $
-		map parseViewParam $ reverse ps
+	go (Just b) = do
+		vu <- annexViewUnsetDirectory <$> Annex.getGitConfig
+		return $ fst $ refineView (View b []) $
+			map (parseViewParam vu) (reverse ps)
 
 checkoutViewBranch :: View -> (View -> Annex Git.Branch) -> CommandCleanup
 checkoutViewBranch view mkbranch = do

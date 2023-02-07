@@ -4,7 +4,7 @@ git-annex vadd - add subdirs to current view
 
 # SYNOPSIS
 
-git annex vadd `[field=glob ...] [field=value ...] [tag ...]`
+git annex vadd `[field=glob ...] [field=value ...] [tag ...] [?tag ...] [field?=glob]`
 
 # DESCRIPTION
 

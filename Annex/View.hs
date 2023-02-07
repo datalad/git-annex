@@ -1,6 +1,6 @@
 {- metadata based branch views
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -56,18 +56,22 @@ viewTooLarge view = visibleViewSize view > 5
 visibleViewSize :: View -> Int
 visibleViewSize = length . filter viewVisible . viewComponents
 
-{- Parses field=value, field!=value, tag, and !tag
+{- Parses field=value, field!=value, field?=value, tag, !tag, and ?tag
  -
  - Note that the field may not be a legal metadata field name,
  - but it's let through anyway.
  - This is useful when matching on directory names with spaces,
  - which are not legal MetaFields.
  -}
-parseViewParam :: String -> (MetaField, ViewFilter)
-parseViewParam s = case separate (== '=') s of
+parseViewParam :: ViewUnset -> String -> (MetaField, ViewFilter)
+parseViewParam vu s = case separate (== '=') s of
 	('!':tag, []) | not (null tag) ->
 		( tagMetaField
 		, mkExcludeValues tag
+		)
+	('?':tag, []) | not (null tag) ->
+		( tagMetaField
+		, mkFilterOrUnsetValues tag
 		)
 	(tag, []) ->
 		( tagMetaField
@@ -78,15 +82,22 @@ parseViewParam s = case separate (== '=') s of
 			( mkMetaFieldUnchecked (T.pack (beginning field))
 			, mkExcludeValues wanted
 			)
+		| end field == "?" ->
+			( mkMetaFieldUnchecked (T.pack (beginning field))
+			, mkFilterOrUnsetValues wanted
+			)
 		| otherwise ->
 			( mkMetaFieldUnchecked (T.pack field)
 			, mkFilterValues wanted
 			)
   where
+	mkExcludeValues = ExcludeValues . S.singleton . toMetaValue . encodeBS
 	mkFilterValues v
 		| any (`elem` v) ['*', '?'] = FilterGlob v
 		| otherwise = FilterValues $ S.singleton $ toMetaValue $ encodeBS v
-	mkExcludeValues = ExcludeValues . S.singleton . toMetaValue . encodeBS
+	mkFilterOrUnsetValues v
+		| any (`elem` v) ['*', '?'] = FilterGlobOrUnset v vu
+		| otherwise = FilterValuesOrUnset (S.singleton $ toMetaValue $ encodeBS v) vu
 
 data ViewChange = Unchanged | Narrowing | Widening
 	deriving (Ord, Eq, Show)
@@ -136,18 +147,8 @@ filterView v vs = v { viewComponents = viewComponents f' ++ viewComponents v}
 	toinvisible c = c { viewVisible = False }
 
 {- Combine old and new ViewFilters, yielding a result that matches
- - either old+new, or only new.
- -
- - If we have FilterValues and change to a FilterGlob,
- - it's always a widening change, because the glob could match other
- - values. OTOH, going the other way, it's a Narrowing change if the old
- - glob matches all the new FilterValues.
- -
- - With two globs, the old one is discarded, and the new one is used.
- - We can tell if that's a narrowing change by checking if the old
- - glob matches the new glob. For example, "*" matches "foo*",
- - so that's narrowing. While "f?o" does not match "f??", so that's
- - widening.
+ - either old+new, or only new. Which depends on the types of things
+ - being combined.
  -}
 combineViewFilter :: ViewFilter -> ViewFilter -> (ViewFilter, ViewChange)
 combineViewFilter old@(FilterValues olds) (FilterValues news)
@@ -160,19 +161,74 @@ combineViewFilter old@(ExcludeValues olds) (ExcludeValues news)
 	| otherwise = (combined, Narrowing)
   where
 	combined = ExcludeValues (S.union olds news)
+{- If we have FilterValues and change to a FilterGlob,
+ - it's always a widening change, because the glob could match other
+ - values. OTOH, going the other way, it's a Narrowing change if the old
+ - glob matches all the new FilterValues. -}
 combineViewFilter (FilterValues _) newglob@(FilterGlob _) =
 	(newglob, Widening)
 combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
 	| all (matchGlob (compileGlob oldglob CaseInsensative (GlobFilePath False)) . decodeBS . fromMetaValue) (S.toList s) = (new, Narrowing)
 	| otherwise = (new, Widening)
+{- With two globs, the old one is discarded, and the new one is used.
+ - We can tell if that's a narrowing change by checking if the old
+ - glob matches the new glob. For example, "*" matches "foo*",
+ - so that's narrowing. While "f?o" does not match "f??", so that's
+ - widening. -}
 combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
 	| old == new = (newglob, Unchanged)
 	| matchGlob (compileGlob old CaseInsensative (GlobFilePath False)) new = (newglob, Narrowing)
 	| otherwise = (newglob, Widening)
+{- Combining FilterValuesOrUnset and FilterGlobOrUnset with FilterValues
+ - and FilterGlob maintains the OrUnset if the second parameter has it,
+ - and is otherwise the same as combining without OrUnset, except that
+ - eliminating the OrUnset can be narrowing, and adding it can be widening. -}
+combineViewFilter old@(FilterValuesOrUnset olds _) (FilterValuesOrUnset news newvu)
+	| combined == old = (combined, Unchanged)
+	| otherwise = (combined, Widening)
+  where
+	combined = FilterValuesOrUnset (S.union olds news) newvu
+combineViewFilter (FilterValues olds) (FilterValuesOrUnset news vu) =
+	(combined, Widening)
+  where
+	combined = FilterValuesOrUnset (S.union olds news) vu
+combineViewFilter old@(FilterValuesOrUnset olds _) (FilterValues news)
+	| combined == old = (combined, Narrowing)
+	| otherwise = (combined, Widening)
+  where
+	combined = FilterValues (S.union olds news)
+combineViewFilter (FilterValuesOrUnset _ _) newglob@(FilterGlob _) =
+	(newglob, Widening)
+combineViewFilter (FilterGlob _) new@(FilterValuesOrUnset _ _) =
+	(new, Widening)
+combineViewFilter (FilterValues _) newglob@(FilterGlobOrUnset _ _) =
+	(newglob, Widening)
+combineViewFilter (FilterValuesOrUnset _ _) newglob@(FilterGlobOrUnset _ _) =
+	(newglob, Widening)
+combineViewFilter (FilterGlobOrUnset oldglob _) new@(FilterValues _) =
+	combineViewFilter (FilterGlob oldglob) new
+combineViewFilter (FilterGlobOrUnset oldglob _) new@(FilterValuesOrUnset _ _) =
+	let (_, viewchange) = combineViewFilter (FilterGlob oldglob) new
+	in (new, viewchange)
+combineViewFilter (FilterGlobOrUnset old _) newglob@(FilterGlobOrUnset new _)
+	| old == new = (newglob, Unchanged)
+	| matchGlob (compileGlob old CaseInsensative (GlobFilePath False)) new = (newglob, Narrowing)
+	| otherwise = (newglob, Widening)
+combineViewFilter (FilterGlob _) newglob@(FilterGlobOrUnset _ _) =
+	(newglob, Widening)
+combineViewFilter (FilterGlobOrUnset _ _) newglob@(FilterGlob _) =
+	(newglob, Narrowing)
+{- There is not a way to filter a value and also apply an exclude. So:
+ - When adding an exclude to a filter, use only the exclude.
+ - When adding a filter to an exclude, use only the filter. -}
 combineViewFilter (FilterGlob _) new@(ExcludeValues _) = (new, Narrowing)
 combineViewFilter (ExcludeValues _) new@(FilterGlob _) = (new, Widening)
 combineViewFilter (FilterValues _) new@(ExcludeValues _) = (new, Narrowing)
 combineViewFilter (ExcludeValues _) new@(FilterValues _) = (new, Widening)
+combineViewFilter (FilterValuesOrUnset _ _) new@(ExcludeValues _) = (new, Narrowing)
+combineViewFilter (ExcludeValues _) new@(FilterValuesOrUnset _ _) = (new, Widening)
+combineViewFilter (FilterGlobOrUnset _ _) new@(ExcludeValues _) = (new, Narrowing)
+combineViewFilter (ExcludeValues _) new@(FilterGlobOrUnset _ _) = (new, Widening)
 
 {- Generates views for a file from a branch, based on its metadata
  - and the filename used in the branch.
@@ -196,7 +252,7 @@ viewedFiles view =
 			then []
 			else 
 				let paths = pathProduct $
-					map (map toViewPath) (visible matches)
+					map (map toviewpath) (visible matches)
 				in if null paths
 					then [mkviewedfile file]
 					else map (</> mkviewedfile file) paths
@@ -204,28 +260,40 @@ viewedFiles view =
 	visible = map (fromJust . snd) .
 		filter (viewVisible . fst) .
 		zip (viewComponents view)
+	
+	toviewpath (MatchingMetaValue v) = toViewPath v
+	toviewpath (MatchingUnset v) = toViewPath (toMetaValue (encodeBS v))
+
+data MatchingValue = MatchingMetaValue MetaValue | MatchingUnset String
 
 {- Checks if metadata matches a ViewComponent filter, and if so
  - returns the value, or values that match. Self-memoizing on ViewComponent. -}
-viewComponentMatcher :: ViewComponent -> (MetaData -> Maybe [MetaValue])
+viewComponentMatcher :: ViewComponent -> (MetaData -> Maybe [MatchingValue])
 viewComponentMatcher viewcomponent = \metadata -> 
-	matcher (currentMetaDataValues metafield metadata)
+	matcher Nothing (viewFilter viewcomponent)
+		(currentMetaDataValues metafield metadata)
   where
 	metafield = viewField viewcomponent
-	matcher = case viewFilter viewcomponent of
-		FilterValues s -> \values -> setmatches $
-			S.intersection s values
-		FilterGlob glob ->
-			let cglob = compileGlob glob CaseInsensative (GlobFilePath False)
-			in \values -> setmatches $
-				S.filter (matchGlob cglob . decodeBS . fromMetaValue) values
-		ExcludeValues excludes -> \values -> 
+	matcher matchunset (FilterValues s) = 
+		\values -> setmatches matchunset $ S.intersection s values
+	matcher matchunset (FilterGlob glob) =
+		let cglob = compileGlob glob CaseInsensative (GlobFilePath False)
+		in \values -> setmatches matchunset $
+			S.filter (matchGlob cglob . decodeBS . fromMetaValue) values
+	matcher _ (ExcludeValues excludes) = 
+		\values -> 
 			if S.null (S.intersection values excludes)
 				then Just []
 				else Nothing
-	setmatches s
-		| S.null s = Nothing
-		| otherwise = Just (S.toList s)
+	matcher _ (FilterValuesOrUnset s (ViewUnset u)) =
+		matcher (Just [MatchingUnset u]) (FilterValues s)
+	matcher _ (FilterGlobOrUnset glob (ViewUnset u)) =
+		matcher (Just [MatchingUnset u]) (FilterGlob glob)
+
+	setmatches matchunset s
+		| S.null s = matchunset 
+		| otherwise = Just $
+			map MatchingMetaValue (S.toList s)
 
 -- This is '∕', a unicode character that displays the same as '/' but is
 -- not it. It is encoded using the filesystem encoding, which allows it
@@ -282,14 +350,25 @@ pathProduct (l:ls) = foldl combinel l ls
  - Derived metadata is excluded.
  -}
 fromView :: View -> ViewedFile -> MetaData
-fromView view f = MetaData $
-	M.fromList (zip fields values) `M.difference` derived
+fromView view f = MetaData $ m `M.difference` derived
   where
+	m = M.fromList $ map convfield $
+		filter (not . isviewunset) (zip visible values)
 	visible = filter viewVisible (viewComponents view)
-	fields = map viewField visible
 	paths = splitDirectories (dropFileName f)
 	values = map (S.singleton . fromViewPath) paths
 	MetaData derived = getViewedFileMetaData f
+	convfield (vc, v) = (viewField vc, v)
+
+	-- When a directory is the one used to hold files that don't
+	-- have the metadata set, don't include it in the MetaData.
+	isviewunset (vc, v) = case viewFilter vc of
+		FilterValues {} -> False
+		FilterGlob {} -> False
+		ExcludeValues {} -> False
+		FilterValuesOrUnset _ (ViewUnset vu) -> isviewunset' vu v
+		FilterGlobOrUnset _ (ViewUnset vu) -> isviewunset' vu v
+	isviewunset' vu v = S.member (fromViewPath vu) v
 
 {- Constructing a view that will match arbitrary metadata, and applying
  - it to a file yields a set of ViewedFile which all contain the same

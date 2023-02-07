@@ -86,6 +86,8 @@ branchView view
 	branchvals (FilterValues set) = '=' : branchset set
 	branchvals (FilterGlob glob) = '=' : forcelegal glob
 	branchvals (ExcludeValues set) = "!=" ++ branchset set
+	branchvals (FilterValuesOrUnset set _) = '=' : branchset set
+	branchvals (FilterGlobOrUnset glob _) = '=' : forcelegal glob
 	branchset = intercalate ","
 		. map (forcelegal . decodeBS . fromMetaValue)
 		. S.toList

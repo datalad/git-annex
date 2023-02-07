@@ -1,6 +1,6 @@
 {- types for metadata based branch views
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,9 +9,9 @@
 
 module Types.View where
 
-import Annex.Common
 import Types.MetaData
 import Utility.QuickCheck
+import Utility.Monad
 import qualified Git
 
 import qualified Data.Set as S
@@ -42,6 +42,11 @@ data ViewFilter
 	= FilterValues (S.Set MetaValue)
 	| FilterGlob String
 	| ExcludeValues (S.Set MetaValue)
+	| FilterValuesOrUnset (S.Set MetaValue) ViewUnset
+	| FilterGlobOrUnset String ViewUnset
+	deriving (Eq, Read, Show)
+
+newtype ViewUnset = ViewUnset String
 	deriving (Eq, Read, Show)
 
 instance Arbitrary ViewFilter where
@@ -60,3 +65,5 @@ multiValue :: ViewFilter -> Bool
 multiValue (FilterValues s) = S.size s > 1
 multiValue (FilterGlob _) = True
 multiValue (ExcludeValues _) = False
+multiValue (FilterValuesOrUnset _ _) = True
+multiValue (FilterGlobOrUnset _ _) = True

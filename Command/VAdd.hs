@@ -8,6 +8,7 @@
 module Command.VAdd where
 
 import Command
+import qualified Annex
 import Annex.View
 import Command.View (checkoutViewBranch)
 
@@ -24,8 +25,9 @@ seek = withWords (commandAction . start)
 start :: [String] -> CommandStart
 start params = starting "vadd" (ActionItemOther Nothing) (SeekInput params) $ 
 	withCurrentView $ \view -> do
+		vu <- annexViewUnsetDirectory <$> Annex.getGitConfig
 		let (view', change) = refineView view $
-			map parseViewParam $ reverse params
+			map (parseViewParam vu) (reverse params)
 		case change of
 			Unchanged -> do
 				showNote "unchanged"
