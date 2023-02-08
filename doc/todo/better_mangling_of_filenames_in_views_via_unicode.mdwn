@@ -24,3 +24,5 @@ kind of name mangling was used, so it doesn't have to try both.
 > mangling avoids. So perhaps keeping it postfix is still a good idea, but
 > it could still use the psdudoslash. Eg, `somefile@foo/bar/baz.ext`?
 > --[[Joey]]
+
+Related: [[Configuring_metadata_view_filenames]]
