@@ -18,3 +18,9 @@ the old names when unmangeling (in dirFromViewedFile). Perhaps something
 additional could be recorded when entering a view branch that indicates what
 kind of name mangling was used, so it doesn't have to try both.
 --[[Joey]]
+
+> When several files are in a deep directory tree like `foo/bar/baz`, 
+> that would be an annoying common prefix to deal with, which the current
+> mangling avoids. So perhaps keeping it postfix is still a good idea, but
+> it could still use the psdudoslash. Eg, `somefile@foo/bar/baz.ext`?
+> --[[Joey]]
