@@ -45,6 +45,10 @@ ever happens when --content is used.) The remote's
 `remote.<name>.annex-tracking-branch` also must be configured, and
 have the same value as the currently checked out branch.
 
+When [[git-annex-adjust]](1) has been used to check out an adjusted branch,
+running sync will propagate changes that have been made back to the 
+parent branch, without propagating the adjustments.
+
 # OPTIONS
 
 * `[remote]`
