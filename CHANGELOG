@@ -9,6 +9,8 @@ git-annex (10.20230127) UNRELEASED; urgency=medium
   * Changed the name of view branches to include the parent branch.
     Existing view branches checked out using an old name will still work.
   * sync: Avoid pushing view branches to remotes.
+  * sync: When run in a view branch, refresh the view branch to reflect any
+    changes that have been made to the parent branch or metadata.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 Feb 2023 13:39:18 -0400
 

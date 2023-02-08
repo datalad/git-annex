@@ -19,6 +19,7 @@ import qualified Git
 import qualified Git.DiffTree as DiffTree
 import qualified Git.Branch
 import qualified Git.LsFiles
+import qualified Git.LsTree
 import qualified Git.Ref
 import Git.UpdateIndex
 import Git.Sha
@@ -428,21 +429,30 @@ narrowView = applyView' viewedFileReuse getViewedFileMetaData
  - or a file in a dotdir in the top. 
  - Look up the metadata of annexed files, and generate any ViewedFiles,
  - and stage them.
- -
- - Must be run from top of repository.
  -}
 applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Annex Git.Branch
 applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepoDetails [] [top]
-	liftIO . removeWhenExistsWith R.removeLink =<< fromRepo gitAnnexViewIndex
-	viewg <- withViewIndex gitRepo
-	withUpdateIndex viewg $ \uh -> do
-		forM_ l $ \(f, sha, mode) -> do
+	applyView'' mkviewedfile getfilemetadata view l clean $ 
+		\go (f, sha, mode) -> do
 			topf <- inRepo (toTopFilePath f)
-			go uh topf sha (toTreeItemType mode) =<< lookupKey f
-		liftIO $ void clean
+			go topf sha (toTreeItemType mode) =<< lookupKey f
 	genViewBranch view
+
+applyView''
+	:: MkViewedFile
+	-> (FilePath -> MetaData)
+	-> View
+	-> [t]
+	-> IO Bool
+	-> ((TopFilePath -> Sha -> Maybe TreeItemType -> Maybe Key -> Annex ()) -> t -> Annex ())
+	-> Annex ()
+applyView'' mkviewedfile getfilemetadata view l clean a = do
+	viewg <- withNewViewIndex gitRepo
+	withUpdateIndex viewg $ \uh -> do
+		forM_ l $ a (go uh)
+		liftIO $ void clean
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
 
@@ -463,6 +473,44 @@ applyView' mkviewedfile getfilemetadata view = do
 		sha <- hashSymlink linktarget
 		liftIO . Git.UpdateIndex.streamUpdateIndex' uh
 			=<< inRepo (Git.UpdateIndex.stageSymlink f sha)
+
+{- Updates the current view with any changes that have been made to its
+ - parent branch or the metadata since the view was created or last updated.
+ -
+ - When there were changes, returns a ref to a commit for the updated view.
+ - Does not update the view branch with it.
+ -
+ - This is not very optimised. An incremental update would be possible to
+ - implement and would be faster, but more complicated.
+ -}
+updateView :: View -> Annex (Maybe Git.Ref)
+updateView view = do
+	(l, clean) <- inRepo $ Git.LsTree.lsTree
+		Git.LsTree.LsTreeRecursive
+		(Git.LsTree.LsTreeLong True)
+		(viewParentBranch view)
+	applyView'' viewedFileFromReference getWorkTreeMetaData view l clean $
+		\go ti -> do
+			let ref = Git.Ref.branchFileRef (viewParentBranch view)
+				(getTopFilePath (Git.LsTree.file ti))
+			k <- case Git.LsTree.size ti of
+				Nothing -> catKey ref
+				Just sz -> catKey' ref sz
+			go
+				(Git.LsTree.file ti)
+				(Git.LsTree.sha ti)
+				(toTreeItemType (Git.LsTree.mode ti))
+				k
+	oldcommit <- inRepo $ Git.Ref.sha (branchView view)
+	oldtree <- maybe (pure Nothing) (inRepo . Git.Ref.tree) oldcommit
+	newtree <- withViewIndex $ inRepo Git.Branch.writeTree
+	if oldtree /= Just newtree
+		then Just <$> do
+			cmode <- annexCommitMode <$> Annex.getGitConfig
+			let msg = "updated " ++ fromRef (branchView view)
+			let parent = catMaybes [oldcommit]
+			inRepo (Git.Branch.commitTree cmode msg parent newtree)
+		else return Nothing
 
 {- Diff between currently checked out branch and staged changes, and
  - update metadata to reflect the changes that are being committed to the
@@ -500,6 +548,11 @@ withViewChanges addmeta removemeta = do
  - info staged for an old view. -}
 withViewIndex :: Annex a -> Annex a
 withViewIndex = withIndexFile ViewIndexFile . const
+
+withNewViewIndex :: Annex a -> Annex a
+withNewViewIndex a = do
+	liftIO . removeWhenExistsWith R.removeLink =<< fromRepo gitAnnexViewIndex
+	withViewIndex a
 
 {- Generates a branch for a view, using the view index file
  - to make a commit to the view branch. The view branch is not

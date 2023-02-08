@@ -1,7 +1,7 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -59,10 +59,11 @@ import Annex.UUID
 import Logs.UUID
 import Logs.Export
 import Logs.PreferredContent
-import Logs.View (fromViewBranch)
+import Logs.View
 import Annex.AutoMerge
 import Annex.AdjustedBranch
 import Annex.AdjustedBranch.Merge
+import Annex.View
 import Annex.Ssh
 import Annex.BloomFilter
 import Annex.UpdateInstead
@@ -440,7 +441,6 @@ updateBranches (Just branch, madj) = do
 	-- to be updated, if the adjustment is not stable, and the usual
 	-- configuration does not update it.
 	case madj of
-		Nothing -> noop
 		Just adj -> do
 			let origbranch = branch
 			propigateAdjustedCommits origbranch adj
@@ -448,13 +448,27 @@ updateBranches (Just branch, madj) = do
 				annexAdjustedBranchRefresh <$> Annex.getGitConfig >>= \case
 					0 -> adjustedBranchRefreshFull adj origbranch
 					_ -> return ()
+		-- When in a view branch, update it to reflect any changes
+		-- of its parent branch or the metadata.
+		Nothing -> currentView >>= \case
+			Nothing -> noop
+			Just view -> updateView view >>= \case
+				Nothing -> noop
+				Just newcommit -> do
+					ok <- inRepo $ Git.Command.runBool
+						[ Param "merge"
+						, Param (Git.fromRef newcommit)
+						]
+					unless ok $
+						giveup $ "failed to update view"
 					
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch (syncBranch branch) branch
 
 updateBranch :: Git.Branch -> Git.Branch -> Git.Repo -> IO ()
 updateBranch syncbranch updateto g = 
-	unlessM go $ giveup $ "failed to update " ++ Git.fromRef syncbranch
+	unlessM go $
+		giveup $ "failed to update " ++ Git.fromRef syncbranch
   where
 	go = Git.Command.runBool
 		[ Param "branch"

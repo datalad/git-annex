@@ -47,7 +47,10 @@ have the same value as the currently checked out branch.
 
 When [[git-annex-adjust]](1) has been used to check out an adjusted branch,
 running sync will propagate changes that have been made back to the 
-parent branch, without propagating the adjustments.
+parent branch, without propagating the adjustments. When
+[[git-annex-view]](1) has been used to check out a view branch,
+running sync will update the view branch to reflect any changes 
+to the parent branch or metadata.
 
 # OPTIONS
 

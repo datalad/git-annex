@@ -35,7 +35,7 @@ start [] = giveup "Specify metadata to include in view"
 start ps = ifM safeToEnterView
 	( do
 		view <- mkView ps
-		go view  =<< currentView
+		go view =<< currentView
 	, giveup "Not safe to enter view."
 	)
   where
