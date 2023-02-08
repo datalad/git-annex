@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="long filenames in view"
+ date="2023-02-08T22:11:30Z"
+ content="""
+Another thing to consider is the too-long-filenames problem, especially on filesystems like ecryptfs which have a max filename length of 144 chars or so. I don't know if git-annex caps the filename length somehow, however I have run into problems of too long filenames when entering a view on ecryptfs.
+"""]]
