@@ -1,0 +1,20 @@
+Currently views mangle filenames to be unique by converting a file 
+named "foo/bar.ext" to "bar_%foo.ext". That is kind of ugly and weird.
+
+But also in views, metadata like author="fred/barney" is made into a
+directory that looks like "fred/barney" but the / is a different unicode
+character that looks like a regular /.
+
+So, why not also use that in the filename mangling? Then a view
+could have a "fred/barney" subdirectory containing a "foo/bar.ext" file!
+
+The unicode might pose challenages for users typing the filename, but
+probably users will tab complete or use a gui anyway. If that did cause a
+problem for some users, there could be a config added to disable the unicode.
+
+How to handle upgrading git-annex when a view branch is checked out,
+if this change is made? It seems it would need to handle both the new and
+the old names when unmangeling (in dirFromViewedFile). Perhaps something
+additional could be recorded when entering a view branch that indicates what
+kind of name mangling was used, so it doesn't have to try both.
+--[[Joey]]
