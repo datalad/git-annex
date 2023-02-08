@@ -21,7 +21,6 @@ module Command.Sync (
 	commitMsg,
 	pushBranch,
 	updateBranch,
-	syncBranch,
 	updateBranches,
 	seekExportContent,
 	parseUnrelatedHistoriesOption,
@@ -60,6 +59,7 @@ import Annex.UUID
 import Logs.UUID
 import Logs.Export
 import Logs.PreferredContent
+import Logs.View (fromViewBranch)
 import Annex.AutoMerge
 import Annex.AdjustedBranch
 import Annex.AdjustedBranch.Merge
@@ -310,7 +310,10 @@ merge currbranch mergeconfig o commitmode tomerge = do
 		(b, _) -> autoMergeFrom tomerge b mergeconfig commitmode canresolvemerge
 
 syncBranch :: Git.Branch -> Git.Branch
-syncBranch = Git.Ref.underBase "refs/heads/synced" . fromAdjustedBranch
+syncBranch = Git.Ref.underBase "refs/heads/synced" . origBranch
+
+origBranch :: Git.Branch -> Git.Branch
+origBranch = fromViewBranch . fromAdjustedBranch
 
 remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
@@ -565,7 +568,7 @@ mergeRemote remote currbranch mergeconfig o = ifM isBareRepo
 		(mapM (merge currbranch mergeconfig o Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
-	branchlist (Just branch) = [fromAdjustedBranch branch, syncBranch branch]
+	branchlist (Just branch) = [origBranch branch, syncBranch branch]
 
 pushRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
 pushRemote _o _remote (Nothing, _) = stop
@@ -654,7 +657,7 @@ pushBranch :: Remote -> Maybe Git.Branch -> MessageState -> Git.Repo -> IO Bool
 pushBranch remote mbranch ms g = directpush `after` annexpush `after` syncpush
   where
 	syncpush = flip Git.Command.runBool g $ pushparams $ catMaybes
-		[ (refspec . fromAdjustedBranch) <$> mbranch
+		[ (refspec . origBranch) <$> mbranch
 		, Just $ Git.Branch.forcePush $ refspec Annex.Branch.name
 		]
 	annexpush = void $ tryIO $ flip Git.Command.runQuiet g $ pushparams
@@ -673,7 +676,7 @@ pushBranch remote mbranch ms g = directpush `after` annexpush `after` syncpush
 		-- will want to see that one.
 		Just branch -> do
 			let p = flip Git.Command.gitCreateProcess g $ pushparams
-				[ Git.fromRef $ Git.Ref.base $ fromAdjustedBranch branch ]
+				[ Git.fromRef $ Git.Ref.base $ origBranch branch ]
 			(transcript, ok) <- processTranscript' p Nothing
 			when (not ok && not ("denyCurrentBranch" `isInfixOf` transcript)) $
 				hPutStr stderr transcript

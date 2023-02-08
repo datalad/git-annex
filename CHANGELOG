@@ -6,6 +6,9 @@ git-annex (10.20230127) UNRELEASED; urgency=medium
     in the view for files that do not have the specified metadata set.
   * Added annex.viewunsetdirectory git config to change the name of the
     "_" directory in a view.
+  * Changed the name of view branches to include the parent branch.
+    Existing view branches checked out using an old name will still work.
+  * sync: Avoid pushing view branches to remotes.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 Feb 2023 13:39:18 -0400
 
