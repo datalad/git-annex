@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-02-10T17:49:31Z"
+ content="""
+Unfortunately the `aws` library git-annex uses does not allow a user-agent
+to be provided. Filed an issue here: 
+<https://github.com/aristidb/aws/issues/286>
+
+What is the severity of this for you? Is there a S3 endpoint that requires
+a user-agent be sent, or would it only be nice to have?
+"""]]
