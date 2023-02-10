@@ -490,7 +490,9 @@ propigateAdjustedCommits' origbranch adj _commitsprevented =
 						, rebase currcommit newparent
 						)
 			Nothing -> return (Nothing, return ())
-		Nothing -> return (Nothing, return ())
+		Nothing -> do
+			warning $ "Cannot find basis ref " ++ fromRef basis ++ "; not propagating adjusted commits to original branch " ++ fromRef origbranch
+			return (Nothing, return ())
   where
 	(BasisBranch basis) = basisBranch adjbranch
 	adjbranch@(AdjBranch currbranch) = originalToAdjusted origbranch adj
