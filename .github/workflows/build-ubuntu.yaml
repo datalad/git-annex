@@ -170,7 +170,7 @@ jobs:
             -m "Installer artifact from build $buildno"
           git ls-remote --heads origin "build-*" | cut -f2 | cut -d/ -f3- > builds.txt
           git ls-remote --heads origin "result-*" | cut -f2 | cut -d/ -f3- > results.txt
-          for clientid in ndoli smaug
+          for clientid in ndoli smaug openmind7
           do build_branch="build-$clientid-$buildno"
              result_branch="result-$clientid-$buildno"
              if grep -Fqx "$result_branch" results.txt
