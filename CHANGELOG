@@ -11,6 +11,8 @@ git-annex (10.20230127) UNRELEASED; urgency=medium
   * sync: Avoid pushing view branches to remotes.
   * sync: When run in a view branch, refresh the view branch to reflect any
     changes that have been made to the parent branch or metadata.
+  * sync: When run in a view branch, avoid updating synced/ branches,
+    or trying to merge anything from remotes.
   * Support http urls that contain ":" that is not followed by a port
     number, the same as git does.
   * sync: Warn when the adjusted basis ref cannot be found, as happens eg when

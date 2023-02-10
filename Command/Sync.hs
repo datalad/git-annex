@@ -409,10 +409,13 @@ mergeLocal' _ _ currbranch@(Nothing, _) = inRepo Git.Branch.currentUnsafe >>= \c
 
 -- Returns the branch that should be merged, if any.
 needMerge :: CurrBranch -> Git.Branch -> Annex (Maybe Git.Branch)
-needMerge currbranch headbranch = ifM (allM id checks)
-	( return (Just syncbranch)
-	, return Nothing
-	)
+needMerge currbranch headbranch
+	| is_branchView headbranch = return Nothing
+	| otherwise = 
+		ifM (allM id checks)
+			( return (Just syncbranch)
+			, return Nothing
+			)
   where
 	syncbranch = syncBranch headbranch
 	checks = case currbranch of
@@ -463,7 +466,7 @@ updateBranches (Just branch, madj) = do
 						giveup $ "failed to update view"
 					
 	-- Update the sync branch to match the new state of the branch
-	inRepo $ updateBranch (syncBranch branch) branch
+	inRepo $ updateBranch (syncBranch branch) (fromViewBranch branch)
 
 updateBranch :: Git.Branch -> Git.Branch -> Git.Repo -> IO ()
 updateBranch syncbranch updateto g = 
@@ -582,7 +585,9 @@ mergeRemote remote currbranch mergeconfig o = ifM isBareRepo
 		(mapM (merge currbranch mergeconfig o Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
-	branchlist (Just branch) = [origBranch branch, syncBranch branch]
+	branchlist (Just branch)
+		| is_branchView branch = []
+		| otherwise = [origBranch branch, syncBranch branch]
 
 pushRemote :: SyncOptions -> Remote -> CurrBranch -> CommandStart
 pushRemote _o _remote (Nothing, _) = stop
