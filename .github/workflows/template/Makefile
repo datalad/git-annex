@@ -1,4 +1,2 @@
-CLIENTS = ../../../clients/clients.yaml
-
 workflows :
-	python3 -m pip_run -q -- mkworkflows.py specs.yml 'build-{{ostype}}.yaml.j2' $(CLIENTS) ..
+	python3 -m pip_run -q -- mkworkflows.py specs.yml 'build-{{ostype}}.yaml.j2' ..

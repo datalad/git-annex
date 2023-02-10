@@ -271,15 +271,7 @@ jobs:
             git-annex[-_]*.*
             dist/build-version
 
-    {% if clients %}
-      {% if ostype != "ubuntu" %}
-      - name: Import GPG key
-        if: github.event_name == 'schedule'
-        run: |
-          # private key for signing - comes from secrets
-          echo '${{ secrets.datalad_builder_gpgkey }}' | gpg --import
-
-      {% endif %}
+    {% if ostype == "ubuntu" %}
       - name: Clone datalad/git-annex-ci-client-jobs
         if: github.event_name == 'schedule'
         uses: actions/checkout@v3
@@ -303,7 +295,7 @@ jobs:
             -m "Installer artifact from build $buildno"
           git ls-remote --heads origin "build-*" | cut -f2 | cut -d/ -f3- > builds.txt
           git ls-remote --heads origin "result-*" | cut -f2 | cut -d/ -f3- > results.txt
-          for clientid in {{clients|join(" ")}}
+          yq -r "keys | .[]" ../clients/clients.yaml | while read clientid
           do build_branch="build-$clientid-$buildno"
              result_branch="result-$clientid-$buildno"
              if grep -Fqx "$result_branch" results.txt
