@@ -34,7 +34,8 @@ Setting up a New Client
 -----------------------
 
 - Determine a unique ID for the client.  Client IDs should consist of only
-  ASCII letters, numbers, underscores, and/or hyphens.
+  ASCII letters, numbers, underscores, and/or hyphens. E.g. could simply correspond
+  to output of `hostname` command.
 
 - Add an entry to `clients.yaml` for the client containing one or more tests
   (See "`clients.yaml` Format" below)
@@ -50,12 +51,20 @@ Setting up a New Client
     - Configure a name & e-mail in Git
 
     - Clone this repository.  Passing `--single-branch` is recommended so as
-      not to include the mirror of git-annex's repository.
+      not to include the mirror of git-annex's repository. E.g.,
+
+            git clone --single-branch http://github.com/datalad/git-annex ~/git-annex-ci/git-annex
 
     - Import `.github/workflows/tools/datalad-builder-key.asc` into GPG
 
+            cd ~/git-annex-ci/git-annex
+            gpg --import < .github/workflows/tools/datalad-builder-key.asc
+
     - Create a Python virtual environment in this directory in the clone and
-      install the packages listed in `requirements.txt` in it
+      install the packages listed in `requirements.txt` in it, e.g.
+
+            cd ~/git-annex-ci/git-annex/clients
+            python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt
 
         - Alternatively, create a conda environment named "`testannex`" using
           the `environment.yml` file in this directory
@@ -66,7 +75,9 @@ Setting up a New Client
 
       where `CLIENTID` is replaced by the ID of the client and
       `/path/to/job/dir` is replaced by the path to the location at which to
-      clone the jobs repository.
+      clone the jobs repository, e.g.
+
+            0 * * * * cd ~/git-annex-ci/git-annex/clients && chronic flock -n -E 0 .lock venv/bin/python testannex.py `hostname` ~/git-annex-ci/jobs
 
         - Alternatively, if using Conda:
 
