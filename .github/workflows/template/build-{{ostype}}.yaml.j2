@@ -355,7 +355,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Send e-mail on failed scheduled run
+      - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
         uses: dawidd6/action-send-mail@v3
         with:
@@ -365,7 +365,7 @@ jobs:
           password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
           from: GitHub Actions Notifications
           to: ${{ secrets.NOTIFY_RECIPIENT }}
-          subject: '[${{ github.repository }}] Scheduled build on {{osname}} failed!'
+          subject: '[${{ github.repository }}] Build on {{osname}} failed!'
           body: |
             A build (via ${{ github.event_name }}) of git-annex for {{osname}} failed!
 
@@ -518,7 +518,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Send e-mail on failed scheduled run
+      - name: Send e-mail on failed run
         if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
         uses: dawidd6/action-send-mail@v3
         with:
@@ -528,7 +528,7 @@ jobs:
           password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
           from: GitHub Actions Notifications
           to: ${{ secrets.NOTIFY_RECIPIENT }}
-          subject: '[${{ github.repository }}] Scheduled tests of {{osname}} build failed!'
+          subject: '[${{ github.repository }}] Tests of {{osname}} build failed!'
           body: |
           {% if test_annex_flavors %}
             The tests for a build (via ${{ github.event_name }}) of git-annex for {{osname}} (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
