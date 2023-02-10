@@ -1,6 +1,6 @@
 {- Url downloading.
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -215,7 +215,7 @@ getUrlInfo url uo = case parseURIRelaxed url of
 	Nothing -> return (Right dne)
    where
 	go :: URI -> IO (Either String UrlInfo)
-	go u = case (urlDownloader uo, parseRequest (show u)) of
+	go u = case (urlDownloader uo, parseRequestRelaxed u) of
 		(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) ->
 			existsconduit r req
 		(DownloadWithConduit (DownloadWithCurlRestricted r), Nothing)
@@ -373,7 +373,7 @@ download' nocurlerror meterupdate iv url file uo =
   where
 	go = case parseURIRelaxed url of
 		Just u -> checkPolicy uo u $
-			case (urlDownloader uo, parseRequest (show u)) of
+			case (urlDownloader uo, parseRequestRelaxed u) of
 				(DownloadWithConduit (DownloadWithCurlRestricted r), Just req) -> catchJust
 					(matchStatusCodeException (== found302))
 					(downloadConduit meterupdate iv req file uo >> return (Right ()))
@@ -598,7 +598,7 @@ downloadPartial url uo n = case parseURIRelaxed url of
 	Nothing -> return Nothing
 	Just u -> go u `catchNonAsync` const (return Nothing)
   where
-	go u = case parseRequest (show u) of
+	go u = case parseRequestRelaxed u of
 		Nothing -> return Nothing
 		Just req -> do
 			let req' = applyRequest uo req
@@ -612,6 +612,19 @@ downloadPartial url uo n = case parseURIRelaxed url of
 parseURIRelaxed :: URLString -> Maybe URI
 parseURIRelaxed s = maybe (parseURIRelaxed' s) Just $
 	parseURI $ escapeURIString isAllowedInURI s
+
+{- Generate a http-conduit Request for an URI. This is able
+ - to deal with some urls that parseRequest would usually reject. 
+ -}
+parseRequestRelaxed :: MonadThrow m => URI -> m Request
+parseRequestRelaxed u = case uriAuthority u of
+	Just ua
+		-- parseURI can handle an empty port value, but
+		-- parseRequest cannot. So remove the ':' to
+		-- make it work.
+		| uriPort ua == ":" -> parseRequest $ show $
+			u { uriAuthority = Just $ ua { uriPort = "" } }
+	_ -> parseRequest (show u)
 
 {- Some characters like '[' are allowed in eg, the address of
  - an uri, but cannot appear unescaped further along in the uri.
@@ -686,6 +699,9 @@ curlRestrictedParams r u defport ps = case uriAuthority u of
 	Nothing -> giveup "malformed url"
 	Just uath -> case uriPort uath of
 		"" -> go (uriRegName uath) defport
+		-- ignore an empty port, same as
+		-- parseRequestRelaxed does.
+		":" -> go (uriRegName uath) defport
 		-- strict parser because the port we provide to curl
 		-- needs to match the port in the url
 		(':':s) -> case readMaybe s :: Maybe Int of

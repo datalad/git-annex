@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-02-10T17:04:51Z"
+ content="""
+Not a legal url really, RFC 1738 says "If the port is omitted, the colon is as well."
+But web browsers, curl, wget, etc do mostly seem to support it, so at least 
+Postel's law seems to apply..
+
+Here's the root cause of it failing:
+
+	ghci> parseRequest "https://datasets.datalad.org:/dbic/QA/.git/"
+	*** Exception: InvalidUrlException "https://datasets.datalad.org:/dbic/QA/.git/" "Invalid port"
+
+So http-conduit refuses to parse it and so can't be used to download it.
+
+Filed an issue, but I don't know if they'll want to change
+http-conduit to accept a malformed url.
+<https://github.com/snoyberg/http-client/issues/501>
+
+Since network-uri is able to parse it, into an URI
+that has `"uriPort = ":"`, git-annex could special 
+case handling of the empty port there, changing it to ""
+and so generating an url that http-conduit can parse.
+I've implemented this fix.
+"""]]
