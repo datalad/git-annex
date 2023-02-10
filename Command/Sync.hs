@@ -897,9 +897,14 @@ syncFile ebloom rs af k = do
 	ai = mkActionItem (k, af)
 	si = SeekInput []
 
-{- When a remote has an annex-tracking-branch configuration, change the export
- - to contain the current content of the branch. Otherwise, transfer any files
- - that were part of an export but are not in the remote yet.
+{- When a remote has an annex-tracking-branch configuration, and that branch
+ - is currently checked out, change the export to contain the current content
+ - of the branch. (If the branch is not currently checked out, anything
+ - imported from the remote will not yet have been merged into it yet and
+ - so exporting would delete files from the remote unexpectedly.)
+ -
+ - Otherwise, transfer any files that were part of a previous export
+ - but are not in the remote yet.
  - 
  - Returns True if any file transfers were made.
  -}
@@ -914,20 +919,26 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 			Export.closeDb
 			(\db -> Export.writeLockDbWhile db (go' r db))
 	go' r db = case remoteAnnexTrackingBranch (Remote.gitconfig r) of
-		Nothing -> cannotupdateexport r db Nothing
+		Nothing -> cannotupdateexport r db Nothing True
 		Just b -> do
 			mtree <- inRepo $ Git.Ref.tree b
+			mcurrtree <- maybe (pure Nothing)
+				(inRepo . Git.Ref.tree)
+				currbranch
 			mtbcommitsha <- Command.Export.getExportCommit r b
-			case (mtree, mtbcommitsha) of
-				(Just tree, Just _) -> do
-					filteredtree <- Command.Export.filterExport r tree
-					Command.Export.changeExport r db filteredtree
-					Command.Export.fillExport r db filteredtree mtbcommitsha
-				_ -> cannotupdateexport r db (Just b)
+			case (mtree, mcurrtree, mtbcommitsha) of
+				(Just tree, Just currtree, Just _)
+					| tree == currtree -> do
+						filteredtree <- Command.Export.filterExport r tree
+						Command.Export.changeExport r db filteredtree
+						Command.Export.fillExport r db filteredtree mtbcommitsha
+					| otherwise -> cannotupdateexport r db (Just b) False
+				_ -> cannotupdateexport r db (Just b) True
 	
-	cannotupdateexport r db mtb = do
+	cannotupdateexport r db mtb showwarning = do
 		exported <- getExport (Remote.uuid r)
-		maybe noop (warncannotupdateexport r mtb exported) currbranch
+		when showwarning $
+			maybe noop (warncannotupdateexport r mtb exported) currbranch
 		fillexistingexport r db (exportedTreeishes exported) Nothing
 	
 	warncannotupdateexport r mtb exported currb = case mtb of

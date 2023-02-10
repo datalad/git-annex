@@ -1,5 +1,8 @@
 git-annex (10.20230127) UNRELEASED; urgency=medium
 
+  * sync: Fix a bug that caused files to be removed from an 
+    importtree=yes exporttree=yes special remote when the remote's
+    annex-tracking-branch was not the currently checked out branch.
   * S3: Support a region= configuration useful for some non-Amazon S3
     implementations. This feature needs git-annex to be built with aws-0.24.
   * view: New field?=glob and ?tag syntax that includes a directory "_"
