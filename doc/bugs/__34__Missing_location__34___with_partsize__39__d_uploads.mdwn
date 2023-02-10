@@ -1,0 +1,29 @@
+### Please describe the problem.
+
+On my Garage/S3 remote, if I configure `partsize=100Mib`, any uploads which are larger than this partsize return:
+
+```
+copy testlargefile (to garage...)
+
+  XmlException {xmlErrorMessage = "Missing Location"}
+
+
+  XmlException {xmlErrorMessage = "Missing Location"}
+failed
+```
+
+The file here is at 124MiB - I can then immediately reattempt the copy command and get:
+
+```
+copy testlargefile ok
+```
+
+Any files below 100MiB report no errors and if I configure no partsize - there are no errors either.
+
+### What version of git-annex are you using? On what operating system?
+
+master on Fedora Silverblue.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+All wonderful otherwise.
