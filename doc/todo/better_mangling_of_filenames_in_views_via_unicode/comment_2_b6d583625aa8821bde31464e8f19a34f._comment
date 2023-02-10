@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-02-10T18:34:36Z"
+ content="""
+Hardly the only place ecryptfs's filename length limits have caused
+problems to git-annex users. SHA256, for example is generally too long for
+it.
+
+It seems to me that the only other thing git-annex could do re mangling
+filenames in views is to append a SHA1 of the path to the filename. 
+Or perhaps when there is a "foo", use the name "foo.2" for the second foo.
+That would also guarantee it's unique, but it seems strictly worse than the
+current behavior of using the path for that. It prevents the user
+from telling which of two "foo" files is which. (Also it would need a
+lookup table to be maintained.)
+
+I think it's ok if a feature can't be used on a filesystem that is too
+limited to support it.
+"""]]
