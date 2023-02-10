@@ -29,3 +29,5 @@ git-annex version: 5.20141024~bpo70+1
 on debian wheezy with backports
 
 ### Please provide any additional information below.
+
+> [[fixed|done]] --[[Joey]]
