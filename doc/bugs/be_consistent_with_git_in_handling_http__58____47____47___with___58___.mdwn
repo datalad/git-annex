@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+I have not checked if it is legit to have an "empty" port number in the (http) URL but I see that `git` itself handles it fine, but git-annex is not happy:
+
+```
+❯ git clone https://datasets.datalad.org:/dbic/QA/.git/
+Cloning into 'QA'...
+warning: redirecting to https://datasets.datalad.org/dbic/QA/.git/
+remote: Enumerating objects: 61661, done.
+remote: Counting objects: 100% (61661/61661), done.
+remote: Compressing objects: 100% (23181/23181), done.
+remote: Total 61661 (delta 31300), reused 56651 (delta 26299)
+Receiving objects: 100% (61661/61661), 33.27 MiB | 25.03 MiB/s, done.
+Resolving deltas: 100% (31300/31300), done.
+
+❯ git annex get sub-emmet/ses-20180508/anat/sub-emmet_ses-20180508_acq-MPRAGE_T1w.nii.gz
+
+  Remote origin not usable by git-annex; setting annex-ignore
+
+  https://datasets.datalad.org:/dbic/QA/.git//config download failed: Unsupported url scheme https://datasets.datalad.org:/dbic/QA/.git//config
+get sub-emmet/ses-20180508/anat/sub-emmet_ses-20180508_acq-MPRAGE_T1w.nii.gz (from datasets.datalad.org...) 
+(scanning for annexed files...)   
+ok
+(recording state in git...)
+```
+
+so it got the file only after enabling type=git special remote for the same location but with correct URL.
+
+I think it would be nice if git-annex was as robust as git in such cases to avoid "late surprise".
+
+Backstory: Happened to a user trying to access some NWB files on gin for DANDI project, here I used different/simpler/faster URL
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
