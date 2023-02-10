@@ -1,0 +1,22 @@
+### Please describe the problem.
+
+After adding a new SSH remote with the assistant on Windows, git-annex can't connect the remote.
+
+### What steps will reproduce the problem?
+
+1. On Windows, add a new "Remote server" repository in the webapp.
+2. Use password authentication. The pairing will succeed initially but it will be added as a "metadata only" remote because SSH connections using the new key pair fail.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 10.20221213-gac824ff96
+
+Installed with the scoop package on Windows.
+
+### Please provide any additional information below.
+
+The problem seems to be that the private key is written with CRLF line endings. I can manually SSH to the remote (using git-annex's key) with the system-installed `ssh`, but Git for Windows rejects the key as invalid until it's converted to LF line endings.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes! I've been using git-annex from the command line to manage my music library for years. Now I'm in the middle of replacing my Syncthing usage with git-annex assistant.
