@@ -1,5 +1,9 @@
 [Homebrew](http://brew.sh/) has [a formula](https://formulae.brew.sh/formula/git-annex) for git-annex.
 
+Warning: Homebew enables telemetry by default, which is not a good practice.
+If you are surprised by it doing this, see [here](https://docs.brew.sh/Analytics)
+and you may want to run `brew analytics off`.
+
 Homebrew users can simply run `brew install git-annex` to install git-annex.
 
 ## buiding git-annex from sources
