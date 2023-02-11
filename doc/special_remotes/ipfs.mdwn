@@ -1,8 +1,12 @@
 This special remote stores file contents in [ipfs](http://ipfs.io/).
 
+Warning: ipfs is written in Go, a language controlled by Google, which
+collects user's data with its compiler. If installing ipfs from source
+you should consider investigating how to disable Go's data collection.
+Or install precompiled ipfs from a software distributor you trust.
+
 ## prerequisites
 
-* git-annex version 5.20150305 or newer.
 * Install [[external/git-annex-remote-ipfs]] somewhere in PATH
   and `chmod +x` the script.
 * Install [go-ipfs](https://github.com/jbenet/go-ipfs) somewhere in PATH.
