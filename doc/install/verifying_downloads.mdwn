@@ -1,6 +1,6 @@
-When you download a git-annex package from downloads.kitenet.net,
-as listed in [[install]], you should use a https connection. That provides
-some security, but here's some more.
+When you download a git-annex package from downloads.kitenet.net, as listed
+in a page under [[install]], you should use a https connection. That
+provides some security, but here's some more.
 
 The downloaded package's integrity can be verified by checking that
 it was signed using the right GPG key, specifically the git-annex

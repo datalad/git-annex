@@ -18,6 +18,11 @@ An autobuild is also available, thanks to the Datalad project.
 * Windows 10 [download](https://downloads.kitenet.net/git-annex/autobuild/windows/git-annex-installer.exe)
   ([build logs](https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+Windows%22))
 
+## download security
+
+All the download links above use https for security. For added security, see
+[[verifying_downloads]].
+
 ## building it yourself
 
 To build git-annex from source on Windows, you need to install

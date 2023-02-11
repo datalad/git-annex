@@ -23,6 +23,11 @@ An autobuild is also available, thanks to the Datalad project.
 * [git-annex.dmg](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-catalina/git-annex.dmg)
   ([build logs](https://github.com/datalad/git-annex/actions/workflows/build-macos.yaml?query=Build+git-annex+on+macOS))
 
+## download security
+
+All the download links above use https for security. For added security, see
+[[verifying_downloads]].
+
 ## using Homebrew
 
 git-annex is [[available in Homebrew|Homebrew]].

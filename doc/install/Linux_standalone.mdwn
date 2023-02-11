@@ -36,14 +36,16 @@ An hourly autobuild is also available, hosted by [[Joey]]:
 * x86-32: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
 * x86-64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
 * x86-32, for ancient kernels: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/git-annex-standalone-i386-ancient.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386-ancient/))
+* arm64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-arm64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/arm64/))
 
 The arm autobuilder runs daily (sun permitting), and is hosted by [[Joey]].
 
 * arm: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/armel/))
 
-The arm64 autobuilder runs only intermittently. Better hosting needed.
+## download security
 
-* arm64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-arm64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/arm64/))
+All the download links above use https for security. For added security, see
+[[verifying_downloads]].
 
 ## building it yourself
 
