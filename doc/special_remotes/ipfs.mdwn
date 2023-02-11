@@ -1,10 +1,5 @@
 This special remote stores file contents in [ipfs](http://ipfs.io/).
 
-Warning: As this page is being written, ipfs is still considered alpha
-quality code, not suitable for production use. Still, it's fun to play
-with, has some nice features and great potential, and git-annex can
-keep your data safe while you're using ipfs.
-
 ## prerequisites
 
 * git-annex version 5.20150305 or newer.
