@@ -1,0 +1,19 @@
+I'm having a major problem with one of my important annexes.
+
+I'm mounting my "centralized" remote via sshfs. The remote is bare format.
+
+I have tried removing it and adding it, making sure not to have a trailing / just in case. So:
+
+git remote add mybare <pathto>/centralized-bare.git
+
+But no matter what I do, I can't get annex to stop appending "/.git" to the path. So that I see something like this:
+
+$ git annex info
+fatal: not a git repository: '../../../../mnt/sshfs/centralized-bare.git/.git'
+
+  First run: git-annex init
+trusted repositories: 0
+
+It's rendering it invisible and breaking using the centralized remote as that important fulcrum.
+
+Any ideas?
