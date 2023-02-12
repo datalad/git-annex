@@ -1,0 +1,7 @@
+I'd love to use git annex for my document archive, but my use case necessitates the archive to be stored encrypted while at rest. It also needs to be easily stored on a number of cloud storage providers.
+
+I usually use Cryptomator and gocryptfs - amongst others - to do this.
+
+I'd like to use git annex within one of those vaults, but it seems they are not compatible. With gocryptfs it shows me that the files `changed while being added` if I try to do a `git annex add .` on the folder. 
+
+Is this an issue caused by some fundamental architectural incompatibility between git annex and these kinds of encryption tools or is there something I can do?  
