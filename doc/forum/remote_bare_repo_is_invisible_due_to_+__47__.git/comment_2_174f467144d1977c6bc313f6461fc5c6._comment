@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="sb-beryllium@6e2c477eac63b823bd315ef8aaf5f93173c1f15b"
+ nickname="sb-beryllium"
+ avatar="http://cdn.libravatar.org/avatar/ef62105380b73ef91d760ec327c14e22"
+ subject="comment 2"
+ date="2023-02-13T00:46:46Z"
+ content="""
+Apologies... I just realised that perhaps I shouldn't have had such confidence in the version of git-annex I'm running.
+
+On the system I'm experiencing the issue, I'm running 8.20200226-1. I had assumed that the release of Linux I was running had a a more up-to-date version.
+
+I'm performing some upgrades, and expecting that the later version of git-annex works better. Will comment post all this.
+"""]]
