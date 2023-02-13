@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Have a look at mount options"
+ date="2023-02-13T08:32:24Z"
+ content="""
+I don't know gocryptfs but on the man page there is the `-ko` option for additional mount options. Maybe try things like `noatime` and the like? Or other options to gocryptfs? I had to massage a Samba mount quote a bit to be workable with git annex.
+"""]]
