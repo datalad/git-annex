@@ -15,12 +15,14 @@ import Types.View
 import Types.MetaData
 import Annex.MetaData
 import qualified Annex
+import qualified Annex.Branch
 import qualified Git
 import qualified Git.DiffTree as DiffTree
 import qualified Git.Branch
 import qualified Git.LsFiles
 import qualified Git.LsTree
 import qualified Git.Ref
+import Git.CatFile
 import Git.UpdateIndex
 import Git.Sha
 import Git.Types
@@ -29,6 +31,8 @@ import Annex.WorkTree
 import Annex.GitOverlay
 import Annex.Link
 import Annex.CatFile
+import Annex.Concurrent
+import Logs
 import Logs.MetaData
 import Logs.View
 import Utility.Glob
@@ -41,6 +45,7 @@ import qualified Data.ByteString as B
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified System.FilePath.ByteString as P
+import Control.Concurrent.Async
 import "mtl" Control.Monad.Writer
 
 {- Each visible ViewFilter in a view results in another level of
@@ -435,9 +440,10 @@ applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepoDetails [] [top]
 	applyView'' mkviewedfile getfilemetadata view l clean $ 
-		\go (f, sha, mode) -> do
+		\(f, sha, mode) -> do
 			topf <- inRepo (toTopFilePath f)
-			go topf sha (toTreeItemType mode) =<< lookupKey f
+			k <- lookupKey f
+			return (topf, sha, toTreeItemType mode, k)
 	genViewBranch view
 
 applyView''
@@ -446,29 +452,58 @@ applyView''
 	-> View
 	-> [t]
 	-> IO Bool
-	-> ((TopFilePath -> Sha -> Maybe TreeItemType -> Maybe Key -> Annex ()) -> t -> Annex ())
+	-> (t -> Annex (TopFilePath, Sha, Maybe TreeItemType, Maybe Key))
 	-> Annex ()
-applyView'' mkviewedfile getfilemetadata view l clean a = do
+applyView'' mkviewedfile getfilemetadata view l clean conv = do
 	viewg <- withNewViewIndex gitRepo
 	withUpdateIndex viewg $ \uh -> do
-		forM_ l $ a (go uh)
-		liftIO $ void clean
+		g <- Annex.gitRepo
+		gc <- Annex.getGitConfig
+		-- Streaming the metadata like this is an optimisation.
+		catObjectStream g $ \mdfeeder mdcloser mdreader -> do
+			tid <- liftIO . async =<< forkState
+				(getmetadata gc mdfeeder mdcloser l)
+			process uh mdreader
+			join (liftIO (wait tid))
+			liftIO $ void clean
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
 
-	go uh topf _sha _mode (Just k) = do
-		metadata <- getCurrentMetaData k
-		let f = fromRawFilePath $ getTopFilePath topf
-		let metadata' = getfilemetadata f `unionMetaData` metadata
-		forM_ (genviewedfiles f metadata') $ \fv -> do
-			f' <- fromRepo (fromTopFilePath $ asTopFilePath $ toRawFilePath fv)
-			stagesymlink uh f' =<< calcRepo (gitAnnexLink f' k)
-	go uh topf sha (Just treeitemtype) Nothing
-		| "." `B.isPrefixOf` getTopFilePath topf =
+	getmetadata _ _ mdcloser [] = liftIO mdcloser
+	getmetadata gc mdfeeder mdcloser (t:ts) = do
+		v@(topf, _sha, _treeitemtype, mkey) <- conv t
+		let feed mdlogf = liftIO $ mdfeeder
+			(v, Git.Ref.branchFileRef Annex.Branch.fullname mdlogf)
+		case mkey of
+			Just key -> feed (metaDataLogFile gc key)
+			Nothing
+				-- Handle toplevel dotfiles that are not
+				-- annexed files by feeding through a query
+				-- for dummy metadata. Calling
+				-- Git.UpdateIndex.streamUpdateIndex'
+				-- here would race with process's calls
+				-- to it.
+				| "." `B.isPrefixOf` getTopFilePath topf ->
+					feed "dummy"
+				| otherwise -> noop
+		getmetadata gc mdfeeder mdcloser ts
+
+	process uh mdreader = liftIO mdreader >>= \case
+		Just ((topf, _, _, Just k), Just mdlog) -> do
+			let metadata = parseCurrentMetaData mdlog
+			let f = fromRawFilePath $ getTopFilePath topf
+			let metadata' = getfilemetadata f `unionMetaData` metadata
+			forM_ (genviewedfiles f metadata') $ \fv -> do
+				f' <- fromRepo (fromTopFilePath $ asTopFilePath $ toRawFilePath fv)
+				stagesymlink uh f' =<< calcRepo (gitAnnexLink f' k)
+			process uh mdreader
+		Just ((topf, sha, Just treeitemtype, Nothing), _) -> do
 			liftIO $ Git.UpdateIndex.streamUpdateIndex' uh $
 				pureStreamer $ updateIndexLine sha treeitemtype topf
-	go _ _ _ _  _ = noop
-
+			process uh mdreader
+		Just _ -> process uh mdreader
+		Nothing -> return ()
+	
 	stagesymlink uh f linktarget = do
 		sha <- hashSymlink linktarget
 		liftIO . Git.UpdateIndex.streamUpdateIndex' uh
@@ -490,17 +525,18 @@ updateView view = do
 		(Git.LsTree.LsTreeLong True)
 		(viewParentBranch view)
 	applyView'' viewedFileFromReference getWorkTreeMetaData view l clean $
-		\go ti -> do
+		\ti -> do
 			let ref = Git.Ref.branchFileRef (viewParentBranch view)
 				(getTopFilePath (Git.LsTree.file ti))
 			k <- case Git.LsTree.size ti of
 				Nothing -> catKey ref
 				Just sz -> catKey' ref sz
-			go
-				(Git.LsTree.file ti)
-				(Git.LsTree.sha ti)
-				(toTreeItemType (Git.LsTree.mode ti))
-				k
+			return
+				( (Git.LsTree.file ti)
+				, (Git.LsTree.sha ti)
+				, (toTreeItemType (Git.LsTree.mode ti))
+				, k
+				)
 	oldcommit <- inRepo $ Git.Ref.sha (branchView view)
 	oldtree <- maybe (pure Nothing) (inRepo . Git.Ref.tree) oldcommit
 	newtree <- withViewIndex $ inRepo Git.Branch.writeTree

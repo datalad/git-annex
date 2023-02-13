@@ -18,3 +18,6 @@ It may also be that just improving the precaching of metadata logs
 would improve the speed a lot. The streaming precaching of location logs
 sped up some commands around 2x before IIRC.
 
+> catObjectStream of metadata logs sped view constriction up by ~50%.
+> More streaming should speed it up more; it still uses
+> lookupKey/catKey once per file. --[[Joey]]
