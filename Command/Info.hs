@@ -165,28 +165,24 @@ autoenableInfo = showCustom "info" (SeekInput []) $ do
 itemInfo :: InfoOptions -> (SeekInput, String) -> Annex ()
 itemInfo o (si, p) = ifM (isdir p)
 	( dirInfo o p si
-	, do
-		v <- Remote.byName' p
-		case v of
-			Right r -> remoteInfo o r si
-			Left _ -> do
-				v' <- Remote.nameToUUID' p
-				case v' of
-					Right u -> uuidInfo o u si
-					Left _ -> do
-						relp <- liftIO $ relPathCwdToFile (toRawFilePath p)
-						lookupKey relp >>= \case
-							Just k -> fileInfo o (fromRawFilePath relp) si k
-							Nothing -> treeishInfo o p si
+	, Remote.byName' p >>= \case
+		Right r -> remoteInfo o r si
+		Left _ -> Remote.nameToUUID' p >>= \case
+			([], _) -> do
+				relp <- liftIO $ relPathCwdToFile (toRawFilePath p)
+				lookupKey relp >>= \case
+					Just k -> fileInfo o (fromRawFilePath relp) si k
+					Nothing -> treeishInfo o p si
+			([u], _) -> uuidInfo o u si
+			(_us, msg) -> noInfo p si msg
 	)
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
 
-noInfo :: String -> SeekInput -> Annex ()
-noInfo s si = do
+noInfo :: String -> SeekInput -> String -> Annex ()
+noInfo s si msg = do
 	showStart "info" (encodeBS s) si
-	showNote $ "not a directory or an annexed file or a treeish or a remote or a uuid"
-	showEndFail
+	giveup msg
 
 dirInfo :: InfoOptions -> FilePath -> SeekInput -> Annex ()
 dirInfo o dir si = showCustom (unwords ["info", dir]) si $ do
@@ -203,6 +199,7 @@ treeishInfo o t si = do
 	mi <- getTreeStatInfo o (Git.Ref (encodeBS t))
 	case mi of
 		Nothing -> noInfo t si
+			"not a directory or an annexed file or a treeish or a remote or a uuid"
 		Just i -> showCustom (unwords ["info", t]) si $ do
 			stats <- selStats 
 				(tostats (tree_name:tree_fast_stats False)) 

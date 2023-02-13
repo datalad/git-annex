@@ -35,12 +35,12 @@ start ps@(oldname:newname:[]) = Annex.SpecialRemote.findExisting oldname >>= \ca
 	-- as a fallback when there is nothing with the name in the
 	-- special remote log.
 	[] -> Remote.nameToUUID' oldname >>= \case
-		Left e -> giveup e
-		Right u -> do
+		([u], _) -> do
 			m <- Logs.Remote.remoteConfigMap
 			case M.lookup u m of
 				Nothing -> giveup "That is not a special remote."
 				Just cfg -> go u cfg Nothing
+		(_, msg) -> giveup msg
 	_ -> giveup $ "There are multiple special remotes named " ++ oldname ++ ". Provide instead the uuid or description of the remote to rename."
   where
 	ai = ActionItemOther Nothing

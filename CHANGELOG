@@ -21,6 +21,9 @@ git-annex (10.20230127) UNRELEASED; urgency=medium
   * sync: Warn when the adjusted basis ref cannot be found, as happens eg when
     the user has renamed branches.
   * Sped up view branch construction by 50%.
+  * info, enableremotemote, renameremote: Avoid a confusing message when more
+    than one repository matches the user provided name.
+  * info: Exit nonzero when the input is not supported.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 Feb 2023 13:39:18 -0400
 

@@ -79,10 +79,10 @@ startSpecialRemote name config [] = do
 	m <- SpecialRemote.specialRemoteMap
 	confm <- Logs.Remote.remoteConfigMap
 	Remote.nameToUUID' name >>= \case
-		Right u | u `M.member` m ->
+		([u], _) | u `M.member` m ->
 			startSpecialRemote name config $
 				[(u, fromMaybe M.empty (M.lookup u confm), Nothing)]
-		_ -> unknownNameError "Unknown remote name."
+		(_, msg) -> unknownNameError msg
 startSpecialRemote name config ((u, c, mcu):[]) =
 	starting "enableremote" ai si $ do
 		let fullconfig = config `M.union` c	

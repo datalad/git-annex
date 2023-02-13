@@ -173,26 +173,33 @@ noRemoteUUIDMsg r = "cannot determine uuid for " ++ name r ++ " (perhaps you nee
  - and returns its UUID. Finds even repositories that are not
  - configured in .git/config. -}
 nameToUUID :: RemoteName -> Annex UUID
-nameToUUID = either giveup return <=< nameToUUID'
+nameToUUID n = nameToUUID' n >>= \case
+	([u], _) -> return u
+	(_, msg) -> giveup msg
 
-nameToUUID' :: RemoteName -> Annex (Either String UUID)
-nameToUUID' "." = Right <$> getUUID -- special case for current repo
-nameToUUID' "here" = Right <$> getUUID
-nameToUUID' n = byName' n >>= go
+nameToUUID' :: RemoteName -> Annex ([UUID], String)
+nameToUUID' n
+	| n == "." = currentrepo
+	| n == "here" = currentrepo
+	| otherwise = byName' n >>= go
   where
+	currentrepo = mkone <$> getUUID
+
 	go (Right r) = return $ case uuid r of
-		NoUUID -> Left $ noRemoteUUIDMsg r
-		u -> Right u
+		NoUUID -> ([], noRemoteUUIDMsg r)
+		u -> mkone u
 	go (Left e) = do
 		m <- uuidDescMap
 		let descn = UUIDDesc (encodeBS n)
 		return $ case M.keys (M.filter (== descn) m) of
-			[u] -> Right u
-			[] -> let u = toUUID n
+			[] -> 
+				let u = toUUID n
 				in case M.keys (M.filterWithKey (\k _ -> k == u) m) of
-					[] -> Left e
-					_ -> Right u
-			_us -> Left "Found multiple repositories with that description"
+					[] -> ([], e)
+					_ -> ([u], e)
+			us -> (us, "found multiple repositories with that description (use the uuid instead to disambiguate)")
+
+	mkone u = ([u], "found a remote")
 
 {- Pretty-prints a list of UUIDs of remotes, with their descriptions,
  - for human display.
