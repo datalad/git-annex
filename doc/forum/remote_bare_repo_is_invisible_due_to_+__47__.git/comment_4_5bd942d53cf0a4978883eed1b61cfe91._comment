@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="sb-beryllium@6e2c477eac63b823bd315ef8aaf5f93173c1f15b"
+ nickname="sb-beryllium"
+ avatar="http://cdn.libravatar.org/avatar/ef62105380b73ef91d760ec327c14e22"
+ subject="Resolved"
+ date="2023-02-13T22:46:47Z"
+ content="""
+After learning rudimentary Haskell, compiling and tracing git-annex, I stumbled on the root cause. And thankfully, it's not in git-annex.
+
+It appears that at some point git introduced the notion of validation of the \"safety\" of git directories.
+
+I first validated what I was seeing from an strace. That chdir() to the remote, and running git config --null --list was returning only the global config, and not the local config with core.bare set to true.
+
+In confusion, thankfully my thoughts turned to git remote as a command that lived exclusively in \"git config\" space, and ran git remote show. When I did, I encountered a \"googleable\" error message:
+
+    fatal: detected dubious ownership in repository at '/mnt/sshfs/centralized-bare.git'
+    To add an exception for this directory, call:
+    
+            git config --global --add safe.directory /mnt/sshfs/centralized-bare.git
+
+And I was off to the races again.
+
+It is a shame that the git config command itself doesn't throw that same error. The silent continuation in this case, was quite fatal to operations.
+
+"""]]
