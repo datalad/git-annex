@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-02-14T16:19:33Z"
+ content="""
+Hmm, git-annex dealt with this change to git back in version 10.20220525.
+
+But, it seems it didn't deal with this specific case of a bare repo used as
+a remote. Opened a bug: [[bugs/bare_remote_safe_directory]]
+"""]]
