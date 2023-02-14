@@ -304,7 +304,7 @@ tryGitConfigRead autoinit r hasuuid
 			Right r' -> do
 				-- Cache when http remote is not bare for
 				-- optimisation.
-				unless (fromMaybe False $ Git.Config.isBare r') $
+				unless (Git.Config.isBare r') $
 					setremote setRemoteBare False
 				return r'
 			Left err -> do

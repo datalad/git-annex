@@ -133,28 +133,14 @@ store' k v repo = repo
  - based on the core.bare and core.worktree settings.
  -}
 updateLocation :: Repo -> IO Repo
-updateLocation r@(Repo { location = LocalUnknown d }) = case isBare r of
-	Just True -> ifM (doesDirectoryExist (fromRawFilePath dotgit))
-		( updateLocation' r $ Local dotgit Nothing
-		, updateLocation' r $ Local d Nothing
-		)
-	Just False -> mknonbare
-	{- core.bare not in config, probably because safe.directory
-	 - did not allow reading the config -}
-	Nothing -> ifM (Git.Construct.isBareRepo (fromRawFilePath d))
-		( mkbare
-		, mknonbare
-		)
+updateLocation r@(Repo { location = LocalUnknown d })
+	| isBare r = ifM (doesDirectoryExist (fromRawFilePath dotgit))
+			( updateLocation' r $ Local dotgit Nothing
+			, updateLocation' r $ Local d Nothing
+			)
+	| otherwise = updateLocation' r $ Local dotgit (Just d)
   where
 	dotgit = d P.</> ".git"
-	-- git treats eg ~/foo as a bare git repository located in
-	-- ~/foo/.git if ~/foo/.git/config has core.bare=true
-	mkbare = ifM (doesDirectoryExist (fromRawFilePath dotgit))
-		( updateLocation' r $ Local dotgit Nothing
-		, updateLocation' r $ Local d Nothing
-		)
-	mknonbare = updateLocation' r $ Local dotgit (Just d)
-
 updateLocation r@(Repo { location = l@(Local {}) }) = updateLocation' r l
 updateLocation r = return r
 
@@ -226,9 +212,8 @@ boolConfig' :: Bool -> S.ByteString
 boolConfig' True = "true"
 boolConfig' False = "false"
 
-{- Note that repoIsLocalBare is often better to use than this. -}
-isBare :: Repo -> Maybe Bool
-isBare r = isTrueFalse' =<< getMaybe coreBare r
+isBare :: Repo -> Bool
+isBare r = fromMaybe False $ isTrueFalse' =<< getMaybe coreBare r
 
 coreBare :: ConfigKey
 coreBare = "core.bare"
