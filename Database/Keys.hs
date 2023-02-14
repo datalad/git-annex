@@ -52,7 +52,7 @@ import Git.Sha
 import Git.CatFile
 import Git.Branch (writeTreeQuiet, update')
 import qualified Git.Ref
-import qualified Git.Config
+import Config
 import Config.Smudge
 import qualified Utility.RawFilePath as R
 
@@ -176,7 +176,7 @@ getAssociatedFiles k = emptyWhenBare $ runReaderIO AssociatedTable $
  - in a bare repository, but it might happen if a non-bare repo got
  - converted to bare. -}
 emptyWhenBare :: Annex [a] -> Annex [a]
-emptyWhenBare a = ifM (Git.Config.isBare <$> gitRepo)
+emptyWhenBare a = ifM isBareRepo
 	( return []
 	, a
 	)
@@ -261,7 +261,7 @@ isInodeKnown i s = or <$> runReaderIO ContentTable
  - is an associated file.
  -}
 reconcileStaged :: Bool -> H.DbQueue -> Annex DbTablesChanged
-reconcileStaged dbisnew qh = ifM (Git.Config.isBare <$> gitRepo)
+reconcileStaged dbisnew qh = ifM isBareRepo
 	( return mempty
 	, do
 		gitindex <- inRepo currentIndexFile
