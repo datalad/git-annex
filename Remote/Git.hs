@@ -352,7 +352,7 @@ tryGitConfigRead autoinit r hasuuid
 			Annex.BranchState.disableUpdate
 			catchNonAsync (autoInitialize (pure [])) $ \e ->
 				warning $ "remote " ++ Git.repoDescribe r ++
-					":"  ++ show e
+					": "  ++ show e
 			Annex.getState Annex.repo
 		s <- newLocal r
 		liftIO $ Annex.eval s $ check
