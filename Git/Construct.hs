@@ -227,7 +227,7 @@ checkForRepo dir =
 	isRepo = checkdir $ 
 		gitSignature (".git" </> "config")
 			<||>
-		-- A git-worktree lacks .git/config, but has .git/commondir.
+		-- A git-worktree lacks .git/config, but has .git/gitdir.
 		-- (Normally the .git is a file, not a symlink, but it can
 		-- be converted to a symlink and git will still work;
 		-- this handles that case.)
