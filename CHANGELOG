@@ -24,6 +24,9 @@ git-annex (10.20230127) UNRELEASED; urgency=medium
   * info, enableremotemote, renameremote: Avoid a confusing message when more
     than one repository matches the user provided name.
   * info: Exit nonzero when the input is not supported.
+  * Fix more breakage caused by git's fix for CVE-2022-24765, this time
+    involving a remote that is a local bare repository not owned by the
+    current user.
 
  -- Joey Hess <id@joeyh.name>  Mon, 06 Feb 2023 13:39:18 -0400
 

@@ -1,6 +1,6 @@
 {- Construction of Git Repo objects
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,7 @@ module Git.Construct (
 	checkForRepo,
 	newFrom,
 	adjustGitDirFile,
+	isBareRepo,
 ) where
 
 #ifndef mingw32_HOST_OS
@@ -216,7 +217,7 @@ checkForRepo :: FilePath -> IO (Maybe RepoLocation)
 checkForRepo dir = 
 	check isRepo $
 		check (checkGitDirFile (toRawFilePath dir)) $
-			check isBareRepo $
+			check (checkdir (isBareRepo dir)) $
 				return Nothing
   where
 	check test cont = maybe cont (return . Just) =<< test
@@ -225,16 +226,17 @@ checkForRepo dir =
 		, return Nothing
 		)
 	isRepo = checkdir $ 
-		gitSignature (".git" </> "config")
+		doesFileExist (dir </> ".git" </> "config")
 			<||>
 		-- A git-worktree lacks .git/config, but has .git/gitdir.
 		-- (Normally the .git is a file, not a symlink, but it can
 		-- be converted to a symlink and git will still work;
 		-- this handles that case.)
-		gitSignature (".git" </> "gitdir")
-	isBareRepo = checkdir $ gitSignature "config"
-		<&&> doesDirectoryExist (dir </> "objects")
-	gitSignature file = doesFileExist $ dir </> file
+		doesFileExist (dir </>  ".git" </> "gitdir")
+
+isBareRepo :: FilePath -> IO Bool
+isBareRepo dir = doesFileExist (dir </> "config")
+	<&&> doesDirectoryExist (dir </> "objects")
 
 -- Check for a .git file.
 checkGitDirFile :: RawFilePath -> IO (Maybe RepoLocation)
