@@ -351,7 +351,7 @@ tryGitConfigRead autoinit r hasuuid
 		let check = do
 			Annex.BranchState.disableUpdate
 			catchNonAsync (autoInitialize (pure [])) $ \e ->
-				warning $ "remote " ++ Git.repoDescribe r ++
+				warning $ "Remote " ++ Git.repoDescribe r ++
 					": "  ++ show e
 			Annex.getState Annex.repo
 		s <- newLocal r
