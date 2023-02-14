@@ -11,3 +11,16 @@
 This is specific to bare git remotes, for non-bare it 
 detects and warns that safe.directory is needed to use the
 remote. --[[Joey]]
+
+> What's causing this is that Git.Config.read is called
+> on the repo, but git refuses to list the repo's config,
+> so updateLocation does not see that the repo is bare
+> when it checks isBare. And so it proceeds to set gitdir
+> to the default non-bare "dir/.git" value.
+> 
+> One way to deal with this would be to make isBare a tristate,
+> since core.bare is not in the listed config at all.
+> 
+> Or, make Git.Construct.fromPath detect when a repo is bare
+> w/o parsing config, and indicate that in the Repo it
+> generates.
