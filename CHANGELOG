@@ -3,6 +3,7 @@ git-annex (10.20230215) UNRELEASED; urgency=medium
   * Fix more breakage caused by git's fix for CVE-2022-24765, this time
     involving a remote that is a local bare repository not owned by the
     current user.
+  * stack.yaml: Update to lts-19.33 and aws-0.24
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2023 14:11:11 -0400
 
