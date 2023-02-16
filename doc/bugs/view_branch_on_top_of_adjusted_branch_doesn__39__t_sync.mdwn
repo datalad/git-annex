@@ -145,3 +145,5 @@ Git Annex is great. I use it several times a week with my multigigabyte backups,
 Big thanks, Joey!
 
 [[!meta author=jkniiv]]
+
+> Closing as a dup with a todo item;[[done]] --[[Joey]]
