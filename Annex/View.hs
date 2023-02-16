@@ -489,8 +489,8 @@ applyView'' mkviewedfile getfilemetadata view l clean conv = do
 		getmetadata gc mdfeeder mdcloser ts
 
 	process uh mdreader = liftIO mdreader >>= \case
-		Just ((topf, _, _, Just k), Just mdlog) -> do
-			let metadata = parseCurrentMetaData mdlog
+		Just ((topf, _, _, Just k), mdlog) -> do
+			let metadata = maybe emptyMetaData parseCurrentMetaData mdlog
 			let f = fromRawFilePath $ getTopFilePath topf
 			let metadata' = getfilemetadata f `unionMetaData` metadata
 			forM_ (genviewedfiles f metadata') $ \fv -> do
