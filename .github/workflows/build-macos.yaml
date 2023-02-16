@@ -161,8 +161,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Send e-mail on failed scheduled run
-        if: "failure() && github.event_name == 'schedule'"
+      - name: Send e-mail on failed run
+        if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
@@ -171,9 +171,9 @@ jobs:
           password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
           from: GitHub Actions Notifications
           to: ${{ secrets.NOTIFY_RECIPIENT }}
-          subject: '[${{ github.repository }}] Scheduled build on macOS failed!'
+          subject: '[${{ github.repository }}] Build on macOS failed!'
           body: |
-            A scheduled build of git-annex for macOS failed!
+            A build (via ${{ github.event_name }}) of git-annex for macOS failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
@@ -290,8 +290,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Send e-mail on failed scheduled run
-        if: "failure() && github.event_name == 'schedule'"
+      - name: Send e-mail on failed run
+        if: failure() && contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.NOTIFY_SMTP_HOST }}
@@ -300,9 +300,9 @@ jobs:
           password: ${{ secrets.NOTIFY_SMTP_PASSWORD }}
           from: GitHub Actions Notifications
           to: ${{ secrets.NOTIFY_RECIPIENT }}
-          subject: '[${{ github.repository }}] Scheduled tests of macOS build failed!'
+          subject: '[${{ github.repository }}] Tests of macOS build failed!'
           body: |
-            The tests for a scheduled build of git-annex for macOS (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
+            The tests for a build (via ${{ github.event_name }}) of git-annex for macOS (flavor: ${{ matrix.flavor }}, OS: ${{ matrix.os }}) failed!
 
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
