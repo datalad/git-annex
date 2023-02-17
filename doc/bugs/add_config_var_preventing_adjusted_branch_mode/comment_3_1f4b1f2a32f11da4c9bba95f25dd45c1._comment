@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2023-02-17T21:50:19Z"
+ content="""
+here my \"concern\" was freeze/thawing procedure. I am yet to get to the bottom of \"variance\" of how differently different ACL paths behave (some exploration from this friday is [here](https://github.com/dbic/handbook/issues/20)). And what I am afraid is that at some point, something would \"trigger\" git-annex to decide that path here is crippled now -- go to adjusted branches mode. If you say it cannot happen, it is ok - I will become more brave ;-)
+"""]]
