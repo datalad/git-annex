@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Weird behavior of git archive in combination with largefiles configuration"""
+ date="2023-02-20T18:52:43Z"
+ content="""
+That behavior does not really have anything to do with the use of
+`git-annex unannex`.
+
+You have configured annex.largefiles to something that matches a file. The
+file is not checked into git (perhaps because you ran `git-annex unannex`
+after adding it earlier, but it could just as well be a new file). You run
+`git add` on the file. What happens? Well, `git add` asks git-annex if the
+file should be annexed. Your annex.largefiles configuration tells it it
+should. So the file is added to the annex, and a pointer file is checked
+into git. (Not a symlink because the file is added unlocked; 
+see [[git-annex-unlock]].)
+
+`git archive` does not archive the contents of the annex, so it only
+archives the pointer file content.
+
+What you can do is use `git-annex add --force-small` when adding the file
+to override the annex.largefiles config. See [[tips/largefiles]] at the
+bottom for a recipe for using that to convert an annexed file to be stored
+in git.
+"""]]
