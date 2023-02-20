@@ -422,3 +422,5 @@ Git Annex is great. I use it several times a week with my multigigabyte backups,
 
 [[!meta author=jkniiv]]
 [[!meta title="windows: Resolver lts-19.33 still (!) causes trouble with Win32 for stack builds"]]
+
+> [[fixed|done]] --[[Joey]]
