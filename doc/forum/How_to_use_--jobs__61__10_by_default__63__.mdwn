@@ -1,0 +1,1 @@
+Whenever I do `git annex add`, I want it to use `--jobs=10`. By default. Without me having to write `--jobs=10` every time. How can I achieve this?
