@@ -182,7 +182,9 @@ itemInfo o (si, p) = ifM (isdir p)
 noInfo :: String -> SeekInput -> String -> Annex ()
 noInfo s si msg = do
 	showStart "info" (encodeBS s) si
-	giveup msg
+	showNote msg
+	showEndFail
+	Annex.incError
 
 dirInfo :: InfoOptions -> FilePath -> SeekInput -> Annex ()
 dirInfo o dir si = showCustom (unwords ["info", dir]) si $ do

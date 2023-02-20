@@ -1,6 +1,6 @@
 {- git-annex test suite
  -
- - Copyright 2010-2022 oey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -1163,6 +1163,12 @@ test_info :: Assertion
 test_info = intmpclonerepo $ do
 	isjson
 	readonly_query isjson
+	-- When presented with an input that it does not support,
+	-- info does not stop but processess subsequent inputs too.
+	git_annex'' (const True)
+		(sha1annexedfile `isInfixOf`)
+		"info"
+		[annexedfile, "dnefile", sha1annexedfile] Nothing "info"
   where
 	isjson = do
 		json <- BU8.fromString <$> git_annex_output "info" ["--json"]
@@ -1682,7 +1688,7 @@ test_uninit = intmpclonerepo $ do
 	git_annex "get" [] "get"
 	annexed_present annexedfile
 	-- any exit status is accepted; does abnormal exit
-	git_annex'' (const True) "uninit" [] Nothing "uninit"
+	git_annex'' (const True) (const True) "uninit" [] Nothing "uninit"
 	checkregularfile annexedfile
 	doesDirectoryExist ".git" @? ".git vanished in uninit"
 
@@ -1797,8 +1803,8 @@ test_borg_remote = when BuildInfo.borg $ do
 	borgdirparent <- fromRawFilePath <$> (absPath . toRawFilePath =<< tmprepodir)
 	let borgdir = borgdirparent </> "borgrepo"
 	intmpclonerepo $ do
-		testProcess "borg" ["init", borgdir, "-e", "none"] Nothing (== True) "borg init"
-		testProcess "borg" ["create", borgdir++"::backup1", "."] Nothing (== True) "borg create"
+		testProcess "borg" ["init", borgdir, "-e", "none"] Nothing (== True) (const True) "borg init"
+		testProcess "borg" ["create", borgdir++"::backup1", "."] Nothing (== True) (const True) "borg create"
 
 		git_annex "initremote" (words $ "borg type=borg borgrepo="++borgdir) "initremote"
 		git_annex "sync" ["borg"] "sync borg"
@@ -1808,7 +1814,7 @@ test_borg_remote = when BuildInfo.borg $ do
 		annexed_present annexedfile
 		git_annex_expectoutput "find" ["--in=borg"] []
 		
-		testProcess "borg" ["create", borgdir++"::backup2", "."] Nothing (== True) "borg create"
+		testProcess "borg" ["create", borgdir++"::backup2", "."] Nothing (== True) (const True) "borg create"
 		git_annex "sync" ["borg"] "sync borg after getting file"
 		git_annex_expectoutput "find" ["--in=borg"] [annexedfile]
 

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-02-20T17:56:39Z"
+ content="""
+Fixed this. Note that with the fix, it will still exit nonzero at the end
+when given a path that does not exist, but it will first process the other
+inputs.
+
+Also I've added a test case.
+"""]]

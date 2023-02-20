@@ -6,6 +6,9 @@ git-annex (10.20230215) UNRELEASED; urgency=medium
   * view: Fix a reversion in 10.20230214 that omitted a file from a view
     when the file had no metadata set, but the view only used path fields.
   * stack.yaml: Update to lts-19.33 and aws-0.24
+  * info: Fix reversion in last release involving handling of unsupported
+    input by continuing to handle any other inputs, before exiting nonzero
+    at the end.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2023 14:11:11 -0400
 

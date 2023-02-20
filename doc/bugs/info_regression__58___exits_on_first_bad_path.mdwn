@@ -55,3 +55,5 @@ IMHO prior behavior is "more correct" and we rely on it in datalad - get respons
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[fixed|done]] --[[Joey]]
