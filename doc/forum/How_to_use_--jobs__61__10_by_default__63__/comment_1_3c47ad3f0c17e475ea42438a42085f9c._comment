@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-02-20T18:37:14Z"
+ content="""
+`git config annex.jobs 10`
+
+That will work, assuming you don't mind other commands also using 10 jobs.
+There is not a way to git config different job numbers for different
+commands.
+
+A shell script or alias would also be a good solution.
+"""]]
