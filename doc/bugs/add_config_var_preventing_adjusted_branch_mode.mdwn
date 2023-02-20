@@ -58,3 +58,5 @@ ok
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[notabug|done]] per comments --[[Joey]]

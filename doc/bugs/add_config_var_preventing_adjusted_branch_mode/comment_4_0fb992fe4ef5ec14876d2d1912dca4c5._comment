@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-02-20T18:40:00Z"
+ content="""
+Well, if you unset annex.version, it will automatically reinitialize, and
+would enter an adjusted branch if a crippled filesystem was detected.
+
+That's the only way I can see that does not involve you running
+`git-annex init` (or upgrade from v5 direct mode as mentioned earlier).
+"""]]
