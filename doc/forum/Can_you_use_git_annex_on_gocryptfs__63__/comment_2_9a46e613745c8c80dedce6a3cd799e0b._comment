@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-02-20T19:17:35Z"
+ content="""
+I wonder if gocryptfs does not have stable inode numbers?
+
+The "changed while it was being added" message happens if git-annex saw one
+inode number when it started adding the file, and a different one at the
+end.
+
+Changes to the mtime, device id, or file size will result in the same
+message.
+
+You might try running the `stat` command on a file before and after and
+see what changed.
+"""]]
