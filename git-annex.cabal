@@ -377,21 +377,7 @@ Executable git-annex
    aws (>= 0.20),
    DAV (>= 1.0),
    network (>= 3.0.0.0),
-   network-bsd,
-   mountpoints,
-   yesod (>= 1.4.3), 
-   yesod-static (>= 1.5.1),
-   yesod-form (>= 1.4.8),
-   yesod-core (>= 1.6.0),
-   path-pieces (>= 0.2.1),
-   warp (>= 3.2.8),
-   warp-tls (>= 3.2.2),
-   wai,
-   wai-extra,
-   blaze-builder,
-   clientsession,
-   template-haskell,
-   shakespeare (>= 2.0.11)
+   network-bsd
   CC-Options: -Wall
   GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
   Default-Language: Haskell2010
@@ -432,6 +418,21 @@ Executable git-annex
   
   if flag(Assistant) && ! os(solaris) && ! os(gnu)
     CPP-Options: -DWITH_ASSISTANT -DWITH_WEBAPP
+    Build-Depends:
+      mountpoints,
+      yesod (>= 1.4.3), 
+      yesod-static (>= 1.5.1),
+      yesod-form (>= 1.4.8),
+      yesod-core (>= 1.6.0),
+      path-pieces (>= 0.2.1),
+      warp (>= 3.2.8),
+      warp-tls (>= 3.2.2),
+      wai,
+      wai-extra,
+      blaze-builder,
+      clientsession,
+      template-haskell,
+      shakespeare (>= 2.0.11)
     Other-Modules:
       Assistant
       Assistant.Alert
@@ -447,8 +448,6 @@ Executable git-annex
       Assistant.Fsck
       Assistant.Gpg
       Assistant.Install
-      Assistant.Install.AutoStart
-      Assistant.Install.Menu
       Assistant.MakeRemote
       Assistant.MakeRepo
       Assistant.Monad
@@ -540,7 +539,6 @@ Executable git-annex
       Command.Watch
       Command.WebApp
       Utility.Mounts
-      Utility.OSX
       Utility.Yesod
       Utility.WebApp
     
@@ -673,6 +671,8 @@ Executable git-annex
     Annex.WorkerPool
     Annex.WorkTree
     Annex.YoutubeDl
+    Assistant.Install.AutoStart
+    Assistant.Install.Menu
     Backend
     Backend.External
     Backend.Hash
@@ -1115,6 +1115,7 @@ Executable git-annex
     Utility.Network
     Utility.NotificationBroadcaster
     Utility.OptParse
+    Utility.OSX
     Utility.PID
     Utility.PartialPrelude
     Utility.Path
