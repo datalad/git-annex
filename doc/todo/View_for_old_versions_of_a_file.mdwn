@@ -1,0 +1,24 @@
+Hey joey,
+
+I often find myself wanting to compare older versions of files (plots, images, etc...) and currently browse the git history and copy-paste paths to the old files in the `.git/annex/objects` to open them or launch a diffing program. This works, but is quite tedious.
+
+I see there is [`git annex diffdriver`](https://git-annex.branchable.com/git-annex-diffdriver/), but haven't tried it yet.
+
+Wouldn't a **view showing old versions of files** be nice? I haven't thought this through fully, but I think this could be implemented similar to the `/=foo` or `/foo=bar` original path filtering logic by introducing a new virtual metadata field (maybe `:`? or `^` like ”anchor”/”history”? 🤔 Aren't that many ASCII characters without special shell meaning left that aren't allowed in a field name... 😅) where old versions of files get assigned that `^` field with their own path or filename and the view would just use the filename as folder level like any other field. 
+
+Or a `git annex view --historical` could be added that allows for scanning the entire history (or up to a certain reach into the past) to include old files as well and adds a git commit identifier to the filename to avoid conflicts.
+
+
+[[!format  bash """
+# show all versions of files tagged with 'plot' in the foo directory
+git annex view --historical tag=plot /=foo
+# This would then make a folder structure like
+"""]]
+
+Not only would this facilitate easy history browsing, but also a more visual way of (force) dropping old content selectively - especially with graphical tools like my Thunar plugin (switch into historical view, select and right-click unneeded files, drop).
+
+What do you think?
+
+Thanks again for git-annex, It's amazing! 🥳
+
+Yann 

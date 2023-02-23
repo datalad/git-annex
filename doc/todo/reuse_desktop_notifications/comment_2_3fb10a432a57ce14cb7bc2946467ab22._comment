@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/d1f0f4275931c552403f4c6707bead7a"
+ subject="comment 2"
+ date="2023-02-23T08:59:28Z"
+ content="""
+I think perhaps the notify options should be revamped as I don't get what their purpose is.
+
+Receiving one desktop notification for each and every transfer sounds like insanity to me. I'd get constant notifications doing anything at all.
+
+To me, notifications are for things that require immediate attention. An email for example or an assistant fsck that found corrupted files or perhaps a failed git-annex transfer. That sort of thing.  
+What's the use-case of constantly requiring immediate attention the entire time for every benign thing happening? In my mind, I might as well just watch the git-annex progress log at that point.
+
+Before reading what the options actually did, I would have expected `--notify-finish` to produce exactly one notification when the git-annex command I set off is done. Perhaps with a summary in it what it had done (successes/errors).
+"""]]
