@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-02-23T18:43:07Z"
+ content="""
+I don't think this would necessarily be an easy or fast branch to
+construct.
+
+And of course `git checkout` of a commit that contains an old version of a
+file is a standard way to look at the old version of a file when using git,
+and works with git-annex..
+"""]]
