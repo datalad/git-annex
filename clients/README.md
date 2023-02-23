@@ -80,6 +80,11 @@ Setting up a New Client
 
                 cd /path/to/clone/clients && chronic flock -n -E 0 .lock ./testannex.sh CLIENTID /path/to/job/dir
 
+- Edit the `README.md` in the root of this repository to add badges for the
+  client's overall test status and per-test statuses.  (Badges will not be
+  available until the client has finished at least one job whose results were
+  successfully processed by datalad/git-annex-ci-client-jobs.)
+
 
 `clients.yaml` Format
 ---------------------

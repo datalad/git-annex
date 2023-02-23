@@ -39,5 +39,6 @@ will fail.
 
 | Client | Test Status |
 | --- | --- |
+| openmind7 | ![Overall test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/openmind7.svg) ![git-annex-home test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/openmind7/git-annex-home.svg) ![git-annex-om2 test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/openmind7/git-annex-om2.svg) |
 | ndoli | ![Overall test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/ndoli.svg) ![git-annex-home test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/ndoli/git-annex-home.svg) ![git-annex-tmp test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/ndoli/git-annex-tmp.svg) |
 | smaug | ![Overall test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/smaug.svg) ![git-annex test status](https://github.com/datalad/git-annex-ci-client-jobs/raw/master/badges/smaug/git-annex.svg) |
