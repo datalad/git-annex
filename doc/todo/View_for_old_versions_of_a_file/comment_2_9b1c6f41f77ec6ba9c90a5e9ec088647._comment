@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 2"
+ date="2023-02-23T22:59:49Z"
+ content="""
+Yes, probably it would be slower as it has to browse the history. `git checkout` works, sure, but it doesn't help if you want to have all old versions of a file in a directory for comparison. Is there git magic (something in the direction of worktree?) to do that? Or can git-annex produce a list of paths to all versions of an annexed file? Then a script could be written to make a poor-mans-`view --historical` manually. I guess one could manually parse `git log -p` or `git diff --name-only` somehow, but I have a feeling that this gets ugly fast...
+"""]]
