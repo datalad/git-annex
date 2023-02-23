@@ -1,6 +1,6 @@
 {- Persistent sqlite database handles.
  -
- - Copyright 2015-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -38,8 +38,9 @@ import Control.Monad.Logger (runNoLoggingT)
 import System.IO
 
 {- A DbHandle is a reference to a worker thread that communicates with
- - the database. It has a MVar which Jobs are submitted to. -}
-data DbHandle = DbHandle RawFilePath (Async ()) (MVar Job)
+ - the database. It has a MVar which Jobs are submitted to. 
+ - There is also an MVar which it will fill when there is a fatal error-}
+data DbHandle = DbHandle RawFilePath (Async ()) (MVar Job) (MVar String)
 
 {- Name of a table that should exist once the database is initialized. -}
 type TableName = String
@@ -49,17 +50,18 @@ type TableName = String
 openDb :: RawFilePath -> TableName -> IO DbHandle
 openDb db tablename = do
 	jobs <- newEmptyMVar
-	worker <- async (workerThread db tablename jobs)
+	errvar <- newEmptyMVar
+	worker <- async (workerThread db tablename jobs errvar)
 	
 	-- work around https://github.com/yesodweb/persistent/issues/474
 	liftIO $ fileEncoding stderr
 
-	return $ DbHandle db worker jobs
+	return $ DbHandle db worker jobs errvar
 
 {- This is optional; when the DbHandle gets garbage collected it will
  - auto-close. -}
 closeDb :: DbHandle -> IO ()
-closeDb (DbHandle _db worker jobs) = do
+closeDb (DbHandle _db worker jobs _) = do
 	debugLocks $ putMVar jobs CloseJob
 	wait worker
 
@@ -74,12 +76,15 @@ closeDb (DbHandle _db worker jobs) = do
  - it is able to run.
  -}
 queryDb :: DbHandle -> SqlPersistM a -> IO a
-queryDb (DbHandle _db _ jobs) a = do
+queryDb (DbHandle _db _ jobs errvar) a = do
 	res <- newEmptyMVar
 	putMVar jobs $ QueryJob $
 		debugLocks $ liftIO . putMVar res =<< tryNonAsync a
-	debugLocks $ (either throwIO return =<< takeMVar res)
-		`catchNonAsync` (\e -> error $ "sqlite query crashed: " ++ show e)
+	debugLocks $ takeMVarSafe res >>= \case
+		Right r -> either throwIO return r
+		Left BlockedIndefinitelyOnMVar -> do
+			err <- takeMVar errvar
+			error $ "sqlite worker thread crashed: " ++ err
 
 {- Writes a change to the database.
  -
@@ -91,7 +96,7 @@ queryDb (DbHandle _db _ jobs) a = do
  - process at least once each 30 seconds.
  -}
 commitDb :: DbHandle -> SqlPersistM () -> IO ()
-commitDb h@(DbHandle db _ _) wa = 
+commitDb h@(DbHandle db _ _ _) wa = 
 	robustly (commitDb' h wa) maxretries emptyDatabaseInodeCache
   where
 	robustly a retries ic = do
@@ -108,7 +113,7 @@ commitDb h@(DbHandle db _ _) wa =
 	maxretries = 300 :: Int -- 30 seconds of briefdelay
 
 commitDb' :: DbHandle -> SqlPersistM () -> IO (Either SomeException ())
-commitDb' (DbHandle _ _ jobs) a = do
+commitDb' (DbHandle _ _ jobs _) a = do
 	debug "Database.Handle" "commitDb start"
 	res <- newEmptyMVar
 	putMVar jobs $ ChangeJob $
@@ -125,18 +130,17 @@ data Job
 	| ChangeJob (SqlPersistM ())
 	| CloseJob
 
-workerThread :: RawFilePath -> TableName -> MVar Job -> IO ()
-workerThread db tablename jobs = newconn
+workerThread :: RawFilePath -> TableName -> MVar Job -> MVar String -> IO ()
+workerThread db tablename jobs errvar = newconn
   where
 	newconn = do
 		v <- tryNonAsync (runSqliteRobustly tablename db loop)
 		case v of
-			Left e -> giveup $
-				"sqlite worker thread crashed: " ++ show e
+			Left e -> putMVar errvar (show e)
 			Right cont -> cont
 	
 	loop = do
-		job <- liftIO getjob
+		job <- liftIO (takeMVarSafe jobs)
 		case job of
 			-- Exception is thrown when the MVar is garbage
 			-- collected, which means the whole DbHandle
@@ -149,9 +153,6 @@ workerThread db tablename jobs = newconn
 				-- Exit the sqlite connection so the
 				-- database gets updated on disk.
 				return newconn
-	
-	getjob :: IO (Either BlockedIndefinitelyOnMVar Job)
-	getjob = try $ takeMVar jobs
 
 {- Like runSqlite, but more robust.
  -
@@ -325,3 +326,7 @@ isDatabaseModified (DatabaseInodeCache a1 b1) (DatabaseInodeCache a2 b2) =
 	ismodified (Just a) (Just b) = not (compareStrong a b)
 	ismodified Nothing Nothing = False
 	ismodified _ _ = True
+
+takeMVarSafe :: MVar a -> IO (Either BlockedIndefinitelyOnMVar a)
+takeMVarSafe = try . takeMVar
+

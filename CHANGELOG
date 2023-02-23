@@ -8,6 +8,8 @@ git-annex (10.20230215) UNRELEASED; urgency=medium
     at the end.
   * git-annex.cabal: Move webapp build deps under the Assistant build flag
     so git-annex can be built again without yesod etc installed.
+  * Improve error message when unable to read a sqlite database due to
+    permissions problem.
 
  -- Joey Hess <id@joeyh.name>  Tue, 14 Feb 2023 14:11:11 -0400
 
