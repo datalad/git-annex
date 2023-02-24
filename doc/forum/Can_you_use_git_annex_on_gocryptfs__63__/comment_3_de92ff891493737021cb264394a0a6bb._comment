@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="nadir"
+ avatar="http://cdn.libravatar.org/avatar/2af9174cf6c06de802104d632dc40071"
+ subject="comment 3"
+ date="2023-02-24T18:56:40Z"
+ content="""
+Sorry, didn't see you guys answered. 
+
+I've tried the \"noatime\" mount option, but no change. 
+
+I think joey might be on to something. As far as I understand [this github issue](https://github.com/rfjakob/gocryptfs/issues/606), there could be something to this.
+
+I guess the only remaining solution would be something like Veracrypt. What a pity.
+
+Thank you for your help.
+"""]]
