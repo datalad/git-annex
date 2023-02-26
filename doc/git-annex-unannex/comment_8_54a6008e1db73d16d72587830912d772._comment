@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="arnaud.legrand@e79f5d4cff79116f56388885021e8507bef18e12"
+ nickname="arnaud.legrand"
+ avatar="http://cdn.libravatar.org/avatar/143239914c3e3c1a374a7c244b56d73e"
+ subject="Re: Weird behavior of git archive in combination with largefiles configuration "
+ date="2023-02-26T18:45:31Z"
+ content="""
+Thanks a lot Joey for your very clear explanation and clean workaround.
+"""]]
