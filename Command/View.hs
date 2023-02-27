@@ -20,6 +20,7 @@ import Types.View
 import Annex.View
 import Logs.View
 import Types.AdjustedBranch
+import Annex.AdjustedBranch.Name
 
 import qualified System.FilePath.ByteString as P
 
@@ -35,16 +36,16 @@ start :: [String] -> CommandStart
 start [] = giveup "Specify metadata to include in view"
 start ps = ifM safeToEnterView
 	( do
-		view <- mkView ps
-		go view =<< currentView
+		(view, madj) <- mkView ps
+		go view madj =<< currentView
 	, giveup "Not safe to enter view."
 	)
   where
 	ai = ActionItemOther Nothing
 	si = SeekInput ps
-	go view Nothing = starting "view" ai si $
-		perform view
-	go view (Just (v, _madj))
+	go view madj Nothing = starting "view" ai si $
+		perform view madj
+	go view _ (Just (v, _madj))
 		| v == view = stop
 		| otherwise = giveup "Already in a view. Use the vfilter and vadd commands to further refine this view."
 
@@ -73,22 +74,26 @@ safeToEnterView = do
 	-- view.
 	dangerous (StagedUnstaged { unstaged = Just _ }) = True
 
-perform :: View -> CommandPerform
-perform view = do
+perform :: View -> Maybe Adjustment -> CommandPerform
+perform view madj = do
 	showAction "searching"
-	next $ checkoutViewBranch view Nothing applyView
+	next $ checkoutViewBranch view madj applyView
 
 paramView :: String
 paramView = paramRepeating "TAG FIELD=GLOB ?TAG FIELD?=GLOB FIELD!=VALUE"
 
-mkView :: [String] -> Annex View
+mkView :: [String] -> Annex (View, Maybe Adjustment)
 mkView ps = go =<< inRepo Git.Branch.current
   where
 	go Nothing = giveup "not on any branch!"
-	go (Just b) = do
+	go (Just b) = case adjustedToOriginal b of
+		Nothing -> go' b Nothing
+		Just (adj, b') -> go' b' (Just adj)
+	go' b madj = do
 		vu <- annexViewUnsetDirectory <$> Annex.getGitConfig
-		return $ fst $ refineView (View b []) $
+		let v = fst $ refineView (View b []) $
 			map (parseViewParam vu) (reverse ps)
+		return (v, madj)
 
 checkoutViewBranch :: View -> Maybe Adjustment -> (View -> Maybe Adjustment -> Annex Git.Branch) -> CommandCleanup
 checkoutViewBranch view madj mkbranch = do
