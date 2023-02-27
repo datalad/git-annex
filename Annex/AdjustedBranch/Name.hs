@@ -88,7 +88,7 @@ type OrigBranch = Branch
 adjustedToOriginal :: Branch -> Maybe (Adjustment, OrigBranch)
 adjustedToOriginal b
 	| adjustedBranchPrefix `S.isPrefixOf` bs = do
-		let (base, as) = separate' (== openparen) (S.drop prefixlen bs)
+		let (base, as) = separateEnd' (== openparen) (S.drop prefixlen bs)
 		adj <- deserializeAdjustment (S.takeWhile (/= closeparen) as)
 		Just (adj, Git.Ref.branchRef (Ref base))
 	| otherwise = Nothing
