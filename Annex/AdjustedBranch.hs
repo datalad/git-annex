@@ -1,6 +1,6 @@
 {- adjusted branch
  -
- - Copyright 2016-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -67,6 +67,7 @@ import Annex.CurrentBranch
 import Types.CleanupActions
 import qualified Database.Keys
 import Config
+import Logs.View (is_branchView)
 
 import qualified Data.Map as M
 
@@ -207,7 +208,7 @@ enterAdjustedBranch adj = inRepo Git.Branch.current >>= \case
 	go currbranch = do
 		let origbranch = fromAdjustedBranch currbranch
 		let adjbranch = adjBranch $ originalToAdjusted origbranch adj
-		ifM (inRepo (Git.Ref.exists adjbranch) <&&> (not <$> Annex.getRead Annex.force))
+		ifM (inRepo (Git.Ref.exists adjbranch) <&&> (not <$> Annex.getRead Annex.force) <&&> pure (not (is_branchView origbranch)))
 			( do
 				mapM_ (warning . unwords)
 					[ [ "adjusted branch"
