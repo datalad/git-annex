@@ -451,23 +451,26 @@ updateBranches (Just branch, madj) = do
 					]
 				unless ok $
 					giveup $ "failed to update view"
+				case madj' of
+					Nothing -> noop
+					Just adj -> updateadjustedbranch adj
 		-- When in an adjusted branch, propigate any changes
-		-- made to it back to the original branch. The adjusted
-		-- branch may also need to be updated, if the adjustment
-		-- is not stable, and the usual configuration does not
-		-- update it.
+		-- made to it back to the original branch.
 		Nothing -> case madj of
 			Just adj -> do
-				let origbranch = branch
-				propigateAdjustedCommits origbranch adj
-				unless (adjustmentIsStable adj) $
-					annexAdjustedBranchRefresh <$> Annex.getGitConfig >>= \case
-						0 -> adjustedBranchRefreshFull adj origbranch
-						_ -> return ()
+				propigateAdjustedCommits branch adj
+				updateadjustedbranch adj
 			Nothing -> noop
 	
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch (syncBranch branch) (fromViewBranch branch)
+  where
+	-- The adjusted branch may also need to be updated, if the adjustment
+	-- is not stable, and the usual configuration does not update it.
+	updateadjustedbranch adj = unless (adjustmentIsStable adj) $
+		annexAdjustedBranchRefresh <$> Annex.getGitConfig >>= \case
+			0 -> adjustedBranchRefreshFull adj branch
+			_ -> return ()
 
 updateBranch :: Git.Branch -> Git.Branch -> Git.Repo -> IO ()
 updateBranch syncbranch updateto g = 

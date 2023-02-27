@@ -59,7 +59,7 @@ and will also propagate commits back to the original branch.
 
 * `--lock`
 
-  Lock all annexed file in the adjusted branch. This may be preferred
+  Lock all annexed files in the adjusted branch. This may be preferred
   by those who like seeing broken symlinks when the content of an
   annexed file is not present.
 
@@ -127,6 +127,8 @@ and will also propagate commits back to the original branch.
 [[git-annex-upgrade]](1)
 
 [[git-annex-sync]](1)
+
+[[git-annex-view]](1)
 
 # AUTHOR
 

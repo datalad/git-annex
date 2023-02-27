@@ -33,6 +33,7 @@ import Annex.GitOverlay
 import Annex.Link
 import Annex.CatFile
 import Annex.Concurrent
+import Annex.Content.Presence
 import Logs
 import Logs.MetaData
 import Logs.View
@@ -510,6 +511,15 @@ applyView'' mkviewedfile getfilemetadata view madj l clean conv = do
 		Nothing -> stagesymlink uh f k
 		Just (LinkAdjustment UnlockAdjustment) ->
 			stagepointerfile uh f k mtreeitemtype
+		Just (LinkPresentAdjustment UnlockPresentAdjustment) ->
+			ifM (inAnnex k)
+				( stagepointerfile uh f k mtreeitemtype
+				, stagesymlink uh f k
+				)
+		Just (PresenceAdjustment HideMissingAdjustment _) ->
+			whenM (inAnnex k)
+				( stagesymlink uh f k
+				)
 		_ -> stagesymlink uh f k
 
 	stagesymlink uh f k = do
