@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-02-27T16:01:49Z"
+ content="""
+@mike, you can use `git-annex info $remotename`
+
+The output will include a "chunking" line which ends
+in "(old style)" when applicable.
+"""]]
