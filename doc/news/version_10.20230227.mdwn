@@ -1,0 +1,11 @@
+git-annex 10.20230227 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Fix more breakage caused by git's fix for CVE-2022-24765, this time
+    involving a remote that is a local bare repository not owned by the
+    current user.
+  * info: Fix reversion in last release involving handling of unsupported
+    input by continuing to handle any other inputs, before exiting nonzero
+    at the end.
+  * git-annex.cabal: Move webapp build deps under the Assistant build flag
+    so git-annex can be built again without yesod etc installed.
+  * Improve error message when unable to read a sqlite database due to
+    permissions problem."""]]
