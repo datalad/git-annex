@@ -1,0 +1,38 @@
+(Tap tap. Oh, this devblog is still on?)
+
+View branches are a neat corner of git-annex that have remained kind of
+obscure since I implemented them back in 2014. Not many improvements
+have been made from back then until recently.
+
+Today I implemented a longstanding todo, unifying view branches with
+adjusted branches. The result is that you can enter an adjusted branch from
+a view branch, or a view branch from an adjusted branch, and get what you
+would probably expect.
+
+For example, to sort your annexed files into directories by author and
+year, and have all annexed files in the view be unlocked:
+
+    git-annex adjust --unlock
+    git-annex view author=* year=*
+
+Earlier this month, I addressed probably the main missing feature of view
+branches, by making `git-annex sync` work in a view branch, updating it
+with metadata and files pulled in from remotes. Although 
+it there is room to make it 
+[[faster|faster_incremental_update_of_view_branch_by_git-annex_sync]]
+still.
+
+Also, view branches can be made that include files that lack metadata.
+Such files are put in a directory named `"_"`. And can be moved out of
+there to other directories to set their metadata. For example:
+
+    git-annex view author?=*
+
+Views combine nicely with graphical file managers, and Yann Büchau
+has recently built an 
+[integration with Thunar](https://pypi.org/project/thunar-plugins/)
+that supports most of these new features and can be seen in action in
+[this screencast](https://fosstodon.org/@nobodyinperson/109836827575976439).
+
+This work was sponsored by Lawrence Brogan, Erik Bjäreholt, and unqueued
+[on Patreon](https://patreon.com/joeyh)
