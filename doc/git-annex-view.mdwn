@@ -44,10 +44,6 @@ into the `_` directory and committing will unset the metadata.
 The name of the `_` directory can be changed using the annex.viewunsetdirectory
 git config.
 
-In a view, annexed files are usually locked, but when both this command
-and [[git-annex-adjust]](1) are used, files in the view will be
-adjusted.
-
 # OPTIONS
 
 * The [[git-annex-common-options]](1) can be used.
