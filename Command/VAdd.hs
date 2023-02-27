@@ -23,7 +23,7 @@ seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start params = starting "vadd" (ActionItemOther Nothing) (SeekInput params) $ 
-	withCurrentView $ \view -> do
+	withCurrentView $ \view madj -> do
 		vu <- annexViewUnsetDirectory <$> Annex.getGitConfig
 		let (view', change) = refineView view $
 			map (parseViewParam vu) (reverse params)
@@ -34,5 +34,5 @@ start params = starting "vadd" (ActionItemOther Nothing) (SeekInput params) $
 			Narrowing -> next $ do
 				if visibleViewSize view' == visibleViewSize view
 					then giveup "That would not add an additional level of directory structure to the view. To filter the view, use vfilter instead of vadd."
-					else checkoutViewBranch view' narrowView
+					else checkoutViewBranch view' madj narrowView
 			Widening -> giveup "Widening view to match more files is not currently supported."

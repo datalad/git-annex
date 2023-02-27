@@ -27,7 +27,7 @@ start :: [String] -> CommandStart
 start ps = go =<< currentView
   where
 	go Nothing = giveup "Not in a view."
-	go (Just v) = starting "vpop" ai si $ do
+	go (Just (v, madj)) = starting "vpop" ai si $ do
 		removeView v
 		(oldvs, vs) <- splitAt (num - 1) . filter (sameparentbranch v)
 			<$> recentViews
@@ -35,7 +35,8 @@ start ps = go =<< currentView
 		case vs of
 			(oldv:_) -> next $ do
 				showOutput
-				checkoutViewBranch oldv (return . branchView)
+				checkoutViewBranch oldv madj
+					(\v' madj' -> return (branchView v' madj'))
 			_ -> next $ do
 				showOutput
 				inRepo $ Git.Command.runBool

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ import Git.Status
 import Types.View
 import Annex.View
 import Logs.View
+import Types.AdjustedBranch
 
 import qualified System.FilePath.ByteString as P
 
@@ -43,7 +44,7 @@ start ps = ifM safeToEnterView
 	si = SeekInput ps
 	go view Nothing = starting "view" ai si $
 		perform view
-	go view (Just v)
+	go view (Just (v, _madj))
 		| v == view = stop
 		| otherwise = giveup "Already in a view. Use the vfilter and vadd commands to further refine this view."
 
@@ -75,7 +76,7 @@ safeToEnterView = do
 perform :: View -> CommandPerform
 perform view = do
 	showAction "searching"
-	next $ checkoutViewBranch view applyView
+	next $ checkoutViewBranch view Nothing applyView
 
 paramView :: String
 paramView = paramRepeating "TAG FIELD=GLOB ?TAG FIELD?=GLOB FIELD!=VALUE"
@@ -89,11 +90,11 @@ mkView ps = go =<< inRepo Git.Branch.current
 		return $ fst $ refineView (View b []) $
 			map (parseViewParam vu) (reverse ps)
 
-checkoutViewBranch :: View -> (View -> Annex Git.Branch) -> CommandCleanup
-checkoutViewBranch view mkbranch = do
+checkoutViewBranch :: View -> Maybe Adjustment -> (View -> Maybe Adjustment -> Annex Git.Branch) -> CommandCleanup
+checkoutViewBranch view madj mkbranch = do
 	here <- liftIO getCurrentDirectory
 
-	branch <- mkbranch view
+	branch <- mkbranch view madj
 	
 	showOutput
 	ok <- inRepo $ Git.Command.runBool

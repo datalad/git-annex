@@ -45,10 +45,9 @@ seek ps = do
 	runAnnexHook preCommitAnnexHook
 
 	-- committing changes to a view updates metadata
-	mv <- currentView
-	case mv of
+	currentView >>= \case
 		Nothing -> noop
-		Just v -> withViewChanges
+		Just (v, _madj) -> withViewChanges
 			(addViewMetaData v)
 			(removeViewMetaData v)
 

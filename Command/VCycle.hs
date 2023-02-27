@@ -26,13 +26,13 @@ start ::CommandStart
 start = go =<< currentView
   where
 	go Nothing = giveup "Not in a view."
-	go (Just v) = starting "vcycle" (ActionItemOther Nothing) (SeekInput []) $ do
+	go (Just (v, madj)) = starting "vcycle" (ActionItemOther Nothing) (SeekInput []) $ do
 		let v' = v { viewComponents = vcycle [] (viewComponents v) }
 		if v == v'
 			then do
 				showNote "unchanged"
 				next $ return True
-			else next $ checkoutViewBranch v' narrowView
+			else next $ checkoutViewBranch v' madj narrowView
 
 	vcycle rest (c:cs)
 		| viewVisible c = rest ++ cs ++ [c]

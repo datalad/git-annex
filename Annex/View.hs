@@ -12,6 +12,7 @@ module Annex.View where
 import Annex.Common
 import Annex.View.ViewedFile
 import Types.View
+import Types.AdjustedBranch
 import Types.MetaData
 import Annex.MetaData
 import qualified Annex
@@ -418,7 +419,7 @@ getViewedFileMetaData = getDirMetaData . dirFromViewedFile . takeFileName
 {- Applies a view to the currently checked out branch, generating a new
  - branch for the view.
  -}
-applyView :: View -> Annex Git.Branch
+applyView :: View -> Maybe Adjustment -> Annex Git.Branch
 applyView = applyView' viewedFileFromReference getWorkTreeMetaData
 
 {- Generates a new branch for a View, which must be a more narrow
@@ -426,7 +427,7 @@ applyView = applyView' viewedFileFromReference getWorkTreeMetaData
  - checked out branch. That is, it must match a subset of the files
  - in view, not any others.
  -}
-narrowView :: View -> Annex Git.Branch
+narrowView :: View -> Maybe Adjustment -> Annex Git.Branch
 narrowView = applyView' viewedFileReuse getViewedFileMetaData
 
 {- Go through each staged file.
@@ -435,26 +436,27 @@ narrowView = applyView' viewedFileReuse getViewedFileMetaData
  - Look up the metadata of annexed files, and generate any ViewedFiles,
  - and stage them.
  -}
-applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Annex Git.Branch
-applyView' mkviewedfile getfilemetadata view = do
+applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Maybe Adjustment -> Annex Git.Branch
+applyView' mkviewedfile getfilemetadata view madj = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepoDetails [] [top]
-	applyView'' mkviewedfile getfilemetadata view l clean $ 
+	applyView'' mkviewedfile getfilemetadata view madj l clean $ 
 		\(f, sha, mode) -> do
 			topf <- inRepo (toTopFilePath f)
 			k <- lookupKey f
 			return (topf, sha, toTreeItemType mode, k)
-	genViewBranch view
+	genViewBranch view madj
 
 applyView''
 	:: MkViewedFile
 	-> (FilePath -> MetaData)
 	-> View
+	-> Maybe Adjustment
 	-> [t]
 	-> IO Bool
 	-> (t -> Annex (TopFilePath, Sha, Maybe TreeItemType, Maybe Key))
 	-> Annex ()
-applyView'' mkviewedfile getfilemetadata view l clean conv = do
+applyView'' mkviewedfile getfilemetadata view madj l clean conv = do
 	viewg <- withNewViewIndex gitRepo
 	withUpdateIndex viewg $ \uh -> do
 		g <- Annex.gitRepo
@@ -518,13 +520,13 @@ applyView'' mkviewedfile getfilemetadata view l clean conv = do
  - This is not very optimised. An incremental update would be possible to
  - implement and would be faster, but more complicated.
  -}
-updateView :: View -> Annex (Maybe Git.Ref)
-updateView view = do
+updateView :: View -> Maybe Adjustment -> Annex (Maybe Git.Ref)
+updateView view madj = do
 	(l, clean) <- inRepo $ Git.LsTree.lsTree
 		Git.LsTree.LsTreeRecursive
 		(Git.LsTree.LsTreeLong True)
 		(viewParentBranch view)
-	applyView'' viewedFileFromReference getWorkTreeMetaData view l clean $
+	applyView'' viewedFileFromReference getWorkTreeMetaData view madj l clean $
 		\ti -> do
 			let ref = Git.Ref.branchFileRef (viewParentBranch view)
 				(getTopFilePath (Git.LsTree.file ti))
@@ -537,13 +539,13 @@ updateView view = do
 				, (toTreeItemType (Git.LsTree.mode ti))
 				, k
 				)
-	oldcommit <- inRepo $ Git.Ref.sha (branchView view)
+	oldcommit <- inRepo $ Git.Ref.sha (branchView view madj)
 	oldtree <- maybe (pure Nothing) (inRepo . Git.Ref.tree) oldcommit
 	newtree <- withViewIndex $ inRepo Git.Branch.writeTree
 	if oldtree /= Just newtree
 		then Just <$> do
 			cmode <- annexCommitMode <$> Annex.getGitConfig
-			let msg = "updated " ++ fromRef (branchView view)
+			let msg = "updated " ++ fromRef (branchView view madj)
 			let parent = catMaybes [oldcommit]
 			inRepo (Git.Branch.commitTree cmode msg parent newtree)
 		else return Nothing
@@ -593,12 +595,12 @@ withNewViewIndex a = do
 {- Generates a branch for a view, using the view index file
  - to make a commit to the view branch. The view branch is not
  - checked out, but entering it will display the view. -}
-genViewBranch :: View -> Annex Git.Branch
-genViewBranch view = withViewIndex $ do
-	let branch = branchView view
+genViewBranch :: View -> Maybe Adjustment -> Annex Git.Branch
+genViewBranch view madj = withViewIndex $ do
+	let branch = branchView view madj
 	cmode <- annexCommitMode <$> Annex.getGitConfig
 	void $ inRepo $ Git.Branch.commit cmode True (fromRef branch) branch []
 	return branch
 
-withCurrentView :: (View -> Annex a) -> Annex a
-withCurrentView a = maybe (giveup "Not in a view.") a =<< currentView
+withCurrentView :: (View -> Maybe Adjustment -> Annex a) -> Annex a
+withCurrentView a = maybe (giveup "Not in a view.") (uncurry a) =<< currentView

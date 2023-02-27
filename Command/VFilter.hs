@@ -22,10 +22,10 @@ seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start params = starting "vfilter" (ActionItemOther Nothing) (SeekInput params) $
-	withCurrentView $ \view -> do
+	withCurrentView $ \view madj -> do
 		vu <- annexViewUnsetDirectory <$> Annex.getGitConfig
 		let view' = filterView view $
 			map (parseViewParam vu) (reverse params)
 		next $ if visibleViewSize view' > visibleViewSize view
 			then giveup "That would add an additional level of directory structure to the view, rather than filtering it. If you want to do that, use vadd instead of vfilter."
-			else checkoutViewBranch view' narrowView
+			else checkoutViewBranch view' madj narrowView

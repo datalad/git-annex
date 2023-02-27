@@ -439,32 +439,33 @@ pushLocal o b = stopUnless (notOnlyAnnex o) $ do
 updateBranches :: CurrBranch -> Annex ()
 updateBranches (Nothing, _) = noop
 updateBranches (Just branch, madj) = do
-	-- When in an adjusted branch, propigate any changes made to it
-	-- back to the original branch. The adjusted branch may also need
-	-- to be updated, if the adjustment is not stable, and the usual
-	-- configuration does not update it.
-	case madj of
-		Just adj -> do
-			let origbranch = branch
-			propigateAdjustedCommits origbranch adj
-			unless (adjustmentIsStable adj) $
-				annexAdjustedBranchRefresh <$> Annex.getGitConfig >>= \case
-					0 -> adjustedBranchRefreshFull adj origbranch
-					_ -> return ()
-		-- When in a view branch, update it to reflect any changes
-		-- of its parent branch or the metadata.
-		Nothing -> currentView >>= \case
+	-- When in a view branch, update it to reflect any changes
+	-- of its parent branch or the metadata.
+	currentView >>= \case
+		Just (view, madj') -> updateView view madj' >>= \case
 			Nothing -> noop
-			Just view -> updateView view >>= \case
-				Nothing -> noop
-				Just newcommit -> do
-					ok <- inRepo $ Git.Command.runBool
-						[ Param "merge"
-						, Param (Git.fromRef newcommit)
-						]
-					unless ok $
-						giveup $ "failed to update view"
-					
+			Just newcommit -> do
+				ok <- inRepo $ Git.Command.runBool
+					[ Param "merge"
+					, Param (Git.fromRef newcommit)
+					]
+				unless ok $
+					giveup $ "failed to update view"
+		-- When in an adjusted branch, propigate any changes
+		-- made to it back to the original branch. The adjusted
+		-- branch may also need to be updated, if the adjustment
+		-- is not stable, and the usual configuration does not
+		-- update it.
+		Nothing -> case madj of
+			Just adj -> do
+				let origbranch = branch
+				propigateAdjustedCommits origbranch adj
+				unless (adjustmentIsStable adj) $
+					annexAdjustedBranchRefresh <$> Annex.getGitConfig >>= \case
+						0 -> adjustedBranchRefreshFull adj origbranch
+						_ -> return ()
+			Nothing -> noop
+	
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch (syncBranch branch) (fromViewBranch branch)
 
