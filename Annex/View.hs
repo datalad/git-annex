@@ -491,13 +491,13 @@ applyView'' mkviewedfile getfilemetadata view madj l clean conv = do
 		getmetadata gc mdfeeder mdcloser ts
 
 	process uh mdreader = liftIO mdreader >>= \case
-		Just ((topf, _, _, Just k), mdlog) -> do
+		Just ((topf, _, mtreeitemtype, Just k), mdlog) -> do
 			let metadata = maybe emptyMetaData parseCurrentMetaData mdlog
 			let f = fromRawFilePath $ getTopFilePath topf
 			let metadata' = getfilemetadata f `unionMetaData` metadata
 			forM_ (genviewedfiles f metadata') $ \fv -> do
 				f' <- fromRepo (fromTopFilePath $ asTopFilePath $ toRawFilePath fv)
-				stagesymlink uh f' =<< calcRepo (gitAnnexLink f' k)
+				stagefile uh f' k mtreeitemtype
 			process uh mdreader
 		Just ((topf, sha, Just treeitemtype, Nothing), _) -> do
 			liftIO $ Git.UpdateIndex.streamUpdateIndex' uh $
@@ -506,10 +506,25 @@ applyView'' mkviewedfile getfilemetadata view madj l clean conv = do
 		Just _ -> process uh mdreader
 		Nothing -> return ()
 	
-	stagesymlink uh f linktarget = do
+	stagefile uh f k mtreeitemtype = case madj of
+		Nothing -> stagesymlink uh f k
+		Just (LinkAdjustment UnlockAdjustment) ->
+			stagepointerfile uh f k mtreeitemtype
+		_ -> stagesymlink uh f k
+
+	stagesymlink uh f k = do
+		linktarget <- calcRepo (gitAnnexLink f k)
 		sha <- hashSymlink linktarget
 		liftIO . Git.UpdateIndex.streamUpdateIndex' uh
 			=<< inRepo (Git.UpdateIndex.stageSymlink f sha)
+	
+	stagepointerfile uh f k mtreeitemtype = do
+		let treeitemtype = if mtreeitemtype == Just TreeExecutable
+			then TreeExecutable
+			else TreeFile
+		sha <- hashPointerFile k
+		liftIO . Git.UpdateIndex.streamUpdateIndex' uh
+			=<< inRepo (Git.UpdateIndex.stageFile sha treeitemtype f)
 
 {- Updates the current view with any changes that have been made to its
  - parent branch or the metadata since the view was created or last updated.
