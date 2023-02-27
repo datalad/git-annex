@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-02-27T15:51:48Z"
+ content="""
+If you only want a notification at the end of the command,
+you can use: `git-annex whatever; notify-send done`
+
+So there is more value in git-annex notifying after each transfer than at
+the end of the command. Just because it would not be valuable in your
+particular case doesn't mean it's a useless feature. It's not unusual to
+have files large enough that transferring them takes some time.
+"""]]
