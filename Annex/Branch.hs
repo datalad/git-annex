@@ -844,7 +844,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 			if L.null content'
 				then do
 					Annex.Queue.addUpdateIndex
-						=<< inRepo (Git.UpdateIndex.unstageFile (fromRawFilePath file))
+						=<< inRepo (Git.UpdateIndex.unstageFile file)
 					-- File is deleted; can't run any other
 					-- transitions on it.
 					return ()

@@ -433,7 +433,7 @@ rewriteIndex r
 	reinject (file, sha, mode, _) = case toTreeItemType mode of
 		Nothing -> return Nothing
 		Just treeitemtype -> Just <$>
-			UpdateIndex.stageFile sha treeitemtype (fromRawFilePath file) r
+			UpdateIndex.stageFile sha treeitemtype file r
 
 newtype GoodCommits = GoodCommits (S.Set Sha)
 

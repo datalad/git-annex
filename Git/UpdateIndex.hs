@@ -99,15 +99,15 @@ updateIndexLine sha treeitemtype file = L.fromStrict $
 	<> "\t"
 	<> indexPath file
 
-stageFile :: Sha -> TreeItemType -> FilePath -> Repo -> IO Streamer
+stageFile :: Sha -> TreeItemType -> RawFilePath -> Repo -> IO Streamer
 stageFile sha treeitemtype file repo = do
-	p <- toTopFilePath (toRawFilePath file) repo
+	p <- toTopFilePath file repo
 	return $ pureStreamer $ updateIndexLine sha treeitemtype p
 
 {- A streamer that removes a file from the index. -}
-unstageFile :: FilePath -> Repo -> IO Streamer
+unstageFile :: RawFilePath -> Repo -> IO Streamer
 unstageFile file repo = do
-	p <- toTopFilePath (toRawFilePath file) repo
+	p <- toTopFilePath file repo
 	return $ unstageFile' p
 
 unstageFile' :: TopFilePath -> Streamer

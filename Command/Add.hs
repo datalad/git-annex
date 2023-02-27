@@ -182,7 +182,7 @@ addFile smallorlarge file s = do
 					=<< withTSDelta (liftIO . genInodeCache file)
 				Large -> noop
 			Annex.Queue.addUpdateIndex =<<
-				inRepo (stageFile sha treetype (fromRawFilePath file))
+				inRepo (stageFile sha treetype file)
 			return True
   where
 	changed a b =

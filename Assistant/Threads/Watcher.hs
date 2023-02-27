@@ -341,7 +341,7 @@ onDel' file = do
 	topfile <- inRepo (toTopFilePath (toRawFilePath file))
 	withkey $ flip Database.Keys.removeAssociatedFile topfile
 	Annex.Queue.addUpdateIndex =<<
-		inRepo (Git.UpdateIndex.unstageFile file)
+		inRepo (Git.UpdateIndex.unstageFile (toRawFilePath file))
   where
 	withkey a = maybe noop a =<< catKeyFile (toRawFilePath file)
 
