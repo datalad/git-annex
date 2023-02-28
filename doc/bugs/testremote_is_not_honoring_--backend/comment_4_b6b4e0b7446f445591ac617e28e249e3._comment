@@ -1,0 +1,245 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Update for git-annex 10.20230227-ga206cdddb4"
+ date="2023-02-28T15:35:50Z"
+ content="""
+Sorry for the long silence. Coming back to this issue I find the behavior changed, but not sufficiently to get the test suite to run in full on windows.
+
+I ran `git annex testremote --fast` on Windows `msys_nt-10.0-17763` with git-annex 10.20230227-ga206cdddb4 and git 2.38.1.windows.1
+
+[[!toggle  id=\"ipsum\" text=\"Show test output\"]]
+
+[[!toggleable  id=\"ipsum\" text=\"\"\"
+```
+[00:14:23] E             unavailable remote
+[00:14:23] E               removeKey:                                       OK (0.02s)
+[00:14:23] E               storeKey:                                        OK
+[00:14:23] E               checkPresent:                                    OK
+[00:14:23] E               retrieveKeyFile:                                 OK (0.03s)
+[00:14:23] E               retrieveKeyFileCheap:                            OK
+[00:14:23] E             key size Just 1048576; remote chunksize=0 encryption=none
+[00:14:23] E               removeKey when not present:                      OK (2.53s)
+[00:14:23] E               present False:                                   OK (0.31s)
+[00:14:23] E               storeKey:                                        FAIL
+[00:14:23] E                 Exception: content not available to send
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048576; remote chunksize=0 encryption=none.storeKey\"' to rerun this test only.
+[00:14:23] E               present True:                                    FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048576; remote chunksize=0 encryption=none.present True\"' to rerun this test only.
+[00:14:23] E               storeKey when already present:                   FAIL
+[00:14:23] E                 Exception: content not available to send
+[00:14:23] E                 Use -p '/key size Just 1048576; remote chunksize=0 encryption=none.storeKey when already present/' to rerun this test only.
+[00:14:23] E               present True:                                    FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048576; remote chunksize=0 encryption=none.present True\"' to rerun this test only.
+[00:14:23] E               retrieveKeyFile:                                 FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048576; remote chunksize=0 encryption=none.retrieveKeyFile\"' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from 0:                   FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '/key size Just 1048576; remote chunksize=0 encryption=none.retrieveKeyFile resume from 0/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from 33%:                 FAIL
+[00:14:23] E                 Exception: .git\annex\objects\86a\533\SHA256E-s1048576--38d246a8a1798726446526c42d4603e4d4ceecc7a2030b774c4bfb89588a3591.this-is-a-test-key\SHA256E-s1048576--38d246a8a179
+8726446526c42d4603e4d4ceecc7a2030b774c4bfb89588a3591.this-is-a-test-key: openBinaryFile: does not exist (No such file or directory)
+[00:14:23] E                 Use -p '/key size Just 1048576; remote chunksize=0 encryption=none.retrieveKeyFile resume from 33%/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from end:                 FAIL (0.07s)
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '/key size Just 1048576; remote chunksize=0 encryption=none.retrieveKeyFile resume from end/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               removeKey when present:                          OK
+[00:14:23] E               present False:                                   OK
+[00:14:23] E             key size Just 1048576; remote chunksize=0 encryption=shared
+[00:14:23] E               removeKey when not present:                      OK (2.61s)
+[00:14:23] E               present False:                                   OK (0.31s)
+[00:14:23] E               storeKey:                                        FAIL
+[00:14:23] E                 Exception: content not available to send
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048576; remote chunksize=0 encryption=shared.storeKey\"' to rerun this test only.
+[00:14:23] E               present True:                                    FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048576; remote chunksize=0 encryption=shared.present True\"' to rerun this test only.
+[00:14:23] E               storeKey when already present:                   FAIL
+[00:14:23] E                 Exception: content not available to send
+[00:14:23] E                 Use -p '/key size Just 1048576; remote chunksize=0 encryption=shared.storeKey when already present/' to rerun this test only.
+[00:14:23] E               present True:                                    FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048576; remote chunksize=0 encryption=shared.present True\"' to rerun this test only.
+[00:14:23] E               retrieveKeyFile:                                 FAIL (0.01s)
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048576; remote chunksize=0 encryption=shared.retrieveKeyFile\"' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from 0:                   FAIL (0.05s)
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '/key size Just 1048576; remote chunksize=0 encryption=shared.retrieveKeyFile resume from 0/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from 33%:                 FAIL
+[00:14:23] E                 Exception: .git\annex\objects\86a\533\SHA256E-s1048576--38d246a8a1798726446526c42d4603e4d4ceecc7a2030b774c4bfb89588a3591.this-is-a-test-key\SHA256E-s1048576--38d246a8a1798726446526c42d4603e4d4ceecc7a2030b774c4bfb89588a3591.this-is-a-test-key: openBinaryFile: does not exist (No such file or directory)
+[00:14:23] E                 Use -p '/key size Just 1048576; remote chunksize=0 encryption=shared.retrieveKeyFile resume from 33%/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from end:                 FAIL (0.08s)
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '/key size Just 1048576; remote chunksize=0 encryption=shared.retrieveKeyFile resume from end/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               removeKey when present:                          OK
+[00:14:23] E               present False:                                   OK
+[00:14:23] E             key size Just 1048575; remote chunksize=0 encryption=none
+[00:14:23] E               removeKey when not present:                      OK
+[00:14:23] E               present False:                                   OK
+[00:14:23] E               storeKey:                                        FAIL
+[00:14:23] E                 Exception: content not available to send
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048575; remote chunksize=0 encryption=none.storeKey\"' to rerun this test only.
+[00:14:23] E               present True:                                    FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048575; remote chunksize=0 encryption=none.present True\"' to rerun this test only.
+[00:14:23] E               storeKey when already present:                   FAIL
+[00:14:23] E                 Exception: content not available to send
+[00:14:23] E                 Use -p '/key size Just 1048575; remote chunksize=0 encryption=none.storeKey when already present/' to rerun this test only.
+[00:14:23] E               present True:                                    FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048575; remote chunksize=0 encryption=none.present True\"' to rerun this test only.
+[00:14:23] E               retrieveKeyFile:                                 FAIL (0.03s)
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048575; remote chunksize=0 encryption=none.retrieveKeyFile\"' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from 0:                   FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '/key size Just 1048575; remote chunksize=0 encryption=none.retrieveKeyFile resume from 0/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from 33%:                 FAIL
+[00:14:23] E                 Exception: .git\annex\objects\8c4\c61\SHA256E-s1048575--79c930fcd7d08355513f158bbf82532eb6a25d5c8688f4504ac1e240e35e7dc5.this-is-a-test-key\SHA256E-s1048575--79c930fcd7d08355513f158bbf82532eb6a25d5c8688f4504ac1e240e35e7dc5.this-is-a-test-key: openBinaryFile: does not exist (No such file or directory)
+[00:14:23] E                 Use -p '/key size Just 1048575; remote chunksize=0 encryption=none.retrieveKeyFile resume from 33%/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from end:                 FAIL (0.07s)
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '/key size Just 1048575; remote chunksize=0 encryption=none.retrieveKeyFile resume from end/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               removeKey when present:                          OK
+[00:14:23] E               present False:                                   OK
+[00:14:23] E             key size Just 1048575; remote chunksize=0 encryption=shared
+[00:14:23] E               removeKey when not present:                      OK
+[00:14:23] E               present False:                                   OK
+[00:14:23] E               storeKey:                                        FAIL
+[00:14:23] E                 Exception: content not available to send
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048575; remote chunksize=0 encryption=shared.storeKey\"' to rerun this test only.
+[00:14:23] E               present True:                                    FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048575; remote chunksize=0 encryption=shared.present True\"' to rerun this test only.
+[00:14:23] E               storeKey when already present:                   FAIL
+[00:14:23] E                 Exception: content not available to send
+[00:14:23] E                 Use -p '/key size Just 1048575; remote chunksize=0 encryption=shared.storeKey when already present/' to rerun this test only.
+[00:14:23] E               present True:                                    FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048575; remote chunksize=0 encryption=shared.present True\"' to rerun this test only.
+[00:14:23] E               retrieveKeyFile:                                 FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '$0==\"Remote Tests.key size Just 1048575; remote chunksize=0 encryption=shared.retrieveKeyFile\"' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from 0:                   FAIL
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '/key size Just 1048575; remote chunksize=0 encryption=shared.retrieveKeyFile resume from 0/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from 33%:                 FAIL
+[00:14:23] E                 Exception: .git\annex\objects\8c4\c61\SHA256E-s1048575--79c930fcd7d08355513f158bbf82532eb6a25d5c8688f4504ac1e240e35e7dc5.this-is-a-test-key\SHA256E-s1048575--79c930fcd7d08355513f158bbf82532eb6a25d5c8688f4504ac1e240e35e7dc5.this-is-a-test-key: openBinaryFile: does not exist (No such file or directory)
+[00:14:23] E                 Use -p '/key size Just 1048575; remote chunksize=0 encryption=shared.retrieveKeyFile resume from 33%/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               retrieveKeyFile resume from end:                 FAIL (0.06s)
+[00:14:23] E                 .\Command\TestRemote.hs:292:
+[00:14:23] E                 failed
+[00:14:23] E                 Use -p '/key size Just 1048575; remote chunksize=0 encryption=shared.retrieveKeyFile resume from end/' to rerun this test only.
+[00:14:23] E               fsck downloaded object:                          OK
+[00:14:23] E               removeKey when present:                          OK
+[00:14:23] E               present False:                                   OK
+[00:14:23] E             exporttree=yes; key size Just 1048576; key size Just 1048575
+[00:14:23] E               check present export when not present:           OK
+[00:14:23] E               remove export when not present:                  OK
+[00:14:23] E               store export:                                    OK
+[00:14:23] E               check present export after store:                OK
+[00:14:23] E               store export when already present:               OK
+[00:14:23] E               retrieve export:                                 OK
+[00:14:23] E               store new content to export:                     OK
+[00:14:23] E               check present export after store of new content: OK
+[00:14:23] E               retrieve export new content:                     OK
+[00:14:23] E               remove export:                                   OK
+[00:14:23] E               check present export after remove:               OK
+[00:14:23] E               retrieve export fails after removal:             OK
+[00:14:23] E               remove export directory:                         OK
+[00:14:23] E               remove export directory that is already removed: OK
+[00:14:23] E             exporttree=yes; key size Just 1048576; key size Just 1048576
+[00:14:23] E               check present export when not present:           OK
+[00:14:23] E               remove export when not present:                  OK
+[00:14:23] E               store export:                                    OK
+[00:14:23] E               check present export after store:                OK
+[00:14:23] E               store export when already present:               OK
+[00:14:23] E               retrieve export:                                 OK
+[00:14:23] E               store new content to export:                     OK
+[00:14:23] E               check present export after store of new content: OK
+[00:14:23] E               retrieve export new content:                     OK
+[00:14:23] E               remove export:                                   OK
+[00:14:23] E               check present export after remove:               OK
+[00:14:23] E               retrieve export fails after removal:             OK
+[00:14:23] E               remove export directory:                         OK
+[00:14:23] E               remove export directory that is already removed: OK
+[00:14:23] E             exporttree=yes; key size Just 1048575; key size Just 1048575
+[00:14:23] E               check present export when not present:           OK
+[00:14:23] E               remove export when not present:                  OK
+[00:14:23] E               store export:                                    OK
+[00:14:23] E               check present export after store:                OK
+[00:14:23] E               store export when already present:               OK
+[00:14:23] E               retrieve export:                                 OK
+[00:14:23] E               store new content to export:                     OK
+[00:14:23] E               check present export after store of new content: OK
+[00:14:23] E               retrieve export new content:                     OK
+[00:14:23] E               remove export:                                   OK
+[00:14:23] E               check present export after remove:               OK
+[00:14:23] E               retrieve export fails after removal:             OK
+[00:14:23] E               remove export directory:                         OK
+[00:14:23] E               remove export directory that is already removed: OK
+[00:14:23] E             exporttree=yes; key size Just 1048575; key size Just 1048576
+[00:14:23] E               check present export when not present:           OK
+[00:14:23] E               remove export when not present:                  OK
+[00:14:23] E               store export:                                    OK
+[00:14:23] E               check present export after store:                OK
+[00:14:23] E               store export when already present:               OK
+[00:14:23] E               retrieve export:                                 OK
+[00:14:23] E               store new content to export:                     OK
+[00:14:23] E               check present export after store of new content: OK
+[00:14:23] E               retrieve export new content:                     OK
+[00:14:23] E               remove export:                                   OK
+[00:14:23] E               check present export after remove:               OK
+[00:14:23] E               retrieve export fails after removal:             OK
+[00:14:23] E               remove export directory:                         OK
+[00:14:23] E               remove export directory that is already removed: OK
+[00:14:23] E           
+[00:14:23] E           32 out of 125 tests failed (6.39s)
+```
+[[!toggle id=\"ipsum\" text=\"hide\"]]
+\"\"\"]]
+
+Right now, I cannot say whether this is pointing to a problem in my implementation or still to something in git-annex. However, the same implementation passes the test suite on linux.
+
+Sidenote: I am not sure of you have access to a windows system for debugging. If this is needed or helpful, please let me know.
+
+Thanks!
+"""]]
