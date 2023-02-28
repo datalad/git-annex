@@ -92,8 +92,7 @@ content from the key-value store.
 
 * `status [path ...]`
 
-  Similar to `git status --short`, displays the status of the files in the
-  working tree.
+  Show the working tree status. (deprecated)
 
   See [[git-annex-status]](1) for details.
 

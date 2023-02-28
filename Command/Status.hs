@@ -15,7 +15,7 @@ cmd :: Command
 cmd = notBareRepo $ noCommit $ noMessages $
 	withAnnexOptions [jsonOptions] $
 		command "status" SectionCommon
-			"show the working tree status"
+			"show the working tree status (deprecated)"
 			paramPaths (seek <$$> optParser)
 
 data StatusOptions = StatusOptions

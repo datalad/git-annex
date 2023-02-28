@@ -2,6 +2,8 @@ git-annex (10.20230228) UNRELEASED; urgency=medium
 
   * Using git-annex view in an adjusted branch, or git-annex adjust in a
     view branch, will enter an adjusted view branch.
+  * status: This command is deprecated because it was only needed in direct
+    mode; git status --short is very similar.
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Feb 2023 12:31:14 -0400
 
