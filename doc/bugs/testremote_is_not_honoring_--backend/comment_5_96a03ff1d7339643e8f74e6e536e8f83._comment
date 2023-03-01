@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-03-01T16:39:39Z"
+ content="""
+Seems like my renamePath fix did work, because looking back at the origianl
+failure log, it was failing to generate test keys, before it got to run the
+test cases at all.
+
+The new failures seem likely to be due to getFileStatus/getSymbolicLinkStatus 
+failing on the long filename on windows, as I suspected might happen in
+comment #3. I've updated the issue at
+<https://github.com/jacobstanley/unix-compat/issues/56>. And maybe that
+will get fixed, my understanding is that unix-compat has a new maintainer
+recently. But, git-annex does contain a convertToNativeNamespace function
+that it could use to work around the problem itself.
+
+(I am able to run Windows in emulation, but it's sufficiently slow and disk
+hog that I generally am not in a position to do it easily and appreciate
+users who can save me the bother.)
+"""]]
