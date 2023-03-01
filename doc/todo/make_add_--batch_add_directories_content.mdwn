@@ -42,3 +42,13 @@ so `annex add` and `annex add --batch` behave differently on folder paths.
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> Comments seem clear that this should not be changed, and there are easy
+> things users of --batch can do to recurse directories themselves.
+> 
+> Also I checked and the documentation of --batch for git-annex add
+> (and other commands) does say that it reads a file from stdin,
+> so there's at least that documentation that it does not support
+> directories.
+> 
+> So, [[wontfix|done]] --[[Joey]]
