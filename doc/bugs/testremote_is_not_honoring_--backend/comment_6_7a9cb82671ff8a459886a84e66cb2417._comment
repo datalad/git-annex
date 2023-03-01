@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2023-03-01T19:56:27Z"
+ content="""
+In [[!commit 54ad1b4cfb1c8302f1b862cb2699ab9351e3eb5b]] I fully worked
+around this class of problems with unix-compat.
+
+I think it's reasonably likely that every access of a file in git-annex
+on Windows now goes through UNC-style normalization, allowing long
+filenames to be used. Assuming that everything in ghc base does it, which I
+think it does.
+
+So good chance this is fixed now..
+"""]]
