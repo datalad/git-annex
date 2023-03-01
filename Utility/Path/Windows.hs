@@ -12,11 +12,13 @@ module Utility.Path.Windows (
 	convertToWindowsNativeNamespace
 ) where
 
-import Utility.Path.AbsRel
+import Utility.Path
+import Utility.FileSystemEncoding
 
-import System.FilePath.ByteString (RawFilePath)
+import System.FilePath.ByteString (RawFilePath, combine)
 import qualified Data.ByteString as B
 import qualified System.FilePath.Windows.ByteString as P
+import System.Directory (getCurrentDirectory)
 
 {- Convert a filepath to use Windows's native namespace.
  - This avoids filesystem length limits.
@@ -34,7 +36,8 @@ convertToWindowsNativeNamespace f
 	| otherwise = do
 		-- Make absolute because any '.' and '..' in the path
 		-- will not be resolved once it's converted.
-		p <- absPath f
+		cwd <- toRawFilePath <$> getCurrentDirectory
+		let p = simplifyPath (combine cwd f)
 		-- Normalize slashes.
 		let p' = P.normalise p
 		return (win32_file_namespace <> p')
