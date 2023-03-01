@@ -51,6 +51,7 @@ import Data.Typeable
 import qualified Data.ByteString.Lazy as L
 import qualified Control.Exception as E
 import Data.Time.Clock
+import System.PosixCompat.Files (fileMode, statusChangeTime)
 
 checkCanWatch :: Annex ()
 checkCanWatch
@@ -218,7 +219,7 @@ onAddFile symlinkssupported f fs = do
 		unlessM (inAnnex oldkey) $
 			logStatus oldkey InfoMissing
 	addlink file key = do
-		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus (toRawFilePath file)
 		liftAnnex $ stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
 		madeChange file $ LinkChange (Just key)
 

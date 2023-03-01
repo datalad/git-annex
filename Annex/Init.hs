@@ -62,6 +62,7 @@ import qualified Utility.LockFile.Posix as Posix
 
 import qualified Data.Map as M
 import Control.Monad.IO.Class (MonadIO)
+import System.PosixCompat.Files (ownerReadMode, isNamedPipe)
 #ifndef mingw32_HOST_OS
 import Data.Either
 import qualified System.FilePath.ByteString as P
@@ -296,7 +297,7 @@ probeCrippledFileSystem' tmp freezecontent thawcontent hasfreezehook = do
 	probe f = catchDefaultIO (True, []) $ do
 		let f2 = f ++ "2"
 		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f2)
-		liftIO $ createSymbolicLink f f2
+		liftIO $ R.createSymbolicLink (toRawFilePath f) (toRawFilePath f2)
 		liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f2)
 		(fromMaybe (liftIO . preventWrite) freezecontent) (toRawFilePath f)
 		-- Should be unable to write to the file (unless
@@ -372,7 +373,7 @@ probeFifoSupport = do
 			removeWhenExistsWith R.removeLink f
 			removeWhenExistsWith R.removeLink f2
 			ms <- tryIO $ do
-				createNamedPipe (fromRawFilePath f) ownerReadMode
+				R.createNamedPipe f ownerReadMode
 				R.createLink f f2
 				R.getFileStatus f
 			removeWhenExistsWith R.removeLink f

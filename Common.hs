@@ -13,7 +13,7 @@ import Data.Default as X
 import System.FilePath as X
 import System.IO as X hiding (FilePath)
 import System.Exit as X
-import System.PosixCompat.Files as X hiding (fileSize, removeLink, rename)
+import System.PosixCompat.Files as X (FileStatus)
 
 import Utility.Misc as X
 import Utility.Exception as X

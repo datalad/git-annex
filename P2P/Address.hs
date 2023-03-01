@@ -14,8 +14,10 @@ import Git.Types
 import Creds
 import Utility.AuthToken
 import Utility.Tor
+import qualified Utility.RawFilePath as R
 
 import qualified Data.Text as T
+import System.PosixCompat.Files (fileOwner, fileGroup)
 
 -- | A P2P address, without an AuthToken.
 --
@@ -80,8 +82,9 @@ storeP2PAddress addr = do
 		-- This may be run by root, so make the creds file
 		-- and directory have the same owner and group as
 		-- the git repository directory has.
-		st <- liftIO . getFileStatus =<< Annex.fromRepo repoLocation
-		let fixowner f = setOwnerAndGroup f (fileOwner st) (fileGroup st)
+		st <- liftIO . R.getFileStatus . toRawFilePath
+			=<< Annex.fromRepo repoLocation
+		let fixowner f = R.setOwnerAndGroup (toRawFilePath f) (fileOwner st) (fileGroup st)
 		liftIO $ do
 			fixowner tmpf
 			fixowner (takeDirectory tmpf)

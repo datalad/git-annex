@@ -31,7 +31,7 @@ import Annex.CheckIgnore
 import qualified Utility.RawFilePath as R
 import qualified System.FilePath.ByteString as P
 
-import System.PosixCompat.Files (fileSize)
+import System.PosixCompat.Files (fileSize, isSymbolicLink, isRegularFile, modificationTime, fileID, deviceID, fileMode, ownerExecuteMode, intersectFileModes)
 
 cmd :: Command
 cmd = notBareRepo $ 

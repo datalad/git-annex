@@ -22,6 +22,8 @@ import Annex.WorkTree
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
 
+import System.PosixCompat.Files (linkCount)
+
 cmd :: Command
 cmd = addCheck check $ 
 	command "uninit" SectionUtility

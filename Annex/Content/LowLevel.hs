@@ -19,6 +19,7 @@ import Utility.CopyFile
 import qualified Utility.RawFilePath as R
 
 import qualified System.FilePath.ByteString as P
+import System.PosixCompat.Files (linkCount)
 
 {- Runs the secure erase command if set, otherwise does nothing.
  - File may or may not be deleted at the end; caller is responsible for

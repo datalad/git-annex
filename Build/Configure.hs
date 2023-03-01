@@ -10,7 +10,7 @@ import Build.Version
 import Utility.SafeCommand
 import Utility.Env.Basic
 import qualified Git.Version
-import Utility.Directory
+import Utility.SystemDirectory
 
 import Control.Monad
 import Control.Applicative

@@ -104,6 +104,7 @@ import Utility.Metered
 import qualified Utility.RawFilePath as R
 
 import qualified System.FilePath.ByteString as P
+import System.PosixCompat.Files (isSymbolicLink, linkCount)
 
 {- Prevents the content from being removed while the action is running.
  - Uses a shared lock.

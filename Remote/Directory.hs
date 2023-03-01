@@ -19,6 +19,7 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import qualified System.FilePath.ByteString as P
 import Data.Default
+import System.PosixCompat.Files (isRegularFile, getFdStatus, deviceID)
 
 import Annex.Common
 import Types.Remote
@@ -254,7 +255,7 @@ retrieveKeyFileCheapM _ (LegacyChunks _) = Nothing
 retrieveKeyFileCheapM d NoChunks = Just $ \k _af f -> liftIO $ do
 	file <- fromRawFilePath <$> (absPath =<< getLocation d k)
 	ifM (doesFileExist file)
-		( createSymbolicLink file f
+		( R.createSymbolicLink (toRawFilePath file) (toRawFilePath f)
 		, giveup "content file not present in remote"
 		)
 #else
@@ -522,7 +523,7 @@ storeExportWithContentIdentifierM ii dir cow src _k loc overwritablecids p = do
 		void $ liftIO $ fileCopier cow src tmpf p Nothing
 		let tmpf' = toRawFilePath tmpf
 		resetAnnexFilePerm tmpf'
-		liftIO (getSymbolicLinkStatus tmpf) >>= liftIO . mkContentIdentifier ii tmpf' >>= \case
+		liftIO (R.getSymbolicLinkStatus tmpf') >>= liftIO . mkContentIdentifier ii tmpf' >>= \case
 			Nothing -> giveup "unable to generate content identifier"
 			Just newcid -> do
 				checkExportContent ii dir loc

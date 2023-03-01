@@ -53,6 +53,7 @@ import Utility.DiskFree
 
 import Data.Time.Clock.POSIX
 import qualified Data.Text as T
+import System.PosixCompat.Files (statusChangeTime, isSymbolicLink)
 
 {- This thread runs once at startup, and most other threads wait for it
  - to finish. (However, the webapp thread does not, to prevent the UI
@@ -156,11 +157,10 @@ dailyCheck urlrenderer = do
 	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo [] False ["."] g
 	now <- liftIO getPOSIXTime
 	forM_ unstaged $ \file -> do
-		let file' = fromRawFilePath file
-		ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file'
+		ms <- liftIO $ catchMaybeIO $ R.getSymbolicLinkStatus file
 		case ms of
 			Just s	| toonew (statusChangeTime s) now -> noop
-				| isSymbolicLink s -> addsymlink file' ms
+				| isSymbolicLink s -> addsymlink (fromRawFilePath file) ms
 			_ -> noop
 	liftIO $ void cleanup
 

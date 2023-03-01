@@ -50,6 +50,7 @@ import Command.AddUrl (addWorkTree, checkRaw)
 import Annex.UntrustedFilePath
 import qualified Annex.Branch
 import Logs
+import qualified Utility.RawFilePath as R
 
 cmd :: Command
 cmd = notBareRepo $ withAnnexOptions [backendOption] $
@@ -312,7 +313,7 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 				let (d, base) = splitFileName file
 				in d </> show n ++ "_" ++ base
 		tryanother = makeunique url (n + 1) file
-		alreadyexists = liftIO $ isJust <$> catchMaybeIO (getSymbolicLinkStatus f)
+		alreadyexists = liftIO $ isJust <$> catchMaybeIO (R.getSymbolicLinkStatus (toRawFilePath f))
 		checksameurl k = ifM (elem url <$> getUrls k)
 			( return Nothing
 			, tryanother

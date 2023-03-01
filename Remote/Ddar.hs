@@ -14,6 +14,7 @@ module Remote.Ddar (remote) where
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
 import System.IO.Error
+import System.PosixCompat.Files (isDirectory)
 
 import Annex.Common
 import Types.Remote
@@ -28,6 +29,7 @@ import Annex.Ssh
 import Annex.UUID
 import Utility.SshHost
 import Types.ProposedAccepted
+import qualified Utility.RawFilePath as R
 
 data DdarRepo = DdarRepo
 	{ ddarRepoConfig :: RemoteGitConfig
@@ -185,7 +187,7 @@ ddarDirectoryExists :: DdarRepo -> Annex (Either String Bool)
 ddarDirectoryExists ddarrepo
 	| ddarLocal ddarrepo = do
 		maybeStatus <- liftIO $ tryJust (guard . isDoesNotExistError) $
-			getSymbolicLinkStatus $ ddarRepoLocation ddarrepo
+			R.getSymbolicLinkStatus $ toRawFilePath $ ddarRepoLocation ddarrepo
 		return $ case maybeStatus of
 			Left _ -> Right False
 			Right status -> Right $ isDirectory status

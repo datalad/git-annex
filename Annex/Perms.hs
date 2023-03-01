@@ -44,6 +44,8 @@ import Config
 import Utility.Directory.Create
 import qualified Utility.RawFilePath as R
 
+import System.PosixCompat.Files (fileMode, intersectFileModes, nullFileMode, groupWriteMode, ownerWriteMode, ownerReadMode, groupReadMode, stdFileMode, ownerExecuteMode, groupExecuteMode)
+
 withShared :: (SharedRepository -> Annex a) -> Annex a
 withShared a = a =<< coreSharedRepository <$> Annex.getGitConfig
 

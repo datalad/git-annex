@@ -7,7 +7,7 @@ module Build.TestConfig where
 import Utility.Path
 import Utility.Monad
 import Utility.SafeCommand
-import Utility.Directory
+import Utility.SystemDirectory
 
 import System.IO
 import System.FilePath

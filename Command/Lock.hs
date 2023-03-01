@@ -20,6 +20,8 @@ import Annex.Ingest
 import Logs.Location
 import Git.FilePath
 import qualified Utility.RawFilePath as R
+
+import System.PosixCompat.Files (linkCount)
 	
 cmd :: Command
 cmd = withAnnexOptions [jsonOptions, annexedMatchingOptions] $

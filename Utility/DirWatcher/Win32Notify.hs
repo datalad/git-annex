@@ -11,7 +11,7 @@ import Common hiding (isDirectory)
 import Utility.DirWatcher.Types
 
 import System.Win32.Notify
-import qualified System.PosixCompat.Files as Files
+import qualified System.PosixCompat.Files (isRegularFile)
 
 watchDir :: FilePath -> (FilePath -> Bool) -> Bool -> WatchHooks -> IO WatchManager
 watchDir dir ignored scanevents hooks = do
@@ -51,7 +51,7 @@ watchDir dir ignored scanevents hooks = do
 				case ms of
 					Nothing -> noop
 					Just s
-						| Files.isRegularFile s ->
+						| isRegularFile s ->
 							when scanevents $
 								runhook addHook ms
 						| otherwise ->

@@ -11,6 +11,9 @@ import Annex.Common
 import Types.Upgrade
 import Annex.Content
 import qualified Upgrade.V1
+import qualified Utility.RawFilePath as R
+
+import System.PosixCompat.Files (isRegularFile)
 
 upgrade :: Annex UpgradeResult
 upgrade = do
@@ -46,7 +49,8 @@ getKeysPresent0 dir = ifM (liftIO $ doesDirectoryExist dir)
   where
 	present d = do
 		result <- tryIO $
-			getFileStatus $ dir ++ "/" ++ takeFileName d
+			R.getFileStatus $ toRawFilePath $
+				dir ++ "/" ++ takeFileName d
 		case result of
 			Right s -> return $ isRegularFile s
 			Left _ -> return False

@@ -11,8 +11,10 @@ import Annex.Common
 import qualified Git
 import Types.Availability
 import qualified Types.Remote as Remote
+import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock.POSIX
+import System.PosixCompat.Files (modificationTime)
 
 repoCheap :: Git.Repo -> Bool
 repoCheap = not . Git.repoIsUrl
@@ -37,7 +39,7 @@ guardUsable r fallback a
 gitRepoInfo :: Remote -> Annex [(String, String)]
 gitRepoInfo r = do
 	d <- fromRawFilePath <$> fromRepo Git.localGitDir
-	mtimes <- liftIO $ mapM (modificationTime <$$> getFileStatus)
+	mtimes <- liftIO $ mapM (\p -> modificationTime <$> R.getFileStatus (toRawFilePath p))
 		=<< dirContentsRecursive (d </> "refs" </> "remotes" </> Remote.name r)
 	let lastsynctime = case mtimes of
 		[] -> "never"

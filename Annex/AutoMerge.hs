@@ -39,6 +39,7 @@ import qualified Utility.RawFilePath as R
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
+import System.PosixCompat.Files (isSymbolicLink)
 
 {- Merges from a branch into the current branch (which may not exist yet),
  - with automatic merge conflict resolution.

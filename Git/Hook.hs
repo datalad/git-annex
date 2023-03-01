@@ -14,6 +14,9 @@ import Git
 import Utility.Tmp
 import Utility.Shell
 import Utility.FileMode
+import qualified Utility.RawFilePath as R
+
+import System.PosixCompat.Files (fileMode)
 
 data Hook = Hook
 	{ hookName :: FilePath
@@ -88,7 +91,7 @@ hookExists h r = do
 	let f = hookFile h r
 	catchBoolIO $
 #ifndef mingw32_HOST_OS
-		isExecutable . fileMode <$> getFileStatus f
+		isExecutable . fileMode <$> R.getFileStatus (toRawFilePath f)
 #else
 		doesFileExist f
 #endif

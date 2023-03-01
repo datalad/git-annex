@@ -222,7 +222,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 	makeorigsymlink olddir = do
 		let origdir = fromRawFilePath (parentDir (toRawFilePath olddir)) </> installBase
 		removeWhenExistsWith R.removeLink (toRawFilePath origdir)
-		createSymbolicLink newdir origdir
+		R.createSymbolicLink (toRawFilePath newdir) (toRawFilePath origdir)
 
 {- Finds where the old version was installed. -}
 oldVersionLocation :: IO FilePath

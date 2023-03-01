@@ -40,12 +40,14 @@ import qualified Database.Keys
 import qualified Command.Sync
 import Utility.Tuple
 import Utility.Metered
+import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Either
 import Control.Concurrent
+import System.PosixCompat.Files (fileID, deviceID, fileMode)
 
 {- This thread makes git commits at appropriate times. -}
 commitThread :: NamedThread
@@ -358,7 +360,7 @@ handleAdds lockdowndir havelsof largefilematcher delayadd cs = returnWhen (null 
 
 	done change file key = liftAnnex $ do
 		logStatus key InfoPresent
-		mode <- liftIO $ catchMaybeIO $ fileMode <$> getFileStatus file
+		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus (toRawFilePath file)
 		stagePointerFile (toRawFilePath file) mode =<< hashPointerFile key
 		showEndOk
 		return $ Just $ finishedChange change key
@@ -367,8 +369,8 @@ handleAdds lockdowndir havelsof largefilematcher delayadd cs = returnWhen (null 
 	 - and is still a hard link to its contentLocation,
 	 - before ingesting it. -}
 	sanitycheck keysource a = do
-		fs <- liftIO $ getSymbolicLinkStatus $ fromRawFilePath $ keyFilename keysource
-		ks <- liftIO $ getSymbolicLinkStatus $ fromRawFilePath $ contentLocation keysource
+		fs <- liftIO $ R.getSymbolicLinkStatus $ keyFilename keysource
+		ks <- liftIO $ R.getSymbolicLinkStatus $ contentLocation keysource
 		if deviceID ks == deviceID fs && fileID ks == fileID fs
 			then a
 			else do

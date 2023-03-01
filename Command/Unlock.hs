@@ -18,6 +18,8 @@ import Git.FilePath
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 
+import System.PosixCompat.Files (fileMode)
+
 cmd :: Command
 cmd = mkcmd "unlock" "unlock files for modification"
 

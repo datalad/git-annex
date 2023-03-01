@@ -22,8 +22,10 @@ module Utility.Tor (
 import Common
 import Utility.ThreadScheduler
 import Utility.FileMode
+import Utility.RawFilePath (setOwnerAndGroup)
 
 import System.PosixCompat.Types
+import System.PosixCompat.Files (ownerReadMode, ownerWriteMode, ownerExecuteMode)
 import Data.Char
 import Network.Socket
 import Network.Socks5
@@ -165,7 +167,7 @@ getHiddenServiceSocketFile _appname uid ident =
 prepHiddenServiceSocketDir :: AppName -> UserID -> UniqueIdent -> IO ()
 prepHiddenServiceSocketDir appname uid ident = do
 	createDirectoryIfMissing True d
-	setOwnerAndGroup d uid (-1)
+	setOwnerAndGroup (toRawFilePath d) uid (-1)
 	modifyFileMode (toRawFilePath d) $
 		addModes [ownerReadMode, ownerExecuteMode, ownerWriteMode]
   where

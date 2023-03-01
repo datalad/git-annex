@@ -700,7 +700,7 @@ type FileCopier = FilePath -> FilePath -> Key -> MeterUpdate -> Annex Bool -> Ve
 mkFileCopier :: Bool -> State -> Annex FileCopier
 mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
 	localwanthardlink <- wantHardLink
-	let linker = \src dest -> createLink src dest >> return True
+	let linker = \src dest -> R.createLink (toRawFilePath src) (toRawFilePath dest) >> return True
 	if remotewanthardlink || localwanthardlink
 		then return $ \src dest k p check verifyconfig ->
 			ifM (liftIO (catchBoolIO (linker src dest)))

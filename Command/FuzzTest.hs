@@ -274,4 +274,4 @@ newDir parent = go (100 :: Int)
 			)
 
 doesnotexist :: FilePath -> IO Bool
-doesnotexist f = isNothing <$> catchMaybeIO (getSymbolicLinkStatus f)
+doesnotexist f = isNothing <$> catchMaybeIO (R.getSymbolicLinkStatus (toRawFilePath f))

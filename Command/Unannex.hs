@@ -19,6 +19,8 @@ import Annex.InodeSentinal
 import Git.FilePath
 import qualified Utility.RawFilePath as R
 
+import System.PosixCompat.Files (linkCount)
+
 cmd :: Command
 cmd = withAnnexOptions [annexedMatchingOptions] $
 	command "unannex" SectionUtility

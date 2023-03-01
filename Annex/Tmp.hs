@@ -15,6 +15,7 @@ import Types.CleanupActions
 import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock.POSIX
+import System.PosixCompat.Files (modificationTime)
 
 -- | For creation of tmp files, other than for key's contents.
 --
@@ -66,7 +67,7 @@ cleanupOtherTmp = do
 	cleanold f = do
 		now <- liftIO getPOSIXTime
 		let oldenough = now - (60 * 60 * 24 * 7)
-		catchMaybeIO (modificationTime <$> getSymbolicLinkStatus f) >>= \case
+		catchMaybeIO (modificationTime <$> R.getSymbolicLinkStatus (toRawFilePath f)) >>= \case
 			Just mtime | realToFrac mtime <= oldenough -> 
 				void $ tryIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
 			_ -> return ()

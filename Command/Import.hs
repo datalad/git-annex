@@ -37,6 +37,7 @@ import Utility.Metered
 import qualified Utility.RawFilePath as R
 
 import Control.Concurrent.STM
+import System.PosixCompat.Files (isDirectory, isSymbolicLink, isRegularFile)
 
 cmd :: Command
 cmd = notBareRepo $

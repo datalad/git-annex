@@ -32,6 +32,7 @@ import Utility.FileMode
 import Data.Char
 import Data.Ord
 import Data.Either
+import System.PosixCompat.Files (groupWriteMode, otherWriteMode)
 
 data SshConfig
 	= GlobalConfig SshSetting

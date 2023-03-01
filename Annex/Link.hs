@@ -43,6 +43,7 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
+import System.PosixCompat.Files (isSymbolicLink)
 
 type LinkTarget = S.ByteString
 

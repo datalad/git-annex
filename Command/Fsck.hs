@@ -49,6 +49,7 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Either
 import qualified System.FilePath.ByteString as P
+import System.PosixCompat.Files (fileMode, isSymbolicLink, modificationTime)
 
 cmd :: Command
 cmd = withAnnexOptions [jobsOption, jsonOptions, annexedMatchingOptions] $

@@ -13,6 +13,7 @@ import "mtl" Control.Monad.State.Strict
 import qualified Data.Map.Strict as M
 import qualified Data.Vector as V
 import qualified System.FilePath.ByteString as P
+import System.PosixCompat.Files (isDirectory)
 import Data.Ord
 import qualified Data.Semigroup as Sem
 import Prelude
@@ -47,6 +48,7 @@ import qualified Limit
 import Messages.JSON (DualDisp(..), ObjectMap(..))
 import Annex.BloomFilter
 import qualified Command.Unused
+import qualified Utility.RawFilePath as R
 
 -- a named computation that produces a statistic
 type Stat = StatState (Maybe (String, StatState String))
@@ -163,7 +165,7 @@ autoenableInfo = showCustom "info" (SeekInput []) $ do
 	return True
 
 itemInfo :: InfoOptions -> (SeekInput, String) -> Annex ()
-itemInfo o (si, p) = ifM (isdir p)
+itemInfo o (si, p) = ifM (isdir (toRawFilePath p))
 	( dirInfo o p si
 	, Remote.byName' p >>= \case
 		Right r -> remoteInfo o r si
@@ -177,7 +179,7 @@ itemInfo o (si, p) = ifM (isdir p)
 			(_us, msg) -> noInfo p si msg
 	)
   where
-	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
+	isdir = liftIO . catchBoolIO . (isDirectory <$$> R.getFileStatus)
 
 noInfo :: String -> SeekInput -> String -> Annex ()
 noInfo s si msg = do

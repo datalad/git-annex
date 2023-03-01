@@ -24,6 +24,7 @@ import Config
 import qualified Utility.RawFilePath as R
 
 import qualified System.FilePath.ByteString as P
+import System.PosixCompat.Files (isSymbolicLink)
 
 upgrade :: Bool -> Annex UpgradeResult
 upgrade automatic = do
@@ -110,7 +111,7 @@ populateKeysDb = unlessM isBareRepo $ do
 	(l, cleanup) <- inRepo $ LsFiles.inodeCaches [top]
 	forM_ l $ \case
 		(_f, Nothing) -> giveup "Unable to parse git ls-files --debug output while upgrading git-annex sqlite databases."
-		(f, Just ic) -> unlessM (liftIO $ catchBoolIO $ isSymbolicLink <$> getSymbolicLinkStatus f) $ do
+		(f, Just ic) -> unlessM (liftIO $ catchBoolIO $ isSymbolicLink <$> R.getSymbolicLinkStatus (toRawFilePath f)) $ do
 			catKeyFile (toRawFilePath f) >>= \case
 				Nothing -> noop
 				Just k -> do

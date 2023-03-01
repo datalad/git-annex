@@ -50,6 +50,7 @@ import Control.Concurrent.STM
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Network.Socket as S
+import System.PosixCompat.Files (groupReadMode, groupWriteMode, otherReadMode, otherWriteMode)
 
 -- Type of interpreters of the Proto free monad.
 type RunProto m = forall a. Proto a -> m (Either ProtoFailure a)

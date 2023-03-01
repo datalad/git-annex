@@ -45,6 +45,7 @@ import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified System.FilePath.ByteString as P
+import System.PosixCompat.Files (accessTime, isSymbolicLink)
 
 {- Some limits can look at the current status of files on
  - disk, or in the annex. This allows controlling which happens. -}
@@ -272,7 +273,7 @@ matchLockStatus wantlocked (MatchingFile fi) = liftIO $ do
 	islocked <- isPointerFile f >>= \case
 		Just _key -> return False
 		Nothing -> isSymbolicLink
-			<$> getSymbolicLinkStatus (fromRawFilePath f)
+			<$> R.getSymbolicLinkStatus f
 	return (islocked == wantlocked)
 matchLockStatus wantlocked (MatchingInfo p) = 
 	pure $ case providedLinkType p of

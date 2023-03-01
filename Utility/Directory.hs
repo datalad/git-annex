@@ -16,7 +16,7 @@ module Utility.Directory (
 
 import Control.Monad
 import System.FilePath
-import System.PosixCompat.Files (getSymbolicLinkStatus, isDirectory, isSymbolicLink)
+import System.PosixCompat.Files (isDirectory, isSymbolicLink)
 import Control.Applicative
 import System.IO.Unsafe (unsafeInterleaveIO)
 import Data.Maybe
@@ -25,7 +25,8 @@ import Prelude
 import Utility.SystemDirectory
 import Utility.Exception
 import Utility.Monad
-import Utility.Applicative
+import Utility.FileSystemEncoding
+import qualified Utility.RawFilePath as R
 
 dirCruft :: FilePath -> Bool
 dirCruft "." = True
@@ -65,7 +66,7 @@ dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir = go [topdir]
 		| otherwise = do
 			let skip = collect (entry:files) dirs' entries
 			let recurse = collect files (entry:dirs') entries
-			ms <- catchMaybeIO $ getSymbolicLinkStatus entry
+			ms <- catchMaybeIO $ R.getSymbolicLinkStatus (toRawFilePath entry)
 			case ms of
 				(Just s) 
 					| isDirectory s -> recurse
@@ -87,9 +88,10 @@ dirTreeRecursiveSkipping skipdir topdir = go [] [topdir]
 		| skipdir (takeFileName dir) = go c dirs
 		| otherwise = unsafeInterleaveIO $ do
 			subdirs <- go []
-				=<< filterM (isDirectory <$$> getSymbolicLinkStatus)
+				=<< filterM isdir
 				=<< catchDefaultIO [] (dirContents dir)
 			go (subdirs++dir:c) dirs
+	isdir p = isDirectory <$> R.getSymbolicLinkStatus (toRawFilePath p)
 
 {- Use with an action that removes something, which may or may not exist.
  -

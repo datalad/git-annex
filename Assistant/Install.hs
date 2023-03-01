@@ -27,6 +27,8 @@ import Utility.UserInfo
 import Utility.Android
 #endif
 
+import System.PosixCompat.Files (ownerExecuteMode)
+
 standaloneAppBase :: IO (Maybe FilePath)
 standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
 

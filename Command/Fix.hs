@@ -19,9 +19,10 @@ import Annex.Link
 import qualified Database.Keys
 import qualified Utility.RawFilePath as R
 
+import System.PosixCompat.Files (fileMode, linkCount)
 #if ! defined(mingw32_HOST_OS)
-import Utility.Touch
 import qualified System.Posix.Files as Posix
+import Utility.Touch
 #endif
 
 cmd :: Command

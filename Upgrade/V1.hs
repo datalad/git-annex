@@ -15,6 +15,7 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Short as S (toShort, fromShort)
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
+import System.PosixCompat.Files (isRegularFile)
 
 import Annex.Common
 import Types.Upgrade
@@ -30,6 +31,7 @@ import Backend
 import Utility.FileMode
 import Utility.Tmp
 import qualified Upgrade.V2
+import qualified Utility.RawFilePath as R
 
 -- v2 adds hashing of filenames of content and location log files.
 -- Key information is encoded in filenames differently, so
@@ -101,7 +103,7 @@ updateSymlinks = do
 				link <- fromRawFilePath
 					<$> calcRepo (gitAnnexLink (toRawFilePath f) k)
 				liftIO $ removeFile f
-				liftIO $ createSymbolicLink link f
+				liftIO $ R.createSymbolicLink (toRawFilePath link) (toRawFilePath f)
 				Annex.Queue.addCommand [] "add" [Param "--"] [f]
 
 moveLocationLogs :: Annex ()
@@ -203,7 +205,8 @@ lookupKey1 file = do
 		Left _ -> return Nothing
 		Right l -> makekey l
   where
-	getsymlink = takeFileName <$> readSymbolicLink file
+	getsymlink = takeFileName . fromRawFilePath
+		<$> R.readSymbolicLink (toRawFilePath file)
 	makekey l = maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 		Nothing -> do
 			unless (null kname || null bname ||
@@ -232,7 +235,7 @@ getKeyFilesPresent1' dir =
 		)
   where
 	present f = do
-		result <- tryIO $ getFileStatus f
+		result <- tryIO $ R.getFileStatus (toRawFilePath f)
 		case result of
 			Right s -> return $ isRegularFile s
 			Left _ -> return False

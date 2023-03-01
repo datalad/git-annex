@@ -22,6 +22,8 @@ import Utility.Touch
 import qualified System.Posix.Files as Posix
 #endif
 
+import System.PosixCompat.Files (fileMode)
+
 {- Populates a pointer file with the content of a key. 
  -
  - If the file already has some other content, it is not modified.
@@ -53,12 +55,11 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
  - Does not check if the pointer file is modified. -}
 depopulatePointerFile :: Key -> RawFilePath -> Annex ()
 depopulatePointerFile key file = do
-	let file' = fromRawFilePath file
-	st <- liftIO $ catchMaybeIO $ getFileStatus file'
+	st <- liftIO $ catchMaybeIO $ R.getFileStatus file
 	let mode = fmap fileMode st
 	secureErase file
 	liftIO $ removeWhenExistsWith R.removeLink file
-	ic <- replaceWorkTreeFile file' $ \tmp -> do
+	ic <- replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
 		let tmp' = toRawFilePath tmp
 		liftIO $ writePointerFile tmp' key mode
 #if ! defined(mingw32_HOST_OS)

@@ -14,10 +14,11 @@ import Types.KeySource
 import Backend.Utilities
 import Git.FilePath
 import Utility.Metered
+import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString.Char8 as S8
-import qualified Utility.RawFilePath as R
 import qualified Data.ByteString.Short as S (toShort, fromShort)
+import System.PosixCompat.Files (modificationTime)
 
 backends :: [Backend]
 backends = [backend]

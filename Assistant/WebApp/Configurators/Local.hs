@@ -40,6 +40,7 @@ import qualified Remote.GCrypt as GCrypt
 import qualified Types.Remote
 import Utility.Android
 import Types.ProposedAccepted
+import qualified Utility.RawFilePath as R
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -421,7 +422,7 @@ canWrite dir = do
 		( return dir
 		, return $ fromRawFilePath $ parentDir $ toRawFilePath dir
 		)
-	catchBoolIO $ fileAccess tocheck False True False
+	catchBoolIO $ R.fileAccess (toRawFilePath tocheck) False True False
 
 {- Gets the UUID of the git repo at a location, which may not exist, or
  - not be a git-annex repo. -}

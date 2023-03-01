@@ -21,12 +21,12 @@ import System.IO
 import System.FilePath
 import System.Directory
 import Control.Monad.IO.Class
-import System.PosixCompat.Files hiding (removeLink)
 import System.IO.Error
 
 import Utility.Exception
 import Utility.FileSystemEncoding
 import Utility.FileMode
+import qualified Utility.RawFilePath as R
 
 type Template = String
 
@@ -62,14 +62,15 @@ viaTmp a file content = bracketIO setup cleanup use
 		_ <- tryIO $ hClose h
 		tryIO $ removeFile tmpfile
 	use (tmpfile, h) = do
+		let tmpfile' = toRawFilePath tmpfile
 		-- Make mode the same as if the file were created usually,
 		-- not as a temp file. (This may fail on some filesystems
 		-- that don't support file modes well, so ignore
 		-- exceptions.)
-		_ <- liftIO $ tryIO $ setFileMode tmpfile =<< defaultFileMode
+		_ <- liftIO $ tryIO $ R.setFileMode tmpfile' =<< defaultFileMode
 		liftIO $ hClose h
 		a tmpfile content
-		liftIO $ rename tmpfile file
+		liftIO $ R.rename tmpfile' (toRawFilePath file)
 
 {- Runs an action with a tmp file located in the system's tmp directory
  - (or in "." if there is none) then removes the file. -}

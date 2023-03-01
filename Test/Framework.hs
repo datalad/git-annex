@@ -25,10 +25,12 @@ import System.Console.Concurrent
 import System.Console.ANSI
 import GHC.Conc
 import System.IO.Unsafe (unsafePerformIO)
+import System.PosixCompat.Files (isSymbolicLink, isRegularFile, fileMode, unionFileModes, ownerWriteMode)
 
 import Common
 import Types.Test
 import Types.Concurrency
+import qualified Utility.RawFilePath as R
 
 import qualified Annex
 import qualified Annex.UUID
@@ -351,24 +353,24 @@ checklink f = ifM (annexeval Config.crippledFileSystem)
 	( (isJust <$> annexeval (Annex.Link.getAnnexLinkTarget (toRawFilePath f)))
 		@? f ++ " is not a (crippled) symlink"
 	, do
-		s <- getSymbolicLinkStatus f
+		s <- R.getSymbolicLinkStatus (toRawFilePath f)
 		isSymbolicLink s @? f ++ " is not a symlink"
 	)
 
 checkregularfile :: FilePath -> Assertion
 checkregularfile f = do
-	s <- getSymbolicLinkStatus f
+	s <- R.getSymbolicLinkStatus (toRawFilePath f)
 	isRegularFile s @? f ++ " is not a normal file"
 	return ()
 
 checkdoesnotexist :: FilePath -> Assertion
 checkdoesnotexist f = 
-	(either (const True) (const False) <$> Utility.Exception.tryIO (getSymbolicLinkStatus f))
+	(either (const True) (const False) <$> Utility.Exception.tryIO (R.getSymbolicLinkStatus (toRawFilePath f)))
 		@? f ++ " exists unexpectedly"
 
 checkexists :: FilePath -> Assertion
 checkexists f = 
-	(either (const False) (const True) <$> Utility.Exception.tryIO (getSymbolicLinkStatus f))
+	(either (const False) (const True) <$> Utility.Exception.tryIO (R.getSymbolicLinkStatus (toRawFilePath f)))
 		@? f ++ " does not exist"
 
 checkcontent :: FilePath -> Assertion
@@ -381,14 +383,14 @@ checkunwritable f = do
 	-- Look at permissions bits rather than trying to write or
 	-- using fileAccess because if run as root, any file can be
 	-- modified despite permissions.
-	s <- getFileStatus f
+	s <- R.getFileStatus (toRawFilePath f)
 	let mode = fileMode s
 	when (mode == mode `unionFileModes` ownerWriteMode) $
 		assertFailure $ "able to modify annexed file's " ++ f ++ " content"
 
 checkwritable :: FilePath -> Assertion
 checkwritable f = do
-	s <- getFileStatus f
+	s <- R.getFileStatus (toRawFilePath f)
 	let mode = fileMode s
 	unless (mode == mode `unionFileModes` ownerWriteMode) $
 		assertFailure $ "unable to modify " ++ f

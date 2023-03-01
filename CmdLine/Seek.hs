@@ -52,6 +52,7 @@ import Control.Concurrent.STM
 import System.Posix.Types
 import Data.IORef
 import Data.Time.Clock.POSIX
+import System.PosixCompat.Files (isDirectory, isSymbolicLink, deviceID, fileID)
 import qualified System.FilePath.ByteString as P
 
 data AnnexedFileSeeker = AnnexedFileSeeker
@@ -114,7 +115,7 @@ withPathContents a params = do
 	-- fail if the path that the user provided is a broken symlink,
 	-- the same as it fails if the path that the user provided does not
 	-- exist.
-	get p = ifM (isDirectory <$> getFileStatus p)
+	get p = ifM (isDirectory <$> R.getFileStatus p')
 		( map (\f -> 
 			let f' = toRawFilePath f
 			in (f', P.makeRelative (P.takeDirectory (P.dropTrailingPathSeparator p')) f'))
@@ -562,8 +563,9 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 		currbranch <- getCurrentBranch
 		stopattop <- prepviasymlink
 		ps' <- flip filterM ps $ \p -> do
-			relf <- liftIO $ relPathCwdToFile $ toRawFilePath p
-			ifM (not <$> (exists p <||> hidden currbranch relf))
+			let p' = toRawFilePath p
+			relf <- liftIO $ relPathCwdToFile p'
+			ifM (not <$> (exists p' <||> hidden currbranch relf))
 				( prob (p ++ " not found")
 				, ifM (viasymlink stopattop (upFrom relf))
 					( prob (p ++ " is beyond a symbolic link")
@@ -574,7 +576,7 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 			then return NoWorkTreeItems
 			else return (WorkTreeItems ps')
 	
-	exists p = isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)
+	exists p = isJust <$> liftIO (catchMaybeIO $ R.getSymbolicLinkStatus p)
 
 	prepviasymlink = do
 		repotopst <- inRepo $ 

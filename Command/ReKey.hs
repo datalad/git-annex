@@ -20,6 +20,8 @@ import Annex.WorkTree
 import Utility.InodeCache
 import qualified Utility.RawFilePath as R
 
+import System.PosixCompat.Files (linkCount, fileMode)
+
 cmd :: Command
 cmd = command "rekey" SectionPlumbing
 	"change keys used for files"

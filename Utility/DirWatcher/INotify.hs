@@ -7,9 +7,10 @@
 
 module Utility.DirWatcher.INotify (watchDir) where
 
-import Common hiding (isDirectory)
+import Common
 import Utility.ThreadLock
 import Utility.DirWatcher.Types
+import qualified Utility.RawFilePath as R
 
 import System.INotify
 import qualified System.Posix.Files as Files
@@ -149,14 +150,14 @@ watchDir i dir ignored scanevents hooks
 
 	indir f = dir </> f
 
-	getstatus f = catchMaybeIO $ getSymbolicLinkStatus $ indir f
+	getstatus f = catchMaybeIO $ R.getSymbolicLinkStatus $ toRawFilePath $ indir f
 	checkfiletype check h f = do
 		ms <- getstatus f
 		case ms of
 			Just s
 				| check s -> runhook h f ms
 			_ -> noop
-	filetype t f = catchBoolIO $ t <$> getSymbolicLinkStatus (indir f)
+	filetype t f = catchBoolIO $ t <$> R.getSymbolicLinkStatus (toRawFilePath (indir f))
 
 	failedaddwatch e
 		-- Inotify fails when there are too many watches with a

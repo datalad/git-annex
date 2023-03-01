@@ -26,9 +26,9 @@ import Control.Concurrent.STM hiding (check)
 
 import Common
 import CmdLine.GitAnnex.Options
+import qualified Utility.RawFilePath as R
 
 import qualified Utility.ShellEscape
-import qualified Utility.RawFilePath as R
 import qualified Annex
 import qualified Git.Filename
 import qualified Git.Types
@@ -1498,7 +1498,7 @@ test_nonannexed_symlink_conflict_resolution = do
 					git_annex "sync" [] "sync in r1"
 				indir r2 $ do
 					disconnectOrigin
-					createSymbolicLink symlinktarget "conflictor"
+					R.createSymbolicLink (toRawFilePath symlinktarget) (toRawFilePath "conflictor")
 					git "add" [conflictor] "git add conflictor"
 					git_annex "sync" [] "sync in r2"
 				pair r1 r2
@@ -1518,8 +1518,8 @@ test_nonannexed_symlink_conflict_resolution = do
 		length v == 1
 			@? (what ++ " too many variant files in: " ++ show v)
 		conflictor `elem` l @? (what ++ " conflictor file missing in: " ++ show l)
-		s <- catchMaybeIO (readSymbolicLink (d </> conflictor))
-		s == Just symlinktarget
+		s <- catchMaybeIO (R.readSymbolicLink (toRawFilePath (d </> conflictor)))
+		s == Just (toRawFilePath symlinktarget)
 			@? (what ++ " wrong target for nonannexed symlink: " ++ show s)
 
 {- Check merge conflict resolution when there is a local file,

@@ -15,10 +15,12 @@ import Utility.CopyFile
 import Utility.FileMode
 import Utility.Touch
 import Utility.Hash (IncrementalVerifier(..))
+import qualified Utility.RawFilePath as R
 
 import Control.Concurrent
 import qualified Data.ByteString as S
 import Data.Time.Clock.POSIX
+import System.PosixCompat.Files (fileMode)
 
 -- To avoid the overhead of trying copy-on-write every time, it's tried
 -- once and if it fails, is not tried again.
@@ -101,9 +103,9 @@ fileCopier copycowtried src dest meterupdate iv =
 			fileContentCopier hsrc dest meterupdate iv
 		
 		-- Copy src mode and mtime.
-		mode <- fileMode <$> getFileStatus src
+		mode <- fileMode <$> R.getFileStatus (toRawFilePath src)
 		mtime <- utcTimeToPOSIXSeconds <$> getModificationTime src
-		setFileMode dest mode
+		R.setFileMode dest' mode
 		touch dest' mtime False
 
 		return Copied

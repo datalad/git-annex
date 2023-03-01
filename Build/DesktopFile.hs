@@ -15,7 +15,7 @@ import Utility.Exception
 import Utility.FreeDesktop
 import Utility.Path
 import Utility.Monad
-import Utility.Directory
+import Utility.SystemDirectory
 import Utility.FileSystemEncoding
 import Config.Files
 import Utility.OSX

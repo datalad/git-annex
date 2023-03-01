@@ -51,6 +51,8 @@ import Annex.AdjustedBranch
 import Annex.FileMatcher
 import qualified Utility.RawFilePath as R
 
+import System.PosixCompat.Files (fileMode)
+
 data LockedDown = LockedDown
 	{ lockDownConfig :: LockDownConfig
 	, keySource :: KeySource
@@ -120,11 +122,12 @@ lockDown' cfg file = tryNonAsync $ ifM crippledFileSystem
 				`catchIO` const (nohardlink' delta)
 
 	withhardlink' delta tmpfile = do
-		createLink file tmpfile
-		cache <- genInodeCache (toRawFilePath tmpfile) delta
+		let tmpfile' = toRawFilePath tmpfile
+		R.createLink file' tmpfile'
+		cache <- genInodeCache tmpfile' delta
 		return $ LockedDown cfg $ KeySource
 			{ keyFilename = file'
-			, contentLocation = toRawFilePath tmpfile
+			, contentLocation = tmpfile'
 			, inodeCache = cache
 			}
 		

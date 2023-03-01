@@ -51,6 +51,7 @@ import Utility.QuickCheck
 import qualified Utility.RawFilePath as R
 
 import System.PosixCompat.Types
+import System.PosixCompat.Files (isRegularFile, fileID)
 import Data.Time.Clock.POSIX
 
 #ifdef mingw32_HOST_OS
