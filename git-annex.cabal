@@ -1122,6 +1122,7 @@ Executable git-annex
     Utility.Path.AbsRel
     Utility.Path.Max
     Utility.Path.Tests
+    Utility.Path.Windows
     Utility.Percentage
     Utility.Process
     Utility.Process.Shim
