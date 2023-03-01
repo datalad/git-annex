@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: comment 9"""
+ date="2023-03-01T16:30:42Z"
+ content="""
+An external special remote can hook into addurl by implementing
+CLAIMURL and CHECKURL. So yes, an external special remote could implement
+s3 urls.
+
+Looking over this thread, I think it's clear that git-annex should not
+implement support for these s3 urls itself.
+"""]]
