@@ -1,4 +1,4 @@
-{- System.Directory without its conflicting isSymbolicLink
+{- System.Directory without its conflicting isSymbolicLink and getFileSize.
  -
  - Copyright 2016 Joey Hess <id@joeyh.name>
  -

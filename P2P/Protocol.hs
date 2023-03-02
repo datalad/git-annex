@@ -32,9 +32,10 @@ import Control.Monad
 import Control.Monad.Free
 import Control.Monad.Free.TH
 import Control.Monad.Catch
-import System.FilePath
 import System.Exit (ExitCode(..))
 import System.IO
+import qualified System.FilePath.ByteString as P
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Data.Char
 import Control.Applicative
@@ -179,11 +180,11 @@ instance Proto.Serializable ProtoAssociatedFile where
 			| isSpace c = "%"
 			| otherwise = [c]
 	
-	deserialize s = case fromRawFilePath $ fromInternalGitPath $ toRawFilePath $ deesc [] s of
-		[] -> Just $ ProtoAssociatedFile $ AssociatedFile Nothing
+	deserialize s = case fromInternalGitPath $ toRawFilePath $ deesc [] s of
 		f
-			| isRelative f -> Just $ ProtoAssociatedFile $ 
-				AssociatedFile $ Just $ toRawFilePath f
+			| B.null f -> Just $ ProtoAssociatedFile $ AssociatedFile Nothing
+			| P.isRelative f -> Just $ ProtoAssociatedFile $ 
+				AssociatedFile $ Just f
 			| otherwise -> Nothing
 	  where
 	  	deesc b [] = reverse b
