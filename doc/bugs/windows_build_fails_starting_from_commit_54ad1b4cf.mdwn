@@ -111,3 +111,8 @@ Git Annex is great. I use it several times a week with my multigigabyte backups,
 
 [[!meta author=jkniiv]]
 [[!meta title="windows: build fails starting from commit 54ad1b4cf"]]
+
+> Kind of expected there would be something! The patch is almost right,
+> but we're avoiding using System.PosixCompat.Files.getFileStatus 
+> since it doesn't support long paths, so have to use
+> Utility.RawFilePath.getFileStatus instead. [[done]] --[[Joey]]

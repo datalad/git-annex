@@ -9,6 +9,7 @@ module Utility.DirWatcher.Win32Notify (watchDir) where
 
 import Common hiding (isDirectory)
 import Utility.DirWatcher.Types
+import qualified Utility.RawFilePath as R
 
 import System.Win32.Notify
 import qualified System.PosixCompat.Files (isRegularFile)
@@ -59,7 +60,7 @@ watchDir dir ignored scanevents hooks = do
 		  where
 			runhook h s = maybe noop (\a -> a f s) (h hooks)
 		
-	getstatus = catchMaybeIO . getFileStatus
+	getstatus = catchMaybeIO . R.getFileStatus . fromRawFilePath
 
 {- Check each component of the path to see if it's ignored. -}
 ignoredPath :: (FilePath -> Bool) -> FilePath -> Bool

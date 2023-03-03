@@ -65,13 +65,10 @@ import Types.ProposedAccepted
 import Annex.Action
 import Messages.Progress
 
-#ifndef mingw32_HOST_OS
-import qualified Utility.RawFilePath as R
-#endif
-
 import Control.Concurrent
 import qualified Data.Map as M
 import qualified Data.ByteString as S
+import qualified Utility.RawFilePath as R
 import Network.URI
 
 remote :: RemoteType
