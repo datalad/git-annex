@@ -24,6 +24,6 @@ I have tried `git prune --dry-run` as suggested some internet sites and I have s
 
 The annex repositories are mostly on btrfs file system, one is on ext4 file system, I do know if it matters. Git-annex versions are 10.20230126-9 in every machine (arch and manjaro). 
 
-`git annex unused` gives nothing. 
+`git annex unused` gives nothing. I am not using any encryption or any other git pluggable system other than git-annex. 
 
 Could you provide some insight please. Is there something wrong my repositories. It really took days to upload and sync all these repositories. Any help is much appreciated. 
