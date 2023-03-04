@@ -115,6 +115,6 @@ Git Annex is great. I use it several times a week with my multigigabyte backups,
 > Kind of expected there would be something! The patch is almost right,
 > but we're avoiding using System.PosixCompat.Files.getFileStatus 
 > since it doesn't support long paths, so have to use
-> Utility.RawFilePath.getFileStatus instead. `[[done]]` --[[Joey]]
+> Utility.RawFilePath.getFileStatus instead. \[\[done\]\] --[[Joey]]
 
 >> Sorry, I had to reopen the bug as Joey's commit didn't quite compile. See page comments for details. --[[jkniiv]]
