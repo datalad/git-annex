@@ -8,6 +8,7 @@ For this task, I decided to three external usb disk along with a directory in my
 
 Currently, there are five git annex repositories as described above. One of them is on the home serve internal disk,  three of them are in the usb disks which are attached to home server. One is in my desktop harddrive. Apart from my desktop repository, all other repositories are configured as  "want standart" and "group backup". My desktop annex repository is configured as standart/manual. Each repository has four remotes of other repositories. They can all sync each other and get the contents. However currently I am receiving git message from all my backup repositories as follows. 
 
+````
 Auto packing the repository in background for optimum performance.
 See "git help gc" for manual housekeeping.
 warning: The last gc run reported the following. Please correct the root cause
@@ -17,6 +18,8 @@ Automatic cleanup will not be performed until the file is removed.
 warning: There are too many unreachable loose objects; run 'git prune' to remove them.
 
 I have tried git prune --dry-run option as suggested some internet sites with dry-run option and I have seen that git wants to remove almost all annex blob files. 
+````
+
 
 Three repositories are on btrfs file system, one is on ext4 file system. 
 
