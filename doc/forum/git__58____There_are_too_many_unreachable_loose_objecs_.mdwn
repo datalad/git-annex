@@ -2,7 +2,7 @@ Hello,
 
 I am a newbie git annex and english is not my native language. Please bare with me. After evaluation so many  options, I have decided to keep track of my family photo collection via git annex. My family photo collection is around 300gb and consisting of 120K items currently and its getting bigger fast. 
 
-For this task, I have only been using my home server and attached usb disks. I have also cold backup disks.  But keeping them in sync without making errors had been troublesome. 
+Previously, I had only been using my home server and attached usb disks. I had had also cold backup disks.  But keeping them in sync without making errors had been troublesome. 
 
 For this task, I decided to three external usb disk along with a directory in my home server each keeping a git annex repository. I use my desktop as source annex repository to upload photos to these git annex repositories. I have implemented this design but I have run into a problem. 
 
