@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="benibilme"
+ avatar="http://cdn.libravatar.org/avatar/6c053ef48706932f4bd7ab184de4794a"
+ subject="Hello,"
+ date="2023-03-05T20:04:03Z"
+ content="""
+Thank you for the response. Yes, repacking and calling garbage collection solved the problem. I am not familiar with git plumbing commands, even though I have been using git for years, I have never needed using these commands. I had to look it up about what they do. I was afraid to lose files, because running prune with dry run options listed objects as many as my files. After your response, I applied on a backed up repository, it seemed I did not lose anything, and applied all other annex repositories, the problem has been solved.  
+
+I read the post you referenced after your pointing out, I would like ask if still `git update-index --index-version 4` is relevant for today. The post is 7 years old, by that time, git must have improved a lot. 
+
+I am also not quite sure about losing file tracking information. I like to keep this information. My annex repository which is in source standard group and does not have any actual content files is around 147mb. My full backup repositories are around 320gb and `git annex find` reports around 37500 files which is way less that I thought. 
+
+`git status` commands takes about 5 or 6 seconds to complete. Yesterday I have added around 30gb of new photos. From source repository in my desktop to four repositories (home server and attached three usb disks) over ssh took about a day. 
+
+Uploading is very slow with ssh. For each file, it copies to each remote in turn. It does not blast out all files to one remote in one connection. How can improve sync speed?    
+
+Thank you againt for the directions...  
+"""]]
