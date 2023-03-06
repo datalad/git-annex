@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2023-03-06T16:26:17Z"
+ content="""
+I'm informed that this this fix, `git-annex test` now succeeds when run in
+a deep and long directory path on Windows. It used to fail in that
+situation. A good indication that long filenames are fully supported now.
+"""]]
