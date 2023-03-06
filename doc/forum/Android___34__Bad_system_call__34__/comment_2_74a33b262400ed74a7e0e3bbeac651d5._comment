@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-03-06T16:44:33Z"
+ content="""
+Reproduced the same thing on my Pixel 5 with CalyxOS.
+
+My guess as to what has happened is that the arm64 build has been updated
+to use a newer version of glibc etc, and that is trying to use a syscall
+that the Android kernel is too old to support. (Kernel 4.19 in my phone's
+case.)
+
+I suggest you try the Nix-On-Droid installation method instead, if you
+don't really need to use termux.
+
+Opened a bug: [[bugs/Android_termux_install_fails_with_Bad_system_call]]
+"""]]
