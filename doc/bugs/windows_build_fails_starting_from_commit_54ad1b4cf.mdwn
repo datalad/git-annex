@@ -118,3 +118,5 @@ Git Annex is great. I use it several times a week with my multigigabyte backups,
 > Utility.RawFilePath.getFileStatus instead. \[\[done\]\] --[[Joey]]
 
 >> Sorry, I had to reopen the bug as Joey's commit didn't quite compile. See page comments for details. --[[jkniiv]]
+
+>>> Should be fully fixed now. [[done]] --[[Joey]]
