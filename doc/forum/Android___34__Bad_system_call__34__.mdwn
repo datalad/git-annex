@@ -1,0 +1,89 @@
+Hi!
+
+I'ce git a Pixel 4a with GrapheneOS running and tried to installiert git-annex, but it fails:
+
+~ $ source git-annex-install
+Installing dependencies with termux pkg manager...
+Testing the available mirrors:
+[*] (10) https://packages-cf.termux.dev/apt/termux-main: ok
+[*] (1) https://mirrors.cbrx.io/apt/termux/termux-main: ok
+[*] (1) https://packages.nscdn.top/termux-main: bad
+[*] (1) https://mirror.nevacloud.com/applications/termux/termux-main: ok
+[*] (1) https://mirror.bardia.tech/termux/termux-main: ok
+[*] (1) https://mirror.albony.xyz/termux/termux-main: ok
+[*] (1) https://linux.domainesia.com/applications/termux/termux-main: ok
+[*] (1) https://mirror.textcord.xyz/termux/termux-main: ok
+[*] (1) https://mirrors.dgut.edu.cn/termux/apt/termux-main: bad
+[*] (1) https://mirrors.cqupt.edu.cn/termux/apt/termux-main: ok
+[*] (1) https://mirror.iscas.ac.cn/termux/apt/termux-main: ok
+[*] (1) https://mirrors.aliyun.com/termux/termux-main: ok
+[*] (1) https://mirrors.bfsu.edu.cn/termux/apt/termux-main: ok
+[*] (1) https://mirrors.nju.edu.cn/termux/apt/termux-main: ok
+[*] (1) https://mirrors.ustc.edu.cn/termux/apt/termux-main: ok
+[*] (1) https://mirrors.pku.edu.cn/termux/termux-main/: ok
+[*] (1) https://mirrors.hit.edu.cn/termux/apt/termux-main: ok
+[*] (1) https://mirrors.sdu.edu.cn/termux/termux-main: ok
+[*] (1) https://mirrors.sau.edu.cn/termux/apt/termux-main: ok
+[*] (1) https://mirrors.tuna.tsinghua.edu.cn/termux/apt/termux-main: ok
+[*] (1) https://mirror.nyist.edu.cn/termux/apt/termux-main: ok
+[*] (1) https://mirrors.njupt.edu.cn/termux/apt/termux-main: bad
+[*] (1) https://mirrors.scau.edu.cn/termux/apt/termux-main: bad
+[*] (1) https://mirrors.sustech.edu.cn/termux/apt/termux-main: ok
+[*] (1) https://mirror.mwt.me/termux/main: ok
+[*] (4) https://grimler.se/termux/termux-main: ok
+[*] (1) https://termux.librehat.com/apt/termux-main: ok
+[*] (1) https://termux.sahilister.in/apt/termux-main: bad
+[*] (1) https://cdn.lumito.net/termux/termux-main: ok
+[*] (1) https://termux.astra.in.ua/apt/termux-main: ok
+[*] (1) https://termux.mentality.rip/termux-main: ok
+[*] (1) https://termux.3san.dev/termux/termux-main: ok
+[*] (1) https://mirror.accum.se/mirror/termux.dev/termux-main: ok
+[*] (1) https://termux.cdn.lumito.net/termux-main: ok
+[*] (1) https://packages.termux.dev/apt/termux-main: ok
+[*] (1) https://mirror.termux.dev/termux-main: ok
+[*] (1) https://md.mirrors.hacktegic.com/termux/termux-main: ok
+[*] (1) https://mirrors.sahilister.in/termux/termux-main: ok
+[*] (4) https://packages.termux.dev/apt/termux-main: ok
+[*] (1) https://plug-mirror.rcac.purdue.edu/termux/termux-main: ok
+[*] (1) https://mirrors.utermux.dev/termux/termux-main: ok
+[*] (1) https://dl.kcubeterm.com/termux-main: ok
+[*] (1) https://mirror.vern.cc/termux/termux-main: ok
+[*] (1) https://mirror.fcix.net/termux/termux-main: ok
+[*] (1) https://mirror.mwt.me/termux/main: ok
+[*] (1) https://mirror.csclub.uwaterloo.ca/termux/termux-main: ok
+[*] (1) https://mirrors.wale.id.au/termux/termux-main: ok
+[*] (1) https://mirror.surf/termux/termux-main/: ok
+[*] (1) http://mirror.mephi.ru/termux/termux-main: ok
+Picking mirror: (3) /data/data/com.termux/files/usr/etc/termux/mirrors/default
+Get:1 https://packages-cf.termux.dev/apt/termux-main stable InRelease [14.0 kB]
+Get:2 https://packages-cf.termux.dev/apt/termux-main stable/main aarch64 Packages [490 kB]
+Fetched 504 kB in 1s (403 kB/s)
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+All packages are up to date.
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+git is already the newest version (2.39.2).
+wget is already the newest version (1.21.3-5).
+tar is already the newest version (1.34-2).
+coreutils is already the newest version (9.1-2).
+proot is already the newest version (5.1.107-57).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Downloading git-annex...
+--2023-03-04 21:36:15--  https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-arm64.tar.gz
+Resolving downloads.kitenet.net... 66.228.36.95
+Connecting to downloads.kitenet.net|66.228.36.95|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 66569031 (63M) [application/x-gzip]
+Saving to: ‘STDOUT’
+
+-             100%  63.48M  6.47MB/s    in 12s
+
+2023-03-04 21:36:27 (5.28 MB/s) - written to stdout [66569031/66569031]
+
+Running on Android.. Tuning for optimal behavior.
+Bad system call
+
+[Process completed (code 159) - press Enter]

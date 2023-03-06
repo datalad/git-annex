@@ -110,9 +110,11 @@ This then compiled cleanly and completed the test suite ok.
 Git Annex is great. I use it several times a week with my multigigabyte backups, where it gives structure to my image-based backup routines, so you could say I'm a believer. :)
 
 [[!meta author=jkniiv]]
-[[!meta title="windows: build fails starting from commit 54ad1b4cf"]]
+[[!meta title="windows: build fails starting from commits 54ad1b4cf, 398633c12"]]
 
 > Kind of expected there would be something! The patch is almost right,
 > but we're avoiding using System.PosixCompat.Files.getFileStatus 
 > since it doesn't support long paths, so have to use
-> Utility.RawFilePath.getFileStatus instead. [[done]] --[[Joey]]
+> Utility.RawFilePath.getFileStatus instead. \[\[done\]\] --[[Joey]]
+
+>> Sorry, I had to reopen the bug as Joey's commit didn't quite compile. See page comments for details. --[[jkniiv]]
