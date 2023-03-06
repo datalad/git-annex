@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-03-06T16:31:40Z"
+ content="""
+By "all annex blob files", do you mean that all the files it wants to
+remove look like git-annex links?
+
+The way this can generally happen is if you `git add` a file
+(`git-annex add` would be the same) and then, without committing that, you 
+`git rm` it, or you change the file and run `git add` again on the new
+content. The original version of the file is not pointed to by any commit,
+so it's unreachable.
+
+So having a lot of such git objects is not itself evidence of a problem,
+if you have done that a lot. Or something similar, such as deleting a
+branch.
+"""]]
