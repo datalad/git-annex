@@ -80,6 +80,13 @@ Setting up a New Client
 
                 cd /path/to/clone/clients && chronic flock -n -E 0 .lock ./testannex.sh CLIENTID /path/to/job/dir
 
+    - On systems with limits/quotes on number of files or storage, we
+      recommend to reduce the `gc.reflogExpire` git config 
+      setting, so that no longer present refs do not occupy space. For that cd to `/path/to/job/dir`
+      and run
+
+          git config gc.reflogExpire 10
+
 - Edit the `README.md` in the root of this repository to add badges for the
   client's overall test status and per-test statuses.  (Badges will not be
   available until the client has finished at least one job whose results were
