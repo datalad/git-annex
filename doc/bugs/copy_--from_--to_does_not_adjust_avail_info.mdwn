@@ -1,0 +1,53 @@
+### Please describe the problem.
+
+```
+(dandisets) dandi@drogon:/mnt/backup/dandi/dandizarrs/27964c5b-6ccd-4e23-a67d-a535282bab34$ git annex whereis 0/0/0/13/2/12 | head
+whereis 0/0/0/13/2/12 (1 copy) 
+        00000000-0000-0000-0000-000000000001 -- web
+
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/0/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/1/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/10/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/11/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/12/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/13/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/14/0
+(dandisets) dandi@drogon:/mnt/backup/dandi/dandizarrs/27964c5b-6ccd-4e23-a67d-a535282bab34$ time git annex copy --from web --to dandi-dandizarrs-dropbox 0/0/0/13/2/12
+copy 0/0/0/13/2/12 (from web...) (to dandi-dandizarrs-dropbox...) ok
+
+real    0m0.366s
+user    0m0.104s
+sys     0m0.042s
+(dandisets) dandi@drogon:/mnt/backup/dandi/dandizarrs/27964c5b-6ccd-4e23-a67d-a535282bab34$ git annex whereis 0/0/0/13/2/12 | head
+whereis 0/0/0/13/2/12 (1 copy) 
+        00000000-0000-0000-0000-000000000001 -- web
+
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/0/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/1/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/10/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/11/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/12/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/13/0
+  web: https://api.dandiarchive.org/api/zarr/27964c5b-6ccd-4e23-a67d-a535282bab34.zarr/0/0/0/1/14/0
+
+(dandisets) dandi@drogon:/mnt/backup/dandi/dandizarrs/27964c5b-6ccd-4e23-a67d-a535282bab34$ git annex list 0/0/0/13/2/12
+here
+|github
+||dandiapi
+|||web
+||||bittorrent
+|||||dandi-dandizarrs-dropbox (untrusted)
+||||||
+__XX__ 0/0/0/13/2/12
+```
+
+I would expect `copy` to make a record locally that now the content is also on destination remote, so 2nd invocation of `copy --from ... --to ... --auto` does nothing.
+
+### What version of git-annex are you using? On what operating system?
+
+```
+10.20230227-gb02b9cc  Debian GNU/Linux
+```
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]

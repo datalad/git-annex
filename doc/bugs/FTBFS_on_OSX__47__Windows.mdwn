@@ -1,0 +1,40 @@
+### Please describe the problem.
+
+For the past few days consistently
+
+```
+ 496   T Mar 06 GitHub Actions  *-4.4* (4.8K/0) datalad/git-annex daily summary: 14 PASSED, 3 FAILED, 5 INCOMPLETE                                                                   
+ 935   T Mar 05 GitHub Actions  *-4.3* (4.8K/0) datalad/git-annex daily summary: 14 PASSED, 3 FAILED, 5 INCOMPLETE                                                                   
+1471 N T Mar 04 GitHub Actions  *-1.9* (4.8K/0) datalad/git-annex daily summary: 15 PASSED, 2 FAILED, 5 INCOMPLETE                                                                   
+1704   T Mar 03 GitHub Actions  *-0.9* (4.8K/0) datalad/git-annex daily summary: 15 PASSED, 2 FAILED, 5 INCOMPLETE                                                                   
+2619   T Mar 01 GitHub Actions  *-3.1* (6.5K/0) datalad/git-annex daily summary: 30 PASSED                                                                                           
+2935 O T Feb 28 GitHub Actions  *-3.8* (6.5K/0) datalad/git-annex daily summary: 30 PASSED        
+```
+
+[sample build on OSX](https://github.com/datalad/git-annex/actions/runs/4320138939/jobs/7540059666) says
+
+```
+
+Utility/RawFilePath.hs:40:1: error:
+    Could not load module ‘System.Posix.Files.ByteString’
+    It is a member of the hidden package ‘unix-2.7.2.2’.
+    You can run ‘:set -package unix’ to expose it.
+    (Note: this unloads all the modules in the current scope.)
+    Use -v (or `:set -v` in ghci) to see a list of the files searched for.
+   |
+40 | import System.Posix.Files.ByteString
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Utility/RawFilePath.hs:41:1: error:
+    Could not load module ‘System.Posix.Directory.ByteString’
+    It is a member of the hidden package ‘unix-2.7.2.2’.
+    You can run ‘:set -package unix’ to expose it.
+    (Note: this unloads all the modules in the current scope.)
+    Use -v (or `:set -v` in ghci) to see a list of the files searched for.
+   |
+41 | import qualified System.Posix.Directory.ByteString as D
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+```
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
