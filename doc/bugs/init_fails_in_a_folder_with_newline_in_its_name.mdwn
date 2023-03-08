@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+ref: [https://github.com/datalad/datalad/issues/7173#issuecomment-1314968568](https://github.com/datalad/datalad/issues/7173#issuecomment-1314968568)
+
+```
+❯ mkdir "/tmp/new
+dquote> line"
+❯ cd "/tmp/new
+line"
+❯ git init
+Initialized empty Git repository in /tmp/new
+line/.git/
+❯ git annex init
+init  ok
+fatal: Cannot open '/tmp/new': No such file or directory
+fatal: Cannot open '/tmp/new': No such file or directory
+fatal: Cannot open '/tmp/new': No such file or directory
+fatal: Cannot open '/tmp/new': No such file or directory
+fatal: Cannot open '/tmp/new': No such file or directory
+fatal: Cannot open '/tmp/new': No such file or directory
+fatal: Cannot open '/tmp/new': No such file or directory
+fatal: Cannot open '/tmp/new': No such file or directory
+fatal: Cannot open '/tmp/new': No such file or directory
+fatal: Cannot open '/tmp/new': No such file or directory
+fatal: Cannot open '/tmp/new': No such file or directory
+git-annex: fd:19: Data.ByteString.hGetLine: end of file
+
+❯ git annex version
+git-annex version: 10.20230214+git26-g8f2829e646-1~ndall+1
+```
+
+as `git` doesn't mind, and now annex batched commands support `-z` already for filenames with newlines in them, I think git-annex should tolerate repository folders with newlines in them too.
+
