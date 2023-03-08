@@ -7,8 +7,9 @@
 
 module Utility.DirWatcher.FSEvents (watchDir) where
 
-import Common hiding (isDirectory)
+import Common
 import Utility.DirWatcher.Types
+import qualified Utility.RawFilePath as R
 
 import System.OSX.FSEvents
 import qualified System.Posix.Files as Files
@@ -89,7 +90,7 @@ watchDir dir ignored scanevents hooks = do
 		  where
 			runhook h s = maybe noop (\a -> a f s) (h hooks)
 		
-	getstatus = catchMaybeIO . getSymbolicLinkStatus
+	getstatus = catchMaybeIO . R.getSymbolicLinkStatus . fromRawFilePath
 
 {- Check each component of the path to see if it's ignored. -}
 ignoredPath :: (FilePath -> Bool) -> FilePath -> Bool
