@@ -15,7 +15,7 @@ module Utility.Path.Windows (
 import Utility.Path
 import Utility.FileSystemEncoding
 
-import System.FilePath.ByteString (RawFilePath, combine)
+import System.FilePath.ByteString (combine)
 import qualified Data.ByteString as B
 import qualified System.FilePath.Windows.ByteString as P
 import System.Directory (getCurrentDirectory)
