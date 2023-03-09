@@ -90,7 +90,7 @@ watchDir dir ignored scanevents hooks = do
 		  where
 			runhook h s = maybe noop (\a -> a f s) (h hooks)
 		
-	getstatus = catchMaybeIO . R.getSymbolicLinkStatus . fromRawFilePath
+	getstatus = catchMaybeIO . R.getSymbolicLinkStatus . toRawFilePath
 
 {- Check each component of the path to see if it's ignored. -}
 ignoredPath :: (FilePath -> Bool) -> FilePath -> Bool
