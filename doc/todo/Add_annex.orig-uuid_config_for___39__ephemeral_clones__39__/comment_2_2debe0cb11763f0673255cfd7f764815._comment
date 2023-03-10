@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-03-10T15:43:58Z"
+ content="""
+Is there any reason you don't initialize the clone with the same uuid as
+the parent remote? That seems to me like it would make sense, since they
+*are* the same git-annex repository.
+
+Can you refresh my memory of where we discussed this --reckless=ephemeral
+hack? I can't find it discussed by that name anywhere in git-annex or mail
+mail archives. Just want to understand the motivation of doing that,
+and why other approaches were not considered.
+"""]]
