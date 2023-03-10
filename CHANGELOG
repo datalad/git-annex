@@ -8,6 +8,9 @@ git-annex (10.20230228) UNRELEASED; urgency=medium
   * status: This command is deprecated because it was only needed in direct
     mode; git status --short is very similar.
   * Windows: Support long filenames in more (possibly all) of the code.
+  * Added arm64 build for ancient kernels, needed to support Android phones
+    whose kernels are too old to support kernels used by the current arm64
+    build.
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Feb 2023 12:31:14 -0400
 

@@ -13,7 +13,7 @@ set -e
 
 case $(uname -m) in
 	aarch64)
-		arch=arm64
+		arch=arm64-ancient
 		;;
 	arm)
 		arch=armel
@@ -22,10 +22,10 @@ case $(uname -m) in
 		arch=armel
 		;;
 	x86_64)
-		arch=amd64
+		arch=amd64-ancient
 		;;
 	x86_32)
-		arch=i386
+		arch=i386-ancient
 		;;
 	*) 
 		echo "unknown architecture $(uname -m), cannot install" >&2
