@@ -521,12 +521,8 @@ importRemote importcontent o remote currbranch
 	| not (pullOption o) || not wantpull = noop
 	| otherwise = case remoteAnnexTrackingBranch (Remote.gitconfig remote) of
 		Nothing -> noop
-		Just tb -> do
-			let (b, p) = separate' (== (fromIntegral (ord ':'))) (Git.fromRef' tb)
-			let branch = Git.Ref b
-			let subdir = if S.null p
-				then Nothing
-				else Just (asTopFilePath p)
+		Just b -> do
+			let (branch, subdir) = splitRemoteAnnexTrackingBranchSubdir b
 			if canImportKeys remote importcontent
 				then do
 					Command.Import.seekRemote remote branch subdir importcontent (CheckGitIgnore True)
@@ -926,8 +922,12 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 		Nothing -> cannotupdateexport r db Nothing True
 		Just b -> do
 			mtree <- inRepo $ Git.Ref.tree b
+			let addsubdir = case snd (splitRemoteAnnexTrackingBranchSubdir b) of
+				Just subdir -> \cb -> Git.Ref $
+					Git.fromRef' cb  <> ":" <> getTopFilePath subdir
+				Nothing -> id
 			mcurrtree <- maybe (pure Nothing)
-				(inRepo . Git.Ref.tree)
+				(inRepo . Git.Ref.tree . addsubdir)
 				currbranch
 			mtbcommitsha <- Command.Export.getExportCommit r b
 			case (mtree, mcurrtree, mtbcommitsha) of
@@ -1029,3 +1029,12 @@ isImport = importTree . Remote.config
 
 isThirdPartyPopulated :: Remote -> Bool
 isThirdPartyPopulated = Remote.thirdPartyPopulated . Remote.remotetype
+
+splitRemoteAnnexTrackingBranchSubdir :: Git.Ref -> (Git.Ref, Maybe TopFilePath)
+splitRemoteAnnexTrackingBranchSubdir tb = (branch, subdir)
+  where
+	(b, p) = separate' (== (fromIntegral (ord ':'))) (Git.fromRef' tb)
+	branch = Git.Ref b
+	subdir = if S.null p
+		then Nothing
+		else Just (asTopFilePath p)

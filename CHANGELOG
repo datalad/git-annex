@@ -2,6 +2,9 @@ git-annex (10.20230228) UNRELEASED; urgency=medium
 
   * Using git-annex view in an adjusted branch, or git-annex adjust in a
     view branch, will enter an adjusted view branch.
+  * sync: Fix a reversion that prevented sending files to exporttree=yes
+    remotes when annex-tracking-branch was configured to branch:subdir
+    (Introduced in version 10.20230214)
   * status: This command is deprecated because it was only needed in direct
     mode; git status --short is very similar.
   * Windows: Support long filenames in more (possibly all) of the code.
