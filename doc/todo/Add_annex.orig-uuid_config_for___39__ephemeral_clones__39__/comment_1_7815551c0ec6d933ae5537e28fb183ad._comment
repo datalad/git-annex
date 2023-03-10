@@ -1,0 +1,78 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2023-03-10T02:52:08Z"
+ content="""
+doh - forgot to add example of what kind of mode of operation I am talking about
+
+<details>
+<summary>Here is the script</summary> 
+
+```shell
+#!/bin/bash
+set -ex
+
+cd \"$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)\"
+
+mkdir orig
+( cd orig; git init; git annex init; echo 123 > 123; git annex add 123; git commit -m 123 123; )
+
+git clone orig ephemeral
+
+(
+cd ephemeral
+
+# making it ephemeral
+ln -s ../../orig/.git/annex .git/annex
+
+git annex init; 
+
+echo 124 > 124
+git annex add 124
+git commit -m 124 124
+
+git annex whereis 124
+)
+
+(
+cd orig;
+
+git remote add ephemeral ../ephemeral
+git pull ephemeral master
+
+: it would still not know that it got 124
+git annex whereis 124 || echo \"exited with $?\"
+
+git annex fsck
+
+: but would know now after fsck
+git annex whereis 124
+)
+
+```
+</details>
+
+running which at the end produces
+
+```
++ : it would still not know that it got 124
++ git annex whereis 124
+whereis 124 (0 copies) failed
+whereis: 1 failed
++ echo 'exited with 1'
+exited with 1
++ git annex fsck
+fsck 123 (checksum...) ok
+fsck 124 (fixing location log) (checksum...) ok
+(recording state in git...)
++ : but would know now after fsck
++ git annex whereis 124
+whereis 124 (1 copy) 
+  	a813ca99-ce43-4e57-b7d9-c3a1456c6b55 -- yoh@lena:~/.tmp/dl-hlNOqBM/orig [here]
+ok
+```
+
+where `124` file was annex added in the reckless clone.
+```
+"""]]
