@@ -85,4 +85,4 @@ for a bucket, in the AWS dashboard.
     }
 
 This should not be necessary if using a new enough version
-of git-annex, which can instead be configured with public=yet.
+of git-annex, which can instead be configured with public=yes.

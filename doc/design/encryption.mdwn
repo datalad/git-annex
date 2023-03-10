@@ -95,7 +95,7 @@ the cipher can get access to whatever other credentials are needed to
 use the special remote.
 
 For example, the S3 special remote does this if configured with
-embedcreds=yet.
+embedcreds=yes.
 
 ## risks
 
