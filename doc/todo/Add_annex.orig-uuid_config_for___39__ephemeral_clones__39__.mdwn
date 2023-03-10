@@ -1,0 +1,8 @@
+In DataLad we have a special mode for cloning git-annex repos called `--reckless=ephemeral` which we discussed with you Joey awhile back as a solution for throw away temporary copies of repos for processing in such a way that we would not need to fetch all TBs of already present on local drive data.
+
+One gotcha is that in such a case population of `.git/annex` with new keys in the clone, does not inform original one about those changes. What we then need to do is to eventually run `git annex fsck` in original location so it realizes that it got all those possibly new keys.  That might take at times quite a while.
+
+I wondered if may be git-annex could gain some "native" support for such use-case which would avoid need for `annex fsck` and possibly would immediately reflect information on changes to availability either in that reckless clone (e.g. if it knows UUID of original one e.g. as stored in `annex.orig-uuid` config), or even in the original repo (by following the symlink or just some `annex.orig-path` dedicated config variable).  WDYT Joey?
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
