@@ -16,6 +16,7 @@ import Text.Feed.Query
 import Text.Feed.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
+import Data.Char
 import Data.Time.Clock
 import Data.Time.Format
 import Data.Time.Calendar
@@ -93,15 +94,22 @@ getFeed addunlockedmatcher opts cache url = do
 	-- ourselves because it goes out of its way to handle encodings.
 	go tmpf = liftIO (parseFeedFromFile' tmpf) >>= \case
 		Nothing -> debugfeedcontent tmpf "parsing the feed failed"
-		Just f -> case findDownloads url f of
-			[] -> debugfeedcontent tmpf "bad feed content; no enclosures to download"
-			l -> do
-				showEndOk
-				ifM (and <$> mapM (performDownload addunlockedmatcher opts cache) l)
-					( clearFeedProblem url
-					, void $ feedProblem url 
-						"problem downloading some item(s) from feed"
-					)
+		Just f -> do
+			case map sanitizetitle $ decodeBS $ fromFeedText $ getFeedTitle f of
+				"" -> noop
+				t -> showNote ('"' : t ++ "\"")
+			case findDownloads url f of
+				[] -> debugfeedcontent tmpf "bad feed content; no enclosures to download"
+				l -> do
+					showEndOk
+					ifM (and <$> mapM (performDownload addunlockedmatcher opts cache) l)
+						( clearFeedProblem url
+						, void $ feedProblem url 
+							"problem downloading some item(s) from feed"
+						)
+	sanitizetitle c
+		| isControl c = '_'
+		| otherwise = c
 	debugfeedcontent tmpf msg = do
 		feedcontent <- liftIO $ readFile tmpf
 		fastDebug "Command.ImportFeed" $ unlines

@@ -11,6 +11,7 @@ git-annex (10.20230228) UNRELEASED; urgency=medium
   * Added arm64 build for ancient kernels, needed to support Android phones
     whose kernels are too old to support kernels used by the current arm64
     build.
+  * importfeed: Display feed title.
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Feb 2023 12:31:14 -0400
 
