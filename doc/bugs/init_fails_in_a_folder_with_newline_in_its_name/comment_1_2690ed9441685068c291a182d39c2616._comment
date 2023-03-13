@@ -14,10 +14,4 @@ written to uuid.log contains a newline, which prevents parsing that line of
 the log correctly. This can also be seen by passing a value
 with a newline to `git-annex describe`. It would also happen in the
 case with the newline directory if it didn't fail earlier.
-
-Another log file that has a similar problem BTW is config.log,
-which can get a newline in a value with eg
-`git annex config --set annex.largefiles "xxx\nyyy"`
-and the result is that reading the value back out omits
-the part after the newline.
 """]]

@@ -2,10 +2,12 @@
  -
  - uuid.log stores a list of known uuids, and their descriptions.
  -
- - Copyright 2010-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE OverloadedStrings #-}
 
 module Logs.UUID (
 	uuidLog,
@@ -25,15 +27,24 @@ import Logs.UUIDBased
 import qualified Annex.UUID
 
 import qualified Data.Map.Strict as M
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString.Lazy as A
+import Data.ByteString.Builder
+import Data.Char
 
 {- Records a description for a uuid in the log. -}
 describeUUID :: UUID -> UUIDDesc -> Annex ()
 describeUUID uuid desc = do
 	c <- currentVectorClock
 	Annex.Branch.change (Annex.Branch.RegardingUUID [uuid]) uuidLog $
-		buildLogOld buildUUIDDesc . changeLog c uuid desc . parseUUIDLog
+		buildLogOld builder . changeLog c uuid desc . parseUUIDLog
+  where
+	builder (UUIDDesc b) = byteString (escnewline b)
+	-- Escape any newline in the description, since newlines cannot
+	-- be present in the logged value. This is a one-way escaping.
+	escnewline = B.intercalate "\\n" . B.split newline
+	newline = fromIntegral (ord '\n')
 
 {- The map is cached for speed. -}
 uuidDescMap :: Annex UUIDDescMap

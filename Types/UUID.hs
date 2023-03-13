@@ -82,9 +82,6 @@ fromUUIDDesc (UUIDDesc d) = decodeBS d
 toUUIDDesc :: String -> UUIDDesc
 toUUIDDesc = UUIDDesc . encodeBS
 
-buildUUIDDesc :: UUIDDesc -> Builder
-buildUUIDDesc (UUIDDesc b) = byteString b
-
 type UUIDDescMap = M.Map UUID UUIDDesc
 
 instance Proto.Serializable UUID where
