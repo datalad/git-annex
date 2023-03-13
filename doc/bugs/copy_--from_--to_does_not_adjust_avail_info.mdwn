@@ -51,3 +51,5 @@ I would expect `copy` to make a record locally that now the content is also on d
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> [[fixed|done]] --[[Joey]]

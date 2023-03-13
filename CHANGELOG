@@ -13,6 +13,9 @@ git-annex (10.20230228) UNRELEASED; urgency=medium
     build.
   * importfeed: Display feed title.
   * init: Support being ran in a repository that has a newline in its path.
+  * copy: When --from and --to are combined and the content is already
+    present on the destination remote, update location tracking as
+    necessary.
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Feb 2023 12:31:14 -0400
 

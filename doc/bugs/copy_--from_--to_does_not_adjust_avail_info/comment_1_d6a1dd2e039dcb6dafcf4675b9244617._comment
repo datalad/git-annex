@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-03-13T18:34:36Z"
+ content="""
+Aah, I see, this is when the content is present on the --to
+remote, but git-annex is not locally aware of that yet.
+
+And `git-annex copy --to remote` does
+update location tracking in such a case, so --from --to should also.
+"""]]

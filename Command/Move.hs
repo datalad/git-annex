@@ -399,6 +399,9 @@ fromToPerform src dest removewhen key afile = do
 			Right True -> do
 				showAction $ "from " ++ Remote.name src
 				showAction $ "to " ++ Remote.name dest
+				-- The log may not indicate dest's copy
+				-- yet, so make sure it does.
+				logChange key (Remote.uuid dest) InfoPresent
 				-- Drop from src, checking copies including
 				-- the one already in dest.
 				dropfromsrc id
