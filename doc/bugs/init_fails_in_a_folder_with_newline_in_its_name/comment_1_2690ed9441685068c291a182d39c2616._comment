@@ -20,9 +20,4 @@ which can get a newline in a value with eg
 `git annex config --set annex.largefiles "xxx\nyyy"`
 and the result is that reading the value back out omits
 the part after the newline.
-
-Also, a newline in a subdirectory inside the repository breaks
-adding files in that directory with `git-annex add`.git-
-
-Newlines in filenames seem to work ok though...
 """]]
