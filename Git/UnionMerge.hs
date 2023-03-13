@@ -108,9 +108,9 @@ mergeFile info file hashhandle h = case S8.words info of
  -}
 calcMerge :: [(Ref, [L8.ByteString])] -> Either Ref [L8.ByteString]
 calcMerge shacontents
-	| null reuseable = Right new
-	| otherwise = Left $ fst $ Prelude.head reuseable
+	| null reusable = Right new
+	| otherwise = Left $ fst $ Prelude.head reusable
   where
-	reuseable = filter (\c -> sorteduniq (snd c) == new) shacontents
+	reusable = filter (\c -> sorteduniq (snd c) == new) shacontents
 	new = sorteduniq $ concat $ map snd shacontents
 	sorteduniq = S.toList . S.fromList

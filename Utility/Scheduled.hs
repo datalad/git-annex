@@ -113,7 +113,7 @@ calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 		(LocalTime endd (TimeOfDay 23 59 0))
 	findfrom r afterday candidate
 		| ynum candidate > (ynum (localDay currenttime)) + 100 =
-			-- avoid possible infinite recusion
+			-- avoid possible infinite recursion
 			error $ "bug: calcNextTime did not find a time within 100 years to run " ++
 			show (schedule, lasttime, currenttime)
 		| otherwise = findfromChecked r afterday candidate

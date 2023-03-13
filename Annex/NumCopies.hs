@@ -185,7 +185,7 @@ getNumMinCopiesAttr file =
 
 {- Checks if numcopies are satisfied for a file by running a comparison
  - between the number of (not untrusted) copies that are
- - belived to exist, and the configured value.
+ - believed to exist, and the configured value.
  -
  - This is good enough for everything except dropping the file, which
  - requires active verification of the copies.

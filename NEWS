@@ -30,7 +30,7 @@ git-annex (8.20200226) upstream; urgency=medium
   This version of git-annex uses repository version 8 for all repositories.
 
   Existing repositories will be automatically upgraded by default.
-  You can prevent this, by runing: git config annex.autoupgraderepository false
+  You can prevent this, by running: git config annex.autoupgraderepository false
  
   The upgrade process involves regenerating some sqlite databases. There are a
   couple consequences of the upgrade to keep in mind:
@@ -78,7 +78,7 @@ git-annex (7.20190912) upstream; urgency=medium
   This version of git-annex uses repository version 7 for all repositories.
 
   Existing v5 repositories will be automatically upgraded by default.
-  You can prevent this, by runing: git config annex.autoupgraderepository false
+  You can prevent this, by running: git config annex.autoupgraderepository false
 
   A v7 repository can can have some files locked while other files are
   unlocked, and all git and git-annex commands can be used on both locked and

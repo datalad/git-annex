@@ -463,7 +463,7 @@ findAdjustingCommit (AdjBranch b) = go =<< catCommit b
  - been propigated to the basis branch, and propigate them to the basis
  - branch and from there on to the orig branch.
  -
- - After propigating the commits back to the basis banch,
+ - After propigating the commits back to the basis branch,
  - rebase the adjusted branch on top of the updated basis branch.
  -}
 propigateAdjustedCommits :: OrigBranch -> Adjustment -> Annex ()

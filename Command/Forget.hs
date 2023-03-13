@@ -48,7 +48,7 @@ start o = starting "forget" ai si $ do
 perform :: Transitions -> Bool -> CommandPerform
 perform ts True = do
 	recordTransitions (Branch.change (Branch.RegardingUUID [])) ts
-	-- get branch committed before contining with the transition
+	-- get branch committed before continuing with the transition
 	_ <- Branch.update
 	void $ Branch.performTransitions ts True []
 	next $ return True

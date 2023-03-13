@@ -706,7 +706,7 @@ test_move_numcopies = intmpclonerepo $ do
 	annexed_notpresent annexedfile
 	inmainrepo $ annexed_present annexedfile
 	git_annex "get" [annexedfile] "get of file"
-	git_annex_shouldfail "move" ["--from", "origin", annexedfile] "move of file --from remote that violates numcopies setting not allowd"
+	git_annex_shouldfail "move" ["--from", "origin", annexedfile] "move of file --from remote that violates numcopies setting not allowed"
 	git_annex_shouldfail "move" ["--to", "origin", annexedfile] "move of file --to remote that violates numcopies setting not allowed"
 
 test_copy :: Assertion

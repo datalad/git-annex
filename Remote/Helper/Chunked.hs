@@ -239,7 +239,7 @@ removeChunks remover u chunkconfig encryptor k = do
  - chunkKeys until it finds one where the retriever successfully
  - gets the first chunked key.
  -
- - If retrival of one of the subsequent chunks throws an exception,
+ - If retrieval of one of the subsequent chunks throws an exception,
  - gives up. Note that partial data may have been written to the file
  - in this case.
  -
