@@ -1,0 +1,7 @@
+[codespell]
+skip = .git,*.pdf,*.svg,*._comment,jquery.*.js,*.mdwn,changelog,CHANGELOG,list.2018
+# some common variables etc (case insensitive)
+# keypair - constructs
+## May be TODO later, touches too much
+# sentinal -> sentinel
+ignore-words-list = dne,inout,fo,ot,bu,te,allright,inh,mor,myu,valus,keypair,pasttime,sentinal,startd,ifset
