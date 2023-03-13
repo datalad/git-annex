@@ -41,7 +41,7 @@ Possible reasons to make changes:
   git-annex checks both locations (eg, a bare repo defaults to xxx/yyy
   but really old ones might use xX/yY for some keys).
 
-  The mixed case hash directories have caused trouble on case-insensative
+  The mixed case hash directories have caused trouble on case-insensitive
   filesystems, although that has mostly been papered over to avoid
   problems. One remaining problem users can stuble on occurs
   when [[moving a repository from OSX to Linux|bugs/OSX_case_insensitive_filesystem]].

@@ -24,7 +24,7 @@ import Data.Char
 
 newtype Glob = Glob Regex
 
-data GlobCase = CaseSensative | CaseInsensative
+data GlobCase = CaseSensitive | CaseInsensitive
 
 -- Is the glob being used to match filenames? 
 --
@@ -44,8 +44,8 @@ compileGlob glob globcase globfilepath = Glob $
   where
 	regex = '^' : wildToRegex globfilepath glob ++ "$"
 	casesentitive = case globcase of
-		CaseSensative -> True
-		CaseInsensative -> False
+		CaseSensitive -> True
+		CaseInsensitive -> False
 
 wildToRegex :: GlobFilePath -> String -> String
 wildToRegex (GlobFilePath globfile) = concat . go

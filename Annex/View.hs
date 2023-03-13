@@ -176,7 +176,7 @@ combineViewFilter old@(ExcludeValues olds) (ExcludeValues news)
 combineViewFilter (FilterValues _) newglob@(FilterGlob _) =
 	(newglob, Widening)
 combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
-	| all (matchGlob (compileGlob oldglob CaseInsensative (GlobFilePath False)) . decodeBS . fromMetaValue) (S.toList s) = (new, Narrowing)
+	| all (matchGlob (compileGlob oldglob CaseInsensitive (GlobFilePath False)) . decodeBS . fromMetaValue) (S.toList s) = (new, Narrowing)
 	| otherwise = (new, Widening)
 {- With two globs, the old one is discarded, and the new one is used.
  - We can tell if that's a narrowing change by checking if the old
@@ -185,7 +185,7 @@ combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
  - widening. -}
 combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
 	| old == new = (newglob, Unchanged)
-	| matchGlob (compileGlob old CaseInsensative (GlobFilePath False)) new = (newglob, Narrowing)
+	| matchGlob (compileGlob old CaseInsensitive (GlobFilePath False)) new = (newglob, Narrowing)
 	| otherwise = (newglob, Widening)
 {- Combining FilterValuesOrUnset and FilterGlobOrUnset with FilterValues
  - and FilterGlob maintains the OrUnset if the second parameter has it,
@@ -220,7 +220,7 @@ combineViewFilter (FilterGlobOrUnset oldglob _) new@(FilterValuesOrUnset _ _) =
 	in (new, viewchange)
 combineViewFilter (FilterGlobOrUnset old _) newglob@(FilterGlobOrUnset new _)
 	| old == new = (newglob, Unchanged)
-	| matchGlob (compileGlob old CaseInsensative (GlobFilePath False)) new = (newglob, Narrowing)
+	| matchGlob (compileGlob old CaseInsensitive (GlobFilePath False)) new = (newglob, Narrowing)
 	| otherwise = (newglob, Widening)
 combineViewFilter (FilterGlob _) newglob@(FilterGlobOrUnset _ _) =
 	(newglob, Widening)
@@ -285,7 +285,7 @@ viewComponentMatcher viewcomponent = \metadata ->
 	matcher matchunset (FilterValues s) = 
 		\values -> setmatches matchunset $ S.intersection s values
 	matcher matchunset (FilterGlob glob) =
-		let cglob = compileGlob glob CaseInsensative (GlobFilePath False)
+		let cglob = compileGlob glob CaseInsensitive (GlobFilePath False)
 		in \values -> setmatches matchunset $
 			S.filter (matchGlob cglob . decodeBS . fromMetaValue) values
 	matcher _ (ExcludeValues excludes) = 

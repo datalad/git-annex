@@ -17,8 +17,8 @@ It's actually possible to make brand-new git-annex repos use all lower case
 hash directories today, by setting `git config annex.tune.objecthashlower true`
 before you run `git annex init` for the first time. 
 
-If you know you will need to move a repository between case-insensative and
-case-sensative filesystems, you could use that configuration. But that
+If you know you will need to move a repository between case-insensitive and
+case-sensitive filesystems, you could use that configuration. But that
 would be very forward looking, and instead users are just going to stumble
 over the mixed case directories from time to time.
 

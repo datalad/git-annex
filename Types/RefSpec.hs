@@ -22,7 +22,7 @@ data RefSpecPart
 	| RemoveMatching Glob
 
 allRefSpec :: RefSpec
-allRefSpec = [AddMatching $ compileGlob "*" CaseSensative (GlobFilePath False)]
+allRefSpec = [AddMatching $ compileGlob "*" CaseSensitive (GlobFilePath False)]
 
 parseRefSpec :: String -> Either String RefSpec
 parseRefSpec v = case partitionEithers (map mk $ splitc ':' v) of
@@ -31,9 +31,9 @@ parseRefSpec v = case partitionEithers (map mk $ splitc ':' v) of
   where
 	mk ('+':s)
 		| any (`elem` s) "*?" =
-			Right $ AddMatching $ compileGlob s CaseSensative (GlobFilePath False)
+			Right $ AddMatching $ compileGlob s CaseSensitive (GlobFilePath False)
 		| otherwise = Right $ AddRef $ Ref $ encodeBS s
-	mk ('-':s) = Right $ RemoveMatching $ compileGlob s CaseSensative (GlobFilePath False)
+	mk ('-':s) = Right $ RemoveMatching $ compileGlob s CaseSensitive (GlobFilePath False)
 	mk "reflog" = Right AddRefLog
 	mk s = Left $ "bad refspec item \"" ++ s ++ "\" (expected + or - prefix)"
 

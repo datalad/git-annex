@@ -111,7 +111,7 @@ parseMetaDataMatcher p = (,)
 		('>':v) -> checkcmp (>) (>) v
 		_ -> checkglob ""
 	checkglob v =
-		let cglob = compileGlob v CaseInsensative (GlobFilePath False)
+		let cglob = compileGlob v CaseInsensitive (GlobFilePath False)
 		in matchGlob cglob . decodeBS . fromMetaValue
 	checkcmp cmp cmp' v mv' = 
 		let v' = decodeBS (fromMetaValue mv')

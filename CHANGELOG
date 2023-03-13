@@ -5117,14 +5117,14 @@ git-annex (5.20140227) unstable; urgency=medium
 
   * metadata: Field names limited to alphanumerics and a few whitelisted
     punctuation characters to avoid issues with views, etc.
-  * metadata: Field names are now case insensative.
+  * metadata: Field names are now case insensitive.
   * When constructing views, metadata is available about the location of the
     file in the view's reference branch. Allows incorporating parts of the
     directory hierarchy in a view.
     For example `git annex view tag=* podcasts/=*` makes a view in the form
     tag/showname.
   * --metadata field=value can now use globs to match, and matches
-    case insensatively, the same as git annex view field=value does.
+    case insensitively, the same as git annex view field=value does.
   * annex.genmetadata can be set to make git-annex automatically set
     metadata (year and month) when adding files.
   * Make annex.web-options be used in several places that call curl.

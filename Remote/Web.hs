@@ -202,7 +202,7 @@ mkUrlIncludeExclude = go fallback
 
 	getglob f pc = do
 		glob <- getRemoteConfigValue f pc
-		Just $ compileGlob glob CaseInsensative (GlobFilePath False)
+		Just $ compileGlob glob CaseInsensitive (GlobFilePath False)
 	
 	mk minclude mexclude = pure $ UrlIncludeExclude
 			{ checkUrlIncludeExclude = \u -> and
