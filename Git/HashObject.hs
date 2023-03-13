@@ -1,6 +1,6 @@
 {- git hash-object interface
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,26 +21,47 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Builder
+import Data.Char
 
-type HashObjectHandle = CoProcess.CoProcessHandle
+data HashObjectHandle = HashObjectHandle CoProcess.CoProcessHandle Repo [CommandParam]
 
 hashObjectStart :: Bool -> Repo -> IO HashObjectHandle
-hashObjectStart writeobject = gitCoProcessStart True $ catMaybes
-	[ Just (Param "hash-object")
-	, if writeobject then Just (Param "-w") else Nothing
-	, Just (Param "--stdin-paths")
-	, Just (Param "--no-filters")
-	]
+hashObjectStart writeobject repo = do
+	h <- gitCoProcessStart True (ps ++ [Param "--stdin-paths"]) repo
+	return (HashObjectHandle h repo ps)
+  where
+	ps = catMaybes
+		[ Just (Param "hash-object")
+		, if writeobject then Just (Param "-w") else Nothing
+		, Just (Param "--no-filters")
+		]
 
 hashObjectStop :: HashObjectHandle -> IO ()
-hashObjectStop = CoProcess.stop
+hashObjectStop (HashObjectHandle h _ _) = CoProcess.stop h
 
 {- Injects a file into git, returning the Sha of the object. -}
 hashFile :: HashObjectHandle -> RawFilePath -> IO Sha
-hashFile h file = CoProcess.query h send receive
+hashFile hdl@(HashObjectHandle h _ _) file = do
+	-- git hash-object chdirs to the top of the repository on
+	-- start, so if the filename is relative, it will
+	-- not work. This seems likely to be a git bug.
+	-- So, make the filename absolute, which will work now
+	-- and also if git's behavior later changes.
+	file' <- absPath file
+	if newline `S.elem` file'
+		then hashFile' hdl file
+		else CoProcess.query h (send file') receive
   where
-	send to = S8.hPutStrLn to =<< absPath file
+	send file' to = S8.hPutStrLn to file'
 	receive from = getSha "hash-object" $ S8.hGetLine from
+	newline = fromIntegral (ord '\n')
+
+{- Runs git hash-object once per call, rather than using a running
+ - one, so is slower. But, is able to handle newlines in the filepath,
+ - which --stdin-paths cannot. -}
+hashFile' :: HashObjectHandle -> RawFilePath -> IO Sha
+hashFile' (HashObjectHandle _ repo ps) file = getSha "hash-object" $
+	pipeReadStrict (ps ++ [File (fromRawFilePath file)]) repo
 
 class HashableBlob t where
 	hashableBlobToHandle :: Handle -> t -> IO ()
