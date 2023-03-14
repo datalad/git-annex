@@ -67,14 +67,14 @@ runFsckForm new activity = case activity of
 			(reposRes, reposView) <- mreq (selectFieldList repolist) (bfs "") (Just ru)
 			(durationRes, durationView) <- mreq intField (bfs "") (Just $ durationSeconds d `quot` 60 )
 			(timeRes, timeView) <- mreq (selectFieldList times) (bfs "") (Just t)
-			(recurranceRes, recurranceView) <- mreq (selectFieldList recurrances) (bfs "") (Just r)
+			(recurrenceRes, recurrenceView) <- mreq (selectFieldList recurrences) (bfs "") (Just r)
 			let form = do
 				webAppFormAuthToken
 				$(widgetFile "configurators/fsck/formcontent")
 			let formresult = mkFsck
 				<$> pure u
 				<*> reposRes
-				<*> (Schedule <$> recurranceRes <*> timeRes)
+				<*> (Schedule <$> recurrenceRes <*> timeRes)
 				<*> (Duration <$> ((60 *) <$> durationRes))
 			return (formresult, form)
 	  where
@@ -82,8 +82,8 @@ runFsckForm new activity = case activity of
 		times = ensurevalue t (T.pack $ fromScheduledTime t) $
 			map (\x -> (T.pack $ fromScheduledTime x, x)) $
 				AnyTime : map (\h -> SpecificTime h 0) [0..23]
-		recurrances :: [(Text, Recurrance)]
-		recurrances = ensurevalue r (T.pack $ fromRecurrance r) $
+		recurrences :: [(Text, Recurrence)]
+		recurrences = ensurevalue r (T.pack $ fromRecurrence r) $
 			[ ("every day", Daily)
 			, ("every Sunday", Weekly $ Just 1)
 			, ("every Monday", Weekly $ Just 2)

@@ -7,7 +7,7 @@
 
 module Utility.Scheduled (
 	Schedule(..),
-	Recurrance(..),
+	Recurrence(..),
 	ScheduledTime(..),
 	NextTime(..),
 	WeekDay,
@@ -19,8 +19,8 @@ module Utility.Scheduled (
 	fromSchedule,
 	fromScheduledTime,
 	toScheduledTime,
-	fromRecurrance,
-	toRecurrance,
+	fromRecurrence,
+	toRecurrence,
 	toSchedule,
 	parseSchedule,
 	prop_past_sane,
@@ -44,15 +44,15 @@ import Control.Applicative
 import Prelude
 
 {- Some sort of scheduled event. -}
-data Schedule = Schedule Recurrance ScheduledTime
+data Schedule = Schedule Recurrence ScheduledTime
 	deriving (Eq, Read, Show, Ord)
 
-data Recurrance
+data Recurrence
 	= Daily
 	| Weekly (Maybe WeekDay)
 	| Monthly (Maybe MonthDay)
 	| Yearly (Maybe YearDay)
-	| Divisible Int Recurrance
+	| Divisible Int Recurrence
 	-- ^ Days, Weeks, or Months of the year evenly divisible by a number.
 	-- (Divisible Year is years evenly divisible by a number.)
 	deriving (Eq, Read, Show, Ord)
@@ -89,7 +89,7 @@ nextTime schedule lasttime = do
 -- | Calculate the next time that fits a Schedule, based on the
 -- last time it occurred, and the current time.
 calcNextTime :: Schedule -> Maybe LocalTime -> LocalTime -> Maybe NextTime
-calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
+calcNextTime schedule@(Schedule recurrence scheduledtime) lasttime currenttime
 	| scheduledtime == AnyTime = do
 		next <- findfromtoday True
 		return $ case next of
@@ -97,7 +97,7 @@ calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 			NextTimeExactly t -> window (localDay t) (localDay t)
 	| otherwise = NextTimeExactly . startTime <$> findfromtoday False
   where
-	findfromtoday anytime = findfrom recurrance afterday today
+	findfromtoday anytime = findfrom recurrence afterday today
 	  where
 		today = localDay currenttime
 		afterday = sameaslastrun || toolatetoday
@@ -225,24 +225,24 @@ maxmnum = 12
 maxwday :: Int
 maxwday = 7
 
-fromRecurrance :: Recurrance -> String
-fromRecurrance (Divisible n r) =
-	fromRecurrance' (++ "s divisible by " ++ show n) r
-fromRecurrance r = fromRecurrance' ("every " ++) r
+fromRecurrence :: Recurrence -> String
+fromRecurrence (Divisible n r) =
+	fromRecurrence' (++ "s divisible by " ++ show n) r
+fromRecurrence r = fromRecurrence' ("every " ++) r
 
-fromRecurrance' :: (String -> String) -> Recurrance -> String
-fromRecurrance' a Daily = a "day"
-fromRecurrance' a (Weekly n) = onday n (a "week")
-fromRecurrance' a (Monthly n) = onday n (a "month")
-fromRecurrance' a (Yearly n) = onday n (a "year")
-fromRecurrance' a (Divisible _n r) = fromRecurrance' a r -- not used
+fromRecurrence' :: (String -> String) -> Recurrence -> String
+fromRecurrence' a Daily = a "day"
+fromRecurrence' a (Weekly n) = onday n (a "week")
+fromRecurrence' a (Monthly n) = onday n (a "month")
+fromRecurrence' a (Yearly n) = onday n (a "year")
+fromRecurrence' a (Divisible _n r) = fromRecurrence' a r -- not used
 
 onday :: Maybe Int -> String -> String
 onday (Just n) s = "on day " ++ show n ++ " of " ++ s
 onday Nothing s = s
 
-toRecurrance :: String -> Maybe Recurrance
-toRecurrance s = case words s of
+toRecurrence :: String -> Maybe Recurrence
+toRecurrence s = case words s of
 	("every":"day":[]) -> Just Daily
 	("on":"day":sd:"of":"every":something:[]) -> withday sd something
 	("every":something:[]) -> noday something
@@ -316,8 +316,8 @@ toScheduledTime v = case words v of
 			<*> if null m then Just 0 else readish m
 
 fromSchedule :: Schedule -> String
-fromSchedule (Schedule recurrance scheduledtime) = unwords
-	[ fromRecurrance recurrance
+fromSchedule (Schedule recurrence scheduledtime) = unwords
+	[ fromRecurrence recurrence
 	, "at"
 	, fromScheduledTime scheduledtime
 	]
@@ -327,14 +327,14 @@ toSchedule = eitherToMaybe . parseSchedule
 
 parseSchedule :: String -> Either String Schedule
 parseSchedule s = do
-	r <- maybe (Left $ "bad recurrance: " ++ recurrance) Right
-		(toRecurrance recurrance)
+	r <- maybe (Left $ "bad recurrence: " ++ recurrence) Right
+		(toRecurrence recurrence)
 	t <- maybe (Left $ "bad time of day: " ++ scheduledtime) Right
 		(toScheduledTime scheduledtime)
 	Right $ Schedule r t
   where
 	(rws, tws) = separate (== "at") (words s)
-	recurrance = unwords rws
+	recurrence = unwords rws
 	scheduledtime = unwords tws
 
 prop_past_sane :: Bool

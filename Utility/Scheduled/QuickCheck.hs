@@ -26,7 +26,7 @@ instance Arbitrary ScheduledTime where
 			<*> choose (1, 59)
 		]
 
-instance Arbitrary Recurrance where
+instance Arbitrary Recurrence where
 	arbitrary = oneof
 		[ pure Daily
 		, Weekly <$> arbday

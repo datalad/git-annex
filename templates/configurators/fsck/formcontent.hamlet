@@ -7,7 +7,7 @@
     ^{fvInput durationView} minutes #
   <div .form-group>
     \ 
-    ^{fvInput recurranceView} #
+    ^{fvInput recurrenceView} #
   \ 
   starting at ^{fvInput timeView} #
   $if new
