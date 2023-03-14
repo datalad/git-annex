@@ -16,7 +16,7 @@ cmd :: Command
 cmd = noCommit $ noMessages $ dontCheck repoExists $
 	withAnnexOptions [backendOption] $
 		command "calckey" SectionPlumbing 
-			"calulate key for a file"
+			"calculate key for a file"
 			(paramRepeating paramFile)
 			(batchable run (pure ()))
 

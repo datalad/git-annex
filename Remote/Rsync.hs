@@ -205,7 +205,7 @@ rsyncSetup _ mu _ c gc = do
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The rsyncurl is stored in git config, not only in this remote's
-	-- persistant state, so it can vary between hosts.
+	-- persistent state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' [("rsyncurl", url)]
 	return (c', u)
 
@@ -283,7 +283,7 @@ removeGeneric o includes = do
 	ps <- sendParams
 	opts <- rsyncOptions o
 	ok <- withRsyncScratchDir $ \tmp -> liftIO $ do
-		{- Send an empty directory to rysnc to make it delete. -}
+		{- Send an empty directory to rsync to make it delete. -}
 		rsync $ opts ++ ps ++
 			map (\s -> Param $ "--include=" ++ s) includes ++
 			[ Param "--exclude=*" -- exclude everything else

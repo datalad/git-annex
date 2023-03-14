@@ -18,7 +18,7 @@ data RepoProblem = RepoProblem
 	, afterFix :: IO ()
 	}
 
-{- The afterFix actions are assumed to all be equivilant. -}
+{- The afterFix actions are assumed to all be equivalent. -}
 sameRepoProblem :: RepoProblem -> RepoProblem -> Bool
 sameRepoProblem = (==) `on` problemUUID
 

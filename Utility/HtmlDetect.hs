@@ -48,7 +48,7 @@ isHtmlBs = isHtml . B8.unpack
 
 -- | Check if the file is html.
 --
--- It would be equivilant to use isHtml <$> readFile file,
+-- It would be equivalent to use isHtml <$> readFile file,
 -- but since that would not read all of the file, the handle
 -- would remain open until it got garbage collected sometime later.
 isHtmlFile :: FilePath -> IO Bool

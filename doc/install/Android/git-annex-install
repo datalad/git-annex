@@ -4,7 +4,7 @@
 # 
 # This is only a convenience script to avoid the user needing to type much
 # in termux. The standalone tarball automatically adapts itself to the termux
-# environment, so this script should stay as mininal as possible.
+# environment, so this script should stay as minimal as possible.
 #
 # This script needs to be sourced into the current termux shell, rather
 # than run with a new shell, so it can set the PATH to include git-annex.

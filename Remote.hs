@@ -99,7 +99,7 @@ remoteMap' mkv mkk = M.fromList . catMaybes <$> (mapM mk =<< remoteList)
 		Just k -> Just (k, mkv r)
 
 {- Map of UUIDs of repositories and their descriptions.
- - The names of Remotes are added to suppliment any description that has
+ - The names of Remotes are added to supplement any description that has
  - been set for a repository.  -}
 uuidDescriptions :: Annex UUIDDescMap
 uuidDescriptions = M.unionWith addName

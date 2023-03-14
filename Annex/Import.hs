@@ -492,7 +492,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	startimport cidmap importing db i@(loc, (cid, _sz)) oldversion largematcher = getcidkey cidmap db cid >>= \case
 		(k:ks) ->
 			-- If the same content was imported before
-			-- yeilding multiple different keys, it's not clear
+			-- yielding multiple different keys, it's not clear
 			-- which is best to use this time, so pick the
 			-- first in the list. But, if any of them is a
 			-- git sha, use it, because the content must

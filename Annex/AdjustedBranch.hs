@@ -460,7 +460,7 @@ findAdjustingCommit (AdjBranch b) = go =<< catCommit b
 			_ -> return Nothing
 
 {- Check for any commits present on the adjusted branch that have not yet
- - been propigated to the basis branch, and propigate them to the basis
+ - been propigated to the basis branch, and propagate them to the basis
  - branch and from there on to the orig branch.
  -
  - After propigating the commits back to the basis branch,
@@ -536,7 +536,7 @@ rebaseOnTopMsg = "rebasing adjusted branch on top of updated original branch"
 reverseAdjustedCommit :: Sha -> Adjustment -> (Sha, Commit) -> OrigBranch -> Annex (Either String Sha)
 reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
 	| length (commitParent basiscommit) > 1 = return $
-		Left $ "unable to propigate merge commit " ++ show csha ++ " back to " ++ show origbranch
+		Left $ "unable to propagate merge commit " ++ show csha ++ " back to " ++ show origbranch
 	| otherwise = do
 		cmode <- annexCommitMode <$> Annex.getGitConfig
 		treesha <- reverseAdjustedTree commitparent adj csha

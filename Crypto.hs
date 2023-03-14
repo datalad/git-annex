@@ -1,7 +1,7 @@
 {- git-annex crypto
  -
  - Currently using gpg; could later be modified to support different
- - crypto backends if neccessary.
+ - crypto backends if necessary.
  -
  - Copyright 2011-2022 Joey Hess <id@joeyh.name>
  -
@@ -62,7 +62,7 @@ import qualified Data.ByteString.Short as S (toShort)
  - (ideally) 64 and 128 bytes of entropy.
  -
  - The remaining characters (320 bytes of entropy) is enough for GnuPG's
- - symetric cipher; unlike weaker public key crypto, the key does not
+ - symmetric cipher; unlike weaker public key crypto, the key does not
  - need to be too large.
  -}
 cipherBeginning :: Int
@@ -164,7 +164,7 @@ decryptCipher' cmd environ c (EncryptedCipher t variant _) =
 type EncKey = Key -> Key
 
 {- Generates an encrypted form of a Key. The encryption does not need to be
- - reversable, nor does it need to be the same type of encryption used
+ - reversible, nor does it need to be the same type of encryption used
  - on content. It does need to be repeatable. -}
 encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = mkKey $ \d -> d

@@ -52,7 +52,7 @@ watchDir dir ignored scanevents hooks = do
 					else maybe (runhook delHook Nothing) handleadd
 						=<< getstatus (eventPath evt)
 			{- Add hooks are run when a file is modified for 
-			 - compatability with INotify, which calls the add
+			 - compatibility with INotify, which calls the add
 			 - hook when a file is closed, and so tends to call
 			 - both add and modify for file modifications. -}
 			when (hasflag eventFlagItemModified && not (hasflag eventFlagItemIsDir)) $ do

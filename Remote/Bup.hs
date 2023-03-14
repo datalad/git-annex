@@ -137,7 +137,7 @@ bupSetup _ mu _ c gc = do
 	storeBupUUID u buprepo
 
 	-- The buprepo is stored in git config, as well as this repo's
-	-- persistant state, so it can vary between hosts.
+	-- persistent state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' [("buprepo", buprepo)]
 
 	return (c', u)

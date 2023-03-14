@@ -27,7 +27,7 @@ import Control.Concurrent
 
 {- This is an arbitrary port in the dynamic port range, that could
  - conceivably be used for some other broadcast messages.
- - If so, hope they ignore the garbage from us; we'll certianly
+ - If so, hope they ignore the garbage from us; we'll certainly
  - ignore garbage from them. Wild wild west. -}
 pairingPort :: PortNumber
 pairingPort = 55556

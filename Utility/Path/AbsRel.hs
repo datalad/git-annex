@@ -37,7 +37,7 @@ import Utility.FileSystemEncoding
  - Also simplifies it using simplifyPath.
  -
  - The first parameter is a base directory (ie, the cwd) to use if the path
- - is not already absolute, and should itsef be absolute.
+ - is not already absolute, and should itself be absolute.
  -
  - Does not attempt to deal with edge cases or ensure security with
  - untrusted inputs.

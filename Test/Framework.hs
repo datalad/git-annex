@@ -724,7 +724,7 @@ runFakeSsh (_host:cmd:[]) =
 		\_ _ _ pid -> exitWith =<< waitForProcess pid
 runFakeSsh ps = error $ "fake ssh option parse error: " ++ show ps
 
-{- Tests each TestTree in parallel, and exits with succcess/failure.
+{- Tests each TestTree in parallel, and exits with success/failure.
  -
  - Tasty supports parallel tests, but this does not use it, because
  - many tests need to be run in test repos, and chdir would not be 

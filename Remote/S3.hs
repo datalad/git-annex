@@ -868,7 +868,7 @@ giveupS3HandleProblem S3HandleNeedCreds u = do
 	warning $ needS3Creds u
 	giveup "No S3 credentials configured"
 giveupS3HandleProblem S3HandleAnonymousOldAws _ =
-	giveup "This S3 special remote is configured with signature=anonymous, but git-annex is buit with too old a version of the aws library to support that."
+	giveup "This S3 special remote is configured with signature=anonymous, but git-annex is built with too old a version of the aws library to support that."
 
 {- Prepares a S3Handle for later use. Does not connect to S3 or do anything
  - else expensive. -}

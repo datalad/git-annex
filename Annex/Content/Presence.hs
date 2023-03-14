@@ -164,7 +164,7 @@ contentLockFile :: Key -> Maybe RepoVersion -> Annex (Maybe RawFilePath)
 #ifndef mingw32_HOST_OS
 {- Older versions of git-annex locked content files themselves, but newer
  - versions use a separate lock file, to better support repos shared
- - amoung users in eg a group. -}
+ - among users in eg a group. -}
 contentLockFile key v
 	| versionNeedsWritableContentFiles v = pure Nothing
 	| otherwise = Just <$> calcRepo (gitAnnexContentLock key)

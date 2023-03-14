@@ -33,7 +33,7 @@ import Data.Maybe
 -- Note on indexes: KeyFileIndex etc are really uniqueness constraints,
 -- which cause sqlite to automatically add indexes. So when adding indexes,
 -- have to take care to only add ones that work as uniqueness constraints.
--- (Unfortunatly persistent does not support indexes that are not
+-- (Unfortunately persistent does not support indexes that are not
 -- uniqueness constraints; https://github.com/yesodweb/persistent/issues/109)
 --
 -- To speed up queries for a key, there's KeyFileIndex, 

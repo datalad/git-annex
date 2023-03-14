@@ -73,7 +73,7 @@ privateUUIDsKnown' = not . S.null . annexPrivateRepos . Annex.gitconfig
 
 {- Records content for a file in the branch to the journal.
  -
- - Using the journal, rather than immediatly staging content to the index
+ - Using the journal, rather than immediately staging content to the index
  - avoids git needing to rewrite the index after every change.
  - 
  - The file in the journal is updated atomically. This avoids an

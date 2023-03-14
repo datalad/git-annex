@@ -153,7 +153,7 @@ directorySetup _ mu _ c gc = do
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The directory is stored in git config, not in this remote's
-	-- persistant state, so it can vary between hosts.
+	-- persistent state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' [("directory", absdir)]
 	return (M.delete directoryField c', u)
 

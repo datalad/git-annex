@@ -84,7 +84,7 @@ urlField = Accepted "url"
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
 gen r u rc gc rs = do
 	c <- parsedRemoteConfig remote rc
-	-- If the repo uses gcrypt, get the underlaying repo without the
+	-- If the repo uses gcrypt, get the underlying repo without the
 	-- gcrypt url, to do LFS endpoint discovery on.
 	r' <- if Git.GCrypt.isEncrypted r
 		then do

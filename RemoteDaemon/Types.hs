@@ -51,7 +51,7 @@ data Emitted
 	| WARNING RemoteURI String
 	deriving (Show)
 
--- Messages that the deamon consumes.
+-- Messages that the daemon consumes.
 data Consumed
 	= PAUSE
 	| LOSTNET

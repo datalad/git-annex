@@ -163,9 +163,9 @@ listenNMConnections client setconnected =
  -   ConnectResultsSent:
  -     Variant "success"
  -
- - Diconnection example:
+ - Disconnection example:
  -   StatusChanged
- -     [Variant 0, Variant [Varient ""]]
+ -     [Variant 0, Variant [Variant ""]]
  -}
 listenWicdConnections :: Client -> (Bool -> IO ()) -> IO ()
 listenWicdConnections client setconnected = do

@@ -55,7 +55,7 @@ mklibs top _installedbins = do
   where
 	-- hwcap lib dirs are things like foo/tls and foo/x86.
 	-- Hard to know if a directory is, so this is a heuristic
-	-- looking for things that are certianly not. If this heuristic
+	-- looking for things that are certainly not. If this heuristic
 	-- fails, a minor optimisation will not happen, but there will be
 	-- no bad results.
 	hwcaplibdir d = not $ or

@@ -392,9 +392,9 @@ withTmp key action = do
  - with colliding files it's their own fault and B) adding such a check
  - would not catch all cases of colliding keys. For example, perhaps 
  - a remote has a key; if it's then added again with different content then
- - the overall system now has two different peices of content for that
+ - the overall system now has two different pieces of content for that
  - key, and one of them will probably get deleted later. So, adding the
- - check here would only raise expectations that git-annex cannot truely
+ - check here would only raise expectations that git-annex cannot truly
  - meet.
  -
  - May return false, when a particular variety of key is not being
@@ -555,7 +555,7 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex' key
 {- Returns a file that contains an object's content,
  - and a check to run after the transfer is complete.
  -
- - When a file is unlocked, it's possble for its content to
+ - When a file is unlocked, it's possible for its content to
  - change as it's being sent. The check detects this case
  - and returns False.
  -

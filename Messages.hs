@@ -136,7 +136,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "recording state in git"
 
-{- Performs an action, supressing showSideAction messages. -}
+{- Performs an action, suppressing showSideAction messages. -}
 doQuietSideAction :: Annex a -> Annex a
 doQuietSideAction = doSideAction' InBlock
 

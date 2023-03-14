@@ -104,7 +104,7 @@ otool appbase installedbins replacement_libs libmap = do
 		-- ImageIO.framework uses libPng which is built against a
 		-- specific version of libz; other versions lack the
 		-- _inflateValidate symbol. So, avoid bundling libz unless
-		-- this incompatability is resolved.
+		-- this incompatibility is resolved.
 		&& not ("libz." `isInfixOf` s)
 	lib_present s
 		| "@rpath" `isInfixOf` s = return True

@@ -151,7 +151,7 @@ rsyncParamsRemote r direction key file = do
 	{- The rsync shell parameter controls where rsync
 	 - goes, so the source/dest parameter can be a dummy value,
 	 - that just enables remote rsync mode.
-	 - For maximum compatability with some patched rsyncs,
+	 - For maximum compatibility with some patched rsyncs,
 	 - the dummy value needs to still contain a hostname,
 	 - even though this hostname will never be used. -}
 	dummy = Param "dummy:"

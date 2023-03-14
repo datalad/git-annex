@@ -80,7 +80,7 @@ onModify file = case parseTransferFile file of
 		\i -> i { bytesComplete = bytesComplete newinfo }
 
 {- This thread can only watch transfer sizes when the DirWatcher supports
- - tracking modificatons to files. -}
+ - tracking modifications to files. -}
 watchesTransferSize :: Bool
 watchesTransferSize = modifyTracked
 

@@ -94,7 +94,7 @@ autoStart o = do
 						, putStrLn "failed"
 						)
 				return Nothing
-	-- Wait for any foreground jobs to finish and propigate exit status.
+	-- Wait for any foreground jobs to finish and propagate exit status.
 	ifM (all (== True) <$> mapConcurrently checkSuccessProcess (catMaybes pids))
 		( exitSuccess
 		, exitFailure

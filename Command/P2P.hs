@@ -87,7 +87,7 @@ unusedPeerRemoteName = go (1 :: Integer) =<< usednames
 
 -- Only addresses are output to stdout, to allow scripting.
 genAddresses :: [P2PAddress] -> Annex ()
-genAddresses [] = giveup "No P2P networks are currrently available."
+genAddresses [] = giveup "No P2P networks are currently available."
 genAddresses addrs = do
 	authtoken <- liftIO $ genAuthToken 128
 	storeP2PAuthToken authtoken
@@ -124,7 +124,7 @@ linkRemote remotename = starting "p2p link" ai si $
 						AuthenticationError e -> giveup e
 
 startPairing :: RemoteName -> [P2PAddress] -> CommandStart
-startPairing _ [] = giveup "No P2P networks are currrently available."
+startPairing _ [] = giveup "No P2P networks are currently available."
 startPairing remotename addrs = ifM (liftIO Wormhole.isInstalled)
 	( starting "p2p pair" ai si $
 		performPairing remotename addrs

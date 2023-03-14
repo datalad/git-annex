@@ -53,13 +53,13 @@ isLoopbackAddress :: SockAddr -> Bool
 isLoopbackAddress (SockAddrInet _ ipv4) = case hostAddressToTuple ipv4 of
 	-- localhost
 	(127,_,_,_) -> True
-	-- current network; functions equivilant to loopback
+	-- current network; functions equivalent to loopback
 	(0,_,_, _) -> True
 	_ -> False
 isLoopbackAddress (SockAddrInet6 _ _ ipv6 _) = case hostAddress6ToTuple ipv6 of
 	-- localhost
 	(0,0,0,0,0,0,0,1) -> True
-	-- unspecified address; functions equivilant to loopback
+	-- unspecified address; functions equivalent to loopback
 	(0,0,0,0,0,0,0,0) -> True
 	v -> maybe False
 		(isLoopbackAddress . SockAddrInet 0)

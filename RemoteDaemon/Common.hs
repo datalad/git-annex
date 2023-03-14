@@ -42,7 +42,7 @@ checkShouldFetch gc transporthandle shas
 	| remoteAnnexPull gc = checkNewShas transporthandle shas
 	| otherwise = return False
 
--- Check if any of the shas are actally new in the local git repo,
+-- Check if any of the shas are actually new in the local git repo,
 -- to avoid unnecessary fetching.
 checkNewShas :: TransportHandle -> [Git.Sha] -> IO Bool
 checkNewShas transporthandle = check

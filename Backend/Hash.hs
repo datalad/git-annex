@@ -281,7 +281,7 @@ md5Hasher = mkHasher md5 md5_context
 descChecksum :: String
 descChecksum = "checksum"
 
-{- A varient of the SHA256E backend, for testing that needs special keys
+{- A variant of the SHA256E backend, for testing that needs special keys
  - that cannot collide with legitimate keys in the repository.
  -
  - This is accomplished by appending a special extension to the key,

@@ -33,7 +33,7 @@ import qualified Data.Attoparsec.ByteString.Lazy as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 
--- This constuctor is not itself exported to other modules, to enforce
+-- This constructor is not itself exported to other modules, to enforce
 -- consistent use of exportedTreeishes.
 data Exported = Exported
 	{ exportedTreeish :: Git.Ref

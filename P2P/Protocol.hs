@@ -263,7 +263,7 @@ data LocalF c
 	-- so, terminate the protocol connection.
 	--
 	-- If the validity check is provided and fails, the content was
-	-- changed while it was being sent, so verificiation of the
+	-- changed while it was being sent, so verification of the
 	-- received content should be forced.
 	--
 	-- Note: The ByteString may not contain the entire remaining content
@@ -387,7 +387,7 @@ serverLoop a = do
 		-- gives up, since it's not clear what state the client
 		-- is in, and so not possible to recover.
 		Just (ERROR _) -> return Nothing
-		-- When the client sends an unparseable message, the server
+		-- When the client sends an unparsable message, the server
 		-- responds with an error message, and loops. This allows
 		-- expanding the protocol with new messages.
 		Nothing -> do

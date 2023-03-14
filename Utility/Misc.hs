@@ -94,7 +94,7 @@ prop_segment_regressionTest :: Bool
 prop_segment_regressionTest = all id
 	-- Even an empty list is a segment.
 	[ segment (== "--") [] == [[]]
-	-- There are two segements in this list, even though the first is empty.
+	-- There are two segments in this list, even though the first is empty.
 	, segment (== "--") ["--", "foo", "bar"] == [[],["foo","bar"]]
 	]
 

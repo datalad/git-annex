@@ -23,7 +23,7 @@ data BackendA a = Backend
 	, verifyKeyContent :: Maybe (Key -> RawFilePath -> a Bool)
 	-- Incrementally verifies the content of a key, using the same
 	-- hash as verifyKeyContent, but with the content provided
-	-- incrementally a peice at a time, until finalized.
+	-- incrementally a piece at a time, until finalized.
 	, verifyKeyContentIncrementally :: Maybe (Key -> a IncrementalVerifier)
 	-- Checks if a key can be upgraded to a better form.
 	, canUpgradeKey :: Maybe (Key -> Bool)

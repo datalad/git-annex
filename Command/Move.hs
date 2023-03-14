@@ -356,7 +356,7 @@ fromToStart removewhen afile key ai si src dest = do
  - drop the local copy, and finally drop from the src.
  -
  - Using a regular download of the local copy, rather than download to
- - some other file makes resuming an interruped download work as usual,
+ - some other file makes resuming an interrupted download work as usual,
  - and simplifies implementation. It does mean that, if `git-annex get` of
  - the same content is being run at the same time as this move, the content
  - may end up locally present, or not. This is similar to the behavior 

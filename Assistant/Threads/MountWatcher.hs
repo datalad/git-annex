@@ -111,7 +111,7 @@ startOneService client (x:xs) = do
 		, startOneService client xs
 		)
 
-{- Filter matching events recieved when drives are mounted and unmounted. -}	
+{- Filter matching events received when drives are mounted and unmounted. -}	
 mountChanged :: [MatchRule]
 mountChanged = [udisks2mount, udisks2umount]
   where

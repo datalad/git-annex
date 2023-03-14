@@ -66,7 +66,7 @@ keyTmpLocation = tmpLocation . fromRawFilePath . keyFile
  -
  - This could be just the keyTmpLocation, but when the file is in a
  - subdirectory, the temp file is put in there. Partly this is to keep
- - it close to the final destination; also certian webdav servers
+ - it close to the final destination; also certain webdav servers
  - seem to be buggy when renaming files from the root into a subdir, 
  - and so writing to the subdir avoids such problems.
  -}

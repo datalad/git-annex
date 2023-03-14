@@ -85,7 +85,7 @@ probeRepo loc baserepo = do
 
 type GCryptId = String
 
-{- gcrypt gives each encrypted repository a uique gcrypt-id,
+{- gcrypt gives each encrypted repository a unique gcrypt-id,
  - which is stored in the repository (in encrypted form)
  - and cached in a per-remote gcrypt-id configuration setting. -}
 remoteRepoId :: Repo -> Maybe RemoteName -> Maybe GCryptId

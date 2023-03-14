@@ -361,7 +361,7 @@ setSshConfig sshdata config = do
  - non-alphanumerics, other than "_"
  -
  - The real hostname is not normally encoded at all. This is done for
- - backwards compatability and to avoid unnecessary ugliness in the
+ - backwards compatibility and to avoid unnecessary ugliness in the
  - filename. However, when it contains special characters
  - (notably ":" which cannot be used on some filesystems), it is url
  - encoded. To indicate it was encoded, the mangled hostname

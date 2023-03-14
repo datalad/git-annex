@@ -119,7 +119,7 @@ new lim tlim = do
 {- Adds an git command to the queue.
  -
  - Git commands with the same subcommand but different parameters are
- - assumed to be equivilant enough to perform in any order with the same
+ - assumed to be equivalent enough to perform in any order with the same
  - end result.
  -}
 addCommand :: MonadIO m => [CommandParam] -> String -> [CommandParam] -> [FilePath] -> Queue m -> Repo -> m (Queue m)

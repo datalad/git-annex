@@ -34,9 +34,9 @@ import Prelude
 -- Describes differences from the v5 repository format.
 --
 -- The serialization is stored in difference.log, so avoid changes that
--- would break compatability.
+-- would break compatibility.
 --
--- Not breaking compatability is why a list of Differences is used, rather
+-- Not breaking compatibility is why a list of Differences is used, rather
 -- than a record type. With a record type, adding a new field for some future
 -- difference would serialize to a value that an older version could not
 -- parse, even if that new field was not used. With the Differences list,

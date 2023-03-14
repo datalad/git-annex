@@ -667,7 +667,7 @@ recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ FsckDb.addDb h key
 
 {- Records the start time of an incremental fsck.
  -
- - To guard against time stamp damange (for example, if an annex directory
+ - To guard against time stamp damage (for example, if an annex directory
  - is copied without -a), the fsckstate file contains a time that should
  - be identical to its modification time.
  - (This is not possible to do on Windows, and so the timestamp in

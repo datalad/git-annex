@@ -103,7 +103,7 @@ explodePacks r = go =<< listPackFiles r
 		return True
 
 {- Try to retrieve a set of missing objects, from the remotes of a
- - repository. Returns any that could not be retreived.
+ - repository. Returns any that could not be retrieved.
  -
  - If another clone of the repository exists locally, which might not be a
  - remote of the repo being repaired, its path can be passed as a reference

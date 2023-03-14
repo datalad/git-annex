@@ -40,7 +40,7 @@ cmdsMap = M.fromList $ map mk
 	readonlycmds = map addAnnexOptions
 		[ Command.ConfigList.cmd
 		, gitAnnexShellCheck Command.NotifyChanges.cmd
-		-- p2pstdio checks the enviroment variables to
+		-- p2pstdio checks the environment variables to
 		-- determine the security policy to use
 		, gitAnnexShellCheck Command.P2PStdIO.cmd
 		, gitAnnexShellCheck Command.InAnnex.cmd

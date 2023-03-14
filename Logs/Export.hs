@@ -106,7 +106,7 @@ recordExportUnderway remoteuuid ec = do
 
 -- Record information about the export to the git-annex branch.
 --
--- This is equivilant to recordExportBeginning followed by
+-- This is equivalent to recordExportBeginning followed by
 -- recordExportUnderway, but without the ability to clean up from
 -- interrupted exports.
 recordExport :: UUID -> Git.Ref -> ExportChange -> Annex ()

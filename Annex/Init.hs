@@ -421,7 +421,7 @@ initSharedClone True = do
 	trustSet u UnTrusted
 	setConfig (annexConfig "hardlink") (Git.Config.boolConfig True)
 
-{- Propigate annex.securehashesonly from then global config to local
+{- Propagate annex.securehashesonly from then global config to local
  - config. This makes a clone inherit a parent's setting, but once
  - a repository has a local setting, changes to the global config won't
  - affect it. -}

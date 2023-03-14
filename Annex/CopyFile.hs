@@ -66,7 +66,7 @@ data CopyMethod = CopiedCoW | Copied
 
 {- Copies from src to dest, updating a meter. Preserves mode and mtime.
  - Uses copy-on-write if it is supported. If the the destination already
- - exists, an interruped copy will resume where it left off.
+ - exists, an interrupted copy will resume where it left off.
  -
  - The IncrementalVerifier is updated with the content of the file as it's
  - being copied. But it is not finalized at the end.

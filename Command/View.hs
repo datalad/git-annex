@@ -110,7 +110,7 @@ checkoutViewBranch view madj mkbranch = do
 		setView view
 		{- A git repo can easily have empty directories in it,
 		 - and this pollutes the view, so remove them.
-		 - (However, emptry directories used by submodules are not
+		 - (However, empty directories used by submodules are not
 		 - removed.) -}
 		top <- liftIO . absPath =<< fromRepo Git.repoPath
 		(l, cleanup) <- inRepo $

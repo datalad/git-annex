@@ -580,7 +580,7 @@ gitAnnexAssistantDefaultDir = "annex"
  - dealing with characters that cause problems.
  -
  - This is used when a new Key is initially being generated, eg by genKey.
- - Unlike keyFile and fileKey, it does not need to be a reversable
+ - Unlike keyFile and fileKey, it does not need to be a reversible
  - escaping. Also, it's ok to change this to add more problematic
  - characters later. Unlike changing keyFile, which could result in the
  - filenames used for existing keys changing and contents getting lost.
@@ -666,7 +666,7 @@ keyPath key hasher = hasher key P.</> f P.</> f
   where
 	f = keyFile key
 
-{- All possibile locations to store a key in a special remote
+{- All possible locations to store a key in a special remote
  - using different directory hashes.
  -
  - This is compatible with the annexLocationsNonBare and annexLocationsBare,

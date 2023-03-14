@@ -325,7 +325,7 @@ reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
 		&& isus x || isus y
 		&& not (isus x && isus y)
 
-{- Gets the InodeCache equivilant information stored in the git index.
+{- Gets the InodeCache equivalent information stored in the git index.
  -
  - Note that this uses a --debug option whose output could change at some
  - point in the future. If the output is not as expected, will use Nothing.

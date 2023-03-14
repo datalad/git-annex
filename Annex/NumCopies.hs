@@ -203,7 +203,7 @@ numCopiesCheck' file vs have = do
 data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
 	deriving (Ord, Eq)
 
-{- Verifies that enough copies of a key exist amoung the listed remotes,
+{- Verifies that enough copies of a key exist among the listed remotes,
  - to safely drop it, running an action with a proof if so, and
  - printing an informative message if not.
  -}

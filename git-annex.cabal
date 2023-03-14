@@ -30,7 +30,7 @@ Description:
  to git and transferring them to other computers. The git-annex webapp
  makes it easy to set up and use git-annex this way.
 -- The tarball uploaded to hackage does not include every non-haskell
--- file in the git repo. The website is left out, so is build machinary for
+-- file in the git repo. The website is left out, so is build machinery for
 -- standalone apps, and packages. Include only files that are needed
 -- make cabal install git-annex work.
 Extra-Source-Files:
@@ -397,7 +397,7 @@ Executable git-annex
   else
     GHC-Options: -O0
 
-  -- Avoid linking with unused dynamic libaries.
+  -- Avoid linking with unused dynamic libraries.
   if os(linux) || os(freebsd)
     GHC-Options: -optl-Wl,--as-needed
 

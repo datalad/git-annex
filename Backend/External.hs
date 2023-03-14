@@ -158,7 +158,7 @@ sendMessage p m = liftIO $ do
   where
 	line = unwords $ Proto.formatMessage m
 
-{- A response handler can yeild a result, or it can request that another
+{- A response handler can yield a result, or it can request that another
  - message be consumed from the external. -}
 data ResponseHandlerResult a
 	= Result a
@@ -170,7 +170,7 @@ result :: a -> Maybe (Annex (ResponseHandlerResult a))
 result = Just . return . Result
 
 {- Waits for a message from the external backend, and passes it to the
- - apppropriate handler. 
+ - appropriate handler. 
  -
  - If the handler returns Nothing, this is a protocol error.
  -}

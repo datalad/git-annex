@@ -1164,7 +1164,7 @@ test_info = intmpclonerepo $ do
 	isjson
 	readonly_query isjson
 	-- When presented with an input that it does not support,
-	-- info does not stop but processess subsequent inputs too.
+	-- info does not stop but processes subsequent inputs too.
 	git_annex'' (const True)
 		(sha1annexedfile `isInfixOf`)
 		"info"
@@ -1837,7 +1837,7 @@ test_crypto = do
 	testscheme scheme = Utility.Tmp.Dir.withTmpDir "gpgtmp" $ \gpgtmp -> do
 		-- Use the system temp directory as gpg temp directory because 
 		-- it needs to be able to store the agent socket there,
-		-- which can be problimatic when testing some filesystems.
+		-- which can be problematic when testing some filesystems.
 		absgpgtmp <- fromRawFilePath <$> absPath (toRawFilePath gpgtmp)
 		res <- testscheme' scheme absgpgtmp
 		-- gpg may still be running and would prevent

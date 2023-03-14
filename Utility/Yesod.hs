@@ -1,6 +1,6 @@
 {- Yesod stuff, that's typically found in the scaffolded site.
  -
- - Also a bit of a compatability layer for older versions of yesod.
+ - Also a bit of a compatibility layer for older versions of yesod.
  -
  - Copyright 2012-2014 Joey Hess <id@joeyh.name>
  -

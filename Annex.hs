@@ -400,7 +400,7 @@ addGitConfigOverride v = do
 			r { Git.gitGlobalOpts = go (Git.gitGlobalOpts r) }
 	changeState $ \st -> st { gitconfigoverride = v : gitconfigoverride st }
   where
-	-- Remove any prior occurrance of the setting to avoid
+	-- Remove any prior occurrence of the setting to avoid
 	-- building up many of them when the adjustment is run repeatedly,
 	-- and add the setting to the end.
 	go [] = [Param "-c", Param v]

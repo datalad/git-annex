@@ -33,7 +33,7 @@ watchDir dir ignored scanevents hooks = do
 			(Modified _ _)
 				| isDirectory evt -> noop
 				{- Add hooks are run when a file is modified for 
-				 - compatability with INotify, which calls the add
+				 - compatibility with INotify, which calls the add
 				 - hook when a file is closed, and so tends to call
 				 - both add and modify for file modifications. -}
 				| otherwise -> do

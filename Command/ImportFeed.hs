@@ -519,7 +519,7 @@ feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing
  -
  - So, it's not safe to use T.unpack to convert that to a String,
  - because later use of that String by eg encodeBS will crash
- - with an encoding error. Use this instad.
+ - with an encoding error. Use this instead.
  -
  - This should not be used on a Text that is read using the
  - filesystem encoding because it does not reverse that encoding.

@@ -98,7 +98,7 @@ data MatchFiles a = MatchFiles
 type FileMatcher a = Matcher (MatchFiles a)
 
 -- This is a matcher that can have tokens added to it while it's being
--- built, and once complete is compiled to an unchangable matcher.
+-- built, and once complete is compiled to an unchangeable matcher.
 data ExpandableMatcher a
 	= BuildingMatcher [Token (MatchFiles a)]
 	| CompleteMatcher (Matcher (MatchFiles a))

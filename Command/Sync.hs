@@ -454,7 +454,7 @@ updateBranches (Just branch, madj) = do
 				case madj' of
 					Nothing -> noop
 					Just adj -> updateadjustedbranch adj
-		-- When in an adjusted branch, propigate any changes
+		-- When in an adjusted branch, propagate any changes
 		-- made to it back to the original branch.
 		Nothing -> case madj of
 			Just adj -> do
@@ -739,7 +739,7 @@ newer remote b = do
 		)
 
 {- Without --all, only looks at files in the work tree.
- - (Or, when in an ajusted branch where some files are hidden, at files in
+ - (Or, when in an adjusted branch where some files are hidden, at files in
  - the original branch.)
  -
  - With --all, when preferred content expressions look at filenames,

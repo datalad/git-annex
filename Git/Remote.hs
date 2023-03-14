@@ -43,7 +43,7 @@ remoteKeyToRemoteName (ConfigKey k)
 {- Construct a legal git remote name out of an arbitrary input string.
  -
  - There seems to be no formal definition of this in the git source,
- - just some ad-hoc checks, and some other things that fail with certian
+ - just some ad-hoc checks, and some other things that fail with certain
  - types of names (like ones starting with '-').
  -}
 makeLegalName :: String -> RemoteName

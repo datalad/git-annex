@@ -284,7 +284,7 @@ props_macs_stable = map (\(desc, mac, result) -> (desc ++ " stable", calcMac mac
 
 data IncrementalHasher = IncrementalHasher
 	{ updateIncrementalHasher :: S.ByteString -> IO ()
-	-- ^ Called repeatedly on each peice of the content.
+	-- ^ Called repeatedly on each piece of the content.
 	, finalizeIncrementalHasher :: IO (Maybe String)
 	-- ^ Called once the full content has been sent, returns
 	-- the hash. (Nothing if unableIncremental was called.)

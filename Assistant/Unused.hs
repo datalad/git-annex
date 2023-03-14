@@ -79,7 +79,7 @@ expireUnused duration = do
 			lockContentForRemoval k noop removeAnnex
 			logStatus k InfoMissing
   where
-	boundry = durationToPOSIXTime <$> duration
-	tooold now (_, mt) = case boundry of
+	boundary = durationToPOSIXTime <$> duration
+	tooold now (_, mt) = case boundary of
 		Nothing -> True
 		Just b -> maybe False (\t -> now - t >= b) mt

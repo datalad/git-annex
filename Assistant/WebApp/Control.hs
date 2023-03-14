@@ -52,7 +52,7 @@ getShutdownConfirmedR = do
 
 {- Use a custom page to avoid putting long polling elements on it that will 
  - fail and cause thet web browser to show an error once the webapp is
- - truely stopped. -}
+ - truly stopped. -}
 getNotRunningR :: Handler Html
 getNotRunningR = customPage' False Nothing $
 	$(widgetFile "control/notrunning")

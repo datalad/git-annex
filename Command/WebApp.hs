@@ -103,7 +103,7 @@ start' allowauto o = do
 		liftIO $ firstRun o
 
 {- If HOME is a git repo, even if it's initialized for git-annex,
- - the user almost certianly does not want to run the assistant there. -}
+ - the user almost certainly does not want to run the assistant there. -}
 notHome :: Annex Bool
 notHome = do
 	g <- Annex.gitRepo

@@ -120,7 +120,7 @@ ddarSetup _ mu _ c gc = do
 	(c', _encsetup) <- encryptionSetup c gc
 
 	-- The ddarrepo is stored in git config, as well as this repo's
-	-- persistant state, so it can vary between hosts.
+	-- persistent state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' [("ddarrepo", ddarrepo)]
 
 	return (c', u)

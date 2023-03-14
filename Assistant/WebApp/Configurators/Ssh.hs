@@ -642,7 +642,7 @@ enableRsyncNetGCrypt sshinput reponame =
  - used on rsync.net. If successful, runs an action with its SshData.
  -
  - To append the ssh key to rsync.net's authorized_keys, their
- - documentation recommends a dd methodd, where the line is fed
+ - documentation recommends a dd method, where the line is fed
  - in to ssh over stdin.
  -}
 prepRsyncNet :: SshInput -> String -> (SshData -> Handler Html) -> Handler Html

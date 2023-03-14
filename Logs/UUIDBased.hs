@@ -4,7 +4,7 @@
  - be union merged.
  -
  - The old format looks like: "UUID[ INFO[ timestamp=foo]]"
- - The timestamp is last for backwards compatability reasons,
+ - The timestamp is last for backwards compatibility reasons,
  - and may not be present on very old log lines.
  -
  - New uuid based logs instead use the form: "timestamp UUID INFO"

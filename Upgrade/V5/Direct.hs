@@ -40,7 +40,7 @@ setIndirect = do
 	coreworktree = ConfigKey "core.worktree"
 	indirectworktree = ConfigKey "core.indirect-worktree"
 	setbare = do
-		-- core.worktree is not compatable with
+		-- core.worktree is not compatible with
 		-- core.bare; git does not allow both to be set, so
 		-- unset it when enabling direct mode, caching in
 		-- core.indirect-worktree

@@ -48,7 +48,7 @@ transfersDisplay = do
 		AssociatedFile (Just af) -> fromRawFilePath af
 
 {- Simplifies a list of transfers, avoiding display of redundant
- - equivilant transfers. -}
+ - equivalent transfers. -}
 simplifyTransfers :: [(Transfer, TransferInfo)] -> [(Transfer, TransferInfo)]
 simplifyTransfers [] = []
 simplifyTransfers (x:[]) = [x]

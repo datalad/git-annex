@@ -58,7 +58,7 @@ data ImportableContents info = ImportableContents
 	{ importableContents :: [(ImportLocation, info)]
 	, importableHistory :: [ImportableContents info]
 	-- ^ Used by remotes that support importing historical versions of
-	-- files that are stored in them. This is equivilant to a git
+	-- files that are stored in them. This is equivalent to a git
 	-- commit history.
 	--
 	-- When retrieving a historical version of a file,

@@ -352,7 +352,7 @@ contentDispositionFilename s
 headRequest :: Request -> Request
 headRequest r = r
 	{ method = methodHead
-	-- remove defaut Accept-Encoding header, to get actual,
+	-- remove default Accept-Encoding header, to get actual,
 	-- not gzip compressed size.
 	, requestHeaders = (hAcceptEncoding, B.empty) :
 		filter (\(h, _) -> h /= hAcceptEncoding)

@@ -38,7 +38,7 @@ lockExclusive file = fmap fst <$> tryMakeLockHandle P.lockPool file
 	(\f _ -> fmap mk <$> F.lockExclusive f)
 
 {- If the initial lock fails, this is a BUSY wait, and does not
- - guarentee FIFO order of waiters. In other news, Windows is a POS. -}
+ - guarantee FIFO order of waiters. In other news, Windows is a POS. -}
 waitToLock :: IO (Maybe lockhandle) -> IO lockhandle
 waitToLock = F.waitToLock
 

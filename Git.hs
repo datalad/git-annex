@@ -1,6 +1,6 @@
 {- git repository handling 
  -
- - This is written to be completely independant of git-annex and should be
+ - This is written to be completely independent of git-annex and should be
  - suitable for other uses.
  -
  - Copyright 2010-2021 Joey Hess <id@joeyh.name>
@@ -79,7 +79,7 @@ repoPath Repo { location = Local { worktree = Just d } } = d
 repoPath Repo { location = Local { gitdir = d } } = d
 repoPath Repo { location = LocalUnknown dir } = dir
 repoPath Repo { location = Unknown } = error "unknown repoPath"
-repoPath Repo { location = UnparseableUrl _u } = error "unknwon repoPath"
+repoPath Repo { location = UnparseableUrl _u } = error "unknown repoPath"
 
 repoWorkTree :: Repo -> Maybe RawFilePath
 repoWorkTree Repo { location = Local { worktree = Just d } } = Just d

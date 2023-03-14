@@ -141,7 +141,7 @@ borgSetup _ mu _ c _gc = do
 		M.lookup borgrepoField c
 
 	-- The borgrepo is stored in git config, as well as this repo's
-	-- persistant state, so it can vary between hosts.
+	-- persistent state, so it can vary between hosts.
 	gitConfigSpecialRemote u c [("borgrepo", borgrepo)]
 
 	return (c, u)

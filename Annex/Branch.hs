@@ -396,7 +396,7 @@ getRef ref file = withIndex $ catFile ref file
 {- Applies a function to modify the content of a file.
  -
  - Note that this does not cause the branch to be merged, it only
- - modifes the current content of the file on the branch.
+ - modifies the current content of the file on the branch.
  -}
 change :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> content) -> Annex ()
 change ru file f = lockJournal $ \jl -> f <$> getToChange ru file >>= set jl ru file
@@ -422,7 +422,7 @@ data ChangeOrAppend t = Change t | Append t
  - value it provides is always appended to the journal file. That avoids
  - reading the journal file, and so can be faster when many lines are being
  - written to it. The information that is recorded will be effectively the
- - same, only obsolate log lines will not get compacted.
+ - same, only obsolete log lines will not get compacted.
  -
  - Currently, only appends when annex.alwayscompact=false. That is to
  - avoid appending when an older version of git-annex is also in use in the
@@ -494,7 +494,7 @@ append jl f appendable toappend = do
 	invalidateCache
 
 {- Commit message used when making a commit of whatever data has changed
- - to the git-annex brach. -}
+ - to the git-annex branch. -}
 commitMessage :: Annex String
 commitMessage = fromMaybe "update" . annexCommitMessage <$> Annex.getGitConfig
 
@@ -624,7 +624,7 @@ branchFiles' = Git.Command.pipeNullSplit' $
 {- Populates the branch's index file with the current branch contents.
  - 
  - This is only done when the index doesn't yet exist, and the index 
- - is used to build up changes to be commited to the branch, and merge
+ - is used to build up changes to be committed to the branch, and merge
  - in changes from other branches.
  -}
 genIndex :: Git.Repo -> IO ()

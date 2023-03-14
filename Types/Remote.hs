@@ -137,7 +137,7 @@ data RemoteA a = Remote
 	, getRepo :: a Git.Repo
 	-- a Remote's configuration from git
 	, gitconfig :: RemoteGitConfig
-	-- a Remote can be assocated with a specific local filesystem path
+	-- a Remote can be associated with a specific local filesystem path
 	, localpath :: Maybe FilePath
 	-- a Remote can be known to be readonly
 	, readonly :: Bool

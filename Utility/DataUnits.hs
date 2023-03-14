@@ -21,7 +21,7 @@
  - error. This was bad.
  -
  - So, a committee was formed. And it arrived at a committee-like decision,
- - which satisfied noone, confused everyone, and made the world an uglier
+ - which satisfied no one, confused everyone, and made the world an uglier
  - place. As with all committees, this was meh. Or in this case, "mib".
  -
  - And the drive manufacturers happily continued selling drives that are
@@ -82,7 +82,7 @@ storageUnits =
 	, Unit (p 4) "TB" "terabyte"
 	, Unit (p 3) "GB" "gigabyte"
 	, Unit (p 2) "MB" "megabyte"
-	, Unit (p 1) "kB" "kilobyte" -- weird capitalization thanks to committe
+	, Unit (p 1) "kB" "kilobyte" -- weird capitalization thanks to committee
 	, Unit 1 "B" "byte"
 	]
   where
@@ -122,7 +122,7 @@ bandwidthUnits =
 	, Unit (p 4) "Tbit" "terabit"
 	, Unit (p 3) "Gbit" "gigabit"
 	, Unit (p 2) "Mbit" "megabit"
-	, Unit (p 1) "kbit" "kilobit" -- weird capitalization thanks to committe
+	, Unit (p 1) "kbit" "kilobit" -- weird capitalization thanks to committee
 	]
   where
 	p :: Integer -> Integer

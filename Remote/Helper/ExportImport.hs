@@ -212,7 +212,7 @@ adjustExportImport' isexport isimport r rs = do
 		-- ones though, since they still allow accessing by Key.
 		-- And for thirdPartyPopulated, it depends on how the
 		-- content gets actually stored in the remote, so
-		-- is not overriddden here.
+		-- is not overridden here.
 		, untrustworthy =
 			if versioned || thirdPartyPopulated (remotetype r)
 				then untrustworthy r
@@ -235,7 +235,7 @@ adjustExportImport' isexport isimport r rs = do
   where
 	thirdpartypopulated = thirdPartyPopulated (remotetype r)
 
-	-- exportActions adjusted to use the equivilant import actions,
+	-- exportActions adjusted to use the equivalent import actions,
 	-- which take ContentIdentifiers into account.
 	exportActionsForImport dbv ciddbv ea = ea
   		{ storeExport = \f k loc p -> do

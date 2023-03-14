@@ -33,7 +33,7 @@ import Utility.PartialPrelude
 import Utility.FileSystemEncoding
 
 {- This is a variable length binary string, but its size is limited to
- - maxPktLineLength. Its serialization includes a 4 byte hexidecimal
+ - maxPktLineLength. Its serialization includes a 4 byte hexadecimal
  - prefix giving its total length, including that prefix. -}
 newtype PktLine = PktLine B.ByteString
 	deriving (Show)

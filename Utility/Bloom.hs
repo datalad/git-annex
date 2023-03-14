@@ -1,4 +1,4 @@
-{- bloomfilter compatability wrapper
+{- bloomfilter compatibility wrapper
  -
  - Copyright 2014 Joey Hess <id@joeyh.name>
  -

@@ -68,7 +68,7 @@ initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
 	{- Repositories directly managed by the assistant use 
 	 - an adjusted unlocked branch with annex.thin set.
 	 - 
-	 - Automatic gc is disabled, as it can be slow. Insted, gc is done
+	 - Automatic gc is disabled, as it can be slow. Instead, gc is done
 	 - once a day.
 	 -}
 	when primary_assistant_repo $ do

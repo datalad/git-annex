@@ -58,7 +58,7 @@ youtubeDlNotAllowedMessage = unwords
 -- and youtube-dl needs to finish up with only one file in the directory
 -- so we know which one it downloaded.
 --
--- (Note that we can't use --output to specifiy the file to download to,
+-- (Note that we can't use --output to specify the file to download to,
 -- due to <https://github.com/rg3/youtube-dl/issues/14864>)
 youtubeDl :: URLString -> FilePath -> MeterUpdate -> Annex (Either String (Maybe FilePath))
 youtubeDl url workdir p = ifM ipAddressesUnlimited

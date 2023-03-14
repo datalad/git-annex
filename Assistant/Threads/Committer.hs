@@ -95,7 +95,7 @@ refill cs = do
  - runs an action to commit them. If more changes arrive while this is
  - going on, they're handled intelligently, batching up changes into
  - large commits where possible, doing rename detection, and
- - commiting immediately otherwise. -}
+ - committing immediately otherwise. -}
 waitChangeTime :: (([Change], UTCTime) -> Assistant Int) -> Assistant ()
 waitChangeTime a = waitchanges 0
   where

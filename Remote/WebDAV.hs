@@ -237,7 +237,7 @@ removeExportDav hdl _k loc = case exportLocation loc of
 	Right p -> withDavHandle hdl $ \h -> runExport h $ \_dav ->
 		removeHelper p
 	-- When the exportLocation is not legal for webdav,
-	-- the content is certianly not stored there, so it's ok for
+	-- the content is certainly not stored there, so it's ok for
 	-- removal to succeed. This allows recovery after failure to store
 	-- content there, as the user can rename the problem file and
 	-- this will be called to make sure it's gone.

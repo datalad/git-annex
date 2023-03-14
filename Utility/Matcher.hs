@@ -37,7 +37,7 @@ import Common
 import Data.Kind
 
 {- A Token can be an Operation of an arbitrary type, or one of a few
- - predefined peices of syntax. -}
+ - predefined pieces of syntax. -}
 data Token op = Operation op | And | Or | Not | Open | Close
 	deriving (Show, Eq)
 

@@ -29,7 +29,7 @@ type MkViewedFile = FilePath -> ViewedFile
 {- Converts a filepath used in a reference branch to the
  - filename that will be used in the view.
  -
- - No two filepaths from the same branch should yeild the same result,
+ - No two filepaths from the same branch should yield the same result,
  - so all directory structure needs to be included in the output filename
  - in some way.
  -

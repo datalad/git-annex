@@ -19,7 +19,7 @@ import Data.ByteString.UTF8 (fromString, toString)
 import Data.Char
 
 -- | This uses the FileSystemEncoding, so it can be used on Strings
--- that repesent filepaths containing arbitrarily encoded characters.
+-- that represent filepaths containing arbitrarily encoded characters.
 toB64 :: String -> String
 toB64 = toString . B64.encode . encodeBS
 

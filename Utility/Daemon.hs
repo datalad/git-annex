@@ -67,7 +67,7 @@ daemonize cmd params openlogfd pidfile changedirectory a = do
 	envvar = "DAEMONIZED"
 #endif
 
-{- To run an action that is normally daemonized in the forground. -}
+{- To run an action that is normally daemonized in the foreground. -}
 #ifndef mingw32_HOST_OS
 foreground :: IO Fd -> Maybe FilePath -> IO () -> IO ()
 foreground openlogfd pidfile a = do

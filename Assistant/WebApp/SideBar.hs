@@ -66,7 +66,7 @@ getSideBarR nid = do
 	waitNotifier getAlertBroadcaster nid
 
 	{- This 0.1 second delay avoids very transient notifications from
-	 - being displayed and churning the sidebar unnecesarily. 
+	 - being displayed and churning the sidebar unnecessarily. 
 	 -
 	 - This needs to be below the level perceptable by the user,
 	 - to avoid slowing down user actions like closing alerts. -}

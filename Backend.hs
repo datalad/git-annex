@@ -34,7 +34,7 @@ import qualified Backend.External
 
 import qualified Data.Map as M
 
-{- Build-in backends. Does not include externals. -}
+{- Built-in backends. Does not include externals. -}
 builtinList :: [Backend]
 builtinList = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
 

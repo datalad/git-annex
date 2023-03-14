@@ -107,7 +107,7 @@ reconnectRemotes rs = void $ do
  - When there's a lot of activity, we may fail more than once.
  - On the other hand, we may fail because the remote is not available.
  - Rather than retrying indefinitely, after the first retry we enter a
- - fallback mode, where our push is guarenteed to succeed if the remote is
+ - fallback mode, where our push is guaranteed to succeed if the remote is
  - reachable. If the fallback fails, the push is queued to be retried
  - later.
  -

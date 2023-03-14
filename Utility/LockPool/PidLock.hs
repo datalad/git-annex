@@ -39,7 +39,7 @@ import Prelude
 -- or the Seconds timeout if the pid lock is held by another process.
 --
 -- There are two levels of locks. A STM lock is used to handle
--- fine-grained locking amoung threads, locking a specific lockfile,
+-- fine-grained locking among threads, locking a specific lockfile,
 -- but only in memory. The pid lock handles locking between processes.
 --
 -- The pid lock is only taken once, and LockShared is used for it,

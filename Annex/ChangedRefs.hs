@@ -106,6 +106,6 @@ notifyHook chan reffile _
 		sha <- catchDefaultIO Nothing $
 			extractSha <$> S.readFile reffile
 		-- When the channel is full, there is probably no reader
-		-- running, or ref changes have been occuring very fast,
+		-- running, or ref changes have been occurring very fast,
 		-- so it's ok to not write the change to it.
 		maybe noop (void . atomically . tryWriteTBMChan chan) sha

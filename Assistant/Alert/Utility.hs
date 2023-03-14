@@ -35,7 +35,7 @@ type AlertPair = (AlertId, Alert)
  - - High priority alerts, newest first
  - - Medium priority Activity, newest first (mostly used for Activity)
  - - Low priority alerts, newest first
- - - Filler priorty alerts, newest first
+ - - Filler priority alerts, newest first
  - - Ties are broken by the AlertClass, with Errors etc coming first.
  -}
 compareAlertPairs :: AlertPair -> AlertPair -> Ordering

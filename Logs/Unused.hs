@@ -5,7 +5,7 @@
  - The format: "int key timestamp"
  -
  - The int is a short, stable identifier that the user can use to
- - refer to this key. (Equivilant to a filename.)
+ - refer to this key. (Equivalent to a filename.)
  -
  - The timestamp indicates when the key was first determined to be unused.
  - Older versions of the log omit the timestamp.

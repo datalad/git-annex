@@ -131,7 +131,7 @@ replaceInode :: FileID -> InodeCache -> InodeCache
 replaceInode inode (InodeCache (InodeCachePrim _ sz mtime)) =
 	InodeCache (InodeCachePrim inode sz mtime)
 
-{- For backwards compatability, support low-res mtime with no
+{- For backwards compatibility, support low-res mtime with no
  - fractional seconds. -}
 data MTime = MTimeLowRes EpochTime | MTimeHighRes POSIXTime
 	deriving (Show, Ord)
@@ -249,7 +249,7 @@ data SentinalStatus = SentinalStatus
  - On Windows, time stamp differences are ignored, since they change
  - with the timezone.
  -
- - When the sential file does not exist, InodeCaches canot reliably be
+ - When the sential file does not exist, InodeCaches cannot reliably be
  - compared, so the assumption is that there is has been a change.
  -}
 checkSentinalFile :: SentinalFile -> IO SentinalStatus

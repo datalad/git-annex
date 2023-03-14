@@ -95,7 +95,7 @@ gitAnnexGitConfigOverrides = concatMap (\c -> [Param "-c", Param c])
  - to daemonize it. Used with Utility.Daemon.daemonize. -}
 gitAnnexDaemonizeParams :: Annex [CommandParam]
 gitAnnexDaemonizeParams = do
-	-- This inclues -c parameters passed to git, as well as ones
+	-- This includes -c parameters passed to git, as well as ones
 	-- passed to git-annex.
 	cps <- gitAnnexGitConfigOverrides
 	-- Get every parameter git-annex was run with.

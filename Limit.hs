@@ -283,7 +283,7 @@ matchLockStatus wantlocked (MatchingInfo p) =
 matchLockStatus _ (MatchingUserInfo _) = pure False
 
 {- Adds a limit to skip files not believed to be present
- - in a specfied repository. Optionally on a prior date. -}
+ - in a specified repository. Optionally on a prior date. -}
 addIn :: String -> Annex ()
 addIn s = do
 	u <- Remote.nameToUUID name
