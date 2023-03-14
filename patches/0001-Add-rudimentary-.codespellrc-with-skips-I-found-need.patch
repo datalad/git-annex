@@ -1,0 +1,33 @@
+From df6534a7691ebfc0bfe0224f3ead2054697097eb Mon Sep 17 00:00:00 2001
+From: Yaroslav Halchenko <debian@onerussian.com>
+Date: Mon, 13 Mar 2023 18:44:58 -0400
+Subject: [PATCH 1/5] Add rudimentary .codespellrc with skips I found needed
+
+added some eyeballed skips
+
+Ignores picked up among 3 letter words using helper
+
+    /home/yoh/deb/gits/pkg-exppsy/afni-upstream/.codespell-ignore-shorts.sh 3 | tr '\n' ','
+
+Ignored thanks file
+---
+ .codespellrc | 7 +++++++
+ 1 file changed, 7 insertions(+)
+ create mode 100644 .codespellrc
+
+diff --git a/.codespellrc b/.codespellrc
+new file mode 100644
+index 0000000000..fe1c6312e3
+--- /dev/null
++++ b/.codespellrc
+@@ -0,0 +1,7 @@
++[codespell]
++skip = .git,*.pdf,*.svg,*._comment,jquery.*.js,*.mdwn,changelog,CHANGELOG,list.2018
++# some common variables etc (case insensitive)
++# keypair - constructs
++## May be TODO later, touches too much
++# sentinal -> sentinel
++ignore-words-list = dne,inout,fo,ot,bu,te,allright,inh,mor,myu,valus,keypair,pasttime,sentinal,startd,ifset
+-- 
+2.39.1
+

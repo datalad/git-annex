@@ -1,0 +1,150 @@
+From ebb9fcdfd11389c30bc5d5acde35779b4dfacbc8 Mon Sep 17 00:00:00 2001
+From: Yaroslav Halchenko <debian@onerussian.com>
+Date: Mon, 13 Mar 2023 18:55:18 -0400
+Subject: [PATCH 2/5] Fix ambigous typos
+
+---
+ Annex/AdjustedBranch.hs  | 2 +-
+ Annex/NumCopies.hs       | 2 +-
+ Command/Forget.hs        | 2 +-
+ Git/FileMode.hs          | 2 +-
+ Git/UnionMerge.hs        | 6 +++---
+ NEWS                     | 4 ++--
+ Remote/Helper/Chunked.hs | 2 +-
+ Test.hs                  | 2 +-
+ Utility/Scheduled.hs     | 2 +-
+ 9 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/Annex/AdjustedBranch.hs b/Annex/AdjustedBranch.hs
+index 1bc44ea2a2..9b35b8f71b 100644
+--- a/Annex/AdjustedBranch.hs
++++ b/Annex/AdjustedBranch.hs
+@@ -463,7 +463,7 @@ findAdjustingCommit (AdjBranch b) = go =<< catCommit b
+  - been propigated to the basis branch, and propigate them to the basis
+  - branch and from there on to the orig branch.
+  -
+- - After propigating the commits back to the basis banch,
++ - After propigating the commits back to the basis branch,
+  - rebase the adjusted branch on top of the updated basis branch.
+  -}
+ propigateAdjustedCommits :: OrigBranch -> Adjustment -> Annex ()
+diff --git a/Annex/NumCopies.hs b/Annex/NumCopies.hs
+index 1c4fed1fcb..9988b2052f 100644
+--- a/Annex/NumCopies.hs
++++ b/Annex/NumCopies.hs
+@@ -185,7 +185,7 @@ getNumMinCopiesAttr file =
+ 
+ {- Checks if numcopies are satisfied for a file by running a comparison
+  - between the number of (not untrusted) copies that are
+- - belived to exist, and the configured value.
++ - believed to exist, and the configured value.
+  -
+  - This is good enough for everything except dropping the file, which
+  - requires active verification of the copies.
+diff --git a/Command/Forget.hs b/Command/Forget.hs
+index 7409fe2c77..b3ff0ad0f6 100644
+--- a/Command/Forget.hs
++++ b/Command/Forget.hs
+@@ -48,7 +48,7 @@ start o = starting "forget" ai si $ do
+ perform :: Transitions -> Bool -> CommandPerform
+ perform ts True = do
+ 	recordTransitions (Branch.change (Branch.RegardingUUID [])) ts
+-	-- get branch committed before contining with the transition
++	-- get branch committed before continuing with the transition
+ 	_ <- Branch.update
+ 	void $ Branch.performTransitions ts True []
+ 	next $ return True
+diff --git a/Git/FileMode.hs b/Git/FileMode.hs
+index 602fdc2983..af4877aaa8 100644
+--- a/Git/FileMode.hs
++++ b/Git/FileMode.hs
+@@ -15,7 +15,7 @@ symLinkMode :: FileMode
+ symLinkMode = 40960
+ 
+ {- Git uses a special file mode to indicate a symlink. This is the case
+- - even on Windows, so we hard code the valuse here, rather than using
++ - even on Windows, so we hard code the values here, rather than using
+  - System.Posix.Files.symbolicLinkMode. -}
+ isSymLink :: FileMode -> Bool
+ isSymLink = checkMode symLinkMode
+diff --git a/Git/UnionMerge.hs b/Git/UnionMerge.hs
+index c603453340..ffa5773975 100644
+--- a/Git/UnionMerge.hs
++++ b/Git/UnionMerge.hs
+@@ -108,9 +108,9 @@ mergeFile info file hashhandle h = case S8.words info of
+  -}
+ calcMerge :: [(Ref, [L8.ByteString])] -> Either Ref [L8.ByteString]
+ calcMerge shacontents
+-	| null reuseable = Right new
+-	| otherwise = Left $ fst $ Prelude.head reuseable
++	| null reusable = Right new
++	| otherwise = Left $ fst $ Prelude.head reusable
+   where
+-	reuseable = filter (\c -> sorteduniq (snd c) == new) shacontents
++	reusable = filter (\c -> sorteduniq (snd c) == new) shacontents
+ 	new = sorteduniq $ concat $ map snd shacontents
+ 	sorteduniq = S.toList . S.fromList
+diff --git a/NEWS b/NEWS
+index 489f86e9c3..a0be690d25 100644
+--- a/NEWS
++++ b/NEWS
+@@ -30,7 +30,7 @@ git-annex (8.20200226) upstream; urgency=medium
+   This version of git-annex uses repository version 8 for all repositories.
+ 
+   Existing repositories will be automatically upgraded by default.
+-  You can prevent this, by runing: git config annex.autoupgraderepository false
++  You can prevent this, by running: git config annex.autoupgraderepository false
+  
+   The upgrade process involves regenerating some sqlite databases. There are a
+   couple consequences of the upgrade to keep in mind:
+@@ -78,7 +78,7 @@ git-annex (7.20190912) upstream; urgency=medium
+   This version of git-annex uses repository version 7 for all repositories.
+ 
+   Existing v5 repositories will be automatically upgraded by default.
+-  You can prevent this, by runing: git config annex.autoupgraderepository false
++  You can prevent this, by running: git config annex.autoupgraderepository false
+ 
+   A v7 repository can can have some files locked while other files are
+   unlocked, and all git and git-annex commands can be used on both locked and
+diff --git a/Remote/Helper/Chunked.hs b/Remote/Helper/Chunked.hs
+index f9014074b0..3e7f8a47e1 100644
+--- a/Remote/Helper/Chunked.hs
++++ b/Remote/Helper/Chunked.hs
+@@ -239,7 +239,7 @@ removeChunks remover u chunkconfig encryptor k = do
+  - chunkKeys until it finds one where the retriever successfully
+  - gets the first chunked key.
+  -
+- - If retrival of one of the subsequent chunks throws an exception,
++ - If retrieval of one of the subsequent chunks throws an exception,
+  - gives up. Note that partial data may have been written to the file
+  - in this case.
+  -
+diff --git a/Test.hs b/Test.hs
+index c16e597d71..8f85c0bac2 100644
+--- a/Test.hs
++++ b/Test.hs
+@@ -706,7 +706,7 @@ test_move_numcopies = intmpclonerepo $ do
+ 	annexed_notpresent annexedfile
+ 	inmainrepo $ annexed_present annexedfile
+ 	git_annex "get" [annexedfile] "get of file"
+-	git_annex_shouldfail "move" ["--from", "origin", annexedfile] "move of file --from remote that violates numcopies setting not allowd"
++	git_annex_shouldfail "move" ["--from", "origin", annexedfile] "move of file --from remote that violates numcopies setting not allowed"
+ 	git_annex_shouldfail "move" ["--to", "origin", annexedfile] "move of file --to remote that violates numcopies setting not allowed"
+ 
+ test_copy :: Assertion
+diff --git a/Utility/Scheduled.hs b/Utility/Scheduled.hs
+index 12ead42521..dfaeb7ff40 100644
+--- a/Utility/Scheduled.hs
++++ b/Utility/Scheduled.hs
+@@ -113,7 +113,7 @@ calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
+ 		(LocalTime endd (TimeOfDay 23 59 0))
+ 	findfrom r afterday candidate
+ 		| ynum candidate > (ynum (localDay currenttime)) + 100 =
+-			-- avoid possible infinite recusion
++			-- avoid possible infinite recursion
+ 			error $ "bug: calcNextTime did not find a time within 100 years to run " ++
+ 			show (schedule, lasttime, currenttime)
+ 		| otherwise = findfromChecked r afterday candidate
+-- 
+2.39.1
+

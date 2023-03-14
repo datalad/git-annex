@@ -1,0 +1,215 @@
+From 984d8e98bd68b533fcc88a3a5676d2ed625bb6f6 Mon Sep 17 00:00:00 2001
+From: Yaroslav Halchenko <debian@onerussian.com>
+Date: Mon, 13 Mar 2023 19:06:23 -0400
+Subject: [PATCH 3/5] Typo: sansative -> sensitive
+
+---
+ Annex/MetaData.hs                                         | 2 +-
+ Annex/View.hs                                             | 8 ++++----
+ CHANGELOG                                                 | 4 ++--
+ Limit.hs                                                  | 6 +++---
+ Remote/Web.hs                                             | 2 +-
+ Types/RefSpec.hs                                          | 6 +++---
+ Utility/Glob.hs                                           | 6 +++---
+ .../comment_1_2e81165ac03e1d0566c81016e7728ee6._comment   | 4 ++--
+ doc/design/new_repo_versions.mdwn                         | 2 +-
+ 9 files changed, 20 insertions(+), 20 deletions(-)
+
+diff --git a/Annex/MetaData.hs b/Annex/MetaData.hs
+index 8379a6df8d..fdc539a324 100644
+--- a/Annex/MetaData.hs
++++ b/Annex/MetaData.hs
+@@ -111,7 +111,7 @@ parseMetaDataMatcher p = (,)
+ 		('>':v) -> checkcmp (>) (>) v
+ 		_ -> checkglob ""
+ 	checkglob v =
+-		let cglob = compileGlob v CaseInsensative (GlobFilePath False)
++		let cglob = compileGlob v CaseInsensitive (GlobFilePath False)
+ 		in matchGlob cglob . decodeBS . fromMetaValue
+ 	checkcmp cmp cmp' v mv' = 
+ 		let v' = decodeBS (fromMetaValue mv')
+diff --git a/Annex/View.hs b/Annex/View.hs
+index 43de231c7a..65db159710 100644
+--- a/Annex/View.hs
++++ b/Annex/View.hs
+@@ -176,7 +176,7 @@ combineViewFilter old@(ExcludeValues olds) (ExcludeValues news)
+ combineViewFilter (FilterValues _) newglob@(FilterGlob _) =
+ 	(newglob, Widening)
+ combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
+-	| all (matchGlob (compileGlob oldglob CaseInsensative (GlobFilePath False)) . decodeBS . fromMetaValue) (S.toList s) = (new, Narrowing)
++	| all (matchGlob (compileGlob oldglob CaseInsensitive (GlobFilePath False)) . decodeBS . fromMetaValue) (S.toList s) = (new, Narrowing)
+ 	| otherwise = (new, Widening)
+ {- With two globs, the old one is discarded, and the new one is used.
+  - We can tell if that's a narrowing change by checking if the old
+@@ -185,7 +185,7 @@ combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
+  - widening. -}
+ combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
+ 	| old == new = (newglob, Unchanged)
+-	| matchGlob (compileGlob old CaseInsensative (GlobFilePath False)) new = (newglob, Narrowing)
++	| matchGlob (compileGlob old CaseInsensitive (GlobFilePath False)) new = (newglob, Narrowing)
+ 	| otherwise = (newglob, Widening)
+ {- Combining FilterValuesOrUnset and FilterGlobOrUnset with FilterValues
+  - and FilterGlob maintains the OrUnset if the second parameter has it,
+@@ -220,7 +220,7 @@ combineViewFilter (FilterGlobOrUnset oldglob _) new@(FilterValuesOrUnset _ _) =
+ 	in (new, viewchange)
+ combineViewFilter (FilterGlobOrUnset old _) newglob@(FilterGlobOrUnset new _)
+ 	| old == new = (newglob, Unchanged)
+-	| matchGlob (compileGlob old CaseInsensative (GlobFilePath False)) new = (newglob, Narrowing)
++	| matchGlob (compileGlob old CaseInsensitive (GlobFilePath False)) new = (newglob, Narrowing)
+ 	| otherwise = (newglob, Widening)
+ combineViewFilter (FilterGlob _) newglob@(FilterGlobOrUnset _ _) =
+ 	(newglob, Widening)
+@@ -285,7 +285,7 @@ viewComponentMatcher viewcomponent = \metadata ->
+ 	matcher matchunset (FilterValues s) = 
+ 		\values -> setmatches matchunset $ S.intersection s values
+ 	matcher matchunset (FilterGlob glob) =
+-		let cglob = compileGlob glob CaseInsensative (GlobFilePath False)
++		let cglob = compileGlob glob CaseInsensitive (GlobFilePath False)
+ 		in \values -> setmatches matchunset $
+ 			S.filter (matchGlob cglob . decodeBS . fromMetaValue) values
+ 	matcher _ (ExcludeValues excludes) = 
+diff --git a/CHANGELOG b/CHANGELOG
+index d61faa42e1..10b4dd5b3c 100644
+--- a/CHANGELOG
++++ b/CHANGELOG
+@@ -5117,14 +5117,14 @@ git-annex (5.20140227) unstable; urgency=medium
+ 
+   * metadata: Field names limited to alphanumerics and a few whitelisted
+     punctuation characters to avoid issues with views, etc.
+-  * metadata: Field names are now case insensative.
++  * metadata: Field names are now case insensitive.
+   * When constructing views, metadata is available about the location of the
+     file in the view's reference branch. Allows incorporating parts of the
+     directory hierarchy in a view.
+     For example `git annex view tag=* podcasts/=*` makes a view in the form
+     tag/showname.
+   * --metadata field=value can now use globs to match, and matches
+-    case insensatively, the same as git annex view field=value does.
++    case insensitively, the same as git annex view field=value does.
+   * annex.genmetadata can be set to make git-annex automatically set
+     metadata (year and month) when adding files.
+   * Make annex.web-options be used in several places that call curl.
+diff --git a/Limit.hs b/Limit.hs
+index 9afaada438..9cb9ac2feb 100644
+--- a/Limit.hs
++++ b/Limit.hs
+@@ -122,7 +122,7 @@ limitExclude glob = Right $ MatchFiles
+ matchGlobFile :: String -> MatchInfo -> Annex Bool
+ matchGlobFile glob = go
+   where
+-	cglob = compileGlob glob CaseSensative (GlobFilePath True) -- memoized
++	cglob = compileGlob glob CaseSensitive (GlobFilePath True) -- memoized
+ 	go (MatchingFile fi) = pure $ matchGlob cglob (fromRawFilePath (matchFile fi))
+ 	go (MatchingInfo p) = pure $ case providedFilePath p of
+ 		Just f -> matchGlob cglob (fromRawFilePath f)
+@@ -168,7 +168,7 @@ matchSameContentGlob glob mi = checkKey (go mi) mi
+ 		check k . toRawFilePath
+ 			=<< getUserInfo (userProvidedFilePath p)
+ 	
+-	cglob = compileGlob glob CaseSensative (GlobFilePath True) -- memoized
++	cglob = compileGlob glob CaseSensitive (GlobFilePath True) -- memoized
+ 	
+ 	matchesglob f = matchGlob cglob (fromRawFilePath f)
+ #ifdef mingw32_HOST_OS
+@@ -232,7 +232,7 @@ matchMagic _limitname querymagic selectprovidedinfo selectuserprovidedinfo (Just
+ 		, matchNeedsLocationLog = False
+ 		}
+   where
+- 	cglob = compileGlob glob CaseSensative (GlobFilePath False) -- memoized
++ 	cglob = compileGlob glob CaseSensitive (GlobFilePath False) -- memoized
+ 	go (MatchingFile fi) = catchBoolIO $
+ 		maybe False (matchGlob cglob)
+ 			<$> querymagic magic (fromRawFilePath (contentFile fi))
+diff --git a/Remote/Web.hs b/Remote/Web.hs
+index ad8a3050cf..4a1b7a61c3 100644
+--- a/Remote/Web.hs
++++ b/Remote/Web.hs
+@@ -202,7 +202,7 @@ mkUrlIncludeExclude = go fallback
+ 
+ 	getglob f pc = do
+ 		glob <- getRemoteConfigValue f pc
+-		Just $ compileGlob glob CaseInsensative (GlobFilePath False)
++		Just $ compileGlob glob CaseInsensitive (GlobFilePath False)
+ 	
+ 	mk minclude mexclude = pure $ UrlIncludeExclude
+ 			{ checkUrlIncludeExclude = \u -> and
+diff --git a/Types/RefSpec.hs b/Types/RefSpec.hs
+index 0567622319..86925634d7 100644
+--- a/Types/RefSpec.hs
++++ b/Types/RefSpec.hs
+@@ -22,7 +22,7 @@ data RefSpecPart
+ 	| RemoveMatching Glob
+ 
+ allRefSpec :: RefSpec
+-allRefSpec = [AddMatching $ compileGlob "*" CaseSensative (GlobFilePath False)]
++allRefSpec = [AddMatching $ compileGlob "*" CaseSensitive (GlobFilePath False)]
+ 
+ parseRefSpec :: String -> Either String RefSpec
+ parseRefSpec v = case partitionEithers (map mk $ splitc ':' v) of
+@@ -31,9 +31,9 @@ parseRefSpec v = case partitionEithers (map mk $ splitc ':' v) of
+   where
+ 	mk ('+':s)
+ 		| any (`elem` s) "*?" =
+-			Right $ AddMatching $ compileGlob s CaseSensative (GlobFilePath False)
++			Right $ AddMatching $ compileGlob s CaseSensitive (GlobFilePath False)
+ 		| otherwise = Right $ AddRef $ Ref $ encodeBS s
+-	mk ('-':s) = Right $ RemoveMatching $ compileGlob s CaseSensative (GlobFilePath False)
++	mk ('-':s) = Right $ RemoveMatching $ compileGlob s CaseSensitive (GlobFilePath False)
+ 	mk "reflog" = Right AddRefLog
+ 	mk s = Left $ "bad refspec item \"" ++ s ++ "\" (expected + or - prefix)"
+ 
+diff --git a/Utility/Glob.hs b/Utility/Glob.hs
+index 9f2d147b4c..f09763f973 100644
+--- a/Utility/Glob.hs
++++ b/Utility/Glob.hs
+@@ -24,7 +24,7 @@ import Data.Char
+ 
+ newtype Glob = Glob Regex
+ 
+-data GlobCase = CaseSensative | CaseInsensative
++data GlobCase = CaseSensitive | CaseInsensitive
+ 
+ -- Is the glob being used to match filenames? 
+ --
+@@ -44,8 +44,8 @@ compileGlob glob globcase globfilepath = Glob $
+   where
+ 	regex = '^' : wildToRegex globfilepath glob ++ "$"
+ 	casesentitive = case globcase of
+-		CaseSensative -> True
+-		CaseInsensative -> False
++		CaseSensitive -> True
++		CaseInsensitive -> False
+ 
+ wildToRegex :: GlobFilePath -> String -> String
+ wildToRegex (GlobFilePath globfile) = concat . go
+diff --git a/doc/bugs/OSX_case_insensitive_filesystem/comment_1_2e81165ac03e1d0566c81016e7728ee6._comment b/doc/bugs/OSX_case_insensitive_filesystem/comment_1_2e81165ac03e1d0566c81016e7728ee6._comment
+index 01f355ec1d..73070f777e 100644
+--- a/doc/bugs/OSX_case_insensitive_filesystem/comment_1_2e81165ac03e1d0566c81016e7728ee6._comment
++++ b/doc/bugs/OSX_case_insensitive_filesystem/comment_1_2e81165ac03e1d0566c81016e7728ee6._comment
+@@ -17,8 +17,8 @@ It's actually possible to make brand-new git-annex repos use all lower case
+ hash directories today, by setting `git config annex.tune.objecthashlower true`
+ before you run `git annex init` for the first time. 
+ 
+-If you know you will need to move a repository between case-insensative and
+-case-sensative filesystems, you could use that configuration. But that
++If you know you will need to move a repository between case-insensitive and
++case-sensitive filesystems, you could use that configuration. But that
+ would be very forward looking, and instead users are just going to stumble
+ over the mixed case directories from time to time.
+ 
+diff --git a/doc/design/new_repo_versions.mdwn b/doc/design/new_repo_versions.mdwn
+index 0ea9045966..df5004e70a 100644
+--- a/doc/design/new_repo_versions.mdwn
++++ b/doc/design/new_repo_versions.mdwn
+@@ -41,7 +41,7 @@ Possible reasons to make changes:
+   git-annex checks both locations (eg, a bare repo defaults to xxx/yyy
+   but really old ones might use xX/yY for some keys).
+ 
+-  The mixed case hash directories have caused trouble on case-insensative
++  The mixed case hash directories have caused trouble on case-insensitive
+   filesystems, although that has mostly been papered over to avoid
+   problems. One remaining problem users can stuble on occurs
+   when [[moving a repository from OSX to Linux|bugs/OSX_case_insensitive_filesystem]].
+-- 
+2.39.1
+

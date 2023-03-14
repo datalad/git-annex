@@ -1,0 +1,1732 @@
+From 1cc0895b0a4d9f4316be332d14904afcf284ca80 Mon Sep 17 00:00:00 2001
+From: Yaroslav Halchenko <debian@onerussian.com>
+Date: Mon, 13 Mar 2023 22:39:16 -0400
+Subject: [PATCH 5/5] Apply codespell -w throughout
+
+---
+ Annex.hs                              | 2 +-
+ Annex/AdjustedBranch.hs               | 4 ++--
+ Annex/Branch.hs                       | 8 ++++----
+ Annex/ChangedRefs.hs                  | 2 +-
+ Annex/Content.hs                      | 6 +++---
+ Annex/Content/Presence.hs             | 2 +-
+ Annex/CopyFile.hs                     | 2 +-
+ Annex/Import.hs                       | 2 +-
+ Annex/Init.hs                         | 2 +-
+ Annex/Journal.hs                      | 2 +-
+ Annex/Locations.hs                    | 4 ++--
+ Annex/NumCopies.hs                    | 2 +-
+ Annex/Path.hs                         | 2 +-
+ Annex/View/ViewedFile.hs              | 2 +-
+ Annex/YoutubeDl.hs                    | 2 +-
+ Assistant/Alert/Utility.hs            | 2 +-
+ Assistant/MakeRepo.hs                 | 2 +-
+ Assistant/Pairing/Network.hs          | 2 +-
+ Assistant/Ssh.hs                      | 2 +-
+ Assistant/Sync.hs                     | 2 +-
+ Assistant/Threads/Committer.hs        | 2 +-
+ Assistant/Threads/MountWatcher.hs     | 2 +-
+ Assistant/Threads/NetWatcher.hs       | 4 ++--
+ Assistant/Threads/TransferWatcher.hs  | 2 +-
+ Assistant/Types/RepoProblem.hs        | 2 +-
+ Assistant/Unused.hs                   | 4 ++--
+ Assistant/WebApp/Configurators/Ssh.hs | 2 +-
+ Assistant/WebApp/Control.hs           | 2 +-
+ Assistant/WebApp/DashBoard.hs         | 2 +-
+ Assistant/WebApp/SideBar.hs           | 2 +-
+ Backend.hs                            | 2 +-
+ Backend/External.hs                   | 4 ++--
+ Backend/Hash.hs                       | 2 +-
+ Build/LinuxMkLibs.hs                  | 2 +-
+ Build/OSXMkLibs.hs                    | 2 +-
+ CmdLine/GitAnnexShell.hs              | 2 +-
+ Command/Assistant.hs                  | 2 +-
+ Command/CalcKey.hs                    | 2 +-
+ Command/Fsck.hs                       | 2 +-
+ Command/ImportFeed.hs                 | 2 +-
+ Command/Move.hs                       | 2 +-
+ Command/P2P.hs                        | 4 ++--
+ Command/Sync.hs                       | 4 ++--
+ Command/View.hs                       | 2 +-
+ Command/WebApp.hs                     | 2 +-
+ Crypto.hs                             | 6 +++---
+ Database/Keys/SQL.hs                  | 2 +-
+ Git.hs                                | 4 ++--
+ Git/GCrypt.hs                         | 2 +-
+ Git/LsFiles.hs                        | 2 +-
+ Git/PktLine.hs                        | 2 +-
+ Git/Queue.hs                          | 2 +-
+ Git/Remote.hs                         | 2 +-
+ Git/Repair.hs                         | 2 +-
+ Limit.hs                              | 2 +-
+ Logs/Chunk.hs                         | 2 +-
+ Logs/Export.hs                        | 2 +-
+ Logs/Export/Pure.hs                   | 2 +-
+ Logs/UUIDBased.hs                     | 2 +-
+ Logs/Unused.hs                        | 2 +-
+ Messages.hs                           | 2 +-
+ P2P/Protocol.hs                       | 4 ++--
+ Remote.hs                             | 2 +-
+ Remote/Borg.hs                        | 2 +-
+ Remote/Bup.hs                         | 2 +-
+ Remote/Ddar.hs                        | 2 +-
+ Remote/Directory.hs                   | 2 +-
+ Remote/External.hs                    | 4 ++--
+ Remote/External/AsyncExtension.hs     | 2 +-
+ Remote/GitLFS.hs                      | 2 +-
+ Remote/Helper/ExportImport.hs         | 4 ++--
+ Remote/Helper/Ssh.hs                  | 2 +-
+ Remote/Rsync.hs                       | 4 ++--
+ Remote/S3.hs                          | 2 +-
+ Remote/WebDAV.hs                      | 2 +-
+ Remote/WebDAV/DavLocation.hs          | 2 +-
+ RemoteDaemon/Common.hs                | 2 +-
+ RemoteDaemon/Types.hs                 | 2 +-
+ Test.hs                               | 4 ++--
+ Test/Framework.hs                     | 2 +-
+ Types/Backend.hs                      | 2 +-
+ Types/Difference.hs                   | 4 ++--
+ Types/FileMatcher.hs                  | 2 +-
+ Types/Import.hs                       | 2 +-
+ Types/Remote.hs                       | 2 +-
+ Upgrade/V5/Direct.hs                  | 2 +-
+ Utility/Base64.hs                     | 2 +-
+ Utility/Bloom.hs                      | 2 +-
+ Utility/Daemon.hs                     | 2 +-
+ Utility/DataUnits.hs                  | 6 +++---
+ Utility/DirWatcher/FSEvents.hs        | 2 +-
+ Utility/DirWatcher/Win32Notify.hs     | 2 +-
+ Utility/Hash.hs                       | 2 +-
+ Utility/HtmlDetect.hs                 | 2 +-
+ Utility/IPAddress.hs                  | 4 ++--
+ Utility/InodeCache.hs                 | 4 ++--
+ Utility/LockFile/Windows.hs           | 2 +-
+ Utility/LockPool/PidLock.hs           | 2 +-
+ Utility/LockPool/Windows.hs           | 2 +-
+ Utility/Matcher.hs                    | 2 +-
+ Utility/Misc.hs                       | 2 +-
+ Utility/Path.hs                       | 4 ++--
+ Utility/Path/AbsRel.hs                | 2 +-
+ Utility/Url.hs                        | 2 +-
+ Utility/Yesod.hs                      | 2 +-
+ doc/install/Android/git-annex-install | 2 +-
+ git-annex.cabal                       | 4 ++--
+ templates/configurators/addia.hamlet  | 2 +-
+ 108 files changed, 135 insertions(+), 135 deletions(-)
+
+diff --git a/Annex.hs b/Annex.hs
+index 482c8455d4..5a9eac3c32 100644
+--- a/Annex.hs
++++ b/Annex.hs
+@@ -400,7 +400,7 @@ addGitConfigOverride v = do
+ 			r { Git.gitGlobalOpts = go (Git.gitGlobalOpts r) }
+ 	changeState $ \st -> st { gitconfigoverride = v : gitconfigoverride st }
+   where
+-	-- Remove any prior occurrance of the setting to avoid
++	-- Remove any prior occurrence of the setting to avoid
+ 	-- building up many of them when the adjustment is run repeatedly,
+ 	-- and add the setting to the end.
+ 	go [] = [Param "-c", Param v]
+diff --git a/Annex/AdjustedBranch.hs b/Annex/AdjustedBranch.hs
+index 9b35b8f71b..1907157e72 100644
+--- a/Annex/AdjustedBranch.hs
++++ b/Annex/AdjustedBranch.hs
+@@ -460,7 +460,7 @@ findAdjustingCommit (AdjBranch b) = go =<< catCommit b
+ 			_ -> return Nothing
+ 
+ {- Check for any commits present on the adjusted branch that have not yet
+- - been propigated to the basis branch, and propigate them to the basis
++ - been propigated to the basis branch, and propagate them to the basis
+  - branch and from there on to the orig branch.
+  -
+  - After propigating the commits back to the basis branch,
+@@ -536,7 +536,7 @@ rebaseOnTopMsg = "rebasing adjusted branch on top of updated original branch"
+ reverseAdjustedCommit :: Sha -> Adjustment -> (Sha, Commit) -> OrigBranch -> Annex (Either String Sha)
+ reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
+ 	| length (commitParent basiscommit) > 1 = return $
+-		Left $ "unable to propigate merge commit " ++ show csha ++ " back to " ++ show origbranch
++		Left $ "unable to propagate merge commit " ++ show csha ++ " back to " ++ show origbranch
+ 	| otherwise = do
+ 		cmode <- annexCommitMode <$> Annex.getGitConfig
+ 		treesha <- reverseAdjustedTree commitparent adj csha
+diff --git a/Annex/Branch.hs b/Annex/Branch.hs
+index 7f03f6bece..37bf6e3a6b 100644
+--- a/Annex/Branch.hs
++++ b/Annex/Branch.hs
+@@ -396,7 +396,7 @@ getRef ref file = withIndex $ catFile ref file
+ {- Applies a function to modify the content of a file.
+  -
+  - Note that this does not cause the branch to be merged, it only
+- - modifes the current content of the file on the branch.
++ - modifies the current content of the file on the branch.
+  -}
+ change :: Journalable content => RegardingUUID -> RawFilePath -> (L.ByteString -> content) -> Annex ()
+ change ru file f = lockJournal $ \jl -> f <$> getToChange ru file >>= set jl ru file
+@@ -422,7 +422,7 @@ data ChangeOrAppend t = Change t | Append t
+  - value it provides is always appended to the journal file. That avoids
+  - reading the journal file, and so can be faster when many lines are being
+  - written to it. The information that is recorded will be effectively the
+- - same, only obsolate log lines will not get compacted.
++ - same, only obsolete log lines will not get compacted.
+  -
+  - Currently, only appends when annex.alwayscompact=false. That is to
+  - avoid appending when an older version of git-annex is also in use in the
+@@ -494,7 +494,7 @@ append jl f appendable toappend = do
+ 	invalidateCache
+ 
+ {- Commit message used when making a commit of whatever data has changed
+- - to the git-annex brach. -}
++ - to the git-annex branch. -}
+ commitMessage :: Annex String
+ commitMessage = fromMaybe "update" . annexCommitMessage <$> Annex.getGitConfig
+ 
+@@ -624,7 +624,7 @@ branchFiles' = Git.Command.pipeNullSplit' $
+ {- Populates the branch's index file with the current branch contents.
+  - 
+  - This is only done when the index doesn't yet exist, and the index 
+- - is used to build up changes to be commited to the branch, and merge
++ - is used to build up changes to be committed to the branch, and merge
+  - in changes from other branches.
+  -}
+ genIndex :: Git.Repo -> IO ()
+diff --git a/Annex/ChangedRefs.hs b/Annex/ChangedRefs.hs
+index 83aa5561a7..7a9ce8a34f 100644
+--- a/Annex/ChangedRefs.hs
++++ b/Annex/ChangedRefs.hs
+@@ -106,6 +106,6 @@ notifyHook chan reffile _
+ 		sha <- catchDefaultIO Nothing $
+ 			extractSha <$> S.readFile reffile
+ 		-- When the channel is full, there is probably no reader
+-		-- running, or ref changes have been occuring very fast,
++		-- running, or ref changes have been occurring very fast,
+ 		-- so it's ok to not write the change to it.
+ 		maybe noop (void . atomically . tryWriteTBMChan chan) sha
+diff --git a/Annex/Content.hs b/Annex/Content.hs
+index 0090703047..568077cabc 100644
+--- a/Annex/Content.hs
++++ b/Annex/Content.hs
+@@ -392,9 +392,9 @@ withTmp key action = do
+  - with colliding files it's their own fault and B) adding such a check
+  - would not catch all cases of colliding keys. For example, perhaps 
+  - a remote has a key; if it's then added again with different content then
+- - the overall system now has two different peices of content for that
++ - the overall system now has two different pieces of content for that
+  - key, and one of them will probably get deleted later. So, adding the
+- - check here would only raise expectations that git-annex cannot truely
++ - check here would only raise expectations that git-annex cannot truly
+  - meet.
+  -
+  - May return false, when a particular variety of key is not being
+@@ -555,7 +555,7 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex' key
+ {- Returns a file that contains an object's content,
+  - and a check to run after the transfer is complete.
+  -
+- - When a file is unlocked, it's possble for its content to
++ - When a file is unlocked, it's possible for its content to
+  - change as it's being sent. The check detects this case
+  - and returns False.
+  -
+diff --git a/Annex/Content/Presence.hs b/Annex/Content/Presence.hs
+index 52020a9902..d3aea87151 100644
+--- a/Annex/Content/Presence.hs
++++ b/Annex/Content/Presence.hs
+@@ -164,7 +164,7 @@ contentLockFile :: Key -> Maybe RepoVersion -> Annex (Maybe RawFilePath)
+ #ifndef mingw32_HOST_OS
+ {- Older versions of git-annex locked content files themselves, but newer
+  - versions use a separate lock file, to better support repos shared
+- - amoung users in eg a group. -}
++ - among users in eg a group. -}
+ contentLockFile key v
+ 	| versionNeedsWritableContentFiles v = pure Nothing
+ 	| otherwise = Just <$> calcRepo (gitAnnexContentLock key)
+diff --git a/Annex/CopyFile.hs b/Annex/CopyFile.hs
+index 8fa84bddcb..9fc8eafc53 100644
+--- a/Annex/CopyFile.hs
++++ b/Annex/CopyFile.hs
+@@ -66,7 +66,7 @@ data CopyMethod = CopiedCoW | Copied
+ 
+ {- Copies from src to dest, updating a meter. Preserves mode and mtime.
+  - Uses copy-on-write if it is supported. If the the destination already
+- - exists, an interruped copy will resume where it left off.
++ - exists, an interrupted copy will resume where it left off.
+  -
+  - The IncrementalVerifier is updated with the content of the file as it's
+  - being copied. But it is not finalized at the end.
+diff --git a/Annex/Import.hs b/Annex/Import.hs
+index c16eb18213..6f398564c2 100644
+--- a/Annex/Import.hs
++++ b/Annex/Import.hs
+@@ -492,7 +492,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
+ 	startimport cidmap importing db i@(loc, (cid, _sz)) oldversion largematcher = getcidkey cidmap db cid >>= \case
+ 		(k:ks) ->
+ 			-- If the same content was imported before
+-			-- yeilding multiple different keys, it's not clear
++			-- yielding multiple different keys, it's not clear
+ 			-- which is best to use this time, so pick the
+ 			-- first in the list. But, if any of them is a
+ 			-- git sha, use it, because the content must
+diff --git a/Annex/Init.hs b/Annex/Init.hs
+index b152f46aa5..1220c2e58e 100644
+--- a/Annex/Init.hs
++++ b/Annex/Init.hs
+@@ -421,7 +421,7 @@ initSharedClone True = do
+ 	trustSet u UnTrusted
+ 	setConfig (annexConfig "hardlink") (Git.Config.boolConfig True)
+ 
+-{- Propigate annex.securehashesonly from then global config to local
++{- Propagate annex.securehashesonly from then global config to local
+  - config. This makes a clone inherit a parent's setting, but once
+  - a repository has a local setting, changes to the global config won't
+  - affect it. -}
+diff --git a/Annex/Journal.hs b/Annex/Journal.hs
+index f2d3738f73..ce0f26e63e 100644
+--- a/Annex/Journal.hs
++++ b/Annex/Journal.hs
+@@ -73,7 +73,7 @@ privateUUIDsKnown' = not . S.null . annexPrivateRepos . Annex.gitconfig
+ 
+ {- Records content for a file in the branch to the journal.
+  -
+- - Using the journal, rather than immediatly staging content to the index
++ - Using the journal, rather than immediately staging content to the index
+  - avoids git needing to rewrite the index after every change.
+  - 
+  - The file in the journal is updated atomically. This avoids an
+diff --git a/Annex/Locations.hs b/Annex/Locations.hs
+index e8361b377e..c8ddc5cc96 100644
+--- a/Annex/Locations.hs
++++ b/Annex/Locations.hs
+@@ -580,7 +580,7 @@ gitAnnexAssistantDefaultDir = "annex"
+  - dealing with characters that cause problems.
+  -
+  - This is used when a new Key is initially being generated, eg by genKey.
+- - Unlike keyFile and fileKey, it does not need to be a reversable
++ - Unlike keyFile and fileKey, it does not need to be a reversible
+  - escaping. Also, it's ok to change this to add more problematic
+  - characters later. Unlike changing keyFile, which could result in the
+  - filenames used for existing keys changing and contents getting lost.
+@@ -666,7 +666,7 @@ keyPath key hasher = hasher key P.</> f P.</> f
+   where
+ 	f = keyFile key
+ 
+-{- All possibile locations to store a key in a special remote
++{- All possible locations to store a key in a special remote
+  - using different directory hashes.
+  -
+  - This is compatible with the annexLocationsNonBare and annexLocationsBare,
+diff --git a/Annex/NumCopies.hs b/Annex/NumCopies.hs
+index 9988b2052f..bcab47d1b6 100644
+--- a/Annex/NumCopies.hs
++++ b/Annex/NumCopies.hs
+@@ -203,7 +203,7 @@ numCopiesCheck' file vs have = do
+ data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
+ 	deriving (Ord, Eq)
+ 
+-{- Verifies that enough copies of a key exist amoung the listed remotes,
++{- Verifies that enough copies of a key exist among the listed remotes,
+  - to safely drop it, running an action with a proof if so, and
+  - printing an informative message if not.
+  -}
+diff --git a/Annex/Path.hs b/Annex/Path.hs
+index e058db32a8..aa51da1b58 100644
+--- a/Annex/Path.hs
++++ b/Annex/Path.hs
+@@ -95,7 +95,7 @@ gitAnnexGitConfigOverrides = concatMap (\c -> [Param "-c", Param c])
+  - to daemonize it. Used with Utility.Daemon.daemonize. -}
+ gitAnnexDaemonizeParams :: Annex [CommandParam]
+ gitAnnexDaemonizeParams = do
+-	-- This inclues -c parameters passed to git, as well as ones
++	-- This includes -c parameters passed to git, as well as ones
+ 	-- passed to git-annex.
+ 	cps <- gitAnnexGitConfigOverrides
+ 	-- Get every parameter git-annex was run with.
+diff --git a/Annex/View/ViewedFile.hs b/Annex/View/ViewedFile.hs
+index e211c621ed..c804a50c0b 100644
+--- a/Annex/View/ViewedFile.hs
++++ b/Annex/View/ViewedFile.hs
+@@ -29,7 +29,7 @@ type MkViewedFile = FilePath -> ViewedFile
+ {- Converts a filepath used in a reference branch to the
+  - filename that will be used in the view.
+  -
+- - No two filepaths from the same branch should yeild the same result,
++ - No two filepaths from the same branch should yield the same result,
+  - so all directory structure needs to be included in the output filename
+  - in some way.
+  -
+diff --git a/Annex/YoutubeDl.hs b/Annex/YoutubeDl.hs
+index 854acb9dad..1dd0d56ec8 100644
+--- a/Annex/YoutubeDl.hs
++++ b/Annex/YoutubeDl.hs
+@@ -58,7 +58,7 @@ youtubeDlNotAllowedMessage = unwords
+ -- and youtube-dl needs to finish up with only one file in the directory
+ -- so we know which one it downloaded.
+ --
+--- (Note that we can't use --output to specifiy the file to download to,
++-- (Note that we can't use --output to specify the file to download to,
+ -- due to <https://github.com/rg3/youtube-dl/issues/14864>)
+ youtubeDl :: URLString -> FilePath -> MeterUpdate -> Annex (Either String (Maybe FilePath))
+ youtubeDl url workdir p = ifM ipAddressesUnlimited
+diff --git a/Assistant/Alert/Utility.hs b/Assistant/Alert/Utility.hs
+index a864edb0f8..8016d620a4 100644
+--- a/Assistant/Alert/Utility.hs
++++ b/Assistant/Alert/Utility.hs
+@@ -35,7 +35,7 @@ type AlertPair = (AlertId, Alert)
+  - - High priority alerts, newest first
+  - - Medium priority Activity, newest first (mostly used for Activity)
+  - - Low priority alerts, newest first
+- - - Filler priorty alerts, newest first
++ - - Filler priority alerts, newest first
+  - - Ties are broken by the AlertClass, with Errors etc coming first.
+  -}
+ compareAlertPairs :: AlertPair -> AlertPair -> Ordering
+diff --git a/Assistant/MakeRepo.hs b/Assistant/MakeRepo.hs
+index 06a0a659d0..e87701f32b 100644
+--- a/Assistant/MakeRepo.hs
++++ b/Assistant/MakeRepo.hs
+@@ -68,7 +68,7 @@ initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
+ 	{- Repositories directly managed by the assistant use 
+ 	 - an adjusted unlocked branch with annex.thin set.
+ 	 - 
+-	 - Automatic gc is disabled, as it can be slow. Insted, gc is done
++	 - Automatic gc is disabled, as it can be slow. Instead, gc is done
+ 	 - once a day.
+ 	 -}
+ 	when primary_assistant_repo $ do
+diff --git a/Assistant/Pairing/Network.hs b/Assistant/Pairing/Network.hs
+index 944007f015..62a4ea02e8 100644
+--- a/Assistant/Pairing/Network.hs
++++ b/Assistant/Pairing/Network.hs
+@@ -27,7 +27,7 @@ import Control.Concurrent
+ 
+ {- This is an arbitrary port in the dynamic port range, that could
+  - conceivably be used for some other broadcast messages.
+- - If so, hope they ignore the garbage from us; we'll certianly
++ - If so, hope they ignore the garbage from us; we'll certainly
+  - ignore garbage from them. Wild wild west. -}
+ pairingPort :: PortNumber
+ pairingPort = 55556
+diff --git a/Assistant/Ssh.hs b/Assistant/Ssh.hs
+index 3826f5e70e..c392d54eb8 100644
+--- a/Assistant/Ssh.hs
++++ b/Assistant/Ssh.hs
+@@ -361,7 +361,7 @@ setSshConfig sshdata config = do
+  - non-alphanumerics, other than "_"
+  -
+  - The real hostname is not normally encoded at all. This is done for
+- - backwards compatability and to avoid unnecessary ugliness in the
++ - backwards compatibility and to avoid unnecessary ugliness in the
+  - filename. However, when it contains special characters
+  - (notably ":" which cannot be used on some filesystems), it is url
+  - encoded. To indicate it was encoded, the mangled hostname
+diff --git a/Assistant/Sync.hs b/Assistant/Sync.hs
+index 4bd3f8d7ff..c7907d777c 100644
+--- a/Assistant/Sync.hs
++++ b/Assistant/Sync.hs
+@@ -107,7 +107,7 @@ reconnectRemotes rs = void $ do
+  - When there's a lot of activity, we may fail more than once.
+  - On the other hand, we may fail because the remote is not available.
+  - Rather than retrying indefinitely, after the first retry we enter a
+- - fallback mode, where our push is guarenteed to succeed if the remote is
++ - fallback mode, where our push is guaranteed to succeed if the remote is
+  - reachable. If the fallback fails, the push is queued to be retried
+  - later.
+  -
+diff --git a/Assistant/Threads/Committer.hs b/Assistant/Threads/Committer.hs
+index 2e9a25c111..b75111a382 100644
+--- a/Assistant/Threads/Committer.hs
++++ b/Assistant/Threads/Committer.hs
+@@ -95,7 +95,7 @@ refill cs = do
+  - runs an action to commit them. If more changes arrive while this is
+  - going on, they're handled intelligently, batching up changes into
+  - large commits where possible, doing rename detection, and
+- - commiting immediately otherwise. -}
++ - committing immediately otherwise. -}
+ waitChangeTime :: (([Change], UTCTime) -> Assistant Int) -> Assistant ()
+ waitChangeTime a = waitchanges 0
+   where
+diff --git a/Assistant/Threads/MountWatcher.hs b/Assistant/Threads/MountWatcher.hs
+index 566e9db78d..7a59018bcb 100644
+--- a/Assistant/Threads/MountWatcher.hs
++++ b/Assistant/Threads/MountWatcher.hs
+@@ -111,7 +111,7 @@ startOneService client (x:xs) = do
+ 		, startOneService client xs
+ 		)
+ 
+-{- Filter matching events recieved when drives are mounted and unmounted. -}	
++{- Filter matching events received when drives are mounted and unmounted. -}	
+ mountChanged :: [MatchRule]
+ mountChanged = [udisks2mount, udisks2umount]
+   where
+diff --git a/Assistant/Threads/NetWatcher.hs b/Assistant/Threads/NetWatcher.hs
+index 59b1da5f37..7d4b6cc138 100644
+--- a/Assistant/Threads/NetWatcher.hs
++++ b/Assistant/Threads/NetWatcher.hs
+@@ -163,9 +163,9 @@ listenNMConnections client setconnected =
+  -   ConnectResultsSent:
+  -     Variant "success"
+  -
+- - Diconnection example:
++ - Disconnection example:
+  -   StatusChanged
+- -     [Variant 0, Variant [Varient ""]]
++ -     [Variant 0, Variant [Variant ""]]
+  -}
+ listenWicdConnections :: Client -> (Bool -> IO ()) -> IO ()
+ listenWicdConnections client setconnected = do
+diff --git a/Assistant/Threads/TransferWatcher.hs b/Assistant/Threads/TransferWatcher.hs
+index c4d743ea2b..43f892e38e 100644
+--- a/Assistant/Threads/TransferWatcher.hs
++++ b/Assistant/Threads/TransferWatcher.hs
+@@ -80,7 +80,7 @@ onModify file = case parseTransferFile file of
+ 		\i -> i { bytesComplete = bytesComplete newinfo }
+ 
+ {- This thread can only watch transfer sizes when the DirWatcher supports
+- - tracking modificatons to files. -}
++ - tracking modifications to files. -}
+ watchesTransferSize :: Bool
+ watchesTransferSize = modifyTracked
+ 
+diff --git a/Assistant/Types/RepoProblem.hs b/Assistant/Types/RepoProblem.hs
+index 16128d0d81..afc7e4b2f3 100644
+--- a/Assistant/Types/RepoProblem.hs
++++ b/Assistant/Types/RepoProblem.hs
+@@ -18,7 +18,7 @@ data RepoProblem = RepoProblem
+ 	, afterFix :: IO ()
+ 	}
+ 
+-{- The afterFix actions are assumed to all be equivilant. -}
++{- The afterFix actions are assumed to all be equivalent. -}
+ sameRepoProblem :: RepoProblem -> RepoProblem -> Bool
+ sameRepoProblem = (==) `on` problemUUID
+ 
+diff --git a/Assistant/Unused.hs b/Assistant/Unused.hs
+index d91299e2e5..8af61527d2 100644
+--- a/Assistant/Unused.hs
++++ b/Assistant/Unused.hs
+@@ -79,7 +79,7 @@ expireUnused duration = do
+ 			lockContentForRemoval k noop removeAnnex
+ 			logStatus k InfoMissing
+   where
+-	boundry = durationToPOSIXTime <$> duration
+-	tooold now (_, mt) = case boundry of
++	boundary = durationToPOSIXTime <$> duration
++	tooold now (_, mt) = case boundary of
+ 		Nothing -> True
+ 		Just b -> maybe False (\t -> now - t >= b) mt
+diff --git a/Assistant/WebApp/Configurators/Ssh.hs b/Assistant/WebApp/Configurators/Ssh.hs
+index 661ab95d1d..86065b8fc4 100644
+--- a/Assistant/WebApp/Configurators/Ssh.hs
++++ b/Assistant/WebApp/Configurators/Ssh.hs
+@@ -642,7 +642,7 @@ enableRsyncNetGCrypt sshinput reponame =
+  - used on rsync.net. If successful, runs an action with its SshData.
+  -
+  - To append the ssh key to rsync.net's authorized_keys, their
+- - documentation recommends a dd methodd, where the line is fed
++ - documentation recommends a dd method, where the line is fed
+  - in to ssh over stdin.
+  -}
+ prepRsyncNet :: SshInput -> String -> (SshData -> Handler Html) -> Handler Html
+diff --git a/Assistant/WebApp/Control.hs b/Assistant/WebApp/Control.hs
+index af248a9046..5d60731bfe 100644
+--- a/Assistant/WebApp/Control.hs
++++ b/Assistant/WebApp/Control.hs
+@@ -52,7 +52,7 @@ getShutdownConfirmedR = do
+ 
+ {- Use a custom page to avoid putting long polling elements on it that will 
+  - fail and cause thet web browser to show an error once the webapp is
+- - truely stopped. -}
++ - truly stopped. -}
+ getNotRunningR :: Handler Html
+ getNotRunningR = customPage' False Nothing $
+ 	$(widgetFile "control/notrunning")
+diff --git a/Assistant/WebApp/DashBoard.hs b/Assistant/WebApp/DashBoard.hs
+index 1bc7c316df..5bbcee3c92 100644
+--- a/Assistant/WebApp/DashBoard.hs
++++ b/Assistant/WebApp/DashBoard.hs
+@@ -48,7 +48,7 @@ transfersDisplay = do
+ 		AssociatedFile (Just af) -> fromRawFilePath af
+ 
+ {- Simplifies a list of transfers, avoiding display of redundant
+- - equivilant transfers. -}
++ - equivalent transfers. -}
+ simplifyTransfers :: [(Transfer, TransferInfo)] -> [(Transfer, TransferInfo)]
+ simplifyTransfers [] = []
+ simplifyTransfers (x:[]) = [x]
+diff --git a/Assistant/WebApp/SideBar.hs b/Assistant/WebApp/SideBar.hs
+index 51279f24a2..aae063d7c4 100644
+--- a/Assistant/WebApp/SideBar.hs
++++ b/Assistant/WebApp/SideBar.hs
+@@ -66,7 +66,7 @@ getSideBarR nid = do
+ 	waitNotifier getAlertBroadcaster nid
+ 
+ 	{- This 0.1 second delay avoids very transient notifications from
+-	 - being displayed and churning the sidebar unnecesarily. 
++	 - being displayed and churning the sidebar unnecessarily. 
+ 	 -
+ 	 - This needs to be below the level perceptable by the user,
+ 	 - to avoid slowing down user actions like closing alerts. -}
+diff --git a/Backend.hs b/Backend.hs
+index 8e49bfce41..d3eb9414dd 100644
+--- a/Backend.hs
++++ b/Backend.hs
+@@ -34,7 +34,7 @@ import qualified Backend.External
+ 
+ import qualified Data.Map as M
+ 
+-{- Build-in backends. Does not include externals. -}
++{- Built-in backends. Does not include externals. -}
+ builtinList :: [Backend]
+ builtinList = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
+ 
+diff --git a/Backend/External.hs b/Backend/External.hs
+index fe7449f1f9..5ee7150c72 100644
+--- a/Backend/External.hs
++++ b/Backend/External.hs
+@@ -158,7 +158,7 @@ sendMessage p m = liftIO $ do
+   where
+ 	line = unwords $ Proto.formatMessage m
+ 
+-{- A response handler can yeild a result, or it can request that another
++{- A response handler can yield a result, or it can request that another
+  - message be consumed from the external. -}
+ data ResponseHandlerResult a
+ 	= Result a
+@@ -170,7 +170,7 @@ result :: a -> Maybe (Annex (ResponseHandlerResult a))
+ result = Just . return . Result
+ 
+ {- Waits for a message from the external backend, and passes it to the
+- - apppropriate handler. 
++ - appropriate handler. 
+  -
+  - If the handler returns Nothing, this is a protocol error.
+  -}
+diff --git a/Backend/Hash.hs b/Backend/Hash.hs
+index 550d8fc6c0..314b2676e2 100644
+--- a/Backend/Hash.hs
++++ b/Backend/Hash.hs
+@@ -281,7 +281,7 @@ md5Hasher = mkHasher md5 md5_context
+ descChecksum :: String
+ descChecksum = "checksum"
+ 
+-{- A varient of the SHA256E backend, for testing that needs special keys
++{- A variant of the SHA256E backend, for testing that needs special keys
+  - that cannot collide with legitimate keys in the repository.
+  -
+  - This is accomplished by appending a special extension to the key,
+diff --git a/Build/LinuxMkLibs.hs b/Build/LinuxMkLibs.hs
+index 33357909e6..44cc32cb30 100644
+--- a/Build/LinuxMkLibs.hs
++++ b/Build/LinuxMkLibs.hs
+@@ -55,7 +55,7 @@ mklibs top _installedbins = do
+   where
+ 	-- hwcap lib dirs are things like foo/tls and foo/x86.
+ 	-- Hard to know if a directory is, so this is a heuristic
+-	-- looking for things that are certianly not. If this heuristic
++	-- looking for things that are certainly not. If this heuristic
+ 	-- fails, a minor optimisation will not happen, but there will be
+ 	-- no bad results.
+ 	hwcaplibdir d = not $ or
+diff --git a/Build/OSXMkLibs.hs b/Build/OSXMkLibs.hs
+index aadd9519ed..f0e8a91d9d 100644
+--- a/Build/OSXMkLibs.hs
++++ b/Build/OSXMkLibs.hs
+@@ -104,7 +104,7 @@ otool appbase installedbins replacement_libs libmap = do
+ 		-- ImageIO.framework uses libPng which is built against a
+ 		-- specific version of libz; other versions lack the
+ 		-- _inflateValidate symbol. So, avoid bundling libz unless
+-		-- this incompatability is resolved.
++		-- this incompatibility is resolved.
+ 		&& not ("libz." `isInfixOf` s)
+ 	lib_present s
+ 		| "@rpath" `isInfixOf` s = return True
+diff --git a/CmdLine/GitAnnexShell.hs b/CmdLine/GitAnnexShell.hs
+index b3dd4e6774..f7e65374b8 100644
+--- a/CmdLine/GitAnnexShell.hs
++++ b/CmdLine/GitAnnexShell.hs
+@@ -40,7 +40,7 @@ cmdsMap = M.fromList $ map mk
+ 	readonlycmds = map addAnnexOptions
+ 		[ Command.ConfigList.cmd
+ 		, gitAnnexShellCheck Command.NotifyChanges.cmd
+-		-- p2pstdio checks the enviroment variables to
++		-- p2pstdio checks the environment variables to
+ 		-- determine the security policy to use
+ 		, gitAnnexShellCheck Command.P2PStdIO.cmd
+ 		, gitAnnexShellCheck Command.InAnnex.cmd
+diff --git a/Command/Assistant.hs b/Command/Assistant.hs
+index 2a9bfc9887..b999e5b271 100644
+--- a/Command/Assistant.hs
++++ b/Command/Assistant.hs
+@@ -94,7 +94,7 @@ autoStart o = do
+ 						, putStrLn "failed"
+ 						)
+ 				return Nothing
+-	-- Wait for any foreground jobs to finish and propigate exit status.
++	-- Wait for any foreground jobs to finish and propagate exit status.
+ 	ifM (all (== True) <$> mapConcurrently checkSuccessProcess (catMaybes pids))
+ 		( exitSuccess
+ 		, exitFailure
+diff --git a/Command/CalcKey.hs b/Command/CalcKey.hs
+index 82d3c4c618..b44a2df0cf 100644
+--- a/Command/CalcKey.hs
++++ b/Command/CalcKey.hs
+@@ -16,7 +16,7 @@ cmd :: Command
+ cmd = noCommit $ noMessages $ dontCheck repoExists $
+ 	withAnnexOptions [backendOption] $
+ 		command "calckey" SectionPlumbing 
+-			"calulate key for a file"
++			"calculate key for a file"
+ 			(paramRepeating paramFile)
+ 			(batchable run (pure ()))
+ 
+diff --git a/Command/Fsck.hs b/Command/Fsck.hs
+index e0b357fcbc..dd48c98680 100644
+--- a/Command/Fsck.hs
++++ b/Command/Fsck.hs
+@@ -667,7 +667,7 @@ recordFsckTime inc key = withFsckDb inc $ \h -> liftIO $ FsckDb.addDb h key
+ 
+ {- Records the start time of an incremental fsck.
+  -
+- - To guard against time stamp damange (for example, if an annex directory
++ - To guard against time stamp damage (for example, if an annex directory
+  - is copied without -a), the fsckstate file contains a time that should
+  - be identical to its modification time.
+  - (This is not possible to do on Windows, and so the timestamp in
+diff --git a/Command/ImportFeed.hs b/Command/ImportFeed.hs
+index 1a874408a7..2146dadc5f 100644
+--- a/Command/ImportFeed.hs
++++ b/Command/ImportFeed.hs
+@@ -519,7 +519,7 @@ feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing
+  -
+  - So, it's not safe to use T.unpack to convert that to a String,
+  - because later use of that String by eg encodeBS will crash
+- - with an encoding error. Use this instad.
++ - with an encoding error. Use this instead.
+  -
+  - This should not be used on a Text that is read using the
+  - filesystem encoding because it does not reverse that encoding.
+diff --git a/Command/Move.hs b/Command/Move.hs
+index 925b4e45d9..96f1b5c6a7 100644
+--- a/Command/Move.hs
++++ b/Command/Move.hs
+@@ -356,7 +356,7 @@ fromToStart removewhen afile key ai si src dest = do
+  - drop the local copy, and finally drop from the src.
+  -
+  - Using a regular download of the local copy, rather than download to
+- - some other file makes resuming an interruped download work as usual,
++ - some other file makes resuming an interrupted download work as usual,
+  - and simplifies implementation. It does mean that, if `git-annex get` of
+  - the same content is being run at the same time as this move, the content
+  - may end up locally present, or not. This is similar to the behavior 
+diff --git a/Command/P2P.hs b/Command/P2P.hs
+index ded64e0ab9..a702648d3e 100644
+--- a/Command/P2P.hs
++++ b/Command/P2P.hs
+@@ -87,7 +87,7 @@ unusedPeerRemoteName = go (1 :: Integer) =<< usednames
+ 
+ -- Only addresses are output to stdout, to allow scripting.
+ genAddresses :: [P2PAddress] -> Annex ()
+-genAddresses [] = giveup "No P2P networks are currrently available."
++genAddresses [] = giveup "No P2P networks are currently available."
+ genAddresses addrs = do
+ 	authtoken <- liftIO $ genAuthToken 128
+ 	storeP2PAuthToken authtoken
+@@ -124,7 +124,7 @@ linkRemote remotename = starting "p2p link" ai si $
+ 						AuthenticationError e -> giveup e
+ 
+ startPairing :: RemoteName -> [P2PAddress] -> CommandStart
+-startPairing _ [] = giveup "No P2P networks are currrently available."
++startPairing _ [] = giveup "No P2P networks are currently available."
+ startPairing remotename addrs = ifM (liftIO Wormhole.isInstalled)
+ 	( starting "p2p pair" ai si $
+ 		performPairing remotename addrs
+diff --git a/Command/Sync.hs b/Command/Sync.hs
+index 595d8f12b9..21f0df45ba 100644
+--- a/Command/Sync.hs
++++ b/Command/Sync.hs
+@@ -454,7 +454,7 @@ updateBranches (Just branch, madj) = do
+ 				case madj' of
+ 					Nothing -> noop
+ 					Just adj -> updateadjustedbranch adj
+-		-- When in an adjusted branch, propigate any changes
++		-- When in an adjusted branch, propagate any changes
+ 		-- made to it back to the original branch.
+ 		Nothing -> case madj of
+ 			Just adj -> do
+@@ -739,7 +739,7 @@ newer remote b = do
+ 		)
+ 
+ {- Without --all, only looks at files in the work tree.
+- - (Or, when in an ajusted branch where some files are hidden, at files in
++ - (Or, when in an adjusted branch where some files are hidden, at files in
+  - the original branch.)
+  -
+  - With --all, when preferred content expressions look at filenames,
+diff --git a/Command/View.hs b/Command/View.hs
+index 4a00d20fe0..60ec890537 100644
+--- a/Command/View.hs
++++ b/Command/View.hs
+@@ -110,7 +110,7 @@ checkoutViewBranch view madj mkbranch = do
+ 		setView view
+ 		{- A git repo can easily have empty directories in it,
+ 		 - and this pollutes the view, so remove them.
+-		 - (However, emptry directories used by submodules are not
++		 - (However, empty directories used by submodules are not
+ 		 - removed.) -}
+ 		top <- liftIO . absPath =<< fromRepo Git.repoPath
+ 		(l, cleanup) <- inRepo $
+diff --git a/Command/WebApp.hs b/Command/WebApp.hs
+index 1e01e1a97f..ac0f9d3419 100644
+--- a/Command/WebApp.hs
++++ b/Command/WebApp.hs
+@@ -103,7 +103,7 @@ start' allowauto o = do
+ 		liftIO $ firstRun o
+ 
+ {- If HOME is a git repo, even if it's initialized for git-annex,
+- - the user almost certianly does not want to run the assistant there. -}
++ - the user almost certainly does not want to run the assistant there. -}
+ notHome :: Annex Bool
+ notHome = do
+ 	g <- Annex.gitRepo
+diff --git a/Crypto.hs b/Crypto.hs
+index 6750284ee1..41d4789d7f 100644
+--- a/Crypto.hs
++++ b/Crypto.hs
+@@ -1,7 +1,7 @@
+ {- git-annex crypto
+  -
+  - Currently using gpg; could later be modified to support different
+- - crypto backends if neccessary.
++ - crypto backends if necessary.
+  -
+  - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+  -
+@@ -62,7 +62,7 @@ import qualified Data.ByteString.Short as S (toShort)
+  - (ideally) 64 and 128 bytes of entropy.
+  -
+  - The remaining characters (320 bytes of entropy) is enough for GnuPG's
+- - symetric cipher; unlike weaker public key crypto, the key does not
++ - symmetric cipher; unlike weaker public key crypto, the key does not
+  - need to be too large.
+  -}
+ cipherBeginning :: Int
+@@ -164,7 +164,7 @@ decryptCipher' cmd environ c (EncryptedCipher t variant _) =
+ type EncKey = Key -> Key
+ 
+ {- Generates an encrypted form of a Key. The encryption does not need to be
+- - reversable, nor does it need to be the same type of encryption used
++ - reversible, nor does it need to be the same type of encryption used
+  - on content. It does need to be repeatable. -}
+ encryptKey :: Mac -> Cipher -> EncKey
+ encryptKey mac c k = mkKey $ \d -> d
+diff --git a/Database/Keys/SQL.hs b/Database/Keys/SQL.hs
+index 0ebeaf7f4f..c97a4280b9 100644
+--- a/Database/Keys/SQL.hs
++++ b/Database/Keys/SQL.hs
+@@ -33,7 +33,7 @@ import Data.Maybe
+ -- Note on indexes: KeyFileIndex etc are really uniqueness constraints,
+ -- which cause sqlite to automatically add indexes. So when adding indexes,
+ -- have to take care to only add ones that work as uniqueness constraints.
+--- (Unfortunatly persistent does not support indexes that are not
++-- (Unfortunately persistent does not support indexes that are not
+ -- uniqueness constraints; https://github.com/yesodweb/persistent/issues/109)
+ --
+ -- To speed up queries for a key, there's KeyFileIndex, 
+diff --git a/Git.hs b/Git.hs
+index 37b2f4420e..5e0b6980b2 100644
+--- a/Git.hs
++++ b/Git.hs
+@@ -1,6 +1,6 @@
+ {- git repository handling 
+  -
+- - This is written to be completely independant of git-annex and should be
++ - This is written to be completely independent of git-annex and should be
+  - suitable for other uses.
+  -
+  - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+@@ -79,7 +79,7 @@ repoPath Repo { location = Local { worktree = Just d } } = d
+ repoPath Repo { location = Local { gitdir = d } } = d
+ repoPath Repo { location = LocalUnknown dir } = dir
+ repoPath Repo { location = Unknown } = error "unknown repoPath"
+-repoPath Repo { location = UnparseableUrl _u } = error "unknwon repoPath"
++repoPath Repo { location = UnparseableUrl _u } = error "unknown repoPath"
+ 
+ repoWorkTree :: Repo -> Maybe RawFilePath
+ repoWorkTree Repo { location = Local { worktree = Just d } } = Just d
+diff --git a/Git/GCrypt.hs b/Git/GCrypt.hs
+index c7e5df47f0..072598b755 100644
+--- a/Git/GCrypt.hs
++++ b/Git/GCrypt.hs
+@@ -85,7 +85,7 @@ probeRepo loc baserepo = do
+ 
+ type GCryptId = String
+ 
+-{- gcrypt gives each encrypted repository a uique gcrypt-id,
++{- gcrypt gives each encrypted repository a unique gcrypt-id,
+  - which is stored in the repository (in encrypted form)
+  - and cached in a per-remote gcrypt-id configuration setting. -}
+ remoteRepoId :: Repo -> Maybe RemoteName -> Maybe GCryptId
+diff --git a/Git/LsFiles.hs b/Git/LsFiles.hs
+index cc824f2641..4eea39541a 100644
+--- a/Git/LsFiles.hs
++++ b/Git/LsFiles.hs
+@@ -325,7 +325,7 @@ reduceUnmerged c (i:is) = reduceUnmerged (new:c) rest
+ 		&& isus x || isus y
+ 		&& not (isus x && isus y)
+ 
+-{- Gets the InodeCache equivilant information stored in the git index.
++{- Gets the InodeCache equivalent information stored in the git index.
+  -
+  - Note that this uses a --debug option whose output could change at some
+  - point in the future. If the output is not as expected, will use Nothing.
+diff --git a/Git/PktLine.hs b/Git/PktLine.hs
+index 32509bd9a8..a49cfc2b63 100644
+--- a/Git/PktLine.hs
++++ b/Git/PktLine.hs
+@@ -33,7 +33,7 @@ import Utility.PartialPrelude
+ import Utility.FileSystemEncoding
+ 
+ {- This is a variable length binary string, but its size is limited to
+- - maxPktLineLength. Its serialization includes a 4 byte hexidecimal
++ - maxPktLineLength. Its serialization includes a 4 byte hexadecimal
+  - prefix giving its total length, including that prefix. -}
+ newtype PktLine = PktLine B.ByteString
+ 	deriving (Show)
+diff --git a/Git/Queue.hs b/Git/Queue.hs
+index dd77b35bf0..156ed8c95a 100644
+--- a/Git/Queue.hs
++++ b/Git/Queue.hs
+@@ -119,7 +119,7 @@ new lim tlim = do
+ {- Adds an git command to the queue.
+  -
+  - Git commands with the same subcommand but different parameters are
+- - assumed to be equivilant enough to perform in any order with the same
++ - assumed to be equivalent enough to perform in any order with the same
+  - end result.
+  -}
+ addCommand :: MonadIO m => [CommandParam] -> String -> [CommandParam] -> [FilePath] -> Queue m -> Repo -> m (Queue m)
+diff --git a/Git/Remote.hs b/Git/Remote.hs
+index 80acccaf4c..e6036a7b2c 100644
+--- a/Git/Remote.hs
++++ b/Git/Remote.hs
+@@ -43,7 +43,7 @@ remoteKeyToRemoteName (ConfigKey k)
+ {- Construct a legal git remote name out of an arbitrary input string.
+  -
+  - There seems to be no formal definition of this in the git source,
+- - just some ad-hoc checks, and some other things that fail with certian
++ - just some ad-hoc checks, and some other things that fail with certain
+  - types of names (like ones starting with '-').
+  -}
+ makeLegalName :: String -> RemoteName
+diff --git a/Git/Repair.hs b/Git/Repair.hs
+index 601b32291a..9638187a76 100644
+--- a/Git/Repair.hs
++++ b/Git/Repair.hs
+@@ -103,7 +103,7 @@ explodePacks r = go =<< listPackFiles r
+ 		return True
+ 
+ {- Try to retrieve a set of missing objects, from the remotes of a
+- - repository. Returns any that could not be retreived.
++ - repository. Returns any that could not be retrieved.
+  -
+  - If another clone of the repository exists locally, which might not be a
+  - remote of the repo being repaired, its path can be passed as a reference
+diff --git a/Limit.hs b/Limit.hs
+index 9cb9ac2feb..19a71185e3 100644
+--- a/Limit.hs
++++ b/Limit.hs
+@@ -283,7 +283,7 @@ matchLockStatus wantlocked (MatchingInfo p) =
+ matchLockStatus _ (MatchingUserInfo _) = pure False
+ 
+ {- Adds a limit to skip files not believed to be present
+- - in a specfied repository. Optionally on a prior date. -}
++ - in a specified repository. Optionally on a prior date. -}
+ addIn :: String -> Annex ()
+ addIn s = do
+ 	u <- Remote.nameToUUID name
+diff --git a/Logs/Chunk.hs b/Logs/Chunk.hs
+index f565032860..c7981445df 100644
+--- a/Logs/Chunk.hs
++++ b/Logs/Chunk.hs
+@@ -5,7 +5,7 @@
+  -
+  - It's possible for a single object to be stored multiple times on the
+  - same remote using different chunk sizes. So, while this is a MapLog, it
+- - is not a normal UUIDBased log. Intead, it's a map from UUID and chunk
++ - is not a normal UUIDBased log. Instead, it's a map from UUID and chunk
+  - size to number of chunks.
+  -
+  - Format: "timestamp uuid:chunksize chunkcount"
+diff --git a/Logs/Export.hs b/Logs/Export.hs
+index ced6341a0a..839bd1b0c0 100644
+--- a/Logs/Export.hs
++++ b/Logs/Export.hs
+@@ -106,7 +106,7 @@ recordExportUnderway remoteuuid ec = do
+ 
+ -- Record information about the export to the git-annex branch.
+ --
+--- This is equivilant to recordExportBeginning followed by
++-- This is equivalent to recordExportBeginning followed by
+ -- recordExportUnderway, but without the ability to clean up from
+ -- interrupted exports.
+ recordExport :: UUID -> Git.Ref -> ExportChange -> Annex ()
+diff --git a/Logs/Export/Pure.hs b/Logs/Export/Pure.hs
+index ea023528fb..f5c5be755f 100644
+--- a/Logs/Export/Pure.hs
++++ b/Logs/Export/Pure.hs
+@@ -33,7 +33,7 @@ import qualified Data.Attoparsec.ByteString.Lazy as A
+ import qualified Data.Attoparsec.ByteString.Char8 as A8
+ import Data.ByteString.Builder
+ 
+--- This constuctor is not itself exported to other modules, to enforce
++-- This constructor is not itself exported to other modules, to enforce
+ -- consistent use of exportedTreeishes.
+ data Exported = Exported
+ 	{ exportedTreeish :: Git.Ref
+diff --git a/Logs/UUIDBased.hs b/Logs/UUIDBased.hs
+index 278430a0b9..d7d7c26da8 100644
+--- a/Logs/UUIDBased.hs
++++ b/Logs/UUIDBased.hs
+@@ -4,7 +4,7 @@
+  - be union merged.
+  -
+  - The old format looks like: "UUID[ INFO[ timestamp=foo]]"
+- - The timestamp is last for backwards compatability reasons,
++ - The timestamp is last for backwards compatibility reasons,
+  - and may not be present on very old log lines.
+  -
+  - New uuid based logs instead use the form: "timestamp UUID INFO"
+diff --git a/Logs/Unused.hs b/Logs/Unused.hs
+index 0fdec4c0d4..6bb1011e84 100644
+--- a/Logs/Unused.hs
++++ b/Logs/Unused.hs
+@@ -5,7 +5,7 @@
+  - The format: "int key timestamp"
+  -
+  - The int is a short, stable identifier that the user can use to
+- - refer to this key. (Equivilant to a filename.)
++ - refer to this key. (Equivalent to a filename.)
+  -
+  - The timestamp indicates when the key was first determined to be unused.
+  - Older versions of the log omit the timestamp.
+diff --git a/Messages.hs b/Messages.hs
+index f261862ace..f19f0973f5 100644
+--- a/Messages.hs
++++ b/Messages.hs
+@@ -136,7 +136,7 @@ showSideAction m = Annex.getState Annex.output >>= go
+ showStoringStateAction :: Annex ()
+ showStoringStateAction = showSideAction "recording state in git"
+ 
+-{- Performs an action, supressing showSideAction messages. -}
++{- Performs an action, suppressing showSideAction messages. -}
+ doQuietSideAction :: Annex a -> Annex a
+ doQuietSideAction = doSideAction' InBlock
+ 
+diff --git a/P2P/Protocol.hs b/P2P/Protocol.hs
+index a75a6e6b1a..5804bab086 100644
+--- a/P2P/Protocol.hs
++++ b/P2P/Protocol.hs
+@@ -263,7 +263,7 @@ data LocalF c
+ 	-- so, terminate the protocol connection.
+ 	--
+ 	-- If the validity check is provided and fails, the content was
+-	-- changed while it was being sent, so verificiation of the
++	-- changed while it was being sent, so verification of the
+ 	-- received content should be forced.
+ 	--
+ 	-- Note: The ByteString may not contain the entire remaining content
+@@ -387,7 +387,7 @@ serverLoop a = do
+ 		-- gives up, since it's not clear what state the client
+ 		-- is in, and so not possible to recover.
+ 		Just (ERROR _) -> return Nothing
+-		-- When the client sends an unparseable message, the server
++		-- When the client sends an unparsable message, the server
+ 		-- responds with an error message, and loops. This allows
+ 		-- expanding the protocol with new messages.
+ 		Nothing -> do
+diff --git a/Remote.hs b/Remote.hs
+index f6cdbcf697..ac7e4b4712 100644
+--- a/Remote.hs
++++ b/Remote.hs
+@@ -99,7 +99,7 @@ remoteMap' mkv mkk = M.fromList . catMaybes <$> (mapM mk =<< remoteList)
+ 		Just k -> Just (k, mkv r)
+ 
+ {- Map of UUIDs of repositories and their descriptions.
+- - The names of Remotes are added to suppliment any description that has
++ - The names of Remotes are added to supplement any description that has
+  - been set for a repository.  -}
+ uuidDescriptions :: Annex UUIDDescMap
+ uuidDescriptions = M.unionWith addName
+diff --git a/Remote/Borg.hs b/Remote/Borg.hs
+index 30414db79e..d3b152c802 100644
+--- a/Remote/Borg.hs
++++ b/Remote/Borg.hs
+@@ -141,7 +141,7 @@ borgSetup _ mu _ c _gc = do
+ 		M.lookup borgrepoField c
+ 
+ 	-- The borgrepo is stored in git config, as well as this repo's
+-	-- persistant state, so it can vary between hosts.
++	-- persistent state, so it can vary between hosts.
+ 	gitConfigSpecialRemote u c [("borgrepo", borgrepo)]
+ 
+ 	return (c, u)
+diff --git a/Remote/Bup.hs b/Remote/Bup.hs
+index b2c11dece4..8bcacf9b94 100644
+--- a/Remote/Bup.hs
++++ b/Remote/Bup.hs
+@@ -137,7 +137,7 @@ bupSetup _ mu _ c gc = do
+ 	storeBupUUID u buprepo
+ 
+ 	-- The buprepo is stored in git config, as well as this repo's
+-	-- persistant state, so it can vary between hosts.
++	-- persistent state, so it can vary between hosts.
+ 	gitConfigSpecialRemote u c' [("buprepo", buprepo)]
+ 
+ 	return (c', u)
+diff --git a/Remote/Ddar.hs b/Remote/Ddar.hs
+index 37b6d03c1f..75d93e6a18 100644
+--- a/Remote/Ddar.hs
++++ b/Remote/Ddar.hs
+@@ -120,7 +120,7 @@ ddarSetup _ mu _ c gc = do
+ 	(c', _encsetup) <- encryptionSetup c gc
+ 
+ 	-- The ddarrepo is stored in git config, as well as this repo's
+-	-- persistant state, so it can vary between hosts.
++	-- persistent state, so it can vary between hosts.
+ 	gitConfigSpecialRemote u c' [("ddarrepo", ddarrepo)]
+ 
+ 	return (c', u)
+diff --git a/Remote/Directory.hs b/Remote/Directory.hs
+index d495d42fdd..5721bd20fa 100644
+--- a/Remote/Directory.hs
++++ b/Remote/Directory.hs
+@@ -153,7 +153,7 @@ directorySetup _ mu _ c gc = do
+ 	(c', _encsetup) <- encryptionSetup c gc
+ 
+ 	-- The directory is stored in git config, not in this remote's
+-	-- persistant state, so it can vary between hosts.
++	-- persistent state, so it can vary between hosts.
+ 	gitConfigSpecialRemote u c' [("directory", absdir)]
+ 	return (M.delete directoryField c', u)
+ 
+diff --git a/Remote/External.hs b/Remote/External.hs
+index 83f1b0410b..4077030fa3 100644
+--- a/Remote/External.hs
++++ b/Remote/External.hs
+@@ -536,7 +536,7 @@ receiveMessageAddonProcess p = do
+ shutdownAddonProcess :: AddonProcess.ExternalAddonProcess -> Bool -> IO ()
+ shutdownAddonProcess = AddonProcess.externalShutdown 
+ 
+-{- A response handler can yeild a result, or it can request that another
++{- A response handler can yield a result, or it can request that another
+  - message be consumed from the external. -}
+ data ResponseHandlerResult a
+ 	= Result a
+@@ -548,7 +548,7 @@ result :: a -> Maybe (Annex (ResponseHandlerResult a))
+ result = Just . return . Result
+ 
+ {- Waits for a message from the external remote, and passes it to the
+- - apppropriate handler. 
++ - appropriate handler. 
+  -
+  - If the handler returns Nothing, this is a protocol error.-}
+ receiveMessage
+diff --git a/Remote/External/AsyncExtension.hs b/Remote/External/AsyncExtension.hs
+index fd88349a45..177249c1cb 100644
+--- a/Remote/External/AsyncExtension.hs
++++ b/Remote/External/AsyncExtension.hs
+@@ -46,7 +46,7 @@ runRelayToExternalAsync external st annexrunner = do
+ 			, externalReceive = atomically (readTBMChan receiveq)
+ 			-- This shuts down the whole relay.
+ 			, externalShutdown = shutdown external st sendq sender receiver
+-			-- These three TMVars are shared amoung all
++			-- These three TMVars are shared among all
+ 			-- ExternalStates that use this relay; they're
+ 			-- common state about the external process.
+ 			, externalPrepared = externalPrepared st
+diff --git a/Remote/GitLFS.hs b/Remote/GitLFS.hs
+index 0ad4a63f7d..621089f203 100644
+--- a/Remote/GitLFS.hs
++++ b/Remote/GitLFS.hs
+@@ -84,7 +84,7 @@ urlField = Accepted "url"
+ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+ gen r u rc gc rs = do
+ 	c <- parsedRemoteConfig remote rc
+-	-- If the repo uses gcrypt, get the underlaying repo without the
++	-- If the repo uses gcrypt, get the underlying repo without the
+ 	-- gcrypt url, to do LFS endpoint discovery on.
+ 	r' <- if Git.GCrypt.isEncrypted r
+ 		then do
+diff --git a/Remote/Helper/ExportImport.hs b/Remote/Helper/ExportImport.hs
+index 1d71ae70d1..987256eb9a 100644
+--- a/Remote/Helper/ExportImport.hs
++++ b/Remote/Helper/ExportImport.hs
+@@ -212,7 +212,7 @@ adjustExportImport' isexport isimport r rs = do
+ 		-- ones though, since they still allow accessing by Key.
+ 		-- And for thirdPartyPopulated, it depends on how the
+ 		-- content gets actually stored in the remote, so
+-		-- is not overriddden here.
++		-- is not overridden here.
+ 		, untrustworthy =
+ 			if versioned || thirdPartyPopulated (remotetype r)
+ 				then untrustworthy r
+@@ -235,7 +235,7 @@ adjustExportImport' isexport isimport r rs = do
+   where
+ 	thirdpartypopulated = thirdPartyPopulated (remotetype r)
+ 
+-	-- exportActions adjusted to use the equivilant import actions,
++	-- exportActions adjusted to use the equivalent import actions,
+ 	-- which take ContentIdentifiers into account.
+ 	exportActionsForImport dbv ciddbv ea = ea
+   		{ storeExport = \f k loc p -> do
+diff --git a/Remote/Helper/Ssh.hs b/Remote/Helper/Ssh.hs
+index 32287b7c14..c71a67ac64 100644
+--- a/Remote/Helper/Ssh.hs
++++ b/Remote/Helper/Ssh.hs
+@@ -151,7 +151,7 @@ rsyncParamsRemote r direction key file = do
+ 	{- The rsync shell parameter controls where rsync
+ 	 - goes, so the source/dest parameter can be a dummy value,
+ 	 - that just enables remote rsync mode.
+-	 - For maximum compatability with some patched rsyncs,
++	 - For maximum compatibility with some patched rsyncs,
+ 	 - the dummy value needs to still contain a hostname,
+ 	 - even though this hostname will never be used. -}
+ 	dummy = Param "dummy:"
+diff --git a/Remote/Rsync.hs b/Remote/Rsync.hs
+index 99b774221d..2fcb965a29 100644
+--- a/Remote/Rsync.hs
++++ b/Remote/Rsync.hs
+@@ -205,7 +205,7 @@ rsyncSetup _ mu _ c gc = do
+ 	(c', _encsetup) <- encryptionSetup c gc
+ 
+ 	-- The rsyncurl is stored in git config, not only in this remote's
+-	-- persistant state, so it can vary between hosts.
++	-- persistent state, so it can vary between hosts.
+ 	gitConfigSpecialRemote u c' [("rsyncurl", url)]
+ 	return (c', u)
+ 
+@@ -283,7 +283,7 @@ removeGeneric o includes = do
+ 	ps <- sendParams
+ 	opts <- rsyncOptions o
+ 	ok <- withRsyncScratchDir $ \tmp -> liftIO $ do
+-		{- Send an empty directory to rysnc to make it delete. -}
++		{- Send an empty directory to rsync to make it delete. -}
+ 		rsync $ opts ++ ps ++
+ 			map (\s -> Param $ "--include=" ++ s) includes ++
+ 			[ Param "--exclude=*" -- exclude everything else
+diff --git a/Remote/S3.hs b/Remote/S3.hs
+index 97219dd509..861b5d20d3 100644
+--- a/Remote/S3.hs
++++ b/Remote/S3.hs
+@@ -868,7 +868,7 @@ giveupS3HandleProblem S3HandleNeedCreds u = do
+ 	warning $ needS3Creds u
+ 	giveup "No S3 credentials configured"
+ giveupS3HandleProblem S3HandleAnonymousOldAws _ =
+-	giveup "This S3 special remote is configured with signature=anonymous, but git-annex is buit with too old a version of the aws library to support that."
++	giveup "This S3 special remote is configured with signature=anonymous, but git-annex is built with too old a version of the aws library to support that."
+ 
+ {- Prepares a S3Handle for later use. Does not connect to S3 or do anything
+  - else expensive. -}
+diff --git a/Remote/WebDAV.hs b/Remote/WebDAV.hs
+index d48c2353d6..518e14bfd1 100644
+--- a/Remote/WebDAV.hs
++++ b/Remote/WebDAV.hs
+@@ -237,7 +237,7 @@ removeExportDav hdl _k loc = case exportLocation loc of
+ 	Right p -> withDavHandle hdl $ \h -> runExport h $ \_dav ->
+ 		removeHelper p
+ 	-- When the exportLocation is not legal for webdav,
+-	-- the content is certianly not stored there, so it's ok for
++	-- the content is certainly not stored there, so it's ok for
+ 	-- removal to succeed. This allows recovery after failure to store
+ 	-- content there, as the user can rename the problem file and
+ 	-- this will be called to make sure it's gone.
+diff --git a/Remote/WebDAV/DavLocation.hs b/Remote/WebDAV/DavLocation.hs
+index c8b8435589..e836acd8a9 100644
+--- a/Remote/WebDAV/DavLocation.hs
++++ b/Remote/WebDAV/DavLocation.hs
+@@ -66,7 +66,7 @@ keyTmpLocation = tmpLocation . fromRawFilePath . keyFile
+  -
+  - This could be just the keyTmpLocation, but when the file is in a
+  - subdirectory, the temp file is put in there. Partly this is to keep
+- - it close to the final destination; also certian webdav servers
++ - it close to the final destination; also certain webdav servers
+  - seem to be buggy when renaming files from the root into a subdir, 
+  - and so writing to the subdir avoids such problems.
+  -}
+diff --git a/RemoteDaemon/Common.hs b/RemoteDaemon/Common.hs
+index e7d83f8b03..d366c08e7e 100644
+--- a/RemoteDaemon/Common.hs
++++ b/RemoteDaemon/Common.hs
+@@ -42,7 +42,7 @@ checkShouldFetch gc transporthandle shas
+ 	| remoteAnnexPull gc = checkNewShas transporthandle shas
+ 	| otherwise = return False
+ 
+--- Check if any of the shas are actally new in the local git repo,
++-- Check if any of the shas are actually new in the local git repo,
+ -- to avoid unnecessary fetching.
+ checkNewShas :: TransportHandle -> [Git.Sha] -> IO Bool
+ checkNewShas transporthandle = check
+diff --git a/RemoteDaemon/Types.hs b/RemoteDaemon/Types.hs
+index 8b31ca16e9..1b5f8e0a8b 100644
+--- a/RemoteDaemon/Types.hs
++++ b/RemoteDaemon/Types.hs
+@@ -51,7 +51,7 @@ data Emitted
+ 	| WARNING RemoteURI String
+ 	deriving (Show)
+ 
+--- Messages that the deamon consumes.
++-- Messages that the daemon consumes.
+ data Consumed
+ 	= PAUSE
+ 	| LOSTNET
+diff --git a/Test.hs b/Test.hs
+index 8f85c0bac2..1a2a0d219f 100644
+--- a/Test.hs
++++ b/Test.hs
+@@ -1164,7 +1164,7 @@ test_info = intmpclonerepo $ do
+ 	isjson
+ 	readonly_query isjson
+ 	-- When presented with an input that it does not support,
+-	-- info does not stop but processess subsequent inputs too.
++	-- info does not stop but processes subsequent inputs too.
+ 	git_annex'' (const True)
+ 		(sha1annexedfile `isInfixOf`)
+ 		"info"
+@@ -1837,7 +1837,7 @@ test_crypto = do
+ 	testscheme scheme = Utility.Tmp.Dir.withTmpDir "gpgtmp" $ \gpgtmp -> do
+ 		-- Use the system temp directory as gpg temp directory because 
+ 		-- it needs to be able to store the agent socket there,
+-		-- which can be problimatic when testing some filesystems.
++		-- which can be problematic when testing some filesystems.
+ 		absgpgtmp <- fromRawFilePath <$> absPath (toRawFilePath gpgtmp)
+ 		res <- testscheme' scheme absgpgtmp
+ 		-- gpg may still be running and would prevent
+diff --git a/Test/Framework.hs b/Test/Framework.hs
+index 8653dca1be..7c2316c238 100644
+--- a/Test/Framework.hs
++++ b/Test/Framework.hs
+@@ -724,7 +724,7 @@ runFakeSsh (_host:cmd:[]) =
+ 		\_ _ _ pid -> exitWith =<< waitForProcess pid
+ runFakeSsh ps = error $ "fake ssh option parse error: " ++ show ps
+ 
+-{- Tests each TestTree in parallel, and exits with succcess/failure.
++{- Tests each TestTree in parallel, and exits with success/failure.
+  -
+  - Tasty supports parallel tests, but this does not use it, because
+  - many tests need to be run in test repos, and chdir would not be 
+diff --git a/Types/Backend.hs b/Types/Backend.hs
+index ae45f3a744..46fbea912a 100644
+--- a/Types/Backend.hs
++++ b/Types/Backend.hs
+@@ -23,7 +23,7 @@ data BackendA a = Backend
+ 	, verifyKeyContent :: Maybe (Key -> RawFilePath -> a Bool)
+ 	-- Incrementally verifies the content of a key, using the same
+ 	-- hash as verifyKeyContent, but with the content provided
+-	-- incrementally a peice at a time, until finalized.
++	-- incrementally a piece at a time, until finalized.
+ 	, verifyKeyContentIncrementally :: Maybe (Key -> a IncrementalVerifier)
+ 	-- Checks if a key can be upgraded to a better form.
+ 	, canUpgradeKey :: Maybe (Key -> Bool)
+diff --git a/Types/Difference.hs b/Types/Difference.hs
+index 754fb71a7d..0617dc22a1 100644
+--- a/Types/Difference.hs
++++ b/Types/Difference.hs
+@@ -34,9 +34,9 @@ import Prelude
+ -- Describes differences from the v5 repository format.
+ --
+ -- The serialization is stored in difference.log, so avoid changes that
+--- would break compatability.
++-- would break compatibility.
+ --
+--- Not breaking compatability is why a list of Differences is used, rather
++-- Not breaking compatibility is why a list of Differences is used, rather
+ -- than a record type. With a record type, adding a new field for some future
+ -- difference would serialize to a value that an older version could not
+ -- parse, even if that new field was not used. With the Differences list,
+diff --git a/Types/FileMatcher.hs b/Types/FileMatcher.hs
+index 005934b9ee..bc94b16845 100644
+--- a/Types/FileMatcher.hs
++++ b/Types/FileMatcher.hs
+@@ -98,7 +98,7 @@ data MatchFiles a = MatchFiles
+ type FileMatcher a = Matcher (MatchFiles a)
+ 
+ -- This is a matcher that can have tokens added to it while it's being
+--- built, and once complete is compiled to an unchangable matcher.
++-- built, and once complete is compiled to an unchangeable matcher.
+ data ExpandableMatcher a
+ 	= BuildingMatcher [Token (MatchFiles a)]
+ 	| CompleteMatcher (Matcher (MatchFiles a))
+diff --git a/Types/Import.hs b/Types/Import.hs
+index c7add2610c..db5b25d39f 100644
+--- a/Types/Import.hs
++++ b/Types/Import.hs
+@@ -58,7 +58,7 @@ data ImportableContents info = ImportableContents
+ 	{ importableContents :: [(ImportLocation, info)]
+ 	, importableHistory :: [ImportableContents info]
+ 	-- ^ Used by remotes that support importing historical versions of
+-	-- files that are stored in them. This is equivilant to a git
++	-- files that are stored in them. This is equivalent to a git
+ 	-- commit history.
+ 	--
+ 	-- When retrieving a historical version of a file,
+diff --git a/Types/Remote.hs b/Types/Remote.hs
+index 121d4fd5cd..52b5adab6b 100644
+--- a/Types/Remote.hs
++++ b/Types/Remote.hs
+@@ -137,7 +137,7 @@ data RemoteA a = Remote
+ 	, getRepo :: a Git.Repo
+ 	-- a Remote's configuration from git
+ 	, gitconfig :: RemoteGitConfig
+-	-- a Remote can be assocated with a specific local filesystem path
++	-- a Remote can be associated with a specific local filesystem path
+ 	, localpath :: Maybe FilePath
+ 	-- a Remote can be known to be readonly
+ 	, readonly :: Bool
+diff --git a/Upgrade/V5/Direct.hs b/Upgrade/V5/Direct.hs
+index 49665e8773..c807b29d9e 100644
+--- a/Upgrade/V5/Direct.hs
++++ b/Upgrade/V5/Direct.hs
+@@ -40,7 +40,7 @@ setIndirect = do
+ 	coreworktree = ConfigKey "core.worktree"
+ 	indirectworktree = ConfigKey "core.indirect-worktree"
+ 	setbare = do
+-		-- core.worktree is not compatable with
++		-- core.worktree is not compatible with
+ 		-- core.bare; git does not allow both to be set, so
+ 		-- unset it when enabling direct mode, caching in
+ 		-- core.indirect-worktree
+diff --git a/Utility/Base64.hs b/Utility/Base64.hs
+index 1a09cb310b..fec056e3bc 100644
+--- a/Utility/Base64.hs
++++ b/Utility/Base64.hs
+@@ -19,7 +19,7 @@ import Data.ByteString.UTF8 (fromString, toString)
+ import Data.Char
+ 
+ -- | This uses the FileSystemEncoding, so it can be used on Strings
+--- that repesent filepaths containing arbitrarily encoded characters.
++-- that represent filepaths containing arbitrarily encoded characters.
+ toB64 :: String -> String
+ toB64 = toString . B64.encode . encodeBS
+ 
+diff --git a/Utility/Bloom.hs b/Utility/Bloom.hs
+index 45937e32d6..e8afb2c1bd 100644
+--- a/Utility/Bloom.hs
++++ b/Utility/Bloom.hs
+@@ -1,4 +1,4 @@
+-{- bloomfilter compatability wrapper
++{- bloomfilter compatibility wrapper
+  -
+  - Copyright 2014 Joey Hess <id@joeyh.name>
+  -
+diff --git a/Utility/Daemon.hs b/Utility/Daemon.hs
+index 3a0cc5baeb..6676ed4e3d 100644
+--- a/Utility/Daemon.hs
++++ b/Utility/Daemon.hs
+@@ -67,7 +67,7 @@ daemonize cmd params openlogfd pidfile changedirectory a = do
+ 	envvar = "DAEMONIZED"
+ #endif
+ 
+-{- To run an action that is normally daemonized in the forground. -}
++{- To run an action that is normally daemonized in the foreground. -}
+ #ifndef mingw32_HOST_OS
+ foreground :: IO Fd -> Maybe FilePath -> IO () -> IO ()
+ foreground openlogfd pidfile a = do
+diff --git a/Utility/DataUnits.hs b/Utility/DataUnits.hs
+index 64c01d9570..8d910c6189 100644
+--- a/Utility/DataUnits.hs
++++ b/Utility/DataUnits.hs
+@@ -21,7 +21,7 @@
+  - error. This was bad.
+  -
+  - So, a committee was formed. And it arrived at a committee-like decision,
+- - which satisfied noone, confused everyone, and made the world an uglier
++ - which satisfied no one, confused everyone, and made the world an uglier
+  - place. As with all committees, this was meh. Or in this case, "mib".
+  -
+  - And the drive manufacturers happily continued selling drives that are
+@@ -82,7 +82,7 @@ storageUnits =
+ 	, Unit (p 4) "TB" "terabyte"
+ 	, Unit (p 3) "GB" "gigabyte"
+ 	, Unit (p 2) "MB" "megabyte"
+-	, Unit (p 1) "kB" "kilobyte" -- weird capitalization thanks to committe
++	, Unit (p 1) "kB" "kilobyte" -- weird capitalization thanks to committee
+ 	, Unit 1 "B" "byte"
+ 	]
+   where
+@@ -122,7 +122,7 @@ bandwidthUnits =
+ 	, Unit (p 4) "Tbit" "terabit"
+ 	, Unit (p 3) "Gbit" "gigabit"
+ 	, Unit (p 2) "Mbit" "megabit"
+-	, Unit (p 1) "kbit" "kilobit" -- weird capitalization thanks to committe
++	, Unit (p 1) "kbit" "kilobit" -- weird capitalization thanks to committee
+ 	]
+   where
+ 	p :: Integer -> Integer
+diff --git a/Utility/DirWatcher/FSEvents.hs b/Utility/DirWatcher/FSEvents.hs
+index 107b73e8fb..fdb3b712cc 100644
+--- a/Utility/DirWatcher/FSEvents.hs
++++ b/Utility/DirWatcher/FSEvents.hs
+@@ -52,7 +52,7 @@ watchDir dir ignored scanevents hooks = do
+ 					else maybe (runhook delHook Nothing) handleadd
+ 						=<< getstatus (eventPath evt)
+ 			{- Add hooks are run when a file is modified for 
+-			 - compatability with INotify, which calls the add
++			 - compatibility with INotify, which calls the add
+ 			 - hook when a file is closed, and so tends to call
+ 			 - both add and modify for file modifications. -}
+ 			when (hasflag eventFlagItemModified && not (hasflag eventFlagItemIsDir)) $ do
+diff --git a/Utility/DirWatcher/Win32Notify.hs b/Utility/DirWatcher/Win32Notify.hs
+index 0b02053c9a..eaff7f95ff 100644
+--- a/Utility/DirWatcher/Win32Notify.hs
++++ b/Utility/DirWatcher/Win32Notify.hs
+@@ -33,7 +33,7 @@ watchDir dir ignored scanevents hooks = do
+ 			(Modified _ _)
+ 				| isDirectory evt -> noop
+ 				{- Add hooks are run when a file is modified for 
+-				 - compatability with INotify, which calls the add
++				 - compatibility with INotify, which calls the add
+ 				 - hook when a file is closed, and so tends to call
+ 				 - both add and modify for file modifications. -}
+ 				| otherwise -> do
+diff --git a/Utility/Hash.hs b/Utility/Hash.hs
+index ccbf23be08..835409f482 100644
+--- a/Utility/Hash.hs
++++ b/Utility/Hash.hs
+@@ -284,7 +284,7 @@ props_macs_stable = map (\(desc, mac, result) -> (desc ++ " stable", calcMac mac
+ 
+ data IncrementalHasher = IncrementalHasher
+ 	{ updateIncrementalHasher :: S.ByteString -> IO ()
+-	-- ^ Called repeatedly on each peice of the content.
++	-- ^ Called repeatedly on each piece of the content.
+ 	, finalizeIncrementalHasher :: IO (Maybe String)
+ 	-- ^ Called once the full content has been sent, returns
+ 	-- the hash. (Nothing if unableIncremental was called.)
+diff --git a/Utility/HtmlDetect.hs b/Utility/HtmlDetect.hs
+index 2e3c525815..e050ff7dd3 100644
+--- a/Utility/HtmlDetect.hs
++++ b/Utility/HtmlDetect.hs
+@@ -48,7 +48,7 @@ isHtmlBs = isHtml . B8.unpack
+ 
+ -- | Check if the file is html.
+ --
+--- It would be equivilant to use isHtml <$> readFile file,
++-- It would be equivalent to use isHtml <$> readFile file,
+ -- but since that would not read all of the file, the handle
+ -- would remain open until it got garbage collected sometime later.
+ isHtmlFile :: FilePath -> IO Bool
+diff --git a/Utility/IPAddress.hs b/Utility/IPAddress.hs
+index 9c683181bf..66e00a47be 100644
+--- a/Utility/IPAddress.hs
++++ b/Utility/IPAddress.hs
+@@ -53,13 +53,13 @@ isLoopbackAddress :: SockAddr -> Bool
+ isLoopbackAddress (SockAddrInet _ ipv4) = case hostAddressToTuple ipv4 of
+ 	-- localhost
+ 	(127,_,_,_) -> True
+-	-- current network; functions equivilant to loopback
++	-- current network; functions equivalent to loopback
+ 	(0,_,_, _) -> True
+ 	_ -> False
+ isLoopbackAddress (SockAddrInet6 _ _ ipv6 _) = case hostAddress6ToTuple ipv6 of
+ 	-- localhost
+ 	(0,0,0,0,0,0,0,1) -> True
+-	-- unspecified address; functions equivilant to loopback
++	-- unspecified address; functions equivalent to loopback
+ 	(0,0,0,0,0,0,0,0) -> True
+ 	v -> maybe False
+ 		(isLoopbackAddress . SockAddrInet 0)
+diff --git a/Utility/InodeCache.hs b/Utility/InodeCache.hs
+index a9a6bb1906..6f07059f53 100644
+--- a/Utility/InodeCache.hs
++++ b/Utility/InodeCache.hs
+@@ -131,7 +131,7 @@ replaceInode :: FileID -> InodeCache -> InodeCache
+ replaceInode inode (InodeCache (InodeCachePrim _ sz mtime)) =
+ 	InodeCache (InodeCachePrim inode sz mtime)
+ 
+-{- For backwards compatability, support low-res mtime with no
++{- For backwards compatibility, support low-res mtime with no
+  - fractional seconds. -}
+ data MTime = MTimeLowRes EpochTime | MTimeHighRes POSIXTime
+ 	deriving (Show, Ord)
+@@ -249,7 +249,7 @@ data SentinalStatus = SentinalStatus
+  - On Windows, time stamp differences are ignored, since they change
+  - with the timezone.
+  -
+- - When the sential file does not exist, InodeCaches canot reliably be
++ - When the sential file does not exist, InodeCaches cannot reliably be
+  - compared, so the assumption is that there is has been a change.
+  -}
+ checkSentinalFile :: SentinalFile -> IO SentinalStatus
+diff --git a/Utility/LockFile/Windows.hs b/Utility/LockFile/Windows.hs
+index 68d1ded506..3b8e0dc02e 100644
+--- a/Utility/LockFile/Windows.hs
++++ b/Utility/LockFile/Windows.hs
+@@ -81,7 +81,7 @@ dropLock :: LockHandle -> IO ()
+ dropLock = closeHandle
+ 
+ {- If the initial lock fails, this is a BUSY wait, and does not
+- - guarentee FIFO order of waiters. In other news, Windows is a POS. -}
++ - guarantee FIFO order of waiters. In other news, Windows is a POS. -}
+ waitToLock :: IO (Maybe lockhandle) -> IO lockhandle
+ waitToLock locker = takelock
+   where
+diff --git a/Utility/LockPool/PidLock.hs b/Utility/LockPool/PidLock.hs
+index ddb0b92291..87f1f1a214 100644
+--- a/Utility/LockPool/PidLock.hs
++++ b/Utility/LockPool/PidLock.hs
+@@ -39,7 +39,7 @@ import Prelude
+ -- or the Seconds timeout if the pid lock is held by another process.
+ --
+ -- There are two levels of locks. A STM lock is used to handle
+--- fine-grained locking amoung threads, locking a specific lockfile,
++-- fine-grained locking among threads, locking a specific lockfile,
+ -- but only in memory. The pid lock handles locking between processes.
+ --
+ -- The pid lock is only taken once, and LockShared is used for it,
+diff --git a/Utility/LockPool/Windows.hs b/Utility/LockPool/Windows.hs
+index b81fbdf074..3ea3da8367 100644
+--- a/Utility/LockPool/Windows.hs
++++ b/Utility/LockPool/Windows.hs
+@@ -38,7 +38,7 @@ lockExclusive file = fmap fst <$> tryMakeLockHandle P.lockPool file
+ 	(\f _ -> fmap mk <$> F.lockExclusive f)
+ 
+ {- If the initial lock fails, this is a BUSY wait, and does not
+- - guarentee FIFO order of waiters. In other news, Windows is a POS. -}
++ - guarantee FIFO order of waiters. In other news, Windows is a POS. -}
+ waitToLock :: IO (Maybe lockhandle) -> IO lockhandle
+ waitToLock = F.waitToLock
+ 
+diff --git a/Utility/Matcher.hs b/Utility/Matcher.hs
+index 567522b59e..0fbcd01041 100644
+--- a/Utility/Matcher.hs
++++ b/Utility/Matcher.hs
+@@ -37,7 +37,7 @@ import Common
+ import Data.Kind
+ 
+ {- A Token can be an Operation of an arbitrary type, or one of a few
+- - predefined peices of syntax. -}
++ - predefined pieces of syntax. -}
+ data Token op = Operation op | And | Or | Not | Open | Close
+ 	deriving (Show, Eq)
+ 
+diff --git a/Utility/Misc.hs b/Utility/Misc.hs
+index 121c06e7cd..3cf527547b 100644
+--- a/Utility/Misc.hs
++++ b/Utility/Misc.hs
+@@ -94,7 +94,7 @@ prop_segment_regressionTest :: Bool
+ prop_segment_regressionTest = all id
+ 	-- Even an empty list is a segment.
+ 	[ segment (== "--") [] == [[]]
+-	-- There are two segements in this list, even though the first is empty.
++	-- There are two segments in this list, even though the first is empty.
+ 	, segment (== "--") ["--", "foo", "bar"] == [[],["foo","bar"]]
+ 	]
+ 
+diff --git a/Utility/Path.hs b/Utility/Path.hs
+index b5aeb16fd0..dcb21400ea 100644
+--- a/Utility/Path.hs
++++ b/Utility/Path.hs
+@@ -53,7 +53,7 @@ import Utility.FileSystemEncoding
+  -
+  - This does not guarantee that two paths that refer to the same location,
+  - and are both relative to the same location (or both absolute) will
+- - yeild the same result. Run both through normalise from System.RawFilePath
++ - yield the same result. Run both through normalise from System.RawFilePath
+  - to ensure that.
+  -}
+ simplifyPath :: RawFilePath -> RawFilePath
+@@ -90,7 +90,7 @@ upFrom dir
+ 
+ {- Checks if the first RawFilePath is, or could be said to contain the second.
+  - For example, "foo/" contains "foo/bar". Also, "foo", "./foo", "foo/" etc
+- - are all equivilant.
++ - are all equivalent.
+  -}
+ dirContains :: RawFilePath -> RawFilePath -> Bool
+ dirContains a b = a == b
+diff --git a/Utility/Path/AbsRel.hs b/Utility/Path/AbsRel.hs
+index 857dd5e320..4007fbbb0f 100644
+--- a/Utility/Path/AbsRel.hs
++++ b/Utility/Path/AbsRel.hs
+@@ -37,7 +37,7 @@ import Utility.FileSystemEncoding
+  - Also simplifies it using simplifyPath.
+  -
+  - The first parameter is a base directory (ie, the cwd) to use if the path
+- - is not already absolute, and should itsef be absolute.
++ - is not already absolute, and should itself be absolute.
+  -
+  - Does not attempt to deal with edge cases or ensure security with
+  - untrusted inputs.
+diff --git a/Utility/Url.hs b/Utility/Url.hs
+index d55c447b69..b7ec0f1d3c 100644
+--- a/Utility/Url.hs
++++ b/Utility/Url.hs
+@@ -352,7 +352,7 @@ contentDispositionFilename s
+ headRequest :: Request -> Request
+ headRequest r = r
+ 	{ method = methodHead
+-	-- remove defaut Accept-Encoding header, to get actual,
++	-- remove default Accept-Encoding header, to get actual,
+ 	-- not gzip compressed size.
+ 	, requestHeaders = (hAcceptEncoding, B.empty) :
+ 		filter (\(h, _) -> h /= hAcceptEncoding)
+diff --git a/Utility/Yesod.hs b/Utility/Yesod.hs
+index d35391252d..5acbdee99c 100644
+--- a/Utility/Yesod.hs
++++ b/Utility/Yesod.hs
+@@ -1,6 +1,6 @@
+ {- Yesod stuff, that's typically found in the scaffolded site.
+  -
+- - Also a bit of a compatability layer for older versions of yesod.
++ - Also a bit of a compatibility layer for older versions of yesod.
+  -
+  - Copyright 2012-2014 Joey Hess <id@joeyh.name>
+  -
+diff --git a/doc/install/Android/git-annex-install b/doc/install/Android/git-annex-install
+index a8390321ef..12fdcbd27c 100755
+--- a/doc/install/Android/git-annex-install
++++ b/doc/install/Android/git-annex-install
+@@ -4,7 +4,7 @@
+ # 
+ # This is only a convenience script to avoid the user needing to type much
+ # in termux. The standalone tarball automatically adapts itself to the termux
+-# environment, so this script should stay as mininal as possible.
++# environment, so this script should stay as minimal as possible.
+ #
+ # This script needs to be sourced into the current termux shell, rather
+ # than run with a new shell, so it can set the PATH to include git-annex.
+diff --git a/git-annex.cabal b/git-annex.cabal
+index 87f78f7189..5ebc664c81 100644
+--- a/git-annex.cabal
++++ b/git-annex.cabal
+@@ -30,7 +30,7 @@ Description:
+  to git and transferring them to other computers. The git-annex webapp
+  makes it easy to set up and use git-annex this way.
+ -- The tarball uploaded to hackage does not include every non-haskell
+--- file in the git repo. The website is left out, so is build machinary for
++-- file in the git repo. The website is left out, so is build machinery for
+ -- standalone apps, and packages. Include only files that are needed
+ -- make cabal install git-annex work.
+ Extra-Source-Files:
+@@ -397,7 +397,7 @@ Executable git-annex
+   else
+     GHC-Options: -O0
+ 
+-  -- Avoid linking with unused dynamic libaries.
++  -- Avoid linking with unused dynamic libraries.
+   if os(linux) || os(freebsd)
+     GHC-Options: -optl-Wl,--as-needed
+ 
+diff --git a/templates/configurators/addia.hamlet b/templates/configurators/addia.hamlet
+index e17cb4580c..ec4087453a 100644
+--- a/templates/configurators/addia.hamlet
++++ b/templates/configurators/addia.hamlet
+@@ -4,7 +4,7 @@
+       Adding an Internet Archive item
+     <p>
+       <a href="http://archive.org/">The Internet Archive</a> allows anyone #
+-      to publically archive their information, for free. All you need to #
++      to publicly archive their information, for free. All you need to #
+       get started is to #
+       <a href="http://archive.org/account/login.createaccount.php">
+         Create an account
+-- 
+2.39.1
+
