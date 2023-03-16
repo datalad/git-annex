@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="jwiegley"
+ avatar="http://cdn.libravatar.org/avatar/910fdec093deffebb92d7db019b5996a"
+ subject="An example of what I see"
+ date="2023-03-16T12:24:45Z"
+ content="""
+Here's an example of what I see:
+```
+Hermes ~/kadena/docs $ w
+## main
+?? archive/
+Hermes ~/kadena/docs $ git add archive
+Hermes ~/kadena/docs $ git diff HEAD
+diff --git c/archive/archive.org w/archive/archive.org
+new file mode 100644
+index 0000000..6cd5281
+--- /dev/null
++++ w/archive/archive.org
+@@ -0,0 +1 @@
++/annex/objects/BLAKE2B512E-s239446--66c363a36b5d1919344b41d947d6ee9c3db879e547fb7cfc5e94d09c16bdec>
+```
+
+Note that I discovered that I had both a `kadena.org` and an `archive/kadena.org`. Once I renamed the latter to `archive/archive.org`, then I was able to `git add` the first file without it being placed in the Annex, but I still cannot add `archive/archive.org` without it being put into the Annex as above.
+"""]]
