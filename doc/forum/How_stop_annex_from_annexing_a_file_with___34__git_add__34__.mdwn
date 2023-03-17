@@ -1,0 +1,14 @@
+At one point, in two repositories, I added the `largefiles` options to my `.gitattributes` file:
+```
+* annex.backend=BLAKE2B512E annex.numcopies=2 annex.largefiles=largerthan=32kb
+```
+
+There were already Org-mode files in those repositories, kept under git. I used `git annex init` on those repositories long after those files had been under version control.
+
+Since some these files were larger than 32k, it appears that after editing them, git-annex decided to alter the files so that the content in Git HEAD for each file is a pathname into the `objects` directory. That is, when I use `ls -l` the file is never a symlink, and yet if I use `git show HEAD:todo.org`, I see a pathname. Using `git annex unlock` on the file does nothing.
+
+I decided to remove the `annex.largefiles` setting, since I don't want this behavior to be "automatic" anymore. So, in one of the two repositories, I ran `git annex unannex todo.org`, and then `git add`, and now I have a regular file back under version control again.
+
+In the other repository, however, the file goes back to being a file path in the Git tree when I use "git add". Nothing that I do will add the file contents to Git rather than to the Annex, in this strange mode where it's never a symlink on disk, but it's definitely an Annex object file path in the Git tree.
+
+How do I tell Annex to stop managing this particular file?
