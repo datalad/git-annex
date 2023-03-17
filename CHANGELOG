@@ -16,6 +16,8 @@ git-annex (10.20230228) UNRELEASED; urgency=medium
   * copy: When --from and --to are combined and the content is already
     present on the destination remote, update location tracking as
     necessary.
+  * Fixed spelling of some messages and added a .codespellrc
+    Thanks, Yaroslav Halchenko
 
  -- Joey Hess <id@joeyh.name>  Mon, 27 Feb 2023 12:31:14 -0400
 
