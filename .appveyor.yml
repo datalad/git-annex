@@ -1,0 +1,128 @@
+# This CI setup provides a largely homogeneous configuration across all
+# major platforms (Windows, MacOS, and Linux). The aim of this test setup is
+# to create a "native" platform experience, using as few cross-platform
+# helper tools as possible.
+#
+# All workers support remote login. Login details are shown at the top of each
+# CI run log.
+#
+# - Linux/Mac workers (via SSH):
+#
+#   - A permitted SSH key must be defined in an APPVEYOR_SSH_KEY environment
+#     variable (via the appveyor project settings)
+#
+#   - SSH login info is given in the form of: 'appveyor@67.225.164.xx -p 22xxx'
+#
+#   - Login with:
+#
+#     ssh -o StrictHostKeyChecking=no <LOGIN>
+#
+#   - to prevent the CI run from exiting, `touch` a file named `BLOCK` in the
+#     user HOME directory (current directory directly after login). The session
+#     will run until the file is removed (or 60 min have passed)
+#
+# - Windows workers (via RDP):
+#
+#   - An RDP password should be defined in an APPVEYOR_RDP_PASSWORD environment
+#     variable (via the appveyor project settings), or a random password is used
+#     every time
+#
+#   - RDP login info is given in the form of IP:PORT
+#
+#   - Login with:
+#
+#     xfreerdp /cert:ignore /dynamic-resolution /u:appveyor /p:<PASSWORD> /v:<LOGIN>
+#
+#   - to prevent the CI run from exiting, create a textfile named `BLOCK` on the
+#     Desktop (a required .txt extension will be added automatically). The session
+#     will run until the file is removed (or 60 min have passed)
+
+environment:
+  # Do not use `image` as a matrix dimension, to have fine-grained control over
+  # what tests run on which platform
+  # The ID variable had no impact, but sorts first in the CI run overview
+  # an intelligible name can help to locate a specific test run
+  matrix:
+    # List a CI run for each platform first, to have immediate access when there
+    # is a need for debugging
+
+    # Ubuntu core tests
+    - ID: Ubu20
+      DTS: datalad_next
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+    # Windows core tests
+    - ID: WinP39core
+      DTS: datalad_next
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    # MacOS core tests
+    - ID: MacP38core
+      DTS: datalad_next
+      APPVEYOR_BUILD_WORKER_IMAGE: macos-monterey
+
+# do not run the CI if only documentation changes were made
+# documentation builds are tested elsewhere and cheaper
+skip_commits:
+  files:
+    - doc/
+    - CHANGELOG
+
+# it is OK to specify paths that may not exist for a particular test run
+cache:
+
+# turn of support for MS project build support (not needed)
+build: off
+
+# init cannot use any components from the repo, because it runs prior to
+# cloning it
+init:
+  # remove windows 260-char limit on path names
+  - cmd: powershell Set-Itemproperty -path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name LongPathsEnabled -value 1
+  # enable developer mode on windows
+  # this should enable mklink without admin privileges, but it doesn't seem to work
+  #- cmd: powershell tools\ci\appveyor_enable_windevmode.ps1
+  # enable RDP access on windows (RDP password is in appveyor project config)
+  # this is relatively expensive (1-2min), but very convenient to jump into any build at any time
+  - cmd: powershell.exe iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  # Identity setup
+  #- git config --global user.email "test@appveyor.land"
+  #- git config --global user.name "Appveyor Almighty"
+
+install:
+  # enable external SSH access to CI worker on all other systems
+  # needs APPVEYOR_SSH_KEY defined in project settings (or environment)
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+
+#before_build:
+#
+
+
+build_script:
+  - stack build
+
+#after_build:
+#
+
+
+#before_test:
+#
+
+#test_script:
+#
+
+#after_test:
+#
+
+#on_success:
+#
+
+#on_failure:
+#
+
+
+on_finish:
+  # block exit until 60 minute timeout, for direct debugging
+  - sh: while true; do sleep 5; done
+  - cmd: powershell.exe while ($true) { Start-Sleep 5 }
+  # conditionally block the exit of a CI run for direct debugging
+  #- sh: while [ -f ~/BLOCK ]; do sleep 5; done
+  #- cmd: powershell.exe while ((Test-Path "C:\Users\\appveyor\\Desktop\\BLOCK.txt")) { Start-Sleep 5 }
