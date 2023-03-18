@@ -1,0 +1,14 @@
+Greetings friends.
+
+In an unfortunate event, I lost my git repository for my annex. 😬
+
+The only thing left is the annex files in an S3 bucket.
+
+Is it possible to recover the repository?
+
+Is it possible to recover the files?
+
+All the files in S3 bucket are in this format:
+GPGHMACSHA1--000b36e47d7ebd51f5ca2b8d294dea2d530c79c8
+
+I'd appreciate any help! 🙏
