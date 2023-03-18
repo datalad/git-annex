@@ -48,15 +48,12 @@ environment:
 
     # Ubuntu core tests
     - ID: Ubu20
-      DTS: datalad_next
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
     # Windows core tests
     - ID: WinP39core
-      DTS: datalad_next
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     # MacOS core tests
     - ID: MacP38core
-      DTS: datalad_next
       APPVEYOR_BUILD_WORKER_IMAGE: macos-monterey
 
 # do not run the CI if only documentation changes were made
@@ -68,6 +65,10 @@ skip_commits:
 
 # it is OK to specify paths that may not exist for a particular test run
 cache:
+   - C:\Users\appveyor\AppData\Roaming\stack
+   - C:\Users\appveyor\AppData\Local\Programs\stack
+   - /home/appveyor/.stack
+   - /Users/appveyor/.stack
 
 # turn of support for MS project build support (not needed)
 build: off
@@ -83,18 +84,16 @@ init:
   # enable RDP access on windows (RDP password is in appveyor project config)
   # this is relatively expensive (1-2min), but very convenient to jump into any build at any time
   - cmd: powershell.exe iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  # Identity setup
-  #- git config --global user.email "test@appveyor.land"
-  #- git config --global user.name "Appveyor Almighty"
 
 install:
   # enable external SSH access to CI worker on all other systems
   # needs APPVEYOR_SSH_KEY defined in project settings (or environment)
   - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+  # install stack (works on linux, OSX, and windows)
+  - curl -sSL https://get.haskellstack.org/ | sh
 
 #before_build:
 #
-
 
 build_script:
   - stack build
@@ -102,12 +101,11 @@ build_script:
 #after_build:
 #
 
-
 #before_test:
 #
 
-#test_script:
-#
+test_script:
+  - stack run git-annex test
 
 #after_test:
 #
@@ -118,11 +116,10 @@ build_script:
 #on_failure:
 #
 
-
 on_finish:
-  # block exit until 60 minute timeout, for direct debugging
-  - sh: while true; do sleep 5; done
-  - cmd: powershell.exe while ($true) { Start-Sleep 5 }
   # conditionally block the exit of a CI run for direct debugging
-  #- sh: while [ -f ~/BLOCK ]; do sleep 5; done
-  #- cmd: powershell.exe while ((Test-Path "C:\Users\\appveyor\\Desktop\\BLOCK.txt")) { Start-Sleep 5 }
+  - sh: while [ -f ~/BLOCK ]; do sleep 5; done
+  - cmd: powershell.exe while ((Test-Path "C:\Users\\appveyor\\Desktop\\BLOCK.txt")) { Start-Sleep 5 }
+  # block exit until 60 minute timeout, for direct debugging
+  #- sh: while true; do sleep 5; done
+  #- cmd: powershell.exe while ($true) { Start-Sleep 5 }
