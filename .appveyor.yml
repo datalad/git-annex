@@ -37,6 +37,10 @@
 #     Desktop (a required .txt extension will be added automatically). The session
 #     will run until the file is removed (or 60 min have passed)
 
+# Do a shallow clone with enough commits that queued builds will still
+# find the commit they want to build.
+clone_depth: 100
+
 environment:
   # Do not use `image` as a matrix dimension, to have fine-grained control over
   # what tests run on which platform
