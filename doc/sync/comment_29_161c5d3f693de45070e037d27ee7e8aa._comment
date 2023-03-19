@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="talmukoydu@ab15521191b4d02584d003f3f211d90f575d5ebb"
+ nickname="talmukoydu"
+ avatar="http://cdn.libravatar.org/avatar/965ffeb49ec136674054e50928ddb2ed"
+ subject="`git annex sync` not automatically syncing gcrypt remotes using relative paths"
+ date="2023-03-19T19:20:44Z"
+ content="""
+@joey Is this a bug or am I missing something?
+
+Notes:
+
+* I am using the latest git-remote-gcrypt, version 1.5
+
+Flow 1
+
+* `git remote add test gcrypt::rsync://user@user.rsync.net:relative/path/to/repo`
+* `git annex sync` -> DOES NOT SYNC to test remote
+* Nothing has been synced so I CANNOT successfully clone from the test remote with `git clone gcrypt::rsync://user@user.rsync.net:relative/path/to/repo`
+* `git push test git-annex master`
+* I can successfully clone from the test remote with `git clone gcrypt::rsync://user@user.rsync.net:relative/path/to/repo`
+
+Flow 2
+
+* `git remote add test gcrypt::rsync://user@user.rsync.net/full/path/to/repo`
+* `git annex sync` -> DOES SYNC to test remote
+* I can successfully clone from the test remote with `git clone gcrypt::rsync://user@user.rsync.net:relative/path/to/repo`
+"""]]

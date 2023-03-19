@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="talmukoydu@ab15521191b4d02584d003f3f211d90f575d5ebb"
+ nickname="talmukoydu"
+ avatar="http://cdn.libravatar.org/avatar/965ffeb49ec136674054e50928ddb2ed"
+ subject="RE: `git annex sync` not automatically syncing gcrypt remotes using relative paths"
+ date="2023-03-19T19:27:46Z"
+ content="""
+@joey definitely seems like a bug. I am able to easily verify by changing the remote url back and forth in the .git/config and then running git annex sync. If the relative url is used git annex sync does not sync to that remote.
+"""]]
