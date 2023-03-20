@@ -1,6 +1,6 @@
 I'm trying to use [datalad](http://www.datalad.org) to manage some scientific data repositories. Datalad uses git annex. 
 
-I've set up an annex for my datalad/git repository using `git-annex-remote-rclone` [website](https://github.com/git-annex-remote-rclone/git-annex-remote-rclone). The setup went fine, but the transfers with a Gigabit connection are of the order of 50-100 kbs. I'm trying to troubleshoot the issue. I'm a new user of git annex. The repository has about 10 GB of stuff.
+I've set up an annex for my datalad/git repository using [`git-annex-remote-rclone`](https://github.com/git-annex-remote-rclone/git-annex-remote-rclone). The setup went fine, but the transfers with a Gigabit connection are of the order of 50-100 kbs. I'm trying to troubleshoot the issue. I'm a new user of git annex. The repository has about 10 GB of stuff.
 
 I'm focusing on `git annex` because I sidestep datalad by using `git annex copy --to=gdrive2`, this is as slow as using `datalad push --to=gdrive2`, which makes sense as the latter is a thin wrapper around `git-annex-copy`.
 
