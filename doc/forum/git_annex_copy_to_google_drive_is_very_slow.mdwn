@@ -6,4 +6,6 @@ I'm focusing on `git annex` because I sidestep datalad by using `git annex copy 
 
 Using an external drive instead of Google Drive was a little better, but it still took hours to copy the 10 GB. Not sure what's going on.
 
+I'm running this on a M1 MacBook Pro.
+
 Any ideas on how to troubeshoot this? 
