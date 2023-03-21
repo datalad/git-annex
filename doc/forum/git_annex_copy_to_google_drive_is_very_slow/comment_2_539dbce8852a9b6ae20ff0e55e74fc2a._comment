@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="carlos@4c213b52601d57b650b22d9a246c59aea2c8f859"
+ nickname="carlos"
+ avatar="http://cdn.libravatar.org/avatar/ef0152bec3818b24d9318f6e7013e104"
+ subject="comment 2"
+ date="2023-03-21T21:34:01Z"
+ content="""
+Hi Joey,
+
+This is my current effort to copy ~6.7 GB using Datalad (git annex with rclone+Gdrive in the background)
+
+```
+Total:  53%|█████████████████████████████████████████████████████████████████▏                                                        | 3.49G/6.53G [8:25:38<7:21:03, 115k Bytes/s]
+```
+
+There are many small files in this repository for sure, but I haven't been able to get specific advice as to whether these very small speeds (even copying to an external drive took many hours) are expected given the bottlenecks you mention. Any feedback is welcome. 
+"""]]
