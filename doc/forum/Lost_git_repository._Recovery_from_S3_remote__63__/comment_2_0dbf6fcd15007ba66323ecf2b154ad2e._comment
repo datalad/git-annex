@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-03-21T17:54:02Z"
+ content="""
+@Lukey is probably right. The one exception would be if the
+S3 remote was set up with encryption=pubkey. Then the files
+stored in the bucket would be simply encrypted to your gpg public key, and
+could be decrypted without needing any other information that you've lost.
+
+(The filenames would still not be able to be recovered.)
+"""]]
