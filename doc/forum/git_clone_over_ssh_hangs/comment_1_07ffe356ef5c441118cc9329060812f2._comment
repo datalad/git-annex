@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-03-21T17:49:31Z"
+ content="""
+Well, this is a git question, not a git-annex question.
+There is no git-annex involved in what you showed.
+You might have better luck on a forum specific to git.
+
+(Especially if it really involves some problem with sidebound packets,
+which is deeper on git protocol than I can go.)
+"""]]
