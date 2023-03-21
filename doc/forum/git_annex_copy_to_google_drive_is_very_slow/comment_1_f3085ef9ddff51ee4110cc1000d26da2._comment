@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-03-21T18:03:40Z"
+ content="""
+How large are the individual files?
+
+With small enough files, non-bandwidth related overhead and/or TCL slow
+start can take more time than copying the file does, preventing saturating
+a connection.
+
+It sometimes helps to use -J10 or so.
+
+The --fast option can also speed up `git-annex copy`,
+see the [[git-annex-copy]] man page for details about it.
+"""]]
