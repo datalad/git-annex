@@ -1,0 +1,17 @@
+I am trying to use git-annex to sync a folder with a backup drive over the network.
+I have followed the walkthrough and run a git annex init in a TrueNAS jail and now I am trying to use git clone through ssh to link the drive and the jail together.
+The problem is that the clone in the backup drive just hangs. It will enumerate the files and count them and then it just seems to do nothing.
+
+
+Command: git clone ssh://user@ip/mnt/dir ./driveBackup
+Output:
+Cloning into './repo'...
+remote: Enumerating objects: 1543, done.
+remote: Counting objects: 100% (1543/1543), done.
+
+...Hangs here nothing obvious happens...
+
+Running it in verbose mode reveals nothing. When you stop the clone it will complain about some sideband packet.
+
+I don't know if it helps, but I have set up passwordless ssh login and I have verified that it works by running ssh user@ip successfully from the backup system.
+Can someone help me please?
