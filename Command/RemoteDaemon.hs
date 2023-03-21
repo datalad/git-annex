@@ -12,7 +12,9 @@ module Command.RemoteDaemon where
 import Command
 import RemoteDaemon.Core
 import Utility.Daemon
+#ifndef mingw32_HOST_OS
 import Annex.Path
+#endif
 
 cmd :: Command
 cmd = noCommit $

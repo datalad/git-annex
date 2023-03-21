@@ -17,6 +17,9 @@ import System.IO
 import Control.Monad
 import System.PosixCompat.Types
 import System.PosixCompat.Files (unionFileModes, intersectFileModes, stdFileMode, nullFileMode, setFileCreationMask, groupReadMode, ownerReadMode, ownerWriteMode, ownerExecuteMode, groupWriteMode, groupExecuteMode, otherReadMode, otherWriteMode, otherExecuteMode, fileMode)
+#ifndef mingw32_HOST_OS
+import System.PosixCompat.Files (setFileCreationMask)
+#endif
 import Control.Monad.IO.Class
 import Foreign (complement)
 import Control.Monad.Catch

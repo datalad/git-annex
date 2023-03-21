@@ -14,11 +14,11 @@ module Utility.MoveFile (
 ) where
 
 import Control.Monad
-import System.PosixCompat.Files (isDirectory)
 import System.IO.Error
 import Prelude
 
 #ifndef mingw32_HOST_OS
+import System.PosixCompat.Files (isDirectory)
 import Control.Monad.IfElse
 import Utility.SafeCommand
 #endif

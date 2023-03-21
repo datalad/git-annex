@@ -19,7 +19,10 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import qualified System.FilePath.ByteString as P
 import Data.Default
-import System.PosixCompat.Files (isRegularFile, getFdStatus, deviceID)
+import System.PosixCompat.Files (isRegularFile, deviceID)
+#ifndef mingw32_HOST_OS
+import System.PosixCompat.Files (getFdStatus)
+#endif
 
 import Annex.Common
 import Types.Remote

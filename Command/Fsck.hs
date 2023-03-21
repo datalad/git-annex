@@ -16,11 +16,13 @@ import qualified Remote
 import qualified Types.Backend
 import qualified Backend
 import Annex.Content
+#ifndef mingw32_HOST_OS
+import Annex.Version
 import Annex.Content.Presence
+#endif
 import Annex.Content.Presence.LowLevel
 import Annex.Perms
 import Annex.Link
-import Annex.Version
 import Logs.Location
 import Logs.Trust
 import Logs.Activity

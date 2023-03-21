@@ -54,9 +54,7 @@ import System.PosixCompat.Types
 import System.PosixCompat.Files (isRegularFile, fileID)
 import Data.Time.Clock.POSIX
 
-#ifdef mingw32_HOST_OS
-import Data.Word (Word64)
-#else
+#ifndef mingw32_HOST_OS
 import qualified System.Posix.Files as Posix
 #endif
 

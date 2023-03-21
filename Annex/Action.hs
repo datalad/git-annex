@@ -27,8 +27,8 @@ import Annex.CheckIgnore
 import Annex.TransferrerPool
 import qualified Database.Keys
 
-import Control.Concurrent.STM
 #ifndef mingw32_HOST_OS
+import Control.Concurrent.STM
 import System.Posix.Signals
 #endif
 

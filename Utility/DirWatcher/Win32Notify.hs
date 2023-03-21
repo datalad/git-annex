@@ -7,7 +7,7 @@
 
 module Utility.DirWatcher.Win32Notify (watchDir) where
 
-import Common hiding (isDirectory)
+import Common
 import Utility.DirWatcher.Types
 import qualified Utility.RawFilePath as R
 

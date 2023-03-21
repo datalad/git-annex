@@ -14,9 +14,11 @@ import Git
 import Utility.Tmp
 import Utility.Shell
 import Utility.FileMode
+#ifndef mingw32_HOST_OS
 import qualified Utility.RawFilePath as R
-
 import System.PosixCompat.Files (fileMode)
+#endif
+
 
 data Hook = Hook
 	{ hookName :: FilePath

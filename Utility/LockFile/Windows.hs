@@ -21,7 +21,6 @@ import Control.Concurrent
 
 import Utility.Path.Windows
 import Utility.FileSystemEncoding
-import Utility.Split
 
 type LockFile = RawFilePath
 

@@ -51,10 +51,10 @@ import Annex.InodeSentinal
 import Upgrade
 import Annex.Tmp
 import Utility.UserInfo
-import qualified Utility.RawFilePath as R
-import Utility.ThreadScheduler
 import Annex.Perms
 #ifndef mingw32_HOST_OS
+import Utility.ThreadScheduler
+import qualified Utility.RawFilePath as R
 import Utility.FileMode
 import System.Posix.User
 import qualified Utility.LockFile.Posix as Posix
@@ -62,8 +62,8 @@ import qualified Utility.LockFile.Posix as Posix
 
 import qualified Data.Map as M
 import Control.Monad.IO.Class (MonadIO)
-import System.PosixCompat.Files (ownerReadMode, isNamedPipe)
 #ifndef mingw32_HOST_OS
+import System.PosixCompat.Files (ownerReadMode, isNamedPipe)
 import Data.Either
 import qualified System.FilePath.ByteString as P
 import Control.Concurrent.Async

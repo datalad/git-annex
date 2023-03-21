@@ -14,13 +14,15 @@ module Utility.FileSize (
 	getFileSize',
 ) where
 
-import System.PosixCompat.Files (FileStatus, fileSize)
-import qualified Utility.RawFilePath as R
 #ifdef mingw32_HOST_OS
 import Control.Exception (bracket)
 import System.IO
 import Utility.FileSystemEncoding
+#else
+import System.PosixCompat.Files (fileSize)
 #endif
+import System.PosixCompat.Files (FileStatus)
+import qualified Utility.RawFilePath as R
 
 type FileSize = Integer
 
