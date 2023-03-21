@@ -1,0 +1,19 @@
+git-annex 10.20230321 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Using git-annex view in an adjusted branch, or git-annex adjust in a
+    view branch, will enter an adjusted view branch.
+  * sync: Fix a reversion that prevented sending files to exporttree=yes
+    remotes when annex-tracking-branch was configured to branch:subdir
+    (Introduced in version 10.20230214)
+  * status: This command is deprecated because it was only needed in direct
+    mode; git status --short is very similar.
+  * Windows: Support long filenames in more (possibly all) of the code.
+  * Added arm64 build for ancient kernels, needed to support Android phones
+    whose kernels are too old to support kernels used by the current arm64
+    build.
+  * importfeed: Display feed title.
+  * init: Support being ran in a repository that has a newline in its path.
+  * copy: When --from and --to are combined and the content is already
+    present on the destination remote, update location tracking as
+    necessary.
+  * Fixed spelling of some messages and added a .codespellrc
+    Thanks, Yaroslav Halchenko"""]]
