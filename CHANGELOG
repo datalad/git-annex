@@ -1,4 +1,4 @@
-git-annex (10.20230228) UNRELEASED; urgency=medium
+git-annex (10.20230321) upstream; urgency=medium
 
   * Using git-annex view in an adjusted branch, or git-annex adjust in a
     view branch, will enter an adjusted view branch.
@@ -19,7 +19,7 @@ git-annex (10.20230228) UNRELEASED; urgency=medium
   * Fixed spelling of some messages and added a .codespellrc
     Thanks, Yaroslav Halchenko
 
- -- Joey Hess <id@joeyh.name>  Mon, 27 Feb 2023 12:31:14 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 21 Mar 2023 16:13:46 -0400
 
 git-annex (10.20230227) upstream; urgency=medium
 
