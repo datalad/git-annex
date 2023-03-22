@@ -62,6 +62,4 @@
 <img src="https://github.com/datalad/git-annex/workflows/Build%20git-annex%20on%20Ubuntu/badge.svg">
 </a>
 <h2>Appveyor</h2>
-<a href="https://ci.appveyor.com/project/mih/git-annex">
-<img src="https://ci.appveyor.com/api/projects/status/mih/git-annex?retina=true">
-</a>
+<a href="https://ci.appveyor.com/project/mih/git-annex">here</a>
