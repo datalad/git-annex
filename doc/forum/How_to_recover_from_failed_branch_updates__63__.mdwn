@@ -1,0 +1,28 @@
+Due to the issue reported in [[bugs/Failed_adjusted_branch_update_after_error_in_drop]], my git-annex repo is now is a limbo state:
+
+
+```
+$ git branch --show-current
+adjusted/master(unlockpresent)
+
+$ git annex drop dirF/
+drop dirF/a/a1.txt ok
+drop dirF/a/a2.txt ok
+[...]
+error: Your local changes to the following files would be overwritten by checkout:
+    dirF/a/a1.txt
+    dirF/a/a2.txt
+    [...]
+
+Aborting
+
+  Updating adjusted branch failed.
+(recording state in git...)
+$ git status
+HEAD detached at 9d92415fb
+nothing to commit, working tree clean
+```
+
+What is the recommended course of action to (safely) return to the `adjusted/master(unlockpresent)` branch?
+
+Is it safe to just use `git annex adjust --unlock-present`?
