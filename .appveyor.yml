@@ -50,15 +50,17 @@ environment:
     # List a CI run for each platform first, to have immediate access when there
     # is a need for debugging
 
-    # Ubuntu core tests
-    - ID: Ubu20
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
     # Windows core tests
     - ID: WinP39core
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      STACK_ROOT: "c:\\sr"
     # MacOS core tests
     - ID: MacP38core
       APPVEYOR_BUILD_WORKER_IMAGE: macos-monterey
+    # Ubuntu core tests
+    # (disabled because it's not needed)
+    #- ID: Ubu20
+    #  APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
 
 # do not run the CI if only documentation changes were made
 # documentation builds are tested elsewhere and cheaper
@@ -69,10 +71,9 @@ skip_commits:
 
 # it is OK to specify paths that may not exist for a particular test run
 cache:
-   - C:\Users\appveyor\AppData\Roaming\stack
-   - C:\Users\appveyor\AppData\Local\Programs\stack
-   - /home/appveyor/.stack
-   - /Users/appveyor/.stack
+   - C:\sr -> stack.yaml
+   - C:\Users\appveyor\AppData\Local\Programs\stack -> stack.yaml
+   - /Users/appveyor/.stack -> stack.yaml
 
 # turn of support for MS project build support (not needed)
 build: off
@@ -96,11 +97,16 @@ install:
   # install stack (works on linux, OSX, and windows)
   - curl -sSL https://get.haskellstack.org/ | sh
 
-#before_build:
-#
+# Building dependencies takes almost too long on windows, so build without
+# optimisation (including when building the dependencies) 
+before_build:
+  - cp stack.yaml stack.yaml.build
+  - sh: 'echo "apply-ghc-options: everything" >> stack.yaml.build'
+  - ps: '"apply-ghc-options: everything" |Add-Content -Path .\stack.yaml.build'
+  - stack --stack-yaml stack.yaml.build build --only-dependencies --ghc-options=-O0
 
 build_script:
-  - stack build
+  - stack --stack-yaml stack.yaml.build build --copy-bins --ghc-options=-O0
 
 #after_build:
 #
@@ -108,8 +114,13 @@ build_script:
 #before_test:
 #
 
+# Cannot use stack run git-annex because it does not support --ghc-options
+# and would rebuild all deps. Instead, use the binary --copy-bins installed.
 test_script:
-  - stack run git-annex test
+  - cmd: C:\Users\appveyor\AppData\Roaming\local\bin\git-annex.exe test
+  - sh: ln -s $(stack path --local-bin)/git-annex git-annex
+  - sh: ln -s $(stack path --local-bin)/git-annex git-annex-shell
+  - sh: PATH=`pwd`:$PATH; export PATH; git-annex test
 
 #after_test:
 #
