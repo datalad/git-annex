@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Xyem"
+ avatar="http://cdn.libravatar.org/avatar/dea2d98057721c21166c3721f6d55c06"
+ subject="comment 7"
+ date="2023-03-23T22:26:24Z"
+ content="""
+So if my understanding is correct, the file paths generated for this view should something like `sd/v1.5_%model%.safetensors` but as `annex.maxextensionlength` isn't being considered during this, it doesn't realise `safetensors` is the extension?
+
+Unfortunately, the software will only regard certain extensions as being usable files, so I will be unable to use metadata views for now. I've set up separate branches and will copy symlinks between branches in the meantime.
+"""]]
