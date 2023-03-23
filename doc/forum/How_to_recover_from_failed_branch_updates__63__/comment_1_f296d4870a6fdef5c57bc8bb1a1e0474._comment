@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-03-23T19:30:12Z"
+ content="""
+You can just run "git checkout adjusted/master(unlockpresent)"
+to switch back to that branch. 
+
+It's fine to switch between adjusted and other branches, though the way git-annex
+failed and left your head detached is certainly a bug.
+"""]]

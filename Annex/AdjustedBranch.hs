@@ -45,7 +45,6 @@ import Annex.Common
 import Types.AdjustedBranch
 import Annex.AdjustedBranch.Name
 import qualified Annex
-import qualified Annex.Queue
 import Git
 import Git.Types
 import qualified Git.Branch
@@ -312,22 +311,20 @@ adjustedBranchRefresh _af a = do
 			    !s' = s { Annex.adjustedbranchrefreshcounter = c' }
 			    in pure (s', enough)
 
-	update adj origbranch = do
-		-- Flush the queue, to make any pending changes be written
-		-- out to disk. But mostly so any pointer files
-		-- restagePointerFile was called on get updated so git
-		-- checkout won't fall over.
-		Annex.Queue.flush
-		-- This is slow, it would be better to incrementally
-		-- adjust the AssociatedFile, and only call this once
-		-- at shutdown to handle cases where not all
-		-- AssociatedFiles are known.
+	-- This is slow, it would be better to incrementally
+	-- adjust the AssociatedFile, and only call this once
+	-- at shutdown to handle cases where not all
+	-- AssociatedFiles are known.
+	update adj origbranch =
 		adjustedBranchRefreshFull adj origbranch
 
 {- Slow, but more dependable version of adjustedBranchRefresh that
  - does not rely on all AssociatedFiles being known. -}
 adjustedBranchRefreshFull :: Adjustment -> OrigBranch -> Annex ()
 adjustedBranchRefreshFull adj origbranch = do
+	-- Restage pointer files so modifications to them due to get/drop
+	-- do not prevent checking out the updated adjusted branch.
+	restagePointerFiles =<< Annex.gitRepo
 	let adjbranch = originalToAdjusted origbranch adj
 	unlessM (updateAdjustedBranch adj adjbranch origbranch) $
 		warning $ unwords [ "Updating adjusted branch failed." ]
