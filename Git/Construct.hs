@@ -140,7 +140,7 @@ fromRemotes repo = catMaybes <$> mapM construct remotepairs
 	filterkeys f = filterconfig (\(k,_) -> f k)
 	remotepairs = filterkeys isRemoteUrlKey
 	construct (k,v) = remoteNamedFromKey k $
-		fromRemoteLocation (fromConfigValue v) repo
+		fromRemoteLocation (fromConfigValue v) False repo
 
 {- Sets the name of a remote when constructing the Repo to represent it. -}
 remoteNamed :: String -> IO Repo -> IO Repo
@@ -156,9 +156,15 @@ remoteNamedFromKey k r = case remoteKeyToRemoteName k of
 	Just n -> Just <$> remoteNamed n r
 
 {- Constructs a new Repo for one of a Repo's remotes using a given
- - location (ie, an url). -}
-fromRemoteLocation :: String -> Repo -> IO Repo
-fromRemoteLocation s repo = gen $ parseRemoteLocation s repo
+ - location (ie, an url). 
+ -
+ - knownurl can be true if the location is known to be an url. This allows
+ - urls that don't parse as urls to be used, returning UnparseableUrl.
+ - If knownurl is false, the location may still be an url, if it parses as
+ - one.
+ -}
+fromRemoteLocation :: String -> Bool -> Repo -> IO Repo
+fromRemoteLocation s knownurl repo = gen $ parseRemoteLocation s knownurl repo
   where
 	gen (RemotePath p) = fromRemotePath p repo
 	gen (RemoteUrl u) = fromUrl u

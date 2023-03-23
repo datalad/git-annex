@@ -36,3 +36,4 @@ Flow 2 (absolute path, working)
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 I am VERY happy with git annex and am using it successfully with a gcrypt remote using an absolute path :)
 
+> [[fixed|done]] --[[Joey]]

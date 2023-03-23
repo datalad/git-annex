@@ -186,12 +186,12 @@ repoList reposelector
 			-- Skip gcrypt repos on removable drives;
 			-- handled separately.
 			case fromProposedAccepted <$> getconfig (Accepted "gitrepo") of
-				Just rr	| remoteLocationIsUrl (parseRemoteLocation rr g) ->
+				Just rr	| remoteLocationIsUrl (parseRemoteLocation rr False g) ->
 					val True EnableSshGCryptR
 				_ -> Nothing
 		Just "git" -> 
 			case fromProposedAccepted <$> getconfig (Accepted "location") of
-				Just loc | remoteLocationIsSshUrl (parseRemoteLocation loc g) ->
+				Just loc | remoteLocationIsSshUrl (parseRemoteLocation loc False g) ->
 					val True EnableSshGitRemoteR
 				_ -> Nothing
 		_ -> Nothing

@@ -235,7 +235,7 @@ editForm _new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
 		Nothing -> getRepoInfo Nothing mempty
 	g <- liftAnnex gitRepo
 	mrepo <- liftAnnex $ maybe (pure Nothing) (Just <$$> Remote.getRepo) mr
-	let sshrepo = maybe False (remoteLocationIsSshUrl . flip parseRemoteLocation g . Git.repoLocation) mrepo
+	let sshrepo = maybe False (\repo -> remoteLocationIsSshUrl (parseRemoteLocation (Git.repoLocation repo) False g)) mrepo
 	$(widgetFile "configurators/edit/nonannexremote")
 
 {- Makes any directory associated with the repository. -}

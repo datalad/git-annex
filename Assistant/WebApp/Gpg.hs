@@ -110,5 +110,5 @@ checkGCryptRepoEncryption location notencrypted notinstalled encrypted =
  - Only works if the gcrypt repo was created as a git-annex remote. -}
 probeGCryptRemoteUUID :: String -> Annex (Maybe UUID)
 probeGCryptRemoteUUID repolocation = do
-	r <- inRepo $ Git.Construct.fromRemoteLocation repolocation
+	r <- inRepo $ Git.Construct.fromRemoteLocation repolocation False
 	GCrypt.getGCryptUUID False r

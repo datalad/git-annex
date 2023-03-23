@@ -102,7 +102,7 @@ list autoinit = do
 			Nothing -> return r
 			Just url -> inRepo $ \g ->
 				Git.Construct.remoteNamed n $
-					Git.Construct.fromRemoteLocation (Git.fromConfigValue url) g
+					Git.Construct.fromRemoteLocation (Git.fromConfigValue url) False g
 
 {- Git remotes are normally set up using standard git commands, not
  - git-annex initremote and enableremote.
@@ -118,7 +118,7 @@ gitSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> Remote
 gitSetup Init mu _ c _ = do
 	let location = maybe (giveup "Specify location=url") fromProposedAccepted $
 		M.lookup locationField c
-	r <- inRepo $ Git.Construct.fromRemoteLocation location
+	r <- inRepo $ Git.Construct.fromRemoteLocation location False
 	r' <- tryGitConfigRead False r False
 	let u = getUncachedUUID r'
 	if u == NoUUID

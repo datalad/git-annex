@@ -203,7 +203,7 @@ configKnownUrl r
 			<$> M.lookup Annex.SpecialRemote.Config.typeField c
 		u <- fromProposedAccepted
 			<$> M.lookup urlField c
-		let u' = Git.Remote.parseRemoteLocation u g
+		let u' = Git.Remote.parseRemoteLocation u False g
 		return $ Git.Remote.RemoteUrl (Git.repoLocation r) == u' 
 			&& t == typename remote
 	go u mcu = do

@@ -220,7 +220,7 @@ seek' o = do
 	let withbranch a = a =<< getCurrentBranch
 
 	remotes <- syncRemotes (syncWith o)
-	-- Remotes that are git repositories, not special remotes.
+	-- Remotes that are git repositories, not (necesarily) special remotes.
 	let gitremotes = filter (Remote.gitSyncableRemoteType . Remote.remotetype) remotes
 	-- Remotes that contain annex object content.
 	contentremotes <- filter (\r -> Remote.uuid r /= NoUUID)

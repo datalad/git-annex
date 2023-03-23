@@ -63,7 +63,7 @@ makeLegalName s = case filter legal $ replace "/" "_" s of
 	legal c = isAlphaNum c
 	
 data RemoteLocation = RemoteUrl String | RemotePath FilePath
-	deriving (Eq)
+	deriving (Eq, Show)
 
 remoteLocationIsUrl :: RemoteLocation -> Bool
 remoteLocationIsUrl (RemoteUrl _) = True
@@ -75,16 +75,18 @@ remoteLocationIsSshUrl _ = False
 
 {- Determines if a given remote location is an url, or a local
  - path. Takes the repository's insteadOf configuration into account. -}
-parseRemoteLocation :: String -> Repo -> RemoteLocation
-parseRemoteLocation s repo = ret $ calcloc s
+parseRemoteLocation :: String -> Bool -> Repo -> RemoteLocation
+parseRemoteLocation s knownurl repo = go
   where
-	ret v
+ 	s' = calcloc s
+	go
 #ifdef mingw32_HOST_OS
-		| dosstyle v = RemotePath (dospath v)
+		| dosstyle s' = RemotePath (dospath s')
 #endif
-		| scpstyle v = RemoteUrl (scptourl v)
-		| urlstyle v = RemoteUrl v
-		| otherwise = RemotePath v
+		| scpstyle s' = RemoteUrl (scptourl s')
+		| urlstyle s' = RemoteUrl s'
+		| knownurl && s' == s = RemoteUrl s'
+		| otherwise = RemotePath s'
 	-- insteadof config can rewrite remote location
 	calcloc l
 		| null insteadofs = l

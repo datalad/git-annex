@@ -55,7 +55,15 @@ encryptedRemote baserepo = go
 			    -- allows them); need to de-escape any such
 			    -- to get back the path to the repository.
 			    l' = Network.URI.unEscapeString l
-			in fromRemoteLocation l' baserepo
+			    -- gcrypt supports relative urls for rsync 
+			    -- like "rsync://host:relative/path"
+			    -- but that does not parse as a valid url
+			    -- (while the absolute urls it supports are
+			    -- valid). 
+			    -- In order to support it, force treating it as
+			    -- an url.
+			    knownurl = "rsync://" `isPrefixOf` l'
+			in fromRemoteLocation l' knownurl baserepo
 		| otherwise = notencrypted
 
 	notencrypted = giveup "not a gcrypt encrypted repository"
