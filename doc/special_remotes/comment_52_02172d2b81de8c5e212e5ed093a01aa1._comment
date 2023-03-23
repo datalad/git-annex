@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 52"""
+ date="2023-03-23T19:23:29Z"
+ content="""
+@gaknuyardi that is expected, they are hash directories. You can see the
+same effect in .git/annex/object/ hash directories when there are enough
+objects.
+"""]]
