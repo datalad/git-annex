@@ -1,0 +1,73 @@
+[[!comment format=mdwn
+ username="dpifke"
+ avatar="http://cdn.libravatar.org/avatar/7b17ce0661a1b1cd708c5c5150eb2c33"
+ subject="comment 5"
+ date="2023-03-23T23:43:17Z"
+ content="""
+Some additional experiments:
+
+```
+$ stat Invoice.pdf 
+  File: Invoice.pdf
+  Size: 54623           Blocks: 112        IO Block: 4096   regular file
+Device: bfh/191d        Inode: 294625      Links: 1
+Access: (0444/-r--r--r--)  Uid: ( 1000/    dave)   Gid: ( 1000/    dave)
+Access: 2023-03-23 17:28:30.299963443 -0600
+Modify: 2023-03-23 17:19:56.731965402 -0600
+Change: 2023-03-23 17:28:30.299963443 -0600
+ Birth: -
+$ sha256sum Invoice.pdf 
+868cb65310f5ef46fcd4f7d85fb364347ea9047766cadcf3d184a8c704164b90  Invoice.pdf
+$ stat Invoice.pdf 
+  File: Invoice.pdf
+  Size: 54623           Blocks: 112        IO Block: 4096   regular file
+Device: bfh/191d        Inode: 294625      Links: 1
+Access: (0444/-r--r--r--)  Uid: ( 1000/    dave)   Gid: ( 1000/    dave)
+Access: 2023-03-23 17:35:38.303961810 -0600
+Modify: 2023-03-23 17:19:56.731965402 -0600
+Change: 2023-03-23 17:28:30.299963443 -0600
+ Birth: -
+```
+
+From the above, I can see that `-ko noatime` doesn't do anything, but the ctime change is something unique to git-annex, not just from opening and reading file contents.  (I've used git-annex on filesystems without noatime before, so I didn't think noatime support was mandatory?)
+
+But wait... why is the file 0444?
+
+```
+$ chmod 644 Invoice.pdf 
+$ stat Invoice.pdf 
+  File: Invoice.pdf
+  Size: 54623           Blocks: 112        IO Block: 4096   regular file
+Device: bfh/191d        Inode: 294625      Links: 1
+Access: (0644/-rw-r--r--)  Uid: ( 1000/    dave)   Gid: ( 1000/    dave)
+Access: 2023-03-23 17:35:38.303961810 -0600
+Modify: 2023-03-23 17:19:56.731965402 -0600
+Change: 2023-03-23 17:38:04.539961252 -0600
+ Birth: -
+```
+
+OK, so setting it back to 0644 modifies ctime.
+
+```
+$ git annex add Invoice.pdf 
+add Invoice.pdf 
+                                  
+  Invoice.pdf changed while it was being added
+failed                            
+add: 1 failed
+$ stat Invoice.pdf 
+  File: Invoice.pdf
+  Size: 54623           Blocks: 112        IO Block: 4096   regular file
+Device: bfh/191d        Inode: 294625      Links: 1
+Access: (0444/-r--r--r--)  Uid: ( 1000/    dave)   Gid: ( 1000/    dave)
+Access: 2023-03-23 17:38:28.999961159 -0600
+Modify: 2023-03-23 17:19:56.731965402 -0600
+Change: 2023-03-23 17:38:28.999961159 -0600
+ Birth: -
+```
+
+And running `git annex add` changes it back to 0444, *and* updates ctime.  So that's why that change is being observed.
+
+So I don't think gocryptfs is doing anything unexpected w.r.t. modifying the file out from under git-annex.  Is there a way to get more detailed information about what git-annex thinks has changed?
+
+"""]]
