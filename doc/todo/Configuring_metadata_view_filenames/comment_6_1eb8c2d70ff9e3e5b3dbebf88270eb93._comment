@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2023-03-23T20:39:33Z"
+ content="""
+@Xyem no, it's unchanged. But annex.maxextensionlength does not configure
+the extension length here currently. I think it would be a good thing for
+it to do, probably.
+"""]]
