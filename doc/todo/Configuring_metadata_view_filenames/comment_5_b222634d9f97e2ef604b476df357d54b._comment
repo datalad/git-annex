@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="Xyem"
+ avatar="http://cdn.libravatar.org/avatar/dea2d98057721c21166c3721f6d55c06"
+ subject="comment 5"
+ date="2023-03-23T17:05:24Z"
+ content="""
+Has the format been changed since this previously asked? I am currently trying to leverage git-annex and its metadata views with AI tooling, but the format seems to be filename_%path%, resulting in the extension being in the middle of the path. I have set `annex.maxextensionlength` to `12` so the extensions are present on the files in the backend.
+
+    $ git annex view type=model model/=*
+    $ ls -lr
+    .:
+    sd
+    
+    ./sd:
+    v1.4.safetensors_%model%sd%  v1.5.safetensors_%model%sd%
+
+whereas I would expect (or rather, I am trying to achieve):
+
+    $ ls -lr
+    .:
+    sd
+    
+    ./sd:
+    v1.4.safetensors  v1.5.safetensors
+
+"""]]

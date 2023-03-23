@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="gaknuyardi@f7280525ccd44eafd8d1485ec087f27532efd2e9"
+ nickname="gaknuyardi"
+ avatar="http://cdn.libravatar.org/avatar/2cfaf95a0836c7a00ef3efb16c3315ae"
+ subject="Understanding encrypted special remote folder structure"
+ date="2023-03-22T19:26:55Z"
+ content="""
+@joey While inspecting my special remote (rsync, encryption=hybrid) I noticed that a couple files ended up in the same folder tree, is that normal or is something wrong? Obfuscated tree output below.
+
+```
+├── [   0]  xxx
+│   └── [   0]  yyy
+│       ├── [   0]  GPGHMACSHA512--1234
+│       │   └── [29M]  GPGHMACSHA512--1234
+│       └── [   0]  GPGHMACSHA512--5678
+│           └── [ 2G]  GPGHMACSHA512--5678
+```
+"""]]
