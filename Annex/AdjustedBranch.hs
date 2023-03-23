@@ -248,26 +248,42 @@ checkoutAdjustedBranch (AdjBranch b) quietcheckout = do
 updateAdjustedBranch :: Adjustment -> AdjBranch -> OrigBranch -> Annex Bool
 updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 	| not (adjustmentIsStable adj) = do
-		b <- preventCommits $ \commitlck -> do
+		(b, origheadfile, newheadfile) <- preventCommits $ \commitlck -> do
 			-- Avoid losing any commits that the adjusted branch
 			-- has that have not yet been propigated back to the
 			-- origbranch.
 			_ <- propigateAdjustedCommits' origbranch adj commitlck
+				
+			origheadfile <- inRepo $ readFile . Git.Ref.headFile
 
 			-- Git normally won't do anything when asked to check
 			-- out the currently checked out branch, even when its
 			-- ref has changed. Work around this by writing a raw
 			-- sha to .git/HEAD.
-			inRepo (Git.Ref.sha currbranch) >>= \case
-				Just headsha -> inRepo $ \r ->
-					writeFile (Git.Ref.headFile r) (fromRef headsha)
-				_ -> noop
+			newheadfile <- inRepo (Git.Ref.sha currbranch) >>= \case
+				Just headsha -> do
+					inRepo $ \r -> do
+						let newheadfile = fromRef headsha
+						writeFile (Git.Ref.headFile r) newheadfile
+						return (Just newheadfile)
+				_ -> return Nothing
 	
-			adjustBranch adj origbranch
+			b <- adjustBranch adj origbranch
+			return (b, origheadfile, newheadfile)
 	
 		-- Make git checkout quiet to avoid warnings about
 		-- disconnected branch tips being lost.
-		checkoutAdjustedBranch b True
+		ok <- checkoutAdjustedBranch b True
+
+		-- Avoid leaving repo with detached head.
+		unless ok $ case newheadfile of
+			Nothing -> noop
+			Just v -> preventCommits $ \_commitlck -> inRepo $ \r -> do
+				v' <- readFile (Git.Ref.headFile r)
+				when (v == v') $
+					writeFile (Git.Ref.headFile r) origheadfile
+
+		return ok
 	| otherwise = preventCommits $ \commitlck -> do
 		-- Done for consistency.
 		_ <- propigateAdjustedCommits' origbranch adj commitlck

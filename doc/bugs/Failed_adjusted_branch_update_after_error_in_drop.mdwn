@@ -53,4 +53,4 @@ local repository version: 8
 
 git-annex is too good. It so rarely causes problems that one does not develop the "git-annex troubleshooting muscle". :)
 
-
+> [[fixed|done]] --[[Joey]]
