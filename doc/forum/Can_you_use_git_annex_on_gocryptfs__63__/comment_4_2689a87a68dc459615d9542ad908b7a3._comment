@@ -1,0 +1,75 @@
+[[!comment format=mdwn
+ username="dpifke"
+ avatar="http://cdn.libravatar.org/avatar/7b17ce0661a1b1cd708c5c5150eb2c33"
+ subject="comment 4"
+ date="2023-03-23T23:32:45Z"
+ content="""
+After successfully using git-annex + gocryptfs for several years now, I came across this issue because I also am no longer able to add files (\"... changed while it was being added\") after upgrading from bullseye to bookworm.
+
+The issue appears with gocryptfs 2.3.1+b3, but if I downgrade to gocryptfs 1.8.0-1+b6 it works again.
+
+It doesn't seem to be an inode number issue, but I do see the atime and ctime of the file change before and after running `git annex add`:
+
+```
+$ sha256sum Invoice.pdf 
+868cb65310f5ef46fcd4f7d85fb364347ea9047766cadcf3d184a8c704164b90  Invoice.pdf
+$ stat Invoice.pdf 
+  File: Invoice.pdf
+  Size: 54623           Blocks: 112        IO Block: 4096   regular file
+Device: bfh/191d        Inode: 294625      Links: 1
+Access: (0444/-r--r--r--)  Uid: ( 1000/    dave)   Gid: ( 1000/    dave)
+Access: 2023-03-23 17:19:59.707965391 -0600
+Modify: 2023-03-23 17:19:56.731965402 -0600
+Change: 2023-03-23 17:19:56.731965402 -0600
+ Birth: -
+$ git annex --debug add Invoice.pdf 
+[2023-03-23 17:20:23.680446749] (Utility.Process) process [2900635] read: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"git-annex\"]
+[2023-03-23 17:20:23.684813572] (Utility.Process) process [2900635] done ExitSuccess
+[2023-03-23 17:20:23.684979722] (Utility.Process) process [2900637] read: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2023-03-23 17:20:23.688066503] (Utility.Process) process [2900637] done ExitSuccess
+[2023-03-23 17:20:23.688331712] (Utility.Process) process [2900638] read: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"log\",\"refs/heads/git-annex..3b3eebc02f68101a6e2aeecc1733f2c214847361\",\"--pretty=%H\",\"-n1\"]
+[2023-03-23 17:20:23.690117996] (Utility.Process) process [2900638] done ExitSuccess
+[2023-03-23 17:20:23.690338783] (Utility.Process) process [2900639] read: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"log\",\"refs/heads/git-annex..60c9383872bd6750ab3d91730de902e2aa330d54\",\"--pretty=%H\",\"-n1\"]
+[2023-03-23 17:20:23.692089872] (Utility.Process) process [2900639] done ExitSuccess
+[2023-03-23 17:20:23.692439951] (Utility.Process) process [2900640] chat: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch\"]
+[2023-03-23 17:20:23.694521134] (Utility.Process) process [2900641] read: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2023-03-23 17:20:23.695417786] (Utility.Process) process [2900641] done ExitSuccess
+[2023-03-23 17:20:23.695579032] (Utility.Process) process [2900642] read: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"show-ref\",\"refs/heads/master\"]
+[2023-03-23 17:20:23.697616186] (Utility.Process) process [2900642] done ExitSuccess
+[2023-03-23 17:20:23.69780391] (Utility.Process) process [2900643] read: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"ls-files\",\"-z\",\"--others\",\"--exclude-standard\",\"--\",\"Invoice.pdf\"]
+[2023-03-23 17:20:23.699829084] (Utility.Process) process [2900644] chat: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.largefiles\",\"annex.numcopies\",\"annex.mincopies\",\"--\"]
+[2023-03-23 17:20:23.701005154] (Utility.Process) process [2900645] chat: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\"]
+add Invoice.pdf [2023-03-23 17:20:23.703386207] (Annex.Perms) freezing content Invoice.pdf
+
+                                  
+  Invoice.pdf changed while it was being added
+failed                            
+[2023-03-23 17:20:23.704163913] (Utility.Process) process [2900643] done ExitSuccess
+[2023-03-23 17:20:23.704269644] (Utility.Process) process [2900646] read: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"ls-files\",\"-z\",\"--modified\",\"--\",\"Invoice.pdf\"]
+[2023-03-23 17:20:23.706229644] (Utility.Process) process [2900646] done ExitSuccess
+[2023-03-23 17:20:23.706353485] (Utility.Process) process [2900647] read: git [\"--git-dir=../../.git\",\"--work-tree=../..\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"diff\",\"--name-only\",\"--diff-filter=T\",\"-z\",\"--cached\",\"--\",\"Invoice.pdf\"]
+[2023-03-23 17:20:23.708586251] (Utility.Process) process [2900647] done ExitSuccess
+[2023-03-23 17:20:23.709078263] (Utility.Process) process [2900640] done ExitSuccess
+[2023-03-23 17:20:23.709198563] (Utility.Process) process [2900645] done ExitSuccess
+[2023-03-23 17:20:23.709484216] (Utility.Process) process [2900644] done ExitSuccess
+add: 1 failed
+$ stat Invoice.pdf 
+  File: Invoice.pdf
+  Size: 54623           Blocks: 112        IO Block: 4096   regular file
+Device: bfh/191d        Inode: 294625      Links: 1
+Access: (0444/-r--r--r--)  Uid: ( 1000/    dave)   Gid: ( 1000/    dave)
+Access: 2023-03-23 17:20:23.699965299 -0600
+Modify: 2023-03-23 17:19:56.731965402 -0600
+Change: 2023-03-23 17:20:23.699965299 -0600
+ Birth: -
+$ sha256sum Invoice.pdf 
+868cb65310f5ef46fcd4f7d85fb364347ea9047766cadcf3d184a8c704164b90  Invoice.pdf
+```
+
+The filesystem was mounted as `/home/dave/.encrypted/Finances on /home/dave/Finances type fuse.gocryptfs (rw,nosuid,nodev,noatime,user_id=1000,group_id=1000,max_read=131072)`.
+
+This is with git-annex 10.20230126-2.
+
+I am happy to debug further if someone wants to point me in a useful direction.
+
+"""]]
