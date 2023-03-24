@@ -1,6 +1,6 @@
 {- filenames (not paths) used in views
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ module Annex.View.ViewedFile (
 	ViewedFile,
 	MkViewedFile,
 	viewedFileFromReference,
+	viewedFileFromReference',
 	viewedFileReuse,
 	dirFromViewedFile,
 	prop_viewedFile_roundtrips,
@@ -35,17 +36,27 @@ type MkViewedFile = FilePath -> ViewedFile
  -
  - So, from dir/subdir/file.foo, generate file_%dir%subdir%.foo
  -}
-viewedFileFromReference :: MkViewedFile
-viewedFileFromReference f = concat $
-	[ escape (fromRawFilePath base)
+viewedFileFromReference :: GitConfig -> MkViewedFile
+viewedFileFromReference g = viewedFileFromReference' (annexMaxExtensionLength g)
+
+viewedFileFromReference' :: Maybe Int -> MkViewedFile
+viewedFileFromReference' maxextlen f = concat $
+	[ escape (fromRawFilePath base')
 	, if null dirs then "" else "_%" ++ intercalate "%" (map escape dirs) ++ "%"
-	, escape $ fromRawFilePath $ S.concat extensions
+	, escape $ fromRawFilePath $ S.concat extensions'
 	]
   where
 	(path, basefile) = splitFileName f
 	dirs = filter (/= ".") $ map dropTrailingPathSeparator (splitPath path)
-	(base, extensions) = splitShortExtensions (toRawFilePath basefile')
-	
+	(base, extensions) = case maxextlen of
+		Nothing -> splitShortExtensions (toRawFilePath basefile')
+		Just n -> splitShortExtensions' (n+1) (toRawFilePath basefile')
+	{- Limit to two extensions maximum. -}
+	(base', extensions')
+		| length extensions <= 2 = (base, extensions)
+		| otherwise = 
+			let (es,more) = splitAt 2 (reverse extensions)
+			in (base <> mconcat (reverse more), reverse es)
 	{- On Windows, if the filename looked like "dir/c:foo" then
 	 - basefile would look like it contains a drive letter, which will
 	 - not work. There cannot really be a filename like that, probably,
@@ -90,7 +101,7 @@ prop_viewedFile_roundtrips tf
 	-- Relative filenames wanted, not directories.
 	| any (isPathSeparator) (end f ++ beginning f) = True
 	| isAbsolute f || isDrive f = True
-	| otherwise = dir == dirFromViewedFile (viewedFileFromReference f)
+	| otherwise = dir == dirFromViewedFile (viewedFileFromReference' Nothing f)
   where
 	f = fromTestableFilePath tf
 	dir = joinPath $ beginning $ splitDirectories f

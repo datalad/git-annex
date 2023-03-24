@@ -44,6 +44,12 @@ into the `_` directory and committing will unset the metadata.
 The name of the `_` directory can be changed using the annex.viewunsetdirectory
 git config.
 
+Filenames in the view branch include their path within the original branch, to
+ensure that they are unique. The path comes after the main filename, and
+before any extensions. For example, "foo/bar.baz" will have a name
+like "bar_%foo%.baz". annex.maxextensionlength can be used to configure
+what is treated as an extension.
+
 # OPTIONS
 
 * The [[git-annex-common-options]](1) can be used.

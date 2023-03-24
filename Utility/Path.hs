@@ -20,6 +20,7 @@ module Utility.Path (
 	runSegmentPaths',
 	dotfile,
 	splitShortExtensions,
+	splitShortExtensions',
 	relPathDirToFileAbs,
 	inSearchPath,
 	searchPath,

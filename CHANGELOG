@@ -5,6 +5,8 @@ git-annex (10.20230322) UNRELEASED; urgency=medium
     drop when annex.adjustedbranchrefresh=1
   * Avoid leaving repo with a detached head when there is a failure
     checking out an updated adjusted branch.
+  * view: Support annex.maxextensionlength when generating filenames for
+    the view branch.
 
  -- Joey Hess <id@joeyh.name>  Thu, 23 Mar 2023 15:04:41 -0400
 

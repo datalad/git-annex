@@ -825,9 +825,11 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
 * `annex.maxextensionlength`
 
-  Maximum length, in bytes, of what is considered a filename extension when
-  adding a file to a backend that preserves filename extensions. The
-  default length is 4, which allows extensions like "jpeg". The dot before
+  Maximum length, in bytes, of what is considered a filename extension.
+  This is used when adding a file to a backend that preserves filename extensions,
+  and also when generating a view branch.
+
+  The default length is 4, which allows extensions like "jpeg". The dot before
   the extension is not counted part of its length. At most two extensions
   at the end of a filename will be preserved, e.g. .gz or .tar.gz .
 

@@ -387,7 +387,7 @@ prop_view_roundtrips (AssociatedFile Nothing) _ _ = True
 prop_view_roundtrips (AssociatedFile (Just f)) metadata visible = or
 	[ B.null (P.takeFileName f) && B.null (P.takeDirectory f)
 	, viewTooLarge view
-	, all hasfields (viewedFiles view viewedFileFromReference (fromRawFilePath f) metadata)
+	, all hasfields (viewedFiles view (viewedFileFromReference' Nothing) (fromRawFilePath f) metadata)
 	]
   where
 	view = View (Git.Ref "foo") $
@@ -421,7 +421,9 @@ getViewedFileMetaData = getDirMetaData . dirFromViewedFile . takeFileName
  - branch for the view.
  -}
 applyView :: View -> Maybe Adjustment -> Annex Git.Branch
-applyView = applyView' viewedFileFromReference getWorkTreeMetaData
+applyView v ma = do
+	gc <- Annex.getGitConfig
+	applyView' (viewedFileFromReference gc) getWorkTreeMetaData v ma
 
 {- Generates a new branch for a View, which must be a more narrow
  - version of the View originally used to generate the currently
@@ -553,7 +555,8 @@ updateView view madj = do
 		Git.LsTree.LsTreeRecursive
 		(Git.LsTree.LsTreeLong True)
 		(viewParentBranch view)
-	applyView'' viewedFileFromReference getWorkTreeMetaData view madj l clean $
+	gc <- Annex.getGitConfig
+	applyView'' (viewedFileFromReference gc) getWorkTreeMetaData view madj l clean $
 		\ti -> do
 			let ref = Git.Ref.branchFileRef (viewParentBranch view)
 				(getTopFilePath (Git.LsTree.file ti))

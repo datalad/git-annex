@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2023-03-24T17:48:43Z"
+ content="""
+I've made git-annex view use `annex.maxextensionlength`. Note that refining
+an existing view will reuse the extension length that was configured when
+initially constructing the view.
+"""]]
