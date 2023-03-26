@@ -24,7 +24,7 @@ Here's an example test run when it fails
 [on github](https://github.com/Wolf480pl/git-annex-remote-rclone/actions/runs/4525558194/jobs/7970140554)
 
 and the test code - [on github](https://github.com/Wolf480pl/git-annex-remote-rclone/blob/bd1a497fca8614286ec290bb557c83442c0e23c9/tests/all-in-one.sh#L224)
-and as [[an attachment|all-in-one.sh]]
+(I'd post it as an attachment but I'm getting an error that only admin can upload attachments).
 
 ### What version of git-annex are you using? On what operating system?
 
@@ -33,9 +33,8 @@ OS: macOS 12.6.3 21G419
 
 ### Please provide any additional information below.
 
-Full log is quite long so I put it in [[an attachment|annex-rclone.log]]
-and also on github gists in case anyone prefers that:
-https://gist.github.com/Wolf480pl/4bdc83e23154827aad46e84bad631419
+Full log is quite long so I put it in a [github gist](https://gist.github.com/Wolf480pl/4bdc83e23154827aad46e84bad631419).
+I wanted to upload it as an attachment but apparently I'm not allowed.
 
 Here are the interesting parts:
 
