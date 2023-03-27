@@ -259,12 +259,13 @@ fixLink key file = do
  - to the other location.
  -}
 fixObjectLocation :: Key -> Annex Bool
-fixObjectLocation key = do
 #ifdef mingw32_HOST_OS
+fixObjectLocation _key = do
 	-- Windows does not allow locked files to be renamed, but annex
 	-- links are also not used on Windows.
 	return True
 #else
+fixObjectLocation key = do
 	loc <- calcRepo (gitAnnexLocation key)
 	idealloc <- calcRepo (gitAnnexLocation' (const (pure True)) key)
 	if loc == idealloc
