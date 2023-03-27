@@ -204,19 +204,24 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 	alreadylocked = giveup "content is locked"
 	failedtolock e = giveup $ "failed to lock content: " ++ show e
 
-	lock locker mlockfile = tryIO $ locker >>= \case
-		Nothing -> alreadylocked
-		Just h ->
 #ifndef mingw32_HOST_OS
-			case mlockfile of
-				Nothing -> return h
-				Just lockfile ->
-					ifM (checkSaneLock lockfile h)
-						( return h
-						, alreadylocked
-						)
+	lock locker mlockfile =
 #else
-			return h
+	lock locker _mlockfile =
+#endif
+		tryIO $ locker >>= \case
+			Nothing -> alreadylocked
+			Just h ->
+#ifndef mingw32_HOST_OS
+				case mlockfile of
+					Nothing -> return h
+					Just lockfile ->
+						ifM (checkSaneLock lockfile h)
+							( return h
+							, alreadylocked
+							)
+#else
+				return h
 #endif
 	
 	go (Right _) = a
