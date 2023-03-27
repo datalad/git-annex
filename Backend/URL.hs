@@ -29,7 +29,7 @@ backend = Backend
 	-- The content of an url can change at any time, so URL keys are
 	-- not stable.
 	, isStableKey = const False
-	, isCryptographicallySecure = const False
+	, isCryptographicallySecure = False
 	}
 
 {- Every unique url has a corresponding key. -}

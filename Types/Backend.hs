@@ -34,7 +34,7 @@ data BackendA a = Backend
 	-- same data.
 	, isStableKey :: Key -> Bool
 	-- Checks if a key is verified using a cryptographically secure hash.
-	, isCryptographicallySecure :: Key -> Bool
+	, isCryptographicallySecure :: Bool
 	}
 
 instance Show (BackendA a) where
