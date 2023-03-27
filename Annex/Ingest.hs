@@ -178,7 +178,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 		Nothing -> do
 			backend <- maybe
 				(chooseBackend $ keyFilename source)
-				(return . Just)
+				return
 				preferredbackend
 			fst <$> genKey source meterupdate backend
 		Just k -> return k

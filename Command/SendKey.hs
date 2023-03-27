@@ -49,7 +49,7 @@ fieldTransfer direction key a = do
 	let afile = AssociatedFile Nothing
 	ok <- maybe (a $ const noop)
 		-- Using noRetry here because we're the sender.
-		(\u -> runner (Transfer direction (toUUID u) (fromKey id key)) afile Nothing noRetry a)
+		(\u -> runner (Transfer direction (toUUID u) (fromKey id key)) Nothing afile Nothing noRetry a)
 		=<< Fields.getField Fields.remoteUUID
 	fastDebug "Command.SendKey" "transfer done"
 	liftIO $ exitBool ok

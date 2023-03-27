@@ -8,6 +8,7 @@ git-annex (10.20230322) UNRELEASED; urgency=medium
   * view: Support annex.maxextensionlength when generating filenames for
     the view branch.
   * Windows: Support urls like "file:///c:/path"
+  * addurl, importfeed: Fix failure when annex.securehashesonly is set.
 
  -- Joey Hess <id@joeyh.name>  Thu, 23 Mar 2023 15:04:41 -0400
 

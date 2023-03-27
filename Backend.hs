@@ -54,15 +54,13 @@ defaultBackend = maybe cache return =<< Annex.getState Annex.backend
 	lookupname = lookupBackendVariety . parseKeyVariety . encodeBS
 
 {- Generates a key for a file. -}
-genKey :: KeySource -> MeterUpdate -> Maybe Backend -> Annex (Key, Backend)
-genKey source meterupdate preferredbackend = do
-	b <- maybe defaultBackend return preferredbackend
-	case B.genKey b of
-		Just a -> do
-			k <- a source meterupdate
-			return (k, b)
-		Nothing -> giveup $ "Cannot generate a key for backend " ++
-			decodeBS (formatKeyVariety (B.backendVariety b))
+genKey :: KeySource -> MeterUpdate -> Backend -> Annex (Key, Backend)
+genKey source meterupdate b = case B.genKey b of
+	Just a -> do
+		k <- a source meterupdate
+		return (k, b)
+	Nothing -> giveup $ "Cannot generate a key for backend " ++
+		decodeBS (formatKeyVariety (B.backendVariety b))
 
 getBackend :: FilePath -> Key -> Annex (Maybe Backend)
 getBackend file k = maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
@@ -78,12 +76,16 @@ unknownBackendVarietyMessage v =
 {- Looks up the backend that should be used for a file.
  - That can be configured on a per-file basis in the gitattributes file,
  - or forced with --backend. -}
-chooseBackend :: RawFilePath -> Annex (Maybe Backend)
+chooseBackend :: RawFilePath -> Annex Backend
 chooseBackend f = Annex.getRead Annex.forcebackend >>= go
   where
-	go Nothing = maybeLookupBackendVariety . parseKeyVariety . encodeBS
-		=<< checkAttr "annex.backend" f
-	go (Just _) = Just <$> defaultBackend
+	go Nothing = do
+		mb <- maybeLookupBackendVariety . parseKeyVariety . encodeBS
+			=<< checkAttr "annex.backend" f
+		case mb of
+			Just b -> return b
+			Nothing -> defaultBackend
+	go (Just _) = defaultBackend
 
 {- Looks up a backend by variety. May fail if unsupported or disabled. -}
 lookupBackendVariety :: KeyVariety -> Annex Backend
@@ -111,5 +113,5 @@ isStableKey k = maybe False (`B.isStableKey` k)
 	<$> maybeLookupBackendVariety (fromKey keyVariety k)
 
 isCryptographicallySecure :: Key -> Annex Bool
-isCryptographicallySecure k = maybe False (`B.isCryptographicallySecure` k)
+isCryptographicallySecure k = maybe False B.isCryptographicallySecure
 	<$> maybeLookupBackendVariety (fromKey keyVariety k)

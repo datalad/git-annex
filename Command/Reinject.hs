@@ -63,7 +63,7 @@ startSrcDest _ = giveup "specify a src file and a dest file"
 startKnown :: FilePath -> CommandStart
 startKnown src = notAnnexed src' $
 	starting "reinject" ai si $ do
-		(key, _) <- genKey ks nullMeterUpdate Nothing
+		(key, _) <- genKey ks nullMeterUpdate =<< defaultBackend
 		ifM (isKnownKey key)
 			( perform src' key
 			, do

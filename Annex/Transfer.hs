@@ -1,6 +1,6 @@
 {- git-annex transfers
  -
- - Copyright 2012-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -34,6 +34,7 @@ import Utility.ThreadScheduler
 import Annex.LockPool
 import Types.Key
 import qualified Types.Remote as Remote
+import qualified Types.Backend
 import Types.Concurrency
 import Annex.Concurrent
 import Types.WorkerPool
@@ -64,11 +65,11 @@ upload r key f d witness =
 -- Upload, not supporting canceling detected stalls
 upload' :: Observable v => UUID -> Key -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 upload' u key f sd d a _witness = guardHaveUUID u $ 
-	runTransfer (Transfer Upload u (fromKey id key)) f sd d a
+	runTransfer (Transfer Upload u (fromKey id key)) Nothing f sd d a
 
 alwaysUpload :: Observable v => UUID -> Key -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 alwaysUpload u key f sd d a _witness = guardHaveUUID u $ 
-	alwaysRunTransfer (Transfer Upload u (fromKey id key)) f sd d a
+	alwaysRunTransfer (Transfer Upload u (fromKey id key)) Nothing f sd d a
 
 -- Download, supporting canceling detected stalls.
 download :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
@@ -87,7 +88,7 @@ download r key f d witness =
 -- Download, not supporting canceling detected stalls.
 download' :: Observable v => UUID -> Key -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> NotifyWitness -> Annex v
 download' u key f sd d a _witness = guardHaveUUID u $
-	runTransfer (Transfer Download u (fromKey id key)) f sd d a
+	runTransfer (Transfer Download u (fromKey id key)) Nothing f sd d a
 
 guardHaveUUID :: Observable v => UUID -> Annex v -> Annex v
 guardHaveUUID u a
@@ -109,20 +110,20 @@ guardHaveUUID u a
  - Cannot cancel stalls, but when a likely stall is detected, 
  - suggests to the user that they enable stall detection handling.
  -}
-runTransfer :: Observable v => Transfer -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+runTransfer :: Observable v => Transfer -> Maybe Backend -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 runTransfer = runTransfer' False
 
 {- Like runTransfer, but ignores any existing transfer lock file for the
  - transfer, allowing re-running a transfer that is already in progress.
  -}
-alwaysRunTransfer :: Observable v => Transfer -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+alwaysRunTransfer :: Observable v => Transfer -> Maybe Backend -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
 alwaysRunTransfer = runTransfer' True
 
-runTransfer' :: Observable v => Bool -> Transfer -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
-runTransfer' ignorelock t afile stalldetection retrydecider transferaction =
+runTransfer' :: Observable v => Bool -> Transfer -> Maybe Backend -> AssociatedFile -> Maybe StallDetection -> RetryDecider -> (MeterUpdate -> Annex v) -> Annex v
+runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider transferaction =
 	enteringStage (TransferStage (transferDirection t)) $
 		debugLocks $
-			preCheckSecureHashes (transferKey t) go
+			preCheckSecureHashes (transferKey t) eventualbackend go
   where
 	go = do
 		info <- liftIO $ startTransferInfo afile
@@ -244,7 +245,7 @@ runTransferrer
 	-> NotifyWitness
 	-> Annex Bool
 runTransferrer sd r k afile retrydecider direction _witness =
-	enteringStage (TransferStage direction) $ preCheckSecureHashes k $ do
+	enteringStage (TransferStage direction) $ preCheckSecureHashes k Nothing $ do
 		info <- liftIO $ startTransferInfo afile
 		go 0 info
   where
@@ -271,18 +272,25 @@ runTransferrer sd r k afile retrydecider direction _witness =
  - still contains content using an insecure hash, remotes will likewise
  - tend to be configured to reject it, so Upload is also prevented.
  -}
-preCheckSecureHashes :: Observable v => Key -> Annex v -> Annex v
-preCheckSecureHashes k a = ifM (isCryptographicallySecure k)
-	( a
-	, ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
-		( do
-			warning $ "annex.securehashesonly blocked transfer of " ++ decodeBS (formatKeyVariety variety) ++ " key"
-			return observeFailure
-		, a
-		)
-	)
+preCheckSecureHashes :: Observable v => Key -> Maybe Backend -> Annex v -> Annex v
+preCheckSecureHashes k meventualbackend a = case meventualbackend of
+	Just eventualbackend -> go
+		(pure (Types.Backend.isCryptographicallySecure eventualbackend))
+		(Types.Backend.backendVariety eventualbackend)
+	Nothing -> go
+		(isCryptographicallySecure k)
+		(fromKey keyVariety k)
   where
-	variety = fromKey keyVariety k
+	go checksecure variety = ifM checksecure
+		( a
+		, ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
+			( blocked variety
+			, a
+			)
+		)
+	blocked variety = do
+		warning $ "annex.securehashesonly blocked transfer of " ++ decodeBS (formatKeyVariety variety) ++ " key"
+		return observeFailure
 
 type NumRetries = Integer
 

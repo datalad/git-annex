@@ -8,7 +8,7 @@
 module Command.CalcKey where
 
 import Command
-import Backend (genKey)
+import Backend (genKey, defaultBackend)
 import Types.KeySource
 import Utility.Metered
 
@@ -21,7 +21,7 @@ cmd = noCommit $ noMessages $ dontCheck repoExists $
 			(batchable run (pure ()))
 
 run :: () -> SeekInput -> String -> Annex Bool
-run _ _ file = tryNonAsync (genKey ks nullMeterUpdate Nothing) >>= \case
+run _ _ file = tryNonAsync (genKey ks nullMeterUpdate =<< defaultBackend) >>= \case
 	Right (k, _) -> do
 		liftIO $ putStrLn $ serializeKey k
 		return True

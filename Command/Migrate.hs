@@ -56,8 +56,7 @@ start o si file key = do
 		Nothing -> stop
 		Just oldbackend -> do
 			exists <- inAnnex key
-			newbackend <- maybe defaultBackend return 
-				=<< chooseBackend file
+			newbackend <- chooseBackend file
 			if (newbackend /= oldbackend || upgradableKey oldbackend key || forced) && exists
 				then go False oldbackend newbackend
 				else if removeSize o && exists
@@ -116,7 +115,7 @@ perform onlyremovesize o file oldkey oldbackend newbackend = go =<< genkey (fast
 			, contentLocation = content
 			, inodeCache = Nothing
 			}
-		newkey <- fst <$> genKey source nullMeterUpdate (Just newbackend)
+		newkey <- fst <$> genKey source nullMeterUpdate newbackend
 		return $ Just (newkey, False)
 	genkey (Just fm) = fm oldkey newbackend afile >>= \case
 		Just newkey -> return (Just (newkey, True))
