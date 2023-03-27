@@ -175,7 +175,11 @@ performTransfer stalldetection level runannex r t info transferrer = do
 {- Starts a new git-annex transfer process, setting up handles
  - that will be used to communicate with it. -}
 mkTransferrer :: SignalActionsVar -> RunTransferrer -> IO Transferrer
+#ifndef mingw32_HOST_OS
 mkTransferrer signalactonsvar (RunTransferrer program params batchmaker) = do
+#else
+mkTransferrer _ (RunTransferrer program params batchmaker) = do
+#endif
 	{- It runs as a batch job. -}
 	let (program', params') = batchmaker (program, params)
 	{- It's put into its own group so that the whole group can be
