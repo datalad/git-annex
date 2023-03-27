@@ -53,7 +53,7 @@ import Types.Export
 import Types.Availability (Availability(..))
 import Types.Key
 import Git.Types
-import Utility.Url (URLString)
+import Utility.Url (URLString, parseURIPortable)
 import qualified Utility.SimpleProtocol as Proto
 
 import Control.Concurrent.STM
@@ -462,7 +462,7 @@ instance Proto.Serializable [(URLString, Size, FilePath)] where
 
 instance Proto.Serializable URI where
 	serialize = show
-	deserialize = parseURI
+	deserialize = parseURIPortable
 
 instance Proto.Serializable ExportLocation where
 	serialize = fromRawFilePath . fromExportLocation

@@ -100,7 +100,7 @@ assistantListening url = catchBoolIO $ do
 	uo <- defUrlOptions
 	(== Right True) <$> exists url' uo
   where
-	url' = case parseURI url of
+	url' = case parseURIPortable url of
 		Nothing -> url
 		Just uri -> show $ uri
 			{ uriScheme = "http:"

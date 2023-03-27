@@ -39,6 +39,7 @@ import Git.Remote
 import Git.FilePath
 import qualified Git.Url as Url
 import Utility.UserInfo
+import Utility.Url (parseURIPortable)
 
 import qualified Data.ByteString as B
 import qualified System.FilePath.ByteString as P
@@ -104,10 +105,10 @@ fromUrl url
 
 fromUrl' :: String -> IO Repo
 fromUrl' url
-	| "file://" `isPrefixOf` url = case parseURI url of
+	| "file://" `isPrefixOf` url = case parseURIPortable url of
 		Just u -> fromAbsPath $ toRawFilePath $ unEscapeString $ uriPath u
 		Nothing -> pure $ newFrom $ UnparseableUrl url
-	| otherwise = case parseURI url of
+	| otherwise = case parseURIPortable url of
 		Just u -> pure $ newFrom $ Url u
 		Nothing -> pure $ newFrom $ UnparseableUrl url
 
@@ -129,7 +130,7 @@ localToUrl reference r
 				, auth
 				, fromRawFilePath (repoPath r)
 				]
-			in r { location = Url $ fromJust $ parseURI absurl }
+			in r { location = Url $ fromJust $ parseURIPortable absurl }
 		_ -> r
 
 {- Calculates a list of a repo's configured remotes, by parsing its config. -}

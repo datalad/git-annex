@@ -117,7 +117,7 @@ data CredentialBaseURL = CredentialBaseURL URI
 
 mkCredentialBaseURL :: Repo -> URLString -> Maybe CredentialBaseURL
 mkCredentialBaseURL r s = do
-	u <- parseURI s
+	u <- parseURIPortable s
 	let usehttppath = fromMaybe False $ Config.isTrueFalse' $
 		Config.get (ConfigKey "credential.useHttpPath") (ConfigValue "") r
 	if usehttppath

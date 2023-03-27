@@ -23,6 +23,7 @@ import Types.CleanupActions
 import Messages.Progress
 import Utility.Metered
 import Utility.Tmp
+import Utility.Url (parseURIPortable)
 import Backend.URL
 import Annex.Perms
 import Annex.Tmp
@@ -141,10 +142,10 @@ isSupportedUrl :: URLString -> Bool
 isSupportedUrl u = isTorrentMagnetUrl u || isTorrentUrl u
 
 isTorrentUrl :: URLString -> Bool
-isTorrentUrl = maybe False (\u -> ".torrent" `isSuffixOf` uriPath u) . parseURI
+isTorrentUrl = maybe False (\u -> ".torrent" `isSuffixOf` uriPath u) . parseURIPortable
 
 isTorrentMagnetUrl :: URLString -> Bool
-isTorrentMagnetUrl u = "magnet:" `isPrefixOf` u && checkbt (parseURI u)
+isTorrentMagnetUrl u = "magnet:" `isPrefixOf` u && checkbt (parseURIPortable u)
   where
 	checkbt (Just uri) | "xt=urn:btih:" `isInfixOf` uriQuery uri = True
 	checkbt _ = False

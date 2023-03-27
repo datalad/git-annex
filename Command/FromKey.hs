@@ -18,6 +18,7 @@ import Annex.Link
 import Annex.FileMatcher
 import Annex.Ingest
 import Git.FilePath
+import Utility.Url
 
 import Network.URI
 
@@ -89,7 +90,7 @@ keyOpt :: String -> Key
 keyOpt = either giveup id . keyOpt'
 
 keyOpt' :: String -> Either String Key
-keyOpt' s = case parseURI s of
+keyOpt' s = case parseURIPortable s of
 	Just u | not (isKeyPrefix (uriScheme u)) ->
 		Right $ Backend.URL.fromUrl s Nothing
 	_ -> case deserializeKey s of

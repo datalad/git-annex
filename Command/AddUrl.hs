@@ -31,6 +31,7 @@ import Logs.Location
 import Utility.Metered
 import Utility.HtmlDetect
 import Utility.Path.Max
+import Utility.Url (parseURIPortable)
 import qualified Utility.RawFilePath as R
 import qualified Annex.Transfer as Transfer
 
@@ -220,7 +221,7 @@ downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd o file $ \ca
 	af = AssociatedFile (Just file)
 
 startWeb :: AddUnlockedMatcher -> AddUrlOptions -> SeekInput -> URLString -> CommandStart
-startWeb addunlockedmatcher o si urlstring = go $ fromMaybe bad $ parseURI urlstring
+startWeb addunlockedmatcher o si urlstring = go $ fromMaybe bad $ parseURIPortable urlstring
   where
 	bad = fromMaybe (giveup $ "bad url " ++ urlstring) $
 		Url.parseURIRelaxed $ urlstring

@@ -15,6 +15,7 @@ import qualified Git.Types as Git
 import qualified Utility.SimpleProtocol as Proto
 import Types.GitConfig
 import Annex.ChangedRefs (ChangedRefs)
+import Utility.Url
 
 import Network.URI
 import Control.Concurrent
@@ -100,7 +101,7 @@ instance Proto.Receivable Consumed where
 
 instance Proto.Serializable RemoteURI where
 	serialize (RemoteURI u) = show u
-	deserialize = RemoteURI <$$> parseURI
+	deserialize = RemoteURI <$$> parseURIPortable
 
 instance Proto.Serializable Bool where
 	serialize False = "0"

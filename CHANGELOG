@@ -7,6 +7,7 @@ git-annex (10.20230322) UNRELEASED; urgency=medium
     checking out an updated adjusted branch.
   * view: Support annex.maxextensionlength when generating filenames for
     the view branch.
+  * Windows: Support urls like "file:///c:/path"
 
  -- Joey Hess <id@joeyh.name>  Thu, 23 Mar 2023 15:04:41 -0400
 

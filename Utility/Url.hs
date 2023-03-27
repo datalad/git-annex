@@ -9,6 +9,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP #-}
 
 module Utility.Url (
 	newManager,
@@ -32,6 +33,7 @@ module Utility.Url (
 	downloadConduit,
 	sinkResponseFile,
 	downloadPartial,
+	parseURIPortable,
 	parseURIRelaxed,
 	matchStatusCodeException,
 	matchHttpExceptionContent,
@@ -71,6 +73,9 @@ import Network.BSD (getProtocolNumber)
 import Data.Either
 import Data.Conduit
 import Text.Read
+#ifdef mingw32_HOST_OS
+import qualified System.FilePath.Windows as PW
+#endif
 
 type URLString = String
 
@@ -608,10 +613,29 @@ downloadPartial url uo n = case parseURIRelaxed url of
 					then Just <$> brReadSome (responseBody resp) n
 					else return Nothing
 
+{- On unix this is the same as parseURI. But on Windows,
+ - it can parse urls such as file:///C:/path/to/file
+ - parseURI normally parses that as a path /C:/path/to/file
+ - and this simply removes the excess leading slash when there is a
+ - drive letter after it. -}
+parseURIPortable :: URLString -> Maybe URI
+#ifndef mingw32_HOST_OS
+parseURIPortable = parseURI
+#else
+parseURIPortable s
+	| "file:" `isPrefixOf` s = do
+		u <- parseURI s
+		return $ case PW.splitDirectories (uriPath u) of
+			(p:d:_) | all PW.isPathSeparator p && PW.isDrive d ->
+				u { uriPath = dropWhile PW.isPathSeparator (uriPath u) }
+			_ -> u
+	| otherwise = parseURI s
+#endif
+
 {- Allows for spaces and other stuff in urls, properly escaping them. -}
 parseURIRelaxed :: URLString -> Maybe URI
 parseURIRelaxed s = maybe (parseURIRelaxed' s) Just $
-	parseURI $ escapeURIString isAllowedInURI s
+	parseURIPortable $ escapeURIString isAllowedInURI s
 
 {- Generate a http-conduit Request for an URI. This is able
  - to deal with some urls that parseRequest would usually reject. 
