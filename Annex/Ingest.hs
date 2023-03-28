@@ -63,7 +63,7 @@ data LockDownConfig = LockDownConfig
 	{ lockingFile :: Bool
 	-- ^ write bit removed during lock down
 	, hardlinkFileTmpDir :: Maybe RawFilePath
-	-- ^ hard link to temp directorya
+	-- ^ hard link to temp directory
 	, checkWritePerms :: Bool
 	-- ^ check that write perms are successfully removed
 	}
