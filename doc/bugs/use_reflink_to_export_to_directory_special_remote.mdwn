@@ -40,3 +40,5 @@ After running, a `btrfs filesystem du ...` tells me that the `repo` and `import`
 ---
 
 In general: Thank you so much for this wonderful piece of software, I'm using it for years now and manage virtually everything with it (audio, video, pictures, important documents, papers, …).
+
+> [[fixed|done]] --[[Joey]]

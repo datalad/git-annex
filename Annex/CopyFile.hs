@@ -31,17 +31,15 @@ newCopyCoWTried = CopyCoWTried <$> newEmptyMVar
 
 {- Copies a file is copy-on-write is supported. Otherwise, returns False.
  -
- - The destination file must not exist yet, or it will fail to make a CoW copy,
- - and will return false.
+ - The destination file must not exist yet (or may exist but be empty), 
+ - or it will fail to make a CoW copy, and will return false.
  -}
 tryCopyCoW :: CopyCoWTried -> FilePath -> FilePath -> MeterUpdate -> IO Bool
 tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
 	-- If multiple threads reach this at the same time, they
 	-- will both try CoW, which is acceptable.
 	ifM (isEmptyMVar copycowtried)
-		-- If dest exists, don't try CoW, since it would
-		-- have to be deleted first.
-		( ifM (doesFileExist dest)
+		( ifM destfilealreadypopulated
 			( return False
 			, do
 				ok <- docopycow
@@ -61,6 +59,22 @@ tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
   where
 	docopycow = watchFileSize dest meterupdate $
 		copyCoW CopyTimeStamps src dest
+	
+	dest' = toRawFilePath dest
+
+	-- Check if the dest file already exists, which would prevent
+	-- probing CoW. If the file exists but is empty, there's no benefit
+	-- to resuming from it when CoW does not work, so remove it.
+	destfilealreadypopulated = 
+		tryIO (R.getFileStatus dest') >>= \case
+			Left _ -> return False
+			Right st -> do
+				sz <- getFileSize' dest' st
+				if sz == 0
+					then tryIO (removeFile dest) >>= \case
+						Right () -> return False
+						Left _ -> return True
+					else return True
 
 data CopyMethod = CopiedCoW | Copied
 
