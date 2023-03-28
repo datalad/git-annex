@@ -377,19 +377,27 @@ handleRequest external req mp responsehandler =
 		handleRequest' st external req mp responsehandler
 
 handleRequestKey :: External -> (SafeKey -> Request) -> Key -> Maybe MeterUpdate -> ResponseHandler a -> Annex a
-handleRequestKey external mkreq k mp responsehandler = case mkSafeKey k of
-	Right sk -> handleRequest external (mkreq sk) mp responsehandler
+handleRequestKey external mkreq k mp responsehandler = 
+	withSafeKey k $ \sk -> handleRequest external (mkreq sk) mp responsehandler
+
+withSafeKey :: Key -> (SafeKey -> Annex a) -> Annex a
+withSafeKey k a = case mkSafeKey k of
+	Right sk -> a sk
 	Left e -> giveup e
 
 {- Export location is first sent in an EXPORT message before
  - the main request. This is done because the ExportLocation can
  - contain spaces etc. -}
 handleRequestExport :: External -> ExportLocation -> (SafeKey -> Request) -> Key -> Maybe MeterUpdate -> ResponseHandler a -> Annex a
-handleRequestExport external loc mkreq k mp responsehandler = do
-	withExternalState external $ \st -> do
-		checkPrepared st external
-		sendMessage st (EXPORT loc)
-	handleRequestKey external mkreq k mp responsehandler
+handleRequestExport external loc mkreq k mp responsehandler = 
+	withSafeKey k $ \sk ->
+		-- Both the EXPORT and subsequent request must be sent to the
+		-- same external process, so run both with the same external
+		-- state.
+		withExternalState external $ \st -> do
+			checkPrepared st external
+			sendMessage st (EXPORT loc)
+			handleRequest' st external (mkreq sk) mp responsehandler
 
 handleRequest' :: ExternalState -> External -> Request -> Maybe MeterUpdate -> ResponseHandler a -> Annex a
 handleRequest' st external req mp responsehandler

@@ -10,6 +10,9 @@ git-annex (10.20230322) UNRELEASED; urgency=medium
   * Windows: Support urls like "file:///c:/path"
   * addurl, importfeed: Fix failure when annex.securehashesonly is set.
   * Copy with a reflink when exporting a tree to a directory special remote.
+  * Fix bug that caused broken protocol to be used with external remotes
+    that use exporttree=yes. In some cases this could result in the wrong
+    content being exported to, or retrieved from the remote.
 
  -- Joey Hess <id@joeyh.name>  Thu, 23 Mar 2023 15:04:41 -0400
 
