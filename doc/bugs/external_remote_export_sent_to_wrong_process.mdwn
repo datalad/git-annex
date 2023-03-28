@@ -84,3 +84,4 @@ But I first needed to be able to exporttree over FTP.
 (I have a cheap NAS is terribly slow at encryption (SSH, etc) so I'm using FTP to get reasonable speeds with it.)
 So I thought I'd implement it and then hit this bug.
 
+> [[fixed|done]] --[[Joey]]
