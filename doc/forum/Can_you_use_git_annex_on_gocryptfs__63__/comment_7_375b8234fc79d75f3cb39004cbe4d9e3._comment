@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2023-03-28T17:19:46Z"
+ content="""
+This is a filesystem bug. I reported it here:
+<https://github.com/rfjakob/gocryptfs/issues/724>
+
+`git-annex add` makes a hard link to the file and then stats the hard link
+before and after hashing. Due to this filesystem bug, it gets a different
+size.
+
+One workaround is:
+
+	git config annex.crippledfilesystem true
+
+Although setting annex.crippledfilesystem has other effects, including
+git-annex not locking down permissions of annexed files. So I don't know if
+I'd really recommend that workaround.
+
+It would be possible for git-annex to work around this by statting the file
+before making the hard link, rather than statting the hardlink after
+creation. But I don't think I want to work around filesystem breakage like
+that.
+"""]]
