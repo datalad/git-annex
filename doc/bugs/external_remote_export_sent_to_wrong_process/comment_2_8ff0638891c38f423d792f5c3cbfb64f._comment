@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-03-28T19:29:01Z"
+ content="""
+What about simply increasing the protocol version number? If VERSION 2 is
+the same as VERSION 1, but only supported by the fixed git-annex, then an
+external can just be updated to send VERSION 2, and it does not need to
+worry about talking with a buggy version of git-annex.
+
+git-annex could either continue to also support VERSION 1, or it could
+refuse to work with externals that don't use VERSION 2. The latter would
+force externals to get updated. But then those externals would have no way to work
+with old git-annex even if they wanted to. I think forcing an update is not called
+for.
+
+Note that git-annex's handling of an external that sends VERSION 2 is not
+stellar currently:
+
+	joey@darkstar:~/tmp/b>git-annex initremote t type=external externaltype=test encryption=none 
+	initremote t 
+	  external special remote protocol error, unexpectedly received "CONFIG directory store data here" (command not allowed at this time)
+	
+	git-annex: unable to use special remote due to protocol error
+
+	joey@darkstar:~/tmp/b>git-annex copy --to t
+	
+	  external special remote protocol error, unexpectedly received "UNSUPPORTED-REQUEST" (command not allowed at this time)
+
+	  external special remote protocol error, unexpectedly received "UNSUPPORTED-REQUEST" (command not allowed at this time)
+	copy x 
+	  external special remote protocol error, unexpectedly received "UNSUPPORTED-REQUEST" (command not allowed at this time)
+	(unable to use special remote due to protocol error) failed
+	copy: 1 failed
+
+Protocol debug shows what's happening:
+
+	[2023-03-28 16:00:09.361602472] (Annex.ExternalAddonProcess) /home/joey/bin/git-annex-remote-test[3] --> VERSION 2
+	[2023-03-28 16:00:09.361764519] (Annex.ExternalAddonProcess) /home/joey/bin/git-annex-remote-test[3] <-- ERROR unsupported VERSION
+	[2023-03-28 16:00:09.361897595] (Annex.ExternalAddonProcess) /home/joey/bin/git-annex-remote-test[3] <-- EXTENSIONS INFO GETGITREMOTENAME ASYNC
+	[2023-03-28 16:00:09.362112912] (Annex.ExternalAddonProcess) /home/joey/bin/git-annex-remote-test[3] --> UNSUPPORTED-REQUEST
+	[2023-03-28 16:00:09.362212948] (Annex.ExternalAddonProcess) /home/joey/bin/git-annex-remote-test[3] <-- PREPARE
+	[2023-03-28 16:00:09.362332494] (Annex.ExternalAddonProcess) /home/joey/bin/git-annex-remote-test[3] --> UNSUPPORTED-REQUEST
+
+Not really ideal behavior for an old version of git-annex when used with
+an external that wants to send VERSION 2 to ensure it does not need to deal with
+this bug. But better than nothing I suppose.
+
+(That output really ought to be fixed going forward, but old versions of git-annex
+of course can't be fixed now.)
+"""]]
