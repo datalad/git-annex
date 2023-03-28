@@ -33,14 +33,14 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
   * `EXPORTSUPPORTED-FAILURE`  
     Indicates that it does not make sense to export to this special remote.
 * `EXPORT Name`  
-  Comes immediately before each of the following requests, 
-  specifying the name of the exported file. It will be in the form
-  of a relative path, and may contain path separators, whitespace,
-  and other special characters.  
+  Comes immediately before each of the following requests (except for
+  `REMOVEEXPORTDIRECTORY`), specifying the name of the exported file. It
+  will be in the form of a relative path, and may contain path separators,
+  whitespace, and other special characters.  
   No response is made to this message.
 * `TRANSFEREXPORT STORE|RETRIEVE Key File`  
   Requests the transfer of a File on local disk to or from the previously 
-  provided Name on the special remote.  
+  provided `EXPORT` Name on the special remote.  
   Note that it's important that, while a file is being stored,
   `CHECKPRESENTEXPORT` not indicate it's present until all the data has
   been transferred.  
@@ -52,7 +52,7 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
   * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
     Indicates the transfer failed.
 * `CHECKPRESENTEXPORT Key`  
-  Requests the remote to check if the previously provided Name is present
+  Requests the remote to check if the previously provided `EXPORT` Name is present
   in it.  
   * `CHECKPRESENT-SUCCESS Key`  
     Indicates that a content has been positively verified to be present in the
@@ -65,7 +65,7 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
     present in the remote. (Perhaps the remote cannot be contacted.)
 * `REMOVEEXPORT Key`  
   Requests the remote to remove content stored by `TRANSFEREXPORT`
-  with the previously provided Name.  
+  with the previously provided `EXPORT` Name.  
   * `REMOVE-SUCCESS Key`  
     Indicates the content has been removed from the remote. May be returned when
     the content was already not present.
@@ -87,7 +87,7 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
     Should not be returned if the directory did not exist.
 * `RENAMEEXPORT Key NewName`  
   Requests the remote rename a file stored on it from the previously
-  provided Name to the NewName. Remotes that support exports but not
+  provided `EXPORT` Name to the NewName. Remotes that support exports but not
   renaming do not need to implement this.  
   * `RENAMEEXPORT-SUCCESS Key`  
     Indicates that a `RENAMEEXPORT` was done successfully.
