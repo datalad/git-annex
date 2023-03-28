@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-03-28T18:26:52Z"
+ content="""
+If you're able to run ghci, here's how to generate a UUID the same way
+git-annex does:
+
+ghci -e 'import Data.UUID.V4' -e nextRandom
+
+And here's how to get entropy the same way that does:
+
+ghci -e 'System.Entropy.getEntropy 16'
+"""]]
