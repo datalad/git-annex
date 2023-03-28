@@ -1,4 +1,4 @@
-git-annex (10.20230322) UNRELEASED; urgency=medium
+git-annex (10.20230329) UNRELEASED; urgency=medium
 
   * sync: Fix parsing of gcrypt::rsync:// urls that use a relative path.
   * Avoid failure to update adjusted branch --unlock-present after git-annex
