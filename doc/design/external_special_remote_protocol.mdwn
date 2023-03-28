@@ -39,7 +39,7 @@ empty, but the separating spaces are still required in that case.
 The special remote is responsible for sending the first message, indicating
 the version of the protocol it is using.
 
-	VERSION 1
+	VERSION 2
 
 Recent versions of git-annex respond with a message indicating
 protocol extensions that it supports. Older versions of
@@ -271,7 +271,7 @@ These messages may be sent by the special remote at any time that it's
 handling a request.
 
 * `VERSION Int`  
-  Supported protocol version. Current version is 1. Must be sent first
+  Supported protocol version. Current version is 2. Must be sent first
   thing at startup, as until it sees this git-annex does not know how to
   talk with the special remote program!  
   (git-annex does not send a reply to this message, but may give up if it
@@ -427,6 +427,18 @@ remote.
   The special remote program should exit after sending this, as
   git-annex will not talk to it any further. If the program receives
   an ERROR from git-annex, it can exit with its own ERROR.
+
+## protocol versions
+
+Currently git-annex supports `VERSION 1` and `VERSION 2`.
+The two protocol versions are actually identical. 
+
+Old versions of git-annex that supported only `VERSION 1`
+had a bug in their implementation of the 
+part of the protocol documented in the[[export_and_import_appendix]].
+The bug could result in ontent being exported to the wrong file.
+External special remotes that implement that should use `VERSION 2` to
+avoid talking to the buggy old version of git-annex.
 
 ## extensions
 

@@ -415,7 +415,7 @@ newtype JobId = JobId Integer
 	deriving (Eq, Ord, Show)
 
 supportedProtocolVersions :: [ProtocolVersion]
-supportedProtocolVersions = [1]
+supportedProtocolVersions = [1, 2]
 
 instance Proto.Serializable JobId where
 	serialize (JobId n) = show n

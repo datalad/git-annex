@@ -37,7 +37,10 @@ a request, it can reply with `UNSUPPORTED-REQUEST`.
   `REMOVEEXPORTDIRECTORY`), specifying the name of the exported file. It
   will be in the form of a relative path, and may contain path separators,
   whitespace, and other special characters.  
-  No response is made to this message.
+  No response is made to this message.  
+  Note that old versions of git-annex had a bug that sometimes prevented
+  sending `EXPORT`. To avoid being used with such a buggy version of
+  git-annex, send `VERSION 2`.
 * `TRANSFEREXPORT STORE|RETRIEVE Key File`  
   Requests the transfer of a File on local disk to or from the previously 
   provided `EXPORT` Name on the special remote.  

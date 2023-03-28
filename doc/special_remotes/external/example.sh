@@ -150,7 +150,7 @@ doremove () {
 }
 
 # This has to come first, to get the protocol started.
-echo VERSION 1
+echo VERSION 2
 
 while read line; do
 	set -- $line

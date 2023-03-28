@@ -18,17 +18,7 @@ but am confident that I fixed it in
 
 ----
 
-I'm looking forward to export support in rclone!
-
-I'm wondering about the data loss part of this. You said:
-
-> As a result, one process receives two `EXPORT`s in a row, the first of which it ignores,
-> while some other process receives a `TRANSFEREXPORT` without a prior `EXPORT`,
-> reusing whatever filename was set in the previous transaction,
-> and either ovewriting the last accessed remote file with the wrong content,
-> or retrieving the content of the last accessed remote file instead of the one git-annex wanted.
-
-So in your implementation, you're keeping EXPORT set after handling TRANSFEREXPORT
+In your implementation, you're keeping EXPORT set after handling TRANSFEREXPORT
 and similar commands, and so if you receive a TRANSFEREXPORT not prefixed by an
 EXPORT, it can be bad. A natural way to write things, indeed 
 `doc/special_remotes/external/example.sh` does the same.
@@ -37,26 +27,20 @@ An alternative implementation would be to clear the EXPORT after handling a
 TRANSFEREXPORT, CHECKPRESENTEXPORT, REMOVEEXPORT, or RENAMEEXPORT.
 And have those error out if no EXPORT was received before them.
 
-So that's one way we can avoid the data loss problem if your external remote
-is used with an old git-annex that has this bug. You might want to do that now.
+But, that does not fully avoid the data loss problem. Because this might
+happen:
 
-----
+	EXPORT foo
+	EXPORT bar
+	TRANSFEREXPORT STORE $foo_key $foo_file
 
-But, that requires defensive coding in every external remote... Maybe it
-would be worth changing the protocol in some way, that avoids the problem.
-Then if external remotes were updated to the new protocol, they'd not work
-with the buggy git-annex versions, and avoid data loss. I'm leaving this bug
-open for now to consider such a protocol change..
+So even ignoring the first EXPORT can result in the external special remote
+doing the wrong thing. To fully guard against it, you'd have to error out
+if multiple EXPORT were received before a request that uses one, rather
+than ignoring the first EXPORT.
 
-Weighing the costs and benefits of such a change, the extent of the data
-loss is fairly limited. exporttree=yes remotes are always untrusted, so
-if a file on one is overwritten with the wrong content, git-annex will be preserving
-the right content elsewhere. And if the wrong file is retrieved from one,
-git-annex will notice it has the wrong content (so long as its key uses a checksum).
-Still, whatever that export is used for would unexpectedly have the wrong file
-content, which could still be a bad day for somebody.
-
-(If I decide against the protocol change, I should fix
-`doc/special_remotes/external/example.sh` to defend against the bug,
-and tell others who have externals that support exporttree too..)
+So, fixing this in your remote and others would need significant defensive
+coding. Too much to make sense, IMHO. I think git-annex needs to chnge the
+protocol in some way instead, to make it easy for you to avoid speaking to
+a buggy git-annex.
 """]]

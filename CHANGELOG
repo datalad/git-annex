@@ -13,6 +13,10 @@ git-annex (10.20230322) UNRELEASED; urgency=medium
   * Fix bug that caused broken protocol to be used with external remotes
     that use exporttree=yes. In some cases this could result in the wrong
     content being exported to, or retrieved from the remote.
+  * Support VERSION 2 in the external special remote protocol, which is
+    identical to VERSION 1, but avoids external remote programs neededing
+    to work around the above bug. External remote program that support
+    exporttree=yes are recommended to be updated to send VERSION 2.
 
  -- Joey Hess <id@joeyh.name>  Thu, 23 Mar 2023 15:04:41 -0400
 
