@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-03-28T18:25:30Z"
+ content="""
+> I also don't get anything from `git config --local annex.uuid`
+
+Do you mean you don't get anything different? Surely that outputs
+something. Or exits with a nonzero exit code.
+"""]]
