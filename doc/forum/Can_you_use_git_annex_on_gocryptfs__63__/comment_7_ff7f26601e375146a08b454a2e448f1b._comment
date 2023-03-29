@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="dpifke"
+ avatar="http://cdn.libravatar.org/avatar/7b17ce0661a1b1cd708c5c5150eb2c33"
+ subject="comment 7"
+ date="2023-03-29T03:13:50Z"
+ content="""
+Thanks for tracking this down, and for the pointer to the `annex.crippledfilesystem` option.  I agree the latter sounds sub-optimal but I'll keep it in mind if staying on the 1.8 release becomes untenable before the Gocryptfs bug is fixed.  I'll follow the linked Github issue for updates on that.
+
+"""]]
