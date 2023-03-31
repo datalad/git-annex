@@ -1,0 +1,104 @@
+### Please describe the problem.
+
+Reference: issue/discovery in [repronim/containers while adding neurodesk images](https://github.com/ReproNim/containers/issues/64#issuecomment-1492256561)
+
+- apparently we had no URLs made registered with images despite running `registerurl KEY ANNEX`
+- some images do have urls
+
+took awhile to grasp what is going on and then I found an unfinished reproducer from `Mar 15  2021 annex-claimurl.sh` without recollection why I have not finished it, but it seems that it might be "operator error" somehow? but seems unlikely... might be datalad special remote bug?
+
+Summary of the problem: if there is an external git-annex-remote which CLAIMURL - git-annex registerurl does **not** associate that URL with any (that external or web) remote and thus does not make that key available to the user despite knowing the url.
+
+Should it btw default to `web` if no remote is associated with it?
+
+Filed complimentary [registerurl --remote REMOTE](https://git-annex.branchable.com/todo/registerurl_--remote_REMOTE/) TODO since in this case I would have preferred to just register against web remote.
+
+### What steps will reproduce the problem?
+
+Here is a new "quick" reproducer but you need datalad being installed to get `git-annex-remote-datalad`.
+
+```
+#!/bin/bash
+
+export PS4='> '
+
+set -eu
+set -x
+
+cd "$(mktemp -d ${TMPDIR:-/tmp}/dl-XXXXXXX)"
+
+git init
+git annex init
+
+# It works fine if we do not enable  datalad  special remote!
+# so it is something about interaction there
+git annex initremote datalad externaltype=datalad type=external encryption=none autoenable=true uuid=65b6c36b-debd-4a23-8fa3-675cbd200496
+git annex enableremote datalad
+
+git annex info
+
+# so it seems that addurl does it right 
+git annex addurl --debug --file 123.dat http://www.oneukrainian.com/tmp/123.dat
+
+# but if I do via registerurl -- not quite so
+echo 124 > 124.dat
+git annex add 124.dat
+key=$(readlink -f 124.dat | xargs basename)
+git annex registerurl --debug "$key" http://www.oneukrainian.com/tmp/124.dat
+
+git commit -m 'added those two files with urls'
+
+git annex whereis --debug 123.dat
+git annex whereis --debug 124.dat
+
+git checkout git-annex
+: # URLs are known for both
+git grep oneukrainian
+: # but only 123.dat would be associated with datalad remote
+git grep 65b6c36b-debd-4a23-8fa3-675cbd200496
+```
+
+With [full log here](http://www.oneukrainian.com/tmp/annex-claimurl-2023.sh.log) and without `--debug` ending up like
+
+```
+❯ grep -v '^\[' annex-claimurl-2023.sh.log | tail -n 29
+(recording state in git...)
+> git commit -m 'added those two files with urls'
+ 2 files changed, 2 insertions(+)
+ create mode 120000 123.dat
+ create mode 120000 124.dat
+> git annex whereis --debug 123.dat
+whereis 123.dat [2023-03-31 18:29:27.56573965] (Utility.Process) process [1429290] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+(2 copies) 
+  	62c53770-5274-40d4-a45a-de308c234ea9 -- yoh@bilena:~/.tmp/dl-FbOrptq [here]
+   	65b6c36b-debd-4a23-8fa3-675cbd200496 -- [datalad]
+
+  datalad: http://www.oneukrainian.com/tmp/123.dat
+ok
+> git annex whereis --debug 124.dat
+whereis 124.dat [2023-03-31 18:29:27.857735575] (Utility.Process) process [1429322] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+(1 copy) 
+  	62c53770-5274-40d4-a45a-de308c234ea9 -- yoh@bilena:~/.tmp/dl-FbOrptq [here]
+ok
+> git checkout git-annex
+Switched to branch 'git-annex'
+> :
+> git grep oneukrainian
+060/68b/SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat.log.web:1680301767.477711756s 1 :http://www.oneukrainian.com/tmp/124.dat
+ae1/21c/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat.log.web:1680301767.037966322s 1 :http://www.oneukrainian.com/tmp/123.dat
+> :
+> git grep 65b6c36b-debd-4a23-8fa3-675cbd200496
+ae1/21c/SHA256E-s4--181210f8f9c779c26da1d9b2075bde0127302ee0e3fca38c9a83f5b1dd8e5d3b.dat.log:1680301767.038748415s 1 65b6c36b-debd-4a23-8fa3-675cbd200496
+remote.log:65b6c36b-debd-4a23-8fa3-675cbd200496 autoenable=true encryption=none externaltype=datalad name=datalad type=external timestamp=1680301766.517251391s
+uuid.log:65b6c36b-debd-4a23-8fa3-675cbd200496 datalad timestamp=1680301765.789226249s
+```
+
+so - both keys have urls, but only 123.dat one is associated with datalad special remote, and only it has url reported by whereis
+
+### What version of git-annex are you using? On what operating system?
+
+10.20230126  but tried with older 8.20210803 since thought it must be regression -- the same result
+
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
