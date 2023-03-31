@@ -1,0 +1,5 @@
+ATM `registerurl` would consider external special remotes via CLAIMURL and might then associate that URL with a specific remote.
+If a remote can handle some urls (e.g. regular http) which annex can handle as well, but user wants to not associate url with that special remote, having this dedicated option would be great to have.
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
