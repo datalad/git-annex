@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, FlexibleContexts, OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies, FlexibleContexts, OverloadedStrings, CPP #-}
 
 module Database.Handle (
 	DbHandle,
@@ -329,4 +329,3 @@ isDatabaseModified (DatabaseInodeCache a1 b1) (DatabaseInodeCache a2 b2) =
 
 takeMVarSafe :: MVar a -> IO (Either BlockedIndefinitelyOnMVar a)
 takeMVarSafe = try . takeMVar
-

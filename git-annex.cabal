@@ -836,6 +836,7 @@ Executable git-annex
     Database.Keys.SQL
     Database.Queue
     Database.Types
+    Database.Utility
     Git
     Git.AutoCorrect
     Git.Branch

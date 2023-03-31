@@ -29,6 +29,7 @@ module Database.Fsck (
 
 import Database.Types
 import qualified Database.Queue as H
+import Database.Utility
 import Database.Init
 import Annex.Locations
 import Utility.Exception
@@ -88,7 +89,7 @@ closeDb (FsckHandle h u) = do
 
 addDb :: FsckHandle -> Key -> IO ()
 addDb (FsckHandle h _) k = H.queueDb h checkcommit $
-	void $ insertUnique $ Fscked k
+	void $ insertUniqueFast $ Fscked k
   where
 	-- Commit queue after 1000 changes or 5 minutes, whichever comes first.
 	-- The time based commit allows for an incremental fsck to be

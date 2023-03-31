@@ -2,6 +2,7 @@ git-annex (10.20230330) UNRELEASED; urgency=medium
 
   * git-annex.cabal: Prevent building with unix-compat 0.7 which
     removed System.PosixCompat.User.
+  * Sped up sqlite inserts 2x when built with persistent 2.14.5.0
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Mar 2023 12:48:54 -0400
 

@@ -49,6 +49,7 @@ module Database.Export (
 import Database.Types
 import qualified Database.Queue as H
 import Database.Init
+import Database.Utility
 import Annex.Locations
 import Annex.Common hiding (delete)
 import Types.Export
@@ -124,7 +125,7 @@ flushDbQueue (ExportHandle h _) = H.flushDbQueue h
 recordExportTreeCurrent :: ExportHandle -> Sha -> IO ()
 recordExportTreeCurrent h s = queueDb h $ do
 	deleteWhere ([] :: [Filter ExportTreeCurrent])
-	void $ insertUnique $ ExportTreeCurrent $ toSSha s
+	void $ insertUniqueFast $ ExportTreeCurrent $ toSSha s
 
 getExportTreeCurrent :: ExportHandle -> IO (Maybe Sha)
 getExportTreeCurrent (ExportHandle h _) = H.queryDbQueue h $ do
@@ -136,7 +137,7 @@ getExportTreeCurrent (ExportHandle h _) = H.queryDbQueue h $ do
 
 addExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportedLocation h k el = queueDb h $ do
-	void $ insertUnique $ Exported k ef
+	void $ insertUniqueFast $ Exported k ef
 	let edirs = map
 		(\ed -> ExportedDirectory (SFilePath (fromExportDirectory ed)) ef)
 		(exportDirectories el)
@@ -186,7 +187,7 @@ getExportTreeKey (ExportHandle h _) el = H.queryDbQueue h $ do
 
 addExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportTree h k loc = queueDb h $
-	void $ insertUnique $ ExportTree k ef
+	void $ insertUniqueFast $ ExportTree k ef
   where
 	ef = SFilePath (fromExportLocation loc)
 

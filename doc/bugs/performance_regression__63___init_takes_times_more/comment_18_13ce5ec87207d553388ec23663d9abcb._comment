@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 18"""
+ date="2023-03-31T18:36:56Z"
+ content="""
+Implemented support for
+<https://github.com/yesodweb/persistent/issues/1457> in git-annex,
+which does speed up sqlite inserts 2x. That will affect the scan in
+question, since that inserts to the keys database. It also will speed up
+some unrelated parts of git-annex.
+"""]]
