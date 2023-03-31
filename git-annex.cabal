@@ -294,7 +294,7 @@ source-repository head
   location: git://git-annex.branchable.com/
 
 custom-setup
-  Setup-Depends: base (>= 4.11.1.0 && < 5.0), split, unix-compat, 
+  Setup-Depends: base (>= 4.11.1.0 && < 5.0), split, unix-compat (< 0.7), 
     filepath, exceptions, bytestring, IfElse, data-default,
     filepath-bytestring (>= 1.4.2.1.4),
     process (>= 1.6.3),
@@ -318,7 +318,7 @@ Executable git-annex
    case-insensitive,
    random,
    dlist,
-   unix-compat (>= 0.5),
+   unix-compat (>= 0.5 && < 0.7),
    SafeSemaphore,
    async,
    directory (>= 1.2.7.0),

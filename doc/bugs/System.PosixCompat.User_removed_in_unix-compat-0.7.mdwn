@@ -56,3 +56,5 @@ Sorry, I'm not a git-annex user. I'm a maintainer of the Homebrew package
 manager, and I help to make the newest git-annex available to our users.
 
 Thanks for all your work maintaining git-annex!
+
+> [[fixed|done]] by avoiding the broken version --[[Joey]]
