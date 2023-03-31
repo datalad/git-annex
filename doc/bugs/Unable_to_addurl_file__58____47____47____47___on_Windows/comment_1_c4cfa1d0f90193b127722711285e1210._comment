@@ -8,5 +8,5 @@ I tried this on windows, and the second command succeeds now.
 The first command still fails as shown.
 
 At this point, what's left of this bug seems to be the same as
-[[bugs/git-annex_drop_fails_to_access_file__58____47____47____47___target_URL_on_Windows]].
+<https://git-annex.branchable.com/bugs/git-annex_drop_fails_to_access_file__58____47____47____47___target_URL_on_Windows/>
 """]]
