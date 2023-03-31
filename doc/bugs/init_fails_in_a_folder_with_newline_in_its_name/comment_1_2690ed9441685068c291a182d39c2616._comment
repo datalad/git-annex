@@ -14,4 +14,7 @@ written to uuid.log contains a newline, which prevents parsing that line of
 the log correctly. This can also be seen by passing a value
 with a newline to `git-annex describe`. It would also happen in the
 case with the newline directory if it didn't fail earlier.
+
+Also fixed this, though, with a one-way escaping, 
+see [[!commit 38e9ea8497bb2ab058e5bd46a666857789c0a84d]].
 """]]
