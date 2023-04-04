@@ -1,6 +1,6 @@
 {- git-annex environment
  -
- - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,13 +23,15 @@ import Control.Exception
 
 {- Checks that the system's environment allows git to function.
  - Git requires a GECOS username, or suitable git configuration, or
+ - environment variables. When none of those are set, this will set the
  - environment variables.
  -
  - Git also requires the system have a hostname containing a dot.
  - Otherwise, it tries various methods to find a FQDN, and will fail if it
  - does not. To avoid replicating that code here, which would break if its
  - methods change, this function does not check the hostname is valid.
- - Instead, code that commits can use ensureCommit.
+ - Instead, git-annex init calls ensureCommit, which makes sure that git
+ - gets set up to allow committing.
  -}
 checkEnvironment :: Annex ()
 checkEnvironment = do
