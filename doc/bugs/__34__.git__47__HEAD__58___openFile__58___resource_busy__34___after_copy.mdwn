@@ -41,3 +41,4 @@ local repository version: 8
 
 This is probably related to [[bugs/Failed_adjusted_branch_update_after_error_in_drop/]]
 
+> [[fixed|done]] (I presume) --[[Joey]]
