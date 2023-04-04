@@ -63,3 +63,5 @@ Enabling `user.useConfigOnly` should prevent this, making it easier to work with
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, it's great!
+
+> [[fixed|done]] --[[Joey]]
