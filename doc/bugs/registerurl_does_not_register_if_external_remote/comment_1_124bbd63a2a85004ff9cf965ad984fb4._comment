@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-04-04T17:07:37Z"
+ content="""
+This is intentional, see [[!commit 451171b7c1eaccfd0f39d4ec1d64c6964613f55a]] 
+which changed setUrlPresent to only update presence info when the url
+belongs to the web but not when it's claimed by other special remotes.
+
+It makes sense for registerurl to be symmetric with rmurl, and rmurl only
+updates presence info when the url is a web url.
+
+To the extent I've been able to follow the complex reasoning there for why,
+part of it is clear: The web special remote is different from other special
+remotes in that content cannot be dropped from it by git-annex, and the url is
+the only pointer to content. So when rmurl removes the last web url, it makes
+sense to treat the content as no longer present on the web. But if the url is
+claimed by another special remote, which does support dropping content, the
+content would still be present on it after removing its url, and would be
+accessible w/o using that url, and `git-annex fsck --fast --from` would notice
+it was present and fix up the location log if it didn't show it as content.
+
+Also note that the rmurl man page documents this when it says:
+
+	Removing the last web url will make git-annex no longer treat content as being
+	present in the web special remote.
+
+All you need to do is use `git-annex setpresentkey` along with registerurl.
+"""]]
