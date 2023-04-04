@@ -5,6 +5,8 @@ git-annex (10.20230330) UNRELEASED; urgency=medium
   * Sped up sqlite inserts 2x when built with persistent 2.14.5.0
   * Fix laziness bug introduced in last release that breaks use
     of --unlock-present and --hide-missing adjusted branches.
+  * Avoid setting user.name and user.email in the git config
+    when git is unable to detect them.
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Mar 2023 12:48:54 -0400
 

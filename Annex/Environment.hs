@@ -1,6 +1,6 @@
 {- git-annex environment
  -
- - Copyright 2012, 2013 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,9 +10,9 @@
 module Annex.Environment where
 
 import Annex.Common
+import qualified Annex
 import Utility.UserInfo
 import qualified Git.Config
-import Config
 import Utility.Env.Set
 
 {- Checks that the system's environment allows git to function.
@@ -41,12 +41,13 @@ checkEnvironmentIO = whenM (isNothing <$> myUserGecos) $ do
 	ensureEnv var val = setEnv var val False
 
 {- Runs an action that commits to the repository, and if it fails, 
- - sets user.email and user.name to a dummy value and tries the action again. -}
+ - overrides user.email and user.name to a dummy value and tries
+ - the action again. -}
 ensureCommit :: Annex a -> Annex a
 ensureCommit a = either retry return =<< tryNonAsync a 
   where
 	retry _ = do
 		name <- liftIO $ either (const "unknown") id <$> myUserName
-		setConfig "user.name" name
-		setConfig "user.email" name
+		Annex.addGitConfigOverride ("user.name=" ++ name)
+		Annex.addGitConfigOverride ("user.email=" ++ name)
 		a
