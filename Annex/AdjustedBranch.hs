@@ -253,8 +253,8 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 			-- has that have not yet been propigated back to the
 			-- origbranch.
 			_ <- propigateAdjustedCommits' origbranch adj commitlck
-				
-			origheadfile <- inRepo $ readFile . Git.Ref.headFile
+			
+			origheadfile <- inRepo $ readFileStrict . Git.Ref.headFile
 
 			-- Git normally won't do anything when asked to check
 			-- out the currently checked out branch, even when its
@@ -279,7 +279,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 		unless ok $ case newheadfile of
 			Nothing -> noop
 			Just v -> preventCommits $ \_commitlck -> inRepo $ \r -> do
-				v' <- readFile (Git.Ref.headFile r)
+				v' <- readFileStrict (Git.Ref.headFile r)
 				when (v == v') $
 					writeFile (Git.Ref.headFile r) origheadfile
 
