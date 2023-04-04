@@ -7,6 +7,7 @@ git-annex (10.20230330) UNRELEASED; urgency=medium
     of --unlock-present and --hide-missing adjusted branches.
   * Avoid setting user.name and user.email in the git config
     when git is unable to detect them.
+  * Support user.useConfigOnly git config.
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Mar 2023 12:48:54 -0400
 

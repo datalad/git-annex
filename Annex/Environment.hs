@@ -7,13 +7,19 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Annex.Environment where
+module Annex.Environment (
+	checkEnvironment,
+	checkEnvironmentIO,
+	ensureCommit,
+) where
 
 import Annex.Common
 import qualified Annex
 import Utility.UserInfo
 import qualified Git.Config
 import Utility.Env.Set
+
+import Control.Exception
 
 {- Checks that the system's environment allows git to function.
  - Git requires a GECOS username, or suitable git configuration, or
@@ -29,7 +35,8 @@ checkEnvironment :: Annex ()
 checkEnvironment = do
 	gitusername <- fromRepo $ Git.Config.getMaybe "user.name"
 	when (isNothing gitusername || gitusername == Just "") $
-		liftIO checkEnvironmentIO
+		unlessM userConfigOnly $
+			liftIO checkEnvironmentIO
 
 checkEnvironmentIO :: IO ()
 checkEnvironmentIO = whenM (isNothing <$> myUserGecos) $ do
@@ -46,8 +53,16 @@ checkEnvironmentIO = whenM (isNothing <$> myUserGecos) $ do
 ensureCommit :: Annex a -> Annex a
 ensureCommit a = either retry return =<< tryNonAsync a 
   where
-	retry _ = do
-		name <- liftIO $ either (const "unknown") id <$> myUserName
-		Annex.addGitConfigOverride ("user.name=" ++ name)
-		Annex.addGitConfigOverride ("user.email=" ++ name)
-		a
+	retry e = ifM userConfigOnly
+		( liftIO (throwIO e)
+		, do
+			name <- liftIO $ either (const "unknown") id <$> myUserName
+			Annex.addGitConfigOverride ("user.name=" ++ name)
+			Annex.addGitConfigOverride ("user.email=" ++ name)
+			a
+		)
+
+userConfigOnly :: Annex Bool
+userConfigOnly = do
+	v <- fromRepo $ Git.Config.getMaybe "user.useconfigonly"
+	return (fromMaybe False (Git.Config.isTrueFalse' =<< v))
