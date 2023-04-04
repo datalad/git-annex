@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-04-04T17:38:22Z"
+ content="""
+Occurs to me that this is very similar to `git worktree`. The difference
+is that you can make whatever changes to git branches in this "ephemeral
+clone" without affecting the parent repository. But as far as git-annex is
+concerned, in both cases there are two git repositories that share their
+.git/annex and so are essentially the same git-annex repository.
+"""]]

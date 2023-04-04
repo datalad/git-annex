@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-04-04T17:48:04Z"
+ content="""
+See downstream discussion here: <https://github.com/datalad/datalad/issues/7363>
+"""]]
