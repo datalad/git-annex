@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 6"
+ date="2023-04-05T19:36:40Z"
+ content="""
+Obviously, as the author of the referenced wishlist, I would welcome addition of `--remote` option to both those commands. 
+
+But IMHO addition of the option doesn't solve initial/naive/programmable user oriented use case where user doesn't know which remote could or should handle the URL, and just wants, analogously or complimentary to `addurl`, to extend the list of the urls available for some key. There is even no user level interface to ask for \"what remotes can handle this url\" to erect some tandem of commands to register extra URLs for a key. So I don't see how addition of the option would solve the problem.
+"""]]
