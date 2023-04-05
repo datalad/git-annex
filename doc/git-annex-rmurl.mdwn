@@ -11,7 +11,9 @@ git annex rmurl `[file url ..]`
 Record that the file is no longer available at the url.
 
 Removing the last web url will make git-annex no longer treat content as being
-present in the web special remote.
+present in the web special remote. If some other special remote
+claims the url, unregistering the url will not update presence information
+for it, because the content may still be present on the remote.
 
 # OPTIONS
 

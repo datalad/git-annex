@@ -62,3 +62,7 @@ cleanup url key = do
 	forM_ [minBound..maxBound] $ \dl -> 
 		setUrlMissing key (setDownloader url dl)
 	return True
+	-- Unlike addurl, this does not update location tracking
+	-- for remotes other than the web special remote. Doing so with
+	-- a remote that git-annex can drop content from would rather
+	-- unexpectedly leave content stranded on that remote.

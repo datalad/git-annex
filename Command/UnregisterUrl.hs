@@ -24,11 +24,15 @@ seek o = case (batchOption o, keyUrlPairs o) of
 	(Batch fmt, _) -> seekBatch unregisterUrl o fmt
 	(NoBatch, ps) -> commandAction (start unregisterUrl o ps)
 
-unregisterUrl :: Key -> String -> Annex ()
-unregisterUrl key url = do
+unregisterUrl :: Remote -> Key -> String -> Annex ()
+unregisterUrl _remote key url = do
 	-- Remove the url no matter what downloader;
 	-- registerurl can set OtherDownloader, and this should also
 	-- be able to remove urls added by addurl, which may use
 	-- YoutubeDownloader.
 	forM_ [minBound..maxBound] $ \dl ->
 		setUrlMissing key (setDownloader url dl)
+	-- Unlike unregisterurl, this does not update location tracking
+	-- for remotes other than the web special remote. Doing so with
+	-- a remote that git-annex can drop content from would rather
+	-- unexpectedly leave content stranded on that remote.

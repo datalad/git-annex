@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2023-04-05T21:00:04Z"
+ content="""
+Guess I'll come down on the side of restoring old behavior which was
+changed w/o warning (and without the new behavior ever being documented).
+
+And on the side of user experience showing the current behavior is surprising.
+
+The future users who get surprised by the resulting inconsistency 
+of unregisterurl not unsetting location tracking will just have to
+live with it.. Sigh.
+"""]]

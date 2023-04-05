@@ -7,6 +7,9 @@ git-annex (10.20230330) UNRELEASED; urgency=medium
     of --unlock-present and --hide-missing adjusted branches.
   * Support user.useConfigOnly git config.
   * registerurl, unregisterurl: Added --remote option.
+  * registerurl: When an url is claimed by a special remote other than the
+    web, update location tracking for that special remote.
+    (This was the behavior before version 6.20181011)
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Mar 2023 12:48:54 -0400
 

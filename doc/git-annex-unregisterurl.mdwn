@@ -11,11 +11,13 @@ git annex unregisterurl `[key url]`
 This plumbing-level command can be used to unregister urls when keys can
 no longer be downloaded from them.
 
-Unregistering a key's last web url will make git-annex no longer treat content
-as being present in the web special remote.
-
 Normally the key is a git-annex formatted key. However, if the key cannot be
 parsed as a key, and is a valid url, an URL key is constructed from the url.
+
+Unregistering a key's last web url will make git-annex no longer treat content
+as being present in the web special remote. If some other special remote
+claims the url, unregistering the url will not update presence information
+for it, because the content may still be present on the remote.
 
 # OPTIONS
 
