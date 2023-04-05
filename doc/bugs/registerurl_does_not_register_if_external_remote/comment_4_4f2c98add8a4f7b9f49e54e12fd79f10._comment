@@ -1,0 +1,64 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-04-05T17:25:48Z"
+ content="""
+Whups, I forgot about the newish unregisterurl! That's the true inverse of
+registerurl. So rmurl is really more the inverse of addurl.
+
+I think I've fully understood the situation that led to this reversion now.
+I do think it was a reversion. That change was all about SETURLPRESENT and
+SETURLMISSING in the external special remote protocol, as well as rmurl;
+I think that the effect on registerurl was not considered.
+
+So while I'd like to simplify registerurl to as basic a plumbing command as
+possible, and would prefer it not to update location tracking, there's the
+matter of backward compatability. Especially for simple cases like adding
+regular web urls with it. It would be ok to change it back to update location
+tracking for remotes that claim an url. As long as unregisterurl can be
+symmetric with it --- can it?
+
+rmurl also has its own wacky behavior in this area:
+
+	# git-annex addurl --fast https://cdimage.debian.org/debian-cd/current/i386/bt-cd/debian-11.6.0-i386-netinst.iso.torrent
+	(downloading torrent file...) addurl https://cdimage.debian.org/debian-cd/current/i386/bt-cd/debian-11.6.0-i386-netinst.iso.torrent (from bittorrent) (to debian-11.6.0-i386-netinst.iso) ok
+	(recording state in git...)
+	# git-annex rmurl debian-11.6.0-i386-netinst.iso https://cdimage.debian.org/debian-cd/current/i386/bt-cd/debian-11.6.0-i386-netinst.iso.torrent
+	rmurl debian-11.6.0-i386-netinst.iso ok
+	(recording state in git...)
+	# git-annex whereis debian-11.6.0-i386-netinst.iso
+	whereis debian-11.6.0-i386-netinst.iso (1 copy)
+	  	00000000-0000-0000-0000-000000000002 -- bittorrent
+	ok
+	# git-annex get debian-11.6.0-i386-netinst.iso
+	(fails)
+
+Is that a bug? It's certianly not ideal for the bittorrent special
+remote, which can't download the file once the url is removed. (It is
+documented behavior though.)
+
+While thinking about those questions, I thought of this situation:
+
+	# git-annex initremote s3 type=S3 ..
+	# git-annex copy --key $key --to s3
+	# git-annex registerurl $key $url
+	# git-annex unregisterurl $key $url
+	# git-annex drop --key $key --from s3
+
+At the end there, it's still able to drop the content from s3.
+
+Now, consider hypothetically, if I decide to make the S3 remote CLAIMURL
+urls that are in the S3 bucket. As things stand, that won't change the
+above scenario. (Although the key won't be recorded as located in the web
+after registerurl.)
+
+But... If unregisterurl is changed to update remote tracking for other remotes
+than web, after the S3 CLAIMURL change, the behavior of that scenario will not
+be the same! After unregisterurl, it will no longer consider the content to be
+present in S3. Now you're racking up S3 charges with content that git-annex
+stored in S3, but that it refuses to delete. That seems bad.
+
+So, that scenario is leading me to think that I should not change 
+unregisterurl (or rmurl) to update location tracking of remotes other than web.
+And so changing registerurl is also looking like a bad idea.
+"""]]

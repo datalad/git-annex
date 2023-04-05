@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-04-05T17:46:54Z"
+ content="""
+What it could do is with --remote=foo, check if foo claims the url. If not,
+fail to register the url. The discussion in
+[[bugs/registerurl_does_not_register_if_external_remote]]
+is inclining me toward an option that works like that.
+
+I suppose that --remote=web could, as a special case, force use of the web
+special remote, bypassing any CLAIMURL. `addurl --raw` does the same thing,
+but it makes sense to have a plumbing level way to do that.
+"""]]
