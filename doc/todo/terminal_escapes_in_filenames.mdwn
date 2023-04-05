@@ -1,0 +1,25 @@
+    touch $(echo -e "\e[31mfoo\e[0m")
+    git-annex add
+    git-annex find
+
+That displays "foo" in red twice. Compare with behavior of git commands that
+display that filename, which display it escaped.
+
+git-annex should probably do the same (except in json output which is
+already escaped).
+
+git porcelain also accepts the escaped form of files as input, necessary for
+round-tripping though. git-annex currently does not. (git plumbing doesn't
+either)
+
+While terminals mostly protect against escape sequences doing very bad
+things, there are security holes in terminals still being found.
+
+Of course, such files in git repos can also be exploited by other commands
+eg `echo *`. 
+
+So this does not seem like a security hole in git-annex, but it would be
+useful defense in depth against terminal security holes, and also good to
+behave more like git.
+
+--[[Joey]]
