@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2023-04-05T00:30:00Z"
+ content="""
+So to some degree it is a regression / broken behavior which initially worked just fine with registerurl -- tried the 6.20180913+git149-g23bd27773 version and it performed \"as expected\". Eh, never enough tests ;)
+
+I have looked at that commit changelog and [detailed description](http://source.git-annex.branchable.com/?p=source.git;a=blob;f=doc/bugs/suggests_to_enable_web_remote_even_when_there_is_no_web_urls_for_the_file/comment_4_6dff7befbaacbff573c5f72688966af5._comment;h=c636b09291a23bbce52b0367a767717137f99a21;hb=451171b7c1eaccfd0f39d4ec1d64c6964613f55a)  . Not fully grasping yet why `registerurl` should not behave symmetrically with `addurl` in being sufficient by itself to add a url to content so it becomes usable for `get` right away, without some other dances like `setpresentkey`.  I think I do get `rmurl` \"ambiguity\" but here on that more reflected below.
+
+Rereading your comment [above](https://git-annex.branchable.com/bugs/registerurl_does_not_register_if_external_remote/#comment-ba9d6517d8f8c10167da95b122a022b3):
+
+> part of it is clear: The web special remote is different from other special remotes in that content cannot be dropped from it by git-annex, and the url is the only pointer to content.
+
+This is just an assumption on some \"special nature of web remote\", e.g. the `datalad` remote also doesn't support dropping, and URL is also just the pointer to content. And CLAIMURL functionality came IIRC exactly for that use case and before adding some kind of duality for having content accessible directly from special remote and via url.
+
+> But if the url is claimed by another special remote, which does support dropping content, the content would still be present on it after removing its url, and would be accessible w/o using that url, 
+
+that is yet another assumption, since e.g. in the case of datalad remote `rmurl` effect would be identical to `web` remote, and there is no other way to get content from that remote. (so there is no duality mentioned above)
+
+> All you need to do is use git-annex setpresentkey along with registerurl.
+
+this somewhat contradicts above \"the content would still be present on it after removing its url\" which suggests that presence of URL for the remote already sufficient indication of being present on the remote.
+
+Overall, there is seems some assumptions about URLs and external remotes which ideally should be avoided.  May be it it should somehow be reflected in the external remote protocol to indicate that CLAIMing URL indicates that it is present at that URL, and that there is no other way to access that content from the remote besides via URL.
+
+As a workaround I of cause will now either `setpresentkey` or will just reassign all urls to be handled directly by web remote somehow.  But in the long run I think it is problematic design since even `registerurl` doesn't even report to which remote that URL was registered to
+
+```
+> git annex registerurl --json SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat http://www.oneukrainian.com/tmp/124.dat
+{\"command\":\"registerurl\",\"error-messages\":[],\"file\":null,\"input\":[\"SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat\",\"http://www.oneukrainian.com/tmp/124.dat\"],\"success\":true}
+```
+so how could I generally to know proper invocation for `setpresent` key to follow it up?
+
+"""]]

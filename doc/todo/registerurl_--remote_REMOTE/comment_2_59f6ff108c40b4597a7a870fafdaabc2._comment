@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2023-04-05T01:03:38Z"
+ content="""
+`registerurl`, besides modifying `.log.web` and adding URLs (with `:` prefix if being claimed by external remote), it also modifies `.log` and registers availability from web remote 
+
+```
+> git annex registerurl --json SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat http://www.oneukrainian.com/tmp/124.dat
+{\"command\":\"registerurl\",\"error-messages\":[],\"file\":null,\"input\":[\"SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat\",\"http://www.oneukrainian.com/tmp/124.dat\"],\"success\":true}
+> git show -p git-annex
+commit 22a29debc107ccdf85fb08161bdfa31f581cedeb (git-annex)
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Tue Apr 4 20:59:29 2023 -0400
+
+    update
+
+diff --git a/060/68b/SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat.log b/060/68b/SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat.log
+index dbe5653..3384a1a 100644
+--- a/060/68b/SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat.log
++++ b/060/68b/SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat.log
+@@ -1 +1,2 @@
++1680656369.682872384s 1 00000000-0000-0000-0000-000000000001
+ 1680656369.621247138s 1 56425bae-be83-44d1-bb22-9f37ce9507a5
+diff --git a/060/68b/SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat.log.web b/060/68b/SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat.log.web
+new file mode 100644
+index 0000000..022fcec
+--- /dev/null
++++ b/060/68b/SHA256E-s4--ca2ebdf97d7469496b1f4b78958f9dc8447efdcb623953fee7b6996b762f6fff.dat.log.web
+@@ -0,0 +1 @@
++1680656369.682162693s 1 http://www.oneukrainian.com/tmp/124.dat
+
+```
+
+The fact that it doesn't do that currently (but did in the past) for external remotes is currently discussed in [https://git-annex.branchable.com/bugs/registerurl_does_not_register_if_external_remote/](https://git-annex.branchable.com/bugs/registerurl_does_not_register_if_external_remote/)
+
+So, my desire here ATM to be able to say `registerurl --remote web` and get it registered to `web` remote, thus to have web remote listed in .log and url added without `:`.
+"""]]

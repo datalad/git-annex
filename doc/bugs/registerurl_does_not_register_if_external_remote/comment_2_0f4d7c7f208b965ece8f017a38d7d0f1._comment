@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2023-04-04T20:15:59Z"
+ content="""
+yet to re-review that reasoning, but does it mean that to merely register a URL client needs to
+- call `annex registerurl`
+- inspect to which remote URL was added/was claimed (is there a way? `whois` is silent)
+- if it was claimed by some special remote other than web -- use `annex setpresentkey`?
+
+Sounds like too much / too fragile, and somewhat different from how `addurl` behaves which does it all just fine regardless either it is web or some claimurl'ed remote.
+"""]]
