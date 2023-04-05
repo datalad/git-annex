@@ -22,7 +22,7 @@ cmd = withAnnexOptions [jsonOptions] $ command "unregisterurl"
 seek :: RegisterUrlOptions -> CommandSeek
 seek o = case (batchOption o, keyUrlPairs o) of
 	(Batch fmt, _) -> seekBatch unregisterUrl o fmt
-	(NoBatch, ps) -> commandAction (start unregisterUrl ps)
+	(NoBatch, ps) -> commandAction (start unregisterUrl o ps)
 
 unregisterUrl :: Key -> String -> Annex ()
 unregisterUrl key url = do

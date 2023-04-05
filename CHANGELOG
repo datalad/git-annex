@@ -6,6 +6,7 @@ git-annex (10.20230330) UNRELEASED; urgency=medium
   * Fix laziness bug introduced in last release that breaks use
     of --unlock-present and --hide-missing adjusted branches.
   * Support user.useConfigOnly git config.
+  * registerurl, unregisterurl: Added --remote option.
 
  -- Joey Hess <id@joeyh.name>  Fri, 31 Mar 2023 12:48:54 -0400
 

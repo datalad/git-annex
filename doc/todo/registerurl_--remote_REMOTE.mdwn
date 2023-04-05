@@ -3,3 +3,5 @@ If a remote can handle some urls (e.g. regular http) which annex can handle as w
 
 [[!meta author=yoh]]
 [[!tag projects/repronim]]
+
+> [[fixed|done]] --[[Joey]]

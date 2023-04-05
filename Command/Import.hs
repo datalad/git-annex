@@ -75,7 +75,7 @@ data ImportOptions
 optParser :: CmdParamsDesc -> Parser ImportOptions
 optParser desc = do
 	ps <- cmdParams desc
-	mfromremote <- optional $ parseRemoteOption <$> parseFromOption
+	mfromremote <- optional $ mkParseRemoteOption <$> parseFromOption
 	content <- invertableSwitch "content" True
 		( help "do not get contents of imported files"
 		)

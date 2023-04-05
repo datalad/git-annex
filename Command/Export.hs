@@ -59,7 +59,7 @@ data ExportOptions = ExportOptions
 optParser :: CmdParamsDesc -> Parser ExportOptions
 optParser _ = ExportOptions
 	<$> (Git.Ref <$> parsetreeish)
-	<*> (parseRemoteOption <$> parseToOption)
+	<*> (mkParseRemoteOption <$> parseToOption)
 	<*> parsetracking
   where
 	parsetreeish = argument str

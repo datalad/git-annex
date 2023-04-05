@@ -19,6 +19,14 @@ parsed as a key, and is a valid url, an URL key is constructed from the url.
 
 # OPTIONS
 
+* `--remote=name|uuid`
+
+  Indicate that the url is expected to be claimed by the specified remote.
+  If some other remote claims the url instead, unregistering it will fail.
+
+  Note that `--remote=web` will prevent any other remote from claiming
+  the url.
+
 * `--batch`
 
   In batch input mode, lines are read from stdin, and each line

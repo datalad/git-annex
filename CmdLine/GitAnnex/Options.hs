@@ -119,8 +119,8 @@ parseAutoOption = switch
 	<> help "automatic mode"
 	)
 
-parseRemoteOption :: RemoteName -> DeferredParse Remote
-parseRemoteOption = DeferredParse 
+mkParseRemoteOption :: RemoteName -> DeferredParse Remote
+mkParseRemoteOption = DeferredParse 
 	. (fromJust <$$> Remote.byNameWithUUID)
 	. Just
 
@@ -145,8 +145,8 @@ instance DeferredParseClass FromToOptions where
 
 parseFromToOptions :: Parser FromToOptions
 parseFromToOptions = 
-	(FromRemote . parseRemoteOption <$> parseFromOption) 
-	<|> (ToRemote . parseRemoteOption <$> parseToOption)
+	(FromRemote . mkParseRemoteOption <$> parseFromOption) 
+	<|> (ToRemote . mkParseRemoteOption <$> parseToOption)
 
 parseFromOption :: Parser RemoteName
 parseFromOption = strOption
@@ -162,6 +162,12 @@ parseToOption = strOption
 	<> completeRemotes
 	)
 
+parseRemoteOption :: Parser RemoteName
+parseRemoteOption = strOption
+	( long "remote" <> metavar paramRemote
+	<> completeRemotes
+	)
+
 -- | From or to a remote, or both, or a special --to=here
 data FromToHereOptions 
 	= FromOrToRemote FromToOptions
@@ -174,14 +180,14 @@ parseFromToHereOptions = go
 	<*> optional parseToOption
   where
 	go (Just from) (Just to) = Just $ FromRemoteToRemote
-		(parseRemoteOption from)
-		(parseRemoteOption to)
+		(mkParseRemoteOption from)
+		(mkParseRemoteOption to)
 	go (Just from) Nothing = Just $ FromOrToRemote
-		(FromRemote $ parseRemoteOption from)
+		(FromRemote $ mkParseRemoteOption from)
 	go Nothing (Just to) = Just $ case to of
 		"here" -> ToHere
 		"." -> ToHere
-		_ -> FromOrToRemote $ ToRemote $ parseRemoteOption to
+		_ -> FromOrToRemote $ ToRemote $ mkParseRemoteOption to
 	go Nothing Nothing = Nothing
 
 instance DeferredParseClass FromToHereOptions where

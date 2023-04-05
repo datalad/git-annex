@@ -17,7 +17,18 @@ Normally the key is a git-annex formatted key. However, to make it easier
 to use this to add urls, if the key cannot be parsed as a key, and is a
 valid url, an URL key is constructed from the url.
 
+Registering an url makes content be treated as being present in the web
+special remote, unless some other special remote claims the url.
+
 # OPTIONS
+
+* `--remote=name|uuid`
+
+  Indicate that the url is expected to be claimed by the specified remote.
+  If some other remote claims the url instead, registering it will fail.
+
+  Note that `--remote=web` will prevent any other remote from claiming
+  the url.
 
 * `--batch`
 

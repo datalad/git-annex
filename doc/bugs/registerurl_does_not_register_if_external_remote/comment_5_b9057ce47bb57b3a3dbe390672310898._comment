@@ -11,6 +11,8 @@ So, you can then use registerurl with --remote=$uuid, check that it
 succeeded, and then use setpresentkey to mark it present on that uuid.
 Without the fragility you complained of.
 
+Update: The --remote parameter is implemented now.
+
 (Could registerurl with --remote update location tracking itself? Maybe,
 but I'd worry about a scenario like in the previous comment.)
 """]]
