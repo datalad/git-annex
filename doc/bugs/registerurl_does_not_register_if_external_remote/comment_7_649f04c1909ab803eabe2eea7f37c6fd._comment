@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2023-04-05T19:57:37Z"
+ content="""
+Well, unregisterurl and rmurl can't safely update location tracking for remotes
+other than the web. Unless there were some way to know that simply removing an
+url was *sufficient*, like it is for the web, and unlike how it would be
+with my S3 remote scenario above.
+
+But, the only issue with registerurl updating location tracking is that it's
+not symmetric with unregisterurl.
+
+So is that symmetry more important than comment 6? I don't know. In both
+cases, some users are going to be surprised by inconsistent behavior.
+
+The only way to avoid all user surprise would be to go back in time and 
+make these plumbing commands not update location tracking from the start.
+"""]]
