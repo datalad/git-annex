@@ -83,9 +83,9 @@ instance Proto.Receivable TransferRequest where
 
 instance Proto.Sendable TransferResponse where
 	formatMessage (TransferOutput (OutputMessage m)) =
-		["om", Proto.serialize (encode_c (decodeBS m))]
+		["om", Proto.serialize (decodeBS (encode_c isUtf8Byte m))]
 	formatMessage (TransferOutput (OutputError e)) =
-		["oe", Proto.serialize (encode_c e)]
+		["oe", Proto.serialize (decodeBS (encode_c isUtf8Byte (encodeBS e)))]
 	formatMessage (TransferOutput BeginProgressMeter) =
 		["opb"]
 	formatMessage (TransferOutput (UpdateProgressMeterTotalSize (TotalSize sz))) =
@@ -99,7 +99,7 @@ instance Proto.Sendable TransferResponse where
 	formatMessage (TransferOutput EndPrompt) =
 		["opre"]
 	formatMessage (TransferOutput (JSONObject b)) =
-		["oj", Proto.serialize (encode_c (decodeBL b))]
+		["oj", Proto.serialize (decodeBS (encode_c isUtf8Byte (L.toStrict b)))]
 	formatMessage (TransferResult True) =
 		["t"]
 	formatMessage (TransferResult False) =
@@ -141,7 +141,9 @@ instance Proto.Serializable TransferRemote where
 	serialize (TransferRemoteUUID u) = 'u':fromUUID u
 	-- A remote name could contain whitespace or newlines, which needs
 	-- to be escaped for the protocol. Use C-style encoding.
-	serialize (TransferRemoteName r) = 'r':encode_c' isSpace r
+	serialize (TransferRemoteName r) = 'r':decodeBS (encode_c is_space_or_unicode (encodeBS r))
+	  where
+		is_space_or_unicode c = isUtf8Byte c || isSpace (chr (fromIntegral c))
 
 	deserialize ('u':u) = Just (TransferRemoteUUID (toUUID u))
 	deserialize ('r':r) = Just (TransferRemoteName (decodeBS (decode_c (encodeBS r))))
@@ -151,7 +153,7 @@ instance Proto.Serializable TransferAssociatedFile where
 	-- Comes last, so whitespace is ok. But, in case the filename
 	-- contains eg a newline, escape it. Use C-style encoding.
 	serialize (TransferAssociatedFile (AssociatedFile (Just f))) =
-		encode_c (fromRawFilePath f)
+		decodeBS (encode_c isUtf8Byte f)
 	serialize (TransferAssociatedFile (AssociatedFile Nothing)) = ""
 
 	deserialize "" = Just $ TransferAssociatedFile $

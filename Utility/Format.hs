@@ -13,6 +13,7 @@ module Utility.Format (
 	decode_c,
 	encode_c,
 	encode_c',
+	isUtf8Byte,
 	prop_encode_c_decode_c_roundtrip
 ) where
 
@@ -21,7 +22,6 @@ import Data.Char (isAlphaNum, isOctDigit, isHexDigit, isSpace, chr, ord, isAscii
 import Data.Maybe (fromMaybe)
 import Data.Word (Word8)
 import Data.List (isPrefixOf)
-import qualified Codec.Binary.UTF8.String
 import qualified Data.Map as M
 import qualified Data.ByteString as S
 
@@ -53,7 +53,8 @@ format f vars = concatMap expand f
   where
 	expand (Const s) = s
 	expand (Var name j esc)
-		| esc = justify j $ encode_c' isSpace $ getvar name
+		| esc = justify j $ decodeBS $ encode_c needescape $
+			encodeBS $ getvar name
 		| otherwise = justify j $ getvar name
 	getvar name = fromMaybe "" $ M.lookup name vars
 	justify UnJustified s        = s
@@ -61,6 +62,9 @@ format f vars = concatMap expand f
 	justify (RightJustified i) s = pad i s ++ s
 	pad i s = take (i - length s) spaces
 	spaces = repeat ' '
+	needescape c = isUtf8Byte c ||
+		isSpace (chr (fromIntegral c)) ||
+		c == fromIntegral (ord '"')
 
 {- Generates a Format that can be used to expand variables in a
  - format string, such as "${foo} ${bar;10} ${baz;-10}\n"
@@ -173,42 +177,52 @@ decode_c s
 		echar 'r' = '\r'
 		echar 't' = '\t'
 		echar 'v' = '\v'
-		echar a = a
+		echar a = a -- \\ decodes to '\', and \" to '"'
 	handle' b = (S.empty, b)
 
-{- Inverse of decode_c. 
- -
- - Note that this operates on String, not ByteString, which is important in
- - order to be able to handle unicode characters, which get encoded in
- - octal. -}
-encode_c :: String -> String
-encode_c = encode_c' (const False)
+{- Inverse of decode_c. Encodes ascii control characters as well as
+ - bytes that match the predicate. (And also '\' itself.)
+ -}
+encode_c :: (Word8 -> Bool) -> S.ByteString -> S.ByteString
+encode_c p s = case encode_c' p s of
+	Just s' -> s'
+	Nothing -> s
 
-{- Encodes special characters, as well as any matching the predicate. -}
-encode_c' :: (Char -> Bool) -> String -> String
-encode_c' p = concatMap echar
+{- Returns Nothing when nothing needs to be escaped in the input ByteString. -}
+encode_c' :: (Word8 -> Bool) -> S.ByteString -> Maybe S.ByteString
+encode_c' p s
+	| S.any needencode s = Just (S.concatMap echar s)
+	| otherwise = Nothing
   where
-	e c = '\\' : [c]
-	echar '\a' = e 'a'
-	echar '\b' = e 'b'
-	echar '\f' = e 'f'
-	echar '\n' = e 'n'
-	echar '\r' = e 'r'
-	echar '\t' = e 't'
-	echar '\v' = e 'v'
-	echar '\\' = e '\\'
-	echar '"'  = e '"'
+	needencode c = iscontrol c || c == del || c == e || p c
+
+	e = fromIntegral (ord '\\')
+	q = fromIntegral (ord '"')
+	del = 0x7F
+	iscontrol c = c < 0x20
+
+	ec c = S.pack [e, fromIntegral (ord c)]
+	
+	echar 0x7 = ec 'a'
+	echar 0x8 = ec 'b'
+	echar 0x0C = ec 'f'
+	echar 0x0A = ec 'n'
+	echar 0x0D = ec 'r'
+	echar 0x09 = ec 't'
+	echar 0x0B = ec 'v'
 	echar c
-		| ord c < 0x20 = e_asc c -- low ascii
-		| ord c >= 256 = e_utf c -- unicode
-		| ord c > 0x7E = e_asc c -- high ascii
-		| p c          = e_asc c
-		| otherwise    = [c]
-	-- unicode character is decomposed to individual Word8s,
-	-- and each is shown in octal
-	e_utf c = showoctal =<< (Codec.Binary.UTF8.String.encode [c] :: [Word8])
-	e_asc c = showoctal $ ord c
-	showoctal i = '\\' : printf "%03o" i
+		| c == e = ec '\\' -- escape the escape character itself
+		| iscontrol c = showoctal c 
+		| c == del = showoctal c
+		| p c = if c == q
+			then ec '"' -- escape double quote
+			else showoctal c
+		| otherwise = S.singleton c
+
+	showoctal i = encodeBS ('\\' : printf "%03o" i)
+
+isUtf8Byte :: Word8 -> Bool
+isUtf8Byte c = c >= 0x80
 
 {- For quickcheck. 
  -
@@ -219,6 +233,7 @@ encode_c' p = concatMap echar
  - This property papers over the problem, by only testing ascii.
  -}
 prop_encode_c_decode_c_roundtrip :: String -> Bool
-prop_encode_c_decode_c_roundtrip s = s' == decodeBS (decode_c (encodeBS (encode_c s')))
+prop_encode_c_decode_c_roundtrip s = s' == 
+	decodeBS (decode_c (encode_c isUtf8Byte (encodeBS s')))
   where
 	s' = filter isAscii s
