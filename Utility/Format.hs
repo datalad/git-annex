@@ -184,9 +184,7 @@ decode_c s
  - bytes that match the predicate. (And also '\' itself.)
  -}
 encode_c :: (Word8 -> Bool) -> S.ByteString -> S.ByteString
-encode_c p s = case encode_c' p s of
-	Just s' -> s'
-	Nothing -> s
+encode_c p s = fromMaybe s (encode_c' p s)
 
 {- Returns Nothing when nothing needs to be escaped in the input ByteString. -}
 encode_c' :: (Word8 -> Bool) -> S.ByteString -> Maybe S.ByteString
@@ -194,15 +192,11 @@ encode_c' p s
 	| S.any needencode s = Just (S.concatMap echar s)
 	| otherwise = Nothing
   where
-	needencode c = iscontrol c || c == del || c == e || p c
-
 	e = fromIntegral (ord '\\')
 	q = fromIntegral (ord '"')
 	del = 0x7F
 	iscontrol c = c < 0x20
 
-	ec c = S.pack [e, fromIntegral (ord c)]
-	
 	echar 0x7 = ec 'a'
 	echar 0x8 = ec 'b'
 	echar 0x0C = ec 'f'
@@ -211,13 +205,17 @@ encode_c' p s
 	echar 0x09 = ec 't'
 	echar 0x0B = ec 'v'
 	echar c
+		| iscontrol c = showoctal c -- other control characters
 		| c == e = ec '\\' -- escape the escape character itself
-		| iscontrol c = showoctal c 
 		| c == del = showoctal c
 		| p c = if c == q
 			then ec '"' -- escape double quote
 			else showoctal c
 		| otherwise = S.singleton c
+	
+	needencode c = iscontrol c || c == e || c == del || p c
+
+	ec c = S.pack [e, fromIntegral (ord c)]
 
 	showoctal i = encodeBS ('\\' : printf "%03o" i)
 
