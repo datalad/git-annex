@@ -11,7 +11,7 @@
 module Git.Filename where
 
 import Common
-import Utility.Format (decode_c, encode_c, isUtf8Byte)
+import Utility.Format (decode_c, encode_c, encode_c', isUtf8Byte)
 import Utility.QuickCheck
 
 import Data.Char
@@ -39,8 +39,22 @@ encodeAlways s = "\"" <> encode_c needencode s <> "\""
   where
 	needencode c = isUtf8Byte c || c == fromIntegral (ord '"')
 
+-- git config core.quotePath controls whether to quote unicode characters
+newtype QuotePath = QuotePath Bool
+
+-- encodes and double quotes when git would
+encode :: QuotePath -> RawFilePath -> S.ByteString
+encode (QuotePath qp) s = case encode_c' needencode s of
+	Nothing -> s
+	Just s' -> "\"" <> s' <> "\""
+  where
+	needencode c
+		| c == fromIntegral (ord '"') = True
+		| qp = isUtf8Byte c
+		| otherwise = False
+
 -- Encoding and then decoding roundtrips only when the string does not
--- contain high unicode, because eg,  both "\12345" and "\227\128\185"
+-- contain high unicode, because eg, both "\12345" and "\227\128\185"
 -- are encoded to "\343\200\271".
 --
 -- That is not a real-world problem, and using TestableFilePath

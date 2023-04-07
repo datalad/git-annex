@@ -35,3 +35,8 @@ useful defense in depth against terminal security holes, and also good to
 behave more like git.
 
 --[[Joey]]
+
+> Git.Filename.encode is implemented, and only needs to be used.
+> Note that core.quotePath controls whether git quotes unicode characters
+> (by default it does), so once this gets implemented, some users may want
+> to set that config to false. --[[Joey]]
