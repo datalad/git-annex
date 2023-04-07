@@ -248,7 +248,7 @@ secretKeys cmd = catchDefaultIO M.empty makemap
 		-- If the userid contains a ":" or a few other special
 		-- characters, gpg will hex-escape it. Use decode_c to
 		-- undo.
-		extract ((keyid, decode_c userid):c) Nothing rest
+		extract ((keyid, decodeBS (decode_c (encodeBS userid))):c) Nothing rest
 	extract c (Just keyid) rest@(("sec":_):_) =
 		extract ((keyid, ""):c) Nothing rest
 	extract c (Just keyid) (_:rest) =

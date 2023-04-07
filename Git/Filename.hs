@@ -26,8 +26,7 @@ decode b = case S.uncons b of
 			Nothing -> b
 			Just (i, l)
 				| l /= q -> b
-				| otherwise ->
-					encodeBS $ decode_c $ decodeBS i
+				| otherwise -> decode_c i
   where
   	q :: Word8
 	q = fromIntegral (ord '"')

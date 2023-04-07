@@ -1,6 +1,6 @@
 {- Formatted string handling.
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -23,10 +23,10 @@ import Data.Word (Word8)
 import Data.List (isPrefixOf)
 import qualified Codec.Binary.UTF8.String
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 
 import Utility.PartialPrelude
-
-type FormatString = String
+import Utility.FileSystemEncoding
 
 {- A format consists of a list of fragments. -}
 type Format = [Frag]
@@ -69,8 +69,8 @@ format f vars = concatMap expand f
  -
  - Also, "${escaped_foo}" will apply encode_c to the value of variable foo.
  -}
-gen :: FormatString -> Format
-gen = filter (not . empty) . fuse [] . scan [] . decode_c
+gen :: String -> Format
+gen = filter (not . empty) . fuse [] . scan [] . decodeBS . decode_c . encodeBS
   where
 	-- The Format is built up in reverse, for efficiency,
 	-- and can have many adjacent Consts. Fusing it fixes both
@@ -122,33 +122,50 @@ formatContainsVar v = any go
 {- Decodes a C-style encoding, where \n is a newline (etc),
  - \NNN is an octal encoded character, and \xNN is a hex encoded character.
  -}
-decode_c :: FormatString -> String
-decode_c [] = []
-decode_c s = unescape ("", s)
+decode_c :: S.ByteString -> S.ByteString
+decode_c s
+	| S.null s = S.empty
+	| otherwise = unescape (S.empty, s)
   where
-	e = '\\'
-	unescape (b, []) = b
-	-- look for escapes starting with '\'
-	unescape (b, v) = b ++ fst pair ++ unescape (handle $ snd pair)
+	e = fromIntegral (ord '\\')
+	x = fromIntegral (ord 'x')
+	isescape c = c == e
+	unescape (b, v)
+		| S.null v = b
+		| otherwise = b <> fst pair <> unescape (handle $ snd pair)
 	  where
-		pair = span (/= e) v
-	isescape x = x == e
-	handle (x:'x':n1:n2:rest)
-		| isescape x && allhex = (fromhex, rest)
+		pair = S.span (not . isescape) v
+	handle b
+		| S.length b >= 1 && isescape (S.index b 0) = handle' b
+		| otherwise = (S.empty, b)
+	
+	handle' b
+		| S.length b >= 4
+			&& S.index b 1 == x
+			&& allhex = (fromhex, rest)
 	  where
+		n1 = chr (fromIntegral (S.index b 2))
+		n2 = chr (fromIntegral (S.index b 3))
+	  	rest = S.drop 4 b
 		allhex = isHexDigit n1 && isHexDigit n2
-		fromhex = [chr $ readhex [n1, n2]]
+		fromhex = encodeBS [chr $ readhex [n1, n2]]
 		readhex h = Prelude.read $ "0x" ++ h :: Int
-	handle (x:n1:n2:n3:rest)
-		| isescape x && alloctal = (fromoctal, rest)
+	handle' b
+		| S.length b >= 4 && alloctal = (fromoctal, rest)
 	  where
+		n1 = chr (fromIntegral (S.index b 1))
+		n2 = chr (fromIntegral (S.index b 2))
+		n3 = chr (fromIntegral (S.index b 3))
+	  	rest = S.drop 4 b
 		alloctal = isOctDigit n1 && isOctDigit n2 && isOctDigit n3
-		fromoctal = [chr $ readoctal [n1, n2, n3]]
+		fromoctal = encodeBS [chr $ readoctal [n1, n2, n3]]
 		readoctal o = Prelude.read $ "0o" ++ o :: Int
-	-- \C is used for a few special characters
-	handle (x:nc:rest)
-		| isescape x = ([echar nc], rest)
+	handle' b
+		| S.length b >= 2 = 
+			(S.singleton (fromIntegral (ord (echar nc))), rest)
 	  where
+		nc = chr (fromIntegral (S.index b 1))
+		rest = S.drop 2 b
 		echar 'a' = '\a'
 		echar 'b' = '\b'
 		echar 'f' = '\f'
@@ -157,14 +174,18 @@ decode_c s = unescape ("", s)
 		echar 't' = '\t'
 		echar 'v' = '\v'
 		echar a = a
-	handle n = ("", n)
+	handle' b = (S.empty, b)
 
-{- Inverse of decode_c. -}
-encode_c :: String -> FormatString
+{- Inverse of decode_c. 
+ -
+ - Note that this operates on String, not ByteString, which is important in
+ - order to be able to handle unicode characters, which get encoded in
+ - octal. -}
+encode_c :: String -> String
 encode_c = encode_c' (const False)
 
 {- Encodes special characters, as well as any matching the predicate. -}
-encode_c' :: (Char -> Bool) -> String -> FormatString
+encode_c' :: (Char -> Bool) -> String -> String
 encode_c' p = concatMap echar
   where
 	e c = '\\' : [c]
@@ -198,6 +219,6 @@ encode_c' p = concatMap echar
  - This property papers over the problem, by only testing ascii.
  -}
 prop_encode_c_decode_c_roundtrip :: String -> Bool
-prop_encode_c_decode_c_roundtrip s = s' == decode_c (encode_c s')
+prop_encode_c_decode_c_roundtrip s = s' == decodeBS (decode_c (encodeBS (encode_c s')))
   where
 	s' = filter isAscii s
