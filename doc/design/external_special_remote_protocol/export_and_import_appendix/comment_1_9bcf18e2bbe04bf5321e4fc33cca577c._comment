@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Status of the import/export protocol implementation"
+ date="2023-04-07T09:17:21Z"
+ content="""
+As of now, the protocol specification states \"This part is a draft, not implemented yet.\" To which degree is this still true? Would it be possible to implement a custom remote that implements (some of) these features, and have git-annex use it in an importtree=yes,exporttree=yes scenario?
+"""]]
