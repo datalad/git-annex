@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Status of the import/export protocol implementation"""
+ date="2023-04-07T16:53:17Z"
+ content="""
+It's still only a draft. I've been waiting for someone to have a use case
+that needs it, so I can work with them in implementing it and making sure
+it all makes sense.
+
+I don't expect that implementing it on the git-annex side will be very
+hard.
+"""]]
