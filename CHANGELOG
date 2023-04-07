@@ -1,8 +1,5 @@
-git-annex (10.20230330) UNRELEASED; urgency=medium
+git-annex (10.20230407) upstream; urgency=medium
 
-  * git-annex.cabal: Prevent building with unix-compat 0.7 which
-    removed System.PosixCompat.User.
-  * Sped up sqlite inserts 2x when built with persistent 2.14.5.0
   * Fix laziness bug introduced in last release that breaks use
     of --unlock-present and --hide-missing adjusted branches.
   * Support user.useConfigOnly git config.
@@ -10,8 +7,11 @@ git-annex (10.20230330) UNRELEASED; urgency=medium
   * registerurl: When an url is claimed by a special remote other than the
     web, update location tracking for that special remote.
     (This was the behavior before version 6.20181011)
+  * Sped up sqlite inserts 2x when built with persistent 2.14.5.0
+  * git-annex.cabal: Prevent building with unix-compat 0.7 which
+    removed System.PosixCompat.User.
 
- -- Joey Hess <id@joeyh.name>  Fri, 31 Mar 2023 12:48:54 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 07 Apr 2023 13:36:23 -0400
 
 git-annex (10.20230329) upstream; urgency=medium
 
