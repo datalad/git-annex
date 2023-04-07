@@ -1,0 +1,7 @@
+Is it "safe" to run `git-annex addurl` or `git-annex registerurl` in batch mode on a git-annex repository while also occasionally executing `git rm` on that repository while the batch process is running?  By "safe", I mean "the `git rm` process will never crash due to the git lock file already existing."  Is there a way to ensure that a `git rm` invocation will not fail due to locking issues while keeping the batch process running?
+
+The only relevant information I can find on this is <https://git-annex.branchable.com/forum/locks_during_--batch_operations/>, which states that a batch process will not hold a single lock throughout its entire run but says nothing about whether a batch process uses a lock at all.
+
+(I am asking about this because we have a program that runs batch processes concurrently with `git rm` invocations, and very rarely there are crashes due to locking issues with `git rm`.  My boss now wants me to address these issues by shutting down any running batch processes before running `git rm`, but this will be a giant hassle that I wish to avoid if at all possible.)
+
+[[!meta author=jwodder]]
