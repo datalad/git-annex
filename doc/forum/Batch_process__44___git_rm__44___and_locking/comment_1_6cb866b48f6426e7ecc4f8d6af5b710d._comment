@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-04-07T16:42:16Z"
+ content="""
+The lock you need to worry about here is for `.git/index`,
+which both `git rm` and `git-annex addurl` need to modify
+(when the latter is adding new files, not adding urls to existing files).
+Unfortunately git's handling of that lock file doesn't play well with multiple
+processes (unlike git-annex's other lock files that it uses).
+
+With --batch, git-annex reads a line, handles it, outputs a response, and
+waits for the next line. It should not keep any lock held while it's
+waiting for the line. So, you should be able to schedule your `git rm`
+to happen at that point and not have problems with locks colliding.
+"""]]
