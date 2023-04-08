@@ -1,6 +1,6 @@
 {- items that a command can act on
  -
- - Copyright 2016-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ module Types.ActionItem where
 import Key
 import Types.Transfer
 import Git.FilePath
+import qualified Git.Filename
 import Utility.FileSystemEncoding
 
 import Data.Maybe
@@ -56,17 +57,18 @@ instance MkActionItem (BranchFilePath, Key) where
 instance MkActionItem (Transfer, TransferInfo) where
 	mkActionItem = uncurry ActionItemFailedTransfer
 
-actionItemDesc :: ActionItem -> S.ByteString
-actionItemDesc (ActionItemAssociatedFile (AssociatedFile (Just f)) _) = f
-actionItemDesc (ActionItemAssociatedFile (AssociatedFile Nothing) k) = 
+actionItemDesc :: Git.Filename.QuotePath -> ActionItem -> S.ByteString
+actionItemDesc qp (ActionItemAssociatedFile (AssociatedFile (Just f)) _) = 
+	Git.Filename.encode qp f
+actionItemDesc _ (ActionItemAssociatedFile (AssociatedFile Nothing) k) = 
 	serializeKey' k
-actionItemDesc (ActionItemKey k) = serializeKey' k
-actionItemDesc (ActionItemBranchFilePath bfp _) = descBranchFilePath bfp
-actionItemDesc (ActionItemFailedTransfer t i) = actionItemDesc $
+actionItemDesc _ (ActionItemKey k) = serializeKey' k
+actionItemDesc qp (ActionItemBranchFilePath bfp _) = descBranchFilePath qp bfp
+actionItemDesc qp (ActionItemFailedTransfer t i) = actionItemDesc qp $
 	ActionItemAssociatedFile (associatedFile i) (transferKey t)
-actionItemDesc (ActionItemTreeFile f) = f
-actionItemDesc (ActionItemOther s) = encodeBS (fromMaybe "" s)
-actionItemDesc (OnlyActionOn _ ai) = actionItemDesc ai
+actionItemDesc qp (ActionItemTreeFile f) = Git.Filename.encode qp f
+actionItemDesc _ (ActionItemOther s) = encodeBS (fromMaybe "" s)
+actionItemDesc qp (OnlyActionOn _ ai) = actionItemDesc qp ai
 
 actionItemKey :: ActionItem -> Maybe Key
 actionItemKey (ActionItemAssociatedFile _ k) = Just k

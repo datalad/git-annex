@@ -31,6 +31,7 @@ import Logs.Transfer
 import Types.Remote
 import qualified Remote
 import qualified Types.Remote as Remote
+import qualified Annex
 import Annex.Wanted
 import Utility.TList
 
@@ -139,7 +140,8 @@ enqueue reason schedule t info
 	| otherwise = go snocTList
   where
 	go modlist = whenM (add modlist) $ do
-		debug [ "queued", describeTransfer t info, ": " ++ reason ]
+		qp <- liftAnnex $ coreQuotePath <$> Annex.getGitConfig
+		debug [ "queued", describeTransfer qp t info, ": " ++ reason ]
 		notifyTransfer
 	add modlist = do
 		q <- getAssistant transferQueue

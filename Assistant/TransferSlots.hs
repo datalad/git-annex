@@ -123,14 +123,16 @@ genTransfer t info = case transferRemote info of
 			return Nothing
 		, ifM (liftAnnex $ shouldTransfer t info)
 			( do
-				debug [ "Transferring:" , describeTransfer t info ]
+				qp <- liftAnnex $ coreQuotePath <$> Annex.getGitConfig
+				debug [ "Transferring:" , describeTransfer qp t info ]
 				notifyTransfer
 				let sd = remoteAnnexStallDetection
 					(Remote.gitconfig remote)
 				return $ Just (t, info, go remote sd)
 			, do
+				qp <- liftAnnex $ coreQuotePath <$> Annex.getGitConfig
 				debug [ "Skipping unnecessary transfer:",
-					describeTransfer t info ]
+					describeTransfer qp t info ]
 				void $ removeTransfer t
 				finishedTransfer t (Just info)
 				return Nothing
@@ -241,9 +243,11 @@ finishedTransfer t (Just info)
 				Later (transferKey t) (associatedFile info) Upload
 	| otherwise = dodrops True
   where
-	dodrops fromhere = handleDrops
-		("drop wanted after " ++ describeTransfer t info)
-		fromhere (transferKey t) (associatedFile info) []
+	dodrops fromhere = do
+		qp <- liftAnnex $ coreQuotePath <$> Annex.getGitConfig
+		handleDrops
+			("drop wanted after " ++ describeTransfer qp t info)
+			fromhere (transferKey t) (associatedFile info) []
 finishedTransfer _ _ = noop
 
 {- Pause a running transfer. -}

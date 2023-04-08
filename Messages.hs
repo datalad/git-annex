@@ -1,6 +1,6 @@
 {- git-annex output messages
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -62,7 +62,6 @@ import Types.Messages
 import Types.ActionItem
 import Types.Concurrency
 import Types.Command (StartMessage(..), SeekInput)
-import Types.Transfer (transferKey)
 import Messages.Internal
 import Messages.Concurrent
 import Annex.Debug
@@ -76,11 +75,13 @@ showStart command file si = outputMessage json $
   where
 	json = JSON.start command (Just file) Nothing si
 
-showStartKey :: String -> Key -> ActionItem -> SeekInput -> Annex ()
-showStartKey command key ai si = outputMessage json $
-	encodeBS command <> " " <> actionItemDesc ai <> " "
+showStartActionItem :: String -> ActionItem -> SeekInput -> Annex ()
+showStartActionItem command ai si = do
+	qp <- coreQuotePath <$> Annex.getGitConfig
+	outputMessage json $
+		encodeBS command <> " " <> actionItemDesc qp ai <> " "
   where
-	json = JSON.start command (actionItemFile ai) (Just key) si
+	json = JSON.start command (actionItemFile ai) (actionItemKey ai) si
 
 showStartOther :: String -> Maybe String -> SeekInput -> Annex ()
 showStartOther command mdesc si = outputMessage json $ encodeBS $
@@ -90,11 +91,11 @@ showStartOther command mdesc si = outputMessage json $ encodeBS $
 
 showStartMessage :: StartMessage -> Annex ()
 showStartMessage (StartMessage command ai si) = case ai of
-	ActionItemAssociatedFile _ k -> showStartKey command k ai si
-	ActionItemKey k -> showStartKey command k ai si
-	ActionItemBranchFilePath _ k -> showStartKey command k ai si
-	ActionItemFailedTransfer t _ -> showStartKey command (transferKey t) ai si
-	ActionItemTreeFile file -> showStart command file si
+	ActionItemAssociatedFile _ _ -> showStartActionItem command ai si
+	ActionItemKey _ -> showStartActionItem command ai si
+	ActionItemBranchFilePath _ _ -> showStartActionItem command ai si
+	ActionItemFailedTransfer _ _ -> showStartActionItem command ai si
+	ActionItemTreeFile _ -> showStartActionItem command ai si
 	ActionItemOther msg -> showStartOther command msg si
 	OnlyActionOn _ ai' -> showStartMessage (StartMessage command ai' si)
 showStartMessage (StartUsualMessages command ai si) = do
@@ -235,7 +236,7 @@ showFullJSON v = withMessageState $ bufferJSON (JSON.complete v)
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's
  - a complete JSON document.
- - This is only needed when showStart and showEndOk is not used.
+ - This is only needed when showStart* and showEndOk is not used.
  -}
 showCustom :: String -> SeekInput -> Annex Bool -> Annex ()
 showCustom command si a = do

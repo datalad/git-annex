@@ -455,15 +455,16 @@ transfer_list = stat desc $ nojson $ lift $ do
 	uuidmap <- Remote.remoteMap id
 	ts <- getTransfers
 	maybeShowJSON $ JSONChunk [(desc, V.fromList $ map (uncurry jsonify) ts)]
+	qp <- coreQuotePath <$> Annex.getGitConfig
 	return $ if null ts
 		then "none"
 		else multiLine $
-			map (uncurry $ line uuidmap) $ sort ts
+			map (uncurry $ line qp uuidmap) $ sort ts
   where
 	desc = "transfers in progress"
-	line uuidmap t i = unwords
+	line qp uuidmap t i = unwords
 		[ fromRawFilePath (formatDirection (transferDirection t)) ++ "ing"
-		, fromRawFilePath $ actionItemDesc $ mkActionItem
+		, fromRawFilePath $ actionItemDesc qp $ mkActionItem
 			(transferKey t, associatedFile i)
 		, if transferDirection t == Upload then "to" else "from"
 		, maybe (fromUUID $ transferUUID t) Remote.name $

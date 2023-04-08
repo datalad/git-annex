@@ -32,6 +32,7 @@ import Git.Types
 import Git.ConfigTypes
 import Git.Remote (isRemoteKey, remoteKeyToRemoteName)
 import Git.Branch (CommitMode(..))
+import Git.Filename (QuotePath(..))
 import Utility.DataUnits
 import Config.Cost
 import Types.UUID
@@ -140,6 +141,7 @@ data GitConfig = GitConfig
 	, annexSupportUnlocked :: Bool
 	, coreSymlinks :: Bool
 	, coreSharedRepository :: SharedRepository
+	, coreQuotePath :: QuotePath
 	, receiveDenyCurrentBranch :: DenyCurrentBranch
 	, gcryptId :: Maybe String
 	, gpgCmd :: GpgCmd
@@ -250,6 +252,7 @@ extractGitConfig configsource r = GitConfig
 	, annexSupportUnlocked = getbool (annexConfig "supportunlocked") True
 	, coreSymlinks = getbool "core.symlinks" True
 	, coreSharedRepository = getSharedRepository r
+	, coreQuotePath = QuotePath (getbool "core.quotepath" True)
 	, receiveDenyCurrentBranch = getDenyCurrentBranch r
 	, gcryptId = getmaybe "core.gcrypt-id"
 	, gpgCmd = mkGpgCmd (getmaybe "gpg.program")

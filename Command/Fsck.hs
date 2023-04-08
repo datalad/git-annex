@@ -167,7 +167,8 @@ performRemote key afile backend numcopies remote =
 			Nothing -> go True Nothing
 			Just (Right verification) -> go True (Just (tmpfile, verification))
 			Just (Left _) -> do
-				warning (decodeBS (actionItemDesc ai) ++ ": failed to download file from remote")
+				qp <- coreQuotePath <$> Annex.getGitConfig
+				warning (decodeBS (actionItemDesc qp ai) ++ ": failed to download file from remote")
 				void $ go True Nothing
 				return False
 	dispatch (Right False) = go False Nothing
@@ -350,9 +351,10 @@ verifyLocationLog' key ai present u updatestatus = do
 			return True
 		(False, True) -> do
 			fix InfoMissing
+			qp <- coreQuotePath <$> Annex.getGitConfig
 			warning $
 				"** Based on the location log, " ++
-				decodeBS (actionItemDesc ai) ++
+				decodeBS (actionItemDesc qp ai) ++
 				"\n** was expected to be present, " ++
 				"but its content is missing."
 			return False
@@ -389,10 +391,11 @@ verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = case afile of
 		if null missinglocs
 			then return True
 			else do
+				qp <- coreQuotePath <$> Annex.getGitConfig
 				missingrequired <- Remote.prettyPrintUUIDs "missingrequired" missinglocs
 				warning $
 					"** Required content " ++
-					decodeBS (actionItemDesc ai) ++
+					decodeBS (actionItemDesc qp ai) ++
 					" is missing from these repositories:\n" ++
 					missingrequired
 				return False
@@ -465,8 +468,9 @@ checkKeySizeOr bad key file ai = case fromKey keySize key of
 		return same
 	badsize a b = do
 		msg <- bad key
+		qp <- coreQuotePath <$> Annex.getGitConfig
 		warning $ concat
-			[ decodeBS (actionItemDesc ai)
+			[ decodeBS (actionItemDesc qp ai)
 			, ": Bad file size ("
 			, compareSizes storageUnits True a b
 			, "); "
@@ -483,8 +487,9 @@ checkKeyUpgrade :: Backend -> Key -> ActionItem -> AssociatedFile -> Annex Bool
 checkKeyUpgrade backend key ai (AssociatedFile (Just file)) =
 	case Types.Backend.canUpgradeKey backend of
 		Just a | a key -> do
+			qp <- coreQuotePath <$> Annex.getGitConfig
 			warning $ concat
-				[ decodeBS (actionItemDesc ai)
+				[ decodeBS (actionItemDesc qp ai)
 				, ": Can be upgraded to an improved key format. "
 				, "You can do so by running: git annex migrate --backend="
 				, decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " "
@@ -534,8 +539,9 @@ checkBackendOr bad backend key file ai =
 			ok <- verifier key file
 			unless ok $ do
 				msg <- bad key
+				qp <- coreQuotePath <$> Annex.getGitConfig
 				warning $ concat
-					[ decodeBS (actionItemDesc ai)
+					[ decodeBS (actionItemDesc qp ai)
 					, ": Bad file content; "
 					, msg
 					]
@@ -562,8 +568,9 @@ checkInodeCache key content mic ai = case mic of
 				withTSDelta (liftIO . genInodeCache content) >>= \case
 					Nothing -> noop
 					Just ic' -> whenM (compareInodeCaches ic ic') $ do
+						qp <- coreQuotePath <$> Annex.getGitConfig
 						warning $ concat
-							[ decodeBS (actionItemDesc ai)
+							[ decodeBS (actionItemDesc qp ai)
 							, ": Stale or missing inode cache; updating."
 							]
 						Database.Keys.addInodeCaches key [ic]

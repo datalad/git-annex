@@ -15,6 +15,7 @@ import Logs.Transfer
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import qualified Remote
+import qualified Annex
 import Annex.Perms
 
 import Control.Concurrent
@@ -62,7 +63,8 @@ onAdd file = case parseTransferFile file of
   where
 	go _ Nothing = noop -- transfer already finished
 	go t (Just info) = do
-		debug [ "transfer starting:", describeTransfer t info ]
+		qp <- liftAnnex $ coreQuotePath <$> Annex.getGitConfig
+		debug [ "transfer starting:", describeTransfer qp t info ]
 		r <- liftAnnex $ Remote.remoteFromUUID $ transferUUID t
 		updateTransferInfo t info { transferRemote = r }
 
