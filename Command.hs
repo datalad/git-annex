@@ -25,7 +25,7 @@ import qualified Git
 import Annex.Init
 import Utility.Daemon
 import Types.Transfer
-import Types.ActionItem
+import Types.ActionItem as ReExported
 import Types.WorkerPool as ReExported
 import Remote.List
 

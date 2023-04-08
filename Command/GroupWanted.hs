@@ -27,6 +27,6 @@ start (g:[]) = startingCustomOutput (ActionItemOther Nothing) $
 start ps@(g:expr:[]) = startingUsualMessages "groupwanted" ai si $
 	performSet groupPreferredContentSet expr (toGroup g)
   where
-	ai = ActionItemOther (Just g)
+	ai = ActionItemOther (Just (UnquotedString g))
 	si = SeekInput ps
 start _ = giveup "Specify a group."

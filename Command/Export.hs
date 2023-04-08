@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2017-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -413,13 +413,15 @@ startMoveToTempName r db f ek =
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
 	tmploc = exportTempName ek
-	ai = ActionItemOther $ Just $ fromRawFilePath f' ++ " -> " ++ fromRawFilePath (fromExportLocation tmploc)
+	ai = ActionItemOther $ Just $ 
+		QuotedPath f' <> " -> " <> QuotedPath (fromExportLocation tmploc)
 	si = SeekInput []
 
 startMoveFromTempName :: Remote -> ExportHandle -> Key -> TopFilePath -> CommandStart
 startMoveFromTempName r db ek f = do
 	let tmploc = exportTempName ek
-	let ai = ActionItemOther (Just (fromRawFilePath (fromExportLocation tmploc) ++ " -> " ++ fromRawFilePath f'))
+	let ai = ActionItemOther $ Just $
+		QuotedPath (fromExportLocation tmploc) <> " -> " <> QuotedPath f'
 	stopUnless (liftIO $ elem tmploc <$> getExportedLocation db ek) $
 		starting ("rename " ++ name r) ai si $
 			performRename r db ek tmploc loc

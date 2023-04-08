@@ -12,14 +12,6 @@ working on or in messages.
 pipeable, and so should have raw filenames. Note that `find` actually
 escapes such filenames when outputting to a terminal, but not a pipe.
 
-It's possible that keys can also contain an escape sequence, eg in the
-extension of a SHA-E key. So commands like `git-annex lookupkey` 
-and `git-annex find` that output keys might need to handle
-that, when outputting to a terminal?
-
-`git-annex metadata` could also contain an escape sequence. So could 
-`git-annex config --get`.
-
 git porcelain also accepts the escaped form of files as input, necessary for
 round-tripping though. git-annex currently does not. (git plumbing doesn't
 either)
@@ -40,3 +32,30 @@ behave more like git.
 > Note that core.quotePath controls whether git quotes unicode characters
 > (by default it does), so once this gets implemented, some users may want
 > to set that config to false. --[[Joey]]
+
+> Update: Most git-annex commands now quote filenames, due to work on
+> ActionItem display. `git-annex find`, `git-annex info $file`,
+> and everywhere filenames get
+> embedded in error messages, warnings, info messages, still need to be done.
+
+----
+
+Also: 
+It's possible that keys can also contain an escape sequence, eg in the
+extension of a SHA-E key. So commands like `git-annex lookupkey` 
+and `git-annex find` that output keys might need to handle
+that, when outputting to a terminal?
+
+Also:
+`git-annex metadata` could also contain an escape sequence. So could
+`git-annex config --get` and `git-annex schedule` and `git-annex wanted`
+and `git-annex required` and `git-annex group`. And so could the
+description of a repository. It seems that git-annex could just filter out
+control characters from all of these, since they are not filenames, and
+any control characters in them are surely malicious.
+
+Also: git-annex importfeed displays urls from the feed, and should filter
+out control characters. If such an url even can be parsed?
+
+Also: git-annex initremote with autoenable may be able to cause a remote
+with a malicious name to be set up?

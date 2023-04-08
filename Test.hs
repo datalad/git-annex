@@ -151,7 +151,7 @@ tests n crippledfilesystem adjustedbranchok opts =
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
-	[ testProperty "prop_encode_decode_roundtrip" Git.Filename.prop_encode_decode_roundtrip
+	[ testProperty "prop_quote_unquote_roundtrip" Git.Filename.prop_quote_unquote_roundtrip
 	, testProperty "prop_encode_c_decode_c_roundtrip" Utility.Format.prop_encode_c_decode_c_roundtrip
 	, testProperty "prop_isomorphic_key_encode" Key.prop_isomorphic_key_encode
 	, testProperty "prop_isomorphic_shellEscape" Utility.ShellEscape.prop_isomorphic_shellEscape

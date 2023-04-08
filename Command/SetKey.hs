@@ -21,10 +21,11 @@ seek = withWords (commandAction . start)
 
 start :: [String] -> CommandStart
 start ps@(keyname:file:[]) = starting "setkey" ai si $
-	perform (toRawFilePath file) (keyOpt keyname)
+	perform file' (keyOpt keyname)
   where
-	ai = ActionItemOther (Just file)
+	ai = ActionItemOther (Just (QuotedPath file'))
 	si = SeekInput ps
+	file' = toRawFilePath file
 start _ = giveup "specify a key and a content file"
 
 keyOpt :: String -> Key

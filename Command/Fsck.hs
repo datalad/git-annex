@@ -42,7 +42,6 @@ import qualified Database.Keys
 import qualified Database.Fsck as FsckDb
 import Types.CleanupActions
 import Types.Key
-import Types.ActionItem
 import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock.POSIX

@@ -89,6 +89,12 @@ showStartOther command mdesc si = outputMessage json $ encodeBS $
   where
 	json = JSON.start command Nothing Nothing si
 
+showStartNothing :: String -> SeekInput -> Annex ()
+showStartNothing command si = outputMessage json $ encodeBS $
+	command ++ " "
+  where
+	json = JSON.start command Nothing Nothing si
+
 showStartMessage :: StartMessage -> Annex ()
 showStartMessage (StartMessage command ai si) = case ai of
 	ActionItemAssociatedFile _ _ -> showStartActionItem command ai si
@@ -96,7 +102,8 @@ showStartMessage (StartMessage command ai si) = case ai of
 	ActionItemBranchFilePath _ _ -> showStartActionItem command ai si
 	ActionItemFailedTransfer _ _ -> showStartActionItem command ai si
 	ActionItemTreeFile _ -> showStartActionItem command ai si
-	ActionItemOther msg -> showStartOther command msg si
+	ActionItemOther Nothing -> showStartNothing command si
+	ActionItemOther _ -> showStartActionItem command ai si
 	OnlyActionOn _ ai' -> showStartMessage (StartMessage command ai' si)
 showStartMessage (StartUsualMessages command ai si) = do
 	outputType <$> Annex.getState Annex.output >>= \case

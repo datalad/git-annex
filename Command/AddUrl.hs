@@ -402,7 +402,7 @@ startingAddUrl si url o p = starting "addurl" ai si $ do
 	-- available and get added to it. That's ok, this is only
 	-- used to prevent two threads running concurrently when that would
 	-- likely fail.
-	ai = OnlyActionOn urlkey (ActionItemOther (Just url))
+	ai = OnlyActionOn urlkey (ActionItemOther (Just (UnquotedString url)))
 	urlkey = Backend.URL.fromUrl url Nothing
 
 showDestinationFile :: FilePath -> Annex ()

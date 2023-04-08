@@ -45,7 +45,7 @@ start :: FilePath -> CommandStart
 start p = starting "undo" ai si $
 	perform p
   where
-	ai = ActionItemOther (Just p)
+	ai = ActionItemOther (Just (QuotedPath (toRawFilePath p)))
 	si = SeekInput [p]
 
 perform :: FilePath -> CommandPerform

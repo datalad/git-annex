@@ -31,7 +31,7 @@ start = parse
 			performGet u
 	parse ps@(name:expr:[]) = do
 		u <- Remote.nameToUUID name
-		let ai = ActionItemOther (Just name)
+		let ai = ActionItemOther (Just (UnquotedString name))
 		let si = SeekInput ps
 		startingUsualMessages "schedule" ai si $
 			performSet expr u

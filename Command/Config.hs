@@ -61,7 +61,7 @@ seek (SetConfig ck@(ConfigKey name) val) = checkIsGlobalConfig ck $ commandActio
 			setConfig ck (fromConfigValue val)
 		next $ return True
   where
-	ai = ActionItemOther (Just (fromConfigValue val))
+	ai = ActionItemOther (Just (UnquotedString (fromConfigValue val)))
 	si = SeekInput [decodeBS name]
 seek (UnsetConfig ck@(ConfigKey name)) = checkIsGlobalConfig ck $ commandAction $
 	startingUsualMessages (decodeBS name) ai si $ do

@@ -48,7 +48,7 @@ mergeAnnexBranch = starting "merge" ai si $ do
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
 	next $ return True
   where
-	ai = ActionItemOther (Just (fromRef Annex.Branch.name))
+	ai = ActionItemOther (Just (UnquotedString (fromRef Annex.Branch.name)))
 	si = SeekInput []
 
 mergeSyncedBranch :: MergeOptions -> CommandStart
@@ -63,5 +63,5 @@ mergeBranch o r = starting "merge" ai si $ do
 	let so = def { notOnlyAnnexOption = True }
 	next $ merge currbranch mc so Git.Branch.ManualCommit r
   where
-	ai = ActionItemOther (Just (Git.fromRef r))
+	ai = ActionItemOther (Just (UnquotedString (Git.fromRef r)))
 	si = SeekInput []

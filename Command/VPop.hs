@@ -48,6 +48,6 @@ start ps = go =<< currentView
 
 	num = fromMaybe 1 $ readish =<< headMaybe ps 
 	
-	ai = ActionItemOther (Just $ show num)
+	ai = ActionItemOther (Just $ UnquotedString $ show num)
 	
 	si = SeekInput ps

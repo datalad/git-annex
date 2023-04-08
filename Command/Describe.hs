@@ -26,7 +26,7 @@ start (name:description) | not (null description) = do
 	starting "describe" ai si $
 		perform u $ unwords description
   where
-	ai = ActionItemOther (Just name)
+	ai = ActionItemOther (Just (UnquotedString name))
 	si = SeekInput [name]
 start _ = giveup "Specify a repository and a description."	
 

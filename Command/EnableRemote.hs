@@ -71,7 +71,7 @@ startNormalRemote name restparams r
 	| otherwise = giveup $
 		"That is a normal git remote; passing these parameters does not make sense: " ++ unwords restparams
   where
-	ai = ActionItemOther (Just name)
+	ai = ActionItemOther (Just (UnquotedString name))
 	si = SeekInput [name]
 
 startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> [(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> CommandStart
@@ -92,7 +92,7 @@ startSpecialRemote name config ((u, c, mcu):[]) =
 			=<< Remote.byUUID u
 		performSpecialRemote t u c fullconfig gc mcu
   where
-	ai = ActionItemOther (Just name)
+	ai = ActionItemOther (Just (UnquotedString name))
 	si = SeekInput [name]
 startSpecialRemote _ _ _ =
 	giveup "Multiple remotes have that name. Either use git-annex renameremote to rename them, or specify the uuid of the remote to enable."

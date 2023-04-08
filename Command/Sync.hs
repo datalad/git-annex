@@ -392,7 +392,7 @@ mergeLocal' mergeconfig o currbranch@(Just branch, _) =
 	needMerge currbranch branch >>= \case
 		Nothing -> stop
 		Just syncbranch -> do
-			let ai = ActionItemOther (Just $ Git.Ref.describe syncbranch)
+			let ai = ActionItemOther (Just $ UnquotedString $ Git.Ref.describe syncbranch)
 			let si = SeekInput []
 			starting "merge" ai si $
 				next $ merge currbranch mergeconfig o Git.Branch.ManualCommit syncbranch
@@ -400,7 +400,7 @@ mergeLocal' _ _ currbranch@(Nothing, _) = inRepo Git.Branch.currentUnsafe >>= \c
 	Just branch -> needMerge currbranch branch >>= \case
 		Nothing -> stop
 		Just syncbranch -> do
-			let ai = ActionItemOther (Just $ Git.Ref.describe syncbranch)
+			let ai = ActionItemOther (Just $ UnquotedString $ Git.Ref.describe syncbranch)
 			let si = SeekInput []
 			starting "merge" ai si $ do
 				warning $ "There are no commits yet to branch " ++ Git.fromRef branch ++ ", so cannot merge " ++ Git.fromRef syncbranch ++ " into it."
@@ -513,7 +513,7 @@ pullRemote o mergeconfig remote branch = stopUnless (pure $ pullOption o && want
 				, Just $ Param $ Remote.name remote
 				] ++ map Param bs
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
-	ai = ActionItemOther (Just (Remote.name remote))
+	ai = ActionItemOther (Just (UnquotedString (Remote.name remote)))
 	si = SeekInput []
 
 importRemote :: Bool -> SyncOptions -> Remote -> CurrBranch -> CommandSeek
@@ -559,7 +559,7 @@ pullThirdPartyPopulated o remote
 		Nothing -> next $ return False
 	go Nothing = next $ return True -- unchanged from before
 
-	ai = ActionItemOther (Just (Remote.name remote))
+	ai = ActionItemOther (Just (UnquotedString (Remote.name remote)))
 	si = SeekInput []
 	
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
@@ -607,7 +607,7 @@ pushRemote o remote (Just branch, _) = do
 					warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
 					return ok
   where
-	ai = ActionItemOther (Just (Remote.name remote))
+	ai = ActionItemOther (Just (UnquotedString (Remote.name remote)))
 	si = SeekInput []
 	gc = Remote.gitconfig remote
 	needpush mainbranch
@@ -1003,7 +1003,7 @@ cleanupRemote remote (Just b, _) =
 				Git.Ref.base $ Annex.Branch.name
 			]
   where
-	ai = ActionItemOther (Just (Remote.name remote))
+	ai = ActionItemOther (Just (UnquotedString (Remote.name remote)))
 	si = SeekInput []
 
 shouldSyncContent :: SyncOptions -> Annex Bool

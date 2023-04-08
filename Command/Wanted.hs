@@ -39,7 +39,7 @@ cmd' name desc getter setter = noMessages $
 	start ps@(rname:expr:[]) = do
 		u <- Remote.nameToUUID rname
 		let si = SeekInput ps
-		let ai = ActionItemOther (Just rname)
+		let ai = ActionItemOther (Just (UnquotedString rname))
 		startingUsualMessages name ai si $
 			performSet setter expr u
 	start _ = giveup "Specify a repository."

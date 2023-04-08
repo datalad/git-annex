@@ -30,7 +30,7 @@ trustCommand c level ps = withStrings (commandAction . start) ps
 	start name = do
 		u <- Remote.nameToUUID name
 		let si = SeekInput [name]
-		starting c (ActionItemOther (Just name)) si (perform name u)
+		starting c (ActionItemOther (Just (UnquotedString name))) si (perform name u)
 	perform name uuid = do
 		when (level >= Trusted) $
 			unlessM (Annex.getRead Annex.force) $

@@ -137,7 +137,7 @@ parserLsTree long = case long of
 		-- sha
 		<*> (Ref <$> A8.takeTill A8.isSpace)
 
-	fileparser = asTopFilePath . Git.Filename.decode <$> A.takeByteString
+	fileparser = asTopFilePath . Git.Filename.unquote <$> A.takeByteString
 
 	sizeparser = fmap Just A8.decimal
 

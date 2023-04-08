@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.Init where
 
 import Command
@@ -62,7 +64,7 @@ start os
 		starting "init" (ActionItemOther (Just "autoenable")) si $
 			performAutoEnableOnly
 	| otherwise = 
-		starting "init" (ActionItemOther (Just $ initDesc os)) si $
+		starting "init" (ActionItemOther (Just $ UnquotedString $ initDesc os)) si $
 			perform os
   where
 	si = SeekInput []

@@ -101,7 +101,7 @@ linkRemote :: RemoteName -> CommandStart
 linkRemote remotename = starting "p2p link" ai si $
 	next promptaddr
   where
-	ai = ActionItemOther (Just remotename)
+	ai = ActionItemOther (Just (UnquotedString remotename))
 	si = SeekInput []
 	promptaddr = do
 		liftIO $ putStrLn ""
@@ -131,7 +131,7 @@ startPairing remotename addrs = ifM (liftIO Wormhole.isInstalled)
 	, giveup "Magic Wormhole is not installed, and is needed for pairing. Install it from your distribution or from https://github.com/warner/magic-wormhole/"
 	)
   where
-	ai = ActionItemOther (Just remotename)
+	ai = ActionItemOther (Just (UnquotedString remotename))
 	si = SeekInput []
 
 performPairing :: RemoteName -> [P2PAddress] -> CommandPerform

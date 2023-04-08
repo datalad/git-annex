@@ -503,7 +503,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			in return $ Left $ Just (loc, v)
 		[] -> do
 			job <- liftIO $ newEmptyTMVarIO
-			let ai = ActionItemOther (Just (fromRawFilePath (fromImportLocation loc)))
+			let ai = ActionItemOther (Just (QuotedPath (fromImportLocation loc)))
 			let si = SeekInput []
 			let importaction = starting ("import " ++ Remote.name remote) ai si $ do
 				when oldversion $

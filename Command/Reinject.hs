@@ -56,7 +56,7 @@ startSrcDest ps@(src:dest:[])
 			( perform src' key
 			, giveup $ src ++ " does not have expected content of " ++ dest
 			)
-	ai = ActionItemOther (Just src)
+	ai = ActionItemOther (Just (QuotedPath src'))
 	si = SeekInput ps
 startSrcDest _ = giveup "specify a src file and a dest file"
 
@@ -73,7 +73,7 @@ startKnown src = notAnnexed src' $
   where
 	src' = toRawFilePath src
 	ks = KeySource src' src' Nothing
-	ai = ActionItemOther (Just src)
+	ai = ActionItemOther (Just (QuotedPath src'))
 	si = SeekInput [src]
 
 notAnnexed :: RawFilePath -> CommandStart -> CommandStart

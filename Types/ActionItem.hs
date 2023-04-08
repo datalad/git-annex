@@ -7,7 +7,10 @@
 
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 
-module Types.ActionItem where
+module Types.ActionItem (
+	module Types.ActionItem,
+	Git.Filename.StringContainingQuotedPath(..),
+) where
 
 import Key
 import Types.Transfer
@@ -15,7 +18,6 @@ import Git.FilePath
 import qualified Git.Filename
 import Utility.FileSystemEncoding
 
-import Data.Maybe
 import qualified Data.ByteString as S
 
 data ActionItem 
@@ -24,7 +26,7 @@ data ActionItem
 	| ActionItemBranchFilePath BranchFilePath Key
 	| ActionItemFailedTransfer Transfer TransferInfo
 	| ActionItemTreeFile RawFilePath
-	| ActionItemOther (Maybe String)
+	| ActionItemOther (Maybe Git.Filename.StringContainingQuotedPath)
 	-- Use to avoid more than one thread concurrently processing the
 	-- same Key.
 	| OnlyActionOn Key ActionItem
@@ -59,15 +61,16 @@ instance MkActionItem (Transfer, TransferInfo) where
 
 actionItemDesc :: Git.Filename.QuotePath -> ActionItem -> S.ByteString
 actionItemDesc qp (ActionItemAssociatedFile (AssociatedFile (Just f)) _) = 
-	Git.Filename.encode qp f
+	Git.Filename.quote qp f
 actionItemDesc _ (ActionItemAssociatedFile (AssociatedFile Nothing) k) = 
 	serializeKey' k
 actionItemDesc _ (ActionItemKey k) = serializeKey' k
 actionItemDesc qp (ActionItemBranchFilePath bfp _) = descBranchFilePath qp bfp
 actionItemDesc qp (ActionItemFailedTransfer t i) = actionItemDesc qp $
 	ActionItemAssociatedFile (associatedFile i) (transferKey t)
-actionItemDesc qp (ActionItemTreeFile f) = Git.Filename.encode qp f
-actionItemDesc _ (ActionItemOther s) = encodeBS (fromMaybe "" s)
+actionItemDesc qp (ActionItemTreeFile f) = Git.Filename.quote qp f
+actionItemDesc _ (ActionItemOther Nothing) = mempty
+actionItemDesc qp (ActionItemOther (Just v)) = Git.Filename.quote qp v
 actionItemDesc qp (OnlyActionOn _ ai) = actionItemDesc qp ai
 
 actionItemKey :: ActionItem -> Maybe Key

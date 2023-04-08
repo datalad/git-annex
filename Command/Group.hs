@@ -27,7 +27,7 @@ start ps@(name:g:[]) = do
 	startingUsualMessages "group" ai si $
 		setGroup u (toGroup g)
   where
-	ai = ActionItemOther (Just name)
+	ai = ActionItemOther (Just (UnquotedString name))
 	si = SeekInput ps
 start (name:[]) = do
 	u <- Remote.nameToUUID name

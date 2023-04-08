@@ -35,5 +35,5 @@ startSet n = startingUsualMessages "mincopies" ai si $ do
 	setGlobalMinCopies $ configuredMinCopies n
 	next $ return True
   where
-	ai = ActionItemOther (Just $ show n)
+	ai = ActionItemOther (Just $ UnquotedString $ show n)
 	si = SeekInput [show n]

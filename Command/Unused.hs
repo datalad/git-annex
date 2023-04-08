@@ -73,7 +73,7 @@ start o = do
 		Just "." -> (".", checkUnused refspec)
 		Just "here" -> (".", checkUnused refspec)
 		Just n -> (n, checkRemoteUnused n refspec)
-	starting "unused" (ActionItemOther (Just name)) (SeekInput []) perform
+	starting "unused" (ActionItemOther (Just (UnquotedString name))) (SeekInput []) perform
 
 checkUnused :: RefSpec -> CommandPerform
 checkUnused refspec = chain 0
@@ -337,6 +337,6 @@ startUnused message unused badunused tmpunused maps n = search
 		case M.lookup n m of
 			Nothing -> search rest
 			Just key -> starting message
-				(ActionItemOther $ Just $ show n)
+				(ActionItemOther $ Just $ UnquotedString $ show n)
 				(SeekInput [])
 				(a key)

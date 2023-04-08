@@ -43,7 +43,6 @@ import Logs.Transfer
 import Types.Key
 import Types.TrustLevel
 import Types.FileMatcher
-import Types.ActionItem
 import qualified Limit
 import Messages.JSON (DualDisp(..), ObjectMap(..))
 import Annex.BloomFilter

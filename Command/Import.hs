@@ -351,7 +351,7 @@ listContents remote importtreeconfig ci tvar = starting "list" ai si $
 		liftIO $ atomically $ writeTVar tvar importable
 		next $ return True
   where
-	ai = ActionItemOther (Just (Remote.name remote))
+	ai = ActionItemOther (Just (UnquotedString (Remote.name remote)))
 	si = SeekInput []
 
 listContents' :: Remote -> ImportTreeConfig -> CheckGitIgnore -> (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, Remote.ByteSize)) -> Annex a) -> Annex a
@@ -373,7 +373,7 @@ commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig
 		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable
 		next $ updateremotetrackingbranch importcommit
   where
-	ai = ActionItemOther (Just $ fromRef $ fromRemoteTrackingBranch tb)
+	ai = ActionItemOther (Just $ UnquotedString $ fromRef $ fromRemoteTrackingBranch tb)
 	si = SeekInput []
 	-- Update the tracking branch. Done even when there
 	-- is nothing new to import, to make sure it exists.

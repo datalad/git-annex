@@ -63,7 +63,7 @@ start' a o (si, (key, url)) =
 	starting "registerurl" ai si $
 		perform a o key url
   where
-	ai = ActionItemOther (Just url)
+	ai = ActionItemOther (Just (UnquotedString url))
 
 perform :: (Remote -> Key -> URLString -> Annex ()) -> RegisterUrlOptions -> Key -> URLString -> CommandPerform
 perform a o key url = do

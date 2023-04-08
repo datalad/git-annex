@@ -133,6 +133,6 @@ parserDiffRaw f = DiffTreeItem
 	<*> (maybe (fail "bad dstsha") return . extractSha =<< nextword)
 	<* A8.char ' '
 	<*> A.takeByteString
-	<*> pure (asTopFilePath $ fromInternalGitPath $ Git.Filename.decode f)
+	<*> pure (asTopFilePath $ fromInternalGitPath $ Git.Filename.unquote f)
   where
 	nextword = A8.takeTill (== ' ')

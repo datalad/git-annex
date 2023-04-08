@@ -79,7 +79,7 @@ start (Expire expire) noact actlog descs u =
 			return $ "last active: " ++ fromDuration d ++ " ago"
 		_  -> return "no activity"
 	desc = fromUUID u ++ " " ++ fromUUIDDesc (fromMaybe mempty (M.lookup u descs))
-	ai = ActionItemOther (Just desc)
+	ai = ActionItemOther (Just (UnquotedString desc))
 	si = SeekInput []
 	notexpired ent = case ent of
 		Unknown -> False

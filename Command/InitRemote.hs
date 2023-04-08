@@ -81,7 +81,7 @@ start o (name:ws) = ifM (not . null <$> findExisting name)
 			if whatElse o
 				then startingCustomOutput (ActionItemOther Nothing) $
 					describeOtherParamsFor c t
-				else starting "initremote" (ActionItemOther (Just name)) si $
+				else starting "initremote" (ActionItemOther (Just (UnquotedString name))) si $
 					perform t name c o
 		)
 	)

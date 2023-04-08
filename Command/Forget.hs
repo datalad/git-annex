@@ -42,7 +42,7 @@ start o = starting "forget" ai si $ do
 		else basets
 	perform ts =<< Annex.getRead Annex.force
   where
-	ai = ActionItemOther (Just (fromRef Branch.name))
+	ai = ActionItemOther (Just (UnquotedString (fromRef Branch.name)))
 	si = SeekInput []
 
 perform :: Transitions -> Bool -> CommandPerform

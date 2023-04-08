@@ -49,5 +49,5 @@ startSet n = startingUsualMessages "numcopies" ai si $ do
 	setGlobalNumCopies $ configuredNumCopies n
 	next $ return True
   where
-	ai = ActionItemOther (Just $ show n)
+	ai = ActionItemOther (Just $ UnquotedString $ show n)
 	si = SeekInput [show n]

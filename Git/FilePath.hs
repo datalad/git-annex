@@ -5,7 +5,7 @@
  - top of the repository even when run in a subdirectory. Adding some
  - types helps keep that straight.
  -
- - Copyright 2012-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -51,7 +51,7 @@ data BranchFilePath = BranchFilePath Ref TopFilePath
 {- Git uses the branch:file form to refer to a BranchFilePath -}
 descBranchFilePath :: Filename.QuotePath -> BranchFilePath -> S.ByteString
 descBranchFilePath qp (BranchFilePath b f) =
-	fromRef' b <> ":" <> Filename.encode qp (getTopFilePath f)
+	fromRef' b <> ":" <> Filename.quote qp (getTopFilePath f)
 
 {- Path to a TopFilePath, within the provided git repo. -}
 fromTopFilePath :: TopFilePath -> Git.Repo -> RawFilePath
