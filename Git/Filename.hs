@@ -70,20 +70,20 @@ instance Quoteable RawFilePath where
 data StringContainingQuotedPath
 	= UnquotedString String 
 	| QuotedPath RawFilePath
-	| StringContainingQuotedPathMulti [StringContainingQuotedPath]
+	| StringContainingQuotedPath :+: StringContainingQuotedPath
 	deriving (Show, Eq)
 
 instance Quoteable StringContainingQuotedPath where
 	quote _ (UnquotedString s) = encodeBS s
 	quote qp (QuotedPath p) = quote qp p
-	quote qp (StringContainingQuotedPathMulti l) = S.concat (map (quote qp) l)
+	quote qp (a :+: b) = quote qp a <> quote qp b
 
 instance IsString StringContainingQuotedPath where
 	fromString = UnquotedString
 
 instance Sem.Semigroup StringContainingQuotedPath where
 	UnquotedString a <> UnquotedString b = UnquotedString (a <> b)
-	a <> b = StringContainingQuotedPathMulti [a, b]
+	a <> b = a :+: b
 
 instance Monoid StringContainingQuotedPath where
 	mempty = UnquotedString mempty
