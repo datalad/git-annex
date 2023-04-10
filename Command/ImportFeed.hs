@@ -81,7 +81,7 @@ seek o = do
 
 getFeed :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> URLString -> CommandSeek
 getFeed addunlockedmatcher opts cache url = do
-	showStartOther "importfeed" (Just url) (SeekInput [])
+	showStartMessage (StartMessage "importfeed" (ActionItemOther (Just (UnquotedString url))) (SeekInput []))
 	withTmpFile "feed" $ \tmpf h -> do
 		liftIO $ hClose h
 		ifM (downloadFeed url tmpf)
@@ -148,7 +148,7 @@ getCache :: Maybe String -> Annex Cache
 getCache opttemplate = ifM (Annex.getRead Annex.force)
 	( ret S.empty S.empty
 	, do
-		showStart "importfeed" "gathering known urls" (SeekInput [])
+		showStartMessage (StartMessage "importfeed" (ActionItemOther (Just "gathering known urls")) (SeekInput []))
 		(us, is) <- knownItems
 		showEndOk
 		ret (S.fromList us) (S.fromList is)
@@ -373,7 +373,7 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 			)
 
 	starturl u = unless started $
-		showStartOther "addurl" (Just u) (SeekInput [])
+		showStartMessage (StartMessage "addurl" (ActionItemOther (Just (UnquotedString u))) (SeekInput []))
 
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"

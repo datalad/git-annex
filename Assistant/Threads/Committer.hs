@@ -333,7 +333,7 @@ handleAdds lockdowndir havelsof largefilematcher delayadd cs = returnWhen (null 
 	  	ks = keySource ld
 		doadd = sanitycheck ks $ do
 			(mkey, _mcache) <- liftAnnex $ do
-				showStart "add" (keyFilename ks) (SeekInput [])
+				showStartMessage (StartMessage "add" (ActionItemOther (Just (QuotedPath (keyFilename ks)))) (SeekInput []))
 				ingest nullMeterUpdate (Just $ LockedDown lockdownconfig ks) Nothing
 			maybe (failedingest change) (done change $ fromRawFilePath $ keyFilename ks) mkey
 	addannexed' _ _ = return Nothing

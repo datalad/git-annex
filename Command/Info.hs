@@ -182,7 +182,7 @@ itemInfo o (si, p) = ifM (isdir (toRawFilePath p))
 
 noInfo :: String -> SeekInput -> String -> Annex ()
 noInfo s si msg = do
-	showStart "info" (encodeBS s) si
+	showStartMessage (StartMessage "info" (ActionItemOther (Just (UnquotedString s))) si)
 	showNote msg
 	showEndFail
 	Annex.incError

@@ -8,8 +8,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Messages (
-	showStart,
-	showStartOther,
 	showStartMessage,
 	showEndMessage,
 	StartMessage(..),
@@ -70,32 +68,6 @@ import Annex.Concurrent.Utility
 import qualified Messages.JSON as JSON
 import qualified Annex
 
-showStart :: String -> RawFilePath -> SeekInput -> Annex ()
-showStart command file si = outputMessage json $
-	encodeBS command <> " " <> file <> " "
-  where
-	json = JSON.start command (Just file) Nothing si
-
-showStartActionItem :: String -> ActionItem -> SeekInput -> Annex ()
-showStartActionItem command ai si = do
-	qp <- coreQuotePath <$> Annex.getGitConfig
-	outputMessage json $
-		encodeBS command <> " " <> actionItemDesc qp ai <> " "
-  where
-	json = JSON.start command (actionItemFile ai) (actionItemKey ai) si
-
-showStartOther :: String -> Maybe String -> SeekInput -> Annex ()
-showStartOther command mdesc si = outputMessage json $ encodeBS $
-	command ++ (maybe "" (" " ++) mdesc) ++ " "
-  where
-	json = JSON.start command Nothing Nothing si
-
-showStartNothing :: String -> SeekInput -> Annex ()
-showStartNothing command si = outputMessage json $ encodeBS $
-	command ++ " "
-  where
-	json = JSON.start command Nothing Nothing si
-
 showStartMessage :: StartMessage -> Annex ()
 showStartMessage (StartMessage command ai si) = case ai of
 	ActionItemAssociatedFile _ _ -> showStartActionItem command ai si
@@ -116,6 +88,20 @@ showStartMessage (CustomOutput _) =
 	outputType <$> Annex.getState Annex.output >>= \case
 		NormalOutput -> Annex.setOutput QuietOutput
 		_ -> noop
+
+showStartActionItem :: String -> ActionItem -> SeekInput -> Annex ()
+showStartActionItem command ai si = do
+	qp <- coreQuotePath <$> Annex.getGitConfig
+	outputMessage json $
+		encodeBS command <> " " <> actionItemDesc qp ai <> " "
+  where
+	json = JSON.start command (actionItemFile ai) (actionItemKey ai) si
+
+showStartNothing :: String -> SeekInput -> Annex ()
+showStartNothing command si = outputMessage json $ encodeBS $
+	command ++ " "
+  where
+	json = JSON.start command Nothing Nothing si
 
 -- Only show end result if the StartMessage is one that gets displayed.
 showEndMessage :: StartMessage -> Bool -> Annex ()

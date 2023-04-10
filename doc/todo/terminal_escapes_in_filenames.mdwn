@@ -54,14 +54,11 @@ description of a repository. It seems that git-annex could just filter out
 control characters from all of these, since they are not filenames, and
 any control characters in them are surely malicious.
 
-Also: git-annex importfeed displays urls from the feed, and should filter
-out control characters. If such an url even can be parsed?
-
 Also: git-annex initremote with autoenable may be able to cause a remote
 with a malicious name to be set up?
 
 Also: Any place that an exception is thrown with an attacker-controlled value.
-`giveup` has been made to filter out control characters, but that leave
+`giveup` has been made to filter out control characters, but that leaves
 other exceptions, including ones thrown by libraries. Catch all exceptions
 at top-level (of program and/or worker threads) and filter out control
 characters?
