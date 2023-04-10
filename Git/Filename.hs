@@ -11,6 +11,7 @@
 module Git.Filename (
 	unquote,
 	quote,
+	noquote,
 	QuotePath(..),
 	StringContainingQuotedPath(..),
 	quotedPaths,
@@ -20,6 +21,7 @@ module Git.Filename (
 import Common
 import Utility.Format (decode_c, encode_c, encode_c', isUtf8Byte)
 import Utility.QuickCheck
+import Utility.SafeOutput
 
 import Data.Char
 import Data.Word
@@ -55,6 +57,8 @@ class Quoteable t where
 	-- double quotes and encodes when git would
 	quote :: QuotePath -> t -> S.ByteString
 
+	noquote :: t -> S.ByteString
+
 instance Quoteable RawFilePath where
 	quote (QuotePath qp) s = case encode_c' needencode s of
 		Nothing -> s
@@ -64,6 +68,8 @@ instance Quoteable RawFilePath where
 			| c == fromIntegral (ord '"') = True
 			| qp = isUtf8Byte c
 			| otherwise = False
+
+	noquote = id
 
 -- Allows building up a string that contains paths, which will get quoted.
 -- With OverloadedStrings, strings are passed through without quoting.
@@ -81,9 +87,13 @@ quotedPaths (p:ps) = QuotedPath p <> if null ps
 	else " " <> quotedPaths ps
 
 instance Quoteable StringContainingQuotedPath where
-	quote _ (UnquotedString s) = encodeBS s
+	quote _ (UnquotedString s) = safeOutput (encodeBS s)
 	quote qp (QuotedPath p) = quote qp p
 	quote qp (a :+: b) = quote qp a <> quote qp b
+
+	noquote (UnquotedString s) = encodeBS s
+	noquote (QuotedPath p) = p
+	noquote (a :+: b) = noquote a <> noquote b
 
 instance IsString StringContainingQuotedPath where
 	fromString = UnquotedString
