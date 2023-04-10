@@ -179,7 +179,7 @@ rsyncTransport gc url
 		case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
 			"ssh":sshopts -> do
 				let (port, sshopts') = sshReadPort sshopts
-				    userhost = either error id $ mkSshHost $ 
+				    userhost = either giveup id $ mkSshHost $ 
 				    	takeWhile (/= ':') url
 				return $ (Param "ssh":) <$> sshOptions ConsumeStdin
 					(userhost, port) gc

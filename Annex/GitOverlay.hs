@@ -73,7 +73,7 @@ withWorkTree d a = withAltRepo
 	(const a)
   where
 	modlocation l@(Local {}) = l { worktree = Just (toRawFilePath d) }
-	modlocation _ = error "withWorkTree of non-local git repo"
+	modlocation _ = giveup "withWorkTree of non-local git repo"
 
 {- Runs an action with the git index file and HEAD, and a few other
  - files that are related to the work tree coming from an overlay

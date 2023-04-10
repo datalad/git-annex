@@ -34,7 +34,7 @@ makeRepo path bare = ifM (probeRepoExists path)
 		(transcript, ok) <-
 			processTranscript "git" (toCommand params) Nothing
 		unless ok $
-			error $ "git init failed!\nOutput:\n" ++ transcript
+			giveup $ "git init failed!\nOutput:\n" ++ transcript
 		return True
 	)
   where

@@ -47,7 +47,7 @@ addRemote :: Annex RemoteName -> Annex Remote
 addRemote a = do
 	name <- a
 	remotesChanged
-	maybe (error "failed to add remote") return
+	maybe (giveup "failed to add remote") return
 		=<< Remote.byName (Just name)
 
 {- Inits a rsync special remote, and returns its name. -}
@@ -94,7 +94,7 @@ initSpecialRemote name remotetype mcreds config = go 0
 enableSpecialRemote :: SpecialRemoteMaker
 enableSpecialRemote name remotetype mcreds config =
 	Annex.SpecialRemote.findExisting name >>= \case
-		[] -> error $ "Cannot find a special remote named " ++ name
+		[] -> giveup $ "Cannot find a special remote named " ++ name
 		((u, c, mcu):_) -> setupSpecialRemote' False name remotetype config mcreds (Just u, R.Enable c, c) mcu
 
 setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.SetupStage, R.RemoteConfig) -> Maybe (Annex.SpecialRemote.ConfigFrom UUID) -> Annex RemoteName

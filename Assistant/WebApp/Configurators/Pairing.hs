@@ -216,10 +216,10 @@ startLocalPairing stage oncancel alert muuid displaysecret secret = do
 	 - background. -}
 	thread <- liftAssistant $ asIO $ do
 		keypair <- liftIO $ genSshKeyPair
-		let pubkey = either error id $ validateSshPubKey $ sshPubKey keypair
+		let pubkey = either giveup id $ validateSshPubKey $ sshPubKey keypair
 		pairdata <- liftIO $ PairData
 			<$> getHostname
-			<*> (either error id <$> myUserName)
+			<*> (either giveup id <$> myUserName)
 			<*> pure reldir
 			<*> pure pubkey
 			<*> (maybe genUUID return muuid)

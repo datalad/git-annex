@@ -229,7 +229,7 @@ sha2Hasher (HashSize hashsize)
 	| hashsize == 224 = mkHasher sha2_224 sha2_224_context
 	| hashsize == 384 = mkHasher sha2_384 sha2_384_context
 	| hashsize == 512 = mkHasher sha2_512 sha2_512_context
-	| otherwise = error $ "unsupported SHA2 size " ++ show hashsize
+	| otherwise = giveup $ "unsupported SHA2 size " ++ show hashsize
 
 sha3Hasher :: HashSize -> Hasher
 sha3Hasher (HashSize hashsize)
@@ -237,13 +237,13 @@ sha3Hasher (HashSize hashsize)
 	| hashsize == 224 = mkHasher sha3_224 sha3_224_context
 	| hashsize == 384 = mkHasher sha3_384 sha3_384_context
 	| hashsize == 512 = mkHasher sha3_512 sha3_512_context
-	| otherwise = error $ "unsupported SHA3 size " ++ show hashsize
+	| otherwise = giveup $ "unsupported SHA3 size " ++ show hashsize
 
 skeinHasher :: HashSize -> Hasher
 skeinHasher (HashSize hashsize)
 	| hashsize == 256 = mkHasher skein256 skein256_context
 	| hashsize == 512 = mkHasher skein512 skein512_context
-	| otherwise = error $ "unsupported SKEIN size " ++ show hashsize
+	| otherwise = giveup $ "unsupported SKEIN size " ++ show hashsize
 
 blake2bHasher :: HashSize -> Hasher
 blake2bHasher (HashSize hashsize)
@@ -252,25 +252,25 @@ blake2bHasher (HashSize hashsize)
 	| hashsize == 160 = mkHasher blake2b_160 blake2b_160_context
 	| hashsize == 224 = mkHasher blake2b_224 blake2b_224_context
 	| hashsize == 384 = mkHasher blake2b_384 blake2b_384_context
-	| otherwise = error $ "unsupported BLAKE2B size " ++ show hashsize
+	| otherwise = giveup $ "unsupported BLAKE2B size " ++ show hashsize
 
 blake2bpHasher :: HashSize -> Hasher
 blake2bpHasher (HashSize hashsize)
 	| hashsize == 512 = mkHasher blake2bp_512 blake2bp_512_context
-	| otherwise = error $ "unsupported BLAKE2BP size " ++ show hashsize
+	| otherwise = giveup $ "unsupported BLAKE2BP size " ++ show hashsize
 
 blake2sHasher :: HashSize -> Hasher
 blake2sHasher (HashSize hashsize)
 	| hashsize == 256 = mkHasher blake2s_256 blake2s_256_context
 	| hashsize == 160 = mkHasher blake2s_160 blake2s_160_context
 	| hashsize == 224 = mkHasher blake2s_224 blake2s_224_context
-	| otherwise = error $ "unsupported BLAKE2S size " ++ show hashsize
+	| otherwise = giveup $ "unsupported BLAKE2S size " ++ show hashsize
 
 blake2spHasher :: HashSize -> Hasher
 blake2spHasher (HashSize hashsize)
 	| hashsize == 256 = mkHasher blake2sp_256 blake2sp_256_context
 	| hashsize == 224 = mkHasher blake2sp_224 blake2sp_224_context
-	| otherwise = error $ "unsupported BLAKE2SP size " ++ show hashsize
+	| otherwise = giveup $ "unsupported BLAKE2SP size " ++ show hashsize
 
 sha1Hasher :: Hasher
 sha1Hasher = mkHasher sha1 sha1_context

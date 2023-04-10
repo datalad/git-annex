@@ -44,7 +44,7 @@ perform file key = do
 		else return True
 	if ok
 		then next $ cleanup key
-		else error "mv failed!"
+		else giveup "move failed!"
 
 cleanup :: Key -> CommandCleanup
 cleanup key = do

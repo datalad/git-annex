@@ -139,7 +139,7 @@ store ddarrepo = fileStorer $ \k src _p -> do
 
 {- Convert remote DdarRepo to host and path on remote end -}
 splitRemoteDdarRepo :: DdarRepo -> (SshHost, String)
-splitRemoteDdarRepo ddarrepo = (either error id $ mkSshHost host, ddarrepo')
+splitRemoteDdarRepo ddarrepo = (either giveup id $ mkSshHost host, ddarrepo')
   where
 	(host, remainder) = span (/= ':') (ddarRepoLocation ddarrepo)
 	ddarrepo' = drop 1 remainder
@@ -228,7 +228,7 @@ checkKey ddarrepo key = do
 	directoryExists <- ddarDirectoryExists ddarrepo
 	case directoryExists of
 		Left e -> error e
-		Right True -> either error return
+		Right True -> either giveup return
 			=<< inDdarManifest ddarrepo key
 		Right False -> return False
 

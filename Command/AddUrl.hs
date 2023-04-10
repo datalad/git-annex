@@ -148,7 +148,7 @@ checkUrl addunlockedmatcher r o si u = do
 	pathmax <- liftIO $ fileNameLengthLimit "."
 	let deffile = fromMaybe (urlString2file u (pathdepthOption o) pathmax) (fileOption (downloadOptions o))
 	go deffile =<< maybe
-		(error $ "unable to checkUrl of " ++ Remote.name r)
+		(giveup $ "unable to checkUrl of " ++ Remote.name r)
 		(tryNonAsync . flip id u)
 		(Remote.checkUrl r)
   where

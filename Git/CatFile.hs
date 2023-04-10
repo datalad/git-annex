@@ -120,7 +120,7 @@ catObjectDetails h object = query (catFileProcess h) object newlinefallback $ \f
 			content <- readObjectContent from r
 			return $ Just (content, sha, objtype)
 		Just DNE -> return Nothing
-		Nothing -> error $ "unknown response from git cat-file " ++ show (header, object)
+		Nothing -> giveup $ "unknown response from git cat-file " ++ show (header, object)
   where
 	-- Slow fallback path for filenames containing newlines.
 	newlinefallback = queryObjectType object (catFileGitRepo h) >>= \case
@@ -144,7 +144,7 @@ readObjectContent h (ParsedResp _ _ size) = do
 	eatchar expected = do
 		c <- hGetChar h
 		when (c /= expected) $
-			error $ "missing " ++ (show expected) ++ " from git cat-file"
+			giveup $ "missing " ++ (show expected) ++ " from git cat-file"
 readObjectContent _ DNE = error "internal"
 
 {- Gets the size and type of an object, without reading its content. -}

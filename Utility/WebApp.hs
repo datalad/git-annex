@@ -87,7 +87,7 @@ getSocket h = do
 	-- getAddrInfo didn't used to work on windows; current status
 	-- unknown.
 	when (isJust h) $
-		error "getSocket with HostName not supported on this OS"
+		giveup "getSocket with HostName not supported on this OS"
 	let addr = tupleToHostAddress (127,0,0,1)
 	sock <- socket AF_INET Stream defaultProtocol
 	preparesocket sock
@@ -99,7 +99,7 @@ getSocket h = do
 	case (partition (\a -> addrFamily a == AF_INET) addrs) of
 		(v4addr:_, _) -> go v4addr
 		(_, v6addr:_) -> go v6addr
-		_ -> error "unable to bind to a local socket"
+		_ -> giveup "unable to bind to a local socket"
   where
 	hostname = fromMaybe localhost h
 	localhost = "localhost"
@@ -108,7 +108,7 @@ getSocket h = do
 	 - unknown reason on OSX. -} 
 	go addr = go' 100 addr
 	go' :: Int -> AddrInfo -> IO Socket
-	go' 0 _ = error "unable to bind to local socket"
+	go' 0 _ = giveup "unable to bind to local socket"
 	go' n addr = do
 		r <- tryIO $ bracketOnError (open addr) close (useaddr addr)
 		either (const $ go' (pred n) addr) return r
@@ -129,9 +129,9 @@ webAppSessionBackend :: Yesod.Yesod y => y -> IO (Maybe Yesod.SessionBackend)
 webAppSessionBackend _ = do
 	g <- newGenIO :: IO SystemRandom
 	case genBytes 96 g of
-		Left e -> error $ "failed to generate random key: " ++ show e
+		Left e -> giveup $ "failed to generate random key: " ++ show e
 		Right (s, _) -> case CS.initKey s of
-			Left e -> error $ "failed to initialize key: " ++ show e
+			Left e -> giveup $ "failed to initialize key: " ++ show e
 			Right key -> use key
   where
 	timeout = 120 * 60 -- 120 minutes

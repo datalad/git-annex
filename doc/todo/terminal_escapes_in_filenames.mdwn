@@ -36,7 +36,7 @@ behave more like git.
 > Update: Most git-annex commands now quote filenames, due to work on
 > ActionItem display. `git-annex find`, `git-annex info $file`,
 > and everywhere filenames get
-> embedded in error messages, warnings, info messages, still need to be done.
+> embedded in warnings, info messages, still need to be done.
 
 ----
 
@@ -59,3 +59,9 @@ out control characters. If such an url even can be parsed?
 
 Also: git-annex initremote with autoenable may be able to cause a remote
 with a malicious name to be set up?
+
+Also: Any place that an exception is thrown with an attacker-controlled value.
+`giveup` has been made to filter out control characters, but that leave
+other exceptions, including ones thrown by libraries. Catch all exceptions
+at top-level (of program and/or worker threads) and filter out control
+characters?

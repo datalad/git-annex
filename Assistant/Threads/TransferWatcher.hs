@@ -53,7 +53,7 @@ runHandler handler file _filestatus =
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr = error
+onErr = giveup
 
 {- Called when a new transfer information file is written. -}
 onAdd :: Handler

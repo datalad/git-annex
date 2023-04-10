@@ -87,7 +87,7 @@ add l = Annex.changeState $ \s -> s { Annex.limit = prepend $ Annex.limit s }
 
 {- Adds a new syntax token. -}
 addSyntaxToken :: String -> Annex ()
-addSyntaxToken = either error add . Utility.Matcher.syntaxToken
+addSyntaxToken = either giveup add . Utility.Matcher.syntaxToken
 
 {- Adds a new limit. -}
 addLimit :: Either String (MatchFiles Annex) -> Annex ()

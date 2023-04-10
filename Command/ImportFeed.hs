@@ -232,7 +232,7 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 								return (Just [])
 				else do
 					res <- tryNonAsync $ maybe
-						(error $ "unable to checkUrl of " ++ Remote.name r)
+						(giveup $ "unable to checkUrl of " ++ Remote.name r)
 						(flip id url)
 						(Remote.checkUrl r)
 					case res of

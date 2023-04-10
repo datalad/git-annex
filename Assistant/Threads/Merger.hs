@@ -58,7 +58,7 @@ runHandler handler file _filestatus =
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr = error
+onErr = giveup
 
 {- Called when a new branch ref is written, or a branch ref is modified.
  -

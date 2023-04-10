@@ -205,7 +205,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 				, Param "--directory", File tmpdir
 				]
 			unless tarok $
-				error $ "failed to untar " ++ distributionfile
+				giveup $ "failed to untar " ++ distributionfile
 			sanitycheck $ tmpdir </> installBase
 			installby R.rename newdir (tmpdir </> installBase)
 		let deleteold = do
@@ -218,7 +218,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 #endif
 	sanitycheck dir = 
 		unlessM (doesDirectoryExist dir) $
-			error $ "did not find " ++ dir ++ " in " ++ distributionfile
+			giveup $ "did not find " ++ dir ++ " in " ++ distributionfile
 	makeorigsymlink olddir = do
 		let origdir = fromRawFilePath (parentDir (toRawFilePath olddir)) </> installBase
 		removeWhenExistsWith R.removeLink (toRawFilePath origdir)
@@ -227,7 +227,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 {- Finds where the old version was installed. -}
 oldVersionLocation :: IO FilePath
 oldVersionLocation = readProgramFile >>= \case
-	Nothing -> error "Cannot find old distribution bundle; not upgrading."
+	Nothing -> giveup "Cannot find old distribution bundle; not upgrading."
 	Just pf -> do
 		let pdir = fromRawFilePath $ parentDir $ toRawFilePath pf
 #ifdef darwin_HOST_OS
@@ -240,7 +240,7 @@ oldVersionLocation = readProgramFile >>= \case
 		let olddir = pdir
 #endif
 		when (null olddir) $
-			error $ "Cannot find old distribution bundle; not upgrading. (Looked in " ++ pdir ++ ")"
+			giveup $ "Cannot find old distribution bundle; not upgrading. (Looked in " ++ pdir ++ ")"
 		return olddir
 
 {- Finds a place to install the new version.

@@ -105,4 +105,4 @@ outputSerialized = id
 waitOutputSerializedResponse :: (IO (Maybe SerializedOutputResponse)) -> SerializedOutputResponse -> IO ()
 waitOutputSerializedResponse getr r = tryIO getr >>= \case
 	Right (Just r') | r' == r -> return ()
-	v -> error $ "serialized output protocol error; expected " ++ show r ++ " got " ++ show v
+	v -> giveup $ "serialized output protocol error; expected " ++ show r ++ " got " ++ show v

@@ -24,7 +24,7 @@ cmd = noCommit $
 
 run :: DaemonOptions -> CommandSeek
 run o
-	| stopDaemonOption o = error "--stop not implemented for remotedaemon"
+	| stopDaemonOption o = giveup "--stop not implemented for remotedaemon"
 	| foregroundDaemonOption o = liftIO runInteractive
 	| otherwise = do
 #ifndef mingw32_HOST_OS

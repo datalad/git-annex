@@ -78,7 +78,7 @@ doMerge hashhandle ch differ repo streamer = do
 	go [] = noop
 	go (info:file:rest) = mergeFile info file hashhandle ch >>=
 		maybe (go rest) (\l -> streamer l >> go rest)
-	go (_:[]) = error $ "parse error " ++ show differ
+	go (_:[]) = giveup $ "parse error " ++ show differ
 
 {- Given an info line from a git raw diff, and the filename, generates
  - a line suitable for update-index that union merges the two sides of the

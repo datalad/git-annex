@@ -58,7 +58,7 @@ perform dest key = do
 				case r of
 					LinkAnnexOk -> return ()
 					LinkAnnexNoop -> return ()
-					LinkAnnexFailed -> error "unlock failed"
+					LinkAnnexFailed -> giveup "unlock failed"
 			, liftIO $ writePointerFile (toRawFilePath tmp) key destmode
 			)
 		withTSDelta (liftIO . genInodeCache (toRawFilePath tmp))

@@ -458,10 +458,10 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	gochunked db c
 		-- Downloading cannot be done when chunked, since only
 		-- the first chunk is processed before returning.
-		| importcontent = error "importKeys does not support downloading chunked import"
+		| importcontent = giveup "importKeys does not support downloading chunked import"
 		-- Chunked import is currently only used by thirdpartypopulated
 		-- remotes.
-		| not thirdpartypopulated = error "importKeys does not support chunked import when not thirdpartypopulated"
+		| not thirdpartypopulated = giveup "importKeys does not support chunked import when not thirdpartypopulated"
 		| otherwise = do
 			l <- forM (importableContentsSubTree c) $ \(loc, i) -> do
 				let loc' = importableContentsChunkFullLocation (importableContentsSubDir c) loc

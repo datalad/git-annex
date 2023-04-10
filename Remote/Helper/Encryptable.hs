@@ -331,4 +331,4 @@ toB64bs = w82s . B.unpack . B64.encode . B.pack . s2w8
 fromB64bs :: String -> String
 fromB64bs s = either (const bad) (w82s . B.unpack) (B64.decode $ B.pack $ s2w8 s)
   where
-	bad = error "bad base64 encoded data"
+	bad = giveup "bad base64 encoded data"

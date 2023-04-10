@@ -83,7 +83,7 @@ runRequests readh writeh a = do
 		go rest
 	go [] = noop
 	go [""] = noop
-	go v = error $ "transferkeys protocol error: " ++ show v
+	go v = giveup $ "transferkeys protocol error: " ++ show v
 
 	readrequests = liftIO $ split fieldSep <$> hGetContents readh
 	sendresult b = liftIO $ do

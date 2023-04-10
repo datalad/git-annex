@@ -225,7 +225,7 @@ runLocal runst runner a = case a of
 						-- known. Force content
 						-- verification.
 						return (rightsize, MustVerify)
-			Left e -> error $ describeProtoFailure e
+			Left e -> giveup $ describeProtoFailure e
 	
 	sinkfile f (Offset o) checkchanged sender p ti = bracket setup cleanup go
 	  where

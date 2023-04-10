@@ -152,7 +152,7 @@ encryptionVariants cache dr = [noenc, sharedenc]
 
 -- Variant of a remote with exporttree disabled.
 disableExportTree :: RemoteVariantCache -> Remote -> Annex Remote
-disableExportTree cache r = maybe (error "failed disabling exportree") return 
+disableExportTree cache r = maybe (giveup "failed disabling exportree") return 
 		=<< adjustRemoteConfig cache r (M.delete exportTreeField)
 
 -- Variant of a remote with exporttree enabled.

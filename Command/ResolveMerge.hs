@@ -28,7 +28,7 @@ start = starting "resolvemerge" (ActionItemOther Nothing) (SeekInput []) $ do
 	us <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	d <- fromRawFilePath <$> fromRepo Git.localGitDir
 	let merge_head = d </> "MERGE_HEAD"
-	them <- fromMaybe (error nomergehead) . extractSha
+	them <- fromMaybe (giveup nomergehead) . extractSha
 		<$> liftIO (S.readFile merge_head)
 	ifM (resolveMerge (Just us) them False)
 		( do

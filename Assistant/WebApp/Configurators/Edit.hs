@@ -203,7 +203,7 @@ editForm new (RepoUUID uuid)
 		mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 		when (mremote == Nothing) $
 			whenM ((/=) uuid <$> liftAnnex getUUID) $
-				error "unknown remote"
+				giveup "unknown remote"
 		curr <- liftAnnex $ getRepoConfig uuid mremote
 		liftAnnex $ checkAssociatedDirectory curr mremote
 		mrepo <- liftAnnex $

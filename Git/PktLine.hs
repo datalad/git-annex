@@ -31,6 +31,7 @@ import Text.Printf
 
 import Utility.PartialPrelude
 import Utility.FileSystemEncoding
+import Utility.Exception
 
 {- This is a variable length binary string, but its size is limited to
  - maxPktLineLength. Its serialization includes a 4 byte hexadecimal
@@ -96,7 +97,7 @@ encodePktLine b
 stringPktLine :: String -> PktLine
 stringPktLine s
 	| length s > maxPktLineLength =
-		error "textPktLine called with too-long value"
+		giveup "textPktLine called with too-long value"
 	| otherwise = PktLine (encodeBS s <> "\n")
 
 {- Sends a PktLine to a Handle, and flushes it so that it will be

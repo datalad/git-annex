@@ -40,7 +40,7 @@ runInteractive = do
 	let reader = forever $ do
 		l <- hGetLine readh
 		case parseMessage l of
-			Nothing -> error $ "protocol error: " ++ l
+			Nothing -> giveup $ "protocol error: " ++ l
 			Just cmd -> atomically $ writeTChan ichan cmd
 	let writer = forever $ do
 		msg <- atomically $ readTChan ochan

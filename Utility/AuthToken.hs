@@ -20,6 +20,7 @@ module Utility.AuthToken (
 
 import qualified Utility.SimpleProtocol as Proto
 import Utility.Hash
+import Utility.Exception
 
 import Data.SecureMem
 import Data.Maybe
@@ -79,8 +80,8 @@ genAuthToken len = do
 	g <- newGenIO :: IO SystemRandom
 	return $
 		case genBytes 512 g of
-			Left e -> error $ "failed to generate auth token: " ++ show e
-			Right (s, _) -> fromMaybe (error "auth token encoding failed") $
+			Left e -> giveup $ "failed to generate auth token: " ++ show e
+			Right (s, _) -> fromMaybe (giveup "auth token encoding failed") $
 				toAuthToken $ T.pack $ take len $
 					show $ sha2_512 $ L.fromChunks [s]
 

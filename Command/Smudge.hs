@@ -191,7 +191,7 @@ clean' file mk passthrough discardreststdin emitpointer =
 	postingest (Just k, _) = do
 		logStatus k InfoPresent
 		return k
-	postingest _ = error "could not add file to the annex"
+	postingest _ = giveup "could not add file to the annex"
 
 	cfg = LockDownConfig
 		{ lockingFile = False

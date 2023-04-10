@@ -20,7 +20,7 @@ import Data.Char
 getSha :: String -> IO S.ByteString -> IO Sha
 getSha subcommand a = maybe bad return =<< extractSha <$> a
   where
-	bad = error $ "failed to read sha from git " ++ subcommand
+	bad = giveup $ "failed to read sha from git " ++ subcommand
 
 {- Extracts the Sha from a ByteString. 
  -

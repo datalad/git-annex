@@ -103,7 +103,7 @@ notAnnexed src a =
 perform :: RawFilePath -> Key -> CommandPerform
 perform src key = ifM move
 	( next $ cleanup key
-	, error "failed"
+	, giveup "failed"
 	)
   where
 	move = checkDiskSpaceToGet key False $

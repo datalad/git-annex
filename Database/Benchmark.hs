@@ -44,7 +44,7 @@ benchmarkDbs mode n = withTmpDirIn "." "benchmark" $ \tmpdir -> do
 			]
 		]
 #else
-benchmarkDbs _ = error "not built with criterion, cannot benchmark"
+benchmarkDbs _ = giveup "not built with criterion, cannot benchmark"
 #endif
 
 #ifdef WITH_BENCHMARK

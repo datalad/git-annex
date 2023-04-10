@@ -62,7 +62,7 @@ data TreeContent
 getTree :: LsTree.LsTreeRecursive -> Ref -> Repo -> IO Tree
 getTree recursive r repo = do
 	(l, cleanup) <- lsTreeWithObjects recursive r repo
-	let !t = either (\e -> error ("ls-tree parse error:" ++ e)) id
+	let !t = either (\e -> giveup ("ls-tree parse error:" ++ e)) id
 		(extractTree l)
 	void cleanup
 	return t
@@ -254,7 +254,7 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 					Just (TreeItem f m s) -> 
 						let commit = TreeCommit f m s
 						in go h wasmodified (commit:c) depth intree is
-			_ -> error ("unexpected object type \"" ++ decodeBS (LsTree.typeobj i) ++ "\"")
+			_ -> giveup ("unexpected object type \"" ++ decodeBS (LsTree.typeobj i) ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
 
 	adjustlist h depth ishere underhere l = do

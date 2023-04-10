@@ -197,7 +197,7 @@ rsyncTransport r gc
 		let rsyncpath = if "/~/" `isPrefixOf` path
 			then drop 3 path
 			else path
-		    sshhost = either error id (mkSshHost host)
+		    sshhost = either giveup id (mkSshHost host)
 		    mkopts = rsyncShell . (Param "ssh" :) 
 			<$> sshOptions ConsumeStdin (sshhost, Nothing) gc []
 		in (mkopts, fromSshHost sshhost ++ ":" ++ rsyncpath, AccessGitAnnexShell)
@@ -239,7 +239,7 @@ gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
 				]
 			(r:_)
 				| Git.repoLocation r == url -> noop
-				| otherwise -> error "Another remote with the same name already exists."		
+				| otherwise -> giveup "Another remote with the same name already exists."		
 
 		pc <- either giveup return . parseRemoteConfig c'
 			=<< configParser remote c'
@@ -505,7 +505,7 @@ getGCryptId fast r gc
 	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
 	| not fast = extract . liftM fst3 <$> getM (eitherToMaybe <$>)
-		[ Ssh.onRemote NoConsumeStdin r (\f p -> liftIO (Git.Config.fromPipe r f p Git.Config.ConfigList), return (Left $ error "configlist failed")) "configlist" [] []
+		[ Ssh.onRemote NoConsumeStdin r (\f p -> liftIO (Git.Config.fromPipe r f p Git.Config.ConfigList), return (Left $ giveup "configlist failed")) "configlist" [] []
 		, getConfigViaRsync r gc
 		]
 	| otherwise = return (Nothing, r)

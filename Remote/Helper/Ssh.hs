@@ -32,7 +32,7 @@ toRepo :: ConsumeStdin -> Git.Repo -> RemoteGitConfig -> SshCommand -> Annex (Fi
 toRepo cs r gc remotecmd = do
 	let host = maybe
 		(giveup "bad ssh url")
-		(either error id . mkSshHost)
+		(either giveup id . mkSshHost)
 		(Git.Url.hostuser r)
 	sshCommand cs (host, Git.Url.port r) gc remotecmd
 

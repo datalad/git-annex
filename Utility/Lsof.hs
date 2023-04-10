@@ -110,4 +110,4 @@ parse s = bundle $ go [] $ lines s
 
 	splitnull = splitc '\0'
 
-	parsefail = error $ "failed to parse lsof output: " ++ show s
+	parsefail = giveup $ "failed to parse lsof output: " ++ show s

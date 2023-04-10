@@ -432,7 +432,7 @@ sshOptionsTo remote gc localr
 			( unchanged
 			, do
 				let port = Git.Url.port remote
-				let sshhost = either error id (mkSshHost host)
+				let sshhost = either giveup id (mkSshHost host)
 				(msockfile, cacheparams) <- sshCachingInfo (sshhost, port)
 				case msockfile of
 					Nothing -> use []

@@ -321,7 +321,7 @@ testDav url (Just (u, p)) = do
 
 	user = toDavUser u
 	pass = toDavPass p
-testDav _ Nothing = error "Need to configure webdav username and password."
+testDav _ Nothing = giveup "Need to configure webdav username and password."
 
 {- Tries to make all the parent directories in the WebDAV urls's path,
  - right down to the root.
@@ -407,7 +407,7 @@ choke :: IO (Either String a) -> IO a
 choke f = do
 	x <- f
 	case x of
-		Left e -> error e
+		Left e -> giveup e
 		Right r -> return r
 
 data DavHandle = DavHandle DAVContext DavUser DavPass URLString
@@ -491,11 +491,11 @@ retrieveLegacyChunked d k p dav = liftIO $
 				inLocation l $
 					snd <$> getContentM
   where
-	onerr = error "download failed"
+	onerr = giveup "download failed"
 
 checkKeyLegacyChunked :: DavHandle -> CheckPresent
 checkKeyLegacyChunked dav k = liftIO $
-	either error id <$> withStoredFilesLegacyChunked k dav onerr check
+	either giveup id <$> withStoredFilesLegacyChunked k dav onerr check
   where
 	check [] = return $ Right True
 	check (l:ls) = do

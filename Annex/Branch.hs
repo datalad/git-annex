@@ -130,7 +130,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 			, Param $ fromRef name
 			, Param $ fromRef originname
 			]
-		fromMaybe (error $ "failed to create " ++ fromRef name)
+		fromMaybe (giveup $ "failed to create " ++ fromRef name)
 			<$> branchsha
 	go False = withIndex' True $ do
 		-- Create the index file. This is not necessary,

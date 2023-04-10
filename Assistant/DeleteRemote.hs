@@ -31,7 +31,7 @@ import qualified Data.Text as T
  - Remote data. -}
 disableRemote :: UUID -> Assistant Remote
 disableRemote uuid = do
-	remote <- fromMaybe (error "unknown remote")
+	remote <- fromMaybe (giveup "unknown remote")
 		<$> liftAnnex (Remote.remoteFromUUID uuid)
 	liftAnnex $ do
 		inRepo $ Git.Remote.Remove.remove (Remote.name remote)
@@ -57,7 +57,7 @@ removableRemote urlrenderer uuid = getkeys >>= \case
 	Just keys
 		| null keys -> finishRemovingRemote urlrenderer uuid
 		| otherwise -> do
-			r <- fromMaybe (error "unknown remote")
+			r <- fromMaybe (giveup "unknown remote")
 				<$> liftAnnex (Remote.remoteFromUUID uuid)
 			mapM_ (queueremaining r) keys
 	Nothing -> noop

@@ -34,7 +34,7 @@ notCurrentRepo uuid a = do
 		then redirect DeleteCurrentRepositoryR
 		else go =<< liftAnnex (Remote.remoteFromUUID uuid)
   where
-	go Nothing = error "Unknown UUID"
+	go Nothing = giveup "Unknown UUID"
 	go (Just _) = a
 
 getDeleteRepositoryR :: UUID -> Handler Html
@@ -45,7 +45,7 @@ getDeleteRepositoryR uuid = notCurrentRepo uuid $ do
 
 getStartDeleteRepositoryR :: UUID -> Handler Html
 getStartDeleteRepositoryR uuid = do
-	remote <- fromMaybe (error "unknown remote")
+	remote <- fromMaybe (giveup "unknown remote")
 		<$> liftAnnex (Remote.remoteFromUUID uuid)
 	liftAnnex $ do
 		trustSet uuid UnTrusted

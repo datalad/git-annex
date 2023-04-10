@@ -281,7 +281,7 @@ parseRawChangeLine = go . words
 	go _ = Nothing
 
 parseTimeStamp :: String -> POSIXTime
-parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (error "bad timestamp") .
+parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (giveup "bad timestamp") .
 	parseTimeM True defaultTimeLocale "%s"
 
 showTimeStamp :: TimeZone -> POSIXTime -> String

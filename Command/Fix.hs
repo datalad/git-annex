@@ -76,7 +76,7 @@ breakHardLink file key obj = do
 		let tmp' = toRawFilePath tmp
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 		unlessM (checkedCopyFile key obj tmp' mode) $
-			error "unable to break hard link"
+			giveup "unable to break hard link"
 		thawContent tmp'
 		Database.Keys.storeInodeCaches key [tmp']
 		modifyContentDir obj $ freezeContent obj
@@ -87,7 +87,7 @@ makeHardLink file key = do
 	replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 		linkFromAnnex' key (toRawFilePath tmp) mode >>= \case
-			LinkAnnexFailed -> error "unable to make hard link"
+			LinkAnnexFailed -> giveup "unable to make hard link"
 			_ -> noop
 	next $ return True
 

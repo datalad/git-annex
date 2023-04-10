@@ -54,7 +54,7 @@ checkAttrs (h, attrs, currdir) want file = do
 	getvals l (x:xs) = case map snd $ filter (\(attr, _) -> attr == x) l of
 			["unspecified"] -> "" : getvals l xs
 			[v] -> v : getvals l xs
-			_ -> error $ "unable to determine " ++ x ++ " attribute of " ++ fromRawFilePath file
+			_ -> giveup $ "unable to determine " ++ x ++ " attribute of " ++ fromRawFilePath file
 
 	send to = B.hPutStr to $ file' `B.snoc` 0
 	receive c from = do

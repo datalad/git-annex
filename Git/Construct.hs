@@ -86,7 +86,7 @@ fromAbsPath :: RawFilePath -> IO Repo
 fromAbsPath dir
 	| absoluteGitPath dir = fromPath dir
 	| otherwise =
-		error $ "internal error, " ++ show dir ++ " is not absolute"
+		giveup $ "internal error, " ++ show dir ++ " is not absolute"
 
 {- Construct a Repo for a remote's url.
  -

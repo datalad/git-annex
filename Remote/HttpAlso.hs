@@ -103,7 +103,7 @@ cannotModify = giveup "httpalso special remote is read only"
 
 httpAlsoSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 httpAlsoSetup _ Nothing _ _ _ =
-	error "Must use --sameas when initializing a httpalso remote."
+	giveup "Must use --sameas when initializing a httpalso remote."
 httpAlsoSetup _ (Just u) _ c gc = do
 	_url <- maybe (giveup "Specify url=")
 		(return . fromProposedAccepted)

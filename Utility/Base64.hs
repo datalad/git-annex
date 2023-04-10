@@ -11,6 +11,7 @@ module Utility.Base64 where
 
 import Utility.FileSystemEncoding
 import Utility.QuickCheck
+import Utility.Exception
 
 import qualified "sandi" Codec.Binary.Base64 as B64
 import Data.Maybe
@@ -36,12 +37,12 @@ fromB64Maybe' = either (const Nothing) Just . B64.decode
 fromB64 :: String -> String
 fromB64 = fromMaybe bad . fromB64Maybe
   where
-	bad = error "bad base64 encoded data"
+	bad = giveup "bad base64 encoded data"
 
 fromB64' :: B.ByteString -> B.ByteString
 fromB64' = fromMaybe bad . fromB64Maybe'
   where
-	bad = error "bad base64 encoded data"
+	bad = giveup "bad base64 encoded data"
 
 -- Only ascii strings are tested, because an arbitrary string may contain
 -- characters not encoded using the FileSystemEncoding, which would thus

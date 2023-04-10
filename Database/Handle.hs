@@ -84,7 +84,7 @@ queryDb (DbHandle _db _ jobs errvar) a = do
 		Right r -> either throwIO return r
 		Left BlockedIndefinitelyOnMVar -> do
 			err <- takeMVar errvar
-			error $ "sqlite worker thread crashed: " ++ err
+			giveup $ "sqlite worker thread crashed: " ++ err
 
 {- Writes a change to the database.
  -

@@ -1133,6 +1133,7 @@ Executable git-annex
     Utility.ResourcePool
     Utility.Rsync
     Utility.SafeCommand
+    Utility.SafeOutput
     Utility.Scheduled
     Utility.Scheduled.QuickCheck
     Utility.Shell

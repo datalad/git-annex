@@ -239,7 +239,7 @@ testRemote testvariants remotetype setupremote =
 		innewrepo $ do
 			git_annex "init" [reponame, "--quiet"] "init"
 			setupremote remotename
-			r <- annexeval $ either error return 
+			r <- annexeval $ either giveup return 
 				=<< Remote.byName' remotename
 			cache <- Command.TestRemote.newRemoteVariantCache
 			unavailr <- annexeval $ Types.Remote.mkUnavailable r

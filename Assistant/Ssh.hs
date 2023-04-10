@@ -68,7 +68,7 @@ sshOpt k v = concat ["-o", k, "=", v]
 
 {- user@host or host -}
 genSshHost :: Text -> Maybe Text -> SshHost
-genSshHost host user = either error id $ mkSshHost $
+genSshHost host user = either giveup id $ mkSshHost $
 	maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
 
 {- Generates a ssh or rsync url from a SshData. -}
@@ -218,7 +218,7 @@ genSshKeyPair = withTmpDir "git-annex-keygen" $ \dir -> do
 		, Param "-f", File $ dir </> "key"
 		]
 	unless ok $
-		error "ssh-keygen failed"
+		giveup "ssh-keygen failed"
 	SshKeyPair
 		<$> readFile (dir </> "key.pub")
 		<*> readFile (dir </> "key")

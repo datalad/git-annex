@@ -313,7 +313,7 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 					in keyaction lt (SeekInput [], k, bfp)
 				Nothing -> noop
 			unlessM (liftIO cleanup) $
-				error ("git ls-tree " ++ Git.fromRef b ++ " failed")
+				giveup ("git ls-tree " ++ Git.fromRef b ++ " failed")
 	
 	runfailedtransfers = do
 		keyaction <- mkkeyaction

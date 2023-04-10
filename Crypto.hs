@@ -73,7 +73,7 @@ cipherSize = 512
 
 cipherPassphrase :: Cipher -> String
 cipherPassphrase (Cipher c) = drop cipherBeginning c
-cipherPassphrase (MacOnlyCipher _) = error "MAC-only cipher"
+cipherPassphrase (MacOnlyCipher _) = giveup "MAC-only cipher"
 
 cipherMac :: Cipher -> String
 cipherMac (Cipher c) = take cipherBeginning c

@@ -150,7 +150,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 			writeCacheCredPair credpair storage
 
 			return $ Just credpair
-		_ -> error "bad creds"
+		_ -> giveup "bad creds"
 
 getRemoteCredPairFor :: String -> ParsedRemoteConfig -> RemoteGitConfig -> CredPairStorage -> Annex (Maybe CredPair)
 getRemoteCredPairFor this c gc storage = go =<< getRemoteCredPair c gc storage
