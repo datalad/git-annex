@@ -211,7 +211,7 @@ lookupKey1 file = do
 		Nothing -> do
 			unless (null kname || null bname ||
 			        not (isLinkToAnnex (toRawFilePath l))) $
-				warning skip
+				warning (UnquotedString skip)
 			return Nothing
 		Just backend -> return $ Just (k, backend)
 	  where

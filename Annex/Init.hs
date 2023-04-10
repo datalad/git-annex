@@ -79,7 +79,7 @@ checkInitializeAllowed a = guardSafeToUseRepo $ noAnnexFileContent' >>= \case
 	Just noannexmsg -> do
 		warning "Initialization prevented by .noannex file (remove the file to override)"
 		unless (null noannexmsg) $
-			warning noannexmsg
+			warning (UnquotedString noannexmsg)
 		giveup "Not initialized."
 
 initializeAllowed :: Annex Bool
@@ -272,7 +272,7 @@ probeCrippledFileSystem = withEventuallyCleanedOtherTmp $ \tmp -> do
 		(Just (freezeContent' UnShared))
 		(Just (thawContent' UnShared))
 		=<< hasFreezeHook
-	mapM_ warning warnings
+	mapM_ (warning . UnquotedString) warnings
 	return r
 
 probeCrippledFileSystem'

@@ -43,7 +43,7 @@ start = do
 			upload' (Remote.uuid remote) key file Nothing stdRetry $ \p -> do
 				tryNonAsync (Remote.storeKey remote key file p) >>= \case
 					Left e -> do
-						warning (show e)
+						warning (UnquotedString (show e))
 						return False
 					Right () -> do
 						Remote.logStatus remote key InfoPresent
@@ -53,7 +53,7 @@ start = do
 				logStatusAfter key $ getViaTmp (Remote.retrievalSecurityPolicy remote) (RemoteVerify remote) key file $ \t -> do
 					r <- tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p (RemoteVerify remote)) >>= \case
 						Left e -> do
-							warning (show e)
+							warning (UnquotedString (show e))
 							return (False, UnVerified)
 						Right v -> return (True, v)
 					-- Make sure we get the current

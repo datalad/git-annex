@@ -152,7 +152,7 @@ performPairing remotename addrs = do
 				warning "Failed receiving data from pair."
 				return False
 			LinkFailed e -> do
-				warning $ "Failed linking to pair: " ++ e
+				warning $ UnquotedString $ "Failed linking to pair: " ++ e
 				return False
   where
 	ui observer producer = do

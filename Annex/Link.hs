@@ -186,7 +186,7 @@ newtype Restage = Restage Bool
 restagePointerFile :: Restage -> RawFilePath -> InodeCache -> Annex ()
 restagePointerFile (Restage False) f orig = do
 	flip writeRestageLog orig =<< inRepo (toTopFilePath f)
-	toplevelWarning True $ unableToRestage $ Just $ fromRawFilePath f
+	toplevelWarning True $ unableToRestage $ Just f
 restagePointerFile (Restage True) f orig = do
 	flip writeRestageLog orig =<< inRepo (toTopFilePath f)
 	-- Avoid refreshing the index if run by the
@@ -319,16 +319,15 @@ restagePointerFiles r = unlessM (Annex.getState Annex.insmudgecleanfilter) $ do
 		ck = ConfigKey "filter.annex.process"
 		ckd = ConfigKey "filter.annex.process-temp-disabled"
 
-unableToRestage :: Maybe FilePath -> String
-unableToRestage mf = unwords
-	[ "git status will show " ++ fromMaybe "some files" mf
-	, "to be modified, since content availability has changed"
-	, "and git-annex was unable to update the index."
-	, "This is only a cosmetic problem affecting git status; git add,"
-	, "git commit, etc won't be affected."
-	, "To fix the git status display, you can run:"
-	, "git-annex restage"
-	]
+unableToRestage :: Maybe RawFilePath -> StringContainingQuotedPath
+unableToRestage mf =
+	"git status will show " <> maybe "some files" QuotedPath mf
+	<> " to be modified, since content availability has changed"
+	<> " and git-annex was unable to update the index."
+	<> " This is only a cosmetic problem affecting git status; git add,"
+	<> " git commit, etc won't be affected."
+	<> " To fix the git status display, you can run:"
+	<> " git-annex restage"
 
 {- Parses a symlink target or a pointer file to a Key.
  -

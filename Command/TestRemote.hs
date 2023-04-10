@@ -32,7 +32,6 @@ import Annex.SpecialRemote.Config (exportTreeField)
 import Remote.Helper.Chunked
 import Remote.Helper.Encryptable (encryptionField, highRandomQualityField)
 import Git.Types
-import Git.Filename
 
 import Test.Tasty
 import Test.Tasty.Runners

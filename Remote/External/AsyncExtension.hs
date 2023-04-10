@@ -7,6 +7,7 @@
 
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Remote.External.AsyncExtension (runRelayToExternalAsync) where
 
@@ -86,7 +87,7 @@ receiveloop external st jidmap sendq sendthread annexrunner = externalReceive st
 	Nothing -> closeandshutdown
   where
 	protoerr s = do
-		annexrunner $ warning $ "async external special remote protocol error: " ++ s
+		annexrunner $ warning $ "async external special remote protocol error: " <> s
 		closeandshutdown
 	
 	closeandshutdown = do

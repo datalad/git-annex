@@ -228,7 +228,7 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 						else Url.withUrlOptions (Url.getUrlInfo url) >>= \case
 							Right urlinfo -> go urlinfo
 							Left err -> do
-								warning err
+								warning (UnquotedString err)
 								return (Just [])
 				else do
 					res <- tryNonAsync $ maybe
@@ -349,7 +349,7 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 						-- an enclosure.
 						Right Nothing -> Just <$> downloadlink True
 						Left msg -> do
-							warning $ linkurl ++ ": " ++ msg
+							warning $ UnquotedString $ linkurl ++ ": " ++ msg
 							return Nothing
 				return (fromMaybe False r)
 			, downloadlink False
@@ -477,10 +477,10 @@ noneValue = "none"
 feedProblem :: URLString -> String -> Annex Bool
 feedProblem url message = ifM (checkFeedBroken url)
 	( do
-		warning $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
+		warning $ UnquotedString $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
 		return False
 	, do
-		warning $ "warning: " ++ message
+		warning $ UnquotedString $ "warning: " ++ message
 		return True
 	)
 

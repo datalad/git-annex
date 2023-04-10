@@ -209,7 +209,7 @@ enterAdjustedBranch adj = inRepo Git.Branch.current >>= \case
 		let adjbranch = adjBranch $ originalToAdjusted origbranch adj
 		ifM (inRepo (Git.Ref.exists adjbranch) <&&> (not <$> Annex.getRead Annex.force) <&&> pure (not (is_branchView origbranch)))
 			( do
-				mapM_ (warning . unwords)
+				mapM_ (warning . UnquotedString . unwords)
 					[ [ "adjusted branch"
 					  , Git.Ref.describe adjbranch
 					  , "already exists."
@@ -343,7 +343,7 @@ adjustedBranchRefreshFull adj origbranch = do
 	restagePointerFiles =<< Annex.gitRepo
 	let adjbranch = originalToAdjusted origbranch adj
 	unlessM (updateAdjustedBranch adj adjbranch origbranch) $
-		warning $ unwords [ "Updating adjusted branch failed." ]
+		warning "Updating adjusted branch failed."
 
 adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
@@ -497,7 +497,7 @@ propigateAdjustedCommits' origbranch adj _commitsprevented =
 			Just currcommit ->
 				newcommits >>= go origsha False >>= \case
 					Left e -> do
-						warning e
+						warning (UnquotedString e)
 						return (Nothing, return ())
 					Right newparent -> return
 						( Just newparent
@@ -505,7 +505,8 @@ propigateAdjustedCommits' origbranch adj _commitsprevented =
 						)
 			Nothing -> return (Nothing, return ())
 		Nothing -> do
-			warning $ "Cannot find basis ref " ++ fromRef basis ++ "; not propagating adjusted commits to original branch " ++ fromRef origbranch
+			warning $ UnquotedString $ 
+				"Cannot find basis ref " ++ fromRef basis ++ "; not propagating adjusted commits to original branch " ++ fromRef origbranch
 			return (Nothing, return ())
   where
 	(BasisBranch basis) = basisBranch adjbranch

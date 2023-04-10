@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Backend (
 	builtinList,
 	defaultBackend,
@@ -66,7 +68,8 @@ getBackend :: FilePath -> Key -> Annex (Maybe Backend)
 getBackend file k = maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 	Just backend -> return $ Just backend
 	Nothing -> do
-		warning $ "skipping " ++ file ++ " (" ++ unknownBackendVarietyMessage (fromKey keyVariety k) ++ ")"
+		warning $ "skipping " <> QuotedPath (toRawFilePath file) <> " (" <>
+			UnquotedString (unknownBackendVarietyMessage (fromKey keyVariety k)) <> ")"
 		return Nothing
 
 unknownBackendVarietyMessage :: KeyVariety -> String

@@ -122,7 +122,7 @@ gen baser u rc gc rs = do
 				setConfig (Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
 				gen' r u' pc gc rs
 			_ -> do
-				warning $ "not using unknown gcrypt repository pointed to by remote " ++ Git.repoDescribe r
+				warning $ UnquotedString $ "not using unknown gcrypt repository pointed to by remote " ++ Git.repoDescribe r
 				return Nothing
 
 gen' :: Git.Repo -> UUID -> ParsedRemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)

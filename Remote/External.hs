@@ -583,7 +583,7 @@ receiveMessage st external handleresponse handlerequest handleexceptional =
 				Just msg -> maybe (protocolError True s) id (handleexceptional msg)
 				Nothing -> protocolError False s
 	protocolError parsed s = do
-		warning $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
+		warning $ UnquotedString $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
 			if parsed
 				then "(command not allowed at this time)"
 				else "(unable to parse command)"
@@ -713,7 +713,7 @@ startExternal' external = do
 				] ++ exrest
 
 	unusable msg = do
-		warning msg
+		warning (UnquotedString msg)
 		giveup ("unable to use external special remote " ++ basecmd)
 
 stopExternal :: External -> Annex ()

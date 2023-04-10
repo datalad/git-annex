@@ -423,13 +423,13 @@ retrieve hv r rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
 	Right h -> 
 		eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
 			Left failreason -> do
-				warning failreason
+				warning (UnquotedString failreason)
 				giveup "cannot download content"
 			Right loc -> retrieveHelper info h loc (fromRawFilePath f) p iv
 	Left S3HandleNeedCreds ->
 		getPublicWebUrls' (uuid r) rs info c k >>= \case
 			Left failreason -> do
-				warning failreason
+				warning (UnquotedString failreason)
 				giveup "cannot download content"
 			Right us -> unlessM (withUrlOptions $ downloadUrl False k p iv us (fromRawFilePath f)) $
 				giveup "failed to download content"
@@ -470,13 +470,13 @@ checkKey :: S3HandleVar -> Remote -> RemoteStateHandle -> ParsedRemoteConfig -> 
 checkKey hv r rs c info k = withS3Handle hv $ \case
 	Right h -> eitherS3VersionID info rs c k (T.pack $ bucketObject info k) >>= \case
 		Left failreason -> do
-			warning failreason
+			warning (UnquotedString failreason)
 			giveup "cannot check content"
 		Right loc -> checkKeyHelper info h loc
 	Left S3HandleNeedCreds ->
 		getPublicWebUrls' (uuid r) rs info c k >>= \case
 			Left failreason -> do
-				warning failreason
+				warning (UnquotedString failreason)
 				giveup "cannot check content"
 			Right us -> do
 				let check u = withUrlOptions $ 
@@ -865,7 +865,7 @@ data S3HandleProblem
 
 giveupS3HandleProblem :: S3HandleProblem -> UUID -> Annex a
 giveupS3HandleProblem S3HandleNeedCreds u = do
-	warning $ needS3Creds u
+	warning $ UnquotedString $ needS3Creds u
 	giveup "No S3 credentials configured"
 giveupS3HandleProblem S3HandleAnonymousOldAws _ =
 	giveup "This S3 special remote is configured with signature=anonymous, but git-annex is built with too old a version of the aws library to support that."

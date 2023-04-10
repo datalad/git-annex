@@ -74,7 +74,7 @@ dbusThread urlrenderer = do
 	onerr :: E.SomeException -> Assistant ()
 	onerr e = do
 		liftAnnex $
-			warning $ "dbus failed; falling back to mtab polling (" ++ show e ++ ")"
+			warning $ UnquotedString $ "dbus failed; falling back to mtab polling (" ++ show e ++ ")"
 		pollingThread urlrenderer
 
 {- Examine the list of services connected to dbus, to see if there

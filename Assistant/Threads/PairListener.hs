@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Assistant.Threads.PairListener where
 
 import Assistant.Common
@@ -49,7 +51,7 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 					debug ["ignoring message that looped back"]
 					go reqs cache sock
 				(_, _, False, _) -> do
-					liftAnnex $ warning $
+					liftAnnex $ warning $ UnquotedString $
 						"illegal control characters in pairing message; ignoring (" ++ show (pairMsgData m) ++ ")"
 					go reqs cache sock
 				-- PairReq starts a pairing process, so a

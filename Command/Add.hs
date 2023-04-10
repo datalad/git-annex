@@ -25,7 +25,6 @@ import Messages.Progress
 import Git.FilePath
 import Git.Types
 import Git.UpdateIndex
-import Git.Filename
 import Config.GitConfig
 import Utility.OptParse
 import Utility.InodeCache
@@ -175,7 +174,7 @@ addFile smallorlarge file s = do
 	s' <- liftIO $ catchMaybeIO $ R.getSymbolicLinkStatus file
 	if maybe True (changed s) s'
 		then do
-			warning $ fromRawFilePath file ++ " changed while it was being added"
+			warning $ QuotedPath file <> " changed while it was being added"
 			return False
 		else do
 			case smallorlarge of

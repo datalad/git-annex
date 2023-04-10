@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Remote.P2P (
 	remote,
 	chainGen
@@ -105,7 +107,7 @@ runProtoConn a c@(OpenConnection (runst, conn)) = do
 	-- so close it.
 	case v of
 		Left e -> do
-			warning $ "Lost connection to peer (" ++ describeProtoFailure e ++ ")"
+			warning $ UnquotedString $ "Lost connection to peer (" ++ describeProtoFailure e ++ ")"
 			liftIO $ closeConnection conn
 			return (ClosedConnection, Nothing)
 		Right r -> return (c, Just r)
@@ -163,9 +165,9 @@ openConnection u addr = do
 					liftIO $ closeConnection conn
 					return ClosedConnection
 				Left e -> do
-					warning $ "Problem communicating with peer. (" ++ describeProtoFailure e ++ ")"
+					warning $ UnquotedString $ "Problem communicating with peer. (" ++ describeProtoFailure e ++ ")"
 					liftIO $ closeConnection conn
 					return ClosedConnection
 		Left e -> do
-			warning $ "Unable to connect to peer. (" ++ show e ++ ")"
+			warning $ UnquotedString $ "Unable to connect to peer. (" ++ show e ++ ")"
 			return ClosedConnection

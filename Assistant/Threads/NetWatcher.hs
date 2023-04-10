@@ -78,7 +78,7 @@ dbusThread = do
 		sendRemoteControl RESUME
 	onerr e _ = do
 		liftAnnex $
-			warning $ "lost dbus connection; falling back to polling (" ++ show e ++ ")"
+			warning $ UnquotedString $ "lost dbus connection; falling back to polling (" ++ show e ++ ")"
 		{- Wait, in hope that dbus will come back -}
 		liftIO $ threadDelaySeconds (Seconds 60)
 

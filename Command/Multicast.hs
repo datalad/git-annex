@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 
 module Command.Multicast where
 
@@ -211,7 +211,7 @@ storeReceived :: FilePath -> Annex ()
 storeReceived f = do
 	case deserializeKey (takeFileName f) of
 		Nothing -> do
-			warning $ "Received a file " ++ f ++ " that is not a git-annex key. Deleting this file."
+			warning $ "Received a file " <> QuotedPath (toRawFilePath f) <> " that is not a git-annex key. Deleting this file."
 			liftIO $ removeWhenExistsWith R.removeLink (toRawFilePath f)
 		Just k -> void $ logStatusAfter k $
 			getViaTmpFromDisk RetrievalVerifiableKeysSecure AlwaysVerify k (AssociatedFile Nothing) $ \dest -> unVerified $

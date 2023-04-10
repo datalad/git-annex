@@ -37,14 +37,14 @@ action :: Annex () -> Annex Bool
 action a = tryNonAsync a >>= \case
 	Right () -> return True
 	Left e -> do
-		warning (show e)
+		warning (UnquotedString (show e))
 		return False
 
 verifiedAction :: Annex Verification -> Annex (Bool, Verification)
 verifiedAction a = tryNonAsync a >>= \case
 	Right v -> return (True, v)
 	Left e -> do
-		warning (show e)
+		warning (UnquotedString (show e))
 		return (False, UnVerified)
 
 

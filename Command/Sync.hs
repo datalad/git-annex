@@ -403,7 +403,7 @@ mergeLocal' _ _ currbranch@(Nothing, _) = inRepo Git.Branch.currentUnsafe >>= \c
 			let ai = ActionItemOther (Just $ UnquotedString $ Git.Ref.describe syncbranch)
 			let si = SeekInput []
 			starting "merge" ai si $ do
-				warning $ "There are no commits yet to branch " ++ Git.fromRef branch ++ ", so cannot merge " ++ Git.fromRef syncbranch ++ " into it."
+				warning $ UnquotedString $ "There are no commits yet to branch " ++ Git.fromRef branch ++ ", so cannot merge " ++ Git.fromRef syncbranch ++ " into it."
 				next $ return False
 	Nothing -> stop
 
@@ -533,7 +533,7 @@ importRemote importcontent o remote currbranch
 					-- mergeing it.
 					mc <- mergeConfig True
 					void $ mergeRemote remote currbranch mc o
-				else warning $ "Cannot import from " ++ Remote.name remote ++ " when not syncing content."
+				else warning $ UnquotedString $ "Cannot import from " ++ Remote.name remote ++ " when not syncing content."
   where
 	wantpull = remoteAnnexPull (Remote.gitconfig remote)
 
@@ -604,7 +604,7 @@ pushRemote o remote (Just branch, _) = do
 			if ok
 				then postpushupdate repo
 				else do
-					warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
+					warning $ UnquotedString $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
 					return ok
   where
 	ai = ActionItemOther (Just (UnquotedString (Remote.name remote)))

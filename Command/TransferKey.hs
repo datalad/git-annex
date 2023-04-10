@@ -57,7 +57,7 @@ toPerform key file remote = go Upload file $
 				Remote.logStatus remote key InfoPresent
 				return True
 			Left e -> do
-				warning (show e)
+				warning (UnquotedString (show e))
 				return False
 
 fromPerform :: Key -> AssociatedFile -> Remote -> CommandPerform
@@ -67,7 +67,7 @@ fromPerform key file remote = go Upload file $
 			tryNonAsync (Remote.retrieveKeyFile remote key file (fromRawFilePath t) p vc) >>= \case
 				Right v -> return (True, v)	
 				Left e -> do
-					warning (show e)
+					warning (UnquotedString (show e))
 					return (False, UnVerified)
   where
 	vc = RemoteVerify remote

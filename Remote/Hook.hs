@@ -128,7 +128,7 @@ lookupHook hookname action = do
 			fallback <- fromConfigValue <$> getConfig hookfallback mempty
 			if null fallback
 				then do
-					warning $ "missing configuration for " ++ fromConfigKey hook ++ " or " ++ fromConfigKey hookfallback
+					warning $ UnquotedString $ "missing configuration for " ++ fromConfigKey hook ++ " or " ++ fromConfigKey hookfallback
 					return Nothing
 				else return $ Just fallback
 		else return $ Just command
@@ -153,7 +153,7 @@ runHook' hook action k f a = maybe (return False) run =<< lookupHook hook action
 		ifM (progressCommandEnv "sh" [Param "-c", Param command] =<< liftIO (hookEnv action k f))
 			( a
 			, do
-				warning $ hook ++ " hook exited nonzero!"
+				warning $ UnquotedString $ hook ++ " hook exited nonzero!"
 				return False
 			)
 

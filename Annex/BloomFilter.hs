@@ -27,7 +27,8 @@ bloomBitsHashes = do
 	accuracy <- bloomAccuracy
 	case safeSuggestSizing capacity (1 / fromIntegral accuracy) of
 		Left e -> do
-			warning $ "bloomfilter " ++ e ++ "; falling back to sane value"
+			warning $ UnquotedString $
+				"bloomfilter " ++ e ++ "; falling back to sane value"
 			-- precaulculated value for 500000 (1/10000000)
 			return (16777216,23)
 		Right v -> return v

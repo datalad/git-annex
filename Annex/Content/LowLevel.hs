@@ -126,7 +126,8 @@ checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getRea
 				let delta = need + reserve - have - alreadythere + inprogress
 				let ok = delta <= 0
 				unless ok $
-					warning $ needMoreDiskSpace delta
+					warning $ UnquotedString $ 
+						needMoreDiskSpace delta
 				return ok
 			_ -> return True
 	)

@@ -192,7 +192,7 @@ accountCommandAction startmsg cleanup = tryNonAsync cleanup >>= \case
 	Left err -> case fromException err of
 		Just exitcode -> liftIO $ exitWith exitcode
 		Nothing -> do
-			toplevelWarning True (show err)
+			toplevelWarning True (UnquotedString (show err))
 			showEndMessage startmsg False
 			incerr
   where

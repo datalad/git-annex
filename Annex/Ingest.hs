@@ -48,7 +48,6 @@ import Utility.CopyFile
 import Utility.Touch
 import Utility.Metered
 import Git.FilePath
-import Git.Filename
 import Annex.InodeSentinal
 import Annex.AdjustedBranch
 import Annex.FileMatcher
@@ -88,7 +87,7 @@ data LockDownConfig = LockDownConfig
  -}
 lockDown :: LockDownConfig-> FilePath -> Annex (Maybe LockedDown)
 lockDown cfg file = either 
-		(\e -> warning (show e) >> return Nothing)
+		(\e -> warning (UnquotedString (show e)) >> return Nothing)
 		(return . Just)
 	=<< lockDown' cfg file
 
@@ -227,7 +226,7 @@ ingest' preferredbackend meterupdate (Just (LockedDown cfg source)) mk restage =
 		return (Just k, mcache)
 
 	failure msg = do
-		warning $ fromRawFilePath (keyFilename source) ++ " " ++ msg
+		warning $ QuotedPath (keyFilename source) <> " " <> UnquotedString msg
 		cleanCruft source
 		return (Nothing, Nothing)
 
@@ -299,7 +298,7 @@ restoreFile file key e = do
 		-- content in the annex, and make a copy back to the file.
 		obj <- fromRawFilePath <$> calcRepo (gitAnnexLocation key)
 		unlessM (liftIO $ copyFileExternal CopyTimeStamps obj (fromRawFilePath file)) $
-			warning $ "Unable to restore content of " ++ fromRawFilePath file ++ "; it should be located in " ++ obj
+			warning $ "Unable to restore content of " <> QuotedPath file <> "; it should be located in " <> QuotedPath (toRawFilePath obj)
 		thawContent file
 	throwM e
 
@@ -412,11 +411,10 @@ addingExistingLink :: RawFilePath -> Key -> Annex a -> Annex a
 addingExistingLink f k a = do
 	unlessM (isKnownKey k <||> inAnnex k) $ do
 		islink <- isJust <$> isAnnexLink f
-		warning $ unwords
-			[ fromRawFilePath f
-			, "is a git-annex"
-			, if islink then "symlink." else "pointer file."
-			, "Its content is not available in this repository."
-			, "(Maybe " ++ fromRawFilePath f ++ " was copied from another repository?)"
-			]
+		warning $
+			QuotedPath f
+			<> " is a git-annex "
+			<> if islink then "symlink." else "pointer file."
+			<> " Its content is not available in this repository."
+			<> " (Maybe " <> QuotedPath f <> " was copied from another repository?)"
 	a

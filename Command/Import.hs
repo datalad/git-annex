@@ -31,7 +31,6 @@ import Annex.RemoteTrackingBranch
 import Utility.InodeCache
 import Logs.Location
 import Git.FilePath
-import Git.Filename
 import Git.Types
 import Types.Import
 import Utility.Metered
@@ -171,7 +170,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 		ignored <- checkIgnored (checkGitIgnoreOption o) destfile
 		if ignored
 			then do
-				warning $ "not importing " ++ fromRawFilePath destfile ++ " which is .gitignored (use --no-check-gitignore to override)"
+				warning $ "not importing " <> QuotedPath destfile <> " which is .gitignored (use --no-check-gitignore to override)"
 				stop
 			else do
 				existing <- liftIO (catchMaybeIO $ R.getSymbolicLinkStatus destfile)
@@ -199,7 +198,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 			Just s
 				| isDirectory s -> cont
 				| otherwise -> do
-					warning $ "not importing " ++ fromRawFilePath destfile ++ " because " ++ fromRawFilePath destdir ++ " is not a directory"
+					warning $ "not importing " <> QuotedPath destfile <> " because " <> QuotedPath destdir <> " is not a directory"
 					stop
 
 	importfilechecked ld k = do
@@ -257,7 +256,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 			, Command.Add.addSmall (DryRun False) destfile s
 			)
 	notoverwriting why = do
-		warning $ "not overwriting existing " ++ fromRawFilePath destfile ++ " " ++ why
+		warning $ "not overwriting existing " <> QuotedPath destfile <> " " <> UnquotedString why
 		stop
 	lockdown a = do
 		let mi = MatchingFile $ FileInfo
@@ -335,7 +334,7 @@ seekRemote remote branch msubdir importcontent ci = do
 	liftIO (atomically (readTVar importabletvar)) >>= \case
 		Nothing -> return ()
 		Just importable -> importKeys remote importtreeconfig importcontent False importable >>= \case
-			Nothing -> warning $ concat
+			Nothing -> warning $ UnquotedString $ concat
 				[ "Failed to import some files from "
 				, Remote.name remote
 				, ". Re-run command to resume import."
@@ -388,5 +387,5 @@ commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig
 				setRemoteTrackingBranch tb c
 				return True
 			Nothing -> do
-				warning $ "Nothing to import and " ++ fromRef branch ++ " does not exist."
+				warning $ UnquotedString $ "Nothing to import and " ++ fromRef branch ++ " does not exist."
 				return False

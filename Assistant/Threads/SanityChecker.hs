@@ -127,7 +127,7 @@ sanityCheckerDailyThread urlrenderer = namedThread "SanityCheckerDaily" $ foreve
 		return r
 
 	showerr e = do
-		liftAnnex $ warning $ show e
+		liftAnnex $ warning $ UnquotedString $ show e
 		return False
 
 {- Only run one check per day, from the time of the last check. -}
@@ -198,7 +198,7 @@ dailyCheck urlrenderer = do
 	toonew timestamp now = now < (realToFrac (timestamp + slop) :: POSIXTime)
 	slop = fromIntegral tenMinutes
 	insanity msg = do
-		liftAnnex $ warning msg
+		liftAnnex $ warning (UnquotedString msg)
 		void $ addAlert $ sanityCheckFixAlert msg
 	addsymlink file s = do
 		Watcher.runHandler Watcher.onAddSymlink file s

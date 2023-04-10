@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Verify (
 	shouldVerify,
@@ -152,7 +153,7 @@ verifyKeySize k f = case fromKey keySize k of
 	Nothing -> return True
 
 warnUnverifiableInsecure :: Key -> Annex ()
-warnUnverifiableInsecure k = warning $ unwords
+warnUnverifiableInsecure k = warning $ UnquotedString $ unwords
 	[ "Getting " ++ kv ++ " keys with this remote is not secure;"
 	, "the content cannot be verified to be correct."
 	, "(Use annex.security.allow-unverified-downloads to bypass"

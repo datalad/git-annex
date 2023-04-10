@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.FromKey where
 
 import Command
@@ -130,7 +132,7 @@ perform matcher key file = lookupKeyNotHidden file >>= \case
 		| otherwise -> hasothercontent
   where
 	hasothercontent = do
-		warning $ fromRawFilePath file ++ " already exists with different content"
+		warning $ QuotedPath file <> " already exists with different content"
 		next $ return False
 	
 	linkunlocked = linkFromAnnex key file Nothing >>= \case

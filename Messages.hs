@@ -55,6 +55,7 @@ module Messages (
 import Control.Concurrent
 import Control.Monad.IO.Class
 import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
 
 import Common
 import Types
@@ -183,16 +184,16 @@ showOutput = unlessM commandProgressDisabled $
 	outputMessage JSON.none "\n"
 
 showLongNote :: String -> Annex ()
-showLongNote s = outputMessage (JSON.note s) (encodeBS (formatLongNote s))
+showLongNote s = outputMessage (JSON.note s) (formatLongNote (encodeBS s))
 
-formatLongNote :: String -> String
-formatLongNote s = '\n' : indent s ++ "\n"
+formatLongNote :: S.ByteString -> S.ByteString
+formatLongNote s = "\n" <> indent s <> "\n"
 
 -- Used by external special remote, displayed same as showLongNote
 -- to console, but json object containing the info is emitted immediately.
 showInfo :: String -> Annex ()
 showInfo s = outputMessage' outputJSON (JSON.info s) $
-	encodeBS (formatLongNote s)
+	formatLongNote (encodeBS s)
 
 showEndOk :: Annex ()
 showEndOk = showEndResult True
@@ -207,20 +208,20 @@ endResult :: Bool -> S.ByteString
 endResult True = "ok"
 endResult False = "failed"
 
-toplevelWarning :: Bool -> String -> Annex ()
-toplevelWarning makeway s = warning' makeway ("git-annex: " ++ s)
+toplevelWarning :: Bool -> StringContainingQuotedPath -> Annex ()
+toplevelWarning makeway s = warning' makeway id ("git-annex: " <> s)
 
-warning :: String -> Annex ()
-warning = warning' True . indent
+warning :: StringContainingQuotedPath -> Annex ()
+warning = warning' True indent
 
-earlyWarning :: String -> Annex ()
-earlyWarning = warning' False
+earlyWarning :: StringContainingQuotedPath -> Annex ()
+earlyWarning = warning' False id
 
-warning' :: Bool -> String -> Annex ()
-warning' makeway w = do
+warning' :: Bool -> (S.ByteString -> S.ByteString) -> StringContainingQuotedPath -> Annex ()
+warning' makeway consolewhitespacef w = do
 	when makeway $
 		outputMessage JSON.none "\n"
-	outputError (w ++ "\n")
+	outputError consolewhitespacef (w <> "\n")
 
 {- Not concurrent output safe. -}
 warningIO :: String -> IO ()
@@ -229,8 +230,8 @@ warningIO w = do
 	hFlush stdout
 	hPutStrLn stderr w
 
-indent :: String -> String
-indent = intercalate "\n" . map (\l -> "  " ++ l) . lines
+indent :: S.ByteString -> S.ByteString
+indent = S.intercalate "\n" . map ("  " <>) . S8.lines
 
 {- Shows a JSON chunk only when in json mode. -}
 maybeShowJSON :: JSON.JSONChunk v -> Annex ()

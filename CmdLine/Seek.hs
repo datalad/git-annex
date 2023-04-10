@@ -9,6 +9,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module CmdLine.Seek where
 
 import Annex.Common
@@ -566,9 +568,9 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 			let p' = toRawFilePath p
 			relf <- liftIO $ relPathCwdToFile p'
 			ifM (not <$> (exists p' <||> hidden currbranch relf))
-				( prob (p ++ " not found")
+				( prob (QuotedPath (toRawFilePath p) <> " not found")
 				, ifM (viasymlink stopattop (upFrom relf))
-					( prob (p ++ " is beyond a symbolic link")
+					( prob (QuotedPath (toRawFilePath p) <> " is beyond a symbolic link")
 					, return True
 					)
 				)
@@ -628,7 +630,7 @@ mkCheckTimeLimit = Annex.getState Annex.timelimit >>= \case
 						swapTVar warningshownv True
 					unless warningshown $ do
 						Annex.changeState $ \s -> s { Annex.reachedlimit = True }
-						warning $ "Time limit (" ++ fromDuration duration ++ ") reached! Shutting down..."
+						warning $ UnquotedString $ "Time limit (" ++ fromDuration duration ++ ") reached! Shutting down..."
 						cleanup
 				else a
 

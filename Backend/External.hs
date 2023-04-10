@@ -139,7 +139,8 @@ handleRequest st req whenunavail responsehandler =
 		loop
   where
 	handleExceptionalMessage _ (ERROR err) = do
-		warning ("external special remote error: " ++ err)
+		warning $ UnquotedString $
+			"external special remote error: " ++ err
 		whenunavail
 	handleExceptionalMessage loop (DEBUG msg) = do
 		fastDebug "Backend.External" msg
@@ -237,7 +238,7 @@ newExternalState ebname hasext pid = do
   where
 	basecmd = externalBackendProgram ebname
 	warnonce msg = when (pid == 1) $
-		warning msg
+		warning (UnquotedString msg)
 
 externalBackendProgram :: ExternalBackendName -> String
 externalBackendProgram (ExternalBackendName bname) = "git-annex-backend-X" ++ decodeBS bname

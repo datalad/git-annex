@@ -253,7 +253,7 @@ discoverLFSEndpoint tro h
 			warning "Unable to parse ssh url for git-lfs remote."
 			return Nothing
 		Just (Left err) -> do
-			warning err
+			warning (UnquotedString err)
 			return Nothing
 		Just (Right hostuser) -> do
 			let port = Git.Url.port r
@@ -275,11 +275,11 @@ discoverLFSEndpoint tro h
 			(sshcommand, sshparams) <- sshCommand NoConsumeStdin (hostuser, port) (remoteGitConfig h) remotecmd
 			liftIO (tryIO (readProcess sshcommand (toCommand sshparams))) >>= \case
 				Left err -> do
-					warning $ "ssh connection to git-lfs remote failed: " ++ show err
+					warning $ UnquotedString $ "ssh connection to git-lfs remote failed: " ++ show err
 					return Nothing
 				Right resp -> case LFS.parseSshDiscoverEndpointResponse (fromString resp) of
 					Nothing -> do
-						warning $ "unexpected response from git-lfs remote when doing ssh endpoint discovery"
+						warning "unexpected response from git-lfs remote when doing ssh endpoint discovery"
 						return Nothing
 					Just endpoint -> return (Just endpoint)
 	

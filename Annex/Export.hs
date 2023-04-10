@@ -15,6 +15,7 @@ import Types
 import Types.Key
 import qualified Git
 import qualified Types.Remote as Remote
+import Git.Filename
 import Messages
 
 import Data.Maybe
@@ -63,7 +64,7 @@ warnExportImportConflict r = do
 		(False, True) -> ("imported from", "git-annex import")
 		(True, False) -> ("exported to", "git-annex export")
 		_ -> ("exported to and/or imported from", "git-annex export")
-	toplevelWarning True $ unwords
+	toplevelWarning True $ UnquotedString $ unwords
 		[ "Conflict detected. Different trees have been"
 		, ops, Remote.name r ++ ". Use"
 		, resolvcmd

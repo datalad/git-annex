@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Remote.Adb (remote) where
 

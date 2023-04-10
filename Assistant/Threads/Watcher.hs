@@ -184,7 +184,7 @@ runHandler :: Handler -> FilePath -> Maybe FileStatus -> Assistant ()
 runHandler handler file filestatus = void $ do
 	r <- tryIO <~> handler (normalize file) filestatus
 	case r of
-		Left e -> liftAnnex $ warning $ show e
+		Left e -> liftAnnex $ warning $ UnquotedString $ show e
 		Right Nothing -> noop
 		Right (Just change) -> recordChange change
   where
@@ -371,6 +371,6 @@ onDelDir dir _ = do
 {- Called when there's an error with inotify or kqueue. -}
 onErr :: Handler
 onErr msg _ = do
-	liftAnnex $ warning msg
+	liftAnnex $ warning (UnquotedString msg)
 	void $ addAlert $ warningAlert "watcher" msg
 	noChange

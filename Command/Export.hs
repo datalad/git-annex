@@ -435,7 +435,7 @@ performRename r db ek src dest =
 	tryNonAsync (renameExport (exportActions r) ek src dest) >>= \case
 		Right (Just ()) -> next $ cleanupRename r db ek src dest
 		Left err -> do
-			warning $ "rename failed (" ++ show err ++ "); deleting instead"
+			warning $ UnquotedString $ "rename failed (" ++ show err ++ "); deleting instead"
 			fallbackdelete
 		-- remote does not support renaming
 		Right Nothing -> fallbackdelete

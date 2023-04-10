@@ -18,7 +18,6 @@ import Utility.Metered
 import Annex.WorkTree
 import qualified Git
 import qualified Annex
-import Git.Filename
 
 cmd :: Command
 cmd = withAnnexOptions [backendOption] $

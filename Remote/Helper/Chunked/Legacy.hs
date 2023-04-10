@@ -100,7 +100,7 @@ storeChunked annexrunner chunksize dests storer content =
 		| otherwise = storechunks sz [] dests content
 		
 	onerr e = do
-		annexrunner $ warning (show e)
+		annexrunner $ warning (UnquotedString (show e))
 		return []
 	
 	storechunks _ _ [] _ = return [] -- ran out of dests

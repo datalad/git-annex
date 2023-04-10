@@ -167,7 +167,7 @@ performRemote key afile backend numcopies remote =
 			Just (Right verification) -> go True (Just (tmpfile, verification))
 			Just (Left _) -> do
 				qp <- coreQuotePath <$> Annex.getGitConfig
-				warning (decodeBS (actionItemDesc qp ai) ++ ": failed to download file from remote")
+				warning $ UnquotedString (decodeBS (actionItemDesc qp ai)) <> ": failed to download file from remote"
 				void $ go True Nothing
 				return False
 	dispatch (Right False) = go False Nothing
@@ -320,7 +320,7 @@ verifyLocationLog key keystatus ai = do
 			KeyLockedThin -> thawContent obj
 			_ -> freezeContent obj
 		checkContentWritePerm obj >>= \case
-			Nothing -> warning $ "** Unable to set correct write mode for " ++ fromRawFilePath obj ++ " ; perhaps you don't own that file, or perhaps it has an xattr or ACL set"
+			Nothing -> warning $ "** Unable to set correct write mode for " <> QuotedPath obj <> " ; perhaps you don't own that file, or perhaps it has an xattr or ACL set"
 			_ -> return ()
 	whenM (liftIO $ R.doesPathExist $ parentDir obj) $
 		freezeContentDir obj
@@ -331,7 +331,7 @@ verifyLocationLog key keystatus ai = do
 	 - config was set. -}
 	whenM (pure present <&&> (not <$> Backend.isCryptographicallySecure key)) $
 		whenM (annexSecureHashesOnly <$> Annex.getGitConfig) $
-			warning $ "** Despite annex.securehashesonly being set, " ++ fromRawFilePath obj ++ " has content present in the annex using an insecure " ++ decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " key"
+			warning $ "** Despite annex.securehashesonly being set, " <> QuotedPath obj <> " has content present in the annex using an insecure " <> UnquotedString (decodeBS (formatKeyVariety (fromKey keyVariety key))) <> " key"
 
 	verifyLocationLog' key ai present u (logChange key u)
 
@@ -352,9 +352,9 @@ verifyLocationLog' key ai present u updatestatus = do
 			fix InfoMissing
 			qp <- coreQuotePath <$> Annex.getGitConfig
 			warning $
-				"** Based on the location log, " ++
-				decodeBS (actionItemDesc qp ai) ++
-				"\n** was expected to be present, " ++
+				"** Based on the location log, " <>
+				QuotedPath (actionItemDesc qp ai) <>
+				"\n** was expected to be present, " <>
 				"but its content is missing."
 			return False
 		(False, False) -> do
@@ -393,10 +393,10 @@ verifyRequiredContent key ai@(ActionItemAssociatedFile afile _) = case afile of
 				qp <- coreQuotePath <$> Annex.getGitConfig
 				missingrequired <- Remote.prettyPrintUUIDs "missingrequired" missinglocs
 				warning $
-					"** Required content " ++
-					decodeBS (actionItemDesc qp ai) ++
-					" is missing from these repositories:\n" ++
-					missingrequired
+					"** Required content " <>
+					QuotedPath (actionItemDesc qp ai) <>
+					" is missing from these repositories:\n" <>
+					UnquotedString missingrequired
 				return False
 verifyRequiredContent _ _ = return True
 
@@ -468,13 +468,12 @@ checkKeySizeOr bad key file ai = case fromKey keySize key of
 	badsize a b = do
 		msg <- bad key
 		qp <- coreQuotePath <$> Annex.getGitConfig
-		warning $ concat
-			[ decodeBS (actionItemDesc qp ai)
-			, ": Bad file size ("
-			, compareSizes storageUnits True a b
-			, "); "
-			, msg
-			]
+		warning $
+			QuotedPath (actionItemDesc qp ai)
+			<> ": Bad file size ("
+			<> UnquotedString (compareSizes storageUnits True a b)
+			<> "); "
+			<> UnquotedString msg
 
 {- Check for keys that are upgradable.
  -
@@ -487,13 +486,13 @@ checkKeyUpgrade backend key ai (AssociatedFile (Just file)) =
 	case Types.Backend.canUpgradeKey backend of
 		Just a | a key -> do
 			qp <- coreQuotePath <$> Annex.getGitConfig
-			warning $ concat
-				[ decodeBS (actionItemDesc qp ai)
-				, ": Can be upgraded to an improved key format. "
-				, "You can do so by running: git annex migrate --backend="
-				, decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " "
-				, decodeBS file
-				]
+			warning $
+				QuotedPath (actionItemDesc qp ai)
+				<> ": Can be upgraded to an improved key format. "
+				<> "You can do so by running: git annex migrate --backend="
+				<> UnquotedString (decodeBS (formatKeyVariety (fromKey keyVariety key))) 
+				<> " "
+				<> QuotedPath file
 			return True
 		_ -> return True
 checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
@@ -539,11 +538,10 @@ checkBackendOr bad backend key file ai =
 			unless ok $ do
 				msg <- bad key
 				qp <- coreQuotePath <$> Annex.getGitConfig
-				warning $ concat
-					[ decodeBS (actionItemDesc qp ai)
-					, ": Bad file content; "
-					, msg
-					]
+				warning $
+					QuotedPath (actionItemDesc qp ai)
+					<> ": Bad file content; "
+					<> UnquotedString msg
 			return ok
 		Nothing -> return True
 
@@ -568,17 +566,16 @@ checkInodeCache key content mic ai = case mic of
 					Nothing -> noop
 					Just ic' -> whenM (compareInodeCaches ic ic') $ do
 						qp <- coreQuotePath <$> Annex.getGitConfig
-						warning $ concat
-							[ decodeBS (actionItemDesc qp ai)
-							, ": Stale or missing inode cache; updating."
-							]
+						warning $
+							QuotedPath (actionItemDesc qp ai)
+							<> ": Stale or missing inode cache; updating."
 						Database.Keys.addInodeCaches key [ic]
 
 checkKeyNumCopies :: Key -> AssociatedFile -> NumCopies -> Annex Bool
 checkKeyNumCopies key afile numcopies = do
 	let (desc, hasafile) = case afile of
-		AssociatedFile Nothing -> (serializeKey key, False)
-		AssociatedFile (Just af) -> (fromRawFilePath af, True)
+		AssociatedFile Nothing -> (serializeKey' key, False)
+		AssociatedFile (Just af) -> (af, True)
 	locs <- loggedLocations key
 	(untrustedlocations, otherlocations) <- trustPartition UnTrusted locs
 	(deadlocations, safelocations) <- trustPartition DeadTrusted otherlocations
@@ -598,21 +595,21 @@ checkKeyNumCopies key afile numcopies = do
 			)
 		else return True
 
-missingNote :: String -> Int -> NumCopies -> String -> String -> String
+missingNote :: RawFilePath -> Int -> NumCopies -> String -> String -> StringContainingQuotedPath
 missingNote file 0 _ [] dead = 
-		"** No known copies exist of " ++ file ++ honorDead dead
+		"** No known copies exist of " <> QuotedPath file <> UnquotedString (honorDead dead)
 missingNote file 0 _ untrusted dead =
-		"Only these untrusted locations may have copies of " ++ file ++
-		"\n" ++ untrusted ++
-		"Back it up to trusted locations with git-annex copy." ++ honorDead dead
+		"Only these untrusted locations may have copies of " <> QuotedPath file <>
+		"\n" <> UnquotedString untrusted <>
+		"Back it up to trusted locations with git-annex copy." <> UnquotedString (honorDead dead)
 missingNote file present needed [] _ =
-		"Only " ++ show present ++ " of " ++ show (fromNumCopies needed) ++ 
-		" trustworthy copies exist of " ++ file ++
+		"Only " <> UnquotedString (show present) <> " of " <> UnquotedString (show (fromNumCopies needed)) <>
+		" trustworthy copies exist of " <> QuotedPath file <>
 		"\nBack it up with git-annex copy."
 missingNote file present needed untrusted dead = 
-		missingNote file present needed [] dead ++
-		"\nThe following untrusted locations may also have copies: " ++
-		"\n" ++ untrusted
+		missingNote file present needed [] dead <>
+		"\nThe following untrusted locations may also have copies: " <>
+		"\n" <> UnquotedString untrusted
 	
 honorDead :: String -> String
 honorDead dead

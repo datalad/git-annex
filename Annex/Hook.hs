@@ -66,7 +66,8 @@ hookUnWrite h = unlessM (inRepo $ Git.hookUnWrite h) $
 hookWarning :: Git.Hook -> String -> Annex ()
 hookWarning h msg = do
 	r <- gitRepo
-	warning $ Git.hookName h ++ " hook (" ++ Git.hookFile h r ++ ") " ++ msg
+	warning $ UnquotedString $
+		Git.hookName h ++ " hook (" ++ Git.hookFile h r ++ ") " ++ msg
 
 {- Runs a hook. To avoid checking if the hook exists every time,
  - the existing hooks are cached. -}
@@ -84,4 +85,4 @@ runAnnexHook hook = do
   where
 	run = unlessM (inRepo $ Git.runHook hook) $ do
 		h <- fromRepo $ Git.hookFile hook
-		warning $ h ++ " failed"
+		warning $ UnquotedString $ h ++ " failed"

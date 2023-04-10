@@ -36,7 +36,7 @@ behave more like git.
 > Update: Most git-annex commands now quote filenames, due to work on
 > ActionItem display. `git-annex find`, `git-annex info $file`,
 > and everywhere filenames get
-> embedded in warnings, info messages, still need to be done.
+> embedded in info messages still need to be done.
 
 ----
 

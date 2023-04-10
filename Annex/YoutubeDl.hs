@@ -148,7 +148,7 @@ youtubeDlTo key url dest p = do
 				return (Just True)
 			Right Nothing -> return (Just False)
 			Left msg -> do
-				warning msg
+				warning (UnquotedString msg)
 				return Nothing
 	return (fromMaybe False res)
 

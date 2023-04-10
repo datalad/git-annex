@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, BangPatterns #-}
+{-# LANGUAGE CPP, BangPatterns, OverloadedStrings #-}
 
 module Annex.Transfer (
 	module X,
@@ -200,7 +200,7 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 				| observeBool v -> return v
 				| otherwise -> checkretry
 			Left e -> do
-				warning (show e)
+				warning (UnquotedString (show e))
 				checkretry
 	  where
 		checkretry = do
@@ -289,7 +289,7 @@ preCheckSecureHashes k meventualbackend a = case meventualbackend of
 			)
 		)
 	blocked variety = do
-		warning $ "annex.securehashesonly blocked transfer of " ++ decodeBS (formatKeyVariety variety) ++ " key"
+		warning $ UnquotedString $ "annex.securehashesonly blocked transfer of " ++ decodeBS (formatKeyVariety variety) ++ " key"
 		return observeFailure
 
 type NumRetries = Integer

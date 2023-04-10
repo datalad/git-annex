@@ -34,7 +34,6 @@ import Utility.Metered
 import Utility.HtmlDetect
 import Utility.Path.Max
 import Utility.Url (parseURIPortable)
-import Git.Filename
 import qualified Utility.RawFilePath as R
 import qualified Annex.Transfer as Transfer
 
@@ -154,7 +153,7 @@ checkUrl addunlockedmatcher r o si u = do
   where
 
 	go _ (Left e) = void $ commandAction $ startingAddUrl si u o $ do
-		warning (show e)
+		warning (UnquotedString (show e))
 		next $ return False
 	go deffile (Right (UrlContents sz mf)) = do
 		f <- maybe (pure deffile) (sanitizeOrPreserveFilePath o) mf
@@ -234,7 +233,7 @@ startWeb addunlockedmatcher o si urlstring = go $ fromMaybe bad $ parseURIPortab
 			else Url.withUrlOptions (Url.getUrlInfo urlstring) >>= \case
 				Right urlinfo -> go' url urlinfo
 				Left err -> do
-					warning err
+					warning (UnquotedString err)
 					next $ return False
 	go' url urlinfo = do
 		pathmax <- liftIO $ fileNameLengthLimit "."
@@ -306,7 +305,7 @@ addUrlChecked o url file u checkexistssize key =
 					logChange key u InfoPresent
 					next $ return True
 				| otherwise -> do
-					warning $ "while adding a new url to an already annexed file, " ++ if exists
+					warning $ UnquotedString $ "while adding a new url to an already annexed file, " ++ if exists
 						then "url does not have expected file size (use --relaxed to bypass this check) " ++ url
 						else "failed to verify url exists: " ++ url
 					stop
@@ -347,7 +346,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 		Right mediafile -> 
 			let f = youtubeDlDestFile o file (toRawFilePath mediafile)
 			in lookupKey f >>= \case
-				Just k -> alreadyannexed (fromRawFilePath f) k
+				Just k -> alreadyannexed f k
 				Nothing -> dl f
 		Left err -> checkRaw (Just err) o Nothing (normalfinish tmp backend)
 	  where
@@ -366,7 +365,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 						Right Nothing -> checkRaw Nothing o Nothing (normalfinish tmp backend)
 						Left msg -> do
 							cleanuptmp
-							warning msg
+							warning (UnquotedString msg)
 							return Nothing
 		mediaurl = setDownloader url YoutubeDownloader
 		mediakey = Backend.URL.fromUrl mediaurl Nothing
@@ -377,13 +376,13 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 			if mediaurl `elem` us
 				then return (Just k)
 				else do
-					warning $ dest ++ " already exists; not overwriting"
+					warning $ QuotedPath dest <> " already exists; not overwriting"
 					return Nothing
 	
 checkRaw :: (Maybe String) -> DownloadOptions -> a -> Annex a -> Annex a
 checkRaw failreason o f a
 	| noRawOption o = do
-		warning $ "Unable to use youtube-dl or a special remote and --no-raw was specified" ++
+		warning $ UnquotedString $ "Unable to use youtube-dl or a special remote and --no-raw was specified" ++
 			case failreason of
 				Just msg -> ": " ++ msg
 				Nothing -> ""
@@ -507,7 +506,7 @@ nodownloadWeb addunlockedmatcher o url urlinfo file
 			Right mediafile -> usemedia (toRawFilePath mediafile)
 			Left err -> checkRaw (Just err) o Nothing nomedia
 	| otherwise = do
-		warning $ "unable to access url: " ++ url
+		warning $ UnquotedString $ "unable to access url: " ++ url
 		return Nothing
   where
 	nomedia = do
@@ -565,11 +564,11 @@ data CanAddFile = CanAddFile
 checkCanAdd :: DownloadOptions -> RawFilePath -> (CanAddFile -> Annex (Maybe a)) -> Annex (Maybe a)
 checkCanAdd o file a = ifM (isJust <$> (liftIO $ catchMaybeIO $ R.getSymbolicLinkStatus file))
 	( do
-		warning $ fromRawFilePath file ++ " already exists; not overwriting"
+		warning $ QuotedPath file <> " already exists; not overwriting"
 		return Nothing
 	, ifM (checkIgnored (checkGitIgnoreOption o) file)
 		( do
-			warning $ "not adding " ++ fromRawFilePath file ++ " which is .gitignored (use --no-check-gitignore to override)"
+			warning $ "not adding " <> QuotedPath file <> " which is .gitignored (use --no-check-gitignore to override)"
 			return Nothing
 		, a CanAddFile
 		)

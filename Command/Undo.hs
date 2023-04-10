@@ -14,7 +14,6 @@ import Git.DiffTree
 import Git.FilePath
 import Git.UpdateIndex
 import Git.Sha
-import Git.Filename
 import qualified Annex
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Command as Git

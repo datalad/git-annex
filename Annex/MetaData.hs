@@ -56,7 +56,7 @@ genMetaData key file mmtime = do
 					dateMetaData (posixSecondsToUTCTime mtime) old
 			Nothing -> noop
   where
-	warncopied = warning $ 
+	warncopied = warning $ UnquotedString $
 		"Copied metadata from old version of " ++ fromRawFilePath file ++ " to new version. " ++ 
 		"If you don't want this copied metadata, run: git annex metadata --remove-all " ++ fromRawFilePath file
 	-- If the only fields copied were date metadata, and they'll

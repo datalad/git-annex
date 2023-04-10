@@ -99,7 +99,7 @@ autoEnable = do
 				showSideAction $ "Auto enabling special remote " ++ name
 				dummycfg <- liftIO dummyRemoteGitConfig
 				tryNonAsync (setup t (AutoEnable c) (Just u) Nothing c dummycfg) >>= \case
-					Left e -> warning (show e)
+					Left e -> warning (UnquotedString (show e))
 					Right (_c, _u) ->
 						when (cu /= u) $
 							setConfig (remoteAnnexConfig c "config-uuid") (fromUUID cu)

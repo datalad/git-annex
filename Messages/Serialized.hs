@@ -21,6 +21,7 @@ import Messages.Internal
 import Messages.Progress
 import qualified Messages.JSON as JSON
 import Utility.Metered (BytesProcessed, setMeterTotalSize)
+import Git.Filename
 
 import Control.Monad.IO.Class (MonadIO)
 
@@ -54,7 +55,7 @@ relaySerializedOutput getso sendsor meterreport runannex = go Nothing
 				msg
 			loop st
 		Left (OutputError msg) -> do
-			runannex $ outputError msg
+			runannex $ outputError id $ UnquotedString msg
 			loop st		
 		Left (JSONObject b) -> do
 			runannex $ withMessageState $ \s -> case outputType s of

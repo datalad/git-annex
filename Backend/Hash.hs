@@ -130,7 +130,7 @@ checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 		_ -> return True
   where
 	hwfault e = do
-		warning $ "hardware fault: " ++ show e
+		warning $ UnquotedString $ "hardware fault: " ++ show e
 		return False
 
 sameCheckSum :: Key -> String -> Bool

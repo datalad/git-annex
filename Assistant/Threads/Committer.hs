@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 
 module Assistant.Threads.Committer where
 
@@ -433,8 +433,8 @@ safeToAdd lockdowndir lockdownconfig havelsof delayadd pending inprocess = do
 
 	canceladd (InProcessAddChange { lockedDown = ld }) = do
 		let ks = keySource ld
-		warning $ fromRawFilePath (keyFilename ks)
-			++ " still has writers, not adding"
+		warning $ QuotedPath (keyFilename ks)
+			<> " still has writers, not adding"
 		-- remove the hard link
 		when (contentLocation ks /= keyFilename ks) $
 			void $ liftIO $ tryIO $ removeFile $ fromRawFilePath $ contentLocation ks

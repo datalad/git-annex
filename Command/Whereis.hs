@@ -142,7 +142,7 @@ getRemoteUrls key remote
 		Just w -> tryNonAsync (w key) >>= \case
 			Right l -> pure l
 			Left e -> do
-				warning $ unwords
+				warning $ UnquotedString $ unwords
 					[ "unable to query remote"
 					, name remote
 					, "for urls:"

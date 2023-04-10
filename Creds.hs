@@ -156,7 +156,7 @@ getRemoteCredPairFor :: String -> ParsedRemoteConfig -> RemoteGitConfig -> CredP
 getRemoteCredPairFor this c gc storage = go =<< getRemoteCredPair c gc storage
   where
 	go Nothing = do
-		warning $ missingCredPairFor this storage
+		warning $ UnquotedString $ missingCredPairFor this storage
 		return Nothing
 	go (Just credpair) = return $ Just credpair
 

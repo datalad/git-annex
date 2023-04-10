@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Annex.Content (
 	inAnnex,
@@ -447,7 +448,7 @@ checkSecureHashes' :: Key -> Annex Bool
 checkSecureHashes' key = checkSecureHashes key >>= \case
 	Nothing -> return True
 	Just msg -> do
-		warning $ msg ++ "to annex objects"
+		warning $ UnquotedString $ msg ++ "to annex objects"
 		return False
 
 data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
@@ -760,9 +761,10 @@ downloadUrl listfailedurls k p iv urls file uo =
 	go [] [] = return False
 	go [] errs@((_, err):_) = do
 		if listfailedurls
-			then warning $ unlines $ flip map errs $ \(u, err') ->
-				u ++ " " ++ err'
-			else warning err
+			then warning $ UnquotedString $
+				unlines $ flip map errs $ \(u, err') ->
+					u ++ " " ++ err'
+			else warning $ UnquotedString err
 		return False
 
 {- Copies a key's content, when present, to a temp file.

@@ -32,6 +32,7 @@ import Utility.LockPool.STM (LockFile, LockMode(..))
 import Utility.LockFile.LockStatus
 import Config (pidLockFile)
 import Messages (warning)
+import Git.Filename
 
 import System.Posix
 
@@ -74,7 +75,7 @@ pidLock m f lockmode posixlock = debugLocks $ go =<< pidLockFile
 	go (Just pidlock) = do
 		timeout <- annexPidLockTimeout <$> Annex.getGitConfig
 		liftIO $ dummyPosixLock m f
-		Pid.waitLock f lockmode timeout pidlock warning
+		Pid.waitLock f lockmode timeout pidlock (warning . UnquotedString)
 
 tryPidLock :: Maybe FileMode -> LockFile -> LockMode -> IO (Maybe LockHandle) -> Annex (Maybe LockHandle)
 tryPidLock m f lockmode posixlock = debugLocks $ liftIO . go =<< pidLockFile

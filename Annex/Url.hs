@@ -6,6 +6,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.Url (
 	withUrlOptions,
 	withUrlOptionsPromptingCreds,
@@ -166,13 +168,13 @@ checkBoth :: U.URLString -> Maybe Integer -> U.UrlOptions -> Annex Bool
 checkBoth url expected_size uo =
 	liftIO (U.checkBoth url expected_size uo) >>= \case
 		Right r -> return r
-		Left err -> warning err >> return False
+		Left err -> warning (UnquotedString err) >> return False
 
 download :: MeterUpdate -> Maybe IncrementalVerifier -> U.URLString -> FilePath -> U.UrlOptions -> Annex Bool
 download meterupdate iv url file uo =
 	liftIO (U.download meterupdate iv url file uo) >>= \case
 		Right () -> return True
-		Left err -> warning err >> return False
+		Left err -> warning (UnquotedString err) >> return False
 
 download' :: MeterUpdate -> Maybe IncrementalVerifier -> U.URLString -> FilePath -> U.UrlOptions -> Annex (Either String ())
 download' meterupdate iv url file uo =
@@ -181,7 +183,7 @@ download' meterupdate iv url file uo =
 exists :: U.URLString -> U.UrlOptions -> Annex Bool
 exists url uo = liftIO (U.exists url uo) >>= \case
 	Right b -> return b
-	Left err -> warning err >> return False
+	Left err -> warning (UnquotedString err) >> return False
 
 getUrlInfo :: U.URLString -> U.UrlOptions -> Annex (Either String U.UrlInfo)
 getUrlInfo url uo = liftIO (U.getUrlInfo url uo)

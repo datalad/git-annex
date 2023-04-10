@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.Smudge where
 
 import Command
@@ -142,7 +144,7 @@ clean' file mk passthrough discardreststdin emitpointer =
 		Right Nothing -> notpointer
 		Left InvalidAppendedPointerFile -> do
 			toplevelWarning False $
-				"The file \"" ++ fromRawFilePath file ++ "\" looks like git-annex pointer file that has had other content appended to it"
+				"The file " <> QuotedPath file <> " looks like git-annex pointer file that has had other content appended to it"
 			notpointer
 
 	notpointer = inRepo (Git.Ref.fileRef file) >>= \case
@@ -329,5 +331,5 @@ updateSmudged restage = streamSmudged $ \k topf -> do
 					else Database.Keys.addInodeCaches k [ic]
 			Nothing -> liftIO (isPointerFile f) >>= \case
 				Just k' | k' == k -> toplevelWarning False $
-					"unable to populate worktree file " ++ fromRawFilePath f
+					"unable to populate worktree file " <> QuotedPath f
 				_ -> noop

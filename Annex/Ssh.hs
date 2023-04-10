@@ -120,8 +120,8 @@ sshCachingInfo (host, port) = go =<< sshCacheDir'
 	
 	warnnocaching whynocaching =
 		whenM (annexAdviceNoSshCaching <$> Annex.getGitConfig) $ do
-			warning nocachingwarning
-			warning whynocaching
+			warning $ UnquotedString nocachingwarning
+			warning $ UnquotedString whynocaching
 	
 	nocachingwarning = unwords
 		[ "You have enabled concurrency, but git-annex is not able"

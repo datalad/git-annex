@@ -19,7 +19,6 @@ import Annex.ReplaceFile
 import Logs.Location
 import Annex.InodeSentinal
 import Annex.WorkTree
-import Git.Filename
 import Utility.InodeCache
 import qualified Utility.RawFilePath as R
 
@@ -118,7 +117,7 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 		ic <- withTSDelta (liftIO . genInodeCache file)
 		case v of
 			Left e -> do
-				warning (show e)
+				warning (UnquotedString (show e))
 				return False
 			Right () -> do
 				r <- linkToAnnex newkey file ic

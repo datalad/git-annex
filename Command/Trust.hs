@@ -40,7 +40,7 @@ trustCommand c level ps = withStrings (commandAction . start) ps
 			groupSet uuid S.empty
 		l <- lookupTrust uuid
 		when (l /= level) $
-			warning $ "This remote's trust level is overridden to " ++ showTrustLevel l ++ "."
+			warning $ UnquotedString $ "This remote's trust level is overridden to " ++ showTrustLevel l ++ "."
 		next $ return True
 
 trustedNeedsForce :: String -> String

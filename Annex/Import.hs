@@ -510,7 +510,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 					showNote "old version"
 				tryNonAsync (importordownload cidmap db i largematcher) >>= \case
 					Left e -> next $ do
-						warning (show e)
+						warning (UnquotedString (show e))
 						liftIO $ atomically $
 							putTMVar job Nothing
 						return False
@@ -535,7 +535,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 						return $ Just (loc, Right k)
 					Right Nothing -> return Nothing
 					Left e -> do
-						warning (show e)
+						warning (UnquotedString (show e))
 						return Nothing
 	
 	importordownload cidmap db (loc, (cid, sz)) largematcher= do
@@ -578,7 +578,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			Right (Just (k, True)) -> return $ Just (loc, Right k)
 			Right _ -> return Nothing
 			Left e -> do
-				warning (show e)
+				warning (UnquotedString (show e))
 				return Nothing
 	  where
 		importer = do
@@ -634,7 +634,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				tryNonAsync (downloader tmpfile) >>= \case
 					Right sha -> return $ Just (loc, Left sha)
 					Left e -> do
-						warning (show e)
+						warning (UnquotedString (show e))
 						return Nothing
 	  where
 		tmpkey = importKey cid sz
@@ -662,7 +662,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			Right (v, True) -> return $ Just (loc, v)
 			Right (_, False) -> return Nothing
 			Left e -> do
-				warning (show e)
+				warning (UnquotedString (show e))
 				return Nothing
 		let bwlimit = remoteAnnexBwLimit (Remote.gitconfig remote)
 		checkDiskSpaceToGet tmpkey Nothing $

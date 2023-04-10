@@ -275,12 +275,12 @@ tryGitConfigRead autoinit r hasuuid
 		case v of
 			Right (r', val, _err) -> do
 				unless (isUUIDConfigured r' || S.null val || not mustincludeuuuid) $ do
-					warning $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
-					warning $ "Instead, got: " ++ show val
-					warning $ "This is unexpected; please check the network transport!"
+					warning $ UnquotedString $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
+					warning $ UnquotedString $ "Instead, got: " ++ show val
+					warning "This is unexpected; please check the network transport!"
 				return $ Right r'
 			Left l -> do
-				warning $ "Unable to parse git config from " ++ configloc
+				warning $ UnquotedString $ "Unable to parse git config from " ++ configloc
 				return $ Left (show l)
 
 	geturlconfig = Url.withUrlOptionsPromptingCreds $ \uo -> do
@@ -306,7 +306,7 @@ tryGitConfigRead autoinit r hasuuid
 				return r'
 			Left err -> do
 				set_ignore "not usable by git-annex" False
-				warning $ url ++ " " ++ err
+				warning $ UnquotedString $ url ++ " " ++ err
 				return r
 
 	{- Is this remote just not available, or does
@@ -323,9 +323,9 @@ tryGitConfigRead autoinit r hasuuid
 		case Git.remoteName r of
 			Nothing -> noop
 			Just n -> do
-				warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting annex-ignore"
+				warning $ UnquotedString $ "Remote " ++ n ++ " " ++ msg ++ "; setting annex-ignore"
 				when longmessage $
-					warning $ "This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote " ++ n
+					warning $ UnquotedString $ "This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote " ++ n
 		setremote setRemoteIgnore True
 	
 	setremote setter v = case Git.remoteName r of
@@ -348,7 +348,7 @@ tryGitConfigRead autoinit r hasuuid
 		let check = do
 			Annex.BranchState.disableUpdate
 			catchNonAsync (autoInitialize (pure [])) $ \e ->
-				warning $ "Remote " ++ Git.repoDescribe r ++
+				warning $ UnquotedString $ "Remote " ++ Git.repoDescribe r ++
 					": "  ++ show e
 			Annex.getState Annex.repo
 		s <- newLocal r
@@ -359,7 +359,7 @@ tryGitConfigRead autoinit r hasuuid
 		unless hasuuid $ case Git.remoteName r of
 			Nothing -> noop
 			Just n -> do
-				warning $ "Remote " ++ n ++ " cannot currently be accessed."
+				warning $ UnquotedString $ "Remote " ++ n ++ " cannot currently be accessed."
 		return r
 		
 	configlistfields = if autoinit
@@ -770,7 +770,7 @@ mkState r u gc = do
 					let ok = u' == u
 					void $ liftIO $ tryPutMVar cv ok
 					unless ok $
-						warning $ Git.repoDescribe r ++ " is not the expected repository. The remote's annex-checkuuid configuration prevented noticing the change until now."
+						warning $ UnquotedString $ Git.repoDescribe r ++ " is not the expected repository. The remote's annex-checkuuid configuration prevented noticing the change until now."
 					return ok
 				, liftIO $ readMVar cv
 				)

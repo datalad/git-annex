@@ -59,7 +59,7 @@ upgrade automatic = flip catchNonAsync onexception $ do
 	return UpgradeSuccess
   where
 	onexception e = do
-		warning $ "caught exception: " ++ show e
+		warning $ UnquotedString $ "caught exception: " ++ show e
 		return UpgradeFailed
 
 -- git before 2.22 would OOM running git status on a large file.

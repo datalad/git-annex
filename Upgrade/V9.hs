@@ -29,7 +29,7 @@ upgrade automatic
 		)
 	| otherwise = ifM (oldprocessesdanger <&&> (not <$> Annex.getRead Annex.force))
 		( do
-			warning $ unlines unsafeupgrade
+			warning $ UnquotedString $ unlines unsafeupgrade
 			return UpgradeDeferred
 		, performUpgrade automatic
 		)
