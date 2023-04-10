@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable #-}
+{-# LANGUAGE ScopedTypeVariables, DeriveDataTypeable, OverloadedStrings #-}
 
 module Annex.NumCopies (
 	module Types.NumCopies,
@@ -277,17 +277,17 @@ notEnoughCopies :: Key -> NumCopies -> MinCopies -> [VerifiedCopy] -> [UUID] -> 
 notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
 	showNote "unsafe"
 	if length have < fromNumCopies neednum
-		then showLongNote $
+		then showLongNote $ UnquotedString $
 			"Could only verify the existence of " ++
 			show (length have) ++ " out of " ++ show (fromNumCopies neednum) ++ 
 			" necessary " ++ pluralcopies (fromNumCopies neednum)
 		else do
-			showLongNote $ "Unable to lock down " ++ show (fromMinCopies needmin) ++ 
+			showLongNote $ UnquotedString $ "Unable to lock down " ++ show (fromMinCopies needmin) ++ 
 				" " ++ pluralcopies (fromMinCopies needmin) ++ 
 				" of file necessary to safely drop it."
 			if null lockunsupported
 				then showLongNote "(This could have happened because of a concurrent drop, or because a remote has too old a version of git-annex-shell installed.)"
-				else showLongNote $ "These remotes do not support locking: "
+				else showLongNote $ UnquotedString $ "These remotes do not support locking: "
 					++ Remote.listRemoteNames lockunsupported
 
 	Remote.showTriedRemotes bad

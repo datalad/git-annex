@@ -233,10 +233,10 @@ checkRequiredContent (PreferredContentChecked False) u k afile =
 			if afile == afile'
 				then showLongNote "That file is required content. It cannot be dropped!"
 				else showLongNote $ "That file has the same content as another file"
-					++ case afile' of
-						AssociatedFile (Just f) -> " (" ++ fromRawFilePath f ++ "),"
+					<> case afile' of
+						AssociatedFile (Just f) -> " (" <> QuotedPath f <> "),"
 						AssociatedFile Nothing -> ""
-					++ " which is required content. It cannot be dropped!"
+					<> " which is required content. It cannot be dropped!"
 			showLongNote "(Use --force to override this check, or adjust required content configuration.)"
 			return False
 

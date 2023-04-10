@@ -120,7 +120,7 @@ checkoutViewBranch view madj mkbranch = do
 		forM_ l (removeemptydir top)
 		liftIO $ void cleanup
 		unlessM (liftIO $ doesDirectoryExist here) $ do
-			showLongNote (cwdmissing (fromRawFilePath top))
+			showLongNote $ UnquotedString $ cwdmissing (fromRawFilePath top)
 	return ok
   where
 	removeemptydir top d = do

@@ -948,14 +948,14 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 	warncannotupdateexport r mtb exported currb = case mtb of
 		Nothing -> inRepo (Git.Ref.tree currb) >>= \case
 			Just currt | not (any (== currt) (exportedTreeishes exported)) ->
-				showLongNote $ unwords
+				showLongNote $ UnquotedString $ unwords
 					[ notupdating
 					, "to reflect changes to the tree, because export"
 					, "tracking is not enabled. "
 					, "(Set " ++ gitconfig ++ " to enable it.)"
 					]
 			_ -> noop
-		Just b -> showLongNote $ unwords
+		Just b -> showLongNote $ UnquotedString $ unwords
 			[ notupdating
 			, "because " ++ Git.fromRef b ++ " does not exist."
 			, "(As configured by " ++ gitconfig ++ ")"

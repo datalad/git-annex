@@ -124,7 +124,7 @@ checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
 	exists <- liftIO $ R.doesPathExist file
 	case (exists, fast) of
 		(True, False) -> do
-			showAction descChecksum
+			showAction (UnquotedString descChecksum)
 			sameCheckSum key 
 				<$> hashFile hash file nullMeterUpdate
 		_ -> return True

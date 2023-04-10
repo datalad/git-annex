@@ -129,7 +129,7 @@ cleanup k = do
 	case toJSON' (AddJSONActionItemFields m) of
 		Object o -> maybeShowJSON $ AesonObject o
 		_ -> noop
-	showLongNote $ unlines $ concatMap showmeta $
+	showLongNote $ UnquotedString $ unlines $ concatMap showmeta $
 		map unwrapmeta (fromMetaData m)
 	return True
   where

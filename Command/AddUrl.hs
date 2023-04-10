@@ -182,8 +182,8 @@ startRemote addunlockedmatcher r o si file uri sz = do
 	let file' = joinPath $ map (truncateFilePath pathmax) $
 		splitDirectories file
 	startingAddUrl si uri o $ do
-		showNote $ "from " ++ Remote.name r 
-		showDestinationFile file'
+		showNote $ UnquotedString $ "from " ++ Remote.name r 
+		showDestinationFile (toRawFilePath file')
 		performRemote addunlockedmatcher r o uri (toRawFilePath file') sz
 
 performRemote :: AddUnlockedMatcher -> Remote -> AddUrlOptions -> URLString -> RawFilePath -> Maybe Integer -> CommandPerform
@@ -296,7 +296,7 @@ addUrlChecked :: AddUrlOptions -> URLString -> RawFilePath -> UUID -> (Key -> An
 addUrlChecked o url file u checkexistssize key =
 	ifM ((elem url <$> getUrls key) <&&> (elem u <$> loggedLocations key))
 		( do
-			showDestinationFile (fromRawFilePath file)
+			showDestinationFile file
 			next $ return True
 		, checkexistssize key >>= \case
 			Just (exists, samesize, url')
@@ -337,7 +337,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 		, normalfinish tmp backend
 		)
 	normalfinish tmp backend = checkCanAdd o file $ \canadd -> do
-		showDestinationFile (fromRawFilePath file)
+		showDestinationFile file
 		createWorkTreeDirectory (parentDir file)
 		Just <$> finishDownloadWith canadd addunlockedmatcher tmp backend webUUID url file
 	-- Ask youtube-dl what filename it will download first, 
@@ -359,7 +359,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 						Right (Just mediafile) -> do
 							cleanuptmp
 							checkCanAdd o dest $ \canadd -> do
-								showDestinationFile (fromRawFilePath dest)
+								showDestinationFile dest
 								addWorkTree canadd addunlockedmatcher webUUID mediaurl dest mediakey (Just (toRawFilePath mediafile))
 								return $ Just mediakey
 						Right Nothing -> checkRaw Nothing o Nothing (normalfinish tmp backend)
@@ -409,10 +409,10 @@ startingAddUrl si url o p = starting "addurl" ai si $ do
 	ai = OnlyActionOn urlkey (ActionItemOther (Just (UnquotedString url)))
 	urlkey = Backend.URL.fromUrl url Nothing
 
-showDestinationFile :: FilePath -> Annex ()
+showDestinationFile :: RawFilePath -> Annex ()
 showDestinationFile file = do
-	showNote ("to " ++ file)
-	maybeShowJSON $ JSONChunk [("file", file)]
+	showNote ("to " <> QuotedPath file)
+	maybeShowJSON $ JSONChunk [("file", fromRawFilePath file)]
 
 {- The Key should be a dummy key, based on the URL, which is used
  - for this download, before we can examine the file and find its real key.
@@ -525,7 +525,7 @@ youtubeDlDestFile o destfile mediafile
 
 nodownloadWeb' :: DownloadOptions -> AddUnlockedMatcher -> URLString -> Key -> RawFilePath -> Annex (Maybe Key)
 nodownloadWeb' o addunlockedmatcher url key file = checkCanAdd o file $ \canadd -> do
-	showDestinationFile (fromRawFilePath file)
+	showDestinationFile file
 	createWorkTreeDirectory (parentDir file)
 	addWorkTree canadd addunlockedmatcher webUUID url file key Nothing
 	return (Just key)

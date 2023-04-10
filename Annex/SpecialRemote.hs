@@ -96,7 +96,7 @@ autoEnable = do
 			Nothing -> cu
 		case (lookupName c, findType c) of
 			(Just name, Right t) -> do
-				showSideAction $ "Auto enabling special remote " ++ name
+				showSideAction $ UnquotedString $ "Auto enabling special remote " ++ name
 				dummycfg <- liftIO dummyRemoteGitConfig
 				tryNonAsync (setup t (AutoEnable c) (Just u) Nothing c dummycfg) >>= \case
 					Left e -> warning (UnquotedString (show e))

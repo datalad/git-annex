@@ -21,22 +21,25 @@ import qualified Data.ByteString as S
 withMessageState :: (MessageState -> Annex a) -> Annex a
 withMessageState a = Annex.getState Annex.output >>= a
 
-outputMessage :: JSONBuilder -> S.ByteString -> Annex ()
+outputMessage :: JSONBuilder -> (S.ByteString -> S.ByteString) -> StringContainingQuotedPath -> Annex ()
 outputMessage = outputMessage' bufferJSON
 
-outputMessage' :: (JSONBuilder -> MessageState -> Annex Bool) -> JSONBuilder -> S.ByteString -> Annex ()
-outputMessage' jsonoutputter jsonbuilder msg = withMessageState $ \s -> case outputType s of
+outputMessage' :: (JSONBuilder -> MessageState -> Annex Bool) -> JSONBuilder -> (S.ByteString -> S.ByteString) -> StringContainingQuotedPath -> Annex ()
+outputMessage' jsonoutputter jsonbuilder consolewhitespacef msg = withMessageState $ \s -> case outputType s of
 	NormalOutput
 		| concurrentOutputEnabled s -> do
+			qp <- coreQuotePath <$> Annex.getGitConfig
 			liftIO $ clearProgressMeter s
-			concurrentMessage s False (decodeBS msg) q
+			concurrentMessage s False (decodeBS (consolewhitespacef (quote qp msg))) q
 		| otherwise -> do
+			qp <- coreQuotePath <$> Annex.getGitConfig
 			liftIO $ clearProgressMeter s
-			liftIO $ flushed $ S.putStr msg
+			liftIO $ flushed $ S.putStr (consolewhitespacef (quote qp msg))
 	JSONOutput _ -> void $ jsonoutputter jsonbuilder s
 	QuietOutput -> q
 	SerializedOutput h _ -> do
-		liftIO $ outputSerialized h $ OutputMessage msg
+		qp <- coreQuotePath <$> Annex.getGitConfig
+		liftIO $ outputSerialized h $ OutputMessage $ consolewhitespacef $ quote qp msg
 		void $ jsonoutputter jsonbuilder s
 
 -- Buffer changes to JSON until end is reached and then emit it.

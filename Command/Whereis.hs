@@ -87,12 +87,14 @@ perform o remotemap key ai = do
 	case formatOption o of
 		Nothing -> do
 			let num = length safelocations
-			showNote $ show num ++ " " ++ copiesplural num
+			showNote $ UnquotedString $ show num ++ " " ++ copiesplural num
 			pp <- ppwhereis "whereis" safelocations urls
-			unless (null safelocations) $ showLongNote pp
+			unless (null safelocations) $
+				showLongNote (UnquotedString pp)
 			pp' <- ppwhereis "untrusted" untrustedlocations urls
-			unless (null untrustedlocations) $ showLongNote $ untrustedheader ++ pp'
-		
+			unless (null untrustedlocations) $
+				showLongNote $ UnquotedString $
+					untrustedheader ++ pp'
 			mapM_ (showRemoteUrls remotemap) urls
 		Just formatter -> liftIO $ do
 			let vs = Command.Find.formatVars key
@@ -160,6 +162,6 @@ showRemoteUrls :: M.Map UUID Remote -> (UUID, [URLString]) -> Annex ()
 showRemoteUrls remotemap (uu, us)
 	| null us = noop
 	| otherwise = case M.lookup uu remotemap of
-		Just r -> showLongNote $ 
+		Just r -> showLongNote $ UnquotedString $
 			unlines $ map (\u -> name r ++ ": " ++ u) us 
 		Nothing -> noop

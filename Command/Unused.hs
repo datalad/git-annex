@@ -109,7 +109,8 @@ check :: FilePath -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
 check file msg a c = do
 	l <- a
 	let unusedlist = number c l
-	unless (null l) $ showLongNote $ msg unusedlist
+	unless (null l) $
+		showLongNote $ UnquotedString $ msg unusedlist
 	updateUnusedLog (toRawFilePath file) (M.fromList unusedlist)
 	return $ c + length l
 
@@ -249,7 +250,7 @@ withKeysReferencedDiffGitRefs refspec a = do
  - differ from those referenced in the index. -}
 withKeysReferencedDiffGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
 withKeysReferencedDiffGitRef a ref = do
-	showAction $ "checking " ++ Git.Ref.describe ref
+	showAction $ UnquotedString $ "checking " ++ Git.Ref.describe ref
 	withKeysReferencedDiff a
 		(inRepo $ DiffTree.diffIndex ref)
 		DiffTree.srcsha

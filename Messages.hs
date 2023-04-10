@@ -65,6 +65,8 @@ import Messages.Internal
 import Messages.Concurrent
 import Annex.Debug
 import Annex.Concurrent.Utility
+import Utility.SafeOutput
+import Git.Filename
 import qualified Messages.JSON as JSON
 import qualified Annex
 
@@ -90,15 +92,13 @@ showStartMessage (CustomOutput _) =
 		_ -> noop
 
 showStartActionItem :: String -> ActionItem -> SeekInput -> Annex ()
-showStartActionItem command ai si = do
-	qp <- coreQuotePath <$> Annex.getGitConfig
-	outputMessage json $
-		encodeBS command <> " " <> actionItemDesc qp ai <> " "
+showStartActionItem command ai si = outputMessage json id $
+	UnquotedString command <> " " <> actionItemDesc ai <> " "
   where
 	json = JSON.start command (actionItemFile ai) (actionItemKey ai) si
 
 showStartNothing :: String -> SeekInput -> Annex ()
-showStartNothing command si = outputMessage json $ encodeBS $
+showStartNothing command si = outputMessage json id $ UnquotedString $
 	command ++ " "
   where
 	json = JSON.start command Nothing Nothing si
@@ -110,13 +110,13 @@ showEndMessage (StartUsualMessages _ _ _) = showEndResult
 showEndMessage (StartNoMessage _) = const noop
 showEndMessage (CustomOutput _) = const noop
 
-showNote :: String -> Annex ()
-showNote s = outputMessage (JSON.note s) $ encodeBS $ "(" ++ s ++ ") "
+showNote :: StringContainingQuotedPath -> Annex ()
+showNote s = outputMessage (JSON.note (decodeBS (noquote s))) id $ "(" <> s <> ") "
 
-showAction :: String -> Annex ()
-showAction s = showNote $ s ++ "..."
+showAction :: StringContainingQuotedPath -> Annex ()
+showAction s = showNote $ s <> "..."
 
-showSideAction :: String -> Annex ()
+showSideAction :: StringContainingQuotedPath -> Annex ()
 showSideAction m = Annex.getState Annex.output >>= go
   where
 	go st
@@ -126,7 +126,7 @@ showSideAction m = Annex.getState Annex.output >>= go
 			Annex.changeState $ \s -> s { Annex.output = st' }
 		| sideActionBlock st == InBlock = return ()
 		| otherwise = go'
-	go' = outputMessage JSON.none $ encodeBS $ "(" ++ m ++ "...)\n"
+	go' = outputMessage JSON.none id $ "(" <> m <> "...)\n"
 			
 showStoringStateAction :: Annex ()
 showStoringStateAction = showSideAction "recording state in git"
@@ -167,19 +167,18 @@ doQuietAction = bracket setup cleanup . const
 {- Make way for subsequent output of a command. -}
 showOutput :: Annex ()
 showOutput = unlessM commandProgressDisabled $
-	outputMessage JSON.none "\n"
+	outputMessage JSON.none id "\n"
 
-showLongNote :: String -> Annex ()
-showLongNote s = outputMessage (JSON.note s) (formatLongNote (encodeBS s))
+showLongNote :: StringContainingQuotedPath -> Annex ()
+showLongNote s = outputMessage (JSON.note (decodeBS (noquote s))) formatLongNote s
 
 formatLongNote :: S.ByteString -> S.ByteString
 formatLongNote s = "\n" <> indent s <> "\n"
 
 -- Used by external special remote, displayed same as showLongNote
 -- to console, but json object containing the info is emitted immediately.
-showInfo :: String -> Annex ()
-showInfo s = outputMessage' outputJSON (JSON.info s) $
-	formatLongNote (encodeBS s)
+showInfo :: StringContainingQuotedPath -> Annex ()
+showInfo s = outputMessage' outputJSON (JSON.info (decodeBS (noquote s))) formatLongNote s
 
 showEndOk :: Annex ()
 showEndOk = showEndResult True
@@ -188,7 +187,8 @@ showEndFail :: Annex ()
 showEndFail = showEndResult False
 
 showEndResult :: Bool -> Annex ()
-showEndResult ok = outputMessage (JSON.end ok) $ endResult ok <> "\n"
+showEndResult ok = outputMessage (JSON.end ok) id $
+	UnquotedByteString (endResult ok) <> "\n"
 
 endResult :: Bool -> S.ByteString
 endResult True = "ok"
@@ -206,7 +206,7 @@ earlyWarning = warning' False id
 warning' :: Bool -> (S.ByteString -> S.ByteString) -> StringContainingQuotedPath -> Annex ()
 warning' makeway consolewhitespacef w = do
 	when makeway $
-		outputMessage JSON.none "\n"
+		outputMessage JSON.none id "\n"
 	outputError consolewhitespacef (w <> "\n")
 
 {- Not concurrent output safe. -}
@@ -214,7 +214,7 @@ warningIO :: String -> IO ()
 warningIO w = do
 	putStr "\n"
 	hFlush stdout
-	hPutStrLn stderr w
+	hPutStrLn stderr (safeOutput w)
 
 indent :: S.ByteString -> S.ByteString
 indent = S.intercalate "\n" . map ("  " <>) . S8.lines
@@ -230,19 +230,19 @@ showFullJSON v = withMessageState $ bufferJSON (JSON.complete v)
 {- Performs an action that outputs nonstandard/customized output, and
  - in JSON mode wraps its output in JSON.start and JSON.end, so it's
  - a complete JSON document.
- - This is only needed when showStart* and showEndOk is not used.
+ - This is only needed when showStartMessage and showEndOk is not used.
  -}
 showCustom :: String -> SeekInput -> Annex Bool -> Annex ()
 showCustom command si a = do
-	outputMessage (JSON.start command Nothing Nothing si) ""
+	outputMessage (JSON.start command Nothing Nothing si) id ""
 	r <- a
-	outputMessage (JSON.end r) ""
+	outputMessage (JSON.end r) id ""
 
 showHeader :: S.ByteString -> Annex ()
-showHeader h = outputMessage JSON.none (h <> ": ")
+showHeader h = outputMessage JSON.none id (UnquotedByteString h <> ": ")
 
 showRaw :: S.ByteString -> Annex ()
-showRaw s = outputMessage JSON.none (s <> "\n")
+showRaw s = outputMessage JSON.none id (UnquotedByteString s <> "\n")
 
 setupConsole :: IO ()
 setupConsole = do
@@ -267,7 +267,7 @@ debugDisplayer = do
 	-- that are displayed at the same time from mixing together.
 	lock <- newMVar ()
 	return $ \s -> withMVar lock $ \() -> do
-		S.hPutStr stderr (s <> "\n")
+		S.hPutStr stderr (safeOutput s <> "\n")
 		hFlush stderr
 
 {- Should commands that normally output progress messages have that

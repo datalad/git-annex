@@ -30,13 +30,12 @@ module Git.FilePath (
 
 import Common
 import Git
-import qualified Git.Filename as Filename
+import Git.Filename
 
 import qualified System.FilePath.ByteString as P
 import qualified System.FilePath.Posix.ByteString
 import GHC.Generics
 import Control.DeepSeq
-import qualified Data.ByteString as S
 
 {- A RawFilePath, relative to the top of the git repository. -}
 newtype TopFilePath = TopFilePath { getTopFilePath :: RawFilePath }
@@ -49,9 +48,9 @@ data BranchFilePath = BranchFilePath Ref TopFilePath
 	deriving (Show, Eq, Ord)
 
 {- Git uses the branch:file form to refer to a BranchFilePath -}
-descBranchFilePath :: Filename.QuotePath -> BranchFilePath -> S.ByteString
-descBranchFilePath qp (BranchFilePath b f) =
-	fromRef' b <> ":" <> Filename.quote qp (getTopFilePath f)
+descBranchFilePath :: BranchFilePath -> StringContainingQuotedPath
+descBranchFilePath (BranchFilePath b f) =
+	UnquotedByteString (fromRef' b) <> ":" <> QuotedPath (getTopFilePath f)
 
 {- Path to a TopFilePath, within the provided git repo. -}
 fromTopFilePath :: TopFilePath -> Git.Repo -> RawFilePath

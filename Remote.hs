@@ -365,13 +365,13 @@ showLocations separateuntrusted key exclude nolocmsg = do
 				"Maybe add some of these git remotes (git remote add ...)"
 			ppuuidsskipped <- pp "skipped" uuidsskipped
 				"Also these untrusted repositories may contain the file"
-			showLongNote $ case ppremotesmakeavailable ++ ppenablespecialremotes ++ ppaddgitremotes ++ ppuuidsskipped of
+			showLongNote $ UnquotedString $ case ppremotesmakeavailable ++ ppenablespecialremotes ++ ppaddgitremotes ++ ppuuidsskipped of
 				[] -> nolocmsg
 				s -> s
 		)
 	ignored <- filterM (liftIO . getDynamicConfig . remoteAnnexIgnore . gitconfig) remotes
 	unless (null ignored) $
-		showLongNote $ "(Note that these git remotes have annex-ignore set: " ++ unwords (map name ignored) ++ ")"
+		showLongNote $ UnquotedString $ "(Note that these git remotes have annex-ignore set: " ++ unwords (map name ignored) ++ ")"
   where
 	filteruuids l x = filter (`notElem` x) l
 
@@ -383,7 +383,7 @@ showLocations separateuntrusted key exclude nolocmsg = do
 showTriedRemotes :: [Remote] -> Annex ()
 showTriedRemotes [] = noop
 showTriedRemotes remotes =
-	showLongNote $ "Unable to access these remotes: "
+	showLongNote $ UnquotedString $ "Unable to access these remotes: "
 		++ listRemoteNames remotes
 
 listRemoteNames :: [Remote] -> String

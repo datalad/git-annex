@@ -193,9 +193,9 @@ encryptionSetup c gc = do
 		Left _ -> True
 	encsetup a = use "encryption setup" . a =<< highRandomQuality
 	use m a = do
-		showNote m
+		showNote (UnquotedString m)
 		cipher <- liftIO a
-		showNote (describeCipher cipher)
+		showNote (UnquotedString (describeCipher cipher))
 		return (storeCipher cipher c', EncryptionIsSetup)
 	highRandomQuality = ifM (Annex.getRead Annex.fast)
 		( return False

@@ -774,7 +774,7 @@ genBucket c gc u = do
 		case r of
 			Right True -> noop
 			_ -> do
-				showAction $ "creating bucket in " ++ datacenter
+				showAction $ UnquotedString $ "creating bucket in " ++ datacenter
 				void $ liftIO $ runResourceT $ sendS3Handle h $ 
 					(S3.putBucket (bucket info))
 						{ S3.pbCannedAcl = acl info

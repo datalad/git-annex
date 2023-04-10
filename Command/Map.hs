@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.Map where
 
 import qualified Data.Map as M
@@ -62,11 +64,11 @@ start = startingNoMessage (ActionItemOther Nothing) $ do
 
 runViewer :: FilePath -> [(String, [CommandParam])] -> Annex Bool
 runViewer file [] = do
-	showLongNote $ "left map in " ++ file
+	showLongNote $ UnquotedString $ "left map in " ++ file
 	return True
 runViewer file ((c, ps):rest) = ifM (liftIO $ inSearchPath c)
 	( do
-		showLongNote $ "running: " ++ c ++ unwords (toCommand ps)
+		showLongNote $ UnquotedString $ "running: " ++ c ++ unwords (toCommand ps)
 		showOutput
 		liftIO $ boolSystem c ps
 	, runViewer file rest

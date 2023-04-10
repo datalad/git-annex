@@ -404,8 +404,8 @@ checkSqliteWorks = do
 		Right () -> return ()
 		Left e -> do
 			showLongNote $ "Detected a filesystem where Sqlite does not work."
-			showLongNote $ "(" ++ show e ++ ")"
-			showLongNote $ "To work around this problem, you can set annex.dbdir " ++
+			showLongNote $ UnquotedString $ "(" ++ show e ++ ")"
+			showLongNote $ "To work around this problem, you can set annex.dbdir " <>
 				"to a directory on another filesystem."
 			showLongNote $ "For example: git config annex.dbdir $HOME/cache/git-annex"
 			giveup "Not initialized."

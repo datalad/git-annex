@@ -154,7 +154,7 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 	si = SeekInput []
 
 	deletedup k = do
-		showNote $ "duplicate of " ++ serializeKey k
+		showNote $ UnquotedString $ "duplicate of " ++ serializeKey k
 		verifyExisting k destfile
 			( do
 				liftIO $ R.removeLink srcfile
@@ -300,7 +300,9 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 			(reinject k)
 			(importfile ld k)
 		_ -> importfile ld k
-	skipbecause s = showNote (s ++ "; skipping") >> next (return True)
+	skipbecause s = do
+		showNote (s <> "; skipping")
+		next (return True)
 
 verifyExisting :: Key -> RawFilePath -> (CommandPerform, CommandPerform) -> CommandPerform
 verifyExisting key destfile (yes, no) = do

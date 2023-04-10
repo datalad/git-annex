@@ -243,7 +243,7 @@ updateTo' pairs = do
 				" into " ++ fromRef name
 		localtransitions <- getLocalTransitions
 		unless (null tomerge) $ do
-			showSideAction merge_desc
+			showSideAction (UnquotedString merge_desc)
 			mapM_ checkBranchDifferences refs
 			mergeIndex jl refs
 		let commitrefs = nub $ fullname:refs

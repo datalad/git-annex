@@ -72,7 +72,7 @@ changeMetaData k metadata = do
 	return True
 
 showMetaDataChange :: MetaData -> Annex ()
-showMetaDataChange = showLongNote . unlines . concatMap showmeta . fromMetaData
+showMetaDataChange = showLongNote . UnquotedString . unlines . concatMap showmeta . fromMetaData
   where
 	showmeta (f, vs) = map (showmetavalue f) $ S.toList vs
 	showmetavalue f v = T.unpack (fromMetaField f) <> showset v <> "=" <> decodeBS (fromMetaValue v)

@@ -157,10 +157,10 @@ toPerform' mcontentlock dest removewhen key afile fastcheck isthere = do
 	srcuuid <- getUUID
 	case isthere of
 		Left err -> do
-			showNote err
+			showNote (UnquotedString err)
 			stop
 		Right False -> logMove srcuuid destuuid False key $ \deststartedwithcopy -> do
-			showAction $ "to " ++ Remote.name dest
+			showAction $ UnquotedString $ "to " ++ Remote.name dest
 			ok <- notifyTransfer Upload afile $
 				upload dest key afile stdRetry
 			if ok
@@ -260,7 +260,7 @@ fromPerform src removewhen key afile = do
 
 fromPerform' :: Bool -> Bool -> Remote -> Key -> AssociatedFile -> Annex (RemoveWhen -> CommandPerform)
 fromPerform' present updatelocationlog src key afile = do
-	showAction $ "from " ++ Remote.name src
+	showAction $ UnquotedString $ "from " ++ Remote.name src
 	destuuid <- getUUID
 	logMove (Remote.uuid src) destuuid present key $ \deststartedwithcopy ->
 		if present
@@ -314,7 +314,7 @@ fromDrop src destuuid deststartedwithcopy key afile adjusttocheck =
 
 	faileddropremote = do
 		showLongNote "(Use --force to override this check, or adjust numcopies.)"
-		showLongNote $ "Content not dropped from " ++ Remote.name src ++ "."
+		showLongNote $ UnquotedString $ "Content not dropped from " ++ Remote.name src ++ "."
 		logMoveCleanup deststartedwithcopy
 		next $ return False
 
@@ -394,11 +394,13 @@ fromToPerform src dest removewhen key afile = do
 		haskey <- Remote.hasKey dest key
 		case haskey of
                 	Left err -> do                   
-				showNote err       
+				showNote (UnquotedString err)
 				stop
 			Right True -> do
-				showAction $ "from " ++ Remote.name src
-				showAction $ "to " ++ Remote.name dest
+				showAction $ UnquotedString $
+					"from " ++ Remote.name src
+				showAction $ UnquotedString $
+					"to " ++ Remote.name dest
 				-- The log may not indicate dest's copy
 				-- yet, so make sure it does.
 				logChange key (Remote.uuid dest) InfoPresent

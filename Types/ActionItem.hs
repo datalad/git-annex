@@ -9,16 +9,14 @@
 
 module Types.ActionItem (
 	module Types.ActionItem,
-	Git.Filename.StringContainingQuotedPath(..),
+	StringContainingQuotedPath(..),
 ) where
 
 import Key
 import Types.Transfer
 import Git.FilePath
-import qualified Git.Filename
+import Git.Filename (StringContainingQuotedPath(..))
 import Utility.FileSystemEncoding
-
-import qualified Data.ByteString as S
 
 data ActionItem 
 	= ActionItemAssociatedFile AssociatedFile Key
@@ -26,7 +24,7 @@ data ActionItem
 	| ActionItemBranchFilePath BranchFilePath Key
 	| ActionItemFailedTransfer Transfer TransferInfo
 	| ActionItemTreeFile RawFilePath
-	| ActionItemOther (Maybe Git.Filename.StringContainingQuotedPath)
+	| ActionItemOther (Maybe StringContainingQuotedPath)
 	-- Use to avoid more than one thread concurrently processing the
 	-- same Key.
 	| OnlyActionOn Key ActionItem
@@ -59,19 +57,21 @@ instance MkActionItem (BranchFilePath, Key) where
 instance MkActionItem (Transfer, TransferInfo) where
 	mkActionItem = uncurry ActionItemFailedTransfer
 
-actionItemDesc :: Git.Filename.QuotePath -> ActionItem -> S.ByteString
-actionItemDesc qp (ActionItemAssociatedFile (AssociatedFile (Just f)) _) = 
-	Git.Filename.quote qp f
-actionItemDesc _ (ActionItemAssociatedFile (AssociatedFile Nothing) k) = 
-	serializeKey' k
-actionItemDesc _ (ActionItemKey k) = serializeKey' k
-actionItemDesc qp (ActionItemBranchFilePath bfp _) = descBranchFilePath qp bfp
-actionItemDesc qp (ActionItemFailedTransfer t i) = actionItemDesc qp $
+actionItemDesc :: ActionItem -> StringContainingQuotedPath
+actionItemDesc (ActionItemAssociatedFile (AssociatedFile (Just f)) _) = 
+	QuotedPath f
+actionItemDesc (ActionItemAssociatedFile (AssociatedFile Nothing) k) = 
+	UnquotedByteString (serializeKey' k)
+actionItemDesc (ActionItemKey k) =
+	UnquotedByteString (serializeKey' k)
+actionItemDesc (ActionItemBranchFilePath bfp _) =
+	descBranchFilePath bfp
+actionItemDesc (ActionItemFailedTransfer t i) = actionItemDesc $
 	ActionItemAssociatedFile (associatedFile i) (transferKey t)
-actionItemDesc qp (ActionItemTreeFile f) = Git.Filename.quote qp f
-actionItemDesc _ (ActionItemOther Nothing) = mempty
-actionItemDesc qp (ActionItemOther (Just v)) = Git.Filename.quote qp v
-actionItemDesc qp (OnlyActionOn _ ai) = actionItemDesc qp ai
+actionItemDesc (ActionItemTreeFile f) = QuotedPath f
+actionItemDesc (ActionItemOther Nothing) = mempty
+actionItemDesc (ActionItemOther (Just v)) = v
+actionItemDesc (OnlyActionOn _ ai) = actionItemDesc ai
 
 actionItemKey :: ActionItem -> Maybe Key
 actionItemKey (ActionItemAssociatedFile _ k) = Just k

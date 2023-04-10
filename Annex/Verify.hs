@@ -128,7 +128,7 @@ resumeVerifyKeyContent k f iv = liftIO (positionIncrementalVerifier iv) >>= \cas
 			liftIO $ catchDefaultIO (Just False) $
 				finalizeIncrementalVerifier iv
 		| otherwise = do
-			showAction (descIncrementalVerifier iv)
+			showAction (UnquotedString (descIncrementalVerifier iv))
 			liftIO $ catchDefaultIO (Just False) $
 				withBinaryFile (fromRawFilePath f) ReadMode $ \h -> do
 					hSeek h AbsoluteSeek endpos

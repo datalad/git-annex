@@ -73,7 +73,7 @@ perform a o key url = do
 		_ -> Remote.claimingUrl url
 	case needremote of
 		Just nr | nr /= r -> do
-			showNote $ "The url " ++ url ++ " is claimed by remote " ++ Remote.name r
+			showNote $ UnquotedString $ "The url " ++ url ++ " is claimed by remote " ++ Remote.name r
 			next $ return False
 		_ -> do
 			a r key (setDownloader' url r)

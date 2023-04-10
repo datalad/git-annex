@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Upgrade.V2 where
 
 import Annex.Common
@@ -120,7 +122,7 @@ push = do
 			-- no origin exists, so just let the user
 			-- know about the new branch
 			void Annex.Branch.update
-			showLongNote $
+			showLongNote $ UnquotedString $
 				"git-annex branch created\n" ++
 				"Be sure to push this branch when pushing to remotes.\n"
 

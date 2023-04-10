@@ -183,7 +183,7 @@ itemInfo o (si, p) = ifM (isdir (toRawFilePath p))
 noInfo :: String -> SeekInput -> String -> Annex ()
 noInfo s si msg = do
 	showStartMessage (StartMessage "info" (ActionItemOther (Just (UnquotedString s))) si)
-	showNote msg
+	showNote (UnquotedString msg)
 	showEndFail
 	Annex.incError
 
@@ -463,7 +463,7 @@ transfer_list = stat desc $ nojson $ lift $ do
 	desc = "transfers in progress"
 	line qp uuidmap t i = unwords
 		[ fromRawFilePath (formatDirection (transferDirection t)) ++ "ing"
-		, fromRawFilePath $ actionItemDesc qp $ mkActionItem
+		, fromRawFilePath $ quote qp $ actionItemDesc $ mkActionItem
 			(transferKey t, associatedFile i)
 		, if transferDirection t == Upload then "to" else "from"
 		, maybe (fromUUID $ transferUUID t) Remote.name $

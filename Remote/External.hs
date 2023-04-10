@@ -504,7 +504,7 @@ handleRequest' st external req mp responsehandler
 		mapM_ (send . VALUE) =<< getUrlsWithPrefix key prefix
 		send (VALUE "") -- end of list
 	handleRemoteRequest (DEBUG msg) = fastDebug "Remote.External" msg
-	handleRemoteRequest (INFO msg) = showInfo msg
+	handleRemoteRequest (INFO msg) = showInfo (UnquotedString msg)
 	handleRemoteRequest (VERSION _) = senderror "too late to send VERSION"
 
 	handleExceptionalMessage (ERROR err) = giveup $ "external special remote error: " ++ err

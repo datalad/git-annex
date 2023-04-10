@@ -50,7 +50,7 @@ start from numcopies mincopies = startUnused "dropunused"
 perform :: Maybe Remote -> NumCopies -> MinCopies -> Key -> CommandPerform
 perform from numcopies mincopies key = case from of
 	Just r -> do
-		showAction $ "from " ++ Remote.name r
+		showAction $ UnquotedString $ "from " ++ Remote.name r
 		Command.Drop.performRemote pcc key (AssociatedFile Nothing) numcopies mincopies r ud
 	Nothing -> ifM (inAnnex key)
 		( droplocal

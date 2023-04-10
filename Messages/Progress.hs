@@ -177,7 +177,7 @@ meteredFile file combinemeterupdate key a =
 
 {- Progress dots. -}
 showProgressDots :: Annex ()
-showProgressDots = outputMessage JSON.none "."
+showProgressDots = outputMessage JSON.none id "."
 
 {- Runs a command, that may output progress to either stdout or
  - stderr, as well as other messages.

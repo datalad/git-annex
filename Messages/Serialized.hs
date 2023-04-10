@@ -52,7 +52,8 @@ relaySerializedOutput getso sendsor meterreport runannex = go Nothing
 			runannex $ outputMessage'
 				(\_ _ -> return False)
 				id
-				msg
+				id
+				(UnquotedByteString msg)
 			loop st
 		Left (OutputError msg) -> do
 			runannex $ outputError id $ UnquotedString msg

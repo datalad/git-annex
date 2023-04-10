@@ -29,4 +29,4 @@ cantCheck :: Describable a => a -> e
 cantCheck v = giveup $ "unable to check " ++ describe v
 
 showLocking :: Describable a => a -> Annex ()
-showLocking v = showAction $ "locking " ++ describe v
+showLocking v = showAction $ UnquotedString $ "locking " ++ describe v

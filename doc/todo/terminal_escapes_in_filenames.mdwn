@@ -33,10 +33,13 @@ behave more like git.
 > (by default it does), so once this gets implemented, some users may want
 > to set that config to false. --[[Joey]]
 
-> Update: Most git-annex commands now quote filenames, due to work on
-> ActionItem display. `git-annex find`, `git-annex info $file`,
-> and everywhere filenames get
-> embedded in info messages still need to be done.
+> Update: Messages now handles quoting of filenames, and also filtering
+> out any escape sequences in other things that get displayed (like Keys..)
+> 
+> Still need to deal with `git-annex find` and `git-annex info $file` 
+> and anything else that outputs without using Messages.
+> (Eg need to do `git-annex metadata`, `git-annex config --get` and `git-annex schedule` and `git-annex wanted`
+> and `git-annex required` and `git-annex group`)
 
 ----
 
@@ -45,14 +48,6 @@ It's possible that keys can also contain an escape sequence, eg in the
 extension of a SHA-E key. So commands like `git-annex lookupkey` 
 and `git-annex find` that output keys might need to handle
 that, when outputting to a terminal?
-
-Also:
-`git-annex metadata` could also contain an escape sequence. So could
-`git-annex config --get` and `git-annex schedule` and `git-annex wanted`
-and `git-annex required` and `git-annex group`. And so could the
-description of a repository. It seems that git-annex could just filter out
-control characters from all of these, since they are not filenames, and
-any control characters in them are surely malicious.
 
 Also: git-annex initremote with autoenable may be able to cause a remote
 with a malicious name to be set up?

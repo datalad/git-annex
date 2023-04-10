@@ -93,7 +93,7 @@ getKey' :: Key -> AssociatedFile -> [Remote] -> Annex Bool
 getKey' key afile = dispatch
   where
 	dispatch [] = do
-		showNote "not available"
+		showNote (UnquotedString "not available")
 		showlocs []
 		return False
 	dispatch remotes = notifyTransfer Download afile $ \witness -> do
@@ -116,6 +116,6 @@ getKey' key afile = dispatch
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
 	docopy r witness = do
-		showAction $ "from " ++ Remote.name r
+		showAction $ UnquotedString $ "from " ++ Remote.name r
 		logStatusAfter key $
 			download r key afile stdRetry witness

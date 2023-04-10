@@ -36,7 +36,7 @@ describeTransfer :: Git.Filename.QuotePath -> Transfer -> TransferInfo -> String
 describeTransfer qp t info = unwords
 	[ show $ transferDirection t
 	, show $ transferUUID t
-	, decodeBS $ actionItemDesc qp $ ActionItemAssociatedFile
+	, decodeBS $ quote qp $ actionItemDesc $ ActionItemAssociatedFile
 		(associatedFile info)
 		(transferKey t)
 	, show $ bytesComplete info

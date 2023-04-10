@@ -76,6 +76,7 @@ instance Quoteable RawFilePath where
 -- Eg: QuotedPath f <> ": not found"
 data StringContainingQuotedPath
 	= UnquotedString String 
+	| UnquotedByteString S.ByteString 
 	| QuotedPath RawFilePath
 	| StringContainingQuotedPath :+: StringContainingQuotedPath
 	deriving (Show, Eq)
@@ -88,10 +89,12 @@ quotedPaths (p:ps) = QuotedPath p <> if null ps
 
 instance Quoteable StringContainingQuotedPath where
 	quote _ (UnquotedString s) = safeOutput (encodeBS s)
+	quote _ (UnquotedByteString s) = safeOutput s
 	quote qp (QuotedPath p) = quote qp p
 	quote qp (a :+: b) = quote qp a <> quote qp b
 
 	noquote (UnquotedString s) = encodeBS s
+	noquote (UnquotedByteString s) = s
 	noquote (QuotedPath p) = p
 	noquote (a :+: b) = noquote a <> noquote b
 
@@ -100,10 +103,11 @@ instance IsString StringContainingQuotedPath where
 
 instance Sem.Semigroup StringContainingQuotedPath where
 	UnquotedString a <> UnquotedString b = UnquotedString (a <> b)
+	UnquotedByteString a <> UnquotedByteString b = UnquotedByteString (a <> b)
 	a <> b = a :+: b
 
 instance Monoid StringContainingQuotedPath where
-	mempty = UnquotedString mempty
+	mempty = UnquotedByteString mempty
 
 -- Encoding and then decoding roundtrips only when the string does not
 -- contain high unicode, because eg, both "\12345" and "\227\128\185"

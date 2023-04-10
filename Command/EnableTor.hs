@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings, CPP #-}
 
 module Command.EnableTor where
 
@@ -61,7 +61,7 @@ start _os = do
 			let ps = [Param (cmdname cmd), Param (show curruserid)]
 			sucommand <- liftIO $ mkSuCommand gitannex ps
 			cleanenv <- liftIO $ cleanStandaloneEnvironment
-			maybe noop showLongNote
+			maybe noop (showLongNote . UnquotedString)
 				(describePasswordPrompt' sucommand)
 			ifM (liftIO $ runSuCommand sucommand cleanenv)
 				( next checkHiddenService

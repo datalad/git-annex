@@ -61,13 +61,13 @@ start (Expire expire) noact actlog descs u =
 	case lastact of
 		Just ent | notexpired ent -> checktrust (== DeadTrusted) $
 			starting "unexpire" ai si $ do
-				showNote =<< whenactive
+				showNote . UnquotedString =<< whenactive
 				unless noact $
 					trustSet u SemiTrusted
 				next $ return True
 		_ -> checktrust (/= DeadTrusted) $
 			starting "expire" ai si $ do
-				showNote =<< whenactive
+				showNote . UnquotedString =<< whenactive
 				unless noact $
 					trustSet u DeadTrusted
 				next $ return True
