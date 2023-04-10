@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.AddUrl where
 
 import Command
@@ -32,6 +34,7 @@ import Utility.Metered
 import Utility.HtmlDetect
 import Utility.Path.Max
 import Utility.Url (parseURIPortable)
+import Git.Filename
 import qualified Utility.RawFilePath as R
 import qualified Annex.Transfer as Transfer
 
@@ -262,16 +265,18 @@ sanitizeOrPreserveFilePath o f
 -- (and probably others, but at least this catches the most egrarious ones).
 checkPreserveFileNameSecurity :: FilePath -> Annex ()
 checkPreserveFileNameSecurity f = do
-	checksecurity escapeSequenceInFilePath False "escape sequence"
-	checksecurity pathTraversalInFilePath True "path traversal"
-	checksecurity gitDirectoryInFilePath True "contains a .git directory"
+	checksecurity controlCharacterInFilePath "control character"
+	checksecurity pathTraversalInFilePath "path traversal"
+	checksecurity gitDirectoryInFilePath "contains a .git directory"
   where
-	checksecurity p canshow d = when (p f) $
-		giveup $ concat
-			[ "--preserve-filename was used, but the filename "
-			, if canshow then "(" ++ f ++ ") " else ""
-			, "has a security problem (" ++ d ++ "), not adding."
-			]
+	checksecurity p d = when (p f) $ do
+		qp <- coreQuotePath <$> Annex.getGitConfig
+		giveup $ decodeBS $ quote qp $
+			"--preserve-filename was used, but the filename ("
+				<> QuotedPath (toRawFilePath f)
+				<> ") has a security problem ("
+				<> d
+				<> "), not adding."
 
 performWeb :: AddUnlockedMatcher -> AddUrlOptions -> URLString -> RawFilePath -> Url.UrlInfo -> CommandPerform
 performWeb addunlockedmatcher o url file urlinfo = lookupKey file >>= \case

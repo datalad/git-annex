@@ -52,8 +52,8 @@ sanitizeLeadingFilePathCharacter ('-':s) = '_':s
 sanitizeLeadingFilePathCharacter ('/':s) = '_':s
 sanitizeLeadingFilePathCharacter s = s
 
-escapeSequenceInFilePath :: FilePath -> Bool
-escapeSequenceInFilePath f = '\ESC' `elem` f
+controlCharacterInFilePath :: FilePath -> Bool
+controlCharacterInFilePath = any isControl
 
 {- ../ is a path traversal, no matter where it appears.
  -

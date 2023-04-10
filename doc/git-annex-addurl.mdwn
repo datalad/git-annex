@@ -70,7 +70,7 @@ be used to get better filenames.
    other modifications.
 
    git-annex will still check the filename for safety, and if the filename
-   has a security problem such as path traversal or an escape sequence,
+   has a security problem such as path traversal or a control character,
    it will refuse to add it.
 
 * `--pathdepth=N`
