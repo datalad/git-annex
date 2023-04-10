@@ -13,6 +13,7 @@ module Git.Filename (
 	quote,
 	QuotePath(..),
 	StringContainingQuotedPath(..),
+	quotedPaths,
 	prop_quote_unquote_roundtrip,
 ) where
 
@@ -72,6 +73,12 @@ data StringContainingQuotedPath
 	| QuotedPath RawFilePath
 	| StringContainingQuotedPath :+: StringContainingQuotedPath
 	deriving (Show, Eq)
+
+quotedPaths :: [RawFilePath] -> StringContainingQuotedPath
+quotedPaths [] = mempty
+quotedPaths (p:ps) = QuotedPath p <> if null ps
+	then mempty
+	else " " <> quotedPaths ps
 
 instance Quoteable StringContainingQuotedPath where
 	quote _ (UnquotedString s) = encodeBS s

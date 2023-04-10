@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, DeriveFunctor, PackageImports #-}
+{-# LANGUAGE RankNTypes, DeriveFunctor, PackageImports, OverloadedStrings #-}
 
 module Command.TestRemote where
 
@@ -32,6 +32,7 @@ import Annex.SpecialRemote.Config (exportTreeField)
 import Remote.Helper.Chunked
 import Remote.Helper.Encryptable (encryptionField, highRandomQualityField)
 import Git.Types
+import Git.Filename
 
 import Test.Tasty
 import Test.Tasty.Runners
@@ -84,7 +85,7 @@ start o = starting "testremote" (ActionItemOther (Just (UnquotedString (testRemo
 			else do
 				showAction "generating test keys"
 				mapM randKey (keySizes basesz fast)
-		fs -> mapM (getReadonlyKey r) fs
+		fs -> mapM (getReadonlyKey r . toRawFilePath) fs
 	let r' = if null (testReadonlyFile o)
 		then r
 		else r { Remote.readonly = True }
@@ -441,15 +442,17 @@ randKey sz = withTmpFile "randkey" $ \f h -> do
 	_ <- moveAnnex k (AssociatedFile Nothing) (toRawFilePath f)
 	return k
 
-getReadonlyKey :: Remote -> FilePath -> Annex Key
-getReadonlyKey r f = lookupKey (toRawFilePath f) >>= \case
-	Nothing -> giveup $ f ++ " is not an annexed file"
-	Just k -> do
-		unlessM (inAnnex k) $
-			giveup $ f ++ " does not have its content locally present, cannot test it"
-		unlessM ((Remote.uuid r `elem`) <$> loggedLocations k) $
-			giveup $ f ++ " is not stored in the remote being tested, cannot test it"
-		return k
+getReadonlyKey :: Remote -> RawFilePath -> Annex Key
+getReadonlyKey r f = do
+	qp <- coreQuotePath <$> Annex.getGitConfig
+	lookupKey f >>= \case
+		Nothing -> giveup $ decodeBS $ quote qp $ QuotedPath f <> " is not an annexed file"
+		Just k -> do
+			unlessM (inAnnex k) $
+				giveup $ decodeBS $ quote qp $ QuotedPath f <> " does not have its content locally present, cannot test it"
+			unlessM ((Remote.uuid r `elem`) <$> loggedLocations k) $
+				giveup $ decodeBS $ quote qp $ QuotedPath f <> " is not stored in the remote being tested, cannot test it"
+			return k
 
 runBool :: Monad m => m () -> m Bool
 runBool a = do

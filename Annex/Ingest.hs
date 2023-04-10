@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Annex.Ingest (
 	LockedDown(..),
 	LockDownConfig(..),
@@ -46,6 +48,7 @@ import Utility.CopyFile
 import Utility.Touch
 import Utility.Metered
 import Git.FilePath
+import Git.Filename
 import Annex.InodeSentinal
 import Annex.AdjustedBranch
 import Annex.FileMatcher
@@ -133,16 +136,16 @@ lockDown' cfg file = tryNonAsync $ ifM crippledFileSystem
 		
 	setperms = when (lockingFile cfg) $ do
 		freezeContent file'
-		when (checkWritePerms cfg) $
-			maybe noop giveup =<< checkLockedDownWritePerms file' file'
+		when (checkWritePerms cfg) $ do
+			qp <- coreQuotePath <$> Annex.getGitConfig
+			maybe noop (giveup . decodeBS . quote qp)
+				=<< checkLockedDownWritePerms file' file'
 
-checkLockedDownWritePerms :: RawFilePath -> RawFilePath -> Annex (Maybe String)
+checkLockedDownWritePerms :: RawFilePath -> RawFilePath -> Annex (Maybe StringContainingQuotedPath)
 checkLockedDownWritePerms file displayfile = checkContentWritePerm file >>= return . \case
-	Just False -> Just $ unwords
-		[ "Unable to remove all write permissions from"
-		, fromRawFilePath displayfile
-		, "-- perhaps it has an xattr or ACL set."
-		]
+	Just False -> Just $ "Unable to remove all write permissions from "
+		<> QuotedPath displayfile
+		<> " -- perhaps it has an xattr or ACL set."
 	_ -> Nothing
 
 {- Ingests a locked down file into the annex. Updates the work tree and

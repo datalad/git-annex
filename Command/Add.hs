@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.Add where
 
 import Command
@@ -23,6 +25,7 @@ import Messages.Progress
 import Git.FilePath
 import Git.Types
 import Git.UpdateIndex
+import Git.Filename
 import Config.GitConfig
 import Utility.OptParse
 import Utility.InodeCache
@@ -160,7 +163,10 @@ addFile smallorlarge file s = do
 		then hashBlob =<< liftIO (R.readSymbolicLink file)
 		else if isRegularFile s
 			then hashFile file
-			else giveup $ fromRawFilePath file ++ " is not a regular file"
+			else do
+				qp <- coreQuotePath <$> Annex.getGitConfig
+				giveup $ decodeBS $ quote qp $
+					file <> " is not a regular file"
 	let treetype = if isSymbolicLink s
 		then TreeSymlink
 		else if intersectFileModes ownerExecuteMode (fileMode s) /= 0

@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.Reinject where
 
 import Command
@@ -15,6 +17,8 @@ import Types.KeySource
 import Utility.Metered
 import Annex.WorkTree
 import qualified Git
+import qualified Annex
+import Git.Filename
 
 cmd :: Command
 cmd = withAnnexOptions [backendOption] $
@@ -48,13 +52,20 @@ startSrcDest ps@(src:dest:[])
 	| otherwise = notAnnexed src' $
 		lookupKey (toRawFilePath dest) >>= \case
 			Just k -> go k
-			Nothing -> giveup $ src ++ " is not an annexed file"
+			Nothing -> do
+				qp <- coreQuotePath <$> Annex.getGitConfig
+				giveup $ decodeBS $ quote qp $ QuotedPath src'
+					<> " is not an annexed file"
   where
 	src' = toRawFilePath src
 	go key = starting "reinject" ai si $
 		ifM (verifyKeyContent key src')
 			( perform src' key
-			, giveup $ src ++ " does not have expected content of " ++ dest
+			, do
+				qp <- coreQuotePath <$> Annex.getGitConfig
+				giveup $ decodeBS $ quote qp $ QuotedPath src'
+					<> " does not have expected content of "
+					<> QuotedPath (toRawFilePath dest)
 			)
 	ai = ActionItemOther (Just (QuotedPath src'))
 	si = SeekInput ps
@@ -81,7 +92,11 @@ notAnnexed src a =
 	ifM (fromRepo Git.repoIsLocalBare)
 		( a
 		, lookupKey src >>= \case
-			Just _ -> giveup $ "cannot used annexed file as src: " ++ fromRawFilePath src
+			Just _ -> do
+				qp <- coreQuotePath <$> Annex.getGitConfig
+				giveup $ decodeBS $ quote qp $ 
+					"cannot used annexed file as src: "
+						<> QuotedPath src
 			Nothing -> a
 		)
 

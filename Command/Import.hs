@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE ApplicativeDo #-}
+{-# LANGUAGE ApplicativeDo, OverloadedStrings #-}
 
 module Command.Import where
 
@@ -31,6 +31,7 @@ import Annex.RemoteTrackingBranch
 import Utility.InodeCache
 import Logs.Location
 import Git.FilePath
+import Git.Filename
 import Git.Types
 import Types.Import
 import Utility.Metered
@@ -125,7 +126,10 @@ seek o@(LocalImportOptions {}) = startConcurrency commandStages $ do
 	inrepops <- liftIO $ filter (dirContains repopath)
 		<$> mapM (absPath . toRawFilePath) (importFiles o)
 	unless (null inrepops) $ do
-		giveup $ "cannot import files from inside the working tree (use git annex add instead): " ++ unwords (map fromRawFilePath inrepops)
+		qp <- coreQuotePath <$> Annex.getGitConfig
+		giveup $ decodeBS $ quote qp $ 
+			"cannot import files from inside the working tree (use git annex add instead): "
+				<> quotedPaths inrepops
 	largematcher <- largeFilesMatcher
 	addunlockedmatcher <- addUnlockedMatcher
 	(commandAction . startLocal o addunlockedmatcher largematcher (duplicateMode o))
@@ -221,7 +225,8 @@ startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
 			checkLockedDownWritePerms destfile srcfile >>= \case
 				Just err -> do
 					liftIO unwind
-					giveup err
+					qp <- coreQuotePath <$> Annex.getGitConfig
+					giveup (decodeBS $ quote qp err)
 				Nothing -> noop
 		-- Get the inode cache of the dest file. It should be
 		-- weakly the same as the originally locked down file's

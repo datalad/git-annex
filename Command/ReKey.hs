@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.ReKey where
 
 import Command
@@ -17,6 +19,7 @@ import Annex.ReplaceFile
 import Logs.Location
 import Annex.InodeSentinal
 import Annex.WorkTree
+import Git.Filename
 import Utility.InodeCache
 import qualified Utility.RawFilePath as R
 
@@ -80,8 +83,10 @@ perform file oldkey newkey = do
 	ifM (inAnnex oldkey) 
 		( unlessM (linkKey file oldkey newkey) $
 			giveup "failed creating link from old to new key"
-		, unlessM (Annex.getRead Annex.force) $
-			giveup $ fromRawFilePath file ++ " is not available (use --force to override)"
+		, unlessM (Annex.getRead Annex.force) $ do
+			qp <- coreQuotePath <$> Annex.getGitConfig
+			giveup $ decodeBS $ quote qp $ QuotedPath file
+				<> " is not available (use --force to override)"
 		)
 	next $ cleanup file newkey
 

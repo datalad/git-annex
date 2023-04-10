@@ -12,6 +12,8 @@ import Git.DiffTree
 import Git.FilePath
 import Git.UpdateIndex
 import Git.Sha
+import Git.Filename
+import qualified Annex
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Command as Git
 import qualified Git.Branch
@@ -29,8 +31,11 @@ seek ps = do
 	-- Safety first; avoid any undo that would touch files that are not
 	-- in the index.
 	(fs, cleanup) <- inRepo $ LsFiles.notInRepo [] False (map toRawFilePath ps)
-	unless (null fs) $
-		giveup $ "Cannot undo changes to files that are not checked into git: " ++ unwords (map fromRawFilePath fs)
+	unless (null fs) $ do
+		qp <- coreQuotePath <$> Annex.getGitConfig
+		giveup $ decodeBS $ quote qp $ 
+			"Cannot undo changes to files that are not checked into git: "
+				<> quotedPaths fs
 	void $ liftIO $ cleanup
 
 	-- Committing staged changes before undo allows later
