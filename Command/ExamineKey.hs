@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.ExamineKey where
 
 import Command
@@ -14,6 +16,7 @@ import Annex.Link
 import Backend
 import Types.Backend
 import Types.Key
+import Utility.SafeOutput
 
 import Data.Char
 import qualified Data.ByteString as B
@@ -54,7 +57,8 @@ run o _ input = do
 	
 	objectpath <- calcRepo $ gitAnnexLocation k
 	let objectpointer = formatPointer k
-	showFormatted (format o) (serializeKey' k) $
+	isterminal <- liftIO $ checkIsTerminal stdout
+	showFormatted isterminal (format o) (serializeKey' k) $
 		[ ("objectpath", fromRawFilePath objectpath)
 		, ("objectpointer", fromRawFilePath objectpointer)
 		] ++ formatVars k af

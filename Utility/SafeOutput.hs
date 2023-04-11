@@ -6,13 +6,25 @@
  - License: BSD-2-clause
  -}
 
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.SafeOutput (safeOutput) where
+module Utility.SafeOutput (
+	safeOutput,
+	IsTerminal(..),
+	checkIsTerminal,
+) where
 
 import Data.Char
 import qualified Data.ByteString as S
+import System.IO
+#ifdef mingw32_HOST_OS
+import System.Win32.MinTTY (isMinTTYHandle)
+import System.Win32.File
+import System.Win32.Types
+import Graphics.Win32.Misc
+import Control.Exception
+#endif
 
 class SafeOutputtable t where
 	safeOutput :: t -> t
@@ -22,3 +34,25 @@ instance SafeOutputtable String where
 
 instance SafeOutputtable S.ByteString where
 	safeOutput = S.filter (not . isControl . chr . fromIntegral)
+
+newtype IsTerminal = IsTerminal Bool
+
+checkIsTerminal :: Handle -> IO IsTerminal
+checkIsTerminal h = do
+#ifndef mingw32_HOST_OS
+	b <- hIsTerminalDevice h
+	return (IsTerminal b)
+#else
+	b <- hIsTerminalDevice h
+	if b
+		then return (IsTerminal b)
+		else do
+			h' <- getStdHandle sTD_OUTPUT_HANDLE
+				`catch` \(_ :: IOError) ->
+					return nullHANDLE
+			if h == nullHANDLE
+				then return (IsTerminal False)
+				else do
+					b' <- isMinTTYHandle h'
+					return (IsTerminal b)
+#endif

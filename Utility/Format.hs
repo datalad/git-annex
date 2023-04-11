@@ -9,6 +9,7 @@ module Utility.Format (
 	Format,
 	gen,
 	format,
+	escapedFormat,
 	formatContainsVar,
 	decode_c,
 	encode_c,
@@ -53,7 +54,7 @@ format f vars = concatMap expand f
   where
 	expand (Const s) = s
 	expand (Var name j esc)
-		| esc = justify j $ decodeBS $ encode_c needescape $
+		| esc = justify j $ decodeBS $ escapedFormat $
 			encodeBS $ getvar name
 		| otherwise = justify j $ getvar name
 	getvar name = fromMaybe "" $ M.lookup name vars
@@ -62,6 +63,10 @@ format f vars = concatMap expand f
 	justify (RightJustified i) s = pad i s ++ s
 	pad i s = take (i - length s) spaces
 	spaces = repeat ' '
+
+escapedFormat :: S.ByteString -> S.ByteString
+escapedFormat = encode_c needescape
+  where
 	needescape c = isUtf8Byte c ||
 		isSpace (chr (fromIntegral c)) ||
 		c == fromIntegral (ord '"')

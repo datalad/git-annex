@@ -33,6 +33,9 @@ that can be determined purely by looking at the key.
   provided to examinekey).
 
   Also, '\\n' is a newline, '\\000' is a NULL, etc.
+  
+  The default output format is the same as `--format='${escapedkey}\\n'`
+  when outputting to the terminal, and otherwise `--format='${key}\\n'`
 
 * `--json`
 

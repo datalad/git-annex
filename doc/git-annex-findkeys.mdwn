@@ -45,7 +45,8 @@ Outputs a list of keys known to git-annex.
 
   Also, '\\n' is a newline, '\\000' is a NULL, etc.
 
-  The default output format is the same as `--format='${key}\\n'`
+  The default output format is the same as `--format='${escapedkey}\\n'`
+  when outputting to the terminal, and otherwise `--format='${key}\\n'`
 
 * `--json`
 

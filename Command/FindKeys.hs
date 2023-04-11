@@ -8,8 +8,9 @@
 module Command.FindKeys where
 
 import Command
-import qualified Utility.Format
 import qualified Command.Find
+import qualified Utility.Format
+import Utility.SafeOutput
 
 cmd :: Command
 cmd = withAnnexOptions [keyMatchingOptions] $ Command.Find.mkCommand $
@@ -26,22 +27,23 @@ optParser _ = FindKeysOptions
 
 seek :: FindKeysOptions -> CommandSeek
 seek o = do
+	isterminal <- liftIO $ checkIsTerminal stdout
 	seeker <- Command.Find.contentPresentUnlessLimited $ AnnexedFileSeeker
 		{ checkContentPresent = Nothing
 		, usesLocationLog = False
 		-- startAction is not actually used since this
 		-- is not used to seek files
-		, startAction = \_ _ key -> start' o key
+		, startAction = \_ _ key -> start' o isterminal key
 		}
 	withKeyOptions (Just WantAllKeys) False seeker
-		(commandAction . start o)
+		(commandAction . start o isterminal)
 		(const noop) (WorkTreeItems [])
 
-start :: FindKeysOptions -> (SeekInput, Key, ActionItem) -> CommandStart
-start o (_si, key, _ai) = start' o key
+start :: FindKeysOptions -> IsTerminal -> (SeekInput, Key, ActionItem) -> CommandStart
+start o isterminal (_si, key, _ai) = start' o isterminal key
 
-start' :: FindKeysOptions -> Key -> CommandStart
-start' o key = startingCustomOutput key $ do
-	Command.Find.showFormatted (formatOption o) (serializeKey' key)
+start' :: FindKeysOptions -> IsTerminal -> Key -> CommandStart
+start' o isterminal key = startingCustomOutput key $ do
+	Command.Find.showFormatted isterminal (formatOption o) (serializeKey' key)
 		(Command.Find.formatVars key (AssociatedFile Nothing))
 	next $ return True

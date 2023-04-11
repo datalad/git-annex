@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ import Types.Key
 import Git.FilePath
 import qualified Utility.Format
 import Utility.DataUnits
+import Utility.SafeOutput
 
 cmd :: Command
 cmd = withAnnexOptions [annexedMatchingOptions] $ mkCommand $
@@ -60,14 +61,15 @@ seek :: FindOptions -> CommandSeek
 seek o = do
 	unless (isJust (keyOptions o)) $
 		checkNotBareRepo
+	isterminal <- liftIO $ checkIsTerminal stdout
 	seeker <- contentPresentUnlessLimited $ AnnexedFileSeeker
-		{ startAction = start o
+		{ startAction = start o isterminal
 		, checkContentPresent = Nothing
 		, usesLocationLog = False
 		}
 	case batchOption o of
 		NoBatch -> withKeyOptions (keyOptions o) False seeker
-			(commandAction . startKeys o)
+			(commandAction . startKeys o isterminal)
 			(withFilesInGitAnnex ww seeker)
 			=<< workTreeItems ww (findThese o)
 		Batch fmt -> batchOnly (keyOptions o) (findThese o) $
@@ -86,22 +88,25 @@ contentPresentUnlessLimited s = do
 			else Just True
 		}
 
-start :: FindOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
-start o _ file key = startingCustomOutput key $ do
-	showFormatted (formatOption o) file 
+start :: FindOptions -> IsTerminal -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o isterminal _ file key = startingCustomOutput key $ do
+	showFormatted isterminal (formatOption o) file
 		(formatVars key (AssociatedFile (Just file)))
 	next $ return True
 
-startKeys :: FindOptions -> (SeekInput, Key, ActionItem) -> CommandStart
-startKeys o (si, key, ActionItemBranchFilePath (BranchFilePath _ topf) _) = 
-	start o si (getTopFilePath topf) key
-startKeys _ _ = stop
+startKeys :: FindOptions -> IsTerminal -> (SeekInput, Key, ActionItem) -> CommandStart
+startKeys o isterminal (si, key, ActionItemBranchFilePath (BranchFilePath _ topf) _) = 
+	start o isterminal si (getTopFilePath topf) key
+startKeys _ _ _ = stop
 
-showFormatted :: Maybe Utility.Format.Format -> S.ByteString -> [(String, String)] -> Annex ()
-showFormatted format unformatted vars =
+showFormatted :: IsTerminal -> Maybe Utility.Format.Format -> S.ByteString -> [(String, String)] -> Annex ()
+showFormatted (IsTerminal isterminal) format unformatted vars =
 	unlessM (showFullJSON $ JSONChunk vars) $
 		case format of
-			Nothing -> liftIO $ S8.putStrLn unformatted
+			Nothing -> do
+				liftIO $ S8.putStrLn $ if isterminal
+					then Utility.Format.escapedFormat unformatted
+					else unformatted
 			Just formatter -> liftIO $ putStr $
 				Utility.Format.format formatter $
 					M.fromList vars

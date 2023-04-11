@@ -7,6 +7,9 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * Control characters in information coming from the repository or other
     possible untrusted sources are filtered out of the display of many
     commands.
+  * find, findkeys, examinekey: When outputting to a terminal and --format
+    is not used, quote unusual characters. 
+    (Similar to the behavior of GNU find.)
   * addurl --preserve-filename now rejects filenames that contain other
     control characters, besides the escape sequences it already rejected.
 
