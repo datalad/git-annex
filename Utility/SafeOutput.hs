@@ -30,10 +30,17 @@ class SafeOutputtable t where
 	safeOutput :: t -> t
 
 instance SafeOutputtable String where
-	safeOutput = filter (not . isControl)
+	safeOutput = filter safeChar
 
 instance SafeOutputtable S.ByteString where
-	safeOutput = S.filter (not . isControl . chr . fromIntegral)
+	safeOutput = S.filter (safeChar . chr . fromIntegral)
+
+safeChar :: Char -> Bool
+safeChar c
+	| not (isControl c) = True
+	| c == '\n' = True
+	| c == '\t' = True
+	| otherwise = False
 
 newtype IsTerminal = IsTerminal Bool
 
