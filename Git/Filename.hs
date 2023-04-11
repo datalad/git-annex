@@ -99,7 +99,7 @@ instance Quoteable StringContainingQuotedPath where
 	noquote (a :+: b) = noquote a <> noquote b
 
 instance IsString StringContainingQuotedPath where
-	fromString = UnquotedString
+	fromString = UnquotedByteString . encodeBS
 
 instance Sem.Semigroup StringContainingQuotedPath where
 	UnquotedString a <> UnquotedString b = UnquotedString (a <> b)
