@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="xloem"
+ avatar="http://cdn.libravatar.org/avatar/b8c087f7c5e6a9358748f0727c077f3b"
+ subject="comment 16"
+ date="2023-04-11T18:07:04Z"
+ content="""
+i had written a hacky special remote for web3.storage at https://github.com/xloem/gitlakepy/blob/master/scripts/git-annex-remote-w3-subprocess but it was kind of flaky, wrapped the cli tool.
+
+i guess arweave isn't relevant here for ipfs. the support for ipfs is nice with w3.storage because you can download things with the ipfs url without requiring the special remote installed.
+
+i have cognitive decline, haven't found recovery from political trafficking, so depending on how my life goes i may make more and more spammy expressions. feel free to clean them up, and thank you for commenting on this one.
+"""]]
