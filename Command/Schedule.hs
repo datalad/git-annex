@@ -11,6 +11,7 @@ import Command
 import qualified Remote
 import Logs.Schedule
 import Types.ScheduledActivity
+import Utility.SafeOutput
 
 import qualified Data.Set as S
 
@@ -40,7 +41,7 @@ start = parse
 performGet :: UUID -> CommandPerform
 performGet uuid = do
 	s <- scheduleGet uuid
-	liftIO $ putStrLn $ intercalate "; " $ 
+	liftIO $ putStrLn $ safeOutput $ intercalate "; " $ 
 		map fromScheduledActivity $ S.toList s
 	next $ return True
 

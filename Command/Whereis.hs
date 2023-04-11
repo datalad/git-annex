@@ -17,6 +17,7 @@ import Remote.Web (getWebUrls)
 import Annex.UUID
 import qualified Utility.Format
 import qualified Command.Find
+import Utility.SafeOutput
 
 import qualified Data.Map as M
 import qualified Data.Vector as V

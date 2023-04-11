@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.Log where
 
 import qualified Data.Set as S
@@ -12,6 +14,7 @@ import qualified Data.Map as M
 import Data.Char
 import Data.Time.Clock.POSIX
 import Data.Time
+import qualified Data.ByteString.Char8 as B8
 import qualified System.FilePath.ByteString as P
 
 import Command
@@ -166,15 +169,17 @@ mkOutputter m zone o file
 	lookupdescription u = maybe (fromUUID u) (fromUUIDDesc) (M.lookup u m)
 
 normalOutput :: (UUID -> String) -> FilePath -> (POSIXTime -> String) -> Outputter
-normalOutput lookupdescription file formattime logchange ts us =
-	liftIO $ mapM_ (putStrLn . format) us
+normalOutput lookupdescription file formattime logchange ts us = do
+	qp <- coreQuotePath <$> Annex.getGitConfig
+	liftIO $ mapM_ (B8.putStrLn . quote qp . format) us
   where
 	time = formattime ts
 	addel = case logchange of
 		Added -> "+"
 		Removed -> "-"
-	format u = unwords [ addel, time, file, "|", 
-		fromUUID u ++ " -- " ++ lookupdescription u ]
+	format u = UnquotedString addel <> " " <> UnquotedString time <> " " 
+		<> QuotedPath (toRawFilePath file) <> " | " <> UnquotedByteString (fromUUID u)
+		<> " -- " <> UnquotedString (lookupdescription u)
 
 gourceOutput :: (UUID -> String) -> FilePath -> Outputter
 gourceOutput lookupdescription file logchange ts us =

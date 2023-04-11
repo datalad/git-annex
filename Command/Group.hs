@@ -11,6 +11,7 @@ import Command
 import qualified Remote
 import Logs.Group
 import Types.Group
+import Utility.SafeOutput
 
 import qualified Data.Set as S
 
@@ -32,7 +33,7 @@ start ps@(name:g:[]) = do
 start (name:[]) = do
 	u <- Remote.nameToUUID name
 	startingCustomOutput (ActionItemOther Nothing) $ do
-		liftIO . putStrLn . unwords . map fmt . S.toList
+		liftIO . putStrLn . safeOutput . unwords . map fmt . S.toList
 			=<< lookupGroups u
 		next $ return True
   where

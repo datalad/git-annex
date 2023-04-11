@@ -14,6 +14,7 @@ import Logs.Config
 import Config
 import Types.GitConfig (globalConfigs)
 import Git.Types (fromConfigValue)
+import Utility.SafeOutput
 
 import qualified Data.ByteString.Char8 as S8
 
@@ -75,7 +76,7 @@ seek (UnsetConfig ck@(ConfigKey name)) = checkIsGlobalConfig ck $ commandAction 
 seek (GetConfig ck) = checkIsGlobalConfig ck $ commandAction $
 	startingCustomOutput ai $ do
 		getGlobalConfig ck >>= \case
-			Just (ConfigValue v) -> liftIO $ S8.putStrLn v
+			Just (ConfigValue v) -> liftIO $ S8.putStrLn $ safeOutput v
 			Just NoConfigValue -> return ()
 			Nothing -> return ()
 		next $ return True

@@ -6,20 +6,25 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Command.List where
 
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Function
 import Data.Ord
+import qualified Data.ByteString.Char8 as B8
 
 import Command
 import Remote
+import qualified Annex
 import Logs.Trust
 import Logs.UUID
 import Annex.UUID
 import Git.Types (RemoteName)
 import Utility.Tuple
+import Utility.SafeOutput
 
 cmd :: Command
 cmd = noCommit $ withAnnexOptions [annexedMatchingOptions] $
@@ -75,12 +80,14 @@ getList o
 			filter (\t -> thd3 t /= DeadTrusted) rs3
 
 printHeader :: [(UUID, RemoteName, TrustLevel)] -> Annex ()
-printHeader l = liftIO $ putStrLn $ lheader $ map (\(_, n, t) -> (n, t)) l
+printHeader l = liftIO $ putStrLn $ safeOutput $ lheader $ map (\(_, n, t) -> (n, t)) l
 
 start :: [(UUID, RemoteName, TrustLevel)] -> SeekInput -> RawFilePath -> Key -> CommandStart
 start l _si file key = do
 	ls <- S.fromList <$> keyLocations key
-	liftIO $ putStrLn $ format (map (\(u, _, t) -> (t, S.member u ls)) l) file
+	qp <- coreQuotePath <$> Annex.getGitConfig
+	liftIO $ B8.putStrLn $ quote qp $
+		format (map (\(u, _, t) -> (t, S.member u ls)) l) file
 	stop
 
 type Present = Bool
@@ -93,8 +100,8 @@ lheader remotes = unlines (zipWith formatheader [0..] remotes) ++ pipes (length 
 	trust UnTrusted = " (untrusted)"
 	trust _ = ""
 
-format :: [(TrustLevel, Present)] -> RawFilePath -> String
-format remotes file = thereMap ++ " " ++ fromRawFilePath file
+format :: [(TrustLevel, Present)] -> RawFilePath -> StringContainingQuotedPath
+format remotes file = UnquotedString (thereMap) <> " " <> QuotedPath file
   where 
 	thereMap = concatMap there remotes
 	there (UnTrusted, True) = "x"

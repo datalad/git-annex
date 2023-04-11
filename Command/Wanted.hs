@@ -11,6 +11,7 @@ import Command
 import qualified Remote
 import Logs.PreferredContent
 import Types.StandardGroups
+import Utility.SafeOutput
 
 import qualified Data.Map as M
 
@@ -47,7 +48,7 @@ cmd' name desc getter setter = noMessages $
 performGet :: Ord a => Annex (M.Map a PreferredContentExpression) -> a -> CommandPerform
 performGet getter a = do
 	m <- getter
-	liftIO $ putStrLn $ fromMaybe "" $ M.lookup a m
+	liftIO $ putStrLn $ safeOutput $ fromMaybe "" $ M.lookup a m
 	next $ return True
 
 performSet :: (a -> PreferredContentExpression -> Annex ()) -> String -> a -> CommandPerform

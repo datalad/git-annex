@@ -10,6 +10,7 @@ module Command.CheckPresentKey where
 import Command
 import qualified Remote
 import Remote.List
+import Utility.SafeOutput
 
 cmd :: Command
 cmd = noCommit $ noMessages $
@@ -68,7 +69,7 @@ exitResult :: Result -> Annex a
 exitResult Present = liftIO exitSuccess
 exitResult NotPresent = liftIO exitFailure
 exitResult (CheckFailure msg) = liftIO $ do
-	hPutStrLn stderr msg
+	hPutStrLn stderr (safeOutput msg)
 	exitWith $ ExitFailure 100
 
 batchResult :: Result -> Annex ()

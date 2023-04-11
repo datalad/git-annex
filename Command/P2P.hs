@@ -24,6 +24,7 @@ import Utility.AuthToken
 import Utility.Tmp.Dir
 import Utility.FileMode
 import Utility.ThreadScheduler
+import Utility.SafeOutput
 import qualified Utility.RawFilePath as R
 import qualified Utility.MagicWormhole as Wormhole
 
@@ -92,7 +93,7 @@ genAddresses addrs = do
 	authtoken <- liftIO $ genAuthToken 128
 	storeP2PAuthToken authtoken
 	earlyWarning "These addresses allow access to this git-annex repository. Only share them with people you trust with that access, using trusted communication channels!"
-	liftIO $ putStr $ unlines $
+	liftIO $ putStr $ safeOutput $ unlines $
 		map formatP2PAddress $
 			map (`P2PAddressAuth` authtoken) addrs
 

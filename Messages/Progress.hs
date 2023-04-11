@@ -23,6 +23,7 @@ import Utility.InodeCache
 import qualified Messages.JSON as JSON
 import Messages.Concurrent
 import Messages.Internal
+import Utility.SafeOutput
 
 import qualified System.Console.Regions as Regions
 import qualified System.Console.Concurrent as Console
@@ -220,5 +221,5 @@ mkStderrEmitter :: Annex (String -> IO ())
 mkStderrEmitter = withMessageState go
   where
 	go s
-		| concurrentOutputEnabled s = return Console.errorConcurrent
-		| otherwise = return (hPutStrLn stderr)
+		| concurrentOutputEnabled s = return (Console.errorConcurrent . safeOutput)
+		| otherwise = return (hPutStrLn stderr . safeOutput)

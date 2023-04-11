@@ -53,6 +53,7 @@ import Utility.DataUnits
 import Utility.HumanTime
 import Utility.SimpleProtocol as Proto
 import Utility.ThreadScheduler
+import Utility.SafeOutput
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
@@ -321,7 +322,7 @@ demeterCommandEnv oh cmd params environ = do
   where
 	stdouthandler l = 
 		unless (quietMode oh) $
-			putStrLn l
+			putStrLn (safeOutput l)
 
 {- To suppress progress output, while displaying other messages,
  - filter out lines that contain \r (typically used to reset to the

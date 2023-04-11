@@ -15,6 +15,7 @@ import Annex.WorkTree
 import Messages.JSON (JSONActionItem(..), AddJSONActionItemFields(..))
 import Types.Messages
 import Utility.Aeson
+import Utility.SafeOutput
 import Limit
 
 import qualified Data.Set as S
@@ -109,7 +110,7 @@ startKeys c o (si, k, ai) = case getSet o of
 	Get f -> startingCustomOutput k $ do
 		l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
 		liftIO $ forM_ l $
-			B8.putStrLn . fromMetaValue
+			B8.putStrLn . safeOutput . fromMetaValue
 		next $ return True
 	_ -> starting "metadata" ai si $
 		perform c o k
