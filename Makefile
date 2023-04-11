@@ -36,6 +36,7 @@ tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	if [ "$(BUILDER)" = ./Setup ]; then $(GHC) --make Setup; fi
 	if [ "$(BUILDER)" != stack ]; then \
 		$(BUILDER) configure $(BUILDERCOMMONOPTIONS) --ghc-options="$(shell Build/collect-ghc-options.sh)"; \
+		rm cabal.project.local~* 2>/dev/null || true; \
 	else \
 		$(BUILDER) setup $(BUILDERCOMMONOPTIONS); \
 	fi
@@ -50,6 +51,7 @@ tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 dev:
 	$(BUILDER) configure -f"-Production" \
 		--enable-executable-dynamic --enable-profiling
+	rm cabal.project.local~* 2>/dev/null || true
 	mkdir -p tmp
 	touch tmp/configure-stamp
 	$(MAKE) git-annex tags
@@ -231,6 +233,7 @@ osxapp:
 distributionupdate:
 	git pull
 	cabal configure
+	rm cabal.project.local~* 2>/dev/null || true
 	ghc -Wall -fno-warn-tabs --make Build/DistributionUpdate -XLambdaCase -XPackageImports
 	./Build/DistributionUpdate
 
