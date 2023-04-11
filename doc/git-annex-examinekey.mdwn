@@ -20,7 +20,8 @@ that can be determined purely by looking at the key.
   The value is a format string, in which '${var}' is expanded to the
   value of a variable. To right-justify a variable with whitespace,
   use '${var;width}' ; to left-justify a variable, use '${var;-width}';
-  to escape unusual characters in a variable, use '${escaped_var}'
+  to escape unusual characters (including control characters)
+  in a variable, use '${escaped_var}'
 
   To generate a path from the top of the repository to the git-annex
   object for a key, use ${objectpath}. To generate the value of a
