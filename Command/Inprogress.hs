@@ -31,6 +31,7 @@ optParser desc = InprogressOptions
 
 seek :: InprogressOptions -> CommandSeek
 seek o = do
+	IsTerminal isterminal <- liftIO $ checkIsTerminal stdout
 	ts <- map (transferKey . fst) <$> getTransfers
 	case keyOptions o of
 		Just WantAllKeys ->
