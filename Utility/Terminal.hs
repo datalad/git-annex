@@ -37,7 +37,7 @@ checkIsTerminal h = do
 			h' <- getStdHandle sTD_OUTPUT_HANDLE
 				`catch` \(_ :: IOError) ->
 					return nullHANDLE
-			if h == nullHANDLE
+			if h' == nullHANDLE
 				then return (IsTerminal False)
 				else do
 					b' <- isMinTTYHandle h'
