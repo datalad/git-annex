@@ -1,0 +1,46 @@
+Last weekend I watched a talk
+["Houdini of the Terminal: The need for escaping"](https://www.youtube.com/watch?v=4kfDBNzStbs)
+which shows several recent exploits of terminal emulators using escape
+sequences. It was eye opening that security holes like that are still 
+being found, and also how severe some of the results can be. I was already
+familiar with escape sequences as a potential security hole, but it never
+seemed to make sense to have a program that was not a terminal emulator
+guard against them. This talk made me think it can make sense for some
+programs, as a defence in depth.
+
+Now git does escape unusual characters when displaying filenames (most of
+the time). But git-annex never has. So it seems it would be a good idea to
+make git-annex follow git's lead on this. And git has a core.quotePath
+which can be used to make it not escape unicode characters, so git-annex
+should also support that.
+
+Implementing that was not very easy, because there are a vast number of
+places where git-annex can display a filename. I had to check every error
+message and warning message and other output in the whole code base to find
+ones that displayed a filename. That took a while.
+
+While doing that, I realized that there are some other ways a control
+character could be stored in the git repository that would cause git-annex
+to display it. It's possible for a git-annex key to have a control
+character in its name. And a few other things stored in the git-annex
+branch, like metadata, could also contain control characters.
+
+I decided the best way to deal with those is not with some complex
+escaping, but just by filtering out the control characters on output. In fact,
+git-annex now filters out control characters in basically all its output.
+The exceptions are some cases where filtering is not done when it's outputting
+to a pipe, and that commands like `git-annex find` that support `--format` 
+only do escaping when requested by the format.
+
+By the way, it turns out that git will display control characters in
+the names of remotes or branches. Possibly in other situations too.
+(I do wonder if a git remote that uses control characters in a branch
+could be used to exploit a terminal emulator?) So git-annex has now gone
+further than git in this area.
+
+The resulting diff is 6500 lines, and I don't consider this an actual
+security fix in git-annex, but only a hardening measure. So I won't be
+hurrying out the next release for this.
+
+This work was sponsored by Jake Vosloo, unqueued, Graham Spencer,
+and Erik Bjäreholt [on Patreon](https://patreon.com/joeyh)
