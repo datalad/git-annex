@@ -1230,3 +1230,5 @@ Some tests failed!
 """]]
 
 [[!tag moreinfo]]
+
+> Closing as this bug report is very old. [[done]] --[[Joey]]
