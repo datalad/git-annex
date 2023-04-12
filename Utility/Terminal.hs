@@ -13,8 +13,6 @@ module Utility.Terminal (
 	checkIsTerminal,
 ) where
 
-import Data.Char
-import qualified Data.ByteString as S
 import System.IO
 #ifdef mingw32_HOST_OS
 import System.Win32.MinTTY (isMinTTYHandle)

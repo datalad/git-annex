@@ -16,7 +16,6 @@ module Utility.SafeOutput (
 
 import Data.Char
 import qualified Data.ByteString as S
-import System.IO
 
 class SafeOutputtable t where
 	safeOutput :: t -> t
