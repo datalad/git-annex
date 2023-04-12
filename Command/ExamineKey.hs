@@ -16,7 +16,7 @@ import Annex.Link
 import Backend
 import Types.Backend
 import Types.Key
-import Utility.SafeOutput
+import Utility.Terminal
 
 import Data.Char
 import qualified Data.ByteString as B

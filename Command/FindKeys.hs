@@ -10,7 +10,7 @@ module Command.FindKeys where
 import Command
 import qualified Command.Find
 import qualified Utility.Format
-import Utility.SafeOutput
+import Utility.Terminal
 
 cmd :: Command
 cmd = withAnnexOptions [keyMatchingOptions] $ Command.Find.mkCommand $

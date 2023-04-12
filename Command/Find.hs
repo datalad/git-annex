@@ -19,7 +19,7 @@ import Types.Key
 import Git.FilePath
 import qualified Utility.Format
 import Utility.DataUnits
-import Utility.SafeOutput
+import Utility.Terminal
 
 cmd :: Command
 cmd = withAnnexOptions [annexedMatchingOptions] $ mkCommand $
