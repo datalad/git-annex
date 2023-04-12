@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 
 module Messages (
 	showStartMessage,
@@ -56,6 +56,7 @@ import Control.Monad.IO.Class
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import System.Exit
+import qualified Control.Monad.Catch as M
 
 import Common
 import Types
@@ -326,11 +327,14 @@ mkPrompter = getConcurrency >>= \case
 				(\v -> putMVar l v >> cleanup)
 				(const $ run a)
 
-{- Catch all (non-async) exceptions and display, santizing any control
- - characters in the exceptions. Exits nonzero on exception, so should only
- - be used at topmost level. -}
+{- Catch all (non-async and not ExitCode) exceptions and display, 
+ - santizing any control characters in the exceptions.
+ -
+ - Exits nonzero on exception, so should only be used at topmost level.
+ -}
 sanitizeTopLevelExceptionMessages :: IO a -> IO a
-sanitizeTopLevelExceptionMessages a = catchNonAsync a go
+sanitizeTopLevelExceptionMessages a = a `catches`
+	((M.Handler (\ (e :: ExitCode) -> throwM e)) : nonAsyncHandler go)
   where
 	go e = do
 		warningIO (show e)
