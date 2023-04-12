@@ -52,6 +52,9 @@ that, when outputting to a terminal?
 Also: git-annex initremote with autoenable may be able to cause a remote
 with a malicious name to be set up?
 
+> Fixed this by silently skipping autoenable, which seems fine since only
+> an attacker would ever try this.
+
 Also: Any place that an exception is thrown with an attacker-controlled value.
 `giveup` has been made to filter out control characters, but that leaves
 other exceptions, including ones thrown by libraries. Catch all exceptions

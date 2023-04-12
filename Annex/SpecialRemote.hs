@@ -23,6 +23,7 @@ import Logs.Remote
 import Logs.Trust
 import qualified Types.Remote as Remote
 import Git.Types (RemoteName)
+import Utility.SafeOutput
 
 import qualified Data.Map as M
 
@@ -95,7 +96,12 @@ autoEnable = do
 			Just (Sameas u') -> u'
 			Nothing -> cu
 		case (lookupName c, findType c) of
-			(Just name, Right t) -> do
+			-- Avoid auto-enabling when the name contains a
+			-- control character, because git does not avoid
+			-- displaying control characters in the name of a
+			-- remote, and an attacker could leverage
+			-- autoenabling it as part of an attack.
+			(Just name, Right t) | safeOutput name == name -> do
 				showSideAction $ UnquotedString $ "Auto enabling special remote " ++ name
 				dummycfg <- liftIO dummyRemoteGitConfig
 				tryNonAsync (setup t (AutoEnable c) (Just u) Nothing c dummycfg) >>= \case

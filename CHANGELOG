@@ -1,17 +1,19 @@
 git-annex (10.20230408) UNRELEASED; urgency=medium
 
-  * Many commands now quotes filenames that contain unusual characters the
+  * Many commands now quote filenames that contain unusual characters the
     same way that git does, to avoid exposing control characters to the terminal.
   * Support core.quotePath, which can be set to false to display utf8
     characters as-is in filenames.
-  * Control characters in information coming from the repository or other
-    possible untrusted sources are filtered out of the display of many
+  * Control characters in non-filename data coming from the repository or
+    other possible untrusted sources are filtered out of the display of many
     commands.
   * find, findkeys, examinekey: When outputting to a terminal and --format
-    is not used, quote unusual characters. 
+    is not used, quote unusual characters.
     (Similar to the behavior of GNU find.)
   * addurl --preserve-filename now rejects filenames that contain other
     control characters, besides the escape sequences it already rejected.
+  * init: Avoid autoenabling special remotes that have control characters
+    in their names.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 
