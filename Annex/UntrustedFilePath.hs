@@ -53,7 +53,12 @@ sanitizeLeadingFilePathCharacter ('/':s) = '_':s
 sanitizeLeadingFilePathCharacter s = s
 
 controlCharacterInFilePath :: FilePath -> Bool
-controlCharacterInFilePath = any isControl
+controlCharacterInFilePath = any (not . safechar)
+  where
+	safechar c
+		| not (isControl c) = True
+		| c == '\t' = True
+		| otherwise = False
 
 {- ../ is a path traversal, no matter where it appears.
  -
