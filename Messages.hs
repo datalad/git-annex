@@ -207,7 +207,7 @@ warning' :: Bool -> (S.ByteString -> S.ByteString) -> StringContainingQuotedPath
 warning' makeway consolewhitespacef w = do
 	when makeway $
 		outputMessage JSON.none id "\n"
-	outputError consolewhitespacef (w <> "\n")
+	outputError (\s -> consolewhitespacef s <> "\n") w
 
 {- Not concurrent output safe. -}
 warningIO :: String -> IO ()
