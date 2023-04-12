@@ -57,7 +57,8 @@ seek o = withKeyOptions (Just (keyOptions o)) False dummyfileseeker
 
 start :: WhereUsedOptions -> (SeekInput, Key, ActionItem) -> CommandStart
 start o (_, key, _) = startingCustomOutput key $ do
-	fs <- filterM stillassociated 
+	fs <- filterM stillassociated
+		=<< mapM (liftIO . relPathCwdToFile)
 		=<< mapM (fromRepo . fromTopFilePath)
 		=<< getAssociatedFiles key
 	forM_ fs $ display key . QuotedPath
