@@ -9,6 +9,8 @@ module Command.Inprogress where
 
 import Command
 import Annex.Transfer
+import Utility.Terminal
+import Utility.SafeOutput
 
 import qualified Data.Set as S
 
@@ -32,14 +34,14 @@ seek o = do
 	ts <- map (transferKey . fst) <$> getTransfers
 	case keyOptions o of
 		Just WantAllKeys ->
-			forM_ ts $ commandAction . start'
+			forM_ ts $ commandAction . (start' isterminal)
 		Just (WantSpecificKey k)
-			| k `elem` ts -> commandAction (start' k)
+			| k `elem` ts -> commandAction (start' isterminal k)
 			| otherwise -> commandAction stop
 		_ -> do
 			let s = S.fromList ts
 			let seeker = AnnexedFileSeeker
-				{ startAction = start s
+				{ startAction = start isterminal s
 				, checkContentPresent = Nothing
 				, usesLocationLog = False
 				}
@@ -48,14 +50,14 @@ seek o = do
   where
 	ww = WarnUnmatchLsFiles
 
-start :: S.Set Key -> SeekInput -> RawFilePath -> Key -> CommandStart
-start s _si _file k
-	| S.member k s = start' k
+start :: IsTerminal -> S.Set Key -> SeekInput -> RawFilePath -> Key -> CommandStart
+start isterminal s _si _file k
+	| S.member k s = start' isterminal k
 	| otherwise = stop
 
-start' :: Key -> CommandStart
-start' k = startingCustomOutput k $ do
+start' :: IsTerminal -> Key -> CommandStart
+start' (IsTerminal isterminal) k = startingCustomOutput k $ do
 	tmpf <- fromRawFilePath <$> fromRepo (gitAnnexTmpObjectLocation k)
 	whenM (liftIO $ doesFileExist tmpf) $
-		liftIO $ putStrLn tmpf
+		liftIO $ putStrLn (if isterminal then safeOutput tmpf else tmpf)
 	next $ return True

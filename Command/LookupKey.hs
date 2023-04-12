@@ -10,6 +10,8 @@ module Command.LookupKey where
 import Command
 import Annex.CatFile
 import qualified Git.LsFiles
+import Utility.Terminal
+import Utility.SafeOutput
 
 cmd :: Command
 cmd = notBareRepo $ noCommit $ noMessages $
@@ -23,7 +25,9 @@ run _ _ file = seekSingleGitFile file >>= \case
 	Nothing -> return False
 	Just file' -> catKeyFile file' >>= \case
 		Just k  -> do
-			liftIO $ putStrLn $ serializeKey k
+			IsTerminal isterminal <- liftIO $ checkIsTerminal stdout
+			let sk = serializeKey k
+			liftIO $ putStrLn $ if isterminal then safeOutput sk else sk
 			return True
 		Nothing -> return False
 

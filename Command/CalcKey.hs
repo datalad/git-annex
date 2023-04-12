@@ -11,6 +11,8 @@ import Command
 import Backend (genKey, defaultBackend)
 import Types.KeySource
 import Utility.Metered
+import Utility.Terminal
+import Utility.SafeOutput
 
 cmd :: Command
 cmd = noCommit $ noMessages $ dontCheck repoExists $
@@ -23,7 +25,9 @@ cmd = noCommit $ noMessages $ dontCheck repoExists $
 run :: () -> SeekInput -> String -> Annex Bool
 run _ _ file = tryNonAsync (genKey ks nullMeterUpdate =<< defaultBackend) >>= \case
 	Right (k, _) -> do
-		liftIO $ putStrLn $ serializeKey k
+		IsTerminal isterminal <- liftIO $ checkIsTerminal stdout
+		let sk = serializeKey k
+		liftIO $ putStrLn $ if isterminal then safeOutput sk else sk
 		return True
 	Left _err -> return False
   where
