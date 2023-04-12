@@ -120,7 +120,7 @@ findHistorical key = do
 	process fs a = or <$> forM fs a
 
 	displayreffile r f = do
-		let tf = asTopFilePath f
+		tf <- inRepo $ toTopFilePath f
 		display key (descBranchFilePath (BranchFilePath r tf))
 		return True
 
