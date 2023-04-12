@@ -15,7 +15,7 @@ module Types.ActionItem (
 import Key
 import Types.Transfer
 import Git.FilePath
-import Git.Filename (StringContainingQuotedPath(..))
+import Git.Quote (StringContainingQuotedPath(..))
 import Utility.FileSystemEncoding
 
 data ActionItem 

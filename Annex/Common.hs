@@ -10,7 +10,7 @@ import Annex as X (gitRepo, inRepo, fromRepo, calcRepo, calcRepo')
 import Annex.Locations as X
 import Annex.Debug as X (fastDebug, debug)
 import Messages as X
-import Git.Filename as X
+import Git.Quote as X
 #ifndef mingw32_HOST_OS
 import System.Posix.IO as X hiding (createPipe)
 #endif

@@ -32,7 +32,7 @@ import Git.Types
 import Git.ConfigTypes
 import Git.Remote (isRemoteKey, remoteKeyToRemoteName)
 import Git.Branch (CommitMode(..))
-import Git.Filename (QuotePath(..))
+import Git.Quote (QuotePath(..))
 import Utility.DataUnits
 import Config.Cost
 import Types.UUID

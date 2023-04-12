@@ -30,7 +30,7 @@ import qualified Utility.RawFilePath as R
 
 import qualified Utility.ShellEscape
 import qualified Annex
-import qualified Git.Filename
+import qualified Git.Quote
 import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
@@ -151,7 +151,7 @@ tests n crippledfilesystem adjustedbranchok opts =
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
-	[ testProperty "prop_quote_unquote_roundtrip" Git.Filename.prop_quote_unquote_roundtrip
+	[ testProperty "prop_quote_unquote_roundtrip" Git.Quote.prop_quote_unquote_roundtrip
 	, testProperty "prop_encode_c_decode_c_roundtrip" Utility.Format.prop_encode_c_decode_c_roundtrip
 	, testProperty "prop_isomorphic_key_encode" Key.prop_isomorphic_key_encode
 	, testProperty "prop_isomorphic_shellEscape" Utility.ShellEscape.prop_isomorphic_shellEscape

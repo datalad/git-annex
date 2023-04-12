@@ -29,7 +29,7 @@ import Git.Sha
 import Git.Command
 import Git.FilePath
 import Git.DiffTreeItem
-import qualified Git.Filename
+import qualified Git.Quote
 import qualified Git.Ref
 import Utility.Attoparsec
 
@@ -133,6 +133,6 @@ parserDiffRaw f = DiffTreeItem
 	<*> (maybe (fail "bad dstsha") return . extractSha =<< nextword)
 	<* A8.char ' '
 	<*> A.takeByteString
-	<*> pure (asTopFilePath $ fromInternalGitPath $ Git.Filename.unquote f)
+	<*> pure (asTopFilePath $ fromInternalGitPath $ Git.Quote.unquote f)
   where
 	nextword = A8.takeTill (== ' ')

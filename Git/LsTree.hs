@@ -23,7 +23,7 @@ import Common
 import Git
 import Git.Command
 import Git.FilePath
-import qualified Git.Filename
+import qualified Git.Quote
 import Utility.Attoparsec
 
 import Numeric
@@ -137,7 +137,7 @@ parserLsTree long = case long of
 		-- sha
 		<*> (Ref <$> A8.takeTill A8.isSpace)
 
-	fileparser = asTopFilePath . Git.Filename.unquote <$> A.takeByteString
+	fileparser = asTopFilePath . Git.Quote.unquote <$> A.takeByteString
 
 	sizeparser = fmap Just A8.decimal
 

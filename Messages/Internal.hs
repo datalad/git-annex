@@ -13,7 +13,7 @@ import Types.Messages
 import Messages.Concurrent
 import qualified Messages.JSON as JSON
 import Messages.JSON (JSONBuilder)
-import Git.Filename
+import Git.Quote
 import Types.GitConfig
 
 import qualified Data.ByteString as S

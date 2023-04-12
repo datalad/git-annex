@@ -30,7 +30,7 @@ module Git.FilePath (
 
 import Common
 import Git
-import Git.Filename
+import Git.Quote
 
 import qualified System.FilePath.ByteString as P
 import qualified System.FilePath.Posix.ByteString

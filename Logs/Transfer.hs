@@ -14,7 +14,7 @@ import Types.Transfer
 import Types.ActionItem
 import Annex.Common
 import qualified Git
-import qualified Git.Filename
+import qualified Git.Quote
 import Utility.Metered
 import Utility.Percentage
 import Utility.PID
@@ -32,7 +32,7 @@ import Control.Concurrent.STM
 import qualified Data.ByteString.Char8 as B8
 import qualified System.FilePath.ByteString as P
 
-describeTransfer :: Git.Filename.QuotePath -> Transfer -> TransferInfo -> String
+describeTransfer :: Git.Quote.QuotePath -> Transfer -> TransferInfo -> String
 describeTransfer qp t info = unwords
 	[ show $ transferDirection t
 	, show $ transferUUID t

@@ -21,7 +21,7 @@ import Messages.Internal
 import Messages.Progress
 import qualified Messages.JSON as JSON
 import Utility.Metered (BytesProcessed, setMeterTotalSize)
-import Git.Filename
+import Git.Quote
 
 import Control.Monad.IO.Class (MonadIO)
 

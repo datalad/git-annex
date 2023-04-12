@@ -8,7 +8,7 @@
 
 {-# LANGUAGE OverloadedStrings, TypeSynonymInstances #-}
 
-module Git.Filename (
+module Git.Quote (
 	unquote,
 	quote,
 	noquote,

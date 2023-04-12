@@ -15,7 +15,7 @@ import Types
 import Types.Key
 import qualified Git
 import qualified Types.Remote as Remote
-import Git.Filename
+import Git.Quote
 import Messages
 
 import Data.Maybe

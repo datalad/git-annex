@@ -856,7 +856,6 @@ Executable git-annex
     Git.Env
     Git.FileMode
     Git.FilePath
-    Git.Filename
     Git.FilterProcess
     Git.Fsck
     Git.GCrypt
@@ -871,6 +870,7 @@ Executable git-annex
     Git.Objects
     Git.PktLine
     Git.Queue
+    Git.Quote
     Git.Ref
     Git.RefLog
     Git.Remote

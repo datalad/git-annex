@@ -32,7 +32,7 @@ import Utility.LockPool.STM (LockFile, LockMode(..))
 import Utility.LockFile.LockStatus
 import Config (pidLockFile)
 import Messages (warning)
-import Git.Filename
+import Git.Quote
 
 import System.Posix
 

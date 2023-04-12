@@ -69,7 +69,7 @@ import Messages.Concurrent
 import Annex.Debug
 import Annex.Concurrent.Utility
 import Utility.SafeOutput
-import Git.Filename
+import Git.Quote
 import qualified Messages.JSON as JSON
 import qualified Annex
 
