@@ -60,3 +60,11 @@ Also: Any place that an exception is thrown with an attacker-controlled value.
 other exceptions, including ones thrown by libraries. Catch all exceptions
 at top-level (of program and/or worker threads) and filter out control
 characters?
+
+> Fixed with a top-level exception catcher; assuming all worker threads
+> have something waiting on them that displays or propagates their
+> exceptions.
+
+----
+
+> all [[fixed|done]]! --[[Joey]]

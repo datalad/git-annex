@@ -48,12 +48,14 @@ module Messages (
 	MessageState,
 	prompt,
 	mkPrompter,
+	sanitizeTopLevelExceptionMessages,
 ) where
 
 import Control.Concurrent
 import Control.Monad.IO.Class
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
+import System.Exit
 
 import Common
 import Types
@@ -323,3 +325,13 @@ mkPrompter = getConcurrency >>= \case
 				(takeMVar l)
 				(\v -> putMVar l v >> cleanup)
 				(const $ run a)
+
+{- Catch all (non-async) exceptions and display, santizing any control
+ - characters in the exceptions. Exits nonzero on exception, so should only
+ - be used at topmost level. -}
+sanitizeTopLevelExceptionMessages :: IO a -> IO a
+sanitizeTopLevelExceptionMessages a = catchNonAsync a go
+  where
+	go e = do
+		warningIO (show e)
+		exitWith $ ExitFailure 1

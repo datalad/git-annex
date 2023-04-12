@@ -16,6 +16,7 @@ import qualified CmdLine.GitAnnexShell
 import qualified CmdLine.GitRemoteTorAnnex
 import qualified Test
 import qualified Benchmark
+import Messages
 import Utility.FileSystemEncoding
 
 #ifdef mingw32_HOST_OS
@@ -24,7 +25,7 @@ import Utility.Env.Set
 #endif
 
 main :: IO ()
-main = withSocketsDo $ do
+main = sanitizeTopLevelExceptionMessages $ withSocketsDo $ do
 	useFileSystemEncoding
 	ps <- getArgs
 #ifdef mingw32_HOST_OS
