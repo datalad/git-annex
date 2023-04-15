@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="DavidD"
+ avatar="http://cdn.libravatar.org/avatar/9e7cced3eede4bf75fb932bfdd4f8847"
+ subject="comment 2"
+ date="2023-04-15T22:16:11Z"
+ content="""
+The submodule .git file having been converted to a symlink is still a problem when using `git checkout` with `--recurse-submodules` in the parent repo. The previous poster's solution to use `git checkout mybranch && git submodule update` does not work with git version 2.40.0 and git-annex version 10.20230407. 
+
+Are there other suggestions for workarounds?
+
+The original post states that the .git as a symlink fixes problems that exist for a .git file which points to the `.git/modules/` folder of the parent. What problems are these problems?
+"""]]
