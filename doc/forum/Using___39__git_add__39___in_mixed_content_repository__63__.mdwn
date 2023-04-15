@@ -1,0 +1,46 @@
+I am attempting to follow the instructions at [[tips/largefiles]] "Configuring mixed content repositories"
+
+After following these instructions, I expect that `git add` will make a decision whether a file goes to 'git-annex' or 'git`.
+
+However, what I observe is: 
+
+* `git-annex add *`  will honor the largefiles setting
+
+* `git add  *`  will NOT honor the largefiles setting
+
+Is there some additional configuration that I need for newer repository versions?
+
+
+I used the following test:
+
+
+    #!/bin/bash
+    curl -Lo https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz  | tar -xvzf -
+    export PATH=./git-annex.linux/:$PATH
+    # Follow steps from https://git-annex.branchable.com/forum/exclude_files_from_annex/
+    git init
+    git annex init
+    git config annex.largefiles "largerthan=100kb and not (include=*.c or include=*.h)"
+    dd if=/dev/urandom of=bigfile1 bs=1M count=1
+    dd if=/dev/urandom of=bigfile2 bs=1M count=1
+    echo 'main() { printf("hello, world!\n") }' > hello.c
+    git annex add bigfile1 
+    if [ ! -L bigfile1 ] ; then
+        echo bigfile1 is not a symlink after git annex add
+        ls -algd ./bigfile1
+    fi
+    git add bigfile2 
+    if [ ! -L bigfile2 ] ; then
+        echo bigfile2 is not a symlink after git add
+        ls -algd ./bigfile2
+    fi
+    git commit -m "Commit!"
+    if [ ! -L bigfile2 ] ; then
+        echo bigfile2 is not a symlink after git commit
+        ls -algd ./bigfile2
+    fi
+
+'bigfile1' is a symlink as expected.
+'bigfile2' never becomes a symlink and is checked into the git repository
+
+
