@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 3"
+ date="2023-04-16T17:49:50Z"
+ content="""
+The obvious problem I guess is that you can't have a file and a folder of the same name. git annex needs to put stuff in `$repo/.git/...`, but if `.git` is a *file*, that doesn't work.
+"""]]
