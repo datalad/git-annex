@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-04-17T17:00:58Z"
+ content="""
+`registerurl` does not touch the git index so uses the usual git-annex
+locking that supports concurrency.
+
+Interestingly, `git commit` does not hold the index.lock while waiting for
+the editor anymore. Despite git's lock failure message still suggesting
+that as the most common reason for a lock to fail. So the window for this
+race is narrower than it used to be. (Also this surprisingly means that you
+can `git add` (or `git-annex add` while `git commit` is in the editor and
+stage files that will be included in the ongoing commit!)
+
+Also the index lock is just the git lock that I've seen be a problem
+before. git does have some other locks that could in some situation be a
+problem with concurrency. See core.filesreflocktimeout for one example.
+
+git-annex's locking method is not without problems either, see
+[[todo/withExclusiveLock_blocking_issue]].
+"""]]
