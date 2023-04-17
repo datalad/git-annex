@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="DavidD"
+ avatar="http://cdn.libravatar.org/avatar/9e7cced3eede4bf75fb932bfdd4f8847"
+ subject="comment 4"
+ date="2023-04-17T15:27:49Z"
+ content="""
+I might have this wrong, but I thought git also put things into `$repo/.git/...`? If git can figure out that the `.git` file points to the actual location of the `.git` folder (in the parent repo) than I would think that git annex can conclude this as well. Again, I don't know how the guts of git annex works, so there is possibly other considerations that I am missing.
+"""]]
