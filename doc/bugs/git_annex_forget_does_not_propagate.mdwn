@@ -26,3 +26,5 @@ There is no error log per se, git annex thinks everything went well.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Aside from this, best thing ever.
+
+> [[fixed|done]] back in 2022 --[[Joey]]
