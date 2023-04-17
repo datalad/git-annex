@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-04-17T17:51:43Z"
+ content="""
+This is like the "archive" group, but you want 3 different ones. 
+git-annex already has a built-in "smallarchive" group that is not
+quite what you want (see [[preferred_content/standard_groups]]), so
+let's call them "archive1", "archive2", and "archive3".
+
+Configure the groups like this, so any member of a group wants to contain a file
+only if it will be the only member of the group to contain a copy.
+
+	git annex groupwanted archive1 "not copies=archive1:1"
+	git annex groupwanted archive2 "not copies=archive2:1"
+	git annex groupwanted archive3 "not copies=archive3:1"
+
+Then use `git-annex group` to put  to put each drive's repository in its
+respective group, and set `wanted` to "standard" to make it use the
+groupwanted expression. For example:
+
+	git-annex group bigdrive archive1
+	git-annex wanted bigdrive standard
+
+Then, `git-annex copy --to bigdrive --auto` and other similar commands
+with `--auto` (or `git-annex sync --content`) will distribute files to the
+drives.
+"""]]
