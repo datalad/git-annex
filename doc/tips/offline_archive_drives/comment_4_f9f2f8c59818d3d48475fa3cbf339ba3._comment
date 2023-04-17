@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="dud225@35a1ee469f82f3a7eb1f2dce4ad453f5e47bdfd3"
+ nickname="dud225"
+ avatar="http://cdn.libravatar.org/avatar/5147563e50c475918474594d93be95c2"
+ subject="Groups comprised of archive drives of various size"
+ date="2023-04-17T10:12:58Z"
+ content="""
+I'd like to store multiple copies of my data but I'm not sure how to implement it with drives of various sizes.
+
+Let's assume that I'd like 3 copies of every file and I'd like the data to be laid out in 3 disk groups:
+
+1. big drive of 1TB
+2. 1 medium drive of 500GB and 2 small drives of 250GB
+3. 4 small drivers of 250GB
+
+The idea is to keep 1 group permanently at home while the 2 others would be stored in different remote locations and resynchronized from time to time. Each disk group would hold all the data, so that a loss of one of them wouldn't matter. Also the composition of those disk group would allow me to easily know which disks can be put aside while being ensured that they could contain all the data.
+
+How could this model be implemented with git-annex?
+"""]]
