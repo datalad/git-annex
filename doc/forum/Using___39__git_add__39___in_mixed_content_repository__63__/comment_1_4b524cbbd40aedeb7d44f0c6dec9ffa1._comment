@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-04-17T17:37:45Z"
+ content="""
+Take a look at `git diff --cached bigfile2` and you will see that what has
+been checked into git is a git-annex key. 
+
+This is an unlocked annexed file, which is like a locked annexed file but
+is represented in git differently.
+
+`git add` adds files locked because the interface that git-annex is using
+to hook into it does not let it stage a symlink into git.
+
+You can `git-annex lock bigfile2` to convert it to a symlink.
+"""]]
