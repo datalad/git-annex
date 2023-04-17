@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-04-17T18:04:26Z"
+ content="""
+Just `git pull` the git-annex branch from remotes yourself like any other
+git branch.
+
+git-annex will automatically merge those pulled git-annex branches into its
+own local git-annex branch the next time you run it.
+
+Then you can `git push` the git-annex branch to any remotes you want to
+publish updated git-annex information to.
+"""]]
