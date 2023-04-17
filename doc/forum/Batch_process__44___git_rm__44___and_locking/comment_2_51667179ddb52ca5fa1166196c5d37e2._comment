@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2023-04-17T13:01:03Z"
+ content="""
+just to clarify/make sure -- is `registerurl` also subject to the same locking or only `addurl`?
+"""]]
