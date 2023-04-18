@@ -61,3 +61,5 @@ I am on Debian sid. I tried git-annex versions 10.20221003 and 10.20230126 -- bo
 
 Loads! This particular issue started to show up in the datalad support channels due to aging infrastructure setups with still popular datasets tracking them using autoenabling special remotes.
 
+> [[fixed|done]] --[[Joey]]
+

@@ -1,0 +1,41 @@
+# NAME
+
+git-annex configremote - changes special remote configuration
+
+# SYNOPSIS
+
+git annex configemote `name|uuid|desc [param=value ...]`
+
+# DESCRIPTION
+
+Changes the configuration of a special remote that was set up earlier
+by `git-annex initremote`. The special remote does not need to be enabled
+for use in the current repository, and this command will not enable it.
+
+This command can currently only be used to change the value of the
+`autoenable` parameter, eg "autoenable=false".
+
+To change other parameters, use `git-annex enableremote`
+
+# OPTIONS
+
+Most options are not prefixed by a dash, and set parameters of the remote,
+as shown above. 
+
+Also, the [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-initremote]](1)
+
+[[git-annex-configremote]](1)
+
+[[git-annex-renameremote]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

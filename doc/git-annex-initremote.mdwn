@@ -125,6 +125,8 @@ want to use `git annex renameremote`.
 
 [[git-annex-enableremote]](1)
 
+[[git-annex-configremote]](1)
+
 [[git-annex-renameremote]](1)
 
 # AUTHOR

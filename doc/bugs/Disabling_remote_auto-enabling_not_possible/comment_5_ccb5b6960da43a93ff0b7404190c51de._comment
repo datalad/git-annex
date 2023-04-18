@@ -23,10 +23,11 @@ Likewise `git-annex init` displays the message from the special remote as a warn
 but exits successfully and without autoenabling it.
 
 Compare with datalad's behavior when it is a regular git remote. The failure there
-happens because git-annex auto-enables the remote, and the datalad tries to 
-fetch from it, but the repo is not available.
+happens because git-annex auto-enables the remote successfully, and then
+datalad tries to fetch from it, but the repo is not available.
 
 So other than the special case of a git remote stored by initremote, this bug's
 real impact seems to only be that enableremote can't be used to change the
-configuration of a remote in this state.
+configuration of a remote that's not accessible and `git-annex init` will
+warn about such a remote.
 """]]

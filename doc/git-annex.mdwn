@@ -222,6 +222,13 @@ content from the key-value store.
   
   See [[git-annex-enableremote]](1) for details.
 
+* `configremote name [param=value ...]`
+
+  Changes configuration of an existing special remote.
+  
+  See [[git-annex-configremote]](1) for details.
+
+
 * `renameremote`
 
   Renames a special remote.

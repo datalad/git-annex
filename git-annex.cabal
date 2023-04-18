@@ -50,6 +50,7 @@ Extra-Source-Files:
   doc/git-annex-calckey.mdwn
   doc/git-annex-checkpresentkey.mdwn
   doc/git-annex-config.mdwn
+  doc/git-annex-configremote.mdwn
   doc/git-annex-contentlocation.mdwn
   doc/git-annex-copy.mdwn
   doc/git-annex-dead.mdwn
@@ -711,6 +712,7 @@ Executable git-annex
     Command.CheckPresentKey
     Command.Config
     Command.ConfigList
+    Command.ConfigRemote
     Command.ContentLocation
     Command.Copy
     Command.Dead

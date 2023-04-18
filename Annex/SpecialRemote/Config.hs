@@ -109,8 +109,7 @@ commonFieldParsers =
 	, optionalStringParser sameasUUIDField HiddenField
 	, optionalStringParser typeField
 		(FieldDesc "type of special remote")
-	, trueFalseParser autoEnableField (Just False)
-		(FieldDesc "automatically enable special remote")
+	, autoEnableFieldParser
 	, costParser costField
 		(FieldDesc "default cost of this special remote")
 	, yesNoParser exportTreeField (Just False)
@@ -120,6 +119,10 @@ commonFieldParsers =
 	, optionalStringParser preferreddirField
 		(FieldDesc "directory whose content is preferred")
 	]
+
+autoEnableFieldParser :: RemoteConfigFieldParser
+autoEnableFieldParser = trueFalseParser autoEnableField (Just False)
+	(FieldDesc "automatically enable special remote")
 
 {- A remote with sameas-uuid set will inherit these values from the config
  - of that uuid. These values cannot be overridden in the remote's config. -}

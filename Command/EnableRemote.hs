@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -43,13 +43,8 @@ start [] = unknownNameError "Specify the remote to enable."
 start (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
   where
 	matchingname r = Git.remoteName r == Just name
-	go [] = 
-		let use = startSpecialRemote name (Logs.Remote.keyValToConfig Proposed rest)
-		in SpecialRemote.findExisting' name >>= \case
-			-- enable dead remote only when there is no
-			-- other remote with the same name
-			([], l) -> use l
-			(l, _) -> use l
+	go [] = deadLast name $ 
+		startSpecialRemote name (Logs.Remote.keyValToConfig Proposed rest)
 	go (r:_)
 		| not (null rest) = go []
 		| otherwise = do
@@ -74,29 +69,34 @@ startNormalRemote name r = starting "enableremote (normal)" ai si $ do
 	si = SeekInput [name]
 
 startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> [(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> CommandStart
-startSpecialRemote name config [] = do
+startSpecialRemote = startSpecialRemote' "enableremote" performSpecialRemote
+
+type PerformSpecialRemote = RemoteType -> UUID -> R.RemoteConfig -> R.RemoteConfig -> RemoteGitConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandPerform
+
+startSpecialRemote' :: String -> PerformSpecialRemote -> Git.RemoteName -> Remote.RemoteConfig -> [(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> CommandStart
+startSpecialRemote' cname perform name config [] = do
 	m <- SpecialRemote.specialRemoteMap
 	confm <- Logs.Remote.remoteConfigMap
 	Remote.nameToUUID' name >>= \case
 		([u], _) | u `M.member` m ->
-			startSpecialRemote name config $
+			startSpecialRemote' cname perform name config $
 				[(u, fromMaybe M.empty (M.lookup u confm), Nothing)]
 		(_, msg) -> unknownNameError msg
-startSpecialRemote name config ((u, c, mcu):[]) =
-	starting "enableremote" ai si $ do
+startSpecialRemote' cname perform name config ((u, c, mcu):[]) =
+	starting cname ai si $ do
 		let fullconfig = config `M.union` c	
 		t <- either giveup return (SpecialRemote.findType fullconfig)
 		gc <- maybe (liftIO dummyRemoteGitConfig) 
 			(return . Remote.gitconfig)
 			=<< Remote.byUUID u
-		performSpecialRemote t u c fullconfig gc mcu
+		perform t u c fullconfig gc mcu
   where
 	ai = ActionItemOther (Just (UnquotedString name))
 	si = SeekInput [name]
-startSpecialRemote _ _ _ =
-	giveup "Multiple remotes have that name. Either use git-annex renameremote to rename them, or specify the uuid of the remote to enable."
+startSpecialRemote' _ _ _ _ _ =
+	giveup "Multiple remotes have that name. Either use git-annex renameremote to rename them, or specify the uuid of the remote."
 
-performSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> R.RemoteConfig -> RemoteGitConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandPerform
+performSpecialRemote :: PerformSpecialRemote
 performSpecialRemote t u oldc c gc mcu = do
 	(c', u') <- R.setup t (R.Enable oldc) (Just u) Nothing c gc
 	next $ cleanupSpecialRemote t u' c' mcu
@@ -138,3 +138,11 @@ unknownNameError prefix = do
 		, liftIO . getDynamicConfig . remoteAnnexIgnore
 			=<< Annex.getRemoteGitConfig r
 		]
+
+-- Use dead remote only when there is no other remote
+-- with the same name
+deadLast :: Git.RemoteName -> ([(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> Annex a) -> Annex a
+deadLast name use =
+	SpecialRemote.findExisting' name >>= \case
+		([], l) -> use l
+		(l, _) -> use l
