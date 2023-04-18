@@ -1,0 +1,22 @@
+Hello!
+
+I've being using git-annex for a while, and I currently have a file which is not being auto dropped, although it has enough of copies.
+I also cannot find out which commit introduced it.
+
+```sh
+% git annex whereis --key=SHA256E-s1611030508--280877e3adf28838f631f0e3ffd892e1bc04842528a1ffa8d8d23711974d2d08.mp4
+whereis SHA256E-s1611030508--280877e3adf28838f631f0e3ffd892e1bc04842528a1ffa8d8d23711974d2d08.mp4 (3 copies)
+        0155e17e-5a25-4be0-b344-6f37d6e37b8c -- [remote1]
+        2f439291-b8ea-4726-83a7-827b3caf8700 -- user@pc:~/repo [here]
+        831a8460-73d4-4684-bd5d-02433590b3bc -- [remote2]
+ok
+
+% git annex numcopies
+2
+```
+
+`git annex drop --auto` doesn't seem to help safely deleting it.
+
+I tried searching the hash with `% git log -S "<hash>"`, but it returns nothing.
+
+Why could this be, and how do I find and drop this files (and how to treat them in general)?
