@@ -131,13 +131,18 @@ gitSetup (AutoEnable _) mu _ c _ = enableRemote mu c
 
 enableRemote :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
 enableRemote (Just u) c = do
-	inRepo $ Git.Command.run
-		[ Param "remote"
-		, Param "add"
-		, Param $ fromMaybe (giveup "no name") (SpecialRemote.lookupName c)
-		, Param $ maybe (giveup "no location") fromProposedAccepted (M.lookup locationField c)
-		]
+	rs <- Annex.getGitRemotes
+	unless (any (\r -> Git.remoteName r == Just cname) rs) $
+		inRepo $ Git.Command.run
+			[ Param "remote"
+			, Param "add"
+			, Param cname
+			, Param clocation
+			]
 	return (c, u)
+  where
+	cname = fromMaybe (giveup "no name") (SpecialRemote.lookupName c)
+	clocation = maybe (giveup "no location") fromProposedAccepted (M.lookup locationField c)
 enableRemote Nothing _ = giveup "unable to enable git remote with no specified uuid"
 
 {- It's assumed to be cheap to read the config of non-URL remotes, so this is

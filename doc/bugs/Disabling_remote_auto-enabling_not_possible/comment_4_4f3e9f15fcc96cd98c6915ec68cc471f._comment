@@ -9,4 +9,6 @@ always fails with
 
 That happens even when the repo is accessible. So there is no way to disable
 a normal git remote that has been initremoted with autoenable=true.
+
+Update: Fixed that.
 """]]

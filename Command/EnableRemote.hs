@@ -50,26 +50,25 @@ start (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
 			-- other remote with the same name
 			([], l) -> use l
 			(l, _) -> use l
-	go (r:_) = do
-		-- This could be either a normal git remote or a special
-		-- remote that has an url (eg gcrypt).
-		rs <- Remote.remoteList
-		case filter (\rmt -> Remote.name rmt == name) rs of
-			(rmt:_) | Remote.remotetype rmt == Remote.Git.remote ->
-				startNormalRemote name rest r
-			_  -> go []
+	go (r:_)
+		| not (null rest) = go []
+		| otherwise = do
+			-- This could be either a normal git remote or a special
+			-- remote that has an url (eg gcrypt).
+			rs <- Remote.remoteList
+			case filter (\rmt -> Remote.name rmt == name) rs of
+				(rmt:_) | Remote.remotetype rmt == Remote.Git.remote ->
+					startNormalRemote name r
+				_  -> go []
 
--- Normal git remotes are special-cased; enableremote retries probing
--- the remote uuid.
-startNormalRemote :: Git.RemoteName -> [String] -> Git.Repo -> CommandStart
-startNormalRemote name restparams r
-	| null restparams = starting "enableremote" ai si $ do
-		setRemoteIgnore r False
-		r' <- Remote.Git.configRead False r
-		u <- getRepoUUID r'
-		next $ return $ u /= NoUUID
-	| otherwise = giveup $
-		"That is a normal git remote; passing these parameters does not make sense: " ++ unwords restparams
+-- enableremote of a normal git remote with no added parameters is a special case
+-- that retries probing the remote uuid.
+startNormalRemote :: Git.RemoteName -> Git.Repo -> CommandStart
+startNormalRemote name r = starting "enableremote (normal)" ai si $ do
+	setRemoteIgnore r False
+	r' <- Remote.Git.configRead False r
+	u <- getRepoUUID r'
+	next $ return $ u /= NoUUID
   where
 	ai = ActionItemOther (Just (UnquotedString name))
 	si = SeekInput [name]
@@ -105,8 +104,7 @@ performSpecialRemote t u oldc c gc mcu = do
 cleanupSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandCleanup
 cleanupSpecialRemote t u c mcu = do
 	case mcu of
-		Nothing -> 
-			Logs.Remote.configSet u c
+		Nothing -> Logs.Remote.configSet u c
 		Just (SpecialRemote.ConfigFrom cu) -> do
 			setConfig (remoteAnnexConfig c "config-uuid") (fromUUID cu)
 			Logs.Remote.configSet cu c

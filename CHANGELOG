@@ -17,6 +17,9 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * init: Avoid autoenabling special remotes that have control characters
     in their names.
   * whereused: Fix display of branch:file when run in a subdirectory.
+  * enableremote: Support enableremote of a git remote (that was previously
+    set up with initremote) when additional parameters such as autoenable=
+    are passed.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 
