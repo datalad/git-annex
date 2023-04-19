@@ -637,9 +637,11 @@ newLocal repo = do
 	(st, rd) <- liftIO $ Annex.new repo
 	debugenabled <- Annex.getRead Annex.debugenabled
 	debugselector <- Annex.getRead Annex.debugselector
+	force <- Annex.getRead Annex.force
 	return (st,  rd
 		{ Annex.debugenabled = debugenabled
 		, Annex.debugselector = debugselector
+		, Annex.force = force
 		})
 
 onLocal' :: LocalRemoteAnnex -> Annex a -> Annex a
