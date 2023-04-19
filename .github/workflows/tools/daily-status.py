@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-__python_requires__ = "~= 3.8"
+__python_requires__ = ">= 3.8"
 __requires__ = [
     "python-dateutil ~= 2.7",
     "PyGithub ~= 1.53",
     "requests ~= 2.20",
+    "ruamel.yaml ~= 0.15",
 ]
 
 from collections import Counter
@@ -13,6 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 import os
+from pathlib import Path
 import re
 from tempfile import TemporaryFile
 from zipfile import Path as ZipPath
@@ -21,6 +23,7 @@ from xml.sax.saxutils import escape
 from dateutil.parser import isoparse
 from github import Github
 import requests
+from ruamel.yaml import YAML
 
 WINDOW = timedelta(days=1)
 
@@ -29,6 +32,8 @@ WORKFLOWS = ["build-ubuntu.yaml", "build-macos.yaml", "build-windows.yaml"]
 
 CLIENTS_REPO = "datalad/git-annex-ci-client-jobs"
 CLIENTS_WORKFLOW = "handle-result.yaml"
+
+CLIENT_INFO_FILE = Path(__file__).parents[3] / "clients" / "clients.yaml"
 
 
 class Outcome(Enum):
@@ -63,36 +68,47 @@ class Outcome(Enum):
 
 @dataclass
 class DailyStatus:
-    github: list[WorkflowStatus]
-    clients: list[ClientStatus | ResultProcessError]
+    github_runs: list[WorkflowStatus]
+    client_runs: list[ClientStatus | ResultProcessError]
+    all_clients: set[str]
 
-    def get_subject(self) -> str:
+    def get_subject_body(self) -> tuple[str, str]:
         qtys = Counter()
-        for st in self.github + self.clients:
-            qtys.update(st.get_summary())
-        return f"{WORKFLOW_REPO} daily summary: " + ", ".join(
-            f"{n} {oc.value}" for oc, n in qtys.items()
-        )
-
-    def get_body(self) -> str:
-        s = "<ul>\n<li><p>GitHub:</p>\n<ul>\n"
-        if self.github:
-            for wfstatus in self.github:
-                s += "<li>" + wfstatus.as_html() + "</li>\n"
+        body = "<ul>\n<li><p>GitHub:</p>\n<ul>\n"
+        if self.github_runs:
+            for wfstatus in self.github_runs:
+                body += "<li>" + wfstatus.as_html() + "</li>\n"
+                qtys.update(wfstatus.get_summary())
         else:
-            s += "<li>[no runs]</li>\n"
-        s += "</ul>\n</li>\n<li><p>Local Clients:</p>\n<ul>\n"
-        if self.clients:
-            for cstatus in self.clients:
-                s += "<li>" + cstatus.as_html() + "</li>\n"
+            body += "<li>[no runs]</li>\n"
+        body += "</ul>\n</li>\n<li><p>Local Clients:</p>\n<ul>\n"
+        if self.client_runs:
+            for cstatus in self.client_runs:
+                body += "<li>" + cstatus.as_html() + "</li>\n"
+                qtys.update(cstatus.get_summary())
         else:
-            s += "<li>[no runs]</li>\n"
-        s += "</ul>"
-        return s
+            body += "<li>[no runs]</li>\n"
+        body += "</ul>"
+        if qtys:
+            subject = f"{WORKFLOW_REPO} daily summary: " + ", ".join(
+                f"{n} {oc.value}" for oc, n in qtys.items()
+            )
+            missing_workflows = set(WORKFLOWS).difference(
+                r.file for r in self.github_runs
+            )
+            missing_clients = self.all_clients.difference(
+                r.client_id for r in self.client_runs
+            )
+            if absent := len(missing_workflows) + len(missing_clients):
+                subject += f", {absent} ABSENT"
+        else:
+            subject = f"{WORKFLOW_REPO} daily summary: NOTHING"
+        return (subject, body)
 
 
 @dataclass
 class WorkflowStatus:
+    file: str
     name: str
     build_id: int
     url: str
@@ -153,20 +169,27 @@ class ResultProcessError:
         return f'{Outcome.ERROR.as_html()} processing results for {escape(self.client_id)} #{self.build_id} [<a href="{self.url}">logs</a>] {self.timestamp}'
 
 
-def main():
+def main() -> None:
     token = os.environ["GITHUB_TOKEN"]
     gh = Github(token)
     cutoff = datetime.now(timezone.utc) - WINDOW
+
+    with CLIENT_INFO_FILE.open() as fp:
+        client_info = YAML(typ="safe").load(fp)
+    all_clients = set(client_info.keys())
 
     with requests.Session() as s:
         s.headers["Authorization"] = f"bearer {token}"
 
         github_statuses = []
         wfrepo = gh.get_repo(WORKFLOW_REPO)
-        for wfname in WORKFLOWS:
-            wf = wfrepo.get_workflow(wfname)
+        for wffilename in WORKFLOWS:
+            wf = wfrepo.get_workflow(wffilename)
             for run in wf.get_runs():
-                if run.status != "completed" or run.event not in ("schedule", "workflow_dispatch"):
+                if run.status != "completed" or run.event not in (
+                    "schedule",
+                    "workflow_dispatch",
+                ):
                     continue
                 dt = ensure_aware(run.created_at)
                 if dt <= cutoff:
@@ -184,6 +207,7 @@ def main():
                 ]
                 github_statuses.append(
                     WorkflowStatus(
+                        file=wffilename,
                         name=wf.name,
                         build_id=run.run_number,
                         url=run.html_url,
@@ -231,10 +255,15 @@ def main():
                     )
                 )
 
-    status = DailyStatus(github=github_statuses, clients=client_statuses)
-    print(status.get_subject())
+    status = DailyStatus(
+        github_runs=github_statuses,
+        client_runs=client_statuses,
+        all_clients=all_clients,
+    )
+    (subject, body) = status.get_subject_body()
+    print(subject)
     with open("body.html", "w") as fp:
-        print(status.get_body(), file=fp)
+        print(body, file=fp)
 
 
 def ensure_aware(dt: datetime) -> datetime:
