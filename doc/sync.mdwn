@@ -29,6 +29,9 @@ to every other repository; as long as the graph of repositories is
 connected, and `git annex sync` is run from time to time on each, a given
 change, made anywhere, will eventually reach every other repository.
 
+(`git-annex sync` will also attempt to push the master branch to remotes, 
+which does work for bare repositories.)
+
 The workflow for using `git annex sync` is simple:
 
 * Make some changes to files in the repository, using `git-annex`,

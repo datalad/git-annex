@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Sync to remote master?"""
+ date="2023-04-19T16:17:11Z"
+ content="""
+The push to remote master will typically fail in a non-bare repository
+(it is possible to configure one to allow it). The push to synced/master
+will then succeed. Then when sync is later run in that repository, it will
+merge synced/master into master.
+"""]]
