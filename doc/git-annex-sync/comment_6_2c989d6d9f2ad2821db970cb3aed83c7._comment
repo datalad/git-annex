@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="dud225@35a1ee469f82f3a7eb1f2dce4ad453f5e47bdfd3"
+ nickname="dud225"
+ avatar="http://cdn.libravatar.org/avatar/5147563e50c475918474594d93be95c2"
+ subject="Sync to remote master?"
+ date="2023-04-19T08:40:41Z"
+ content="""
+I'm a bit confused by what is mentioned in this page:
+> To make working with such non-bare remotes easier, sync pushes not only local master to remote master, but also to remote synced/master
+
+but just above it's explained that by default Git does not allow to push to remote master:
+> Syncing with a non-bare remote will not normally update the remote's current branch with changes from the local repository.
+
+In addition the page https://git-annex.branchable.com/sync/ doesn't mention that the remote master branch is directly synchronized:
+> When you run git annex sync [...] Finally, it updates synced/master to reflect the new state of master, and pushes it out to each of the remotes.
+
+So I was wondering about the correctness of the first cited sentence.
+"""]]
