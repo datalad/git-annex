@@ -21,3 +21,5 @@ git-annex version: 10.20230329-ge6a337e8e
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I love it! 🤩
+
+> [[fixed|done]] --[[Joey]]

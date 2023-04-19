@@ -22,6 +22,8 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     are passed.
   * configremote: New command, currently limited to changing autoenable=
     setting of a special remote.
+  * assistant --autostop: Avoid crashing when ~/.config/git-annex/autostart
+    lists a directory that it cannot chdir to.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

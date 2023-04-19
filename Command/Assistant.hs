@@ -130,8 +130,11 @@ autoStop = do
 	program <- programPath
 	forM_ dirs $ \d -> do
 		putStrLn $ "git-annex autostop in " ++ d
-		setCurrentDirectory d
-		ifM (boolSystem program [Param "assistant", Param "--stop"])
-			( putStrLn "ok"
-			, putStrLn "failed"
-			)
+		tryIO (setCurrentDirectory d) >>= \case
+			Right () -> ifM (boolSystem program [Param "assistant", Param "--stop"])
+				( putStrLn "ok"
+				, putStrLn "failed"
+				)
+			Left e -> do
+				putStrLn (show e)
+				putStrLn "failed"
