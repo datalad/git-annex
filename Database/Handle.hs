@@ -96,32 +96,36 @@ queryDb (DbHandle _db _ jobs errvar) a = do
  - process at least once each 30 seconds.
  -}
 commitDb :: DbHandle -> SqlPersistM () -> IO ()
-commitDb h@(DbHandle db _ _ _) wa = 
+commitDb h@(DbHandle db _ _ errvar) wa = 
 	robustly (commitDb' h wa) maxretries emptyDatabaseInodeCache
   where
 	robustly a retries ic = do
 		r <- a
 		case r of
-			Right _ -> return ()
-			Left err -> do
+			Right (Right _) -> return ()
+			Right (Left err) -> do
 				threadDelay briefdelay
 				retryHelper "write to" err maxretries db retries ic $ 
 					robustly a
+			Left BlockedIndefinitelyOnMVar -> do
+				err <- takeMVar errvar
+				giveup $ "sqlite worker thread crashed: " ++ err
 	
 	briefdelay = 100000 -- 1/10th second
 
 	maxretries = 300 :: Int -- 30 seconds of briefdelay
 
-commitDb' :: DbHandle -> SqlPersistM () -> IO (Either SomeException ())
+commitDb' :: DbHandle -> SqlPersistM () -> IO (Either BlockedIndefinitelyOnMVar (Either SomeException ()))
 commitDb' (DbHandle _ _ jobs _) a = do
 	debug "Database.Handle" "commitDb start"
 	res <- newEmptyMVar
 	putMVar jobs $ ChangeJob $
 		debugLocks $ liftIO . putMVar res =<< tryNonAsync a
-	r <- debugLocks $ takeMVar res
+	r <- debugLocks $ takeMVarSafe res
 	case r of
-		Right () -> debug "Database.Handle" "commitDb done"
-		Left e -> debug "Database.Handle" ("commitDb failed: " ++ show e)
+		Right (Right ()) -> debug "Database.Handle" "commitDb done"
+		Right (Left e) -> debug "Database.Handle" ("commitDb failed: " ++ show e)
+		Left BlockedIndefinitelyOnMVar -> debug "Database.Handle" ("commitDb BlockedIndefinitelyOnMVar")
 
 	return r
 
