@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-04-19T16:21:09Z"
+ content="""
+`git-annex drop` only operates on files in the current subdirectory
+and below, so it won't do anything about a key that is not used by any
+file.
+
+Run `git-annex unused` and then `git-annex drop --unused` to deal
+with such keys.
+
+All it takes to create a key that is not referenced by anything in
+the repository is adding it and then never committing the file.
+For example:
+
+	git-annex add foo
+	rm foo
+	git rm --cached foo
+"""]]
