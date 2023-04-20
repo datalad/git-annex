@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-04-20T18:04:56Z"
+ content="""
+I don't think it's possible to improve git-annex's behavior here much.
+
+git-annex could avoid converting .git file to a directory, but then the
+git-annex symlinks would point to the wrong place. It could, when in a
+submodule, make the git-annex symlinks point up to ../.git/modules/sub/,
+but then the links would not work when the submodule was cloned by itself,
+or when the submodule was located at a different directory level.
+
+The only other thing git-annex can do is avoid using symlinks at all,
+eg adjusted unlocked branches. I don't think it's a good trafeoff to do
+that. On the one hand, there is this minor issue with submodule deletion,
+and the need to avoid using `--recurse-submodules` and instead do `git
+submodule update`. On the other hand, unlocked annexed files use 2x
+as much disk space.
+"""]]

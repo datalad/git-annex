@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-04-20T17:51:01Z"
+ content="""
+Notice that your script is doing something a bit unusual. You check out a
+branch, add the submodule in that branch, and then check out the original
+branch, which is before the submodule was added.
+
+So, git needs to delete the submodule. Deleting the submodule is
+mentioned in [[submodules]] as a particular case where git-annex's hack to
+support submodules does not work very well.
+
+If that's all this bug is about, its description is over-broad. 
+It doesn't seem to prevent using submodules with git-annex in situations
+where you are not deleting a submodule, but are updating submodules
+
+Yes, `git checkout main --recurse-submodules` will fail in those
+situations, but the workaround in [this comment](https://git-annex.branchable.com/submodules/#comment-0d7c31e3f08e803bf9b13ab0568fedcc)
+of using `git checkout main && git submodule update` will work.
+
+And yes, I've verified that does still work, with git 2.40.0.
+I modified the test case to add the submodule before checking out
+the branch, then add `sub_file2.txt`, and commit that to the branch.
+At that point,  `git checkout main && git submodule update` worked fine.
+
+So, nothing changed in git, and git-annex's approach for submodules does
+broadly work, except git has issues deleting submodules that have a .git
+directory in them. The solution is to `rm -rf` the submodule after
+running `git checkout`.
+"""]]

@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-04-20T16:45:38Z"
+ content="""
+The above issue is being discussed at
+[[bugs/Git_checkout_fails_using_--recurse-submodules]].
+
+DavidD's comment #2 is misleading, `git submodule update` does work fine when
+you've checkout out a branch and want to update an existing submodule.
+
+When `git submodule update` does not work 100% is the case where you checked out
+a branch, added a submodule in that branch, and then checked out another
+branch that does not contain the submodule. What happens then is:
+
+	warning: unable to rmdir 'sub': Directory not empty
+
+And the solution is to `rm -rf sub` manually. This is essentially the same
+problem discussed above on this page where it talks about deleting a whole
+submodule.
+"""]]
