@@ -21,7 +21,7 @@ SUB_DIR=/tmp/submodule-source
 if [ -d $SUB_DIR ]; then
     sudo rm -rf $SUB_DIR
 fi
-mkdir $SUB_DIR
+mkdir -p $SUB_DIR
 cd $SUB_DIR
 git init
 git annex init
@@ -31,11 +31,11 @@ git annex add .
 git commit -m "Add sub_file1.txt"
 
 # setup parent dataset
-PRNT_DIR=/tmp/submodules_annex
+PRNT_DIR=/tmp/submodule-annex
 if [ -d $PRNT_DIR ]; then
     sudo rm -rf $PRNT_DIR
 fi
-mkdir $PRNT_DIR
+mkdir -p $PRNT_DIR
 cd $PRNT_DIR
 git init
 git annex init
