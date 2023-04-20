@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-04-20T18:13:04Z"
+ content="""
+Well, there is `git-annex adjust --fix` now. So in theory, git-annex in a
+submodule could leave .git a file and enter an adjusted fixed branch, and
+when generating that branch, make the annex object symlinks point to
+`../.git/modules/sub/`
+
+Then git would commit the ref of the adjusted branch as the submodule.
+So checking it out elsewhere would need to either replicate that same
+commit sha  with `git-annex adjust --fix` again (doable but tricky),
+or that ref would need to be pushed.
+
+The user would also need to use `git-annex sync` in the submodule
+after making changes if they want to propatate them out of the adjusted
+branch to the main branch.
+"""]]
