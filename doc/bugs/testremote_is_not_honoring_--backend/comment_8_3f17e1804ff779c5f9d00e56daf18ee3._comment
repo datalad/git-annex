@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="adina.wagner@2a4cac6443aada2bd2a329b8a33f4a7b87cc8eff"
+ nickname="adina.wagner"
+ avatar="http://cdn.libravatar.org/avatar/80b124ad61d6008fa0f6f0b4b0f7c2ef"
+ subject="comment 8"
+ date="2023-04-21T07:08:35Z"
+ content="""
+I can confirm that the original linked issue in the report is fixed with 54ad1b4cfb1. 
+"""]]
