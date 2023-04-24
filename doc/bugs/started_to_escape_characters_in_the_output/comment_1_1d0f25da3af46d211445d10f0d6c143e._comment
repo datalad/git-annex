@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-04-24T15:13:35Z"
+ content="""
+The next release is going to escape and quote filenames that contain
+special characters similarly to how git does. (But json will not be affected due
+to already being escaped.)
+
+This will affect filenames output in error messages. So if you are
+parsing error messages or non-json output with filenames that contain
+characters that need to be escaped, you will need to deal with the
+change.
+
+See [[todo/terminal_escapes_in_filenames]] for the full details of this
+change.
+
+One thing I noticed about your example is that git-annex add doesn't display
+that particular filename the same as git add does:
+
+	joey@darkstar:~/tmp/xxx>git-annex add 'gl\orious'
+	git-annex: "gl\\orious" not found
+	joey@darkstar:~/tmp/xxx>git add 'gl\orious'
+	fatal: pathspec 'gl\orious' did not match any files
+
+But, that is an inconsistency in git itself. More commonly it uses the same
+display as git-annex for this filename:
+
+	joey@darkstar:~/tmp/xxx>touch 'gl\orious'
+	joey@darkstar:~/tmp/xxx>git add 'gl\orious'
+	joey@darkstar:~/tmp/xxx>git diff --cached
+	diff --git "a/gl\\orious" "b/gl\\orious"
+	new file mode 100644
+	index 0000000..e69de29
+
+So I don't think there's a problem with git-annex's behavior here. With
+that said, we can talk about adding something to make back-compatability
+easy for you, or whatever. An config like core.quotePath but that also
+affects special characters, not just unicode, for example.
+"""]]
