@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-04-24T19:25:12Z"
+ content="""
+git escapes filenames like this extensively:
+
+	joey@darkstar:~/tmp/xxx>git ls-files
+	"gl\\orious"
+	joey@darkstar:~/tmp/xxx>git status
+	Changes to be committed:
+	  (use "git restore --staged <file>..." to unstage)
+		new file:   "gl\\orious"
+	joey@darkstar:~/tmp/xxx>git grep hi
+	"gl\\orious":hi
+
+This message from `git add` escapes slightly differently, but it still escapes
+some characters:
+
+	joey@darkstar:~/tmp/xxx>git add $(echo -e "\e[31mfoo\e[0m")
+	fatal: pathspec '?[31mfoo?[0m' did not match any files
+
+Git only does this type of escaping when displaying a fatal error
+(it's `vreportf` in the git source, used by things like `die`).
+It's basically a last-ditch filtering of a string, which may contain a filename
+or other untrusted data, to avoid displaying escape characters. git-annex does
+contain such a last-ditch filtering too (safeOutput) but type safety let me avoid
+needing to use it to handle this filename here. I don't think it's at all necessary
+for git-annex to be bug-for-bug equivilant with git in its display of error
+messages; but it is important that it escape somehow. Git's double-quoted escaping
+is documented, and this other escaping is not.
+
+Since either behavior would be a behavior change from before when git-annex didn't
+escape the filename in the error message with either method, it seems to me either
+one would likely break your assumption. So I don't know why you're arguing for
+one way over the other way.
+"""]]
