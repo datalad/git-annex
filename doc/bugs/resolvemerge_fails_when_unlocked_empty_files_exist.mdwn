@@ -1,0 +1,165 @@
+### Please describe the problem.
+
+Causing a file conflict with an unlocked empty file in the repository results in resolvemerge failing.
+
+This can be quirky at times when a resolvemerge unexpectedly fails due to some program inconspicuously creating an empty file, since the repositories I regularly work with have annex.addunlocked set to true.
+
+### What steps will reproduce the problem?
+
+1. With two repositories,
+2. Add an empty file to one repository.
+3. Sync repositories.
+4. Unlock the empty file.
+5. Sync repositories.
+6. Add a file to both repositories with the same name but different contents.
+7. Sync repositories, expecting resolvemerge to automatically fix the conflict, but see it fail instead.
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+git-annex version: 10.20230321
+build flags: Assistant Webapp Pairing Inotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.23 bloomfilter-2.0.1.0 cryptonite-0.30 DAV-1.3.4 feed-1.3.2.1 ghc-9.2.5 http-client-0.7.13.1 persistent-sqlite-2.13.1.0 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+"""]]
+
+Running git-annex on Fedora 37, with git-annex installed via Guix.
+
+### Please provide any additional information below.
+
+<details>
+<summary>The following script reliably produces the issue on my end:</summary>
+
+[[!format bash """
+# [1] Set up two connected repositories
+create-repo () {
+    git init "$1"
+    cd "$1"
+    git-annex init "$1"
+    cd -
+}
+create-repo repo1
+create-repo repo2
+cd repo1
+git remote add repo2 ../repo2
+cd ../repo2
+git remote add repo1 ../repo1
+cd ..
+
+# [2-5] Syncing unlocked empty file seems fine
+cd repo1
+touch emptyfile
+git-annex add
+git-annex unlock
+git-annex sync --content
+# Syncing other repository succeeds, albeit with an odd error message
+# (probably unrelated since it happens without an emptyfile; different bug?)
+cd ../repo2
+git-annex sync --content
+cd ..
+
+# [6-7] Causing a resolvemerge at this point results in the operation failing
+cd repo2
+echo repo2 line > testfile
+git-annex add
+git-annex sync --content
+cd ../repo1
+echo repo1 line > testfile
+git-annex add
+# Error here
+git-annex sync --content
+
+# resolvemerge works again once emptyfile is locked
+git-annex lock
+git-annex sync --content
+"""]]
+</details>
+
+<details>
+<summary>The `git-annex sync --content` command marked with "Error here" in the script produces the following output:</summary>
+
+[[!format sh """
+commit 
+[master 5c0fd88] git-annex in repo1
+ 1 file changed, 1 insertion(+)
+ create mode 120000 testfile
+ok
+merge synced/master 
+fatal: stash failed
+failed
+pull repo2 
+From ../repo2
+   a951533..20ed66d  git-annex     -> repo2/git-annex
+ * [new branch]      master        -> repo2/master
+   560d494..69204c4  synced/master -> repo2/synced/master
+
+fatal: stash failed
+
+fatal: stash failed
+failed
+copy testfile (to repo2...) 
+(checksum...) ok
+pull repo2 
+
+fatal: stash failed
+
+fatal: stash failed
+failed
+(recording state in git...)
+push repo2 
+Enumerating objects: 23, done.
+Counting objects: 100% (23/23), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (15/15), done.
+Writing objects: 100% (18/18), 1.65 KiB | 1.65 MiB/s, done.
+Total 18 (delta 4), reused 0 (delta 0), pack-reused 0
+To ../repo2
+   a951533..34ec971  git-annex -> synced/git-annex
+ ! [rejected]        master -> synced/master (non-fast-forward)
+error: failed to push some refs to '../repo2'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and integrate the remote changes
+hint: (e.g. 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+To ../repo2
+ ! [rejected]        master -> master (non-fast-forward)
+error: failed to push some refs to '../repo2'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+
+  Pushing to repo2 failed.
+failed
+sync: 4 failed
+"""]]
+</details>
+
+Curiously, I only managed to stumble on this using magit with Emacs on my repository.
+
+`git status` and `git-annex status` don't output any changes, but for some reason magit reports that there are unstaged changes to remove the empty file symlinks.
+
+<details>
+<summary>For example, this is what magit shows before [6-7] in the script:</summary>
+
+[[!format diff """
+Head:     master git-annex in repo1
+
+Unstaged changes (1)
+modified   emptyfile
+@@ -1 +0,0 @@
+-/annex/objects/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+Recent commits
+eac97cf master synced/master repo2/synced/master git-annex in repo1
+"""]]
+</details>
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I have been incorporating git-annex into my backup system for the past year now, and it has been absolutely wonderful to work with.
