@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2023-04-24T21:25:08Z"
+ content="""
+I am \"arguing\" because ideally I prefer not to handle some not quite standardized un-escaping.
+
+1. Which characters I should expect to be escaped? [Here](https://github.com/datalad/datalad/blob/maint/datalad/support/network.py#L925) is the ones we have for SSH: `_SSH_ESCAPED_CHARACTERS = '\\#&;`|*?~<>^()[]{}$\'\" '`. The same here?
+2. Would it be sensible to request `add --json --json-error-messages` to produce a proper machine readable json record  for \"unknown\" input, or there is a reason why there is no json record here in `--json` mode?
+
+Also I just wanted to make sure that we are not missing some aspect, like what I felt was an unnoticed (to me at least) difference between `'` and `\"` escaping methods, and possibly some original reason on why `git` has them different in those cases -- may be there is some good reason?
+
+"""]]
