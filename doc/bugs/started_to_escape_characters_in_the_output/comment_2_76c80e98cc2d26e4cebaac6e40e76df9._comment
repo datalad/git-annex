@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2023-04-24T19:23:22Z"
+ content="""
+hm, I didn't look inside `git` but `git diff` is likely to have it escaped because `patch` (and/or other unified diff operating tools) expect it such. In other words -- `git diff` must encode paths escaped because the \"diff standard\" expects it such.
+
+On the other hand, as you confirmed, `git add` just displays the name on the screen, and as such it does not bother escaping it since may be I just cut/paste it as a string which is \"raw\" and thus not expecting any escape characters.
+
+RTFMing [git-config on core.quotePath](https://git-scm.com/docs/git-config#Documentation/git-config.txt-corequotePath)  I  spotted 
+
+> ... enclosing the pathname in double-quotes and escaping ...
+
+so it talks about double-quotes.  `git` `status`, `diff` report paths in double (`\"`) not single (`'`) quotes. I wonder if that is where/how `git` is consistent since in your example that is the difference too:
+
+```
+# current master git-annex
+joey@darkstar:~/tmp/xxx>git-annex add 'gl\orious'
+git-annex: \"gl\\orious\" not found
+joey@darkstar:~/tmp/xxx>git add 'gl\orious'
+fatal: pathspec 'gl\orious' did not match any files
+```
+
+that git uses `'` (and does not escape) while git annex uses `\"` (and escapes)?  Did you see git doing escaping in paths where it reports them within single (`'`) quotes?
+
+and thus git-annex should have just wrapped in `'` to become consistent with git in :
+
+```shell
+# released git-annex
+> git annex add --json --json-error-messages '\e[31mfo\o\e[0m'
+git-annex: \e[31mfo\o\e[0m not found
+add: 1 failed
+> git add '\e[31mfo\o\e[0m'
+fatal: pathspec '\e[31mfo\o\e[0m' did not match any files
+> git rm '\e[31mfo\o\e[0m'
+fatal: pathspec '\e[31mfo\o\e[0m' did not match any files
+```
+
+
+"""]]
