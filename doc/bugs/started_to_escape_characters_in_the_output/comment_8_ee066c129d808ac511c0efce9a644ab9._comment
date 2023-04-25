@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2023-04-25T23:33:56Z"
+ content="""
+Also yarik mentioned this change
+<https://github.com/datalad/datalad/pull/7372/commits/45ddd4b12ff637c6c77e982225c0e9d9eb53c1b6>
+which was caused by [[!commit a0e6fa18eb3c16c3c8079bb41c18151e6ea8b554]],
+which was part of my series for escaping control characters.
+
+I think git-annex needs to be returned to the old behavior there, even
+though `git-annex info dne` is not technically operating on a file when it
+doesn't exist.
+"""]]
