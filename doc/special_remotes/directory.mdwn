@@ -5,11 +5,13 @@ you want to use to sneakernet files between systems (possibly with
 [[encrypted|encryption]] contents). Just set up both systems to use
 the drive's mountpoint as a directory remote.
 
-Note that directory remotes have a special directory structure
-(by design, the same as the [[rsync|rsync]] remote).
-If you just want two copies of your repository with the files "visible"
-in the tree in both, the directory special remote is not what you want.
-Instead, you should use a regular `git clone` of your git-annex repository.
+With the exporttree=yes parameter, the directory contains a tree of files
+with the same filenames used in a branch of your repository. Without that
+parameter, the directory contains a directory structure similar to
+`.git/annex/objects` or other special remotes like [[rsync]].
+
+Bear in mind that you can also use a regular `git clone` of your git-annex
+repository, rather than a directory remote.
 
 ## configuration
 
