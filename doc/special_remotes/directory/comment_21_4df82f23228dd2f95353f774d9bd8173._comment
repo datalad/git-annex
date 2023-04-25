@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="dud225@35a1ee469f82f3a7eb1f2dce4ad453f5e47bdfd3"
+ nickname="dud225"
+ avatar="http://cdn.libravatar.org/avatar/5147563e50c475918474594d93be95c2"
+ subject="File visibility"
+ date="2023-04-25T05:09:49Z"
+ content="""
+This page warns against the use of the directory special remote if the user expects to be able to access his files:
+> Note that directory remotes have a special directory structure (by design, the same as the rsync remote). If you just want two copies of your repository with the files \"visible\" in the tree in both, the directory special remote is not what you want. 
+
+By setting the options `importtree` and `exporttree` it seems that the user can have the aforementioned behaviour right?
+"""]]
