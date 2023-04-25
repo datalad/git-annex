@@ -32,10 +32,10 @@ cmd = command "pre-commit" SectionPlumbing
 
 seek :: CmdParams -> CommandSeek
 seek ps = do
-	let ww = WarnUnmatchWorkTreeItems
+	let ww = WarnUnmatchWorkTreeItems "pre-commit"
 	l <- workTreeItems ww ps
 	-- fix symlinks to files being committed
-	flip withFilesToBeCommitted l $ \(si, f) -> commandAction $
+	flip (withFilesToBeCommitted ww) l $ \(si, f) -> commandAction $
 		maybe stop (Command.Fix.start Command.Fix.FixSymlinks si f)
 			=<< isAnnexLink f
 	-- after a merge conflict or git cherry-pick or stash, pointer

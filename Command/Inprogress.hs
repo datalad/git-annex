@@ -49,7 +49,7 @@ seek o = do
 			withFilesInGitAnnex ww seeker
 				=<< workTreeItems ww (inprogressFiles o)
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "inprogress"
 
 start :: IsTerminal -> S.Set Key -> SeekInput -> RawFilePath -> Key -> CommandStart
 start isterminal s _si _file k

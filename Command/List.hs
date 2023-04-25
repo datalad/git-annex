@@ -56,7 +56,7 @@ seek o = do
 		}
 	withFilesInGitAnnex ww seeker =<< workTreeItems ww (listThese o)
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "list"
 
 getList :: ListOptions -> Annex [(UUID, RemoteName, TrustLevel)]
 getList o

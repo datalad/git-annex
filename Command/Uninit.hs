@@ -53,13 +53,13 @@ seek ps = do
 	l <- workTreeItems ww ps
 	withFilesNotInGit
 		(CheckGitIgnore False)
-		WarnUnmatchWorkTreeItems
+		(WarnUnmatchWorkTreeItems "uninit")
 		checksymlinks
 		l
 	withFilesInGitAnnex ww (Command.Unannex.seeker True) l
 	finish
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "uninit"
 	checksymlinks (_, f) = 
 		commandAction $ lookupKey f >>= \case
 			Nothing -> stop

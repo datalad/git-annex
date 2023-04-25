@@ -113,7 +113,7 @@ seek o = startConcurrency commandStages $ do
 	cleanupIncremental i
 	void $ tryIO $ recordActivity Fsck u
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "fsck"
 
 checkDeadRepo :: UUID -> Annex ()
 checkDeadRepo u =

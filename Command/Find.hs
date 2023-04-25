@@ -75,7 +75,7 @@ seek o = do
 		Batch fmt -> batchOnly (keyOptions o) (findThese o) $
 			batchAnnexedFiles fmt seeker
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "find"
 
 -- Default to needing content to be present, but if the user specified a
 -- limit, content does not need to be present.

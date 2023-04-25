@@ -64,7 +64,7 @@ seek o = do
 		Batch fmt -> batchOnly (keyOptions o) (whereisFiles o) $
 			batchAnnexed fmt seeker (startKeys o m)
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "whereis"
 
 start :: WhereisOptions -> M.Map UUID Remote -> SeekInput -> RawFilePath -> Key -> CommandStart
 start o remotemap si file key = 

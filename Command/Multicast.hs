@@ -131,7 +131,7 @@ send ups fs = do
 	-- expensive.
 	starting "sending files" (ActionItemOther Nothing) (SeekInput []) $
 		withTmpFile "send" $ \t h -> do
-			let ww = WarnUnmatchLsFiles
+			let ww = WarnUnmatchLsFiles "multicast"
 			(fs', cleanup) <- seekHelper id ww LsFiles.inRepo
 				=<< workTreeItems ww fs
 			matcher <- Limit.getMatcher

@@ -35,7 +35,7 @@ seek :: CmdParams -> CommandSeek
 seek ps = unlessM crippledFileSystem $
 	withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "fix"
 	seeker = AnnexedFileSeeker
 		{ startAction = start FixAll
 		, checkContentPresent = Nothing

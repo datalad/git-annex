@@ -147,9 +147,9 @@ withPairs a params = sequence_ $
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
 	pairs _ _ = giveup "expected pairs"
 
-withFilesToBeCommitted :: ((SeekInput, RawFilePath) -> CommandSeek) -> WorkTreeItems -> CommandSeek
-withFilesToBeCommitted a l = seekFiltered (const (pure True)) a $
-	seekHelper id WarnUnmatchWorkTreeItems (const LsFiles.stagedNotDeleted) l
+withFilesToBeCommitted :: WarnUnmatchWhen -> ((SeekInput, RawFilePath) -> CommandSeek) -> WorkTreeItems -> CommandSeek
+withFilesToBeCommitted ww a l = seekFiltered (const (pure True)) a $
+	seekHelper id ww (const LsFiles.stagedNotDeleted) l
 
 {- unlocked pointer files that are staged, and whose content has not been
  - modified-}
@@ -512,15 +512,15 @@ seekHelper c ww a (WorkTreeItems l) = do
 		and <$> sequence cleanups
 seekHelper _ _ _ NoWorkTreeItems = return ([], pure True)
 
-data WarnUnmatchWhen = WarnUnmatchLsFiles | WarnUnmatchWorkTreeItems
+data WarnUnmatchWhen = WarnUnmatchLsFiles String | WarnUnmatchWorkTreeItems String
 
 seekOptions :: WarnUnmatchWhen -> Annex [LsFiles.Options]
-seekOptions WarnUnmatchLsFiles =
+seekOptions (WarnUnmatchLsFiles _) =
 	ifM (annexSkipUnknown <$> Annex.getGitConfig)
 		( return [] 
 		, return [LsFiles.ErrorUnmatch]
 		)
-seekOptions WarnUnmatchWorkTreeItems = return []
+seekOptions (WarnUnmatchWorkTreeItems _) = return []
 
 -- Items in the work tree, which may be files or directories.
 data WorkTreeItems
@@ -554,23 +554,23 @@ workTreeItems = workTreeItems' (AllowHidden False)
 
 workTreeItems' :: AllowHidden -> WarnUnmatchWhen -> CmdParams -> Annex WorkTreeItems
 workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
-	WarnUnmatchWorkTreeItems -> runcheck
-	WarnUnmatchLsFiles -> 
+	(WarnUnmatchWorkTreeItems action) -> runcheck action
+	(WarnUnmatchLsFiles action) -> 
 		ifM (annexSkipUnknown <$> Annex.getGitConfig)
-			( runcheck
+			( runcheck action
 			, return $ WorkTreeItems ps
 			)
   where
-	runcheck = do
+	runcheck action = do
 		currbranch <- getCurrentBranch
 		stopattop <- prepviasymlink
 		ps' <- flip filterM ps $ \p -> do
 			let p' = toRawFilePath p
 			relf <- liftIO $ relPathCwdToFile p'
 			ifM (not <$> (exists p' <||> hidden currbranch relf))
-				( prob (QuotedPath (toRawFilePath p) <> " not found")
+				( prob action FileNotFound p' "not found"
 				, ifM (viasymlink stopattop (upFrom relf))
-					( prob (QuotedPath (toRawFilePath p) <> " is beyond a symbolic link")
+					( prob action FileBeyondSymbolicLink p' "is beyond a symbolic link"
 					, return True
 					)
 				)
@@ -605,8 +605,8 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 			<$> catObjectMetaDataHidden f currbranch
 		| otherwise = return False
 
-	prob msg = do
-		toplevelWarning False msg
+	prob action errorid p msg = do
+		toplevelFileProblem False errorid msg action p Nothing (SeekInput [fromRawFilePath p])
 		Annex.incError
 		return False
 	

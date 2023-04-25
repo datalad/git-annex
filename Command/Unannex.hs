@@ -30,7 +30,7 @@ cmd = withAnnexOptions [annexedMatchingOptions] $
 seek :: CmdParams -> CommandSeek
 seek ps = withFilesInGitAnnex ww (seeker False) =<< workTreeItems ww ps
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "unannex"
 
 seeker :: Bool -> AnnexedFileSeeker
 seeker fast = AnnexedFileSeeker

@@ -25,6 +25,10 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * assistant --autostop: Avoid crashing when ~/.config/git-annex/autostart
     lists a directory that it cannot chdir to.
   * Honor --force option when operating on a local git remote.
+  * When a nonexistant file is passed to a command and 
+    --json-error-messages is enabled, output a JSON object indicating the
+    problem. (But git ls-files --error-unmatch still displays errors about
+    such files in some situations.)
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

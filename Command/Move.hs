@@ -84,7 +84,7 @@ seek' o fto = startConcurrency (stages fto) $ do
 		, usesLocationLog = True
 		}
 	keyaction = startKey fto (removeWhen o)
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "move"
 
 stages :: FromToHereOptions -> UsedStages
 stages (FromOrToRemote (FromRemote _)) = transferStages

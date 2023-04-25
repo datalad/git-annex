@@ -74,7 +74,7 @@ seek o = startConcurrency commandStages $ do
 		Batch fmt -> batchOnly (keyOptions o) (dropFiles o) $
 			batchAnnexed fmt seeker (startKeys o from)
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "drop"
 
 start :: DropOptions -> Maybe Remote -> SeekInput -> RawFilePath -> Key -> CommandStart
 start o from si file key = start' o from key afile ai si

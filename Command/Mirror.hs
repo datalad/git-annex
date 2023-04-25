@@ -50,7 +50,7 @@ seek o = startConcurrency stages $
 	stages = case fromToOptions o of
 		FromRemote _ -> transferStages
 		ToRemote _ -> commandStages
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "mirror"
 	seeker = AnnexedFileSeeker
 		{ startAction = start o
 		, checkContentPresent = Nothing

@@ -84,3 +84,9 @@ data SerializedOutput
 data SerializedOutputResponse
 	= ReadyPrompt
 	deriving (Eq, Show)
+
+-- | Error identifiers. Avoid changing these.
+data ErrorId
+	= FileNotFound
+	| FileBeyondSymbolicLink
+	deriving (Show)

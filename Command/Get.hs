@@ -53,7 +53,7 @@ seek o = startConcurrency transferStages $ do
 		Batch fmt -> batchOnly (keyOptions o) (getFiles o) $
 			batchAnnexed fmt seeker (startKeys from)
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "get"
 
 start :: GetOptions -> Maybe Remote -> SeekInput -> RawFilePath -> Key -> CommandStart
 start o from si file key = start' expensivecheck from key afile ai si

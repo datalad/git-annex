@@ -105,7 +105,7 @@ seek o = ifM (null <$> Annex.Branch.getUnmergedRefs)
 	, giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents displaying location log changes. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
 	)
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "log"
 
 start :: LogOptions -> (FilePath -> Outputter) -> SeekInput -> RawFilePath -> Key -> CommandStart
 start o outputter _ file key = do

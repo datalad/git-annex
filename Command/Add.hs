@@ -119,7 +119,7 @@ seek o = startConcurrency commandStages $ do
 			-- are not known to git yet, since this will add
 			-- them. Instead, have workTreeItems warn about other
 			-- problems, like files that don't exist.
-			let ww = WarnUnmatchWorkTreeItems
+			let ww = WarnUnmatchWorkTreeItems "add"
 			l <- workTreeItems ww (addThese o)
 			let go b a = a ww (commandAction . gofile b) l
 			unless (updateOnly o) $

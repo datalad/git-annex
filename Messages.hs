@@ -27,6 +27,8 @@ module Messages (
 	showEndFail,
 	showEndResult,
 	endResult,
+	ErrorId(..),
+	toplevelFileProblem,
 	toplevelWarning,
 	warning,
 	earlyWarning,
@@ -34,6 +36,7 @@ module Messages (
 	indent,
 	JSON.JSONChunk(..),
 	maybeShowJSON,
+	maybeShowJSON',
 	showFullJSON,
 	showCustom,
 	showHeader,
@@ -197,8 +200,18 @@ endResult :: Bool -> S.ByteString
 endResult True = "ok"
 endResult False = "failed"
 
+toplevelMsg :: StringContainingQuotedPath -> StringContainingQuotedPath
+toplevelMsg = ("git-annex: " <>)
+
+toplevelFileProblem :: Bool -> ErrorId -> StringContainingQuotedPath -> String -> RawFilePath -> Maybe Key -> SeekInput -> Annex ()
+toplevelFileProblem makeway errorid msg action file mkey si = do
+	maybeShowJSON' $ JSON.start action (Just file) mkey si
+	maybeShowJSON' $ JSON.errorid errorid
+	warning' makeway id (toplevelMsg (QuotedPath file <> " " <> msg))
+	maybeShowJSON' $ JSON.end False
+
 toplevelWarning :: Bool -> StringContainingQuotedPath -> Annex ()
-toplevelWarning makeway s = warning' makeway id ("git-annex: " <> s)
+toplevelWarning makeway s = warning' makeway id (toplevelMsg s)
 
 warning :: StringContainingQuotedPath -> Annex ()
 warning = warning' True indent
@@ -207,10 +220,10 @@ earlyWarning :: StringContainingQuotedPath -> Annex ()
 earlyWarning = warning' False id
 
 warning' :: Bool -> (S.ByteString -> S.ByteString) -> StringContainingQuotedPath -> Annex ()
-warning' makeway consolewhitespacef w = do
+warning' makeway consolewhitespacef msg = do
 	when makeway $
 		outputMessage JSON.none id "\n"
-	outputError (\s -> consolewhitespacef s <> "\n") w
+	outputError (\s -> consolewhitespacef s <> "\n") msg
 
 {- Not concurrent output safe. -}
 warningIO :: String -> IO ()
@@ -225,6 +238,9 @@ indent = S.intercalate "\n" . map ("  " <>) . S8.lines
 {- Shows a JSON chunk only when in json mode. -}
 maybeShowJSON :: JSON.JSONChunk v -> Annex ()
 maybeShowJSON v = void $ withMessageState $ bufferJSON (JSON.add v)
+
+maybeShowJSON' :: JSON.JSONBuilder -> Annex ()
+maybeShowJSON' v = void $ withMessageState $ bufferJSON v
 
 {- Shows a complete JSON value, only when in json mode. -}
 showFullJSON :: JSON.JSONChunk v -> Annex Bool

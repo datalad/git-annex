@@ -192,4 +192,4 @@ seek o = withOtherTmp $ \tmpdir -> do
 	c <- inRepo $ Git.commitTree cmode cmessage [] t
 	liftIO $ putStrLn (fromRef c)
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "filter-branch"

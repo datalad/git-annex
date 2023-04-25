@@ -76,7 +76,7 @@ seek :: MetaDataOptions -> CommandSeek
 seek o = case batchOption o of
 	NoBatch -> do
 		c <- currentVectorClock
-		let ww = WarnUnmatchLsFiles
+		let ww = WarnUnmatchLsFiles "metadata"
 		let seeker = AnnexedFileSeeker
 			{ startAction = start c o
 			, checkContentPresent = Nothing

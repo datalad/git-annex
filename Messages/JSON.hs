@@ -20,6 +20,7 @@ module Messages.JSON (
 	addErrorMessage,
 	note,
 	info,
+	errorid,
 	add,
 	complete,
 	progress,
@@ -51,6 +52,7 @@ import Utility.Metered
 import Utility.Percentage
 import Utility.Aeson
 import Utility.FileSystemEncoding
+import Types.Messages
 
 -- A global lock to avoid concurrent threads emitting json at the same time.
 {-# NOINLINE emitLock #-}
@@ -68,7 +70,8 @@ emit' b = do
 	putMVar emitLock ()
 
 -- Building up a JSON object can be done by first using start,
--- then add and note any number of times, and finally complete.
+-- then add and note and errorid any number of times, and finally
+-- complete.
 type JSONBuilder = Maybe (Object, Bool) -> Maybe (Object, Bool)
 
 none :: JSONBuilder
@@ -111,6 +114,12 @@ note s (Just (o, e)) = Just (HM.unionWith combinelines (HM.singleton "note" (toJ
 	combinelines (String new) (String old) =
 		String (old <> "\n" <> new)
 	combinelines new _old = new
+
+errorid :: ErrorId -> JSONBuilder
+errorid _ Nothing = Nothing
+errorid eid (Just (o, e)) = Just (HM.unionWith replaceold (HM.singleton "errorid" (toJSON' (show eid))) o, e)
+  where
+	replaceold new _old = new
 
 info :: String -> JSONBuilder
 info s _ = case j of

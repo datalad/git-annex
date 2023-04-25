@@ -32,7 +32,7 @@ cmd = withAnnexOptions [jsonOptions, annexedMatchingOptions] $
 seek :: CmdParams -> CommandSeek
 seek ps = withFilesInGitAnnex ww seeker =<< workTreeItems ww ps
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "lock"
 	seeker = AnnexedFileSeeker
 		{ startAction = start
 		, checkContentPresent = Nothing

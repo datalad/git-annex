@@ -41,7 +41,7 @@ optParser desc = MigrateOptions
 seek :: MigrateOptions -> CommandSeek
 seek o = withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "migrate"
 	seeker = AnnexedFileSeeker
 		{ startAction = start o
 		, checkContentPresent = Nothing

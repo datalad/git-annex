@@ -794,7 +794,7 @@ seekSyncContent o rs currbranch = do
 		in seekFiltered (const (pure True)) filterer $
 			seekHelper id ww (LsFiles.inRepoOrBranch origbranch) l 
 
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "sync"
 
 	gofile bloom mvar _ f k = 
 		go (Right bloom) mvar (AssociatedFile (Just f)) k

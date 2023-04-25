@@ -60,7 +60,7 @@ seek' o fto = startConcurrency (Command.Move.stages fto) $ do
 		Batch fmt -> batchOnly (keyOptions o) (copyFiles o) $
 			batchAnnexed fmt seeker keyaction
   where
-	ww = WarnUnmatchLsFiles
+	ww = WarnUnmatchLsFiles "copy"
 	
 	seeker = AnnexedFileSeeker
 		{ startAction = start o fto
