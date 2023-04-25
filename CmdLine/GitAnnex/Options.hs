@@ -445,20 +445,13 @@ jsonOptions =
 		<> help "include error messages in JSON"
 		<> hidden
 		)
-	, annexFlag (setAnnexState $ Annex.setOutput (JSONOutput jsonexceptionsoptions))
-		( long "json-exceptions"
-		<> help "include exceptions in JSON"
-		<> hidden
-		)
 	]
   where
 	stdjsonoptions = JSONOptions
 		{ jsonProgress = False
 		, jsonErrorMessages = False
-		, jsonExceptions = False
 		}
 	jsonerrormessagesoptions = stdjsonoptions { jsonErrorMessages = True }
-	jsonexceptionsoptions = stdjsonoptions { jsonExceptions = True }
 
 jsonProgressOption :: [AnnexOption]
 jsonProgressOption = 
@@ -472,7 +465,6 @@ jsonProgressOption =
 	jsonoptions = JSONOptions
 		{ jsonProgress = True
 		, jsonErrorMessages = False
-		, jsonExceptions = False
 		}
 
 -- Note that a command that adds this option should wrap its seek

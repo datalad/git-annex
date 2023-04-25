@@ -25,8 +25,6 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * assistant --autostop: Avoid crashing when ~/.config/git-annex/autostart
     lists a directory that it cannot chdir to.
   * Honor --force option when operating on a local git remote.
-  * Added a --json-exceptions option, which makes some exceptions be output
-    in json.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

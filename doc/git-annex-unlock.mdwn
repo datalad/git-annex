@@ -53,19 +53,12 @@ repository. So, enable annex.thin with care.
 * `--json`
 
   Enable JSON output. This is intended to be parsed by programs that use
-  git-annex. Each line of output is a JSON object corresponding to a file
-  being processed.
+  git-annex. Each line of output is a JSON object.
 
 * `--json-error-messages`
 
-  Adds an "error-messages" field to the JSON that contains messages that
-  would normally be output to the standard error when processing a file.
-
-* `--json-exceptions`
-
-  Output additional JSON objects for some exceptions that are not
-  associated with a particular file.
-
+  Messages that would normally be output to standard error are included in
+  the JSON instead.
 
 * Also the [[git-annex-common-options]](1) can be used.
 

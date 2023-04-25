@@ -31,7 +31,7 @@ bpoldrack makes a good point
 
 So eg:
 
-	{"exception":"UNIQUEID", "file":"foo", "message":"foo not found"}
+	{"exception":"UNIQUEID", "file":"foo", "error-messages":["foo not found"]}
 
 That seems about right to me, and it future proofs git-annex to be able to
 report other exceptions in json output later on.

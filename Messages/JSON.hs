@@ -1,6 +1,6 @@
 {- git-annex command-line JSON output and input
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2021 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -27,7 +27,6 @@ module Messages.JSON (
 	ObjectMap(..),
 	JSONActionItem(..),
 	AddJSONActionItemFields(..),
-	exceptionObject,
 ) where
 
 import Control.Applicative
@@ -219,14 +218,3 @@ newtype AddJSONActionItemFields a = AddJSONActionItemFields a
 
 instance ToJSON' a => ToJSON' (AddJSONActionItemFields a) where
 	toJSON' (AddJSONActionItemFields a) = object [ ("fields", toJSON' a) ]
-
-exceptionObject :: String -> String -> Maybe RawFilePath -> Object
-exceptionObject eid msg mfile = case o of
-	Object o' -> o'
-	_ -> error "internal"
-  where
-	o = object
-		[ "exception" .= toJSON' eid
-		, "message" .= toJSON' msg
-		, "file" .= toJSON' (maybe "" decodeBS mfile)
-		]
