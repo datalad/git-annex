@@ -58,6 +58,9 @@ relaySerializedOutput getso sendsor meterreport runannex = go Nothing
 		Left (OutputError msg) -> do
 			runannex $ outputError id $ UnquotedString msg
 			loop st		
+		Left (OutputException eid mfile msg) -> do
+			runannex $ outputException eid mfile $ UnquotedString msg
+			loop st
 		Left (JSONObject b) -> do
 			runannex $ withMessageState $ \s -> case outputType s of
 				JSONOutput _ -> liftIO $ flushed $ JSON.emit' b

@@ -121,6 +121,16 @@ the modified file.
 
 * `--json-error-messages`
 
+  Adds an "error-messages" field to the JSON that contains messages that
+  would normally be output to the standard error when processing a file.
+
+* `--json-exceptions`
+
+  Output additional JSON objects for some exceptions that are not
+  associated with a particular file.
+
+* `--json-error-messages`
+
   Messages that would normally be output to standard error are included in
   the JSON instead.
 

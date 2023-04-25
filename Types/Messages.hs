@@ -9,6 +9,7 @@ module Types.Messages where
 
 import qualified Utility.Aeson as Aeson
 import Utility.Metered
+import Utility.RawFilePath
 
 import Control.Concurrent
 import System.Console.Regions (ConsoleRegion)
@@ -26,6 +27,7 @@ data OutputType
 data JSONOptions = JSONOptions
 	{ jsonProgress :: Bool
 	, jsonErrorMessages :: Bool
+	, jsonExceptions :: Bool
 	}
 	deriving (Show)
 
@@ -33,6 +35,7 @@ adjustOutputType :: OutputType -> OutputType -> OutputType
 adjustOutputType (JSONOutput old) (JSONOutput new) = JSONOutput $ JSONOptions
 	{ jsonProgress = jsonProgress old || jsonProgress new
 	, jsonErrorMessages = jsonErrorMessages old || jsonErrorMessages new
+	, jsonExceptions = jsonExceptions old || jsonExceptions new
 	}
 adjustOutputType _old new = new
 
@@ -70,6 +73,7 @@ newMessageState = do
 data SerializedOutput
 	= OutputMessage S.ByteString
 	| OutputError String
+	| OutputException String (Maybe RawFilePath) String
 	| BeginProgressMeter
 	| UpdateProgressMeterTotalSize TotalSize
 	| UpdateProgressMeter BytesProcessed

@@ -27,6 +27,8 @@ module Messages (
 	showEndFail,
 	showEndResult,
 	endResult,
+	ExceptionId(..),
+	showException,
 	toplevelWarning,
 	warning,
 	earlyWarning,
@@ -196,6 +198,26 @@ showEndResult ok = outputMessage (JSON.end ok) id $
 endResult :: Bool -> S.ByteString
 endResult True = "ok"
 endResult False = "failed"
+
+{- Unique ids for different exceptions. Do not change the constructors. -}
+data ExceptionId
+	= FileNotFound
+	| FileBeyondSymbolicLink
+	deriving (Show)
+
+{- Displays an message that is not associated with any file being
+ - processed. -}
+showException :: Bool -> ExceptionId -> StringContainingQuotedPath -> Annex ()
+showException makeway eid msg = do
+	when makeway $
+		outputMessage JSON.none id "\n"
+	outputException (show eid) (mentionedfile msg)
+		("git-annex: " <> msg <> "\n")
+  where
+	mentionedfile (QuotedPath p) = Just p
+	mentionedfile (a :+: b) = mentionedfile a <|> mentionedfile b
+	mentionedfile (UnquotedString _) = Nothing
+	mentionedfile (UnquotedByteString _) = Nothing
 
 toplevelWarning :: Bool -> StringContainingQuotedPath -> Annex ()
 toplevelWarning makeway s = warning' makeway id ("git-annex: " <> s)

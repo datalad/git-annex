@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-04-25T18:43:20Z"
+ content="""
+I've implemented --json-exceptions:
+
+	joey@darkstar:~/tmp/xxx>git-annex add dne --json-exceptions
+	{"exception":"FileNotFound","file":"dne","message":"git-annex: dne not found\n"}
+	add: 1 failed
+
+Note that when a command like `git-annex get` is run on a file that exists,
+but is not checked into git, `git ls-files` still displays its own error message,
+so --json-exceptions doesn't help with this:
+
+	joey@darkstar:~/tmp/xxx>touch foo
+	joey@darkstar:~/tmp/xxx>git-annex get foo --json-exceptions
+	error: pathspec 'foo' did not match any file(s) known to git
+	Did you forget to 'git add'?
+	get: 1 failed
+
+Datalad will still have to parse the git output if it wants to know what file
+it failed on in that case.
+"""]]

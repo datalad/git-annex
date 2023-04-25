@@ -90,17 +90,31 @@ outputError consolewhitespacef msg = withMessageState $ \s -> case (outputType s
 		qp <- coreQuotePath <$> Annex.getGitConfig
 		liftIO $ outputSerialized h $ OutputError $ decodeBS $
 			consolewhitespacef $ quote qp msg
-	_
-		| concurrentOutputEnabled s -> do
-			qp <- coreQuotePath <$> Annex.getGitConfig
-			concurrentMessage s True (decodeBS $ consolewhitespacef $ quote qp msg) go
-		| otherwise -> go
+	_ -> outputError' consolewhitespacef msg s
+
+outputError' :: (S.ByteString -> S.ByteString) -> StringContainingQuotedPath -> MessageState -> Annex ()
+outputError' consolewhitespacef msg s
+	| concurrentOutputEnabled s = do
+		qp <- coreQuotePath <$> Annex.getGitConfig
+		concurrentMessage s True (decodeBS $ consolewhitespacef $ quote qp msg) go
+	| otherwise = go
   where
 	go = do
 		qp <- coreQuotePath <$> Annex.getGitConfig
 		liftIO $ hFlush stdout
 		liftIO $ S.hPutStr stderr (consolewhitespacef $ quote qp msg)
 		liftIO $ hFlush stderr
+
+outputException :: String -> Maybe RawFilePath -> StringContainingQuotedPath -> Annex ()
+outputException eid mfile msg = withMessageState $ \s -> case outputType s of
+	(JSONOutput jsonoptions) | jsonExceptions jsonoptions ->
+		liftIO $ flushed $ JSON.emit $
+			JSON.exceptionObject eid (decodeBS (noquote msg)) mfile
+	(SerializedOutput h _) -> do
+		qp <- coreQuotePath <$> Annex.getGitConfig
+		liftIO $ outputSerialized h $ OutputException eid mfile $ decodeBS $
+			quote qp msg
+	_ -> outputError' id msg s
 
 q :: Monad m => m ()
 q = noop

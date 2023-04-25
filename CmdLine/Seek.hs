@@ -568,9 +568,9 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 			let p' = toRawFilePath p
 			relf <- liftIO $ relPathCwdToFile p'
 			ifM (not <$> (exists p' <||> hidden currbranch relf))
-				( prob (QuotedPath (toRawFilePath p) <> " not found")
+				( prob FileNotFound (QuotedPath (toRawFilePath p) <> " not found")
 				, ifM (viasymlink stopattop (upFrom relf))
-					( prob (QuotedPath (toRawFilePath p) <> " is beyond a symbolic link")
+					( prob FileBeyondSymbolicLink (QuotedPath (toRawFilePath p) <> " is beyond a symbolic link")
 					, return True
 					)
 				)
@@ -605,8 +605,8 @@ workTreeItems' (AllowHidden allowhidden) ww ps = case ww of
 			<$> catObjectMetaDataHidden f currbranch
 		| otherwise = return False
 
-	prob msg = do
-		toplevelWarning False msg
+	prob eid msg = do
+		showException False eid msg
 		Annex.incError
 		return False
 	
