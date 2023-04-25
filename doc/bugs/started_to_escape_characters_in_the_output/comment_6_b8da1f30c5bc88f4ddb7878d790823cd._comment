@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2023-04-25T16:31:44Z"
+ content="""
+I dug into your code, and datalad is parsing git-annex's (and perhaps 
+git's in some cases) stderr to find error messages like this one for files
+that don't exist, and then it internally dummies up something as if git-annex
+were outputting a --json-error-messages record for the file. See
+`./datalad/support/annex_utils.py` `_get_non_existing_from_annex_output`
+
+Ok, I can understand now how needing to do an additional form of unescaping
+on top of that existing pain point would cause the reaction I have seen in
+this bug report.
+
+[[todo/api_for_telling_when_nonexistant_or_non_git_files_passed]] is a todo
+item I opened the last time I became aware of this error message parsing ugliness.
+(Also relevant is [this closed todo](https://git-annex.branchable.com/projects/datalad/bugs-done/copy_does_not_reflect_some_failed_copies_in_--json_output/)
+where I discuss why --json-error-messages cannot include these errors
+as-is.)
+
+So the choice is between implementing 
+[[todo/api_for_telling_when_nonexistant_or_non_git_files_passed]]
+and changing datalad to use that. Or adding a git config
+that avoids escaping filenames. The latter would be easy
+to do (and easier for datalad to use), but it kicks the can down the road.
+Datalad parsing error messages would continue to be a problem going
+forward. (Imagine if git-annex gets localized error messages..)
+"""]]
