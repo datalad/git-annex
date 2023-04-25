@@ -9,8 +9,23 @@ caused it, and so an exit status is not enough information.
 (See `./datalad/support/annex_utils.py`
 `_get_non_existing_from_annex_output`)
 
-So the additional json would need to include the filename that didn't exist,
-perhaps something like this:
+So the additional json would need to include the filename that didn't
+exist.
 
-	{"file", "foo", "error-messages":["foo not found"]}
+bpoldrack makes a good point
+[here](https://github.com/datalad/datalad/pull/6510#issuecomment-1057320621):
+
+> Ideally, there'd be some indication of the problem that isn't meant to
+> be a message to the user and not (so easily) subject to change - pretty
+> much something that's akin to an exception name. That's because there
+> are possible errors that we can deal with from within datalad if we can
+> "understand" the problem - not everything needs to be passed onto the
+> user.
+
+So eg:
+
+	{"exception":"UNIQUEID", "file", "foo", "error-messages":["foo not found"]}
+
+That seems about right to me, and it future proofs git-annex to be able to
+report other exceptions in json output later on.
 """]]
