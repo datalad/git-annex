@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2023-04-25T23:27:25Z"
+ content="""
+[[todo/api_for_telling_when_nonexistant_or_non_git_files_passed]] is
+implemented now.
+
+In datalad, all you should need to do now is check for a json object with
+`errorid:"FileNotFound"` and the `file` field is the name of the file.
+
+Note that the parser for error messages like "did not match any file(s)
+known to git" from `git ls-files --error-unmatch` will still be needed in
+datalad.
+
+I'm going to leave this open as a git-annex release blocker until the
+necessary changes get made to datalad.
+"""]]

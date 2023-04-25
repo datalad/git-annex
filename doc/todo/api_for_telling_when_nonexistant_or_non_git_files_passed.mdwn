@@ -25,3 +25,5 @@ This does risk breaking things that parse the existing JSON and fall
 over on the new record, but I think git-annex should be free to add new
 records and fields to its JSON output in general, and it has probably
 at least added new fields before. --[[Joey]]
+
+> [[done]] --[[Joey]]
