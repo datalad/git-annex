@@ -93,7 +93,7 @@ annexed content, and other symlinks.
 * `--json-error-messages`
 
   Messages that would normally be output to standard error are included in
-  the json instead.
+  the JSON instead.
 
 * `--batch`
 

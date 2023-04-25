@@ -45,7 +45,7 @@ that can be determined purely by looking at the key.
 * `--json-error-messages`
 
   Messages that would normally be output to standard error are included in
-  the json instead.
+  the JSON instead.
 
 * `--migrate-to-backend=backend`
 

@@ -63,7 +63,7 @@ finds files in the current directory and its subdirectories.
 * `--json-error-messages`
 
   Messages that would normally be output to standard error are included in
-  the json instead.
+  the JSON instead.
 
 * `--batch`
 
