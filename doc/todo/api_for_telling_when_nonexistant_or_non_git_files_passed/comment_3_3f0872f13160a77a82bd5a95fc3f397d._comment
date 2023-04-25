@@ -12,6 +12,13 @@ caused it, and so an exit status is not enough information.
 So the additional json would need to include the filename that didn't
 exist.
 
+[this closed todo](https://git-annex.branchable.com/projects/datalad/bugs-done/copy_does_not_reflect_some_failed_copies_in_--json_output/)
+argues persuasively that --json-error-messages cannot be extended to
+include these errors as-is. In particular, putting them in the current
+json would mean outputting a record without a "key" field in situations
+where that field is always present, so json consumers might 
+misbehave without it.
+
 bpoldrack makes a good point
 [here](https://github.com/datalad/datalad/pull/6510#issuecomment-1057320621):
 
@@ -24,7 +31,7 @@ bpoldrack makes a good point
 
 So eg:
 
-	{"exception":"UNIQUEID", "file", "foo", "error-messages":["foo not found"]}
+	{"exception":"UNIQUEID", "file":"foo", "error-messages":["foo not found"]}
 
 That seems about right to me, and it future proofs git-annex to be able to
 report other exceptions in json output later on.
