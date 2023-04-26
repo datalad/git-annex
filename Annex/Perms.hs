@@ -44,8 +44,7 @@ import Config
 import Utility.Directory.Create
 import qualified Utility.RawFilePath as R
 
-import System.PosixCompat.Files (fileMode, intersectFileModes, nullFileMode, groupWriteMode, ownerWriteMode, ownerReadMode, groupReadMode, stdFileMode, ownerExecuteMode, groupExecuteMode)
-import Numeric
+import System.PosixCompat.Files (fileMode, intersectFileModes, nullFileMode, groupWriteMode, ownerWriteMode, ownerReadMode, groupReadMode, otherReadMode, stdFileMode, ownerExecuteMode, groupExecuteMode, otherExecuteMode, setGroupIDMode)
 
 withShared :: (SharedRepository -> Annex a) -> Annex a
 withShared a = a =<< coreSharedRepository <$> Annex.getGitConfig
@@ -78,14 +77,9 @@ setAnnexPerm' modef isdir file = unlessM crippledFileSystem $
 		Nothing -> noop
 		Just f -> void $ liftIO $ tryIO $
 			modifyFileMode file $ f []
-	go (UmaskShared n) = do
-		warnUmaskSharedUnsupported n
-		go UnShared
+	go (UmaskShared n) = void $ liftIO $ tryIO $ R.setFileMode file $
+		if isdir then umaskSharedDirectory n else n
 	modef' = fromMaybe addModes modef
-
-warnUmaskSharedUnsupported :: Int -> Annex ()
-warnUmaskSharedUnsupported n = warning $ UnquotedString $
-	"core.sharedRepository set to a umask override (0" ++ showOct n "" ++ ") is not supported by git-annex; ignoring that configuration"
 
 resetAnnexFilePerm :: RawFilePath -> Annex ()
 resetAnnexFilePerm = resetAnnexPerm False
@@ -109,14 +103,12 @@ resetAnnexPerm isdir file = unlessM crippledFileSystem $ do
  - taken into account; this is for use with actions that create the file
  - and apply the umask automatically. -}
 annexFileMode :: Annex FileMode
-annexFileMode = withShared go
+annexFileMode = withShared (pure . go)
   where
-	go GroupShared = return sharedmode
-	go AllShared = return $ combineModes (sharedmode:readModes)
-	go UnShared = return stdFileMode
-	go (UmaskShared n) = do
-		warnUmaskSharedUnsupported n
-		go UnShared
+	go GroupShared = sharedmode
+	go AllShared = combineModes (sharedmode:readModes)
+	go UnShared = stdFileMode
+	go (UmaskShared n) = n
 	sharedmode = combineModes groupSharedModes
 
 {- Creates a directory inside the gitAnnexDir (or possibly the dbdir), 
@@ -179,6 +171,7 @@ freezeContent'' sr file rv = do
 	unlessM crippledFileSystem $ go sr
 	freezeHook file
   where
+	go UnShared = liftIO $ nowriteadd [ownerReadMode]
 	go GroupShared = if versionNeedsWritableContentFiles rv
 		then liftIO $ ignoresharederr $ modmode $ addModes
 			[ownerReadMode, groupReadMode, ownerWriteMode, groupWriteMode]
@@ -189,10 +182,13 @@ freezeContent'' sr file rv = do
 			(readModes ++ writeModes)
 		else liftIO $ ignoresharederr $ 
 			nowriteadd readModes
-	go UnShared = liftIO $ nowriteadd [ownerReadMode]
-	go (UmaskShared n) = do
-		warnUmaskSharedUnsupported n
-		go UnShared
+	go (UmaskShared n) = if versionNeedsWritableContentFiles rv
+		-- Assume that the configured mode includes write bits
+		-- for all users who should be able to lock the file, so
+		-- don't need to add any write modes.
+		then liftIO $ ignoresharederr $ modmode $ const n
+		else liftIO $ ignoresharederr $ modmode $ const $
+			removeModes writeModes n
 
 	ignoresharederr = void . tryIO
 
@@ -228,6 +224,7 @@ checkContentWritePerm' :: SharedRepository -> RawFilePath -> Maybe RepoVersion -
 checkContentWritePerm' sr file rv hasfreezehook
 	| hasfreezehook = return (Just True)
 	| otherwise = case sr of
+		UnShared -> want Just (excludemodes writeModes)
 		GroupShared
 			| versionNeedsWritableContentFiles rv -> want sharedret
 				(includemodes [ownerWriteMode, groupWriteMode])
@@ -236,9 +233,11 @@ checkContentWritePerm' sr file rv hasfreezehook
 			| versionNeedsWritableContentFiles rv -> 
 				want sharedret (includemodes writeModes)
 			| otherwise -> want sharedret (excludemodes writeModes)
-		UnShared -> want Just (excludemodes writeModes)
-		UmaskShared _ ->
-			checkContentWritePerm' UnShared file rv hasfreezehook
+		UmaskShared n
+			| versionNeedsWritableContentFiles rv -> want sharedret
+				(\havemode -> havemode == n)
+			| otherwise -> want sharedret
+				(\havemode -> havemode == removeModes writeModes n)
   where
 	want mk f = catchMaybeIO (fileMode <$> R.getFileStatus file)
 		>>= return . \case
@@ -264,9 +263,7 @@ thawContent' sr file = do
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead file
 	go AllShared = liftIO $ void $ tryIO $ groupWriteRead file
 	go UnShared = liftIO $ allowWrite file
-	go (UmaskShared n) = do
-		warnUmaskSharedUnsupported n
-		go UnShared
+	go (UmaskShared n) = liftIO $ void $ tryIO $ R.setFileMode file n
 
 {- Runs an action that thaws a file's permissions. This will probably
  - fail on a crippled filesystem. But, if file modes are supported on a
@@ -281,7 +278,7 @@ thawPerms a hook = ifM crippledFileSystem
 {- Blocks writing to the directory an annexed file is in, to prevent the
  - file accidentally being deleted. However, if core.sharedRepository
  - is set, this is not done, since the group must be allowed to delete the
- - file.
+ - file without eing able to thaw the directory.
  -}
 freezeContentDir :: RawFilePath -> Annex ()
 freezeContentDir file = do
@@ -290,19 +287,26 @@ freezeContentDir file = do
 	freezeHook dir
   where
 	dir = parentDir file
+	go UnShared = liftIO $ preventWrite dir
 	go GroupShared = liftIO $ void $ tryIO $ groupWriteRead dir
 	go AllShared = liftIO $ void $ tryIO $ groupWriteRead dir
-	go UnShared = liftIO $ preventWrite dir
-	go (UmaskShared n) = do
-		warnUmaskSharedUnsupported n
-		go UnShared
+	go (UmaskShared n) = liftIO $ void $ tryIO $ R.setFileMode dir $
+		umaskSharedDirectory $ 
+			-- If n includes group or other write mode, leave them set
+			-- to allow them to delete the file without being able to
+			-- thaw the directory.
+			removeModes [ownerWriteMode] n
 
 thawContentDir :: RawFilePath -> Annex ()
 thawContentDir file = do
 	fastDebug "Annex.Perms" ("thawing content directory " ++ fromRawFilePath dir)
-	thawPerms (liftIO $ allowWrite dir) (thawHook dir)
+	thawPerms (withShared (liftIO . go)) (thawHook dir)
   where
 	dir = parentDir file
+	go UnShared = allowWrite dir
+	go GroupShared = allowWrite dir
+	go AllShared = allowWrite dir
+	go (UmaskShared n) = R.setFileMode dir n
 
 {- Makes the directory tree to store an annexed file's content,
  - with appropriate permissions on each level. -}
@@ -354,3 +358,17 @@ thawHook p = maybe noop go =<< annexThawContentCommand <$> Annex.getGitConfig
 	go basecmd = void $ liftIO $
 		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
 	gencmd = massReplace [ ("%path", shellEscape (fromRawFilePath p)) ]
+
+{- Calculate mode to use for a directory from the mode to use for a file.
+ -
+ - This corresponds to git's handling of core.sharedRepository=0xxx
+ -}
+umaskSharedDirectory :: FileMode -> FileMode
+umaskSharedDirectory n = flip addModes n $ map snd $ filter fst
+	[ (isset ownerReadMode, ownerExecuteMode)
+	, (isset groupReadMode, groupExecuteMode)
+	, (isset otherReadMode, otherExecuteMode)
+	, (isset groupReadMode || isset groupWriteMode, setGroupIDMode)
+	]
+  where
+	isset v = checkMode v n

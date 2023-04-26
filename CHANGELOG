@@ -29,7 +29,7 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     --json-error-messages is enabled, output a JSON object indicating the
     problem. (But git ls-files --error-unmatch still displays errors about
     such files in some situations.)
-  * Warn about unsupported core.sharedRepository=0xxx when set.
+  * Support core.sharedRepository=0xxx at long last.
   * Bug fix: Create .git/annex/, .git/annex/fsckdb,
     .git/annex/sentinal, .git/annex/sentinal.cache, and
     .git/annex/journal/* with permissions configured by core.sharedRepository.

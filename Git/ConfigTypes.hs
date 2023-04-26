@@ -12,13 +12,14 @@ module Git.ConfigTypes where
 import Data.Char
 import Numeric
 import qualified Data.ByteString.Char8 as S8
+import System.PosixCompat.Types
 
 import Common
 import Git
 import Git.Types
 import qualified Git.Config
 
-data SharedRepository = UnShared | GroupShared | AllShared | UmaskShared Int
+data SharedRepository = UnShared | GroupShared | AllShared | UmaskShared FileMode
 	deriving (Eq)
 
 getSharedRepository :: Repo -> SharedRepository
