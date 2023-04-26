@@ -93,6 +93,8 @@ createInodeSentinalFile evenwithobjects =
 		s <- annexSentinalFile
 		createAnnexDirectory (parentDir (sentinalFile s))
 		liftIO $ writeSentinalFile s
+		setAnnexFilePerm (sentinalFile s)
+		setAnnexFilePerm (sentinalCacheFile s)
   where
 	alreadyexists = liftIO. sentinalFileExists =<< annexSentinalFile
 	hasobjects

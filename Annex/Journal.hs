@@ -91,7 +91,10 @@ setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
 	let tmpfile = tmp P.</> jfile
 	liftIO $ withFile (fromRawFilePath tmpfile) WriteMode $ \h ->
 		writeJournalHandle h content
-	let mv = liftIO $ moveFile tmpfile (jd P.</> jfile)
+	let dest = jd P.</> jfile
+	let mv = do
+		liftIO $ moveFile tmpfile dest
+		setAnnexFilePerm dest
 	-- avoid overhead of creating the journal directory when it already
 	-- exists
 	mv `catchIO` (const (createAnnexDirectory jd >> mv))
