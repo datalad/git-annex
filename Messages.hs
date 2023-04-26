@@ -27,7 +27,7 @@ module Messages (
 	showEndFail,
 	showEndResult,
 	endResult,
-	ErrorId(..),
+	MessageId(..),
 	toplevelFileProblem,
 	toplevelWarning,
 	warning,
@@ -203,10 +203,10 @@ endResult False = "failed"
 toplevelMsg :: StringContainingQuotedPath -> StringContainingQuotedPath
 toplevelMsg = ("git-annex: " <>)
 
-toplevelFileProblem :: Bool -> ErrorId -> StringContainingQuotedPath -> String -> RawFilePath -> Maybe Key -> SeekInput -> Annex ()
-toplevelFileProblem makeway errorid msg action file mkey si = do
+toplevelFileProblem :: Bool -> MessageId -> StringContainingQuotedPath -> String -> RawFilePath -> Maybe Key -> SeekInput -> Annex ()
+toplevelFileProblem makeway messageid msg action file mkey si = do
 	maybeShowJSON' $ JSON.start action (Just file) mkey si
-	maybeShowJSON' $ JSON.errorid errorid
+	maybeShowJSON' $ JSON.messageid messageid
 	warning' makeway id (toplevelMsg (QuotedPath file <> " " <> msg))
 	maybeShowJSON' $ JSON.end False
 

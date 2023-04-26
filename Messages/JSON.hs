@@ -20,7 +20,7 @@ module Messages.JSON (
 	addErrorMessage,
 	note,
 	info,
-	errorid,
+	messageid,
 	add,
 	complete,
 	progress,
@@ -70,7 +70,7 @@ emit' b = do
 	putMVar emitLock ()
 
 -- Building up a JSON object can be done by first using start,
--- then add and note and errorid any number of times, and finally
+-- then add and note and messageid any number of times, and finally
 -- complete.
 type JSONBuilder = Maybe (Object, Bool) -> Maybe (Object, Bool)
 
@@ -115,9 +115,9 @@ note s (Just (o, e)) = Just (HM.unionWith combinelines (HM.singleton "note" (toJ
 		String (old <> "\n" <> new)
 	combinelines new _old = new
 
-errorid :: ErrorId -> JSONBuilder
-errorid _ Nothing = Nothing
-errorid eid (Just (o, e)) = Just (HM.unionWith replaceold (HM.singleton "errorid" (toJSON' (show eid))) o, e)
+messageid :: MessageId -> JSONBuilder
+messageid _ Nothing = Nothing
+messageid mid (Just (o, e)) = Just (HM.unionWith replaceold (HM.singleton "message-id" (toJSON' (show mid))) o, e)
   where
 	replaceold new _old = new
 
