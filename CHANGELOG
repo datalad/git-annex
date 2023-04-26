@@ -29,6 +29,8 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     --json-error-messages is enabled, output a JSON object indicating the
     problem. (But git ls-files --error-unmatch still displays errors about
     such files in some situations.)
+  * init: Bug fix: Create .git/annex/ and .git/annex/fsckdb/ directories with
+    permissions configured by core.sharedRepository.
   * Warn about unsupported core.sharedRepository=0xxx when set.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
