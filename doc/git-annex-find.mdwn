@@ -50,8 +50,8 @@ finds files in the current directory and its subdirectories.
 
   Also, '\\n' is a newline, '\\000' is a NULL, etc.
 
-  The default output format is the same as `--format='${escaped_file}\\n'`
-  when outputting to the terminal, and otherwise `--format='${file}\\n'`
+  The default output format is the same as `--format='${file}\\n'`,
+  except when outputting to a terminal, control characters will be escaped.
 
 * `--json`
 

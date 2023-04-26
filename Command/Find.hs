@@ -105,7 +105,7 @@ showFormatted (IsTerminal isterminal) format unformatted vars =
 		case format of
 			Nothing -> do
 				liftIO $ S8.putStrLn $ if isterminal
-					then Utility.Format.escapedFormat unformatted
+					then Utility.Format.encode_c (const False) unformatted
 					else unformatted
 			Just formatter -> liftIO $ putStr $
 				Utility.Format.format formatter $
