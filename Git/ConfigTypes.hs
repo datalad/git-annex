@@ -1,6 +1,6 @@
 {- git config types
  -
- - Copyright 2012, 2017 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@
 module Git.ConfigTypes where
 
 import Data.Char
+import Numeric
 import qualified Data.ByteString.Char8 as S8
 
 import Common
@@ -31,7 +32,8 @@ getSharedRepository r =
 			"all" -> AllShared
 			"world" -> AllShared
 			"everybody" -> AllShared
-			_ -> maybe UnShared UmaskShared (readish (decodeBS v))
+			_ -> maybe UnShared UmaskShared 
+				(fmap fst $ headMaybe $ readOct $ decodeBS v)
 		Just NoConfigValue -> UnShared
 		Nothing -> UnShared
 
