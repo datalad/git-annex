@@ -33,6 +33,8 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * Bug fix: Create .git/annex/, .git/annex/fsckdb,
     .git/annex/sentinal, .git/annex/sentinal.cache, and
     .git/annex/journal/* with permissions configured by core.sharedRepository.
+  * Bug fix: Lock files were created with wrong modes for some combinations
+    of core.sharedRepository and umask.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

@@ -15,7 +15,6 @@ module Annex.Perms (
 	annexFileMode,
 	createAnnexDirectory,
 	createWorkTreeDirectory,
-	noUmask,
 	freezeContent,
 	freezeContent',
 	freezeContent'',
@@ -60,24 +59,26 @@ setAnnexDirPerm = setAnnexPerm True
  - don't change the mode, but with core.sharedRepository set,
  - allow the group to write, etc. -}
 setAnnexPerm :: Bool -> RawFilePath -> Annex ()
-setAnnexPerm = setAnnexPerm' Nothing
+setAnnexPerm isdir file = setAnnexPerm' Nothing isdir >>= \go -> liftIO (go file)
 
-setAnnexPerm' :: Maybe ([FileMode] -> FileMode -> FileMode) -> Bool -> RawFilePath -> Annex ()
-setAnnexPerm' modef isdir file = unlessM crippledFileSystem $
-	withShared go
+setAnnexPerm' :: Maybe ([FileMode] -> FileMode -> FileMode) -> Bool -> Annex (RawFilePath -> IO ())
+setAnnexPerm' modef isdir = ifM crippledFileSystem
+	( return (const noop)
+	, withShared $ \s -> return $ \file -> go s file
+	)
   where
-	go GroupShared = void $ liftIO $ tryIO $ modifyFileMode file $ modef' $
+	go GroupShared file = void $ tryIO $ modifyFileMode file $ modef' $
 		groupSharedModes ++
 		if isdir then [ ownerExecuteMode, groupExecuteMode ] else []
-	go AllShared = void $ liftIO $ tryIO $ modifyFileMode file $ modef' $
+	go AllShared file = void $ tryIO $ modifyFileMode file $ modef' $
 		readModes ++
 		[ ownerWriteMode, groupWriteMode ] ++
 		if isdir then executeModes else []
-	go UnShared = case modef of
+	go UnShared file = case modef of
 		Nothing -> noop
-		Just f -> void $ liftIO $ tryIO $
+		Just f -> void $ tryIO $
 			modifyFileMode file $ f []
-	go (UmaskShared n) = void $ liftIO $ tryIO $ R.setFileMode file $
+	go (UmaskShared n) file = void $ tryIO $ R.setFileMode file $
 		if isdir then umaskSharedDirectory n else n
 	modef' = fromMaybe addModes modef
 
@@ -96,20 +97,19 @@ resetAnnexPerm :: Bool -> RawFilePath -> Annex ()
 resetAnnexPerm isdir file = unlessM crippledFileSystem $ do
 	defmode <- liftIO defaultFileMode
 	let modef moremodes _oldmode = addModes moremodes defmode
-	setAnnexPerm' (Just modef) isdir file
+	setAnnexPerm' (Just modef) isdir >>= \go -> liftIO (go file)
 
-{- Gets the appropriate mode to use for creating a file in the annex
- - (other than content files, which are locked down more). The umask is not
- - taken into account; this is for use with actions that create the file
- - and apply the umask automatically. -}
-annexFileMode :: Annex FileMode
-annexFileMode = withShared (pure . go)
+{- Creates a ModeSetter which can be used for creating a file in the annex
+ - (other than content files, which are locked down more). -}
+annexFileMode :: Annex ModeSetter
+annexFileMode = do
+	modesetter <- setAnnexPerm' Nothing False
+	withShared (\s -> pure $ mk s modesetter)
   where
-	go GroupShared = sharedmode
-	go AllShared = combineModes (sharedmode:readModes)
-	go UnShared = stdFileMode
-	go (UmaskShared n) = n
-	sharedmode = combineModes groupSharedModes
+	mk GroupShared = ModeSetter stdFileMode
+	mk AllShared = ModeSetter stdFileMode
+	mk UnShared = ModeSetter stdFileMode
+	mk (UmaskShared mode) = ModeSetter mode
 
 {- Creates a directory inside the gitAnnexDir (or possibly the dbdir), 
  - creating any parent directories up to and including the gitAnnexDir.

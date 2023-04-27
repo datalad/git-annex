@@ -31,6 +31,7 @@ import Annex.Perms
 import Annex.Action
 import Utility.Metered
 import Utility.ThreadScheduler
+import Utility.FileMode
 import Annex.LockPool
 import Types.Key
 import qualified Types.Remote as Remote
@@ -144,7 +145,7 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 					else recordFailedTransfer t info
 				return v
 	
-	prep :: RawFilePath -> Annex () -> FileMode -> Annex (Maybe LockHandle, Bool)
+	prep :: RawFilePath -> Annex () -> ModeSetter -> Annex (Maybe LockHandle, Bool)
 #ifndef mingw32_HOST_OS
 	prep tfile createtfile mode = catchPermissionDenied (const prepfailed) $ do
 		let lck = transferLockFile tfile

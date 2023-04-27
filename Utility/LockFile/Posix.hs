@@ -1,6 +1,6 @@
 {- Posix lock files
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2023 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -22,6 +22,7 @@ module Utility.LockFile.Posix (
 
 import Utility.Exception
 import Utility.Applicative
+import Utility.FileMode
 import Utility.LockFile.LockStatus
 
 import System.IO
@@ -36,31 +37,31 @@ type LockFile = RawFilePath
 newtype LockHandle = LockHandle Fd
 
 -- Takes a shared lock, blocking until the lock is available.
-lockShared :: Maybe FileMode -> LockFile -> IO LockHandle
+lockShared :: Maybe ModeSetter -> LockFile -> IO LockHandle
 lockShared = lock ReadLock
 
 -- Takes an exclusive lock, blocking until the lock is available.
-lockExclusive :: Maybe FileMode -> LockFile -> IO LockHandle
+lockExclusive :: Maybe ModeSetter -> LockFile -> IO LockHandle
 lockExclusive = lock WriteLock
 
 -- Tries to take a shared lock, but does not block.
-tryLockShared :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
+tryLockShared :: Maybe ModeSetter -> LockFile -> IO (Maybe LockHandle)
 tryLockShared = tryLock ReadLock
 
 -- Tries to take an exclusive lock, but does not block.
-tryLockExclusive :: Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
+tryLockExclusive :: Maybe ModeSetter -> LockFile -> IO (Maybe LockHandle)
 tryLockExclusive = tryLock WriteLock
 
 -- Setting the FileMode allows creation of a new lock file.
 -- If it's Nothing then this only succeeds when the lock file already exists.
-lock :: LockRequest -> Maybe FileMode -> LockFile -> IO LockHandle
+lock :: LockRequest -> Maybe ModeSetter -> LockFile -> IO LockHandle
 lock lockreq mode lockfile = do
 	l <- openLockFile lockreq mode lockfile
 	waitToSetLock l (lockreq, AbsoluteSeek, 0, 0)
 	return (LockHandle l)
 
 -- Tries to take an lock, but does not block.
-tryLock :: LockRequest -> Maybe FileMode -> LockFile -> IO (Maybe LockHandle)
+tryLock :: LockRequest -> Maybe ModeSetter -> LockFile -> IO (Maybe LockHandle)
 tryLock lockreq mode lockfile = uninterruptibleMask_ $ do
 	l <- openLockFile lockreq mode lockfile
 	v <- tryIO $ setLock l (lockreq, AbsoluteSeek, 0, 0)
@@ -71,9 +72,10 @@ tryLock lockreq mode lockfile = uninterruptibleMask_ $ do
 		Right _ -> return $ Just $ LockHandle l
 
 -- Close on exec flag is set so child processes do not inherit the lock.
-openLockFile :: LockRequest -> Maybe FileMode -> LockFile -> IO Fd
+openLockFile :: LockRequest -> Maybe ModeSetter -> LockFile -> IO Fd
 openLockFile lockreq filemode lockfile = do
-	l <- openFd lockfile openfor filemode defaultFileFlags
+	l <- applyModeSetter filemode lockfile $ \filemode' ->
+		openFd lockfile openfor filemode' defaultFileFlags
 	setFdOption l CloseOnExec True
 	return l
   where

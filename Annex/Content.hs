@@ -102,6 +102,7 @@ import Logs.Location
 import Utility.InodeCache
 import Utility.CopyFile
 import Utility.Metered
+import Utility.FileMode
 import qualified Utility.RawFilePath as R
 
 import qualified System.FilePath.ByteString as P
@@ -171,7 +172,7 @@ lockContentForRemoval key fallback a = lockContentUsing lock key fallback $
 type ContentLocker = RawFilePath -> Maybe LockFile -> (Annex (Maybe LockHandle), Maybe (Annex (Maybe LockHandle)))
 
 #ifndef mingw32_HOST_OS
-posixLocker :: (Maybe FileMode -> LockFile -> Annex (Maybe LockHandle)) -> LockFile -> Annex (Maybe LockHandle)
+posixLocker :: (Maybe ModeSetter -> LockFile -> Annex (Maybe LockHandle)) -> LockFile -> Annex (Maybe LockHandle)
 posixLocker takelock lockfile = do
 	mode <- annexFileMode
 	modifyContentDirWhenExists lockfile $

@@ -311,7 +311,7 @@ sshCleanup = mapM_ cleanup =<< enumSocketFiles
 		let lockfile = socket2lock socketfile
 		unlockFile lockfile
 		mode <- annexFileMode
-		noUmask mode (tryLockExclusive (Just mode) lockfile) >>= \case
+		tryLockExclusive (Just mode) lockfile >>= \case
 			Nothing -> noop
 			Just lck -> do
 				forceStopSsh socketfile

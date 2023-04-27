@@ -83,8 +83,7 @@ trySideLock :: PidLockFile -> (SideLockHandle -> IO a) -> IO a
 trySideLock lockfile a = do
 	sidelock <- sideLockFile lockfile
 	mlck <- catchDefaultIO Nothing $ 
-		withUmask nullFileMode $
-			Posix.tryLockExclusive (Just mode) sidelock
+		Posix.tryLockExclusive (Just modesetter) sidelock
 	-- Check the lock we just took, in case we opened a side lock file
 	-- belonging to another process that will have since deleted it.
 	case mlck of
@@ -100,6 +99,7 @@ trySideLock lockfile a = do
 	-- delete another user's lock file there, so could not
 	-- delete a stale lock.
 	mode = combineModes (readModes ++ writeModes)
+	modesetter = ModeSetter mode (\f -> modifyFileMode f (const mode))
 
 dropSideLock :: SideLockHandle -> IO ()
 dropSideLock Nothing = return ()

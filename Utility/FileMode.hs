@@ -1,6 +1,6 @@
 {- File mode utilities.
  -
- - Copyright 2010-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -103,16 +103,19 @@ checkMode checkfor mode = checkfor `intersectFileModes` mode == checkfor
 isExecutable :: FileMode -> Bool
 isExecutable mode = combineModes executeModes `intersectFileModes` mode /= 0
 
-{- Runs an action without that pesky umask influencing it, unless the
- - passed FileMode is the standard one. -}
-noUmask :: (MonadIO m, MonadMask m) => FileMode -> m a -> m a
-#ifndef mingw32_HOST_OS
-noUmask mode a
-	| mode == stdFileMode = a
-	| otherwise = withUmask nullFileMode a
-#else
-noUmask _ a = a
-#endif
+data ModeSetter = ModeSetter FileMode (RawFilePath -> IO ())
+
+{- Runs an action which should create the file, passing it the desired
+ - initial file mode. Then runs the ModeSetter's action on the file, which
+ - can adjust the initial mode if umask prevented the file from being
+ - created with the right mode. -}
+applyModeSetter :: Maybe ModeSetter -> RawFilePath -> (Maybe FileMode -> IO a) -> IO a
+applyModeSetter (Just (ModeSetter mode modeaction)) file a = do
+	r <- a (Just mode)
+	void $ tryIO $ modeaction file
+	return r
+applyModeSetter Nothing _ a = 
+	a Nothing
 
 withUmask :: (MonadIO m, MonadMask m) => FileMode -> m a -> m a
 #ifndef mingw32_HOST_OS
@@ -172,10 +175,10 @@ writeFileProtected file content = writeFileProtected' file
 	(\h -> hPutStr h content)
 
 writeFileProtected' :: RawFilePath -> (Handle -> IO ()) -> IO ()
-writeFileProtected' file writer = protectedOutput $
-	withFile (fromRawFilePath file) WriteMode $ \h -> do
-		void $ tryIO $ modifyFileMode file $ removeModes otherGroupModes
-		writer h
+writeFileProtected' file writer = do
+	h <- protectedOutput $ openFile (fromRawFilePath file) WriteMode
+	void $ tryIO $ modifyFileMode file $ removeModes otherGroupModes
+	writer h
 
 protectedOutput :: IO a -> IO a
 protectedOutput = withUmask 0o0077

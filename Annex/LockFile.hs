@@ -36,7 +36,7 @@ lockFileCached file = go =<< fromLockCache file
 	go Nothing = do
 #ifndef mingw32_HOST_OS
 		mode <- annexFileMode
-		lockhandle <- noUmask mode $ lockShared (Just mode) file
+		lockhandle <- lockShared (Just mode) file
 #else
 		lockhandle <- liftIO $ waitToLock $ lockShared file
 #endif
@@ -69,7 +69,7 @@ withSharedLock lockfile a = debugLocks $ do
 	bracket (lock mode lockfile) (liftIO . dropLock) (const a)
   where
 #ifndef mingw32_HOST_OS
-	lock mode = noUmask mode . lockShared (Just mode)
+	lock mode = lockShared (Just mode)
 #else
 	lock _mode = liftIO . waitToLock . lockShared
 #endif
@@ -90,7 +90,7 @@ takeExclusiveLock lockfile = debugLocks $ do
 	lock mode lockfile
   where
 #ifndef mingw32_HOST_OS
-	lock mode = noUmask mode . lockExclusive (Just mode)
+	lock mode = lockExclusive (Just mode)
 #else
 	lock _mode = liftIO . waitToLock . lockExclusive
 #endif
@@ -104,7 +104,7 @@ tryExclusiveLock lockfile a = debugLocks $ do
 	bracket (lock mode lockfile) (liftIO . unlock) go
   where
 #ifndef mingw32_HOST_OS
-	lock mode = noUmask mode . tryLockExclusive (Just mode)
+	lock mode = tryLockExclusive (Just mode)
 #else
 	lock _mode = liftIO . lockExclusive
 #endif

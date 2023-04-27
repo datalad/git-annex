@@ -87,7 +87,7 @@ runHooks r starthook stophook a = do
 		unlockFile lck
 #ifndef mingw32_HOST_OS
 		mode <- annexFileMode
-		v <- noUmask mode $ tryLockExclusive (Just mode) lck
+		v <- tryLockExclusive (Just mode) lck
 #else
 		v <- liftIO $ lockExclusive lck
 #endif
