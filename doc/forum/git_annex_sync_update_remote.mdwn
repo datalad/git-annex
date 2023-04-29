@@ -1,0 +1,50 @@
+I have a repo on my cluster. On my system I cloned it by
+
+```
+[my_system] $ git clone ssh://jed//home/tdegeus/tmp/mydata cluster
+```
+
+This works fine to get files from the cluster. 
+
+However, I also want to send files from my system to the cluster and to be able to drop files on the cluster. The problem is, however, that I have no stable IP to SSH to my system, so I don't have a good way to add my system as remote on the cluster. I thought that running 
+
+```
+[my_system] $ git annex sync
+```
+
+from my laptop would be enough. But that does not seems to sufficiently update the repo on the cluster.
+
+From example on the cluster adding some files
+
+```
+[ssh->jed] $ git annex add foo.h5
+[ssh->jed] $ git commit -m "my message"
+```
+
+and then downloading on my system
+
+```
+[my_system] $ git annex sync
+[my_system] $ git annex get foo.h5
+[my_system] $ git annex sync
+```
+
+works fine.
+
+But then back on the cluster running
+
+```
+[ssh->jed] $ git annex drop foo.h5
+```
+
+results, erroneously, in 
+
+```
+foo.h5 a.h5 (unsafe)
+  Could only verify the existence of 0 out of 1 necessary copy
+
+  Maybe add some of these git remotes (git remote add ...):
+  	ee3f4fc7-db8f-4c45-8c40-92e96d046999 -- tdegeus:~/Downloads/annex/cluster
+
+  (Use --force to override this check, or adjust numcopies.)
+```
