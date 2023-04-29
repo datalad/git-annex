@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 1"
+ date="2023-04-29T14:46:46Z"
+ content="""
+Your repo you're executing git annex from needs to have direct access to the remote in question. There's no relaying.
+
+If just the changing IP address is the problem, consider using a DynDNS service like https://freends.afraid.org, it's free and works very well.
+"""]]
