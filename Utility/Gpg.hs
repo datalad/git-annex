@@ -302,7 +302,10 @@ genSecretKey (GpgCmd cmd) keytype passphrase userid keysize =
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
  - first newline. -}
 genRandom :: GpgCmd -> Bool -> Size -> IO String
-genRandom cmd highQuality size = checksize <$> readStrict cmd params
+genRandom cmd highQuality size = do
+	s <- readStrict cmd params
+	checksize s
+	return s
   where
 	params = 
 		[ Param "--gen-random"
@@ -325,9 +328,8 @@ genRandom cmd highQuality size = checksize <$> readStrict cmd params
 	expectedlength = size * 8 `div` 6
 
 	checksize s = let len = length s in
-		if len >= expectedlength
-			then s
-			else shortread len
+		unless (len >= expectedlength) $
+			shortread len
 
 	shortread got = giveup $ unwords
 		[ "Not enough bytes returned from gpg", show params

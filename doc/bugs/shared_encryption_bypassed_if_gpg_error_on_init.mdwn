@@ -22,3 +22,6 @@ tried with `10.20230329` and `10.20230408+gc70677e31` on Manjaro
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 It's awesome 👍
+
+> Indeed, there was a laziness bug that prevented it from exiting early
+> enough. [[fixed|done]] --[[Joey]]
