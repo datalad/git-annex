@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-05-01T17:02:17Z"
+ content="""
+One way is to run this on your system:
+
+	git-annex drop foo.h5 --from cluster
+
+If you really have a reason to want to run `git-annex drop` on the cluster
+itself, it needs to be able to connect back to your system in order to to
+verify that your system still has a copy of the file it's dropping.
+
+Imagine what would happen if you ran `git-annex drop` of the same file on
+your system and on the cluster at the same time, if that check were not
+done. The file would be dropped from both places and so you'd lose data.
+
+You can use `git-annex drop --force` on the cluster if you're sure that
+your system still has the content. But it's probably going to be better to
+just use `git-annex drop --from cluster` run on your system, which avoids
+the potential for a mistake causing data loss.
+"""]]
