@@ -1,0 +1,22 @@
+I am trying to 
+
+```
+$ git annex unlock myfile
+```
+
+but it gives
+
+```
+unlock myfile
+git-annex: unlock failed
+failed
+unlock: 1 failed
+```
+
+I have no idea why, and the error gives me no means to debug (nor was an internet search helpful). Note that e.g.
+
+```
+$ cat myfile
+```
+
+works fine
