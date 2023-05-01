@@ -60,6 +60,7 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import System.Exit
 import qualified Control.Monad.Catch as M
+import Data.String
 
 import Common
 import Types
@@ -200,8 +201,8 @@ endResult :: Bool -> S.ByteString
 endResult True = "ok"
 endResult False = "failed"
 
-toplevelMsg :: StringContainingQuotedPath -> StringContainingQuotedPath
-toplevelMsg = ("git-annex: " <>)
+toplevelMsg :: (Semigroup t, IsString t) => t -> t
+toplevelMsg s = fromString "git-annex: " <> s
 
 toplevelFileProblem :: Bool -> MessageId -> StringContainingQuotedPath -> String -> RawFilePath -> Maybe Key -> SeekInput -> Annex ()
 toplevelFileProblem makeway messageid msg action file mkey si = do
@@ -353,5 +354,5 @@ sanitizeTopLevelExceptionMessages a = a `catches`
 	((M.Handler (\ (e :: ExitCode) -> throwM e)) : nonAsyncHandler go)
   where
 	go e = do
-		warningIO (show e)
+		hPutStrLn stderr $ safeOutput $ toplevelMsg (show e)
 		exitWith $ ExitFailure 1
