@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2023-05-01T21:07:19Z"
+ content="""
+I'm guessing that, in a v10 repo, this is less of a problem, since
+git-annex uses git's long-running filter-process interface then. So git can
+probably run `git-annex filter-process` once and use it to re-smudge all
+the empty files it (for whatever reason) wants to re-smudge.
+"""]]
