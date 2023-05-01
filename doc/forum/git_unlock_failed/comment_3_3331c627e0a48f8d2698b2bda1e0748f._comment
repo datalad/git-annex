@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-05-01T15:53:41Z"
+ content="""
+Strange that cp is failing without displaying any kind of error message.
+The exit code being negative suggests it received signal 9 (SIGKILL).
+
+I'd look at `strace -o log -ff` at this point and find the log file for the
+cp process, to see what it was doing before it exited.
+"""]]
