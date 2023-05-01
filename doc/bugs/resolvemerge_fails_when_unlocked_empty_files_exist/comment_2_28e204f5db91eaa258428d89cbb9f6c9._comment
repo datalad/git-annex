@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-05-01T21:08:48Z"
+ content="""
+I think what needs to be done here is write a simple smudge
+filter script that mocks `git-annex smuge --clean`, and see if the problem can be
+reproduced with that. That should pin down what about the behavior of that
+might be triggering what problem in git.
+"""]]
