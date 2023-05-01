@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 1"
+ date="2023-05-01T12:26:10Z"
+ content="""
+Try `git annex --debug unlock myfile`. Otherwise do an `strace git annex --debug unlock myfile` and you can try setting git debug environment variables: https://stackoverflow.com/questions/6178401/how-can-i-debug-git-git-shell-related-problems
+"""]]
