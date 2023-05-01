@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="tom@b87e4336a0d0785eb7d5853e390835a18797402f"
+ nickname="tom"
+ avatar="http://cdn.libravatar.org/avatar/ad14e568e362e17d4cbe9010d639f111"
+ subject="output"
+ date="2023-05-01T12:58:46Z"
+ content="""
+Thanks. It just gives a vague `-9` exit signal.
+
+```
+$ git annex --debug unlock a.h5
+[2023-05-01 14:55:49.113032] (Utility.Process) process [2384] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"ls-files\",\"--stage\",\"-z\",\"--error-unmatch\",\"--\",\"a.h5\"]
+[2023-05-01 14:55:49.117717] (Utility.Process) process [2385] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch-check=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2023-05-01 14:55:49.119457] (Utility.Process) process [2386] chat: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+unlock a.h5 [2023-05-01 14:55:49.137739] (Utility.Process) process [2388] call: cp [\"-a\",\".git/annex/objects/53/Mp/SHA256E-s800002048--53c9d89060bab30a448a870f0c81bc475fa79c78ebf46aa4368b54c7c481cd65.h5/SHA256E-s800002048--53c9d89060bab30a448a870f0c81bc475fa79c78ebf46aa4368b54c7c481cd65.h5\",\".git/annex/othertmp/a.h5.0/a.h5\"]
+[2023-05-01 14:55:49.138315] (Utility.Process) process [2388] done ExitFailure (-9)
+
+git-annex: unlock failed
+failed
+[2023-05-01 14:55:49.140959] (Utility.Process) process [2386] done ExitSuccess
+[2023-05-01 14:55:49.141007] (Utility.Process) process [2385] done ExitSuccess
+[2023-05-01 14:55:49.141037] (Utility.Process) process [2384] done ExitSuccess
+[2023-05-01 14:55:49.141534] (Database.Handle) commitDb start
+[2023-05-01 14:55:49.151421] (Database.Handle) commitDb done
+unlock: 1 failed
+```
+"""]]
