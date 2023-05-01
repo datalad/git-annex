@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="tom@b87e4336a0d0785eb7d5853e390835a18797402f"
+ nickname="tom"
+ avatar="http://cdn.libravatar.org/avatar/ad14e568e362e17d4cbe9010d639f111"
+ subject="What is the underlying reason for needing a two-way SSH connection"
+ date="2023-05-01T08:34:46Z"
+ content="""
+Thanks for the tip.
+
+I wonder what the underlying reason is for needing a two-way remote. It would have been nice if for example
+
+```
+[my_system] $ git annex sync --force
+```
+
+would update the state of all available remotes. In that the only functionality that would not be available in the absence of a two-way remote is
+
+
+```
+[ssh->jed] $ git annex get myfile
+```
+
+But if one can live with that limitation it would simplify the setup and increase functionality. I do believe that it would also relax the `git-annex` dependency of the remote somewhat. Potentially, it would then only be needed at runtime on the remote. Not at runtime on the local system. That too would simplify the setup a lot (one can then use `git-annex` for a virtual environment that is not forced as the default base).
+"""]]
