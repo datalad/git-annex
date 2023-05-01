@@ -11,4 +11,6 @@ which was part of my series for escaping control characters.
 I think git-annex needs to be returned to the old behavior there, even
 though `git-annex info dne` is not technically operating on a file when it
 doesn't exist.
+
+Update: Fixed this.
 """]]
