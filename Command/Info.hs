@@ -182,7 +182,11 @@ itemInfo o (si, p) = ifM (isdir (toRawFilePath p))
 
 noInfo :: String -> SeekInput -> String -> Annex ()
 noInfo s si msg = do
-	showStartMessage (StartMessage "info" (ActionItemOther (Just (UnquotedString s))) si)
+	-- The string may not really be a file, but use ActionItemTreeFile,
+	-- rather than ActionItemOther to avoid breaking back-compat of
+	-- json output.
+	let ai = ActionItemTreeFile (toRawFilePath s)
+	showStartMessage (StartMessage "info" ai si)
 	showNote (UnquotedString msg)
 	showEndFail
 	Annex.incError
