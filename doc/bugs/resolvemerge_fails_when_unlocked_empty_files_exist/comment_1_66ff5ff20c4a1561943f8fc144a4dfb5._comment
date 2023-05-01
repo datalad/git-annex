@@ -1,0 +1,70 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-05-01T19:50:46Z"
+ content="""
+I was able to reproduce the problem using the script.
+
+This does not actually involve resolvemerge at all AFAICS. The pull does
+not result in the repo getting into a conflicted state, because
+`git merge` is failing before that point.
+
+	joey@darkstar:~/tmp/c/repo1>git --git-dir=.git --work-tree=. -c merge.directoryRenames=false --literal-pathspecs merge --no-edit refs/remotes/repo2/master
+	fatal: stash failed
+
+Strange error message... That seems like it could be a bug in git.
+Certianly an unusual code path in it.
+
+If I disable filter.annex.process and filter.annex.clean, the merge
+"succeeds":
+
+	error: Merging is not possible because you have unmerged files.
+	hint: Fix them up in the work tree, and then use 'git add/rm <file>'
+	hint: as appropriate to mark resolution and make a commit.
+	fatal: Exiting because of an unresolved conflict.
+
+I see that it's asking git-annex to clean emptyfile:
+
+	joey@darkstar:~/tmp/c/repo1>GIT_TRACE=1 git --git-dir=.git --work-tree=. -c merge.directoryRenames=false --literal-pathspecs merge --no-edit refs/remotes/repo2/master
+	16:36:51.406445 git.c:439               trace: built-in: git merge --no-edit refs/remotes/repo2/master
+	16:36:51.409519 run-command.c:655       trace: run_command: 'git-annex smudge --clean -- '\''emptyfile'\'''
+	16:36:51.427425 git.c:439               trace: built-in: git config --null --list
+	16:36:51.432485 git.c:439               trace: built-in: git cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)'
+	16:36:51.435775 git.c:439               trace: built-in: git cat-file --batch
+	16:36:51.444646 git.c:439               trace: built-in: git show-ref --hash refs/annex/last-index
+	16:36:51.461672 run-command.c:655       trace: run_command: git stash create
+	16:36:51.464416 git.c:439               trace: built-in: git stash create
+	16:36:51.465753 run-command.c:655       trace: run_command: 'git-annex smudge --clean -- '\''emptyfile'\'''
+	16:36:51.475280 git.c:439               trace: built-in: git config --null --list
+	16:36:51.480984 git.c:439               trace: built-in: git cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)'
+	16:36:51.484934 git.c:439               trace: built-in: git cat-file --batch
+	16:36:51.493965 git.c:439               trace: built-in: git show-ref --hash refs/annex/last-index
+	16:36:51.498182 git.c:439               trace: built-in: git cat-file '--batch-check=%(objectname) %(objecttype) %(objectsize)' --buffer
+	16:36:51.499385 git.c:439               trace: built-in: git cat-file '--batch=%(objectname) %(objecttype) %(objectsize)' --buffer
+	16:36:51.500025 git.c:439               trace: built-in: git diff 06f9e23961782cde731bc7ed3e9fb16a930398e1 --staged --raw -z --no-abbrev -G/annex/objects/ --no-renames --ignore-submodules=all --no-textconv --no-ext-diff
+	fatal: stash failed
+
+Since it asks git-annex to clean emptyfile twice, I'm guessing that it's
+cleaning two different versions of the file. Perhaps for the locked and the
+unlocked versions? (But the locked version is a symlink, so why would it
+clean it?)
+
+I instrumented `git-annex smudge --clean` to see what git is feeding it on
+stdin. In both calls shown above, git-annex is fed "". That seems odd,
+I'd have expected at least one of them to be an annex pointer file.
+
+At this point, my suspicion is that git is cleaning at least one
+emptyfile version that is not the one in the working tree. But
+`git-annex smudge --clean` assumes it's always being used to clean
+the one in the working tree. And it has various behaviors based on
+that assumption (which is necessary for good performance). So it may
+be outputting something that git is not prepared for somehow,
+which is causing git merge to fail in this unusual way. But,
+it does not really seem right to me that any output from the clean
+filter should cause git merge to fail like this. Still thinking
+it might be a git bug, or a combination of bugs.
+
+Also, this does only happen when emptyfile is in fact empty.
+Which is interesting... that should not affect the behavior
+of `git-annex smudge --clean` at all.
+"""]]
