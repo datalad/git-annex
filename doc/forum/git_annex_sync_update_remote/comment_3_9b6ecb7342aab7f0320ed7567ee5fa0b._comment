@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="git-annex relaying syncs across remotes"
+ date="2023-05-01T08:50:10Z"
+ content="""
+It does update the state of all available remotes of the `my_system` you're executing git-annex from. I would also love to see git-annex propagate the changes across the graph of connected remotes as far as it gets. It already has permissions to run git-annex on the remote server, so it could trigger a `git annex sync` from there, then reaching out for all configured remotes it has configured itself. But I'm sure @joey has a good reason not to do this, it screams of potential race conditions and git locking weirdness. But I don't know 🤷
+"""]]
