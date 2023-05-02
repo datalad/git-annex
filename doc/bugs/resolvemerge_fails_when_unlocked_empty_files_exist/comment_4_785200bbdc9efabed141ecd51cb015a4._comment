@@ -1,0 +1,61 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-05-02T16:56:12Z"
+ content="""
+This is a git bug. The test case below does not use git-annex, but causes the
+same merge problem.
+
+I've reported the bug to the git developers 
+<https://lore.kernel.org/git/ZFFGi9i7JGL9xNx5@kitenet.net/T/#u>
+
+	#!/bin/bash
+	setup_smudge_clean() {
+		cat <<'EOF' > .git/test-clean
+	#!/bin/sh
+	mkdir -p ../content
+	cat > ../content/new.content
+	v=$(sha1sum ../content/new.content | cut -d ' ' -f 1)
+	mv ../content/new.content ../content/$v.content
+	echo "$v"
+	EOF
+		cat <<'EOF' > .git/test-smudge
+	#!/bin/sh
+	v=$(cat)
+	cat ../content/$v.content
+	EOF
+		chmod +x .git/test-clean
+		chmod +x .git/test-smudge
+		git config filter.foo.smudge .git/test-smudge
+		git config filter.foo.clean .git/test-clean
+		echo "* filter=foo" > .git/info/attributes
+	}
+	
+	git init repo1
+	cd repo1
+	setup_smudge_clean
+	git commit --allow-empty -m foo
+	git remote add repo2 ../repo2
+	cd ..
+	git clone repo1 repo2
+	cd repo2
+	git remote add repo1 ../repo1
+	setup_smudge_clean
+	cd ..
+	
+	cd repo1
+	touch emptyfile
+	git add emptyfile
+	git commit -m add
+	cd ../repo2
+	git pull
+	
+	echo foo > testfile
+	git add testfile
+	git commit -m foo
+	cd ../repo1
+	echo bar > testfile
+	git add testfile
+	git commit -m bar
+	git pull repo2 master
+"""]]

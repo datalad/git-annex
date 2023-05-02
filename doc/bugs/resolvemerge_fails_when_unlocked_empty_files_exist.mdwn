@@ -165,3 +165,7 @@ eac97cf master synced/master repo2/synced/master git-annex in repo1
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I have been incorporating git-annex into my backup system for the past year now, and it has been absolutely wonderful to work with.
+
+> Since this is a git bug, and since I don't think there's a reasonable
+> workaround in git-annex, I'm closing this as forwarded to git. [[done]]
+> --[[Joey]]

@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-05-02T16:44:03Z"
+ content="""
+Here's a simplified test case that does not use `git-annex sync` but still
+uses git-annex.
+
+	#!/bin/sh
+	git init repo1
+	cd repo1
+	git-annex init
+	git commit --allow-empty -m foo
+	git remote add repo2 ../repo2
+	cd ..
+	git clone repo1 repo2
+	cd repo2
+	git remote add repo1 ../repo1
+	cd ..
+	cd repo1
+	touch emptyfile
+	git-annex add
+	git-annex unlock
+	git commit -m add
+	cd ../repo2
+	git pull
+	echo repo2 line > testfile
+	git-annex add
+	git commit -m add
+	cd ../repo1
+	echo repo1 line > testfile
+	git-annex add
+	git commit -m foo
+	git pull repo2 master
+"""]]
