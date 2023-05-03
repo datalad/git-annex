@@ -2,3 +2,103 @@ While looking for various spots where `core.quotepath=true` is now treated by gi
 
 [[!meta author=yoh]]
 [[!tag projects/repronim]]
+
+These commands have been updated to support --json:
+
+* git-annex-unannex
+
+Provisional list of commands that don't support --json and maybe should:
+
+(Feel free to reorder things to the top)
+ 
+* git-annex-addunused
+* git-annex-adjust
+* git-annex-assistant
+* git-annex-backends
+* git-annex-benchmark
+* git-annex-calckey
+* git-annex-checkpresentkey
+* git-annex-common-options
+* git-annex-config
+* git-annex-configremote
+* git-annex-contentlocation
+* git-annex-dead
+* git-annex-describe
+* git-annex-diffdriver
+* git-annex-direct
+* git-annex-dropunused
+* git-annex-edit
+* git-annex-enable-tor
+* git-annex-enableremote
+* git-annex-expire
+* git-annex-filter-branch
+* git-annex-filter-process
+* git-annex-findref
+* git-annex-fix
+* git-annex-forget
+* git-annex-fuzztest
+* git-annex-group
+* git-annex-groupwanted
+* git-annex-importfeed
+* git-annex-indirect
+* git-annex-init
+* git-annex-initremote
+* git-annex-inprogress
+* git-annex-list
+* git-annex-log
+* git-annex-lookupkey
+* git-annex-map
+* git-annex-matchexpression
+* git-annex-matching-expression
+* git-annex-matching-options
+* git-annex-merge
+* git-annex-migrate
+* git-annex-mincopies
+* git-annex-multicast
+* git-annex-numcopies
+* git-annex-p2p
+* git-annex-post-receive
+* git-annex-pre-commit
+* git-annex-preferred-content
+* git-annex-proxy
+* git-annex-readpresentkey
+* git-annex-reinit
+* git-annex-reinject
+* git-annex-rekey
+* git-annex-remotedaemon
+* git-annex-renameremote
+* git-annex-repair
+* git-annex-required
+* git-annex-resolvemerge
+* git-annex-restage
+* git-annex-rmurl
+* git-annex-schedule
+* git-annex-semitrust
+* git-annex-setkey
+* git-annex-setpresentkey
+* git-annex-shell
+* git-annex-smudge
+* git-annex-sync
+* git-annex-test
+* git-annex-testremote
+* git-annex-transferkey
+* git-annex-transferkeys
+* git-annex-transferrer
+* git-annex-trust
+* git-annex-undo
+* git-annex-ungroup
+* git-annex-uninit
+* git-annex-untrust
+* git-annex-unused
+* git-annex-upgrade
+* git-annex-vadd
+* git-annex-vcycle
+* git-annex-version
+* git-annex-vfilter
+* git-annex-vicfg
+* git-annex-view
+* git-annex-vpop
+* git-annex-wanted
+* git-annex-watch
+* git-annex-webapp
+* git-annex-whereused

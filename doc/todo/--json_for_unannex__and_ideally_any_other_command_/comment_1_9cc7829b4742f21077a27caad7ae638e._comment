@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-05-03T19:33:50Z"
+ content="""
+I agree generally, anything that is not already
+explicitly machine parseable should support --json
+(and --json-error-options will be available for free once that's added)
+
+I'd exclude things like `git-annex find` which have
+--format that can be used similarly; and a separate json
+output would not be very useful for find anyway probably?
+
+I've added a list of commands that currently don't support --json above.
+
+Did unannex already, as it was trivial.
+"""]]

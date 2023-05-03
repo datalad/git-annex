@@ -37,6 +37,7 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     of core.sharedRepository and umask.
   * initremote: Avoid creating a remote that is not encrypted when gpg is
     broken.
+  * unannex: Support --json and --json-error-messages.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

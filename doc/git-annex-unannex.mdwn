@@ -28,6 +28,16 @@ case you should use `git annex drop` instead, and you can also
   But use --fast mode with caution, because editing the file will
   change the content in the annex.
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--json-error-messages`
+
+  Messages that would normally be output to standard error are included in
+  the JSON instead.
+
 * file matching options
 
   The [[git-annex-matching-options]](1)

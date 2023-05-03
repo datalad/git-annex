@@ -22,7 +22,7 @@ import qualified Utility.RawFilePath as R
 import System.PosixCompat.Files (linkCount)
 
 cmd :: Command
-cmd = withAnnexOptions [annexedMatchingOptions] $
+cmd = withAnnexOptions [jsonOptions, annexedMatchingOptions] $
 	command "unannex" SectionUtility
 		"undo accidental add command"
 		paramPaths (withParams seek)
