@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="dud225@35a1ee469f82f3a7eb1f2dce4ad453f5e47bdfd3"
+ nickname="dud225"
+ avatar="http://cdn.libravatar.org/avatar/5147563e50c475918474594d93be95c2"
+ subject="Groups comprised of archive drives of various size"
+ date="2023-05-03T07:49:19Z"
+ content="""
+Thanks Joey for your clear and comprehensive answer.
+
+Quoting a part of your answer:
+
+> and set wanted to \"standard\" to make it use the groupwanted expression.
+
+According to the documentation the \"standard\" groupwanted expression only allows to use the predefined expressions, so I assume that the groupwanted expression shall be set to \"groupwanted\" instead:
+
+    git-annex wanted bigdrive groupwanted
+"""]]
