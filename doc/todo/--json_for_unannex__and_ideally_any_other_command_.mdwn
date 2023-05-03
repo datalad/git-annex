@@ -1,0 +1,4 @@
+While looking for various spots where `core.quotepath=true` is now treated by git-annex ([ref](https://github.com/datalad/datalad/pull/7372#issuecomment-1533507701)) I found that `unannex` doesn't have `--json` and we do some really ad-hoc splitting which fails with spaces and we never actually tested enough.  With all the `quotepath` and other fun, we really should get machine-readable, thus `--json`, output for all annex commands IMHO. E.g. `unannex` has recently come up within treatment of BIDS datasets, and so far we were lucky that BIDS filenames do not allow for spaces in the filenames, but there is always `derivatives/` and `sourcedata/` which are not formalized and could have all kinds of odd filenames.
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
