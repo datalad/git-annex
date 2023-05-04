@@ -20,7 +20,7 @@ import Logs.Web
 import Utility.Metered
 
 cmd :: Command
-cmd = withAnnexOptions [backendOption, annexedMatchingOptions] $
+cmd = withAnnexOptions [backendOption, annexedMatchingOptions, jsonOptions] $
 	command "migrate" SectionUtility 
 		"switch data to different backend"
 		paramPaths (seek <$$> optParser)

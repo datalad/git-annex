@@ -22,7 +22,7 @@ import qualified Command.Sync
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
-cmd = notBareRepo $
+cmd = notBareRepo $ withAnnexOptions [jsonOptions] $
 	command "undo" SectionCommon 
 		"undo last change to a file or directory"
 		paramPaths (withParams seek)
