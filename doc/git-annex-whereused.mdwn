@@ -40,6 +40,16 @@ key. The `--historical` option makes it also find past versions of files.
   It stops after finding one use of the key, and outputs a git rev that
   refers to where it was used, eg "HEAD@{40}:somefile"
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--json-error-messages`
+
+  Messages that would normally be output to standard error are included in
+  the JSON instead.
+
 # SEE ALSO
 
 [[git-annex]](1)

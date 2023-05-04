@@ -26,7 +26,7 @@ import Utility.Touch
 #endif
 
 cmd :: Command
-cmd = noCommit $ withAnnexOptions [annexedMatchingOptions] $
+cmd = noCommit $ withAnnexOptions [annexedMatchingOptions, jsonOptions] $
 	command "fix" SectionMaintenance
 		"fix up links to annexed content"
 		paramPaths (withParams seek)

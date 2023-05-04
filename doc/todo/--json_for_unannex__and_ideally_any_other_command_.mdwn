@@ -8,14 +8,15 @@ These commands have been updated to support --json:
 * git-annex-unannex
 * git-annex-rmurl 
 * git-annex-log
+* git-annex-fix
 
 Provisional list of commands that don't support --json and maybe should:
 
 (Feel free to reorder things to the top)
 
+* git-annex-whereused
 * git-annex-addunused
 * git-annex-adjust
-* git-annex-assistant
 * git-annex-backends
 * git-annex-benchmark
 * git-annex-calckey
@@ -27,7 +28,6 @@ Provisional list of commands that don't support --json and maybe should:
 * git-annex-dead
 * git-annex-describe
 * git-annex-diffdriver
-* git-annex-direct
 * git-annex-dropunused
 * git-annex-edit
 * git-annex-enable-tor
@@ -35,33 +35,25 @@ Provisional list of commands that don't support --json and maybe should:
 * git-annex-expire
 * git-annex-filter-branch
 * git-annex-filter-process
-* git-annex-findref
-* git-annex-fix
 * git-annex-forget
 * git-annex-fuzztest
 * git-annex-group
 * git-annex-groupwanted
 * git-annex-importfeed
-* git-annex-indirect
 * git-annex-init
 * git-annex-initremote
 * git-annex-inprogress
-* git-annex-list
 * git-annex-lookupkey
 * git-annex-map
 * git-annex-matchexpression
 * git-annex-matching-expression
-* git-annex-matching-options
 * git-annex-merge
 * git-annex-migrate
 * git-annex-mincopies
 * git-annex-multicast
 * git-annex-numcopies
 * git-annex-p2p
-* git-annex-post-receive
-* git-annex-pre-commit
 * git-annex-preferred-content
-* git-annex-proxy
 * git-annex-readpresentkey
 * git-annex-reinit
 * git-annex-reinject
@@ -76,8 +68,6 @@ Provisional list of commands that don't support --json and maybe should:
 * git-annex-semitrust
 * git-annex-setkey
 * git-annex-setpresentkey
-* git-annex-shell
-* git-annex-smudge
 * git-annex-sync
 * git-annex-test
 * git-annex-testremote
@@ -100,5 +90,18 @@ Provisional list of commands that don't support --json and maybe should:
 * git-annex-vpop
 * git-annex-wanted
 * git-annex-watch
-* git-annex-webapp
-* git-annex-whereused
+
+These commands have been reviewed and should not support json:
+
+* git-annex-list (because it's a compact display of whereis so no new information)
+* git-annex-direct (deprecated noop)
+* git-annex findref (same as find)
+* git-annex indirect (deprecated noop)
+* git-annex proxy (deprecated and displays git command output so nothing
+  structured)
+* git-annex-pre-commit (used internally)
+* git-annex-post-receive (used internally)
+* git-annex-smudge (used internally)
+* git-annex-shell (run by git)
+* git-annex-assistant (too high level)
+* git-annex-webapp (too high level)
