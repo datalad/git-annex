@@ -10,7 +10,9 @@ These commands have been updated to support --json:
 Provisional list of commands that don't support --json and maybe should:
 
 (Feel free to reorder things to the top)
- 
+
+* git-annex-log
+* git-annex-rmurl 
 * git-annex-addunused
 * git-annex-adjust
 * git-annex-assistant
@@ -45,7 +47,6 @@ Provisional list of commands that don't support --json and maybe should:
 * git-annex-initremote
 * git-annex-inprogress
 * git-annex-list
-* git-annex-log
 * git-annex-lookupkey
 * git-annex-map
 * git-annex-matchexpression
@@ -71,7 +72,6 @@ Provisional list of commands that don't support --json and maybe should:
 * git-annex-required
 * git-annex-resolvemerge
 * git-annex-restage
-* git-annex-rmurl
 * git-annex-schedule
 * git-annex-semitrust
 * git-annex-setkey
