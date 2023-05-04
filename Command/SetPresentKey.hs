@@ -12,7 +12,7 @@ import Logs.Location
 import Logs.Presence.Pure
 
 cmd :: Command
-cmd = noCommit $ 
+cmd = noCommit $ withAnnexOptions [jsonOptions] $
 	command "setpresentkey" SectionPlumbing
 		"change records of where key is present"
 		(paramPair paramKey (paramPair paramUUID "[1|0]"))

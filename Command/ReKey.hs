@@ -25,10 +25,11 @@ import qualified Utility.RawFilePath as R
 import System.PosixCompat.Files (linkCount, fileMode)
 
 cmd :: Command
-cmd = command "rekey" SectionPlumbing
-	"change keys used for files"
-	(paramRepeating $ paramPair paramPath paramKey)
-	(seek <$$> optParser)
+cmd = withAnnexOptions [jsonOptions] $ 
+	command "rekey" SectionPlumbing
+		"change keys used for files"
+		(paramRepeating $ paramPair paramPath paramKey)
+		(seek <$$> optParser)
 
 data ReKeyOptions = ReKeyOptions
 	{ reKeyThese :: CmdParams
