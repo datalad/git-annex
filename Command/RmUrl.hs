@@ -12,7 +12,7 @@ import Logs.Web
 import Annex.WorkTree
 
 cmd :: Command
-cmd = notBareRepo $
+cmd = notBareRepo $ withAnnexOptions [jsonOptions] $
 	command "rmurl" SectionCommon 
 		"record file is not available at url"
 		(paramRepeating (paramPair paramFile paramUrl))
