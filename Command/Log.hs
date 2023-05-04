@@ -162,7 +162,7 @@ showLog outputter cs = forM_ cs $ \c -> do
 
 mkOutputter :: UUIDDescMap -> TimeZone -> LogOptions -> FilePath -> Outputter
 mkOutputter m zone o file
-	| rawDateOption o = normalOutput lookupdescription file show
+	| rawDateOption o = normalOutput lookupdescription file rawTimeStamp
 	| gourceOption o = gourceOutput lookupdescription file
 	| otherwise = normalOutput lookupdescription file (showTimeStamp zone)
   where
@@ -292,3 +292,6 @@ parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (giveup "bad timestamp") .
 showTimeStamp :: TimeZone -> POSIXTime -> String
 showTimeStamp zone = formatTime defaultTimeLocale rfc822DateFormat 
 	. utcToZonedTime zone . posixSecondsToUTCTime
+
+rawTimeStamp :: POSIXTime -> String
+rawTimeStamp t = filter (/= 's') (show t)
