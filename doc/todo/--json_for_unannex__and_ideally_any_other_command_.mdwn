@@ -6,13 +6,13 @@ While looking for various spots where `core.quotepath=true` is now treated by gi
 These commands have been updated to support --json:
 
 * git-annex-unannex
+* git-annex-rmurl 
+* git-annex-log
 
 Provisional list of commands that don't support --json and maybe should:
 
 (Feel free to reorder things to the top)
 
-* git-annex-log
-* git-annex-rmurl 
 * git-annex-addunused
 * git-annex-adjust
 * git-annex-assistant

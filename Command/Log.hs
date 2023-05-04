@@ -89,7 +89,7 @@ seek o = ifM (null <$> Annex.Branch.getUnmergedRefs)
 	( do
 		m <- Remote.uuidDescriptions
 		zone <- liftIO getCurrentTimeZone
-		let outputter = mkOutputter m zone o
+		outputter <- mkOutputter m zone o <$> jsonOutputEnabled
 		let seeker = AnnexedFileSeeker
 			{ startAction = start o outputter
 			, checkContentPresent = Nothing
@@ -107,17 +107,18 @@ seek o = ifM (null <$> Annex.Branch.getUnmergedRefs)
   where
 	ww = WarnUnmatchLsFiles "log"
 
-start :: LogOptions -> (FilePath -> Outputter) -> SeekInput -> RawFilePath -> Key -> CommandStart
-start o outputter _ file key = do
+start :: LogOptions -> (ActionItem -> SeekInput -> Outputter) -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o outputter si file key = do
 	(changes, cleanup) <- getKeyLog key (passthruOptions o)
-	showLogIncremental (outputter (fromRawFilePath file)) changes
+	let ai = mkActionItem (file, key)
+	showLogIncremental (outputter ai si) changes
 	void $ liftIO cleanup
 	stop
 
-startAll :: LogOptions -> (String -> Outputter) -> CommandStart
+startAll :: LogOptions -> (ActionItem -> SeekInput -> Outputter) -> CommandStart
 startAll o outputter = do
 	(changes, cleanup) <- getAllLog (passthruOptions o)
-	showLog outputter changes
+	showLog (\ai -> outputter ai (SeekInput [])) changes
 	void $ liftIO cleanup
 	stop
 
@@ -152,24 +153,25 @@ showLogIncremental outputter ps = do
 {- Displays changes made. Streams, and can display changes affecting
  - different keys, but does twice as much reading of logged values
  - as showLogIncremental. -}
-showLog :: (String -> Outputter) -> [RefChange] -> Annex ()
+showLog :: (ActionItem -> Outputter) -> [RefChange] -> Annex ()
 showLog outputter cs = forM_ cs $ \c -> do
-	let keyname = serializeKey (changekey c)
+	let ai = mkActionItem (changekey c)
 	new <- S.fromList <$> loggedLocationsRef (newref c)
 	old <- S.fromList <$> loggedLocationsRef (oldref c)
-	sequence_ $ compareChanges (outputter keyname)
+	sequence_ $ compareChanges (outputter ai)
 		[(changetime c, new, old)]
 
-mkOutputter :: UUIDDescMap -> TimeZone -> LogOptions -> FilePath -> Outputter
-mkOutputter m zone o file
-	| rawDateOption o = normalOutput lookupdescription file rawTimeStamp
-	| gourceOption o = gourceOutput lookupdescription file
-	| otherwise = normalOutput lookupdescription file (showTimeStamp zone)
+mkOutputter :: UUIDDescMap -> TimeZone -> LogOptions -> Bool -> ActionItem -> SeekInput -> Outputter
+mkOutputter m zone o jsonenabled ai si
+	| jsonenabled = jsonOutput m ai si
+	| rawDateOption o = normalOutput lookupdescription ai rawTimeStamp
+	| gourceOption o = gourceOutput lookupdescription ai 
+	| otherwise = normalOutput lookupdescription ai (showTimeStamp zone)
   where
 	lookupdescription u = maybe (fromUUID u) (fromUUIDDesc) (M.lookup u m)
 
-normalOutput :: (UUID -> String) -> FilePath -> (POSIXTime -> String) -> Outputter
-normalOutput lookupdescription file formattime logchange ts us = do
+normalOutput :: (UUID -> String) -> ActionItem -> (POSIXTime -> String) -> Outputter
+normalOutput lookupdescription ai formattime logchange ts us = do
 	qp <- coreQuotePath <$> Annex.getGitConfig
 	liftIO $ mapM_ (B8.putStrLn . quote qp . format) us
   where
@@ -177,19 +179,38 @@ normalOutput lookupdescription file formattime logchange ts us = do
 	addel = case logchange of
 		Added -> "+"
 		Removed -> "-"
-	format u = UnquotedString addel <> " " <> UnquotedString time <> " " 
-		<> QuotedPath (toRawFilePath file) <> " | " <> UnquotedByteString (fromUUID u)
-		<> " -- " <> UnquotedString (lookupdescription u)
+	format u = UnquotedString addel <> " " 
+		<> UnquotedString time <> " " 
+		<> actionItemDesc ai <> " | " 
+		<> UnquotedByteString (fromUUID u) <> " -- "
+		<> UnquotedString (lookupdescription u)
 
-gourceOutput :: (UUID -> String) -> FilePath -> Outputter
-gourceOutput lookupdescription file logchange ts us =
+jsonOutput :: UUIDDescMap -> ActionItem -> SeekInput -> Outputter
+jsonOutput m ai si logchange ts us = do
+	showStartMessage $ StartMessage "log" ai si
+	maybeShowJSON $ JSONChunk
+		[ ("logged", case logchange of
+			Added -> "addition"
+			Removed -> "removal")
+		, ("date", rawTimeStamp ts)
+		]
+	void $ Remote.prettyPrintUUIDsDescs "locations" m us
+	showEndOk
+
+gourceOutput :: (UUID -> String) -> ActionItem -> Outputter
+gourceOutput lookupdescription ai logchange ts us =
 	liftIO $ mapM_ (putStrLn . intercalate "|" . format) us
   where
 	time = takeWhile isDigit $ show ts
 	addel = case logchange of
 		Added -> "A" 
 		Removed -> "M"
-	format u = [ time, lookupdescription u, addel, file ]
+	format u =
+		[ time
+		, lookupdescription u
+		, addel
+		, decodeBS (noquote (actionItemDesc ai))
+		]
 
 {- Generates a display of the changes.
  - Uses a formatter to generate a display of items that are added and
@@ -197,10 +218,12 @@ gourceOutput lookupdescription file logchange ts us =
 compareChanges :: Ord a => (LogChange -> POSIXTime -> [a] -> b) -> [(POSIXTime, S.Set a, S.Set a)] -> [b]
 compareChanges format changes = concatMap diff changes
   where
-	diff (ts, new, old) =
-		[ format Added ts   $ S.toList $ S.difference new old
-		, format Removed ts $ S.toList $ S.difference old new
-		]
+	diff (ts, new, old)
+		| new == old = []
+		| otherwise = 
+			[ format Added ts   $ S.toList $ S.difference new old
+			, format Removed ts $ S.toList $ S.difference old new
+			]
 
 {- Streams the git log for a given key's location log file.
  -

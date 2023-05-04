@@ -39,6 +39,16 @@ false, information may not have been committed to the branch yet.
 
   Generates output suitable for the `gource` visualization program.
 
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--json-error-messages`
+
+  Messages that would normally be output to standard error are included in
+  the JSON instead.
+
 * matching options
   
   The [[git-annex-matching-options]](1)
