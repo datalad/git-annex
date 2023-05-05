@@ -20,6 +20,7 @@ RUN set -ex; \
     export DEBIAN_FRONTEND=noninteractive; \
     apt-get build-dep -y -q git-annex-standalone; \
     apt-get install -y -q -t bullseye-backports git; \
+    dpkg --compare-versions $(dpkg -l git | awk '/^ii/{print $3}') ge 1:2.34; \
     # Needed additional build-depends which might have not yet in "released" version
     apt-get install -y libghc-criterion-dev libghc-http-client-restricted-dev; \
     # Needed additional tools
