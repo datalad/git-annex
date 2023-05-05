@@ -25,16 +25,18 @@ These commands have been updated to support --json:
 * git-annex-migrate
 * git-annex-addunused
 * git-annex-dropunused
+* git-annex-expire
+* git-annex-trust
+* git-annex-semitrust
+* git-annex-untrust
+* git-annex-dead
 
 Provisional list of commands that don't support --json and maybe should:
 
 (Feel free to reorder things to the top)
 
-* git-annex-adjust
 * git-annex-configremote
-* git-annex-dead
 * git-annex-enableremote
-* git-annex-expire
 * git-annex-importfeed
 * git-annex-init
 * git-annex-initremote
@@ -46,11 +48,6 @@ Provisional list of commands that don't support --json and maybe should:
 * git-annex-sync
 * git-annex-unused
 * git-annex-upgrade
-* git-annex-vadd
-* git-annex-vcycle
-* git-annex-vfilter
-* git-annex-view
-* git-annex-vpop
 
 These commands could support json, but I punted:
 
@@ -99,10 +96,6 @@ These commands have been reviewed and should not support json:
 * git-annex-mincopies, git-annex-numcopies (like git-annex-config)
 * git-annex-group (like git-annex-config)
 * git-annex-ungroup (no point if group doesn't)
-* git-annex-semitrust, git-annex-trust, git-annex-untrust, git-annex-describe, 
-  git-annex forget
-  (really nothing useful in output, besides an indication that the command
-  worked)
 * git-annex-filter-branch (output is already machine parseable)
 * git-annex-remotedaemon (plumbing, speaks its own protocol)
 * git-annex-repair (seems unlikely to be useful to integrate with
@@ -112,3 +105,7 @@ These commands have been reviewed and should not support json:
   seems unlikely to be useful to jsonize)
 * git-annex-multicast (runs uftp and displays its output)
 * git-annex-whereused (output is already machine parseable)
+* git-annex forget (output does not contain anything useful to a program)
+* git-annex-adjust, git-annex-vadd, git-annex-vcycle, git-annex-vfilter, git-annex-view, git-annex-vpop
+  (no output that would be useful to a program using these. They enter a
+  new branch and git branch will tell what it is.)

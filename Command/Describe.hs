@@ -23,10 +23,10 @@ seek = withWords (commandAction . start)
 start :: [String] -> CommandStart
 start (name:description) | not (null description) = do
 	u <- Remote.nameToUUID name
+	let ai = ActionItemUUID u (UnquotedString name)
 	starting "describe" ai si $
 		perform u $ unwords description
   where
-	ai = ActionItemOther (Just (UnquotedString name))
 	si = SeekInput [name]
 start _ = giveup "Specify a repository and a description."	
 

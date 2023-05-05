@@ -14,6 +14,7 @@ module Types.ActionItem (
 
 import Key
 import Types.Transfer
+import Types.UUID
 import Git.FilePath
 import Git.Quote (StringContainingQuotedPath(..))
 import Utility.FileSystemEncoding
@@ -24,10 +25,12 @@ data ActionItem
 	| ActionItemBranchFilePath BranchFilePath Key
 	| ActionItemFailedTransfer Transfer TransferInfo
 	| ActionItemTreeFile RawFilePath
+	| ActionItemUUID UUID StringContainingQuotedPath
+	-- ^ UUID with a description or name of the repository
 	| ActionItemOther (Maybe StringContainingQuotedPath)
-	-- Use to avoid more than one thread concurrently processing the
-	-- same Key.
 	| OnlyActionOn Key ActionItem
+	-- ^ Use to avoid more than one thread concurrently processing the
+	-- same Key.
 	deriving (Show, Eq)
 
 class MkActionItem t where
@@ -69,6 +72,7 @@ actionItemDesc (ActionItemBranchFilePath bfp _) =
 actionItemDesc (ActionItemFailedTransfer t i) = actionItemDesc $
 	ActionItemAssociatedFile (associatedFile i) (transferKey t)
 actionItemDesc (ActionItemTreeFile f) = QuotedPath f
+actionItemDesc (ActionItemUUID _ desc) = desc
 actionItemDesc (ActionItemOther Nothing) = mempty
 actionItemDesc (ActionItemOther (Just v)) = v
 actionItemDesc (OnlyActionOn _ ai) = actionItemDesc ai
@@ -79,14 +83,20 @@ actionItemKey (ActionItemKey k) = Just k
 actionItemKey (ActionItemBranchFilePath _ k) = Just k
 actionItemKey (ActionItemFailedTransfer t _) = Just (transferKey t)
 actionItemKey (ActionItemTreeFile _) = Nothing
+actionItemKey (ActionItemUUID _ _) = Nothing
 actionItemKey (ActionItemOther _) = Nothing
 actionItemKey (OnlyActionOn _ ai) = actionItemKey ai
 
 actionItemFile :: ActionItem -> Maybe RawFilePath
 actionItemFile (ActionItemAssociatedFile (AssociatedFile af) _) = af
 actionItemFile (ActionItemTreeFile f) = Just f
+actionItemFile (ActionItemUUID _ _) = Nothing
 actionItemFile (OnlyActionOn _ ai) = actionItemFile ai
 actionItemFile _ = Nothing
+
+actionItemUUID :: ActionItem -> Maybe UUID
+actionItemUUID (ActionItemUUID uuid _) = Just uuid
+actionItemUUID _ = Nothing
 
 actionItemTransferDirection :: ActionItem -> Maybe Direction
 actionItemTransferDirection (ActionItemFailedTransfer t _) = Just $

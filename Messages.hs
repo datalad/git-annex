@@ -78,15 +78,11 @@ import qualified Messages.JSON as JSON
 import qualified Annex
 
 showStartMessage :: StartMessage -> Annex ()
-showStartMessage (StartMessage command ai si) = case ai of
-	ActionItemAssociatedFile _ _ -> showStartActionItem command ai si
-	ActionItemKey _ -> showStartActionItem command ai si
-	ActionItemBranchFilePath _ _ -> showStartActionItem command ai si
-	ActionItemFailedTransfer _ _ -> showStartActionItem command ai si
-	ActionItemTreeFile _ -> showStartActionItem command ai si
-	ActionItemOther Nothing -> showStartNothing command si
-	ActionItemOther _ -> showStartActionItem command ai si
-	OnlyActionOn _ ai' -> showStartMessage (StartMessage command ai' si)
+showStartMessage (StartMessage command ai si) =
+	outputMessage json id $
+		UnquotedString command <> " " <> actionItemDesc ai <> " "
+  where
+	json = JSON.startActionItem command ai si
 showStartMessage (StartUsualMessages command ai si) = do
 	outputType <$> Annex.getState Annex.output >>= \case
 		QuietOutput -> Annex.setOutput NormalOutput
@@ -97,18 +93,6 @@ showStartMessage (CustomOutput _) =
 	outputType <$> Annex.getState Annex.output >>= \case
 		NormalOutput -> Annex.setOutput QuietOutput
 		_ -> noop
-
-showStartActionItem :: String -> ActionItem -> SeekInput -> Annex ()
-showStartActionItem command ai si = outputMessage json id $
-	UnquotedString command <> " " <> actionItemDesc ai <> " "
-  where
-	json = JSON.start command (actionItemFile ai) (actionItemKey ai) si
-
-showStartNothing :: String -> SeekInput -> Annex ()
-showStartNothing command si = outputMessage json id $ UnquotedString $
-	command ++ " "
-  where
-	json = JSON.start command Nothing Nothing si
 
 -- Only show end result if the StartMessage is one that gets displayed.
 showEndMessage :: StartMessage -> Bool -> Annex ()

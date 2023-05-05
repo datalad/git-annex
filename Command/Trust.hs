@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,8 +17,9 @@ import Logs.Group
 import qualified Data.Set as S
 
 cmd :: Command
-cmd = command "trust" SectionSetup "trust a repository"
-	(paramRepeating paramRepository) (withParams seek)
+cmd = withAnnexOptions [jsonOptions] $
+	command "trust" SectionSetup "trust a repository"
+		(paramRepeating paramRepository) (withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = trustCommand "trust" Trusted
@@ -30,7 +31,7 @@ trustCommand c level ps = withStrings (commandAction . start) ps
 	start name = do
 		u <- Remote.nameToUUID name
 		let si = SeekInput [name]
-		starting c (ActionItemOther (Just (UnquotedString name))) si (perform name u)
+		starting c (ActionItemUUID u (UnquotedString name)) si (perform name u)
 	perform name uuid = do
 		when (level >= Trusted) $
 			unlessM (Annex.getRead Annex.force) $

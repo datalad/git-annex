@@ -38,12 +38,12 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * initremote: Avoid creating a remote that is not encrypted when gpg is
     broken.
   * Support --json and --json-error-messages in more commands
-    (addunused, dropunused, fix, log, migrate, rekey, rmurl, 
-    setpresentkey, unannex, undo)
+    (addunused, dead, describe, dropunused, expire, fix, log, migrate,
+    rekey, rmurl, semitrust, setpresentkey, trust, unannex, undo, untrust)
   * log: When --raw-date is used, display only seconds from the epoch, as
     documented, omitting a trailing "s" that was included in the output
     before.
-  * addunused: Display the names of the files that it adds.
+  * addunused: Displays the names of the files that it adds.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

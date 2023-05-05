@@ -15,8 +15,9 @@ import Remote (keyLocations)
 import Git.Types
 
 cmd :: Command
-cmd = command "dead" SectionSetup "hide a lost repository or key"
-	(paramRepeating paramRepository) (seek <$$> optParser)
+cmd = withAnnexOptions [jsonOptions] $
+	command "dead" SectionSetup "hide a lost repository or key"
+		(paramRepeating paramRepository) (seek <$$> optParser)
 
 data DeadOptions = DeadRemotes [RemoteName] | DeadKeys [Key]
 

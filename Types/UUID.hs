@@ -1,6 +1,6 @@
 {- git-annex UUID type
  -
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@
 module Types.UUID where
 
 import qualified Data.ByteString as B
+import qualified Data.Text as T
 import qualified Data.Map as M
 import qualified Data.UUID as U
 import Data.Maybe
@@ -20,6 +21,7 @@ import qualified Data.Semigroup as Sem
 import Git.Types (ConfigValue(..))
 import Utility.FileSystemEncoding
 import Utility.QuickCheck
+import Utility.Aeson
 import qualified Utility.SimpleProtocol as Proto
 
 -- A UUID is either an arbitrary opaque string, or UUID info may be missing.
@@ -64,6 +66,18 @@ instance ToUUID ConfigValue where
 -- be NoUUID or perhaps contain something not allowed in a canonical UUID.
 instance ToUUID U.UUID where
 	toUUID = toUUID . U.toASCIIBytes
+
+instance ToJSON' UUID where
+	toJSON' (UUID u) = toJSON' u
+	toJSON' NoUUID = toJSON' ""
+
+instance FromJSON UUID where
+	parseJSON (String t)
+		| isUUID s = pure (toUUID s)
+		| otherwise = mempty
+	  where
+		s = T.unpack t
+	parseJSON _ = mempty
 
 buildUUID :: UUID -> Builder
 buildUUID (UUID b) = byteString b

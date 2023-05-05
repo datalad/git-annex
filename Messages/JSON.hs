@@ -1,6 +1,6 @@
 {- git-annex command-line JSON output and input
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ module Messages.JSON (
 	encode,
 	none,
 	start,
+	startActionItem,
 	end,
 	finalize,
 	addErrorMessage,
@@ -47,6 +48,8 @@ import Data.Monoid
 import Prelude
 
 import Types.Command (SeekInput(..))
+import Types.ActionItem
+import Types.UUID
 import Key
 import Utility.Metered
 import Utility.Percentage
@@ -86,6 +89,21 @@ start command file key si _ = case j of
 		{ itemCommand = Just command
 		, itemKey = key
 		, itemFile = fromRawFilePath <$> file
+		, itemUUID = Nothing
+		, itemFields = Nothing :: Maybe Bool
+		, itemSeekInput = si
+		}
+
+startActionItem :: String -> ActionItem -> SeekInput -> JSONBuilder
+startActionItem command ai si _ = case j of
+	Object o -> Just (o, False)
+	_ -> Nothing
+  where
+	j = toJSON' $ JSONActionItem
+		{ itemCommand = Just command
+		, itemKey = actionItemKey ai
+		, itemFile = fromRawFilePath <$> actionItemFile ai
+		, itemUUID = actionItemUUID ai
 		, itemFields = Nothing :: Maybe Bool
 		, itemSeekInput = si
 		}
@@ -193,6 +211,7 @@ data JSONActionItem a = JSONActionItem
 	{ itemCommand :: Maybe String
 	, itemKey :: Maybe Key
 	, itemFile :: Maybe FilePath
+	, itemUUID :: Maybe UUID
 	, itemFields :: Maybe a
 	, itemSeekInput :: SeekInput
 	}
@@ -208,6 +227,9 @@ instance ToJSON' a => ToJSON' (JSONActionItem a) where
 		, case itemFields i of
 			Just f -> Just $ "fields" .= toJSON' f
 			Nothing -> Nothing
+		, case itemUUID i of
+			Just u -> Just $ "uuid" .= toJSON' u
+			Nothing -> Nothing
 		, Just $ "input" .= fromSeekInput (itemSeekInput i)
 		]
 
@@ -216,6 +238,7 @@ instance FromJSON a => FromJSON (JSONActionItem a) where
 		<$> (v .:? "command")
 		<*> (maybe (return Nothing) parseJSON =<< (v .:? "key"))
 		<*> (v .:? "file")
+		<*> (v .:? "uuid")
 		<*> (v .:? "fields")
 		<*> pure (SeekInput [])
 	parseJSON _ = mempty

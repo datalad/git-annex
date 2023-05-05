@@ -22,9 +22,10 @@ import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
 cmd :: Command
-cmd = command "expire" SectionMaintenance
-	"expire inactive repositories"
-	paramExpire (seek <$$> optParser)
+cmd = withAnnexOptions [jsonOptions] $
+	command "expire" SectionMaintenance
+		"expire inactive repositories"
+		paramExpire (seek <$$> optParser)
 
 paramExpire :: String
 paramExpire = (paramRepeating $ paramOptional paramRemote ++ ":" ++ paramTime)
@@ -79,7 +80,7 @@ start (Expire expire) noact actlog descs u =
 			return $ "last active: " ++ fromDuration d ++ " ago"
 		_  -> return "no activity"
 	desc = fromUUID u ++ " " ++ fromUUIDDesc (fromMaybe mempty (M.lookup u descs))
-	ai = ActionItemOther (Just (UnquotedString desc))
+	ai = ActionItemUUID u (UnquotedString desc)
 	si = SeekInput []
 	notexpired ent = case ent of
 		Unknown -> False
