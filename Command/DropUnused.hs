@@ -20,9 +20,10 @@ import Annex.Content
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
-cmd = command "dropunused" SectionMaintenance
-	"drop unused file content"
-	(paramRepeating paramNumRange) (seek <$$> optParser)
+cmd = withAnnexOptions [jsonOptions] $
+	command "dropunused" SectionMaintenance
+		"drop unused file content"
+		(paramRepeating paramNumRange) (seek <$$> optParser)
 
 data DropUnusedOptions = DropUnusedOptions
 	{ rangesToDrop :: CmdParams
@@ -42,10 +43,15 @@ seek o = do
 	withUnusedMaps (start from numcopies mincopies) (rangesToDrop o)
 
 start :: Maybe Remote -> NumCopies -> MinCopies -> UnusedMaps -> Int -> CommandStart
-start from numcopies mincopies = startUnused "dropunused"
-	(perform from numcopies mincopies)
-	(performOther gitAnnexBadLocation)
-	(performOther gitAnnexTmpObjectLocation)
+start from numcopies mincopies = startUnused
+	(go (perform from numcopies mincopies))
+	(go (performOther gitAnnexBadLocation))
+	(go (performOther gitAnnexTmpObjectLocation))
+  where
+	go a n key = starting "dropunused" 
+		(ActionItemOther $ Just $ UnquotedString $ show n)
+		(SeekInput [show n])
+		(a key)
 
 perform :: Maybe Remote -> NumCopies -> MinCopies -> Key -> CommandPerform
 perform from numcopies mincopies key = case from of

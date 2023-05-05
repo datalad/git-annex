@@ -23,16 +23,16 @@ These commands have been updated to support --json:
 * git-annex-rekey
 * git-annex-undo
 * git-annex-migrate
+* git-annex-addunused
+* git-annex-dropunused
 
 Provisional list of commands that don't support --json and maybe should:
 
 (Feel free to reorder things to the top)
 
-* git-annex-addunused
 * git-annex-adjust
 * git-annex-configremote
 * git-annex-dead
-* git-annex-dropunused
 * git-annex-enableremote
 * git-annex-expire
 * git-annex-importfeed

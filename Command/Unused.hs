@@ -322,12 +322,12 @@ unusedSpec m spec
 
 {- Seek action for unused content. Finds the number in the maps, and
  - calls one of 3 actions, depending on the type of unused file. -}
-startUnused :: String
-	-> (Key -> CommandPerform)
-	-> (Key -> CommandPerform) 
-	-> (Key -> CommandPerform)
+startUnused
+	:: (Int -> Key -> CommandStart)
+	-> (Int -> Key -> CommandStart) 
+	-> (Int -> Key -> CommandStart)
 	-> UnusedMaps -> Int -> CommandStart
-startUnused message unused badunused tmpunused maps n = search
+startUnused unused badunused tmpunused maps n = search
 	[ (unusedMap maps, unused)
 	, (unusedBadMap maps, badunused)
 	, (unusedTmpMap maps, tmpunused)
@@ -337,7 +337,4 @@ startUnused message unused badunused tmpunused maps n = search
 	search ((m, a):rest) =
 		case M.lookup n m of
 			Nothing -> search rest
-			Just key -> starting message
-				(ActionItemOther $ Just $ UnquotedString $ show n)
-				(SeekInput [])
-				(a key)
+			Just key -> a n key
