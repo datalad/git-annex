@@ -30,6 +30,7 @@ These commands have been updated to support --json:
 * git-annex-semitrust
 * git-annex-untrust
 * git-annex-dead
+* git-annex-describe
 
 Provisional list of commands that don't support --json and maybe should:
 
