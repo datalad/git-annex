@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="out of date git-annex"
+ date="2023-05-05T14:19:41Z"
+ content="""
+Your git annex is very out of date, try updating. Also, the right place for reporting bugs is https://git-annex.branchable.com/bugs/
+"""]]
