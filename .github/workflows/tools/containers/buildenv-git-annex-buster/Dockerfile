@@ -11,8 +11,8 @@ RUN echo 'Acquire::http::Dl-Limit "1000";' >| /etc/apt/apt.conf.d/20snapshots \
 # We need to enable backports to get more recent than 2.30 git.
 # ref: https://git-annex.branchable.com/forum/error__58___bogus_format_in_GIT__95__CONFIG__95__PARAMETERS/
 RUN set -ex; \
-    apt update; \
     sed -i -e 's,^\(.* \)bullseye\( main.*\),\1bullseye\2\n\1bullseye-backports\2,g' /etc/apt/sources.list; \
+    apt update; \
     apt install neurodebian-freeze; \
     nd_freeze 20220327; \
     sed -i -e 's,^#deb-src,deb-src,g' /etc/apt/sources.list.d/neurodebian.sources.list; \
