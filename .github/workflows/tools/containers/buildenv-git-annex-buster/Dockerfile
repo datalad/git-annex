@@ -8,13 +8,18 @@ RUN echo 'Acquire::http::Dl-Limit "1000";' >| /etc/apt/apt.conf.d/20snapshots \
     && echo 'Acquire::https::Dl-Limit "1000";' >> /etc/apt/apt.conf.d/20snapshots \
     && echo 'Acquire::Retries "5";' >> /etc/apt/apt.conf.d/20snapshots
 
+# We need to enable backports to get more recent than 2.30 git.
+# ref: https://git-annex.branchable.com/forum/error__58___bogus_format_in_GIT__95__CONFIG__95__PARAMETERS/
 RUN set -ex; \
-    apt update; apt install neurodebian-freeze; \
+    apt update; \
+    sed -i -e 's,^\(.* \)bullseye\( main.*\),\1bullseye\2\n\1bullseye-backports\2,g' /etc/apt/sources.list; \
+    apt install neurodebian-freeze; \
     nd_freeze 20220327; \
     sed -i -e 's,^#deb-src,deb-src,g' /etc/apt/sources.list.d/neurodebian.sources.list; \
     apt-get update -qq; \
     export DEBIAN_FRONTEND=noninteractive; \
     apt-get build-dep -y -q git-annex-standalone; \
+    apt-get install -y -q -t bullseye-backports git; \
     # Needed additional build-depends which might have not yet in "released" version
     apt-get install -y libghc-criterion-dev libghc-http-client-restricted-dev; \
     # Needed additional tools
