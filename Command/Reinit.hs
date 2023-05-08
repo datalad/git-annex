@@ -14,7 +14,7 @@ import qualified Remote
 import qualified Annex.SpecialRemote
 	
 cmd :: Command
-cmd = dontCheck repoExists $
+cmd = dontCheck repoExists $ withAnnexOptions [jsonOptions] $
 	command "reinit" SectionUtility 
 		"initialize repository, reusing old UUID"
 		(paramUUID ++ "|" ++ paramDesc)
