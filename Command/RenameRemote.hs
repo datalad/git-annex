@@ -18,10 +18,11 @@ import Types.ProposedAccepted
 import qualified Data.Map as M
 
 cmd :: Command
-cmd = command "renameremote" SectionSetup
-	"changes name of special remote"
-	(paramPair paramName paramName)
-	(withParams seek)
+cmd = withAnnexOptions [jsonOptions] $
+	command "renameremote" SectionSetup
+		"changes name of special remote"
+		(paramPair paramName paramName)
+		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)
