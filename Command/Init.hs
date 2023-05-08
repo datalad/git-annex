@@ -19,7 +19,7 @@ import Control.Monad.Fail as Fail (MonadFail(..))
 import qualified Data.Map as M
 	
 cmd :: Command
-cmd = dontCheck repoExists $
+cmd = dontCheck repoExists $ withAnnexOptions [jsonOptions] $
 	command "init" SectionSetup "initialize git-annex"
 		paramDesc (seek <$$> optParser)
 
