@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,9 +18,11 @@ import Utility.Metered
 import Annex.WorkTree
 import qualified Git
 import qualified Annex
+import Utility.Aeson
+import Messages.JSON (AddJSONActionItemField(..))
 
 cmd :: Command
-cmd = withAnnexOptions [backendOption] $
+cmd = withAnnexOptions [backendOption, jsonOptions] $
 	command "reinject" SectionUtility 
 		"inject content of file back into annex"
 		(paramRepeating (paramPair "SRC" "DEST"))
@@ -43,50 +45,45 @@ optParser desc = ReinjectOptions
 seek :: ReinjectOptions -> CommandSeek
 seek os
 	| knownOpt os = withStrings (commandAction . startKnown) (params os)
-	| otherwise = withWords (commandAction . startSrcDest) (params os)
+	| otherwise = withPairs (commandAction . startSrcDest) (params os)
 
-startSrcDest :: [FilePath] -> CommandStart
-startSrcDest ps@(src:dest:[])
+startSrcDest :: (SeekInput, (String, String)) -> CommandStart
+startSrcDest (si, (src, dest))
 	| src == dest = stop
-	| otherwise = notAnnexed src' $
+	| otherwise = starting "reinject" ai si $ notAnnexed src' $
 		lookupKey (toRawFilePath dest) >>= \case
-			Just k -> go k
+			Just key -> ifM (verifyKeyContent key src')
+				( perform src' key
+				, do
+					qp <- coreQuotePath <$> Annex.getGitConfig
+					giveup $ decodeBS $ quote qp $ QuotedPath src'
+						<> " does not have expected content of "
+						<> QuotedPath (toRawFilePath dest)
+				)
 			Nothing -> do
 				qp <- coreQuotePath <$> Annex.getGitConfig
 				giveup $ decodeBS $ quote qp $ QuotedPath src'
 					<> " is not an annexed file"
   where
 	src' = toRawFilePath src
-	go key = starting "reinject" ai si $
-		ifM (verifyKeyContent key src')
-			( perform src' key
-			, do
-				qp <- coreQuotePath <$> Annex.getGitConfig
-				giveup $ decodeBS $ quote qp $ QuotedPath src'
-					<> " does not have expected content of "
-					<> QuotedPath (toRawFilePath dest)
-			)
 	ai = ActionItemOther (Just (QuotedPath src'))
-	si = SeekInput ps
-startSrcDest _ = giveup "specify a src file and a dest file"
 
 startKnown :: FilePath -> CommandStart
-startKnown src = notAnnexed src' $
-	starting "reinject" ai si $ do
-		(key, _) <- genKey ks nullMeterUpdate =<< defaultBackend
-		ifM (isKnownKey key)
-			( perform src' key
-			, do
-				warning "Not known content; skipping"
-				next $ return True
-			)
+startKnown src = starting "reinject" ai si $ notAnnexed src' $ do
+	(key, _) <- genKey ks nullMeterUpdate =<< defaultBackend
+	ifM (isKnownKey key)
+		( perform src' key
+		, do
+			warning "Not known content; skipping"
+			next $ return True
+		)
   where
 	src' = toRawFilePath src
 	ks = KeySource src' src' Nothing
 	ai = ActionItemOther (Just (QuotedPath src'))
 	si = SeekInput [src]
 
-notAnnexed :: RawFilePath -> CommandStart -> CommandStart
+notAnnexed :: RawFilePath -> CommandPerform -> CommandPerform
 notAnnexed src a = 
 	ifM (fromRepo Git.repoIsLocalBare)
 		( a
@@ -100,10 +97,14 @@ notAnnexed src a =
 		)
 
 perform :: RawFilePath -> Key -> CommandPerform
-perform src key = ifM move
-	( next $ cleanup key
-	, giveup "failed"
-	)
+perform src key = do
+	case toJSON' (AddJSONActionItemField "key" (serializeKey key)) of
+		Object o -> maybeShowJSON $ AesonObject o
+		_ -> noop
+	ifM move
+		( next $ cleanup key
+		, giveup "failed"
+		)
   where
 	move = checkDiskSpaceToGet key False $
 		moveAnnex key (AssociatedFile Nothing) src

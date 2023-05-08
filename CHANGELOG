@@ -39,12 +39,13 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     broken.
   * Support --json and --json-error-messages in more commands
     (addunused, dead, describe, dropunused, expire, fix, init, log, migrate,
-    reinit, rekey, rmurl, semitrust, setpresentkey, trust, unannex, undo,
-    untrust, unused)
+    reinit, reinject, rekey, rmurl, semitrust, setpresentkey, trust, unannex,
+    undo, untrust, unused)
   * log: When --raw-date is used, display only seconds from the epoch, as
     documented, omitting a trailing "s" that was included in the output
     before.
   * addunused: Displays the names of the files that it adds.
+  * reinject: Fix support for operating on multiple pairs of files and keys.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

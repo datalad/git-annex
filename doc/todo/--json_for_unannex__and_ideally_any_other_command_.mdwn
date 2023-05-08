@@ -34,6 +34,7 @@ These commands have been updated to support --json:
 * git-annex-unused
 * git-annex-init
 * git-annex-reinit
+* git-annex-reinject
 
 Provisional list of commands that don't support --json and maybe should:
 
@@ -43,7 +44,6 @@ Provisional list of commands that don't support --json and maybe should:
 * git-annex-enableremote
 * git-annex-initremote
 * git-annex-merge
-* git-annex-reinject
 * git-annex-renameremote
 * git-annex-sync
 * git-annex-upgrade
