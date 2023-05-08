@@ -12,7 +12,6 @@ module Messages.JSON (
 	JSONChunk(..),
 	emit,
 	emit',
-	encode,
 	none,
 	start,
 	startActionItem,
@@ -29,6 +28,7 @@ module Messages.JSON (
 	ObjectMap(..),
 	JSONActionItem(..),
 	AddJSONActionItemField(..),
+	module Utility.Aeson,
 ) where
 
 import Control.Applicative

@@ -35,7 +35,6 @@ import Annex.BloomFilter
 import qualified Database.Keys
 import Annex.InodeSentinal
 import Utility.Aeson
-import Messages.JSON (AddJSONActionItemField(..))
 
 import qualified Data.Map as M
 import qualified Data.Vector as V
@@ -115,11 +114,9 @@ check fileprefix msg a c = do
 	let unusedlist = number c l
 	unless (null l) $
 		showLongNote $ UnquotedString $ msg unusedlist
-	let v = V.fromList $ map (\(n,  k) -> (show n, serializeKey k)) unusedlist
-	let f = (if null fileprefix then "unused" else fileprefix) ++ "-list"
-	case toJSON' (AddJSONActionItemField f v) of
-		Object o -> maybeShowJSON $ AesonObject o
-		_ -> noop
+	maybeAddJSONField
+		((if null fileprefix then "unused" else fileprefix) ++ "-list")
+		(V.fromList $ map (\(n,  k) -> (show n, serializeKey k)) unusedlist)
 	updateUnusedLog (toRawFilePath fileprefix) (M.fromList unusedlist)
 	return $ c + length l
 

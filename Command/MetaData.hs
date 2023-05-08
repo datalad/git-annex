@@ -12,11 +12,10 @@ import Annex.MetaData
 import Annex.VectorClock
 import Logs.MetaData
 import Annex.WorkTree
-import Messages.JSON (JSONActionItem(..), AddJSONActionItemField(..))
 import Types.Messages
-import Utility.Aeson
 import Utility.SafeOutput
 import Limit
+import Messages.JSON (JSONActionItem(..), eitherDecode)
 
 import qualified Data.Set as S
 import qualified Data.Map as M
@@ -127,9 +126,7 @@ perform c o k = case getSet o of
 cleanup :: Key -> CommandCleanup
 cleanup k = do
 	m <- getCurrentMetaData k
-	case toJSON' (AddJSONActionItemField "fields" m) of
-		Object o -> maybeShowJSON $ AesonObject o
-		_ -> noop
+	maybeAddJSONField "fields" m
 	showLongNote $ UnquotedString $ unlines $ concatMap showmeta $
 		map unwrapmeta (fromMetaData m)
 	return True

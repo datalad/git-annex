@@ -37,6 +37,7 @@ module Messages (
 	JSON.JSONChunk(..),
 	maybeShowJSON,
 	maybeShowJSON',
+	maybeAddJSONField,
 	showFullJSON,
 	showCustom,
 	showHeader,
@@ -226,6 +227,12 @@ maybeShowJSON v = void $ withMessageState $ bufferJSON (JSON.add v)
 
 maybeShowJSON' :: JSON.JSONBuilder -> Annex ()
 maybeShowJSON' v = void $ withMessageState $ bufferJSON v
+
+{- Adds a field to the current json object. -}
+maybeAddJSONField :: JSON.ToJSON' v => String -> v -> Annex ()
+maybeAddJSONField f v = case JSON.toJSON' (JSON.AddJSONActionItemField f v) of
+	JSON.Object o -> maybeShowJSON $ JSON.AesonObject o
+	_ -> noop
 
 {- Shows a complete JSON value, only when in json mode. -}
 showFullJSON :: JSON.JSONChunk v -> Annex Bool

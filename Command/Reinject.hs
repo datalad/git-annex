@@ -18,8 +18,6 @@ import Utility.Metered
 import Annex.WorkTree
 import qualified Git
 import qualified Annex
-import Utility.Aeson
-import Messages.JSON (AddJSONActionItemField(..))
 
 cmd :: Command
 cmd = withAnnexOptions [backendOption, jsonOptions] $
@@ -98,9 +96,7 @@ notAnnexed src a =
 
 perform :: RawFilePath -> Key -> CommandPerform
 perform src key = do
-	case toJSON' (AddJSONActionItemField "key" (serializeKey key)) of
-		Object o -> maybeShowJSON $ AesonObject o
-		_ -> noop
+	maybeAddJSONField "key" (serializeKey key)
 	ifM move
 		( next $ cleanup key
 		, giveup "failed"

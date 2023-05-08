@@ -45,7 +45,6 @@ Provisional list of commands that don't support --json and maybe should:
 * git-annex-initremote
 * git-annex-merge
 * git-annex-renameremote
-* git-annex-sync
 * git-annex-upgrade
 
 These commands could support json, but I punted:
@@ -113,3 +112,11 @@ These commands have been reviewed and should not support json:
   (no output that would be useful to a program using these. They enter a
   new branch and git branch will tell what it is.)
 * git-annex-inprogress (output is already machine readable)
+* git-annex-sync (while it would be pretty easy to support, it outputs
+  different types of messages depending on what remotes it syncs with and
+  what needs to be done. Eg, copy to remote, or export to remote, or import
+  from remote. Each would be a different format of json message, which
+  violates the principle that all git-annex json output should be
+  discoverable by simply running the command. And of course, everything it
+  does can be done by other commands, which can support json without having
+  that problem.)
