@@ -34,15 +34,19 @@ import Logs.View (is_branchView)
 import Annex.BloomFilter
 import qualified Database.Keys
 import Annex.InodeSentinal
+import Utility.Aeson
+import Messages.JSON (AddJSONActionItemField(..))
 
 import qualified Data.Map as M
+import qualified Data.Vector as V
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import Data.Char
 
 cmd :: Command
-cmd = command "unused" SectionMaintenance "look for unused file content"
-	paramNothing (seek <$$> optParser)
+cmd = withAnnexOptions [jsonOptions] $
+	command "unused" SectionMaintenance "look for unused file content"
+		paramNothing (seek <$$> optParser)
 
 data UnusedOptions = UnusedOptions
 	{ fromRemote :: Maybe RemoteName
@@ -105,13 +109,18 @@ checkRemoteUnused remotename refspec = go =<< Remote.nameToUUID remotename
 		Just ks -> excludeReferenced refspec ks
 		Nothing -> giveup "This repository is read-only."
 
-check :: FilePath -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
-check file msg a c = do
+check :: String -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
+check fileprefix msg a c = do
 	l <- a
 	let unusedlist = number c l
 	unless (null l) $
 		showLongNote $ UnquotedString $ msg unusedlist
-	updateUnusedLog (toRawFilePath file) (M.fromList unusedlist)
+	let v = V.fromList $ map (\(n,  k) -> (show n, serializeKey k)) unusedlist
+	let f = (if null fileprefix then "unused" else fileprefix) ++ "-list"
+	case toJSON' (AddJSONActionItemField f v) of
+		Object o -> maybeShowJSON $ AesonObject o
+		_ -> noop
+	updateUnusedLog (toRawFilePath fileprefix) (M.fromList unusedlist)
 	return $ c + length l
 
 number :: Int -> [a] -> [(Int, a)]

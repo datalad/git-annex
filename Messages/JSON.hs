@@ -28,7 +28,7 @@ module Messages.JSON (
 	DualDisp(..),
 	ObjectMap(..),
 	JSONActionItem(..),
-	AddJSONActionItemFields(..),
+	AddJSONActionItemField(..),
 ) where
 
 import Control.Applicative
@@ -223,7 +223,9 @@ instance ToJSON' a => ToJSON' (JSONActionItem a) where
 		, case itemKey i of
 			Just k -> Just $ "key" .= toJSON' k
 			Nothing -> Nothing
-		, Just $ "file" .= toJSON' (itemFile i)
+		, case itemFile i of
+			Just f -> Just $ "file" .= toJSON' f
+			Nothing -> Nothing
 		, case itemFields i of
 			Just f -> Just $ "fields" .= toJSON' f
 			Nothing -> Nothing
@@ -240,13 +242,15 @@ instance FromJSON a => FromJSON (JSONActionItem a) where
 		<*> (v .:? "file")
 		<*> (v .:? "uuid")
 		<*> (v .:? "fields")
+		-- ^ fields is used for metadata, which is currently the
+		-- only json that gets parsed
 		<*> pure (SeekInput [])
 	parseJSON _ = mempty
 
--- This can be used to populate the "fields" after a JSONActionItem
+-- This can be used to populate a field after a JSONActionItem
 -- has already been started.
-newtype AddJSONActionItemFields a = AddJSONActionItemFields a
+data AddJSONActionItemField a = AddJSONActionItemField String a
 	deriving (Show)
 
-instance ToJSON' a => ToJSON' (AddJSONActionItemFields a) where
-	toJSON' (AddJSONActionItemFields a) = object [ ("fields", toJSON' a) ]
+instance ToJSON' a => ToJSON' (AddJSONActionItemField a) where
+	toJSON' (AddJSONActionItemField f a) = object [ (textKey (packString f), toJSON' a) ]
