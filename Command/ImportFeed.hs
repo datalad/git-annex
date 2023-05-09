@@ -54,9 +54,11 @@ import Logs
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
-cmd = notBareRepo $ withAnnexOptions [jobsOption, backendOption] $
+cmd = notBareRepo $ withAnnexOptions os $
 	command "importfeed" SectionCommon "import files from podcast feeds"
 		(paramRepeating paramUrl) (seek <$$> optParser)
+  where
+	os = [jobsOption, jsonOptions, jsonProgressOption, backendOption]
 
 data ImportFeedOptions = ImportFeedOptions
 	{ feedUrls :: CmdParams
@@ -139,7 +141,7 @@ getFeed
 	-> TMVar (M.Map URLString (Maybe (Maybe [ToDownload])))
 	-> CommandStart
 getFeed url st =
-	starting "importfeed" (ActionItemOther (Just (UnquotedString url))) (SeekInput []) $
+	starting "importfeed" (ActionItemOther (Just (UnquotedString url))) (SeekInput [url]) $
 		get `onException` recordfail
   where
 	record v = liftIO $ atomically $ do
@@ -210,9 +212,12 @@ getCache :: Maybe String -> Annex Cache
 getCache opttemplate = ifM (Annex.getRead Annex.force)
 	( ret S.empty S.empty
 	, do
-		showStartMessage (StartMessage "importfeed" (ActionItemOther (Just "gathering known urls")) (SeekInput []))
+		j <- jsonOutputEnabled
+		unless j $
+			showStartMessage (StartMessage "importfeed" (ActionItemOther (Just "gathering known urls")) (SeekInput []))
 		(us, is) <- knownItems
-		showEndOk
+		unless j
+			showEndOk
 		ret (S.fromList us) (S.fromList is)
 	)
   where
@@ -295,7 +300,7 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 	recordsuccess = liftIO $ atomically $ putTMVar cv True
 	
 	startdownloadenclosure :: URLString -> CommandStart
-	startdownloadenclosure url = checkknown url $ startUrlDownload cv url $
+	startdownloadenclosure url = checkknown url $ startUrlDownload cv todownload url $
 		downloadEnclosure addunlockedmatcher opts cache cv todownload url 
 
 	knownitemid = case getItemId (item todownload) of
@@ -306,7 +311,7 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 	downloadmedia linkurl mediaurl mediakey
 		| rawOption (downloadOptions opts) = startdownloadlink
 		| otherwise = ifM (youtubeDlSupported linkurl)
-			( startUrlDownload cv linkurl $
+			( startUrlDownload cv todownload linkurl $
 				withTmpWorkDir mediakey $ \workdir -> do
 					dl <- youtubeDl linkurl (fromRawFilePath workdir) nullMeterUpdate
 					case dl of
@@ -336,7 +341,7 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 	addmediafast linkurl mediaurl mediakey =
 		ifM (pure (not (rawOption (downloadOptions opts)))
 		     <&&> youtubeDlSupported linkurl)
-			( startUrlDownload cv linkurl $ do
+			( startUrlDownload cv todownload linkurl $ do
 				runDownload todownload linkurl ".m" cache cv $ \f ->
 					checkCanAdd (downloadOptions opts) f $ \canadd -> do
 						addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey Nothing
@@ -453,10 +458,10 @@ runDownload todownload url extension cache cv getter = do
 			, tryanother
 			)
 
-startUrlDownload :: TMVar Bool -> URLString -> CommandPerform -> CommandStart
-startUrlDownload cv url a = starting "addurl"
+startUrlDownload :: TMVar Bool -> ToDownload -> URLString -> CommandPerform -> CommandStart
+startUrlDownload cv todownload url a = starting "addurl"
 	(ActionItemOther (Just (UnquotedString url)))
-	(SeekInput [])
+	(SeekInput [feedurl todownload])
 	(a `onException` recordfailure)
   where
 	recordfailure = do

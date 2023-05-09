@@ -38,15 +38,16 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * initremote: Avoid creating a remote that is not encrypted when gpg is
     broken.
   * Support --json and --json-error-messages in more commands
-    (addunused, dead, describe, dropunused, expire, fix, init, log, migrate,
-    reinit, reinject, rekey, renameremote, rmurl, semitrust, setpresentkey,
-    trust, unannex, undo, untrust, unused)
+    (addunused, dead, describe, dropunused, expire, fix, importfeed, init,
+    log, migrate, reinit, reinject, rekey, renameremote, rmurl, semitrust,
+    setpresentkey, trust, unannex, undo, untrust, unused)
   * log: When --raw-date is used, display only seconds from the epoch, as
     documented, omitting a trailing "s" that was included in the output
     before.
   * addunused: Displays the names of the files that it adds.
   * reinject: Fix support for operating on multiple pairs of files and keys.
   * importfeed: Support -J
+  * importfeed: Support --json-progress
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

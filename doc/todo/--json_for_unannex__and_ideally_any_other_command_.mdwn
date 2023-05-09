@@ -36,6 +36,7 @@ These commands have been updated to support --json:
 * git-annex-reinit
 * git-annex-reinject
 * git-annex-renameremote
+* git-annex-importfeed
 
 Provisional list of commands that don't support --json and maybe should:
 
@@ -55,10 +56,6 @@ These commands could support json, but I punted:
 * git-annex-version (--raw already exists, and the output is fairly machine
   parseable already. It would be possible to jsonize the output to make it
   possibly more machine parseable. But I'm doubtful that would be useful.
-* git-annex-importfeed (implemented w/o using usual command actions,
-  which makes warning messages not get put in any particular json record.
-  Same problem would also need to be fixed for [[doc/todo/importfeed_parallell]]
-  btw.)
 
 These commands have been reviewed and should not support json:
 
