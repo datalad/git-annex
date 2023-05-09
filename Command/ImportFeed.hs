@@ -459,14 +459,18 @@ runDownload todownload url extension cache cv getter = do
 			)
 
 startUrlDownload :: TMVar Bool -> ToDownload -> URLString -> CommandPerform -> CommandStart
-startUrlDownload cv todownload url a = starting "addurl"
-	(ActionItemOther (Just (UnquotedString url)))
-	(SeekInput [feedurl todownload])
-	(a `onException` recordfailure)
+startUrlDownload cv todownload url a = do
+	starting "addurl"
+		(ActionItemOther (Just (UnquotedString url)))
+		(SeekInput [feedurl todownload])
+		(go `onException` recordfailure)
   where
 	recordfailure = do
 		void $ feedProblem url "download failed"
 		liftIO $ atomically $ tryPutTMVar cv False
+	go = do
+		maybeAddJSONField "url" url
+		a
 
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
