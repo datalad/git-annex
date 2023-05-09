@@ -89,7 +89,7 @@ seek o = startConcurrency commandStages $ do
 	
 	startpendingdownloads addunlockedmatcher cache dlst checkst True
 
-	checkfeedproblems checkst
+	clearfeedproblems checkst
   where
   	getpendingdownloads dlst blocking
 		| blocking = do
@@ -128,15 +128,11 @@ seek o = startConcurrency commandStages $ do
 					commandAction $
 						startDownload addunlockedmatcher o cache cv i
 	
-	checkfeedproblems checkst = do
+	clearfeedproblems checkst = do
 		m <- liftIO $ atomically $ readTVar checkst
 		forM_ (M.toList m) $ \(url, cvl) ->
-			ifM (and <$> mapM (liftIO . atomically . takeTMVar) cvl)
-				( clearFeedProblem url
-				-- FIXME: This will not be captured in json
-				, void $ feedProblem url 
-					"problem downloading some item(s) from feed"
-				)
+			whenM (and <$> mapM (liftIO . atomically . takeTMVar) cvl) $
+				clearFeedProblem url
 
 getFeed
 	:: URLString
@@ -407,8 +403,10 @@ runDownload todownload url extension cache cv getter = do
 			Just ks
 				-- Download problem.
 				| null ks -> do
-					liftIO . atomically . putTMVar cv 
-						=<< checkFeedBroken (feedurl todownload)
+					broken <- checkFeedBroken (feedurl todownload)
+					when broken $
+						void $ feedProblem url "download failed"
+					liftIO $ atomically $ putTMVar cv broken
 					next $ return False
 				| otherwise -> do
 					forM_ ks $ \key ->
@@ -456,12 +454,14 @@ runDownload todownload url extension cache cv getter = do
 			)
 
 startUrlDownload :: TMVar Bool -> URLString -> CommandPerform -> CommandStart
-startUrlDownload cv u a = starting "addurl"
-	(ActionItemOther (Just (UnquotedString u)))
+startUrlDownload cv url a = starting "addurl"
+	(ActionItemOther (Just (UnquotedString url)))
 	(SeekInput [])
 	(a `onException` recordfailure)
   where
-	recordfailure = liftIO $ atomically $ tryPutTMVar cv False
+	recordfailure = do
+		void $ feedProblem url "download failed"
+		liftIO $ atomically $ tryPutTMVar cv False
 
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
