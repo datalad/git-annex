@@ -46,6 +46,7 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     before.
   * addunused: Displays the names of the files that it adds.
   * reinject: Fix support for operating on multiple pairs of files and keys.
+  * importfeed: Support -J
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

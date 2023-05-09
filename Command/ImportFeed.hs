@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ import Data.Time.Clock
 import Data.Time.Format
 import Data.Time.Calendar
 import Data.Time.LocalTime
+import Control.Concurrent.STM
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified System.FilePath.ByteString as P
@@ -53,7 +54,7 @@ import Logs
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
-cmd = notBareRepo $ withAnnexOptions [backendOption] $
+cmd = notBareRepo $ withAnnexOptions [jobsOption, backendOption] $
 	command "importfeed" SectionCommon "import files from podcast feeds"
 		(paramRepeating paramUrl) (seek <$$> optParser)
 
@@ -73,25 +74,96 @@ optParser desc = ImportFeedOptions
 	<*> parseDownloadOptions False
 
 seek :: ImportFeedOptions -> CommandSeek
-seek o = do
+seek o = startConcurrency commandStages $ do
 	addunlockedmatcher <- addUnlockedMatcher
 	cache <- getCache (templateOption o)
-	forM_ (feedUrls o) (getFeed addunlockedmatcher o cache)
+	dlst <- liftIO $ newTMVarIO M.empty
+	checkst <- liftIO $ newTVarIO M.empty
 
-getFeed :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> URLString -> CommandSeek
-getFeed addunlockedmatcher opts cache url = do
-	showStartMessage (StartMessage "importfeed" (ActionItemOther (Just (UnquotedString url))) (SeekInput []))
-	withTmpFile "feed" $ \tmpf h -> do
+	forM_ (feedUrls o) $ \url -> do
+		liftIO $ atomically $ do
+			m <- takeTMVar dlst
+			putTMVar dlst (M.insert url Nothing m)
+		commandAction $ getFeed url dlst
+		startpendingdownloads addunlockedmatcher cache dlst checkst False
+	
+	startpendingdownloads addunlockedmatcher cache dlst checkst True
+
+	checkfeedproblems checkst
+  where
+  	getpendingdownloads dlst blocking
+		| blocking = do
+			m <- takeTMVar dlst
+			if M.null m
+				then do
+					putTMVar dlst m
+					return m
+				else
+					let (pending, rest) = M.partition ispending m
+					in if M.null pending
+						then retry
+						else do
+							putTMVar dlst rest
+							return pending
+		| otherwise = do
+			m <- takeTMVar dlst
+			let (pending, rest) = M.partition ispending m
+			putTMVar dlst rest
+			return pending
+	  where
+		ispending Nothing = False
+		ispending (Just _) = True
+
+	startpendingdownloads addunlockedmatcher cache dlst checkst blocking = do
+		m <- liftIO $ atomically $ getpendingdownloads dlst blocking
+		
+		forM_ (M.toList m) $ \(url, v) -> case v of
+			Nothing -> noop
+			Just Nothing -> noop
+			Just (Just is) -> 
+				forM_ is $ \i -> do
+					cv <- liftIO newEmptyTMVarIO
+					liftIO $ atomically $ modifyTVar checkst $
+						M.insertWith (++) url [cv]
+					commandAction $
+						startDownload addunlockedmatcher o cache cv i
+	
+	checkfeedproblems checkst = do
+		m <- liftIO $ atomically $ readTVar checkst
+		forM_ (M.toList m) $ \(url, cvl) ->
+			ifM (and <$> mapM (liftIO . atomically . takeTMVar) cvl)
+				( clearFeedProblem url
+				-- FIXME: This will not be captured in json
+				, void $ feedProblem url 
+					"problem downloading some item(s) from feed"
+				)
+
+getFeed
+	:: URLString
+	-> TMVar (M.Map URLString (Maybe (Maybe [ToDownload])))
+	-> CommandStart
+getFeed url st =
+	starting "importfeed" (ActionItemOther (Just (UnquotedString url))) (SeekInput []) $
+		get `onException` recordfail
+  where
+	record v = liftIO $ atomically $ do
+		m <- takeTMVar st
+		putTMVar st (M.insert url v m)
+	recordfail = record (Just Nothing)
+	
+	get = withTmpFile "feed" $ \tmpf h -> do
 		liftIO $ hClose h
 		ifM (downloadFeed url tmpf)
-			( go tmpf
-			, showEndResult =<< feedProblem url
-				"downloading the feed failed"
+			( parse tmpf
+			, do
+				recordfail
+				next $ feedProblem url
+					"downloading the feed failed"
 			)
-  where
+
 	-- Use parseFeedFromFile rather than reading the file
 	-- ourselves because it goes out of its way to handle encodings.
-	go tmpf = liftIO (parseFeedFromFile' tmpf) >>= \case
+	parse tmpf = liftIO (parseFeedFromFile' tmpf) >>= \case
 		Nothing -> debugfeedcontent tmpf "parsing the feed failed"
 		Just f -> do
 			case decodeBS $ fromFeedText $ getFeedTitle f of
@@ -100,12 +172,9 @@ getFeed addunlockedmatcher opts cache url = do
 			case findDownloads url f of
 				[] -> debugfeedcontent tmpf "bad feed content; no enclosures to download"
 				l -> do
-					showEndOk
-					ifM (and <$> mapM (performDownload addunlockedmatcher opts cache) l)
-						( clearFeedProblem url
-						, void $ feedProblem url 
-							"problem downloading some item(s) from feed"
-						)
+					record (Just (Just l))
+					next $ return True
+	
 	debugfeedcontent tmpf msg = do
 		feedcontent <- liftIO $ readFile tmpf
 		fastDebug "Command.ImportFeed" $ unlines
@@ -113,7 +182,8 @@ getFeed addunlockedmatcher opts cache url = do
 			, feedcontent
 			, "end of feed content"
 			]
-		showEndResult =<< feedProblem url
+		recordfail
+		next $ feedProblem url
 			(msg ++ " (use --debug --debugfilter=ImportFeed to see the feed content that was downloaded)")
 
 parseFeedFromFile' :: FilePath -> IO (Maybe Feed)
@@ -199,51 +269,9 @@ downloadFeed url f
 	| otherwise = Url.withUrlOptions $
 		Url.download nullMeterUpdate Nothing url f
 
-performDownload :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
-performDownload = performDownload' False
-
-performDownload' :: Bool -> AddUnlockedMatcher -> ImportFeedOptions -> Cache -> ToDownload -> Annex Bool
-performDownload' started addunlockedmatcher opts cache todownload = case location todownload of
-	Enclosure url -> checkknown url $ do
-		starturl url
-		rundownload url (takeWhile (/= '?') $ takeExtension url) $ \f -> do
-			let f' = fromRawFilePath f
-			r <- Remote.claimingUrl url
-			if Remote.uuid r == webUUID || rawOption (downloadOptions opts)
-				then checkRaw (Just url) (downloadOptions opts) Nothing $ do
-					let dlopts = (downloadOptions opts)
-						-- force using the filename
-						-- chosen here
-						{ fileOption = Just f'
-						-- don't use youtube-dl
-						, rawOption = True
-						}
-					let go urlinfo = Just . maybeToList <$> addUrlFile addunlockedmatcher dlopts url urlinfo f
-					if relaxedOption (downloadOptions opts)
-						then go Url.assumeUrlExists
-						else Url.withUrlOptions (Url.getUrlInfo url) >>= \case
-							Right urlinfo -> go urlinfo
-							Left err -> do
-								warning (UnquotedString err)
-								return (Just [])
-				else do
-					res <- tryNonAsync $ maybe
-						(giveup $ "unable to checkUrl of " ++ Remote.name r)
-						(flip id url)
-						(Remote.checkUrl r)
-					case res of
-						Left _ -> return (Just [])
-						Right (UrlContents sz _) ->
-							Just . maybeToList <$>
-								downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url f sz
-						Right (UrlMulti l) -> do
-							kl <- forM l $ \(url', sz, subf) ->
-								let dest = f P.</> toRawFilePath (sanitizeFilePath subf)
-								in downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url' dest sz
-							return $ Just $ if all isJust kl
-								then catMaybes kl
-								else []
-							
+startDownload :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> TMVar Bool -> ToDownload -> CommandStart
+startDownload addunlockedmatcher opts cache cv todownload = case location todownload of
+	Enclosure url -> startdownloadenclosure url
 	MediaLink linkurl -> do
 		let mediaurl = setDownloader linkurl YoutubeDownloader
 		let mediakey = Backend.URL.fromUrl mediaurl Nothing
@@ -263,45 +291,149 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 	 - associated with a file in the annex, unless forced. -}
 	checkknown url a
 		| knownitemid || S.member url (knownurls cache)
-			= ifM forced (a, return True)
+			= ifM forced (a, nothingtodo)
 		| otherwise = a
+
+	nothingtodo = recordsuccess >> stop
+
+	recordsuccess = liftIO $ atomically $ putTMVar cv True
+	
+	startdownloadenclosure :: URLString -> CommandStart
+	startdownloadenclosure url = checkknown url $ startUrlDownload cv url $
+		downloadEnclosure addunlockedmatcher opts cache cv todownload url 
 
 	knownitemid = case getItemId (item todownload) of
 		Just (_, itemid) ->
 			S.member (decodeBS $ fromFeedText itemid) (knownitems cache)
 		_ -> False
 
-	rundownload url extension getter = do
-		dest <- makeunique url (1 :: Integer) $
-			feedFile (template cache) todownload extension
-		case dest of
-			Nothing -> return True
-			Just f -> getter (toRawFilePath f) >>= \case
-				Just ks
-					-- Download problem.
-					| null ks -> do
-						showEndFail
-						checkFeedBroken (feedurl todownload)
-					| otherwise -> do
-						forM_ ks $ \key ->
-							ifM (annexGenMetaData <$> Annex.getGitConfig)
-								( addMetaData key $ extractMetaData todownload
-								, addMetaData key $ minimalMetaData todownload
-								)
-						showEndOk
-						return True
-				-- Was not able to add anything, but not
-				-- because of a download problem.
-				Nothing -> do
-					showEndFail
-					return False
+	downloadmedia linkurl mediaurl mediakey
+		| rawOption (downloadOptions opts) = startdownloadlink
+		| otherwise = ifM (youtubeDlSupported linkurl)
+			( startUrlDownload cv linkurl $
+				withTmpWorkDir mediakey $ \workdir -> do
+					dl <- youtubeDl linkurl (fromRawFilePath workdir) nullMeterUpdate
+					case dl of
+						Right (Just mediafile) -> do
+							let ext = case takeExtension mediafile of
+								[] -> ".m"
+								s -> s
+							runDownload todownload linkurl ext cache cv $ \f ->
+								checkCanAdd (downloadOptions opts) f $ \canadd -> do
+									addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey (Just (toRawFilePath mediafile))
+									return (Just [mediakey])
+						-- youtube-dl didn't support it, so
+						-- download it as if the link were
+						-- an enclosure.
+						Right Nothing -> contdownloadlink
+						Left msg -> do
+							warning $ UnquotedString $ linkurl ++ ": " ++ msg
+							liftIO $ atomically $ putTMVar cv False
+							next $ return False
+			, startdownloadlink
+			)
+	  where
+		startdownloadlink = checkRaw (Just linkurl) (downloadOptions opts) nothingtodo $
+			startdownloadenclosure linkurl
+		contdownloadlink = downloadEnclosure addunlockedmatcher opts cache cv todownload linkurl
+
+	addmediafast linkurl mediaurl mediakey =
+		ifM (pure (not (rawOption (downloadOptions opts)))
+		     <&&> youtubeDlSupported linkurl)
+			( startUrlDownload cv linkurl $ do
+				runDownload todownload linkurl ".m" cache cv $ \f ->
+					checkCanAdd (downloadOptions opts) f $ \canadd -> do
+						addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey Nothing
+						return (Just [mediakey])
+			, startdownloadenclosure linkurl
+			)
+
+downloadEnclosure :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> TMVar Bool -> ToDownload -> URLString -> CommandPerform
+downloadEnclosure addunlockedmatcher opts cache cv todownload url = 
+	runDownload todownload url (takeWhile (/= '?') $ takeExtension url) cache cv $ \f -> do
+		let f' = fromRawFilePath f
+		r <- Remote.claimingUrl url
+		if Remote.uuid r == webUUID || rawOption (downloadOptions opts)
+			then checkRaw (Just url) (downloadOptions opts) (pure Nothing) $ do
+				let dlopts = (downloadOptions opts)
+					-- force using the filename
+					-- chosen here
+					{ fileOption = Just f'
+					-- don't use youtube-dl
+					, rawOption = True
+					}
+				let go urlinfo = Just . maybeToList <$> addUrlFile addunlockedmatcher dlopts url urlinfo f
+				if relaxedOption (downloadOptions opts)
+					then go Url.assumeUrlExists
+					else Url.withUrlOptions (Url.getUrlInfo url) >>= \case
+						Right urlinfo -> go urlinfo
+						Left err -> do
+							warning (UnquotedString err)
+							return (Just [])
+			else do
+				res <- tryNonAsync $ maybe
+					(giveup $ "unable to checkUrl of " ++ Remote.name r)
+					(flip id url)
+					(Remote.checkUrl r)
+				case res of
+					Left _ -> return (Just [])
+					Right (UrlContents sz _) ->
+						Just . maybeToList <$>
+							downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url f sz
+					Right (UrlMulti l) -> do
+						kl <- forM l $ \(url', sz, subf) ->
+							let dest = f P.</> toRawFilePath (sanitizeFilePath subf)
+							in downloadRemoteFile addunlockedmatcher r (downloadOptions opts) url' dest sz
+						return $ Just $ if all isJust kl
+							then catMaybes kl
+							else []
+
+runDownload
+	:: ToDownload
+	-> URLString
+	-> String
+	-> Cache
+	-> TMVar Bool
+	-> (RawFilePath -> Annex (Maybe [Key]))
+	-> CommandPerform
+runDownload todownload url extension cache cv getter = do
+	dest <- makeunique (1 :: Integer) $
+		feedFile (template cache) todownload extension
+	case dest of
+		Nothing -> do
+			recordsuccess
+			stop
+		Just f -> getter (toRawFilePath f) >>= \case
+			Just ks
+				-- Download problem.
+				| null ks -> do
+					liftIO . atomically . putTMVar cv 
+						=<< checkFeedBroken (feedurl todownload)
+					next $ return False
+				| otherwise -> do
+					forM_ ks $ \key ->
+						ifM (annexGenMetaData <$> Annex.getGitConfig)
+							( addMetaData key $ extractMetaData todownload
+							, addMetaData key $ minimalMetaData todownload
+							)
+					recordsuccess
+					next $  return True
+			-- Was not able to add anything, but not
+			-- because of a download problem.
+			Nothing -> do
+				recordsuccess
+				next $ return False
+  where
+	recordsuccess = liftIO $ atomically $ putTMVar cv True
+
+	forced = Annex.getRead Annex.force
 
 	{- Find a unique filename to save the url to.
 	 - If the file exists, prefixes it with a number.
 	 - When forced, the file may already exist and have the same
 	 - url, in which case Nothing is returned as it does not need
 	 - to be re-downloaded. -}
-	makeunique url n file = ifM alreadyexists
+	makeunique n file = ifM alreadyexists
 		( ifM forced
 			( lookupKey (toRawFilePath f) >>= \case
 				Just k -> checksameurl k
@@ -316,60 +448,20 @@ performDownload' started addunlockedmatcher opts cache todownload = case locatio
 			else
 				let (d, base) = splitFileName file
 				in d </> show n ++ "_" ++ base
-		tryanother = makeunique url (n + 1) file
+		tryanother = makeunique (n + 1) file
 		alreadyexists = liftIO $ isJust <$> catchMaybeIO (R.getSymbolicLinkStatus (toRawFilePath f))
 		checksameurl k = ifM (elem url <$> getUrls k)
 			( return Nothing
 			, tryanother
 			)
-	
-	downloadmedia linkurl mediaurl mediakey
-		| rawOption (downloadOptions opts) = downloadlink False
-		| otherwise = ifM (youtubeDlSupported linkurl)
-			( do
-				starturl linkurl
-				r <- withTmpWorkDir mediakey $ \workdir -> do
-					dl <- youtubeDl linkurl (fromRawFilePath workdir) nullMeterUpdate
-					case dl of
-						Right (Just mediafile) -> do
-							let ext = case takeExtension mediafile of
-								[] -> ".m"
-								s -> s
-							ok <- rundownload linkurl ext $ \f ->
-								checkCanAdd (downloadOptions opts) f $ \canadd -> do
-									addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey (Just (toRawFilePath mediafile))
-									return (Just [mediakey])
-							return (Just ok)
-						-- youtube-dl didn't support it, so
-						-- download it as if the link were
-						-- an enclosure.
-						Right Nothing -> Just <$> downloadlink True
-						Left msg -> do
-							warning $ UnquotedString $ linkurl ++ ": " ++ msg
-							return Nothing
-				return (fromMaybe False r)
-			, downloadlink False
-			)
-	  where
-		downloadlink started' = checkRaw (Just linkurl) (downloadOptions opts) False $
-			performDownload' started' addunlockedmatcher opts cache todownload
-				{ location = Enclosure linkurl }
 
-	addmediafast linkurl mediaurl mediakey =
-		ifM (pure (not (rawOption (downloadOptions opts)))
-		     <&&> youtubeDlSupported linkurl)
-			( do
-				starturl linkurl
-				rundownload linkurl ".m" $ \f ->
-					checkCanAdd (downloadOptions opts) f $ \canadd -> do
-						addWorkTree canadd addunlockedmatcher webUUID mediaurl f mediakey Nothing
-						return (Just [mediakey])
-			, performDownload' started addunlockedmatcher opts cache todownload
-				{ location = Enclosure linkurl }
-			)
-
-	starturl u = unless started $
-		showStartMessage (StartMessage "addurl" (ActionItemOther (Just (UnquotedString u))) (SeekInput []))
+startUrlDownload :: TMVar Bool -> URLString -> CommandPerform -> CommandStart
+startUrlDownload cv u a = starting "addurl"
+	(ActionItemOther (Just (UnquotedString u)))
+	(SeekInput [])
+	(a `onException` recordfailure)
+  where
+	recordfailure = liftIO $ atomically $ tryPutTMVar cv False
 
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
@@ -476,7 +568,7 @@ feedProblem url message = ifM (checkFeedBroken url)
 		warning $ UnquotedString $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
 		return False
 	, do
-		warning $ UnquotedString $ "warning: " ++ message
+		warning $ UnquotedString $ "warning: " ++ message ++ " (feed: " ++ url ++ ")"
 		return True
 	)
 

@@ -102,6 +102,12 @@ resulting in the new url being downloaded to such a filename.
   url to a file that would be ignored. This makes such files be added
   despite any ignores.
 
+* `--jobs=N` `-JN`
+
+  Runs multiple downloads parallel. For example: `-J4`  
+
+  Setting this to "cpus" will run one job per CPU core.
+
 * `--backend`
 
   Specifies which key-value backend to use.
