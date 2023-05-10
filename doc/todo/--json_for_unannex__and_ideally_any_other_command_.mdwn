@@ -41,9 +41,6 @@ These commands have been updated to support --json:
 * git-annex-upgrade
 * git-annex-initremote
 * git-annex-enableremote
-
-Provisional list of commands that don't support --json and maybe should:
-
 * git-annex-configremote
 
 These commands could support json, but I punted:
@@ -56,6 +53,8 @@ These commands could support json, but I punted:
   possibly more machine parseable. But I'm doubtful that would be useful.
 
 These commands have been reviewed and should not support json:
+
+(Discussion welcome of course if you disagree..)
 
 * git-annex-contentlocation, git-annex-lookupkey, git-annex-calckey,
   (plumbing, output already machine parseable)
