@@ -16,9 +16,10 @@ import Command.Sync (prepMerge, mergeLocal, mergeConfig, merge, notOnlyAnnexOpti
 import Git.Types
 
 cmd :: Command
-cmd = command "merge" SectionMaintenance
-	"merge changes from remotes"
-	(paramOptional paramRef) (seek <$$> optParser)
+cmd = withAnnexOptions [jsonOptions] $
+	command "merge" SectionMaintenance
+		"merge changes from remotes"
+		(paramOptional paramRef) (seek <$$> optParser)
 
 data MergeOptions = MergeOptions
 	{ mergeBranches :: [String]
