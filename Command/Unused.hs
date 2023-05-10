@@ -40,6 +40,7 @@ import qualified Data.Map as M
 import qualified Data.Vector as V
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
+import qualified Data.Text as T
 import Data.Char
 
 cmd :: Command
@@ -116,7 +117,7 @@ check fileprefix msg a c = do
 		showLongNote $ UnquotedString $ msg unusedlist
 	maybeAddJSONField
 		((if null fileprefix then "unused" else fileprefix) ++ "-list")
-		(V.fromList $ map (\(n,  k) -> (show n, serializeKey k)) unusedlist)
+		(M.fromList $ map (\(n,  k) -> (T.pack (show n), serializeKey k)) unusedlist)
 	updateUnusedLog (toRawFilePath fileprefix) (M.fromList unusedlist)
 	return $ c + length l
 

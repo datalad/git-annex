@@ -2,7 +2,7 @@
  -
  - Import instead of Data.Aeson
  -
- - Copyright 2018-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2018-2023 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -33,6 +33,7 @@ import qualified Data.Text.Encoding as T
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
 import qualified Data.Set
+import qualified Data.Map
 import qualified Data.Vector
 import Prelude
 
@@ -99,6 +100,11 @@ instance ToJSON' s => ToJSON' (Data.Vector.Vector s) where
 -- Aeson generates the same JSON for a Set as for a list.
 instance ToJSON' s => ToJSON' (Data.Set.Set s) where
 	toJSON' = toJSON . map toJSON' . Data.Set.toList
+
+instance (ToJSON' v) => ToJSON' (Data.Map.Map T.Text v) where
+	toJSON' m = object $ map go (Data.Map.toList m)
+	  where
+		go (k, v) = (textKey k, toJSON' v)
 
 instance (ToJSON' a, ToJSON a) => ToJSON' (Maybe a) where
 	toJSON' (Just a) = toJSON (Just (toJSON' a))
