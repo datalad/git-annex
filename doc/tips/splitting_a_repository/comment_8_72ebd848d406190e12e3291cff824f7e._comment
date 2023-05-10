@@ -1,0 +1,137 @@
+[[!comment format=mdwn
+ username="jochen.keil@38b1f86ab65128dab3e62e726403ceee4f5141bf"
+ nickname="jochen.keil"
+ avatar="http://cdn.libravatar.org/avatar/a1329c0b3a262017553cc5497aa12c18"
+ subject="comment 8"
+ date="2023-05-10T12:57:54Z"
+ content="""
+Hi,
+
+I went through the hassle of splitting up repositories once again. I wrote earlier about it ([comment 4](http://git-annex.branchable.com/tips/splitting_a_repository/#comment-7285540d397c0f0c0b790f9de3ce8458)) and got some valuable input from Joey!
+
+My repositories contain pictures only. They are organized by `YYYY/MM/DD/YYYY-MM-DDTHH:MM:SS_Filename.ext` where the `YYYY` directory is also the repository (i.e. contains the `.git` subfolder). Every repository is backed by a bare repository which is located on a much larger, but slower, zfs RAID. Here's an example:
+
+
+```
+ls -la 2020
+total 4K
+drwxrwxr-x 1 jchnkl jchnkl  44 Apr 12 12:25 .
+drwxr-xr-x 1 jchnkl jchnkl 770 Mai  9 22:43 ..
+drwxrwxr-x 1 jchnkl jchnkl  16 Jan 30 11:55 01
+drwxrwxr-x 1 jchnkl jchnkl  32 Feb 28 18:21 02
+drwxrwxr-x 1 jchnkl jchnkl   4 Mär  3 10:23 03
+drwxrwxr-x 1 jchnkl jchnkl  28 Apr 12 12:26 04
+[..]
+drwxrwxr-x 1 jchnkl jchnkl 196 Mai 10 14:19 .git
+-rw-rw-r-- 1 jchnkl jchnkl  14 Jan 19 12:21 .gitignore
+```
+
+```
+ls -la 2020/01/01
+total 1400K
+drwxrwxr-x 1 jchnkl jchnkl 13320 Jan 19 12:23 .
+drwxrwxr-x 1 jchnkl jchnkl    16 Jan 30 11:55 ..
+lrwxrwxrwx 1 jchnkl jchnkl   206 Jan  1 09:19 2020-01-01T08:19:17+0100_0092.arw -> ../../.git/annex/objects/f1/v3/SHA256E-s85557248--bda9d67b8d39afd96041f063ec2b9431ca8cc6fa9d88c35ae9015bf591a85265.arw/SHA256E-s85557248--bda9d67b8d39afd96041f063ec2b9431ca8cc6fa9d88c35ae9015bf591a85265.arw
+-rw-rw-r-- 1 jchnkl jchnkl  1226 Jan 19 12:31 2020-01-01T08:19:17+0100_0092.arw.xmp
+lrwxrwxrwx 1 jchnkl jchnkl   206 Jan  1 09:20 2020-01-01T08:20:03+0100_0093.arw -> ../../.git/annex/objects/Mw/M9/SHA256E-s85557248--a4c5c050078a4ab94e1b686794d017c7500bb9b2c2e9b8063f6eeb9772055056.arw/SHA256E-s85557248--a4c5c050078a4ab94e1b686794d017c7500bb9b2c2e9b8063f6eeb9772055056.arw
+-rw-rw-r-- 1 jchnkl jchnkl  1226 Jan 19 12:31 2020-01-01T08:20:03+0100_0093.arw.xmp
+[..]
+```
+
+My problem was that I had a bunch (hundreds) of files that I didn't want to be there. So, the first step was to create a list of globs of all files that I wanted to move away, for example:
+
+```
+01/02/* # all files
+02/03/*_{0001..1234}* # a range of files
+# etc.
+```
+
+I used `bash` to expand those globs to a list of files:
+
+```
+for g in $(< globs.txt); do bash -O nullglob -c \"echo $g\"; done | tr ' ' '\n' > files.txt
+```
+
+Then I cloned the original repository (here: `2020`) twice, and removed the remote:
+
+```
+git clone 2020 2020.new.1
+cd 2020.new.1
+git remote rm origin
+cd ..
+
+git clone 2020 2020.new.2
+cd 2020.new.2
+git remote rm origin
+```
+
+I also created two new bare repositories:
+
+```
+git init --bare 2020.new.1.git
+cd 2020.new.1.git && git annex init tank
+cd ..
+
+git init --bare 2020.new.2.git
+cd 2020.new.2.git && git annex init tank
+```
+
+Where I hardlinke'd the annexed objects from the original bare repository (`2020.git`):
+
+```
+cp -ranl 2020.git/annex/objects 2020.new.1/annex
+cp -ranl 2020.git/annex/objects 2020.new.2/annex
+```
+
+After that I went back to the first clone, added the new remote and fixed the file location using `fsck`:
+
+```
+cd 2020.new.1
+git remote add tank /path/to/2020.new.1.git
+git annex sync tank
+git annex fsck --fsck --from tank
+```
+
+Once that was done I could easily remove the files:
+
+```
+for f in $(< files.txt); do git rm -f $f; done
+git commit -a -m 'remove files'
+git annex sync tank
+git annex unused --from=tank
+git annex dropunused --force --from=tank all
+```
+
+Fixing up the second repository requires a second list of files: everything that's left over in `2020.new.1`:
+
+```
+find ?? -type f -or -type l > files.2.txt
+```
+
+Now in the second repository I did the same as for the first but with `files.2.txt`:
+
+```
+cd 2020.new.2
+git remote add tank /path/to/2020.new.2.git
+git annex sync tank
+git annex fsck --fsck --from tank
+for f in $(< files.2.txt); do git rm -f $f; done
+git commit -a -m 'remove files'
+git annex sync tank
+git annex unused --from=tank
+git annex dropunused --force --from=tank all
+```
+
+Before removing the old repositories (`2020` and `2020.git`) I double checked that all files are still around:
+
+```
+find 2020.git/annex/objects -type f | sed -e 's|.*/||' > 2020.git.annex.objects.txt
+find 2020.new.1.git/annex/objects -type f | sed -e 's|.*/||' > 2020.new.1.git.annex.objects.txt
+find 2020.new.2.git/annex/objects -type f | sed -e 's|.*/||' > 2020.new.2.git.annex.objects.txt
+diff -u <(echo old; sort -u 2020.git.annex.objects.txt) <(echo new; sort -u 2020.new.{1,2}.git.annex.objects.txt)
+```
+
+Finally, there should be no differences and it's save to `rm -rf` `2020` and `2020.git`.
+
+Hope this helps. Any comments and suggestions welcome!
+"""]]
