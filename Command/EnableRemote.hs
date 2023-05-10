@@ -30,10 +30,11 @@ import Git.Config
 import qualified Data.Map as M
 
 cmd :: Command
-cmd = command "enableremote" SectionSetup
-	"enables git-annex to use a remote"
-	(paramPair paramName $ paramOptional $ paramRepeating paramParamValue)
-	(withParams seek)
+cmd = withAnnexOptions [jsonOptions] $
+	command "enableremote" SectionSetup
+		"enables git-annex to use a remote"
+		(paramPair paramName $ paramOptional $ paramRepeating paramParamValue)
+		(withParams seek)
 
 seek :: CmdParams -> CommandSeek
 seek = withWords (commandAction . start)

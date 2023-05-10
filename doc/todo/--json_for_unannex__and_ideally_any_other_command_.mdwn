@@ -40,11 +40,11 @@ These commands have been updated to support --json:
 * git-annex-merge
 * git-annex-upgrade
 * git-annex-initremote
+* git-annex-enableremote
 
 Provisional list of commands that don't support --json and maybe should:
 
 * git-annex-configremote
-* git-annex-enableremote
 
 These commands could support json, but I punted:
 
