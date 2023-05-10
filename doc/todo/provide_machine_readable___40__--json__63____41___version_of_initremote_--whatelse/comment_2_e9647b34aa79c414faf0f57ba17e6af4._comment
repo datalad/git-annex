@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-05-10T16:56:37Z"
+ content="""
+I'm still not seeing much of an application for this, but since I've been
+adding --json support to most git-annex commands anyway recently, and got
+to initremote, I did go ahead and make --whatelse --json work.
+
+Currently only the field name and description, and a description of the
+allowed values are in there. It might be possible to add more information
+like type or required or not, but I'd want to work with someone who was
+consuming that information to do that.
+"""]]

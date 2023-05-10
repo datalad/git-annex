@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,8 +8,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Command.InitRemote where
-
-import qualified Data.Map as M
 
 import Command
 import Annex.SpecialRemote
@@ -23,12 +21,17 @@ import Types.GitConfig
 import Types.ProposedAccepted
 import Config
 import Git.Config
+import Utility.Aeson
+
+import qualified Data.Map as M
+import qualified Data.Text as T
 
 cmd :: Command
-cmd = command "initremote" SectionSetup
-	"creates a special (non-git) remote"
-	(paramPair paramName $ paramOptional $ paramRepeating paramParamValue)
-	(seek <$$> optParser)
+cmd = withAnnexOptions [jsonOptions] $
+	command "initremote" SectionSetup
+		"creates a special (non-git) remote"
+		(paramPair paramName $ paramOptional $ paramRepeating paramParamValue)
+		(seek <$$> optParser)
 
 data InitRemoteOptions = InitRemoteOptions
 	{ cmdparams :: CmdParams
@@ -64,29 +67,35 @@ seek o = withWords (commandAction . (start o)) (cmdparams o)
 
 start :: InitRemoteOptions -> [String] -> CommandStart
 start _ [] = giveup "Specify a name for the remote."
-start o (name:ws) = ifM (not . null <$> findExisting name)
-	( giveup $ "There is already a special remote named \"" ++ name ++
-		"\". (Use enableremote to enable an existing special remote.)"
-	, ifM (isJust <$> Remote.byNameOnly name)
-		( giveup $ "There is already a remote named \"" ++ name ++ "\""
-		, do
-			sameasuuid <- maybe
-				(pure Nothing)
-				(Just . Sameas <$$> getParsed)
-				(sameas o) 
-			c <- newConfig name sameasuuid
-				(Logs.Remote.keyValToConfig Proposed ws)
-				<$> remoteConfigMap
-			t <- either giveup return (findType c)
-			if whatElse o
-				then startingCustomOutput (ActionItemOther Nothing) $
-					describeOtherParamsFor c t
-				else starting "initremote" (ActionItemOther (Just (UnquotedString name))) si $
-					perform t name c o
-		)
-	)
+start o (name:ws) = do
+	if whatElse o
+		then ifM jsonOutputEnabled
+			( starting "initremote" ai si $ prep $ \c t ->
+				describeOtherParamsFor c t
+			, startingCustomOutput (ActionItemOther Nothing) $ prep $ \c t ->
+				describeOtherParamsFor c t
+			)
+		else starting "initremote" ai si $ prep $ \c t ->
+			perform t name c o
   where
-	si = SeekInput [name]
+	prep a = do
+		whenM (not . null <$> findExisting name) $
+			giveup $ "There is already a special remote named \"" ++ name ++
+				"\". (Use enableremote to enable an existing special remote.)"
+		whenM (isJust <$> Remote.byNameOnly name) $
+			giveup $ "There is already a remote named \"" ++ name ++ "\""
+		sameasuuid <- maybe
+			(pure Nothing)
+			(Just . Sameas <$$> getParsed)
+			(sameas o) 
+		c <- newConfig name sameasuuid
+			(Logs.Remote.keyValToConfig Proposed ws)
+			<$> remoteConfigMap
+		t <- either giveup return (findType c)
+		a c t
+	
+	si = SeekInput (name:ws)
+	ai = ActionItemOther (Just (UnquotedString name))
 
 perform :: RemoteType -> String -> R.RemoteConfig -> InitRemoteOptions -> CommandPerform
 perform t name c o = do
@@ -126,18 +135,36 @@ describeOtherParamsFor c t = do
 	cp <- R.configParser t c
 	let l = map mk (filter notinconfig $ remoteConfigFieldParsers cp)
 		++ map mk' (maybe [] snd (remoteConfigRestPassthrough cp))
-	liftIO $ forM_ l $ \(p, fd, vd) -> case fd of
-		HiddenField -> return ()
-		FieldDesc d -> do
-			putStrLn p
-			putStrLn ("\t" ++ d)
-			case vd of
-				Nothing -> return ()
-				Just (ValueDesc d') ->
-					putStrLn $ "\t(" ++ d' ++ ")"
+	ifM jsonOutputEnabled
+		( maybeAddJSONField "whatelse" $ M.fromList $ mkjson l
+		, liftIO $ forM_ l $ \(p, fd, vd) -> case fd of
+			HiddenField -> return ()
+			FieldDesc d -> do
+				putStrLn p
+				putStrLn ("\t" ++ d)
+				case vd of
+					Nothing -> return ()
+					Just (ValueDesc d') ->
+						putStrLn $ "\t(" ++ d' ++ ")"
+		
+		)
 	next $ return True
   where
+	mkjson = mapMaybe $ \(p, fd, vd) ->
+		case fd of
+			HiddenField -> Nothing
+			FieldDesc d -> Just 
+				( T.pack p
+				, M.fromList
+					[ ("description" :: T.Text, d)
+					, ("valuedescription", case vd of
+						Nothing -> ""
+						Just (ValueDesc d') -> d')
+					]
+				)
+
 	notinconfig fp = not (M.member (parserForField fp) c)
+
 	mk fp = ( fromProposedAccepted (parserForField fp)
 		, fieldDesc fp
 		, valueDesc fp

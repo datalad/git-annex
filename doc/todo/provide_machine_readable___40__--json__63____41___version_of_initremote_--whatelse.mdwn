@@ -57,3 +57,5 @@ Looking at the [protocol](https://git-annex.branchable.com/design/external_speci
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> [[done]] --[[Joey]]
