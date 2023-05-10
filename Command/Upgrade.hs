@@ -20,6 +20,7 @@ cmd = dontCheck
 	repoExists $
 	-- avoid upgrading repo out from under daemon
 	noDaemonRunning $
+	withAnnexOptions [jsonOptions] $
 	command "upgrade" SectionMaintenance "upgrade repository"
 		paramNothing (seek <$$> optParser)
 

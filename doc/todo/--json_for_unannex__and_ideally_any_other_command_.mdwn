@@ -38,13 +38,13 @@ These commands have been updated to support --json:
 * git-annex-renameremote
 * git-annex-importfeed
 * git-annex-merge
+* git-annex-upgrade
 
 Provisional list of commands that don't support --json and maybe should:
 
 * git-annex-configremote
 * git-annex-enableremote
 * git-annex-initremote
-* git-annex-upgrade
 
 These commands could support json, but I punted:
 
