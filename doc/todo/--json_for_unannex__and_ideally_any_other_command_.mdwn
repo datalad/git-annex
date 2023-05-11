@@ -44,12 +44,6 @@ These commands have been updated to support --json:
 * git-annex-configremote
 * git-annex-uninit
 
-These commands could support json, but I punted:
-
-* git-annex-version (--raw already exists, and the output is fairly machine
-  parseable already. It would be possible to jsonize the output to make it
-  possibly more machine parseable. But I'm doubtful that would be useful.
-
 These commands have been reviewed and should not support json:
 
 (Discussion welcome of course if you disagree..)
@@ -112,3 +106,13 @@ These commands have been reviewed and should not support json:
   discoverable by simply running the command. And of course, everything it
   does can be done by other commands, which can support json without having
   that problem.)
+* git-annex-version (--raw already exists, and the other output is fairly
+  machine parseable already. It would be possible to jsonize the output to
+  make it possibly more machine parseable. But I'm doubtful that would be
+  useful.
+  Also, this command needs to work when not run in a git-annex repo,
+  and usual json display needs the Annex monad. So it would need to use
+  aeson manually.
+
+> Calling this [[done]]. Of course, if I was wrong about any of the
+> commands above not needing json, just let me know. --[[Joey]]
