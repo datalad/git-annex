@@ -104,7 +104,7 @@ removeAnnexDir recordok = do
 	Annex.Queue.flush
 	annexdir <- fromRawFilePath <$> fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
-	starting ("uninit objects") (ActionItemOther (Just (QuotedPath annexobjectdir))) (SeekInput []) $ do
+	starting ("uninit objects") (ActionItemOther Nothing) (SeekInput []) $ do
 		leftovers <- removeUnannexed =<< listKeys InAnnex
 		prepareRemoveAnnexDir annexdir
 		if null leftovers
