@@ -50,13 +50,13 @@ check = do
 
 seek :: CommandParams -> CommandSeek
 seek = withNothing $ do
-	l <- workTreeItems ww []
 	withFilesNotInGit
 		(CheckGitIgnore False)
 		(WarnUnmatchWorkTreeItems "uninit")
 		checksymlinks
-		l
-	withFilesInGitAnnex ww (Command.Unannex.seeker True) l
+		=<< workTreeItems ww []
+	withFilesInGitAnnex ww (Command.Unannex.seeker True)
+		=<< workTreeItems ww []
 	finish
   where
 	ww = WarnUnmatchLsFiles "uninit"
