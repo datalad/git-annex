@@ -28,7 +28,7 @@ cmd :: Command
 cmd = addCheck check $ 
 	command "uninit" SectionUtility
 		"de-initialize git-annex and clean out repository"
-		paramPaths (withParams seek)
+		paramNothing (withParams seek)
 
 check :: Annex ()
 check = do
@@ -48,9 +48,9 @@ check = do
 	revhead = inRepo $ Git.Command.pipeReadStrict
 		[Param "rev-parse", Param "--abbrev-ref", Param "HEAD"]
 
-seek :: CmdParams -> CommandSeek
-seek ps = do
-	l <- workTreeItems ww ps
+seek :: CommandParams -> CommandSeek
+seek = withNothing $ do
+	l <- workTreeItems ww []
 	withFilesNotInGit
 		(CheckGitIgnore False)
 		(WarnUnmatchWorkTreeItems "uninit")
