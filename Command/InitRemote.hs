@@ -21,7 +21,6 @@ import Types.GitConfig
 import Types.ProposedAccepted
 import Config
 import Git.Config
-import Utility.Aeson
 
 import qualified Data.Map as M
 import qualified Data.Text as T
