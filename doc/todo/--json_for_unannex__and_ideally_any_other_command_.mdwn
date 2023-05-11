@@ -42,12 +42,10 @@ These commands have been updated to support --json:
 * git-annex-initremote
 * git-annex-enableremote
 * git-annex-configremote
+* git-annex-uninit
 
 These commands could support json, but I punted:
 
-* git-annex-uninit (hard to support --json-error-messages because it does
-  pre-check and post-unannex things that are not usual actions and so would
-  not show as json objects without more work)
 * git-annex-version (--raw already exists, and the output is fairly machine
   parseable already. It would be possible to jsonize the output to make it
   possibly more machine parseable. But I'm doubtful that would be useful.

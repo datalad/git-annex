@@ -125,17 +125,17 @@ commonChecks :: [CommandCheck]
 commonChecks = [repoExists]
 
 repoExists :: CommandCheck
-repoExists = CommandCheck 0 (ensureInitialized remoteList)
+repoExists = CommandCheck RepoExists (ensureInitialized remoteList)
 
 notBareRepo :: Command -> Command
-notBareRepo = addCheck checkNotBareRepo
+notBareRepo = addCheck CheckNotBareRepo checkNotBareRepo
 
 checkNotBareRepo :: Annex ()
 checkNotBareRepo = whenM (fromRepo Git.repoIsLocalBare) $
 	giveup "You cannot run this command in a bare repository."
 
 noDaemonRunning :: Command -> Command
-noDaemonRunning = addCheck $ whenM (isJust <$> daemonpid) $
+noDaemonRunning = addCheck NoDaemonRunning $ whenM (isJust <$> daemonpid) $
 	giveup "You cannot run this command while git-annex watch or git-annex assistant is running."
   where
 	daemonpid = liftIO . checkDaemon . fromRawFilePath
@@ -144,9 +144,9 @@ noDaemonRunning = addCheck $ whenM (isJust <$> daemonpid) $
 dontCheck :: CommandCheck -> Command -> Command
 dontCheck check cmd = mutateCheck cmd $ \c -> filter (/= check) c
 
-addCheck :: Annex () -> Command -> Command
-addCheck check cmd = mutateCheck cmd $ \c ->
-	CommandCheck (length c + 100) check : c
+addCheck :: CommandCheckId -> Annex () -> Command -> Command
+addCheck cid check cmd = mutateCheck cmd $ \c ->
+	CommandCheck cid check : c
 
 mutateCheck :: Command -> ([CommandCheck] -> [CommandCheck]) -> Command
 mutateCheck cmd@(Command { cmdcheck = c }) a = cmd { cmdcheck = a c }

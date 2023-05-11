@@ -78,7 +78,7 @@ checkDirectory mdir = do
 {- Modifies a Command to check that it is run in either a git-annex
  - repository, or a repository with a gcrypt-id set. -}
 gitAnnexShellCheck :: Command -> Command
-gitAnnexShellCheck = addCheck okforshell . dontCheck repoExists
+gitAnnexShellCheck = addCheck GitAnnexShellOk okforshell . dontCheck repoExists
   where
 	okforshell = unlessM (isInitialized <||> isJust . gcryptId <$> Annex.getGitConfig) $
 		giveup "Not a git-annex or gcrypt repository."

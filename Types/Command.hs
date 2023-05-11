@@ -24,7 +24,7 @@ import Types.ActionItem
 type CommandParser = Parser CommandSeek
 {- b. The check stage runs checks, that error out if
  -    anything prevents the command from running. -}
-data CommandCheck = CommandCheck { idCheck :: Int, runCheck :: Annex () }
+data CommandCheck = CommandCheck { idCheck :: CommandCheckId, runCheck :: Annex () }
 {- c. The seek stage is passed input from the parser, looks through
  -    the repo to find things to act on (ie, new files to add), and
  -    runs commandAction to handle all necessary actions. -}
@@ -136,3 +136,10 @@ descSection SectionAddOn = "Addon commands"
 
 newtype DryRun = DryRun Bool
 	deriving (Show)
+
+data CommandCheckId 
+	= CheckNotBareRepo
+	| RepoExists
+	| NoDaemonRunning
+	| GitAnnexShellOk
+	deriving (Show, Ord, Eq)
