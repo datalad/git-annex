@@ -48,7 +48,7 @@ check = do
 	revhead = inRepo $ Git.Command.pipeReadStrict
 		[Param "rev-parse", Param "--abbrev-ref", Param "HEAD"]
 
-seek :: CommandParams -> CommandSeek
+seek :: CmdParams -> CommandSeek
 seek = withNothing $ do
 	withFilesNotInGit
 		(CheckGitIgnore False)
