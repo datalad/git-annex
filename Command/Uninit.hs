@@ -54,8 +54,7 @@ seek = withNothing $ do
 			withFilesInGitAnnex ww (Command.Unannex.seeker True)
 				=<< workTreeItems ww []
 			whenM (checkok False $ commandAction $ removeAnnexDir recordok) $ 
-				whenM (checkok False $ commandAction $ completeUnitialize recordok) $
-					liftIO exitSuccess
+				commandAction completeUnitialize
   where
 	ww = WarnUnmatchLsFiles "uninit"
 	checksymlinks recordnotok (_, f) = 
@@ -163,12 +162,12 @@ removeUnannexed = go []
 		s <- R.getFileStatus f
 		return $ linkCount s > 1
 
-completeUnitialize :: CommandCleanup -> CommandStart
-completeUnitialize recordok =
+completeUnitialize :: CommandStart
+completeUnitialize =
 	starting ("uninit finish") (ActionItemOther Nothing) (SeekInput []) $ do
 		uninitialize
 		removeAnnexBranch
-		next recordok
+		next $ return True
 
 removeAnnexBranch :: Annex ()
 removeAnnexBranch = do
