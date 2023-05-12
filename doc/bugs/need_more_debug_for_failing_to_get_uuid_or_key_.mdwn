@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+Original case has more in [datalad github issue](https://github.com/datalad/datalad/issues/7371). 
+In a nutshell in my words: a user has a repository which is v9, under ACL (but git annex works fine as is). A user clones from another user locally. `git annex init` fails to determine (doesn't record) UUID of the `origin` remote but also does not make it `git-annex` ignore.  If we manually set `origin` uuid within .git/config of the clone, then `git annex whereis` reports presence fine. But if we do `git annex get` (see [here](https://github.com/datalad/datalad/issues/7371#issuecomment-1546158732)), it says that it is unable to access remote origin, and suggests two other remotes (not available).
+
+The sad part is that `git-annex` did not really give any reason ( in --debug) on why it didn't discover UUID or why it is unable to access it, e.g. here is output from `git annex init` in the clone when I think it should have discovered/recorded UUID
+
+```
+[2023-05-12 11:26:12.750934374] (Annex.Branch) read uuid.log
+[2023-05-12 11:26:12.753755353] (Annex.Branch) set uuid.log
+[2023-05-12 11:26:12.7539016] (Annex.Branch) read remote.log
+[2023-05-12 11:26:12.755652872] (Utility.Process) process [43725] read: git ["config","--null","--list"]
+[2023-05-12 11:26:12.763856026] (Utility.Process) process [43725] done ExitSuccess
+[2023-05-12 11:26:12.76467482] (Utility.Process) process [43726] call: /usr/local/miniconda3/share/git-annex-10.20220927-0/bin/git-annex ["upgrade","--quiet","--autoonly"]
+[2023-05-12 11:26:12.794100842] (Utility.Process) process [43726] done ExitSuccess
+[2023-05-12 11:26:12.79481645] (Utility.Process) process [43733] read: git ["config","--null","--list"]
+[2023-05-12 11:26:12.802972197] (Utility.Process) process [43733] done ExitSuccess
+[2023-05-12 11:26:12.803473974] (Annex.Branch) read trust.log
+ok
+```
+from [this comment](https://github.com/datalad/datalad/issues/7371#issuecomment-1545929998).
+
+
+So what we really need is some debug logging to tell us more.
+
+### What steps will reproduce the problem?
+
+we failed to create  a reproducer. So it is something about that user + original location.
+
+`git annex upgrade` from v9 to v10 somehow resolved it in one sample case. We have more cases like that we are not upgrading yet to reproduce again.
+
+
+### What version of git-annex are you using? On what operating system?
+
+originally in some older 8.2022  but now in 10.20230407
+
+[[!meta author=yoh]]
+[[!tag projects/datalad]]
