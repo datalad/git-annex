@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2023-05-12T13:22:19Z"
+ content="""
+since referenced issue was \"cleaned up\", I deduce from git log that it was fixed in [8.20210714-78-g3b5a3e168d AKA 8.20210803~31](https://git.kitenet.net/index.cgi/git-annex.git/commit/?id=3b5a3e168d8decd196509ad582ad4b8795d979a6).  In my case I am getting it with `8.20210223-1~ndall+1` so I better upgrade first indeed.
+"""]]
