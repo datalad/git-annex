@@ -104,19 +104,23 @@ global = do
 hRead :: Repo -> ConfigStyle -> Handle -> IO Repo
 hRead repo st h = do
 	val <- S.hGetContents h
-	store val st repo
+	let c = parse val st
+	debug (DebugSource "Git.Config") $ "git config read: " ++
+		show (map (\(k, v) -> (show k, map show v)) (M.toList c))
+	storeParsed c repo
 
 {- Stores a git config into a Repo, returning the new version of the Repo.
  - The git config may be multiple lines, or a single line.
  - Config settings can be updated incrementally.
  -}
 store :: S.ByteString -> ConfigStyle -> Repo -> IO Repo
-store s st repo = do
-	let c = parse s st
-	updateLocation $ repo
-		{ config = (M.map Prelude.head c) `M.union` config repo
-		, fullconfig = M.unionWith (++) c (fullconfig repo)
-		}
+store s st = storeParsed (parse s st)
+
+storeParsed :: M.Map ConfigKey [ConfigValue] -> Repo -> IO Repo
+storeParsed c repo = updateLocation $ repo
+	{ config = (M.map Prelude.head c) `M.union` config repo
+	, fullconfig = M.unionWith (++) c (fullconfig repo)
+	}
 
 {- Stores a single config setting in a Repo, returning the new version of
  - the Repo. Config settings can be updated incrementally. -}

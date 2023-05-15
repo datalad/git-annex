@@ -36,3 +36,10 @@ originally in some older 8.2022  but now in 10.20230407
 
 [[!meta author=yoh]]
 [[!tag projects/datalad]]
+
+> Hard to know when there is *enough* debugging, but with what I've added,
+> I can't think of any more I could add that would help with a problem of
+> this kind. Unless of course git-annex has a deep dark bug where it reads
+> an annex.uuid from git config, but then somehow misplaces it. But I can't
+> imagine such a bug so it's hard to add debugging for it. So, I suppose
+> this is [[done]] --[[Joey]]

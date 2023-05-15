@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-05-15T17:43:21Z"
+ content="""
+Something that prevents `git config` from working, or prevents it from
+listing an annex.uuid for the remote, seems like the overridingly likely
+reason for their problem. (You were asking the right questions 
+[here](https://github.com/datalad/datalad/issues/7371#issuecomment-1545975295)
+and I don't think they really answered them, unless it happened in your office
+hours.)
+
+I've made --debug include the output of `git config --list`,
+which allows seeing if a problem prevents git from reading the config of
+the remote.
+
+I also made the debug output tell what directory it's running a command in
+when it's not the pwd.
+
+So, for example:
+
+	[2023-05-15 15:16:01.414302245] (Utility.Process) process [59665] read: git ["config","--null","--list"] in "/home/joey/tmp/a"
+	[2023-05-15 15:16:01.419396816] (Git.Config) git config read: [("",[]),("annex.uuid",["9553f51c-87ad-4321-86fb-de4aa630e997"]) [...]
+"""]]
