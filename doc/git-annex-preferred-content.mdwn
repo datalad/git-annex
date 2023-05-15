@@ -40,6 +40,13 @@ elsewhere to allow removing it).
   files relative to the current directory, preferred content expressions
   match files relative to the top of the git repository.
 
+  A glob is something like `foo.*` or `b?r`. 
+  Globs can also contain character classes, 
+  like `foo[Bb]ar`, as well as additional POSIX character classes like
+  `[[:space:]]`. Which is useful, since a glob in a preferred content
+  expression cannot contain spaces. See the `glob(7)` man page for more
+  about globs.
+
   For example, suppose you put files into `archive` directories
   when you're done with them. Then you could configure your laptop to prefer
   to not retain those files, like this: `exclude=*/archive/*`
@@ -129,6 +136,13 @@ elsewhere to allow removing it).
   Matches only files that have a metadata field attached with a value that
   matches the glob. The values of metadata fields are matched case
   insensitively.
+
+  A glob is something like `foo.*` or `b?r`. 
+  Globs can also contain character classes, 
+  like `foo[Bb]ar`, as well as additional POSIX character classes like
+  `[[:space:]]`. Which is useful, since a glob in a preferred content
+  expression cannot contain spaces. See the `glob(7)` man page for more
+  about globs.
 
   To match a tag "done", use `metadata=tag=done`
 

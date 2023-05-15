@@ -29,3 +29,5 @@ upgrade supported from repository versions: 0 1 2 4
 The only workaround I found is to use a glob for the filepath which only works for the first space: *include='pictures/dir\*'*.
 
 [[!tag confirmed]]
+
+> [[fixed|done]] by documenting the `[[:space:]]` workaround. --[[Joey]]
