@@ -866,7 +866,8 @@ syncFile ebloom rs af k = do
 	return (got || not (null putrs))
   where
 	wantget have inhere = allM id 
-		[ pure (not $ null have)
+		[ pure (maybe True pullOption o)
+		, pure (not $ null have)
 		, pure (not inhere)
 		, wantGet True (Just k) af
 		]
@@ -879,6 +880,7 @@ syncFile ebloom rs af k = do
 			next $ return True
 
 	wantput r
+		| pushOption o = Just False = return False
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| isThirdPartyPopulated r = return False
 		| otherwise = wantGetBy True (Just k) af (Remote.uuid r)
