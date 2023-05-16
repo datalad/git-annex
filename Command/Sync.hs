@@ -912,7 +912,7 @@ seekExportContent :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
 seekExportContent o rs (currbranch, _) = or <$> forM rs go
   where
 	go r
-		| not (maybe True pullOption o) = return False
+		| not (maybe True pushOption o) = return False
 		| not (remoteAnnexPush (Remote.gitconfig r)) = return False
 		| otherwise = bracket
 			(Export.openDb (Remote.uuid r))
