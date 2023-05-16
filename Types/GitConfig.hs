@@ -93,7 +93,7 @@ data GitConfig = GitConfig
 	, annexHttpHeadersCommand :: Maybe String
 	, annexAutoCommit :: GlobalConfigurable Bool
 	, annexResolveMerge :: GlobalConfigurable Bool
-	, annexSyncContent :: GlobalConfigurable Bool
+	, annexSyncContent :: GlobalConfigurable (Maybe Bool)
 	, annexSyncOnlyAnnex :: GlobalConfigurable Bool
 	, annexDebug :: Bool
 	, annexDebugFilter :: Maybe String
@@ -181,7 +181,7 @@ extractGitConfig configsource r = GitConfig
 		getmaybebool (annexConfig "autocommit")
 	, annexResolveMerge = configurable True $ 
 		getmaybebool (annexConfig "resolvemerge")
-	, annexSyncContent = configurable False $ 
+	, annexSyncContent = configurablemaybe $ 
 		getmaybebool (annexConfig "synccontent")
 	, annexSyncOnlyAnnex = configurable False $ 
 		getmaybebool (annexConfig "synconlyannex")
@@ -287,6 +287,11 @@ extractGitConfig configsource r = GitConfig
 	configurable _ (Just v) = case configsource of
 		FromGitConfig -> HasGitConfig v
 		FromGlobalConfig -> HasGlobalConfig v
+	
+	configurablemaybe Nothing = DefaultConfig Nothing
+	configurablemaybe (Just v) = case configsource of
+		FromGitConfig -> HasGitConfig (Just v)
+		FromGlobalConfig -> HasGlobalConfig (Just v)
 
 	onemegabyte = 1000000
 	

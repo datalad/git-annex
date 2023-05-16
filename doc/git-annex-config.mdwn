@@ -74,23 +74,27 @@ looks for these.
 
   Set to false to prevent merge conflicts in the checked out branch
   being automatically resolved by the `git-annex assitant`,
-  `git-annex sync`, `git-annex merge`, and the `git-annex post-receive`
-  hook.
+  `git-annex sync`, `git-annex pull`, ``git-annex merge`, 
+  and the `git-annex post-receive` hook.
    
   This sets a default, which can be overridden by annex.resolvemerge
   in `git config`.
 
 * `annex.synccontent`
 
-  Set to true to make git-annex sync default to syncing annexed content.
+  Set to true to make `git-annex sync` default to transferring
+  annexed content.
+  
+  Set to false to prevent `git-annex pull` and `git-annex` push from
+  transferring annexed content.
   
   This sets a default, which can be overridden by annex.synccontent
   in `git config`.
 
 * `annex.synconlyannex`
 
-  Set to true to make git-annex sync default to only sync the git-annex
-  branch and annexed content.
+  Set to true to make `git-annex sync`, `git-annex pull` and `git-annex
+  push` default to only operate on the git-annex branch and annexed content.
   
   This sets a default, which can be overridden by annex.synconlyannex
   in `git config`.

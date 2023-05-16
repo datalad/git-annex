@@ -9,11 +9,11 @@ git annex merge [branch]
 # DESCRIPTION
 
 When run without any parameters, this performs the same merging (and merge
-conflict resolution) that is done by the sync command, but without pushing
-or pulling any data.
+conflict resolution) that is done by the `git-annex pull` and `git-annex sync`
+commands, but without uploading or downloading any data.
 
 When a branch to merge is specified, this merges it, using the same merge
-conflict resolution as the sync command. This is especially useful on
+conflict resolution as the `git-annex pull` command. This is especially useful on
 an adjusted branch, because it applies the same adjustment to the
 branch before merging it.
 
@@ -42,6 +42,8 @@ will not be done.
 # SEE ALSO
 
 [[git-annex]](1)
+
+[[git-annex-pull]](1)
 
 [[git-annex-sync]](1)
 

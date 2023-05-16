@@ -1,0 +1,143 @@
+# NAME
+
+git-annex pull - pull content from remotes
+
+# SYNOPSIS
+
+git annex pull `[remote ...]`
+
+# DESCRIPTION
+
+This command pulls content from remotes. It downloads
+both git repository content, and the content of annexed files.
+Like `git pull`, it merges changes into the current branch.
+
+You can use `git pull` and `git-annex get` by hand to do the same thing as
+this command, but this command handles several details, including making
+sure that the git-annex branch is fetched from the remote.
+
+Some special remotes contain a tree of files that can be imported,
+and this command can be used to pull from those remotes as
+well as regular git remotes. See [[git-annex-import]](1) for details
+about how those special remotes work. In order for this command to import
+from a special remote, `remote.<name>.annex-tracking-branch` also must
+be configured, and have the same value as the currently checked out branch.
+
+When [[git-annex-adjust]](1) has been used to check out an adjusted branch,
+this command will also pull changes from the parent branch.
+
+When [[git-annex-view]](1) has been used to check out a view branch,
+this command will update the view branch to reflect any changes 
+to the parent branch or metadata.
+  
+Normally this tries to download the content of each annexed file,
+from any remote that it's pulling from that has a copy. 
+To control which files it downloads, configure the preferred
+content of the local repository.It will also drop files from a
+remote that are not preferred content of the remote.
+See [[git-annex-preferred-content]](1).
+
+# OPTIONS
+
+* `[remote]`
+
+  By default this command pulls from all remotes, except for remotes
+  that have `remote.<name>.annex-pull` (or `remote.<name>.annex-sync`) 
+  set to false. 
+
+  By specifying the names of remotes (or remote groups), you can control
+  which ones to pull from.
+
+* `--fast`
+
+  Only pull with the remotes with the lowest annex-cost value configured.
+
+  When a list of remotes (or remote groups) is provided, it picks from
+  amoung those, otherwise it picks from amoung all remotes.
+
+* `--only-annex` `-a`, `--not-only-annex`
+
+  Only pull the git-annex branch and annexed content from remotes,
+  not other git branches.
+
+  The `annex.synconlyannex` configuration can be set to true to make
+  this be the default behavior. To override such a setting, use
+  `--not-only-annex`.
+
+  When this is combined with --no-content, only the git-annex branch
+  will be pulled.
+
+* `--no-content`, `--content`
+
+  Use `--no-content` to avoid downloading (and dropping)
+  the content of annexed files.
+
+  If you often use `--no-content`, you can set the `annex.synccontent`
+  configuration to false to prevent downloading content by default.
+  The `--content` option overrides that configuration.
+
+* `--content-of=path` `-C path`
+
+  Only download (and drop) annexed files in the given path.
+
+  This option can be repeated multiple times with different paths.
+
+* `--all` `-A`
+
+  Usually this command operates on annexed files in the current branch.
+  This option makes it operate on all available versions of all annexed files
+  (when preferred content settings allow).
+
+  Note that preferred content settings that use `include=` or `exclude=`
+  will only match the version of files currently in the work tree, but not
+  past versions of files.
+
+* `--jobs=N` `-JN`
+
+  Enables parallel pulling with up to the specified number of jobs
+  running at once. For example: `-J10`
+
+  Setting this to "cpus" will run one job per CPU core.
+
+  (Note that git pulls are not done in parallel because that tends to be
+  less efficient.)
+
+* `--allow-unrelated-histories`, `--no-allow-unrelated-histories`
+
+  Passed on to `git merge`, to control whether or not to merge
+  histories that do not share a common ancestor.
+
+* `--resolvemerge`, `--no-resolvemerge`
+
+  By default, merge conflicts are automatically handled by this command. 
+  When two conflicting versions of a file have been committed, both will
+  be added  to the tree, under different filenames. For example, file "foo"
+  would be replaced with "foo.variant-A" and "foo.variant-B". (See
+  [[git-annex-resolvemerge]](1) for details.)
+
+  Use `--no-resolvemerge` to disable this automatic merge conflict
+  resolution. It can also be disabled by setting `annex.resolvemerge`
+  to false.
+
+* `--backend`
+
+  Specifies which key-value backend to use when importing from a
+  special remote. 
+
+* Also the [[git-annex-common-options]](1) can be used.
+  
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-push]](1)
+
+[[git-annex-sync]](1)
+
+[[git-annex-preferred-content]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -1,0 +1,127 @@
+# NAME
+
+git-annex push - push content to remotes
+
+# SYNOPSIS
+
+git annex push `[remote ...]`
+
+# DESCRIPTION
+
+This command pushes content to remotes. It uploads 
+both git repository content, and the content of annexed files.
+
+You can use `git push` and `git-annex copy` by hand to do the same thing as
+this command, but this command handles several details, including making
+sure that the git-annex branch is pushed to the remote.
+
+When using git-annex, often remotes are not bare repositories, because
+it's helpful to add remotes for nearby machines that you want
+to access the same annexed content. Pushing to a non-bare remote will
+not normally update the remote's current branch with changes from the local
+repository. (Unless the remote is configured with
+receive.denyCurrentBranch=updateInstead.)
+
+To make working with such non-bare remotes easier, this command pushes not only
+local `master` to remote `master`, but also to remote `synced/master` (and
+similar with other branches). When `git-annex pull` (or `git-annex sync`) 
+is later run on the remote, it will merge the `synced/` branches that
+were pushed to it.
+
+Some special remotes allow exporting a tree of files to them,
+and this command can be used to push to those remotes as well
+as regular git remotes. See [[git-annex-export]](1) for details
+about how those special remotes work. In order for this command to export
+to a special remote, `remote.<name>.annex-tracking-branch` also must
+be configured, and have the same value as the currently checked out branch.
+
+When [[git-annex-adjust]](1) has been used to check out an adjusted branch,
+this command will propagate changes that have been made back to the 
+parent branch, without propagating the adjustments. 
+
+Normally this tries to upload the content of each annexed file that is
+in the working tree, to any remote that it's pushing to that does not have
+a copy. To control which files are uploaded to a remote, configure the preferred
+content of the remote. When a file is not the preferred content of a remote,
+or of the local repository, this command will try to drop the file's content.
+See [[git-annex-preferred-content]](1).
+
+# OPTIONS
+
+* `[remote]`
+
+  By default, this command pushes to all remotes, except for remotes 
+  that have `remote.<name>.annex-push` (or `remote.<name>.annex-sync`) 
+  set to false or `remote.<name>.annex-readonly` set to true.
+
+  By specifying the names of remotes (or remote groups), you can control which
+  ones to push to.
+
+* `--fast`
+
+  Only push to the remotes with the lowest annex-cost value configured.
+
+  When a list of remotes (or remote groups) is provided, it picks from
+  amoung those, otherwise it picks from amoung all remotes.
+
+* `--only-annex` `-a`, `--not-only-annex`
+
+  Only pull the git-annex branch and annexed content from remotes,
+  not other git branches.
+
+  The `annex.synconlyannex` configuration can be set to true to make
+  this be the default behavior. To override such a setting, use
+  `--not-only-annex`.
+
+  When this is combined with --no-content, only the git-annex branch
+  will be pulled.
+
+* `--no-content`, `--content`
+
+  Use `--no-content` to avoid uploading (and dropping) the content of annexed
+  files.
+
+  If you often use `--no-content`, you can set the `annex.synccontent`
+  configuration to false to prevent uploading content by default.
+  The `--content` option overrides that configuration.
+
+* `--content-of=path` `-C path`
+
+  Only upload (or drop) annexed files in the given path.
+
+  This option can be repeated multiple times with different paths.
+
+* `--all` `-A`
+
+  Usually this command operates on annexed files in the current branch.
+  This option makes it operate on all available versions of all annexed files
+  (when preferred content settings allow).
+
+  Note that preferred content settings that use `include=` or `exclude=`
+  will only match the version of files currently in the work tree, but not
+  past versions of files.
+
+* `--jobs=N` `-JN`
+
+  Enables parallel pushing with up to the specified number of jobs
+  running at once. For example: `-J10`
+
+  Setting this to "cpus" will run one job per CPU core.
+
+* Also the [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-pull]](1)
+
+[[git-annex-sync]](1)
+
+[[git-annex-preferred-content]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

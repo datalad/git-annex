@@ -52,15 +52,13 @@ paragraph do not apply. Note that dropping content from such a remote is
 not supported. See individual special remotes' documentation for
 details of how to enable such versioning.
 
-The `git annex sync --content` command (and the git-annex assistant)
-can also be used to export a branch to a special remote, 
-updating the special remote whenever the branch is changed.
-To do this, you need to configure "remote.<name>.annex-tracking-branch"
-to tell it what branch to track.
-For example:
+Commands like `git-annex push` can also be used to export a branch to a
+special remote, updating the special remote whenever the branch is changed.
+To do this, you need to configure "remote.<name>.annex-tracking-branch" to
+tell it what branch to track. For example:
 
 	git config remote.myremote.annex-tracking-branch master
-	git annex sync --content
+	git annex push myremote
 
 You can combine using `git annex export` to send changes to a special 
 remote with `git annex import` to fetch changes from a special remote.
@@ -89,7 +87,7 @@ so the overwritten modification is not lost.)
 * `--fast`
 
   This sets up an export of a tree, but avoids any expensive file uploads to
-  the remote. You can later run `git annex sync --content` to upload
+  the remote. You can later run `git annex push` to upload
   the files to the export.
 
 * `--jobs=N` `-JN`
@@ -162,7 +160,7 @@ export`, it will detect the export conflict, and resolve it.
 
 [[git-annex-import]](1)
 
-[[git-annex-sync]](1)
+[[git-annex-push]](1)
 
 [[git-annex-preferred-content]](1)
 

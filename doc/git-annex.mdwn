@@ -114,6 +114,18 @@ content from the key-value store.
   
   See [[git-annex-lock]](1) for details.
 
+* `pull [remote ...]`
+
+  Pull content from remotes.
+  
+  See [[git-annex-pull]](1) for details.
+
+* `push [remote ...]`
+
+  Push content to remotes.
+  
+  See [[git-annex-push]](1) for details.
+
 * `sync [remote ...]`
 
   Synchronize local repository with remotes.
@@ -706,7 +718,8 @@ content from the key-value store.
 
   Resolves a conflicted merge, by adding both conflicting versions of the
   file to the tree, using variants of their filename. This is done
-  automatically when using `git annex sync` or `git annex merge`.
+  automatically when using `git annex sync` or `git-annex pull`
+  or `git annex merge`.
 
   See [[git-annex-resolvemerge]](1) for details.
 
@@ -1163,8 +1176,8 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 * `annex.resolvemerge`
 
   Set to false to prevent merge conflicts in the checked out branch
-  being automatically resolved by the git-annex assitant,
-  git-annex sync, git-annex merge,
+  being automatically resolved by the `git-annex assitant`,
+  `git-annex sync`, `git-annex pull`, `git-annex merge`,
   and the git-annex post-receive hook.
 
   To configure the behavior in all clones of the repository,
@@ -1172,15 +1185,19 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
 * `annex.synccontent`
 
-  Set to true to make git-annex sync default to syncing annexed content.
+  Set to true to make `git-annex sync` default to transferring
+  annexed content.
+
+  Set to false to prevent `git-annex pull` and `git-annex push` from
+  transferring annexed content.
 
   To configure the behavior in all clones of the repository,
   this can be set in [[git-annex-config]](1).
 
 * `annex.synconlyannex`
 
-  Set to true to make git-annex sync default to only sincing the git-annex
-  branch and annexed content.
+  Set to true to make git-annex sync, git-annex pull, and git-annex push
+  default to only operating on the git-annex branch and annexed content.
 
   To configure the behavior in all clones of the repository,
   this can be set in [[git-annex-config]](1).
@@ -1352,7 +1369,7 @@ Remotes are configured using these settings in `.git/config`.
 * `remote.<name>.annex-ignore`
 
   If set to `true`, prevents git-annex
-  from storing file contents on this remote by default.
+  from storing annexed file contents on this remote by default.
   (You can still request it be used by the `--from` and `--to` options.)
 
   This is, for example, useful if the remote is located somewhere
@@ -1360,8 +1377,8 @@ Remotes are configured using these settings in `.git/config`.
   Or, it could be used if the network connection between two
   repositories is too slow to be used normally.
 
-  This does not prevent git-annex sync (or the git-annex assistant) from
-  syncing the git repository to the remote.
+  This does not prevent git-annex sync, git-annex pull, git-annex push,
+  or the git-annex assistant from operating on the git repository.
 
 * `remote.<name>.annex-ignore-command`
 
@@ -1371,9 +1388,8 @@ Remotes are configured using these settings in `.git/config`.
 
 * `remote.<name>.annex-sync`
 
-  If set to `false`, prevents git-annex sync (and the git-annex assistant)
-  from syncing with this remote by default. However, `git annex sync <name>`
-  can still be used to sync with the remote.
+  If set to `false`, prevents git-annex sync (and git-annex pull, git-annex
+  sync, and the git-annex assistant) from operating on this remote by default.
 
 * `remote.<name>.annex-sync-command`
 
@@ -1383,13 +1399,14 @@ Remotes are configured using these settings in `.git/config`.
 
 * `remote.<name>.annex-pull`
 
-  If set to `false`, prevents git-annex sync (and the git-annex assistant
-  etc) from ever pulling (or fetching) from the remote.
+  If set to `false`, prevents git-annex sync, git-annex pull,
+  (and the git-annex assistant etc) from ever pulling (or fetching)
+  from the remote.
 
 * `remote.<name>.annex-push`
 
-  If set to `false`, prevents git-annex sync (and the git-annex assistant
-  etc) from ever pushing to the remote.
+  If set to `false`, prevents git-annex sync, git-annex push,
+  (and the git-annex assistant etc) from ever pushing to the remote.
 
 * `remote.<name>.annex-readonly`
 

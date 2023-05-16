@@ -100,6 +100,8 @@ import qualified Command.Ungroup
 import qualified Command.Config
 import qualified Command.Vicfg
 import qualified Command.Sync
+import qualified Command.Pull
+import qualified Command.Push
 import qualified Command.Mirror
 import qualified Command.AddUrl
 import qualified Command.ImportFeed
@@ -145,6 +147,8 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.Unlock.editcmd
 	, Command.Lock.cmd
 	, Command.Sync.cmd
+	, Command.Pull.cmd
+	, Command.Push.cmd
 	, Command.Mirror.cmd
 	, Command.AddUrl.cmd
 	, Command.ImportFeed.cmd

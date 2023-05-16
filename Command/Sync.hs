@@ -11,6 +11,7 @@
 
 module Command.Sync (
 	cmd,
+	seek,
 	CurrBranch,
 	mergeConfig,
 	merge,
@@ -23,8 +24,10 @@ module Command.Sync (
 	updateBranch,
 	updateBranches,
 	seekExportContent,
+	optParser,
 	parseUnrelatedHistoriesOption,
 	SyncOptions(..),
+	OperationMode(..),
 ) where
 
 import Command
@@ -73,6 +76,7 @@ import Annex.CurrentBranch
 import Annex.Import
 import Annex.CheckIgnore
 import Types.FileMatcher
+import Types.GitConfig
 import qualified Database.Export as Export
 import Utility.Bloom
 import Utility.OptParse
@@ -88,7 +92,10 @@ cmd :: Command
 cmd = withAnnexOptions [jobsOption, backendOption] $
 	command "sync" SectionCommon 
 		"synchronize local repository with remotes"
-		(paramRepeating paramRemote) (seek <--< optParser)
+		(paramRepeating paramRemote) (seek <--< optParser SyncMode)
+
+data OperationMode = SyncMode | PullMode | PushMode
+	deriving (Eq, Show)
 
 data SyncOptions = SyncOptions
 	{ syncWith :: CmdParams
@@ -106,6 +113,7 @@ data SyncOptions = SyncOptions
 	, keyOptions :: Maybe KeyOptions
 	, resolveMergeOverride :: Bool
 	, allowUnrelatedHistories :: Bool
+	, operationMode :: OperationMode
 	}
 
 instance Default SyncOptions where
@@ -125,10 +133,11 @@ instance Default SyncOptions where
 		, keyOptions = Nothing
 		, resolveMergeOverride = False
 		, allowUnrelatedHistories = False
+		, operationMode = SyncMode
 		}
 
-optParser :: CmdParamsDesc -> Parser SyncOptions
-optParser desc = SyncOptions
+optParser :: OperationMode -> CmdParamsDesc -> Parser SyncOptions
+optParser mode desc = SyncOptions
 	<$> (many $ argument str
 		( metavar desc
 		<> completeRemotes
@@ -136,30 +145,36 @@ optParser desc = SyncOptions
 	<*> switch 
 		( long "only-annex"
 		<> short 'a'
-		<> help "only sync git-annex branch and annexed file contents"
+		<> help "do not operate on git branches"
 		)
 	<*> switch 
 		( long "not-only-annex"
-		<> help "sync git branches as well as annex"
+		<> help "operate on git branches as well as annex"
 		)
-	<*> switch
+	<*> unlesssync False (switch
 		( long "commit"
 		<> help "commit changes to git"
-		)
-	<*> switch
+		))
+	<*> unlesssync True (switch
 		( long "no-commit"
 		<> help "avoid git commit" 
-		)
-	<*> optional (strOption
+		))
+	<*> unlesssync Nothing (optional (strOption
 		( long "message" <> short 'm' <> metavar "MSG"
 		<> help "commit message"
-		))
-	<*> invertableSwitch "pull" True
-		( help "avoid git pulls from remotes" 
-		)
-	<*> invertableSwitch "push" True
-		( help "avoid git pushes to remotes" 
-		)
+		)))
+	<*> case mode of
+		SyncMode -> invertableSwitch "pull" True
+			( help "avoid git pulls from remotes" 
+			)
+		PullMode -> pure True
+		PushMode -> pure False
+	<*> case mode of
+		SyncMode -> invertableSwitch "push" True
+			( help "avoid git pushes to remotes" 
+			)
+		PullMode -> pure False
+		PushMode -> pure True
 	<*> switch 
 		( long "content"
 		<> help "transfer annexed file contents" 
@@ -174,15 +189,24 @@ optParser desc = SyncOptions
 		<> help "transfer contents of annexed files in a given location"
 		<> metavar paramPath
 		))
-	<*> switch
+	<*> unlesssync False (switch
 		( long "cleanup"
 		<> help "remove synced/ branches from previous sync"
-		)
+		))
 	<*> optional parseAllOption
-	<*> invertableSwitch "resolvemerge" True
-		( help "do not automatically resolve merge conflicts"
-		)
-	<*> parseUnrelatedHistoriesOption
+	<*> case mode of
+		PushMode -> pure False
+		_ -> invertableSwitch "resolvemerge" True
+			( help "do not automatically resolve merge conflicts"
+			)
+	<*> case mode of
+		PushMode -> pure False
+		_ -> parseUnrelatedHistoriesOption
+	<*> pure mode
+  where
+	unlesssync v a = case mode of
+		SyncMode -> a
+		_ -> pure v
 
 parseUnrelatedHistoriesOption :: Parser Bool
 parseUnrelatedHistoriesOption = 
@@ -209,6 +233,7 @@ instance DeferredParseClass SyncOptions where
 		<*> pure (keyOptions v)
 		<*> pure (resolveMergeOverride v)
 		<*> pure (allowUnrelatedHistories v)
+		<*> pure (operationMode v)
 
 seek :: SyncOptions -> CommandSeek
 seek o = do
@@ -241,7 +266,7 @@ seek' o = do
 				[ [ commit o ]
 				, [ withbranch (mergeLocal mc o) ]
 				, map (withbranch . pullRemote o mc) gitremotes
-				,  [ mergeAnnex ]
+				, [ mergeAnnex ]
 				]
 			
 			content <- shouldSyncContent o
@@ -794,7 +819,11 @@ seekSyncContent o rs currbranch = do
 		in seekFiltered (const (pure True)) filterer $
 			seekHelper id ww (LsFiles.inRepoOrBranch origbranch) l 
 
-	ww = WarnUnmatchLsFiles "sync"
+	ww = WarnUnmatchLsFiles $
+		case operationMode o of
+			SyncMode -> "sync"
+			PullMode -> "pull"
+			PushMode -> "push"
 
 	gofile bloom mvar _ f k = 
 		go (Right bloom) mvar (AssociatedFile (Just f)) k
@@ -805,7 +834,7 @@ seekSyncContent o rs currbranch = do
 	go ebloom mvar af k = do
 		let ai = OnlyActionOn k (ActionItemKey k)
 		startingNoMessage ai $ do
-			whenM (syncFile ebloom rs af k) $
+			whenM (syncFile o ebloom rs af k) $
 				void $ liftIO $ tryPutMVar mvar ()
 			next $ return True
 
@@ -828,8 +857,8 @@ seekSyncContent o rs currbranch = do
  -
  - Returns True if any file transfers were made.
  -}
-syncFile :: Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex Bool
-syncFile ebloom rs af k = do
+syncFile :: SyncOptions -> Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex Bool
+syncFile o ebloom rs af k = do
 	inhere <- inAnnex k
 	locs <- map Remote.uuid <$> Remote.keyPossibilities k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
@@ -866,7 +895,7 @@ syncFile ebloom rs af k = do
 	return (got || not (null putrs))
   where
 	wantget have inhere = allM id 
-		[ pure (maybe True pullOption o)
+		[ pure (pullOption o)
 		, pure (not $ null have)
 		, pure (not inhere)
 		, wantGet True (Just k) af
@@ -880,7 +909,7 @@ syncFile ebloom rs af k = do
 			next $ return True
 
 	wantput r
-		| pushOption o = Just False = return False
+		| pushOption o == False = return False
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| isThirdPartyPopulated r = return False
 		| otherwise = wantGetBy True (Just k) af (Remote.uuid r)
@@ -1011,8 +1040,19 @@ cleanupRemote remote (Just b, _) =
 shouldSyncContent :: SyncOptions -> Annex Bool
 shouldSyncContent o
 	| noContentOption o = pure False
+	-- For git-annex pull and git-annex push, 
+	-- annex.syncontent defaults to True unless set
+	| operationMode o /= SyncMode = annexsynccontent True
 	| contentOption o || not (null (contentOfOption o)) = pure True
-	| otherwise = getGitConfigVal annexSyncContent <||> onlyAnnex o
+	-- For git-annex sync, 
+	-- annex.syncontent defaults to False unless set
+	| otherwise = annexsynccontent False <||> onlyAnnex o
+  where
+	annexsynccontent d = 
+		getGitConfigVal' annexSyncContent >>= \case
+			HasGlobalConfig (Just c) -> return c
+			HasGitConfig (Just c) -> return c
+			_ -> return d
 
 notOnlyAnnex :: SyncOptions -> Annex Bool
 notOnlyAnnex o = not <$> onlyAnnex o

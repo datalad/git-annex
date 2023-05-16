@@ -23,5 +23,10 @@ repository|tips/centralized_git_repository_tutorial]]. See [[sync]] for
 details.
 
 By default `git annex sync` only syncs the metadata about your
-files that is stored in git. It does not sync the contents of files, that
-are managed by git-annex. To do that, you can use `git annex sync --content`
+files that is stored in git. It does not sync the contents of annexed
+files, that are managed by git-annex. To do that, you can use
+`git annex sync --content`
+
+There are also commands `git-annex pull` and `git-annex push` that are like
+`git-annex sync`, but only transfer in one direction, do not commit, and
+operate on the content of annexed files by default.

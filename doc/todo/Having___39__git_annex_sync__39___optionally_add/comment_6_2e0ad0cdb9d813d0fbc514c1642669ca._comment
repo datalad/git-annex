@@ -11,4 +11,7 @@ users want it to do more things.
 
 It is not too late to split it up, and eventually deprecating it would be a
 good path to making annex.synccontent default.
+
+Update: Implemented `git-annex pull` and `git-annex push`, although I have
+no plans yet to deprecate `git-annex sync`.
 """]]
