@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2023-05-16T17:05:35Z"
+ content="""
+I also generally feel like `git-annex sync` was probably a bad conflation
+of 3 git commands into 1 command when there could have just been `git-annex
+pull` and `git-annex push`. The fact that it conflates several things makes
+users think of it as just a big "does all the things" command, which makes
+users want it to do more things.
+
+It is not too late to split it up, and eventually deprecating it would be a
+good path to making annex.synccontent default.
+"""]]
