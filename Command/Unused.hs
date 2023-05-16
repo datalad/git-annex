@@ -34,10 +34,8 @@ import Logs.View (is_branchView)
 import Annex.BloomFilter
 import qualified Database.Keys
 import Annex.InodeSentinal
-import Utility.Aeson
 
 import qualified Data.Map as M
-import qualified Data.Vector as V
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.Text as T
