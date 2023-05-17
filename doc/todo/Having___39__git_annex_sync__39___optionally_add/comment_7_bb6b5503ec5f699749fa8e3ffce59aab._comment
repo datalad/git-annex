@@ -6,7 +6,7 @@
 Brainstorming some names for a new command that is `git add -A` + sync...
 
 `git-annex publish` kind of implies more exposure of local files to others
-than just syncing. But it also implies sending data, not also receiving it.
+than just syncing. But it more implies sending data, not also receiving it.
 
 `git-annex addsync` is clear what it does, but not very memorable.
 
