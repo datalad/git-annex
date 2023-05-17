@@ -56,7 +56,7 @@ commonOptions =
 		)
 	, annexOption setdebugfilter $ strOption
 		( long "debugfilter" <> metavar "NAME[,NAME..]"
-		<> help "show debug messages coming from a module"
+		<> help "show debug messages coming from the specified module"
 		<> hidden
 		)
 	]
