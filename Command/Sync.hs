@@ -181,6 +181,7 @@ optParser mode desc = SyncOptions
 		)
 	<*> switch
 		( long "no-content"
+		<> short 'g'
 		<> help "do not transfer annexed file contents"
 		)
 	<*> many (strOption

@@ -19,10 +19,13 @@ content by default. This may change in a future version of git-annex.
 
 # OPTIONS
 
-* `--content`, `--no-content`
+* `--content`, `--no-content`, `-g`
 
   The --content option causes the content of annexed files
   to also be pulled and pushed.
+
+  The --no-content and -g options cause the content of annexed files to
+  not be pulled and pushed.
 
   The `annex.synccontent` configuration can be set to true to make
   `--content` be enabled by default.
