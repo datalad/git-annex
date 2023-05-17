@@ -15,7 +15,7 @@ previously been added to the repository. Then it does the equivilant of
 [[git-annex-pull]](1) followed by [[git-annex-push]](1).
 
 However, unlike those commands, this command does not transfer annexed
-content by default. This may change in a future version of git-annex.
+content by default. That will change in a future version of git-annex,
 
 # OPTIONS
 

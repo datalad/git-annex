@@ -106,8 +106,8 @@ data SyncOptions = SyncOptions
 	, messageOption :: Maybe String
 	, pullOption :: Bool
 	, pushOption :: Bool
-	, contentOption :: Bool
-	, noContentOption :: Bool
+	, contentOption :: Maybe Bool
+	, noContentOption :: Maybe Bool
 	, contentOfOption :: [FilePath]
 	, cleanupOption :: Bool
 	, keyOptions :: Maybe KeyOptions
@@ -126,8 +126,8 @@ instance Default SyncOptions where
 		, messageOption = Nothing
 		, pullOption = False
 		, pushOption = False
-		, contentOption = False
-		, noContentOption = False
+		, contentOption = Just False
+		, noContentOption = Just False
 		, contentOfOption = []
 		, cleanupOption = False
 		, keyOptions = Nothing
@@ -175,15 +175,15 @@ optParser mode desc = SyncOptions
 			)
 		PullMode -> pure False
 		PushMode -> pure True
-	<*> switch 
+	<*> optional (flag' True 
 		( long "content"
 		<> help "transfer annexed file contents" 
-		)
-	<*> switch
+		))
+	<*> optional (flag' True
 		( long "no-content"
 		<> short 'g'
 		<> help "do not transfer annexed file contents"
-		)
+		))
 	<*> many (strOption
 		( long "content-of"
 		<> short 'C'
@@ -236,9 +236,11 @@ instance DeferredParseClass SyncOptions where
 
 seek :: SyncOptions -> CommandSeek
 seek o = do
+	warnSyncContentTransition o
+
 	prepMerge
 	startConcurrency transferStages (seek' o)
-	
+
 seek' :: SyncOptions -> CommandSeek
 seek' o = do
 	let withbranch a = a =<< getCurrentBranch
@@ -1038,11 +1040,11 @@ cleanupRemote remote (Just b, _) =
 
 shouldSyncContent :: SyncOptions -> Annex Bool
 shouldSyncContent o
-	| noContentOption o = pure False
+	| fromMaybe False (noContentOption o) = pure False
 	-- For git-annex pull and git-annex push, 
 	-- annex.syncontent defaults to True unless set
 	| operationMode o /= SyncMode = annexsynccontent True
-	| contentOption o || not (null (contentOfOption o)) = pure True
+	| fromMaybe False (contentOption o) || not (null (contentOfOption o)) = pure True
 	-- For git-annex sync, 
 	-- annex.syncontent defaults to False unless set
 	| otherwise = annexsynccontent False <||> onlyAnnex o
@@ -1052,6 +1054,24 @@ shouldSyncContent o
 			HasGlobalConfig (Just c) -> return c
 			HasGitConfig (Just c) -> return c
 			_ -> return d
+
+-- Transition started May 2023, should wait until that has been in a Debian
+-- stable release before completing the transition.
+warnSyncContentTransition :: SyncOptions -> Annex ()
+warnSyncContentTransition o
+	| operationMode o /= SyncMode = noop
+	| isJust (noContentOption o) || isJust (contentOption o) = noop
+	| not (null (contentOfOption o)) = noop
+	| otherwise = getGitConfigVal' annexSyncContent >>= \case
+		HasGlobalConfig (Just _) -> noop
+		HasGitConfig (Just _) -> noop
+		_ -> showwarning
+  where
+	showwarning = earlyWarning $
+		"git-annex sync will change default behavior to operate on"
+		<> " --content in a future version of git-annex. Recommend"
+		<> " you explicitly use --no-content (or -g) to prepare for"
+		<> " that change. (Or you can configure annex.synccontent)"
 
 notOnlyAnnex :: SyncOptions -> Annex Bool
 notOnlyAnnex o = not <$> onlyAnnex o

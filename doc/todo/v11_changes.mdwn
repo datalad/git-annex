@@ -10,3 +10,10 @@ version.
   after upgrading to the repo version that enables this. Depending on the
   timing of v11, this may need to be put in a v12 upgrade that is delayed
   some amount of time (eg 1 year) after v11.
+
+* Finish the transition of git-annex sync defaulting to --content.
+  A warning was added in May 2023 when it's run in a way that will change
+  behavior. It would be good to wait until all git-annex users have
+  gotten the version with the warning, and used it for a while,
+  before finishing the transition. This does not need to be tied to a
+  repository version change really, but it would be reasonable to do so.

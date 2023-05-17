@@ -57,8 +57,12 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     --content. With --no-pull, avoid downloading content, and with
     --no-push avoid uploading content. This was done before, but
     inconsistently.
-  * sync: Added -g as a short option for --no-content.
   * uninit: Avoid buffering the names of all annexed files in memory.
+  * sync: Started a transition to --content being enabled by default.
+    When used without --content or --no-content, warn about the upcoming
+    transition, and suggest using one of the options, or setting
+    annex.synccontent.
+  * sync: Added -g as a short option for --no-content.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 
