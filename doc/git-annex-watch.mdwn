@@ -14,7 +14,7 @@ deleted, copied, and moved files. With this running as a daemon in the
 background, you no longer need to manually run git commands when
 manipulating your files.
   
-By default, all files in the directory will be added to the repository.
+By default, all new files in the directory will be added to the repository.
 (Including dotfiles.) To block some files from being added, use
 `.gitignore` files.
   
