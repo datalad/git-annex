@@ -61,20 +61,6 @@ content by default. This may change in a future version of git-annex.
   When `remote.<name>.annex-sync` is set to false, pushing is disabled for
   that remote, and using `--push` will not enable it.
 
-* `--cleanup`
-
-  Removes the local and remote `synced/` branches, which were created
-  and pushed by `git-annex sync`. This option prevents all other syncing
-  activities.
-
-  This can come in handy when you've synced a change to remotes and now
-  want to reset your master branch back before that change. So you
-  run `git reset` and force-push the master branch to remotes, only
-  to find that the next `git annex merge` or `git annex sync` brings the
-  changes back. Why? Because the `synced/master` branch is hanging
-  around and still has the change in it. Cleaning up the `synced/` branches
-  prevents that problem.
-
 * Also all options supported by [[git-annex-pull]](1) and
   [[git-annex-push]](1) can be used.
 

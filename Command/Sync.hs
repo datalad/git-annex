@@ -151,15 +151,15 @@ optParser mode desc = SyncOptions
 		( long "not-only-annex"
 		<> help "operate on git branches as well as annex"
 		)
-	<*> unlesssync False (switch
+	<*> unlessmode SyncMode False (switch
 		( long "commit"
 		<> help "commit changes to git"
 		))
-	<*> unlesssync True (switch
+	<*> unlessmode SyncMode True (switch
 		( long "no-commit"
 		<> help "avoid git commit" 
 		))
-	<*> unlesssync Nothing (optional (strOption
+	<*> unlessmode SyncMode Nothing (optional (strOption
 		( long "message" <> short 'm' <> metavar "MSG"
 		<> help "commit message"
 		)))
@@ -190,24 +190,22 @@ optParser mode desc = SyncOptions
 		<> help "transfer contents of annexed files in a given location"
 		<> metavar paramPath
 		))
-	<*> unlesssync False (switch
+	<*> unlessmode PullMode False (switch
 		( long "cleanup"
 		<> help "remove synced/ branches from previous sync"
 		))
 	<*> optional parseAllOption
-	<*> case mode of
-		PushMode -> pure False
-		_ -> invertableSwitch "resolvemerge" True
-			( help "do not automatically resolve merge conflicts"
-			)
+	<*> unlessmode PushMode False (invertableSwitch "resolvemerge" True
+		( help "do not automatically resolve merge conflicts"
+		))
 	<*> case mode of
 		PushMode -> pure False
 		_ -> parseUnrelatedHistoriesOption
 	<*> pure mode
   where
-	unlesssync v a = case mode of
-		SyncMode -> a
-		_ -> pure v
+	unlessmode m v a
+		| mode /= m = a
+		| otherwise = pure v
 
 parseUnrelatedHistoriesOption :: Parser Bool
 parseUnrelatedHistoriesOption = 
