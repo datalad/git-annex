@@ -190,12 +190,12 @@ optParser mode desc = SyncOptions
 		<> help "transfer contents of annexed files in a given location"
 		<> metavar paramPath
 		))
-	<*> unlessmode PullMode False (switch
+	<*> whenmode PullMode False (switch
 		( long "cleanup"
 		<> help "remove synced/ branches from previous sync"
 		))
 	<*> optional parseAllOption
-	<*> unlessmode PushMode False (invertableSwitch "resolvemerge" True
+	<*> whenmode PushMode False (invertableSwitch "resolvemerge" True
 		( help "do not automatically resolve merge conflicts"
 		))
 	<*> case mode of
@@ -204,8 +204,11 @@ optParser mode desc = SyncOptions
 	<*> pure mode
   where
 	unlessmode m v a
-		| mode /= m = a
-		| otherwise = pure v
+		| mode /= m = pure v
+		| otherwise = a
+	whenmode m v a
+		| mode == m = pure v
+		| otherwise = a
 
 parseUnrelatedHistoriesOption :: Parser Bool
 parseUnrelatedHistoriesOption = 
