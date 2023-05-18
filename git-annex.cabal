@@ -103,6 +103,8 @@ Extra-Source-Files:
   doc/git-annex-pre-commit.mdwn
   doc/git-annex-preferred-content.mdwn
   doc/git-annex-proxy.mdwn
+  doc/git-annex-pull.mdwn
+  doc/git-annex-push.mdwn
   doc/git-annex-readpresentkey.mdwn
   doc/git-annex-registerurl.mdwn
   doc/git-annex-reinit.mdwn
