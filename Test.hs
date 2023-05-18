@@ -128,7 +128,7 @@ runner :: TestOptions -> IO ()
 runner opts = parallelTestRunner opts tests
 
 tests :: Int -> Bool -> Bool -> TestOptions -> [TestTree]
-tests n crippledfilesystem adjustedbranchok opts = 
+tests numparts crippledfilesystem adjustedbranchok opts = 
 	properties 
 		: withTestMode remotetestmode testRemotes
 		: concatMap mkrepotests testmodes
@@ -147,7 +147,7 @@ tests n crippledfilesystem adjustedbranchok opts =
 		| otherwise = Nothing
 	mkrepotests (d, te) = map 
 		(\uts -> withTestMode te uts)
-		(repoTests d n)
+		(repoTests d numparts)
 
 properties :: TestTree
 properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $

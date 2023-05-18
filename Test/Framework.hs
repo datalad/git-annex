@@ -23,6 +23,7 @@ import Control.Concurrent.STM
 import System.Environment (getArgs)
 import System.Console.Concurrent
 import System.Console.ANSI
+import Data.Time.Clock
 import GHC.Conc
 import System.IO.Unsafe (unsafePerformIO)
 import System.PosixCompat.Files (isSymbolicLink, isRegularFile, fileMode, unionFileModes, ownerWriteMode)
@@ -63,6 +64,7 @@ import qualified Utility.Exception
 import qualified Utility.ThreadScheduler
 import qualified Utility.Tmp.Dir
 import qualified Utility.Metered
+import qualified Utility.HumanTime
 import qualified Command.Uninit
 
 -- Run a process. The output and stderr is captured, and is only
@@ -799,11 +801,20 @@ parallelTestRunner' numjobs opts mkts
 			(_, _, _, pid) <- createProcessConcurrent p
 			waitForProcess pid
 		nvar <- newTVarIO (1, length ts)
+		starttime <- getCurrentTime
 		exitcodes <- forConcurrently [1..numjobs] $ \_ -> 
 			worker [] nvar runone
 		unless (keepFailuresOption opts) finalCleanup
+		duration <- Utility.HumanTime.durationSince starttime
 		case nub (filter (/= ExitSuccess) (concat exitcodes)) of
-			[] -> exitSuccess
+			[] -> do
+				putStrLn ""
+				putStrLn $ "All tests succeeded. (Ran "
+					++ show (length ts) 
+					++ " test groups in " 
+					++ Utility.HumanTime.fromDuration duration
+					++ ")"
+				exitSuccess
 			[ExitFailure 1] -> do
 				putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
 				putStrLn "   with utilities, such as git, installed on this system.)"
