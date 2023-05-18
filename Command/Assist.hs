@@ -33,6 +33,7 @@ myseek o = startConcurrency transferStages $ do
 		, Command.Add.checkGitIgnoreOption = CheckGitIgnore (False)
 		, Command.Add.dryRunOption = DryRun False
 		}
+	waitForAllRunningCommandActions
 	-- Flush added files to index so they will be committed.
 	Annex.Queue.flush
 
