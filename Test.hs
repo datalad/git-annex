@@ -439,7 +439,7 @@ test_readonly_remote =
 				git_annex "get" [annexedfile] "get failed in first repo"
 			make_readonly r1
 			indir r2 $ do
-				git_annex "sync" ["r1", "--no-push"] "sync with readonly repo"
+				git_annex "sync" ["r1", "--no-push", "--no-content"] "sync with readonly repo"
 				git_annex "get" [annexedfile, "--from", "r1"] "get from readonly repo"
 				git "remote" ["rm", "origin"] "remote rm"
 				git_annex "drop" [annexedfile] "drop vs readonly repo"
@@ -511,7 +511,7 @@ test_magic = intmpclonerepo $ do
 	writeFile "text" "test\n" 
 	git_annex "add" ["binary", "text"]
 		"git-annex add with mimeencoding in largefiles"
-	git_annex "sync" []
+	git_annex "sync" ["--no-content"]
 		"git-annex sync"
 	(isJust <$> annexeval (Annex.CatFile.catKeyFile (encodeBS "binary")))
 		@? "binary file not added to annex despite mimeencoding config"
@@ -1051,13 +1051,13 @@ test_unused = intmpclonerepo $ do
 	checkunused [] "after rm"
 	-- commit the rm, and when on an adjusted branch, sync it back to
 	-- the master branch
-	git_annex "sync" ["--no-push", "--no-pull"] "git-annex sync"
+	git_annex "sync" ["--no-push", "--no-pull", "--no-content"] "git-annex sync"
 	checkunused [] "after commit"
 	-- unused checks origin/master; once it's gone it is really unused
 	git "remote" ["rm", "origin"] "git remote rm origin"
 	checkunused [annexedfilekey] "after origin branches are gone"
 	git "rm" ["-fq", sha1annexedfile] "git rm"
-	git_annex "sync" ["--no-push", "--no-pull"] "git-annex sync"
+	git_annex "sync" ["--no-push", "--no-pull", "--no-content"] "git-annex sync"
 	checkunused [annexedfilekey, sha1annexedfilekey] "after rm sha1annexedfile"
 
 	-- good opportunity to test dropkey also
@@ -1183,7 +1183,7 @@ test_version = intmpclonerepo $ do
 
 test_sync :: Assertion
 test_sync = intmpclonerepo $ do
-	git_annex "sync" [] "sync"
+	git_annex "sync" ["--no-content"] "sync"
 	{- Regression test for bug fixed in
 	 - 039e83ed5d1a11fd562cce55b8429c840d72443e, where a present
 	 - wanted file was dropped. -}
@@ -1239,11 +1239,11 @@ test_union_merge_regression =
 					git_annex "get" [annexedfile] "get"
 					git "remote" ["rm", "origin"] "remote rm"
 				forM_ [r3, r2, r1] $ \r -> indir r $
-					git_annex "sync" [] ("sync in " ++ r)
+					git_annex "sync" ["--no-content"] ("sync in " ++ r)
 				forM_ [r3, r2] $ \r -> indir r $
 					git_annex "drop" ["--force", annexedfile] ("drop in " ++ r)
 				indir r1 $ do
-					git_annex "sync" [] "sync in r1"
+					git_annex "sync" ["--no-content"] "sync in r1"
 					git_annex_expectoutput "find" ["--in", "r3"] []
 					{- This was the bug. The sync
 					 - mangled location log data and it
@@ -1269,7 +1269,7 @@ test_conflict_resolution_movein_regression = withtmpclonerepo $ \r1 ->
 		{- Sync twice in r1 so it gets the conflict resolution
 		 - update from r2 -}
 		forM_ [r1, r2, r1] $ \r -> indir r $
-			git_annex "sync" ["--force"] ("sync in " ++ rname r)
+			git_annex "sync" ["--force", "--no-content"] ("sync in " ++ rname r)
 		{- After the sync, it should be possible to get all
 		 - files. This includes both sides of the conflict,
 		 - although the filenames are not easily predictable.
@@ -1289,15 +1289,15 @@ test_conflict_resolution =
 				disconnectOrigin
 				writecontent conflictor "conflictor1"
 				add_annex conflictor "add conflicter"
-				git_annex "sync" [] "sync in r1"
+				git_annex "sync" ["--no-content"] "sync in r1"
 			indir r2 $ do
 				disconnectOrigin
 				writecontent conflictor "conflictor2"
 				add_annex conflictor "add conflicter"
-				git_annex "sync" [] "sync in r2"
+				git_annex "sync" ["--no-content"] "sync in r2"
 			pair r1 r2
 			forM_ [r1,r2,r1] $ \r -> indir r $
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 			checkmerge "r1" r1
 			checkmerge "r2" r2
   where
@@ -1322,19 +1322,19 @@ test_conflict_resolution_adjusted_branch =
 				disconnectOrigin
 				writecontent conflictor "conflictor1"
 				add_annex conflictor "add conflicter"
-				git_annex "sync" [] "sync in r1"
+				git_annex "sync" ["--no-content"] "sync in r1"
 			indir r2 $ do
 				disconnectOrigin
 				writecontent conflictor "conflictor2"
 				add_annex conflictor "add conflicter"
-				git_annex "sync" [] "sync in r2"
+				git_annex "sync" ["--no-content"] "sync in r2"
 				-- We might be in an adjusted branch
 				-- already, when eg on a crippled
 				-- filesystem. So, --force it.
 				git_annex "adjust" ["--unlock", "--force"] "adjust"
 			pair r1 r2
 			forM_ [r1,r2,r1] $ \r -> indir r $
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 			checkmerge "r1" r1
 			checkmerge "r2" r2
   where
@@ -1363,17 +1363,17 @@ test_mixed_conflict_resolution = do
 				disconnectOrigin
 				writecontent conflictor "conflictor"
 				add_annex conflictor "add conflicter"
-				git_annex "sync" [] "sync in r1"
+				git_annex "sync" ["--no-content"] "sync in r1"
 			indir r2 $ do
 				disconnectOrigin
 				createDirectory conflictor
 				writecontent subfile "subfile"
 				add_annex conflictor "add conflicter"
-				git_annex "sync" [] "sync in r2"
+				git_annex "sync" ["--no-content"] "sync in r2"
 			pair r1 r2
 			let l = if inr1 then [r1, r2] else [r2, r1]
 			forM_ l $ \r -> indir r $
-				git_annex "sync" [] "sync in mixed conflict"
+				git_annex "sync" ["--no-content"] "sync in mixed conflict"
 			checkmerge "r1" r1
 			checkmerge "r2" r2
 	conflictor = "conflictor"
@@ -1405,12 +1405,12 @@ test_remove_conflict_resolution = do
 				disconnectOrigin
 				writecontent conflictor "conflictor"
 				add_annex conflictor "add conflicter"
-				git_annex "sync" [] "sync in r1"
+				git_annex "sync" ["--no-content"] "sync in r1"
 			indir r2 $
 				disconnectOrigin
 			pair r1 r2
 			indir r2 $ do
-				git_annex "sync" [] "sync in r2"
+				git_annex "sync" ["--no-content"] "sync in r2"
 				git_annex "get" [conflictor] "get conflictor"
 				git_annex "unlock" [conflictor] "unlock conflictor"
 				writecontent conflictor "newconflictor"
@@ -1418,7 +1418,7 @@ test_remove_conflict_resolution = do
 				removeWhenExistsWith R.removeLink (toRawFilePath conflictor)
 			let l = if inr1 then [r1, r2, r1] else [r2, r1, r2]
 			forM_ l $ \r -> indir r $
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 			checkmerge "r1" r1
 			checkmerge "r2" r2
 	conflictor = "conflictor"
@@ -1445,7 +1445,7 @@ test_nonannexed_file_conflict_resolution = do
 				disconnectOrigin
 				writecontent conflictor "conflictor"
 				add_annex conflictor "add conflicter"
-				git_annex "sync" [] "sync in r1"
+				git_annex "sync" ["--no-content"] "sync in r1"
 			indir r2 $ do
 				disconnectOrigin
 				writecontent conflictor nonannexed_content
@@ -1454,11 +1454,11 @@ test_nonannexed_file_conflict_resolution = do
 					, "exclude=" ++ ingitfile ++ " and exclude=" ++ conflictor
 					] "git config annex.largefiles"
 				git "add" [conflictor] "git add conflictor"
-				git_annex "sync" [] "sync in r2"
+				git_annex "sync" ["--no-content"] "sync in r2"
 			pair r1 r2
 			let l = if inr1 then [r1, r2] else [r2, r1]
 			forM_ l $ \r -> indir r $
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 			checkmerge "r1" r1
 			checkmerge "r2" r2
 	conflictor = "conflictor"
@@ -1495,16 +1495,16 @@ test_nonannexed_symlink_conflict_resolution = do
 					disconnectOrigin
 					writecontent conflictor "conflictor"
 					add_annex conflictor "add conflicter"
-					git_annex "sync" [] "sync in r1"
+					git_annex "sync" ["--no-content"] "sync in r1"
 				indir r2 $ do
 					disconnectOrigin
 					R.createSymbolicLink (toRawFilePath symlinktarget) (toRawFilePath "conflictor")
 					git "add" [conflictor] "git add conflictor"
-					git_annex "sync" [] "sync in r2"
+					git_annex "sync" ["--no-content"] "sync in r2"
 				pair r1 r2
 				let l = if inr1 then [r1, r2] else [r2, r1]
 				forM_ l $ \r -> indir r $
-					git_annex "sync" [] "sync"
+					git_annex "sync" ["--no-content"] "sync"
 				checkmerge "r1" r1
 				checkmerge "r2" r2
 	conflictor = "conflictor"
@@ -1543,14 +1543,14 @@ test_uncommitted_conflict_resolution = do
 				createDirectoryIfMissing True (fromRawFilePath (parentDir (toRawFilePath remoteconflictor)))
 				writecontent remoteconflictor annexedcontent
 				add_annex conflictor "add remoteconflicter"
-				git_annex "sync" [] "sync in r1"
+				git_annex "sync" ["--no-content"] "sync in r1"
 			indir r2 $ do
 				disconnectOrigin
 				writecontent conflictor localcontent
 			pair r1 r2
 			-- this case is intentionally not handled
 			-- since the user can recover on their own easily
-			indir r2 $ git_annex_shouldfail "sync" [] "sync should not succeed"
+			indir r2 $ git_annex_shouldfail "sync" ["--no-content"] "sync should not succeed"
 	conflictor = "conflictor"
 	localcontent = "local"
 	annexedcontent = "annexed"
@@ -1566,18 +1566,18 @@ test_conflict_resolution_symlink_bit = unlessM (hasUnlockedFiles <$> getTestMode
 				indir r1 $ do
 					writecontent conflictor "conflictor"
 					git_annex "add" [conflictor] "add conflicter"
-					git_annex "sync" [] "sync in r1"
+					git_annex "sync" ["--no-content"] "sync in r1"
 					check_is_link conflictor "r1"
 				indir r2 $ do
 					createDirectory conflictor
 					writecontent (conflictor </> "subfile") "subfile"
 					git_annex "add" [conflictor] "add conflicter"
-					git_annex "sync" [] "sync in r2"
+					git_annex "sync" ["--no-content"] "sync in r2"
 					check_is_link (conflictor </> "subfile") "r2"
 				indir r3 $ do
 					writecontent conflictor "conflictor"
 					git_annex "add" [conflictor] "add conflicter"
-					git_annex "sync" [] "sync in r1"
+					git_annex "sync" ["--no-content"] "sync in r1"
 					check_is_link (conflictor </> "subfile") "r3"
   where
 	conflictor = "conflictor"
@@ -1598,16 +1598,16 @@ test_mixed_lock_conflict_resolution =
 				disconnectOrigin
 				writecontent conflictor "conflictor"
 				git_annex "add" [conflictor] "add conflicter"
-				git_annex "sync" [] "sync in r1"
+				git_annex "sync" ["--no-content"] "sync in r1"
 			indir r2 $ do
 				disconnectOrigin
 				writecontent conflictor "conflictor"
 				git_annex "add" [conflictor] "add conflicter"
 				git_annex "unlock" [conflictor] "unlock conflicter"
-				git_annex "sync" [] "sync in r2"
+				git_annex "sync" ["--no-content"] "sync in r2"
 			pair r1 r2
 			forM_ [r1,r2,r1] $ \r -> indir r $
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 			checkmerge "r1" r1
 			checkmerge "r2" r2
   where
@@ -1644,9 +1644,9 @@ test_adjusted_branch_merge_regression = do
 		git_annex "adjust" ["--unlock", "--force"] "adjust"
 		writecontent conflictor "conflictor"
 		git_annex "add" [conflictor] "add conflicter"
-		git_annex "sync" [] "sync"
+		git_annex "sync" ["--no-content"] "sync"
 	checkmerge what d = indir d $ whensupported $ do
-		git_annex "sync" [] ("sync should not work in " ++ what)
+		git_annex "sync" ["--no-content"] ("sync should not work in " ++ what)
 		l <- getDirectoryContents "."
 		conflictor `elem` l
 			@? ("conflictor not present after merge in " ++ what)
@@ -1667,11 +1667,11 @@ test_adjusted_branch_subtree_regression =
 			createDirectoryIfMissing True "a/b/c"
 			writecontent "a/b/c/d" "foo"
 			git_annex "add" ["a/b/c"] "add a/b/c"
-			git_annex "sync" [] "sync"
+			git_annex "sync" ["--no-content"] "sync"
 			createDirectoryIfMissing True "a/b/x"
 			writecontent "a/b/x/y" "foo"
 			git_annex "add" ["a/b/x"] "add a/b/x"
-			git_annex "sync" [] "sync"
+			git_annex "sync" ["--no-content"] "sync"
 			git "checkout" [origbranch] "git checkout"
 			doesFileExist "a/b/x/y" @? ("a/b/x/y missing from master after adjusted branch sync")
 
@@ -1807,7 +1807,7 @@ test_borg_remote = when BuildInfo.borg $ do
 		testProcess "borg" ["create", borgdir++"::backup1", "."] Nothing (== True) (const True) "borg create"
 
 		git_annex "initremote" (words $ "borg type=borg borgrepo="++borgdir) "initremote"
-		git_annex "sync" ["borg"] "sync borg"
+		git_annex "sync" ["--no-content", "borg"] "sync borg"
 		git_annex_expectoutput "find" ["--in=borg"] []
 
 		git_annex "get" [annexedfile] "get of file"
@@ -1815,7 +1815,7 @@ test_borg_remote = when BuildInfo.borg $ do
 		git_annex_expectoutput "find" ["--in=borg"] []
 		
 		testProcess "borg" ["create", borgdir++"::backup2", "."] Nothing (== True) (const True) "borg create"
-		git_annex "sync" ["borg"] "sync borg after getting file"
+		git_annex "sync" ["--no-content", "borg"] "sync borg after getting file"
 		git_annex_expectoutput "find" ["--in=borg"] [annexedfile]
 
 		git "remote" ["rm", "origin"] "remote rm"
@@ -1932,7 +1932,7 @@ test_add_subdirs = intmpclonerepo $ do
 	{- Regression test for Windows bug where symlinks were not
 	 - calculated correctly for files in subdirs. -}
 	unlessM (hasUnlockedFiles <$> getTestMode) $ do
-		git_annex "sync" [] "sync"
+		git_annex "sync" ["--no-content"] "sync"
 		l <- annexeval $ Utility.FileSystemEncoding.decodeBL
 			<$> Annex.CatFile.catObject (Git.Types.Ref (encodeBS "HEAD:dir/foo"))
 		"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
@@ -2008,7 +2008,7 @@ test_export_import = intmpclonerepo $ do
 	-- When on an adjusted branch, this updates the master branch
 	-- to match it, which is necessary since the master branch is going
 	-- to be exported.
-	commitchanges = git_annex "sync" ["--no-pull", "--no-push"] "sync"
+	commitchanges = git_annex "sync" ["--no-pull", "--no-push", "--no-content"] "sync"
 
 test_export_import_subdir :: Assertion
 test_export_import_subdir = intmpclonerepo $ do
@@ -2024,7 +2024,7 @@ test_export_import_subdir = intmpclonerepo $ do
 	-- When on an adjusted branch, this updates the master branch
 	-- to match it, which is necessary since the master branch is going
 	-- to be exported.
-	git_annex "sync" ["--no-pull", "--no-push"] "sync"
+	git_annex "sync" ["--no-pull", "--no-push", "--no-content"] "sync"
 
 	-- Run three times because there was a bug that took a couple
 	-- of runs to lead to the wrong tree being written to the remote
@@ -2066,12 +2066,12 @@ test_transition_propagation_reversion =
 				disconnectOrigin
 				writecontent wormannexedfile $ content wormannexedfile
 				git_annex "add" [wormannexedfile, "--backend=WORM"] "add"
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 			indir r2 $ do
 				disconnectOrigin
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 			indir r1 $ do
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 			indir r2 $ do
 				git_annex "get" [wormannexedfile] "get"
 				git_annex "drop" [wormannexedfile] "drop"
@@ -2079,15 +2079,15 @@ test_transition_propagation_reversion =
 				git_annex "drop" [wormannexedfile] "drop"
 			indir r1 $ do
 				git_annex "drop" ["--force", wormannexedfile] "drop"
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 				git_annex "forget" ["--force"] "forget"
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 				emptylog
 			indir r2 $ do
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 				emptylog
 			indir r1 $ do
-				git_annex "sync" [] "sync"
+				git_annex "sync" ["--no-content"] "sync"
 				emptylog
   where
 	emptylog = git_annex_expectoutput "log" [wormannexedfile] []
