@@ -152,10 +152,14 @@ optParser mode desc = SyncOptions
 		( long "not-only-annex"
 		<> help "operate on git branches as well as annex"
 		)
-	<*> unlessmode [SyncMode] False (switch
-		( long "commit"
-		<> help "commit changes to git"
-		))
+	<*> case mode of
+		SyncMode -> switch
+			( long "commit"
+			<> help "commit changes to git"
+			)
+		PushMode -> pure False
+		PullMode -> pure False
+		AssistMode -> pure True
 	<*> unlessmode [SyncMode] True (switch
 		( long "no-commit"
 		<> help "avoid git commit" 

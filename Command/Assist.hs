@@ -34,10 +34,4 @@ myseek o = startConcurrency transferStages $ do
 		}
 	
 	Command.Sync.prepMerge
-	Command.Sync.seek' o'
-  where
-	o'
-		| Command.Sync.contentOption o == Nothing 
-			&& Command.Sync.noContentOption o == Nothing =
-				o { Command.Sync.contentOption = Just True }
-		| otherwise = o
+	Command.Sync.seek' o
