@@ -195,7 +195,7 @@ optParser mode desc = SyncOptions
 		))
 	<*> whenmode [PullMode] False (switch
 		( long "cleanup"
-		<> help "remove synced/ branches from previous sync"
+		<> help "remove synced/ branches"
 		))
 	<*> optional parseAllOption
 	<*> whenmode [PushMode] False (invertableSwitch "resolvemerge" True
