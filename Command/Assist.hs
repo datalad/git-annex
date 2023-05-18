@@ -11,6 +11,7 @@ import Command
 import qualified Command.Sync
 import qualified Command.Add
 import Annex.CheckIgnore
+import qualified Annex.Queue
 
 cmd :: Command
 cmd = withAnnexOptions [jobsOption, backendOption] $
@@ -32,6 +33,8 @@ myseek o = startConcurrency transferStages $ do
 		, Command.Add.checkGitIgnoreOption = CheckGitIgnore (False)
 		, Command.Add.dryRunOption = DryRun False
 		}
-	
+	-- Flush added files to index so they will be committed.
+	Annex.Queue.flush
+
 	Command.Sync.prepMerge
 	Command.Sync.seek' o
