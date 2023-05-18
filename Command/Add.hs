@@ -86,7 +86,10 @@ checkGitIgnoreSwitch = CheckGitIgnore <$>
 		(help "Do not check .gitignore when adding files")
 
 seek :: AddOptions -> CommandSeek
-seek o = startConcurrency commandStages $ do
+seek o = startConcurrency commandStages (seek' o)
+
+seek' :: AddOptions -> CommandSeek
+seek' o = do
 	largematcher <- largeFilesMatcher
 	addunlockedmatcher <- addUnlockedMatcher
 	annexdotfiles <- getGitConfigVal annexDotFiles 

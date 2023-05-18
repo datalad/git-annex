@@ -34,3 +34,5 @@ while true;do git annex sync --content;done
 What do you think?
 
 Cheers, Yann
+
+> [[done]] as `git-annex assist` --[[Joey]]

@@ -12,6 +12,7 @@
 module Command.Sync (
 	cmd,
 	seek,
+	seek',
 	CurrBranch,
 	mergeConfig,
 	merge,
@@ -94,7 +95,7 @@ cmd = withAnnexOptions [jobsOption, backendOption] $
 		"synchronize local repository with remotes"
 		(paramRepeating paramRemote) (seek <--< optParser SyncMode)
 
-data OperationMode = SyncMode | PullMode | PushMode
+data OperationMode = SyncMode | PullMode | PushMode | AssistMode
 	deriving (Eq, Show)
 
 data SyncOptions = SyncOptions
@@ -151,15 +152,15 @@ optParser mode desc = SyncOptions
 		( long "not-only-annex"
 		<> help "operate on git branches as well as annex"
 		)
-	<*> unlessmode SyncMode False (switch
+	<*> unlessmode [SyncMode] False (switch
 		( long "commit"
 		<> help "commit changes to git"
 		))
-	<*> unlessmode SyncMode True (switch
+	<*> unlessmode [SyncMode] True (switch
 		( long "no-commit"
 		<> help "avoid git commit" 
 		))
-	<*> unlessmode SyncMode Nothing (optional (strOption
+	<*> unlessmode [SyncMode, AssistMode] Nothing (optional (strOption
 		( long "message" <> short 'm' <> metavar "MSG"
 		<> help "commit message"
 		)))
@@ -169,12 +170,14 @@ optParser mode desc = SyncOptions
 			)
 		PullMode -> pure True
 		PushMode -> pure False
+		AssistMode -> pure True
 	<*> case mode of
 		SyncMode -> invertableSwitch "push" True
 			( help "avoid git pushes to remotes" 
 			)
 		PullMode -> pure False
 		PushMode -> pure True
+		AssistMode -> pure True
 	<*> optional (flag' True 
 		( long "content"
 		<> help "transfer annexed file contents" 
@@ -190,25 +193,24 @@ optParser mode desc = SyncOptions
 		<> help "transfer contents of annexed files in a given location"
 		<> metavar paramPath
 		))
-	<*> whenmode PullMode False (switch
+	<*> whenmode [PullMode] False (switch
 		( long "cleanup"
 		<> help "remove synced/ branches from previous sync"
 		))
 	<*> optional parseAllOption
-	<*> whenmode PushMode False (invertableSwitch "resolvemerge" True
+	<*> whenmode [PushMode] False (invertableSwitch "resolvemerge" True
 		( help "do not automatically resolve merge conflicts"
 		))
-	<*> case mode of
-		PushMode -> pure False
-		_ -> parseUnrelatedHistoriesOption
+	<*> whenmode [PushMode] False
+		parseUnrelatedHistoriesOption
 	<*> pure mode
   where
-	unlessmode m v a
-		| mode /= m = pure v
-		| otherwise = a
 	whenmode m v a
-		| mode == m = pure v
+		| mode `elem` m = pure v
 		| otherwise = a
+	unlessmode m v a
+		| mode `elem` m = a
+		| otherwise = pure v
 
 parseUnrelatedHistoriesOption :: Parser Bool
 parseUnrelatedHistoriesOption = 
@@ -240,8 +242,9 @@ instance DeferredParseClass SyncOptions where
 seek :: SyncOptions -> CommandSeek
 seek o = do
 	warnSyncContentTransition o
-
+	
 	prepMerge
+	
 	startConcurrency transferStages (seek' o)
 
 seek' :: SyncOptions -> CommandSeek
@@ -828,6 +831,7 @@ seekSyncContent o rs currbranch = do
 			SyncMode -> "sync"
 			PullMode -> "pull"
 			PushMode -> "push"
+			AssistMode -> "assist"
 
 	gofile bloom mvar _ f k = 
 		go (Right bloom) mvar (AssociatedFile (Just f)) k
@@ -1044,7 +1048,7 @@ cleanupRemote remote (Just b, _) =
 shouldSyncContent :: SyncOptions -> Annex Bool
 shouldSyncContent o
 	| fromMaybe False (noContentOption o) = pure False
-	-- For git-annex pull and git-annex push, 
+	-- For git-annex pull and git-annex push and git-annex assist,
 	-- annex.syncontent defaults to True unless set
 	| operationMode o /= SyncMode = annexsynccontent True
 	| fromMaybe False (contentOption o) || not (null (contentOfOption o)) = pure True

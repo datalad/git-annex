@@ -24,7 +24,7 @@ cmd :: Command
 cmd = dontCheck repoExists $ notBareRepo $
 	noRepo (startNoRepo <$$> optParser) $
 		command "assistant" SectionCommon
-			"automatically sync changes"
+			"daemon to add files and automatically sync changes"
 			paramNothing (seek <$$> optParser)
 
 data AssistantOptions = AssistantOptions

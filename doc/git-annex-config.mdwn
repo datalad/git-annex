@@ -35,6 +35,18 @@ looks for these.
   It is an expression that matches the large files, eg
   "`include=*.mp3 or largerthan(500kb)`".
   See [[git-annex-matching-expression]](1) for details on the syntax.
+  
+  This configures the behavior of both git-annex and git when adding
+  files to the repository. By default, `git-annex add` adds all files
+  to the annex (except dotfiles), and `git add` adds files to git
+  (unless they were added to the annex previously).
+  When annex.largefiles is configured, both
+  `git annex add` and `git add` will add matching large files to the
+  annex, and the other files to git.
+
+  Other git-annex commands also honor annex.largefiles, including
+  `git annex import`, `git annex addurl`, `git annex importfeed`,
+  `git-annex assist`, and the `git-annex assistant`.
 
   This sets a default, which can be overridden by annex.largefiles
   attributes in `.gitattributes` files, or by `git config`.
@@ -64,8 +76,9 @@ looks for these.
 
 * `annex.autocommit`
 
-  Set to false to prevent the `git-annex assistant` and `git-annex sync`
-  from automatically committing changes to files in the repository.
+  Set to false to prevent the `git-annex assistant`, `git-annex assist`
+  and `git-annex sync` from automatically committing changes to files
+  in the repository.
    
   This sets a default, which can be overridden by annex.autocommit
   in `git config`.

@@ -45,6 +45,7 @@ Extra-Source-Files:
   doc/git-annex-addunused.mdwn
   doc/git-annex-addurl.mdwn
   doc/git-annex-adjust.mdwn
+  doc/git-annex-assist.mdwn
   doc/git-annex-assistant.mdwn
   doc/git-annex-backends.mdwn
   doc/git-annex-calckey.mdwn
@@ -709,6 +710,7 @@ Executable git-annex
     Command.AddUnused
     Command.AddUrl
     Command.Adjust
+    Command.Assist
     Command.Benchmark
     Command.CalcKey
     Command.CheckPresentKey

@@ -1,6 +1,6 @@
 # NAME
 
-git-annex assistant - automatically sync changes
+git-annex assistant - daemon to add files and automatically sync changes
 
 # SYNOPSIS
 
@@ -57,6 +57,8 @@ files that it does not match will instead be added with `git add`.
 [[git-annex]](1)
 
 [[git-annex-watch]](1)
+
+[[git-annex-assist]](1)
 
 [[git-annex-schedule]](1)
 
