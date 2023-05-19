@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2023-05-19T18:55:35Z"
+ content="""
+The reason dropkeys does not error on an unknown key is that it's entirely
+possible to get a repository into a state where a key's content is present
+but the key is otherwise unknown to git-annex. Eg, it doesn't have any
+location tracking information for it, there are no files in the git repo
+that point to it, etc. 
+
+It makes sense to support dropping the content of such a key.
+
+And, dropkeys intentionally operates the same on a key when its content is
+not present as it does when the content is present and it successfully
+dropped it. Because in either case the result is now that the specified
+key's content is not present.
+"""]]

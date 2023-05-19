@@ -78,5 +78,6 @@ showRawVersion = do
 	putStr BuildInfo.packageversion
 	hFlush stdout -- no newline, so flush
 
+-- Ignore failure to write so that this command can eg be piped to head.
 vinfo :: String -> String -> IO ()
-vinfo k v = putStrLn $ k ++ ": " ++ v
+vinfo k v = void $ tryIO $ putStrLn $ k ++ ": " ++ v

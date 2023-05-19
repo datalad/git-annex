@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2023-05-19T18:54:53Z"
+ content="""
+Aha, thanks for clearing up that `git-annex version` does that! That seems
+like a bit of a bug on its own really. 
+
+
+.. Fixed that.
+"""]]
