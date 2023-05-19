@@ -1,0 +1,13 @@
+I use BTRFS, so have CoW and snapshots of the entire system which I transfer regularly to a backup box.
+Before dropping some content in the "working" instance of the repository, I thought to note availability of the keys in some backup snapshot(s) on a backup server.
+The difficulty is that those all would have the same git-annex UUID (since they are snapshots of the same "working one"), and internally git-annex would have availability marked based on that UUID so I guess that would not work as is.
+
+So I am thinking (didn't try) to do the following dance:
+
+- make a "read-write" copy of the entire backup snapshot
+- `git annex init` the backup copy inthat snapshot to cause regeneration of UUID
+- run `git annex fsck` so git-annex annotates availability of those keys with that new UUID
+- make read-only snapshot of the read-write snapshot
+- add that read-only snapshot host:/path as a remote to the "working" instance.
+
+Would that be "optimal" way or may be there is some feature of git-annex which would allow me to avoid the dance?
