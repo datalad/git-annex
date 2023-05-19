@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-05-19T17:39:29Z"
+ content="""
+You are piping non-null-terminated output into a command that needs 
+terminating nulls. So, it reads the entire findkeys output, including
+newlines as the name of a key. And drops that key, which doesn't exist of
+course.
+
+With `findkeys --print0`, it does work. It would also be fine to not use
+`-z`, since keys should never actually contain a newline in their name.
+"""]]
