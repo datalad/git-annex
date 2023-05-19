@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-05-19T18:51:06Z"
+ content="""
+Is it possible to mount the snapshot and edit it? If so, you could skip
+making the CoW copy of it, and just go into it, unset annex.uuid and
+`git-annex init`. Then proceed with the fsck etc.
+
+There's no way around needing to fsck, it needs to update its location
+tracking logs for the new uuid, and fsck is as good a tool as any.
+(Obviously --fast can be used.)
+"""]]
