@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2023-05-19T18:47:49Z"
+ content="""
+It makes total sense, thank you Joey!  I guess a little odd behavior is only the reporting of git annex `ok` for dropping an unknown key. I guess like with `rm unknownfile` (unless `-f` is used) I would have expected it to error out. 
+"""]]
