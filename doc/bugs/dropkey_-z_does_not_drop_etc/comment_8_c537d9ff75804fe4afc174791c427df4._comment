@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2023-05-19T19:22:04Z"
+ content="""
+Gotcha.  Just a food for possible discussion/future:  I think it is more then of \"annotation\" of the action outcome to be not just a binary \"ok/fail\". Indeed `dropkey` can say \"ok\" as to the promise that in the end there is no key (either it was known or not etc).  But it can arrive there differently.  Similarish for \"fail\".  In DataLad we have now 4 \"status\" states: \"ok\", \"notneeded\", \"impossible\", \"error\" for that reason where first two are for \"ok\" and the other two for \"fail\". [documented here](https://github.com/datalad/datalad/blob/HEAD/docs/source/design/result_records.rst#status].
+So, here `dropkey unknown` was more of \"notneeded\" success I guess if it was for datalad to report.  May be `--json` records and non-json output of `git-annex` in the future could somehow discriminate between those outcomes.
+"""]]
