@@ -22,11 +22,13 @@ cmd = withAnnexOptions [jobsOption, backendOption] $
 
 myseek :: Command.Sync.SyncOptions -> CommandSeek
 myseek o = startConcurrency transferStages $ do
-	-- Run before prepMerge so it adds only files in the current
-	-- directory and below, not new files elsewhere in the working
-	-- tree.
+	-- Changes to top of repository, so when this is run in a
+	-- subdirectory, it will still default to adding files anywhere in
+	-- the working tree.
+	Command.Sync.prepMerge
+
 	Command.Add.seek Command.Add.AddOptions
-		{ Command.Add.addThese = []
+		{ Command.Add.addThese = Command.Sync.contentOfOption o
 		, Command.Add.batchOption = NoBatch
 		, Command.Add.updateOnly = False
 		, Command.Add.largeFilesOverride = Nothing
@@ -37,5 +39,4 @@ myseek o = startConcurrency transferStages $ do
 	-- Flush added files to index so they will be committed.
 	Annex.Queue.flush
 
-	Command.Sync.prepMerge
 	Command.Sync.seek' o

@@ -13,10 +13,13 @@ and syncing with remotes. It's the simplest possible way to use git-annex
 at the command line, since only this one command needs to be run on a
 regular basis.
 
-This command first adds any new files (in the current directory and
-its children) to the repository, and commits those as well as any
-modified files. Then it does the equivilant of running
+This command first adds any new files to the repository, and commits those
+as well as any modified files. Then it does the equivilant of running
 [[git-annex-pull](1) followed by [[git-annex-push]](1).
+
+This command operates on all files in the whole working tree,
+even when ran in a subdirectory. To limit it to operating on files in a
+subdirectory, use the `--content-of` option.
 
 To block some files from being added to the repository, use `.gitignore`
 files.
@@ -30,6 +33,12 @@ files that it does not match will instead be added with `git add`.
 * `--message=msg`
 
   Use this option to specify a commit message.
+
+* `--content-of=path` `-C path`
+
+  Only add, pull, and push files in the given path.
+
+  This option can be repeated multiple times with different paths.
 
 * Also all options supported by [[git-annex-pull]](1) and
   [[git-annex-push]](1) can be used.
