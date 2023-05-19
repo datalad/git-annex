@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2023-05-19T19:06:00Z"
+ content="""
+> Is it possible to mount the snapshot and edit it?
+
+may be, but I better make (it is cheap) an snapshot of the snapshot with some explicit annotation (e.g. `-4shub-gitannex` suffix) before introducing any changes: after all snapshots are backups and better stay identical to the origin.  But gotcha overall -- thank you, will proceed per above plan
+"""]]
