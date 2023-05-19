@@ -11,6 +11,13 @@ jobs:
       - name: Checkout this repository
         uses: actions/checkout@v3
 
+      - name: Checkout ci-reports repository
+        uses: actions/checkout@v3
+        with:
+          repository: datalad/git-annex-ci-reports
+          token: ${{ secrets.DATALAD_GITHUB_TOKEN }}
+          path: git-annex-ci-reports
+
       - name: Install Python
         uses: actions/setup-python@v4
         with:
@@ -22,8 +29,14 @@ jobs:
       - name: Generate e-mail content
         id: content
         run: |
-          subject="$(python -m pip-run -q -- .github/workflows/tools/daily-status.py)"
+          fpath="$(date +%Y/%m/%d.html)"
+          subject="$(python -m pip-run -q -- "$GITHUB_WORKSPACE"/.github/workflows/tools/daily-status.py "$fpath")"
           echo "subject=$subject" >> "$GITHUB_OUTPUT"
+          ln -f -s "$fpath" index.html
+          git add .
+          git commit -m "[daily-status] $subject"
+          git push
+        working-directory: git-annex-ci-reports
         env:
           GITHUB_TOKEN: ${{ secrets.DATALAD_GITHUB_TOKEN }}
 
@@ -37,6 +50,7 @@ jobs:
           from: GitHub Actions Notifications
           to: ${{ secrets.DAILY_STATUS_RECIPIENTS }}
           subject: ${{ steps.content.outputs.subject }}
-          html_body: file://body.html
+          html_body: file://index.html
+        working-directory: git-annex-ci-reports
 
 # vim:set sts=2:
