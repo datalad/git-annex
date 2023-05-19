@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-05-19T17:53:51Z"
+ content="""
+However, after successfully dropping all the keys with `--print0`, there
+is then this oddity:
+
+	git-annex: Batch input parse failure: bad key
+
+That's a bug in nul splitting when there's a trailing nul. Oops. I've
+fixed that.
+
+Also while I reproduced the rest of the behavior, I didn't see this part:
+
+	commitBuffer: resource vanished 
+
+I'm not sure which command that comes from. Probably I think the findkeys,
+if its entire output was not consumed for some reason.
+"""]]

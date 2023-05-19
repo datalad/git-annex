@@ -115,7 +115,17 @@ batchLines (BatchFormat sep _) = do
   where
 	splitter = case sep of
 		BatchLine -> lines
-		BatchNull -> splitc '\0'
+		BatchNull -> elimemptyend . splitc '\0'
+
+	-- When there is a trailing null on the input, eliminate the empty
+	-- string that splitc generates. Other empty strings elsewhere in
+	-- the list are preserved. This is the same effect as how `lines`
+	-- handles a trailing newline.
+	elimemptyend [] = []
+	elimemptyend (x:[])
+		| null x = []
+		| otherwise = [x]
+	elimemptyend (x:rest) = x : elimemptyend rest
 
 -- When concurrency is enabled at the command line, it is used in batch
 -- mode. But, if it's only set in git config, don't use it, because the

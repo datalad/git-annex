@@ -65,6 +65,7 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     transition, and suggest using one of the options, or setting
     annex.synccontent.
   * sync: Added -g as a short option for --no-content.
+  * Fix bug in -z handling of trailing NUL in input.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 
