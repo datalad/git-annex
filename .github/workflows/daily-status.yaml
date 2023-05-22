@@ -30,6 +30,7 @@ jobs:
         id: content
         run: |
           fpath="$(date +%Y/%m/%d.html)"
+          mkdir -p "$(date +%Y/%m)"
           subject="$(python -m pip-run -q -- "$GITHUB_WORKSPACE"/.github/workflows/tools/daily-status.py "$fpath")"
           echo "subject=$subject" >> "$GITHUB_OUTPUT"
           ln -f -s "$fpath" index.html
