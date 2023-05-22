@@ -16,6 +16,7 @@ from enum import Enum
 import os
 from pathlib import Path
 import re
+import sys
 from tempfile import TemporaryFile
 from zipfile import Path as ZipPath
 from xml.sax.saxutils import escape
@@ -83,12 +84,18 @@ class DailyStatus:
             body += "<li>[no runs]</li>\n"
         body += "</ul>\n</li>\n<li><p>Local Clients:</p>\n<ul>\n"
         if self.client_runs:
+            seen = set()
             for cstatus in self.client_runs:
-                body += "<li>" + cstatus.as_html() + "</li>\n"
+                if cstatus.client_id not in seen:
+                    idattr = f' id="{cstatus.client_id}"'
+                    seen.add(cstatus.client_id)
+                else:
+                    idattr = ""
+                body += f"<li{idattr}>" + cstatus.as_html() + "</li>\n"
                 qtys.update(cstatus.get_summary())
         else:
             body += "<li>[no runs]</li>\n"
-        body += "</ul>"
+        body += "</ul></li></ul>"
         if qtys:
             subject = f"{WORKFLOW_REPO} daily summary: " + ", ".join(
                 f"{n} {oc.value}" for oc, n in qtys.items()
@@ -103,6 +110,18 @@ class DailyStatus:
                 subject += f", {absent} ABSENT"
         else:
             subject = f"{WORKFLOW_REPO} daily summary: NOTHING"
+        body = (
+            "<!DOCTYPE html>\n"
+            '<html lang="en">\n'
+            "<head>\n"
+            '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">\n'
+            f"<title>{subject}</title>\n"
+            "</head>\n"
+            "<body>\n"
+            f"{body}\n"
+            "</body>\n"
+            "</html>"
+        )
         return (subject, body)
 
 
@@ -170,6 +189,7 @@ class ResultProcessError:
 
 
 def main() -> None:
+    outfile = sys.argv[1]
     token = os.environ["GITHUB_TOKEN"]
     gh = Github(token)
     cutoff = datetime.now(timezone.utc) - WINDOW
@@ -262,7 +282,7 @@ def main() -> None:
     )
     (subject, body) = status.get_subject_body()
     print(subject)
-    with open("body.html", "w") as fp:
+    with open(outfile, "w") as fp:
         print(body, file=fp)
 
 
