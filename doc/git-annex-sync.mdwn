@@ -43,7 +43,7 @@ content by default. That will change in a future version of git-annex,
   
   Use --no-commit to avoid committing local changes.
 
-* `--message=msg`
+* `--message=msg` `-m msg`
 
   Use this option to specify a commit message.
 

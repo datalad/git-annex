@@ -30,7 +30,7 @@ files that it does not match will instead be added with `git add`.
 
 # OPTIONS
 
-* `--message=msg`
+* `--message=msg` `-m msg`
 
   Use this option to specify a commit message.
 
