@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2023-05-23T15:42:39Z"
+ content="""
+Many commands do reflect "notneeded" by not displaying any output.
+
+(I suppose that could even be a problem with --json --batch, since
+a command like drop will not output anything when it has nothing to do.)
+
+In the case of dropkey, it could have skipped displaying anything for keys
+that don't exist, but changing that now doesn't seem wise.
+"""]]
