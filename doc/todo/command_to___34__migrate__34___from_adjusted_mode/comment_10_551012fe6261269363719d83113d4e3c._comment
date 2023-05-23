@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 10"
+ date="2023-05-23T16:12:42Z"
+ content="""
+FWIW: confirming that `git-annex fsck --fast` worked out nicely on a sample test repo.
+
+Re question above on how we got there:  it is trivial.  While having no globally defined thawcontent-command/freezecontent-command we created a new repo with git annex `10.20230126-1~ndall+1` (so - recent).
+
+```
+[d31548v@discovery7 test]$ git init; git annex init; echo 123 > 123 ; git annex add 123; git commit -m 123 123; ls -l 
+Initialized empty Git repository in /dartfs-hpc/rc/lab/C/CANlab/labdata/projects/test/test/.git/
+init  
+  Filesystem does not allow removing write bit from files.
+
+  Detected a crippled filesystem.
+
+  Disabling core.symlinks.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+add 123 
+ok                                
+(recording state in git...)
+[adjusted/master(unlocked) 6fc2d66] 123
+ 1 file changed, 1 insertion(+)
+ create mode 100644 123
+total 24
+-rwxrwx--- 1 d31548v rc-CANlab-admin 4 May 23 12:01 123
+[d31548v@discovery7 test]$ ls -lta
+total 120
+drwxrwx--- 9 d31548v rc-CANlab-admin 293 May 23 12:01 .git
+-rwxrwx--- 1 d31548v rc-CANlab-admin   4 May 23 12:01 123
+drwxrwx--- 3 d31548v rc-CANlab-admin  43 May 23 12:01 .
+drwxrwx--- 4 d31548v rc-CANlab-admin  62 May 23 12:01 ..
+```
+
+so we ended up in adjusted branches mode, with .git/config having those `core.symlinks = false` and `annex.crippledfilesystem = true`.  
+
+Then we wanted to move back to \"normal\" -- enabled those thaw/freeze config options, `git config --unset core.symlinks; git config --unset annex.crippledfilesystem`, ran `git annex fsck --fast` and seems got it all alright.
+"""]]
