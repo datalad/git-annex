@@ -51,7 +51,6 @@ jobs:
           from: GitHub Actions Notifications
           to: ${{ secrets.DAILY_STATUS_RECIPIENTS }}
           subject: ${{ steps.content.outputs.subject }}
-          html_body: file://index.html
-        working-directory: git-annex-ci-reports
+          html_body: file://git-annex-ci-reports/index.html
 
 # vim:set sts=2:
