@@ -32,7 +32,7 @@ myseek o = startConcurrency transferStages $ do
 		, Command.Add.batchOption = NoBatch
 		, Command.Add.updateOnly = False
 		, Command.Add.largeFilesOverride = Nothing
-		, Command.Add.checkGitIgnoreOption = CheckGitIgnore (False)
+		, Command.Add.checkGitIgnoreOption = CheckGitIgnore True
 		, Command.Add.dryRunOption = DryRun False
 		}
 	waitForAllRunningCommandActions
