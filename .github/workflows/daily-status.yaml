@@ -34,6 +34,8 @@ jobs:
           subject="$(python -m pip-run -q -- "$GITHUB_WORKSPACE"/.github/workflows/tools/daily-status.py "$fpath")"
           echo "subject=$subject" >> "$GITHUB_OUTPUT"
           ln -f -s "$fpath" index.html
+          git config --global user.email "test@github.land"
+          git config --global user.name "GitHub Almighty"
           git add .
           git commit -m "[daily-status] $subject"
           git push
