@@ -3,6 +3,7 @@ name: Daily Status E-Mail
 on:
   schedule:
     - cron: '5 23 * * *'
+  workflow_dispatch:
 
 jobs:
   update:
