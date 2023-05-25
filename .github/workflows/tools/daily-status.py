@@ -10,6 +10,7 @@ __requires__ = [
 ]
 
 from collections import Counter
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from enum import Enum
@@ -36,6 +37,8 @@ CLIENTS_WORKFLOW = "handle-result.yaml"
 
 CLIENT_INFO_FILE = Path(__file__).parents[3] / "clients" / "clients.yaml"
 
+APPVEYOR_PROJECT = "mih/git-annex"
+
 
 class Outcome(Enum):
     PASS = "PASSED"
@@ -56,6 +59,17 @@ class Outcome(Enum):
         else:
             raise ValueError(f"Unknown GitHub workflow conclusion: {concl!r}")
 
+    @classmethod
+    def from_appveyor_status(cls, status: str) -> Outcome:
+        if status == "success":
+            return cls.PASS
+        elif status == "failed":
+            return cls.FAIL
+        elif status == "cancelled":
+            return cls.INCOMPLETE
+        else:
+            raise ValueError(f"Unknown Appveyor status: {status!r}")
+
     def as_html(self) -> str:
         if self is Outcome.PASS:
             return '<span style="color: green">PASS</span>'
@@ -72,6 +86,7 @@ class DailyStatus:
     github_runs: list[WorkflowStatus]
     client_runs: list[ClientStatus | ResultProcessError]
     all_clients: set[str]
+    appveyor_builds: list[AppveyorBuild]
 
     def get_subject_body(self) -> tuple[str, str]:
         qtys = Counter()
@@ -95,7 +110,14 @@ class DailyStatus:
                 qtys.update(cstatus.get_summary())
         else:
             body += "<li>[no runs]</li>\n"
-        body += "</ul></li></ul>"
+        body += "</ul>\n</li>\n<li><p>Appveyor Builds:</p>\n<ul>\n"
+        if self.appveyor_builds:
+            for build in self.appveyor_builds:
+                body += "<li>" + build.as_html() + "</li>\n"
+                qtys.update(build.get_summary())
+        else:
+            body += "<li>[no builds]</li>\n"
+        body += "</ul>\n</li>\n</ul>"
         if qtys:
             subject = f"{WORKFLOW_REPO} daily summary: " + ", ".join(
                 f"{n} {oc.value}" for oc, n in qtys.items()
@@ -188,6 +210,43 @@ class ResultProcessError:
         return f'{Outcome.ERROR.as_html()} processing results for {escape(self.client_id)} #{self.build_id} [<a href="{self.url}">logs</a>] {self.timestamp}'
 
 
+@dataclass
+class AppveyorBuild:
+    id: int
+    version: str
+    timestamp: datetime
+    outcome: Outcome
+    jobs: list[AppveyorJob]
+
+    @property
+    def url(self) -> str:
+        return f"https://ci.appveyor.com/project/{APPVEYOR_PROJECT}/builds/{self.id}"
+
+    def get_summary(self) -> Counter[Outcome]:
+        return Counter(j.outcome for j in self.jobs)
+
+    def as_html(self) -> str:
+        s = f'<p>{self.outcome.as_html()} <a href="{self.url}">{self.version}</a> {self.timestamp}</p>\n<ul>\n'
+        for j in self.jobs:
+            s += "<li>" + j.as_html() + "</li>\n"
+        return s + "</ul>\n"
+
+
+@dataclass
+class AppveyorJob:
+    build_id: int
+    id: str
+    name: str
+    outcome: Outcome
+
+    @property
+    def url(self) -> str:
+        return f"https://ci.appveyor.com/project/{APPVEYOR_PROJECT}/builds/{self.build_id}/job/{self.id}"
+
+    def as_html(self) -> str:
+        return f'{self.outcome.as_html()} <a href="{self.url}">{escape(self.name)}</a>'
+
+
 def main() -> None:
     outfile = sys.argv[1]
     token = os.environ["GITHUB_TOKEN"]
@@ -275,10 +334,43 @@ def main() -> None:
                     )
                 )
 
+    appveyor_builds = []
+    with requests.Session() as s:
+        for build in get_appveyor_builds(s):
+            if build.get("finished") is None:
+                continue
+            finished = isoparse(build["finished"])
+            if finished <= cutoff:
+                break
+            r = s.get(
+                f"https://ci.appveyor.com/api/projects/{APPVEYOR_PROJECT}"
+                f"/build/{build['version']}"
+            )
+            r.raise_for_status()
+            data = r.json()
+            appveyor_builds.append(
+                AppveyorBuild(
+                    id=build["buildId"],
+                    version=build["version"],
+                    outcome=Outcome.from_appveyor_status(build["status"]),
+                    timestamp=isoparse(build["started"]),
+                    jobs=[
+                        AppveyorJob(
+                            build_id=build["buildId"],
+                            id=job["jobId"],
+                            name=job["name"],
+                            outcome=Outcome.from_appveyor_status(job["status"]),
+                        )
+                        for job in data["build"]["jobs"]
+                    ],
+                )
+            )
+
     status = DailyStatus(
         github_runs=github_statuses,
         client_runs=client_statuses,
         all_clients=all_clients,
+        appveyor_builds=appveyor_builds,
     )
     (subject, body) = status.get_subject_body()
     print(subject)
@@ -309,6 +401,22 @@ def get_client_test_outcomes(
                     Outcome.PASS if int(p.read_text()) == 0 else Outcome.FAIL
                 )
     return tests
+
+
+def get_appveyor_builds(s: requests.Session) -> Iterator[dict]:
+    params = {"recordsNumber": 20}
+    while True:
+        r = s.get(
+            f"https://ci.appveyor.com/api/projects/{APPVEYOR_PROJECT}/history",
+            params=params,
+        )
+        r.raise_for_status()
+        data = r.json()
+        if builds := data.get("builds"):
+            yield from builds
+            params["startBuildId"] = builds[-1]["buildId"]
+        else:
+            break
 
 
 if __name__ == "__main__":
