@@ -1,6 +1,6 @@
-{- youtube-dl integration for git-annex
+{- yt-dlp (and deprecated youtube-dl) integration for git-annex
  -
- - Copyright 2017-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2017-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -22,13 +22,11 @@ import Utility.DiskFree
 import Utility.HtmlDetect
 import Utility.Process.Transcript
 import Utility.Metered
-import Utility.DataUnits
 import Messages.Progress
 import Logs.Transfer
 
 import Network.URI
 import Control.Concurrent.Async
-import Data.Char
 import Text.Read
 
 -- youtube-dl can follow redirects to anywhere, including potentially
@@ -39,10 +37,10 @@ youtubeDlAllowed = ipAddressesUnlimited
 
 youtubeDlNotAllowedMessage :: String
 youtubeDlNotAllowedMessage = unwords
-	[ "This url is supported by youtube-dl, but"
-	, "youtube-dl could potentially access any address, and the"
+	[ "This url is supported by yt-dlp, but"
+	, "yt-dlp could potentially access any address, and the"
 	, "configuration of annex.security.allowed-ip-addresses"
-	, "does not allow that. Not using youtube-dl."
+	, "does not allow that. Not using yt-dlp (or youtube-dl)."
 	]
 
 -- Runs youtube-dl in a work directory, to download a single media file
@@ -76,20 +74,21 @@ youtubeDl' url workdir p uo
 				fs -> return (toomanyfiles fs)
 			Right False -> workdirfiles >>= \case
 				[] -> return (Right Nothing)
-				_ -> return (Left "youtube-dl download is incomplete. Run the command again to resume.")
+				_ -> return (Left "yt-dlp download is incomplete. Run the command again to resume.")
 			Left msg -> return (Left msg)
 		, return (Right Nothing)
 		)
 	| otherwise = return (Right Nothing)
   where
-	nofiles = Left "youtube-dl did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
-	toomanyfiles fs = Left $ "youtube-dl downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
+	nofiles = Left "yt-dlp did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
+	toomanyfiles fs = Left $ "yt-dlp downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
 	workdirfiles = liftIO $ filterM (doesFileExist) =<< dirContents workdir
 	runcmd = youtubeDlMaxSize workdir >>= \case
 		Left msg -> return (Left msg)
 		Right maxsize -> do
 			cmd <- youtubeDlCommand
-			opts <- youtubeDlOpts (dlopts ++ maxsize)
+			let isytdlp = "yt-dlp" `isInfixOf` cmd
+			opts <- youtubeDlOpts (dlopts isytdlp ++ maxsize)
 			oh <- mkOutputHandlerQuiet
 			-- The size is unknown to start. Once youtube-dl
 			-- outputs some progress, the meter will be updated
@@ -97,21 +96,25 @@ youtubeDl' url workdir p uo
 			-- meter is passed into commandMeter'
 			let unknownsize = Nothing :: Maybe FileSize
 			ok <- metered (Just p) unknownsize Nothing $ \meter meterupdate ->
-				liftIO $ commandMeter' 
-					parseYoutubeDlProgress oh (Just meter) meterupdate cmd opts
+				liftIO $ commandMeter'
+					(if isytdlp then parseYtdlpProgress else parseYoutubeDlProgress)
+					oh (Just meter) meterupdate cmd opts
 					(\pr -> pr { cwd = Just workdir })
 			return (Right ok)
-	dlopts = 
+	dlopts isytdlp = 
 		[ Param url
-		-- To make youtube-dl only download one file when given a
+		-- To make it only download one file when given a
 		-- page with a video and a playlist, download only the video.
 		, Param "--no-playlist"
 		-- And when given a page with only a playlist, download only
 		-- the first video on the playlist. (Assumes the video is
 		-- somewhat stable, but this is the only way to prevent
-		-- youtube-dl from downloading the whole playlist.)
+		-- it from downloading the whole playlist.)
 		, Param "--playlist-items", Param "0"
-		]
+		] ++
+			if isytdlp
+				then [Param "--progress-template", Param progressTemplate]
+				else []
 
 -- To honor annex.diskreserve, ask youtube-dl to not download too
 -- large a media file. Factors in other downloads that are in progress,
@@ -251,7 +254,7 @@ youtubeDlOpts addopts = do
 youtubeDlCommand :: Annex String
 youtubeDlCommand = annexYoutubeDlCommand <$> Annex.getGitConfig >>= \case
 	Just c -> pure c
-	Nothing -> fromMaybe "yt-dlp" <$> liftIO (searchPath "youtube-dl")
+	Nothing -> fromMaybe "youtube-dl" <$> liftIO (searchPath "yt-dlp")
 
 supportedScheme :: UrlOptions -> URLString -> Bool
 supportedScheme uo url = case parseURIRelaxed url of
@@ -264,41 +267,39 @@ supportedScheme uo url = case parseURIRelaxed url of
 		"ftp:" -> False
 		_ -> allowedScheme uo u
 
-{- Strategy: Look for chunks prefixed with \r, which look approximately
- - like this for youtube-dl:
- - "ESC[K[download]  26.6% of 60.22MiB at 254.69MiB/s ETA 00:00"
- - or for yt-dlp, like this:
- - "\r[download]   1.8% of    1.14GiB at    1.04MiB/s ETA 18:23"
- - Look at the number before "% of " and the number and unit after,
- - to determine the number of bytes.
+progressTemplate :: String
+progressTemplate = "ANNEX %(progress.downloaded_bytes)i %(progress.total_bytes_estimate)i %(progress.total_bytes)i ANNEX"
+
+{- The progressTemplate makes output look like "ANNEX 10 100 NA ANNEX" or
+ - "ANNEX 10 NA 100 ANNEX" depending on whether the total bytes are estimated
+ - or known. That makes parsing much easier (and less fragile) than parsing
+ - the usual progress output.
  -}
-parseYoutubeDlProgress :: ProgressParser
-parseYoutubeDlProgress = go [] . reverse . progresschunks
+parseYtdlpProgress :: ProgressParser
+parseYtdlpProgress = go [] . reverse . progresschunks
   where
 	delim = '\r'
 
-	progresschunks = drop 1 . splitc delim
+	progresschunks = splitc delim
 
 	go remainder [] = (Nothing, Nothing, remainder)
-	go remainder (x:xs) = case split "% of " x of
-		(p:r:[]) -> case (parsepercent p, parsebytes r) of
-			(Just percent, Just total) ->
-				( Just (toBytesProcessed (calc percent total))
-				, Just (TotalSize total)
-				, remainder
-				)
-			_ -> go (delim:x++remainder) xs
-		_ -> go (delim:x++remainder) xs
+	go remainder (x:xs) = case splitc ' ' x of
+			("ANNEX":downloaded_bytes_s:total_bytes_estimate_s:total_bytes_s:"ANNEX":[]) ->
+				case (readMaybe downloaded_bytes_s, readMaybe total_bytes_estimate_s, readMaybe total_bytes_s) of
+					(Just downloaded_bytes, Nothing, Just total_bytes) ->
+						( Just (BytesProcessed downloaded_bytes)
+						, Just (TotalSize total_bytes)
+						, remainder
+						)
+					(Just downloaded_bytes, Just total_bytes_estimate, _) ->
+						( Just (BytesProcessed downloaded_bytes)
+						, Just (TotalSize total_bytes_estimate)
+						, remainder
+						)
+					_ -> go (remainder++x) xs
+			_ -> go (remainder++x) xs
 
-	calc :: Double -> Integer -> Integer
-	calc percent total = round (percent * fromIntegral total / 100)
-
-	parsepercent :: String -> Maybe Double
-	parsepercent = readMaybe 
-		. reverse . takeWhile (not . isSpace) . reverse
-		. dropWhile isSpace 
-
-	parsebytes = readSize units . takeWhile (not . isSpace) 
-		. dropWhile isSpace
-
-	units = committeeUnits ++ storageUnits
+{- youtube-dl is deprecated, parsing its progress was attempted before but
+ - was buggy and is no longer done. -}
+parseYoutubeDlProgress :: ProgressParser
+parseYoutubeDlProgress _ = (Nothing, Nothing, "")

@@ -75,9 +75,9 @@ number takes that many paths from the end.
 <a name=videos></a>
 
 There's support for downloading videos from sites like YouTube, Vimeo,
-and many more. This relies on youtube-dl to download the videos.
+and many more. This relies on yt-dlp to download the videos.
 
-When you have youtube-dl installed, you can just 
+When you have yt-dlp installed, you can just 
 `git annex addurl http://youtube.com/foo` and it will detect that
 it is a video and download the video content for offline viewing.
 
@@ -86,16 +86,14 @@ See the documentation of annex.security.allowed-ip-addresses
 in [[git-annex]] for details.)
 
 Later, in another clone of the repository, you can run `git annex get` on
-the file and it will also be downloaded with youtube-dl. This works
+the file and it will also be downloaded with yt-dlp. This works
 even if the video host has transcoded or otherwise changed the video
 in the meantime; the assumption is that these video files are equivalent.
 
 There is an `annex.youtube-dl-options` configuration setting that can be used
-to pass parameters to quvi. For example, you could set `git config
+to pass parameters to yt-dlp. For example, you could set `git config
 annex.youtube-dl-options "--format worst"` to configure it to download low
-quality videos from YouTube. Note that the youtube-dl configuration files
-are not read when git-annex runs youtube-dl, to avoid config settings that
-break its integration.
+quality videos from YouTube.
 
 To download a youtube channel, you need to find the RSS feed associated with
 that channel, and pass it to `git annex importfeed`. There does not seem to

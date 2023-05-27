@@ -13,7 +13,7 @@ content has not already been added to the repository before, so you can
 delete, rename, etc the resulting files and repeated runs won't duplicate
 them.
 
-When `youtube-dl` is installed, it can be used to download links in the feed.
+When `yt-dlp` is installed, it can be used to download links in the feed.
 This allows importing e.g., YouTube playlists.
 (However, this is disabled by default as it can be a security risk. 
 See the documentation of annex.security.allowed-ip-addresses
@@ -54,13 +54,13 @@ resulting in the new url being downloaded to such a filename.
 
 * `--raw`
 
-  Prevent special handling of urls by youtube-dl, bittorrent, and other
+  Prevent special handling of urls by yt-dlp, bittorrent, and other
   special remotes. This will for example, make importfeed
   download a .torrent file and not the contents it points to.
 
 * `--no-raw`
 
-  Require content pointed to by the url to be downloaded using youtube-dl
+  Require content pointed to by the url to be downloaded using yt-dlp
   or a special remote, rather than the raw content of the url. if that
   cannot be done, the import will fail, and the next import of the feed
   will retry.

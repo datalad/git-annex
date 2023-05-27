@@ -10,7 +10,7 @@ git annex addurl `[url ...]`
 
 Downloads each url to its own file, which is added to the annex.
 
-When `youtube-dl` is installed, it can be used to check for a video
+When `yt-dlp` is installed, it can be used to check for a video
 embedded in  a web page at the url, and that is added to the annex instead.
 (However, this is disabled by default as it can be a security risk. 
 See the documentation of annex.security.allowed-ip-addresses
@@ -45,13 +45,13 @@ be used to get better filenames.
   
 * `--raw`
 
-  Prevent special handling of urls by youtube-dl, bittorrent, and other
+  Prevent special handling of urls by yt-dlp, bittorrent, and other
   special remotes. This will for example, make addurl
   download the .torrent file and not the contents it points to.
 
 * `--no-raw`
 
-  Require content pointed to by the url to be downloaded using youtube-dl
+  Require content pointed to by the url to be downloaded using yt-dlp
   or a special remote, rather than the raw content of the url. if that
   cannot be done, the add will fail.
 

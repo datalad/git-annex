@@ -67,6 +67,13 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * sync: Added -g as a short option for --no-content.
   * Fix bug in -z handling of trailing NUL in input.
   * version: Avoid error message when entire output is not read.
+  * Fix excessive CPU usage when parsing yt-dlp (or youtube-dl) progress
+    output fails.
+  * Use --progress-template with yt-dlp to fix a failure to parse
+    progress output when only an estimated total size is known.
+  * When yt-dlp is available, default to using it in preference to
+    youtube-dl. Using youtube-dl is now deprecated, and git-annex no longer
+    tries to parse its output to display download progress
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

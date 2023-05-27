@@ -1774,19 +1774,19 @@ Remotes are configured using these settings in `.git/config`.
 
 * `annex.youtube-dl-options`
 
-  Options to pass to youtube-dl (or yt-dlp) when using it to find the url
-  to download for a video.
+  Options to pass to yt-dlp (or deprecated youtube-dl) when using it to
+  find the url to download for a video.
 
-  Some options may break git-annex's integration with youtube-dl. For
+  Some options may break git-annex's integration with yt-dlp. For
   example, the --output option could cause it to store files somewhere
-  git-annex won't find them. Avoid setting here or in the youtube-dl config
-  file any options that cause youtube-dl to download more than one file,
+  git-annex won't find them. Avoid setting here or in the yt-dlp config
+  file any options that cause it to download more than one file,
   or to store the file anywhere other than the current working directory.
 
 * `annex.youtube-dl-command`
 
-  Command to run for youtube-dl. Default is to use "youtube-dl" or 
-  if that is not available in the PATH, to use "yt-dlp".
+  Default is to use "yt-dlp" or if that is not available in the PATH, 
+  to use "youtube-dl".
 
 * `annex.aria-torrent-options`
 
@@ -1837,8 +1837,8 @@ Remotes are configured using these settings in `.git/config`.
   causing it to be downloaded into your repository and transferred to
   other remotes, exposing its content.
 
-  Note that, since the interfaces of curl and youtube-dl do not allow
-  these IP address restrictions to be enforced, curl and youtube-dl will
+  Note that, since the interfaces of curl and yt-dlp do not allow
+  these IP address restrictions to be enforced, curl and yt-dlp will
   never be used unless annex.security.allowed-ip-addresses=all.
   
   To allow accessing local or private IP addresses on only specific ports,
