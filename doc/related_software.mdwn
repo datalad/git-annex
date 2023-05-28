@@ -65,4 +65,8 @@ designed to interoperate with it.
   reproducible computational workflows in which version control is
   done with git + git annex
 
+* [borg2annex](https://gitlab.com/hxtmdev/borg2annex)
+  converts a sequence of borgbackup archives into a git-annex repository,
+  storing nested Git repositories as subtrees or bundles.
+
 See also [[not]] for software that is *not* related to git-annex, but similar.
