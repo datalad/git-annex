@@ -10,7 +10,9 @@ own scalability limits with many files.)
 
 Still, it would be good to find some ways to speed it up.
 
-Hmm... What if it generated a git tree, where each file in the tree is
+---
+
+What if it generated a git tree, where each file in the tree is
 a sha1 hash of the ContentIdentifier. The tree can just be recorded locally
 somewhere. It's ok if it gets garbage collected; it's only an optimisation.
 On the next sync, diff from the old to the new tree. It only needs to
@@ -21,6 +23,11 @@ If there was a collision it would fail to import the new file. But it seems
 reasonable, because git loses data on sha1 collisions anyway, and ContentIdentifiers
 are no more likely to collide than the content of files, and probably less
 likely overall..)
+
+How fast can a git tree of say, 10000 files be generated? Is it faster than
+querying sqlite 10000 times?
+
+----
 
 Another idea would to be use something faster than sqlite to record the cid
 to key mappings. Looking up those mappings is the main thing that makes
