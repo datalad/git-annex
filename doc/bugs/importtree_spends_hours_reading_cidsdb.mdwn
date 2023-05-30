@@ -39,6 +39,10 @@ There are about 150,000 files in that tree.  This problem occurs *after* git-ann
 
 .git/annex/cidsdb/db is only 51M so it is certainly entirely cached.  git-annex is entirely CPU-bound at this point.
 
+I can rerun the sync with an unchanged import directory.  It still takes 107 minutes, the majority of which is spent reading cidsdb.  Only the first minute or two are spent scanning the source area.
+
+I have tested this on a source directory that's 2.2G and another that's 1.1T, both with about 150,000 files.  After the first import, the subsequent syncs are similar in performance.  In other words, this behavior appears to be related to the number of files, not the size of files.
+
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, and I hope to use it for a project to archive family photos and videos to BD-R (that's what this is about here)
