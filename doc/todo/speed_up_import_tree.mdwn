@@ -27,6 +27,14 @@ likely overall..)
 How fast can a git tree of say, 10000 files be generated? Is it faster than
 querying sqlite 10000 times?
 
+Once it knows which files are changed, it still needs to generate the
+imported tree, which contains both changed and unchanged files. How to
+handle unchanged files when generating that tree? Current method is
+to do a database lookup to convert the ContentIdentifier into a Key, and
+record that in the tree. But those database lookups are the slow thing that
+needs to be avoided. Seems like it will need to either use adjustTree, or a
+separate index file. (The index file would make importing a History hard.)
+
 ----
 
 Another idea would to be use something faster than sqlite to record the cid
