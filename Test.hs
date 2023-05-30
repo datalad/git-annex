@@ -354,6 +354,7 @@ repoTests note numparts = map mk $ sep
 	, testCase "required_content" test_required_content
 	, testCase "add subdirs" test_add_subdirs
 	, testCase "addurl" test_addurl
+	, testCase "repair" test_repair
 	]
   where
 	mk l = testGroup groupname (initTests : map adddep l)
@@ -2091,3 +2092,8 @@ test_transition_propagation_reversion =
 				emptylog
   where
 	emptylog = git_annex_expectoutput "log" [wormannexedfile] []
+
+test_repair :: Assertion
+test_repair = intmpclonerepo $
+	-- Simply running repair used to fail on Windows.
+	git_annex "repair" [] "repair"

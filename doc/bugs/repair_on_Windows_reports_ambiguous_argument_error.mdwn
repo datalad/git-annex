@@ -71,3 +71,7 @@ repair: 1 failed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes. I am developing the easy-git-annex API for git-annex.
+
+> Should be [[fixed|done]] now... It was reading the contents of the refs/
+> directory recursively, and treating those names as refs, which is wrong
+> on Windows due to path separator being different. --[[Joey]]

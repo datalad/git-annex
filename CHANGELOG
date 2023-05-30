@@ -74,6 +74,7 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * When yt-dlp is available, default to using it in preference to
     youtube-dl. Using youtube-dl is now deprecated, and git-annex no longer
     tries to parse its output to display download progress
+  * repair: Fix handling of git ref names on Windows.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

@@ -30,6 +30,7 @@ import Git.Types
 import Git.Fsck
 import Git.Index
 import Git.Env
+import Git.FilePath
 import qualified Git.Config as Config
 import qualified Git.Construct as Construct
 import qualified Git.LsTree as LsTree
@@ -252,7 +253,8 @@ getAllRefs r = getAllRefs' (fromRawFilePath (localGitDir r) </> "refs")
 getAllRefs' :: FilePath -> IO [Ref]
 getAllRefs' refdir = do
 	let topsegs = length (splitPath refdir) - 1
-	let toref = Ref . encodeBS . joinPath . drop topsegs . splitPath
+	let toref = Ref . toInternalGitPath . encodeBS 
+		. joinPath . drop topsegs . splitPath
 	map toref <$> dirContentsRecursive refdir
 
 explodePackedRefsFile :: Repo -> IO ()
