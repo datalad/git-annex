@@ -508,7 +508,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			let importaction = starting ("import " ++ Remote.name remote) ai si $ do
 				when oldversion $
 					showNote "old version"
-				tryNonAsync (importordownload cidmap db i largematcher) >>= \case
+				tryNonAsync (importordownload cidmap i largematcher) >>= \case
 					Left e -> next $ do
 						warning (UnquotedString (show e))
 						liftIO $ atomically $
@@ -530,7 +530,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 			Just importkey ->
 				tryNonAsync (importkey loc cid sz nullMeterUpdate) >>= \case
 					Right (Just k) -> do
-						recordcidkey' db cid k
+						recordcidkeyindb db cid k
 						logChange k (Remote.uuid remote) InfoPresent
 						return $ Just (loc, Right k)
 					Right Nothing -> return Nothing
@@ -538,7 +538,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 						warning (UnquotedString (show e))
 						return Nothing
 	
-	importordownload cidmap db (loc, (cid, sz)) largematcher= do
+	importordownload cidmap (loc, (cid, sz)) largematcher= do
 		f <- locworktreefile loc
 		matcher <- largematcher f
 		-- When importing a key is supported, always use it rather
@@ -551,9 +551,9 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 					then dodownload
 					else doimport
 			else doimport
-		act cidmap db (loc, (cid, sz)) f matcher
+		act cidmap (loc, (cid, sz)) f matcher
 
-	doimport cidmap db (loc, (cid, sz)) f matcher =
+	doimport cidmap (loc, (cid, sz)) f matcher =
 		case Remote.importKey ia of
 			Nothing -> error "internal" -- checked earlier
 			Just importkey -> do
@@ -570,10 +570,10 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				let bwlimit = remoteAnnexBwLimit (Remote.gitconfig remote)
 				islargefile <- checkMatcher' matcher mi mempty
 				metered Nothing sz bwlimit $ const $ if islargefile
-					then doimportlarge importkey cidmap db loc cid sz f
-					else doimportsmall cidmap db loc cid sz
+					then doimportlarge importkey cidmap loc cid sz f
+					else doimportsmall cidmap loc cid sz
 	
-	doimportlarge importkey cidmap db loc cid sz f p =
+	doimportlarge importkey cidmap loc cid sz f p =
 		tryNonAsync importer >>= \case
 			Right (Just (k, True)) -> return $ Just (loc, Right k)
 			Right _ -> return Nothing
@@ -591,7 +591,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				Nothing -> return Nothing
 				Just k -> checkSecureHashes k >>= \case
 					Nothing -> do
-						recordcidkey cidmap db cid k
+						recordcidkey cidmap cid k
 						logChange k (Remote.uuid remote) InfoPresent
 						if importcontent
 							then getcontent k
@@ -618,7 +618,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	-- The file is small, so is added to git, so while importing
 	-- without content does not retrieve annexed files, it does
 	-- need to retrieve this file.
-	doimportsmall cidmap db loc cid sz p = do
+	doimportsmall cidmap loc cid sz p = do
 		let downloader tmpfile = do
 			(k, _) <- Remote.retrieveExportWithContentIdentifier
 				ia loc [cid] (fromRawFilePath tmpfile)
@@ -626,7 +626,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				p
 			case keyGitSha k of
 				Just sha -> do
-					recordcidkey cidmap db cid k
+					recordcidkey cidmap cid k
 					return sha
 				Nothing -> error "internal"
 		checkDiskSpaceToGet tmpkey Nothing $
@@ -640,7 +640,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		tmpkey = importKey cid sz
 		mkkey tmpfile = gitShaKey <$> hashFile tmpfile
 	
-	dodownload cidmap db (loc, (cid, sz)) f matcher = do
+	dodownload cidmap (loc, (cid, sz)) f matcher = do
 		let af = AssociatedFile (Just f)
 		let downloader tmpfile p = do
 			(k, _) <- Remote.retrieveExportWithContentIdentifier
@@ -651,12 +651,12 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				Nothing -> do
 					ok <- moveAnnex k af tmpfile
 					when ok $ do
-						recordcidkey cidmap db cid k
+						recordcidkey cidmap cid k
 						logStatus k InfoPresent
 						logChange k (Remote.uuid remote) InfoPresent
 					return (Right k, ok)
 				Just sha -> do
-					recordcidkey cidmap db cid k
+					recordcidkey cidmap cid k
 					return (Left sha, True)
 		let rundownload tmpfile p = tryNonAsync (downloader tmpfile p) >>= \case
 			Right (v, True) -> return $ Just (loc, v)
@@ -706,12 +706,18 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				maybeToList . M.lookup cid <$> readTVar cidmap
 			l -> return l
 
-	recordcidkey cidmap db cid k = do
+	recordcidkey cidmap cid k = do
 		liftIO $ atomically $ modifyTVar' cidmap $
 			M.insert cid k
-		recordcidkey' db cid k
-	recordcidkey' db cid k = do
+		-- Only record in log now; the database will be updated
+		-- later from the log, and the cidmap will be used for now.
+		recordcidkeyinlog cid k
+	
+	recordcidkeyindb db cid k = do
 		liftIO $ CIDDb.recordContentIdentifier db rs cid k
+		recordcidkeyinlog cid k
+	
+	recordcidkeyinlog cid k =
 		CIDLog.recordContentIdentifier rs cid k
 
 	rs = Remote.remoteStateHandle remote

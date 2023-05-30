@@ -75,6 +75,8 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     youtube-dl. Using youtube-dl is now deprecated, and git-annex no longer
     tries to parse its output to display download progress
   * repair: Fix handling of git ref names on Windows.
+  * Speed up importing trees from special remotes somewhat by avoiding
+    redundant writes to sqlite database.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 
