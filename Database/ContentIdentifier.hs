@@ -132,15 +132,15 @@ getContentIdentifierKeys (ContentIdentifierHandle h) (RemoteStateHandle u) cid =
 
 recordAnnexBranchTree :: ContentIdentifierHandle -> Sha -> IO ()
 recordAnnexBranchTree h s = queueDb h $ do
-        deleteWhere ([] :: [Filter AnnexBranch])
-        void $ insertUniqueFast $ AnnexBranch $ toSSha s
+	deleteWhere ([] :: [Filter AnnexBranch])
+	void $ insertUniqueFast $ AnnexBranch $ toSSha s
 
 getAnnexBranchTree :: ContentIdentifierHandle -> IO Sha
 getAnnexBranchTree (ContentIdentifierHandle h) = H.queryDbQueue h $ do
-        l <- selectList ([] :: [Filter AnnexBranch]) []
-        case l of
-                (s:[]) -> return $ fromSSha $ annexBranchTree $ entityVal s
-                _ -> return emptyTree
+	l <- selectList ([] :: [Filter AnnexBranch]) []
+	case l of
+		(s:[]) -> return $ fromSSha $ annexBranchTree $ entityVal s
+		_ -> return emptyTree
 
 {- Check if the git-annex branch has been updated and the database needs
  - to be updated with any new content identifiers in it. -}
