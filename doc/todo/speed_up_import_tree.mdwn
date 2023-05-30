@@ -1,0 +1,29 @@
+Users sometimes expect `git-annex import --from remote` to be faster than
+it is, when importing hundreds of thousands of files, particularly
+from a directory special remote.
+
+I think generally, they're expecting something that is not achievable.
+It is always going to be slower than using git in a repository with that
+many files, because git operates at a lower level of abstraction (the
+filesystem), so has more optimisations available to it. (Also git has its
+own scalability limits with many files.)
+
+Still, it would be good to find some ways to speed it up.
+
+Hmm... What if it generated a git tree, where each file in the tree is
+a sha1 hash of the ContentIdentifier. The tree can just be recorded locally
+somewhere. It's ok if it gets garbage collected; it's only an optimisation.
+On the next sync, diff from the old to the new tree. It only needs to
+import the changed files!
+
+(That is assuming that ContentIdentifiers don't tend to sha1 collide.
+If there was a collision it would fail to import the new file. But it seems
+reasonable, because git loses data on sha1 collisions anyway, and ContentIdentifiers
+are no more likely to collide than the content of files, and probably less
+likely overall..)
+
+Another idea would to be use something faster than sqlite to record the cid
+to key mappings. Looking up those mappings is the main thing that makes
+import slow when only a few files have changed and a large number have not.
+
+--[[Joey]] 

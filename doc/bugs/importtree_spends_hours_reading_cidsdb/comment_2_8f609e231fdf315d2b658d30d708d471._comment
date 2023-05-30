@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-05-30T18:49:34Z"
+ content="""
+I think I see why a second sync re-writes the cidsdb with information from
+the git-annex branch. 
+
+The first sync does write to the cidsdb at the same time it writes to the
+git-annex branch. So, it seems that it could at the end call 
+recordAnnexBranchTree to indicate that the information in the git-annex
+branch has all been written to the cidsdb. That would avoid the second sync
+doing extra work.
+
+But, there could be other processes running at the same time, and one of
+them may update the git-annex branch, eg merging a remote git-annex branch
+into it. Any cids logs on that merged git-annex branch would not be
+reflected in the cidsdb yet. If the sync then called
+recordAnnexBranchTree, the cidsdb would never get updated with that merged
+information.
+
+I don't think there's a good way to prevent, or to detect that situation.
+So, it can't call recordAnnexBranchTree at the end, and has to do extra
+work in updateFromLog at the beginning.
+
+What it could do is, only record a cid to the git-annex branch, not to the
+cidsdb. Then the updateFromLog would not be doing extra work, but necessary
+work. But, it also needs to read cids from the db during import, and if it
+doesn't record a cid there, it won't know when a later file has the same
+cid. So it will re-import it. Which for other special remotes than
+directory, means an expensive second download of the content.
+
+Anyway, the extra work of re-writing the cidsdb is only done on the sync
+immediately after the one that did import some new files. And it only
+re-writes cids for the new files, not for unchanged files.
+
+I'm not sure that this extra work is what the bug reporter was complaining about though.
+"""]]
