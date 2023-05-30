@@ -282,8 +282,8 @@ repoTests note numparts = map mk $ sep
 	, testCase "readonly remote" test_readonly_remote
 	, testCase "ignore deleted files" test_ignore_deleted_files
 	, testCase "metadata" test_metadata
-	, testCase "export_import" test_export_import
-	, testCase "export_import_subdir" test_export_import_subdir
+	, testCase "export and import" test_export_import
+	, testCase "export and import of subdir" test_export_import_subdir
 	, testCase "shared clone" test_shared_clone
 	, testCase "log" test_log
 	, testCase "view" test_view
