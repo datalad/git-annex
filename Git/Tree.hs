@@ -77,7 +77,7 @@ withMkTreeHandle :: (MonadIO m, MonadMask m) => Repo -> (MkTreeHandle -> m a) ->
 withMkTreeHandle repo a = bracketIO setup cleanup (a . MkTreeHandle)
   where
 	setup = gitCoProcessStart False ps repo
-	ps = [Param "mktree", Param "--batch", Param "-z"]
+	ps = [Param "mktree", Param "--missing", Param "--batch", Param "-z"]
 	cleanup = CoProcess.stop
 
 {- Records a Tree in the Repo, returning its Sha.

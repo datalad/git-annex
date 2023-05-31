@@ -10,6 +10,7 @@
 module Utility.Hash (
 	sha1,
 	sha1_context,
+	sha1s,
 	sha2_224,
 	sha2_224_context,
 	sha2_256,
@@ -83,6 +84,9 @@ sha1 = hashlazy
 
 sha1_context :: Context SHA1
 sha1_context = hashInit
+
+sha1s :: S.ByteString -> Digest SHA1
+sha1s = hash
 
 sha2_224 :: L.ByteString -> Digest SHA224
 sha2_224 = hashlazy
