@@ -587,12 +587,12 @@ pullThirdPartyPopulated o remote
 		Command.Import.listContents' remote ImportTree (CheckGitIgnore False) go
   where
 	go (Just importable) = importKeys remote ImportTree False True importable >>= \case
-		Just importablekeys -> do
+		ImportFinished importablekeys -> do
 			(_imported, updatestate) <- recordImportTree remote ImportTree importablekeys
 			next $ do
 				updatestate
 				return True
-		Nothing -> next $ return False
+		ImportUnfinished -> next $ return False
 	go Nothing = next $ return True -- unchanged from before
 
 	ai = ActionItemOther (Just (UnquotedString (Remote.name remote)))

@@ -14,6 +14,8 @@ module Annex.Import (
 	buildImportTrees,
 	recordImportTree,
 	canImportKeys,
+	ImportResult(..),
+	importChanges,
 	importKeys,
 	makeImportMatcher,
 	getImportableContents,
@@ -27,6 +29,7 @@ import Git.Tree
 import Git.Sha
 import Git.FilePath
 import Git.History
+import qualified Git.DiffTree
 import qualified Git.Ref
 import qualified Git.Branch
 import qualified Annex
@@ -47,6 +50,7 @@ import Messages.Progress
 import Utility.DataUnits
 import Utility.Metered
 import Utility.Hash (sha1s)
+import Logs.Import
 import Logs.Export
 import Logs.Location
 import Logs.PreferredContent
@@ -300,22 +304,30 @@ convertImportTree msubdir ls = treeItemsToTree <$> mapM mktreeitem ls
  -}
 buildContentIdentifierTree
 	:: ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)
-	-> Annex (History Sha)
-buildContentIdentifierTree = 
-	buildImportTreesGeneric convertContentIdentifierTree emptyTree Nothing
+	-> Annex (History Sha, M.Map Sha (ContentIdentifier, ByteSize))
+buildContentIdentifierTree importable = do
+	mv <- liftIO $ newTVarIO M.empty
+	r <- buildImportTreesGeneric (convertContentIdentifierTree mv) emptyTree Nothing importable
+	m <- liftIO $ atomically $ readTVar mv
+	return (r, m)
 
 {- For speed, and to avoid bloating the repository, the ContentIdentifiers
  - are not actually checked into git, instead a sha1 hash is calculated
  - internally.
  -}
 convertContentIdentifierTree
-	:: Maybe TopFilePath
+	:: TVar (M.Map Sha (ContentIdentifier, ByteSize))
+	-> Maybe TopFilePath
 	-> [(ImportLocation, (ContentIdentifier, ByteSize))]
 	-> Annex Tree
-convertContentIdentifierTree _ ls = pure $ treeItemsToTree $ map mktreeitem ls
+convertContentIdentifierTree mv _ ls = do
+	let (tis, ml) = unzip (map mktreeitem ls)
+	liftIO $ atomically $ modifyTVar' mv $
+		M.union (M.fromList ml)
+	return (treeItemsToTree tis)
   where
-	mktreeitem (loc, ((ContentIdentifier cid), _sz)) = 
-		TreeItem p mode sha1
+	mktreeitem (loc, v@((ContentIdentifier cid), _sz)) =
+		(TreeItem p mode sha1, (sha1, v))
 	  where
 		p = asTopFilePath (fromImportLocation loc)
 		mode = fromTreeItemType TreeFile
@@ -414,6 +426,90 @@ canImportKeys remote importcontent =
   where
 	ia = Remote.importActions remote
 
+data Diffed t
+	= DiffChanged t
+	| DiffRemoved
+
+{- Diffs between the current and previous ContentIdentifier trees, and 
+ - runs importKeys on only the changed files.
+ -
+ - This will download the same content as if importKeys were run on all
+ - files, but this speeds it up significantly when there are a lot of files
+ - and only a few have changed. importKeys has to look up each
+ - ContentIdentifier to see if a Key is known for it. This avoids doing
+ - that lookup on files that have not changed.
+ -
+ - Diffing is not currently implemented when there is a History.
+ -}
+importChanges
+	:: Remote
+	-> ImportTreeConfig
+	-> Bool
+	-> Bool
+	-> ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)
+	-> Annex (ImportResult (Either
+		(ImportableContentsChunkable Annex (Either Sha Key))
+		(ImportableContentsChunkable Annex (Diffed (Either Sha Key)))))
+importChanges remote importtreeconfig importcontent thirdpartypopulated importablecontents = do
+	((History currcidtree currhistory), cidtreemap) <- buildContentIdentifierTree importablecontents
+	-- diffimport below does not handle history, so when there is
+	-- history, do a full import.
+	if not (S.null currhistory)
+		then fullimport currcidtree
+		else do
+			getContentIdentifierTree (Remote.uuid remote) >>= \case
+				Nothing -> fullimport currcidtree
+				Just prevcidtree -> diffimport cidtreemap prevcidtree currcidtree
+  where
+	remember = recordContentIdentifierTree (Remote.uuid remote)
+
+	fullimport currcidtree = 
+		importKeys remote importtreeconfig importcontent thirdpartypopulated importablecontents >>= \case
+			ImportUnfinished -> return ImportUnfinished
+			ImportFinished r -> do
+				remember currcidtree
+	 			return $ ImportFinished $ Left r
+	
+	diffimport cidtreemap prevcidtree currcidtree = do
+		(diff, cleanup) <- inRepo $ Git.DiffTree.diffTreeRecursive currcidtree prevcidtree
+		let (removed, changed) = partition (\ti -> Git.DiffTree.dstsha ti `elem` nullShas) diff
+		let mkloc = mkImportLocation . getTopFilePath . Git.DiffTree.file
+		let mkicchanged ti = do
+			v <- M.lookup (Git.DiffTree.dstsha ti) cidtreemap
+			return (mkloc ti, v)
+		let ic = ImportableContentsComplete $ ImportableContents
+				{ importableContents = mapMaybe mkicchanged changed
+				, importableHistory = []
+				}
+		importKeys remote importtreeconfig importcontent thirdpartypopulated ic >>= \case
+			ImportUnfinished -> do
+				void $ liftIO cleanup
+				return ImportUnfinished
+			ImportFinished (ImportableContentsComplete ic') -> liftIO cleanup >>= \case
+				False -> return ImportUnfinished
+				True -> do
+					remember currcidtree
+					let diffchanged = map
+						(\(loc, v) -> (loc, DiffChanged v))
+						(importableContents ic')
+					let diffremoved = map
+						(\ti -> (mkloc ti, DiffRemoved))
+						removed
+					let ic'' = ImportableContentsComplete $ ImportableContents
+						{ importableContents = diffremoved ++ diffchanged
+						, importableHistory = []
+						}
+					return $ ImportFinished $ Right ic''
+			-- importKeys is not passed ImportableContentsChunked
+			-- above, so it cannot return it
+			ImportFinished (ImportableContentsChunked {}) -> error "internal"
+
+-- Result of an import. ImportUnfinished indicates that some file failed to
+-- be imported. Running again should resume where it left off.
+data ImportResult t
+	= ImportFinished t
+	| ImportUnfinished
+
 {- Downloads all new ContentIdentifiers, or when importcontent is False,
  - generates Keys without downloading.
  -
@@ -422,9 +518,6 @@ canImportKeys remote importcontent =
  - (or generate a git Sha), so always generates Keys.
  -
  - Supports concurrency when enabled.
- -
- - If it fails on any file, the whole thing fails with Nothing, 
- - but it will resume where it left off.
  -
  - Note that, when a ContentIdentifier has been imported before,
  - generates the same thing that was imported before, so annex.largefiles
@@ -436,10 +529,8 @@ importKeys
 	-> Bool
 	-> Bool
 	-> ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)
-	-> Annex (Maybe (ImportableContentsChunkable Annex (Either Sha Key)))
+	-> Annex (ImportResult (ImportableContentsChunkable Annex (Either Sha Key)))
 importKeys remote importtreeconfig importcontent thirdpartypopulated importablecontents = do
-	_ts <- buildContentIdentifierTree importablecontents
-	-- TODO use above
 	unless (canImportKeys remote importcontent) $
 		giveup "This remote does not support importing without downloading content."
 	-- This map is used to remember content identifiers that
@@ -476,13 +567,13 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		case importablecontents of
 			ImportableContentsComplete ic ->
 				go False largematcher cidmap importing db ic >>= return . \case
-					Nothing -> Nothing
-					Just v -> Just $ ImportableContentsComplete v
+					Nothing -> ImportUnfinished
+					Just v -> ImportFinished $ ImportableContentsComplete v
 			ImportableContentsChunked {} -> do
 				c <- gochunked db (importableContentsChunk importablecontents)
 				gohistory largematcher cidmap importing db (importableHistoryComplete importablecontents) >>= return . \case
-					Nothing -> Nothing
-					Just h -> Just $ ImportableContentsChunked
+					Nothing -> ImportUnfinished
+					Just h -> ImportFinished $ ImportableContentsChunked
 						{ importableContentsChunk = c
 						, importableHistoryComplete = h
 						}

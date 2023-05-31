@@ -1,11 +1,11 @@
 {- git-annex import types
  -
- - Copyright 2019-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, DeriveFunctor #-}
 
 module Types.Import where
 
@@ -67,7 +67,7 @@ data ImportableContents info = ImportableContents
 	-- locations. So, if a remote does not support Key/Value access,
 	-- it should not populate the importableHistory.
 	}
-	deriving (Show, Generic)
+	deriving (Show, Generic, Functor)
 
 instance NFData info => NFData (ImportableContents info)
 
@@ -81,6 +81,7 @@ data ImportableContentsChunkable m info
 		, importableHistoryComplete :: [ImportableContents info]
 		-- ^ Chunking the history is not supported
 		}
+	deriving (Functor)
 
 {- A chunk of ImportableContents, which is the entire content of a subtree
  - of the main tree. Nested subtrees are not allowed. -}
@@ -92,6 +93,7 @@ data ImportableContentsChunk m info = ImportableContentsChunk
 	-- ^ Continuation to get the next chunk.
 	-- Returns Nothing when there are no more chunks.
 	}
+	deriving (Functor)
 
 newtype ImportChunkSubDir = ImportChunkSubDir { importChunkSubDir :: RawFilePath }
 

@@ -46,7 +46,7 @@ instance NFData TopFilePath
 {- A file in a branch or other treeish. -}
 data BranchFilePath = BranchFilePath Ref TopFilePath
 	deriving (Show, Eq, Ord)
-
+ 
 {- Git uses the branch:file form to refer to a BranchFilePath -}
 descBranchFilePath :: BranchFilePath -> StringContainingQuotedPath
 descBranchFilePath (BranchFilePath b f) =

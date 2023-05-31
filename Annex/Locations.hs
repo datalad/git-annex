@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -59,6 +59,8 @@ module Annex.Locations (
 	gitAnnexExportLock,
 	gitAnnexExportUpdateLock,
 	gitAnnexExportExcludeLog,
+	gitAnnexImportDir,
+	gitAnnexImportLog,
 	gitAnnexContentIdentifierDbDir,
 	gitAnnexContentIdentifierLock,
 	gitAnnexScheduleState,
@@ -437,6 +439,16 @@ gitAnnexContentIdentifierDbDir r c =
 {- Lock file for writing to the content id database. -}
 gitAnnexContentIdentifierLock :: Git.Repo -> GitConfig -> RawFilePath
 gitAnnexContentIdentifierLock r c = gitAnnexContentIdentifierDbDir r c <> ".lck"
+
+{- .git/annex/import/ is used to store information about
+ - imports from special remotes. -}
+gitAnnexImportDir :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexImportDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "import"
+
+{- File containing state about the last import done from a remote. -}
+gitAnnexImportLog :: UUID -> Git.Repo -> GitConfig -> RawFilePath
+gitAnnexImportLog u r c = 
+	gitAnnexImportDir r c P.</> fromUUID u P.</> "log"
 
 {- .git/annex/schedulestate is used to store information about when
  - scheduled jobs were last run. -}

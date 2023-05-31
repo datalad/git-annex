@@ -910,6 +910,7 @@ Executable git-annex
     Logs.File
     Logs.FsckResults
     Logs.Group
+    Logs.Import
     Logs.Line
     Logs.Location
     Logs.MapLog
