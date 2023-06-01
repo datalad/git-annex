@@ -46,3 +46,5 @@ likely overall..)
 > do not include History. So importing from versioned S3 buckets will
 > still be slow. It would be possible to do a similar optimisation for
 > History, but it seemed complicated so I punted.) --[[Joey]]
+
+[[!meta title="speed up import tree from special remotes with history (eg S3 versioned bucket)"]]
