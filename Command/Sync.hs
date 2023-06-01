@@ -295,13 +295,16 @@ seek' o = do
 					seekExportContent (Just o)
 						(filter isExport contentremotes)
 
-				-- Sync content with remotes, but not with
-				-- export or import remotes, which handle content
-				-- syncing as part of export and import.
+				-- Sync content with remotes, including
+				-- with import remotes (since importing
+				-- only downloads new files not old files),
+				-- but not with export only remotes.
+				let shouldsynccontent r
+					| isExport r && not (isImport r) = False
+					| otherwise = True
 				syncedcontent <- withbranch $
-					seekSyncContent o $ filter
-						(\r -> not (isExport r || isImport r))
-						contentremotes
+					seekSyncContent o
+						(filter shouldsynccontent contentremotes)
 
 				-- Transferring content can take a while,
 				-- and other changes can be pushed to the
