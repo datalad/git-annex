@@ -335,7 +335,7 @@ seekRemote remote branch msubdir importcontent ci = do
 	void $ includeCommandAction (listContents remote importtreeconfig ci importabletvar)
 	liftIO (atomically (readTVar importabletvar)) >>= \case
 		Nothing -> return ()
-		Just importable -> importKeys remote importtreeconfig importcontent False importable >>= \case
+		Just importable -> importChanges remote importtreeconfig importcontent False importable >>= \case
 			ImportUnfinished -> warning $ UnquotedString $ concat
 				[ "Failed to import some files from "
 				, Remote.name remote
@@ -373,10 +373,10 @@ listContents' remote importtreeconfig ci a =
 			, err
 			]
 
-commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> ImportableContentsChunkable Annex (Either Sha Key) -> CommandStart
-commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig importable =
+commitRemote :: Remote -> Branch -> RemoteTrackingBranch -> Maybe Sha -> ImportTreeConfig -> ImportCommitConfig -> Imported -> CommandStart
+commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig imported =
 	starting "update" ai si $ do
-		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig importable
+		importcommit <- buildImportCommit remote importtreeconfig importcommitconfig imported
 		next $ updateremotetrackingbranch importcommit
   where
 	ai = ActionItemOther (Just $ UnquotedString $ fromRef $ fromRemoteTrackingBranch tb)

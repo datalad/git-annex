@@ -10,13 +10,24 @@ own scalability limits with many files.)
 
 Still, it would be good to find some ways to speed it up.
 
+In particular, speeding up repeated imports from the same special remote,
+when only a few files have changed, would make it much more useful. It's ok
+to pay a somewhat expensive price to import a lot of new files, if updates
+are quick after that.
+
 ---
+
+A major thing that makes it slow, when a remote contains 
+many files, is converting from ContentIdentifiers to Keys.
+It does a cidsdb lookup for every file, before it knows if the file has
+changed or not, which gets slow with a lot of files.
 
 What if it generated a git tree, where each file in the tree is
 a sha1 hash of the ContentIdentifier. The tree can just be recorded locally
 somewhere. It's ok if it gets garbage collected; it's only an optimisation.
 On the next sync, diff from the old to the new tree. It only needs to
-import the changed files!
+import the changed files, and can avoid the cidsdb lookup for the
+unchanged files!
 
 (That is assuming that ContentIdentifiers don't tend to sha1 collide.
 If there was a collision it would fail to import the new file. But it seems
@@ -24,21 +35,14 @@ reasonable, because git loses data on sha1 collisions anyway, and ContentIdentif
 are no more likely to collide than the content of files, and probably less
 likely overall..)
 
-How fast can a git tree of say, 10000 files be generated? Is it faster than
-querying sqlite 10000 times?
+> I implemented this optimisation. Importing from a special remote that
+> has 10000 files, that have all been imported before, and 1 new file
+> sped up from 26.06 to 2.59 seconds. An import with no changes sped
+> up from 24.3 to 1.99 seconds. Going up to 20000 files, an import with
+> no changes sped up from 125.95 to 3.84 seconds.
+> (All measured with warm cache.)
 
-Once it knows which files are changed, it still needs to generate the
-imported tree, which contains both changed and unchanged files. How to
-handle unchanged files when generating that tree? Current method is
-to do a database lookup to convert the ContentIdentifier into a Key, and
-record that in the tree. But those database lookups are the slow thing that
-needs to be avoided. Seems like it will need to either use adjustTree, or a
-separate index file. (The index file would make importing a History hard.)
-
-----
-
-Another idea would to be use something faster than sqlite to record the cid
-to key mappings. Looking up those mappings is the main thing that makes
-import slow when only a few files have changed and a large number have not.
-
---[[Joey]] 
+> (Note that I have only implemented this optimisation for imports that
+> do not include History. So importing from versioned S3 buckets will
+> still be slow. It would be possible to do a similar optimisation for
+> History, but it seemed complicated so I punted.) --[[Joey]]

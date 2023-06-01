@@ -586,9 +586,9 @@ pullThirdPartyPopulated o remote
 	| otherwise = void $ includeCommandAction $ starting "list" ai si $
 		Command.Import.listContents' remote ImportTree (CheckGitIgnore False) go
   where
-	go (Just importable) = importKeys remote ImportTree False True importable >>= \case
-		ImportFinished importablekeys -> do
-			(_imported, updatestate) <- recordImportTree remote ImportTree importablekeys
+	go (Just importable) = importChanges remote ImportTree False True importable >>= \case
+		ImportFinished imported -> do
+			(_t, updatestate) <- recordImportTree remote ImportTree imported
 			next $ do
 				updatestate
 				return True

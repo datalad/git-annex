@@ -15,6 +15,7 @@ module Annex.Import (
 	recordImportTree,
 	canImportKeys,
 	ImportResult(..),
+	Imported,
 	importChanges,
 	importKeys,
 	makeImportMatcher,
@@ -41,6 +42,7 @@ import Annex.RemoteTrackingBranch
 import Annex.HashObject
 import Annex.Transfer
 import Annex.CheckIgnore
+import Annex.CatFile
 import Annex.VectorClock
 import Command
 import Backend
@@ -104,9 +106,9 @@ buildImportCommit
 	:: Remote
 	-> ImportTreeConfig
 	-> ImportCommitConfig
-	-> ImportableContentsChunkable Annex (Either Sha Key)
+	-> Imported
 	-> Annex (Maybe Ref)
-buildImportCommit remote importtreeconfig importcommitconfig importable =
+buildImportCommit remote importtreeconfig importcommitconfig imported =
 	case importCommitTracking importcommitconfig of
 		Nothing -> go Nothing
 		Just trackingcommit -> inRepo (Git.Ref.tree trackingcommit) >>= \case
@@ -114,8 +116,8 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 			Just _ -> go (Just trackingcommit)
   where
 	go trackingcommit = do
-		(imported, updatestate) <- recordImportTree remote importtreeconfig importable
-		buildImportCommit' remote importcommitconfig trackingcommit imported >>= \case
+		(importedtree, updatestate) <- recordImportTree remote importtreeconfig imported
+		buildImportCommit' remote importcommitconfig trackingcommit importedtree >>= \case
 			Just finalcommit -> do
 				updatestate
 				return (Just finalcommit)
@@ -129,11 +131,11 @@ buildImportCommit remote importtreeconfig importcommitconfig importable =
 recordImportTree
 	:: Remote
 	-> ImportTreeConfig
-	-> ImportableContentsChunkable Annex (Either Sha Key)
+	-> Imported
 	-> Annex (History Sha, Annex ())
-recordImportTree remote importtreeconfig importable = do
-	imported@(History finaltree _) <- buildImportTrees basetree subdir importable
-	return (imported, updatestate finaltree)
+recordImportTree remote importtreeconfig imported = do
+	importedtree@(History finaltree _) <- buildImportTrees basetree subdir imported
+	return (importedtree, updatestate finaltree)
   where
 	basetree = case importtreeconfig of
 		ImportTree -> emptyTree
@@ -265,34 +267,69 @@ buildImportCommit' remote importcommitconfig mtrackingcommit imported@(History t
 			parents <- mapM (mknewcommits oldhc old) (S.toList hs)
 			mkcommit parents importedtree
 
-{- Builds a history of git trees reflecting the ImportableContents.
+{- Builds a history of git trees for an import.
  -
- - When a subdir is provided, imported tree is grafted into the basetree at
- - that location, replacing any object that was there.
+ - When a subdir is provided, the imported tree is grafted into 
+ - the basetree at that location, replacing any object that was there.
  -}
 buildImportTrees
 	:: Ref
 	-> Maybe TopFilePath
-	-> ImportableContentsChunkable Annex (Either Sha Key)
+	-> Imported
 	-> Annex (History Sha)
-buildImportTrees = buildImportTreesGeneric convertImportTree
+buildImportTrees basetree msubdir (ImportedFull imported) = 
+	buildImportTreesGeneric convertImportTree basetree msubdir imported
+buildImportTrees basetree msubdir (ImportedDiff (LastImportedTree oldtree) imported) = do
+	importtree <- if null (importableContents imported)
+		then pure oldtree
+		else applydiff
+	repo <- Annex.gitRepo
+	t <- withMkTreeHandle repo $
+		graftImportTree basetree msubdir importtree
+	-- Diffing is not currently implemented when the history is not empty.
+	return (History t mempty)
+  where
+	applydiff = do
+		let (removed, new) = partition isremoved
+			(importableContents imported)
+		newtreeitems <- catMaybes <$> mapM mktreeitem new
+		let removedfiles = map (mkloc . fst) removed
+		inRepo $ adjustTree
+			(pure . Just) 
+			-- ^ keep files that are not added/removed the same
+			newtreeitems
+			(\_oldti newti -> newti)
+			-- ^ prefer newly added version of file
+			removedfiles
+			oldtree
+	
+	mktreeitem (loc, DiffChanged v) = 
+		Just <$> mkImportTreeItem msubdir loc v
+	mktreeitem (_, DiffRemoved) = 
+		pure Nothing
+
+	mkloc = asTopFilePath . fromImportLocation
+		
+	isremoved (_, v) = v == DiffRemoved
 
 convertImportTree :: Maybe TopFilePath -> [(ImportLocation, Either Sha Key)] -> Annex Tree
-convertImportTree msubdir ls = treeItemsToTree <$> mapM mktreeitem ls
+convertImportTree msubdir ls = 
+	treeItemsToTree <$> mapM (uncurry $ mkImportTreeItem msubdir) ls
+
+mkImportTreeItem :: Maybe TopFilePath -> ImportLocation -> Either Sha Key -> Annex TreeItem
+mkImportTreeItem msubdir loc v = case v of
+	Right k -> do
+		relf <- fromRepo $ fromTopFilePath topf
+		symlink <- calcRepo $ gitAnnexLink relf k
+		linksha <- hashSymlink symlink
+		return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
+	Left sha -> 
+		return $ TreeItem treepath (fromTreeItemType TreeFile) sha
   where
-	mktreeitem (loc, v) = case v of
-		Right k -> do
-			relf <- fromRepo $ fromTopFilePath topf
-			symlink <- calcRepo $ gitAnnexLink relf k
-			linksha <- hashSymlink symlink
-			return $ TreeItem treepath (fromTreeItemType TreeSymlink) linksha
-		Left sha -> 
-			return $ TreeItem treepath (fromTreeItemType TreeFile) sha
-	  where
-		lf = fromImportLocation loc
-		treepath = asTopFilePath lf
-		topf = asTopFilePath $
-			maybe lf (\sd -> getTopFilePath sd P.</> lf) msubdir
+	lf = fromImportLocation loc
+	treepath = asTopFilePath lf
+	topf = asTopFilePath $
+		maybe lf (\sd -> getTopFilePath sd P.</> lf) msubdir
 
 {- Builds a history of git trees using ContentIdentifiers.
  -
@@ -426,11 +463,24 @@ canImportKeys remote importcontent =
   where
 	ia = Remote.importActions remote
 
+-- Result of an import. ImportUnfinished indicates that some file failed to
+-- be imported. Running again should resume where it left off.
+data ImportResult t
+	= ImportFinished t
+	| ImportUnfinished
+
 data Diffed t
 	= DiffChanged t
 	| DiffRemoved
+	deriving (Eq)
 
-{- Diffs between the current and previous ContentIdentifier trees, and 
+data Imported
+	= ImportedFull (ImportableContentsChunkable Annex (Either Sha Key))
+	| ImportedDiff LastImportedTree (ImportableContents (Diffed (Either Sha Key)))
+
+newtype LastImportedTree = LastImportedTree Sha
+
+{- Diffs between the previous and current ContentIdentifier trees, and 
  - runs importKeys on only the changed files.
  -
  - This will download the same content as if importKeys were run on all
@@ -447,9 +497,7 @@ importChanges
 	-> Bool
 	-> Bool
 	-> ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)
-	-> Annex (ImportResult (Either
-		(ImportableContentsChunkable Annex (Either Sha Key))
-		(ImportableContentsChunkable Annex (Diffed (Either Sha Key)))))
+	-> Annex (ImportResult Imported)
 importChanges remote importtreeconfig importcontent thirdpartypopulated importablecontents = do
 	((History currcidtree currhistory), cidtreemap) <- buildContentIdentifierTree importablecontents
 	-- diffimport below does not handle history, so when there is
@@ -459,56 +507,90 @@ importChanges remote importtreeconfig importcontent thirdpartypopulated importab
 		else do
 			getContentIdentifierTree (Remote.uuid remote) >>= \case
 				Nothing -> fullimport currcidtree
-				Just prevcidtree -> diffimport cidtreemap prevcidtree currcidtree
+				Just prevcidtree -> candiffimport prevcidtree >>= \case
+					Nothing -> fullimport currcidtree
+					Just lastimportedtree -> diffimport cidtreemap prevcidtree currcidtree lastimportedtree
   where
 	remember = recordContentIdentifierTree (Remote.uuid remote)
+
+	-- In order to use a diff, the previous ContentIdentifier tree must
+	-- not have been garbage collected. Which can happen since there
+	-- are no git refs to it.
+	--
+	-- Also, a tree must have been imported before, and that tree must
+	-- also have not been garbage collected (which is less likely to
+	-- happen due to the remote tracking branch).
+	candiffimport prevcidtree =
+		catObjectMetaData prevcidtree >>= \case
+			Nothing -> return Nothing
+			Just _ -> getLastImportedTree remote >>= \case
+				Nothing -> return Nothing
+				Just lastimported@(LastImportedTree t) -> 
+					ifM (isJust <$> catObjectMetaData t)
+						( return (Just lastimported)
+						, return Nothing
+						)
 
 	fullimport currcidtree = 
 		importKeys remote importtreeconfig importcontent thirdpartypopulated importablecontents >>= \case
 			ImportUnfinished -> return ImportUnfinished
 			ImportFinished r -> do
 				remember currcidtree
-	 			return $ ImportFinished $ Left r
-	
-	diffimport cidtreemap prevcidtree currcidtree = do
-		(diff, cleanup) <- inRepo $ Git.DiffTree.diffTreeRecursive currcidtree prevcidtree
-		let (removed, changed) = partition (\ti -> Git.DiffTree.dstsha ti `elem` nullShas) diff
-		let mkloc = mkImportLocation . getTopFilePath . Git.DiffTree.file
+	 			return $ ImportFinished $ ImportedFull r
+		
+	diffimport cidtreemap prevcidtree currcidtree lastimportedtree = do
+		(diff, cleanup) <- inRepo $ Git.DiffTree.diffTreeRecursive
+			prevcidtree
+			currcidtree
+		let (removed, changed) = partition isremoval diff
 		let mkicchanged ti = do
 			v <- M.lookup (Git.DiffTree.dstsha ti) cidtreemap
 			return (mkloc ti, v)
 		let ic = ImportableContentsComplete $ ImportableContents
-				{ importableContents = mapMaybe mkicchanged changed
-				, importableHistory = []
-				}
+			{ importableContents = mapMaybe mkicchanged changed
+			, importableHistory = []
+			}
 		importKeys remote importtreeconfig importcontent thirdpartypopulated ic >>= \case
 			ImportUnfinished -> do
 				void $ liftIO cleanup
 				return ImportUnfinished
-			ImportFinished (ImportableContentsComplete ic') -> liftIO cleanup >>= \case
-				False -> return ImportUnfinished
-				True -> do
-					remember currcidtree
-					let diffchanged = map
-						(\(loc, v) -> (loc, DiffChanged v))
-						(importableContents ic')
-					let diffremoved = map
-						(\ti -> (mkloc ti, DiffRemoved))
-						removed
-					let ic'' = ImportableContentsComplete $ ImportableContents
-						{ importableContents = diffremoved ++ diffchanged
-						, importableHistory = []
-						}
-					return $ ImportFinished $ Right ic''
+			ImportFinished (ImportableContentsComplete ic') -> 
+				liftIO cleanup >>= \case
+					False -> return ImportUnfinished
+					True -> do
+						remember currcidtree
+						return $ ImportFinished $ 
+							ImportedDiff lastimportedtree
+								(mkdiff ic' removed)
 			-- importKeys is not passed ImportableContentsChunked
 			-- above, so it cannot return it
 			ImportFinished (ImportableContentsChunked {}) -> error "internal"
+		
+	isremoval ti = Git.DiffTree.dstsha ti `elem` nullShas
+	
+	mkloc = mkImportLocation . getTopFilePath . Git.DiffTree.file
 
--- Result of an import. ImportUnfinished indicates that some file failed to
--- be imported. Running again should resume where it left off.
-data ImportResult t
-	= ImportFinished t
-	| ImportUnfinished
+	mkdiff ic removed = ImportableContents
+		{ importableContents = diffremoved ++ diffchanged
+		, importableHistory = []
+		}
+	  where
+		diffchanged = map
+			(\(loc, v) -> (loc, DiffChanged v))
+			(importableContents ic)
+		diffremoved = map
+			(\ti -> (mkloc ti, DiffRemoved))
+			removed
+
+{- Gets the tree that was last imported from the remote
+ - (or exported to it if an export happened after the last import).
+ -}
+getLastImportedTree :: Remote -> Annex (Maybe LastImportedTree)
+getLastImportedTree remote = do
+	db <- Export.openDb (Remote.uuid remote)
+	mtree <- liftIO $ Export.getExportTreeCurrent db
+	Export.closeDb db
+	return (LastImportedTree <$> mtree)
 
 {- Downloads all new ContentIdentifiers, or when importcontent is False,
  - generates Keys without downloading.
