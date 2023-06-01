@@ -1,0 +1,30 @@
+Importing trees from special remotes still feels a bit like a new feature,
+although it was added to git-annex in 2019. I don't know if many people are
+using it. I've had some complaints about it being slow when the remote
+contains a large number of files (eg 100 thousand).
+
+I've just finished speeding up repeated imports from a special remote a
+lot, when the special remote contains a large number of files, and few or
+no files have changed.
+
+git-annex was spending a lot of time converting content identifiers to
+keys. Each conversion took a database lookup, which was slow enough to
+become painful in bulk.
+
+I thought of a neat trick. Take the sha1 of a content identifier, and
+create a git tree of the files in the special remote, using those sha1s as
+the content of the files. Of course, that is not the actual content of any
+file that git knows about. But it doesn't matter, because once git-annex
+has those trees, it can diff the current tree to the tree from the previous
+import. And that tells it which files have changed. Then it only has to do
+database lookups for the changed files.
+
+This turned out to be one of the best results I've ever gotten from a
+git-annex optimisation. It runs 60x faster or more with more files!
+
+The moral is that git is really good at diffing trees fast, and so it's
+worth using git diff whenever possible, even if the thing being diffed is
+not a regular tree of files.
+
+This work was sponsored by Mark Reidenbach and Lawrence Brogan
+[on Patreon](https://patreon.com/joeyh)
