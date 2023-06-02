@@ -1,6 +1,6 @@
 {- Sqlite database of ContentIdentifiers imported from special remotes.
  -
- - Copyright 2019 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2023 Joey Hess <id@joeyh.name>
  -:
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@
 
 module Database.ContentIdentifier (
 	ContentIdentifierHandle,
+	databaseIsEmpty,
 	openDb,
 	closeDb,
 	flushDbQueue,
@@ -57,7 +58,10 @@ import Database.Persist.Sqlite (runSqlite)
 import qualified System.FilePath.ByteString as P
 import qualified Data.Text as T
 
-data ContentIdentifierHandle = ContentIdentifierHandle H.DbQueue
+data ContentIdentifierHandle = ContentIdentifierHandle H.DbQueue Bool
+
+databaseIsEmpty :: ContentIdentifierHandle -> Bool
+databaseIsEmpty (ContentIdentifierHandle _ b) = b
 
 share [mkPersist sqlSettings, mkMigrate "migrateContentIdentifier"] [persistLowerCase|
 ContentIdentifiers
@@ -81,23 +85,23 @@ openDb :: Annex ContentIdentifierHandle
 openDb = do
 	dbdir <- calcRepo' gitAnnexContentIdentifierDbDir
 	let db = dbdir P.</> "db"
-	ifM (liftIO $ not <$> R.doesPathExist db)
-		( initDb db $ void $ 
+	isnew <- liftIO $ not <$> R.doesPathExist db
+	if isnew
+		then initDb db $ void $ 
 			runMigrationSilent migrateContentIdentifier
 		-- Migrate from old version of database, which had
 		-- an incorrect uniqueness constraint on the
 		-- ContentIdentifiers table.
-		, liftIO $ runSqlite (T.pack (fromRawFilePath db)) $ void $
+		else liftIO $ runSqlite (T.pack (fromRawFilePath db)) $ void $
 			runMigrationSilent migrateContentIdentifier
-		)
 	h <- liftIO $ H.openDbQueue db "content_identifiers"
-	return $ ContentIdentifierHandle h
+	return $ ContentIdentifierHandle h isnew
 
 closeDb :: ContentIdentifierHandle -> Annex ()
-closeDb (ContentIdentifierHandle h) = liftIO $ H.closeDbQueue h
+closeDb (ContentIdentifierHandle h _) = liftIO $ H.closeDbQueue h
 
 queueDb :: ContentIdentifierHandle -> SqlPersistM () -> IO ()
-queueDb (ContentIdentifierHandle h) = H.queueDb h checkcommit
+queueDb (ContentIdentifierHandle h _) = H.queueDb h checkcommit
   where
 	-- commit queue after 1000 changes
 	checkcommit sz _lastcommittime
@@ -105,7 +109,7 @@ queueDb (ContentIdentifierHandle h) = H.queueDb h checkcommit
 		| otherwise = return False
 
 flushDbQueue :: ContentIdentifierHandle -> IO ()
-flushDbQueue (ContentIdentifierHandle h) = H.flushDbQueue h
+flushDbQueue (ContentIdentifierHandle h _) = H.flushDbQueue h
 
 -- Be sure to also update the git-annex branch when using this.
 recordContentIdentifier :: ContentIdentifierHandle -> RemoteStateHandle -> ContentIdentifier -> Key -> IO ()
@@ -113,7 +117,7 @@ recordContentIdentifier h (RemoteStateHandle u) cid k = queueDb h $ do
 	void $ insertUniqueFast $ ContentIdentifiers u cid k
 
 getContentIdentifiers :: ContentIdentifierHandle -> RemoteStateHandle -> Key -> IO [ContentIdentifier]
-getContentIdentifiers (ContentIdentifierHandle h) (RemoteStateHandle u) k = 
+getContentIdentifiers (ContentIdentifierHandle h _) (RemoteStateHandle u) k = 
 	H.queryDbQueue h $ do
 		l <- selectList
 			[ ContentIdentifiersKey ==. k
@@ -122,7 +126,7 @@ getContentIdentifiers (ContentIdentifierHandle h) (RemoteStateHandle u) k =
 		return $ map (contentIdentifiersCid . entityVal) l
 
 getContentIdentifierKeys :: ContentIdentifierHandle -> RemoteStateHandle -> ContentIdentifier -> IO [Key]
-getContentIdentifierKeys (ContentIdentifierHandle h) (RemoteStateHandle u) cid = 
+getContentIdentifierKeys (ContentIdentifierHandle h _) (RemoteStateHandle u) cid = 
 	H.queryDbQueue h $ do
 		l <- selectList
 			[ ContentIdentifiersCid ==. cid
@@ -136,7 +140,7 @@ recordAnnexBranchTree h s = queueDb h $ do
 	void $ insertUniqueFast $ AnnexBranch $ toSSha s
 
 getAnnexBranchTree :: ContentIdentifierHandle -> IO Sha
-getAnnexBranchTree (ContentIdentifierHandle h) = H.queryDbQueue h $ do
+getAnnexBranchTree (ContentIdentifierHandle h _) = H.queryDbQueue h $ do
 	l <- selectList ([] :: [Filter AnnexBranch]) []
 	case l of
 		(s:[]) -> return $ fromSSha $ annexBranchTree $ entityVal s
@@ -153,8 +157,8 @@ needsUpdateFromLog db = do
 		_ -> return Nothing
 
 {- The database should be locked for write when calling this. -}
-updateFromLog :: ContentIdentifierHandle -> (Sha, Sha) -> Annex ()
-updateFromLog db (oldtree, currtree) = do
+updateFromLog :: ContentIdentifierHandle -> (Sha, Sha) -> Annex ContentIdentifierHandle
+updateFromLog db@(ContentIdentifierHandle h _) (oldtree, currtree) = do
 	(l, cleanup) <- inRepo $
 		DiffTree.diffTreeRecursive oldtree currtree
 	mapM_ go l
@@ -162,6 +166,7 @@ updateFromLog db (oldtree, currtree) = do
 	liftIO $ do
 		recordAnnexBranchTree db currtree
 		flushDbQueue db
+	return (ContentIdentifierHandle h False)
   where
 	go ti = case extLogFileKey remoteContentIdentifierExt (getTopFilePath (DiffTree.file ti)) of
 		Nothing -> return ()

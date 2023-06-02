@@ -77,8 +77,7 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * repair: Fix handling of git ref names on Windows.
   * Large speed up to importing trees from special remotes that contain a lot
     of files, by only processing changed files.
-  * Speed up importing trees from special remotes somewhat by avoiding
-    redundant writes to sqlite database.
+  * Some other speedups to importing trees from special remotes.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

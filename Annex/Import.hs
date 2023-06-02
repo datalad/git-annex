@@ -626,9 +626,9 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 	-- avoid two threads both importing the same content identifier.
 	importing <- liftIO $ newTVarIO S.empty
 	withciddb $ \db -> do
-		CIDDb.needsUpdateFromLog db
-			>>= maybe noop (CIDDb.updateFromLog db)
-		(prepclock (run cidmap importing db))
+		db' <- CIDDb.needsUpdateFromLog db
+			>>= maybe (pure db) (CIDDb.updateFromLog db)
+		(prepclock (run cidmap importing db'))
   where
 	-- When not importing content, reuse the same vector
 	-- clock for all state that's recorded. This can save
@@ -925,10 +925,16 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				getTopFilePath subdir P.</> fromImportLocation loc
 
 	getcidkey cidmap db cid = liftIO $
-		CIDDb.getContentIdentifierKeys db rs cid >>= \case
-			[] -> atomically $
-				maybeToList . M.lookup cid <$> readTVar cidmap
-			l -> return l
+		-- Avoiding querying the database when it's empty speeds up
+		-- the initial import.
+		if CIDDb.databaseIsEmpty db
+			then getcidkeymap cidmap cid
+			else CIDDb.getContentIdentifierKeys db rs cid >>= \case
+				[] -> getcidkeymap cidmap cid
+				l -> return l
+
+	getcidkeymap cidmap cid =
+		atomically $ maybeToList . M.lookup cid <$> readTVar cidmap
 
 	recordcidkey cidmap cid k = do
 		liftIO $ atomically $ modifyTVar' cidmap $

@@ -280,14 +280,14 @@ adjustExportImport' isexport isimport r rs = do
 			Nothing -> ifM (liftIO $ atomically $ tryPutTMVar lcklckv ())
 				( do
 					db <- ContentIdentifier.openDb
-					ContentIdentifier.needsUpdateFromLog db >>= \case
+					db' <- ContentIdentifier.needsUpdateFromLog db >>= \case
 						Just v -> do
 							cidlck <- calcRepo' gitAnnexContentIdentifierLock 
 							withExclusiveLock cidlck $
 								ContentIdentifier.updateFromLog db v
-						Nothing -> noop
-					liftIO $ atomically $ putTMVar dbtv db
-					return db
+						Nothing -> pure db
+					liftIO $ atomically $ putTMVar dbtv db'
+					return db'
 				-- loser waits for winner to open the db and
 				-- can then also use its handle
 				, liftIO $ atomically (readTMVar dbtv)
