@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2023-06-05T19:06:30Z"
+ content="""
+This has been blocking git-annex release for the past month.
+
+Apparently datalad has mostly been updated now. 
+<https://github.com/datalad/datalad/pull/7372> is still not merged, but I'm
+not clear if the 2 failed tests there are caused by this change or
+something else.
+
+I'm feeling now that I've waited long enough for datalad. I've closed this
+bug and don't consider it as blocking release.
+"""]]
