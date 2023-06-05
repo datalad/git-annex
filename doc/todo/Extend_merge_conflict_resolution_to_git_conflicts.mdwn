@@ -9,3 +9,5 @@ To not confuse users, it could be opt-in (`git annex --set annex.resolvegitmerge
 On conflict, it would remove the conflicting file and instead create two versions with suffixes either like annexed files or better the commit hash and/or date.
 
 Submodule conflicts can't be resolved like this, in that case I would use the most recent commit of the two in question.
+
+> [[rejected|done]] --[[Joey]]
