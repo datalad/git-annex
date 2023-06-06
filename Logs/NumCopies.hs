@@ -45,22 +45,22 @@ setGlobalMinCopies new = do
 
 {- Value configured in the numcopies log. Cached for speed. -}
 getGlobalNumCopies :: Annex (Maybe NumCopies)
-getGlobalNumCopies = maybe globalNumCopiesLoad (return . Just)
+getGlobalNumCopies = maybe globalNumCopiesLoad return
 	=<< Annex.getState Annex.globalnumcopies
 
 {- Value configured in the mincopies log. Cached for speed. -}
 getGlobalMinCopies :: Annex (Maybe MinCopies)
-getGlobalMinCopies = maybe globalMinCopiesLoad (return . Just)
+getGlobalMinCopies = maybe globalMinCopiesLoad return
 	=<< Annex.getState Annex.globalmincopies
 
 globalNumCopiesLoad :: Annex (Maybe NumCopies)
 globalNumCopiesLoad = do
 	v <- getLog numcopiesLog
-	Annex.changeState $ \s -> s { Annex.globalnumcopies = v }
+	Annex.changeState $ \s -> s { Annex.globalnumcopies = Just v }
 	return v
 
 globalMinCopiesLoad :: Annex (Maybe MinCopies)
 globalMinCopiesLoad = do
 	v <- getLog mincopiesLog
-	Annex.changeState $ \s -> s { Annex.globalmincopies = v }
+	Annex.changeState $ \s -> s { Annex.globalmincopies = Just v }
 	return v

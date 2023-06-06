@@ -79,6 +79,8 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * Large speed up to importing trees from special remotes that contain a lot
     of files, by only processing changed files.
   * Some other speedups to importing trees from special remotes.
+  * Cache negative lookups of global numcopies and mincopies. 
+    Speeds up eg git-annex sync --content by up to 50%.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

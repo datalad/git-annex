@@ -183,8 +183,8 @@ data AnnexState = AnnexState
 	, hashobjecthandle :: Maybe (ResourcePool HashObjectHandle)
 	, checkattrhandle :: Maybe (ResourcePool CheckAttrHandle)
 	, checkignorehandle :: Maybe (ResourcePool CheckIgnoreHandle)
-	, globalnumcopies :: Maybe NumCopies
-	, globalmincopies :: Maybe MinCopies
+	, globalnumcopies :: Maybe (Maybe NumCopies)
+	, globalmincopies :: Maybe (Maybe MinCopies)
 	, limit :: ExpandableMatcher Annex
 	, timelimit :: Maybe (Duration, POSIXTime)
 	, sizelimit :: Maybe (TVar Integer)
