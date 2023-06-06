@@ -3,15 +3,16 @@
  subject="""comment 2"""
  date="2023-06-06T16:50:16Z"
  content="""
+annex.addunlocked can already be set to a [[git-annex-matching-expression]]
+and this allows configuring it differently for different filenames, etc.
+This has been supported since 7.20191230.
+
 You can already configure annex.addunlocked with `git-annex config`.
 
 Adding gitattributes for configs is problimatic because querying
 for them is not fast. They have to be queried for every file. Also the
 gitattributes format is not well suited to complex expressions since the
 value cannot contain spaces.
-
-annex.addunlocked can already be set to a [[git-annex-matching-expression]]
-and this allows configuring it differently for different filenames, etc.
 
 The only benefit to supporting it in gitattributes would be to configure it
 differently in different branches of the repository. 
