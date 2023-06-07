@@ -254,6 +254,8 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 			-- origbranch.
 			_ <- propigateAdjustedCommits' origbranch adj commitlck
 			
+			b <- adjustBranch adj origbranch
+			
 			origheadfile <- inRepo $ readFileStrict . Git.Ref.headFile
 
 			-- Git normally won't do anything when asked to check
@@ -268,7 +270,6 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 						return (Just newheadfile)
 				_ -> return Nothing
 	
-			b <- adjustBranch adj origbranch
 			return (b, origheadfile, newheadfile)
 	
 		-- Make git checkout quiet to avoid warnings about
