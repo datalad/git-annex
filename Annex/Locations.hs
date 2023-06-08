@@ -52,6 +52,8 @@ module Annex.Locations (
 	gitAnnexRestageLog,
 	gitAnnexRestageLogOld,
 	gitAnnexRestageLock,
+	gitAnnexAdjustedBranchUpdateLog,
+	gitAnnexAdjustedBranchUpdateLock,
 	gitAnnexMoveLog,
 	gitAnnexMoveLock,
 	gitAnnexExportDir,
@@ -394,6 +396,14 @@ gitAnnexRestageLogOld r = gitAnnexDir r P.</> "restage.old"
 
 gitAnnexRestageLock :: Git.Repo -> RawFilePath
 gitAnnexRestageLock r = gitAnnexDir r P.</> "restage.lck"
+
+{- .git/annex/adjust.log is used to log when the adjusted branch needs to
+ - be updated. -}
+gitAnnexAdjustedBranchUpdateLog :: Git.Repo -> RawFilePath
+gitAnnexAdjustedBranchUpdateLog r = gitAnnexDir r P.</> "adjust.log"
+
+gitAnnexAdjustedBranchUpdateLock :: Git.Repo -> RawFilePath
+gitAnnexAdjustedBranchUpdateLock r = gitAnnexDir r P.</> "adjust.lck"
 
 {- .git/annex/move.log is used to log moves that are in progress,
  - to better support resuming an interrupted move. -}

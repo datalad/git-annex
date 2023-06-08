@@ -898,6 +898,7 @@ Executable git-annex
     Limit.Wanted
     Logs
     Logs.Activity
+    Logs.AdjustedBranchUpdate
     Logs.Chunk
     Logs.Chunk.Pure
     Logs.Config

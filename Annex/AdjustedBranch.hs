@@ -67,7 +67,9 @@ import Types.CleanupActions
 import qualified Database.Keys
 import Config
 import Logs.View (is_branchView)
+import Logs.AdjustedBranchUpdate
 
+import Data.Time.Clock.POSIX
 import qualified Data.Map as M
 
 class AdjustTreeItem t where
@@ -223,9 +225,13 @@ enterAdjustedBranch adj = inRepo Git.Branch.current >>= \case
 					]
 				return False
 			, do
+				starttime <- liftIO getPOSIXTime
 				b <- preventCommits $ const $ 
 					adjustBranch adj origbranch
-				checkoutAdjustedBranch b False
+				ok <- checkoutAdjustedBranch b False
+				when ok $
+					recordAdjustedBranchUpdateFinished starttime
+				return ok
 			)
 
 checkoutAdjustedBranch :: AdjBranch -> Bool -> Annex Bool
@@ -304,18 +310,22 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 adjustedBranchRefresh :: AssociatedFile -> Annex a -> Annex a
 adjustedBranchRefresh _af a = do
 	r <- a
-	annexAdjustedBranchRefresh <$> Annex.getGitConfig >>= \case
-		0 -> return ()
-		n -> go n
+	go
 	return r
   where
-	go n = getCurrentBranch >>= \case
+	go = getCurrentBranch >>= \case
 		(Just origbranch, Just adj) ->
-			unless (adjustmentIsStable adj) $
-				ifM (checkcounter n)
-					( update adj origbranch
+			unless (adjustmentIsStable adj) $ do
+				recordAdjustedBranchUpdateNeeded
+				n <- annexAdjustedBranchRefresh <$> Annex.getGitConfig
+				unless (n == 0) $ ifM (checkcounter n)
+					-- This is slow, it would be better to incrementally
+					-- adjust the AssociatedFile, and only call this once
+					-- at shutdown to handle cases where not all
+					-- AssociatedFiles are known.
+					( adjustedBranchRefreshFull' adj origbranch
 					, Annex.addCleanupAction AdjustedBranchUpdate $
-						adjustedBranchRefreshFull adj origbranch
+						adjustedBranchRefreshFull' adj origbranch
 					)
 		_ -> return ()
 	
@@ -329,23 +339,24 @@ adjustedBranchRefresh _af a = do
 			    !s' = s { Annex.adjustedbranchrefreshcounter = c' }
 			    in pure (s', enough)
 
-	-- This is slow, it would be better to incrementally
-	-- adjust the AssociatedFile, and only call this once
-	-- at shutdown to handle cases where not all
-	-- AssociatedFiles are known.
-	update adj origbranch =
-		adjustedBranchRefreshFull adj origbranch
-
 {- Slow, but more dependable version of adjustedBranchRefresh that
  - does not rely on all AssociatedFiles being known. -}
 adjustedBranchRefreshFull :: Adjustment -> OrigBranch -> Annex ()
-adjustedBranchRefreshFull adj origbranch = do
+adjustedBranchRefreshFull adj origbranch =
+	whenM isAdjustedBranchUpdateNeeded $ do
+		adjustedBranchRefreshFull' adj origbranch
+
+adjustedBranchRefreshFull' :: Adjustment -> OrigBranch -> Annex ()
+adjustedBranchRefreshFull' adj origbranch = do
 	-- Restage pointer files so modifications to them due to get/drop
 	-- do not prevent checking out the updated adjusted branch.
 	restagePointerFiles =<< Annex.gitRepo
+	starttime <- liftIO getPOSIXTime
 	let adjbranch = originalToAdjusted origbranch adj
-	unlessM (updateAdjustedBranch adj adjbranch origbranch) $
-		warning "Updating adjusted branch failed."
+	ifM (updateAdjustedBranch adj adjbranch origbranch)
+		( recordAdjustedBranchUpdateFinished starttime
+		, warning "Updating adjusted branch failed."
+		)
 
 adjustToCrippledFileSystem :: Annex ()
 adjustToCrippledFileSystem = do
