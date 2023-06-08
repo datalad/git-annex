@@ -254,18 +254,19 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 			-- origbranch.
 			_ <- propigateAdjustedCommits' origbranch adj commitlck
 			
-			b <- adjustBranch adj origbranch
-			
 			origheadfile <- inRepo $ readFileStrict . Git.Ref.headFile
+			origheadsha <- inRepo (Git.Ref.sha currbranch)
+			
+			b <- adjustBranch adj origbranch
 
 			-- Git normally won't do anything when asked to check
 			-- out the currently checked out branch, even when its
 			-- ref has changed. Work around this by writing a raw
 			-- sha to .git/HEAD.
-			newheadfile <- inRepo (Git.Ref.sha currbranch) >>= \case
-				Just headsha -> do
+			newheadfile <- case origheadsha of
+				Just s -> do
 					inRepo $ \r -> do
-						let newheadfile = fromRef headsha
+						let newheadfile = fromRef s
 						writeFile (Git.Ref.headFile r) newheadfile
 						return (Just newheadfile)
 				_ -> return Nothing
