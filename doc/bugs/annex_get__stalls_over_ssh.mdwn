@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+```
+yoh      1441153  0.0  0.0   9732  3924 pts/31   S+   11:38   0:00          |   \_ git annex --debug get sourcedata
+yoh      1441155  0.5  0.0 1075008100 48380 pts/31 Sl+ 11:38   0:00          |   |   \_ /usr/lib/git-annex.linux/exe/git-annex --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git-annex/git-annex --debug get sourcedata
+yoh      1441187  0.0  0.0  11592  4516 pts/31   S+   11:38   0:00          |   |       \_ /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.debug=true hash-object -w --no-filters --stdin-paths
+yoh      1441191  0.0  0.0  51252  5760 pts/31   S+   11:38   0:00          |   |       \_ /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.debug=true cat-file --batch
+yoh      1441202  0.0  0.0  44852  5580 pts/31   S+   11:38   0:00          |   |       \_ /usr/lib/git-annex.linux/exe/git --library-path /usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /usr/lib/git-annex.linux/shimmed/git/git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.debug=true cat-file --batch
+yoh      1441248  0.0  0.0  12444  6736 pts/31   S+   11:38   0:00          |   |       \_ ssh user@server.dartmouth.edu -S .git/annex/ssh/user@server.dartmouth.edu -o ControlMaster=auto -o ControlPersist=yes -T git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba726b95-7662-41fa-8e82-f7ffd16fce7e' --uuid 6384a551-a41d-4290-b186-9258befede97
+yoh      1441249  0.0  0.0  12444  6780 pts/31   S+   11:38   0:00          |   |       \_ ssh user@server.dartmouth.edu -S .git/annex/ssh/user@server.dartmouth.edu -o ControlMaster=auto -o ControlPersist=yes -T git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba726b95-7662-41fa-8e82-f7ffd16fce7e' --uuid 6384a551-a41d-4290-b186-9258befede97
+yoh      1441250  0.0  0.0  12444  6900 pts/31   S+   11:38   0:00          |   |       \_ ssh user@server.dartmouth.edu -S .git/annex/ssh/user@server.dartmouth.edu -o ControlMaster=auto -o ControlPersist=yes -T git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba726b95-7662-41fa-8e82-f7ffd16fce7e' --uuid 6384a551-a41d-4290-b186-9258befede97
+yoh      1441251  0.0  0.0  12444  6508 pts/31   S+   11:38   0:00          |   |       \_ ssh user@server.dartmouth.edu -S .git/annex/ssh/user@server.dartmouth.edu -o ControlMaster=auto -o ControlPersist=yes -T git-annex-shell 'p2pstdio' '/inbox/BIDS/dbic/QA' '--debug' 'ba726b95-7662-41fa-8e82-f7ffd16fce7e' --uuid 6384a551-a41d-4290-b186-9258befede97
+yoh      1441154  0.0  0.0   5372   504 pts/31   S+   11:38   0:00          |   \_ tee /tmp/annex-get-debug.log
+```
+
+with git-annex 10.20230321-1~ndall+1 and ssh's:
+```ssh
+$> ssh -V
+OpenSSH_8.4p1 Debian-5+deb11u1+p1, OpenSSL 1.1.1n  15 Mar 2022
+
+$> ssh user@server.dartmouth.edu ssh -V
+OpenSSH_7.4p1, OpenSSL 1.0.2k-fips  26 Jan 2017
+
+$> ssh user@server.dartmouth.edu git-annex version | head -n1
+git-annex version: 6.20180808-ga1327779a
+```
+
+am I right to blame too outdated remote git-annex-shell?
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
