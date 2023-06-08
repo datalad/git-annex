@@ -10,6 +10,7 @@ git annex group harddrive backup
 ```
 
 and for the laptop with 
+
 ```shell
 git annex wanted laptop standard
 git annex group laptop incrementalbackup
