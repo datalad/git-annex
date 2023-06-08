@@ -1049,7 +1049,10 @@ getImportableContents r importtreeconfig ci matcher = do
 				Just c' -> Just <$> filterunwantedchunk dbhandle c'
 			)
 
-	opendbhandle = Export.openDb (Remote.uuid r)
+	opendbhandle = do
+		h <- Export.openDb (Remote.uuid r)
+		void $ Export.updateExportTreeFromLog h
+		return h
 
 	wanted dbhandle (loc, (_cid, sz))
 		| ingitdir = pure False
