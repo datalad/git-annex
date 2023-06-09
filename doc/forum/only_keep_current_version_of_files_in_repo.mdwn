@@ -1,0 +1,23 @@
+Hi,
+
+I have a repo on a server, my laptop, and a separate backup hard drive. In the repo I have many small files as well as several very large files that are present in several versions. I want to set up my repos such that my backup hard drive has everything on it, my server has only the most recent version of the large files (the server is shared, so I don't want to hog disk space), and my laptop doesn't keep annexed files locally. 
+
+I think I can probably achieve what I want for the hard drive with 
+
+```shell
+git annex wanted harddrive standard
+git annex group harddrive backup
+```
+
+and for the laptop with 
+
+```shell
+git annex wanted laptop standard
+git annex group laptop incrementalbackup
+```
+
+but I haven't been able to figure out how to setup the server so it keeps the current copy of large files but not their old versions. Do you have any suggestions?
+Alternatively, I might be able to do it manually, but haven't been able to figure out how to specifically drop old versions of a file, so I would be open to suggestions on that front too.
+
+Thanks!
+-Jack
