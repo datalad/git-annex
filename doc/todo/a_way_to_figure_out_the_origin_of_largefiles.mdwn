@@ -1,0 +1,8 @@
+we spent some time scratching our heads while trying to figure out WTF git-annex was adding some mouse atlas `.nii` file into `git` while `.gitattributes` had it set so it wouldn't and nothing was in `git annex vicfg` to only then realize that there is also generic `git config annex.largefiles` which effects it.
+
+I wondered if there could be some kind of a "mix" between `git check-attr [PATH]`, `git annex config`, and `git config --list --show-origin` which would not just state the final decision (not large) for a given PATH but also based on what value of `annex.largefiles` it did it and where it got it from (the `.gitattributes`? `git annex config`? `git config` file/option as via `--show-origin`?)
+
+I guess the same functionality might be useful for some other options which could be picked from various sources.
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
