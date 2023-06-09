@@ -46,3 +46,5 @@ I have tested this on a source directory that's 2.2G and another that's 1.1T, bo
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, and I hope to use it for a project to archive family photos and videos to BD-R (that's what this is about here)
+
+> [[fixed|done]] --[[Joey]]
