@@ -63,12 +63,24 @@ data ContentIdentifierHandle = ContentIdentifierHandle H.DbQueue Bool
 databaseIsEmpty :: ContentIdentifierHandle -> Bool
 databaseIsEmpty (ContentIdentifierHandle _ b) = b
 
+-- Note on indexes: ContentIndentifiersKeyRemoteCidIndex etc are really
+-- uniqueness constraints, which cause sqlite to automatically add indexes.
+-- So when adding indexes, have to take care to only add ones that work as
+-- uniqueness constraints. (Unfortunately persistent does not support indexes
+-- that are not uniqueness constraints; 
+-- https://github.com/yesodweb/persistent/issues/109)
+-- 
+-- ContentIndentifiersKeyRemoteCidIndex speeds up queries like 
+-- getContentIdentifiers, but it is not used for
+-- getContentIdentifierKeys. ContentIndentifiersCidRemoteKeyIndex was
+-- addedto speed that up.
 share [mkPersist sqlSettings, mkMigrate "migrateContentIdentifier"] [persistLowerCase|
 ContentIdentifiers
   remote UUID
   cid ContentIdentifier
   key Key
   ContentIndentifiersKeyRemoteCidIndex key remote cid
+  ContentIndentifiersCidRemoteKeyIndex cid remote key
 -- The last git-annex branch tree sha that was used to update
 -- ContentIdentifiers
 AnnexBranch
@@ -89,9 +101,8 @@ openDb = do
 	if isnew
 		then initDb db $ void $ 
 			runMigrationSilent migrateContentIdentifier
-		-- Migrate from old version of database, which had
-		-- an incorrect uniqueness constraint on the
-		-- ContentIdentifiers table.
+		-- Migrate from old versions of database, which had buggy
+		-- and suboptimal uniqueness constraints.
 		else liftIO $ runSqlite (T.pack (fromRawFilePath db)) $ void $
 			runMigrationSilent migrateContentIdentifier
 	h <- liftIO $ H.openDbQueue db "content_identifiers"
