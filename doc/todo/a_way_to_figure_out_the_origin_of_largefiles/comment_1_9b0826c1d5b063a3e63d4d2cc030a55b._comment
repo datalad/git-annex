@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 1"
+ date="2023-06-10T06:06:58Z"
+ content="""
+I absolutely second this! Maybe a flag like --explain or an entirely new command that details why exactly git-annex is doing what it does.
+"""]]
