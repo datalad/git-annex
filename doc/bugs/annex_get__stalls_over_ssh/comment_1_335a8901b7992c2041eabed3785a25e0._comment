@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-06-12T16:57:14Z"
+ content="""
+Your git-annex-shell does support p2pstdio, not the older thing that
+git-annex no longer uses. But it's from fairly early in
+its rollout, and it does seem likely that it has a since-fixed bug.
+
+There were at least 3 commits made soon after version 6.20180808
+that fixed hangs in the p2p protocol:
+
+[[!commit 0b053b96119c1a2d6c2d03ba7f98f032e89b8b66]]
+[[!commit 983c9d5a53189f71797591692c0ed675f5bd1c16]]
+[[!commit 6ecd55a9fa4c64399b5ede3944bd2aa5f78cf0b1]]
+
+So I think it will likely be fixed by an upgrade.
+"""]]
