@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="tomdhunt"
+ avatar="http://cdn.libravatar.org/avatar/02694633d0fb05bb89f025cf779218a3"
+ subject="Differing reliability among remotes"
+ date="2023-06-12T22:58:41Z"
+ content="""
+I'm looking for a way to express that remotes may be of differing reliability. E.g. some remotes are on RAIDs that are robust to disk failures, but others are on single, possibly external disks. I would like copies of a file on a reliable remote to count for more than those on an unreliable one, so that e.g. git-annex requires two copies on single disks but allows one on a RAID.
+
+Is there a way to do this via the copies logic? Or some other method?
+"""]]
