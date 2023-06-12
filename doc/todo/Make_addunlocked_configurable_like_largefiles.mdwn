@@ -41,3 +41,5 @@ git config annex.addunlocked 'include=**/*.odt or include=**/*.pdf'
 What do you think?
 
 Cheers, Yann
+
+> [[notabug|done]] --[[Joey]]

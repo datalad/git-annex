@@ -15,18 +15,20 @@ If no path is specified, adds files from the current directory and below.
 Files that are already checked into git and are unmodified, or that
 git has been configured to ignore will be silently skipped.
 
-If annex.largefiles is configured, and does not match a file, 
-`git annex add` will behave the same as `git add` and add the
-non-large file directly to the git repository, instead of to the annex.
-(By default dotfiles are assumed to not be large, and are added directly
-to git, but annex.dotfiles can be configured to annex those too.)
-See the git-annex manpage for documentation of these and other
-configuration settings.
+If annex.largefiles is configured (in git config, gitattributes, or
+git-annex config), and does not match a file, `git annex add` will behave
+the same as `git add` and add the non-large file directly to the git
+repository, instead of to the annex. (By default dotfiles are assumed to
+not be large, and are added directly to git, but annex.dotfiles can be
+configured to annex those too.) See the git-annex manpage for documentation
+of these and other configuration settings.
 
-Large files are added to the annex in locked form, which prevents further
-modification of their content unless unlocked by [[git-annex-unlock]](1).
-(This is not the case however when a repository is in a filesystem not
-supporting symlinks.)
+By default, large files are added to the annex in locked form, which
+prevents further modification of their content until
+unlocked by [[git-annex-unlock]](1). (This is not the case however
+when a repository is in a filesystem not supporting symlinks.)
+The annex.addunlocked git config (and git-annex config) can be used to
+change this behavior.
 
 This command can also be used to add symbolic links, both symlinks to
 annexed content, and other symlinks.
