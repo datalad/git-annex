@@ -86,6 +86,8 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * Speed up sync in an adjusted branch by avoiding re-adjusting the branch
     unncessarily, particularly when it is adjusted with --hide-missing
     or --unlock-present.
+  * assistant: Add dotfiles to git by default, unless annex.dotfiles
+    is configured, the same as git-annex add does.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

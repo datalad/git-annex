@@ -38,6 +38,7 @@ import qualified Annex
 import Utility.InodeCache
 import qualified Database.Keys
 import qualified Command.Sync
+import Config.GitConfig
 import Utility.Tuple
 import Utility.Metered
 import qualified Utility.RawFilePath as R
@@ -56,6 +57,7 @@ commitThread = namedThread "Committer" $ do
 	delayadd <- liftAnnex $
 		fmap Seconds . annexDelayAdd <$> Annex.getGitConfig
 	largefilematcher <- liftAnnex largeFilesMatcher
+	annexdotfiles <- liftAnnex $ getGitConfigVal annexDotFiles
 	msg <- liftAnnex Command.Sync.commitMsg
 	lockdowndir <- liftAnnex $ fromRepo gitAnnexTmpWatcherDir
 	liftAnnex $ do
@@ -65,7 +67,7 @@ commitThread = namedThread "Committer" $ do
 			(fromRawFilePath lockdowndir)
 		void $ createAnnexDirectory lockdowndir
 	waitChangeTime $ \(changes, time) -> do
-		readychanges <- handleAdds (fromRawFilePath lockdowndir) havelsof largefilematcher delayadd $
+		readychanges <- handleAdds (fromRawFilePath lockdowndir) havelsof largefilematcher annexdotfiles delayadd $
 			simplifyChanges changes
 		if shouldCommit False time (length readychanges) readychanges
 			then do
@@ -261,8 +263,8 @@ commitStaged msg = do
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: FilePath -> Bool -> GetFileMatcher -> Maybe Seconds -> [Change] -> Assistant [Change]
-handleAdds lockdowndir havelsof largefilematcher delayadd cs = returnWhen (null incomplete) $ do
+handleAdds :: FilePath -> Bool -> GetFileMatcher -> Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
+handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	let lockdownconfig = LockDownConfig
 		{ lockingFile = False
@@ -289,11 +291,16 @@ handleAdds lockdowndir havelsof largefilematcher delayadd cs = returnWhen (null 
 		| c = return otherchanges
 		| otherwise = a
 
-	checksmall change =
-		ifM (liftAnnex $ checkFileMatcher largefilematcher (toRawFilePath (changeFile change)))
-			( return (Left change)
-			, return (Right change)
-			)
+	checksmall change
+		| not annexdotfiles && dotfile f =
+			return (Right change)
+		| otherwise =
+			ifM (liftAnnex $ checkFileMatcher largefilematcher f)
+				( return (Left change)
+				, return (Right change)
+				)
+	  where
+		f = toRawFilePath (changeFile change)
 
 	addsmall [] = noop
 	addsmall toadd = liftAnnex $ Annex.Queue.addCommand [] "add"

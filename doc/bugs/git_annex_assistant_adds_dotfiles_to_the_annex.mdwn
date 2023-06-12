@@ -31,3 +31,5 @@ add .somedotfile ok
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]
