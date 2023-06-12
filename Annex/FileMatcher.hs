@@ -43,7 +43,6 @@ import Git.FilePath
 import Types.Remote (RemoteConfig)
 import Types.ProposedAccepted
 import Annex.CheckAttr
-import Git.CheckAttr (unspecifiedAttr)
 import qualified Git.Config
 #ifdef WITH_MAGICMIME
 import Annex.Magic
@@ -233,7 +232,7 @@ largeFilesMatcher = go =<< getGitConfigVal' annexLargeFiles
 		return $ const $ return matcher
 	go v = return $ \file -> do
 		expr <- checkAttr "annex.largefiles" file
-		if null expr || expr == unspecifiedAttr
+		if null expr
 			then case v of
 				HasGlobalConfig (Just expr') ->
 					mkmatcher expr' "git-annex config"
