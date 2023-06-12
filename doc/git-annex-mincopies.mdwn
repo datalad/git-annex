@@ -39,6 +39,7 @@ droping content in entirely safe situations.
 
 [[git-annex]](1)
 [[git-annex-numcopies]](1)
+[[git-annex-config]](1)
 
 # AUTHOR
 

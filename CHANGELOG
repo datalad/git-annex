@@ -88,6 +88,8 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     or --unlock-present.
   * assistant: Add dotfiles to git by default, unless annex.dotfiles
     is configured, the same as git-annex add does.
+  * config: Added the --show-origin and --for-file options.
+  * config: Support annex.numcopies and annex.mincopies.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

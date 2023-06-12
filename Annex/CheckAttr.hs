@@ -6,6 +6,7 @@
  -}
 
 module Annex.CheckAttr (
+	annexAttrs,
 	checkAttr,
 	checkAttrs,
 	checkAttrStop,

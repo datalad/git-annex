@@ -36,6 +36,7 @@ using [[git-annex-mincopies]](1)
 
 [[git-annex]](1)
 [[git-annex-mincopies]](1)
+[[git-annex-config]](1)
 
 # AUTHOR
 
