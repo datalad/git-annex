@@ -6,3 +6,5 @@ Would be awesome to use latest git-annex on my Raspberry PIs etc. 🙂
 
 Cheers, 
 Yann
+
+> [[fixed_in_april_already|done]] --[[Joey]]
