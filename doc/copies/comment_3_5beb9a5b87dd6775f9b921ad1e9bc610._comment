@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 3"
+ date="2023-06-13T06:42:47Z"
+ content="""
+git annex can't have multiple copies of the same file in one repo. And if your disk fails, a second copy doesn't really help, does it? But you can achieve what you want with either:
+
+- kinda with `git annex untrust repo-on-normal-disk`, this will assume your normal disks might fail anytime and will put files elsewhere as well
+- with [groups](https://git-annex.branchable.com/preferred_content/standard_groups/)
+  - make another, second repo on your normal disks (that alone could help)
+  - put all repos on your normal disks into one group: `git annex group mydisk1 baddisks` and `git annex group mydisk2 baddisks`
+  - specify that all your normal disks want to have the same content as the raid ones with some expression: https://git-annex.branchable.com/preferred_content/   `git annex groupwanted baddisks ...`    `git annex wanted myrepo1 groupwanted`
+"""]]
