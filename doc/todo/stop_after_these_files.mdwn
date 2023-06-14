@@ -1,0 +1,9 @@
+It would be useful if there was a way to make git-annex stop transferring
+after the current files finish being transferred. Sometimes I am
+moving files to a remote, and I might not pick the same remote to move them
+to next time, so interrupting a transfer unfinished can result in wasted
+work and space used temporarily storing partially transferred files.
+
+This should not be ctrl-c, because it could take a very long time for the
+current transfer to finish. Maybe SIGUSR1 or something like that?
+--[[Joey]]
