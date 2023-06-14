@@ -7,3 +7,7 @@ work and space used temporarily storing partially transferred files.
 This should not be ctrl-c, because it could take a very long time for the
 current transfer to finish. Maybe SIGUSR1 or something like that?
 --[[Joey]]
+
+> An alternative approach, which avoids the complexity of needing to send a
+> signal, would be for git-annex to remember what transfers got
+> interrupted, and provide a simple command to resume them. --[[Joey]]
