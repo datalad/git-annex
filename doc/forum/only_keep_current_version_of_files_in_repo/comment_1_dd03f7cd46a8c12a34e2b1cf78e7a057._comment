@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="aurtzy"
+ avatar="http://cdn.libravatar.org/avatar/7d44f9b718a534ada04551ee8c72e07f"
+ subject="comment 1"
+ date="2023-06-15T01:56:43Z"
+ content="""
+Hi! It sounds like what you want is the client [standard group](/preferred_content/standard_groups/) without the archive exclusion part? If so, this should work: `git-annex wanted server \"include=*\"`
+"""]]

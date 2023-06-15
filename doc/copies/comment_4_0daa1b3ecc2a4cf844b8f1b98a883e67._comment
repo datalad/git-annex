@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="strmd"
+ avatar="http://cdn.libravatar.org/avatar/035707b9756129bbdea6b36a7f7b38d3"
+ subject="comment 4"
+ date="2023-06-14T10:42:40Z"
+ content="""
+A quick thought: Perhaps it might be worth exploring if `trust` could be like implemented in a way similar to `cost`. It might open up possibilities for setting a required level of trust for a given file, adding up the various remotes  to a sum.
+"""]]
