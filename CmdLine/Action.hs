@@ -74,9 +74,7 @@ commandAction start = do
 	st <- Annex.getState id
 	case getConcurrency' (Annex.concurrency st) of
 		NonConcurrent -> runnonconcurrent (Annex.sizelimit st)
-		Concurrent n
-			| n > 1 -> runconcurrent (Annex.sizelimit st) (Annex.workers st)
-			| otherwise -> runnonconcurrent (Annex.sizelimit st)
+		Concurrent _ -> runconcurrent (Annex.sizelimit st) (Annex.workers st)
 		ConcurrentPerCpu -> runconcurrent (Annex.sizelimit st) (Annex.workers st)
   where
 	runnonconcurrent sizelimit = start >>= \case
@@ -235,8 +233,11 @@ startConcurrency usedstages a = do
 	let usegitcfg = setConcurrency (ConcurrencyGitConfig fromgitcfg)
 	case (fromcmdline, fromgitcfg) of
 		(NonConcurrent, NonConcurrent) -> a
-		(Concurrent n, _) ->
-			goconcurrent n
+		(Concurrent n, _) 
+			| n > 1 -> goconcurrent n
+			| otherwise -> do
+				setConcurrency' NonConcurrent ConcurrencyCmdLine
+				a
 		(ConcurrentPerCpu, _) ->
 			goconcurrentpercpu
 		(NonConcurrent, Concurrent n) -> do

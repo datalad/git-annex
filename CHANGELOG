@@ -90,6 +90,7 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     is configured, the same as git-annex add does.
   * config: Added the --show-origin and --for-file options.
   * config: Support annex.numcopies and annex.mincopies.
+  * Fix display when run with -J1.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

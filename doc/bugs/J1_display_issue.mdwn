@@ -9,3 +9,5 @@ The filename is displayed at end.
 This does not happen at -J2 or without -J.
 
 --[[Joey]]
+
+> [[fixed|done]] --[[Joey]]
