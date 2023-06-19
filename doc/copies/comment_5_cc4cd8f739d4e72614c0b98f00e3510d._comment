@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-06-19T15:36:07Z"
+ content="""
+@strmd, there is a todo relevant to this,
+[[todo/repositories_that_count_as_more_than_one_copy]].
+
+I think it's a reasonable idea, but there are probably details that need to
+be thought through.
+"""]]
