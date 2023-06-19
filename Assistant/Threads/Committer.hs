@@ -1,6 +1,6 @@
 {- git-annex assistant commit thread
  -
- - Copyright 2012-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -38,6 +38,7 @@ import qualified Annex
 import Utility.InodeCache
 import qualified Database.Keys
 import qualified Command.Sync
+import qualified Command.Add
 import Config.GitConfig
 import Utility.Tuple
 import Utility.Metered
@@ -303,8 +304,10 @@ handleAdds lockdowndir havelsof largefilematcher annexdotfiles delayadd cs = ret
 		f = toRawFilePath (changeFile change)
 
 	addsmall [] = noop
-	addsmall toadd = liftAnnex $ Annex.Queue.addCommand [] "add"
-		[ Param "--force", Param "--"] (map changeFile toadd)
+	addsmall toadd = liftAnnex $ void $ tryIO $
+		forM (map (toRawFilePath . changeFile) toadd) $ \f ->
+			Command.Add.addFile Command.Add.Small f
+				=<< liftIO (R.getSymbolicLinkStatus f)
 
 	{- Avoid overhead of re-injesting a renamed unlocked file, by
 	 - examining the other Changes to see if a removed file has the

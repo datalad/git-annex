@@ -67,3 +67,5 @@ Committer crashed: user error (xargs ["-0","git","--git-dir=.git","--work-tree=.
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]
