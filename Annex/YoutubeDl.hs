@@ -48,16 +48,18 @@ youtubeDlNotAllowedMessage = unwords
 --
 -- Displays a progress meter as youtube-dl downloads.
 --
--- If youtube-dl fails without writing any files to the work directory, 
--- or is not installed, returns Right Nothing.
+-- If no file is downloaded, or the program is not installed,
+-- returns Right Nothing.
 --
--- The work directory can contain files from a previous run of youtube-dl
--- and it will resume. It should not contain any other files though,
--- and youtube-dl needs to finish up with only one file in the directory
--- so we know which one it downloaded.
---
--- (Note that we can't use --output to specify the file to download to,
--- due to <https://github.com/rg3/youtube-dl/issues/14864>)
+-- youtube-dl can write to multiple files, either temporary files, or
+-- multiple videos found at the url, and git-annex needs only one file.
+-- So we need to find the destination file, and make sure there is not
+-- more than one. With yt-dlp use --print-to-file to make it record the 
+-- file(s) it downloads. With youtube-dl, the best that can be done is
+-- to require that the work directory end up with only 1 file in it.
+-- (This can fail, but youtube-dl is deprecated, and they closed my
+-- issue requesting something like --print-to-file; 
+-- <https://github.com/rg3/youtube-dl/issues/14864>)
 youtubeDl :: URLString -> FilePath -> MeterUpdate -> Annex (Either String (Maybe FilePath))
 youtubeDl url workdir p = ifM ipAddressesUnlimited
 	( withUrlOptions $ youtubeDl' url workdir p
@@ -66,29 +68,38 @@ youtubeDl url workdir p = ifM ipAddressesUnlimited
 
 youtubeDl' :: URLString -> FilePath -> MeterUpdate -> UrlOptions -> Annex (Either String (Maybe FilePath))
 youtubeDl' url workdir p uo
-	| supportedScheme uo url = ifM (liftIO . inSearchPath =<< youtubeDlCommand)
-		( runcmd >>= \case
-			Right True -> workdirfiles >>= \case
-				(f:[]) -> return (Right (Just f))
-				[] -> return nofiles
-				fs -> return (toomanyfiles fs)
-			Right False -> workdirfiles >>= \case
-				[] -> return (Right Nothing)
-				_ -> return (Left "yt-dlp download is incomplete. Run the command again to resume.")
-			Left msg -> return (Left msg)
-		, return (Right Nothing)
-		)
+	| supportedScheme uo url = do
+		cmd <- youtubeDlCommand
+		ifM (liftIO $ inSearchPath cmd)
+			( runcmd cmd >>= \case
+				Right True -> downloadedfiles cmd >>= \case
+					(f:[]) -> return (Right (Just f))
+					[] -> return nofiles
+					fs -> return (toomanyfiles fs)
+				Right False -> workdirfiles >>= \case
+					[] -> return (Right Nothing)
+					_ -> return (Left "yt-dlp download is incomplete. Run the command again to resume.")
+				Left msg -> return (Left msg)
+			, return (Right Nothing)
+			)
 	| otherwise = return (Right Nothing)
   where
 	nofiles = Left "yt-dlp did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
 	toomanyfiles fs = Left $ "yt-dlp downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
-	workdirfiles = liftIO $ filterM (doesFileExist) =<< dirContents workdir
-	runcmd = youtubeDlMaxSize workdir >>= \case
+	downloadedfiles cmd
+		| isytdlp cmd = liftIO $ 
+			(lines <$> readFile filelistfile)
+				`catchIO` (pure . const [])
+		| otherwise = workdirfiles
+	workdirfiles = liftIO $ filter (/= filelistfile) 
+		<$> (filterM (doesFileExist) =<< dirContents workdir)
+	filelistfile = workdir </> filelistfilebase
+	filelistfilebase = "git-annex-file-list-file"
+	isytdlp cmd = "yt-dlp" `isInfixOf` cmd
+	runcmd cmd = youtubeDlMaxSize workdir >>= \case
 		Left msg -> return (Left msg)
 		Right maxsize -> do
-			cmd <- youtubeDlCommand
-			let isytdlp = "yt-dlp" `isInfixOf` cmd
-			opts <- youtubeDlOpts (dlopts isytdlp ++ maxsize)
+			opts <- youtubeDlOpts (dlopts cmd ++ maxsize)
 			oh <- mkOutputHandlerQuiet
 			-- The size is unknown to start. Once youtube-dl
 			-- outputs some progress, the meter will be updated
@@ -97,11 +108,11 @@ youtubeDl' url workdir p uo
 			let unknownsize = Nothing :: Maybe FileSize
 			ok <- metered (Just p) unknownsize Nothing $ \meter meterupdate ->
 				liftIO $ commandMeter'
-					(if isytdlp then parseYtdlpProgress else parseYoutubeDlProgress)
+					(if isytdlp cmd then parseYtdlpProgress else parseYoutubeDlProgress)
 					oh (Just meter) meterupdate cmd opts
 					(\pr -> pr { cwd = Just workdir })
 			return (Right ok)
-	dlopts isytdlp = 
+	dlopts cmd = 
 		[ Param url
 		-- To make it only download one file when given a
 		-- page with a video and a playlist, download only the video.
@@ -112,8 +123,14 @@ youtubeDl' url workdir p uo
 		-- it from downloading the whole playlist.)
 		, Param "--playlist-items", Param "0"
 		] ++
-			if isytdlp
-				then [Param "--progress-template", Param progressTemplate]
+			if isytdlp cmd
+				then 
+					[ Param "--progress-template"
+					, Param progressTemplate
+					, Param "--print-to-file"
+					, Param "after_move:filepath"
+					, Param filelistfilebase
+					]
 				else []
 
 -- To honor annex.diskreserve, ask youtube-dl to not download too
