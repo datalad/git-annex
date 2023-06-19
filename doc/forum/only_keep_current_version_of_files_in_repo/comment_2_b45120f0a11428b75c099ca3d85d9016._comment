@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-06-19T17:34:59Z"
+ content="""
+The straightforward way to do this is to run periodically on the hard
+drive:
+
+	git-annex unused
+	git-annex move --unused --from server
+
+If you're using `git-annex sync --content`, you need to use `--all` in
+order for it to consider unused content. Otherwise it will only operate
+on files in the current branch, and leave other content as-is.
+And you will need to run `git-annex unused` still.
+
+If you are using the assistant, it does periodically scan for unused
+content and moves them to some repository whose preferred content matches
+them.
+
+You're right that using the "backup" standard group will make the hard
+drive want the unused content. That's because it wants "`anything`", which
+matches files whether they are unused or not.
+
+Any preferred content expression that matches on a filename,
+like "`include=*`", makes it not want unused content, which has no
+filename.
+
+Or, you can use "`not unused`" in a preferred content expression to
+explicitly exclude the unused content.
+"""]]
