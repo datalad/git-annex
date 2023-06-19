@@ -296,9 +296,9 @@ seek' o = do
 						(filter isExport contentremotes)
 
 				-- Sync content with remotes, including
-				-- with import remotes (since importing
-				-- only downloads new files not old files),
-				-- but not with export only remotes.
+				-- importing from import remotes (since
+				-- importing only downloads new files not
+				-- old files)
 				let shouldsynccontent r
 					| isExport r && not (isImport r) = False
 					| otherwise = True
@@ -926,6 +926,7 @@ syncFile o ebloom rs af k = do
 	wantput r
 		| pushOption o == False = return False
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
+		| isExport r = return False
 		| isThirdPartyPopulated r = return False
 		| otherwise = wantGetBy True (Just k) af (Remote.uuid r)
 	handleput lack inhere
