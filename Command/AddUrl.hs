@@ -343,9 +343,10 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	-- Ask youtube-dl what filename it will download first, 
 	-- so it's only used when the file contains embedded media.
 	tryyoutubedl tmp backend = youtubeDlFileNameHtmlOnly url >>= \case
-		Right mediafile -> 
+		Right mediafile -> do
+			liftIO $ liftIO $ removeWhenExistsWith R.removeLink tmp
 			let f = youtubeDlDestFile o file (toRawFilePath mediafile)
-			in lookupKey f >>= \case
+			lookupKey f >>= \case
 				Just k -> alreadyannexed f k
 				Nothing -> dl f
 		Left err -> checkRaw (Just err) o (pure Nothing) (normalfinish tmp backend)
