@@ -1,9 +1,11 @@
 {- HttpAlso remote (readonly).
  -
- - Copyright 2020-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2020-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE RankNTypes #-}
 
 module Remote.HttpAlso (remote) where
 
@@ -30,7 +32,7 @@ import System.FilePath.Posix as P
 import Control.Concurrent.STM
 
 remote :: RemoteType
-remote = RemoteType
+remote = specialRemoteType $ RemoteType
 	{ typename = "httpalso"
 	, enumerate = const (findSpecialRemotes "httpalso")
 	, generate = gen
@@ -53,21 +55,26 @@ gen r u rc gc rs = do
 	cst <- remoteCost gc c expensiveRemoteCost
 	let url = getRemoteConfigValue urlField c
 	ll <- liftIO newLearnedLayout
-	return $ Just $ this url ll c cst
+	return $ Just $ specialRemote c
+		cannotModify
+		(downloadKey url ll)
+		cannotModify
+		(checkKey url ll)
+		(this url c cst)
   where
-	this url ll c cst = Remote
+	this url c cst = Remote
 		{ uuid = u
 		, cost = cst
 		, name = Git.repoDescribe r
 		, storeKey = cannotModify
-		, retrieveKeyFile = downloadKey url ll
+		, retrieveKeyFile = retrieveKeyFileDummy
 		, retrieveKeyFileCheap = Nothing
 		-- HttpManagerRestricted is used here, so this is
 		-- secure.
 		, retrievalSecurityPolicy = RetrievalAllKeysSecure
 		, removeKey = cannotModify
 		, lockContent = Nothing
-		, checkPresent = checkKey url ll
+		, checkPresent = checkPresentDummy
 		, checkPresentCheap = False
 		, exportActions = ExportActions
 			{ storeExport = cannotModify
@@ -114,10 +121,9 @@ httpAlsoSetup _ (Just u) _ c gc = do
 	gitConfigSpecialRemote u c' [("httpalso", "true")]
 	return (c', u)
 
-downloadKey :: Maybe URLString -> LearnedLayout -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
-downloadKey baseurl ll key _af dest p vc = do
-	verifyKeyContentIncrementally vc key $ \iv ->
-		downloadAction dest p iv key (keyUrlAction baseurl ll key)
+downloadKey :: Maybe URLString -> LearnedLayout -> Retriever
+downloadKey baseurl ll = fileRetriever' $ \dest key p iv ->
+	downloadAction (fromRawFilePath dest) p iv key (keyUrlAction baseurl ll key)
 
 retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
 retriveExportHttpAlso baseurl key loc dest p = do
@@ -127,11 +133,10 @@ retriveExportHttpAlso baseurl key loc dest p = do
 downloadAction :: FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Key -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
 downloadAction dest p iv key run =
 	Url.withUrlOptions $ \uo ->
-		meteredFile dest (Just p) key $
-			run (\url -> Url.download' p iv url dest uo)
-				>>= either giveup (const (return ()))
+		run (\url -> Url.download' p iv url dest uo)
+			>>= either giveup (const (return ()))
 
-checkKey :: Maybe URLString -> LearnedLayout -> Key -> Annex Bool
+checkKey :: Maybe URLString -> LearnedLayout -> CheckPresent
 checkKey baseurl ll key =
 	isRight <$> keyUrlAction baseurl ll key (checkKey' key)
 
@@ -150,9 +155,9 @@ type LearnedLayout = TVar (Maybe [Key -> URLString])
 newLearnedLayout :: IO LearnedLayout
 newLearnedLayout = newTVarIO Nothing
 
--- Learns which layout the special remote uses, so the once any
--- action on an url succeeds, subsequent calls will continue to use that
--- layout (or related layouts).
+-- Learns which layout the special remote uses, so once any action on an
+-- url succeeds, subsequent calls will continue to use that layout
+-- (or related layouts).
 keyUrlAction
 	:: Maybe URLString
 	-> LearnedLayout

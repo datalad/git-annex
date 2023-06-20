@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 23"""
+ date="2023-06-20T17:25:27Z"
+ content="""
+httpalso now supports chunking. So I think there's no need to add readonly
+support to webdav, probably. But if you disagree, I do think it would be
+possible to add. Just probably not useful.. after all webdav minus writing
+is little different than http. If you disagree, open a [[todo]].
+"""]]

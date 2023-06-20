@@ -94,6 +94,7 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * assistant: Fix a crash when a small file is deleted immediately after
     being created.
   * Improve resuming interrupted download when using yt-dlp or youtube-dl.
+  * httpalso: Support being used with special remotes that use chunking.
 
  -- Joey Hess <id@joeyh.name>  Sat, 08 Apr 2023 13:57:18 -0400
 

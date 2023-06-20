@@ -137,8 +137,12 @@ sameasInherits = S.fromList
 	, pubkeysField
 	-- legacy chunking was either enabled or not, so has to be the same
 	-- across configs for remotes that access the same data
-	-- (new-style chunking does not have that limitation)
 	, chunksizeField
+	-- (new-style chunking does not have that limitation)
+	-- but there is no benefit to picking a different chunk size
+	-- for the sameas remote, since it's reading whatever chunks were
+	-- stored
+	, chunkField
 	]
 
 {- Each RemoteConfig that has a sameas-uuid inherits some fields
