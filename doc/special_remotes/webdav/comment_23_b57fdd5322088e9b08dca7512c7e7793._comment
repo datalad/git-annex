@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="kdm9"
+ avatar="http://cdn.libravatar.org/avatar/b7b736335a0e9944a8169a582eb4c43d"
+ subject="read-only webdav access"
+ date="2023-06-20T10:22:57Z"
+ content="""
+Hi Joey et al.,
+
+Thanks yet again for a fantastic tool.
+
+We are using it to distribute scientific data, via a webdav share backed by a customised owncloud deployment.
+
+As this repository will be public, we want to have two special remotes: data-rw and data. The former is used by staff to upload data, and uses a share URL & password with list-read-write-upload-delete permission which works fine.
+
+We also have a share link that only allows listing and reading content. If I try to initremote with the same settings as for the rw remote (but changing the username and password), then we get a failure during remote testing, as git-annex is unable to create a test file. I can get it to work if I temporary enable RW access for that share URL, but then an external user's `git annex enableremote` would fail when they go to initialise it later after I've reset the share link to RO.
+
+I've tried with `git annex initremote ... readonly=true`, but that complains that readonly isn't a valid parameter for webdav. I also see in the source code that readonly is hard-coded to false for the webdav remote (I think -- my Haskell is very rusty).
+
+Is there any chance that we can enable setting readonly=true for webdav, and disabling the write tests for a webdav remote, effectively turning it into a RO special remote *a la* http/ftp/etc?
+
+I've tried using httpalso or web, but that's incompatible with the chunking we need to enable for Webdav.
+
+Any other suggestions?
+
+Thanks again and in advance,
+
+KDM
+"""]]
