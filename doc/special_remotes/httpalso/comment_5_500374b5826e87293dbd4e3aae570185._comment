@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="kdm9"
+ avatar="http://cdn.libravatar.org/avatar/b7b736335a0e9944a8169a582eb4c43d"
+ subject="chunking"
+ date="2023-06-20T10:21:35Z"
+ content="""
+Hi Joey,
+
+Another question: could the httpalso special remote be made to support mirroring remotes that enable chunking (with chunk=xxMiB)? This would in general allow anonymous access to e.g. webdav shares also published over https.
+
+Best,
+KDM
+"""]]
