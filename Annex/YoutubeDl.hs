@@ -12,6 +12,7 @@ module Annex.YoutubeDl (
 	youtubeDlCheck,
 	youtubeDlFileName,
 	youtubeDlFileNameHtmlOnly,
+	youtubeDlCommand,
 ) where
 
 import Annex.Common
@@ -74,18 +75,18 @@ youtubeDl' url workdir p uo
 			( runcmd cmd >>= \case
 				Right True -> downloadedfiles cmd >>= \case
 					(f:[]) -> return (Right (Just f))
-					[] -> return nofiles
-					fs -> return (toomanyfiles fs)
+					[] -> return (nofiles cmd)
+					fs -> return (toomanyfiles cmd fs)
 				Right False -> workdirfiles >>= \case
 					[] -> return (Right Nothing)
-					_ -> return (Left "yt-dlp download is incomplete. Run the command again to resume.")
+					_ -> return (Left $ cmd ++ " download is incomplete. Run the command again to resume.")
 				Left msg -> return (Left msg)
 			, return (Right Nothing)
 			)
 	| otherwise = return (Right Nothing)
   where
-	nofiles = Left "yt-dlp did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
-	toomanyfiles fs = Left $ "yt-dlp downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
+	nofiles cmd = Left $ cmd ++ " did not put any media in its work directory, perhaps it's been configured to store files somewhere else?"
+	toomanyfiles cmd fs = Left $ cmd ++ " downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
 	downloadedfiles cmd
 		| isytdlp cmd = liftIO $ 
 			(lines <$> readFile filelistfile)
@@ -95,7 +96,7 @@ youtubeDl' url workdir p uo
 		<$> (filterM (doesFileExist) =<< dirContents workdir)
 	filelistfile = workdir </> filelistfilebase
 	filelistfilebase = "git-annex-file-list-file"
-	isytdlp cmd = "yt-dlp" `isInfixOf` cmd
+	isytdlp cmd = cmd == "yt-dlp"
 	runcmd cmd = youtubeDlMaxSize workdir >>= \case
 		Left msg -> return (Left msg)
 		Right maxsize -> do
@@ -271,7 +272,10 @@ youtubeDlOpts addopts = do
 youtubeDlCommand :: Annex String
 youtubeDlCommand = annexYoutubeDlCommand <$> Annex.getGitConfig >>= \case
 	Just c -> pure c
-	Nothing -> fromMaybe "youtube-dl" <$> liftIO (searchPath "yt-dlp")
+	Nothing -> ifM (liftIO $ inSearchPath "yt-dlp")
+		( return "yt-dlp"
+		, return "youtube-dl"
+		)
 
 supportedScheme :: UrlOptions -> URLString -> Bool
 supportedScheme uo url = case parseURIRelaxed url of

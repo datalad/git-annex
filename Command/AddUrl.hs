@@ -353,20 +353,24 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	  where
 		dl dest = withTmpWorkDir mediakey $ \workdir -> do
 			let cleanuptmp = pruneTmpWorkDirBefore tmp (liftIO . removeWhenExistsWith R.removeLink)
-			showNote "using youtube-dl"
+			dlcmd <- youtubeDlCommand
+			showNote ("using " <> UnquotedString dlcmd)
 			Transfer.notifyTransfer Transfer.Download url $
-				Transfer.download' webUUID mediakey (AssociatedFile Nothing) Nothing Transfer.noRetry $ \p ->
+				Transfer.download' webUUID mediakey (AssociatedFile Nothing) Nothing Transfer.noRetry $ \p -> do
+					showDestinationFile dest
 					youtubeDl url (fromRawFilePath workdir) p >>= \case
 						Right (Just mediafile) -> do
 							cleanuptmp
 							checkCanAdd o dest $ \canadd -> do
-								showDestinationFile dest
 								addWorkTree canadd addunlockedmatcher webUUID mediaurl dest mediakey (Just (toRawFilePath mediafile))
 								return $ Just mediakey
-						Right Nothing -> checkRaw Nothing o (pure Nothing) (normalfinish tmp backend)
 						Left msg -> do
 							cleanuptmp
 							warning (UnquotedString msg)
+							return Nothing
+						Right Nothing -> do
+							cleanuptmp
+							warning (UnquotedString dlcmd <> " did not download anything")
 							return Nothing
 		mediaurl = setDownloader url YoutubeDownloader
 		mediakey = Backend.URL.fromUrl mediaurl Nothing
