@@ -37,7 +37,7 @@ import Logs.File
 import qualified Utility.Format
 import Utility.Tmp
 import Utility.Metered
-import Command.AddUrl (addUrlFile, downloadRemoteFile, parseDownloadOptions, DownloadOptions(..), checkCanAdd)
+import Command.AddUrl (addUrlFile, downloadRemoteFile, parseDownloadOptions, DownloadOptions(..), checkCanAdd, addWorkTree, checkRaw)
 import Annex.UUID
 import Backend.URL (fromUrl)
 import Annex.Content
@@ -47,7 +47,6 @@ import Types.MetaData
 import Logs.MetaData
 import Annex.MetaData
 import Annex.FileMatcher
-import Command.AddUrl (addWorkTree, checkRaw)
 import Annex.UntrustedFilePath
 import qualified Annex.Branch
 import Logs
