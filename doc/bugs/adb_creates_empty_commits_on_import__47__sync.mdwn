@@ -39,3 +39,4 @@ Example of "main" branch history cluttered by empty commits:
 """]]
 
 
+[[!tag moreinfo]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2023-06-21T18:20:00Z"
+ content="""
+I no longer see an empty commit in the scenario I described in comment #1.
+I'm not sure what fixed that.
+
+So this bug is blocked on more information being available, since I still
+don't know how to reproduce the empty commit problem. Marking moreinfo.
+"""]]
