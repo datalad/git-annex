@@ -85,3 +85,5 @@ I also don't get anything from
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 Git annex is great, I use it to manage 3TB+ of research data, and it's useful for manually keeping data in track and versioned
+
+[[!tag moreinfo]]
