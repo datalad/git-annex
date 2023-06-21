@@ -92,6 +92,7 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * assistant: Fix a crash when a small file is deleted immediately after
     being created.
   * repair: Fix handling of git ref names on Windows.
+  * repair: Fix a crash when .git/annex/journal/ does not exist.
   * Support building with optparse-applicative 0.18.1
     (Thanks, Peter Simons)
 

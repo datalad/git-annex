@@ -230,8 +230,13 @@ getJournalledFilesStale getjournaldir = do
 {- Directory handle open on a journal directory. -}
 withJournalHandle :: (Git.Repo -> RawFilePath) -> (DirectoryHandle -> IO a) -> Annex a
 withJournalHandle getjournaldir a = do
-	d <- fromRawFilePath <$> fromRepo getjournaldir
-	bracketIO (openDirectory d) closeDirectory (liftIO . a)
+	d <- fromRepo getjournaldir
+	bracket (opendir d) (liftIO . closeDirectory) (liftIO . a)
+  where
+	-- avoid overhead of creating the journal directory when it already
+	-- exists
+	opendir d = liftIO (openDirectory (fromRawFilePath d))
+		`catchIO` (const (createAnnexDirectory d >> opendir d))
 
 {- Checks if there are changes in the journal. -}
 journalDirty :: (Git.Repo -> RawFilePath) -> Annex Bool
