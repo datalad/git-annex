@@ -116,7 +116,7 @@ parseCmd progname progdesc allargs allcmds getparser =
 		<*> getparser c
 		<*> parserAnnexOptions (cmdannexoptions c)
 	synopsis n d = n ++ " - " ++ d
-	intro = mconcat $ concatMap (\l -> [H.text l, H.line])
+	intro = mconcat $ concatMap (\l -> [H.pretty l, H.line])
 		(synopsis progname progdesc : commandList allcmds)
 
 {- Selects the Command that matches the subcommand name.
