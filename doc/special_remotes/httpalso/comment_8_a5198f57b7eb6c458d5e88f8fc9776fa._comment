@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2023-06-21T15:40:53Z"
+ content="""
+@kdm some of the hourly autobuilds are updated with it already, eg the
+x86-64 linux one. Others should update today. I do hope to make a release
+soon.
+"""]]
