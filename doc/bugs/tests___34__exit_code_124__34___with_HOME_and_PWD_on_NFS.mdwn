@@ -34,3 +34,5 @@ $> tail cron-20211122/build-ubuntu.yaml-491-280a49ed-failed/test-annex\ \(nfs-ho
 ### What version of git-annex are you using? On what operating system?
 
 8.20211118-g5a7f25397  linux ubuntu on github actions
+
+[[!tag moreinfo]]
