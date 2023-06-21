@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-06-21T18:32:35Z"
+ content="""
+I suspect that this might be fixed in a current release of git-annex.
+
+[[!commit 54ad1b4cfb1c8302f1b862cb2699ab9351e3eb5b]] made git-annex
+fully support long filenames on windows. Some of the filenames in this bug
+look long, and also it involved a network share path that I think that
+commit would have likely improved git-annex's handling of.
+"""]]
