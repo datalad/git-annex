@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-06-21T19:28:52Z"
+ content="""
+Confirmed this is still a problem. `git-annex fsck` does detect and deal
+with it, by eg deleting the corrupted object.
+
+It seems like it would be hard for git-annex to make other files that use
+the same object be unlocked. Consider a repo with one file, that is
+unlocked and uses an object. Then a `git merge` adds another, locked file,
+using the same object. git-annex didn't have a chance to run at all, and
+now the stage is set for this problem to happen if the user appends to the
+unlocked file.
+
+In a way, the docs for annex.thin do warn the user about this. If you squint
+just right:
+
+	... but when a modification is made to a
+        file, you will lose the local (and possibly only)  copy  of  the
+        old version
+
+But, git-annex goes out of its way to avoid 2 unlocked files being hardlinked
+when using annex.thin. So it seems wrong that a locked file and an unlocked file
+will be hard linked, and that the locked file can get corrupted.
+
+Ok, I've made the docs warn about it, and I think that is just the best that
+can be done. The only real fix would be to remove annex.thin.
+"""]]

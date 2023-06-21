@@ -7,3 +7,8 @@ Also, with `annex.thin`, the [[invariant|internals]] that `.git/annex/objects/aa
 [[`git-annex-drop`|git-annex-drop]] succeeds but does not actually drop the file.
 
 Also, even if the current repo is trusted, with `annex.thin`, an unlocked file should not count as a trusted copy.
+
+[[!tag confirmed]]
+
+> documentation updated to mention this unfixable wart. Ugh. [[done]]
+> --[[Joey]]

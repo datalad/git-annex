@@ -1156,7 +1156,10 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   Set this to `true` to make unlocked files be a hard link to their content
   in the annex, rather than a second copy. This can save considerable
   disk space, but when a modification is made to a file, you will lose the
-  local (and possibly only) copy of the old version. So, enable with care.
+  local (and possibly only) copy of the old version. Any other, locked
+  files in the repository that pointed to that content will get broken
+  as well (`git-annex fsck` will detect and clean up after that). 
+  So, enable this with care.
 
   After setting (or unsetting) this, you should run `git annex fix` to
   fix up the annexed files in the work tree to be hard links (or copies).
