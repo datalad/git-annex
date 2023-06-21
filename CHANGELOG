@@ -6,6 +6,11 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     annex.synccontent is explicitly set to false.)
   * assist: New command, which is the same as git-annex sync but with
     new files added and content transferred by default.
+  * sync: Started a transition to --content being enabled by default.
+    When used without --content or --no-content, warn about the upcoming
+    transition, and suggest using one of the options, or setting
+    annex.synccontent.
+  * sync: Added -g as a short option for --no-content.
   * Many commands now quote filenames that contain unusual characters the
     same way that git does, to avoid exposing control characters to the
     terminal.
@@ -23,20 +28,35 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     control characters, besides the escape sequences it already rejected.
   * init: Avoid autoenabling special remotes that have control characters
     in their names.
+  * Support core.sharedRepository=0xxx at long last.
+  * Support --json and --json-error-messages in many more commands
+    (addunused, configremote, dead, describe, dropunused, enableremote,
+    expire, fix, importfeed, init, initremote, log, merge, migrate, reinit,
+    reinject, rekey, renameremote, rmurl, semitrust, setpresentkey, trust,
+    unannex, undo, uninit, untrust, unused, upgrade)
+  * importfeed: Support -J
+  * importfeed: Support --json-progress
+  * httpalso: Support being used with special remotes that use chunking.
+  * Several significant speedups to importing large trees from special
+    remotes. Imports that took over an hour now take only a few minutes.
+  * Cache negative lookups of global numcopies and mincopies. 
+    Speeds up eg git-annex sync --content by up to 50%.
+  * Speed up sync in an adjusted branch by avoiding re-adjusting the branch
+    unncessarily, particularly when it is adjusted with --hide-missing
+    or --unlock-present.
+  * config: Added the --show-origin and --for-file options.
+  * config: Support annex.numcopies and annex.mincopies.
   * whereused: Fix display of branch:file when run in a subdirectory.
   * enableremote: Support enableremote of a git remote (that was previously
     set up with initremote) when additional parameters such as autoenable=
     are passed.
   * configremote: New command, currently limited to changing autoenable=
     setting of a special remote.
-  * assistant --autostop: Avoid crashing when ~/.config/git-annex/autostart
-    lists a directory that it cannot chdir to.
   * Honor --force option when operating on a local git remote.
   * When a nonexistant file is passed to a command and 
     --json-error-messages is enabled, output a JSON object indicating the
     problem. (But git ls-files --error-unmatch still displays errors about
     such files in some situations.)
-  * Support core.sharedRepository=0xxx at long last.
   * Bug fix: Create .git/annex/, .git/annex/fsckdb,
     .git/annex/sentinal, .git/annex/sentinal.cache, and
     .git/annex/journal/* with permissions configured by core.sharedRepository.
@@ -44,28 +64,16 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
     of core.sharedRepository and umask.
   * initremote: Avoid creating a remote that is not encrypted when gpg is
     broken.
-  * Support --json and --json-error-messages in many more commands
-    (addunused, configremote, dead, describe, dropunused, enableremote,
-    expire, fix, importfeed, init, initremote, log, merge, migrate, reinit,
-    reinject, rekey, renameremote, rmurl, semitrust, setpresentkey, trust,
-    unannex, undo, uninit, untrust, unused, upgrade)
   * log: When --raw-date is used, display only seconds from the epoch, as
     documented, omitting a trailing "s" that was included in the output
     before.
   * addunused: Displays the names of the files that it adds.
   * reinject: Fix support for operating on multiple pairs of files and keys.
-  * importfeed: Support -J
-  * importfeed: Support --json-progress
   * sync: Fix buggy handling of --no-pull and --no-push when syncing
     --content. With --no-pull, avoid downloading content, and with
     --no-push avoid uploading content. This was done before, but
     inconsistently.
   * uninit: Avoid buffering the names of all annexed files in memory.
-  * sync: Started a transition to --content being enabled by default.
-    When used without --content or --no-content, warn about the upcoming
-    transition, and suggest using one of the options, or setting
-    annex.synccontent.
-  * sync: Added -g as a short option for --no-content.
   * Fix bug in -z handling of trailing NUL in input.
   * version: Avoid error message when entire output is not read.
   * Fix excessive CPU usage when parsing yt-dlp (or youtube-dl) progress
@@ -75,26 +83,15 @@ git-annex (10.20230408) UNRELEASED; urgency=medium
   * When yt-dlp is available, default to using it in preference to
     youtube-dl. Using youtube-dl is now deprecated, and git-annex no longer
     tries to parse its output to display download progress
-  * repair: Fix handling of git ref names on Windows.
-  * Large speed up to importing trees from special remotes that contain a lot
-    of files, by only processing changed files.
-  * Optimise database to further speed up importing large trees from special
-    remotes, and getting files from importtree=yes remotes.
-  * Some other speedups to importing trees from special remotes.
-  * Cache negative lookups of global numcopies and mincopies. 
-    Speeds up eg git-annex sync --content by up to 50%.
-  * Speed up sync in an adjusted branch by avoiding re-adjusting the branch
-    unncessarily, particularly when it is adjusted with --hide-missing
-    or --unlock-present.
+  * Improve resuming interrupted download when using yt-dlp or youtube-dl.
   * assistant: Add dotfiles to git by default, unless annex.dotfiles
     is configured, the same as git-annex add does.
-  * config: Added the --show-origin and --for-file options.
-  * config: Support annex.numcopies and annex.mincopies.
+  * assistant --autostop: Avoid crashing when ~/.config/git-annex/autostart
+    lists a directory that it cannot chdir to.
   * Fix display when run with -J1.
   * assistant: Fix a crash when a small file is deleted immediately after
     being created.
-  * Improve resuming interrupted download when using yt-dlp or youtube-dl.
-  * httpalso: Support being used with special remotes that use chunking.
+  * repair: Fix handling of git ref names on Windows.
   * Support building with optparse-applicative 0.18.1
     (Thanks, Peter Simons)
 
