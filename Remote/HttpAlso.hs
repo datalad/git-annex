@@ -20,7 +20,6 @@ import Config.Cost
 import Config
 import Logs.Web
 import Creds
-import Messages.Progress
 import Utility.Metered
 import Annex.Verify
 import qualified Annex.Url as Url
@@ -123,15 +122,15 @@ httpAlsoSetup _ (Just u) _ c gc = do
 
 downloadKey :: Maybe URLString -> LearnedLayout -> Retriever
 downloadKey baseurl ll = fileRetriever' $ \dest key p iv ->
-	downloadAction (fromRawFilePath dest) p iv key (keyUrlAction baseurl ll key)
+	downloadAction (fromRawFilePath dest) p iv (keyUrlAction baseurl ll key)
 
 retriveExportHttpAlso :: Maybe URLString -> Key -> ExportLocation -> FilePath -> MeterUpdate -> Annex Verification
 retriveExportHttpAlso baseurl key loc dest p = do
 	verifyKeyContentIncrementally AlwaysVerify key $ \iv ->
-		downloadAction dest p iv key (exportLocationUrlAction baseurl loc)
+		downloadAction dest p iv (exportLocationUrlAction baseurl loc)
 
-downloadAction :: FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> Key -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
-downloadAction dest p iv key run =
+downloadAction :: FilePath -> MeterUpdate -> Maybe IncrementalVerifier -> ((URLString -> Annex (Either String ())) -> Annex (Either String ())) -> Annex ()
+downloadAction dest p iv run =
 	Url.withUrlOptions $ \uo ->
 		run (\url -> Url.download' p iv url dest uo)
 			>>= either giveup (const (return ()))
