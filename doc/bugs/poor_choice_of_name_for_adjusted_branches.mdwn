@@ -23,4 +23,4 @@ The problem is easy to fix, I think, by choosing a different naming convention. 
 
 Thank you very much for making git-annex available, much appreciated.
 
-> I disagree that this needs fixing, so [[wontfix]] --[[Joey]]
+> I disagree that this needs fixing, so [[wontfix|done]] --[[Joey]]
