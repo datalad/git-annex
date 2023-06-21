@@ -76,3 +76,4 @@ FreeBSD extra-2 13.1-RELEASE-p2 FreeBSD 13.1-RELEASE-p2 n245412-484f039b1d0 TRUE
 I use git-annex for several years, and I'm very happy with it. I's one of the best files synchronisation tools.
 
 
+[[!meta title="sqlite fails when repository path contains non-unicode"]]

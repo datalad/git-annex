@@ -5,4 +5,9 @@
  content="""
 I sent in a pull request today to persistent-sqlite
 that will let git-annex fix this once accepted.
+
+<https://github.com/yesodweb/persistent/pull/1486>
+
+Once/if that is merged, git-annex can be changed to 
+use the new `open'`
 """]]
