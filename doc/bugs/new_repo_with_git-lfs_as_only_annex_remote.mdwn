@@ -37,3 +37,6 @@ Now
 I use it all the time for lots of files, git-annex is great! Hoping to migrate off my own ancient server to a gitlab one maintained by somebody else, mainly because it's backed up. But would prefer to stick with git-annex instead of having to migrate to horrible git-lfs.
 
 [[!tag moreinfo]]
+
+> [[closing|done]] as the bug reporter did not follow up with information
+> about how to reproduce it. --[[Joey]]

@@ -53,3 +53,5 @@ no changes added to commit (use "git add" and/or "git commit -a")
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 It's almost perfect :-).
+
+> [[notabug|done]] --[[Joey]]
