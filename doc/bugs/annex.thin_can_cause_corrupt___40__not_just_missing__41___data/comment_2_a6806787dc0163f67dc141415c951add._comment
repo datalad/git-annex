@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-06-22T17:45:08Z"
+ content="""
+Ugh, I had closed this as not solvable, but on second thought, it's a very
+real wart and if it's not solvable that doesn't make it not a problem.
+
+And it does seem that it could be solved in some outside the box way. 
+
+For example, what if thin files were not hard links to the object file?
+Now, they *have* to hard link to somewhere, to prevent git checkout from
+deleting the only copy of a thin file. But it could hard link to a
+different name in the object directory. One that symlinks do not point to.
+
+Then `git-annex fix` or fsck would need to notice when a symlink points to
+an object file that is missing, and copy the thin file to it to populate
+it. And, something might also want to reap object files that have become
+only used by thin files.
+"""]]

@@ -9,6 +9,3 @@ Also, with `annex.thin`, the [[invariant|internals]] that `.git/annex/objects/aa
 Also, even if the current repo is trusted, with `annex.thin`, an unlocked file should not count as a trusted copy.
 
 [[!tag confirmed]]
-
-> documentation updated to mention this unfixable wart. Ugh. [[done]]
-> --[[Joey]]

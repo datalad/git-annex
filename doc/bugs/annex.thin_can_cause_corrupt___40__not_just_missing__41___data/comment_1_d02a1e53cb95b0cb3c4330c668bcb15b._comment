@@ -24,6 +24,5 @@ But, git-annex goes out of its way to avoid 2 unlocked files being hardlinked
 when using annex.thin. So it seems wrong that a locked file and an unlocked file
 will be hard linked, and that the locked file can get corrupted.
 
-Ok, I've made the docs warn about it, and I think that is just the best that
-can be done. The only real fix would be to remove annex.thin.
+I've made the docs warn about it better.
 """]]
