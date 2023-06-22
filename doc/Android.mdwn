@@ -27,7 +27,7 @@ to install it. Paste these commands into Termux:
 Installing git-annex using
 [Nix-On-Droid](https://github.com/t184256/nix-on-droid) is recommended
 for more advanced users who want to use git-annex at the command line.
-The git-annex webapp does not currently work in Nix-On-Droid.
+The git-annex webapp does not currently work in Nix-On-Droid (as a workaround, run `git annex webapp --listen 127.0.0.1` and copy-paste the URL in a browser).
 
 To enter a shell with git-annex available to use,
 run inside Nix-On-Droid: `nix-shell -p git git-annex`
