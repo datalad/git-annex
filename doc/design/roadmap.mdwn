@@ -9,4 +9,4 @@ seem to have a design ready:
 [[!inline pages="todo/* and !todo/*/* and !todo/done and !link(todo/done) 
 and link(todo/confirmed) and !link(todo/needsthought) and !*/Discussion and
 !todo/moreinfo and !todo/confirmed and !todo/needsthought and
-!todo/unlikely" template=buglist]]
+!todo/unlikely" template=buglist show=0]]
