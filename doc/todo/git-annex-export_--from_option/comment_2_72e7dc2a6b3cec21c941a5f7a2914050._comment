@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-06-23T20:05:45Z"
+ content="""
+`git-annex copy --from foo --to bar`  is implemented now, with caveats.
+(Eg, needs to temporarily store each file on disk.)
+
+So I think it would make sense to implement `git-annex export --from foo
+--to bar`, with the same caveats.
+"""]]

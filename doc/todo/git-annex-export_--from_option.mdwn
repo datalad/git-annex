@@ -6,4 +6,4 @@ Which is caused by the fact that I didn't have checked out the files on my works
 
 Is there a reason that does not exist and if so what would be a way to do sending files to the android device without ssh-ing into my server?
 
-[[!tag unlikely]]
+[[!tag confirmed]]
