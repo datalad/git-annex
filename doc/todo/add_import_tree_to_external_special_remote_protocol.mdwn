@@ -21,4 +21,4 @@ for people to implement it despite its complexity, so I'm tagging this confirmed
 although it might make sense to implement that as a simpler protocol
 extension.)
 
-[[!confirmed]]
+[[!tag confirmed]]
