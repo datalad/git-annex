@@ -101,3 +101,5 @@ that.
 
 (All the extra "(recording state in git...)" when dropping
 are due to it doing that too.)
+
+[[!tag confirmed]]
