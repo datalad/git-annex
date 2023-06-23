@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="contr-error"
+ avatar="http://cdn.libravatar.org/avatar/d79c2491dfc6947b8084796b06174cdb"
+ subject="More settings here"
+ date="2023-06-23T09:18:11Z"
+ content="""
+See also [[git-annex]], under \"CONFIGURATION OF REMOTES\" for more settings which can be set using git-annex-config.
+"""]]
