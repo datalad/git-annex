@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-06-23T16:33:32Z"
+ content="""
+@yarikoptic yes, importtree remotes can be read-only.
+
+I do think this would be a good reason to implement
+[[importtree_only_remotes]].
+"""]]
