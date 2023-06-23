@@ -18,4 +18,14 @@ This seems like a prerequisite for [[remove_legacy_import_directory_interface]] 
 `git-annex import --deduplicate` and `--clean-duplicates` need to remove individual files
 from the remote.
 
+> Note that doing this with an importtree=yes remote would 
+> result, after import, in the remote tracking branch having the file
+> deleted. That could be surprising when merged, since it would delete
+> the file from master!
+> 
+> I think this problem can be avoided by rewriting the remote tracking
+> branch's previous commit to not include the file that got deleted. Then
+> merging would need --allow-unrelated-histories, but would not cause the
+> file to be deleted from master.
+
 [[!tag confirmed]]
