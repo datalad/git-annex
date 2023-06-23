@@ -18,4 +18,4 @@ This seems like a prerequisite for [[remove_legacy_import_directory_interface]] 
 `git-annex import --deduplicate` and `--clean-duplicates` need to remove individual files
 from the remote.
 
-[[!confirmed]]
+[[!tag confirmed]]
