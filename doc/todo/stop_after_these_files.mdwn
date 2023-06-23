@@ -11,3 +11,17 @@ current transfer to finish. Maybe SIGUSR1 or something like that?
 > An alternative approach, which avoids the complexity of needing to send a
 > signal, would be for git-annex to remember what transfers got
 > interrupted, and provide a simple command to resume them. --[[Joey]]
+> 
+> > That could not be something like the (existing) 
+> > `git-annex get --incomplete`, because for that you have to remember
+> > you were running a get and run effectively the same command again.
+> >
+> > For an interrupted `git-annex move --to foo`, it would not do to need 
+> > to remember what remote a file was being sent to. The goal would be
+> > something like `git-annex resume` that remembers for you.
+> >
+> > For this, the transfer logs would need to be extended with the operation
+> > and remote.
+
+[[!meta title="resume interrupted move/copy"]]
+[[!tag confirmed]]
