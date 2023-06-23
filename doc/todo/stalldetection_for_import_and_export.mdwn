@@ -8,3 +8,5 @@ extended to cover the additional actions. --[[Joey]]
 > The old transferkeys will exit with an error if the new git-annex
 > happens to run it somehow. So it should be fine to add this stuff later
 > on. --[[Joey]]
+
+[[!tag confirmed]]
