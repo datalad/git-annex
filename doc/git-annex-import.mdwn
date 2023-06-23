@@ -182,7 +182,7 @@ link, and that symbolic link will be followed.
 
 		git annex import /dir --include='*.png'
 
-## COMMON OPTIONS
+# COMMON OPTIONS
 
 * `--jobs=N` `-JN`
 
