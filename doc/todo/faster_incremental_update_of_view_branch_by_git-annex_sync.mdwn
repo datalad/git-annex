@@ -21,3 +21,7 @@ sped up some commands around 2x before IIRC.
 > catObjectStream of metadata logs sped view constriction up by ~50%.
 > More streaming should speed it up more; it still uses
 > lookupKey/catKey once per file. --[[Joey]]
+
+> Seems like this was implemented in
+> [[!commit 5f9bf51438a16b73d6fcf30f3ca43fbb894ea5df]]
+> ... so [[done]]! --[[Joey]]
