@@ -1,0 +1,21 @@
+It should be possible for this to work:
+
+	joey@darkstar:~/tmp/bench3/a>git annex move x --from d
+	move x (from d...)
+	  dropping content from an export is not supported; use `git annex export` to export a tree that lacks the files you want to remove
+	failed
+
+git-annex could just alter the tree exported to the remote to remove the file.
+It might be a little slow to do that for a lot of files, and it would create
+some unattached tree objects that would linger until gc. 
+
+A simple optimisation would be to remove the file (with removeExport) but not update the
+export tree for one file. Keep a log of removed files, and at the end of the command,
+or some future point where the export tree is used, update the export tree to remove the
+files from it.
+
+This seems like a prerequisite for [[remove_legacy_import_directory_interface]] because
+`git-annex import --deduplicate` and `--clean-duplicates` need to remove individual files
+from the remote.
+
+[[!confirmed]]

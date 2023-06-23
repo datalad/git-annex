@@ -5,14 +5,15 @@
  content="""
 `git-annex import --from remote` has recently been sped up a lot,
 and the plan is to [[todo/remove_legacy_import_directory_interface]]
-in favor of it.
+in favor of it or reimplement the lecacy interface on top of it.
 
-I think this would work as a faster alternative to --clean-duplicates,
-using a directory special remote:
+Using `git-annex import --from remote --fast`, when there's a huge file in
+the directory remote, will hash it, but only once. On subsequent runs it
+will recognise the file it has seen before.
 
-	git-annex import --from remote --fast
+So all that's needed to emulate --clean-duplicates is a way to do this:
+
 	git-annex move --from remote --copies 2
 
-When there's a huge file in the directory remote, it will hash it, but only
-once. On subsequent runs it will recognise the file it has seen before.
+Which doesn't work currently, but see [[drop_from_export_remote]].
 """]]

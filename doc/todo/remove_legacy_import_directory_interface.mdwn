@@ -33,6 +33,13 @@ Another likely pain point is ad-hoc importing of individual files or
 files matched by wildcard. The new interface is much more about importing
 whole trees, perhaps configured by preferred content settings
 
+> This is now addressed; `--fast` import from directory special remotes
+> followed by `git-annex get` of the files that are wanted. --[[Joey]]
+
+Another pain point is that to remove files from an export, 
+the user has to create trees that lack the files they want to remove.
+[[drop_from_export_remote]] will resolve that.
+
 One approach would be to make the old interface be implemented using the
 new interface, and paper over the cracks, by eg setting up a directory
 special remote automatically.
@@ -46,4 +53,4 @@ interface.
 
 --[[Joey]]
 
-[[!tag needsthought]]
+[[!tag confirmed]]
