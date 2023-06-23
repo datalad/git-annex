@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-06-23T15:44:13Z"
+ content="""
+@contr-error nope, only the config settings listed on this man page can be
+set with `git-annex config`. Those others can only be set in `git config`.
+"""]]
