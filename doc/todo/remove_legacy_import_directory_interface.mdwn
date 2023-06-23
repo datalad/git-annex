@@ -53,4 +53,78 @@ interface.
 
 --[[Joey]]
 
+Let's consider the cases:
+
+## import with no options
+
+This deletes all files from the directory. So, the equivilant would be:
+
+    git-annex import master --from directory
+    git merge directory/master
+    git-annex export $emptytree --to directory
+
+Actually the git merge is not quite right because on subseqent runs, that
+would merge the empty tree, so deleting from master the files imported
+before. So what's really needed is to diff from the empty tree to
+directory/master, and create a tree that has all new/changed files, and
+merge that into master. Which is something git-annex could pretty easily
+do, although so could a simple script.
+
+## import --duplicate
+
+This is the simplest one, it's just:
+
+    git-annex import master --from directory
+    git merge directory/master
+
+## import --deduplicate
+
+This needs to deletes duplicate files from the special remote, and import
+the other files. The easiest way to do that seems to be to first
+implement [[drop_from_export_remote]]. That will allow first an import
+--from --fast, followed by iterating over the new/changed files in the import,
+and dropping any that use keys whose content is present anywhere other
+than in the directory special remote.
+
+And following that, the same kind of creation of a tree that has all
+(remaining) new/changed files, and mergeing that into mater.
+
+## import --skip-duplicates
+
+This will be very similar in implementation to --deduplicate. But avoid
+dropping any files from the directory special remote. Just build a tree
+of files that are new/changed and whose content is not present anywhere
+else, and merge that.
+
+## import --clean-duplicates
+
+    git-annex import master --from directory
+
+Followed by interating over the new/changed files in the import, and
+if they have content anywhere else, dropping from the directory
+special remote. Needs [[drop_from_export_remote]] to be implemented.
+
+## import --reinject-duplicates
+
+This takes care of most of it:
+
+    git-annex import master --from directory
+
+Then all that's needed is to iterate over new/changed files, and filter out
+any that use a key that is present anywhere else. Create a tree from that,
+and merge it into master.
+
+## import --include= (and other file matching options)
+
+Using these options will add another pass over the imported tree,
+that filters out files that don't match.
+
+## --force
+
+This makes existing files be overwritten by imported files. But with
+import tree, there's a tree that gets merged by git, and so regular git
+conflict handling can be used. Which is a better interface than just always
+overwriting. If desired though, this could be implemented by merging
+with the "theirs" conflict resolution strategy.
+
 [[!tag confirmed]]
