@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-06-23T16:00:04Z"
+ content="""
+My recent optimisations of `git-annex sync` with importtree remotes uses a
+similar diffing approach.
+
+A transition is underway to making `--content` be enabled by default, and
+faster syncing with it would be a nice thing to do before then.
+"""]]
