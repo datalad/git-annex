@@ -36,6 +36,10 @@ whole trees, perhaps configured by preferred content settings
 > This is now addressed; `--fast` import from directory special remotes
 > followed by `git-annex get` of the files that are wanted. --[[Joey]]
 
+>> By `--fast` do you actually mean `--no-content` because I can't
+>> seem to find `--fast` documented in the manual page of [[git-annex-import]]?
+>> Otherwise, what would a `--fast` operation mean in this context? --[[jkniiv]]
+
 Another pain point is that to remove files from an export, 
 the user has to create trees that lack the files they want to remove.
 [[drop_from_export_remote]] will resolve that.
