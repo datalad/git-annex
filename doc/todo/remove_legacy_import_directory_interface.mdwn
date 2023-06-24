@@ -57,6 +57,18 @@ interface.
 
 --[[Joey]]
 
+> Just a small plea. 🙏
+> I'd rather see the the old functionality spared, although in a gutted
+> form as a command called `git-annex-ingest` (as the name was suggested by
+> [[Ilya_Shlyakhter]] in [[change git-annex-import not to delete original files by default]]).
+> It would have none of the presumably confusing `--*duplicate*` options.
+> It would still *move* files into the annex thus saving a lot of disk space
+> when you're in a tight spot; as I see it for instance the "import with no options"
+> case as suggested below would pretty much double the disk space
+> requirements during the import. Also ingesting/importing huge files
+> by moving instead of copying them into the annex saves a lot of time, too.
+> --[[jkniiv]]
+
 Let's consider the cases:
 
 ## import with no options
