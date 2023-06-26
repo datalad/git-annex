@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-06-26T14:53:36Z"
+ content="""
+I think that the most likely way to speed it up is for git-annex to include
+its own .gitattributes parser. It could then cache .gitattributes files,
+probably in memory for a single command would be sufficient.
+
+Stracing `git check-attr --stdin` shows it has a small in-memory cache.
+And it is pretty fast. The problem is that its batch interface is not well
+suited to querying multiple different gitattributes, and the roundtrips
+through stdin are not very fast compared with what could be a very quick
+in-memory calculation.
+
+See [[todo/annex.addunlocked_in_gitattributes]] for a currently rejected
+todo that it would probably make sense to revisit if this were implemented.
+That todo's comments also have some information about gitattributes query
+speed and other arguments in favor of supporting them for more stuff,
+including <https://github.com/datalad/datalad/issues/5383#issuecomment-770108778>.
+
+I've always felt a gitattributes parser might be worth doing. But
+the pattern syntax used by git is pretty complicated, and it would need to
+imitate it perfectly.
+
+Anyway, if a patch doing this landed in my inbox, (or someone wanted to fund
+a medium sized project), I think I'd accept it. So I'll confirm this todo.
+"""]]
