@@ -12,6 +12,6 @@ While Datalad is aimed at scientists, and I look forward to spending time
 with them, you do not have to be a scientist to attend, any interested
 users are welcome.
 
-Also, if you'd like to learn about git-annex in Berlin this weekend,
+Also, if you'd like to learn about git-annex in Germany this weekend,
 Yann Büchau is hosting a
 [workshop](https://cfp.tuebix.org/tuebix-2023/talk/review/GWRP3UKE3VFKVDG8RNQ8ZZPCZPNZYYWM).
