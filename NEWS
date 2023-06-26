@@ -1,3 +1,12 @@
+git-annex (10.20230626) upstream; urgency=medium
+
+  Many commands now quote filenames that contain unusual characters the
+  same way that git does, to avoid exposing control characters to the
+  terminal. The core.quotePath config can be set to false to disable this
+  quoting.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 26 Jun 2023 10:38:07 -0400
+
 git-annex (10.20220218) upstream; urgency=medium
 
   Transition notice: Commands like `git-annex get foo*` have changed to error
