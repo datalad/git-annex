@@ -1,6 +1,4 @@
-There is a version of git-annex in the 
-[EPEL](https://fedoraproject.org/wiki/EPEL) repo. However, it is probably
-quite old.
+git-annex is available in the [EPEL](https://fedoraproject.org/wiki/EPEL) repo.
 
-To install a newer version of git-annex, use the
+If that package is too old, you can also use the 
 [[git-annex-standalone rpm|rpm_standalone]].
