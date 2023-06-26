@@ -1,0 +1,19 @@
+## The Problem
+
+Apparently, `.gitattributes`-based configuration (of e.g. `numcopies`, `largefiles`, `addunlocked` (not even implemented due to the inefficienty), etc.) is slow as every file needs to be queried individually for its attributes (`git check-attr` under the hood, I guess).
+
+## The Motivation
+
+From a user's perspective, `.gitattributes`-based configuration has several benefits over the `git annex --set annex....` approach:
+
+- `.gitattributes` can differ between branches
+- `.gitattributes` lists file name matches much more easily readable, while e.g. `git annex --set annex.largefiles 'include=*.txt and include=*.md and include=*.bla and mimetype shenanigans and largerthan and whatnot...'` gets confusing quickly.
+- `.gitattributes` nests well in subdirs, enabling quite concise and fine-grained control (e.g. all files in THAT folder should be annexed, but if I delete the folder at some point, nvm, my `git config --get annex.largefiles` won't stay cluttered with that path config)
+
+Furthermore, Datalad [relies on `.gitattributes` configuration](https://git-annex.branchable.com/todo/annex.addunlocked_in_gitattributes/#comment-431d5040eac3b9a01d97724e25194f17) to specify the backend and e.g. the `text2git` procedure
+
+## Suggestion
+
+Couldn't the [separate-git-tree-for-diffing-technique you used lately to speed up repeated imports](https://git-annex.branchable.com/devblog/day_649-650__speeding_up_repeated_imports/) be used to cache `.gitattributes` for all (or relevant) files in a git tree (e.g. have the same paths in that tree but file contents are the attributes), querying the attributes is a matter of quering this tree and updating them just requires re-querying the touched paths.
+
+One problem I see with this tough is that it wouldn't be possible to cache the user's `.git/info/attributes` settings, which can change independently.
