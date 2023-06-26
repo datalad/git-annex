@@ -29,6 +29,7 @@ cmd = withAnnexOptions [backendOption, jsonOptions] $
 data ReinjectOptions = ReinjectOptions
 	{ params :: CmdParams
 	, knownOpt :: Bool
+	, guessKeysOpt :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser ReinjectOptions
@@ -39,9 +40,16 @@ optParser desc = ReinjectOptions
 		<> help "inject all known files"
 		<> hidden
 		)
+	<*> switch
+		( long "guesskeys"
+		<> help "inject files that are named like keys"
+		<> hidden
+		)
 
 seek :: ReinjectOptions -> CommandSeek
 seek os
+	| guessKeysOpt os && knownOpt os = giveup "Cannot combine --known with --guesskeys"
+	| guessKeysOpt os = withStrings (commandAction . startGuessKeys) (params os)
 	| knownOpt os = withStrings (commandAction . startKnown) (params os)
 	| otherwise = withPairs (commandAction . startSrcDest) (params os)
 
@@ -65,6 +73,24 @@ startSrcDest (si, (src, dest))
   where
 	src' = toRawFilePath src
 	ai = ActionItemOther (Just (QuotedPath src'))
+
+startGuessKeys :: FilePath -> CommandStart
+startGuessKeys src = starting "reinject" ai si $ notAnnexed src' $
+	case fileKey (toRawFilePath (takeFileName src)) of
+		Just key -> ifM (verifyKeyContent key src')
+			( perform src' key
+			, do
+				qp <- coreQuotePath <$> Annex.getGitConfig
+				giveup $ decodeBS $ quote qp $ QuotedPath src'
+					<> " does not have expected content"
+			)
+		Nothing -> do
+			warning "Not named like an object file; skipping"
+			next $ return True
+  where
+	src' = toRawFilePath src
+	ai = ActionItemOther (Just (QuotedPath src'))
+	si = SeekInput [src]
 
 startKnown :: FilePath -> CommandStart
 startKnown src = starting "reinject" ai si $ notAnnexed src' $ do
