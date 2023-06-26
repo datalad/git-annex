@@ -1,0 +1,17 @@
+Today I'm releasing git-annex 10.20230626. This release got delayed for 2
+months due to making some breaking changes in how filenames with unusual
+characters are quoted. So it has an unsual amount of changes in it, and is
+as major as a git-annex release gets without being a repository version
+bump.
+
+But I mostly wanted to announce that we are planning a joint git-annex/Datalad meeting!
+In the first half of 2024, probably in Germany. If you would be interested in
+attending, please fill out this 
+[brief survey](https://docs.google.com/forms/d/e/1FAIpQLSf0PVLyzicTnAIz8dN7PrT8runUl2W9QxSWCzZoEW3x5bD9lA/viewform).
+While Datalad is aimed at scientists, and I look forward to spending time
+with them, you do not have to be a scientist to attend, any interested
+users are welcome.
+
+Also, if you'd like to learn about git-annex in Berlin this weekend,
+Yann Büchau is hosting a
+[workshop](https://cfp.tuebix.org/tuebix-2023/talk/review/GWRP3UKE3VFKVDG8RNQ8ZZPCZPNZYYWM).
