@@ -1,0 +1,9 @@
+Just stopped a `git status` call that was stuck for hours on the following line:
+
+    refresh index:  13% (30610/235456)
+
+That problem suddenly occurred this weekend after I `git annex add`ed some files. I haven't called status or anything before, but last time I used that drive it worked well.
+
+Other commands like `git commit` also just don't do anything and can't overcome a `S+` state. Problem happens on both macOS and Linux hosts. Nothing in the kernel log that indicates drive IO problems or something similar.
+
+Any idea what might lead to this?
