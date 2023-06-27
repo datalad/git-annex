@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="dud225@35a1ee469f82f3a7eb1f2dce4ad453f5e47bdfd3"
+ nickname="dud225"
+ avatar="http://cdn.libravatar.org/avatar/5147563e50c475918474594d93be95c2"
+ subject="?=*"
+ date="2023-06-27T07:59:55Z"
+ content="""
+Regarding the expression that allows to include the files that are missing the proper metadata:
+
+    git-annex view author?=*
+
+It's not working on my side, which version is bringing that feature? I don't see it mentioned in the [changelogs](https://git-annex.branchable.com/news/).
+
+> Yann Büchau has recently built an integration with Thunar 
+
+I'm not using Thunar but I have to admit that this plugin is awesome!
+"""]]
