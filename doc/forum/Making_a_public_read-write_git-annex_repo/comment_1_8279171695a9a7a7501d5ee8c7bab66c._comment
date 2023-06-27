@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 1"
+ date="2023-06-27T08:54:45Z"
+ content="""
+Maybe a bare git repo on a nfs or smb share? I'm not sure if concurrent pushes work right with that.
+
+It's probably also a good idea to set `git annex config --set annex.dotfiles true`, so no one gets into a situation where they have to resolve a merge conflict manually.
+"""]]
