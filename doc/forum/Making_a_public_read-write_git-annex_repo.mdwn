@@ -1,0 +1,9 @@
+For [the workshop](https://cfp.tuebix.org/tuebix-2023/talk/THBBK7/) I'll host on Saturday I'm still wondering how to make a quick'n'dirty publicly accessible git-annex repo where all participants can just push and pull and do git annex stuff with.
+
+Options:
+
+- Use one of my servers, make a new user, add all of the participants' ssh keys (works)
+- Make a https/git protocol git server without auth (no annex possible, right?)
+- Use the assistant to set up local pairing and have it do the key setup (should work, though I don't know if it's reliable in that uni WiFi)
+
+Any more ideas?
