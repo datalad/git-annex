@@ -108,7 +108,8 @@ startLocal pcc afile ai si numcopies mincopies key preverified ud =
 
 startRemote :: PreferredContentChecked -> AssociatedFile -> ActionItem -> SeekInput -> NumCopies -> MinCopies -> Key -> DroppingUnused -> Remote -> CommandStart
 startRemote pcc afile ai si numcopies mincopies key ud remote = 
-	starting ("drop " ++ Remote.name remote) (OnlyActionOn key ai) si $
+	starting "drop" (OnlyActionOn key ai) si $ do
+		showAction $ UnquotedString $ "from " ++ Remote.name remote
 		performRemote pcc key afile numcopies mincopies remote ud
 
 performLocal :: PreferredContentChecked -> Key -> AssociatedFile -> NumCopies -> MinCopies -> [VerifiedCopy] -> DroppingUnused -> CommandPerform
