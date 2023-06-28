@@ -1,0 +1,12 @@
+`git-annex sync` has been split into push/pull, but there is another split
+possible: `git-annex sync --no-commit --no-pull --no-push --content`.
+
+That is a mouthful, so maybe it could be a separate command? 
+
+Also, such a command could be perhaps be more like `git-annex get/drop/copy`
+in operating on the listed files or current directory and below by default.
+Although that might make it difficult for it to handle sending files to
+exporttree remotes, which sync does with `seekExportContent` which operates
+on the whole exported tree.
+
+What would be a good name for such a command?  --[[Joey]]
