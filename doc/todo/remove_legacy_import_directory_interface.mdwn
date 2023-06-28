@@ -40,6 +40,8 @@ whole trees, perhaps configured by preferred content settings
 >> seem to find `--fast` documented in the manual page of [[git-annex-import]]?
 >> Otherwise, what would a `--fast` operation mean in this context? --[[jkniiv]]
 
+>>> Err, yes, I meant `--no-content`. --[[Joey]]
+
 Another pain point is that to remove files from an export, 
 the user has to create trees that lack the files they want to remove.
 [[drop_from_export_remote]] will resolve that.
