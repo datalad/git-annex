@@ -7,7 +7,7 @@ git-annex (10.20230627) UNRELEASED; urgency=medium
 git-annex (10.20230626) upstream; urgency=medium
 
   * Split out two new commands, git-annex pull and git-annex push.
-    Those plus a git commit are equivilant to git-annex sync.
+    Those plus a git commit are equivalent to git-annex sync.
     (Note that the new commands default to syncing content, unless
     annex.synccontent is explicitly set to false.)
   * assist: New command, which is the same as git-annex sync but with
@@ -48,7 +48,7 @@ git-annex (10.20230626) upstream; urgency=medium
   * Cache negative lookups of global numcopies and mincopies. 
     Speeds up eg git-annex sync --content by up to 50%.
   * Speed up sync in an adjusted branch by avoiding re-adjusting the branch
-    unncessarily, particularly when it is adjusted with --hide-missing
+    unnecessarily, particularly when it is adjusted with --hide-missing
     or --unlock-present.
   * config: Added the --show-origin and --for-file options.
   * config: Support annex.numcopies and annex.mincopies.
