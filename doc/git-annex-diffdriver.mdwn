@@ -24,7 +24,7 @@ as the external diff driver, where cmd is the external diff
 driver you want it to run, and params are any extra parameters to pass
 to it. Note the trailing "--", which is required.
 
-For example, set `GIT_EXTERNAL_DIFF=git-annex diffdriver -- j-c-diff --`
+For example, set `GIT_EXTERNAL_DIFF="git-annex diffdriver -- j-c-diff --"`
 
 # OPTIONS
 
