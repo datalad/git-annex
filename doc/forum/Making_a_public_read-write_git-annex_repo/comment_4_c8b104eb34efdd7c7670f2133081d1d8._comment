@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-06-28T17:27:21Z"
+ content="""
+You can use https and have an annex in the repo, but it will be read-only.
+
+In a classroom setting, `git-annex multicast` can sometimes be useful.
+You'd still need a publically writable git repository hosted somewhere.
+
+I'd use ssh though, and automate the key enrollment.
+"""]]
