@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-06-28T17:06:45Z"
+ content="""
+@dud225 that came in 10.20230214 which is too old for the news page, but
+you can find it in the [full CHANGELOG](http://source.git-annex.branchable.com/?p=source.git;a=blob;f=CHANGELOG;h=f5ec8192765fc403c340f74f1bcfde765e470ef7;hb=HEAD#l189)
+"""]]
