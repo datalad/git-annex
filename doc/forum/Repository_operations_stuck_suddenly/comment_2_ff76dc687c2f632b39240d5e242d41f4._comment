@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-06-28T17:09:07Z"
+ content="""
+If it gets fully stuck and the number is not increasing at all, I'd second
+the suggestion to gdb, or run git with `GIT_TRACE=1 GIT_TRACE_PACKET=1`
+
+If it's increasingly but slowly, it might be that you have an older version
+of git-annex, or a repository using git-annex format v8. That makes git
+have to run git-annex once per file it needs to update the status of.
+(Why git needs to update the status of so many files I don't know, but
+there are certianly situations where it could.)
+Upgrading to git-annex v10 lets git run git-annex only once, so will be a
+lot faster.
+"""]]
