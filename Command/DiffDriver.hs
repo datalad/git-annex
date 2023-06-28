@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,13 +15,26 @@ import Git.Types
 cmd :: Command
 cmd = dontCheck repoExists $
 	command "diffdriver" SectionPlumbing 
-		"external git diff driver shim"
-		("-- cmd --") (withParams seek)
+		"git diff driver"
+		("-- cmd --") (seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek = withWords (commandAction . start)
+data Options = Options
+	{ textDiff :: Bool
+	, restOptions :: CmdParams
+	}
 
-start :: [String] -> CommandStart
+optParser :: CmdParamsDesc -> Parser Options
+optParser desc = Options
+	<$> switch
+		( long "text"
+		<> help "diff text files with diff(1)"
+		)
+	<*> cmdParams desc
+
+seek :: Options -> CommandSeek
+seek = commandAction . start
+
+start :: Options -> CommandStart
 start opts = do
 	let (req, differ) = parseReq opts
 	void $ liftIO . exitBool =<< liftIO . differ =<< fixupReq req
@@ -55,10 +68,12 @@ serializeReq req@(Req {}) = map Param
 	, rNewMode req
 	]
 
-parseReq :: [String] -> (Req, Differ)
-parseReq opts = case separate (== "--") opts of
-	(c:ps, l) -> (mk l, externalDiffer c ps)
-	([],_) -> badopts
+parseReq :: Options -> (Req, Differ)
+parseReq opts
+	| textDiff opts = (mk (restOptions opts), textDiffer)
+	| otherwise = case separate (== "--") (restOptions opts) of
+		(c:ps, l) -> (mk l, externalDiffer c ps)
+		([],_) -> badopts
   where
 	mk (path:old_file:old_hex:old_mode:new_file:new_hex:new_mode:[]) =
 		Req
@@ -73,7 +88,7 @@ parseReq opts = case separate (== "--") opts of
 	mk (unmergedpath:[]) = UnmergedReq { rPath = unmergedpath }
 	mk _ = badopts
 
-	badopts = giveup $ "Unexpected input: " ++ unwords opts
+	badopts = giveup $ "Unexpected input: " ++ unwords (restOptions opts)
 
 {- Check if either file is a symlink to a git-annex object,
  - which git-diff will leave as a normal file containing the link text.
@@ -101,3 +116,14 @@ fixupReq req@(Req {}) =
 
 externalDiffer :: String -> [String] -> Differ
 externalDiffer c ps = \req -> boolSystem c (map Param ps ++ serializeReq req )
+
+textDiffer :: Differ
+textDiffer req = do
+	putStrLn ("diff a/" ++ rPath req ++ " b/" ++ rPath req)
+	-- diff exits nonzero on difference, so ignore exit status
+	void $ boolSystem "diff"
+		[ Param "-u"
+		, Param (rOldFile req)
+		, Param (rNewFile req)
+		]
+	return True

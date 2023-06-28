@@ -731,8 +731,7 @@ content from the key-value store.
 
 * `diffdriver`
 
-  This can be used to make `git diff` use an external diff driver with
-  annexed files.
+  This can be used to make `git diff` diff the content of annexed files.
 
   See [[git-annex-diffdriver]](1) for details.
 

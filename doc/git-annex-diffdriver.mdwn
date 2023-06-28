@@ -1,35 +1,50 @@
 # NAME
 
-git-annex diffdriver - external git diff driver shim
+git-annex diffdriver - git diff driver
 
 # SYNOPSIS
+
+git annex diffdriver --text
 
 git annex diffdriver `-- cmd --opts --`
 
 # DESCRIPTION
 
-This is an external git diff driver shim. Normally, when using `git diff`
-with an external diff driver, it will not see the contents of annexed
-files, since git passes to it the git-annex symlinks or pointer files.
-This command works around the problem, by running the 
-real external diff driver, and passing it the paths to the annexed content.
+Normally, `git diff` when run on annexed files displays the changes that
+are staged in git, eg annex symlinks and pointers. This command allows
+`git diff` to diff the content of annexed files instead.
 
-To use this, you will need to have installed some git external diff driver
-command. This is not the regular diff command; it takes a git-specific
-input. See git's documentation of `GIT_EXTERNAL_DIFF` and
+This command can be used either as a simple text differ,
+or as a shim that runs an external git diff driver.
+
+If some of your annexed files are textual in form, and can be usefully
+diffed with diff(1), you can configure git to use this command to diff
+them, by configuring `.gitattributes` to contain eg `*.txt diff=annextextdiff`
+and setting `git config diff.annextextdiff.command "git annex diffdriver --text"`
+
+If your annexed files are not textual in form, you will need an external
+diff driver program that is able to diff the file format(s) you use.
+See git's documentation of `GIT_EXTERNAL_DIFF` and
 gitattributes(5)'s documentation of external diff drivers.
 
-Configure git to use "git-annex diffdriver -- cmd params --"
+Normally, when using `git diff` with an external diff driver, it will not
+see the contents of annexed files, since git passes to it the git-annex
+symlinks or pointer files. This command works around the problem, by
+running the real external diff driver, and passing it the paths to the
+annexed content. Configure git to use "git-annex diffdriver -- cmd params --"
 as the external diff driver, where cmd is the external diff
 driver you want it to run, and params are any extra parameters to pass
 to it. Note the trailing "--", which is required.
 
-For example, set `GIT_EXTERNAL_DIFF="git-annex diffdriver -- j-c-diff --"`
+For example, to use the j-c-diff program as the external diff driver, 
+set `GIT_EXTERNAL_DIFF="git-annex diffdriver -- j-c-diff --"`
 
 # OPTIONS
 
-Normally "--" followed by the diff driver command, its options, 
-and another "--"
+To diff text files with diff(1), use the "--text" option.
+
+To use an external diff driver command, the options must start with
+"--" followed by the diff driver command, its options, and another "--"
 
 Also the [[git-annex-common-options]](1) can be used.
 

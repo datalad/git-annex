@@ -25,3 +25,5 @@ What do you think?
 Cheers, Yann
 
 PS: Thank you very much for git-annex, it's awesome! I'm giving a git-annex workshop next weekend [@Tuebix](https://cfp.tuebix.org/tuebix-2023/talk/review/GWRP3UKE3VFKVDG8RNQ8ZZPCZPNZYYWM), really looking forward to it.
+
+> [[fixed|done]] --[[Joey]]
