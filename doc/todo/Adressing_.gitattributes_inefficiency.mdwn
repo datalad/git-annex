@@ -19,3 +19,4 @@ Couldn't the [separate-git-tree-for-diffing-technique you used lately to speed u
 One problem I see with this tough is that it wouldn't be possible to cache the user's `.git/info/attributes` settings, which can change independently.
 
 [[!tag confirmed]]
+[[!tag projects/datalad/potential]]

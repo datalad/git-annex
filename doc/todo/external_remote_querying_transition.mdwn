@@ -50,3 +50,4 @@ Note that the protocol does allow querying with GETCONFIG etc before
 responding to a WHEREIS request.
 
 [[!tag confirmed]]
+[[!tag projects/datalad/potential]]

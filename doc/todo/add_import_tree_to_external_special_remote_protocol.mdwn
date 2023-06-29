@@ -14,6 +14,9 @@ What I'd like to do is implement this in concert with someone who is
 implementing a special remote that uses it. So we can iterate on the
 protocol as needed to make it better. --[[Joey]]
 
+> @mih expressed some interest in this in [a comment](https://git-annex.branchable.com/design/external_special_remote_protocol/export_and_import_appendix/#comment-d0cffbe55870a469052ebb7ed36f8300)
+> so maybe him? --[[Joey]]
+
 I do want to implement this though, assuming it turns out to be feasible
 for people to implement it despite its complexity, so I'm tagging this confirmed.
 
@@ -22,3 +25,4 @@ although it might make sense to implement that as a simpler protocol
 extension.)
 
 [[!tag confirmed]]
+[[!tag projects/datalad/potential]]

@@ -105,3 +105,4 @@ easy to fix up a git commit history to remove an unwanted commit.
 Does annex.resolvemerge meet criteria #1? --[[Joey]]
 
 [[!tag confirmed]]
+[[!tag projects/datalad/potential]]

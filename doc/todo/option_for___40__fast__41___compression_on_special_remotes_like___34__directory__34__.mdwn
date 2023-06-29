@@ -6,3 +6,4 @@ For example, I use git annex for very large scientific tomographic datasets and 
 Though, I guess, it would be possible to write a special remote wrapper for this, I wonder if this might qualify as an officially supported option to the already existing special remotes like "directory" or "rsync". E.g. in conjunction to `encryption` something like `compression` with possible values like `pbzip`, `bzip`, `pigz` and `gzip`.
 
 [[!tag confirmed]]
+[[!tag projects/datalad/potential]]

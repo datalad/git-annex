@@ -29,3 +29,4 @@ from the remote.
 > file to be deleted from master.
 
 [[!tag confirmed]]
+[[!tag projects/datalad/potential]]

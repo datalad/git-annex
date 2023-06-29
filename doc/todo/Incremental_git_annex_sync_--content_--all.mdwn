@@ -18,3 +18,4 @@ So I have yet another idea to speed up git annex. For now only for the 2nd pass 
 2. Again, update the commit id of remotes that we successfully synced with.
 
 [[!tag confirmed]]
+[[!tag projects/datalad/potential]]
