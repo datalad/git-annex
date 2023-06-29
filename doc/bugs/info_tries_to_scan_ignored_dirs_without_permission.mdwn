@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+`git annex info` prints several warnings:
+
+```
+annexed files in working tree: warning: could not open directory '.Spotlight-V100/': Operation not permitted
+warning: could not open directory '.Trashes/': Operation not permitted
+warning: could not open directory '.fseventsd/': Permission denied
+```
+
+### What steps will reproduce the problem?
+
+1. Create an APFS volume on MacOS
+2. Initialize a git repo and annex in that volume dir (e.g. `/Volumes/my-annex`)
+3. Add a `.gitignore` as seen below
+4. `git annex info`
+
+.gitignore:
+
+```
+.Spotlight-V100
+.Trashes
+.fseventsd
+```
+
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 10.20230407
+MacOS 12.6.2
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, lots! :)
