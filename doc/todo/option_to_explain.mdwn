@@ -1,0 +1,38 @@
+Add an --explain option that displays human readable descriptions of why
+git-annex decides whether or not to transfer or drop a file. Eg:
+
+    git-annex get bar foo --explain
+    [bar is not present here]
+    [foo is present here]
+    get bar
+
+    git-get get --auto --explain baz meep
+    [baz is not present here]
+    (baz has 1 copy, and its numcopies is 2)
+    get baz
+    [meep is not present here]
+    [meep matches preferred content: include==* and exclude==archive/*]
+    get meep
+
+    git-annex drop --explain archive/foo
+    [archive/foo is present here]
+    [archive/foo has 2 copies, and its numcopies is 1]
+    [archive/foo does not march preferred content: include==* and exclude!=archive/*]
+    drop foo (checking origin...) ok
+
+Implementation would be to output these extra lines when checking if
+content is present, and when checking if preferred content expressions
+match.
+
+It could also display the actions taken while attempting to drop a file,
+and the drop safety proof that is constructed. --debug already contains
+that, but it could be made more human readable and included in --explain.
+
+It should be possible, while matching a preferred content expression, to
+accumulate a version of it with "=" replaced by "==" and "!=" depending on
+whether a term matches. That seems clear enough to understand why it
+matched. What to do about terms like "present"? Maybe "!present" when it
+doesn't match?" And a term like "standard" would ideally expand out the
+included expression, eg: "standard(group==backup, include==*)" 
+
+[[!tag confirmed]] --[[Joey]]
