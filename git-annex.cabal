@@ -118,6 +118,7 @@ Extra-Source-Files:
   doc/git-annex-restage.mdwn
   doc/git-annex-resolvemerge.mdwn
   doc/git-annex-rmurl.mdwn
+  doc/git-annex-satisfy.mdwn
   doc/git-annex-schedule.mdwn
   doc/git-annex-semitrust.mdwn
   doc/git-annex-setkey.mdwn

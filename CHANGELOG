@@ -1,5 +1,9 @@
 git-annex (10.20230627) UNRELEASED; urgency=medium
 
+  * satify: New command that gets/sends/drops content to satisfy
+    numcopies and preferred content settings. This is similar to
+    the --content part of git-annex sync, but with an interface
+    more like get/move/drop.
   * reinject: Added --guesskeys option.
   * diffdriver: Added --text option for easy diffing of the contents of
     annexed text files.

@@ -1,0 +1,89 @@
+# NAME
+
+git-annex satisfy - transfer and drop content as configured
+
+# SYNOPSIS
+
+git annex satisffy `[path ...]`
+
+# DESCRIPTION
+
+This transfers and drops content to satisfy the numcopies and preferred
+content settings of the local repository and remotes.
+
+It does the same thing as `git-annex sync --content` without the pulling
+and pushing of git repositories.
+
+By default it operates on all annexed files in the current directory and
+its subdirectories. Paths of files or directories can also be specified.
+
+# OPTIONS
+
+* `--jobs=N` `-JN`
+
+  Enables parallel processing with up to the specified number of jobs
+  running at once. For example: `-J10`
+
+  Setting this to "cpus" will run one job per CPU core.
+
+* `--all` `-A`
+
+  Operate on all objects stored in the git annex, not only objects used by
+  currently existing files. 
+  
+  However, this bypasses checking the .gitattributes annex.numcopies
+  setting when dropping files.
+
+  This is the default behavior when running git-annex in a bare repository.
+
+* `--branch=ref`
+
+  Operate on files in the specified branch or treeish.
+
+  Like --all, this bypasses checking the .gitattributes annex.numcopies
+  setting when dropping files.
+
+* `--unused`
+
+  Operate on files found by last run of git-annex unused.
+
+* `--failed`
+
+  Operate on files that have recently failed to be transferred.
+
+* matching options
+
+  The [[git-annex-matching-options]](1)
+  can be used to control what files to operate on.
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--json-progress`
+
+  Include progress objects in JSON output.
+
+* `--json-error-messages`
+
+  Messages that would normally be output to standard error are included in
+  the JSON instead.
+
+* Also the [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-sync]](1)
+
+[[git-annex-preferred-numcopies]](1)
+
+[[git-annex-preferred-content]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

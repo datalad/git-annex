@@ -138,6 +138,13 @@ content from the key-value store.
   
   See [[git-annex-assist]](1) for details.
 
+* `satisfy [path ...]`
+
+  Satisfy numcopies and preferred content settings by transferring
+  and dropping content.
+  
+  See [[git-annex-satisfy]](1) for details.
+
 * `mirror [path ...] [--to=remote|--from=remote]`
 
   Mirror content of files to/from another repository.
