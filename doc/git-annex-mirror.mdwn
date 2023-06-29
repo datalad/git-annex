@@ -73,6 +73,9 @@ contents. Use [[git-annex-sync]](1) for that.
   Enable JSON output. This is intended to be parsed by programs that use
   git-annex. Each line of output is a JSON object.
 
+  Note that unlike all other commands that support `--json`, this command
+  outputs different types of json objects in different circumstances.
+
 * `--json-progress`
 
   Include progress objects in JSON output.
