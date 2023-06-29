@@ -790,6 +790,7 @@ Executable git-annex
     Command.ResolveMerge
     Command.Restage
     Command.RmUrl
+    Command.Satisfy
     Command.Schedule
     Command.Semitrust
     Command.SendKey

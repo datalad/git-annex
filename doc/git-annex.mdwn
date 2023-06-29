@@ -138,10 +138,9 @@ content from the key-value store.
   
   See [[git-annex-assist]](1) for details.
 
-* `satisfy [path ...]`
+* `satisfy [remote ...]`
 
-  Satisfy numcopies and preferred content settings by transferring
-  and dropping content.
+  Satisfy preferred content settings by transferring and dropping content.
   
   See [[git-annex-satisfy]](1) for details.
 

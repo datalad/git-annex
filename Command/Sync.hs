@@ -95,7 +95,7 @@ cmd = withAnnexOptions [jobsOption, backendOption] $
 		"synchronize local repository with remotes"
 		(paramRepeating paramRemote) (seek <--< optParser SyncMode)
 
-data OperationMode = SyncMode | PullMode | PushMode | AssistMode
+data OperationMode = SyncMode | PullMode | PushMode | SatisfyMode | AssistMode
 	deriving (Eq, Show)
 
 data SyncOptions = SyncOptions
@@ -143,15 +143,17 @@ optParser mode desc = SyncOptions
 		( metavar desc
 		<> completeRemotes
 		))
-	<*> switch 
-		( long "only-annex"
-		<> short 'a'
-		<> help "do not operate on git branches"
-		)
-	<*> switch 
-		( long "not-only-annex"
-		<> help "operate on git branches as well as annex"
-		)
+	<*> whenmode [SatisfyMode] True 
+		(switch 
+			( long "only-annex"
+			<> short 'a'
+			<> help "do not operate on git branches"
+			))
+	<*> whenmode [SatisfyMode] False 
+		( switch 
+			( long "not-only-annex"
+			<> help "operate on git branches as well as annex"
+			))
 	<*> case mode of
 		SyncMode -> switch
 			( long "commit"
@@ -159,21 +161,25 @@ optParser mode desc = SyncOptions
 			)
 		PushMode -> pure False
 		PullMode -> pure False
+		SatisfyMode -> pure False
 		AssistMode -> pure True
-	<*> unlessmode [SyncMode] True (switch
-		( long "no-commit"
-		<> help "avoid git commit" 
-		))
-	<*> unlessmode [SyncMode, AssistMode] Nothing (optional (strOption
-		( long "message" <> short 'm' <> metavar "MSG"
-		<> help "commit message"
-		)))
+	<*> unlessmode [SyncMode] True 
+		(switch
+			( long "no-commit"
+			<> help "avoid git commit" 
+			))
+	<*> unlessmode [SyncMode, AssistMode] Nothing
+		(optional (strOption
+			( long "message" <> short 'm' <> metavar "MSG"
+			<> help "commit message"
+			)))
 	<*> case mode of
 		SyncMode -> invertableSwitch "pull" True
 			( help "avoid git pulls from remotes" 
 			)
 		PullMode -> pure True
 		PushMode -> pure False
+		SatisfyMode -> pure False
 		AssistMode -> pure True
 	<*> case mode of
 		SyncMode -> invertableSwitch "push" True
@@ -181,31 +187,36 @@ optParser mode desc = SyncOptions
 			)
 		PullMode -> pure False
 		PushMode -> pure True
+		SatisfyMode -> pure False
 		AssistMode -> pure True
-	<*> optional (flag' True 
-		( long "content"
-		<> help "transfer annexed file contents" 
-		))
-	<*> optional (flag' True
-		( long "no-content"
-		<> short 'g'
-		<> help "do not transfer annexed file contents"
-		))
+	<*> whenmode [SatisfyMode] (Just True)
+		(optional (flag' True 
+			( long "content"
+			<> help "transfer annexed file contents" 
+			)))
+	<*> whenmode [SatisfyMode] Nothing
+		(optional (flag' True
+			( long "no-content"
+			<> short 'g'
+			<> help "do not transfer annexed file contents"
+			)))
 	<*> many (strOption
 		( long "content-of"
 		<> short 'C'
 		<> help "transfer contents of annexed files in a given location"
 		<> metavar paramPath
 		))
-	<*> whenmode [PullMode] False (switch
-		( long "cleanup"
-		<> help "remove synced/ branches"
-		))
+	<*> whenmode [PullMode, SatisfyMode] False 
+		(switch
+			( long "cleanup"
+			<> help "remove synced/ branches"
+			))
 	<*> optional parseAllOption
-	<*> whenmode [PushMode] False (invertableSwitch "resolvemerge" True
-		( help "do not automatically resolve merge conflicts"
-		))
-	<*> whenmode [PushMode] False
+	<*> whenmode [PushMode, SatisfyMode] False 
+		(invertableSwitch "resolvemerge" True
+			( help "do not automatically resolve merge conflicts"
+			))
+	<*> whenmode [PushMode, SatisfyMode] False
 		parseUnrelatedHistoriesOption
 	<*> pure mode
   where
@@ -838,6 +849,7 @@ seekSyncContent o rs currbranch = do
 			SyncMode -> "sync"
 			PullMode -> "pull"
 			PushMode -> "push"
+			SatisfyMode -> "satisfy"
 			AssistMode -> "assist"
 
 	gofile bloom mvar _ f k = 
@@ -910,7 +922,7 @@ syncFile o ebloom rs af k = do
 	return (got || not (null putrs))
   where
 	wantget have inhere = allM id 
-		[ pure (pullOption o)
+		[ pure (pullOption o || operationMode o == SatisfyMode)
 		, pure (not $ null have)
 		, pure (not inhere)
 		, wantGet True (Just k) af
@@ -924,7 +936,7 @@ syncFile o ebloom rs af k = do
 			next $ return True
 
 	wantput r
-		| pushOption o == False = return False
+		| pushOption o == False && operationMode o /= SatisfyMode = return False
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| isExport r = return False
 		| isThirdPartyPopulated r = return False
@@ -949,6 +961,7 @@ syncFile o ebloom rs af k = do
  - of the branch. (If the branch is not currently checked out, anything
  - imported from the remote will not yet have been merged into it yet and
  - so exporting would delete files from the remote unexpectedly.)
+ - (This is not done in SatifyMode.)
  -
  - Otherwise, transfer any files that were part of a previous export
  - but are not in the remote yet.
@@ -959,12 +972,14 @@ seekExportContent :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
 seekExportContent o rs (currbranch, _) = or <$> forM rs go
   where
 	go r
+		| maybe False (\o' -> operationMode o' == SatisfyMode) o =
+			case remoteAnnexTrackingBranch (Remote.gitconfig r) of
+				Nothing -> return False
+				Just b -> withdb r $ \db ->
+					cannotupdateexport r db (Just b) False
 		| not (maybe True pushOption o) = return False
 		| not (remoteAnnexPush (Remote.gitconfig r)) = return False
-		| otherwise = bracket
-			(Export.openDb (Remote.uuid r))
-			Export.closeDb
-			(\db -> Export.writeLockDbWhile db (go' r db))
+		| otherwise = withdb r (go' r)
 	go' r db = case remoteAnnexTrackingBranch (Remote.gitconfig r) of
 		Nothing -> cannotupdateexport r db Nothing True
 		Just b -> do
@@ -985,6 +1000,11 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 						Command.Export.fillExport r db filteredtree mtbcommitsha
 					| otherwise -> cannotupdateexport r db (Just b) False
 				_ -> cannotupdateexport r db (Just b) True
+	
+	withdb r a = bracket
+		(Export.openDb (Remote.uuid r))
+		Export.closeDb
+		(\db -> Export.writeLockDbWhile db (a db))
 	
 	cannotupdateexport r db mtb showwarning = do
 		exported <- getExport (Remote.uuid r)
@@ -1056,6 +1076,7 @@ cleanupRemote remote (Just b, _) =
 shouldSyncContent :: SyncOptions -> Annex Bool
 shouldSyncContent o
 	| fromMaybe False (noContentOption o) = pure False
+	| operationMode o == SatisfyMode = pure True
 	-- For git-annex pull and git-annex push and git-annex assist,
 	-- annex.syncontent defaults to True unless set
 	| operationMode o /= SyncMode = annexsynccontent True

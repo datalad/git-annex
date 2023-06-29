@@ -33,7 +33,7 @@ to the parent branch or metadata.
 Normally this tries to download the content of each annexed file,
 from any remote that it's pulling from that has a copy. 
 To control which files it downloads, configure the preferred
-content of the local repository.It will also drop files from a
+content of the local repository. It will also drop files from a
 remote that are not preferred content of the remote.
 See [[git-annex-preferred-content]](1).
 

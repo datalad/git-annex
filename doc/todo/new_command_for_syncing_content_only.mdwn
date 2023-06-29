@@ -19,3 +19,5 @@ What would be a good name for such a command?  --[[Joey]]
 > How about `git-annex port` as it carries content over like a luggage carrier aka. porter?
 > Another one that comes to mind is `git-annex shuttle` but that could be semantically too
 > similar to `git-annex assist`, perhaps. --[[jkniiv]]
+
+>> `git-annex satisfy` [[done]] --[[Joey]]
