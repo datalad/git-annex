@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="WiFi without broadcasting"
+ date="2023-06-30T07:56:03Z"
+ content="""
+Turns out, both WiFi networks here disallow broadcasting, so the local pairing of the webapp doesn't work. Just tried it with two laptops, the pairing request is never shown.
+
+So the server solution with SSH keys it is, then!
+"""]]
