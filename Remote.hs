@@ -360,7 +360,7 @@ showLocations separateuntrusted key exclude nolocmsg = do
 			ppremotesmakeavailable <- pp "remotes" remotesmakeavailable
 				"Try making some of these remotes available"
 			ppenablespecialremotes <- pp "enableremote" enablespecialremotes
-				"Maybe enable some of these special remotes (git annex initremote ...)"
+				"Maybe enable some of these special remotes (git annex enableremote ...)"
 			ppaddgitremotes <- pp "repos" addgitremotes
 				"Maybe add some of these git remotes (git remote add ...)"
 			ppuuidsskipped <- pp "skipped" uuidsskipped
