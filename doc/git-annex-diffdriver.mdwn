@@ -20,7 +20,17 @@ or as a shim that runs an external git diff driver.
 If some of your annexed files are textual in form, and can be usefully
 diffed with diff(1), you can configure git to use this command to diff
 them, by configuring `.gitattributes` to contain eg `*.txt diff=annextextdiff`
-and setting `git config diff.annextextdiff.command "git annex diffdriver --text"`
+and setting `git config diff.annextextdiff.command "git annex diffdriver --text"`.
+The following can thus be used to configure `git diff` (only in your local
+repository) to operate on the contents of annexed files:
+
+```sh
+echo '* diff=annextextdiff' >> .git/info/attributes
+git config diff.annextextdiff.command "git annex diffdriver --text"
+```
+
+Note, however, that this will change the diff mechanism for *all* tracked files,
+so `git diff` might look a little different than normal.
 
 If your annexed files are not textual in form, you will need an external
 diff driver program that is able to diff the file format(s) you use.
