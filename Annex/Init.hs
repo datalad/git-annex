@@ -118,6 +118,9 @@ initialize mdescription mversion = checkInitializeAllowed $ \initallowed -> do
 	initSharedClone sharedclone
 	
 	u <- getUUID
+	when (u == NoUUID) $
+		giveup "Failed to read annex.uuid from git config after setting it. This should never happen. Please file a bug report."
+	
 	{- Avoid overwriting existing description with a default
 	 - description. -}
 	whenM (pure (isJust mdescription) <||> not . M.member u <$> uuidDescMapRaw) $

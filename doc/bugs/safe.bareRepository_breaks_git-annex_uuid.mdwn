@@ -13,8 +13,9 @@ The breakage starts with git-annex init:
 	+ joey@darkstar:~/tmp/g timestamp=1688579729.946567508s
 
 uuid.log has a NoUUID item logged to it. This is despite annex.uuid being set.
-10.20230407 --[[Joey]]
 
-And it seems this is because git-annex runs `git config --list`
+This is because git-annex runs `git config --list`
 inside `.git`.. Which with that config set, omits looking at
-`config`.
+`config` because it thinks it's in a bare repository.
+
+> [[fixed|done]] --[[Joey]]
