@@ -1,0 +1,25 @@
+      git init g
+      cd g
+      git annex init
+      git commit --allow-empty -m foo
+      cd ..
+      git clone g g2
+      git clone g g3
+      cd g3
+      git remote add g2 ../g2
+      git-annex assist
+      date > n
+      date > n2
+      date > n3
+      dd if=/dev/urandom of=n4 bs=1M count=200
+      dd if=/dev/urandom of=n5 bs=1M count=200
+      git-annex assist --jobs=2
+      git-annex move --from origin
+      git-annex move --from g2
+
+The final move fails, complaining it's not safe to drop the last copy. It
+has somehow lost track of the fact that there's a local copy.
+
+This only happens when using assist. Using add followed by sync --content
+doesn't have the problem. And with --jobs=1 it doesn't have the problem
+either. --[[Joey]]
