@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 1"
+ date="2023-07-05T20:46:13Z"
+ content="""
+Sounds absolutely awesome! The new `git annex satisfy` would also benefit from this. 
+
+Also when thinking about a potential future `--dry-run` mode that wouldn't actually do stuff but in combination with `--explain` would display what it would do and why. I know dry-running can be nontrivial to implement, especially when actions change state. But imagine how cool it would be to do `git annex assist --dry-run --explain` and to see what exactly it *would* do (what files go to git, which to the annex, what files will be copied where, etc.) 🤩
+"""]]
