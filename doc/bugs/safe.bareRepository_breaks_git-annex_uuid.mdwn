@@ -1,0 +1,20 @@
+Turns out that git-annex breaks badly when git is configured with
+`safe.bareRepository = explicit`.
+
+The breakage starts with git-annex init:
+
+	joey@darkstar:~/tmp>git init g
+	Initialized empty Git repository in /home/joey/tmp/g/.git/
+	joey@darkstar:~/tmp>cd g
+	joey@darkstar:~/tmp/g>git-annex init
+	init  ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/g>git show git-annex | tail
+	+ joey@darkstar:~/tmp/g timestamp=1688579729.946567508s
+
+uuid.log has a NoUUID item logged to it. This is despite annex.uuid being set.
+10.20230407 --[[Joey]]
+
+And it seems this is because git-annex runs `git config --list`
+inside `.git`.. Which with that config set, omits looking at
+`config`.
