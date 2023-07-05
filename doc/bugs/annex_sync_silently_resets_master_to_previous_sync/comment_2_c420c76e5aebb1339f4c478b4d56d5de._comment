@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-07-05T21:01:53Z"
+ content="""
+I've fixed the data loss part of this bug.
+
+`git-annex sync` is able to resolve the divergence too. But for some
+reason, the first time it's run after the divergence, it leaves it
+diverged, and the second time it resolves it. That needs to be fixed.
+"""]]

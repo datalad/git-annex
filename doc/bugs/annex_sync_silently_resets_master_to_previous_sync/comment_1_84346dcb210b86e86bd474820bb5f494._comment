@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-07-05T19:49:19Z"
+ content="""
+Simplified test case:
+
+	git init tc
+	cd tc
+	git-annex init
+	echo 1 > foo
+	git-annex add
+	git commit -m add
+	git annex adjust --unlock
+	git checkout master
+	rm foo
+	echo 2 > foo
+	git-annex add
+	git commit -m "this commit will be lost"
+	git checkout 'adjusted/master(unlocked)'
+	git annex adjust --unlock  # or git-annex sync
+	git log master
+
+What an unfortunate oversight! And it's not a reversion, it's been there
+since the beginning of adjusted branches.
+
+git-annex adjust should display a warning message in that situation,
+since the original branch has diverged from the adjusted branch.
+
+And git-annex sync should be able to resolve the divergence by
+auto-merging the changes from the original branch into the adjusted
+branch.
+"""]]

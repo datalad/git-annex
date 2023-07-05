@@ -258,7 +258,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 			-- Avoid losing any commits that the adjusted branch
 			-- has that have not yet been propigated back to the
 			-- origbranch.
-			_ <- propigateAdjustedCommits' origbranch adj commitlck
+			_ <- propigateAdjustedCommits' True origbranch adj commitlck
 			
 			origheadfile <- inRepo $ readFileStrict . Git.Ref.headFile
 			origheadsha <- inRepo (Git.Ref.sha currbranch)
@@ -294,7 +294,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 		return ok
 	| otherwise = preventCommits $ \commitlck -> do
 		-- Done for consistency.
-		_ <- propigateAdjustedCommits' origbranch adj commitlck
+		_ <- propigateAdjustedCommits' True origbranch adj commitlck
 		-- No need to actually update the branch because the
 		-- adjustment is stable.
 		return True
@@ -495,20 +495,21 @@ findAdjustingCommit (AdjBranch b) = go =<< catCommit b
 propigateAdjustedCommits :: OrigBranch -> Adjustment -> Annex ()
 propigateAdjustedCommits origbranch adj = 
 	preventCommits $ \commitsprevented ->
-		join $ snd <$> propigateAdjustedCommits' origbranch adj commitsprevented
+		join $ snd <$> propigateAdjustedCommits' True origbranch adj commitsprevented
 		
 {- Returns sha of updated basis branch, and action which will rebase
  - the adjusted branch on top of the updated basis branch. -}
 propigateAdjustedCommits'
-	:: OrigBranch
+	:: Bool
+	-> OrigBranch
 	-> Adjustment
 	-> CommitsPrevented
 	-> Annex (Maybe Sha, Annex ())
-propigateAdjustedCommits' origbranch adj _commitsprevented =
+propigateAdjustedCommits' warnwhendiverged origbranch adj _commitsprevented =
 	inRepo (Git.Ref.sha basis) >>= \case
 		Just origsha -> catCommit currbranch >>= \case
 			Just currcommit ->
-				newcommits >>= go origsha False >>= \case
+				newcommits >>= go origsha origsha False >>= \case
 					Left e -> do
 						warning (UnquotedString e)
 						return (Nothing, return ())
@@ -528,20 +529,25 @@ propigateAdjustedCommits' origbranch adj _commitsprevented =
 		-- Get commits oldest first, so they can be processed
 		-- in order made.
 		[Param "--reverse"]
-	go parent _ [] = do
+	go origsha parent _ [] = do
 		setBasisBranch (BasisBranch basis) parent
-		inRepo $ Git.Branch.update' origbranch parent
+		inRepo (Git.Ref.sha origbranch) >>= \case
+			Just origbranchsha | origbranchsha /= origsha ->
+				when warnwhendiverged $
+					warning $ UnquotedString $ 
+						"Original branch " ++ fromRef origbranch ++ " has diverged from current adjusted branch " ++ fromRef currbranch
+			_ -> inRepo $ Git.Branch.update' origbranch parent
 		return (Right parent)
-	go parent pastadjcommit (sha:l) = catCommit sha >>= \case
+	go origsha parent pastadjcommit (sha:l) = catCommit sha >>= \case
 		Just c
 			| commitMessage c == adjustedBranchCommitMessage ->
-				go parent True l
+				go origsha parent True l
 			| pastadjcommit ->
 				reverseAdjustedCommit parent adj (sha, c) origbranch
 					>>= \case
 						Left e -> return (Left e)
-						Right commit -> go commit pastadjcommit l
-		_ -> go parent pastadjcommit l
+						Right commit -> go origsha commit pastadjcommit l
+		_ -> go origsha parent pastadjcommit l
 	rebase currcommit newparent = do
 		-- Reuse the current adjusted tree, and reparent it
 		-- on top of the newparent.

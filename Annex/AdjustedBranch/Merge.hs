@@ -46,7 +46,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 		ifM (inRepo $ Git.Branch.changed currbranch tomerge)
 			( do
 				(updatedorig, _) <- propigateAdjustedCommits'
-					origbranch adj commitsprevented
+					False origbranch adj commitsprevented
 				changestomerge updatedorig
 			, nochangestomerge
 			)
