@@ -37,3 +37,17 @@ Somehow, when add calls logStatus, getUUID == NoUUID, so it doesn't record
 anything. This despite it having initialized with a UUID earlier.
 Even with a manual git-annex init before the command that still happens.
 --[[Joey]]
+
+I think this must be related:
+
+	joey@darkstar:~/tmp>git init g
+	Initialized empty Git repository in /home/joey/tmp/g/.git/
+	joey@darkstar:~/tmp>cd g
+	joey@darkstar:~/tmp/g>git-annex init
+	init  ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/g>git show git-annex | tail
+	+ joey@darkstar:~/tmp/g timestamp=1688579729.946567508s
+
+uuid.log has a NoUUID item logged to it. This is despite annex.uuid being set.
+10.20230407 --[[Joey]]
