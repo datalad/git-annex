@@ -1,0 +1,5 @@
+[Yann Büchau's (German) talk](https://odysee.com/@nobodyinperson:6/T%C3%BCbix2023-Yann-B%C3%BCchau-git-annex:6)
+about Git Annex on the [Tübix2023 Linux Day](https://tuebix.org) in Tübingen, Germany 
+
+[[!meta date="1 Jul 2023"]]
+[[!meta title="git-annex presentation by Yann Büchau at Tübix2023"]]
