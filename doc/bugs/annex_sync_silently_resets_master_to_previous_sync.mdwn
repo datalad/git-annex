@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+Familiarizing myself more with adjusted branches mode and might be doing smth wrong.  But in this http://www.oneukrainian.com/tmp/case-20230630.tgz case I observe that `annex sync` simply updates `master` to some prior state, thus possibly silently causing a data loss for me if I don't spot it:
+
+```
+❯ tar -xzf case-20230630.tgz
+❯ cd case
+content.html@  datasets.datalad.org/  subfolder/
+❯ ( source ~/git-annexes/10.20230626+git13-g029d12815c.env; git annex version | head -n 1; git describe master; git checkout 'adjusted/master(unlocked)'; git annex sync ; git describe master; )
+git-annex version: 10.20230626+git13-g029d12815c-1~ndall+1
+0.0.0-2-gf34191a
+Switched to branch 'adjusted/master(unlocked)'
+git-annex sync will change default behavior to operate on --content in a future version of git-annex. Recommend you explicitly use --no-content (or -g) to prepare for that change. (Or you can configure annex.synccontent)
+commit  
+On branch adjusted/master(unlocked)
+nothing to commit, working tree clean
+ok
+0.0.0-1-gde710c5
+```
+
+PS investigation of adjusted/unlocked came up in ReproNim context where people wanted a "hard copy" of the fmriprep results without symlinks to simplify navigation of the results in the browser, which otherwise due to browser resolving symlinks makes it hard and require a workaround like starting a webserver [as we documented in dbic handbook](https://dbic-handbook.readthedocs.io/en/latest/datalad.html#how-to-view-mriqcfmriprepetc-dataladified-results-in-a-browser)
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]

@@ -1,0 +1,46 @@
+First mentioned [here](https://git-annex.branchable.com/todo/new_command_for_syncing_content_only/#comment-0814894ed5e40c9d0f7aef694cce53c1)
+
+## TL;DR: Feature Proposal: A matching option to operate only on files within a git revision range
+
+## Motivation
+
+I use git-annex for several repositories where content is added automatically, e.g.:
+
+- my phone (pictures I take, selected pictures others send me, etc.)
+- my research data repo (new files are added as data comes in)
+
+Those repos don't necessarily have the assistant running as I want to control when and what's being added. I also have `annex.synccontent=false` set because full availability of all files doesn't make sense. I imagine I am not the only one using git annex like this.
+
+Most of the time, when I want to access content from such repos from another machine, it is often just the most recent content. Example: I take a picture on my phone and would like to have it *now* on my desktop. The workflow is:
+
+[[!format  bash """
+yann@phone> git annex assist # takes ages for some reason, but only when --content functionality is active
+yann@desktop> git annex assist # doesn't pull all content from server because I have annex.synccontent=false set (too much space otherwise)
+# selectively get files I want (tedious, manual picking)
+yann@desktop> git annex get file1 file2 file3 ...
+"""]]
+
+## Workaround
+
+One can script the following to only sync the recently touched files:
+
+[[!format  bash """
+# Specifying a git rev range by having `git diff` figure out the details
+yann@desktop> git diff --name-only HEAD~20  | xargs -d'\n' git annex get
+# Specifying a time range
+yann@desktop> git log -p --since="1 week ago" | grep -e '^[+-]\{3\}' | cut -c5- | grep -vx '/dev/null' | cut -c3- | sort -u | xargs -d'\n' git annex get 
+"""]]
+
+This kinda works but...
+
+- is fragile shell scripting
+- doesn't like deleted files that much (they get handed to git-annex, which complains that those don't exist)
+- is two very separate solutions for the same thing: only operating on recent files
+
+## Proposal
+
+How about a `--recent` or `--since` or `--revs` etc. option which you can hand either a commit(range) or a `git log --since`-compatible string like `1 week ago`, which will cause git-annex to only consider those files for `get`ing or `drop`ing or `sync`ing or whatnot?
+
+I observed that `git annex sync --content` is often very much slower than `git annex sync --no-content` (without the time the actual syncing takes naturally), apparently because it needs to check a whole lot of files for syncing necessity. If that is the case, then a `--since` option could result in a speed improvement as only a very small amount of files would need to be checked for.
+
+Also, it would be awesome if one could say `git annex assist|sync --since=yesterday` and one would end up with a perfectly synced repo and the files touched yesterday being available. This is a situation I find myself needing on a daily basis.

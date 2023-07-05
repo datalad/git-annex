@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="dud225@35a1ee469f82f3a7eb1f2dce4ad453f5e47bdfd3"
+ nickname="dud225"
+ avatar="http://cdn.libravatar.org/avatar/5147563e50c475918474594d93be95c2"
+ subject="Disabling a special remote"
+ date="2023-07-04T20:54:19Z"
+ content="""
+Is there any way to enable a special remote on demand?
+
+My configuration is comprised of local standard remotes (directories located on the same computer) and my phone as described in the Android tutorial [1]. I've noticed that git-annex automatically ignores the standard remotes that are missing (the aforementioned directories actually map to external drives that may or may not be connected), that's perfect, but for the phone special remote it seems to always try to connect to it, as a result the command \"git annex sync\" constantly outputs error messages:
+
+    list phone error: device 'xxxx' not found
+    
+    git-annex: Unable to list contents of phone: adb find failed
+    failed
+
+
+[1] https://git-annex.branchable.com/tips/android_sync_with_adb/
+"""]]
