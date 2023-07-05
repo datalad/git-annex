@@ -4,7 +4,7 @@ git-annex diffdriver - git diff driver
 
 # SYNOPSIS
 
-git annex diffdriver --text
+git annex diffdriver --text [-- --opts --]
 
 git annex diffdriver `-- cmd --opts --`
 
@@ -42,6 +42,7 @@ set `GIT_EXTERNAL_DIFF="git-annex diffdriver -- j-c-diff --"`
 # OPTIONS
 
 To diff text files with diff(1), use the "--text" option.
+To pass additional options to diff(1), use eg "--text -- --color --"
 
 To use an external diff driver command, the options must start with
 "--" followed by the diff driver command, its options, and another "--"

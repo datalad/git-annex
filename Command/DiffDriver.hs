@@ -70,7 +70,9 @@ serializeReq req@(Req {}) = map Param
 
 parseReq :: Options -> (Req, Differ)
 parseReq opts
-	| textDiff opts = (mk (restOptions opts), textDiffer)
+	| textDiff opts = case separate (== "--") (restOptions opts) of
+		(_,[]) -> (mk (restOptions opts), textDiffer [])
+		(ps,rest) -> (mk rest, textDiffer ps)
 	| otherwise = case separate (== "--") (restOptions opts) of
 		(c:ps, l) -> (mk l, externalDiffer c ps)
 		([],_) -> badopts
@@ -117,13 +119,13 @@ fixupReq req@(Req {}) =
 externalDiffer :: String -> [String] -> Differ
 externalDiffer c ps = \req -> boolSystem c (map Param ps ++ serializeReq req )
 
-textDiffer :: Differ
-textDiffer req = do
+textDiffer :: [String] -> Differ
+textDiffer diffopts req = do
 	putStrLn ("diff a/" ++ rPath req ++ " b/" ++ rPath req)
 	-- diff exits nonzero on difference, so ignore exit status
-	void $ boolSystem "diff"
+	void $ boolSystem "diff" $
 		[ Param "-u"
 		, Param (rOldFile req)
 		, Param (rNewFile req)
-		]
+		] ++ map Param diffopts
 	return True

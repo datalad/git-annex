@@ -28,3 +28,5 @@ How about having `git annex diffdriver --text` always using `diff --text`? That 
 Thanks again a ton for git-annex, the Tübix2023-Workshop was well appreciated and lots of fun. 👍
 
 Yann
+
+> [[done]] --[[Joey]]
