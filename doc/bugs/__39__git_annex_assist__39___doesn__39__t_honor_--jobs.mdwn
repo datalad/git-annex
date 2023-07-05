@@ -32,3 +32,5 @@ local repository version: 10
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 git-annex is **marvellous** and a game-changer for all my workflows 👍
+
+> [[fixed|done]] --[[Joey]]

@@ -21,7 +21,7 @@ cmd = withAnnexOptions [jobsOption, backendOption] $
 		(myseek <--< Command.Sync.optParser Command.Sync.AssistMode)
 
 myseek :: Command.Sync.SyncOptions -> CommandSeek
-myseek o = startConcurrency transferStages $ do
+myseek o = do
 	-- Changes to top of repository, so when this is run in a
 	-- subdirectory, it will still default to adding files anywhere in
 	-- the working tree.
@@ -35,7 +35,7 @@ myseek o = startConcurrency transferStages $ do
 		, Command.Add.checkGitIgnoreOption = CheckGitIgnore True
 		, Command.Add.dryRunOption = DryRun False
 		}
-	waitForAllRunningCommandActions
+	finishCommandActions
 	-- Flush added files to index so they will be committed.
 	Annex.Queue.flush
 

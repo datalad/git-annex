@@ -260,10 +260,10 @@ seek o = do
 	
 	prepMerge
 	
-	startConcurrency transferStages (seek' o)
+	seek' o
 
 seek' :: SyncOptions -> CommandSeek
-seek' o = do
+seek' o = startConcurrency transferStages $ do
 	let withbranch a = a =<< getCurrentBranch
 
 	remotes <- syncRemotes (syncWith o)
