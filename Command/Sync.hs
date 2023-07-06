@@ -351,14 +351,16 @@ mergeConfig mergeunrelated = do
 			else Nothing
 		]
 
-merge :: CurrBranch -> [Git.Merge.MergeConfig] -> SyncOptions -> Git.Branch.CommitMode -> Git.Branch -> Annex Bool
-merge currbranch mergeconfig o commitmode tomerge = do
+merge :: CurrBranch -> [Git.Merge.MergeConfig] -> SyncOptions -> Git.Branch.CommitMode -> [Git.Branch] -> Annex Bool
+merge currbranch mergeconfig o commitmode tomergel = do
 	canresolvemerge <- if resolveMergeOverride o
 		then getGitConfigVal annexResolveMerge
 		else return False
-	case currbranch of
-		(Just b, Just adj) -> mergeToAdjustedBranch tomerge (b, adj) mergeconfig canresolvemerge commitmode
-		(b, _) -> autoMergeFrom tomerge b mergeconfig commitmode canresolvemerge
+	and <$> case currbranch of
+		(Just b, Just adj) -> forM tomergel $ \tomerge ->
+			mergeToAdjustedBranch tomerge (b, adj) mergeconfig canresolvemerge commitmode
+		(b, _) -> forM tomergel $ \tomerge ->
+			autoMergeFrom tomerge b mergeconfig commitmode canresolvemerge
 
 syncBranch :: Git.Branch -> Git.Branch
 syncBranch = Git.Ref.underBase "refs/heads/synced" . origBranch
@@ -440,46 +442,54 @@ mergeLocal mergeconfig o currbranch = stopUnless (notOnlyAnnex o) $
 mergeLocal' :: [Git.Merge.MergeConfig] -> SyncOptions -> CurrBranch -> CommandStart
 mergeLocal' mergeconfig o currbranch@(Just branch, _) =
 	needMerge currbranch branch >>= \case
-		Nothing -> stop
-		Just syncbranch -> do
-			let ai = ActionItemOther (Just $ UnquotedString $ Git.Ref.describe syncbranch)
+		[] -> stop
+		tomerge -> do
+			let ai = ActionItemOther (Just $ UnquotedString $ unwords $ map Git.Ref.describe tomerge)
 			let si = SeekInput []
 			starting "merge" ai si $
-				next $ merge currbranch mergeconfig o Git.Branch.ManualCommit syncbranch
+				next $ merge currbranch mergeconfig o Git.Branch.ManualCommit tomerge
 mergeLocal' _ _ currbranch@(Nothing, _) = inRepo Git.Branch.currentUnsafe >>= \case
 	Just branch -> needMerge currbranch branch >>= \case
-		Nothing -> stop
-		Just syncbranch -> do
-			let ai = ActionItemOther (Just $ UnquotedString $ Git.Ref.describe syncbranch)
+		[] -> stop
+		tomerge -> do
+			let ai = ActionItemOther (Just $ UnquotedString $ unwords $ map Git.Ref.describe tomerge)
 			let si = SeekInput []
 			starting "merge" ai si $ do
-				warning $ UnquotedString $ "There are no commits yet to branch " ++ Git.fromRef branch ++ ", so cannot merge " ++ Git.fromRef syncbranch ++ " into it."
+				warning $ UnquotedString $ "There are no commits yet to branch " ++ Git.fromRef branch ++ ", so cannot merge " ++ unwords (map Git.fromRef tomerge) ++ " into it."
 				next $ return False
 	Nothing -> stop
 
--- Returns the branch that should be merged, if any.
-needMerge :: CurrBranch -> Git.Branch -> Annex (Maybe Git.Branch)
+-- Returns the branches that should be merged, if any.
+--
+-- Usually this is the sync branch. However, when in an adjusted branch,
+-- it can be either the sync branch or the original branch, or both.
+needMerge :: CurrBranch -> Git.Branch -> Annex [Git.Branch]
 needMerge currbranch headbranch
-	| is_branchView headbranch = return Nothing
-	| otherwise = 
-		ifM (allM id checks)
-			( return (Just syncbranch)
-			, return Nothing
-			)
+	| is_branchView headbranch = return []
+	| otherwise = ifM isBareRepo
+		( return []
+		, do
+			syncbranchret <- usewhen syncbranch syncbranchchecks
+			adjbranchret <- case currbranch of
+				(Just origbranch, Just adj) -> 
+					usewhen origbranch $
+						canMergeToAdjustedBranch origbranch (origbranch, adj)
+				_ -> return []
+			return (syncbranchret++adjbranchret)
+		)
   where
+	usewhen v c = ifM c
+		( return [v]
+		, return []
+		)
 	syncbranch = syncBranch headbranch
-	checks = case currbranch of
-		(Just _, madj) -> 
-			let branch' = maybe headbranch (adjBranch . originalToAdjusted headbranch) madj
-			in 
-				[ not <$> isBareRepo
-				, inRepo (Git.Ref.exists syncbranch)
-				, inRepo (Git.Branch.changed branch' syncbranch)
-				]
-		(Nothing, _) ->
-			[ not <$> isBareRepo
-			, inRepo (Git.Ref.exists syncbranch)
-			]
+	syncbranchchecks = case currbranch of
+		(Just _, madj) -> syncbranchchanged madj
+		(Nothing, _) -> hassyncbranch
+	hassyncbranch = inRepo (Git.Ref.exists syncbranch)
+	syncbranchchanged madj =
+		let branch' = maybe headbranch (adjBranch . originalToAdjusted headbranch) madj
+		in hassyncbranch <&&> inRepo (Git.Branch.changed branch' syncbranch)
 
 pushLocal :: SyncOptions -> CurrBranch -> CommandStart
 pushLocal o b = stopUnless (notOnlyAnnex o) $ do
@@ -631,8 +641,9 @@ mergeRemote remote currbranch mergeconfig o = ifM isBareRepo
 			mergelisted (tomerge (branchlist (Just branch)))
 	)
   where
-	mergelisted getlist = and <$> 
-		(mapM (merge currbranch mergeconfig o Git.Branch.ManualCommit . remoteBranch remote) =<< getlist)
+	mergelisted getlist =
+		merge currbranch mergeconfig o Git.Branch.ManualCommit
+			=<< map (remoteBranch remote) <$> getlist
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch)

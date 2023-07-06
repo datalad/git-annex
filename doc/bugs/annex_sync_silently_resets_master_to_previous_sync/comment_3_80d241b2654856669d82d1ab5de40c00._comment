@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-07-06T16:16:36Z"
+ content="""
+Ok, fixed git-annex sync to immediately merge the changes from the original
+branch into the adjusted branch.
+"""]]

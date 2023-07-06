@@ -1,6 +1,6 @@
 {- adjusted branch merging
  -
- - Copyright 2016-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 {-# LANGUAGE BangPatterns, OverloadedStrings #-}
 
 module Annex.AdjustedBranch.Merge (
+	canMergeToAdjustedBranch,
 	mergeToAdjustedBranch,
 ) where
 
@@ -32,6 +33,12 @@ import Utility.Directory.Create
 import qualified Data.ByteString as S
 import qualified System.FilePath.ByteString as P
 
+canMergeToAdjustedBranch :: Branch -> (OrigBranch, Adjustment) -> Annex Bool
+canMergeToAdjustedBranch tomerge (origbranch, adj) =
+	inRepo $ Git.Branch.changed currbranch tomerge
+  where
+	AdjBranch currbranch = originalToAdjusted origbranch adj
+
 {- Update the currently checked out adjusted branch, merging the provided
  - branch into it. Note that the provided branch should be a non-adjusted
  - branch. -}
@@ -42,16 +49,10 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 	adjbranch@(AdjBranch currbranch) = originalToAdjusted origbranch adj
 	basis = basisBranch adjbranch
 
-	go commitsprevented =
-		ifM (inRepo $ Git.Branch.changed currbranch tomerge)
-			( do
-				(updatedorig, _) <- propigateAdjustedCommits'
-					False origbranch adj commitsprevented
-				changestomerge updatedorig
-			, nochangestomerge
-			)
-
-	nochangestomerge = return $ return True
+	go commitsprevented = do
+		(updatedorig, _) <- propigateAdjustedCommits'
+			False origbranch adj commitsprevented
+		changestomerge updatedorig
 
 	{- Since the adjusted branch changes files, merging tomerge
 	 - directly into it would likely result in unnecessary merge
@@ -98,7 +99,8 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 				-- (for an unknown reason).
 				-- http://thread.gmane.org/gmane.comp.version-control.git/297237
 				inRepo $ Git.Command.run [Param "reset", Param "HEAD", Param "--quiet"]
-				showAction $ UnquotedString $ "Merging into " ++ fromRef (Git.Ref.base origbranch)
+				when (tomerge /= origbranch) $
+					showAction $ UnquotedString $ "Merging into " ++ fromRef (Git.Ref.base origbranch)
 				merged <- autoMergeFrom' tomerge Nothing mergeconfig commitmode True
 					(const $ resolveMerge (Just updatedorig) tomerge True)
 				if merged

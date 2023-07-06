@@ -62,7 +62,7 @@ mergeBranch o r = starting "merge" ai si $ do
 	currbranch <- getCurrentBranch
 	mc <- mergeConfig (allowUnrelatedHistories o)
 	let so = def { notOnlyAnnexOption = True }
-	next $ merge currbranch mc so Git.Branch.ManualCommit r
+	next $ merge currbranch mc so Git.Branch.ManualCommit [r]
   where
 	ai = ActionItemOther (Just (UnquotedString (Git.fromRef r)))
 	si = SeekInput []

@@ -22,3 +22,5 @@ PS investigation of adjusted/unlocked came up in ReproNim context where people w
 
 [[!meta author=yoh]]
 [[!tag projects/repronim]]
+
+> [[fixed|done]] --[[Joey]]
