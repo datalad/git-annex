@@ -537,7 +537,8 @@ minimalMetaData i = case getItemId (item i) of
  - and to generate the filename. -}
 extractFields :: ToDownload -> [(String, String)]
 extractFields i = map (uncurry extractField)
-	[ ("feedtitle", [feedtitle])
+	[ ("feedurl", [Just (feedurl i)])
+	, ("feedtitle", [feedtitle])
 	, ("itemtitle", [itemtitle])
 	, ("feedauthor", [feedauthor])
 	, ("itemauthor", [itemauthor])

@@ -72,7 +72,7 @@ resulting in the new url being downloaded to such a filename.
   The default template is '${feedtitle}/${itemtitle}${extension}'
   
   The available variables in the template include these that
-  are information about the feed: feedtitle, feedauthor
+  are information about the feed: feedtitle, feedauthor, feedurl
 
   And these that are information about individual items in the feed:
   itemtitle, itemauthor, itemsummary, itemdescription, itemrights,
