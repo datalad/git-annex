@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="dud225@35a1ee469f82f3a7eb1f2dce4ad453f5e47bdfd3"
+ nickname="dud225"
+ avatar="http://cdn.libravatar.org/avatar/5147563e50c475918474594d93be95c2"
+ subject="Disabling a special remote"
+ date="2023-07-07T12:51:12Z"
+ content="""
+Finally found the answer on my own:
+
+    git config remote.phone.annex-ignore true
+
+"""]]
