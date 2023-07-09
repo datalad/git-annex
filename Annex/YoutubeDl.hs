@@ -89,7 +89,7 @@ youtubeDl' url workdir p uo
 	toomanyfiles cmd fs = Left $ cmd ++ " downloaded multiple media files; git-annex is only able to deal with one per url: " ++ show fs
 	downloadedfiles cmd
 		| isytdlp cmd = liftIO $ 
-			(lines <$> readFile filelistfile)
+			(nub . lines <$> readFile filelistfile)
 				`catchIO` (pure . const [])
 		| otherwise = workdirfiles
 	workdirfiles = liftIO $ filter (/= filelistfile) 
