@@ -1,0 +1,6 @@
+Hi,
+I'd like to overwrite any conflicting files during an export to the directory special remote. 
+
+I just exported ~30000 files but the export got interrupted half way. It resumed all right but 71 files seem to differ as git annex says it's "unsafe to overwrite" the files. 
+
+Alternatively I'd be fine with getting neat output of the list of affected files somehow so that I can automate removal. 
