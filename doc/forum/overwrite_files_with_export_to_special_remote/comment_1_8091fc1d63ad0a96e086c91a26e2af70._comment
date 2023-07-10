@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-07-10T19:18:26Z"
+ content="""
+If the special remote is configured with importtree=yes, you can `git-annex
+import --from` it. That will let git-annex realize that the files on it are
+ones it knows (or if they are somehow not, it will start tracking their
+content), and so you should then be able to export back to it.
+"""]]
