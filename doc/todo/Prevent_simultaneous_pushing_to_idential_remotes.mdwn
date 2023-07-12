@@ -1,0 +1,22 @@
+Hi joey,
+
+(This might be considered a bug but it is not a dealbreaker so I put it as a todo)
+
+When multiple configured git remotes have the same `annex-uuid` (e.g. there's multiple URLs to the same repo, which can be the case if there's a fast local url and a slow publicly accessible url), `git annex sync|assist|push --jobs=cpus` (nightly build) pushes simultaneously via all paths. Depending on who wins the race, slower pushes fail with something like:
+
+```
+remote: error: cannot lock ref 'refs/heads/synced/master': is at ce08fb81df1df82357dfd58aad9d1f65e6d2e58a but expected e8a067f2
+19eaa5947c3553e7d06c23d5f830a6de                                                                                               
+To ssh://URL                                                                      
+ ! [remote rejected] master -> synced/master (failed to update ref) 
+```
+
+Immediately syncing again afterwards skips the pushing as everything is up to date.
+
+This is just a cosmetic inconvenience and doesn't stop syncing from working. However, I guess nobody likes having red error messages thrown at them (can cause a certain spike in heart rate if one is on a tight schedule 😉). git annex knows that the remotes are effectively the same repo, so it could just push to them in sequence (sorted by lowest cost) and stop after the first successful push.
+
+Cheers,
+
+Yann
+
+P.S.: Thanks for git-annex, it is just a joy to use 🙂
