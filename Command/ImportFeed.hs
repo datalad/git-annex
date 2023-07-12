@@ -101,7 +101,7 @@ seek o = startConcurrency commandStages $ do
 					return m
 				else
 					let (pending, rest) = M.partition ispending m
-					in if M.null pending
+					in if M.null pending || not (M.null rest)
 						then retry
 						else do
 							putTMVar dlst rest

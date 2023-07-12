@@ -14,6 +14,8 @@ git-annex (10.20230627) UNRELEASED; urgency=medium
   * importfeed: Add feedurl to the metadata (and allow it to be used in the
     --template)
   * Improve resuming interrupted download when using yt-dlp.
+  * importfeed bug fix: When -J was used with multiple feeds, some feeds
+    did not get their items downloaded.
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Jun 2023 13:10:40 -0400
 
