@@ -1,0 +1,157 @@
+### Please describe the problem.
+
+FTR, I can work around this specific problem (somehow, not sure how yet); I also didn't intend to report two bugs in 10.20230626 today, but I found them both in a specific repo while trying to work around new error output from 10.20230626, and both of them seemed to justify being reported.  (To avoid future confusion, [other bug, relating to change in meaning of sync](https://git-annex.branchable.com/bugs/Changing_sync_to_include_content_breaks_UX/).)
+
+In short, I've ended up with the "same" podcast known in git-annex by two different encodings of the filename, both of which appear in `git annex list`, but only one of which appears in the checked out annex file system. 
+
+While `git annex list` can *show* these uniquely, there doesn't appear to be a way to identify the relevant file to operate on uniquely to, eg, `git annex drop`, or `git annex whereis`, or even `git annex list` being more specific.  They do not appear to accept the "encoded format" that is output by `git annex list`, which makes roundtriping filenames printed out difficult.  And since the files just differ by encoding, I'm not even sure if there is *any* way to specify one of them.
+
+I found this while trying to debug what had happened with a podcast downloaded from:
+
+https://popculturedetective.agency/feed/podcast/
+
+with git-annex; specifically the episode with the title starting "A Conversation with Artist Simon ...", where the artists surname has a latin accented character in it.
+
+My git-annex list is showing two references to that podcast, with subtly different names:
+
+```
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git annex list | grep "A_Conv"
+XXXX_ "A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3"
+XXXX_ "A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3"
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ 
+```
+
+one of which matches the file now checked out on disk in that directory:
+
+```
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ LANG=C ls -B | grep A_Conv
+A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ 
+```
+
+and the other does not.  As best I can tell `\303\245` is the UTF-8 for U+00E5 ("a" with small ring above), and `\314\212` is the UTF-8 for U+030A (combining character, small ring above; after an "a").  So both are somewhat legitimate ways to encode that particular accented "a".
+
+The podcast feed (now?) has the `61 cc  8a` varient in the title of the podcast episode (ie, a, plus combining ring; equivalent to `a\314\212` as git annex now encodes it).
+
+Digging back through the git history, it appears I had the `archive/Pop_Culture_Detective__Audio_Files/A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3` variant by 2022-11-04, and downloaded the `archive/Pop_Culture_Detective__Audio_Files/A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3` version on 2022-11-03, the day before.  (My commit comment from that date implies I was fixing libsyn filenames, I think to remove a URL suffix on them and/or avoid duplicate downloads; so I may also have upgraded git annex around that timeframe.)
+
+I also have a file hard linked to this podcast (from when it was first downloaded, 2022-11-03) which has the other encoding, implying that at one point git-annex put the other variation into the checked out files (since I hard link all "newly downloaded" files into another directory, targetted at the content file inside the annex, to make them easier to play back).
+
+```
+ewen@basadi:~/Music/podcasts$ ls -ilB A_Conversation_with_Artist_Simon_Stålenhag.mp3
+19692405 -r--r--r--  2 ewen  staff  42854272  3 Nov  2022 A_Conversation_with_Artist_Simon_Stålenhag.mp3
+ewen@basadi:~/Music/podcasts$ ls -ilBL archive/Pop_Culture_Detective__Audio_Files/A_Conversation_with_Artist_Simon_Stålenhag.mp3 
+19692405 -r--r--r--  2 ewen  staff  42854272  3 Nov  2022 archive/Pop_Culture_Detective__Audio_Files/A_Conversation_with_Artist_Simon_Stålenhag.mp3
+ewen@basadi:~/Music/podcasts$ ls -ilB archive/Pop_Culture_Detective__Audio_Files/A_Conversation_with_Artist_Simon_Stålenhag.mp3 
+19757493 lrwxr-xr-x  1 ewen  staff  206  4 Nov  2022 archive/Pop_Culture_Detective__Audio_Files/A_Conversation_with_Artist_Simon_Stålenhag.mp3 -> ../../.git/annex/objects/Xm/3v/SHA256E-s42854272--5b156789d2152e69dd0738bb75d42ddd9172a891e9646cc53d86963bd6014dc2.mp3/SHA256E-s42854272--5b156789d2152e69dd0738bb75d42ddd9172a891e9646cc53d86963bd6014dc2.mp3
+ewen@basadi:~/Music/podcasts$ ls -il .git/annex/objects/Xm/3v/SHA256E-s42854272--5b156789d2152e69dd0738bb75d42ddd9172a891e9646cc53d86963bd6014dc2.mp3/SHA256E-s42854272--5b156789d2152e69dd0738bb75d42ddd9172a891e9646cc53d86963bd6014dc2.mp3
+19692405 -r--r--r--  2 ewen  staff  42854272  3 Nov  2022 .git/annex/objects/Xm/3v/SHA256E-s42854272--5b156789d2152e69dd0738bb75d42ddd9172a891e9646cc53d86963bd6014dc2.mp3/SHA256E-s42854272--5b156789d2152e69dd0738bb75d42ddd9172a891e9646cc53d86963bd6014dc2.mp3
+ewen@basadi:~/Music/podcasts$ 
+```
+
+Given the Podcast feed itself (still) contains the UTF-8 (hex) `61 cc  8a`, which is the version I seem to have from first download, it feels like git annex might have changed to canonicalisng the UTF-8 in a way that it didn't previously *and* handled having files with the "old" encoding by (a) changing to the new coding (eg, in the checked out file) *and* (b) retaining the old *and* new encodings in the list of files.  (And it seems like this would have happened in a 2022 release of git-annex.)
+
+What seems to have changed with 10.20230626 is (from the [10.20230626 changelog](https://hackage.haskell.org/package/git-annex-10.20230626/changelog)):
+
+```
+* Many commands now quote filenames that contain unusual characters the
+  same way that git does, to avoid exposing control characters to the
+  terminal.
+```
+
+which makes sense as far as it it goes, so now the two different encodings known to git annex are visible in the "list".
+
+But the format in the output for filenames containing UTF-8 is not accepted by, eg, "git annex drop", which threw error messages, which I noticed today.
+
+In particular (a) commands *receiving* file names do not seem to understand these escaped versions, which makes round tripping of filenames (eg "git annex list" filtered and then handed back to "git annex drop") more difficult than all previous versions of git annex, (b) the UTF-8 characters are output as octal escapes of each individual byte, which makes matching them against filenames in the file system more difficult (although it seems usually they should match `LANG=C ls -B` output -- I just got unlucky here with git annex learning about two variations on the name...).
+
+
+### What steps will reproduce the problem?
+
+Something like:
+
+```
+git annex importfeed --template='archive/${feedtitle}/${itemtitle}${extension}' https://popculturedetective.agency/feed/podcast/
+git annex list archive/Pop_Culture_Detective__Audio_Files
+LANG=C ls -B archive/Pop_Culture_Detective__Audio_Files/*
+git annex list "A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3"
+```
+
+but it may require first importing the feed with git-annex older than 10.20230626 and then again with git annex 10.20230626 (I'm not entirely clear how I ended up in this exact state; but that specific feed definitely was imported with an older git-annex first, I'm just not 100% certain how old).
+
+### What version of git-annex are you using? On what operating system?
+
+Now git-annex 10.20230626, on macOS, installed from Home Brew; before git-annex 10.2022xxxx, on macOS, installed from Home Brew (around early November 2022):
+
+```
+ewen@basadi:~$ git annex version
+git-annex version: 10.20230626
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.1 bloomfilter-2.0.1.0 cryptonite-0.30 DAV-1.3.4 feed-1.3.2.1 ghc-9.4.4 http-client-0.7.13.1 persistent-sqlite-2.13.1.1 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: darwin x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+ewen@basadi:~$ 
+```
+
+### Please provide any additional information below.
+
+Additional example of the "cannot use output name as input" problem:
+
+```
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git annex list | grep A_Conv                                           
+XXXX_ "A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3"
+XXXX_ "A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3"
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git annex list "A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3"
+here
+|bethel
+||nas01
+|||web
+||||bittorrent
+|||||
+error: pathspec 'A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3' did not match any file(s) known to git
+Did you forget to 'git add'?
+list: 1 failed
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git annex list "A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3"
+here
+|bethel
+||nas01
+|||web
+||||bittorrent
+|||||
+error: pathspec 'A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3' did not match any file(s) known to git
+Did you forget to 'git add'?
+list: 1 failed
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ 
+```
+
+And proof that the actual downloaded file origin is the same:
+
+```
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git annex whereis | sed -n '/A_Conv/,/ok/p'
+whereis "A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3" (4 copies) 
+  	00000000-0000-0000-0000-000000000001 -- web
+   	4e10813c-063b-4cd9-9680-db6685b1c5e8 -- bethel_data_drive [bethel]
+   	680fc999-1dc8-465d-b5ae-5defdb18d019 -- basadi (Mac Mini 2020) [here]
+   	9f693b73-3283-45fa-83d3-251d57da7cd3 -- Synology DS216+ [nas01]
+
+  web: https://popculturedetective.agency/podcast-download/18821/a-conversation-with-artist-simon-sta%cc%8alenhag.mp3
+ok
+whereis "A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3" (4 copies) 
+  	00000000-0000-0000-0000-000000000001 -- web
+   	4e10813c-063b-4cd9-9680-db6685b1c5e8 -- bethel_data_drive [bethel]
+   	680fc999-1dc8-465d-b5ae-5defdb18d019 -- basadi (Mac Mini 2020) [here]
+   	9f693b73-3283-45fa-83d3-251d57da7cd3 -- Synology DS216+ [nas01]
+
+  web: https://popculturedetective.agency/podcast-download/18821/a-conversation-with-artist-simon-sta%cc%8alenhag.mp3
+ok
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ 
+```
+
+(where I had to use that command variant, as there doesn't seem to be any input method to specify those two encodings separately :-/ )
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Thanks again for writing git-annex.  It's been mostly trouble free for 10 years as a "podcatcher".  Today seems to be something of a "find all the surprises" day, having upgraded git-annex (from Home Brew) earlier this week.
