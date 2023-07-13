@@ -1,0 +1,62 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="comment 2"
+ date="2023-07-13T00:54:34Z"
+ content="""
+Yes, it's also somewhat strange to me that I ended up with two variations of this filename (by UTF-8 encoding) on disk.
+
+The filesystem is the default modern macOS one (APFS, case preserving but case insensitive).  From a quick experiement, it looks like the encoding of \"a with circle above\" is one of the \"case preserving but case insensitive\" things of the APFS file system.  Ie, I can create either variation, but which ever variation is created first is treated the same as the other variation when it comes to opening/updating the file.  Which I guess makes sense, as they're two different UTF-8 encodings of ultimately the same glyph.
+
+FWIW, I also noticed while investigating this, this morning, that the encoding on disk in my annex had switched back to consistently encoding in both my linked copy (2023-11-03) and the annex archive directory (2023-11-04).  So with the two versions known to the annex, it feels like I might be seeing a \"first to be created\" race in the UTF-8 encoding used when sync runs.
+
+Also FTR, in addition to the possibility that the podcast RSS changed encoding between the two runs, it's also possible that this got canonicalised by, eg, shell expansion, around 2023-11-03 / 2023-11-04; it definitely looks like I did a bunch of automated \"git mv ...\" to fix up filenames around that point.  (And then possibly the next git annex podcast fetch re-learnt the other name.)
+
+Since I seem to have stablised on one encoding no disk right now, I'm going to try to make git-annex forget about the other encoding of the name, to tidy up this particular confusion for now.
+
+But I agree it would be helpful to have a command variant that can accept the octal-encoded byte sequences (now) output by `git annex list`.  Both for cases like this, and in general for round tripping output back to input (something I do in some cases to handle scripted checks on annexed files against other things).
+
+Thanks for the reply,
+
+Ewen
+
+```
+ewen@basadi:/tmp$ mkdir encoding
+ewen@basadi:/tmp$ cd encoding
+ewen@basadi:/tmp/encoding$ df -Pm .
+Filesystem   1M-blocks   Used Available Capacity  Mounted on
+/dev/disk1s2   1908108 991091    900870    53%    /System/Volumes/Data
+ewen@basadi:/tmp/encoding$ mount | grep /System/Volumes/Data
+/dev/disk1s2 on /System/Volumes/Data (apfs, local, journaled, nobrowse)
+map auto_home on /System/Volumes/Data/home (autofs, automounted, nobrowse)
+ewen@basadi:/tmp/encoding$ touch A_Conversation_with_Artist_Simon_Stålenhag.mp3
+ewen@basadi:/tmp/encoding$ LANG=C ls -lB
+total 0
+-rw-r--r--  1 ewen  wheel  0 Jul 13 12:40 A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:/tmp/encoding$ touch A_Conversation_with_Artist_Simon_Stålenhag.mp3
+ewen@basadi:/tmp/encoding$ LANG=C ls -lB                                       
+total 0
+-rw-r--r--  1 ewen  wheel  0 Jul 13 12:41 A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:/tmp/encoding$ touch A_Conversation_with_Artist_Simon_Stålenhag.mp3-new
+ewen@basadi:/tmp/encoding$ LANG=C ls -lB
+total 0
+-rw-r--r--  1 ewen  wheel  0 Jul 13 12:41 A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3-new
+-rw-r--r--  1 ewen  wheel  0 Jul 13 12:41 A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:/tmp/encoding$ touch A_Conversation_with_Artist_Simon_Stålenhag.mp3-new
+ewen@basadi:/tmp/encoding$ LANG=C ls -lB
+total 0
+-rw-r--r--  1 ewen  wheel  0 Jul 13 12:43 A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3-new
+-rw-r--r--  1 ewen  wheel  0 Jul 13 12:41 A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:/tmp/encoding$ 
+```
+
+```
+ewen@basadi:~/Music/podcasts$ date
+Thu 13 Jul 2023 12:44:54 NZST
+ewen@basadi:~/Music/podcasts$ LANG=C ls -lB A_Conv*
+-r--r--r--  2 ewen  staff  42854272 Nov  3  2022 A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:~/Music/podcasts$ LANG=C ls -lB archive/Pop_Culture_Detective__Audio_Files/A_Conv*
+lrwxr-xr-x  1 ewen  staff  206 Nov  4  2022 archive/Pop_Culture_Detective__Audio_Files/A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3 -> ../../.git/annex/objects/Xm/3v/SHA256E-s42854272--5b156789d2152e69dd0738bb75d42ddd9172a891e9646cc53d86963bd6014dc2.mp3/SHA256E-s42854272--5b156789d2152e69dd0738bb75d42ddd9172a891e9646cc53d86963bd6014dc2.mp3
+ewen@basadi:~/Music/podcasts$ 
+```
+"""]]
