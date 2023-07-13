@@ -1,0 +1,147 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="git mv to temporary name, commit, git mv back, commit, can resolve duplicates"
+ date="2023-07-13T01:12:34Z"
+ content="""
+Interestingly, just renaming the file on disk (`git mv`) is sufficient to make the second (duplicate) entry go away, as the second one gets flagged as \"deleted\".  And if I commit both changes, then it seems to be persistent.  Ie, *after* the commit, I can `git mv` the file back to the original on-disk name, and commit that, and `git annex list` only shows the one name.  That seems to survive `git annex sync --no-content` and even another run of my podcast fetching.  So I think that dance solves my immediate \"cannot reference by name\" problem -- ie, move the one on disk aside, commit, move back, commit.
+
+(I still have a problem with my auto-cleanup automation for this repository -- `git annex drop ...` if it's no longer linked into the \"postcasts to play\" repo -- but I'm fairly sure I can fix the detection of that somehow.  And the few special cases that no longer auto-drop by \"name from `git annex list`\" I can drop by hand via wildcards or tab-completion.)
+
+Other than the feature request (some way to feed the escaped output back in as input) I think this bug is resolved.  Thanks for your comments.
+
+Ewen
+
+```
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git annex list
+here
+|bethel
+||nas01
+|||web
+||||bittorrent
+|||||
+XXXX_ \"A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3\"
+XXXX_ \"A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\"
+_XXX_ Demystifying_Fair_Use__Copyright__and_Content_ID.mp3
+XXXX_ Indiana_Jones_and_The_Case_of_The_Ancient_Aliens.mp3
+_XXX_ Solarpunk_and_How_We_Escape_Dystopia.mp3
+_XXX_ The_Case_of_Boba_Fett_and_the_Hollywood_Western.mp3
+XXXX_ The_Case_of_The_Cursed_Jungle_Cruise.mp3
+_XXX_ The_Case_of_The_Falcon_and_The_Winter_Soldier.mp3
+XXXX_ The_Continuing_Case_of_Ted_Lasso.mp3
+_XXX_ The_Curious_Case_of_Ted_Lasso.mp3
+XXXX_ The_Multiversal_Case_of_Everything_Everywhere.mp3
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ LANG=C ls -B *Conversation_*
+A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git mv A_Conversation_with_Artist_Simon_Stålenhag.mp3 keep-A_Conversation_with_Artist_Simon_Stålenhag.mp3 
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ LANG=C ls -B *Conversation_*
+keep-A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git annex list              
+here
+|bethel
+||nas01
+|||web
+||||bittorrent
+|||||
+_XXX_ Demystifying_Fair_Use__Copyright__and_Content_ID.mp3
+XXXX_ Indiana_Jones_and_The_Case_of_The_Ancient_Aliens.mp3
+_XXX_ Solarpunk_and_How_We_Escape_Dystopia.mp3
+_XXX_ The_Case_of_Boba_Fett_and_the_Hollywood_Western.mp3
+XXXX_ The_Case_of_The_Cursed_Jungle_Cruise.mp3
+_XXX_ The_Case_of_The_Falcon_and_The_Winter_Soldier.mp3
+XXXX_ The_Continuing_Case_of_Ted_Lasso.mp3
+_XXX_ The_Curious_Case_of_Ted_Lasso.mp3
+XXXX_ The_Multiversal_Case_of_Everything_Everywhere.mp3
+XXXX_ \"keep-A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\"
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git status
+On branch master
+Changes to be committed:
+  (use \"git restore --staged <file>...\" to unstage)
+	renamed:    \"A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\" -> \"keep-A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\"
+
+Changes not staged for commit:
+  (use \"git add/rm <file>...\" to update what will be committed)
+  (use \"git restore <file>...\" to discard changes in working directory)
+	deleted:    \"A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3\"
+
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git commit -am 'Consolidate on one UTF-8 encoding of A Conversation with Simon Stalenhag'
+[master 05d2c2c50] Consolidate on one UTF-8 encoding of A Conversation with Simon Stalenhag
+ 2 files changed, 1 deletion(-)
+ delete mode 120000 \"archive/Pop_Culture_Detective__Audio_Files/A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\"
+ rename \"archive/Pop_Culture_Detective__Audio_Files/A_Conversation_with_Artist_Simon_Sta\314\212lenhag.mp3\" => \"archive/Pop_Culture_Detective__Audio_Files/keep-A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\" (100%)
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git status
+On branch master
+nothing to commit, working tree clean
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ LANG=C ls -B *Conversation_*
+keep-A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git annex list
+here
+|bethel
+||nas01
+|||web
+||||bittorrent
+|||||
+_XXX_ Demystifying_Fair_Use__Copyright__and_Content_ID.mp3
+XXXX_ Indiana_Jones_and_The_Case_of_The_Ancient_Aliens.mp3
+_XXX_ Solarpunk_and_How_We_Escape_Dystopia.mp3
+_XXX_ The_Case_of_Boba_Fett_and_the_Hollywood_Western.mp3
+XXXX_ The_Case_of_The_Cursed_Jungle_Cruise.mp3
+_XXX_ The_Case_of_The_Falcon_and_The_Winter_Soldier.mp3
+XXXX_ The_Continuing_Case_of_Ted_Lasso.mp3
+_XXX_ The_Curious_Case_of_Ted_Lasso.mp3
+XXXX_ The_Multiversal_Case_of_Everything_Everywhere.mp3
+XXXX_ \"keep-A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\"
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git mv keep-A_Conversation_with_Artist_Simon_Stålenhag.mp3 A_Conversation_with_Artist_Simon_Stålenhag.mp3 
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ LANG=C ls -B *Conversation*
+A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git annex list
+here
+|bethel
+||nas01
+|||web
+||||bittorrent
+|||||
+XXXX_ \"A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\"
+_XXX_ Demystifying_Fair_Use__Copyright__and_Content_ID.mp3
+XXXX_ Indiana_Jones_and_The_Case_of_The_Ancient_Aliens.mp3
+_XXX_ Solarpunk_and_How_We_Escape_Dystopia.mp3
+_XXX_ The_Case_of_Boba_Fett_and_the_Hollywood_Western.mp3
+XXXX_ The_Case_of_The_Cursed_Jungle_Cruise.mp3
+_XXX_ The_Case_of_The_Falcon_and_The_Winter_Soldier.mp3
+XXXX_ The_Continuing_Case_of_Ted_Lasso.mp3
+_XXX_ The_Curious_Case_of_Ted_Lasso.mp3
+XXXX_ The_Multiversal_Case_of_Everything_Everywhere.mp3
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git status
+On branch master
+Changes to be committed:
+  (use \"git restore --staged <file>...\" to unstage)
+	renamed:    \"keep-A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\" -> \"A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\"
+
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git commit -m 'Restore canonical name for A Conversation with Simon Stalenhag podcast'
+[master 8c7249dae] Restore canonical name for A Conversation with Simon Stalenhag podcast
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ rename \"archive/Pop_Culture_Detective__Audio_Files/keep-A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\" => \"archive/Pop_Culture_Detective__Audio_Files/A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\" (100%)
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ LANG=C ls -B *Conversation*
+A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ LANG=C ls -B ../../*Conversation*Simon*
+../../A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ git annex list
+here
+|bethel
+||nas01
+|||web
+||||bittorrent
+|||||
+XXXX_ \"A_Conversation_with_Artist_Simon_St\303\245lenhag.mp3\"
+_XXX_ Demystifying_Fair_Use__Copyright__and_Content_ID.mp3
+XXXX_ Indiana_Jones_and_The_Case_of_The_Ancient_Aliens.mp3
+_XXX_ Solarpunk_and_How_We_Escape_Dystopia.mp3
+_XXX_ The_Case_of_Boba_Fett_and_the_Hollywood_Western.mp3
+XXXX_ The_Case_of_The_Cursed_Jungle_Cruise.mp3
+_XXX_ The_Case_of_The_Falcon_and_The_Winter_Soldier.mp3
+XXXX_ The_Continuing_Case_of_Ted_Lasso.mp3
+_XXX_ The_Curious_Case_of_Ted_Lasso.mp3
+XXXX_ The_Multiversal_Case_of_Everything_Everywhere.mp3
+ewen@basadi:~/Music/podcasts/archive/Pop_Culture_Detective__Audio_Files$ 
+```
+"""]]
