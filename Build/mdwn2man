@@ -22,6 +22,7 @@ while (<>) {
 	s/^Warning:.*mdwn2man.*//g;
 	s/^$/.PP\n/;
 	s/^\*\s+(.*)/.IP "$1"/;
+	s/\\$/\\\\/;
 	next if $_ eq ".PP\n" && $skippara;
 	if (/^.IP /) {
 		$inlist=1;
