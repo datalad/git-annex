@@ -70,6 +70,9 @@ Finally the annexed file contents need to be copied to the new repository:
 	# Fix up annex links to content and make sure it's all ok.
 	git annex fsck
 
+Warning: This method of copying the annexed file contents and dropping
+the unused ones causes the git-annex branch to log information.
+
 # alternative older method
 
 Here is another way to do it. Suppose the old big repo is at `~/oldrepo`:

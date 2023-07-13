@@ -1,0 +1,14 @@
+`git-annex filter-branch` can be used to split a git-annex repository.
+However, the approach in [[tips/splitting_a_repository]] then copies all
+objects into the new repository and drops unused objects. And dropunused
+updates location log in that situation, even when the location log didn't
+exist in that repository before. So, that approach leaks information about
+objects that were in the original repository into the split repository.
+
+Splitting a git-annex repository is something that, when you need to do it,
+you may have good reasons to want to avoid any such leakage of
+information.
+
+So perhaps add a feature that copies only the needed objects over to the
+split repository? Or update the tip with a better method that avoids this
+problem. --[[Joey]]
