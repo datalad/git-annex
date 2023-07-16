@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+I have an old (broken) annex that I would like to revive. I'm unable to upgrade the annex.
+
+### What steps will reproduce the problem?
+
+git annex sync
+git-annex: Repository /mnt/sdc/annex/.git is at unsupported version 9. Automatic upgrade exception! .git/annex: createDirectory: does not exist (No such file or directory)
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 10.20230626-g55fef4fb81
+running on Archlinux (up to date)
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[alex@proliant .git]$ git annex sync
+git-annex: Repository /mnt/sdc/annex/.git is at unsupported version 9. Automatic upgrade exception! .git/annex: createDirectory: does not exist (No such file or directory)
+[alex@proliant .git]$ git annex upgrade
+upgrade  (v9 to v10...) 
+git-annex: .git/annex: createDirectory: does not exist (No such file or directory)
+failed
+upgrade: 1 failed
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I'm starting to get the hang of git-annex (after about three years ;-). I started with an annex which I somehow broke. Then I opened a "bannex", which I thought I broke. Therefore I started "cannex", only to realize that bannex wasn't broke. Now I'm using bannex, but my data is scattered around a-,b-,c-annex. I think I made Napoleon somewhere in between (because he annexed Europe). But my brain is slowly wrapping around git and the annex. I'd like to create an annex to rule them all ;-)
+Thanks to the developers!
