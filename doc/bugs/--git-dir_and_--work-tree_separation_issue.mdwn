@@ -1,0 +1,99 @@
+### Please describe the problem.
+
+When `--git-dir` and `--work-tree` deviate from standard, running commands like `git annex list` fails in untracked directories.
+
+### What steps will reproduce the problem?
+
+- see transcript below
+- separate `--git-dir` and `--work-tree` as commonly used to track one's dotfiles
+- run `git annex list` in an untracked directory
+- error is `error: pathspec 'DIRECTORY' did not match any file(s) known to git`
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 10.20230627-g2469720e1
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
++ set -x
++ chmod +w -R .dotfiles
++ rm -rf .dotfiles
++ git init --bare .dotfiles
+Initialized empty Git repository in /home/yann2/.dotfiles/
++ alias 'dit=git --work-tree=$HOME --git-dir=$HOME/.dotfiles'
++ echo '*' > .gitignore
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles add -f .gitignore
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles commit -m 'add gitignore'
+[main (root-commit) 65d21e1] add gitignore
+ 1 file changed, 1 insertion(+)
+ create mode 100644 .gitignore
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles annex init
+init  ok
+(recording state in git...)
++ mkdir dir1
++ cd dir1
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles annex list
+here
+|web
+||bittorrent
+|||
+Did you forget to 'git add'?
+list: 1 failed
++ touch myfile
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles annex add --no-check-gitignore myfile
+add myfile 
+ok
+(recording state in git...)
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles annex sync -m 'add file in dir1'
+git-annex sync will change default behavior to operate on --content in a future version of git-annex. Recommend you explicitly use --no-content (or -g) to prepare for that change. (Or you can configure annex.synccontent)
+commit  
+[main da84a6c] add file in dir1
+ 1 file changed, 1 insertion(+)
+ create mode 120000 dir1/myfile
+ok
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles annex list
+here
+|web
+||bittorrent
+|||
+X__ myfile
++ cd
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles annex list
+here
+|web
+||bittorrent
+|||
+X__ dir1/myfile
++ mkdir dir2
++ cd dir2
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles annex list
+here
+|web
+||bittorrent
+|||
+error: pathspec 'dir2/' did not match any file(s) known to git
+Did you forget to 'git add'?
+list: 1 failed
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles -C /home/yann2 annex list
+here
+|web
+||bittorrent
+|||
+X__ dir1/myfile
++ git --work-tree=/home/yann2 --git-dir=/home/yann2/.dotfiles -C / annex list
+here
+|web
+||bittorrent
+|||
+X__ dir1/myfile
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yep, git-annex is awesome! 🥳
+
