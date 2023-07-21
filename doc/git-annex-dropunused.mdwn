@@ -28,6 +28,14 @@ Or, specify "all" to drop all unused data.
   the last repository that is storing their content. Data loss can
   result from using this option.
 
+* `--jobs=N` `-JN`
+
+  Runs multiple drop jobs in parallel. This is particularly useful
+  when git-annex has to contact remotes to check if it can drop content.
+  For example: `-J4`  
+
+  Setting this to "cpus" will run one job per CPU core.
+
 * `--json`
 
   Enable JSON output. This is intended to be parsed by programs that use

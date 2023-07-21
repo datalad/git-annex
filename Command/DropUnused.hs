@@ -20,7 +20,7 @@ import Annex.Content
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
-cmd = withAnnexOptions [jsonOptions] $
+cmd = withAnnexOptions [jobsOption, jsonOptions] $
 	command "dropunused" SectionMaintenance
 		"drop unused file content"
 		(paramRepeating paramNumRange) (seek <$$> optParser)
@@ -36,7 +36,7 @@ optParser desc = DropUnusedOptions
 	<*> optional (Command.Drop.parseDropFromOption)
 
 seek :: DropUnusedOptions -> CommandSeek
-seek o = do
+seek o = startConcurrency commandStages $ do
 	numcopies <- getNumCopies
 	mincopies <- getMinCopies
 	from <- maybe (pure Nothing) (Just <$$> getParsed) (dropFrom o)
