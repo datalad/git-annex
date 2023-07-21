@@ -439,7 +439,7 @@ remove r rsyncopts accessmethod k = do
 remove' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Remover
 remove' repo r rsyncopts accessmethod k
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $
-		liftIO $ Remote.Directory.removeDirGeneric
+		liftIO $ Remote.Directory.removeDirGeneric False
 			(fromRawFilePath (Git.repoPath repo))
 			(fromRawFilePath (parentDir (toRawFilePath (gCryptLocation repo k))))
 	| Git.repoIsSsh repo = shellOrRsync r removeshell removersync

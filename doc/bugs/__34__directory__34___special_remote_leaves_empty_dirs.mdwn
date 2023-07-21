@@ -112,3 +112,5 @@ drop sp_rsync a ok
 
 I'm tinkering with annex for about 1 week, "doing research" in preparation to
 use it as storage for backups.
+
+> [[fixed|done]] --[[Joey]]

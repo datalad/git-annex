@@ -232,7 +232,7 @@ checkDiskSpaceDirectory d k = do
  - down. -}
 finalizeStoreGeneric :: RawFilePath -> RawFilePath -> RawFilePath -> IO ()
 finalizeStoreGeneric d tmp dest = do
-	removeDirGeneric (fromRawFilePath d) dest'
+	removeDirGeneric False (fromRawFilePath d) dest'
 	createDirectoryUnder [d] (parentDir dest)
 	renameDirectory (fromRawFilePath tmp) dest'
 	-- may fail on some filesystems
@@ -266,7 +266,7 @@ retrieveKeyFileCheapM _ _ = Nothing
 #endif
 
 removeKeyM :: RawFilePath -> Remover
-removeKeyM d k = liftIO $ removeDirGeneric
+removeKeyM d k = liftIO $ removeDirGeneric True
 	(fromRawFilePath d)
 	(fromRawFilePath (storeDir d k))
 
@@ -279,9 +279,13 @@ removeKeyM d k = liftIO $ removeDirGeneric
  - exist. If the topdir does not exist, fails, because in this case the
  - remote is not currently accessible and probably still has the content
  - we were supposed to remove from it.
+ -
+ - Empty parent directories (up to but not including the topdir)
+ - can also be removed. Failure to remove such a directory is not treated
+ - as an error.
  -}
-removeDirGeneric :: FilePath -> FilePath -> IO ()
-removeDirGeneric topdir dir = do
+removeDirGeneric :: Bool -> FilePath -> FilePath -> IO ()
+removeDirGeneric removeemptyparents topdir dir = do
 	void $ tryIO $ allowWrite (toRawFilePath dir)
 #ifdef mingw32_HOST_OS
 	{- Windows needs the files inside the directory to be writable
@@ -293,6 +297,15 @@ removeDirGeneric topdir dir = do
 		Left e ->
 			unlessM (doesDirectoryExist topdir <&&> (not <$> doesDirectoryExist dir)) $
 				throwM e
+	when removeemptyparents $ do
+		subdir <- relPathDirToFile (toRawFilePath topdir) (P.takeDirectory (toRawFilePath dir))
+		goparents (Just (P.takeDirectory subdir)) (Right ())
+  where
+	goparents _ (Left _e) = return ()
+	goparents Nothing _ = return ()
+	goparents (Just subdir) _ = do
+		let d = topdir </> fromRawFilePath subdir
+		goparents (upFrom subdir) =<< tryIO (removeDirectory d)
 
 checkPresentM :: RawFilePath -> ChunkConfig -> CheckPresent
 checkPresentM d (LegacyChunks _) k = Legacy.checkKey d locations k
