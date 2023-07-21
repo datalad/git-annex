@@ -439,8 +439,8 @@ remove r rsyncopts accessmethod k = do
 remove' :: Git.Repo -> Remote -> Remote.Rsync.RsyncOpts -> AccessMethod -> Remover
 remove' repo r rsyncopts accessmethod k
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $
-		liftIO $ Remote.Directory.removeDirGeneric False
-			(fromRawFilePath (Git.repoPath repo))
+		liftIO $ Remote.Directory.removeDirGeneric True
+			(gCryptTopDir repo)
 			(fromRawFilePath (parentDir (toRawFilePath (gCryptLocation repo k))))
 	| Git.repoIsSsh repo = shellOrRsync r removeshell removersync
 	| accessmethod == AccessRsyncOverSsh = removersync
@@ -466,10 +466,13 @@ checkKey' repo r rsyncopts accessmethod k
 	checkrsync = Remote.Rsync.checkKey rsyncopts k
 	checkshell = Ssh.inAnnex repo k
 
+gCryptTopDir :: Git.Repo -> FilePath
+gCryptTopDir repo = Git.repoLocation repo </> fromRawFilePath objectDir
+
 {- Annexed objects are hashed using lower-case directories for max
  - portability. -}
 gCryptLocation :: Git.Repo -> Key -> FilePath
-gCryptLocation repo key = Git.repoLocation repo </> fromRawFilePath objectDir
+gCryptLocation repo key = gCryptTopDir repo
 	</> fromRawFilePath (keyPath key (hashDirLower def))
 
 data AccessMethod = AccessRsyncOverSsh | AccessGitAnnexShell
