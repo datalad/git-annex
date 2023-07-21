@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-07-21T16:51:35Z"
+ content="""
+Please strace `git-annex upgrade` and display the end part of the strace,
+before it displays this error message:
+
+	git-annex: .git/annex: createDirectory: does not exist (No such file or directory)
+
+I have not been able to find a situation where it can fail like that.
+If .git/annex somehow doesn't exist (which would be very strange to start
+with), it will be created during the upgrade.
+
+The closest I've gotten is making .git/annex a symlink to a directory that
+doesn't exist, which causes the upgrade to fail like this:
+
+	git-annex: .git/annex: createDirectory: already exists (File exists)
+
+Now, if .git didn't exist, it would make sense that creating .git/annex
+would fail like that. But of course, if .git doesn't exist, it's not a git
+repository. Unless, I suppose, you have done something to make git use a
+different directory than .git?
+
+(I thought .git might be a gitlink file as used for a submodule, 
+but testing `git-annex upgrade` in a submodule with a gitlink file,
+it does convert it to a symlink and creating .git/annex succeeds.)
+"""]]
