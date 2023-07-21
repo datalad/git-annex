@@ -37,3 +37,5 @@ upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 I work daily with git-annex and I never fail to be amazed by it. Thank you for your work!
+
+> [[fixed|done]] --[[Joey]]

@@ -16,6 +16,12 @@ git-annex (10.20230627) UNRELEASED; urgency=medium
   * Improve resuming interrupted download when using yt-dlp.
   * importfeed bug fix: When -J was used with multiple feeds, some feeds
     did not get their items downloaded.
+  * S3: Amazon S3 buckets created after April 2023 do not support ACLs,
+    so public=yes cannot be used with them. Existing buckets configured
+    with public=yes will keep working.
+  * S3: Allow setting publicurl=yes without public=yes, to support
+    buckets that are configured with a Bucket Policy that allows public
+    access.
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Jun 2023 13:10:40 -0400
 

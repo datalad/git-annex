@@ -94,7 +94,7 @@ remote = specialRemoteType $ RemoteType
 			, yesNoParser versioningField (Just False)
 				(FieldDesc "enable versioning of bucket content")
 			, yesNoParser publicField (Just False)
-				(FieldDesc "allow public read access to the bucket")
+				(FieldDesc "allow public read access to the bucket via ACLs (only supported for old Amazon S3 buckets)")
 			, optionalStringParser publicurlField
 				(FieldDesc "url that can be used by public to download files")
 			, optionalStringParser protocolField
@@ -238,7 +238,7 @@ gen r u rc gc rs = do
                                 , removeExportDirectoryWhenEmpty = Nothing
                                 , checkPresentExportWithContentIdentifier = checkPresentExportWithContentIdentifierS3 hdl this info
                                 }
-			, whereisKey = Just (getPublicWebUrls u rs info c)
+			, whereisKey = Just (getPublicWebUrls rs info c)
 			, remoteFsck = Nothing
 			, repairRepo = Nothing
 			, config = c
@@ -427,7 +427,7 @@ retrieve hv r rs c info = fileRetriever' $ \f k p iv -> withS3Handle hv $ \case
 				giveup "cannot download content"
 			Right loc -> retrieveHelper info h loc (fromRawFilePath f) p iv
 	Left S3HandleNeedCreds ->
-		getPublicWebUrls' (uuid r) rs info c k >>= \case
+		getPublicWebUrls' rs info c k >>= \case
 			Left failreason -> do
 				warning (UnquotedString failreason)
 				giveup "cannot download content"
@@ -474,7 +474,7 @@ checkKey hv r rs c info k = withS3Handle hv $ \case
 			giveup "cannot check content"
 		Right loc -> checkKeyHelper info h loc
 	Left S3HandleNeedCreds ->
-		getPublicWebUrls' (uuid r) rs info c k >>= \case
+		getPublicWebUrls' rs info c k >>= \case
 			Left failreason -> do
 				warning (UnquotedString failreason)
 				giveup "cannot check content"
@@ -974,7 +974,7 @@ data S3Info = S3Info
 	, partSize :: Maybe Integer
 	, isIA :: Bool
 	, versioning :: Bool
-	, public :: Bool
+	, publicACL :: Bool
 	, publicurl :: Maybe URLString
 	, host :: Maybe String
 	, region :: Maybe String
@@ -997,7 +997,7 @@ extractS3Info c = do
 		, isIA = configIA c
 		, versioning = fromMaybe False $
 			getRemoteConfigValue versioningField c
-		, public = fromMaybe False $
+		, publicACL = fromMaybe False $
 			getRemoteConfigValue publicField c
 		, publicurl = getRemoteConfigValue publicurlField c
 		, host = getRemoteConfigValue hostField c
@@ -1014,7 +1014,7 @@ putObject info file rbody = (S3.putObject (bucket info) file rbody)
 
 acl :: S3Info -> Maybe S3.CannedAcl
 acl info
-	| public info = Just S3.AclPublicRead
+	| publicACL info = Just S3.AclPublicRead
 	| otherwise = Nothing
 
 getBucketName :: ParsedRemoteConfig -> Maybe BucketName
@@ -1154,7 +1154,8 @@ s3Info c info = catMaybes
 		then Just ("internet archive item", iaItemUrl $ fromMaybe "unknown" $ getBucketName c)
 		else Nothing
 	, Just ("partsize", maybe "unlimited" (roughSize storageUnits False) (getPartSize c))
-	, Just ("public", if public info then "yes" else "no")
+	, Just ("publicurl", fromMaybe "" (publicurl info))
+	, Just ("public", if publicACL info then "yes" else "no")
 	, Just ("versioning", if versioning info then "yes" else "no")
 	]
   where
@@ -1162,13 +1163,11 @@ s3Info c info = catMaybes
 	showstorageclass (S3.OtherStorageClass t) = T.unpack t
 	showstorageclass sc = show sc
 
-getPublicWebUrls :: UUID -> RemoteStateHandle -> S3Info -> ParsedRemoteConfig -> Key -> Annex [URLString]
-getPublicWebUrls u rs info c k = either (const []) id <$> getPublicWebUrls' u rs info c k
+getPublicWebUrls :: RemoteStateHandle -> S3Info -> ParsedRemoteConfig -> Key -> Annex [URLString]
+getPublicWebUrls rs info c k = either (const []) id <$> getPublicWebUrls' rs info c k
 
-getPublicWebUrls' :: UUID -> RemoteStateHandle -> S3Info -> ParsedRemoteConfig -> Key -> Annex (Either String [URLString])
-getPublicWebUrls' u rs info c k
-	| not (public info) = return $ Left $ 
-		"S3 bucket does not allow public access; " ++ needS3Creds u
+getPublicWebUrls' :: RemoteStateHandle -> S3Info -> ParsedRemoteConfig -> Key -> Annex (Either String [URLString])
+getPublicWebUrls' rs info c k
 	| exportTree c = if versioning info
 		then case publicurl info of
 			Just url -> getversionid (const $ genericPublicUrl url)

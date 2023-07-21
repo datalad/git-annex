@@ -125,15 +125,18 @@ the S3 remote.
   When versioning is not enabled, this risks data loss, and so git-annex
   will not let you enable a remote with that configuration unless forced.
 
-* `public` - Set to "yes" to allow public read access to files sent
-  to the S3 remote. This is accomplished by setting an ACL when each 
-  file is uploaded to the remote. So, changes to this setting will
-  only affect subseqent uploads.
-
 * `publicurl` - Configure the URL that is used to download files
-  from the bucket. Using this in combination with public=yes allows
-  git-annex to download files from the S3 remote without needing to
-  know the S3 credentials.
+  from the bucket. Using this with a S3 bucket that has been configured
+  to allow anyone to download its content allows git-annex to download
+  files from the S3 remote without needing to know the S3 credentials.
+
+  To configure the S3 bucket to allow anyone to download its content,
+  refer to S3 documentation to set a Bucket Policy.
+
+* `public` - Deprecated. This enables public read access to files sent to
+  the S3 remote using ACLs. Note that Amazon S3 buckets created after April
+  2023 do not support using ACLs in this way and a Bucket Policy must instead
+  be used. This should only be set for older buckets.
 
 * `partsize` - Amazon S3 only accepts uploads up to a certian file size,
   and storing larger files requires a multipart upload process.
