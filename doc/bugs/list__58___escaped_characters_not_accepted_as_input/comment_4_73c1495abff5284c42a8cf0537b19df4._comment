@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-07-21T19:20:54Z"
+ content="""
+Interestingly, `git rm` does have a way to make it accept quotepath
+formatted filenames:
+
+       --pathspec-from-file=<file>
+           Pathspec is passed in <file> instead of commandline args. If <file>
+           is exactly - then standard input is used. Pathspec elements are
+           separated by LF or CR/LF. Pathspec elements can be quoted as
+           explained for the configuration variable core.quotePath (see git-
+           config(1)). See also --pathspec-file-nul and global
+           --literal-pathspecs.
+
+I don't think that's the first thing I would have reached for though.
+It's not a common option supported by other git commands. I would have
+probably instead used `git ls-files -c core.quotePath=false`, filtered
+the output to only have one of the two related filenames, and passed it to
+`git rm` as a parameter.
+
+If git had a common way to accept quotepath input, I'd think that git-annex
+should support it, but since it doesn't, I'm unsure that it's worth complicating
+git-annex, since core.quotePath=false can already be used.
+"""]]
