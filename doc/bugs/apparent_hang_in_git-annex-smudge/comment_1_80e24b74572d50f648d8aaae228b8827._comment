@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-07-21T19:04:05Z"
+ content="""
+Suggest you truss the `git-annex smudge` process and see what it's stuck
+on. Looking at what file descriptors it has open would also be useful.
+
+Unless you have prevented git-annex from upgrading your repository from
+annex.version 8, it would normally have `filter.annex.process` configured,
+and so `git status` would normally run `git-annex filter-process` rather
+than `git annex smudge`.
+
+So I suppose you either have an old repository version or have manually
+unset `filter.annex.process`. Which it is seems like relevant information
+to try to reproduce this.
+
+Closest I can come to this bug is the deadlock that was fixed
+by [[!commit d5451afc8f90832a58e78b17cfc461c24e417d52]] in 2020..
+"""]]
