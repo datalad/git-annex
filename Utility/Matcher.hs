@@ -31,6 +31,7 @@ module Utility.Matcher (
 	isEmpty,
 	combineMatchers,
 	introspect,
+	describeMatchDesc,
 
 	prop_matcher_sane
 ) where
@@ -50,6 +51,15 @@ data Matcher op = MAny
 	| MNot (Matcher op)
 	| MOp op
 	deriving (Show, Eq, Foldable)
+
+data MatchDesc op
+	= MatchedOperation Bool op
+	| MatchedAnd
+	| MatchedOr
+	| MatchedNot
+	| MatchedOpen
+	| MatchedClose
+	deriving (Show, Eq)
 
 {- Converts a word of syntax into a token. Doesn't handle operations. -}
 syntaxToken :: String -> Either String (Token op)
@@ -128,14 +138,6 @@ implicitAnd (a:rest) = a : implicitAnd rest
 match :: (op -> v -> Bool) -> Matcher op -> v -> Bool
 match a m v = fst $ runWriter $ match' a m v
 
-data MatchDesc op
-	= MatchedOperation op
-	| UnmatchedOperation op
-	| MatchedAnd
-	| MatchedOr
-	| MatchedNot
-	deriving (Show, Eq)
-
 {- Like match, but accumulates a description of why it did or didn't match. -}
 match' :: (op -> v -> Bool) -> Matcher op -> v -> Writer [MatchDesc op] Bool
 match' a m v = matchMrun' m (\op -> pure (a op v))
@@ -159,27 +161,37 @@ matchMrun' m run = go m
   where
 	go MAny = return True
 	go (MAnd m1 m2) = do
+		tell [MatchedOpen]
 		r1 <- go m1
 		if r1 
 			then do
 				tell [MatchedAnd]
-				go m2
-			else return False
+				r <- go m2
+				tell [MatchedClose]
+				return r
+			else do
+				tell [MatchedClose]
+				return False
 	go (MOr m1 m2) = do
+		tell [MatchedOpen]
 		r1 <- go m1
 		if r1
-			then return True
+			then do
+				tell [MatchedClose]
+				return True
 			else do
 				tell [MatchedOr]
-				go m2
+				r <- go m2
+				tell [MatchedClose]
+				return r
 	go (MNot m1) = do
-		tell [MatchedNot]
-		liftM not (go m1)
+		tell [MatchedOpen, MatchedNot]
+		r <- liftM not (go m1)
+		tell [MatchedClose]
+		return r
 	go (MOp op) = do
 		r <- lift (run op)
-		if r
-			then tell [MatchedOperation op]
-			else tell [UnmatchedOperation op]
+		tell [MatchedOperation r op]
 		return r
 
 {- Checks if a matcher contains no limits. -}
@@ -198,6 +210,35 @@ combineMatchers a b
 {- Checks if anything in the matcher meets the condition. -}
 introspect :: (a -> Bool) -> Matcher a -> Bool
 introspect = any
+
+{- Converts a [MatchDesc] into a description of what matched and didn't
+ - match. -}
+describeMatchDesc :: (op -> Bool -> String) -> [MatchDesc op] -> String
+describeMatchDesc descop = unwords . go . simplify True
+  where
+ 	go [] = []
+	go (MatchedOperation b op:rest) = descop op b : go rest
+	go (MatchedAnd:rest) = "and" : go rest
+	go (MatchedOr:rest) = "or" : go rest
+	go (MatchedNot:rest) = "not" : go rest
+	go (MatchedOpen:rest) = "(" : go rest
+	go (MatchedClose:rest) = ")" : go rest
+
+	-- Remove unncessary outermost parens
+	simplify True (MatchedOpen:rest) = case lastMaybe rest of
+		Just MatchedClose -> simplify True (dropFromEnd 1 rest)
+		_ -> simplify False rest
+	-- (foo or bar) or baz => foo or bar or baz
+	simplify _ (MatchedOpen:o1@(MatchedOperation {}):MatchedOr:o2@(MatchedOperation {}):MatchedClose:MatchedOr:rest) = 
+		o1:MatchedOr:o2:MatchedOr:simplify False rest
+	-- (foo and bar) and baz => foo and bar and baz
+	simplify _ (MatchedOpen:o1@(MatchedOperation {}):MatchedAnd:o2@(MatchedOperation {}):MatchedClose:MatchedAnd:rest) = 
+		o1:MatchedAnd:o2:MatchedAnd:simplify False rest
+	-- (not foo) => not foo
+	simplify _ (MatchedOpen:MatchedNot:o@(MatchedOperation {}):MatchedClose:rest) =
+		MatchedNot:o:simplify False rest
+	simplify _ (v:rest) = v : simplify False rest
+	simplify _ v = v
 
 prop_matcher_sane :: Bool
 prop_matcher_sane = and
