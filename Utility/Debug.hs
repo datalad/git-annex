@@ -1,6 +1,6 @@
 {- Debug output
  -
- - Copyright 2021-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2021 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -12,14 +12,10 @@
 module Utility.Debug (
 	DebugSource(..),
 	DebugSelector(..),
-	DebugMessage,
-	RawDebugMessage(..),
 	configureDebug,
 	getDebugSelector,
 	debug,
-	debug',
-	fastDebug,
-	fastDebug'
+	fastDebug
 ) where
 
 import qualified Data.ByteString as S
@@ -54,22 +50,6 @@ instance Sem.Semigroup DebugSelector where
 instance Monoid DebugSelector where
 	mempty = NoDebugSelector
 
-class DebugMessage msg where
-	formatDebugMessage :: DebugSource -> msg -> IO S.ByteString
-
-instance DebugMessage String where
-	formatDebugMessage (DebugSource src) msg = do
-		t <- encodeBS . formatTime defaultTimeLocale "[%F %X%Q]"
-			<$> getZonedTime
-		return (t <> " (" <> src <> ") " <> encodeBS msg)
-
--- Debug message to be displayed without the usual time stamp 
--- and source information.
-newtype RawDebugMessage = RawDebugMessage String
-
-instance DebugMessage RawDebugMessage where
-	formatDebugMessage _ (RawDebugMessage msg) = pure (encodeBS msg)
-
 -- | Configures debugging.
 configureDebug
 	:: (S.ByteString -> IO ())
@@ -96,10 +76,7 @@ debugConfigGlobal = unsafePerformIO $ newIORef (dontshow, selectnone)
 -- have to consult a IORef each time, using it in a tight loop may slow
 -- down the program.
 debug :: DebugSource -> String -> IO ()
-debug = debug'
-
-debug' :: DebugMessage msg => DebugSource -> msg -> IO ()
-debug' src msg = readIORef debugConfigGlobal >>= \case
+debug src msg = readIORef debugConfigGlobal >>= \case
 	(displayer, NoDebugSelector) ->
 		displayer =<< formatDebugMessage src msg
 	(displayer, DebugSelector p)
@@ -111,12 +88,15 @@ debug' src msg = readIORef debugConfigGlobal >>= \case
 -- When the DebugSelector does not let the message be displayed, this runs
 -- very quickly, allowing it to be used inside tight loops.
 fastDebug :: DebugSelector -> DebugSource -> String -> IO ()
-fastDebug = fastDebug'
-
-fastDebug' :: DebugMessage msg => DebugSelector -> DebugSource -> msg -> IO ()
-fastDebug' NoDebugSelector src msg = do
+fastDebug NoDebugSelector src msg = do
 	(displayer, _) <- readIORef debugConfigGlobal
 	displayer =<< formatDebugMessage src msg
-fastDebug' (DebugSelector p) src msg
-	| p src = fastDebug' NoDebugSelector src msg
+fastDebug (DebugSelector p) src msg
+	| p src = fastDebug NoDebugSelector src msg
 	| otherwise = return ()
+
+formatDebugMessage :: DebugSource -> String -> IO S.ByteString
+formatDebugMessage (DebugSource src) msg = do
+	t <- encodeBS . formatTime defaultTimeLocale "[%F %X%Q]"
+		<$> getZonedTime
+	return (t <> " (" <> src <> ") " <> encodeBS msg)
