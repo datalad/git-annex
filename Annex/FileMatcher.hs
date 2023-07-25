@@ -139,8 +139,8 @@ commonKeylessTokens lb =
 	, SimpleToken "nothing" (simply limitNothing)
 	, ValueToken "include" (usev limitInclude)
 	, ValueToken "exclude" (usev limitExclude)
-	, ValueToken "largerthan" (usev $ limitSize lb (>))
-	, ValueToken "smallerthan" (usev $ limitSize lb (<))
+	, ValueToken "largerthan" (usev $ limitSize lb "largerthan" (>))
+	, ValueToken "smallerthan" (usev $ limitSize lb "smallerthan" (<))
 	]
 
 commonKeyedTokens :: [ParseToken (MatchFiles Annex)]
@@ -164,9 +164,9 @@ data PreferredContentData = PCD
 -- so the Key is not known.
 preferredContentKeylessTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
 preferredContentKeylessTokens pcd =
-	[ SimpleToken "standard" (call $ matchStandard pcd)
-	, SimpleToken "groupwanted" (call $ matchGroupWanted pcd)
-	, SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir)
+	[ SimpleToken "standard" (call "standard" $ matchStandard pcd)
+	, SimpleToken "groupwanted" (call "groupwanted" $ matchGroupWanted pcd)
+	, SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir "inpreferreddir")
 	] ++ commonKeylessTokens LimitAnnexFiles
   where
 	preferreddir = maybe "public" fromProposedAccepted $
@@ -177,8 +177,8 @@ preferredContentKeyedTokens pcd =
 	[ SimpleToken "present" (simply $ limitPresent $ repoUUID pcd)
 	, SimpleToken "securehash" (simply limitSecureHash)
 	, ValueToken "copies" (usev limitCopies)
-	, ValueToken "lackingcopies" (usev $ limitLackingCopies False)
-	, ValueToken "approxlackingcopies" (usev $ limitLackingCopies True)
+	, ValueToken "lackingcopies" (usev $ limitLackingCopies "lackingcopies" False)
+	, ValueToken "approxlackingcopies" (usev $ limitLackingCopies "approxlackingcopies" True)
 	, ValueToken "inbackend" (usev limitInBackend)
 	, ValueToken "metadata" (usev limitMetaData)
 	, ValueToken "inallgroup" (usev $ limitInAllGroup $ getGroupMap pcd)
@@ -275,13 +275,14 @@ simply = Right . Operation
 usev :: MkLimit Annex -> String -> ParseResult (MatchFiles Annex)
 usev a v = Operation <$> a v
 
-call :: Either String (FileMatcher Annex) -> ParseResult (MatchFiles Annex)
-call (Right sub) = Right $ Operation $ MatchFiles
+call :: String -> Either String (FileMatcher Annex) -> ParseResult (MatchFiles Annex)
+call desc (Right sub) = Right $ Operation $ MatchFiles
 	{ matchAction = \notpresent mi ->
 		matchMrun sub $ \o -> matchAction o notpresent mi
 	, matchNeedsFileName = any matchNeedsFileName sub
 	, matchNeedsFileContent = any matchNeedsFileContent sub
 	, matchNeedsKey = any matchNeedsKey sub
 	, matchNeedsLocationLog = any matchNeedsLocationLog sub
+	, matchDesc = matchDescSimple desc
 	}
-call (Left err) = Left err
+call _ (Left err) = Left err

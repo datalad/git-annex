@@ -15,27 +15,27 @@ import Logs.PreferredContent
 import qualified Remote
 
 addWantGet :: Annex ()
-addWantGet = addPreferredContentLimit $
+addWantGet = addPreferredContentLimit "want-get" $
 	checkWant $ wantGet False Nothing
 
 addWantGetBy :: String -> Annex ()
 addWantGetBy name = do
 	u <- Remote.nameToUUID name
-	addPreferredContentLimit $ checkWant $ \af ->
+	addPreferredContentLimit "want-get-by" $ checkWant $ \af ->
 		wantGetBy False Nothing af u
 
 addWantDrop :: Annex ()
-addWantDrop = addPreferredContentLimit $ checkWant $ \af ->
+addWantDrop = addPreferredContentLimit "want-drop" $ checkWant $ \af ->
 	wantDrop False Nothing Nothing af (Just [])
 
 addWantDropBy :: String -> Annex ()
 addWantDropBy name = do
 	u <- Remote.nameToUUID name
-	addPreferredContentLimit $ checkWant $ \af ->
+	addPreferredContentLimit "want-drop-by" $ checkWant $ \af ->
 		wantDrop False (Just u) Nothing af (Just [])
 
-addPreferredContentLimit :: (MatchInfo -> Annex Bool) -> Annex ()
-addPreferredContentLimit a = do
+addPreferredContentLimit :: String -> (MatchInfo -> Annex Bool) -> Annex ()
+addPreferredContentLimit desc a = do
 	nfn <- introspectPreferredRequiredContent matchNeedsFileName Nothing
 	nfc <- introspectPreferredRequiredContent matchNeedsFileContent Nothing
 	nk <- introspectPreferredRequiredContent matchNeedsKey Nothing
@@ -46,6 +46,7 @@ addPreferredContentLimit a = do
 		, matchNeedsFileContent = nfc
 		, matchNeedsKey = nk
 		, matchNeedsLocationLog = nl
+		, matchDesc = matchDescSimple desc
 		}
 
 checkWant :: (AssociatedFile -> Annex Bool) -> MatchInfo -> Annex Bool

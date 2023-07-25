@@ -1,5 +1,7 @@
 git-annex (10.20230627) UNRELEASED; urgency=medium
 
+  * --explain: New option to display explanations of what git-annex
+    takes into account when deciding what to do.
   * satisfy: New command that gets/sends/drops content to satisfy
     preferred content settings. This is like to the --content
     part of git-annex sync.

@@ -1,6 +1,6 @@
 {- git-annex file matcher types
  -
- - Copyright 2013-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,7 +11,7 @@ import Types.UUID (UUID)
 import Types.Key (Key)
 import Types.Link (LinkType)
 import Types.Mime
-import Utility.Matcher (Matcher, Token)
+import Utility.Matcher (Matcher, Token, MatchDesc)
 import Utility.FileSize
 import Utility.FileSystemEncoding
 
@@ -93,6 +93,8 @@ data MatchFiles a = MatchFiles
 	-- ^ does the matchAction look at information about the key?
 	, matchNeedsLocationLog :: Bool
 	-- ^ does the matchAction look at the location log?
+	, matchDesc :: Bool -> MatchDesc
+	-- ^ displayed to the user to describe whether it matched or not
 	}
 
 type FileMatcher a = Matcher (MatchFiles a)

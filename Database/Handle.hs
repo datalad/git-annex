@@ -125,7 +125,7 @@ commitDb' (DbHandle _ _ jobs _) a = do
 	case r of
 		Right (Right ()) -> debug "Database.Handle" "commitDb done"
 		Right (Left e) -> debug "Database.Handle" ("commitDb failed: " ++ show e)
-		Left BlockedIndefinitelyOnMVar -> debug "Database.Handle" ("commitDb BlockedIndefinitelyOnMVar")
+		Left BlockedIndefinitelyOnMVar -> debug "Database.Handle" "commitDb BlockedIndefinitelyOnMVar"
 
 	return r
 

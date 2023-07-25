@@ -122,6 +122,7 @@ data AnnexRead = AnnexRead
 	, transferrerpool :: TransferrerPool
 	, debugenabled :: Bool
 	, debugselector :: DebugSelector
+	, explainenabled :: Bool
 	, ciphers :: TMVar (M.Map StorableCipher Cipher)
 	, fast :: Bool
 	, force :: Bool
@@ -152,6 +153,7 @@ newAnnexRead c = do
 		, transferrerpool = tp
 		, debugenabled = annexDebug c
 		, debugselector = debugSelectorFromGitConfig c
+		, explainenabled = False
 		, ciphers = cm
 		, fast = False
 		, force = False

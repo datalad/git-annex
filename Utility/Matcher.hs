@@ -21,6 +21,7 @@ module Utility.Matcher (
 	Token(..),
 	Matcher(..),
 	MatchDesc(..),
+	MatchResult(..),
 	syntaxToken,
 	generate,
 	match,
@@ -31,7 +32,7 @@ module Utility.Matcher (
 	isEmpty,
 	combineMatchers,
 	introspect,
-	describeMatchDesc,
+	describeMatchResult,
 
 	prop_matcher_sane
 ) where
@@ -52,7 +53,9 @@ data Matcher op = MAny
 	| MOp op
 	deriving (Show, Eq, Foldable)
 
-data MatchDesc op
+newtype MatchDesc = MatchDesc String
+
+data MatchResult op
 	= MatchedOperation Bool op
 	| MatchedAnd
 	| MatchedOr
@@ -139,7 +142,7 @@ match :: (op -> v -> Bool) -> Matcher op -> v -> Bool
 match a m v = fst $ runWriter $ match' a m v
 
 {- Like match, but accumulates a description of why it did or didn't match. -}
-match' :: (op -> v -> Bool) -> Matcher op -> v -> Writer [MatchDesc op] Bool
+match' :: (op -> v -> Bool) -> Matcher op -> v -> Writer [MatchResult op] Bool
 match' a m v = matchMrun' m (\op -> pure (a op v))
 
 {- Runs a monadic Matcher, where Operations are actions in the monad. -}
@@ -151,9 +154,9 @@ matchM m v = matchMrun m $ \op -> op v
 matchMrun :: Monad m => Matcher op -> (op -> m Bool) -> m Bool
 matchMrun m run = fst <$> runWriterT (matchMrun' m run)
 
-{- Like matchMRun, but accumulates a description of why it did or didn't match. -}
+{- Like matchMrun, but accumulates a description of why it did or didn't match. -}
 matchMrun'
-	:: (MonadWriter [MatchDesc op] (t m), MonadTrans t, Monad m)
+	:: (MonadWriter [MatchResult op] (t m), MonadTrans t, Monad m)
 	=> Matcher op
 	-> (op -> m Bool)
 	-> t m Bool
@@ -211,13 +214,15 @@ combineMatchers a b
 introspect :: (a -> Bool) -> Matcher a -> Bool
 introspect = any
 
-{- Converts a [MatchDesc] into a description of what matched and didn't
+{- Converts a [MatchResult] into a description of what matched and didn't
  - match. -}
-describeMatchDesc :: (op -> Bool -> String) -> [MatchDesc op] -> String
-describeMatchDesc descop = unwords . go . simplify True
+describeMatchResult :: (op -> Bool -> MatchDesc) -> [MatchResult op] -> String
+describeMatchResult descop = unwords . go . simplify True
   where
  	go [] = []
-	go (MatchedOperation b op:rest) = descop op b : go rest
+	go (MatchedOperation b op:rest) = 
+		let MatchDesc d = descop op b
+		in d : go rest
 	go (MatchedAnd:rest) = "and" : go rest
 	go (MatchedOr:rest) = "or" : go rest
 	go (MatchedNot:rest) = "not" : go rest

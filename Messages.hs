@@ -50,6 +50,7 @@ module Messages (
 	outputMessage,
 	withMessageState,
 	MessageState,
+	explain,
 	prompt,
 	mkPrompter,
 	sanitizeTopLevelExceptionMessages,
@@ -298,6 +299,14 @@ jsonOutputEnabled = withMessageState $ \s -> return $
 	case outputType s of
 		JSONOutput _ -> True
 		_ -> False
+
+explain :: Maybe RawFilePath -> StringContainingQuotedPath -> Annex ()
+explain Nothing _ = return ()
+explain (Just f) msg = do
+	rd <- Annex.getRead id
+	when (Annex.explainenabled rd) $
+		outputMessage JSON.none id $
+			"[" <> QuotedPath f <> " " <> msg <> "]\n"
 
 {- Prevents any concurrent console access while running an action, so
  - that the action is the only thing using the console, and can eg prompt

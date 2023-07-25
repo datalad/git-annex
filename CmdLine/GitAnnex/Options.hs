@@ -286,12 +286,12 @@ keyMatchingOptions' =
 		<> help "skip files with fewer copies"
 		<> hidden
 		)
-	, annexOption (setAnnexState . Limit.addLackingCopies False) $ strOption
+	, annexOption (setAnnexState . Limit.addLackingCopies "lackingcopies" False) $ strOption
 		( long "lackingcopies" <> metavar paramNumber
 		<> help "match files that need more copies"
 		<> hidden
 		)
-	, annexOption (setAnnexState . Limit.addLackingCopies True) $ strOption
+	, annexOption (setAnnexState . Limit.addLackingCopies "approxlackingcopies" True) $ strOption
 		( long "approxlackingcopies" <> metavar paramNumber
 		<> help "match files that need more copies (faster)"
 		<> hidden

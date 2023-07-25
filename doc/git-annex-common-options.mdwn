@@ -29,11 +29,17 @@ Most of these options are accepted by all git-annex commands.
 
 * `--verbose`
 
-  Enable verbose display.
+  Enable verbose display. On by default but can be disabled by --quiet.
+
+* `--explain`
+
+  Display explanations of what git-annex takes into account when deciding
+  what to do. The explanations will be inside square brackets.
+  For example, "[foo is not present here]"
 
 * `--debug`
 
-  Display debug messages.
+  Display debug messages to standard error.
 
 * `--no-debug`
 
