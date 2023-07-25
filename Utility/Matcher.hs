@@ -237,8 +237,19 @@ describeMatchDesc descop = unwords . go . simplify True
 	-- (not foo) => not foo
 	simplify _ (MatchedOpen:MatchedNot:o@(MatchedOperation {}):MatchedClose:rest) =
 		MatchedNot:o:simplify False rest
+	-- ((foo bar)) => (foo bar)
+	simplify _ (MatchedOpen:MatchedOpen:rest) =
+		MatchedOpen : simplify False (removeclose (0 :: Int) rest)
 	simplify _ (v:rest) = v : simplify False rest
 	simplify _ v = v
+
+	removeclose n (MatchedOpen:rest) =
+		MatchedOpen : removeclose (n+1) rest
+	removeclose n (MatchedClose:rest)
+		| n > 0 = MatchedClose : removeclose (n-1) rest
+		| otherwise = rest
+	removeclose n (v:rest) = v : removeclose n rest
+	removeclose _ [] = []
 
 prop_matcher_sane :: Bool
 prop_matcher_sane = and
