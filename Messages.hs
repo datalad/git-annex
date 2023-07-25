@@ -50,6 +50,7 @@ module Messages (
 	outputMessage,
 	withMessageState,
 	MessageState,
+	explain,
 	prompt,
 	mkPrompter,
 	sanitizeTopLevelExceptionMessages,
@@ -280,6 +281,11 @@ debugDisplayer = do
 	return $ \s -> withMVar lock $ \() -> do
 		S.hPutStr stderr (safeOutput s <> "\n")
 		hFlush stderr
+
+explain :: Maybe String -> String -> Annex ()
+explain Nothing _ = return ()
+explain (Just f) msg = fastDebug' "explain" $ 
+	RawDebugMessage ('[' : f ++ " " ++ msg ++ "]")
 
 {- Should commands that normally output progress messages have that
  - output disabled? -}
