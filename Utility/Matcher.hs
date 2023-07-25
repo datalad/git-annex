@@ -10,21 +10,24 @@
  - Is forgiving about misplaced closing parens, so "foo and (bar or baz"
  - will be handled, as will "foo and ( bar or baz ) )"
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
- - License: BSD-2-clause
+ - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE Rank2Types, KindSignatures, DeriveFoldable #-}
+{-# LANGUAGE DeriveFoldable, FlexibleContexts #-}
 
 module Utility.Matcher (
 	Token(..),
 	Matcher(..),
+	MatchDesc(..),
 	syntaxToken,
 	generate,
 	match,
+	match',
 	matchM,
 	matchMrun,
+	matchMrun',
 	isEmpty,
 	combineMatchers,
 	introspect,
@@ -34,7 +37,7 @@ module Utility.Matcher (
 
 import Common
 
-import Data.Kind
+import Control.Monad.Writer
 
 {- A Token can be an Operation of an arbitrary type, or one of a few
  - predefined pieces of syntax. -}
@@ -123,29 +126,61 @@ implicitAnd (a:rest) = a : implicitAnd rest
 {- Checks if a Matcher matches, using a supplied function to check
  - the value of Operations. -}
 match :: (op -> v -> Bool) -> Matcher op -> v -> Bool
-match a m v = go m
-  where
-	go MAny = True
-	go (MAnd m1 m2) = go m1 && go m2
-	go (MOr m1 m2) =  go m1 || go m2
-	go (MNot m1) = not $ go m1
-	go (MOp o) = a o v
+match a m v = fst $ runWriter $ match' a m v
+
+data MatchDesc op
+	= MatchedOperation op
+	| UnmatchedOperation op
+	| MatchedAnd
+	| MatchedOr
+	| MatchedNot
+	deriving (Show, Eq)
+
+{- Like match, but accumulates a description of why it did or didn't match. -}
+match' :: (op -> v -> Bool) -> Matcher op -> v -> Writer [MatchDesc op] Bool
+match' a m v = matchMrun' m (\op -> pure (a op v))
 
 {- Runs a monadic Matcher, where Operations are actions in the monad. -}
 matchM :: Monad m => Matcher (v -> m Bool) -> v -> m Bool
-matchM m v = matchMrun m $ \o -> o v
+matchM m v = matchMrun m $ \op -> op v
 
 {- More generic running of a monadic Matcher, with full control over running
- - of Operations. Mostly useful in order to match on more than one
- - parameter. -}
-matchMrun :: forall o (m :: Type -> Type). Monad m => Matcher o -> (o -> m Bool) -> m Bool
-matchMrun m run = go m
+ - of Operations. -}
+matchMrun :: Monad m => Matcher op -> (op -> m Bool) -> m Bool
+matchMrun m run = fst <$> runWriterT (matchMrun' m run)
+
+{- Like matchMRun, but accumulates a description of why it did or didn't match. -}
+matchMrun'
+	:: (MonadWriter [MatchDesc op] (t m), MonadTrans t, Monad m)
+	=> Matcher op
+	-> (op -> m Bool)
+	-> t m Bool
+matchMrun' m run = go m
   where
 	go MAny = return True
-	go (MAnd m1 m2) = go m1 <&&> go m2
-	go (MOr m1 m2) =  go m1 <||> go m2
-	go (MNot m1) = liftM not (go m1)
-	go (MOp o) = run o
+	go (MAnd m1 m2) = do
+		r1 <- go m1
+		if r1 
+			then do
+				tell [MatchedAnd]
+				go m2
+			else return False
+	go (MOr m1 m2) = do
+		r1 <- go m1
+		if r1
+			then return True
+			else do
+				tell [MatchedOr]
+				go m2
+	go (MNot m1) = do
+		tell [MatchedNot]
+		liftM not (go m1)
+	go (MOp op) = do
+		r <- lift (run op)
+		if r
+			then tell [MatchedOperation op]
+			else tell [UnmatchedOperation op]
+		return r
 
 {- Checks if a matcher contains no limits. -}
 isEmpty :: Matcher a -> Bool
