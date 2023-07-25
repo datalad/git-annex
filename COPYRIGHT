@@ -43,7 +43,7 @@ Copyright: 2019 Joey Hess <id@joeyh.name>
            2007-2015 Bryan O'Sullivan
 License: BSD-3-clause
 
-Files: Utility/GitLFS.hs
+Files: Utility/GitLFS.hs Utility/Matcher.hs Utility/Tor.hs Utility/Yesod.hs
 Copyright: © 2019 Joey Hess <id@joeyh.name>
 License: AGPL-3+
 
