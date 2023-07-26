@@ -242,6 +242,12 @@ describeMatchResult descop l prefix = Just $
 	-- (foo and bar) and baz => foo and bar and baz
 	simplify _ (MatchedOpen:o1@(MatchedOperation {}):MatchedAnd:o2@(MatchedOperation {}):MatchedClose:MatchedAnd:rest) = 
 		o1:MatchedAnd:o2:MatchedAnd:simplify False rest
+	-- or (foo) => or foo
+	simplify _ (MatchedOr:MatchedOpen:o@(MatchedOperation {}):MatchedClose:rest) =
+		MatchedOr:o:simplify False rest
+	-- and (foo) => and foo
+	simplify _ (MatchedAnd:MatchedOpen:o@(MatchedOperation {}):MatchedClose:rest) =
+		MatchedAnd:o:simplify False rest
 	-- (not foo) => not foo
 	simplify _ (MatchedOpen:MatchedNot:o@(MatchedOperation {}):MatchedClose:rest) =
 		MatchedNot:o:simplify False rest
