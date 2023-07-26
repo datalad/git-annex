@@ -625,8 +625,9 @@ checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a
 checkKey a (MatchingInfo p) = maybe (return False) a (providedKey p)
 checkKey a (MatchingUserInfo p) = a =<< getUserInfo (userProvidedKey p)
 
-matchDescSimple :: String -> Bool -> Utility.Matcher.MatchDesc
-matchDescSimple s b = Utility.Matcher.MatchDesc $ (if b then "" else "!") ++ s
+matchDescSimple :: String -> (Bool -> Utility.Matcher.MatchDesc)
+matchDescSimple s b = Utility.Matcher.MatchDesc $ s ++
+	if b then "[TRUE]" else "[FALSE]"
 
 (=?) :: String -> String -> (Bool -> Utility.Matcher.MatchDesc)
-k =? v = \b -> Utility.Matcher.MatchDesc $ k ++ (if b then "==" else "!=") ++ v
+k =? v = matchDescSimple (k ++ "=" ++ v)

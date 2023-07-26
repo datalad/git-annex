@@ -306,7 +306,7 @@ explain ai (Just msg) = do
 	when (Annex.explainenabled rd) $
 		let d = actionItemDesc ai
 		in outputMessage JSON.none id $
-			"[" <> (if d == mempty then "" else (d <> " ")) <> msg <> "]\n"
+			"[ " <> (if d == mempty then "" else (d <> " ")) <> msg <> " ]\n"
 explain _ _ = return ()
 
 {- Prevents any concurrent console access while running an action, so

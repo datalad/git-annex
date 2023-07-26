@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-07-26T19:31:40Z"
+ content="""
+--explain is implemented and expanations for preferred content expressions,
+annex.largefiles, and annex.addunlocked are now displayed.
+
+Leaving this open because I do think that explanations of numcopies and
+content presence checking should be added, as well as perhaps explanations
+of drop proofs.
+"""]]

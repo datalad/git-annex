@@ -37,6 +37,13 @@ Most of these options are accepted by all git-annex commands.
   what to do. The explanations will be inside square brackets.
   For example, "[foo is not present here]"
 
+  This includes explanations of why preferred content expressions and
+  other similar expressions like annex.largefiles match or fail to match.
+  In these explanations, the expression is displayed, with each term
+  followed by "[TRUE]" or "[FALSE]" to indicate the value.
+  Irrelevant terms will be ommitted from the explanation, for example 
+  `"exclude=* and copies=1"` will be displayed as `"exclude=*[FALSE]"`
+
 * `--debug`
 
   Display debug messages to standard error.
