@@ -1,6 +1,6 @@
 {- git-annex file matching
  -
- - Copyright 2012-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -50,6 +50,7 @@ import Annex.Magic
 
 import Data.Either
 import qualified Data.Set as S
+import Control.Monad.Writer
 
 type GetFileMatcher = RawFilePath -> Annex (FileMatcher Annex)
 
@@ -69,7 +70,7 @@ checkFileMatcher' getmatcher file notconfigured = do
 
 checkMatcher :: FileMatcher Annex -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Annex Bool -> Annex Bool -> Annex Bool
 checkMatcher matcher mkey afile notpresent notconfigured d
-	| isEmpty matcher = notconfigured
+	| isEmpty (fst matcher) = notconfigured
 	| otherwise = case (mkey, afile) of
 		(_, AssociatedFile (Just file)) ->
 			go =<< fileMatchInfo file mkey
@@ -88,8 +89,13 @@ checkMatcher matcher mkey afile notpresent notconfigured d
 	go mi = checkMatcher' matcher mi notpresent
 
 checkMatcher' :: FileMatcher Annex -> MatchInfo -> AssumeNotPresent -> Annex Bool
-checkMatcher' matcher mi notpresent =
-	matchMrun matcher $ \o -> matchAction o notpresent mi
+checkMatcher' (matcher, (MatcherDesc matcherdesc)) mi notpresent = do
+	(matches, desc) <- runWriterT $ matchMrun' matcher $ \op ->
+		matchAction op notpresent mi
+	explain (mkActionItem mi) $ UnquotedString <$>
+		describeMatchResult matchDesc desc
+			((if matches then "matches " else "does not match ") ++ matcherdesc ++ ": ")
+	return matches
 
 fileMatchInfo :: RawFilePath -> Maybe Key -> Annex MatchInfo
 fileMatchInfo file mkey = do
@@ -100,12 +106,12 @@ fileMatchInfo file mkey = do
 		, matchKey = mkey
 		}
 
-matchAll :: FileMatcher Annex
+matchAll :: Matcher (MatchFiles Annex)
 matchAll = generate []
 
-parsedToMatcher :: [ParseResult (MatchFiles Annex)] -> Either String (FileMatcher Annex)
-parsedToMatcher parsed = case partitionEithers parsed of
-	([], vs) -> Right $ generate vs
+parsedToMatcher :: MatcherDesc -> [ParseResult (MatchFiles Annex)] -> Either String (FileMatcher Annex)
+parsedToMatcher matcherdesc parsed = case partitionEithers parsed of
+	([], vs) -> Right (generate vs, matcherdesc)
 	(es, _) -> Left $ unwords $ map ("Parse failure: " ++) es
 
 data ParseToken t
@@ -149,8 +155,8 @@ commonKeyedTokens =
 	]
 
 data PreferredContentData = PCD
-	{ matchStandard :: Either String (FileMatcher Annex)
-	, matchGroupWanted :: Either String (FileMatcher Annex)
+	{ matchStandard :: Either String (Matcher (MatchFiles Annex))
+	, matchGroupWanted :: Either String (Matcher (MatchFiles Annex))
 	, getGroupMap :: Annex GroupMap
 	, configMap :: M.Map UUID RemoteConfig
 	, repoUUID :: Maybe UUID
@@ -227,6 +233,7 @@ mkMatchExpressionParser = do
 largeFilesMatcher :: Annex GetFileMatcher
 largeFilesMatcher = go =<< getGitConfigVal' annexLargeFiles
   where
+	matcherdesc = MatcherDesc "annex.largefiles"
 	go (HasGitConfig (Just expr)) = do
 		matcher <- mkmatcher expr "git config"
 		return $ const $ return matcher
@@ -236,34 +243,38 @@ largeFilesMatcher = go =<< getGitConfigVal' annexLargeFiles
 			then case v of
 				HasGlobalConfig (Just expr') ->
 					mkmatcher expr' "git-annex config"
-				_ -> return matchAll
+				_ -> return (matchAll, matcherdesc)
 			else mkmatcher expr "gitattributes"
 
 	mkmatcher expr cfgfrom = do
 		parser <- mkMatchExpressionParser
-		either (badexpr cfgfrom) return $ parsedToMatcher $ parser expr
+		either (badexpr cfgfrom) return $ parsedToMatcher matcherdesc $ parser expr
+
 	badexpr cfgfrom e = giveup $ "bad annex.largefiles configuration in " ++ cfgfrom ++ ": " ++ e
 
 newtype AddUnlockedMatcher = AddUnlockedMatcher (FileMatcher Annex)
 
 addUnlockedMatcher :: Annex AddUnlockedMatcher
-addUnlockedMatcher = AddUnlockedMatcher <$> 
+addUnlockedMatcher = AddUnlockedMatcher <$>
 	(go =<< getGitConfigVal' annexAddUnlocked)
   where
 	go (HasGitConfig (Just expr)) = mkmatcher expr "git config"
 	go (HasGlobalConfig (Just expr)) = mkmatcher expr "git annex config"
 	go _ = matchalways False
 
+	matcherdesc = MatcherDesc "annex.addunlocked"
+
 	mkmatcher :: String -> String -> Annex (FileMatcher Annex)
 	mkmatcher expr cfgfrom = case Git.Config.isTrueFalse expr of
 		Just b -> matchalways b
 		Nothing -> do
 			parser <- mkMatchExpressionParser
-			either (badexpr cfgfrom) return $ parsedToMatcher $ parser expr
+			either (badexpr cfgfrom) return $ parsedToMatcher matcherdesc $ parser expr
+
 	badexpr cfgfrom e = giveup $ "bad annex.addunlocked configuration in " ++ cfgfrom ++ ": " ++ e
 
-	matchalways True = return $ MOp limitAnything
-	matchalways False = return $ MOp limitNothing
+	matchalways True = return (MOp limitAnything, matcherdesc)
+	matchalways False = return (MOp limitNothing, matcherdesc)
 
 checkAddUnlockedMatcher :: AddUnlockedMatcher -> MatchInfo -> Annex Bool
 checkAddUnlockedMatcher (AddUnlockedMatcher matcher) mi = 
@@ -275,7 +286,7 @@ simply = Right . Operation
 usev :: MkLimit Annex -> String -> ParseResult (MatchFiles Annex)
 usev a v = Operation <$> a v
 
-call :: String -> Either String (FileMatcher Annex) -> ParseResult (MatchFiles Annex)
+call :: String -> Either String (Matcher (MatchFiles Annex)) -> ParseResult (MatchFiles Annex)
 call desc (Right sub) = Right $ Operation $ MatchFiles
 	{ matchAction = \notpresent mi ->
 		matchMrun sub $ \o -> matchAction o notpresent mi

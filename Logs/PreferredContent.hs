@@ -1,6 +1,6 @@
 {- git-annex preferred content matcher configuration
  -
- - Copyright 2012-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -70,7 +70,7 @@ introspectPreferredRequiredContent c mu = do
 	u <- maybe getUUID return mu
 	check u preferredContentMap <||> check u requiredContentMap
   where
-	check u mk = mk >>= return . maybe False (any c) . M.lookup u
+	check u mk = mk >>= return . maybe False (any c . fst) . M.lookup u
 
 preferredContentMap :: Annex (FileMatcherMap Annex)
 preferredContentMap = maybe (fst <$> preferredRequiredMapsLoad preferredContentTokens) return
@@ -83,18 +83,18 @@ requiredContentMap = maybe (snd <$> preferredRequiredMapsLoad preferredContentTo
 preferredRequiredMapsLoad :: (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (FileMatcherMap Annex, FileMatcherMap Annex)
 preferredRequiredMapsLoad mktokens = do
 	(pc, rc) <- preferredRequiredMapsLoad' mktokens
-	let pc' = handleunknown pc
-	let rc' = handleunknown rc
+	let pc' = handleunknown (MatcherDesc "preferred content") pc
+	let rc' = handleunknown (MatcherDesc "required content") rc
 	Annex.changeState $ \s -> s
 		{ Annex.preferredcontentmap = Just pc'
 		, Annex.requiredcontentmap = Just rc'
 		}
 	return (pc', rc')
   where
-	handleunknown = M.mapWithKey $ \u ->
-		either (const $ unknownMatcher u) id
+	handleunknown matcherdesc = M.mapWithKey $ \u v ->
+		(either (const $ unknownMatcher u) id v, matcherdesc)
 
-preferredRequiredMapsLoad' :: (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (M.Map UUID (Either String (FileMatcher Annex)), M.Map UUID (Either String (FileMatcher Annex)))
+preferredRequiredMapsLoad' :: (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (M.Map UUID (Either String (Matcher (MatchFiles Annex))), M.Map UUID (Either String (Matcher (MatchFiles Annex))))
 preferredRequiredMapsLoad' mktokens = do
 	groupmap <- groupMap
 	configmap <- remoteConfigMap
@@ -125,12 +125,12 @@ makeMatcher
 	-> UUID
 	-> (PreferredContentData -> [ParseToken (MatchFiles Annex)])
 	-> PreferredContentExpression
-	-> Either String (FileMatcher Annex)
+	-> Either String (Matcher (MatchFiles Annex))
 makeMatcher groupmap configmap groupwantedmap u mktokens = go True True
   where
 	go expandstandard expandgroupwanted expr
 		| null (lefts tokens) = Right $ generate $ rights tokens
-		| otherwise = Left (unwords (lefts tokens))
+		| otherwise = Left $ unwords $ lefts tokens
 	  where
 		tokens = preferredContentParser (mktokens pcd) expr
 		pcd = PCD
@@ -159,16 +159,17 @@ makeMatcher groupmap configmap groupwantedmap u mktokens = go True True
  -
  - This avoid unwanted/expensive changes to the content, until the problem
  - is resolved. -}
-unknownMatcher :: UUID -> FileMatcher Annex
+unknownMatcher :: UUID -> Matcher (MatchFiles Annex)
 unknownMatcher u = generate [present]
   where
 	present = Operation $ limitPresent (Just u)
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: PreferredContentExpression -> Maybe String
-checkPreferredContentExpression expr = case parsedToMatcher tokens of
-	Left e -> Just e
-	Right _ -> Nothing
+checkPreferredContentExpression expr = 
+	case parsedToMatcher (MatcherDesc mempty) tokens of
+		Left e -> Just e
+		Right _ -> Nothing
   where
 	tokens = preferredContentParser (preferredContentTokens pcd) expr
 	pcd = PCD

@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2016 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,7 +10,6 @@ module Command.MatchExpression where
 import Command
 import Annex.FileMatcher
 import Utility.DataUnits
-import Utility.Matcher
 import Annex.UUID
 import Logs.Group
 
@@ -84,15 +83,14 @@ seek o = do
 				, configMap = M.empty
 				, repoUUID = Just u
 				}
-	case parsedToMatcher $ parser ((matchexpr o)) of
+	case parsedToMatcher (MatcherDesc "provided expression") $ parser ((matchexpr o)) of
 		Left e -> liftIO $ bail $ "bad expression: " ++ e
 		Right matcher -> ifM (checkmatcher matcher)
 			( liftIO exitSuccess
 			, liftIO exitFailure
 			)
   where
-	checkmatcher matcher = matchMrun matcher $ \op ->
-		matchAction op S.empty (matchinfo o)
+	checkmatcher matcher = checkMatcher' matcher (matchinfo o) S.empty
 
 bail :: String -> IO a
 bail s = do

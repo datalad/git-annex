@@ -15,6 +15,7 @@ module Types.ActionItem (
 import Key
 import Types.Transfer
 import Types.UUID
+import Types.FileMatcher
 import Git.FilePath
 import Git.Quote (StringContainingQuotedPath(..))
 import Utility.FileSystemEncoding
@@ -59,6 +60,15 @@ instance MkActionItem (BranchFilePath, Key) where
 
 instance MkActionItem (Transfer, TransferInfo) where
 	mkActionItem = uncurry ActionItemFailedTransfer
+
+instance MkActionItem MatchInfo where
+	mkActionItem (MatchingFile i) = ActionItemTreeFile (matchFile i)
+	mkActionItem (MatchingInfo i) = case providedFilePath i of
+		Just f -> ActionItemTreeFile f
+		Nothing -> case providedKey i of
+			Just k -> ActionItemKey k
+			Nothing -> ActionItemOther Nothing
+	mkActionItem (MatchingUserInfo _) = ActionItemOther Nothing
 
 actionItemDesc :: ActionItem -> StringContainingQuotedPath
 actionItemDesc (ActionItemAssociatedFile (AssociatedFile (Just f)) _) = 

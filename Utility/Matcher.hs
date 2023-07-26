@@ -215,9 +215,12 @@ introspect :: (a -> Bool) -> Matcher a -> Bool
 introspect = any
 
 {- Converts a [MatchResult] into a description of what matched and didn't
- - match. -}
-describeMatchResult :: (op -> Bool -> MatchDesc) -> [MatchResult op] -> String
-describeMatchResult descop = unwords . go . simplify True
+ - match. Returns Nothing when the matcher didn't contain any operations
+ - and so matched by default. -}
+describeMatchResult :: (op -> Bool -> MatchDesc) -> [MatchResult op] -> String -> Maybe String
+describeMatchResult _ [] _ = Nothing
+describeMatchResult descop l prefix = Just $
+	prefix ++ unwords (go $ simplify True l)
   where
  	go [] = []
 	go (MatchedOperation b op:rest) = 

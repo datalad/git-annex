@@ -53,6 +53,11 @@ For example, this will exit 0:
   Tell what the mime encoding of the file is. Only needed when using
   --largefiles with a mimeencoding= expression.
 
+* `--explain`
+
+  Display explanation of what parts of the preferred content expression
+  match, and which parts don't match.
+
 * Also the [[git-annex-common-options]](1) can be used.
 
 # SEE ALSO

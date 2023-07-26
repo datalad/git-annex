@@ -65,15 +65,10 @@ getMatcher = run <$> getMatcher'
 		(match, desc) <- runWriterT $
 			Utility.Matcher.matchMrun' matcher $ \o ->
 				matchAction o S.empty i
-		explain (getfile i) $ UnquotedString $ unwords
-			[ if match then "matches:" else "does not match:"
-			, Utility.Matcher.describeMatchResult matchDesc desc
-			]
+		explain (mkActionItem i) $ UnquotedString <$>
+			Utility.Matcher.describeMatchResult matchDesc desc
+				(if match then "matches:" else "does not match:")
 		return match
-
-	getfile (MatchingFile f) = Just (matchFile f)
-	getfile (MatchingInfo p) = providedFilePath p
-	getfile (MatchingUserInfo _) = Nothing
 
 getMatcher' :: Annex (Utility.Matcher.Matcher (MatchFiles Annex))
 getMatcher' = go =<< Annex.getState Annex.limit

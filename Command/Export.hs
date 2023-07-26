@@ -491,8 +491,8 @@ filterExport :: Remote -> Git.Ref -> Annex (ExportFiltered Git.Ref)
 filterExport r tree = logExportExcluded (uuid r) $ \logwriter -> do
 	m <- preferredContentMap
 	case M.lookup (uuid r) m of
-		Just matcher | not (isEmpty matcher) ->
-			ExportFiltered <$> go (Just matcher) logwriter
+		Just (matcher, matcherdesc) | not (isEmpty matcher) ->
+			ExportFiltered <$> go (Just (matcher, matcherdesc)) logwriter
 		_ -> ExportFiltered <$> go Nothing logwriter
   where
 	go mmatcher logwriter = do

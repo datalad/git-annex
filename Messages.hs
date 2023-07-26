@@ -300,13 +300,14 @@ jsonOutputEnabled = withMessageState $ \s -> return $
 		JSONOutput _ -> True
 		_ -> False
 
-explain :: Maybe RawFilePath -> StringContainingQuotedPath -> Annex ()
-explain Nothing _ = return ()
-explain (Just f) msg = do
+explain :: ActionItem -> Maybe StringContainingQuotedPath -> Annex ()
+explain ai (Just msg) = do
 	rd <- Annex.getRead id
 	when (Annex.explainenabled rd) $
-		outputMessage JSON.none id $
-			"[" <> QuotedPath f <> " " <> msg <> "]\n"
+		let d = actionItemDesc ai
+		in outputMessage JSON.none id $
+			"[" <> (if d == mempty then "" else (d <> " ")) <> msg <> "]\n"
+explain _ _ = return ()
 
 {- Prevents any concurrent console access while running an action, so
  - that the action is the only thing using the console, and can eg prompt

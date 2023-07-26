@@ -76,6 +76,8 @@ getUserInfo :: MonadIO m => UserInfo a -> m a
 getUserInfo (Right i) = return i
 getUserInfo (Left e) = liftIO e
 
+newtype MatcherDesc = MatcherDesc String
+
 type FileMatcherMap a = M.Map UUID (FileMatcher a)
 
 type MkLimit a = String -> Either String (MatchFiles a)
@@ -97,7 +99,7 @@ data MatchFiles a = MatchFiles
 	-- ^ displayed to the user to describe whether it matched or not
 	}
 
-type FileMatcher a = Matcher (MatchFiles a)
+type FileMatcher a = (Matcher (MatchFiles a), MatcherDesc)
 
 -- This is a matcher that can have tokens added to it while it's being
 -- built, and once complete is compiled to an unchangeable matcher.

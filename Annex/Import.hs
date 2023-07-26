@@ -762,7 +762,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 						warning (UnquotedString (show e))
 						return Nothing
 	
-	importordownload cidmap (loc, (cid, sz)) largematcher= do
+	importordownload cidmap (loc, (cid, sz)) largematcher = do
 		f <- locworktreefile loc
 		matcher <- largematcher f
 		-- When importing a key is supported, always use it rather
@@ -771,7 +771,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		let act = if importcontent
 			then case Remote.importKey ia of
 				Nothing -> dodownload
-				Just _ -> if Utility.Matcher.introspect matchNeedsFileContent matcher
+				Just _ -> if Utility.Matcher.introspect matchNeedsFileContent (fst matcher)
 					then dodownload
 					else doimport
 			else doimport
@@ -781,7 +781,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 		case Remote.importKey ia of
 			Nothing -> error "internal" -- checked earlier
 			Just importkey -> do
-				when (Utility.Matcher.introspect matchNeedsFileContent matcher) $
+				when (Utility.Matcher.introspect matchNeedsFileContent (fst matcher)) $
 					giveup "annex.largefiles configuration examines file contents, so cannot import without content."
  				let mi = MatchingInfo ProvidedInfo
 					{ providedFilePath = Just f
@@ -994,14 +994,15 @@ addBackExportExcluded remote importtree =
  -}
 makeImportMatcher :: Remote -> Annex (Either String (FileMatcher Annex))
 makeImportMatcher r = load preferredContentKeylessTokens >>= \case
-	Nothing -> return $ Right matchAll
-	Just (Right v) -> return $ Right v
+	Nothing -> return $ Right (matchAll, matcherdesc)
+	Just (Right v) -> return $ Right (v, matcherdesc)
 	Just (Left err) -> load preferredContentTokens >>= \case
 		Just (Left err') -> return $ Left err'
 		_ -> return $ Left $
 			"The preferred content expression contains terms that cannot be checked when importing: " ++ err
   where
 	load t = M.lookup (Remote.uuid r) . fst <$> preferredRequiredMapsLoad' t
+	matcherdesc = MatcherDesc "preferred content"
 
 {- Gets the ImportableContents from the remote.
  -
