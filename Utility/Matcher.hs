@@ -234,7 +234,7 @@ describeMatchResult descop l prefix = Just $
 
 	-- Remove unncessary outermost parens
 	simplify True (MatchedOpen:rest) = case lastMaybe rest of
-		Just MatchedClose -> simplify True (dropFromEnd 1 rest)
+		Just MatchedClose -> simplify False (dropFromEnd 1 rest)
 		_ -> simplify False rest
 	-- (foo or bar) or baz => foo or bar or baz
 	simplify _ (MatchedOpen:o1@(MatchedOperation {}):MatchedOr:o2@(MatchedOperation {}):MatchedClose:MatchedOr:rest) = 
