@@ -1,0 +1,7 @@
+As I am beginning to experiment with git-annex, I am trying to imagine a system as hand-free as possible, that could be usable even for non-git users once everything is setup. Knowing the safety limitations of using files directly, I tend towards using either an unlocked adjusted branch with annex.thin, or a directory special remote (exporttree=yes, importtree=yes), as git-annex will operate further away from the tracked data.
+
+The setup will include multiple computers sharing the same tree, which will have multiple copies across other servers. As each computer will have a different set of prefered content rules, it is important to see missing files.
+
+I feel that the unlocked mode is the safer option, but there is the appeal in having files mostly untouched as in the directory special remote.
+
+How do both methods compare from a user perspective? What are their limitations? Is there a way to show hidden files on a directory special remote (as [drafted](https://git-annex.branchable.com/design/assistant/desymlink/))?
