@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="No built-in way for dropping all old versions of a file AFAIK"
+ date="2023-07-29T17:43:41Z"
+ content="""
+@mario: AFAIK there's no built-in way to drop selected|all old versions of a file.
+
+Some Context:
+
+- [user asking pretty much the same](https://git-annex.branchable.com/forum/drop_old_versions_of_a_file/)
+- [me opening a (now vanished?) todo on making old versions available in a view](https://downloads.kitenet.net/gitweb/?p=git-annex.git;a=blob;f=doc/todo/View_for_old_versions_of_a_file.mdwn;h=2d7df8246ecc768556d76fc6a5693b3a17bc8726;hb=a268dbf4012dd1c843da5b7a0cfca0700775a94d)
+
+My [proposal above](https://downloads.kitenet.net/gitweb/?p=git-annex.git;a=blob;f=doc/todo/View_for_old_versions_of_a_file.mdwn;h=2d7df8246ecc768556d76fc6a5693b3a17bc8726;hb=a268dbf4012dd1c843da5b7a0cfca0700775a94d) would facilitate this (kinda), e.g. like this:
+
+[[!format  bash \"\"\"
+# enter a view with all versions of files in the foo directory
+git annex view --historical /=foo
+# in the repo toplevel there are now all versions of all files that were in the foo directory
+git annex drop # drop all versions of all files in the foo dir
+git annex drop MyFile.txt* # drop all versions of that one file named like this
+\"\"\"]]
+
+The `--historical` is not implemented, so you currently have two options:
+
+## 1. Checking out each relevant commit, then drop content from there
+
+[[!format  bash \"\"\"
+f=\"path/to/myfile.txt\"
+# find all commits that touched exactly that file path (except for the latest version)
+# parsing --follow to catch renames/moves will be more challenging
+git log --format=format:%H \"$f\" | tail -n+2 | while read commit;do
+    # go to that commit, then drop that file path
+    (set -x;git checkout $commit;git annex drop \"$f\")
+done
+# remember to switch back to your default branch afterwards
+\"\"\"]]
+
+## 2. Parsing the log to find the relevant keys to drop
+
+[[!format  bash \"\"\"
+# This lists all commits including filenames and annex paths of the file in question
+git log --patch --follow -- path/to/myfile.txt
+# You will need to parse this somehow and extract the keys, then drop them:
+git annex drop --key $KEY
+# This also catches renames (--follow)!
+\"\"\"]]
+
+I would also love a git-annex-native way to delete all old versions of a file reliably. I think option 2 above and/or the [new view feature I proposed](https://downloads.kitenet.net/gitweb/?p=git-annex.git;a=blob;f=doc/todo/View_for_old_versions_of_a_file.mdwn;h=2d7df8246ecc768556d76fc6a5693b3a17bc8726;hb=a268dbf4012dd1c843da5b7a0cfca0700775a94d) would be very helpful. 👍
+"""]]
