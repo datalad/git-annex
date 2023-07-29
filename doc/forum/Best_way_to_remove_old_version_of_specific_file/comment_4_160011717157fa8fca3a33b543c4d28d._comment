@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="mario"
+ avatar="http://cdn.libravatar.org/avatar/4c63b0935789d29210d0bd8cad8d7ac7"
+ subject="Dropping all older versions of a file"
+ date="2023-07-29T12:57:02Z"
+ content="""
+Is there also a straight forward way to drop all versions of a specific file?
+
+In option 1, I always have to drop the file right away. In my use case it makes more sense to drop (all) older versions of a specific file from time to time.
+
+Typically I want to keep old versions (of other files), therefore I can't use drop unused. But for some specific files, I want to get rid of the history at some point in time (e.g., after the project they belong to is finished).
+
+Alternatively, is there a way to get all prior keys a specific file once pointed to? Then I could drop all these keys.
+"""]]
