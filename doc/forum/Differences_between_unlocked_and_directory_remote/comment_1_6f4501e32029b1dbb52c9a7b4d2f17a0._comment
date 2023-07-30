@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 1"
+ date="2023-07-30T06:53:57Z"
+ content="""
+I'd just go with `git annex config --set annex.addunlocked true` and have the assistant run on all machines. I wouldn't use `annex.thin`, though it's appealing to not have files use twice their size, but it is insecure and can easily cause data loss. If possible, I'd also not use an adjusted unlocked branch, because that's yet another layer of complexity where things could go wrong. It usually works, but can also produce weirdness (e.g. there was a bug fixed lately where rexent changes were deleted when syncing an unlocked branch).
+
+Plain git remotes on all sides work most reliably, safely and efficiently with git annex in my experience.
+"""]]
