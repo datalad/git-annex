@@ -197,8 +197,12 @@ numCopiesCheck file key vs = do
 
 numCopiesCheck' :: RawFilePath -> (Int -> Int -> v) -> [UUID] -> Annex v
 numCopiesCheck' file vs have = do
-	needed <- fst <$> getFileNumMinCopies file
-	return $ length have `vs` fromNumCopies needed
+	needed <- fromNumCopies . fst <$> getFileNumMinCopies file
+	let nhave = length have
+	explain (ActionItemTreeFile file) $ Just $ UnquotedString $
+		"has " ++ show nhave ++ " " ++ pluralCopies nhave ++ 
+		", and the configured annex.numcopies is " ++ show needed
+	return $ nhave `vs` needed
 
 data UnVerifiedCopy = UnVerifiedRemote Remote | UnVerifiedHere
 	deriving (Ord, Eq)
@@ -280,10 +284,10 @@ notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
 		then showLongNote $ UnquotedString $
 			"Could only verify the existence of " ++
 			show (length have) ++ " out of " ++ show (fromNumCopies neednum) ++ 
-			" necessary " ++ pluralcopies (fromNumCopies neednum)
+			" necessary " ++ pluralCopies (fromNumCopies neednum)
 		else do
 			showLongNote $ UnquotedString $ "Unable to lock down " ++ show (fromMinCopies needmin) ++ 
-				" " ++ pluralcopies (fromMinCopies needmin) ++ 
+				" " ++ pluralCopies (fromMinCopies needmin) ++ 
 				" of file necessary to safely drop it."
 			if null lockunsupported
 				then showLongNote "(This could have happened because of a concurrent drop, or because a remote has too old a version of git-annex-shell installed.)"
@@ -292,9 +296,10 @@ notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
 
 	Remote.showTriedRemotes bad
 	Remote.showLocations True key (map toUUID have++skip) nolocmsg
-  where
-	pluralcopies 1 = "copy"
-	pluralcopies _ = "copies"
+
+pluralCopies :: Int -> String
+pluralCopies 1 = "copy"
+pluralCopies _ = "copies"
 
 {- Finds locations of a key that can be used to get VerifiedCopies,
  - in order to allow dropping the key.

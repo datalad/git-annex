@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-07-31T16:38:05Z"
+ content="""
+--explain now also shows when numcopies is taken into account when not
+dropping, eg `get --auto`.
+
+When dropping, git-annex already explains when numcopies is not satisfied
+of course. As to displaying the drop safety proof, I think it's too much in
+the weeds for a user to want it explained? Users probably don't want to
+worry about the distinction between RecentlyVerifiedCopy and LockedCopy,
+for example; those details are git-annex's job. It already gives a well
+calibrated explanation when it can't drop, so explaining when it can drop
+seems unncessary.
+
+I also looked at adding it for file content checking, but inAnnex is pretty core
+and is used in a lot of situations where --explain output would not be
+useful, eg after git-annex has downloaded a file, it will check inAnnex.
+While it would be possible to add something that explains that is only
+called when deciding whether to operate on a file, that would be an
+intrusive code change and would add complexity.
+
+Also, while it can be confusing to users sometimes why eg `git-annex get
+foo` doesn't output anything due to the file being present already, it
+seems like adding --explain output to that would generally not be useful to
+more experienced users. Explain needs to remain relatively concise, or it's
+just more debug output.
+
+So, closing this as completed, although of course more can be added
+to --explain later..
+"""]]
