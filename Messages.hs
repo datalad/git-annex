@@ -303,10 +303,11 @@ jsonOutputEnabled = withMessageState $ \s -> return $
 explain :: ActionItem -> Maybe StringContainingQuotedPath -> Annex ()
 explain ai (Just msg) = do
 	rd <- Annex.getRead id
-	when (Annex.explainenabled rd) $
-		let d = actionItemDesc ai
-		in outputMessage JSON.none id $
-			"[ " <> (if d == mempty then "" else (d <> " ")) <> msg <> " ]\n"
+	let d = actionItemDesc ai
+	let msg' = "[ " <> (if d == mempty then "" else (d <> " ")) <> msg <> " ]\n"
+	if Annex.explainenabled rd
+		then outputMessage JSON.none id msg'
+		else fastDebug' rd "Messages.explain" (decodeBS (noquote msg'))
 explain _ _ = return ()
 
 {- Prevents any concurrent console access while running an action, so

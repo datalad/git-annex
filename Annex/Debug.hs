@@ -1,6 +1,6 @@
 {- git-annex debugging
  -
- - Copyright 2021 Joey Hess <id@joeyh.name>
+ - Copyright 2021-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@ module Annex.Debug (
 	DebugSource(..),
 	debug,
 	fastDebug,
+	fastDebug',
 	configureDebug,
 	debugSelectorFromGitConfig,
 	parseDebugSelector,
@@ -27,5 +28,8 @@ import Annex.Debug.Utility
 fastDebug :: DebugSource -> String -> Annex.Annex ()
 fastDebug src msg = do
 	rd <- Annex.getRead id
-	when (Annex.debugenabled rd) $
-		liftIO $ Utility.Debug.fastDebug (Annex.debugselector rd) src msg
+	fastDebug' rd src msg
+
+fastDebug' :: Annex.AnnexRead -> DebugSource -> String -> Annex.Annex ()
+fastDebug' rd src msg = when (Annex.debugenabled rd) $
+	liftIO $ Utility.Debug.fastDebug (Annex.debugselector rd) src msg
