@@ -127,6 +127,12 @@ in either of two repositories.
   Matches only when git-annex believes content is present in
   all repositories in the specified group.
 
+* `--onlyingroup=groupname`
+
+  Matches only when git-annex believes content is present in at least one
+  repository that is in the specified group, and is not present in any
+  repositories that are not in the specified group.
+
 * `--smallerthan=size`
 * `--largerthan=size`
 

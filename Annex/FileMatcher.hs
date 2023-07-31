@@ -188,6 +188,7 @@ preferredContentKeyedTokens pcd =
 	, ValueToken "inbackend" (usev limitInBackend)
 	, ValueToken "metadata" (usev limitMetaData)
 	, ValueToken "inallgroup" (usev $ limitInAllGroup $ getGroupMap pcd)
+	, ValueToken "onlyingroup" (usev $ limitOnlyInGroup $ getGroupMap pcd)
 	] ++ commonKeyedTokens
 
 preferredContentTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]

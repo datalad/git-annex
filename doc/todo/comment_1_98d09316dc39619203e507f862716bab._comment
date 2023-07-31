@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-07-31T18:41:03Z"
+ content="""
+	Matches files that git-annex believes are present in at least one
+	repository that is in the specified group, and are not present in any
+	repositories that are not in the specified group.
+
+That's a pretty simple description and it allows matching when a repository
+is in the specified group but is also in some other groups.
+
+So that makes me happy with onlyingroup and I implemented it.
+"""]]

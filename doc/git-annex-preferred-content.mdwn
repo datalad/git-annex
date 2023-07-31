@@ -123,6 +123,12 @@ elsewhere to allow removing it).
   Matches only files that git-annex believes are present in all repositories
   in the specified group.
 
+* `onlyingroup=groupname`
+
+  Matches files that git-annex believes are present in at least one
+  repository that is in the specified group, and are not present in any
+  repositories that are not in the specified group.
+
 * `smallerthan=size` / `largerthan=size`
 
   Matches only files whose content is smaller than, or larger than the

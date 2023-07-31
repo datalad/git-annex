@@ -309,7 +309,12 @@ keyMatchingOptions' =
 		)
 	, annexOption (setAnnexState . Limit.addInAllGroup) $ strOption
 		( long "inallgroup" <> metavar paramGroup
-		<> help "match files present in all remotes in a group"
+		<> help "match files present in all repositories in a group"
+		<> hidden
+		)
+	, annexOption (setAnnexState . Limit.addOnlyInGroup) $ strOption
+		( long "onlyingroup" <> metavar paramGroup
+		<> help "match files that are only present in repositories in the group"
 		<> hidden
 		)
 	, annexOption (setAnnexState . Limit.addMetaData) $ strOption
