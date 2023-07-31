@@ -9,7 +9,7 @@ number of copies that are in repositories that are not in the offline group.
 
 That might be expressed as say, `copies=!offline:1`
 
-Then `not copies=!offline:1` would be useful to only want files that are
+Then `not copies=!offline:0` would be useful to only want files that are
 available in some repository that is not offline.
 
 This would avoid the question of what to do with onlyingroup when a
@@ -17,4 +17,6 @@ repository is in the specified group but also another one.
 
 I really don't like the `copies=!offline:1` syntax though. (I already
 disliked copies=group:n` and this takes it in an even worse direction.)
+
+So while this is more generic, I kind of prefer the onlyingroup name..
 """]]
