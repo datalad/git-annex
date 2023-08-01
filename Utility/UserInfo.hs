@@ -28,22 +28,20 @@ import Prelude
  -
  - getpwent will fail on LDAP or NIS, so use HOME if set. -}
 myHomeDir :: IO FilePath
-myHomeDir = either giveup return =<< myVal env homeDirectory
-  where
+myHomeDir = either giveup return =<<
 #ifndef mingw32_HOST_OS
-	env = ["HOME"]
+	myVal ["HOME"] homeDirectory
 #else
-	env = ["USERPROFILE", "HOME"] -- HOME is used in Cygwin
+	myVal ["USERPROFILE", "HOME"] -- HOME is used in Cygwin
 #endif
 
 {- Current user's user name. -}
 myUserName :: IO (Either String String)
-myUserName = myVal env userName
-  where
+myUserName =
 #ifndef mingw32_HOST_OS
-	env = ["USER", "LOGNAME"]
+	myVal ["USER", "LOGNAME"] userName
 #else
-	env = ["USERNAME", "USER", "LOGNAME"]
+	myVal ["USERNAME", "USER", "LOGNAME"]
 #endif
 
 myUserGecos :: IO (Maybe String)
@@ -54,16 +52,20 @@ myUserGecos = return Nothing
 myUserGecos = eitherToMaybe <$> myVal [] userGecos
 #endif
 
+#ifndef mingw32_HOST_OS
 myVal :: [String] -> (UserEntry -> String) -> IO (Either String String)
 myVal envvars extract = go envvars
   where
 	go [] = either (const $ envnotset) (Right . extract) <$> get
 	go (v:vs) = maybe (go vs) (return . Right) =<< getEnv v
-#ifndef mingw32_HOST_OS
 	-- This may throw an exception if the system doesn't have a
 	-- passwd file etc; don't let it crash.
 	get = tryNonAsync $ getUserEntryForID =<< getEffectiveUserID
 #else
-	get = return envnotset
+myVal :: [String] -> IO (Either String String)
+myVal envvars = go envvars
+  where
+	go [] = envnotset
+	go (v:vs) = maybe (go vs) (return . Right) =<< getEnv v
 #endif
 	envnotset = Left ("environment not set: " ++ show envvars)
