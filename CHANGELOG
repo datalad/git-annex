@@ -30,6 +30,10 @@ git-annex (10.20230627) UNRELEASED; urgency=medium
   * dropunused: Support --jobs
   * Support "onlyingroup=" in preferred content expressions.
   * Support --onlyingroup= matching option.
+  * Setup.hs: Stop installing man pages, desktop files, and the
+    git-annex-shell and git-remote-tor-annex symlinks.
+    Anything still relying on that, eg via cabal v1-install will need to
+    change to using make install-home.
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Jun 2023 13:10:40 -0400
 

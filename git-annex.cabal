@@ -299,13 +299,13 @@ source-repository head
   location: git://git-annex.branchable.com/
 
 custom-setup
-  Setup-Depends: base (>= 4.11.1.0 && < 5.0), split, unix-compat (< 0.7), 
-    filepath, exceptions, bytestring, IfElse, data-default,
+  Setup-Depends: base (>= 4.11.1.0 && < 5.0), split,
+    filepath, exceptions, bytestring,
     filepath-bytestring (>= 1.4.2.1.4),
     process (>= 1.6.3),
     time (>= 1.5.0),
     directory (>= 1.2.7.0),
-    async, utf8-string, transformers, Cabal (< 4.0)
+    async, Cabal (< 4.0)
 
 Executable git-annex
   Main-Is: git-annex.hs
