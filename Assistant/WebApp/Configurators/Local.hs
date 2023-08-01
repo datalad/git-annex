@@ -6,7 +6,8 @@
  -}
 
 {-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
-{-# LANGUAGE RankNTypes, KindSignatures, TypeFamilies, FlexibleContexts #-}
+{-# LANGUAGE RankNTypes, KindSignatures, TypeFamilies, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Assistant.WebApp.Configurators.Local where
 
