@@ -347,7 +347,6 @@ Executable git-annex
    bloomfilter (>= 2.0.0),
    edit-distance,
    resourcet,
-   connection (>= 0.2.6),
    http-client (>= 0.5.3),
    http-client-tls,
    http-types (>= 0.7),
