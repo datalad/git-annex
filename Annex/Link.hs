@@ -44,7 +44,10 @@ import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import qualified System.FilePath.ByteString as P
 #ifndef mingw32_HOST_OS
+#if MIN_VERSION_unix(2,8,0)
+#else
 import System.PosixCompat.Files (isSymbolicLink)
+#endif
 #endif
 
 type LinkTarget = S.ByteString
@@ -435,7 +438,7 @@ isPointerFile f = catchDefaultIO Nothing $
 #else
 #if MIN_VERSION_unix(2,8,0)
 	bracket
-		(openFd (fromRawFilePath f) ReadOnly (defaultFileFlags { nofollow = True }) Nothing)
+		(openFd (fromRawFilePath f) ReadOnly (defaultFileFlags { nofollow = True }))
 		closeFd
 		(\fd -> readhandle =<< fdToHandle fd)
 #else
