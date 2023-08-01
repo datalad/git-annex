@@ -50,6 +50,9 @@ import Utility.InodeCache
 import Utility.FileMode
 import Utility.Directory.Create
 import qualified Utility.RawFilePath as R
+#ifndef mingw32_HOST_OS
+import Utility.OpenFd
+#endif
 
 remote :: RemoteType
 remote = specialRemoteType $ RemoteType
@@ -469,7 +472,7 @@ retrieveExportWithContentIdentifierM ii dir cow loc cids dest gk p =
 #ifndef mingw32_HOST_OS
 		let open = do
 			-- Need a duplicate fd for the post check.
-			fd <- openFd f' ReadOnly Nothing defaultFileFlags
+			fd <- openFdWithMode f ReadOnly Nothing defaultFileFlags
 			dupfd <- dup fd
 			h <- fdToHandle fd
 			return (h, dupfd)

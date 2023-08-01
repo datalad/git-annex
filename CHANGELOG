@@ -35,6 +35,7 @@ git-annex (10.20230627) UNRELEASED; urgency=medium
     Anything still relying on that, eg via cabal v1-install will need to
     change to using make install-home.a
   * git-annex.cabal: Support building with unix-compat 0.7
+  * Support building with unix-2.8.0.
 
  -- Joey Hess <id@joeyh.name>  Mon, 26 Jun 2023 13:10:40 -0400
 

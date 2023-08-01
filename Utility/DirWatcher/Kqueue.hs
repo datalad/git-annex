@@ -19,6 +19,7 @@ module Utility.DirWatcher.Kqueue (
 
 import Common
 import Utility.DirWatcher.Types
+import Utility.OpenFd
 
 import System.Posix.Types
 import Foreign.C.Types
@@ -110,7 +111,7 @@ scanRecursive topdir prune = M.fromList <$> walk [] [topdir]
 				Nothing -> walk c rest
 				Just info -> do
 					mfd <- catchMaybeIO $
-						Posix.openFd dir Posix.ReadOnly Nothing Posix.defaultFileFlags
+						openFdWithMode (toRawFilePath dir) Posix.ReadOnly Nothing Posix.defaultFileFlags
 					case mfd of
 						Nothing -> walk c rest
 						Just fd -> do

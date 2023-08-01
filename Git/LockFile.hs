@@ -12,6 +12,7 @@ module Git.LockFile where
 import Common
 
 #ifndef mingw32_HOST_OS
+import Utility.OpenFd
 import System.Posix.Types
 import System.Posix.IO
 #else
@@ -51,7 +52,7 @@ openLock' :: FilePath -> IO LockHandle
 openLock' lck = do
 #ifndef mingw32_HOST_OS
 	-- On unix, git simply uses O_EXCL
-	h <- openFd lck ReadWrite (Just 0O666)
+	h <- openFdWithMode (toRawFilePath lck) ReadWrite (Just 0O666)
 		(defaultFileFlags { exclusive = True })
 	setFdOption h CloseOnExec True
 #else

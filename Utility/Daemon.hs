@@ -21,6 +21,7 @@ import Utility.PID
 #ifndef mingw32_HOST_OS
 import Utility.LogFile
 import Utility.Env
+import Utility.OpenFd
 #else
 import System.Win32.Process (terminateProcessById)
 import Utility.LockFile
@@ -49,7 +50,7 @@ daemonize cmd params openlogfd pidfile changedirectory a = do
 			maybe noop lockPidFile pidfile 
 			a
 		_ -> do
-			nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
+			nullfd <- openFdWithMode (toRawFilePath "/dev/null") ReadOnly Nothing defaultFileFlags
 			redir nullfd stdInput
 			redirLog =<< openlogfd
 			environ <- getEnvironment
@@ -95,9 +96,9 @@ foreground pidfile a = do
 lockPidFile :: FilePath -> IO ()
 lockPidFile pidfile = do
 #ifndef mingw32_HOST_OS
-	fd <- openFd pidfile ReadWrite (Just stdFileMode) defaultFileFlags
+	fd <- openFdWithMode (toRawFilePath pidfile) ReadWrite (Just stdFileMode) defaultFileFlags
 	locked <- catchMaybeIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-	fd' <- openFd newfile ReadWrite (Just stdFileMode) defaultFileFlags
+	fd' <- openFdWithMode (toRawFilePath newfile) ReadWrite (Just stdFileMode) defaultFileFlags
 		{ trunc = True }
 	locked' <- catchMaybeIO $ setLock fd' (WriteLock, AbsoluteSeek, 0, 0)
 	case (locked, locked') of
@@ -132,7 +133,7 @@ checkDaemon :: FilePath -> IO (Maybe PID)
 checkDaemon pidfile = bracket setup cleanup go
   where
 	setup = catchMaybeIO $
-		openFd pidfile ReadOnly (Just stdFileMode) defaultFileFlags
+		openFdWithMode (toRawFilePath pidfile) ReadOnly (Just stdFileMode) defaultFileFlags
 	cleanup (Just fd) = closeFd fd
 	cleanup Nothing = return ()
 	go (Just fd) = catchDefaultIO Nothing $ do

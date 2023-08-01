@@ -55,7 +55,6 @@ import Utility.Hash (IncrementalVerifier(..))
 
 import Network.URI
 import Network.HTTP.Types
-import qualified Network.Connection as NC
 import qualified Data.CaseInsensitive as CI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.UTF8 as B8
@@ -745,8 +744,8 @@ curlRestrictedParams r u defport ps = case uriAuthority u of
 		case partitionEithers (map checkrestriction addrs) of
 			((e:_es), []) -> throwIO e
 			(_, as)
-				| null as -> throwIO $ 
-					NC.HostNotResolved hostname
+				| null as -> giveup $ 
+					"cannot resolve host " ++ hostname
 				| otherwise -> return $
 					(limitresolve p) as ++ ps
 	checkrestriction addr = maybe (Right addr) Left $

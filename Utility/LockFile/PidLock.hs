@@ -30,6 +30,7 @@ import Utility.Directory
 import Utility.Monad
 import Utility.Path.AbsRel
 import Utility.FileMode
+import Utility.OpenFd
 import Utility.LockFile.LockStatus
 import Utility.ThreadScheduler
 import Utility.Hash
@@ -204,7 +205,7 @@ linkToLock (Just _) src dest = do
 				)
 		Left _ -> catchMaybeIO $ do
 			let setup = do
-				fd <- openFd dest WriteOnly
+				fd <- openFdWithMode dest WriteOnly
 					(Just $ combineModes readModes)
 					(defaultFileFlags {exclusive = True})
 				fdToHandle fd

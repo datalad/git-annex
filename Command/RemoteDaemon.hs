@@ -14,6 +14,7 @@ import RemoteDaemon.Core
 import Utility.Daemon
 #ifndef mingw32_HOST_OS
 import Annex.Path
+import Utility.OpenFd
 #endif
 
 cmd :: Command
@@ -30,7 +31,7 @@ run o
 #ifndef mingw32_HOST_OS
 		git_annex <- liftIO programPath
 		ps <- gitAnnexDaemonizeParams
-		let logfd = openFd "/dev/null" ReadOnly Nothing defaultFileFlags
+		let logfd = openFdWithMode (toRawFilePath "/dev/null") ReadOnly Nothing defaultFileFlags
 		liftIO $ daemonize git_annex ps logfd Nothing False runNonInteractive
 #else
 		liftIO $ foreground Nothing runNonInteractive	

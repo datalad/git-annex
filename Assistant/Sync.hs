@@ -75,15 +75,15 @@ reconnectRemotes rs = void $ do
 		| Git.repoIsLocal r = True
 		| Git.repoIsLocalUnknown r = True
 		| otherwise = False
-	sync currentbranch@(Just _, _) = do
+	syncbranch currentbranch@(Just _, _) = do
 		(failedpull, diverged) <- manualPull currentbranch =<< gitremotes
 		now <- liftIO getCurrentTime
 		failedpush <- pushToRemotes' now =<< gitremotes
 		return (nub $ failedpull ++ failedpush, diverged)
 	{- No local branch exists yet, but we can try pulling. -}
-	sync (Nothing, _) = manualPull (Nothing, Nothing) =<< gitremotes
+	syncbranch (Nothing, _) = manualPull (Nothing, Nothing) =<< gitremotes
 	go = do
-		(failed, diverged) <- sync =<< liftAnnex getCurrentBranch
+		(failed, diverged) <- syncbranch =<< liftAnnex getCurrentBranch
 		addScanRemotes diverged =<<
 			filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) rs
 		return failed

@@ -1132,6 +1132,7 @@ Executable git-annex
     Utility.MoveFile
     Utility.Network
     Utility.NotificationBroadcaster
+    Utility.OpenFd
     Utility.OptParse
     Utility.OSX
     Utility.PID

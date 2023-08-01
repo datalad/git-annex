@@ -24,6 +24,7 @@ import Utility.Exception
 import Utility.Applicative
 import Utility.FileMode
 import Utility.LockFile.LockStatus
+import Utility.OpenFd
 
 import System.IO
 import System.Posix.Types
@@ -75,7 +76,7 @@ tryLock lockreq mode lockfile = uninterruptibleMask_ $ do
 openLockFile :: LockRequest -> Maybe ModeSetter -> LockFile -> IO Fd
 openLockFile lockreq filemode lockfile = do
 	l <- applyModeSetter filemode lockfile $ \filemode' ->
-		openFd lockfile openfor filemode' defaultFileFlags
+		openFdWithMode lockfile openfor filemode' defaultFileFlags
 	setFdOption l CloseOnExec True
 	return l
   where
