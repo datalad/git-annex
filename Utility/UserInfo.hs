@@ -19,9 +19,9 @@ import Utility.Exception
 #ifndef mingw32_HOST_OS
 import Utility.Data
 import Control.Applicative
+import System.Posix.User
 #endif
 
-import System.PosixCompat.User
 import Prelude
 
 {- Current user's home directory.

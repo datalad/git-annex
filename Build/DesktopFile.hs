@@ -24,7 +24,7 @@ import Assistant.Install.Menu
 
 import System.Environment
 #ifndef mingw32_HOST_OS 
-import System.PosixCompat.User
+import System.Posix.User
 import Data.Maybe
 import Control.Applicative
 import Prelude
