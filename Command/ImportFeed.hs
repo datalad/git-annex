@@ -531,7 +531,7 @@ minimalMetaData :: ToDownload -> MetaData
 minimalMetaData i = case getItemId (item i) of
 	(Nothing) -> emptyMetaData
 	(Just (_, itemid)) -> MetaData $ M.singleton itemIdField 
-		(S.singleton $ toMetaValue $fromFeedText itemid)
+		(S.singleton $ toMetaValue $ fromFeedText itemid)
 
 {- Extract fields from the feed and item, that are both used as metadata,
  - and to generate the filename. -}
