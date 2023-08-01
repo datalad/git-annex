@@ -20,6 +20,9 @@ import Utility.Exception
 import Utility.Data
 import Control.Applicative
 import System.Posix.User
+#if MIN_VERSION_unix(2,8,0)
+import System.Posix.User.ByteString (UserEntry)
+#endif
 #endif
 
 import Prelude
