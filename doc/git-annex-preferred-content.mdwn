@@ -293,7 +293,7 @@ The --explain option can be used to understand why a complex preferred
 content expression matches or fails to match. The expression will
 be displayed, with each term followed by "[TRUE]" or "[FALSE]" to indicate
 the value. Irrelevant terms will be ommitted from the explanation,
-for example "exclude=* and copies=1"` will be displayed as 
+for example `"exclude=* and copies=1"` will be displayed as 
 `"exclude=*[FALSE]"`
 
 # SEE ALSO
