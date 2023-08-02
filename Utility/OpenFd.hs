@@ -8,9 +8,9 @@
 {-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Utility.OpenFd (
-	openFdWithMode,
-) where
+module Utility.OpenFd where
+
+#ifndef mingw32_HOST_OS
 
 import System.Posix.IO.ByteString
 import System.Posix.Types
@@ -22,4 +22,6 @@ openFdWithMode f openmode filemode flags =
 	openFd f openmode (flags { creat = filemode })
 #else
 openFdWithMode = openFd
+#endif
+
 #endif
