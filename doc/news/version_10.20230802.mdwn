@@ -1,0 +1,40 @@
+git-annex 10.20230802 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * satisfy: New command that gets/sends/drops content to satisfy
+    preferred content settings. This is like to the --content
+    part of git-annex sync.
+  * --explain: New option to display explanations of what git-annex
+    takes into account when deciding what to do. Including explaining
+    matching of preferred content expressions, annex.largefiles, and
+    annex.addunlocked.
+  * reinject: Added --guesskeys option.
+  * diffdriver: Added --text option for easy diffing of the contents of
+    annexed text files.
+  * assist: With --jobs, parallelize transferring content to/from remotes.
+  * Bug fix: Re-running git-annex adjust or sync when in an adjusted branch
+    would overwrite the original branch, losing any commits that had been
+    made to it since the adjusted branch was created.
+  * Bug fix: Fix behavior when git is configured with
+    safe.bareRepository = explicit.
+  * importfeed bug fix: When -J was used with multiple feeds, some feeds
+    did not get their items downloaded.
+  * importfeed: Add feedurl to the metadata (and allow it to be used in the
+    --template)
+  * Improve resuming interrupted download when using yt-dlp.
+  * S3: Amazon S3 buckets created after April 2023 do not support ACLs,
+    so public=yes cannot be used with them. Existing buckets configured
+    with public=yes will keep working.
+  * S3: Allow setting publicurl=yes without public=yes, to support
+    buckets that are configured with a Bucket Policy that allows public
+    access.
+  * directory, gcrypt: Remove empty hash directories when dropping content.
+  * dropunused: Support --jobs
+  * Support "onlyingroup=" in preferred content expressions.
+  * Support --onlyingroup= matching option.
+  * Setup.hs: Stop installing man pages, desktop files, and the
+    git-annex-shell and git-remote-tor-annex symlinks.
+    Anything still relying on that, eg via cabal v1-install will need to
+    change to using make install-home.
+  * Support building with unix-compat 0.7
+  * Support building with unix-2.8.0.
+  * stack.yaml: Update to build with ghc-9.6.2 and aws-0.24.
+    (For windows, stack-lts-18.13.yaml has to be used instead for now.)"""]]
