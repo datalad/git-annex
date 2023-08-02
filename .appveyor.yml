@@ -33,8 +33,8 @@
 #
 #     xfreerdp /cert:ignore /dynamic-resolution /u:appveyor /p:<PASSWORD> /v:<LOGIN>
 #
-#   - to prevent the CI run from exiting, create a textfile named `BLOCK` on the
-#     Desktop (a required .txt extension will be added automatically). The session
+#   - to prevent the CI run from exiting, create a textfile named
+#     `BLOCK.txt` in the currently directory after login. The session
 #     will run until the file is removed (or 60 min have passed)
 
 # Do a shallow clone with enough commits that queued builds will still
@@ -134,7 +134,7 @@ test_script:
 on_finish:
   # conditionally block the exit of a CI run for direct debugging
   - sh: while [ -f ~/BLOCK ]; do sleep 5; done
-  - cmd: powershell.exe while ((Test-Path "C:\Users\\appveyor\\Desktop\\BLOCK.txt")) { Start-Sleep 5 }
+  - cmd: powershell.exe while ((Test-Path "C:\Users\\appveyor\\BLOCK.txt")) { Start-Sleep 5 }
   # block exit until 60 minute timeout, for direct debugging
   #- sh: while true; do sleep 5; done
   #- cmd: powershell.exe while ($true) { Start-Sleep 5 }
