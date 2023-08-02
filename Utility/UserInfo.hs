@@ -68,7 +68,7 @@ myVal envvars extract = go envvars
 myVal :: [String] -> IO (Either String String)
 myVal envvars = go envvars
   where
-	go [] = envnotset
+	go [] = return envnotset
 	go (v:vs) = maybe (go vs) (return . Right) =<< getEnv v
 #endif
 	envnotset = Left ("environment not set: " ++ show envvars)
