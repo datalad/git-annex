@@ -35,6 +35,7 @@ Description:
 -- make cabal install git-annex work.
 Extra-Source-Files:
   stack.yaml
+  stack-lts-18.13.yaml
   README
   CHANGELOG
   NEWS
@@ -413,7 +414,7 @@ Executable git-annex
 
   if (os(windows))
     Build-Depends:
-      Win32 (>= 2.13.4.0),
+      Win32 ((>= 2.6.1.0 && < 2.12.0.0) || >= 2.13.4.0),
       setenv,
       process (>= 1.6.2.0),
       silently (>= 1.2.5.1)
