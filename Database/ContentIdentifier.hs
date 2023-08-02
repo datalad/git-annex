@@ -6,7 +6,7 @@
  -}
 
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE QuasiQuotes, TypeFamilies, TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes, TypeFamilies, TypeOperators, TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts, EmptyDataDecls #-}
 {-# LANGUAGE MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
