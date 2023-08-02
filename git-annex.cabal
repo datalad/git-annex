@@ -310,6 +310,7 @@ custom-setup
     time (>= 1.5.0),
     directory (>= 1.2.7.0),
     async,
+    utf8-string,
     Cabal (< 4.0)
 
 Executable git-annex
