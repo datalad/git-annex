@@ -18,7 +18,6 @@ extra-deps:
 - torrent-10000.1.1
 - bencode-0.6.1.1
 - feed-1.3.2.1
-- Win32-2.13.4.0
 - git: https://github.com/sjakobi/bloomfilter.git
   commit: fb79b39c44404fd791a3bed973e9d844fb084f1e
 allow-newer: true
