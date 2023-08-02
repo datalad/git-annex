@@ -434,23 +434,22 @@ maxSymlinkSz = 8192
 isPointerFile :: RawFilePath -> IO (Maybe Key)
 isPointerFile f = catchDefaultIO Nothing $
 #if defined(mingw32_HOST_OS)
-	checkcontentfollowssymlinks -- no symlinks supported on windows
+	withFile (fromRawFilePath f) ReadMode readhandle
 #else
 #if MIN_VERSION_unix(2,8,0)
-	bracket
-		(openFd (fromRawFilePath f) ReadOnly (defaultFileFlags { nofollow = True }))
-		closeFd
-		(\fd -> readhandle =<< fdToHandle fd)
+	let open = do
+		fd <- openFd (fromRawFilePath f) ReadOnly 
+			(defaultFileFlags { nofollow = True })
+		fdToHandle fd
+	in bracket open hClose readhandle
 #else
 	ifM (isSymbolicLink <$> R.getSymbolicLinkStatus f)
 		( return Nothing
-		, checkcontentfollowssymlinks
+		, withFile (fromRawFilePath f) ReadMode readhandle
 		)
 #endif
 #endif
   where
-	checkcontentfollowssymlinks = 
-		withFile (fromRawFilePath f) ReadMode readhandle
 	readhandle h = parseLinkTargetOrPointer <$> S.hGet h maxPointerSz
 
 {- Checks a symlink target or pointer file first line to see if it
