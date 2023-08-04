@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-08-04T16:19:57Z"
+ content="""
+Since filter.foo.process was being developed at the same time, they had a
+good reason to not accept the patch.
+
+This page tracks ways that the current git interface limits git-annex:
+[[todo/git_smudge_clean_interface_suboptiomal]]
+
+Since I've been able to work around most of the problems with the
+interface, the main consequences are slightly slower `git add` of large
+files and lack of integration with commands like `git stash` that update
+the working tree without running any hook. This is minor enough that most
+people won't be bothered by it, so implementing a better interface is not a
+priority for me.
+
+I would support git's smudge/clean interface being improved, but the benefits
+to git-annex are too small to make me want to dive back into implementing
+it myself.
+
+(Adding a git hook that runs after `git stash`, `git reset --hard` etc
+would interestingly fix the biggest remaining issue in a way that avoids
+the issue of improving the interface. Adding hooks is comparatively
+easy...)
+"""]]
