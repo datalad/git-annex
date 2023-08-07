@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="xvorsx@a3fc1a0cf228782f624e5eb21ba8a664227b6c60"
+ nickname="xvorsx"
+ avatar="http://cdn.libravatar.org/avatar/f8a11fb3152e472307bde487d188b23a"
+ subject="comment 4"
+ date="2023-08-07T07:19:46Z"
+ content="""
+Thank you for the reference!
+
+I may try to use this trick, but I doubt it would be sufficient for me:
+
+> To avoid the problem, git-annex smudge --clean relies on a not very well documented trick: It is fed a possibly large file on stdin, but when it closes the FD without reading. git gets a SIGPIPE and stops reading and sending the file. Instead of reading from stdin, git-annex abuses the fact that git provides the clean filter with the work tree filename, and reads and cleans the file itself, more efficiently.
+
+I will keep you updated on the progress in this direction.
+"""]]
