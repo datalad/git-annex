@@ -509,8 +509,9 @@ limitInAllGroup getgroupmap groupname = Right $ MatchFiles
 		present <- S.fromList <$> Remote.keyLocations key
 		return $ S.null $ want `S.difference` present
 
-{- Skip files that are only present in repositories that are not in the
- - group. -}
+{- Skip files unless they are present in at least one repository that is in
+ - the specified group, and are not present in any repositories that are not
+ - in the specified group. -}
 addOnlyInGroup :: String -> Annex ()
 addOnlyInGroup groupname = addLimit $ limitOnlyInGroup groupMap groupname
 
@@ -532,7 +533,8 @@ limitOnlyInGroup getgroupmap groupname = Right $ MatchFiles
 	check notpresent want key = do
 		locs <- S.fromList <$> Remote.keyLocations key
 		let present = locs `S.difference` notpresent
-		return $ not $ S.null $ present `S.intersection` want
+		return $ not (S.null $ present `S.intersection` want)
+			&& S.null (S.filter (`S.notMember` want) present)
 
 {- Adds a limit to skip files not using a specified key-value backend. -}
 addInBackend :: String -> Annex ()
