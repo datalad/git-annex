@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-08-08T17:21:19Z"
+ content="""
+It's actually git that is displaying that message.
+Specifically `git ls-files --others`
+
+Note that command is specifically supposed to list files that have been
+gitignored. And unfortunately there's no way to get a similar list of
+files while honoring .gitignore.
+
+`git-annex add` behaves the same way, and obviously it does need to
+use `git ls-files --others` or some equivilant, since it needs a way to
+list untracked files.
+
+The reason why `git-annex info` does is because it reuses some code from
+`git-annex unused`. In the latter case, [[!commit 6fd2935a5af196d22e27c423acac67b5d79ea6a6]]
+gives a rationalle, to look for unstaged annex symlinks. That certianly makes
+sense for `git-annex unused`, because running `mv foo bar` on an annexed
+file shouldn't make the annex content be considered unused, unlike `rm foo`.
+
+And it also means that `git-annex info` knows about unstaged symlinks to
+annexed files, eg:
+
+	git init foo
+	cd foo
+	git-annex init
+	date > bar
+	git annex add
+	mv bar baz
+	git-annex unused
+	...
+	annexed files in working tree: 1
+
+So, while it would be possible to change `git annex info` to not behave
+this way, `git-annex unused` and `git-annex add` still would.
+
+So I'm inclinded not to change this. It would, I think be
+reasonable to talk to the git developers about whether git ls-files needs
+to display permission denied errors in this situation. Or perhaps there
+could be a mode added to ls-files that lists untracked files but honors
+gitignores.
+"""]]
