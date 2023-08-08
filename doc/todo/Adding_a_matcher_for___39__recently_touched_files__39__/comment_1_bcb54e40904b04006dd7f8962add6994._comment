@@ -3,7 +3,8 @@
  subject="""comment 1"""
  date="2023-07-05T21:12:07Z"
  content="""
-There's a plan for [[speeding up sync --content|todo/Incremental_git_annex_sync_--content_--all]] (and `assist`).
+There's a plan for speeding up sync --content (and `assist`) at
+<https://git-annex.branchable.com/todo/Incremental_git_annex_sync_--content_--all/>
 
 That method is farly similar, and it wouldn't need the user to specify
 an additional matching option to get the speedup.
