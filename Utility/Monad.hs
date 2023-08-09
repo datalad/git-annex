@@ -12,6 +12,7 @@ module Utility.Monad (
 	getM,
 	anyM,
 	allM,
+	partitionM,
 	untilTrue,
 	ifM,
 	(<||>),
@@ -44,6 +45,13 @@ anyM p = liftM isJust . firstM p
 allM :: Monad m => (a -> m Bool) -> [a] -> m Bool
 allM _ [] = return True
 allM p (x:xs) = p x <&&> allM p xs
+
+partitionM :: Monad m => (a -> m Bool) -> [a] -> m ([a], [a])
+partitionM _ [] = return ([], [])
+partitionM p (x:xs) = do
+	r <- p x
+	(as, bs) <- partitionM p xs
+	return $ if r then (x:as, bs) else (as, x:bs)
 
 {- Runs an action on values from a list until it succeeds. -}
 untilTrue :: Monad m => [a] -> (a -> m Bool) -> m Bool

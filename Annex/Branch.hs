@@ -183,23 +183,24 @@ updateTo' pairs = do
 	branchref <- getBranch
 	ignoredrefs <- getIgnoredRefs
 	let unignoredrefs = excludeset ignoredrefs pairs
-	tomerge <- if null unignoredrefs
-		then return []
+	(tomerge, notnewer) <- if null unignoredrefs
+		then return ([], [])
 		else do
 			mergedrefs <- getMergedRefs
-			filterM isnewer (excludeset mergedrefs unignoredrefs)
+			partitionM isnewer $
+				excludeset mergedrefs unignoredrefs
 	{- In a read-only repository, catching permission denied lets
 	 - query operations still work, although they will need to do
 	 - additional work since the refs are not merged. -}
 	catchPermissionDenied
 		(const (updatefailedperms tomerge))
-		(go branchref tomerge)
+		(go branchref tomerge notnewer)
   where
 	excludeset s = filter (\(r, _) -> S.notMember r s)
 
 	isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
 
-	go branchref tomerge = do
+	go branchref tomerge notnewer = do
 		dirty <- journalDirty gitAnnexJournalDir
 		journalcleaned <- if null tomerge
 			{- Even when no refs need to be merged, the index
@@ -229,6 +230,7 @@ updateTo' pairs = do
 		journalclean <- if journalcleaned
 			then not <$> privateUUIDsKnown
 			else pure False
+		addMergedRefs notnewer
 		return $ UpdateMade
 			{ refsWereMerged = not (null tomerge)
 			, journalClean = journalclean 

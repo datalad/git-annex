@@ -2,6 +2,8 @@ git-annex (10.20230803) UNRELEASED; urgency=medium
 
   * Fix behavior of onlyingroup.
   * info: Added --dead-repositories option. 
+  * Significant startup speed increase by avoiding repeatedly checking
+    if some remote git-annex branch refs need to be merged.
 
  -- Joey Hess <id@joeyh.name>  Mon, 07 Aug 2023 13:04:13 -0400
 
