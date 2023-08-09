@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -109,6 +109,7 @@ data InfoOptions = InfoOptions
 	, bytesOption :: Bool
 	, batchOption :: BatchMode
 	, autoenableOption :: Bool
+	, deadrepositoriesOption :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser InfoOptions
@@ -123,6 +124,10 @@ optParser desc = InfoOptions
 		( long "autoenable"
 		<> help "list special remotes that are configured to autoenable"
 		)
+	<*> switch
+		( long "dead-repositories"
+		<> help "list repositories that have been marked as dead"
+		)
 
 seek :: InfoOptions -> CommandSeek
 seek o = case batchOption o of
@@ -134,7 +139,9 @@ start :: InfoOptions -> [String] -> CommandStart
 start o [] = do
 	if autoenableOption o
 		then autoenableInfo
-		else globalInfo o
+		else if deadrepositoriesOption o
+			then deadrepositoriesInfo o
+			else globalInfo o
 	stop
 start o ps = do
 	mapM_ (\p -> itemInfo o (SeekInput [p], p)) ps
@@ -161,6 +168,11 @@ autoenableInfo = showCustom "info" (SeekInput []) $ do
 		"autoenable special remotes"
 		descm (M.keys m)
 	showRaw (encodeBS s)
+	return True
+
+deadrepositoriesInfo :: InfoOptions -> Annex ()
+deadrepositoriesInfo o = showCustom "info" (SeekInput []) $ do
+	evalStateT (showStat (repo_list DeadTrusted)) (emptyStatInfo o)
 	return True
 
 itemInfo :: InfoOptions -> (SeekInput, String) -> Annex ()

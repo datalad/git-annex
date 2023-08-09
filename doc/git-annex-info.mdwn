@@ -50,6 +50,11 @@ for the local repository and all annexed content.
   Display a list of special remotes that have been configured to
   autoenable.  
 
+* `--dead-repositories`
+
+  Display a list of repositories that have been marked as dead.
+  Such repositories are not displayed in other info displays.
+
 * matching options
 
   The [[git-annex-matching-options]](1) can be used to select what

@@ -12,7 +12,7 @@ This command exists to deal with situations where data has been lost,
 and you know it has, and you want to stop being reminded of that fact.
 
 When a repository is specified, indicates that the repository has
-been irretrievably lost, so it will not be listed in eg, `git annex info`.
+been irretrievably lost, so it will not be listed in eg, `git annex whereis`.
 Repositories can be specified using their remote name, their
 description, or their UUID. (To undo, use `git-annex semitrust`.)
 
