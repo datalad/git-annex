@@ -8,4 +8,4 @@ Is that possible?
 
 Marking it with [[git-annex-dead]] doesn't cut it, from what I understand. In [[tips/what_to_do_when_you_lose_a_repository]], joeyh seemed to say "`dead` is the best we can do", as "the automatic merging used on the git-annex branch tends to re-add lines that are deleted in one repo when merging with another that still has them." But now we have something like `forget`, could that be coerced into forgetting just a subset of stuff?
 
-Thanks!
+Thanks! -- [[anarcat]]
