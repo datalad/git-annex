@@ -1,0 +1,11 @@
+Say I have two **unrelated** videos repositories. Say that, by some mistake of history, one was added as the git remote of the other. I somehow managed to clean the git history and disentangle the files between the two repos.
+
+Now git-annex still thinks about that other repository. I can mark it as dead, but it will still have location tracking information for all the files of the other repository.
+
+I know about [[git-annex-forget]]: I'm not sure it's what I want. I do not want to "[throw] away historical data about past locations of files", I would actually *want* to keep historical location data for relevant files. I want to forget a *repository* ever existed.
+
+Is that possible?
+
+Marking it with [[git-annex-dead]] doesn't cut it, from what I understand. In [[tips/what_to_do_when_you_lose_a_repository]], joeyh seemed to say "`dead` is the best we can do", as "the automatic merging used on the git-annex branch tends to re-add lines that are deleted in one repo when merging with another that still has them." But now we have something like `forget`, could that be coerced into forgetting just a subset of stuff?
+
+Thanks!
