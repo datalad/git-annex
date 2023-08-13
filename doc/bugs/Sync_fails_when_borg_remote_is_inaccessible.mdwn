@@ -22,6 +22,8 @@ See below for a script that produces this error for me.
 
 ### What version of git-annex are you using? On what operating system?
 
+Using the Guix package on Fedora.
+
 ```
 git-annex version: 10.20230626
 build flags: Assistant Webapp Pairing Inotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
