@@ -16,6 +16,7 @@ previously been added to the repository. Then it does the equivilant of
 
 However, unlike those commands, this command does not transfer annexed
 content by default. That will change in a future version of git-annex,
+when syncing with repositories that have preferred content configured.
 
 # OPTIONS
 

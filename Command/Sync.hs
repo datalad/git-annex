@@ -256,8 +256,6 @@ instance DeferredParseClass SyncOptions where
 
 seek :: SyncOptions -> CommandSeek
 seek o = do
-	warnSyncContentTransition o
-	
 	prepMerge
 	
 	seek' o
@@ -267,6 +265,7 @@ seek' o = startConcurrency transferStages $ do
 	let withbranch a = a =<< getCurrentBranch
 
 	remotes <- syncRemotes (syncWith o)
+	warnSyncContentTransition o remotes
 	-- Remotes that are git repositories, not (necesarily) special remotes.
 	let gitremotes = filter (Remote.gitSyncableRemoteType . Remote.remotetype) remotes
 	-- Remotes that contain annex object content.
@@ -1102,23 +1101,28 @@ shouldSyncContent o
 			HasGitConfig (Just c) -> return c
 			_ -> return d
 
--- Transition started May 2023, should wait until that has been in a Debian
--- stable release before completing the transition.
-warnSyncContentTransition :: SyncOptions -> Annex ()
-warnSyncContentTransition o
+-- See doc/todo/finish_sync_content_transition.mdwn
+warnSyncContentTransition :: SyncOptions -> [Remote] -> Annex ()
+warnSyncContentTransition o remotes
 	| operationMode o /= SyncMode = noop
 	| isJust (noContentOption o) || isJust (contentOption o) = noop
 	| not (null (contentOfOption o)) = noop
 	| otherwise = getGitConfigVal' annexSyncContent >>= \case
 		HasGlobalConfig (Just _) -> noop
 		HasGitConfig (Just _) -> noop
-		_ -> showwarning
+		_ -> do
+			m <- preferredContentMap
+			hereu <- getUUID
+			when (any (`M.member` m) (hereu:map Remote.uuid remotes)) $
+				showwarning
   where
 	showwarning = earlyWarning $
-		"git-annex sync will change default behavior to operate on"
-		<> " --content in a future version of git-annex. Recommend"
-		<> " you explicitly use --no-content (or -g) to prepare for"
-		<> " that change. (Or you can configure annex.synccontent)"
+		"git-annex sync will change default behavior in the future to"
+		<> " send content to repositories that have"
+		<> " preferred content configured. If you do not want this to"
+		<> " send any content, use --no-content (or -g)"
+		<> " to prepare for that change."
+		<> " (Or you can configure annex.synccontent)"
 
 notOnlyAnnex :: SyncOptions -> Annex Bool
 notOnlyAnnex o = not <$> onlyAnnex o

@@ -64,3 +64,5 @@ Absolutely.  I've been using git-annex since nearly the beginning; and use it ex
 Thanks for writing git-annex.  It's the reason I've been sponsoring you on Patreon for years.
 
 Please don't break backwards compatibility.  Even in the user experience :-)
+
+> [[closing|done]] per new plan --[[Joey]]
