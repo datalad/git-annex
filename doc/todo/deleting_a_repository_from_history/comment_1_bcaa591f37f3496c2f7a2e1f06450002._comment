@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 1"
+ date="2023-08-10T01:08:16Z"
+ content="""
+This has happened repeatedly to me and I feel your pain. It is especially likely to happen when using submodules, which can sometimes be uninitialized, so when you enter them and modify `git remote`s from there, you're actually messing up the parent repo.
+
+I'm afraid there's no convenient way to purge git annex remotes except marking as `dead` and then `forget --drop-dead`, which loses past location history as well.
+
+What you can do though is trying to manually kick the bad commit out of the git-annex branch (e.g. `git rebase -i`), then force-push the git-annex branch to all remotes. If you miss one remote, the bad commit will be reintroduced somewhen later.
+"""]]
