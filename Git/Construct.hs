@@ -39,7 +39,7 @@ import Git.Remote
 import Git.FilePath
 import qualified Git.Url as Url
 import Utility.UserInfo
-import Utility.Url (parseURIPortable)
+import Utility.Url.Parse
 
 import qualified Data.ByteString as B
 import qualified System.FilePath.ByteString as P

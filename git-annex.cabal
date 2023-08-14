@@ -1175,6 +1175,7 @@ Executable git-annex
     Utility.Touch
     Utility.Tuple
     Utility.Url
+    Utility.Url.Parse
     Utility.UserInfo
     Utility.Verifiable
 

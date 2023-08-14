@@ -53,7 +53,8 @@ import Types.Export
 import Types.Availability (Availability(..))
 import Types.Key
 import Git.Types
-import Utility.Url (URLString, parseURIPortable)
+import Utility.Url (URLString)
+import Utility.Url.Parse
 import qualified Utility.SimpleProtocol as Proto
 
 import Control.Concurrent.STM

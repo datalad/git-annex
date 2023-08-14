@@ -9,7 +9,6 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE CPP #-}
 
 module Utility.Url (
 	newManager,
@@ -33,8 +32,6 @@ module Utility.Url (
 	downloadConduit,
 	sinkResponseFile,
 	downloadPartial,
-	parseURIPortable,
-	parseURIRelaxed,
 	matchStatusCodeException,
 	matchHttpExceptionContent,
 	BasicAuth(..),
@@ -52,6 +49,7 @@ import Network.HTTP.Client.Restricted
 import Utility.IPAddress
 import qualified Utility.RawFilePath as R
 import Utility.Hash (IncrementalVerifier(..))
+import Utility.Url.Parse
 
 import Network.URI
 import Network.HTTP.Types
@@ -72,9 +70,6 @@ import Network.BSD (getProtocolNumber)
 import Data.Either
 import Data.Conduit
 import Text.Read
-#ifdef mingw32_HOST_OS
-import qualified System.FilePath.Windows as PW
-#endif
 
 type URLString = String
 
@@ -612,30 +607,6 @@ downloadPartial url uo n = case parseURIRelaxed url of
 					then Just <$> brReadSome (responseBody resp) n
 					else return Nothing
 
-{- On unix this is the same as parseURI. But on Windows,
- - it can parse urls such as file:///C:/path/to/file
- - parseURI normally parses that as a path /C:/path/to/file
- - and this simply removes the excess leading slash when there is a
- - drive letter after it. -}
-parseURIPortable :: URLString -> Maybe URI
-#ifndef mingw32_HOST_OS
-parseURIPortable = parseURI
-#else
-parseURIPortable s
-	| "file:" `isPrefixOf` s = do
-		u <- parseURI s
-		return $ case PW.splitDirectories (uriPath u) of
-			(p:d:_) | all PW.isPathSeparator p && PW.isDrive d ->
-				u { uriPath = dropWhile PW.isPathSeparator (uriPath u) }
-			_ -> u
-	| otherwise = parseURI s
-#endif
-
-{- Allows for spaces and other stuff in urls, properly escaping them. -}
-parseURIRelaxed :: URLString -> Maybe URI
-parseURIRelaxed s = maybe (parseURIRelaxed' s) Just $
-	parseURIPortable $ escapeURIString isAllowedInURI s
-
 {- Generate a http-conduit Request for an URI. This is able
  - to deal with some urls that parseRequest would usually reject. 
  -}
@@ -648,23 +619,6 @@ parseRequestRelaxed u = case uriAuthority u of
 		| uriPort ua == ":" -> parseRequest $ show $
 			u { uriAuthority = Just $ ua { uriPort = "" } }
 	_ -> parseRequest (show u)
-
-{- Some characters like '[' are allowed in eg, the address of
- - an uri, but cannot appear unescaped further along in the uri.
- - This handles that, expensively, by successively escaping each character
- - from the back of the url until the url parses.
- -}
-parseURIRelaxed' :: URLString -> Maybe URI
-parseURIRelaxed' s = go [] (reverse s)
-  where
-	go back [] = parseURI back
-	go back (c:cs) = case parseURI (escapeURIString isAllowedInURI (reverse (c:cs)) ++ back) of
-		Just u -> Just u
-		Nothing -> go (escapeURIChar escapemore c ++ back) cs
-
-	escapemore '[' = False
-	escapemore ']' = False
-	escapemore c = isAllowedInURI c
 
 hAcceptEncoding :: CI.CI B.ByteString
 hAcceptEncoding = "Accept-Encoding"

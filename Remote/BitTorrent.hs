@@ -23,7 +23,7 @@ import Types.CleanupActions
 import Messages.Progress
 import Utility.Metered
 import Utility.Tmp
-import Utility.Url (parseURIPortable)
+import Utility.Url.Parse
 import Backend.URL
 import Annex.Perms
 import Annex.Tmp

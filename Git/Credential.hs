@@ -15,6 +15,7 @@ import Git.Types
 import Git.Command
 import qualified Git.Config as Config
 import Utility.Url
+import Utility.Url.Parse
 
 import qualified Data.Map as M
 import Network.URI

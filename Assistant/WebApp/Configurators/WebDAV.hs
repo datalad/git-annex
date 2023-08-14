@@ -22,7 +22,7 @@ import Assistant.Gpg
 import Types.GitConfig
 import Annex.SpecialRemote.Config
 import Types.ProposedAccepted
-import Utility.Url
+import Utility.Url.Parse
 
 import qualified Data.Map as M
 import qualified Data.Text as T

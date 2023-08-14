@@ -16,6 +16,7 @@ import qualified Utility.SimpleProtocol as Proto
 import Types.GitConfig
 import Annex.ChangedRefs (ChangedRefs)
 import Utility.Url
+import Utility.Url.Parse
 
 import Network.URI
 import Control.Concurrent

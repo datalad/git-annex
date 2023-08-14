@@ -20,7 +20,7 @@ import Annex.Link
 import Annex.FileMatcher
 import Annex.Ingest
 import Git.FilePath
-import Utility.Url
+import Utility.Url.Parse
 
 import Network.URI
 

@@ -34,6 +34,7 @@ module Annex.Url (
 import Annex.Common
 import qualified Annex
 import qualified Utility.Url as U
+import qualified Utility.Url.Parse as U
 import Utility.Hash (IncrementalVerifier)
 import Utility.IPAddress
 import Network.HTTP.Client.Restricted

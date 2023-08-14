@@ -33,7 +33,7 @@ import Logs.Location
 import Utility.Metered
 import Utility.HtmlDetect
 import Utility.Path.Max
-import Utility.Url (parseURIPortable)
+import Utility.Url.Parse
 import qualified Utility.RawFilePath as R
 import qualified Annex.Transfer as Transfer
 

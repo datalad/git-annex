@@ -16,6 +16,7 @@ import Assistant.NamedThread
 import Utility.ThreadScheduler
 import Utility.NotificationBroadcaster
 import Utility.Url
+import Utility.Url.Parse
 import Utility.PID
 import qualified Utility.RawFilePath as R
 import qualified Git.Construct
