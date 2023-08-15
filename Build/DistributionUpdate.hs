@@ -169,7 +169,7 @@ makeinfos updated changelogversion = do
 	
 	-- Check for out of date info files.
 	infos <- liftIO $ filter (".info" `isSuffixOf`)
-		<$> dirContentsRecursive "git-annex"
+		<$> emptyWhenDoesNotExist (dirContentsRecursive "git-annex")
 	ds <- liftIO $ forM infos (readish <$$> readFile)
 	let dis = zip infos ds
 	let ood = filter outofdate dis

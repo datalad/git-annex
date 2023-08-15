@@ -4,6 +4,9 @@ git-annex (10.20230803) UNRELEASED; urgency=medium
   * info: Added --dead-repositories option. 
   * Significant startup speed increase by avoiding repeatedly checking
     if some remote git-annex branch refs need to be merged.
+  * Fix behavior when importing a tree from a directory remote when the
+    directory does not exist. An empty tree was imported, rather than the
+    import failing.
 
  -- Joey Hess <id@joeyh.name>  Mon, 07 Aug 2023 13:04:13 -0400
 

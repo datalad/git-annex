@@ -61,7 +61,8 @@ cleanupOtherTmp = do
 		tmpdir <- fromRawFilePath <$> fromRepo gitAnnexTmpOtherDir
 		void $ liftIO $ tryIO $ removeDirectoryRecursive tmpdir
 		oldtmp <- fromRawFilePath <$> fromRepo gitAnnexTmpOtherDirOld
-		liftIO $ mapM_ cleanold =<< dirContentsRecursive oldtmp
+		liftIO $ mapM_ cleanold
+			=<< emptyWhenDoesNotExist (dirContentsRecursive oldtmp)
 		liftIO $ void $ tryIO $ removeDirectory oldtmp -- when empty
   where
 	cleanold f = do

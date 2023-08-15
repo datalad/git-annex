@@ -80,8 +80,9 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 				-- Copy in refs and packed-refs, to work
 				-- around bug in git 2.13.0, which
 				-- causes it not to look in GIT_DIR for refs.
-				refs <- liftIO $ dirContentsRecursive $
-					git_dir' </> "refs"
+				refs <- liftIO $ emptyWhenDoesNotExist $ 
+					dirContentsRecursive $
+						git_dir' </> "refs"
 				let refs' = (git_dir' </> "packed-refs") : refs
 				liftIO $ forM_ refs' $ \src -> do
 					let src' = toRawFilePath src

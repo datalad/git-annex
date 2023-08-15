@@ -40,7 +40,7 @@ gitRepoInfo :: Remote -> Annex [(String, String)]
 gitRepoInfo r = do
 	d <- fromRawFilePath <$> fromRepo Git.localGitDir
 	mtimes <- liftIO $ mapM (\p -> modificationTime <$> R.getFileStatus (toRawFilePath p))
-		=<< dirContentsRecursive (d </> "refs" </> "remotes" </> Remote.name r)
+		=<< emptyWhenDoesNotExist (dirContentsRecursive (d </> "refs" </> "remotes" </> Remote.name r))
 	let lastsynctime = case mtimes of
 		[] -> "never"
 		_ -> show $ posixSecondsToUTCTime $ realToFrac $ maximum mtimes

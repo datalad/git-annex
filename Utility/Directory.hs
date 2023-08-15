@@ -1,6 +1,6 @@
 {- directory traversal and manipulation
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -43,14 +43,26 @@ dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
  -
  - Does not follow symlinks to other subdirectories.
  -
- - When the directory does not exist, no exception is thrown,
- - instead, [] is returned. -}
+ - Throws exception if the directory does not exist or otherwise cannot be
+ - accessed. However, does not throw exceptions when subdirectories cannot
+ - be accessed (the use of unsafeInterleaveIO would make it difficult to
+ - trap such exceptions).
+ -}
 dirContentsRecursive :: FilePath -> IO [FilePath]
 dirContentsRecursive = dirContentsRecursiveSkipping (const False) True
 
 {- Skips directories whose basenames match the skipdir. -}
 dirContentsRecursiveSkipping :: (FilePath -> Bool) -> Bool -> FilePath -> IO [FilePath]
-dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir = go [topdir]
+dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir
+	| skipdir (takeFileName topdir) = return []
+	| otherwise = do
+		-- Get the contents of the top directory outside of
+		-- unsafeInterleaveIO, which allows throwing exceptions if
+		-- it cannot be accessed.
+		(files, dirs) <- collect [] []
+			=<< dirContents topdir
+		files' <- go dirs
+		return (files ++ files')
   where
 	go [] = return []
 	go (dir:dirs)
@@ -79,9 +91,19 @@ dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir = go [topdir]
 
 {- Gets the directory tree from a point, recursively and lazily,
  - with leaf directories **first**, skipping any whose basenames
- - match the skipdir. Does not follow symlinks. -}
+ - match the skipdir. Does not follow symlinks.
+ -
+ - Throws exception if the directory does not exist or otherwise cannot be
+ - accessed. However, does not throw exceptions when subdirectories cannot
+ - be accessed (the use of unsafeInterleaveIO would make it difficult to
+ - trap such exceptions).
+ -}
 dirTreeRecursiveSkipping :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
-dirTreeRecursiveSkipping skipdir topdir = go [] [topdir]
+dirTreeRecursiveSkipping skipdir topdir
+	| skipdir (takeFileName topdir) = return []
+	| otherwise = do
+		subdirs <- filterM isdir =<< dirContents topdir
+		go [] subdirs
   where
 	go c [] = return c
 	go c (dir:dirs)
@@ -92,6 +114,12 @@ dirTreeRecursiveSkipping skipdir topdir = go [] [topdir]
 				=<< catchDefaultIO [] (dirContents dir)
 			go (subdirs++dir:c) dirs
 	isdir p = isDirectory <$> R.getSymbolicLinkStatus (toRawFilePath p)
+
+{- When the action fails due to the directory not existing, returns []. -}
+emptyWhenDoesNotExist :: IO [a] -> IO [a]
+emptyWhenDoesNotExist a = tryWhenExists a >>= return . \case
+	Just v -> v
+	Nothing -> []
 
 {- Use with an action that removes something, which may or may not exist.
  -

@@ -127,7 +127,8 @@ runRepair u mrmt destructiverepair = do
  -}
 repairStaleGitLocks :: Git.Repo -> Assistant Bool
 repairStaleGitLocks r = do
-	lockfiles <- liftIO $ filter islock <$> findgitfiles r
+	lockfiles <- liftIO $ filter islock
+		<$> emptyWhenDoesNotExist (findgitfiles r)
 	repairStaleLocks lockfiles
 	return $ not $ null lockfiles
   where

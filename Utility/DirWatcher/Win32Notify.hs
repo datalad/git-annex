@@ -43,7 +43,7 @@ watchDir dir ignored scanevents hooks = do
 		runhook h s = maybe noop (\a -> a (filePath evt) s) (h hooks)
 
 	scan d = unless (ignoredPath ignored d) $
-		mapM_ go =<< dirContentsRecursiveSkipping (const False) False d
+		mapM_ go =<< emptyWhenDoesNotExist (dirContentsRecursiveSkipping (const False) False d)
 	  where		
 		go f
 			| ignoredPath ignored f = noop

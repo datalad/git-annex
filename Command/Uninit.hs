@@ -141,7 +141,7 @@ prepareRemoveAnnexDir annexdir = do
 
 prepareRemoveAnnexDir' :: FilePath -> IO ()
 prepareRemoveAnnexDir' annexdir =
-	dirTreeRecursiveSkipping (const False) annexdir 
+	emptyWhenDoesNotExist (dirTreeRecursiveSkipping (const False) annexdir)
 		>>= mapM_ (void . tryIO . allowWrite . toRawFilePath)
 
 {- Keys that were moved out of the annex have a hard link still in the

@@ -152,7 +152,7 @@ getTransfers' dirs wanted = do
 	infos <- mapM checkTransfer transfers
 	return $ mapMaybe running $ zip transfers infos
   where
-	findfiles = liftIO . mapM (dirContentsRecursive . fromRawFilePath)
+	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive . fromRawFilePath)
 		=<< mapM (fromRepo . transferDir) dirs
 	running (t, Just i) = Just (t, i)
 	running (_, Nothing) = Nothing
@@ -179,7 +179,7 @@ getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles
 		return $ case (mt, mi) of
 			(Just t, Just i) -> Just (t, i)
 			_ -> Nothing
-	findfiles = liftIO . mapM (dirContentsRecursive . fromRawFilePath)
+	findfiles = liftIO . mapM (emptyWhenDoesNotExist . dirContentsRecursive . fromRawFilePath)
 		=<< mapM (fromRepo . failedTransferDir u) [Download, Upload]
 
 clearFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]

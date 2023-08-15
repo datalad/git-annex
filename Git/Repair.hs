@@ -88,7 +88,7 @@ explodePacks r = go =<< listPackFiles r
 			void $ tryIO $
 				pipeWrite [Param "unpack-objects", Param "-r"] r' $ \h ->
 				L.hPut h =<< L.readFile packfile
-		objs <- dirContentsRecursive tmpdir
+		objs <- emptyWhenDoesNotExist (dirContentsRecursive tmpdir)
 		forM_ objs $ \objfile -> do
 			f <- relPathDirToFile
 				(toRawFilePath tmpdir)
@@ -255,7 +255,7 @@ getAllRefs' refdir = do
 	let topsegs = length (splitPath refdir) - 1
 	let toref = Ref . toInternalGitPath . encodeBS 
 		. joinPath . drop topsegs . splitPath
-	map toref <$> dirContentsRecursive refdir
+	map toref <$> emptyWhenDoesNotExist (dirContentsRecursive refdir)
 
 explodePackedRefsFile :: Repo -> IO ()
 explodePackedRefsFile r = do
