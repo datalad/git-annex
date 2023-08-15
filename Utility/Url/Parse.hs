@@ -16,33 +16,7 @@ module Utility.Url.Parse (
 	parseURIRelaxed,
 ) where
 
-import Common
-import Utility.Debug
-import Utility.Metered
-import Network.HTTP.Client.Restricted
-import Utility.IPAddress
-import qualified Utility.RawFilePath as R
-import Utility.Hash (IncrementalVerifier(..))
-
 import Network.URI
-import Network.HTTP.Types
-import qualified Data.CaseInsensitive as CI
-import qualified Data.ByteString as B
-import qualified Data.ByteString.UTF8 as B8
-import qualified Data.ByteString.Lazy as L
-import qualified Data.Set as S
-import Control.Exception (throwIO, evaluate)
-import Control.Monad.Trans.Resource
-import Control.Monad.IO.Class (MonadIO)
-import Control.DeepSeq
-import Network.HTTP.Conduit
-import Network.HTTP.Client
-import Network.HTTP.Simple (getResponseHeader)
-import Network.Socket
-import Network.BSD (getProtocolNumber)
-import Data.Either
-import Data.Conduit
-import Text.Read
 #ifdef mingw32_HOST_OS
 import qualified System.FilePath.Windows as PW
 #endif
