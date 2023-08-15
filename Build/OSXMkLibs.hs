@@ -96,7 +96,7 @@ otool appbase installedbins replacement_libs libmap = do
 		-- to find real path to library, but for now, skip it.
 		not ("@executable_path" `isInfixOf` s)
 		&& not ("@loader_path" `isInfixOf` s)
-		-- OSX framekworks such as Cocoa are too tightly tied to
+		-- OSX frameworks such as Cocoa are too tightly tied to
 		-- a specific OSX version, so don't bundle.
 		&& not (".framework" `isInfixOf` s)
 		-- libSystem.B is tightly tied to frameworks.

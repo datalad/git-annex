@@ -63,14 +63,11 @@ preferredBundledPrograms = catMaybes
 	, Just "sh"
 	-- used by git-annex when available
 	, Just "uname"
+	-- Included in git for Windows
+	, Just "cp"
 #endif
 	, BuildInfo.lsof
 	, BuildInfo.gcrypt
-#ifndef mingw32_HOST_OS
-	-- These utilities are included in git for Windows
-	, ifset BuildInfo.curl "curl"
-	, Just "cp"
-#endif
 #ifdef linux_HOST_OS
 	-- used to unpack the tarball when upgrading
 	, Just "gunzip"
