@@ -9,9 +9,11 @@ module Remote.Helper.Git where
 
 import Annex.Common
 import qualified Git
+import qualified Git.GCrypt
 import Types.Availability
 import qualified Types.Remote as Remote
 import qualified Utility.RawFilePath as R
+import qualified Git.Config
 
 import Data.Time.Clock.POSIX
 import System.PosixCompat.Files (modificationTime)
@@ -24,10 +26,25 @@ localpathCalc r
 	| not (Git.repoIsLocal r) && not (Git.repoIsLocalUnknown r) = Nothing
 	| otherwise = Just $ fromRawFilePath $ Git.repoPath r
 
-availabilityCalc :: Git.Repo -> Availability
-availabilityCalc r
-	| (Git.repoIsLocal r || Git.repoIsLocalUnknown r) = LocallyAvailable
-	| otherwise = GloballyAvailable
+{- Checks relatively inexpensively if a repository is available for use. -}
+repoAvail :: Git.Repo -> Annex Availability
+repoAvail r 
+	| Git.repoIsHttp r = return GloballyAvailable
+	| Git.GCrypt.isEncrypted r = do
+		g <- gitRepo
+		liftIO $ do
+			er <- Git.GCrypt.encryptedRemote g r
+			if Git.repoIsLocal er || Git.repoIsLocalUnknown er
+				then checklocal er
+				else return GloballyAvailable
+	| Git.repoIsUrl r = return GloballyAvailable
+	| Git.repoIsLocalUnknown r = return Unavailable
+	| otherwise = checklocal r
+  where
+	checklocal r' = ifM (liftIO $ isJust <$> catchMaybeIO (Git.Config.read r'))
+		( return LocallyAvailable
+		, return Unavailable
+		)
 
 {- Avoids performing an action on a local repository that's not usable.
  - Does not check that the repository is still available on disk. -}

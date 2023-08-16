@@ -10,7 +10,7 @@ git-annex (10.20230803) UNRELEASED; urgency=medium
   * Stop bundling curl in the OSX dmg and linux standalone image.
   * sync, assist, push, pull: Skip more types of remotes when they
     are not present due to eg being on a drive that is offline.
-    (directory, borg, bup, ddar, rsync)
+    (directory, borg, bup, ddar, gcrypt, rsync)
   * info: Added available to the info displayed for a remote.
   * Added AVAILABILITY UNAVAILABLE and the UNAVAILABLERESPONSE extension
     to the external special remote protocol.

@@ -231,26 +231,6 @@ unavailable r = gen r'
 			Nothing -> r { Git.location = Git.Unknown }
 		_ -> r -- already unavailable
 
-{- Checks relatively inexpensively if a repository is available for use. -}
-repoAvail :: Git.Repo -> Annex Availability
-repoAvail r 
-	| Git.repoIsHttp r = return GloballyAvailable
-	| Git.GCrypt.isEncrypted r = do
-		g <- gitRepo
-		liftIO $ do
-			er <- Git.GCrypt.encryptedRemote g r
-			if Git.repoIsLocal er || Git.repoIsLocalUnknown er
-				then checklocal er
-				else return GloballyAvailable
-	| Git.repoIsUrl r = return GloballyAvailable
-	| Git.repoIsLocalUnknown r = return Unavailable
-	| otherwise = checklocal r
-  where
-	checklocal r' = ifM (liftIO $ isJust <$> catchMaybeIO (Git.Config.read r'))
-		( return LocallyAvailable
-		, return Unavailable
-		)
-
 {- Tries to read the config for a specified remote, updates state, and
  - returns the updated repo. -}
 tryGitConfigRead :: Bool -> Git.Repo -> Bool -> Annex Git.Repo
