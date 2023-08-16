@@ -41,7 +41,7 @@ See [[git-annex-preferred-content]](1).
 
 * `[remote]`
 
-  By default this command pulls from all remotes, except for remotes
+  By default this command pulls from all available remotes, except for remotes
   that have `remote.<name>.annex-pull` (or `remote.<name>.annex-sync`) 
   set to false. 
 

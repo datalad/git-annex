@@ -50,7 +50,7 @@ See [[git-annex-preferred-content]](1).
 
 * `[remote]`
 
-  By default, this command pushes to all remotes, except for remotes 
+  By default, this command pushes to all available remotes, except for remotes 
   that have `remote.<name>.annex-push` (or `remote.<name>.annex-sync`) 
   set to false or `remote.<name>.annex-readonly` set to true.
 
