@@ -1,0 +1,5 @@
+I don't run fsck much on my git-annex repos, and I think I should do it more often. Part of the problem is I have lots of repos scattered all over the place and I'm not sure i want to run the assistant everywhere, so there's no clear way for me to "run `git annex foo` everywhere". (I have crude replacements like [git-annex-sync-all](https://gitlab.com/anarcat/scripts/-/blob/main/git-annex-sync-all?ref_type=heads) but anyway, that is not the point here...)
+
+One thing with fsck is I don't know if I've ever ran it on a repo. I have *just* noticed, after running it on a local repo, that the `activity.log` file on the `git-annex` branch gets bumped when a fsck runs, which I find interesting. Why wouldn't this precious information be displayed somewhere? Maybe in [[git-annex-info]], for the local repository (or added to the repositories table)?
+
+Thanks! -- [[anarcat]]
