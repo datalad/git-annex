@@ -370,10 +370,10 @@ origBranch = fromViewBranch . fromAdjustedBranch
 remoteBranch :: Remote -> Git.Ref -> Git.Ref
 remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
 
--- Do automatic initialization of remotes when possible when getting remote
--- list.
 syncRemotes :: [String] -> Annex [Remote]
 syncRemotes ps = do
+	-- Do automatic initialization of remotes when possible
+	-- when getting remote list.
 	remotelist <- Remote.remoteList' True
 	available <- filterM (liftIO . getDynamicConfig . remoteAnnexSync . Remote.gitconfig) remotelist
 	syncRemotes' ps available
