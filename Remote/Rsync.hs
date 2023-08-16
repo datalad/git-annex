@@ -31,6 +31,7 @@ import Annex.Ssh
 import Annex.Perms
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
+import Remote.Helper.Path
 import Types.Export
 import Types.ProposedAccepted
 import Remote.Rsync.RsyncUrl
@@ -120,8 +121,7 @@ gen r u rc gc rs = do
 			, readonly = False
 			, appendonly = False
 			, untrustworthy = False
-			, availability = pure $
-				if islocal then LocallyAvailable else GloballyAvailable
+			, availability = checkPathAvailability islocal (rsyncUrl o)
 			, remotetype = remote
 			, mkUnavailable = return Nothing
 			, getInfo = return [("url", url)]

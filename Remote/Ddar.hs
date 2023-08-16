@@ -25,6 +25,7 @@ import Config.Cost
 import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
+import Remote.Helper.Path
 import Annex.Ssh
 import Annex.UUID
 import Utility.SshHost
@@ -98,8 +99,9 @@ gen r u rc gc rs = do
 			then Just $ ddarRepoLocation ddarrepo
 			else Nothing
 		, remotetype = remote
-		, availability = pure $
-			if ddarLocal ddarrepo then LocallyAvailable else GloballyAvailable
+		, availability = checkPathAvailability
+			(ddarLocal ddarrepo && not (null $ ddarRepoLocation ddarrepo))
+			(ddarRepoLocation ddarrepo)
 		, readonly = False
 		, appendonly = False
 		, untrustworthy = False

@@ -34,6 +34,7 @@ import Config
 import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
+import Remote.Helper.Path
 import Types.Import
 import qualified Remote.Directory.LegacyChunked as Legacy
 import Annex.CopyFile
@@ -134,7 +135,7 @@ gen r u rc gc rs = do
 			, readonly = False
 			, appendonly = False
 			, untrustworthy = False
-			, availability = pure LocallyAvailable
+			, availability = checkPathAvailability True dir'
 			, remotetype = remote
 			, mkUnavailable = gen r u rc
 				(gc { remoteAnnexDirectory = Just "/dev/null" }) rs

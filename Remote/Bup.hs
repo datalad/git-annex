@@ -32,6 +32,7 @@ import qualified Remote.Helper.Ssh as Ssh
 import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
+import Remote.Helper.Path
 import Utility.Hash
 import Utility.UserInfo
 import Annex.UUID
@@ -97,8 +98,9 @@ gen r u rc gc rs = do
 			then Just buprepo
 			else Nothing
 		, remotetype = remote
-		, availability = pure $
-			if bupLocal buprepo then LocallyAvailable else GloballyAvailable
+		, availability = if null buprepo
+			then pure LocallyAvailable
+			else checkPathAvailability (bupLocal buprepo) buprepo
 		, readonly = False
 		, appendonly = False
 		, untrustworthy = False

@@ -21,7 +21,7 @@ repoCheap = not . Git.repoIsUrl
 
 localpathCalc :: Git.Repo -> Maybe FilePath
 localpathCalc r
-	| availabilityCalc r == GloballyAvailable = Nothing
+	| not (Git.repoIsLocal r) && not (Git.repoIsLocalUnknown r) = Nothing
 	| otherwise = Just $ fromRawFilePath $ Git.repoPath r
 
 availabilityCalc :: Git.Repo -> Availability

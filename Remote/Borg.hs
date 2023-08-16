@@ -1,6 +1,6 @@
 {- Using borg as a remote.
  -
- - Copyright 2020,2021 Joey Hess <id@joeyh.name>
+ - Copyright 2020,2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,7 @@ import Annex.Tmp
 import Annex.SpecialRemote.Config
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
+import Remote.Helper.Path
 import Annex.UUID
 import Types.ProposedAccepted
 import Utility.Metered
@@ -112,8 +113,7 @@ gen r u rc gc rs = do
 		, gitconfig = gc
 		, localpath = borgRepoLocalPath borgrepo
 		, remotetype = remote
-		, availability = pure $
-			if borgLocal borgrepo then LocallyAvailable else GloballyAvailable
+		, availability = checkAvailability borgrepo
 		, readonly = False
 		, appendonly = False
 		-- When the user sets the appendonly field, they are
@@ -161,8 +161,12 @@ absBorgRepo r@(BorgRepo p)
 
 borgRepoLocalPath :: BorgRepo -> Maybe FilePath
 borgRepoLocalPath r@(BorgRepo p)
-	| borgLocal r && not (null p) = Just p
+	| borgLocal r = Just p
 	| otherwise = Nothing
+
+checkAvailability :: BorgRepo -> Annex Availability
+checkAvailability borgrepo@(BorgRepo r) = 
+	checkPathAvailability (borgLocal borgrepo) r
 
 listImportableContentsM :: UUID -> BorgRepo -> ParsedRemoteConfig -> Annex (Maybe (ImportableContentsChunkable Annex (ContentIdentifier, ByteSize)))
 listImportableContentsM u borgrepo c = prompt $ do
