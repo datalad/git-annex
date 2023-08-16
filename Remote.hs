@@ -411,9 +411,12 @@ byCost = map snd . sortBy (comparing fst) . M.toList . costmap
 	costmap = M.fromListWith (++) . map costpair
 	costpair r = (cost r, [r])
 
-checkAvailable :: Bool -> Remote -> IO Bool
-checkAvailable assumenetworkavailable = 
-	maybe (return assumenetworkavailable) doesDirectoryExist . localpath
+checkAvailable :: Bool -> Remote -> Annex Bool
+checkAvailable assumenetworkavailable r = tryNonAsync (availability r) >>= \case
+	Left _e -> return assumenetworkavailable
+	Right LocallyAvailable -> return True
+	Right GloballyAvailable -> return assumenetworkavailable
+	Right Unavailable -> return False
 
 hasKey :: Remote -> Key -> Annex (Either String Bool)
 hasKey r k = either (Left  . show) Right <$> tryNonAsync (checkPresent r k)

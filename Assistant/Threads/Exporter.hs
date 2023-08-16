@@ -51,7 +51,7 @@ exportThread = namedThread "Exporter" $ runEvery (Seconds 30) <~> do
  - to avoid ugly messages when a removable drive is not attached.
  -}
 exportTargets :: Assistant [Remote]
-exportTargets = liftIO . filterM (Remote.checkAvailable True)
+exportTargets = liftAnnex . filterM (Remote.checkAvailable True)
 	=<< candidates <$> getDaemonStatus
   where
 	candidates = filter (not . Remote.readonly) . exportRemotes

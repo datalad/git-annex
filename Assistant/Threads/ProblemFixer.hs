@@ -56,7 +56,7 @@ handleRemoteProblem urlrenderer rmt = do
 handleRemoteProblem' :: Git.Repo -> UrlRenderer -> Remote -> Assistant Bool
 handleRemoteProblem' repo urlrenderer rmt
 	| Git.repoIsLocal repo && not (Git.repoIsLocalUnknown repo) =
-		ifM (liftIO $ checkAvailable True rmt)
+		ifM (liftAnnex $ checkAvailable True rmt)
 			( do
 				fixedlocks <- repairStaleGitLocks repo
 				fsckresults <- showFscking urlrenderer (Just rmt) $ tryNonAsync $

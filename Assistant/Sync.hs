@@ -59,11 +59,11 @@ import Control.Concurrent.Async
 reconnectRemotes :: [Remote] -> Assistant ()
 reconnectRemotes [] = recordExportCommit
 reconnectRemotes rs = void $ do
-	rs' <- liftIO $ filterM (Remote.checkAvailable True) rs
+	rs' <- liftAnnex $ filterM (Remote.checkAvailable True) rs
 	unless (null rs') $ do
 		failedrs <- syncAction rs' (const go)
 		forM_ failedrs $ \r ->
-			whenM (liftIO $ Remote.checkAvailable False r) $
+			whenM (liftAnnex $ Remote.checkAvailable False r) $
 				repoHasProblem (Remote.uuid r) (syncRemote r)
 		mapM_ signal $ filter (`notElem` failedrs) rs'
 	recordExportCommit
