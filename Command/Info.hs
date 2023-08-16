@@ -43,6 +43,7 @@ import Logs.Transfer
 import Types.Key
 import Types.TrustLevel
 import Types.FileMatcher
+import Types.Availability
 import qualified Limit
 import Messages.JSON (DualDisp(..), ObjectMap(..))
 import Annex.BloomFilter
@@ -312,6 +313,7 @@ remote_fast_stats r = map (\s -> s r)
 	[ remote_name
 	, remote_cost
 	, remote_type
+	, remote_availabile
 	]
 
 uuid_fast_stats :: UUID -> [Stat]
@@ -396,6 +398,11 @@ remote_cost r = simpleStat "cost" $ pure $
 remote_type :: Remote -> Stat
 remote_type r = simpleStat "type" $ pure $
 	Remote.typename $ Remote.remotetype r
+
+remote_availabile :: Remote -> Stat
+remote_availabile r = simpleStat "available" $ lift $
+	either show (\av -> boolConfig (av /= Unavailable))
+		<$> tryNonAsync (Remote.availability r)
 
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $ json show $
