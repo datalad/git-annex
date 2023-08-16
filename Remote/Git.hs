@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,7 +11,6 @@
 module Remote.Git (
 	remote,
 	configRead,
-	repoAvail,
 	onLocalRepo,
 ) where
 
@@ -210,7 +209,7 @@ gen r u rc gc rs
 			, readonly = Git.repoIsHttp r
 			, appendonly = False
 			, untrustworthy = False
-			, availability = availabilityCalc r
+			, availability = repoAvail r
 			, remotetype = remote
 			, mkUnavailable = unavailable r u rc gc rs
 			, getInfo = gitRepoInfo new
@@ -233,20 +232,24 @@ unavailable r = gen r'
 		_ -> r -- already unavailable
 
 {- Checks relatively inexpensively if a repository is available for use. -}
-repoAvail :: Git.Repo -> Annex Bool
+repoAvail :: Git.Repo -> Annex Availability
 repoAvail r 
-	| Git.repoIsHttp r = return True
+	| Git.repoIsHttp r = return GloballyAvailable
 	| Git.GCrypt.isEncrypted r = do
 		g <- gitRepo
 		liftIO $ do
 			er <- Git.GCrypt.encryptedRemote g r
 			if Git.repoIsLocal er || Git.repoIsLocalUnknown er
-				then catchBoolIO $
-					void (Git.Config.read er) >> return True
-				else return True
-	| Git.repoIsUrl r = return True
-	| Git.repoIsLocalUnknown r = return False
-	| otherwise = liftIO $ isJust <$> catchMaybeIO (Git.Config.read r)
+				then checklocal er
+				else return GloballyAvailable
+	| Git.repoIsUrl r = return GloballyAvailable
+	| Git.repoIsLocalUnknown r = return Unavailable
+	| otherwise = checklocal r
+  where
+	checklocal r' = ifM (liftIO $ isJust <$> catchMaybeIO (Git.Config.read r'))
+		( return LocallyAvailable
+		, return Unavailable
+		)
 
 {- Tries to read the config for a specified remote, updates state, and
  - returns the updated repo. -}

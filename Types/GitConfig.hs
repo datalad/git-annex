@@ -37,7 +37,6 @@ import Utility.DataUnits
 import Config.Cost
 import Types.UUID
 import Types.Distribution
-import Types.Availability
 import Types.Concurrency
 import Types.NumCopies
 import Types.Difference
@@ -351,7 +350,6 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexTrustLevel :: Maybe String
 	, remoteAnnexStartCommand :: Maybe String
 	, remoteAnnexStopCommand :: Maybe String
-	, remoteAnnexAvailability :: Maybe Availability
 	, remoteAnnexSpeculatePresent :: Bool
 	, remoteAnnexBare :: Maybe Bool
 	, remoteAnnexRetry :: Maybe Integer
@@ -416,7 +414,6 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
 		, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
 		, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
-		, remoteAnnexAvailability = getmayberead "availability"
 		, remoteAnnexSpeculatePresent = getbool "speculate-present" False
 		, remoteAnnexBare = getmaybebool "bare"
 		, remoteAnnexRetry = getmayberead "retry"

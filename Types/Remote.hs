@@ -152,7 +152,8 @@ data RemoteA a = Remote
 	-- decide.
 	, untrustworthy :: Bool
 	-- a Remote can be globally available. (Ie, "in the cloud".)
-	, availability :: Availability
+	-- Some Remotes can mark themselves unavailable.
+	, availability :: a Availability
 	-- the type of the remote
 	, remotetype :: RemoteTypeA a
 	-- For testing, makes a version of this remote that is not

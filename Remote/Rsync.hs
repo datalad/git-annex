@@ -120,7 +120,8 @@ gen r u rc gc rs = do
 			, readonly = False
 			, appendonly = False
 			, untrustworthy = False
-			, availability = if islocal then LocallyAvailable else GloballyAvailable
+			, availability = pure $
+				if islocal then LocallyAvailable else GloballyAvailable
 			, remotetype = remote
 			, mkUnavailable = return Nothing
 			, getInfo = return [("url", url)]

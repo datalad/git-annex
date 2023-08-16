@@ -78,6 +78,7 @@ import Annex.Import
 import Annex.CheckIgnore
 import Types.FileMatcher
 import Types.GitConfig
+import Types.Availability
 import qualified Database.Export as Export
 import Utility.Bloom
 import Utility.OptParse
@@ -388,10 +389,9 @@ syncRemotes' ps available =
 	
 	listed = concat <$> mapM Remote.byNameOrGroup ps
 	
-	good r
-		| Remote.gitSyncableRemoteType (Remote.remotetype r) =
-			Remote.Git.repoAvail =<< Remote.getRepo r
-		| otherwise = return True
+	good r = tryNonAsync (Remote.availability r) >>= return . \case
+		Right Unavailable -> False
+		_ -> True
 	
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 

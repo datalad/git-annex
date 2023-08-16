@@ -7,5 +7,5 @@
 
 module Types.Availability where
 
-data Availability = GloballyAvailable | LocallyAvailable
-	deriving (Eq, Show, Read)
+data Availability = GloballyAvailable | LocallyAvailable | Unavailable
+	deriving (Eq, Show)

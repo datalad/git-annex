@@ -68,7 +68,7 @@ gen r u rc gc rs
 	| externaltype == "readonly" = do
 		c <- parsedRemoteConfig remote rc
 		cst <- remoteCost gc c expensiveRemoteCost
-		let rmt = mk c cst GloballyAvailable
+		let rmt = mk c cst (pure GloballyAvailable)
 			Nothing
 			(externalInfo externaltype)
 			Nothing
@@ -87,7 +87,6 @@ gen r u rc gc rs
 			(Git.remoteName r) (Just rs)
 		Annex.addCleanupAction (RemoteCleanup u) $ stopExternal external
 		cst <- getCost external r gc c
-		avail <- getAvailability external r gc
 		exportsupported <- if exportTree c
 			then checkExportSupported' external
 			else return False
@@ -107,7 +106,7 @@ gen r u rc gc rs
 		let cheapexportsupported = if exportsupported
 			then exportIsSupported
 			else exportUnsupported
-		let rmt = mk c cst avail
+		let rmt = mk c cst (getAvailability external)
 			(Just (whereisKeyM external))
 			(getInfoM external)
 			(Just (claimUrlM external))
@@ -777,25 +776,16 @@ getCost external r gc pc =
 		return c
 	defcst = expensiveRemoteCost
 
-{- Caches the availability in the git config to avoid needing to start up an
- - external special remote every time time just to ask it what its
- - availability is.
- -
- - Most remotes do not bother to implement a reply to this request;
+{- Most remotes do not bother to implement a reply to this request;
  - globally available is the default.
  -}
-getAvailability :: External -> Git.Repo -> RemoteGitConfig -> Annex Availability
-getAvailability external r gc = 
-	maybe (catchNonAsync query (const (pure defavail))) return
-		(remoteAnnexAvailability gc)
+getAvailability :: External -> Annex Availability
+getAvailability external = catchNonAsync query (const (pure defavail))
   where
-	query = do
-		avail <- handleRequest external GETAVAILABILITY Nothing $ \req -> case req of
-			AVAILABILITY avail -> result avail
-			UNSUPPORTED_REQUEST -> result defavail
-			_ -> Nothing
-		setRemoteAvailability r avail
-		return avail
+	query = handleRequest external GETAVAILABILITY Nothing $ \req -> case req of
+		AVAILABILITY avail -> result avail
+		UNSUPPORTED_REQUEST -> result defavail
+		_ -> Nothing
 	defavail = GloballyAvailable
 
 claimUrlM :: External -> URLString -> Annex Bool

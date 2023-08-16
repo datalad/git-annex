@@ -97,7 +97,8 @@ gen r u rc gc rs = do
 			then Just buprepo
 			else Nothing
 		, remotetype = remote
-		, availability = if bupLocal buprepo then LocallyAvailable else GloballyAvailable
+		, availability = pure $
+			if bupLocal buprepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
 		, appendonly = False
 		, untrustworthy = False

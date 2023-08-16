@@ -1565,8 +1565,7 @@ Remotes are configured using these settings in `.git/config`.
 
 * `remote.<name>.annex-availability`
 
-  Can be used to tell git-annex whether a remote is LocallyAvailable
-  or GloballyAvailable. Normally, git-annex determines this automatically.
+  This configuration setting is no longer used.
 
 * `remote.<name>.annex-speculate-present`
 

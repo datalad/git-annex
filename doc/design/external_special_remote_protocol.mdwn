@@ -45,7 +45,7 @@ Recent versions of git-annex respond with a message indicating
 protocol extensions that it supports. Older versions of
 git-annex do not send this message.
 
-	EXTENSIONS INFO ASYNC GETGITREMOTENAME
+	EXTENSIONS INFO ASYNC GETGITREMOTENAME UNAVAILABLERESPONSE
 
 The special remote can respond to that with its own EXTENSIONS message, listing
 any extensions it wants to use. 
@@ -207,9 +207,19 @@ the special remote can reply with `UNSUPPORTED-REQUEST`.
   (Ie stored in the cloud vs on a local disk.)  
   If the remote replies with `UNSUPPORTED-REQUEST`, its availability
   is assumed to be global. So, only remotes that are only reachable
-  locally need to worry about implementing this.
+  locally need to worry about implementing this.  
+  This is queried at remote startup, so should avoid doing anything that
+  can take long to run or is expensive. Checking if a directory where the
+  remote stores files is currently mounted is the kind of thing it makes
+  sense to do here.
   * `AVAILABILITY GLOBAL|LOCAL`  
     Indicates if the remote is globally or only locally available.
+  * `AVAILABILITY UNAVAILABLE`  
+    Indicates that the remote is not currently available.  
+    This will prevent some git-annex commands like `git-annex sync` from
+    trying to use the remote.  
+    Older versions of git-annex do not support this response, so avoid
+    sending it unless the `UNAVAILABLERESPONSE` extension is enabled.
 * `CLAIMURL Url`  
   Asks the remote if it wishes to claim responsibility for downloading
   an url.
@@ -445,13 +455,16 @@ avoid talking to the buggy old version of git-annex.
 These protocol extensions are currently supported.
 
 * `INFO`  
-  This makes the `INFO` message available to use.
+  This allows using the `INFO` message.
 * `ASYNC`  
   This lets multiple actions be performed at the same time by
   a single external special remote program, rather than starting multiple
   programs. See the [[async_appendix]] for details.
 * `GETGITREMOTENAME`  
-  This makes the `GETGITREMOTENAME` message available to use.
+  This allows using the `GETGITREMOTENAME` message.
+* `UNAVAILABLERESPONSE`  
+  This allows the `AVAILABILITY UNAVAILABLE` response to be used
+  in reply to `GETAVAILABILITY`.
 
 ## signals
 

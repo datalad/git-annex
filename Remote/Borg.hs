@@ -112,7 +112,8 @@ gen r u rc gc rs = do
 		, gitconfig = gc
 		, localpath = borgRepoLocalPath borgrepo
 		, remotetype = remote
-		, availability = if borgLocal borgrepo then LocallyAvailable else GloballyAvailable
+		, availability = pure $
+			if borgLocal borgrepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
 		, appendonly = False
 		-- When the user sets the appendonly field, they are

@@ -13,6 +13,7 @@ import Assistant.Common
 import Assistant.Alert.Utility
 import Utility.Tmp
 import Utility.NotificationBroadcaster
+import Types.Availability
 import Types.Transfer
 import Logs.Transfer
 import Logs.Trust
@@ -59,6 +60,7 @@ calcSyncRemotes = do
 	let (exportremotes, nonexportremotes) = partition (exportTree . Remote.config) contentremotes
 	let isimport r = importTree (Remote.config r) || Remote.thirdPartyPopulated (Remote.remotetype r)
 	let dataremotes = filter (not . isimport) nonexportremotes
+	tocloud <- anyM iscloud contentremotes
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
@@ -66,10 +68,14 @@ calcSyncRemotes = do
 		, syncDataRemotes = dataremotes
 		, exportRemotes = exportremotes
 		, downloadRemotes = contentremotes
-		, syncingToCloudRemote = any iscloud contentremotes
+		, syncingToCloudRemote = tocloud
 		}
   where
-	iscloud r = not (Remote.readonly r) && Remote.availability r == Remote.GloballyAvailable
+	iscloud r
+		| Remote.readonly r = pure False
+		| otherwise = tryNonAsync (Remote.availability r) >>= return . \case
+			Right GloballyAvailable -> True
+			_ -> False
 
 {- Updates the syncRemotes list from the list of all remotes in Annex state. -}
 updateSyncRemotes :: Assistant ()

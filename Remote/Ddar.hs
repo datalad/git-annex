@@ -98,7 +98,8 @@ gen r u rc gc rs = do
 			then Just $ ddarRepoLocation ddarrepo
 			else Nothing
 		, remotetype = remote
-		, availability = if ddarLocal ddarrepo then LocallyAvailable else GloballyAvailable
+		, availability = pure $
+			if ddarLocal ddarrepo then LocallyAvailable else GloballyAvailable
 		, readonly = False
 		, appendonly = False
 		, untrustworthy = False

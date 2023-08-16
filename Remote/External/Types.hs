@@ -110,6 +110,7 @@ supportedExtensionList :: ExtensionList
 supportedExtensionList = ExtensionList
 	[ "INFO"
 	, "GETGITREMOTENAME"
+	, "UNAVAILABLERESPONSE"
 	, asyncExtension
 	]
 
@@ -447,9 +448,11 @@ instance Proto.Serializable Size where
 instance Proto.Serializable Availability where
 	serialize GloballyAvailable = "GLOBAL"
 	serialize LocallyAvailable = "LOCAL"
+	serialize Unavailable = "UNAVAILABLE"
 
 	deserialize "GLOBAL" = Just GloballyAvailable
 	deserialize "LOCAL" = Just LocallyAvailable
+	deserialize "UNAVAILABLE" = Just Unavailable
 	deserialize _ = Nothing
 
 instance Proto.Serializable [(URLString, Size, FilePath)] where

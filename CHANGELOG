@@ -8,6 +8,11 @@ git-annex (10.20230803) UNRELEASED; urgency=medium
     directory does not exist. An empty tree was imported, rather than the
     import failing.
   * Stop bundling curl in the OSX dmg and linux standalone image.
+  * sync, assist, push, pull: Skip more types of remotes when they
+    are not present due to eg being on a drive that is offline.
+  * Added AVAILABILITY UNAVAILABLE and the UNAVAILABLERESPONSE extension
+    to the external special remote protocol.
+  * The remote.name.annex-availability git config is no longer used.
 
  -- Joey Hess <id@joeyh.name>  Mon, 07 Aug 2023 13:04:13 -0400
 

@@ -130,7 +130,7 @@ gen r u rc gc rs = do
 		, gitconfig = gc
 		, localpath = Nothing
 		, remotetype = remote
-		, availability = GloballyAvailable
+		, availability = pure GloballyAvailable
 		, readonly = False
 		-- content cannot be removed from a git-lfs repo
 		, appendonly = True
