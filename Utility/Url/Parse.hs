@@ -18,6 +18,7 @@ module Utility.Url.Parse (
 
 import Network.URI
 #ifdef mingw32_HOST_OS
+import Data.List
 import qualified System.FilePath.Windows as PW
 #endif
 
