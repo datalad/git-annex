@@ -1,0 +1,12 @@
+diff --git a/Utility/Url/Parse.hs b/Utility/Url/Parse.hs
+index 7fc952b034..ab456ed31e 100644
+--- a/Utility/Url/Parse.hs
++++ b/Utility/Url/Parse.hs
+@@ -18,6 +18,7 @@ module Utility.Url.Parse (
+ 
+ import Network.URI
+ #ifdef mingw32_HOST_OS
++import Common
+ import qualified System.FilePath.Windows as PW
+ #endif
+ 
