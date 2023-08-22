@@ -101,6 +101,7 @@ Extra-Source-Files:
   doc/git-annex-move.mdwn
   doc/git-annex-multicast.mdwn
   doc/git-annex-numcopies.mdwn
+  doc/git-annex-oldkeys.mdwn
   doc/git-annex-p2p.mdwn
   doc/git-annex-pre-commit.mdwn
   doc/git-annex-preferred-content.mdwn
@@ -776,6 +777,7 @@ Executable git-annex
     Command.NotifyChanges
     Command.NumCopies
     Command.MinCopies
+    Command.OldKeys
     Command.P2P
     Command.P2PStdIO
     Command.PostReceive

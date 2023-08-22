@@ -488,6 +488,10 @@ content from the key-value store.
 
   See [[git-annex-log]](1) for details.
 
+* `oldkeys [path ...]`
+
+  List keys used for old versions of files.
+
 * `info [directory|file|remote|uuid ...]`
 
   Displays statistics and other information for the specified item,

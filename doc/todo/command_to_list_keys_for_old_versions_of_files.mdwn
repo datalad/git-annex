@@ -13,7 +13,8 @@ Or like this:
     # proceed to diff between old versions of the file 
     # (although git-annex-diffdriver --get is another way to do this)
 
-Or this to make every old version visible as files:
+Or this to make every old version visible as files to flip through in a
+slideshow:
 
     n=0
     for k in $(git-annex oldkeys my.gif); do
@@ -24,4 +25,15 @@ Or this to make every old version visible as files:
 ----
 
 Is oldkeys the best name for this? `git-annex log` is already taken.
---[[Joey]]
+
+Since this would be implemented on top of `git log --raw`, it would
+be possible to support multiple files at once, or whole directories.
+
+If an old key is the same as the current key, should it list the old key or
+not? If it did, then the move example above would move the current 
+version of the file away. And there are tricky cases involving renames 
+and reverts. So it seems that it ought to avoid
+ever listing a key currently used by the file(s) it is run on 
+as an old key.
+
+> [[done]] --[[Joey]]

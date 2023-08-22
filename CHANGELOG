@@ -1,5 +1,6 @@
 git-annex (10.20230803) UNRELEASED; urgency=medium
 
+  * oldkeys: New command that lists the keys used by old versions of a file.
   * Fix behavior of onlyingroup.
   * info: Added --dead-repositories option. 
   * Significant startup speed increase by avoiding repeatedly checking
