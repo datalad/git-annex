@@ -29,11 +29,16 @@ cmd = noCommit $ withAnnexOptions [annexedMatchingOptions] $
 
 data OldKeysOptions = OldKeysOptions
 	{ fileOptions :: CmdParams
+	, revisionRange :: Maybe String
 	}
 
 optParser :: CmdParamsDesc -> Parser OldKeysOptions
 optParser desc = OldKeysOptions
 	<$> cmdParams desc
+	<*> optional (strOption
+		( long "revision-range" <> metavar "RANGE"
+		<> help "limit to a revision range"
+		))
 
 seek :: OldKeysOptions -> CommandSeek
 seek o = do
@@ -71,7 +76,11 @@ seek o = do
 		, Param "--raw"
 		-- Avoid outputting anything except for the raw diff.
 		, Param "--pretty="
-		] ++ map File (fileOptions o)
+		]
+		++ case revisionRange o of
+			Nothing -> []
+			Just rr -> [Param rr]
+		++ map File (fileOptions o)
 	
 	isfilemode m = case toTreeItemType m of
 		Just TreeFile -> True

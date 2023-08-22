@@ -23,6 +23,15 @@ repository.
 
 # OPTIONS
 
+* --revision-range=value
+
+  Only list old keys used in the specified range of revisions.
+  This works the same as the revision range option of `git log`.
+  See gitrevisions(7) for documentation about the format of this option.
+
+  For example, to list only keys used since the tag v1.0, use
+  `--revision-range=v1.0..HEAD`
+
 * Also the [[git-annex-common-options]](1) can be used.
 
 # SEE ALSO
