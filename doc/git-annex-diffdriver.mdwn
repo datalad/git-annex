@@ -4,9 +4,9 @@ git-annex diffdriver - git diff driver
 
 # SYNOPSIS
 
-git annex diffdriver --text [-- --opts --]
+`git annex diffdriver [--get,--text] [-- --diffopts --]`
 
-git annex diffdriver `-- cmd --opts --`
+`git annex diffdriver -- cmd --cmdopts --`
 
 # DESCRIPTION
 
@@ -41,7 +41,11 @@ set `GIT_EXTERNAL_DIFF="git-annex diffdriver -- j-c-diff --"`
 
 # OPTIONS
 
-To diff text files with diff(1), use the "--text" option.
+To get the contents of annexed files from remotes when they are not already
+present, use the `--get` option. The file contents will remain in the
+repository for later use until dropped in the usual ways.
+
+To diff text files with diff(1), use the `--text` option.
 To pass additional options to diff(1), use eg "--text -- --color --"
 
 To use an external diff driver command, the options must start with

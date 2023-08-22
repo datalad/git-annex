@@ -7,7 +7,6 @@ git-annex (10.20230803) UNRELEASED; urgency=medium
   * Fix behavior when importing a tree from a directory remote when the
     directory does not exist. An empty tree was imported, rather than the
     import failing.
-  * Stop bundling curl in the OSX dmg and linux standalone image.
   * sync, assist, push, pull: Skip more types of remotes when they
     are not present due to eg being on a drive that is offline.
     (directory, borg, bup, ddar, gcrypt, rsync)
@@ -18,6 +17,9 @@ git-annex (10.20230803) UNRELEASED; urgency=medium
   * Avoid using curl when annex.security.allowed-ip-addresses is set
     but neither annex.web-options nor annex.security.allowed-url-schemes
     is set to a value that needs curl.
+  * Stop bundling curl in the OSX dmg and linux standalone image.
+  * diffdriver: Added --get option.
+  * diffdriver: Refuse to run when not in a git-annex repository.
 
  -- Joey Hess <id@joeyh.name>  Mon, 07 Aug 2023 13:04:13 -0400
 
