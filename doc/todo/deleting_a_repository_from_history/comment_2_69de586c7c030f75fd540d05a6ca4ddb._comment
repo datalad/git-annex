@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-08-22T16:03:55Z"
+ content="""
+`git-annex forget --drop-dead` is probably the best answer.
+
+Yes, this also deletes historical data about past locations of files. The
+only user-visible effect of that is that `git-annex log` won't show where
+files used to be located.
+
+It has to delete history, because history includes all the data that was
+merged from the other repository. And it would be too hard to traverse all
+history and delete any information that came from that repository in every
+commit.
+"""]]
