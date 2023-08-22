@@ -5,7 +5,14 @@ It would allow a workflow like eg:
 
     edit foo
     git-annex add foo
+    git commit -m new\ foo
     git-annex oldkeys foo | git-annex move --batch-keys --to bar
+
+Or this, to send someone the current version of a file, and also all old
+versions:
+
+    git-annex copy foo --to baz
+    git-annex oldkeys foo | git-annex copy --to baz
 
 Or like this:
 
