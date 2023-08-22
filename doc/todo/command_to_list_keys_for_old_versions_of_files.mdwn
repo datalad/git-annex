@@ -1,0 +1,27 @@
+A command like `git-annex oldkeys $file` that lists the keys used for all
+previous versions of the file.
+
+It would allow a workflow like eg:
+
+    edit foo
+    git-annex add foo
+    git-annex oldkeys foo | git-annex move --batch-keys --to bar
+
+Or like this:
+
+    git-annex oldkeys foo | git-annex get --batch-keys
+    # proceed to diff between old versions of the file 
+    # (although git-annex-diffdriver --get is another way to do this)
+
+Or this to make every old version visible as files:
+
+    n=0
+    for k in $(git-annex oldkeys my.gif); do
+        $n=$(expr $n + 1)
+        ln -s $(git-annex examinkey $k --format='${objectpath}') my.$n.gif
+    done
+
+----
+
+Is oldkeys the best name for this? `git-annex log` is already taken.
+--[[Joey]]

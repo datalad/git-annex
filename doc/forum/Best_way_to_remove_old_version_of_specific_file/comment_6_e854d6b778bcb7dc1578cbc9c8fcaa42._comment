@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Dropping all older versions of a file"""
+ date="2023-08-22T16:23:29Z"
+ content="""
+@mario interesting question..
+
+You could use `git log --raw` to list old versions of the file, and
+then use `git show` to find the git-annex key.
+
+Doable, but would take quite a lot of bother to script.
+I think it would be a good enhancement to git-annex to
+add a [[todo/command_to_list_keys_for_old_versions_of_files]].
+"""]]
