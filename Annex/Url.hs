@@ -83,7 +83,7 @@ getUrlOptions = Annex.getState Annex.urloptions >>= \case
 		["all"] -> do
 			curlopts <- map Param . annexWebOptions <$> Annex.getGitConfig
 			allowedurlschemes <- annexAllowedUrlSchemes <$> Annex.getGitConfig
-			let urldownloader = if null curlopts && not (any (`S.member` U.conduitUrlSchemes) allowedurlschemes)
+			let urldownloader = if null curlopts && not (any (`S.notMember` U.conduitUrlSchemes) allowedurlschemes)
 				then U.DownloadWithConduit $
 					U.DownloadWithCurlRestricted mempty
 				else U.DownloadWithCurl curlopts

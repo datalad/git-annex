@@ -1822,7 +1822,8 @@ Remotes are configured using these settings in `.git/config`.
   and transferred on to other remotes, exposing its content.
 
   Any url schemes supported by curl can be listed here, but you will
-  also need to configure annex.allowed-ip-addresses to allow using curl.
+  also need to configure annex.security.allowed-ip-addresses to allow
+  using curl.
 
   Some special remotes support their own domain-specific URL
   schemes; those are not affected by this configuration setting.

@@ -15,6 +15,9 @@ git-annex (10.20230803) UNRELEASED; urgency=medium
   * Added AVAILABILITY UNAVAILABLE and the UNAVAILABLERESPONSE extension
     to the external special remote protocol.
   * The remote.name.annex-availability git config is no longer used.
+  * Avoid using curl when annex.security.allowed-ip-addresses is set
+    but neither annex.web-options nor annex.security.allowed-url-schemes
+    is set to a value that needs curl.
 
  -- Joey Hess <id@joeyh.name>  Mon, 07 Aug 2023 13:04:13 -0400
 
