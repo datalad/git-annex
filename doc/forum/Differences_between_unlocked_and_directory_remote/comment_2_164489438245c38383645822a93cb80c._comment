@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-08-22T16:11:56Z"
+ content="""
+The directory special remote with `importtree=yes exporttree=yes` is indeed
+getting fairly close to feature parity with using all unlocked files with
+`annex.thin` set.
+
+One big difference is that such a special remote will always be untrusted.
+Which might prevent dropping files from elsewhere.
+
+Importing from the directory special remote is slower than just running
+`git commit`. And it probably always will be; git is just fast. 
+Although importing was sped up significantly a few months ago.
+
+Using annex.thin needs the filesystem to support hard links, or git-annex
+stores 2 copies of every file. This is the main reason I'd use a directory
+special remote instead sometimes, when using a filesystem like FAT.
+
+Another reason is if there's some requirement that the directory *not* be a
+git repository. Eg, if it's published by a web server, but you don't want
+to publish all the git history.
+
+Otherwise, I'd always prefer the git repository.
+"""]]
