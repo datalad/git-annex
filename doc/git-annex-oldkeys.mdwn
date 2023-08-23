@@ -15,13 +15,20 @@ The output from this command can be piped into a command like
 
 The keys are listed in order from newest to oldest.
 
-When listing old keys for a directory, it will include the most recent
-key used by deleted files (but not by renamed files).
-
-Note that the listed keys may still be used by other files in the
-repository.
+When listing old keys for a directory, it will include keys used by deleted
+files that were in that directory in past commits.
 
 # OPTIONS
+
+* --unchecked
+
+  By default this command does not list a key that is also used by any
+  file in the currently checked out branch. This option makes it also
+  list such keys.
+
+  The default behavior avoids surprises when dropping listed keys.
+  This option can be useful when eg copying all old versions of a file to a
+  remote.
 
 * --revision-range=value
 

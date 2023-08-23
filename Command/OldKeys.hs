@@ -1,4 +1,4 @@
-{- GIT-annex command
+{- git-annex command
  -
  - Copyright 2023 Joey Hess <id@joeyh.name>
  -
@@ -16,13 +16,12 @@ import qualified Annex
 import Annex.CatFile
 import Utility.Terminal
 import qualified Utility.Format
+import qualified Database.Keys
 
-import qualified Data.Map as M
-import qualified Data.Set as S
 import qualified Data.ByteString.Char8 as S8
 
 cmd :: Command
-cmd = noCommit $ withAnnexOptions [annexedMatchingOptions] $
+cmd = noCommit $
 	command "oldkeys" SectionQuery
 		"list keys used for old versions of files"
 		paramPaths (seek <$$> optParser)
@@ -30,6 +29,7 @@ cmd = noCommit $ withAnnexOptions [annexedMatchingOptions] $
 data OldKeysOptions = OldKeysOptions
 	{ fileOptions :: CmdParams
 	, revisionRange :: Maybe String
+	, uncheckedOption :: Bool
 	}
 
 optParser :: CmdParamsDesc -> Parser OldKeysOptions
@@ -39,20 +39,21 @@ optParser desc = OldKeysOptions
 		( long "revision-range" <> metavar "RANGE"
 		<> help "limit to a revision range"
 		))
+	<*> switch 
+		( long "unchecked"
+		<> help "don't check if current files use keys"
+		)
 
 seek :: OldKeysOptions -> CommandSeek
 seek o = do
 	isterminal <- liftIO $ checkIsTerminal stdout
-	-- Get the diff twice and make separate passes over it
-	-- to avoid needing to cache it all in memory.
-	currentkeys <- withdiff getcurrentkeys
 	withdiff $ \l -> 
 		forM_ l $ \i ->
 			when (DiffTree.srcsha i `notElem` nullShas) $ do
 				catKey (DiffTree.srcsha i) >>= \case
-					Just key | S.notMember key currentkeys ->
-						commandAction $ start isterminal key
-					_ -> return ()
+					Just key -> commandAction $ 
+						start o isterminal key
+					Nothing -> return ()
   where
   	withdiff a = do
 		(output, cleanup) <- Annex.inRepo $
@@ -87,38 +88,17 @@ seek o = do
 		Just TreeExecutable -> True
 		Just TreeSymlink -> True
 		_ -> False
-	
-	-- Accumulate the most recent key used for each file 
-	-- (that is not deleted).
-	-- Those keys should never be listed as old keys, even if
-	-- some other file did have them as an old key. This avoids
-	-- surprising behavior for renames and reverts.
-	getcurrentkeys l = getcurrentkeys' l M.empty
-	getcurrentkeys' [] m = pure $ S.fromList $ catMaybes $ M.elems m
-	getcurrentkeys' (i:l) m
-		| not (isfilemode (DiffTree.dstmode i)) =
-			getcurrentkeys' l m
-		| DiffTree.dstsha i `elem` nullShas = 
-			getcurrentkeys' l $
-				M.insertWith (\_ prev -> prev)
-					(DiffTree.file i)
-					Nothing
-					m
-		| otherwise = case M.lookup (DiffTree.file i) m of
-			Just _ -> getcurrentkeys' l m
-			Nothing -> catKey (DiffTree.dstsha i) >>= \case
-				Just key -> getcurrentkeys' l $
-					M.insert	
-						(DiffTree.file i)
-						(Just key)
-						m
-				_ -> getcurrentkeys' l m
 
-start :: IsTerminal -> Key -> CommandStart
-start (IsTerminal isterminal) key = startingCustomOutput key $ do
-	liftIO $ S8.putStrLn $ if isterminal
-		then Utility.Format.encode_c (const False) sk
-		else sk
-	next $ return True
+start :: OldKeysOptions -> IsTerminal -> Key -> CommandStart
+start o (IsTerminal isterminal) key
+	| uncheckedOption o = go
+	| otherwise = Database.Keys.getAssociatedFiles key >>= \case
+		[] -> go
+		_ -> stop
   where
+	go = startingCustomOutput key $ do
+		liftIO $ S8.putStrLn $ if isterminal
+			then Utility.Format.encode_c (const False) sk
+			else sk
+		next $ return True
 	sk = serializeKey' key
