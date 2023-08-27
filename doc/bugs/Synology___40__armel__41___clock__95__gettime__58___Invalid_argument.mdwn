@@ -1,0 +1,22 @@
+### Please describe the problem.
+
+Executing 'runshell' works fine. However, every git-annex command fails with 'clock_gettime: Invalid argument':
+
+    $ git annex init
+    warning: /bin/sh: setlocale: LC_ALL: cannot change locale (en_US.utf8)
+    warning: /bin/sh: setlocale: LC_ALL: cannot change locale (en_US.utf8)
+    clock_gettime: Invalid argument
+
+### What steps will reproduce the problem?
+
+Download armel package. Run runshell. Try git-annex.
+
+### What version of git-annex are you using? On what operating system?
+
+Used an up2date armel build:
+
+https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz
+
+The kernel on this synology box is quite old, maybe that's the reason why git-annex is not running:
+
+    Linux skyranch 3.10.108 #42962 SMP Fri Mar 24 13:07:57 CST 2023 armv7l GNU/Linux synology_armada38x_ds216j
