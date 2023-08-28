@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 10.20230802
+Version: 10.20230828
 Cabal-Version: 1.12
 License: AGPL-3
 Maintainer: Joey Hess <id@joeyh.name>
@@ -19,7 +19,7 @@ Description:
  .
  It can store large files in many places, from local hard drives, to a
  large number of cloud storage services, including S3, WebDAV,
- and rsync, with a dozen cloud storage providers usable via plugins.
+ and rsync, and many other usable via plugins.
  Files can be stored encrypted with gpg, so that the cloud storage
  provider cannot see your data. git-annex keeps track of where each file
  is stored, so it knows how many copies are available, and has many
@@ -30,9 +30,9 @@ Description:
  to git and transferring them to other computers. The git-annex webapp
  makes it easy to set up and use git-annex this way.
 -- The tarball uploaded to hackage does not include every non-haskell
--- file in the git repo. The website is left out, so is build machinery for
--- standalone apps, and packages. Include only files that are needed
--- make cabal install git-annex work.
+-- file in the git repo. The website is left out, as are man pages, 
+-- so is build machinery for standalone apps, and packages. 
+-- Include only files that are needed make cabal install git-annex work.
 Extra-Source-Files:
   stack.yaml
   stack-lts-18.13.yaml
@@ -41,124 +41,8 @@ Extra-Source-Files:
   NEWS
   doc/license/GPL
   doc/license/AGPL
-  doc/git-annex.mdwn
-  doc/git-annex-add.mdwn
-  doc/git-annex-addunused.mdwn
-  doc/git-annex-addurl.mdwn
-  doc/git-annex-adjust.mdwn
-  doc/git-annex-assist.mdwn
-  doc/git-annex-assistant.mdwn
-  doc/git-annex-backends.mdwn
-  doc/git-annex-calckey.mdwn
-  doc/git-annex-checkpresentkey.mdwn
-  doc/git-annex-config.mdwn
-  doc/git-annex-configremote.mdwn
-  doc/git-annex-contentlocation.mdwn
-  doc/git-annex-copy.mdwn
-  doc/git-annex-dead.mdwn
-  doc/git-annex-describe.mdwn
-  doc/git-annex-diffdriver.mdwn
-  doc/git-annex-direct.mdwn
-  doc/git-annex-drop.mdwn
-  doc/git-annex-dropkey.mdwn
-  doc/git-annex-dropunused.mdwn
-  doc/git-annex-edit.mdwn
-  doc/git-annex-enableremote.mdwn
-  doc/git-annex-enable-tor.mdwn
-  doc/git-annex-examinekey.mdwn
-  doc/git-annex-expire.mdwn
-  doc/git-annex-export.mdwn
-  doc/git-annex-filter-branch.mdwn
-  doc/git-annex-find.mdwn
-  doc/git-annex-findkeys.mdwn
-  doc/git-annex-findref.mdwn
-  doc/git-annex-fix.mdwn
-  doc/git-annex-forget.mdwn
-  doc/git-annex-fromkey.mdwn
-  doc/git-annex-fsck.mdwn
-  doc/git-annex-fuzztest.mdwn
-  doc/git-annex-get.mdwn
-  doc/git-annex-group.mdwn
-  doc/git-annex-groupwanted.mdwn
-  doc/git-annex-import.mdwn
-  doc/git-annex-importfeed.mdwn
-  doc/git-annex-indirect.mdwn
-  doc/git-annex-info.mdwn
-  doc/git-annex-init.mdwn
-  doc/git-annex-initremote.mdwn
-  doc/git-annex-inprogress.mdwn
-  doc/git-annex-list.mdwn
-  doc/git-annex-lock.mdwn
-  doc/git-annex-log.mdwn
-  doc/git-annex-lookupkey.mdwn
-  doc/git-annex-map.mdwn
-  doc/git-annex-matchexpression.mdwn
-  doc/git-annex-matching-options.mdwn
-  doc/git-annex-merge.mdwn
-  doc/git-annex-metadata.mdwn
-  doc/git-annex-migrate.mdwn
-  doc/git-annex-mirror.mdwn
-  doc/git-annex-move.mdwn
-  doc/git-annex-multicast.mdwn
-  doc/git-annex-numcopies.mdwn
-  doc/git-annex-oldkeys.mdwn
-  doc/git-annex-p2p.mdwn
-  doc/git-annex-pre-commit.mdwn
-  doc/git-annex-preferred-content.mdwn
-  doc/git-annex-proxy.mdwn
-  doc/git-annex-pull.mdwn
-  doc/git-annex-push.mdwn
-  doc/git-annex-readpresentkey.mdwn
-  doc/git-annex-registerurl.mdwn
-  doc/git-annex-reinit.mdwn
-  doc/git-annex-reinject.mdwn
-  doc/git-annex-rekey.mdwn
-  doc/git-annex-remotedaemon.mdwn
-  doc/git-annex-renameremote.mdwn
-  doc/git-annex-repair.mdwn
-  doc/git-annex-required.mdwn
-  doc/git-annex-restage.mdwn
-  doc/git-annex-resolvemerge.mdwn
-  doc/git-annex-rmurl.mdwn
-  doc/git-annex-satisfy.mdwn
-  doc/git-annex-schedule.mdwn
-  doc/git-annex-semitrust.mdwn
-  doc/git-annex-setkey.mdwn
-  doc/git-annex-setpresentkey.mdwn
-  doc/git-annex-shell.mdwn
-  doc/git-annex-smudge.mdwn
-  doc/git-annex-status.mdwn
-  doc/git-annex-sync.mdwn
-  doc/git-annex-test.mdwn
-  doc/git-annex-testremote.mdwn
-  doc/git-annex-transferkey.mdwn
-  doc/git-annex-transferkeys.mdwn
-  doc/git-annex-trust.mdwn
-  doc/git-annex-unannex.mdwn
-  doc/git-annex-undo.mdwn
-  doc/git-annex-ungroup.mdwn
-  doc/git-annex-uninit.mdwn
-  doc/git-annex-unlock.mdwn
-  doc/git-annex-untrust.mdwn
-  doc/git-annex-unregisterurl.mdwn
-  doc/git-annex-unused.mdwn
-  doc/git-annex-upgrade.mdwn
-  doc/git-annex-vadd.mdwn
-  doc/git-annex-vcycle.mdwn
-  doc/git-annex-version.mdwn
-  doc/git-annex-vfilter.mdwn
-  doc/git-annex-vicfg.mdwn
-  doc/git-annex-view.mdwn
-  doc/git-annex-vpop.mdwn
-  doc/git-annex-wanted.mdwn
-  doc/git-annex-watch.mdwn
-  doc/git-annex-webapp.mdwn
-  doc/git-annex-whereis.mdwn
-  doc/git-annex-whereused.mdwn
-  doc/git-remote-tor-annex.mdwn
   doc/logo.svg
   doc/logo_16x16.png
-  Build/mdwn2man
   Assistant/WebApp/routes
   static/activityicon.gif
   static/css/bootstrap.css
