@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-08-28T16:03:38Z"
+ content="""
+That system call dates to linux 2.6, but perhaps there is some
+incompatability.
+
+I doubt anything can be done in the build to address this.
+"""]]
