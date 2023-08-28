@@ -38,7 +38,7 @@ into other parts of your HOME directory, run:
 Using stack automates nearly everything, will work on many systems,
 and avoids build failures due to fast-changing haskell libraries.
 
-First, [install stack](https://github.com/commercialhaskell/stack/blob/master/doc/install_and_upgrade.md)
+First, [install stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/)  
 On Debian:
 
 	sudo apt-get install haskell-stack zlib1g-dev
