@@ -9,7 +9,7 @@ git-annex (10.20230803) UNRELEASED; urgency=medium
     directory does not exist. An empty tree was imported, rather than the
     import failing.
   * sync, assist, push, pull: Skip more types of remotes when they
-    are not present due to eg being on a drive that is offline.
+    are not available due to eg being on a drive that is offline.
     (directory, borg, bup, ddar, gcrypt, rsync)
   * info: Added available to the info displayed for a remote.
   * Added AVAILABILITY UNAVAILABLE and the UNAVAILABLERESPONSE extension
