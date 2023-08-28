@@ -1,4 +1,4 @@
-git-annex (10.20230803) UNRELEASED; urgency=medium
+git-annex (10.20230828) upstream; urgency=medium
 
   * oldkeys: New command that lists the keys used by old versions of a file.
   * Fix behavior of onlyingroup.
@@ -22,7 +22,7 @@ git-annex (10.20230803) UNRELEASED; urgency=medium
   * diffdriver: Added --get option.
   * diffdriver: Refuse to run when not in a git-annex repository.
 
- -- Joey Hess <id@joeyh.name>  Mon, 07 Aug 2023 13:04:13 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 28 Aug 2023 12:40:37 -0400
 
 git-annex (10.20230802) upstream; urgency=medium
 
