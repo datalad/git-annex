@@ -79,11 +79,6 @@ preferredBundledPrograms = catMaybes
 	-- we rely on the system's own version, which may better match
 	-- its kernel, and avoid using them if not available.
 	]
-  where
-#ifndef mingw32_HOST_OS
-	ifset True s = Just s
-	ifset False _ = Nothing
-#endif
 
 magicDLLs :: [FilePath]
 #ifdef mingw32_HOST_OS
