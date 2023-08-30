@@ -20,13 +20,24 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build image
-        run: docker build -t datalad/buildenv-git-annex .
         working-directory: .github/workflows/tools/containers/buildenv-git-annex
+        run: |
+          set -eux
+          release=$(sed -nE -e '/FROM/s,.*:(.*),\1,gp' Dockerfile)
+          freeze_date=$(sed -nE '/nd_freeze/s,.* (20[0-9]*).*,\1,gp' Dockerfile)
+          commit=$(git rev-parse --short=4 HEAD)
+          docker build \
+            -t "datalad/buildenv-git-annex:latest" \
+            -t "datalad/buildenv-git-annex:${release}" \
+            -t "datalad/buildenv-git-annex:${release}-${freeze_date}-${commit}" \
+            .
+          docker images
 
       - name: Push image
         if: github.ref_name == 'master'
         run: |
+          # TODO: switch to some datalad bot account
           docker login -u jwodder --password-stdin <<<"$DOCKER_TOKEN"
-          docker push datalad/buildenv-git-annex
+          docker push --all-tags datalad/buildenv-git-annex
         env:
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
