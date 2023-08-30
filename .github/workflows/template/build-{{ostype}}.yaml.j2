@@ -140,7 +140,7 @@ jobs:
           gpg --import .github/workflows/tools/datalad-builder-key.asc
 
       - name: Get the git-annex build environment container
-        run: chronic singularity pull --name buildenv.sif docker://datalad/buildenv-git-annex-buster
+        run: chronic singularity pull --name buildenv.sif docker://datalad/buildenv-git-annex
         working-directory: /tmp
 
       - name: Build source packages

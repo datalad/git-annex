@@ -5,11 +5,11 @@ on:
     branches:
       - master
     paths:
-      - .github/workflows/tools/containers/buildenv-git-annex-buster/*
+      - .github/workflows/tools/containers/buildenv-git-annex/*
       - .github/workflows/build-linux-buildenv.yaml
   pull_request:
     paths:
-      - .github/workflows/tools/containers/buildenv-git-annex-buster/*
+      - .github/workflows/tools/containers/buildenv-git-annex/*
       - .github/workflows/build-linux-buildenv.yaml
 
 jobs:
@@ -20,13 +20,13 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build image
-        run: docker build -t datalad/buildenv-git-annex-buster .
-        working-directory: .github/workflows/tools/containers/buildenv-git-annex-buster
+        run: docker build -t datalad/buildenv-git-annex .
+        working-directory: .github/workflows/tools/containers/buildenv-git-annex
 
       - name: Push image
         if: github.ref_name == 'master'
         run: |
           docker login -u jwodder --password-stdin <<<"$DOCKER_TOKEN"
-          docker push datalad/buildenv-git-annex-buster
+          docker push datalad/buildenv-git-annex
         env:
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
