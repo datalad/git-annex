@@ -1,4 +1,4 @@
-FROM neurodebian:bullseye
+FROM neurodebian:bookworm
 
 # Apparently snapshots.debian.org has heavy rate limiting policy so we better
 # provide some apt conf tune ups with hope to make apt more robust in talking to it
@@ -8,10 +8,21 @@ RUN echo 'Acquire::http::Dl-Limit "1000";' >| /etc/apt/apt.conf.d/20snapshots \
     && echo 'Acquire::https::Dl-Limit "1000";' >> /etc/apt/apt.conf.d/20snapshots \
     && echo 'Acquire::Retries "5";' >> /etc/apt/apt.conf.d/20snapshots
 
+# Notes: 
+# - in APT for NeuroDebian we have #deb-src  for debian-devel, so we need to change
+#   that too.
+# - APT specification switched away from .list to .sources format in bookworm.
+#   nd_freeze works on policy output so works fine but does not disable old source
+#   file, so we are moving it to .disabled "manually" here if we do not detect
+#   use of snapshot url there (we might implement support that way).
+#   Remove after https://github.com/neurodebian/neurodebian/issues/90 is fixed/released
+#   for the used date of nd_freeze.
 RUN set -ex; \
-    apt update; apt install neurodebian-freeze; \
-    nd_freeze 20220327; \
-    sed -i -e 's,^#deb-src,deb-src,g' /etc/apt/sources.list.d/neurodebian.sources.list; \
+    apt update; \
+    apt install neurodebian-freeze; \
+    nd_freeze 20230829; \
+    f=/etc/apt/sources.list.d/debian.sources; if [ -e "$f" ] && ! grep -q "^URIs:.*snapshot\." "$f"; then mv "$f" "$f.disabled"; fi; \
+    sed -i -e 's,/debian-devel ,/debian ,g' -e 's,^#deb-src,deb-src,g' /etc/apt/sources.list.d/neurodebian.sources.list; \
     apt-get update -qq; \
     export DEBIAN_FRONTEND=noninteractive; \
     apt-get build-dep -y -q git-annex-standalone; \
