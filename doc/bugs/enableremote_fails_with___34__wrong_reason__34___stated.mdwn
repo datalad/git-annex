@@ -1,0 +1,44 @@
+### Please describe the problem.
+
+```shell
+$> git annex version
+git-annex version: 10.20230828+git6-g86c70833a1-1~ndall+1
+...
+
+$> git annex enableremote typhon                                                          
+enableremote (normal) typhon 
+  Unable to parse git config from typhon
+
+  Remote typhon does not have git-annex installed; setting annex-ignore
+
+  This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote typhon
+failed
+enableremote: 1 failed
+
+```
+
+here git-annex hints on git-annex not being installed (totally not true), or inability to parse config (in effect it is true but not for the reason of config being wrong etc).
+
+It is all because that folder on the ssh remote belongs to someone else and if I run shell command manually then I see the hint from `git` itself:
+
+```
+$> ssh typhon git-annex-shell configlist /mnt/DATA/data/studies/bep302/gin_BEP032-examples --debug
+[2023-08-31 11:57:26.338523978] (Utility.Process) process [3594411] read: git ["--git-dir=/mnt/DATA/data/studies/bep302/gin_BEP032-examples/.git","--work-tree=/mnt/DATA/data/studies/bep302/gin_BEP032-examples","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2023-08-31 11:57:26.339808748] (Utility.Process) process [3594411] done ExitSuccess
+[2023-08-31 11:57:26.340366568] (Utility.Process) process [3594412] read: git ["config","--local","--list"]
+[2023-08-31 11:57:26.342570264] (Utility.Process) process [3594412] done ExitFailure 128
+[2023-08-31 11:57:26.342620672] (Git.Config) config output: fatal: --local can only be used inside a git repository
+
+git-annex-shell: Git refuses to operate in this repository,
+probably because it is owned by someone else.
+
+To add an exception for this directory, call:
+	git config --global --add safe.directory /mnt/DATA/data/studies/bep302/gin_BEP032-examples
+```
+
+so, ideally `git annex enableremote` should provide a similar diagnostic output instead of incorrect reasons stated.
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
+
+```
