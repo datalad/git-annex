@@ -11,6 +11,7 @@ addurl https://www.youtube.com/watch?v=zGDzdps75ns
 (using yt-dlp) (to Small short test video [zGDzdps75ns].webm) 
 ok                                   
 (recording state in git...)
+$ git commit -m 'test'
 $ echo test | sudo tee './Small short test video [zGDzdps75ns].webm'
 test
 $ git annex fsck './Small short test video [zGDzdps75ns].webm'
@@ -28,6 +29,25 @@ fsck Small short test video [zGDzdps75ns].webm
 ok                                    
 (recording state in git...)
 ```
+
+In contrast, doing the same thing to a non-youtube video via addurl _does_ get detected by fsck:
+
+```
+$ git annex addurl 'https://git-annex.branchable.com/logo_small.png'
+addurl https://git-annex.branchable.com/logo_small.png 
+(to git-annex.branchable.com_logo_small.png) ok
+(recording state in git...)
+$ git commit -m 'test'
+$ echo test | sudo tee ./git-annex.branchable.com_logo_small.png 
+test
+$ git annex fsck ./git-annex.branchable.com_logo_small.png
+fsck git-annex.branchable.com_logo_small.png 
+  git-annex.branchable.com_logo_small.png: Bad file size (4.74 kB smaller); moved to .git/annex/bad/SHA256E-s4749--c604d942bd8edebe5e8e01d18d1ad3604b0874c38d436c9486c52d601e4251dd.png
+failed
+(recording state in git...)
+fsck: 1 failed
+```
+
 
 
 ### What version of git-annex are you using? On what operating system?
