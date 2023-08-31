@@ -7,7 +7,12 @@ I added a YT vid via addurl and then intentionally corrupted it by rewriting the
 
 ```
 $ git annex addurl 'https://www.youtube.com/watch?v=zGDzdps75ns'
+addurl https://www.youtube.com/watch?v=zGDzdps75ns 
+(using yt-dlp) (to Small short test video [zGDzdps75ns].webm) 
+ok                                   
+(recording state in git...)
 $ echo test | sudo tee './Small short test video [zGDzdps75ns].webm'
+test
 $ git annex fsck './Small short test video [zGDzdps75ns].webm'
 fsck Small short test video [zGDzdps75ns].webm ok
 (recording state in git...)
