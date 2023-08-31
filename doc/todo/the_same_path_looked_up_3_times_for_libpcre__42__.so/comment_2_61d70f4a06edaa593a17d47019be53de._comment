@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2023-08-31T16:48:34Z"
+ content="""
+I looked at it \"wrong way\" - it is not 3 more, it is twice more!  after changing first threshold we get to the second check
+
+```
+>> nfailed init 'libpcre.*so'
+>> wc -l
+>> awk '/libpcre.*so.*ENOENT/{print}'
+>> strace -f git-annex init
+>> tee /dev/fd/2
+...
+[pid  1893] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/glibc-hwcaps/x86-64-v4/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  1893] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/glibc-hwcaps/x86-64-v3/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  1893] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/glibc-hwcaps/x86-64-v2/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  1893] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  1893] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/tls/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+[pid  1893] openat(AT_FDCWD, \"/usr/lib/git-annex.linux//lib/x86_64-linux-gnu/haswell/libpcre2-8.so.0\", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+> test 251 -lt 140
+Error: Process completed with exit code 1.
+```
+
+so we are now getting twice more lookups for that single library for `annex init` as well, and that reaches 250. I will need to boost that threshold too. Overall -- sounds like some overhead would be \"twice slower\" now. Ideally we should find a way to workaround.
+"""]]
