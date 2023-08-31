@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="gitannex@fe613c61745e9d1e7f6df5e24a666828bb5682cc"
+ nickname="gitannex"
+ avatar="http://cdn.libravatar.org/avatar/d6820063ef0e9c0e23d42d3b797246f0"
+ subject="comment 1"
+ date="2023-08-31T01:56:30Z"
+ content="""
+I think I found a likely explanation: The yt-dlp downloaded videos use the URL backend, which doesn't include any sort of hashing. That makes some sense, but the indicator that `git annex fsck` gives here is still misleading. You might have silent corruption without realizing it, which is never something I'd anticipate with files stored in a git repo.
+
+Should `git annex fsck` perhaps print a warning of some type when checking files it cannot verify consistency on?
+"""]]
