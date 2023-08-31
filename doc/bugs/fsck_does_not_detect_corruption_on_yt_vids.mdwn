@@ -1,0 +1,47 @@
+### Please describe the problem.
+
+I added a YT vid via addurl and then intentionally corrupted it by rewriting the underlying contents. After doing so, the video was clearly broken, but `git annex fsck` did not detect this.
+
+
+### What steps will reproduce the problem?
+
+```
+$ git annex addurl 'https://www.youtube.com/watch?v=zGDzdps75ns'
+$ echo test | sudo tee './Small short test video [zGDzdps75ns].webm'
+$ git annex fsck './Small short test video [zGDzdps75ns].webm'
+fsck Small short test video [zGDzdps75ns].webm ok
+(recording state in git...)
+$ file -L ./Small\ short\ test\ video\ \[zGDzdps75ns\].webm
+./Small short test video [zGDzdps75ns].webm: ASCII text
+```
+
+The fsck reports the file is "ok". Even an fsck `--from=web` reports the video is OK:
+
+```
+$ git annex fsck './Small short test video [zGDzdps75ns].webm' --from=web
+fsck Small short test video [zGDzdps75ns].webm 
+ok                                    
+(recording state in git...)
+```
+
+
+### What version of git-annex are you using? On what operating system?
+
+10.20230828, on Ubuntu Jammy.
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Excited to move my photo collection over to it!
+
+
