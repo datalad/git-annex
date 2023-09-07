@@ -72,18 +72,21 @@ read' repo = go repo
 	go _ = assertLocal repo $ error "internal"
 	git_config addparams d = withCreateProcess p (git_config' p)
 	  where
-		params = addparams ++ safedirparam 
+		params = addparams ++ explicitrepoparams
 			++ ["config", "--null", "--list"]
 		p = (proc "git" params)
 			{ cwd = Just (fromRawFilePath d)
 			, env = gitEnv repo
 			, std_out = CreatePipe 
 			}
-		safedirparam = if safeDirectory repo 
-			-- Use * rather than d, because git treats
-			-- "dir/" differently than "dir" when comparing for
-			-- safe.directory purposes.
-			then ["-c", "safe.directory=*"]
+		explicitrepoparams = if repoPathSpecifiedExplicitly repo 
+			then 
+				-- Use * rather than d, because git treats
+				-- "dir/" differently than "dir" when comparing
+				-- for safe.directory purposes.
+				[ "-c", "safe.directory=*"
+				, "-c", "safe.bareRepository=all" 
+				]
 			else []
 	git_config' p _ (Just hout) _ pid = 
 		forceSuccessProcess p pid

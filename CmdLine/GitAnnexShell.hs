@@ -124,11 +124,7 @@ builtin cmd dir params = do
 	mkrepo = do
 		r <- Git.Construct.repoAbsPath (toRawFilePath dir)
 			>>= Git.Construct.fromAbsPath
-		{- Since the path to the repository was specified
-		 - explicitly, CVE-2022-24765 is not a concern,
-		 - so tell git to treat the repository directory as safe.
-		 -}
-		let r' = r { safeDirectory = True }
+		let r' = r { repoPathSpecifiedExplicitly = True }
 		Git.Config.read r'
 			`catchIO` \_ -> do
 				hn <- fromMaybe "unknown" <$> getHostname

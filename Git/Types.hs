@@ -53,8 +53,11 @@ data Repo = Repo
 	, gitGlobalOpts :: [CommandParam]
 	-- True only when --git-dir or GIT_DIR was used
 	, gitDirSpecifiedExplicitly :: Bool
-	-- Set -c safe.directory when using this repository.
-	, safeDirectory :: Bool
+	-- Use when the path to the repository was specified explicitly,
+	-- eg in a git remote, and so it's safe to set 
+	-- -c safe.directory=* and -c safe.bareRepository=all 
+	-- when using this repository.
+	, repoPathSpecifiedExplicitly :: Bool
 	} deriving (Show, Eq, Ord)
 
 newtype ConfigKey = ConfigKey S.ByteString

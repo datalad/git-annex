@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-09-07T18:36:37Z"
+ content="""
+Another related case is when git has been configured with
+safe.bareRepository=explicit and the remote (either ssh or local)
+is a bare repo. git-annex-shell will fail with the same misleading message,
+and for a local repo, git-annex will also display the same misleading
+message.
+
+I think it also ought to override safe.bareRepository for such remotes,
+because eg git pull works with such remotes. The point of 
+safe.bareRepository=explicit is not to prevent using bare remotes, but to
+prevent things like shell prompts to accidentially use bare repos that are
+eg, committed by a malicious attacker to a git repository, to avoid using
+git configs that allow running arbitrary code.
+"""]]
