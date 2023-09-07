@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-09-07T17:01:41Z"
+ content="""
+I wonder if it even makes sense for git-annex-shell to replicate this git
+security check, or would it be better for it to instruct git to trust the
+repository, so it can be used on it?
+
+git's CVE-2022-24765 involves a malicious creation of a .git repository
+above the victim's cwd, with a .git/config that causes things like eg shell
+prompts that run git to execute attacker-controlled commands.
+
+git-annex-shell commands all take the directory that the repository is
+in, and uses that repository. So it doesn't traverse above looking for
+other .git directories.
+
+And, `git clone` will happily clone a remote repsository that's owned 
+by another user, including over ssh. And pull and push etc work with such a
+remote. So git-annex-shell should too.
+
+(For that matter, other git-annex-shell commands do work, it's only the
+command that reads the git config that fails to work.)
+"""]]

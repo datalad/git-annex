@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-09-07T18:21:30Z"
+ content="""
+Closely related, when a local repo is owned by someone else, cloning it and
+using it as a git-annex remote also fails, at the same config listing
+stage.
+
+I think the same reasoning applies to that, the path to the repo is
+explicitly specified in the remote url, so it should treat it as a safe
+repo for the purposes of listing its config.
+"""]]

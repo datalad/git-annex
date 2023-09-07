@@ -339,7 +339,12 @@ tryGitConfigRead autoinit r hasuuid
 				warning $ UnquotedString $ "Remote " ++ Git.repoDescribe r ++
 					": "  ++ show e
 			Annex.getState Annex.repo
-		s <- newLocal r
+		{- Since the path to the repository was specified
+		 - explicitly, CVE-2022-24765 is not a concern,
+		 - so tell git to treat the repository directory as safe.
+		 -}
+		let r' = r { Git.safeDirectory = True }
+		s <- newLocal r'
 		liftIO $ Annex.eval s $ check
 			`finally` quiesce True
 		

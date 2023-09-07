@@ -287,5 +287,6 @@ newFrom l = Repo
 	, gitEnvOverridesGitDir = False
 	, gitGlobalOpts = []
 	, gitDirSpecifiedExplicitly = False
+	, safeDirectory = False
 	}
 

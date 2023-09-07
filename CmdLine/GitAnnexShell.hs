@@ -1,6 +1,6 @@
 {- git-annex-shell main program
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,6 +18,7 @@ import CmdLine.GitAnnexShell.Checks
 import CmdLine.GitAnnexShell.Fields
 import Remote.GCrypt (getGCryptUUID)
 import P2P.Protocol (ServerMode(..))
+import Git.Types
 
 import qualified Command.ConfigList
 import qualified Command.NotifyChanges
@@ -123,7 +124,12 @@ builtin cmd dir params = do
 	mkrepo = do
 		r <- Git.Construct.repoAbsPath (toRawFilePath dir)
 			>>= Git.Construct.fromAbsPath
-		Git.Config.read r
+		{- Since the path to the repository was specified
+		 - explicitly, CVE-2022-24765 is not a concern,
+		 - so tell git to treat the repository directory as safe.
+		 -}
+		let r' = r { safeDirectory = True }
+		Git.Config.read r'
 			`catchIO` \_ -> do
 				hn <- fromMaybe "unknown" <$> getHostname
 				giveup $ "failed to read git config of git repository in " ++ hn ++ " on " ++ dir ++ "; perhaps this repository is not set up correctly or has moved"

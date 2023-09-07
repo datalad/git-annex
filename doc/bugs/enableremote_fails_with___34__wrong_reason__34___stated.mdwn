@@ -42,3 +42,5 @@ so, ideally `git annex enableremote` should provide a similar diagnostic output 
 [[!tag projects/dandi]]
 
 ```
+
+> [[fixed|done]] --[[Joey]]
