@@ -85,7 +85,9 @@ consolidateUsrLib top libdirs = go [] libdirs
 						renameFile src dst
 			symlinkHwCapDirs top d
 			go c rest
-		_ -> go (x:c) rest
+		_ -> do
+			symlinkHwCapDirs top x
+			go (x:c) rest
 
 {- The linker looks for optimised versions of libraries depending on the
  - hardware capabilities. That causes a lot of extra work searching for

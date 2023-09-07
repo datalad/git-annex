@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-09-07T16:50:20Z"
+ content="""
+I tracked this down: The /usr merge broke the optimisation,
+since it was symlinking the tls and hwcaps directories only
+when there was a /usr directory.
+
+Here I was seeing 3 failed stats for libpcre in a `git-annex version`
+and with the fix, it's down to 0.
+"""]]

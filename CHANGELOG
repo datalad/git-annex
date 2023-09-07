@@ -1,6 +1,7 @@
 git-annex (10.20230829) UNRELEASED; urgency=medium
 
   * Removed the vendored git-lfs and the GitLfs build flag.
+  * Fix linker optimisation in linux standalone tarballs.
 
  -- Joey Hess <id@joeyh.name>  Mon, 28 Aug 2023 13:10:17 -0400
 
