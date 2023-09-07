@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-09-07T18:58:31Z"
+ content="""
+The intent of this is to allow downloading the same youtube video to
+multiple devices, since youtube might present different encodings of the
+video at different times.
+
+You can use `git-annex migrate --backend=SHA256` to convert to a backend
+that does get hash checked.
+
+If you set the annex.securehashesonly config to true, `git-annex fsck`
+will complain about any files that are not hashed (as well as files using
+insecure hashes).
+
+Setting annex.securehashesonly will also prevent `git-annex addurl` from
+adding youtube videos, eg:
+
+	git-annex addurl 'https://www.youtube.com/watch?v=uA3yPe5lG4c'
+	addurl https://www.youtube.com/watch?v=uA3yPe5lG4c
+	(using yt-dlp)
+	  annex.securehashesonly blocked transfer of URL key
+	failed
+
+Perhaps it would be better for addurl, with that configuration, to
+not generate an URL key, but hash it with the default backend.
+"""]]
