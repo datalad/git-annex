@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="get file by branch and path in bare repository"
+ date="2023-09-08T15:47:16Z"
+ content="""
+Hey!
+
+Is there any way to `git annex get` a file in a specific branch when I have a bare repository?
+
+Since `git show <branch name>:<path in branch>` works I tried that notation in `get`, but that is not recognized.
+
+It is also not possible to combine `--branch` with a path as far as I can tell.
+
+My next idea was to figure out the key of the file first and then get that, but `git annex lookupkey` does not work in a bare repository either.
+
+I could parse the key from the output of `git show`, but then I would need to deal with git-annex internals like if it is a symlink or a pointer file, which feels a bit wrong.
+But since that would be possible I don't see a reason why e.g. lookupkey does not work. Is there any way to achieve this?
+"""]]
