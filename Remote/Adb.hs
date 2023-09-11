@@ -183,24 +183,12 @@ store serial adir = fileStorer $ \k src _p ->
 		giveup "adb failed"
 
 store' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool
-store' serial dest src = store'' serial dest src (return True)
-
-store'' :: AndroidSerial -> AndroidPath -> FilePath -> Annex Bool -> Annex Bool
-store'' serial dest src canoverwrite = checkAdbInPath False $ do
+store' serial dest src = checkAdbInPath False $ do
 	let destdir = takeDirectory $ fromAndroidPath dest
 	void $ adbShell serial [Param "mkdir", Param "-p", File destdir]
 	showOutput -- make way for adb push output
-	let tmpdest = fromAndroidPath dest ++ ".annextmp"
-	ifM (liftIO $ boolSystem "adb" (mkAdbCommand serial [Param "push", File src, File tmpdest]))
-		( ifM canoverwrite
-			-- move into place atomically
-			( adbShellBool serial [Param "mv", File tmpdest, File (fromAndroidPath dest)]
-			, do
-				void $ remove' serial (AndroidPath tmpdest)
-				return False
-			)
-		, return False
-		)
+	liftIO $ boolSystem "adb" $ mkAdbCommand serial
+		[Param "push", File src, File (fromAndroidPath dest)]
 
 retrieve :: AndroidSerial -> AndroidPath -> Retriever
 retrieve serial adir = fileRetriever $ \dest k _p ->
@@ -385,10 +373,8 @@ retrieveExportWithContentIdentifierM serial adir loc cids dest gk _p = do
 
 storeExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 storeExportWithContentIdentifierM serial adir src _k loc overwritablecids _p =
-	-- Check if overwrite is safe before sending, because sending the
-	-- file is expensive and don't want to do it unncessarily.
 	ifM checkcanoverwrite
-		( ifM (store'' serial dest src checkcanoverwrite)
+		( ifM (store' serial dest src)
 			( getExportContentIdentifier serial adir loc >>= \case
 				Right (Just cid) -> return cid
 				Right Nothing -> giveup "adb failed to store file"
