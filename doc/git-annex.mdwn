@@ -491,6 +491,8 @@ content from the key-value store.
 * `oldkeys [path ...]`
 
   List keys used for old versions of files.
+  
+  See [[git-annex-oldkeys]](1) for details.
 
 * `info [directory|file|remote|uuid ...]`
 
