@@ -34,3 +34,5 @@ Did you mean one of these?
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes. I am developing the easy-git-annex API.
+
+> Closing as it will be fixed by the next release. [[done]] --[[Joey]]
