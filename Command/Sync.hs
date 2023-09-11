@@ -985,8 +985,8 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 		| maybe False (\o' -> operationMode o' == SatisfyMode) o =
 			case remoteAnnexTrackingBranch (Remote.gitconfig r) of
 				Nothing -> return False
-				Just b -> withdb r $ \db ->
-					cannotupdateexport r db (Just b) False
+				Just _ -> withdb r $ \db ->
+					cannotupdateexport r db Nothing False
 		| not (maybe True pushOption o) = return False
 		| not (remoteAnnexPush (Remote.gitconfig r)) = return False
 		| otherwise = withdb r (go' r)
@@ -1008,21 +1008,23 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 						filteredtree <- Command.Export.filterExport r tree
 						Command.Export.changeExport r db filteredtree
 						Command.Export.fillExport r db filteredtree mtbcommitsha
-					| otherwise -> cannotupdateexport r db (Just b) False
-				_ -> cannotupdateexport r db (Just b) True
+					| otherwise -> cannotupdateexport r db Nothing False
+				(Nothing, _, _) -> cannotupdateexport r db (Just (Git.fromRef b ++ " does not exist")) True
+				(_, Nothing, _) -> cannotupdateexport r db (Just "no branch is currently checked out") True
+				(_, _, Nothing) -> cannotupdateexport r db (Just "tracking branch name is not valid") True
 	
 	withdb r a = bracket
 		(Export.openDb (Remote.uuid r))
 		Export.closeDb
 		(\db -> Export.writeLockDbWhile db (a db))
 	
-	cannotupdateexport r db mtb showwarning = do
+	cannotupdateexport r db mreason showwarning = do
 		exported <- getExport (Remote.uuid r)
 		when showwarning $
-			maybe noop (warncannotupdateexport r mtb exported) currbranch
+			maybe noop (warncannotupdateexport r mreason exported) currbranch
 		fillexistingexport r db (exportedTreeishes exported) Nothing
 	
-	warncannotupdateexport r mtb exported currb = case mtb of
+	warncannotupdateexport r mreason exported currb = case mreason of
 		Nothing -> inRepo (Git.Ref.tree currb) >>= \case
 			Just currt | not (any (== currt) (exportedTreeishes exported)) ->
 				showLongNote $ UnquotedString $ unwords
@@ -1032,9 +1034,9 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 					, "(Set " ++ gitconfig ++ " to enable it.)"
 					]
 			_ -> noop
-		Just b -> showLongNote $ UnquotedString $ unwords
+		Just reason -> showLongNote $ UnquotedString $ unwords
 			[ notupdating
-			, "because " ++ Git.fromRef b ++ " does not exist."
+			, "because " ++ reason ++ "."
 			, "(As configured by " ++ gitconfig ++ ")"
 			]
 	  where
