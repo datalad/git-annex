@@ -979,7 +979,17 @@ syncFile o ebloom rs af k = do
  - Returns True if any file transfers were made.
  -}
 seekExportContent :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
-seekExportContent o rs (currbranch, _) = or <$> forM rs go
+seekExportContent o rs (mcurrbranch, madj)
+	| null rs = return False
+	| otherwise = do
+		-- Propigate commits from the adjusted branch, so that
+		-- when the remoteAnnexTrackingBranch is set to the parent
+		-- branch, it will be up-to-date.
+		case (mcurrbranch, madj) of
+			(Just currbranch, Just adj) ->
+				propigateAdjustedCommits currbranch adj
+			_ -> noop
+		or <$> forM rs go
   where
 	go r
 		| maybe False (\o' -> operationMode o' == SatisfyMode) o =
@@ -1000,7 +1010,7 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 				Nothing -> id
 			mcurrtree <- maybe (pure Nothing)
 				(inRepo . Git.Ref.tree . addsubdir)
-				currbranch
+				mcurrbranch
 			mtbcommitsha <- Command.Export.getExportCommit r b
 			case (mtree, mcurrtree, mtbcommitsha) of
 				(Just tree, Just currtree, Just _)
@@ -1021,7 +1031,7 @@ seekExportContent o rs (currbranch, _) = or <$> forM rs go
 	cannotupdateexport r db mreason showwarning = do
 		exported <- getExport (Remote.uuid r)
 		when showwarning $
-			maybe noop (warncannotupdateexport r mreason exported) currbranch
+			maybe noop (warncannotupdateexport r mreason exported) mcurrbranch
 		fillexistingexport r db (exportedTreeishes exported) Nothing
 	
 	warncannotupdateexport r mreason exported currb = case mreason of
