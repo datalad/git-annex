@@ -29,7 +29,7 @@ jobs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -188,7 +188,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -311,7 +311,7 @@ jobs:
     needs: build-package
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -368,7 +368,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -424,7 +424,7 @@ jobs:
 
       # needed for ssh certs under ubuntu and tox.ini everywhere
       - name: Checkout datalad
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: datalad/datalad
           path: datalad
