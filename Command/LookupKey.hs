@@ -10,6 +10,7 @@ module Command.LookupKey where
 import Command
 import Annex.CatFile
 import qualified Git.LsFiles
+import Git.Types
 import Utility.Terminal
 import Utility.SafeOutput
 
@@ -18,18 +19,33 @@ cmd = notBareRepo $ noCommit $ noMessages $
 	command "lookupkey" SectionPlumbing 
 		"looks up key used for file"
 		(paramRepeating paramFile)
-		(batchable run (pure ()))
+		(batchable run optParser)
 
-run :: () -> SeekInput -> String -> Annex Bool
-run _ _ file = seekSingleGitFile file >>= \case
-	Nothing -> return False
-	Just file' -> catKeyFile file' >>= \case
-		Just k  -> do
-			IsTerminal isterminal <- liftIO $ checkIsTerminal stdout
-			let sk = serializeKey k
-			liftIO $ putStrLn $ if isterminal then safeOutput sk else sk
-			return True
+data LookupKeyOptions = LookupKeyOptions
+	{ refOption :: Bool
+	}
+
+optParser :: Parser LookupKeyOptions
+optParser = LookupKeyOptions
+	<$> switch
+		( long "ref"
+		<> help "look up key used by git ref to file"
+		)
+
+run :: LookupKeyOptions -> SeekInput -> String -> Annex Bool
+run o _ file
+	| refOption o = catKey (Ref (toRawFilePath file)) >>= display
+	| otherwise = seekSingleGitFile file >>= \case
 		Nothing -> return False
+		Just file' -> catKeyFile file' >>= display
+
+display :: Maybe Key -> Annex Bool
+display (Just k) = do
+	IsTerminal isterminal <- liftIO $ checkIsTerminal stdout
+	let sk = serializeKey k
+	liftIO $ putStrLn $ if isterminal then safeOutput sk else sk
+	return True
+display Nothing = return False
 
 -- To support absolute filenames, pass through git ls-files.
 -- But, this plumbing command does not recurse through directories.

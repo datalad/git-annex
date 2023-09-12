@@ -15,6 +15,13 @@ nothing is output, and it exits nonzero.
 
 # OPTIONS
 
+* `--ref`
+
+  Rather than looking for the specified files in the index, interpet them
+  as git refs. For example to find the key used for somefile in tag v1.0:
+
+    git-annex lookupkey v1.0:somefile
+
 * `--batch`
 
   Enable batch mode, in which a line containing the filename is read from

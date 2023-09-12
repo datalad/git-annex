@@ -11,6 +11,7 @@ git-annex (10.20230829) UNRELEASED; urgency=medium
     filenames that confuse adb shell commands.
   * push: When on an adjusted branch, propagate changes to parent branch
     before updating export remotes.
+  * lookupkey: Added --ref option.
 
  -- Joey Hess <id@joeyh.name>  Mon, 28 Aug 2023 13:10:17 -0400
 

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: get file by branch and path in bare repository"""
+ date="2023-09-12T16:46:55Z"
+ content="""
+--branch is limited to a treeish, so not a single file.
+
+You can use `git-annex lookupkey --ref` to look up the key used by a ref to
+a file, and then pass that to `git-annex get --key`
+
+(That's a new feature I added due to you asking this question.)
+"""]]
