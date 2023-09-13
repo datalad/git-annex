@@ -889,16 +889,15 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   to be asked to operate on files that are not checked into git.
   (This is the default in recent versions of git-annex.)
 
-  Note that, when annex.skipunknown is false, a command like "git-annex get ."
-  will fail if no files in the current directory are checked into git,
-  but a command like "git-annex get" will not fail, because the current
-  directory is not listed, but is implicit. Commands like "git-annex get foo/"
-  will fail if no files in the directory are checked into git, but if
-  at least one file is, it will ignore other files that are not. This is
-  all the same as the behavior of "git-ls files --error-unmatch".
+  Note that, when annex.skipunknown is false, a command like "git-annex get
+  ." will fail if no files in the current directory are checked into git.
+  Commands like "git-annex get foo/" will fail if no files in the directory
+  are checked into git, but if at least one file is, it will ignore other
+  files that are not. This is all the same as the behavior of "git-ls files
+  --error-unmatch".
   
   Also note that git-annex skips files that are checked into git, but are
-  not annexed files, this setting does not affect that.
+  not annexed files; this setting does not affect that.
 
 * `annex.largefiles`
 
