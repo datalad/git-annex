@@ -43,12 +43,16 @@ tmp/configure-stamp: Build/TestConfig.hs Build/Configure.hs
 	mkdir -p tmp
 	touch tmp/configure-stamp
 
+# Build with stack if it was used to build before, otherwise cabal.
+dev:
+	@if [ -d .stack-work ]; then BUILDER=stack make; else make; fi
+
 # Non-optimised build for development, with profiling enabled (for memory
 # profiling).
 #
-# This leaves cabal.project.local configured for a dev build,
-# so just running make will continue to do dev builds.
-dev:
+# This leaves cabal.project.local configured for a prof build,
+# so just running make will continue to do prof builds.
+prof:
 	$(BUILDER) configure -f"-Production" \
 		--enable-executable-dynamic --enable-profiling
 	rm cabal.project.local~* 2>/dev/null || true
