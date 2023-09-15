@@ -5,7 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, FlexibleContexts, OverloadedStrings, CPP #-}
+{-# LANGUAGE TypeFamilies, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, OverloadedStrings, CPP #-}
 
 module Database.Handle (
 	DbHandle,
