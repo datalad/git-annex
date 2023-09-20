@@ -36,7 +36,7 @@ getVersion = do
 		, catchDefaultIO changelogversion $ do
 			gitversion <- takeWhile (\c -> isAlphaNum c) <$> readProcess "sh"
 				[ "-c"
-				, "git log -n 1 --format=format:'%h'"
+				, "git log -n 1 --format=format:'%H'"
 				] ""
 			return $ if null gitversion
 				then changelogversion
