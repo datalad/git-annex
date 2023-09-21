@@ -106,9 +106,13 @@ parseReq opts
 fixupReq :: Req -> Options -> Annex Req
 fixupReq req@(UnmergedReq {}) _ = return req
 fixupReq req@(Req {}) opts = 
-	check rOldFile rOldMode (\r f -> r { rOldFile = f }) req
-		>>= check rNewFile rNewMode (\r f -> r { rNewFile = f })
+	check rOldFile rOldMode setoldfile req
+		>>= check rNewFile rNewMode setnewfile
   where
+	setoldfile r@(Req {}) f = r { rOldFile = f }
+	setoldfile r@(UnmergedReq {}) _ = r
+	setnewfile r@(Req {}) f = r { rNewFile = f }
+	setnewfile r@(UnmergedReq {}) _ = r
 	check getfile getmode setfile r = case readTreeItemType (encodeBS (getmode r)) of
 		Just TreeSymlink -> do
 			v <- getAnnexLinkTarget' f False
