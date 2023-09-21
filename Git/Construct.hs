@@ -260,7 +260,7 @@ adjustGitDirFile :: RepoLocation -> IO RepoLocation
 adjustGitDirFile loc = fromMaybe loc <$> adjustGitDirFile' loc
 
 adjustGitDirFile' :: RepoLocation -> IO (Maybe RepoLocation)
-adjustGitDirFile' loc = do
+adjustGitDirFile' loc@(Local {}) = do
 	let gd = gitdir loc
 	c <- firstLine <$> catchDefaultIO "" (readFile (fromRawFilePath gd))
 	if gitdirprefix `isPrefixOf` c
@@ -275,7 +275,7 @@ adjustGitDirFile' loc = do
 		else return Nothing
  where
 	gitdirprefix = "gitdir: "
-
+adjustGitDirFile' _ = error "internal"
 
 newFrom :: RepoLocation -> Repo
 newFrom l = Repo
