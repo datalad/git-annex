@@ -76,8 +76,8 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.IORef
-import "cryptonite" Crypto.MAC.HMAC hiding (Context)
-import "cryptonite" Crypto.Hash
+import Crypto.MAC.HMAC hiding (Context)
+import Crypto.Hash
 
 sha1 :: L.ByteString -> Digest SHA1
 sha1 = hashlazy

@@ -165,6 +165,9 @@ Flag TorrentParser
 Flag MagicMime
   Description: Use libmagic to determine file MIME types
 
+Flag Crypton
+  Description: Use the crypton library rather than the no longer maintained cryptonite
+
 Flag Benchmark
   Description: Enable benchmarking
   Default: True
@@ -254,7 +257,6 @@ Executable git-annex
    stm-chans,
    securemem,
    crypto-api,
-   cryptonite (>= 0.23),
    memory,
    deepseq,
    split,
@@ -293,6 +295,12 @@ Executable git-annex
   -- Avoid linking with unused dynamic libraries.
   if os(linux) || os(freebsd)
     GHC-Options: -optl-Wl,--as-needed
+
+  if flag(Crypton)
+    Build-Depends: crypton
+    CPP-Options: -DWITH_CRYPTON
+  else
+    Build-Depends: cryptonite (>= 0.23)
 
   if (os(windows))
     Build-Depends:

@@ -75,7 +75,11 @@ dependencyVersions = map fmt $ sortBy (comparing (CI.mk . fst))
 	, ("bloomfilter", VERSION_bloomfilter)
 	, ("http-client", VERSION_http_client)
 	, ("persistent-sqlite", VERSION_persistent_sqlite)
+#ifdef WITH_CRYPTON
+	, ("crypton", VERSION_crypton)
+#else
 	, ("cryptonite", VERSION_cryptonite)
+#endif
 	, ("aws", VERSION_aws)
 	, ("DAV", VERSION_DAV)
 #ifdef WITH_TORRENTPARSER
