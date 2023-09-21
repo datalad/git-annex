@@ -175,7 +175,7 @@ updateLocation r@(Repo { location = l@(Local {}) }) = updateLocation' r l
 updateLocation r = return r
 
 updateLocation' :: Repo -> RepoLocation -> IO Repo
-updateLocation' r l = do
+updateLocation' r l@(Local {}) = do
 	l' <- case getMaybe "core.worktree" r of
 		Nothing -> return l
 		Just (ConfigValue d) -> do
@@ -185,6 +185,7 @@ updateLocation' r l = do
 			return $ l { worktree = Just p }
 		Just NoConfigValue -> return l
 	return $ r { location = l' }
+updateLocation' r l = return r { location = l }
 
 data ConfigStyle = ConfigList | ConfigNullList
 

@@ -43,8 +43,10 @@ fixPostReceiveHookEnv = do
 	case location g of
 		Local { gitdir = ".", worktree = Just "." } ->
 			Annex.adjustGitRepo $ \g' -> pure $ g'
-				{ location = (location g')
-					{ worktree = Just ".." }
+				{ location = case location g' of
+					loc@(Local {}) -> loc 
+						{ worktree = Just ".." }
+					loc -> loc
 				}
 		_ -> noop
 
