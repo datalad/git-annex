@@ -274,12 +274,14 @@ Executable git-annex
    network-bsd,
    git-lfs (>= 1.2.0)
   CC-Options: -Wall
-  GHC-Options: -Wall -fno-warn-tabs  -Wincomplete-uni-patterns
+  GHC-Options: -Wall -fno-warn-tabs -Wincomplete-uni-patterns
   Default-Language: Haskell2010
   Default-Extensions: LambdaCase
   Other-Extensions: TemplateHaskell
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
+  -- Build using all CPUs
+  GHC-Options: -j
 
   -- Fully optimize for production.
   if flag(Production)
