@@ -40,3 +40,5 @@ debian sid, git-annex version: 7.20190129
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+> I think this got fixed by [[!commit 195508fc6541b8f03b78e2ae457422308fc8d9e2]].
+> [[done]] --[[Joey]]
