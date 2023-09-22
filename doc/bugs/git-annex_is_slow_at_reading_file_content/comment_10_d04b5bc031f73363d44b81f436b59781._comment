@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2023-09-22T16:57:14Z"
+ content="""
+crytonite has been forked to crypton, which git-annex can build with as an
+option. It may be that the maintainer of that
+will be more open to this kind of optimisation.
+<https://github.com/kazu-yamamoto/crypton/issues>
+"""]]
