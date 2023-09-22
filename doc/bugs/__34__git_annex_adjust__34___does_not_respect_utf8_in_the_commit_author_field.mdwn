@@ -7,3 +7,5 @@ I ran `git annex adjust --unlock` in a repo. `git-annex` did its job and added a
 ### What version of git-annex are you using? On what operating system?
 
 Current Debian sid version: 7.20181205
+
+[[!tag moreinfo]]
