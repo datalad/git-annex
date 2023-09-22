@@ -35,3 +35,5 @@ Installed from the Arch Linux repository.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Sure, I'm using it for photos, music and videos
+
+> This got fixed in v7 repositories. [[done]] --[[Joey]]
