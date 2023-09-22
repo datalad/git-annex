@@ -13,3 +13,6 @@ raw/photos/something
 This is quite surprising. It seems somehow when it modified the old
 tree, it rooted the new at the location the old had been moved to in
 master.
+
+> Gonna close this old bug since I suspect it's been fixed. [[done]]
+> --[[Joey]]
