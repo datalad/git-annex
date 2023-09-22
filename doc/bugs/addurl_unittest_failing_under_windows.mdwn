@@ -52,3 +52,5 @@ FAIL (7.16s)
 """]]
 
 
+> This seems to have been fixed in the meantime, windows test case fully
+> passes these days. [[done]] --[[Joey]]
