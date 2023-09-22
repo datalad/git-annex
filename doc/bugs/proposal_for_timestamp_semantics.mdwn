@@ -9,3 +9,5 @@
 # open questions/ideas:
 * What if the user `touch`es a file/symlink, bypassing git-annex? Should the data be reconciled or ignored?
 * preserving directory mtimes looks tricky, but could it maybe be done from a hook or two?
+
+> [[notabug|done]] --[[Joey]]
