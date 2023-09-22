@@ -1458,7 +1458,7 @@ Remotes are configured using these settings in `.git/config`.
   When set to eg, "master:subdir", the special remote tracks only
   the subdirectory of that branch.
 
-  Setting this enables some other command to work with these special
+  Setting this enables some other commands to work with these special
   remotes: `git-annex pull` will import changes from the remote and merge them into
   the annex-tracking-branch. And `git-annex push` will export changes to
   the remote. Higher-level commands `git-annex sync --content`
