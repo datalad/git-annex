@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-09-22T17:37:50Z"
+ content="""
+Was a bit tricky to reproduce this (which does not excuse forgetting about
+it for 5 years!)
+
+	export LANG=en_US.utf8
+	git init foo
+	cd foo
+	export GIT_AUTHOR_NAME=Félix
+	git-annex init
+	touch foo
+	git-annex add
+	git commit -m add
+	unset GIT_AUTHOR_NAME
+	export LANG=C
+	git-annex adjust --unlock
+
+What seems to be happening is that catCommit gets:
+
+	commitName = Just "F\56515\56489lix"
+
+Which is I think ok, that's a utf-8 surrogate. But then 
+that's passed into commitWithMetaData, which sets the environment
+variable to its content. And setting an environment variable to a String
+like that does not pass it through the filesystem encoding. And so the
+utf-8 surrogate is not converted back to the right bytes.
+
+One fix would be to keep it a ByteString all the way though, using
+`System.Posix.Env.ByteString`. I tried converting all environment in
+git-annex to use that, but CreateProcess uses String for env, so that is
+not really possible. Also it's pretty intrusive, and is problimatic for
+Windows since it would have to decode the ByteString back to String.
+So while this would be best -- it would ensure that any environment
+variable that for some reason needs to get set by git-annex would
+not incur mojibake -- it doesn't seem possible with the current library
+ecosystem.
+
+So, I think the best fix is to avoid commitWithMetaData using environment
+variables.
+"""]]
