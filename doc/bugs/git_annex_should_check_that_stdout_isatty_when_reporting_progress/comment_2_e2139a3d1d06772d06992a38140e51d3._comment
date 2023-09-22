@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-09-22T19:56:06Z"
+ content="""
+Nowadays, -J1 does not have that behavior but eg -J2 still does. But I'd
+probably just use --quiet in my cron job, or for that matter use `chronic`.
+
+I do think it would be better for git-annex to be consistent and not
+display progress when not at a tty. However, the work required to do that
+is nontrivial. A lot of commands git-annex runs can themselves display
+progress. And all that nontrivial work has in fact been done in order to
+support -J. It's just not enabled by default or for -J1.
+
+The reason git-annex has not yet switched to the concurrent output by
+default is that it assumes a VT100 compatable terminal.
+"""]]
