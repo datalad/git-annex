@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-09-22T19:13:32Z"
+ content="""
+	joey@darkstar:~>cat f
+	Félix
+	joey@darkstar:~>cat foo.hs
+	import System.Process
+	import qualified GHC.IO.Encoding as Encoding
+	
+	main = do
+		e <- Encoding.getFileSystemEncoding
+		Encoding.setLocaleEncoding e
+		v <- readFile "f"
+		print v
+		(_, _, _, p) <- createProcess (proc "sh" ["-c", "echo test $V"])
+			{ env = Just [("V", v)] }
+		waitForProcess p
+		return ()
+	joey@darkstar:~>LANG=C runghc foo.hs
+	"F\56515\56489lix\n"
+	test Félix
+
+Interesting! This confirms that "F\56515\56489lix" is the correctly
+encoded value. And yet here, the environment variable gets set correctly
+as well, and it round-trips.
+"""]]
