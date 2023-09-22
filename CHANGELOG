@@ -13,6 +13,8 @@ git-annex (10.20230829) UNRELEASED; urgency=medium
     before updating export remotes.
   * lookupkey: Added --ref option.
   * Support being built with crypton rather than cryptonite.
+  * enableremote: Avoid overwriting existing git remote when passed the uuid
+    of a specialremote that was earlier initialized with the same name.
 
  -- Joey Hess <id@joeyh.name>  Mon, 28 Aug 2023 13:10:17 -0400
 

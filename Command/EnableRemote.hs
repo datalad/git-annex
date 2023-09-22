@@ -99,6 +99,16 @@ startSpecialRemote' _ _ _ _ _ =
 
 performSpecialRemote :: PerformSpecialRemote
 performSpecialRemote t u oldc c gc mcu = do
+	-- Avoid enabling a special remote if there is another remote
+	-- with the same name.
+	case SpecialRemote.lookupName c of
+		Nothing -> noop
+		Just name -> do
+			rs <- Remote.remoteList
+			case filter (\rmt -> Remote.name rmt == name) rs of
+				(rmt:_) | Remote.uuid rmt /= u ->
+					giveup $ "Not overwriting currently configured git remote named \"" ++ name ++ "\""
+				_ -> noop
 	(c', u') <- R.setup t (R.Enable oldc) (Just u) Nothing c gc
 	next $ cleanupSpecialRemote t u' c' mcu
 

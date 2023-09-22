@@ -9,3 +9,5 @@ annex-uuid and adding whatever other git configs the special remote uses.
 
 (initremote does check if there's already a remote with the same name, and
 refuses to overwrite it).
+
+> [[fixed|done]] --[[Joey]]
