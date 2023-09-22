@@ -38,6 +38,9 @@ when syncing with repositories that have preferred content configured.
 
   This option can be repeated multiple times with different paths.
 
+  Note that this option does not prevent exporting other files to an 
+  "exporttree=yes" remote.
+
 * `--commit`, `--no-commit`
 
   A commit is done by default (unless `annex.autocommit` is set to false).

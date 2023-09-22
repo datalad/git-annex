@@ -12,3 +12,6 @@ not send it to any other remotes, since it's not in directory foo.
 
 Also this affects `git-annex satisfy`, and other related commands too.
 --[[Joey]]
+
+> Decided to just document this behavior since there does not seem to be
+> any good alternative behavior. [[done]] --[[Joey]]

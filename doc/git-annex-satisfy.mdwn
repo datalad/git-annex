@@ -32,6 +32,9 @@ imported to or exported from special remotes.
 
   This option can be repeated multiple times with different paths.
 
+  Note that this option is ignored when syncing with "exporttree=yes"
+  remotes.
+
 * `--jobs=N` `-JN`
 
   Enables parallel processing with up to the specified number of jobs

@@ -28,7 +28,8 @@ only local `master` to remote `master`, but also to remote `synced/master`
 sync`) is later run on the remote, it will merge the `synced/` branches
 that were pushed to it.
 
-Some special remotes allow exporting a tree of files to them,
+Some special remotes allow exporting a tree of files to them
+(`exporttree=yes`),
 and this command can be used to push to those remotes as well
 as regular git remotes. See [[git-annex-export]](1) for details
 about how those special remotes work. In order for this command to export
@@ -90,6 +91,9 @@ See [[git-annex-preferred-content]](1).
   Only upload (or drop) annexed files in the given path.
 
   This option can be repeated multiple times with different paths.
+
+  Note that this option is ignored when syncing with "exporttree=yes"
+  remotes.
 
 * `--all` `-A`
 
