@@ -43,3 +43,8 @@ Not specific to assistant.
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Yes, this worked for ages, a year or more, it's awesome! Haven't plugged the removeable drives in for a while, now when I do this happens...
+
+> git-annex does not set the gcrypt id. git-remote-gcrypt does that.
+> So if it somehow changed, it must be because of a bug in
+> git-remote-gcrypt. Or, because of something you did..
+> [[notabug|done]] --[[Joey]]
