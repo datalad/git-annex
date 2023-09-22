@@ -24,3 +24,6 @@ git-annex-shell: git-shell failed
 Yes.
 
 [[moreinfo]]
+
+> Gonna assume this was operator error after 5 years of no information.
+> [[done]] --[[Joey]]
