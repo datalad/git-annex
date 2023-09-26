@@ -1,22 +1,23 @@
-git-annex (10.20230829) UNRELEASED; urgency=medium
+git-annex (10.20230926) upstream; urgency=medium
 
   * Fix more breakage caused by git's fix for CVE-2022-24765, this time
     involving a remote (either local or ssh) that is a repository not owned
     by the current user.
   * Fix using git remotes that are bare when git is configured with 
     safe.bareRepository = explicit.
-  * Removed the vendored git-lfs and the GitLfs build flag.
   * Fix linker optimisation in linux standalone tarballs.
-  * adb: Avoid some problems with unusual character in exporttree 
+  * adb: Avoid some problems with unusual characters in exporttree 
     filenames that confuse adb shell commands.
   * push: When on an adjusted branch, propagate changes to parent branch
     before updating export remotes.
   * lookupkey: Added --ref option.
-  * Support being built with crypton rather than cryptonite.
   * enableremote: Avoid overwriting existing git remote when passed the uuid
     of a specialremote that was earlier initialized with the same name.
+  * Support being built with crypton rather than the no-longer maintained 
+    cryptonite.
+  * Removed the vendored git-lfs and the GitLfs build flag.
 
- -- Joey Hess <id@joeyh.name>  Mon, 28 Aug 2023 13:10:17 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 26 Sep 2023 13:23:37 -0400
 
 git-annex (10.20230828) upstream; urgency=medium
 
