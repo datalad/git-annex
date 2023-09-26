@@ -1,6 +1,7 @@
 flags:
   git-annex:
     production: true
+    parallelbuild: true
     assistant: true
     pairing: true
     torrentparser: true

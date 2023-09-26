@@ -159,6 +159,10 @@ Flag Pairing
 Flag Production
   Description: Enable production build (slower build; faster binary)
 
+Flag ParallelBuild
+  Description: Enable production build (slower build; faster binary)
+  Default: False
+
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
 
@@ -291,6 +295,9 @@ Executable git-annex
       GHC-Options: -O2
   else
     GHC-Options: -O0
+
+  if flag(ParallelBuild)
+    GHC-Options: -j
 
   -- Avoid linking with unused dynamic libraries.
   if os(linux) || os(freebsd)
