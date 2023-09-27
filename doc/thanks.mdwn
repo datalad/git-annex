@@ -35,7 +35,6 @@ contributed good bug reports and great ideas.
 
 <img alt="McGill logo" src="https://mcgill.ca/hbhl/sites/all/themes/moriarty/images/logo-red.svg" width=100>
 <img alt="Neurohub" src="https://joeyh.name/blog/pics/neurohub.png" width=100>
-<img alt="NSF logo" src="https://nsf.widen.net/s/dzrzh9djbz">
 <img alt="Powderhouse logo" src="https://d33wubrfki0l68.cloudfront.net/e9285c9a8db37874efdadd61f2231774ce1d86cb/5de87/assets/phs-leftaligned-logo.svg" width=100>
 
 git-annex development was supported in large part by:
@@ -60,8 +59,6 @@ Thanks also to these folks for their support:
 [[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
 
 ## financial support, 2014-2018
-
-<img alt="NSF logo" src="https://nsf.widen.net/s/dzrzh9djbz">
 
 git-annex development was partially supported by the
 [Datalad project](http://datalad.org/), funded by a
