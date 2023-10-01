@@ -1,0 +1,12 @@
+I've been using git annex in a star topology (one NAS always available to all repositories) for the longest time but now want to interconnect the repositories on the "outside" aswell. A hurdle to that is that not all remotes will be online all the time (in fact some of them will rarely be online) but git annex expects them to be reachable via ssh at all times.  
+
+There is an escape hatch here in the form of the `remote.<remote>.annex-sync-command` and `remote.<remote>.annex-ignore-command` git config flags where you can script a liveness check.  
+However, in order to actually use that, you must set these options on each and every instance of the repository which is not feasible. Usually for cases like this, there is `git annex config` but it doesn't allow this setting.
+
+Could these become git annex config flags aswell?
+
+Alternatives:
+
+* A built-in liveness check with configurable optionality (though you'd probably want this setting on the git-annex branch aswell)
+
+Am I missing another way to do this without manually setting the commands perhaps?
