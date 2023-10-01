@@ -1,0 +1,84 @@
+### Please describe the problem.
+
+Context: As part of trying to get a non-star topology as described [here](https://git-annex.branchable.com/todo/Allow_remote_sync__42___and_ignore__42___in_git_annex_config/), I added remotes that are not online and don't have the ignore flag set.
+
+Running `git annex info` (without additional args) causes git-annex to try to ssh to the enabled git special remote and then git fetch it which takes *minutes* to time out.
+
+### What steps will reproduce the problem?
+
+1. Add a reachable but unavailable ip address such as 101.101.101.101 to a local interface for setup
+2. `git annex initremote bad type=git location=ssh://101.101.101.101:/tmp/foo`
+3. Remove the address from the local interface again (and clear annex ssh caches)
+4. `git annex info` (hangs)
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 10.20230802
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.1 bloomfilter-2.0.1.2 cryptonite-0.30 DAV-1.3.4 feed-1.3.2.1 ghc-9.4.6 http-client-0.7.13.1 persistent-sqlite-2.13.1.1 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+```
+
+### Please provide any additional information below.
+
+```
+$ time git annex info --debug
+[2023-10-01 11:54:30.392801032] (Utility.Process) process [588948] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2023-10-01 11:54:30.393683972] (Utility.Process) process [588948] done ExitSuccess
+[2023-10-01 11:54:30.393935272] (Utility.Process) process [588949] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2023-10-01 11:54:30.394796062] (Utility.Process) process [588949] done ExitSuccess
+[2023-10-01 11:54:30.395083822] (Utility.Process) process [588950] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..3d1d07c0a9dc56682f27ba310660fae82a483487","--pretty=%H","-n1"]
+[2023-10-01 11:54:30.396110553] (Utility.Process) process [588950] done ExitSuccess
+[2023-10-01 11:54:30.396321043] (Utility.Process) process [588951] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..314451b72f15a36ad620106fce7972c03f729cdf","--pretty=%H","-n1"]
+[2023-10-01 11:54:30.397313663] (Utility.Process) process [588951] done ExitSuccess
+[2023-10-01 11:54:30.397520583] (Utility.Process) process [588952] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..c7a89661d145e9cd2f019301a49cad3382bdaa4e","--pretty=%H","-n1"]
+[2023-10-01 11:54:30.398499344] (Utility.Process) process [588952] done ExitSuccess
+[2023-10-01 11:54:30.399090524] (Utility.Process) process [588953] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2023-10-01 11:54:30.400543744] (Utility.Process) process [588954] call: sh ["-c","ping -c 1 -W 0.3 -n LYKOURGOS.redacted 2>&1 >/dev/null"]
+[2023-10-01 11:54:30.704778033] (Utility.Process) process [588954] done ExitFailure 1
+[2023-10-01 11:54:30.705468863] (Utility.Process) process [588956] call: sh ["-c","ping -c 1 -W 0.3 -n uranos.redacted 2>&1 >/dev/null"]
+[2023-10-01 11:54:31.011500591] (Utility.Process) process [588956] done ExitFailure 1
+[2023-10-01 11:54:31.012659161] (Utility.Process) process [588958] read: ssh ["101.101.101.101","-S",".git/annex/ssh/101.101.101.101","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","git-annex-shell 'configlist' '/tmp/foo' '--debug'"]
+
+[2023-10-01 11:56:43.654364825] (Utility.Process) process [588958] done ExitFailure 255
+
+  Unable to parse git config from bad
+[2023-10-01 11:56:43.654791355] (Utility.Process) process [589323] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","fetch","--quiet","bad"]
+ssh: connect to host 101.101.101.101 port 22: Connection timed out
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+[2023-10-01 11:58:56.774415157] (Utility.Process) process [589323] done ExitFailure 128
+trusted repositories: 0
+semitrusted repositories: 8
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        080e4b9c-a094-4b74-9825-438b689b665c -- foo2
+        330a9e48-26c2-43ef-a16b-d798f90dd215 -- URANOS
+        65cc3cd9-a1a9-490b-ba46-2bc15b195f96 -- LYKOURGOS
+        8b88ef14-74ef-482f-80ad-74581516ddbb -- atemu@HEPHAISTOS:/tmp/foo4
+        ef313204-e6a2-4895-b817-66365273854c -- bad [here]
+        ff295fe4-85eb-4f98-be21-a070314627e9 -- [SOTERIA]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 32.53 gigabytes (+1 gigabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: [2023-10-01 11:58:56.775992177] (Utility.Process) process [589591] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","-z","--cached","--others","--","."]
+[2023-10-01 11:58:56.776843407] (Utility.Process) process [589591] done ExitSuccess
+0
+size of annexed files in working tree: 0 bytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage:
+[2023-10-01 11:58:56.777581777] (Utility.Process) process [588953] done ExitSuccess
+
+real    4m26.397s
+user    0m0.513s
+sys     0m0.038s
+```
