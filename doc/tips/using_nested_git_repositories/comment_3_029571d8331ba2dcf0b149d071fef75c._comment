@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="branch"
+ subject="comment 3"
+ date="2023-10-05T21:40:54Z"
+ content="""
+On a similar topic, I also have multiple git repositories that I want to backup (multiple copies...). These repositories belong to a parent repository that is properly set up with git-annex, and the necessary remotes. I want to be able to recover the entire state of the parent folder (including these children repositories) at any given time.
+
+I am quite unfamiliar with submodules, so feel free to correct me, but based on my experiments, using them makes each child repository/submodule independent/invisible to the parent one. If all these child repositories were submodules, I wouldn't be able to use the parent config to back them up, and I would have to repeat the same configuration on each submodule.
+
+If I were to leave the repositories as they are, the enclosing files seem to be annexed by the parent repository as I would want them up, but the .git repository is ignored. To achieve my goal, I can imagine one solution where every child .git folder would be zipped and annexed alongside, maybe on a pre-commit hook, to be restored in certain occasions.
+
+Is my understanding of the issue reasonable? Is there any other option?
+"""]]
