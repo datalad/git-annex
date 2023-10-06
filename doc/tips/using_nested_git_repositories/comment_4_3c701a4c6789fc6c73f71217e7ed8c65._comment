@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 4"
+ date="2023-10-06T03:22:12Z"
+ content="""
+Submodules can feel a bit clunky, that's right. They're 'invisible to the parent repo' in that they indeed have separate configs (remotes, etc.), so one needs to manually set it up again when replicating.
+
+DataLad embraces this and provides e.g. `datalad save`, which commits recursively into all submodules and it will also initialize and handle submodules a bit more automatic. But it lacks the fully bidirectional `git annex sync|assist`.
+
+I use submodules extensively and am not entirely happy with it due to the fragile manual config necessary.
+
+Auto-enabled special remotes can help out a bit (those will be configured upon first submodule creation by git annex). 
+"""]]
