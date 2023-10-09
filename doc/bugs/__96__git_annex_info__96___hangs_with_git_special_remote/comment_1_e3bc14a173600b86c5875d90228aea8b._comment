@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-10-09T18:50:00Z"
+ content="""
+An easier way to see this behavior is:
+
+	git remote add foo 192.168.1.101:/dne
+	time git fetch foo
+	2:14.36elapsed
+
+So I'm having difficulty seeing this as a bug in git-annex
+particularly.
+
+Yes, git-annex has to ssh once to new git remotes, 
+in order to determine their git-annex uuid. git-annex
+info needs to know what uuids each remote has, so it's
+certianly right that it does this.
+
+Yes, if that fails git-annex falls back to a git fetch,
+in order to determine if the remote is unavailable,
+or if the remote is available but does not
+have git-annex-shell installed. So it takes twice
+as long to time out as the usual ssh tcp timeout.
+"""]]
