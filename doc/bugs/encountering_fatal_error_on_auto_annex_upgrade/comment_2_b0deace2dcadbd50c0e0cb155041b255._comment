@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-10-09T18:29:08Z"
+ content="""
+As to why the upgrade fails, it seems to me that mounting webdav as a
+filesystem could easily have incompatabilities that cause strange behavior.
+
+git can fail with this error message in at least 3 different ways. Although
+in all cases it's supposed to be displaying a path where it has "(null)",
+so it seems something is causing git to have a null pointer. That seems
+like it almost has to be a bug in git.
+
+It might help to run the git-annex command with --debug to determine what
+git command is doing this.
+"""]]
