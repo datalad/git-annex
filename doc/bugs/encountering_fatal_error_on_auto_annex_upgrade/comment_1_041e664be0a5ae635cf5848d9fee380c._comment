@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-10-09T18:28:15Z"
+ content="""
+The "unsupported version 9" is wrong, version 9 is still supported and so
+this upgrade failing won't prevent git-annex from using the repository.
+I've corrected the message.
+"""]]
