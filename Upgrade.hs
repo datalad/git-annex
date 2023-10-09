@@ -61,7 +61,11 @@ needsUpgrade v
 		p <- liftIO $ absPath $ Git.repoPath g
 		return $ Just $ unwords
 			[ "Repository", fromRawFilePath p
-			, "is at unsupported version"
+			, "is at"
+			, if v `elem` supportedVersions 
+				then "supported"
+				else "unsupported"
+			, "version"
 			, show (fromRepoVersion v) ++ "."
 			, msg
 			]
