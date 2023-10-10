@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="comment 4"
+ date="2023-10-10T02:36:51Z"
+ content="""
+I should say that, sometimes I forget my internal monologue/designs.
+
+My initial intention was to use the webdav mount exclusively, but somehow I setup my remote to the backing filesystem path
+
+So, there's no need for a workaround really. Please free to close.
+"""]]
