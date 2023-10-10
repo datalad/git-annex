@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="comment 3"
+ date="2023-10-09T22:30:46Z"
+ content="""
+Thanks joey. Based off of your comments, I believe I have found the root cause, which you are right, I don't think it's git-annex.
+
+Also, I realise I should have added a bit more detail.
+
+The /u01/webdav/www/ path is not a webdav mount, it's the backing real filesystem for actual webdav mounts. And this is important.
+
+Further, this scenario worked with the Debian 11 version of git-annex, and I think those other bugs I linked to might account for the difference, because handing of dot files changed... but I'm not sure.
+
+Also, I did run --debug, but the reason I reached out is, the git calls were of the form:
+
+[[!format  sh \"\"\"
+git --git-dir=. --literal-pathspecs -c annex.debug=true hash-object -w --no-filters --stdin-paths
+\"\"\"]]
+
+and I couldn't work out what paths were being passed via stdin. However, I've run strace and the reason I believe I see these messages is this:
+
+[[!format sh \"\"\"
+$ find . -name .DAV -print
+./.DAV
+./refs/heads/.DAV
+./refs/heads/synced/.DAV
+./info/.DAV
+./annex/.DAV
+./annex/journal/.DAV
+./hooks/.DAV
+./objects/71/.DAV
+./objects/ba/.DAV
+./objects/80/.DAV
+./objects/15/.DAV
+./objects/7a/.DAV
+./objects/a8/.DAV
+./objects/b0/.DAV
+./objects/27/.DAV
+./objects/pack/.DAV
+./objects/a5/.DAV
+./objects/33/.DAV
+./objects/28/.DAV
+./objects/b6/.DAV
+./objects/77/.DAV
+./objects/ad/.DAV
+./objects/94/.DAV
+\"\"\"]]
+
+So for me, the solution is to use an actual webdav mount, even on the local hosting server, and that will hide these webdav \"internals\"/metadata.
+
+Is there cause at all for config changes around git-annex to avoid that though?
+
+
+"""]]
