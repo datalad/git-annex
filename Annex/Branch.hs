@@ -49,6 +49,7 @@ import Data.ByteString.Builder
 import Control.Concurrent (threadDelay)
 import Control.Concurrent.MVar
 import qualified System.FilePath.ByteString as P
+import System.PosixCompat.Files (isRegularFile)
 
 import Annex.Common hiding (append)
 import Types.BranchState
@@ -726,13 +727,14 @@ stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 	genstream dir h jh jlogh streamer = readDirectory jh >>= \case
 		Nothing -> return ()
 		Just file -> do
-			unless (dirCruft file) $ do
-				let path = dir P.</> toRawFilePath file
+			let path = dir P.</> toRawFilePath file
+			unless (dirCruft file) $ whenM (isfile path) $ do
 				sha <- Git.HashObject.hashFile h path
 				hPutStrLn jlogh file
 				streamer $ Git.UpdateIndex.updateIndexLine
 					sha TreeFile (asTopFilePath $ fileJournal $ toRawFilePath file)
 			genstream dir h jh jlogh streamer
+	isfile file = isRegularFile <$> R.getFileStatus file
 	-- Clean up the staged files, as listed in the temp log file.
 	-- The temp file is used to avoid needing to buffer all the
 	-- filenames in memory.

@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-10-10T17:00:37Z"
+ content="""
+Reproduced as follows:
+
+	joey@darkstar:~/tmp/bench>git init  --bare dav
+	Initialized empty Git repository in /home/joey/tmp/bench/dav/
+	joey@darkstar:~/tmp/bench>cd dav
+	joey@darkstar:~/tmp/bench/dav>git-annex init --version=9
+	init  ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench/dav>for s in $(find -type d); do mkdir $s/.DAV;done
+	joey@darkstar:~/tmp/bench/dav>git-annex init --version=9
+	init  fatal: Unable to add (null) to database
+
+So it's these empty directories indeed. (Empty .DAV files don't cause this.)
+
+In particular, it's any empty directory in .git/annex/journal. Which is
+supposed to only contain files that git-annex wrote there. Staging the journal
+is why git hash-object gets involved.
+
+	mkdir .DAV
+	echo .DAV | git hash-object -w --stdin-paths
+	fatal: Unable to add .DAV to database
+
+Still unclear why git ends up with "(null)" in the error message.
+
+While it will slow git-annex down a tiny bit to check if it's a regular file,
+it seems better for git-annex to be robust against this kind of pollution.
+"""]]
