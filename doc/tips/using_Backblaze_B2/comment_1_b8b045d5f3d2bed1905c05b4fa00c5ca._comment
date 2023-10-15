@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="emi@f69ad15b49bfecb4ea3836b6480e5ab8df9a5f7d"
+ nickname="emi"
+ avatar="http://cdn.libravatar.org/avatar/84bf8bb9fcad258f264f28740d91981e"
+ subject="Rclone B2 vs S3"
+ date="2023-10-15T15:03:18Z"
+ content="""
+ I've been using the rclone B2 special remote for a while now, and it seems to produce a very large number of Class C (the most expensive class) transactions while performing certain operations (uploads & dropunused, at least). I just started using the S3 special remote today, and while I've only uploaded so far, it seems to produce far fewer Class C transactions (after uploading a pretty large number of files, I'm only seeing 13). If cost is a concern, that might be one reason to prefer the S3 special remote. That said, this is mostly anecdotal. Perhaps someone else might chip in empirical data or check out the code to back up these observations. 
+"""]]
