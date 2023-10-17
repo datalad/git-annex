@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="comment 2"
+ date="2023-10-17T10:28:51Z"
+ content="""
+Apologies again. I've realised that my count of the find command is totally wrong. It should be:
+
+[[!format sh \"\"\"
+$ find . -path .git -o \( \! -type d -print \) | wc -l
+<actually larger number... which is worrying in its own right>\"
+\"\"\"]]
+
+The reason being... for some reason I have some files that contain the key, and some actual symbolic links, all intermixed.
+
+Is there something I should do to make this all uniform?
+
+"""]]
