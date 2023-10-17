@@ -1,0 +1,27 @@
+I am using Google Cloud as a special remote to backup photos in one annex.
+
+It's in my interests, due to storage costs, to keep duplicates to a minimum. I've noticed that the cloud bucket has a lot more files than I would have expected.
+
+I performed the following to get the number of files in the bucket:
+
+[[!format sh """
+$ gsutil ls gs://cloud-<uuid>/ | wc -l
+<one large number>
+"""]]
+
+and of course, in the git-annex:
+
+[[!format sh """
+$ find . -path .git -o \( -type f -print \) | wc -l
+<one not as large number, about 60% of the larger number>
+"""]]
+
+When I took a sample of the list, I found may of the files that shared the exact key, but had, for example. both .jpg and .JPG suffixes.
+
+Some of these files, when checked with git-annex whereused --key=<each key with its cased suffix>, some were files I had maybe re-arranged in folders. I'm running a script at the moment to get a wider sample of what's happening with these duplicates.
+
+One of the problems I speculate may be coming into play is that I did originally copy files to the cloud remote via an older, Windows git-annex version (repo version I think at 5?).
+
+I think over time interoperability issues have ironed out, but this might be a remnant of when these were more prolific.... though I do still have one that I will report separately once I've gather more data.
+
+Any advise on how I might deal with the duplicates, get them deleted out of the bucket?
