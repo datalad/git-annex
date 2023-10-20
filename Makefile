@@ -15,11 +15,6 @@ SHAREDIR?=share
 # this to /usr/share/zsh/vendor-completions
 ZSH_COMPLETIONS_PATH?=$(PREFIX)/$(SHAREDIR)/zsh/site-functions
 
-# Am I typing :make in vim? Do a dev build.
-ifdef VIM
-all=dev
-endif
-
 build: $(all)
 
 # install system-wide
