@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-10-20T17:52:06Z"
+ content="""
+git-annex preserves the filename extension as-is, it does not try to
+normalize it to lower case or anything. See discussion at
+[[todo/Lower-case_extension_for_SHA256E_and_similar]].
+
+You can configure git-annex to use SHA256 rather than the default SHA256E
+so the extension is not used and it will deduplicate better. Eg, in
+.gitattributes:
+
+	* annex.backend=SHA256
+
+You could then run `git-annex migrate` on existing files to switch them to
+that backend. Bear in mind that you would have to re-upload the files to
+your special remote, and would have to `git-annex dropunused --from`
+that remote to clean up the duplicate data stored there.
+"""]]
