@@ -20,6 +20,7 @@ This portion in the log does not look good
 ok
 [2023-10-20 18:06:25.152624] (Utility.Process) process [63599] done ExitSuccess
 ```
+Full log: 
 
 ### What steps will reproduce the problem?
 1. Create a special remote of type `gcrypt::rsync`
@@ -42,3 +43,6 @@ macOS
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 
+
+
+[[debug.txt]]
