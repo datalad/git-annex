@@ -1,6 +1,7 @@
 git-annex (10.20230927) UNRELEASED; urgency=medium
 
   * Ignore directories and other unusual files in .git/annex/journal/
+  * Fix crash of enableremote when the special remote has embedcreds=yes.
 
  -- Joey Hess <id@joeyh.name>  Tue, 10 Oct 2023 13:17:31 -0400
 

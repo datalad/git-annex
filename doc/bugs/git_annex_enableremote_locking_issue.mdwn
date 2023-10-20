@@ -52,3 +52,5 @@ git-annex version: 10.20230926-g44a7b4c9734adfda5912dd82c1aa97c615689f57
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 A great deal, we use it daily in our research and I also use it on some personal files -- thanks for all your efforts Joey et al.!
+
+> Reproduced and fixed. [[done]] --[[Joey]]

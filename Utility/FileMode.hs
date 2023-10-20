@@ -175,10 +175,13 @@ writeFileProtected file content = writeFileProtected' file
 	(\h -> hPutStr h content)
 
 writeFileProtected' :: RawFilePath -> (Handle -> IO ()) -> IO ()
-writeFileProtected' file writer = do
-	h <- protectedOutput $ openFile (fromRawFilePath file) WriteMode
-	void $ tryIO $ modifyFileMode file $ removeModes otherGroupModes
-	writer h
+writeFileProtected' file writer = bracket setup cleanup writer
+  where
+	setup = do
+		h <- protectedOutput $ openFile (fromRawFilePath file) WriteMode
+		void $ tryIO $ modifyFileMode file $ removeModes otherGroupModes
+		return h
+	cleanup = hClose
 
 protectedOutput :: IO a -> IO a
 protectedOutput = withUmask 0o0077
