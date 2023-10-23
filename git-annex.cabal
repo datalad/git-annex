@@ -737,6 +737,7 @@ Executable git-annex
     Database.Export
     Database.Fsck
     Database.Handle
+    Database.ImportFeed
     Database.Init
     Database.Keys
     Database.Keys.Handle

@@ -162,10 +162,7 @@ getAnnexBranchTree (ContentIdentifierHandle h _) = H.queryDbQueue h $ do
 needsUpdateFromLog :: ContentIdentifierHandle -> Annex (Maybe (Sha, Sha))
 needsUpdateFromLog db = do
 	oldtree <- liftIO $ getAnnexBranchTree db
-	inRepo (Git.Ref.tree Annex.Branch.fullname) >>= \case
-		Just currtree | currtree /= oldtree ->
-			return $ Just (oldtree, currtree)
-		_ -> return Nothing
+	Annex.Branch.updatedFromTree oldtree
 
 {- The database should be locked for write when calling this. -}
 updateFromLog :: ContentIdentifierHandle -> (Sha, Sha) -> Annex ContentIdentifierHandle

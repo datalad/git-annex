@@ -15,7 +15,8 @@ module Annex.MetaData.StandardFields (
 	isDateMetaField,
 	lastChangedField,
 	mkLastChangedField,
-	isLastChangedField
+	isLastChangedField,
+	itemIdField
 ) where
 
 import Types.MetaData
@@ -61,3 +62,6 @@ lastchanged = "lastchanged"
 
 lastchangedSuffix :: T.Text
 lastchangedSuffix = "-lastchanged"
+
+itemIdField :: MetaField
+itemIdField = mkMetaFieldUnchecked "itemid"

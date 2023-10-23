@@ -73,18 +73,18 @@ share [mkPersist sqlSettings, mkMigrate "migrateExport"] [persistLowerCase|
 -- Files that have been exported to the remote and are present on it.
 Exported
   key Key
-  file SFilePath
+  file SByteString
   ExportedIndex key file
 -- Directories that exist on the remote, and the files that are in them.
 ExportedDirectory
-  subdir SFilePath
-  file SFilePath
+  subdir SByteString
+  file SByteString
   ExportedDirectoryIndex subdir file
 -- The content of the tree that has been exported to the remote.
 -- Not all of these files are necessarily present on the remote yet.
 ExportTree
   key Key
-  file SFilePath
+  file SByteString
   ExportTreeKeyFileIndex key file
   ExportTreeFileKeyIndex file key
 -- The tree stored in ExportTree
@@ -139,26 +139,26 @@ addExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportedLocation h k el = queueDb h $ do
 	void $ insertUniqueFast $ Exported k ef
 	let edirs = map
-		(\ed -> ExportedDirectory (SFilePath (fromExportDirectory ed)) ef)
+		(\ed -> ExportedDirectory (SByteString (fromExportDirectory ed)) ef)
 		(exportDirectories el)
 	putMany edirs
   where
-	ef = SFilePath (fromExportLocation el)
+	ef = SByteString (fromExportLocation el)
 
 removeExportedLocation :: ExportHandle -> Key -> ExportLocation -> IO ()
 removeExportedLocation h k el = queueDb h $ do
 	deleteWhere [ExportedKey ==. k, ExportedFile ==. ef]
-	let subdirs = map (SFilePath . fromExportDirectory)
+	let subdirs = map (SByteString . fromExportDirectory)
 		(exportDirectories el)
 	deleteWhere [ExportedDirectoryFile ==. ef, ExportedDirectorySubdir <-. subdirs]
   where
-	ef = SFilePath (fromExportLocation el)
+	ef = SByteString (fromExportLocation el)
 
 {- Note that this does not see recently queued changes. -}
 getExportedLocation :: ExportHandle -> Key -> IO [ExportLocation]
 getExportedLocation (ExportHandle h _) k = H.queryDbQueue h $ do
 	l <- selectList [ExportedKey ==. k] []
-	return $ map (mkExportLocation . (\(SFilePath f) -> f) . exportedFile . entityVal) l
+	return $ map (mkExportLocation . (\(SByteString f) -> f) . exportedFile . entityVal) l
 
 {- Note that this does not see recently queued changes. -}
 isExportDirectoryEmpty :: ExportHandle -> ExportDirectory -> IO Bool
@@ -166,13 +166,13 @@ isExportDirectoryEmpty (ExportHandle h _) d = H.queryDbQueue h $ do
 	l <- selectList [ExportedDirectorySubdir ==. ed] []
 	return $ null l
   where
-	ed = SFilePath $ fromExportDirectory d
+	ed = SByteString $ fromExportDirectory d
 
 {- Get locations in the export that might contain a key. -}
 getExportTree :: ExportHandle -> Key -> IO [ExportLocation]
 getExportTree (ExportHandle h _) k = H.queryDbQueue h $ do
 	l <- selectList [ExportTreeKey ==. k] []
-	return $ map (mkExportLocation . (\(SFilePath f) -> f) . exportTreeFile . entityVal) l
+	return $ map (mkExportLocation . (\(SByteString f) -> f) . exportTreeFile . entityVal) l
 
 {- Get keys that might be currently exported to a location.
  -
@@ -183,19 +183,19 @@ getExportTreeKey (ExportHandle h _) el = H.queryDbQueue h $ do
 	map (exportTreeKey . entityVal) 
 		<$> selectList [ExportTreeFile ==. ef] []
   where
-	ef = SFilePath (fromExportLocation el)
+	ef = SByteString (fromExportLocation el)
 
 addExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
 addExportTree h k loc = queueDb h $
 	void $ insertUniqueFast $ ExportTree k ef
   where
-	ef = SFilePath (fromExportLocation loc)
+	ef = SByteString (fromExportLocation loc)
 
 removeExportTree :: ExportHandle -> Key -> ExportLocation -> IO ()
 removeExportTree h k loc = queueDb h $
 	deleteWhere [ExportTreeKey ==. k, ExportTreeFile ==. ef]
   where
-	ef = SFilePath (fromExportLocation loc)
+	ef = SByteString (fromExportLocation loc)
 
 -- An action that is passed the old and new values that were exported,
 -- and updates state.

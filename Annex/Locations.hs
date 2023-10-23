@@ -65,6 +65,8 @@ module Annex.Locations (
 	gitAnnexImportLog,
 	gitAnnexContentIdentifierDbDir,
 	gitAnnexContentIdentifierLock,
+	gitAnnexImportFeedDbDir,
+	gitAnnexImportFeedDbLock,
 	gitAnnexScheduleState,
 	gitAnnexTransferDir,
 	gitAnnexCredsDir,
@@ -459,6 +461,15 @@ gitAnnexImportDir r c = fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "import"
 gitAnnexImportLog :: UUID -> Git.Repo -> GitConfig -> RawFilePath
 gitAnnexImportLog u r c = 
 	gitAnnexImportDir r c P.</> fromUUID u P.</> "log"
+
+{- Directory containing database used by importfeed. -}
+gitAnnexImportFeedDbDir :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexImportFeedDbDir r c =
+	fromMaybe (gitAnnexDir r) (annexDbDir c) P.</> "importfeed"
+
+{- Lock file for writing to the importfeed database. -}
+gitAnnexImportFeedDbLock :: Git.Repo -> GitConfig -> RawFilePath
+gitAnnexImportFeedDbLock r c = gitAnnexImportFeedDbDir r c <> ".lck"
 
 {- .git/annex/schedulestate is used to store information about when
  - scheduled jobs were last run. -}

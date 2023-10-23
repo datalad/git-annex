@@ -1,6 +1,5 @@
 * [[metadata]] for views
 * [[todo/cache_key_info]]
-* [[todo/importfeed_needs_more_memory_the_more_urls_there_are]]
 
 What do all these have in common? They could all be improved by
 using some kind of database to locally store the information in an

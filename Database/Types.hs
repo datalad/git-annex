@@ -79,15 +79,15 @@ instance PersistField ContentIdentifier where
 instance PersistFieldSql ContentIdentifier where
 	sqlType _ = SqlBlob
 
--- A serialized RawFilePath.
-newtype SFilePath = SFilePath S.ByteString
+-- A serialized bytestring.
+newtype SByteString = SByteString S.ByteString
 	deriving (Eq, Show)
 
-instance PersistField  SFilePath where
-	toPersistValue (SFilePath b) = toPersistValue b
-	fromPersistValue v = SFilePath <$> fromPersistValue v
+instance PersistField  SByteString where
+	toPersistValue (SByteString b) = toPersistValue b
+	fromPersistValue v = SByteString <$> fromPersistValue v
 
-instance PersistFieldSql SFilePath where
+instance PersistFieldSql SByteString where
 	sqlType _ = SqlBlob
 
 -- A serialized git Sha

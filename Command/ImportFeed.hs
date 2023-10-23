@@ -48,9 +48,8 @@ import Logs.MetaData
 import Annex.MetaData
 import Annex.FileMatcher
 import Annex.UntrustedFilePath
-import qualified Annex.Branch
-import Logs
 import qualified Utility.RawFilePath as R
+import qualified Database.ImportFeed as Db
 
 cmd :: Command
 cmd = notBareRepo $ withAnnexOptions os $
@@ -202,53 +201,25 @@ data DownloadLocation = Enclosure URLString | MediaLink URLString
 type ItemId = String
 
 data Cache = Cache
-	{ knownurls :: S.Set URLString
-	, knownitems :: S.Set ItemId
+	{ dbhandle :: Maybe Db.ImportFeedDbHandle 
 	, template :: Utility.Format.Format
 	}
 
 getCache :: Maybe String -> Annex Cache
 getCache opttemplate = ifM (Annex.getRead Annex.force)
-	( ret S.empty S.empty
+	( ret Nothing
 	, do
 		j <- jsonOutputEnabled
 		unless j $
 			showStartMessage (StartMessage "importfeed" (ActionItemOther (Just "gathering known urls")) (SeekInput []))
-		(us, is) <- knownItems
+		h <- Db.openDb
 		unless j
 			showEndOk
-		ret (S.fromList us) (S.fromList is)
+		ret (Just h)
 	)
   where
 	tmpl = Utility.Format.gen $ fromMaybe defaultTemplate opttemplate
-	ret us is = return $ Cache us is tmpl
-
-{- Scan all url logs and metadata logs in the branch and find urls
- - and ItemIds that are already known. -}
-knownItems :: Annex ([URLString], [ItemId])
-knownItems = Annex.Branch.overBranchFileContents select (go [] []) >>= \case
-		Just r -> return r
-		Nothing -> giveup "This repository is read-only."
-  where
-	select f
-		| isUrlLog f = Just ()
-		| isMetaDataLog f = Just ()
-		| otherwise = Nothing
-
-	go uc ic reader = reader >>= \case
-		Just ((), f, Just content)
-			| isUrlLog f -> case parseUrlLog content of
-				[] -> go uc ic reader
-				us -> go (us++uc) ic reader
-			| isMetaDataLog f ->
-				let s = currentMetaDataValues itemIdField $
-					parseCurrentMetaData content
-				in if S.null s
-					then go uc ic reader
-					else go uc (map (decodeBS . fromMetaValue) (S.toList s)++ic) reader
-			| otherwise -> go uc ic reader
-		Just ((), _, Nothing) -> go uc ic reader
-		Nothing -> return (uc, ic)
+	ret h = return $ Cache h tmpl
 
 findDownloads :: URLString -> Feed -> [ToDownload]
 findDownloads u f = catMaybes $ map mk (feedItems f)
@@ -285,14 +256,20 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 				, downloadmedia linkurl mediaurl mediakey
 				)
   where
-	forced = Annex.getRead Annex.force
-
 	{- Avoids downloading any items that are already known to be
-	 - associated with a file in the annex, unless forced. -}
-	checkknown url a
-		| knownitemid || S.member url (knownurls cache)
-			= ifM forced (a, nothingtodo)
-		| otherwise = a
+	 - associated with a file in the annex. -}
+	checkknown url a = case dbhandle cache of
+		Just db -> ifM (liftIO $ Db.isKnownUrl db url)
+			( nothingtodo
+			, case getItemId (item todownload) of
+				Just (_, itemid) ->
+					ifM (liftIO $ Db.isKnownItemId db (fromFeedText itemid))
+						( nothingtodo
+						, a
+						)
+				_ -> a
+			)
+		Nothing -> a
 
 	nothingtodo = recordsuccess >> stop
 
@@ -301,11 +278,6 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 	startdownloadenclosure :: URLString -> CommandStart
 	startdownloadenclosure url = checkknown url $ startUrlDownload cv todownload url $
 		downloadEnclosure addunlockedmatcher opts cache cv todownload url 
-
-	knownitemid = case getItemId (item todownload) of
-		Just (_, itemid) ->
-			S.member (decodeBS $ fromFeedText itemid) (knownitems cache)
-		_ -> False
 
 	downloadmedia linkurl mediaurl mediakey
 		| rawOption (downloadOptions opts) = startdownloadlink
@@ -554,9 +526,6 @@ extractFields i = map (uncurry extractField)
 	itemtitle = decodeBS . fromFeedText <$> getItemTitle (item i)
 	feedauthor = decodeBS . fromFeedText <$> getFeedAuthor (feed i)
 	itemauthor = decodeBS . fromFeedText <$> getItemAuthor (item i)
-
-itemIdField :: MetaField
-itemIdField = mkMetaFieldUnchecked "itemid"
 
 extractField :: String -> [Maybe String] -> (String, String)
 extractField k [] = (k, noneValue)

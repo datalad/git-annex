@@ -36,6 +36,7 @@ module Annex.Branch (
 	withIndex,
 	precache,
 	overBranchFileContents,
+	updatedFromTree,
 ) where
 
 import qualified Data.ByteString as B
@@ -1029,3 +1030,11 @@ overBranchFileContents' select go st = do
 		Nothing -> getnext fs
 		Just v -> Just (v, f, fs)
 
+{- Check if the git-annex branch has been updated from the oldtree.
+ - If so, returns the tuple of the old and new trees. -}
+updatedFromTree :: Git.Sha -> Annex (Maybe (Git.Sha, Git.Sha))
+updatedFromTree oldtree =
+	inRepo (Git.Ref.tree fullname) >>= \case
+		Just currtree | currtree /= oldtree ->
+			return $ Just (oldtree, currtree)
+		_ -> return Nothing

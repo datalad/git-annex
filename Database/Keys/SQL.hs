@@ -46,7 +46,7 @@ import Data.Maybe
 share [mkPersist sqlSettings, mkMigrate "migrateKeysDb"] [persistLowerCase|
 Associated
   key Key
-  file SFilePath
+  file SByteString
   KeyFileIndex key file
   FileKeyIndex file key
 Content
@@ -87,7 +87,7 @@ addAssociatedFile k f = queueDb $
 		(Associated k af)
 		[AssociatedFile =. af, AssociatedKey =. k]
   where
-	af = SFilePath (getTopFilePath f)
+	af = SByteString (getTopFilePath f)
 
 -- Faster than addAssociatedFile, but only safe to use when the file
 -- was not associated with a different key before, as it does not delete
@@ -96,14 +96,14 @@ newAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
 newAssociatedFile k f = queueDb $
 	insert_ $ Associated k af
   where
-	af = SFilePath (getTopFilePath f)
+	af = SByteString (getTopFilePath f)
 
 {- Note that the files returned were once associated with the key, but
  - some of them may not be any longer. -}
 getAssociatedFiles :: Key -> ReadHandle -> IO [TopFilePath]
 getAssociatedFiles k = readDb $ do
 	l <- selectList [AssociatedKey ==. k] []
-	return $ map (asTopFilePath . (\(SFilePath f) -> f) . associatedFile . entityVal) l
+	return $ map (asTopFilePath . (\(SByteString f) -> f) . associatedFile . entityVal) l
 
 {- Gets any keys that are on record as having a particular associated file.
  - (Should be one or none.) -}
@@ -112,13 +112,13 @@ getAssociatedKey f = readDb $ do
 	l <- selectList [AssociatedFile ==. af] []
 	return $ map (associatedKey . entityVal) l
   where
-	af = SFilePath (getTopFilePath f)
+	af = SByteString (getTopFilePath f)
 
 removeAssociatedFile :: Key -> TopFilePath -> WriteHandle -> IO ()
 removeAssociatedFile k f = queueDb $
 	deleteWhere [AssociatedKey ==. k, AssociatedFile ==. af]
   where
-	af = SFilePath (getTopFilePath f)
+	af = SByteString (getTopFilePath f)
 
 addInodeCaches :: Key -> [InodeCache] -> WriteHandle -> IO ()
 addInodeCaches k is = queueDb $
