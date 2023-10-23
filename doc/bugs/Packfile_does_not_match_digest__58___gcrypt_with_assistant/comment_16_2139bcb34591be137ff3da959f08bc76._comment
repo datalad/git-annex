@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="branch"
+ subject="comment 16"
+ date="2023-10-23T09:56:59Z"
+ content="""
+This issue is still present, when using the assistant with git-remote-gcrypt.
+
+Although one can recover from this issue by resetting the repository, this is handicaping, as we have to continuously monitor whether pushes have been successful, which contradicts the idea of the assistant.
+
+This may be anecdotal, but the push before the 'Packfile *** does not match digest!' error, have had some network issues, as follows:
+
+```
+gcrypt: Due to a longstanding bug, this push implicitly has --force.
+gcrypt: Consider explicitly passing --force, and setting
+gcrypt: gcrypt's require-explicit-force-push git config key.
+gcrypt: Encrypting to:  -r ***
+gcrypt: Requesting manifest signature
+error: src refspec refs/gcrypt/gitception+ does not match any
+fatal: the remote end hung up unexpectedly
+error: failed to push some refs to ***
+error: failed to push some refs to ***
+```
+"""]]
