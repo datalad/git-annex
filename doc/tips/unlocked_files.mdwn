@@ -50,7 +50,7 @@ an unlocked file, it will be replaced by a pointer file, which
 looks like "/annex/objects/...". So if you open a file and see
 that, you'll need to use `git annex get`.
 
-Under the hood, unlocked files use git's [[todo/smudge]] filter interface,
+Under the hood, unlocked files use git's smudge/clean filter interface,
 and git-annex converts between the content of the big file and a pointer
 file, which is what gets committed to git.
 
@@ -58,7 +58,8 @@ file, which is what gets committed to git.
 By default, git-annex commands will add files in locked mode,
 unless used on a filesystem that does not support symlinks, when unlocked
 mode is used. To make them always use unlocked mode, run:
-`git config annex.addunlocked true`
+`git config annex.addunlocked true`  
+`git add` always adds files in unlocked mode.
 """]]
 
 ## adjusted branches
