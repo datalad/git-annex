@@ -1,7 +1,6 @@
 * [[metadata]] for views
 * [[todo/cache_key_info]]
-* [[bugs/indeterminite_preferred_content_state_for_duplicated_file]]
-* [[todo/speed_up_git_annex_sync_--content_--all]]
+* [[todo/importfeed_needs_more_memory_the_more_urls_there_are]]
 
 What do all these have in common? They could all be improved by
 using some kind of database to locally store the information in an
@@ -26,7 +25,7 @@ Store in the database the Ref of the branch that was used to construct it.
 3. Use sqlite db for associated files cache. **done** (only for v6 unlocked
    files)
 4. Use associated files db when dropping files, to fix
-   [[bugs/indeterminite_preferred_content_state_for_duplicated_file]]
+   indeterminite preferred content state for duplicated files **done**
 5. Also, use associated files db to construct views.
 6. Use sqlite db for metadata cache.
 7. Use sqlite db for list of keys present in local annex.
