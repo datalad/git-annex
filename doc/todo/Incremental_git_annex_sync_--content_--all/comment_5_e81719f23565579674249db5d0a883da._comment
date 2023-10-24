@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-10-24T17:26:53Z"
+ content="""
+To implement this optimisation for a non-all sync, when 
+the tree being synced has changed, it ought to diff from the old
+tree to the current tree, and sync those files. Preferred
+content can vary depending on filename, and diffing like that will avoid
+scanning every file in the whole tree.
+
+And when there are location log changes, it needs to also sync files in the
+tree that use keys whose location log changed, using the git-annex branch
+diff to find those keys. (And presumably then using the keys database to get
+back to the filenames.)
+
+So, implementing an optimisation like this for a non-all sync has two
+separate diffs which would have to be combined together somehow.
+
+Doing that in constant memory would be hard. It seems that a bloom filter
+cannot be used to check if a file was processed in the first diff and avoid
+processing it again in the second diff. Because a false positive would
+avoid processing a file whose location log did change. I think it would
+need to use an on-disk structure maybe (eg sqlite)?
+
+None of which should prevent implementing this nice optimisation for --all.
+"""]]

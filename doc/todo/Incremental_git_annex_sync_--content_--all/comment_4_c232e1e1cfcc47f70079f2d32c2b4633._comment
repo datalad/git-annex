@@ -6,6 +6,6 @@
 My recent optimisations of `git-annex sync` with importtree remotes uses a
 similar diffing approach.
 
-A transition is underway to making `--content` be enabled by default, and
-faster syncing with it would be a nice thing to do before then.
+`git-annex satisfy` syncs `--content` by default, so this optimisation would
+be especially nice to have for it.
 """]]
