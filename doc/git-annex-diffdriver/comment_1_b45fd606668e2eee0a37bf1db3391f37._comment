@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="v@80d733f66c2e675c27ee39df565ebed8d0ea12de"
+ nickname="v"
+ avatar="http://cdn.libravatar.org/avatar/5d1f51d6e21cfcfb0da6dfe0aea2fc77"
+ subject="Outdated?"
+ date="2023-10-24T13:26:44Z"
+ content="""
+This article seems outdated. `--text` is not a valid option in version 8.20210223 and `GIT_EXTERNAL_DIFF=\"git annex diffdriver -- diff --\" git diff` fails with `diff: extra operand '<commit hash>'`.
+"""]]
