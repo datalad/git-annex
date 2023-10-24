@@ -1,16 +1,23 @@
-Using --all, or running in a bare repo, as well as
-`git annex unused` and `git annex info` all end up buffering the list of
-all keys that have uncommitted journalled changes in memory.
-This is due to Annex.Branch.files's call to getJournalledFilesStale which
-reads all the files in the directory into a buffer.
+`git annex unused --from=$remote` and `git annex info $remote`
+buffer the list of keys that have uncommitted journalled changes
+in memory. This is due to Annex.Branch.files's which reads all the
+files in the journal into a buffer.
 
 Note that the list of keys in the branch *does* stream in, so this
 is only really a problem when using annex.alwayscommit=false to build
-up big git-annex branch commits via the journal.
+up big git-annex branch commits via the journal. Or using annex.private,
+since the private journal can build up a lot of keys in it.
 
 An attempt at making it stream via unsafeInterleaveIO failed miserably
 and that is not the right approach. This would be a good place to use
 ResourceT, but it might need some changes to the Annex monad to allow
 combining the two. --[[Joey]]
 
+> This used to also affect --all and using git-annex in a bare repo, but
+> that was avoided by using the overBranchFileContents interface. This
+> suggests that changing to that interface in unused and info would be a
+> solution.
+
 [[!tag confirmed]]
+
+[[!meta title="improve memory usage of unused and info when the journal contains a lot of files"]]

@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -597,21 +597,24 @@ files = do
 		then return Nothing
 		else do
 			(bfs, cleanup) <- branchFiles
+			jfs <- journalledFiles
+			pjfs <- journalledFilesPrivate
 			-- ++ forces the content of the first list to be
 			-- buffered in memory, so use journalledFiles,
 			-- which should be much smaller most of the time.
 			-- branchFiles will stream as the list is consumed.
-			l <- (++) <$> journalledFiles <*> pure bfs
+			let l = jfs ++ pjfs ++ bfs
 			return (Just (l, cleanup))
 
-{- Lists all files currently in the journal. There may be duplicates in
- - the list when using a private journal. -}
+{- Lists all files currently in the journal, but not files in the private
+ - journal. -}
 journalledFiles :: Annex [RawFilePath]
-journalledFiles = ifM privateUUIDsKnown
-	( (++)
-		<$> getJournalledFilesStale gitAnnexPrivateJournalDir
-		<*> getJournalledFilesStale gitAnnexJournalDir
-	, getJournalledFilesStale gitAnnexJournalDir
+journalledFiles = getJournalledFilesStale gitAnnexJournalDir
+
+journalledFilesPrivate :: Annex [RawFilePath]
+journalledFilesPrivate = ifM privateUUIDsKnown
+	( getJournalledFilesStale gitAnnexPrivateJournalDir
+	, return []
 	)
 
 {- Files in the branch, not including any from journalled changes,
@@ -992,8 +995,11 @@ overBranchFileContents' select go st = do
 			-- This can cause the action to be run a
 			-- second time with a file it already ran on.
 			| otherwise -> liftIO (tryTakeMVar buf) >>= \case
-				Nothing -> drain buf =<< journalledFiles
-				Just fs -> drain buf fs
+				Nothing -> do
+					jfs <- journalledFiles
+					pjfs <- journalledFilesPrivate
+					drain buf jfs pjfs
+				Just (jfs, pjfs) -> drain buf jfs pjfs
 	catObjectStreamLsTree l (select' . getTopFilePath . Git.LsTree.file) g go'
 		`finally` liftIO (void cleanup)
   where
@@ -1007,9 +1013,9 @@ overBranchFileContents' select go st = do
 			PossiblyStaleJournalledContent journalledcontent ->
 				Just (fromMaybe mempty branchcontent <> journalledcontent)
 				
-	drain buf fs = case getnext fs of
-		Just (v, f, fs') -> do
-			liftIO $ putMVar buf fs'
+	drain buf fs pfs = case getnext fs pfs of
+		Just (v, f, fs', pfs') -> do
+			liftIO $ putMVar buf (fs', pfs')
 			content <- getJournalFileStale (GetPrivate True) f >>= \case
 				NoJournalledContent -> return Nothing
 				JournalledContent journalledcontent ->
@@ -1022,13 +1028,16 @@ overBranchFileContents' select go st = do
 					return (Just (content <> journalledcontent))
 			return (Just (v, f, content))
 		Nothing -> do
-			liftIO $ putMVar buf []
+			liftIO $ putMVar buf ([], [])
 			return Nothing
 	
-	getnext [] = Nothing
-	getnext (f:fs) = case select f of
-		Nothing -> getnext fs
-		Just v -> Just (v, f, fs)
+	getnext [] [] = Nothing
+	getnext (f:fs) pfs = case select f of
+		Nothing -> getnext fs pfs
+		Just v -> Just (v, f, fs, pfs)
+	getnext [] (pf:pfs) = case select pf of
+		Nothing -> getnext [] pfs
+		Just v -> Just (v, pf, [], pfs)
 
 {- Check if the git-annex branch has been updated from the oldtree.
  - If so, returns the tuple of the old and new trees. -}
