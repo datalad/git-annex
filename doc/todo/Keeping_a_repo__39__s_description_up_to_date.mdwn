@@ -1,0 +1,14 @@
+Hi joey,
+
+I was recently moving many of my git annex repos around. This caused all of the (partly auto-generated) repo descriptions (e.g. `user@host:path`) to be outdated, making it more difficult to re-add them later from another host. Updating all of them manually was really error prone and tedious.
+
+What do you think about having git annex update the repo description "from time to time"? `git annex sync|assist|...` could check if the current repo description matches what the auto-generated string would be and update it accordingly.
+
+I see the following problems with this:
+
+- Adding this check to each and every git annex command is probably not a good idea. Maybe `git annex sync` and `git annex assist`. The overhead might be negligible though.
+- How to detect if the current description was really auto-generated and not user-specified? git annex could parse it with a regex (e.g. `(?P<user>[^@]+@(?P<host>[^:]+:(?P<path>.*)$`) and if that matches could assume it was auto-generated. Feels a little fragile though.
+
+Maybe the whole auto-updating idea is not ideal, but a new command like `git annex redescribe` or `git annex autodescribe` or `git annex describe --auto` could be introduced, so users can run it periodically or on-demand. Following the discussion on '`git annex sync` defaulting to syncing content', I have a feeling that people wouldn't like git annex messing with their repo descriptions 😉. Ideally, auto-describing would (optionally) also be able to update remotes' descriptions properly.
+
+All of this could also be done by a third-party program, but having this functionality in git annex itself would be handy.
