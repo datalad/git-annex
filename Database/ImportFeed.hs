@@ -112,9 +112,9 @@ isKnownItemId (ImportFeedDbHandle h) i =
 			] []
 		return $ not (null l)
 
-recordKnownUrl :: ImportFeedDbHandle -> URLString -> IO ()
+recordKnownUrl :: ImportFeedDbHandle -> URLByteString -> IO ()
 recordKnownUrl h u = queueDb h $
-	void $ insertUniqueFast $ KnownUrls $ SByteString $ encodeBS u
+	void $ insertUniqueFast $ KnownUrls $ SByteString u
 
 recordKnownItemId :: ImportFeedDbHandle -> SByteString -> IO ()
 recordKnownItemId h i = queueDb h $
@@ -177,7 +177,7 @@ updateFromLog db@(ImportFeedDbHandle h) (oldtree, currtree)
 		let f = getTopFilePath (DiffTree.file ti)
 		case extLogFileKey urlLogExt f of
 			Just k -> do
-				knownurls =<< getUrls k
+				knownurls =<< getUrls' k
 			Nothing -> case extLogFileKey metaDataLogExt f of
 				Just k -> do
 					m <- getCurrentMetaData k

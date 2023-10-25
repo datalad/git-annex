@@ -1,6 +1,6 @@
 {- Web url logs.
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -9,7 +9,9 @@
 
 module Logs.Web (
 	URLString,
+	URLByteString,
 	getUrls,
+	getUrls',
 	getUrlsWithPrefix,
 	setUrlPresent,
 	setUrlMissing,
@@ -23,6 +25,7 @@ module Logs.Web (
 ) where
 
 import qualified Data.Map as M
+import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 
 import Annex.Common
@@ -35,20 +38,27 @@ import Annex.UUID
 import qualified Annex.Branch
 import qualified Types.Remote as Remote
 
+type URLByteString = S.ByteString
+
 {- Gets all urls that a key might be available from. -}
 getUrls :: Key -> Annex [URLString]
 getUrls key = do
-	config <- Annex.getGitConfig
-	l <- go $ urlLogFile config key : oldurlLogs config key
+	l <- map decodeBS <$> getUrls' key
 	tmpl <- Annex.getState (maybeToList . M.lookup key . Annex.tempurls)
 	return (tmpl ++ l)
+
+{- Note that this does not include temporary urls set with setTempUrl. -}
+getUrls' :: Key -> Annex [URLByteString]
+getUrls' key = do
+	config <- Annex.getGitConfig
+	go $ urlLogFile config key : oldurlLogs config key
   where
 	go [] = return []
 	go (l:ls) = do
 		us <- currentLogInfo l
 		if null us
 			then go ls
-			else return $ map decodeUrlLogInfo us
+			else return $ map fromLogInfo us
 
 getUrlsWithPrefix :: Key -> String -> Annex [URLString]
 getUrlsWithPrefix key prefix = filter (prefix `isPrefixOf`) 
@@ -123,10 +133,7 @@ getDownloader u = case separate (== ':') u of
 	("", u') -> (u', OtherDownloader)
 	_ -> (u, WebDownloader)
 
-decodeUrlLogInfo :: LogInfo -> URLString
-decodeUrlLogInfo = decodeBS . fromLogInfo
-
 {- Parses the content of an url log file, returning the urls that are
  - currently recorded. -}
-parseUrlLog :: L.ByteString -> [URLString]
-parseUrlLog = map decodeUrlLogInfo . getLog
+parseUrlLog :: L.ByteString -> [URLByteString]
+parseUrlLog = map fromLogInfo . getLog
