@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-10-25T17:57:50Z"
+ content="""
+Note that `git-annex describe remote --auto` has a small problem 
+when the remote is a git ssh remote, that there
+may be multiple hostnames, the one that happens to be used locally
+might not be as fully qualified as the "right" one. Or it may even be a ssh
+host alias, which can't be converted to a FQDN.
+
+For special remotes, `git-annex initremote` does not set a description at
+all, and whatever hostname might be used for one is hidden underneath an
+abstraction layer anyway. So it couldn't do anything useful for those.
+
+So that limits it to local git repositories..
+"""]]
