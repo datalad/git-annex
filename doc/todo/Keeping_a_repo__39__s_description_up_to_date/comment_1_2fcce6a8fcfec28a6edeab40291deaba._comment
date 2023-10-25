@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-10-25T17:21:16Z"
+ content="""
+I think a good thing to do if you plan to be moving a repo around is to
+describe it with something that does not depend on its current location.
+
+For example, suppose I am making a repo on a removable USB drive. I'm gonna
+literally move that from place to place by plugging it into different
+computers. So the default user@host:/mntpoint description is not a good one
+for that repository. Instead I use something like "2 tb passport USB drive", 
+or even better I slap a sticker on that drive and give it a real 
+name and use that as the description.
+
+I guess that someone who was moving a USB drive back and forth between 2
+computers would not be enthused if git-annex started updating the
+description after each move. Even if that prevented the 
+description from being wrong half the time.
+
+I do think that `git-annex describe --auto` is a reasonable idea.
+"""]]
