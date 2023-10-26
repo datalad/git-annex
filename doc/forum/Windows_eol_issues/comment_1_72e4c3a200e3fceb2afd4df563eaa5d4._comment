@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-10-26T18:36:59Z"
+ content="""
+The .git/annex/mergedrefs problem seems to indicate that `git show-ref` is
+outputting lines ending with CRLF. That's surprising to me, I thought git
+commands on Windows didn't output CRLF at least when piped.
+Can you show the output of that command fed through `cat -vet` please?
+
+In retrospect it would be better if annex pointer files did not end in a
+newline at all. It's not really necessary that they do, and that would
+avoid git for windows from messing with their content when merging them
+from elsewhere. However, AFAIK git-annex manages to not break despite git
+doing that to its pointer file, by ignoring CR in pointer files
+(see [[!commit 4d89a1ffd1b4bfd423c11c9e703e9d2fb0f5fb25]]). 
+So I'm not sure what problem you're demonstrating with that example merge?
+
+git-annex list is displaying CRLF for the header because it uses putStrLn
+for it, and putStrLn on Windows uses CRLF by default (due to the default NewlineMode
+on Windows). Then for the file list it uses ByteString.Char8.putStrLn, which does
+not use CRLF. Since those two are generally seen as equivilant and code is
+often switched between them to improve performance, it would be a real
+ongoing pain point to remember this gotcha. This makes me think that
+git-annex on windows ought to `hSetNewlineMode stdout noNewlineTranslation`
+so it consistently outputs without CRLF.
+
+About the CRLF in the hooks, I know it's been discussed somewhere before,
+but I can't remember where. IIRC there were some complexities involving
+what the bash bundled with git expected to find.
+"""]]
