@@ -95,4 +95,4 @@ initRepo' desc mgroup = unlessM isInitialized $ do
 {- Checks if a git repo exists at a location. -}
 probeRepoExists :: FilePath -> IO Bool
 probeRepoExists dir = isJust <$>
-	catchDefaultIO Nothing (Git.Construct.checkForRepo dir)
+	catchDefaultIO Nothing (Git.Construct.checkForRepo (encodeBS dir))

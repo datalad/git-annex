@@ -40,6 +40,7 @@ import Git.FilePath
 import qualified Git.Url as Url
 import Utility.UserInfo
 import Utility.Url.Parse
+import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as B
 import qualified System.FilePath.ByteString as P
@@ -47,14 +48,14 @@ import qualified System.FilePath.ByteString as P
 {- Finds the git repository used for the cwd, which may be in a parent
  - directory. -}
 fromCwd :: IO (Maybe Repo)
-fromCwd = getCurrentDirectory >>= seekUp
+fromCwd = R.getCurrentDirectory >>= seekUp
   where
 	seekUp dir = do
 		r <- checkForRepo dir
 		case r of
-			Nothing -> case upFrom (toRawFilePath dir) of
+			Nothing -> case upFrom dir of
 				Nothing -> return Nothing
-				Just d -> seekUp (fromRawFilePath d)
+				Just d -> seekUp d
 			Just loc -> pure $ Just $ newFrom loc
 
 {- Local Repo constructor, accepts a relative or absolute path. -}
@@ -220,26 +221,27 @@ expandTilde p = expandt True p
 
 {- Checks if a git repository exists in a directory. Does not find
  - git repositories in parent directories. -}
-checkForRepo :: FilePath -> IO (Maybe RepoLocation)
+checkForRepo :: RawFilePath -> IO (Maybe RepoLocation)
 checkForRepo dir = 
 	check isRepo $
-		check (checkGitDirFile (toRawFilePath dir)) $
-			check (checkdir (isBareRepo dir)) $
+		check (checkGitDirFile dir) $
+			check (checkdir (isBareRepo dir')) $
 				return Nothing
   where
 	check test cont = maybe cont (return . Just) =<< test
 	checkdir c = ifM c
-		( return $ Just $ LocalUnknown $ toRawFilePath dir
+		( return $ Just $ LocalUnknown dir
 		, return Nothing
 		)
 	isRepo = checkdir $ 
-		doesFileExist (dir </> ".git" </> "config")
+		doesFileExist (dir' </> ".git" </> "config")
 			<||>
 		-- A git-worktree lacks .git/config, but has .git/gitdir.
 		-- (Normally the .git is a file, not a symlink, but it can
 		-- be converted to a symlink and git will still work;
 		-- this handles that case.)
-		doesFileExist (dir </>  ".git" </> "gitdir")
+		doesFileExist (dir' </>  ".git" </> "gitdir")
+	dir' = fromRawFilePath dir
 
 isBareRepo :: FilePath -> IO Bool
 isBareRepo dir = doesFileExist (dir </> "config")
