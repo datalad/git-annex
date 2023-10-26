@@ -28,8 +28,6 @@ module Remote.Helper.Encryptable (
 
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified "sandi" Codec.Binary.Base64 as B64
-import qualified Data.ByteString as B
 import Control.Concurrent.STM
 
 import Annex.Common
@@ -39,6 +37,7 @@ import Types.Crypto
 import Types.ProposedAccepted
 import qualified Annex
 import Annex.SpecialRemote.Config
+import Utility.Base64
 
 -- Used to ensure that encryption has been set up before trying to
 -- eg, store creds in the remote config that would need to use the
@@ -272,7 +271,7 @@ storeCipher cip = case cip of
 	(EncryptedCipher t _ ks) -> addcipher t . storekeys ks cipherkeysField
 	(SharedPubKeyCipher t ks) -> addcipher t . storekeys ks pubkeysField
   where
-	addcipher t = M.insert cipherField (Accepted (toB64bs t))
+	addcipher t = M.insert cipherField (Accepted (decodeBS (toB64 (encodeBS t))))
 	storekeys (KeyIds l) n = M.insert n (Accepted (intercalate "," l))
 
 {- Extracts an StorableCipher from a remote's configuration. -}
@@ -281,13 +280,13 @@ extractCipher c = case (getRemoteConfigValue cipherField c,
 			(getRemoteConfigValue cipherkeysField c <|> getRemoteConfigValue pubkeysField c),
 			getRemoteConfigValue encryptionField c) of
 	(Just t, Just ks, Just HybridEncryption) ->
-		Just $ EncryptedCipher (fromB64bs t) Hybrid (readkeys ks)
+		Just $ EncryptedCipher (decodeBS (fromB64 (encodeBS t))) Hybrid (readkeys ks)
 	(Just t, Just ks, Just PubKeyEncryption) ->
-		Just $ EncryptedCipher (fromB64bs t) PubKey (readkeys ks)
+		Just $ EncryptedCipher (decodeBS (fromB64 (encodeBS t))) PubKey (readkeys ks)
 	(Just t, Just ks, Just SharedPubKeyEncryption) ->
-		Just $ SharedPubKeyCipher (fromB64bs t) (readkeys ks)
+		Just $ SharedPubKeyCipher (decodeBS (fromB64 (encodeBS t))) (readkeys ks)
 	(Just t, Nothing, Just SharedEncryption) ->
-		Just $ SharedCipher (fromB64bs t)
+		Just $ SharedCipher (decodeBS (fromB64 (encodeBS t)))
 	_ -> Nothing
   where
 	readkeys = KeyIds . splitc ','
@@ -321,14 +320,3 @@ describeCipher c = case c of
 	(SharedPubKeyCipher _ ks) -> showkeys ks
   where
 	showkeys (KeyIds { keyIds = ks }) = "to gpg keys: " ++ unwords ks
-
-{- Not using Utility.Base64 because these "Strings" are really
- - bags of bytes and that would convert to unicode and not round-trip
- - cleanly. -}
-toB64bs :: String -> String
-toB64bs = w82s . B.unpack . B64.encode . B.pack . s2w8
-
-fromB64bs :: String -> String
-fromB64bs s = either (const bad) (w82s . B.unpack) (B64.decode $ B.pack $ s2w8 s)
-  where
-	bad = giveup "bad base64 encoded data"

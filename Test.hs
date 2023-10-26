@@ -77,7 +77,6 @@ import qualified Utility.Hash
 import qualified Utility.Scheduled
 import qualified Utility.Scheduled.QuickCheck
 import qualified Utility.HumanTime
-import qualified Utility.Base64
 import qualified Utility.Tmp.Dir
 import qualified Utility.FileSystemEncoding
 import qualified Utility.Aeson
@@ -184,7 +183,6 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck" $
 	, testProperty "prop_viewPath_roundtrips" Annex.View.prop_viewPath_roundtrips
 	, testProperty "prop_view_roundtrips" Annex.View.prop_view_roundtrips
 	, testProperty "prop_viewedFile_rountrips" Annex.View.ViewedFile.prop_viewedFile_roundtrips
-	, testProperty "prop_b64_roundtrips" Utility.Base64.prop_b64_roundtrips
 	, testProperty "prop_standardGroups_parse" Logs.PreferredContent.prop_standardGroups_parse
 	] ++ map (uncurry testProperty) combos
   where

@@ -100,10 +100,10 @@ setRemoteCredPair' pc encsetup gc storage mcreds = case mcreds of
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		s <- liftIO $ encrypt cmd (pc, gc) cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
-			(readBytesStrictly $ return . S.unpack)
-		storeconfig' key (Accepted (toB64 s))
+			(readBytesStrictly return)
+		storeconfig' key (Accepted (decodeBS (toB64 s)))
 	storeconfig creds key Nothing =
-		storeconfig' key (Accepted (toB64 $ encodeCredPair creds))
+		storeconfig' key (Accepted (decodeBS $ toB64 $ encodeBS $ encodeCredPair creds))
 	
 	storeconfig' key val = return $ pc
 		{ parsedRemoteConfigMap = M.insert key (RemoteConfigValue val) (parsedRemoteConfigMap pc)
@@ -129,13 +129,13 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 		case (getval, mcipher) of
 			(Nothing, _) -> return Nothing
 			(Just enccreds, Just (cipher, storablecipher)) ->
-				fromenccreds enccreds cipher storablecipher
+				fromenccreds (encodeBS enccreds) cipher storablecipher
 			(Just bcreds, Nothing) ->
-				fromcreds $ fromB64 bcreds
+				fromcreds $ decodeBS $ fromB64 $ encodeBS bcreds
 	fromenccreds enccreds cipher storablecipher = do
 		cmd <- gpgCmd <$> Annex.getGitConfig
 		mcreds <- liftIO $ catchMaybeIO $ decrypt cmd (c, gc) cipher
-			(feedBytes $ L.pack $ fromB64 enccreds)
+			(feedBytes $ L.fromStrict $ fromB64 enccreds)
 			(readBytesStrictly $ return . S.unpack)
 		case mcreds of
 			Just creds -> fromcreds creds
@@ -146,7 +146,7 @@ getRemoteCredPair c gc storage = maybe fromcache (return . Just) =<< fromenv
 				case storablecipher of
 					SharedCipher {} -> showLongNote "gpg error above was caused by an old git-annex bug in credentials storage. Working around it.."
 					_ -> giveup "*** Insecure credentials storage detected for this remote! See https://git-annex.branchable.com/upgrades/insecure_embedded_creds/"
-				fromcreds $ fromB64 enccreds
+				fromcreds $ decodeBS $ fromB64 enccreds
 	fromcreds creds = case decodeCredPair creds of
 		Just credpair -> do
 			writeCacheCredPair credpair storage

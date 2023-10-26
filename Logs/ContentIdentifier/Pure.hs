@@ -41,7 +41,7 @@ buildContentIdentifierList l = case l of
   where
 	buildcid (ContentIdentifier c)
 		| S8.any (`elem` [':', '\r', '\n']) c || "!" `S8.isPrefixOf` c =
-			charUtf8 '!' <> byteString (toB64' c)
+			charUtf8 '!' <> byteString (toB64 c)
 		| otherwise = byteString c
 	go [] = mempty
 	go (c:[]) = buildcid c
@@ -58,7 +58,7 @@ parseContentIdentifierList = do
 	cidparser = do
 		b <- A8.takeWhile (/= ':')
 		return $ if "!" `S8.isPrefixOf` b
-			then ContentIdentifier $ fromMaybe b (fromB64Maybe' (S.drop 1 b))
+			then ContentIdentifier $ fromMaybe b (fromB64Maybe (S.drop 1 b))
 			else ContentIdentifier b
 	listparser first rest = ifM A8.atEnd
 		( return (first :| reverse rest)
