@@ -6,7 +6,6 @@
  -}
 
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-tabs #-}
 
 module Utility.Path.AbsRel (
@@ -20,17 +19,13 @@ module Utility.Path.AbsRel (
 
 import System.FilePath.ByteString
 import qualified Data.ByteString as B
-#ifdef mingw32_HOST_OS
-import System.Directory (getCurrentDirectory)
-#else
-import System.Posix.Directory.ByteString (getWorkingDirectory)
-#endif
 import Control.Applicative
 import Prelude
 
 import Utility.Path
 import Utility.UserInfo
 import Utility.FileSystemEncoding
+import qualified Utility.RawFilePath as R
 
 {- Makes a path absolute.
  -
@@ -58,11 +53,7 @@ absPath file
 	-- so also used here for consistency.
 	| isAbsolute file = return $ simplifyPath file
 	| otherwise = do
-#ifdef mingw32_HOST_OS
-		cwd <- toRawFilePath <$> getCurrentDirectory
-#else
-		cwd <- getWorkingDirectory
-#endif
+		cwd <- R.getCurrentDirectory
 		return $ absPathFrom cwd file
 
 {- Constructs the minimal relative path from the CWD to a file.
@@ -78,11 +69,7 @@ relPathCwdToFile f
 	-- and does not contain any ".." component.
 	| isRelative f && not (".." `B.isInfixOf` f) = return f
 	| otherwise = do
-#ifdef mingw32_HOST_OS
-		c <- toRawFilePath <$> getCurrentDirectory
-#else
-		c <- getWorkingDirectory
-#endif
+		c <- R.getCurrentDirectory
 		relPathDirToFile c f
 
 {- Constructs a minimal relative path from a directory to a file. -}
