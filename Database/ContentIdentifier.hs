@@ -46,7 +46,6 @@ import Types.RemoteState
 import Git.Types
 import Git.Sha
 import Git.FilePath
-import qualified Git.Ref
 import qualified Git.DiffTree as DiffTree
 import Logs
 import qualified Logs.ContentIdentifier as Log
