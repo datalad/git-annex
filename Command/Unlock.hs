@@ -54,14 +54,14 @@ perform dest key = do
 	destic <- replaceWorkTreeFile (fromRawFilePath dest) $ \tmp -> do
 		ifM (inAnnex key)
 			( do
-				r <- linkFromAnnex' key (toRawFilePath tmp) destmode
+				r <- linkFromAnnex' key tmp destmode
 				case r of
 					LinkAnnexOk -> return ()
 					LinkAnnexNoop -> return ()
 					LinkAnnexFailed -> giveup "unlock failed"
-			, liftIO $ writePointerFile (toRawFilePath tmp) key destmode
+			, liftIO $ writePointerFile tmp key destmode
 			)
-		withTSDelta (liftIO . genInodeCache (toRawFilePath tmp))
+		withTSDelta (liftIO . genInodeCache tmp)
 	next $ cleanup dest destic key destmode
 
 cleanup :: RawFilePath -> Maybe InodeCache -> Key -> Maybe FileMode -> CommandCleanup

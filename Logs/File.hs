@@ -47,8 +47,8 @@ withLogHandle f a = do
 		bracket (setup tmp) cleanup a
   where
 	setup tmp = do
-		setAnnexFilePerm (toRawFilePath tmp)
-		liftIO $ openFile tmp WriteMode
+		setAnnexFilePerm tmp
+		liftIO $ openFile (fromRawFilePath tmp) WriteMode
 	cleanup h = liftIO $ hClose h
 
 -- | Appends a line to a log file, first locking it to prevent

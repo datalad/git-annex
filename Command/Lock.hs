@@ -79,7 +79,7 @@ perform file key = do
 		mfc <- withTSDelta (liftIO . genInodeCache file)
 		unlessM (sameInodeCache obj (maybeToList mfc)) $ do
 			modifyContentDir obj $ replaceGitAnnexDirFile (fromRawFilePath obj) $ \tmp -> do
-				unlessM (checkedCopyFile key obj (toRawFilePath tmp) Nothing) $
+				unlessM (checkedCopyFile key obj tmp Nothing) $
 					giveup "unable to lock file"
 			Database.Keys.storeInodeCaches key [obj]
 

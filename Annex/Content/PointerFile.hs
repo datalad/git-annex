@@ -38,11 +38,10 @@ populatePointerFile restage k obj f = go =<< liftIO (isPointerFile f)
 		destmode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus f
 		liftIO $ removeWhenExistsWith R.removeLink f
 		(ic, populated) <- replaceWorkTreeFile f' $ \tmp -> do
-			let tmp' = toRawFilePath tmp
-			ok <- linkOrCopy k obj tmp' destmode >>= \case
-				Just _ -> thawContent tmp' >> return True
-				Nothing -> liftIO (writePointerFile tmp' k destmode) >> return False
-			ic <- withTSDelta (liftIO . genInodeCache tmp')
+			ok <- linkOrCopy k obj tmp destmode >>= \case
+				Just _ -> thawContent tmp >> return True
+				Nothing -> liftIO (writePointerFile tmp k destmode) >> return False
+			ic <- withTSDelta (liftIO . genInodeCache tmp)
 			return (ic, ok)
 		maybe noop (restagePointerFile restage f) ic
 		if populated
@@ -60,14 +59,13 @@ depopulatePointerFile key file = do
 	secureErase file
 	liftIO $ removeWhenExistsWith R.removeLink file
 	ic <- replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
-		let tmp' = toRawFilePath tmp
-		liftIO $ writePointerFile tmp' key mode
+		liftIO $ writePointerFile tmp key mode
 #if ! defined(mingw32_HOST_OS)
 		-- Don't advance mtime; this avoids unnecessary re-smudging
 		-- by git in some cases.
 		liftIO $ maybe noop
-			(\t -> touch tmp' t False)
+			(\t -> touch tmp t False)
 			(fmap Posix.modificationTimeHiRes st)
 #endif
-		withTSDelta (liftIO . genInodeCache tmp')
+		withTSDelta (liftIO . genInodeCache tmp)
 	maybe noop (restagePointerFile (Restage True) file) ic

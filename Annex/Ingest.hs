@@ -306,7 +306,7 @@ restoreFile file key e = do
 makeLink :: RawFilePath -> Key -> Maybe InodeCache -> Annex LinkTarget
 makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 	l <- calcRepo $ gitAnnexLink file key
-	replaceWorkTreeFile file' $ makeAnnexLink l . toRawFilePath
+	replaceWorkTreeFile file' $ makeAnnexLink l
 
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache

@@ -73,12 +73,11 @@ start fixwhat si file key = do
 breakHardLink :: RawFilePath -> Key -> RawFilePath -> CommandPerform
 breakHardLink file key obj = do
 	replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
-		let tmp' = toRawFilePath tmp
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
-		unlessM (checkedCopyFile key obj tmp' mode) $
+		unlessM (checkedCopyFile key obj tmp mode) $
 			giveup "unable to break hard link"
-		thawContent tmp'
-		Database.Keys.storeInodeCaches key [tmp']
+		thawContent tmp
+		Database.Keys.storeInodeCaches key [tmp]
 		modifyContentDir obj $ freezeContent obj
 	next $ return True
 
@@ -86,7 +85,7 @@ makeHardLink :: RawFilePath -> Key -> CommandPerform
 makeHardLink file key = do
 	replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
 		mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
-		linkFromAnnex' key (toRawFilePath tmp) mode >>= \case
+		linkFromAnnex' key tmp mode >>= \case
 			LinkAnnexFailed -> giveup "unable to make hard link"
 			_ -> noop
 	next $ return True
@@ -99,10 +98,9 @@ fixSymlink file link = do
 		<$> R.getSymbolicLinkStatus file
 #endif
 	replaceWorkTreeFile (fromRawFilePath file) $ \tmpfile -> do
-		let tmpfile' = toRawFilePath tmpfile
-		liftIO $ R.createSymbolicLink link tmpfile'
+		liftIO $ R.createSymbolicLink link tmpfile
 #if ! defined(mingw32_HOST_OS)
-		liftIO $ maybe noop (\t -> touch tmpfile' t False) mtime
+		liftIO $ maybe noop (\t -> touch tmpfile t False) mtime
 #endif
 	stageSymlink file =<< hashSymlink link
 	next $ return True

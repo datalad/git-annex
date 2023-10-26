@@ -417,16 +417,15 @@ verifyWorkTree key file = do
 		Just k | k == key -> whenM (inAnnex key) $ do
 			showNote "fixing worktree content"
 			replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
-				let tmp' = toRawFilePath tmp
 				mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 				ifM (annexThin <$> Annex.getGitConfig)
-					( void $ linkFromAnnex' key tmp' mode
+					( void $ linkFromAnnex' key tmp mode
 					, do
 						obj <- calcRepo (gitAnnexLocation key)
-						void $ checkedCopyFile key obj tmp' mode
-						thawContent tmp'
+						void $ checkedCopyFile key obj tmp mode
+						thawContent tmp
 					)
-				Database.Keys.storeInodeCaches key [tmp']
+				Database.Keys.storeInodeCaches key [tmp]
 		_ -> return ()
 	return True
 

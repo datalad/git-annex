@@ -26,17 +26,17 @@ import Utility.Path.Max
 #endif
 
 {- replaceFile on a file located inside the gitAnnexDir. -}
-replaceGitAnnexDirFile :: FilePath -> (FilePath -> Annex a) -> Annex a
+replaceGitAnnexDirFile :: FilePath -> (RawFilePath -> Annex a) -> Annex a
 replaceGitAnnexDirFile = replaceFile createAnnexDirectory
 
 {- replaceFile on a file located inside the .git directory. -}
-replaceGitDirFile :: FilePath -> (FilePath -> Annex a) -> Annex a
+replaceGitDirFile :: FilePath -> (RawFilePath -> Annex a) -> Annex a
 replaceGitDirFile = replaceFile $ \dir -> do
 	top <- fromRepo localGitDir
 	liftIO $ createDirectoryUnder [top] dir
 
 {- replaceFile on a worktree file. -}
-replaceWorkTreeFile :: FilePath -> (FilePath -> Annex a) -> Annex a
+replaceWorkTreeFile :: FilePath -> (RawFilePath -> Annex a) -> Annex a
 replaceWorkTreeFile = replaceFile createWorkTreeDirectory
 
 {- Replaces a possibly already existing file with a new version, 
@@ -54,10 +54,10 @@ replaceWorkTreeFile = replaceFile createWorkTreeDirectory
  - The createdirectory action is only run when moving the file into place
  - fails, and can create any parent directory structure needed.
  -}
-replaceFile :: (RawFilePath -> Annex ()) -> FilePath -> (FilePath -> Annex a) -> Annex a
+replaceFile :: (RawFilePath -> Annex ()) -> FilePath -> (RawFilePath -> Annex a) -> Annex a
 replaceFile createdirectory file action = replaceFile' createdirectory file (const True) action
 
-replaceFile' :: (RawFilePath -> Annex ()) -> FilePath -> (a -> Bool) -> (FilePath -> Annex a) -> Annex a
+replaceFile' :: (RawFilePath -> Annex ()) -> FilePath -> (a -> Bool) -> (RawFilePath -> Annex a) -> Annex a
 replaceFile' createdirectory file checkres action = withOtherTmp $ \othertmpdir -> do
 	let othertmpdir' = fromRawFilePath othertmpdir
 #ifndef mingw32_HOST_OS
@@ -72,10 +72,10 @@ replaceFile' createdirectory file checkres action = withOtherTmp $ \othertmpdir 
 	let basetmp = "t"
 #endif
 	withTmpDirIn othertmpdir' basetmp $ \tmpdir -> do
-		let tmpfile = tmpdir </> basetmp
+		let tmpfile = toRawFilePath (tmpdir </> basetmp)
 		r <- action tmpfile
 		when (checkres r) $
-			replaceFileFrom (toRawFilePath tmpfile) (toRawFilePath file) createdirectory
+			replaceFileFrom tmpfile (toRawFilePath file) createdirectory
 		return r
 
 replaceFileFrom :: RawFilePath -> RawFilePath -> (RawFilePath -> Annex ()) -> Annex ()

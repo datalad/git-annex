@@ -477,7 +477,7 @@ linkToAnnex key src srcic = ifM (checkSecureHashes' key)
 linkFromAnnex :: Key -> RawFilePath -> Maybe FileMode -> Annex LinkAnnexResult
 linkFromAnnex key dest destmode =
 	replaceFile' (const noop) (fromRawFilePath dest) (== LinkAnnexOk) $ \tmp ->
-		linkFromAnnex' key (toRawFilePath tmp) destmode
+		linkFromAnnex' key tmp destmode
 
 {- This is only safe to use when dest is not a worktree file. -}
 linkFromAnnex' :: Key -> RawFilePath -> Maybe FileMode -> Annex LinkAnnexResult

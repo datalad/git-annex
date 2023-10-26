@@ -111,10 +111,9 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 			when (linkCount st > 1) $ do
 				freezeContent oldobj
 				replaceWorkTreeFile (fromRawFilePath file) $ \tmp -> do
-					let tmp' = toRawFilePath tmp
-					unlessM (checkedCopyFile oldkey oldobj tmp' Nothing) $
+					unlessM (checkedCopyFile oldkey oldobj tmp Nothing) $
 						giveup "can't lock old key"
-					thawContent tmp'
+					thawContent tmp
 		ic <- withTSDelta (liftIO . genInodeCache file)
 		case v of
 			Left e -> do

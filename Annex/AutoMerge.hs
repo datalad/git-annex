@@ -242,7 +242,7 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 		stageSymlink dest' =<< hashSymlink l
 
 	replacewithsymlink dest link = replaceWorkTreeFile dest $
-		makeGitLink link . toRawFilePath
+		makeGitLink link
 
 	makepointer key dest destmode = do
 		unless inoverlay $ 
@@ -267,10 +267,10 @@ resolveMerge' unstagedmap (Just us) them inoverlay u = do
 			Nothing -> noop
 			Just sha -> replaceWorkTreeFile item $ \tmp -> do
 				c <- catObject sha
-				liftIO $ L.writeFile tmp c
+				liftIO $ L.writeFile (decodeBS tmp) c
 				when isexecutable $
 					liftIO $ void $ tryIO $ 
-						modifyFileMode (toRawFilePath tmp) $
+						modifyFileMode tmp $
 							addModes executeModes
 
 		-- Update the work tree to reflect the graft.
