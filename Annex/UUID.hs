@@ -41,6 +41,7 @@ import Config
 import qualified Data.UUID as U
 import qualified Data.UUID.V4 as U4
 import qualified Data.UUID.V5 as U5
+import qualified Data.ByteString as S
 import Data.String
 
 configkeyUUID :: ConfigKey
@@ -53,13 +54,13 @@ genUUID = toUUID <$> U4.nextRandom
 {- Generates a UUID from a given string, using a namespace.
  - Given the same namespace, the same string will always result
  - in the same UUID. -}
-genUUIDInNameSpace :: U.UUID -> String -> UUID
-genUUIDInNameSpace namespace = toUUID . U5.generateNamed namespace . s2w8
+genUUIDInNameSpace :: U.UUID -> S.ByteString -> UUID
+genUUIDInNameSpace namespace = toUUID . U5.generateNamed namespace . S.unpack
 
 {- Namespace used for UUIDs derived from git-remote-gcrypt ids. -}
 gCryptNameSpace :: U.UUID
 gCryptNameSpace = U5.generateNamed U5.namespaceURL $
-	s2w8 "http://git-annex.branchable.com/design/gcrypt/" 
+	S.unpack "http://git-annex.branchable.com/design/gcrypt/" 
 
 {- Get current repository's UUID. -}
 getUUID :: Annex UUID

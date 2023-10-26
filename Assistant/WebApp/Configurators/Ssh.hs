@@ -319,7 +319,7 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 		finduuid (k, v)
 			| k == "annex.uuid" = Just $ toUUID v
 			| k == fromConfigKey GCrypt.coreGCryptId =
-				Just $ genUUIDInNameSpace gCryptNameSpace v
+				Just $ genUUIDInNameSpace gCryptNameSpace (encodeBS v)
 			| otherwise = Nothing
 	
 	checkcommand c = "if which " ++ c ++ "; then " ++ report c ++ "; fi"

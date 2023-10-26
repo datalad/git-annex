@@ -29,7 +29,7 @@ start gcryptid = starting "gcryptsetup" (ActionItemOther Nothing) (SeekInput [gc
 	
 	g <- gitRepo
 	gu <- Remote.GCrypt.getGCryptUUID True g
-	let newgu = genUUIDInNameSpace gCryptNameSpace gcryptid
+	let newgu = genUUIDInNameSpace gCryptNameSpace (encodeBS gcryptid)
 	if isNothing gu || gu == Just newgu
 		then if Git.repoIsLocalBare g
 			then do

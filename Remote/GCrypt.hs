@@ -112,7 +112,7 @@ gen baser u rc gc rs = do
 	-- that is now available. Also need to set the gcrypt particiants
 	-- correctly.
 	resetup gcryptid r = do
-		let u' = genUUIDInNameSpace gCryptNameSpace gcryptid
+		let u' = genUUIDInNameSpace gCryptNameSpace (encodeBS gcryptid)
 		v <- M.lookup u' <$> remoteConfigMap
 		case (Git.remoteName baser, v) of
 			(Just remotename, Just rc') -> do
@@ -263,7 +263,7 @@ gCryptSetup _ mu _ c gc = go $ fromProposedAccepted <$> M.lookup gitRepoField c
 		case Git.GCrypt.remoteRepoId g (Just remotename) of
 			Nothing -> giveup "unable to determine gcrypt-id of remote"
 			Just gcryptid -> do
-				let u = genUUIDInNameSpace gCryptNameSpace gcryptid
+				let u = genUUIDInNameSpace gCryptNameSpace (encodeBS gcryptid)
 				if Just u == mu || isNothing mu
 					then do
 						method <- setupRepo gcryptid =<< inRepo (Git.Construct.fromRemoteLocation gitrepo False)
@@ -489,7 +489,7 @@ toAccessMethod _ = AccessRsyncOverSsh
 getGCryptUUID :: Bool -> Git.Repo -> Annex (Maybe UUID)
 getGCryptUUID fast r = do
 	dummycfg <- liftIO dummyRemoteGitConfig
-	(genUUIDInNameSpace gCryptNameSpace <$>) . fst
+	(genUUIDInNameSpace gCryptNameSpace . encodeBS <$>) . fst
 		<$> getGCryptId fast r dummycfg
 
 coreGCryptId :: ConfigKey

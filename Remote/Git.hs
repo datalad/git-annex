@@ -327,7 +327,7 @@ tryGitConfigRead autoinit r hasuuid
 		case Git.GCrypt.remoteRepoId g (Git.remoteName r) of
 			Nothing -> return r
 			Just v -> storeUpdatedRemote $ liftIO $ setUUID r $
-				genUUIDInNameSpace gCryptNameSpace v
+				genUUIDInNameSpace gCryptNameSpace (encodeBS v)
 
 	{- The local repo may not yet be initialized, so try to initialize
 	 - it if allowed. However, if that fails, still return the read
