@@ -773,7 +773,28 @@ parallelTestRunner' numjobs opts mkts
 				r <- a n
 				worker (r:rs) nvar a
 	
-	go Nothing = withConcurrentOutput $ do
+	summarizeresults a = do
+		starttime <- getCurrentTime
+		(numts, exitcodes) <- a
+		duration <- Utility.HumanTime.durationSince starttime
+		case nub (filter (/= ExitSuccess) (concat exitcodes)) of
+			[] -> do
+				putStrLn ""
+				putStrLn $ "All tests succeeded. (Ran "
+					++ show numts
+					++ " test groups in " 
+					++ Utility.HumanTime.fromDuration duration
+					++ ")"
+				exitSuccess
+			[ExitFailure 1] -> do
+				putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
+				putStrLn "   with utilities, such as git, installed on this system.)"
+				exitFailure
+			_ -> do
+				putStrLn $ "  Test subprocesses exited with unexpected exit codes: " ++ show (concat exitcodes)
+				exitFailure
+
+	go Nothing = summarizeresults $ withConcurrentOutput $ do
 		ensuredir tmpdir
 		crippledfilesystem <- fst <$> Annex.Init.probeCrippledFileSystem'
 			(toRawFilePath tmpdir)
@@ -801,27 +822,10 @@ parallelTestRunner' numjobs opts mkts
 			(_, _, _, pid) <- createProcessConcurrent p
 			waitForProcess pid
 		nvar <- newTVarIO (1, length ts)
-		starttime <- getCurrentTime
 		exitcodes <- forConcurrently [1..numjobs] $ \_ -> 
 			worker [] nvar runone
 		unless (keepFailuresOption opts) finalCleanup
-		duration <- Utility.HumanTime.durationSince starttime
-		case nub (filter (/= ExitSuccess) (concat exitcodes)) of
-			[] -> do
-				putStrLn ""
-				putStrLn $ "All tests succeeded. (Ran "
-					++ show (length ts) 
-					++ " test groups in " 
-					++ Utility.HumanTime.fromDuration duration
-					++ ")"
-				exitSuccess
-			[ExitFailure 1] -> do
-				putStrLn "  (Failures above could be due to a bug in git-annex, or an incompatibility"
-				putStrLn "   with utilities, such as git, installed on this system.)"
-				exitFailure
-			_ -> do
-				putStrLn $ "  Test subprocesses exited with unexpected exit codes: " ++ show (concat exitcodes)
-				exitFailure
+		return (length ts, exitcodes)
 	go (Just subenvval) = case readish subenvval of
 		Nothing -> error ("Bad " ++ subenv)
 		Just (n, crippledfilesystem, adjustedbranchok) -> setTestEnv $ do
