@@ -1,0 +1,552 @@
+This is just a heads-up with regards to end-of-line handling with git-annex.
+
+I've discussed in the past issues I've had with interoperability between Windows and Linux, the earliest I think being the CRLF eol in .git/hooks scripts created on Windows.
+
+I originally started using the Windows port when I had had minimal experience with git-annex. Since then, WSL has come along, coupled with better understanding of worlflows, overtaken an explicit need to use the Windows port, so I'm no longer going to use it for my primary workflows.
+
+But I will continue to check back with new releases of the Windows port to help improve it, as I think there will be users who for whatever reason must use the Windows port (I think Windows Subsystem Linux (WSL) isn't available on vanilla Windows I think... so there's that for example).
+
+In that vane, I'm demonstrating issues with end-of-line that I've noticed with the Windows port.
+
+Before I do that, I'd like to say... eol considerations have been a problem forever (eg. I observed meltdown when Cygwin dropped hybrid eol support many years ago), and Git for Windows itself has gotchas. I really value git-annex, and I want to be clear, this isn't whinging or complaining, just information.
+
+I'll summarise the problem. By default Git for Windows is setup for msdos CRLF line endings. That is, it expects text files to have CRLF line endings, and strips them to "normalise" the lines in storage.
+
+Under this default, the text files that substitute for unix symlinks are ending up with mixed eol. That is, the ones created by git-annex under Windows have LF only endings, and the ones that are created by merge from Unix have CRLF endings. Eg. from a workflow involving the creation of new repositories (note the hooks are created CRLF):
+
+[[!format  sh """
+...
+./.git/hooks/post-checkout:                               POSIX shell script, ASCII text executable, with CRLF line terminators
+./.git/hooks/post-merge:                                  POSIX shell script, ASCII text executable, with CRLF line terminators
+./.git/hooks/post-receive:                                POSIX shell script, ASCII text executable, with CRLF line terminators
+./.git/hooks/post-update.sample:                          POSIX shell script, ASCII text executable
+./.git/hooks/pre-applypatch.sample:                       POSIX shell script, ASCII text executable
+./.git/hooks/pre-commit:                                  POSIX shell script, ASCII text executable, with CRLF line terminators
+...
+./libc.so.6:                                              ASCII text, with CRLF line terminators
+./ntdll.dll:                                              ASCII text
+./wsl-os-release:                                         ASCII text, with CRLF line terminators
+"""]]
+
+From what I can tell, when you try to perform actions in an interoperable way, you get toggling between CRLF/LF. And some annex files get a compounding effect of CRLF endings.
+
+[[!format sh """
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ cat -vet .git/annex/mergedrefs
+95eca82f10ec85f9ed860af5a13ef48fe7801418^Irefs/heads/git-annex^M$
+436ed1bfa6abfc7be4ceeb39ea3b8bad976e27ca^Irefs/heads/git-annex^M^M$
+46a62f21bea952a3014a9fa875a010849ac4183f^Irefs/heads/git-annex^M^M^M$
+a05d9831a28c20babf0d414e0e4edee042b486d6^Irefs/heads/git-annex^M^M^M^M$
+a0bd57285fa715245deab6e5c117768c5da5d990^Irefs/heads/git-annex^M^M^M^M^M$
+"""]]
+
+Now, I know enough that I can probably avoid at least the former, by changing the git configuration for eol (though I have yet to test it). However, this vagary I suspect won't be changed by settings. That is, git-annex list, and probably some other git-annex commands, are inconsistent in their output of eol. git-annex list displays correctly in a Windows console, so I assume it is correctly outputting CRLF. But if I redirect the output to a file, the header correctly has CRLF, but the actually list entries do not:
+
+[[!format sh """
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ git-annex list > git-annex-list.out
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ file git-annex-list.out
+git-annex-list.out: ASCII text, with CRLF, LF line terminators
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ cat -vet git-annex-list.out
+here^M$
+|web^M$
+||bittorrent^M$
+|||^M$
+___ libc.so.6$
+___ ntdll.dll$
+"""]]
+
+Just to clarify, native Windows commands should have CRLF:
+
+[[!format  sh """
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ cmd /c
+Microsoft Windows [Version 10.0.19045.3570]
+(c) Microsoft Corporation. All rights reserved.
+
+@ C:\PublicData\Temp\git-annex-eol-demo.msw
+$ echo Hello > hello.txt
+
+@ C:\PublicData\Temp\git-annex-eol-demo.msw
+$ exit
+
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ cat -vet hello.txt
+Hello ^M$
+"""]]
+
+That's it. From here, I'll just detail the workflow that led me to this. Let's start with a WSL git repo.
+
+[[!format  sh """
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git version
+git version 2.39.2
+shaddy@mswhost-wsldebs:~$ git-annex version
+git-annex version: 10.20230321-1~ndall+1
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ cat wsl-os-release
+PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+VERSION_ID="12"
+VERSION="12 (bookworm)"
+VERSION_CODENAME=bookworm
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git init
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint:
+hint:   git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint:   git branch -m <name>
+Initialized empty Git repository in /home/shaddy/git-annex-eol-demo.wsl/.git/
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ find . -type f -print0 | xargs -0 file
+./.git/info/exclude:                    ASCII text
+./.git/hooks/commit-msg.sample:         POSIX shell script, ASCII text executable
+./.git/hooks/pre-receive.sample:        POSIX shell script, ASCII text executable
+./.git/hooks/pre-merge-commit.sample:   POSIX shell script, ASCII text executable
+./.git/hooks/pre-push.sample:           POSIX shell script, ASCII text executable
+./.git/hooks/fsmonitor-watchman.sample: Perl script text executable
+./.git/hooks/push-to-checkout.sample:   POSIX shell script, ASCII text executable
+./.git/hooks/update.sample:             POSIX shell script, ASCII text executable
+./.git/hooks/pre-commit.sample:         POSIX shell script, ASCII text executable
+./.git/hooks/pre-applypatch.sample:     POSIX shell script, ASCII text executable
+./.git/hooks/applypatch-msg.sample:     POSIX shell script, ASCII text executable
+./.git/hooks/pre-rebase.sample:         POSIX shell script, ASCII text executable
+./.git/hooks/prepare-commit-msg.sample: POSIX shell script, ASCII text executable
+./.git/hooks/post-update.sample:        POSIX shell script, ASCII text executable
+./.git/HEAD:                            ASCII text
+./.git/description:                     ASCII text
+./.git/config:                          ASCII text
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ cp /etc/os-release wsl-os-release
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ file wsl-os-release
+wsl-os-release: ASCII text
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git add wsl-os-release
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git commit -m wsl-os-release
+[master (root-commit) 64ebd49] wsl-os-release
+ 1 file changed, 9 insertions(+)
+ create mode 100644 wsl-os-release
+"""]]
+
+Now, in a git-bash.exe created window (that comes with Git for Windows):
+
+[[!format  sh """
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw
+$ git version
+git version 2.42.0.windows.2
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw
+$ git-annex version
+git-annex version: 10.20230927-g18f902efa9c53ffd75a16e25cc666334b1029ea8
+build flags: Assistant Webapp Pairing TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.0 ghc-8.10.7 http-client-0.7.9 persistent-sqlite-2.13.0.3 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.1.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKE
+IN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S
+160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: mingw32 x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 2 3 4 5 6 7 8 9 10
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw
+$ git init
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint:   git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint:   git branch -m <name>
+Initialized empty Git repository in C:/PublicData/Temp/git-annex-eol-demo.msw/.git/
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (master)
+$ find . -type f -print0 | xargs -0 file
+./.git/config:                          ASCII text
+./.git/description:                     ASCII text
+./.git/HEAD:                            ASCII text
+./.git/hooks/applypatch-msg.sample:     POSIX shell script, ASCII text executable
+./.git/hooks/commit-msg.sample:         POSIX shell script, ASCII text executable
+./.git/hooks/fsmonitor-watchman.sample: Perl script text executable
+./.git/hooks/post-update.sample:        POSIX shell script, ASCII text executable
+./.git/hooks/pre-applypatch.sample:     POSIX shell script, ASCII text executable
+./.git/hooks/pre-commit.sample:         POSIX shell script, ASCII text executable
+./.git/hooks/pre-merge-commit.sample:   POSIX shell script, ASCII text executable
+./.git/hooks/pre-push.sample:           POSIX shell script, ASCII text executable
+./.git/hooks/pre-rebase.sample:         POSIX shell script, ASCII text executable
+./.git/hooks/pre-receive.sample:        POSIX shell script, ASCII text executable
+./.git/hooks/prepare-commit-msg.sample: POSIX shell script, ASCII text executable
+./.git/hooks/push-to-checkout.sample:   POSIX shell script, ASCII text executable
+./.git/hooks/sendemail-validate.sample: POSIX shell script, ASCII text executable
+./.git/hooks/update.sample:             POSIX shell script, ASCII text executable
+./.git/info/exclude:                    ASCII text
+
+
+"""]]
+
+To keep things as simple as possible, I setup a "push" scheme to link the two repos. First, I demonstrate Unix -> Windows eol interplay and git-annex setup:
+
+[[!format  sh """
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git remote add msw /mnt/c/PublicData/Temp/git-annex-eol-demo.msw
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git push --set-upstream msw HEAD:fromwsl/master
+Enumerating objects: 3, done.
+Counting objects: 100% (3/3), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (3/3), 377 bytes | 377.00 KiB/s, done.
+Total 3 (delta 0), reused 0 (delta 0), pack-reused 0
+To /mnt/c/PublicData/Temp/git-annex-eol-demo.msw
+ * [new branch]      HEAD -> fromwsl/master
+branch 'master' set up to track 'msw/fromwsl/master'.
+"""]]
+and push through to the first sign of trouble:
+[[!format  sh """
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (master)
+$ git merge fromwsl/master
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (master)
+$ file wsl-os-release
+wsl-os-release: ASCII text, with CRLF line terminators
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (master)
+$ git-annex init msw
+init msw
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ cp /c/Windows/System32/ntdll.dll .
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ git-annex add ntdll.dll
+add ntdll.dll
+ok
+(recording state in git...)
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ git-annex sync
+commit
+warning: in the working copy of 'ntdll.dll', LF will be replaced by CRLF the next time Git touches it
+[adjusted/master(unlocked) b7cfd14] git-annex in msw
+ 1 file changed, 1 insertion(+)
+ create mode 100644 ntdll.dll
+ok
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ file ntdll.dll
+ntdll.dll: PE32+ executable (DLL) (console) x86-64, for MS Windows, 10 sections
+"""]]
+Now setup git-annex on WSL and grab ntdll.dll. Note the post-receive error. I forgot to change the eol on it first. Also, now setup a file for sending back to native Windows:
+[[!format  sh """
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git-annex init wsl
+init wsl ok
+(recording state in git...)
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git-annex info
+trusted repositories: 0
+semitrusted repositories: 4
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        1bc9600e-c005-49a8-ab3e-35f1cff640bd -- wsl [here]
+        80ece5fd-dab2-4271-a92f-e7c285c774c9 -- msw
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 1.02 terabytes (+100 megabytes reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 0
+size of annexed files in working tree: 0 bytes
+bloom filter size: 32 mebibytes (0% full)
+backend usage:
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git-annex sync
+commit
+On branch master
+Your branch is up to date with 'msw/fromwsl/master'.
+
+nothing to commit, working tree clean
+ok
+pull msw
+remote: Enumerating objects: 12, done.
+remote: Counting objects: 100% (12/12), done.
+remote: Compressing objects: 100% (8/8), done.
+remote: Total 11 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (11/11), 1.04 KiB | 213.00 KiB/s, done.
+From /mnt/c/PublicData/Temp/git-annex-eol-demo.msw
+ * [new branch]      adjusted/master(unlocked) -> msw/adjusted/master(unlocked)
+ * [new branch]      git-annex                 -> msw/git-annex
+ * [new branch]      master                    -> msw/master
+ok
+(merging msw/git-annex into git-annex...)
+(recording state in git...)
+push msw
+Enumerating objects: 10, done.
+Counting objects: 100% (10/10), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (8/8), 737 bytes | 737.00 KiB/s, done.
+Total 8 (delta 2), reused 0 (delta 0), pack-reused 0
+fatal: cannot run hooks/post-receive: No such file or directory
+To /mnt/c/PublicData/Temp/git-annex-eol-demo.msw
+ * [new branch]      master -> synced/master
+ * [new branch]      git-annex -> synced/git-annex
+ok
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ ls -l
+total 4
+-rw-r--r-- 1 shaddy shaddy 267 Oct 26 10:52 wsl-os-release
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git-annex sync
+commit
+On branch master
+Your branch is up to date with 'msw/fromwsl/master'.
+
+nothing to commit, working tree clean
+ok
+pull msw
+remote: Enumerating objects: 7, done.
+remote: Counting objects: 100% (7/7), done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 6 (delta 0), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (6/6), 731 bytes | 182.00 KiB/s, done.
+From /mnt/c/PublicData/Temp/git-annex-eol-demo.msw
+ + c8f7ad8...c7101bd adjusted/master(unlocked) -> msw/adjusted/master(unlocked)  (forced update)
+   64ebd49..d2154f2  master                    -> msw/master
+   64ebd49..d2154f2  synced/master             -> msw/synced/master
+
+Updating 64ebd49..d2154f2
+Fast-forward
+ ntdll.dll | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 ntdll.dll
+
+Already up to date.
+ok
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ ls -l
+total 8
+lrwxrwxrwx 1 shaddy shaddy 198 Oct 26 11:04 ntdll.dll -> .git/annex/objects/5f/9X/SHA256E-s2028432--2c8154698c5d5162ec9751c8e6bba462d47f2293ced6be5763579af34334ada3.dll/SHA256E-s2028432--2c8154698c5d5162ec9751c8e6bba462d47f2293ced6be5763579af34334ada3.dll
+-rw-r--r-- 1 shaddy shaddy 267 Oct 26 10:52 wsl-os-release
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git-annex get ntdll.dll
+get ntdll.dll (from msw...)
+ok
+(recording state in git...)
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git-annex sync
+commit
+On branch master
+Your branch is ahead of 'msw/fromwsl/master' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+ok
+pull msw
+ok
+push msw
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 457 bytes | 457.00 KiB/s, done.
+Total 5 (delta 1), reused 0 (delta 0), pack-reused 0
+fatal: cannot run hooks/post-receive: No such file or directory
+To /mnt/c/PublicData/Temp/git-annex-eol-demo.msw
+   46a62f2..436ed1b  git-annex -> synced/git-annex
+ok
+
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ cp /lib/x86_64-linux-gnu/libc.so.6 .
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git-annex add libc.so.6
+add libc.so.6
+ok
+(recording state in git...)
+shaddy@mswhost-wsldebs:~/git-annex-eol-demo.wsl$ git-annex sync
+commit
+[master 22a06f5] git-annex in wsl
+ 1 file changed, 1 insertion(+)
+ create mode 120000 libc.so.6
+ok
+pull msw
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 5 (delta 2), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (5/5), 395 bytes | 131.00 KiB/s, done.
+From /mnt/c/PublicData/Temp/git-annex-eol-demo.msw
+   436ed1b..1c0face  git-annex  -> msw/git-annex
+ok
+(merging msw/git-annex into git-annex...)
+(recording state in git...)
+push msw
+Enumerating objects: 13, done.
+Counting objects: 100% (13/13), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (9/9), done.
+Writing objects: 100% (10/10), 1.20 KiB | 1.20 MiB/s, done.
+Total 10 (delta 0), reused 0 (delta 0), pack-reused 0
+fatal: cannot run hooks/post-receive: No such file or directory
+To /mnt/c/PublicData/Temp/git-annex-eol-demo.msw
+   436ed1b..95eca82  git-annex -> synced/git-annex
+   d2154f2..22a06f5  master -> synced/master
+ok
+"""]]
+
+And finally, corrupting git structure backing git-annex:
+
+[[!format  sh """
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ git-annex list --allrepos
+here
+|web
+||bittorrent
+|||wsl
+||||
+X__X ntdll.dll
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ git-annex drop --force ntdll.dll
+drop ntdll.dll ok
+(recording state in git...)
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ file ntdll.dll
+ntdll.dll: ASCII text
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ git-annex sync
+commit
+On branch adjusted/master(unlocked)
+nothing to commit, working tree clean
+ok
+merge synced/master master (Merging into master...)
+Updating d2154f2..22a06f5
+Fast-forward
+ libc.so.6 | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 libc.so.6
+(Merging into adjusted branch...)
+Updating c7101bd..99dbd2c
+Fast-forward
+ libc.so.6 | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 libc.so.6
+
+Already up to date.
+(Merging into adjusted branch...)
+Updating d0175a9..8153e87
+Fast-forward
+ok
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ file ntdll.dll  libc.so.6
+ntdll.dll: ASCII text
+libc.so.6: ASCII text, with CRLF line terminators
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ git-annex list > git-annex-list.out
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ cat -vet git-annex-list.out
+here^M$
+|web^M$
+||bittorrent^M$
+|||^M$
+___ libc.so.6$
+___ ntdll.dll$
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ find . -type f -print0 | xargs -0 file
+./.git/annex/adjust.lck:                                  empty
+./.git/annex/adjust.log:                                  ASCII text
+./.git/annex/fsck/fsck.lck:                               empty
+./.git/annex/fsck/fsckdb/db:                              SQLite 3.x database, last written using SQLite version 3033000, writer version 2, read version 2, file counter 2, database pages 3, cookie 0x1, schema 4, UTF-8, version-valid-for 2
+./.git/annex/gitqueue.lck:                                empty
+./.git/annex/index:                                       Git index, version 2, 3 entries
+./.git/annex/index.lck:                                   ASCII text, with CRLF line terminators
+./.git/annex/journal.lck:                                 empty
+./.git/annex/keysdb/db:                                   SQLite 3.x database, last written using SQLite version 3033000, writer version 2, read version 2, file counter 2, database pages 7, cookie 0x2, schema 4, UTF-8, version-valid-for 2
+./.git/annex/keysdb.cache:                                ASCII text, with no line terminators
+./.git/annex/keysdb.lck:                                  empty
+./.git/annex/mergedrefs:                                  ASCII text, with CRLF, CR line terminators
+./.git/annex/othertmp.lck:                                empty
+./.git/annex/restage.lck:                                 empty
+./.git/annex/sentinal:                                    empty
+./.git/annex/sentinal.cache:                              ASCII text, with no line terminators
+./.git/annex/smudge.lck:                                  empty
+./.git/annex/smudge.log:                                  empty
+./.git/COMMIT_EDITMSG:                                    ASCII text
+./.git/config:                                            ASCII text
+./.git/description:                                       ASCII text
+./.git/HEAD:                                              ASCII text
+./.git/hooks/applypatch-msg.sample:                       POSIX shell script, ASCII text executable
+./.git/hooks/commit-msg.sample:                           POSIX shell script, ASCII text executable
+./.git/hooks/fsmonitor-watchman.sample:                   Perl script text executable
+./.git/hooks/post-checkout:                               POSIX shell script, ASCII text executable, with CRLF line terminators
+./.git/hooks/post-merge:                                  POSIX shell script, ASCII text executable, with CRLF line terminators
+./.git/hooks/post-receive:                                POSIX shell script, ASCII text executable, with CRLF line terminators
+./.git/hooks/post-update.sample:                          POSIX shell script, ASCII text executable
+./.git/hooks/pre-applypatch.sample:                       POSIX shell script, ASCII text executable
+./.git/hooks/pre-commit:                                  POSIX shell script, ASCII text executable, with CRLF line terminators
+./.git/hooks/pre-commit.sample:                           POSIX shell script, ASCII text executable
+./.git/hooks/pre-merge-commit.sample:                     POSIX shell script, ASCII text executable
+./.git/hooks/pre-push.sample:                             POSIX shell script, ASCII text executable
+./.git/hooks/pre-rebase.sample:                           POSIX shell script, ASCII text executable
+./.git/hooks/pre-receive.sample:                          POSIX shell script, ASCII text executable
+./.git/hooks/prepare-commit-msg.sample:                   POSIX shell script, ASCII text executable
+./.git/hooks/push-to-checkout.sample:                     POSIX shell script, ASCII text executable
+./.git/hooks/sendemail-validate.sample:                   POSIX shell script, ASCII text executable
+./.git/hooks/update.sample:                               POSIX shell script, ASCII text executable
+./.git/index:                                             Git index, version 2, 3 entries
+./.git/info/attributes:                                   ASCII text, with CRLF line terminators
+./.git/info/exclude:                                      ASCII text
+./.git/logs/HEAD:                                         ASCII text
+./.git/logs/refs/heads/adjusted/master(unlocked):         ASCII text
+./.git/logs/refs/heads/fromwsl/master:                    ASCII text
+./.git/logs/refs/heads/git-annex:                         ASCII text
+./.git/logs/refs/heads/master:                            ASCII text
+./.git/logs/refs/heads/synced/git-annex:                  ASCII text
+./.git/logs/refs/heads/synced/master:                     ASCII text
+...
+./.git/ORIG_HEAD:                                         ASCII text
+./.git/refs/annex/last-index:                             ASCII text
+./.git/refs/basis/adjusted/master(unlocked):              ASCII text
+./.git/refs/heads/adjusted/master(unlocked):              ASCII text
+./.git/refs/heads/fromwsl/master:                         ASCII text
+./.git/refs/heads/git-annex:                              ASCII text
+./.git/refs/heads/master:                                 ASCII text
+./.git/refs/heads/synced/git-annex:                       ASCII text
+./.git/refs/heads/synced/master:                          ASCII text
+./git-annex-list.out:                                     ASCII text, with CRLF, LF line terminators
+./libc.so.6:                                              ASCII text, with CRLF line terminators
+./ntdll.dll:                                              ASCII text
+./wsl-os-release:                                         ASCII text, with CRLF line terminators
+
+shaddy@mswhost-w10 MINGW64 /c/PublicData/Temp/git-annex-eol-demo.msw (adjusted/master(unlocked))
+$ cat -vet .git/annex/mergedrefs
+95eca82f10ec85f9ed860af5a13ef48fe7801418^Irefs/heads/git-annex^M$
+436ed1bfa6abfc7be4ceeb39ea3b8bad976e27ca^Irefs/heads/git-annex^M^M$
+46a62f21bea952a3014a9fa875a010849ac4183f^Irefs/heads/git-annex^M^M^M$
+a05d9831a28c20babf0d414e0e4edee042b486d6^Irefs/heads/git-annex^M^M^M^M$
+a0bd57285fa715245deab6e5c117768c5da5d990^Irefs/heads/git-annex^M^M^M^M^M$
+
+"""]]
