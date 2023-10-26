@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 3"
+ date="2023-10-26T17:46:27Z"
+ content="""
+> I think a good thing to do if you plan to be moving a repo around is to describe it with something that does not depend on its current location.
+> 
+> For example, suppose I am making a repo on a removable USB drive. I'm gonna literally move that from place to place by plugging it into different computers. So the default user@host:/mntpoint description is not a good one for that repository. Instead I use something like \"2 tb passport USB drive\", or even better I slap a sticker on that drive and give it a real name and use that as the description.
+
+I do that too (adding unique information about the storage medium, e.g. the HDD's manufacturer, serial number and human-readable description), but still it is important (to me) to have a (be it partly) copy-pastable link/path that simplifies re-adding the remote later elsewhere. In my case, I moved three HDDs (some of them internal, some connected via USB) to a different host and had to change the mountpoints for consistency. On all of these I stored many (>10) git annex repos, so that makes >30 remote descriptions I had to update manually -- probably forgot a lot of those. 
+
+Automating this would have helped a lot. A quick'n'dirty way to get FQDN(s) is this `nslookup \"$(curl -s icanhazip.com)\" | perl -ne 'print if s|^.*name\s+=\s+(.*)\.$|$1|g'` (doesn't work for DynDNS though...).
+
+I'd agree with you if you said, something like this is too specific to have git annex do it ('it' being updating descriptions of *remotes*). But if `git annex describe here --auto` would check if `here`'s description looks auto-generated and if yes, update it with the default auto-generated one, that would already help. Maybe just `git annex describe --auto` would suffice, as the `here` is kind of redundant -- any other remote wouldn't work like this.
+"""]]
