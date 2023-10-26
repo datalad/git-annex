@@ -164,9 +164,8 @@ batchFilesKeys fmt a = do
 	matcher <- getMatcher
 	go $ \si v -> case v of
 		Right f -> 
-			let f' = toRawFilePath f
-			in ifM (matcher $ MatchingFile $ FileInfo f' f' Nothing)
-				( a (si, Right f')
+			ifM (matcher $ MatchingFile $ FileInfo f f Nothing)
+				( a (si, Right f)
 				, return Nothing
 				)
 		Left k -> a (si, Left k)
@@ -177,7 +176,7 @@ batchFilesKeys fmt a = do
 		-- because in non-batch mode, that is done when
 		-- CmdLine.Seek uses git ls-files.
 		BatchFormat _ (BatchKeys False) -> 
-			Right . Right . fromRawFilePath 
+			Right . Right
 				<$$> liftIO . relPathCwdToFile . toRawFilePath
 		BatchFormat _ (BatchKeys True) -> \i ->
 			pure $ case deserializeKey i of
