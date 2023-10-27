@@ -1,0 +1,137 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="comment 2"
+ date="2023-10-27T18:45:03Z"
+ content="""
+@joey, just out of curiosity (and concern) I took a peek into my .git/annex/mergedrefs files (within native Windows annexes
+ -- no WSL involved) and sure enough I had a similar presentation where CRs had become multiplied at the end
+of the lines. However, when you ask if `git show-ref` is outputting any lines ending with CRLF, that doesn't
+seem to be the case:
+
+[[!format sh \"\"\"
+jkniiv@AINESIS MINGW64 /c/git-annex-tested-binaries (adjusted/master(unlocked))
+$ git show-ref | cat -vet
+c10f7c4ed5751458b0c5fa687fa4fe1bcc538140 refs/annex/last-index$
+00ff347497e0c1d921b7f2484d092e9ac18657cb refs/basis/adjusted/master(unlocked)$
+a9f629165f81c026322bd4a58b2704dc557b5d48 refs/heads/adjusted/master(unlocked)$
+92e22121afd9d47fd63f27a0709d86da0485d2be refs/heads/git-annex$
+00ff347497e0c1d921b7f2484d092e9ac18657cb refs/heads/master$
+9b5e29d8c3bef88b9537864d6b3ae56d5c29a429 refs/heads/synced/git-annex$
+00ff347497e0c1d921b7f2484d092e9ac18657cb refs/heads/synced/master$
+782a184a8a9d11d2b7fc9f5990b33ebddc4ff9d0 refs/remotes/gatb-archive/git-annex$
+11803c78a1bfd54c4e5e0ee19d5de020f9990cb2 refs/remotes/gatb-archive/master$
+782a184a8a9d11d2b7fc9f5990b33ebddc4ff9d0 refs/remotes/gatb-archive/synced/git-annex$
+11803c78a1bfd54c4e5e0ee19d5de020f9990cb2 refs/remotes/gatb-archive/synced/master$
+941d08010d54724495fb5ccf69f6943083dec61f refs/remotes/gatb-bare/adjusted/master(unlocked)$
+92e22121afd9d47fd63f27a0709d86da0485d2be refs/remotes/gatb-bare/git-annex$
+00ff347497e0c1d921b7f2484d092e9ac18657cb refs/remotes/gatb-bare/master$
+92e22121afd9d47fd63f27a0709d86da0485d2be refs/remotes/gatb-bare/synced/git-annex$
+00ff347497e0c1d921b7f2484d092e9ac18657cb refs/remotes/gatb-bare/synced/master$
+ead34cd4d6a1dfb372b69d7acd88a70a96d5a547 refs/remotes/gatb-hetzner/git-annex$
+13bf1536cb3bcd22216f7696011327cb3bf1a81d refs/remotes/gatb-hetzner/master$
+ead34cd4d6a1dfb372b69d7acd88a70a96d5a547 refs/remotes/gatb-hetzner/synced/git-annex$
+13bf1536cb3bcd22216f7696011327cb3bf1a81d refs/remotes/gatb-hetzner/synced/master$
+65a00ffec41383ad7e06198e6aae3150b96032e2 refs/remotes/gawb4/git-annex$
+d2f6d4dadd5fa404c3c70b4e2713c3f73918cbf9 refs/remotes/gawb4/master$
+65a00ffec41383ad7e06198e6aae3150b96032e2 refs/remotes/gawb4/synced/git-annex$
+d2f6d4dadd5fa404c3c70b4e2713c3f73918cbf9 refs/remotes/gawb4/synced/master$
+
+jkniiv@AINESIS MINGW64 /c/git-annex-tested-binaries (adjusted/master(unlocked))
+$ git show-ref | od -a | head
+0000000   c   1   0   f   7   c   4   e   d   5   7   5   1   4   5   8
+0000020   b   0   c   5   f   a   6   8   7   f   a   4   f   e   1   b
+0000040   c   c   5   3   8   1   4   0  sp   r   e   f   s   /   a   n
+0000060   n   e   x   /   l   a   s   t   -   i   n   d   e   x  nl   0
+0000100   0   f   f   3   4   7   4   9   7   e   0   c   1   d   9   2
+0000120   1   b   7   f   2   4   8   4   d   0   9   2   e   9   a   c
+0000140   1   8   6   5   7   c   b  sp   r   e   f   s   /   b   a   s
+0000160   i   s   /   a   d   j   u   s   t   e   d   /   m   a   s   t
+0000200   e   r   (   u   n   l   o   c   k   e   d   )  nl   a   9   f
+0000220   6   2   9   1   6   5   f   8   1   c   0   2   6   3   2   2
+\"\"\"]]
+
+Just to prove my case, this is how .git/annex/mergedrefs looks like in the above repo:
+
+[[!format sh \"\"\"
+jkniiv@AINESIS MINGW64 /c/git-annex-tested-binaries (adjusted/master(unlocked))
+$ cat -vet .git/annex/mergedrefs
+92e22121afd9d47fd63f27a0709d86da0485d2be^Irefs/heads/git-annex^M$
+2e3dd770daa05dfaa023fc492fa13fd5af056694^Irefs/heads/git-annex^M^M$
+b8e586bb07a49c0c67616314e37783d21f18e70f^Irefs/heads/git-annex^M^M^M$
+6932d8306081c2506e2dc720cef6c6c4039044a5^Irefs/remotes/gatb-bare/git-annex^M^M^M^M$
+9b5e29d8c3bef88b9537864d6b3ae56d5c29a429^Irefs/heads/git-annex^M^M^M^M^M$
+ead34cd4d6a1dfb372b69d7acd88a70a96d5a547^Irefs/heads/git-annex^M^M^M^M^M^M$
+286d76b2cd3cceb25322021012ab3a6a478779bc^Irefs/heads/git-annex^M^M^M^M^M^M^M$
+05a146f6a8357e92e9b2dc6b4ed3dd63a5ccd467^Irefs/heads/git-annex^M^M^M^M^M^M^M^M$
+3946949105cc004919c2e1a41ebd5ee4553f40f3^Irefs/heads/git-annex^M^M^M^M^M^M^M^M^M$
+debedf463e5bd4f420271e6e4550c46c683e6c91^Irefs/heads/git-annex^M^M^M^M^M^M^M^M^M^M$
+8b56b9f04394bd6735e729fa9fd206493acd11ae^Irefs/heads/git-annex^M^M^M^M^M^M^M^M^M^M^M$
+c1d72955c7bb1e3ab71373ad1ed66066c03a40dd^Irefs/heads/git-annex^M^M^M^M^M^M^M^M^M^M^M^M$
+3268d0d1937f1f86f9794526330e0b5a8dbf7ac7^Irefs/heads/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M$
+db9a8f6f0631f13665f520e372dc1b425a197b73^Irefs/heads/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+fcd934175a3dab20cf9e66040126922febab3107^Irefs/heads/synced/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+782a184a8a9d11d2b7fc9f5990b33ebddc4ff9d0^Irefs/remotes/gatb-archive/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+f054b35273e9ee8797c4570782ebf8de923b8bec^Irefs/remotes/gatb-bare/synced/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+65a00ffec41383ad7e06198e6aae3150b96032e2^Irefs/remotes/gawb4/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+1ab48671d698ad56df6fae874ffb918b5b7c55da^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+cf6514421f552040f65a5f64f10cdb8644a91367^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+bcb6cb79e2822eb87a517909305ba7738af71fb7^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+57408550366738cb1440f8ad0052cef11170837d^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+14783b3c3383df28e86902758b024f09915fe79d^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+e1f481c2ff3be7da1c4adfa6148aa00bb652fecc^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+785fe3d81ea5ce4c1843b993e2487830133f6380^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+1c1ffa7bbec72b0bdc251561b82be283b149d814^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+7344df6135fc90d38f6ab2c7e184813849040b1b^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+5a434c6c53fee582bbf1a84941dcc21edc860f6b^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+e2c44e5214f06ab0897363677111124ac7b165bd^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+79d2b38753bce49828f6ed585f6891ae5d394e63^Irefs/remotes/gawb4/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+fa0d446f0e67658a40c4f1c6153522d7544afa16^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+1d2d0cca747460254d35a6a1717401a566fdc892^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+2ac05dcb208ef343b0baf21755cf268c3a3bea36^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+857832b466f608781c342ea946de42e2707a7f7d^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+cecf8c16a0cfc1e862e4c287305065ddfed215cc^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+e27eca9c36d4c9fe733ba4d8312091e3dab8eabd^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+c28cd1c09f3498073b5239dfb5a0c00396b0a0d3^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+ddf4486a7cf3219ad79ea72ab94611f65dcd8c75^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+cf5f396481de19336e6157f62fa4f76e02049f62^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+0757122bb58d08024ee8184c871cdff28746958a^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+3ba81bd06ffdc3598131acd83b9d9c825e547b9a^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+e77b6e375092ae03b13b7518e62148c6ac424c80^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+8e78173936ec9a134a12c80b4c0705098eff3793^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+a50f6a64b8d47dd1084b1b49817cc073b1f0ff9e^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+644a387e091a0878c2ad1b4d90d5ad4abf7e195e^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+f6432e124a8cadc45f96c7ab64ae1657d6417259^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+650a95c4d04438a91319e6fe214b103fa3599a33^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+e0e3a5ed05ccfca84c084850af21188b4262c63b^Irefs/remotes/gatb-hetzner/synced/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+0e84071b9352d587611d927636de4aaec95f01b9^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+fb38147c51706678ecb1c353e997a29604ee1a19^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+bfec3c6a4c93194f0b1a18117b6c5fae02b9f517^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+3fd7a8a29b00f2e11042d9fad7b3c24c5121a98c^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+f1c01aad6a1fcb7c6c3f13a74434eac34f4df397^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+d10cff285d737d6335a28e5966df21d333c0ce15^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+7cc02c1fbd05b1537cea55385e8f500c3c58b6a3^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+7424f6b424a4934945c22794291fa3e35734c66a^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+362f5ebc033bc8660bb45da356cfa78512a22922^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+b32c1c0152ddb3bb07981b471a7a44c2bb0cfae0^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+64df2acfeb780cb77a7b9a3882ba39fc29399616^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+53cb9f7c033c887bf76b7a5445161f846397d5dc^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+db2233280bc66f524fd1427c7fe8bfad732189b9^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+cee656c1fa1f53f84c7acdf9f88cd5dba86e9934^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+554e4ea4cb16b69964ce4a4e8be3eccb3f516e12^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+c93d2de1fc7173768730567839a7c335d45c055b^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+f71d65064f2d417e8198a6ebfdb47d1fa654412a^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+7d8914cd49d9ae8235a93c0f85e64822284ec955^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+396b17eec3f1cc1a1769fdbae3a26d5f32462777^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+c8276787b4aeb8db842bd718a1a2f55f4e9b2959^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+15c14cd9d37769315e6620b0a55f0d2428e54e50^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+ab2e5c00e0265c9c028477172c852d9cabf16c90^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+0ac85b5975b385669f7bc22d8cf79ccdb533162b^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+fef8eedd67a1178ec3ea9c4f0612eef238d10c7d^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+af383db2d08d956c150948d8fe330aad2298ae36^Irefs/remotes/gatb-hetzner/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+98aaf6d680c1ca1610634ff92500c7ce9734788c^Irefs/remotes/gatb-archive/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+ed4e3318763983db679d0b1fea727072afdca98e^Irefs/remotes/gatb-bare/git-annex^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M^M$
+\"\"\"]]
+
+Do you think we have a cause for concern? How should this file be formatted -- i.e. should there be multiple hashes for any one ref like above?
+"""]]
