@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables, CPP #-}
 
 module Messages (
 	showStartMessage,
@@ -265,6 +265,12 @@ setupConsole = do
 	 - a file or a pipe. -}
 	hSetBuffering stdout LineBuffering
 	hSetBuffering stderr LineBuffering
+#ifdef mingw32_HOST_OS
+	{- Avoid outputting CR at end of line on Windows. git commands do
+	 - not ouput CR there. -}
+	hSetNewlineMode stdout noNewlineTranslation
+	hSetNewlineMode stderr noNewlineTranslation
+#endif
 
 enableDebugOutput :: Annex ()
 enableDebugOutput = do
