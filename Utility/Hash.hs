@@ -6,6 +6,7 @@
  -}
 
 {-# LANGUAGE BangPatterns, PackageImports #-}
+{-# LANGUAGE CPP #-}
 
 module Utility.Hash (
 	sha1,
@@ -76,8 +77,13 @@ import qualified Data.ByteString.Lazy as L
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.IORef
-import Crypto.MAC.HMAC hiding (Context)
-import Crypto.Hash
+#ifdef WITH_CRYPTON
+import "crypton" Crypto.MAC.HMAC hiding (Context)
+import "crypton" Crypto.Hash
+#else
+import "cryptonite" Crypto.MAC.HMAC hiding (Context)
+import "cryptonite" Crypto.Hash
+#endif
 
 sha1 :: L.ByteString -> Digest SHA1
 sha1 = hashlazy
