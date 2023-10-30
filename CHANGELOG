@@ -5,6 +5,7 @@ git-annex (10.20230927) UNRELEASED; urgency=medium
   * importfeed: Use caching database to avoid needing to list urls
     on every run, and avoid using too much memory.
   * Improve memory use of --all when using annex.private.
+  * Windows: Fix CRLF handling in some log files.
 
  -- Joey Hess <id@joeyh.name>  Tue, 10 Oct 2023 13:17:31 -0400
 

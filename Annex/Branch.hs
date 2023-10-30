@@ -889,7 +889,7 @@ ignoreRefs rs = do
 
 getIgnoredRefs :: Annex (S.Set Git.Sha)
 getIgnoredRefs = 
-	S.fromList . mapMaybe Git.Sha.extractSha . B8.lines <$> content
+	S.fromList . mapMaybe Git.Sha.extractSha . fileLines' <$> content
   where
 	content = do
 		f <- fromRawFilePath <$> fromRepo gitAnnexIgnoredRefs
@@ -912,7 +912,7 @@ getMergedRefs' :: Annex [(Git.Sha, Git.Branch)]
 getMergedRefs' = do
 	f <- fromRawFilePath <$> fromRepo gitAnnexMergedRefs
 	s <- liftIO $ catchDefaultIO mempty $ B.readFile f
-	return $ map parse $ B8.lines s
+	return $ map parse $ fileLines' s
   where
 	parse l = 
 		let (s, b) = separate' (== (fromIntegral (ord '\t'))) l

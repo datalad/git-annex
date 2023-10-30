@@ -1,11 +1,11 @@
 {- git-annex log files
  -
- - Copyright 2018-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2018-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP, BangPatterns #-}
 
 module Logs.File (
 	writeLogFile,
@@ -17,6 +17,8 @@ module Logs.File (
 	checkLogFile,
 	calcLogFile,
 	calcLogFileUnsafe,
+	fileLines,
+	fileLines',
 ) where
 
 import Annex.Common
@@ -25,6 +27,8 @@ import Annex.LockFile
 import Annex.ReplaceFile
 import Utility.Tmp
 
+import qualified Data.ByteString as S
+import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
 
@@ -74,7 +78,7 @@ appendLogFile f lck c =
 modifyLogFile :: RawFilePath -> RawFilePath -> ([L.ByteString] -> [L.ByteString]) -> Annex ()
 modifyLogFile f lck modf = withExclusiveLock lck $ do
 	ls <- liftIO $ fromMaybe []
-		<$> tryWhenExists (L8.lines <$> L.readFile f')
+		<$> tryWhenExists (fileLines <$> L.readFile f')
 	let ls' = modf ls
 	when (ls' /= ls) $
 		createDirWhenNeeded f $
@@ -94,7 +98,7 @@ checkLogFile f lck matchf = withSharedLock lck $ bracket setup cleanup go
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = return False
 	go (Just h) = do
-		!r <- liftIO (any matchf . L8.lines <$> L.hGetContents h)
+		!r <- liftIO (any matchf . fileLines <$> L.hGetContents h)
 		return r
 	f' = fromRawFilePath f
 
@@ -111,7 +115,7 @@ calcLogFileUnsafe f start update = bracket setup cleanup go
 	cleanup Nothing = noop
 	cleanup (Just h) = liftIO $ hClose h
 	go Nothing = return start
-	go (Just h) = go' start =<< liftIO (L8.lines <$> L.hGetContents h)
+	go (Just h) = go' start =<< liftIO (fileLines <$> L.hGetContents h)
 	go' v [] = return v
 	go' v (l:ls) = do
 		let !v' = update l v
@@ -157,3 +161,32 @@ createDirWhenNeeded f a = a `catchNonAsync` \_e -> do
 	-- done if writing the file fails.
 	createAnnexDirectory (parentDir f)
 	a
+
+-- On windows, readFile does NewlineMode translation,
+-- stripping CR before LF. When converting to ByteString,
+-- use this to emulate that.
+fileLines :: L.ByteString -> [L.ByteString]
+#ifdef mingw32_HOST_OS
+fileLines = map stripCR . L8.lines
+  where
+	stripCR b = case L8.unsnoc b of
+		Nothing -> b
+		Just (b', e)
+			| e == '\r' -> b'
+			| otherwise -> b
+#else
+fileLines = L8.lines
+#endif
+
+fileLines' :: S.ByteString -> [S.ByteString]
+#ifdef mingw32_HOST_OS
+fileLines' = map stripCR . S8.lines
+  where
+	stripCR b = case S8.unsnoc b of
+		Nothing -> b
+		Just (b', e)
+			| e == '\r' -> b'
+			| otherwise -> b
+#else
+fileLines' = S8.lines
+#endif
