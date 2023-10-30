@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+See e.g. on [https://github.com/datalad/git-annex/actions/runs/6680765679/job/18154374923](https://github.com/datalad/git-annex/actions/runs/6680765679/job/18154374923)
+
+```
+  Repo Tests v10 unlocked
+    Init Tests
+      init:                                   OK (0.17s)
+      add:                                    OK (0.73s)
+    addurl:                                   OK (0.57s)
+    crypto:                                   FAIL (3.07s)
+      ./Test/Framework.hs:86:
+      initremote failed with unexpected exit code (transcript follows)
+      initremote foo (encryption setup) (to gpg keys: 129D6E0AC537B9C7) 
+      git-annex: .git/annex/othertmp/remote.log: hPut: invalid argument (invalid character)
+      failed
+      (recording state in git...)
+      initremote: 1 failed
+```
+
+started only recently but consistently:
+
+```
+(git)smaug:/mnt/datasets/datalad/ci/git-annex/builds/2023/10[master]git
+$> git grep -l 'hPut: invalid argument'
+cron-20231027/build-ubuntu.yaml-1289-1c03c8fd-failed/0_test-annex (normal, ubuntu-latest).txt
+...
+```
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
+
+
