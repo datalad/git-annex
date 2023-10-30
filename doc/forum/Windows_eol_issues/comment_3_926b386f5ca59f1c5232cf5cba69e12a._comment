@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-10-30T17:04:40Z"
+ content="""
+I would not be concerned about the contents of the mergedrefs file, since
+it is only an optimisation and at worst git-annex does a little extra work
+re-merging a branch it has already merged.
+
+I've fixed this in [[!commit eb42935e5822a43ec29c1c113d5df62ea676d119]].
+Several log files were affected as detailed in the commit, but it seems
+nothing really broke, only some optimisations were prevented from working,
+luckily.
+
+Also I checked git commands on windows and nothing I tried output CRLF to
+stdout on windows. So I've made git-annex follow suite, and disabled
+NewlineMode for stdout.
+"""]]
