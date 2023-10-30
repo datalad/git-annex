@@ -21,3 +21,5 @@ This surprised me, hence I am reporting it here as a potential bug.
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 10.20230126
+
+> [[fixed|done]] --[[Joey]]

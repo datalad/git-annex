@@ -50,11 +50,13 @@ display Nothing = return False
 -- To support absolute filenames, pass through git ls-files.
 -- But, this plumbing command does not recurse through directories.
 seekSingleGitFile :: FilePath -> Annex (Maybe RawFilePath)
-seekSingleGitFile file = do
-	(l, cleanup) <- inRepo (Git.LsFiles.inRepo [] [toRawFilePath file])
-	r <- case l of
-		(f:[]) | takeFileName (fromRawFilePath f) == takeFileName file ->
-			return (Just f)
-		_ -> return Nothing
-	void $ liftIO cleanup
-	return r
+seekSingleGitFile file
+	| isRelative file = return (Just (toRawFilePath file))
+	| otherwise = do
+		(l, cleanup) <- inRepo (Git.LsFiles.inRepo [] [toRawFilePath file])
+		r <- case l of
+			(f:[]) | takeFileName (fromRawFilePath f) == takeFileName file ->
+				return (Just f)
+			_ -> return Nothing
+		void $ liftIO cleanup
+		return r

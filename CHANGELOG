@@ -9,6 +9,7 @@ git-annex (10.20230927) UNRELEASED; urgency=medium
     the behavior of git on Windows, which does not end lines with CR
     either.
   * Windows: Fix CRLF handling in some log files.
+  * lookupkey: Sped up --batch.
 
  -- Joey Hess <id@joeyh.name>  Tue, 10 Oct 2023 13:17:31 -0400
 
