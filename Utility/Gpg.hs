@@ -1,10 +1,11 @@
 {- gpg interface
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Utility.Gpg (
@@ -48,6 +49,7 @@ import Utility.Format (decode_c)
 
 import Control.Concurrent.Async
 import Control.Monad.IO.Class
+import qualified Data.ByteString as B
 import qualified Data.Map as M
 import Data.Char
 
@@ -108,10 +110,10 @@ stdEncryptionParams symmetric = enc symmetric ++
 		]
 
 {- Runs gpg with some params and returns its stdout, strictly. -}
-readStrict :: GpgCmd -> [CommandParam] -> IO String
+readStrict :: GpgCmd -> [CommandParam] -> IO B.ByteString
 readStrict c p = readStrict' c p Nothing
 
-readStrict' :: GpgCmd -> [CommandParam] -> Maybe [(String, String)] -> IO String
+readStrict' :: GpgCmd -> [CommandParam] -> Maybe [(String, String)] -> IO B.ByteString
 readStrict' (GpgCmd cmd) params environ = do
 	params' <- stdParams params
 	let p = (proc cmd params')
@@ -120,17 +122,16 @@ readStrict' (GpgCmd cmd) params environ = do
 		}
 	withCreateProcess p (go p)
   where
-	go p _ (Just hout) _ pid = do
-		hSetBinaryMode hout True
-		forceSuccessProcess p pid `after` hGetContentsStrict hout
+	go p _ (Just hout) _ pid =
+		forceSuccessProcess p pid `after` B.hGetContents hout
 	go _ _ _ _ _ = error "internal"
 
 {- Runs gpg, piping an input value to it, and returning its stdout,
  - strictly. -}
-pipeStrict :: GpgCmd -> [CommandParam] -> String -> IO String
+pipeStrict :: GpgCmd -> [CommandParam] -> B.ByteString -> IO B.ByteString
 pipeStrict c p i = pipeStrict' c p Nothing i
 
-pipeStrict' :: GpgCmd -> [CommandParam] -> Maybe [(String, String)] -> String -> IO String
+pipeStrict' :: GpgCmd -> [CommandParam] -> Maybe [(String, String)] -> B.ByteString -> IO B.ByteString
 pipeStrict' (GpgCmd cmd) params environ input = do
 	params' <- stdParams params
 	let p = (proc cmd params')
@@ -141,11 +142,9 @@ pipeStrict' (GpgCmd cmd) params environ input = do
 	withCreateProcess p (go p)
   where
 	go p (Just to) (Just from) _ pid = do
-		hSetBinaryMode to True
-		hSetBinaryMode from True
-		hPutStr to input
+		B.hPutStr to input
 		hClose to
-		forceSuccessProcess p pid `after` hGetContentsStrict from
+		forceSuccessProcess p pid `after` B.hGetContents from
 	go _ _ _ _ _ = error "internal"
 
 {- Runs gpg with some parameters. First sends it a passphrase (unless it
@@ -158,7 +157,7 @@ pipeStrict' (GpgCmd cmd) params environ input = do
  - the passphrase.
  -
  - Note that the reader must fully consume gpg's input before returning. -}
-feedRead :: (MonadIO m, MonadMask m) => GpgCmd -> [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> m a) -> m a
+feedRead :: (MonadIO m, MonadMask m) => GpgCmd -> [CommandParam] -> B.ByteString -> (Handle -> IO ()) -> (Handle -> m a) -> m a
 feedRead cmd params passphrase feeder reader = do
 #ifndef mingw32_HOST_OS
 	let setup = liftIO $ do
@@ -166,7 +165,7 @@ feedRead cmd params passphrase feeder reader = do
 		(frompipe, topipe) <- System.Posix.IO.createPipe
 		toh <- fdToHandle topipe
 		t <- async $ do
-			hPutStrLn toh passphrase
+			B.hPutStr toh (passphrase <> "\n")
 			hClose toh
 		let Fd pfd = frompipe
 		let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
@@ -180,7 +179,7 @@ feedRead cmd params passphrase feeder reader = do
 #else
 	-- store the passphrase in a temp file for gpg
 	withTmpFile "gpg" $ \tmpfile h -> do
-		liftIO $ hPutStr h passphrase
+		liftIO $ B.hPutStr h passphrase
 		liftIO $ hClose h
 		let passphrasefile = [Param "--passphrase-file", File tmpfile]
 		go $ passphrasefile ++ params
@@ -223,7 +222,8 @@ findPubKeys' cmd environ for
 	-- pass forced subkey through as-is rather than
 	-- looking up the master key.
 	| isForcedSubKey for = return $ KeyIds [for]
-	| otherwise = KeyIds . parse . lines <$> readStrict' cmd params environ
+	| otherwise = KeyIds . parse . lines . decodeBS
+		<$> readStrict' cmd params environ
   where
 	params = [Param "--with-colons", Param "--list-public-keys", Param for]
 	parse = mapMaybe (keyIdField . splitc ':')
@@ -241,7 +241,8 @@ type UserId = String
 secretKeys :: GpgCmd -> IO (M.Map KeyId UserId)
 secretKeys cmd = catchDefaultIO M.empty makemap
   where
-	makemap = M.fromList . parse . lines <$> readStrict cmd params
+	makemap = M.fromList . parse . lines . decodeBS
+		<$> readStrict cmd params
 	params = [Param "--with-colons", Param "--list-secret-keys", Param "--fixed-list-mode"]
 	parse = extract [] Nothing . map (splitc ':')
 	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =
@@ -301,7 +302,7 @@ genSecretKey (GpgCmd cmd) keytype passphrase userid keysize =
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
  - first newline. -}
-genRandom :: GpgCmd -> Bool -> Size -> IO String
+genRandom :: GpgCmd -> Bool -> Size -> IO B.ByteString
 genRandom cmd highQuality size = do
 	s <- readStrict cmd params
 	checksize s
@@ -327,7 +328,7 @@ genRandom cmd highQuality size = do
 	 - entropy. -}
 	expectedlength = size * 8 `div` 6
 
-	checksize s = let len = length s in
+	checksize s = let len = B.length s in
 		unless (len >= expectedlength) $
 			shortread len
 
@@ -439,8 +440,8 @@ testHarness tmpdir cmd a = ifM (inSearchPath (unGpgCmd cmd))
 		liftIO $ void $ tryIO $ modifyFileMode (toRawFilePath subdir) $
 			removeModes $ otherGroupModes
 		-- For some reason, recent gpg needs a trustdb to be set up.
-		_ <- pipeStrict' cmd [Param "--trust-model", Param "auto", Param "--update-trustdb"] (Just environ) []
-		_ <- pipeStrict' cmd [Param "--import", Param "-q"] (Just environ) $ unlines
+		_ <- pipeStrict' cmd [Param "--trust-model", Param "auto", Param "--update-trustdb"] (Just environ) mempty
+		_ <- pipeStrict' cmd [Param "--import", Param "-q"] (Just environ) $ encodeBS $ unlines
 			[testSecretKey, testKey]
 		return environ
 		
@@ -470,7 +471,7 @@ checkEncryptionFile cmd environ filename keys =
   where
 	params = [Param "--list-packets", Param "--list-only", File filename]
 
-checkEncryptionStream :: GpgCmd -> Maybe [(String, String)] -> String -> Maybe KeyIds -> IO Bool
+checkEncryptionStream :: GpgCmd -> Maybe [(String, String)] -> B.ByteString -> Maybe KeyIds -> IO Bool
 checkEncryptionStream cmd environ stream keys =
 	checkGpgPackets cmd environ keys =<< pipeStrict' cmd params environ stream
   where
@@ -480,13 +481,13 @@ checkEncryptionStream cmd environ stream keys =
  - symmetrically encrypted (keys is Nothing), or encrypted to some
  - public key(s).
  - /!\ The key needs to be in the keyring! -}
-checkGpgPackets :: GpgCmd -> Maybe [(String, String)] -> Maybe KeyIds -> String -> IO Bool
+checkGpgPackets :: GpgCmd -> Maybe [(String, String)] -> Maybe KeyIds -> B.ByteString -> IO Bool
 checkGpgPackets cmd environ keys str = do
 	let (asym,sym) = partition (pubkeyEncPacket `isPrefixOf`) $
 			filter (\l' -> pubkeyEncPacket `isPrefixOf` l' ||
 				symkeyEncPacket `isPrefixOf` l') $
 			takeWhile (/= ":encrypted data packet:") $
-			lines str
+			lines (decodeBS str)
 	case (keys,asym,sym) of
 		(Nothing, [], [_]) -> return True
 		(Just (KeyIds ks), ls, []) -> do

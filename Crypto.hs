@@ -3,7 +3,7 @@
  - Currently using gpg; could later be modified to support different
  - crypto backends if necessary.
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -39,7 +39,6 @@ module Crypto (
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
-import Data.ByteString.UTF8 (fromString)
 import Control.Monad.IO.Class
 
 import Annex.Common
@@ -71,12 +70,12 @@ cipherBeginning = 256
 cipherSize :: Int
 cipherSize = 512
 
-cipherPassphrase :: Cipher -> String
-cipherPassphrase (Cipher c) = drop cipherBeginning c
+cipherPassphrase :: Cipher -> S.ByteString
+cipherPassphrase (Cipher c) = S.drop cipherBeginning c
 cipherPassphrase (MacOnlyCipher _) = giveup "MAC-only cipher"
 
-cipherMac :: Cipher -> String
-cipherMac (Cipher c) = take cipherBeginning c
+cipherMac :: Cipher -> S.ByteString
+cipherMac (Cipher c) = S.take cipherBeginning c
 cipherMac (MacOnlyCipher c) = c
 
 {- Creates a new Cipher, encrypted to the specified key id. -}
@@ -168,7 +167,7 @@ type EncKey = Key -> Key
  - on content. It does need to be repeatable. -}
 encryptKey :: Mac -> Cipher -> EncKey
 encryptKey mac c k = mkKey $ \d -> d
-	{ keyName = S.toShort $ encodeBS $ macWithCipher mac c (serializeKey k)
+	{ keyName = S.toShort $ encodeBS $ macWithCipher mac c (serializeKey' k)
 	, keyVariety = OtherKey $
 		encryptedBackendNamePrefix <> encodeBS (showMac mac)
 	}
@@ -225,10 +224,10 @@ decrypt cmd c cipher = case cipher of
   where
 	params = Param "--decrypt" : getGpgDecParams c
 
-macWithCipher :: Mac -> Cipher -> String -> String
+macWithCipher :: Mac -> Cipher -> S.ByteString -> String
 macWithCipher mac c = macWithCipher' mac (cipherMac c)
-macWithCipher' :: Mac -> String -> String -> String
-macWithCipher' mac c s = calcMac mac (fromString c) (fromString s)
+macWithCipher' :: Mac -> S.ByteString -> S.ByteString -> String
+macWithCipher' mac c s = calcMac mac c s
 
 {- Ensure that macWithCipher' returns the same thing forevermore. -}
 prop_HmacSha1WithCipher_sane :: Bool
