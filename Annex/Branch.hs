@@ -41,7 +41,6 @@ module Annex.Branch (
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Char8 as B8
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Function
