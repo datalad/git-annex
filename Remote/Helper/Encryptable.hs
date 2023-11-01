@@ -28,6 +28,8 @@ module Remote.Helper.Encryptable (
 
 import qualified Data.Map as M
 import qualified Data.Set as S
+import qualified Data.ByteString as B
+import Data.Word
 import Control.Concurrent.STM
 
 import Annex.Common
@@ -271,7 +273,7 @@ storeCipher cip = case cip of
 	(EncryptedCipher t _ ks) -> addcipher t . storekeys ks cipherkeysField
 	(SharedPubKeyCipher t ks) -> addcipher t . storekeys ks pubkeysField
   where
-	addcipher t = M.insert cipherField (Accepted (decodeBS (toB64 (encodeBS t))))
+	addcipher t = M.insert cipherField (Accepted (toB64bs t))
 	storekeys (KeyIds l) n = M.insert n (Accepted (intercalate "," l))
 
 {- Extracts an StorableCipher from a remote's configuration. -}
@@ -280,13 +282,13 @@ extractCipher c = case (getRemoteConfigValue cipherField c,
 			(getRemoteConfigValue cipherkeysField c <|> getRemoteConfigValue pubkeysField c),
 			getRemoteConfigValue encryptionField c) of
 	(Just t, Just ks, Just HybridEncryption) ->
-		Just $ EncryptedCipher (decodeBS (fromB64 (encodeBS t))) Hybrid (readkeys ks)
+		Just $ EncryptedCipher (fromB64bs t) Hybrid (readkeys ks)
 	(Just t, Just ks, Just PubKeyEncryption) ->
-		Just $ EncryptedCipher (decodeBS (fromB64 (encodeBS t))) PubKey (readkeys ks)
+		Just $ EncryptedCipher (fromB64bs t) PubKey (readkeys ks)
 	(Just t, Just ks, Just SharedPubKeyEncryption) ->
-		Just $ SharedPubKeyCipher (decodeBS (fromB64 (encodeBS t))) (readkeys ks)
+		Just $ SharedPubKeyCipher (fromB64bs t) (readkeys ks)
 	(Just t, Nothing, Just SharedEncryption) ->
-		Just $ SharedCipher (decodeBS (fromB64 (encodeBS t)))
+		Just $ SharedCipher (fromB64bs t)
 	_ -> Nothing
   where
 	readkeys = KeyIds . splitc ','
@@ -320,3 +322,25 @@ describeCipher c = case c of
 	(SharedPubKeyCipher _ ks) -> showkeys ks
   where
 	showkeys (KeyIds { keyIds = ks }) = "to gpg keys: " ++ unwords ks
+
+{- Not using encodeBS because these "Strings" are really
+ - bags of bytes and are not encoding with the filesystem encoding.
+ - So this hack is needed to work on all locales and roundtrip cleanly.
+ -}
+toB64bs :: String -> String
+toB64bs = w82s . B.unpack . toB64 . B.pack . s2w8
+
+fromB64bs :: String -> String
+fromB64bs = w82s . B.unpack . fromB64 . B.pack . s2w8
+
+c2w8 :: Char -> Word8
+c2w8 = fromIntegral . fromEnum
+
+w82c :: Word8 -> Char
+w82c = toEnum . fromIntegral
+
+s2w8 :: String -> [Word8]
+s2w8 = map c2w8
+
+w82s :: [Word8] -> String
+w82s = map w82c

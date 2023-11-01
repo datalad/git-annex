@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-11-01T16:53:48Z"
+ content="""
+Will probably need to revert the Remote/Helper/Encryptable.hs part of that
+commit. 
+
+What is happening here is, encodeBS is failing when run on the String from
+a SharedPubKeyCipher. That String comes from Utility.Gpg.genRandom and is
+literally a bunch of random bytes. So it's not encoded with the filesystem
+encoding. And it really ought to be a ByteString of course, but since it's
+not, anything involving encoding it fails.
+
+That's why the old code had this comment:
+
+	{- Not using Utility.Base64 because these "Strings" are really
+	 - bags of bytes and that would convert to unicode and not round-trip
+	 - cleanly. -}
+
+And converted that String to a ByteString via `B.pack . s2w8`, which avoids this problem.
+
+What an ugly thing. Really ought to be fixed to use ByteString throughout. 
+But for now, let's revert.
+"""]]
