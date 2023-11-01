@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-11-01T16:07:15Z"
+ content="""
+Reproduced with LANG=C:
+
+      ./Test/Framework.hs:86:
+      initremote failed with unexpected exit code (transcript follows)
+      initremote foo (encryption setup) (to gpg keys: 129D6E0AC537B9C7)
+      git-annex: .git/annex/othertmp/remote.log: withFile: invalid argument (cannot encode character '\132')
+      failed
+      (recording state in git...)
+      initremote: 1 failed
+
+Not quite the same error but almost certianly the same problem.
+
+I've confirmed this is caused by 
+[[!commit 3742263c99180d1391e4fd51724aae52d6d02137]]
+"""]]
