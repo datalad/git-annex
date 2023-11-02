@@ -19,6 +19,7 @@ import qualified Utility.RawFilePath as R
 import System.PosixCompat.Files (fileMode)
 #endif
 
+import qualified Data.ByteString as B
 
 data Hook = Hook
 	{ hookName :: FilePath
@@ -57,7 +58,12 @@ hookWrite h r = ifM (doesFileExist f)
   where
 	f = hookFile h r
 	go = do
-		viaTmp writeFile f (hookScript h)
+		-- On Windows, using B.writeFile here avoids
+		-- the newline translation done by writeFile.
+		-- Hook scripts on Windows could use CRLF endings, but
+		-- they typically use unix newlines, which does work there
+		-- and makes the repository more portable.
+		viaTmp B.writeFile f (encodeBS (hookScript h))
 		void $ tryIO $ modifyFileMode
 			(toRawFilePath f)
 			(addModes executeModes)
@@ -81,6 +87,10 @@ data ExpectedContent = UnexpectedContent | ExpectedContent | OldExpectedContent
 
 expectedContent :: Hook -> Repo -> IO ExpectedContent
 expectedContent h r = do
+	-- Note that on windows, this readFile does newline translation,
+	-- and so a hook file that has CRLF will be treated the same as one
+	-- that has LF. That is intentional, since users may have a reason
+	-- to prefer one or the other.
 	content <- readFile $ hookFile h r
 	return $ if content == hookScript h
 		then ExpectedContent

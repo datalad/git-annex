@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-11-02T17:28:49Z"
+ content="""
+Took a look at hook script line endings on windows, and found that they
+work both with CRLF endings and without the CR.
+
+It seems better to not use CR in them, because git for windows does not
+in the examples it writes, and because it will make the hooks portable if
+the repository gets moved to a unix system.
+
+So, I made `git-annex init` omit the CR when writing new hook scripts.
+Existing hook scripts that use CRLF will be preserved by git-annex.
+
+I have not been able to reproduce this problem with or without CR in hook
+scripts:
+
+	fatal: cannot run hooks/post-receive: No such file or directory
+"""]]
