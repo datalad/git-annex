@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+It's unclear how to use `git union-merge` as described [here](https://git-annex.branchable.com/git-union-merge/).
+
+### What steps will reproduce the problem?
+
+Run `git union-merge`, yields `git: 'union-merge' is not a git command. See 'git --help'.`
+
+No binary `git-union-merge` is shipped in the standalone tarball and distros also don't seem to ship it.
+
+### What version of git-annex are you using? On what operating system?
+
+Tried with (on a Manjaro box):
+
+- git-annex-standalone-amd64.tar.gz	2023-10-09 14:21 	51M	 from [here](https://downloads.kitenet.net/git-annex/linux/current/) (the build is a month old, is that right?)
+- `git-annex` in Manjaro repos
+- `git-annex-standalone-nightly-bin` from AUR
+- `nix-shell -p git-annex` (10.20230926 in nixos-unstable)
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+git-annex rules and is a marvelous tool.
+
+I wanted to try the union merging to resolve merge conflicts on non-annexed files. It's not ideal, but might be better than repeated `git annex assist|sync` eventually adding the merge conflict markers `<<<<<<<<<` and the like to the files, breaking things like `.gitattributes` syntax which in turn has more devastating lockup consequences...
