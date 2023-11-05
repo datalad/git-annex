@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="unqueued"
+ avatar="http://cdn.libravatar.org/avatar/3bcbe0c9e9825637ad7efa70f458640d"
+ subject="comment 4"
+ date="2023-11-05T21:32:17Z"
+ content="""
+Just putting this out there, but if you are on ZFS or BTRFS, you can just duplicate the subvolume/dataset, remove what you want, and send it. It will by default verify your data integrity, and it is often faster.
+
+On BTRFS, it is easy to `btrfs sub create send.RW; cp --reflink=always .git/annex/objects send.RW; btrfs sub snap -r send.RW send.RO; btrfs sub del send.RW`
+
+Then, on the target, I can reflink copy into the target repo's .git/annex/objects, and the `git annex fsck --all --fast`, since the send operation verified the integrity.
+
+
+Sometimes, if the target repo does not exist, I can take a snapshot of an entire repo, and then enter it, then re-init it with the target uuid, force drop what I don't want, and then send it. If you're dealing with hundreds of thousands of files, it can be more practical to do that.
+
+If you want to verify the integrity of an annexed file on ZFS or BTRFS, all you have to do is read it, and let the filesystem verify the checksums for you.
+
+If you want a nice progress display, you can just do `pv myfile > /dev/null`
+
+I considered making a git-annex-scrub script that would check if the underlying fs supports integrity verification, then just read the file and update the log.
+
+BTRFS uses hardware accelerated crc32, which is fine for bitrot, but it is not secure from intentional tampering.
+"""]]
