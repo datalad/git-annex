@@ -8,18 +8,35 @@ git annex info `[directory|file|treeish|remote|description|uuid ...]`
 
 # DESCRIPTION
 
-Displays statistics and other information for the specified item,
-which can be a directory, or a file, or a treeish, or a remote,
-or the description or uuid of a repository.
+Displays statistics and other information for the specified item.
 
-When no item is specified, displays statistics and information
-for the local repository and all annexed content.
+When no item is specified, displays overall information. This includes a
+list of all known repositories, how much annexed data is present in the
+local repository, and the total size of all annexed data in the working
+tree.
+
+When a directory is specified, displays information
+about the annexed files in that directory (and subdirectories).
+This includes how much annexed data is present in the local repository,
+the total size of all annexed data in the directory, how many files
+have the specified numcopies or more (+1, +2 etc) or less (-1, -2 etc),
+and information about how much of the annexed data is stored in known
+repositories.
+
+When a treeish is specified, displays similar information
+as when a directory is specified, but about the annexed files in that
+treeish.
+
+When a remote, or description of a repository, or uuid is specified, 
+displays information about the specified repository, including the total
+amount of annexed data stored in it, and a variety of configuration
+information.
 
 # OPTIONS
 
 * `--fast`
 
-  Only show the data that can be gathered quickly.
+  Only show the information that can be gathered quickly.
 
 * `--json`
 
