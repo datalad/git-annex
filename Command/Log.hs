@@ -244,7 +244,8 @@ getKeyLog key os = do
 	let logfile = p P.</> locationLogFile config key
 	getGitLog [fromRawFilePath logfile] (Param "--remove-empty" : os)
 
-{- Streams the git log for all git-annex branch changes. -}
+{- Streams the git log for all git-annex branch changes to location log
+ - files. -}
 getAllLog :: [CommandParam] -> Annex ([RefChange], IO Bool)
 getAllLog = getGitLog []
 
@@ -257,6 +258,7 @@ getGitLog fs os = do
 		, Param "--pretty=format:%ct"
 		, Param "--raw"
 		, Param "--no-abbrev"
+		, Param "--no-renames"
 		] ++ os ++
 		[ Param $ Git.fromRef Annex.Branch.fullname
 		, Param "--"
@@ -277,6 +279,8 @@ getGitLog fs os = do
 --
 -- The timestamp is not included before all changelines, so
 -- keep track of the most recently seen timestamp.
+--
+-- Only changes to location log files are returned.
 parseGitRawLog :: GitConfig -> [String] -> [RefChange]
 parseGitRawLog config = parse epoch
   where
