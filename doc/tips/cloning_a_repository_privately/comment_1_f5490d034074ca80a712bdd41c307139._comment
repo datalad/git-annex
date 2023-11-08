@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="What about temporary annex.private declaration?"
+ date="2023-11-07T15:49:47Z"
+ content="""
+The instructions indicate that `annex.private` should be set in the local repository configuration.
+
+However, the following approach is also a possibility:
+
+```
+❯ mkdir priv
+❯ cd priv
+❯ git init
+Initialized empty Git repository in /tmp/priv/.git/
+
+❯ git -c annex.private=1 annex init
+init  ok
+
+❯ ls .git/annex/journal-private
+uuid.log
+
+❯ cat .git/config
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[annex]
+        uuid = 955373ac-6044-493e-a696-1a706437b542
+        version = 10
+[filter \"annex\"]
+        smudge = git-annex smudge -- %f
+        clean = git-annex smudge --clean -- %f
+        process = git-annex filter-process
+```
+
+It seems this repository was in private mode when it was initialized (expected). What is the implication of the switch not being permanent in the config? And by extension: what are the implications of removing the switch later in the lifetime of a repository clone?
+"""]]

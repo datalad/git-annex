@@ -1,0 +1,82 @@
+Hey there,
+
+I am having the issue that git-annex reports files to be required even though it should not be.
+
+The setup is as follows (The groups that the repo is part of is specified in brackets):
+
+- Main repo (`origin`, `server`) on a server
+    - Regularly syncs all its data two two backup repos (`server`, `backup`, `backup_server`)
+        - These two backup repos are trusted, as they are not reachable by clients
+- Client repo (`client`) on PC
+    - Syncs with other clients via the server
+    - Manually syncs with a backup repo (`backup` `offline`, `backup_offline`) on a disk
+    - Each client has two remotes, the server (named `origin`) and the backup drive (named `usb`)
+
+I want that the required content is everything present, that is not yet (all of them):
+
+1. in the server repo
+2. in both server backup repos
+3. in a backup repo on an external drive
+
+I specify that using `git annex required . "present and (copies=origin:0 or (not copies=backup_server:2) or copies=backup_offline:0)"`.
+
+Now I want to drop file `A`
+
+File `A` is present on 5 repos. However, I cannot delete it, as it is "apparently" not on the server (i.e. `copies=origin:0` is true).
+
+```
+$ git annex whereis A
+whereis A (5 copies)
+  	0cdca96a-e44d-4168-a3a0-8ab846451e74 -- Server_Backup2
+   	44039708-f0d9-4ed0-833b-4d146d419b5d -- jeanclaude [here]
+   	4ac4c649-b37c-403e-94e0-9497a7bc2a91 -- Server_Backup1
+   	c0d1b661-1e19-4956-b290-ff62abc6d61a -- jc_backup_wd6tb [usb]
+   	da3e14a5-188f-4a65-bf93-8fce9e409d09 -- [origin]
+ok
+
+$ git annex drop A --explain
+drop A [ A matches required content: present[TRUE] and ( copies=origin:0[TRUE] ) ]
+
+  That file is required content. It cannot be dropped!
+
+  (Use --force to override this check, or adjust required content configuration.)
+failed
+drop: 1 failed
+```
+
+What is it saying that it is not no `origin`? Is there something wrong with my setup? Does the drop command try to *lock* file `A` on all remotes (except on the server backups, as they are trusted)?
+
+
+Me doing some "debugging":
+
+```
+$ git annex required . "present and (copies=origin:1 or (not copies=backup_server:2) or copies=backup_offline:0)"
+required . ok
+(recording state in git...)
+
+$ git annex drop A --explain
+drop A [ A matches required content: present[TRUE] and ( copies=origin:1[TRUE] ) ]
+
+  That file is required content. It cannot be dropped!
+
+  (Use --force to override this check, or adjust required content configuration.)
+failed
+drop: 1 failed
+
+$ git annex required . "present and (copies=origin:10 or (not copies=backup_server:2) or copies=backup_offline:0)"
+required . ok
+(recording state in git...)
+
+$ git annex drop 2022/220513-PolybandInConcert/220513_220256.cr3 --explain
+drop A [ A matches required content: present[TRUE] and ( copies=origin:10[FALSE] or not copies=backup_server:2[TRUE] or copies=backup_offline:0[TRUE] ) ]
+
+  That file is required content. It cannot be dropped!
+
+  (Use --force to override this check, or adjust required content configuration.)
+failed
+drop: 1 failed
+```
+
+How can the number of copies on `origin` be `0` and `1` at the same time? Or do I misunderstand something completely? It also reports that the file in none of the backups (neither local nor remote).
+
+Thanks a lot your your time and effort!

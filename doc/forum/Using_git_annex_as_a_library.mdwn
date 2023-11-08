@@ -1,0 +1,6 @@
+I've started writing a small tool in Haskell to manage data processing pipelines. I'm interested in using git-annex as a library as part of this (since the idea is that the raw data is tracked in git-annex and git). I'm wondering what the best way to go about doing it is.
+
+If I set my stack.yaml `extra-deps` to point to the git repository and run `stack build` then stack visibly goes and downloads the package. But from there I can't actually import any modules in my own Haskell program. When I use `import Git` or `import Annex.HashObject` then I get a compile error along the lines of `Could not find module ‘Annex.HashObject’`.
+
+Do you have any pointers for how I might best use git-annex as a library? Thanks for your help, sorry if it's so basic as I'm new to the Haskell tooling ecosystem.
+
