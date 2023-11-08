@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-__requires__ = ["click ~= 7.0", "PyGithub == 1.*"]
+__requires__ = ["click ~= 8.0", "PyGithub == 2.*"]
 import os
 import subprocess
 import click
-from github import Github
+from github import Auth, Github
 
 REPO = "datalad/git-annex"
 ALL_OS_TYPES = ("macos", "ubuntu", "windows")
@@ -11,7 +11,7 @@ ALL_OS_TYPES = ("macos", "ubuntu", "windows")
 
 class BuildDispatcher:
     def __init__(self, token):
-        self.gh = Github(token)
+        self.gh = Github(auth=Auth.Token(token))
         self.repo = self.gh.get_repo(REPO)
 
     def get_os_workflows(self, ostypes):

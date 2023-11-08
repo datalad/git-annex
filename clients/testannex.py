@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+from collections.abc import Iterator
 from dataclasses import dataclass
 import logging
 import os
@@ -8,11 +10,11 @@ import shlex
 import subprocess
 import sys
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, Dict
 
 import click
 from click_loglevel import LogLevel
-from pydantic import BaseModel, parse_obj_as
+from pydantic import BaseModel, TypeAdapter
 from ruamel.yaml import YAML
 
 JOB_REPOSITORY = "git@github.com:datalad/git-annex-ci-client-jobs.git"
@@ -58,12 +60,13 @@ class Client(BaseModel):
             yield Test(name=name, shell=self.shell, body=body)
 
 
-def parse_clients(path: Optional[Path] = None) -> Dict[str, Client]:
+def parse_clients(path: Path | None = None) -> dict[str, Client]:
     if path is None:
         path = Path(__file__).with_name("clients.yaml")
     with path.open() as fp:
         data = YAML(typ="safe").load(fp)
-    return parse_obj_as(Dict[str, Client], data)
+    adapter = TypeAdapter(Dict[str, Client])
+    return adapter.validate_python(data)
 
 
 @dataclass
@@ -71,19 +74,19 @@ class GitRepo:
     path: Path
 
     def run(
-        self, *args: Union[str, Path], **kwargs: Any
+        self, *args: str | Path, **kwargs: Any
     ) -> subprocess.CompletedProcess:
         kwargs.setdefault("cwd", self.path)
         return runcmd("git", *args, **kwargs)
 
-    def read(self, *args: Union[str, Path], **kwargs: Any) -> str:
+    def read(self, *args: str | Path, **kwargs: Any) -> str:
         kwargs.setdefault("cwd", self.path)
         return readcmd("git", *args, **kwargs)
 
-    def readlines(self, *args: Union[str, Path], **kwargs: Any) -> List[str]:
+    def readlines(self, *args: str | Path, **kwargs: Any) -> list[str]:
         return self.read(*args, **kwargs).splitlines()
 
-    def ls_branches(self, pattern: Optional[str]) -> List[str]:
+    def ls_branches(self, pattern: str | None) -> list[str]:
         cmd = ["branch", "--format=%(refname:short)"]
         if pattern is not None:
             cmd.append("--list")
@@ -91,9 +94,9 @@ class GitRepo:
         return self.readlines(*cmd)
 
     def ls_remote_branches(
-        self, remote: str = "origin", pattern: Optional[str] = None
-    ) -> List[str]:
-        heads: List[str] = []
+        self, remote: str = "origin", pattern: str | None = None
+    ) -> list[str]:
+        heads: list[str] = []
         cmd = ["ls-remote", "--heads", remote]
         if pattern is not None:
             cmd.append(pattern)
@@ -265,14 +268,14 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
         log.info("All jobs passed!")
 
 
-def runcmd(*args: Union[str, Path], **kwargs: Any) -> subprocess.CompletedProcess:
+def runcmd(*args: str | Path, **kwargs: Any) -> subprocess.CompletedProcess:
     argstrs = [str(a) for a in args]
     log.debug("Running: %s", " ".join(map(shlex.quote, argstrs)))
     kwargs.setdefault("check", True)
     return subprocess.run(argstrs, **kwargs)
 
 
-def readcmd(*args: Union[str, Path], **kwargs: Any) -> str:
+def readcmd(*args: str | Path, **kwargs: Any) -> str:
     kwargs["stdout"] = subprocess.PIPE
     kwargs["universal_newlines"] = True
     r = runcmd(*args, **kwargs)

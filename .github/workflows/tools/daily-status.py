@@ -4,7 +4,7 @@ from __future__ import annotations
 __python_requires__ = ">= 3.8"
 __requires__ = [
     "python-dateutil ~= 2.7",
-    "PyGithub ~= 1.53",
+    "PyGithub ~= 2.0",
     "requests ~= 2.20",
     "ruamel.yaml ~= 0.15",
 ]
@@ -23,7 +23,7 @@ from zipfile import Path as ZipPath
 from xml.sax.saxutils import escape
 
 from dateutil.parser import isoparse
-from github import Github
+from github import Auth, Github
 import requests
 from ruamel.yaml import YAML
 
@@ -250,7 +250,7 @@ class AppveyorJob:
 def main() -> None:
     outfile = sys.argv[1]
     token = os.environ["GITHUB_TOKEN"]
-    gh = Github(token)
+    gh = Github(auth=Auth.Token(token))
     cutoff = datetime.now(timezone.utc) - WINDOW
 
     with CLIENT_INFO_FILE.open() as fp:
