@@ -12,6 +12,7 @@ git-annex (10.20230927) UNRELEASED; urgency=medium
   * Windows: When git-annex init is installing hook scripts, it will
     avoid ending lines with CR for portability. Existing hook scripts
     that do have CR line endings will not be changed.
+  * info: Added calculation of combined annex size of all repositories.
 
  -- Joey Hess <id@joeyh.name>  Tue, 10 Oct 2023 13:17:31 -0400
 

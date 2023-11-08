@@ -89,12 +89,13 @@ data StatInfo = StatInfo
 	{ presentData :: Maybe KeyInfo
 	, referencedData :: Maybe KeyInfo
 	, repoData :: M.Map UUID KeyInfo
+	, allRepoData :: Maybe KeyInfo
 	, numCopiesStats :: Maybe NumCopiesStats
 	, infoOptions :: InfoOptions
 	}
 
 emptyStatInfo :: InfoOptions -> StatInfo
-emptyStatInfo = StatInfo Nothing Nothing M.empty Nothing
+emptyStatInfo = StatInfo Nothing Nothing M.empty Nothing Nothing
 
 -- a state monad for running Stats in
 type StatState = StateT StatInfo Annex
@@ -281,8 +282,9 @@ global_slow_stats =
 	, local_annex_size
 	, known_annex_files True
 	, known_annex_size True
-	, bloom_info
+	, total_annex_size
 	, backend_usage
+	, bloom_info
 	]
 
 tree_fast_stats :: Bool -> [FilePath -> Stat]
@@ -435,6 +437,11 @@ known_annex_size :: Bool -> Stat
 known_annex_size isworktree = 
 	simpleStat ("size of annexed files in " ++ treeDesc isworktree) $
 		showSizeKeys =<< cachedReferencedData
+
+total_annex_size :: Stat
+total_annex_size = 
+	simpleStat "combined annex size of all repositories" $
+		showSizeKeys =<< cachedAllRepoData
   
 treeDesc :: Bool -> String
 treeDesc True = "working tree"
@@ -612,6 +619,23 @@ cachedReferencedData = do
 			put s { referencedData = Just v }
 			return v
 
+cachedAllRepoData :: StatState KeyInfo
+cachedAllRepoData = do
+	s <- get
+	case allRepoData s of
+		Just v -> return v
+		Nothing -> do
+			matcher <- lift getKeyOnlyMatcher
+			!v <- lift $ overLocationLogs emptyKeyInfo $ \k locs d -> do
+				numcopies <- genericLength . snd
+					<$> trustPartition DeadTrusted locs
+				ifM (matchOnKey matcher k)
+					( return (addKeyCopies numcopies k d)
+					, return d
+					)
+			put s { allRepoData = Just v }
+			return v
+
 -- currently only available for directory info
 cachedNumCopiesStats :: StatState (Maybe NumCopiesStats)
 cachedNumCopiesStats = numCopiesStats <$> get
@@ -627,7 +651,13 @@ getDirStatInfo o dir = do
 	(presentdata, referenceddata, numcopiesstats, repodata) <-
 		Command.Unused.withKeysFilesReferencedIn dir initial
 			(update matcher fast)
-	return $ StatInfo (Just presentdata) (Just referenceddata) repodata (Just numcopiesstats) o
+	return $ StatInfo
+		(Just presentdata)
+		(Just referenceddata)
+		repodata
+		Nothing
+		(Just numcopiesstats)
+		o
   where
 	initial = (emptyKeyInfo, emptyKeyInfo, emptyNumCopiesStats, M.empty)
 	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats, repodata) =
@@ -663,7 +693,7 @@ getTreeStatInfo o r = do
 	(presentdata, referenceddata, repodata) <- go fast matcher ls initial
 	ifM (liftIO cleanup)
 		( return $ Just $
-			StatInfo (Just presentdata) (Just referenceddata) repodata Nothing o
+			StatInfo (Just presentdata) (Just referenceddata) repodata Nothing Nothing o
 		, return Nothing
 		)
   where
@@ -695,16 +725,19 @@ emptyNumCopiesStats :: NumCopiesStats
 emptyNumCopiesStats = NumCopiesStats M.empty
 
 addKey :: Key -> KeyInfo -> KeyInfo
-addKey key (KeyInfo count size unknownsize backends) =
+addKey = addKeyCopies 1
+
+addKeyCopies :: Integer -> Key -> KeyInfo -> KeyInfo
+addKeyCopies numcopies key (KeyInfo count size unknownsize backends) =
 	KeyInfo count' size' unknownsize' backends'
   where
 	{- All calculations strict to avoid thunks when repeatedly
 	 - applied to many keys. -}
 	!count' = count + 1
 	!backends' = M.insertWith (+) (fromKey keyVariety key) 1 backends
-	!size' = maybe size (+ size) ks
+	!size' = maybe size (\sz -> sz * numcopies + size) ks
 	!unknownsize' = maybe (unknownsize + 1) (const unknownsize) ks
-	ks = fromKey keySize key
+	!ks = fromKey keySize key
 
 updateRepoData :: Key -> [UUID] -> M.Map UUID KeyInfo -> M.Map UUID KeyInfo
 updateRepoData key locs m = m'
@@ -776,3 +809,5 @@ matchOnKey matcher k = matcher $ MatchingInfo $ ProvidedInfo
 	, providedMimeEncoding = Nothing
 	, providedLinkType = Nothing
 	}
+
+

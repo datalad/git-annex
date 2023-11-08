@@ -8,10 +8,12 @@
  - Repositories record their UUID and the date when they --get or --drop
  - a value.
  - 
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
+
+{-# LANGUAGE BangPatterns #-}
 
 module Logs.Location (
 	LogStatus(..),
@@ -29,6 +31,8 @@ module Logs.Location (
 	loggedKeys,
 	loggedKeysFor,
 	loggedKeysFor',
+	overLocationLogs,
+	overLocationLogs',
 ) where
 
 import Annex.Common
@@ -42,6 +46,7 @@ import Git.Types (RefDate, Ref)
 import qualified Annex
 
 import Data.Time.Clock
+import qualified Data.ByteString.Lazy as L
 
 {- Log a change in the presence of a key's value in current repository. -}
 logStatus :: Key -> LogStatus -> Annex ()
@@ -82,6 +87,11 @@ loggedLocationsHistorical = getLoggedLocations . historicalLogInfo
 {- Gets the locations contained in a git ref. -}
 loggedLocationsRef :: Ref -> Annex [UUID]
 loggedLocationsRef ref = map (toUUID . fromLogInfo) . getLog <$> catObject ref
+
+{- Parses the content of a log file and gets the locations in it. -}
+parseLoggedLocations :: L.ByteString -> [UUID]
+parseLoggedLocations l = map (toUUID . fromLogInfo . info)
+	(filterPresent (parseLog l))
 
 getLoggedLocations :: (RawFilePath -> Annex [LogInfo]) -> Key -> Annex [UUID]
 getLoggedLocations getter key = do
@@ -174,3 +184,33 @@ loggedKeysFor' u = loggedKeys' isthere
 		us <- loggedLocations k
 		let !there = u `elem` us
 		return there
+
+{- This is much faster than loggedKeys. -}
+overLocationLogs :: v -> (Key -> [UUID] -> v -> Annex v) -> Annex v
+overLocationLogs v = overLocationLogs' v (flip const)
+
+overLocationLogs'
+	 :: v 
+	-> (Annex (Maybe (Key, RawFilePath, Maybe L.ByteString)) -> Annex v -> Annex v)
+        -> (Key -> [UUID] -> v -> Annex v)
+        -> Annex v
+overLocationLogs' iv discarder keyaction = do
+	config <- Annex.getGitConfig
+		
+	let getk = locationLogFileKey config
+	let go v reader = reader >>= \case
+		Just (k, f, content) -> discarder reader $ do
+			-- precache to make checkDead fast, and also to
+			-- make any accesses done in keyaction fast.
+			maybe noop (Annex.Branch.precache f) content
+			ifM (checkDead k)
+				( go v reader
+				, do
+					!v' <- keyaction k (maybe [] parseLoggedLocations content) v
+					go v' reader
+				)
+		Nothing -> return v
+
+	Annex.Branch.overBranchFileContents getk (go iv) >>= \case
+		Just r -> return r
+		Nothing -> giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents operating on all keys. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"

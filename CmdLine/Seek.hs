@@ -276,24 +276,14 @@ withKeyOptions' ko auto mkkeyaction fallbackaction worktreeitems = do
 	-- those. This significantly speeds up typical operations
 	-- that need to look at the location log for each key.
 	runallkeys = do
-		checktimelimit <- mkCheckTimeLimit
 		keyaction <- mkkeyaction
-		config <- Annex.getGitConfig
-		
-		let getk = locationLogFileKey config
+		checktimelimit <- mkCheckTimeLimit
 		let discard reader = reader >>= \case
 			Nothing -> noop
 			Just _ -> discard reader
-		let go reader = reader >>= \case
-			Just (k, f, content) -> checktimelimit (discard reader) $ do
-				maybe noop (Annex.Branch.precache f) content
-				unlessM (checkDead k) $
-					keyaction Nothing (SeekInput [], k, mkActionItem k)
-				go reader
-			Nothing -> return ()
-		Annex.Branch.overBranchFileContents getk go >>= \case
-			Just r -> return r
-			Nothing -> giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents operating on all keys. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
+		overLocationLogs' () 
+			(\reader cont -> checktimelimit (discard reader) cont) 
+			(\k _ () -> keyaction Nothing (SeekInput [], k, mkActionItem k))
 
 	runkeyaction getks = do
 		keyaction <- mkkeyaction

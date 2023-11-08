@@ -12,8 +12,8 @@ Displays statistics and other information for the specified item.
 
 When no item is specified, displays overall information. This includes a
 list of all known repositories, how much annexed data is present in the
-local repository, and the total size of all annexed data in the working
-tree.
+local repository, the total size of all annexed data in the working
+tree, and the combined size of all annexed data in all known repositories.
 
 When a directory is specified, displays information
 about the annexed files in that directory (and subdirectories).
