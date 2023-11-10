@@ -380,7 +380,7 @@ sizeHistoryInfo mu o = do
 	epoch = toEnum 0
 
 	displaysizes (zone, displayedyet, prevt, prevoutput) uuidmap sizemap t
-		| t - prevt > dt
+		| t - prevt >= dt
 		  && (displayedyet || any (/= 0) sizes) 
 		  && (prevoutput /= Just output) = do
 			displayts zone t output
@@ -400,8 +400,9 @@ sizeHistoryInfo mu o = do
 			then rawTimeStamp t
 			else showTimeStamp zone "%Y-%m-%dT%H:%M:%S" t
 
-	displayendsizes (zone , _, t, Just output) = 
-		displayts zone t output
+	displayendsizes (zone , _, _, Just output) = do
+		now <- getPOSIXTime
+		displayts zone now output
 	displayendsizes _ = return ()
 
 	showsize n
