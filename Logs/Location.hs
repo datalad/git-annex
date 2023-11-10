@@ -23,6 +23,7 @@ module Logs.Location (
 	loggedLocations,
 	loggedLocationsHistorical,
 	loggedLocationsRef,
+	parseLoggedLocations,
 	isKnownKey,
 	checkDead,
 	setDead,

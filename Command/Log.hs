@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, BangPatterns #-}
 
 module Command.Log where
 
@@ -16,15 +16,21 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import qualified Data.ByteString.Char8 as B8
 import qualified System.FilePath.ByteString as P
+import Control.Concurrent.Async
 
 import Command
 import Logs
 import Logs.Location
+import Logs.UUID
+import qualified Logs.Presence.Pure as PLog
 import qualified Annex
 import qualified Annex.Branch
 import qualified Remote
 import qualified Git
 import Git.Log
+import Git.CatFile
+import Utility.DataUnits
+import Utility.HumanTime
 
 data LogChange = Added | Removed
 
@@ -38,7 +44,10 @@ cmd = withAnnexOptions [jsonOptions, annexedMatchingOptions] $
 data LogOptions = LogOptions
 	{ logFiles :: CmdParams
 	, allOption :: Bool
+	, sizesOfOption :: Maybe (DeferredParse UUID)
+	, whenOption :: Maybe Duration
 	, rawDateOption :: Bool
+	, bytesOption :: Bool
 	, gourceOption :: Bool
 	, passthruOptions :: [CommandParam]
 	}
@@ -51,9 +60,23 @@ optParser desc = LogOptions
 		<> short 'A'
 		<> help "display location log changes to all files"
 		)
+	<*> optional ((parseUUIDOption <$> strOption
+		( long "sizesof"
+		<> metavar (paramRemote `paramOr` paramDesc `paramOr` paramUUID)
+		<> help "display history of sizes of this repository"
+		<> completeRemotes
+		)))
+	<*> optional (option (eitherReader parseDuration)
+		( long "when" <> metavar paramTime
+		<> help "when to display changed size"
+		))
 	<*> switch
 		( long "raw-date"
 		<> help "display seconds from unix epoch"
+		)
+	<*> switch
+		( long "bytes"
+		<> help "display sizes in bytes"
 		)
 	<*> switch
 		( long "gource"
@@ -78,7 +101,14 @@ optParser desc = LogOptions
 
 seek :: LogOptions -> CommandSeek
 seek o = ifM (null <$> Annex.Branch.getUnmergedRefs)
-	( do
+	( maybe (pure Nothing) (Just <$$> getParsed) (sizesOfOption o) >>= \case
+		Just u -> sizeHistoryInfo (Just u) o
+		Nothing -> go	
+	, giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents displaying location log changes. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
+	)
+  where
+	ww = WarnUnmatchLsFiles "log"
+	go = do
 		m <- Remote.uuidDescriptions
 		zone <- liftIO getCurrentTimeZone
 		outputter <- mkOutputter m zone o <$> jsonOutputEnabled
@@ -94,10 +124,6 @@ seek o = ifM (null <$> Annex.Branch.getUnmergedRefs)
 				=<< workTreeItems ww fs
 			([], True) -> commandAction (startAll o outputter)
 			(_, True) -> giveup "Cannot specify both files and --all"
-	, giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents displaying location log changes. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
-	)
-  where
-	ww = WarnUnmatchLsFiles "log"
 
 start :: LogOptions -> (ActionItem -> SeekInput -> Outputter) -> SeekInput -> RawFilePath -> Key -> CommandStart
 start o outputter si file key = do
@@ -158,7 +184,7 @@ mkOutputter m zone o jsonenabled ai si
 	| jsonenabled = jsonOutput m ai si
 	| rawDateOption o = normalOutput lookupdescription ai rawTimeStamp
 	| gourceOption o = gourceOutput lookupdescription ai 
-	| otherwise = normalOutput lookupdescription ai (showTimeStamp zone)
+	| otherwise = normalOutput lookupdescription ai (showTimeStamp zone rfc822DateFormat)
   where
 	lookupdescription u = maybe (fromUUID u) (fromUUIDDesc) (M.lookup u m)
 
@@ -242,9 +268,142 @@ getGitLogAnnex fs os = do
 	let fileselector = locationLogFileKey config . toRawFilePath
 	inRepo $ getGitLog Annex.Branch.fullname fs os fileselector
 
-showTimeStamp :: TimeZone -> POSIXTime -> String
-showTimeStamp zone = formatTime defaultTimeLocale rfc822DateFormat 
+showTimeStamp :: TimeZone -> String -> POSIXTime -> String
+showTimeStamp zone format = formatTime defaultTimeLocale format
 	. utcToZonedTime zone . posixSecondsToUTCTime
 
 rawTimeStamp :: POSIXTime -> String
 rawTimeStamp t = filter (/= 's') (show t)
+
+sizeHistoryInfo :: (Maybe UUID) -> LogOptions -> Annex ()
+sizeHistoryInfo mu o = do
+	zone <- liftIO getCurrentTimeZone
+	let dispst = (zone, False, epoch, Nothing)
+	uuidmap <- getuuidmap
+	(l, cleanup) <- getlog
+	g <- Annex.gitRepo
+	liftIO $ catObjectStream g $ \feeder closer reader -> do
+		tid <- async $ do
+			forM_ l $ \c -> 
+				feeder ((changed c, changetime c), newref c)
+			closer
+		go reader M.empty M.empty M.empty uuidmap dispst
+		wait tid
+	void $ liftIO cleanup
+  where
+	-- Go through the log of the git-annex branch in reverse,
+	-- and in date order, and pick out changes to location log files
+	-- and to the trust log.
+	getlog = do
+		config <- Annex.getGitConfig
+		let fileselector = \f -> let f' = toRawFilePath f in
+			case locationLogFileKey config f' of
+				Just k -> Just (Right k)
+				Nothing
+					| f' == trustLog -> Just (Left ())
+					| otherwise -> Nothing
+		inRepo $ getGitLog Annex.Branch.fullname []
+			[ Param "--date-order"
+			, Param "--reverse"
+			]
+			fileselector
+
+	go reader sizemap locmap deadmap uuidmap dispst = reader >>= \case
+		Just ((Right k, t), Just logcontent) -> do
+			let !newlog = parselocationlog logcontent uuidmap
+			let !(sizemap', locmap') = case M.lookup k locmap of
+				Nothing -> addnew k sizemap locmap newlog
+				Just v -> update k sizemap locmap v newlog
+			dispst' <- displaysizes dispst uuidmap sizemap' t
+			go reader sizemap' locmap' deadmap uuidmap dispst'
+		Just ((Left (), t), Just logcontent) -> do
+			-- XXX todo update deadmap
+			go reader sizemap locmap deadmap uuidmap dispst
+		Just (_, Nothing) -> 
+			go reader sizemap locmap deadmap uuidmap dispst
+		Nothing -> 
+			displayendsizes dispst
+
+	-- Known uuids are stored in this map, and when uuids are stored in the
+	-- state, it's a value from this map. This avoids storing multiple
+	-- copies of the same uuid in memory.
+	getuuidmap = do
+		us <- M.keys <$> uuidDescMap
+		return $ M.fromList (zip us us)
+	
+	-- Parses a location log file, and replaces the logged uuid
+	-- with one from the uuidmap.
+	parselocationlog logcontent uuidmap = 
+		map replaceuuid $ PLog.parseLog logcontent
+	  where
+		replaceuuid ll = 
+			let !u = toUUID $ PLog.fromLogInfo $ PLog.info ll
+			    !ushared = fromMaybe u $ M.lookup u uuidmap
+			in ll { PLog.info = PLog.LogInfo (fromUUID ushared) }
+
+	presentlocs = map (toUUID . PLog.fromLogInfo . PLog.info)
+		. PLog.filterPresent
+	
+	-- Since the git log is being traversed in date order, commits
+	-- from different branches can appear one after the other, and so
+	-- the newlog is not necessarily the complete state known at that
+	-- time across all git-annex repositories.
+	--
+	-- This combines the new location log with what has been
+	-- accumulated so far, which is equivilant to merging together
+	-- all git-annex branches at that point in time.
+	update k sizemap locmap (oldlog, oldlocs) newlog = 
+		( updatesize (updatesize sizemap sz (S.toList addedlocs))
+			(negate sz) (S.toList removedlocs)
+		, M.insert k (combinedlog, combinedlocs) locmap
+		)
+	  where
+		sz = ksz k
+		combinedlog = PLog.compactLog (oldlog ++ newlog)
+		combinedlocs = S.fromList (presentlocs combinedlog)
+		addedlocs = S.difference combinedlocs oldlocs
+		removedlocs = S.difference oldlocs combinedlocs
+	
+	addnew k sizemap locmap newlog = 
+		( updatesize sizemap (ksz k) locs
+		, M.insert k (newlog, S.fromList locs) locmap
+		)
+	  where
+		locs = presentlocs newlog
+	
+	ksz k = fromMaybe 0 (fromKey keySize k)
+	
+	updatesize sizemap _ [] = sizemap
+	updatesize sizemap sz (l:ls) =
+		updatesize (M.insertWith (+) l sz sizemap) sz ls
+
+	epoch = toEnum 0
+
+	displaysizes (zone, displayedyet, prevt, prevoutput) uuidmap sizemap t
+		| t - prevt > dt
+		  && (displayedyet || any (/= 0) sizes) 
+		  && (prevoutput /= Just output) = do
+			displayts zone t output
+			return (zone, True, t, Just output)
+		| otherwise = return (zone, displayedyet, prevt, Just output)
+	  where
+		output = intercalate ", " (map showsize sizes)
+		us = case mu of
+			Just u -> [u]
+			Nothing -> M.keys uuidmap
+		sizes = map (\u -> fromMaybe 0 (M.lookup u sizemap)) us
+		dt = maybe 1 durationToPOSIXTime (whenOption o)
+
+	displayts zone t output = putStrLn $ ts ++ ", " ++ output
+	  where
+		ts = if rawDateOption o
+			then rawTimeStamp t
+			else showTimeStamp zone "%Y-%m-%dT%H:%M:%S" t
+
+	displayendsizes (zone , _, t, Just output) = 
+		displayts zone t output
+	displayendsizes _ = return ()
+
+	showsize n
+		| bytesOption o = show n
+		| otherwise = roughSize storageUnits True n

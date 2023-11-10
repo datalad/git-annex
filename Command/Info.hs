@@ -809,5 +809,3 @@ matchOnKey matcher k = matcher $ MatchingInfo $ ProvidedInfo
 	, providedMimeEncoding = Nothing
 	, providedLinkType = Nothing
 	}
-
-
