@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,19 +20,11 @@ import qualified System.FilePath.ByteString as P
 import Command
 import Logs
 import Logs.Location
-import qualified Annex.Branch
-import qualified Git
-import Git.Command
-import qualified Remote
 import qualified Annex
-
-data RefChange = RefChange 
-	{ changetime :: POSIXTime
-	, oldref :: Git.Ref
-	, newref :: Git.Ref
-	, changekey :: Key
-	}
-	deriving (Show)
+import qualified Annex.Branch
+import qualified Remote
+import qualified Git
+import Git.Log
 
 data LogChange = Added | Removed
 
@@ -117,7 +109,7 @@ start o outputter si file key = do
 
 startAll :: LogOptions -> (ActionItem -> SeekInput -> Outputter) -> CommandStart
 startAll o outputter = do
-	(changes, cleanup) <- getAllLog (passthruOptions o)
+	(changes, cleanup) <- getGitLogAnnex [] (passthruOptions o)
 	showLog (\ai -> outputter ai (SeekInput [])) changes
 	void $ liftIO cleanup
 	stop
@@ -136,7 +128,7 @@ startAll o outputter = do
  - This also generates subtly better output when the git-annex branch
  - got diverged.
  -}
-showLogIncremental :: Outputter -> [RefChange] -> Annex ()
+showLogIncremental :: Outputter -> [RefChange Key] -> Annex ()
 showLogIncremental outputter ps = do
 	sets <- mapM (getset newref) ps
 	previous <- maybe (return genesis) (getset oldref) (lastMaybe ps)
@@ -153,9 +145,9 @@ showLogIncremental outputter ps = do
 {- Displays changes made. Streams, and can display changes affecting
  - different keys, but does twice as much reading of logged values
  - as showLogIncremental. -}
-showLog :: (ActionItem -> Outputter) -> [RefChange] -> Annex ()
+showLog :: (ActionItem -> Outputter) -> [RefChange Key] -> Annex ()
 showLog outputter cs = forM_ cs $ \c -> do
-	let ai = mkActionItem (changekey c)
+	let ai = mkActionItem (changed c)
 	new <- S.fromList <$> loggedLocationsRef (newref c)
 	old <- S.fromList <$> loggedLocationsRef (oldref c)
 	sequence_ $ compareChanges (outputter ai)
@@ -236,85 +228,19 @@ compareChanges format changes = concatMap diff changes
  - once the location log file is gone avoids it checking all the way back
  - to commit 0 to see if it used to exist, so generally speeds things up a
  - *lot* for newish files. -}
-getKeyLog :: Key -> [CommandParam] -> Annex ([RefChange], IO Bool)
+getKeyLog :: Key -> [CommandParam] -> Annex ([RefChange Key], IO Bool)
 getKeyLog key os = do
 	top <- fromRepo Git.repoPath
 	p <- liftIO $ relPathCwdToFile top
 	config <- Annex.getGitConfig
 	let logfile = p P.</> locationLogFile config key
-	getGitLog [fromRawFilePath logfile] (Param "--remove-empty" : os)
+	getGitLogAnnex [fromRawFilePath logfile] (Param "--remove-empty" : os)
 
-{- Streams the git log for all git-annex branch changes to location log
- - files. -}
-getAllLog :: [CommandParam] -> Annex ([RefChange], IO Bool)
-getAllLog = getGitLog []
-
-getGitLog :: [FilePath] -> [CommandParam] -> Annex ([RefChange], IO Bool)
-getGitLog fs os = do
+getGitLogAnnex :: [FilePath] -> [CommandParam] -> Annex ([RefChange Key], IO Bool)
+getGitLogAnnex fs os = do
 	config <- Annex.getGitConfig
-	(ls, cleanup) <- inRepo $ pipeNullSplit $
-		[ Param "log"
-		, Param "-z"
-		, Param "--pretty=format:%ct"
-		, Param "--raw"
-		, Param "--no-abbrev"
-		, Param "--no-renames"
-		] ++ os ++
-		[ Param $ Git.fromRef Annex.Branch.fullname
-		, Param "--"
-		] ++ map Param fs
-	return (parseGitRawLog config (map decodeBL ls), cleanup)
-
--- Parses chunked git log --raw output, which looks something like:
---
--- [ "timestamp\n:changeline"
--- , "logfile"
--- , ""
--- , "timestamp\n:changeline"
--- , "logfile"
--- , ":changeline"
--- , "logfile"
--- , ""
--- ]
---
--- The timestamp is not included before all changelines, so
--- keep track of the most recently seen timestamp.
---
--- Only changes to location log files are returned.
-parseGitRawLog :: GitConfig -> [String] -> [RefChange]
-parseGitRawLog config = parse epoch
-  where
-	epoch = toEnum 0 :: POSIXTime
-	parse oldts ([]:rest) = parse oldts rest
-	parse oldts (c1:c2:rest) = case mrc of
-		Just rc -> rc : parse ts rest
-		Nothing -> parse ts (c2:rest)
-	  where
-		(ts, cl) = case separate (== '\n') c1 of
-			(cl', []) -> (oldts, cl')
-			(tss, cl') -> (parseTimeStamp tss, cl')
-	  	mrc = do
-			(old, new) <- parseRawChangeLine cl
-			key <- locationLogFileKey config (toRawFilePath c2)
-			return $ RefChange
-				{ changetime = ts
-				, oldref = old
-				, newref = new
-				, changekey = key
-				}	
-	parse _ _ = []
-
--- Parses something like "100644 100644 oldsha newsha M"
-parseRawChangeLine :: String -> Maybe (Git.Ref, Git.Ref)
-parseRawChangeLine = go . words
-  where
-	go (_:_:oldsha:newsha:_) = 
-		Just (Git.Ref (encodeBS oldsha), Git.Ref (encodeBS newsha))
-	go _ = Nothing
-
-parseTimeStamp :: String -> POSIXTime
-parseTimeStamp = utcTimeToPOSIXSeconds . fromMaybe (giveup "bad timestamp") .
-	parseTimeM True defaultTimeLocale "%s"
+	let fileselector = locationLogFileKey config . toRawFilePath
+	inRepo $ getGitLog Annex.Branch.fullname fs os fileselector
 
 showTimeStamp :: TimeZone -> POSIXTime -> String
 showTimeStamp zone = formatTime defaultTimeLocale rfc822DateFormat 
