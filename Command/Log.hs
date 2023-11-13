@@ -45,6 +45,7 @@ data LogOptions = LogOptions
 	{ logFiles :: CmdParams
 	, allOption :: Bool
 	, sizesOfOption :: Maybe (DeferredParse UUID)
+	, sizesOption :: Bool
 	, whenOption :: Maybe Duration
 	, rawDateOption :: Bool
 	, bytesOption :: Bool
@@ -66,6 +67,10 @@ optParser desc = LogOptions
 		<> help "display history of sizes of this repository"
 		<> completeRemotes
 		)))
+	<*> switch
+		( long "sizes"
+		<> help "display history of sizes of all repositories"
+		)
 	<*> optional (option (eitherReader parseDuration)
 		( long "when" <> metavar paramTime
 		<> help "when to display changed size"
@@ -103,7 +108,9 @@ seek :: LogOptions -> CommandSeek
 seek o = ifM (null <$> Annex.Branch.getUnmergedRefs)
 	( maybe (pure Nothing) (Just <$$> getParsed) (sizesOfOption o) >>= \case
 		Just u -> sizeHistoryInfo (Just u) o
-		Nothing -> go	
+		Nothing -> if sizesOption o
+			then sizeHistoryInfo Nothing o
+			else go	
 	, giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents displaying location log changes. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
 	)
   where
@@ -277,9 +284,10 @@ rawTimeStamp t = filter (/= 's') (show t)
 
 sizeHistoryInfo :: (Maybe UUID) -> LogOptions -> Annex ()
 sizeHistoryInfo mu o = do
-	zone <- liftIO getCurrentTimeZone
-	let dispst = (zone, False, epoch, Nothing)
 	uuidmap <- getuuidmap
+	zone <- liftIO getCurrentTimeZone
+	liftIO $ displayheader uuidmap
+	let dispst = (zone, False, epoch, Nothing)
 	(l, cleanup) <- getlog
 	g <- Annex.gitRepo
 	liftIO $ catObjectStream g $ \feeder closer reader -> do
@@ -328,8 +336,8 @@ sizeHistoryInfo mu o = do
 	-- state, it's a value from this map. This avoids storing multiple
 	-- copies of the same uuid in memory.
 	getuuidmap = do
-		us <- M.keys <$> uuidDescMap
-		return $ M.fromList (zip us us)
+		(us, ds) <- unzip . M.toList <$> uuidDescMap
+		return $ M.fromList (zip us (zip us ds))
 	
 	-- Parses a location log file, and replaces the logged uuid
 	-- with one from the uuidmap.
@@ -338,7 +346,7 @@ sizeHistoryInfo mu o = do
 	  where
 		replaceuuid ll = 
 			let !u = toUUID $ PLog.fromLogInfo $ PLog.info ll
-			    !ushared = fromMaybe u $ M.lookup u uuidmap
+			    !ushared = maybe u fst $ M.lookup u uuidmap
 			in ll { PLog.info = PLog.LogInfo (fromUUID ushared) }
 
 	presentlocs = map (toUUID . PLog.fromLogInfo . PLog.info)
@@ -379,6 +387,12 @@ sizeHistoryInfo mu o = do
 
 	epoch = toEnum 0
 
+	displayheader uuidmap
+		| sizesOption o = putStrLn $ intercalate "," $
+			"date" : map (csvquote . fromUUIDDesc . snd)
+				(M.elems uuidmap)
+		| otherwise = return ()
+
 	displaysizes (zone, displayedyet, prevt, prevoutput) uuidmap sizemap t
 		| t - prevt >= dt
 		  && (displayedyet || any (/= 0) sizes) 
@@ -387,14 +401,14 @@ sizeHistoryInfo mu o = do
 			return (zone, True, t, Just output)
 		| otherwise = return (zone, displayedyet, prevt, Just output)
 	  where
-		output = intercalate ", " (map showsize sizes)
+		output = intercalate "," (map showsize sizes)
 		us = case mu of
 			Just u -> [u]
 			Nothing -> M.keys uuidmap
 		sizes = map (\u -> fromMaybe 0 (M.lookup u sizemap)) us
 		dt = maybe 1 durationToPOSIXTime (whenOption o)
 
-	displayts zone t output = putStrLn $ ts ++ ", " ++ output
+	displayts zone t output = putStrLn $ ts ++ "," ++ output
 	  where
 		ts = if rawDateOption o
 			then rawTimeStamp t
@@ -408,3 +422,11 @@ sizeHistoryInfo mu o = do
 	showsize n
 		| bytesOption o = show n
 		| otherwise = roughSize storageUnits True n
+	
+	csvquote s
+		| ',' `elem` s || '"' `elem` s = 
+			'"' : concatMap escquote s ++ ['"']
+		| otherwise = s
+	  where
+		escquote '"' = "\"\""
+		escquote c = [c]
