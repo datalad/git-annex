@@ -34,8 +34,8 @@ Setting up a New Client
 -----------------------
 
 - Determine a unique ID for the client.  Client IDs should consist of only
-  ASCII letters, numbers, underscores, and/or hyphens. E.g. could simply correspond
-  to output of `hostname` command.
+  ASCII letters, numbers, underscores, and/or hyphens.  Using the output of
+  `hostname` on the client machine is recommended.
 
 - Add an entry to `clients.yaml` for the client containing one or more tests
   (See "`clients.yaml` Format" below)
@@ -48,44 +48,50 @@ Setting up a New Client
     - Configure a name & e-mail in Git
 
     - Clone this repository.  Passing `--single-branch` is recommended so as
-      not to include the mirror of git-annex's repository. E.g.,
+      not to include the mirror of git-annex's repository. E.g.:
 
-            git clone --single-branch http://github.com/datalad/git-annex ~/git-annex-ci/git-annex
+        ```shell
+        git clone --single-branch http://github.com/datalad/git-annex ~/git-annex-ci/git-annex
+        ```
 
-    - Import `.github/workflows/tools/datalad-builder-key.asc` into GPG
+    - Import `.github/workflows/tools/datalad-builder-key.asc` into GPG:
 
-            cd ~/git-annex-ci/git-annex
-            gpg --import < .github/workflows/tools/datalad-builder-key.asc
+        ```shell
+        cd ~/git-annex-ci/git-annex
+        gpg --import < .github/workflows/tools/datalad-builder-key.asc
+        ```
 
-    - Create a Python virtual environment in this directory in the clone and
-      install the packages listed in `requirements.txt` in it, e.g.
+    - Create a conda environment named "`testannex`" using the `spec-file.txt`
+      file in this directory:
 
-            cd ~/git-annex-ci/git-annex/clients
-            python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt
-
-        - Alternatively, create a conda environment named "`testannex`" using
-          the `environment.yml` file in this directory
+        ```shell
+        cd ~/git-annex-ci/git-annex/clients
+        conda create -n testannex --file spec-file.txt
+        ```
 
     - Create a cronjob with a command of the form:
 
-            cd /path/to/clone/clients && chronic flock -n -E 0 .lock venv/bin/python testannex.py CLIENTID /path/to/job/dir
+        ```shell
+        cd /path/to/clone/clients && chronic flock -n -E 0 .lock ./testannex.sh CLIENTID /path/to/job/dir
+        ```
 
       where `CLIENTID` is replaced by the ID of the client and
       `/path/to/job/dir` is replaced by the path to the location at which to
-      clone the jobs repository, e.g.
+      clone the jobs repository, e.g.:
 
-            0 * * * * cd ~/git-annex-ci/git-annex/clients && chronic flock -n -E 0 .lock venv/bin/python testannex.py `hostname` ~/git-annex-ci/jobs
+        ```crontab
+        0 * * * * cd ~/git-annex-ci/git-annex/clients && chronic flock -n -E 0 .lock ./testannex.sh `hostname` ~/git-annex-ci/jobs
+        ```
 
-        - Alternatively, if using Conda:
+    - On systems with limits/quotas on the number or total size of files, we
+      recommend reducing the value of Git's `gc.reflogExpire` configuration
+      option for the jobs repository so that old unreachable refs are not
+      retained:
 
-                cd /path/to/clone/clients && chronic flock -n -E 0 .lock ./testannex.sh CLIENTID /path/to/job/dir
-
-    - On systems with limits/quotes on number of files or storage, we
-      recommend to reduce the `gc.reflogExpire` git config 
-      setting, so that no longer present refs do not occupy space. For that cd to `/path/to/job/dir`
-      and run
-
-          git config gc.reflogExpire 10
+        ```shell
+        cd /path/to/job/dir
+        git config gc.reflogExpire 10
+        ```
 
 - Edit the `README.md` in the root of this repository to add badges for the
   client's overall test status and per-test statuses.  (Badges will not be

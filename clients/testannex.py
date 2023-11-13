@@ -126,14 +126,6 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
         level=log_level,
     )
 
-    this_script = Path(__file__)
-    mtime = this_script.stat().st_mtime_ns
-    log.info("Updating client config repo ...")
-    GitRepo(this_script.parent).run("-c", "pull.rebase=false", "pull", "origin", "master")
-    if this_script.stat().st_mtime_ns > mtime:
-        log.info("This script was modified; restarting ...")
-        os.execl(sys.executable, sys.executable, __file__, *sys.argv[1:])
-
     cfg = parse_clients()
     try:
         client = cfg[clientid]
