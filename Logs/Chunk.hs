@@ -54,3 +54,4 @@ getCurrentChunks u k = do
 		. map (\((_ku, m), l) -> (m, value l))
 		. M.toList
 		. M.filterWithKey (\(ku, _m) _ -> ku == u)
+		. fromMapLog

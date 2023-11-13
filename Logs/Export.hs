@@ -101,7 +101,7 @@ recordExportUnderway remoteuuid ec = do
 	Annex.Branch.change ru exportLog $ 
 		buildExportLog
 			. changeMapLog c ep exported 
-			. M.mapWithKey (updateForExportChange remoteuuid ec c hereuuid)
+			. mapLogWithKey (updateForExportChange remoteuuid ec c hereuuid)
 			. parseExportLog
 
 -- Record information about the export to the git-annex branch.

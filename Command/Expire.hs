@@ -73,7 +73,7 @@ start (Expire expire) noact actlog descs u =
 					trustSet u DeadTrusted
 				next $ return True
   where
-	lastact = changed <$> M.lookup u actlog
+	lastact = changed <$> M.lookup u (fromMapLog actlog)
 	whenactive = case lastact of
 		Just (VectorClock c) -> do
 			d <- liftIO $ durationSince $ posixSecondsToUTCTime c

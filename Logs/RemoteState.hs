@@ -14,6 +14,7 @@ import Annex.Common
 import Types.RemoteState
 import Logs
 import Logs.UUIDBased
+import Logs.MapLog
 import qualified Annex.Branch
 import qualified Annex
 
@@ -39,7 +40,7 @@ buildRemoteState = buildLogNew (byteString . encodeBS)
 getRemoteState :: RemoteStateHandle -> Key -> Annex (Maybe RemoteState)
 getRemoteState (RemoteStateHandle u) k = do
 	config <- Annex.getGitConfig
-	extract . parseRemoteState
+	extract . fromMapLog . parseRemoteState
 		<$> Annex.Branch.get (remoteStateLogFile config k)
   where
 	extract m = value <$> M.lookup u m

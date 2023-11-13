@@ -9,7 +9,7 @@
  -
  - New uuid based logs instead use the form: "timestamp UUID INFO"
  - 
- - Copyright 2011-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -37,12 +37,10 @@ import Common
 import Types.UUID
 import Annex.VectorClock
 import Logs.MapLog
-import Logs.Line
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Attoparsec.ByteString as A
-import qualified Data.Attoparsec.ByteString.Lazy as AL
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 import qualified Data.DList as D
@@ -50,7 +48,7 @@ import qualified Data.DList as D
 type Log v = MapLog UUID v
 
 buildLogOld :: (v -> Builder) -> Log v -> Builder
-buildLogOld builder = mconcat . map genline . M.toList
+buildLogOld builder = mconcat . map genline . M.toList . fromMapLog
   where
 	genline (u, LogEntry c@(VectorClock {}) v) =
 		buildUUID u <> sp <> builder v <> sp
@@ -66,18 +64,16 @@ parseLogOld :: A.Parser a -> L.ByteString -> Log a
 parseLogOld = parseLogOldWithUUID . const
 
 parseLogOldWithUUID :: (UUID -> A.Parser a) -> L.ByteString -> Log a
-parseLogOldWithUUID parser = fromMaybe M.empty . AL.maybeResult
-	. AL.parse (logParserOld parser)
+parseLogOldWithUUID parser = parseMapLogWith (logParserOld parser)
 
 logParserOld :: (UUID -> A.Parser a) -> A.Parser (Log a)
-logParserOld parser = M.fromListWith best <$> parseLogLines go
+logParserOld parser = mapLogParser' $ do
+	u <- toUUID <$> A8.takeWhile1 (/= ' ')
+	(dl, ts) <- accumval D.empty
+	v <- either fail return $ A.parseOnly (parser u <* A.endOfInput)
+		(S.intercalate " " $ D.toList dl)
+	return (u, LogEntry ts v)
   where
-	go = do
-		u <- toUUID <$> A8.takeWhile1 (/= ' ')
-		(dl, ts) <- accumval D.empty
-		v <- either fail return $ A.parseOnly (parser u <* A.endOfInput)
-			(S.intercalate " " $ D.toList dl)
-		return (u, LogEntry ts v)
 	accumval dl =
 		((dl,) <$> parsetimestamp)
 		<|> (A8.char ' ' *> (A8.takeWhile (/= ' ')) >>= accumval . D.snoc dl)

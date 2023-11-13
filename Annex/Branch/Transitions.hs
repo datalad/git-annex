@@ -18,6 +18,7 @@ import qualified Logs.Presence.Pure as Presence
 import qualified Logs.Chunk.Pure as Chunk
 import qualified Logs.MetaData.Pure as MetaData
 import qualified Logs.Remote.Pure as Remote
+import Logs.MapLog
 import Types.TrustLevel
 import Types.UUID
 import Types.MetaData
@@ -53,7 +54,7 @@ dropDead trustmap remoteconfigmap gc f content
 	| f == trustLog = PreserveFile
 	| f == remoteLog = ChangeFile $
 		Remote.buildRemoteConfigLog $
-			M.mapWithKey minimizesameasdead $
+			mapLogWithKey minimizesameasdead $
 				filterMapLog (notdead trustmap) id $
 					Remote.parseRemoteConfigLog content
 	| otherwise = filterBranch (notdead trustmap') gc f content
@@ -95,8 +96,8 @@ filterBranch wantuuid gc f content = case getLogVariety gc f of
 	Just OtherLog -> PreserveFile
 	Nothing -> PreserveFile
 
-filterMapLog :: (UUID -> Bool) -> (k -> UUID) -> M.Map k v -> M.Map k v
-filterMapLog wantuuid getuuid = M.filterWithKey $ \k _v -> wantuuid (getuuid k)
+filterMapLog :: (UUID -> Bool) -> (k -> UUID) -> MapLog k v -> MapLog k v
+filterMapLog wantuuid getuuid = filterMapLogWith (\k _v -> wantuuid (getuuid k))
 
 filterLocationLog :: (UUID -> Bool) -> [Presence.LogLine] -> [Presence.LogLine]
 filterLocationLog wantuuid = filter $

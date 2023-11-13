@@ -19,7 +19,10 @@ import qualified Data.Attoparsec.ByteString.Char8 as A8
 import Data.ByteString.Builder
 
 calcTrustMap :: L.ByteString -> TrustMap
-calcTrustMap = simpleMap . parseLogOld trustLevelParser
+calcTrustMap = simpleMap . parseTrustLog
+
+parseTrustLog :: L.ByteString -> Log TrustLevel
+parseTrustLog = parseLogOld trustLevelParser
 
 trustLevelParser :: A.Parser TrustLevel
 trustLevelParser = (totrust <$> A8.anyChar <* A.endOfInput)
