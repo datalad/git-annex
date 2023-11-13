@@ -23,12 +23,15 @@ import Logs
 import Logs.Location
 import Logs.UUID
 import qualified Logs.Presence.Pure as PLog
+import Logs.Trust.Pure (parseTrustLog)
+import Logs.UUIDBased (simpleMap)
 import qualified Annex
 import qualified Annex.Branch
 import qualified Remote
 import qualified Git
 import Git.Log
 import Git.CatFile
+import Types.TrustLevel
 import Utility.DataUnits
 import Utility.HumanTime
 
@@ -300,7 +303,7 @@ sizeHistoryInfo mu o = do
 			forM_ l $ \c -> 
 				feeder ((changed c, changetime c), newref c)
 			closer
-		go reader M.empty M.empty M.empty uuidmap dispst
+		go reader mempty mempty mempty uuidmap dispst
 		wait tid
 	void $ liftIO cleanup
   where
@@ -321,19 +324,20 @@ sizeHistoryInfo mu o = do
 			]
 			fileselector
 
-	go reader sizemap locmap deadmap uuidmap dispst = reader >>= \case
+	go reader sizemap locmap trustlog uuidmap dispst = reader >>= \case
 		Just ((Right k, t), Just logcontent) -> do
 			let !newlog = parselocationlog logcontent uuidmap
 			let !(sizemap', locmap') = case M.lookup k locmap of
 				Nothing -> addnew k sizemap locmap newlog
 				Just v -> update k sizemap locmap v newlog
-			dispst' <- displaysizes dispst uuidmap sizemap' t
-			go reader sizemap' locmap' deadmap uuidmap dispst'
+			dispst' <- displaysizes dispst trustlog uuidmap sizemap' t
+			go reader sizemap' locmap' trustlog uuidmap dispst'
 		Just ((Left (), t), Just logcontent) -> do
-			-- XXX todo update deadmap
-			go reader sizemap locmap deadmap uuidmap dispst
+			let !trustlog' = trustlog <> parseTrustLog logcontent
+			dispst' <- displaysizes dispst trustlog' uuidmap sizemap t
+			go reader sizemap locmap trustlog' uuidmap dispst'
 		Just (_, Nothing) -> 
-			go reader sizemap locmap deadmap uuidmap dispst
+			go reader sizemap locmap trustlog uuidmap dispst
 		Nothing -> 
 			displayendsizes dispst
 
@@ -398,7 +402,7 @@ sizeHistoryInfo mu o = do
 				(M.elems uuidmap)
 		| otherwise = return ()
 
-	displaysizes (zone, displayedyet, prevt, prevoutput) uuidmap sizemap t
+	displaysizes (zone, displayedyet, prevt, prevoutput) trustlog uuidmap sizemap t
 		| t - prevt >= dt
 		  && (displayedyet || any (/= 0) sizes) 
 		  && (prevoutput /= Just output) = do
@@ -411,9 +415,16 @@ sizeHistoryInfo mu o = do
 			Just u -> [u]
 			Nothing -> M.keys uuidmap
 		sizes
-			| totalSizesOption o = [sum (M.elems sizemap)]
-			| otherwise = map (\u -> fromMaybe 0 (M.lookup u sizemap)) us
+			| totalSizesOption o = [sum (M.elems sizemap')]
+			| otherwise = map (\u -> fromMaybe 0 (M.lookup u sizemap')) us
 		dt = maybe 1 durationToPOSIXTime (whenOption o)
+
+		-- A verison of sizemap where uuids that are currently dead
+		-- have 0 size.
+		sizemap' = M.mapWithKey zerodead sizemap
+		zerodead u v = case M.lookup u (simpleMap trustlog) of
+			Just DeadTrusted -> 0
+			_ -> v
 
 	displayts zone t output = putStrLn $ ts ++ "," ++ output
 	  where
