@@ -46,6 +46,7 @@ data LogOptions = LogOptions
 	, allOption :: Bool
 	, sizesOfOption :: Maybe (DeferredParse UUID)
 	, sizesOption :: Bool
+	, totalSizesOption :: Bool
 	, whenOption :: Maybe Duration
 	, rawDateOption :: Bool
 	, bytesOption :: Bool
@@ -70,6 +71,10 @@ optParser desc = LogOptions
 	<*> switch
 		( long "sizes"
 		<> help "display history of sizes of all repositories"
+		)
+	<*> switch
+		( long "totalsizes"
+		<> help "display history of total sizes of all repositories"
 		)
 	<*> optional (option (eitherReader parseDuration)
 		( long "when" <> metavar paramTime
@@ -108,7 +113,7 @@ seek :: LogOptions -> CommandSeek
 seek o = ifM (null <$> Annex.Branch.getUnmergedRefs)
 	( maybe (pure Nothing) (Just <$$> getParsed) (sizesOfOption o) >>= \case
 		Just u -> sizeHistoryInfo (Just u) o
-		Nothing -> if sizesOption o
+		Nothing -> if sizesOption o || totalSizesOption o
 			then sizeHistoryInfo Nothing o
 			else go	
 	, giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents displaying location log changes. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
@@ -405,7 +410,9 @@ sizeHistoryInfo mu o = do
 		us = case mu of
 			Just u -> [u]
 			Nothing -> M.keys uuidmap
-		sizes = map (\u -> fromMaybe 0 (M.lookup u sizemap)) us
+		sizes
+			| totalSizesOption o = [sum (M.elems sizemap)]
+			| otherwise = map (\u -> fromMaybe 0 (M.lookup u sizemap)) us
 		dt = maybe 1 durationToPOSIXTime (whenOption o)
 
 	displayts zone t output = putStrLn $ ts ++ "," ++ output
