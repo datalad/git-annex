@@ -408,6 +408,7 @@ sizeHistoryInfo mu o = do
 		  && (prevoutput /= Just output) = do
 			displayts zone t output
 			return (zone, True, t, Just output)
+		| t < prevt = return (zone, displayedyet, t, Just output)
 		| otherwise = return (zone, displayedyet, prevt, Just output)
 	  where
 		output = intercalate "," (map showsize sizes)
