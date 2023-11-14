@@ -66,14 +66,14 @@ jobs:
         run: |
           # The goal here is for $BUILD_COMMIT to be the HEAD (necessary for
           # git-annex's version detection to use the correct git commit) with
-          # the contents of master — or whatever ref is being used as the
-          # workflow source — also available.
+          # the .github/ and patches/ trees from master — or whatever ref is
+          # being used as the workflow source — also available.
           git reset --soft "$BUILD_COMMIT"
           # Avoid checking out unnecessary files with paths that are invalid on
           # Windows.
           git ls-tree --name-only HEAD | grep -v '^doc$' | xargs git checkout HEAD
           git checkout HEAD doc/license ':(glob)doc/*.mdwn' ':(glob)doc/logo*'
-          git checkout "$GITHUB_SHA" -- .
+          git checkout "$GITHUB_SHA" -- .github patches
 
       - name: Get build version
         id: build-version

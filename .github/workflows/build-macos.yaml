@@ -60,10 +60,10 @@ jobs:
         run: |
           # The goal here is for $BUILD_COMMIT to be the HEAD (necessary for
           # git-annex's version detection to use the correct git commit) with
-          # the contents of master — or whatever ref is being used as the
-          # workflow source — also available.
+          # the .github/ and patches/ trees from master — or whatever ref is
+          # being used as the workflow source — also available.
           git checkout "$BUILD_COMMIT"
-          git checkout "$GITHUB_SHA" -- .
+          git checkout "$GITHUB_SHA" -- .github patches
 
       - name: Get build version
         id: build-version
