@@ -52,6 +52,7 @@ data LogOptions = LogOptions
 	, totalSizesOption :: Bool
 	, intervalOption :: Maybe Duration
 	, receivedOption :: Bool
+	, gnuplotOption :: Bool
 	, rawDateOption :: Bool
 	, bytesOption :: Bool
 	, gourceOption :: Bool
@@ -87,6 +88,10 @@ optParser desc = LogOptions
 	<*> switch
 		( long "received"
 		<> help "display received data per interval rather than repository sizes"
+		)
+	<*> switch
+		( long "gnuplot"
+		<> help "graph the history"
 		)
 	<*> switch
 		( long "raw-date"
@@ -299,8 +304,7 @@ sizeHistoryInfo :: (Maybe UUID) -> LogOptions -> Annex ()
 sizeHistoryInfo mu o = do
 	uuidmap <- getuuidmap
 	zone <- liftIO getCurrentTimeZone
-	liftIO $ displayheader uuidmap
-	let dispst = (zone, False, epoch, Nothing, mempty)
+	dispst <- displaystart uuidmap zone
 	(l, cleanup) <- getlog
 	g <- Annex.gitRepo
 	liftIO $ catObjectStream g $ \feeder closer reader -> do
@@ -344,7 +348,7 @@ sizeHistoryInfo mu o = do
 		Just (_, Nothing) -> 
 			go reader sizemap locmap trustlog uuidmap dispst
 		Nothing -> 
-			displayendsizes dispst
+			displayend dispst
 
 	-- Known uuids are stored in this map, and when uuids are stored in the
 	-- state, it's a value from this map. This avoids storing multiple
@@ -403,18 +407,63 @@ sizeHistoryInfo mu o = do
 
 	epoch = toEnum 0
 
-	displayheader uuidmap
-		| sizesOption o = putStrLn $ intercalate "," $
-			"date" : map (csvquote . fromUUIDDesc . snd)
-				(M.elems uuidmap)
-		| otherwise = return ()
+	displaystart uuidmap zone
+		| gnuplotOption o = do
+			file <- (</>)
+				<$> fromRepo (fromRawFilePath . gitAnnexDir)
+				<*> pure "gnuplot"
+			liftIO $ putStrLn $ "Generating gnuplot script in " ++ file
+			h <- liftIO $ openFile file WriteMode
+			liftIO $ mapM_ (hPutStrLn h)
+				[ "set datafile separator ','"
+				, "set timefmt \"%Y-%m-%dT%H:%M:%S\""
+				, "set xdata time"
+				, "set xtics out"
+				, "set ytics format '%s%c'"
+				, "set tics front"
+				, "set key spacing 1 font \",8\""
+				]
+			unless (sizesOption o) $
+				liftIO $ hPutStrLn h "set key off"
+			liftIO $ hPutStrLn h "$data << EOD"
+			liftIO $ hPutStrLn h $ if sizesOption o
+				then uuidmapheader
+				else csvheader ["value"]
+			let endaction = do
+				mapM_ (hPutStrLn h)
+					[ "EOD"
+					, ""
+					, "plot for [i=2:" ++ show ncols ++ ":1] \\"
+					, "  \"$data\" using 1:(sum [col=i:" ++ show ncols ++ "] column(col)) \\"
+					, "  title columnheader(i) \\"
+					, if receivedOption o
+						then "  with boxes"
+						else "  with filledcurves x1"
+					]
+				hFlush h
+				putStrLn $ "Running gnuplot..."
+				void $ liftIO $ boolSystem "gnuplot"
+					[Param "-p", File file]
+			return (dispst h endaction)
+		| sizesOption o = do
+			liftIO $ putStrLn uuidmapheader
+			return (dispst stdout noop)
+		| otherwise = return (dispst stdout noop)
+	  where
+		dispst fileh endaction = 
+			(zone, False, epoch, Nothing, mempty, fileh, endaction)
+		ncols
+			| sizesOption o = 1 + length (M.elems uuidmap)
+			| otherwise = 2
+		uuidmapheader = csvheader $
+			map (fromUUIDDesc . snd) (M.elems uuidmap)
 
-	displaysizes (zone, displayedyet, prevt, prevoutput, prevsizemap) trustlog uuidmap sizemap t
+	displaysizes (zone, displayedyet, prevt, prevoutput, prevsizemap, h, endaction) trustlog uuidmap sizemap t
 		| t - prevt >= dt && changedoutput = do
-			displayts zone t output
-			return (zone, True, t, Just output, sizemap')
-		| t < prevt = return (zone, displayedyet, t, Just output, prevsizemap)
-		| otherwise = return (zone, displayedyet, prevt, prevoutput, prevsizemap)
+			displayts zone t output h
+			return (zone, True, t, Just output, sizemap', h, endaction)
+		| t < prevt = return (zone, displayedyet, t, Just output, prevsizemap, h, endaction)
+		| otherwise = return (zone, displayedyet, prevt, prevoutput, prevsizemap, h, endaction)
 	  where
 		output = intercalate "," (map showsize sizes)
 		us = case mu of
@@ -447,19 +496,25 @@ sizeHistoryInfo mu o = do
 			Just DeadTrusted -> 0
 			_ -> v
 
-	displayts zone t output = putStrLn $ ts ++ "," ++ output
+	displayts zone t output h = do
+		hPutStrLn h (ts ++ "," ++ output)
+		hFlush h
 	  where
-		ts = if rawDateOption o
+		ts = if rawDateOption o && not (gnuplotOption o)
 			then rawTimeStamp t
 			else showTimeStamp zone "%Y-%m-%dT%H:%M:%S" t
 
-	displayendsizes (zone , _, _, Just output, _) = do
+	displayend dispst@(_, _, _, _, _, _, endaction) = do
+		displayendsizes dispst
+		endaction
+
+	displayendsizes (zone, _, _, Just output, _, h, _) = do
 		now <- getPOSIXTime
-		displayts zone now output
+		displayts zone now output h
 	displayendsizes _ = return ()
 
 	showsize n
-		| bytesOption o = show n
+		| bytesOption o || gnuplotOption o = show n
 		| otherwise = roughSize storageUnits True n
 	
 	csvquote s
@@ -469,3 +524,5 @@ sizeHistoryInfo mu o = do
 	  where
 		escquote '"' = "\"\""
 		escquote c = [c]
+	
+	csvheader l = intercalate "," ("date" : map csvquote l)

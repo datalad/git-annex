@@ -15,7 +15,7 @@ git-annex (10.20230927) UNRELEASED; urgency=medium
   * info: Added calculation of combined annex size of all repositories.
   * log: Added options --sizesof, --sizes and --totalsizes that
     display how the size of repositories changed over time.
-  * log: Added options --interval, --bytes, --received 
+  * log: Added options --interval, --bytes, --received, and --gnuplot
     to tune the output of the above added options.
 
  -- Joey Hess <id@joeyh.name>  Tue, 10 Oct 2023 13:17:31 -0400
