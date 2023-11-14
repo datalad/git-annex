@@ -31,9 +31,7 @@ def typing_daily_status(session: nox.Session) -> None:
 def typing_dispatch_build(session: nox.Session) -> None:
     path = ".github/workflows/tools/dispatch-build"
     install_requires(session, path)
-    # PyGithub uses python-dateutil and requests, so apparently their typing
-    # stubs have to be installed in order for mypy to analyze PyGithub
-    session.install("mypy", "types-python-dateutil", "types-requests")
+    session.install("mypy")
     session.run(
         "mypy",
         "--cache-dir",
