@@ -80,8 +80,8 @@ optParser desc = LogOptions
 		<> help "display history of total sizes of all repositories"
 		)
 	<*> optional (option (eitherReader parseDuration)
-		( long "when" <> metavar paramTime
-		<> help "when to display changed size"
+		( long "interval" <> metavar paramTime
+		<> help "minimum time between displays of changed size"
 		))
 	<*> switch
 		( long "raw-date"
