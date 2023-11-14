@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-__requires__ = ["Jinja2 >= 2.11", "PyYAML >= 5.3"]
 from   pathlib import Path
 import sys
 import jinja2
