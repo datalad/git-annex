@@ -1,31 +1,48 @@
 #!/usr/bin/env python3
-__requires__ = ["click ~= 8.0", "PyGithub == 2.*"]
+from __future__ import annotations
+from collections.abc import Sequence
 import os
 import subprocess
 import click
 from github import Auth, Github
+from github.Workflow import Workflow
+
+__python_requires__ = ">= 3.8"
+__requires__ = ["click ~= 8.0", "PyGithub == 2.*"]
 
 REPO = "datalad/git-annex"
 ALL_OS_TYPES = ("macos", "ubuntu", "windows")
 
 
 class BuildDispatcher:
-    def __init__(self, token):
+    def __init__(self, token: str) -> None:
         self.gh = Github(auth=Auth.Token(token))
         self.repo = self.gh.get_repo(REPO)
 
-    def get_os_workflows(self, ostypes):
+    def get_os_workflows(self, ostypes: Sequence[str]) -> list[Workflow]:
         return [self.repo.get_workflow(f"build-{o}.yaml") for o in ostypes]
 
-    def build_pr(self, pr, ostypes=ALL_OS_TYPES, workflow_ref="master"):
+    def build_pr(
+        self,
+        pr: int,
+        ostypes: Sequence[str] = ALL_OS_TYPES,
+        workflow_ref: str = "master",
+    ) -> None:
         for w in self.get_os_workflows(ostypes):
             w.create_dispatch(ref=workflow_ref, inputs={"pr": str(pr)})
 
-    def build_commitish(self, commitish, ostypes=ALL_OS_TYPES, workflow_ref="master"):
+    def build_commitish(
+        self,
+        commitish: str,
+        ostypes: Sequence[str] = ALL_OS_TYPES,
+        workflow_ref: str = "master",
+    ) -> None:
         for w in self.get_os_workflows(ostypes):
             w.create_dispatch(ref=workflow_ref, inputs={"commitish": commitish})
 
-    def build_latest(self, ostypes=ALL_OS_TYPES, workflow_ref="master"):
+    def build_latest(
+        self, ostypes: Sequence[str] = ALL_OS_TYPES, workflow_ref: str = "master"
+    ) -> None:
         for w in self.get_os_workflows(ostypes):
             w.create_dispatch(ref=workflow_ref, inputs={})
 
@@ -48,7 +65,9 @@ class BuildDispatcher:
     show_default=True,
 )
 @click.argument("ref", required=False)
-def main(ostypes, pr, ref, workflow_ref):
+def main(
+    ostypes: tuple[str, ...], pr: bool, ref: str | None, workflow_ref: str
+) -> None:
     """
     Trigger builds of datalad/git-annex.
 
@@ -91,16 +110,19 @@ def main(ostypes, pr, ref, workflow_ref):
     token = os.environ.get("GITHUB_TOKEN")
     if token is None:
         token = subprocess.check_output(
-            ["git", "config", "hub.oauthtoken"], universal_newlines=True
+            ["git", "config", "hub.oauthtoken"], text=True
         ).strip()
     dispatcher = BuildDispatcher(token)
     if pr:
-        try:
-            int(ref)
-        except ValueError:
+        if ref is None:
             raise click.UsageError("--pr requires a PR number")
-        dispatcher.build_pr(pr, ostypes, workflow_ref=workflow_ref)
-    elif ref:
+        else:
+            try:
+                pr_num = int(ref)
+            except ValueError:
+                raise click.UsageError("--pr requires a PR number")
+        dispatcher.build_pr(pr_num, ostypes, workflow_ref=workflow_ref)
+    elif ref is not None:
         dispatcher.build_commitish(ref, ostypes, workflow_ref=workflow_ref)
     else:
         dispatcher.build_latest(ostypes, workflow_ref=workflow_ref)
