@@ -19,9 +19,8 @@ from pathlib import Path
 import re
 import sys
 from tempfile import TemporaryFile
-from zipfile import Path as ZipPath
 from xml.sax.saxutils import escape
-
+from zipfile import Path as ZipPath
 from dateutil.parser import isoparse
 from github import Auth, Github
 import requests
