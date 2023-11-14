@@ -6,7 +6,12 @@ import nox
 def typing_testannex(session: nox.Session) -> None:
     session.install("-r", "clients/requirements.txt")
     session.install("mypy")
-    session.run("mypy", "clients/testannex.py")
+    session.run(
+        "mypy",
+        "--cache-dir",
+        str(session.cache_dir / "mypy_cache" / session.name),
+        "clients/testannex.py",
+    )
 
 
 @nox.session
@@ -14,7 +19,12 @@ def typing_daily_status(session: nox.Session) -> None:
     path = ".github/workflows/tools/daily-status.py"
     install_requires(session, path)
     session.install("mypy", "types-python-dateutil", "types-requests")
-    session.run("mypy", path)
+    session.run(
+        "mypy",
+        "--cache-dir",
+        str(session.cache_dir / "mypy_cache" / session.name),
+        path,
+    )
 
 
 @nox.session
@@ -24,7 +34,12 @@ def typing_dispatch_build(session: nox.Session) -> None:
     # PyGithub uses python-dateutil and requests, so apparently their typing
     # stubs have to be installed in order for mypy to analyze PyGithub
     session.install("mypy", "types-python-dateutil", "types-requests")
-    session.run("mypy", path)
+    session.run(
+        "mypy",
+        "--cache-dir",
+        str(session.cache_dir / "mypy_cache" / session.name),
+        path,
+    )
 
 
 def install_requires(session: nox.Session, path: str) -> None:
