@@ -18,7 +18,7 @@ def typing_testannex(session: nox.Session) -> None:
 def typing_daily_status(session: nox.Session) -> None:
     path = ".github/workflows/tools/daily-status.py"
     install_requires(session, path)
-    session.install("mypy", "types-python-dateutil", "types-requests")
+    session.install("mypy", "types-requests")
     session.run(
         "mypy",
         "--cache-dir",

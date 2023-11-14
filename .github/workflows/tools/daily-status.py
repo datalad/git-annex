@@ -6,7 +6,6 @@ __requires__ = [
     "ghreq ~= 0.2",
     "ghtoken ~= 0.1",
     "pydantic ~= 2.0",
-    "python-dateutil ~= 2.7",
     "requests ~= 2.20",
     "ruamel.yaml ~= 0.15",
 ]
@@ -20,12 +19,12 @@ from pathlib import Path
 import re
 import sys
 from tempfile import TemporaryFile
+from typing import List
 from xml.sax.saxutils import escape
 from zipfile import Path as ZipPath
-from dateutil.parser import isoparse
 from ghreq import Client
 from ghtoken import get_ghtoken
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import requests
 from ruamel.yaml import YAML
 
@@ -235,41 +234,56 @@ class ResultProcessError:
         return f'{Outcome.ERROR.as_html()} processing results for {escape(self.client_id)} #{self.build_id} [<a href="{self.url}">logs</a>] {self.timestamp}'
 
 
-@dataclass
-class AppveyorBuild:
-    id: int
+class AppveyorJob(BaseModel):
+    jobId: str
+    name: str
+    status: str
+
+    @property
+    def outcome(self) -> Outcome:
+        return Outcome.from_appveyor_status(self.status)
+
+    def url(self, build_id: int) -> str:
+        return f"https://ci.appveyor.com/project/{APPVEYOR_PROJECT}/builds/{build_id}/job/{self.jobId}"
+
+    def as_html(self, build_id: int) -> str:
+        return f'{self.outcome.as_html()} <a href="{self.url(build_id)}">{escape(self.name)}</a>'
+
+
+class AppveyorBuild(BaseModel):
+    buildId: int
+    finished: datetime | None
+    started: datetime
     version: str
-    timestamp: datetime
-    outcome: Outcome
-    jobs: list[AppveyorJob]
+    status: str
+    jobs: List[AppveyorJob]
+
+    @property
+    def outcome(self) -> Outcome:
+        return Outcome.from_appveyor_status(self.status)
 
     @property
     def url(self) -> str:
-        return f"https://ci.appveyor.com/project/{APPVEYOR_PROJECT}/builds/{self.id}"
+        return (
+            f"https://ci.appveyor.com/project/{APPVEYOR_PROJECT}/builds/{self.buildId}"
+        )
 
     def get_summary(self) -> Counter[Outcome]:
         return Counter(j.outcome for j in self.jobs)
 
     def as_html(self) -> str:
-        s = f'<p>{self.outcome.as_html()} <a href="{self.url}">{self.version}</a> {self.timestamp}</p>\n<ul>\n'
+        s = f'<p>{self.outcome.as_html()} <a href="{self.url}">{self.version}</a> {self.started}</p>\n<ul>\n'
         for j in self.jobs:
-            s += "<li>" + j.as_html() + "</li>\n"
+            s += "<li>" + j.as_html(self.buildId) + "</li>\n"
         return s + "</ul>\n"
 
 
-@dataclass
-class AppveyorJob:
-    build_id: int
-    id: str
-    name: str
-    outcome: Outcome
+class AppveyorProject(BaseModel):
+    build: AppveyorBuild
 
-    @property
-    def url(self) -> str:
-        return f"https://ci.appveyor.com/project/{APPVEYOR_PROJECT}/builds/{self.build_id}/job/{self.id}"
 
-    def as_html(self) -> str:
-        return f'{self.outcome.as_html()} <a href="{self.url}">{escape(self.name)}</a>'
+class AppveyorHistory(BaseModel):
+    builds: List[AppveyorBuild] = Field(default_factory=list)
 
 
 def main() -> None:
@@ -355,34 +369,20 @@ def main() -> None:
     appveyor_builds = []
     with requests.Session() as s:
         for build in get_appveyor_builds(s):
-            if build.get("finished") is None:
+            if build.finished is None:
                 continue
-            finished = isoparse(build["finished"])
-            if finished <= cutoff:
+            if build.finished <= cutoff:
                 break
+            # Appveyor's build history endpoint omits job information, so we
+            # need to refetch each build via its individual endpoint to get the
+            # jobs.
             r = s.get(
                 f"https://ci.appveyor.com/api/projects/{APPVEYOR_PROJECT}"
-                f"/build/{build['version']}"
+                f"/build/{build.version}"
             )
             r.raise_for_status()
-            data = r.json()
-            appveyor_builds.append(
-                AppveyorBuild(
-                    id=build["buildId"],
-                    version=build["version"],
-                    outcome=Outcome.from_appveyor_status(build["status"]),
-                    timestamp=isoparse(build["started"]),
-                    jobs=[
-                        AppveyorJob(
-                            build_id=build["buildId"],
-                            id=job["jobId"],
-                            name=job["name"],
-                            outcome=Outcome.from_appveyor_status(job["status"]),
-                        )
-                        for job in data["build"]["jobs"]
-                    ],
-                )
-            )
+            project = AppveyorProject.model_validate(r.json())
+            appveyor_builds.append(project.build)
 
     status = DailyStatus(
         github_runs=github_statuses,
@@ -412,7 +412,7 @@ def get_client_test_outcomes(client: Client, artifact_url: str) -> dict[str, Out
     return tests
 
 
-def get_appveyor_builds(s: requests.Session) -> Iterator[dict]:
+def get_appveyor_builds(s: requests.Session) -> Iterator[AppveyorBuild]:
     params = {"recordsNumber": 20}
     while True:
         r = s.get(
@@ -420,10 +420,10 @@ def get_appveyor_builds(s: requests.Session) -> Iterator[dict]:
             params=params,
         )
         r.raise_for_status()
-        data = r.json()
-        if builds := data.get("builds"):
-            yield from builds
-            params["startBuildId"] = builds[-1]["buildId"]
+        history = AppveyorHistory.model_validate(r.json())
+        if history.builds:
+            yield from history.builds
+            params["startBuildId"] = history.builds[-1].buildId
         else:
             break
 
