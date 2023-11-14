@@ -52,7 +52,7 @@ class Outcome(Enum):
         elif concl == "failure":
             return cls.FAIL
         elif concl == "timed_out":
-            return cls.ERRROR
+            return cls.ERROR
         elif concl in {"neutral", "action_required", "cancelled", "skipped", "stale"}:
             return cls.INCOMPLETE
         else:
@@ -88,7 +88,7 @@ class DailyStatus:
     appveyor_builds: list[AppveyorBuild]
 
     def get_subject_body(self) -> tuple[str, str]:
-        qtys = Counter()
+        qtys: Counter[Outcome] = Counter()
         body = "<ul>\n<li><p>GitHub:</p>\n<ul>\n"
         if self.github_runs:
             for wfstatus in self.github_runs:
@@ -295,7 +295,7 @@ def main() -> None:
                     )
                 )
 
-        client_statuses = []
+        client_statuses: list[ClientStatus | ResultProcessError] = []
         for run in gh.get_repo(CLIENTS_REPO).get_workflow(CLIENTS_WORKFLOW).get_runs():
             if run.status != "completed":
                 continue
