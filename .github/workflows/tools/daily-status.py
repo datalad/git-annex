@@ -22,7 +22,7 @@ from tempfile import TemporaryFile
 from typing import List
 from xml.sax.saxutils import escape
 from zipfile import Path as ZipPath
-from ghreq import Client
+from ghreq import Client, make_user_agent
 from ghtoken import get_ghtoken
 from pydantic import BaseModel, Field
 import requests
@@ -289,13 +289,16 @@ class AppveyorHistory(BaseModel):
 def main() -> None:
     outfile = sys.argv[1]
     token = get_ghtoken()
+    user_agent = make_user_agent(
+        "daily-status.py", url="https://github.com/datalad/git-annex"
+    )
     cutoff = datetime.now(timezone.utc) - WINDOW
 
     with CLIENT_INFO_FILE.open() as fp:
         client_info = YAML(typ="safe").load(fp)
     all_clients = set(client_info.keys())
 
-    with Client(token=token) as client:
+    with Client(token=token, user_agent=user_agent) as client:
         github_statuses = []
         wfrepo = client / "repos" / WORKFLOW_REPO
         for wffilename in WORKFLOWS:
@@ -368,6 +371,7 @@ def main() -> None:
 
     appveyor_builds = []
     with requests.Session() as s:
+        s.headers["User-Agent"] = user_agent
         for build in get_appveyor_builds(s):
             if build.finished is None:
                 continue

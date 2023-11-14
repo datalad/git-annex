@@ -2,7 +2,7 @@
 from __future__ import annotations
 from collections.abc import Sequence
 import click
-from ghreq import Client
+from ghreq import Client, make_user_agent
 from ghtoken import get_ghtoken
 
 __python_requires__ = ">= 3.8"
@@ -108,7 +108,10 @@ def main(
     the `gh` or `hub` command, or by setting the `hub.oauthtoken` Git config
     option in your `~/.gitconfig` file.
     """
-    with BuildDispatcher(token=get_ghtoken()) as client:
+    user_agent = make_user_agent(
+        "dispatch-build", url="https://github.com/datalad/git-annex"
+    )
+    with BuildDispatcher(token=get_ghtoken(), user_agent=user_agent) as client:
         if pr:
             if ref is None:
                 raise click.UsageError("--pr requires a PR number")
