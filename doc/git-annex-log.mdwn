@@ -41,7 +41,7 @@ false, information may not have been committed to the branch yet.
 * `--sizesof=repository`
 
   Displays a history of the total size of the annexed files in a repository
-  as it changed over time from the creation of the repository to the present.
+  over time from the creation of the repository to the present.
 
   The repository can be "here" for the current repository, or the name of a
   remote, or a repository description or uuid.
@@ -65,9 +65,24 @@ false, information may not have been committed to the branch yet.
 
   When using `--sizesof`, `--sizes`, and `--totalsizes`, this 
   controls the minimum interval between displays of the size.
-  The default is to display each recorded change to the size.
+  The default is to display each new recorded size.
 
   The time is of the form "30d" or "1y".
+
+* `--received`
+
+  Combine this option with `--sizesof` or `--sizes` to display
+  the amount of data received into repositories since the last
+  line was output.
+
+* `--bytes`
+
+  Show sizes in bytes, disabling the default nicer units.
+
+* `--raw-date`
+
+  Rather than the normal display of a date in the local time zone,
+  displays seconds since the unix epoch.
 
 * `--since=date`, `--after=date`, `--until=date`, `--before=date`, `--max-count=N`
 
@@ -78,15 +93,6 @@ false, information may not have been committed to the branch yet.
 
   These options do not have an affect when using `--sizesof`, `--sizes`, 
   and `--totalsizes`.
-
-* `--bytes`
-
-  Show sizes in bytes, disabling the default nicer units.
-
-* `--raw-date`
-
-  Rather than the normal display of a date in the local time zone,
-  displays seconds since the unix epoch.
 
 * `--gource`
 

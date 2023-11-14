@@ -50,7 +50,8 @@ data LogOptions = LogOptions
 	, sizesOfOption :: Maybe (DeferredParse UUID)
 	, sizesOption :: Bool
 	, totalSizesOption :: Bool
-	, whenOption :: Maybe Duration
+	, intervalOption :: Maybe Duration
+	, receivedOption :: Bool
 	, rawDateOption :: Bool
 	, bytesOption :: Bool
 	, gourceOption :: Bool
@@ -83,6 +84,10 @@ optParser desc = LogOptions
 		( long "interval" <> metavar paramTime
 		<> help "minimum time between displays of changed size"
 		))
+	<*> switch
+		( long "received"
+		<> help "display received data per interval rather than repository sizes"
+		)
 	<*> switch
 		( long "raw-date"
 		<> help "display seconds from unix epoch"
@@ -295,7 +300,7 @@ sizeHistoryInfo mu o = do
 	uuidmap <- getuuidmap
 	zone <- liftIO getCurrentTimeZone
 	liftIO $ displayheader uuidmap
-	let dispst = (zone, False, epoch, Nothing)
+	let dispst = (zone, False, epoch, Nothing, mempty)
 	(l, cleanup) <- getlog
 	g <- Annex.gitRepo
 	liftIO $ catObjectStream g $ \feeder closer reader -> do
@@ -379,7 +384,9 @@ sizeHistoryInfo mu o = do
 		combinedlog = PLog.compactLog (oldlog ++ newlog)
 		combinedlocs = S.fromList (presentlocs combinedlog)
 		addedlocs = S.difference combinedlocs oldlocs
-		removedlocs = S.difference oldlocs combinedlocs
+		removedlocs
+			| receivedOption o = S.empty
+			| otherwise = S.difference oldlocs combinedlocs
 	
 	addnew k sizemap locmap newlog = 
 		( updatesize sizemap (ksz k) locs
@@ -402,23 +409,36 @@ sizeHistoryInfo mu o = do
 				(M.elems uuidmap)
 		| otherwise = return ()
 
-	displaysizes (zone, displayedyet, prevt, prevoutput) trustlog uuidmap sizemap t
-		| t - prevt >= dt
-		  && (displayedyet || any (/= 0) sizes) 
-		  && (prevoutput /= Just output) = do
+	displaysizes (zone, displayedyet, prevt, prevoutput, prevsizemap) trustlog uuidmap sizemap t
+		| t - prevt >= dt && changedoutput = do
 			displayts zone t output
-			return (zone, True, t, Just output)
-		| t < prevt = return (zone, displayedyet, t, Just output)
-		| otherwise = return (zone, displayedyet, prevt, Just output)
+			return (zone, True, t, Just output, sizemap')
+		| t < prevt = return (zone, displayedyet, t, Just output, prevsizemap)
+		| otherwise = return (zone, displayedyet, prevt, prevoutput, prevsizemap)
 	  where
 		output = intercalate "," (map showsize sizes)
 		us = case mu of
 			Just u -> [u]
 			Nothing -> M.keys uuidmap
 		sizes
-			| totalSizesOption o = [sum (M.elems sizemap')]
-			| otherwise = map (\u -> fromMaybe 0 (M.lookup u sizemap')) us
-		dt = maybe 1 durationToPOSIXTime (whenOption o)
+			| totalSizesOption o = [sum (M.elems sizedisplaymap)]
+			| otherwise = map (\u -> fromMaybe 0 (M.lookup u sizedisplaymap)) us
+		dt = maybe 1 durationToPOSIXTime (intervalOption o)
+
+		changedoutput
+			| receivedOption o = 
+				any (/= 0) sizes 
+					|| prevoutput /= Just output
+			| otherwise = 
+				(displayedyet || any (/= 0) sizes)
+					&& (prevoutput /= Just output)
+
+		sizedisplaymap
+			| receivedOption o = 
+				M.unionWith posminus sizemap' prevsizemap
+			| otherwise = sizemap'
+
+		posminus a b = max 0 (a - b)
 
 		-- A verison of sizemap where uuids that are currently dead
 		-- have 0 size.
@@ -433,7 +453,7 @@ sizeHistoryInfo mu o = do
 			then rawTimeStamp t
 			else showTimeStamp zone "%Y-%m-%dT%H:%M:%S" t
 
-	displayendsizes (zone , _, _, Just output) = do
+	displayendsizes (zone , _, _, Just output, _) = do
 		now <- getPOSIXTime
 		displayts zone now output
 	displayendsizes _ = return ()
