@@ -1,0 +1,68 @@
+### Please describe the problem.
+
+`git annex sync` does not report when `git fetch` and `git push` fail due to
+network issues.  While `git fetch`'s error messages are printed, the exit
+status of `git annex sync` will still be `0`.
+
+Looking at the source code, this seems to be a deliberate design decision. The
+synchronization operation are coded in such a way that failing to send/receive
+commits to/from a remote is not reported as an error. (See `pullRemote` and
+`pushRemote` in `Command/Sync.hs`.) This has the advantage of allowing the user
+to simply say `git annex sync` without worrying too much about whether all of
+their configured remotes are reachable.
+
+However, this poses problems when trying to use `git annex sync` in an
+automated way. If networking issues (including authentication failures) are
+ignored, this can easily convince a script using `git annex sync` that the
+operation has succeeded, when in fact it has failed.
+
+I can think of a few ways of addressing this issue:
+
+1. Keep going of any of the `pullRemote`/`pushRemote` invocations fail, but
+   keep track of the fact that something has failed, and exit with status 1 if
+   this happens. This has the advantage that scripts will be properly alerted
+   when things go wrong, but isn't strictly backwards compatible.
+2. Add an option to `git annex sync` which causes any failures within
+   `pullRemote`/`pushRemote` to be considered fatal errors. Perhaps the option
+   could be called `--batch` or `--report-errors`. This would allow for strict
+   backwards-compatibility.
+3. Make failures of `pullRemote`/`pushRemote` fatal errors if exactly one
+   remote is given on the command line. This isn't backwards compatible, and
+   also has issues because the semantics are not necessarily obvious to those
+   using `git annex sync`.
+
+I'm sure there are other solutions, but I think users of `git annex sync` need
+a way of detecting network errors and responding to them appropriately.
+Especially when you're only trying to synchronize with a single remote, and
+failing to reach that remote is by definition a failure of the entire process.
+
+### What steps will reproduce the problem?
+
+Attempt to pull from any standard properly-configured `git-annex` remote
+`<REMOTE>` with
+[[!format sh """
+ $ git annex sync <REMOTE>
+"""]]
+when `<REMOTE>` is not reachable on the network.
+Then check the exit status with
+[[!format sh """
+ $ echo $?
+"""]]
+You should get `0` as the result.
+
+### What version of git-annex are you using? On what operating system?
+
+I'm using the latest version in Debian stable, 8.20210223-2.
+
+### Please provide any additional information below.
+
+Not really sure what to put here. Except perhaps to apologize for the overly
+design-oriented bug report. Also, be aware that I'm more than happy to put in
+the legwork of fixing the issue I've described above. But I'd like to make sure
+we agree on a solution before I spend a lot of effort assembling a patch
+series.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Oh yes, I've used `git annex` for many years now to handle synchronizing files
+between various machines. Many thanks for your work on this project.
