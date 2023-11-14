@@ -28,7 +28,7 @@ class Test:
     shell: str
     body: str
 
-    def run(self, result_dir: Path, **kwargs) -> bool:
+    def run(self, result_dir: Path, **kwargs: Any) -> bool:
         log.info("Running test %r", self.name)
         with NamedTemporaryFile("w+") as script:
             print(self.body, file=script, flush=True)
