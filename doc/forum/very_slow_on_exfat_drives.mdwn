@@ -1,0 +1,7 @@
+I want to use git-annex to keep track of and archive of large tarballs (on the order of 10 to 100GB each).
+One of the locations are a set of external HDDs that are formatted to exFAT.
+
+Unfortunately every git command takes hours to execute.
+e.g. every time I use `git status` the index is refreshed which takes about 3 hours, committing a single takes similarly long.
+
+Is there anything I can do to speed things up?
