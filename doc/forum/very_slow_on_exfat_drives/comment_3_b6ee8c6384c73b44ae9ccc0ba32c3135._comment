@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 3"
+ date="2023-11-16T15:55:49Z"
+ content="""
+Ah, and make sure you're not on an adjusted-unlocked branch. And only use locked files. If exFAT can't do symlinks properly, that might be the problem. Unlocked gigantic files are also a bottleneck.
+"""]]
