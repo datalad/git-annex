@@ -1,4 +1,8 @@
 ndoli:
+  # Client location:
+  # - Server: ndoli.dartmouth.edu
+  # - Account: f006dyc
+  # - datalad/git-annex clone location: ~/git-annex-client/git-annex
   tests:
     git-annex-home: |
       set -eux
@@ -17,6 +21,10 @@ ndoli:
       timeout 7200 git annex test -J5 | ts -s
 
 smaug:
+  # Client location:
+  # - Server: smaug.datalad.org
+  # - Account: datalad
+  # - datalad/git-annex clone location: ~/git-annex-ci/git-annex
   tests:
     git-annex: |
       set -eux
@@ -26,6 +34,10 @@ smaug:
       timeout 3600 git annex test -J5 | ts -s
 
 openmind7:
+  # Client location:
+  # - Server: openmind
+  # - Account: Managed by @yarikoptic; see him for information
+  # - datalad/git-annex clone location: ~/git-annex-ci/git-annex
   tests:
     git-annex-home: |
       set -eux
