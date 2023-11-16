@@ -35,9 +35,9 @@ smaug:
 
 openmind7:
   # Client location:
-  # - Server: ???
-  # - Account: ???
-  # - datalad/git-annex clone location: ???
+  # - Server: openmind
+  # - Account: Managed by @yarikoptic; see him for information
+  # - datalad/git-annex clone location: ~/git-annex-ci/git-annex
   tests:
     git-annex-home: |
       set -eux
