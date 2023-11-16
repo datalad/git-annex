@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 2"
+ date="2023-11-16T15:54:08Z"
+ content="""
+Normally, using a bare repo helps on slow hardware/filesystems. This means making yokr repo on the HDD a bare repo, then adding your files somewhere else, where it's fast, and having git annex sync it over to the HDD. Uncool, but it seems lile exFAT or your HDD is rather on the shitty side. File size shouldn't matter much, the amount of files is often a problem.
+"""]]
