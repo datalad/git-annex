@@ -1,0 +1,124 @@
+### Please describe the problem.
+
+I need to "quickly" ensure that remote has all the files it should have gotten. For that I use invocation like
+
+```
+time git annex copy --fast --from web --to dandi-dandisets-dropbox
+```
+
+or
+
+```
+time git annex copy --auto --from web --to dandi-dandisets-dropbox
+```
+
+but then in the cases where all files are already there according to
+
+```
+dandi@drogon:/mnt/backup/dandi/dandisets/000003$ time git annex find  --not --in dandi-dandisets-dropbox
+
+real    0m0.562s
+user    0m0.051s
+sys     0m0.019s
+```
+
+the `copy` still goes and checks every chunk of every file
+
+```
+dandi@drogon:/mnt/backup/dandi/dandisets/000003$ time git annex copy --fast --from web --to dandi-dandisets-dropbox
+copy sub-YutaMouse20/sub-YutaMouse20_ses-YutaMouse20-140321_behavior+ecephys.nwb Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+^C
+
+real    0m3.886s
+user    0m0.037s
+sys     0m0.032s
+
+```
+
+so to achieve what I need, I thought to explicitly specify the query:
+
+```
+dandi@drogon:/mnt/backup/dandi/dandisets/000003$ time git annex copy --fast --not --in dandi-dandisets-dropbox --from web --to dandi-dandisets-dropbox
+
+real    0m0.221s
+user    0m0.056s
+sys     0m0.018s
+```
+
+but it  doesn't works out correctly whenever there are some files to actually copy:
+
+```
+dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git annex find --in web --not --in dandi-dandisets-dropbox | nl | tail -n 2
+    40  sub-440889/sub-440889_ses-837360280_obj-raw_behavior+image+ophys.nwb
+    41  sub-440889/sub-440889_ses-838633305_obj-raw_behavior+image+ophys.nwb
+dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git annex copy --fast --from web --to dandi-dandisets-dropbox --not --in dandi-dandisets-dropbox
+dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git annex copy --fast --from web --to dandi-dandisets-dropbox --in web --not --in dandi-dandisets-dropbox
+dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git annex copy --from web --to dandi-dandisets-dropbox --in web --not --in dandi-dandisets-dropbox
+```
+
+so the only way now would be to pipe `find` output into `copy`?
+
+But then trying on a sample file, it also doesn't work
+
+```
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git annex copy --from web --to dandi-dandisets-dropbox --debug sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb                                                                   [2023-11-16 12:52:04.81241] (Utility.Process) process [2316547] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2023-11-16 12:52:04.813751] (Utility.Process) process [2316547] done ExitSuccess
+[2023-11-16 12:52:04.814117] (Utility.Process) process [2316548] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2023-11-16 12:52:04.816003] (Utility.Process) process [2316548] done ExitSuccess
+[2023-11-16 12:52:04.818154] (Utility.Process) process [2316549] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..d7eb789ba745f56dc9ee590196c5b392458010fa","--pretty=%H","-n1"]
+[2023-11-16 12:52:04.821013] (Utility.Process) process [2316549] done ExitSuccess
+[2023-11-16 12:52:04.8243] (Utility.Process) process [2316550] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2023-11-16 12:52:04.834761] (Utility.Process) process [2316551] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","--stage","-z","--error-unmatch","--","sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb"]
+[2023-11-16 12:52:04.835779] (Utility.Process) process [2316552] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2023-11-16 12:52:04.836863] (Utility.Process) process [2316553] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2023-11-16 12:52:04.837628] (Utility.Process) process [2316550] done ExitSuccess
+[2023-11-16 12:52:04.837998] (Utility.Process) process [2316554] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2023-11-16 12:52:04.839285] (Utility.Process) process [2316554] done ExitSuccess
+[2023-11-16 12:52:04.839402] (Utility.Process) process [2316553] done ExitSuccess
+[2023-11-16 12:52:04.839465] (Utility.Process) process [2316552] done ExitSuccess
+[2023-11-16 12:52:04.839518] (Utility.Process) process [2316551] done ExitSuccess
+
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000037$ ls -ld sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb
+lrwxrwxrwx 1 dandi dandi 209 Apr 18  2023 sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb -> ../.git/annex/objects/6V/Xx/SHA256E-s47571970892--25b98e8c5a497600cd516164ac121d906cb3cf10e0332ff871edcf0e587c5da3.nwb/SHA256E-s47571970892--25b98e8c5a497600cd516164ac121d906cb3cf10e0332ff871edcf0e587c5da3.nwb
+
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git annex whereis sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb
+whereis sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb (1 copy)
+        00000000-0000-0000-0000-000000000001 -- web
+
+  web: https://api.dandiarchive.org/api/assets/37ae9a5f-d6ce-4c18-a752-2d67d5b27845/download/
+  web: https://dandiarchive.s3.amazonaws.com/blobs/761/a81/761a81c4-d5d4-47ad-bc15-e609a0a9fb5a?versionId=hQQHvGqBX_kBgPYwhedAG.5Cghw9yvde
+ok
+
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git remote
+dandi-dandisets-dropbox
+dandiapi
+github
+
+```
+
+so now I am just confused...
+
+NB `git annex find` has `-z` for input but not for output...
+
+
+refs to related reports/issues which were said to be addressed for `--fast` mode:
+
+- [https://git-annex.branchable.com/forum/copy_--auto_copies_already_synced_files/](https://git-annex.branchable.com/forum/copy_--auto_copies_already_synced_files/)
+- [https://git-annex.branchable.com/forum/batch_check_on_remote_when_using_copy/](https://git-annex.branchable.com/forum/batch_check_on_remote_when_using_copy/)
+
+### What version of git-annex are you using? On what operating system?
+
+
+```
+10.20230321-1~ndall+1
+```
+
+and then in conda with `10.20230626-g801c4b7` 
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
