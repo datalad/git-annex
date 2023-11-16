@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 4"
+ date="2023-11-16T16:34:12Z"
+ content="""
+Yep, apparently, [exFAT can't do symlinks](https://superuser.com/questions/232257/does-or-will-exfat-support-symlinks).
+
+In general, it is best to use git-annex on non-shitty filesystems or one will run into problems with their limitations -- something git-annex can't really do much about.
+
+But you can work around it by using a bare git repository on the HDD as I mentioned above (see [here](https://stackoverflow.com/a/2200662) for how to do that) or to use the HDD just as a directory/rsync special remote from other git-annex repos. In both cases, symlinks are not needed and no expensive slow piping through smudge/clean filters is done. The downside is that you can't work (i.e. add, read, modify files) directly on the HDD, but you only use it as a storage drive.
+"""]]
