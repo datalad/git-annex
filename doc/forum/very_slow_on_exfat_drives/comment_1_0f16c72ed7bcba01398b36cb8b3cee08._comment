@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="imlew"
+ avatar="http://cdn.libravatar.org/avatar/23858c3eed3c3ea9e21522f4c999f1ed"
+ subject="I guess this question is about backends"
+ date="2023-11-16T12:51:59Z"
+ content="""
+As so often happens, search the docs for hours and don't find anything and right after I asking the question I found a (seemingly) relevant page I had somehow missed before.
+
+In this case [backends](https://git-annex.branchable.com/backends/).
+
+Creating a new annex repo on a drive that already had the data but no repo and changing the backend to `WORM` (with `git config --local --add annex.backend WORM`) seems to have made things a little bit faster. Adding the first 3.5GB file in just under 2 minutes and `git status` returning after 44 seconds when first run and thereafter returning instantaneously. However adding all ~3TB in the repo is shaping up to take multiple days anyway.
+
+Is there anything else I've missed? I don't see what could be taking so long if all that is being checked is mtime, name and size.
+"""]]
