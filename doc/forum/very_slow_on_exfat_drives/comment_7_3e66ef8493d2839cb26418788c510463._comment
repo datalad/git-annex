@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 7"
+ date="2023-11-17T08:45:56Z"
+ content="""
+I'm not sure exactly what you mean. If you `git annex move`d a file from a local repo to the bare repo on the HDD, your local repo should know about this immediately. I'm not sure if an immediate `git annex move` *on the HDD* afterwards knows about this. Sounds like it should but maybe it doesn't for performance reasons. That would explain the need for a subsequent `sync`. In general, I would recommend setting up preferred content expressions for each repo, and then always just run `git annex assist` to have it sync everything. Slower than manual moving and copying though, but less worrying.
+"""]]
