@@ -17,6 +17,8 @@ git-annex (10.20230927) UNRELEASED; urgency=medium
     display how the size of repositories changed over time.
   * log: Added options --interval, --bytes, --received, and --gnuplot
     to tune the output of the above added options.
+  * Fix bug in git-annex copy --from --to that skipped files that were
+    locally present.
 
  -- Joey Hess <id@joeyh.name>  Tue, 10 Oct 2023 13:17:31 -0400
 

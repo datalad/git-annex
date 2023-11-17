@@ -68,7 +68,7 @@ seek' o fto = startConcurrency (Command.Move.stages fto) $ do
 			FromOrToRemote (FromRemote _) -> Just False
 			FromOrToRemote (ToRemote _) -> Just True
 			ToHere -> Just False
-			FromRemoteToRemote _ _ -> Just False
+			FromRemoteToRemote _ _ -> Nothing
 		, usesLocationLog = True
 		}
 	keyaction = Command.Move.startKey fto Command.Move.RemoveNever
