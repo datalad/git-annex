@@ -1,0 +1,92 @@
+### Please describe the problem.
+
+originally reported while composing [https://git-annex.branchable.com/bugs/copy_--fast_--from_--to_checks_destination_files/](https://git-annex.branchable.com/bugs/copy_--fast_--from_--to_checks_destination_files/) but it is a separate issue: some files are simply not `annex copy`'ed at all: here it tries 6 out of 8 files and still reports that 2 are not on the target remote:
+
+```
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000235$ git annex copy --from web --to dandi-dandisets-dropbox --fast
+copy sub-Fish01-GCaMP-vlgut-FBd-5dpf-RandomWave/sub-Fish01-GCaMP-vlgut-FBd-5dpf-RandomWave_ses-20210818T112556_behavior+ophys.nwb Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 696.194 MBytes (730012683 Bytes)
+(from web...) (to dandi-dandisets-dropbox...) ok
+copy sub-Fish13-GCaMP-vlgut-FBv-5dpf-RandomWave/sub-Fish13-GCaMP-vlgut-FBv-5dpf-RandomWave_ses-20210830T100716_behavior+ophys.nwb Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 224.618 MBytes (235528804 Bytes)
+(from web...) (to dandi-dandisets-dropbox...) ok
+copy sub-Fish31-GCaMP-vlgut-FBd-5dpf-RandomWave/sub-Fish31-GCaMP-vlgut-FBd-5dpf-RandomWave_ses-20210920T120959_behavior+ophys.nwb Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 295.387 MBytes (309735634 Bytes)
+(from web...) (to dandi-dandisets-dropbox...) ok
+copy sub-Fish32-GCaMP-vlgut-FBv-5dpf-RandomWave/sub-Fish32-GCaMP-vlgut-FBv-5dpf-RandomWave_ses-20210920T181347_behavior+ophys.nwb Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 860.168 MBytes (901951882 Bytes)
+(from web...) (to dandi-dandisets-dropbox...) ok
+copy sub-Fish47-GCaMP-vlgut-FBd-7dpf-RandomWave/sub-Fish47-GCaMP-vlgut-FBd-7dpf-RandomWave_ses-20211124T174401_behavior+ophys.nwb Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 856.342 MBytes (897939760 Bytes)
+(from web...) (to dandi-dandisets-dropbox...) ok
+copy sub-Fish58-GCaMP-vlgut-FBd-5dpf-RandomWave/sub-Fish58-GCaMP-vlgut-FBd-5dpf-RandomWave_ses-20220525T092829_behavior+ophys.nwb Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 953.674 MBytes (1000000000 Bytes)
+Total objects: 1 Total size: 948.656 MBytes (994737479 Bytes)
+(from web...) (to dandi-dandisets-dropbox...) ok
+
+
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000235$ git annex find --in web --not --in dandi-dandisets-dropbox | nl
+     1  sub-Fish02-GCaMP-vlgut-FBv-5dpf-RandomWave/sub-Fish02-GCaMP-vlgut-FBv-5dpf-RandomWave_ses-20210818T173531_behavior+ophys.nwb
+     2  sub-Fish41-GCaMP-vlgut-FBv-7dpf-RandomWave/sub-Fish41-GCaMP-vlgut-FBv-7dpf-RandomWave_ses-20210929T173736_behavior+ophys.nwb
+```
+
+and it seems to boil down (at least in one case, don't know yet if generalizes to other cases I have) to having those keys present locally:
+
+
+```
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000235$ git annex find --in web --not --in dandi-dandisets-dropbox | xargs ls -lL
+-r--r--r-- 1 dandi dandi 3878847966 Mar 16  2023 sub-Fish02-GCaMP-vlgut-FBv-5dpf-RandomWave/sub-Fish02-GCaMP-vlgut-FBv-5dpf-RandomWave_ses-20210818T173531_behavior+ophys.nwb
+-r--r--r-- 1 dandi dandi 3665589468 Mar 16  2023 sub-Fish41-GCaMP-vlgut-FBv-7dpf-RandomWave/sub-Fish41-GCaMP-vlgut-FBv-7dpf-RandomWave_ses-20210929T173736_behavior+ophys.nwb
+```
+
+but somehow it doesn't know that it has them according to `list`:
+
+```
+(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000235$ git annex list
+here
+|github
+||dandiapi
+|||web
+||||bittorrent
+|||||dandi-dandisets-dropbox (untrusted)
+||||||
+__XX_x sub-Fish01-GCaMP-vlgut-FBd-5dpf-RandomWave/sub-Fish01-GCaMP-vlgut-FBd-5dpf-RandomWave_ses-20210818T112556_behavior+ophys.nwb
+__XX__ sub-Fish02-GCaMP-vlgut-FBv-5dpf-RandomWave/sub-Fish02-GCaMP-vlgut-FBv-5dpf-RandomWave_ses-20210818T173531_behavior+ophys.nwb
+__XX_x sub-Fish13-GCaMP-vlgut-FBv-5dpf-RandomWave/sub-Fish13-GCaMP-vlgut-FBv-5dpf-RandomWave_ses-20210830T100716_behavior+ophys.nwb
+__XX_x sub-Fish31-GCaMP-vlgut-FBd-5dpf-RandomWave/sub-Fish31-GCaMP-vlgut-FBd-5dpf-RandomWave_ses-20210920T120959_behavior+ophys.nwb
+__XX_x sub-Fish32-GCaMP-vlgut-FBv-5dpf-RandomWave/sub-Fish32-GCaMP-vlgut-FBv-5dpf-RandomWave_ses-20210920T181347_behavior+ophys.nwb
+__XX__ sub-Fish41-GCaMP-vlgut-FBv-7dpf-RandomWave/sub-Fish41-GCaMP-vlgut-FBv-7dpf-RandomWave_ses-20210929T173736_behavior+ophys.nwb
+__XX_x sub-Fish47-GCaMP-vlgut-FBd-7dpf-RandomWave/sub-Fish47-GCaMP-vlgut-FBd-7dpf-RandomWave_ses-20211124T174401_behavior+ophys.nwb
+__XX_x sub-Fish58-GCaMP-vlgut-FBd-5dpf-RandomWave/sub-Fish58-GCaMP-vlgut-FBd-5dpf-RandomWave_ses-20220525T092829_behavior+ophys.nwb
+
+```
+
+running without `--from web` starts the transfer:
+
+```
+git annex copy --fast --to dandi-dandisets-dropbox
+```
+
+IMHO it should perform copy from the local store into the remote since in effect it would be fulfilling the goal - adding a copy to the destination.
+I didn't check `move` command but if it does support similar `--from --to` and has similar defect -- should just compliment with dropping after from the original remote.
+
+### What version of git-annex are you using? On what operating system?
+
+10.20230626-g801c4b7 from conda-forge .
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
+
+
