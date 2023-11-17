@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-11-17T19:58:39Z"
+ content="""
+> -r--r--r-- 1 dandi dandi 3665589468 Mar 16  2023 sub-Fish41-GCaMP-vlgut-FBv-7dpf-RandomWave/sub-Fish41-GCaMP-vlgut-FBv-7dpf-RandomWave_ses-20210929T173736_behavior+ophys.nwb
+
+This could be an unlocked file that has gotten modified but the staged
+version is not actually present locally. Or if `git-annex fsck` on it says
+its fixing the location logs, that would tell us something happened that
+got the location tracking out of sync with reality.
+
+So possibly there's an issue that could be tracked down regarding the state
+of that file. But in either case, git-annex doesn't know it has a local
+copy of the file, so `copy --from --to` could not use it.
+
+----
+
+But: `copy --from --to` does in fact have an interesting bug:
+
+	joey@darkstar:~/tmp/bench/r2>git-annex whereis foo
+	whereis foo (2 copies)
+	  	22dfa446-7482-4c0a-92c9-70db793859fb -- joey@darkstar:~/tmp/bench/r [origin]
+	   	8a504049-2c22-4baa-9a16-218e9561608b -- joey@darkstar:~/tmp/bench/r2 [here]
+	ok
+	joey@darkstar:~/tmp/bench/r2>git-annex copy foo --from origin --to r3
+	joey@darkstar:~/tmp/bench/r2>
+
+So the file content being present locally prevents it sending it to the remote! This needs to get fixed.
+
+Hmm: In the corresponding case of `git-annex move --from --to`, it does not
+behave that way.
+
+----
+
+As far as what the behavior ought to be when a file is present locally but not on the --from remote,
+the documentation does say:
+
+       --from=remote
+
+              Copy the content of files from the specified remote to the local repository.
+
+              Any files that are not available on the remote will be silently skipped.
+
+So it is behaving as documented. I can think of two reasons why that
+documented behavior makes some sense:
+
+* The user may be intending to only copy files --to that are present in --from.
+  The local repo may have a lot of files they do not want to populate --to.
+  (For example, perhaps the goal is to make a replica of the --from
+  repository.)
+  With that said, the user could do `git-annex copy --from foo --to bar --in foo`
+  to explicitly only act on files that are present in it.
+* Performance. Needing to check if there is a local copy when there is no
+  remote copy would be a little extra work. Likely not enough to be
+  significant though.
+"""]]
