@@ -334,18 +334,18 @@ toHereStart removewhen afile key ai si =
 		next $ return True
 
 fromToStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> SeekInput -> Remote -> Remote -> CommandStart
-fromToStart removewhen afile key ai si src dest = do
-	if Remote.uuid src == Remote.uuid dest
-		then stop
-		else do
-			u <- getUUID
-			if u == Remote.uuid src
-				then toStart removewhen afile key ai si dest
-				else if u == Remote.uuid dest
-					then fromStart removewhen afile key ai si src
-					else stopUnless (fromOk src key) $
-						starting (describeMoveAction removewhen) (OnlyActionOn key ai) si $
-							fromToPerform src dest removewhen key afile
+fromToStart removewhen afile key ai si src dest = 
+	stopUnless somethingtodo $ do
+		u <- getUUID
+		if u == Remote.uuid src
+			then toStart removewhen afile key ai si dest
+			else if u == Remote.uuid dest
+				then fromStart removewhen afile key ai si src
+				else stopUnless (fromOk src key) $
+					starting (describeMoveAction removewhen) (OnlyActionOn key ai) si $
+						fromToPerform src dest removewhen key afile
+  where
+	somethingtodo = pure (Remote.uuid src /= Remote.uuid dest)
 
 {- When there is a local copy, transfer it to the dest, and drop from the src.
  -
