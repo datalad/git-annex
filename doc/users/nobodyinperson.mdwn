@@ -1,9 +1,11 @@
 I use git-annex to:
 
-- manage my research data
+- manage my research data, partly also with [DataLad](https://datalad.org)
 - sync and backup personal documents
 - sync media files to and from my SailfishOS phone
 - sync, organise and backup a huge media collection
 - experiment doing inventory management
 
 I made a [Thunar plugin](https://gitlab.com/nobodyinperson/thunar-plugins) for git-annex, here's a [📹 screencast](https://fosstodon.org/@nobodyinperson/109836827575976439).
+
+At the [Tübix 2023](https://www.tuebix.org/) I gave a (German) git annex workshop, of which you can find a recording of the initial talk [📹 here in the fediverse](https://tube.tchncs.de/w/db1ec5ca-94ad-4f49-a507-2124fd699ff1) and [📹 here on Odysee](https://odysee.com/@nobodyinperson:6/T%C3%BCbix2023-Yann-B%C3%BCchau-git-annex:6). 
