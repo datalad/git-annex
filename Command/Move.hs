@@ -345,7 +345,13 @@ fromToStart removewhen afile key ai si src dest =
 					starting (describeMoveAction removewhen) (OnlyActionOn key ai) si $
 						fromToPerform src dest removewhen key afile
   where
-	somethingtodo = pure (Remote.uuid src /= Remote.uuid dest)
+	somethingtodo
+		| Remote.uuid src == Remote.uuid dest = return False
+		| otherwise = do
+			fast <- Annex.getRead Annex.fast
+			if fast && removewhen == RemoveNever
+				then not <$> expectedPresent dest key
+				else return True
 
 {- When there is a local copy, transfer it to the dest, and drop from the src.
  -

@@ -19,6 +19,7 @@ git-annex (10.20230927) UNRELEASED; urgency=medium
     to tune the output of the above added options.
   * Fix bug in git-annex copy --from --to that skipped files that were
     locally present.
+  * Make git-annex copy --from --to --fast actually fast.
 
  -- Joey Hess <id@joeyh.name>  Tue, 10 Oct 2023 13:17:31 -0400
 

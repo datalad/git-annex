@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-11-17T21:16:35Z"
+ content="""
+BTW `git-annex find --print0`  is the output eqivilant of -z.
+"""]]

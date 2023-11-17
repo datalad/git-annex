@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-11-17T20:57:19Z"
+ content="""
+> but it doesn't works out correctly whenever there are some files to actually copy
+
+I think that was due to the bug you linked, which is now fixed.
+
+I've confirmed that `--fast` is not actually implemented for `git-annex
+copy --from --to`. Explicitly specifying `--not --in destremote` is a
+fine workaround. But I've gone ahead and implemented `--fast` for it too.
+"""]]
