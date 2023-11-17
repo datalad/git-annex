@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-11-17T20:42:24Z"
+ content="""
+So that leaves only the question of what it should do when
+content is present locally but not on the --from remote.
+
+Another reason for the current behavior is to be symmetric with `git-annex
+move --from foo --to bar`. It would be surprising, I think, if that
+populated bar with files that are not present in foo, but are in the local
+repository!
+
+So I'm inclined to not change the documented behavior. If you want to
+populate a remote with files that are either in the local repo or in a
+--from remote, you can just run `git-annex copy` twice after all.
+
+(Or there could be a new option like `git-annex copy --to bar --from foo --or-from-here`)
+"""]]

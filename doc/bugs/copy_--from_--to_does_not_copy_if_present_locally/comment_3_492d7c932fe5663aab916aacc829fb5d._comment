@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-11-17T20:33:01Z"
+ content="""
+That bug I fixed would also explain the behavior that you saw if the
+content *was* present locally, and the location log *was* out of date about
+that.
+
+In that situation, git-annex sees that the object file is present, and so
+treats the content as present, despite the location log not knowing it's
+present. Which triggers the situation of the bug I fixed, causing it to
+skip copying the file.
+
+Also, there's a pretty easy way to get into this situation. When the file
+is not present, run `git-annex --from --to`. Then interrupt it after it's
+downloaded the file --from but before it's finished sending it --to.
+This results in the file being present locally, but only transiently so it
+didn't update the location log.
+
+So my guess is you interrupted a copy like that (or it failed incomplete
+for whatever reason).
+
+Now that I've fixed that bug, the behavior in that situation is that it
+does copy the file to the remote. And then it drops the local copy since
+the location log doesn't contain it. So it resumes correctly now.
+"""]]
