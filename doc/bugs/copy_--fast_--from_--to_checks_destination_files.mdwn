@@ -63,45 +63,7 @@ dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git annex copy --from web --to 
 
 so the only way now would be to pipe `find` output into `copy`?
 
-But then trying on a sample file, it also doesn't work
-
-```
-(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git annex copy --from web --to dandi-dandisets-dropbox --debug sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb                                                                   [2023-11-16 12:52:04.81241] (Utility.Process) process [2316547] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
-[2023-11-16 12:52:04.813751] (Utility.Process) process [2316547] done ExitSuccess
-[2023-11-16 12:52:04.814117] (Utility.Process) process [2316548] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
-[2023-11-16 12:52:04.816003] (Utility.Process) process [2316548] done ExitSuccess
-[2023-11-16 12:52:04.818154] (Utility.Process) process [2316549] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..d7eb789ba745f56dc9ee590196c5b392458010fa","--pretty=%H","-n1"]
-[2023-11-16 12:52:04.821013] (Utility.Process) process [2316549] done ExitSuccess
-[2023-11-16 12:52:04.8243] (Utility.Process) process [2316550] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
-[2023-11-16 12:52:04.834761] (Utility.Process) process [2316551] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","--stage","-z","--error-unmatch","--","sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb"]
-[2023-11-16 12:52:04.835779] (Utility.Process) process [2316552] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
-[2023-11-16 12:52:04.836863] (Utility.Process) process [2316553] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
-[2023-11-16 12:52:04.837628] (Utility.Process) process [2316550] done ExitSuccess
-[2023-11-16 12:52:04.837998] (Utility.Process) process [2316554] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
-[2023-11-16 12:52:04.839285] (Utility.Process) process [2316554] done ExitSuccess
-[2023-11-16 12:52:04.839402] (Utility.Process) process [2316553] done ExitSuccess
-[2023-11-16 12:52:04.839465] (Utility.Process) process [2316552] done ExitSuccess
-[2023-11-16 12:52:04.839518] (Utility.Process) process [2316551] done ExitSuccess
-
-(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000037$ ls -ld sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb
-lrwxrwxrwx 1 dandi dandi 209 Apr 18  2023 sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb -> ../.git/annex/objects/6V/Xx/SHA256E-s47571970892--25b98e8c5a497600cd516164ac121d906cb3cf10e0332ff871edcf0e587c5da3.nwb/SHA256E-s47571970892--25b98e8c5a497600cd516164ac121d906cb3cf10e0332ff871edcf0e587c5da3.nwb
-
-(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git annex whereis sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb
-whereis sub-440889/sub-440889_ses-832883243_obj-raw_behavior+image+ophys.nwb (1 copy)
-        00000000-0000-0000-0000-000000000001 -- web
-
-  web: https://api.dandiarchive.org/api/assets/37ae9a5f-d6ce-4c18-a752-2d67d5b27845/download/
-  web: https://dandiarchive.s3.amazonaws.com/blobs/761/a81/761a81c4-d5d4-47ad-bc15-e609a0a9fb5a?versionId=hQQHvGqBX_kBgPYwhedAG.5Cghw9yvde
-ok
-
-(git-annex) dandi@drogon:/mnt/backup/dandi/dandisets/000037$ git remote
-dandi-dandisets-dropbox
-dandiapi
-github
-
-```
-
-so now I am just confused...
+note on edit: filed a dedicated [https://git-annex.branchable.com/bugs/copy_--from_--to_does_not_copy_if_present_locally/](https://git-annex.branchable.com/bugs/copy_--from_--to_does_not_copy_if_present_locally/) 
 
 NB `git annex find` has `-z` for input but not for output...
 
