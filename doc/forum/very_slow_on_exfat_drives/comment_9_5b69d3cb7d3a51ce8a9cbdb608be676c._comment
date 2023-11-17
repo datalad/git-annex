@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 9"
+ date="2023-11-17T09:49:02Z"
+ content="""
+Alright, that's how it's supposed to be. Copying files around and keeping track of the locations are two separate things. The location tracking, metadata, etc. are stored in the `git-annex`-branch, which is only synced with `git annex sync` or `git annex assist`. If you're on the manual route (i.e. no preferred content, no `git annex sync --content`, no `git annex assist`), then you are supposed to sync the git repos yourself, e.g. with `git annex sync`. It also makes sense from a performance standpoint. git syncing can be slow, especially on slow hardware. Maybe you don't want to sync the metadata after every copy/move/drop/etc., but you batch it up. And as long as the info where the files are is *somewhere* in a `git-annex`-branch (e.g. your local repo `L`), it's fine as it will eventually be synced around.
+"""]]
