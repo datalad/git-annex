@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 5"
+ date="2023-11-18T01:35:35Z"
+ content="""
+> (Or there could be a new option like git-annex copy --to bar --from foo --or-from-here)
+
+or may be 
+
+`git-annex copy --to bar --from remote1 --or-from remote2 ...` or alike so there could be a sequence (in order of preference) of remotes?  or better a general `git-annex copy --to bar --from-anywhere` so that `annex` first `get`'s it following current set costs etc if not present here, and then copies over.
+"""]]
