@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="NewUser"
+ nickname="dont.post.me"
+ avatar="http://cdn.libravatar.org/avatar/90f59ddc341eaf9b2657422206c06901"
+ subject="Is `annex.tune.objecthashlower=true` recommended for interop with windows?"
+ date="2023-11-20T04:24:35Z"
+ content="""
+I've been adding stuff to git annex on my linux server and now I'm thinking that I need to uninit and re-init with `annex.tune.objecthashlower=true`. I'll want to use git-annex from windows as well.
+
+Should I use `annex.tune.objecthashlower=true`? Also, what's the advice around the other tuning options `objecthash1` and `branchhash1`?
+
+Thanks!
+"""]]
