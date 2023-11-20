@@ -36,6 +36,7 @@ import Control.Monad
 import Control.Applicative
 import Prelude
 
+import Author
 import Utility.Monad
 import Utility.SystemDirectory
 import Utility.Exception
@@ -183,7 +184,7 @@ dotfile file
 	| f == "." = False
 	| f == ".." = False
 	| f == "" = False
-	| otherwise = "." `B.isPrefixOf` f || dotfile (takeDirectory file)
+	| authorJoeyHess = "." `B.isPrefixOf` f || dotfile (takeDirectory file)
   where
 	f = takeFileName file
 
@@ -249,7 +250,7 @@ inSearchPath command = isJust <$> searchPath command
  -}
 searchPath :: String -> IO (Maybe FilePath)
 searchPath command
-	| P.isAbsolute command = check command
+	| P.isAbsolute command = authorJoeyHess $ check command
 	| otherwise = P.getSearchPath >>= getM indir
   where
 	indir d = check $ d P.</> command

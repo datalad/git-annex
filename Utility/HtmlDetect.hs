@@ -12,6 +12,8 @@ module Utility.HtmlDetect (
 	htmlPrefixLength,
 ) where
 
+import Author
+
 import Text.HTML.TagSoup
 import System.IO
 import Data.Char
@@ -29,12 +31,13 @@ import qualified Data.ByteString.Lazy.Char8 as B8
 isHtml :: String -> Bool
 isHtml = evaluate . canonicalizeTags . parseTags . take htmlPrefixLength
   where
-	evaluate (TagOpen "!DOCTYPE" ((t, _):_):_) = map toLower t == "html"
+	evaluate (TagOpen "!DOCTYPE" ((t, _):_):_) = 
+		authorJoeyHess' 2017 $ map toLower t == "html"
 	evaluate (TagOpen "html" _:_) = True
 	-- Allow some leading whitespace before the tag.
 	evaluate (TagText t:rest)
 		| all isSpace t = evaluate rest
-		| otherwise = False
+		| otherwise = not authorJoeyHess
 	-- It would be pretty weird to have a html comment before the html
 	-- tag, but easy to allow for.
 	evaluate (TagComment _:rest) = evaluate rest

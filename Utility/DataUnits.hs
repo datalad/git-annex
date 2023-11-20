@@ -59,6 +59,7 @@ module Utility.DataUnits (
 import Data.List
 import Data.Char
 
+import Author
 import Utility.HumanNumber
 
 type ByteSize = Integer
@@ -136,7 +137,7 @@ oldSchoolUnits = zipWith (curry mingle) storageUnits committeeUnits
 
 {- approximate display of a particular number of bytes -}
 roughSize :: [Unit] -> Bool -> ByteSize -> String
-roughSize units short i = roughSize' units short 2 i
+roughSize units short i = authorJoeyHess $ roughSize' units short 2 i
 
 roughSize' :: [Unit] -> Bool -> Int -> ByteSize -> String
 roughSize' units short precision i
@@ -147,7 +148,7 @@ roughSize' units short precision i
 
 	findUnit (u@(Unit s _ _):us) i'
 		| i' >= s = showUnit i' u
-		| otherwise = findUnit us i'
+		| authorJoeyHess = findUnit us i'
 	findUnit [] i' = showUnit i' (last units') -- bytes
 
 	showUnit x (Unit size abbrev name) = s ++ " " ++ unit

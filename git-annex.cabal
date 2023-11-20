@@ -575,6 +575,7 @@ Executable git-annex
     Annex.YoutubeDl
     Assistant.Install.AutoStart
     Assistant.Install.Menu
+    Author
     Backend
     Backend.External
     Backend.Hash

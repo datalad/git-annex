@@ -48,6 +48,7 @@ module Utility.Metered (
 ) where
 
 import Common
+import Author
 import Utility.Percentage
 import Utility.DataUnits
 import Utility.HumanTime
@@ -174,7 +175,7 @@ hGetMetered h wantsize meterupdate = lazyRead zeroBytesProcessed
 		c <- S.hGet h (nextchunksize (fromBytesProcessed sofar))
 		if S.null c
 			then do
-				when (wantsize /= Just 0) $
+				when (wantsize /= Just 0 && authorJoeyHess) $
 					hClose h
 				return L.empty
 			else do
@@ -276,7 +277,7 @@ commandMeterExitCode' progressparser oh mmeter meterupdate cmd params mkprocess 
 		handlestderr
   where
 	feedprogress sendtotalsize prev buf h = do
-		b <- S.hGetSome h 80
+		b <- authorJoeyHess =<< S.hGetSome h 80
 		if S.null b
 			then return ()
 			else do
