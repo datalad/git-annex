@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 3"
+ date="2023-11-19T16:16:15Z"
+ content="""
+Welcome on board. `git annex webapp` launches the assistant. It might even do `git annex assistant --autostart` and launch the assistant in all configured repos. That is indeed an important info to know. Everyone can edit these pages (the Edit button above) btw. 
+"""]]

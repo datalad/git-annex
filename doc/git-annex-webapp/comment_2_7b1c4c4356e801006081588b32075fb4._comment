@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="NewUser"
+ nickname="dont.post.me"
+ avatar="http://cdn.libravatar.org/avatar/90f59ddc341eaf9b2657422206c06901"
+ subject="launching `git annex webapp` starts adding to the annex which is surprising"
+ date="2023-11-18T20:08:17Z"
+ content="""
+Since I panicked upon seeing a message about adding files to the annex, I promptly killed the webapp. I might just be misunderstanding what's going on. Thanks!
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="NewUser"
+ nickname="dont.post.me"
+ avatar="http://cdn.libravatar.org/avatar/90f59ddc341eaf9b2657422206c06901"
+ subject="launching `git annex webapp` starts adding to the annex which is surprising"
+ date="2023-11-18T20:03:06Z"
+ content="""
+I have gotten as far as running `git init` and `git annex init` on my server. There&rsquo;s a bunch of stuff there and I figure I&rsquo;ll just add the things that I care about as I go.
+
+I read the page on the [webapp](https://git-annex.branchable.com/git-annex-webapp/) and it just says that it &ldquo;allows easy setup of a git-annex repository, and control of the git-annex assistant&rdquo;. I started the webapp on my server and I was alarmed to see a message in the webapp that it was adding things to git annex. Over on the page for the [git annex assistant](https://git-annex.branchable.com/git-annex-assistant/) it says &ldquo;By default, all new files in the directory will be added to the repository&rdquo; which is definitely not what I expected. I&rsquo;m a new user trying to learn how to use git annex and this was an unpleasant surprise. Can we amend the docs for the webapp to warn about this behavior?
+
+"""]]
