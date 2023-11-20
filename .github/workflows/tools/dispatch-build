@@ -1,33 +1,49 @@
 #!/usr/bin/env python3
-__requires__ = ["click ~= 8.0", "PyGithub == 2.*"]
-import os
-import subprocess
+from __future__ import annotations
+from collections.abc import Sequence
 import click
-from github import Auth, Github
+from ghreq import Client, make_user_agent
+from ghtoken import get_ghtoken
+
+__python_requires__ = ">= 3.8"
+__requires__ = ["click ~= 8.0", "ghreq ~= 0.2", "ghtoken ~= 0.1"]
 
 REPO = "datalad/git-annex"
 ALL_OS_TYPES = ("macos", "ubuntu", "windows")
 
 
-class BuildDispatcher:
-    def __init__(self, token):
-        self.gh = Github(auth=Auth.Token(token))
-        self.repo = self.gh.get_repo(REPO)
+class BuildDispatcher(Client):
+    def dispatch(self, workflow: str, payload: dict) -> None:
+        self.post(f"/repos/{REPO}/actions/workflows/{workflow}/dispatches", payload)
 
-    def get_os_workflows(self, ostypes):
-        return [self.repo.get_workflow(f"build-{o}.yaml") for o in ostypes]
+    def build_pr(
+        self,
+        pr: int,
+        ostypes: Sequence[str] = ALL_OS_TYPES,
+        workflow_ref: str = "master",
+    ) -> None:
+        for o in ostypes:
+            self.dispatch(
+                f"build-{o}.yaml", {"ref": workflow_ref, "inputs": {"pr": str(pr)}}
+            )
 
-    def build_pr(self, pr, ostypes=ALL_OS_TYPES, workflow_ref="master"):
-        for w in self.get_os_workflows(ostypes):
-            w.create_dispatch(ref=workflow_ref, inputs={"pr": str(pr)})
+    def build_commitish(
+        self,
+        commitish: str,
+        ostypes: Sequence[str] = ALL_OS_TYPES,
+        workflow_ref: str = "master",
+    ) -> None:
+        for o in ostypes:
+            self.dispatch(
+                f"build-{o}.yaml",
+                {"ref": workflow_ref, "inputs": {"commitish": commitish}},
+            )
 
-    def build_commitish(self, commitish, ostypes=ALL_OS_TYPES, workflow_ref="master"):
-        for w in self.get_os_workflows(ostypes):
-            w.create_dispatch(ref=workflow_ref, inputs={"commitish": commitish})
-
-    def build_latest(self, ostypes=ALL_OS_TYPES, workflow_ref="master"):
-        for w in self.get_os_workflows(ostypes):
-            w.create_dispatch(ref=workflow_ref, inputs={})
+    def build_latest(
+        self, ostypes: Sequence[str] = ALL_OS_TYPES, workflow_ref: str = "master"
+    ) -> None:
+        for o in ostypes:
+            self.dispatch(f"build-{o}.yaml", {"ref": workflow_ref, "inputs": {}})
 
 
 @click.command()
@@ -48,7 +64,9 @@ class BuildDispatcher:
     show_default=True,
 )
 @click.argument("ref", required=False)
-def main(ostypes, pr, ref, workflow_ref):
+def main(
+    ostypes: tuple[str, ...], pr: bool, ref: str | None, workflow_ref: str
+) -> None:
     """
     Trigger builds of datalad/git-annex.
 
@@ -84,26 +102,29 @@ def main(ostypes, pr, ref, workflow_ref):
          # Build a commit hash:
          python3 dispatch-build.py [<options>] 65131af
 
-    This script requires a GitHub OAuth token in order to run.  The token can
-    be specified via either the `GITHUB_TOKEN` environment variable or, if that
-    is not set, via the Git `hub.oauthtoken` config option.
+    This script requires a GitHub access token with appropriate permissions in
+    order to run.  Specify the token via the `GH_TOKEN` or `GITHUB_TOKEN`
+    environment variable (possibly in an `.env` file), by storing a token with
+    the `gh` or `hub` command, or by setting the `hub.oauthtoken` Git config
+    option in your `~/.gitconfig` file.
     """
-    token = os.environ.get("GITHUB_TOKEN")
-    if token is None:
-        token = subprocess.check_output(
-            ["git", "config", "hub.oauthtoken"], universal_newlines=True
-        ).strip()
-    dispatcher = BuildDispatcher(token)
-    if pr:
-        try:
-            int(ref)
-        except ValueError:
-            raise click.UsageError("--pr requires a PR number")
-        dispatcher.build_pr(pr, ostypes, workflow_ref=workflow_ref)
-    elif ref:
-        dispatcher.build_commitish(ref, ostypes, workflow_ref=workflow_ref)
-    else:
-        dispatcher.build_latest(ostypes, workflow_ref=workflow_ref)
+    user_agent = make_user_agent(
+        "dispatch-build", url="https://github.com/datalad/git-annex"
+    )
+    with BuildDispatcher(token=get_ghtoken(), user_agent=user_agent) as client:
+        if pr:
+            if ref is None:
+                raise click.UsageError("--pr requires a PR number")
+            else:
+                try:
+                    pr_num = int(ref)
+                except ValueError:
+                    raise click.UsageError("--pr requires a PR number")
+                client.build_pr(pr_num, ostypes, workflow_ref=workflow_ref)
+        elif ref is not None:
+            client.build_commitish(ref, ostypes, workflow_ref=workflow_ref)
+        else:
+            client.build_latest(ostypes, workflow_ref=workflow_ref)
 
 
 if __name__ == "__main__":

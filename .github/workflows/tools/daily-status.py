@@ -3,8 +3,9 @@ from __future__ import annotations
 
 __python_requires__ = ">= 3.8"
 __requires__ = [
-    "python-dateutil ~= 2.7",
-    "PyGithub ~= 2.0",
+    "ghreq ~= 0.2",
+    "ghtoken ~= 0.1",
+    "pydantic ~= 2.0",
     "requests ~= 2.20",
     "ruamel.yaml ~= 0.15",
 ]
@@ -14,16 +15,16 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from enum import Enum
-import os
 from pathlib import Path
 import re
 import sys
 from tempfile import TemporaryFile
-from zipfile import Path as ZipPath
+from typing import List
 from xml.sax.saxutils import escape
-
-from dateutil.parser import isoparse
-from github import Auth, Github
+from zipfile import Path as ZipPath
+from ghreq import Client, make_user_agent
+from ghtoken import get_ghtoken
+from pydantic import BaseModel, Field
 import requests
 from ruamel.yaml import YAML
 
@@ -47,13 +48,13 @@ class Outcome(Enum):
     INCOMPLETE = "INCOMPLETE"
 
     @classmethod
-    def from_conclusion(cls, concl: str) -> Outcome:
+    def from_conclusion(cls, concl: str | None) -> Outcome:
         if concl == "success":
             return cls.PASS
         elif concl == "failure":
             return cls.FAIL
         elif concl == "timed_out":
-            return cls.ERRROR
+            return cls.ERROR
         elif concl in {"neutral", "action_required", "cancelled", "skipped", "stale"}:
             return cls.INCOMPLETE
         else:
@@ -89,7 +90,7 @@ class DailyStatus:
     appveyor_builds: list[AppveyorBuild]
 
     def get_subject_body(self) -> tuple[str, str]:
-        qtys = Counter()
+        qtys: Counter[Outcome] = Counter()
         body = "<ul>\n<li><p>GitHub:</p>\n<ul>\n"
         if self.github_runs:
             for wfstatus in self.github_runs:
@@ -147,6 +148,40 @@ class DailyStatus:
         return (subject, body)
 
 
+class WorkflowRun(BaseModel):
+    name: str | None = None
+    head_branch: str | None = None
+    run_number: int
+    event: str
+    status: str | None = None
+    conclusion: str | None = None
+    created_at: datetime
+    artifacts_url: str
+    jobs_url: str
+    html_url: str
+    check_suite_id: int
+
+
+class WorkflowJob(BaseModel):
+    name: str
+    html_url: str
+    started_at: datetime
+    conclusion: str
+
+    @property
+    def outcome(self) -> Outcome:
+        return Outcome.from_conclusion(self.conclusion)
+
+    def as_html(self) -> str:
+        return f'{self.outcome.as_html()} <a href="{self.html_url}">{escape(self.name)}</a> {self.started_at}'
+
+
+class Artifact(BaseModel):
+    id: int
+    created_at: datetime
+    archive_download_url: str
+
+
 @dataclass
 class WorkflowStatus:
     file: str
@@ -155,7 +190,7 @@ class WorkflowStatus:
     url: str
     timestamp: datetime
     outcome: Outcome
-    jobs: list[JobStatus]
+    jobs: list[WorkflowJob]
 
     def get_summary(self) -> Counter[Outcome]:
         return Counter(j.outcome for j in self.jobs)
@@ -165,17 +200,6 @@ class WorkflowStatus:
         for j in self.jobs:
             s += "<li>" + j.as_html() + "</li>\n"
         return s + "</ul>\n"
-
-
-@dataclass
-class JobStatus:
-    name: str
-    url: str
-    timestamp: datetime
-    outcome: Outcome
-
-    def as_html(self) -> str:
-        return f'{self.outcome.as_html()} <a href="{self.url}">{escape(self.name)}</a> {self.timestamp}'
 
 
 @dataclass
@@ -210,117 +234,128 @@ class ResultProcessError:
         return f'{Outcome.ERROR.as_html()} processing results for {escape(self.client_id)} #{self.build_id} [<a href="{self.url}">logs</a>] {self.timestamp}'
 
 
-@dataclass
-class AppveyorBuild:
-    id: int
+class AppveyorJob(BaseModel):
+    jobId: str
+    name: str
+    status: str
+
+    @property
+    def outcome(self) -> Outcome:
+        return Outcome.from_appveyor_status(self.status)
+
+    def url(self, build_id: int) -> str:
+        return f"https://ci.appveyor.com/project/{APPVEYOR_PROJECT}/builds/{build_id}/job/{self.jobId}"
+
+    def as_html(self, build_id: int) -> str:
+        return f'{self.outcome.as_html()} <a href="{self.url(build_id)}">{escape(self.name)}</a>'
+
+
+class AppveyorBuild(BaseModel):
+    buildId: int
+    finished: datetime | None
+    started: datetime
     version: str
-    timestamp: datetime
-    outcome: Outcome
-    jobs: list[AppveyorJob]
+    status: str
+    jobs: List[AppveyorJob]
+
+    @property
+    def outcome(self) -> Outcome:
+        return Outcome.from_appveyor_status(self.status)
 
     @property
     def url(self) -> str:
-        return f"https://ci.appveyor.com/project/{APPVEYOR_PROJECT}/builds/{self.id}"
+        return (
+            f"https://ci.appveyor.com/project/{APPVEYOR_PROJECT}/builds/{self.buildId}"
+        )
 
     def get_summary(self) -> Counter[Outcome]:
         return Counter(j.outcome for j in self.jobs)
 
     def as_html(self) -> str:
-        s = f'<p>{self.outcome.as_html()} <a href="{self.url}">{self.version}</a> {self.timestamp}</p>\n<ul>\n'
+        s = f'<p>{self.outcome.as_html()} <a href="{self.url}">{self.version}</a> {self.started}</p>\n<ul>\n'
         for j in self.jobs:
-            s += "<li>" + j.as_html() + "</li>\n"
+            s += "<li>" + j.as_html(self.buildId) + "</li>\n"
         return s + "</ul>\n"
 
 
-@dataclass
-class AppveyorJob:
-    build_id: int
-    id: str
-    name: str
-    outcome: Outcome
+class AppveyorProject(BaseModel):
+    build: AppveyorBuild
 
-    @property
-    def url(self) -> str:
-        return f"https://ci.appveyor.com/project/{APPVEYOR_PROJECT}/builds/{self.build_id}/job/{self.id}"
 
-    def as_html(self) -> str:
-        return f'{self.outcome.as_html()} <a href="{self.url}">{escape(self.name)}</a>'
+class AppveyorHistory(BaseModel):
+    builds: List[AppveyorBuild] = Field(default_factory=list)
 
 
 def main() -> None:
     outfile = sys.argv[1]
-    token = os.environ["GITHUB_TOKEN"]
-    gh = Github(auth=Auth.Token(token))
+    token = get_ghtoken()
+    user_agent = make_user_agent(
+        "daily-status.py", url="https://github.com/datalad/git-annex"
+    )
     cutoff = datetime.now(timezone.utc) - WINDOW
 
     with CLIENT_INFO_FILE.open() as fp:
         client_info = YAML(typ="safe").load(fp)
     all_clients = set(client_info.keys())
 
-    with requests.Session() as s:
-        s.headers["Authorization"] = f"bearer {token}"
-
+    with Client(token=token, user_agent=user_agent) as client:
         github_statuses = []
-        wfrepo = gh.get_repo(WORKFLOW_REPO)
+        wfrepo = client / "repos" / WORKFLOW_REPO
         for wffilename in WORKFLOWS:
-            wf = wfrepo.get_workflow(wffilename)
-            for run in wf.get_runs():
+            wfep = wfrepo / "actions" / "workflows" / wffilename
+            wf = wfep.get()
+            for data in (wfep / "runs").paginate():
+                run = WorkflowRun.model_validate(data)
                 if run.status != "completed" or run.event not in (
                     "schedule",
                     "workflow_dispatch",
                 ):
                     continue
-                dt = ensure_aware(run.created_at)
-                if dt <= cutoff:
+                if run.created_at <= cutoff:
                     break
-                r = s.get(run.jobs_url)
-                r.raise_for_status()
-                job_statuses = [
-                    JobStatus(
-                        name=j["name"],
-                        url=j["html_url"],
-                        timestamp=isoparse(j["started_at"]),
-                        outcome=Outcome.from_conclusion(j["conclusion"]),
-                    )
-                    for j in r.json()["jobs"]
+                jobs = [
+                    WorkflowJob.model_validate(jdata)
+                    for jdata in client.paginate(run.jobs_url)
                 ]
                 github_statuses.append(
                     WorkflowStatus(
                         file=wffilename,
-                        name=wf.name,
+                        name=wf["name"],
                         build_id=run.run_number,
                         url=run.html_url,
-                        timestamp=dt,
+                        timestamp=run.created_at,
                         outcome=Outcome.from_conclusion(run.conclusion),
-                        jobs=job_statuses,
+                        jobs=jobs,
                     )
                 )
 
-        client_statuses = []
-        for run in gh.get_repo(CLIENTS_REPO).get_workflow(CLIENTS_WORKFLOW).get_runs():
+        client_statuses: list[ClientStatus | ResultProcessError] = []
+        for data in client.paginate(
+            f"/repos/{CLIENTS_REPO}/actions/workflows/{CLIENTS_WORKFLOW}/runs"
+        ):
+            run = WorkflowRun.model_validate(data)
             if run.status != "completed":
                 continue
-            dt = ensure_aware(run.created_at)
-            if dt <= cutoff:
+            if run.created_at <= cutoff:
                 break
+            assert run.head_branch is not None
             m = re.fullmatch(r"result-(.+)-(\d+)", run.head_branch)
             assert m
             if Outcome.from_conclusion(run.conclusion) is Outcome.PASS:
-                r = s.get(run.artifacts_url)
-                r.raise_for_status()
-                (artifact,) = r.json()["artifacts"]
+                (artdata,) = client.paginate(run.artifacts_url)
+                artifact = Artifact.model_validate(artdata)
                 client_statuses.append(
                     ClientStatus(
                         client_id=m[1],
                         build_id=int(m[2]),
-                        timestamp=dt,
+                        timestamp=run.created_at,
                         artifact_url=(
                             f"https://github.com/{CLIENTS_REPO}/suites"
-                            f"/{run.raw_data['check_suite_id']}/artifacts"
-                            f"/{artifact['id']}"
+                            f"/{run.check_suite_id}/artifacts"
+                            f"/{artifact.id}"
                         ),
                         tests=get_client_test_outcomes(
-                            s, artifact["archive_download_url"]
+                            client, artifact.archive_download_url
                         ),
                     )
                 )
@@ -329,42 +364,29 @@ def main() -> None:
                     ResultProcessError(
                         client_id=m[1],
                         build_id=int(m[2]),
-                        timestamp=dt,
+                        timestamp=run.created_at,
                         url=run.html_url,
                     )
                 )
 
     appveyor_builds = []
     with requests.Session() as s:
+        s.headers["User-Agent"] = user_agent
         for build in get_appveyor_builds(s):
-            if build.get("finished") is None:
+            if build.finished is None:
                 continue
-            finished = isoparse(build["finished"])
-            if finished <= cutoff:
+            if build.finished <= cutoff:
                 break
+            # Appveyor's build history endpoint omits job information, so we
+            # need to refetch each build via its individual endpoint to get the
+            # jobs.
             r = s.get(
                 f"https://ci.appveyor.com/api/projects/{APPVEYOR_PROJECT}"
-                f"/build/{build['version']}"
+                f"/build/{build.version}"
             )
             r.raise_for_status()
-            data = r.json()
-            appveyor_builds.append(
-                AppveyorBuild(
-                    id=build["buildId"],
-                    version=build["version"],
-                    outcome=Outcome.from_appveyor_status(build["status"]),
-                    timestamp=isoparse(build["started"]),
-                    jobs=[
-                        AppveyorJob(
-                            build_id=build["buildId"],
-                            id=job["jobId"],
-                            name=job["name"],
-                            outcome=Outcome.from_appveyor_status(job["status"]),
-                        )
-                        for job in data["build"]["jobs"]
-                    ],
-                )
-            )
+            project = AppveyorProject.model_validate(r.json())
+            appveyor_builds.append(project.build)
 
     status = DailyStatus(
         github_runs=github_statuses,
@@ -378,22 +400,13 @@ def main() -> None:
         print(body, file=fp)
 
 
-def ensure_aware(dt: datetime) -> datetime:
-    # Pygithub returns naïve datetimes for timestamps with a "Z" suffix.  Until
-    # that's fixed <https://github.com/PyGithub/PyGithub/pull/1831>, we need to
-    # make such datetimes timezone-aware manually.
-    return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt
-
-
-def get_client_test_outcomes(
-    s: requests.Session, artifact_url: str
-) -> dict[str, Outcome]:
+def get_client_test_outcomes(client: Client, artifact_url: str) -> dict[str, Outcome]:
     tests = {}
     with TemporaryFile() as fp:
-        with s.get(artifact_url, stream=True) as r:
-            r.raise_for_status()
+        with client.get(artifact_url, stream=True) as r:
             for chunk in r.iter_content(chunk_size=8192):
                 fp.write(chunk)
+        fp.flush()
         fp.seek(0)
         for p in ZipPath(fp).iterdir():
             if p.name.endswith(".rc"):
@@ -403,7 +416,7 @@ def get_client_test_outcomes(
     return tests
 
 
-def get_appveyor_builds(s: requests.Session) -> Iterator[dict]:
+def get_appveyor_builds(s: requests.Session) -> Iterator[AppveyorBuild]:
     params = {"recordsNumber": 20}
     while True:
         r = s.get(
@@ -411,10 +424,10 @@ def get_appveyor_builds(s: requests.Session) -> Iterator[dict]:
             params=params,
         )
         r.raise_for_status()
-        data = r.json()
-        if builds := data.get("builds"):
-            yield from builds
-            params["startBuildId"] = builds[-1]["buildId"]
+        history = AppveyorHistory.model_validate(r.json())
+        if history.builds:
+            yield from history.builds
+            params["startBuildId"] = history.builds[-1].buildId
         else:
             break
 

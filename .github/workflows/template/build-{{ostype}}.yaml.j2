@@ -33,7 +33,7 @@ jobs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -96,8 +96,8 @@ jobs:
         run: |
           # The goal here is for $BUILD_COMMIT to be the HEAD (necessary for
           # git-annex's version detection to use the correct git commit) with
-          # the contents of master — or whatever ref is being used as the
-          # workflow source — also available.
+          # the .github/ and patches/ trees from master — or whatever ref is
+          # being used as the workflow source — also available.
           {% if ostype == "windows" %}
           git reset --soft "$BUILD_COMMIT"
           # Avoid checking out unnecessary files with paths that are invalid on
@@ -107,7 +107,7 @@ jobs:
           {% else %}
           git checkout "$BUILD_COMMIT"
           {% endif %}
-          git checkout "$GITHUB_SHA" -- .
+          git checkout "$GITHUB_SHA" -- .github patches
 
       - name: Get build version
         id: build-version
@@ -277,7 +277,7 @@ jobs:
     {% if ostype == "ubuntu" %}
       - name: Clone datalad/git-annex-ci-client-jobs
         if: contains(fromJSON('["schedule", "workflow_dispatch"]'), github.event_name)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: datalad/git-annex-ci-client-jobs
           fetch-depth: 1
@@ -384,7 +384,7 @@ jobs:
   {% endif %}
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -539,7 +539,7 @@ jobs:
     needs: build-package
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -600,7 +600,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout this repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create pending PR status
         if: github.event.inputs.pr != ''
@@ -732,7 +732,7 @@ jobs:
 
       # needed for ssh certs under ubuntu and tox.ini everywhere
       - name: Checkout datalad
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: datalad/datalad
           path: datalad

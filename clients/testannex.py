@@ -11,7 +11,6 @@ import subprocess
 import sys
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Any, Dict
-
 import click
 from click_loglevel import LogLevel
 from pydantic import BaseModel, TypeAdapter
@@ -29,7 +28,7 @@ class Test:
     shell: str
     body: str
 
-    def run(self, result_dir: Path, **kwargs) -> bool:
+    def run(self, result_dir: Path, **kwargs: Any) -> bool:
         log.info("Running test %r", self.name)
         with NamedTemporaryFile("w+") as script:
             print(self.body, file=script, flush=True)
@@ -73,9 +72,7 @@ def parse_clients(path: Path | None = None) -> dict[str, Client]:
 class GitRepo:
     path: Path
 
-    def run(
-        self, *args: str | Path, **kwargs: Any
-    ) -> subprocess.CompletedProcess:
+    def run(self, *args: str | Path, **kwargs: Any) -> subprocess.CompletedProcess:
         kwargs.setdefault("cwd", self.path)
         return runcmd("git", *args, **kwargs)
 
@@ -250,7 +247,7 @@ def main(clientid: str, jobdir: Path, log_level: int) -> None:
         jobrepo.run("branch", "-D", branch)
         # It appears that `git push origin result-*` doesn't create a branch
         # under origin/ when in a "single branch" clone
-        #jobrepo.run("branch", "-D", "-r", f"origin/{branch}")
+        # jobrepo.run("branch", "-D", "-r", f"origin/{branch}")
     jobrepo.run("gc")
 
     if failed_jobs:

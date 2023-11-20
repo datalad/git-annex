@@ -8,7 +8,7 @@ RUN echo 'Acquire::http::Dl-Limit "1000";' >| /etc/apt/apt.conf.d/20snapshots \
     && echo 'Acquire::https::Dl-Limit "1000";' >> /etc/apt/apt.conf.d/20snapshots \
     && echo 'Acquire::Retries "5";' >> /etc/apt/apt.conf.d/20snapshots
 
-# Notes: 
+# Notes:
 # - in APT for NeuroDebian we have #deb-src  for debian-devel, so we need to change
 #   that too.
 # - APT specification switched away from .list to .sources format in bookworm.
