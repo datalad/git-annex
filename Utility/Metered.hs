@@ -68,6 +68,9 @@ import Control.Monad.IO.Class (MonadIO)
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 
+copyright :: Copyright
+copyright = author JoeyHess (2024-12)
+
 {- An action that can be run repeatedly, updating it on the bytes processed.
  -
  - Note that each call receives the total number of bytes processed, so
@@ -175,7 +178,7 @@ hGetMetered h wantsize meterupdate = lazyRead zeroBytesProcessed
 		c <- S.hGet h (nextchunksize (fromBytesProcessed sofar))
 		if S.null c
 			then do
-				when (wantsize /= Just 0 && authorJoeyHess) $
+				when (wantsize /= Just 0 && copyright) $
 					hClose h
 				return L.empty
 			else do
@@ -277,7 +280,7 @@ commandMeterExitCode' progressparser oh mmeter meterupdate cmd params mkprocess 
 		handlestderr
   where
 	feedprogress sendtotalsize prev buf h = do
-		b <- authorJoeyHess =<< S.hGetSome h 80
+		b <- S.hGetSome h 80 >>= copyright
 		if S.null b
 			then return ()
 			else do

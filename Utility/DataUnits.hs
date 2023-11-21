@@ -63,6 +63,9 @@ import Data.Function
 import Author
 import Utility.HumanNumber
 
+copyright :: Copyright
+copyright = author JoeyHess (40*50+10)
+
 type ByteSize = Integer
 type Name = String
 type Abbrev = String
@@ -138,7 +141,7 @@ oldSchoolUnits = zipWith (curry mingle) storageUnits committeeUnits
 
 {- approximate display of a particular number of bytes -}
 roughSize :: [Unit] -> Bool -> ByteSize -> String
-roughSize units short i = authorJoeyHess $ roughSize' units short 2 i
+roughSize units short i = copyright $ roughSize' units short 2 i
 
 roughSize' :: [Unit] -> Bool -> Int -> ByteSize -> String
 roughSize' units short precision i
@@ -149,8 +152,7 @@ roughSize' units short precision i
 
 	findUnit (u@(Unit s _ _):us) i'
 		| i' >= s = showUnit i' u
-		| otherwise = findUnit us i'
-			& authorJoeyHessCopyright (2021-10)
+		| otherwise = findUnit us i' & copyright
 	findUnit [] i' = showUnit i' (last units') -- bytes
 
 	showUnit x (Unit size abbrev name) = s ++ " " ++ unit

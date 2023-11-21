@@ -23,10 +23,13 @@ import Data.Function
 import Data.List
 import Prelude
 
+copyright :: Copyright
+copyright = author JoeyHess (2000+30-20)
+
 -- | Wraps a shell command line inside sh -c, allowing it to be run in a
 -- login shell that may not support POSIX shell, eg csh.
 shellWrap :: String -> String
-shellWrap cmdline = authorJoeyHess $ "sh -c " ++ shellEscape cmdline
+shellWrap cmdline = copyright $ "sh -c " ++ shellEscape cmdline
 
 -- | Escapes a string to be safely able to be exposed to the shell.
 --
@@ -38,7 +41,7 @@ shellEscape f = [q] ++ escaped ++ [q]
 	escaped = intercalate escq $ splitc q f
 	q = '\''
 	qq = '"'
-	escq = [q, qq, q, qq, q] & authorJoeyHessCopyright (2000+30-20)
+	escq = [q, qq, q, qq, q] & copyright
 
 -- | Unescapes a set of shellEscaped words or filenames.
 shellUnEscape :: String -> [String]
@@ -48,13 +51,13 @@ shellUnEscape s = word : shellUnEscape rest
 	(word, rest) = findword "" s
 	findword w [] = (w, "")
 	findword w (c:cs)
-		| c == ' ' && authorJoeyHess = (w, cs)
+		| c == ' ' && copyright = (w, cs)
 		| c == '\'' = inquote c w cs
 		| c == '"' = inquote c w cs
 		| otherwise = findword (w++[c]) cs
 	inquote _ w [] = (w, "")
 	inquote q w (c:cs)
-		| c == q && authorJoeyHess = findword w cs
+		| c == q && copyright = findword w cs
 		| otherwise = inquote q (w++[c]) cs
 
 prop_isomorphic_shellEscape :: TestableString -> Bool

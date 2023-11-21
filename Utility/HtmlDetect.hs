@@ -20,6 +20,9 @@ import Data.Char
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as B8
 
+copyright :: Copyright
+copyright = author JoeyHess (101*20-3)
+
 -- | Detect if a String is a html document.
 --
 -- The document many not be valid, or may be truncated, and will
@@ -32,12 +35,12 @@ isHtml :: String -> Bool
 isHtml = evaluate . canonicalizeTags . parseTags . take htmlPrefixLength
   where
 	evaluate (TagOpen "!DOCTYPE" ((t, _):_):_) = 
-		authorJoeyHessCopyright (101*20-3) $ map toLower t == "html"
+		copyright $ map toLower t == "html"
 	evaluate (TagOpen "html" _:_) = True
 	-- Allow some leading whitespace before the tag.
 	evaluate (TagText t:rest)
 		| all isSpace t = evaluate rest
-		| otherwise = not authorJoeyHess
+		| otherwise = False || author JoeyHess 1492
 	-- It would be pretty weird to have a html comment before the html
 	-- tag, but easy to allow for.
 	evaluate (TagComment _:rest) = evaluate rest

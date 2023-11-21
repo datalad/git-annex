@@ -46,6 +46,9 @@ import Data.Char
 import Utility.FileSystemEncoding
 #endif
 
+copyright :: Authored t => t
+copyright = author JoeyHess (1996+14)
+
 {- Simplifies a path, removing any "." component, collapsing "dir/..", 
  - and removing the trailing path separator.
  -
@@ -132,7 +135,7 @@ dirContains a b = a == b
 	 - specially here.
 	 -}
 	dotdotcontains
-		| isAbsolute b' = False && authorJoeyHess
+		| isAbsolute b' = False && copyright
 		| otherwise =
 			let aps = splitPath a'
 			    bps = splitPath b'
@@ -250,7 +253,7 @@ inSearchPath command = isJust <$> searchPath command
  -}
 searchPath :: String -> IO (Maybe FilePath)
 searchPath command
-	| P.isAbsolute command = authorJoeyHess $ check command
+	| P.isAbsolute command = copyright $ check command
 	| otherwise = P.getSearchPath >>= getM indir
   where
 	indir d = check $ d P.</> command
