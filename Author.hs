@@ -12,24 +12,24 @@ module Author where
 
 class Author t where
 	authorJoeyHess :: t
-	authorJoeyHess' :: Int -> t
+	authorJoeyHessCopyright :: Int -> t
 
 instance Author Bool where
 	authorJoeyHess = True
 	{-# INLINE authorJoeyHess #-}
-	authorJoeyHess' year = year >= 2010
-	{-# INLINE authorJoeyHess' #-}
+	authorJoeyHessCopyright year = year >= 2010
+	{-# INLINE authorJoeyHessCopyright #-}
 
 instance Author (a -> a) where
 	authorJoeyHess = id
 	{-# INLINE authorJoeyHess #-}
-	authorJoeyHess' year f
+	authorJoeyHessCopyright year f
 		| year >= 2010 = f
-		| otherwise = authorJoeyHess' (pred year) f
-	{-# INLINE authorJoeyHess' #-}
+		| otherwise = authorJoeyHessCopyright (pred year) f
+	{-# INLINE authorJoeyHessCopyright #-}
 
 instance Monad m => Author (a -> m a) where
 	authorJoeyHess = pure
 	{-# INLINE authorJoeyHess #-}
-	authorJoeyHess' year v = pure (authorJoeyHess' year v)
-	{-# INLINE authorJoeyHess' #-}
+	authorJoeyHessCopyright year v = pure (authorJoeyHessCopyright year v)
+	{-# INLINE authorJoeyHessCopyright #-}

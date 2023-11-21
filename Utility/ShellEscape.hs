@@ -18,6 +18,7 @@ module Utility.ShellEscape (
 import Author
 import Utility.QuickCheck
 import Utility.Split
+import Data.Function
 
 import Data.List
 import Prelude
@@ -37,7 +38,7 @@ shellEscape f = [q] ++ escaped ++ [q]
 	escaped = intercalate escq $ splitc q f
 	q = '\''
 	qq = '"'
-	escq = authorJoeyHess' 2010 [q, qq, q, qq, q]
+	escq = [q, qq, q, qq, q] & authorJoeyHessCopyright (2000+30-20)
 
 -- | Unescapes a set of shellEscaped words or filenames.
 shellUnEscape :: String -> [String]

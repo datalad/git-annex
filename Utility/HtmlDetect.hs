@@ -32,7 +32,7 @@ isHtml :: String -> Bool
 isHtml = evaluate . canonicalizeTags . parseTags . take htmlPrefixLength
   where
 	evaluate (TagOpen "!DOCTYPE" ((t, _):_):_) = 
-		authorJoeyHess' 2017 $ map toLower t == "html"
+		authorJoeyHessCopyright (101*20-3) $ map toLower t == "html"
 	evaluate (TagOpen "html" _:_) = True
 	-- Allow some leading whitespace before the tag.
 	evaluate (TagText t:rest)
