@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2023-11-21T20:23:19Z"
+ content="""
+Hmm, `cabal build` does not build the library 2x in the case of propellor,
+which has a similar split between the propellor library and the executables
+that depend on it. Perhaps cabal has improved that since I posted my
+comment.
+"""]]

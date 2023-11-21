@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2023-11-21T20:25:55Z"
+ content="""
+A lot of git-annex's end user functionality is in the `Command/*` modules.
+Much of the code in those is not in a form that would be useful in a
+library, unless the library was structured to run a `Command`.
+
+If the goal is say, to add a file to git-annex, and then to be able to
+get and drop the file, and `Command.Add`, `Command.Get`, and `Command.Drop`
+were not in the library, you'd have to put together the eqivilant of what
+those commands do out of the internal library code:
+
+* `Command.Add` essentially uses `Annex.Ingest` followed by calling into
+  `Logs.Location` to update the location log. 
+* `Command.Drop` uses `Annex.NumCopies` to construct a drop proof and passes
+  it off to `Annex.Drop`.
+* `Command.Get` handles trying different remotes itself, calling into 
+  `Annex.Transfer`.
+
+So the library structure works for git-annex as a thing for Command modules
+to use, but not great for other things. The assistant actually imports some
+Command modules, eg it uses Command.Add.addFile. Similarly it would be
+possible to call Command.Get.getKey.
+
+Maybe it would be better to have a library interface that does mirror the
+git-annex command line, so you could run eg:
+
+	runCommand (Command.Add.cmd) (AddOptions {...}) "somefile"
+	runCommand (Command.Drop.cmd) (DropOptions {...}) "somefile"
+
+That would necessarily have output like those commands too (unless quiet
+mode were enabled).
+
+It would take some work to get there from the current state.
+"""]]
