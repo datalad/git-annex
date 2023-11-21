@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-11-21T20:12:11Z"
+ content="""
+I think I should probably just remove that. It's not being maintained.
+
+Adding it to the cabal file so it gets built would slow down builds
+producing this extra binary. It would need to be handled as a multicall
+program in git-annex the way git-annex-shell and git-remote-tor-annex are.
+
+Do you have a reason to want to use it?
+"""]]
