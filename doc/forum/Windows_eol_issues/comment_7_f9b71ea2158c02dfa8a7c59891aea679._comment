@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="comment 7"
+ date="2023-11-21T09:25:33Z"
+ content="""
+Thanks joey for your response. And thank you for jkniiv for providing the output to git show-head, it matches what I see.
+
+With regards to the pointer file... I think the problem I have with it is.. well, first the avoidable warning:
+
+[[!format  sh \"\"\"
+warning: in the working copy of 'ntdll.dll', LF will be replaced by CRLF the next time Git touches it
+\"\"\"]]
+
+I guess also, because git-annex doesn't honour (??) git's actual expectations on line mode, you end up with git thinking a file is modified. Because git knows it as text, and in the default mode under Windows, it expects the text file to be CRLF.
+
+Also... I guess in a way, once Windows has acted on a file that came from unix, it now becomes a pointer file on disk. You can't get the benefit of the symlink to view the contents.
+
+Also also... I don't think I demonstrated it here, but I found that eventually, some merge would cause the line-ending to flip, and then there would be another unnecessary checkin of the pointer file.
+
+Sorry if this is all a bit abstract. I was working on large repos, oblivious to some of what I found and have pasted above, and was filling in the \"bitmap\" of my knowledge piecemeal.
+
+With the CRLF hooks, yes, I originally reported that. So in the above, not how I do a push msw to wsl only, and no pull from msw at wsl. That's because that type of pull would break, with the wsl/linux system() call interpreting the CR as part of the shebang, and being unable to execute the shell itself.
+
+"""]]
