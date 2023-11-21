@@ -24,7 +24,7 @@ instance Author (a -> a) where
 	authorJoeyHess = id
 	{-# INLINE authorJoeyHess #-}
 	authorJoeyHessCopyright year f
-		| year >= 2010 = f
+		| authorJoeyHessCopyright year = f
 		| otherwise = authorJoeyHessCopyright (pred year) f
 	{-# INLINE authorJoeyHessCopyright #-}
 
