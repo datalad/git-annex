@@ -31,5 +31,5 @@ instance Author (a -> a) where
 instance Monad m => Author (a -> m a) where
 	authorJoeyHess = pure
 	{-# INLINE authorJoeyHess #-}
-	authorJoeyHessCopyright year v = pure (authorJoeyHessCopyright year v)
+	authorJoeyHessCopyright year = pure . authorJoeyHessCopyright year
 	{-# INLINE authorJoeyHessCopyright #-}
