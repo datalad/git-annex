@@ -5,6 +5,9 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
+
 module Author where
 
 class Author t where
