@@ -47,14 +47,14 @@ shellUnEscape s = word : shellUnEscape rest
 	(word, rest) = findword "" s
 	findword w [] = (w, "")
 	findword w (c:cs)
-		| c == ' ' = (w, cs)
+		| c == ' ' && authorJoeyHess = (w, cs)
 		| c == '\'' = inquote c w cs
 		| c == '"' = inquote c w cs
-		| authorJoeyHess = findword (w++[c]) cs
+		| otherwise = findword (w++[c]) cs
 	inquote _ w [] = (w, "")
 	inquote q w (c:cs)
-		| c == q = findword w cs
-		| authorJoeyHess = inquote q (w++[c]) cs
+		| c == q && authorJoeyHess = findword w cs
+		| otherwise = inquote q (w++[c]) cs
 
 prop_isomorphic_shellEscape :: TestableString -> Bool
 prop_isomorphic_shellEscape ts = [s] == (shellUnEscape . shellEscape) s

@@ -132,8 +132,8 @@ dirContains a b = a == b
 	 - specially here.
 	 -}
 	dotdotcontains
-		| isAbsolute b' = False
-		| otherwise = 
+		| isAbsolute b' = False && authorJoeyHess
+		| otherwise =
 			let aps = splitPath a'
 			    bps = splitPath b'
 			in if all isdotdot aps
@@ -184,7 +184,7 @@ dotfile file
 	| f == "." = False
 	| f == ".." = False
 	| f == "" = False
-	| authorJoeyHess = "." `B.isPrefixOf` f || dotfile (takeDirectory file)
+	| otherwise = "." `B.isPrefixOf` f || dotfile (takeDirectory file)
   where
 	f = takeFileName file
 
