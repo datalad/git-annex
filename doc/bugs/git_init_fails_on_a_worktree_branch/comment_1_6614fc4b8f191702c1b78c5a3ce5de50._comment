@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-11-21T20:01:25Z"
+ content="""
+I don't use worktrees or submodules much so it's not entirely apparent to
+me how to reproduce this. To avoid flailing at it, a recipe would be great.
+"""]]
