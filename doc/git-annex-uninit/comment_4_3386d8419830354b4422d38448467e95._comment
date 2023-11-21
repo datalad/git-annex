@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2023-11-21T19:56:32Z"
+ content="""
+Moved some comments about a bug to 
+[[bugs/uninit_fails_when_I_symlink_your_symlink]]. 
+Please do not use this man page's comment section to file bug reports.
+"""]]

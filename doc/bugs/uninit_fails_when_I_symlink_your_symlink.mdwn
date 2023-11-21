@@ -1,10 +1,3 @@
-[[!comment format=mdwn
- username="NewUser"
- nickname="dont.post.me"
- avatar="http://cdn.libravatar.org/avatar/90f59ddc341eaf9b2657422206c06901"
- subject="`git annex uninit` fails when I symlink your symlink"
- date="2023-11-20T04:22:02Z"
- content="""
 ```
 $ mkdir annex-test
 $ cd annex-test/
@@ -42,4 +35,3 @@ What should I do?
 Honestly, I'm happy with git-annex so far, I'm just thinking that I need to re-init with `annex.tune.objecthashlower=true` because my other computer is windows.
 
 Thanks!
-"""]]
