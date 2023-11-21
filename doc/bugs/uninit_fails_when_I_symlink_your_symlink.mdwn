@@ -35,3 +35,5 @@ What should I do?
 Honestly, I'm happy with git-annex so far, I'm just thinking that I need to re-init with `annex.tune.objecthashlower=true` because my other computer is windows.
 
 Thanks!
+
+> I see this was resolved as ok behavior, so [[done]] --[[Joey]]
