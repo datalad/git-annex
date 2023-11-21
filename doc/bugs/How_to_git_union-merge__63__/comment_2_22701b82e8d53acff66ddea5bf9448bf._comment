@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 2"
+ date="2023-11-21T20:20:13Z"
+ content="""
+It sounds promising as an automatic merge conflict resolver that I'd like to fall back to for non-annexed file conflicts. I don't really know how do achieve that manually. If it's easily possible in another way, I'll try that.
+"""]]
