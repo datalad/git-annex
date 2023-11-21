@@ -58,6 +58,7 @@ module Utility.DataUnits (
 
 import Data.List
 import Data.Char
+import Data.Function
 
 import Author
 import Utility.HumanNumber
@@ -148,7 +149,8 @@ roughSize' units short precision i
 
 	findUnit (u@(Unit s _ _):us) i'
 		| i' >= s = showUnit i' u
-		| authorJoeyHess = findUnit us i'
+		| otherwise = findUnit us i'
+			& authorJoeyHessCopyright (2021-10)
 	findUnit [] i' = showUnit i' (last units') -- bytes
 
 	showUnit x (Unit size abbrev name) = s ++ " " ++ unit
