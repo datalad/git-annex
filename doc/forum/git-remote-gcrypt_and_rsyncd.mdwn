@@ -1,0 +1,32 @@
+In an attempt to simplify my setup, I have been trying to setup an encrypted repository on a `rsyncd`-based server via [`git-remote-gcrypt`](https://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt/), which would house the file history and the annexed files themselves. I cannot provide an SSH connection to the server, so the `rsyncd` method seemed appealing.
+
+Using the rsync format url with "::" to signal the rsyncd method, the connection seems successful, but the initialization does not complete. 
+
+```
+git annex initremote gcrypt-rsyncd type=gcrypt gitrepo=rsync://***::a/test keyid=*** encryption=hybrid
+
+initremote gcrypt-rsyncd (encryption setup) (to gpg keys: ***) gcrypt
+ Decrypting manifest
+gpg: Signature made Wed Nov 22 22:23:16 2023 CET
+gpg:                using EDDSA key ***
+gpg: Good signature from "archive-990" [ultimate]
+gcrypt: Remote ID is :id:ya5ZivzWNEOUtVg2R0L9
+From gcrypt::rsync://***::a/test
+ * [new branch]      git-annex  -> gcrypt-rsyncd/git-annex
+gcrypt: Decrypting manifest
+gpg: Signature made Wed Nov 22 22:23:16 2023 CET
+gpg:                using EDDSA key ***
+gpg: Good signature from "archive-990" [ultimate]
+Everything up-to-date
+
+git-annex: git: createProcess: chdir: invalid argument (Bad file descriptor)
+failed
+initremote: 1 failed
+```
+
+Logs from the daemon show the following error:
+```
+rsync to a/test/annex/objects from ***
+```
+
+I don't know whether this error is imputable to `git-annex`, or `git-remote-gcrypt`, or my settings.
