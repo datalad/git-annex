@@ -12,13 +12,13 @@ is important for me as it allows me to track down the files that occupy most of 
 archive. However, if I try to call the above command, it does not show me a list of keys matching the criterion, but a help page
 as if I have misspelled the option:
 
-> $ git annex findkeys --largerthan 1
-> Invalid option `--largerthan'
->
-> Usage: git-annex COMMAND
->  git-annex - manage files with git, without checking their contents in
->
->  Commonly used commands:
+>     $ git annex findkeys --largerthan 1
+>     Invalid option `--largerthan'
+>     
+>     Usage: git-annex COMMAND
+>       git-annex - manage files with git, without checking their contents in
+>     
+>     Commonly used commands:
 >
 >  add             add files to annex
 > ......
