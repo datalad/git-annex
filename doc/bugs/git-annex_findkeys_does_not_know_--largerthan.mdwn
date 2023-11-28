@@ -25,12 +25,14 @@ as if I have misspelled the option:
 
 ### What steps will reproduce the problem?
 
+[[!format sh """
 echo hi > file
 git annex init
 git annex add file
 git commit -m "Test commit"
 git annex find --largerthan 1   # << this lists "file"
 git annex findkeys --largerthan 1   # << this fails
+]]
 
 ### What version of git-annex are you using? On what operating system?
 
@@ -40,16 +42,7 @@ git annex findkeys --largerthan 1   # << this fails
 
 
 
-### Please provide any additional information below.
-
-[[!format sh """
-# If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
-
-
-# End of transcript or log.
-"""]]
-
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-
+I am using it for my research project (data science/predictions in plant breeding) and it allows me to keep track of the
+current model iteration and associated results. Thank you for this! 
