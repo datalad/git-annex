@@ -266,6 +266,7 @@ annexedMatchingOptions = concat
 keyMatchingOptions :: [AnnexOption]
 keyMatchingOptions = concat
 	[ keyMatchingOptions'
+	, sizeMatchingOptions Limit.LimitAnnexFiles
 	, anythingNothingOptions
 	, combiningOptions 
 	, timeLimitOption 
@@ -398,7 +399,11 @@ fileMatchingOptions' lb =
 		<> help "limit to files whose content is the same as another file matching the glob pattern"
 		<> hidden
 		)
-	, annexOption (setAnnexState . Limit.addLargerThan lb) $ strOption
+	] ++ sizeMatchingOptions lb
+
+sizeMatchingOptions :: Limit.LimitBy -> [AnnexOption]
+sizeMatchingOptions lb =
+	[ annexOption (setAnnexState . Limit.addLargerThan lb) $ strOption
 		( long "largerthan" <> metavar paramSize
 		<> help "match files larger than a size"
 		<> hidden

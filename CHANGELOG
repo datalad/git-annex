@@ -20,6 +20,7 @@ git-annex (10.20230927) UNRELEASED; urgency=medium
   * Fix bug in git-annex copy --from --to that skipped files that were
     locally present.
   * Make git-annex copy --from --to --fast actually fast.
+  * findkeys: Support --largerthan and --smallerthan.
 
  -- Joey Hess <id@joeyh.name>  Tue, 10 Oct 2023 13:17:31 -0400
 
