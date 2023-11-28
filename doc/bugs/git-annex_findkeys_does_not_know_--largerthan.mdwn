@@ -26,13 +26,13 @@ as if I have misspelled the option:
 ### What steps will reproduce the problem?
 
 [[!format sh """
-echo hi > file
-git annex init
-git annex add file
-git commit -m "Test commit"
-git annex find --largerthan 1   # << this lists "file"
-git annex findkeys --largerthan 1   # << this fails
-]]
+    echo hi > file
+    git annex init
+    git annex add file
+    git commit -m "Test commit"
+    git annex find --largerthan 1   # << this lists "file"
+    git annex findkeys --largerthan 1   # << this fails
+"""]]
 
 ### What version of git-annex are you using? On what operating system?
 
