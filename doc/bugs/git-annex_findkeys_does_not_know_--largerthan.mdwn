@@ -21,7 +21,7 @@ as if I have misspelled the option:
 >     Commonly used commands:
 >
 >     add             add files to annex
-> ......
+>     [...]
 
 ### What steps will reproduce the problem?
 
