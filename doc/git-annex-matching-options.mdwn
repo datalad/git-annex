@@ -103,8 +103,8 @@ in either of two repositories.
 
 * `--lackingcopies=number`
 
-  Matches only when git-annex beleives that the specified number or 
-  more additional copies to be made in order to satisfy numcopies
+  Matches only when git-annex believes that the specified number or 
+  more additional copies need to be made in order to satisfy numcopies
   settings.
 
 * `--approxlackingcopies=number`
