@@ -16,14 +16,9 @@ and pushing of git repositories, and without changing the trees that are
 imported to or exported from special remotes.
 
 Note that it (like [[git-annex-sync]] or [[git-annex-assist]]) does not work
-specifically towards satisfying the [[git-annex-numcopies]] setting and it will
-not violate the local preferred content expression in order to move files
-between remotes that are not present locally. To allow for files to be present
-locally for such a movement between remotes, consider adding `or
-approxlackingcopies=1` to your local [[preferred_content]] expression (and
-maybe increasing [[git-annex-numcopies]] accordingly) so that files may pass
-through your local repo temporarily. Otherwise, `git annex satisfy` does not
-see a pathway for files to pass between other remotes.
+specifically towards satisfying the [[git-annex-numcopies]] setting,
+unless the preferred content setting of the local repository is written to
+do so by using eg `approxlackingcopies=1`.
 
 # OPTIONS
 
