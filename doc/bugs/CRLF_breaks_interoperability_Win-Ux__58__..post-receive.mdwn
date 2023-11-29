@@ -60,3 +60,5 @@ To /var/tmp/mnt/winhost-w10-5920/cygdrive/e/my.gitannex/
 
 Yes. I think git-annex is a hidden gem of the open source
 community.
+
+> [[fixed|done]] --[[Joey]]
