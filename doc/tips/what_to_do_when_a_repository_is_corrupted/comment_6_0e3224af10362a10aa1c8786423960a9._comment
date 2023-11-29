@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2023-11-29T16:44:35Z"
+ content="""
+@sng you can clone any git repository, it does not need to be a bare one.
+"""]]
