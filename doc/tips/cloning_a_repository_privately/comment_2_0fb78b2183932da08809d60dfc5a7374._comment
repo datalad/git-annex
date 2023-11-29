@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: What about temporary annex.private declaration?"""
+ date="2023-11-29T16:50:05Z"
+ content="""
+I'm sure that the private information will not leak out from
+`.git/annex/journal-private/` into the git-annex branch
+after annex.private is unset. The design ensures this because, when
+making a change to the branch, it only reads the private journal file
+when the repository whose information is being changed is private.
+
+However, when git-annex does not have any private repositories configured,
+an optimisation makes it skip trying to read from the private journal. So
+information about those repositories, that were private, will no longer be
+read.
+
+This effect is easy to see, for example:
+
+	joey@darkstar:~/tmp/xxx>git-annex whereis
+	whereis foo (1 copy)
+	  	ff1f0bbd-7be6-45ff-8c90-fd322820b717 -- joey@darkstar:~/tmp/xxx [here]
+	ok
+	joey@darkstar:~/tmp/xxx>git config annex.private false
+	joey@darkstar:~/tmp/xxx>git-annex whereis
+	whereis foo (0 copies) failed
+	whereis: 1 failed
+
+I think this could be improved, eg it could check once if the private
+journal exists and if so read from it even when no private uuids are
+currently configured. A single stat to support this would be ok; the goal
+was to avoid checking nonexistany files on every branch read when private
+repositories are not used.
+
+Configuring any remote with annex-private can be used to work around that
+problem, that lets it read information about all previously-private repositories
+as well.
+"""]]
