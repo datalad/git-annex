@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2023-11-29T17:36:28Z"
+ content="""
+What might be happening on the exfat drive is, every time that filesystem
+is mounted, it generates new inode numbers for all the files. So when you
+run `git status`, git sees the new inode and needs to do work to determine
+if it's changed. When the file is an annexed file that is unlocked (which
+all annexed files necessarily are on this filesystem since it doesn't
+support symlinks), git status needs to ask git-annex about it.
+And git-annex has to either re-hash the file (for SHA) or do a
+smaller amount of work (for WORM).
+
+A bare repository does get around that. But what I tend to use in these
+situations is a [[/special_remotes/directory]] special remote configured
+with `ignoreinodes=yes`.
+"""]]
