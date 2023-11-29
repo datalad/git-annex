@@ -1,7 +1,16 @@
-git-annex (10.20230927) UNRELEASED; urgency=medium
+git-annex (10.20231129) upstream; urgency=medium
 
-  * Ignore directories and other unusual files in .git/annex/journal/
+  * Fix bug in git-annex copy --from --to that skipped files that were
+    locally present.
+  * Make git-annex copy --from --to --fast actually fast.
   * Fix crash of enableremote when the special remote has embedcreds=yes.
+  * Ignore directories and other unusual files in .git/annex/journal/
+  * info: Added calculation of combined annex size of all repositories.
+  * log: Added options --sizesof, --sizes and --totalsizes that
+    display how the size of repositories changed over time.
+  * log: Added options --interval, --bytes, --received, and --gnuplot
+    to tune the output of the above added options.
+  * findkeys: Support --largerthan and --smallerthan.
   * importfeed: Use caching database to avoid needing to list urls
     on every run, and avoid using too much memory.
   * Improve memory use of --all when using annex.private.
@@ -12,17 +21,8 @@ git-annex (10.20230927) UNRELEASED; urgency=medium
   * Windows: When git-annex init is installing hook scripts, it will
     avoid ending lines with CR for portability. Existing hook scripts
     that do have CR line endings will not be changed.
-  * info: Added calculation of combined annex size of all repositories.
-  * log: Added options --sizesof, --sizes and --totalsizes that
-    display how the size of repositories changed over time.
-  * log: Added options --interval, --bytes, --received, and --gnuplot
-    to tune the output of the above added options.
-  * Fix bug in git-annex copy --from --to that skipped files that were
-    locally present.
-  * Make git-annex copy --from --to --fast actually fast.
-  * findkeys: Support --largerthan and --smallerthan.
 
- -- Joey Hess <id@joeyh.name>  Tue, 10 Oct 2023 13:17:31 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 29 Nov 2023 15:59:20 -0400
 
 git-annex (10.20230926) upstream; urgency=medium
 
