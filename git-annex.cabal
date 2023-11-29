@@ -162,6 +162,7 @@ Flag Production
 Flag ParallelBuild
   Description: Enable production build (slower build; faster binary)
   Default: False
+  Manual: True
 
 Flag TorrentParser
   Description: Use haskell torrent library to parse torrent files
