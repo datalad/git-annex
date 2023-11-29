@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="sng@353ca358075d9aa328f60a5439a3cee10f8301fe"
+ nickname="sng"
+ avatar="http://cdn.libravatar.org/avatar/d64f4854965b2b1c3ecafee4b2a66fac"
+ subject="corrupted bare repo"
+ date="2023-11-29T15:34:30Z"
+ content="""
+I've tried following these steps with a bare repo that became corrupted somehow, but at the cloning another repo step I'm stuck... how do I clone a repo when the bare repo is the one corrupted? (if it matters, this is a very large repo of photo files)
+"""]]
