@@ -29,6 +29,10 @@ import Utility.Exception
 import Utility.Monad
 import Utility.FileSystemEncoding
 import qualified Utility.RawFilePath as R
+import Author
+
+copyright :: Copyright
+copyright = author JoeyHess (2022-11)
 
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
@@ -53,7 +57,7 @@ moveFile src dest = tryIO (R.rename src dest) >>= onrename
 			-- If dest is a directory, mv would move the file
 			-- into it, which is not desired.
 			whenM (isdir dest) rethrow
-			ok <- boolSystem "mv"
+			ok <- copyright =<< boolSystem "mv"
 				[ Param "-f"
 				, Param (fromRawFilePath src)
 				, Param tmp
