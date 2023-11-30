@@ -1,0 +1,22 @@
+I have several workflows that rely on regular key migrations, and I would love to explore some ways that migrating keys could be improved.
+
+I see there has already been discussion about this:
+https://git-annex.branchable.com/todo/alternate_keys_for_same_content/
+
+I don't know how often this comes up, but it comes up a lot for me. I have several data sources that I regularly index and mirror by constructing keys based on md5 and size, and assemble a repo with the known filename. (gdrive, many software distribution sites, and others).
+
+So, I have a queue-repo, and I have the flexibilty of populating it later. I could even have a queue repo with just URL keys. Then I can handle ingestion and migration later.
+
+
+I would love to have a simple programatic way of recording that one key is the authoritative key for another key, like for MD5 -> SHA256 migrations.
+
+There don't seem to be any really great solutions to the prolem of obsolete keys. Merging will often re-introduce them, even if they have been excised. Marking them as dead stil keeps them around, and doesn't preserve information about what key now represents the same object.
+
+I have written helper scripts, and tools like git-annex-filter-branch are also very helpful. But I like having the flexibility of many repos that may not regularly be in sync with each other, and a consistent history.
+
+
+This would break things for sure, but what if during a migration, a symlink was made in the git-annex branch from the prev key to the migrated key. The union merge driver could defer to the upgraded or prefered backend. If an out of date repo tries syncing with an already upgraded key, the merge driver can see that the migration for that key has already happened, merge the obsolete key entries, and overwrite it back to a symlink during merge.
+
+A less drastic approach might be to expand the location log format to indiciate a canonical "successor" key, instead of just being dead.
+
+It might seem like a lot of complexity, but it would also in my opinion make a more consistent and flexible data model.
