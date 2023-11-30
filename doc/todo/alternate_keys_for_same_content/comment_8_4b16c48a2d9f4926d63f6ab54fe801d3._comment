@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2023-11-30T20:43:53Z"
+ content="""
+I think Ilya Shlyakhter gets to a fundamental problem in his comment above.
+Any way that git-annex stores data about an alternate key that is recorded
+in git, allows anyone to spoof bad data.
+
+For example, if I have a SHA256 key stored in git-annex, it would be a bad
+security hole if I fetched from Ilya's repository and suddenly git-annex
+was willing to accept some MD5 key as being the same content as my SHA256
+key. Even if the two keys had the same content currently, that MD5 key can
+be collision attacked later.
+
+So there would need to be a direction in which key upgrades were allowed.
+Which is fine for `WORM -> SHA256`, but less clear for `SHA1 -> SHA256`
+and much less clear for other pairs of modern hashes.
+"""]]
