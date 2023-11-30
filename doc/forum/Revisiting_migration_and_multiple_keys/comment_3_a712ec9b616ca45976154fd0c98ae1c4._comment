@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-11-30T20:55:02Z"
+ content="""
+I wonder if it would suffice to have a way for git-annex to record that key
+A migrated to B, but not treat that as meaning that it should get B's
+content when it wants A, or vice-versa.
+
+Instead, when a repository learns that A was elsewhere migrated to B, it
+could hardlink its content for A to B and update the location log for
+B to say is has a copy. The same as if `git-annex migrate` were run locally.
+(It could even hash the content and verify it got B.)
+
+That wouldn't help if a special remote has the content of A, and 
+git-annex wants to get the content of B.
+"""]]

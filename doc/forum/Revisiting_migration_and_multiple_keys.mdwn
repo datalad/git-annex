@@ -1,7 +1,7 @@
 I have several workflows that rely on regular key migrations, and I would love to explore some ways that migrating keys could be improved.
 
 I see there has already been discussion about this:
-https://git-annex.branchable.com/todo/alternate_keys_for_same_content/
+[[todo/alternate_keys_for_same_content]]
 
 I don't know how often this comes up, but it comes up a lot for me. I have several data sources that I regularly index and mirror by constructing keys based on md5 and size, and assemble a repo with the known filename. (gdrive, many software distribution sites, and others).
 

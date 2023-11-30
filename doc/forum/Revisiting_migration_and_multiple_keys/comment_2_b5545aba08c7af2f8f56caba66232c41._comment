@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-11-30T20:49:53Z"
+ content="""
+There seem to be difficulties with both performance and with security in
+storing information in the git-annex branch to declare that one key
+is replaced by another one.
+
+I wonder if there are any pain points that could be handled better without
+recording such information in the git-annex branch. What do your helper
+scripts do?
+"""]]
