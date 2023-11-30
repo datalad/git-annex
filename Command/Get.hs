@@ -87,7 +87,8 @@ perform key afile = stopUnless (getKey key afile) $
 {- Try to find a copy of the file in one of the remotes,
  - and copy it to here. -}
 getKey :: Key -> AssociatedFile -> Annex Bool
-getKey key afile = getKey' key afile =<< Remote.keyPossibilities key
+getKey key afile = getKey' key afile
+	=<< Remote.keyPossibilities (Remote.IncludeIgnored False) key
 
 getKey' :: Key -> AssociatedFile -> [Remote] -> Annex Bool
 getKey' key afile = dispatch

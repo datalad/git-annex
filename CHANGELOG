@@ -1,3 +1,10 @@
+git-annex (10.20231130) UNRELEASED; urgency=medium
+
+  * Make git-annex get/copy/move --from foo override configuration of 
+    remote.foo.annex-ignore, as documented.
+
+ -- Joey Hess <id@joeyh.name>  Thu, 30 Nov 2023 14:48:12 -0400
+
 git-annex (10.20231129) upstream; urgency=medium
 
   * Fix bug in git-annex copy --from --to that skipped files that were

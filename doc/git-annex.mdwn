@@ -1388,9 +1388,9 @@ Remotes are configured using these settings in `.git/config`.
 
 * `remote.<name>.annex-ignore`
 
-  If set to `true`, prevents git-annex
-  from storing annexed file contents on this remote by default.
-  (You can still request it be used by the `--from` and `--to` options.)
+  If set to `true`, prevents git-annex from storing or retrieving annexed
+  file contents on this remote by default. 
+  (You can still request it be used with the `--from` and `--to` options.)
 
   This is, for example, useful if the remote is located somewhere
   without git-annex-shell. (For example, if it's on GitHub).
@@ -1399,7 +1399,7 @@ Remotes are configured using these settings in `.git/config`.
 
   This does not prevent `git-annex sync`, `git-annex pull`, `git-annex push`,
   `git-annex assist` or the `git-annex assistant` from operating on the
-  git repository.
+  git repository. It only affects annexed content.
 
 * `remote.<name>.annex-ignore-command`
 

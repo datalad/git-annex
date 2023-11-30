@@ -317,7 +317,7 @@ pluralCopies _ = "copies"
 verifiableCopies :: Key -> [UUID] -> Annex ([UnVerifiedCopy], [VerifiedCopy])
 verifiableCopies key exclude = do
 	locs <- Remote.keyLocations key
-	(remotes, trusteduuids) <- Remote.remoteLocations locs
+	(remotes, trusteduuids) <- Remote.remoteLocations (Remote.IncludeIgnored False) locs
 		=<< trustGet Trusted
 	untrusteduuids <- trustGet UnTrusted
 	let exclude' = exclude ++ untrusteduuids

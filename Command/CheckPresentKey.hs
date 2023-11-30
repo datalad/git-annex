@@ -51,7 +51,7 @@ check :: String -> Maybe Remote -> Annex Result
 check ks mr = case mr of
 	Just r -> go Nothing [r]
 	Nothing -> do
-		mostlikely <- Remote.keyPossibilities k
+		mostlikely <- Remote.keyPossibilities (Remote.IncludeIgnored False) k
 		otherremotes <- flip Remote.remotesWithoutUUID 
 			(map Remote.uuid mostlikely)
 			<$> remoteList

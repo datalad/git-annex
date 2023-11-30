@@ -47,6 +47,7 @@ module Remote (
 	remotesWithUUID,
 	remotesWithoutUUID,
 	keyLocations,
+	IncludeIgnored(..),
 	keyPossibilities,
 	remoteLocations,
 	nameToUUID,
@@ -299,13 +300,16 @@ remotesWithoutUUID rs us = filter (\r -> uuid r `notElem` us) rs
 keyLocations :: Key -> Annex [UUID]
 keyLocations key = trustExclude DeadTrusted =<< loggedLocations key
 
+{- Whether to include remotes that have annex-ignore set. -}
+newtype IncludeIgnored = IncludeIgnored Bool
+
 {- Cost ordered lists of remotes that the location log indicates
  - may have a key.
  -
  - Also includes remotes with remoteAnnexSpeculatePresent set.
  -}
-keyPossibilities :: Key -> Annex [Remote]
-keyPossibilities key = do
+keyPossibilities :: IncludeIgnored -> Key -> Annex [Remote]
+keyPossibilities ii key = do
 	u <- getUUID
 	-- uuids of all remotes that are recorded to have the key
 	locations <- filter (/= u) <$> keyLocations key
@@ -315,19 +319,21 @@ keyPossibilities key = do
 	-- there are unlikely to be many speclocations, so building a Set
 	-- is not worth the expense
 	let locations' = speclocations ++ filter (`notElem` speclocations) locations
-	fst <$> remoteLocations locations' []
+	fst <$> remoteLocations ii locations' []
 
 {- Given a list of locations of a key, and a list of all
  - trusted repositories, generates a cost-ordered list of
  - remotes that contain the key, and a list of trusted locations of the key.
  -}
-remoteLocations :: [UUID] -> [UUID] -> Annex ([Remote], [UUID])
-remoteLocations locations trusted = do
+remoteLocations :: IncludeIgnored -> [UUID] -> [UUID] -> Annex ([Remote], [UUID])
+remoteLocations (IncludeIgnored ii) locations trusted = do
 	let validtrustedlocations = nub locations `intersect` trusted
 
 	-- remotes that match uuids that have the key
 	allremotes <- remoteList 
-		>>= filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . gitconfig)
+		>>= if not ii
+			then filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . gitconfig)
+			else return
 	let validremotes = remotesWithUUID allremotes locations
 
 	return (sortBy (comparing cost) validremotes, validtrustedlocations)

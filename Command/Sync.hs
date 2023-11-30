@@ -897,7 +897,7 @@ seekSyncContent o rs currbranch = do
 syncFile :: SyncOptions -> Either (Maybe (Bloom Key)) (Key -> Annex ()) -> [Remote] -> AssociatedFile -> Key -> Annex Bool
 syncFile o ebloom rs af k = do
 	inhere <- inAnnex k
-	locs <- map Remote.uuid <$> Remote.keyPossibilities k
+	locs <- map Remote.uuid <$> Remote.keyPossibilities (Remote.IncludeIgnored False) k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
 	got <- anyM id =<< handleget have inhere

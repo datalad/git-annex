@@ -146,7 +146,7 @@ toStart' dest removewhen afile key ai si = do
 
 expectedPresent :: Remote -> Key -> Annex Bool
 expectedPresent dest key = do
-	remotes <- Remote.keyPossibilities key
+	remotes <- Remote.keyPossibilities (Remote.IncludeIgnored True) key
 	return $ dest `elem` remotes
 
 toPerform :: Remote -> RemoveWhen -> Key -> AssociatedFile -> Bool -> Either String Bool -> CommandPerform
@@ -249,7 +249,7 @@ fromOk src key
   where
 	checklog = do
 		u <- getUUID
-		remotes <- Remote.keyPossibilities key
+		remotes <- Remote.keyPossibilities (Remote.IncludeIgnored True) key
 		return $ u /= Remote.uuid src && elem src remotes
 
 fromPerform :: Remote -> RemoveWhen -> Key -> AssociatedFile -> CommandPerform
@@ -326,7 +326,7 @@ fromDrop src destuuid deststartedwithcopy key afile adjusttocheck =
 toHereStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> SeekInput -> CommandStart
 toHereStart removewhen afile key ai si = 
 	startingNoMessage (OnlyActionOn key ai) $ do
-		rs <- Remote.keyPossibilities key
+		rs <- Remote.keyPossibilities (Remote.IncludeIgnored False) key
 		forM_ rs $ \r ->
 			includeCommandAction $
 				starting (describeMoveAction removewhen) ai si $
