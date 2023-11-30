@@ -81,6 +81,7 @@ seek' o fto = startConcurrency (stages fto) $ do
 			FromOrToRemote (ToRemote _) -> Just True
 			ToHere -> Nothing
 			FromRemoteToRemote _ _ -> Nothing
+			FromAnywhereToRemote _ -> Nothing
 		, usesLocationLog = True
 		}
 	keyaction = startKey fto (removeWhen o)
@@ -91,6 +92,7 @@ stages (FromOrToRemote (FromRemote _)) = transferStages
 stages (FromOrToRemote (ToRemote _)) = commandStages
 stages ToHere = transferStages
 stages (FromRemoteToRemote _ _) = transferStages
+stages (FromAnywhereToRemote _) = transferStages
 
 start :: FromToHereOptions -> RemoveWhen -> SeekInput -> RawFilePath -> Key -> CommandStart
 start fromto removewhen si f k = start' fromto removewhen afile si k ai
@@ -118,6 +120,9 @@ start' fromto removewhen afile si key ai =
 			src' <- getParsed src
 			dest' <- getParsed dest
 			fromToStart removewhen afile key ai si src' dest'
+		FromAnywhereToRemote dest -> do
+			dest' <- getParsed dest
+			fromAnywhereToStart removewhen afile key ai si dest'
 
 describeMoveAction :: RemoveWhen -> String
 describeMoveAction RemoveNever = "copy"
@@ -352,6 +357,30 @@ fromToStart removewhen afile key ai si src dest =
 			if fast && removewhen == RemoveNever
 				then not <$> expectedPresent dest key
 				else return True
+
+fromAnywhereToStart :: RemoveWhen -> AssociatedFile -> Key -> ActionItem -> SeekInput -> Remote -> CommandStart
+fromAnywhereToStart removewhen afile key ai si dest =
+	stopUnless somethingtodo $ do
+		u <- getUUID
+		if u == Remote.uuid dest
+			then toHereStart removewhen afile key ai si
+			else startingNoMessage (OnlyActionOn key ai) $ do
+				rs <- filter (/= dest) 
+					<$> Remote.keyPossibilities (Remote.IncludeIgnored False) key
+				forM_ rs $ \r ->
+					includeCommandAction $
+						starting (describeMoveAction removewhen) ai si $
+							fromToPerform r dest removewhen key afile
+				whenM (inAnnex key) $
+					void $ includeCommandAction $
+						toStart removewhen afile key ai si dest 
+				next $ return True
+  where
+	somethingtodo = do
+		fast <- Annex.getRead Annex.fast
+		if fast && removewhen == RemoveNever
+			then not <$> expectedPresent dest key
+			else return True
 
 {- When there is a local copy, transfer it to the dest, and drop from the src.
  -

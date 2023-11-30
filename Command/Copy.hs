@@ -69,6 +69,7 @@ seek' o fto = startConcurrency (Command.Move.stages fto) $ do
 			FromOrToRemote (ToRemote _) -> Just True
 			ToHere -> Just False
 			FromRemoteToRemote _ _ -> Nothing
+			FromAnywhereToRemote _ -> Nothing
 		, usesLocationLog = True
 		}
 	keyaction = Command.Move.startKey fto Command.Move.RemoveNever
@@ -84,12 +85,13 @@ start o fto si file key = stopUnless shouldCopy $
 		| autoMode o = want <||> numCopiesCheck file key (<)
 		| otherwise = return True
 	want = case fto of
-		FromOrToRemote (ToRemote dest) ->
-			(Remote.uuid <$> getParsed dest) >>= checkwantsend
+		FromOrToRemote (ToRemote dest) -> checkwantsend dest
 		FromOrToRemote (FromRemote _) -> checkwantget
 		ToHere -> checkwantget
-		FromRemoteToRemote _ dest ->
-			(Remote.uuid <$> getParsed dest) >>= checkwantsend
-			
-	checkwantsend = wantGetBy False (Just key) (AssociatedFile (Just file))
+		FromRemoteToRemote _ dest -> checkwantsend dest
+		FromAnywhereToRemote dest -> checkwantsend dest
+
+	checkwantsend dest = 
+		(Remote.uuid <$> getParsed dest) >>=
+			wantGetBy False (Just key) (AssociatedFile (Just file))
 	checkwantget = wantGet False (Just key) (AssociatedFile (Just file))

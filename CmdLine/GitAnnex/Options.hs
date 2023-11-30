@@ -162,40 +162,55 @@ parseToOption = strOption
 	<> completeRemotes
 	)
 
+parseFromAnywhereOption :: Parser Bool
+parseFromAnywhereOption = switch
+	( long "from-anywhere"
+	<> help "from any remote"
+	)
+
 parseRemoteOption :: Parser RemoteName
 parseRemoteOption = strOption
 	( long "remote" <> metavar paramRemote
 	<> completeRemotes
 	)
 
--- | From or to a remote, or both, or a special --to=here
+-- | --from or --to a remote, or both, or a special --to=here,
+-- or --from-anywhere --to remote.
 data FromToHereOptions 
 	= FromOrToRemote FromToOptions
 	| ToHere
 	| FromRemoteToRemote (DeferredParse Remote) (DeferredParse Remote)
+	| FromAnywhereToRemote (DeferredParse Remote)
 
 parseFromToHereOptions :: Parser (Maybe FromToHereOptions)
 parseFromToHereOptions = go
 	<$> optional parseFromOption
 	<*> optional parseToOption
+	<*> parseFromAnywhereOption
   where
-	go (Just from) (Just to) = Just $ FromRemoteToRemote
+	go _ (Just to) True = Just $ FromAnywhereToRemote
+		(mkParseRemoteOption to)
+	go (Just from) (Just to) _ = Just $ FromRemoteToRemote
 		(mkParseRemoteOption from)
 		(mkParseRemoteOption to)
-	go (Just from) Nothing = Just $ FromOrToRemote
+	go (Just from) Nothing _ = Just $ FromOrToRemote
 		(FromRemote $ mkParseRemoteOption from)
-	go Nothing (Just to) = Just $ case to of
+	go Nothing (Just to) _ = Just $ case to of
 		"here" -> ToHere
 		"." -> ToHere
 		_ -> FromOrToRemote $ ToRemote $ mkParseRemoteOption to
-	go Nothing Nothing = Nothing
+	go Nothing Nothing _ = Nothing
 
 instance DeferredParseClass FromToHereOptions where
-	finishParse (FromOrToRemote v) = FromOrToRemote <$> finishParse v
+	finishParse (FromOrToRemote v) = 
+		FromOrToRemote <$> finishParse v
 	finishParse ToHere = pure ToHere
-	finishParse (FromRemoteToRemote v1 v2) = FromRemoteToRemote
-		<$> finishParse v1
-		<*> finishParse v2
+	finishParse (FromRemoteToRemote v1 v2) = 
+		FromRemoteToRemote
+			<$> finishParse v1
+			<*> finishParse v2
+	finishParse (FromAnywhereToRemote v) = 
+		FromAnywhereToRemote <$> finishParse v
 
 -- Options for acting on keys, rather than work tree files.
 data KeyOptions

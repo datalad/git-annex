@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2023-11-30T18:26:30Z"
+ content="""
+I like the idea of `copy --from-anywhere --to=remote` and just 
+use the lowest cost remote (when not in local repo). Like `git-annex get`
+and `git-annex copy --to=here`.
+
+Hmm, if there's a remote that is too expensive to want to use in such a
+copy, it would be possible to use `-c remote.foo.annex-ignore=true`
+to make it avoid using that remote. As can also be done in the case of
+`git-annex get`, although that was not documented well.
+
+I've implemented --from-anywhere..
+"""]]

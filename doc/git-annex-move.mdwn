@@ -38,6 +38,11 @@ Paths of files or directories to operate on can be specified.
   then deleting the content from the local repository (if it was not present
   to start with).
 
+* `--from-anywhere --to=remote`
+
+  Move to the remote files from the local repository and from all 
+  reachable remotes.
+
 * `--force`
 
   Override numcopies and required content checking, and always remove

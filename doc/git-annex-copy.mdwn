@@ -41,6 +41,11 @@ Paths of files or directories to operate on can be specified.
   then deleting the content from the local repository (if it was not present
   to start with).
 
+* `--from-anywhere --to=remote`
+
+  Copy to the remote files from the local repository as well as from any reachable
+  remotes.
+
 * `--jobs=N` `-JN`
 
   Enables parallel transfers with up to the specified number of jobs
