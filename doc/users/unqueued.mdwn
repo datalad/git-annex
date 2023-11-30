@@ -1,0 +1,7 @@
+Hello.
+
+I have been using git-annex since 2017, and it has been a huge boon.
+
+I mostly consider myself a hobbyist, but I have used git-annex professionally. Along the way, I've learned a lot about unix system programming, git, and automation.
+
+I personally find managing large sets of files to be very annoying. So being able to wrangle giant sets of files with the precision of git is awesome. I used to spend a lot of time checksumming files, making download queues, and trying to catalog where stuff was.
