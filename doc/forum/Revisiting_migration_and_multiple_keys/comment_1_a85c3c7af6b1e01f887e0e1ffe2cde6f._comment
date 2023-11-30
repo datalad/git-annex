@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 1"
+ date="2023-11-30T06:51:53Z"
+ content="""
+Hi! If I understand you correctly, your problem is that you often migrate keys to another backend, and there are situations involving merges of repos far away from each other in history that cause merge conflicts, which results in the dead old pre-migration key being reintroduced?
+
+I never use key backend migration and I don't fully understand your workflow. Could you provide a reproducible example of your problem (incl  all commands)? This would help a lot.
+"""]]
