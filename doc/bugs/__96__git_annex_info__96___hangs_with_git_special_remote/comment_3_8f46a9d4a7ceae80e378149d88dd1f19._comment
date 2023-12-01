@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Another possibility to make --fast faster?"
+ date="2023-12-01T11:50:25Z"
+ content="""
+How about having `git annex info --fast` skip this lookup step for remotes where it doesn't know the UUID of yet?
+
+`git annex info` can already be quite slow in the other steps it takes (counting files, disk space, etc.) in large repos, so it is not so much of a surprise that it hangs a while by default. But if `--fast` would make it actually fast by staying completely offline (right?) and skipping the slow local counting steps, this would be logical.
+
+"""]]
