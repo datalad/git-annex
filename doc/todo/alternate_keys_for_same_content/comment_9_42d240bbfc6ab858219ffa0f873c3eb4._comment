@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""git-annex branch size when storing migration information"""
+ date="2023-12-01T16:10:11Z"
+ content="""
+I did a small experiment to gauge how much the git repo size would grow if
+migration were recorded in log files in the git-annex branch.
+
+In my experiment, I started with 1000 files using sha256. The size of the
+git objects (after repack by git gc --aggressive) was 0.5 mb. I then
+migrated them to sha512, which increased the size of git objects to 1.1 mb
+(after repacking).
+
+Then I recorded in the git-annex branch additional log files for each of
+the sha512 keys that contained the corresponding sha256 key. That grew the
+git objects to 1.4 mb after repacking.
+
+This was a little disappointing. I'd hoped that repacking would avoid
+duplication of the sha256 keys, which are both in the log files I wrote
+and are used as filenames. But the data I wrote to the logs is only 75 kb
+total, and git grew 4x that.
+
+I tried the same thing except instead of separate log files I added to git
+one log file that contained pairs of sha256 and sha512 keys. That log file
+was 213 kb and adding it to the git repo grew it by 102 kb. So there was
+some compression there, but less than I would have hoped, and not much
+better than just gzip -9 of the log file (113 kb). Of course putting all
+the migration information in a single file like this would add a lot of  
+complexity to accessing it.
+
+So adding this information to the git-annex branch would involve at best
+around a 16% overhead, which is a surprising amount. 
+
+(It would be possible to make `git-annex forget --drop-dead` remove the
+information about old migrated keys if they later get marked as dead, and
+so regain the space.)
+
+This is also rather redundant information to store in git, since most
+of the time when file foo has been migrated, the old key can be determined
+by looking at `git log foo`. Not always of course because foo might have
+been renamed after migration, for example.
+
+Another way to store migration information in the git-annex branch would to
+be graft in the pre-migration tree and the post-migration tree. Diffing
+those two trees would show what migrated, and most of the time this would
+use almost no additional space in git, because the user will have committed
+both those trees anyway, or something very close to them. But it would be
+more expensive to extract the migration information then, and this would
+need a local cache of migrations to be built up from examining those diffs..
+"""]]
