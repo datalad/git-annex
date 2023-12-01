@@ -1,0 +1,47 @@
+Currently `git-annex migrate` only hard links the objects in the local
+repo. This leaves other clones without the new keys' objects unless
+they re-download them, or unless the same migrate command is
+re-run, in the same tree, on each clone.
+
+It would be good to support distributed migration, so that whatever
+migration is done in one repo is reflected in the other repos.
+
+This needs some way to store, in the git repo, a mapping between the old
+key and the new key it has been migrated to. (I investigated
+how much space that would need in the git repo, in 
+[this comment](https://git-annex.branchable.com/todo/alternate_keys_for_same_content/#comment-917eba0b2d1637236c5d900ecb5d8da0).)
+The mapping might be communicated via the git branch but be locally stored
+in a sqlite database to make querying it fast.
+
+Once that mapping is available, one simple way to use it would be a
+git-annex command that updates the local repo to reflect migrations that
+have happened elsewhere. It would not touch the HEAD branch, but would 
+just hardlink object files from the old to new key, and update the location
+log for the new key to indicate the content is present in the repo.
+This command could be something like `git-annex migrate --update`.
+
+That wouldn't be entirely sufficient though, because special remotes from
+pre-migration will be populated with the old keys. A similar command could
+upload the new content to special remotes, but that would double the data
+stored in a special remote (or drop the old keys from them), 
+and use a lot of bandwidth. Probably not a good idea.
+
+Alternatively, the old key could be left on a special remote, but update
+the location log for the special remote to say it has the new key,
+and have git-annex request the old key when it wants to get (or checkpresent)
+the content from the special remote. This would need the mapping to be
+cheap enough to query that it won't signficantly slow down accessing a
+special remote.
+
+Rather than a dedicated command that users need to remember to run,
+distributed migration could be done automatically when merging a git-annex
+branch that adds migration information. Just hardlink object files and
+update the location log for the local repo and for available special
+remotes.
+
+It would be possible to avoid updating the location log, but then all
+location log queries would have to check the migration mapping. It would be
+hard to make that fast enough. Consider `git-annex find --in foo`, which
+queries the location log for each file.
+
+--[[Joey]]

@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: simpler proposal"""
+ date="2023-12-01T18:00:20Z"
+ content="""
+About the idea of recording a checksum of the content of a URL or WORM key,
+without migrating to a SHA key, that does seem worth considering. (And
+maybe was the original idea of this todo really..)
+
+If that were implemented, it would be necessary for more than one checksum
+to be able to be recorded for a given URL key. Because different
+clones might get different content from the URL and each add its checksum.
+
+So, this would not be as strong an assurance as using a SHA key that you're
+referring to a specific peice of data. It would be useful to protect
+against bit rot, but not as a way to pin a file to a particular version.
+Which is often something one does want to do in a git repository!
+
+I do think that implementing that would be a lot simpler. And it would
+only affect performance when verifying the content of URL or WORM keys,
+when it would need to look up the checksum in the git-annex branch.
+"""]]
