@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="unqueued"
+ avatar="http://cdn.libravatar.org/avatar/3bcbe0c9e9825637ad7efa70f458640d"
+ subject="comment 4"
+ date="2023-12-01T02:09:07Z"
+ content="""
+@joey
+
+It isn't a huge problem, but I keep coming back to it. The only workflow I still use where this comes up is for my filesharing assets repo. I just ended up leaving it as MD5E, because much of it is downstream from gdrive shares, and I almost never have all of the content in one place at a time.
+
+
+This is one of the scripts I sometimes use, although I wrote it awhile ago before I found out about git-annex-filter-branch
+<https://gist.github.com/unqueued/06b5a5c14daa8224a659c5610dce3132>
+
+But I mostly rely on splitting off subset repos with no history, processing them in some way, and then re-absorbing them back into a larger repo.
+
+I actually started a repo that would track new builds for Microsoft Dev VMs: <https://github.com/unqueued/official-microsoft-vms-annex>
+
+But for my bigger repos, I almost never have all of the data in the same place at the same time.
+
+
+@nobodyinperson
+
+> Hi! If I understand you correctly, your problem is that you often migrate keys to another backend, and there are situations involving merges of repos far away from each other in history that cause merge conflicts, which results in the dead old pre-migration key being reintroduced?
+
+Well, there aren't any conflicts, they just get silently reintroduced, which isn't the end of the world, especially if they get marked as dead. But they clutter the git-annex branch, and over time, with large repos, it may become a problem. There isn't any direct relationship between the previous key and the migrated key.
+
+So, if I have my `linux_isos` repo, and I do git-annex-migrate on it, but say only isos for the year 2021 are in my specific repo at that moment, then the symlinks will be updated and the new sha256 log log files will be added to my git-annex branch.
+
+And if you sync with another repo that also has the same files in the backend, they will still be in the repo, but just inaccessible.
+
+And I feel like there's enough information to efficiently track the lifecycle of a key.
+
+
+I'm exhuming my old scripts and cleaning them up, but essentially, you can get everything you need to assemble an MD5E annex from a Google Drive share by doing `rclone lsjson -R --hash rclone-drive-remote:`
+
+And to get the keys, you could pipe it into something like this:
+`perl -MJSON::PP -ne 'BEGIN { $/ = undef; $j = decode_json(<>); } foreach $e (@{$j}) { next if $e->{\"IsDir\"} || !exists $e->{\"Hashes\"}; print \"MD5-s\" . $e->{\"Size\"} . \"--\" . $e->{\"Hashes\"}->{\"MD5\"} . \"\t\" . $e->{\"Path\"} . \"\n\"; }' `
+
+That's just part of a project I have with a Makefile that indexes, assembles and then optionally re-serves an rclone gdrive remote. I will try to post it later tonight. It was just a project I made for fun.
+
+And there are plenty of other places where you can get enough info to assemble a repo ahead of time, and essentially turn it into a big queue.
+
+
+You can find all sorts of interesting things to annex.
+
+https://old.reddit.com/r/opendirectories sometimes has interesting stuff.
+
+Here are some public Google Drive shares:
+
+* [Bibliotheca Anonoma](https://drive.google.com/drive/folders/0B7WYx7u6HJh_Z3FjU2F0NFNyQWs)
+* [Esoteric Library](https://drive.google.com/drive/folders/0B0UEkmH7vYJZRWxfSmdRbFJGNWc)
+* [EBookDroid - Google Drive](https://drive.google.com/drive/folders/0B6y-A-HTzyBiYnpIRHMzR1pueFU)
+* [The 510 Archives - Google Drive](https://drive.google.com/drive/folders/0ByCvxnHNk90SMzIxZWIwYWYtYzljNy00ZGU2LWI3ODctYzRjMmE0MGY3NTA1)
+* [Some ebooks](https://drive.google.com/drive/folders/1SReXFt16DYpTdFsSsT5Nzkj33VAYOQLa)
+
+
+"""]]
