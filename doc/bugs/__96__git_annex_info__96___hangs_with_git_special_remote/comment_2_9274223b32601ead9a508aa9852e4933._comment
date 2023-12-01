@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/86b8c2d893dfdf2146e1bbb8ac4165fb"
+ subject="comment 2"
+ date="2023-12-01T10:21:09Z"
+ content="""
+I've had an idea on this: Why not only update UUIDs on (manual) sync/fetch?
+
+This would be in line with how git interacts with regular remotes otherwise too; always requiring an explicit fetch to update its info.
+
+To me it just violates the principle of least surprise to have git-annex try and reach remotes when running something as simple as `info`.
+"""]]
