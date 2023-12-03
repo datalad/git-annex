@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="branch"
+ subject="comment 2"
+ date="2023-12-03T11:57:56Z"
+ content="""
+There is no specific log to highlight when running the command in `--debug`.
+
+```
+[2023-12-03 12:43:49.274023] (Utility.Process) process [40369] done ExitSuccess
+
+git-annex: git: createProcess: chdir: invalid argument (Bad file descriptor)
+failed
+[2023-12-03 12:43:49.276644] (Utility.Process) process [40197] done ExitSuccess
+initremote: 1 failed
+```
+
+I ended up refactoring my systems to allow the use of SSH, which seems to be the supported method, and to avoid any further issue down the line.
+"""]]
