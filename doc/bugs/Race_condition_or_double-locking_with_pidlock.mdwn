@@ -1,0 +1,57 @@
+### Please describe the problem.
+
+When doing `git annex sync` with new changes from a remote (i.e. synced/main and/or some_remote/main is ahead of our main), git annex seems to try and lock at least two things/times. With pidlock, this of course isn't possible, so somewhere around a `git merge`, we get the following error:
+
+```
+   waiting for pid lock file .git/annex/pidlock which is held by another process (or may be stale)
+```
+
+When I inspect the content of the pidlock, the `git-annex-sync` process has the lock.
+
+Manually running `git merge <ref that is ahead>` and then `git annex sync` doesn't have this issue, so it seems related to merging changes to the main branch (not the git-annnex branch). 
+
+### What steps will reproduce the problem?
+
+I've really struggled to find a minimal reproducer, but I've hit this bug with several large real-world repos (@joeyh, I would be more than happy to give private access to one of these if you think it would be useful for debugging)
+
+The latest time this happened, this was the full log:
+
+```
+$ git annex sync
+pull origin 
+
+Updating 130dffc63..f8889be0c
+  waiting for pid lock file .git/annex/pidlock which is held by another process (or may be stale)
+#### hangs indefinitely  ######
+^C
+$ git merge origin/main
+Updating 130dffc63..f8889be0c
+Updating files: 100% (223/223), done.
+Fast-forward
+ .gitignore 
+<and then quite a large diff, including many files created/deleted>
+$ git annex sync
+# merges git-annex branch and pushes to all remotes successfully
+```
+
+Sometimes, but not always, it seems that a git merge updates the files on disk, but not the git index, leading to an inconsistent state where I have the working tree of the latest commit, but git believes I'm still on the older HEAD and shows the diff as unstaged changes. In these cases one must `git reset --hard HEAD && git clean -df` to clear the state back to HEAD, and then git merge manually, and only then will git annex sync behave as expected.
+
+### What version of git-annex are you using? On what operating system?
+
+This issue seems to only exist on versions 10.xxxx, and I remember first running into this a bit over a year ago (I first assumed that it was user error, but I've since had it occur quite a few tim  es where it can't be, e.g. freshly logging into a server that was just restarted). At least the following versions are affected:
+
+* git-annex version: 10.20220526-gc6b112108
+* git-annex version: 10.20230803-gb2887edc9
+* git-annex version: 10.20230926-g44a7b4c9734adfda5912dd82c1aa97c615689f57
+
+This is on various linuxes, mostly a few years old as these are institutional supercomputing clusters (ubuntu 20.04, debian 10, SLES 15.4).
+
+### Please provide any additional information below.
+
+This only affects clones with pidlock enabled (on compute clusters with NFS filesystems), the same repo on a laptop or whatever with a standard local filesystem (e.g. ext4, xfs) works perfectly.
+
+Could this be caused by e.g. git annex running git merge which runs git annex filterprocess (directly or via git status), and git-annex-filterprocess tries to take the pidlock that git-annex-sync already has?
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Lots! This problem popped up during our regular use of git-annex in plant genomic research, where we use git annex to manage and move our analyses between the many clusters we must use for computation. Git annex is indispensable for this use case!!
