@@ -282,9 +282,11 @@ notEnoughCopies key neednum needmin have skip bad nolocmsg lockunsupported = do
 	showNote "unsafe"
 	if length have < fromNumCopies neednum
 		then showLongNote $ UnquotedString $
-			"Could only verify the existence of " ++
-			show (length have) ++ " out of " ++ show (fromNumCopies neednum) ++ 
-			" necessary " ++ pluralCopies (fromNumCopies neednum)
+			if fromNumCopies neednum == 1
+				then "Could not verify the existence of the 1 necessary copy."
+				else "Could only verify the existence of " ++
+					show (length have) ++ " out of " ++ show (fromNumCopies neednum) ++ 
+					" necessary " ++ pluralCopies (fromNumCopies neednum) ++ "."
 		else do
 			showLongNote $ UnquotedString $ "Unable to lock down " ++ show (fromMinCopies needmin) ++ 
 				" " ++ pluralCopies (fromMinCopies needmin) ++ 
