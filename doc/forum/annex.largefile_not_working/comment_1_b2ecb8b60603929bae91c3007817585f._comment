@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="kdm9"
+ avatar="http://cdn.libravatar.org/avatar/b7b736335a0e9944a8169a582eb4c43d"
+ subject="comment 1"
+ date="2023-12-04T10:09:15Z"
+ content="""
+I think this is intended behavior when adding with `git add`, or at least it's what I've seen for long enough for me to have forgotten if it ever was different. `git annex add` will create symlinks, as will `git add  && git annex lock`.
+
+If this was actually a small file, you wouldn't see it hashed & copied under .git/annex/objects. You should also see in git log that the change is an addition of some git annex key, not a git blob diff as would be the case for a small file.
+
+NB: I'm just another user, @joey please correct me if this is wrong
+"""]]
