@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-12-04T17:48:39Z"
+ content="""
+	git remote add client1 $DIR/client1
+	git remote add client2 $DIR/client1
+
+It seems to me you have a typo in the second line there.
+
+The other problem I noticed is, you are putting repositories in groups, but you
+never configure preferred content, and so the group settings will not be used.
+So you probably want to run `git-annex wanted here standard` in each of the
+repositories.
+
+With those fixes, it seems to work for me.
+"""]]
