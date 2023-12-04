@@ -55,3 +55,5 @@ Could this be caused by e.g. git annex running git merge which runs git annex fi
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
 Lots! This problem popped up during our regular use of git-annex in plant genomic research, where we use git annex to manage and move our analyses between the many clusters we must use for computation. Git annex is indispensable for this use case!!
+
+> [[fixed|done]] (for the merge case at least) --[[Joey]]

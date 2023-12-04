@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-12-04T17:06:11Z"
+ content="""
+> Could this be caused by e.g. git annex running git merge which runs git annex
+> filterprocess (directly or via git status), and git-annex-filterprocess tries
+> to take the pidlock that git-annex-sync already has?
+
+If so you should be able to see the two git-annex's running in ps when this hang occurs
+with the git process in between them.
+That would be very helpful to verify since it would narrow down the git command
+that runs this git-annex child process.
+
+git-annex does deal with exactly this kind of scenario when running eg
+`git update-index`, by setting an environment variable to tell the child git-annex
+process not to re-lock the pid lock. But not in eg the case of a git merge.
+
+So, if you can narrow it down specifically to `git merge` running when this
+happens, or whatever other command, it should be easy to fix it.
+
+Hmm, I suppose that it makes sense `git merge` will sometimes need to check if
+a worktree file is modified, and so run git-annex. I'm pretty convinced by your
+transcript that it is the git merge that's hanging. So I've gone ahead and put
+in the workaround for that. There's of course still the possibility there's
+some other git command I've not anticipated that still needs the workaround.
+"""]]

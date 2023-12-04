@@ -76,6 +76,7 @@ import Annex.TaggedPush
 import Annex.CurrentBranch
 import Annex.Import
 import Annex.CheckIgnore
+import Annex.PidLock
 import Types.FileMatcher
 import Types.GitConfig
 import Types.Availability
@@ -352,15 +353,16 @@ mergeConfig mergeunrelated = do
 		]
 
 merge :: CurrBranch -> [Git.Merge.MergeConfig] -> SyncOptions -> Git.Branch.CommitMode -> [Git.Branch] -> Annex Bool
-merge currbranch mergeconfig o commitmode tomergel = do
-	canresolvemerge <- if resolveMergeOverride o
-		then getGitConfigVal annexResolveMerge
-		else return False
-	and <$> case currbranch of
-		(Just b, Just adj) -> forM tomergel $ \tomerge ->
-			mergeToAdjustedBranch tomerge (b, adj) mergeconfig canresolvemerge commitmode
-		(b, _) -> forM tomergel $ \tomerge ->
-			autoMergeFrom tomerge b mergeconfig commitmode canresolvemerge
+merge currbranch mergeconfig o commitmode tomergel = 
+	runsGitAnnexChildProcessViaGit $ do
+		canresolvemerge <- if resolveMergeOverride o
+			then getGitConfigVal annexResolveMerge
+			else return False
+		and <$> case currbranch of
+			(Just b, Just adj) -> forM tomergel $ \tomerge ->
+				mergeToAdjustedBranch tomerge (b, adj) mergeconfig canresolvemerge commitmode
+			(b, _) -> forM tomergel $ \tomerge ->
+				autoMergeFrom tomerge b mergeconfig commitmode canresolvemerge
 
 syncBranch :: Git.Branch -> Git.Branch
 syncBranch = Git.Ref.underBase "refs/heads/synced" . origBranch
