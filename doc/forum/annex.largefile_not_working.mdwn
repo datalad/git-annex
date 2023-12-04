@@ -1,0 +1,20 @@
+I seem to be having issues with annex.largefiles.  I initialize git and the annex, then I set largefiles to put everything in the annex, generate a 1Mb file, `git add` it, and commit it.  The file is copied and renamed to its hash value in .git/annex/objects but the file also remains in the main directory instead of being replaced with a symlink.  Here are my steps to create the issue:
+
+    git init
+    git annex init
+    git annex config --set annex.largefiles anything
+    fallocate -l 1M test.bin
+    git add test.bin
+    git commit -a -m "Test"
+
+I've also tried creating a .gitattributes file in the main directory with the following attribute:
+
+    * annex.largefiles=anything
+
+Still, nothing is symlinked.
+
+It works just fine when I run `git annex add test.bin`.  It puts the file in the annex and creates a symlink to it.
+
+I've tried this on Fedora 39 with git annex version 10.20230626 and on Ubuntu 22.04.2 LTS with git annex version 8.20210223.  These are both fresh machines that have never had git or git-annex run on them before.
+
+What am I doing wrong here?  Should I be filing a bug report?

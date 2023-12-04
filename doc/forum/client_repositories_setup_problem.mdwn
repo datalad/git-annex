@@ -1,0 +1,156 @@
+I'm trying to setup git-annex for syncing two clients using a transfer repository. All of that without the webapp UI.
+
+Here's the reproducible scenario with a bash script:
+
+```bash
+#/usr/bin/env bash
+
+# Just a way to access the script's directory
+cd "$(dirname "$0")"
+DIR="$(pwd)"
+
+# Create the 1st client repository
+mkdir $DIR/client1
+cd $DIR/client1
+git init && git annex init
+
+# Create the 2nd client repository
+mkdir $DIR/client2
+cd $DIR/client2
+git init && git annex init
+
+# Create the transfer repository
+mkdir $DIR/share
+cd $DIR/share
+git init && git annex init
+
+# Setup the remotes and groups for the transfer repository
+cd $DIR/share
+git remote add client1 $DIR/client1
+git remote add client2 $DIR/client1
+git annex group . transfer
+git annex group client1 client
+git annex group client2 client
+git co -b main
+
+# Setup the remotes and groups for the 1st client repository.
+cd $DIR/client1
+git remote add share $DIR/share
+git annex group . client
+git annex group share transfer
+git co -b main
+
+# Setup the remotes and groups for the 2nd client repository.
+cd $DIR/client2
+git remote add share $DIR/share
+git annex group . client
+git annex group share transfer
+git co -b main
+
+# Run git-annex assistant for each repository
+cd $DIR/client1 && git annex assistant
+cd $DIR/client2 && git annex assistant
+cd $DIR/share && git annex assistant
+
+# Add a single file to the 1st client.
+cd $DIR/client1
+echo "My first file" >> file.txt
+```
+
+Result:
+
+client1: I see the auto-commit has been added for file.txt
+
+share: I get the following daemon logs:
+
+```
+(scanning...) (started...) 
+From /home/xxx/git-annex-scenarios/share-between-clients/client1
+ * [new branch]      git-annex  -> client2/git-annex
+(merging client2/git-annex into git-annex...)
+From /home/xxx/git-annex-scenarios/share-between-clients/client1
+ * [new branch]      git-annex  -> client1/git-annex
+
+merge: refs/remotes/client2/main - not something we can merge
+
+merge: refs/remotes/client2/synced/main - not something we can merge
+
+merge: refs/remotes/client1/main - not something we can merge
+
+merge: refs/remotes/client1/synced/main - not something we can merge
+(merging synced/git-annex into git-annex...)
+(recording state in git...)
+
+```
+
+client2: I get the following daemon logs:
+
+```
+From /home/xxx/git-annex-scenarios/share-between-clients/share
+ * [new branch]      git-annex  -> share/git-annex
+(merging share/git-annex into git-annex...)
+(recording state in git...)
+
+merge: refs/remotes/share/main - not something we can merge
+
+merge: refs/remotes/share/synced/main - not something we can merge
+
+```
+
+Then, I thought that maybe I needed to do an initial `git pull` for each repository. So I tried adding to the bash script the following lines:
+
+```bash
+# Need to do this if there are no commits in the 'client2' and 'share' repositories.
+# Or else, I'll get the following logs:
+#
+# merge: refs/remotes/share/main - not something we can merge
+# merge: refs/remotes/share/synced/main - not something we can merge
+sleep 3;
+cd $DIR/share
+git pull client1 main
+sleep 3;
+cd $DIR/client2
+git pull share main
+```
+
+But I'm still getting the same error:
+
+```
+(scanning...) (started...) 
+From /home/xxx/git-annex-scenarios/share-between-clients/share
+ * [new branch]      git-annex  -> share/git-annex
+(merging share/git-annex into git-annex...)
+(recording state in git...)
+
+merge: refs/remotes/share/main - not something we can merge
+
+merge: refs/remotes/share/synced/main - not something we can merge
+(recording state in git...)
+To /home/kolam/git-annex-scenarios/share-between-clients/share
+ + 28079ec...ca3c481 git-annex -> synced/git-annex (forced update)
+Everything up-to-date
+To /home/kolam/git-annex-scenarios/share-between-clients/share
+ + 28079ec...ca3c481 git-annex -> synced/git-annex (forced update)
+```
+
+However, even though I have that error, `file.txt` now appears in `client2`.
+But, the content of `file.txt` is:
+
+```
+/annex/objects/SHA256E-s14--14b99b7ab1e9777f7e1c2b482fe2cd95653c7cf35f
+459ef0b15bd0d75b2245c9.txt
+```
+
+and that link doesn't exist in my filesystem.
+Running `git annex whereis file.txt` in `client2` gives me:
+
+```
+whereis file.txt (0 copies) failed
+whereis: 1 failed
+```
+
+So my questions are:
+
+* did I miss something in the steps required to setup the repositories?
+* is there some documentation outlining the steps to do so without the webapp?
+* how can we enhance the UX for that scenario with better messages?
