@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-12-04T16:48:09Z"
+ content="""
+`git add` always adds the annexed file unlocked. You can `git-annex lock`
+the file is you want to convert it to a symlink.
+
+(The reason for this difference between `git add` and `git-annex add` is
+that there's simply no way for git-annex to tell `git add` to make the file
+be a symlink.)
+"""]]
