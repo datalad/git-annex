@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="How about a --offline flag?"
+ date="2023-12-04T17:52:44Z"
+ content="""
+How about a global `--offline` flag, then? 🙃 It would prevent running anything that has to do with (non-specified) remotes (git pull/push, copying files, fetching UUIDs, etc.), however local things like committing, merging any already present `synced` branches, etc. would still run. 
+
+I can imagine this being helpful in offline kind of situations: 
+
+- You're in an network-less vault/safe and want to sync up your offline hard-drive with just `git annex assist|sync --offline OFFLINEDRIVE` (although that would already do little with other remotes, except when it's run for the first time to auto-enable other remotes, right?)
+- You're on a really bad mobile connection and want to run `git annex assist --offline` to save your current changes without git-annex trying to sync with other remotes (internet is bad anyway). Alternative is to `git annex add` and `git commit` manually.
+
+It could go as far as allowing remotes that are on a local path on a non-networked filesystem, but for that to work reliably git-annex would need to go out of its way quite far, so probably a bit much to ask.
+"""]]
