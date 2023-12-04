@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-12-04T16:50:45Z"
+ content="""
+git-annex does only do uuid discovery of new remotes when it is dealing
+with remotes. Many git-annex commands do deal with remotes, and that
+includes `git-annex info`, which after all shows a list of repositories.
+Commands that do not deal with remotes do skip the uuid discovery.
+
+Since this kind of configuration can cause many different git-annex (and
+also git) commands to hang for a while, it doesn't seem very useful to
+do something specifically to `git-annex info` to deal with it.
+"""]]
