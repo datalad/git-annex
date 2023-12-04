@@ -1,4 +1,4 @@
-I seem to be having issues with annex.largefiles.  I initialize git and the annex, then I set largefiles to put everything in the annex, generate a 1Mb file, add it, and commit it.  The file is copied and renamed to its hash value in .git/annex/objects but the file also remains in the main directory instead of being replaced with a symlink.  Here are my steps to create the issue:
+I seem to be having issues with annex.largefiles.  I initialize git and the annex, then I set largefiles to put everything in the annex, generate a 1Mb file, `git add` it, and commit it.  The file is copied and renamed to its hash value in .git/annex/objects but the file also remains in the main directory instead of being replaced with a symlink.  Here are my steps to create the issue:
 
     git init
     git annex init
