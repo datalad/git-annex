@@ -1,0 +1,28 @@
+I get a failure in name resolution when running `annex testremote`:
+
+```
+mvanhult@detekti:~/temp/my_repo$ git annex testremote bbborig | head
+testremote bbborig (generating test keys...) Remote Tests
+  unavailable remote
+ssh: Could not resolve hostname !dne!: non-recoverable failure in name resolution
+    removeKey:                                       OK (0.01s)
+ssh: Could not resolve hostname !dne!: non-recoverable failure in name resolution
+    storeKey:                                        OK
+ssh: Could not resolve hostname !dne!: non-recoverable failure in name resolution
+    checkPresent:                                    OK
+ssh: Could not resolve hostname !dne!: non-recoverable failure in name resolution
+    retrieveKeyFile:                                 OK
+    retrieveKeyFileCheap:                            OK
+  key size Just 1048576; remote chunksize=0 encryption=none
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) Stages/2024
+    removeKey when not present:                      FAIL
+      Exception: removing content from remote failed
+```
+
+Where does this `!dne!` come from?
+The relevant host of the remote is `juwels` and not `!dne!`.
+I have never before this post entered the string `!dne!`.
+Is *dne* an abbreviation?
