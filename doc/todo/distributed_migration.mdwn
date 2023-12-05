@@ -16,7 +16,7 @@ in a sqlite database to make querying it fast.
 Once that mapping is available, one simple way to use it would be a
 git-annex command that updates the local repo to reflect migrations that
 have happened elsewhere. It would not touch the HEAD branch, but would 
-just hardlink object files from the old to new key, and update the location
+just hard link object files from the old to new key, and update the location
 log for the new key to indicate the content is present in the repo.
 This command could be something like `git-annex migrate --update`.
 
@@ -29,23 +29,14 @@ and use a lot of bandwidth. Probably not a good idea.
 Alternatively, the old key could be left on a special remote, but update
 the location log for the special remote to say it has the new key,
 and have git-annex request the old key when it wants to get (or checkpresent)
-the new key from the special remote. (Being careful to verify the content
-using the new key when downloading from the old key on the special remote.)
+the new key from the special remote.
 This would need the mapping to be cheap enough to query that it won't
 signficantly slow down accessing a special remote.
 
-> A complication is that the special remote could end up containing both
-> old and new key. So it would need to fall back from one to the other for
-> get and checkpresent. Which will double the number of round trips to the
-> special remote if it tries the wrong one first.
-> 
-> And how to handle dropping from a special remote then? It would need to
-> update the location log for both old key and new key when dropping the
-> old key or the new key. But when the special remote stores both the old
-> and new key on it separately, dropping one should not change the location
-> log for the other. So it seems it would need to drop the key, then check
-> if the other key is stored there and if not, update the location log to
-> indicate it's not present.
+Dropping the new key from the special remote would then need to drop the
+old key. But that could violate numcopies for the old key. Perhaps it could
+check numcopies for the old key and drop it, otherwise leave the old key on
+the special remote.
 
 Rather than a dedicated command that users need to remember to run,
 distributed migration could be done automatically when merging a git-annex
@@ -59,3 +50,46 @@ hard to make that fast enough. Consider `git-annex find --in foo`, which
 queries the location log for each file.
 
 --[[Joey]]
+
+# security
+
+It is possible for bad migration information to be recorded in the
+git-annex branch by someone malicious. To avoid bad or insecure behavior
+when bad migration information is recorded:
+
+* When updating the local repository with a migration, verify that
+  the object file hashes to the new key before hardlinking.
+* When downloading content from a special remote by getting the old
+  pre-migration key, verify that download hashes to the new key.
+
+That leaves at least two possible security problems:
+
+* checkpresent against the special remote has to trust that the content
+  stored on it for the old key will hash to the new key. This could result
+  in data loss when a bad migration is provided, and the special remote is
+  trusted.
+
+  Eg, if key A is locally present, and B is present on the special
+  remote, and then wrong migration is recorded from B to A, 
+  the special remote will be treated as containing a copy of A,
+  allowing dropping the local copy of A, which was the only copy.
+
+* DOS by flooding the git-annex branch with migrations, resulting in 
+  lots of hard links (or copies on filesystems not supporting hard links)
+  and hashing of large files.
+
+Note that a malicious person who can write to the git-annex branch
+can already set their own repo as trusted, wait for someone
+to drop their local copy, and then demand a ransom for the content.
+For that matter, someone hosting a git-annex remote on a server can wait
+for someone to rely on it to contain the only copy of content and ransom
+it then. 
+
+git-annex is probably not normally used in situations where we
+need to worry about this kind of attack; if we don't trust someone we
+shouldn't pull the git-annex branch from them, and should not trust their
+remote to contain the only copy.
+
+If we pull a git-annex branch from someone, they can already DOS disk space
+and CPU by checking a lot of junk into git. So maybe a DOS by migration is
+not really a concern.
