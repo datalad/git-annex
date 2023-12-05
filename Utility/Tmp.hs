@@ -35,8 +35,10 @@ type Template = String
  - to help identify what call was responsible.
  -}
 openTmpFileIn :: FilePath -> String -> IO (FilePath, Handle)
-openTmpFileIn dir template = openTempFile dir template
-	`catchIO` decoraterrror
+openTmpFileIn dir template = do
+	liftIO $ print ("openTmpFileIn", dir, template)
+	openTempFile dir template
+		`catchIO` decoraterrror
   where
 	decoraterrror e = throwM $
 		let loc = ioeGetLocation e ++ " template " ++ template
@@ -105,7 +107,12 @@ withTmpFileIn tmpdir template a = bracket create remove use
  -}
 relatedTemplate :: FilePath -> FilePath
 relatedTemplate f
-	| len > 20 = truncateFilePath (len - 20) f
+	| len > 20 = 
+		{- Some filesystems like FAT have issues with filenames
+		 - ending in ".", so avoid truncating a filename to end
+		 - that way. -}
+		reverse $ dropWhile (== '.') $ reverse $
+			truncateFilePath (len - 20) f
 	| otherwise = f
   where
 	len = length f
