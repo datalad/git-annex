@@ -35,10 +35,8 @@ type Template = String
  - to help identify what call was responsible.
  -}
 openTmpFileIn :: FilePath -> String -> IO (FilePath, Handle)
-openTmpFileIn dir template = do
-	liftIO $ print ("openTmpFileIn", dir, template)
-	openTempFile dir template
-		`catchIO` decoraterrror
+openTmpFileIn dir template = openTempFile dir template
+	`catchIO` decoraterrror
   where
 	decoraterrror e = throwM $
 		let loc = ioeGetLocation e ++ " template " ++ template
