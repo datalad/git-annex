@@ -90,4 +90,4 @@ add: 1 failed
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
-Yes! I use git annex and datalad all the time for personal and work projects.
+Yes! I use git annex and datalad all the time for personal and work projects. 
