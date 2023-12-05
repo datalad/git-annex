@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-12-05T17:34:47Z"
+ content="""
+This is intentional behavior, it's testing that the remote behaves
+correctly when the server is unavailable. "dne" is an abbreviation for Does
+Not Exist, and "!dne!" is very unlikely to exist, so it uses that.
+"""]]
