@@ -1,0 +1,23 @@
+	joey@darkstar:~/tmp/bench/me>git init ../other
+	Initialized empty Git repository in /home/joey/tmp/bench/other/.git/
+	joey@darkstar:~/tmp/bench/me>git remote add other ../other
+	joey@darkstar:~/tmp/bench/me>ls
+	joey@darkstar:~/tmp/bench/me>date > foo
+	joey@darkstar:~/tmp/bench/me>git-annex add foo
+
+With this setup, `git-annex sync --content` does not send foo to other
+the first time run. However, on the second run it, does.
+
+If the other repo had `git-annex init` ran in it first, it would sync content
+to it on the first run.
+
+Auto-init only happens once the git-annex branch gets pushed to the remote
+and git-annex enumerates that remote.
+So after the first sync in this situation, the remote has a synced/git-annex 
+branch, but no uuid yet. The second sync then auto-inits.
+
+To fix this, sync could re-enumerate remotes after pushing, I suppose. But
+re-enumerating remotes is some work so it would need to do it only for ones that
+have no uuid. 
+
+Saw this happening in yann's talk. --[[Joey]]
