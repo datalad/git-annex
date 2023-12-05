@@ -20,6 +20,9 @@ The following modules were not unloaded:
   1) Stages/2024
     removeKey when not present:                      FAIL
       Exception: removing content from remote failed
+mvanhult@detekti:~/temp/my_repo$ git remote -v
+bbborig	juwels:/p/home/jusers/vanhulten1/juwels/temp/my_repo (fetch)
+bbborig	juwels:/p/home/jusers/vanhulten1/juwels/temp/my_repo (push)
 ```
 
 Where does this `!dne!` come from?
