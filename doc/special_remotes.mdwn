@@ -26,7 +26,6 @@ the git history is not stored in them.
 * [[git]]
 * [[httpalso]]
 * [[borg]]
-* [[xmpp]]
 
 The above special remotes are built into git-annex, and can be used
 to tie git-annex into many cloud services.
