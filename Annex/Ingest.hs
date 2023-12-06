@@ -19,6 +19,7 @@ module Annex.Ingest (
 	finishIngestUnlocked,
 	cleanOldKeys,
 	addSymlink,
+	genSymlink,
 	makeLink,
 	addUnlocked,
 	CheckGitIgnore(..),
@@ -38,6 +39,7 @@ import Annex.MetaData
 import Annex.CurrentBranch
 import Annex.CheckIgnore
 import Logs.Location
+import qualified Git
 import qualified Annex
 import qualified Database.Keys
 import Config
@@ -320,9 +322,12 @@ makeLink file key mcache = flip catchNonAsync (restoreFile file key) $ do
 
 {- Creates the symlink to the annexed content, and stages it in git. -}
 addSymlink :: RawFilePath -> Key -> Maybe InodeCache -> Annex ()
-addSymlink file key mcache = do
+addSymlink file key mcache = stageSymlink file =<< genSymlink file key mcache
+
+genSymlink :: RawFilePath -> Key -> Maybe InodeCache -> Annex Git.Sha
+genSymlink file key mcache = do
 	linktarget <- makeLink file key mcache
-	stageSymlink file =<< hashSymlink linktarget
+	hashSymlink linktarget
 
 {- Parameters to pass to git add, forcing addition of ignored files.
  -

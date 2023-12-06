@@ -346,3 +346,14 @@ Example:
 ## `multicast.log`
 
 Records uftp public key fingerprints, for use by [[git-annex-multicast]].
+
+## `migrate.tree/old` and `migrate.tree/new`
+
+These are used to record migrations done by `git-annex migrate`. By diffing
+between the two, the old and new keys can be determined. This lets
+migrations be recorded while using a minimum of space in the git
+repository. The filenames in these trees have no connection to the names
+of actual annexed files.
+
+These trees are recorded in history of the git-annex branch, but the
+head of the git-annex branch will never contain them.

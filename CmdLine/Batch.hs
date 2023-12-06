@@ -198,7 +198,7 @@ batchAnnexed fmt seeker keyaction = do
 			Right f -> lookupKeyStaged f >>= \case
 				Nothing -> return Nothing
 				Just k -> checkpresent k $
-					startAction seeker si f k
+					startAction seeker Nothing si f k
 			Left k -> ifM (matcher (MatchingInfo (mkinfo k)))
 				( checkpresent k $
 					keyaction (si, k, mkActionItem k)

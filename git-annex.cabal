@@ -821,6 +821,7 @@ Executable git-annex
     Logs.MapLog
     Logs.MetaData
     Logs.MetaData.Pure
+    Logs.Migrate
     Logs.Multicast
     Logs.NumCopies
     Logs.PreferredContent

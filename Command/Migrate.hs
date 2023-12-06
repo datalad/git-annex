@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ import Annex.Content
 import qualified Command.ReKey
 import qualified Command.Fsck
 import qualified Annex
+import Logs.Migrate
 import Logs.MetaData
 import Logs.Web
 import Utility.Metered
@@ -39,17 +40,19 @@ optParser desc = MigrateOptions
 		)
 
 seek :: MigrateOptions -> CommandSeek
-seek o = withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
+seek o = do
+	withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
+	commitMigration
   where
 	ww = WarnUnmatchLsFiles "migrate"
 	seeker = AnnexedFileSeeker
-		{ startAction = const $ start o
+		{ startAction = start o
 		, checkContentPresent = Nothing
 		, usesLocationLog = False
 		}
 
-start :: MigrateOptions -> SeekInput -> RawFilePath -> Key -> CommandStart
-start o si file key = do
+start :: MigrateOptions -> Maybe KeySha -> SeekInput -> RawFilePath -> Key -> CommandStart
+start o ksha si file key = do
 	forced <- Annex.getRead Annex.force
 	v <- Backend.getBackend (fromRawFilePath file) key
 	case v of
@@ -63,9 +66,12 @@ start o si file key = do
 					then go True oldbackend oldbackend
 					else stop
   where
-	go onlyremovesize oldbackend newbackend =
+	go onlyremovesize oldbackend newbackend = do
+		keyrec <- case ksha of
+			Just (KeySha s) -> pure (MigrationRecord s)
+			Nothing -> error "internal"
 		starting "migrate" (mkActionItem (key, file)) si $
-			perform onlyremovesize o file key oldbackend newbackend
+			perform onlyremovesize o file key keyrec oldbackend newbackend
 
 {- Checks if a key is upgradable to a newer representation.
  - 
@@ -87,8 +93,8 @@ upgradableKey backend key = isNothing (fromKey keySize key) || backendupgradable
  - data cannot get corrupted after the fsck but before the new key is
  - generated.
  -}
-perform :: Bool -> MigrateOptions -> RawFilePath -> Key -> Backend -> Backend -> CommandPerform
-perform onlyremovesize o file oldkey oldbackend newbackend = go =<< genkey (fastMigrate oldbackend)
+perform :: Bool -> MigrateOptions -> RawFilePath -> Key -> MigrationRecord -> Backend -> Backend -> CommandPerform
+perform onlyremovesize o file oldkey oldkeyrec oldbackend newbackend = go =<< genkey (fastMigrate oldbackend)
   where
 	go Nothing = stop
 	go (Just (newkey, knowngoodcontent))
@@ -104,7 +110,8 @@ perform onlyremovesize o file oldkey oldbackend newbackend = go =<< genkey (fast
 			urls <- getUrls oldkey
 			forM_ urls $ \url ->
 				setUrlPresent newkey url
-			next $ Command.ReKey.cleanup file newkey
+			next $ Command.ReKey.cleanup file newkey $
+				logMigration oldkeyrec
 		, giveup "failed creating link from old to new key"
 		)
 	genkey _ | onlyremovesize = return $ Just (oldkey, False)

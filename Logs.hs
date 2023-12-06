@@ -1,6 +1,6 @@
 {- git-annex log file names
  -
- - Copyright 2013-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -155,6 +155,11 @@ exportLog = "export.log"
  - the git-annex branch. -}
 exportTreeGraftPoint :: RawFilePath
 exportTreeGraftPoint = "export.tree"
+
+{- This is not a log file, it's where migration treeishes get grafted into
+ - the git-annex branch. -}
+migrationTreeGraftPoint :: RawFilePath
+migrationTreeGraftPoint = "migrate.tree"
 
 {- The pathname of the location log file for a given key. -}
 locationLogFile :: GitConfig -> Key -> RawFilePath

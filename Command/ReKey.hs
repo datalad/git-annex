@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ import Annex.ReplaceFile
 import Logs.Location
 import Annex.InodeSentinal
 import Annex.WorkTree
+import Logs.Migrate
 import Utility.InodeCache
 import qualified Utility.RawFilePath as R
 
@@ -88,7 +89,7 @@ perform file oldkey newkey = do
 			giveup $ decodeBS $ quote qp $ QuotedPath file
 				<> " is not available (use --force to override)"
 		)
-	next $ cleanup file newkey
+	next $ cleanup file newkey $ const noop
 
 {- Make a hard link to the old key content (when supported),
  - to avoid wasting disk space. -}
@@ -127,18 +128,23 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 					LinkAnnexNoop -> True
 	)
 
-cleanup :: RawFilePath -> Key -> CommandCleanup
-cleanup file newkey = do
-	ifM (isJust <$> isAnnexLink file)
+cleanup :: RawFilePath -> Key -> (MigrationRecord -> Annex ()) -> CommandCleanup
+cleanup file newkey a = do
+	newkeyrec <- ifM (isJust <$> isAnnexLink file)
 		( do
 			-- Update symlink to use the new key.
-			addSymlink file newkey Nothing
+			sha <- genSymlink file newkey Nothing
+			stageSymlink file sha
+			return (MigrationRecord sha)
 		, do
 			mode <- liftIO $ catchMaybeIO $ fileMode <$> R.getFileStatus file
 			liftIO $ whenM (isJust <$> isPointerFile file) $
 				writePointerFile file newkey mode
-			stagePointerFile file mode =<< hashPointerFile newkey
+			sha <- hashPointerFile newkey
+			stagePointerFile file mode sha
+			return (MigrationRecord sha)
 		)
 	whenM (inAnnex newkey) $
 		logStatus newkey InfoPresent
+	a newkeyrec
 	return True
