@@ -1,7 +1,7 @@
 {- Interface for running a shell command as a coprocess,
  - sending it queries and getting back results.
  -
- - Copyright 2012-2013 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2023 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -14,6 +14,8 @@ module Utility.CoProcess (
 	start,
 	stop,
 	query,
+	send,
+	receive,
 ) where
 
 import Common
@@ -67,11 +69,11 @@ stop ch = do
  - receive actions are assumed to mean communication with the process
  - failed, and the failed action is re-run with a new process. -}
 query :: (MonadIO m, MonadCatch m) => CoProcessHandle -> (Handle -> m a) -> (Handle -> m b) -> m b
-query ch send receive = do
+query ch sender receiver = do
 	s <- liftIO $ readMVar ch
-	restartable s (send $ coProcessTo s) $ const $
+	restartable s (sender $ coProcessTo s) $ const $
 		restartable s (liftIO $ hFlush $ coProcessTo s) $ const $
-			restartable s (receive $ coProcessFrom s)
+			restartable s (receiver $ coProcessFrom s)
 				return
   where
 	restartable s a cont
@@ -87,4 +89,15 @@ query ch send receive = do
 		s' <- liftIO $ start' $ (coProcessSpec s)
 			{ coProcessNumRestarts = coProcessNumRestarts (coProcessSpec s) - 1 }
 		liftIO $ putMVar ch s'
-		query ch send receive
+		query ch sender receiver
+
+send :: MonadIO m => CoProcessHandle -> (Handle -> m a) -> m a
+send ch a = do
+	s <- liftIO $ readMVar ch
+	a (coProcessTo s)
+
+receive :: MonadIO m => CoProcessHandle -> (Handle -> m a) -> m a
+receive ch a = do
+	s <- liftIO $ readMVar ch
+	liftIO $ hFlush $ coProcessTo s
+	a (coProcessFrom s)

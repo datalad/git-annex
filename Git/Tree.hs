@@ -23,7 +23,8 @@ module Git.Tree (
 	graftTree',
 	withMkTreeHandle,
 	MkTreeHandle,
-	mkTree,
+	sendMkTree,
+	finishMkTree,
 	treeMode,
 ) where
 
@@ -92,39 +93,37 @@ recordTree :: Tree -> Repo -> IO Sha
 recordTree t repo = withMkTreeHandle repo $ \h -> recordTree' h t
 
 recordTree' :: MkTreeHandle -> Tree -> IO Sha
-recordTree' h (Tree l) = mkTree' h =<< mapM (recordSubTree h) l
+recordTree' h (Tree l) = mkTree h =<< mapM (recordSubTree h) l
 
 {- Note that the returned RecordedSubTree does not have its [TreeContent]
  - list populated. This is a memory optimisation, since the list is not
  - used. -}
 recordSubTree :: MkTreeHandle -> TreeContent -> IO TreeContent
 recordSubTree h (NewSubTree d l) = do
-	sha <- mkTree' h =<< mapM (recordSubTree h) l
+	sha <- mkTree h =<< mapM (recordSubTree h) l
 	return (RecordedSubTree d sha [])
 recordSubTree _ alreadyrecorded = return alreadyrecorded
 
-{- Note that this creates a single tree. It cannot create a recursive tree
- - with subtrees in a single call. -}
-mkTree
-	:: (MonadIO m, MonadCatch m)
-	=> MkTreeHandle
-	-> ((FileMode -> ObjectType -> Sha -> TopFilePath -> m ()) -> m ())
-	-> m Sha
-mkTree (MkTreeHandle cp) a = CoProcess.query cp send receive
-  where
-	send h = do
-		a $ \fm ot s f -> liftIO $ hPutStr h (mkTreeOutput fm ot s f)
-		-- NUL to signal end of tree to --batch
-		liftIO $ hPutStr h "\NUL"
-	receive h = liftIO $ getSha "mktree" (S8.hGetLine h)
+sendMkTree :: MkTreeHandle -> FileMode -> ObjectType -> Sha -> TopFilePath -> IO ()
+sendMkTree (MkTreeHandle cp) fm ot s f =
+	CoProcess.send cp $ \h -> 
+		hPutStr h (mkTreeOutput fm ot s f)
 
-mkTree' :: MkTreeHandle -> [TreeContent] -> IO Sha
-mkTree' h l = mkTree h $ \send -> 
+finishMkTree :: MkTreeHandle -> IO Sha
+finishMkTree (MkTreeHandle cp) = do
+	CoProcess.send cp $ \h ->
+		-- NUL to signal end of tree to --batch
+		hPutStr h "\NUL"
+	getSha "mktree" (CoProcess.receive cp S8.hGetLine)
+
+mkTree :: MkTreeHandle -> [TreeContent] -> IO Sha
+mkTree h l = do
 	forM_ l $ \case
-		TreeBlob f fm s -> send fm BlobObject s f
-		RecordedSubTree f s _ -> send treeMode TreeObject s f
+		TreeBlob f fm s -> sendMkTree h fm BlobObject s f
+		RecordedSubTree f s _ -> sendMkTree h treeMode TreeObject s f
 		NewSubTree _ _ -> error "recordSubTree internal error; unexpected NewSubTree"
-		TreeCommit f fm s -> send fm CommitObject s f
+		TreeCommit f fm s -> sendMkTree h fm CommitObject s f
+	finishMkTree h
 
 treeMode :: FileMode
 treeMode = 0o040000
@@ -233,7 +232,7 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 		(l, cleanup) <- liftIO $ lsTreeWithObjects LsTree.LsTreeRecursive r repo
 		(l', _, _) <- go h False [] 1 inTopTree l
 		l'' <- adjustlist h 0 inTopTree (const True) l'
-		sha <- liftIO $ mkTree' h l''
+		sha <- liftIO $ mkTree h l''
 		void $ liftIO cleanup
 		return sha
   where
@@ -344,7 +343,7 @@ graftTree' subtree graftloc basetree repo hdl = go basetree subdirs graftdirs
 							return $ RecordedSubTree tloc tsha'' []
 					_ -> graftin (topmostgraphdir:restgraphdirs)
 				return (newshas ++ rest)
-		mkTree' hdl t'
+		mkTree hdl t'
 	go _ _ [] = return subtree
 	go _ [] _ = return subtree
 	

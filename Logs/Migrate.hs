@@ -66,37 +66,36 @@ commitMigration = do
 	logf <- fromRawFilePath <$> fromRepo gitAnnexMigrateLog
 	lckf <- fromRepo gitAnnexMigrateLock
 	nv <- liftIO $ newTVarIO (0 :: Integer)
-	newtv <- liftIO newEmptyTMVarIO
 	g <- Annex.gitRepo
-	oldt <- withMkTreeHandle g $ \oldh ->
+	withMkTreeHandle g $ \oldh ->
 		withMkTreeHandle g $ \newh ->
-			mkTree oldh $ \oldsend -> do
-				newt <- mkTree newh $ \newsend ->
-					streamLogFile logf lckf noop $
-						processor nv oldsend newsend
-				liftIO $ atomically $ writeTMVar newtv newt
-	newt <- liftIO $ atomically $ takeTMVar newtv
-	n <- liftIO $ atomically $ readTVar nv
-	when (n > 0) $ do
-		treesha <- liftIO $ flip recordTree g $ Tree
-			[ RecordedSubTree (asTopFilePath "old") oldt []
-			, RecordedSubTree (asTopFilePath "new") newt []
-			]
-		Annex.Branch.rememberTreeish treesha
-			(asTopFilePath migrationTreeGraftPoint)
+			streamLogFile logf lckf 
+				(finalizer nv oldh newh g)
+				(processor nv oldh newh)
   where
-	processor nv oldsend newsend s = case words s of
+	processor nv oldh newh s = case words s of
 		(old:new:[]) -> do
 			fn <- liftIO $ atomically $ do
 				n <- readTVar nv
 				let !n' = succ n
 				writeTVar nv n'
 				return (asTopFilePath (encodeBS (show n')))
-			let rec f r = f
+			let rec h r = liftIO $ sendMkTree h
 				(fromTreeItemType TreeFile)
 				BlobObject
 				(Git.Ref (encodeBS r))
 				fn
-			void $ rec oldsend old
-			void $ rec newsend new
+			rec oldh old
+			rec newh new
 		_ -> error "migrate.log parse error"
+	finalizer nv oldh newh g = do
+		oldt <- liftIO $ finishMkTree oldh
+		newt <- liftIO $ finishMkTree newh
+		n <- liftIO $ atomically $ readTVar nv
+		when (n > 0) $ do
+			treesha <- liftIO $ flip recordTree g $ Tree
+				[ RecordedSubTree (asTopFilePath "old") oldt []
+				, RecordedSubTree (asTopFilePath "new") newt []
+				]
+			Annex.Branch.rememberTreeish treesha
+				(asTopFilePath migrationTreeGraftPoint)
