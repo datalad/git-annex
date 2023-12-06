@@ -63,7 +63,7 @@ seek' o fto = startConcurrency (Command.Move.stages fto) $ do
 	ww = WarnUnmatchLsFiles "copy"
 	
 	seeker = AnnexedFileSeeker
-		{ startAction = start o fto
+		{ startAction = const $ start o fto
 		, checkContentPresent = case fto of
 			FromOrToRemote (FromRemote _) -> Just False
 			FromOrToRemote (ToRemote _) -> Just True

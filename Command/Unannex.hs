@@ -34,7 +34,7 @@ seek ps = withFilesInGitAnnex ww (seeker False) =<< workTreeItems ww ps
 
 seeker :: Bool -> AnnexedFileSeeker
 seeker fast = AnnexedFileSeeker
-	{ startAction = start fast
+	{ startAction = const $ start fast
 	, checkContentPresent = Just True
 	, usesLocationLog = False
 	}

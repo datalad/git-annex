@@ -43,7 +43,7 @@ seek o = withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
   where
 	ww = WarnUnmatchLsFiles "migrate"
 	seeker = AnnexedFileSeeker
-		{ startAction = start o
+		{ startAction = const $ start o
 		, checkContentPresent = Nothing
 		, usesLocationLog = False
 		}

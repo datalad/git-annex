@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -58,10 +58,13 @@ import System.PosixCompat.Files (isDirectory, isSymbolicLink, deviceID, fileID)
 import qualified System.FilePath.ByteString as P
 
 data AnnexedFileSeeker = AnnexedFileSeeker
-	{ startAction :: SeekInput -> RawFilePath -> Key -> CommandStart
+	{ startAction :: Maybe KeySha -> SeekInput -> RawFilePath -> Key -> CommandStart
 	, checkContentPresent :: Maybe Bool
 	, usesLocationLog :: Bool
 	}
+
+-- The Sha that was read to get the Key.
+newtype KeySha = KeySha Git.Sha
 
 withFilesInGitAnnex :: WarnUnmatchWhen -> AnnexedFileSeeker -> WorkTreeItems -> CommandSeek
 withFilesInGitAnnex ww a l = seekFilteredKeys a $
@@ -375,9 +378,9 @@ seekFilteredKeys seeker listfs = do
 	propagateLsFilesError cleanup
   where
 	finisher mi oreader checktimelimit = liftIO oreader >>= \case
-		Just ((si, f), content) -> checktimelimit (liftIO discard) $ do
-			keyaction f mi content $ 
-				commandAction . startAction seeker si f
+		Just ((si, f, keysha), content) -> checktimelimit (liftIO discard) $ do
+			keyaction f mi content $
+				commandAction . startAction seeker keysha si f
 			finisher mi oreader checktimelimit
 		Nothing -> return ()
 	  where
@@ -386,12 +389,12 @@ seekFilteredKeys seeker listfs = do
 			Just _ -> discard
 
 	precachefinisher mi lreader checktimelimit = liftIO lreader >>= \case
-		Just ((logf, (si, f), k), logcontent) -> checktimelimit (liftIO discard) $ do
+		Just ((logf, (si, f, keysha), k), logcontent) -> checktimelimit (liftIO discard) $ do
 			maybe noop (Annex.Branch.precache logf) logcontent
 			checkMatcherWhen mi
 				(matcherNeedsLocationLog mi && not (matcherNeedsFileName mi))
 				(MatchingFile $ FileInfo f f (Just k))
-				(commandAction $ startAction seeker si f k)
+				(commandAction $ startAction seeker keysha si f k)
 			precachefinisher mi lreader checktimelimit
 		Nothing -> return ()
 	  where
@@ -400,11 +403,11 @@ seekFilteredKeys seeker listfs = do
 			Just _ -> discard
 	
 	precacher mi config oreader lfeeder lcloser = liftIO oreader >>= \case
-		Just ((si, f), content) -> do
+		Just ((si, f, keysha), content) -> do
 			keyaction f mi content $ \k -> 
 				let logf = locationLogFile config k
 				    ref = Git.Ref.branchFileRef Annex.Branch.fullname logf
-				in liftIO $ lfeeder ((logf, (si, f), k), ref)
+				in liftIO $ lfeeder ((logf, (si, f, keysha), k), ref)
 			precacher mi config oreader lfeeder lcloser
 		Nothing -> liftIO $ void lcloser
 	
@@ -415,7 +418,7 @@ seekFilteredKeys seeker listfs = do
 		(not ((matcherNeedsKey mi || matcherNeedsLocationLog mi) 
 			&& not (matcherNeedsFileName mi)))
 		(MatchingFile $ FileInfo f f Nothing)
-		(liftIO $ ofeeder ((si, f), sha))
+		(liftIO $ ofeeder ((si, f, Just (KeySha sha)), sha))
 
 	keyaction f mi content a = 
 		case parseLinkTargetOrPointerLazy =<< content of

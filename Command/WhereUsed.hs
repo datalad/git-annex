@@ -49,7 +49,7 @@ seek o = withKeyOptions (Just (keyOptions o)) False dummyfileseeker
 	(commandAction . start o) dummyfilecommandseek (WorkTreeItems [])
   where
 	dummyfileseeker = AnnexedFileSeeker
-		{ startAction = \_ _ _ -> return Nothing
+		{ startAction = \_ _ _ _ -> return Nothing
 		, checkContentPresent = Nothing
 		, usesLocationLog = False
 		}

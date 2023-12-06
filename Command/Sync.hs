@@ -842,7 +842,7 @@ seekSyncContent o rs currbranch = do
   where
 	seekworktree mvar l bloomfeeder = do
 		let seeker = AnnexedFileSeeker
-			{ startAction = gofile bloomfeeder mvar
+			{ startAction = const $ gofile bloomfeeder mvar
 			, checkContentPresent = Nothing
 			, usesLocationLog = True
 			}
