@@ -16,7 +16,7 @@ import Data.Time
 import Data.Time.Clock.POSIX
 
 -- A change made to a file.
-data RefChange t = RefChange
+data LoggedFileChange t = LoggedFileChange
 	{ changetime :: POSIXTime
 	, changed :: t
 	, changedfile :: FilePath
@@ -25,7 +25,9 @@ data RefChange t = RefChange
 	}
 	deriving (Show)
 
--- Get the git log. Note that the returned cleanup action should only be
+-- Get the git log of changes to files. 
+-- 
+-- Note that the returned cleanup action should only be
 -- run after processing the returned list.
 getGitLog
 	:: Ref
@@ -34,7 +36,7 @@ getGitLog
 	-> [CommandParam]
 	-> (Sha -> FilePath -> Maybe t)
 	-> Repo
-	-> IO ([RefChange t], IO Bool)
+	-> IO ([LoggedFileChange t], IO Bool)
 getGitLog ref stopref fs os selector repo = do
 	(ls, cleanup) <- pipeNullSplit ps repo
 	return (parseGitRawLog selector (map decodeBL ls), cleanup)
@@ -73,7 +75,7 @@ commitinfoFormat = "%H %ct"
 --
 -- The commitinfo is not included before all changelines, so
 -- keep track of the most recently seen commitinfo.
-parseGitRawLog :: (Ref -> FilePath -> Maybe t) -> [String] -> [RefChange t]
+parseGitRawLog :: (Ref -> FilePath -> Maybe t) -> [String] -> [LoggedFileChange t]
 parseGitRawLog selector = parse (deleteSha, epoch)
   where
 	epoch = toEnum 0 :: POSIXTime
@@ -90,7 +92,7 @@ parseGitRawLog selector = parse (deleteSha, epoch)
 	  	mrc = do
 			(old, new) <- parseRawChangeLine cl
 			v <- selector commitsha c2
-			return $ RefChange
+			return $ LoggedFileChange
 				{ changetime = ts
 				, changed = v
 				, changedfile = c2

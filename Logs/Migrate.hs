@@ -50,14 +50,17 @@ import qualified Annex.Branch
 import Git.Types
 import Git.Tree
 import Git.FilePath
+import Git.Ref
+import Git.Sha
+import Git.Log
 import Logs.File
 import Logs
-import Git.Log
-import Git.Sha
 import Annex.CatFile
 
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Control.Concurrent.STM
+import System.FilePath.ByteString as P
 
 -- | What to use to record a migration. This should be the same Sha that is
 -- used to as the content of the annexed file in the HEAD branch.
@@ -128,16 +131,27 @@ streamNewDistributedMigrations a = do
 		-- and then deleted, and normally git log stops when a file
 		-- gets deleted.
 		([Param "--reverse", Param "--follow"])
-		(\sha _file -> Just sha)
-	forM_ l $ \c ->
-		unless (changed c `elem` toskip) $ do
-			moldkey <- catKey XXX
-			mnewkey <- catKey YYY
-			case (moldkey, mnewkey) of
-				(Just oldkey, Just newkey) -> a oldkey newkey
-				_ -> return ()
+		(\commit _file -> Just commit)
+	forM_ l (go toskip)
 	liftIO $ void cleanup
 	recordPerformedMigrations branchsha toskip
+  where
+	go toskip c
+		| newref c `elem` nullShas = return ()
+		| changed c `elem` toskip = return ()
+		| not ("/new/" `B.isInfixOf` newfile) = return ()
+		| otherwise = 
+			catKey (newref c) >>= \case
+				Nothing -> return ()
+				Just newkey -> catKey oldfileref >>= \case
+					Nothing -> return ()
+					Just oldkey -> a oldkey newkey
+	  where
+		newfile = toRawFilePath (changedfile c)
+		oldfile = migrationTreeGraftPoint 
+			P.</> "old" 
+			P.</> P.takeBaseName (fromInternalGitPath newfile)
+		oldfileref = branchFileRef (changed c) oldfile
 
 getPerformedMigrations :: Annex (Maybe Sha, [Sha])
 getPerformedMigrations = do
@@ -161,12 +175,12 @@ getPerformedMigrations = do
 -- commit. The list is additional commits that can be removed from the
 -- log file if present.
 recordPerformedMigrations :: Sha -> [Sha] -> Annex ()
-recordPerformedMigrations sha toremove = do
+recordPerformedMigrations commit toremove = do
 	logf <- fromRepo gitAnnexMigrationsLog
 	lckf <- fromRepo gitAnnexMigrationsLock
 	modifyLogFile logf lckf (update . drop 1)
   where
-	update l = L.fromStrict (fromRef' sha) : filter (`notElem` toremove') l
+	update l = L.fromStrict (fromRef' commit) : filter (`notElem` toremove') l
 	toremove' = map (L.fromStrict . fromRef') toremove
 
 -- Record that a migration was performed locally and committed.

@@ -165,7 +165,7 @@ startAll o outputter = do
 	void $ liftIO cleanup
 	stop
 
-{- Displays changes made. Only works when all the RefChanges are for the
+{- Displays changes made. Only works when all the LoggedFileChanges are for the
  - same key. The method is to compare each value with the value
  - after it in the list, which is the old version of the value.
  -
@@ -179,7 +179,7 @@ startAll o outputter = do
  - This also generates subtly better output when the git-annex branch
  - got diverged.
  -}
-showLogIncremental :: Outputter -> [RefChange Key] -> Annex ()
+showLogIncremental :: Outputter -> [LoggedFileChange Key] -> Annex ()
 showLogIncremental outputter ps = do
 	sets <- mapM (getset newref) ps
 	previous <- maybe (return genesis) (getset oldref) (lastMaybe ps)
@@ -196,7 +196,7 @@ showLogIncremental outputter ps = do
 {- Displays changes made. Streams, and can display changes affecting
  - different keys, but does twice as much reading of logged values
  - as showLogIncremental. -}
-showLog :: (ActionItem -> Outputter) -> [RefChange Key] -> Annex ()
+showLog :: (ActionItem -> Outputter) -> [LoggedFileChange Key] -> Annex ()
 showLog outputter cs = forM_ cs $ \c -> do
 	let ai = mkActionItem (changed c)
 	new <- S.fromList <$> loggedLocationsRef (newref c)
@@ -279,7 +279,7 @@ compareChanges format changes = concatMap diff changes
  - once the location log file is gone avoids it checking all the way back
  - to commit 0 to see if it used to exist, so generally speeds things up a
  - *lot* for newish files. -}
-getKeyLog :: Key -> [CommandParam] -> Annex ([RefChange Key], IO Bool)
+getKeyLog :: Key -> [CommandParam] -> Annex ([LoggedFileChange Key], IO Bool)
 getKeyLog key os = do
 	top <- fromRepo Git.repoPath
 	p <- liftIO $ relPathCwdToFile top
@@ -287,7 +287,7 @@ getKeyLog key os = do
 	let logfile = p P.</> locationLogFile config key
 	getGitLogAnnex [fromRawFilePath logfile] (Param "--remove-empty" : os)
 
-getGitLogAnnex :: [FilePath] -> [CommandParam] -> Annex ([RefChange Key], IO Bool)
+getGitLogAnnex :: [FilePath] -> [CommandParam] -> Annex ([LoggedFileChange Key], IO Bool)
 getGitLogAnnex fs os = do
 	config <- Annex.getGitConfig
 	let fileselector = \_sha f ->
