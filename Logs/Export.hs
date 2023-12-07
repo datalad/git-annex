@@ -78,7 +78,7 @@ recordExportBeginning remoteuuid newtree = do
 -- repository, the tree has to be kept available, even if it
 -- doesn't end up being merged into the master branch.
 recordExportTreeish :: Git.Ref -> Annex ()
-recordExportTreeish t = 
+recordExportTreeish t = void $
 	Annex.Branch.rememberTreeish t (asTopFilePath exportTreeGraftPoint)
 
 -- | Record that an export to a special remote is under way.

@@ -56,6 +56,8 @@ module Annex.Locations (
 	gitAnnexAdjustedBranchUpdateLock,
 	gitAnnexMigrateLog,
 	gitAnnexMigrateLock,
+	gitAnnexMigrationsLog,
+	gitAnnexMigrationsLock,
 	gitAnnexMoveLog,
 	gitAnnexMoveLock,
 	gitAnnexExportDir,
@@ -415,6 +417,13 @@ gitAnnexMigrateLog r = gitAnnexDir r P.</> "migrate.log"
 
 gitAnnexMigrateLock :: Git.Repo -> RawFilePath
 gitAnnexMigrateLock r = gitAnnexDir r P.</> "migrate.lck"
+
+{- .git/annex/migrations.log is used to log committed migrations. -}
+gitAnnexMigrationsLog :: Git.Repo -> RawFilePath
+gitAnnexMigrationsLog r = gitAnnexDir r P.</> "migrations.log"
+
+gitAnnexMigrationsLock :: Git.Repo -> RawFilePath
+gitAnnexMigrationsLock r = gitAnnexDir r P.</> "migrations.lck"
 
 {- .git/annex/move.log is used to log moves that are in progress,
  - to better support resuming an interrupted move. -}

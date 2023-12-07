@@ -1,5 +1,7 @@
 git-annex (10.20231130) UNRELEASED; urgency=medium
 
+  * migrate: Support distributed migrations by recording each migration,
+    and adding a --update option that updates the local repository.
   * Make git-annex get/copy/move --from foo override configuration of 
     remote.foo.annex-ignore, as documented.
   * Support git-annex copy/move --from-anywhere --to remote.

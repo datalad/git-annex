@@ -14,6 +14,7 @@ module Annex.Branch (
 	hasSibling,
 	siblingBranches,
 	create,
+	getBranch,
 	UpdateMade(..),
 	update,
 	forceUpdate,
@@ -120,7 +121,7 @@ siblingBranches = inRepo $ Git.Ref.matchingUniq [name]
 create :: Annex ()
 create = void getBranch
 
-{- Returns the ref of the branch, creating it first if necessary. -}
+{- Returns the sha of the branch, creating it first if necessary. -}
 getBranch :: Annex Git.Ref
 getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
   where
@@ -920,10 +921,14 @@ getMergedRefs' = do
 {- Grafts a treeish into the branch at the specified location,
  - and then removes it. This ensures that the treeish won't get garbage
  - collected, and will always be available as long as the git-annex branch
- - is available. -}
-rememberTreeish :: Git.Ref -> TopFilePath -> Annex ()
-rememberTreeish treeish graftpoint = lockJournal $ rememberTreeishLocked treeish graftpoint
-rememberTreeishLocked :: Git.Ref -> TopFilePath -> JournalLocked -> Annex ()
+ - is available.
+ -
+ - Returns the sha of the git commit made to the git-annex branch.
+ -}
+rememberTreeish :: Git.Ref -> TopFilePath -> Annex Git.Sha
+rememberTreeish treeish graftpoint = lockJournal $
+	rememberTreeishLocked treeish graftpoint
+rememberTreeishLocked :: Git.Ref -> TopFilePath -> JournalLocked -> Annex Git.Sha
 rememberTreeishLocked treeish graftpoint jl = do
 	branchref <- getBranch
 	updateIndex jl branchref
@@ -940,6 +945,7 @@ rememberTreeishLocked treeish graftpoint jl = do
 	-- and the index was updated to that above, so it's safe to
 	-- say that the index contains c'.
 	setIndexSha c'
+	return c'
 
 {- Runs an action on the content of selected files from the branch.
  - This is much faster than reading the content of each file in turn,

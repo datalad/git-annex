@@ -28,6 +28,7 @@ cmd = withAnnexOptions [backendOption, annexedMatchingOptions, jsonOptions] $
 
 data MigrateOptions = MigrateOptions
 	{ migrateThese :: CmdParams
+	, updateOption :: Bool
 	, removeSize :: Bool
 	}
 
@@ -35,14 +36,23 @@ optParser :: CmdParamsDesc -> Parser MigrateOptions
 optParser desc = MigrateOptions
 	<$> cmdParams desc
 	<*> switch
+		( long "update"
+		<> help "update for migrations performed elsewhere"
+		)
+	<*> switch
 		( long "remove-size"
 		<> help "remove size field from keys"
 		)
 
 seek :: MigrateOptions -> CommandSeek
-seek o = do
-	withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
-	commitMigration
+seek o
+	| updateOption o = do
+		unless (null (migrateThese o)) $
+			error "Cannot combine --update with files to migrate."
+		commandAction update
+	| otherwise = do
+		withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
+		commitMigration
   where
 	ww = WarnUnmatchLsFiles "migrate"
 	seeker = AnnexedFileSeeker
@@ -131,3 +141,10 @@ perform onlyremovesize o file oldkey oldkeyrec oldbackend newbackend = go =<< ge
 		| removeSize o = alterKey k $ \kd -> kd { keySize = Nothing } 
 		| otherwise = k
 	afile = AssociatedFile (Just file)
+
+update :: CommandStart
+update = starting "migrate" (ActionItemOther Nothing) (SeekInput []) $ do
+	streamNewDistributedMigrations $ \oldkey newkey -> do
+		liftIO $ print ("migrate", oldkey, newkey)
+	next $ return True
+

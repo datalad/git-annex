@@ -16,7 +16,19 @@
  - The filenames used in the trees are not the original filenames, to avoid
  - running migrate in a throwaway branch unexpectedly recording that
  - branch's contents.
--
+ -
+ - There are two local log files:
+ - * migrate.log contains pairs of old and new keys, and is used while
+ -   performing a new migration, to build up a migration to commit.
+ -   This allows an interrupted migration to be resumed later.
+ - * migrations.log has as its first line a commit to the git-annex branch
+ -   up to which all migrations have been performed locally (including any
+ -   migrations in parent commits). Or the first line may be a null sha when
+ -   this has not been done yet. The rest of the lines in the file
+ -   are commits that have been made for locally performed migrations,
+ -   but whose parent commits have not necessarily been checked for
+ -   migrations yet.
+ -
  - Copyright 2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
@@ -28,6 +40,7 @@ module Logs.Migrate (
 	MigrationRecord(..),
 	logMigration,
 	commitMigration,
+	streamNewDistributedMigrations,
 ) where
 
 import Annex.Common
@@ -39,6 +52,9 @@ import Git.Tree
 import Git.FilePath
 import Logs.File
 import Logs
+import Git.Log
+import Git.Sha
+import Annex.CatFile
 
 import qualified Data.ByteString.Lazy as L
 import Control.Concurrent.STM
@@ -48,9 +64,6 @@ import Control.Concurrent.STM
 newtype MigrationRecord = MigrationRecord { fromMigrationRecord :: Git.Sha }
 
 -- | Logs a migration from an old to a new key.
---
--- This writes to a log file, which can later be committed. That allows an
--- interrupted migration to be resumed later.
 logMigration :: MigrationRecord -> MigrationRecord -> Annex ()
 logMigration old new = do
 	logf <- fromRepo gitAnnexMigrateLog
@@ -97,5 +110,77 @@ commitMigration = do
 				[ RecordedSubTree (asTopFilePath "old") oldt []
 				, RecordedSubTree (asTopFilePath "new") newt []
 				]
-			Annex.Branch.rememberTreeish treesha
+			commitsha <- Annex.Branch.rememberTreeish treesha
 				(asTopFilePath migrationTreeGraftPoint)
+			committedMigration commitsha
+
+-- Streams distributed migrations from the git-annex branch that have not
+-- been performed here, and runs the provided action on each old and new
+-- key pair.
+streamNewDistributedMigrations :: (Key -> Key -> Annex ()) -> Annex ()
+streamNewDistributedMigrations a = do
+	void Annex.Branch.update
+	branchsha <- Annex.Branch.getBranch
+	(stoppoint, toskip) <- getPerformedMigrations
+	(l, cleanup) <- inRepo $ getGitLog branchsha stoppoint
+		[fromRawFilePath migrationTreeGraftPoint]
+		-- Need to follow because migrate.tree is grafted in 
+		-- and then deleted, and normally git log stops when a file
+		-- gets deleted.
+		([Param "--reverse", Param "--follow"])
+		(\sha _file -> Just sha)
+	forM_ l $ \c ->
+		unless (changed c `elem` toskip) $ do
+			moldkey <- catKey XXX
+			mnewkey <- catKey YYY
+			case (moldkey, mnewkey) of
+				(Just oldkey, Just newkey) -> a oldkey newkey
+				_ -> return ()
+	liftIO $ void cleanup
+	recordPerformedMigrations branchsha toskip
+
+getPerformedMigrations :: Annex (Maybe Sha, [Sha])
+getPerformedMigrations = do
+	logf <- fromRepo gitAnnexMigrationsLog
+	lckf <- fromRepo gitAnnexMigrationsLock
+	ls <- calcLogFile logf lckf [] (:)
+	return $ case reverse ls of
+		[] -> (Nothing, [])
+		(stoppoint:toskip) ->
+			let stoppoint' = conv stoppoint
+			in 
+				( if stoppoint' `elem` nullShas
+					then Nothing
+					else Just stoppoint'
+				, map conv toskip
+				)
+  where
+	conv = Git.Ref . L.toStrict
+
+-- Record locally that migrations have been performed up to the given
+-- commit. The list is additional commits that can be removed from the
+-- log file if present.
+recordPerformedMigrations :: Sha -> [Sha] -> Annex ()
+recordPerformedMigrations sha toremove = do
+	logf <- fromRepo gitAnnexMigrationsLog
+	lckf <- fromRepo gitAnnexMigrationsLock
+	modifyLogFile logf lckf (update . drop 1)
+  where
+	update l = L.fromStrict (fromRef' sha) : filter (`notElem` toremove') l
+	toremove' = map (L.fromStrict . fromRef') toremove
+
+-- Record that a migration was performed locally and committed.
+-- Since committing a migration may result in parent migrations that have
+-- not yet been processed locally, that commit cannot be the first line of
+-- the log file, which is reserved for commits whose parents have also had
+-- their migrations handled. So if the log file does not exist or is empty,
+-- make the first line a null sha.
+committedMigration :: Sha -> Annex ()
+committedMigration commitsha = do
+	logf <- fromRepo gitAnnexMigrationsLog
+	lckf <- fromRepo gitAnnexMigrationsLock
+	modifyLogFile logf lckf update
+  where
+	update [] = [conv deleteSha, conv commitsha]
+	update logged = logged ++ [conv commitsha]
+	conv = L.fromStrict . fromRef'

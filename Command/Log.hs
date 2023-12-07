@@ -290,8 +290,9 @@ getKeyLog key os = do
 getGitLogAnnex :: [FilePath] -> [CommandParam] -> Annex ([RefChange Key], IO Bool)
 getGitLogAnnex fs os = do
 	config <- Annex.getGitConfig
-	let fileselector = locationLogFileKey config . toRawFilePath
-	inRepo $ getGitLog Annex.Branch.fullname fs os fileselector
+	let fileselector = \_sha f ->
+		locationLogFileKey config (toRawFilePath f)
+	inRepo $ getGitLog Annex.Branch.fullname Nothing fs os fileselector
 
 showTimeStamp :: TimeZone -> String -> POSIXTime -> String
 showTimeStamp zone format = formatTime defaultTimeLocale format
@@ -321,13 +322,13 @@ sizeHistoryInfo mu o = do
 	-- and to the trust log.
 	getlog = do
 		config <- Annex.getGitConfig
-		let fileselector = \f -> let f' = toRawFilePath f in
+		let fileselector = \_sha f -> let f' = toRawFilePath f in
 			case locationLogFileKey config f' of
 				Just k -> Just (Right k)
 				Nothing
 					| f' == trustLog -> Just (Left ())
 					| otherwise -> Nothing
-		inRepo $ getGitLog Annex.Branch.fullname []
+		inRepo $ getGitLog Annex.Branch.fullname Nothing []
 			[ Param "--date-order"
 			, Param "--reverse"
 			]
