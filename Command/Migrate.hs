@@ -18,6 +18,7 @@ import qualified Annex
 import Logs.Migrate
 import Logs.MetaData
 import Logs.Web
+import Logs.Location
 import Utility.Metered
 
 cmd :: Command
@@ -144,7 +145,8 @@ perform onlyremovesize o file oldkey oldkeyrec oldbackend newbackend = go =<< ge
 
 update :: CommandStart
 update = starting "migrate" (ActionItemOther Nothing) (SeekInput []) $ do
-	streamNewDistributedMigrations $ \oldkey newkey -> do
-		liftIO $ print ("migrate", oldkey, newkey)
+	streamNewDistributedMigrations $ \oldkey newkey ->
+		unlessM (inAnnex newkey) $
+			whenM (Command.ReKey.linkKey' oldkey newkey) $
+				logStatus newkey InfoPresent
 	next $ return True
-

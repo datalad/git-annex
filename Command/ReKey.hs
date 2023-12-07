@@ -95,14 +95,7 @@ perform file oldkey newkey = do
  - to avoid wasting disk space. -}
 linkKey :: RawFilePath -> Key -> Key -> Annex Bool
 linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
- 	{- If the object file is already hardlinked to elsewhere, a hard
-	 - link won't be made by getViaTmpFromDisk, but a copy instead.
-	 - This avoids hard linking to content linked to an
-	 - unlocked file, which would leave the new key unlocked
-	 - and vulnerable to corruption. -}
-	( getViaTmpFromDisk RetrievalAllKeysSecure DefaultVerify newkey (AssociatedFile Nothing) $ \tmp -> unVerified $ do
-		oldobj <- calcRepo (gitAnnexLocation oldkey)
-		isJust <$> linkOrCopy' (return True) newkey oldobj tmp Nothing
+	( linkKey' oldkey newkey
 	, do
 	 	{- The file being rekeyed is itself an unlocked file; if
 		 - it's hard linked to the old key, that link must be broken. -}
@@ -127,6 +120,17 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
 					LinkAnnexOk -> True
 					LinkAnnexNoop -> True
 	)
+
+ {- If the object file is already hardlinked to elsewhere, a hard
+ - link won't be made by getViaTmpFromDisk, but a copy instead.
+ - This avoids hard linking to content linked to an
+ - unlocked file, which would leave the new key unlocked
+ - and vulnerable to corruption. -}
+linkKey' :: Key -> Key -> Annex Bool
+linkKey' oldkey newkey =
+	getViaTmpFromDisk RetrievalAllKeysSecure DefaultVerify newkey (AssociatedFile Nothing) $ \tmp -> unVerified $ do
+		oldobj <- calcRepo (gitAnnexLocation oldkey)
+		isJust <$> linkOrCopy' (return True) newkey oldobj tmp Nothing
 
 cleanup :: RawFilePath -> Key -> (MigrationRecord -> Annex ()) -> CommandCleanup
 cleanup file newkey a = do
