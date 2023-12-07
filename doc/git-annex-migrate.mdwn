@@ -12,10 +12,11 @@ git annex migrate --update
 
 Changes the specified annexed files to use the default key-value backend
 (or the one specified with `--backend`). Only files whose content
-is currently available are migrated.
+is currently present are migrated.
 
-Note that the content is also still available using the old key after
-migration. Use `git annex unused` to find and remove the old key.
+Note that the content is also still stored using the old keys after
+migration. When possible, hard links are used to avoid that taking up
+extra disk space. Use `git annex unused` to find and remove the old keys.
 
 Normally, nothing will be done to files already using the new backend.
 However, if a backend changes the information it uses to construct a key,

@@ -20,6 +20,9 @@ import Logs.MetaData
 import Logs.Web
 import Logs.Location
 import Utility.Metered
+import qualified Database.Keys
+import Git.FilePath
+import Annex.Link
 
 cmd :: Command
 cmd = withAnnexOptions [backendOption, annexedMatchingOptions, jsonOptions] $
@@ -50,7 +53,8 @@ seek o
 	| updateOption o = do
 		unless (null (migrateThese o)) $
 			error "Cannot combine --update with files to migrate."
-		commandAction update
+		streamNewDistributedMigrations $ \oldkey newkey ->
+			commandAction $ update oldkey newkey
 	| otherwise = do
 		withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
 		commitMigration
@@ -143,10 +147,22 @@ perform onlyremovesize o file oldkey oldkeyrec oldbackend newbackend = go =<< ge
 		| otherwise = k
 	afile = AssociatedFile (Just file)
 
-update :: CommandStart
-update = starting "migrate" (ActionItemOther Nothing) (SeekInput []) $ do
-	streamNewDistributedMigrations $ \oldkey newkey ->
-		unlessM (inAnnex newkey) $
-			whenM (Command.ReKey.linkKey' oldkey newkey) $
-				logStatus newkey InfoPresent
-	next $ return True
+update :: Key -> Key -> CommandStart
+update oldkey newkey =
+	stopUnless ((not <$> inAnnex newkey) <&&> inAnnex oldkey) $ do
+		ai <- findworktreefile >>= return . \case
+			Just f -> ActionItemAssociatedFile (AssociatedFile (Just f)) newkey
+			Nothing -> ActionItemKey newkey
+		starting "migrate" ai (SeekInput []) $
+			ifM (Command.ReKey.linkKey' oldkey newkey)
+				( do
+					logStatus newkey InfoPresent
+					next $ return True
+				, next $ return False
+				)
+  where
+	findworktreefile = do
+		fs <- Database.Keys.getAssociatedFiles newkey
+		g <- Annex.gitRepo
+		firstM (\f -> (== Just newkey) <$> isAnnexLink f) $
+			map (\f -> simplifyPath (fromTopFilePath f g)) fs
