@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="kolam"
+ avatar="http://cdn.libravatar.org/avatar/4d2741e5e0b47928bc599b00397b5e59"
+ subject="comment 2"
+ date="2023-12-07T20:12:31Z"
+ content="""
+There's a similar setup page for running your own server with a bare git repo: https://git-annex.branchable.com/tips/centralized_git_repository_tutorial/on_your_own_server/
+
+However:
+1- it doesn't work as a transfer repo and showcasing the git-annex-drop statement
+2- out of date as the instructions don't work.
+
+I also found https://git-annex.branchable.com/forum/How_to_work_with_transfer_repos_manually__63__/. 
+But the solution doesn't seem to work here either. Maybe something changed since then.
+"""]]
