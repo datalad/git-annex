@@ -1,13 +1,28 @@
-Maybe you started out using the WORM backend, and have now configured
-git-annex to use SHA1. But files you added to the annex before still
-use the WORM backend. There is a simple command that can migrate that
+Maybe you started out using the SHA1 backend, and have now configured
+git-annex to use SHA256. But files you added to the annex before still
+use the SHA1 backend. There is a simple command that can migrate that
 data:
 
 	# git annex migrate my_cool_big_file
 	migrate my_cool_big_file (checksum...) ok
 
+This stages a change to the file, which you can `git commit` like any other
+change.
+
 You can only migrate files whose content is currently available. Other
 files will be skipped.
+
+## distributed migration
+
+When you pull changes into your repository that include migration of files,
+your repository then needs to be updated to follow the migration.
+
+    # git-annex migrate --update
+	migrate my_cool_big_file (checksum...) ok
+
+This is done automatically by commands like `git-annex pull`.
+
+## unused old content
 
 After migrating a file to a new backend, the old content in the old backend
 will still be present. That is necessary because multiple files
