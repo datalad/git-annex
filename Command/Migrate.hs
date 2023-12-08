@@ -149,7 +149,7 @@ perform onlyremovesize o file oldkey oldkeyrec oldbackend newbackend = go =<< ge
 
 update :: Key -> Key -> CommandStart
 update oldkey newkey =
-	stopUnless ((not <$> inAnnex newkey) <&&> inAnnex oldkey) $ do
+	stopUnless ((not <$> inAnnex newkey) <&&> inAnnex oldkey <&&> allowed) $ do
 		ai <- findworktreefile >>= return . \case
 			Just f -> ActionItemAssociatedFile (AssociatedFile (Just f)) newkey
 			Nothing -> ActionItemKey newkey
@@ -161,6 +161,11 @@ update oldkey newkey =
 				, next $ return False
 				)
   where
+	-- annex.securehashesonly will block adding keys with insecure
+	-- hashes, this check is only to avoid doing extra work and
+	-- displaying a message when it fails.
+	allowed = isNothing <$> checkSecureHashes newkey
+
 	findworktreefile = do
 		fs <- Database.Keys.getAssociatedFiles newkey
 		g <- Annex.gitRepo
