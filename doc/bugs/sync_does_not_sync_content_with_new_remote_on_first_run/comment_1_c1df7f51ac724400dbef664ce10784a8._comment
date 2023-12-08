@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Similar to initremote type=git"
+ date="2023-12-07T08:31:08Z"
+ content="""
+Cool, this would reduce surprises for sure! 😀
+
+On that note, IIRC `initremote type=git` straight up refuses to proceed if the remote does not have a UUID (i.e. has had `git annex init` run in it). Might be worth auto-init-ing here as well when you're already at it.
+"""]]

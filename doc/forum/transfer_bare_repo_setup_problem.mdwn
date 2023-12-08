@@ -1,0 +1,111 @@
+Thanks to Joey's help, I managed to get the transfer repository setup working in a [previous forum question](https://git-annex.branchable.com/forum/client_repositories_setup_problem/).
+
+Now, I'm trying to do something similar, but using a bare git repository as the transfer repo instead of a regular git repository.
+
+Here's my bash script which bootstraps the setup stage:
+
+```
+#/usr/bin/env bash
+
+# Useful links:
+# https://git-annex.branchable.com/bare_repositories/
+
+# Just a way to access the script's directory
+cd "$(dirname "$0")"
+DIR="$(pwd)"
+
+# Create the 1st client repository
+mkdir $DIR/client1
+cd $DIR/client1
+git init && git annex init
+
+# Create the 2nd client repository
+mkdir $DIR/client2
+cd $DIR/client2
+git init && git annex init
+
+# Create the transfer repository
+mkdir $DIR/share
+cd $DIR/share
+git init --bare && git annex init
+
+# Setup the remotes and groups for the transfer repository
+cd $DIR/share
+git remote add client1 $DIR/client1
+git remote add client2 $DIR/client2
+git annex wanted . standard
+git annex group . transfer
+git annex group client1 client
+git annex group client2 client
+git annex mincopies 2
+git annex numcopies 2
+
+# Setup the remotes and groups for the 1st client repository.
+cd $DIR/client1
+git remote add share $DIR/share
+git annex wanted . standard
+git annex group . client
+git annex group share transfer
+git annex config --set annex.addunlocked true
+git co -b main
+
+# Setup the remotes and groups for the 2nd client repository.
+cd $DIR/client2
+git remote add share $DIR/share
+git annex wanted . standard
+git annex group . client
+git annex group share transfer
+git annex config --set annex.addunlocked true
+git co -b main
+
+# Add a single file to the 1st client.
+cd $DIR/client1
+touch file.txt
+git annex add file.txt
+git commit -m "Initial commit"
+
+# Needed step for bare repos, as documented in https://git-annex.branchable.com/bare_repositories/
+cd $DIR/client1
+git push share main
+
+###############################################################################
+# Need to do this if there are no commits in the 'client2' and 'share'
+# repositories. Or else, I'll get the following logs:
+#
+# merge: refs/remotes/share/main - not something we can merge
+# merge: refs/remotes/share/synced/main - not something we can merge
+cd $DIR/client2
+git pull share main
+###############################################################################
+
+# Run git-annex assistant for each repository
+cd $DIR/client1 && git annex assistant
+cd $DIR/client2 && git annex assistant
+
+sleep 3;
+cd $DIR/client1
+echo "My first line" >> file.txt
+```
+
+The repo `client1` correctly contains 2 commits representing changes to `file.txt`.
+Additionally, `share` and `client2` contain the same commits that were propagated.
+However, I expected `cat client2/file.txt` to show "My first line", but it shows instead "/annex/objects/SHA256E-s14--42e950c34152a022a2ec82b2201a2287689e39d4d97bfcef67f8940b49d25d4b.txt".
+
+Doing `git status` in `client2` yield:
+
+```
+  file.txt is a git-annex pointer file. Its content is not available in this repository. (Maybe file.txt was copied from another repository?)
+```
+
+but not sure how to solve this.
+
+Running `git annex whereis` yields:
+
+```
+whereis file.txt (0 copies) failed
+whereis: 1 failed
+```
+
+Any ideas what went wrong?
+
+-- [[kolam]]

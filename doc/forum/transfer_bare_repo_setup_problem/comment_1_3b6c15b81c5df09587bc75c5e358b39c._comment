@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="kolam"
+ avatar="http://cdn.libravatar.org/avatar/4d2741e5e0b47928bc599b00397b5e59"
+ subject="comment 1"
+ date="2023-12-07T20:08:52Z"
+ content="""
+Seems like I needed to manually run:
+
+```
+cd $DIR/client2
+git annex sync --content
+```
+
+which solves the file not found issue. Wonder why the git-annex assistant didn't just sync again...
+
+Then, `cat file.txt` still gives `/annex/objects/SHA256E-s14--42e950c34152a022a2ec82b2201a2287689e39d4d97bfcef67f8940b49d25d4b.txt`.
+
+I managed to solve it by running `git-annex restage` on client2.
+
+However, after running `git annex whereis`, I get:
+
+```
+whereis file.txt (3 copies) 
+  	1d6bad3e-6a1c-4371-af5f-794bf387480c -- kolam@xxx:~/git-annex-scenarios/share-between-clients/share [share]
+   	87ba86d9-4922-4a4a-8c8d-57c791e0f80e -- kolam@xxx:~/git-annex-scenarios/share-between-clients/client2 [here]
+   	f5b9efb1-e5b3-4573-aa6d-354180193c74 -- kolam@xxx:~/git-annex-scenarios/share-between-clients/client1
+ok
+```
+
+but I noticed that the assistant doesn't drop the file from the \"share\" repo.
+
+Running `git annex drop --auto --from share`, I get:
+
+```
+drop file.txt (from share...) (unsafe) 
+  Could only verify the existence of 1 out of 2 necessary copies
+
+  Maybe add some of these git remotes (git remote add ...):
+  	f5b9efb1-e5b3-4573-aa6d-354180193c74 -- kolam@nelson:~/git-annex-scenarios/share-between-clients/client1
+
+  (Use --force to override this check, or adjust numcopies.)
+failed
+drop: 1 failed
+```
+
+Of course, that also means that if I modify \"$DIR/client2/file.txt\", the assistant doesn't send the updates to client1. I need to do a manual `git annex sync --content` on `client1`.
+Then again, I can't drop the file from \"share\" because of that same error as before.
+"""]]
