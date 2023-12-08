@@ -20,29 +20,10 @@ just hard link object files from the old to new key, and update the location
 log for the new key to indicate the content is present in the repo.
 This command could be something like `git-annex migrate --update`.
 
-That wouldn't be entirely sufficient though, because special remotes from
-pre-migration will be populated with the old keys. A similar command could
-upload the new content to special remotes, but that would double the data
-stored in a special remote (or drop the old keys from them), 
-and use a lot of bandwidth. Probably not a good idea.
-
-Alternatively, the old key could be left on a special remote, but update
-the location log for the special remote to say it has the new key,
-and have git-annex request the old key when it wants to get (or checkpresent)
-the new key from the special remote.
-This would need the mapping to be cheap enough to query that it won't
-signficantly slow down accessing a special remote.
-
-Dropping the new key from the special remote would then need to drop the
-old key. But that could violate numcopies for the old key. Perhaps it could
-check numcopies for the old key and drop it, otherwise leave the old key on
-the special remote.
-
 Rather than a dedicated command that users need to remember to run,
 distributed migration could be done automatically when merging a git-annex
 branch that adds migration information. Just hardlink object files and
-update the location log for the local repo and for available special
-remotes.
+update the location log.
 
 It would be possible to avoid updating the location log, but then all
 location log queries would have to check the migration mapping. It would be
@@ -50,6 +31,8 @@ hard to make that fast enough. Consider `git-annex find --in foo`, which
 queries the location log for each file.
 
 --[[Joey]]
+
+> [[done]] --[[Joey]]
 
 # security
 
@@ -59,20 +42,10 @@ when bad migration information is recorded:
 
 * When updating the local repository with a migration, verify that
   the object file hashes to the new key before hardlinking.
-* When downloading content from a special remote by getting the old
-  pre-migration key, verify that download hashes to the new key.
 
-That leaves at least two possible security problems:
+> This was done.
 
-* checkpresent against the special remote has to trust that the content
-  stored on it for the old key will hash to the new key. This could result
-  in data loss when a bad migration is provided, and the special remote is
-  trusted.
-
-  Eg, if key A is locally present, and B is present on the special
-  remote, and then wrong migration is recorded from B to A, 
-  the special remote will be treated as containing a copy of A,
-  allowing dropping the local copy of A, which was the only copy.
+That leaves at these possible security problems:
 
 * DOS by flooding the git-annex branch with migrations, resulting in 
   lots of hard links (or copies on filesystems not supporting hard links)
@@ -93,3 +66,6 @@ remote to contain the only copy.
 If we pull a git-annex branch from someone, they can already DOS disk space
 and CPU by checking a lot of junk into git. So maybe a DOS by migration is
 not really a concern.
+
+> If people are worried about this kind of thing, they can avoid using the
+> feature. --[[Joey]]

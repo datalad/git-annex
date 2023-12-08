@@ -1,0 +1,41 @@
+[[distributed_migration]] is implemented for local repositories via
+`git-annex migrate --update`.
+
+That leaves updating special remotes after a migration as the main pain
+point in doing migrations.
+
+One approach would be a command like `git-annex migrate
+--update-remote=foo` that uploads new keys and drops old keys.
+But that would double the data stored in the special remote and use a lot
+of bandwidth.
+
+Alternatively, the old key could be left on a special remote, but update
+the location log for the special remote to say it has the new key,
+and have git-annex request the old key when it wants to get (or checkpresent)
+the new key from the special remote.
+This would need the mapping to be cheap enough to query that it won't
+signficantly slow down accessing a special remote.
+
+Dropping the new key from the special remote would then need to drop the
+old key. But that could violate numcopies for the old key. Perhaps it could
+check numcopies for the old key and drop it, otherwise leave the old key on
+the special remote.
+
+--[[Joey]]
+
+# security
+
+
+When downloading content from a special remote by getting the old
+pre-migration key it's important to verify that download hashes to the new key.
+See [[distributed_migration]]'s security section for relevant background.
+
+Another problem to consider: checkpresent against the special remote has to
+trust that the content stored on it for the old key will hash to the new
+key. This could result in data loss when a bad migration is provided, and
+the special remote is trusted.
+
+Eg, if key A is locally present, and B is present on the special
+remote, and then wrong migration is recorded from B to A, 
+the special remote will be treated as containing a copy of A,
+allowing dropping the local copy of A, which was the only copy.
