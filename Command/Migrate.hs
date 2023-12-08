@@ -154,7 +154,7 @@ update oldkey newkey =
 			Just f -> ActionItemAssociatedFile (AssociatedFile (Just f)) newkey
 			Nothing -> ActionItemKey newkey
 		starting "migrate" ai (SeekInput []) $
-			ifM (Command.ReKey.linkKey' oldkey newkey)
+			ifM (Command.ReKey.linkKey' v oldkey newkey)
 				( do
 					logStatus newkey InfoPresent
 					next $ return True
@@ -166,3 +166,9 @@ update oldkey newkey =
 		g <- Annex.gitRepo
 		firstM (\f -> (== Just newkey) <$> isAnnexLink f) $
 			map (\f -> simplifyPath (fromTopFilePath f g)) fs
+	
+	-- Always verify the content agains the newkey, even if
+	-- annex.verify is unset. This is done to prent bad migration
+	-- information maliciously injected into the git-annex branch
+	-- from populating files with the wrong content.
+	v = AlwaysVerify

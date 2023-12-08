@@ -95,7 +95,7 @@ perform file oldkey newkey = do
  - to avoid wasting disk space. -}
 linkKey :: RawFilePath -> Key -> Key -> Annex Bool
 linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
-	( linkKey' oldkey newkey
+	( linkKey' DefaultVerify oldkey newkey
 	, do
 	 	{- The file being rekeyed is itself an unlocked file; if
 		 - it's hard linked to the old key, that link must be broken. -}
@@ -126,9 +126,9 @@ linkKey file oldkey newkey = ifM (isJust <$> isAnnexLink file)
  - This avoids hard linking to content linked to an
  - unlocked file, which would leave the new key unlocked
  - and vulnerable to corruption. -}
-linkKey' :: Key -> Key -> Annex Bool
-linkKey' oldkey newkey =
-	getViaTmpFromDisk RetrievalAllKeysSecure DefaultVerify newkey (AssociatedFile Nothing) $ \tmp -> unVerified $ do
+linkKey' :: VerifyConfig -> Key -> Key -> Annex Bool
+linkKey' v oldkey newkey =
+	getViaTmpFromDisk RetrievalAllKeysSecure v newkey (AssociatedFile Nothing) $ \tmp -> unVerified $ do
 		oldobj <- calcRepo (gitAnnexLocation oldkey)
 		isJust <$> linkOrCopy' (return True) newkey oldobj tmp Nothing
 
