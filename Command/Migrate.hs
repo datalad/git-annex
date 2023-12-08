@@ -59,9 +59,7 @@ seek o
 	| updateOption o || applyOption o = do
 		unless (null (migrateThese o)) $
 			error "Cannot combine --update or --apply with files to migrate."
-		streamNewDistributedMigrations (not (applyOption o)) $ 
-			\oldkey newkey ->
-				commandAction $ update oldkey newkey
+		seekDistributedMigrations (not (applyOption o))
 	| otherwise = do
 		withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
 		commitMigration
@@ -72,6 +70,14 @@ seek o
 		, checkContentPresent = Nothing
 		, usesLocationLog = False
 		}
+
+seekDistributedMigrations :: Bool -> CommandSeek
+seekDistributedMigrations incremental =
+	streamNewDistributedMigrations incremental $ \oldkey newkey ->
+		-- Not using commandAction because this is not necessarily
+		-- concurrency safe, and also is unlikely to be sped up
+		-- by multiple jobs.
+		void $ includeCommandAction $ update oldkey newkey
 
 start :: MigrateOptions -> Maybe KeySha -> SeekInput -> RawFilePath -> Key -> CommandStart
 start o ksha si file key = do

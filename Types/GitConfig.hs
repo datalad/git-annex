@@ -94,6 +94,7 @@ data GitConfig = GitConfig
 	, annexResolveMerge :: GlobalConfigurable Bool
 	, annexSyncContent :: GlobalConfigurable (Maybe Bool)
 	, annexSyncOnlyAnnex :: GlobalConfigurable Bool
+	, annexSyncMigrations :: Bool
 	, annexDebug :: Bool
 	, annexDebugFilter :: Maybe String
 	, annexWebOptions :: [String]
@@ -184,6 +185,7 @@ extractGitConfig configsource r = GitConfig
 		getmaybebool (annexConfig "synccontent")
 	, annexSyncOnlyAnnex = configurable False $ 
 		getmaybebool (annexConfig "synconlyannex")
+	, annexSyncMigrations = getbool (annexConfig "syncmigrations") True
 	, annexDebug = getbool (annexConfig "debug") False
 	, annexDebugFilter = getmaybe (annexConfig "debugfilter")
 	, annexWebOptions = getwords (annexConfig "web-options")

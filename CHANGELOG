@@ -5,6 +5,10 @@ git-annex (10.20231130) UNRELEASED; urgency=medium
     incrementally, hard linking annex objects to their new keys.
   * migrate: Added --apply option that (re)applies all recorded 
     distributed migrations to the objects in repository.
+  * pull, sync: When operating on content, automatically hard link objects
+    that have been migrated.
+  * Added annex.syncmigrations config that can be set to false to prevent
+    pull and sync from migrating object content.
   * Make git-annex get/copy/move --from foo override configuration of 
     remote.foo.annex-ignore, as documented.
   * Support git-annex copy/move --from-anywhere --to remote.

@@ -29,7 +29,10 @@ this command will also pull changes from the parent branch.
 When [[git-annex-view]](1) has been used to check out a view branch,
 this command will update the view branch to reflect any changes 
 to the parent branch or metadata.
-  
+
+When [[git-annex-migrate]](1) has been used in other repositories,
+this updates the content in the local repository for those migrations as well.
+
 Normally this tries to download the content of each annexed file,
 from any remote that it's pulling from that has a copy. 
 To control which files it downloads, configure the preferred
@@ -70,11 +73,16 @@ See [[git-annex-preferred-content]](1).
 * `--no-content, `-g`, `--content`
 
   Use `--no-content` or `-g` to avoid downloading (and dropping)
-  the content of annexed files.
+  the content of annexed files, and also prevent doing any migrations of
+  content.
 
   If you often use `--no-content`, you can set the `annex.synccontent`
   configuration to false to prevent downloading content by default.
   The `--content` option overrides that configuration.
+
+  To only prevent only migrations of content, you can set the
+  `annex.syncmigrations` configuration to false.
+  The `--content` option overrides that configuration as well.
 
 * `--content-of=path` `-C path`
 

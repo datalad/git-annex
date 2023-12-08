@@ -58,6 +58,7 @@ import Command.Get (getKey')
 import qualified Command.Move
 import qualified Command.Export
 import qualified Command.Import
+import qualified Command.Migrate
 import Annex.Drop
 import Annex.UUID
 import Logs.UUID
@@ -293,6 +294,10 @@ seek' o = startConcurrency transferStages $ do
 				]
 			
 			content <- shouldSyncContent o
+
+			when content $
+				whenM (annexSyncMigrations <$> Annex.getGitConfig) $
+					Command.Migrate.seekDistributedMigrations True
 
 			forM_ (filter isImport contentremotes) $
 				withbranch . importRemote content o

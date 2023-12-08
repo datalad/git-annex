@@ -1222,6 +1222,12 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   To configure the behavior in all clones of the repository,
   this can be set in [[git-annex-config]](1).
 
+* `annex.syncmigrations`
+
+  Set to false to prevent `git-annex sync` and `git-annex pull`
+  from scanning for migrations and updating the local 
+  repository for those migrations.
+
 * `annex.viewunsetdirectory`
 
   This configures the name of a directory that is used in a view to contain
