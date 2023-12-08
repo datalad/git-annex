@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -66,6 +66,7 @@ module Annex.Content (
 	getKeyStatus,
 	getKeyFileStatus,
 	cleanObjectDirs,
+	contentSize,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -916,3 +917,25 @@ getKeyFileStatus key file = do
 				)
 		_ -> return s
 
+{- Gets the size of the content of a key when it is present.
+ - Useful when the key does not have keySize set. 
+ -
+ - When the object file appears possibly modified with annex.thin set, does
+ - not do an expensive verification that the content is good, just returns
+ - Nothing.
+ -}
+contentSize :: Key -> Annex (Maybe FileSize)
+contentSize key = catchDefaultIO Nothing $
+	withObjectLoc key $ \loc ->
+		withTSDelta (liftIO . genInodeCache loc) >>= \case
+			Just ic -> ifM (unmodified ic)
+				( return (Just (inodeCacheFileSize ic))
+				, return Nothing
+				)
+			Nothing -> return Nothing
+  where
+	unmodified ic =
+		ifM (annexThin <$> Annex.getGitConfig)
+			( isUnmodifiedCheap' key ic
+			, return True
+			)

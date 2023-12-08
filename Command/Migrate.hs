@@ -88,29 +88,26 @@ start o ksha si file key = do
 		Just oldbackend -> do
 			exists <- inAnnex key
 			newbackend <- chooseBackend file
-			if (newbackend /= oldbackend || upgradableKey oldbackend key || forced) && exists
+			if (newbackend /= oldbackend || upgradableKey oldbackend || forced) && exists
 				then go False oldbackend newbackend
-				else if removeSize o && exists
-					then go True oldbackend oldbackend
+				else if cantweaksize newbackend oldbackend && exists
+					then go True oldbackend newbackend
 					else stop
   where
-	go onlyremovesize oldbackend newbackend = do
+	go onlytweaksize oldbackend newbackend = do
 		keyrec <- case ksha of
 			Just (KeySha s) -> pure (MigrationRecord s)
 			Nothing -> error "internal"
 		starting "migrate" (mkActionItem (key, file)) si $
-			perform onlyremovesize o file key keyrec oldbackend newbackend
+			perform onlytweaksize o file key keyrec oldbackend newbackend
 
-{- Checks if a key is upgradable to a newer representation.
- - 
- - Reasons for migration:
- -  - Ideally, all keys have file size metadata. Old keys may not.
- -  - Something has changed in the backend, such as a bug fix.
- -}
-upgradableKey :: Backend -> Key -> Bool
-upgradableKey backend key = isNothing (fromKey keySize key) || backendupgradable
-  where
-	backendupgradable = maybe False (\a -> a key) (canUpgradeKey backend)
+	cantweaksize newbackend oldbackend
+		| removeSize o = isJust (fromKey keySize key)
+		| newbackend /= oldbackend = False
+		| isNothing (fromKey keySize key) = True
+		| otherwise = False
+
+	upgradableKey oldbackend = maybe False (\a -> a key) (canUpgradeKey oldbackend)
 
 {- Store the old backend's key in the new backend
  - The old backend's key is not dropped from it, because there may
@@ -122,13 +119,13 @@ upgradableKey backend key = isNothing (fromKey keySize key) || backendupgradable
  - generated.
  -}
 perform :: Bool -> MigrateOptions -> RawFilePath -> Key -> MigrationRecord -> Backend -> Backend -> CommandPerform
-perform onlyremovesize o file oldkey oldkeyrec oldbackend newbackend = go =<< genkey (fastMigrate oldbackend)
+perform onlytweaksize o file oldkey oldkeyrec oldbackend newbackend = go =<< genkey (fastMigrate oldbackend)
   where
 	go Nothing = stop
 	go (Just (newkey, knowngoodcontent))
-		| knowngoodcontent = finish (removesize newkey)
+		| knowngoodcontent = finish =<< tweaksize newkey
 		| otherwise = stopUnless checkcontent $
-			finish (removesize newkey)
+			finish =<< tweaksize newkey
 	checkcontent = Command.Fsck.checkBackend oldbackend oldkey KeyPresent afile
 	finish newkey = ifM (Command.ReKey.linkKey file oldkey newkey)
 		( do
@@ -142,7 +139,7 @@ perform onlyremovesize o file oldkey oldkeyrec oldbackend newbackend = go =<< ge
 				logMigration oldkeyrec
 		, giveup "failed creating link from old to new key"
 		)
-	genkey _ | onlyremovesize = return $ Just (oldkey, False)
+	genkey _ | onlytweaksize = return $ Just (oldkey, False)
 	genkey Nothing = do
 		content <- calcRepo $ gitAnnexLocation oldkey
 		let source = KeySource
@@ -155,9 +152,17 @@ perform onlyremovesize o file oldkey oldkeyrec oldbackend newbackend = go =<< ge
 	genkey (Just fm) = fm oldkey newbackend afile >>= \case
 		Just newkey -> return (Just (newkey, True))
 		Nothing -> genkey Nothing
-	removesize k
-		| removeSize o = alterKey k $ \kd -> kd { keySize = Nothing } 
-		| otherwise = k
+	tweaksize k
+		| removeSize o = pure (removesize k)
+		| onlytweaksize = addsize k
+		| otherwise = pure k
+	removesize k = alterKey k $ \kd -> kd { keySize = Nothing }
+	addsize k
+		| fromKey keySize k == Nothing = 
+			contentSize k >>= return . \case
+				Just sz -> alterKey k $ \kd -> kd { keySize = Just sz }
+				Nothing -> k
+		| otherwise = return k
 	afile = AssociatedFile (Just file)
 
 update :: Key -> Key -> CommandStart

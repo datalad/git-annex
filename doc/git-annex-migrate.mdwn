@@ -82,6 +82,10 @@ format.
 
   	git-annex migrate --remove-size --backend=URL somefile
 
+  To add back the size to an URL key, use this:
+
+    git-annex migrate --backend=URL somefile
+
 * `--json`
 
   Enable JSON output. This is intended to be parsed by programs that use

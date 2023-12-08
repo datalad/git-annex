@@ -18,6 +18,7 @@ module Annex.Content.Presence (
 	isUnmodified,
 	isUnmodified',
 	isUnmodifiedCheap,
+	isUnmodifiedCheap',
 	withContentLockFile,
 	contentLockFile,
 ) where
@@ -206,7 +207,7 @@ isUnmodified' = isUnmodifiedLowLevel Database.Keys.addInodeCaches
  - within a small time window (eg 1 second).
  -}
 isUnmodifiedCheap :: Key -> RawFilePath -> Annex Bool
-isUnmodifiedCheap key f = maybe (return False) (isUnmodifiedCheap' key) 
+isUnmodifiedCheap key f = maybe (pure False) (isUnmodifiedCheap' key) 
 	=<< withTSDelta (liftIO . genInodeCache f)
 
 isUnmodifiedCheap' :: Key -> InodeCache -> Annex Bool
