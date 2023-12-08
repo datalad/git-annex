@@ -70,13 +70,17 @@ buildLog = mconcat . map genline
 	genstatus InfoMissing = charUtf8 '0'
 	genstatus InfoDead = charUtf8 'X'
 
-{- Given a log, returns only the info that is are still in effect. -}
+{- Given a log, returns only the info that is still present. -}
 getLog :: L.ByteString -> [LogInfo]
 getLog = map info . filterPresent . parseLog
 
-{- Returns the info from LogLines that are in effect. -}
+{- Returns the info from LogLines that is present. -}
 filterPresent :: [LogLine] -> [LogLine]
 filterPresent = filter (\l -> InfoPresent == status l) . compactLog
+
+{- Returns the info from LogLines that is not present. -}
+filterNotPresent :: [LogLine] -> [LogLine]
+filterNotPresent = filter (\l -> InfoPresent /= status l) . compactLog
 
 {- Compacts a set of logs, returning a subset that contains the current
  - status. -}

@@ -21,6 +21,7 @@ module Logs.Location (
 	logStatusAfter,
 	logChange,
 	loggedLocations,
+	loggedPreviousLocations,
 	loggedLocationsHistorical,
 	loggedLocationsRef,
 	parseLoggedLocations,
@@ -79,7 +80,13 @@ logChange _ NoUUID _ = noop
 {- Returns a list of repository UUIDs that, according to the log, have
  - the value of a key. -}
 loggedLocations :: Key -> Annex [UUID]
-loggedLocations = getLoggedLocations currentLogInfo
+loggedLocations = getLoggedLocations presentLogInfo
+
+{- Returns a list of repository UUIDs that the location log indicates
+ - used to have the vale of a key, but no longer do.
+ -}
+loggedPreviousLocations :: Key -> Annex [UUID]
+loggedPreviousLocations = getLoggedLocations notPresentLogInfo
 
 {- Gets the location log on a particular date. -}
 loggedLocationsHistorical :: RefDate -> Key -> Annex [UUID]

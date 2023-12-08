@@ -117,15 +117,18 @@ commitMigration = do
 				(asTopFilePath migrationTreeGraftPoint)
 			committedMigration commitsha
 
--- Streams distributed migrations from the git-annex branch that have not
--- been performed here, and runs the provided action on each old and new
--- key pair.
-streamNewDistributedMigrations :: (Key -> Key -> Annex ()) -> Annex ()
-streamNewDistributedMigrations a = do
+-- Streams distributed migrations from the git-annex branch,
+-- and runs the provided action on each old and new key pair.
+--
+-- With the incremental option, only scans as far as the last recorded
+-- migration that this has handled before.
+streamNewDistributedMigrations :: Bool -> (Key -> Key -> Annex ()) -> Annex ()
+streamNewDistributedMigrations incremental a = do
 	void Annex.Branch.update
 	branchsha <- Annex.Branch.getBranch
 	(stoppoint, toskip) <- getPerformedMigrations
-	(l, cleanup) <- inRepo $ getGitLog branchsha stoppoint
+	(l, cleanup) <- inRepo $ getGitLog branchsha
+		(if incremental then stoppoint else Nothing)
 		[fromRawFilePath migrationTreeGraftPoint]
 		-- Need to follow because migrate.tree is grafted in 
 		-- and then deleted, and normally git log stops when a file

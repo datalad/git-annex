@@ -55,7 +55,7 @@ getUrls' key = do
   where
 	go [] = return []
 	go (l:ls) = do
-		us <- currentLogInfo l
+		us <- presentLogInfo l
 		if null us
 			then go ls
 			else return $ map fromLogInfo us

@@ -17,8 +17,8 @@ module Logs.Presence (
 	addLog',
 	maybeAddLog,
 	readLog,
-	currentLog,
-	currentLogInfo,
+	presentLogInfo,
+	notPresentLogInfo,
 	historicalLogInfo,
 ) where
 
@@ -68,12 +68,13 @@ genLine logstatus loginfo c old = LogLine c' logstatus loginfo
 readLog :: RawFilePath -> Annex [LogLine]
 readLog = parseLog <$$> Annex.Branch.get
 
-{- Reads a log and returns only the info that is still in effect. -}
-currentLogInfo :: RawFilePath -> Annex [LogInfo]
-currentLogInfo file = map info <$> currentLog file
+{- Reads a log and returns only the info that is still present. -}
+presentLogInfo :: RawFilePath -> Annex [LogInfo]
+presentLogInfo file = map info . filterPresent <$> readLog file
 
-currentLog :: RawFilePath -> Annex [LogLine]
-currentLog file = filterPresent <$> readLog file
+{- Reads a log and returns only the info that is no longer present. -}
+notPresentLogInfo :: RawFilePath -> Annex [LogInfo]
+notPresentLogInfo file = map info . filterNotPresent <$> readLog file
 
 {- Reads a historical version of a log and returns the info that was in
  - effect at that time. 

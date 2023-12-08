@@ -23,6 +23,7 @@ import Utility.Metered
 import qualified Database.Keys
 import Git.FilePath
 import Annex.Link
+import Annex.UUID
 
 cmd :: Command
 cmd = withAnnexOptions [backendOption, annexedMatchingOptions, jsonOptions] $
@@ -33,6 +34,7 @@ cmd = withAnnexOptions [backendOption, annexedMatchingOptions, jsonOptions] $
 data MigrateOptions = MigrateOptions
 	{ migrateThese :: CmdParams
 	, updateOption :: Bool
+	, applyOption :: Bool
 	, removeSize :: Bool
 	}
 
@@ -41,7 +43,11 @@ optParser desc = MigrateOptions
 	<$> cmdParams desc
 	<*> switch
 		( long "update"
-		<> help "update for migrations performed elsewhere"
+		<> help "incrementally apply migrations performed elsewhere"
+		)
+	<*> switch
+		( long "apply"
+		<> help "(re)apply migrations performed elsewhere"
 		)
 	<*> switch
 		( long "remove-size"
@@ -50,11 +56,12 @@ optParser desc = MigrateOptions
 
 seek :: MigrateOptions -> CommandSeek
 seek o
-	| updateOption o = do
+	| updateOption o || applyOption o = do
 		unless (null (migrateThese o)) $
-			error "Cannot combine --update with files to migrate."
-		streamNewDistributedMigrations $ \oldkey newkey ->
-			commandAction $ update oldkey newkey
+			error "Cannot combine --update or --apply with files to migrate."
+		streamNewDistributedMigrations (not (applyOption o)) $ 
+			\oldkey newkey ->
+				commandAction $ update oldkey newkey
 	| otherwise = do
 		withFilesInGitAnnex ww seeker =<< workTreeItems ww (migrateThese o)
 		commitMigration
@@ -149,7 +156,7 @@ perform onlyremovesize o file oldkey oldkeyrec oldbackend newbackend = go =<< ge
 
 update :: Key -> Key -> CommandStart
 update oldkey newkey =
-	stopUnless ((not <$> inAnnex newkey) <&&> inAnnex oldkey <&&> allowed) $ do
+	stopUnless (allowed <&&> available <&&> wanted) $ do
 		ai <- findworktreefile >>= return . \case
 			Just f -> ActionItemAssociatedFile (AssociatedFile (Just f)) newkey
 			Nothing -> ActionItemKey newkey
@@ -161,10 +168,20 @@ update oldkey newkey =
 				, next $ return False
 				)
   where
+	available = (not <$> inAnnex newkey) <&&> inAnnex oldkey
+
 	-- annex.securehashesonly will block adding keys with insecure
 	-- hashes, this check is only to avoid doing extra work and
 	-- displaying a message when it fails.
 	allowed = isNothing <$> checkSecureHashes newkey
+
+	-- If the new key was previous present in this repository, but got
+	-- dropped, assume the user still doesn't want it there.
+	wanted = loggedPreviousLocations newkey >>= \case
+		[] -> pure True
+		us -> do
+			u <- getUUID
+			pure (u `notElem` us)
 
 	findworktreefile = do
 		fs <- Database.Keys.getAssociatedFiles newkey
