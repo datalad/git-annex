@@ -449,7 +449,7 @@ checkSecureHashes' :: Key -> Annex Bool
 checkSecureHashes' key = checkSecureHashes key >>= \case
 	Nothing -> return True
 	Just msg -> do
-		warning $ UnquotedString $ msg ++ "to annex objects"
+		warning $ UnquotedString $ msg ++ " to annex objects"
 		return False
 
 data LinkAnnexResult = LinkAnnexOk | LinkAnnexFailed | LinkAnnexNoop
