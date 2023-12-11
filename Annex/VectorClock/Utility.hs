@@ -20,4 +20,14 @@ startVectorClock = go =<< getEnv "GIT_ANNEX_VECTOR_CLOCK"
 	go (Just s) = case parsePOSIXTime s of
 		Just t -> return (pure (CandidateVectorClock t))
 		Nothing -> timebased
-	timebased = return (CandidateVectorClock <$> getPOSIXTime)
+	-- Avoid using fractional seconds in the CandidateVectorClock.
+	-- This reduces the size of the packed git-annex branch by up
+	-- to 8%. 
+	--
+	-- Due to the use of vector clocks, high resolution timestamps are
+	-- not necessary to make clear which information is most recent when
+	-- eg, a value is changed repeatedly in the same second. In such a
+	-- case, the vector clock will be advanced to the next second after
+	-- the last modification.
+	timebased = return $
+		CandidateVectorClock . truncateResolution 0 <$> getPOSIXTime

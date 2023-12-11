@@ -1,6 +1,6 @@
 {- timestamp parsing and formatting
  -
- - Copyright 2015-2019 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2023 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -9,6 +9,7 @@ module Utility.TimeStamp (
 	parserPOSIXTime,
 	parsePOSIXTime,
 	formatPOSIXTime,
+	truncateResolution,
 ) where
 
 import Utility.Data
@@ -56,3 +57,10 @@ mkPOSIXTime n (d, dlen)
 
 formatPOSIXTime :: String -> POSIXTime -> String
 formatPOSIXTime fmt t = formatTime defaultTimeLocale fmt (posixSecondsToUTCTime t)
+
+{- Truncate the resolution to the specified number of decimal places. -}
+truncateResolution :: Int -> POSIXTime -> POSIXTime
+truncateResolution n t = secondsToNominalDiffTime $
+	fromIntegral ((truncate (nominalDiffTimeToSeconds t * d)) :: Integer) / d
+  where
+	d = 10 ^ n
