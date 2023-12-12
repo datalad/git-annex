@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="aaa"
+ avatar="http://cdn.libravatar.org/avatar/df34e736d4a63a5c29e8bd513ed719ca"
+ subject="Key permissions"
+ date="2023-12-12T22:29:24Z"
+ content="""
+I tried to use Backblaze B2 using the second method, and tried different application key permissions. Hopefully I can save your time if you’re going to use this special remote.
+
+In order to init a B2 remote, you should create a key with the ability to read & write all buckets, and you must create a new bucket using git-annex (by setting a unique name in `bucket=`). If you create an empty bucket using Backblaze's web UI, then use that bucket for `git annex initremote`, you will receive this error message: `(InternalException (HandshakeFailed (Error_Protocol (\"expecting server hello, got alert : [(AlertLevel_Fatal,IllegalParameter)]\",True,HandshakeFailure))))`.
+
+In order to enable a B2 remote, you need a key with read & write permission to the bucket you're using. If you created a key with only read permission, you can’t use `git annex get` on that remote.
+"""]]
