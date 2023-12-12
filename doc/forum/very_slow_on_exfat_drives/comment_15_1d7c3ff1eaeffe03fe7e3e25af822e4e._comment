@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="comment 15"
+ date="2023-12-12T19:25:16Z"
+ content="""
+The fact of the matter is that HDDs have gotten shittier during the past decade or so because most of them
+(except for sizes above 8TB and drives meant for the enterprise) already employ SMR (shingled magnetic recording)
+instead of conventional recording techniques. It seems SMR is poison to all sorts of workloads having
+small files and directories being rewritten (not that drives employing it have sequential speeds that are exactly
+stellar either) like what git and git-annex are doing under the hood. I bought an 6TB WD Elements desktop drive recently
+(knowingly an SMR unit because non-SMR HDDs are rather expensive here in Finland) as an git-annex archival drive and I was
+flabbergasted at how slow it turned out for merely syncing git metadata. I'm on Windows and have to use adjusted-unlocked
+branches so there's that but NTFS on Windows is not terribly slow -- maybe not as speedy as Linux filesystems but it caches
+metadata rather well, so it's ok. The problem is that while my 4TB Seagate IronWolf non-SMR drive (git-annex) syncs
+in a minute or two, my new 6TB takes a minimum of *ten* minutes or so to do that. At this point I have just resigned myself
+to the fact that all my future archival drives where I use regular git remotes will be slow as molasses. I'd love to own
+big, fast non-SMR enterprise drives but those will be outside my budget for years to come, I'm afraid. :/
+"""]]
