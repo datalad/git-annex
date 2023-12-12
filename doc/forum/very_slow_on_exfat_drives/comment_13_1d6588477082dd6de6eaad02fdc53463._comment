@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 13"
+ date="2023-12-12T12:44:38Z"
+ content="""
+A directory special remote is just a bunch of files. A bare repo has the git history and all the metadata for the bunch of files. Git itself on slow and bad filesystems is not fun and git-annex having to comb through many git objects to extract metadata for the actual annexed files is most likely the bottleneck here. Best is to not run any git-annex commands directly on the bad filesystem, but elsewhere and operate the bad filesystem repo as a remote. Then you let git-annex gather its information on a fast filesysetm and hardware and let it do only the copying of real files to and from the bad filesystem. At least that's my experience.
+"""]]
