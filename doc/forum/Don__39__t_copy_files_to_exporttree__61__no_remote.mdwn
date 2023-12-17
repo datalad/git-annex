@@ -1,0 +1,5 @@
+I import my phone apps' backups to a subdirectory via an ADB special remote and `importtree=yes` but every time I run a sync, it tries to copy files to it that are below numcopies; even those outside the relevant sub-directory.
+
+How can I make it so that it never tries to copy any files to it? `exporttree=no`, it will provably never work.
+
+Note that you can't make it want `nothing` because that also prevents import from working.
