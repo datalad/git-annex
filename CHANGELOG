@@ -19,6 +19,10 @@ git-annex (10.20231130) UNRELEASED; urgency=medium
     filesystems that have problems with such filenames.
   * Lower precision of timestamps in git-annex branch, which can reduce the
     size of the branch by up to 8%.
+  * When importing from a special remote, support preferred content
+    expressions that use terms that match on keys (eg "present", "copies=1").
+    Such terms are ignored when importing, since the key is not known yet.
+    Before, such expressions caused the import to fail.
 
  -- Joey Hess <id@joeyh.name>  Thu, 30 Nov 2023 14:48:12 -0400
 

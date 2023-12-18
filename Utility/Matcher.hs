@@ -24,6 +24,7 @@ module Utility.Matcher (
 	MatchResult(..),
 	syntaxToken,
 	generate,
+	pruneMatcher,
 	match,
 	match',
 	matchM,
@@ -98,6 +99,28 @@ generate = simplify . process MAny . implicitAnd . tokenGroups
 	simplify (MOr x y) = MOr (simplify x) (simplify y)
 	simplify (MNot x) = MNot (simplify x)
 	simplify x = x
+
+{- Prunes selected ops from the Matcher. -}
+pruneMatcher :: (op -> Bool) -> Matcher op -> Matcher op
+pruneMatcher f = fst . go
+  where
+	go MAny = (MAny, False)
+	go (MAnd a b) = case (go a, go b) of
+		((_,  True),  (_,  True))  -> (MAny, True)
+		((a', False), (b', False)) -> (MAnd a' b', False)
+		((_,  True),  (b', False)) -> (b', False)
+		((a', False), (_,  True))  -> (a', False)
+	go (MOr a b) = case (go a, go b) of
+		((_,  True),  (_,  True))  -> (MAny, True)
+		((a', False), (b', False)) -> (MOr a' b', False)
+		((_,  True),  (b', False)) -> (b', False)
+		((a', False), (_,  True))  -> (a', False)
+	go (MNot a) = case go a of
+		(_, True)  -> (MAny, True)
+		(a', False) -> (MNot a', False)
+	go (MOp op)
+		| f op = (MAny, True)
+		| otherwise = (MOp op, False)
 
 data TokenGroup op = One (Token op) | Group [TokenGroup op]
 	deriving (Show, Eq)

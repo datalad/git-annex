@@ -82,7 +82,7 @@ requiredContentMap = maybe (snd <$> preferredRequiredMapsLoad preferredContentTo
 
 preferredRequiredMapsLoad :: (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (FileMatcherMap Annex, FileMatcherMap Annex)
 preferredRequiredMapsLoad mktokens = do
-	(pc, rc) <- preferredRequiredMapsLoad' mktokens
+	(pc, rc) <- preferredRequiredMapsLoad' id mktokens
 	let pc' = handleunknown (MatcherDesc "preferred content") pc
 	let rc' = handleunknown (MatcherDesc "required content") rc
 	Annex.changeState $ \s -> s
@@ -94,12 +94,12 @@ preferredRequiredMapsLoad mktokens = do
 	handleunknown matcherdesc = M.mapWithKey $ \u v ->
 		(either (const $ unknownMatcher u) id v, matcherdesc)
 
-preferredRequiredMapsLoad' :: (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (M.Map UUID (Either String (Matcher (MatchFiles Annex))), M.Map UUID (Either String (Matcher (MatchFiles Annex))))
-preferredRequiredMapsLoad' mktokens = do
+preferredRequiredMapsLoad' :: (Matcher (MatchFiles Annex) -> Matcher (MatchFiles Annex)) -> (PreferredContentData -> [ParseToken (MatchFiles Annex)]) -> Annex (M.Map UUID (Either String (Matcher (MatchFiles Annex))), M.Map UUID (Either String (Matcher (MatchFiles Annex))))
+preferredRequiredMapsLoad' matcherf mktokens = do
 	groupmap <- groupMap
 	configmap <- remoteConfigMap
 	let genmap l gm = 
-		let mk u = makeMatcher groupmap configmap gm u mktokens
+		let mk u = makeMatcher groupmap configmap gm u matcherf mktokens
 		in simpleMap
 			. parseLogOldWithUUID (\u -> mk u . decodeBS <$> A.takeByteString)
 			<$> Annex.Branch.get l
@@ -123,13 +123,14 @@ makeMatcher
 	-> M.Map UUID RemoteConfig
 	-> M.Map Group PreferredContentExpression
 	-> UUID
+	-> (Matcher (MatchFiles Annex) -> Matcher (MatchFiles Annex))
 	-> (PreferredContentData -> [ParseToken (MatchFiles Annex)])
 	-> PreferredContentExpression
 	-> Either String (Matcher (MatchFiles Annex))
-makeMatcher groupmap configmap groupwantedmap u mktokens = go True True
+makeMatcher groupmap configmap groupwantedmap u matcherf mktokens = go True True
   where
 	go expandstandard expandgroupwanted expr
-		| null (lefts tokens) = Right $ generate $ rights tokens
+		| null (lefts tokens) = Right $ matcherf $ generate $ rights tokens
 		| otherwise = Left $ unwords $ lefts tokens
 	  where
 		tokens = preferredContentParser (mktokens pcd) expr

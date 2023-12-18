@@ -990,19 +990,21 @@ addBackExportExcluded remote importtree =
  -
  - Only keyless tokens are supported, because the keys are not known
  - until an imported file is downloaded, which is too late to bother
- - excluding it from an import.
+ - excluding it from an import. So prunes any tokens in the preferred
+ - content expression that need keys.
  -}
 makeImportMatcher :: Remote -> Annex (Either String (FileMatcher Annex))
-makeImportMatcher r = load preferredContentKeylessTokens >>= \case
+makeImportMatcher r = load preferredContentTokens >>= \case
 	Nothing -> return $ Right (matchAll, matcherdesc)
 	Just (Right v) -> return $ Right (v, matcherdesc)
-	Just (Left err) -> load preferredContentTokens >>= \case
-		Just (Left err') -> return $ Left err'
-		_ -> return $ Left $
-			"The preferred content expression contains terms that cannot be checked when importing: " ++ err
+	Just (Left err) -> return $ Left err
   where
-	load t = M.lookup (Remote.uuid r) . fst <$> preferredRequiredMapsLoad' t
+	load t = M.lookup (Remote.uuid r) . fst
+		<$> preferredRequiredMapsLoad' pruneImportMatcher t
 	matcherdesc = MatcherDesc "preferred content"
+
+pruneImportMatcher :: Utility.Matcher.Matcher (MatchFiles a) -> Utility.Matcher.Matcher (MatchFiles a)
+pruneImportMatcher = Utility.Matcher.pruneMatcher matchNeedsKey
 
 {- Gets the ImportableContents from the remote.
  -

@@ -16,7 +16,6 @@ module Annex.FileMatcher (
 	matchAll,
 	PreferredContentData(..),
 	preferredContentTokens,
-	preferredContentKeylessTokens,
 	preferredContentParser,
 	ParseToken,
 	parsedToMatcher,
@@ -139,19 +138,15 @@ tokenizeMatcher = filter (not . null) . concatMap splitparens . words
   where
 	splitparens = segmentDelim (`elem` "()")
 
-commonKeylessTokens :: LimitBy -> [ParseToken (MatchFiles Annex)]
-commonKeylessTokens lb =
+commonTokens :: LimitBy -> [ParseToken (MatchFiles Annex)]
+commonTokens lb =
 	[ SimpleToken "anything" (simply limitAnything)
 	, SimpleToken "nothing" (simply limitNothing)
 	, ValueToken "include" (usev limitInclude)
 	, ValueToken "exclude" (usev limitExclude)
 	, ValueToken "largerthan" (usev $ limitSize lb "largerthan" (>))
 	, ValueToken "smallerthan" (usev $ limitSize lb "smallerthan" (<))
-	]
-
-commonKeyedTokens :: [ParseToken (MatchFiles Annex)]
-commonKeyedTokens = 
-	[ SimpleToken "unused" (simply limitUnused)
+	, SimpleToken "unused" (simply limitUnused)
 	]
 
 data PreferredContentData = PCD
@@ -162,25 +157,12 @@ data PreferredContentData = PCD
 	, repoUUID :: Maybe UUID
 	}
 
--- Tokens of preferred content expressions that do not need a Key to be
--- known. 
---
--- When importing from a special remote, this is used to match
--- some preferred content expressions before the content is downloaded,
--- so the Key is not known.
-preferredContentKeylessTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
-preferredContentKeylessTokens pcd =
+preferredContentTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
+preferredContentTokens pcd =
 	[ SimpleToken "standard" (call "standard" $ matchStandard pcd)
 	, SimpleToken "groupwanted" (call "groupwanted" $ matchGroupWanted pcd)
 	, SimpleToken "inpreferreddir" (simply $ limitInDir preferreddir "inpreferreddir")
-	] ++ commonKeylessTokens LimitAnnexFiles
-  where
-	preferreddir = maybe "public" fromProposedAccepted $
-		M.lookup preferreddirField =<< (`M.lookup` configMap pcd) =<< repoUUID pcd
-
-preferredContentKeyedTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
-preferredContentKeyedTokens pcd =
-	[ SimpleToken "present" (simply $ limitPresent $ repoUUID pcd)
+	, SimpleToken "present" (simply $ limitPresent $ repoUUID pcd)
 	, SimpleToken "securehash" (simply limitSecureHash)
 	, ValueToken "copies" (usev limitCopies)
 	, ValueToken "lackingcopies" (usev $ limitLackingCopies "lackingcopies" False)
@@ -189,13 +171,10 @@ preferredContentKeyedTokens pcd =
 	, ValueToken "metadata" (usev limitMetaData)
 	, ValueToken "inallgroup" (usev $ limitInAllGroup $ getGroupMap pcd)
 	, ValueToken "onlyingroup" (usev $ limitOnlyInGroup $ getGroupMap pcd)
-	] ++ commonKeyedTokens
-
-preferredContentTokens :: PreferredContentData -> [ParseToken (MatchFiles Annex)]
-preferredContentTokens pcd = concat
-	[ preferredContentKeylessTokens pcd
-	, preferredContentKeyedTokens pcd
-	]
+	] ++ commonTokens LimitAnnexFiles
+  where
+	preferreddir = maybe "public" fromProposedAccepted $
+		M.lookup preferreddirField =<< (`M.lookup` configMap pcd) =<< repoUUID pcd
 
 preferredContentParser :: [ParseToken (MatchFiles Annex)] -> String -> [ParseResult (MatchFiles Annex)]
 preferredContentParser tokens = map (parseToken tokens) . tokenizeMatcher
@@ -210,8 +189,7 @@ mkMatchExpressionParser = do
 		const $ Left $ "\""++n++"\" not supported; not built with MagicMime support"
 #endif
 	let parse = parseToken $
-		commonKeyedTokens ++
-		commonKeylessTokens LimitDiskFiles ++
+		commonTokens LimitDiskFiles ++
 #ifdef WITH_MAGICMIME
 		[ mimer "mimetype" $
 			matchMagic "mimetype" getMagicMimeType providedMimeType userProvidedMimeType

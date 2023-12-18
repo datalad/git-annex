@@ -74,16 +74,17 @@ Any files that are gitignored will not be included in the import,
 but will be left on the remote.
 
 When the special remote has a preferred content expression set by
-[[git-annex-wanted]](1), it will be honored when importing from it.
-Files that are not preferred content of the remote will not be
+[[git-annex-wanted]](1), that is used to pick which files to import from
+it. Files that are not preferred content of the remote will not be
 imported from it, but will be left on the remote.
 
-However, preferred content expressions that relate to the key
-can't be matched when importing, because the content of the file is not
-known. Importing will fail when such a preferred content expression is
-set. This includes expressions containing "copies=", "metadata=", and other
-things that depend on the key. Preferred content expressions containing
-"include=", "exclude=" "smallerthan=", "largerthan=" will work.
+So for example, a preferred content expression like 
+`"include=*.jpeg or largerthan=100mb"` will make only jpegs and 
+large files be imported.
+
+Parts of a preferred content expression that relate to the key,
+such as "copies=" are ignored when importing, because the key
+is not known before importing.
 
 Things in the expression like "include=" match relative to the top of
 the tree of files on the remote, even when importing into a subdirectory.
