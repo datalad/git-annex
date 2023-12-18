@@ -140,7 +140,7 @@ jobs:
         if: "!contains(env.DEB_BUILD_OPTIONS, 'nocheck')"
 
       - name: Upload packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: git-annex-debianstandalone-packages_${{ steps.build-version.outputs.version }}
           path: |
