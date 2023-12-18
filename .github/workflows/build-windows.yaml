@@ -233,7 +233,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: git-annex-windows-installer_${{ needs.build-package.outputs.build-version }}
 
@@ -330,7 +330,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: git-annex-windows-installer_${{ needs.build-package.outputs.build-version }}
 
