@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 17"""
+ date="2023-12-18T17:52:30Z"
+ content="""
+@imlew `git add` runs git-annex as a filter, so it cannot output progress
+displays or other messages on stdout at that point. It would have to output
+to stderr, but outputting non-errors to stderr is not great either.
+"""]]
