@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2023-12-18T17:41:39Z"
+ content="""
+You have probably set remote.phoneremote.annex-tracking-branch to "master".
+That tells `git-annex sync` to try to export the whole branch to that
+remote.
+
+If you are confining the phone to a subdirectory, you should set that
+to eg "master:phonedir", then it will only consider files in that
+directory.
+
+> `exporttree=no`, it will provably never work
+
+What do you mean by this? If git-annex sync 
+ignored exporttree=no, that would be a bug. I just verified it honors that
+setting.
+"""]]
