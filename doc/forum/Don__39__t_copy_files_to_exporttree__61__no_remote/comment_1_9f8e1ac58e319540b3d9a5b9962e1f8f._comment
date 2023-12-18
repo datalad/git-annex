@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="numcopies is no the target"
+ date="2023-12-17T19:04:41Z"
+ content="""
+Syncing doesn't work towards satisfying `numcopies`, just preferred content. So if you find files to be copied to the phone, then its preferred content matches those files. Maybe try `git annex wanted PHONE 'present or approxlackingcopies=1'` or just `git annex wanted PHONE present`. `nothing` is indeed not a good idea as that will have git-annex wanting to yank everything off the phone.
+"""]]

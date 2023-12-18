@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="oadams"
+ avatar="http://cdn.libravatar.org/avatar/ac166a5f89f10c4108e5150015e6751b"
+ subject="comment 9"
+ date="2023-12-16T21:37:21Z"
+ content="""
+A belated thanks for the follow-up from https://git-annex.branchable.com/forum/Using_git_annex_as_a_library/
+
+Not that its useful for anyone here, but just FWIW after some more playing around I decided to keep things minimal and not depend on git-annex as a library. Although what I'm making naturally pairs well with git-annex it doesn't really require it, so adding the dependency just complicates things.
+"""]]
