@@ -140,7 +140,7 @@ jobs:
         if: "!contains(env.DEB_BUILD_OPTIONS, 'nocheck')"
 
       - name: Upload packages
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: git-annex-debianstandalone-packages_${{ steps.build-version.outputs.version }}
           path: |
@@ -261,7 +261,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: git-annex-debianstandalone-packages_${{ needs.build-package.outputs.build-version }}
 
@@ -378,7 +378,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: git-annex-debianstandalone-packages_${{ needs.build-package.outputs.build-version }}
 
@@ -432,7 +432,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download git-annex package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: git-annex-debianstandalone-packages_${{ needs.build-package.outputs.build-version }}
 
