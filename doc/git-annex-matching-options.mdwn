@@ -50,7 +50,7 @@ in either of two repositories.
 * `--includesamecontent=glob`
 
   Skips files when there is no other file with the same content
-  whose name matches the glob. (Same as `--not --includesamecontent`)
+  whose name matches the glob. (Same as `--not --excludesamecontent`)
 
   For example, if you have inbox and outbox directories, and want to find
   anything in the inbox that has the same content as something in the outbox:
