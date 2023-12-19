@@ -105,22 +105,20 @@ pruneMatcher :: (op -> Bool) -> Matcher op -> Matcher op
 pruneMatcher f = fst . go
   where
 	go MAny = (MAny, False)
-	go (MAnd a b) = case (go a, go b) of
-		((_,  True),  (_,  True))  -> (MAny, True)
-		((a', False), (b', False)) -> (MAnd a' b', False)
-		((_,  True),  (b', False)) -> (b', False)
-		((a', False), (_,  True))  -> (a', False)
-	go (MOr a b) = case (go a, go b) of
-		((_,  True),  (_,  True))  -> (MAny, True)
-		((a', False), (b', False)) -> (MOr a' b', False)
-		((_,  True),  (b', False)) -> (b', False)
-		((a', False), (_,  True))  -> (a', False)
+	go (MAnd a b) = go2 a b MAnd
+	go (MOr a b) = go2 a b MOr
 	go (MNot a) = case go a of
 		(_, True)  -> (MAny, True)
 		(a', False) -> (MNot a', False)
 	go (MOp op)
 		| f op = (MAny, True)
 		| otherwise = (MOp op, False)
+
+	go2 a b g = case (go a, go b) of
+		((_,  True),  (_,  True))  -> (MAny, True)
+		((a', False), (b', False)) -> (g a' b', False)
+		((_,  True),  (b', False)) -> (b', False)
+		((a', False), (_,  True))  -> (a', False)
 
 data TokenGroup op = One (Token op) | Group [TokenGroup op]
 	deriving (Show, Eq)
