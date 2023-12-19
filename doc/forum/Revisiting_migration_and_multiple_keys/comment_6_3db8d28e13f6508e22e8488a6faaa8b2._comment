@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="unqueued"
+ avatar="http://cdn.libravatar.org/avatar/3bcbe0c9e9825637ad7efa70f458640d"
+ subject="comment 6"
+ date="2023-12-19T18:50:08Z"
+ content="""
+Whoa, thanks for implementing that Joey! Can't wait to give it a try!
+
+
+FYI, one of the cases I was talking about before where I repeatedly import keys in MD5E format, is that construct an annex repo, set web urls, and deal with mirroring further down the pipeline.
+
+Code isn't great, just something I threw together years ago:
+https://github.com/unqueued/annex-drive-share
+
+Because it is gdrive, I can get MD5s and filenames with rclone urls for web remotes.
+
+The way I use it is to init a new annex repo (reusing the same uuid), and then absorb into primary downstream repo overwriting filenames and letting sync update any new keys with the primary repo. Considered using subtree.
+
+It does end up causing merge commits to build up in the git-annex branch, but I might want to run this on a server without sharing an entire repo.
+
+It happens to make sense for me because I have an unlimited @edu gdrive account and it can work great for some workflows as an intermediate file store.
+"""]]
