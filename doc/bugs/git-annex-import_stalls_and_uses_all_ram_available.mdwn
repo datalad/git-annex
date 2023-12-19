@@ -1,0 +1,66 @@
+### Please describe the problem.
+
+I'm not sure if what I am experiencing is a bug, or just something I am doing incorrectly.
+
+I am running into an issue with git-annex-import where it seems to stall, and use all available ram it can until the system terminates the process.
+
+### What steps will reproduce the problem?
+
+Here are my prep steps:
+
+```sh
+git init
+
+git annex initremote s3-data type=S3 encryption=none port=443 protocol=https public=no \
+importtree=yes versioning=yes host=$S3HOST bucket=$BUCKET fileprefix=primary_folder/
+
+git annex wanted s3-data "exclude=subfolder-*/* and include=specialfilename1.*"
+
+git annex import main --from s3-data --skip-duplicates --backend MD5E --jobs=4
+```
+
+### What version of git-annex are you using? On what operating system?
+
+Originally, 10.20230321 on Debian Bookworm
+
+I also tried 10.20231129 on Debian Bookworm with the same results
+
+### Please provide any additional information below.
+
+There are around 22000 files under the prefix I am trying to import from , and it amounts to around 115 GB.  However, most of that data is part of many seperate subdatasets underneath this one.  These have all worked fine and without any issue.
+
+There are only 2 files I am actually trying to import, though there are several versions(about 70 each for a total of 140) of them at this location.  In this example, that is `specialfilename1.json` & `specialfilename1.csv`
+
+When I use debug mode on the import command a lot of information is printed, but it mostly seems to amount to filenames that I would think would be excluded based on my `git-annex-wanted` command.  That output looks like the following until it stops, and then uses up what's available for RAM before inevitably terminating the process.
+
+```
+[2023-12-18 23:47:54.924814306] (Utility.Process) process [11787] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2023-12-18 23:47:54.929719575] (Utility.Process) process [11787] done ExitSuccess
+[2023-12-18 23:47:54.930053775] (Utility.Process) process [11789] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2023-12-18 23:47:54.935010757] (Utility.Process) process [11789] done ExitSuccess
+[2023-12-18 23:47:54.935508638] (Utility.Process) process [11790] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..a6d7c6ae03747e23c2bedbecc8d1a5afeabe5220","--pretty=%H","-n1"]
+[2023-12-18 23:47:54.940887356] (Utility.Process) process [11790] done ExitSuccess
+[2023-12-18 23:47:54.941241371] (Utility.Process) process [11791] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","log","refs/heads/git-annex..27a0dedea083605106c614a159d48fd3daa92284","--pretty=%H","-n1"]
+[2023-12-18 23:47:54.947198539] (Utility.Process) process [11791] done ExitSuccess
+[2023-12-18 23:47:54.949236306] (Utility.Process) process [11792] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2023-12-18 23:47:54.971233148] (Utility.Process) process [11793] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/remotes/s3-data/main"]
+[2023-12-18 23:47:54.97613841] (Utility.Process) process [11793] done ExitFailure 1
+...
+
+String to sign: "GET\n\n\nMon, 18 Dec 2023 23:47:57 GMT\n/bucketname/?versions"
+[2023-12-18 23:47:57.978207613] (Remote.S3) Host: "bucketname.s3-us-east-1.amazonaws.com"
+[2023-12-18 23:47:57.978237701] (Remote.S3) Path: "/"
+[2023-12-18 23:47:57.978260264] (Remote.S3) Query string: "versions&key-marker=primary_folder%subfolder-100101%2sessions.json&prefix=primary_folder%2F&version-id-marker=Xg1KUaCh6tpvJ2E1juz4qobn.w3.x9k"
+[2023-12-18 23:47:57.978337803] (Remote.S3) Header: [("Date","Mon, 18 Dec 2023 23:47:57 GMT"),("Authorization","AWS [Redacted]")]
+[2023-12-18 23:47:58.003376688] (Remote.S3) Response status: Status {statusCode = 200, statusMessage = "OK"}
+[2023-12-18 23:47:58.00343782] (Remote.S3)  Response header 'Transfer-Encoding': 'chunked'
+[2023-12-18 23:47:58.003472907] (Remote.S3) Response header 'x-amz-request-id': 'tx00000925b31abf8c9c162-006580da2d-19170577-default'
+[2023-12-18 23:47:58.003527331] (Remote.S3) Response header 'Content-Type': 'application/xml'
+[2023-12-18 23:47:58.003557859] (Remote.S3) Response header 'Date': 'Mon, 18 Dec 2023 23:47:58 GMT
+```
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+In the past, on smaller versions of data structured the same way, this setup has worked, and I don't run into this issue.
+
+I'm not exactly sure how to troubleshoot further and I am feeling stuck.  Is there something else I can be doing to see more info about what's happening behind the scenes?
