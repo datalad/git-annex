@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2023-12-20T16:56:04Z"
+ content="""
+How much ram did it use up?
+
+The fact that the S3 bucket is versioned and that there are many versions
+seems very relevant to me. Importing lists all the files in the bucket, and
+traverses all versions and lists all the files in each version. That builds
+up a data structure in memory, which could be very large in this case. If
+you have around 150 versions total, the number of files in the data
+structure would be effectively three million.
+
+If the same thing works for you with `versioning=no` set, that will confirm
+the source of the problem.
+
+It only gets filtered down to the wanted files in a subsequent pass.
+Filtering on the fly would certainly help with your case, but not with a
+case where someone wants to import all 22000 files.
+
+Rather, I'd be inclined to try to fix this by making importableHistory into
+a callback so it can request one historical tree at a time. Similar to how
+ImportableContentsChunked works.
+"""]]
