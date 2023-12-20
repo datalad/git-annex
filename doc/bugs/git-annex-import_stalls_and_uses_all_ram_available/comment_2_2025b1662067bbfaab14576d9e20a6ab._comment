@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2023-12-20T17:34:11Z"
+ content="""
+I looked into filtering to preferred content on the fly. I was able to
+adapt listImportableContents to allow that to be done optionally. But of
+the remotes that support tree import, only directory and S3 would be able
+to use it. And I've not yet managed to implement it for S3. My incomplete 
+work on this is in the `importtreefilter` branch.
+"""]]
