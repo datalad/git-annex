@@ -777,3 +777,7 @@ backups, where it gives structure to my image-based backup routines, so you coul
 say I'm a believer. :)
 
 [[!meta author=jkniiv]]
+
+### Update 20 Dec 2023
+
+P.S. This is a bit embarrasing but I found out this is [[notabug|done]], cf. my comment --[[jkniiv]]
