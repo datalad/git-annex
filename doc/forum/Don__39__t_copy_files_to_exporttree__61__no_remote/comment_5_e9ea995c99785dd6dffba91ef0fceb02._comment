@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2023-12-26T19:44:23Z"
+ content="""
+I reproduced it with the current version and a remote set up with:
+
+	git-annex initremote test type=directory directory=../d encryption=none exporttree=no importtree=yes
+	git config remote.directory.annex-tracking-branch master
+
+Fixed for tomorrow's release.
+"""]]

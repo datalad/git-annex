@@ -955,7 +955,7 @@ syncFile o ebloom rs af k = do
 	wantput r
 		| pushOption o == False && operationMode o /= SatisfyMode = return False
 		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
-		| isExport r = return False
+		| isExport r || isImport r = return False
 		| isThirdPartyPopulated r = return False
 		| otherwise = wantGetBy True (Just k) af (Remote.uuid r)
 	handleput lack inhere

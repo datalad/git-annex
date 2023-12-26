@@ -23,6 +23,8 @@ git-annex (10.20231130) UNRELEASED; urgency=medium
   * sync: Fix locking problems during merge when annex.pidlock is set.
   * Avoid a problem with temp file names ending in "." on certian
     filesystems that have problems with such filenames.
+  * sync, push: Avoid trying to send individual files to special remotes
+    configured with importtree=yes exporttree=no, which would always fail.
 
  -- Joey Hess <id@joeyh.name>  Thu, 30 Nov 2023 14:48:12 -0400
 
