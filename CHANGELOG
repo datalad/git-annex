@@ -25,6 +25,8 @@ git-annex (10.20231130) UNRELEASED; urgency=medium
     filesystems that have problems with such filenames.
   * sync, push: Avoid trying to send individual files to special remotes
     configured with importtree=yes exporttree=no, which would always fail.
+  * Fix a crash opening sqlite databases when run in a non-unicode locale.
+    (Needs persistent-sqlite 2.13.3.)
 
  -- Joey Hess <id@joeyh.name>  Thu, 30 Nov 2023 14:48:12 -0400
 

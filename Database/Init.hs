@@ -1,11 +1,11 @@
 {- Persistent sqlite database initialization
  -
- - Copyright 2015-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2015-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, CPP #-}
 
 module Database.Init where
 
@@ -13,6 +13,9 @@ import Annex.Common
 import Annex.Perms
 import Utility.FileMode
 import qualified Utility.RawFilePath as R
+#if MIN_VERSION_persistent_sqlite(2,13,3)
+import Database.RawFilePath
+#endif
 
 import Database.Persist.Sqlite
 import Lens.Micro
@@ -32,9 +35,13 @@ initDb db migration = do
 	let dbdir = P.takeDirectory db
 	let tmpdbdir = dbdir <> ".tmp"
 	let tmpdb = tmpdbdir P.</> "db"
-	let tdb = T.pack (fromRawFilePath tmpdb)
+	let tmpdb' = T.pack (fromRawFilePath tmpdb)
 	createAnnexDirectory tmpdbdir
-	liftIO $ runSqliteInfo (enableWAL tdb) migration
+#if MIN_VERSION_persistent_sqlite(2,13,3)
+	liftIO $ runSqliteInfo' tmpdb (enableWAL tmpdb') migration
+#else
+	liftIO $ runSqliteInfo (enableWAL tmpdb') migration
+#endif
 	setAnnexDirPerm tmpdbdir
 	-- Work around sqlite bug that prevents it from honoring
 	-- less restrictive umasks.

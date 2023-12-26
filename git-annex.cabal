@@ -746,6 +746,7 @@ Executable git-annex
     Database.Keys.Tables
     Database.Keys.SQL
     Database.Queue
+    Database.RawFilePath
     Database.Types
     Database.Utility
     Git

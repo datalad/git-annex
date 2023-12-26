@@ -53,9 +53,14 @@ import qualified Utility.RawFilePath as R
 
 import Database.Persist.Sql hiding (Key)
 import Database.Persist.TH
-import Database.Persist.Sqlite (runSqlite)
 import qualified System.FilePath.ByteString as P
+
+#if MIN_VERSION_persistent_sqlite(2,13,3)
+import Database.RawFilePath
+#else
+import Database.Persist.Sqlite (runSqlite)
 import qualified Data.Text as T
+#endif
 
 data ContentIdentifierHandle = ContentIdentifierHandle H.DbQueue Bool
 
@@ -102,8 +107,13 @@ openDb = do
 			runMigrationSilent migrateContentIdentifier
 		-- Migrate from old versions of database, which had buggy
 		-- and suboptimal uniqueness constraints.
+#if MIN_VERSION_persistent_sqlite(2,13,3)
+		else liftIO $ runSqlite' db $ void $
+			runMigrationSilent migrateContentIdentifier
+#else
 		else liftIO $ runSqlite (T.pack (fromRawFilePath db)) $ void $
 			runMigrationSilent migrateContentIdentifier
+#endif
 	h <- liftIO $ H.openDbQueue db "content_identifiers"
 	return $ ContentIdentifierHandle h isnew
 

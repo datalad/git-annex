@@ -77,3 +77,6 @@ I use git-annex for several years, and I'm very happy with it. I's one of the be
 
 
 [[!meta title="sqlite fails when repository path contains non-unicode"]]
+
+> [[fixed|done]], when git-annex is built against persistent-sqlite version
+> 2.13.3. --[[Joey]]
