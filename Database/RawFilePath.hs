@@ -35,6 +35,7 @@
 
 module Database.RawFilePath where
 
+#if MIN_VERSION_persistent_sqlite(2,13,3)
 import Database.Persist.Sqlite
 import qualified Database.Sqlite as Sqlite
 import qualified System.FilePath.ByteString as P
@@ -45,11 +46,6 @@ import Control.Monad.Logger (NoLoggingT, runNoLoggingT)
 import Control.Monad.Trans.Reader (ReaderT)
 import UnliftIO.Resource (ResourceT, runResourceT)
 
-{- The functions below are copied from persistent-sqlite, but modified to
- - take a RawFilePath and ignore the sqlConnectionStr from the
- - SqliteConnectionInfo. This avoids encoding problems using Text
- - in some situations. -}
-#if MIN_VERSION_persistent_sqlite(2,13,3)
 openWith'
 	:: P.RawFilePath 
 	-> (SqlBackend -> Sqlite.Connection -> r)
