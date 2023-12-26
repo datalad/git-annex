@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/86b8c2d893dfdf2146e1bbb8ac4165fb"
+ subject="comment 7"
+ date="2023-12-25T13:03:50Z"
+ content="""
+To explain my rationale a bit more, I use `git-annex info` for three purposes (descending frequency):
+
+1. Overview of repos and trust level (like `git remote`)
+2. Query metadata of files/keys (size, repo/group presence)
+3. Query metadata of individual repos (size, trust)
+
+AFAICT, none of these actually interact with remote repositories in any way; they gather information from the local `git-annex` branch and present it in a digestible format. (Apart from the presence check functionality in question of course.) I'd expect these to run these as fast as the CPU and disk allow without any possible interference by the network.  
+
+Commands like `sync`, `copy` or get must obviously interact with other repositories; it's their primary or even sole purpose. When remote repos are present, I'd fully expect network usage with these and, equally important, timing dependence.  
+(Though I too would love to see an offline flag for these commands like Yann suggested; i.e. `git annex copy --auto --offline` only copying from and to locally available repos.)
+
+I would not expect `info` to have to open any network connections to do its job however; all of the data should be present in the `git-annex` branch afterall. Repo presence is a practical and desirable feature but I wouldn't expect it to be updated on every invocation of `info` and in fact it isn't: When I unmount a repo and run `info` again, git-annex still thinks its present. Actually not even a `sync` will update that; I'm unsure whether it's even possible to do so?
+
+I think I'd prefer an explicit `git annex info --fetch` command (or perhaps even a new sub command) which runs the repo presence check from scratch for all repos or a specific repo. This stops the regular `info` command from requiring any networking whatsoever and provides confidence that remotes are actually present when claimed as such after you run it.
+"""]]

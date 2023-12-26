@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/86b8c2d893dfdf2146e1bbb8ac4165fb"
+ subject="comment 4"
+ date="2023-12-25T12:21:58Z"
+ content="""
+The remote's `annex-tracking-branch` includes the sub-directory in my setup.
+
+I did not mean that it ignores exporttree and actually exports files, it ignores it insofar that it attempts to copy to the remote but then fails because `exporttree=no`. Tonnes of:
+
+```
+copy Filename (to paperless...) 
+  remote is configured with importtree=yes and without exporttree=yes; cannot modify content stored on it
+failed
+```
+
+It shouldn't even attempt to do that, it will never work.
+
+Some new info: After updating my NAS to NixOS 23.11, it is now also affected while it wasn't before on 23.05.
+
+Good: 10.20230407  
+Bad: 10.20230926
+"""]]
