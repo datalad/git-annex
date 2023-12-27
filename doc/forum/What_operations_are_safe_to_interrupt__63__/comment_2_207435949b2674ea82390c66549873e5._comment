@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="The issue with slow connection and huge repo - no batches"
+ date="2023-12-27T06:08:59Z"
+ content="""
+This issue is quite important when you reach a certain point/scenarios.
+
+I'm using a git annex repo that have ~300GB of annexed files; I wanted to push them to a remote server in another country.
+This server has limited bandwidth around 1MB/s. I also have a limited data plan at home. That is why I was planning to
+`git annex copy --to my-slow-remote-server` at work, were the data plan is unlimited. But after spending around 4 hours
+during the copy I realized that when I do `Ctrl+C` then the copy operation interrupts and it seems like it's not resumable,
+because \"git annex\" does not record any state in git after interrupting the copy operation.
+
+To solve this issue I'm planning to write a custom script - similar to [finding duplicate files](https://git-annex.branchable.com/tips/finding_duplicate_files/).
+The goal of this script would be:
+
+1. To \"split\" large files by their size (e.g. bigger than 5GB) using `git annex find=*`, and upload them individually.
+2. To \"split\" small files by folders in batches (e.g. 5GB), and then do `cd <dir> & git annex copy . --to my-slow-remote-server`
+
+It will allow me to upload all files in batches in a course of several days/weeks.
+But I it will also probably take me a weekend or more to handle it correctly.
+
+So, the questions are:
+
+1. Are there any easier ways to upload huge repo on a slow connection in batches?
+2. Is there anything in progress or planned that will solve this issue?
+"""]]
