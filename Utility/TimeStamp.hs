@@ -5,6 +5,8 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.TimeStamp (
 	parserPOSIXTime,
 	parsePOSIXTime,
@@ -60,7 +62,11 @@ formatPOSIXTime fmt t = formatTime defaultTimeLocale fmt (posixSecondsToUTCTime 
 
 {- Truncate the resolution to the specified number of decimal places. -}
 truncateResolution :: Int -> POSIXTime -> POSIXTime
+#if MIN_VERSION_time(1,9,1)
 truncateResolution n t = secondsToNominalDiffTime $
 	fromIntegral ((truncate (nominalDiffTimeToSeconds t * d)) :: Integer) / d
   where
 	d = 10 ^ n
+#else
+truncateResolution _ t = t
+#endif
