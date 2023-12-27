@@ -1,4 +1,4 @@
-git-annex (10.20231130) UNRELEASED; urgency=medium
+git-annex (10.20231227) upstream; urgency=medium
 
   * migrate: Support distributed migrations by recording each migration,
     and adding a --update option that updates the local repository
@@ -28,7 +28,7 @@ git-annex (10.20231130) UNRELEASED; urgency=medium
   * Fix a crash opening sqlite databases when run in a non-unicode locale.
     (Needs persistent-sqlite 2.13.3.)
 
- -- Joey Hess <id@joeyh.name>  Thu, 30 Nov 2023 14:48:12 -0400
+ -- Joey Hess <id@joeyh.name>  Wed, 27 Dec 2023 19:27:37 -0400
 
 git-annex (10.20231129) upstream; urgency=medium
 
