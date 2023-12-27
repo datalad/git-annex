@@ -17,7 +17,6 @@ module Utility.TimeStamp (
 import Utility.Data
 
 import Data.Time.Clock.POSIX
-import Data.Time.Clock
 import Data.Time
 import Data.Ratio
 import Control.Applicative
