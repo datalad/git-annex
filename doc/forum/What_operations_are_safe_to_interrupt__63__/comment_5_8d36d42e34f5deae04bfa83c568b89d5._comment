@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Try annex.queuesize and --not --in"
+ date="2023-12-27T07:51:00Z"
+ content="""
+Git annex can normally resume any operation seamlessly. It can resume from aborted copying and shouldn't need to start over. I suggest:
+
+- setting [annex.queuesize](https://git-annex.branchable.com/git-annex/) to a low value to commit more frequently to the `git-annex` branch (I think that it does that)
+- skipping already-present files by specifying `git annex --copy --to=slowremote --not --in=slowremote`, that should speed up the initial phase of finding what to copy and also not display the files that are already copied (maybe that confused you)
+"""]]
