@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="Works: Try annex.queuesize and --not --in"
+ date="2023-12-28T05:33:13Z"
+ content="""
+> \"setting `annex.queuesize` to a low value to commit more frequently to the git-annex branch (I think that it does that)\"
+
+Aha, that what I missed!
+
+> \"(maybe that confused you)\"
+
+Indeed, my original observations weren't entirely correct. Seems like git annex does record it's state periodically.
+For some big files where copying took ~1 hour, after running `git annex copy` again it was done almost
+immediately. And as you suggested `--not --in=slowremote` should speedup the initial process.
+
+It laterally saved me hours, thanks a lot!
+
+P.S.: Still, it may be probably a good idea to record the progress state to git annex on `ctrl+c` and show a friendly message e.g. \"The operation is interrupted and the progress is recorded. You can safely resume it by running `git annex copy` again.\"
+"""]]
