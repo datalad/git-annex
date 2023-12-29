@@ -656,11 +656,9 @@ cachedAllRepoData = do
   where
 	accumrepodata k = M.alter (Just . addKey k . fromMaybe emptyKeyInfo)
 
--- only available for directory info, populated by earlier getDirStatInfo
 cachedNumCopiesStats :: StatState (Maybe NumCopiesStats)
 cachedNumCopiesStats = numCopiesStats <$> get
 
--- only available for directory info, populated by earlier getDirStatInfo
 cachedRepoData :: StatState (M.Map UUID KeyInfo)
 cachedRepoData = repoData <$> get
 
