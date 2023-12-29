@@ -627,10 +627,11 @@ cachedAllRepoData = do
 		Nothing -> do
 			matcher <- lift getKeyOnlyMatcher
 			!v <- lift $ overLocationLogs emptyKeyInfo $ \k locs d -> do
-				numcopies <- genericLength . snd
-					<$> trustPartition DeadTrusted locs
 				ifM (matchOnKey matcher k)
-					( return (addKeyCopies numcopies k d)
+					( do
+						numcopies <- genericLength . snd
+							<$> trustPartition DeadTrusted locs
+						return (addKeyCopies numcopies k d)
 					, return d
 					)
 			put s { allRepoData = Just v }
