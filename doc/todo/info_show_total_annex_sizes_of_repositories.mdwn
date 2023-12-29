@@ -6,3 +6,5 @@ I think that this recently became possible to inplement cheaply.
 cachedAllRepoData is collected now, used for "combined annex size of all repositories".
 For this, it also needs to accumulate the size of each separate repository.
 --[[Joey]]
+
+> [[done]] --[[Joey]]

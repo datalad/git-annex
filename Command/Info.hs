@@ -283,6 +283,7 @@ global_slow_stats =
 	, known_annex_files True
 	, known_annex_size True
 	, total_annex_size
+	, reposizes_stats_global
 	, backend_usage
 	, bloom_info
 	]
@@ -298,7 +299,7 @@ tree_fast_stats isworktree =
 tree_slow_stats :: [FilePath -> Stat]
 tree_slow_stats =
 	[ const numcopies_stats
-	, const reposizes_stats
+	, const reposizes_stats_tree
 	, const reposizes_total
 	]
 
@@ -372,6 +373,10 @@ countRepoList :: Int -> String -> String
 countRepoList _ [] = "0"
 countRepoList n s = show n ++ "\n" ++ beginning s
 
+dispRepoList :: String -> String
+dispRepoList [] = ""
+dispRepoList s = "\n" ++ beginning s
+
 dir_name :: FilePath -> Stat
 dir_name dir = simpleStat "directory" $ pure dir
 
@@ -441,7 +446,8 @@ known_annex_size isworktree =
 total_annex_size :: Stat
 total_annex_size = 
 	simpleStat "combined annex size of all repositories" $
-		showSizeKeys =<< cachedAllRepoData
+		showSizeKeys . fromMaybe mempty . allRepoData
+		=<< cachedAllRepoData
   
 treeDesc :: Bool -> String
 treeDesc True = "working tree"
@@ -545,21 +551,29 @@ numcopies_stats = stat "numcopies stats" $ json fmt $
 		. map (\(variance, count) -> "numcopies " ++ variance ++ ": " ++ show count)
 		. V.toList
 
-reposizes_stats :: Stat
-reposizes_stats = stat desc $ nojson $ do
+reposizes_stats_tree :: Stat
+reposizes_stats_tree = reposizes_stats True "repositories containing these files"
+	=<< cachedRepoData
+
+reposizes_stats_global :: Stat
+reposizes_stats_global = reposizes_stats False "annex sizes of repositories" 
+	. repoData =<< cachedAllRepoData
+
+reposizes_stats :: Bool -> String -> M.Map UUID KeyInfo -> Stat
+reposizes_stats count desc m = stat desc $ nojson $ do
 	sizer <- mkSizer
-	l <- map (\(u, kd) -> (u, sizer storageUnits True (sizeKeys kd)))
-		. sortBy (flip (comparing (sizeKeys . snd)))
-		. M.toList
-		<$> cachedRepoData
+	let l = map (\(u, kd) -> (u, sizer storageUnits True (sizeKeys kd))) $
+		sortBy (flip (comparing (sizeKeys . snd))) $
+		M.toList m
 	let maxlen = maximum (map (length . snd) l)
 	descm <- lift Remote.uuidDescriptions
 	-- This also handles json display.
 	s <- lift $ Remote.prettyPrintUUIDsWith (Just "size") desc descm (Just . show) $
 		map (\(u, sz) -> (u, Just $ mkdisp sz maxlen)) l
-	return $ countRepoList (length l) s
+	return $ if count
+		then countRepoList (length l) s
+		else dispRepoList s
   where
-	desc = "repositories containing these files"
 	mkdisp sz maxlen = DualDisp
 		{ dispNormal = lpad maxlen sz
 		, dispJson = sz
@@ -619,29 +633,34 @@ cachedReferencedData = do
 			put s { referencedData = Just v }
 			return v
 
-cachedAllRepoData :: StatState KeyInfo
+cachedAllRepoData :: StatState StatInfo
 cachedAllRepoData = do
 	s <- get
 	case allRepoData s of
-		Just v -> return v
+		Just _ -> return s
 		Nothing -> do
 			matcher <- lift getKeyOnlyMatcher
-			!v <- lift $ overLocationLogs emptyKeyInfo $ \k locs d -> do
+			!(d, rd) <- lift $ overLocationLogs (emptyKeyInfo, mempty) $ \k locs (d, rd) -> do
 				ifM (matchOnKey matcher k)
 					( do
-						numcopies <- genericLength . snd
+						alivelocs <- snd
 							<$> trustPartition DeadTrusted locs
-						return (addKeyCopies numcopies k d)
-					, return d
+						let !d' = addKeyCopies (genericLength alivelocs) k d
+						let !rd' = foldl' (flip (accumrepodata k)) rd alivelocs
+						return (d', rd')
+					, return (d, rd)
 					)
-			put s { allRepoData = Just v }
-			return v
+			let s' = s { allRepoData = Just d, repoData = rd }
+			put s'
+			return s'
+  where
+	accumrepodata k = M.alter (Just . addKey k . fromMaybe emptyKeyInfo)
 
--- currently only available for directory info
+-- only available for directory info, populated by earlier getDirStatInfo
 cachedNumCopiesStats :: StatState (Maybe NumCopiesStats)
 cachedNumCopiesStats = numCopiesStats <$> get
 
--- currently only available for directory info
+-- only available for directory info, populated by earlier getDirStatInfo
 cachedRepoData :: StatState (M.Map UUID KeyInfo)
 cachedRepoData = repoData <$> get
 

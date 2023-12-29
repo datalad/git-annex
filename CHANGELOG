@@ -1,3 +1,9 @@
+git-annex (10.20231228) UNRELEASED; urgency=medium
+
+  * info: Added "annex sizes of repositories" table to the overall display.
+
+ -- Joey Hess <id@joeyh.name>  Fri, 29 Dec 2023 11:52:06 -0400
+
 git-annex (10.20231227) upstream; urgency=medium
 
   * migrate: Support distributed migrations by recording each migration,
