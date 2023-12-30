@@ -1,5 +1,5 @@
 ### Please describe the problem.
-While on an adjusted branch, merge conflicts neither manually nor with a git merge driver. See the transcript below.
+While on an adjusted branch, merge conflicts can neither be resolved manually nor with a git merge driver. See the transcript below.
 
 
 ### What version of git-annex are you using? On what operating system?
