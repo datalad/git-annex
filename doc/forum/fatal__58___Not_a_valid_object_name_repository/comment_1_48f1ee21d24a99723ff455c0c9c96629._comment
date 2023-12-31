@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="jgsuess@732b8c62c50d8595d7b1d58eea11e5019c2308b1"
+ nickname="jgsuess"
+ avatar="http://cdn.libravatar.org/avatar/35a99d1b5df046b206807941ce9795d3"
+ subject="wrong parameter used - `repository` is not a subcommand"
+ date="2023-12-31T09:41:13Z"
+ content="""
+If I call with UUID, I receive this. However, this still does not help me understand what the item is:
+
+```sh
+jg@jg-OptiPlex-9020-AIO:~/Desktop/annex/VideoStreamFiles/space race$ git-annex info af3e59fb-d2a8-418d-bde5-48b008f61fbb
+uuid: af3e59fb-d2a8-418d-bde5-48b008f61fbb
+description: jg@jg-OptiPlex-9020-AIO:/media/jg/S5/annex
+trust: semitrusted
+remote annex keys: 1
+remote annex size: 373.36 megabytes
+jg@jg-OptiPlex-9020-AIO:~/Desktop/annex/VideoStreamFiles/space race$ git-annex info 96d8d103-1bc5-41d8-be3e-804260a9ee8d
+uuid: 96d8d103-1bc5-41d8-be3e-804260a9ee8d
+description: jg@jg-OptiPlex-9020-AIO:/media/jg/S5/annex
+trust: semitrusted
+remote annex keys: 0
+remote annex size: 0 bytes
+```
+
+
+"""]]
