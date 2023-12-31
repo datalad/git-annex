@@ -1,0 +1,49 @@
+After inadvertently deleting my main repository on my local machine, I had to rebuild. This has worked ok, as far as I can tell at the moment. However, when listing the repository details, I get the listing below.
+
+My problem is that **S5** has three aliases: `S5 [S51]`, which I cannot rename to `S5` for some reason, and two other repos residing in `jg@jg-OptiPlex-9020-AIO:/media/jg/S5/annex`. When I try to query there details, I get the information at the bottom. I am a bit anxious, as I am unsure if I am dealing with prior instances that have been somehow overridden but are still being tracked.
+
+Any help in understanding the situation is appreciated. Ideally, I would like to remove the spurious repository references, provided they are not required.
+
+```sh
+jg@jg-OptiPlex-9020-AIO:~/Desktop/annex/VideoStreamFiles/space race$ git-annex info
+trusted repositories: 0
+semitrusted repositories: 15
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	246524b7-7cc2-4b3e-9559-4aa5992a4b94 -- S5 [S51]
+ 	2d8de5a5-4662-4bbb-bab0-51f39ec07d2e -- L1
+ 	39291601-0cc2-45aa-89f4-85e6d5bead99 -- L6
+ 	40897254-d2e8-4803-b291-a735d23fe03b -- [S2]
+ 	48e8f8c5-cb12-4b1d-9f50-30b39f38b6cb -- L5
+ 	63e417a1-b10c-45c2-8a90-44971b8b69bf -- [S1]
+ 	96d8d103-1bc5-41d8-be3e-804260a9ee8d -- jg@jg-OptiPlex-9020-AIO:/media/jg/S5/annex
+ 	a518d97d-4fb0-4018-95b1-2fc1b02a3081 -- L3
+ 	a7972a52-b3c2-4282-b690-a832dbbad982 -- [S3]
+ 	ae317911-25b1-418c-bcd2-a88d4f8d48f2 -- [S4]
+ 	af3e59fb-d2a8-418d-bde5-48b008f61fbb -- jg@jg-OptiPlex-9020-AIO:/media/jg/S5/annex
+ 	cb2c7d0c-b946-4e74-9362-3f4d56a5db5a -- jg@jg-Latitude-5500:~/annex [jglatitude5500.lan_annex]
+ 	ce573cf5-5007-4d5d-b540-ab73f393c32e -- jg@jg-OptiPlex-9020-AIO:~/Desktop/annex [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 14.23 megabytes (+100 megabytes reserved)
+local annex keys: 292
+local annex size: 120.26 gigabytes
+annexed files in working tree: 45158
+size of annexed files in working tree: 1 terabyte
+bloom filter size: 32 mebibytes (0.1% full)
+backend usage: 
+	SHA256E: 45158
+```
+
+
+```sh
+jg@jg-OptiPlex-9020-AIO:~/Desktop/annex/VideoStreamFiles/space race$ git-annex info  repository 96d8d103-1bc5-41d8-be3e-804260a9ee8d
+fatal: Not a valid object name repository
+info repository (not a directory or an annexed file or a treeish or a remote or a uuid) failed
+uuid: 96d8d103-1bc5-41d8-be3e-804260a9ee8d
+description: jg@jg-OptiPlex-9020-AIO:/media/jg/S5/annex
+trust: semitrusted
+remote annex keys: 0
+remote annex size: 0 bytes
+info: 1 failed
+```
