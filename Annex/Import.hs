@@ -223,20 +223,27 @@ buildImportCommit' remote importcommitconfig mtrackingcommit imported@(History t
 		-- nothing new needs to be committed.
 		-- (This is unlikely to happen.)
 		| sametodepth h' = return Nothing
-		| otherwise = do
-			importedcommit <- case getRemoteTrackingBranchImportHistory h of
-				Nothing -> mkcommitsunconnected imported
-				Just oldimported@(History oldhc _)
-					| importeddepth == 1 ->
-						mkcommitconnected imported oldimported
-					| otherwise -> do
-						let oldimportedtrees = mapHistory historyCommitTree oldimported
-						mknewcommits oldhc oldimportedtrees imported
-			ti' <- addBackExportExcluded remote ti
-			Just <$> makeRemoteTrackingBranchMergeCommit'
-				trackingcommit importedcommit ti'
+		-- If the imported tree is unchanged,
+		-- nothing new needs to be committed.
+		| otherwise = getLastImportedTree remote >>= \case
+			Just (LastImportedTree lasttree)
+				| lasttree == ti -> return Nothing
+			_ -> gencommit trackingcommit h
 	  where
 		h'@(History t s) = mapHistory historyCommitTree h
+	
+	gencommit trackingcommit h = do
+		importedcommit <- case getRemoteTrackingBranchImportHistory h of
+			Nothing -> mkcommitsunconnected imported
+			Just oldimported@(History oldhc _)
+				| importeddepth == 1 ->
+					mkcommitconnected imported oldimported
+				| otherwise -> do
+					let oldimportedtrees = mapHistory historyCommitTree oldimported
+					mknewcommits oldhc oldimportedtrees imported
+		ti' <- addBackExportExcluded remote ti
+		Just <$> makeRemoteTrackingBranchMergeCommit'
+			trackingcommit importedcommit ti'
 
 	importeddepth = historyDepth imported
 
