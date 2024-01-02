@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 8"
+ date="2023-12-30T11:35:22Z"
+ content="""
+I solved this problem by having my own dhcp+dns server (dnsmasq) running on the LAN which gives out only 30 second dhcp leases. This way only alive hosts are resolvable. And remotes are accessed not by ip, but by hostname.
+
+Another way to do this is via mdns, but I found that to be very unreliable.
+"""]]

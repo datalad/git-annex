@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="lemondata"
+ avatar="http://cdn.libravatar.org/avatar/481bf8163b175e5d0bdbef7d8c7fb3f4"
+ subject="comment 3"
+ date="2024-01-02T15:44:21Z"
+ content="""
+The first system I tried capped out at 8GB of ram, and it used around 7 before ending the process with `error: git-annex died of signal 9`.  Since I initially thought it might just be a ram problem I attempted the same on a system with 32GB of ram, but arrived at the same results after the system used around 31GB of ram.  I was not able to try any higher due to my own physical hardware restrictions.
+
+Just to help confirm the suspicion of the problem I tried the same thing with `versioning=no` set, and the import worked great.
+
+Since I do not want to import all 22000 files and I just need two items at this prefix(and their historical versions), I think some way to filter on the fly would make a huge difference.  Alternatively, like you mentioned, importing one historical tree at a time sounds like it would ease the ram requirements here too.
+
+Is there anything I can do to help further with testing?  Or is there any more information I can give about the issue that would be helpful to you?
+"""]]

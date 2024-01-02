@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Lukey"
+ avatar="http://cdn.libravatar.org/avatar/c7c08e2efd29c692cc017c4a4ca3406b"
+ subject="comment 3"
+ date="2023-12-31T14:41:18Z"
+ content="""
+Are these special remotes? You can get more info with `git cat-file blob git-annex:remote.log`. Warning, this will print encryption keys if you set up a encrypted special remote.
+
+Any yes, `git annex dead` should do the trick, it will not count files in the dead repo as a copy anymore.
+"""]]

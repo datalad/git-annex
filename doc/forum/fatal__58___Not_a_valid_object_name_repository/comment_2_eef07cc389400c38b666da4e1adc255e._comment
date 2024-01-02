@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="jgsuess@732b8c62c50d8595d7b1d58eea11e5019c2308b1"
+ nickname="jgsuess"
+ avatar="http://cdn.libravatar.org/avatar/35a99d1b5df046b206807941ce9795d3"
+ subject="Scanning for files in ghost repos"
+ date="2023-12-31T09:46:53Z"
+ content="""
+So I used the incantations below to scan for contents. Seems that one only holds a single file and the other does not hold anything at all. Is it the safe to declare them `dead` and will that lead to the replication of the file from `S1` to somewhere else?
+
+```sh
+jg@jg-OptiPlex-9020-AIO:~/Desktop/annex/VideoStreamFiles/space race$ git-annex whereis --all --in=af3e59fb-d2a8-418d-bde5-48b008f61fbb
+whereis SHA256E-s373363860--f10c801755cabc38d958adace3af29d767670c780b97c572d04a8dcd10ca0a9a.avi (2 copies) 
+  	63e417a1-b10c-45c2-8a90-44971b8b69bf -- [S1]
+   	af3e59fb-d2a8-418d-bde5-48b008f61fbb -- jg@jg-OptiPlex-9020-AIO:/media/jg/S5/annex
+ok
+jg@jg-OptiPlex-9020-AIO:~/Desktop/annex/VideoStreamFiles/space race$ git-annex whereis --all --in=96d8d103-1bc5-41d8-be3e-804260a9ee8d
+jg@jg-OptiPlex-9020-AIO:~/Desktop/annex/VideoStreamFiles/space race$ 
+
+```
+"""]]
