@@ -1,0 +1,87 @@
+git-annex import from a special remote has a stage where
+addBackExportExcluded is run, to add back files that were excluded from
+being exported to the special remote to the tree of files imported from it. 
+
+This is quite slow when there are a lot of files in the tree. 
+Eg, in my sound repo, exporting to my phone, I have 50k excluded files, and
+it takes about 2 minutes to run this step.
+
+Can it be optimised?
+
+## speed up adjustTree
+
+It currently uses adjustTree with a big list of files to add back 
+to the tree. That performs badly when the list is large.
+
+This seems to be the bottleneck; git-annex is using 100% cpu,
+and the two helper processes `git mktree` and `git ls-tree` are barely active.
+
+At each level of the tree, it partitions the list to find files present
+in that subtree. It also filters the list. So the list gets traversed
+many times. 
+
+What's needed is a data structure, eg a tree, that avoids needing to
+repeatedly traverse the list like that.
+
+Note that adjustTree is also used with a possibly big list of files to add
+in Annex.Import.buildImportTrees. No other calls of adjustTree pass files
+to add.
+
+## git merge-tree
+
+Would it be possible to use `git merge-tree` instead?
+
+That command needs commits, and one commit cannot be a parent of the other
+in this case, so it seems it would be used like this:
+
+* Make a commit of the tree imported from the remote. This is a temporary
+  commit, and should have no parent.
+* Make a commit of the full tree from the remote tracking branch. This is a
+  temporary commit and should have no parent.
+* `git merge-tree` with the two temporary commits.
+  (Needs `--allow-unrelated-histories`)
+
+The cases are:
+
+1. new file added to remote
+2. file is present in the full tree, but was excluded out of the tree
+   exported to the remote
+3. file is modified on the remote
+4. file is present in the full tree, was excluded out of the tree exported
+   to the remote, but then got created separately on the remote
+5. file is present in the full tree, and got deleted from the remote
+
+In case 1, the new file will just be included in the merged tree.
+
+In case 2, the excluded file will also be just included in the merged tree.
+This is the point of this exercise.
+
+In case 3, there will be a conflict output. The right resolution of this
+conflict is to force in the version of the file from the imported tree.
+
+In case 4, there will be a conflict output. The right resolution of this
+conflict is same as in case 3.
+
+In case 5, the deleted file will be included in the merged tree.
+Oops, this is not what we want. Seems that this won't work?
+
+--- 
+
+What if the commit of the tree imported from the remote has as its parent a
+commit of the previous tree that was on the remote?
+
+Then in case 5, the deleted file will be in conflict; it was deleted from
+the import, and added from the full tree. Resolving this import in favor of
+the deletion will work.
+
+In case 4, there will be an add/add conflict. Force in the file from the
+imported tree.
+
+In case 3, same.
+
+In case 2, the excluded file will also be just included in the merged tree.
+This is the point of this exercise.
+
+In case 1, the new file will just be included in the merged tree.
+
+If that analysis is correct, this would work.. --[[Joey]]
