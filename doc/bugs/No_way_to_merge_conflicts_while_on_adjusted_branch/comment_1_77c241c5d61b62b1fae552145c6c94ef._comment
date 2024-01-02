@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-01-02T18:05:47Z"
+ content="""
+git is what's doing the automatic merge, using the merge driver that you
+configured. Is the file `study.org` an annexed file? If not, I don't really
+see how this involves git-annex. git doesn't care if an adjusted branch is
+checked out or not, when using a merge driver to merge a non-annexed file.
+
+It looks like your merge driver is perhaps not working..
+"""]]
