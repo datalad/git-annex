@@ -27,13 +27,13 @@ will fail.
 
 ## Status
 
-![Update mirror](https://github.com/datalad/git-annex/workflows/Update%20mirror/badge.svg)
+[![Update mirror](https://github.com/datalad/git-annex/actions/workflows/update-mirror.yml/badge.svg)](https://github.com/datalad/git-annex/actions/workflows/update-mirror.yml)
 
 ## Build git-annex & test DataLad against it
 
-[![Ubuntu](https://github.com/datalad/git-annex/workflows/Build%20git-annex%20on%20Ubuntu/badge.svg)](https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+Ubuntu%22)
-[![macOS](https://github.com/datalad/git-annex/workflows/Build%20git-annex%20on%20macOS/badge.svg)](https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+macOS%22)
-[![Windows](https://github.com/datalad/git-annex/workflows/Build%20git-annex%20on%20Windows/badge.svg)](https://github.com/datalad/git-annex/actions?query=workflow%3A%22Build+git-annex+on+Windows%22)
+[![Ubuntu](https://github.com/datalad/git-annex/actions/workflows/build-ubuntu.yaml/badge.svg)](https://github.com/datalad/git-annex/actions/workflows/build-ubuntu.yaml)
+[![macOS](https://github.com/datalad/git-annex/actions/workflows/build-macos.yaml/badge.svg)](https://github.com/datalad/git-annex/actions/workflows/build-macos.yaml)
+[![Windows](https://github.com/datalad/git-annex/actions/workflows/build-windows.yaml/badge.svg)](https://github.com/datalad/git-annex/actions/workflows/build-windows.yaml)
 
 ## Client Tests
 
