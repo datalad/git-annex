@@ -1,0 +1,73 @@
+### Please describe the problem.
+
+Doing backup of data using `git annex move` from local to dropbox via `git-annex-remote-rclone`.
+
+Full invocation here is
+
+```shell
+( source ~/git-annexes/10.20231227+git24-gd37dbd62b8.env; OUR_LOG_FILE=~/.cache/rclone/logs/`date --iso-8601=seconds`-movedebug; RCLONE_LOG_LEVEL=DEBUG RCLONE_LOG_FILE=${OUR_LOG_FILE}_rclone.log git annex --debug move --to dandi-dandisets-dropbox sub-484677/sub-484677_ses-20210419T161140_behavior+ecephys+ogen.nwb 2>&1 | tee ${OUR_LOG_FILE}_git-annex.log ; )
+```
+under `/mnt/backup/dandi/dandisets/000363` . On git-annex side we see
+
+```shell
+dandi@drogon:~/.cache/rclone/logs$ grep -4 'Transfer stalled' 2024-01-04T14:28:29-05:00-movedebug_git-annex.log
+[2024-01-04 14:43:24.5722525] (Annex.TransferrerPool) < op 295000000000
+75%   274.74 GiB        7 MiB/s 3h46m2024/01/04 14:44:49 DEBUG : Setting --log-level "DEBUG" from environment variable RCLONE_LOG_LEVEL="DEBUG"
+2024/01/04 14:44:49 DEBUG : Setting --log-file "/home/dandi/.cache/rclone/logs/2024-01-04T14:28:29-05:00-movedebug_rclone.log" from environment variable RCLONE_LOG_FILE="/home/dandi/.cache/rclone/logs/2024-01-04T14:28:29-05:00-movedebug_rclone.log"
+
+  Transfer stalled
+[2024-01-04 14:45:40.042053663] (Utility.Process) process [2329029] chat: /home/dandi/git-annexes/10.20231227+git24-gd37dbd62b8/usr/lib/git-annex.linux/git-annex ["transferrer","-c","annex.debug=true"]
+
+```
+
+and rclone logs for around that time point(s):
+
+```
+2024/01/04 14:44:49 DEBUG : rclone: Version "v1.61.1-DEV" starting with parameters ["rclone" "copy" ".git/annex/tmp/SHA256E-s393314879887-S1000000000-C296--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb" "dandi-dandisets-dropbox:dandi-dandisets/annexstore/b4f/757/"]
+2024/01/04 14:44:49 DEBUG : Creating backend with remote ".git/annex/tmp/SHA256E-s393314879887-S1000000000-C296--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb"
+2024/01/04 14:44:49 DEBUG : Using config file from "/home/dandi/.rclone.conf"
+2024/01/04 14:44:49 DEBUG : fs cache: adding new entry for parent of ".git/annex/tmp/SHA256E-s393314879887-S1000000000-C296--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb", "/mnt/backup/dandi/dandisets/000363/.git/annex/tmp"
+2024/01/04 14:44:49 DEBUG : Creating backend with remote "dandi-dandisets-dropbox:dandi-dandisets/annexstore/b4f/757/"
+2024/01/04 14:44:49 DEBUG : fs cache: renaming cache item "dandi-dandisets-dropbox:dandi-dandisets/annexstore/b4f/757/" to be canonical "dandi-dandisets-dropbox:dandi-dandisets/annexstore/b4f/757"
+2024/01/04 14:44:49 DEBUG : SHA256E-s393314879887-S1000000000-C296--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb: Need to transfer - File not found at Destination
+2024/01/04 14:44:50 DEBUG : SHA256E-s393314879887-S1000000000-C296--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb: Uploading chunk 1/20
+...
+2024/01/04 14:45:36 DEBUG : SHA256E-s393314879887-S1000000000-C296--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb: Uploading chunk 19/20
+2024/01/04 14:45:38 DEBUG : SHA256E-s393314879887-S1000000000-C296--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb: Uploading chunk 20/20
+2024/01/04 14:45:39 INFO  : Signal received: interrupt
+2024/01/04 14:45:39 INFO  : Dropbox root 'dandi-dandisets/annexstore/b4f/757': Committing uploads - please wait...
+2024/01/04 14:45:39 INFO  : Exiting...
+```
+
+<details>
+<summary>using older git-annex I got similar crash but on earlier chunk, so it is not pertinent to last chunk</summary> 
+
+```shell
+2024/01/04 13:56:29 DEBUG : rclone: Version "v1.61.1-DEV" starting with parameters ["rclone" "copy" ".git/annex/tmp/SHA256E-s393314879887-S1000000000-C287--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb" "dandi-dandisets-dropbox:dandi-dandisets/annexstore/b4f/757/"]
+2024/01/04 13:56:29 DEBUG : Creating backend with remote ".git/annex/tmp/SHA256E-s393314879887-S1000000000-C287--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb"
+2024/01/04 13:56:29 DEBUG : Using config file from "/home/dandi/.rclone.conf"
+2024/01/04 13:56:29 DEBUG : fs cache: adding new entry for parent of ".git/annex/tmp/SHA256E-s393314879887-S1000000000-C287--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb", "/mnt/backup/dandi/dandisets/000363/.git/annex/tmp"
+2024/01/04 13:56:29 DEBUG : Creating backend with remote "dandi-dandisets-dropbox:dandi-dandisets/annexstore/b4f/757/"
+2024/01/04 13:56:30 DEBUG : fs cache: renaming cache item "dandi-dandisets-dropbox:dandi-dandisets/annexstore/b4f/757/" to be canonical "dandi-dandisets-dropbox:dandi-dandisets/annexstore/b4f/757"
+2024/01/04 13:56:30 DEBUG : SHA256E-s393314879887-S1000000000-C287--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb: Need to transfer - File not found at Destination
+2024/01/04 13:56:30 DEBUG : SHA256E-s393314879887-S1000000000-C287--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb: Uploading chunk 1/20
+...
+2024/01/04 13:57:08 DEBUG : SHA256E-s393314879887-S1000000000-C287--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb: Uploading chunk 17/20
+2024/01/04 13:57:10 DEBUG : SHA256E-s393314879887-S1000000000-C287--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb: Uploading chunk 18/20
+2024/01/04 13:57:11 DEBUG : SHA256E-s393314879887-S1000000000-C287--38c8c93c66ece7cbe8eeca9621ab72bf3968873e842f3e376ddda012eb0a0e5f.nwb: Uploading chunk 19/20
+2024/01/04 13:57:14 INFO  : Signal received: interrupt
+2024/01/04 13:57:14 INFO  : Dropbox root 'dandi-dandisets/annexstore/b4f/757': Committing uploads - please wait...
+2024/01/04 13:57:14 INFO  : Exiting...
+```
+</details>
+
+So it seems that stall detection (I didn't look how it even decides on that) is flawed in case of large (chunked) files being transferred through external custom remotes which have no way to report progress as it is the case here in https://github.com/git-annex-remote-rclone/git-annex-remote-rclone/blob/master/git-annex-remote-rclone (filed [a bug report](https://github.com/git-annex-remote-rclone/git-annex-remote-rclone/issues/76) to see that addressed).
+
+
+### What version of git-annex are you using? On what operating system?
+
+first was a year old version, then tried with bleeding edge 10.20231227+git24-gd37dbd62b8
+
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
