@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 7"
+ date="2024-01-05T21:00:52Z"
+ content="""
+so there remains no way to configure assistant to add files in regular locked mode where files would \"migrate\" to become symlinks after having been added to annex?
+
+Our use case is the \"data acquisition\" box (for repronim's reprostim project) which we are configuring to collect videos, which are then to be transferred to another box. Size will be large, we will rely on branches and copies/moves of the files, so having them to be symlinks is kinda \"mandatory\" to keep operations fast and to not waste space.
+"""]]
