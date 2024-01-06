@@ -1,0 +1,12 @@
+### Please describe the problem.
+
+in recent builds [eg](https://github.com/datalad/git-annex/actions/runs/7417377022/job/20183877530#step:7:1288)
+
+```
+    adjusted branch subtree regression: FAIL (1.26s)
+      Test.hs:1675:
+      a/b/x/y missing from master after adjusted branch sync
+      Use -p '/adjusted branch subtree regression/' to rerun this test only.
+```
+
+may be more
