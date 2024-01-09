@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 8"
+ date="2024-01-06T09:22:54Z"
+ content="""
+Not that I know of. Simplest solution for you would be probably a `while true;git annex assist`done` instead of the assistant.
+"""]]

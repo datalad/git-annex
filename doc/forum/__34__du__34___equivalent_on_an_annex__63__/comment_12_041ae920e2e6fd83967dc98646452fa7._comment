@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="Using fuse annexize - works like a charm"
+ date="2024-01-07T04:11:37Z"
+ content="""
+Hey @wzhd,
+
+Thanks a lot for this tool - annexize works like a charm even in tags views!
+
+It's basically solve the most important problem for me:
+
+I can use ncdu for organizing files in my local git annex repository that
+does not contain any actual files (only file links), and then just sync
+with linked repos that do store those files.
+"""]]

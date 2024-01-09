@@ -1,0 +1,21 @@
+### Please describe the problem.
+
+```
+reprostim@reproiner:/data/reprostim/Videos$ ps auxw | grep webapp
+reprost+   25249  0.0  0.0   9892  2100 pts/5    S+   Jan05   0:00 git annex --debug webapp --listen 0.0.0.0:8888
+reprost+   25250  5.4  0.2 1074346616 65556 ?    Ssl  Jan05  60:39 /usr/bin/git-annex --debug webapp --listen 0.0.0.0:8888
+reprost+  224039  0.0  0.0   6332  2116 pts/6    S+   10:55   0:00 grep webapp
+
+reprostim@reproiner:/data/reprostim/Videos$ lsof -i :8888
+
+reprostim@reproiner:/data/reprostim/Videos$ lsof -i | grep git-annex
+git-annex  25250 reprostim   14u  IPv4 129033      0t0  UDP *:55556
+git-annex 221230 reprostim   14u  IPv4 129033      0t0  UDP *:55556
+
+reprostim@reproiner:/data/reprostim/Videos$ git annex version
+git-annex version: 10.20230126
+
+```
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
