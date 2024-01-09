@@ -37,6 +37,7 @@ It seems that git-annex would need to prompt for the secret key's password
 itself, since sop doesn't prompt, and feed it in via `--with-key-password`.
 It can detect if a password is needed by trying the sop operation without a
 password and checking for an exit code of 67.
+See [this issue on sop password prompting](https://gitlab.com/dkg/openpgp-stateless-cli/-/issues/64)
 
 git-annex also uses gpg to generate random data for an encryption cipher
 when setting up an encrypted special remote. Of course there are other ways
