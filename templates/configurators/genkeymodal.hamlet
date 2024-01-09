@@ -5,7 +5,7 @@
         <div .modal-header>
           <h3>
             <img src="@{StaticR activityicon_gif}" alt=""> #
-            Generating a #{maxRecommendedKeySize} bit GnuPg key.
+            Generating a GnuPg key.
         <div .modal-body>
         <p>
           Generating a GnuPg key can take a long time. To speed up the process, #

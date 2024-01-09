@@ -23,8 +23,6 @@ module Utility.Gpg (
 	findPubKeys,
 	UserId,
 	secretKeys,
-	KeyType(..),
-	maxRecommendedKeySize,
 	genSecretKey,
 	genRandom,
 	testKeyId,
@@ -59,6 +57,8 @@ newtype KeyIds = KeyIds { keyIds :: [KeyId] }
 	deriving (Ord, Eq)
 
 newtype GpgCmd = GpgCmd { unGpgCmd :: String }
+
+type Passphrase = B.ByteString
 
 {- Get gpg command to use, Just what's specified or, if a specific gpg
  - command was found at configure time, use it, or otherwise, "gpg". -}
@@ -157,7 +157,7 @@ pipeStrict' (GpgCmd cmd) params environ input = do
  - the passphrase.
  -
  - Note that the reader must fully consume gpg's input before returning. -}
-feedRead :: (MonadIO m, MonadMask m) => GpgCmd -> [CommandParam] -> B.ByteString -> (Handle -> IO ()) -> (Handle -> m a) -> m a
+feedRead :: (MonadIO m, MonadMask m) => GpgCmd -> [CommandParam] -> Passphrase -> (Handle -> IO ()) -> (Handle -> m a) -> m a
 feedRead cmd params passphrase feeder reader = do
 #ifndef mingw32_HOST_OS
 	let setup = liftIO $ do
@@ -260,49 +260,29 @@ secretKeys cmd = catchDefaultIO M.empty makemap
 	extract c k (_:rest) =
 		extract c k rest
 
-type Passphrase = String
-type Size = Int
-data KeyType = Algo Int | DSA | RSA
-
-{- The maximum key size that gpg currently offers in its UI when
- - making keys. -}
-maxRecommendedKeySize :: Size
-maxRecommendedKeySize = 4096
-
 {- Generates a secret key using the experimental batch mode.
  - The key is added to the secret key ring.
  - Can take a very long time, depending on system entropy levels.
  -}
-genSecretKey :: GpgCmd -> KeyType -> Passphrase -> UserId -> Size -> IO ()
-genSecretKey (GpgCmd cmd) keytype passphrase userid keysize =
-	let p = (proc cmd params)
-		{ std_in = CreatePipe }
-	in withCreateProcess p (go p)
+genSecretKey :: GpgCmd -> Passphrase -> UserId -> IO ()
+genSecretKey gpgcmd passphrase userid =
+	feedRead gpgcmd params passphrase feeder reader
   where
-	params = ["--batch", "--gen-key"]
-
-	go p (Just h) _ _ pid = do
-		hPutStr h $ unlines $ catMaybes
-			[ Just $  "Key-Type: " ++ 
-				case keytype of
-					DSA -> "DSA"
-					RSA -> "RSA"
-					Algo n -> show n
-			, Just $ "Key-Length: " ++ show keysize
-			, Just $ "Name-Real: " ++ userid
-			, Just "Expire-Date: 0"
-			, if null passphrase
-				then Nothing
-				else Just $ "Passphrase: " ++ passphrase
-			]
-		hClose h
-		forceSuccessProcess p pid
-	go _ _ _ _ _ = error "internal"
+	params =
+		[ Param "--batch"
+		, Param "--quick-gen-key"
+		, Param userid
+		, Param "default" -- algo
+		, Param "default" -- usage
+		, Param "never" -- expire
+		]
+	feeder = hClose
+	reader = void . hGetContents
 
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
  - first newline. -}
-genRandom :: GpgCmd -> Bool -> Size -> IO B.ByteString
+genRandom :: GpgCmd -> Bool -> Int -> IO B.ByteString
 genRandom cmd highQuality size = do
 	s <- readStrict cmd params
 	checksize s

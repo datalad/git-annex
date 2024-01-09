@@ -54,7 +54,7 @@ withNewSecretKey :: (KeyId -> Handler Html) -> Handler Html
 withNewSecretKey use = do
 	cmd <- liftAnnex $ gpgCmd <$> Annex.getGitConfig
 	userid <- liftIO $ newUserId cmd
-	liftIO $ genSecretKey cmd RSA "" userid maxRecommendedKeySize
+	liftIO $ genSecretKey cmd "" userid
 	results <- M.keys . M.filter (== userid) <$> liftIO (secretKeys cmd)
 	case results of
 		[] -> giveup "Failed to generate gpg key!"

@@ -2,6 +2,8 @@ git-annex (10.20231228) UNRELEASED; urgency=medium
 
   * info: Added "annex sizes of repositories" table to the overall display.
   * import: Sped up import from special remotes.
+  * assistant: When generating a gpg secret key, avoid hardcoding the
+    key algorithm and size.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Dec 2023 11:52:06 -0400
 
