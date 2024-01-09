@@ -1,0 +1,51 @@
+<https://datatracker.ietf.org/doc/draft-dkg-openpgp-stateless-cli/> or "sop" is
+a standard for a command-line interface for OpenPGP. There are several
+implementations available in Debian already, like sqop (using Sequoia), gosop,
+gpainless-cli, and hop from hopenpgp-tools (haskell).
+
+It's possible to use this in a way that interoperates with gpg. For example:
+
+	joey@darkstar:~>cat pw
+	hunter1
+	joey@darkstar:~>cat foo
+	Tue Jan  9 15:10:32 JEST 2024
+	joey@darkstar:~>sqop encrypt --with-password=pw < foo > bar
+	joey@darkstar:~>gpg --passphrase-file pw --decrypt bar
+	gpg: AES256.CFB encrypted session key
+	gpg: encrypted with 1 passphrase
+	Tue Jan  9 15:10:32 JEST 2024
+
+That example uses symmetric encryption, which is what git-annex uses
+for encryption=shared. So git-annex could use this or gpg to access the
+same encrypted special remote.
+
+For the public key encryption used by the other encryption= schemes,
+sop would be harder to use, because it does not define any location
+to store private keys. Though it is possible to export gpg private keys
+and use them with sop to encrypt/decrypt files, it wouldn't make sense
+for git-annex to do that for the user. So there would need to be some way
+to map from keyid= value to a file containing the key. Which could be as
+simple as files named `.git/annex/sop/$keyid.sec`, which would be installed
+by the user using whatever means they prefer.
+
+Since sop also supports hardware-backed secret keys, and using one avoids
+the problem of where to store the secret key file, it would be good to
+support using those. This could be something like `keyid=@HARDWARE:xxx`
+making `@HARDWARE:xxx` be passed to sop.
+
+It seems that git-annex would need to prompt for the secret key's password
+itself, since sop doesn't prompt, and feed it in via `--with-key-password`.
+It can detect if a password is needed by trying the sop operation without a
+password and checking for an exit code of 67.
+
+git-annex also uses gpg to generate random data for an encryption cipher
+when setting up an encrypted special remote. Of course there are other ways
+to generate random data, but it does make sense to use gpg or a similar
+tool for this particular random data generation, since it's effectively a
+secret key. And genRandom already using --armor. So when using sop, it
+seems like it might make sense to use the `generate-key` command, and
+extract the armored data from it. Although note that not all of that output
+is random, the first several bytes are OpenPGP header that doesn't change
+much.
+
+See also: [[todo/whishlist__58___GPG_alternatives_like_AGE]]
