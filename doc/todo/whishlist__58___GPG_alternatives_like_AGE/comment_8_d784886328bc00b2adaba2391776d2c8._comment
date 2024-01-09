@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2024-01-09T20:28:58Z"
+ content="""
+<https://crates.io/crates/sequoia-chameleon-gnupg> should be possible to
+use as a drop-in replacement for gpg. Assuming they implemented enough of
+gpg's interface.
+
+To try using it with git-annex, it should be sufficient to run:
+
+	git config gpg.program gpg-sq
+"""]]
