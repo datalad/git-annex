@@ -1060,6 +1060,7 @@ Executable git-annex
     Utility.Split
     Utility.SshConfig
     Utility.SshHost
+    Utility.StatelessOpenPGP
     Utility.Su
     Utility.SystemDirectory
     Utility.Terminal
