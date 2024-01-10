@@ -133,6 +133,7 @@ feedRead cmd subcmd params password emptydirectory feeder reader = do
 	let setup = liftIO $ do
 		-- pipe the passphrase in on a fd
 		(frompipe, topipe) <- System.Posix.IO.createPipe
+		setFdOption topipe CloseOnExec True
 		toh <- fdToHandle topipe
 		t <- async $ do
 			B.hPutStr toh (password <> "\n")
