@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-01-10T20:32:54Z"
+ content="""
+This was caused by [[!commit 2c86651180d5c8648b8244be894c26bc98a6c334]]
+and so I've reverted that commit for now.
+
+Leaving this bug open because that commit was an important optimisation and
+needs to be fixed and reapplied.
+"""]]
