@@ -27,6 +27,7 @@ import Control.Concurrent.STM hiding (check)
 import Common
 import CmdLine.GitAnnex.Options
 import qualified Utility.RawFilePath as R
+import Data.String
 
 import qualified Utility.ShellEscape
 import qualified Annex
@@ -82,6 +83,7 @@ import qualified Utility.FileSystemEncoding
 import qualified Utility.Aeson
 import qualified Utility.CopyFile
 import qualified Utility.MoveFile
+import qualified Utility.StatelessOpenPGP
 import qualified Types.Remote
 #ifndef mingw32_HOST_OS
 import qualified Remote.Helper.Encryptable
@@ -347,7 +349,8 @@ repoTests note numparts = map mk $ sep
 	, testCase "rsync remote" test_rsync_remote
 	, testCase "bup remote" test_bup_remote
 	, testCase "borg remote" test_borg_remote
-	, testCase "crypto" test_crypto
+	, testCase "gpg crypto" test_gpg_crypto
+	, testCase "sop crypto" test_sop_crypto
 	, testCase "preferred content" test_preferred_content
 	, testCase "required_content" test_required_content
 	, testCase "add subdirs" test_add_subdirs
@@ -1824,10 +1827,29 @@ test_borg_remote = when BuildInfo.borg $ do
 		git_annex "drop" [annexedfile] "drop from borg (appendonly)"
 		git_annex "get" [annexedfile, "--from=borg"] "get from borg"
 
+-- To test Stateless OpenPGP, annex.shared-sop-command has to be set using
+-- the --test-git-config option.
+test_sop_crypto :: Assertion
+test_sop_crypto = do
+	gc <- testGitConfig . testOptions <$> getTestMode
+	case filter (\(k, _) -> k == ck) gc of
+		[] -> noop
+		((_, sopcmd):_) -> go $ 
+			Utility.StatelessOpenPGP.SopCmd $
+				Git.Types.fromConfigValue sopcmd
+  where
+	ck = fromString "annex.shared-sop-command"
+	pw = fromString "testpassword"
+	v = fromString "somevalue"
+	unarmored = Utility.StatelessOpenPGP.Armoring False
+	go sopcmd = do
+		Utility.StatelessOpenPGP.test_encrypt_decrypt_Symmetric sopcmd sopcmd pw unarmored v
+			@? "sop command roundtrips symmetric encryption"
+
 -- gpg is not a build dependency, so only test when it's available
-test_crypto :: Assertion
+test_gpg_crypto :: Assertion
 #ifndef mingw32_HOST_OS
-test_crypto = do
+test_gpg_crypto = do
 	testscheme "shared"
 	testscheme "hybrid"
 	testscheme "pubkey"

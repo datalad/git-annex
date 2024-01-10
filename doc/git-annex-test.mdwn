@@ -44,6 +44,10 @@ framework. Pass --help for details about those.
   One valid use of this is to change a git configuration to a value that
   is planned to be the new default in a future version of git.
 
+  Also, some things can only be tested with a git configuration. For
+  example, annex.shared-sop-command has to be set for the test suite to
+  test using that command.
+
 * `--test-debug`
 
   Normally output of commands run by the test suite is hidden, so even

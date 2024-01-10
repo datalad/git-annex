@@ -372,6 +372,8 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexRsyncTransport :: [String]
 	, remoteAnnexGnupgOptions :: [String]
 	, remoteAnnexGnupgDecryptOptions :: [String]
+	, remoteAnnexSharedSOPCommand :: Maybe String
+	, remoteAnnexSharedSOPProfile :: Maybe String
 	, remoteAnnexRsyncUrl :: Maybe String
 	, remoteAnnexBupRepo :: Maybe String
 	, remoteAnnexBorgRepo :: Maybe String
@@ -439,6 +441,8 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexRsyncTransport = getoptions "rsync-transport"
 		, remoteAnnexGnupgOptions = getoptions "gnupg-options"
 		, remoteAnnexGnupgDecryptOptions = getoptions "gnupg-decrypt-options"
+		, remoteAnnexSharedSOPCommand = notempty $ getmaybe "shared-sop-command"
+		, remoteAnnexSharedSOPProfile = notempty $ getmaybe "shared-sop-profile"
 		, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"
 		, remoteAnnexBupRepo = getmaybe "buprepo"
 		, remoteAnnexBorgRepo = getmaybe "borgrepo"

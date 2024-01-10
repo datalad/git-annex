@@ -9,6 +9,10 @@
 
 module Utility.StatelessOpenPGP (
 	SopCmd(..),
+	SopSubCmd,
+	Password,
+	Profile,
+	Armoring(..),
 	encryptSymmetric,
 	decryptSymmetric,
 	test_encrypt_decrypt_Symmetric,
@@ -98,7 +102,7 @@ decryptSymmetric sopcmd password emptydirectory feeder reader =
 
 {- Test a value round-trips through symmetric encryption and decryption. -}
 test_encrypt_decrypt_Symmetric :: SopCmd -> SopCmd -> Password -> Armoring -> B.ByteString -> IO Bool
-test_encrypt_decrypt_Symmetric a b password armoring v =
+test_encrypt_decrypt_Symmetric a b password armoring v = catchBoolIO $
 	withTmpDir "test" $ \d -> do
 		let ed = EmptyDirectory d
 		enc <- encryptSymmetric a password ed Nothing armoring

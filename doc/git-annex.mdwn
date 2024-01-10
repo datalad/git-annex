@@ -1655,10 +1655,29 @@ Remotes are configured using these settings in `.git/config`.
   precedence over the default GnuPG configuration, which is otherwise
   used.)
 
+* `remote.<name>.annex-shared-sop-command`
+
+  Use this command, which is an implementation of the Stateless OpenPGP
+  command line interface, rather than GnuPG for encrypting and decrypting
+  data. This is only used when a special remote is configured with
+  encryption=shared.
+
+  For example, to use Sequoia PGP's sqop command, set this to "sqop".
+
+* `remote.<name>.annex-shared-sop-profile`
+
+  When encrypting with a Stateless OpenPGP command, this can be used
+  to specify the profile to use, such as "rfc4880".
+
+  For a list of available profiles, run eg "sqop list-profiles encrypt"
+
+  sqop list-profiles encrypt
+
 * `annex.ssh-options`, `annex.rsync-options`,
   `annex.rsync-upload-options`, `annex.rsync-download-options`,
   `annex.bup-split-options`, `annex.gnupg-options`,
-  `annex.gnupg-decrypt-options`
+  `annex.gnupg-decrypt-options`,
+  `annex.shared-sop-command`, `annex.shared-sop-profile`
 
   Default options to use if a remote does not have more specific options
   as described above.
