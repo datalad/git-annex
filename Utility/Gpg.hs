@@ -260,7 +260,7 @@ secretKeys cmd = catchDefaultIO M.empty makemap
 	extract c k (_:rest) =
 		extract c k rest
 
-{- Generates a secret key using the experimental batch mode.
+{- Generates a secret key.
  - The key is added to the secret key ring.
  - Can take a very long time, depending on system entropy levels.
  -}
