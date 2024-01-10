@@ -147,8 +147,8 @@ pipeStrict' (GpgCmd cmd) params environ input = do
 		forceSuccessProcess p pid `after` B.hGetContents from
 	go _ _ _ _ _ = error "internal"
 
-{- Runs gpg with some parameters. First sends it a passphrase (unless it
- - is empty) via '--passphrase-fd'. Then runs a feeder action that is
+{- Runs gpg with some parameters. First sends it a passphrase via
+ - '--passphrase-fd'. Then runs a feeder action that is
  - passed a handle and should write to it all the data to input to gpg.
  - Finally, runs a reader action that is passed a handle to gpg's
  - output.
