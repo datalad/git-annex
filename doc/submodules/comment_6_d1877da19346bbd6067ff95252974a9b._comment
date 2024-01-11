@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="TTTTAAAx"
+ avatar="http://cdn.libravatar.org/avatar/9edd4b69b9f9fc9b8c1cb8ecd03902d5"
+ subject="comment 6"
+ date="2024-01-11T13:58:27Z"
+ content="""
+Since git 1.8.5, `git mv projects/2023/prj_1 archives/2023/prj_1` can update local path of submodule.
+Currently, `git-annex` doesn't detect submodule path changed and Just moving parent directories breaks git-modules thoroughly.
+The only way I found is to move all submodule to another tree structure one by one using `git mv ...`.
+
+If the parent directory name(e.g: projects->01_Projects) or its depth was changed by chance, all submodules inside the directory are broken.
+
+So I cannot use submodules to handle source code in my git-annex repo.
+Is there an easy (cool) way for this?
+"""]]
