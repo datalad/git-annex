@@ -3,5 +3,20 @@
  subject="""comment 9"""
  date="2024-01-09T20:33:08Z"
  content="""
-See also: [[support_using_Stateless_OpenPGP_instead_of_gpg]]
+git-annex now supports using any program that implements the
+Stateless OpenPGP standard for remotes using encryption=shared
+
+Eg, to use Sequoia's sqpop:
+
+	git config annex.shared-sop-command sqop
+
+That fully interoperates with gpg, though it's probably a good idea
+to specify an enryption profile that is backwards compatable if interop
+is a concern. Eg:
+
+	git config annex.shared-sop-profile rfc4880
+
+For other encryption= schemes, Stateless OpenPGP is not yet supported,
+mostly because it's not clear how to manage the encryption keys.
+See this todo [[support_using_Stateless_OpenPGP_instead_of_gpg]]
 """]]
