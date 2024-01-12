@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Try datalad"
+ date="2024-01-12T09:23:16Z"
+ content="""
+Sounds like you might want to use [datalad](https://datalad.org), which is built around git annex and where submodules are a first-class citizen.
+"""]]

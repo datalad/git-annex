@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="TTTTAAAx"
+ avatar="http://cdn.libravatar.org/avatar/9edd4b69b9f9fc9b8c1cb8ecd03902d5"
+ subject="comment 75"
+ date="2024-01-11T14:15:58Z"
+ content="""
+Can I make armv7 version for alpine Linux? Or WASM?
+`git-annex` can't run on iOS without jailbreak.
+The only way is to build it on iSH or A-shell.
+
+git-annex(aarch64) is already provided on alpine repo. But iSH supports only armv7. So I can't install git-annex. I tried to build ghc for armv7. But the Haskell foundation has dropped supporting the armv7 since ghc-9. 
+
+A-shell needs WASI binary. I tried ghc-wasm-meta to compile git-annex to WASI binary, But I couldn't handle package version conflicts inside git-annex.
+
+
+"""]]
