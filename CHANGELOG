@@ -2,10 +2,14 @@ git-annex (10.20231228) UNRELEASED; urgency=medium
 
   * info: Added "annex sizes of repositories" table to the overall display.
   * import: Sped up import from special remotes.
-  * assistant: When generating a gpg secret key, avoid hardcoding the
-    key algorithm and size.
+  * Support using commands that implement the Stateless OpenPGP command line
+    interface, as an alternative to gpg.
+    Currently only supported for encryption=shared special remotes,
+    when annex.shared-sop-command is configured.
   * test: Test a specified Stateless OpenPGP command when
     run with eg --test-git-config annex.shared-sop-command=sqop
+  * assistant: When generating a gpg secret key, avoid hardcoding the
+    key algorithm and size.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Dec 2023 11:52:06 -0400
 

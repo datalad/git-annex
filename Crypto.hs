@@ -1,7 +1,6 @@
 {- git-annex crypto
  -
- - Currently using gpg; could later be modified to support different
- - crypto backends if necessary.
+ - Currently using gpg by default, or optionally stateless OpenPGP.
  -
  - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
@@ -32,7 +31,7 @@ module Crypto (
 	readBytesStrictly,
 	encrypt,
 	decrypt,
-	LensGpgEncParams(..),
+	LensEncParams(..),
 
 	prop_HmacSha1WithCipher_sane
 ) where
@@ -40,6 +39,7 @@ module Crypto (
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
 import Control.Monad.IO.Class
+import qualified Data.ByteString.Short as S (toShort)
 
 import Annex.Common
 import qualified Utility.Gpg as Gpg
@@ -48,28 +48,32 @@ import Types.Crypto
 import Types.Remote
 import Types.Key
 import Annex.SpecialRemote.Config
-import qualified Data.ByteString.Short as S (toShort)
+import Utility.Tmp.Dir
+
+{- The number of bytes of entropy used to generate a Cipher.
+ -
+ - Since a Cipher is base-64 encoded, the actual size of a Cipher
+ - is larger than this. 512 bytes of date base-64 encodes to 684
+ - characters.
+ -}
+cipherSize :: Int
+cipherSize = 512
 
 {- The beginning of a Cipher is used for MAC'ing; the remainder is used
- - as the GPG symmetric encryption passphrase when using the hybrid
- - scheme. Note that the cipher itself is base-64 encoded, hence the
- - string is longer than 'cipherSize': 683 characters, padded to 684.
+ - as the symmetric encryption passphrase.
  -
- - The 256 first characters that feed the MAC represent at best 192
- - bytes of entropy.  However that's more than enough for both the
- - default MAC algorithm, namely HMAC-SHA1, and the "strongest"
+ - Due to the base-64 encoding of the Cipher, the beginning 265 characters
+ - represent at best 192 bytes of entropy. However that's more than enough
+ - for both the default MAC algorithm, namely HMAC-SHA1, and the "strongest"
  - currently supported, namely HMAC-SHA512, which respectively need
  - (ideally) 64 and 128 bytes of entropy.
  -
- - The remaining characters (320 bytes of entropy) is enough for GnuPG's
- - symmetric cipher; unlike weaker public key crypto, the key does not
- - need to be too large.
+ - The remaining characters (320 bytes of entropy) is enough for
+ - the symmetric encryption passphrase; unlike weaker public key crypto,
+ - that does not need to be too large.
  -}
 cipherBeginning :: Int
 cipherBeginning = 256
-
-cipherSize :: Int
-cipherSize = 512
 
 cipherPassphrase :: Cipher -> S.ByteString
 cipherPassphrase (Cipher c) = S.drop cipherBeginning c
@@ -80,7 +84,7 @@ cipherMac (Cipher c) = S.take cipherBeginning c
 cipherMac (MacOnlyCipher c) = c
 
 {- Creates a new Cipher, encrypted to the specified key id. -}
-genEncryptedCipher :: LensGpgEncParams c => Gpg.GpgCmd -> c -> Gpg.KeyId -> EncryptedCipherVariant -> Bool -> IO StorableCipher
+genEncryptedCipher :: LensEncParams c => Gpg.GpgCmd -> c -> Gpg.KeyId -> EncryptedCipherVariant -> Bool -> IO StorableCipher
 genEncryptedCipher cmd c keyid variant highQuality = do
 	ks <- Gpg.findPubKeys cmd keyid
 	random <- Gpg.genRandom cmd highQuality size
@@ -106,7 +110,7 @@ genSharedPubKeyCipher cmd keyid highQuality = do
 {- Updates an existing Cipher, making changes to its keyids.
  -
  - When the Cipher is encrypted, re-encrypts it. -}
-updateCipherKeyIds :: LensGpgEncParams encparams => Gpg.GpgCmd -> encparams -> [(Bool, Gpg.KeyId)] -> StorableCipher -> IO StorableCipher
+updateCipherKeyIds :: LensEncParams encparams => Gpg.GpgCmd -> encparams -> [(Bool, Gpg.KeyId)] -> StorableCipher -> IO StorableCipher
 updateCipherKeyIds _ _ _ SharedCipher{} = giveup "Cannot update shared cipher"
 updateCipherKeyIds _ _ [] c = return c
 updateCipherKeyIds cmd encparams changes encipher@(EncryptedCipher _ variant ks) = do
@@ -130,7 +134,7 @@ updateCipherKeyIds' cmd changes (KeyIds ks) = do
 	listKeyIds = concat <$$> mapM (keyIds <$$> Gpg.findPubKeys cmd)
 
 {- Encrypts a Cipher to the specified KeyIds. -}
-encryptCipher :: LensGpgEncParams c => Gpg.GpgCmd -> c -> Cipher -> EncryptedCipherVariant -> KeyIds -> IO StorableCipher
+encryptCipher :: LensEncParams c => Gpg.GpgCmd -> c -> Cipher -> EncryptedCipherVariant -> KeyIds -> IO StorableCipher
 encryptCipher cmd c cip variant (KeyIds ks) = do
 	-- gpg complains about duplicate recipient keyids
 	let ks' = nub $ sort ks
@@ -147,10 +151,10 @@ encryptCipher cmd c cip variant (KeyIds ks) = do
 		MacOnlyCipher x -> x
 
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
-decryptCipher :: LensGpgEncParams c => Gpg.GpgCmd -> c -> StorableCipher -> IO Cipher
+decryptCipher :: LensEncParams c => Gpg.GpgCmd -> c -> StorableCipher -> IO Cipher
 decryptCipher cmd c cip = decryptCipher' cmd Nothing c cip
 
-decryptCipher' :: LensGpgEncParams c => Gpg.GpgCmd -> Maybe [(String, String)] -> c -> StorableCipher -> IO Cipher
+decryptCipher' :: LensEncParams c => Gpg.GpgCmd -> Maybe [(String, String)] -> c -> StorableCipher -> IO Cipher
 decryptCipher' _ _ _ (SharedCipher t) = return $ Cipher t
 decryptCipher' _ _ _ (SharedPubKeyCipher t _) = return $ MacOnlyCipher t
 decryptCipher' cmd environ c (EncryptedCipher t variant _) =
@@ -198,16 +202,23 @@ readBytesStrictly a h = liftIO (S.hGetContents h) >>= a
 
 {- Runs a Feeder action, that generates content that is symmetrically
  - encrypted with the Cipher (unless it is empty, in which case
- - public-key encryption is used) using the given gpg options, and then
- - read by the Reader action. 
+ - public-key encryption is used), and then read by the Reader action. 
  -
- - Note that the Reader must fully consume gpg's input before returning.
+ - Note that the Reader must fully consume all input before returning.
  -}
-encrypt :: (MonadIO m, MonadMask m, LensGpgEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
-encrypt cmd c cipher = case cipher of
-	Cipher{} -> Gpg.feedRead cmd (params ++ Gpg.stdEncryptionParams True) $
-			cipherPassphrase cipher
-	MacOnlyCipher{} -> Gpg.feedRead' cmd $ params ++ Gpg.stdEncryptionParams False
+encrypt :: (MonadIO m, MonadMask m, LensEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
+encrypt gpgcmd c cipher feeder reader = case cipher of
+	Cipher{} -> 
+		let passphrase = cipherPassphrase cipher
+		in case statelessOpenPGPCommand c of
+			Just sopcmd -> withTmpDir "sop" $ \d ->
+				SOP.encryptSymmetric sopcmd passphrase
+					(SOP.EmptyDirectory d)
+					(statelessOpenPGPProfile c)
+					(SOP.Armoring False)
+					feeder reader
+			Nothing -> Gpg.feedRead gpgcmd (params ++ Gpg.stdEncryptionParams True) passphrase feeder reader
+	MacOnlyCipher{} -> Gpg.feedRead' gpgcmd (params ++ Gpg.stdEncryptionParams False) feeder reader
   where
 	params = getGpgEncParams c
 
@@ -215,12 +226,19 @@ encrypt cmd c cipher = case cipher of
  - Cipher (or using a private key if the Cipher is empty), and read by the
  - Reader action.
  -
- - Note that the Reader must fully consume gpg's input before returning.
+ - Note that the Reader must fully consume all input before returning.
  - -}
-decrypt :: (MonadIO m, MonadMask m, LensGpgEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
-decrypt cmd c cipher = case cipher of
-	Cipher{} -> Gpg.feedRead cmd params $ cipherPassphrase cipher
-	MacOnlyCipher{} -> Gpg.feedRead' cmd params
+decrypt :: (MonadIO m, MonadMask m, LensEncParams c) => Gpg.GpgCmd -> c -> Cipher -> Feeder -> Reader m a -> m a
+decrypt cmd c cipher feeder reader = case cipher of
+	Cipher{} -> 
+		let passphrase = cipherPassphrase cipher
+		in case statelessOpenPGPCommand c of
+			Just sopcmd -> withTmpDir "sop" $ \d ->
+				SOP.decryptSymmetric sopcmd passphrase
+					(SOP.EmptyDirectory d)
+					feeder reader
+			Nothing -> Gpg.feedRead cmd params passphrase feeder reader
+	MacOnlyCipher{} -> Gpg.feedRead' cmd params feeder reader
   where
 	params = Param "--decrypt" : getGpgDecParams c
 
@@ -235,19 +253,26 @@ prop_HmacSha1WithCipher_sane = known_good == macWithCipher' HmacSha1 "foo" "bar"
   where
 	known_good = "46b4ec586117154dacd49d664e5d63fdc88efb51"
 
-class LensGpgEncParams a where
-	{- Base parameters for encrypting. Does not include specification
+class LensEncParams a where
+	{- Base gpg parameters for encrypting. Does not include specification
 	 - of recipient keys. -}
 	getGpgEncParamsBase :: a -> [CommandParam]
-	{- Parameters for encrypting. When the remote is configured to use
+	{- Gpg parameters for encrypting. When the remote is configured to use
 	 - public-key encryption, includes specification of recipient keys. -}
 	getGpgEncParams :: a -> [CommandParam]
-	{- Parameters for decrypting. -}
+	{- Gpg parameters for decrypting. -}
 	getGpgDecParams :: a -> [CommandParam]
+	{- Set when stateless OpenPGP should be used rather than gpg.
+	 - It is currently only used for SharedEncryption and not the other
+	 - schemes which use public keys. -}
+	statelessOpenPGPCommand :: a -> Maybe SOP.SOPCmd
+	{- When using stateless OpenPGP, this may be set to a profile
+	 - which should be used instead of the default. -}
+	statelessOpenPGPProfile :: a -> Maybe SOP.SOPProfile
 
 {- Extract the GnuPG options from a pair of a Remote Config and a Remote
  - Git Config. -}
-instance LensGpgEncParams (ParsedRemoteConfig, RemoteGitConfig) where
+instance LensEncParams (ParsedRemoteConfig, RemoteGitConfig) where
 	getGpgEncParamsBase (_c,gc) = map Param (remoteAnnexGnupgOptions gc)
 	getGpgEncParams (c,gc) = getGpgEncParamsBase (c,gc) ++
  		{- When the remote is configured to use public-key encryption,
@@ -261,9 +286,21 @@ instance LensGpgEncParams (ParsedRemoteConfig, RemoteGitConfig) where
 					getRemoteConfigValue pubkeysField c
 			_ -> []
 	getGpgDecParams (_c,gc) = map Param (remoteAnnexGnupgDecryptOptions gc)
+	statelessOpenPGPCommand (c,gc) = case remoteAnnexSharedSOPCommand gc of
+		Nothing -> Nothing
+		Just sopcmd ->
+			{- So far stateless OpenPGP is only supported
+			 - for SharedEncryption, not other encryption
+			 - methods that involve public keys. -}
+			case getRemoteConfigValue encryptionField c of
+				Just SharedEncryption -> Just sopcmd
+				_ -> Nothing
+	statelessOpenPGPProfile (_c,gc) = remoteAnnexSharedSOPProfile gc
 
 {- Extract the GnuPG options from a Remote. -}
-instance LensGpgEncParams (RemoteA a) where
+instance LensEncParams (RemoteA a) where
 	getGpgEncParamsBase r = getGpgEncParamsBase (config r, gitconfig r)
 	getGpgEncParams r = getGpgEncParams (config r, gitconfig r)
 	getGpgDecParams r = getGpgDecParams (config r, gitconfig r)
+	statelessOpenPGPCommand r = statelessOpenPGPCommand (config r, gitconfig r)
+	statelessOpenPGPProfile r  = statelessOpenPGPProfile (config r, gitconfig r)

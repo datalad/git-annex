@@ -115,7 +115,7 @@ numChunks = pred . fromJust . fromKey keyChunkNum . fst . nextChunkKeyStream
  - writes a whole L.ByteString at a time.
  -}
 storeChunks
-	:: LensGpgEncParams encc
+	:: LensEncParams encc
 	=> UUID
 	-> ChunkConfig
 	-> EncKey
@@ -250,7 +250,7 @@ removeChunks remover u chunkconfig encryptor k = do
  - Handles decrypting the content when encryption is used.
  -}
 retrieveChunks 
-	:: LensGpgEncParams encc
+	:: LensEncParams encc
 	=> Retriever
 	-> UUID
 	-> VerifyConfig
@@ -391,7 +391,7 @@ retrieveChunks retriever u vc chunkconfig encryptor basek dest basep enc encc
  - into place. (And it may even already be in the right place..)
  -}
 writeRetrievedContent
-	:: LensGpgEncParams encc
+	:: LensEncParams encc
 	=> FilePath
 	-> Maybe (Cipher, EncKey)
 	-> encc

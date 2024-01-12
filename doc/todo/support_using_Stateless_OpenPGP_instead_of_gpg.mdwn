@@ -19,6 +19,14 @@ That example uses symmetric encryption, which is what git-annex uses
 for encryption=shared. So git-annex could use this or gpg to access the
 same encrypted special remote.
 
+Update: That's implemented now, when annex.shared-sop-command is configured
+it will be used for encryption=shared special remotes. It interoperates
+fine with using gpg, as long as the sop command uses a compatable profile
+(setting annex.shared-sop-profile = rfc4880 is probably a good idea).
+
+Leaving this todo open because there are other encryption schemes than 
+encryption=shared, for which using sop is not yet supported.
+
 For the public key encryption used by the other encryption= schemes,
 sop would be harder to use, because it does not define any location
 to store private keys. Though it is possible to export gpg private keys
@@ -39,14 +47,6 @@ It can detect if a password is needed by trying the sop operation without a
 password and checking for an exit code of 67.
 See [this issue on sop password prompting](https://gitlab.com/dkg/openpgp-stateless-cli/-/issues/64)
 
-git-annex also uses gpg to generate random data for an encryption cipher
-when setting up an encrypted special remote. Of course there are other ways
-to generate random data, but it does make sense to use gpg or a similar
-tool for this particular random data generation, since it's effectively a
-secret key. And genRandom already using --armor. So when using sop, it
-seems like it might make sense to use the `generate-key` command, and
-extract the armored data from it. Although note that not all of that output
-is random, the first several bytes are OpenPGP header that doesn't change
-much.
-
 See also: [[todo/whishlist__58___GPG_alternatives_like_AGE]]
+
+[[!meta title="support using Stateless OpenPGP instead of gpg for encryption methods other than encryption=shared"]]

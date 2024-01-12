@@ -35,6 +35,7 @@ data EncryptionMethod
 	| HybridEncryption
 	deriving (Typeable, Eq)
 
+-- A base-64 encoded random value used for encryption.
 -- XXX ideally, this would be a locked memory region
 data Cipher = Cipher ByteString | MacOnlyCipher ByteString
 

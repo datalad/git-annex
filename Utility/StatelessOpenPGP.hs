@@ -9,9 +9,10 @@
 
 module Utility.StatelessOpenPGP (
 	SOPCmd(..),
-	SopSubCmd,
+	SOPSubCmd,
+	SOPProfile(..),
 	Password,
-	Profile,
+	EmptyDirectory(..),
 	Armoring(..),
 	encryptSymmetric,
 	decryptSymmetric,
@@ -37,18 +38,18 @@ import qualified Data.ByteString as B
 newtype SOPCmd = SOPCmd { unSOPCmd :: String }
 
 {- The subcommand to run eg encrypt. -}
-type SopSubCmd = String
+type SOPSubCmd = String
+
+newtype SOPProfile = SOPProfile String
 
 {- Note that SOP requires passwords to be UTF-8 encoded, and that they
  - may try to trim trailing whitespace. They may also forbid leading
  - whitespace, or forbid some non-printing characters. -}
 type Password = B.ByteString
 
-type Profile = String
-
 newtype Armoring = Armoring Bool
 
-{- The path to an empty temporary directory.
+{- The path to a sufficiently empty directory.
  -
  - This is unfortunately needed because of an infelicity in the SOP
  - standard, as documented in section 9.9 "Be Careful with Special
@@ -61,6 +62,9 @@ newtype Armoring = Armoring Bool
  - special designators, an empty directory has to be provided, and the
  - command is run in that directory. Of course, this necessarily means
  - that any relative paths passed to the command have to be made absolute.
+ -
+ - The directory does not really have to be empty, it just needs to be one
+ - that should not contain any files with names starting with "@".
  -}
 newtype EmptyDirectory = EmptyDirectory FilePath
 
@@ -70,7 +74,7 @@ encryptSymmetric
 	=> SOPCmd
 	-> Password
 	-> EmptyDirectory
-	-> Maybe Profile
+	-> Maybe SOPProfile
 	-> Armoring
 	-> (Handle -> IO ())
 	-> (Handle -> m a)
@@ -84,7 +88,8 @@ encryptSymmetric sopcmd password emptydirectory mprofile armoring feeder reader 
 			Armoring True -> Nothing
 		, Just "--as=binary"
 		, case mprofile of
-			Just profile -> Just $ "--profile=" ++ profile
+			Just (SOPProfile profile) -> 
+				Just $ "--profile=" ++ profile
 			Nothing -> Nothing
 		]
 
@@ -121,7 +126,7 @@ test_encrypt_decrypt_Symmetric a b password armoring v = catchBoolIO $
 feedRead
 	:: (MonadIO m, MonadMask m)
 	=> SOPCmd
-	-> SopSubCmd
+	-> SOPSubCmd
 	-> [CommandParam]
 	-> Password
 	-> EmptyDirectory
@@ -166,7 +171,7 @@ feedRead cmd subcmd params password emptydirectory feeder reader = do
 feedRead'
 	:: (MonadIO m, MonadMask m)
 	=> SOPCmd
-	-> SopSubCmd
+	-> SOPSubCmd
 	-> [CommandParam]
 	-> Maybe EmptyDirectory
 	-> (Handle -> IO ())
