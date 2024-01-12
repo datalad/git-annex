@@ -1835,7 +1835,7 @@ test_sop_crypto = do
 	case filter (\(k, _) -> k == ck) gc of
 		[] -> noop
 		((_, sopcmd):_) -> go $ 
-			Utility.StatelessOpenPGP.SopCmd $
+			Utility.StatelessOpenPGP.SOPCmd $
 				Git.Types.fromConfigValue sopcmd
   where
 	ck = fromString "annex.shared-sop-command"

@@ -8,7 +8,7 @@
 {-# LANGUAGE CPP, OverloadedStrings #-}
 
 module Utility.StatelessOpenPGP (
-	SopCmd(..),
+	SOPCmd(..),
 	SopSubCmd,
 	Password,
 	Profile,
@@ -34,7 +34,7 @@ import Control.Monad.IO.Class
 import qualified Data.ByteString as B
 
 {- The command to run, eq sqop. -}
-newtype SopCmd = SopCmd { unSopCmd :: String }
+newtype SOPCmd = SOPCmd { unSOPCmd :: String }
 
 {- The subcommand to run eg encrypt. -}
 type SopSubCmd = String
@@ -67,7 +67,7 @@ newtype EmptyDirectory = EmptyDirectory FilePath
 {- Encrypt using symmetric encryption with the specified password. -}
 encryptSymmetric
 	:: (MonadIO m, MonadMask m)
-	=> SopCmd
+	=> SOPCmd
 	-> Password
 	-> EmptyDirectory
 	-> Maybe Profile
@@ -91,7 +91,7 @@ encryptSymmetric sopcmd password emptydirectory mprofile armoring feeder reader 
 {- Deccrypt using symmetric encryption with the specified password. -}
 decryptSymmetric
 	:: (MonadIO m, MonadMask m)
-	=> SopCmd
+	=> SOPCmd
 	-> Password
 	-> EmptyDirectory
 	-> (Handle -> IO ())
@@ -101,7 +101,7 @@ decryptSymmetric sopcmd password emptydirectory feeder reader =
 	feedRead sopcmd "decrypt" [] password emptydirectory feeder reader
 
 {- Test a value round-trips through symmetric encryption and decryption. -}
-test_encrypt_decrypt_Symmetric :: SopCmd -> SopCmd -> Password -> Armoring -> B.ByteString -> IO Bool
+test_encrypt_decrypt_Symmetric :: SOPCmd -> SOPCmd -> Password -> Armoring -> B.ByteString -> IO Bool
 test_encrypt_decrypt_Symmetric a b password armoring v = catchBoolIO $
 	withTmpDir "test" $ \d -> do
 		let ed = EmptyDirectory d
@@ -120,7 +120,7 @@ test_encrypt_decrypt_Symmetric a b password armoring v = catchBoolIO $
  - Note that the reader must fully consume its input before returning. -}
 feedRead
 	:: (MonadIO m, MonadMask m)
-	=> SopCmd
+	=> SOPCmd
 	-> SopSubCmd
 	-> [CommandParam]
 	-> Password
@@ -165,14 +165,14 @@ feedRead cmd subcmd params password emptydirectory feeder reader = do
 {- Like feedRead, but without password. -}
 feedRead'
 	:: (MonadIO m, MonadMask m)
-	=> SopCmd
+	=> SOPCmd
 	-> SopSubCmd
 	-> [CommandParam]
 	-> Maybe EmptyDirectory
 	-> (Handle -> IO ())
 	-> (Handle -> m a)
 	-> m a
-feedRead' (SopCmd cmd) subcmd params med feeder reader = do
+feedRead' (SOPCmd cmd) subcmd params med feeder reader = do
 	let p = (proc cmd (subcmd:toCommand params))
 		{ std_in = CreatePipe
 		, std_out = CreatePipe

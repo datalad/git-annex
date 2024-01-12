@@ -158,18 +158,18 @@ parseMac (Just (Proposed s)) = case readMac s of
 encryptionSetup :: RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, EncryptionIsSetup)
 encryptionSetup c gc = do
 	pc <- either giveup return $ parseEncryptionConfig c
-	cmd <- gpgCmd <$> Annex.getGitConfig
-	maybe (genCipher pc cmd) (updateCipher pc cmd) (extractCipher pc)
+	gpgcmd <- gpgCmd <$> Annex.getGitConfig
+	maybe (genCipher pc gpgcmd) (updateCipher pc gpgcmd) (extractCipher pc)
   where
 	-- The type of encryption
 	encryption = parseEncryptionMethod (fromProposedAccepted <$> M.lookup encryptionField c) c
 	-- Generate a new cipher, depending on the chosen encryption scheme
-	genCipher pc cmd = case encryption of
+	genCipher pc gpgcmd = case encryption of
 		Right NoneEncryption -> return (c, NoEncryption)
-		Right SharedEncryption -> encsetup $ genSharedCipher cmd
-		Right HybridEncryption -> encsetup $ genEncryptedCipher cmd (pc, gc) key Hybrid
-		Right PubKeyEncryption -> encsetup $ genEncryptedCipher cmd (pc, gc) key PubKey
-		Right SharedPubKeyEncryption -> encsetup $ genSharedPubKeyCipher cmd key
+		Right SharedEncryption -> encsetup $ genSharedCipher gpgcmd
+		Right HybridEncryption -> encsetup $ genEncryptedCipher gpgcmd (pc, gc) key Hybrid
+		Right PubKeyEncryption -> encsetup $ genEncryptedCipher gpgcmd (pc, gc) key PubKey
+		Right SharedPubKeyEncryption -> encsetup $ genSharedPubKeyCipher gpgcmd key
 		Left err -> giveup err
 	key = maybe (giveup "Specify keyid=...") fromProposedAccepted $
 		M.lookup (Accepted "keyid") c
@@ -177,13 +177,13 @@ encryptionSetup c gc = do
 		maybe [] (\k -> [(False,fromProposedAccepted k)]) (M.lookup (Accepted "keyid-") c)
 	cannotchange = giveup "Cannot set encryption type of existing remotes."
 	-- Update an existing cipher if possible.
-	updateCipher pc cmd v = case v of
+	updateCipher pc gpgcmd v = case v of
 		SharedCipher _ | encryption == Right SharedEncryption ->
 			return (c', EncryptionIsSetup)
 		EncryptedCipher _ variant _ | sameasencryption variant ->
-			use "encryption update" $ updateCipherKeyIds cmd (pc, gc) newkeys v
+			use "encryption update" $ updateCipherKeyIds gpgcmd (pc, gc) newkeys v
 		SharedPubKeyCipher _ _ ->
-			use "encryption update" $ updateCipherKeyIds cmd (pc, gc) newkeys v
+			use "encryption update" $ updateCipherKeyIds gpgcmd (pc, gc) newkeys v
 		_ -> cannotchange
 	sameasencryption variant = case encryption of
 		Right HybridEncryption -> variant == Hybrid
@@ -236,8 +236,8 @@ remoteCipher' c gc = case extractCipher c of
 				(go cachev encipher)
   where
 	go cachev encipher cache = do
-		cmd <- gpgCmd <$> Annex.getGitConfig
-		cipher <- liftIO $ decryptCipher cmd (c, gc) encipher
+		gpgcmd <- gpgCmd <$> Annex.getGitConfig
+		cipher <- liftIO $ decryptCipher gpgcmd (c, gc) encipher
 		liftIO $ atomically $ putTMVar cachev $
 			M.insert encipher cipher cache
 		return $ Just (cipher, encipher)

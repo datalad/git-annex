@@ -47,6 +47,7 @@ import Types.View
 import Config.DynamicConfig
 import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
+import Utility.StatelessOpenPGP (SOPCmd(..))
 import Utility.ThreadScheduler (Seconds(..))
 import Utility.Url (Scheme, mkScheme)
 
@@ -372,7 +373,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexRsyncTransport :: [String]
 	, remoteAnnexGnupgOptions :: [String]
 	, remoteAnnexGnupgDecryptOptions :: [String]
-	, remoteAnnexSharedSOPCommand :: Maybe String
+	, remoteAnnexSharedSOPCommand :: Maybe SOPCmd
 	, remoteAnnexSharedSOPProfile :: Maybe String
 	, remoteAnnexRsyncUrl :: Maybe String
 	, remoteAnnexBupRepo :: Maybe String
@@ -441,7 +442,8 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexRsyncTransport = getoptions "rsync-transport"
 		, remoteAnnexGnupgOptions = getoptions "gnupg-options"
 		, remoteAnnexGnupgDecryptOptions = getoptions "gnupg-decrypt-options"
-		, remoteAnnexSharedSOPCommand = notempty $ getmaybe "shared-sop-command"
+		, remoteAnnexSharedSOPCommand = SOPCmd <$>
+			notempty (getmaybe "shared-sop-command")
 		, remoteAnnexSharedSOPProfile = notempty $ getmaybe "shared-sop-profile"
 		, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"
 		, remoteAnnexBupRepo = getmaybe "buprepo"

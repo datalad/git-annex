@@ -3,7 +3,7 @@
  - Currently using gpg; could later be modified to support different
  - crypto backends if necessary.
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -43,6 +43,7 @@ import Control.Monad.IO.Class
 
 import Annex.Common
 import qualified Utility.Gpg as Gpg
+import qualified Utility.StatelessOpenPGP as SOP
 import Types.Crypto
 import Types.Remote
 import Types.Key
@@ -194,7 +195,6 @@ readBytes a h = liftIO (L.hGetContents h) >>= a
 
 readBytesStrictly :: (MonadIO m) => (S.ByteString -> m a) -> Reader m a
 readBytesStrictly a h = liftIO (S.hGetContents h) >>= a
-
 
 {- Runs a Feeder action, that generates content that is symmetrically
  - encrypted with the Cipher (unless it is empty, in which case
