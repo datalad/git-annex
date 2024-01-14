@@ -20,7 +20,7 @@ Mac #2 shows the “<me on another computer> is sending a pair request” notice
 
 At this point, Assistant on Mac #1 shows “PairListener crashed: failed setting up ssh authorized keys” with a ”Restart Thread” button. Clicking the button does not seem to help.
 
-Here are things I’ve also check and/or tried:
+Here are things I’ve also checked and/or tried:
 
 1. Enabled “Remote Login” (SSH) in System Settings > General > Sharing on each computer. (I did this before any attempts to share any `git-annex` repositories between the two computers.) This is limited to only my macOS user account on both Macs.
 1. macOS Firewall is set to default (i.e. shows up as “Inactive” on both Macs.
