@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+There is no way to specify the commit message used by the pull command.
+
+### What steps will reproduce the problem?
+
+When pulling from a special remote with importtree=yes to get new/modified files, git-annex generates the commit message. It is desired to specify the commit message to describe the content being pulled.
+
+### What version of git-annex are you using? On what operating system?
+
+10.20231130-g0e9bc415882a5e3a285e004cf9f80936e5762a07
+Linux
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
