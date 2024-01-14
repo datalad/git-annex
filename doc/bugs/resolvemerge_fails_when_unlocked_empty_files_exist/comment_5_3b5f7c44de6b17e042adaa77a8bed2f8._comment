@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="aurelien@f0d0a0c7da69eff6badf0464898f0a859f69114d"
+ nickname="aurelien"
+ avatar="http://cdn.libravatar.org/avatar/2cbf28821cf4b36380554c22f0b8b809"
+ subject="comment 5"
+ date="2024-01-14T23:18:43Z"
+ content="""
+I think I have been hit by this bug as well with getting \"fatal: stash failed\" after importing some files and trying to sync.
+
+Indeed, temporarily deactivating filter.annex.process and filter.annex.clean allowed to sync. 
+
+And the problem didn't reappear after so far. 
+Is there a reliable workaround (the bug report seem to have no responses?). 
+
+git version 2.43.0
+git-annex version: 10.20230926-g4ac2758ba589562e427a66437b9fdcd5172357e1
+"""]]
