@@ -1,0 +1,32 @@
+I’m trying to start syncing between two Macs. This is my first time trying to use `git-annex`.
+
+I have Mac #1 with macOS v14 Sonoma, which is an Apple Silicon Mac.
+
+Mac #2, an Intel Macs, has macOS v13 Ventura.
+
+I installed `git-annex` via the disk image (dmg) on both. Each computer has version 10.20231228-g181e14467ffee9d198529efb74c38242e51107c3.
+
+On Mac #1, I start “git-annex” by double-clicking on it in the Finder. It starts up the assistant in Safari. I create a starting git-annex repo there, with a path in my macOS user home folder — or at least I *try*, because the progress of loading the page never finishes after many minutes of waiting and no indication of any further progress.
+
+I found that if I quit `git-annex` in Activity Monitor and then re-launch it, I see the `git-annex` repo listed.
+
+From there, I select `git-annex` Assistant > Configuration > Repositories > Local Computer. I input a Secret Phase, click the “Start Pairing” button, and all seems relatively okay. There is a “Pair in progress” notice in the Assistant, with a “Cancel” button.
+
+On Mac #2, I start “git-annex” in the Finder, and it launches in Safari. I create an initial git-annex repo. Again, this never seems to complete.
+
+I quit `git-annex` in Activity Monitor and then re-launch it, I see the git-annex repo listed as I did on Mac #1.
+
+Mac #2 shows the “<me on another computer> is sending a pair request” notice, with a “Respond” button. I click “Respond,” enter the same Secret Phrase, and click “Finish pairing.”
+
+At this point, Assistant on Mac #1 shows “PairListener crashed: failed setting up ssh authorized keys” with a ”Restart Thread” button. Clicking the button does not seem to help.
+
+Here are things I’ve also check and/or tried:
+
+1. Enabled “Remote Login” (SSH) in System Settings > General > Sharing on each computer. (I did this before any attempts to share any `git-annex` repositories between the two computers.) This is limited to only my macOS user account on both Macs.
+1. macOS Firewall is set to default (i.e. shows up as “Inactive” on both Macs.
+1. Mac #2 is using Little Snitch (an alternative firewall) in “Silent (Allow)” mode. I don’t get any alerts from its app about `git-annex` or `ssh`, and it is set to allow incoming and outbound traffic. Even with Little Snitch in “Alert Mode,” I do not get any information about `git-annex` or `ssh`.
+1. Doing a manual setup without Assistant, using the “walkthrough” instructions. This has always resulting in “Remote origin does not have git-annex installed” errors, which I surmise are due to the `authorized_keys` and `config` settings for SSH, or just needing a more-permissive-than-macOS-defaults SSH setup.
+1. Starting setup with Assistant, then trying to manually fill in the SSH configuration gaps. This means I’m trying to cobble together what I assume should be the `authorized_keys` and `config` settings for SSH manually. I’ve used the `git-annex` man pages and some ChatGPT to try to sort that out. I haven’t sorted this out yet. I also haven’t been able to have Git work over SSH between the two computers for this purpose. While doing this, I noted that Mac #1 didn’t have any SSH changes made by git-annex Assistant — but interestingly, Mac #2 did get at least the `authorized_keys` changes. It is possible if I simplify what was doing manually, I may get better luck. Mac #2 already has an `~/.ssh/config` setup and `~/.ssh/authorized_keys`.
+1. Assistant setup, after adding the “git-annex.app” to the Full Disk Access list in System Settings > Privacy & Security. I quit all `git-annex` processes and restarted the app from the Finder afterwards on both computers. Same results.
+
+I’m at a bit of a loss here. Thanks in advance for any ideas that could help get this going.
