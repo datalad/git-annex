@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="TTTTAAAx"
+ avatar="http://cdn.libravatar.org/avatar/9edd4b69b9f9fc9b8c1cb8ecd03902d5"
+ subject="comment 8"
+ date="2024-01-15T01:43:28Z"
+ content="""
+> Sounds like you might want to use datalad, which is built around git annex and where submodules are a first-class citizen. 
+
+Thank you for information. I'll try datalad. I considered it for audio and transcription dataset management few years ago. But I didn't use it because datalad using git-annex in it and I already used git-annex for data management. It was seemd to be redundant to me.
+
+I think submodule path detecting can be implemented still and be useful in `git-annex-assist` also.
+"""]]
