@@ -1,0 +1,32 @@
+### Please describe the problem.
+
+Spotted today
+
+```
+[695 of 696] Compiling CmdLine.GitAnnex
+runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\lib (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\lib (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\lib (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\lib (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\lib (Win32 error 3): The system cannot find the path specified.
+ghc.exe: addLibrarySearchPath: C:\Users\runneradmin\AppData\Local\Programs\stack\x86_64-windows\msys2-20221216\mingw64\bin (Win32 error 3): The system cannot find the path specified.
+
+Error: [S-7282]
+       Stack failed to execute the build plan.
+       
+       While executing the build plan, Stack encountered the error:
+       
+       [S-7011]
+       While building package git-annex-10.20231227 (scroll up to its section to see the error)
+       using:
+       D:\a\git-annex\git-annex\.stack-work\dist\274b403a\setup\setup --verbose=1 --builddir=.stack-work\dist\274b403a build exe:git-annex --ghc-options ""
+       Process exited with code: ExitFailure 1 
+Error: Process completed with exit code 1.
+```
+
+https://github.com/datalad/git-annex/actions/runs/7516705948/job/20462067511
