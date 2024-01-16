@@ -1,11 +1,12 @@
 {- git trees
  -
- - Copyright 2016-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
 {-# LANGUAGE BangPatterns, TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Git.Tree (
 	Tree(..),
@@ -231,7 +232,7 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 	withMkTreeHandle repo $ \h -> do
 		(l, cleanup) <- liftIO $ lsTreeWithObjects LsTree.LsTreeRecursive r repo
 		(l', _, _) <- go h False [] 1 inTopTree l
-		l'' <- adjustlist h 0 inTopTree (const True) l'
+		l'' <- adjustlist h 0 inTopTree topTreePath l'
 		sha <- liftIO $ mkTree h l''
 		void $ liftIO cleanup
 		return sha
@@ -250,7 +251,7 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 						in go h modified (blob:c) depth intree is
 			Just TreeObject -> do
 				(sl, modified, is') <- go h False [] (depth+1) (beneathSubTree i) is
-				sl' <- adjustlist h depth (inTree i) (beneathSubTree i) sl
+				sl' <- adjustlist h depth (inTree i) (gitPath i) sl
 				let slmodified = sl' /= sl
 				subtree <- if modified || slmodified
 					then liftIO $ recordSubTree h $ NewSubTree (LsTree.file i) sl'
@@ -268,15 +269,21 @@ adjustTree adjusttreeitem addtreeitems resolveaddconflict removefiles r repo =
 			_ -> giveup ("unexpected object type \"" ++ decodeBS (LsTree.typeobj i) ++ "\"")
 		| otherwise = return (c, wasmodified, i:is)
 
-	adjustlist h depth ishere underhere l = do
-		let (addhere, rest) = partition ishere addtreeitems
+	adjustlist h depth ishere herepath l = do
+		let addhere = fromMaybe [] $ M.lookup herepath addtreeitempathmap
 		let l' = filter (not . removed) $
 			addoldnew l (map treeItemToTreeContent addhere)
 		let inl i = any (\t -> beneathSubTree t i) l'
 		let (Tree addunderhere) = flattenTree depth $ treeItemsToTree $
-			filter (\i -> underhere i && not (inl i)) rest
+			filter (not . inl) $ if herepath == topTreePath
+				then filter (not . ishere) addtreeitems
+				else fromMaybe [] $
+					M.lookup (subTreePrefix herepath) addtreeitemprefixmap
 		addunderhere' <- liftIO $ mapM (recordSubTree h) addunderhere
 		return (addoldnew l' addunderhere')
+
+	addtreeitempathmap = mkPathMap addtreeitems
+	addtreeitemprefixmap = mkSubTreePathPrefixMap addtreeitems
 
 	removeset = S.fromList $ map (P.normalise . gitPath) removefiles
 	removed (TreeBlob f _ _) = S.member (P.normalise (gitPath f)) removeset
@@ -355,12 +362,8 @@ graftTree' subtree graftloc basetree repo hdl = go basetree subdirs graftdirs
 
 	subdirs = P.splitDirectories $ gitPath graftloc
 
-	-- For a graftloc of "foo/bar/baz", this generates
-	-- ["foo", "foo/bar", "foo/bar/baz"]
 	graftdirs = map (asTopFilePath . toInternalGitPath) $
-		mkpaths [] subdirs
-	mkpaths _ [] = []
-	mkpaths base (d:rest) = (P.joinPath base P.</> d) : mkpaths (base ++ [d]) rest
+		pathPrefixes subdirs
 
 {- Assumes the list is ordered, with tree objects coming right before their
  - contents. -}
@@ -413,13 +416,50 @@ instance GitPath TreeContent where
 	gitPath (TreeCommit f _ _) = gitPath f
 
 inTopTree :: GitPath t => t -> Bool
-inTopTree = inTree "."
+inTopTree = inTree topTreePath
+
+topTreePath :: RawFilePath
+topTreePath = "."
 
 inTree :: (GitPath t, GitPath f) => t -> f -> Bool
 inTree t f = gitPath t == P.takeDirectory (gitPath f)
 
 beneathSubTree :: (GitPath t, GitPath f) => t -> f -> Bool
-beneathSubTree t f = prefix `B.isPrefixOf` P.normalise (gitPath f)
+beneathSubTree t f = subTreePrefix t `B.isPrefixOf` subTreePath f
+
+subTreePath :: GitPath t => t -> RawFilePath
+subTreePath = P.normalise . gitPath
+
+subTreePrefix :: GitPath t => t -> RawFilePath
+subTreePrefix t
+	| B.null tp = tp
+	| otherwise = P.addTrailingPathSeparator (P.normalise tp)
   where
 	tp = gitPath t
-	prefix = if B.null tp then tp else P.addTrailingPathSeparator (P.normalise tp)
+
+{- Makes a Map where the keys are directories, and the values
+ - are the items located in that directory.
+ -
+ - Values that are not in any subdirectory are placed in
+ - the topTreePath key.
+ -}
+mkPathMap :: GitPath t => [t] -> M.Map RawFilePath [t]
+mkPathMap l = M.fromListWith (++) $
+	map (\ti -> (P.takeDirectory (gitPath ti), [ti])) l
+
+{- Input is eg splitDirectories "foo/bar/baz",
+ - for which it will output ["foo", "foo/bar", "foo/bar/baz"] -}
+pathPrefixes :: [RawFilePath] -> [RawFilePath]
+pathPrefixes = go []
+  where
+	go _ [] = []
+	go base (d:rest) = (P.joinPath base P.</> d) : go (base ++ [d]) rest
+
+{- Makes a Map where the keys are all subtree path prefixes, 
+ - and the values are items with that subtree path prefix.
+ -}
+mkSubTreePathPrefixMap :: GitPath t => [t] -> M.Map RawFilePath [t]
+mkSubTreePathPrefixMap l = M.fromListWith (++) $ concatMap go l
+  where
+	go ti = map (\p -> (p, [ti]))
+		(map subTreePrefix $ pathPrefixes $ P.splitDirectories $ subTreePath ti)
