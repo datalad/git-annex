@@ -58,4 +58,4 @@ To pass parameters to ssh/rsh, include the parameters after "rsh" or
 "ssh".  For example, to configure ssh to use the private key at
 `/path/to/private/key`:
 
-	git config renote.name.annex-rsync-transport "ssh -i /path/to/private/key"
+	git config remote.name.annex-rsync-transport "ssh -i /path/to/private/key"
