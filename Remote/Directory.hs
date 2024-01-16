@@ -228,7 +228,7 @@ checkDiskSpaceDirectory d k = do
 		(\a b -> deviceID a == deviceID b)
 			<$> R.getSymbolicLinkStatus d
 			<*> R.getSymbolicLinkStatus annexdir
-	checkDiskSpace (Just d) k 0 samefilesystem
+	checkDiskSpace Nothing (Just d) k 0 samefilesystem
 
 {- Passed a temp directory that contains the files that should be placed
  - in the dest directory, moves it into place. Anything already existing

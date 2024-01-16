@@ -222,7 +222,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 	isencrypted = isEncrypted c
 
 	-- chunk, then encrypt, then feed to the storer
-	storeKeyGen k p enc = sendAnnex k rollback $ \src ->
+	storeKeyGen k p enc = sendAnnex k rollback $ \src _sz ->
 		displayprogress p k (Just src) $ \p' ->
 			storeChunks (uuid baser) chunkconfig enck k src p'
 				enc encr storer checkpresent

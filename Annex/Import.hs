@@ -841,7 +841,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				when ok $
 					logStatus k InfoPresent
 				return (Just (k, ok))
-			checkDiskSpaceToGet k Nothing $
+			checkDiskSpaceToGet k Nothing Nothing $
 				notifyTransfer Download af $
 					download' (Remote.uuid remote) k af Nothing stdRetry $ \p' ->
 						withTmp k $ downloader p'
@@ -860,7 +860,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 					recordcidkey cidmap cid k
 					return sha
 				Nothing -> error "internal"
-		checkDiskSpaceToGet tmpkey Nothing $
+		checkDiskSpaceToGet tmpkey Nothing Nothing $
 			withTmp tmpkey $ \tmpfile ->
 				tryNonAsync (downloader tmpfile) >>= \case
 					Right sha -> return $ Just (loc, Left sha)
@@ -896,7 +896,7 @@ importKeys remote importtreeconfig importcontent thirdpartypopulated importablec
 				warning (UnquotedString (show e))
 				return Nothing
 		let bwlimit = remoteAnnexBwLimit (Remote.gitconfig remote)
-		checkDiskSpaceToGet tmpkey Nothing $
+		checkDiskSpaceToGet tmpkey Nothing Nothing $
 			notifyTransfer Download af $
 				download' (Remote.uuid remote) tmpkey af Nothing stdRetry $ \p ->
 					withTmp tmpkey $ \tmpfile ->

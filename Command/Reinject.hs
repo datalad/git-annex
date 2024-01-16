@@ -128,7 +128,7 @@ perform src key = do
 		, giveup "failed"
 		)
   where
-	move = checkDiskSpaceToGet key False $
+	move = checkDiskSpaceToGet key Nothing False $
 		moveAnnex key (AssociatedFile Nothing) src
 
 cleanup :: Key -> CommandCleanup

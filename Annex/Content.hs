@@ -279,9 +279,10 @@ lockContentUsing contentlocker key fallback a = withContentLockFile key $ \mlock
 {- Runs an action, passing it the temp file to get,
  - and if the action succeeds, verifies the file matches
  - the key and moves the file into the annex as a key's content. -}
-getViaTmp :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> AssociatedFile -> (RawFilePath -> Annex (Bool, Verification)) -> Annex Bool
-getViaTmp rsp v key af action = checkDiskSpaceToGet key False $
-	getViaTmpFromDisk rsp v key af action
+getViaTmp :: RetrievalSecurityPolicy -> VerifyConfig -> Key -> AssociatedFile -> Maybe FileSize -> (RawFilePath -> Annex (Bool, Verification)) -> Annex Bool
+getViaTmp rsp v key af sz action =
+	checkDiskSpaceToGet key sz False $
+		getViaTmpFromDisk rsp v key af action
 
 {- Like getViaTmp, but does not check that there is enough disk space
  - for the incoming key. For use when the key content is already on disk
@@ -349,14 +350,14 @@ verificationOfContentFailed tmpfile = do
  -
  - Wen there's enough free space, runs the download action.
  -}
-checkDiskSpaceToGet :: Key -> a -> Annex a -> Annex a
-checkDiskSpaceToGet key unabletoget getkey = do
+checkDiskSpaceToGet :: Key -> Maybe FileSize -> a -> Annex a -> Annex a
+checkDiskSpaceToGet key sz unabletoget getkey = do
 	tmp <- fromRepo (gitAnnexTmpObjectLocation key)
 	e <- liftIO $ doesFileExist (fromRawFilePath tmp)
 	alreadythere <- liftIO $ if e
 		then getFileSize tmp
 		else return 0
-	ifM (checkDiskSpace Nothing key alreadythere True)
+	ifM (checkDiskSpace sz Nothing key alreadythere True)
 		( do
 			-- The tmp file may not have been left writable
 			when e $ thawContent tmp
@@ -542,17 +543,18 @@ unlinkAnnex key = do
 		secureErase obj
 		liftIO $ removeWhenExistsWith R.removeLink obj
 
-{- Runs an action to transfer an object's content.
+{- Runs an action to transfer an object's content. The action is also
+ - passed the size of the object.
  -
  - In some cases, it's possible for the file to change as it's being sent.
  - If this happens, runs the rollback action and throws an exception.
  - The rollback action should remove the data that was transferred.
  -}
-sendAnnex :: Key -> Annex () -> (FilePath -> Annex a) -> Annex a
+sendAnnex :: Key -> Annex () -> (FilePath -> FileSize -> Annex a) -> Annex a
 sendAnnex key rollback sendobject = go =<< prepSendAnnex' key
   where
-	go (Just (f, check)) = do
-		r <- sendobject f
+	go (Just (f, sz, check)) = do
+		r <- sendobject f sz
 		check >>= \case
 			Nothing -> return r
 			Just err -> do
@@ -571,9 +573,13 @@ sendAnnex key rollback sendobject = go =<< prepSendAnnex' key
  - Annex monad of the remote that is receiving the object, rather than
  - the sender. So it cannot rely on Annex state.
  -}
-prepSendAnnex :: Key -> Annex (Maybe (FilePath, Annex Bool))
+prepSendAnnex :: Key -> Annex (Maybe (FilePath, FileSize, Annex Bool))
 prepSendAnnex key = withObjectLoc key $ \f -> do
-	let retval c = return $ Just (fromRawFilePath f, sameInodeCache f c)
+	let retval c cs = return $ Just 
+		(fromRawFilePath f
+		, inodeCacheFileSize c
+		, sameInodeCache f cs
+		)
 	cache <- Database.Keys.getInodeCaches key
 	if null cache
 		-- Since no inode cache is in the database, this
@@ -581,7 +587,7 @@ prepSendAnnex key = withObjectLoc key $ \f -> do
 		-- change while the transfer is in progress, so
 		-- generate an inode cache for the starting
 		-- content.
-		then maybe (return Nothing) (retval . (:[]))
+		then maybe (return Nothing) (\fc -> retval fc [fc])
 			=<< withTSDelta (liftIO . genInodeCache f)
 		-- Verify that the object is not modified. Usually this
 		-- only has to check the inode cache, but if the cache
@@ -589,19 +595,19 @@ prepSendAnnex key = withObjectLoc key $ \f -> do
 		-- content.
 		else withTSDelta (liftIO . genInodeCache f) >>= \case
 			Just fc -> ifM (isUnmodified' key f fc cache)
-				( retval (fc:cache)
+				( retval fc (fc:cache)
 				, return Nothing
 				)
 			Nothing -> return Nothing
 
-prepSendAnnex' :: Key -> Annex (Maybe (FilePath, Annex (Maybe String)))
+prepSendAnnex' :: Key -> Annex (Maybe (FilePath, FileSize, Annex (Maybe String)))
 prepSendAnnex' key = prepSendAnnex key >>= \case
-	Just (f, checksuccess) -> 
+	Just (f, sz, checksuccess) -> 
 		let checksuccess' = ifM checksuccess
 			( return Nothing
 			, return (Just "content changed while it was being sent")
 			)
-		in return (Just (f, checksuccess'))
+		in return (Just (f, sz, checksuccess'))
 	Nothing -> return Nothing
 
 cleanObjectLoc :: Key -> Annex () -> Annex ()

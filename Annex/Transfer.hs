@@ -80,7 +80,7 @@ download r key f d witness =
 		Just StallDetectionDisabled -> go Nothing
 		Just sd -> runTransferrer sd r key f d Download witness
   where
-	go sd = getViaTmp (Remote.retrievalSecurityPolicy r) vc key f $ \dest ->
+	go sd = getViaTmp (Remote.retrievalSecurityPolicy r) vc key f Nothing $ \dest ->
 		download' (Remote.uuid r) key f sd d (go' dest) witness
 	go' dest p = verifiedAction $
 		Remote.retrieveKeyFile r key f (fromRawFilePath dest) p vc

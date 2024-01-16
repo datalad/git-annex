@@ -195,7 +195,7 @@ performRemote key afile backend numcopies remote =
 		let cleanup = liftIO $ catchIO (R.removeLink tmp) (const noop)
 		cleanup
 		cleanup `after` a tmp
-	getfile tmp = ifM (checkDiskSpace (Just (P.takeDirectory tmp)) key 0 True)
+	getfile tmp = ifM (checkDiskSpace Nothing (Just (P.takeDirectory tmp)) key 0 True)
 		( ifM (getcheap tmp)
 			( return (Just (Right UnVerified))
 			, ifM (Annex.getRead Annex.fast)

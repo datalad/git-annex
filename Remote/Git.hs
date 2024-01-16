@@ -487,7 +487,7 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
 		let bwlimit = remoteAnnexBwLimit (gitconfig r)
 		-- run copy from perspective of remote
 		onLocalFast st $ Annex.Content.prepSendAnnex' key >>= \case
-			Just (object, check) -> do
+			Just (object, _sz, check) -> do
 				let checksuccess = check >>= \case
 					Just err -> giveup err
 					Nothing -> return True
@@ -545,7 +545,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 	| otherwise = giveup "copying to non-ssh repo not supported"
   where
 	copylocal Nothing = giveup "content not available"
-	copylocal (Just (object, check)) = do
+	copylocal (Just (object, sz, check)) = do
 		-- The check action is going to be run in
 		-- the remote's Annex, but it needs access to the local
 		-- Annex monad's state.
@@ -563,7 +563,7 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 				let checksuccess = liftIO checkio >>= \case
 					Just err -> giveup err
 					Nothing -> return True
-				logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file $ \dest ->
+				logStatusAfter key $ Annex.Content.getViaTmp rsp verify key file (Just sz) $ \dest ->
 					metered (Just (combineMeterUpdate meterupdate p)) key bwlimit $ \_ p' -> 
 						copier object (fromRawFilePath dest) key p' checksuccess verify
 			)

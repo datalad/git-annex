@@ -439,7 +439,7 @@ downloadWith canadd addunlockedmatcher downloader dummykey u url file =
  - the returned location. -}
 downloadWith' :: (FilePath -> MeterUpdate -> Annex Bool) -> Key -> UUID -> URLString -> RawFilePath -> Annex (Maybe (RawFilePath, Backend))
 downloadWith' downloader dummykey u url file =
-	checkDiskSpaceToGet dummykey Nothing $ do
+	checkDiskSpaceToGet dummykey Nothing Nothing $ do
 		backend <- chooseBackend file
 		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
 		let t = (Transfer.Transfer Transfer.Download u (fromKey id dummykey))

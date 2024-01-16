@@ -64,7 +64,7 @@ runLocal runst runner a = case a of
 		let fallback = runner (sender mempty (return Invalid))
 		v <- tryNonAsync $ prepSendAnnex k
 		case v of
-			Right (Just (f, checkchanged)) -> proceed $ do
+			Right (Just (f, _sz, checkchanged)) -> proceed $ do
 				-- alwaysUpload to allow multiple uploads of the same key.
 				let runtransfer ti = transfer alwaysUpload k af Nothing $ \p ->
 					sinkfile f o checkchanged sender p ti
@@ -79,7 +79,7 @@ runLocal runst runner a = case a of
 			iv <- startVerifyKeyContentIncrementally DefaultVerify k
 			let runtransfer ti = 
 				Right <$> transfer download' k af Nothing (\p ->
-					logStatusAfter k $ getViaTmp rsp DefaultVerify k af $ \tmp ->
+					logStatusAfter k $ getViaTmp rsp DefaultVerify k af Nothing $ \tmp ->
 						storefile (fromRawFilePath tmp) o l getb iv validitycheck p ti)
 			let fallback = return $ Left $
 				ProtoFailureMessage "transfer already in progress, or unable to take transfer lock"

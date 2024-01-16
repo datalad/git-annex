@@ -296,7 +296,7 @@ test runannex mkr mkk =
 		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return True
 			Just verifier -> verifier k (serializeKey' k)
-	get r k = logStatusAfter k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) $ \dest ->
+	get r k = logStatusAfter k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
 		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate (RemoteVerify r)) >>= \case
 			Right v -> return (True, v)
 			Left _ -> return (False, UnVerified)
@@ -370,13 +370,13 @@ testUnavailable runannex mkr mkk =
 	, check (`notElem` [Right True, Right False]) "checkPresent" $ \r k ->
 		Remote.checkPresent r k
 	, check (== Right False) "retrieveKeyFile" $ \r k ->
-		logStatusAfter k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) $ \dest ->
+		logStatusAfter k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
 			tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate (RemoteVerify r)) >>= \case
 				Right v -> return (True, v)
 				Left _ -> return (False, UnVerified)
 	, check (== Right False) "retrieveKeyFileCheap" $ \r k -> case Remote.retrieveKeyFileCheap r of
 		Nothing -> return False
-		Just a -> logStatusAfter k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) $ \dest -> 
+		Just a -> logStatusAfter k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest -> 
 			unVerified $ isRight
 				<$> tryNonAsync (a k (AssociatedFile Nothing) (fromRawFilePath dest))
 	]

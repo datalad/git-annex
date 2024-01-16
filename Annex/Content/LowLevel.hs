@@ -1,6 +1,6 @@
 {- git-annex low-level content functions
  -
- - Copyright 2010-2018 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -102,13 +102,13 @@ preserveGitMode _ _ = return True
  - to be downloaded from the free space. This way, we avoid overcommitting
  - when doing concurrent downloads.
  -}
-checkDiskSpace :: Maybe RawFilePath -> Key -> Integer -> Bool -> Annex Bool
-checkDiskSpace destdir key = checkDiskSpace' (fromMaybe 1 (fromKey keySize key)) destdir key
+checkDiskSpace :: Maybe FileSize -> Maybe RawFilePath -> Key -> Integer -> Bool -> Annex Bool
+checkDiskSpace msz destdir key = checkDiskSpace' sz destdir key
+  where
+	sz = fromMaybe 1 (fromKey keySize key <|> msz)
 
-{- Allows specifying the size of the key, if it's known, which is useful
- - as not all keys know their size. -}
-checkDiskSpace' :: Integer -> Maybe RawFilePath -> Key -> Integer -> Bool -> Annex Bool
-checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getRead Annex.force)
+checkDiskSpace' :: FileSize -> Maybe RawFilePath -> Key -> Integer -> Bool -> Annex Bool
+checkDiskSpace' sz destdir key alreadythere samefilesystem = ifM (Annex.getRead Annex.force)
 	( return True
 	, do
 		-- We can't get inprogress and free at the same
@@ -123,7 +123,7 @@ checkDiskSpace' need destdir key alreadythere samefilesystem = ifM (Annex.getRea
 		dir >>= liftIO . getDiskFree . fromRawFilePath >>= \case
 			Just have -> do
 				reserve <- annexDiskReserve <$> Annex.getGitConfig
-				let delta = need + reserve - have - alreadythere + inprogress
+				let delta = sz + reserve - have - alreadythere + inprogress
 				let ok = delta <= 0
 				unless ok $
 					warning $ UnquotedString $ 

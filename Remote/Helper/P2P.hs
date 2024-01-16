@@ -16,6 +16,7 @@ import Types.Remote
 import Annex.Content
 import Messages.Progress
 import Utility.Metered
+import Utility.Tuple
 import Types.NumCopies
 import Annex.Verify
 
@@ -33,7 +34,7 @@ type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) ->
 
 store :: RemoteGitConfig -> ProtoRunner Bool -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
 store gc runner k af p = do
-	let sizer = KeySizer k (fmap (toRawFilePath . fst) <$> prepSendAnnex k)
+	let sizer = KeySizer k (fmap (toRawFilePath . fst3) <$> prepSendAnnex k)
 	let bwlimit = remoteAnnexBwLimit gc
 	metered (Just p) sizer bwlimit $ \_ p' ->
 		runner (P2P.put k af p') >>= \case
