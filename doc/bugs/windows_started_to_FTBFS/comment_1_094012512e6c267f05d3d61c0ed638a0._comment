@@ -1,0 +1,52 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="I can confirm"
+ date="2024-01-16T22:28:21Z"
+ content="""
+but the true point of error seems to be this (line 1167 in the log):
+
+```
+[605 of 696] Compiling Test
+D:\a\git-annex\git-annex\Test.hs:1850:1: error:
+[606 of 696] Compiling Assistant.Pairing
+    The type signature for `test_gpg_crypto'
+      lacks an accompanying binding
+[607 of 696] Compiling Assistant.Types.DaemonStatus
+      Perhaps you meant one of these:
+[608 of 696] Compiling Assistant.Monad
+        `test_sop_crypto' (Defined at Test.hs:1833:1),
+[609 of 696] Compiling Assistant.Types.NamedThread
+        `test_crypto' (Defined at Test.hs:1944:1)
+```
+
+In fact if you do a non-parallelbuild, stack bails out already @ Test.hs:
+
+```
+[603 of 696] Compiling CmdLine.GitAnnexShell
+[604 of 696] Compiling Utility.Verifiable
+[605 of 696] Compiling Test
+
+C:\Users\jkniiv\Projektit\git-annex.branchable.com\git-annex--BUILD-240116-c15fa1763\Test.hs:1850:1: error:
+    The type signature for `test_gpg_crypto'
+      lacks an accompanying binding
+      Perhaps you meant one of these:
+        `test_sop_crypto' (Defined at Test.hs:1833:1),
+        `test_crypto' (Defined at Test.hs:1944:1)
+     |
+1850 | test_gpg_crypto :: Assertion
+     | ^^^^^^^^^^^^^^^
+
+Error: [S-7282]
+       Stack failed to execute the build plan.
+
+       While executing the build plan, Stack encountered the error:
+
+       [S-7011]
+       While building package git-annex-10.20231227 (scroll up to its section to see the error)
+       using:
+       C:\Users\jkniiv\Projektit\git-annex.branchable.com\git-annex--BUILD-240116-c15fa1763\.stack-work\dist\ed8db9df\setup\setup --verbose=1 --builddir=.stack-work\dist\ed8db9df build exe:git-annex --ghc-options \"\"
+       Process exited with code: ExitFailure 1
+```
+
+"""]]
