@@ -1,0 +1,48 @@
+### Please describe the problem.
+The `--from-anywhere` option is not recognized.
+
+### What steps will reproduce the problem?
+Create a repo, add a file to it, clone it, then try to copy the files with `git annex copy $FILE --from-anywhere --to=here`
+```sh
+$ mkdir a && cd a
+$ git init
+$ git annex init
+$ touch somefile
+$ git annex add somefile
+$ git commit -m "blub"
+$ cd ..
+$ git clone a b
+$ cd b
+$ git annex init
+$ git annex copy somefile --from-anywhere --to=here
+```
+The last command fails with
+`Invalid option `--from-anywhere'`
+
+### What version of git-annex are you using? On what operating system?
+Output from `git annex version`
+```
+git-annex version: 10.20231129-gbacd781c4fe05126219c4b5f2963677a6de01481
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24 bloomfilter-2.0.1.2 crypton-0.34 DAV-1.3.4 feed-1.3.2.1 ghc-9.0.2 http-client-0.7.15 persistent-sqlite-2.13.1.0 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+I'm experiencing this issue on EndeavourOS
+```
+$ uname -r
+6.6.10-arch1-1
+```
+
+### Please provide any additional information below.
+
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+git annex does everything I was looking for when I found it and then some. Thank you for creating and maintaining it!
+
+
