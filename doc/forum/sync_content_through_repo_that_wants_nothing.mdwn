@@ -1,0 +1,7 @@
+I'm trying to figure out how to automatically sync all the remotes that I can currently reach while the local repo does not want any content.
+
+Specifically want to download content from a server (remote repo) to a USB-drive (directory special remote) through a local repo.
+If the local repo has no preferred content set or if the preferred content includes the files I want to sync to the disk it works.
+However, if I set the local preferred content to `exclude=*` neither `sync`, `satisfy` nor `assist` do what I had hoped, which is to download the files, copy them to the remote and then delete the local copy.
+
+Is there something I can do to achieve this behavior? 
