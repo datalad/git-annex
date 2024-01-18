@@ -30,3 +30,6 @@ Error: Process completed with exit code 1.
 ```
 
 https://github.com/datalad/git-annex/actions/runs/7516705948/job/20462067511
+
+> Fixed the Test.hs problem, which if I understand correctly was the root
+> cause of all of this, so [[done]] --[[Joey]]
