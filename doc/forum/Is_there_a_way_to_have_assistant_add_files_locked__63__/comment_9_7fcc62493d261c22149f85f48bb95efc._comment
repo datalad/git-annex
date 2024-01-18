@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2024-01-18T17:08:57Z"
+ content="""
+That seems like a resonable use case to me,
+I've opened a todo
+[[todo/allow_configuring_assistant_to_add_files_locked]].
+
+I have not revisited looking at how hard it would be to
+implement such a config option. @yarikoptic if you're 
+needing this for ReproNim I could prioritize doing that.
+"""]]
