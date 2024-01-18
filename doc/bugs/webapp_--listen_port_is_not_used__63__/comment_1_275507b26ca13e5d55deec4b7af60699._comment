@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-01-18T16:47:15Z"
+ content="""
+--listen takes an IP address (or hostname),
+it does not let you specify the port. I've clarified the documentation
+about this.
+
+I don't reproduce the behavior you show, when I try that the process
+runs but does not bind to any port, and in .git/annex/daemon.log, I see:
+
+	WebApp crashed: Network.Socket.getAddrInfo (called with preferred socket type/protocol: AddrInfo {addrFlags = [], addrFamily = AF_UNSPEC, addrSocketType = Stream, addrProtocol = 0, addrAddress = 0.0.0.0:0, addrCanonName = Nothing}, host name: Just "0.0.0.0:8888", service name: Nothing): does not exist (Name or service not known)
+
+This may be an OS or resolver difference. If "0.0.0.0:8888" somehow
+resolves to an IP address on your system, then the webapp will listen
+on that IP address I suppose. But it's not expecting that to specify a
+port.
+
+The webapp outputs the full url, including the port it chose. 
+Since that url also includes an auth token that is required to use the
+webapp, specifying the port for it to listen on does not seem very useful.
+
+What's your use case for wanting to specify a port?
+"""]]
