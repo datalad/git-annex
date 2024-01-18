@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-01-18T21:17:13Z"
+ content="""
+What you want is the behavior of a transfer repository. See
+[[preferred_content/standard_groups]].
+"""]]
