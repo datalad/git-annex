@@ -591,7 +591,7 @@ importRemote importcontent o remote currbranch
 			let (branch, subdir) = splitRemoteAnnexTrackingBranchSubdir b
 			if canImportKeys remote importcontent
 				then do
-					Command.Import.seekRemote remote branch subdir importcontent (CheckGitIgnore True)
+					Command.Import.seekRemote remote branch subdir importcontent (CheckGitIgnore True) Nothing
 					-- Importing generates a branch
 					-- that is not initially connected
 					-- to the current branch, so allow

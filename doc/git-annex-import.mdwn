@@ -102,6 +102,11 @@ the tree of files on the remote, even when importing into a subdirectory.
   `git-annex get` can later be used to download files, as desired.
   The --no-content option is not supported by all special remotes.
 
+* `--message=msg` `-m msg`
+
+  Use this option to specify a commit message for the changes that have
+  been made to the special remote since the last import from it.
+
 # IMPORTING FROM A DIRECTORY
 
 When run with a path, `git annex import` **moves** files from somewhere outside

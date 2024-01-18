@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-01-18T16:18:38Z"
+ content="""
+This would need to start with `git-annex import --from=remote` 
+getting a `--message` option. Which I've just implemented.
+
+As for adding an option to `git-annex pull`, it would need to be an option
+other than `--message`, because `git-annex sync` already uses `--message`
+for the commit message. And since `git-annex pull` can pull from more than
+one remote at a time, it seems that it would need an option that specifies
+a message plus which remote to use that message for. Or the option
+would need to only be used when using `git-annex pull` with a single
+specified remote.
+
+That seems like perhaps unncessary complexity, since if you want to import
+a tree from a remote and specify a message, you can just use 
+`git-annex import` with `--message` now. 
+And then you can run `git-annex pull` to proceed with the rest of what it does.
+
+Good enough?
+"""]]

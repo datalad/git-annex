@@ -70,6 +70,7 @@ data ImportOptions
 		, importToSubDir :: Maybe FilePath
 		, importContent :: Bool
 		, checkGitIgnoreOption :: CheckGitIgnore
+		, messageOption :: Maybe String
 		}
 
 optParser :: CmdParamsDesc -> Parser ImportOptions
@@ -81,7 +82,11 @@ optParser desc = do
 		)
 	dupmode <- fromMaybe Default <$> optional duplicateModeParser
 	ic <- Command.Add.checkGitIgnoreSwitch
-	return $ case mfromremote of
+	message <- optional (strOption
+		( long "message" <> short 'm' <> metavar "MSG"
+		<> help "commit message"
+		))
+	pure $ case mfromremote of
 		Nothing -> LocalImportOptions ps dupmode ic
 		Just r -> case ps of
 			[bs] -> 
@@ -91,6 +96,7 @@ optParser desc = do
 					(if null subdir then Nothing else Just subdir)
 					content
 					ic
+					message
 			_ -> giveup "expected BRANCH[:SUBDIR]"
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates | ReinjectDuplicates
@@ -141,7 +147,9 @@ seek o@(RemoteImportOptions {}) = startConcurrency commandStages $ do
 		(pure Nothing)
 		(Just <$$> inRepo . toTopFilePath . toRawFilePath)
 		(importToSubDir o)
-	seekRemote r (importToBranch o) subdir (importContent o) (checkGitIgnoreOption o)
+	seekRemote r (importToBranch o) subdir (importContent o) 
+		(checkGitIgnoreOption o)
+		(messageOption o)
 
 startLocal :: ImportOptions -> AddUnlockedMatcher -> GetFileMatcher -> DuplicateMode -> (RawFilePath, RawFilePath) -> CommandStart
 startLocal o addunlockedmatcher largematcher mode (srcfile, destfile) =
@@ -314,8 +322,8 @@ verifyExisting key destfile (yes, no) = do
 	verifyEnoughCopiesToDrop [] key Nothing needcopies mincopies [] preverified tocheck
 		(const yes) no
 
-seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CheckGitIgnore -> CommandSeek
-seekRemote remote branch msubdir importcontent ci = do
+seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CheckGitIgnore -> Maybe String -> CommandSeek
+seekRemote remote branch msubdir importcontent ci mimportmessage = do
 	importtreeconfig <- case msubdir of
 		Nothing -> return ImportTree
 		Just subdir ->
@@ -345,7 +353,9 @@ seekRemote remote branch msubdir importcontent ci = do
 				includeCommandAction $ 
 					commitimport imported
   where
-	importmessage = "import from " ++ Remote.name remote
+	importmessage = fromMaybe 
+		("import from " ++ Remote.name remote)
+		mimportmessage
 
 	tb = mkRemoteTrackingBranch remote branch
 
