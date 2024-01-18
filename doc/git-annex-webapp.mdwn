@@ -21,13 +21,13 @@ it opens a browser window.
 * `--listen=address`
 
   Useful for using the webapp on a remote computer. This makes the webapp
-  listen on the specified address.
+  listen on the specified IP address.
 
   This disables running a local web browser, and outputs the url you
   can use to open the webapp.
 
   Set annex.listen in the git config to make the webapp always
-  listen on an address.
+  listen on an IP address.
 
 * Also the [[git-annex-common-options]](1) can be used.
 

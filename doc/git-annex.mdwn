@@ -1995,9 +1995,9 @@ Remotes are configured using these settings in `.git/config`.
 
 * `annex.listen`
 
-  Configures which address the webapp listens on. The default is localhost.
-  Can be either an IP address, or a hostname that resolves to the desired
-  address.
+  Configures which IP address the webapp listens on. 
+  The default is localhost. Can be either an IP address, 
+  or a hostname that resolves to the desired address.
 
 # CONFIGURATION VIA .gitattributes
 
