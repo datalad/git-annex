@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="jkniiv"
+ avatar="http://cdn.libravatar.org/avatar/05fd8b33af7183342153e8013aa3713d"
+ subject="comment 2"
+ date="2024-01-16T23:23:27Z"
+ content="""
+The compilation error turned out to be a typo / small neglect. The following quick fix makes it go away
+(at least with build flag `--flag 'git-annex:-ParallelBuild'`):
+
+[[!format diff \"\"\"
+diff --git a/Test.hs b/Test.hs
+index c8db8147a4..b752d4dc22 100644
+--- a/Test.hs
++++ b/Test.hs
+@@ -1941,7 +1941,7 @@ test_gpg_crypto = do
+                        Annex.Locations.keyPaths .
+                        Crypto.encryptKey Types.Crypto.HmacSha1 cipher
+ #else
+-test_crypto = putStrLn \"gpg testing not implemented on Windows\"
++test_gpg_crypto = putStrLn \"gpg testing not implemented on Windows\"
+ #endif
+
+ test_add_subdirs :: Assertion
+\"\"\"]]
+
+"""]]
