@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2024-01-18T16:14:11Z"
+ content="""
+Datalad relies on git-annex's handling of submodules to work afaik so I
+don't see why using it would avoid this problem.
+
+If I understand correctly, the .git symlink in the submodule that git-annex
+sets up gets broken when the submodule is relocated. But I would have
+expected that moving from `a/b/` to `x/y/` would keep the symlink working,
+since it's at the same path depth.
+
+I'd need more information to fix this problem, so I recommend filing a
+[[bugs|bug]] report with details.
+"""]]
