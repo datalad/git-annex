@@ -1538,8 +1538,8 @@ Remotes are configured using these settings in `.git/config`.
 
   Set to "false" to avoid all attempts at stall detection.
 
-  For more fine control over what constitutes a stall, set to a value in
-  the form "$amount/$timeperiod" to specify how much data git-annex should
+  To detect and cancel stalled transfers, set this to a value in the form
+  "$amount/$timeperiod" which specifies how much data git-annex should
   expect to see flowing, minimum, over a given period of time.
 
   For example, to detect outright stalls where no data has been transferred
@@ -1550,11 +1550,22 @@ Remotes are configured using these settings in `.git/config`.
   stuck for a long time, you could use:
   `git config remote.usbdrive.annex-stalldetection "1MB/1m"`
 
-  This is not enabled by default, because it can make git-annex use
-  more resources. To be able to cancel stalls, git-annex has to run
-  transfers in separate processes (one per concurrent job). So it
-  may need to open more connections to a remote than usual, or
-  the communication with those processes may make it a bit slower.
+  Some remotes don't report transfer progress, and stalls cannot be
+  detected when using those.
+
+  Some remotes only report transfer progress occasionally, eg
+  after each chunk. To avoid false timeouts in such a situation, if the
+  first progress update takes longer to arrive than the configured time
+  period, the stall detection will be automically adjusted to use a longer
+  time period. For example, if the first progress update comes after 10
+  minutes, but annex.stalldetection is "1MB/1m", it will be treated as eg
+  "15MB/15m".
+
+  Configuring stall detection can make git-annex use more resources. To be
+  able to cancel stalls, git-annex has to run transfers in separate
+  processes (one per concurrent job). So it may need to open more
+  connections to a remote than usual, or the communication with those
+  processes may make it a bit slower.
 
 * `remote.<name>.annex-checkuuid`
 

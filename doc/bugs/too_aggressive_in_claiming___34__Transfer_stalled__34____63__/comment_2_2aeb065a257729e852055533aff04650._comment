@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-01-18T17:50:21Z"
+ content="""
+I think that what git-annex could do is detect when progress updates are
+happening with too low a granularity for the annex.stalldetection
+configuration.
+
+When waiting for the first progress update, it can keep track of how much time
+has elapsed. If annex.stalldetection is "10mb/2m" and it took 20 minutes to
+get the first progress update, the granularity is clearly too low.
+
+And then it could disregard the configuration, or suggest a better
+configuration value, or adjust what it's expecting to match the
+observed granularity.
+
+(The stall detection auto-prober uses a similar heuristic to that already.
+It observes the granularity and only if it's sufficiently low (an update
+every 30 seconds or less) does it assume that 60 seconds without an update
+may be a stall.)
+"""]]

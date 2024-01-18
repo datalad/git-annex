@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-01-18T17:18:07Z"
+ content="""
+It looks like you must have annex.stalldetection (or the per-remote config)
+set. git-annex does not behave this way without that configuration.
+What is it set to?
+
+You are probably right in that it involves rclone special remote not
+reporting transfer progress back to git-annex.
+
+Normally, when a special remote does not do progress reporting,
+git-annex does not do any stall detection, because there must have been
+at least some previous progress update in order for it to detect a stall.
+
+But when chunking is enabled (as it was in your case with 1 gb chunks),
+git-annex itself updates the progress after each chunk. When the special
+remote does not do any progress reporting, and chunk size is large, that
+means that the progress will be updated very infrequently. 
+
+So for example, if it takes 2 minutes to upload a chunk, and you had
+annex.stalldetection set to eg "10mb/1m", then in a chunk after the 1st one,
+git-annex would wake up after 1 minute, see that no data seemed to have
+been sent, and conclude there was a stall. You would need to change the
+time period in the config to something less granular eg "100mb/10m"
+to avoid that.
+
+This might be a documentation problem, it may not be clear to the user
+that "10mb/1m" is any different than "100mb/10m". And finding a value that
+works depends on knowing details of how often the progress gets updated
+for a given remote.
+
+But, your transcript show that the stall was detected on chunk 296.
+(git-annex's chunk, rclone is doing its own chunking to dropbox)
+So the annex.stalldetection configuration must have been one that
+worked most of the time, for it to transfer the previous 295 chunks
+without a stall having been detected. Unless this was a resume after
+previous command(s) had uploaded those other chunks.
+"""]]

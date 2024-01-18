@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-01-18T19:04:26Z"
+ content="""
+To reproduce this (more or less), I modified the example.sh external
+special remote to sleep for 10 seconds before each key store.
+Set up a remote with chunk=1mb, and annex.stalldetection = "0.001mb/1s".
+
+Uploading a 100 mb file, a stall is detected after the first chunk is
+uploaded. As expected, since 1 second passed with no update.
+
+When I resume the upload, the second chunk is uploaded and then a stall is
+detected on the third. And so on.
+
+I've implemented dynamic granularity scaling now, and in this test case, it notices
+it took 11 seconds for the first chunk, and behaves as if it were
+configured with annex.stalldetection of "0.022mb/22s". Which keeps it from
+detecting a stall.
+"""]]

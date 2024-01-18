@@ -159,9 +159,9 @@ storeChunks u chunkconfig encryptor k f p enc encc storer checker =
 				-- stored, update the chunk log.
 				chunksStored u k (FixedSizeChunks chunksize) numchunks
 			| otherwise = do
-				liftIO $ meterupdate' zeroBytesProcessed
 				let (chunkkey, chunkkeys') = nextChunkKeyStream chunkkeys
 				storechunk chunkkey (ByteContent chunk) meterupdate'
+				liftIO $ meterupdate' zeroBytesProcessed
 				let bytesprocessed' = addBytesProcessed bytesprocessed (L.length chunk)
 				loop bytesprocessed' (splitchunk bs) chunkkeys'
 		  where
