@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-01-18T21:13:42Z"
+ content="""
+IPv6 would beg to differ about `:\d+` ;-)
+
+Actually, it may be that your address:port was treated as some IPv6 mixed
+IPv4, iirc something like that is a thing.
+
+> it was to have some static port I could keep an ssh redirect pointing to so I could investigate behavior of the remote running annex webapp.
+
+You would still need to copy over the url though to get the access key
+for the webapp..
+"""]]
