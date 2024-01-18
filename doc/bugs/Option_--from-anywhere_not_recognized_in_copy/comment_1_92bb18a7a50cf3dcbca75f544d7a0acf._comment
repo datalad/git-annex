@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-01-18T15:57:56Z"
+ content="""
+Your git-annex version is from before --from-anywhere was implemented.
+
+Also, `--from-anywhere` needs `--to=remote`, as documented on the man page.
+"here" is not a remote name, so `--from-anywhere --to=here` will not work.
+
+	git-annex copy --from-anywhere --to=here
+	git-annex: there is no available git remote named "here"
+
+A simpler way to do what you were trying to do, that does work is
+`git-annex copy --to=here`
+
+An even simpler way to do exactly the same thing is `git-annex get`
+
+So, I don't see any point in trying to support `--from-anywhere --to=here`
+with `git-annex copy`.
+"""]]

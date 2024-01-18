@@ -45,4 +45,4 @@ $ uname -r
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 git annex does everything I was looking for when I found it and then some. Thank you for creating and maintaining it!
 
-
+> not a bug, version too old [[done]] --[[Joey]]
