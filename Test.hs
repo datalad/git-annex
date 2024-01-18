@@ -1941,7 +1941,7 @@ test_gpg_crypto = do
 			Annex.Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
-test_crypto = putStrLn "gpg testing not implemented on Windows"
+test_gpg_crypto = putStrLn "gpg testing not implemented on Windows"
 #endif
 
 test_add_subdirs :: Assertion
