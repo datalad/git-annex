@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2024-01-18T21:32:30Z"
+ content="""
+Thank you Joey for looking into it!  FWIW, indeed I had `stalldetection = 1KB/120s` .  But I believe I introduced it primarily for data \"download\", where git-annex actually IIRC keeps its monitoring of the file size as it is arriving.  For the `copy` out, situation is indeed different and in case of assymmetric connections I even wondered if worth allowing different values for stalldetection-get and -put?
+
+In this particular case, since original report we did adjust rclone special remote to report PROGRESS back.  I think it completed fine on few 1 large file uploads.  I will tomorrow (after we get daily git-annex build in) run it \"on full\" for a good number of files and see what happens.
+"""]]
