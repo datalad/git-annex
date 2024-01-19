@@ -751,7 +751,7 @@ downloadUrl :: Bool -> Key -> MeterUpdate -> Maybe IncrementalVerifier -> [Url.U
 downloadUrl listfailedurls k p iv urls file uo = 
 	-- Poll the file to handle configurations where an external
 	-- download command is used.
-	meteredFile file (Just p) k (go urls [])
+	meteredFile (toRawFilePath file) (Just p) k (go urls [])
   where
 	go (u:us) errs p' = Url.download' p' iv u file uo >>= \case
 		Right () -> return True

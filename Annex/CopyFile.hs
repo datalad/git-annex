@@ -57,7 +57,7 @@ tryCopyCoW (CopyCoWTried copycowtried) src dest meterupdate =
 			)
 		)
   where
-	docopycow = watchFileSize dest meterupdate $ const $
+	docopycow = watchFileSize dest' meterupdate $ const $
 		copyCoW CopyTimeStamps src dest
 	
 	dest' = toRawFilePath dest

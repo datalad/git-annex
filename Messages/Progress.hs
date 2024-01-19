@@ -171,7 +171,7 @@ metered' st setclear othermeterupdate msize bwlimit showoutput a = go st
 	minratelimit = min consoleratelimit jsonratelimit
 		
 {- Poll file size to display meter. -}
-meteredFile :: FilePath -> Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
+meteredFile :: RawFilePath -> Maybe MeterUpdate -> Key -> (MeterUpdate -> Annex a) -> Annex a
 meteredFile file combinemeterupdate key a = 
 	metered combinemeterupdate key Nothing $ \_ p ->
 		watchFileSize file p a

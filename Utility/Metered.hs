@@ -227,7 +227,7 @@ defaultChunkSize = 32 * k - chunkOverhead
  -}
 watchFileSize
 	:: (MonadIO m, MonadMask m)
-	=> FilePath
+	=> RawFilePath
 	-> MeterUpdate
 	-> (MeterUpdate -> m a)
 	-> m a
@@ -245,8 +245,7 @@ watchFileSize f p a = do
 			p' sz
 		watcher p' sz
 	getsz = catchDefaultIO zeroBytesProcessed $
-		toBytesProcessed <$> getFileSize f'
-	f' = toRawFilePath f
+		toBytesProcessed <$> getFileSize f
 
 	meterupdate sizevar preventbacktracking n
 		| preventbacktracking = do
