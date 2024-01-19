@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="jstritch"
+ avatar="http://cdn.libravatar.org/avatar/56756b34ff409071074762951d270002"
+ subject="comment 2"
+ date="2024-01-19T17:44:39Z"
+ content="""
+The new import option --message should do the trick.  I'll probably it up with the recommended git annex merge instead of git annex pull. Thanks!
+"""]]
