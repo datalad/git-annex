@@ -1,6 +1,6 @@
 {- Metered IO and actions
  -
- - Copyright 2012-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - License: BSD-2-clause
  -}
@@ -218,22 +218,48 @@ defaultChunkSize = 32 * k - chunkOverhead
  - away and start over. To avoid reporting the original file size followed
  - by a smaller size in that case, wait until the file starts growing
  - before updating the meter for the first time.
+ -
+ - An updated version of the MeterUpdate is passed to the action, and the
+ - action should use that for any updates that it makes. This allows for
+ - eg, the action updating the meter before a write is flushed to the file.
+ - In that situation, this avoids the meter being set back to the size of
+ - the file when it's gotten ahead of that point.
  -}
-watchFileSize :: (MonadIO m, MonadMask m) => FilePath -> MeterUpdate -> m a -> m a
-watchFileSize f p a = bracket 
-	(liftIO $ forkIO $ watcher =<< getsz)
-	(liftIO . void . tryIO . killThread)
-	(const a)
+watchFileSize
+	:: (MonadIO m, MonadMask m)
+	=> FilePath
+	-> MeterUpdate
+	-> (MeterUpdate -> m a)
+	-> m a
+watchFileSize f p a = do
+	sizevar <- liftIO $ newMVar zeroBytesProcessed
+	bracket 
+		(liftIO $ forkIO $ watcher (meterupdate sizevar True) =<< getsz)
+		(liftIO . void . tryIO . killThread)
+		(const (a (meterupdate sizevar False)))
   where
-	watcher oldsz = do
+	watcher p' oldsz = do
 		threadDelay 500000 -- 0.5 seconds
 		sz <- getsz
 		when (sz > oldsz) $
-			p sz
-		watcher sz
+			p' sz
+		watcher p' sz
 	getsz = catchDefaultIO zeroBytesProcessed $
 		toBytesProcessed <$> getFileSize f'
 	f' = toRawFilePath f
+
+	meterupdate sizevar preventbacktracking n
+		| preventbacktracking = do
+			old <- takeMVar sizevar
+			if old > n
+				then putMVar sizevar old
+				else do
+					putMVar sizevar n
+					p n
+		| otherwise = do
+			void $ takeMVar sizevar
+			putMVar sizevar n
+			p n
 
 data OutputHandler = OutputHandler
 	{ quietMode :: Bool

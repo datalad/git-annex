@@ -753,7 +753,7 @@ downloadUrl listfailedurls k p iv urls file uo =
 	-- download command is used.
 	meteredFile file (Just p) k (go urls [])
   where
-	go (u:us) errs = Url.download' p iv u file uo >>= \case
+	go (u:us) errs p' = Url.download' p' iv u file uo >>= \case
 		Right () -> return True
 		Left err -> do
 			-- If the incremental verifier was fed anything
@@ -765,9 +765,9 @@ downloadUrl listfailedurls k p iv urls file uo =
 					Just n | n > 0 -> unableIncrementalVerifier iv'
 					_ -> noop
 				Nothing -> noop
-			go us ((u, err) : errs)
-	go [] [] = return False
-	go [] errs@((_, err):_) = do
+			go us ((u, err) : errs) p'
+	go [] [] _ = return False
+	go [] errs@((_, err):_) _ = do
 		if listfailedurls
 			then warning $ UnquotedString $
 				unlines $ flip map errs $ \(u, err') ->
