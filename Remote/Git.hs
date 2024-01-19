@@ -484,7 +484,8 @@ copyFromRemote'' repo r st@(State connpool _ _ _ _) key file dest meterupdate vc
 	| not $ Git.repoIsUrl repo = guardUsable repo (giveup "cannot access remote") $ do
 		u <- getUUID
 		hardlink <- wantHardLink
-		let bwlimit = remoteAnnexBwLimit (gitconfig r)
+		let bwlimit = remoteAnnexBwLimitDownload (gitconfig r)
+			<|> remoteAnnexBwLimit (gitconfig r)
 		-- run copy from perspective of remote
 		onLocalFast st $ Annex.Content.prepSendAnnex' key >>= \case
 			Just (object, _sz, check) -> do
@@ -552,7 +553,8 @@ copyToRemote' repo r st@(State connpool duc _ _ _) key file meterupdate
 		checkio <- Annex.withCurrentState check
 		u <- getUUID
 		hardlink <- wantHardLink
-		let bwlimit = remoteAnnexBwLimit (gitconfig r)
+		let bwlimit = remoteAnnexBwLimitUpload (gitconfig r)
+			<|> remoteAnnexBwLimit (gitconfig r)
 		-- run copy from perspective of remote
 		res <- onLocalFast st $ ifM (Annex.Content.inAnnex key)
 			( return True

@@ -35,7 +35,7 @@ type WithConn a c = (ClosableConnection c -> Annex (ClosableConnection c, a)) ->
 store :: RemoteGitConfig -> ProtoRunner Bool -> Key -> AssociatedFile -> MeterUpdate -> Annex ()
 store gc runner k af p = do
 	let sizer = KeySizer k (fmap (toRawFilePath . fst3) <$> prepSendAnnex k)
-	let bwlimit = remoteAnnexBwLimit gc
+	let bwlimit = remoteAnnexBwLimitUpload gc <|> remoteAnnexBwLimit gc
 	metered (Just p) sizer bwlimit $ \_ p' ->
 		runner (P2P.put k af p') >>= \case
 			Just True -> return ()
@@ -45,7 +45,7 @@ store gc runner k af p = do
 retrieve :: RemoteGitConfig -> (ProtoRunner (Bool, Verification)) -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> VerifyConfig -> Annex Verification
 retrieve gc runner k af dest p verifyconfig = do
 	iv <- startVerifyKeyContentIncrementally verifyconfig k
-	let bwlimit = remoteAnnexBwLimit gc
+	let bwlimit = remoteAnnexBwLimitDownload gc <|> remoteAnnexBwLimit gc
 	metered (Just p) k bwlimit $ \m p' -> 
 		runner (P2P.get dest k iv af m p') >>= \case
 			Just (True, v) -> return v

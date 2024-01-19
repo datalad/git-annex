@@ -56,7 +56,7 @@ import Data.Ord
 -- Upload, supporting canceling detected stalls.
 upload :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
 upload r key f d witness = 
-	case remoteAnnexStallDetection (Remote.gitconfig r) of
+	case getStallDetection Upload r of
 		Nothing -> go (Just ProbeStallDetection)
 		Just StallDetectionDisabled -> go Nothing
 		Just sd -> runTransferrer sd r key f d Upload witness
@@ -75,7 +75,7 @@ alwaysUpload u key f sd d a _witness = guardHaveUUID u $
 -- Download, supporting canceling detected stalls.
 download :: Remote -> Key -> AssociatedFile -> RetryDecider -> NotifyWitness -> Annex Bool
 download r key f d witness = 
-	case remoteAnnexStallDetection (Remote.gitconfig r) of
+	case getStallDetection Download r of
 		Nothing -> go (Just ProbeStallDetection)
 		Just StallDetectionDisabled -> go Nothing
 		Just sd -> runTransferrer sd r key f d Download witness

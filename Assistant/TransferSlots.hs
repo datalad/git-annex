@@ -33,6 +33,7 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Annex.Content
 import Annex.Wanted
+import Annex.StallDetection
 import Utility.Batch
 import Types.NumCopies
 
@@ -126,8 +127,7 @@ genTransfer t info = case transferRemote info of
 				qp <- liftAnnex $ coreQuotePath <$> Annex.getGitConfig
 				debug [ "Transferring:" , describeTransfer qp t info ]
 				notifyTransfer
-				let sd = remoteAnnexStallDetection
-					(Remote.gitconfig remote)
+				let sd = getStallDetection (transferDirection t) remote
 				return $ Just (t, info, go remote sd)
 			, do
 				qp <- liftAnnex $ coreQuotePath <$> Annex.getGitConfig

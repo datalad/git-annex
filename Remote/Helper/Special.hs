@@ -212,9 +212,9 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 			then whereisKey baser
 			else Nothing
 		, exportActions = (exportActions baser)
-			{ storeExport = \f k l p -> displayprogress p k (Just f) $
+			{ storeExport = \f k l p -> displayprogress uploadbwlimit p k (Just f) $
 				storeExport (exportActions baser) f k l
-			, retrieveExport = \k l f p -> displayprogress p k Nothing $
+			, retrieveExport = \k l f p -> displayprogress downloadbwlimit p k Nothing $
 				retrieveExport (exportActions baser) k l f
 			}
 		}
@@ -223,7 +223,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 
 	-- chunk, then encrypt, then feed to the storer
 	storeKeyGen k p enc = sendAnnex k rollback $ \src _sz ->
-		displayprogress p k (Just src) $ \p' ->
+		displayprogress uploadbwlimit p k (Just src) $ \p' ->
 			storeChunks (uuid baser) chunkconfig enck k src p'
 				enc encr storer checkpresent
 	  where
@@ -232,7 +232,7 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 
 	-- call retriever to get chunks; decrypt them; stream to dest file
 	retrieveKeyFileGen k dest p vc enc =
-		displayprogress p k Nothing $ \p' ->
+		displayprogress downloadbwlimit p k Nothing $ \p' ->
 			retrieveChunks retriever (uuid baser) vc
 				chunkconfig enck k dest p' enc encr
 	  where
@@ -250,9 +250,13 @@ specialRemote' cfg c storer retriever remover checkpresent baser = encr
 
 	chunkconfig = chunkConfig cfg
 
-	displayprogress p k srcfile a
+	downloadbwlimit = remoteAnnexBwLimitDownload (gitconfig baser)
+		<|> remoteAnnexBwLimit (gitconfig baser)
+	uploadbwlimit = remoteAnnexBwLimitUpload (gitconfig baser)
+		<|> remoteAnnexBwLimit (gitconfig baser)
+
+	displayprogress bwlimit p k srcfile a
 		| displayProgress cfg = do
-			let bwlimit = remoteAnnexBwLimit (gitconfig baser)
 			metered (Just p) (KeySizer k (pure (fmap toRawFilePath srcfile))) bwlimit (const a)
 		| otherwise = a p
 

@@ -5,10 +5,16 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Annex.StallDetection (detectStalls, StallDetection) where
+module Annex.StallDetection (
+	getStallDetection,
+	detectStalls,
+	StallDetection,
+) where
 
 import Annex.Common
 import Types.StallDetection
+import Types.Direction
+import Types.Remote (gitconfig)
 import Utility.Metered
 import Utility.HumanTime
 import Utility.DataUnits
@@ -17,6 +23,14 @@ import Utility.ThreadScheduler
 import Control.Concurrent.STM
 import Control.Monad.IO.Class (MonadIO)
 import Data.Time.Clock
+
+getStallDetection :: Direction -> Remote -> Maybe StallDetection
+getStallDetection Download r = 
+	remoteAnnexStallDetectionDownload (gitconfig r)
+		<|> remoteAnnexStallDetection (gitconfig r)
+getStallDetection Upload r =
+	remoteAnnexStallDetectionUpload (gitconfig r)
+		<|> remoteAnnexStallDetection (gitconfig r)
 
 {- This may be safely canceled (with eg uninterruptibleCancel),
  - as long as the passed action can be safely canceled. -}
@@ -120,7 +134,7 @@ upscale input@(BwRate minsz duration) timepassedsecs
 		(Duration (ceiling (fromIntegral dsecs * scale)))
 	| otherwise = input
   where
-	scale = max 1 $
+	scale = max (1 :: Double) $
 		(fromIntegral timepassedsecs / fromIntegral (max dsecs 1))
 		* fromIntegral allowedvariation
 	

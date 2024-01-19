@@ -1521,7 +1521,19 @@ Remotes are configured using these settings in `.git/config`.
   for remotes where the transfer is run by a separate program than
   git-annex. 
 
-* `remote.<name>.annex-stalldetecton`, `annex.stalldetection`
+* `remote.<name>.annex-bwlimit-download`, `annex.bwlimit-download`
+
+  Limit bandwith for downloads from a remote.
+  
+  Overrides `remote.<name>.annex-bwlimit` and `annex.bwlimit`
+
+* `remote.<name>.annex-bwlimit-upload`, `annex.bwlimit-upload`
+  
+  Limit bandwith for uploads to a remote. 
+
+  Overrides `remote.<name>.annex-bwlimit` and `annex.bwlimit`
+
+* `remote.<name>.annex-stalldetection`, `annex.stalldetection`
 
   Configuring this lets stalled or too-slow transfers be detected, and
   dealt with, so rather than getting stuck, git-annex will cancel the
@@ -1566,6 +1578,24 @@ Remotes are configured using these settings in `.git/config`.
   processes (one per concurrent job). So it may need to open more
   connections to a remote than usual, or the communication with those
   processes may make it a bit slower.
+
+* `remote.<name>.annex-stalldetection-download`, `annex.stalldetection-download`
+
+  Stall detection for downloads from a remote.
+ 
+  For example, if a remote is often fast, but sometimes is very slow,
+  and there is another remote that is consistently medium speed
+  and that contains the same data, this could be set to treat the fast
+  remote as stalled when it's slow. Then a command like `git-annex get`
+  will fall back to downloading from the medium speed remote.
+
+  Overrides `remote.<name>.annex-stalldetection`, `annex.stalldetection`
+
+* `remote.<name>.annex-stalldetection-upload`, `annex.stalldetection-upload`
+
+  Stall detection for uploads to a remote.
+
+  Overrides `remote.<name>.annex-stalldetection`, `annex.stalldetection`
 
 * `remote.<name>.annex-checkuuid`
 

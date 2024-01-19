@@ -1,6 +1,6 @@
 {- git-annex configuration
  -
- - Copyright 2012-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -359,7 +359,11 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexForwardRetry :: Maybe Integer
 	, remoteAnnexRetryDelay :: Maybe Seconds
 	, remoteAnnexStallDetection :: Maybe StallDetection
+	, remoteAnnexStallDetectionUpload :: Maybe StallDetection
+	, remoteAnnexStallDetectionDownload :: Maybe StallDetection
 	, remoteAnnexBwLimit :: Maybe BwRate
+	, remoteAnnexBwLimitUpload :: Maybe BwRate
+	, remoteAnnexBwLimitDownload :: Maybe BwRate
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
 	, remoteAnnexConfigUUID :: Maybe UUID
 
@@ -426,11 +430,17 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexRetryDelay = Seconds
 			<$> getmayberead "retrydelay"
 		, remoteAnnexStallDetection =
-			either (const Nothing) Just . parseStallDetection
-				=<< getmaybe "stalldetection"
-		, remoteAnnexBwLimit = do
-			sz <- readSize dataUnits =<< getmaybe "bwlimit"
-			return (BwRate sz (Duration 1))
+			readStallDetection =<< getmaybe "stalldetection"
+		, remoteAnnexStallDetectionUpload =
+			readStallDetection =<< getmaybe "stalldetection-upload"
+		, remoteAnnexStallDetectionDownload =
+			readStallDetection =<< getmaybe "stalldetection-download"
+		, remoteAnnexBwLimit =
+			readBwRatePerSecond =<< getmaybe "bwlimit"
+		, remoteAnnexBwLimitUpload =
+			readBwRatePerSecond =<< getmaybe "bwlimit-upload"
+		, remoteAnnexBwLimitDownload =
+			readBwRatePerSecond =<< getmaybe "bwlimit-download"
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe ("security-allow-unverified-downloads")
 		, remoteAnnexConfigUUID = toUUID <$> getmaybe "config-uuid"

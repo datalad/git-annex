@@ -1,6 +1,6 @@
 {- types for stall detection and banwdith rates
  -
- - Copyright 2020-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2020-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -39,6 +39,9 @@ parseStallDetection s = case isTrueFalse s of
 	Just True -> Right ProbeStallDetection
 	Just False -> Right StallDetectionDisabled
 
+readStallDetection :: String -> Maybe StallDetection
+readStallDetection = either (const Nothing) Just . parseStallDetection
+
 parseBwRate :: String -> Either String BwRate
 parseBwRate s = do
 	let (bs, ds) = separate (== '/') s
@@ -48,3 +51,8 @@ parseBwRate s = do
 		(readSize dataUnits bs)
 	d <- parseDuration ds
 	Right (BwRate b d)
+
+readBwRatePerSecond :: String -> Maybe BwRate
+readBwRatePerSecond s = do
+	sz <- readSize dataUnits s
+	return (BwRate sz (Duration 1))
