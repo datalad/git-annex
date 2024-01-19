@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-01-19T17:31:41Z"
+ content="""
+Re asymmetric connections, stall detection doesn't need to be
+configured anywhere near the total available bandwidth, so generally it
+would be ok to configure it for a slow uplink even when a fast downlink is
+available. And if you're only interested in detecting total stalls
+(as opposed to some kind of "too slow" condition), "1k" per some unit of
+time is sufficient.
+
+But maybe it does make sense to be able to configure it to abandon slow
+downloads but allow slow uploads. For example, `git-annex get` with
+the content on several remotes, where the download speed from one
+remote is often fast but occasionally slows down, and another remote
+is consistently medium speed.
+So you might set "10gb/1m" for that remote, knowing that if it is slow
+it will abort the download from it and fall back to the medium speed remote.
+But when sending content *to* the variable speed remote, would not want to
+give up only because it was a little slow.
+"""]]

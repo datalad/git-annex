@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-01-19T17:01:27Z"
+ content="""
+> "download", where git-annex actually IIRC keeps its monitoring of the file size as it is arriving
+
+git-annex does do file size monitoring
+in a few cases (when running `cp`, and when downloading
+an url with `curl`), but it does not do it for downloads
+in general, and not for external special remotes specifically.
+
+If it did for external special remotes, and if rclone grows the 
+destination file as it downloads, rather than atomically at the end
+(which I have not verified), that would have avoided this problem.
+Probably it will avoids this type of problem for downloads
+from the majority of external special remotes. Though of course not for
+uploads.
+
+Ok, implemented that for external special remotes.
+"""]]

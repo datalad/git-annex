@@ -15,6 +15,9 @@ git-annex (10.20231228) UNRELEASED; urgency=medium
   * import: --message/-m option.
   * Improve annex.stalldetection to handle remotes that update progress
     less frequently than the configured time period.
+  * external: Monitor file size when getting content from external
+    special remotes and use that to update the progress meter,
+    in case the external special remote program does not report progress.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Dec 2023 11:52:06 -0400
 

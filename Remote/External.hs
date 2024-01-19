@@ -235,7 +235,7 @@ storeKeyM external = fileStorer $ \k f p ->
 
 retrieveKeyFileM :: External -> Retriever
 retrieveKeyFileM external = fileRetriever $ \d k p ->
-	either giveup return =<< go d k p
+	either giveup return =<< watchFileSize d p (go d k)
   where
 	go d k p = handleRequestKey external (\sk -> TRANSFER Download sk (fromRawFilePath d)) k (Just p) $ \resp ->
 		case resp of
