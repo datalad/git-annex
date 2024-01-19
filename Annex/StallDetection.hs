@@ -23,7 +23,7 @@ import Data.Time.Clock
 detectStalls :: (Monad m, MonadIO m) => Maybe StallDetection -> TVar (Maybe BytesProcessed) -> m () -> m ()
 detectStalls Nothing _ _ = noop
 detectStalls (Just StallDetectionDisabled) _ _ = noop
-detectStalls (Just (StallDetection (BwRate minsz duration))) metervar onstall = do
+detectStalls (Just (StallDetection bwrate@(BwRate _minsz duration))) metervar onstall = do
 	-- If the progress is being updated, but less frequently than
 	-- the specified duration, a stall would be incorrectly detected.
 	--
@@ -32,25 +32,15 @@ detectStalls (Just (StallDetection (BwRate minsz duration))) metervar onstall = 
 	-- size. In that case, progress is only updated after each chunk.
 	--
 	-- So, wait for the first update, and see how long it takes.
-	-- It's longer than the duration, upscale the duration and minsz
-	-- accordingly.
+	-- When it's longer than the duration (or close to it), 
+	-- upscale the duration and minsz accordingly.
 	starttime <- liftIO getCurrentTime
 	v <- waitforfirstupdate =<< readMeterVar metervar
 	endtime <- liftIO getCurrentTime
 	let timepassed = floor (endtime `diffUTCTime` starttime)
-	let (scaledminsz, scaledduration) = upscale timepassed
+	let BwRate scaledminsz scaledduration = upscale bwrate timepassed
 	detectStalls' scaledminsz scaledduration metervar onstall v
   where
-	upscale timepassed
-		| timepassed > dsecs = 
-			let scale = scaleamount timepassed
-			in (minsz * scale, Duration (dsecs * scale))
-		| otherwise = (minsz, duration)
-	scaleamount timepassed = max 1 $ floor $
-		(fromIntegral timepassed / fromIntegral (max dsecs 1))
-		* scalefudgefactor
-	scalefudgefactor = 1.5 :: Double
-	dsecs = durationSeconds duration
 	minwaitsecs = Seconds $
 		min 60 (fromIntegral (durationSeconds duration))
 	waitforfirstupdate startval = do
@@ -59,7 +49,6 @@ detectStalls (Just (StallDetection (BwRate minsz duration))) metervar onstall = 
 		if v > startval
 			then return v
 			else waitforfirstupdate startval
-	
 detectStalls (Just ProbeStallDetection) metervar onstall = do
 	-- Only do stall detection once the progress is confirmed to be
 	-- consistently updating. After the first update, it needs to
@@ -120,3 +109,32 @@ readMeterVar
 	-> m (Maybe ByteSize)
 readMeterVar metervar = liftIO $ atomically $ 
 	fmap fromBytesProcessed <$> readTVar metervar
+
+-- Scale up the minsz and duration to match the observed time that passed
+-- between progress updates. This allows for some variation in the transfer
+-- rate causing later progress updates to happen less frequently.
+upscale :: BwRate -> Integer -> BwRate
+upscale input@(BwRate minsz duration) timepassedsecs
+	| timepassedsecs > dsecs `div` allowedvariation = BwRate 
+		(ceiling (fromIntegral minsz * scale))
+		(Duration (ceiling (fromIntegral dsecs * scale)))
+	| otherwise = input
+  where
+	scale = max 1 $
+		(fromIntegral timepassedsecs / fromIntegral (max dsecs 1))
+		* fromIntegral allowedvariation
+	
+	dsecs = durationSeconds duration
+
+	-- Setting this too low will make normal bandwidth variations be
+	-- considered to be stalls, while setting it too high will make
+	-- stalls not be detected for much longer than the expected
+	-- duration.
+	--
+	-- For example, a BwRate of 20MB/1m, when the first progress
+	-- update takes 10m to arrive, is scaled to 600MB/30m. That 30m
+	-- is a reasonable since only 3 chunks get sent in that amount of
+	-- time at that rate. If allowedvariation = 10, that would
+	-- be 2000MB/100m, which seems much too long to wait to detect a
+	-- stall.
+	allowedvariation = 3

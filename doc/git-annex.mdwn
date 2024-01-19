@@ -1559,7 +1559,7 @@ Remotes are configured using these settings in `.git/config`.
   period, the stall detection will be automically adjusted to use a longer
   time period. For example, if the first progress update comes after 10
   minutes, but annex.stalldetection is "1MB/1m", it will be treated as eg
-  "15MB/15m".
+  "30MB/30m".
 
   Configuring stall detection can make git-annex use more resources. To be
   able to cancel stalls, git-annex has to run transfers in separate
