@@ -136,7 +136,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 			<$> branchsha
 	go False = withIndex' True $ do
 		-- Create the index file. This is not necessary,
-		-- except to avoid a bug in git that causes
+		-- except to avoid a bug in git 2.37 that causes
 		-- git write-tree to segfault when the index file does not
 		-- exist.
 		inRepo $ flip Git.UpdateIndex.streamUpdateIndex []
