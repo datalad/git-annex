@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-01-23T16:25:28Z"
+ content="""
+There would need to be a way for git-annex to tell if an object on a remote
+was compressed or not, and with what compressor. The two reaonable ways to
+do it are to use different namespaces for objects, or to make compression
+an immutable part of a special remote's configuration that is set at
+initremote time. 
+
+(A less reasonable way (IMHO) would be to record in the remote's state
+for each object what compression was used for it; this would bloat the
+git-annex branch.)
+
+A problem with using different namespaces is that git-annex then will
+have to do extra work to check for each one when retriving or checking
+presence of an object.
+
+When chunking is enabled, git-annex already has to check for chunked and
+unchunked versions of an object. This can include several different chunk
+sizes that have been in use at different times.
+
+So, we have a bit of an expontential blowup when combining chunking with
+compression namespaces. Probably the number of chunk sizes tried is less
+than 4 (eg logged chunk size, currently configured chunk size (when
+different), unchunked), and the number of possible compressors is less than
+10. So 20x or so increase in overhead. So I'm cautious of the namespaces approach.
+
+It would be possible to configure a single compressor that may be used at
+initremote time, but let some objects be chunked and others not. That would
+only double the overhead, and only for remotes with a compressor
+configured.
+
+As far as enabling compression based on filename though, it seems to me
+that an easier way to do that would be to have one remote with compression
+enabled, and a second one without it, and use preferred content to control
+which files are stored in which.
+"""]]
