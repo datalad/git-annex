@@ -37,3 +37,5 @@ where those 3 extra (identical) looks up are coming from now?
 PS Since not critical, I will workaround for now by raising max count to 7.
 
 [[!tag projects/datalad]]
+
+> [[done]] per my earlier comment --[[Joey]]
