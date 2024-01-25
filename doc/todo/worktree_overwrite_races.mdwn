@@ -32,3 +32,14 @@ place. It gets 3 appended to it. So the worktree file ends up containing
 `1,3`.
 
 So, perhaps there is really no good solution to this. --[[Joey]]
+
+> I suppose the balance of probabilities is that a worktree file being
+> overwritten in the current race window is fairly plausibly likely, 
+> while a file being repeatedly appended to in that way is very unlikely.
+> 
+> But the balance of ill effects is that in the current case you lose data
+> in a way that is easy to understand (and that git is also subject to),
+> and in the repeated append case, a file gets into a state it never ought
+> to possibly be in.
+> 
+> So I think it makes sense to abandon this idea. [[done]] --[[Joey]]
