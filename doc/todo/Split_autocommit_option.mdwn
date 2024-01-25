@@ -15,3 +15,6 @@ Additionally, there should be two more options to control the other two. `annex.
 Making the new options namespaced would also allow the old option to retain its current function; enabling all three.
 
 I've got multiple use-cases for git-annex where I cannot use the assistant because these finer-grained options don't exist.
+
+> Closing because remote.name.annex-sync seems to be sufficient. [[done]]
+> --[[Joey]] 
