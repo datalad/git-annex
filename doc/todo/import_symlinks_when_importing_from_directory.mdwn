@@ -10,3 +10,6 @@ Absolute symlinks pointing into the tree being imported should be turned into re
 
 Absolute symlinks pointing outside the tree are a harder case.  I would still suggest importing these as git symlinks, pointing to the same absolute target path.
 As long as the repo is checked out into a filesystem where the same absolute paths are mounted, the links will work.  That's a common scenario when all repo users use the same compute cluster with a shared filesystem.
+
+> I've decided to reject this idea, although I'm still open to discussion
+> about use cases for it. [[done]] --[[Joey]]
