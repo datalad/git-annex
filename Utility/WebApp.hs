@@ -58,9 +58,9 @@ browserProc url = proc "xdg-open" [url]
  - An IO action can also be run, to do something with the address,
  - such as start a web browser to view the webapp.
  -}
-runWebApp :: Maybe TLSSettings -> Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
-runWebApp tlssettings h app observer = withSocketsDo $ do
-	sock <- getSocket h
+runWebApp :: Maybe TLSSettings -> Maybe HostName -> Maybe PortNumber -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
+runWebApp tlssettings h p app observer = withSocketsDo $ do
+	sock <- getSocket h p
 	void $ forkIO $ go webAppSettings sock app	
 	sockaddr <- getSocketName sock
 	observer sockaddr
@@ -74,14 +74,13 @@ webAppSettings = setTimeout halfhour defaultSettings
 	halfhour = 30 * 60
 
 {- Binds to a local socket, or if specified, to a socket on the specified
- - hostname or address. Selects any free port, unless the hostname ends with
- - ":port"
+ - hostname or address. Selects any free port, unless a port is specified.
  -
  - Prefers to bind to the ipv4 address rather than the ipv6 address
  - of localhost, if it's available.
  -}
-getSocket :: Maybe HostName -> IO Socket
-getSocket h = do
+getSocket :: Maybe HostName -> Maybe PortNumber -> IO Socket
+getSocket h p = do
 #if defined (mingw32_HOST_OS)
 	-- The HostName is ignored by this code.
 	-- getAddrInfo didn't used to work on windows; current status
@@ -91,11 +90,11 @@ getSocket h = do
 	let addr = tupleToHostAddress (127,0,0,1)
 	sock <- socket AF_INET Stream defaultProtocol
 	preparesocket sock
-	bind sock (SockAddrInet defaultPort addr)
+	bind sock (SockAddrInet (fromMaybe defaultPort p) addr)
 	use sock
   where
 #else
-	addrs <- getAddrInfo (Just hints) (Just hostname) Nothing
+	addrs <- getAddrInfo (Just hints) (Just hostname) (fmap show p)
 	case (partition (\a -> addrFamily a == AF_INET) addrs) of
 		(v4addr:_, _) -> go v4addr
 		(_, v6addr:_) -> go v6addr

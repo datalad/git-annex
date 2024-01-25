@@ -59,7 +59,7 @@ import System.Environment (getArgs)
 #endif
 import qualified Utility.Debug as Debug
 
-import Network.Socket (HostName)
+import Network.Socket (HostName, PortNumber)
 
 stopDaemon :: Annex ()
 stopDaemon = liftIO . Utility.Daemon.stopDaemon . fromRawFilePath
@@ -70,8 +70,8 @@ stopDaemon = liftIO . Utility.Daemon.stopDaemon . fromRawFilePath
  -
  - startbrowser is passed the url and html shim file, as well as the original
  - stdout and stderr descriptors. -}
-startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe String -> Maybe HostName ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
-startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = do
+startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe String -> Maybe HostName -> Maybe PortNumber ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
+startDaemon assistant foreground startdelay cannotrun listenhost listenport startbrowser = do
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	enableInteractiveBranchAccess
 	pidfile <- fromRepo gitAnnexPidFile
@@ -141,7 +141,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 #endif
 		urlrenderer <- liftIO newUrlRenderer
 #ifdef WITH_WEBAPP
-		let webappthread = [ assist $ webAppThread d urlrenderer False cannotrun Nothing listenhost webappwaiter ]
+		let webappthread = [ assist $ webAppThread d urlrenderer False cannotrun Nothing listenhost listenport webappwaiter ]
 #else
 		let webappthread = []
 #endif

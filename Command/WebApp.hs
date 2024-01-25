@@ -36,6 +36,7 @@ import Utility.Android
 
 import Control.Concurrent
 import Control.Concurrent.STM
+import Network.Socket (PortNumber)
 
 cmd :: Command
 cmd = noCommit $ dontCheck repoExists $ notBareRepo $
@@ -45,6 +46,7 @@ cmd = noCommit $ dontCheck repoExists $ notBareRepo $
 
 data WebAppOptions = WebAppOptions
 	{ listenAddress :: Maybe String
+	, listenPort :: Maybe PortNumber
 	}
 
 optParser :: CmdParamsDesc -> Parser WebAppOptions
@@ -52,6 +54,10 @@ optParser _ = WebAppOptions
 	<$> optional (strOption
 		( long "listen" <> metavar paramAddress
 		<> help "accept connections to this address"
+		))
+	<*> optional (option auto
+		( long "port" <> metavar paramNumber
+		<> help "specify port to listen on"
 		))
 
 seek :: WebAppOptions -> CommandSeek
@@ -77,9 +83,12 @@ start' allowauto o = do
 		listenAddress' <- if isJust (listenAddress o)
 			then pure (listenAddress o)
 			else annexListen <$> Annex.getGitConfig
+		listenPort' <- if isJust (listenPort o)
+			then pure (listenPort o)
+			else annexPort <$> Annex.getGitConfig
 		ifM (checkpid <&&> checkshim (fromRawFilePath f))
-			( if isJust (listenAddress o)
-				then giveup "The assistant is already running, so --listen cannot be used."
+			( if isJust (listenAddress o) || isJust (listenPort o)
+				then giveup "The assistant is already running, so --listen and --port cannot be used."
 				else do
 					url <- liftIO . readFile . fromRawFilePath
 						=<< fromRepo gitAnnexUrlFile
@@ -87,7 +96,7 @@ start' allowauto o = do
 						then putStrLn url
 						else liftIO $ openBrowser browser (fromRawFilePath f) url Nothing Nothing
 			, do
-				startDaemon True True Nothing cannotrun listenAddress' $ Just $ 
+				startDaemon True True Nothing cannotrun listenAddress' listenPort' $ Just $ 
 					\origout origerr url htmlshim ->
 						if isJust listenAddress'
 							then maybe noop (`hPutStrLn` url) origout
@@ -168,6 +177,7 @@ firstRun o = do
 			webAppThread d urlrenderer True Nothing
 				(callback signaler)
 				(listenAddress o)
+				(listenPort o)
 				(callback mainthread)
 		waitNamedThreads
   where
@@ -189,8 +199,8 @@ firstRun o = do
 			_wait <- takeMVar v
 			state <- Annex.new =<< Git.CurrentRepo.get
 			Annex.eval state $
-				startDaemon True True Nothing Nothing (listenAddress o) $ Just $
-					sendurlback v
+				startDaemon True True Nothing Nothing (listenAddress o) (listenPort o) 
+					(Just $ sendurlback v)
 	sendurlback v _origout _origerr url _htmlshim = putMVar v url
 
 openBrowser :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()

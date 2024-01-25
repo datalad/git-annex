@@ -24,5 +24,12 @@ start :: Bool -> DaemonOptions -> Maybe Duration -> CommandStart
 start assistant o startdelay = do
 	if stopDaemonOption o
 		then stopDaemon
-		else startDaemon assistant (foregroundDaemonOption o) startdelay Nothing Nothing Nothing -- does not return
+		else startDaemon assistant 
+			(foregroundDaemonOption o)
+			startdelay
+			Nothing 
+			Nothing
+			Nothing
+			Nothing
+			-- does not return
 	stop

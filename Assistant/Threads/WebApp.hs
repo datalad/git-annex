@@ -45,7 +45,7 @@ import Git
 import qualified Annex
 
 import Yesod
-import Network.Socket (SockAddr, HostName)
+import Network.Socket (SockAddr, HostName, PortNumber)
 import Data.Text (pack, unpack)
 import qualified Network.Wai.Handler.WarpTLS as TLS
 import Network.Wai.Middleware.RequestLogger
@@ -61,12 +61,16 @@ webAppThread
 	-> Maybe String
 	-> Maybe (IO Url)
 	-> Maybe HostName
+	-> Maybe PortNumber
 	-> Maybe (Url -> FilePath -> IO ())
 	-> NamedThread
-webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost onstartup = thread $ liftIO $ do
+webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost listenport onstartup = thread $ liftIO $ do
 	listenhost' <- if isJust listenhost
 		then pure listenhost
 		else getAnnex $ annexListen <$> Annex.getGitConfig
+	listenport' <- if isJust listenport
+		then pure listenport
+		else getAnnex $ annexPort <$> Annex.getGitConfig
 	tlssettings <- getAnnex getTlsSettings
 	webapp <- WebApp
 		<$> pure assistantdata
@@ -84,7 +88,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 		( return $ logStdout app
 		, return app
 		)
-	runWebApp tlssettings listenhost' app' $ \addr -> if noannex
+	runWebApp tlssettings listenhost' listenport' app' $ \addr -> if noannex
 		then withTmpFile "webapp.html" $ \tmpfile h -> do
 			hClose h
 			go tlssettings addr webapp tmpfile Nothing

@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-01-25T17:29:08Z"
+ content="""
+I found an old todo about the same thing,
+[[todo/Make_webapp_port_configurable]].
+
+The idea there was, they were using docker and wanted to open only a
+specific port selected for the webapp. So basically the same kind of thing.
+
+I think that this should be a separate --port option, to avoid needing to
+try to parse something that may be an ipv6 address or hostname, or
+whatever.
+
+I don't think that using --port should prevent the webapp from needing
+the `?auth=' part of the url, as output when using --listen.
+
+Probably it does not make sense to use --port without also using --listen,
+but if the user does use it, I don't think --port needs to output the url
+the way --listen does.
+"""]]

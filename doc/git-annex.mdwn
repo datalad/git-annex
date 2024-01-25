@@ -2040,6 +2040,11 @@ Remotes are configured using these settings in `.git/config`.
   The default is localhost. Can be either an IP address, 
   or a hostname that resolves to the desired address.
 
+* `annex.port`
+
+  Configures which port address the webapp listens on. 
+  The default is to pick an unused port.
+
 # CONFIGURATION VIA .gitattributes
 
 The key-value backend used when adding a new file to the annex can be

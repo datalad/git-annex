@@ -50,6 +50,7 @@ import Utility.Gpg (GpgCmd, mkGpgCmd)
 import Utility.StatelessOpenPGP (SOPCmd(..), SOPProfile(..))
 import Utility.ThreadScheduler (Seconds(..))
 import Utility.Url (Scheme, mkScheme)
+import Network.Socket (PortNumber)
 
 import Control.Concurrent.STM
 import qualified Data.Set as S
@@ -115,6 +116,7 @@ data GitConfig = GitConfig
 	, annexSecureEraseCommand :: Maybe String
 	, annexGenMetaData :: Bool
 	, annexListen :: Maybe String
+	, annexPort :: Maybe PortNumber
 	, annexStartupScan :: Bool
 	, annexHardLink :: Bool
 	, annexThin :: Bool
@@ -210,6 +212,7 @@ extractGitConfig configsource r = GitConfig
 	, annexSecureEraseCommand = getmaybe (annexConfig "secure-erase-command")
 	, annexGenMetaData = getbool (annexConfig "genmetadata") False
 	, annexListen = getmaybe (annexConfig "listen")
+	, annexPort = getmayberead (annexConfig "port")
 	, annexStartupScan = getbool (annexConfig "startupscan") True
 	, annexHardLink = getbool (annexConfig "hardlink") False
 	, annexThin = getbool (annexConfig "thin") False

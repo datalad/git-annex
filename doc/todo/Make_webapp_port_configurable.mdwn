@@ -39,9 +39,4 @@ dependency versions: aws-0.20 bloomfilter-2.0.1.0 cryptonite-0.25 DAV-1.3.3 feed
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 git annex seems awesome with the little bit of testing I've done. It seems like the perfect tool for what I want to accomplish. Thanks!
 
-> I don't think this necessarily makes sense, but there is an active bug
-> report about the same thing at
-> [[bugs/webapp_--listen_port_is_not_used__63__]]
-> 
-> So, closing this old todo to keep discussion in one place. [[done]]
-> --[[Joey]]
+> [[done]] via --port option --[[Joey]]

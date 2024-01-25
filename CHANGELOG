@@ -22,6 +22,7 @@ git-annex (10.20231228) UNRELEASED; urgency=medium
     annex.bwlimit-download, annex.bwlimit-upload,
     and similar per-remote configs.
   * Added --expected-present file matching option.
+  * webapp: Added --port option, and annex.port config.
 
  -- Joey Hess <id@joeyh.name>  Fri, 29 Dec 2023 11:52:06 -0400
 
