@@ -293,7 +293,7 @@ keyMatchingOptions' :: [AnnexOption]
 keyMatchingOptions' = 
 	[ annexOption (setAnnexState . Limit.addIn) $ strOption
 		( long "in" <> short 'i' <> metavar paramRemote
-		<> help "match files present in a remote"
+		<> help "match files present in a repository"
 		<> hidden
 		<> completeRemotes
 		)
@@ -384,6 +384,11 @@ keyMatchingOptions' =
 	, annexFlag (setAnnexState Limit.addLocked)
 		( long "locked"
 		<> help "match files that are locked"
+		<> hidden
+		)
+	, annexFlag (setAnnexState Limit.addExpectedPresent)
+		( long "expected-present"
+		<> help "match files expected to be present"
 		<> hidden
 		)
 	]

@@ -60,12 +60,15 @@ in either of two repositories.
 * `--in=repository`
 
   Matches only when git-annex believes that the content is present in a
-  repository. Note that it does not check the repository to verify
-  that it still has the content.
+  repository.
 
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository. For the current repository,
   use `--in=here`
+  
+  Note that this does not check remote repositories to verify that content
+  is still present on them. However, when checking the current repository,
+  it does verify that content is present in it.
 
 * `--in=repository@{date}`
 
@@ -79,6 +82,20 @@ in either of two repositories.
   For example, you might need to run `git annex drop .` to temporarily
   free up disk space. The next day, you can get back the files you dropped
   using `git annex get . --in=here@{yesterday}`
+
+* `--expected-present`
+
+  Matches only when git-annex believes that the content is present 
+  in the local repository.
+
+  This is like `--in=here`, except it does not verify that the content
+  is actually present. So it can be used in situations where the location
+  tracking information is known to be out of date.
+
+  For example, if a repository is being restored from a backup
+  that did not include the git-annex objects, this could be used to get
+  back all files that were expected to be in it: 
+  `git-annex get --expected-present`
 
 * `--copies=number`
 

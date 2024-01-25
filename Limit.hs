@@ -330,6 +330,22 @@ addIn s = do
 				then return False
 				else inAnnex key
 
+{- Limit to content that location tracking expects to be present
+ - in the current repository. Does not verify inAnnex. -}
+addExpectedPresent :: Annex ()
+addExpectedPresent = do
+	hereu <- getUUID
+	addLimit $ Right $ MatchFiles
+		{ matchAction = const $ checkKey $ \key -> do
+			us <- Remote.keyLocations key
+			return $ hereu `elem` us
+		, matchNeedsFileName = False
+		, matchNeedsFileContent = False
+		, matchNeedsKey = True
+		, matchNeedsLocationLog = True
+		, matchDesc = matchDescSimple "expected-present"
+		}
+
 {- Limit to content that is currently present on a uuid. -}
 limitPresent :: Maybe UUID -> MatchFiles Annex
 limitPresent u = MatchFiles

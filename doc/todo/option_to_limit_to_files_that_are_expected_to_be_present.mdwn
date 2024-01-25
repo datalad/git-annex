@@ -3,3 +3,5 @@ situation where my repo was copied from elsewhere but missing the object
 files, and I wanted to get back the same objects. So I had to disable that
 check. So an option that checks for files expected to be here would be
 useful. --[[Joey]]
+
+> [[done]] as --expected-present --[[Joey]]
