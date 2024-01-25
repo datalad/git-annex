@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-01-25T15:50:04Z"
+ content="""
+`not copies=2` might be sufficient in your situation.
+
+If you look at the preferred content expression for a transfer repository, it
+is:
+
+`not (inallgroup=client and copies=client:2) and ($client)`
+
+Where `$client` is a copy of the preferred content expressions of the client.
+
+There's no reason you can't write a preferred content expression that
+does the same thing for some other group of repositories.
+"""]]
