@@ -11,3 +11,5 @@ To traverse the whole history and get the list of changes, could use `git
 log --raw`. That is reasonably performant but then it needs to feed every
 sha into cat-file to find the annex objects, which would probably take a
 while. Alternatively perhaps git log --diff and parsing might be faster.
+
+[[!tag confirmed]]
