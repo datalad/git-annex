@@ -1,4 +1,4 @@
-git-annex (10.20231228) UNRELEASED; urgency=medium
+git-annex (10.20240129) upstream; urgency=medium
 
   * info: Added "annex sizes of repositories" table to the overall display.
   * import: Sped up import from special remotes.
@@ -24,7 +24,7 @@ git-annex (10.20231228) UNRELEASED; urgency=medium
   * assistant: When generating a gpg secret key, avoid hardcoding the
     key algorithm and size.
 
- -- Joey Hess <id@joeyh.name>  Fri, 29 Dec 2023 11:52:06 -0400
+ -- Joey Hess <id@joeyh.name>  Mon, 29 Jan 2024 13:12:00 -0400
 
 git-annex (10.20231227) upstream; urgency=medium
 
