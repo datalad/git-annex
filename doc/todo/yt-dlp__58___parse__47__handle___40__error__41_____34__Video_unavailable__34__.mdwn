@@ -89,3 +89,6 @@ note that if I fake up that youtube url by changing letter to the next `d` - res
 ❯ yt-dlp https://www.youtube.com/watch?v=jy01CnsQ9ed --get-filename --no-warnings --no-playlist
 ERROR: [youtube] jy01CnsQ9ed: Video unavailable
 ```
+
+> I don't consider this a bug because with --no-raw it will do what you
+> want. --[[Joey]]

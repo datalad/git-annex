@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-01-30T19:43:50Z"
+ content="""
+To get the behavior you want, use `--no-raw`:
+
+	git-annex addurl --no-raw 'https://www.youtube.com/watch?v=jy01CnsQ9ec'
+	addurl https://www.youtube.com/watch?v=jy01CnsQ9ec
+	
+	  Unable to use youtube-dl or a special remote and --no-raw was specified: no media in url
+	failed
+	addurl: 1 failed
+
+Bear in mind that yt-dlp supports many websites, not just youtube, and youtube
+probably has many domains (eg `youtu.be`). And addurl can legitimately be used
+when you want to archive the current content of an url. So in this case
+git-annex can't distinguish between a webpage with a withdrawn or private video
+and any other url that a user would expect it to download.
+"""]]
