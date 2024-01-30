@@ -95,12 +95,10 @@ to pass parameters to yt-dlp. For example, you could set `git config
 annex.youtube-dl-options "--format worst"` to configure it to download low
 quality videos from YouTube.
 
-To download a youtube channel, you need to find the RSS feed associated with
-that channel, and pass it to `git annex importfeed`. There does not seem to
-be an easy link anywhere to get the RSS feed, but you can construct its url
-manually. For a channel like
-"https://www.youtube.com/channel/$foo", the
-feed is "https://www.youtube.com/feeds/videos.xml?channel_id=$foo"
+To download all the videos in a youtube channel, you can use 
+`git-annex importfeed --scrape` with the url to the
+channel, or you can find the RSS feed for the channel, and 
+`git-annex importfeed` that url (without `--scrape`).
 
 ## bittorrent
 
