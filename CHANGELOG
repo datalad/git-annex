@@ -1,3 +1,10 @@
+git-annex (10.20240130) UNRELEASED; urgency=medium
+
+  * importfeed: Added --scrape option, which uses yt-dlp to screen scrape
+    the equivilant of an RSS feed.
+
+ -- Joey Hess <id@joeyh.name>  Mon, 29 Jan 2024 15:59:33 -0400
+
 git-annex (10.20240129) upstream; urgency=medium
 
   * info: Added "annex sizes of repositories" table to the overall display.

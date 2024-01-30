@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -17,6 +17,7 @@ import Text.Feed.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Time.Clock
+import Data.Time.Clock.POSIX
 import Data.Time.Format
 import Data.Time.Calendar
 import Data.Time.LocalTime
@@ -61,6 +62,7 @@ cmd = notBareRepo $ withAnnexOptions os $
 data ImportFeedOptions = ImportFeedOptions
 	{ feedUrls :: CmdParams
 	, templateOption :: Maybe String
+	, scrapeOption :: Bool
 	, downloadOptions :: DownloadOptions
 	}
 
@@ -71,6 +73,10 @@ optParser desc = ImportFeedOptions
 		( long "template" <> metavar paramFormat
 		<> help "template for filenames"
 		))
+	<*> switch
+		( long "scrape"
+		<> help "scrape website for content to import"
+		)
 	<*> parseDownloadOptions False
 
 seek :: ImportFeedOptions -> CommandSeek
@@ -84,7 +90,7 @@ seek o = startConcurrency commandStages $ do
 		liftIO $ atomically $ do
 			m <- takeTMVar dlst
 			putTMVar dlst (M.insert url Nothing m)
-		commandAction $ getFeed url dlst
+		commandAction $ getFeed o url dlst
 		startpendingdownloads addunlockedmatcher cache dlst checkst False
 	
 	startpendingdownloads addunlockedmatcher cache dlst checkst True
@@ -135,18 +141,23 @@ seek o = startConcurrency commandStages $ do
 				clearFeedProblem url
 
 getFeed
-	:: URLString
+	:: ImportFeedOptions
+	-> URLString
 	-> TMVar (M.Map URLString (Maybe (Maybe [ToDownload])))
 	-> CommandStart
-getFeed url st =
+getFeed o url st =
 	starting "importfeed" (ActionItemOther (Just (UnquotedString url))) (SeekInput [url]) $
-		get `onException` recordfail
+		go `onException` recordfail
   where
 	record v = liftIO $ atomically $ do
 		m <- takeTMVar st
 		putTMVar st (M.insert url v m)
 	recordfail = record (Just Nothing)
 	
+	go
+		| scrapeOption o = scrape
+		| otherwise = get
+
 	get = withTmpFile "feed" $ \tmpf h -> do
 		liftIO $ hClose h
 		ifM (downloadFeed url tmpf)
@@ -181,6 +192,14 @@ getFeed url st =
 		recordfail
 		next $ feedProblem url
 			(msg ++ " (use --debug --debugfilter=ImportFeed to see the feed content that was downloaded)")
+		
+	scrape = youtubePlaylist url >>= \case
+		Left err -> do
+			recordfail
+			next $ feedProblem url err
+		Right playlist -> do
+			record (Just (Just (playlistDownloads url playlist)))
+			next $ return True
 
 parseFeedFromFile' :: FilePath -> IO (Maybe Feed)
 #if MIN_VERSION_feed(1,1,0)
@@ -197,6 +216,9 @@ data ToDownload = ToDownload
 	, itempubdate :: Maybe (Either String UTCTime)
 	-- Fields that are used as metadata and to generate the filename.
 	, itemfields :: [(String, String)]
+	-- True when youtube-dl found this by scraping, so certainly
+	-- supports downloading it.
+	, youtubedlscraped :: Bool
 	}
 
 data DownloadLocation = Enclosure URLString | MediaLink URLString
@@ -246,6 +268,7 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
 			_ -> Left . decodeBS . fromFeedText 
 				<$> getItemPublishDateString  i
 		, itemfields = extractFeedItemFields f i u
+		, youtubedlscraped = False
 		}
 
 {- Feeds change, so a feed download cannot be resumed. -}
@@ -326,7 +349,7 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 
 	addmediafast linkurl mediaurl mediakey =
 		ifM (pure (not (rawOption (downloadOptions opts)))
-		     <&&> youtubeDlSupported linkurl)
+		     <&&> (pure (youtubedlscraped todownload) <||> youtubeDlSupported linkurl))
 			( startUrlDownload cv todownload linkurl $ do
 				runDownload todownload linkurl ".m" cache cv $ \f ->
 					checkCanAdd (downloadOptions opts) f $ \canadd -> do
@@ -515,6 +538,15 @@ minimalMetaData i = case itemid i of
 	Just iid -> MetaData $ M.singleton itemIdField
 		(S.singleton $ toMetaValue iid)
 
+noneValue :: String
+noneValue = "none"
+
+extractField :: String -> [Maybe String] -> (String, String)
+extractField k [] = (k, noneValue)
+extractField k (Just v:_)
+	| not (null v) = (k, v)
+extractField k (_:rest) = extractField k rest
+
 extractFeedItemFields :: Feed -> Item -> URLString -> [(String, String)]
 extractFeedItemFields f i u = map (uncurry extractField)
 	[ ("feedurl", [Just u])
@@ -535,14 +567,36 @@ extractFeedItemFields f i u = map (uncurry extractField)
 	feedauthor = decodeBS . fromFeedText <$> getFeedAuthor f
 	itemauthor = decodeBS . fromFeedText <$> getItemAuthor i
 
-extractField :: String -> [Maybe String] -> (String, String)
-extractField k [] = (k, noneValue)
-extractField k (Just v:_)
-	| not (null v) = (k, v)
-extractField k (_:rest) = extractField k rest
+playlistFields :: URLString -> YoutubePlaylistItem -> [(String, String)]
+playlistFields u i = map (uncurry extractField)
+	[ ("feedurl", [Just u])
+	, ("feedtitle", [youtube_playlist_title i])
+	, ("itemtitle", [youtube_title i])
+	, ("feedauthor", [youtube_playlist_uploader i])
+	, ("itemauthor", [youtube_playlist_uploader i])
+	-- itemsummary omitted, no equivilant in yt-dlp data
+	, ("itemdescription", [youtube_description i])
+	, ("itemrights", [youtube_license i])
+	, ("itemid", [youtube_url i])
+	, ("title", [youtube_title i, youtube_playlist_title i])
+	, ("author", [youtube_playlist_uploader i])
+	]
 
-noneValue :: String
-noneValue = "none"
+playlistDownloads :: URLString -> [YoutubePlaylistItem] -> [ToDownload]
+playlistDownloads url = mapMaybe go
+  where
+	go i = do
+		iurl <- youtube_url i
+		return $ ToDownload
+			{ feedurl = url
+			, location = MediaLink iurl
+			, itemid = Just (encodeBS iurl)
+			, itempubdate = 
+				Right . posixSecondsToUTCTime . fromIntegral
+					<$> youtube_timestamp i
+			, itemfields = playlistFields url i
+			, youtubedlscraped = True
+			}
 
 {- Called when there is a problem with a feed.
  -

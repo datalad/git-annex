@@ -8,10 +8,10 @@ git annex importfeed `[url ...]`
 
 # DESCRIPTION
 
-Imports the contents of podcasts and other feeds. Only downloads files whose
-content has not already been added to the repository before, so you can
-delete, rename, etc the resulting files and repeated runs won't duplicate
-them.
+Imports the contents of podcasts and other rss and atom feeds. Only
+downloads files whose content has not already been added to the repository
+before, so you can delete, rename, etc the resulting files and repeated
+runs won't duplicate them.
 
 When `yt-dlp` is installed, it can be used to download links in the feed.
 This allows importing e.g., YouTube playlists.
@@ -64,6 +64,12 @@ resulting in the new url being downloaded to such a filename.
   or a special remote, rather than the raw content of the url. if that
   cannot be done, the import will fail, and the next import of the feed
   will retry.
+
+* `--scrape`
+
+  Rather than downloading the url and parsing it as a rss/atom feed
+  to find files to import, uses yt-dlp to screen scrape the equivilant
+  of a feed, and imports what it found.
 
 * `--template`
 
