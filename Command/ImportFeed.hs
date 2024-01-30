@@ -190,10 +190,13 @@ parseFeedFromFile' f = catchMaybeIO (parseFeedFromFile f)
 #endif
 
 data ToDownload = ToDownload
-	{ feed :: Feed
-	, feedurl :: URLString
-	, item :: Item
+	{ feedurl :: URLString
 	, location :: DownloadLocation
+	, itemid :: Maybe B.ByteString
+	-- Either the parsed or unparsed date.
+	, itempubdate :: Maybe (Either String UTCTime)
+	-- Fields that are used as metadata and to generate the filename.
+	, itemfields :: [(String, String)]
 	}
 
 data DownloadLocation = Enclosure URLString | MediaLink URLString
@@ -226,12 +229,24 @@ findDownloads u f = catMaybes $ map mk (feedItems f)
   where
 	mk i = case getItemEnclosure i of
 		Just (enclosureurl, _, _) ->
-			Just $ ToDownload f u i $ Enclosure $ 
-				decodeBS $ fromFeedText enclosureurl
+			Just $ mk' i
+				(Enclosure $ decodeBS $ fromFeedText enclosureurl)
 		Nothing -> case getItemLink i of
-			Just l -> Just $ ToDownload f u i $ 
-				MediaLink $ decodeBS $ fromFeedText l
+			Just l -> Just $ mk' i
+				(MediaLink $ decodeBS $ fromFeedText l)
 			Nothing -> Nothing
+	mk' i l = ToDownload
+		{ feedurl = u
+		, location = l
+		, itemid = case getItemId i of
+			Just (_, iid) -> Just (fromFeedText iid)
+			_ -> Nothing
+		, itempubdate = case getItemPublishDate i :: Maybe (Maybe UTCTime) of
+			Just (Just d) -> Just (Right d)
+			_ -> Left . decodeBS . fromFeedText 
+				<$> getItemPublishDateString  i
+		, itemfields = extractFeedItemFields f i u
+		}
 
 {- Feeds change, so a feed download cannot be resumed. -}
 downloadFeed :: URLString -> FilePath -> Annex Bool
@@ -261,13 +276,13 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 	checkknown url a = case dbhandle cache of
 		Just db -> ifM (liftIO $ Db.isKnownUrl db url)
 			( nothingtodo
-			, case getItemId (item todownload) of
-				Just (_, itemid) ->
-					ifM (liftIO $ Db.isKnownItemId db (fromFeedText itemid))
+			, case itemid todownload of
+				Just iid ->
+					ifM (liftIO $ Db.isKnownItemId db iid)
 						( nothingtodo
 						, a
 						)
-				_ -> a
+				Nothing -> a
 			)
 		Nothing -> a
 
@@ -451,9 +466,9 @@ defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
 feedFile :: Utility.Format.Format -> ToDownload -> String -> FilePath
 feedFile tmpl i extension = sanitizeLeadingFilePathCharacter $ 
 	Utility.Format.format tmpl $
-		M.map sanitizeFilePathComponent $ M.fromList $ extractFields i ++
+		M.map sanitizeFilePathComponent $ M.fromList $ itemfields i ++
 			[ ("extension", extension)
-			, extractField "itempubdate" [itempubdate]
+			, extractField "itempubdate" [itempubdatestring]
 			, extractField "itempubyear" [itempubyear]
 			, extractField "itempubmonth" [itempubmonth]
 			, extractField "itempubday" [itempubday]
@@ -462,18 +477,13 @@ feedFile tmpl i extension = sanitizeLeadingFilePathCharacter $
 			, extractField "itempubsecond" [itempubsecond]
 			]
   where
-	itm = item i
-
-	pubdate = case getItemPublishDate itm :: Maybe (Maybe UTCTime) of
-		Just (Just d) -> Just d
-		_ -> Nothing
+	pubdate = maybe Nothing eitherToMaybe (itempubdate i)
 	
-	itempubdate = case pubdate of
-		Just pd -> Just $
-			formatTime defaultTimeLocale "%F" pd
+	itempubdatestring = case itempubdate i of
+		Just (Right pd) -> Just $ formatTime defaultTimeLocale "%F" pd
 		-- if date cannot be parsed, use the raw string
-		Nothing-> replace "/" "-" . decodeBS . fromFeedText
-			<$> getItemPublishDateString itm
+		Just (Left s) -> Just $ replace "/" "-" s
+		Nothing -> Nothing
 	
 	(itempubyear, itempubmonth, itempubday) = case pubdate of
 		Nothing -> (Nothing, Nothing, Nothing)
@@ -492,40 +502,38 @@ feedFile tmpl i extension = sanitizeLeadingFilePathCharacter $
 			   )
 
 extractMetaData :: ToDownload -> MetaData
-extractMetaData i = case getItemPublishDate (item i) :: Maybe (Maybe UTCTime) of
-	Just (Just d) -> unionMetaData meta (dateMetaData d meta)
+extractMetaData i = case itempubdate i of
+	Just (Right d) -> unionMetaData meta (dateMetaData d meta)
 	_ -> meta
   where
 	tometa (k, v) = (mkMetaFieldUnchecked (T.pack k), S.singleton (toMetaValue (encodeBS v)))
-	meta = MetaData $ M.fromList $ map tometa $ extractFields i
+	meta = MetaData $ M.fromList $ map tometa $ itemfields i
 
 minimalMetaData :: ToDownload -> MetaData
-minimalMetaData i = case getItemId (item i) of
-	(Nothing) -> emptyMetaData
-	(Just (_, itemid)) -> MetaData $ M.singleton itemIdField 
-		(S.singleton $ toMetaValue $ fromFeedText itemid)
+minimalMetaData i = case itemid i of
+	Nothing -> emptyMetaData
+	Just iid -> MetaData $ M.singleton itemIdField
+		(S.singleton $ toMetaValue iid)
 
-{- Extract fields from the feed and item, that are both used as metadata,
- - and to generate the filename. -}
-extractFields :: ToDownload -> [(String, String)]
-extractFields i = map (uncurry extractField)
-	[ ("feedurl", [Just (feedurl i)])
+extractFeedItemFields :: Feed -> Item -> URLString -> [(String, String)]
+extractFeedItemFields f i u = map (uncurry extractField)
+	[ ("feedurl", [Just u])
 	, ("feedtitle", [feedtitle])
 	, ("itemtitle", [itemtitle])
 	, ("feedauthor", [feedauthor])
 	, ("itemauthor", [itemauthor])
-	, ("itemsummary", [decodeBS . fromFeedText <$> getItemSummary (item i)])
-	, ("itemdescription", [decodeBS . fromFeedText <$> getItemDescription (item i)])
-	, ("itemrights", [decodeBS . fromFeedText <$> getItemRights (item i)])
-	, ("itemid", [decodeBS . fromFeedText . snd <$> getItemId (item i)])
+	, ("itemsummary", [decodeBS . fromFeedText <$> getItemSummary i])
+	, ("itemdescription", [decodeBS . fromFeedText <$> getItemDescription i])
+	, ("itemrights", [decodeBS . fromFeedText <$> getItemRights i])
+	, ("itemid", [decodeBS . fromFeedText . snd <$> getItemId i])
 	, ("title", [itemtitle, feedtitle])
 	, ("author", [itemauthor, feedauthor])
 	]
   where
-	feedtitle = Just $ decodeBS $ fromFeedText $ getFeedTitle $ feed i
-	itemtitle = decodeBS . fromFeedText <$> getItemTitle (item i)
-	feedauthor = decodeBS . fromFeedText <$> getFeedAuthor (feed i)
-	itemauthor = decodeBS . fromFeedText <$> getItemAuthor (item i)
+	feedtitle = Just $ decodeBS $ fromFeedText $ getFeedTitle f
+	itemtitle = decodeBS . fromFeedText <$> getItemTitle i
+	feedauthor = decodeBS . fromFeedText <$> getFeedAuthor f
+	itemauthor = decodeBS . fromFeedText <$> getItemAuthor i
 
 extractField :: String -> [Maybe String] -> (String, String)
 extractField k [] = (k, noneValue)
