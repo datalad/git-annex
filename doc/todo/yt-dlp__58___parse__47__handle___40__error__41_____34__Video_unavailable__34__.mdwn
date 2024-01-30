@@ -1,0 +1,91 @@
+ATM `git-annex addurl` would happily download HTML from youtube instead of errorring, which would probably a better behavior, if video was removed from YouTube or made private.  E.g.
+
+<details>
+<summary>here is a detailed git annex --debug addurl output</summary> 
+
+```shell
+$> git annex --debug addurl --file Комендантські_балачки/2024-01-28-___Стрім_20_30_28.01.2024_чат_рулетка_LIVE_стрим._Андрій_Попик.mkv https://www.youtube.com/watch?v=jy01CnsQ9ec
+[2024-01-29 16:55:36.511153059] (Utility.Process) process [2205617] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2024-01-29 16:55:36.515415282] (Utility.Process) process [2205617] done ExitSuccess
+[2024-01-29 16:55:36.515888181] (Utility.Process) process [2205618] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2024-01-29 16:55:36.519652103] (Utility.Process) process [2205618] done ExitSuccess
+[2024-01-29 16:55:36.521989271] (Utility.Process) process [2205619] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+addurl https://www.youtube.com/watch?v=jy01CnsQ9ec
+[2024-01-29 16:55:36.546921281] (Utility.Url) Request {
+  host                 = "www.youtube.com"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding",""),("User-Agent","git-annex/10.20231227-1~ndall+1")]
+  path                 = "/watch"
+  queryString          = "?v=jy01CnsQ9ec"
+  method               = "HEAD"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2024-01-29 16:55:36.767345074] (Utility.Process) process [2205641] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2024-01-29 16:55:36.771989935] (Utility.Process) process [2205641] done ExitSuccess
+[2024-01-29 16:55:36.772619847] (Utility.Process) process [2205642] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","refs/heads/master"]
+[2024-01-29 16:55:36.777260151] (Utility.Process) process [2205642] done ExitSuccess
+[2024-01-29 16:55:36.778775886] (Utility.Process) process [2205643] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","check-attr","-z","--stdin","annex.backend","annex.largefiles","annex.numcopies","annex.mincopies","--"]
+[2024-01-29 16:55:36.78290662] (Utility.Url) Request {
+  host                 = "www.youtube.com"
+  port                 = 443
+  secure               = True
+  requestHeaders       = [("Accept-Encoding","identity"),("User-Agent","git-annex/10.20231227-1~ndall+1")]
+  path                 = "/watch"
+  queryString          = "?v=jy01CnsQ9ec"
+  method               = "GET"
+  proxy                = Nothing
+  rawBody              = False
+  redirectCount        = 10
+  responseTimeout      = ResponseTimeoutDefault
+  requestVersion       = HTTP/1.1
+  proxySecureMode      = ProxySecureWithConnect
+}
+
+[2024-01-29 16:55:36.982919787] (Utility.Process) process [2205644] read: yt-dlp ["https://www.youtube.com/watch?v=jy01CnsQ9ec","--get-filename","--no-warnings","--no-playlist"]
+[2024-01-29 16:55:38.035161914] (Utility.Process) process [2205644] done ExitFailure 1
+[2024-01-29 16:55:38.036097212] (Utility.Process) p(to Комендантські_балачки/2024-01-28-___Стрім_20_30_28.01.2024_чат_рулетка_LIVE_стрим._Андрій_Попик.mkv) "--stdin","--verbose","--non-matching"]
+[2024-01-29 16:55:38.054030685] (Messages.explain) [ Комендантські_балачки/2024-01-28-___Стрім_20_30_28.01.2024_чат_рулетка_LIVE_стрим._Андрій_Попик.mkv does not match annex.largefiles: mimeencoding=binary[FALSE] ]
+                                                                                                                                                            (non-large file; adding content to git repository)
+[2024-01-29 16:55:38.054895156] (Utility.Process) process [2205761] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","hash-object","-w","--no-filters","--stdin-paths"]
+[2024-01-29 16:55:38.072695867] (Utility.Process) process [2205762] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","write-tree"]
+[2024-01-29 16:55:38.078372317] (Utility.Process) process [2205762] done ExitSuccess
+[2024-01-29 16:55:38.07887887] (Utility.Process) process [2205763] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/annex/last-index"]
+addurl https://www.youtube.com/watch?v=jy01CnsQ9ec (to Комендантські_балачки/2024-01-28-___Стрім_20_30_28.01.2024_чат_рулетка_LIVE_стрим._Андрій_Попик.mkv) (non-large file; adding content to git repository) ok
+(recording state in git...)
+[2024-01-29 16:55:38.083368582] (Utility.Process) process [2205764] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","update-index","-z","--index-info"]
+[2024-01-29 16:55:38.129969795] (Utility.Process) process [2205764] done ExitSuccess
+[2024-01-29 16:55:38.130183526] (Database.Handle) commitDb start
+[2024-01-29 16:55:38.130668768] (Database.Handle) commitDb done
+[2024-01-29 16:55:38.131339954] (Utility.Process) process [2205619] done ExitSuccess
+[2024-01-29 16:55:38.131872474] (Utility.Process) process [2205643] done ExitSuccess
+[2024-01-29 16:55:38.132363417] (Utility.Process) process [2205761] done ExitSuccess
+[2024-01-29 16:55:38.132786755] (Utility.Process) process [2205760] done ExitFailure 1
+
+$> file -L Комендантські_балачки/2024-01-28-___Стрім_20_30_28.01.2024_чат_рулетка_LIVE_стрим._Андрій_Попик.mkv
+Комендантські_балачки/2024-01-28-___Стрім_20_30_28.01.2024_чат_рулетка_LIVE_стрим._Андрій_Попик.mkv: HTML document, ASCII text, with very long lines (56909)
+
+```
+</details>
+
+whenever that video is now announced to be Private if you go to that youtube url or `yt-dlp` saying that 
+
+```shell
+❯ yt-dlp https://www.youtube.com/watch?v=jy01CnsQ9ec --get-filename --no-warnings --no-playlist
+ERROR: [youtube] jy01CnsQ9ec: Video unavailable. This video has been removed by the uploader
+❯ yt-dlp --version
+2023.11.16
+```
+
+note that if I fake up that youtube url by changing letter to the next `d` - response does not include any reason
+
+```shell
+❯ yt-dlp https://www.youtube.com/watch?v=jy01CnsQ9ed --get-filename --no-warnings --no-playlist
+ERROR: [youtube] jy01CnsQ9ed: Video unavailable
+```

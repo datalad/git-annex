@@ -1,0 +1,37 @@
+### Please describe the problem.
+
+When importing from a directory special remote created with importtree=yes and the --json-progress option is specified, the file field is omitted from the progress objects.
+
+### What steps will reproduce the problem?
+
+The command
+
+git annex import --from import-special-remote --json-progress main:Music
+
+generates output with the file field omitted from the nested action object in the progress objects on line 2 and 4, below.
+
+### What version of git-annex are you using? On what operating system?
+
+10.20231228-g5540f42e21afce6947d5410c5f18b178de6c336a
+
+on Linux
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+{\"command\":\"list\",\"error-messages\":[],\"input\":[],\"success\":true}
+{\"action\":{\"command\":\"import import-special-remote\",\"input\":[]},\"byte-progress\":9972,\"percent-progress\":\"100%\",\"total-size\":9972}
+{\"command\":\"import import-special-remote\",\"error-messages\":[],\"input\":[],\"success\":true}
+{\"action\":{\"command\":\"import import-special-remote\",\"input\":[]},\"byte-progress\":18,\"percent-progress\":\"100%\",\"total-size\":18}
+{\"command\":\"import import-special-remote\",\"error-messages\":[],\"input\":[],\"success\":true}
+{\"command\":\"update\",\"error-messages\":[],\"input\":[],\"success\":true}
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Yes, I am developing the easy-git-annex interface.

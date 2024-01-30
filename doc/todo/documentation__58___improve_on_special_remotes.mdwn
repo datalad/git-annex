@@ -1,0 +1,9 @@
+Even though there is a [special_remotes](https://git-annex.branchable.com/special_remotes/) page, description there is quite superficial and does not provide a good overview of various aspects on special remotes 
+
+- life cycle, e.g. how they relate to Git remotes -- that they become listed among `git remote`s whenever enabled, that git remotes get the corresponding `annex-uuid` assigned when "sensed" or get annex-ignore, how to "disable" an enabled remote (just `git remote remove`)
+- clearly list commands to operate on the special remotes (initremote, enableremote) or interrogate them (e.g. how to figure out if there is already a special remote with a target uuid but may be not enabled yet, etc)
+
+Without such a documentation it is hard to "on board" new git-annex users and developers.
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
