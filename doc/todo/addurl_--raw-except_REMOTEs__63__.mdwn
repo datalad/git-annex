@@ -1,0 +1,5 @@
+In [backups2datalad](https://github.com/dandi/backups2datalad/pull/21#issuecomment-1917911205) we ran into a behavior that `addurl --raw` does not only not considers all the fancy handling for youtube and .torrents, but also disregards our (`git-annex-remote-datalad`) external special remote (although still CLAIMURLs it first).
+I think generally we would still prefer to use `--raw` as to avoid possible side-effects when someone manages to add some `.torrent` file which we want to add as a file, not to download it. But we would like to explicitly allow interactions with our special remote. That is why I think the most viable solution would be to provide `--raw-except` which would be like `--raw` but allowing explicitly listed special remotes (or hardcoded keywords like `:torrents:`, `:youtube:`) to be handled if encountered.
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
