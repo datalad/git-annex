@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="jstritch"
+ avatar="http://cdn.libravatar.org/avatar/56756b34ff409071074762951d270002"
+ subject="comment 2"
+ date="2024-01-31T22:12:47Z"
+ content="""
+Yes, copying .h but not .c would be an example. It makes a mess of the special remote's directory structure.
+
+Export has the same problem, so there is no way to copy files to the special remote without making a mess.
+
+Import does it correctly going the other way by *not* grabbing files *wanted* by the repository but *not wanted* the special remote. I believe symmetry is desirable in this case.
+
+Please provide a way to copy to a special remote with import-like filtering.
+
+"""]]
