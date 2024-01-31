@@ -1,0 +1,6 @@
+In [backups2datalad](https://github.com/dandi/backups2datalad/pull/21) we are implementing support for "embargoed" data -- files which would require authorization initially. To provide authentication support we enable/configure `git-annex-remote-datalad` to handle them.  But in the future, when data gets unembargoed we would need to remove/disable `datalad` special remote and migrate (the same) URLs to no longer be associated with it and rather be handled by `web` remote.  Generally the use case might desire moving URLs between remotes (e.g. from `datalad` to `datalad-next`), or migrating from `web` into an external remote.
+
+Is it already possible reasonably well, or would require messing with `.web` files in the git-annex branch?
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]
