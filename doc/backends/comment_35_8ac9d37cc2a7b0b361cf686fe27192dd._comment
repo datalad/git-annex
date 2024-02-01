@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="windfish@91c7bac51a452080189a071094cb6f914fe3435b"
+ nickname="windfish"
+ avatar="http://cdn.libravatar.org/avatar/648c1b6a023d94a30193b1b428c8d373"
+ subject="combine worm with partial hash"
+ date="2024-02-01T11:53:54Z"
+ content="""
+would it be possible to provide a combined backend of worm + partial hash? i'd imagine that this would make the backend faster than merely hashes while also lower the probability of erroneously identifying two different, but worm-equivalent files.
+"""]]
