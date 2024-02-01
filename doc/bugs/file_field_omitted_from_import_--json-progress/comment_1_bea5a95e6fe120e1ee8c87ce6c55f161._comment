@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jstritch"
+ avatar="http://cdn.libravatar.org/avatar/56756b34ff409071074762951d270002"
+ subject="comment 1"
+ date="2024-02-01T20:49:12Z"
+ content="""
+I'm not convinced the remote name should appear in the command field of the nested action. The whole point of using JSON is to avoid parsing strings.
+
+Adding a separate field with a string array of the command arguments would be ok, but I'm not requesting it now.
+"""]]
