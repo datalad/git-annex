@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2024-02-02T19:08:38Z"
+ content="""
+I don't think overwrite here should have done anything -- should have been the same key and filename, so should be the same as skipping I think.
+
+Overall indeed might be just nice to have `--existing noclob|overwrite|skip` so it either adds index to declob, or skips or overwrites?  I would have probably used either skip or overwrite ;)
+"""]]
