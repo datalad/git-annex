@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-02-02T18:48:59Z"
+ content="""
+I see you're using CLAIMURL. What `git-annex addurl` does when a special
+remote claims an url is it records the url for the key in the git-annex
+branch, but mangled to indicate that it is not an url used by the web
+special remote.
+
+The mangling is just to prefix the url with ":".
+
+If you `git-annex registerurl --remote=web` the same url again
+but without that prefix, and  
+`git-annex setpresentkey $key 00000000-0000-0000-0000-000000000001 1`,
+the url will will able to be downloaded by the web special remote. 
+
+Then you can unregisterurl the (unmangled) url from your remote that you no
+longer want to use, and use setpresentkey with your remote's uuid and "0" to
+remove the mangled url.
+
+I don't think there's any plumbing currently that makes it easy to access
+and demangle the urls. `git-annex whereis --json` will list the demangled
+url in the "urls" field, but in amoung any other urls that other special
+remotes might have for the same content. Without --json there is a nice
+display that shows the remote that claims the url:
+
+	joey@darkstar:~/tmp/bench/rx>git-annex whereis
+	whereis foo (1 copy)
+	  	177d51e9-a115-443e-8100-49588f8a6ca2 -- foo [test]
+	
+	  test: http://example.com/foo.test
+
+Improving the whereis --json or adding some other machine-readable 
+way to list urls claimed by a remote seems like maybe worth doing?
+Let me know.
+"""]]
