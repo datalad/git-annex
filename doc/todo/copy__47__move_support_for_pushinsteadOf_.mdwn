@@ -1,0 +1,58 @@
+ATM
+
+files didn't `datalad push` as they should have due to existing settings of `wanted`:
+
+```
+❯ git annex wanted datasets.datalad.org
+include=.datalad/* and (not metadata=distribution-restrictions=*)
+❯ git annex find --not --in datasets.datalad.org .
+crcns-2022-dataland.pdf
+crcns-2022-dataland.png
+crcns-2022-dataland.svg
+❯ git annex metadata *
+metadata crcns-2022-dataland.pdf 
+
+ok
+metadata crcns-2022-dataland.png 
+
+ok
+metadata crcns-2022-dataland.svg 
+
+ok
+❯ git annex copy --auto --to datasets.datalad.org *
+❯ git annex version
+git-annex version: 10.20231227-1~ndall+1
+
+```
+
+so I was confused... the reason was
+
+```
+❯ git annex copy  --to datasets.datalad.org *
+copy crcns-2022-dataland.pdf (to datasets.datalad.org...) 
+  copying to non-ssh repo not supported
+failed
+copy crcns-2022-dataland.png (to datasets.datalad.org...) 
+  copying to non-ssh repo not supported
+failed
+copy crcns-2022-dataland.svg (to datasets.datalad.org...) 
+  copying to non-ssh repo not supported
+failed
+copy: 3 failed
+```
+
+wherever I have 
+
+```shell
+❯ git remote show -n datasets.datalad.org
+* remote datasets.datalad.org
+  Fetch URL: https://datasets.datalad.org/datalad/artwork/.git
+  Push  URL: falkor.dartmouth.edu:/srv/datasets.datalad.org/www/datalad/artwork/.git
+...
+```
+
+and the use case is quite common for me and in particular for ReproNim/containers which is shared/adjusted in similar ways
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
+
