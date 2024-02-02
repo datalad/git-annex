@@ -462,7 +462,7 @@ runDownload todownload url extension cache cv getter = do
 				in d </> show n ++ "_" ++ base
 		tryanother = makeunique (n + 1) file
 		alreadyexists = liftIO $ isJust <$> catchMaybeIO (R.getSymbolicLinkStatus (toRawFilePath f))
-		checksameurl k = ifM (elem url <$> getUrls k)
+		checksameurl k = ifM (elem url . map fst . map getDownloader <$> getUrls k)
 			( return Nothing
 			, tryanother
 			)

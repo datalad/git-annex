@@ -2,6 +2,8 @@ git-annex (10.20240130) UNRELEASED; urgency=medium
 
   * importfeed: Added --scrape option, which uses yt-dlp to screen scrape
     the equivilant of an RSS feed.
+  * importfeed --force: Avoid creating duplicates of existing
+    already downloaded files when yt-dlp or a special remote was used.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Jan 2024 15:59:33 -0400
 

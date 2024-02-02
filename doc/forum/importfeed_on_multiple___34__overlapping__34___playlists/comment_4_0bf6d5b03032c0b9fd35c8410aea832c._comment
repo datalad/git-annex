@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-02-02T19:27:41Z"
+ content="""
+Oh, but it seems that `importfeed --force` already has code to handle this.
+It checks if the file already exists and has the same url recorded as the url
+being imported. For some reason in that case, it says it failed to import
+the url, which seems a bit odd behavior to me, but in any case it doesn't
+add a "2_" file.
+
+That works for regular rss feeds, but does not work for yt-dlp urls.
+
+The reason is the url mangling done for yt-dlp urls (and other special
+remote urls). Fixed this bug.
+"""]]
