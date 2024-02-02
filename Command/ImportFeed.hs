@@ -412,7 +412,7 @@ runDownload todownload url extension cache cv getter = do
 	case dest of
 		Nothing -> do
 			recordsuccess
-			stop
+			next $ return True
 		Just f -> getter (toRawFilePath f) >>= \case
 			Just ks
 				-- Download problem.
