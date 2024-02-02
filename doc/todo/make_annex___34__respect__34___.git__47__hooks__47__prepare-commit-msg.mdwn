@@ -1,0 +1,136 @@
+I am trying to work out a helper for creating more meaningful automated commit messages for reprostim where we collect videos and annex assistant moves them to the server.
+
+<details>
+<summary>I was about to file this TODO report describing more detail before I realized that in principle git has a hook I could use</summary> 
+
+ATM (git annex 10.20231227-1~ndall+1) git annex assistant just commits with a generic non-descript (besides location) commit message e.g.
+
+```
+git-annex in reprostim@reproiner:/data/reprostim
+```
+
+and to figure out what actually git-annex has done takes at least rerunning `git log --stat` but in git gui of some kind takes looking at each and every commit to identify the one of interest (which e.g. modified `config.yaml`) or specific filtering etc.
+
+I would have appreciated if commits became more descriptive. Since git-annex assistant is quite reactive and (at least in our case) mostly commits one file change at a time I would have appreciated commit messages like
+
+```
+Edited config.yaml
+```
+
+or `Addded` or `Removed`.  If file is under a folder and length of the path is over some limit, would have abbreviated path to smth like ```.../config.yaml```.
+
+In case of multiple files per "action", summarized in numbers and possibly again with a hint on location
+
+```
+Edited config.yaml, added 10 files under Videos/
+```
+
+Moreover, I would have still appreciated that information annex reports about location now, but I would have made it into the extended part of the commit message after a new line, and added a version info.  So altogether could have looked like
+
+```
+Edited config.yaml, added 10 files under Videos/
+
+---
+# git annex metadata
+repository: reprostim@reproiner:/data/reprostim
+version: 10.20231227-1~ndall+1
+```
+
+And even more "ideally", if it could pick up (if exists) an optional file (e.g. `.git/ANNEX_COMMIT_META.yaml`) or some `git config` field to add to the commit, I could have then added information about the system/software I care about, e.g.
+
+```
+reprostim-version: 0.20240202.0
+```
+
+and thus have commit carrying metadata about the version which produces those video files.  ATM the video capture is completely ignorant of git-annex so I cannot go and metadata annotate those files... but that would be a different issue ... ;)
+
+As some kind of testament to possibility and usability of such commits, could navigate through commits of our automated datalad dandisets e.g. [000108](https://github.com/dandisets/000108/commits/draft/) where now without any extra tools etc I can tell where we added or removed files or just modified some metadata. It is indeed custom and more specific to our use case, but I think aforementioned would already be better.
+
+</details>
+
+<details>
+<summary>But when I created this experimental version of the script to see what info I have available</summary> 
+
+```shell
+#!/bin/sh
+#
+# A hook to provide custom commit messages for
+# changes in the repo which would be better than default ones git-annex provides.
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA1=$3
+
+if [ -n "$COMMIT_MSG_FILE" ]; then
+	orig_msg=$(cat "$COMMIT_MSG_FILE")
+else
+	orig_msg=NONE
+fi
+
+cat <<EOF >| "$COMMIT_MSG_FILE"
+Custom commit msg for source=$COMMIT_SOURCE sha1=$SHA1
+
+orig_msg: $orig_msg
+git-annex version: `git annex version --raw`
+environment:
+`export`
+
+EOF
+
+```
+</details>
+
+I saw that `git-annex` somehow commits while avoiding this hook entirely!
+
+```
+❯ rm random && dd if=/dev/random of=random count=1 && git annex add random && git commit -m "Added random to annex without custom commit msg"; git show git-annex | head -n 5
+1+0 records in
+1+0 records out
+512 bytes copied, 0.000295152 s, 1.7 MB/s
+add random 
+ok                                
+(recording state in git...)
+[master 470d6ce] Custom commit msg for source=message sha1=
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+commit 97423356f56f1f16b6a9646614af1d3d4d3d8717
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Fri Feb 2 12:03:18 2024 -0500
+
+    update
+
+```
+
+so we got hook working for `master` and commit to `git-annex` branch went without it.  FWIW if I use annex.commitmessage -- that one works but it is inflexible
+
+```shell
+❯ rm random && dd if=/dev/random of=random count=1 && git -c annex.commitmessage="custom one" annex add random && git commit -m "Added random to annex WITH custom commit msg"; git show git-annex | head -n 5
+1+0 records in
+1+0 records out
+512 bytes copied, 8.0667e-05 s, 6.3 MB/s
+add random 
+ok                                
+(recording state in git...)
+[master 65d4400] Custom commit msg for source=message sha1=
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+commit dff6b4833f4d0e2193d43576c834212f84e54f49
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Fri Feb 2 12:05:08 2024 -0500
+
+    custom one
+```
+
+I think it would be great if I could just create a "generic" prepare-commit-msg hook I could use for any branch, git-annex included.
+
+The same applies to changes git-annex assistant commits to master -- apparently it seems to avoid that hook as well since even with the hook present I got 
+
+```shell
+commit 78c5dcb6bf91b056cba7dc4ee93dd5b31f15f297 (HEAD -> master, synced/master)
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Fri Feb 2 12:06:41 2024 -0500
+
+    git-annex in yoh@bilena:~/proj/datalad/trash/try-commit-message
+```
+
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
