@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-02-02T18:34:23Z"
+ content="""
+The reason it doesn't overwrite is that it's not impossible for a feed
+to have two posts with the same title (eg "happy groundhogs day") or
+whatever else is used to construct the filename (unless you use `${itemid}`
+in your --template).
+
+Maybe overwriting would have been the right choice in your situation.. do
+you think an option that overwrites would be useful?
+
+Or maybe better, an option that skips downloading when a file with the
+generated name already exists? If one groundhog's day greeting
+is enough for you..
+"""]]
