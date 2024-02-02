@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-02-02T17:25:54Z"
+ content="""
+As for `pushInsteadOf`, in 2011 this was considered
+in <https://bugs.debian.org/644278>. And the result was that git-annex
+honors `insteadOf` but not `pushInsteadOf` or `pushurl`. With the (weak?)
+rationalle that what git-annex does is neither pushing or pulling really.
+
+So it seems to me better for you to use `insteadOf`. Unless there's some
+reason why you need git to pull from the http url rather than from the ssh
+url?
+
+Perhaps you're setting this up for many users,
+some of whom are limited to read-only access.
+Pulling from http would work for those users. And git-annex get
+from http also works read-only the way your repository is set up.
+
+If that is the reason you want to use `pushInsteadOf` rather than
+`insteadOf`, it would follow that you would want git-annex to use
+the pull url for getting files, but use the push url for putting/dropping
+files.
+"""]]

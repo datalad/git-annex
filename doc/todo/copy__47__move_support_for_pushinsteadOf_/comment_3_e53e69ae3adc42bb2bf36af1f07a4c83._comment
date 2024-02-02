@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-02-02T17:57:51Z"
+ content="""
+But: If this change were made, it would risk breaking existing
+working setups, that happen to have a push url that points to a different
+repository. When git-annex was upgraded to use the push url, it would start
+noticing that the repository behind the url has a different uuid than the
+remote does.
+
+For a ssh repository, that would prevent it from using the repository until
+the user did something to fix the configuration. 
+
+For a local repository, git-annex currently automatically updates the
+cached repository uuid. It's not clear to me how that would work if there were
+two urls pointing to two different repositories. Does seem like this would
+prevent eg, getting files from the remote that it was able to get before.
+
+I don't know how common such a setup with a push url pointing to a 
+different repository might be. I think it is much more
+likely that `remote.foo.pushurl` be pointed to some other url that is not
+on the same server. pushInsteadOf is really intended to configure a
+different access method for the same server as the repository url.
+"""]]
