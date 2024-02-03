@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 2"
+ date="2024-02-03T01:17:39Z"
+ content="""
+in theory - yes. In practice, ATM I would probably just `git annex whereis | awk -e \"/^ *$remote:/{print $2;}\"` or alike in bash, and in Python it would be quite trivial to filter for a specific remote. 
+The main \"hurdle\" here would be the need to do that dance with registerurl/unregisterurl and given that we might need to do that for many thousands keys (imaging going through such repos as [dandizarrs](https://github.com/dandizarrs)), I felt like some internal dedicated function would be worthwhile.
+"""]]
