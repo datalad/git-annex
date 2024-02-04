@@ -1,5 +1,6 @@
 ## Expect behaviors
-`git annex assistant` won't annex the old files and won't annex "non-large files".
+`git annex assistant` doesn't annex the old files and annex "non-large files". According to the below quote from the [`git-annex assistant`](https://git-annex.branchable.com/git-annex-assistant/) document:
+
 > By default, all files added are added to the annex, the same as when you run git annex add. If you configure annex.largefiles, files that it does not match will instead be added with git add.
 
 ## Actual behaiors
