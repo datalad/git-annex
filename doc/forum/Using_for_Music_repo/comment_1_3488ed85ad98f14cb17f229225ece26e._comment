@@ -6,5 +6,5 @@
  content="""
 You can use [[direct_mode]] to keep all files unlocked all the time.
 
-You can use the [[assistant]] to automatically commit whatever changes are made to the directory, as well as automatically sync them to your other computers.
+You can use the [[forum/`git_annex_assistant`_command_replace_all_files_with_pointer_file.]] to automatically commit whatever changes are made to the directory, as well as automatically sync them to your other computers.
 """]]
