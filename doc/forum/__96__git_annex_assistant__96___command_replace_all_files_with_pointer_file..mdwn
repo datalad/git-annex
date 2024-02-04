@@ -3,7 +3,7 @@
 
 > By default, all files added are added to the annex, the same as when you run git annex add. If you configure annex.largefiles, files that it does not match will instead be added with git add.
 
-## Actual behaiors
+## Actual behaviors
 Git annex replaces all old files (file is already stored by git before the `git annex` command) and newly added files with pointer files after using the `git annex assistant` command. Even I config `annex.largefiles` to include all files.
 
 
