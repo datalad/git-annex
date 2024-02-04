@@ -13,6 +13,7 @@ Git annex replaces all old files (file is already stored by git before the `git 
 ## Context
 
 Output of `git annex version`:
+
 ```
 git-annex version: 10.20240129
 build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
