@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-02-05T17:26:48Z"
+ content="""
+Works for me. Also if pull didn't work, sync wouldn't work and surely
+someone would have reported such a problem?
+
+But, you left out information including what kind of adjusted branch.
+Please provide the details needed to reproduce your problem.
+
+Here it is working:
+
+	joey@darkstar:~/tmp/bench/y#master(unlocked)>git-annex pull --allow-unrelated-histories origin
+	pull origin
+	remote: Enumerating objects: 10, done.
+	remote: Counting objects: 100% (10/10), done.
+	remote: Compressing objects: 100% (7/7), done.
+	remote: Total 8 (delta 0), reused 0 (delta 0), pack-reused 0
+	Unpacking objects: 100% (8/8), 794 bytes | 397.00 KiB/s, done.
+	From /home/joey/tmp/bench/x
+	   2722cc7..f380042  git-annex  -> origin/git-annex
+	   3960dff..ae25b27  master     -> origin/master
+	(Merging into master...)
+	Updating 3960dff..ae25b27
+	Fast-forward
+	 x | 1 +
+	 1 file changed, 1 insertion(+)
+	 create mode 120000 x
+	(Merging into adjusted branch...)
+	Updating 6c80746..7a752e3
+	Fast-forward
+	 x | 1 +
+	 1 file changed, 1 insertion(+)
+	 create mode 100644 x
+	ok
+	(merging origin/git-annex into git-annex...)
+	(recording state in git...)
+	get x (from origin...)
+	ok
+	pull origin
+	ok
+	(recording state in git...)
+	(recording state in git...)
+	joey@darkstar:~/tmp/bench/y#master(unlocked)>cat x
+	hello, world
+"""]]
