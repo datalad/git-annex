@@ -38,7 +38,7 @@ import Logs.File
 import qualified Utility.Format
 import Utility.Tmp
 import Utility.Metered
-import Command.AddUrl (addUrlFile, downloadRemoteFile, parseDownloadOptions, DownloadOptions(..), checkCanAdd, addWorkTree, checkRaw)
+import Command.AddUrl (addUrlFile, downloadRemoteFile, parseDownloadOptions, DownloadOptions(..), checkClaimingUrl, checkCanAdd, addWorkTree, checkRaw, useYoutubeDl)
 import Annex.UUID
 import Backend.URL (fromUrl)
 import Annex.Content
@@ -317,9 +317,8 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 	startdownloadenclosure url = checkknown url $ startUrlDownload cv todownload url $
 		downloadEnclosure addunlockedmatcher opts cache cv todownload url 
 
-	downloadmedia linkurl mediaurl mediakey
-		| rawOption (downloadOptions opts) = startdownloadlink
-		| otherwise = ifM (youtubeDlSupported linkurl)
+	downloadmedia linkurl mediaurl mediakey =
+		ifM (useYoutubeDl (downloadOptions opts) <&&> youtubeDlSupported linkurl)
 			( startUrlDownload cv todownload linkurl $
 				withTmpWorkDir mediakey $ \workdir -> do
 					dl <- youtubeDl linkurl (fromRawFilePath workdir) nullMeterUpdate
@@ -348,7 +347,7 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 		contdownloadlink = downloadEnclosure addunlockedmatcher opts cache cv todownload linkurl
 
 	addmediafast linkurl mediaurl mediakey =
-		ifM (pure (not (rawOption (downloadOptions opts)))
+		ifM (useYoutubeDl (downloadOptions opts)
 		     <&&> (pure (youtubedlscraped todownload) <||> youtubeDlSupported linkurl))
 			( startUrlDownload cv todownload linkurl $ do
 				runDownload todownload linkurl ".m" cache cv $ \f ->
@@ -362,7 +361,7 @@ downloadEnclosure :: AddUnlockedMatcher -> ImportFeedOptions -> Cache -> TMVar B
 downloadEnclosure addunlockedmatcher opts cache cv todownload url = 
 	runDownload todownload url (takeWhile (/= '?') $ takeExtension url) cache cv $ \f -> do
 		let f' = fromRawFilePath f
-		r <- Remote.claimingUrl url
+		r <- checkClaimingUrl (downloadOptions opts) url
 		if Remote.uuid r == webUUID || rawOption (downloadOptions opts)
 			then checkRaw (Just url) (downloadOptions opts) (pure Nothing) $ do
 				let dlopts = (downloadOptions opts)

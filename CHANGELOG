@@ -7,6 +7,7 @@ git-annex (10.20240130) UNRELEASED; urgency=medium
     10.20230626.)
   * importfeed --force: Avoid creating duplicates of existing
     already downloaded files when yt-dlp or a special remote was used.
+  * addurl, importfeed: Added --raw-except option.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Jan 2024 15:59:33 -0400
 

@@ -1,6 +1,6 @@
 {- git-annex remotes
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -59,6 +59,7 @@ module Remote (
 	logStatus,
 	checkAvailable,
 	claimingUrl,
+	claimingUrl',
 	isExportSupported,
 ) where
 
@@ -432,9 +433,15 @@ hasKeyCheap = checkPresentCheap
 
 {- The web special remote claims urls by default. -}
 claimingUrl :: URLString -> Annex Remote
-claimingUrl url = do
+claimingUrl = claimingUrl' (const True)
+
+{- The web special remote still claims urls if there is no
+ - other remote that does, even when the remotefilter does
+ - not include it. -}
+claimingUrl' :: (Remote -> Bool) -> URLString -> Annex Remote
+claimingUrl' remotefilter url = do
 	rs <- remoteList
 	let web = Prelude.head $ filter (\r -> uuid r == webUUID) rs
-	fromMaybe web <$> firstM checkclaim rs
+	fromMaybe web <$> firstM checkclaim (filter remotefilter rs)
   where
 	checkclaim = maybe (pure False) (`id` url) . claimUrl

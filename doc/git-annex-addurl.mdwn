@@ -45,8 +45,8 @@ be used to get better filenames.
   
 * `--raw`
 
-  Prevent special handling of urls by yt-dlp, bittorrent, and other
-  special remotes. This will for example, make addurl
+  Prevent special handling of urls by yt-dlp, and by bittorrent
+  and other special remotes. This will for example, make addurl
   download the .torrent file and not the contents it points to.
 
 * `--no-raw`
@@ -54,6 +54,12 @@ be used to get better filenames.
   Require content pointed to by the url to be downloaded using yt-dlp
   or a special remote, rather than the raw content of the url. if that
   cannot be done, the add will fail.
+
+* `--raw-except=remote`
+
+  Prevent special handling of urls by all special remotes except
+  for the specified one. To allow special handling only
+  by yt-dlp, use `--raw-except=web`.
 
 * `--file=name`
 

@@ -64,6 +64,7 @@ data DownloadOptions = DownloadOptions
 	{ relaxedOption :: Bool
 	, rawOption :: Bool
 	, noRawOption :: Bool
+	, rawExceptOption :: Maybe (DeferredParse Remote)
 	, fileOption :: Maybe FilePath
 	, preserveFilenameOption :: Bool
 	, checkGitIgnoreOption :: CheckGitIgnore
@@ -105,6 +106,13 @@ parseDownloadOptions withfileoptions = DownloadOptions
 		( long "no-raw"
 		<> help "prevent downloading raw url content, must use special handling"
 		)
+	<*> optional
+		(mkParseRemoteOption <$> strOption
+		        ( long "raw-except" <> metavar paramRemote
+			<> help "disable special handling except by this remote"
+			<> completeRemotes
+			)
+		)
 	<*> (if withfileoptions
 		then optional (strOption
 			( long "file" <> metavar paramFile
@@ -123,7 +131,7 @@ seek :: AddUrlOptions -> CommandSeek
 seek o = startConcurrency commandStages $ do
 	addunlockedmatcher <- addUnlockedMatcher
 	let go (si, (o', u)) = do
-		r <- Remote.claimingUrl u
+		r <- checkClaimingUrl (downloadOptions o) u
 		if Remote.uuid r == webUUID || rawOption (downloadOptions o')
 			then void $ commandAction $
 				startWeb addunlockedmatcher o' si u
@@ -132,6 +140,13 @@ seek o = startConcurrency commandStages $ do
 		Batch fmt -> batchOnly Nothing (addUrls o) $
 			batchInput fmt (pure . parseBatchInput o) go
 		NoBatch -> forM_ (addUrls o) (\u -> go (SeekInput [u], (o, u)))
+
+checkClaimingUrl :: DownloadOptions -> URLString -> Annex Remote
+checkClaimingUrl o u = do
+	allowedremote <- case rawExceptOption o of
+                Nothing -> pure (const True)
+                Just f -> (==) <$> getParsed f
+	Remote.claimingUrl' allowedremote u
 
 parseBatchInput :: AddUrlOptions -> String -> Either String (AddUrlOptions, URLString)
 parseBatchInput o s
@@ -284,7 +299,7 @@ performWeb addunlockedmatcher o url file urlinfo = lookupKey file >>= \case
   where
 	geturl = next $ isJust <$> addUrlFile addunlockedmatcher (downloadOptions o) url urlinfo file
 	addurl = addUrlChecked o url file webUUID $ \k ->
-		ifM (pure (not (rawOption (downloadOptions o))) <&&> youtubeDlSupported url)
+		ifM (useYoutubeDl (downloadOptions o) <&&> youtubeDlSupported url)
 			( return (Just (True, True, setDownloader url YoutubeDownloader))
 			, checkRaw Nothing (downloadOptions o) (pure Nothing) $
 				return (Just (Url.urlExists urlinfo, Url.urlSize urlinfo == fromKey keySize k, url))
@@ -332,7 +347,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
 	downloader f p = Url.withUrlOptions $ downloadUrl False urlkey p Nothing [url] f
 	go Nothing = return Nothing
-	go (Just (tmp, backend)) = ifM (pure (not (rawOption o)) <&&> liftIO (isHtmlFile (fromRawFilePath tmp)))
+	go (Just (tmp, backend)) = ifM (useYoutubeDl o <&&> liftIO (isHtmlFile (fromRawFilePath tmp)))
 		( tryyoutubedl tmp backend
 		, normalfinish tmp backend
 		)
@@ -393,6 +408,15 @@ checkRaw failreason o f a
 				Nothing -> ""
 		f
 	| otherwise = a
+
+useYoutubeDl :: DownloadOptions -> Annex Bool
+useYoutubeDl o
+	| rawOption o = pure False
+	| otherwise = case rawExceptOption o of
+                Nothing -> pure True
+                Just f -> do
+			remote <- getParsed f
+			pure (Remote.uuid remote == webUUID)
 
 {- The destination file is not known at start time unless the user provided
  - a filename. It's not displayed then for output consistency, 
