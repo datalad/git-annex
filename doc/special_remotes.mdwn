@@ -88,12 +88,12 @@ uses.
 
 ## Setting up a special remote
 
-To create a new special remote, use 
+To initialize a new special remote, use 
 [[git-annex initremote|git-annex-initremote]]. See the documentation for
 the special remote you want to use for details about configuration and
 examples of how to initremote it.
 
-Once a special remote has been created, other clones of the repository can
+Once a special remote has been initialize, other clones of the repository can
 also enable it, by using [[git-annex enableremote|git-annex-enableremote]]
 with the same name that was used to initialize it. (Run the command without
 any name to get a list of available special remotes.)
