@@ -16,7 +16,9 @@ not altered), although it may perform expensive data transfers.
 
 It's best to make a new remote for testing purposes. While the test
 tries to clean up after itself, if the remote being tested had a bug,
-the cleanup might fail, leaving test data in the remote.
+the cleanup might fail, leaving test data in the remote. Also,
+some special remotes don't support removal of data that has been stored 
+in them, so test data won't be able to be cleaned up when testing those.
 
 Testing will use the remote's configuration, automatically varying
 the chunk sizes, and with simple shared encryption disabled and enabled,

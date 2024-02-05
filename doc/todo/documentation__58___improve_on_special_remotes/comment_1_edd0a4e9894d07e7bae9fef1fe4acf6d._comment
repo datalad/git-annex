@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-02-05T19:44:16Z"
+ content="""
+The walkthrough has enough to get a user started in the right direction
+in <https://git-annex.branchable.com/walkthrough/#index12h2>.
+
+I don't know if <https://git-annex.branchable.com/special_remotes> is a
+good entry point for a user to learn the basics of what they are. It's
+mostly a list, and I doubt most readers make it past the list.
+
+I have expanded it to mention the main commands.
+"""]]

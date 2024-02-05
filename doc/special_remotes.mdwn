@@ -79,17 +79,29 @@ git annex move --to specialremote large files when your local drive is
 getting full, and then git annex move the files back when free space is
 again available. You could have one repository copy files to a special
 remote, and then git annex get them on another repository, to transfer the
-files between computers that do not communicate directly. 
-
-The git-annex assistant makes it easy to set up rsync remotes using this
-last scenario, which is referred to as a transfer repository, and arranges
-to drop files from the transfer repository once they have been transferred
-to all known clients.
+files between computers that do not communicate directly.
 
 None of these use cases are particular to particular special remote types.
 Most special remotes can all be used in these and other ways. It largely
 doesn't matter for your use what underlying transport the special remote
 uses.
+
+## Setting up a special remote
+
+To create a new special remote, use 
+[[git-annex initremote|git-annex-initremote]]. See the documentation for
+the special remote you want to use for details about configuration and
+examples of how to initremote it.
+
+Once a special remote has been created, other clones of the repository can
+also enable it, by using [[git-annex enableremote|git-annex-enableremote]]
+with the same name that was used to initialize it. (Run the command without
+any name to get a list of available special remotes.)
+
+Initializing or enabling a special remote adds it as a remote of your git
+repository. You can't use git commands like `git pull` with the remote
+(usually, there are exceptions like [[git-lfs]]), but you can use git-annex
+commands.
 
 ## Unused content on special remotes
 
@@ -108,20 +120,16 @@ on special remotes, instead use `git annex unused --from`. Example:
 	$ git annex dropunused --from mys3 1
 	dropunused 12948 (from mys3...) ok
 
+## Removing special remotes
+
+Like git remotes, a special remote can be removed from your repository
+by using `git remote remove`. Note that does not delete the special remote,
+or prevent other repositories from enabling or using it.
+
 ## Testing special remotes
 
 To make sure that a special remote is working correctly, you can use the
-`git annex testremote` command. This expects you to have set up the remote
-as usual, and it then runs a lot of tests, using random data. It's
-particularly useful to test new implementations of special remotes.
-
-By default it will upload and download files of around 1MiB to the remote
-it tests; the `--size` parameter can adjust it to test using smaller files.
-
-It's safe to use this command even when you're already storing data in a
-remote; it won't touch your existing files stored on the remote.
-
-For most remotes, it also won't bloat the remote with any data, since
-it cleans up the stuff it uploads. However, the bup, ddar, and tahoe
-special remotes don't support removal of uploaded files, so be careful
-with those.
+[[git annex testremote|git-annex-testremote]] command. This expects you to
+have set up the remote as usual, and it then runs a lot of tests, using
+random data. It's particularly useful to test new implementations of
+special remotes.
