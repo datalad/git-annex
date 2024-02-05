@@ -1,0 +1,24 @@
+I realize this is git 101, and I apologize in advance, but I honestly have no idea how to debug this.
+
+I have two Macs, with git annex assistant running headless on both. I renamed a file on one system somewhere along the line, and now whenever the assistant syncs changes from system B to system A, I always find myself in a situation like this:
+
+```
+On branch master
+Your branch is behind 'mbp/master' by 1 commit, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	deleted:    myfile.md
+```
+
+This file was originally myfile-1234.md or whatever, but I renamed it on system A, and those changes were synced. Today, on system B, that file exists as myfile.md as I'd expect. On system A, however, it always gets deleted whenever I make changes made to any file on system B that the assistant then syncs over.
+
+I've tried re-adding the file and committing, but it continues to be deleted every time system B syncs changes to system A.
+
+I don't know what to do except abandon this file path completely and just use a different filename that git doesn't think is deleted on one of the systems; the correct solution to this eludes me.
+
+I appreciate any suggestions that you might have.
+
+Thanks.
