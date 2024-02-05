@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-02-05T17:57:49Z"
+ content="""
+They don't have --json, which would be a necessary first step.
+
+This was considered in [[this_todo|todo/--json_for_unannex__and_ideally_any_other_command_]]
+when adding --json to many commands, and the thinking for not adding it
+was:
+
+> git-annex-sync (while it would be pretty easy to support, it outputs
+> different types of messages depending on what remotes it syncs with and
+> what needs to be done. Eg, copy to remote, or export to remote, or import
+> from remote. Each would be a different format of json message, which
+> violates the principle that all git-annex json output should be
+> discoverable by simply running the command. And of course, everything it
+> does can be done by other commands, which can support json without having
+> that problem.)
+
+sync had not been split into pull and push at that point. Being split does
+reduce the space of different things, but it's still multiple things, so
+still a problem for json output discoverability.
+
+(Also push and pull can drop from a remote or locally, and of course there are
+the git operations they do, which would probably have to become silent in
+json mode.)
+"""]]
