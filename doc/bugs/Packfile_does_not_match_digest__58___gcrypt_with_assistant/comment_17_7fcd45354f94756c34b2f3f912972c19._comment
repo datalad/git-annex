@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="felix@996ab1030f55d480e424a17116e03a48bd984549"
+ nickname="felix"
+ avatar="http://cdn.libravatar.org/avatar/d6198e60afe87cca852190852feeafa8"
+ subject="Same issue after kernel oops"
+ date="2024-02-05T14:58:33Z"
+ content="""
+Just to add one more data point – I ran into the situation after a kernel oops had caused my rootfs to become read-only. So maybe related to the \"out of inodes\" issue reported above.
+
+~~~
+$ git push
+gcrypt: Decrypting manifest
+gpg: error getting version from 'scdaemon': No SmartCard daemon
+gpg: Signature made Mo 05 Feb 2024 15:22:01 CET
+gpg:                using RSA key XXX
+gpg: Good signature from \"XXX\" [ultimate]
+Primary key fingerprint: XXX
+gcrypt: Due to a longstanding bug, this push implicitly has --force.
+gcrypt: Consider explicitly passing --force, and setting
+gcrypt: gcrypt's require-explicit-force-push git config key.
+gcrypt: Repacking remote origin, ...
+gcrypt: Packfile XXX does not match digest!
+fatal: early EOF
+error: failed to push some refs to 'XXX'
+~~~
+
+XXX is obviously my redactions. I was not running the assistant, just plain git-annex.
+
+There was no plaintext on the remote and the only way for me to recover was to nuke the remote repo.
+
+I kept copies of both repos, though I unfortunately cannot share the unencrypted one.
+"""]]
