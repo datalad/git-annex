@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-02-05T18:12:31Z"
+ content="""
+Seems pretty reasonable.
+
+--raw-except=bittorrent would handle bittorrent, no special case needed for
+that.
+
+Since yt-dlp is effectively part of the web special remote (despite being
+implemented as a special case in addurl), seems reasonable to make
+--raw-except=web disable other special remotes while still letting yt-dlp
+be used for appropriate urls.
+
+Implemented.
+"""]]
