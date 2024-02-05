@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-02-05T18:06:59Z"
+ content="""
+You have to `git-annex sync` (or `push`) first to get your changes
+propagated from the adjusted branch to the main branch that you are
+exporting.
+
+(You could alternatively export the adjusted branch itself.)
+
+This is the same as if you tried `git push main origin` when on an adjusted
+branch. It would surely not be a bug that doesn't push changes you have
+only committed to the adjusted branch. So I think it's reasonable for the
+export workflow to need the same step that the git push workflow needs.
+"""]]
