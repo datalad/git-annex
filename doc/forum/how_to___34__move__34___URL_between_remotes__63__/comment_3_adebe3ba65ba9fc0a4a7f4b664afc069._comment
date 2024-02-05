@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-02-05T17:33:32Z"
+ content="""
+The commands you would need do all support --batch, so it seems very
+scriptable.
+
+I'm struggling a bit with the idea of a dedicated git-annex command for
+this, because it seems a fairly unusual situation.
+
+Maybe `git-annex registerurl could have a switch that says to move urls
+from remote foo to the web special remote? That would avoid needing to
+query for the urls.
+
+	git-annex registerurl --move-from=foo $key
+
+Since registering an url also marks it present, all you would need after
+that is to mark it as not present any longer on your special remote.
+"""]]
