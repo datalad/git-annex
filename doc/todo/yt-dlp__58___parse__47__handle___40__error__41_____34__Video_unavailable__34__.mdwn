@@ -91,4 +91,4 @@ ERROR: [youtube] jy01CnsQ9ed: Video unavailable
 ```
 
 > I don't consider this a bug because with --no-raw it will do what you
-> want. --[[Joey]]
+> want. [[done]] --[[Joey]]
