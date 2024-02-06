@@ -326,11 +326,7 @@ setTestEnv a = Utility.Tmp.Dir.withTmpDir "testhome" $ \tmphome -> do
 	a
 
 removeDirectoryForCleanup :: FilePath -> IO ()
-#if MIN_VERSION_directory(1,2,7)
 removeDirectoryForCleanup = removePathForcibly
-#else
-removeDirectoryForCleanup = removeDirectoryRecursive
-#endif
 
 cleanup :: FilePath -> IO ()
 cleanup dir = whenM (doesDirectoryExist dir) $ do

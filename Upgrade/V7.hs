@@ -78,11 +78,7 @@ removeOldDb :: FilePath -> Annex ()
 removeOldDb db =
 	whenM (liftIO $ doesDirectoryExist db) $ do
 		v <- liftIO $ tryNonAsync $
-#if MIN_VERSION_directory(1,2,7)
 			removePathForcibly db
-#else
-			removeDirectoryRecursive db
-#endif
 		case v of
 			Left ex -> giveup $ "Failed removing old database directory " ++ db ++ " during upgrade (" ++ show ex ++ ") -- delete that and re-run git-annex to finish the upgrade."
 			Right () -> return ()
