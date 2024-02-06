@@ -14,7 +14,7 @@ packages:
 - '.'
 extra-deps:
 - IfElse-0.85
-- aws-0.22
+- aws-0.23
 - bloomfilter-2.0.1.0
 - tasty-1.2
 - tasty-rerun-1.1.14
