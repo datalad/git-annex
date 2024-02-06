@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="zoran.bosnjak@683708e9d46ca9d9fa8957bd513e6648cbcbf421"
+ nickname="zoran.bosnjak"
+ avatar="http://cdn.libravatar.org/avatar/83221ce6eaa0b62d27a6507c96a61fae"
+ subject="centralized repository workflow"
+ date="2024-02-06T12:33:20Z"
+ content="""
+Hi, what would be a recommended setup and the working procedures for the following scenario:
+
+- using git-annex version: 8.20210223, which is the one in ubuntu-22.04 (can't upgrade easily)
+- a central server as a mutable central archive, many users (over ssh)
+- users are all trusted
+- the server shall keep all annexed files, but only the HEAD version is relevant, that is:
+  if the file is removed by the user, it shall eventually be permanently removed from the central server too,
+  to save space.
+- users would tipically not need all the files, but only some, so `git annex get files...` would do
+- users would also add or remove annexed files (and push them to the central repository)
+- a user might remove his/her local repository at any time, so the central server shall not keep track about clones
+  or at least shall not care if any or all clones get removed
+
+I have created central repository like this (please correct me):
+
+    git init test --bare                                                                                       
+    cd test                                                                                                    
+    git annex init                                                                                             
+    git annex required . \"include=*\" 
+
+On the user site
+
+    git clone ssh://some.server/repo/test test
+    cd test
+    dd if=/dev/random of=./bigfile bs=1M count=10
+    git annex add bigfile
+    # how to sync (push only)?
+    # how to permanently remove big file?
+    cd ..
+    # done with the task
+    chmod -R 777 test
+    rm -rf test
+
+What I am looking for is the sequence of commands for the users, to:
+
+- sync to the latest state (without fetching the content)
+- add new annexed file to the repository and push it
+- permanently delete annexed file
+
+There are several issues I am facing at the moment.
+I was expecting to push the new file with `git annex sync --content --no-pull`, but this command also pulls the contents of all annexd files, which I don't want. The server does not want to remove the old content. It looks like I am doing something wrong. Appreciate your suggestions about this scenario.
+
+"""]]
