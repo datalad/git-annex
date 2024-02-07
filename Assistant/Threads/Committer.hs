@@ -40,6 +40,7 @@ import qualified Database.Keys
 import qualified Command.Sync
 import qualified Command.Add
 import Config.GitConfig
+import qualified Git.Branch
 import Utility.Tuple
 import Utility.Metered
 import qualified Utility.RawFilePath as R
@@ -240,7 +241,11 @@ commitStaged msg = do
 		Left _ -> return False
 		Right _ -> do
 			cmode <- annexCommitMode <$> Annex.getGitConfig
-			ok <- Command.Sync.commitStaged cmode msg
+			ok <- inRepo $ Git.Branch.commitCommand cmode
+				(Git.Branch.CommitQuiet True)
+				[ Param "-m"
+				, Param msg
+				]
 			when ok $
 				Command.Sync.updateBranches =<< getCurrentBranch
 			return ok

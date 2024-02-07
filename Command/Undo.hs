@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2014 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -18,7 +18,6 @@ import qualified Annex
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Command as Git
 import qualified Git.Branch
-import qualified Command.Sync
 import qualified Utility.RawFilePath as R
 
 cmd :: Command
@@ -42,7 +41,7 @@ seek ps = do
 	-- Committing staged changes before undo allows later
 	-- undoing the undo. It would be nicer to only commit staged
 	-- changes to the specified files, rather than all staged changes.
-	void $ Command.Sync.commitStaged Git.Branch.ManualCommit
+	void $ commitStaged Git.Branch.ManualCommit
 		"commit before undo"
 	
 	withStrings (commandAction . start) ps
@@ -81,3 +80,11 @@ perform p = do
 		inRepo $ Git.run [Param "checkout", Param "--", File f]
 
 	next $ liftIO cleanup
+
+commitStaged :: Git.Branch.CommitMode -> String -> Annex Bool
+commitStaged commitmode commitmessage =
+	inRepo $ Git.Branch.commitCommand commitmode
+		(Git.Branch.CommitQuiet True)
+		[ Param "-m"
+		, Param commitmessage
+		]

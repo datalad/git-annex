@@ -19,7 +19,6 @@ module Command.Sync (
 	prepMerge,
 	mergeLocal,
 	mergeRemote,
-	commitStaged,
 	commitMsg,
 	pushBranch,
 	updateBranch,
@@ -428,14 +427,6 @@ commitMsg = do
 	u <- getUUID
 	m <- uuidDescMap
 	return $ "git-annex in " ++ maybe "unknown" fromUUIDDesc (M.lookup u m)
-
-commitStaged :: Git.Branch.CommitMode -> String -> Annex Bool
-commitStaged commitmode commitmessage =
-	inRepo $ Git.Branch.commitCommand commitmode
-		(Git.Branch.CommitQuiet True)
-		[ Param "-m"
-		, Param commitmessage
-		]
 
 mergeLocal :: [Git.Merge.MergeConfig] -> SyncOptions -> CurrBranch -> CommandStart
 mergeLocal mergeconfig o currbranch = stopUnless (notOnlyAnnex o) $
