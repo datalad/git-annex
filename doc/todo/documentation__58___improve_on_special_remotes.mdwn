@@ -7,3 +7,6 @@ Without such a documentation it is hard to "on board" new git-annex users and de
 
 [[!meta author=yoh]]
 [[!tag projects/dandi]]
+
+> Hard to say that documentation is ever done, but I've made some
+> improvements and I guess am going to call this [[done]] --[[Joey]]
