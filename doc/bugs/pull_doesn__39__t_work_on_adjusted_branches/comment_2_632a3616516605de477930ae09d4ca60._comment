@@ -1,0 +1,131 @@
+[[!comment format=mdwn
+ username="jstritch"
+ avatar="http://cdn.libravatar.org/avatar/56756b34ff409071074762951d270002"
+ subject="comment 2"
+ date="2024-02-06T18:27:33Z"
+ content="""
+If I commit a change, setting annex.adjustedbranchrefresh to true is not working as I *expected*. I want to pull to one specified remote only. I do not want to sync with any other repositories or special remotes that may happen to be available at the moment. This is possibly another manifestation of the issue I submitted about export not copying.
+
+The `git annex sync` command is not happy with `here` as a remote name.
+
+I see the same result if I change both `git annex adjust` from `--unlock` to `--lock`. If both adjust statements are commented out, pull-repo1 ends up with a broken link to the second file. The workflow should be the same for all cases.
+
+Here's a script reproducing what I have:
+[[!format sh \"\"\"
+mkdir pull-repo1
+mkdir pull-repo2
+
+cd pull-repo1
+git init --initial-branch main
+git annex init pull-repo1
+git config annex.adjustedbranchrefresh true
+git config receive.denyCurrentBranch updateInstead
+git annex config --set annex.largefiles include=*.xtx
+git annex group here manual
+git annex wanted here standard
+echo \"test file one\" >> test-file-one.xtx
+git annex add .
+git commit -m \"add test file one\"
+git annex adjust --unlock
+
+cd ../pull-repo2
+git clone --origin pull-repo1 ../pull-repo1 .
+git annex init pull-repo2
+cd ../pull-repo1
+git remote add pull-repo2 ../pull-repo2
+git annex push pull-repo2
+
+cd ../pull-repo2
+git config annex.adjustedbranchrefresh true
+git config receive.denyCurrentBranch updateInstead
+git annex config --set annex.largefiles include=*.xtx
+git annex group here manual
+git annex wanted here standard
+git annex adjust --unlock
+echo \"test file two\" >> test-file-two.xtx
+git annex add .
+git commit -m \"add test file two\"
+
+cd ../pull-repo1
+git annex pull --allow-unrelated-histories --content pull-repo2
+git annex list
+\"\"\"]]
+
+And here's its output:
+[[!format sh \"\"\"
+Initialized empty Git repository in /home/juanito/Documents/pull-repo1/.git/
+init pull-repo1 ok
+(recording state in git...)
+annex.largefiles include=*.xtx ok
+(recording state in git...)
+group here ok
+(recording state in git...)
+wanted here ok
+(recording state in git...)
+add test-file-one.xtx 
+ok                                
+(recording state in git...)
+[main (root-commit) 6eff4e8] add test file one
+ 1 file changed, 1 insertion(+)
+ create mode 120000 test-file-one.xtx
+adjust  
+Switched to branch 'adjusted/main(unlocked)'
+ok
+Cloning into '.'...
+done.
+init pull-repo2 (merging pull-repo1/git-annex into git-annex...)
+(recording state in git...)
+ok
+(recording state in git...)
+copy test-file-one.xtx (to pull-repo2...) 
+(recording state in git...)       
+ok
+(recording state in git...)
+push pull-repo2 
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 426 bytes | 426.00 KiB/s, done.
+Total 5 (delta 2), reused 0 (delta 0), pack-reused 0
+To ../pull-repo2
+ * [new branch]      main -> synced/main
+ * [new branch]      git-annex -> synced/git-annex
+ok
+annex.largefiles include=*.xtx (merging synced/git-annex into git-annex...)
+(recording state in git...)
+ok
+group here ok
+(recording state in git...)
+wanted here ok
+(recording state in git...)
+adjust  ok
+add test-file-two.xtx 
+ok                                
+(recording state in git...)
+[adjusted/main(unlocked) 57a9dab] add test file two
+ 1 file changed, 1 insertion(+)
+ create mode 100644 test-file-two.xtx
+pull pull-repo2 
+remote: Enumerating objects: 32, done.
+remote: Counting objects: 100% (29/29), done.
+remote: Compressing objects: 100% (21/21), done.
+remote: Total 23 (delta 8), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (23/23), 2.24 KiB | 1.12 MiB/s, done.
+From ../pull-repo2
+ * [new branch]      adjusted/main(unlocked) -> pull-repo2/adjusted/main(unlocked)
+ * [new branch]      git-annex  -> pull-repo2/git-annex
+ok
+(merging pull-repo2/git-annex into git-annex...)
+here
+|pull-repo2
+||web
+|||bittorrent
+||||
+XX__ test-file-one.xtx
+\"\"\"]]
+
+Please observe test-file-two.xtx is not listed and also not in the first repository.
+
+How should I proceed?
+"""]]

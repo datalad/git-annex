@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="jstritch"
+ avatar="http://cdn.libravatar.org/avatar/56756b34ff409071074762951d270002"
+ subject="comment 3"
+ date="2024-02-07T15:52:18Z"
+ content="""
+Additional clarification of my posts above:
+
+1) JSON allows optional fields. That is, fields which are only present when needed. I am specifically saying not to include all fields every time with `null` values as needed.
+
+2) Occasionally tacking the remote name onto the end of a string named `command` is not discoverable. The `command` key would have to be renamed to something like `commandAndSometimesRemote` to be discoverable. jstritch's naming rule #5: If a name needs a conjunction to accurately describe it, the design can be improved.
+
+3) The optional field name is more easily observed than the optional string content.
+
+4) Consider the application code consuming the JSON. A test for the presence of the remote name is required either way. Do you want those applications writing the test \"if the command value contains one space\" or \"if the remote key is present\"? Code is written once and read hundreds of times. The second test conveys the intent, reducing maintenance cost.
+
+5) The application code to deal with splitting the string and handling each part becomes unnecessary with the optional field.
+
+6) The documentation of the JSON could include a matrix showing the key name and its data type versus the commands, similar to a feature comparison table.
+
+7) Documenting the JSON does not make it less discoverable.
+
+I hope you find this information helpful to improve the end-user experience. Let me know if you have any questions.
+"""]]

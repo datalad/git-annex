@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2024-02-07T18:47:19Z"
+ content="""
+> `git-annex registerurl --move-from=foo $key`
+
+looks good
+
+> Since registering an url also marks it present, all you would need after that is to mark it as not present any longer on your special remote.
+
+it is `--move-from`, not `--copy-from`, so wouldn't it mark it not present any longer on `foo`?
+"""]]

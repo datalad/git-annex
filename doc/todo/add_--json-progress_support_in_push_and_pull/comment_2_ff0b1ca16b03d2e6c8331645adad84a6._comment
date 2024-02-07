@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="jstritch"
+ avatar="http://cdn.libravatar.org/avatar/56756b34ff409071074762951d270002"
+ subject="comment 2"
+ date="2024-02-06T16:10:56Z"
+ content="""
+To me, the purpose of any progress message is twofold: 1) let the user know the program is not stuck and 2) provide information about what was happening if it does get stuck. Push and pull do this now without JSON.
+
+I agree the same JSON progress object format should be used for all commands. Currently the action progress information includes: command, file, input, byte-progress, total-size, and percent-progress.
+
+The calling application is able to \"know\" which command it issued to cause the progress reports.
+
+A separate, optional field could be added for the particular remote involved. For example, messages like \"Copy file A to remote-one X% complete\" and \"Export file B to remote-two X% complete\" should be possible.
+
+I'm in favor of documenting data structures. Forcing developers to reverse-engineer the structure is inefficient at best. While the principle that all git-annex json output should be discoverable by simply running the command sounds good, I find it leaves much to be desired. Just to find out what's available, someone must setup and run the command. I suggest updating the requirement to \"All git-annex JSON output objects are documented.\"
+
+Users will get impatient and grow frustrated without some type of indication work is in progress.
+
+I'm OK with leaving Git operations silent for now.
+
+Please improve the end-user experience by devising a way to inform the user git-annex is making progress with JSON.
+"""]]
