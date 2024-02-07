@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-02-07T19:09:44Z"
+ content="""
+Git has two hooks, prepare-commit-msg and commit-msg. prepare-commit-msg
+is used prior to interactive editing of the commit message. Since these
+commits do not involve interactive editing, I don't think it
+necesarily makes sense for git-annex to use that hook.
+
+The commit-msg hook is simpler, and it would certianly be possible for
+git-annex to call it everywhere it does a `git commit-tree`.
+
+But if git-annex called either of these hooks, how is the hook supposed to
+know what is being committed? In the usual case, the hook 
+is called with `GIT_INDEX_FILE` pointed at an index file that 
+has been modified to include whatever is going to be in the commit
+(which may be different than what is staged in the index), and it knows
+that the working directory is being committed. So it can
+do things like `git diff --name-stage --cached` to get the files that
+are being committed, for example.
+
+In the git-annex case, `GIT_INDEX_FILE` is pointed at .git/annex/index
+when committing the git-annex branch. If a commit-msg hook uses
+`git diff --name-stage --cached`, it will diff from the working directory
+to new git-annex branch contents, which will not be a useful set of file changes
+to summarize in a commit message!
+
+Even if the hook somehow knows that the git-annex branch is being
+committed, the best it could do is diff from git-annex branch to
+`GIT_INDEX_FILE` and then it has a bunch of git-annex branch filenames
+that have changed, and is supposed to somehow generate a useful commit
+message from that. How?
+
+It seems more likely to me that you know that git-annex branch changes are
+associated with an operation, so you might commit with "added 57 photos"
+to the master branch, and then use the same message for the git-annex
+branch commit. annex.commitmessage seems to already cover that case though?
+"""]]

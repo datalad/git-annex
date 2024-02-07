@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-02-07T18:59:34Z"
+ content="""
+Re the default messages, let's just say that any choice git-annex makes
+about a default commit message will not be to some people's liking.
+
+Re the hook not being run, this is due to it using `git commit-tree`.
+As well as being used for commits to the git-annex branch, it's also
+used in a few other places, including `git-annex import`, and
+generating adjusted branches and view branches, and the assistant
+and `git-annex undo`.
+"""]]

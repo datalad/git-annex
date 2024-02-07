@@ -36,7 +36,6 @@ import qualified Annex
 import qualified Annex.Branch
 import qualified Remote
 import qualified Types.Remote as Remote
-import Annex.Hook
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Branch
@@ -431,15 +430,12 @@ commitMsg = do
 	return $ "git-annex in " ++ maybe "unknown" fromUUIDDesc (M.lookup u m)
 
 commitStaged :: Git.Branch.CommitMode -> String -> Annex Bool
-commitStaged commitmode commitmessage = do
-	runAnnexHook preCommitAnnexHook
-	mb <- inRepo Git.Branch.currentUnsafe
-	let (getparent, branch) = case mb of
-		Just b -> (Git.Ref.sha b, b)
-		Nothing -> (Git.Ref.headSha, Git.Ref.headRef)
-	parents <- maybeToList <$> inRepo getparent
-	void $ inRepo $ Git.Branch.commit commitmode False commitmessage branch parents
-	return True
+commitStaged commitmode commitmessage =
+	inRepo $ Git.Branch.commitCommand commitmode
+		(Git.Branch.CommitQuiet True)
+		[ Param "-m"
+		, Param commitmessage
+		]
 
 mergeLocal :: [Git.Merge.MergeConfig] -> SyncOptions -> CurrBranch -> CommandStart
 mergeLocal mergeconfig o currbranch = stopUnless (notOnlyAnnex o) $

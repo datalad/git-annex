@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-02-07T19:58:11Z"
+ content="""
+Irrespective of comment #2, I do think that it makes sense for the
+assistant and `git-annex undo`, when committing to the HEAD branch,
+to run all the usual commit hooks.
+
+Actually, I don't see any reason for those to not run `git commit`.
+It seems that the use of `git commit-tree` in those dates back to 
+[[!commit 03932212ecb8940e0fe2dd09c04951990bc29422]] which involved
+direct mode.
+
+Fixed those to run commits in the usual way (though noninteractive).
+"""]]
