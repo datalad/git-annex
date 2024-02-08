@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 4"
+ date="2024-02-08T22:08:41Z"
+ content="""
+Thank you Joey!!!  Re
+
+> so you might commit with \"added 57 photos\" to the master branch, and then use the same message for the git-annex branch commit. annex.commitmessage seems to already cover that case though?
+
+how to implement it using that config setting for `git annex assistant` mode of operation when we do not have some kind of a wrapper helper and only hooks?
+
+"""]]
