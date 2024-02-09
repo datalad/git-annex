@@ -1,0 +1,15 @@
+I do not know yet if that it possible since I have only cursory knowledge of former grafts in git and what new came to replace them.
+
+The use case:  we have a git-annex repo (heudiconv converted MRI data) where some files with sensitive information were added directly to git not git-annex.  We do not want to rewrite the entire history since that repository already saw a good number of clones and forks.  I wondered if we could
+
+1. move those files under git-annex
+2. establish a new history from that new tree object
+3. "graft" new history commit into the old "sensitive" one as to establish correspondence between the two
+   - I would expect then something like "git pull --ff-only" to work for people seamlessly jumping between those points
+4. git push only new history to github thus not revealing old  history with sensitive data under git
+
+
+Joey, WDYT? any words of wisdom?
+
+[[!meta author=yoh]]
+[[!tag projects/repronim?]]
