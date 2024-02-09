@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-02-09T17:33:10Z"
+ content="""
+I think this needs two things:
+
+1. A hook to get the commit message when committing to
+   the git-annex branch. Apparently none of the git hooks
+   are well suited to be reused for that.
+2. Ensure that the assistant always waits to commit the git-annex branch
+   until after it's committed changes to the working tree.
+
+Then you could do a variety of things...
+
+You could make the git-annex branch commit hook look for the last
+change committed to the master branch, and reuse its commit message.
+(If it's sufficiently close to the present that it's probably for
+the same change.)
+
+You could use the git commit hook to generate a git commit message but also
+store the message or a list of files somewhere for later use in the
+git-annex branch commit hook.
+
+You could write a description of your current task to a file somewhere,
+and have both hooks use that as their commit message. (Note that this does
+not need #2 above actually, only needs the hook.)
+
+---
+
+Does the assistant always wait to commit to the git-annex branch until
+after committing changes to the working tree? I'm unsure. A quick test
+indiciated it usually does, but I'm not sure why or if that's always the
+case. It would take some analysis and making this behavior more explicit to
+be able to rely on it.
+"""]]
