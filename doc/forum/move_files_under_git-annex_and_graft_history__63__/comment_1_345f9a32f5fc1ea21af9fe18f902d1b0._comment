@@ -1,0 +1,78 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-02-09T20:01:01Z"
+ content="""
+Well `git replace` does turn out to be able to do this. With some caveats.
+
+I started with this history:
+
+	6df78e79d688de8392d952dc8705d094384ed2c0 add file (accidentially to git)
+	3235872149f1767efd282635ca12ec2f9056f9cc initial commit
+
+Then amended 6df78e, following the usual
+process to convert git to annexed, as outlined in [[tips/largefiles]],
+producing commit f36b42e.
+
+Then `git replace 6df78e f36b42e` and the log changed to:
+
+	6df78e79d688de8392d952dc8705d094384ed2c0 (replaced) add file (to annex)
+	3235872149f1767efd282635ca12ec2f9056f9cc initial commit
+
+Note that, when there are further commits made on top of
+the bad commit, they all would need to be replaced with amended commits
+as well.
+
+I'd already pushed to origin before this. And origin still showed the bad
+commit in its log. But pushing the replace refs fixed that:
+
+	git push origin 'refs/replace/*'
+
+Now looking at the origin repo showed the same amended history.
+
+In another clone, the old history is still visible, but that can be fixed, by running:
+
+	git fetch origin 'refs/replace/*:refs/replace/*'
+
+Then I deleted the git object for 6df78e from the origin repo, along with the
+blob object that contained the content of the file accidentially added to git.
+
+This is where it fell down, because cloning from that origin repo then
+fails:
+
+	joey@darkstar:~/tmp/test>git clone demo.git/ democlone
+	Cloning into 'democlone'...
+	done.
+	fatal: update_ref failed for ref 'HEAD': cannot update ref 'refs/heads/master': trying to write ref 'refs/heads/master' with nonexistent object 6df78e79d688de8392d952dc8705d094384ed2c0
+
+But, that can be worked around. Just need to make an additional commit on top of the
+replaced commit, so git clone will see a commit that has not been deleted. I did that,
+and:
+
+	joey@darkstar:~/tmp/test>git clone demo.git/ democlone
+	Cloning into 'democlone'...
+	done.
+	joey@darkstar:~/tmp/test>cd democlone
+	joey@darkstar:~/tmp/test/democlone>git log
+	error: Could not read 6df78e79d688de8392d952dc8705d094384ed2c0
+	fatal: Failed to traverse parents of commit 167b6e6842a669bc90925dd4b6df0c1a6ec4c141
+
+	joey@darkstar:~/tmp/test/democlone>git fetch origin 'refs/replace/*:refs/replace/*'
+	From /home/joey/tmp/test/demo
+	 * [new ref]         refs/replace/6df78e79d688de8392d952dc8705d094384ed2c0 -> refs/replace/6df78e79d688de8392d952dc8705d094384ed2c0
+	joey@darkstar:~/tmp/test/democlone>git log --pretty=oneline
+	167b6e6842a669bc90925dd4b6df0c1a6ec4c141 (HEAD -> master, origin/master, origin/HEAD) empty
+	6df78e79d688de8392d952dc8705d094384ed2c0 (replaced) add file (to annex)
+	3235872149f1767efd282635ca12ec2f9056f9cc initial commit
+
+So, you can do this if you're ok with clones needing to manually fetch the replace refs
+in order to access the replaced history.
+
+And of course, existing clones need to be manually updated to fetch the replace refs.
+And probably ought to have the bad objects deleted out of their .git/objects/
+to avoid accidental data leakage.
+
+I'd also caution that, if the history you rewrite with `git replace` contains a lot
+of commits, the number of refs in refs/replace/* could get large, and a large number
+of git refs can be innefficient in various ways.
+"""]]
