@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-02-09T21:02:09Z"
+ content="""
+Oh and I doubt github lets you delete .git/object files from a repo hosted
+there, so you might need to delete the repo and re-create it.
+
+Given how github shares git object stores amoung forks, even that might not
+be enough to eliminate the objects from it.
+"""]]
