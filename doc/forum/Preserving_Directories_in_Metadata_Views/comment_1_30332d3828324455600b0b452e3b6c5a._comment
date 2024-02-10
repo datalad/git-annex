@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="This behavior should be the default one"
+ date="2024-02-10T08:11:30Z"
+ content="""
+This behavior needs to be the default. Though, I understand that everyone have different needs.
+
+At least it may be better to configure the behavior via a command argument, e.g. by default `git annex view` preserves the directory structure.
+
+And when `--plain` argument is provided, then it would behave as it currently does - the directory structure is not preserved.
+
+Personally, I do not see any use cases for the active behavior because usually I set tags to many files (thousands), and it's not practical for me to see thousand files in a single directory (view tag). As a more real-world example - I've tried to prepare files to be burned into BDXL disk, and for that purpose I tagged the files I want to burn as `bdxl-disk-1` tag. I then used `ncdu` to analyze the space taken by that tag. But then when I started \"fine tuning\" what should and should not go to that disk, I found it too difficult because `git annex view` places all tagged files into a single directory.
+
+Are there any workarounds? I'm using git annex version `10.20231228`.
+"""]]
