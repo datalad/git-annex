@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="Update: workaround with branches"
+ date="2024-02-10T10:53:56Z"
+ content="""
+Seems like there is a way to use git annex as I would like, though it may not be obvious.
+
+In order to organize files and then burn them on to BDXL, instead of using tags, I've just switched to a new branch.
+e.g.:
+
+```sh
+git checkout -b view/bdxl
+```
+
+and then moved files and folders to a new folder which I intend to burn later. I've also assigned `git annex tag bdxl-disk-1 . --force` directly in this folder, so later I can see which files are burned even on the main branch (because tags are tied to git annex content and shared across branches).
+
+P.S.: In any case, preserving the folder structure on the first `git annex view tag=*` may be much more powerful and intuitive.
+"""]]
