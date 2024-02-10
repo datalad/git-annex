@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-02-10T14:22:31Z"
+ content="""
+In the meantime, distributed migration has been implemented, allowing
+to `git-annex migrate --update` to catch up with all migrations that were
+started elsewhere.
+
+This is essentially the same goal, and it is much more efficient in terms
+of storage than git-replace of a large number of refs.
+
+So, I'm going to close this.
+"""]]

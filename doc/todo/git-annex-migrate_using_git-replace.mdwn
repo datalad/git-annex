@@ -3,3 +3,5 @@ Currently, git-annex-migrate leads to content (and metadata) being stored under 
 More generally, git-annex-replace could be implemented this way, doing what git-replace does, but for git-annex keys rather than git hashes.  [[git-annex-pre-commit]] might need to be changed to implement replacement of keys added later.
 
 [[!tag needsthought]]
+
+> [[wontfix|done]], use distributed migration instead --[[Joey]]
