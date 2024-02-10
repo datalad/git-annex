@@ -1,0 +1,64 @@
+Adding a relaxed url currently prevents verifying the content of the object
+when transferring it between repositories. This risks data corruption going
+unnoticed. Could the hash be recorded when a relaxed url is downloaded from
+the web, and then used for verification of other transfers?
+
+This would need a new per-key file in the git-annex branch, that can list
+one or more hash-based keys. Then implement verification for url keys, that
+checks if hash-based keys are recorded in the file, and if so uses them to
+verify the content.
+
+The web special remote can hash the content as it's downloading it from the
+web, and record the resulting hash-based key.
+
+## handling upgrades
+
+A repository that currently contains the content of a relaxed url needs to
+keep working. So, the object stored in the repository has to be treated as
+valid, even though it does not correspond to any hash-based keys listed for
+the url key. 
+
+This presents a problem; there is no way to tell the difference between
+a valid object in such a repository and an object that was downloaded from
+the web with its hash recorded, but has since gotten corrupted.
+
+Seems that the only possible way to resolve this problem is to change to a
+new type of url key, that is known to always have its hash recorded on
+download from the web. (Call this a "dynamic" url key.)
+And handle all existing relaxed url keys as before.
+
+That would leave it up to the user to migrate their relaxed url keys to
+dynamic urls keys, if desired.
+
+## other special remotes
+
+If the web special remote is what takes care of hashing the content on
+download and recording the hash-based key, what about other special remotes
+that claim an url?
+
+This could also be implemented in the bittorrent special remote, but what
+about external special remotes?
+
+An alternative would be to add a downloadDynamicUrl that is called instead
+of retrieveKeyFile and returns a hash-based key (allowing hashing the
+download on the fly). Then git-annex would take
+care of recording the hash-based key. The external special remote interface
+could be extended to include that.
+
+## hash-based key choice
+
+Should annex.backend gitconfig be used to pick which hash-based key to use?
+The risk is that config changes and several different hash-based keys get
+recorded for a dynamic url. Not really a problem, but would increase the
+size of the git-annex branch unncessarily, and require extra work when
+verifying the key.)
+
+## use for other types of keys
+
+It would also be possible to use these new git-annex branch log files
+for other types of keys, like WORM, or perhaps SHA1. But, the same upgrade
+problem would apply. So, there's problably no benefit in doing that,
+compared with migrating the key to the desired hash backend.
+
+Does seem to be some chance this could help implementing 
+[[wishlist_degraded_files]].
