@@ -1,0 +1,53 @@
+git-annex can be used to let people clone a repository, without being
+able to access the content of annexed files whose content you want to keep
+private.
+
+But what to do if you're using a repository like that, and accidentially
+add a file to git that you intended to keep private? And you didn't notice
+for a while and made other changes.
+
+Here's a way to recover from that mistake without throwing away the commits
+you made. It creates a separate, redacted history where the private
+file (`$privatefile`) is an annexed file. And uses `git replace` to let you
+locally keep using the unredacted history.
+
+Start by identifiying the parent commit of the commit that added the
+private file to git (`$lastsafecommit`).
+
+Reset back to `$lastsafecommit` and squash in all changes made since then:
+
+    git branch unredacted-master master
+    git reset --hard $lastsafecommit
+    git merge --squash unredacted-master
+
+Then convert `$privatefile` to an annexed file:
+
+    git rm --cached $privatefile
+    git annex add --force-large $privatefile
+
+Commit the redacted version of master, and locally replace it with your
+original unredacted history.
+
+    git commit
+    git replace master unredacted-master
+
+Now you can push master to other remotes, and it will push the redacted
+form of master:
+
+    git push --force origin master
+
+(Note that, if you already pushed the unredacted commits to origin, this
+push will not necessarily completely delete the private content from it.
+Making a new origin repo and pushing to that is an easy way to be sure.)
+
+If you do want to share the unredacted history with any other repositories,
+you can, by fetching the replacement refs into them:
+
+    git fetch myhost:myrepo 'refs/replace/*'
+    git fetch myhost:myrepo unredacted-master
+    git replace master unredacted-master
+
+Note that the above example makes the redacted history contain a single
+squashed commit, but this technique is not limited to that. You can make
+redacted versions of individual commits too, and build up whatever form of
+redacted history you want to publish.
