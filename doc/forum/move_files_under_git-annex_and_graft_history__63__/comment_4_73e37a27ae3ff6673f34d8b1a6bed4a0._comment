@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-02-10T16:06:26Z"
+ content="""
+A simpler approach is to make a redacted history, publish that, and locally
+replace the redacted history with the unredacted history.
+
+1. make a new empty bare repo (eg on github)
+2. git branch unredacted-master master
+3. git branch -D master
+4. start a new master branch at the commit before the problem file
+   was added, that contains one or more rewritten commits, where the problem
+   file is added to the annex (eg, use `git merge --squash
+   unredacted-master` and the convert the problem file to annexed before
+   committing)
+4. push the (new) master branch to the new bare repo
+5. `git replace master unredacted-master`
+
+That last step lets you locally access all your unredacted history locally,
+but pushes of further changes to master will still push the redacted history.
+
+You can do the same git replace in each existing clone of the repository
+and keep on referring to the unredacted history in those, while publishing
+the redacted history.
+"""]]
