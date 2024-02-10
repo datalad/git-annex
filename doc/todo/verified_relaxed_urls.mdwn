@@ -28,7 +28,8 @@ download from the web. (Call this a "dynamic" url key.)
 And handle all existing relaxed url keys as before.
 
 That would leave it up to the user to migrate their relaxed url keys to
-dynamic urls keys, if desired.
+dynamic urls keys, if desired. Now that distributed migration is
+implemented, that seems sufficiently easy.
 
 ## other special remotes
 
@@ -62,3 +63,5 @@ compared with migrating the key to the desired hash backend.
 
 Does seem to be some chance this could help implementing 
 [[wishlist_degraded_files]].
+
+[[!tag projects/datalad/potential]]
