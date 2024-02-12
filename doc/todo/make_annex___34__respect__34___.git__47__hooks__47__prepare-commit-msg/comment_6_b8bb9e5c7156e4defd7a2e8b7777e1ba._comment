@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-02-12T17:36:32Z"
+ content="""
+Turns out that the assistant doesn't commit to the git-annex branch itself,
+instead the pre-commit hook runs `git-annex pre-commit`, and 
+the git-annex branch commit on process shutdown is where the commit
+happens.
+
+A bit surprising! If the pre-commit hook didn't run git-annex, 
+the assistant would later explicitly commit the branch before
+pushing to remotes.
+
+Anyway, this does mean you can rely on the git-annex branch commit
+happening after the working tree commit. At least, when there are
+no other git-annex processes running.
+"""]]

@@ -11,6 +11,7 @@ git-annex (10.20240130) UNRELEASED; urgency=medium
   * stack.yaml: Update to lts-22.9 and use crypton.
   * assistant, undo: When committing, let the usual git commit
     hooks run.
+  * Added annex.commitmessage-command config.
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Jan 2024 15:59:33 -0400
 

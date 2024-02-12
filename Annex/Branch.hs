@@ -500,11 +500,19 @@ append jl f appendable toappend = do
 {- Commit message used when making a commit of whatever data has changed
  - to the git-annex branch. -}
 commitMessage :: Annex String
-commitMessage = fromMaybe "update" . annexCommitMessage <$> Annex.getGitConfig
+commitMessage = fromMaybe "update" <$> getCommitMessage
 
 {- Commit message used when creating the branch. -}
 createMessage :: Annex String
-createMessage = fromMaybe "branch created" . annexCommitMessage <$> Annex.getGitConfig
+createMessage = fromMaybe "branch created" <$> getCommitMessage
+
+getCommitMessage :: Annex (Maybe String)
+getCommitMessage = do
+	config <- Annex.getGitConfig
+	case annexCommitMessageCommand config of
+		Nothing -> return (annexCommitMessage config)
+		Just cmd -> catchDefaultIO (annexCommitMessage config) $
+			Just <$> liftIO (readProcess "sh" ["-c", cmd])
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()

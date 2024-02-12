@@ -1088,6 +1088,11 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   This works well in combination with annex.alwayscommit=false,
   to gather up a set of changes and commit them with a message you specify.
 
+* `annex.commitmessage-command`
+
+  This command is run and its output is used as the commit message to the
+  git-annex branch.
+
 * `annex.alwayscompact`
 
   By default, git-annex compacts data it records in the git-annex branch.
