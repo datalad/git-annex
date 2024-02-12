@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-02-12T17:01:13Z"
+ content="""
+> Another note worthwhile making IMHO is that AFAIK those `git replace` markers
+> are local only, and whoever has unredacted-master later on might need to set
+> them up as well for their local clones to make such a \"collapse\" of histories
+
+Right, any repository you fetch unredacted-master into, you will also want to 
+fetch refs/redacted/ to as well, and run git replace there, as shown in the last
+code block of the tip above.
+"""]]
