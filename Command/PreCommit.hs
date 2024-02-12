@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2014 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -20,12 +20,14 @@ import Logs.View
 import Logs.MetaData
 import Types.View
 import Types.MetaData
+import qualified Annex
+import qualified Annex.Branch
 
 import qualified Data.Set as S
 import qualified Data.Text as T
 
 cmd :: Command
-cmd = command "pre-commit" SectionPlumbing
+cmd = noCommit $ command "pre-commit" SectionPlumbing
 	"run by git pre-commit hook"
 	paramPaths
 	(withParams seek)
@@ -47,9 +49,14 @@ seek ps = do
 	-- committing changes to a view updates metadata
 	currentView >>= \case
 		Nothing -> noop
-		Just (v, _madj) -> withViewChanges
-			(addViewMetaData v)
-			(removeViewMetaData v)
+		Just (v, _madj) -> do
+			withViewChanges
+				(addViewMetaData v)
+				(removeViewMetaData v)
+			-- Manually commit in this case, because
+			-- noCommit prevents automatic commit.
+			whenM (annexAlwaysCommit <$> Annex.getGitConfig) $
+				Annex.Branch.commit =<< Annex.Branch.commitMessage
 
 addViewMetaData :: View -> ViewedFile -> Key -> CommandStart
 addViewMetaData v f k = starting "metadata" ai si $

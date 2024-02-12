@@ -12,6 +12,8 @@ git-annex (10.20240130) UNRELEASED; urgency=medium
   * assistant, undo: When committing, let the usual git commit
     hooks run.
   * Added annex.commitmessage-command config.
+  * pre-commit: Avoid committing the git-annex branch
+    (except when a commit is made in a view, which changes metadata).
 
  -- Joey Hess <id@joeyh.name>  Mon, 29 Jan 2024 15:59:33 -0400
 

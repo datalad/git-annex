@@ -1,6 +1,6 @@
 {- git-annex assistant commit thread
  -
- - Copyright 2012-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,7 +19,6 @@ import Assistant.TransferQueue
 import Assistant.Drop
 import Types.Transfer
 import Logs.Location
-import qualified Annex.Queue
 import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
 import qualified Utility.DirWatcher as DirWatcher
@@ -35,6 +34,8 @@ import Annex.InodeSentinal
 import Annex.CurrentBranch
 import Annex.FileMatcher
 import qualified Annex
+import qualified Annex.Queue
+import qualified Annex.Branch
 import Utility.InodeCache
 import qualified Database.Keys
 import qualified Command.Sync
@@ -248,6 +249,11 @@ commitStaged msg = do
 				]
 			when ok $
 				Command.Sync.updateBranches =<< getCurrentBranch
+			{- Commit the git-annex branch. This comes after
+			 - the commit of the staged changes, so that
+			 - annex.commitmessage-command can examine that
+			 - commit. -}
+			Annex.Branch.commit =<< Annex.Branch.commitMessage
 			return ok
 
 {- If there are PendingAddChanges, or InProcessAddChanges, the files

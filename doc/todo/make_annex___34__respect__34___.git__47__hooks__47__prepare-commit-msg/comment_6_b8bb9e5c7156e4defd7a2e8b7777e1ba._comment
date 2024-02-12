@@ -3,16 +3,34 @@
  subject="""comment 6"""
  date="2024-02-12T17:36:32Z"
  content="""
-Turns out that the assistant doesn't commit to the git-annex branch itself,
-instead the pre-commit hook runs `git-annex pre-commit`, and 
-the git-annex branch commit on process shutdown is where the commit
-happens.
+I've implemented annex.commitmessage-command and made sure that the
+assistant calls it after committing the working tree changes.
 
-A bit surprising! If the pre-commit hook didn't run git-annex, 
-the assistant would later explicitly commit the branch before
-pushing to remotes.
+Example of using the prepare-commit-msg hook to generate a commit message
+and then reusing that message for the git-annex branch commit:
 
-Anyway, this does mean you can rely on the git-annex branch commit
-happening after the working tree commit. At least, when there are
-no other git-annex processes running.
+	joey@darkstar:~/tmp/a>cat .git/hooks/prepare-commit-msg
+	#!/bin/sh
+	msg="files: $(git diff --name-only --cached)"
+	echo $msg > .git/last-commit-msg
+	echo $msg > $1
+	
+	joey@darkstar:~/tmp/a>git config annex.commitmessage-command
+	cat .git/last-commit-msg
+	
+	joey@darkstar:~/tmp/a>git-annex assistant
+	joey@darkstar:~/tmp/a>date > bar
+
+	joey@darkstar:~/tmp/a>git log -n1 master
+	commit 676f87d02f031192c7eb0b7d29a6ce2429b8c727 (HEAD -> master, synced/master)
+	Author: Joey Hess <joeyh@joeyh.name>
+	Date:   Mon Feb 12 14:29:12 2024 -0400
+	
+	    files: bar
+	joey@darkstar:~/tmp/a>git log -n1 git-annex
+	commit 676588dd6d921115782e61be85f75e395cc480b6 (git-annex)
+	Author: Joey Hess <joeyh@joeyh.name>
+	Date:   Mon Feb 12 14:29:12 2024 -0400
+	
+	    files: bar
 """]]
