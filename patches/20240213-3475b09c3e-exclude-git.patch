@@ -1,3 +1,10 @@
+diff --git a/debian/source/format b/debian/source/format
+new file mode 100644
+index 0000000000..d3827e75a5
+--- /dev/null
++++ b/debian/source/format
+@@ -0,0 +1 @@
++1.0
 diff --git a/debian/source/options b/debian/source/options
 new file mode 100644
 index 0000000000..62612d7c71
