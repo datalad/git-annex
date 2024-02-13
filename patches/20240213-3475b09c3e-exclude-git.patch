@@ -1,0 +1,7 @@
+diff --git a/debian/source/options b/debian/source/options
+new file mode 100644
+index 0000000000..8217775d01
+--- /dev/null
++++ b/debian/source/options
+@@ -0,0 +1 @@
++tar-ignore = ".git"
