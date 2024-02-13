@@ -1,0 +1,24 @@
+diff --git a/debian/source/format b/debian/source/format
+new file mode 100644
+index 0000000000..d3827e75a5
+--- /dev/null
++++ b/debian/source/format
+@@ -0,0 +1 @@
++1.0
+diff --git a/debian/source/options b/debian/source/options
+new file mode 100644
+index 0000000000..62612d7c71
+--- /dev/null
++++ b/debian/source/options
+@@ -0,0 +1,11 @@
++# Due to restrictions around allowed version strings, git-annex's Debian source
++# package has to use format 1.0, which doesn't ignore VCS files unless the
++# following explicit options are given:
++diff-ignore
++tar-ignore
++
++# Also ignore some trees specific to the datalad/git-annex build process:
++extend-diff-ignore = "(^|/)(\.github|clients|patches)($|/)"
++tar-ignore = .github
++tar-ignore = clients
++tar-ignore = patches
