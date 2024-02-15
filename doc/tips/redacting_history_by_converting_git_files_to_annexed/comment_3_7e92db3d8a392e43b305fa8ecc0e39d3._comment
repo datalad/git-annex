@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="a script to hide history"
+ date="2024-02-15T22:05:12Z"
+ content="""
+Here is a script I crafted to use to make it easy and reuse current tree object for new \"squashed history\" commit
+
+```bash
+#!/bin/bash
+#
+# A helper to establish an alternative history to hide commits which could have
+# leaked personal data etc.
+#
+# More information on motivation etc and another implementation could be
+# found at https://git-annex.branchable.com/tips/redacting_history_by_converting_git_files_to_annexed/
+#
+
+set -eu
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+: \"${SECRET_BRANCH:=unredacted-$BRANCH}\"
+SAFE_BASE=\"$1\"
+
+git branch \"${SECRET_BRANCH}\"
+
+rm -f .git/COMBINED_COMMIT_MESSAGE
+echo -e \"Combined commits to hide away sensitive data\n\" >> .git/COMBINED_COMMIT_MESSAGE
+git log --format=%B \"$SAFE_BASE..HEAD\" >> .git/COMBINED_COMMIT_MESSAGE
+
+# the tree we are on ATM
+TREE_HASH=$(git log -1 --format=%T HEAD)
+NEW_COMMIT=$(git commit-tree $TREE_HASH -p \"$SAFE_BASE\" -F .git/COMBINED_COMMIT_MESSAGE)
+rm -f .git/COMBINED_COMMIT_MESSAGE
+git reset --hard $NEW_COMMIT
+
+git replace \"$BRANCH\" \"$SECRET_BRANCH\"
+```
+"""]]
