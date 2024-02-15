@@ -31,6 +31,20 @@ tips, user support, etc. Two names that come to mind are Anarcat and
 CandyAngel. John Lawrence made the logo. And many others have
 contributed good bug reports and great ideas.
 
+## financial support, 2024
+
+git-annex development is supported in large part by:
+
+* [DANDI](https://www.dandiarchive.org/), funded by
+  [a NIH grant](https://projectreporter.nih.gov/project_info_description.cfm?aid=9981835)
+  awarded to MIT, Dartmouth College, and Kitware.
+* [ReproNim](https://repronim.org/), funded by
+  [a NIH grant](https://projectreporter.nih.gov/project_info_details.cfm?aid=8999833)
+  awarded to UMass Medical School Worcester, Dartmouth College, MIT, et al.
+
+Thanks also to these folks for their support: 
+[[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
+
 ## financial support, 2019-2023
 
 <img alt="McGill logo" src="https://mcgill.ca/hbhl/sites/all/themes/moriarty/images/logo-red.svg" width=100>
@@ -56,7 +70,7 @@ git-annex development was supported in large part by:
 * Gioele Barabucci ENK
 
 Thanks also to these folks for their support: 
-[[!inline raw=yes pages="thanks/list"]] and anonymous supporters.
+[[!inline raw=yes pages="thanks/list.2023"]] and anonymous supporters.
 
 ## financial support, 2014-2018
 
