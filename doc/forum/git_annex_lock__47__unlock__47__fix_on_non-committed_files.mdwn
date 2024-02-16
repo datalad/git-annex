@@ -1,0 +1,15 @@
+In an ideal world, one could just use `git annex diffdriver` to compare annex'ed files. However, sometimes one might need an approach that is constructed simpler. For example, I want to run a comparison utility that is in a container which translates my paths for better reproducibility of scientific results. Or I have a colleage who is not familiar with all the intricacies of git annex and knows git just enough `git checkout` version 1, move it, the `git checkout` the second version and compare these two. Then the situation can arise that one has a symlink to `.git/annex/objects/...` which is named differently than what is saved in the tree. 
+
+In that case, `git annex unlock` refuses to work:
+
+```
+mv file file_version1
+git annex unlock file
+error: pathspec 'file' did not match any file(s) known to git
+Did you forget to 'git add'?
+unlock: 1 failed
+```
+
+Similar story goes with `git lock` and `git fix`. I think it would be a nice behaviour if these commands would just do their work on the new file name. For example, git unlock would replace a symlink with its content even if the file is not committed with this name. 
+
+Is it possible to implement this in git annex?
