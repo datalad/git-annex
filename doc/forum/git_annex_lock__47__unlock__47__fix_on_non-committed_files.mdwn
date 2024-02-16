@@ -4,7 +4,7 @@ In that case, `git annex unlock` refuses to work:
 
 ```
 mv file file_version1
-git annex unlock file
+git annex unlock file_version1
 error: pathspec 'file' did not match any file(s) known to git
 Did you forget to 'git add'?
 unlock: 1 failed
