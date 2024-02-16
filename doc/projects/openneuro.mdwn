@@ -1,0 +1,28 @@
+OpenNeuro ([openneuro.org](https://openneuro.org))
+==================================================
+
+[OpenNeuro](https://openneuro.org) is a free and open platform for sharing [BIDS](https://bids.neuroimaging.io)-compliant neuroimaging (MRI, PET, MEG, EEG, and iEEG) data. 
+Git-annex is the core tool for data logistics at OpenNeuro, e.g. for exporting the content to AWS S3 into open `openneuro.org` S3 bucket, and providing all datasets as DataLad datasets (git/git-annex repositories with a unique DataLad ID) from the [github.com/OpenNeuroDatasets](https://github.com/OpenNeuroDatasets) organization.
+
+## TODOs
+
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and tagged(projects/openneuro)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
+
+<details>
+<summary>Done</summary>
+
+[[!inline pages="todo/* and !todo/done and link(todo/done) and tagged(projects/openneuro)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
+
+</details>
+
+## BUGs
+
+[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and tagged(projects/openneuro)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
+
+<details>
+<summary>Done</summary>
+
+[[!inline pages="((bugs/* and !bugs/done and link(bugs/done)) or projects/openneuro/bugs-done/*) and tagged(projects/openneuro)" sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]] 
+
+</details>
+
