@@ -1,0 +1,351 @@
+[[!comment format=mdwn
+ username="jstritch"
+ avatar="http://cdn.libravatar.org/avatar/56756b34ff409071074762951d270002"
+ subject="comment 1"
+ date="2024-02-16T17:48:55Z"
+ content="""
+I have attached a script and log file demonstrating the problem. The script:
+
+1) sets up an integration repository and two backup repositories each containing one file.
+
+2) adds another file to the integration repository, pushes it to both backups, and does a `git annex list` which shows correctly.
+
+3) does a `git annex sync music-backup-one` to introduce the problem.
+
+4) adds another file to the integration repository, pushes it to both backups, and does a `git annex list` which shows the file missing from `music-backup-one`.
+
+5) does `git annex mirror . --to=music-backup-one` then another `git annex list` which shows the files as expected.
+
+If the sync command is commented out, the last two lines are unnecessary. The sync command should not change the behavior of other commands.
+
+[[!format sh \"\"\"
+mkdir music-repo
+mkdir music-backup-one
+mkdir music-backup-two
+
+cd music-repo
+git init --initial-branch main
+git annex init music-repo
+git config annex.adjustedbranchrefresh true
+git config receive.denyCurrentBranch updateInstead
+git annex config --set annex.largefiles include=*.xtx
+git annex group here manual
+git annex wanted here standard
+echo \"test file one\" >> test-file-one.xtx
+git annex add .
+git commit -m \"add test file one\"
+git annex adjust --unlock
+
+cd ../music-backup-one
+git clone --origin music-repo ../music-repo .
+git annex init music-backup-one
+cd ../music-repo
+git remote add music-backup-one ../music-backup-one
+git annex push music-backup-one
+
+cd ../music-backup-two
+git clone --origin music-repo ../music-repo .
+git annex init music-backup-two
+cd ../music-repo
+git remote add music-backup-two ../music-backup-two
+git annex push music-backup-two
+
+cd ../music-backup-one
+git config annex.adjustedbranchrefresh true
+git config receive.denyCurrentBranch updateInstead
+git annex config --set annex.largefiles include=*.xtx
+git annex group here manual
+git annex wanted here standard
+git annex adjust --lock
+
+cd ../music-backup-two
+git config annex.adjustedbranchrefresh true
+git config receive.denyCurrentBranch updateInstead
+git annex config --set annex.largefiles include=*.xtx
+git annex group here manual
+git annex wanted here standard
+git annex adjust --lock
+
+cd ../music-repo
+echo \"test file two\" >> test-file-two.xtx
+git annex add .
+git commit -m \"add test file two\"
+git annex push music-backup-one
+git annex push music-backup-two
+git annex list
+
+# *** comment out line below to fix ***
+git annex sync music-backup-one
+
+echo \"test file three\" >> test-file-three.xtx
+git annex add .
+git commit -m \"add test file three\"
+git annex push music-backup-one
+git annex push music-backup-two
+git annex list
+
+# *** lines below only needed if sync is not commented out ***
+git annex mirror . --to=music-backup-one
+git annex list
+\"\"\"]]
+
+Here's the log file:
+
+[[!format sh \"\"\"
+Initialized empty Git repository in /home/juanito/Documents/music-repo/.git/
+init music-repo ok
+(recording state in git...)
+annex.largefiles include=*.xtx ok
+(recording state in git...)
+group here ok
+(recording state in git...)
+wanted here ok
+(recording state in git...)
+add test-file-one.xtx 
+ok                                
+(recording state in git...)
+[main (root-commit) 3358556] add test file one
+ 1 file changed, 1 insertion(+)
+ create mode 120000 test-file-one.xtx
+adjust  
+Switched to branch 'adjusted/main(unlocked)'
+ok
+Cloning into '.'...
+done.
+init music-backup-one (merging music-repo/git-annex into git-annex...)
+ok
+(recording state in git...)
+copy test-file-one.xtx (to music-backup-one...) 
+(recording state in git...)       
+ok
+(recording state in git...)
+push music-backup-one 
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 422 bytes | 422.00 KiB/s, done.
+Total 5 (delta 2), reused 0 (delta 0), pack-reused 0
+To ../music-backup-one
+ * [new branch]      main -> synced/main
+ * [new branch]      git-annex -> synced/git-annex
+ok
+Cloning into '.'...
+done.
+init music-backup-two (merging music-repo/git-annex into git-annex...)
+(recording state in git...)
+ok
+(recording state in git...)
+copy test-file-one.xtx (to music-backup-two...) 
+(recording state in git...)       
+ok
+(recording state in git...)
+push music-backup-two 
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 447 bytes | 447.00 KiB/s, done.
+Total 5 (delta 2), reused 0 (delta 0), pack-reused 0
+To ../music-backup-two
+ * [new branch]      main -> synced/main
+ * [new branch]      git-annex -> synced/git-annex
+ok
+annex.largefiles include=*.xtx (merging synced/git-annex into git-annex...)
+(recording state in git...)
+ok
+group here ok
+(recording state in git...)
+wanted here ok
+(recording state in git...)
+adjust  
+Switched to branch 'adjusted/main(locked)'
+ok
+annex.largefiles include=*.xtx (merging synced/git-annex into git-annex...)
+(recording state in git...)
+ok
+group here ok
+(recording state in git...)
+wanted here ok
+(recording state in git...)
+adjust  
+Switched to branch 'adjusted/main(locked)'
+ok
+add test-file-two.xtx 
+ok                                
+(recording state in git...)
+[adjusted/main(unlocked) e5a8b04] add test file two
+ 1 file changed, 1 insertion(+)
+ create mode 100644 test-file-two.xtx
+copy test-file-two.xtx (to music-backup-one...) 
+ok                                
+(recording state in git...)
+push music-backup-one 
+Enumerating objects: 23, done.
+Counting objects: 100% (23/23), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (15/15), done.
+Writing objects: 100% (18/18), 1.49 KiB | 1.49 MiB/s, done.
+Total 18 (delta 6), reused 0 (delta 0), pack-reused 0
+remote: merge synced/main (Merging into main...) 
+remote: Updating 3358556..e4f11f9
+remote: Fast-forward
+remote:  test-file-two.xtx | 1 +
+remote:  1 file changed, 1 insertion(+)
+remote:  create mode 120000 test-file-two.xtx
+remote: (Merging into adjusted branch...) 
+remote: Updating a49a4c5..526277a
+remote: Fast-forward
+remote:  test-file-two.xtx | 1 +
+remote:  1 file changed, 1 insertion(+)
+remote:  create mode 120000 test-file-two.xtx
+remote: ok
+To ../music-backup-one
+   49a54e0..73ea4dc  git-annex -> synced/git-annex
+   3358556..e4f11f9  main -> synced/main
+ok
+copy test-file-two.xtx (to music-backup-two...) 
+ok                                
+(recording state in git...)
+push music-backup-two 
+Enumerating objects: 20, done.
+Counting objects: 100% (20/20), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (15/15), done.
+Writing objects: 100% (18/18), 1.44 KiB | 1.44 MiB/s, done.
+Total 18 (delta 7), reused 0 (delta 0), pack-reused 0
+remote: merge synced/main (Merging into main...) 
+remote: Updating 3358556..e4f11f9
+remote: Fast-forward
+remote:  test-file-two.xtx | 1 +
+remote:  1 file changed, 1 insertion(+)
+remote:  create mode 120000 test-file-two.xtx
+remote: (Merging into adjusted branch...) 
+remote: Updating a49a4c5..526277a
+remote: Fast-forward
+remote:  test-file-two.xtx | 1 +
+remote:  1 file changed, 1 insertion(+)
+remote:  create mode 120000 test-file-two.xtx
+remote: ok
+To ../music-backup-two
+   cb6fd7f..db606aa  git-annex -> synced/git-annex
+   3358556..e4f11f9  main -> synced/main
+ok
+here
+|music-backup-one
+||music-backup-two
+|||web
+||||bittorrent
+|||||
+XXX__ test-file-one.xtx
+XXX__ test-file-two.xtx
+git-annex sync will change default behavior in the future to send content to repositories that have preferred content configured. If you do not want this to send any content, use --no-content (or -g) to prepare for that change. (Or you can configure annex.synccontent)
+commit  
+On branch adjusted/main(unlocked)
+nothing to commit, working tree clean
+ok
+pull music-backup-one 
+remote: Enumerating objects: 33, done.
+remote: Counting objects: 100% (29/29), done.
+remote: Compressing objects: 100% (19/19), done.
+remote: Total 21 (delta 6), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (21/21), 2.15 KiB | 2.15 MiB/s, done.
+From ../music-backup-one
+ * [new branch]      adjusted/main(locked)   -> music-backup-one/adjusted/main(locked)
+ * [new branch]      adjusted/main(unlocked) -> music-backup-one/adjusted/main(unlocked)
+ * [new branch]      git-annex               -> music-backup-one/git-annex
+ok
+(merging music-backup-one/git-annex into git-annex...)
+(recording state in git...)
+push music-backup-one 
+Enumerating objects: 15, done.
+Counting objects: 100% (15/15), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (7/7), 733 bytes | 733.00 KiB/s, done.
+Total 7 (delta 3), reused 0 (delta 0), pack-reused 0
+To ../music-backup-one
+   73ea4dc..c7e0b7c  git-annex -> synced/git-annex
+ok
+add test-file-three.xtx 
+ok                                
+(recording state in git...)
+[adjusted/main(unlocked) 823aa04] add test file three
+ 1 file changed, 1 insertion(+)
+ create mode 100644 test-file-three.xtx
+push music-backup-one 
+Enumerating objects: 10, done.
+Counting objects: 100% (10/10), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (8/8), 844 bytes | 844.00 KiB/s, done.
+Total 8 (delta 1), reused 0 (delta 0), pack-reused 0
+remote: merge synced/main (Merging into main...) 
+remote: Updating e4f11f9..5659d23
+remote: Fast-forward
+remote:  test-file-three.xtx | 1 +
+remote:  1 file changed, 1 insertion(+)
+remote:  create mode 120000 test-file-three.xtx
+remote: (Merging into adjusted branch...) 
+remote: Updating 36d4013..7ab1f09
+remote: Fast-forward
+remote:  test-file-three.xtx | 1 +
+remote:  1 file changed, 1 insertion(+)
+remote:  create mode 120000 test-file-three.xtx
+remote: ok
+To ../music-backup-one
+   c7e0b7c..a80e236  git-annex -> synced/git-annex
+   e4f11f9..5659d23  main -> synced/main
+ok
+copy test-file-three.xtx (to music-backup-two...) 
+ok                                
+(recording state in git...)
+push music-backup-two 
+Enumerating objects: 48, done.
+Counting objects: 100% (42/42), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (29/29), done.
+Writing objects: 100% (32/32), 2.99 KiB | 2.99 MiB/s, done.
+Total 32 (delta 12), reused 0 (delta 0), pack-reused 0
+remote: merge synced/main (Merging into main...) 
+remote: Updating e4f11f9..5659d23
+remote: Fast-forward
+remote:  test-file-three.xtx | 1 +
+remote:  1 file changed, 1 insertion(+)
+remote:  create mode 120000 test-file-three.xtx
+remote: (Merging into adjusted branch...) 
+remote: Updating 36d4013..7ab1f09
+remote: Fast-forward
+remote:  test-file-three.xtx | 1 +
+remote:  1 file changed, 1 insertion(+)
+remote:  create mode 120000 test-file-three.xtx
+remote: ok
+To ../music-backup-two
+   db606aa..c67fdd4  git-annex -> synced/git-annex
+   e4f11f9..5659d23  main -> synced/main
+ok
+here
+|music-backup-one
+||music-backup-two
+|||web
+||||bittorrent
+|||||
+XXX__ test-file-one.xtx
+X_X__ test-file-three.xtx
+XXX__ test-file-two.xtx
+copy test-file-one.xtx ok
+copy test-file-three.xtx (to music-backup-one...) 
+ok                                
+copy test-file-two.xtx ok
+(recording state in git...)
+here
+|music-backup-one
+||music-backup-two
+|||web
+||||bittorrent
+|||||
+XXX__ test-file-one.xtx
+XXX__ test-file-three.xtx
+XXX__ test-file-two.xtx
+\"\"\"]]
+"""]]
