@@ -1,0 +1,10 @@
+[annextimelog](https://gitlab.com/nobodyinperson/annextimelog) (`atl`) is a cli time tracker and logbook made by [[users/nobodyinperson]]. It uses git-annex to store and sync data. `atl` has a loosely similar usage to [timewarrior](https://timewarrior.net/) but improves on many of its pain points:
+
+- tracking of simultaneous events
+- conflict-free syncing
+- more powerful tagging system
+- more powerful search
+- more output formats (JSON, hledger timeclock, ...)
+- a more sophisticated event specification language
+
+annextimelog is also an experiment how useable git-annex is as a backend for syncable application data storage. While first sounding silly, it works very well.
