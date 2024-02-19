@@ -4,6 +4,12 @@ Variants of the git-annex logo.
 
 [[logo.svg]]
 
+[[logo-with-cli.svg]]
+
+[[logo-with-cli.png]]
+
+(The font of the `> git annex` text is [JetBrains Mono](https://www.jetbrains.com/lp/mono/))
+
 [[logo-old.png]]
 
 [[logo-old_small.png]]
@@ -16,6 +22,7 @@ Variants of the git-annex logo.
 
 	Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
 	           2010 Joey Hess <id@joeyh.name>
-		   2013 John Lawrence
+	           2013 John Lawrence
+	           2024 Yann Büchau <nobodyinperson at posteo de>
 	License: other
 	  Free to modify and redistribute with due credit, and obviously free to use.
