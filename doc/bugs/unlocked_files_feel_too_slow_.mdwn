@@ -1,0 +1,33 @@
+### Please describe the problem.
+
+I recently switched a large (~6TiB) video repository from "normal" to "unlocked" mode, mainly because some external tool was getting confused by symlinks.
+
+As a result, all remotes related to that repositories have this painful, multi-hour process by which they convert their work tree to follow the new layout. That, in itself, is disturbingly slow, with little progress shown to the user. In fact, I often fear that git-annex is messing up and actually adding files as git blobs itself, which makes me interrupt it and start over again, which, obviously, makes things much worse.
+
+But there are other weird things. At the moment, I'm copying files from my laptop with:
+
+    git annex copy --from angela -J2
+
+Being worried about the lack of progress, I interrupted it and ran instead:
+
+    git annex copy --from angela -J2 --not --in here --in angela
+
+That command generated zero output for 12 minutes straight. Looking at strace, it seemed to have read a large number of files in `.git/annex/objects`, which is slow.
+
+Another example is, after the above command completed, i ran `git annex sync -g`, which i expected to take a handful of seconds, but the first line was a `commit` that took nearly a minute.
+
+### What steps will reproduce the problem?
+
+It's not quite clear to me how to reproduce this from scratch. I guess convert an existing large repo?
+
+### What version of git-annex are you using? On what operating system?
+
+10.20230802-1~bpo12+1 on debian bookworm.
+
+### Please provide any additional information below.
+
+Not sure what could help here.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+I use git-annex daily, and it's a lifesaver. :)
