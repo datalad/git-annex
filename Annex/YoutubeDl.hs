@@ -135,8 +135,12 @@ youtubeDl' url workdir p uo
 		, Param "--playlist-items", Param "0"
 		] ++
 			if isytdlp cmd
-				then 
-					[ Param "--progress-template"
+				then
+					-- Avoid warnings, which go to
+					-- stderr and may mess up
+					-- git-annex's display.
+					[ Param "--no-warnings"
+					, Param "--progress-template"
 					, Param progressTemplate
 					, Param "--print-to-file"
 					, Param "after_move:filepath"
