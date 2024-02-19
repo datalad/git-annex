@@ -26,7 +26,9 @@ It's not quite clear to me how to reproduce this from scratch. I guess convert a
 
 ### Please provide any additional information below.
 
-Not sure what could help here.
+Not sure what could help here. Maybe having more feedback on what's actually happening in those minutes-long stretches would help. Git, for example, has a percentage/object count thing that pops up when things like `git status` take too long. I would love to see something similar here.
+
+Also, I understand the [[todo/git_smudge_clean_interface_suboptiomal]] problem, and this might just be a specific manifestation of it. It still seems to me having some feedback, if even around the git filter boundaries, would alleviate some of those problems.
 
 ### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
 
