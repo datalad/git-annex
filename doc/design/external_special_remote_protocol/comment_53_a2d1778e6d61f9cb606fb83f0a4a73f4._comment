@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="matrss"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="Multi-line string in WHEREIS-SUCCESS?"
+ date="2024-02-21T12:29:14Z"
+ content="""
+Is it possible to somehow make `git annex whereis` show the response of the special remote to `WHEREIS` over multiple lines? Just including newlines obviously results in an error, since that ends the WHEREIS-SUCCESS message.
+
+I am implementing a special remote for which the data is fully described by what is essentially a json-encoded request to a third-party API, and I would like to show this json string pretty-printed over multiple lines in the whereis output, instead of as a single line.
+"""]]
