@@ -1,0 +1,73 @@
+It's an enhancement feature to handle submodules to manage data with associated its projects.
+
+I want `git-annex` could detect submodule paths changed on disks which was cause by `mv` or file explorer.
+If user uses `git-annex-assist daemon` or `git-annex-assist` command directly after `mv` command, The submodules would be totally broken.
+
+Currently, the workaround is just use `git-mv` on each submodules manually.
+
+I made a testing shell script for this. 
+
+
+```shell
+#!/bin/bash
+# This is test script for submodule path changing.
+# set -e
+USE_GIT_MV=false # USE_GIT_MV=true works correctly
+cd /tmp/
+mkdir -p test_sub/{archive/projects,projects/2023_01_personal_some_cool_project,resources}
+cd test_sub
+git init
+git annex init
+git annex version
+cd projects/2023_01_personal_some_cool_project
+
+echo NOTE: Add some data and sub-projects for testing
+touch README.md 01_dataset_lists.csv 09_reports.md
+git submodule add https://github.com/Lykos153/git-annex-remote-googledrive.git
+git submodule add https://github.com/alpernebbi/git-annex-adapter.git
+git submodule status # check it
+git annex assist
+echo
+
+echo NOTE: I think that the projects are need to be changed "01_Projects" for sorting order.
+cd /tmp/test_sub
+if $USE_GIT_MV; then
+    git mv projects 01_Projects
+else
+    # NOTE: Just rename file makes submodules broken. directory depth is same
+    mv projects 01_Projects
+    (
+        cd 01_Projects/2023_01_personal_some_cool_project/git-annex-adapter
+        git status # it shows 'No such file or directory'
+    )
+fi
+git submodule status # check it
+git annex assist
+echo
+
+echo NOTE: I want to change some submodule name is for referencing just for work.
+cd /tmp/test_sub/01_Projects/2023_01_personal_some_cool_project
+if $USE_GIT_MV; then
+    git mv git-annex-adapter ref_sample_adapter_code
+else
+    # NOTE: Just rename file makes submodules broken. directory depth is same
+    mv git-annex-adapter ref_sample_adapter_code
+fi
+git submodule status # check it
+git annex assist
+echo
+
+echo NOTE: Now, i want to archive my old projects.
+cd /tmp/test_sub
+if $USE_GIT_MV; then
+    git mv 01_Projects/2023_01_personal_some_cool_project archive/projects/2023_01_personal_some_cool_project
+else
+    # NOTE: Just rename file makes submodules broken. directory depth is changed
+    mv 01_Projects/2023_01_personal_some_cool_project archive/projects/2023_01_personal_some_cool_project
+fi
+git submodule status # check it
+git annex assist
+echo
+
+echo test done
+```
