@@ -70,4 +70,6 @@ git annex assist
 echo
 
 echo test done
-```
+``
+
+> [[wontfix|done]] as it is out of scope --[[Joey]]`
