@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="lell"
+ avatar="http://cdn.libravatar.org/avatar/4c4138a71d069e290240a3a12367fabe"
+ subject="Using fsck is an option?"
+ date="2024-02-22T07:47:36Z"
+ content="""
+Hi, this worked for me:
+
+```
+~$ mkdir ~/test/gta
+~$ cd ~/test/gta
+~/test/gta$ git init
+
+Initialized empty Git repository in /home/lell/test/gta/.git/
+
+~/test/gta$ git annex init
+~/test/gta$ git annex add file
+~/test/gta$ git commit -m test
+
+~/test/gta$ cd ..
+~/test$ git clone a b
+
+~/test$ cd gta/
+~/test/gta$ cd ..
+~/test$ git clone gta gta2
+~/test$ cd gta2
+
+~/test/gta2$ mkdir .git/annex/objects
+~/test/gta2$ cp -r ../gta/.git/annex/objects/* .git/annex/objects/
+~/test/gta2$ cp -r ../gta/.git/annex/objects .git/annex/objects
+~/test/gta2$ git annex list   # it does not yet know that the file is now also here
+here
+|origin
+||web
+|||bittorrent
+||||
+_X__ file
+~/test/gta2$ git annex fsck
+fsck file (fixing location log) (checksum...) ok
+(recording state in git...)
+$ git annex list   # now it knows
+here
+|origin
+||web
+|||bittorrent
+||||
+XX__ file
+```
+
+"""]]
