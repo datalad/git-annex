@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: comment 6"""
+ date="2024-02-22T16:50:34Z"
+ content="""
+@TTTTAAAx kindly posted a full example of their problem, 
+which I've moved to 
+[[todo/detect_and_handle_submodules_after_path_changed_by_mv]].
+
+I do think that using `git mv` to rename directories that contain
+submodules is the right way to avoid that kind of problem. 
+Note that renaming such a directory without using git followed by running
+`git add` on the new directory has the same behavior as running
+`git-annex assist` does. This is not a git-annex problem, but I think it
+could be considered a git problem; git could make `git add` of a moved
+submodule do the right thing.
+"""]]
