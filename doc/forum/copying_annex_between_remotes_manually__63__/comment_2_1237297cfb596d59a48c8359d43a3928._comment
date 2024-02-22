@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="lell"
+ avatar="http://cdn.libravatar.org/avatar/4c4138a71d069e290240a3a12367fabe"
+ subject="comment 2"
+ date="2024-02-22T07:49:58Z"
+ content="""
+In the example above, of course I forgot one line that creates the file \"file\"  in the repository gta, e.g. like this `echo test > file`
+"""]]
