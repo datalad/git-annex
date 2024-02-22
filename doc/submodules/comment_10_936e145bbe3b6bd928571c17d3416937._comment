@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="TTTTAAAx"
+ avatar="http://cdn.libravatar.org/avatar/9edd4b69b9f9fc9b8c1cb8ecd03902d5"
+ subject="Datalad cannot detect submodule path changed on disk"
+ date="2024-02-22T08:34:47Z"
+ content="""
+> Sounds like you might want to use datalad, which is built around git annex and where submodules are a first-class citizen. 
+
+Datalad handles submodules as subdatasets and add python code layers on it to handle datasets(e.g. dedup submodules). But it doesn't detect the submodules path changed like git.
+
+So, it doesn't do my needs sadly.
+"""]]
