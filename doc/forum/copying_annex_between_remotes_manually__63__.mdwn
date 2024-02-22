@@ -1,0 +1,5 @@
+I'm currently trying to migrate a git-annex repository to a new machine, one of whose remotes is the one from [this issue](https://git-annex.branchable.com/bugs/apparent_hang_in_git-annex-smudge/). I determined that the root cause there seemed to be under git rather than git-annex; in particular, any whole-repository operation would take multiple days to execute, for unclear reasons. Pulling the commit data to a new repository seems to fix this.
+
+I'm now trying to move all the annexed data from the original, broken remote to the new one. The default option here would be `git annex move`. However, when I run this, it apparently does some git operation for every key moved, taking hours to days; there are tens of thousands of keys, so this is obviously unworkable.
+
+Is there a way to simply mass-move the annexed data into the new repo, via rsync or similar, and then update the new repo's metadata all at once? The state of the old repository does not matter, since I intend to discard it as soon as this migration is done.

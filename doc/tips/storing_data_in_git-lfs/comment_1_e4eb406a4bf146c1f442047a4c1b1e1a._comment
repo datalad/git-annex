@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="beryllium@5bc3c32eb8156390f96e363e4ba38976567425ec"
+ nickname="beryllium"
+ avatar="http://cdn.libravatar.org/avatar/62b67d68e918b381e7e9dd6a96c16137"
+ subject="Colocating git-annex and git-lfs"
+ date="2024-02-22T02:55:25Z"
+ content="""
+Is it possible to add git-lfs capabilities to a git-annex, without using a special remote?
+
+I guess what I want is, are there any reasonable instructions to graft the hooks so that this is possible:
+
+
+	$ git init
+	$ git-lfs install
+	$ git-annex init
+
+And you can alternate between something like below:
+
+	$ git-lfs track \"*.exif_thumbnail.*\"
+	$ git-annex add IMG_0001.jpg
+	$ git add IMG_0001.exif_thumbnail.jpg
+
+Obviously this betrays the scenario of extracting thumbnails from the EXIF header and storing them alongside, as another form of metadata. If there's a better workflow to this, that would be appreciated too.
+"""]]
