@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="tchen_annex"
+ avatar="http://cdn.libravatar.org/avatar/758a07ad226fbf59a287e6cbff1c11ed"
+ subject="this also fails with encryption=none"
+ date="2024-02-25T01:08:43Z"
+ content="""
+One potentially useful info. A bit more experimentation shows that this fails with encryption=none as well. Seems to be purely a rsync issue.
+"""]]
