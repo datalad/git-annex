@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="tchen_annex"
+ avatar="http://cdn.libravatar.org/avatar/758a07ad226fbf59a287e6cbff1c11ed"
+ subject="ignore, upgrading to v10.20231227 solved this issue"
+ date="2024-02-25T17:34:31Z"
+ content="""
+Okay, I tried the latest version of git-annex via git-annex-standalone package in NeuroDebian deb-src. Problem solved with latest version. Please this error report.
+"""]]
