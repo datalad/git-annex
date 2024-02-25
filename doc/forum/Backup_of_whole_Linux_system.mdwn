@@ -1,4 +1,4 @@
-If I would want to backup my whole Linux system, what's unclear or maybe missing from Git Annex:
+If I would want to back up my whole Linux system, what's unclear or maybe missing from Git Annex:
 
 I'm not exactly sure about the best way to import the files. Should I just copy over all the files (e.g. using `cp -ax /* .`, or maybe `rsync -a /* .` or so) to the repo, and then use `git annex add`? (Let's skip `/dev` and maybe other special files for now.)
 
