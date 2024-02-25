@@ -1,0 +1,84 @@
+Hi,
+
+I am running into a bizarre testremote failure (with an rsync+encryption=shared special remote). 
+
+Here are the exact steps to replicate:
+
+    $ mkdir test
+    $ cd test/
+    $ git init
+    $ git annex init
+    $ git annex initremote newremote type=rsync rsyncurl=10.0.0.100:/backup/annex-enc/test encryption=shared
+    $ git annex testremote newremote
+
+    Here is what I will get
+
+    testremote newremote (generating test keys...) Remote Tests
+      unavailable remote
+        removeKey:                                       OK
+        storeKey:                                        OK
+        checkPresent:                                    OK
+        retrieveKeyFile:                                 OK
+        retrieveKeyFileCheap:                            OK
+      key size Just 1048576; remote chunksize=0 encryption=none
+        removeKey when not present:                      OK (1.51s)
+        present False:                                   OK (0.62s)
+        storeKey:                                        OK (1.10s)
+        present True:                                    FAIL (0.62s)
+          ./Command/TestRemote.hs:290:
+          failed
+        storeKey when already present:                   OK (0.37s)
+        present True:                                    FAIL (0.63s)
+          ./Command/TestRemote.hs:290:
+          failed
+        retrieveKeyFile:                                 rsync: change_dir "/backup/annex-enc/test/242/793/'SHA256E-s1048576--26a83e410604bf3f0f9288c14b39387ce244a832a02b192c81a97a36a0e42296.this-is-a-test-key" failed: No such file or directory (2)
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1865) [Receiver=3.2.7]
+    rsync: [Receiver] write error: Broken pipe (32)
+    rsync exited 23
+    rsync: change_dir "/backup/annex-enc/test/W4/4g/'SHA256E-s1048576--26a83e410604bf3f0f9288c14b39387ce244a832a02b192c81a97a36a0e42296.this-is-a-test-key" failed: No such file or directory (2)
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1865) [Receiver=3.2.7]
+    rsync: [Receiver] write error: Broken pipe (32)
+    rsync exited 23
+    FAIL (0.61s)
+          ./Command/TestRemote.hs:290:
+          failed
+        fsck downloaded object:                          OK
+        retrieveKeyFile resume from 33%:                 FAIL
+          Exception: .git/annex/objects/W4/4g/SHA256E-s1048576--26a83e410604bf3f0f9288c14b39387ce244a832a02b192c81a97a36a0e42296.this-is-a-test-key/SHA256E-s1048576--26a83e410604bf3f0f9288c14b39387ce244a832a02b192c81a97a36a0e42296.this-is-a-test-key: openBinaryFile: does not exist (No such file or directory)
+        fsck downloaded object:                          OK
+        retrieveKeyFile resume from 0:                   rsync: change_dir "/backup/annex-enc/test/242/793/'SHA256E-s1048576--26a83e410604bf3f0f9288c14b39387ce244a832a02b192c81a97a36a0e42296.this-is-a-test-key" failed: No such file or directory (2)
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1865) [Receiver=3.2.7]
+    rsync: [Receiver] write error: Broken pipe (32)
+    rsync exited 23
+    rsync: change_dir "/backup/annex-enc/test/W4/4g/'SHA256E-s1048576--26a83e410604bf3f0f9288c14b39387ce244a832a02b192c81a97a36a0e42296.this-is-a-test-key" failed: No such file or directory (2)
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1865) [Receiver=3.2.7]
+    rsync: [Receiver] write error: Broken pipe (32)
+    rsync exited 23
+    FAIL (0.61s)
+          ./Command/TestRemote.hs:290:
+          failed
+        fsck downloaded object:                          OK
+        retrieveKeyFile resume from end:                 cp: cannot stat '.git/annex/objects/W4/4g/SHA256E-s1048576--26a83e410604bf3f0f9288c14b39387ce244a832a02b192c81a97a36a0e42296.this-is-a-test-key/SHA256E-s1048576--26a83e410604bf3f0f9288c14b39387ce244a832a02b192c81a97a36a0e42296.this-is-a-test-key': No such file or directory
+
+This will repeat again and again (with different remote chunksize?) until finally it hangs where I would have to Ctrl+C it to force it to abort.
+
+I am using Ubuntu 22.04.3 LTS (Jammy) with the following git annex version:
+
+    $ git annex version
+    git-annex version: 8.20210223
+    build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+    dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.26 DAV-1.3.4 feed-1.3.0.1 ghc-8.8.4 http-client-0.6.4.1 persistent-sqlite-2.10.6.2 torrent-10000.1.1 uuid-1.3.13 yesod-1.6.1.0
+    key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+    remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+    operating system: linux x86_64
+    supported repository versions: 8
+    upgrade supported from repository versions: 0 1 2 3 4 5 6 7
+    local repository version: 8
+
+I can't see why git-annex rsync would be failing. I can do normal rsync via command line w/o any issues.
+
+Any help would be appreciated.
+
+
+
+
