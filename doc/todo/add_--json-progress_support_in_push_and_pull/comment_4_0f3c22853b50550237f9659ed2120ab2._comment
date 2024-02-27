@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-02-27T17:22:52Z"
+ content="""
+Rather than using git-annex push/pull/sync with a complex json format,
+complications of knowing what remote it's acting on, etc, a program can
+simply use git-annex get/copy/drop/import/export to do the same operations,
+all of which already support json.
+
+> I'm OK with leaving Git operations silent for now.
+
+In the case where the git operation needs to prompt for a password, this
+would leave the user with a password prompt with no prior indication of what is
+being done. I don't think that's acceptable.
+
+> Please improve the end-user experience by devising a way to inform the
+> user git-annex is making progress with JSON.
+
+> I hope you find this information helpful to improve the end-user experience.
+> Let me know if you have any questions.
+
+Yikes, that almost triggered my ChatGPT detector.
+"""]]
