@@ -1,0 +1,29 @@
+A remote like the directory special remote can have objects that have not
+been fully transferred to it by an interrupted copy, that linger until the
+copy is re-run and the content gets fully sent to the remote. It would be
+good if `git-annex unused` could find and clean up such things, like it
+does for incomplete transfers into a git-annex repository.
+
+In the directory special remote, these are files named "tmp/$key/$key".
+
+This would need to be an extension to the remote interface to add an action
+to find when a key has such a file, and an action to delete one of them.
+
+A problem is that any such file might actually still be in the process
+of being sent, perhaps from a different repository than the one where
+`git-annex unused` is being run. So deleting such a file could cause that
+transfer to fail. This problem seems unavoidable generally.
+
+----
+
+It's also possible for a special remote to get keys stored in it which
+git-annex does not know about. For example, in a temporary clone of the
+git-annex repository, add a new file. Send it to the special remote. Then
+delete the temporary clone.
+
+`git-annex unused --from` can't detect those keys, because it can only ask
+the special remote about presence of keys that it knows about.
+
+Might it be possible to solve both problems together? Eg, add an action
+that has the special remote list all keys and partial keys present in it.
+--[[Joey]]

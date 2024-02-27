@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-02-27T16:16:31Z"
+ content="""
+That file was created by a git-annex copy to the special remote that was
+interrupted before it finished. It's safe to remove it.
+
+`git-annex unused` can't detect these kinds of things on special remotes
+(though it can in git-annex repositories). I do think it would be good if
+it were able to. Opened [[todo/improve_unused_for_special_remotes]].
+"""]]
