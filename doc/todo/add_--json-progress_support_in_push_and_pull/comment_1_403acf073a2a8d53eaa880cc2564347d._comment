@@ -5,7 +5,8 @@
  content="""
 They don't have --json, which would be a necessary first step.
 
-This was considered in [[this_todo|todo/--json_for_unannex__and_ideally_any_other_command_]]
+This was considered in
+[this_todo](https://git-annex.branchable.com/todo/--json_for_unannex__and_ideally_any_other_command_/)
 when adding --json to many commands, and the thinking for not adding it
 was:
 
