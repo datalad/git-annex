@@ -1,0 +1,15 @@
+Should git-annex unused work on a directory special remote? I tried the following:
+
+	$ git-annex unused --from SanDisk64GB4Torrented
+	unused SanDisk64GB4Torrented (checking for unused data...) ok
+	$ 
+
+However, despite git-annex list --in SanDisk64GB4Torrented demonstrating that there were no annex files in it, the size of the directory was still large. And I can see a file in tmp/ of that annex's directory:
+
+	$ ls tmp/
+	SHA256E-s2351316992--bdfba5df0bd72cffdb398fe885d9e36d052617647c0ae4fd0579a8fc785c95ba.iso
+	$ 
+
+Am I right to think that the file being present in tmp/ should cause git-annex unused to list it?
+
+I'm assuming it's fine to just remove the file. But I guess this might be a bug... so I'm putting it out there just in case.
