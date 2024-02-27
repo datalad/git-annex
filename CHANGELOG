@@ -1,4 +1,4 @@
-git-annex (10.20240130) UNRELEASED; urgency=medium
+git-annex (10.20240227) upstream; urgency=medium
 
   * importfeed: Added --scrape option, which uses yt-dlp to screen scrape
     the equivilant of an RSS feed.
@@ -16,7 +16,7 @@ git-annex (10.20240130) UNRELEASED; urgency=medium
     (except when a commit is made in a view, which changes metadata).
   * Pass --no-warnings to yt-dlp.
 
- -- Joey Hess <id@joeyh.name>  Mon, 29 Jan 2024 15:59:33 -0400
+ -- Joey Hess <id@joeyh.name>  Tue, 27 Feb 2024 12:58:30 -0400
 
 git-annex (10.20240129) upstream; urgency=medium
 
