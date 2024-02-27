@@ -1,3 +1,9 @@
+git-annex (10.20240228) UNRELEASED; urgency=medium
+
+  * Added dependency on unbounded-delays.
+
+ -- Joey Hess <id@joeyh.name>  Tue, 27 Feb 2024 13:07:10 -0400
+
 git-annex (10.20240227) upstream; urgency=medium
 
   * importfeed: Added --scrape option, which uses yt-dlp to screen scrape
