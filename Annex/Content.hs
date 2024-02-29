@@ -439,7 +439,7 @@ moveAnnex key af src = ifM (checkSecureHashes' key)
 	alreadyhave = liftIO $ R.removeLink src
 
 checkSecureHashes :: Key -> Annex (Maybe String)
-checkSecureHashes key = ifM (Backend.isCryptographicallySecure key)
+checkSecureHashes key = ifM (Backend.isCryptographicallySecureKey key)
 	( return Nothing
 	, ifM (annexSecureHashesOnly <$> Annex.getGitConfig)
 		( return $ Just $ "annex.securehashesonly blocked adding " ++ decodeBS (formatKeyVariety (fromKey keyVariety key)) ++ " key"

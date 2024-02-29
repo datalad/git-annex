@@ -32,7 +32,8 @@ backend = Backend
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just removeProblemChars
 	, isStableKey = const True
-	, isCryptographicallySecure = pure False
+	, isCryptographicallySecure = False
+	, isCryptographicallySecureKey = const (pure False)
 	}
 
 {- The key includes the file size, modification time, and the

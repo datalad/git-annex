@@ -575,7 +575,7 @@ addSecureHash = addLimit $ Right limitSecureHash
 
 limitSecureHash :: MatchFiles Annex
 limitSecureHash = MatchFiles
-	{ matchAction = const $ checkKey isCryptographicallySecure
+	{ matchAction = const $ checkKey isCryptographicallySecureKey
 	, matchNeedsFileName = False
 	, matchNeedsFileContent = False
 	, matchNeedsKey = True

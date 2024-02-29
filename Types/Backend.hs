@@ -2,7 +2,7 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -33,8 +33,11 @@ data BackendA a = Backend
 	-- Checks if a key is known (or assumed) to always refer to the
 	-- same data.
 	, isStableKey :: Key -> Bool
+	-- Are all keys using this backend verified using a cryptographically
+	-- secure hash?
+	, isCryptographicallySecure :: Bool
 	-- Checks if a key is verified using a cryptographically secure hash.
-	, isCryptographicallySecure :: a Bool
+	, isCryptographicallySecureKey :: Key -> a Bool
 	}
 
 instance Show (BackendA a) where

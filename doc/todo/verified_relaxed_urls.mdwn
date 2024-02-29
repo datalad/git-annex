@@ -85,8 +85,8 @@ cryptographically secure hashes were recorded for a VURL. But of course,
 which hashes are considered secure can change. Still, let's start by
 only allowing currently secure hashes to be used for VURLs. This way,
 when there are multiple hashes recorded for a VURL, they will all be
-cryptographically secure, and so the VURL can have
-`isCryptographicallySecure = True`. If any of the hashes later becomes
+cryptographically secure normally, and so the VURL can be considered
+cryptographically secure itself. If any of the hashes later becomes
 broken, the VURL will no longer be treated as cryptographically secure,
 because the broken hash can be used to verify its content.
 In that case, the user would probably just migrate to a hash-based key,

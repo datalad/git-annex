@@ -81,7 +81,9 @@ genBackend hash = Backend
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
 	, isStableKey = const True
-	, isCryptographicallySecure = pure $ cryptographicallySecure hash
+	, isCryptographicallySecure = cryptographicallySecure hash
+	, isCryptographicallySecureKey = const $ pure $
+		cryptographicallySecure hash
 	}
 
 genBackendE :: Hash -> Backend

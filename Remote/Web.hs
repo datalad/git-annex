@@ -171,10 +171,9 @@ downloadKey urlincludeexclude key _af dest p vc =
 		-- Make sure to pick a backend that is cryptographically
 		-- secure.
 		db <- defaultBackend
-		b <- ifM (isCryptographicallySecure' db)
-			( pure db
-			, pure defaultHashBackend
-			)
+		let b = if isCryptographicallySecure db
+			then db
+			else defaultHashBackend
 		showSideAction (UnquotedString descChecksum)
 		(hashk, _) <- genKey ks nullMeterUpdate b
 		unless (hashk `elem` eks) $

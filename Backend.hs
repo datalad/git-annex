@@ -18,9 +18,11 @@ module Backend (
 	lookupBuiltinBackendVariety,
 	maybeLookupBackendVariety,
 	isStableKey,
+	isCryptographicallySecureKey,
 	isCryptographicallySecure,
-	isCryptographicallySecure',
 ) where
+
+import qualified Data.Map as M
 
 import Annex.Common
 import qualified Annex
@@ -29,18 +31,12 @@ import Types.Key
 import Types.KeySource
 import qualified Types.Backend as B
 import Utility.Metered
-
--- When adding a new backend, import it here and add it to the builtinList.
-import qualified Backend.Hash
-import qualified Backend.WORM
-import qualified Backend.URL
-import qualified Backend.External
-
-import qualified Data.Map as M
+import Backend.Variety
+import qualified Backend.VURL
 
 {- Built-in backends. Does not include externals. -}
 builtinList :: [Backend]
-builtinList = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
+builtinList = regularBackendList ++ Backend.VURL.backends
 
 {- The default hashing backend. This must use a cryptographically secure
  - hash. -}
@@ -107,25 +103,24 @@ lookupBuiltinBackendVariety :: KeyVariety -> Backend
 lookupBuiltinBackendVariety v = fromMaybe (giveup (unknownBackendVarietyMessage v)) $
 	maybeLookupBuiltinBackendVariety v
 
-maybeLookupBackendVariety :: KeyVariety -> Annex (Maybe Backend)
-maybeLookupBackendVariety (ExternalKey s hasext) =
-	Just <$> Backend.External.makeBackend s hasext
-maybeLookupBackendVariety v = 
-	pure $ M.lookup v varietyMap
-
 maybeLookupBuiltinBackendVariety :: KeyVariety -> Maybe Backend
 maybeLookupBuiltinBackendVariety v = M.lookup v varietyMap
 
+maybeLookupBackendVariety :: KeyVariety -> Annex (Maybe Backend)
+maybeLookupBackendVariety v = maybeLookupBackendVarietyMap v varietyMap
+
 varietyMap :: M.Map KeyVariety Backend
-varietyMap = M.fromList $ zip (map B.backendVariety builtinList) builtinList
+varietyMap = makeVarietyMap builtinList
 
 isStableKey :: Key -> Annex Bool
 isStableKey k = maybe False (`B.isStableKey` k) 
 	<$> maybeLookupBackendVariety (fromKey keyVariety k)
 
-isCryptographicallySecure :: Key -> Annex Bool
-isCryptographicallySecure k = maybe (pure False) isCryptographicallySecure'
+isCryptographicallySecureKey :: Key -> Annex Bool
+isCryptographicallySecureKey k = maybe 
+	(pure False)
+	(\b -> B.isCryptographicallySecureKey b k)
 	=<< maybeLookupBackendVariety (fromKey keyVariety k)
 
-isCryptographicallySecure' :: Backend -> Annex Bool
-isCryptographicallySecure' = B.isCryptographicallySecure
+isCryptographicallySecure :: Backend -> Bool
+isCryptographicallySecure = B.isCryptographicallySecure

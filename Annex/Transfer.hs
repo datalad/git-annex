@@ -42,7 +42,7 @@ import Types.WorkerPool
 import Annex.WorkerPool
 import Annex.TransferrerPool
 import Annex.StallDetection
-import Backend (isCryptographicallySecure)
+import Backend (isCryptographicallySecureKey)
 import Types.StallDetection
 import qualified Utility.RawFilePath as R
 
@@ -276,10 +276,10 @@ runTransferrer sd r k afile retrydecider direction _witness =
 preCheckSecureHashes :: Observable v => Key -> Maybe Backend -> Annex v -> Annex v
 preCheckSecureHashes k meventualbackend a = case meventualbackend of
 	Just eventualbackend -> go
-		(Types.Backend.isCryptographicallySecure eventualbackend)
+		(pure (Types.Backend.isCryptographicallySecure eventualbackend))
 		(Types.Backend.backendVariety eventualbackend)
 	Nothing -> go
-		(isCryptographicallySecure k)
+		(isCryptographicallySecureKey k)
 		(fromKey keyVariety k)
   where
 	go checksecure variety = ifM checksecure
