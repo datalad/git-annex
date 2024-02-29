@@ -23,7 +23,20 @@ backendVURL :: Backend
 backendVURL = Backend
 	{ backendVariety = VURLKey
 	, genKey = Nothing
-	, verifyKeyContent = Nothing -- TODO
+	, verifyKeyContent = Just $ \k f -> do
+		equivkeys k >>= \case
+			-- Normally there will always be an key
+			-- recorded when a VURL's content is available,
+			-- because downloading the content from the web in
+			-- the first place records one.
+			[] -> return False
+			l -> do
+				let check ek = getbackend ek >>= \case
+					Nothing -> pure False
+					Just b -> case verifyKeyContent b of
+						Just verify -> verify ek f
+						Nothing -> pure False
+				anyM check l
 	, verifyKeyContentIncrementally = Nothing -- TODO
 	, canUpgradeKey = Nothing
 	, fastMigrate = Nothing

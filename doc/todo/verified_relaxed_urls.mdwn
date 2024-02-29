@@ -11,6 +11,17 @@ verify the content.
 The web special remote can hash the content as it's downloading it from the
 web, and record the resulting hash-based key.
 
+> Status: This is implemented and working, but verifyKeyContentIncrementally
+> needs to be implemented. Until it is, VURLs will not be as efficient 
+> as they could be.
+> 
+> Also `git-annex addurl --relaxed --verifiable` followed by `git-annex get`
+> currently does 2 checksums in the get stage; it should only do one.
+> Re-check this after implementing incremental verification.
+> 
+> It's not yet possible to migrate an URL key to a VURL key. Should
+> be easy to add support for this. --[[Joey]]
+
 ## handling upgrades
 
 A repository that currently contains the content of a relaxed url needs to
@@ -69,6 +80,12 @@ download on the fly). Then git-annex would take
 care of recording the hash-based key. The external special remote interface
 could be extended to include that.
 
+> For now, gonna punt on this. It would be possible to support other
+> special remotes later, but implemented it in the web special remote only
+> for now. When using `git-annex addurl --verified` with others, it creates
+> a VURL, but never generates a hash key, so the VURL works just like an
+> URL key.
+
 ## hash-based key choice
 
 Should annex.backend gitconfig be used to pick which hash-based key to use?
@@ -76,6 +93,11 @@ The risk is that config changes and several different hash-based keys get
 recorded for a VURL. Not really a problem, but would increase the
 size of the git-annex branch unncessarily, and require extra work when
 verifying the key.)
+
+> It will let annex.backend gitconfig and --backend be used,
+> but it didn't seem worth supporting annex.backend gitattribute, or really
+> even appropriate to since this is not really related to any particular
+> work tree file. --[[Joey]]
 
 What if annex.backend uses WORM or something that is not hash-based?
 Seems it ought to fall back to SHA256 or something then.
@@ -103,4 +125,11 @@ compared with migrating the key to the desired hash backend.
 Does seem to be some chance this could help implementing 
 [[wishlist_degraded_files]].
 
-[[!tag projects/datalad/potential]]
+## security
+
+There is the potential for a loop, where a VURL has recorded an equivilant
+key what is the same VURL, or another VURL in a loop. Leading to a crafted
+git-annex branch that DOSes git-annex.
+
+To avoid this, any VURL in equivilant keys will be ignored.
+
