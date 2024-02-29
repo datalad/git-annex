@@ -76,4 +76,4 @@ Or by complicating Remote.Helper.ExportImport further..
 --[[Joey]]
 
 [[!tag confirmed]]
-[[!tag projects/datalad/potential]]
+[[!tag projects/dandi/potential]]
