@@ -506,7 +506,7 @@ gitAnnexWebCertificate r = fromRawFilePath $ gitAnnexDir r P.</> "certificate.pe
 gitAnnexWebPrivKey :: Git.Repo -> FilePath
 gitAnnexWebPrivKey r = fromRawFilePath $ gitAnnexDir r P.</> "privkey.pem"
 
-{- .git/annex/feeds/ is used to record per-key (url) state by importfeeds -}
+{- .git/annex/feeds/ is used to record per-key (url) state by importfeed -}
 gitAnnexFeedStateDir :: Git.Repo -> RawFilePath
 gitAnnexFeedStateDir r = P.addTrailingPathSeparator $
 	gitAnnexDir r P.</> "feedstate"

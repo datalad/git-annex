@@ -54,6 +54,10 @@ in `.gitattributes`:
   `BLAKE2SP224E`, `BLAKE2SP256E`
   -- Fast [Blake2 hash](https://blake2.net/) variants optimised for 
   8-way CPUs.
+  `VURL` -- This is like an `URL` (see below) but the content can
+  be verified with a cryptographically secure checksum that is
+  recorded in the git-annex branch. It's generated when using 
+  eg `git-annex addurl --fast --verifiable`.
 
 ## non-cryptograpgically secure backends
 
@@ -68,10 +72,11 @@ content of an annexed file remains unchanged.
   files or slow systems.
 * `URL` -- This is a key that is generated from the url to a file.
   It's generated when using eg, `git annex addurl --fast`, when the file
-  content is not available for hashing.  The key may not contain the full
-  URL; for long URLs, part of the URL may be represented by a checksum.
+  content is not available for hashing.  
+  The key may not contain the full URL; for long URLs, part of the URL may be
+  represented by a checksum.  
   The URL key may contain `&` characters; be sure to quote the key if
-  passing it to a shell script.  The URL-backend key is distinct from URLs/URIs
+  passing it to a shell script. These types of keys are distinct from URLs/URIs
   that may be attached to a key (using any backend) indicating the key's location
   on the web or in one of [[special_remotes]].
 * `GIT` -- This is used internally by git-annex when exporting trees

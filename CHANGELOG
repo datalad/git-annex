@@ -1,5 +1,9 @@
 git-annex (10.20240228) UNRELEASED; urgency=medium
 
+  * addurl, importfeed: Added --verifiable option, which improves
+    the safety of --fast or --relaxed by letting the content of
+    annexed files be verified with a checksum that is calculated
+    on a later download from the web.
   * Added dependency on unbounded-delays.
 
  -- Joey Hess <id@joeyh.name>  Tue, 27 Feb 2024 13:07:10 -0400

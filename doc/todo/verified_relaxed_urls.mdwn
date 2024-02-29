@@ -24,12 +24,34 @@ the web with its hash recorded, but has since gotten corrupted.
 
 Seems that the only possible way to resolve this problem is to change to a
 new type of url key, that is known to always have its hash recorded on
-download from the web. (Call this a "dynamic" url key.)
+download from the web. (Call this a verifiable url key: a VURL.)
 And handle all existing relaxed url keys as before.
 
-That would leave it up to the user to migrate their relaxed url keys to
-dynamic urls keys, if desired. Now that distributed migration is
+That would leave it up to the user to migrate their URL keys to
+VURL keys, if desired. Now that distributed migration is
 implemented, that seems sufficiently easy.
+
+## addurl --fast 
+
+Using addurl --fast rather than --relaxed records the size but doesn't
+hash. So it has the same problem that data corruption can go unnoticed,
+only the data corruption has to involve bit flips and not truncation.
+
+So it seems that --fast ought to also be handled. The difference being that
+an url added with --fast is expected to always be the same on re-download
+from the web, while an url added with --relaxed may change its content on
+re-download from the web while being still considered the same object.
+
+This can also use a VURL key, but include the size in it. When downloading
+a sized VURL, the web special remote will hash the content, and verify
+that either no hash has been recorded before (and record the hash when the
+size matches), or that it matches the previously recorded hash.
+
+Note that, if an url is added with --fast and that gets committed and
+pulled by another repo, and then later both repos download the content
+from the web, it would be possible for the web to serve up different
+content to the two, and in that case either hash would be treated as
+valid.
 
 ## other special remotes
 
@@ -37,10 +59,11 @@ If the web special remote is what takes care of hashing the content on
 download and recording the hash-based key, what about other special remotes
 that claim an url?
 
-This could also be implemented in the bittorrent special remote, but what
+This could also be implemented in the bittorrent special remote
+(though ), but what
 about external special remotes?
 
-An alternative would be to add a downloadDynamicUrl that is called instead
+An alternative would be to add a downloadVerifiedUrl that is called instead
 of retrieveKeyFile and returns a hash-based key (allowing hashing the
 download on the fly). Then git-annex would take
 care of recording the hash-based key. The external special remote interface
@@ -50,9 +73,25 @@ could be extended to include that.
 
 Should annex.backend gitconfig be used to pick which hash-based key to use?
 The risk is that config changes and several different hash-based keys get
-recorded for a dynamic url. Not really a problem, but would increase the
+recorded for a VURL. Not really a problem, but would increase the
 size of the git-annex branch unncessarily, and require extra work when
 verifying the key.)
+
+What if annex.backend uses WORM or something that is not hash-based?
+Seems it ought to fall back to SHA256 or something then.
+
+To support annex.securehashesonly it would be good if only
+cryptographically secure hashes were recorded for a VURL. But of course,
+which hashes are considered secure can change. Still, let's start by
+only allowing currently secure hashes to be used for VURLs. This way,
+when there are multiple hashes recorded for a VURL, they will all be
+cryptographically secure, and so the VURL can have
+`isCryptographicallySecure = True`. If any of the hashes later becomes
+broken, the VURL will no longer be treated as cryptographically secure,
+because the broken hash can be used to verify its content.
+In that case, the user would probably just migrate to a hash-based key,
+although perhaps something VURL-specific could be built to upgrade its
+hashes.
 
 ## use for other types of keys
 

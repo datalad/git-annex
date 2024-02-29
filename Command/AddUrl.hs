@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -62,6 +62,7 @@ data AddUrlOptions = AddUrlOptions
 
 data DownloadOptions = DownloadOptions
 	{ relaxedOption :: Bool
+	, verifiableOption :: Bool
 	, rawOption :: Bool
 	, noRawOption :: Bool
 	, rawExceptOption :: Maybe (DeferredParse Remote)
@@ -96,7 +97,12 @@ parseDownloadOptions :: Bool -> Parser DownloadOptions
 parseDownloadOptions withfileoptions = DownloadOptions
 	<$> switch
 		( long "relaxed"
-		<> help "skip size check"
+		<> help "accept whatever content is downloaded from web even if it changes"
+		)
+	<*> switch
+		( long "verifiable"
+		<> short 'V'
+		<> help "improve later verification of --fast or --relaxed content"
 		)
 	<*> switch
 		( long "raw"
@@ -215,7 +221,7 @@ performRemote addunlockedmatcher r o uri file sz = lookupKey file >>= \case
 
 downloadRemoteFile :: AddUnlockedMatcher -> Remote -> DownloadOptions -> URLString -> RawFilePath -> Maybe Integer -> Annex (Maybe Key)
 downloadRemoteFile addunlockedmatcher r o uri file sz = checkCanAdd o file $ \canadd -> do
-	let urlkey = Backend.URL.fromUrl uri sz
+	let urlkey = Backend.URL.fromUrl uri sz (verifiableOption o)
 	createWorkTreeDirectory (parentDir file)
 	ifM (Annex.getRead Annex.fast <||> pure (relaxedOption o))
 		( do
@@ -344,7 +350,7 @@ downloadWeb :: AddUnlockedMatcher -> DownloadOptions -> URLString -> Url.UrlInfo
 downloadWeb addunlockedmatcher o url urlinfo file =
 	go =<< downloadWith' downloader urlkey webUUID url file
   where
-	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing
+	urlkey = addSizeUrlKey urlinfo $ Backend.URL.fromUrl url Nothing (verifiableOption o)
 	downloader f p = Url.withUrlOptions $ downloadUrl False urlkey p Nothing [url] f
 	go Nothing = return Nothing
 	go (Just (tmp, backend)) = ifM (useYoutubeDl o <&&> liftIO (isHtmlFile (fromRawFilePath tmp)))
@@ -388,7 +394,7 @@ downloadWeb addunlockedmatcher o url urlinfo file =
 							warning (UnquotedString dlcmd <> " did not download anything")
 							return Nothing
 		mediaurl = setDownloader url YoutubeDownloader
-		mediakey = Backend.URL.fromUrl mediaurl Nothing
+		mediakey = Backend.URL.fromUrl mediaurl Nothing (verifiableOption o)
 		-- Does the already annexed file have the mediaurl
 		-- as an url? If so nothing to do.
 		alreadyannexed dest k = do
@@ -436,7 +442,7 @@ startingAddUrl si url o p = starting "addurl" ai si $ do
 	-- used to prevent two threads running concurrently when that would
 	-- likely fail.
 	ai = OnlyActionOn urlkey (ActionItemOther (Just (UnquotedString url)))
-	urlkey = Backend.URL.fromUrl url Nothing
+	urlkey = Backend.URL.fromUrl url Nothing (verifiableOption (downloadOptions o))
 
 showDestinationFile :: RawFilePath -> Annex ()
 showDestinationFile file = do
@@ -539,12 +545,12 @@ nodownloadWeb addunlockedmatcher o url urlinfo file
 		return Nothing
   where
 	nomedia = do
-		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo)
+		let key = Backend.URL.fromUrl url (Url.urlSize urlinfo) (verifiableOption o)
 		nodownloadWeb' o addunlockedmatcher url key file
 	usemedia mediafile = do
 		let dest = youtubeDlDestFile o file mediafile
 		let mediaurl = setDownloader url YoutubeDownloader
-		let mediakey = Backend.URL.fromUrl mediaurl Nothing
+		let mediakey = Backend.URL.fromUrl mediaurl Nothing (verifiableOption o)
 		nodownloadWeb' o addunlockedmatcher mediaurl mediakey dest
 
 youtubeDlDestFile :: DownloadOptions -> RawFilePath -> RawFilePath -> RawFilePath

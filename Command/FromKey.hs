@@ -94,7 +94,7 @@ keyOpt = either giveup id . keyOpt'
 keyOpt' :: String -> Either String Key
 keyOpt' s = case parseURIPortable s of
 	Just u | not (isKeyPrefix (uriScheme u)) ->
-		Right $ Backend.URL.fromUrl s Nothing
+		Right $ Backend.URL.fromUrl s Nothing False
 	_ -> case deserializeKey s of
 		Just k -> Right k
 		Nothing -> Left $ "bad key/url " ++ s

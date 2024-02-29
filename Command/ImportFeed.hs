@@ -283,7 +283,7 @@ startDownload addunlockedmatcher opts cache cv todownload = case location todown
 	Enclosure url -> startdownloadenclosure url
 	MediaLink linkurl -> do
 		let mediaurl = setDownloader linkurl YoutubeDownloader
-		let mediakey = Backend.URL.fromUrl mediaurl Nothing
+		let mediakey = Backend.URL.fromUrl mediaurl Nothing (verifiableOption (downloadOptions opts))
 		-- Old versions of git-annex that used quvi might have
 		-- used the quviurl for this, so check if it's known
 		-- to avoid adding it a second time.
@@ -638,7 +638,7 @@ clearFeedProblem url =
 		=<< feedState url
 
 feedState :: URLString -> Annex RawFilePath
-feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing
+feedState url = fromRepo $ gitAnnexFeedState $ fromUrl url Nothing False
 
 {- The feed library parses the feed to Text, and does not use the
  - filesystem encoding to do it, so when the locale is not unicode

@@ -42,7 +42,24 @@ be used to get better filenames.
   This is the fastest option, but it still has to access the network
   to check if the url contains embedded media. When adding large numbers
   of urls, using `--relaxed --raw` is much faster.
-  
+
+* `--verifiable` `-V`
+
+  This can be used with the `--fast` or `--relaxed` option. It improves
+  the safety of the resulting annexed file, by letting its content be
+  verified with a checksum when it is transferred between git-annex
+  repositories, as well as by things like `git-annex fsck`.
+
+  When used with --relaxed, content from the web will always be accepted,
+  even if it has changed, and the checksum recorded for later verification.
+
+  When used with --fast, the checksum is recorded the first time the
+  content is downloaded from the web. Once a checksum has been recorded,
+  subsequent downloads from the web must have the same checksum.
+
+  Note that this option currently only has an effect when using the
+  web special remote, not other special remotes that handle urls.
+
 * `--raw`
 
   Prevent special handling of urls by yt-dlp, and by bittorrent

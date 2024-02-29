@@ -37,7 +37,7 @@ resulting in the new url being downloaded to such a filename.
 
   Force downloading items it's seen before.
 
-* `--relaxed`, `--fast`, `--raw`, `--raw-except`
+* `--fast`, `--relaxed`, `--verifiable`, `--raw`, `--raw-except`
 
   These options behave the same as when using [[git-annex-addurl]](1).
 
