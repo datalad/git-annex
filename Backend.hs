@@ -124,8 +124,8 @@ isStableKey k = maybe False (`B.isStableKey` k)
 	<$> maybeLookupBackendVariety (fromKey keyVariety k)
 
 isCryptographicallySecure :: Key -> Annex Bool
-isCryptographicallySecure k = maybe False isCryptographicallySecure'
-	<$> maybeLookupBackendVariety (fromKey keyVariety k)
+isCryptographicallySecure k = maybe (pure False) isCryptographicallySecure'
+	=<< maybeLookupBackendVariety (fromKey keyVariety k)
 
-isCryptographicallySecure' :: Backend -> Bool
+isCryptographicallySecure' :: Backend -> Annex Bool
 isCryptographicallySecure' = B.isCryptographicallySecure

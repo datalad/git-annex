@@ -276,7 +276,7 @@ runTransferrer sd r k afile retrydecider direction _witness =
 preCheckSecureHashes :: Observable v => Key -> Maybe Backend -> Annex v -> Annex v
 preCheckSecureHashes k meventualbackend a = case meventualbackend of
 	Just eventualbackend -> go
-		(pure (Types.Backend.isCryptographicallySecure eventualbackend))
+		(Types.Backend.isCryptographicallySecure eventualbackend)
 		(Types.Backend.backendVariety eventualbackend)
 	Nothing -> go
 		(isCryptographicallySecure k)

@@ -31,7 +31,7 @@ backendURL = Backend
 	-- The content of an url can change at any time, so URL keys are
 	-- not stable.
 	, isStableKey = const False
-	, isCryptographicallySecure = False
+	, isCryptographicallySecure = pure False
 	}
 
 backendVURL :: Backend
@@ -48,7 +48,7 @@ backendVURL = Backend
 	-- can be more than one hash and different versions of the content.
 	-- So the content is not stable.
 	, isStableKey = const False
-	, isCryptographicallySecure = False 
+	, isCryptographicallySecure = pure False 
 	-- TODO it is when all recorded hashes are
 	}
 

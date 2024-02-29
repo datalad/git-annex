@@ -72,7 +72,7 @@ makeBackend' ebname@(ExternalBackendName bname) hasext (Right p) = do
 		, canUpgradeKey = Nothing
 		, fastMigrate = Nothing
 		, isStableKey = const isstable
-		, isCryptographicallySecure = iscryptographicallysecure
+		, isCryptographicallySecure = pure iscryptographicallysecure
 		}
 makeBackend' ebname hasext (Left _) = return $ unavailBackend ebname hasext
 
@@ -86,7 +86,7 @@ unavailBackend (ExternalBackendName bname) hasext =
 		, canUpgradeKey = Nothing
 		, fastMigrate = Nothing
 		, isStableKey = const False
-		, isCryptographicallySecure = False
+		, isCryptographicallySecure = pure False
 		}
 
 genKeyExternal :: ExternalBackendName -> HasExt -> KeySource -> MeterUpdate -> Annex Key
