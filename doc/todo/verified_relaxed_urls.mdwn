@@ -42,6 +42,8 @@ That would leave it up to the user to migrate their URL keys to
 VURL keys, if desired. Now that distributed migration is
 implemented, that seems sufficiently easy.
 
+See [[migration_to_VURL_by_default]]
+
 ## addurl --fast 
 
 Using addurl --fast rather than --relaxed records the size but doesn't

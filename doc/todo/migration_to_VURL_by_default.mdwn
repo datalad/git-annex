@@ -1,0 +1,18 @@
+`git-annex addurl --fast/--relaxed --verifiable` now uses VURL keys,
+which is an improvement over the old, un-verifiable URL keys. But users
+have to know to use it, and can have URL keys in their repository.
+
+Note that old git-annex, when in a repo with VURL keys, is still able to
+operate on them fine, even though it doesn't know what they are.
+Only fsck warns about them. So --verifiable could become the default
+reasonably soon. It's not necessary to wait for everyone to have the new
+version of git-annex.
+
+It might be good to nudge users to migrate their existing files to VURL
+eventually. Could be a fsck warning about URL keys, at some point after
+--verifiable becomes the default for addurl. Or could be a warning when
+transferring the content between repositories that it's not possible to
+verify it.
+
+Of course if users want to continue to use URL keys, that's fine. Users can
+also choose to use WORM keys if they really want to. --[[Joey]]
