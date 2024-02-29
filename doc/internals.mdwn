@@ -224,6 +224,13 @@ These log files record urls used by the
 Their format is similar to the location tracking files, but with urls
 rather than UUIDs.
 
+## `aaa/bbb/*.log.ek`
+
+These log files record other keys that are equivilant to the key
+used in the filename. This is currently used for the `VURL` backend.
+Their format is similar to the location tracking files, but with keys
+rather than UUIDs.
+
 ## `aaa/bbb/*.log.rmt`
 
 These log files are used by remotes that need to record their own state

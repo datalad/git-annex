@@ -812,6 +812,7 @@ Executable git-annex
     Logs.ContentIdentifier.Pure
     Logs.Difference
     Logs.Difference.Pure
+    Logs.EquivilantKeys
     Logs.Export
     Logs.Export.Pure
     Logs.File

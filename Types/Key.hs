@@ -134,12 +134,12 @@ buildKeyData k = byteString (formatKeyVariety (keyVariety k))
 	c ?: (Just b) = sepbefore (char7 c <> b)
 	_ ?: Nothing = mempty
 
-{- This is a strict parser for security reasons; a key
- - can contain only 4 fields, which all consist only of numbers.
+{- This is a strict parser for security reasons; in addition to keyName,
+ - a key can contain only 4 fields, which all consist only of numbers.
  - Any key containing other fields, or non-numeric data will fail
  - to parse.
  -
- - If a key contained non-numeric fields, they could be used to
+ - If a key contained other non-numeric fields, they could be used to
  - embed data used in a SHA1 collision attack, which would be a
  - problem since the keys are committed to git.
  -}

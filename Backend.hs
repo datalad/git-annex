@@ -1,6 +1,6 @@
 {- git-annex key/value backends
  -
- - Copyright 2010-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@
 module Backend (
 	builtinList,
 	defaultBackend,
+	defaultHashBackend,
 	genKey,
 	getBackend,
 	chooseBackend,
@@ -18,6 +19,7 @@ module Backend (
 	maybeLookupBackendVariety,
 	isStableKey,
 	isCryptographicallySecure,
+	isCryptographicallySecure',
 ) where
 
 import Annex.Common
@@ -40,7 +42,13 @@ import qualified Data.Map as M
 builtinList :: [Backend]
 builtinList = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
 
-{- Backend to use by default when generating a new key. -}
+{- The default hashing backend. This must use a cryptographically secure
+ - hash. -}
+defaultHashBackend :: Backend
+defaultHashBackend = Prelude.head builtinList
+
+{- Backend to use by default when generating a new key. Takes git config
+ - and --backend option into account. -}
 defaultBackend :: Annex Backend
 defaultBackend = maybe cache return =<< Annex.getState Annex.backend
   where
@@ -49,7 +57,7 @@ defaultBackend = maybe cache return =<< Annex.getState Annex.backend
 			=<< Annex.getRead Annex.forcebackend
 		b <- case n of
 			Just name | valid name -> lookupname name
-			_ -> pure (Prelude.head builtinList)
+			_ -> pure defaultHashBackend
 		Annex.changeState $ \s -> s { Annex.backend = Just b }
 		return b
 	valid name = not (null name)
@@ -116,5 +124,8 @@ isStableKey k = maybe False (`B.isStableKey` k)
 	<$> maybeLookupBackendVariety (fromKey keyVariety k)
 
 isCryptographicallySecure :: Key -> Annex Bool
-isCryptographicallySecure k = maybe False B.isCryptographicallySecure
+isCryptographicallySecure k = maybe False isCryptographicallySecure'
 	<$> maybeLookupBackendVariety (fromKey keyVariety k)
+
+isCryptographicallySecure' :: Backend -> Bool
+isCryptographicallySecure' = B.isCryptographicallySecure

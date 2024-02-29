@@ -1,6 +1,6 @@
 {- git-annex log file names
  -
- - Copyright 2013-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -35,7 +35,9 @@ getLogVariety config f
 	| isRemoteStateLog f = Just NewUUIDBasedLog
 	| isRemoteContentIdentifierLog f = Just NewUUIDBasedLog
 	| isRemoteMetaDataLog f = Just RemoteMetaDataLog
-	| isMetaDataLog f || f `elem` otherTopLevelLogs = Just OtherLog
+	| isMetaDataLog f
+		|| f `elem` otherTopLevelLogs
+		|| isEquivilantKeyLog f = Just OtherLog
 	| otherwise = (LocationLog <$> locationLogFileKey config f)
 		<|> (ChunkLog <$> extLogFileKey chunkLogExt f)
 		<|> (UrlLog  <$> urlLogFileKey f)
@@ -70,6 +72,7 @@ keyLogFiles config k =
 	, remoteMetaDataLogFile config k
 	, remoteContentIdentifierLogFile config k
 	, chunkLogFile config k
+	, equivilantKeysLogFile config k
 	] ++ oldurlLogs config k
 
 {- All uuid-based logs stored in the top of the git-annex branch. -}
@@ -207,6 +210,18 @@ chunkLogFile config key =
 
 chunkLogExt :: S.ByteString
 chunkLogExt = ".log.cnk"
+
+{- The filename of the equivilant keys log for a given key. -}
+equivilantKeysLogFile :: GitConfig -> Key -> RawFilePath
+equivilantKeysLogFile config key = 
+	(branchHashDir config key P.</> keyFile key)
+		<> equivilantKeyLogExt
+
+equivilantKeyLogExt :: S.ByteString
+equivilantKeyLogExt = ".log.ek"
+
+isEquivilantKeyLog :: RawFilePath -> Bool
+isEquivilantKeyLog path = equivilantKeyLogExt `S.isSuffixOf` path
 
 {- The filename of the metadata log for a given key. -}
 metaDataLogFile :: GitConfig -> Key -> RawFilePath

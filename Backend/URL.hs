@@ -15,6 +15,7 @@ import Annex.Common
 import Types.Key
 import Types.Backend
 import Backend.Utilities
+import Logs.EquivilantKeys
 
 backends :: [Backend]
 backends = [backendURL, backendVURL]

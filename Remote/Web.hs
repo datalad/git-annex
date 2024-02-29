@@ -1,6 +1,6 @@
 {- Web remote.
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -11,6 +11,8 @@ import Annex.Common
 import Types.Remote
 import Types.ProposedAccepted
 import Types.Creds
+import Types.Key
+import Types.KeySource
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import qualified Git
@@ -27,6 +29,9 @@ import qualified Annex.Url as Url
 import Annex.YoutubeDl
 import Annex.SpecialRemote.Config
 import Logs.Remote
+import Logs.EquivilantKeys
+import Backend
+import Backend.Hash (descChecksum)
 
 import qualified Data.Map as M
 
@@ -123,23 +128,62 @@ downloadKey urlincludeexclude key _af dest p vc =
 			, show (length urls)
 			, "known url(s) failed"
 			]
+	
+	isyoutube (_, YoutubeDownloader) = True
+	isyoutube _ = False
 
 	dl ([], ytus) = flip getM (map fst ytus) $ \u ->
 		ifM (youtubeDlTo key u dest p)
-			( return (Just UnVerified)
+			( postdl UnVerified
 			, return Nothing
 			)
 	dl (us, ytus) = do
 		iv <- startVerifyKeyContentIncrementally vc key
 		ifM (Url.withUrlOptions $ downloadUrl True key p iv (map fst us) dest)
 			( finishVerifyKeyContentIncrementally iv >>= \case
-				(True, v) -> return (Just v)
+				(True, v) -> postdl v
 				(False, _) -> dl ([], ytus)
 			, dl ([], ytus)
 			)
 
-	isyoutube (_, YoutubeDownloader) = True
-	isyoutube _ = False
+	postdl v@Verified = return (Just v)
+	postdl v = do
+		when (fromKey keyVariety key == VURLKey) $
+			recordvurlkey
+		return (Just v)
+	
+	-- For a VURL key that was not verified on download, 
+	-- need to generate a hashed key for the content downloaded
+	-- from the web, and record it for later use verifying this content.
+	--
+	-- But when the VURL key has a known size, and already has a
+	-- recorded hashed key, don't record a new key, since the content
+	-- on the web is expected to be stable for such a key.
+	recordvurlkey = case fromKey keySize key of
+		Nothing -> recordvurlkey' =<< getEquivilantKeys key
+		Just _ -> do
+			eks <- getEquivilantKeys key
+			if null eks
+				then recordvurlkey' eks
+				else return ()
+	
+	recordvurlkey' eks = do
+		-- Make sure to pick a backend that is cryptographically
+		-- secure.
+		db <- defaultBackend
+		let b = if isCryptographicallySecure' db
+			then db
+			else defaultHashBackend
+		showSideAction (UnquotedString descChecksum)
+		(hashk, _) <- genKey ks nullMeterUpdate b
+		unless (hashk `elem` eks) $
+			setEquivilantKey key hashk
+	  where
+		ks = KeySource
+			{ keyFilename = mempty -- avoid adding any extension
+			, contentLocation = toRawFilePath dest
+			, inodeCache = Nothing
+			}
 
 uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 uploadKey _ _ _ = giveup "upload to web not supported"

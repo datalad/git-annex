@@ -11,6 +11,7 @@ module Backend.Hash (
 	backends,
 	testKeyBackend,
 	keyHash,
+	descChecksum,
 ) where
 
 import Annex.Common
