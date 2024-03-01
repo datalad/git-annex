@@ -15,6 +15,8 @@ import Types.Key
 import Types.Backend
 import Logs.EquivilantKeys
 import Backend.Variety
+import Backend.Hash (descChecksum)
+import Utility.Hash
 
 backends :: [Backend]
 backends = [backendVURL]
@@ -30,14 +32,42 @@ backendVURL = Backend
 			-- because downloading the content from the web in
 			-- the first place records one.
 			[] -> return False
-			l -> do
+			eks -> do
 				let check ek = getbackend ek >>= \case
 					Nothing -> pure False
 					Just b -> case verifyKeyContent b of
 						Just verify -> verify ek f
 						Nothing -> pure False
-				anyM check l
-	, verifyKeyContentIncrementally = Nothing -- TODO
+				anyM check eks
+	, verifyKeyContentIncrementally = Just $ \k -> do
+		-- Run incremental verifiers for each equivilant key together,
+		-- and see if any of them succeed.
+		eks <- equivkeys k
+		let get = \ek -> getbackend ek >>= \case
+			Nothing -> pure Nothing
+			Just b -> case verifyKeyContentIncrementally b of
+				Nothing -> pure Nothing
+				Just va -> Just <$> va ek
+		l <- catMaybes <$> forM eks get
+		return $ IncrementalVerifier
+			{ updateIncrementalVerifier = \s ->
+				forM_ l $ flip updateIncrementalVerifier s
+			-- If there are no equivilant keys recorded somehow,
+			-- or if none of them support incremental verification,
+			-- this will return Nothing, which indicates that
+			-- incremental verification was not able to be
+			-- performed.
+			, finalizeIncrementalVerifier = do
+				r <- forM l finalizeIncrementalVerifier
+				return $ case catMaybes r of
+					[] -> Nothing
+					r' -> Just (or r')
+			, unableIncrementalVerifier = 
+				forM_ l unableIncrementalVerifier
+			, positionIncrementalVerifier =
+				getM positionIncrementalVerifier l
+			, descIncrementalVerifier = descChecksum
+			} 
 	, canUpgradeKey = Nothing
 	, fastMigrate = Nothing
 	-- Even if a hash is recorded on initial download from the web and
