@@ -27,13 +27,19 @@ migrateFromURLToVURL oldkey newbackend _af inannex
 			Just ek -> do
 				setEquivilantKey newkey ek
 				return (Just newkey)
-	| otherwise = do
-		liftIO $ print ("migrateFromURL", inannex, fromKey keyVariety oldkey)
-		return Nothing
+	| otherwise = return Nothing
   where
 	-- Relies on the first hash being cryptographically secure, and the
 	-- default hash used by git-annex.
 	hashbackend = Prelude.head Backend.Hash.backends
+
+migrateFromVURLToURL :: Key -> Backend -> AssociatedFile -> Bool -> Annex (Maybe Key)
+migrateFromVURLToURL oldkey newbackend _af _
+	| fromKey keyVariety oldkey == VURLKey && backendVariety newbackend == URLKey =
+		return $ Just $ mkKey $ const $
+			(keyData oldkey)
+				{ keyVariety = URLKey }
+	| otherwise = return Nothing
 
 -- The Backend must use a cryptographically secure hash.
 generateEquivilantKey :: Backend -> RawFilePath -> Annex (Maybe Key)

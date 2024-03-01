@@ -17,6 +17,7 @@ import Logs.EquivilantKeys
 import Backend.Variety
 import Backend.Hash (descChecksum)
 import Utility.Hash
+import Backend.VURL.Utilities
 
 backends :: [Backend]
 backends = [backendVURL]
@@ -69,7 +70,7 @@ backendVURL = Backend
 			, descIncrementalVerifier = descChecksum
 			} 
 	, canUpgradeKey = Nothing
-	, fastMigrate = Nothing
+	, fastMigrate = Just migrateFromVURLToURL
 	-- Even if a hash is recorded on initial download from the web and
 	-- is used to verify every subsequent transfer including other
 	-- downloads from the web, in a split-brain situation there
