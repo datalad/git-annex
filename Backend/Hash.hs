@@ -53,8 +53,10 @@ cryptographicallySecure (Blake2spHash _) = True
 cryptographicallySecure SHA1Hash = False
 cryptographicallySecure MD5Hash = False
 
-{- Order is slightly significant; want SHA256 first, and more general
- - sizes earlier. -}
+{- Order is significant. The first hash is the default one that git-annex
+ - uses, and must be cryptographically secure. 
+ -
+ - Also, want more common sizes earlier than uncommon sizes. -}
 hashes :: [Hash]
 hashes = concat 
 	[ map (SHA2Hash . HashSize) [256, 512, 224, 384]
@@ -167,8 +169,8 @@ needsUpgrade key = or
 	, not (hasExt (fromKey keyVariety key)) && keyHash key /= S.fromShort (fromKey keyName key)
 	]
 
-trivialMigrate :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
-trivialMigrate oldkey newbackend afile = trivialMigrate' oldkey newbackend afile
+trivialMigrate :: Key -> Backend -> AssociatedFile -> Bool -> Annex (Maybe Key)
+trivialMigrate oldkey newbackend afile _inannex = trivialMigrate' oldkey newbackend afile
 	<$> (annexMaxExtensionLength <$> Annex.getGitConfig)
 
 trivialMigrate' :: Key -> Backend -> AssociatedFile -> Maybe Int -> Maybe Key

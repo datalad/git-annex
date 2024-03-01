@@ -57,8 +57,9 @@ be used to get better filenames.
   content is downloaded from the web. Once a checksum has been recorded,
   subsequent downloads from the web must have the same checksum.
 
-  Note that this option currently only has an effect when using the
-  web special remote, not other special remotes that handle urls.
+  When addurl was used without this option before, the file it added 
+  can be converted to be verifiable by migrating it to the VURL backend.
+  For example: `git-annex migrate foo --backend=VURL`
 
 * `--raw`
 

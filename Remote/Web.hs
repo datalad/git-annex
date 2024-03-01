@@ -12,7 +12,6 @@ import Types.Remote
 import Types.ProposedAccepted
 import Types.Creds
 import Types.Key
-import Types.KeySource
 import Remote.Helper.Special
 import Remote.Helper.ExportImport
 import qualified Git
@@ -31,7 +30,7 @@ import Annex.SpecialRemote.Config
 import Logs.Remote
 import Logs.EquivilantKeys
 import Backend
-import Backend.Hash (descChecksum)
+import Backend.VURL.Utilities (generateEquivilantKey)
 
 import qualified Data.Map as M
 
@@ -175,17 +174,12 @@ downloadKey urlincludeexclude key _af dest p vc =
 		let b = if isCryptographicallySecure db
 			then db
 			else defaultHashBackend
-		showSideAction (UnquotedString descChecksum)
-		(hashk, _) <- genKey ks nullMeterUpdate b
-		unless (hashk `elem` eks) $
-			setEquivilantKey key hashk
-		return (Just Verified)
-	  where
-		ks = KeySource
-			{ keyFilename = mempty -- avoid adding any extension
-			, contentLocation = toRawFilePath dest
-			, inodeCache = Nothing
-			}
+		generateEquivilantKey b (toRawFilePath dest) >>= \case
+			Nothing -> return Nothing
+			Just ek -> do
+				unless (ek `elem` eks) $
+					setEquivilantKey key ek
+				return (Just Verified)
 
 uploadKey :: Key -> AssociatedFile -> MeterUpdate -> Annex ()
 uploadKey _ _ _ = giveup "upload to web not supported"

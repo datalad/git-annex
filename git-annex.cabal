@@ -585,6 +585,7 @@ Executable git-annex
     Backend.Utilities
     Backend.Variety
     Backend.VURL
+    Backend.VURL.Utilities
     Backend.WORM
     Benchmark
     Build.BundledPrograms

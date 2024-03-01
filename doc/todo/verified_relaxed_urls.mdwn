@@ -11,8 +11,7 @@ verify the content.
 The web special remote can hash the content as it's downloading it from the
 web, and record the resulting hash-based key.
 
-> Status: Working, but it's not yet possible to migrate an URL key to a VURL key. Should be easy
-> to add support for this. --[[Joey]]
+> [[done]] --[[Joey]]
 
 ## handling upgrades
 
@@ -126,4 +125,3 @@ key what is the same VURL, or another VURL in a loop. Leading to a crafted
 git-annex branch that DOSes git-annex.
 
 To avoid this, any VURL in equivilant keys will be ignored.
-

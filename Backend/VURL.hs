@@ -99,4 +99,3 @@ backendVURL = Backend
 	allowedequiv ek = fromKey keyVariety ek /= VURLKey
 	varietymap = makeVarietyMap regularBackendList
 	getbackend ek = maybeLookupBackendVarietyMap (fromKey keyVariety ek) varietymap
-

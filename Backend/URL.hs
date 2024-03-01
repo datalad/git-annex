@@ -14,6 +14,7 @@ import Annex.Common
 import Types.Key
 import Types.Backend
 import Backend.Utilities
+import Backend.VURL.Utilities (migrateFromURLToVURL)
 
 backends :: [Backend]
 backends = [backendURL]
@@ -25,7 +26,7 @@ backendURL = Backend
 	, verifyKeyContent = Nothing
 	, verifyKeyContentIncrementally = Nothing
 	, canUpgradeKey = Nothing
-	, fastMigrate = Nothing
+	, fastMigrate = Just migrateFromURLToVURL
 	-- The content of an url can change at any time, so URL keys are
 	-- not stable.
 	, isStableKey = const False

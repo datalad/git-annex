@@ -59,8 +59,8 @@ needsUpgrade :: Key -> Bool
 needsUpgrade key =
 	any (`S8.elem` S.fromShort (fromKey keyName key)) [' ', '\r']
 
-removeProblemChars :: Key -> Backend -> AssociatedFile -> Annex (Maybe Key)
-removeProblemChars oldkey newbackend _
+removeProblemChars :: Key -> Backend -> AssociatedFile -> Bool -> Annex (Maybe Key)
+removeProblemChars oldkey newbackend _ _
 	| migratable = return $ Just $ alterKey oldkey $ \d -> d
 		{ keyName = S.toShort $ encodeBS $ reSanitizeKeyName $ decodeBS $ S.fromShort $ keyName d }
 	| otherwise = return Nothing

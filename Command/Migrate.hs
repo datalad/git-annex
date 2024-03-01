@@ -149,7 +149,7 @@ perform onlytweaksize o file oldkey oldkeyrec oldbackend newbackend = go =<< gen
 			}
 		newkey <- fst <$> genKey source nullMeterUpdate newbackend
 		return $ Just (newkey, False)
-	genkey (Just fm) = fm oldkey newbackend afile >>= \case
+	genkey (Just fm) = fm oldkey newbackend afile True >>= \case
 		Just newkey -> return (Just (newkey, True))
 		Nothing -> genkey Nothing
 	tweaksize k

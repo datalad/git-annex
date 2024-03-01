@@ -38,11 +38,6 @@ import qualified Backend.VURL
 builtinList :: [Backend]
 builtinList = regularBackendList ++ Backend.VURL.backends
 
-{- The default hashing backend. This must use a cryptographically secure
- - hash. -}
-defaultHashBackend :: Backend
-defaultHashBackend = Prelude.head builtinList
-
 {- Backend to use by default when generating a new key. Takes git config
  - and --backend option into account. -}
 defaultBackend :: Annex Backend

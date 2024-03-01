@@ -78,6 +78,6 @@ run o _ input = do
 		Just v -> getParsed v >>= \b ->
 			maybeLookupBackendVariety (fromKey keyVariety ik) >>= \case
 				Just ib -> case fastMigrate ib of
-					Just fm -> fromMaybe ik <$> fm ik b af
+					Just fm -> fromMaybe ik <$> fm ik b af False
 					Nothing -> pure ik
 				Nothing -> pure ik

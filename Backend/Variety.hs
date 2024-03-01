@@ -25,6 +25,10 @@ regularBackendList = Backend.Hash.backends
 	++ Backend.WORM.backends 
 	++ Backend.URL.backends
 
+{- The default hashing backend. -}
+defaultHashBackend :: Backend
+defaultHashBackend = Prelude.head regularBackendList
+
 makeVarietyMap :: [Backend] -> M.Map KeyVariety Backend
 makeVarietyMap l = M.fromList $ zip (map backendVariety l) l
 
