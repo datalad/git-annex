@@ -496,7 +496,7 @@ checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
 
 {- Runs the backend specific check on a key's content object.
  -
- - When a annex.this is set, an unlocked file may be a hard link to the object.
+ - When a annex.thin is set, an unlocked file may be a hard link to the object.
  - Thus when the user modifies the file, the object will be modified and
  - not pass the check, and we don't want to find an error in this case.
  -}
