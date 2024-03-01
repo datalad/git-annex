@@ -74,7 +74,8 @@ format.
 
   Keys often include the size of their content, which is generally a useful
   thing. In fact, this command defaults to adding missing size information
-  to keys. With this option, the size information is removed instead.
+  to keys in most migrations. With this option, the size information is
+  removed instead.
 
   One use of this option is to convert URL keys that were added
   by `git-annex addurl --fast` to ones that would have been added if
