@@ -1,0 +1,5 @@
+These are TODOs that have been tagged as potentially being useful for
+[[/projects/Dandi]] or a related project to fund work on.
+
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and tagged(projects/dandi/potential)"
+sort=mtime feeds=no actions=yes archive=yes show=0 template=buglist]]
