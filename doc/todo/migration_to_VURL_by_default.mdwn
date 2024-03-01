@@ -14,5 +14,10 @@ eventually. Could be a fsck warning about URL keys, at some point after
 transferring the content between repositories that it's not possible to
 verify it.
 
-Of course if users want to continue to use URL keys, that's fine. Users can
-also choose to use WORM keys if they really want to. --[[Joey]]
+Of course if users want to continue to use their existing URL keys and 
+not be able to verify content, that's fine. Users can also choose to use 
+WORM keys if they really want to. 
+
+However, I don't think there's enough reason to want to use URL keys to add
+configuration of which kind of keys addurl uses, once VURL is the default.
+--[[Joey]]
