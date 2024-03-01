@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2023 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ import qualified Remote
 import qualified Types.Backend
 import qualified Backend
 import Annex.Content
+import Annex.Verify
 #ifndef mingw32_HOST_OS
 import Annex.Version
 import Annex.Content.Presence
@@ -524,17 +525,14 @@ checkBackendRemote backend key remote ai localcopy =
 	checkBackendOr (badContentRemote remote localcopy) backend key localcopy ai
 
 checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> RawFilePath -> ActionItem -> Annex Bool
-checkBackendOr bad backend key file ai =
-	case Types.Backend.verifyKeyContent backend of
-		Just verifier -> do
-			ok <- verifier key file
-			unless ok $ do
-				msg <- bad key
-				warning $ actionItemDesc ai
-					<> ": Bad file content; "
-					<> UnquotedString msg
-			return ok
-		Nothing -> return True
+checkBackendOr bad backend key file ai = do
+	ok <- verifyKeyContent' key file
+	unless ok $ do
+		msg <- bad key
+		warning $ actionItemDesc ai
+			<> ": Bad file content; "
+			<> UnquotedString msg
+	return ok
 
 {- Check, if there are InodeCaches recorded for a key, that one of them
  - matches the object file. There are situations where the InodeCache

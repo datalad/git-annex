@@ -12,6 +12,7 @@ module Annex.Verify (
 	shouldVerify,
 	verifyKeyContentPostRetrieval,
 	verifyKeyContent,
+	verifyKeyContent',
 	Verification(..),
 	unVerified,
 	warnUnverifiableInsecure,
@@ -97,16 +98,32 @@ verifyKeyContentPostRetrieval rsp v verification k f = case (rsp, verification) 
 				resumeVerifyKeyContent k f iv
 			_ -> verifyKeyContent k f
 
+-- When possible, does an incremental verification, because that can be
+-- faster. Eg, the VURL backend can need to try multiple checksums and only
+-- with an incremental verification does it avoid reading files twice.
 verifyKeyContent :: Key -> RawFilePath -> Annex Bool
 verifyKeyContent k f = verifyKeySize k f <&&> verifyKeyContent' k f
 
+-- Does not verify size.
 verifyKeyContent' :: Key -> RawFilePath -> Annex Bool
 verifyKeyContent' k f = 
 	Backend.maybeLookupBackendVariety (fromKey keyVariety k) >>= \case
 		Nothing -> return True
-		Just b -> case Types.Backend.verifyKeyContent b of
-			Nothing -> return True
-			Just verifier -> verifier k f
+		Just b -> case (Types.Backend.verifyKeyContentIncrementally b, Types.Backend.verifyKeyContent b) of
+			(Nothing, Nothing) -> return True
+			(Just mkiv, mverifier) -> do
+				iv <- mkiv k
+				showAction (UnquotedString (descIncrementalVerifier iv))
+				res <- liftIO $ catchDefaultIO Nothing $
+					withBinaryFile (fromRawFilePath f) ReadMode $ \h -> do
+						feedIncrementalVerifier h iv
+						finalizeIncrementalVerifier iv
+				case res of
+					Just res' -> return res'
+					Nothing -> case mverifier of
+						Nothing -> return True
+						Just verifier -> verifier k f
+			(Nothing, Just verifier) -> verifier k f
 
 resumeVerifyKeyContent :: Key -> RawFilePath -> IncrementalVerifier -> Annex Bool
 resumeVerifyKeyContent k f iv = liftIO (positionIncrementalVerifier iv) >>= \case
@@ -132,17 +149,18 @@ resumeVerifyKeyContent k f iv = liftIO (positionIncrementalVerifier iv) >>= \cas
 			liftIO $ catchDefaultIO (Just False) $
 				withBinaryFile (fromRawFilePath f) ReadMode $ \h -> do
 					hSeek h AbsoluteSeek endpos
-					feedincremental h
+					feedIncrementalVerifier h iv
 					finalizeIncrementalVerifier iv
 	
-	feedincremental h = do
-		b <- S.hGetSome h chunk
-		if S.null b
-			then return ()
-			else do
-				updateIncrementalVerifier iv b
-				feedincremental h
-
+feedIncrementalVerifier :: Handle -> IncrementalVerifier -> IO ()
+feedIncrementalVerifier h iv = do
+	b <- S.hGetSome h chunk
+	if S.null b
+		then return ()
+		else do
+			updateIncrementalVerifier iv b
+			feedIncrementalVerifier h iv
+  where
 	chunk = 65536
 
 verifyKeySize :: Key -> RawFilePath -> Annex Bool
