@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 11"""
+ date="2024-03-01T18:53:39Z"
+ content="""
+My laptop now has SHA256 in hardware I assume, as I'm seeing similar speed
+differences. Eg:
+
+	joey@darkstar:~/tmp/x3>time sha256sum x
+	e1f21b651362cf2f86ccc14a7376c33a49f30d7d14afe1ec6993eead5e8cfe41  x
+	0.53user 0.17system 0:00.71elapsed 99%CPU (0avgtext+0avgdata 3712maxresident)k
+	32inputs+0outputs (1major+239minor)pagefaults 0swaps
+	joey@darkstar:~/tmp/x3>time git-annex fsck x
+	fsck x (checksum...) ok
+	(recording state in git...)
+	3.22user 0.40system 0:03.63elapsed 100%CPU (0avgtext+0avgdata 61180maxresident)k
+	0inputs+144outputs (0major+8547minor)pagefaults 0swaps
+
+I agree that this bug should be left open since even a relatively low-end laptop
+now has this, git-annex shouldn't leave so much performance on the table.
+
+I've opened an issue on crypton:
+<https://github.com/kazu-yamamoto/crypton/issues/31>
+
+If it's rejected from crypton, I'm open to considering another library. 
+I'd rather avoid OpenSSL wrappers because adding a C library dependency on openssl
+will complicate building git-annex in some situations. It would be better to
+have a haskell library that, like cryptonite, embeds the necessary C code.
+
+Also, whatever library git-annex uses needs to support incremental hashing,
+otherwise git-annex has to pay a performance penalty of re-reading a file to hash
+it after download, rather than hashing while downloading.
+"""]]
