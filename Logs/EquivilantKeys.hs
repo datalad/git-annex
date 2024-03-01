@@ -21,7 +21,7 @@ import qualified Annex.Branch
 getEquivilantKeys :: Key -> Annex [Key]
 getEquivilantKeys key = do
 	config <- Annex.getGitConfig
-	mapMaybe (deserializeKey' . fromLogInfo)
+	nub . mapMaybe (deserializeKey' . fromLogInfo)
 		<$> presentLogInfo (equivilantKeysLogFile config key)
 
 setEquivilantKey :: Key -> Key -> Annex ()
