@@ -1,0 +1,10 @@
+When a VURL key has multiple equivilant keys that all use the same hash,
+verifying the VURL key currently has to verify each equivilant key.
+Usually that is done incrementally, so it only has to read the file once. But it
+still does redundant work, updating each incremental verifier with each
+chunk.
+
+This could be improved by caclulating a hash once, and then compare it
+with a hash value exposed by the Backend. That seems doable but will mean
+extending the Backend interface, to expose the hash value and type.
+--[[Joey]] 
