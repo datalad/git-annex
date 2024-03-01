@@ -11,11 +11,7 @@ verify the content.
 The web special remote can hash the content as it's downloading it from the
 web, and record the resulting hash-based key.
 
-> Status: Working, but `git-annex addurl --relaxed --verifiable` followed
-> by `git-annex get` currently does 2 checksums in the get stage; it should
-> only do one.
-> 
-> It's not yet possible to migrate an URL key to a VURL key. Should be easy
+> Status: Working, but it's not yet possible to migrate an URL key to a VURL key. Should be easy
 > to add support for this. --[[Joey]]
 
 ## handling upgrades

@@ -147,27 +147,28 @@ downloadKey urlincludeexclude key _af dest p vc =
 			)
 
 	postdl v@Verified = return (Just v)
-	postdl v = do
-		when (fromKey keyVariety key == VURLKey) $
-			recordvurlkey
-		return (Just v)
+	postdl v
+		-- For a VURL key that was not verified on download, 
+		-- need to generate a hashed key for the content downloaded
+		-- from the web, and record it for later use verifying this
+		-- content.
+		--
+		-- But when the VURL key has a known size, and already has a
+		-- recorded hashed key, don't record a new key, since the
+		-- content on the web is expected to be stable for such a key.
+		| fromKey keyVariety key == VURLKey =
+			case fromKey keySize key of
+				Nothing -> 
+					getEquivilantKeys key
+						>>= recordvurlkey
+				Just _ -> do
+					eks <- getEquivilantKeys key
+					if null eks
+						then recordvurlkey eks
+						else return (Just v)
+		| otherwise = return (Just v)
 	
-	-- For a VURL key that was not verified on download, 
-	-- need to generate a hashed key for the content downloaded
-	-- from the web, and record it for later use verifying this content.
-	--
-	-- But when the VURL key has a known size, and already has a
-	-- recorded hashed key, don't record a new key, since the content
-	-- on the web is expected to be stable for such a key.
-	recordvurlkey = case fromKey keySize key of
-		Nothing -> recordvurlkey' =<< getEquivilantKeys key
-		Just _ -> do
-			eks <- getEquivilantKeys key
-			if null eks
-				then recordvurlkey' eks
-				else return ()
-	
-	recordvurlkey' eks = do
+	recordvurlkey eks = do
 		-- Make sure to pick a backend that is cryptographically
 		-- secure.
 		db <- defaultBackend
@@ -178,6 +179,7 @@ downloadKey urlincludeexclude key _af dest p vc =
 		(hashk, _) <- genKey ks nullMeterUpdate b
 		unless (hashk `elem` eks) $
 			setEquivilantKey key hashk
+		return (Just Verified)
 	  where
 		ks = KeySource
 			{ keyFilename = mempty -- avoid adding any extension
