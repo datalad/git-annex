@@ -62,7 +62,7 @@ that can be determined purely by looking at the key.
 
   Or to remove the extension from a key:
 
-  	git-annex examinekey SHA256E-xxx.tar.gz --migrate-to-backend=SHA256
+  	git-annex examinekey SHA256E--xxx.tar.gz --migrate-to-backend=SHA256
 
 * `--filename=name`
 
