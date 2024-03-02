@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="Atemu"
+ avatar="http://cdn.libravatar.org/avatar/86b8c2d893dfdf2146e1bbb8ac4165fb"
+ subject="comment 12"
+ date="2024-03-02T08:32:40Z"
+ content="""
+Thank you for looking into this again.
+
+> I'd rather avoid OpenSSL wrappers because adding a C library dependency on openssl will complicate building git-annex in some situations.
+
+Would it be possible to make this a build-time option perhaps?
+
+git-annex without SIMD hashing obviously still *works* fast enough for many purposes as its the status quo but having it would be a greatly appreciated optimisation by many. It'd be great to have the option to enable it wherever possible and simply fall back to non-SIMD where it isn't.
+
+> Also, whatever library git-annex uses needs to support incremental hashing, otherwise git-annex has to pay a performance penalty of re-reading a file to hash it after download, rather than hashing while downloading.
+
+Agreed. Incremental hashing is too important to lose over a general optimisation like this.
+"""]]
