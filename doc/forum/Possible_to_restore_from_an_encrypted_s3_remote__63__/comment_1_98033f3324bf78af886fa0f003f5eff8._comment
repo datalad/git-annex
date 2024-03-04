@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-03-04T21:17:26Z"
+ content="""
+You need to clone to git repository where you initialized the special
+remote the first time, then `git-annex enableremote` will enable using it
+from the clone.
+"""]]
