@@ -1,0 +1,7 @@
+Hi folks, I'm working on a new external special remote for rclone named "git-annex-remote-rclone-goyle", or "garrgoyle" for short. (I chose a unique name to disambiguate from the preexisting [git-annex-remote-rclone](https://github.com/git-annex-remote-rclone/git-annex-remote-rclone) project.)
+
+Like git-annex-remote-rclone, garrgoyle only supports the [external special remote protocol](https://git-annex.branchable.com/design/external_special_remote_protocol/). In the near future, I'd like to add support for the *simple export interface* (see [export_and_import_appendix](https://git-annex.branchable.com/design/external_special_remote_protocol/export_and_import_appendix/)).
+
+Garrgoyle seems to be faster than git-annex-remote-rclone. Anecdotally, it was 10x faster when I asked to copy ~20 files that were already present on a "drive" remote. I think the difference is that garrgoyle pays the rclone startup cost once, rather than once per action.
+
+I've uploaded a PR to rclone's GitHub repo <https://github.com/rclone/rclone/pull/7654>. If anyone is willing to alpha test, I would greatly appreciate it! Feedback on the PR is also welcome.
