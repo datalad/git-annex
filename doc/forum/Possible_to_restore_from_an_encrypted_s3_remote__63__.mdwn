@@ -1,0 +1,5 @@
+I tried creating a new git annex repo on my desktop and adding the remote but I think I got an error about both repos not having the same idea. I might be wrong.
+
+Is it possible to init a git annex repo on my desktop using an encrypted s3 remote?
+
+thanks
