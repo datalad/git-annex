@@ -26,7 +26,7 @@ Now, you may want to be able to add a third repo and have the data be
 rebalanced, with some moving to it. And that would happen. However, as this
 scheme stands, it's equally likely that adding repo3 will make repo1 and
 repo2 want to swap files between them. So, we'll want to add some
-precautions to avoid a lof of data moving around in this case:
+precautions to avoid a lot of data moving around in this case:
 
 	((balanced_amoung(backup) and not (copies=backup:1)) or present
 
@@ -49,6 +49,24 @@ These can be dealt with by noticing when a repo is full and moving some
 of it's files (any will do) to other repos in its group. I don't see a way
 to make preferred content express that movement though; it would need to be
 a manual/scripted process.
+
+> Could the size of each repo be recorded (either actual disk size or
+> desired max size) and when a repo is too full to hold an object, be left
+> out of the set of repos used to calculate where to store that object?
+>
+> With the preferred content expression above with "present" in it, 
+> a repo being full would not cause any content to be moved off of it,
+> only new content that had not yet reached any of the repos in the 
+> group would be affected. That seems good.
+> 
+> This would need only a single one-time write to the git-annex branch,
+> to record the repo size. Then update a local counter for each repository
+> from the git-annex branch location log changes. 
+> 
+> Of course, in the time after the git-annex branch was updated and before
+> it reaches the local repo, a repo can be full without us knowing about
+> it. Stores to it would fail, and perhaps be retried, until the updated
+> git-annex branch was synced.
 
 -----
 
@@ -78,3 +96,18 @@ opportunistically get files it doesn't want but that it has space for
 and that don't have enough copies yet.
 Although this gets back to the original problem of multiple repos racing
 downloads and files getting more than the desired number of copies.
+
+> With the above idea of tracking when repos are full, the new repo
+> would want all files when the other 9 repos are full.
+
+----
+
+Another possibility to think about is to have one repo calculate which
+files to store on which repos, to best distribute and pack them. The first
+repo that writes a solution would win and other nodes would work to move
+files around as needed. 
+
+In a split brain situation, there would be sets of repos doing work toward 
+different solutions. On merge it would make sense to calculate a new
+solution that takes that work into account as well as possible. (Some work
+would surely have been in vain.)
