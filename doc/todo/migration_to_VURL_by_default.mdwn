@@ -21,3 +21,9 @@ WORM keys if they really want to.
 However, I don't think there's enough reason to want to use URL keys to add
 configuration of which kind of keys addurl uses, once VURL is the default.
 --[[Joey]]
+
+> One way this might cause trouble is that current `git-annex registerurl`
+> and `unregisterurl` (and `fromkey`)  when passed an url rather than a key,
+> generates an URL key. If that is changed to generate a VURL key, then
+> it might break some workflow, particularly one where an url was
+> registered as an URL key and is now being unregistered.
