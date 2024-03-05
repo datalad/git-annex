@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-03-05T17:23:34Z"
+ content="""
+Thing is that `unregisterurl` does not mark content as not present in a
+special remote. Except for the web which is a special case. Reason is
+that not having an url registered by a special remote does not prevent getting
+content from that special remote in general.
+
+So my idea for `--move-from=foo` was that it should behave the same way
+since it's the same as `registerurl + unregisterurl`.
+
+If you're going to remove/disable the special remote anyway, it won't
+matter whether git-annex thinks it contains content, I suppose? Or you
+could use setpresentkey of course.
+"""]]
