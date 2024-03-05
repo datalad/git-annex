@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-03-05T18:11:32Z"
+ content="""
+Went far enough down implementing `registerurl --move-from` to be sure that
+it would complicate the code far more than just adding a new `moveurl`
+command. So despite it being a fairly unusual situation, a new command
+is better than that option.
+
+And implemented it:
+
+	joey@darkstar:~/tmp/x>git-annex registerurl WORM--bar http://example.com/bar.fooregisterurl http://example.com/bar.foo ok
+	joey@darkstar:~/tmp/x> git-annex whereis --key WORM--bar
+	whereis WORM--bar (1 copy)
+	  	dca0b5f9-659a-4928-84db-ff9fd74d8fc8 -- [foo]
+	
+	  foo: http://example.com/bar.foo
+	ok
+	joey@darkstar:~/tmp/x>git-annex reregisterurl WORM--bar --move-from=foo
+	reregisterurl WORM--bar ok
+	joey@darkstar:~/tmp/x>git-annex whereis --key WORM--bar
+	whereis WORM--bar (2 copies)
+	  	00000000-0000-0000-0000-000000000001 -- web
+	   	dca0b5f9-659a-4928-84db-ff9fd74d8fc8 -- [foo]
+	
+	  web: http://example.com/bar.foo
+	ok
+"""]]

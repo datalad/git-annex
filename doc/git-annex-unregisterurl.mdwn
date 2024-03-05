@@ -57,6 +57,8 @@ for it, because the content may still be present on the remote.
 
 [[git-annex-registerurl]](1)
 
+[[git-annex-reregisterurl]](1)
+
 [[git-annex-rmurl]](1)
 
 # AUTHOR

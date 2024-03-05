@@ -685,6 +685,7 @@ Executable git-annex
     Command.ReadPresentKey
     Command.RecvKey
     Command.RegisterUrl
+    Command.ReregisterUrl
     Command.Reinit
     Command.Reinject
     Command.RemoteDaemon

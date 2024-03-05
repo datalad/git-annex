@@ -1,0 +1,64 @@
+# NAME
+
+git-annex reregisterurl - updates url registration information
+
+# SYNOPSIS
+
+git annex reregisterurl `[key]`
+
+# DESCRIPTION
+
+This plumbing-level command updates information about the urls that are
+registered for a key.
+
+# OPTIONS
+
+* `--move-from=name|uuid`
+
+  For each key, update any urls that are currently claimed by the
+  specified remote to be instead used by the web special remote.
+
+  This could be used eg, when a special remote was needed to provide
+  authorization to get an url, but the url has now become publically
+  available and so the web special remote can be used.
+
+  Note that, like `git-annex unregisterurl`, using this option unregisters
+  an url from a special remote, but it does not mark the content as not
+  present in that special remote. However, like `git-annex registerurl`,
+  this option does mark content as being present in the web special remote.
+
+* `--batch`
+
+  In batch input mode, lines are read from stdin, and each line
+  should contain a key.
+
+* `-z`
+
+   When in batch mode, the input is delimited by nulls instead of the usual
+   newlines.
+
+* `--json`
+
+  Enable JSON output. This is intended to be parsed by programs that use
+  git-annex. Each line of output is a JSON object.
+
+* `--json-error-messages`
+
+  Messages that would normally be output to standard error are included in
+  the JSON instead.
+
+* Also the [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+
+[[git-annex-registerurl]](1)
+
+[[git-annex-unregisterurl]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

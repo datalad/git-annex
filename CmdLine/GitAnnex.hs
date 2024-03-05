@@ -34,6 +34,7 @@ import qualified Command.MatchExpression
 import qualified Command.FromKey
 import qualified Command.RegisterUrl
 import qualified Command.UnregisterUrl
+import qualified Command.ReregisterUrl
 import qualified Command.SetKey
 import qualified Command.DropKey
 import qualified Command.Transferrer
@@ -196,6 +197,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.FromKey.cmd
 	, Command.RegisterUrl.cmd
 	, Command.UnregisterUrl.cmd
+	, Command.ReregisterUrl.cmd
 	, Command.SetKey.cmd
 	, Command.DropKey.cmd
 	, Command.Transferrer.cmd

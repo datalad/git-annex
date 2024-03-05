@@ -677,6 +677,12 @@ content from the key-value store.
   
   See [[git-annex-unregisterurl]](1) for details.
 
+* `reregisterurl [key url]`
+
+  Updates url registration information.
+  
+  See [[git-annex-reregisterurl]](1) for details.
+
 * `setkey key file`
 
   Moves a file into the annex as the content of a key.
