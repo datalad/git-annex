@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="TTTTAAAx"
+ avatar="http://cdn.libravatar.org/avatar/9edd4b69b9f9fc9b8c1cb8ecd03902d5"
+ subject="comment 12"
+ date="2024-03-05T05:21:59Z"
+ content="""
+I agree with you. Specifically, [this](https://git-annex.branchable.com/todo/detect_and_handle_submodules_after_path_changed_by_mv/) is related to git, not git-annex.
+
+I wanted to run `git annex assist` just and expect to be fixed.
+
+I wrote a simple python script to fix the issue, which changed the path of the submodule. And by adding the script in pre-commit hook, I can do `git annex assist` now without fixing the submodules manually.
+(I used python to manipulate the text files such as dot-gitmodules etc. Perl or Ruby would be much compact in this job.)
+
+It seems to work well for my needs, even though just a prototype script. 
+
+After some polishing (and testing), I'll upload the script here.
+
+Thank you.
+"""]]
