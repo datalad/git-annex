@@ -62,6 +62,8 @@ a manual/scripted process.
 > This would need only a single one-time write to the git-annex branch,
 > to record the repo size. Then update a local counter for each repository
 > from the git-annex branch location log changes. 
+> There is a todo about doing this,
+> [[todo/track_free_space_in_repos_via_git-annex_branch]].
 > 
 > Of course, in the time after the git-annex branch was updated and before
 > it reaches the local repo, a repo can be full without us knowing about

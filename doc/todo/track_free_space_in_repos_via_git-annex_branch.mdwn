@@ -1,0 +1,51 @@
+If the total space available in a repository for annex objects is recorded
+on the git-annex branch (by the user running a command probably, or perhaps
+automatically), then it is possible to examine the git-annex branch and
+tell how much free space a remote has available.
+
+One use case is just to display it in `git-annex info`. But a more
+compelling use case is [[design/balanced_preferred_content]], which needs a
+way to tell when an object is too large to store on a repository, so that
+it can be redirected to be stored on another repository in the same group.
+
+This was actually a fairly common feature request early on in git-annex
+and I probably should have thought about it more back then!
+
+`git-annex info` has recently started summing up the sizes of repositories
+from location logs, and is well optimised. In my big repository, that takes
+8.54 seconds of its total runtime.
+
+Since info already knows the repo sizes, just adding a `git-annex maxsize
+here 200gb` type of command would let it display the free space of all
+repos that had a maxsize recorded, essentially for free.
+
+But 8 seconds is rather a long time to block a `git-annex push`
+type command. Which would be needed if any remote's preferred content
+expression used `balanced_amoung`.
+
+It would help some to cache the calculated sizes in eq a sqlite db, update
+the cache after sending or dropping content, and invalidate the cache when
+git-annex branch update merges in a git-annex branch from elsewhere.
+
+Would it be possible to update incrementally from the previous git-annex
+branch to the current one? That's essentially what `git-annex log
+--sizesof` does for each commit on the git-annex branch, so could
+imagine adapting that to store its state on disk, so it can resume
+at a new git-annex branch commit.
+
+Perhaps a less expensive implementation than `git-annex log --sizesof`
+is possible, to get only the current sizes, if the past sizes are known at a
+particular git-annex branch commit. We don't care about sizes at
+intermediate points in time, which that command does calculate.
+
+See [[todo/info_--size-history]] for the subtleties that had to be handled.
+In particular, diffing from the previous git-annex branch commit to current may
+yield lines that seem to indicate content was added to a repo, but in fact
+that repo already had that content at the previous git-annex branch commit.
+So it seems it would have to look up the location log's value at the 
+previous commit, either querying the git-annex branch or cached state.
+
+Worst case, that's queries of the location log file for every single key.
+If queried from git, that would be slow -- slower than `git-annex info`'s
+streaming approach. If they were all cached in a sqlite database, it might
+manage to be faster?
