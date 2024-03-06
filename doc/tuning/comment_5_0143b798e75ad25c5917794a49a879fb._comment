@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="imlew"
+ avatar="http://cdn.libravatar.org/avatar/23858c3eed3c3ea9e21522f4c999f1ed"
+ subject="Still experimental?"
+ date="2024-03-06T12:26:56Z"
+ content="""
+`annex.tune.objecthash1=true` and `annex.tune.branchhash1=true` seem like they could be helpful in reducing git annex's inode usage, but the disclaimer about this feature being experimental is a little worrying.
+
+Since this it is over 10 years old though, is it still considered experimental or has it graduated to being a stable feature? I.e. will using this meaningfully increase the chance of losing data?
+
+
+Also, what is the (potential) benefit of using lowercase for the hashes?
+"""]]
