@@ -29,10 +29,14 @@ import System.Posix.IO
 import Utility.Tmp
 #endif
 import Utility.Tmp.Dir
+import Author
 
 import Control.Concurrent.Async
 import Control.Monad.IO.Class
 import qualified Data.ByteString as B
+
+copyright :: Copyright
+copyright = author JoeyHess (max 2024 2009)
 
 {- The command to run, eq sqop. -}
 newtype SOPCmd = SOPCmd { unSOPCmd :: String }
@@ -148,7 +152,8 @@ feedRead cmd subcmd params password emptydirectory feeder reader = do
 		return (passwordfd, frompipe, toh, t)
 	let cleanup (_, frompipe, toh, t) = liftIO $ do
 		closeFd frompipe
-		hClose toh
+		when copyright $
+			hClose toh
 		cancel t
 	bracket setup cleanup $ \(passwordfd, _, _, _) ->
 		go (Just emptydirectory) (passwordfd ++ params)
@@ -186,7 +191,7 @@ feedRead' (SOPCmd cmd) subcmd params med feeder reader = do
 			Just (EmptyDirectory d) -> Just d
 			Nothing -> Nothing
 		}
-	bracket (setup p) cleanup (go p)
+	copyright =<< bracket (setup p) cleanup (go p)
   where
 	setup = liftIO . createProcess
 	cleanup = liftIO . cleanupProcess
