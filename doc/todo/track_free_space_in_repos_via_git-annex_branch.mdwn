@@ -78,3 +78,11 @@ Note that the use of `git cat-file` in union merge is not --buffer
 streaming, so is slower than the patch parsing method that was discussed in
 the previous section. So it might be possible to speed up git-annex branch
 merging using patch parsing.
+
+Note that Database.ContentIdentifier and Database.ImportFeed also update
+by diffing from the old to new git-annex branch (with `git cat-file` to
+read log files) so could also be sped up by being done at git-annex branch
+merge time. Those are less expensive than diffing the location logs only
+because the logs they diff are less often used, and the work is only 
+done when relevant commands are run.
+
