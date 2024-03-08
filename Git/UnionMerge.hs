@@ -87,11 +87,11 @@ mergeFile :: S.ByteString -> RawFilePath -> HashObjectHandle -> CatFileHandle ->
 mergeFile info file hashhandle h = case S8.words info of
 	[_colonmode, _bmode, asha, bsha, _status] -> 
 		case filter (`notElem` nullShas) [Ref asha, Ref bsha] of
-		[] -> return Nothing
-		(sha:[]) -> use sha
-		shas -> use
-			=<< either return (hashBlob hashhandle . L8.unlines)
-			=<< calcMerge . zip shas <$> mapM getcontents shas
+			[] -> return Nothing
+			(sha:[]) -> use sha
+			shas -> use
+				=<< either return (hashBlob hashhandle . L8.unlines)
+				=<< calcMerge . zip shas <$> mapM getcontents shas
 	_ -> return Nothing
   where
 	use sha = return $ Just $
