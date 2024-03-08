@@ -7,7 +7,7 @@ that entirely:
   other repo is not know to contain, but then repos will race and both get
   the same file, or similarly if they are not communicating frequently.
 
-So, let's add a new expression: `balanced_amoung(group)`
+So, let's add a new expression: `balanced(group)`
 
 This would work by taking the list of uuids of all repositories in the
 group, and sorting them, which yields a list from 0..M-1 repositories.
@@ -28,7 +28,7 @@ scheme stands, it's equally likely that adding repo3 will make repo1 and
 repo2 want to swap files between them. So, we'll want to add some
 precautions to avoid a lot of data moving around in this case:
 
-	((balanced_amoung(backup) and not (copies=backup:1)) or present
+	((balanced(backup) and not (copies=backup:1)) or present
 
 So once file lands on a backup drive, it stays there, even if more backup
 drives change the balancing.
@@ -74,7 +74,7 @@ a manual/scripted process.
 
 What if we have 5 backup repos and want each file to land in 3 of them?
 There's a simple change that can support that:
-`balanced_amoung(group:3)`
+`balanced(group:3)`
 
 This works the same as before, but rather than just `N mod M`, take
 `N+I mod M` where I is [0..2] to get the list of 3 repositories that want a
