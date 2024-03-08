@@ -77,7 +77,7 @@ databaseIsEmpty (ContentIdentifierHandle _ b) = b
 -- ContentIndentifiersKeyRemoteCidIndex speeds up queries like 
 -- getContentIdentifiers, but it is not used for
 -- getContentIdentifierKeys. ContentIndentifiersCidRemoteKeyIndex was
--- addedto speed that up.
+-- added to speed that up.
 share [mkPersist sqlSettings, mkMigrate "migrateContentIdentifier"] [persistLowerCase|
 ContentIdentifiers
   remote UUID
