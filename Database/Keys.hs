@@ -352,7 +352,7 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 		, Param "-z"
 		, Param "--no-abbrev"
 		-- Optimization: Limit to pointer files and annex symlinks.
-		-- This is not perfect. A file could contain with this and not
+		-- This is not perfect. A file could contain this and not
 		-- be a pointer file. And a pointer file that is replaced with
 		-- a non-pointer file will match this. This is only a
 		-- prefilter so that's ok.
