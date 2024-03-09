@@ -228,7 +228,7 @@ gen r u rc gc rs = do
 				, checkPresentExport = checkPresentExportS3 hdl this info
 				-- S3 does not have directories.
 				, removeExportDirectory = Nothing
-				, renameExport = renameExportS3 hdl this rs info
+				, renameExport = Just $ renameExportS3 hdl this rs info
 				}
 			, importActions = ImportActions
                                 { listImportableContents = listImportableContentsS3 hdl this info c

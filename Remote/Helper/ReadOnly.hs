@@ -34,7 +34,7 @@ adjustReadOnly r
 			{ storeExport = readonlyStoreExport
 			, removeExport = readonlyRemoveExport
 			, removeExportDirectory = Just readonlyRemoveExportDirectory
-			, renameExport = readonlyRenameExport
+			, renameExport = Nothing
 			}
 		, importActions = (importActions r)
 			{ storeExportWithContentIdentifier = readonlyStoreExportWithContentIdentifier
@@ -61,9 +61,6 @@ readonlyRemoveExport _ _ = readonlyFail
 
 readonlyRemoveExportDirectory :: ExportDirectory -> Annex ()
 readonlyRemoveExportDirectory _ = readonlyFail
-
-readonlyRenameExport :: Key -> ExportLocation -> ExportLocation -> Annex (Maybe ())
-readonlyRenameExport _ _ _ = return Nothing
 
 readonlyStoreExportWithContentIdentifier :: FilePath -> Key -> ExportLocation -> [ContentIdentifier] -> MeterUpdate -> Annex ContentIdentifier
 readonlyStoreExportWithContentIdentifier _ _ _ _ _ = readonlyFail

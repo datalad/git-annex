@@ -112,7 +112,7 @@ gen r u rc gc rs = do
 				-- Not needed because removeExportLocation
 				-- auto-removes empty directories.
 				, removeExportDirectory = Nothing
-				, renameExport = renameExportM dir
+				, renameExport = Just $ renameExportM dir
 				}
 			, importActions = ImportActions
 				{ listImportableContents = listImportableContentsM ii dir

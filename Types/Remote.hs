@@ -302,7 +302,7 @@ data ExportActions a = ExportActions
 	--
 	-- Throws an exception if the remote cannot be accessed, or
 	-- the file doesn't exist or cannot be renamed.
-	, renameExport :: Key -> ExportLocation -> ExportLocation -> a (Maybe ())
+	, renameExport :: Maybe (Key -> ExportLocation -> ExportLocation -> a (Maybe ()))
 	}
 
 data ImportActions a = ImportActions

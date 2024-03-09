@@ -41,7 +41,7 @@ instance HasExportUnsupported (ExportActions Annex) where
 		, removeExport = nope
 		, versionedExport = False
 		, removeExportDirectory = nope
-		, renameExport = \_ _ _ -> return Nothing
+		, renameExport = Nothing
 		}
 	 where
 	 	nope = giveup "export not supported"
@@ -257,7 +257,7 @@ adjustExportImport' isexport isimport r rs = do
 		-- renameExport is optional, and the remote's
 		-- implementation may lose modifications to the file
 		-- (by eg copying and then deleting) so don't use it
-		, renameExport = \_ _ _ -> return Nothing
+		, renameExport = Nothing
 		, checkPresentExport = checkPresentImport ciddbv
 		}
 	

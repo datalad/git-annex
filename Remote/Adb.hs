@@ -94,7 +94,7 @@ gen r u rc gc rs = do
 			, versionedExport = False
 			, checkPresentExport = checkPresentExportM serial adir
 			, removeExportDirectory = Just $ removeExportDirectoryM serial adir
-			, renameExport = renameExportM serial adir
+			, renameExport = Just $ renameExportM serial adir
 			}
 		, importActions = ImportActions
 			{ listImportableContents = listImportableContentsM serial adir c

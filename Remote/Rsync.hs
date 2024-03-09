@@ -106,7 +106,7 @@ gen r u rc gc rs = do
 				, versionedExport = False
 				, checkPresentExport = checkPresentExportM o
 				, removeExportDirectory = Just (removeExportDirectoryM o)
-				, renameExport = renameExportM o
+				, renameExport = Just $ renameExportM o
 				}
 			, importActions = importUnsupported
 			, whereisKey = Nothing

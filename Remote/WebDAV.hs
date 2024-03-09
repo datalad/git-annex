@@ -104,7 +104,7 @@ gen r u rc gc rs = do
 				, versionedExport = False
 				, removeExportDirectory = Just $
 					removeExportDirectoryDav hdl
-				, renameExport = renameExportDav hdl
+				, renameExport = Just $ renameExportDav hdl
 				}
 			, importActions = importUnsupported
 			, whereisKey = Nothing

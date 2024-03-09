@@ -98,7 +98,7 @@ gen r u rc gc rs
 				, versionedExport = False
 				, checkPresentExport = checkPresentExportM external
 				, removeExportDirectory = Just $ removeExportDirectoryM external
-				, renameExport = renameExportM external
+				, renameExport = Just $ renameExportM external
 				}
 			else exportUnsupported
 		-- Cheap exportSupported that replaces the expensive
