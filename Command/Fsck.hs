@@ -128,7 +128,7 @@ start from inc si file key = Backend.getBackend (fromRawFilePath file) key >>= \
 		(numcopies, _mincopies) <- getFileNumMinCopies file
 		case from of
 			Nothing -> go $ perform key file backend numcopies
-			Just r -> go $ performRemote key afile backend numcopies r
+			Just r -> go $ performRemote key afile numcopies r
   where
 	go = runFsck inc si (mkActionItem (key, afile)) key
 	afile = AssociatedFile (Just file)
@@ -145,7 +145,7 @@ perform key file backend numcopies = do
 		, verifyAssociatedFiles key keystatus file
 		, verifyWorkTree key file
 		, checkKeySize key keystatus ai
-		, checkBackend backend key keystatus afile
+		, checkBackend key keystatus afile
 		, checkKeyUpgrade backend key ai afile
 		, checkKeyNumCopies key afile numcopies
 		]
@@ -155,8 +155,8 @@ perform key file backend numcopies = do
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
-performRemote :: Key -> AssociatedFile -> Backend -> NumCopies -> Remote -> Annex Bool
-performRemote key afile backend numcopies remote =
+performRemote :: Key -> AssociatedFile -> NumCopies -> Remote -> Annex Bool
+performRemote key afile numcopies remote =
 	dispatch =<< Remote.hasKey remote key
   where
 	dispatch (Left err) = do
@@ -179,7 +179,7 @@ performRemote key afile backend numcopies remote =
 		, case fmap snd lv of
 			Just Verified -> return True
 			_ -> withLocalCopy (fmap fst lv) $
-				checkBackendRemote backend key remote ai
+				checkBackendRemote key remote ai
 		, checkKeyNumCopies key afile numcopies
 		]
 	ai = mkActionItem (key, afile)
@@ -218,16 +218,16 @@ startKey from inc (si, key, ai) numcopies =
 		Nothing -> stop
 		Just backend -> runFsck inc si ai key $
 			case from of
-				Nothing -> performKey key backend numcopies
-				Just r -> performRemote key (AssociatedFile Nothing) backend numcopies r
+				Nothing -> performKey key numcopies
+				Just r -> performRemote key (AssociatedFile Nothing) numcopies r
 
-performKey :: Key -> Backend -> NumCopies -> Annex Bool
-performKey key backend numcopies = do
+performKey :: Key -> NumCopies -> Annex Bool
+performKey key numcopies = do
 	keystatus <- getKeyStatus key
 	check
 		[ verifyLocationLog key keystatus (mkActionItem key)
 		, checkKeySize key keystatus (mkActionItem key)
-		, checkBackend backend key keystatus (AssociatedFile Nothing)
+		, checkBackend key keystatus (AssociatedFile Nothing)
 		, checkKeyNumCopies key (AssociatedFile Nothing) numcopies
 		]
 
@@ -501,14 +501,14 @@ checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
  - Thus when the user modifies the file, the object will be modified and
  - not pass the check, and we don't want to find an error in this case.
  -}
-checkBackend :: Backend -> Key -> KeyStatus -> AssociatedFile -> Annex Bool
-checkBackend backend key keystatus afile = do
+checkBackend :: Key -> KeyStatus -> AssociatedFile -> Annex Bool
+checkBackend key keystatus afile = do
 	content <- calcRepo (gitAnnexLocation key)
 	ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
 		( nocheck
 		, do
 			mic <- withTSDelta (liftIO . genInodeCache content)
-			ifM (checkBackendOr badContent backend key content ai)
+			ifM (checkBackendOr badContent key content ai)
 				( do
 					checkInodeCache key content mic ai
 					return True
@@ -520,12 +520,12 @@ checkBackend backend key keystatus afile = do
 
 	ai = mkActionItem (key, afile)
 
-checkBackendRemote :: Backend -> Key -> Remote -> ActionItem -> RawFilePath -> Annex Bool
-checkBackendRemote backend key remote ai localcopy =
-	checkBackendOr (badContentRemote remote localcopy) backend key localcopy ai
+checkBackendRemote :: Key -> Remote -> ActionItem -> RawFilePath -> Annex Bool
+checkBackendRemote key remote ai localcopy =
+	checkBackendOr (badContentRemote remote localcopy) key localcopy ai
 
-checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> RawFilePath -> ActionItem -> Annex Bool
-checkBackendOr bad backend key file ai = do
+checkBackendOr :: (Key -> Annex String) -> Key -> RawFilePath -> ActionItem -> Annex Bool
+checkBackendOr bad key file ai = do
 	ok <- verifyKeyContent' key file
 	unless ok $ do
 		msg <- bad key

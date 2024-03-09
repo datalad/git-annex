@@ -126,7 +126,7 @@ perform onlytweaksize o file oldkey oldkeyrec oldbackend newbackend = go =<< gen
 		| knowngoodcontent = finish =<< tweaksize newkey
 		| otherwise = stopUnless checkcontent $
 			finish =<< tweaksize newkey
-	checkcontent = Command.Fsck.checkBackend oldbackend oldkey KeyPresent afile
+	checkcontent = Command.Fsck.checkBackend oldkey KeyPresent afile
 	finish newkey = ifM (Command.ReKey.linkKey file oldkey newkey)
 		( do
 			_ <- copyMetaData oldkey newkey
