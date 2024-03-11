@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="ewen"
+ avatar="http://cdn.libravatar.org/avatar/605b2981cb52b4af268455dee7a4f64e"
+ subject="TLS v1.2 EMS (Extended Master/Main Secret)"
+ date="2024-03-07T03:01:20Z"
+ content="""
+From some more research it seems that Extended Master Secret (aka Extended Main Secret) is a TLS 1.2 only extension, to work around a problem with TLS 1.2 (eg, [2015 post about the problem](https://www.tripwire.com/state-of-security/tls-extended-master-secret-extension-fixing-a-hole-in-tls)).
+
+TLS v1.3 doesn't have this problem, by design, AFAIK.  And thus clients/servers supporting TLS v1.3 entirely avoids the problem (possibly why I have only found it on a few servers; the one I looked into in detail definitely won't connect with TLS v1.3 right now, but they're looking into it).
+
+The webserver support can be confirmed with, eg forced TLS v1.2:
+
+```
+echo \"\" | openssl s_client -tls1_2 -connect WEBSERVER:443 2>&1 | egrep \"Protocol|Extended master\"
+```
+
+and forced TLS v1.3 to check if that will work:
+
+```
+echo \"\" | openssl s_client -tls1_3 -connect WEBSERVER:443
+```
+
+Hopefully that means the number of impacted sites is *relatively* small (eg, ones that haven't enabled TLS v1.3 support in the last 5+ years).
+
+Ewen
+"""]]

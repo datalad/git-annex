@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="bbigras"
+ avatar="http://cdn.libravatar.org/avatar/f1c0201e3f1435eaab02c803a33c52ae"
+ subject="comment 2"
+ date="2024-03-06T17:03:50Z"
+ content="""
+I'm not sure I understand what you mean.
+
+Do you mean that I should clone the s3 bucket with a tool like git-remote-s3? I'm not sure how to do that.
+
+I tried downloading the whole bucket from backblaze, but since I enabled encryption on the bucket, backblaze doesn't let me download the encrypted files. I'm not sure yet if I can get those files using their api.
+
+Just in case I didn't explain correctly what I'm trying to do, I'm trying to do something like this, on a new computer with a fresh ~/Document:
+
+```bash
+❯ cd ~/Documents
+❯ git init
+Initialized empty Git repository in /home/bbigras/Documents/.git/
+❯ git annex init
+init  ok
+(recording state in git...)
+❯ git annex initremote backblaze type=S3 signature=v4 host=s3.us-west-000.backblazeb2.com bucket=my-bucket protocol=https encryption=hybrid keyid=my-key-id
+initremote backblaze (encryption setup) (to gpg keys: my-key-id) (checking bucket...)
+  The bucket already exists, and its annex-uuid file indicates it is used by a different special remote.
+
+git-annex: Cannot reuse this bucket.
+failed
+initremote: 1 failed
+```
+"""]]
