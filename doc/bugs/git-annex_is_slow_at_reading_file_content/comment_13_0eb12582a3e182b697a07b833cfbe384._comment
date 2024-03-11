@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 13"""
+ date="2024-03-11T13:43:19Z"
+ content="""
+<https://hackage.haskell.org/package/botan-low> is another possibility.
+There is a significant effort ongoing to build up this library stack in
+haskell. It does need the botan C library to be installed separately
+unfortunately (I've suggested they embed it).
+
+I have not benchmarked it yet but the docs say it supports hardware
+accellerated SHA1, SHA2, SHA3 on x86 and also SHA1, SHA2 on arm64.
+"""]]
