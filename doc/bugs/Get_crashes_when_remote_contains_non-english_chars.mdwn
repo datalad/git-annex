@@ -1,0 +1,107 @@
+Hi,
+
+### Please describe the problem.
+I'm trying to set up a git-annex repo for my books/technical papers to have easy access to them on my desktop and laptop. I'm using a centralized server (following [this guide](https://git-annex.branchable.com/tips/centralized_git_repository_tutorial/on_your_own_server/)) to make it easy to sync between my machines.
+
+The issue is however that sqlite crashes when I'm trying to get a file from my server. See the log further down for the error message. I'm suspecting it is due to the repo on my server is named `Böcker` (swedish name for books). It does work if I'm cloning it locally on my server. E.g.
+
+[[!format sh """
+$ ssh server
+$ git clone /mnt/Valhalla/Böcker books
+$ cd books
+$ git annex init
+init  ok
+(recording state in git...)
+$ git annex get facklitteratur/rapporter/143-rods.pdf
+get facklitteratur/rapporter/143-rods.pdf (from origin...) 
+ok                                
+(recording state in git...)
+"""]]
+
+And if I use the `ssh://server/~/books` as a remote it works fine.
+
+### What steps will reproduce the problem?
+[[!format sh """
+$ ssh server
+server$ mkdir /tmp/Böcker
+server$ cd /tmp/Böcker
+server$ git init
+server$ git annex init
+server$ dd if=/dev/zeo of=foo bs=4k count=1
+server$ git annex add foo
+server$ git commit -m "Add foo"
+server$ exit
+$ git clone ssh://server/tmp/Böcker /tmp/Böcker
+$ cd Böcker
+$ git annex init
+$ git annex get foo
+"""]]
+Note that `foo` need to have some size hence the use of `dd`, just doing `touch foo` did not trigger the issue for me.
+
+### What version of git-annex are you using? On what operating system?
+On my desktop:
+[[!format sh """
+$ git annex version
+git-annex version: 10.20240227
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.23 bloomfilter-2.0.1.2 cryptonite-0.30 DAV-1.3.4 feed-1.3.2.1 ghc-9.2.5 http-client-0.7.13.1 persistent-sqlite-2.13.1.0 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+"""]]
+
+Running Guix with linux kernel 6.6.18
+
+On my server:
+[[!format sh """
+$ git annex version
+git-annex version: 10.20240227-gbee3abab14f99f3e3d981d8255ca0dd4ff124a84
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24 bloomfilter-2.0.1.2 crypton-0.34 DAV-1.3.4 feed-1.3.2.1 ghc-9.2.8 http-client-0.7.15 persistent-sqlite-2.13.1.0 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+"""]]
+Running Arch Linux with kernel 6.7.9-arch1-1
+
+### Please provide any additional information below.
+Here is the error message I get without any changes to the config (I can silence the warning by enabling annex.sshcaching).
+[[!format sh """
+⎣plattfot@desktop Böcker⎦ git annex get facklitteratur/rapporter/143-rods.pdf
+get facklitteratur/rapporter/143-rods.pdf (from origin...) 
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+git-annex: sqlite worker thread crashed: SQLite3 returned ErrorCan'tOpen while attempting to perform open "/mnt/Valhalla/B\65533\65533cker/.git/annex/keysdb/db".
+p2pstdio: 1 failed
+
+  Lost connection (fd:19: hGetChar: end of file)
+
+  Transfer failed
+
+  Unable to access these remotes: origin
+
+  Maybe add some of these git remotes (git remote add ...):
+  	8c92de49-1a89-4870-8186-b0099ad84be6 -- plattfot@server:~/books
+failed
+get: 1 failed
+
+# End of transcript or log.
+"""]]
+
+Note that this was run after I tested to create a repo with the name books.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sadly no, I manage to hit this on my first try of git-annex.  But I have known about git-annex for a few years, never found a good use for it in my workflow. As I've been using Syncthing for bigger files and that has been working ok.  But with that you pretty much get all or nothing and conflicts are no fun to resolve.  With my books I want to have my .bib file in git but somehow sync the files. I did not want to put everything in a normal git repo as the books directory takes about 64GB. After looking around I remembered git-annex and reading the walkthrough it seems to be a perfect fit! The killer feature in my opinion is that I can specify what files to sync. Which will be handy on my laptop as I don't really want to use up 64GB just so I can read one or two papers.
+
+I'm not giving up on this that easily. Worst case I'll just rename my repo on my server to Books.
+
+Thank you for all the hours developing this software!
+
