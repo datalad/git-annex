@@ -104,6 +104,30 @@ downloads and files getting more than the desired number of copies.
 
 ----
 
+Of course this is not limited to backup drives. A more complicated example:
+There are 4 geographically distributed datacenters, each of which has some
+number of drives. Each file should have 1 copy stored in each datacenter,
+on some drive there. 
+
+This can be implemented by making a group for each datacenter, which all of
+its drives are in, and using `balanced()` to pick the drive that holds the
+copy of the file. The preferred content expression would be eg:
+	
+    ((balanced(datacenterA) and not (copies=datacenterA:1)) or present
+
+In such a situation, to avoid a `N^2` remote interconnect, there might be a
+transfer repository in each datacenter, that is in front of its drives. The
+transfer repository should want files that have not yet reached the
+destination drive. How to write a preferred content expression for that?
+It might be sufficient to use `copies=datacenterA:1`, so long as the file
+reaching any drive in the datacenter is enough. But may want to add
+something analagous to `inallgroup=` that checks if a file is in
+the place that `balanced()` picks for a group. Eg, 
+`balancedgroup=datacenterA` for 1 copy and `balancedgroup=group:datacenterA:2`
+for N copies.
+
+----
+
 Another possibility to think about is to have one repo calculate which
 files to store on which repos, to best distribute and pack them. The first
 repo that writes a solution would win and other nodes would work to move
