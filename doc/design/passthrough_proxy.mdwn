@@ -107,3 +107,18 @@ content. Eg, analize what files are typically requested, and store another
 copy of those on the proxy. Perhaps prioritize storing smaller files, where
 latency tends to swamp transfer speed.
 
+## encryption
+
+When the proxy is in front of a special remote that uses encryption, where
+does the encryption happen? It could either happen on the client before
+sending to the proxy, or the proxy could do the encryption since it
+communicates with the special remote. For security, doing the encryption on
+the client seems like the best choice by far.
+
+But, git-annex's git remotes don't currently ever do encryption. And
+special remotes don't communicate via the P2P protocol with a git remote.
+So none of git-annex existing remote implementations would be able to handle
+this case. So something will need to be changed in the remote
+implementation to handle this case.
+
+(Chunking has the same problem.)
