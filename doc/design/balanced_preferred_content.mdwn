@@ -137,3 +137,7 @@ In a split brain situation, there would be sets of repos doing work toward
 different solutions. On merge it would make sense to calculate a new
 solution that takes that work into account as well as possible. (Some work
 would surely have been in vain.)
+
+## see also
+
+[[todo/proving_preferred_content_behavior]]
