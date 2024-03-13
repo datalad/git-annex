@@ -117,8 +117,11 @@ the client seems like the best choice by far.
 
 But, git-annex's git remotes don't currently ever do encryption. And
 special remotes don't communicate via the P2P protocol with a git remote.
-So none of git-annex existing remote implementations would be able to handle
-this case. So something will need to be changed in the remote
-implementation to handle this case.
+So none of git-annex's existing remote implementations would be able to handle
+this case. Something will need to be changed in the remote
+implementation for this.
 
 (Chunking has the same problem.)
+
+There's potentially a layering problem here, because exactly how encryption
+(or chunking) works can vary depending on the type of special remote.
