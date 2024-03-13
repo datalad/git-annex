@@ -1,0 +1,90 @@
+When [[balanced_preferred_content]] is used, there may be many repositories
+in a location -- either a server or a cluster -- and getting any given file
+may need to access any of them. Configuring remotes for each repository
+adds a lot of complexity, both in setting up access controls on each
+server, and for the user. 
+
+Particularly on the user side, when ssh is used they may have to deal with
+many different ssh host keys, as well as adding new remotes or removing
+existing remotes to keep up with changes are made on the server side.
+
+A proxy would avoid this complexity. It also allows limiting network
+ingress to a single point.
+
+Ideally a proxy would look like any other git-annex remote. All the files
+stored anywhere in the cluster would be available to retrieve from the
+proxy. When a file is sent to the proxy, it would store it somewhere in the
+cluster.
+
+Currently the closest git-annex can get to implementing such a proxy is a
+transfer repository that wants all content that is not yet stored in the
+cluster. This allows incoming transfers to be accepted and distributed to
+nodes of the cluster. To get data back out of the cluster, there has to be
+some communication that it is preferred content (eg, setting metadata),
+then after some delay for it to be copied back to the transfer repository,
+it becomes available for the client to download it. And once it knows the
+client has its copy, it can be removed from the transfer repository.
+
+That is quite slow, and rather clumsy. And it risks the transfer repository
+filling up with data that has been requested by clients that have not yet
+picked it up, or with incoming transfers that have not yet reached the
+cluster.
+
+A proxy would not hold the content of files itself. It would be a clone of
+the git repository though, probably. Uploads and downloads would stream
+through the proxy. The git-annex [[P2P_protocol]] could be relayed in this way. 
+
+## discovering UUIDS
+
+A significant difficulty in implementing a proxy for the P2P protocol is
+that each git-annex remote has a single UUID. But the remote that points at
+the proxy can't just have the UUID of the proxy's repository, git-annex
+needs to know that the remote can be used to access repositories with every
+UUID in the cluster.
+
+----
+
+Could the P2P protocol be extended to let the proxy communicate the UUIDs
+of all the repositories behind it?
+
+Once the client git-annex knows the set of UUIDs behind the proxy, it can
+instantiate a remote object per uuid, each of which accesses the proxy, but
+with a different UUID.
+
+But, git-annx usually only does UUID discovery the first time a ssh remote
+is accessed. So it would need to discover at that point that the remote is
+a proxy. Then it could do UUID discovery each time git-annex starts up.
+But that adds significant overhead, git-annex would be making a connection
+to the proxy in situations where it is not going to use it.
+
+----
+
+Could the proxy's set of UUIDs instead be recorded somewhere in the
+git-annex branch?
+
+With this approach, git-annex would know as soon as it sees the proxy's
+UUID that this is a proxy for this other set of UUIDS. (Unless its
+git-annex branch is not up-to-date.) And then it can instantiate a UUID for
+each remote.
+
+One difficulty with this is that, when the git-annex branch is not up to
+date with changes from the proxy, git-annex may try to access repositories
+that are no longer available behind the proxy. That failure would be
+handled the same as any other currently unavailable repository. Also
+git-annex would not use the full set of repositories, so might not be able
+to store data when eg, all the repositories that is knows about are full.
+Just getting the git-annex back in sync should recover from either
+situation.
+
+## streaming to special remotes
+
+As well as being an intermediary to git-annex repositories, the proxy could
+provide access to other special remotes. That could be an object store like
+S3, which might be internal to the cluster or not. When using a cloud
+service like S3, only the proxy needs to know the access credentials.
+
+Currently git-annex does not support streaming content to special remotes.
+The remote interface operates on object files stored on disk. See
+[[todo/transitive_transfers]] for discussion of that problem. If proxies
+get implemented, that problem should be revisited.
+
