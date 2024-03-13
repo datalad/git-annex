@@ -34,15 +34,15 @@ A proxy would not hold the content of files itself. It would be a clone of
 the git repository though, probably. Uploads and downloads would stream
 through the proxy. The git-annex [[P2P_protocol]] could be relayed in this way. 
 
-## discovering UUIDS
+## UUID discovery
 
-A significant difficulty in implementing a proxy for the P2P protocol is
-that each git-annex remote has a single UUID. But the remote that points at
-the proxy can't just have the UUID of the proxy's repository, git-annex
-needs to know that the remote can be used to access repositories with every
-UUID in the cluster.
+A significant difficulty in implementing a proxy is that each git-annex
+remote has a single UUID. But the remote that points at the proxy can't
+just have the UUID of the proxy's repository, git-annex needs to know that
+the proxy's remote can be used to access repositories with every UUID in
+the cluster.
 
-----
+### UUID discovery via P2P protocol extension
 
 Could the P2P protocol be extended to let the proxy communicate the UUIDs
 of all the repositories behind it?
@@ -57,7 +57,7 @@ a proxy. Then it could do UUID discovery each time git-annex starts up.
 But that adds significant overhead, git-annex would be making a connection
 to the proxy in situations where it is not going to use it.
 
-----
+### UUID discovery via git-annex branch
 
 Could the proxy's set of UUIDs instead be recorded somewhere in the
 git-annex branch?
