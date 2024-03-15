@@ -1,4 +1,4 @@
-Say we have 2 backup drives and want to fill them both evenly with files,
+Say we have 2 drives and want to fill them both evenly with files,
 different files in each drive. Currently, preferred content cannot express
 that entirely:
 
@@ -6,11 +6,20 @@ that entirely:
 * Or, can let both repos take whatever files, perhaps at random, that the
   other repo is not know to contain, but then repos will race and both get
   the same file, or similarly if they are not communicating frequently.
+  Existing preferred content expressions such as the one for archive group
+  have this problem.
 
 So, let's add a new expression: `balanced(group)`
 
+## implementation
+
 This would work by taking the list of uuids of all repositories in the
-group, and sorting them, which yields a list from 0..M-1 repositories.
+group that have enough free space to store a key, and sorting them, 
+which yields a list from 0..M-1 repositories.
+
+(To know if a repo has enough free space to store a key 
+will need [[todo/track_free_space_in_repos_via_git-annex_branch]]
+to be implemented.)
 
 To decide which repository wants key K, convert K to a number N in some
 stable way and then `N mod M` yields the number of the repository that
@@ -19,60 +28,29 @@ wants it, while all the rest don't.
 (Since git-annex keys can be pretty long and not all of them are random
 hashes, let's md5sum the key and then use the md5 as a number.)
 
-This expression is stable as long as the members of the group don't change.
-I think that's stable enough to work as a preferred content expression.
+## stability
 
-Now, you may want to be able to add a third repo and have the data be
-rebalanced, with some moving to it. And that would happen. However, as this
-scheme stands, it's equally likely that adding repo3 will make repo1 and
-repo2 want to swap files between them. So, we'll want to add some
-precautions to avoid a lot of data moving around in this case:
+Note that this preferred content expression will not be stable. A change in 
+the members of the group will change which repository is selected. And
+changes in how full repositories are will also change which repo is
+selected.
+
+Without stability, when another repo is added to the group, all data will
+be rebalanced, with some moving to it. Which could be desirable in some
+situations, but the problem is that it's likely that adding repo3 will make
+repo1 and repo2 want to swap some files between them,
+
+So, we'll want to add some precautions to avoid a lot of data moving around
+in such a case:
 
 	((balanced(backup) and not (copies=backup:1)) or present
 
 So once file lands on a backup drive, it stays there, even if more backup
 drives change the balancing.
 
------
+## use case: 3 of 5
 
-Some limitations:
-
-* The item size is not taken into account. One repo could end up with a
-  much larger item or items and so fill up faster. And the other repo
-  wouldn't then notice it was full and take up some slack.
-* With the complicated expression above, adding a new repo when one 
-  is full would not necessarily result in new files going to one of the 2
-  repos that still have space. Some items would end up going to the full
-  repo.
-
-These can be dealt with by noticing when a repo is full and moving some
-of it's files (any will do) to other repos in its group. I don't see a way
-to make preferred content express that movement though; it would need to be
-a manual/scripted process.
-
-> Could the size of each repo be recorded (either actual disk size or
-> desired max size) and when a repo is too full to hold an object, be left
-> out of the set of repos used to calculate where to store that object?
->
-> With the preferred content expression above with "present" in it, 
-> a repo being full would not cause any content to be moved off of it,
-> only new content that had not yet reached any of the repos in the 
-> group would be affected. That seems good.
-> 
-> This would need only a single one-time write to the git-annex branch,
-> to record the repo size. Then update a local counter for each repository
-> from the git-annex branch location log changes. 
-> There is a todo about doing this,
-> [[todo/track_free_space_in_repos_via_git-annex_branch]].
-> 
-> Of course, in the time after the git-annex branch was updated and before
-> it reaches the local repo, a repo can be full without us knowing about
-> it. Stores to it would fail, and perhaps be retried, until the updated
-> git-annex branch was synced.
-
------
-
-What if we have 5 backup repos and want each file to land in 3 of them?
+What if we have 5 backup repos and want each key to be stored in 3 of them?
 There's a simple change that can support that:
 `balanced(group:3)`
 
@@ -80,29 +58,15 @@ This works the same as before, but rather than just `N mod M`, take
 `N+I mod M` where I is [0..2] to get the list of 3 repositories that want a
 key.
 
-This does not really avoid the limitations above, but having more repos
-that want each file will reduce the chances that no repo will be able to
-take a given file. In the [[iabackup]] scenario, new clients will just be
-assigned until all the files reach the desired level or replication.
+However, once 3 of those 5 repos get full, new keys will only be able to be
+stored on 2 of them. At that point one or more new repos will need to be
+added to reach the goal of each key being stored in 3 of them. It would be
+possible to rebalance the 3 full repos by moving some keys from them to the
+other 2 repos, and eke out more storage before needing to add new
+repositories. A separate rebalancing pass, that does not use preferred
+content alone, could be implemented to handle this (see below).
 
-However.. Imagine there are 9 repos, all full, and some files have not
-reached desired level of replication. Seems like adding 1 more repo will make
-only 3 in 10 files be wanted by that new repo. Even if the repo has space
-for all the files, it won't be sufficient, and more repos would need to be
-added.
-
-One way to avoid this problem would be if the preferred content was only
-used for the initial distribution of files to a repo. If the repo has
-gotten all the files it wants, it could make a second pass and
-opportunistically get files it doesn't want but that it has space for
-and that don't have enough copies yet.
-Although this gets back to the original problem of multiple repos racing
-downloads and files getting more than the desired number of copies.
-
-> With the above idea of tracking when repos are full, the new repo
-> would want all files when the other 9 repos are full.
-
-----
+## use case: geographically distinct datacenters
 
 Of course this is not limited to backup drives. A more complicated example:
 There are 4 geographically distributed datacenters, each of which has some
@@ -112,7 +76,7 @@ on some drive there.
 This can be implemented by making a group for each datacenter, which all of
 its drives are in, and using `balanced()` to pick the drive that holds the
 copy of the file. The preferred content expression would be eg:
-	
+
     ((balanced(datacenterA) and not (copies=datacenterA:1)) or present
 
 In such a situation, to avoid a `N^2` remote interconnect, there might be a
@@ -126,20 +90,60 @@ the place that `balanced()` picks for a group. Eg,
 `balancedgroup=datacenterA` for 1 copy and `balancedgroup=group:datacenterA:2`
 for N copies.
 
-----
+The [[design/passthrough_proxy]] idea is an alternate way to put a
+repository in front of such a cluster, that does not need additional
+extensions to preferred content.
 
-Another possibility to think about is to have one repo calculate which
-files to store on which repos, to best distribute and pack them. The first
-repo that writes a solution would win and other nodes would work to move
-files around as needed. 
+## split brain situations
 
-In a split brain situation, there would be sets of repos doing work toward 
-different solutions. On merge it would make sense to calculate a new
-solution that takes that work into account as well as possible. (Some work
-would surely have been in vain.)
+Of course, in the time after the git-annex branch was updated and before
+it reaches the local repo, a repo can be full without us knowing about
+it. Stores to it would fail, and perhaps be retried, until the updated
+git-annex branch was synced. 
 
-## see also
+In the worst case, a split brain situation
+can make the balanced preferred content expression
+pick a different repository to hold two independent
+stores of the same key. Eg, when one side thinks one repo is full,
+and the other side thinks the other repo is full.
 
-[[todo/proving_preferred_content_behavior]]  
-[[todo/passthrough_proxy]]  
+If `present` is used in the preferred content, both of them will then
+want to contain it. (Is `present` really needed like shown in the examples
+above?)
+
+If it's not, one of them will drop it and the other will
+usually maintain its copy. It would perhaps be possible for both of
+them to drop it, leading to a re-upload cycle. This needs some research
+to see if it's a real problem. 
+See [[todo/proving_preferred_content_behavior]].
+
+## rebalancing
+
+In both the 3 of 5 use case and a split brain situation, it's possible for
+content to end up not optimally balanced between repositories. git-annex
+can be made to operate in a mode where it does additional work to rebalance
+repositories. 
+
+This can be an option like --rebalance, that changes how the preferred content
+expression is evaluated. The user can choose where and when to run that.
+Eg, it might be run on a node inside a cluster after adding more storage to
+the cluster.
+
+In several examples above, we have preferred content expressions in this
+form:
+
+    ((balanced(group:N) and not (copies=group:N)) or present
+
+In order to rebalance, that needs to be changed to:
+
+    balanced(group:N)
+
+What could be done is make `balanced()` usually expand to the former,
+but when --rebalance is used, it only expands to the latter.
+
+(Might make the fully balanced behavior available as `fullybalanced()` for
+users who want it, then 
+`balanced() == ((fullybalanced(group:N) and not (copies=group:N)) or present`
+usually and when --rebalance is used, `balanced() == fullybalanced(group:N)`
+
 
