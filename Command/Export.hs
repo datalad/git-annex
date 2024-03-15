@@ -409,13 +409,15 @@ startMoveToTempName :: Remote -> ExportHandle -> TopFilePath -> Key -> CommandSt
 startMoveToTempName r db f ek = case renameExport (exportActions r) of
 	Just _ -> starting ("rename " ++ name r) ai si $
 		performRename r db ek loc tmploc
-	Nothing -> stop
+	Nothing -> starting ("unexport " ++ name r) ai' si $
+		performUnexport r db [ek] loc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
 	tmploc = exportTempName ek
 	ai = ActionItemOther $ Just $ 
 		QuotedPath f' <> " -> " <> QuotedPath (fromExportLocation tmploc)
+	ai' = ActionItemTreeFile (fromExportLocation loc)
 	si = SeekInput []
 
 startMoveFromTempName :: Remote -> ExportHandle -> Key -> TopFilePath -> CommandStart
@@ -423,13 +425,15 @@ startMoveFromTempName r db ek f = case renameExport (exportActions r) of
 	Just _ -> stopUnless (liftIO $ elem tmploc <$> getExportedLocation db ek) $
 		starting ("rename " ++ name r) ai si $
 			performRename r db ek tmploc loc
-	Nothing -> stop
+	Nothing -> starting ("unexport " ++ name r) ai' si $
+		performUnexport r db [ek] tmploc
   where
 	loc = mkExportLocation f'
 	f' = getTopFilePath f
 	tmploc = exportTempName ek
 	ai = ActionItemOther $ Just $
 		QuotedPath (fromExportLocation tmploc) <> " -> " <> QuotedPath f'
+	ai' = ActionItemTreeFile (fromExportLocation tmploc)
 	si = SeekInput []
 
 performRename :: Remote -> ExportHandle -> Key -> ExportLocation -> ExportLocation -> CommandPerform
