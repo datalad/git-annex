@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="oadams"
+ avatar="http://cdn.libravatar.org/avatar/ac166a5f89f10c4108e5150015e6751b"
+ subject="Need for git-annex-remote-rclone"
+ date="2024-03-14T01:03:46Z"
+ content="""
+In order to use rclone as a special remote, the user needs to download a separate Bash scriptfrom https://github.com/DanielDent/git-annex-remote-rclone and put it in their PATH. Since that extra dependency is only a few hundred lines of Bash, I would be interested in attempting to implement `Remote/Rclone.hs` so that the rclone special remote is entirely built into git-annex. However, I wanted to run it by you before more seriously considering investing time in doing that. What are your thoughts on this? I'm assuming the only reason rclone support isn't built into git-annex is just a lack of time and incentive, rather than a more fundamental technical reason. Is that right?
+
+Thanks for all your work on this tool. 
+"""]]
