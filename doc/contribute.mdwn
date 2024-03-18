@@ -61,6 +61,9 @@ or work on porting libraries needed by the Windows port.
 To send patches, either include the patch in a [[bug|bugs]] report (small
 patch) or put up a branch in a git repository containing your changes.
 
+[Policy on AI generated content](https://joeyh.name/blog/entry/policy_on_adding_AI_generated_content_to_my_software_projects/)
+(Summary: It's welcome! But see the page for important details.)
+
 ## learning some Haskell
 
 Want to learn some Haskell to get hacking on git-annex?
