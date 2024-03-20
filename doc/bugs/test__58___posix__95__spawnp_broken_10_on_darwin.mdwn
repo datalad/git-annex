@@ -1,0 +1,25 @@
+### Please describe the problem.
+
+We observer error in our CI:
+
+```
+      ./Test/Framework.hs:86:
+      addurl on file:///private/tmp/nix-build-git-annex-10.20231129.drv-0/git-annex-10.20231129-src/.t/25/tmprepo0/myurl failed with unexpected exit code (transcript follows)
+      addurl file:///private/tmp/nix-build-git-annex-10.20231129.drv-0/git-annex-10.20231129-src/.t/25/tmprepo0/myurl 
+      git-annex: security: createProcess: posix_spawnp: does not exist (No such file or directory)
+      failed
+      addurl: 1 failed
+```
+
+https://github.com/cachix/pre-commit-hooks.nix/actions/runs/8355807260/job/22871621632
+
+### What steps will reproduce the problem?
+
+build git-annex and run tests on darwin
+
+### What version of git-annex are you using? On what operating system?
+
+10.20231129
+
+
+
