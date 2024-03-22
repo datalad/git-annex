@@ -538,7 +538,7 @@ git-annex (10.20220927) upstream; urgency=medium
   * Fix updating git index file after getting an unlocked file 
     when annex.stalldetection is set.
   * restage: New git-annex command, handles restaging unlocked files.
-  * test: Added --test-with-git-config option.
+  * test: Added --test-git-config option.
   * Run annex.freezecontent-command and annex.thawcontent-command
     when on a crippled filesystem.
     Thanks, Reiko Asakura
