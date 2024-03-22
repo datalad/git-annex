@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-03-22T14:47:02Z"
+ content="""
+This error message seems to indicate that git-annex tried to run a program
+named "security", which does not exist.
+
+I can reproduce the error message like so:
+
+	ghci> createProcess (proc "security" [])
+	*** Exception: security: createProcess: posix_spawnp: does not exist (No such file or directory)
+
+Since git-annex definitely does not normally try to run a program named
+"security" -- it doesn't even contain any String with that value -- I am
+puzzled by what could be causing it to do so. My best guess is something in
+your git configuration might be set. For example:
+
+	joey@darkstar:~/tmp/xx>git config annex.freezecontent-command security
+	joey@darkstar:~/tmp/xx>git-annex addurl file:///bin/sh
+	addurl file:///bin/sh
+	(to _bin_sh) sh: 1: security: not found
+
+Which well, rules out that particular git config, but there are several git
+configs that specify a command to run, so some other one.
+
+However, the test suite also runs with `GIT_CONFIG_NOSYSTEM` set, so git won't read
+the system gitconfig file, and it also sets HOME to a temp directory to avoid reading
+`~/.gitconfig`. So normally even such a git config setting should not affect the test suite.
+"""]]
