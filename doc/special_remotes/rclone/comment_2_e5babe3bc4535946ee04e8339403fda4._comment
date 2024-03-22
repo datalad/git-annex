@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: Need for git-annex-remote-rclone"""
+ date="2024-03-22T15:01:43Z"
+ content="""
+That's right, I have actually thought before that enough people use it that
+it would make sense to either build it in as haskell or ship the program
+with git-annex in a kind of contrib.
+
+With that said, there is also something to be said for distributing
+maintenance, and I think I'd at least want a committment to maintain it if
+it were added to git-annex, since git-annex-remote-rclone already has
+ongoing maintenance.
+
+Another angle is [[forum/New_external_special_remote_for_rclone]] which
+might see the special remote built into rclone itself, and so able to take
+advantage of rclone's internal API. That might supplant the shell script if
+it turns out to be better.
+"""]]
