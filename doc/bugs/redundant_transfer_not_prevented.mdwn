@@ -1,0 +1,51 @@
+Copying the same file from 2 repositories into another repository at the
+same time, the redundant transfer is not prevented.
+
+This was surprising to me! I would have expected it to prevent starting an
+upload when another transfer of that key is already running. The same as
+it does when starting 2 copies of the same file to the same remote.
+
+I'm easily able to reproduce this in a bench test with 2 clones of a repo.
+
+    git init a
+    cd a
+    git-annex init
+    dd if=/dev/urandom of=big bs=1M count=1000
+    git-annex add
+    git commit -m add
+    cd ..
+    git clone a b
+    git clone a c
+    cd b; git-annex get
+    cd ../c; git-annex move --from orgin
+    (cd b; git-annex copy --to origin) &
+    (cd c; git-annex copy --to origin) &
+
+Aha... Looking at the code, this seems like a fundamental oversight.
+The `transferFile` depends on the uuid of the remote being transfered
+to/from, so there are two different ones in this case. And the transfer
+lock file that is checked derives from those files, so there are two
+seperate lock files.
+
+That is actually what we want when eg, uploading content from the same
+repo into two different repos. It would not do for an upload to one repo
+to block uploading to another repo. So a per-uuid lock file makes sense for
+uploads. But not for downloads.
+
+It seems that it does make sense to have different transfer information
+files for downloads from different uuids. Because the filename is parsed
+to determine the uuid.
+
+Perhaps the fix is just for `transferLockFile` to take a Transfer parameter,
+and return the same lock file for all Downloads of a key, no matter the
+uuid.
+
+There is the issue that renaming the lock file would break interoperability 
+with old git-annex. In this case, since this bug prevents noticing multiple
+downloads from different uuids, interoperability would only prevent
+noticing multiple downloads from the same uuid. Which is not a great
+behavior to break either, even if it would usually only break transiently.
+
+Of course that could be avoided by keeping the current lock file, and
+adding a second level lock file.
+--[[Joey]]
