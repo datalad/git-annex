@@ -17,6 +17,8 @@ version.
   interoperate with old git-annex versions that only lock the old lock file
   and not the new one.
 
+  See [[!commit f04d9574d6a56cfdf034a974f9714f0a3b8c49fa]].
+
   (Note that the old lock file should still be deleted when cleaning up the
   new lock file, to make sure that all the old lock files get deleted.)
 
