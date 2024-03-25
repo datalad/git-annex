@@ -171,7 +171,7 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 		createAnnexDirectory $ P.takeDirectory lck
 		catchMaybeIO (liftIO $ lockExclusive lck) >>= \case
 			Nothing -> return (Nothing, False)
-			Just Nothing -> return (Nothing, True)
+			Just Nothing -> return (Nothing, False)
 			Just (Just lockhandle) -> do
 				createtfile
 				return (Just lockhandle, False)
