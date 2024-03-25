@@ -1,5 +1,7 @@
 Variants of the git-annex logo.
 
+👕 Since March 2024 you can buy shirts, hoodies and backpacks with the git annex logo over at [hellotux.com](https://www.hellotux.com/git-annex).
+
 [[logo_small.png]]
 
 [[logo.svg]]

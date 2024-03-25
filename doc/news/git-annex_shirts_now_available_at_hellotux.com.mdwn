@@ -1,0 +1,3 @@
+Since 24.03.2024, [hellotux.com](https://www.hellotux.com/git-annex) now offers git-annex-branded shirts, hoodies and backpacks. Just in time, right before the [distribits](https://distribits.live/) meeting.
+
+This cooperation was initiated by [Yann Büchau (nobodyinperson)](https://git-annex.branchable.com/users/nobodyinperson/).
