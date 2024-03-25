@@ -1,6 +1,6 @@
 {- git-annex transfers
  -
- - Copyright 2012-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -128,9 +128,10 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
   where
 	go = do
 		info <- liftIO $ startTransferInfo afile
-		(meter, tfile, createtfile, metervar) <- mkProgressUpdater t info
+		(tfile, lckfile, moldlckfile) <- fromRepo $ transferFileAndLockFile t
+		(meter, createtfile, metervar) <- mkProgressUpdater t info tfile
 		mode <- annexFileMode
-		(lck, inprogress) <- prep tfile createtfile mode
+		(lck, inprogress) <- prep lckfile moldlckfile createtfile mode
 		if inprogress && not ignorelock
 			then do
 				warning "transfer already in progress, or unable to take transfer lock"
@@ -139,51 +140,75 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 				v <- retry 0 info metervar $
 					detectStallsAndSuggestConfig stalldetection metervar $
 						transferaction meter
-				liftIO $ cleanup tfile lck
+				liftIO $ cleanup tfile lckfile moldlckfile lck
 				if observeBool v
 					then removeFailedTransfer t
 					else recordFailedTransfer t info
 				return v
 	
-	prep :: RawFilePath -> Annex () -> ModeSetter -> Annex (Maybe LockHandle, Bool)
+	prep :: RawFilePath -> Maybe RawFilePath -> Annex () -> ModeSetter -> Annex (Maybe (LockHandle, Maybe LockHandle), Bool)
 #ifndef mingw32_HOST_OS
-	prep tfile createtfile mode = catchPermissionDenied (const prepfailed) $ do
-		let lck = transferLockFile tfile
-		createAnnexDirectory $ P.takeDirectory lck
-		tryLockExclusive (Just mode) lck >>= \case
+	prep lckfile moldlckfile createtfile mode = catchPermissionDenied (const prepfailed) $ do
+		createAnnexDirectory $ P.takeDirectory lckfile
+		tryLockExclusive (Just mode) lckfile >>= \case
 			Nothing -> return (Nothing, True)
 			-- Since the lock file is removed in cleanup,
 			-- there's a race where different processes
 			-- may have a deleted and a new version of the same
 			-- lock file open. checkSaneLock guards against
 			-- that.
-			Just lockhandle -> ifM (checkSaneLock lck lockhandle)
-				( do
-					createtfile
-					return (Just lockhandle, False)
+			Just lockhandle -> ifM (checkSaneLock lckfile lockhandle)
+				( case moldlckfile of
+					Nothing -> do
+						createtfile
+						return (Just (lockhandle, Nothing), False)
+					Just oldlckfile -> do
+						createAnnexDirectory $ P.takeDirectory oldlckfile
+						tryLockExclusive (Just mode) oldlckfile >>= \case
+							Nothing -> do
+								liftIO $ dropLock lockhandle
+								return (Nothing, True)
+							Just oldlockhandle -> ifM (checkSaneLock oldlckfile oldlockhandle)
+								( do
+									createtfile
+									return (Just (lockhandle, Just oldlockhandle), False)
+								, do
+									liftIO $ dropLock oldlockhandle
+									liftIO $ dropLock lockhandle
+									return (Nothing, True)
+								)
 				, do
 					liftIO $ dropLock lockhandle
 					return (Nothing, True)
 				)
 #else
-	prep tfile createtfile _mode = catchPermissionDenied (const prepfailed) $ do
-		let lck = transferLockFile tfile
-		createAnnexDirectory $ P.takeDirectory lck
-		catchMaybeIO (liftIO $ lockExclusive lck) >>= \case
-			Nothing -> return (Nothing, False)
-			Just Nothing -> return (Nothing, False)
-			Just (Just lockhandle) -> do
-				createtfile
-				return (Just lockhandle, False)
+	prep lckfile moldlckfile createtfile _mode = catchPermissionDenied (const prepfailed) $ do
+		createAnnexDirectory $ P.takeDirectory lckfile
+		catchMaybeIO (liftIO $ lockExclusive lckfile) >>= \case
+			Just (Just lockhandle) -> case moldlckfile of
+				Nothing -> do
+					createtfile
+					return (Just (lockhandle, Nothing), False)
+				Just oldlckfile -> do
+					createAnnexDirectory $ P.takeDirectory oldlckfile
+					catchMaybeIO (liftIO $ lockExclusive oldlckfile) >>= \case
+						Just (Just oldlockhandle) -> do
+							createtfile
+							return (Just (lockhandle, Just oldlockhandle), False)
+						_ -> do
+							liftIO $ dropLock lockhandle
+							return (Nothing, False)
+			_ -> return (Nothing, False)
 #endif
 	prepfailed = return (Nothing, False)
 
-	cleanup _ Nothing = noop
-	cleanup tfile (Just lockhandle) = do
-		let lck = transferLockFile tfile
+	cleanup _ _ _ Nothing = noop
+	cleanup tfile lckfile moldlckfile (Just (lockhandle, moldlockhandle)) = do
 		void $ tryIO $ R.removeLink tfile
 #ifndef mingw32_HOST_OS
-		void $ tryIO $ R.removeLink lck
+		void $ tryIO $ R.removeLink lckfile
+		maybe noop (void . tryIO . R.removeLink) moldlckfile
+		maybe noop dropLock moldlockhandle
 		dropLock lockhandle
 #else
 		{- Windows cannot delete the lockfile until the lock
@@ -191,8 +216,10 @@ runTransfer' ignorelock t eventualbackend afile stalldetection retrydecider tran
 		 - process that takes the lock before it's removed,
 		 - so ignore failure to remove.
 		 -}
+		maybe noop dropLock moldlockhandle
 		dropLock lockhandle
-		void $ tryIO $ R.removeLink lck
+		void $ tryIO $ R.removeLink lckfile
+		maybe noop (void . tryIO . R.removeLink) moldlckfile
 #endif
 
 	retry numretries oldinfo metervar run =

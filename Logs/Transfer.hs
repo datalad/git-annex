@@ -1,6 +1,6 @@
 {- git-annex transfer information files and lock files
  -
- - Copyright 2012-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -56,26 +56,24 @@ percentComplete t info =
 		<*> Just (fromMaybe 0 $ bytesComplete info)
 
 {- Generates a callback that can be called as transfer progresses to update
- - the transfer info file. Also returns the file it'll be updating, 
- - an action that sets up the file with appropriate permissions,
- - which should be run after locking the transfer lock file, but
- - before using the callback, and a TVar that can be used to read
- - the number of bytes processed so far. -}
-mkProgressUpdater :: Transfer -> TransferInfo -> Annex (MeterUpdate, RawFilePath, Annex (), TVar (Maybe BytesProcessed))
-mkProgressUpdater t info = do
-	tfile <- fromRepo $ transferFile t
+ - the transfer info file. Also returns an action that sets up the file with
+ - appropriate permissions, which should be run after locking the transfer
+ - lock file, but before using the callback, and a TVar that can be used to
+ - read the number of bytes processed so far. -}
+mkProgressUpdater :: Transfer -> TransferInfo -> RawFilePath -> Annex (MeterUpdate, Annex (), TVar (Maybe BytesProcessed))
+mkProgressUpdater t info tfile = do
 	let createtfile = void $ tryNonAsync $ writeTransferInfoFile info tfile
 	tvar <- liftIO $ newTVarIO Nothing
 	loggedtvar <- liftIO $ newTVarIO 0
-	return (liftIO . updater (fromRawFilePath tfile) tvar loggedtvar, tfile, createtfile, tvar)
+	return (liftIO . updater (fromRawFilePath tfile) tvar loggedtvar, createtfile, tvar)
   where
-	updater tfile tvar loggedtvar new = do
+	updater tfile' tvar loggedtvar new = do
 		old <- atomically $ swapTVar tvar (Just new)
 		let oldbytes = maybe 0 fromBytesProcessed old
 		let newbytes = fromBytesProcessed new
 		when (newbytes - oldbytes >= mindelta) $ do
 			let info' = info { bytesComplete = Just newbytes }
-			_ <- tryIO $ updateTransferInfoFile info' tfile
+			_ <- tryIO $ updateTransferInfoFile info' tfile'
 			atomically $ writeTVar loggedtvar newbytes
 
 	{- The minimum change in bytesComplete that is worth
@@ -102,33 +100,40 @@ startTransferInfo afile = TransferInfo
 {- If a transfer is still running, returns its TransferInfo.
  - 
  - If no transfer is running, attempts to clean up the stale
- - lock and info files. This can happen if a transfer process was
- - interrupted.
+ - lock and info files, which can be left behind when a transfer
+ - process was interrupted.
  -}
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
 checkTransfer t = debugLocks $ do
-	tfile <- fromRepo $ transferFile t
-	let lck = transferLockFile tfile
-	let cleanstale = do
+	(tfile, lck, moldlck) <- fromRepo $ transferFileAndLockFile t
+	let deletestale = do
 		void $ tryIO $ R.removeLink tfile
 		void $ tryIO $ R.removeLink lck
+		maybe noop (void . tryIO . R.removeLink) moldlck
 #ifndef mingw32_HOST_OS
 	v <- getLockStatus lck
-	case v of
+	v' <- case (moldlck, v) of
+		(Nothing, _) -> pure v
+		(_, StatusLockedBy pid) -> pure (StatusLockedBy pid)
+		(Just oldlck, _) -> getLockStatus oldlck
+	case v' of
 		StatusLockedBy pid -> liftIO $ catchDefaultIO Nothing $
 			readTransferInfoFile (Just pid) (fromRawFilePath tfile)
 		_ -> do
-			-- Take a non-blocking lock while deleting
-			-- the stale lock file. Ignore failure
-			-- due to permissions problems, races, etc.
-			void $ tryIO $ do
-				mode <- annexFileMode
-				r <- tryLockExclusive (Just mode) lck
-				case r of
-					Just lockhandle -> liftIO $ do
-						cleanstale
+			mode <- annexFileMode
+			-- Ignore failure due to permissions, races, etc.
+			void $ tryIO $ tryLockExclusive (Just mode) lck >>= \case
+				Just lockhandle -> case moldlck of
+					Nothing -> liftIO $ do
+						deletestale
 						dropLock lockhandle
-					_ -> noop
+					Just oldlck -> tryLockExclusive (Just mode) oldlck >>= \case
+						Just oldlockhandle -> liftIO $ do
+							deletestale
+							dropLock oldlockhandle
+							dropLock lockhandle
+						Nothing -> liftIO $ dropLock lockhandle
+				Nothing -> noop
 			return Nothing
 #else
 	v <- liftIO $ lockShared lck
@@ -198,24 +203,45 @@ recordFailedTransfer t info = do
 	failedtfile <- fromRepo $ failedTransferFile t
 	writeTransferInfoFile info failedtfile
 
-{- The transfer information file to use for a given Transfer. -}
-transferFile :: Transfer -> Git.Repo -> RawFilePath
-transferFile (Transfer direction u kd) r =
-	transferDir direction r
-		P.</> B8.filter (/= '/') (fromUUID u)
-		P.</> keyFile (mkKey (const kd))
+{- The transfer information file and transfer lock file 
+ - to use for a given Transfer. 
+ -
+ - The transfer lock file used for an Upload includes the UUID.
+ - This allows multiple transfers of the same key to different remote
+ - repositories run at the same time, while preventing multiple
+ - transfers of the same key to the same remote repository.
+ -
+ - The transfer lock file used for a Download does not include the UUID.
+ - This prevents multiple transfers of the same key into the local
+ - repository at the same time.
+ -
+ - Since old versions of git-annex (10.20240227 and older) used to 
+ - include the UUID in the transfer lock file for a Download, this also
+ - returns a second lock file for Downloads, which has to be locked
+ - in order to interoperate with the old git-annex processes.
+ - Lock order is the same as return value order. 
+ - At some point in the future, when old git-annex processes are no longer
+ - a concern, this complication can be removed.
+ -}
+transferFileAndLockFile :: Transfer -> Git.Repo -> (RawFilePath, RawFilePath, Maybe RawFilePath)
+transferFileAndLockFile (Transfer direction u kd) r =
+	case direction of
+		Upload -> (transferfile, uuidlockfile, Nothing)
+		Download -> (transferfile, nouuidlockfile, Just uuidlockfile)
+  where
+	td = transferDir direction r
+	fu = B8.filter (/= '/') (fromUUID u)
+	kf = keyFile (mkKey (const kd))
+	lckkf = "lck." <> kf
+	transferfile = td P.</> fu P.</> kf
+	uuidlockfile = td P.</> fu P.</> lckkf
+	nouuidlockfile = td P.</> "lck" P.</> lckkf
 
 {- The transfer information file to use to record a failed Transfer -}
 failedTransferFile :: Transfer -> Git.Repo -> RawFilePath
 failedTransferFile (Transfer direction u kd) r = 
 	failedTransferDir u direction r
 		P.</> keyFile (mkKey (const kd))
-
-{- The transfer lock file corresponding to a given transfer info file. -}
-transferLockFile :: RawFilePath -> RawFilePath
-transferLockFile infofile = 
-	let (d, f) = P.splitFileName infofile
-	in P.combine d ("lck." <> f)
 
 {- Parses a transfer information filename to a Transfer. -}
 parseTransferFile :: FilePath -> Maybe Transfer

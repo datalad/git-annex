@@ -21,6 +21,9 @@ I'm easily able to reproduce this in a bench test with 2 clones of a repo.
     (cd b; git-annex copy --to origin) &
     (cd c; git-annex copy --to origin) &
 
+Also same happens when running `git-annex get --from` two different remotes
+concurrently in the same repo.
+
 Aha... Looking at the code, this seems like a fundamental oversight.
 The `transferFile` depends on the uuid of the remote being transfered
 to/from, so there are two different ones in this case. And the transfer
@@ -47,5 +50,7 @@ noticing multiple downloads from the same uuid. Which is not a great
 behavior to break either, even if it would usually only break transiently.
 
 Of course that could be avoided by keeping the current lock file, and
-adding a second level lock file.
+adding a second lock file. [[done]] this, with plans in
+[[todo/v11_changes]] to transition to use only the new lock file in
+the future.
 --[[Joey]]

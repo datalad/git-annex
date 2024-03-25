@@ -10,3 +10,19 @@ version.
   after upgrading to the repo version that enables this. Depending on the
   timing of v11, this may need to be put in a v12 upgrade that is delayed
   some amount of time (eg 1 year) after v11.
+
+* Avoid locking old transfer lock file. transferFileAndLockFile
+  currently returns two lock files for Download transfers,
+  and locking both of them is unncessary work, which is only needed to
+  interoperate with old git-annex versions that only lock the old lock file
+  and not the new one.
+
+  (Note that the old lock file should still be deleted when cleaning up the
+  new lock file, to make sure that all the old lock files get deleted.)
+
+  It would not be great if this change were made when a git-annex version
+  10.20240227 or older was running in the repository. But it wouldn't be
+  the end of the world either, because the effect would be effectively
+  the same as the bug that the second transfer lock was added to fix.
+  Still, it would make sense to put this in a v12 upgrade that is delayed
+  some amount of time (eg 1 year) after v11.

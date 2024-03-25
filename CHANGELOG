@@ -7,6 +7,10 @@ git-annex (10.20240228) UNRELEASED; urgency=medium
   * Added dependency on unbounded-delays.
   * reregisterurl: New command that can change an url from being
     used by a special remote to being used by the web remote.
+  * Bugfix: While redundant concurrent transfers were already
+    prevented in most cases, it failed to prevent the case where
+    two different repositories were sending the same content to
+    the same repository.
 
  -- Joey Hess <id@joeyh.name>  Tue, 27 Feb 2024 13:07:10 -0400
 

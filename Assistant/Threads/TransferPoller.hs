@@ -45,7 +45,7 @@ transferPollerThread = namedThread "TransferPoller" $ do
 		{- Otherwise, this code polls the upload progress
 		 - by reading the transfer info file. -}
 		| otherwise = do
-			let f = transferFile t g
+			let (f, _, _) = transferFileAndLockFile t g
 			mi <- liftIO $ catchDefaultIO Nothing $
 				readTransferInfoFile Nothing (fromRawFilePath f)
 			maybe noop (newsize t info . bytesComplete) mi
