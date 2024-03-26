@@ -52,7 +52,7 @@ import Control.Concurrent.MVar
 import qualified System.FilePath.ByteString as P
 import System.PosixCompat.Files (isRegularFile)
 
-import Annex.Common hiding (append)
+import Annex.Common
 import Types.BranchState
 import Annex.BranchState
 import Annex.Journal
