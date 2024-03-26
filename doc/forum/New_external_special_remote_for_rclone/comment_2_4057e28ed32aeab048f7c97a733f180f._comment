@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="d@403a635aa8eaa8bfa8613acb6a375d9e06ed7001"
+ nickname="d"
+ avatar="http://cdn.libravatar.org/avatar/b79468a0d03ec3ec7acbae547c4fa994"
+ subject="comment 2"
+ date="2024-03-26T14:07:19Z"
+ content="""
+This has now been merged into rclone, but it's not yet shipped in a release. It is now a subcommand of rclone (`rclone gitannex`) rather than a standalone command. When invoked with `-h`, it prints some rough installation instructions, which are also available here: <https://github.com/rclone/rclone/blob/master/cmd/gitannex/gitannex.md>.
+
+As for the concurrent transfers problem, I was told by rclone's maintainer that on backends where partially uploaded files are visible, the backend automatically writes to a temp location and renames when the transfer is complete [[GitHub thread](https://github.com/rclone/rclone/pull/7654#discussion_r1512964399)]. I want to delve into this a little more and do something in `rclone gitannex` when the backend does not have this two-step-transfer property (maybe it should print a warning, or maybe just abort).
+"""]]
