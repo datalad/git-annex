@@ -31,9 +31,6 @@ import Utility.FileSystemEncoding
 import qualified Utility.RawFilePath as R
 import Author
 
-copyright :: Copyright
-copyright = author JoeyHess (2022-11)
-
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
 moveFile :: RawFilePath -> RawFilePath -> IO ()
@@ -64,8 +61,7 @@ moveFile src dest = tryIO (R.rename src dest) >>= onrename
 				]
 			let e' = e
 #else
-			r <- tryIO $ copyright
-				=<< copyFile (fromRawFilePath src) tmp
+			r <- tryIO $ copyFile (fromRawFilePath src) tmp
 			let (ok, e') = case r of
 				Left err -> (False, err)
 				Right _ -> (True, e)
@@ -81,4 +77,7 @@ moveFile src dest = tryIO (R.rename src dest) >>= onrename
 		case r of
 			(Left _) -> return False
 			(Right s) -> return $ isDirectory s
+
+copyright :: Copyright
+copyright = author JoeyHess (2022-11)
 #endif
