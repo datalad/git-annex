@@ -18,9 +18,9 @@ module Utility.ThreadScheduler (
 ) where
 
 import Control.Monad
-import Control.Concurrent
 import qualified Control.Concurrent.Thread.Delay as Unbounded
 #ifndef mingw32_HOST_OS
+import Control.Concurrent
 import Control.Monad.IfElse
 import System.Posix.IO
 #endif

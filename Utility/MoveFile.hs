@@ -64,7 +64,8 @@ moveFile src dest = tryIO (R.rename src dest) >>= onrename
 				]
 			let e' = e
 #else
-			r <- tryIO $ copyFile (fromRawFilePath src) tmp
+			r <- tryIO $ copyright
+				=<< copyFile (fromRawFilePath src) tmp
 			let (ok, e') = case r of
 				Left err -> (False, err)
 				Right _ -> (True, e)
