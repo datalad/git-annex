@@ -216,7 +216,7 @@ startKey :: Maybe Remote -> Incremental -> (SeekInput, Key, ActionItem) -> NumCo
 startKey from inc (si, key, ai) numcopies =
 	Backend.maybeLookupBackendVariety (fromKey keyVariety key) >>= \case
 		Nothing -> stop
-		Just backend -> runFsck inc si ai key $
+		Just _ -> runFsck inc si ai key $
 			case from of
 				Nothing -> performKey key numcopies
 				Just r -> performRemote key (AssociatedFile Nothing) numcopies r
