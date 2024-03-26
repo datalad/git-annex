@@ -40,5 +40,5 @@ checkIsTerminal h = do
 				then return (IsTerminal False)
 				else do
 					b' <- isMinTTYHandle h'
-					return (IsTerminal b)
+					return (IsTerminal b')
 #endif
