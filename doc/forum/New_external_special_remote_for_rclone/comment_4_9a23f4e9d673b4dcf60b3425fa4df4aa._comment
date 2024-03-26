@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-03-26T17:39:25Z"
+ content="""
+Looking at the docs at
+<https://github.com/git-annex-remote-rclone/git-annex-remote-rclone>
+there are a lot of options for different directory layouts. Do you have any
+plans to support those? It seems it might be useful for migration of
+existing special remotes, if nothing else.
+
+I guess that "rcloneprefix=" in this is the same as "prefix="
+in git-annex-remote-rclone?
+
+I've added a mention of this to [[special_remotes/rclone]].
+"""]]
