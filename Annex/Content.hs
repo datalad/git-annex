@@ -103,7 +103,9 @@ import Logs.Location
 import Utility.InodeCache
 import Utility.CopyFile
 import Utility.Metered
+#ifndef mingw32_HOST_OS
 import Utility.FileMode
+#endif
 import qualified Utility.RawFilePath as R
 
 import qualified System.FilePath.ByteString as P
