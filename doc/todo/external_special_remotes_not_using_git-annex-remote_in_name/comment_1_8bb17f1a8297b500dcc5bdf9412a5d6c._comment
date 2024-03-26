@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2024-03-26T19:13:15Z"
+ content="""
+my 1c: since `git-annex` is pretty much following git's own `git-remote-` paradigm here, I think it is ok to require `git-annex-remote-` to even simply be able to check what are the available `git-annex` remotes etc. Providing a shim to pass through to some tool specific interface is IMHO trivial enough. And as you outline, such approach also helps to avoid a security concern.
+"""]]
