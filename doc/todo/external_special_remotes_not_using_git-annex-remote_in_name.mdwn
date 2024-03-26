@@ -1,0 +1,29 @@
+rclone now supports being run as a git-annex special remote natively
+see <https://github.com/rclone/rclone/pull/7654>. "rclone gitannex"
+is the command to run. But git-annex needs a git-annex-remote-rclone or similar,
+so they are shipping a git-annex-remote-rclone-builtin symlink to rclone,
+and when run under that name it behaves as if "rclone gitannex" were run.
+
+So in this case, the need for "git-annex-remote-foo" is complicating an
+upstream project that has gone out of its way to support git-annex. Not ideal.
+
+From the pull request, @dmcardle wrote:
+
+> My taste would be to implement a more generic mechanism rather than adding a special case for rclone gitannex. 
+> What if externaltype could be repeated, so that git annex initremote MyRemote type=external externaltype=rclone >
+> externaltype=gitannex ... would cause git-annex to exec rclone with the additional gitannex arg?
+
+But, that seems to present a security problem. Consider an attacker who runs
+`git-annex initremote foo type=external autoenable=true externaltype=rm externaltype=/foo`
+
+My conclusion is that git-annex can't provide a generic way to run a different
+command for an external special remote. Any such commands need to be
+whitelisted in some way. And if they're whitelisted, it seems better to not
+require the user to enter additional parameters at all.
+
+So one way would be to make "git-annex initremote foo type=external externaltype=rclone-builtin"
+run "rclone gitannex".
+
+Or, git-annex add an internal rclone special remote, that is just
+a wrapper around the external special remote, that makes it use
+"rclone gitannex". "git-annex initremote foo type=rclone" --[[Joey]]

@@ -24,7 +24,14 @@ the time of writing, this includes the following services:
   * Yandex Disk
   * The local filesystem
 
-That list is regularly expanding. git-annex supports all of those through
+That list is regularly expanding. 
+
+git-annex supports all of those through
 the use of the [rclone special remote](https://github.com/DanielDent/git-annex-remote-rclone).
+
+Alternatively, rclone recently gained support for being used as a special
+remote on its own, without needing installation of the above program.
+For documentation on using rclone that way, see the output of
+`rclone gitannex` or [here](https://github.com/git-annex-remote-rclone/git-annex-remote-rclone).
 
 See their documentation for more concrete examples.
