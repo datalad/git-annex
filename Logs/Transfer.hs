@@ -142,7 +142,7 @@ checkTransfer t = debugLocks $ do
 			readTransferInfoFile Nothing (fromRawFilePath tfile)
 		Just lockhandle -> do
 			dropLock lockhandle
-			cleanstale
+			deletestale
 			return Nothing
 #endif
 
