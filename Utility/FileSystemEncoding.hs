@@ -21,17 +21,18 @@ module Utility.FileSystemEncoding (
 	truncateFilePath,
 ) where
 
-import qualified GHC.Foreign as GHC
 import qualified GHC.IO.Encoding as Encoding
 import System.IO
-import System.IO.Unsafe
 import System.FilePath.ByteString (RawFilePath, encodeFilePath, decodeFilePath)
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
-import Data.ByteString.Unsafe (unsafePackMallocCStringLen)
 #ifdef mingw32_HOST_OS
 import qualified Data.ByteString.UTF8 as S8
 import qualified Data.ByteString.Lazy.UTF8 as L8
+#else
+import qualified GHC.Foreign as GHC
+import System.IO.Unsafe
+import Data.ByteString.Unsafe (unsafePackMallocCStringLen)
 #endif
 
 {- Makes all subsequent Handles that are opened, as well as stdio Handles,

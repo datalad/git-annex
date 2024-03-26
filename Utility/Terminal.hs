@@ -16,7 +16,6 @@ module Utility.Terminal (
 import System.IO
 #ifdef mingw32_HOST_OS
 import System.Win32.MinTTY (isMinTTYHandle)
-import System.Win32.File
 import System.Win32.Types
 import Graphics.Win32.Misc
 import Control.Exception
