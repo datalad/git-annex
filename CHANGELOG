@@ -344,7 +344,7 @@ git-annex (10.20230329) upstream; urgency=medium
     that use exporttree=yes. In some cases this could result in the wrong
     content being exported to, or retrieved from the remote.
   * Support VERSION 2 in the external special remote protocol, which is
-    identical to VERSION 1, but avoids external remote programs neededing
+    identical to VERSION 1, but avoids external remote programs needing
     to work around the above bug. External remote program that support
     exporttree=yes are recommended to be updated to send VERSION 2.
 
