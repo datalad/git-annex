@@ -32,6 +32,6 @@ the use of the [rclone special remote](https://github.com/DanielDent/git-annex-r
 Alternatively, rclone recently gained support for being used as a special
 remote on its own, without needing installation of the above program.
 For documentation on using rclone that way, see the output of
-`rclone gitannex` or [here](https://github.com/git-annex-remote-rclone/git-annex-remote-rclone).
+`rclone gitannex -h` or [here](//github.com/rclone/rclone/blob/master/cmd/gitannex/gitannex.md).
 
 See their documentation for more concrete examples.
