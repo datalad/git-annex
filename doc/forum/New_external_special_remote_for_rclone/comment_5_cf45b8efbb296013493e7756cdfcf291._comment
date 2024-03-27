@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="d@403a635aa8eaa8bfa8613acb6a375d9e06ed7001"
+ nickname="d"
+ avatar="http://cdn.libravatar.org/avatar/b79468a0d03ec3ec7acbae547c4fa994"
+ subject="comment 5"
+ date="2024-03-27T13:26:34Z"
+ content="""
+> Looking at the docs at <https://github.com/git-annex-remote-rclone/git-annex-remote-rclone> there are a lot of options for different directory layouts. Do you have any plans to support those? It seems it might be useful for migration of existing special remotes, if nothing else.
+
+This wasn't on my roadmap, but I think it's worth prioritizing. It would enable users to migrate between these special remote implementations without requiring double the storage space on the remote and a proportional amount of patience. I've added this to milestone 2 in my [tracking comment](https://github.com/rclone/rclone/issues/7625#issuecomment-1951403856) on GitHub.
+
+> I guess that \"rcloneprefix=\" in this is the same as \"prefix=\" in git-annex-remote-rclone?
+
+Correct. I intentionally chose to start all config names with \"rclone\". I think this makes it a little easier for users to grok the initremote command, since other key-value pairs like `encryption=hybrid` also show up there. I suppose I could also support config names without the rclone prefix without much trouble, and it might make it easier for users to migrate. I'll have to mull on that. Also added to the tracking comment linked above.
+
+> I've added a mention of this to rclone.
+
+Awesome! Thanks for adding my project! Two edits:
+
+* The command should be `rclone gitannex -h`. Without `-h`, it will start speaking the external special remote protocol at the user ;)
+* The link should be <https://github.com/rclone/rclone/blob/master/cmd/gitannex/gitannex.md> -- looks like you accidentally pasted the link for git-annex-remote-rclone.
+
+
+"""]]
