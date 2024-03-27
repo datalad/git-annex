@@ -945,9 +945,9 @@ rememberTreeishLocked treeish graftpoint jl = do
 	addedt <- inRepo $ Git.Tree.graftTree treeish graftpoint origtree
 	cmode <- annexCommitMode <$> Annex.getGitConfig
 	c <- inRepo $ Git.Branch.commitTree cmode
-		"graft" [branchref] addedt
+		["graft"] [branchref] addedt
 	c' <- inRepo $ Git.Branch.commitTree cmode
-		"graft cleanup" [c] origtree
+		["graft cleanup"] [c] origtree
 	inRepo $ Git.Branch.update' fullname c'
 	-- The tree in c' is the same as the tree in branchref,
 	-- and the index was updated to that above, so it's safe to

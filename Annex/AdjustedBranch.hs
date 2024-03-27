@@ -469,7 +469,7 @@ commitAdjustedTree' treesha (BasisBranch basis) parents =
 			(commitCommitterMetaData basiscommit)
 			(mkcommit cmode)
 	mkcommit cmode = Git.Branch.commitTree cmode
-		adjustedBranchCommitMessage parents treesha
+		[adjustedBranchCommitMessage] parents treesha
 
 {- This message should never be changed. -}
 adjustedBranchCommitMessage :: String
@@ -577,7 +577,7 @@ reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
 			(commitAuthorMetaData basiscommit)
 			(commitCommitterMetaData basiscommit) $
 				Git.Branch.commitTree cmode
-					(commitMessage basiscommit)
+					[commitMessage basiscommit]
 					[commitparent] treesha
 		return (Right revadjcommit)
 

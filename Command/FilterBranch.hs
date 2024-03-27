@@ -189,7 +189,7 @@ seek o = withOtherTmp $ \tmpdir -> do
 	liftIO $ removeWhenExistsWith removeLink tmpindex
 	cmode <- annexCommitMode <$> Annex.getGitConfig
 	cmessage <- Annex.Branch.commitMessage
-	c <- inRepo $ Git.commitTree cmode cmessage [] t
+	c <- inRepo $ Git.commitTree cmode [cmessage] [] t
 	liftIO $ putStrLn (fromRef c)
   where
 	ww = WarnUnmatchLsFiles "filter-branch"

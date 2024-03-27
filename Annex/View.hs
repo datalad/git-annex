@@ -577,7 +577,7 @@ updateView view madj = do
 			cmode <- annexCommitMode <$> Annex.getGitConfig
 			let msg = "updated " ++ fromRef (branchView view madj)
 			let parent = catMaybes [oldcommit]
-			inRepo (Git.Branch.commitTree cmode msg parent newtree)
+			inRepo (Git.Branch.commitTree cmode [msg] parent newtree)
 		else return Nothing
 
 {- Diff between currently checked out branch and staged changes, and

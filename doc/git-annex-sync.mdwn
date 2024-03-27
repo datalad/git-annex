@@ -51,6 +51,9 @@ when syncing with repositories that have preferred content configured.
 
   Use this option to specify a commit message.
 
+  If multiple -m options are given, their values are concatenated
+  as separate paragraphs.
+
 * `--pull`, `--no-pull`
 
   Use this option to disable pulling.
