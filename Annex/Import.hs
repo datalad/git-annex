@@ -86,7 +86,7 @@ data ImportCommitConfig = ImportCommitConfig
 	{ importCommitTracking :: Maybe Sha
 	-- ^ Current commit on the remote tracking branch.
 	, importCommitMode :: Git.Branch.CommitMode
-	, importCommitMessages :: [String]
+	, importCommitMessage :: String
 	}
 
 {- Buils a commit for an import from a special remote.
@@ -251,7 +251,7 @@ buildImportCommit' remote importcommitconfig mtrackingcommit imported@(History t
 
 	mkcommit parents tree = inRepo $ Git.Branch.commitTree
 		(importCommitMode importcommitconfig)
-		(importCommitMessages importcommitconfig)
+		(importCommitMessage importcommitconfig)
 		parents
 		tree
 

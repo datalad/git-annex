@@ -178,7 +178,7 @@ commit commitmode allowempty message branch parentrefs repo = do
 	tree <- writeTree repo
 	ifM (cancommit tree)
 		( do
-			sha <- commitTree commitmode [message] parentrefs tree repo
+			sha <- commitTree commitmode message parentrefs tree repo
 			update' branch sha repo
 			return $ Just sha
 		, return Nothing
@@ -207,15 +207,15 @@ writeTreeQuiet repo = extractSha <$> withNullHandle go
 	go nullh = pipeReadStrict' (\p -> p { std_err = UseHandle nullh }) 
 		[Param "write-tree"] repo
 
-commitTree :: CommitMode -> [String] -> [Ref] -> Ref -> Repo -> IO Sha
-commitTree commitmode messages parentrefs tree repo =
-	getSha "commit-tree" $ pipeReadStrict ps repo
+commitTree :: CommitMode -> String -> [Ref] -> Ref -> Repo -> IO Sha
+commitTree commitmode message parentrefs tree repo =
+	getSha "commit-tree" $
+		pipeWriteRead ([Param "commit-tree", Param (fromRef tree)] ++ ps)
+			sendmsg repo
   where
-	ps = [Param "commit-tree", Param (fromRef tree)]
-		++ applyCommitModeForCommitTree commitmode baseparams repo
-	baseparams = map Param $
-		concatMap (\r -> ["-p", fromRef r]) parentrefs
-			++ concatMap (\msg -> ["-m", msg]) messages
+	sendmsg = Just $ flip hPutStr message
+	ps = applyCommitModeForCommitTree commitmode parentparams repo
+	parentparams = map Param $ concatMap (\r -> ["-p", fromRef r]) parentrefs
 
 {- A leading + makes git-push force pushing a branch. -}
 forcePush :: String -> String

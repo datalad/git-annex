@@ -77,7 +77,7 @@ makeRemoteTrackingBranchMergeCommit' commitsha importedhistory treesha = do
 	cmode <- annexCommitMode <$> Annex.getGitConfig
 	inRepo $ Git.Branch.commitTree
 			cmode
-			["remote tracking branch"]
+			"remote tracking branch"
 			[commitsha, importedhistory]
 			treesha
 

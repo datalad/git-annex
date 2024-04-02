@@ -153,8 +153,7 @@ mergeToAdjustedBranch tomerge (origbranch, adj) mergeconfig canresolvemerge comm
 			then do
 				cmode <- annexCommitMode <$> Annex.getGitConfig
 				c <- inRepo $ Git.Branch.commitTree cmode
-					["Merged " ++ fromRef tomerge]
-					[adjmergecommit]
+					("Merged " ++ fromRef tomerge) [adjmergecommit]
 					(commitTree currentcommit)
 				inRepo $ Git.Branch.update "updating adjusted branch" currbranch c
 				propigateAdjustedCommits origbranch adj

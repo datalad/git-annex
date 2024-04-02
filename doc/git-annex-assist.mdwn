@@ -34,9 +34,6 @@ files that it does not match will instead be added with `git add`.
 
   Use this option to specify a commit message.
 
-  If multiple -m options are given, their values are concatenated
-  as separate paragraphs.
-
 * `--content-of=path` `-C path`
 
   Only add, pull, and push files in the given path.
