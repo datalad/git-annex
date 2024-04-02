@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="psxvoid"
+ avatar="http://cdn.libravatar.org/avatar/fde068fbdeabeea31e3be7aa9c55d84b"
+ subject="support for bulk write/read/test remote"
+ date="2024-04-02T06:41:25Z"
+ content="""
+Hi,
+
+I'm wondering whether there an any easy way to delay \"progress reporting\" (a.k.a. \"report progress for ALL `transfer_store` operations ONCE\", a.k.a. \"bulk transfer\") for a special remote?
+
+What I'm trying to achieve: there is an archiver called [dar](http://dar.linux.free.fr/), which I would like to implement a special remote for.
+It can write many files into a single archive and also supports incremental/differential backups.
+A one can create an archive with this utility, by providing a list of files or directories as params.
+
+The problem with the current git annex special remote API is that it does not allows to report transfer progress for ALL key/files for a special remote (e.g. with `transfer_store`), and then check the progress at **ONCE** for **ALL** files at the end of the process.
+Ideally, the protocol should have some kind of \"write test\" command to check the written archive for errors, and only then report the progress as \"successful\".
+
+What I was thinking of is to just write all files into a temporarily list during `transfer_store`, and then externally archive this list of files after `git annex copy --to dar-remote` is done. But seems like git annex will think that the process of writing files to that remote was successful, while it may not (e.g. file access error happened, or an archive was corrupted, etc).
+
+How can it be achieved? Do we need to extend git annex with another protocol extension? How difficult it may be, and where to start?
+I suppose there is no way Joey or anyone else will work on it any time soon if there is no workaround, and I have to submit a patch?
+
+P.S.: I've seen [async extensions](https://git-annex.branchable.com/design/external_special_remote_protocol/async_appendix/) but it seems like it's tied to a threads, which most likely won't allow to achieve the described goals.
+"""]]
