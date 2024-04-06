@@ -211,7 +211,7 @@ chunkLogFile config key =
 chunkLogExt :: S.ByteString
 chunkLogExt = ".log.cnk"
 
-{- The filename of the equivilant keys log for a given key. -}
+{- The filename of the equivalent keys log for a given key. -}
 equivilantKeysLogFile :: GitConfig -> Key -> RawFilePath
 equivilantKeysLogFile config key = 
 	(branchHashDir config key P.</> keyFile key)

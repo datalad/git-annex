@@ -491,7 +491,7 @@ reconcileStaged dbisnew qh = ifM isBareRepo
 
 	-- How large is large? Too large and there will be a long
 	-- delay before the message is shown; too short and the message
-	-- will clutter things up unncessarily. It's uncommon for 1000
+	-- will clutter things up unnecessarily. It's uncommon for 1000
 	-- files to change in the index, and processing that many files
 	-- takes less than half a second, so that seems about right.
 	largediff :: Int

@@ -267,7 +267,7 @@ seek' o = startConcurrency transferStages $ do
 
 	remotes <- syncRemotes (syncWith o)
 	warnSyncContentTransition o remotes
-	-- Remotes that are git repositories, not (necesarily) special remotes.
+	-- Remotes that are git repositories, not (necessarily) special remotes.
 	let gitremotes = filter (Remote.gitSyncableRemoteType . Remote.remotetype) remotes
 	-- Remotes that contain annex object content.
 	contentremotes <- filter (\r -> Remote.uuid r /= NoUUID)
@@ -978,7 +978,7 @@ seekExportContent :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
 seekExportContent o rs (mcurrbranch, madj)
 	| null rs = return False
 	| otherwise = do
-		-- Propigate commits from the adjusted branch, so that
+		-- Propagate commits from the adjusted branch, so that
 		-- when the remoteAnnexTrackingBranch is set to the parent
 		-- branch, it will be up-to-date.
 		case (mcurrbranch, madj) of

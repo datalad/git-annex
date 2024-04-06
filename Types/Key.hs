@@ -60,7 +60,7 @@ data KeyData = Key
 
 instance NFData KeyData
 
-{- Caching the seralization of a key is an optimization.
+{- Caching the serialization of a key is an optimization.
  -
  - This constructor is not exported, and all smart constructors maintain
  - the serialization.

@@ -1,4 +1,4 @@
-{- Logs listing keys that are equivilant to a key.
+{- Logs listing keys that are equivalent to a key.
  -
  - Copyright 2024 Joey Hess <id@joeyh.name>
  -

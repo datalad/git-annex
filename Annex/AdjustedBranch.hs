@@ -173,7 +173,7 @@ adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = catKey s >>= \case
 
 -- This is a hidden branch ref, that's used as the basis for the AdjBranch,
 -- since pushes can overwrite the OrigBranch at any time. So, changes
--- are propigated from the AdjBranch to the head of the BasisBranch.
+-- are propagated from the AdjBranch to the head of the BasisBranch.
 newtype BasisBranch = BasisBranch Ref
 
 -- The basis for refs/heads/adjusted/master(unlocked) is
@@ -256,7 +256,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 	| not (adjustmentIsStable adj) = do
 		(b, origheadfile, newheadfile) <- preventCommits $ \commitlck -> do
 			-- Avoid losing any commits that the adjusted branch
-			-- has that have not yet been propigated back to the
+			-- has that have not yet been propagated back to the
 			-- origbranch.
 			_ <- propigateAdjustedCommits' True origbranch adj commitlck
 			
@@ -472,7 +472,7 @@ commitAdjustedTree' treesha (BasisBranch basis) parents =
 	-- since that message is looked for later.
 	-- After git-annex 10.20240227, it's possible to use
 	-- commitTree instead of this, but this is being kept
-	-- for some time, for compatability with older versions.
+	-- for some time, for compatibility with older versions.
 	mkcommit cmode = Git.Branch.commitTreeExactMessage cmode
 		adjustedBranchCommitMessage parents treesha
 
@@ -497,10 +497,10 @@ findAdjustingCommit (AdjBranch b) = go =<< catCommit b
 			_ -> return Nothing
 
 {- Check for any commits present on the adjusted branch that have not yet
- - been propigated to the basis branch, and propagate them to the basis
+ - been propagated to the basis branch, and propagate them to the basis
  - branch and from there on to the orig branch.
  -
- - After propigating the commits back to the basis branch,
+ - After propagating the commits back to the basis branch,
  - rebase the adjusted branch on top of the updated basis branch.
  -}
 propigateAdjustedCommits :: OrigBranch -> Adjustment -> Annex ()
@@ -642,7 +642,7 @@ data AdjustedClone = InAdjustedClone | NotInAdjustedClone
  - checked out adjusted branch; the origin could have the two branches
  - out of sync (eg, due to another branch having been pushed to the origin's
  - origbranch), or due to a commit on its adjusted branch not having been
- - propigated back to origbranch.
+ - propagated back to origbranch.
  -
  - So, find the adjusting commit on the currently checked out adjusted
  - branch, and use the parent of that commit as the basis, and set the

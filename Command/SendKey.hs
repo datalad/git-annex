@@ -40,7 +40,7 @@ start (_, key) = do
 		)
   where
 	{- No need to do any rollback; when sendAnnex fails, a nonzero
-	 - exit will be propigated, and the remote will know the transfer
+	 - exit will be propagated, and the remote will know the transfer
 	 - failed. -}
 	rollback = noop
 

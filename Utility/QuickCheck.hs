@@ -32,7 +32,7 @@ import Prelude
  - characters, except for ones in surrogate plane. Converting a string that
  - does contain other unicode characters to a ByteString using the
  - filesystem encoding (see GHC.IO.Encoding) will throw an exception,
- - so use this instead to avoid quickcheck tests breaking unncessarily.
+ - so use this instead to avoid quickcheck tests breaking unnecessarily.
  -} 
 newtype TestableString = TestableString
 	{ fromTestableString :: String }
@@ -46,7 +46,7 @@ instance Arbitrary TestableString where
  -
  - No real-world filename can be empty or contain a NUL. So code can
  - well be written that assumes that and using this avoids quickcheck
- - tests breaking unncessarily.
+ - tests breaking unnecessarily.
  -} 
 newtype TestableFilePath = TestableFilePath
 	{ fromTestableFilePath :: FilePath }

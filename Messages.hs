@@ -267,7 +267,7 @@ setupConsole = do
 	hSetBuffering stderr LineBuffering
 #ifdef mingw32_HOST_OS
 	{- Avoid outputting CR at end of line on Windows. git commands do
-	 - not ouput CR there. -}
+	 - not output CR there. -}
 	hSetNewlineMode stdout noNewlineTranslation
 	hSetNewlineMode stderr noNewlineTranslation
 #endif
@@ -353,7 +353,7 @@ mkPrompter = getConcurrency >>= \case
 				(const $ run a)
 
 {- Catch all (non-async and not ExitCode) exceptions and display, 
- - santizing any control characters in the exceptions.
+ - sanitizing any control characters in the exceptions.
  -
  - Exits nonzero on exception, so should only be used at topmost level.
  -}

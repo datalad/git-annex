@@ -41,7 +41,7 @@ backendVURL = Backend
 						Nothing -> pure False
 				anyM check eks
 	, verifyKeyContentIncrementally = Just $ \k -> do
-		-- Run incremental verifiers for each equivilant key together,
+		-- Run incremental verifiers for each equivalent key together,
 		-- and see if any of them succeed.
 		eks <- equivkeys k
 		let get = \ek -> getbackend ek >>= \case
@@ -53,7 +53,7 @@ backendVURL = Backend
 		return $ IncrementalVerifier
 			{ updateIncrementalVerifier = \s ->
 				forM_ l $ flip updateIncrementalVerifier s
-			-- If there are no equivilant keys recorded somehow,
+			-- If there are no equivalent keys recorded somehow,
 			-- or if none of them support incremental verification,
 			-- this will return Nothing, which indicates that
 			-- incremental verification was not able to be
@@ -80,9 +80,9 @@ backendVURL = Backend
 	-- Not all keys using this backend are necessarily 
 	-- cryptographically secure.
 	, isCryptographicallySecure = False
-	-- A key is secure when all recorded equivilant keys are.
+	-- A key is secure when all recorded equivalent keys are.
 	-- If there are none recorded yet, it's secure because when
-	-- downloaded, an equivilant key that is cryptographically secure
+	-- downloaded, an equivalent key that is cryptographically secure
 	-- will be constructed then.
 	, isCryptographicallySecureKey = \k ->
 		equivkeys k >>= \case
@@ -95,7 +95,7 @@ backendVURL = Backend
 	}
   where
 	equivkeys k = filter allowedequiv <$> getEquivilantKeys k
-	-- Don't allow using VURL keys as equivilant keys, because that
+	-- Don't allow using VURL keys as equivalent keys, because that
 	-- could let a crafted git-annex branch cause an infinite loop.
 	allowedequiv ek = fromKey keyVariety ek /= VURLKey
 	varietymap = makeVarietyMap regularBackendList

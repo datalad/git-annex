@@ -46,7 +46,7 @@ setRemoteTrackingBranch tb commit =
  -
  - The second parent of the merge commit is the past history of the
  - RemoteTrackingBranch as imported from a remote. When importing a
- - history of trees from a remote, commits can be sythesized from
+ - history of trees from a remote, commits can be synthesized from
  - them, but such commits won't have the same sha due to eg date differing.
  - But since we know that the second parent consists entirely of such
  - import commits, they can be reused when updating the

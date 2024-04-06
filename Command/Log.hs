@@ -169,7 +169,7 @@ startAll o outputter = do
  - same key. The method is to compare each value with the value
  - after it in the list, which is the old version of the value.
  -
- - This ncessarily buffers the whole list, so does not stream.
+ - This necessarily buffers the whole list, so does not stream.
  - But, the number of location log changes for a single key tends to be
  - fairly small.
  -
@@ -377,7 +377,7 @@ sizeHistoryInfo mu o = do
 	-- time across all git-annex repositories.
 	--
 	-- This combines the new location log with what has been
-	-- accumulated so far, which is equivilant to merging together
+	-- accumulated so far, which is equivalent to merging together
 	-- all git-annex branches at that point in time.
 	update k sizemap locmap (oldlog, oldlocs) newlog = 
 		( updatesize (updatesize sizemap sz (S.toList addedlocs))
@@ -490,7 +490,7 @@ sizeHistoryInfo mu o = do
 
 		posminus a b = max 0 (a - b)
 
-		-- A verison of sizemap where uuids that are currently dead
+		-- A version of sizemap where uuids that are currently dead
 		-- have 0 size.
 		sizemap' = M.mapWithKey zerodead sizemap
 		zerodead u v = case M.lookup u (simpleMap trustlog) of

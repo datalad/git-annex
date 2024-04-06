@@ -70,7 +70,7 @@ closeDb (DbHandle _db worker jobs _) = do
  - changes to the database!
  -
  - Note that the action is not run by the calling thread, but by a
- - worker thread. Exceptions are propigated to the calling thread.
+ - worker thread. Exceptions are propagated to the calling thread.
  -
  - Only one action can be run at a time against a given DbHandle.
  - If called concurrently in the same process, this will block until
