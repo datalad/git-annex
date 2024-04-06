@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="jasonc"
+ nickname="mail"
+ avatar="http://cdn.libravatar.org/avatar/cb07bdfbe978aa83388d64e08a972eb2"
+ subject="Possible simplified scenario"
+ date="2024-04-03T16:48:04Z"
+ content="""
+Hello, firstly thank you for developing a really useful piece of software.  During my initial experimentation I came across what appears to be a variation of this bug, and think I've distilled it to a minimal reproducible scenario.
+
+Initialise in the usual way on an NTFS partition, then add a directory special remote (no `encryption`, no `importtree` and no `exporttree`):
+<pre>
+    git init
+    git annex init local
+    git annex initremote nextdoor type=directory directory=N:\nextdoordir encryption=none
+</pre>
+
+In my case I then added and committed the files locally, then moved them to the directory special remote and back again:
+<pre>
+    git annex add .
+    git commit --all --message=\"first commit\"
+    git annex move . --to nextdoor
+    git annex move . --from nextdoor
+</pre>
+
+This completes successfully, however repeating the last two steps a second time triggers the `permission denied (Access is denied.)` failure at the start of the bug report.
+
+Going through each part step by step:
+
+* Since NTFS is designated as a \"crippled filesystem\", the annexed objects appear to be read-write by default (no ACL modifications, no ReadOnly attribute).
+* When the files are moved away to the directory special remote (in my test, the same NTFS partition), they pick up a ReadOnly attribute in the new location, so `Archive+Compression` becomes `ReadOnly+Archive+Compression`.
+* When the files are then moved back from the directory special remote, the ReadOnly attribute persists.
+* Repeating the movement then fails, as the file cannot be dropped locally (the UNC path exists, but `DeleteFile` fails).
+
+If I remove the ReadOnly attributes and try again, the move away is successful.  Similarly if I use a networked ext4 location for the directory special remote (and NTFS locally), the same cycle of success then failure can be observed.
+
+Version information: git `git version 2.44.0.windows.1`, annex `git-annex version: 10.20240130-gad8e32c09d3ec866e0c0654cdcd146bf1aefbc5e` (installer from 2024-02-27), Windows 10 22H2
+
+If you require logs or other information, please let me know.
+"""]]

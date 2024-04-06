@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="more use cases for configurable default preferred content"
+ date="2024-04-06T15:12:50Z"
+ content="""
+This came up again at the distribits meeting.
+
+DataLad itself is designed to work like `git annex wanted . present` (i.e. content is supposed to be fetched manually. It is assumed that the user does not generally want all content of a DataLad dataset / git annex repo). DataLad could itself run `git annex wanted . present` as part of its setup (talked about that with @mih), but I still think a setting in the git-annex branch that auto-sets the above settings in fresh clones (even when using plain git annex, not DataLad), is useful. It enhances the user experience of sparse checkouts (a `git annex assist` in a freshly cloned annex repo can then be configured to only pull specific or no files).
+
+I also discussed it with people in the context of handling confidential patient data that should not necessarily be copied everywhere. The default of just wanting all worktree content increases the delicacy of the matter a bit. Were there a way to have fresh clones (or even freshly created remotes that were not yet given a preferred content manually) have a preconfigured default wanted content, it would reduce the possibility of confidential data accidentally being copied all over the place.
+"""]]

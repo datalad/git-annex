@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="m.risse@77eac2c22d673d5f10305c0bade738ad74055f92"
+ nickname="m.risse"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="comment 1"
+ date="2024-04-06T10:05:04Z"
+ content="""
+Looking at this again I am also surprised that I didn't need to set the equivalent of `git config --local remote.cds.annex-security-allow-unverified-downloads ACKTHPPT` for the web special remote when get'ing a file with just a URL key.
+"""]]
