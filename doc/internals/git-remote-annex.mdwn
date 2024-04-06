@@ -1,8 +1,9 @@
-This adds a GIT-- object type to git-annex.
+This adds two new object types to git-annex, GITMANIFEST and a GITBUNDLE.
 
-GIT--manifest is the manifest
+GITMANIFEST-$UUID is the manifest for a git repository stored in the
+git-annex repository with that UUID.
 
-GIT--hash is a git bundle
+GITBUNDLE--sha256 is a git bundle.
 
 # format of the manifest file
 
@@ -10,15 +11,35 @@ An ordered list of bundle keys, one per line.
 
 # fetching
 
-1. download manifest
-2. download each listed GIT bundle object that we don't have
-3. fetch from bundles in timestamp order
+1. download GITMANIFEST for the uuid of the special remote
+2. download each listed GITBUNDLE object that we don't have
+3. git fetch from bundles in timestamp order
 
-# pushing
+# pushing (incrementally)
 
-1. create git bundle, hash to calculate GIT bundle object name
-2. upload GIT bundle object
-3. download current manifest
-4. add to manifest with current time, and upload
+1. create git bundle containing refs to push, and objects since
+   the previously pushed refs
+2. hash to calculate GITBUNDLE key
+3. upload GITBUNDLE object
+4. download current manifest
+5. append GITBUNDLE key to manifest
 
+# pushing (replacing incrementals with single bundle)
 
+1. create git bundle containing refs to push and all objects
+2. hash to calculate GITBUNDLE object name
+3. upload GITBUNDLE object
+4. download current manifest
+5. remove all old GITBUNDLES from the manifest, and add new GITBUNDLE at
+   the end. Note that it's possible for the manifest to contain GITBUNDLES
+   that were not in the last fetched manifest, if so those must be
+   preserved, and the new GITBUNDLE appended
+
+# multiple GITMANIFEST files
+
+Usually there will only be one per special remote, but it's possible for
+multiple special remotes to point to the same object storage, and if so
+multiple GITMANIFEST objects can be stored.
+
+It follows that the UUID of the special remote has to be included in the
+annex:// uri, to know which GITMANIFEST to use when cloning from it.
