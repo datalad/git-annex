@@ -21,7 +21,7 @@ same encrypted special remote.
 
 Update: That's implemented now, when annex.shared-sop-command is configured
 it will be used for encryption=shared special remotes. It interoperates
-fine with using gpg, as long as the sop command uses a compatable profile
+fine with using gpg, as long as the sop command uses a compatible profile
 (setting annex.shared-sop-profile = rfc4880 is probably a good idea).
 
 Leaving this todo open because there are other encryption schemes than 

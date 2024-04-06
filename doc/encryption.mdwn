@@ -79,7 +79,7 @@ repository with access to the encrypted data stored in the special remote.
 By default `gpg` is used for shared encryption, but it is also possible to
 use other programs that implement the Stateless OpenPGP command line
 interface. For example, to use Sequoia PGP's `sqop` command, configured to
-be backwards compatable with `gpg`:
+be backwards compatible with `gpg`:
 
     git config annex.shared-sop-command sqop
     git config annex.shared-sop-profile rfc4880

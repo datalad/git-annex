@@ -13,7 +13,7 @@ about the new remote yet, and crashed (and was restarted knowing about it,
 so successfully sent any other files). So got sidetracked on fixing that.
 
 Also did some work to make the gpg bundled with git-annex on OSX be
-compatable with the config files written by MacGPG. At first I was going to
+compatible with the config files written by MacGPG. At first I was going to
 hack it to not crash on the options it didn't support, but it turned out
 that upgrading to version 1.4.14 actually fixed the problem that was making
 it build without support for DNS.

@@ -4576,7 +4576,7 @@ git-annex (5.20150508) unstable; urgency=medium
     --clean-duplicates mode, verify that enough copies of its content still
     exist.
   * Improve integration with KDE's file manager to work with dolphin
-    version 14.12.3 while still being compatable with 4.14.2.
+    version 14.12.3 while still being compatible with 4.14.2.
     Thanks, silvio.
   * assistant: Added --autostop to complement --autostart.
   * Work around wget bug #784348 which could cause it to clobber git-annex

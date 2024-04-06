@@ -63,7 +63,7 @@ the S3 remote.
   affect new objects sent to the remote, but not objects already
   stored there.
 
-* `host` - Specify in order to use a different, S3 compatable
+* `host` - Specify in order to use a different, S3 compatible
   service.
 
 * `region` - Specify the region to use. Only makes sense to use when

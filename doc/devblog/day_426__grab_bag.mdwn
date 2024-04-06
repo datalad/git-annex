@@ -40,7 +40,7 @@ complicate it, and the hidden service side would need to listen on a unix
 socket, instead of the regular http port. It might be worth it to use http
 for tor, if it could be reused for git-annex http servers not on the tor
 network. But, then I'd have to make the http server support git pull and
-push over http in a way that's compatable with how git uses http, including
+push over http in a way that's compatible with how git uses http, including
 authentication. Which is a whole nother ball of complexity. So, I'm leaning
 instead to using a simple custom protocol something like:
 
