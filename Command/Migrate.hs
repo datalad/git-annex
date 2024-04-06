@@ -200,7 +200,7 @@ update oldkey newkey =
 		firstM (\f -> (== Just newkey) <$> isAnnexLink f) $
 			map (\f -> simplifyPath (fromTopFilePath f g)) fs
 	
-	-- Always verify the content agains the newkey, even if
+	-- Always verify the content against the newkey, even if
 	-- annex.verify is unset. This is done to prent bad migration
 	-- information maliciously injected into the git-annex branch
 	-- from populating files with the wrong content.
