@@ -1,0 +1,24 @@
+This adds a GIT-- object type to git-annex.
+
+GIT--manifest is the manifest
+
+GIT--hash is a git bundle
+
+# format of the manifest file
+
+An ordered list of bundle keys, one per line.
+
+# fetching
+
+1. download manifest
+2. download each listed GIT bundle object that we don't have
+3. fetch from bundles in timestamp order
+
+# pushing
+
+1. create git bundle, hash to calculate GIT bundle object name
+2. upload GIT bundle object
+3. download current manifest
+4. add to manifest with current time, and upload
+
+
