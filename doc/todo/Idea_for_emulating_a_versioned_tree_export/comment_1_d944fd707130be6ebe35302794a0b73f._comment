@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-04-08T20:46:26Z"
+ content="""
+When we were talking about this idea, I thought there was a problem, but
+didn't quite manage to find it then. 
+
+I see it now: If `foo` is an annexed file that gets exported
+this way to `foo/SHA--x`, and then that annexed file
+is deleted and a new annexed file `foo/SHA--x` is added,
+it will want to export it to `foo/SHA--x/SHA--y`.
+
+It would either fail because the file exists, or delete it and replace
+it with the directory. The former would cause the export to fail, the
+latter could case data loss. It's not defined what a special remote will do
+in this situation.
+
+It seems that this case would never occur accidentially, but it's still worth
+considering it.
+
+Perhaps it should simply skip exporting any files that have names
+that look like annex keys.
+"""]]
