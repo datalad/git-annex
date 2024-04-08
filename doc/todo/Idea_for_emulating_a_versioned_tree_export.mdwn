@@ -3,6 +3,7 @@ Dear Joey,
 During DistriBits 2024, we discussed a concept that you seemed to like: emulating versioned tree export on a special remote with a non-versioned filesystem. This could be a generic mechanism of git-annex. Maybe a new option for the special remote (say: 'versioning = yes / no / emulated' or 'exporttree = yes / no / emulated')?
 
 The idea is to save target files in the remote at paths reflecting the ones in the repo, but:
+
 * create an extra directory at the end of the path identical to the filename,
 * directory name includes the original extension of the file, which may seem a bit odd, but ensures no ambiguities,
 * inside the directory, save the file under filename = key (preferably add the original extension).
@@ -52,6 +53,7 @@ Example: the content of the git-annex repo and remote filesystem after a few tre
 ----------------------
 
 Advantages:
+
 * easy to implement,
 * you get (kind of) versioning on any POSIX-like filesystem,
 * older versions of files are never overwritten (history tracking),
@@ -59,6 +61,7 @@ Advantages:
 * users can use the remote filesystem directly, as it represents something meaningful.
 
 Disadvantages:
+
 * not perfect,
 * users need to accept the inconvenience caused by file naming on the bottom level,
 * it may be hard to find the right file version in the remote, especially if there are lots of them;
