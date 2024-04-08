@@ -1,0 +1,7 @@
+A lot of my git-annex content doesn't have a "stable" location within the repository, I might decide to move things to subdirectories or out of subdirectories. This always invalidates the relative `../../.git/` symlinks that git-annex uses and I have to `annex fix` them every time I move things around. This is especially useful when I'm accessing my homeserver over SMB from Windows PCs, where symlinks are followed automatically – and broken symlinks simply don't show up via SMB at all, so moving a file into a subfolder causes it to "disappear" until `annex fix`.
+
+But the repository as a whole does have a stable location in the filesystem, so it would be much more convenient if I had an option for the item symlinks to use absolute paths, e.g. `Foo.mkv -> /hdd/Videos/.git/annex/[etc]`. (I *could* ensure that the `/hdd/Videos` path is valid on all the hosts that the repository is on, and I don't mind running `annex fix` on the rare occasion when I need to move it.)
+
+I thought such an option already exists, but could not find it anywhere within the git-annex manual.
+
+I considered having the files unlocked (which seems to work well with Btrfs automatically providing thin copies even without needing to use the fragile-looking annex.thin mode), but 1) even missing files appear as regular files when they're unlocked, which is *very* confusing; 2) the files are no longer read-only and I don't like the idea of some tool accidentally damaging them.
