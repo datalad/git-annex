@@ -1,0 +1,69 @@
+Dear Joey,
+
+During DistriBits 2024, we discussed a concept that you seemed to like: emulating versioned tree export on a special remote with a non-versioned filesystem. This could be a generic mechanism of git-annex. Maybe a new option for the special remote (say: 'versioning = yes / no / emulated' or 'exporttree = yes / no / emulated')?
+
+The idea is to save target files in the remote at paths reflecting the ones in the repo, but:
+- create an extra directory at the end of the path identical to the filename,
+- directory name includes the original extension of the file, which may seem a bit odd, but ensures no ambiguities,
+- inside the directory, save the file under filename = key (preferably add the original extension).
+
+Example: the content of the git-annex repo and remote filesystem after a few tree exports:
+
+	[git-annex]
+	repo-name
+	|
+	|-- phd
+	|   |
+	|   |-- thesis.pdf
+	|   |-- images
+	|       |
+	|       |-- figure.png
+	|       |-- diagram.png
+	|
+	|-- guidelines.pdf
+
+
+	[remote filesystem]
+	repo-name
+	|
+	|-- phd
+	|   |
+	|   |-- thesis.pdf
+	|   |   |
+	|   |   |--- SHA256E-...-key1.pdf
+	|   |   |--- SHA256E-...-key2.pdf
+	|   |   |--- SHA256E-...-key3.pdf
+	|   | 
+	|   |-- images
+	|       |
+	|       |-- figure.png
+	|       |   |
+	|       |   |-- SHA256E-...-key1.png
+	|       |   
+	|       |-- diagram.png
+	|           |
+	|           |-- SHA256E-...-key1.png
+	|           |-- SHA256E-...-key2.png
+	|
+	|-- guidelines.pdf
+	|   |
+	|   |-- SHA256E-...-key1.pdf
+
+----------------------
+
+Advantages:
+- easy to implement,
+- you get (kind of) versioning on any POSIX-like filesystem,
+- older versions of files are never overwritten (history tracking),
+- it's sufficient to push only the changed files,
+- users can use the remote filesystem directly, as it represents something meaningful.
+
+Disadvantages:
+- not perfect,
+- users need to accept the inconvenience caused by file naming on the bottom level,
+- it may be hard to find the right file version in the remote, especially if there are lots of them;
+	- modification times will certainly help here,
+	- can we concatenate some extra information to the file names that could help in identification?
+
+
+Feel free to contact me, I'd be happy to discuss and help make this happen.
