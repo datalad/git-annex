@@ -13,6 +13,8 @@ git-annex (10.20240228) UNRELEASED; urgency=medium
     the same repository.
   * Windows: Fix escaping output to terminal when using old
     versions of MinTTY.
+  * sync, assist, import: Allow -m option to be specified multiple
+    times, to provide additional paragraphs for the commit message.
 
  -- Joey Hess <id@joeyh.name>  Tue, 27 Feb 2024 13:07:10 -0400
 

@@ -1,6 +1,6 @@
 {- git branch stuff
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -178,7 +178,7 @@ commit commitmode allowempty message branch parentrefs repo = do
 	tree <- writeTree repo
 	ifM (cancommit tree)
 		( do
-			sha <- commitTree commitmode message parentrefs tree repo
+			sha <- commitTree commitmode [message] parentrefs tree repo
 			update' branch sha repo
 			return $ Just sha
 		, return Nothing
@@ -207,8 +207,21 @@ writeTreeQuiet repo = extractSha <$> withNullHandle go
 	go nullh = pipeReadStrict' (\p -> p { std_err = UseHandle nullh }) 
 		[Param "write-tree"] repo
 
-commitTree :: CommitMode -> String -> [Ref] -> Ref -> Repo -> IO Sha
-commitTree commitmode message parentrefs tree repo =
+commitTree :: CommitMode -> [String] -> [Ref] -> Ref -> Repo -> IO Sha
+commitTree commitmode messages parentrefs tree repo =
+	getSha "commit-tree" $ pipeReadStrict ps repo
+  where
+	ps = [Param "commit-tree", Param (fromRef tree)]
+		++ applyCommitModeForCommitTree commitmode baseparams repo
+	baseparams = map Param $
+		concatMap (\r -> ["-p", fromRef r]) parentrefs
+			++ concatMap (\msg -> ["-m", msg]) messages
+
+-- commitTree passes the commit message to git with -m, which can cause it
+-- to get modified slightly (eg adding trailing newline). This variant uses
+-- the exact commit message that is provided.
+commitTreeExactMessage :: CommitMode -> String -> [Ref] -> Ref -> Repo -> IO Sha
+commitTreeExactMessage commitmode message parentrefs tree repo =
 	getSha "commit-tree" $
 		pipeWriteRead ([Param "commit-tree", Param (fromRef tree)] ++ ps)
 			sendmsg repo

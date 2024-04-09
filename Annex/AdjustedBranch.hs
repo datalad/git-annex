@@ -468,19 +468,30 @@ commitAdjustedTree' treesha (BasisBranch basis) parents =
 			(commitAuthorMetaData basiscommit)
 			(commitCommitterMetaData basiscommit)
 			(mkcommit cmode)
-	mkcommit cmode = Git.Branch.commitTree cmode
+	-- Make sure that the exact message is used in the commit,
+	-- since that message is looked for later.
+	-- After git-annex 10.20240227, it's possible to use
+	-- commitTree instead of this, but this is being kept
+	-- for some time, for compatability with older versions.
+	mkcommit cmode = Git.Branch.commitTreeExactMessage cmode
 		adjustedBranchCommitMessage parents treesha
 
 {- This message should never be changed. -}
 adjustedBranchCommitMessage :: String
 adjustedBranchCommitMessage = "git-annex adjusted branch"
 
+{- Allow for a trailing newline after the message. -}
+hasAdjustedBranchCommitMessage :: Commit -> Bool
+hasAdjustedBranchCommitMessage c = 
+	dropWhileEnd (\x -> x == '\n' || x == '\r') (commitMessage c) 
+		== adjustedBranchCommitMessage
+
 findAdjustingCommit :: AdjBranch -> Annex (Maybe Commit)
 findAdjustingCommit (AdjBranch b) = go =<< catCommit b
   where
 	go Nothing = return Nothing
 	go (Just c)
-		| commitMessage c == adjustedBranchCommitMessage = return (Just c)
+		| hasAdjustedBranchCommitMessage c = return (Just c)
 		| otherwise = case commitParent c of
 			[p] -> go =<< catCommit p
 			_ -> return Nothing
@@ -540,7 +551,7 @@ propigateAdjustedCommits' warnwhendiverged origbranch adj _commitsprevented =
 		return (Right parent)
 	go origsha parent pastadjcommit (sha:l) = catCommit sha >>= \case
 		Just c
-			| commitMessage c == adjustedBranchCommitMessage ->
+			| hasAdjustedBranchCommitMessage c ->
 				go origsha parent True l
 			| pastadjcommit ->
 				reverseAdjustedCommit parent adj (sha, c) origbranch
@@ -577,7 +588,7 @@ reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
 			(commitAuthorMetaData basiscommit)
 			(commitCommitterMetaData basiscommit) $
 				Git.Branch.commitTree cmode
-					(commitMessage basiscommit)
+					[commitMessage basiscommit]
 					[commitparent] treesha
 		return (Right revadjcommit)
 
