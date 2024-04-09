@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="mdekstrand"
+ avatar="http://cdn.libravatar.org/avatar/0acb8a6c848d39aa53d94bd81239b034"
+ subject="Update after transferring more files"
+ date="2024-04-09T14:45:07Z"
+ content="""
+After transferring many more files with `--force`, `git annex info` reports an available space of 17.46 terabytes, with following actual space:
+
+```
+$ df -h .
+Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on
+/dev/disk5s1    98Ti   2.3Ti    96Ti     3%     75k  1.0T    0%   /Volumes/ABYSS
+```
+
+I suspect the problem is either an integer overflow of some kind, or an integer size/precision error reading from the disk space struct in the disk space library.
+"""]]

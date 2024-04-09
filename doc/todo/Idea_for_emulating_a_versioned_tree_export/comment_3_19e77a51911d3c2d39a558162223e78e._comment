@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="or use numcopies for safety"
+ date="2024-04-09T10:48:10Z"
+ content="""
+Or, even better: If such an export action would cause data loss, the potentially vanishing keys would be known, because they reside in a git-tree that you diff anyway, right? Git annex could then apply its usual logic of 'I shall never execute an action that reduces a file's copies below `$numcopies`' and error out with an explanation. That feels right and consistent with git annex' typical behavior.
+"""]]
