@@ -8,6 +8,6 @@ I use git-annex to:
 
 I made a [Thunar plugin](https://gitlab.com/nobodyinperson/thunar-plugins) for git-annex, here's a [📹 screencast](https://fosstodon.org/@nobodyinperson/109836827575976439).
 
-In an attempt to [#gitAnnexAllTheThings](https://fosstodon.org/tags/gitAnnexAllTheThings), I used git annex as a backend for a cli time tracker [annextimelog](https://pypi.org/project/annextimelog/). It has similarities with timewarrior but adresses many of its inconveniences.
+In an attempt to [#gitAnnexAllTheThings](https://fosstodon.org/tags/gitAnnexAllTheThings), I used git annex as a backend for a cli time tracker [annextimelog](https://pypi.org/project/annextimelog/). It has similarities with timewarrior but adresses many of its inconveniences. I talked about it a bit at my [distribits 2024](https://distribits.live) talk, of which there is a recording [📹 on YouTube](https://www.youtube.com/watch?v=IdRUsn-zB2s).
 
 At the [Tübix 2023](https://www.tuebix.org/) I gave a git annex workshop, of which you can find a recording of the initial talk [📹 here (🇩🇪 German)](https://tube.tchncs.de/w/db1ec5ca-94ad-4f49-a507-2124fd699ff1) or [📹 here (English)](https://tube.tchncs.de/w/1U4vbTAhSEje3KQ1dGqvxh) in the fediverse and [📹 here on Odysee (🇩🇪 German)](https://odysee.com/@nobodyinperson:6/T%C3%BCbix2023-Yann-B%C3%BCchau-git-annex:6). 
