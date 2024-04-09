@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="when someone names files like keys, they probably want trouble 🙃"
+ date="2024-04-09T10:43:16Z"
+ content="""
+> skip exporting any files that have names that look like annex keys.
+
+A general regex for a key looks like `^[A-Z0-9]+(?:-[a-z]\d+)*--.+$`, right? This seems like there would be many possible false positives that would not be exported, like `GIT--The Book.pdf`. 
+
+I can't see a situation where git annex would produce or rename files named like their (or another) key. So if someone deliberately names a file like `SHA256E-s31390--f50d7ac4c6b9031379986bc362fcefb65f1e52621ce1708d537e740fefc59cc0.mp3` and then exports it to such a versioned tree, I'd be fine with overwriting. After all, export remotes aren't primarily for full backups, rather for access convenience and filesystem limitations, right?
+
+I don't know if it's a problem internally for git-annex though when an export suddenly causes keys to vanish from the remote, but I guess your git-tree-diffing automatically takes care of that?
+"""]]
