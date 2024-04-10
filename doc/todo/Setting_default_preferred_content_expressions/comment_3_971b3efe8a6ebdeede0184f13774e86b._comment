@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-04-10T16:58:39Z"
+ content="""
+I agree, after discussions at distribits it's clear there is use for this
+in datalad, and in git-annex generally.
+"""]]
