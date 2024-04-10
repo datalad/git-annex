@@ -1,0 +1,35 @@
+I have given a lot of thought and experimentation to how git-annex could be used for large projects where there is a desire to distribute files to many users, but where only a minority of users would would actually push key changes.
+
+The first option would be to have an annexless mode, where a local repo either has no uuid, or where the git-annex branch is not stored in the default namespace.
+
+This is for cases where the client only cares that a file exists in the repo and that it has been verified.
+
+One possibility could be `git-annex-get --no-init`, which would not init a local repo, but would get and verify a file. The existence of a file would simply be if the file exists. Only upon making a change can a could be fully inited.
+
+Or even better, in a restricted environment where git-annex is not available, this case is simple enough that getting a key from a url could be done with a shellscript. The url could be extracted from the upstream git-annex branch without checking it out, and the symlinks used for verification. However, there is a chance that the upstream git-annex branch may not be stable (like if it is not propagated after a mirror), so one could "shrinkwrap" keys and store their remote url locations in a .gitattributes file or somewhere else in the same branch. If key changes are desired, it can be fairly effortlessly upgraded to an actual git-annex repo.
+
+A step up from a completely annexless repo would be a hypothetical local-only git-annex repo, where git-annex only uses a git-annex branch locally.
+
+There could be a `git-annex-init --local` option which creates a `local/git-annex` branch, for local tracking, but would not sync to the server by default.
+
+In this mode, the upstream git-annex branch would just be pulled and kept read-only, and `local/git-annex` would keep local differences. The `local/git-annex` would just use the union driver to combine upstream changes with local changes. Upgrading to a full git-annex repo would be as easy as creating a new `git-annex` branch at the same commit id as `local/git-annex`
+
+
+So, in summary, I have considered two modes:
+
+Fully annex-less mode, which is simple enough to be implemented completely without git-annex, useful for restricted environments. Optionally, can use a kind of shinkwrapping to externalize key URLs to a file in the branch to guarantee that the fetch location is stored.
+
+Secondly is local mode, where a `local/git-annex` branch is downstream from a git-annex branch, and in order to sync changes back to the server, the repo is upgraded.
+
+Both of these modes could easily be upgraded to a full git-annex repo on demand.
+
+I think this is useful when considering large scale usage.
+
+
+Most of this functionality is something that is probably best suited for a wrapper.
+
+In terms of any any potential core changes to git-annex, it may be as simple as having a GIT_ANNEX_BRANCH environment variable, analogous to the GIT_DIR variable for git.
+
+Has anyone given any thought to scenarios like this?
+
+I think there are cases where developers use git-lfs and something like this might be a better fit. And also with making git-annex repos more generally available and portable.
