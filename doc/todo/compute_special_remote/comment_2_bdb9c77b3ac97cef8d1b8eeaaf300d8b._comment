@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="mih"
+ avatar="http://cdn.libravatar.org/avatar/f881df265a423e4f24eff27c623148fd"
+ subject="Need for more than HEAD/URL?"
+ date="2024-04-15T05:00:58Z"
+ content="""
+> \"Instruction deposition\" is essentially just adding a URL to a key in my implementation, which is pretty nice. Using the built-in relaxed option automatically gives the distinction between generating keys that have never existed and regenerating keys.
+
+Thanks for the pointer, very useful!
+
+Regarding the points you raised:
+
+Datalad's `run` feature has been around for some years, and we have seen usage in the wild with command lines that are small programs and dozens, sometimes hundreds of inputs. It is true that anything could be simply URL-encoded. However, especially with command-patterns (always same, except parameter change) that may be needlessly heavy. Maybe it would compress well (likely), but it still poses a maintenance issue. Say the compute instructions need an update (software API change): Updating one shared instruction set is a simpler task than sifting through annex-keys and rewriting URLs.
+
+> I don't quite understand the necessity for \"Worktree provisioning\". If I understand that right, I think it would just make things more complicated and unintuitive compared to always staying in HEAD.
+
+We need a worktree different from `HEAD` whenever HEAD has changed from the original worktree used for setting up a compute instruction. Say a command needs two input files, but one has been moved to a different directory in current `HEAD`. An implementation would now either say \"no longer available\" and force maintenance update, or be able to provision the respective worktree. In case of no provision capability we would need to replace the URL-encoded instructions (this would make the key uncomputable in earlier versions), or amend with an additional instruction set (and now we would start to accumulate cruft where changes in the git-annex branch need to account for (unrelated) changes in any other branch).
+"""]]
