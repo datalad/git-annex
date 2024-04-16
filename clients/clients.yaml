@@ -15,7 +15,7 @@ ndoli:
     git-annex-tmp: |
       set -eux
       source testlib.sh
-      workdir_base /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp
+      workdir_base /dartfs/rc/lab/D/DBIC/DBIC/archive/tmp/ci-git-annex
       export PATH=~/bin:$PATH
       git annex version
       timeout 7200 git annex test -J5 | ts -s
