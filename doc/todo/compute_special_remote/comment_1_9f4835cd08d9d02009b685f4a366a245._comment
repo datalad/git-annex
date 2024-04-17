@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="m.risse@77eac2c22d673d5f10305c0bade738ad74055f92"
+ nickname="m.risse"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="prior art"
+ date="2024-04-13T20:30:56Z"
+ content="""
+I just want to mention that I've implemented/tried to implement something like this in <https://github.com/matrss/datalad-getexec>. It basically just records a command line invocation to execute and all required input files as base64-encoded json in a URL with a custom scheme, which made it surprisingly simple to implement. I haven't touched it in a while and it was more of an experiment, but other than issues with dependencies on files in sub-datasets it worked pretty well. The main motivation to build it was the mentioned use-case of automatically converting between file formats. Of course it doesn't address all of your mentioned points. E.g. trust is something I haven't considered in my experiments, at all. But it shows that the current special remote protocol is sufficient for a basic implementation of this.
+
+I like the proposed \"request one key, receive many\" extension to the special remote protocol and I think that could be useful in other \"unusual\" special remotes as well.
+
+I don't quite understand the necessity for \"Worktree provisioning\". If I understand that right, I think it would just make things more complicated and unintuitive compared to always staying in HEAD.
+
+\"Instruction deposition\" is essentially just adding a URL to a key in my implementation, which is pretty nice. Using the built-in relaxed option automatically gives the distinction between generating keys that have never existed and regenerating keys.
+"""]]

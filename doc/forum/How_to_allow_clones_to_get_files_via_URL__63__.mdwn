@@ -1,0 +1,52 @@
+I'm working with Datalad, but I suspect that my problems stem from not fully understanding how git annex works.
+
+I’ve been trying a set up a dataset that primarily lives on a web server, but needs to be clone-able by other people. The annex files are visible and downloadable from the server’s website. In particular, the files I’m concerned about here are in a subdataset.
+
+I used `datalad addurls` to add the URL of each file on the server to each file in the annex. When I run `git annex whereis filename`, it shows up that it lives on the server in the server’s local copy of the dataset, and that it lives on the web, with a correct URL. In fact, if I click on that URL and open it in a browser, it downloads my file.
+
+The dataset lives on Github, but the annex does not. When I make a clone of the superdataset on my personal computer, I get messages like
+
+```
+[INFO   ] Unable to parse git config from origin                                                                                       
+[INFO   ] Remote origin does not have git-annex installed; setting annex-ignore                                                        
+|   This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote origin 
+install(ok): /home/erin/Documents/DHA/carcas (dataset)
+```
+
+Then when I'm in the dataset `carcas-models` that has the annex and I run `datalad get models
+/Alpaca\ 3rd\ Carpal\ L.glb`, I get this error message: 
+
+```
+get(error): models/Alpaca 3rd Carpal L.glb (file) [no known url                                
+no known url
+no known url]
+```
+
+I suspect my problem is with how I set things up with git annex, because when I try `git annex get models/Alpaca\ 3rd\ Carpal\ L.glb`, I get the error:
+
+```
+get models/Alpaca 3rd Carpal L.glb (from web...) 
+  no known url
+
+  Unable to access these remotes: web
+
+  Maybe add some of these git remotes (git remote add ...):
+        095e299d-037e-4172-87e0-bbd7183a6613 -- CARCAS models on the 3dviewers server
+
+  (Note that these git remotes have annex-ignore set: origin)
+failed
+get: 1 failed
+```
+
+I'm confused on how to debug this because when I run git annex whereis models/Alpaca\ 3rd\ Carpal\ L.glb, everything looks correct:
+
+```
+whereis models/Alpaca 3rd Carpal L.glb (2 copies) 
+        00000000-0000-0000-0000-000000000001 -- web
+        095e299d-037e-4172-87e0-bbd7183a6613 -- CARCAS models on the 3dviewers server
+
+  web: https://3dviewer.sites.carleton.edu/carcas/carcas-models/models/Alpaca%203rd%20Carpal%20L.glb
+ok
+```
+
+What's the correct way to set up this use case? I don't think that I want the server to be a special remote, because the hidden files like .gitattributes aren't visible. I want to be able to put more files on the server, add their URLS based on where they are on the server, and push to github so that other people can get these files if they want. 

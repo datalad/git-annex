@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="unqueued"
+ avatar="http://cdn.libravatar.org/avatar/3bcbe0c9e9825637ad7efa70f458640d"
+ subject="comment 3"
+ date="2024-04-10T12:46:53Z"
+ content="""
+I would just clone the repo to the new machine, do `git annex init`, and then rsync the contents of `.git/annex/objects`, and then do `git annex fsck --all` to have to recheck every key it knows about.
+
+Alternatively, if you're concerned that there might be keys that weren't properly recorded somehow, in your new repo, after `.git/annex/objects` has been transferred, you can create an ingestion directory with a flat layout of the copied keys:
+
+```bash
+mkdir ingest && find .git/annex/objects -type f | xargs mv ingest && git annex reinject --known ingest/*
+```
+
+Finally, if you just want to rebuild it from scratch, do cp with the `-cL` option. If you are on macOS, it will make a reflink copy, and follow the symlinks. Delete the target .git dir and re-create it.
+"""]]

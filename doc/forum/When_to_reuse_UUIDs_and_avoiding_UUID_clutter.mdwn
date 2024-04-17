@@ -1,0 +1,15 @@
+I wanted to discuss cases for UUID reuse
+
+One reason is to mutate a special remote type. For example, a directory special remote to an rsync special remote and vice versa, passing along the uuid argument to initremote. Changing the directory layout is not hard. And you may wish to re-layout your .git/annex/objects directory to a different directory prefix and upload it to a cloud provider. If it supports an rclone remote that has hashing, you can verify it without having to redownload.
+
+Another good reason is to reuse a uuid is to avoid uuid namespace clutter.
+If you know ahead of time that you are storing data in repos that may later be merged, it makes sense to have a template annex repo to base a new repo off of, as well as store common settings and uuids.
+
+For example, I have a uuid space for multimedia annexes (peertube, youtube, podcasts, etc).
+
+The template comes preloaded with a uuid.log and remote.log. If my hostname is in the uuid.log, I reinit with that.
+
+If I must merge unrelated histories with conflicting name/uuid values, I first prefix my names with something. After a merge, I can do some gymnastics to make sure that the proper keys are set present for the respective uuid/name that I have chosen, and make the obsolete uuid/name dead. Simply making them dead is not enough, because even if a special remote uuid is marked dead, if the name is the same, it will still cause a conflict, so prefixing uuid/name collisions is importnat.
+
+I currently have a several annex template repos for different purposes (disk images, multimedia, etc). I have been meaning to automate this process more.
+

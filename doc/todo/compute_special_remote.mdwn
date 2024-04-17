@@ -1,0 +1,62 @@
+# Enable git-annex to provision file content by other means than download
+
+This idea [goes back many years](https://github.com/datalad/datalad/issues/2850), and has been [iterated on repeatedly afterwards](https://github.com/datalad/datalad-next/issues/143), and most recently at Distribits 2024.
+The following is a summary of what role git-annex could play in this functionality.
+
+The basic idea is to wrap a provision-by-compute process into the standard interface of a git annex remote.
+A consumer would (theoretically) not need to worry about how an annex key is provided, they would simply get-annex-get it, whether this leads to a download or a computation.
+Moreover, access cost and redundancies could be managed/communicated using established patterns.
+
+## Use cases
+
+Here are a few concrete use cases that illustrate why one would want to have functionality like this
+
+### Generate annex keys (that have never existed)
+
+This can be useful for leaving instructions how, e.g. other data formats can be generated from a single format that is kept on storage.
+For example, a collection of CSV files is stored, but an XLSX variant can be generated upon request automatically.
+Or a single large live stream video is stored, and a collection of shorter clips is generated from a cue sheet or cut list.
+
+
+### Re-generate annex keys
+
+This can be useful when storing a key is expensive, but its exact identity is known/important. For example, an outcome of a scientific computation yields a large output that is expensive to compute and to store, yet needs to be tracked for repeated further processing -- the cost of a recomputation may be reduced, by storing (smaller) intermediate results, and leaving instruction how to perform (a different) computation that yields the identical original output.
+
+This second scenario, where annex keys are reproduced exactly, can be considered the general case. It generally requires exact inputs to the computation, where as the first scenario can/should handle an application of a compute instruction on any compatible input data.
+
+
+## What is in scope for git-annex?
+
+The execution of arbitrary code without any inherent trust is a problem. A problem that git-annex may not want to get into. Moreover, there are many candidate environments for code execution -- a complexity that git-annex may not want to get into either.
+
+### External remote protocol sufficient?
+
+From my point of view, pretty much all required functionality could be hidden behind the external remote protocol and thereby inside on or more special remote implementations.
+
+- `STORE`: somehow capture the computing instructions, likely linking some code to some (key-specific) parameters, like input files
+- `CHECKPRESENT`: do compute instruction for a key exist?
+- `RETRIEVE`: compute the key
+- `REMOVE`: remove the instructions/parameter record
+- `WHEREIS`: give information on computation/inputs
+
+where `SET/GETSTATE` may implement the instruction deposit/retrieval.
+
+### Worktree provisioning?
+
+Such external remote implementation would need a way to create suitable worktrees to (re)run a given code. Git-annex support to provide a (separate) worktree for a repository at a specific commit, with efficient (re)use of the main repository's annex would simplify such implementations.
+
+### Request one key, receive many
+
+It is possible that a single computation yields multiple annex keys, even when git-annex only asked for a single one (which is what it would do, sequentially, when driving a special remote). It would be good to be able to capture that and avoid needless duplication of computations.
+
+### Instruction deposition
+
+Using `STORE` (`git annex copy --to`) record instructions is possible (say particular ENV variables are used that pass information to a special remote), but is more or less a hack. It would be useful to have a dedicated command to accept and deposit such a record in association with one or more annex keys (which may or may not be known at that time). This likely require settling on a format for such records.
+
+### Storage redundancy tests
+
+I believe that no particular handling of annex key that are declared inputs to computing instructions for other keys are needed. Still listing it here to state that, and be possibly proven wrong.
+
+### Trust
+
+We would need a way for users to indicate that they trust a particular compute introduction or the entity that provided it. Even if git-annex does not implement tooling for that, it would be good to settle on a concept that can be interpreted/implemented by such special remotes.
