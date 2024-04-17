@@ -9,7 +9,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE RankNTypes #-}
 
-module Remote.External (remote) where
+module Remote.External where
 
 import Remote.External.Types
 import Remote.External.AsyncExtension
@@ -48,10 +48,10 @@ remote :: RemoteType
 remote = specialRemoteType $ RemoteType
 	{ typename = "external"
 	, enumerate = const (findSpecialRemotes "externaltype")
-	, generate = gen
-	, configParser = remoteConfigParser
-	, setup = externalSetup
-	, exportSupported = checkExportSupported
+	, generate = gen remote Nothing
+	, configParser = remoteConfigParser Nothing
+	, setup = externalSetup Nothing Nothing
+	, exportSupported = checkExportSupported Nothing
 	, importSupported = importUnsupported
 	, thirdPartyPopulated = False
 	}
@@ -62,15 +62,15 @@ externaltypeField = Accepted "externaltype"
 readonlyField :: RemoteConfigField
 readonlyField = Accepted "readonly"
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
-gen r u rc gc rs
+gen :: RemoteType -> Maybe ExternalProgram -> Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> RemoteStateHandle -> Annex (Maybe Remote)
+gen rt externalprogram r u rc gc rs
 	-- readonly mode only downloads urls; does not use external program
-	| externaltype == "readonly" = do
+	| externalprogram' == ExternalType "readonly" = do
 		c <- parsedRemoteConfig remote rc
 		cst <- remoteCost gc c expensiveRemoteCost
 		let rmt = mk c cst (pure GloballyAvailable)
 			Nothing
-			(externalInfo externaltype)
+			(externalInfo externalprogram')
 			Nothing
 			Nothing
 			exportUnsupported
@@ -83,7 +83,7 @@ gen r u rc gc rs
 			rmt
 	| otherwise = do
 		c <- parsedRemoteConfig remote rc
-		external <- newExternal externaltype (Just u) c (Just gc)
+		external <- newExternal externalprogram' (Just u) c (Just gc)
 			(Git.remoteName r) (Just rs)
 		Annex.addCleanupAction (RemoteCleanup u) $ stopExternal external
 		cst <- getCost external r gc c
@@ -150,19 +150,27 @@ gen r u rc gc rs
 			, appendonly = False
 			, untrustworthy = False
 			, availability = avail
-			, remotetype = remote 
+			, remotetype = rt 
 				{ exportSupported = cheapexportsupported }
-			, mkUnavailable = gen r u rc
-				(gc { remoteAnnexExternalType = Just "!dne!" }) rs
+			, mkUnavailable =
+				let dneprogram = case externalprogram of
+					Just (ExternalCommand _ _) -> Just (ExternalType "!dne!")
+					_ -> Nothing
+				    dnegc = gc { remoteAnnexExternalType = Just "!dne!" }
+				in gen rt dneprogram r u rc dnegc rs
 			, getInfo = togetinfo
 			, claimUrl = toclaimurl
 			, checkUrl = tocheckurl
 			, remoteStateHandle = rs
 			}
-	externaltype = fromMaybe (giveup "missing externaltype") (remoteAnnexExternalType gc)
+	externalprogram' = case externalprogram of
+		Just p -> p
+		Nothing -> ExternalType $ 
+			fromMaybe (giveup "missing externaltype")
+				(remoteAnnexExternalType gc)
 
-externalSetup :: SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
-externalSetup _ mu _ c gc = do
+externalSetup :: Maybe ExternalProgram -> Maybe (String, String) -> SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
+externalSetup externalprogram setgitconfig _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
 	pc <- either giveup return $ parseRemoteConfig c lenientRemoteConfigParser
 	let readonlyconfig = getRemoteConfigValue readonlyField pc == Just True
@@ -182,7 +190,8 @@ externalSetup _ mu _ c gc = do
 			return c'
 		else do
 			pc' <- either giveup return $ parseRemoteConfig c' lenientRemoteConfigParser
-			external <- newExternal externaltype (Just u) pc' (Just gc) Nothing Nothing
+			let p = fromMaybe (ExternalType externaltype) externalprogram
+			external <- newExternal p (Just u) pc' (Just gc) Nothing Nothing
 			-- Now that we have an external, ask it to LISTCONFIGS, 
 			-- and re-parse the RemoteConfig strictly, so we can
 			-- error out if the user provided an unexpected config.
@@ -200,17 +209,20 @@ externalSetup _ mu _ c gc = do
 				liftIO . atomically . readTMVar . externalConfigChanges
 			return (changes c')
 
-	gitConfigSpecialRemote u c'' [("externaltype", externaltype)]
+	gitConfigSpecialRemote u c''
+		[ fromMaybe ("externaltype", externaltype) setgitconfig ]
 	return (M.delete readonlyField c'', u)
 
-checkExportSupported :: ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool
-checkExportSupported c gc = do
+checkExportSupported :: Maybe ExternalProgram -> ParsedRemoteConfig -> RemoteGitConfig -> Annex Bool
+checkExportSupported Nothing c gc = do
 	let externaltype = fromMaybe (giveup "Specify externaltype=") $
 		remoteAnnexExternalType gc <|> getRemoteConfigValue externaltypeField c
 	if externaltype == "readonly"
 		then return False
-		else checkExportSupported' 
-			=<< newExternal externaltype Nothing c (Just gc) Nothing Nothing
+		else checkExportSupported (Just (ExternalType externaltype)) c gc
+checkExportSupported (Just externalprogram) c gc = 
+	checkExportSupported' 
+		=<< newExternal externalprogram Nothing c (Just gc) Nothing Nothing
 
 checkExportSupported' :: External -> Annex Bool
 checkExportSupported' external = go `catchNonAsync` (const (return False))
@@ -658,7 +670,7 @@ startExternal' external = do
 		n <- succ <$> readTVar (externalLastPid external)
 		writeTVar (externalLastPid external) n
 		return n
-	AddonProcess.startExternalAddonProcess basecmd [] pid >>= \case
+	AddonProcess.startExternalAddonProcess externalcmd externalparams pid >>= \case
 		Left (AddonProcess.ProgramFailure err) -> do
 			unusable err
 		Left (AddonProcess.ProgramNotInstalled err) ->
@@ -667,7 +679,7 @@ startExternal' external = do
 					[ err
 					, "This remote has annex-readonly=true, and previous versions of"
 					, "git-annex would try to download from it without"
-					, "installing " ++ basecmd ++ ". If you want that, you need to set:"
+					, "installing " ++ externalcmd ++ ". If you want that, you need to set:"
 					, "git config remote." ++ rname ++ ".annex-externaltype readonly"
 					]
 				_ -> unusable err
@@ -686,7 +698,9 @@ startExternal' external = do
 			extensions <- startproto st
 			return (st, extensions)
   where
-	basecmd = "git-annex-remote-" ++ externalType external
+	(externalcmd, externalparams) = case externalProgram external of
+		ExternalType t -> ("git-annex-remote-" ++ t, [])
+		ExternalCommand c ps -> (c, ps)
 	startproto st = do
 		receiveMessage st external
 			(const Nothing)
@@ -707,13 +721,13 @@ startExternal' external = do
 		case filter (`notElem` fromExtensionList supportedExtensionList) (fromExtensionList exwanted) of
 			[] -> return exwanted
 			exrest -> unusable $ unwords $
-				[ basecmd
+				[ externalcmd
 				, "requested extensions that this version of git-annex does not support:"
 				] ++ exrest
 
 	unusable msg = do
 		warning (UnquotedString msg)
-		giveup ("unable to use external special remote " ++ basecmd)
+		giveup ("unable to use external special remote " ++ externalcmd)
 
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ do
@@ -825,12 +839,13 @@ getWebUrls key = filter supported <$> getUrls key
   where
 	supported u = snd (getDownloader u) == WebDownloader
 			
-externalInfo :: ExternalType -> Annex [(String, String)]
-externalInfo et = return [("externaltype", et)]
+externalInfo :: ExternalProgram -> Annex [(String, String)]
+externalInfo (ExternalType et) = return [("externaltype", et)]
+externalInfo (ExternalCommand _ _) = return []
 
 getInfoM :: External -> Annex [(String, String)]
 getInfoM external = (++)
-	<$> externalInfo (externalType external)
+	<$> externalInfo (externalProgram external)
 	<*> handleRequest external GETINFO Nothing (collect [])
   where
 	collect l req = case req of
@@ -886,8 +901,8 @@ listConfigs external = handleRequest external LISTCONFIGS Nothing (collect [])
 		UNSUPPORTED_REQUEST -> result Nothing
 		_ -> Nothing
 
-remoteConfigParser :: RemoteConfig -> Annex RemoteConfigParser
-remoteConfigParser c
+remoteConfigParser :: Maybe ExternalProgram -> RemoteConfig -> Annex RemoteConfigParser
+remoteConfigParser externalprogram c
 	-- No need to start the external when there is no config to parse,
 	-- or when everything in the config was already accepted; in those
 	-- cases the lenient parser will do the same thing as the strict
@@ -899,7 +914,8 @@ remoteConfigParser c
 			(Nothing, _) -> return lenientRemoteConfigParser
 			(_, Just True) -> return lenientRemoteConfigParser
 			(Just externaltype, _) -> do
-				external <- newExternal externaltype Nothing pc Nothing Nothing Nothing
+				let p = fromMaybe (ExternalType externaltype) externalprogram
+				external <- newExternal p Nothing pc Nothing Nothing Nothing
 				strictRemoteConfigParser external
   where
 	isproposed (Accepted _) = False

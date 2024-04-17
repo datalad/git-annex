@@ -1794,6 +1794,11 @@ Remotes are configured using these settings in `.git/config`.
   Used to identify Amazon Glacier special remotes.
   Normally this is automatically set up by `git annex initremote`.
 
+* `remote.<name>.annex-rclone`
+
+  Used to identify rclone special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
 * `remote.<name>.annex-web`
 
   Used to identify web special remotes.
@@ -1832,7 +1837,7 @@ Remotes are configured using these settings in `.git/config`.
 
 * `remote.<name>.annex-externaltype`
 
-  Used external special remotes to record the type of the remote.
+  Used by external special remotes to record the type of the remote.
 
   Eg, if this is set to "foo", git-annex will run a "git-annex-remote-foo"
   program to communicate with the external special remote.

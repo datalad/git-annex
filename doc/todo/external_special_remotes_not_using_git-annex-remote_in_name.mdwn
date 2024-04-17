@@ -44,3 +44,5 @@ a wrapper around the external special remote, that makes it use
 > I feel that the simplicity of the type=rclone config will pay off in the
 > long term, vs short term complication for probably a small subset of users
 > who somehow can upgrade rclone but can't upgrade git-annex. --[[Joey]]
+
+> > [[done]] 

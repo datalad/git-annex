@@ -15,6 +15,9 @@ git-annex (10.20240228) UNRELEASED; urgency=medium
     versions of MinTTY.
   * sync, assist, import: Allow -m option to be specified multiple
     times, to provide additional paragraphs for the commit message.
+  * Added rclone special remote, which can be used without needing
+    to install the git-annex-remote-rclone program. This needs
+    a new version of rclone, which supports "rclone gitannex".
 
  -- Joey Hess <id@joeyh.name>  Tue, 27 Feb 2024 13:07:10 -0400
 

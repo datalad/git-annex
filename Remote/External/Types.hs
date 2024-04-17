@@ -1,6 +1,6 @@
 {- External special remote data types.
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,7 +12,7 @@
 module Remote.External.Types (
 	External(..),
 	newExternal,
-	ExternalType,
+	ExternalProgram(..),
 	ExternalState(..),
 	PrepareStatus(..),
 	ExtensionList(..),
@@ -64,7 +64,7 @@ import Text.Read
 import qualified Data.ByteString.Short as S (fromShort)
 
 data External = External
-	{ externalType :: ExternalType
+	{ externalProgram :: ExternalProgram
 	, externalUUID :: Maybe UUID
 	, externalState :: TVar [ExternalState]
 	-- ^ Contains states for external special remote processes
@@ -77,9 +77,9 @@ data External = External
 	, externalAsync :: TMVar ExternalAsync
 	}
 
-newExternal :: ExternalType -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteName -> Maybe RemoteStateHandle -> Annex External
-newExternal externaltype u c gc rn rs = liftIO $ External
-	<$> pure externaltype
+newExternal :: ExternalProgram -> Maybe UUID -> ParsedRemoteConfig -> Maybe RemoteGitConfig -> Maybe RemoteName -> Maybe RemoteStateHandle -> Annex External
+newExternal p u c gc rn rs = liftIO $ External
+	<$> pure p
 	<*> pure u
 	<*> atomically (newTVar [])
 	<*> atomically (newTVar 0)
@@ -89,7 +89,12 @@ newExternal externaltype u c gc rn rs = liftIO $ External
 	<*> pure rs
 	<*> atomically (newTMVar UncheckedExternalAsync)
 
-type ExternalType = String
+data ExternalProgram
+	= ExternalType String
+	-- ^ "git-annex-remote-" is prepended to this to get the program
+	| ExternalCommand String [CommandParam]
+	-- ^ to use a program with a different name, and parameters
+	deriving (Show, Eq)
 
 data ExternalState = ExternalState
 	{ externalSend :: forall t. (Proto.Sendable t, ToAsyncWrapped t) => t -> IO ()
