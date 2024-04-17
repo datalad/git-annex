@@ -172,7 +172,7 @@ gen rt externalprogram r u rc gc rs
 externalSetup :: Maybe ExternalProgram -> Maybe (String, String) -> SetupStage -> Maybe UUID -> Maybe CredPair -> RemoteConfig -> RemoteGitConfig -> Annex (RemoteConfig, UUID)
 externalSetup externalprogram setgitconfig _ mu _ c gc = do
 	u <- maybe (liftIO genUUID) return mu
-	pc <- either giveup return $ parseRemoteConfig c lenientRemoteConfigParser
+	pc <- either giveup return $ parseRemoteConfig c (lenientRemoteConfigParser externalprogram)
 	let readonlyconfig = getRemoteConfigValue readonlyField pc == Just True
 	let externaltype = if readonlyconfig
 		then "readonly"
@@ -189,7 +189,7 @@ externalSetup externalprogram setgitconfig _ mu _ c gc = do
 			setConfig (remoteAnnexConfig (fromJust (lookupName c)) "readonly") (boolConfig True)
 			return c'
 		else do
-			pc' <- either giveup return $ parseRemoteConfig c' lenientRemoteConfigParser
+			pc' <- either giveup return $ parseRemoteConfig c' (lenientRemoteConfigParser externalprogram)
 			let p = fromMaybe (ExternalType externaltype) externalprogram
 			external <- newExternal p (Just u) pc' (Just gc) Nothing Nothing
 			-- Now that we have an external, ask it to LISTCONFIGS, 
@@ -862,34 +862,41 @@ getInfoM external = (++)
 
 {- All unknown configs are passed through in case the external program
  - uses them. -}
-lenientRemoteConfigParser :: RemoteConfigParser
-lenientRemoteConfigParser =
-	addRemoteConfigParser specialRemoteConfigParsers baseRemoteConfigParser
+lenientRemoteConfigParser :: Maybe ExternalProgram -> RemoteConfigParser
+lenientRemoteConfigParser externalprogram =
+	addRemoteConfigParser specialRemoteConfigParsers (baseRemoteConfigParser externalprogram)
 
-baseRemoteConfigParser :: RemoteConfigParser
-baseRemoteConfigParser = RemoteConfigParser
-	{ remoteConfigFieldParsers =
-		[ optionalStringParser externaltypeField
-			(FieldDesc "type of external special remote to use")
-		, trueFalseParser readonlyField (Just False)
-			(FieldDesc "enable readonly mode")
-		]
+baseRemoteConfigParser :: Maybe ExternalProgram -> RemoteConfigParser
+baseRemoteConfigParser externalprogram = RemoteConfigParser
+	{ remoteConfigFieldParsers = if isJust extcommand
+		then []
+		else 
+			[ optionalStringParser externaltypeField
+				(FieldDesc "type of external special remote to use")
+			, trueFalseParser readonlyField (Just False)
+				(FieldDesc "enable readonly mode")
+			]
 	, remoteConfigRestPassthrough = Just
 		( const True
-		, [("*", FieldDesc "all other parameters are passed to external special remote program")]
+		, [("*", FieldDesc $ "all other parameters are passed to " ++ fromMaybe "external special remote program" extcommand)]
 		)
 	}
+  where
+	extcommand = case externalprogram of
+		Just (ExternalCommand c _) -> Just c
+		_ -> Nothing
 
 {- When the remote supports LISTCONFIGS, only accept the ones it listed.
  - When it does not, accept all configs. -}
 strictRemoteConfigParser :: External -> Annex RemoteConfigParser
 strictRemoteConfigParser external = listConfigs external >>= \case
-	Nothing -> return lenientRemoteConfigParser
+	Nothing -> return lcp
 	Just l -> do
 		let s = S.fromList (map fst l)
 		let listed f = S.member (fromProposedAccepted f) s
-		return $ lenientRemoteConfigParser
-			{ remoteConfigRestPassthrough = Just (listed, l) }
+		return $ lcp { remoteConfigRestPassthrough = Just (listed, l) }
+  where
+	lcp = lenientRemoteConfigParser (Just (externalProgram external))
 
 listConfigs :: External -> Annex (Maybe [(Setting, FieldDesc)])
 listConfigs external = handleRequest external LISTCONFIGS Nothing (collect [])
@@ -907,12 +914,12 @@ remoteConfigParser externalprogram c
 	-- or when everything in the config was already accepted; in those
 	-- cases the lenient parser will do the same thing as the strict
 	-- parser.
-	| M.null (M.filter isproposed c) = return lenientRemoteConfigParser
-	| otherwise = case parseRemoteConfig c baseRemoteConfigParser of
-		Left _ -> return lenientRemoteConfigParser
+	| M.null (M.filter isproposed c) = return (lenientRemoteConfigParser externalprogram)
+	| otherwise = case parseRemoteConfig c (baseRemoteConfigParser externalprogram) of
+		Left _ -> return (lenientRemoteConfigParser externalprogram)
 		Right pc -> case (getRemoteConfigValue externaltypeField pc, getRemoteConfigValue readonlyField pc) of
-			(Nothing, _) -> return lenientRemoteConfigParser
-			(_, Just True) -> return lenientRemoteConfigParser
+			(Nothing, _) -> return (lenientRemoteConfigParser externalprogram)
+			(_, Just True) -> return (lenientRemoteConfigParser externalprogram)
 			(Just externaltype, _) -> do
 				let p = fromMaybe (ExternalType externaltype) externalprogram
 				external <- newExternal p Nothing pc Nothing Nothing Nothing
