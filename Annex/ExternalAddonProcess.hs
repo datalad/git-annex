@@ -1,6 +1,6 @@
 {- External addon processes for special remotes and backends.
  -
- - Copyright 2013-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -33,16 +33,16 @@ data ExternalAddonStartError
 	= ProgramNotInstalled String
 	| ProgramFailure String
 
-startExternalAddonProcess :: String -> ExternalAddonPID -> Annex (Either ExternalAddonStartError ExternalAddonProcess)
-startExternalAddonProcess basecmd pid = do
+startExternalAddonProcess :: String -> [CommandParam] -> ExternalAddonPID -> Annex (Either ExternalAddonStartError ExternalAddonProcess)
+startExternalAddonProcess basecmd ps pid = do
 	errrelayer <- mkStderrRelayer
 	g <- Annex.gitRepo
 	cmdpath <- liftIO $ searchPath basecmd
 	liftIO $ start errrelayer g cmdpath
   where
 	start errrelayer g cmdpath = do
-		(cmd, ps) <- maybe (pure (basecmd, [])) findShellCommand cmdpath
-		let basep = (proc cmd (toCommand ps))
+		(cmd, cmdps) <- maybe (pure (basecmd, [])) findShellCommand cmdpath
+		let basep = (proc cmd (toCommand (cmdps ++ ps)))
 			{ std_in = CreatePipe
 			, std_out = CreatePipe
 			, std_err = CreatePipe

@@ -215,7 +215,7 @@ poolVar = unsafePerformIO $ newMVar M.empty
 -- using it.
 newExternalState :: ExternalBackendName -> HasExt -> ExternalAddonPID -> Annex ExternalState
 newExternalState ebname hasext pid = do
-	st <- startExternalAddonProcess basecmd pid
+	st <- startExternalAddonProcess basecmd [] pid
 	st' <- case st of
 		Left (ProgramNotInstalled msg) -> warnonce msg >> return st
 		Left (ProgramFailure msg) -> warnonce msg >> return st
