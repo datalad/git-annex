@@ -1,6 +1,6 @@
 {- External special remote interface.
  -
- - Copyright 2013-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -666,7 +666,7 @@ startExternal' external = do
 				(Just rname, Just True) -> unusable $ unlines
 					[ err
 					, "This remote has annex-readonly=true, and previous versions of"
-					, "git-annex would tried to download from it without"
+					, "git-annex would try to download from it without"
 					, "installing " ++ basecmd ++ ". If you want that, you need to set:"
 					, "git config remote." ++ rname ++ ".annex-externaltype readonly"
 					]
