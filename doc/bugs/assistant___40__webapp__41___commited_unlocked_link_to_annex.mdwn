@@ -1,0 +1,106 @@
+### Please describe the problem.
+
+Today I noticed odd commits happening such as
+
+```
+❯ git show 4a157861f3d27a40b38ae441dfe306e45e448c66
+commit 4a157861f3d27a40b38ae441dfe306e45e448c66
+Author: ReproStim User <changeme@example.com>
+Date:   Wed Apr 17 09:22:04 2024 -0400
+
+    git-annex in reprostim@reproiner:/data/reprostim
+
+diff --git a/Videos/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log b/Videos/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+index fc930f54..92b79020 100644
+--- a/Videos/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
++++ b/Videos/2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+@@ -1 +1 @@
+-/annex/objects/MD5E-s68799--29541299bea3691f430d855d2fb432fb.mkv.log
++/annex/objects/MD5E-s69--08983cc11522233e5d4815e4ef62275a.mkv.log
+```
+
+-- today is April but commits are for files in March... 
+
+There is `git annex webapp` running which is configured to offload all content to another host.
+
+And actual patch shows that it pretty much annexed the "unlocked link" file after the file was offloaded to remote host.
+
+
+Do not have a minimal reproducer yet, but I think it happened while
+
+- I had initially .log files which are text going to git
+- then I added to `.gitattributes` 
+
+```
+*.log annex.largefiles=anything
+```
+
+but it was never committed (? I assumed that annex webapp/assistant would do that -- it didn't) -- only now I did that.  
+- not sure how this morning was special...
+
+The most interesting is that if I `annex get` -- I do get correct file...
+
+It is like an inception!!!
+
+On the fresh clone, if I look inside that file I see short key:
+
+```
+❯ cat 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+/annex/objects/MD5E-s69--08983cc11522233e5d4815e4ef62275a.mkv.log
+```
+
+then, if I `annex get` it -- I get content with long key
+
+```shell
+❯ git annex get 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+get 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log (from rolando...) 
+ok                                
+(recording state in git...)
+❯ cat 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+/annex/objects/MD5E-s68799--29541299bea3691f430d855d2fb432fb.mkv.log
+```
+
+then upon subsequent get -- I will get the actual content:
+
+```shell
+❯ git annex get 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+get 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log (from rolando...) 
+ok                                
+(recording state in git...)
+❯ head -n 1 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+2024-03-17 14:09:12.551 [info] [685899] Session logging begin   : reprostim-videocapture 1.5.0.119, session_logger_2024.03.17.14.09.12.550, start_ts=2024.03.17.14.09.12.550
+```
+and dropping it would lead me just to the "long key"
+
+```
+❯ git annex drop 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+drop 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log (locking rolando...) ok
+(recording state in git...)
+❯ cat 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+/annex/objects/MD5E-s68799--29541299bea3691f430d855d2fb432fb.mkv.log
+```
+
+and will not be able to come out into reality from the 2nd level of inception:
+
+```
+❯ git annex drop 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+❯ cat 2024.03.17.14.09.12.550_2024.03.17.14.09.18.818.mkv.log
+/annex/objects/MD5E-s68799--29541299bea3691f430d855d2fb432fb.mkv.log
+```
+
+
+### What version of git-annex are you using? On what operating system?
+
+on original server with webapp:  10.20240227-1~ndall+1
+
+on intermediate server through which transfer of files happens: I think it might be old 
+
+```
+[bids@rolando VIDS] > git annex version
+git-annex version: 6.20180808-ga1327779a
+```
+
+on laptop where I dive into inception: 10.20240129
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
