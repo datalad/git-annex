@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-04-18T17:39:52Z"
+ content="""
+Of course, choosing a backend that does not include extension is something
+worth considering. Unless something needs the object file to preserve the
+extension. For a .mkv file, I'd guess most video players don't care about
+the extension.
+
+annex.maxextensionlength won't help here, but I think it makes sense to add
+an analagous annex.maxextensioncount which would default to 2 (as it
+currently does to handle .tar.gz) but you could set to 1.
+
+It might also be a reasonable argument that filename extensions are not
+just numbers, but then again, foo.1.pdf foo.2.pdf is a pretty common kind
+of pattern, although the extent that the numbers in that are extensions
+with any meaning to a program would depend. Some archivers do eg split
+files into foo.1 foo.2 foo.3 and use the extensions to get them back.
+Anyway, the same kind of problem could happen when not using only
+numbers.
+"""]]
