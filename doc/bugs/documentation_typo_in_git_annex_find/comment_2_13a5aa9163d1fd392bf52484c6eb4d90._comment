@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="ErrGe"
+ avatar="http://cdn.libravatar.org/avatar/37423d3bfd69af2cda23d194ec74f991"
+ subject="but I'm talking about --help, isn't that in the source code?"
+ date="2024-04-18T13:07:40Z"
+ content="""
+I'm talking about the output of a --help command, that has to be in the source code somewhere, no?
+"""]]

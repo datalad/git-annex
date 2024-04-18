@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="ErrGe"
+ avatar="http://cdn.libravatar.org/avatar/37423d3bfd69af2cda23d194ec74f991"
+ subject="hook idea implementation is cool, but usage is not so simple for the enduser"
+ date="2024-04-18T01:17:02Z"
+ content="""
+Sorry for resurrecting this after 2 years, I somehow forgot this discussion was ongoing.
+
+So, first of all, thank you so much for taking the time to writing up a very cool server side solution for the problem.  Do I understand your proposal correctly, that basically on the server we would always store a git-annex rewritten branch as if it was correctly written by the client, no matter what the clients do on their own in their own git-annex branches, right?
+
+And since all the merging in git-annex is line based, this constant rewrite wouldn't confuse the clients when they `git fetch --all` + `git annex merge`?  Wouldn't the merge commits in `gitk git-annex` be very weird to understand?
+
+So what I don't understand, is that if we do this on the central server side, then yes, the rewrite on the server is good, but when the offending client does a `git fetch` + `git annex merge`, it will create a merge commit with 2 parents.  Will we also straighten that out automatically and delete the \"stupid\" side on the next push?  Doesn't this mean, that debugging just becomes more confusing and this client will create longer and longer side branches on its graphical branch view of `gitk git-annex`?
+
+Let me reflect back to your \"comment 5\", where you asked the very valid question of what to do in case of difference of opinions.  I think the correct solution is to implement the override feature (in .git/config, as you said), and let it completely happen.  If the only way for unwanted UUIDs to appear in my central repo is for someone to use this extra feature, I'm OK with that.  I want to prevent accidents, and I certainly don't want to prevent expert power-users achieving their goals when needed, so local override (even if the end result is pushed back), is 100% fine.
+
+Now, that I'm thinking about this as a \"reasonable difference of opinion to have\", an interesting \"solution\" comes to mind, that opens up of course a very big discussion: why in the design of git-annex there is only ONE AND ONLY git-annex branch?  Git has orphan branches, and it would be legit to say, that different group of people working in a repo, have different opinion of \"view of the annex\", e.g. they think different repos (or special remotes) are important or unimportant for them. I mention this question not really seriously as a proposal to redesign, but I'm sure that you had this idea sometime in the past, and if you have some insight or revelations, I'd be happy to read it.
+"""]]
