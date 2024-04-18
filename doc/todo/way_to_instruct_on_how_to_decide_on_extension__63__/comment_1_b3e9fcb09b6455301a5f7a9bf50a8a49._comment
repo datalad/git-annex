@@ -9,7 +9,7 @@ extension. For a .mkv file, I'd guess most video players don't care about
 the extension.
 
 annex.maxextensionlength won't help here, but I think it makes sense to add
-an analagous annex.maxextensioncount which would default to 2 (as it
+an analagous annex.maxextensions which would default to 2 (as it
 currently does to handle .tar.gz) but you could set to 1.
 
 It might also be a reasonable argument that filename extensions are not

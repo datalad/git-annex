@@ -387,7 +387,7 @@ prop_view_roundtrips (AssociatedFile Nothing) _ _ = True
 prop_view_roundtrips (AssociatedFile (Just f)) metadata visible = or
 	[ B.null (P.takeFileName f) && B.null (P.takeDirectory f)
 	, viewTooLarge view
-	, all hasfields (viewedFiles view (viewedFileFromReference' Nothing) (fromRawFilePath f) metadata)
+	, all hasfields (viewedFiles view (viewedFileFromReference' Nothing Nothing) (fromRawFilePath f) metadata)
 	]
   where
 	view = View (Git.Ref "foo") $

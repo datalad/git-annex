@@ -45,20 +45,24 @@ genKeyName s
  - file that the key was generated from.  -}
 addE :: KeySource -> (KeyVariety -> KeyVariety) -> Key -> Annex Key
 addE source sethasext k = do
-	maxlen <- annexMaxExtensionLength <$> Annex.getGitConfig
-	let ext = selectExtension maxlen (keyFilename source)
+	c <- Annex.getGitConfig
+	let ext = selectExtension
+		(annexMaxExtensionLength c)
+		(annexMaxExtensions c)
+		(keyFilename source)
 	return $ alterKey k $ \d -> d
 		{ keyName = keyName d <> S.toShort ext
 		, keyVariety = sethasext (keyVariety d)
 		}
 
-selectExtension :: Maybe Int -> RawFilePath -> S.ByteString
-selectExtension maxlen f
+selectExtension :: Maybe Int -> Maybe Int -> RawFilePath -> S.ByteString
+selectExtension maxlen maxextensions f
 	| null es = ""
 	| otherwise = S.intercalate "." ("":es)
   where
 	es = filter (not . S.null) $ reverse $
-		take 2 $ filter (S.all validInExtension) $
+		take (fromMaybe maxExtensions maxextensions) $
+		filter (S.all validInExtension) $
 		takeWhile shortenough $
 		reverse $ S.split (fromIntegral (ord '.')) (P.takeExtensions f')
 	shortenough e = S.length e <= fromMaybe maxExtensionLen maxlen
@@ -75,3 +79,6 @@ validInExtension c
 
 maxExtensionLen :: Int
 maxExtensionLen = 4 -- long enough for "jpeg"
+
+maxExtensions :: Int
+maxExtensions = 2 -- include both extensions of "tar.gz"

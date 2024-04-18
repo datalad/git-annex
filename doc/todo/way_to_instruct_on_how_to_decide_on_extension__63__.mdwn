@@ -12,3 +12,5 @@ Just throwing against the wall to see if sticks
 
 [[!meta author=yoh]]
 [[!tag projects/repronim]]
+
+> added annex.maxextensions config, [[done]] --[[Joey]]

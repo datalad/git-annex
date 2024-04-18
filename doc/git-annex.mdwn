@@ -873,8 +873,16 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   and also when generating a view branch.
 
   The default length is 4, which allows extensions like "jpeg". The dot before
-  the extension is not counted part of its length. At most two extensions
-  at the end of a filename will be preserved, e.g. .gz or .tar.gz .
+  the extension is not counted part of its length.
+
+* `annex.maxextensions`
+
+  Maximum number of filename extensions to preserve when using a backend
+  that preserves filename extensions, and also when generating a view
+  branch.
+
+  The default is 2, which allows for compound extensions like ".tar.gz".
+  When set to 1, it will only preserve the last extension, eg ".gz".
 
 * `annex.diskreserve`
 

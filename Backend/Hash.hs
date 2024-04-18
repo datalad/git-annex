@@ -170,11 +170,14 @@ needsUpgrade key = or
 	]
 
 trivialMigrate :: Key -> Backend -> AssociatedFile -> Bool -> Annex (Maybe Key)
-trivialMigrate oldkey newbackend afile _inannex = trivialMigrate' oldkey newbackend afile
-	<$> (annexMaxExtensionLength <$> Annex.getGitConfig)
+trivialMigrate oldkey newbackend afile _inannex = do
+	c <- Annex.getGitConfig
+	return $ trivialMigrate' oldkey newbackend afile
+		(annexMaxExtensionLength c)
+		(annexMaxExtensions c)
 
-trivialMigrate' :: Key -> Backend -> AssociatedFile -> Maybe Int -> Maybe Key
-trivialMigrate' oldkey newbackend afile maxextlen
+trivialMigrate' :: Key -> Backend -> AssociatedFile -> Maybe Int -> Maybe Int -> Maybe Key
+trivialMigrate' oldkey newbackend afile maxextlen maxexts
 	{- Fast migration from hashE to hash backend. -}
 	| migratable && hasExt oldvariety = Just $ alterKey oldkey $ \d -> d
 		{ keyName = S.toShort (keyHash oldkey)
@@ -185,7 +188,7 @@ trivialMigrate' oldkey newbackend afile maxextlen
 		AssociatedFile Nothing -> Nothing
 		AssociatedFile (Just file) -> Just $ alterKey oldkey $ \d -> d
 			{ keyName = S.toShort $ keyHash oldkey 
-				<> selectExtension maxextlen file
+				<> selectExtension maxextlen maxexts file
 			, keyVariety = newvariety
 			}
 	{- Upgrade to fix bad previous migration that created a

@@ -136,6 +136,7 @@ data GitConfig = GitConfig
 	, annexAllowedIPAddresses :: String
 	, annexAllowUnverifiedDownloads :: Bool
 	, annexMaxExtensionLength :: Maybe Int
+	, annexMaxExtensions :: Maybe Int
 	, annexJobs :: Concurrency
 	, annexCacheCreds :: Bool
 	, annexAutoUpgradeRepository :: Bool
@@ -244,6 +245,7 @@ extractGitConfig configsource r = GitConfig
 	, annexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 		getmaybe (annexConfig "security.allow-unverified-downloads")
 	, annexMaxExtensionLength = getmayberead (annexConfig "maxextensionlength")
+	, annexMaxExtensions = getmayberead (annexConfig "maxextensions")
 	, annexJobs = fromMaybe NonConcurrent $ 
 		parseConcurrency =<< getmaybe (annexConfig "jobs")
 	, annexCacheCreds = getbool (annexConfig "cachecreds") True
