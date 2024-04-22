@@ -1,0 +1,1 @@
+There is a documentation issue with `--copies` (e.g. used in `git annex find`), parameter should be a number, not a remote.
