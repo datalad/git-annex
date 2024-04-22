@@ -19,7 +19,7 @@ index 694b60d240..07cf54069e 100644
  		)
  	, annexOption (setAnnexState . Limit.addCopies) $ strOption
 -		( long "copies" <> short 'C' <> metavar paramRemote
-+                ( long "copies" <> short 'C' <> metavar paramNumber
++		( long "copies" <> short 'C' <> metavar paramNumber
  		<> help "skip files with fewer copies"
  		<> hidden
  		)
