@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="aurtzy"
+ avatar="http://cdn.libravatar.org/avatar/7d44f9b718a534ada04551ee8c72e07f"
+ subject="comment 1"
+ date="2024-04-25T17:35:49Z"
+ content="""
+`git config annex.uuid` seems reliable enough to me - the uuid is stored in `.git/config` and doesn't exist if it's not annex-inited (assuming no malicious behavior).
+
+If you're looking for the very cheapest, perhaps something like a file-exists check on `.git/annex` would work? I don't know if there are any edge cases with this one, though.
+"""]]

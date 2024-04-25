@@ -1,0 +1,11 @@
+I need to implement some functionality that should work in similar ways when faced with a plain Git vs a git-annex repo. In this context I am looking for the cheapest of the appropriate tests for an initialized annex?
+
+I have looked at
+
+- `git config annex.uuid` (~3ms)
+- `git rev-parse git-annex` (~3ms)
+- `git annex info --fast -q` (~50ms)
+
+Are  the fast ones sufficient to guarantee that no subsequent call to a git-annex command would yield `git-annex: First run: git-annex init`?
+
+Thanks!
