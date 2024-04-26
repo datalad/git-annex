@@ -1,5 +1,7 @@
 #!/bin/sh
 
+TOPDIR=..
+
 set -x
 
 # remember the refs that were uploaded already
@@ -34,16 +36,16 @@ while read foo; do
 			echo
 		;;
 		list*)
-			if [ -e "MANIFEST" ]; then
+			if [ -e "$TOPDIR/MANIFEST" ]; then
 				# Only list the refs in the last bundle
 				# listed in the manifest. Each push
 				# includes all refs in its bundle.
-				f=$(tail -n 1 MANIFEST)
+				f=$(tail -n 1 $TOPDIR/MANIFEST)
 				if [ -n "$f" ]; then
 					# refs in the bundle may end up prefixed with refs/namespaces/mine/
 					# when the intent is for the bundle to include a
 					# ref with the name that comes after that.
-					git bundle list-heads $f | sed 's/refs\/namespaces\/mine\///'
+					git bundle list-heads $TOPDIR/$f | sed 's/refs\/namespaces\/mine\///'
 				fi
 			fi
 			echo
@@ -78,9 +80,9 @@ while read foo; do
 		# another series of commands could follow
 		"")
 			if [ "$dofetch" ]; then
-				if [ -e "MANIFEST" ]; then
-					for f in $(cat MANIFEST); do
-						git bundle unbundle "$f" >/dev/null 2>&1
+				if [ -e "$TOPDIR/MANIFEST" ]; then
+					for f in $(cat $TOPDIR/MANIFEST); do
+						git bundle unbundle "$TOPDIR/$f" >/dev/null 2>&1
 					done
 				fi
 				echo
@@ -89,21 +91,21 @@ while read foo; do
 			if [ "$dopush" ]; then
 				if [ -z "$(git for-each-ref refs/namespaces/mine/)" ]; then
 					# deleted all refs
-					if [ -e "MANIFEST" ]; then
-						for f in $(cat MANIFEST); do
-							rm "$f"
+					if [ -e "$TOPDIR/MANIFEST" ]; then
+						for f in $(cat $TOPDIR/MANIFEST); do
+							rm "$TOPDIR/$f"
 						done
-						rm MANIFEST
-						touch MANIFEST
+						rm $TOPDIR/MANIFEST
+						touch $TOPDIR/MANIFEST
 					fi
 				else
 					# set REPUSH=1 to do a full push
 					# rather than incremental
 					if [ "$REPUSH" ]; then
-						rm MANIFEST
-						rm *.bundle
+						rm $TOPDIR/MANIFEST
+						rm $TOPDIR/*.bundle
 						git for-each-ref refs/namespaces/mine/ | awk '{print $3}' | \
-							git bundle create --quiet new.bundle --stdin
+							git bundle create --quiet $TOPDIR/new.bundle --stdin
 					else
 						# incremental bundle
 						IFS="
@@ -138,11 +140,11 @@ while read foo; do
 								echo "$r"
 							fi
 						done) \
-							| git bundle create --quiet new.bundle --stdin
+							| git bundle create --quiet $TOPDIR/new.bundle --stdin
 					fi
-					sha1=$(sha1sum new.bundle | awk '{print $1}')
-					mv new.bundle "$sha1.bundle"
-					echo "$sha1.bundle" >> MANIFEST
+					sha1=$(sha1sum $TOPDIR/new.bundle | awk '{print $1}')
+					mv $TOPDIR/new.bundle "$TOPDIR/$sha1.bundle"
+					echo "$sha1.bundle" >> $TOPDIR/MANIFEST
 				fi
 				echo 
 				dopush=""
