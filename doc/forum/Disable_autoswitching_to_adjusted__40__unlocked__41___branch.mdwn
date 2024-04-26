@@ -1,0 +1,3 @@
+Is it possible to disable the automatic switching to the `adjusted/main(unlocked)` branch? 
+
+Context: For our measurement campaign, have a policy to only use unlocked files anyway and git-annex always initially switching to that adjusted branch is a bit annoying as we have to manually switch back to the default branch - of which the name is not always the same. Because when you `git annex assist` in an empty repo, it first pushes the `synced/main` branch, which makes it the default on the (Gitea) remote, so subsequent `git clone`s use that as default branch. I'd like to avoid the adjusted branch if possible as I have hit some performance / merge conflict situations with it in the past.
