@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# BUG: 
+# In one repo, make a new commit on master, and git push remote master
+# In a second repo, make a new branch foo, make a new commit in foo, and
+# git push remote foo
+# This second push overwrites the master branch pushed from the first repo
+# with an old version.
+# Need to fetch new revs before push or rethink including all revs in most
+# recent bundle.
+
 TOPDIR=..
 
 set -x
