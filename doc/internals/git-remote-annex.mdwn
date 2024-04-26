@@ -35,11 +35,9 @@ objects, but not refs.
    objects
 2. hash to calculate GITBUNDLE object name
 3. upload GITBUNDLE object
-4. download current manifest
-5. remove all old GITBUNDLES from the manifest, and add new GITBUNDLE at
-   the end. Note that it's possible for the manifest to contain GITBUNDLES
-   that were not in the last fetched manifest, if so those must be
-   preserved, and the new GITBUNDLE appended
+4. download old manifest
+4. upload new manifest listing only the single new GITBUNDLE
+5. delete all other GITBUNDLEs that were listed in the old manifest
 
 # multiple GITMANIFEST files
 

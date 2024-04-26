@@ -7,6 +7,8 @@ set -x
 # remember the refs that were uploaded already
 git for-each-ref refs/namespaces/mine/ > .git/old-refs
 
+rm -f .git/push-response
+
 # Unfortunately, git bundle omits prerequisites that are omitted once,
 # even if they are used by a later ref.
 # For example, where x is a ref that points at A, and y is a ref
@@ -42,10 +44,13 @@ while read foo; do
 				# includes all refs in its bundle.
 				f=$(tail -n 1 $TOPDIR/MANIFEST)
 				if [ -n "$f" ]; then
+					# stash the listed refs for later
+					# checking in push
+					git bundle list-heads $TOPDIR/$f > .git/listed-refs
 					# refs in the bundle may end up prefixed with refs/namespaces/mine/
 					# when the intent is for the bundle to include a
 					# ref with the name that comes after that.
-					git bundle list-heads $TOPDIR/$f | sed 's/refs\/namespaces\/mine\///'
+					sed 's/refs\/namespaces\/mine\///' .git/listed-refs
 				fi
 			fi
 			echo
@@ -56,21 +61,46 @@ while read foo; do
 		push*)
 			set -- $foo
 			x="$2"
-			# src ref if prefixed with a + in a forced push
+			# src ref is prefixed with a + in a forced push
+			forcedpush=""
+			if echo "$x" | cut -d : -f 1 | egrep -q '^\+'; then
+				forcedpush=1
+			fi
 			srcref="$(echo "$x" | cut -d : -f 1 | sed 's/^\+//')"
 			dstref="$(echo "$x" | cut -d : -f 2)"
+			# Need to create a bundle containing $dstref, but
+			# don't want to overwrite that ref in the local
+			# repo. Unfortunately, git bundle does not support
+			# GIT_NAMESPACE, so it's not possible to do that
+			# without making a clone of the whole git repo.
+			# Instead, just create a ref under the namespace
+			# refs/namespaces/mine/ that will be put in the
+			# bundle.
+			mydstref=refs/namespaces/mine/"$dstref"
 			if [ -z "$srcref" ]; then
-				git update-ref -d refs/namespaces/mine/"$dstref"
+				git update-ref -d "$mydstref"
+				touch .git/push-response
+				echo "ok $dstref" >> .git/push-response
 			else
-				# Need to create a bundle containing $dstref, but
-				# don't want to overwrite that ref in the local
-				# repo. Unfortunately, git bundle does not support
-				# GIT_NAMESPACE, so it's not possible to do that
-				# without making a clone of the whole git repo.
-				# Instead, just create a ref under the namespace
-				# refs/namespaces/mine/ that will be put in the
-				# bundle.
-				git update-ref refs/namespaces/mine/"$dstref" "$srcref"
+				if [ ! "$forcedpush" ]; then
+					# check if the push would overwrite
+					# work in the ref currently stored in the
+					# remote, if so refuse to do it
+					prevsha=$(grep " $mydstref$"  .git/listed-refs | awk '{print $1}')
+					newsha=$(git rev-parse "$srcref")
+					if [ -n "$prevsha" ] && [ "$prevsha" != "$newsha" ] && [ -z "$(git log --oneline $prevsha..$newsha 2>/dev/null)" ]; then
+						touch .git/push-response
+						echo "error $dstref non-fast-forward" >> .git/push-response
+					else
+						touch .git/push-response
+						echo "ok $dstref" >> .git/push-response
+						git update-ref "$mydstref" "$srcref"
+					fi
+				else	
+					git update-ref "$mydstref" "$srcref"
+					touch .git/push-response
+					echo "ok $dstref" >> .git/push-response
+				fi
 			fi
 			dopush=1
 		;;
@@ -89,63 +119,76 @@ while read foo; do
 				dofetch=""
 			fi
 			if [ "$dopush" ]; then
-				if [ -z "$(git for-each-ref refs/namespaces/mine/)" ]; then
-					# deleted all refs
-					if [ -e "$TOPDIR/MANIFEST" ]; then
-						for f in $(cat $TOPDIR/MANIFEST); do
-							rm "$TOPDIR/$f"
-						done
-						rm $TOPDIR/MANIFEST
-						touch $TOPDIR/MANIFEST
-					fi
+				# if some refs cannot be pushed, refuse to
+				# push anything. It would be difficult to
+				# push only some refs, because the bundle
+				# needs to contain all refs, and some refs
+				# on the remote may contain objects we have
+				# not fetched yet.
+				if egrep -q "^error" .git/push-response; then
+					sed 's/^ok \(.*\)/error \1 unable to push this due to other pushed ref being non-fast-forward/' .git/push-response > .git/push-response.new
+					mv .git/push-response.new .git/push-response
 				else
-					# set REPUSH=1 to do a full push
-					# rather than incremental
-					if [ "$REPUSH" ]; then
-						rm $TOPDIR/MANIFEST
-						rm $TOPDIR/*.bundle
-						git for-each-ref refs/namespaces/mine/ | awk '{print $3}' | \
-							git bundle create --quiet $TOPDIR/new.bundle --stdin
+					if [ -z "$(git for-each-ref refs/namespaces/mine/)" ]; then
+						# deleted all refs
+						if [ -e "$TOPDIR/MANIFEST" ]; then
+							for f in $(cat $TOPDIR/MANIFEST); do
+								rm "$TOPDIR/$f"
+							done
+							rm $TOPDIR/MANIFEST
+							touch $TOPDIR/MANIFEST
+						fi
 					else
-						# incremental bundle
-						IFS="
+						# set REPUSH=1 to do a full push
+						# rather than incremental
+						if [ "$REPUSH" ]; then
+							rm $TOPDIR/MANIFEST
+							rm $TOPDIR/*.bundle
+							git for-each-ref refs/namespaces/mine/ | awk '{print $3}' | \
+								git bundle create --quiet $TOPDIR/new.bundle --stdin
+						else
+							# incremental bundle
+							IFS="
 "
-						(for l in $(git for-each-ref refs/namespaces/mine/); do
-							r=$(echo "$l" | awk '{print $3}')
-							newsha=$(echo "$l" | awk '{print $1}')
-							oldsha=$(grep -P "\t$r$" .git/old-refs | awk '{print $1}')
-							if [ -n "$oldsha" ]; then
-								# include changes from $oldsha to $r when there are some
-								if [ -n "$(git log --oneline $oldsha..$r)" ]; then
-									check_prereq "$oldsha" "$r"
-								else
-									if [ "$oldsha" = "$newsha" ]; then
-										# $r is unchanged from last push, so include
-										# the minimum data to make the bundle contain $r
-										rparentsha=$(git log -n 2 "$r" --format='%H' | tail -n+2)
-										if [ -n "$rparentsha" ]; then
-											check_prereq "$rparentsha" "$r"
+							(for l in $(git for-each-ref refs/namespaces/mine/); do
+								r=$(echo "$l" | awk '{print $3}')
+								newsha=$(echo "$l" | awk '{print $1}')
+								oldsha=$(grep -P "\t$r$" .git/old-refs | awk '{print $1}')
+								if [ -n "$oldsha" ]; then
+									# include changes from $oldsha to $r when there are some
+									if [ -n "$(git log --oneline $oldsha..$r)" ]; then
+										check_prereq "$oldsha" "$r"
+									else
+										if [ "$oldsha" = "$newsha" ]; then
+											# $r is unchanged from last push, so include
+											# the minimum data to make the bundle contain $r
+											rparentsha=$(git log -n 2 "$r" --format='%H' | tail -n+2)
+											if [ -n "$rparentsha" ]; then
+												check_prereq "$rparentsha" "$r"
+											else
+												# $r has no parent so include it as is
+												echo "$r"
+											fi
 										else
-											# $r has no parent so include it as is
+											# $oldsha is not a parent of $r, so 
+											# include $r and all its parents
 											echo "$r"
 										fi
-									else
-										# $oldsha is not a parent of $r, so 
-										# include $r and all its parents
-										echo "$r"
-									fi
-								fi	
-							else
-								# no old version was pushed so include $r and all its parents
-								echo "$r"
-							fi
-						done) \
-							| git bundle create --quiet $TOPDIR/new.bundle --stdin
+									fi	
+								else
+									# no old version was pushed so include $r and all its parents
+									echo "$r"
+								fi
+							done) \
+								| git bundle create --quiet $TOPDIR/new.bundle --stdin
+						fi
+						sha1=$(sha1sum $TOPDIR/new.bundle | awk '{print $1}')
+						mv $TOPDIR/new.bundle "$TOPDIR/$sha1.bundle"
+						echo "$sha1.bundle" >> $TOPDIR/MANIFEST
 					fi
-					sha1=$(sha1sum $TOPDIR/new.bundle | awk '{print $1}')
-					mv $TOPDIR/new.bundle "$TOPDIR/$sha1.bundle"
-					echo "$sha1.bundle" >> $TOPDIR/MANIFEST
 				fi
+				cat .git/push-response
+				rm -f .git/push-response
 				echo 
 				dopush=""
 			fi
