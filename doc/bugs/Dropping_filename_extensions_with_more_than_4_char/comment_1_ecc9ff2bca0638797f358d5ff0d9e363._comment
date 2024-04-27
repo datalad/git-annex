@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="annex.maxextensionlength and annex.maxextensions"
+ date="2024-04-27T19:16:29Z"
+ content="""
+See the recently added `annex.maxextensionlength` and `annex.maxextensions` configurations: https://git-annex.branchable.com/git-annex/, which should fix your issue.
+"""]]
