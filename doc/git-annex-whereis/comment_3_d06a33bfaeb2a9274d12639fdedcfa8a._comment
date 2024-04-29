@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="rshalaev"
+ avatar="http://cdn.libravatar.org/avatar/d7f181d338cbcef7418faa01f0441e86"
+ subject="How to find last available version of a file?"
+ date="2024-04-29T14:07:40Z"
+ content="""
+Repo that contains the latest/current version of a file is not accessible. Can git annex whereis find the last available version of a file in other repos (or a specific repo)?
+
+I can looping through commit log and running whereis for each commit until an earlier version of a file is found, but perhaps there is a better way to do it with a single command?
+"""]]
