@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""Re: How to find last available version of a file?"""
+ date="2024-04-30T18:52:12Z"
+ content="""
+There's not currently a way to do that without some scripting to get
+the keys, and then `git-annex whereis --key`.
+
+I think this idea is worth doing something about, so I made this todo:
+[[todo/wherewas]].
+"""]]
