@@ -1,20 +1,8 @@
 #!/bin/sh
 
-# BUG: 
-# In one repo, make a new commit on master, and git push remote master
-# In a second repo, make a new branch foo, make a new commit in foo, and
-# git push remote foo
-# This second push overwrites the master branch pushed from the first repo
-# with an old version.
-# Need to fetch new revs before push or rethink including all revs in most
-# recent bundle.
-
 TOPDIR=..
 
 set -x
-
-# remember the refs that were uploaded already
-git for-each-ref refs/namespaces/mine/ > .git/old-refs
 
 rm -f .git/push-response
 
@@ -26,17 +14,23 @@ rm -f .git/push-response
 check_prereq () {
 	# So, if a sha is one of the other refs that will be included in the
 	# bundle, it cannot be treated as a prerequisite.
-	if git for-each-ref refs/namespaces/mine/ | grep -Pv "\t$2$" | awk '{print $1}' | grep -q "$1"; then
+	if git show-ref $push_refs | grep -v " $2$" | awk '{print $1}' | grep -q "$1"; then
 		echo "$2"
 	else
 		# And, if one of the other refs that will be included in the bundle
 		# is an ancestor of the sha, it cannot be treated as a prerequisite.
-		if [ -n "$(for x in $(git for-each-ref refs/namespaces/mine/ | grep -Pv "\t$2$" | awk '{print $1}'); do git log --oneline -n1 $x..$1; done)" ]; then
+		if [ -n "$(for x in $(git show-ref $push_refs | grep -v " $2$" | awk '{print $1}'); do git log --oneline -n1 $x..$1; done)" ]; then
 			echo "$2"
 		else
 			echo "$1..$2"
 		fi
 	fi
+}
+
+addnewbundle () {
+	sha1=$(sha1sum $TOPDIR/new.bundle | awk '{print $1}')
+	mv $TOPDIR/new.bundle "$TOPDIR/$sha1.bundle"
+	echo "$sha1.bundle" >> $TOPDIR/MANIFEST
 }
 
 while read foo; do
@@ -48,19 +42,41 @@ while read foo; do
 		;;
 		list*)
 			if [ -e "$TOPDIR/MANIFEST" ]; then
-				# Only list the refs in the last bundle
-				# listed in the manifest. Each push
-				# includes all refs in its bundle.
-				f=$(tail -n 1 $TOPDIR/MANIFEST)
-				if [ -n "$f" ]; then
-					# stash the listed refs for later
-					# checking in push
-					git bundle list-heads $TOPDIR/$f > .git/listed-refs
-					# refs in the bundle may end up prefixed with refs/namespaces/mine/
-					# when the intent is for the bundle to include a
-					# ref with the name that comes after that.
-					sed 's/refs\/namespaces\/mine\///' .git/listed-refs
+				for f in $(cat $TOPDIR/MANIFEST); do
+					git bundle list-heads $TOPDIR/$f >> .git/listed-refs-new
+					if [ "$foo" = "list for-push" ]; then
+						# Get all the objects from the bundle. This is done here so that
+						# refs/namespaces/mine can be updated with what was listed,
+						# and so what when a full repush needs to be done, everything
+						# gets pushed.
+						git bundle unbundle "$TOPDIR/$f" >/dev/null 2>&1
+					fi
+				done
+				perl -e 'while (<>) { if (m/(.*) (.*)/) { $seen{$2}=$1 } }; foreach my $k (keys %seen) { print "$seen{$k} $k\n" }' < .git/listed-refs-new > .git/listed-refs
+				rm -f .git/listed-refs-new
+
+				# when listing for a push, update refs/namespaces/mine to match what was
+				# listed. This is necessary in order for a full repush to know what to push.
+				if [ "$foo" = "list for-push" ]; then
+					for r in $(git for-each-ref refs/namespaces/mine/ | awk '{print $3}'); do
+						git update-ref -d "$r"
+					done
+					IFS="
+					"
+					for x in $(cat .git/listed-refs); do
+						sha="$(echo "$x" | cut -d ' ' -f 1)"
+						r="$(echo "$x" | cut -d ' ' -f 2)"
+						git update-ref "$r" "$sha"
+					done
+					unset IFS
 				fi
+
+				# respond to git with a list of refs
+				sed 's/refs\/namespaces\/mine\///' .git/listed-refs
+				# .git/listed-refs is later checked in push
+			else
+				rm -f .git/listed-refs
+				touch .git/listed-refs		
 			fi
 			echo
 		;;
@@ -87,6 +103,9 @@ while read foo; do
 			# bundle.
 			mydstref=refs/namespaces/mine/"$dstref"
 			if [ -z "$srcref" ]; then
+				# To delete a ref, have to do a repush of
+				# all remaining refs.
+				REPUSH=1
 				git update-ref -d "$mydstref"
 				touch .git/push-response
 				echo "ok $dstref" >> .git/push-response
@@ -104,11 +123,13 @@ while read foo; do
 						touch .git/push-response
 						echo "ok $dstref" >> .git/push-response
 						git update-ref "$mydstref" "$srcref"
+						push_refs="$mydstref $push_refs"
 					fi
 				else	
 					git update-ref "$mydstref" "$srcref"
 					touch .git/push-response
 					echo "ok $dstref" >> .git/push-response
+					push_refs="$mydstref $push_refs"
 				fi
 			fi
 			dopush=1
@@ -128,72 +149,56 @@ while read foo; do
 				dofetch=""
 			fi
 			if [ "$dopush" ]; then
-				# if some refs cannot be pushed, refuse to
-				# push anything. It would be difficult to
-				# push only some refs, because the bundle
-				# needs to contain all refs, and some refs
-				# on the remote may contain objects we have
-				# not fetched yet.
-				if egrep -q "^error" .git/push-response; then
-					sed 's/^ok \(.*\)/error \1 unable to push this due to other pushed ref being non-fast-forward/' .git/push-response > .git/push-response.new
-					mv .git/push-response.new .git/push-response
+				if [ -z "$(git for-each-ref refs/namespaces/mine/)" ]; then
+					# deleted all refs
+					if [ -e "$TOPDIR/MANIFEST" ]; then
+						for f in $(cat $TOPDIR/MANIFEST); do
+							rm "$TOPDIR/$f"
+						done
+						rm $TOPDIR/MANIFEST
+						touch $TOPDIR/MANIFEST
+					fi
 				else
-					if [ -z "$(git for-each-ref refs/namespaces/mine/)" ]; then
-						# deleted all refs
-						if [ -e "$TOPDIR/MANIFEST" ]; then
-							for f in $(cat $TOPDIR/MANIFEST); do
-								rm "$TOPDIR/$f"
-							done
-							rm $TOPDIR/MANIFEST
-							touch $TOPDIR/MANIFEST
-						fi
+					# set REPUSH=1 to do a full push
+					# rather than incremental
+					if [ "$REPUSH" ]; then
+						rm $TOPDIR/MANIFEST
+						rm $TOPDIR/*.bundle
+						git for-each-ref refs/namespaces/mine/ | awk '{print $3}' | \
+							git bundle create --quiet $TOPDIR/new.bundle --stdin
+						addnewbundle
 					else
-						# set REPUSH=1 to do a full push
-						# rather than incremental
-						if [ "$REPUSH" ]; then
-							rm $TOPDIR/MANIFEST
-							rm $TOPDIR/*.bundle
-							git for-each-ref refs/namespaces/mine/ | awk '{print $3}' | \
-								git bundle create --quiet $TOPDIR/new.bundle --stdin
-						else
-							# incremental bundle
-							IFS="
-"
-							(for l in $(git for-each-ref refs/namespaces/mine/); do
-								r=$(echo "$l" | awk '{print $3}')
-								newsha=$(echo "$l" | awk '{print $1}')
-								oldsha=$(grep -P "\t$r$" .git/old-refs | awk '{print $1}')
-								if [ -n "$oldsha" ]; then
-									# include changes from $oldsha to $r when there are some
-									if [ -n "$(git log --oneline $oldsha..$r)" ]; then
-										check_prereq "$oldsha" "$r"
-									else
-										if [ "$oldsha" = "$newsha" ]; then
-											# $r is unchanged from last push, so include
-											# the minimum data to make the bundle contain $r
-											rparentsha=$(git log -n 2 "$r" --format='%H' | tail -n+2)
-											if [ -n "$rparentsha" ]; then
-												check_prereq "$rparentsha" "$r"
-											else
-												# $r has no parent so include it as is
-												echo "$r"
-											fi
-										else
-											# $oldsha is not a parent of $r, so 
-											# include $r and all its parents
-											echo "$r"
-										fi
-									fi	
+						# incremental bundle
+						for r in $push_refs; do
+							newsha=$(git show-ref "$r" | awk '{print $1}')
+							oldsha=$(grep " $r$" .git/listed-refs | awk '{print $1}')
+							if [ -n "$oldsha" ]; then
+								# include changes from $oldsha to $r when there are some
+								if [ -n "$(git log --oneline $oldsha..$r)" ]; then
+									check_prereq "$oldsha" "$r"
 								else
-									# no old version was pushed so include $r and all its parents
-									echo "$r"
-								fi
-							done) \
-								| git bundle create --quiet $TOPDIR/new.bundle --stdin
+									if [ "$oldsha" = "$newsha" ]; then
+										# $r is unchanged from last push, so no need to push it
+										:
+									else
+										# $oldsha is not a parent of $r, so 
+										# include $r and all its parents
+										# XXX (this could be improved by checking other refs that were pushed
+										# and only including changes from them)
+										echo "$r"
+									fi
+								fi	
+							else
+								# no old version was pushed so include $r and all its parents
+								# XXX (this could be improved by checking other refs that were pushed
+								# and only including changes from them)
+								echo "$r"
+							fi
+						done > .git/tobundle
+						if [ -s ".git/tobundle" ]; then
+							git bundle create --quiet $TOPDIR/new.bundle --stdin < ".git/tobundle"
+							addnewbundle
 						fi
-						sha1=$(sha1sum $TOPDIR/new.bundle | awk '{print $1}')
-						mv $TOPDIR/new.bundle "$TOPDIR/$sha1.bundle"
-						echo "$sha1.bundle" >> $TOPDIR/MANIFEST
 					fi
 				fi
 				cat .git/push-response

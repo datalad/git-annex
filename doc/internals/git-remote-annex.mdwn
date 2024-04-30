@@ -9,27 +9,30 @@ GITBUNDLE--sha256 is a git bundle.
 
 An ordered list of bundle keys, one per line.
 
-The last bundle in the list provides all refs that are currently stored in
-the repository. The bundles before it in the list can incrementally provide
-objects, but not refs.
-
 # fetching
 
 1. download GITMANIFEST for the uuid of the special remote
 2. download each listed GITBUNDLE object that we don't have
-3. `git bundle unpack` each bundle in order
-4. `git fetch` from the last bundle listed in the manifest
+3. `git fetch` from each new bundle in order
+   (note that later bundles can update refs from the versions in previous
+   bundles)
 
 # pushing (incrementally)
 
-1. create git bundle all refs that will be stored in the repository, 
+This is how pushes are usually done.
+
+1. create git bundle of all refs that are being pushed and have changed,
    and objects since the previously pushed refs
 2. hash to calculate GITBUNDLE key
 3. upload GITBUNDLE object
 4. download current manifest
 5. append GITBUNDLE key to manifest
 
-# pushing (replacing incrementals with single bundle)
+# pushing (full)
+
+Note that this can be used to replace incrementals with a single bundle for
+performance. It is also the only way to handle a push that deletes a
+previously pushed ref.
 
 1. create git bundle containing all refs stored in the repository, and all
    objects
