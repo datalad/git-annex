@@ -1,0 +1,24 @@
+git-annex 10.20240430 released with [[!toggle text="these changes"]]
+[[!toggleable text="""  * Bug fix: While redundant concurrent transfers were already
+    prevented in most cases, it failed to prevent the case where
+    two different repositories were sending the same content to
+    the same repository.
+  * addurl, importfeed: Added --verifiable option, which improves
+    the safety of --fast or --relaxed by letting the content of
+    annexed files be verified with a checksum that is calculated
+    on a later download from the web. This will become the default later.
+  * Added rclone special remote, which can be used without needing
+    to install the git-annex-remote-rclone program. This needs
+    a forthcoming version of rclone (1.67.0), which supports
+    "rclone gitannex".
+  * sync, assist, import: Allow -m option to be specified multiple
+    times, to provide additional paragraphs for the commit message.
+  * reregisterurl: New command that can change an url from being
+    used by a special remote to being used by the web remote.
+  * annex.maxextensions configuration controls how many filename
+    extensions to preserve.
+  * find: Fix --help for --copies.
+    Thanks, Gergely Risko
+  * Windows: Fix escaping output to terminal when using old
+    versions of MinTTY.
+  * Added dependency on unbounded-delays."""]]
