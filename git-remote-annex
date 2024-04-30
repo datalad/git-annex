@@ -1,10 +1,11 @@
 #!/bin/sh
+URL="$2"
 
-TOPDIR=..
+TOPDIR="$(echo "$URL" | sed 's/^annex:\/\///')"
 
 set -x
 
-rm -f .git/push-response
+rm -f $GIT_DIR/push-response
 
 # Unfortunately, git bundle omits prerequisites that are omitted once,
 # even if they are used by a later ref.
@@ -43,7 +44,7 @@ while read foo; do
 		list*)
 			if [ -e "$TOPDIR/MANIFEST" ]; then
 				for f in $(cat $TOPDIR/MANIFEST); do
-					git bundle list-heads $TOPDIR/$f >> .git/listed-refs-new
+					git bundle list-heads $TOPDIR/$f >> $GIT_DIR/listed-refs-new
 					if [ "$foo" = "list for-push" ]; then
 						# Get all the objects from the bundle. This is done here so that
 						# refs/namespaces/mine can be updated with what was listed,
@@ -52,8 +53,8 @@ while read foo; do
 						git bundle unbundle "$TOPDIR/$f" >/dev/null 2>&1
 					fi
 				done
-				perl -e 'while (<>) { if (m/(.*) (.*)/) { $seen{$2}=$1 } }; foreach my $k (keys %seen) { print "$seen{$k} $k\n" }' < .git/listed-refs-new > .git/listed-refs
-				rm -f .git/listed-refs-new
+				perl -e 'while (<>) { if (m/(.*) (.*)/) { $seen{$2}=$1 } }; foreach my $k (keys %seen) { print "$seen{$k} $k\n" }' < $GIT_DIR/listed-refs-new > $GIT_DIR/listed-refs
+				rm -f $GIT_DIR/listed-refs-new
 
 				# when listing for a push, update refs/namespaces/mine to match what was
 				# listed. This is necessary in order for a full repush to know what to push.
@@ -63,7 +64,7 @@ while read foo; do
 					done
 					IFS="
 					"
-					for x in $(cat .git/listed-refs); do
+					for x in $(cat $GIT_DIR/listed-refs); do
 						sha="$(echo "$x" | cut -d ' ' -f 1)"
 						r="$(echo "$x" | cut -d ' ' -f 2)"
 						git update-ref "$r" "$sha"
@@ -72,11 +73,11 @@ while read foo; do
 				fi
 
 				# respond to git with a list of refs
-				sed 's/refs\/namespaces\/mine\///' .git/listed-refs
-				# .git/listed-refs is later checked in push
+				sed 's/refs\/namespaces\/mine\///' $GIT_DIR/listed-refs
+				# $GIT_DIR/listed-refs is later checked in push
 			else
-				rm -f .git/listed-refs
-				touch .git/listed-refs		
+				rm -f $GIT_DIR/listed-refs
+				touch $GIT_DIR/listed-refs		
 			fi
 			echo
 		;;
@@ -107,28 +108,28 @@ while read foo; do
 				# all remaining refs.
 				REPUSH=1
 				git update-ref -d "$mydstref"
-				touch .git/push-response
-				echo "ok $dstref" >> .git/push-response
+				touch $GIT_DIR/push-response
+				echo "ok $dstref" >> $GIT_DIR/push-response
 			else
 				if [ ! "$forcedpush" ]; then
 					# check if the push would overwrite
 					# work in the ref currently stored in the
 					# remote, if so refuse to do it
-					prevsha=$(grep " $mydstref$"  .git/listed-refs | awk '{print $1}')
+					prevsha=$(grep " $mydstref$"  $GIT_DIR/listed-refs | awk '{print $1}')
 					newsha=$(git rev-parse "$srcref")
 					if [ -n "$prevsha" ] && [ "$prevsha" != "$newsha" ] && [ -z "$(git log --oneline $prevsha..$newsha 2>/dev/null)" ]; then
-						touch .git/push-response
-						echo "error $dstref non-fast-forward" >> .git/push-response
+						touch $GIT_DIR/push-response
+						echo "error $dstref non-fast-forward" >> $GIT_DIR/push-response
 					else
-						touch .git/push-response
-						echo "ok $dstref" >> .git/push-response
+						touch $GIT_DIR/push-response
+						echo "ok $dstref" >> $GIT_DIR/push-response
 						git update-ref "$mydstref" "$srcref"
 						push_refs="$mydstref $push_refs"
 					fi
 				else	
 					git update-ref "$mydstref" "$srcref"
-					touch .git/push-response
-					echo "ok $dstref" >> .git/push-response
+					touch $GIT_DIR/push-response
+					echo "ok $dstref" >> $GIT_DIR/push-response
 					push_refs="$mydstref $push_refs"
 				fi
 			fi
@@ -171,7 +172,7 @@ while read foo; do
 						# incremental bundle
 						for r in $push_refs; do
 							newsha=$(git show-ref "$r" | awk '{print $1}')
-							oldsha=$(grep " $r$" .git/listed-refs | awk '{print $1}')
+							oldsha=$(grep " $r$" $GIT_DIR/listed-refs | awk '{print $1}')
 							if [ -n "$oldsha" ]; then
 								# include changes from $oldsha to $r when there are some
 								if [ -n "$(git log --oneline $oldsha..$r)" ]; then
@@ -194,15 +195,15 @@ while read foo; do
 								# and only including changes from them)
 								echo "$r"
 							fi
-						done > .git/tobundle
-						if [ -s ".git/tobundle" ]; then
-							git bundle create --quiet $TOPDIR/new.bundle --stdin < ".git/tobundle"
+						done > $GIT_DIR/tobundle
+						if [ -s "$GIT_DIR/tobundle" ]; then
+							git bundle create --quiet $TOPDIR/new.bundle --stdin < "$GIT_DIR/tobundle"
 							addnewbundle
 						fi
 					fi
 				fi
-				cat .git/push-response
-				rm -f .git/push-response
+				cat $GIT_DIR/push-response
+				rm -f $GIT_DIR/push-response
 				echo 
 				dopush=""
 			fi
