@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-04-30T19:48:55Z"
+ content="""
+About worktree provisioning, couldn't you record the sha1 of the tree
+containing the files needed to generate the object, and then use 
+`git worktree` to make a temporary checkout of that tree? You could
+`git-annex get` whatever files are necessary within the temp worktree,
+which could result in recursive computations to get dependencies.
+
+I would be careful to avoid dependency cycles though..
+"""]]

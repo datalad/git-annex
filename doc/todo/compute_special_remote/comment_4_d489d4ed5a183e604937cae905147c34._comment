@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-04-30T19:34:34Z"
+ content="""
+An interesting benefit of using URL keys for this is the recently added
+VURL keys in today's release, which work just like url keys, except a
+checksum gets calculated when the content is downloaded from the url.
+This allows `git-annex fsck` to verify the checksums, as well as letting
+the checksum be verified when transferring the content between repositories.
+(See `git-annex addurl --verifiable` documentation.)
+
+And a nice thing about using URL or VURL keys for this is that it allows
+for both fully reproducible computations and computations that generate
+equivilant but not identical files. The latter corresponds to `git-annex
+addurl --relaxed`.
+
+If you use a VURL key and give it a size, then the checksum is calculated
+on first download from your compute special remote, and subsequent
+downloads are required to have the same checksum. Without a size, it's
+relaxed and anything your compute special remote generates is treated as
+effectively the same key, so there can be several checksums that git-annex
+knows about, attached to the same VURL key.
+"""]]
