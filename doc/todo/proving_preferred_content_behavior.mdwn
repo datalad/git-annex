@@ -73,3 +73,5 @@ git-annex does.
 
 Since users can write preferred content expressions, this should be
 targeted at being used by end users.
+
+[[!tag projects/openneuro]]
