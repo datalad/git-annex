@@ -125,18 +125,6 @@ Commands like `git-annex push` and `git-annex pull`
 should also skip the instantiated remotes when pushing or pulling the git
 repo, because that would be extra work that accomplishes nothing.
 
-## streaming to special remotes
-
-As well as being an intermediary to git-annex repositories, the proxy could
-provide access to other special remotes. That could be an object store like
-S3, which might be internal to the cluster or not. When using a cloud
-service like S3, only the proxy needs to know the access credentials.
-
-Currently git-annex does not support streaming content to special remotes.
-The remote interface operates on object files stored on disk. See
-[[todo/transitive_transfers]] for discussion of that problem. If proxies
-get implemented, that problem should be revisited.
-
 ## speed
 
 A passthrough proxy should be as fast as possible so as not to add overhead
@@ -156,6 +144,18 @@ content. Eg, analize what files are typically requested, and store another
 copy of those on the proxy. Perhaps prioritize storing smaller files, where
 latency tends to swamp transfer speed.
 
+## streaming to special remotes
+
+As well as being an intermediary to git-annex repositories, the proxy could
+provide access to other special remotes. That could be an object store like
+S3, which might be internal to the cluster or not. When using a cloud
+service like S3, only the proxy needs to know the access credentials.
+
+Currently git-annex does not support streaming content to special remotes.
+The remote interface operates on object files stored on disk. See
+[[todo/transitive_transfers]] for discussion of that problem. If proxies
+get implemented, that problem should be revisited.
+
 ## encryption
 
 When the proxy is in front of a special remote that uses encryption, where
@@ -174,3 +174,29 @@ implementation for this.
 
 There's potentially a layering problem here, because exactly how encryption
 (or chunking) works can vary depending on the type of special remote.
+
+## exporttree=yes
+
+Could the proxy be in front of a special remote that uses exporttree=yes?
+
+Some possible approaches:
+
+* Proxy caches files until all the files in the configured
+  annex-tracking-branch are available, then exports them all to the special
+  remote. Not ideal at all.
+* Proxy exports each file to the special remote as it is received.
+  It records an incomplete tree export after each export.
+  Once all files in the configured annex-tracking-branch have been sent,
+  it records a completed tree export. This seems possible, it's similar
+  to `git-annex export --to=remote` recovering after having been
+  interrupted.
+* Proxy storeExport and all related export/import actions. This would need
+  a large expansion of the P2P protocol.
+
+The first two approaches need some way to communicate the
+configured annex-tracking-branch over the P2P protocol. Or to communicate
+the tree that it currently points to.
+
+The first two approaches also have a complication when a key is sent to
+the proxy that is not part of the configured annex-tracking-branch. What
+does the proxy do with it?
