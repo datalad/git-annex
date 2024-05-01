@@ -36,7 +36,15 @@ cluster.
 
 A proxy would not hold the content of files itself. It would be a clone of
 the git repository though, probably. Uploads and downloads would stream
-through the proxy. The git-annex [[P2P_protocol]] could be relayed in this way. 
+through the proxy. 
+
+## protocol
+
+The git-annex [[P2P_protocol]] would be relayed via the proxy, 
+which would be a regular git ssh remote. 
+
+There is also the possibility of relaying the P2P protocol over another
+protocol such as HTTP, see [[P2P_protocol_over_http]].
 
 ## UUID discovery
 
