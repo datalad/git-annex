@@ -1,6 +1,6 @@
 [codespell]
 skip = .git,*.pdf,*.svg,*._comment,jquery.*.js,*.mdwn,changelog,CHANGELOG,list.2018,html,dist,dist-newstyle,.stack-work,man,tags,tmp
-ignore-regex=\bvalUs\b
+ignore-regex=\b(valUs|addIn)\b
 # some common variables etc (case insensitive)
 # keypair - constructs
 ## May be TODO later, touches too much

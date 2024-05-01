@@ -125,7 +125,7 @@ knownMissing :: FsckResults -> MissingObjects
 knownMissing FsckFailed = S.empty
 knownMissing (FsckFoundMissing s _) = s
 
-{- Finds objects that are missing from the git repsitory, or are corrupt.
+{- Finds objects that are missing from the git repository, or are corrupt.
  -
  - This does not use git cat-file --batch, because catting a corrupt
  - object can cause it to crash, or to report incorrect size information.

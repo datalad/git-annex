@@ -1,4 +1,4 @@
-{- git-annex assistant sceduled jobs runner
+{- git-annex assistant scheduled jobs runner
  -
  - Copyright 2013 Joey Hess <id@joeyh.name>
  -
