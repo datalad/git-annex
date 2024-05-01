@@ -47,8 +47,8 @@ the cluster.
 Could the P2P protocol be extended to let the proxy communicate the UUIDs
 of all the repositories behind it?
 
-Once the client git-annex knows the set of UUIDs behind the proxy, it can
-instantiate a remote object per uuid, each of which accesses the proxy, but
+Once the client git-annex knows the set of UUIDs behind the proxy, it could
+eg instantiate a remote object per UUID, each of which accesses the proxy, but
 with a different UUID.
 
 But, git-annx usually only does UUID discovery the first time a ssh remote
@@ -64,8 +64,7 @@ git-annex branch?
 
 With this approach, git-annex would know as soon as it sees the proxy's
 UUID that this is a proxy for this other set of UUIDS. (Unless its
-git-annex branch is not up-to-date.) And then it can instantiate a UUID for
-each remote.
+git-annex branch is not up-to-date.)
 
 One difficulty with this is that, when the git-annex branch is not up to
 date with changes from the proxy, git-annex may try to access repositories
@@ -75,6 +74,56 @@ git-annex would not use the full set of repositories, so might not be able
 to store data when eg, all the repositories that is knows about are full.
 Just getting the git-annex back in sync should recover from either
 situation.
+
+## user interface
+
+What to name the instantiated remotes? Probably the best that could
+be done is to use the proxy's own remote names as suffixes on the client.
+Eg, the proxy's "node1" remote is "proxy-node1".
+
+But the user probably doesn't want to pick which node to send content to.
+They don't necessarily know anything about the nodes. Ideally the user
+would `git-annex copy --to proxy` or `git-annex push` and let it pick
+which instantiated remote(s) to send to.
+
+To make `git-annex copy --to proxy` work, `storeKey` could be changed to
+allow returning a UUID (or UUIDs) where the content was actually stored.
+That would also allow a single upload to the proxy to fan out and be stored
+in multiple nodes. The proxy would use preferred content to pick which of
+its nodes to store on.
+
+Instantiated remotes would still be needed for `git-annex get` and similar
+to work.
+
+To make `git-annex copy --from proxy` work, the proxy would need to pick
+a node and stream content from it. That's doable, but how to handle a case
+where a node gets corrupted? The best it could do is mark that node as no
+longer containing the content (as if a fsck failed) and try another one
+next time. This complication might not be necessary. Consider that
+while `git-annex copy --to foo` followed later by `git-annex copy --from foo`
+will usually work, it doesn't work when eg first copying to a transfer
+remote, which then sends the content elsewhere and drops its copy.
+
+What about dropping? `git-annex drop --from proxy` could be made to work,
+by having `removeKey` return a list of UUIDs that the content was dropped
+from. What should that do if it's able to drop from some nodes but not
+others? Perhaps it would need to be able to return a list of UUIDs that
+content was dropped from but still indicate it overall failed to drop.
+(Note that it's entirely possible that dropping from one node of the proxy
+involves lockContent on another node of the proxy in order to satisfy
+numcopies.)
+
+A command like `git-annex push` would see all the instantiated remotes and
+would pick one to send content to. Seems like the proxy might choose to
+`storeKey` the content on other node(s) than the requested one. Which would
+be fine. But, `git-annex push` would still do considerable extra work in
+interating over all the instantiated remotes. So it might be better to make
+such commands not operate on instantiated remotes for sending content but
+only on the proxy. 
+
+Commands like `git-annex push` and `git-annex pull`
+should also skip the instantiated remotes when pushing or pulling the git
+repo, because that would be extra work that accomplishes nothing.
 
 ## streaming to special remotes
 
