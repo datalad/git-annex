@@ -1,3 +1,5 @@
+[[!toc ]]
+
 Preferred content expressions can be complicated to write and reason about.
 A complex expression can involve lots of repositories that can get into
 different states, and needs to be written to avoid unwanted behavior.

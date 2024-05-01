@@ -1,3 +1,5 @@
+[[!toc ]]
+
 When [[balanced_preferred_content]] is used, there may be many repositories
 in a location -- either a server or a cluster -- and getting any given file
 may need to access any of them. Configuring remotes for each repository

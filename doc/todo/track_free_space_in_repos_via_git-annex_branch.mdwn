@@ -1,3 +1,5 @@
+[[!toc ]]
+
 If the total space available in a repository for annex objects is recorded
 on the git-annex branch (by the user running a command probably, or perhaps
 automatically), then it is possible to examine the git-annex branch and
