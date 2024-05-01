@@ -63,7 +63,7 @@ Once the client git-annex knows the set of UUIDs behind the proxy, it could
 eg instantiate a remote object per UUID, each of which accesses the proxy, but
 with a different UUID.
 
-But, git-annx usually only does UUID discovery the first time a ssh remote
+But, git-annex usually only does UUID discovery the first time a ssh remote
 is accessed. So it would need to discover at that point that the remote is
 a proxy. Then it could do UUID discovery each time git-annex starts up.
 But that adds significant overhead, git-annex would be making a connection
