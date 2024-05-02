@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+Executing git annex copy sometimes does not copy the necessary files. 
+
+### What steps will reproduce the problem?
+
+I do not know how to reproduce it, because it sometimes happens and sometimes not. This is the code I used:
+
+```
+$ git annex findkeys --not --in origin-storage
+MD5E-s7265--9885654f68b8e72de9b681c8783b3bf8.yaml
+
+$ git annex copy --not --in origin-storage --to origin-storage
+### Note that there is no output
+
+$ git annex findkeys --not --in origin-storage
+MD5E-s7265--9885654f68b8e72de9b681c8783b3bf8.yaml
+## Still there!
+
+11:00 $ git annex findkeys --not --in origin-storage | git annex copy --batch-keys --to origin-storage
+copy MD5E-s7265--9885654f68b8e72de9b681c8783b3bf8.yaml (to origin-storage...) 
+ok
+
+$ git annex findkeys --not --in origin-storage
+## Now the problem is resolved
+```
+
+My expectations are that the second and the fourth command do the same thing, but they don't.
+
+### What version of git-annex are you using? On what operating system?
+
+Rocky OS 9
+git-annex version: 10.20230926-g44a7b4c9734adfda5912dd82c1aa97c615689f57
+
+
