@@ -239,3 +239,7 @@ need to upload more than once, which eliminates one benefit of the proxy.
 So it might be reasonable to only support one url, but what if the proxy 
 has multiple remotes that want to provide urls, how does it pick which one
 wins?
+
+Is only an URL enough for the client to be able to upload to wherever? It
+may be that the HTTP verb is also necessary. Consider POST vs PUT. Some
+services might need additional HTTP headers.
