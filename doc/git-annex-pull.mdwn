@@ -70,7 +70,7 @@ See [[git-annex-preferred-content]](1).
   When this is combined with --no-content, only the git-annex branch
   will be pulled.
 
-* `--no-content, `-g`, `--content`
+* `--no-content`, `-g`, `--content`
 
   Use `--no-content` or `-g` to avoid downloading (and dropping)
   the content of annexed files, and also prevent doing any migrations of
