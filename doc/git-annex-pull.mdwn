@@ -56,7 +56,7 @@ See [[git-annex-preferred-content]](1).
   Only pull with the remotes with the lowest annex-cost value configured.
 
   When a list of remotes (or remote groups) is provided, it picks from
-  amoung those, otherwise it picks from amoung all remotes.
+  among those, otherwise it picks from among all remotes.
 
 * `--only-annex` `-a`, `--not-only-annex`
 
