@@ -187,6 +187,28 @@ implementation for this.
 There's potentially a layering problem here, because exactly how encryption
 (or chunking) works can vary depending on the type of special remote.
 
+## cycles
+
+What if repo A is a proxy and has repo B as a remote. Meanwhile, repo B is
+a proxy and has repo A as a remote?
+
+An upload to repo A will start by checkin if repo B wants the content and if so,
+start an upload to repo B. Then the same happens on repo B, leading it to
+start an upload to repo A. 
+
+At this point, it might be possible for git-annex to detect the cycle,
+if the proxy uses a transfer lock file. If repo B or repo A had some other
+remote that is not part of a cycle, they could deposit the upload there and
+the upload still succeed. Otherwise the upload would fail, which is
+probably the best that can be done with such a broken configuration.
+
+So, it seems like proxies will need to take transfer locks for uploads,
+even though the content is being proxied to elsewhere.
+
+Dropping could have similar cycles with content presence locking, which
+needs to be thought through as well. A cycle of the actual dropContent
+operation might also be possible.
+
 ## exporttree=yes
 
 Could the proxy be in front of a special remote that uses exporttree=yes?
