@@ -212,3 +212,30 @@ the tree that it currently points to.
 The first two approaches also have a complication when a key is sent to
 the proxy that is not part of the configured annex-tracking-branch. What
 does the proxy do with it?
+
+## possible enhancement: indirect uploads
+
+(Thanks to Chris Markiewicz for this idea.)
+
+When a client wants to upload an object, the proxy could indicate that the
+upload should not be sent to it, but instead be PUT to a HTTP url that it
+provides to the client.
+
+An example use case involves
+[presigned S3 urls](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html).
+When one of the proxy's nodes is a S3 bucket, having the client upload
+directly to S3 would avoid needing double traffic through the proxy's
+network.
+
+This would need a special remote that generates the presigned S3 url.
+Probably an external, so the external special remote protocol would need to
+be updated as well as the P2P protocol.
+
+Since an upload to a proxy can be distributed to multiple nodes, should
+the proxy be able to indicate more than one url that the client
+should upload to? Also the proxy might want an upload to still be sent to
+it in addition to url(s). Of course the downside is that the client would
+need to upload more than once, which eliminates one benefit of the proxy.
+So it might be reasonable to only support one url, but what if the proxy 
+has multiple remotes that want to provide urls, how does it pick which one
+wins?
