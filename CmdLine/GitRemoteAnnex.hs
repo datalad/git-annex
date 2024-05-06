@@ -11,11 +11,14 @@ import Annex.Common
 import qualified Annex
 import qualified Git.CurrentRepo
 import Annex.UUID
+import Network.URI
 
 run :: [String] -> IO ()
-run (_remotename:url:[]) = do
-	state <- Annex.new =<< Git.CurrentRepo.get
-	Annex.eval state (run' url)
+run (_remotename:url:[]) = case parseSpecialRemoteUrl url of
+	Left e -> giveup e
+	Right src -> do
+		state <- Annex.new =<< Git.CurrentRepo.get
+		Annex.eval state (run' url)
 run (_remotename:[]) = giveup "remote url not configured"
 run _ = giveup "expected remote name and url parameters"
 
@@ -109,3 +112,30 @@ splitLine l =
 	let (c, sv) = break (== ' ') l
 	    v = if null sv then sv else drop 1 sv
 	in (c, v)
+
+data SpecialRemoteConfig = SpecialRemoteConfig
+	{ specialRemoteUUID :: UUID
+	, specialRemoteParams :: [(String, String)]
+	}
+	deriving (Show)
+
+-- The url for a special remote looks like
+-- annex:uuid?param=value&param=value...
+parseSpecialRemoteUrl :: String -> Either String SpecialRemoteConfig
+parseSpecialRemoteUrl s = case parseURI s of
+	Nothing -> Left "URL parse failed"
+	Just u -> case uriScheme u of
+		"annex:" -> case uriPath u of
+			"" -> Left "annex: URL did not include a UUID"
+			(':':_) -> Left "annex: URL malformed"
+			p -> Right $ SpecialRemoteConfig
+				{ specialRemoteUUID = toUUID p
+				, specialRemoteParams = parsequery u
+				}
+		_ -> Left "Not an annex: URL"
+  where
+	parsequery u = map parsekv $ splitc '&' (drop 1 (uriQuery u))
+	parsekv s =
+		let (k, sv) = break (== '=') s
+		    v = if null sv then sv else drop 1 sv
+		in (unEscapeString k, unEscapeString v)
