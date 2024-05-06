@@ -25,7 +25,7 @@ run (_remotename:address:[]) = forever $
 		"capabilities" -> putStrLn "connect" >> ready
 		"connect git-upload-pack" -> go UploadPack
 		"connect git-receive-pack" -> go ReceivePack
-		l -> giveup $ "git-remote-helpers protocol error at " ++ show l
+		l -> giveup $ "gitremote-helpers protocol error at " ++ show l
   where
 	(onionaddress, onionport)
 		| '/' `elem` address = parseAddressPort $

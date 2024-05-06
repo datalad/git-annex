@@ -21,7 +21,7 @@ service, its first line is used as the authtoken.
 
 # SEE ALSO
 
-git-remote-helpers(1)
+gitremote-helpers(1)
 
 [[git-annex]](1)
 
