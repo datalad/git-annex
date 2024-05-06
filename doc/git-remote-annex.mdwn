@@ -1,0 +1,79 @@
+# NAME
+
+git-remote-annex - remote helper program to store git repository in a git-annex special remote
+
+# SYNOPSIS
+
+git fetch annex::uuid?param=value&param=value...
+
+# DESCRIPTION
+
+This is a git remote helper program that allows git to clone,
+pull and push from a git repository that is stored in a git-annex
+special remote.
+
+It can be used with any special remote except those that use
+encryption=shared or encryption=hybrid. (Since those types of encryption
+rely on on cipher that is checked into the git repository, cloning from
+such a special remote would present a chicken and egg problem.)
+
+The format of the remote URL is "annex::" followed by the UUID of the
+special remote, and then followed by all of the configuration parameters of
+the special remote.
+
+For example, to clone from a directory special remote:
+
+    git clone annex::358ff77e-0bc3-11ef-bc49-872e6695c0e3?type=directory&encryption=none&directory=/mnt/foo/
+
+When a special remote needs some additional credentials to be provided,
+they are not included in the URL, and need to be provided when cloning from
+the special remote. That is typically done by setting environment
+variables. Some special remotes may also need environment variables to be
+set when pulling or pushing.
+
+As a useful shorthand, when the special remote has already been enabled,
+the configuration parameters can be omitted. For example:
+
+	git push annex::358ff77e-0bc3-11ef-bc49-872e6695c0e3 master
+
+This also makes it easy to configure git to use an existing special remote:
+
+	git config remote.foo.url annex::358ff77e-0bc3-11ef-bc49-872e6695c0e3
+	git fetch foo master
+
+Configuring the url like that is automatically done when cloning from a
+special remote, but not by [[git-annex-initremote]](1) and
+[[git-annex-enableremote]](1).
+
+The git repository is stored in the special remote using special annex objects
+with names starting with "GITMANIFEST--" and "GITBUNDLE--". For details about
+how the git repository is stored, see
+<https://git-annex.branchable.com/internals/git-remote-annex/>
+
+Pushes to a special remote are usually done incrementally. However,
+sometimes the whole git repository (but not the annex) needs to be
+re-uploaded. This is done when deleting a ref from the remote. It's also
+done when too many git bundles accumulate in the special remote, as
+configured by the `remote.<name>.git-remote-annex-max-bundles` git config.
+
+Like any git repository, a git repository stored on a special remote can
+have conflicting things pushed to it from different places. This mostly
+works the same as any other git repository, eg a push that overwrites other
+work will be prevented unless forced. However, it is possible, when
+conflicting pushes are being done at the same time, for one of the pushes
+to be overwritten by the other one. In this sitiation, the push will appear
+to have succeeded, but pulling later will show the true situation.
+
+# SEE ALSO
+
+gitremote-helpers(1)
+
+[[git-annex]](1)
+
+[[git-annex-initremote]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
