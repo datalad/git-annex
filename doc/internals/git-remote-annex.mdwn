@@ -3,11 +3,13 @@ This adds two new object types to git-annex, GITMANIFEST and a GITBUNDLE.
 GITMANIFEST--$UUID is the manifest for a git repository stored in the
 git-annex repository with that UUID.
 
-GITBUNDLE--$UUID--sha256 is a git bundle.
+GITBUNDLE--$UUID-sha256 is a git bundle.
 
 # format of the manifest file
 
-An ordered list of bundle keys, one per line.
+An ordered list of bundle keys, one per line. 
+
+(Lines end with unix `"\n"`, not `"\r\n"`.)
 
 # fetching
 
