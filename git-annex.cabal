@@ -606,6 +606,7 @@ Executable git-annex
     CmdLine.GitAnnexShell.Fields
     CmdLine.AnnexSetter
     CmdLine.Option
+    CmdLine.GitRemoteAnnex
     CmdLine.GitRemoteTorAnnex
     CmdLine.Seek
     CmdLine.Usage

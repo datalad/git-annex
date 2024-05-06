@@ -1,4 +1,4 @@
-all=git-annex git-annex-shell mans docs
+all=git-annex git-annex-shell git-remote-annex mans docs
 
 # set to "./Setup" if you lack a cabal program. Or can be set to "stack"
 BUILDER?=cabal
@@ -70,6 +70,9 @@ git-annex: tmp/configure-stamp
 git-annex-shell: git-annex
 	ln -sf git-annex git-annex-shell
 
+git-remote-annex: git-annex
+	ln -sf git-annex git-remote-annex
+
 # These are not built normally.
 git-union-merge.1: doc/git-union-merge.mdwn
 	./Build/mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
@@ -90,6 +93,7 @@ install-bins: build
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install git-annex $(DESTDIR)$(PREFIX)/bin
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
+	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-remote-annex
 	ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-remote-tor-annex
 
 install-desktop: build Build/InstallDesktopFile
@@ -141,7 +145,7 @@ clean:
 		doc/.ikiwiki html dist tags Build/SysConfig Build/Version \
 		Setup Build/InstallDesktopFile Build/Standalone \
 		Build/DistributionUpdate Build/BuildVersion Build/MakeMans \
-		git-annex-shell git-union-merge .tasty-rerun-log
+		git-annex-shell git-remote-annex git-union-merge .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
 

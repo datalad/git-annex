@@ -224,6 +224,7 @@ installGitAnnex topdir = go (topdir </> "bin")
 			error "strip failed"
 		createSymbolicLink "git-annex" (bindir </> "git-annex-shell")
 		createSymbolicLink "git-annex" (bindir </> "git-remote-tor-annex")
+		createSymbolicLink "git-annex" (bindir </> "git-remote-annex")
 
 main :: IO ()
 main = getArgs >>= go
