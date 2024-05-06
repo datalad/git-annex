@@ -1,6 +1,6 @@
 # NAME
 
-git-remote-annex - remote helper program to store git repository in a git-annex special remote
+git-remote-annex - remote helper program to store a git repository in a git-annex special remote
 
 # SYNOPSIS
 
@@ -14,7 +14,7 @@ special remote.
 
 It can be used with any special remote except those that use
 encryption=shared or encryption=hybrid. (Since those types of encryption
-rely on on cipher that is checked into the git repository, cloning from
+rely on a cipher that is checked into the git repository, cloning from
 such a special remote would present a chicken and egg problem.)
 
 The format of the remote URL is "annex::" followed by the UUID of the
@@ -36,7 +36,8 @@ the configuration parameters can be omitted. For example:
 
 	git push annex::358ff77e-0bc3-11ef-bc49-872e6695c0e3 master
 
-This also makes it easy to configure git to use an existing special remote:
+This also makes it easy to configure the url for an existing special remote,
+making it usable by git:
 
 	git config remote.foo.url annex::358ff77e-0bc3-11ef-bc49-872e6695c0e3
 	git fetch foo master
@@ -52,9 +53,9 @@ how the git repository is stored, see
 
 Pushes to a special remote are usually done incrementally. However,
 sometimes the whole git repository (but not the annex) needs to be
-re-uploaded. This is done when deleting a ref from the remote. It's also
+re-uploaded. That is done when deleting a ref from the remote. It's also
 done when too many git bundles accumulate in the special remote, as
-configured by the `remote.<name>.git-remote-annex-max-bundles` git config.
+configured by the `remote.<name>.max-bundles` git config.
 
 Like any git repository, a git repository stored on a special remote can
 have conflicting things pushed to it from different places. This mostly

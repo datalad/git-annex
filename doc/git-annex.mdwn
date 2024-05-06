@@ -1644,7 +1644,7 @@ Remotes are configured using these settings in `.git/config`.
   remotes, and is set when using [[git-annex-initremote]](1) with the
   `--private` option.
 
-* `remote.<name>.git-remote-annex-max-bundles`
+* `remote.<name>.max-bundles`, `annex.max-bundles`
 
   When using [[git-remote-annex]] to store a git repository in a special 
   remote, this configures how many separate git bundle objects to store
