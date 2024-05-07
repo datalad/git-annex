@@ -135,18 +135,18 @@ data SpecialRemoteConfig = SpecialRemoteConfig
 	deriving (Show)
 
 -- The url for a special remote looks like
--- annex:uuid?param=value&param=value...
+-- annex::uuid?param=value&param=value...
 parseSpecialRemoteUrl :: String -> Either String SpecialRemoteConfig
 parseSpecialRemoteUrl s = case parseURI s of
 	Nothing -> Left "URL parse failed"
 	Just u -> case uriScheme u of
 		"annex:" -> case uriPath u of
 			"" -> Left "annex: URL did not include a UUID"
-			(':':_) -> Left "annex: URL malformed"
-			p -> Right $ SpecialRemoteConfig
+			(':':p) -> Right $ SpecialRemoteConfig
 				{ specialRemoteUUID = toUUID p
 				, specialRemoteParams = parsequery u
 				}
+			_ -> Left "annex: URL malformed"
 		_ -> Left "Not an annex: URL"
   where
 	parsequery u = map parsekv $ splitc '&' (drop 1 (uriQuery u))

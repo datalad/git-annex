@@ -4,7 +4,7 @@ git-remote-annex - remote helper program to store a git repository in a git-anne
 
 # SYNOPSIS
 
-git fetch annex:uuid?param=value&param=value...
+git fetch annex::uuid?param=value&param=value...
 
 # DESCRIPTION
 
@@ -17,13 +17,13 @@ encryption=shared or encryption=hybrid. (Since those types of encryption
 rely on a cipher that is checked into the git repository, cloning from
 such a special remote would present a chicken and egg problem.)
 
-The format of the remote URL is "annex:" followed by the UUID of the
+The format of the remote URL is "annex::" followed by the UUID of the
 special remote, and then followed by all of the configuration parameters of
 the special remote.
 
 For example, to clone from a directory special remote:
 
-    git clone annex:358ff77e-0bc3-11ef-bc49-872e6695c0e3?type=directory&encryption=none&directory=/mnt/foo/
+    git clone annex::358ff77e-0bc3-11ef-bc49-872e6695c0e3?type=directory&encryption=none&directory=/mnt/foo/
 
 When a special remote needs some additional credentials to be provided,
 they are not included in the URL, and need to be provided when cloning from
@@ -31,16 +31,12 @@ the special remote. That is typically done by setting environment
 variables. Some special remotes may also need environment variables to be
 set when pulling or pushing.
 
-As a useful shorthand, when the special remote has already been enabled,
-the configuration parameters can be omitted. For example:
+When configuring the url of an existing special remote, a
+shorter url of "annex::" is sufficient. For example:
 
-	git push annex:358ff77e-0bc3-11ef-bc49-872e6695c0e3 master
-
-This also makes it easy to configure the url for an existing special remote,
-making it usable by git:
-
-	git config remote.foo.url annex:358ff77e-0bc3-11ef-bc49-872e6695c0e3
-	git fetch foo master
+    git-annex initremote foo type=directory encryption=none directory=/mnt/foo
+    git config remote.foo.url annex::
+	git push foo master
 
 Configuring the url like that is automatically done when cloning from a
 special remote, but not by [[git-annex-initremote]](1) and
