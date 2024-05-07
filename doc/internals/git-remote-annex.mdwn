@@ -1,4 +1,4 @@
-This adds two new object types to git-annex, GITMANIFEST and a GITBUNDLE.
+This adds two new key types to git-annex, GITMANIFEST and a GITBUNDLE.
 
 GITMANIFEST--$UUID is the manifest for a git repository stored in the
 git-annex repository with that UUID.
@@ -14,7 +14,7 @@ An ordered list of bundle keys, one per line.
 # fetching
 
 1. download GITMANIFEST for the uuid of the special remote
-2. download each listed GITBUNDLE object that we don't have
+2. download each listed GITBUNDLE key that we don't have
 3. `git fetch` from each new bundle in order
    (note that later bundles can update refs from the versions in previous
    bundles)
@@ -26,7 +26,7 @@ This is how pushes are usually done.
 1. create git bundle of all refs that are being pushed and have changed,
    and objects since the previously pushed refs
 2. hash to calculate GITBUNDLE key
-3. upload GITBUNDLE object
+3. upload GITBUNDLE key
 4. download current manifest
 5. append GITBUNDLE key to manifest
 
@@ -38,8 +38,8 @@ previously pushed ref.
 
 1. create git bundle containing all refs stored in the repository, and all
    objects
-2. hash to calculate GITBUNDLE object name
-3. upload GITBUNDLE object
+2. hash to calculate GITBUNDLE key name
+3. upload GITBUNDLE key
 4. download old manifest
 4. upload new manifest listing only the single new GITBUNDLE
 5. delete all other GITBUNDLEs that were listed in the old manifest

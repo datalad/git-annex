@@ -1,6 +1,6 @@
 {- git-annex hashing backends
  -
- - Copyright 2011-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,10 @@ module Backend.Hash (
 	testKeyBackend,
 	keyHash,
 	descChecksum,
+	Hash(..),
+	cryptographicallySecure,
+	hashFile,
+	checkKeyChecksum
 ) where
 
 import Annex.Common
@@ -78,7 +82,7 @@ genBackend :: Hash -> Backend
 genBackend hash = Backend
 	{ backendVariety = hashKeyVariety hash (HasExt False)
 	, genKey = Just (keyValue hash)
-	, verifyKeyContent = Just $ checkKeyChecksum hash
+	, verifyKeyContent = Just $ checkKeyChecksum sameCheckSum hash
 	, verifyKeyContentIncrementally = Just $ checkKeyChecksumIncremental hash
 	, canUpgradeKey = Just needsUpgrade
 	, fastMigrate = Just trivialMigrate
@@ -123,14 +127,14 @@ keyValueE hash source meterupdate =
 	keyValue hash source meterupdate
 		>>= addE source (const $ hashKeyVariety hash (HasExt True))
 
-checkKeyChecksum :: Hash -> Key -> RawFilePath -> Annex Bool
-checkKeyChecksum hash key file = catchIOErrorType HardwareFault hwfault $ do
+checkKeyChecksum :: (Key -> String -> Bool) -> Hash -> Key -> RawFilePath -> Annex Bool
+checkKeyChecksum issame hash key file = catchIOErrorType HardwareFault hwfault $ do
 	fast <- Annex.getRead Annex.fast
 	exists <- liftIO $ R.doesPathExist file
 	case (exists, fast) of
 		(True, False) -> do
 			showAction (UnquotedString descChecksum)
-			sameCheckSum key 
+			issame key 
 				<$> hashFile hash file nullMeterUpdate
 		_ -> return True
   where

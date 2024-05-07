@@ -219,6 +219,7 @@ data KeyVariety
 	| WORMKey
 	| URLKey
 	| VURLKey
+	| GitBundleKey
 	-- A key that is handled by some external backend.
 	| ExternalKey S.ByteString HasExt
  	-- Some repositories may contain keys of other varieties,
@@ -253,6 +254,7 @@ hasExt (MD5Key (HasExt b)) = b
 hasExt WORMKey = False
 hasExt URLKey = False
 hasExt VURLKey = False
+hasExt GitBundleKey = False
 hasExt (ExternalKey _ (HasExt b)) = b
 hasExt (OtherKey s) = (snd <$> S8.unsnoc s) == Just 'E'
 
@@ -282,6 +284,7 @@ formatKeyVariety v = case v of
 	WORMKey -> "WORM"
 	URLKey -> "URL"
 	VURLKey -> "VURL"
+	GitBundleKey -> "GITBUNDLE"
 	ExternalKey s e -> adde e ("X" <> s)
 	OtherKey s -> s
   where
@@ -347,6 +350,7 @@ parseKeyVariety "MD5E"         = MD5Key (HasExt True)
 parseKeyVariety "WORM"         = WORMKey
 parseKeyVariety "URL"          = URLKey
 parseKeyVariety "VURL"         = VURLKey
+parseKeyVariety "GITBUNDLE"    = GitBundleKey
 parseKeyVariety b
 	| "X" `S.isPrefixOf` b = 
 		let b' = S.tail b

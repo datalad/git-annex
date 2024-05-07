@@ -580,6 +580,7 @@ Executable git-annex
     Author
     Backend
     Backend.External
+    Backend.GitRemoteAnnex
     Backend.Hash
     Backend.URL
     Backend.Utilities
