@@ -147,6 +147,10 @@ fetch' st rmt = do
 	manifest <- maybe (downloadManifest rmt) pure (manifestCache st)
 	forM_ (inManifest manifest) $ \k ->
 		downloadGitBundle rmt k >>= inRepo . Git.Bundle.unbundle
+	-- Newline indicates end of fetch.
+	liftIO $ do
+		putStrLn ""
+		hFlush stdout
 
 push :: State -> Remote -> [String] -> Annex [String]
 push st rmt ls = do
