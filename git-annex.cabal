@@ -760,6 +760,7 @@ Executable git-annex
     Git.AutoCorrect
     Git.Branch
     Git.BuildVersion
+    Git.Bundle
     Git.CatFile
     Git.CheckAttr
     Git.CheckIgnore
