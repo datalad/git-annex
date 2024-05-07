@@ -1,6 +1,6 @@
 {- git ref stuff
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -164,6 +164,15 @@ matchingUniq refs repo = nubBy uniqref <$> matching refs repo
 {- List of all refs. -}
 list :: Repo -> IO [(Sha, Ref)]
 list = matching' [] []
+
+{- Lists refs using for-each-ref.  -}
+forEachRef :: [CommandParam] -> Repo -> IO [(Sha, Branch)]
+forEachRef ps repo = map gen . S8.lines <$>
+	pipeReadStrict (Param "for-each-ref" : ps ++ [format]) repo
+  where
+	format = Param "--format=%(objectname) %(refname)"
+	gen l = let (r, b) = separate' (== fromIntegral (ord ' ')) l
+		in (Ref r, Ref b)
 
 {- Deletes a ref. This can delete refs that are not branches, 
  - which git branch --delete refuses to delete. -}
