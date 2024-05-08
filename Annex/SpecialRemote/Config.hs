@@ -1,6 +1,6 @@
 {- git-annex special remote configuration
  -
- - Copyright 2019-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2019-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
