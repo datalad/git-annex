@@ -21,7 +21,7 @@ import qualified Git.Remote
 import qualified Git.Remote.Remove
 import qualified Annex.SpecialRemote as SpecialRemote
 import qualified Annex.Branch
-import qualified Types.Remote as R
+import qualified Types.Remote as Remote
 import Annex.Transfer
 import Backend.GitRemoteAnnex
 import Config
@@ -44,6 +44,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Map.Strict as M
 import System.FilePath.ByteString as P
+import qualified Utility.RawFilePath as R
 
 run :: [String] -> IO ()
 run (remotename:url:[]) =
@@ -60,11 +61,12 @@ run (_remotename:[]) = giveup "remote url not configured"
 run _ = giveup "expected remote name and url parameters"
 
 run' :: SpecialRemoteConfig -> Annex ()
-run' src =
+run' src = do
+	sab <- startAnnexBranch
 	-- Prevent any usual git-annex output to stdout, because
 	-- the output of this command is being parsed by git.
 	doQuietAction $
-		withSpecialRemote src $ \rmt -> do
+		withSpecialRemote src sab $ \rmt -> do
 			ls <- lines <$> liftIO getContents
 			go rmt ls emptyState
   where
@@ -258,24 +260,24 @@ parseSpecialRemoteUrl url remotename = case parseURI url of
 		in (Proposed (unEscapeString k), Proposed (unEscapeString v))
 
 -- Runs an action with a Remote as specified by the SpecialRemoteConfig.
-withSpecialRemote :: SpecialRemoteConfig -> (Remote -> Annex a) -> Annex a
-withSpecialRemote (ExistingSpecialRemote remotename) a =
+withSpecialRemote :: SpecialRemoteConfig -> StartAnnexBranch -> (Remote -> Annex a) -> Annex a
+withSpecialRemote (ExistingSpecialRemote remotename) _ a =
 	getEnabledSpecialRemoteByName remotename >>=
 		maybe (giveup $ "There is no special remote named " ++ remotename)
 		a
-withSpecialRemote cfg@(SpecialRemoteConfig {}) a = case specialRemoteName cfg of
+withSpecialRemote cfg@(SpecialRemoteConfig {}) sab a = case specialRemoteName cfg of
 	-- The name could be the name of an existing special remote,
 	-- if so use it as long as its UUID matches the UUID from the url.
 	Just remotename -> getEnabledSpecialRemoteByName remotename >>= \case
 		Just rmt
-			| R.uuid rmt == specialRemoteUUID cfg -> a rmt
+			| Remote.uuid rmt == specialRemoteUUID cfg -> a rmt
 			| otherwise -> giveup $ "The uuid in the annex:: url does not match the uuid of the remote named " ++ remotename
 		-- When cloning from an annex:: url,
 		-- this is used to set up the origin remote.
 		Nothing -> (initremote remotename >>= a)
-			`finally` cleanupInitialization
+			`finally` cleanupInitialization sab
 	Nothing -> inittempremote
-		`finally` cleanupInitialization
+		`finally` cleanupInitialization sab
   where
 	-- Initialize a new special remote with the provided configuration
 	-- and name.
@@ -290,7 +292,7 @@ withSpecialRemote cfg@(SpecialRemoteConfig {}) a = case specialRemoteName cfg of
 			(specialRemoteConfig cfg)
 		t <- either giveup return (SpecialRemote.findType c)
 		dummycfg <- liftIO dummyRemoteGitConfig
-		(c', _u) <- R.setup t R.Init (Just (specialRemoteUUID cfg)) 
+		(c', _u) <- Remote.setup t Remote.Init (Just (specialRemoteUUID cfg)) 
 			Nothing c dummycfg
 			`onException` cleanupremote remotename
 		setConfig (remoteConfig c' "url") (specialRemoteUrl cfg)
@@ -337,7 +339,7 @@ getEnabledSpecialRemoteByName remotename =
 -- chicken and egg problem when cloning.
 checkSpecialRemoteProblems :: Remote -> Maybe String
 checkSpecialRemoteProblems rmt
-	| R.thirdPartyPopulated (R.remotetype rmt) =
+	| Remote.thirdPartyPopulated (Remote.remotetype rmt) =
 		Just "Cannot use this thirdparty-populated special remote as a git remote"
 	| otherwise = Nothing
 
@@ -354,12 +356,12 @@ newtype Manifest = Manifest { inManifest :: [Key] }
 -- the usual Annex.Transfer.download. The content of manifests is not
 -- stable, and so it needs to re-download it fresh every time.
 downloadManifest :: Remote -> Annex Manifest
-downloadManifest rmt = ifM (R.checkPresent rmt mk)
+downloadManifest rmt = ifM (Remote.checkPresent rmt mk)
 	( withTmpFile "GITMANIFEST" $ \tmp tmph -> do
 		liftIO $ hClose tmph
-		_ <- R.retrieveKeyFile rmt mk
+		_ <- Remote.retrieveKeyFile rmt mk
 			(AssociatedFile Nothing) tmp
-			nullMeterUpdate R.NoVerify
+			nullMeterUpdate Remote.NoVerify
 		ks <- map deserializeKey' . B8.lines <$> liftIO (B.readFile tmp)
 		Manifest <$> checkvalid [] ks
 	, return (Manifest [])
@@ -445,16 +447,29 @@ getRepo = getEnv "GIT_WORK_TREE" >>= \case
 		r { location = loc { worktree = Just (P.takeDirectory (gitdir loc)) } }
 	fixup r = r
 
+-- Records what the git-annex branch was at the beginning of this command.
+data StartAnnexBranch
+	= AnnexBranchExistedAlready Ref
+	| AnnexBranchCreatedEmpty Ref
+
+startAnnexBranch :: Annex StartAnnexBranch
+startAnnexBranch = ifM (null <$> Annex.Branch.siblingBranches)
+	( AnnexBranchCreatedEmpty <$> Annex.Branch.getBranch
+	, AnnexBranchExistedAlready <$> Annex.Branch.getBranch
+	)
+
 -- This is run after git has used this process to fetch or push from a
 -- special remote that was specified using a git-annex url. If the git
 -- repository was not initialized for use by git-annex already, it is still
 -- not initialized at this point.
 --
--- It's important that initialization not be done by this process until
--- git has fetched any git-annex branch from the special remote. That
--- git-annex branch may have Differences, and prematurely initializing the
--- local repository would then create a git-annex branch that can't merge
--- with the one from the special remote.
+-- If the git-annex branch did not exist when this command started,
+-- the current contents of it were created in passing by this command,
+-- which is hard to avoid. But if a git-annex branch is fetched from the
+-- special remote and contains Differences, it would not be possible to
+-- merge it into the git-annex branch that was created while running this
+-- command. To avoid that problem, when the git-annex branch was created
+-- at the start of this command, it's deleted.
 --
 -- If there is still not a sibling git-annex branch, this deletes all annex
 -- objects for git bundles from the annex objects directory, and deletes
@@ -466,18 +481,22 @@ getRepo = getEnv "GIT_WORK_TREE" >>= \case
 -- When there is now a sibling git-annex branch, this handles
 -- initialization. When the initialized git-annex branch has Differences,
 -- the git bundle objects are in the wrong place, so have to be deleted.
---
--- FIXME git-annex branch is unfortunately created during git clone from a
--- special remote. Should not be for this to work.
-cleanupInitialization :: Annex ()
-cleanupInitialization = ifM Annex.Branch.hasSibling
-	( do
-		autoInitialize' (pure True) remoteList
-		differences <- allDifferences <$> recordedDifferences
-		when (differences /= mempty) $
-			deletebundleobjects
-	, deletebundleobjects
-	)
+cleanupInitialization :: StartAnnexBranch -> Annex ()
+cleanupInitialization sab = do
+	case sab of
+		AnnexBranchExistedAlready _ -> noop
+		AnnexBranchCreatedEmpty _ -> do
+			inRepo $ Git.Branch.delete Annex.Branch.fullname
+			indexfile <- fromRepo gitAnnexIndex
+			liftIO $ removeWhenExistsWith R.removeLink indexfile
+	ifM Annex.Branch.hasSibling
+		( do
+			autoInitialize' (pure True) remoteList
+			differences <- allDifferences <$> recordedDifferences
+			when (differences /= mempty) $
+				deletebundleobjects
+		, deletebundleobjects
+		)
   where
 	deletebundleobjects = do
 		annexobjectdir <- fromRepo gitAnnexObjectDir
