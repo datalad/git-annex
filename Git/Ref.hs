@@ -174,14 +174,23 @@ forEachRef ps repo = map gen . S8.lines <$>
 	gen l = let (r, b) = separate' (== fromIntegral (ord ' ')) l
 		in (Ref r, Ref b)
 
-{- Deletes a ref. This can delete refs that are not branches, 
- - which git branch --delete refuses to delete. -}
+{- Deletes a ref when it contains the specified sha. 
+ - This can delete refs that are not branches, which
+ - git branch --delete refuses to delete. -}
 delete :: Sha -> Ref -> Repo -> IO ()
 delete oldvalue ref = run
 	[ Param "update-ref"
 	, Param "-d"
 	, Param $ fromRef ref
 	, Param $ fromRef oldvalue
+	]
+
+{- Deletes a ref no matter what it contains. -}
+delete' :: Ref -> Repo -> IO ()
+delete' ref = run
+	[ Param "update-ref"
+	, Param "-d"
+	, Param $ fromRef ref
 	]
 
 {- Gets the sha of the tree a ref uses. 
@@ -200,6 +209,19 @@ tree (Ref ref) = extractSha <$$> pipeReadStrict
 		then ref
 		-- de-reference commit objects to the tree
 		else ref <> ":"
+
+{- Check if the first ref is an ancestor of the second ref. 
+ -
+ - Note that if the two refs point to the same commit, it is considered
+ - to be an ancestor of itself.
+ -}
+isAncestor :: Ref -> Ref -> Repo -> IO Bool
+isAncestor r1 r2 = runBool
+	[ Param "merge-base"
+	, Param "--ancestor"
+	, Param (fromRef r1)
+	, Param (fromRef r2)
+	]
 
 {- Checks if a String is a legal git ref name.
  -

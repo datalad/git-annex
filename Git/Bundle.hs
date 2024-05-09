@@ -23,3 +23,16 @@ listHeads bundle repo = map gen . S8.lines <$>
 
 unbundle :: FilePath -> Repo -> IO ()
 unbundle bundle = runQuiet [Param "bundle", Param "unbundle", File bundle]
+
+create :: FilePath -> [Ref] -> Repo -> IO ()
+create bundle refs repo = pipeWrite
+	[ Param "bundle"
+	, Param "create"
+	, Param "--quiet"
+	, File bundle
+	, Param "--stdin"
+	] repo writerefs
+  where
+	writerefs h = do
+		mapM_ (S8.hPutStrLn h . fromRef') refs
+		hClose h

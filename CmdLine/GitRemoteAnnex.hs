@@ -13,7 +13,6 @@ import Annex.Common
 import qualified Annex
 import qualified Remote
 import qualified Git.CurrentRepo
-import qualified Git
 import qualified Git.Ref
 import qualified Git.Branch
 import qualified Git.Bundle
@@ -78,8 +77,10 @@ run' src = do
 				"" -> list st rmt False >>= go rmt ls
 				"for-push" -> list st rmt True >>= go rmt ls
 				_ -> protocolError l
-			"fetch" -> fetch st rmt (l:ls) >>= \ls' -> go rmt ls' st
-			"push" -> push st rmt (l:ls) >>= \ls' -> go rmt ls' st
+			"fetch" -> fetch st rmt (l:ls)
+				>>= \ls' -> go rmt ls' st
+			"push" -> push st rmt (l:ls)
+				>>= \(ls', st') -> go rmt ls' st'
 			"" -> return ()
 			_ -> protocolError l
 	go _ [] _ = return ()
@@ -140,7 +141,7 @@ list st rmt forpush = do
 		putStrLn ""
 		hFlush stdout
 
-	-- Remember the tracking refs.
+	-- Remember the tracking refs and manifest.
 	return $ st
 		{ manifestCache = Just manifest
 		, trackingRefs = trackingrefmap
@@ -172,16 +173,128 @@ fetch' st rmt = do
 		putStrLn ""
 		hFlush stdout
 
-push :: State -> Remote -> [String] -> Annex [String]
+-- Note that the git bundles that are generated to push contain 
+-- tracking refs, rather than the actual refs that the user requested to
+-- push. This is done because git bundle does not allow creating a bundle
+-- that contains refs with different names than the ones in the git
+-- repository. Consider eg, git push remote foo:bar, where the destination
+-- ref is bar, but there may be no bar ref locally, or the bar ref may
+-- be different than foo. If git bundle supported GIT_NAMESPACE, it would
+-- be possible to generate a bundle that contains the specified refs.
+push :: State -> Remote -> [String] -> Annex ([String], State)
 push st rmt ls = do
 	let (refspecs, ls') = collectRefSpecs ls
-	error "TODO push refspecs"
-	return ls'
+	(responses, trackingrefs) <- calc refspecs ([], trackingRefs st)
+	(ok, st') <- if M.null trackingrefs
+		then pushEmpty st rmt
+		else if any forcedPush refspecs
+			then fullPush st rmt (M.keys trackingrefs)
+			-- TODO: support max-bundles config
+			else incrementalPush st rmt
+				(trackingRefs st) trackingrefs
+	if ok
+		then do
+			sendresponses responses
+			-- Update the tracking refs to reflect the push.
+			updateTrackingRefs rmt trackingrefs
+			return (ls', st' { trackingRefs = trackingrefs })
+		else do
+			sendresponses $
+				map (const "error push failed") refspecs
+			return (ls', st')
+  where
+	calc
+		:: [RefSpec]
+		-> ([B.ByteString], M.Map Ref Sha)
+		-> Annex ([B.ByteString], M.Map Ref Sha)
+	calc [] (responses, trackingrefs) = 
+		return (reverse responses, trackingrefs)
+	calc (r:rs) (responses, trackingrefs) =
+		let tr = toTrackingRef rmt (dstRef r)
+		    okresp m = pure 
+		    	( ("ok " <> fromRef' (dstRef r)):responses
+			, m
+			)
+		    errresp msg = pure
+		    	( ("error " <> fromRef' (dstRef r) <> " " <> msg):responses
+			, trackingrefs
+			)
+		in calc rs =<< case srcRef r of
+			Just srcref
+				| forcedPush r -> okresp $
+					M.insert tr srcref trackingrefs
+				| otherwise -> ifM (isfastforward srcref tr)
+					( okresp $
+						M.insert tr srcref trackingrefs
+					, errresp $ fromRef' (dstRef r)
+						<> " non-fast-forward"
+					)
+			Nothing -> okresp $ M.delete tr trackingrefs
+	
+	-- Check if the push is a fast-forward that will not overwrite work
+	-- in the ref currently stored in the remote. This seems redundant
+	-- to git's own checking for non-fast-forwards. But unfortunately,
+	-- before git push checks that, it actually tells us to push.
+	-- That seems likely to be a bug in git, and this is a workaround.
+	isfastforward newref tr = case M.lookup tr (trackingRefs st) of
+		Nothing -> pure False
+		Just prevsha -> inRepo $ Git.Ref.isAncestor prevsha newref
+	
+	-- Send responses followed by newline to indicate end of push.
+	sendresponses responses = liftIO $ do
+		mapM_ B8.putStrLn responses
+		putStrLn ""
+		hFlush stdout
+
+-- Full push of the specified refs to the remote.
+-- All git bundle objects listed in the old manifest will be 
+-- deleted after successful upload of the new git bundle and manifest. 
+--
+-- If this is interrupted, or loses access to the remote mid way through, it
+-- will leave the remote with unused bundle keys on it, but every bundle 
+-- key listed in the manifest will exist, so it's in a consistent, usable
+-- state.
+--
+-- However, the manifest is replaced by first dropping the object and then
+-- uploading a new one. Interrupting that will leave the remote without a
+-- manifest, which will appear as if all tracking branches were deleted
+-- from it.
+fullPush :: State -> Remote -> [Ref] -> Annex (Bool, State)
+fullPush st rmt refs = flip catchNonAsync failed $ do
+	oldmanifest <- maybe (downloadManifest rmt) pure (manifestCache st)
+	bundlekey <- generateAndUploadGitBundle rmt refs oldmanifest
+	uploadManifest rmt (Manifest [bundlekey])
+	let st' = st { manifestCache = Nothing }
+	ok <- allM (dropKey rmt) $
+		filter (/= bundlekey) (inManifest oldmanifest)
+	return (ok, st')
+  where
+	failed ex = do
+		liftIO $ hPutStrLn stderr $
+			"Push faild (" ++ show ex ++ ")"
+		return (False, st)
+
+-- Incremental push of only the refs that changed.
+incrementalPush :: State -> Remote -> M.Map Ref Sha -> M.Map Ref Sha -> Annex (Bool, State)
+incrementalPush st rmt oldtrackingrefs newtrackingrefs = do
+	error "TODO incrementalPush"
+
+-- When the push deletes all refs from the remote, drop the manifest
+-- and all bundles that were listed in it. The manifest is dropped
+-- first so if this is interrupted, only unused bundles will remain in the
+-- remote, rather than leaving the remote with a manifest that refers to
+-- missing bundles.
+pushEmpty :: State -> Remote -> Annex (Bool, State)
+pushEmpty st rmt = do
+	manifest <- maybe (downloadManifest rmt) pure (manifestCache st)
+	ok <- allM (dropKey rmt) 
+		(genManifestKey (Remote.uuid rmt) : inManifest manifest)
+	return (ok, st { manifestCache = Nothing })
 
 data RefSpec = RefSpec
 	{ forcedPush :: Bool
-	, srcRef :: Maybe String -- empty when deleting a ref
-	, dstRef :: String
+	, srcRef :: Maybe Ref -- ^ Nothing when deleting a ref
+	, dstRef :: Ref
 	}
 	deriving (Show)
 
@@ -201,10 +314,15 @@ parseRefSpec ('+':s) = (parseRefSpec s) { forcedPush = True }
 parseRefSpec s = 
 	let (src, cdst) = break (== ':') s
 	    dst = if null cdst then cdst else drop 1 cdst
+	    deletesrc = null src
 	in RefSpec
-		{ forcedPush = False
-		, srcRef = if null src then Nothing else Just src
-		, dstRef = dst
+		-- To delete a ref, have to do a force push of all
+		-- remaining refs.
+		{ forcedPush = deletesrc
+		, srcRef = if deletesrc
+			then Nothing
+			else Just (Ref (encodeBS src))
+		, dstRef = Ref (encodeBS dst)
 		}
 
 -- "foo bar" to ("foo", "bar")
@@ -376,6 +494,50 @@ downloadManifest rmt = ifM (Remote.checkPresent rmt mk)
 	checkvalid _ (Nothing:_) =
 		giveup $ "Error parsing manifest " ++ serializeKey mk
 
+-- Uploads the Manifest to the remote.
+--
+-- Throws errors if the remote cannot be accessed or the upload fails.
+--
+-- The manifest key is first dropped from the remote, then the new
+-- content is uploaded. This is necessary because the same key is used,
+-- and behavior of remotes is undefined when sending a key that is
+-- already present on the remote, but with different content.
+--
+-- Note that if this is interrupted or loses access to the remote part
+-- way through, it may leave the remote without a manifest file. That will
+-- appear as if all refs have been deleted from the remote.
+-- FIXME It should be possible to remember when that happened, by writing
+-- state to a file before, and then the next time git-remote-annex is run, it
+-- could recover from the situation.
+uploadManifest :: Remote -> Manifest -> Annex ()
+uploadManifest rmt manifest =
+	withTmpFile "GITMANIFEST" $ \tmp tmph -> do
+		liftIO $ forM_ (inManifest manifest) $ \bundlekey ->
+			B8.hPutStrLn tmph (serializeKey' bundlekey)
+		liftIO $ hClose tmph
+		-- Remove old manifest if present.
+		Remote.removeKey rmt mk
+		-- storeKey needs the key to be in the annex objects
+		-- directory, so put the manifest file there temporarily.
+		-- Using linkOrCopy rather than moveAnnex to avoid updating
+		-- InodeCache database. Also, works even when the repository
+		-- is configured to require only cryptographically secure
+		-- keys, which it is not.
+		objfile <- calcRepo (gitAnnexLocation mk)
+		unlessM (isJust <$> linkOrCopy mk (toRawFilePath tmp) objfile Nothing)
+			uploadfailed
+		-- noRetry because manifest content is not stable
+		ok <- upload rmt mk (AssociatedFile Nothing)
+			noRetry noNotification
+		-- Don't leave the manifest key in the annex objects
+		-- directory.
+		unlinkAnnex mk
+		unless ok
+			uploadfailed
+  where
+	mk = genManifestKey (Remote.uuid rmt)	
+	uploadfailed = giveup $ "Failed to upload " ++ serializeKey mk
+
 -- Downloads a git bundle to the annex objects directory, unless
 -- the object file is already present. Returns the filename of the object
 -- file.
@@ -397,6 +559,49 @@ downloadGitBundle rmt k =
 		( decodeBS <$> calcRepo (gitAnnexLocation k)
 		, giveup $ "Failed to download " ++ serializeKey k
 		)
+
+-- Uploads a git bundle from the annex objects directory to the remote.
+--
+-- Throws errors if the upload fails.
+--
+-- This does not update the location log to indicate that the remote
+-- contains the git bundle object.
+uploadGitBundle :: Remote -> Key -> Annex ()
+uploadGitBundle rmt k =
+	unlessM (upload rmt k (AssociatedFile Nothing) stdRetry noNotification) $
+		giveup $ "Failed to upload " ++ serializeKey k
+
+-- Generates a git bundle that contains the specified refs, ingests
+-- it into the local objects directory, and uploads its key to the special
+-- remote.
+--
+-- If the key is present in the provided manifest, avoids uploading it.
+--
+-- On failure, an exception is thrown, and nothing is added to the local
+-- objects directory.
+generateAndUploadGitBundle :: Remote -> [Ref] -> Manifest -> Annex Key
+generateAndUploadGitBundle rmt refs manifest =
+	withTmpFile "GITBUNDLE" $ \tmp tmph -> do
+		liftIO $ hClose tmph
+		inRepo $ Git.Bundle.create tmp refs
+		bundlekey <- genGitBundleKey (Remote.uuid rmt)
+			(toRawFilePath tmp) nullMeterUpdate
+		unless (bundlekey `elem` (inManifest manifest)) $ do
+			unlessM (moveAnnex bundlekey (AssociatedFile Nothing) (toRawFilePath tmp)) $
+				giveup "Unable to push"
+			uploadGitBundle rmt bundlekey
+				`onException` unlinkAnnex bundlekey
+		return bundlekey
+
+dropKey :: Remote -> Key -> Annex Bool
+dropKey rmt k = tryNonAsync (Remote.removeKey rmt k) >>= \case
+	Right () -> return True
+	Left ex -> do
+		liftIO $ hPutStrLn stderr $
+			"Failed to drop " 
+				++ serializeKey k 
+				++ " (" ++ show ex ++ ")"
+		return False
 
 -- Tracking refs are used to remember the refs that are currently on the
 -- remote. This is different from git's remote tracking branches, since it
