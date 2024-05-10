@@ -226,8 +226,7 @@ push st rmt ls = do
 				| otherwise -> ifM (isfastforward srcref tr)
 					( okresp $
 						M.insert tr srcref trackingrefs
-					, errresp $ fromRef' (dstRef r)
-						<> " non-fast-forward"
+					, errresp "non-fast-forward"
 					)
 			Nothing -> okresp $ M.delete tr trackingrefs
 	
@@ -237,8 +236,8 @@ push st rmt ls = do
 	-- before git push checks that, it actually tells us to push.
 	-- That seems likely to be a bug in git, and this is a workaround.
 	isfastforward newref tr = case M.lookup tr (trackingRefs st) of
-		Nothing -> pure False
 		Just prevsha -> inRepo $ Git.Ref.isAncestor prevsha newref
+		Nothing -> pure True
 	
 	-- Send responses followed by newline to indicate end of push.
 	sendresponses responses = liftIO $ do
@@ -260,24 +259,92 @@ push st rmt ls = do
 -- manifest, which will appear as if all tracking branches were deleted
 -- from it.
 fullPush :: State -> Remote -> [Ref] -> Annex (Bool, State)
-fullPush st rmt refs = flip catchNonAsync failed $ do
+fullPush st rmt refs = guardPush st $ do
 	oldmanifest <- maybe (downloadManifest rmt) pure (manifestCache st)
-	bundlekey <- generateAndUploadGitBundle rmt refs oldmanifest
+	let bs = map Git.Bundle.fullBundleSpec refs
+	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
 	uploadManifest rmt (Manifest [bundlekey])
-	let st' = st { manifestCache = Nothing }
 	ok <- allM (dropKey rmt) $
 		filter (/= bundlekey) (inManifest oldmanifest)
-	return (ok, st')
-  where
-	failed ex = do
-		liftIO $ hPutStrLn stderr $
-			"Push faild (" ++ show ex ++ ")"
-		return (False, st)
+	return (ok, st { manifestCache = Nothing })
+
+guardPush :: State -> Annex (Bool, State) -> Annex (Bool, State)
+guardPush st a = catchNonAsync a $ \ex -> do
+	liftIO $ hPutStrLn stderr $
+		"Push faild (" ++ show ex ++ ")"
+	return (False, st { manifestCache = Nothing })
 
 -- Incremental push of only the refs that changed.
+--
+-- No refs were deleted (that causes a fullPush), but new refs may
+-- have been added.
 incrementalPush :: State -> Remote -> M.Map Ref Sha -> M.Map Ref Sha -> Annex (Bool, State)
-incrementalPush st rmt oldtrackingrefs newtrackingrefs = do
-	error "TODO incrementalPush"
+incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
+	bs <- calc [] (M.toList newtrackingrefs)
+	liftIO $ hPutStrLn stderr (show bs)
+	oldmanifest <- maybe (downloadManifest rmt) pure (manifestCache st)
+	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
+	uploadManifest rmt (Manifest [bundlekey])
+	return (True, st { manifestCache = Nothing })
+  where
+	calc c [] = return (reverse c)
+	calc c ((ref, sha):refs) = case M.lookup ref oldtrackingrefs of
+		Just oldsha
+			| oldsha == sha -> calc c refs -- unchanged
+			| otherwise ->
+				ifM (inRepo $ Git.Ref.isAncestor oldsha ref)
+					( use $ checkprereq oldsha ref
+					, use $ findotherprereq ref sha
+					)
+		Nothing -> use $ findotherprereq ref sha
+	  where
+		use a = do
+			bs <- a
+			calc (bs:c) refs
+	
+	-- Unfortunately, git bundle will let a prerequisite specified
+	-- for one ref prevent it including another ref. For example,
+	-- where x is a ref that points at A, and y is a ref that points at
+	-- B (which has A as its parent), git bundle x A..y
+	-- will omit including the x ref in the bundle at all.
+	--
+	-- But we need to include all (changed) refs that the user
+	-- specified to push in the bundle. So, only include the sha
+	-- as a prerequisite when it will not prevent including another
+	-- changed ref in the bundle.
+	checkprereq prereq ref =
+		ifM (anyM shadows $ M.elems $ M.delete ref changedrefs)
+			( pure $ Git.Bundle.fullBundleSpec ref
+			, pure $ Git.Bundle.BundleSpec
+				{ Git.Bundle.preRequisiteRef = Just prereq
+				, Git.Bundle.includeRef = ref
+				}
+			)
+	  where
+		shadows s
+			| s == prereq = pure True
+			| otherwise = inRepo $ Git.Ref.isAncestor s prereq
+		changedrefs = M.differenceWith
+			(\a b -> if a == b then Nothing else Just a)
+			newtrackingrefs oldtrackingrefs
+	
+	-- When the old tracking ref is not able to be used as a
+	-- prerequisite, this to find some other ref that was previously
+	-- pushed that can be used as a prerequisite instead. This can
+	-- optimise the bundle size a bit in edge cases.
+	--
+	-- For example, a forced push of branch foo that resets it back
+	-- several commits can use a previously pushed bar as a prerequisite
+	-- if it's an ancestor of foo.
+	findotherprereq ref sha = 
+		findotherprereq' ref sha (M.elems oldtrackingrefs)
+	findotherprereq' ref _ [] = pure (Git.Bundle.fullBundleSpec ref)
+	findotherprereq' ref sha (l:ls)
+		| l == sha = findotherprereq' ref sha ls
+		| otherwise = ifM (inRepo $ Git.Ref.isAncestor l ref)
+			( checkprereq l ref	
+			, findotherprereq' ref sha ls
+			)
 
 -- When the push deletes all refs from the remote, drop the manifest
 -- and all bundles that were listed in it. The manifest is dropped
@@ -506,7 +573,7 @@ downloadManifest rmt = ifM (Remote.checkPresent rmt mk)
 -- Note that if this is interrupted or loses access to the remote part
 -- way through, it may leave the remote without a manifest file. That will
 -- appear as if all refs have been deleted from the remote.
--- FIXME It should be possible to remember when that happened, by writing
+-- XXX It should be possible to remember when that happened, by writing
 -- state to a file before, and then the next time git-remote-annex is run, it
 -- could recover from the situation.
 uploadManifest :: Remote -> Manifest -> Annex ()
@@ -571,19 +638,23 @@ uploadGitBundle rmt k =
 	unlessM (upload rmt k (AssociatedFile Nothing) stdRetry noNotification) $
 		giveup $ "Failed to upload " ++ serializeKey k
 
--- Generates a git bundle that contains the specified refs, ingests
--- it into the local objects directory, and uploads its key to the special
--- remote.
+-- Generates a git bundle, ingests it into the local objects directory, 
+-- and uploads its key to the special remote.
 --
--- If the key is present in the provided manifest, avoids uploading it.
+-- If the key is already present in the provided manifest, avoids
+-- uploading it.
 --
 -- On failure, an exception is thrown, and nothing is added to the local
 -- objects directory.
-generateAndUploadGitBundle :: Remote -> [Ref] -> Manifest -> Annex Key
-generateAndUploadGitBundle rmt refs manifest =
+generateAndUploadGitBundle
+	:: Remote
+	-> [Git.Bundle.BundleSpec]
+	-> Manifest
+	-> Annex Key
+generateAndUploadGitBundle rmt bs manifest =
 	withTmpFile "GITBUNDLE" $ \tmp tmph -> do
 		liftIO $ hClose tmph
-		inRepo $ Git.Bundle.create tmp refs
+		inRepo $ Git.Bundle.create tmp bs
 		bundlekey <- genGitBundleKey (Remote.uuid rmt)
 			(toRawFilePath tmp) nullMeterUpdate
 		unless (bundlekey `elem` (inManifest manifest)) $ do
