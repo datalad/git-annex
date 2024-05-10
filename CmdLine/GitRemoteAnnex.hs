@@ -283,7 +283,6 @@ guardPush st a = catchNonAsync a $ \ex -> do
 incrementalPush :: State -> Remote -> M.Map Ref Sha -> M.Map Ref Sha -> Annex (Bool, State)
 incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 	bs <- calc [] (M.toList newtrackingrefs)
-	liftIO $ hPutStrLn stderr (show bs)
 	oldmanifest <- maybe (downloadManifest rmt) pure (manifestCache st)
 	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
 	uploadManifest rmt (Manifest [bundlekey])
@@ -430,11 +429,13 @@ parseSpecialRemoteUrl url remotename = case parseURI url of
 	Just u -> case uriScheme u of
 		"annex:" -> case uriPath u of
 			"" -> Left "annex: URL did not include a UUID"
-			(':':p) -> Right $ SpecialRemoteConfig
-				{ specialRemoteUUID = toUUID p
-				, specialRemoteConfig = parsequery u
-				, specialRemoteName = remotename
-				, specialRemoteUrl = url
+			(':':p)
+				| null p -> Left "annex: URL did not include a UUID"
+				| otherwise -> Right $ SpecialRemoteConfig
+					{ specialRemoteUUID = toUUID p
+					, specialRemoteConfig = parsequery u
+					, specialRemoteName = remotename
+					, specialRemoteUrl = url
 				}
 			_ -> Left "annex: URL malformed"
 		_ -> Left "Not an annex: URL"
