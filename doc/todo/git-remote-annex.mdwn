@@ -4,21 +4,88 @@ repository to any git-annex special remote.
 This is a redesign and reimplementation of git-remote-datalad-annex. 
 It will be a safer implementation, will support incremental pushes, and
 will be available to users who don't use datalad. 
-
-Work is in the `git-remote-annex` branch, currently we have a design for
-the core data files and operations.
-<http://source.git-annex.branchable.com/?p=source.git;a=blob;f=doc/internals/git-remote-annex.mdwn;hb=git-remote-annex>
-
-Also, that branch has a proof of concept implementation in a shell script.
-Though it doesn't yet use special remotes at all, it is able to do
-incremental pushes to git bundles with a manifest.
-
-I still need to do some design work around using the git-annex branch to
-detect concurrent push situations where changes to the manifest get lost,
-and re-add those changes to it later.
-
-Also, it's not clear what will happen when two people make conflicting pushes
-to a ref, the goal would be to replicate git push to a regular git remote,
-but that may not be entirely possible. This will need to be investigated
-further.
 --[[Joey]]
+
+---
+
+This is implememented and working. Remaining todo list for it:
+
+* Need to test all types of pushes, barely tested at all.
+
+* Support exporttree=yes remotes.
+
+* Support max-bundles config
+
+* Need to mention git-remote-annex in special remotes page, and perhaps
+  write a tip for it. Also link to it from git-annex man page.
+
+* initremote could optionally configure the url to a special remote
+  to an annex:: url. This would make it easier to use git-remote-annex,
+  since the user would not need to set up the url themselves.
+  (Also it would then avoid setting `skipFetchAll = true`)
+
+* Prevent using with remotes that are encrypted using a cipher
+  stored in the repo. Chicken and egg problem cloning from
+  such a remote. Maybe allow advanced users to force it?
+
+* When the remote has no manifest, a pull from it should fail,
+  while a push should succeed. Otherwise, it can be confusing
+  to clone from a wrong url, since it fails to download
+  a manifest and so appears as if the remote is empty.
+
+* See XXX in uploadManifest about recovering from a situation
+  where the remote is left with a deleted manifest when a push
+  is interrupted part way through. This should be recoverable
+  by caching the manifest locally and re-uploading it when
+  the remote has no manifest.
+
+* datalad-annex supports cloning from the web special remote,
+  using an url that contains the result of pushing to eg, a directory
+  special remote.
+  `datalad-annex::https://example.com?type=web&url={noquery}`
+  Supporting something like this would be good.
+
+* It would be nice if git-annex could generate an annex:: url
+  for a special remote and show it to the user, eg when 
+  they have set the shorthand "annex::" url, so they know the full url.
+  `git-annex info $remote` could also display it.
+  Currently, the user has to remember how the special remote was
+  configured and replicate it all in the url.
+
+  There are some difficulties to doing this, including that
+  RemoteConfig can have hidden fields that should be omitted,
+  and that some, like type=directory, remove some configs
+  (eg directory=) in their setup action.
+
+* Improve behavior in push races. A race can overwrite a change
+  to the MANIFEST and lose work that was pushed from the other repo.
+  From the user's perspective, that situation is the same as if one repo
+  pushed new work, then the other repo did a git push --force, overwriting
+  the first repo's push. In the first repo, another push will then fail as
+  a non fast-forward, and the user can recover as usual. This is probably
+  okish.
+
+  But.. a MANIFEST overwrite will leave bundle files in the remote that
+  are not listed in the MANIFEST. It seems likely that git-annex could
+  detect that after the fact and clean it up. Eg, if it caches
+  the last MANIFEST it uploaded, next time it downloads the MANIFEST
+  it can check if there are bundle files in the old one that are not
+  in the new one. If so, it can drop those bundle files from the remote.
+
+* A push race can also appear to the user as if they pushed a ref, but then
+  it got deleted from the remote. This happens when two pushes are
+  pushing different ref names. This might be harder for the user to
+  notice; git fetch does not indicate that a remote ref got deleted.
+  They would have to use git fetch --prune to notice the deletion.
+  Once the user does notice, they can re-push their ref to recover.
+  Can this be improved?
+
+* The race condition described in 
+  [[!commit 797f27ab0517e0021363791ff269300f2ba095a5]]
+  where before git-annex init is run in a repo,
+  using git-remote-annex and at the same time git-annex init can lose
+  changes that the latter command (and ones after it) write to the
+  git-annex branch.
+
+  This should be fixable by making git-remote-annex not write to the
+  git-annex branch, but to eg, a temporary journal directory.

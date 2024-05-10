@@ -1,5 +1,8 @@
 git-annex (10.20240431) UNRELEASED; urgency=medium
 
+  * git-remote-annex: New program which allows pushing a git repo to a
+    git-annex special remote, and cloning from a special remote.
+    (Based on Michael Hanke's git-remote-datalad-annex.)
   * Typo fixes.
     Thanks, Yaroslav Halchenko
 

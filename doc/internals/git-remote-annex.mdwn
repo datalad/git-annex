@@ -1,3 +1,6 @@
+The [[git-remote-annex|/git-remote-annex]] command allows pushing a git
+repository to a special remote, and later cloning from it.
+
 This adds two new key types to git-annex, GITMANIFEST and a GITBUNDLE.
 
 GITMANIFEST--$UUID is the manifest for a git repository stored in the
@@ -11,44 +14,26 @@ An ordered list of bundle keys, one per line.
 
 (Lines end with unix `"\n"`, not `"\r\n"`.)
 
-# fetching
-
-1. download GITMANIFEST for the uuid of the special remote
-2. download each listed GITBUNDLE key that we don't have
-3. `git fetch` from each new bundle in order
-   (note that later bundles can update refs from the versions in previous
-   bundles)
-
-# pushing (incrementally)
-
-This is how pushes are usually done.
-
-1. create git bundle of all refs that are being pushed and have changed,
-   and objects since the previously pushed refs
-2. hash to calculate GITBUNDLE key
-3. upload GITBUNDLE key
-4. download current manifest
-5. append GITBUNDLE key to manifest
-
-# pushing (full)
-
-Note that this can be used to replace incrementals with a single bundle for
-performance. It is also the only way to handle a push that deletes a
-previously pushed ref.
-
-1. create git bundle containing all refs stored in the repository, and all
-   objects
-2. hash to calculate GITBUNDLE key name
-3. upload GITBUNDLE key
-4. download old manifest
-4. upload new manifest listing only the single new GITBUNDLE
-5. delete all other GITBUNDLEs that were listed in the old manifest
-
 # multiple GITMANIFEST files
 
 Usually there will only be one per special remote, but it's possible for
 multiple special remotes to point to the same object storage, and if so
 multiple GITMANIFEST objects can be stored.
 
-It follows that the UUID of the special remote has to be included in the
-annex:// uri, to know which GITMANIFEST to use when cloning from it.
+This is why the UUID of the special remote is included in the GITMANIFEST
+key, and in the annex:: uri.
+
+# manually cloning from these files
+
+If you are unable to use git-annex and need to clone a git repository
+stored in such a special remote, this procedure will work:
+
+* Find and download the GITMANIFEST
+* Download each listed GITBUNDLE
+* `git fetch` from each new bundle in order.
+   (Note that later bundles can update refs from the versions in previous
+   bundles.)
+
+When the special remote is encryptee, the GITMANIFEST and GITBUNDLE will
+also be encrypted. To decrypt those manually, see this
+[[fairly simple shell script using standard tools|tips/Decrypting_files_in_special_remotes_without_git-annex]].

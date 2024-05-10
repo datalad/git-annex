@@ -49,5 +49,5 @@ problem:
   [[fairly simple shell script using standard tools|tips/Decrypting_files_in_special_remotes_without_git-annex]]
   (gpg and openssl) can decrypt files stored on such
   a remote, as long as you have access to the encryption keys (which
-  are stored in the git-annex branch of the repository, sometimes
-  encrypted with your gpg key).
+  for some types of encryption are stored in the git-annex branch of
+  the repository, sometimes encrypted with your gpg key).

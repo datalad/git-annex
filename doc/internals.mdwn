@@ -2,6 +2,8 @@ In the world of git, we're not scared about internal implementation
 details, and sometimes we like to dive in and tweak things by hand. Here's
 some documentation to that end.
 
+[[!toc ]]
+
 ## The .git/ directory
 
 ### `.git/annex/objects/aa/bb/*/*`
@@ -364,3 +366,8 @@ of actual annexed files.
 
 These trees are recorded in history of the git-annex branch, but the
 head of the git-annex branch will never contain them.
+
+## Other internals documentation
+
+* [[git-remote-annex]] documents how git repositories are stored
+  on special remotes when using git with "annex::" urls.
