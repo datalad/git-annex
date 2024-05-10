@@ -32,6 +32,7 @@ import Git.Types
 import Logs.Difference
 import Annex.Init
 import Annex.Content
+import Annex.Perms
 import Remote.List
 import Remote.List.Util
 import Utility.Tmp
@@ -185,6 +186,7 @@ push :: State -> Remote -> [String] -> Annex ([String], State)
 push st rmt ls = do
 	let (refspecs, ls') = collectRefSpecs ls
 	(responses, trackingrefs) <- calc refspecs ([], trackingRefs st)
+	updateTrackingRefs rmt trackingrefs
 	(ok, st') <- if M.null trackingrefs
 		then pushEmpty st rmt
 		else if any forcedPush refspecs
@@ -195,10 +197,10 @@ push st rmt ls = do
 	if ok
 		then do
 			sendresponses responses
-			-- Update the tracking refs to reflect the push.
-			updateTrackingRefs rmt trackingrefs
 			return (ls', st' { trackingRefs = trackingrefs })
 		else do
+			-- Restore the old tracking refs 
+			updateTrackingRefs rmt (trackingRefs st)
 			sendresponses $
 				map (const "error push failed") refspecs
 			return (ls', st')
@@ -271,7 +273,7 @@ fullPush st rmt refs = guardPush st $ do
 guardPush :: State -> Annex (Bool, State) -> Annex (Bool, State)
 guardPush st a = catchNonAsync a $ \ex -> do
 	liftIO $ hPutStrLn stderr $
-		"Push faild (" ++ show ex ++ ")"
+		"Push failed (" ++ show ex ++ ")"
 	return (False, st { manifestCache = Nothing })
 
 -- Incremental push of only the refs that changed.
@@ -591,7 +593,9 @@ uploadManifest rmt manifest =
 		-- is configured to require only cryptographically secure
 		-- keys, which it is not.
 		objfile <- calcRepo (gitAnnexLocation mk)
-		unlessM (isJust <$> linkOrCopy mk (toRawFilePath tmp) objfile Nothing)
+		res <- modifyContentDir objfile $
+			linkOrCopy mk (toRawFilePath tmp) objfile Nothing
+		unless (isJust res)
 			uploadfailed
 		-- noRetry because manifest content is not stable
 		ok <- upload rmt mk (AssociatedFile Nothing)
