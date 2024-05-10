@@ -347,14 +347,15 @@ incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 			, findotherprereq' ref sha ls
 			)
 
--- When the push deletes all refs from the remote, drop the manifest
--- and all bundles that were listed in it. The manifest is dropped
--- first so if this is interrupted, only unused bundles will remain in the
--- remote, rather than leaving the remote with a manifest that refers to
--- missing bundles.
+-- When the push deletes all refs from the remote, upload an empty
+-- manifest and then drop all bundles that were listed in it. 
+-- The manifest is emptired first so if this is interrupted, only
+-- unused bundles will remain in the remote, rather than leaving the
+-- remote with a manifest that refers to missing bundles.
 pushEmpty :: State -> Remote -> Annex (Bool, State)
 pushEmpty st rmt = do
 	manifest <- maybe (downloadManifest rmt) pure (manifestCache st)
+	uploadManifest rmt (Manifest [])
 	ok <- allM (dropKey rmt) 
 		(genManifestKey (Remote.uuid rmt) : inManifest manifest)
 	return (ok, st { manifestCache = Nothing })
