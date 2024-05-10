@@ -298,7 +298,7 @@ keyMatchingOptions' =
 		<> completeRemotes
 		)
 	, annexOption (setAnnexState . Limit.addCopies) $ strOption
-		( long "copies" <> short 'C' <> metavar paramRemote
+		( long "copies" <> short 'C' <> metavar paramNumber
 		<> help "skip files with fewer copies"
 		<> hidden
 		)

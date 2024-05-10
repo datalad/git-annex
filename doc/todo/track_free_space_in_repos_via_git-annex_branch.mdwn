@@ -1,3 +1,7 @@
+[[!toc ]]
+
+## motivations
+
 If the total space available in a repository for annex objects is recorded
 on the git-annex branch (by the user running a command probably, or perhaps
 automatically), then it is possible to examine the git-annex branch and
@@ -10,6 +14,8 @@ it can be redirected to be stored on another repository in the same group.
 
 This was actually a fairly common feature request early on in git-annex
 and I probably should have thought about it more back then!
+
+## implementation
 
 `git-annex info` has recently started summing up the sizes of repositories
 from location logs, and is well optimised. In my big repository, that takes
@@ -86,3 +92,4 @@ merge time. Those are less expensive than diffing the location logs only
 because the logs they diff are less often used, and the work is only 
 done when relevant commands are run.
 
+[[!tag projects/openneuro]]

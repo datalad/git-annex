@@ -1,6 +1,4 @@
 git-annex sync etc -m should be able to be specified multiple times. In git
 commit, multiple -m can be used to make a multiparagraph commit. --[[Joey]]
 
-> I got this implemented, but it caused a reversion. See 
-> [[!commit a8dd85ea5a9f8515819db04b9f1d154488193e7d]]
-> for what needs to be done on this next. --[[Joey]]
+> [[done]]

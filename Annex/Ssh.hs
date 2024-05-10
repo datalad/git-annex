@@ -407,7 +407,7 @@ fromSshOptionsEnv = map Param . lines
 {- Enables ssh caching for git push/pull to a particular
  - remote git repo. (Can safely be used on non-ssh remotes.)
  -
- - Also propigates any configured ssh-options.
+ - Also propagates any configured ssh-options.
  -
  - Like inRepo, the action is run with the local git repo.
  - But here it's a modified version, with gitEnv to set GIT_SSH=git-annex,

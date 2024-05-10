@@ -1,0 +1,18 @@
+When a git-annex repository is on eg, a zfs or btrfs filesystem, the
+filesystem has built-in checksum verification of file. So a "scrub"
+operation that just reads all annexed files can detect when a file has
+gotten corrupt.
+
+This could be an enhancement to git-annex fsck, or a separate command.
+
+Note that this could detect corruption of files whose key does not
+contain a checksum.
+
+Since fsck reads the file content anyway when checksumming, 
+the enhancement could be an option to scrub files that don't use 
+checksums.
+
+It would make sense to move a file that is detected as corrupt to
+.git/annex/bad/ the same as fsck does.
+
+(Idea from Timothy Sanders.)

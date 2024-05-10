@@ -17,7 +17,7 @@ that almost everything uses. But in its favor:
 
 * --sameas already relies on special remotes using the same path form, and so
   it seems we're going to end up documenting which special remotes are
-  compatable. That information could even be encoded in the remotes and
+  compatible. That information could even be encoded in the remotes and
   git-annex sanity check uses of --sameas. 
 
   Perhaps --sameas is a slippery slope and this should not continue down it,

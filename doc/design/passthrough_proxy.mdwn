@@ -1,3 +1,7 @@
+[[!toc ]]
+
+## motivations
+
 When [[balanced_preferred_content]] is used, there may be many repositories
 in a location -- either a server or a cluster -- and getting any given file
 may need to access any of them. Configuring remotes for each repository
@@ -32,7 +36,15 @@ cluster.
 
 A proxy would not hold the content of files itself. It would be a clone of
 the git repository though, probably. Uploads and downloads would stream
-through the proxy. The git-annex [[P2P_protocol]] could be relayed in this way. 
+through the proxy. 
+
+## protocol
+
+The git-annex [[P2P_protocol]] would be relayed via the proxy, 
+which would be a regular git ssh remote. 
+
+There is also the possibility of relaying the P2P protocol over another
+protocol such as HTTP, see [[P2P_protocol_over_http]].
 
 ## UUID discovery
 
@@ -47,11 +59,11 @@ the cluster.
 Could the P2P protocol be extended to let the proxy communicate the UUIDs
 of all the repositories behind it?
 
-Once the client git-annex knows the set of UUIDs behind the proxy, it can
-instantiate a remote object per uuid, each of which accesses the proxy, but
+Once the client git-annex knows the set of UUIDs behind the proxy, it could
+eg instantiate a remote object per UUID, each of which accesses the proxy, but
 with a different UUID.
 
-But, git-annx usually only does UUID discovery the first time a ssh remote
+But, git-annex usually only does UUID discovery the first time a ssh remote
 is accessed. So it would need to discover at that point that the remote is
 a proxy. Then it could do UUID discovery each time git-annex starts up.
 But that adds significant overhead, git-annex would be making a connection
@@ -64,8 +76,7 @@ git-annex branch?
 
 With this approach, git-annex would know as soon as it sees the proxy's
 UUID that this is a proxy for this other set of UUIDS. (Unless its
-git-annex branch is not up-to-date.) And then it can instantiate a UUID for
-each remote.
+git-annex branch is not up-to-date.)
 
 One difficulty with this is that, when the git-annex branch is not up to
 date with changes from the proxy, git-annex may try to access repositories
@@ -76,17 +87,55 @@ to store data when eg, all the repositories that is knows about are full.
 Just getting the git-annex back in sync should recover from either
 situation.
 
-## streaming to special remotes
+## user interface
 
-As well as being an intermediary to git-annex repositories, the proxy could
-provide access to other special remotes. That could be an object store like
-S3, which might be internal to the cluster or not. When using a cloud
-service like S3, only the proxy needs to know the access credentials.
+What to name the instantiated remotes? Probably the best that could
+be done is to use the proxy's own remote names as suffixes on the client.
+Eg, the proxy's "node1" remote is "proxy-node1".
 
-Currently git-annex does not support streaming content to special remotes.
-The remote interface operates on object files stored on disk. See
-[[todo/transitive_transfers]] for discussion of that problem. If proxies
-get implemented, that problem should be revisited.
+But the user probably doesn't want to pick which node to send content to.
+They don't necessarily know anything about the nodes. Ideally the user
+would `git-annex copy --to proxy` or `git-annex push` and let it pick
+which instantiated remote(s) to send to.
+
+To make `git-annex copy --to proxy` work, `storeKey` could be changed to
+allow returning a UUID (or UUIDs) where the content was actually stored.
+That would also allow a single upload to the proxy to fan out and be stored
+in multiple nodes. The proxy would use preferred content to pick which of
+its nodes to store on.
+
+Instantiated remotes would still be needed for `git-annex get` and similar
+to work.
+
+To make `git-annex copy --from proxy` work, the proxy would need to pick
+a node and stream content from it. That's doable, but how to handle a case
+where a node gets corrupted? The best it could do is mark that node as no
+longer containing the content (as if a fsck failed) and try another one
+next time. This complication might not be necessary. Consider that
+while `git-annex copy --to foo` followed later by `git-annex copy --from foo`
+will usually work, it doesn't work when eg first copying to a transfer
+remote, which then sends the content elsewhere and drops its copy.
+
+What about dropping? `git-annex drop --from proxy` could be made to work,
+by having `removeKey` return a list of UUIDs that the content was dropped
+from. What should that do if it's able to drop from some nodes but not
+others? Perhaps it would need to be able to return a list of UUIDs that
+content was dropped from but still indicate it overall failed to drop.
+(Note that it's entirely possible that dropping from one node of the proxy
+involves lockContent on another node of the proxy in order to satisfy
+numcopies.)
+
+A command like `git-annex push` would see all the instantiated remotes and
+would pick one to send content to. Seems like the proxy might choose to
+`storeKey` the content on other node(s) than the requested one. Which would
+be fine. But, `git-annex push` would still do considerable extra work in
+interating over all the instantiated remotes. So it might be better to make
+such commands not operate on instantiated remotes for sending content but
+only on the proxy. 
+
+Commands like `git-annex push` and `git-annex pull`
+should also skip the instantiated remotes when pushing or pulling the git
+repo, because that would be extra work that accomplishes nothing.
 
 ## speed
 
@@ -107,6 +156,18 @@ content. Eg, analize what files are typically requested, and store another
 copy of those on the proxy. Perhaps prioritize storing smaller files, where
 latency tends to swamp transfer speed.
 
+## streaming to special remotes
+
+As well as being an intermediary to git-annex repositories, the proxy could
+provide access to other special remotes. That could be an object store like
+S3, which might be internal to the cluster or not. When using a cloud
+service like S3, only the proxy needs to know the access credentials.
+
+Currently git-annex does not support streaming content to special remotes.
+The remote interface operates on object files stored on disk. See
+[[todo/transitive_transfers]] for discussion of that problem. If proxies
+get implemented, that problem should be revisited.
+
 ## encryption
 
 When the proxy is in front of a special remote that uses encryption, where
@@ -125,3 +186,82 @@ implementation for this.
 
 There's potentially a layering problem here, because exactly how encryption
 (or chunking) works can vary depending on the type of special remote.
+
+## cycles
+
+What if repo A is a proxy and has repo B as a remote. Meanwhile, repo B is
+a proxy and has repo A as a remote?
+
+An upload to repo A will start by checkin if repo B wants the content and if so,
+start an upload to repo B. Then the same happens on repo B, leading it to
+start an upload to repo A. 
+
+At this point, it might be possible for git-annex to detect the cycle,
+if the proxy uses a transfer lock file. If repo B or repo A had some other
+remote that is not part of a cycle, they could deposit the upload there and
+the upload still succeed. Otherwise the upload would fail, which is
+probably the best that can be done with such a broken configuration.
+
+So, it seems like proxies will need to take transfer locks for uploads,
+even though the content is being proxied to elsewhere.
+
+Dropping could have similar cycles with content presence locking, which
+needs to be thought through as well. A cycle of the actual dropContent
+operation might also be possible.
+
+## exporttree=yes
+
+Could the proxy be in front of a special remote that uses exporttree=yes?
+
+Some possible approaches:
+
+* Proxy caches files until all the files in the configured
+  annex-tracking-branch are available, then exports them all to the special
+  remote. Not ideal at all.
+* Proxy exports each file to the special remote as it is received.
+  It records an incomplete tree export after each export.
+  Once all files in the configured annex-tracking-branch have been sent,
+  it records a completed tree export. This seems possible, it's similar
+  to `git-annex export --to=remote` recovering after having been
+  interrupted.
+* Proxy storeExport and all related export/import actions. This would need
+  a large expansion of the P2P protocol.
+
+The first two approaches need some way to communicate the
+configured annex-tracking-branch over the P2P protocol. Or to communicate
+the tree that it currently points to.
+
+The first two approaches also have a complication when a key is sent to
+the proxy that is not part of the configured annex-tracking-branch. What
+does the proxy do with it?
+
+## possible enhancement: indirect uploads
+
+(Thanks to Chris Markiewicz for this idea.)
+
+When a client wants to upload an object, the proxy could indicate that the
+upload should not be sent to it, but instead be PUT to a HTTP url that it
+provides to the client.
+
+An example use case involves
+[presigned S3 urls](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html).
+When one of the proxy's nodes is a S3 bucket, having the client upload
+directly to S3 would avoid needing double traffic through the proxy's
+network.
+
+This would need a special remote that generates the presigned S3 url.
+Probably an external, so the external special remote protocol would need to
+be updated as well as the P2P protocol.
+
+Since an upload to a proxy can be distributed to multiple nodes, should
+the proxy be able to indicate more than one url that the client
+should upload to? Also the proxy might want an upload to still be sent to
+it in addition to url(s). Of course the downside is that the client would
+need to upload more than once, which eliminates one benefit of the proxy.
+So it might be reasonable to only support one url, but what if the proxy 
+has multiple remotes that want to provide urls, how does it pick which one
+wins?
+
+Is only an URL enough for the client to be able to upload to wherever? It
+may be that the HTTP verb is also necessary. Consider POST vs PUT. Some
+services might need additional HTTP headers.

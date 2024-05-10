@@ -573,7 +573,7 @@ playlistFields u i = map (uncurry extractField)
 	, ("itemtitle", [youtube_title i])
 	, ("feedauthor", [youtube_playlist_uploader i])
 	, ("itemauthor", [youtube_playlist_uploader i])
-	-- itemsummary omitted, no equivilant in yt-dlp data
+	-- itemsummary omitted, no equivalent in yt-dlp data
 	, ("itemdescription", [youtube_description i])
 	, ("itemrights", [youtube_license i])
 	, ("itemid", [youtube_url i])

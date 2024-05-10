@@ -873,8 +873,16 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   and also when generating a view branch.
 
   The default length is 4, which allows extensions like "jpeg". The dot before
-  the extension is not counted part of its length. At most two extensions
-  at the end of a filename will be preserved, e.g. .gz or .tar.gz .
+  the extension is not counted part of its length.
+
+* `annex.maxextensions`
+
+  Maximum number of filename extensions to preserve when using a backend
+  that preserves filename extensions, and also when generating a view
+  branch.
+
+  The default is 2, which allows for compound extensions like ".tar.gz".
+  When set to 1, it will only preserve the last extension, eg ".gz".
 
 * `annex.diskreserve`
 
@@ -1805,6 +1813,11 @@ Remotes are configured using these settings in `.git/config`.
   Used to identify Amazon Glacier special remotes.
   Normally this is automatically set up by `git annex initremote`.
 
+* `remote.<name>.annex-rclone`
+
+  Used to identify rclone special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
 * `remote.<name>.annex-web`
 
   Used to identify web special remotes.
@@ -1843,7 +1856,7 @@ Remotes are configured using these settings in `.git/config`.
 
 * `remote.<name>.annex-externaltype`
 
-  Used external special remotes to record the type of the remote.
+  Used by external special remotes to record the type of the remote.
 
   Eg, if this is set to "foo", git-annex will run a "git-annex-remote-foo"
   program to communicate with the external special remote.

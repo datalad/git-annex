@@ -1,0 +1,29 @@
+Repo that contains the latest/current version of a file is not accessible.
+Can git annex whereis find the last available version of a file in other
+repos (or a specific repo)?
+
+I can looping through commit log and running whereis for each commit until
+an earlier version of a file is found, but perhaps there is a better way to
+do it with a single command?
+
+> Not currently, but I think it would be a useful command to have available
+> without scripting.
+> 
+> So the use case seems to be that the most recent version of a file is not
+> accessible currently, but you want to access some version of the file,
+> and will settle for an older version.
+> 
+> One interface could be:
+> 
+>   git-annex findversion thefile --in=foo
+> 
+> Which would look at past versions of thefile that are present in remote
+> foo, and output something like "master@{10}", or just a bare
+> git commit sha. Which you can `git checkout`
+> and then `git-annex get thefile --from=foo` will work to access the
+> content.
+> 
+> One problem with this interface is it would need to be limited to a
+> single file, because there may be no commit that has the latest
+> versions of several files that are all in the specified remote.
+> --[[Joey]]

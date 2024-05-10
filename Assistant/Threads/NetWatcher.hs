@@ -102,7 +102,7 @@ checkNetMonitor client = do
 	networkd = "org.freedesktop.network1"
 	wicd = "org.wicd.daemon"
 
-{- Listens for systemd-networkd connections and diconnections.
+{- Listens for systemd-networkd connections and disconnections.
  -
  - Connection example (once fully connected):
  - [Variant {"OperationalState": Variant "routable"}]
@@ -128,7 +128,7 @@ listenNDConnections client setconnected =
 					else setconnected False
 				Nothing -> noop
 
-{- Listens for NetworkManager connections and diconnections.
+{- Listens for NetworkManager connections and disconnections.
  -
  - Connection example (once fully connected):
  - [Variant {"ActivatingConnection": Variant (ObjectPath "/"), "PrimaryConnection": Variant (ObjectPath "/org/freedesktop/NetworkManager/ActiveConnection/34"), "State": Variant 70}]

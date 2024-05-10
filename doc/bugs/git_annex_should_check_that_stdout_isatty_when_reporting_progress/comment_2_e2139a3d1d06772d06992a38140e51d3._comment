@@ -13,5 +13,5 @@ progress. And all that nontrivial work has in fact been done in order to
 support -J. It's just not enabled by default or for -J1.
 
 The reason git-annex has not yet switched to the concurrent output by
-default is that it assumes a VT100 compatable terminal.
+default is that it assumes a VT100 compatible terminal.
 """]]

@@ -173,7 +173,7 @@ adjustToSymlink' gitannexlink ti@(TreeItem f _m s) = catKey s >>= \case
 
 -- This is a hidden branch ref, that's used as the basis for the AdjBranch,
 -- since pushes can overwrite the OrigBranch at any time. So, changes
--- are propigated from the AdjBranch to the head of the BasisBranch.
+-- are propagated from the AdjBranch to the head of the BasisBranch.
 newtype BasisBranch = BasisBranch Ref
 
 -- The basis for refs/heads/adjusted/master(unlocked) is
@@ -256,7 +256,7 @@ updateAdjustedBranch adj (AdjBranch currbranch) origbranch
 	| not (adjustmentIsStable adj) = do
 		(b, origheadfile, newheadfile) <- preventCommits $ \commitlck -> do
 			-- Avoid losing any commits that the adjusted branch
-			-- has that have not yet been propigated back to the
+			-- has that have not yet been propagated back to the
 			-- origbranch.
 			_ <- propigateAdjustedCommits' True origbranch adj commitlck
 			
@@ -468,28 +468,39 @@ commitAdjustedTree' treesha (BasisBranch basis) parents =
 			(commitAuthorMetaData basiscommit)
 			(commitCommitterMetaData basiscommit)
 			(mkcommit cmode)
-	mkcommit cmode = Git.Branch.commitTree cmode
+	-- Make sure that the exact message is used in the commit,
+	-- since that message is looked for later.
+	-- After git-annex 10.20240227, it's possible to use
+	-- commitTree instead of this, but this is being kept
+	-- for some time, for compatibility with older versions.
+	mkcommit cmode = Git.Branch.commitTreeExactMessage cmode
 		adjustedBranchCommitMessage parents treesha
 
 {- This message should never be changed. -}
 adjustedBranchCommitMessage :: String
 adjustedBranchCommitMessage = "git-annex adjusted branch"
 
+{- Allow for a trailing newline after the message. -}
+hasAdjustedBranchCommitMessage :: Commit -> Bool
+hasAdjustedBranchCommitMessage c = 
+	dropWhileEnd (\x -> x == '\n' || x == '\r') (commitMessage c) 
+		== adjustedBranchCommitMessage
+
 findAdjustingCommit :: AdjBranch -> Annex (Maybe Commit)
 findAdjustingCommit (AdjBranch b) = go =<< catCommit b
   where
 	go Nothing = return Nothing
 	go (Just c)
-		| commitMessage c == adjustedBranchCommitMessage = return (Just c)
+		| hasAdjustedBranchCommitMessage c = return (Just c)
 		| otherwise = case commitParent c of
 			[p] -> go =<< catCommit p
 			_ -> return Nothing
 
 {- Check for any commits present on the adjusted branch that have not yet
- - been propigated to the basis branch, and propagate them to the basis
+ - been propagated to the basis branch, and propagate them to the basis
  - branch and from there on to the orig branch.
  -
- - After propigating the commits back to the basis branch,
+ - After propagating the commits back to the basis branch,
  - rebase the adjusted branch on top of the updated basis branch.
  -}
 propigateAdjustedCommits :: OrigBranch -> Adjustment -> Annex ()
@@ -540,7 +551,7 @@ propigateAdjustedCommits' warnwhendiverged origbranch adj _commitsprevented =
 		return (Right parent)
 	go origsha parent pastadjcommit (sha:l) = catCommit sha >>= \case
 		Just c
-			| commitMessage c == adjustedBranchCommitMessage ->
+			| hasAdjustedBranchCommitMessage c ->
 				go origsha parent True l
 			| pastadjcommit ->
 				reverseAdjustedCommit parent adj (sha, c) origbranch
@@ -577,7 +588,7 @@ reverseAdjustedCommit commitparent adj (csha, basiscommit) origbranch
 			(commitAuthorMetaData basiscommit)
 			(commitCommitterMetaData basiscommit) $
 				Git.Branch.commitTree cmode
-					(commitMessage basiscommit)
+					[commitMessage basiscommit]
 					[commitparent] treesha
 		return (Right revadjcommit)
 
@@ -631,7 +642,7 @@ data AdjustedClone = InAdjustedClone | NotInAdjustedClone
  - checked out adjusted branch; the origin could have the two branches
  - out of sync (eg, due to another branch having been pushed to the origin's
  - origbranch), or due to a commit on its adjusted branch not having been
- - propigated back to origbranch.
+ - propagated back to origbranch.
  -
  - So, find the adjusting commit on the currently checked out adjusted
  - branch, and use the parent of that commit as the basis, and set the

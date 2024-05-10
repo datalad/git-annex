@@ -1,0 +1,31 @@
+There is a documentation issue with `--copies` (e.g. used in `git annex find`), parameter should be a number, not a remote.
+
+```
+From dc8c177efcfdd82f62ae1d49a7b1276774a4fbc3 Mon Sep 17 00:00:00 2001
+From: Gergely Risko <errge@nilcons.com>
+Date: Mon, 22 Apr 2024 17:32:06 +0200
+Subject: [PATCH] Change --copies' meta parameter to NUMBER
+
+---
+ CmdLine/GitAnnex/Options.hs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CmdLine/GitAnnex/Options.hs b/CmdLine/GitAnnex/Options.hs
+index 694b60d240..07cf54069e 100644
+--- a/CmdLine/GitAnnex/Options.hs
++++ b/CmdLine/GitAnnex/Options.hs
+@@ -298,7 +298,7 @@ keyMatchingOptions' =
+ 		<> completeRemotes
+ 		)
+ 	, annexOption (setAnnexState . Limit.addCopies) $ strOption
+-		( long "copies" <> short 'C' <> metavar paramRemote
++		( long "copies" <> short 'C' <> metavar paramNumber
+ 		<> help "skip files with fewer copies"
+ 		<> hidden
+ 		)
+-- 
+2.43.0
+```
+
+> Thanks! I've applied this for the next release.
+> [[done]] --[[Joey]]

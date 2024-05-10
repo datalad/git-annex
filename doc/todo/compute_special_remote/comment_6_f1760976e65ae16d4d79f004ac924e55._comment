@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 6"""
+ date="2024-04-30T19:53:43Z"
+ content="""
+On trust, it seems to me that if someone chooses to enable a particular
+special remote, they are choosing to trust whatever kind of computations it
+supports.
+
+Eg a special remote could choose to always run a computation inside a
+particular container system and then if you trust that container system is
+secure, you can choose to use it.
+"""]]

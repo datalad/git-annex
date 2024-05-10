@@ -1,0 +1,11 @@
+This is a summary todo covering several subprojects, which would extend
+git-annex to be able to use proxies which sit in front of a cluster of
+repositories.
+
+1. [[design/passthrough_proxy]]
+2. [[design/p2p_protocol_over_http]]
+3. [[design/balanced_preferred_content]]
+4. [[todo/track_free_space_in_repos_via_git-annex_branch]]
+5. [[todo/proving_preferred_content_behavior]]
+
+[[!tag projects/openneuro]]

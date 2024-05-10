@@ -77,7 +77,7 @@ upgradedEnv = "GIT_ANNEX_UPGRADED"
  -
  - Creates the destination directory where the upgrade will be installed
  - early, in order to check if another upgrade has happened (or is
- - happending). On failure, the directory is removed.
+ - happening). On failure, the directory is removed.
  -}
 startDistributionDownload :: GitAnnexDistribution -> Assistant ()
 startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO oldVersionLocation

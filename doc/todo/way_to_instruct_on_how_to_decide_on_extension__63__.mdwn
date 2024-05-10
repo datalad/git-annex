@@ -1,0 +1,16 @@
+In our case we are storing videos using timestamp in the filename, e.g.
+
+```
+2024.03.08.09.31.09.041_2024.03.08.09.34.53.759.mkv
+```
+
+where last number is `ms`.  `git-annex` for MD5E decides that extension is `.759.mkv`, so if we rename file (adjust timing), it seems to produce a new key.
+
+I wonder if you have any ideas Joey on how to overcome it (smarter extension deduction? some config to "hardcode" target extension to be .mkv?)?
+
+Just throwing against the wall to see if sticks
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
+
+> added annex.maxextensions config, [[done]] --[[Joey]]

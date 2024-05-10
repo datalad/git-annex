@@ -131,7 +131,7 @@ import qualified Utility.RawFilePath as R
  - trailing path separator. Most code does not rely on that, but a few
  - things do. 
  -
- - Everything else should not end in a trailing path sepatator. 
+ - Everything else should not end in a trailing path separator. 
  -
  - Only functions (with names starting with "git") that build a path
  - based on a git repository should return full path relative to the git

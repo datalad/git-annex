@@ -69,7 +69,7 @@ mkGpgCmd Nothing = GpgCmd (fromMaybe "gpg" BuildInfo.gpg)
 boolGpgCmd :: GpgCmd -> [CommandParam] -> IO Bool
 boolGpgCmd (GpgCmd cmd) = boolSystem cmd
 
--- Generate an argument list to asymetrically encrypt to the given recipients.
+-- Generate an argument list to asymmetrically encrypt to the given recipients.
 pkEncTo :: [String] -> [CommandParam]
 pkEncTo = concatMap (\r -> [Param "--recipient", Param r])
 

@@ -253,7 +253,7 @@ describeMatchResult descop l prefix = Just $
 	go (MatchedOpen:rest) = "(" : go rest
 	go (MatchedClose:rest) = ")" : go rest
 
-	-- Remove unncessary outermost parens
+	-- Remove unnecessary outermost parens
 	simplify True (MatchedOpen:rest) = case lastMaybe rest of
 		Just MatchedClose -> simplify False (dropFromEnd 1 rest)
 		_ -> simplify False rest

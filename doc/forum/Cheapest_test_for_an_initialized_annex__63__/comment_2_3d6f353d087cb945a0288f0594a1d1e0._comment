@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-04-30T19:18:58Z"
+ content="""
+annex.uuid is the right way.
+
+I would not trust checking existence of .git/annex directory. There may be
+some situation where the repo is initialized, then uninitialized, but that
+directory still exists. Or similar.
+"""]]

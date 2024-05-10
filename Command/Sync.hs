@@ -1,7 +1,7 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -105,7 +105,7 @@ data SyncOptions = SyncOptions
 	, notOnlyAnnexOption :: Bool
 	, commitOption :: Bool
 	, noCommitOption :: Bool
-	, messageOption :: Maybe String
+	, messageOption :: [String]
 	, pullOption :: Bool
 	, pushOption :: Bool
 	, contentOption :: Maybe Bool
@@ -125,7 +125,7 @@ instance Default SyncOptions where
 		, notOnlyAnnexOption = False
 		, commitOption = False
 		, noCommitOption = False
-		, messageOption = Nothing
+		, messageOption = []
 		, pullOption = False
 		, pushOption = False
 		, contentOption = Just False
@@ -169,8 +169,8 @@ optParser mode desc = SyncOptions
 			( long "no-commit"
 			<> help "avoid git commit" 
 			))
-	<*> unlessmode [SyncMode, AssistMode] Nothing
-		(optional (strOption
+	<*> unlessmode [SyncMode, AssistMode] []
+		(many (strOption
 			( long "message" <> short 'm' <> metavar "MSG"
 			<> help "commit message"
 			)))
@@ -267,7 +267,7 @@ seek' o = startConcurrency transferStages $ do
 
 	remotes <- syncRemotes (syncWith o)
 	warnSyncContentTransition o remotes
-	-- Remotes that are git repositories, not (necesarily) special remotes.
+	-- Remotes that are git repositories, not (necessarily) special remotes.
 	let gitremotes = filter (Remote.gitSyncableRemoteType . Remote.remotetype) remotes
 	-- Remotes that contain annex object content.
 	contentremotes <- filter (\r -> Remote.uuid r /= NoUUID)
@@ -402,17 +402,18 @@ syncRemotes' ps available =
 
 commit :: SyncOptions -> CommandStart
 commit o = stopUnless shouldcommit $ starting "commit" ai si $ do
-	commitmessage <- maybe commitMsg return (messageOption o)
 	Annex.Branch.commit =<< Annex.Branch.commitMessage
+	mopts <- concatMap (\msg -> [Param "-m", Param msg])
+		<$> if null (messageOption o)
+			then (:[]) <$> commitMsg
+			else pure (messageOption o)
 	next $ do
 		showOutput
 		let cmode = Git.Branch.ManualCommit
 		cquiet <- Git.Branch.CommitQuiet <$> commandProgressDisabled
-		void $ inRepo $ Git.Branch.commitCommand cmode cquiet
-			[ Param "-a"
-			, Param "-m"
-			, Param commitmessage
-			]
+		void $ inRepo $ Git.Branch.commitCommand
+			cmode cquiet
+			([ Param "-a" ] ++ mopts)
 		return True
   where
 	shouldcommit = notOnlyAnnex o <&&>
@@ -426,7 +427,8 @@ commitMsg :: Annex String
 commitMsg = do
 	u <- getUUID
 	m <- uuidDescMap
-	return $ "git-annex in " ++ maybe "unknown" fromUUIDDesc (M.lookup u m)
+	return $ "git-annex in "
+		++ maybe "unknown" fromUUIDDesc (M.lookup u m)
 
 mergeLocal :: [Git.Merge.MergeConfig] -> SyncOptions -> CurrBranch -> CommandStart
 mergeLocal mergeconfig o currbranch = stopUnless (notOnlyAnnex o) $
@@ -578,7 +580,7 @@ importRemote importcontent o remote currbranch
 			let (branch, subdir) = splitRemoteAnnexTrackingBranchSubdir b
 			if canImportKeys remote importcontent
 				then do
-					Command.Import.seekRemote remote branch subdir importcontent (CheckGitIgnore True) Nothing
+					Command.Import.seekRemote remote branch subdir importcontent (CheckGitIgnore True) []
 					-- Importing generates a branch
 					-- that is not initially connected
 					-- to the current branch, so allow
@@ -976,7 +978,7 @@ seekExportContent :: Maybe SyncOptions -> [Remote] -> CurrBranch -> Annex Bool
 seekExportContent o rs (mcurrbranch, madj)
 	| null rs = return False
 	| otherwise = do
-		-- Propigate commits from the adjusted branch, so that
+		-- Propagate commits from the adjusted branch, so that
 		-- when the remoteAnnexTrackingBranch is set to the parent
 		-- branch, it will be up-to-date.
 		case (mcurrbranch, madj) of

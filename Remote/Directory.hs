@@ -413,7 +413,7 @@ mkContentIdentifier (IgnoreInodes ii) f st =
 
 -- Since ignoreinodes can be changed by enableremote, and since previous
 -- versions of git-annex ignored inodes by default, treat two content
--- idenfiers as the same if they differ only by one having the inode
+-- identifiers as the same if they differ only by one having the inode
 -- ignored.
 guardSameContentIdentifiers :: a -> [ContentIdentifier] -> Maybe ContentIdentifier -> a
 guardSameContentIdentifiers _ _ Nothing = giveup "file not found"

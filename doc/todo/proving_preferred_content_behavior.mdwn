@@ -1,3 +1,7 @@
+[[!toc ]]
+
+## motivating examples
+
 Preferred content expressions can be complicated to write and reason about.
 A complex expression can involve lots of repositories that can get into
 different states, and needs to be written to avoid unwanted behavior.
@@ -5,8 +9,6 @@ different states, and needs to be written to avoid unwanted behavior.
 It would be very handy to provide some way to prove things about behavior
 of preferred content expressions, or a way to simulate the behavior of a
 network of git-annex repositories with a given preferred content configuration 
-
-## motivating examples
 
 For example, consider two reposities A and B. A is in group M and B is in
 group N. A has preferred content `not inallgroup=N` and B has `not inallgroup=M`.
@@ -73,3 +75,5 @@ git-annex does.
 
 Since users can write preferred content expressions, this should be
 targeted at being used by end users.
+
+[[!tag projects/openneuro]]

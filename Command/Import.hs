@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2012-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -70,7 +70,7 @@ data ImportOptions
 		, importToSubDir :: Maybe FilePath
 		, importContent :: Bool
 		, checkGitIgnoreOption :: CheckGitIgnore
-		, messageOption :: Maybe String
+		, messageOption :: [String]
 		}
 
 optParser :: CmdParamsDesc -> Parser ImportOptions
@@ -82,7 +82,7 @@ optParser desc = do
 		)
 	dupmode <- fromMaybe Default <$> optional duplicateModeParser
 	ic <- Command.Add.checkGitIgnoreSwitch
-	message <- optional (strOption
+	message <- many (strOption
 		( long "message" <> short 'm' <> metavar "MSG"
 		<> help "commit message"
 		))
@@ -322,8 +322,8 @@ verifyExisting key destfile (yes, no) = do
 	verifyEnoughCopiesToDrop [] key Nothing needcopies mincopies [] preverified tocheck
 		(const yes) no
 
-seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CheckGitIgnore -> Maybe String -> CommandSeek
-seekRemote remote branch msubdir importcontent ci mimportmessage = do
+seekRemote :: Remote -> Branch -> Maybe TopFilePath -> Bool -> CheckGitIgnore -> [String] -> CommandSeek
+seekRemote remote branch msubdir importcontent ci importmessages = do
 	importtreeconfig <- case msubdir of
 		Nothing -> return ImportTree
 		Just subdir ->
@@ -336,7 +336,7 @@ seekRemote remote branch msubdir importcontent ci mimportmessage = do
 	
 	trackingcommit <- fromtrackingbranch Git.Ref.sha
 	cmode <- annexCommitMode <$> Annex.getGitConfig
-	let importcommitconfig = ImportCommitConfig trackingcommit cmode importmessage
+	let importcommitconfig = ImportCommitConfig trackingcommit cmode importmessages'
 	let commitimport = commitRemote remote branch tb trackingcommit importtreeconfig importcommitconfig
 
 	importabletvar <- liftIO $ newTVarIO Nothing
@@ -353,9 +353,9 @@ seekRemote remote branch msubdir importcontent ci mimportmessage = do
 				includeCommandAction $ 
 					commitimport imported
   where
-	importmessage = fromMaybe 
-		("import from " ++ Remote.name remote)
-		mimportmessage
+	importmessages'
+		| null importmessages = ["import from " ++ Remote.name remote]
+		| otherwise = importmessages
 
 	tb = mkRemoteTrackingBranch remote branch
 

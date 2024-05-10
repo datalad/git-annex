@@ -267,7 +267,7 @@ autoInitialize' check remotelist = getInitializedVersion >>= maybe needsinit che
 			initialize Nothing Nothing
 			autoEnableSpecialRemotes remotelist
 
-{- Checks if a repository is initialized. Does not check version for ugrade. -}
+{- Checks if a repository is initialized. Does not check version for upgrade. -}
 isInitialized :: Annex Bool
 isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersion
 

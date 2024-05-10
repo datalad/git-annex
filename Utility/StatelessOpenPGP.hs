@@ -58,7 +58,7 @@ newtype Armoring = Armoring Bool
  - This is unfortunately needed because of an infelicity in the SOP
  - standard, as documented in section 9.9 "Be Careful with Special
  - Designators", when using "@FD:" and similar designators the SOP
- - command may test for the presense of a file with the same name on the
+ - command may test for the presence of a file with the same name on the
  - filesystem, and fail with  AMBIGUOUS_INPUT. 
  -
  - Since we don't want to need to deal with such random failure due to

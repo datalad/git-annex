@@ -1,11 +1,12 @@
 rclone now supports being run as a git-annex special remote natively
 see <https://github.com/rclone/rclone/pull/7654>. "rclone gitannex"
 is the command to run. But git-annex needs a git-annex-remote-rclone or similar,
-so they are shipping a git-annex-remote-rclone-builtin symlink to rclone,
+so to use it needs a git-annex-remote-rclone-builtin symlink to rclone,
 and when run under that name it behaves as if "rclone gitannex" were run.
 
-So in this case, the need for "git-annex-remote-foo" is complicating an
-upstream project that has gone out of its way to support git-annex. Not ideal.
+rclone won't be shipping that symlink, so users will have to create it
+themselves, which complicates using it. So could git-annex instead
+support running "rclone gitannex" itself?
 
 From the pull request, @dmcardle wrote:
 
@@ -27,3 +28,21 @@ run "rclone gitannex".
 Or, git-annex add an internal rclone special remote, that is just
 a wrapper around the external special remote, that makes it use
 "rclone gitannex". "git-annex initremote foo type=rclone" --[[Joey]]
+
+> Considering those two approaches again, the first would let the new
+> rclone be used with old git-annex with the user making the
+> git-annex-remote-rclone-builtin symlink. Then later, that same
+> special remote could be used with the new git-annex on a system
+> where that symlink was not set up.
+> 
+> The second approach would make a special remote that can't be used with
+> old git-annex. But if the user wanted to use the new rclone with old
+> git-annex, they can still make the symlink. To later migrate away from
+> the symlink, they would need to initremote another special remote using
+> --sameas.
+>
+> I feel that the simplicity of the type=rclone config will pay off in the
+> long term, vs short term complication for probably a small subset of users
+> who somehow can upgrade rclone but can't upgrade git-annex. --[[Joey]]
+
+> > [[done]] 

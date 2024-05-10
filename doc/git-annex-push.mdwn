@@ -67,7 +67,7 @@ See [[git-annex-preferred-content]](1).
 
 * `--only-annex` `-a`, `--not-only-annex`
 
-  Only pull the git-annex branch and annexed content from remotes,
+  Only push the git-annex branch and annexed content to remotes,
   not other git branches.
 
   The `annex.synconlyannex` configuration can be set to true to make
@@ -75,7 +75,7 @@ See [[git-annex-preferred-content]](1).
   `--not-only-annex`.
 
   When this is combined with --no-content, only the git-annex branch
-  will be pulled.
+  will be pushed.
 
 * `--no-content`, `-g`, `--content`
 

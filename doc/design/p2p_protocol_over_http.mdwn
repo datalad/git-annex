@@ -1,0 +1,125 @@
+[[!toc ]]
+
+## motivation
+
+The [[P2P protocol]] is a custom protocol that git-annex speaks over a ssh
+connection (mostly). This is a design working on supporting the P2P
+protocol over HTTP.
+
+Upload of annex objects to git remotes that use http is currently not
+supported by git-annex, and this would be a generally very useful addition.
+
+For use cases such as OpenNeuro's javascript client, ssh is too difficult
+to support, so they currently use a special remote that talks to a http
+endpoint in order to upload objects. Implementing this would let them
+talk to git-annex over http.
+
+With the [[passthrough_proxy]], this would let clients configure a single
+http remote that accesses a more complicated network of git-annex
+repositories.
+
+## approach 1: encapsulation
+
+One approach is to encapsulate the P2P protocol inside HTTP. This has the
+benefit of being simple to think about. It is not very web-native though.
+
+There would be a single API endpoint. The client connects and sends a
+request that encapsulates one or more lines in the P2P protocol. The server
+sends a response that encapsulates one or more lines in the P2P
+protocol.
+
+For example (eliding the full HTTP responses, only showing the data):
+
+    > POST /git-annex HTTP/1.0
+    > Content-Type: x-git-annex-p2p
+    > Content-Length: ...
+    > 
+    > AUTH 79a5a1f4-07e8-11ef-873d-97f93ca91925 
+    < AUTH_SUCCESS ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6
+
+    > POST /git-annex HTTP/1.0
+    > Content-Type: x-git-annex-p2p
+    > Content-Length: ...
+    > 
+    > VERSION 1
+    < VERSION 1
+
+    > POST /git-annex HTTP/1.0
+    > Content-Type: x-git-annex-p2p
+    > Content-Length: ...
+    > 
+    > CHECKPRESENT SHA1--foo
+    < SUCCESS
+
+    > POST /git-annex HTTP/1.0
+    > Content-Type: x-git-annex-p2p
+    > Content-Length: ...
+    > 
+    > PUT bar SHA1--bar
+    < PUT-FROM 0
+
+    > POST /git-annex HTTP/1.0
+    > Content-Type: x-git-annex-p2p
+    > Content-Length: ...
+    > 
+    > DATA 3
+    > foo
+    > VALID
+    < SUCCESS
+
+Note that, since VERSION is negotiated in one request, the HTTP server
+needs to know that a series of requests are part of the same P2P protocol
+session. In the example above, it would not have a good way to do that.
+One solution would be to add a session identifier UUID to each request.
+
+## approach 2: HTTP API
+
+Another approach is to define a web-native API with endpoints that
+correspond to each action in the P2P protocol. 
+
+Something like this:
+
+    > GET /git-annex/v1/AUTH?clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925 HTTP/1.0
+    < AUTH_SUCCESS ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6
+
+    > GET /git-annex/v1/CHECKPRESENT?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.0
+    > SUCCESS
+
+    > GET /git-annex/v1/PUT-FROM?key=SHA1--foo&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.0
+    < PUT-FROM 0
+
+    > POST /git-annex/v1/PUT?key=SHA1--foo&associatedfile=bar&put-from=0&clientuuid=79a5a1f4-07e8-11ef-873d-97f93ca91925&serveruuid=ecf6d4ca-07e8-11ef-8990-9b8c1f696bf6 HTTP/1.0
+    > Content-Type: application/octet-stream
+    > Content-Length: 4
+    > foo1
+    < SUCCESS
+
+(In the last example above "foo" is the content, there is an additional byte at the end that
+is 1 for VALID and 0 for INVALID. This seems better than needing an entire
+other request to indicate validitity.)
+
+This needs a more complex spec. But it's easier for others to implement,
+especially since it does not need a session identifier, so the HTTP server can 
+be stateless.
+
+## HTTP GET
+
+It should be possible to support a regular HTTP get of a key, with
+no additional parameters, so that annex objects can be served to other clients
+from this web server.
+
+    > GET /git-annex/key/SHA1--foo HTTP/1.0
+    < foo
+
+Although this would be a special case, not used by git-annex, because the P2P
+protocol's GET has the complication of offsets, and of the server sending
+VALID/INVALID after the content, and of needing to know the client's UUID in
+order to update the location log.
+
+## Problem: CONNECT
+
+The CONNECT message allows both sides of the P2P protocol to send DATA
+messages in any order. This seems difficult to encapsulate in HTTP.
+
+Probably this can be not implemented, it's probably not needed for a HTTP
+remote?

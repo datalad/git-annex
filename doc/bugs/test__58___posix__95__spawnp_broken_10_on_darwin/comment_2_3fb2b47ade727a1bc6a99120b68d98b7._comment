@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Happens on nix on MacOS as well"
+ date="2024-04-13T15:51:54Z"
+ content="""
+I just had the same problem. An `addurl` test failing while building on MacOS with `nix-shell -p git-annex`. I recorded a video of it coincidentally. I don't know what's with the `security` program it tries to call. I was using a MacOS VM via [Docker-OSX](https://github.com/sickcodes/Docker-OSX?tab=readme-ov-file#big-sur-).
+"""]]

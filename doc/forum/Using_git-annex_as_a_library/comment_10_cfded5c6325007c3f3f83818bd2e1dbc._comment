@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="unqueued"
+ avatar="http://cdn.libravatar.org/avatar/3bcbe0c9e9825637ad7efa70f458640d"
+ subject="comment 10"
+ date="2024-04-10T12:26:49Z"
+ content="""
+For my two cents, I have found git-annex to be a simple enough format that I have only needed basic helper scripts.
+
+But many operations can be done with one or a few lines of code.
+
+Git can do much of the heavy lifting for you in terms of looking stuff up from the git-annex branch, and I find the formats to be quite regular and easy to parse.
+
+I am thinking of bringing some of this together into a PHP library.
+
+But maybe I should just post my pure git-annex bash/perl one-liners.
+"""]]

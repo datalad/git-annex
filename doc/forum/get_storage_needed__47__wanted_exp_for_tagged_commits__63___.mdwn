@@ -1,0 +1,15 @@
+I would like to retain a copy of keys which are referenced in a tagged commit.
+
+- is there some easy way to figure out size of keys across all such tagged commits?  `git-annex info` seems to report per each commit/tree separately.  I need a total size.
+  (I will need to assess it over hundreds of repos)
+
+- ATM I do not think it is possible directly with [preferred-content expressions](https://git-annex.branchable.com/git-annex-preferred-content/).
+  Do you think it would be feasible to develop support for retaining content based on the properties of the commit?
+
+  Or what other "workflow" would you recommend?  e.g. I guess upon tagging I could add to all keys some metadata field (e.g. `released`, may be with value of tags where it was released) and then set preferred-content based on having that metadata field?
+
+
+Target use-case -- backup remote for dandisets will soon seize to exist, need to figure out some backup strategy. For that want to first assess how much of data which was tagged (higher priority to keep) to retain.
+
+[[!meta author=yoh]]
+[[!tag projects/dandi]]

@@ -167,7 +167,7 @@ relPath = adjustPath torel
 		p' <- relPathCwdToFile p
 		return $ if B.null p' then "." else p'
 
-{- Adusts the path to a local Repo using the provided function. -}
+{- Adjusts the path to a local Repo using the provided function. -}
 adjustPath :: (RawFilePath -> IO RawFilePath) -> Repo -> IO Repo
 adjustPath f r@(Repo { location = l@(Local { gitdir = d, worktree = w }) }) = do
 	d' <- f d

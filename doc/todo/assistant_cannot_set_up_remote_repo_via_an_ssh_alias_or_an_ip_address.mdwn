@@ -40,7 +40,7 @@ everyday problem for an average user.
 > 
 > Also, the assistant sets up it *own* .ssh/config hostname alias,
 > in order to make it use the special ssh key that it generates for the host.
-> So that is not compatable with using a ssh host alias you've set up.
+> So that is not compatible with using a ssh host alias you've set up.
 > Even if it knew about your alias, it would set up a new hostname alias, and
 > whatever machinery you have to update the alias would not work.
 >  

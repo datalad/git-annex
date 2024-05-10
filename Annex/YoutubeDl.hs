@@ -372,7 +372,7 @@ youtubePlaylist' url cmd = withTmpFile "yt-dlp" $ \tmpfile h -> do
 				<$> B.readFile tmpfile
 			return $ case partitionEithers v of
 				((parserr:_), _) -> 
-					Left $ "yt-dlp json parse errror: " ++ parserr
+					Left $ "yt-dlp json parse error: " ++ parserr
 				([], r) -> Right r
 		else return $ Left $ if null outerr
 			then "yt-dlp failed"

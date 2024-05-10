@@ -18,7 +18,7 @@ looks like a cache directory with a missing or empty base file, so it
 decides to clean it up. In the meantime the first process has written
 base and other files and so the rm fails. Also, the first process may
 succeed and end up running git-annex with some locale files missing
-(if the rm happened to delete those), resulting in incompatable
+(if the rm happened to delete those), resulting in incompatible
 system locales being used.
 
 So, it ought to defer cleaning up old caches until after it's made sure its

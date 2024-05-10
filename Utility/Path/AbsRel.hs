@@ -48,7 +48,7 @@ absPathFrom dir path = simplifyPath (combine dir path)
  - already exists. -}
 absPath :: RawFilePath -> IO RawFilePath
 absPath file
-	-- Avoid unncessarily getting the current directory when the path
+	-- Avoid unnecessarily getting the current directory when the path
 	-- is already absolute. absPathFrom uses simplifyPath
 	-- so also used here for consistency.
 	| isAbsolute file = return $ simplifyPath file

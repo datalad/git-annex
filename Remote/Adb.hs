@@ -348,7 +348,7 @@ listImportableContentsM serial adir c = adbfind >>= \case
 	mk _ = Nothing
 
 -- This does not guard against every possible race. As long as the adb
--- connection is resonably fast, it's probably as good as
+-- connection is reasonably fast, it's probably as good as
 -- git's handling of similar situations with files being modified while
 -- it's updating the working tree for a merge.
 retrieveExportWithContentIdentifierM :: AndroidSerial -> AndroidPath -> ExportLocation -> [ContentIdentifier] -> FilePath -> Either Key (Annex Key) -> MeterUpdate -> Annex (Key, Verification)

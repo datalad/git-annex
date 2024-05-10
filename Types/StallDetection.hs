@@ -27,9 +27,9 @@ data BwRate = BwRate ByteSize Duration
 
 -- Parse eg, "0KiB/60s"
 --
--- Also, it can be set to "true" (or other git config equivilants)
+-- Also, it can be set to "true" (or other git config equivalents)
 -- to enable ProbeStallDetection. 
--- And "false" (and other git config equivilants) explicitly
+-- And "false" (and other git config equivalents) explicitly
 -- disable stall detection.
 parseStallDetection :: String -> Either String StallDetection
 parseStallDetection s = case isTrueFalse s of

@@ -72,7 +72,7 @@ on its own line, followed by a newline and the binary data.
 The Len value tells how many bytes of data to read.
 
 	DATA 3
-	foo1
+	foo
 
 Note that there is no newline after the binary data; the next protocol
 message will come immediately after it.

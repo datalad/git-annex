@@ -1,6 +1,6 @@
 {- filenames (not paths) used in views
  -
- - Copyright 2014-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2014-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ module Annex.View.ViewedFile (
 
 import Annex.Common
 import Utility.QuickCheck
+import Backend.Utilities (maxExtensions)
 
 import qualified Data.ByteString as S
 
@@ -37,10 +38,12 @@ type MkViewedFile = FilePath -> ViewedFile
  - So, from dir/subdir/file.foo, generate file_%dir%subdir%.foo
  -}
 viewedFileFromReference :: GitConfig -> MkViewedFile
-viewedFileFromReference g = viewedFileFromReference' (annexMaxExtensionLength g)
+viewedFileFromReference g = viewedFileFromReference'
+	(annexMaxExtensionLength g)
+	(annexMaxExtensions g)
 
-viewedFileFromReference' :: Maybe Int -> MkViewedFile
-viewedFileFromReference' maxextlen f = concat $
+viewedFileFromReference' :: Maybe Int -> Maybe Int -> MkViewedFile
+viewedFileFromReference' maxextlen maxextensions f = concat $
 	[ escape (fromRawFilePath base')
 	, if null dirs then "" else "_%" ++ intercalate "%" (map escape dirs) ++ "%"
 	, escape $ fromRawFilePath $ S.concat extensions'
@@ -51,11 +54,12 @@ viewedFileFromReference' maxextlen f = concat $
 	(base, extensions) = case maxextlen of
 		Nothing -> splitShortExtensions (toRawFilePath basefile')
 		Just n -> splitShortExtensions' (n+1) (toRawFilePath basefile')
-	{- Limit to two extensions maximum. -}
+	{- Limit number of extensions. -}
+	maxextensions' = fromMaybe maxExtensions maxextensions
 	(base', extensions')
-		| length extensions <= 2 = (base, extensions)
+		| length extensions <= maxextensions' = (base, extensions)
 		| otherwise = 
-			let (es,more) = splitAt 2 (reverse extensions)
+			let (es,more) = splitAt maxextensions' (reverse extensions)
 			in (base <> mconcat (reverse more), reverse es)
 	{- On Windows, if the filename looked like "dir/c:foo" then
 	 - basefile would look like it contains a drive letter, which will
@@ -101,7 +105,8 @@ prop_viewedFile_roundtrips tf
 	-- Relative filenames wanted, not directories.
 	| any (isPathSeparator) (end f ++ beginning f) = True
 	| isAbsolute f || isDrive f = True
-	| otherwise = dir == dirFromViewedFile (viewedFileFromReference' Nothing f)
+	| otherwise = dir == dirFromViewedFile 
+		(viewedFileFromReference' Nothing Nothing f)
   where
 	f = fromTestableFilePath tf
 	dir = joinPath $ beginning $ splitDirectories f

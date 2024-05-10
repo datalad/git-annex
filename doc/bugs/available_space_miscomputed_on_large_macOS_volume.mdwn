@@ -1,0 +1,78 @@
+### Please describe the problem.
+
+`git-annex` is misreporting the available disk space on my large (98TiB) APFS volume on MacOS.
+
+### What steps will reproduce the problem?
+
+- acquire a large storage array (how large, unclear)
+- format with APFS on MacOS (no idea if it also occurs on on other platforms or file systems)
+- clone a git-annex repo onto it
+- look at `git annex info` / try to copy data
+
+Here's my `df` output:
+
+```
+Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on
+/dev/disk5s1    98Ti   2.2Ti    96Ti     3%     54k  1.0T    0%   /Volumes/ABYSS
+```
+
+And here's the `git annex info`:
+
+```
+trusted repositories: 0
+semitrusted repositories: 8
+	00000000-0000-0000-0000-000000000001 -- web
+ 	00000000-0000-0000-0000-000000000002 -- bittorrent
+ 	335d1827-1f6e-40d8-ae70-23ba9dd4b4a6 -- borg
+ 	4d887674-fb3f-47ee-afea-487f0143950e -- dvc
+ 	512ca1ff-43b7-4537-bf64-0f55e1ba2e8a -- cci server [origin]
+ 	71414f81-c837-4838-894d-840d0a2170ff -- [pocket]
+ 	dd695a7f-4b41-4a7d-ae57-3174f6a839e1 -- bsu server [grue]
+ 	df875036-d197-46f8-940c-9df5dc7fc2cd -- abyss [here]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 3.94 gigabytes (+100 megabytes reserved)
+local annex keys: 14380
+local annex size: 4.18 terabytes
+annexed files in working tree: 13312
+size of annexed files in working tree: 2.59 terabytes
+combined annex size of all repositories: 19.09 terabytes (+ 9 unknown size)
+annex sizes of repositories:
+	  5.57 TB: 512ca1ff-43b7-4537-bf64-0f55e1ba2e8a -- cci server [origin]
+ 	  4.18 TB: df875036-d197-46f8-940c-9df5dc7fc2cd -- abyss [here]
+ 	  3.21 TB: 71414f81-c837-4838-894d-840d0a2170ff -- [pocket]
+ 	  2.52 TB: 335d1827-1f6e-40d8-ae70-23ba9dd4b4a6 -- borg
+ 	  1.92 TB: dd695a7f-4b41-4a7d-ae57-3174f6a839e1 -- bsu server [grue]
+ 	879.87 GB: 00000000-0000-0000-0000-000000000001 -- web
+ 	819.55 GB: 4d887674-fb3f-47ee-afea-487f0143950e -- dvc
+backend usage:
+	SHA256: 6991
+	SHA256E: 6321
+bloom filter size: 32 mebibytes (2.9% full)
+```
+
+### What version of git-annex are you using? On what operating system?
+
+MacOS Sonoma 14.4.1, Git Annex version below:
+
+```
+git-annex version: 10.20240227
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.1 bloomfilter-2.0.1.2 crypton-0.34 DAV-1.3.4 feed-1.3.2.1 ghc-9.6.3 http-client-0.7.16 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg hook external
+operating system: darwin aarch64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+local repository version: 10
+```
+
+### Please provide any additional information below.
+
+I don't know what other file system versions (or operating systems) this may appear in, as this is the only 98TiB volume I have right now.
+
+I'm happy to do some poking around or test proposed fixes, I have some Haskell experience but it's been a while. My current instinct is that either `disk-free-space` is misbehaving on a disk this large for unclear reasons.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Been successfully using it for the last year+, for managing archives of academic research & teaching work and the assets for my web site. Generally quite happy :). Like it enough I want to use it schlep a few terabytes (and growing) onto my new Thunderbolt RAID array...

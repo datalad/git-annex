@@ -111,7 +111,7 @@ checkHiddenService = bracket setup cleanup go
 		-- we just want to know if the tor circuit works.
 		liftIO (tryNonAsync $ connectPeer g addr) >>= \case
 			Left e -> do
-				warning $ UnquotedString $ "Unable to connect to hidden service. It may not yet have propigated to the Tor network. (" ++ show e ++ ") Will retry.."
+				warning $ UnquotedString $ "Unable to connect to hidden service. It may not yet have propagated to the Tor network. (" ++ show e ++ ") Will retry.."
 				liftIO $ threadDelaySeconds (Seconds 2)
 				check (n-1) addrs
 			Right conn -> do

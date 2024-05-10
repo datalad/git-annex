@@ -11,7 +11,7 @@ Eg, to use Sequoia's sqpop:
 	git config annex.shared-sop-command sqop
 
 That fully interoperates with gpg, though it's probably a good idea
-to specify an enryption profile that is backwards compatable if interop
+to specify an enryption profile that is backwards compatible if interop
 is a concern. Eg:
 
 	git config annex.shared-sop-profile rfc4880

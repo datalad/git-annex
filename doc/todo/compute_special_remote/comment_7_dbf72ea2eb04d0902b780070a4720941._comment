@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2024-04-30T20:00:53Z"
+ content="""
+About request one, receive many, it would be possible for a special remote
+to run eg `git-annex reinject --guesskeys` to move additional generated
+object files into .git/annex/objects/.
+
+(Doesn't datalad do something like that when it download and unpacks a
+tarball that contains several annexed files besides the one it was running
+the download to get? Or perhaps it only stores the tarball in the annex and
+unpacks it several times?)
+"""]]
