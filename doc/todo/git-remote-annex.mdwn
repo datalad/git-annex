@@ -16,6 +16,10 @@ This is implememented and working. Remaining todo list for it:
 
 * Support max-bundles config
 
+* Cloning from an annex:: url with importtree=yes doesn't work
+  (with or without exporttree=yes). This is because the ContentIdentifier
+  db is not populated.
+
 * Need to mention git-remote-annex in special remotes page, and perhaps
   write a tip for it. Also link to it from git-annex man page.
 
