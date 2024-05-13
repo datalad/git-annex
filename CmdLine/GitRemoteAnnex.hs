@@ -10,6 +10,7 @@
 module CmdLine.GitRemoteAnnex where
 
 import Annex.Common
+import Types.GitRemoteAnnex
 import qualified Annex
 import qualified Remote
 import qualified Git.CurrentRepo
@@ -266,7 +267,7 @@ fullPush st rmt refs = guardPush st $ do
 	oldmanifest <- maybe (downloadManifest rmt) pure (manifestCache st)
 	let bs = map Git.Bundle.fullBundleSpec refs
 	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
-	uploadManifest rmt (Manifest [bundlekey] [])
+	uploadManifest rmt (mkManifest [bundlekey] [])
 	ok <- allM (dropKey rmt) $
 		filter (/= bundlekey) (inManifest oldmanifest)
 	return (ok, st { manifestCache = Nothing })
@@ -286,7 +287,7 @@ incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 	bs <- calc [] (M.toList newtrackingrefs)
 	oldmanifest <- maybe (downloadManifest rmt) pure (manifestCache st)
 	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
-	uploadManifest rmt (Manifest [bundlekey] [])
+	uploadManifest rmt (oldmanifest <> mkManifest [bundlekey] [])
 	return (True, st { manifestCache = Nothing })
   where
 	calc c [] = return (reverse c)
@@ -356,7 +357,7 @@ incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 pushEmpty :: State -> Remote -> Annex (Bool, State)
 pushEmpty st rmt = do
 	manifest <- maybe (downloadManifest rmt) pure (manifestCache st)
-	uploadManifest rmt (Manifest [] [])
+	uploadManifest rmt mempty
 	ok <- allM (dropKey rmt) 
 		(genManifestKey (Remote.uuid rmt) : inManifest manifest)
 	return (ok, st { manifestCache = Nothing })
@@ -533,16 +534,6 @@ checkSpecialRemoteProblems rmt
 		Just "Cannot use this thirdparty-populated special remote as a git remote"
 	| otherwise = Nothing
 
--- The manifest contains an ordered list of git bundle keys.
---
--- There is a second list of git bundle keys that are no longer
--- used and should be deleted.
-data Manifest =
-	Manifest 
-		{ inManifest :: [Key]
-		, outManifest :: [Key]
-		}
-
 -- Downloads the Manifest, or if it does not exist, returns an empty
 -- Manifest.
 --
@@ -561,10 +552,10 @@ downloadManifest rmt = ifM (Remote.checkPresent rmt mk)
 			nullMeterUpdate Remote.NoVerify
 		(outks, inks) <- partitionEithers . map parseline . B8.lines
 			<$> liftIO (B.readFile tmp)
-		Manifest
+		mkManifest
 			<$> checkvalid [] inks
-			<*> checkvalid [] (filter (`notElem` inks) outks)
-	, return (Manifest [] [])
+			<*> checkvalid [] outks
+	, return mempty
 	)
   where
 	mk = genManifestKey (Remote.uuid rmt)

@@ -942,6 +942,7 @@ Executable git-annex
     Types.Export
     Types.FileMatcher
     Types.GitConfig
+    Types.GitRemoteAnnex
     Types.Group
     Types.Import
     Types.IndexFiles
