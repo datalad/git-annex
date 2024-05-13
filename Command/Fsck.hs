@@ -504,16 +504,19 @@ checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
 checkBackend :: Key -> KeyStatus -> AssociatedFile -> Annex Bool
 checkBackend key keystatus afile = do
 	content <- calcRepo (gitAnnexLocation key)
-	ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
-		( nocheck
-		, do
-			mic <- withTSDelta (liftIO . genInodeCache content)
-			ifM (checkBackendOr badContent key content ai)
-				( do
-					checkInodeCache key content mic ai
-					return True
-				, return False
-				)
+	ifM (liftIO $ R.doesPathExist content)
+		( ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
+			( nocheck
+			, do
+				mic <- withTSDelta (liftIO . genInodeCache content)
+				ifM (checkBackendOr badContent key content ai)
+					( do
+						checkInodeCache key content mic ai
+						return True
+					, return False
+					)
+			)
+		, nocheck
 		)
   where
 	nocheck = return True
