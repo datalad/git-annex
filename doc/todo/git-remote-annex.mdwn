@@ -10,9 +10,12 @@ will be available to users who don't use datalad.
 
 This is implememented and working. Remaining todo list for it:
 
-* Need to test all types of pushes, barely tested at all.
+* Test pushes that delete branches.
 
-* Need to test exporttree=yes remotes.
+* Test incremental pushes that don't fast-forward.
+
+* exporttree=yes remote works, but cloning one from the annex:: url
+  does not, somehow exportTree is not set then.
 
 * Support max-bundles config
 
