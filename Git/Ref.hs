@@ -218,7 +218,7 @@ tree (Ref ref) = extractSha <$$> pipeReadStrict
 isAncestor :: Ref -> Ref -> Repo -> IO Bool
 isAncestor r1 r2 = runBool
 	[ Param "merge-base"
-	, Param "--ancestor"
+	, Param "--is-ancestor"
 	, Param (fromRef r1)
 	, Param (fromRef r2)
 	]
