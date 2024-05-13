@@ -12,6 +12,10 @@ GITBUNDLE--$UUID-sha256 is a git bundle.
 
 An ordered list of bundle keys, one per line. 
 
+Additionally, there may be bundle keys that are prefixed with "-".
+These keys are not part of the current content of the git remote
+and are in the process of being deleted.
+
 (Lines end with unix `"\n"`, not `"\r\n"`.)
 
 # multiple GITMANIFEST files
