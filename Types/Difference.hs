@@ -17,6 +17,7 @@ module Types.Difference (
 	differenceConfigVal,
 	hasDifference,
 	listDifferences,
+	mkDifferences,
 ) where
 
 import Utility.PartialPrelude

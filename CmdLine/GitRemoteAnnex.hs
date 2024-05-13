@@ -25,15 +25,19 @@ import qualified Types.Remote as Remote
 import Annex.Transfer
 import Backend.GitRemoteAnnex
 import Config
+import Types.Key
 import Types.RemoteConfig
 import Types.ProposedAccepted
-import Types.Key
+import Types.Export
 import Types.GitConfig
+import Types.Difference
 import Git.Types
 import Logs.Difference
 import Annex.Init
+import Annex.UUID
 import Annex.Content
 import Annex.Perms
+import Annex.SpecialRemote.Config
 import Remote.List
 import Remote.List.Util
 import Utility.Tmp
@@ -45,8 +49,9 @@ import Data.Either
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Map.Strict as M
-import System.FilePath.ByteString as P
+import qualified System.FilePath.ByteString as P
 import qualified Utility.RawFilePath as R
+import qualified Data.Set as S
 
 run :: [String] -> IO ()
 run (remotename:url:[]) =
@@ -526,6 +531,28 @@ getEnabledSpecialRemoteByName remotename =
 			maybe (return (Just rmt)) giveup
 				(checkSpecialRemoteProblems rmt)
 
+parseManifest :: B.ByteString -> Either String Manifest
+parseManifest b = 
+	let (outks, inks) = partitionEithers $ map parseline $ B8.lines b
+	in case (checkvalid [] inks, checkvalid [] outks) of
+		(Right inks', Right outks') -> 
+			Right $ mkManifest inks' outks'
+		(Left err, _) -> Left err
+		(_, Left err) -> Left err
+  where
+	parseline l
+		| "-" `B.isPrefixOf` l = 
+			Left $ deserializeKey' $ B.drop 1 l
+		| otherwise =
+			Right $ deserializeKey' l
+	
+	checkvalid c [] = Right (reverse c)
+	checkvalid c (Just k:ks) = case fromKey keyVariety k of
+		GitBundleKey -> checkvalid (k:c) ks
+		_ -> Left $ "Wrong type of key in manifest " ++ serializeKey k
+	checkvalid _ (Nothing:_) =
+		Left "Error parsing manifest"
+
 -- Avoid using special remotes that are thirdparty populated, because
 -- there is no way to push the git repository keys into one.
 --
@@ -555,38 +582,39 @@ downloadManifestOrFail rmt =
 -- Throws errors if the remote cannot be accessed or the download fails,
 -- or if the manifest file cannot be parsed.
 downloadManifest :: Remote -> Annex (Maybe Manifest)
-downloadManifest rmt = ifM (Remote.checkPresent rmt mk)
-	-- Downloads to a temporary file, rather than using
-	-- the usual Annex.Transfer.download. The content of manifests is
-	-- not stable, and so it needs to re-download it fresh every time.
-	( withTmpFile "GITMANIFEST" $ \tmp tmph -> do
-		liftIO $ hClose tmph
-		_ <- Remote.retrieveKeyFile rmt mk
-			(AssociatedFile Nothing) tmp
-			nullMeterUpdate Remote.NoVerify
-		(outks, inks) <- partitionEithers . map parseline . B8.lines
-			<$> liftIO (B.readFile tmp)
-		m <- mkManifest
-			<$> checkvalid [] inks
-			<*> checkvalid [] outks
-		return (Just m)
-	, return Nothing
-	)
+downloadManifest rmt = getKeyExportLocations rmt mk >>= \case
+	Nothing -> ifM (Remote.checkPresent rmt mk)
+		( gettotmp $ \tmp ->
+			Remote.retrieveKeyFile rmt mk
+				(AssociatedFile Nothing) tmp
+				nullMeterUpdate Remote.NoVerify
+		, return Nothing
+		)
+	Just locs -> getexport locs
   where
 	mk = genManifestKey (Remote.uuid rmt)
 
-	checkvalid c [] = return (reverse c)
-	checkvalid c (Just k:ks) = case fromKey keyVariety k of
-		GitBundleKey -> checkvalid (k:c) ks
-		_ -> giveup $ "Wrong type of key in manifest " ++ serializeKey k
-	checkvalid _ (Nothing:_) =
-		giveup $ "Error parsing manifest " ++ serializeKey mk
+	-- Downloads to a temporary file, rather than using eg
+	-- Annex.Transfer.download that would put it in the object
+	-- directory. The content of manifests is not stable, and so
+	-- it needs to re-download it fresh every time, and the object
+	-- file should not be stored locally.
+	gettotmp dl = withTmpFile "GITMANIFEST" $ \tmp tmph -> do
+		liftIO $ hClose tmph
+		_ <- dl tmp
+		b <- liftIO (B.readFile tmp)
+		case parseManifest b of
+			Right m -> return (Just m)
+			Left err -> giveup err
 
-	parseline l
-		| "-" `B.isPrefixOf` l = 
-			Left $ deserializeKey' $ B.drop 1 l
-		| otherwise =
-			Right $ deserializeKey' l
+	getexport [] = return Nothing
+	getexport (loc:locs) =
+		ifM (Remote.checkPresentExport (Remote.exportActions rmt) mk loc)
+			( gettotmp $ \tmp -> 
+				Remote.retrieveExport (Remote.exportActions rmt)
+					mk loc tmp nullMeterUpdate
+			, getexport locs
+			)
 
 -- Uploads the Manifest to the remote.
 --
@@ -610,7 +638,7 @@ uploadManifest rmt manifest =
 			B8.hPutStrLn tmph (serializeKey' bundlekey)
 		liftIO $ hClose tmph
 		-- Remove old manifest if present.
-		Remote.removeKey rmt mk
+		dropKey' rmt mk
 		-- storeKey needs the key to be in the annex objects
 		-- directory, so put the manifest file there temporarily.
 		-- Using linkOrCopy rather than moveAnnex to avoid updating
@@ -622,9 +650,8 @@ uploadManifest rmt manifest =
 			linkOrCopy mk (toRawFilePath tmp) objfile Nothing
 		unless (isJust res)
 			uploadfailed
-		-- noRetry because manifest content is not stable
-		ok <- upload rmt mk (AssociatedFile Nothing)
-			noRetry noNotification
+		ok <- (uploadGitObject rmt mk >> pure True)
+			`catchNonAsync` (const (pure False))
 		-- Don't leave the manifest key in the annex objects
 		-- directory.
 		unlinkAnnex mk
@@ -650,22 +677,46 @@ uploadManifest rmt manifest =
 -- 3. Git bundle objects are not usually transferred between repositories
 --    except special remotes (although the user can if they want to).
 downloadGitBundle :: Remote -> Key -> Annex FilePath
-downloadGitBundle rmt k = 
-	ifM (download rmt k (AssociatedFile Nothing) stdRetry noNotification)
+downloadGitBundle rmt k = getKeyExportLocations rmt k >>= \case
+	Nothing -> dlwith $ 
+		download rmt k (AssociatedFile Nothing) stdRetry noNotification
+	Just locs -> dlwith $
+		anyM getexport locs
+  where
+	dlwith a = ifM a
 		( decodeBS <$> calcRepo (gitAnnexLocation k)
 		, giveup $ "Failed to download " ++ serializeKey k
 		)
 
--- Uploads a git bundle from the annex objects directory to the remote.
+	getexport loc = catchNonAsync (getexport' loc) (const (pure False))
+	getexport' loc =
+		getViaTmp rsp vc k (AssociatedFile Nothing) Nothing $ \tmp -> do
+			v <- Remote.retrieveExport (Remote.exportActions rmt)
+				k loc (decodeBS tmp) nullMeterUpdate
+			return (True, v)
+	rsp = Remote.retrievalSecurityPolicy rmt
+	vc = Remote.RemoteVerify rmt
+
+-- Uploads a bundle or manifest object from the annex objects directory
+-- to the remote.
 --
 -- Throws errors if the upload fails.
 --
 -- This does not update the location log to indicate that the remote
--- contains the git bundle object.
-uploadGitBundle :: Remote -> Key -> Annex ()
-uploadGitBundle rmt k =
-	unlessM (upload rmt k (AssociatedFile Nothing) stdRetry noNotification) $
-		giveup $ "Failed to upload " ++ serializeKey k
+-- contains the git object.
+uploadGitObject :: Remote -> Key -> Annex ()
+uploadGitObject rmt k = getKeyExportLocations rmt k >>= \case
+	Just (loc:_) -> do
+		objfile <- fromRawFilePath <$> calcRepo (gitAnnexLocation k)
+		Remote.storeExport (Remote.exportActions rmt) objfile k loc nullMeterUpdate
+	_ -> 
+		unlessM (upload rmt k (AssociatedFile Nothing) retry noNotification) $
+			giveup $ "Failed to upload " ++ serializeKey k
+  where
+	retry = case fromKey keyVariety k of
+		GitBundleKey -> stdRetry
+		-- Manifest keys are not stable
+		_ -> noRetry
 
 -- Generates a git bundle, ingests it into the local objects directory, 
 -- and uploads its key to the special remote.
@@ -689,12 +740,12 @@ generateAndUploadGitBundle rmt bs manifest =
 		unless (bundlekey `elem` (inManifest manifest)) $ do
 			unlessM (moveAnnex bundlekey (AssociatedFile Nothing) (toRawFilePath tmp)) $
 				giveup "Unable to push"
-			uploadGitBundle rmt bundlekey
+			uploadGitObject rmt bundlekey
 				`onException` unlinkAnnex bundlekey
 		return bundlekey
 
 dropKey :: Remote -> Key -> Annex Bool
-dropKey rmt k = tryNonAsync (Remote.removeKey rmt k) >>= \case
+dropKey rmt k = tryNonAsync (dropKey' rmt k) >>= \case
 	Right () -> return True
 	Left ex -> do
 		liftIO $ hPutStrLn stderr $
@@ -702,6 +753,49 @@ dropKey rmt k = tryNonAsync (Remote.removeKey rmt k) >>= \case
 				++ serializeKey k 
 				++ " (" ++ show ex ++ ")"
 		return False
+
+dropKey' :: Remote -> Key -> Annex ()
+dropKey' rmt k = getKeyExportLocations rmt k >>= \case
+	Nothing -> Remote.removeKey rmt k
+	Just locs -> forM_ locs $ \loc -> 
+		Remote.removeExport (Remote.exportActions rmt) k loc
+
+getKeyExportLocations :: Remote -> Key -> Annex (Maybe [ExportLocation])
+getKeyExportLocations rmt k = do
+	cfg <- Annex.getGitConfig
+	u <- getUUID
+	return $ keyExportLocations rmt k cfg u
+
+-- When the remote contains a tree, the git keys are stored
+-- inside the .git/annex/objects/ directory in the remote.
+--
+-- The first ExportLocation in the returned list is the one that
+-- is the same as the local repository would use. But it's possible
+-- that one of the others in the list was used by another repository to
+-- upload a git key.
+keyExportLocations :: Remote -> Key -> GitConfig -> UUID -> Maybe [ExportLocation]
+keyExportLocations rmt k cfg uuid
+	| exportTree (Remote.config rmt) || importTree (Remote.config rmt) = 
+		Just $ map (\p -> mkExportLocation (".git" P.</> p)) $
+			concatMap (`annexLocationsNonBare` k) cfgs
+	| otherwise = Nothing
+  where
+	-- When git-annex has not been initialized yet (eg, when cloning), 
+	-- the Differences are unknown, so make a version of the GitConfig
+	-- with and without the OneLevelObjectHash difference.
+	cfgs
+		| uuid /= NoUUID = [cfg]
+		| hasDifference OneLevelObjectHash (annexDifferences cfg) =
+			[ cfg
+			, cfg { annexDifferences = mempty }
+			]
+		| otherwise =
+			[ cfg
+			, cfg 
+				{ annexDifferences = mkDifferences 
+					(S.singleton OneLevelObjectHash)
+				}
+			]
 
 -- Tracking refs are used to remember the refs that are currently on the
 -- remote. This is different from git's remote tracking branches, since it

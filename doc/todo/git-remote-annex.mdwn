@@ -12,7 +12,7 @@ This is implememented and working. Remaining todo list for it:
 
 * Need to test all types of pushes, barely tested at all.
 
-* Support exporttree=yes remotes.
+* Need to test exporttree=yes remotes.
 
 * Support max-bundles config
 
@@ -35,7 +35,7 @@ This is implememented and working. Remaining todo list for it:
   where the remote is left with a deleted manifest when a push
   is interrupted part way through. This should be recoverable
   by caching the manifest locally and re-uploading it when
-  the remote has no manifest.
+  the remote has no manifest or prompting the user to merge and re-push.
 
 * datalad-annex supports cloning from the web special remote,
   using an url that contains the result of pushing to eg, a directory
@@ -87,3 +87,7 @@ This is implememented and working. Remaining todo list for it:
 
   This should be fixable by making git-remote-annex not write to the
   git-annex branch, but to eg, a temporary journal directory.
+
+  Also, when the remote uses importree=yes, pushing to it updates
+  content identifiers, which currently get recorded in the git-annex
+  branch. It would be good to avoid that being written as well.
