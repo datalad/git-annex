@@ -14,9 +14,6 @@ This is implememented and working. Remaining todo list for it:
 
 * Test incremental pushes that don't fast-forward.
 
-* exporttree=yes remote works, but cloning one from the annex:: url
-  does not, somehow exportTree is not set then.
-
 * Support max-bundles config
 
 * Need to mention git-remote-annex in special remotes page, and perhaps
@@ -90,6 +87,12 @@ This is implememented and working. Remaining todo list for it:
 
   This should be fixable by making git-remote-annex not write to the
   git-annex branch, but to eg, a temporary journal directory.
+
+  Also, cloning currently writes the special remote config into remote.log,
+  which might be slightly different in some way than the config in
+  remote.log for the same remote. cloning should not change the stored
+  config of a remote, but that branch write was necessary. So throwing
+  away the branch write is also good for this case.
 
   Also, when the remote uses importree=yes, pushing to it updates
   content identifiers, which currently get recorded in the git-annex

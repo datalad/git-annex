@@ -22,6 +22,7 @@ import qualified Git.Remote.Remove
 import qualified Annex.SpecialRemote as SpecialRemote
 import qualified Annex.Branch
 import qualified Types.Remote as Remote
+import qualified Logs.Remote
 import Annex.Transfer
 import Backend.GitRemoteAnnex
 import Config
@@ -481,20 +482,15 @@ withSpecialRemote cfg@(SpecialRemoteConfig {}) sab a = case specialRemoteName cf
   where
 	-- Initialize a new special remote with the provided configuration
 	-- and name.
-	--
-	-- The configuration is not stored in the git-annex branch, because
-	-- it's expected that the git repository stored on the special
-	-- remote includes its configuration, perhaps under a different
-	-- name, and perhaps slightly different (when the annex:: url
-	-- omitted some unimportant part of the configuration).
 	initremote remotename = do
 		let c = M.insert SpecialRemote.nameField (Proposed remotename)
 			(specialRemoteConfig cfg)
 		t <- either giveup return (SpecialRemote.findType c)
 		dummycfg <- liftIO dummyRemoteGitConfig
-		(c', _u) <- Remote.setup t Remote.Init (Just (specialRemoteUUID cfg)) 
+		(c', u) <- Remote.setup t Remote.Init (Just (specialRemoteUUID cfg)) 
 			Nothing c dummycfg
 			`onException` cleanupremote remotename
+		Logs.Remote.configSet u c'
 		setConfig (remoteConfig c' "url") (specialRemoteUrl cfg)
 		remotesChanged
 		getEnabledSpecialRemoteByName remotename >>= \case
