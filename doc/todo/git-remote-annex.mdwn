@@ -28,11 +28,6 @@ This is implememented and working. Remaining todo list for it:
   stored in the repo. Chicken and egg problem cloning from
   such a remote. Maybe allow advanced users to force it?
 
-* When the remote has no manifest, a pull from it should fail,
-  while a push should succeed. Otherwise, it can be confusing
-  to clone from a wrong url, since it fails to download
-  a manifest and so appears as if the remote is empty.
-
 * Improve recovery from interrupted push by using outManifest to clean up
   after it. (Requires populating outManifest.)
 

@@ -111,7 +111,9 @@ capabilities = do
 
 list :: State -> Remote -> Bool -> Annex State
 list st rmt forpush = do
-	manifest <- downloadManifest rmt
+	manifest <- if forpush
+		then downloadManifestWhenPresent rmt
+		else downloadManifestOrFail rmt
 	l <- forM (inManifest manifest) $ \k -> do
 		b <- downloadGitBundle rmt k
 		heads <- inRepo $ Git.Bundle.listHeads b	
@@ -168,7 +170,7 @@ fetch st rmt [] = do
 
 fetch' :: State -> Remote -> Annex ()
 fetch' st rmt = do
-	manifest <- maybe (downloadManifest rmt) pure (manifestCache st)
+	manifest <- maybe (downloadManifestOrFail rmt) pure (manifestCache st)
 	forM_ (inManifest manifest) $ \k ->
 		downloadGitBundle rmt k >>= inRepo . Git.Bundle.unbundle
 	-- Newline indicates end of fetch.
@@ -264,7 +266,8 @@ push st rmt ls = do
 -- from it.
 fullPush :: State -> Remote -> [Ref] -> Annex (Bool, State)
 fullPush st rmt refs = guardPush st $ do
-	oldmanifest <- maybe (downloadManifest rmt) pure (manifestCache st)
+	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure
+		(manifestCache st)
 	let bs = map Git.Bundle.fullBundleSpec refs
 	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
 	uploadManifest rmt (mkManifest [bundlekey] [])
@@ -285,7 +288,7 @@ guardPush st a = catchNonAsync a $ \ex -> do
 incrementalPush :: State -> Remote -> M.Map Ref Sha -> M.Map Ref Sha -> Annex (Bool, State)
 incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 	bs <- calc [] (M.toList newtrackingrefs)
-	oldmanifest <- maybe (downloadManifest rmt) pure (manifestCache st)
+	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure (manifestCache st)
 	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
 	uploadManifest rmt (oldmanifest <> mkManifest [bundlekey] [])
 	return (True, st { manifestCache = Nothing })
@@ -350,13 +353,14 @@ incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 			)
 
 -- When the push deletes all refs from the remote, upload an empty
--- manifest and then drop all bundles that were listed in it. 
--- The manifest is emptired first so if this is interrupted, only
+-- manifest and then drop all bundles that were listed in the manifest.
+-- The manifest is emptied first so if this is interrupted, only
 -- unused bundles will remain in the remote, rather than leaving the
 -- remote with a manifest that refers to missing bundles.
 pushEmpty :: State -> Remote -> Annex (Bool, State)
 pushEmpty st rmt = do
-	manifest <- maybe (downloadManifest rmt) pure (manifestCache st)
+	manifest <- maybe (downloadManifestWhenPresent rmt) pure
+		(manifestCache st)
 	uploadManifest rmt mempty
 	ok <- allM (dropKey rmt) 
 		(genManifestKey (Remote.uuid rmt) : inManifest manifest)
@@ -534,17 +538,27 @@ checkSpecialRemoteProblems rmt
 		Just "Cannot use this thirdparty-populated special remote as a git remote"
 	| otherwise = Nothing
 
--- Downloads the Manifest, or if it does not exist, returns an empty
--- Manifest.
+-- Downloads the Manifest when present in the remote. When not present,
+-- returns an empty Manifest.
+downloadManifestWhenPresent :: Remote -> Annex Manifest
+downloadManifestWhenPresent rmt = fromMaybe mempty <$> downloadManifest rmt
+
+-- Downloads the Manifest, or fails if the remote does not contain it.
+downloadManifestOrFail :: Remote -> Annex Manifest
+downloadManifestOrFail rmt =
+	maybe (giveup "No git repository found in this remote.") return
+		=<< downloadManifest rmt
+
+-- Downloads the Manifest or Nothing if the remote does not contain a
+-- manifest.
 --
 -- Throws errors if the remote cannot be accessed or the download fails,
 -- or if the manifest file cannot be parsed.
---
--- This downloads the manifest to a temporary file, rather than using
--- the usual Annex.Transfer.download. The content of manifests is not
--- stable, and so it needs to re-download it fresh every time.
-downloadManifest :: Remote -> Annex Manifest
+downloadManifest :: Remote -> Annex (Maybe Manifest)
 downloadManifest rmt = ifM (Remote.checkPresent rmt mk)
+	-- Downloads to a temporary file, rather than using
+	-- the usual Annex.Transfer.download. The content of manifests is
+	-- not stable, and so it needs to re-download it fresh every time.
 	( withTmpFile "GITMANIFEST" $ \tmp tmph -> do
 		liftIO $ hClose tmph
 		_ <- Remote.retrieveKeyFile rmt mk
@@ -552,10 +566,11 @@ downloadManifest rmt = ifM (Remote.checkPresent rmt mk)
 			nullMeterUpdate Remote.NoVerify
 		(outks, inks) <- partitionEithers . map parseline . B8.lines
 			<$> liftIO (B.readFile tmp)
-		mkManifest
+		m <- mkManifest
 			<$> checkvalid [] inks
 			<*> checkvalid [] outks
-	, return mempty
+		return (Just m)
+	, return Nothing
 	)
   where
 	mk = genManifestKey (Remote.uuid rmt)
