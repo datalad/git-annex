@@ -528,14 +528,18 @@ checkBackendRemote key remote ai localcopy =
 	checkBackendOr (badContentRemote remote localcopy) key localcopy ai
 
 checkBackendOr :: (Key -> Annex String) -> Key -> RawFilePath -> ActionItem -> Annex Bool
-checkBackendOr bad key file ai = do
-	ok <- verifyKeyContent' key file
-	unless ok $ do
-		msg <- bad key
-		warning $ actionItemDesc ai
-			<> ": Bad file content; "
-			<> UnquotedString msg
-	return ok
+checkBackendOr bad key file ai =
+	ifM (Annex.getRead Annex.fast)
+		( return True
+		, do
+			ok <- verifyKeyContent' key file
+			unless ok $ do
+				msg <- bad key
+				warning $ actionItemDesc ai
+					<> ": Bad file content; "
+					<> UnquotedString msg
+			return ok
+		)
 
 {- Check, if there are InodeCaches recorded for a key, that one of them
  - matches the object file. There are situations where the InodeCache
