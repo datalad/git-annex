@@ -362,7 +362,6 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexStopCommand :: Maybe String
 	, remoteAnnexSpeculatePresent :: Bool
 	, remoteAnnexBare :: Maybe Bool
-	, remoteAnnexAllowEncryptedGitRepo :: Bool
 	, remoteAnnexRetry :: Maybe Integer
 	, remoteAnnexForwardRetry :: Maybe Integer
 	, remoteAnnexRetryDelay :: Maybe Seconds
@@ -374,6 +373,8 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBwLimitDownload :: Maybe BwRate
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
 	, remoteAnnexConfigUUID :: Maybe UUID
+	, remoteAnnexMaxGitBundles :: Int
+	, remoteAnnexAllowEncryptedGitRepo :: Bool
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
@@ -434,8 +435,6 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexSpeculatePresent = 
 			getbool "speculate-present" False
 		, remoteAnnexBare = getmaybebool "bare"
-		, remoteAnnexAllowEncryptedGitRepo = 
-			getbool "allow-encrypted-gitrepo" False
 		, remoteAnnexRetry = getmayberead "retry"
 		, remoteAnnexForwardRetry = getmayberead "forward-retry"
 		, remoteAnnexRetryDelay = Seconds
@@ -480,6 +479,10 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexDdarRepo = getmaybe "ddarrepo"
 		, remoteAnnexHookType = notempty $ getmaybe "hooktype"
 		, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
+		, remoteAnnexMaxGitBundles = 
+			fromMaybe 100 (getmayberead  "max-git-bundles")
+		, remoteAnnexAllowEncryptedGitRepo = 
+			getbool "allow-encrypted-gitrepo" False
 		}
   where
 	getbool k d = fromMaybe d $ getmaybebool k

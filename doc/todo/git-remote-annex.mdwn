@@ -19,8 +19,6 @@ This is implememented and working. Remaining todo list for it:
 
 * Test incremental pushes that don't fast-forward.
 
-* Support max-bundles config
-
 * Cloning from an annex:: url with importtree=yes doesn't work
   (with or without exporttree=yes). This is because the ContentIdentifier
   db is not populated.
