@@ -23,6 +23,7 @@ import qualified Annex.SpecialRemote as SpecialRemote
 import qualified Annex.Branch
 import qualified Types.Remote as Remote
 import qualified Logs.Remote
+import Remote.Helper.Encryptable (parseEncryptionMethod)
 import Annex.Transfer
 import Backend.GitRemoteAnnex
 import Config
@@ -32,6 +33,7 @@ import Types.ProposedAccepted
 import Types.Export
 import Types.GitConfig
 import Types.Difference
+import Types.Crypto
 import Git.Types
 import Logs.Difference
 import Annex.Init
@@ -558,8 +560,21 @@ parseManifest b =
 checkSpecialRemoteProblems :: Remote -> Maybe String
 checkSpecialRemoteProblems rmt
 	| Remote.thirdPartyPopulated (Remote.remotetype rmt) =
-		Just "Cannot use this thirdparty-populated special remote as a git remote"
+		Just $ "Cannot use this thirdparty-populated special"
+			++ " remote as a git remote."
+	| importTree (Remote.config rmt) = 
+		Just $ "Using importtree=yes special remotes as git remotes"
+			++ " is not yet supported."
+	| parseEncryptionMethod (unparsedRemoteConfig (Remote.config rmt)) /= Right NoneEncryption
+		&& not (remoteAnnexAllowEncryptedGitRepo (Remote.gitconfig rmt)) =
+			Just $ "Using an encrypted special remote as a git"
+				++ " remote makes it impossible to clone"
+				++ " from it. If you will never need to"
+				++ " clone from this remote, set: git config "
+				++ decodeBS allowencryptedgitrepo ++ " true"
 	| otherwise = Nothing
+  where
+	ConfigKey allowencryptedgitrepo = remoteAnnexConfig rmt "allow-encrypted-gitrepo"
 
 -- Downloads the Manifest when present in the remote. When not present,
 -- returns an empty Manifest.

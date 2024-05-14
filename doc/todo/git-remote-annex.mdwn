@@ -1,5 +1,5 @@
-git-remote-annex will be a program that allows push/pull of a git
-repository to any git-annex special remote.
+git-remote-annex will be a program that allows push/pull/clone of a git
+repository to many types of git-annex special remote.
 
 This is a redesign and reimplementation of git-remote-datalad-annex. 
 It will be a safer implementation, will support incremental pushes, and
@@ -23,14 +23,20 @@ This is implememented and working. Remaining todo list for it:
 * Need to mention git-remote-annex in special remotes page, and perhaps
   write a tip for it. Also link to it from git-annex man page.
 
-* initremote could optionally configure the url to a special remote
-  to an annex:: url. This would make it easier to use git-remote-annex,
-  since the user would not need to set up the url themselves.
-  (Also it would then avoid setting `skipFetchAll = true`)
+* It would be nice if git-annex could generate an annex:: url
+  for a special remote and show it to the user, eg when 
+  they have set the shorthand "annex::" url, so they know the full url.
+  `git-annex info $remote` could also display it.
+  Currently, the user has to remember how the special remote was
+  configured and replicate it all in the url.
 
-* Prevent using with remotes that are encrypted using a cipher
-  stored in the repo. Chicken and egg problem cloning from
-  such a remote. Maybe allow advanced users to force it?
+  There are some difficulties to doing this, including that
+  RemoteConfig can have hidden fields that should be omitted.
+
+* initremote/enableremote could have an option that configures the url to a
+  special remote to a annex:: url. This would make it easier to use
+  git-remote-annex, since the user would not need to set up the url
+  themselves. (Also it would then avoid setting `skipFetchAll = true`)
 
 * Improve recovery from interrupted push by using outManifest to clean up
   after it. (Requires populating outManifest.)
@@ -46,18 +52,6 @@ This is implememented and working. Remaining todo list for it:
   special remote.
   `datalad-annex::https://example.com?type=web&url={noquery}`
   Supporting something like this would be good.
-
-* It would be nice if git-annex could generate an annex:: url
-  for a special remote and show it to the user, eg when 
-  they have set the shorthand "annex::" url, so they know the full url.
-  `git-annex info $remote` could also display it.
-  Currently, the user has to remember how the special remote was
-  configured and replicate it all in the url.
-
-  There are some difficulties to doing this, including that
-  RemoteConfig can have hidden fields that should be omitted,
-  and that some, like type=directory, remove some configs
-  (eg directory=) in their setup action.
 
 * Improve behavior in push races. A race can overwrite a change
   to the MANIFEST and lose work that was pushed from the other repo.
@@ -101,3 +95,4 @@ This is implememented and working. Remaining todo list for it:
   Also, when the remote uses importree=yes, pushing to it updates
   content identifiers, which currently get recorded in the git-annex
   branch. It would be good to avoid that being written as well.
+

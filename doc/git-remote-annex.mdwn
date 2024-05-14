@@ -12,11 +12,6 @@ This is a git remote helper program that allows git to clone,
 pull and push from a git repository that is stored in a git-annex
 special remote.
 
-It can be used with any special remote except those that use
-encryption=shared or encryption=hybrid. (Since those types of encryption
-rely on a cipher that is checked into the git repository, cloning from
-such a special remote would present a chicken and egg problem.)
-
 The format of the remote URL is "annex::" followed by the UUID of the
 special remote, and then followed by all of the configuration parameters of
 the special remote.

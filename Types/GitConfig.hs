@@ -362,6 +362,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexStopCommand :: Maybe String
 	, remoteAnnexSpeculatePresent :: Bool
 	, remoteAnnexBare :: Maybe Bool
+	, remoteAnnexAllowEncryptedGitRepo :: Bool
 	, remoteAnnexRetry :: Maybe Integer
 	, remoteAnnexForwardRetry :: Maybe Integer
 	, remoteAnnexRetryDelay :: Maybe Seconds
@@ -430,8 +431,11 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
 		, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
 		, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
-		, remoteAnnexSpeculatePresent = getbool "speculate-present" False
+		, remoteAnnexSpeculatePresent = 
+			getbool "speculate-present" False
 		, remoteAnnexBare = getmaybebool "bare"
+		, remoteAnnexAllowEncryptedGitRepo = 
+			getbool "allow-encrypted-gitrepo" False
 		, remoteAnnexRetry = getmayberead "retry"
 		, remoteAnnexForwardRetry = getmayberead "forward-retry"
 		, remoteAnnexRetryDelay = Seconds
