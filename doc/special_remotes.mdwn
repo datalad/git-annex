@@ -5,8 +5,7 @@ directory.
 
 But, git-annex also extends git's concept of remotes, with these special
 types of remotes. These can be used by git-annex to store and retrieve
-the content of files. They cannot be used by other git commands, and
-the git history is not stored in them.
+the content of files.
 
 * [[adb]] (for Android devices)
 * [[Amazon_Glacier|glacier]]
@@ -94,15 +93,25 @@ To initialize a new special remote, use
 the special remote you want to use for details about configuration and
 examples of how to initremote it.
 
-Once a special remote has been initialize, other clones of the repository can
+Once a special remote has been initialized, other clones of the repository can
 also enable it, by using [[git-annex enableremote|git-annex-enableremote]]
 with the same name that was used to initialize it. (Run the command without
 any name to get a list of available special remotes.)
 
 Initializing or enabling a special remote adds it as a remote of your git
-repository. You can't use git commands like `git pull` with the remote
-(usually, there are exceptions like [[git-lfs]]), but you can use git-annex
-commands.
+repository.
+
+## Storing a git repository in a special remote
+
+Most special remotes do not include a clone of the git repository
+by default, so you can't use commands like `git push` and `git pull`
+with them. (There are some exceptions like [[git-lfs]].)
+
+But it is possible to store a git repository in many special remotes,
+using the [[git-remote-annex]] command. This involves configuring
+the remote with an "annex::" url. It's even possible to `git clone`
+from a special remote using such an url. See the documentation of
+[[git-remote-annex]] for details.
 
 ## Unused content on special remotes
 
