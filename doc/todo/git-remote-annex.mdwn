@@ -19,7 +19,7 @@ This is implememented and working. Remaining todo list for it:
   db is not populated.
 
 * Need to mention git-remote-annex in special remotes page, and perhaps
-  write a tip for it. Also link to it from git-annex man page.
+  write a tip for it.
 
 * It would be nice if git-annex could generate an annex:: url
   for a special remote and show it to the user, eg when 

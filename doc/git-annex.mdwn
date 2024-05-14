@@ -2215,6 +2215,10 @@ More git-annex documentation is available on its web site,
 If git-annex is installed from a package, a copy of its documentation
 should be included, in, for example, `/usr/share/doc/git-annex/`.
 
+* [[git-annex-shell]](1)
+* [[git-remote-annex]](1)
+* [[git-remote-tor-annex]](1)
+
 # AUTHOR
 
 Joey Hess <id@joeyh.name>
