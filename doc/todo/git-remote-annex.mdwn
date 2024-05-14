@@ -10,9 +10,22 @@ will be available to users who don't use datalad.
 
 This is implememented and working. Remaining todo list for it:
 
-* Test pushes that delete branches.
+* Bug: Problem with forced push:
 
-* Test incremental pushes that don't fast-forward.
+	joey@darkstar:~/tmp/bench5/a#ook>git push d ook --force
+	fatal: bad revision 'refs/namespaces/git-remote-annex/d5a263c6-1c28-432a-a161-914476ae5390/refs/heads/git-annex'
+	Push failed (user error (git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","bundle","create","--quiet","/home/joey/tmp/GITBUNDLE2690124-1","--stdin"] exited 128))
+	warning: helper reported unexpected status of push
+	Everything up-to-date
+
+  This was preceeded by pushing the git-annex branch and master,
+  then making 3 commits and pushing each of them in turn.
+  Then reset back one commit, try to push (which fails as
+  non-fast-forward), and force push as shown then fails.
+
+  So the problem is not the forced push itself, which works
+  if a non-forced push is not tried before it, but something 
+  with that specific situation.
 
 * Cloning from an annex:: url with importtree=yes doesn't work
   (with or without exporttree=yes). This is because the ContentIdentifier
