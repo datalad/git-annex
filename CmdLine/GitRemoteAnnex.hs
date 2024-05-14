@@ -144,7 +144,7 @@ list st rmt forpush = do
 	-- was listed. This is necessary in order for a full repush to know
 	-- what to push.
 	when forpush $
-		updateTrackingRefs rmt trackingrefmap
+		updateTrackingRefs True rmt trackingrefmap
 
 	-- Respond to git with a list of refs.
 	liftIO $ do
@@ -198,7 +198,7 @@ push :: State -> Remote -> [String] -> Annex ([String], State)
 push st rmt ls = do
 	let (refspecs, ls') = collectRefSpecs ls
 	(responses, trackingrefs) <- calc refspecs ([], trackingRefs st)
-	updateTrackingRefs rmt trackingrefs
+	updateTrackingRefs False rmt trackingrefs
 	(ok, st') <- if M.null trackingrefs
 		then pushEmpty st rmt
 		else if any forcedPush refspecs
@@ -211,7 +211,7 @@ push st rmt ls = do
 			return (ls', st' { trackingRefs = trackingrefs })
 		else do
 			-- Restore the old tracking refs 
-			updateTrackingRefs rmt (trackingRefs st)
+			updateTrackingRefs True rmt (trackingRefs st)
 			sendresponses $
 				map (const "error push failed") refspecs
 			return (ls', st')
@@ -835,15 +835,17 @@ toTrackingRef rmt (Ref r) = Ref $ trackingRefPrefix rmt <> r
 fromTrackingRef :: Remote -> Ref -> Ref
 fromTrackingRef rmt = Git.Ref.removeBase (decodeBS (trackingRefPrefix rmt))
 
--- Update the tracking refs to be those in the map, and no others. 
-updateTrackingRefs :: Remote -> M.Map Ref Sha -> Annex ()
-updateTrackingRefs rmt new = do
+-- Update the tracking refs to be those in the map.
+-- When deleteold is set, any other tracking refs are deleted.
+updateTrackingRefs :: Bool -> Remote -> M.Map Ref Sha -> Annex ()
+updateTrackingRefs deleteold rmt new = do
 	old <- inRepo $ Git.Ref.forEachRef 
 		[Param (decodeBS (trackingRefPrefix rmt))]
 
 	-- Delete all tracking refs that are not in the map.
-	forM_ (filter (\p -> M.notMember (fst p) new) old) $ \(s, r) ->
-		inRepo $ Git.Ref.delete s r
+	when deleteold $
+		forM_ (filter (\p -> M.notMember (fst p) new) old) $ \(s, r) ->
+			inRepo $ Git.Ref.delete s r
 	
 	-- Update all changed tracking refs.
 	let oldmap = M.fromList (map (\(s, r) -> (r, s)) old)
