@@ -220,6 +220,7 @@ data KeyVariety
 	| URLKey
 	| VURLKey
 	| GitBundleKey
+	| GitManifestKey
 	-- A key that is handled by some external backend.
 	| ExternalKey S.ByteString HasExt
  	-- Some repositories may contain keys of other varieties,
@@ -255,6 +256,7 @@ hasExt WORMKey = False
 hasExt URLKey = False
 hasExt VURLKey = False
 hasExt GitBundleKey = False
+hasExt GitManifestKey = False
 hasExt (ExternalKey _ (HasExt b)) = b
 hasExt (OtherKey s) = (snd <$> S8.unsnoc s) == Just 'E'
 
@@ -285,6 +287,7 @@ formatKeyVariety v = case v of
 	URLKey -> "URL"
 	VURLKey -> "VURL"
 	GitBundleKey -> "GITBUNDLE"
+	GitManifestKey -> "GITMANIFEST"
 	ExternalKey s e -> adde e ("X" <> s)
 	OtherKey s -> s
   where

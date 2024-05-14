@@ -10,11 +10,6 @@ will be available to users who don't use datalad.
 
 This is implememented and working. Remaining todo list for it:
 
-* git-annex unused --from remote should not treat git manifest and bundle
-  keys as unused, since that could lead to data loss. It's fine for
-  git-annex unused on the local repo to treat those as unused since they're
-  only a local cache.
-
 * Test pushes that delete branches.
 
 * Test incremental pushes that don't fast-forward.

@@ -14,6 +14,7 @@ module Backend.GitRemoteAnnex (
 	backends,
 	genGitBundleKey,
 	genManifestKey,
+	isGitRemoteAnnexKey,
 ) where
 
 import Annex.Common
@@ -24,9 +25,10 @@ import Utility.Metered
 import qualified Backend.Hash as Hash
 
 import qualified Data.ByteString.Short as S
+import qualified Data.ByteString.Char8 as B8
 
 backends :: [Backend]
-backends = [gitbundle]
+backends = [gitbundle, gitmanifest]
 
 gitbundle :: Backend
 gitbundle = Backend
@@ -42,6 +44,19 @@ gitbundle = Backend
 	, isCryptographicallySecure = Hash.cryptographicallySecure hash
 	, isCryptographicallySecureKey = const $ pure $
 		Hash.cryptographicallySecure hash
+	}
+
+gitmanifest :: Backend
+gitmanifest = Backend
+	{ backendVariety = GitManifestKey
+	, genKey = Nothing
+	, verifyKeyContent = Nothing
+	, verifyKeyContentIncrementally = Nothing
+	, canUpgradeKey = Nothing
+	, fastMigrate = Nothing
+	, isStableKey = const True
+	, isCryptographicallySecure = False
+	, isCryptographicallySecureKey = const $ pure False
 	}
 
 -- git bundle keys use the sha256 hash.
@@ -72,5 +87,18 @@ genGitBundleKey remoteuuid file meterupdate = do
 genManifestKey :: UUID -> Key
 genManifestKey u = mkKey $ \kd -> kd
 	{ keyName = S.toShort (fromUUID u)
-	, keyVariety = OtherKey "GITMANIFEST"
+	, keyVariety = GitManifestKey
 	}
+
+{- Is the key a manifest or bundle key that belongs to the special remote
+ - with this uuid? -}
+isGitRemoteAnnexKey :: UUID -> Key -> Bool
+isGitRemoteAnnexKey u k = 
+	case fromKey keyVariety k of
+		GitBundleKey -> sameuuid $
+			-- Remove the checksum that comes after the UUID.
+			B8.dropEnd 1 . B8.dropWhileEnd (/= '-')
+		GitManifestKey -> sameuuid id
+		_ -> False
+  where
+	sameuuid f = fromUUID u == f (S.fromShort (fromKey keyName k))
