@@ -16,6 +16,15 @@ This is implememented and working. Remaining todo list for it:
   (with or without exporttree=yes). This is because the ContentIdentifier
   db is not populated.
 
+* Improve recovery from interrupted push by using outManifest to clean up
+  after it. (Requires populating outManifest.)
+
+* See XXX in uploadManifest about recovering from a situation
+  where the remote is left with a deleted manifest when a push
+  is interrupted part way through. This should be recoverable
+  by caching the manifest locally and re-uploading it when
+  the remote has no manifest or prompting the user to merge and re-push.
+
 * It would be nice if git-annex could generate an annex:: url
   for a special remote and show it to the user, eg when 
   they have set the shorthand "annex::" url, so they know the full url.
@@ -30,15 +39,6 @@ This is implememented and working. Remaining todo list for it:
   special remote to a annex:: url. This would make it easier to use
   git-remote-annex, since the user would not need to set up the url
   themselves. (Also it would then avoid setting `skipFetchAll = true`)
-
-* Improve recovery from interrupted push by using outManifest to clean up
-  after it. (Requires populating outManifest.)
-
-* See XXX in uploadManifest about recovering from a situation
-  where the remote is left with a deleted manifest when a push
-  is interrupted part way through. This should be recoverable
-  by caching the manifest locally and re-uploading it when
-  the remote has no manifest or prompting the user to merge and re-push.
 
 * datalad-annex supports cloning from the web special remote,
   using an url that contains the result of pushing to eg, a directory
