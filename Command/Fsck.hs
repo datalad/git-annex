@@ -504,16 +504,19 @@ checkKeyUpgrade _ _ _ (AssociatedFile Nothing) =
 checkBackend :: Key -> KeyStatus -> AssociatedFile -> Annex Bool
 checkBackend key keystatus afile = do
 	content <- calcRepo (gitAnnexLocation key)
-	ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
-		( nocheck
-		, do
-			mic <- withTSDelta (liftIO . genInodeCache content)
-			ifM (checkBackendOr badContent key content ai)
-				( do
-					checkInodeCache key content mic ai
-					return True
-				, return False
-				)
+	ifM (liftIO $ R.doesPathExist content)
+		( ifM (pure (isKeyUnlockedThin keystatus) <&&> (not <$> isUnmodified key content))
+			( nocheck
+			, do
+				mic <- withTSDelta (liftIO . genInodeCache content)
+				ifM (checkBackendOr badContent key content ai)
+					( do
+						checkInodeCache key content mic ai
+						return True
+					, return False
+					)
+			)
+		, nocheck
 		)
   where
 	nocheck = return True
@@ -525,14 +528,18 @@ checkBackendRemote key remote ai localcopy =
 	checkBackendOr (badContentRemote remote localcopy) key localcopy ai
 
 checkBackendOr :: (Key -> Annex String) -> Key -> RawFilePath -> ActionItem -> Annex Bool
-checkBackendOr bad key file ai = do
-	ok <- verifyKeyContent' key file
-	unless ok $ do
-		msg <- bad key
-		warning $ actionItemDesc ai
-			<> ": Bad file content; "
-			<> UnquotedString msg
-	return ok
+checkBackendOr bad key file ai =
+	ifM (Annex.getRead Annex.fast)
+		( return True
+		, do
+			ok <- verifyKeyContent' key file
+			unless ok $ do
+				msg <- bad key
+				warning $ actionItemDesc ai
+					<> ": Bad file content; "
+					<> UnquotedString msg
+			return ok
+		)
 
 {- Check, if there are InodeCaches recorded for a key, that one of them
  - matches the object file. There are situations where the InodeCache

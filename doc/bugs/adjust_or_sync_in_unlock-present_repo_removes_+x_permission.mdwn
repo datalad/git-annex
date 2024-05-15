@@ -1,0 +1,34 @@
+It seems that performing `git annex adjust --unlock-present` or `sync` 
+will remove the +x permission from files.
+
+Steps to reproduce:
+
+$ mkdir /tmp/ga; cd /tmp/ga; git init ; git annex init
+$ touch a.txt s.sh
+$ chmod +x s.sh
+$ git annex add . && git annex sync
+$ stat -Lc%A s.sh
+-r-xr-xr-x
+$ git annex adjust --unlock-present
+$ stat -c%A s.sh
+-rw-r--r--
+
+The permission is removed also after a sync, but only in case other 
+files have been changed (and adjust called behind the scenes):
+
+$ chmod +x s.sh
+$ git annex sync
+$ stat -c%A s.sh
+-rwxr-xr-x
+$ git annex drop --force a.txt
+$ stat -c%A s.sh
+-rwxr-xr-x
+$ git annex sync
+$ stat -c%A s.sh
+-rw-r--r--
+
+I'm using git-annex version: 10.20240430-g5b36e6b4 with 
+annex.alwayscommit = false.
+
+PS: git-annex is so solid that this is the first data-related issue I've 
+ever seen. Kudos!

@@ -26,7 +26,6 @@ import Types.Backend
 import Types.KeySource
 import Utility.Hash
 import Utility.Metered
-import qualified Utility.RawFilePath as R
 
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Short as S (toShort, fromShort)
@@ -129,14 +128,9 @@ keyValueE hash source meterupdate =
 
 checkKeyChecksum :: (Key -> String -> Bool) -> Hash -> Key -> RawFilePath -> Annex Bool
 checkKeyChecksum issame hash key file = catchIOErrorType HardwareFault hwfault $ do
-	fast <- Annex.getRead Annex.fast
-	exists <- liftIO $ R.doesPathExist file
-	case (exists, fast) of
-		(True, False) -> do
-			showAction (UnquotedString descChecksum)
-			issame key 
-				<$> hashFile hash file nullMeterUpdate
-		_ -> return True
+	showAction (UnquotedString descChecksum)
+	issame key 
+		<$> hashFile hash file nullMeterUpdate
   where
 	hwfault e = do
 		warning $ UnquotedString $ "hardware fault: " ++ show e
