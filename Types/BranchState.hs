@@ -36,7 +36,10 @@ data BranchState = BranchState
 	-- process need to be noticed while the current process is running?
 	-- (This makes the journal always be read, and avoids using the
 	-- cache.)
+	, alternateJournal :: Maybe RawFilePath
+	-- ^ use this directory for all journals, rather than the
+	-- gitAnnexJournalDir and gitAnnexPrivateJournalDir.
 	}
 
 startBranchState :: BranchState
-startBranchState = BranchState False False False [] [] [] False
+startBranchState = BranchState False False False [] [] [] False Nothing

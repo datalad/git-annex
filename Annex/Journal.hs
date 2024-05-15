@@ -7,7 +7,7 @@
  - All files in the journal must be a series of lines separated by
  - newlines.
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -23,6 +23,8 @@ import qualified Git
 import Annex.Perms
 import Annex.Tmp
 import Annex.LockFile
+import Annex.BranchState
+import Types.BranchState
 import Utility.Directory.Stream
 import qualified Utility.RawFilePath as R
 
@@ -82,9 +84,10 @@ privateUUIDsKnown' = not . S.null . annexPrivateRepos . Annex.gitconfig
  -}
 setJournalFile :: Journalable content => JournalLocked -> RegardingUUID -> RawFilePath -> content -> Annex ()
 setJournalFile _jl ru file content = withOtherTmp $ \tmp -> do
+	st <- getState
 	jd <- fromRepo =<< ifM (regardingPrivateUUID ru)
-		( return gitAnnexPrivateJournalDir
-		, return gitAnnexJournalDir
+		( return (gitAnnexPrivateJournalDir st)
+		, return (gitAnnexJournalDir st)
 		)
 	-- journal file is written atomically
 	let jfile = journalFile file
@@ -106,9 +109,10 @@ newtype AppendableJournalFile = AppendableJournalFile (RawFilePath, RawFilePath)
  - branch. -}
 checkCanAppendJournalFile :: JournalLocked -> RegardingUUID -> RawFilePath -> Annex (Maybe AppendableJournalFile)
 checkCanAppendJournalFile _jl ru file = do
+	st <- getState
 	jd <- fromRepo =<< ifM (regardingPrivateUUID ru)
-		( return gitAnnexPrivateJournalDir
-		, return gitAnnexJournalDir
+		( return (gitAnnexPrivateJournalDir st)
+		, return (gitAnnexJournalDir st)
 		)
 	let jfile = jd P.</> journalFile file
 	ifM (liftIO $ R.doesPathExist jfile)
@@ -176,14 +180,12 @@ data GetPrivate = GetPrivate Bool
  -}
 getJournalFileStale :: GetPrivate -> RawFilePath -> Annex JournalledContent
 getJournalFileStale (GetPrivate getprivate) file = do
-	-- Optimisation to avoid a second MVar access.
 	st <- Annex.getState id
-	let g = Annex.repo st
 	liftIO $
 		if getprivate && privateUUIDsKnown' st
 		then do
-			x <- getfrom (gitAnnexJournalDir g)
-			getfrom (gitAnnexPrivateJournalDir g) >>= \case
+			x <- getfrom (gitAnnexJournalDir (Annex.branchstate st) (Annex.repo st))
+			getfrom (gitAnnexPrivateJournalDir (Annex.branchstate st) (Annex.repo st)) >>= \case
 				Nothing -> return $ case x of
 					Nothing -> NoJournalledContent
 					Just b -> JournalledContent b
@@ -193,7 +195,7 @@ getJournalFileStale (GetPrivate getprivate) file = do
 					-- happens in a merge of two
 					-- git-annex branches.
 					Just x' -> x' <> y
-		else getfrom (gitAnnexJournalDir g) >>= return . \case
+		else getfrom (gitAnnexJournalDir (Annex.branchstate st) (Annex.repo st)) >>= return . \case
 			Nothing -> NoJournalledContent
 			Just b -> JournalledContent b
   where
@@ -219,18 +221,20 @@ discardIncompleteAppend v
 {- List of existing journal files in a journal directory, but without locking,
  - may miss new ones just being added, or may have false positives if the
  - journal is staged as it is run. -}
-getJournalledFilesStale :: (Git.Repo -> RawFilePath) -> Annex [RawFilePath]
+getJournalledFilesStale :: (BranchState -> Git.Repo -> RawFilePath) -> Annex [RawFilePath]
 getJournalledFilesStale getjournaldir = do
-	g <- gitRepo
-	fs <- liftIO $ catchDefaultIO [] $
-		getDirectoryContents $ fromRawFilePath (getjournaldir g)
+	st <- Annex.getState id
+	let d = getjournaldir (Annex.branchstate st) (Annex.repo st)
+	fs <- liftIO $ catchDefaultIO [] $ 
+		getDirectoryContents (fromRawFilePath d)
 	return $ filter (`notElem` [".", ".."]) $
 		map (fileJournal . toRawFilePath) fs
 
 {- Directory handle open on a journal directory. -}
-withJournalHandle :: (Git.Repo -> RawFilePath) -> (DirectoryHandle -> IO a) -> Annex a
+withJournalHandle :: (BranchState -> Git.Repo -> RawFilePath) -> (DirectoryHandle -> IO a) -> Annex a
 withJournalHandle getjournaldir a = do
-	d <- fromRepo getjournaldir
+	st <- Annex.getState id
+	let d = getjournaldir (Annex.branchstate st) (Annex.repo st)
 	bracket (opendir d) (liftIO . closeDirectory) (liftIO . a)
   where
 	-- avoid overhead of creating the journal directory when it already
@@ -239,9 +243,10 @@ withJournalHandle getjournaldir a = do
 		`catchIO` (const (createAnnexDirectory d >> opendir d))
 
 {- Checks if there are changes in the journal. -}
-journalDirty :: (Git.Repo -> RawFilePath) -> Annex Bool
+journalDirty :: (BranchState -> Git.Repo -> RawFilePath) -> Annex Bool
 journalDirty getjournaldir = do
-	d <- fromRawFilePath <$> fromRepo getjournaldir
+	st <- getState
+	d <- fromRawFilePath <$> fromRepo (getjournaldir st)
 	liftIO $ 
 		(not <$> isDirectoryEmpty d)
 			`catchIO` (const $ doesDirectoryExist d)

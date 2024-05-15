@@ -118,6 +118,7 @@ import Key
 import Types.UUID
 import Types.GitConfig
 import Types.Difference
+import Types.BranchState
 import qualified Git
 import qualified Git.Types as Git
 import Git.FilePath
@@ -528,15 +529,19 @@ gitAnnexTransferDir r =
 
 {- .git/annex/journal/ is used to journal changes made to the git-annex
  - branch -}
-gitAnnexJournalDir :: Git.Repo -> RawFilePath
-gitAnnexJournalDir r = 
-	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "journal"
+gitAnnexJournalDir :: BranchState -> Git.Repo -> RawFilePath
+gitAnnexJournalDir st r = P.addTrailingPathSeparator $ 
+	case alternateJournal st of
+		Nothing -> gitAnnexDir r P.</> "journal"
+		Just d -> d
 
 {- .git/annex/journal.private/ is used to journal changes regarding private
  - repositories. -}
-gitAnnexPrivateJournalDir :: Git.Repo -> RawFilePath
-gitAnnexPrivateJournalDir r = 
-	P.addTrailingPathSeparator $ gitAnnexDir r P.</> "journal-private"
+gitAnnexPrivateJournalDir :: BranchState -> Git.Repo -> RawFilePath
+gitAnnexPrivateJournalDir st r = P.addTrailingPathSeparator $
+	case alternateJournal st of
+		Nothing -> gitAnnexDir r P.</> "journal-private"
+		Just d -> d
 
 {- Lock file for the journal. -}
 gitAnnexJournalLock :: Git.Repo -> RawFilePath

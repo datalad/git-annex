@@ -21,6 +21,7 @@ import qualified Git.Remote
 import qualified Git.Remote.Remove
 import qualified Annex.SpecialRemote as SpecialRemote
 import qualified Annex.Branch
+import qualified Annex.BranchState
 import qualified Types.Remote as Remote
 import qualified Logs.Remote
 import Remote.Helper.Encryptable (parseEncryptionMethod)
@@ -32,6 +33,7 @@ import Types.RemoteConfig
 import Types.ProposedAccepted
 import Types.Export
 import Types.GitConfig
+import Types.BranchState
 import Types.Difference
 import Types.Crypto
 import Git.Types
@@ -44,6 +46,7 @@ import Annex.SpecialRemote.Config
 import Remote.List
 import Remote.List.Util
 import Utility.Tmp
+import Utility.Tmp.Dir
 import Utility.Env
 import Utility.Metered
 
@@ -485,10 +488,9 @@ withSpecialRemote cfg@(SpecialRemoteConfig {}) sab a = case specialRemoteName cf
 			| otherwise -> giveup $ "The uuid in the annex:: url does not match the uuid of the remote named " ++ remotename
 		-- When cloning from an annex:: url,
 		-- this is used to set up the origin remote.
-		Nothing -> (initremote remotename >>= a)
-			`finally` cleanupInitialization sab
-	Nothing -> inittempremote
-		`finally` cleanupInitialization sab
+		Nothing -> specialRemoteFromUrl sab 
+			(initremote remotename >>= a)
+	Nothing -> specialRemoteFromUrl sab inittempremote
   where
 	-- Initialize a new special remote with the provided configuration
 	-- and name.
@@ -869,27 +871,48 @@ getRepo = getEnv "GIT_WORK_TREE" >>= \case
 
 -- Records what the git-annex branch was at the beginning of this command.
 data StartAnnexBranch
-	= AnnexBranchExistedAlready Ref
-	| AnnexBranchCreatedEmpty Ref
+	= AnnexBranchExistedAlready Sha
+	| AnnexBranchCreatedEmpty Sha
 
+{- Run early in the command, gets the initial state of the git-annex
+ - branch.
+ -
+ - If the branch does not exist yet, it's created here. This is done
+ - because it's hard to avoid the branch being created by this command,
+ - so tracking the sha of the created branch allows cleaning it up later.
+ -}
 startAnnexBranch :: Annex StartAnnexBranch
 startAnnexBranch = ifM (null <$> Annex.Branch.siblingBranches)
 	( AnnexBranchCreatedEmpty <$> Annex.Branch.getBranch
 	, AnnexBranchExistedAlready <$> Annex.Branch.getBranch
 	)
 
--- This is run after git has used this process to fetch or push from a
--- special remote that was specified using a git-annex url. If the git
--- repository was not initialized for use by git-annex already, it is still
--- not initialized at this point.
+-- This runs an action that will set up a special remote that
+-- was specified using an annex url.
 --
+-- Setting up a special remote needs to write its config to the git-annex
+-- branch. And using a special remote may also write to the branch.
+-- But in this case, writes to the git-annex branch need to be avoided,
+-- so that cleanupInitialization can leave things in the right state.
+--
+-- So this prevents commits to the git-annex branch, and redirects all
+-- journal writes to a temporary directory, so that all writes
+-- to the git-annex branch by the action will be discarded.
+specialRemoteFromUrl :: StartAnnexBranch -> Annex a -> Annex a
+specialRemoteFromUrl sab a = withTmpDir "journal" $ \tmpdir -> do
+	Annex.overrideGitConfig $ \c -> 
+		c { annexAlwaysCommit = False }
+	Annex.BranchState.changeState $ \st -> 
+		st { alternateJournal = Just (toRawFilePath tmpdir) }
+	a `finally` cleanupInitialization sab
+
 -- If the git-annex branch did not exist when this command started,
--- the current contents of it were created in passing by this command,
--- which is hard to avoid. But if a git-annex branch is fetched from the
--- special remote and contains Differences, it would not be possible to
--- merge it into the git-annex branch that was created while running this
--- command. To avoid that problem, when the git-annex branch was created
--- at the start of this command, it's deleted.
+-- it was created empty by this command, and this command has avoided
+-- making any other commits to it. If nothing else has written to the
+-- branch while this command was running, the branch will be deleted.
+-- That allows for the git-annex branch that is fetched from the special
+-- remote to contain Differences, which would prevent it from being merged
+-- with the git-annex branch created by this command.
 --
 -- If there is still not a sibling git-annex branch, this deletes all annex
 -- objects for git bundles from the annex objects directory, and deletes
@@ -905,10 +928,11 @@ cleanupInitialization :: StartAnnexBranch -> Annex ()
 cleanupInitialization sab = do
 	case sab of
 		AnnexBranchExistedAlready _ -> noop
-		AnnexBranchCreatedEmpty _ -> do
-			inRepo $ Git.Branch.delete Annex.Branch.fullname
-			indexfile <- fromRepo gitAnnexIndex
-			liftIO $ removeWhenExistsWith R.removeLink indexfile
+		AnnexBranchCreatedEmpty r -> 
+			whenM ((r ==) <$> Annex.Branch.getBranch) $ do
+				inRepo $ Git.Branch.delete Annex.Branch.fullname
+				indexfile <- fromRepo gitAnnexIndex
+				liftIO $ removeWhenExistsWith R.removeLink indexfile
 	ifM Annex.Branch.hasSibling
 		( do
 			autoInitialize' (pure True) remoteList

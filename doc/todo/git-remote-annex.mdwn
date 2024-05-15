@@ -10,26 +10,6 @@ will be available to users who don't use datalad.
 
 This is implememented and working. Remaining todo list for it:
 
-* Cloning writes the new special remote config into remote.log,
-  and *deletes* other special remote configs.
-  
-  The remote config from the url may be slightly different as well
-  than the existing one. Cloning should not write it.
-
-* The race condition described in 
-  [[!commit 797f27ab0517e0021363791ff269300f2ba095a5]]
-  where before git-annex init is run in a repo,
-  using git-remote-annex and at the same time git-annex init can lose
-  changes that the latter command (and ones after it) write to the
-  git-annex branch.
-
-  This should be fixable by making git-remote-annex not write to the
-  git-annex branch, but to eg, a temporary journal directory.
-
-  Also, when the remote uses importtree=yes, pushing to it updates
-  content identifiers, which currently get recorded in the git-annex
-  branch. It would be good to avoid that being written as well.
-
 * Test incremental push edge cases involving checkprereq.
 
 * Cloning from an annex:: url with importtree=yes doesn't work

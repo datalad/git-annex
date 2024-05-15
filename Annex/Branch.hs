@@ -727,7 +727,8 @@ stageJournal :: JournalLocked -> Annex () -> Annex ()
 stageJournal jl commitindex = withIndex $ withOtherTmp $ \tmpdir -> do
 	prepareModifyIndex jl
 	g <- gitRepo
-	let dir = gitAnnexJournalDir g
+	st <- getState
+	let dir = gitAnnexJournalDir st g
 	(jlogf, jlogh) <- openjlog (fromRawFilePath tmpdir)
 	withHashObjectHandle $ \h ->
 		withJournalHandle gitAnnexJournalDir $ \jh ->
