@@ -1,6 +1,6 @@
 {- git remote stuff
  -
- - Copyright 2012-2021 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ module Git.Remote where
 import Common
 import Git
 import Git.Types
+import Git.Command
 
 import Data.Char
 import qualified Data.Map as M
@@ -22,6 +23,11 @@ import Network.URI
 #ifdef mingw32_HOST_OS
 import Git.FilePath
 #endif
+
+{- Lists all currently existing git remotes. -}
+listRemotes :: Repo -> IO [RemoteName]
+listRemotes repo = map decodeBS . S8.lines
+	<$> pipeReadStrict [Param "remote"] repo
 
 {- Is a git config key one that specifies the url of a remote? -}
 isRemoteUrlKey :: ConfigKey -> Bool

@@ -1,6 +1,6 @@
 {- git ref stuff
  -
- - Copyright 2011-2020 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -165,14 +165,32 @@ matchingUniq refs repo = nubBy uniqref <$> matching refs repo
 list :: Repo -> IO [(Sha, Ref)]
 list = matching' [] []
 
-{- Deletes a ref. This can delete refs that are not branches, 
- - which git branch --delete refuses to delete. -}
+{- Lists refs using for-each-ref.  -}
+forEachRef :: [CommandParam] -> Repo -> IO [(Sha, Branch)]
+forEachRef ps repo = map gen . S8.lines <$>
+	pipeReadStrict (Param "for-each-ref" : ps ++ [format]) repo
+  where
+	format = Param "--format=%(objectname) %(refname)"
+	gen l = let (r, b) = separate' (== fromIntegral (ord ' ')) l
+		in (Ref r, Ref b)
+
+{- Deletes a ref when it contains the specified sha. 
+ - This can delete refs that are not branches, which
+ - git branch --delete refuses to delete. -}
 delete :: Sha -> Ref -> Repo -> IO ()
 delete oldvalue ref = run
 	[ Param "update-ref"
 	, Param "-d"
 	, Param $ fromRef ref
 	, Param $ fromRef oldvalue
+	]
+
+{- Deletes a ref no matter what it contains. -}
+delete' :: Ref -> Repo -> IO ()
+delete' ref = run
+	[ Param "update-ref"
+	, Param "-d"
+	, Param $ fromRef ref
 	]
 
 {- Gets the sha of the tree a ref uses. 
@@ -191,6 +209,19 @@ tree (Ref ref) = extractSha <$$> pipeReadStrict
 		then ref
 		-- de-reference commit objects to the tree
 		else ref <> ":"
+
+{- Check if the first ref is an ancestor of the second ref. 
+ -
+ - Note that if the two refs point to the same commit, it is considered
+ - to be an ancestor of itself.
+ -}
+isAncestor :: Ref -> Ref -> Repo -> IO Bool
+isAncestor r1 r2 = runBool
+	[ Param "merge-base"
+	, Param "--is-ancestor"
+	, Param (fromRef r1)
+	, Param (fromRef r2)
+	]
 
 {- Checks if a String is a legal git ref name.
  -

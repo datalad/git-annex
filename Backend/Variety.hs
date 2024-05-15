@@ -18,12 +18,14 @@ import qualified Backend.External
 import qualified Backend.Hash
 import qualified Backend.WORM
 import qualified Backend.URL
+import qualified Backend.GitRemoteAnnex
 
 {- Regular backends. Does not include externals or VURL. -}
 regularBackendList :: [Backend]
 regularBackendList = Backend.Hash.backends 
 	++ Backend.WORM.backends 
 	++ Backend.URL.backends
+	++ Backend.GitRemoteAnnex.backends
 
 {- The default hashing backend. -}
 defaultHashBackend :: Backend

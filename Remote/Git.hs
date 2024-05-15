@@ -92,7 +92,7 @@ list :: Bool -> Annex [Git.Repo]
 list autoinit = do
 	c <- fromRepo Git.config
 	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
-	mapM (configRead autoinit) rs
+	mapM (configRead autoinit) (filter (not . isGitRemoteAnnex) rs)
   where
 	annexurl r = remoteConfig r "annexurl"
 	tweakurl c r = do
@@ -102,6 +102,9 @@ list autoinit = do
 			Just url -> inRepo $ \g ->
 				Git.Construct.remoteNamed n $
 					Git.Construct.fromRemoteLocation (Git.fromConfigValue url) False g
+
+isGitRemoteAnnex :: Git.Repo -> Bool
+isGitRemoteAnnex r = "annex::" `isPrefixOf` Git.repoLocation r
 
 {- Git remotes are normally set up using standard git commands, not
  - git-annex initremote and enableremote.

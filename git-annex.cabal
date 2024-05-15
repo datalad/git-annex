@@ -580,6 +580,7 @@ Executable git-annex
     Author
     Backend
     Backend.External
+    Backend.GitRemoteAnnex
     Backend.Hash
     Backend.URL
     Backend.Utilities
@@ -606,6 +607,7 @@ Executable git-annex
     CmdLine.GitAnnexShell.Fields
     CmdLine.AnnexSetter
     CmdLine.Option
+    CmdLine.GitRemoteAnnex
     CmdLine.GitRemoteTorAnnex
     CmdLine.Seek
     CmdLine.Usage
@@ -758,6 +760,7 @@ Executable git-annex
     Git.AutoCorrect
     Git.Branch
     Git.BuildVersion
+    Git.Bundle
     Git.CatFile
     Git.CheckAttr
     Git.CheckIgnore
@@ -939,6 +942,7 @@ Executable git-annex
     Types.Export
     Types.FileMatcher
     Types.GitConfig
+    Types.GitRemoteAnnex
     Types.Group
     Types.Import
     Types.IndexFiles

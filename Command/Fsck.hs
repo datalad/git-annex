@@ -38,6 +38,7 @@ import Utility.CopyFile
 import Git.FilePath
 import Utility.PID
 import Utility.InodeCache
+import Utility.Metered
 import Annex.InodeSentinal
 import qualified Database.Keys
 import qualified Database.Fsck as FsckDb
@@ -206,8 +207,7 @@ performRemote key afile numcopies remote =
 			)
 		, return Nothing
 		)
-	getfile' tmp = Remote.retrieveKeyFile remote key (AssociatedFile Nothing) (fromRawFilePath tmp) dummymeter (RemoteVerify remote)
-	dummymeter _ = noop
+	getfile' tmp = Remote.retrieveKeyFile remote key (AssociatedFile Nothing) (fromRawFilePath tmp) nullMeterUpdate (RemoteVerify remote)
 	getcheap tmp = case Remote.retrieveKeyFileCheap remote of
 		Just a -> isRight <$> tryNonAsync (a key afile (fromRawFilePath tmp))
 		Nothing -> return False

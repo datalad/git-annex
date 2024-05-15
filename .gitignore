@@ -13,6 +13,7 @@ Build/BuildVersion
 Build/MakeMans
 git-annex
 git-annex-shell
+git-remote-annex
 man
 git-union-merge
 git-union-merge.1

@@ -79,10 +79,6 @@ content of an annexed file remains unchanged.
   passing it to a shell script. These types of keys are distinct from URLs/URIs
   that may be attached to a key (using any backend) indicating the key's location
   on the web or in one of [[special_remotes]].
-* `GIT` -- This is used internally by git-annex when exporting trees
-  containing files stored in git, rather than git-annex. It represents a
-  git sha. This is never used for git-annex links, but information about
-  keys of this type is stored in the git-annex branch.
 
 ## external backends
 
@@ -99,6 +95,19 @@ Here's a list of external backends. Edit this page to add yours to the list.
 Like with git-annex's builtin backends, you can add "E" to the end of the
 name of an external backend, to get a version that includes the file
 extension in the key.
+
+## internal use backends
+
+Keys using these backends can sometimes be visible, but they are used by
+git-annex for its own purposes, and not for your annexed files.
+
+* `GIT` -- This is used internally by git-annex when exporting trees
+  containing files stored in git, rather than git-annex. It represents a
+  git sha. This is never used for git-annex links, but information about
+  keys of this type is stored in the git-annex branch.
+* `GITBUNDLE` and `GITMANIFEST` -- Used by [[git-remote-annex]] to store
+  a git repository in a special remote. See 
+  [[this_page|internals/git-remote-annex]] for details about these.
 
 ## notes
 

@@ -1,6 +1,6 @@
 {- git-annex main program dispatch
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import Network.Socket (withSocketsDo)
 
 import qualified CmdLine.GitAnnex
 import qualified CmdLine.GitAnnexShell
+import qualified CmdLine.GitRemoteAnnex
 import qualified CmdLine.GitRemoteTorAnnex
 import qualified Test
 import qualified Benchmark
@@ -35,6 +36,7 @@ main = sanitizeTopLevelExceptionMessages $ withSocketsDo $ do
   where
 	run ps n = case takeFileName n of
 		"git-annex-shell" -> CmdLine.GitAnnexShell.run ps
+		"git-remote-annex" -> CmdLine.GitRemoteAnnex.run ps
 		"git-remote-tor-annex" -> CmdLine.GitRemoteTorAnnex.run ps
 		_  -> CmdLine.GitAnnex.run Test.optParser Test.runner Benchmark.mkGenerator ps
 

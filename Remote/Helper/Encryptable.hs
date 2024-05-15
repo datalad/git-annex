@@ -14,6 +14,7 @@ module Remote.Helper.Encryptable (
 	encryptionAlreadySetup,
 	encryptionConfigParsers,
 	parseEncryptionConfig,
+	parseEncryptionMethod,
 	remoteCipher,
 	remoteCipher',
 	embedCreds,
@@ -85,7 +86,7 @@ encryptionFieldParser :: RemoteConfigFieldParser
 encryptionFieldParser = RemoteConfigFieldParser
 	{ parserForField = encryptionField
 	, valueParser = \v c -> Just . RemoteConfigValue
-		<$> parseEncryptionMethod (fmap fromProposedAccepted v) c
+		<$> parseEncryptionMethod' v c
 	, fieldDesc = FieldDesc "how to encrypt data stored in the special remote"
 	, valueDesc = Just $ ValueDesc $
 		intercalate " or " (M.keys encryptionMethods)
@@ -100,14 +101,18 @@ encryptionMethods = M.fromList
 	, ("sharedpubkey", SharedPubKeyEncryption)
 	]
 
-parseEncryptionMethod :: Maybe String -> RemoteConfig -> Either String EncryptionMethod
-parseEncryptionMethod (Just s) _ = case M.lookup s encryptionMethods of
-	Just em -> Right em
-	Nothing -> Left badEncryptionMethod
+parseEncryptionMethod :: RemoteConfig -> Either String EncryptionMethod
+parseEncryptionMethod c = parseEncryptionMethod' (M.lookup encryptionField c) c
+
+parseEncryptionMethod' :: Maybe (ProposedAccepted String) -> RemoteConfig -> Either String EncryptionMethod
+parseEncryptionMethod' (Just s) _ =
+	case M.lookup (fromProposedAccepted s) encryptionMethods of
+		Just em -> Right em
+		Nothing -> Left badEncryptionMethod
 -- Hybrid encryption is the default when a keyid is specified without
 -- an encryption field, or when there's a cipher already but no encryption
 -- field.
-parseEncryptionMethod Nothing c
+parseEncryptionMethod' Nothing c
 	| M.member (Accepted "keyid") c || M.member cipherField c = Right HybridEncryption
 	| otherwise = Left badEncryptionMethod
 
@@ -162,7 +167,7 @@ encryptionSetup c gc = do
 	maybe (genCipher pc gpgcmd) (updateCipher pc gpgcmd) (extractCipher pc)
   where
 	-- The type of encryption
-	encryption = parseEncryptionMethod (fromProposedAccepted <$> M.lookup encryptionField c) c
+	encryption = parseEncryptionMethod c
 	-- Generate a new cipher, depending on the chosen encryption scheme
 	genCipher pc gpgcmd = case encryption of
 		Right NoneEncryption -> return (c, NoEncryption)

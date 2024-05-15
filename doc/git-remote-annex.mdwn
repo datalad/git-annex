@@ -1,0 +1,71 @@
+# NAME
+
+git-remote-annex - remote helper program to store a git repository in a git-annex special remote
+
+# SYNOPSIS
+
+git fetch annex::uuid?param=value&param=value...
+
+# DESCRIPTION
+
+This is a git remote helper program that allows git to clone,
+pull and push from a git repository that is stored in a git-annex
+special remote.
+
+The format of the remote URL is "annex::" followed by the UUID of the
+special remote, and then followed by all of the configuration parameters of
+the special remote.
+
+For example, to clone from a directory special remote:
+
+    git clone annex::358ff77e-0bc3-11ef-bc49-872e6695c0e3?type=directory&encryption=none&directory=/mnt/foo/
+
+When configuring the url of an existing special remote, a
+shorter url of "annex::" is sufficient. For example:
+
+    git-annex initremote foo type=directory encryption=none directory=/mnt/foo
+    git config remote.foo.url annex::
+	git push foo master
+
+Configuring the url like that is automatically done when cloning from a
+special remote, but not by [[git-annex-initremote]](1) and
+[[git-annex-enableremote]](1).
+
+When a special remote needs some additional credentials to be provided,
+they are not included in the URL, and need to be provided when cloning from
+the special remote. That is typically done by setting environment
+variables. Some special remotes may also need environment variables to be
+set when pulling or pushing.
+
+The git repository is stored in the special remote using special annex objects
+with names starting with "GITMANIFEST--" and "GITBUNDLE--". For details about
+how the git repository is stored, see
+<https://git-annex.branchable.com/internals/git-remote-annex/>
+
+Pushes to a special remote are usually done incrementally. However,
+sometimes the whole git repository (but not the annex) needs to be
+re-uploaded. That is done when deleting a ref from the remote. It's also
+done when too many git bundles accumulate in the special remote, as
+configured by the `remote.<name>.annex-max-git-bundles` git config.
+
+Like any git repository, a git repository stored on a special remote can
+have conflicting things pushed to it from different places. This mostly
+works the same as any other git repository, eg a push that overwrites other
+work will be prevented unless forced. However, it is possible, when
+conflicting pushes are being done at the same time, for one of the pushes
+to be overwritten by the other one. In this sitiation, the push will appear
+to have succeeded, but pulling later will show the true situation.
+
+# SEE ALSO
+
+gitremote-helpers(1)
+
+[[git-annex]](1)
+
+[[git-annex-initremote]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

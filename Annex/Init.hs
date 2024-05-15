@@ -1,6 +1,6 @@
 {- git-annex repository initialization
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -12,6 +12,7 @@ module Annex.Init (
 	checkInitializeAllowed,
 	ensureInitialized,
 	autoInitialize,
+	autoInitialize',
 	isInitialized,
 	initialize,
 	initialize',
@@ -256,10 +257,13 @@ guardSafeToUseRepo a = ifM (inRepo Git.Config.checkRepoConfigInaccessible)
  - Checks repository version and handles upgrades too.
  -}
 autoInitialize :: Annex [Remote] -> Annex ()
-autoInitialize remotelist = getInitializedVersion >>= maybe needsinit checkUpgrade
+autoInitialize = autoInitialize' autoInitializeAllowed
+
+autoInitialize' :: Annex Bool -> Annex [Remote] -> Annex ()
+autoInitialize' check remotelist = getInitializedVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit =
-		whenM (initializeAllowed <&&> autoInitializeAllowed) $ do
+		whenM (initializeAllowed <&&> check) $ do
 			initialize Nothing Nothing
 			autoEnableSpecialRemotes remotelist
 

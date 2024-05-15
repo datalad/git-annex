@@ -1,0 +1,48 @@
+The [[git-remote-annex|/git-remote-annex]] command allows pushing a git
+repository to a special remote, and later cloning from it.
+
+This adds two new key types to git-annex, GITMANIFEST and a GITBUNDLE.
+
+GITMANIFEST--$UUID is the manifest for a git repository stored in the
+git-annex repository with that UUID.
+
+GITBUNDLE--$UUID-sha256 is a git bundle.
+
+# format of the manifest file
+
+An ordered list of bundle keys, one per line. 
+
+Additionally, there may be bundle keys that are prefixed with "-".
+These keys are not part of the current content of the git remote
+and are in the process of being deleted.
+
+(Lines end with unix `"\n"`, not `"\r\n"`.)
+
+# exporttree=yes remotes
+
+In an exporttree=yes remote, the GITMANIFEST and GITBUNDLE objects are
+stored in the remote, under the `.git/annex/objects/` path.
+
+# multiple GITMANIFEST files
+
+Usually there will only be one per special remote, but it's possible for
+multiple special remotes to point to the same object storage, and if so
+multiple GITMANIFEST objects can be stored.
+
+This is why the UUID of the special remote is included in the GITMANIFEST
+key, and in the annex:: uri.
+
+# manually cloning from these files
+
+If you are unable to use git-annex and need to clone a git repository
+stored in such a special remote, this procedure will work:
+
+* Find and download the GITMANIFEST
+* Download each listed GITBUNDLE
+* `git fetch` from each new bundle in order.
+   (Note that later bundles can update refs from the versions in previous
+   bundles.)
+
+When the special remote is encrypted, the GITMANIFEST and GITBUNDLE will
+also be encrypted. To decrypt those manually, see this
+[[fairly simple shell script using standard tools|tips/Decrypting_files_in_special_remotes_without_git-annex]].

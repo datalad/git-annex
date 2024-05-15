@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2016 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -34,6 +34,7 @@ import Logs.View (is_branchView)
 import Annex.BloomFilter
 import qualified Database.Keys
 import Annex.InodeSentinal
+import Backend.GitRemoteAnnex (isGitRemoteAnnexKey)
 
 import qualified Data.Map as M
 import qualified Data.ByteString as S
@@ -104,7 +105,8 @@ checkRemoteUnused remotename refspec = go =<< Remote.nameToUUID remotename
 		_ <- check "" (remoteUnusedMsg r remotename) (remoteunused u) 0
 		next $ return True
 	remoteunused u = loggedKeysFor u >>= \case
-		Just ks -> excludeReferenced refspec ks
+		Just ks -> filter (not . isGitRemoteAnnexKey u)
+			<$> excludeReferenced refspec ks
 		Nothing -> giveup "This repository is read-only."
 
 check :: String -> ([(Int, Key)] -> String) -> Annex [Key] -> Int -> Annex Int
