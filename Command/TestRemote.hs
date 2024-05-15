@@ -295,7 +295,9 @@ test runannex mkr mkk =
 		Nothing -> return True
 		Just b -> case Types.Backend.verifyKeyContent b of
 			Nothing -> return True
-			Just verifier -> verifier k (serializeKey' k)
+			Just verifier -> do
+				loc <- Annex.calcRepo (gitAnnexLocation k)
+				verifier k loc
 	get r k = logStatusAfter k $ getViaTmp (Remote.retrievalSecurityPolicy r) (RemoteVerify r) k (AssociatedFile Nothing) Nothing $ \dest ->
 		tryNonAsync (Remote.retrieveKeyFile r k (AssociatedFile Nothing) (fromRawFilePath dest) nullMeterUpdate (RemoteVerify r)) >>= \case
 			Right v -> return (True, v)
