@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2024-05-16T22:22:50Z"
+ content="""
+dang -- doing that dance of remove and re-enableremote actually addressed it (I did feel that we had similar case before) -- it removed duplicate entries in `remote.log`.
+
+and looking at https://github.com/OpenNeuroDatasets/ds000001/blob/git-annex/remote.log -- there is no duplicates.
+
+So it feels like it is just a matter of git-annex to be able to somehow trigger fixup for a user without needing to do the whole investigation and dance of remove/re-enableremote?  or at least to warn somehow whenever such a situation detected
+"""]]
