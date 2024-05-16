@@ -95,9 +95,10 @@ genManifestKey u = mkKey $ \kd -> kd
 isGitRemoteAnnexKey :: UUID -> Key -> Bool
 isGitRemoteAnnexKey u k = 
 	case fromKey keyVariety k of
-		GitBundleKey -> sameuuid $
+		GitBundleKey -> sameuuid $ \b ->
 			-- Remove the checksum that comes after the UUID.
-			B8.dropEnd 1 . B8.dropWhileEnd (/= '-')
+			let b' = B8.dropWhileEnd (/= '-') b
+			in B8.take (B8.length b' - 1) b'
 		GitManifestKey -> sameuuid id
 		_ -> False
   where
