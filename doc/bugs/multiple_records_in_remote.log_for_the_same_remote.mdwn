@@ -1,0 +1,72 @@
+### Please describe the problem.
+
+original issue: [https://github.com/datalad/datalad-fuse/issues/118](https://github.com/datalad/datalad-fuse/issues/118)
+
+I obtained unexpected result from 
+
+```shell
+(git)smaug:/mnt/btrfs/datasets/datalad/crawl/openneuro/ds000001[master]git
+$> git annex whereis sub-02/anat/sub-02_inplaneT2.nii.gz
+whereis sub-02/anat/sub-02_inplaneT2.nii.gz (2 copies)
+        8d2b6e96-ad81-44a5-99b4-0ec37d6b3800 -- s3-PUBLIC
+        b5dd2e3d-825f-4bc2-b719-cba1059f6bfc -- root@93184394ac19:/datalad/ds000001
+ok
+```
+
+giving no URLs, whenever I expected it to be autoenabled 
+
+```
+$> git annex info --autoenable
+        8d2b6e96-ad81-44a5-99b4-0ec37d6b3800 -- [s3-PUBLIC]
+```
+
+but overall `git annex info` not stating that it is enabled
+
+```
+$> git annex info | grep s3-PU
+        8d2b6e96-ad81-44a5-99b4-0ec37d6b3800 -- s3-PUBLIC
+        2.42 GB: 8d2b6e96-ad81-44a5-99b4-0ec37d6b3800 -- s3-PUBLIC
+```
+
+and looking to `.git/config` showed oddity -- it has different UUID!
+
+```
+$> grep -A2 s3-PUBLIC .git/config
+[remote "s3-PUBLIC"]
+        annex-s3 = true
+        annex-uuid = deaa691f-c824-4416-9bf8-a94a47dd31b5
+```
+
+and then looking at remote.log we see the mess:
+
+```
+$> git show git-annex:remote.log | grep s3-PUBLIC
+8d2b6e96-ad81-44a5-99b4-0ec37d6b3800 autoenable=true bucket=openneuro.org datacenter=US encryption=none exporttree=yes fileprefix=ds000001/ host=s3.amazonaws.com name=s3-PUBLIC partsize=1GiB port=80 public=yes publicurl=https://s3.amazonaws.com/openneuro.org storageclass=STANDARD type=S3 versioning=yes timestamp=1598041450.944011857s
+deaa691f-c824-4416-9bf8-a94a47dd31b5 autoenable=true bucket=openneuro.org datacenter=US encryption=none exporttree=yes fileprefix=ds000001/ host=s3.amazonaws.com name=s3-PUBLIC partsize=1GiB port=80 public=yes publicurl=http://openneuro.org.s3.amazonaws.com/ storageclass=STANDARD type=S3 versioning=yes timestamp=1541446534.498728751s
+deaa691f-c824-4416-9bf8-a94a47dd31b5 autoenable=true bucket=openneuro.org datacenter=US encryption=none exporttree=yes fileprefix=ds000001/ host=s3.amazonaws.com name=s3-PUBLIC partsize=1GiB port=80 public=yes publicurl=https://s3.amazonaws.com/openneuro.org storageclass=STANDARD type=S3 versioning=yes timestamp=1597693935.116974698s
+deaa691f-c824-4416-9bf8-a94a47dd31b5 autoenable=true bucket=openneuro.org datacenter=US encryption=none exporttree=yes fileprefix=ds000001/ host=s3.amazonaws.com name=s3-PUBLIC-unversioned partsize=1GiB port=80 public=yes publicurl=https://s3.amazonaws.com/openneuro.org storageclass=STANDARD type=S3 versioning=yes timestamp=1598041440.701349559s
+
+```
+
+`git annex fsck` happily completes and nothing complains about nothing.
+
+
+
+### What steps will reproduce the problem?
+
+dunno... the history
+
+repository is at http://github.com/OpenNeuroDatasets/ds000001 and it was in 30cf8f0cf99c9c98ab83ebca8d5c9708b563b2d4 Fri Aug 21 20:24:10 2020 +0000 when initial remote 8d2b6e96-ad81-44a5-99b4-0ec37d6b3800 was added . Actually by then there was already deaa691f-c824-4416-9bf8-a94a47dd31b5 but it was named differently -- `s3-PUBLIC-unversioned` . I just now spotted that it is there listed as well -- so multiple names for the same UUID. And multiple UUIDs for the same name...  May be OpenNeuro folks could shine more light on this situation.
+
+I would expect some warnings or even some fix by fsck in such a case.
+
+To mitigate I `git remove s3-PUBLIC` and then `git annex enableremote s3-PUBLIC` and `whereis` started to work.
+
+### What version of git-annex are you using? On what operating system?
+
+ATM 10.20240430+git26-g5f61667f27-1~ndall+1 but I guess it is unrelated.
+
+
+
+[[!meta author=yoh]]
+[[!tag projects/openneuro]]
