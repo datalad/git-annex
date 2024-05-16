@@ -10,6 +10,23 @@ will be available to users who don't use datalad.
 
 This is implememented and working. Remaining todo list for it:
 
+* A race between an incremental push and a full push can result in
+  a bundle that the incremental push is based on being deleted by the full
+  push, and then incremental push's manifest file being written later.
+  Which will prevent cloning or some pulls from working.
+
+  There is no way to prevent this race, but the problem can be avoided:
+  Make each full push also write to a fallback manifest file that is only
+  written by full pushes, not incremental pushes. When fetching the main
+  manifest file, always check that all bundles mentioned in it are still in
+  the remote. If any are missing, fetch and use the fallback manifest file
+  instead.
+
+  (The only other solution I can think of is to never delete old bundles,
+  except after some amount of time long enough that it credibly avoids
+  the race. But since a process could be suspended at any point and resumed
+  later, the race window could be arbitrarily wide.)
+
 * Test incremental push edge cases involving checkprereq.
 
 * Cloning from an annex:: url with importtree=yes doesn't work
