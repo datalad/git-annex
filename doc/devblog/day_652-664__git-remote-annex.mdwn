@@ -1,0 +1,47 @@
+The [Distribits](https://distribits.live/) conference was a wonderful
+chance to meet with many scientific users of git-annex and learn about
+amazing things they are doing with it.
+
+After giving [my talk](https://www.youtube.com/watch?v=pp8IeGXpRRI&list=PLEQHbPfpVqU6esVrgqjfYybY394XD2qf2&index=3),
+titled "git annex is complete, right?", it turned out (spoilers) to not be
+complete. Indeed, the
+[very next talk](https://www.youtube.com/watch?v=SQyfYzZbD2M&list=PLEQHbPfpVqU6esVrgqjfYybY394XD2qf2&index=4)
+gave me a big idea that I have been working on for the past several weeks
+and have merged into master today. Michael Hanke described his 
+[git-remote-datalad-annex](https://github.com/datalad/datalad-next/blob/main/datalad_next/gitremotes/datalad_annex.py)
+which lets git push, pull, and even clone from a git-annex special remote.
+
+I immediately saw that this would be better implemented in git-annex, which
+would let it use its internals rather than some of the hacky workarounds
+Michael needed. Also, I saw that git bundles were a much better data
+format to use, which would allow cheap incremental git pushes.
+
+At the Distribits hackathon, I got together with Michael and Timothy
+Sanders, and we thought through the data format to store on special remotes.
+We ended up with a quite simple data design, which can be used without
+git-annex if necessary. (See [[internals/git-remote-annex]].)
+
+Getting git bundles to work right, especially incremental bundles, and
+dealing with all the quirks of git's gitremote-helper interface turned out
+to be more challanging than I thought. I ended up spending a week
+implementing a 
+[prototype in shell script](http://source.git-annex.branchable.com/?p=source.git;a=blob;f=git-remote-annex.sh;h=2e818ed42016c7ea2044155d070a7901d34c75ba;hb=dfb09ad1ad99898591b50debebb4fb3d8215698b) 
+to work through all the details. Then I had to reimplement it all in Haskell,
+ending up with over 1000 lines of code.
+
+The result is the [[git-remote-annex]], which will ship in the next
+git-annex release. It should work with most types of special remotes,
+including exporttree=yes ones (but not yet importtree=yes). But I've only
+tested it on the directory special remote so far. It's really neat to be
+able to git clone a repository from so many places, as well as
+incrementally push changes.
+
+There is a [[todo/git-remote-annex]] todo page, of which a lot of the remainder
+is various race conditions when two people are pushing different things to the
+same special remote at the same time. At least some of those will be dealt
+with, for now I recommend only using git-remote-annex when you know you're the
+only one pushing to a special remote.
+
+This work was sponsored by Mark Reidenbach, Jake Vosloo, Lawrence Brogan,
+Graham Spencer, unqueued, and Erik Bjäreholt 
+[on Patreon](https://patreon.com/joeyh)
