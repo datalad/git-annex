@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Importing specific directories from sdcard and internal storage"
+ date="2024-05-19T08:08:46Z"
+ content="""
+Do I understand correctly, that if I want to import/sync specific directories from *both* sdcard and internal storage, I effectively **need to make two remotes** (one for the sdcard, one for the internal storage)? I tried with `androiddirectory=/`, then `git annex wanted thephone 'include=/storage/self/primary/DCIM and include=/storage/33A8-601A/DCIM'` (I guess a trailing `/*` would have been necessary in addition), but that gives a gigantic amount of `find: [...] read/permission denied` errors upon import (I canceled it) and I guess as it traverses the entire file tree, it is very inefficient.
+"""]]
