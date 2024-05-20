@@ -31,10 +31,7 @@ This is implememented and working. Remaining todo list for it:
 
 * Cloning from an annex:: url with importtree=yes doesn't work
   (with or without exporttree=yes). This is because the ContentIdentifier
-  db is not populated.
-
-* Improve recovery from interrupted push by using outManifest to clean up
-  after it. (Requires populating outManifest.)
+  db is not populated. It should be possible to work around this.
 
 * See XXX in uploadManifest about recovering from a situation
   where the remote is left with a deleted manifest when a push

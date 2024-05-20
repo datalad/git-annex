@@ -262,18 +262,6 @@ push st rmt ls = do
 		hFlush stdout
 
 -- Full push of the specified refs to the remote.
--- All git bundle objects listed in the old manifest will be 
--- deleted after successful upload of the new git bundle and manifest. 
---
--- If this is interrupted, or loses access to the remote mid way through, it
--- will leave the remote with unused bundle keys on it, but every bundle 
--- key listed in the manifest will exist, so it's in a consistent, usable
--- state.
---
--- However, the manifest is replaced by first dropping the object and then
--- uploading a new one. Interrupting that will leave the remote without a
--- manifest, which will appear as if all tracking branches were deleted
--- from it.
 fullPush :: State -> Remote -> [Ref] -> Annex (Bool, State)
 fullPush st rmt refs = guardPush st $ do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure
@@ -284,10 +272,11 @@ fullPush' :: Manifest -> State -> Remote -> [Ref] -> Annex (Bool, State)
 fullPush' oldmanifest st rmt refs =do
 	let bs = map Git.Bundle.fullBundleSpec refs
 	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
-	uploadManifest rmt (mkManifest [bundlekey] [])
-	ok <- allM (dropKey rmt) $
-		filter (/= bundlekey) (inManifest oldmanifest)
-	return (ok, st { manifestCache = Nothing })
+	oldmanifest' <- dropOldKeys rmt oldmanifest (/= bundlekey)
+	let manifest = mkManifest [bundlekey]
+		(inManifest oldmanifest ++ outManifest oldmanifest')
+	uploadManifest rmt manifest
+	return (True, st { manifestCache = Nothing })
 
 guardPush :: State -> Annex (Bool, State) -> Annex (Bool, State)
 guardPush st a = catchNonAsync a $ \ex -> do
@@ -309,7 +298,8 @@ incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
  	go oldmanifest = do
 		bs <- calc [] (M.toList newtrackingrefs)
 		bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
-		uploadManifest rmt (oldmanifest <> mkManifest [bundlekey] [])
+		oldmanifest' <- dropOldKeys rmt oldmanifest (/= bundlekey)
+		uploadManifest rmt (oldmanifest' <> mkManifest [bundlekey] [])
 		return (True, st { manifestCache = Nothing })
 	
 	calc c [] = return (reverse c)
@@ -371,18 +361,15 @@ incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 			, findotherprereq' ref sha ls
 			)
 
--- When the push deletes all refs from the remote, upload an empty
--- manifest and then drop all bundles that were listed in the manifest.
--- The manifest is emptied first so if this is interrupted, only
--- unused bundles will remain in the remote, rather than leaving the
--- remote with a manifest that refers to missing bundles.
 pushEmpty :: State -> Remote -> Annex (Bool, State)
 pushEmpty st rmt = do
-	manifest <- maybe (downloadManifestWhenPresent rmt) pure
+	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure
 		(manifestCache st)
-	uploadManifest rmt mempty
-	ok <- allM (dropKey rmt) (inManifest manifest)
-	return (ok, st { manifestCache = Nothing })
+	oldmanifest' <- dropOldKeys rmt oldmanifest (const True)
+	let manifest = mkManifest mempty
+		(inManifest oldmanifest ++ outManifest oldmanifest')
+	uploadManifest rmt manifest
+	return (True, st { manifestCache = Nothing })
 
 data RefSpec = RefSpec
 	{ forcedPush :: Bool
@@ -651,6 +638,10 @@ downloadManifest rmt = getKeyExportLocations rmt mk >>= \case
 -- XXX It should be possible to remember when that happened, by writing
 -- state to a file before, and then the next time git-remote-annex is run, it
 -- could recover from the situation.
+--
+-- Once the manifest has been uploaded, attempts to drop all outManifest
+-- keys. A failure to drop does not cause an error to be thrown, because
+-- the push has already succeeded.
 uploadManifest :: Remote -> Manifest -> Annex ()
 uploadManifest rmt manifest =
 	withTmpFile "GITMANIFEST" $ \tmp tmph -> do
@@ -675,11 +666,27 @@ uploadManifest rmt manifest =
 		-- Don't leave the manifest key in the annex objects
 		-- directory.
 		unlinkAnnex mk
-		unless ok
-			uploadfailed
+		if ok
+			-- Avoid re-uploading the manifest with
+			-- the dropped keys removed from outManifest,
+			-- because dropping the keys takes some time and
+			-- another push may have already overwritten the
+			-- manifest in the meantime.
+			then void $ dropOldKeys rmt manifest (const True)
+			else uploadfailed
   where
 	mk = genManifestKey (Remote.uuid rmt)	
 	uploadfailed = giveup $ "Failed to upload " ++ serializeKey mk
+
+-- Drops the outManifest keys. Returns a version of the manifest with
+-- any outManifest keys that were successfully dropped removed from it.
+--
+-- If interrupted at this stage, or if a drop fails, the key remains
+-- in the outManifest, so the drop will be tried again later.
+dropOldKeys :: Remote -> Manifest -> (Key -> Bool) -> Annex Manifest
+dropOldKeys rmt manifest p =
+	mkManifest (inManifest manifest)
+		<$> filterM (dropKey rmt) (filter p (outManifest manifest))
 
 -- Downloads a git bundle to the annex objects directory, unless
 -- the object file is already present. Returns the filename of the object
