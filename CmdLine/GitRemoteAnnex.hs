@@ -549,10 +549,6 @@ parseManifest b =
 
 -- Avoid using special remotes that are thirdparty populated, because
 -- there is no way to push the git repository keys into one.
---
--- XXX Avoid using special remotes that are encrypted by key
--- material stored in the git repository, since that would present a
--- chicken and egg problem when cloning.
 checkSpecialRemoteProblems :: Remote -> Maybe String
 checkSpecialRemoteProblems rmt
 	| Remote.thirdPartyPopulated (Remote.remotetype rmt) =
