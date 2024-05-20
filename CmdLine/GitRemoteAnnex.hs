@@ -381,8 +381,7 @@ pushEmpty st rmt = do
 	manifest <- maybe (downloadManifestWhenPresent rmt) pure
 		(manifestCache st)
 	uploadManifest rmt mempty
-	ok <- allM (dropKey rmt) 
-		(genManifestKey (Remote.uuid rmt) : inManifest manifest)
+	ok <- allM (dropKey rmt) (inManifest manifest)
 	return (ok, st { manifestCache = Nothing })
 
 data RefSpec = RefSpec
