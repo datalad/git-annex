@@ -59,7 +59,7 @@ jobs:
       - name: Install Singularity
         run: |
           # use if decide to get most recent release of singularity
-          # release="$(gh api --jq .tag_name /repos/sylabs/singularity/releases/latest)"
+          # release="$(gh api --jq .tag_name repos/sylabs/singularity/releases/latest)"
           release="v3.10.4"
           codename="$(lsb_release -cs)"
           arch="$(dpkg --print-architecture)"
@@ -716,7 +716,7 @@ jobs:
       - name: Install ${{ matrix.version }} Datalad
         run: |
           if [ "${{ matrix.version }}" = "release" ]; then
-            commitish="$(gh api --jq .tag_name /repos/datalad/datalad/releases/latest)"
+            commitish="$(gh api --jq .tag_name repos/datalad/datalad/releases/latest)"
           else
             commitish="${{ matrix.version }}"
           fi

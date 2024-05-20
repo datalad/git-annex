@@ -2,7 +2,7 @@
 set -eu -o pipefail
 
 if [ -n "$INPUT_PR" ]
-then merge_sha="$(GH_PAGER=cat gh api --jq .merge_commit_sha /repos/datalad/git-annex/pulls/"$INPUT_PR")"
+then merge_sha="$(GH_PAGER=cat gh api --jq .merge_commit_sha repos/datalad/git-annex/pulls/"$INPUT_PR")"
      git fetch origin +"$merge_sha":refs/remotes/pull/"$INPUT_PR"/merge
      BUILD_COMMIT="pull/$INPUT_PR/merge"
 elif [ -n "$INPUT_COMMITISH" ]

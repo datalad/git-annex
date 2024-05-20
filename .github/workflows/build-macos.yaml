@@ -408,7 +408,7 @@ jobs:
       - name: Install ${{ matrix.version }} Datalad
         run: |
           if [ "${{ matrix.version }}" = "release" ]; then
-            commitish="$(gh api --jq .tag_name /repos/datalad/datalad/releases/latest)"
+            commitish="$(gh api --jq .tag_name repos/datalad/datalad/releases/latest)"
           else
             commitish="${{ matrix.version }}"
           fi

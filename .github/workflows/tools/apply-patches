@@ -27,7 +27,7 @@ do
         fi
         echo "[INFO] $patchfile is already applied.  Creating PR to remove."
         branch_name="rmpatch/$(basename "$patchfile" .patch)"
-        if gh api "/repos/$GITHUB_REPOSITORY/branches/$branch_name" > /dev/null
+        if gh api "repos/$GITHUB_REPOSITORY/branches/$branch_name" > /dev/null
         then
             echo "[INFO] Branch $branch_name already exists; assuming PR already exists"
         else
@@ -54,7 +54,7 @@ do
         issue_title="Patch $(basename "$patchfile") fails to apply"
         if gh api -X GET \
             -f state=open -f per_page=100 -f sort=created -f direction=desc \
-            "/repos/$GITHUB_REPOSITORY/issues" \
+            "repos/$GITHUB_REPOSITORY/issues" \
             | jq -e --arg title "$issue_title" 'any(.[].title; . == $title)'
         then
             echo "[INFO] Issue already exists"
