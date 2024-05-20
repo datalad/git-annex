@@ -10,6 +10,8 @@ will be available to users who don't use datalad.
 
 This is implememented and working. Remaining todo list for it:
 
+* Test incremental push edge cases involving checkprereq.
+
 * A race between an incremental push and a full push can result in
   a bundle that the incremental push is based on being deleted by the full
   push, and then incremental push's manifest file being written later.
@@ -27,7 +29,19 @@ This is implememented and working. Remaining todo list for it:
   the race. But since a process could be suspended at any point and resumed
   later, the race window could be arbitrarily wide.)
 
-* Test incremental push edge cases involving checkprereq.
+* A race between two full pushes can also result in the manifest file listing
+  a bundle that has been deleted:
+
+  Start with a full push that results in manifest file M.
+
+  Then make a full push of something else. This overwrites the 
+  manifest file, and then deletes the bundle listed in M.
+
+  At the same time, make another full push of M. This uploads the bundle
+  listed in M (just before the other push deletes it), and then writes
+  manifest file M.
+
+  Will the fallback manifest file help with this case?
 
 * Cloning from an annex:: url with importtree=yes doesn't work
   (with or without exporttree=yes). This is because the ContentIdentifier
@@ -35,9 +49,23 @@ This is implememented and working. Remaining todo list for it:
 
 * See XXX in uploadManifest about recovering from a situation
   where the remote is left with a deleted manifest when a push
-  is interrupted part way through. This should be recoverable
+  is interrupted part way through. 
+
+  This should be recoverable
   by caching the manifest locally and re-uploading it when
   the remote has no manifest or prompting the user to merge and re-push.
+  But, this leaves the remote unusable for fetching until that is dealt
+  with.
+
+  Or, could have two identical manifest files, A and B. When pushing, first
+  delete and upload A. Then delete and upload B. When fetching, if A does
+  not exist, use B instead. However, allows for races and interruptions
+  that cause A and B to be out of sync, with one push in A and another in B.
+  
+  Once out of sync, in the window where a push has deleted but not
+  re-uploaded A yet, B will have a different content. So a fetch at that
+  point will see something that was pushed by a push that otherwise had
+  lost a push race.
 
 * It would be nice if git-annex could generate an annex:: url
   for a special remote and show it to the user, eg when 
