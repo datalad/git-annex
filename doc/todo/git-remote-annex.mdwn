@@ -47,26 +47,6 @@ This is implememented and working. Remaining todo list for it:
   (with or without exporttree=yes). This is because the ContentIdentifier
   db is not populated. It should be possible to work around this.
 
-* See XXX in uploadManifest about recovering from a situation
-  where the remote is left with a deleted manifest when a push
-  is interrupted part way through. 
-
-  This should be recoverable
-  by caching the manifest locally and re-uploading it when
-  the remote has no manifest or prompting the user to merge and re-push.
-  But, this leaves the remote unusable for fetching until that is dealt
-  with.
-
-  Or, could have two identical manifest files, A and B. When pushing, first
-  delete and upload A. Then delete and upload B. When fetching, if A does
-  not exist, use B instead. However, allows for races and interruptions
-  that cause A and B to be out of sync, with one push in A and another in B.
-  
-  Once out of sync, in the window where a push has deleted but not
-  re-uploaded A yet, B will have a different content. So a fetch at that
-  point will see something that was pushed by a push that otherwise had
-  lost a push race.
-
 * It would be nice if git-annex could generate an annex:: url
   for a special remote and show it to the user, eg when 
   they have set the shorthand "annex::" url, so they know the full url.

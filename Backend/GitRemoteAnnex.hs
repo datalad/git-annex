@@ -84,9 +84,10 @@ genGitBundleKey remoteuuid file meterupdate = do
 		, keySize = Just filesize
 		}
 
-genManifestKey :: UUID -> Key
-genManifestKey u = mkKey $ \kd -> kd
-	{ keyName = S.toShort (fromUUID u)
+genManifestKey :: UUID -> Maybe S.ShortByteString -> Key
+genManifestKey u extension = mkKey $ \kd -> kd
+	{ keyName = S.toShort (fromUUID u) <> 
+		maybe mempty ("." <>) extension
 	, keyVariety = GitManifestKey
 	}
 
@@ -99,7 +100,14 @@ isGitRemoteAnnexKey u k =
 			-- Remove the checksum that comes after the UUID.
 			let b' = B8.dropWhileEnd (/= '-') b
 			in B8.take (B8.length b' - 1) b'
-		GitManifestKey -> sameuuid id
+		GitManifestKey -> sameuuid $ \b ->
+			-- Remove an optional extension after the UUID.
+			-- (A UUID never contains '.')
+			if '.' `B8.elem` b
+				then
+					let b' = B8.dropWhileEnd (/= '.') b
+					in B8.take (B8.length b' - 1) b'
+				else b
 		_ -> False
   where
 	sameuuid f = fromUUID u == f (S.fromShort (fromKey keyName k))

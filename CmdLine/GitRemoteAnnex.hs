@@ -585,17 +585,20 @@ downloadManifestOrFail rmt =
 -- Throws errors if the remote cannot be accessed or the download fails,
 -- or if the manifest file cannot be parsed.
 downloadManifest :: Remote -> Annex (Maybe Manifest)
-downloadManifest rmt = getKeyExportLocations rmt mk >>= \case
-	Nothing -> ifM (Remote.checkPresent rmt mk)
-		( gettotmp $ \tmp ->
-			Remote.retrieveKeyFile rmt mk
-				(AssociatedFile Nothing) tmp
-				nullMeterUpdate Remote.NoVerify
-		, return Nothing
-		)
-	Just locs -> getexport locs
+downloadManifest rmt = get mkmain >>= maybe (get mkbak) (pure . Just)
   where
-	mk = genManifestKey (Remote.uuid rmt)
+	mkmain = genManifestKey (Remote.uuid rmt) Nothing
+	mkbak = genManifestKey (Remote.uuid rmt) (Just "bak")
+
+	get mk = getKeyExportLocations rmt mk >>= \case
+		Nothing -> ifM (Remote.checkPresent rmt mk)
+			( gettotmp $ \tmp ->
+				Remote.retrieveKeyFile rmt mk
+					(AssociatedFile Nothing) tmp
+					nullMeterUpdate Remote.NoVerify
+			, return Nothing
+			)
+		Just locs -> getexport mk locs
 
 	-- Downloads to a temporary file, rather than using eg
 	-- Annex.Transfer.download that would put it in the object
@@ -610,13 +613,13 @@ downloadManifest rmt = getKeyExportLocations rmt mk >>= \case
 			Right m -> return (Just m)
 			Left err -> giveup err
 
-	getexport [] = return Nothing
-	getexport (loc:locs) =
+	getexport _ [] = return Nothing
+	getexport mk (loc:locs) =
 		ifM (Remote.checkPresentExport (Remote.exportActions rmt) mk loc)
 			( gettotmp $ \tmp -> 
 				Remote.retrieveExport (Remote.exportActions rmt)
 					mk loc tmp nullMeterUpdate
-			, getexport locs
+			, getexport mk locs
 			)
 
 -- Uploads the Manifest to the remote.
@@ -628,24 +631,43 @@ downloadManifest rmt = getKeyExportLocations rmt mk >>= \case
 -- and behavior of remotes is undefined when sending a key that is
 -- already present on the remote, but with different content.
 --
--- Note that if this is interrupted or loses access to the remote part
--- way through, it may leave the remote without a manifest file. That will
--- appear as if all refs have been deleted from the remote.
--- XXX It should be possible to remember when that happened, by writing
--- state to a file before, and then the next time git-remote-annex is run, it
--- could recover from the situation.
+-- So this may be interrupted and leave the manifest key not present.
+-- To deal with that, there is a backup manifest key. This takes care
+-- to ensure that one of the two keys will always exist.
 --
 -- Once the manifest has been uploaded, attempts to drop all outManifest
 -- keys. A failure to drop does not cause an error to be thrown, because
--- the push has already succeeded.
+-- the push has already succeeded. Avoids re-uploading the manifest with
+-- the dropped keys removed from outManifest, because dropping the keys
+-- takes some time and another push may have already overwritten
+-- the manifest in the meantime.
 uploadManifest :: Remote -> Manifest -> Annex ()
-uploadManifest rmt manifest =
-	withTmpFile "GITMANIFEST" $ \tmp tmph -> do
-		liftIO $ forM_ (inManifest manifest) $ \bundlekey ->
-			B8.hPutStrLn tmph (serializeKey' bundlekey)
-		liftIO $ hClose tmph
-		-- Remove old manifest if present.
+uploadManifest rmt manifest = do
+	ok <- ifM (Remote.checkPresent rmt mkbak)
+		( dropandput mkmain <&&> dropandput mkbak
+		-- The backup manifest doesn't exist, so upload
+		-- it first, and then the manifest second.
+		-- This ensures that at no point are both deleted.
+		, put mkbak <&&> dropandput mkmain
+		)
+	if ok
+		then void $ dropOldKeys rmt manifest (const True)
+		else uploadfailed
+  where
+	mkmain = genManifestKey (Remote.uuid rmt) Nothing
+	mkbak = genManifestKey (Remote.uuid rmt) (Just "bak")
+	
+	uploadfailed = giveup "Failed to upload manifest."
+	
+	manifestcontent = B8.unlines $ map serializeKey' (inManifest manifest)
+	
+	dropandput mk = do
 		dropKey' rmt mk
+		put mk
+
+	put mk = withTmpFile "GITMANIFEST" $ \tmp tmph -> do
+		liftIO $ B8.hPut tmph manifestcontent
+		liftIO $ hClose tmph
 		-- storeKey needs the key to be in the annex objects
 		-- directory, so put the manifest file there temporarily.
 		-- Using linkOrCopy rather than moveAnnex to avoid updating
@@ -662,17 +684,7 @@ uploadManifest rmt manifest =
 		-- Don't leave the manifest key in the annex objects
 		-- directory.
 		unlinkAnnex mk
-		if ok
-			-- Avoid re-uploading the manifest with
-			-- the dropped keys removed from outManifest,
-			-- because dropping the keys takes some time and
-			-- another push may have already overwritten the
-			-- manifest in the meantime.
-			then void $ dropOldKeys rmt manifest (const True)
-			else uploadfailed
-  where
-	mk = genManifestKey (Remote.uuid rmt)	
-	uploadfailed = giveup $ "Failed to upload " ++ serializeKey mk
+		return ok
 
 -- Drops the outManifest keys. Returns a version of the manifest with
 -- any outManifest keys that were successfully dropped removed from it.

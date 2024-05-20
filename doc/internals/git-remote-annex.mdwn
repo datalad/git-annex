@@ -4,9 +4,10 @@ repository to a special remote, and later cloning from it.
 This adds two new key types to git-annex, GITMANIFEST and a GITBUNDLE.
 
 GITMANIFEST--$UUID is the manifest for a git repository stored in the
-git-annex repository with that UUID.
+git-annex repository with that UUID. When that is not present,
+GITMANIFEST--$UUID.bak is a backup copy that can be used instead.
 
-GITBUNDLE--$UUID-sha256 is a git bundle.
+GITBUNDLE--$UUID-$sha256 is a git bundle.
 
 # format of the manifest file
 
@@ -23,11 +24,10 @@ and are in the process of being deleted.
 In an exporttree=yes remote, the GITMANIFEST and GITBUNDLE objects are
 stored in the remote, under the `.git/annex/objects/` path.
 
-# multiple GITMANIFEST files
+# multiple special remotes in the same place
 
-Usually there will only be one per special remote, but it's possible for
-multiple special remotes to point to the same object storage, and if so
-multiple GITMANIFEST objects can be stored.
+It's possible for multiple special remotes to point to the same
+object storage.
 
 This is why the UUID of the special remote is included in the GITMANIFEST
 key, and in the annex:: uri.
