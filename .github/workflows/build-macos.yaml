@@ -24,7 +24,7 @@ env:
 
 jobs:
   build-package:
-    runs-on: macos-11
+    runs-on: macos-12
     outputs:
       build-version: ${{ steps.build-version.outputs.version }}
     steps:
@@ -183,7 +183,7 @@ jobs:
     strategy:
       matrix:
         flavor: ["normal", "crippled-tmp", "custom-config1"]
-        os: [macos-11]
+        os: [macos-12]
         include: [{"flavor": "normal", "os": "macos-latest"}]
       fail-fast: false
     steps:
@@ -307,7 +307,7 @@ jobs:
             See <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}> for more information.
 
   test-annex-more:
-    runs-on: macos-11
+    runs-on: macos-12
     needs: build-package
     steps:
       - name: Checkout this repository
@@ -360,7 +360,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-datalad:
-    runs-on: macos-11
+    runs-on: macos-12
     needs: build-package
     strategy:
       matrix:
