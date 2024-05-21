@@ -9,7 +9,7 @@ need to set `git config receive.fsck.symlinkPointsToGitDir ignore`.
 FWIW, github does not (currently) have this behavior.
 
 This change does have some other knock-on effects that git-annex can deal
-with, see [[todo/todo/deal_with_git_fsck_symlinkPointsToGitDir]].
+with, see [[todo/deal_with_git_fsck_symlinkPointsToGitDir]].
 
 I suppose that it would also work to unlock any annexed files that you want
 to push to gitlab. It shouldn't matter that there are locked annexed files
