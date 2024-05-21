@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="datamanager"
+ avatar="http://cdn.libravatar.org/avatar/7d4ca7c5e571d4740ef072b83a746c12"
+ subject="Not git's fault, but probably your forge's"
+ date="2024-05-21T13:12:22Z"
+ content="""
+I don't think this is git's fault, but my gitlab's. The commit says that setting
+`fsck.symlinkPointsToGitDir` to `warn` should avoid the problem. It seems,
+however, that gitlab has it set to `error` -- your forge probably has the same
+setting as well. I can think of only two solutions: 
+ 
+1. Ask gitlab for recourse: maybe they can respect the setting in your local repository 
+2. Change to a forge that has it set to `warn` 
+
+"""]]
