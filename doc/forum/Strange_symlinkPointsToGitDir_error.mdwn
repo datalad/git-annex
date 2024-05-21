@@ -21,4 +21,4 @@ It's strange because I've done this unlock, edit, and sync, flow a few times in 
 
 It's very concerning because it prevents me from syncing with my remote repository at all. I was able to work around the problem with `git reset HEAD~` so I could at least get a few changes sent to my remote, but that meant I lost all the changes I made to the file itself. 
 
-Can anyone say what the proble might be here? 
+Can anyone say what the problem might be here? Why does git suddenly seem upset that I've got a symlink pointing at my git directory? 
