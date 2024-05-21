@@ -44,9 +44,10 @@ how the git repository is stored, see
 
 Pushes to a special remote are usually done incrementally. However,
 sometimes the whole git repository (but not the annex) needs to be
-re-uploaded. That is done when deleting a ref from the remote. It's also
-done when too many git bundles accumulate in the special remote, as
-configured by the `remote.<name>.annex-max-git-bundles` git config.
+re-uploaded. That is done when force pushing a ref, or deleting a
+ref from the remote. It's also done when too many git bundles
+accumulate in the special remote, as configured by the
+`remote.<name>.annex-max-git-bundles` git config.
 
 Like any git repository, a git repository stored on a special remote can
 have conflicting things pushed to it from different places. This mostly
