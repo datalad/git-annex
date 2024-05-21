@@ -14,6 +14,7 @@ module Backend.GitRemoteAnnex (
 	backends,
 	genGitBundleKey,
 	genManifestKey,
+	genBackupManifestKey,
 	isGitRemoteAnnexKey,
 ) where
 
@@ -84,10 +85,16 @@ genGitBundleKey remoteuuid file meterupdate = do
 		, keySize = Just filesize
 		}
 
-genManifestKey :: UUID -> Maybe S.ShortByteString -> Key
-genManifestKey u extension = mkKey $ \kd -> kd
+genManifestKey :: UUID -> Key
+genManifestKey = genManifestKey' Nothing
+
+genBackupManifestKey :: UUID -> Key
+genBackupManifestKey = genManifestKey' (Just ".bak")
+
+genManifestKey' :: Maybe S.ShortByteString -> UUID -> Key
+genManifestKey' extension u = mkKey $ \kd -> kd
 	{ keyName = S.toShort (fromUUID u) <> 
-		maybe mempty ("." <>) extension
+		fromMaybe mempty extension
 	, keyVariety = GitManifestKey
 	}
 

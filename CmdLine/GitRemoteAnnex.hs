@@ -587,8 +587,8 @@ downloadManifestOrFail rmt =
 downloadManifest :: Remote -> Annex (Maybe Manifest)
 downloadManifest rmt = get mkmain >>= maybe (get mkbak) (pure . Just)
   where
-	mkmain = genManifestKey (Remote.uuid rmt) Nothing
-	mkbak = genManifestKey (Remote.uuid rmt) (Just "bak")
+	mkmain = genManifestKey (Remote.uuid rmt)
+	mkbak = genBackupManifestKey (Remote.uuid rmt)
 
 	get mk = getKeyExportLocations rmt mk >>= \case
 		Nothing -> ifM (Remote.checkPresent rmt mk)
@@ -654,8 +654,8 @@ uploadManifest rmt manifest = do
 		then void $ dropOldKeys rmt manifest (const True)
 		else uploadfailed
   where
-	mkmain = genManifestKey (Remote.uuid rmt) Nothing
-	mkbak = genManifestKey (Remote.uuid rmt) (Just "bak")
+	mkmain = genManifestKey (Remote.uuid rmt)
+	mkbak = genBackupManifestKey (Remote.uuid rmt)
 	
 	uploadfailed = giveup "Failed to upload manifest."
 	
