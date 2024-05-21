@@ -454,8 +454,7 @@ parseSpecialRemoteUrl url remotename = case parseURI url of
 
 -- Runs an action with a Remote as specified by the SpecialRemoteConfig.
 withSpecialRemote :: SpecialRemoteConfig -> StartAnnexBranch -> (Remote -> Annex a) -> Annex a
-withSpecialRemote (ExistingSpecialRemote remotename) _ a = do
-	liftIO $ hPutStrLn stderr "case 1"
+withSpecialRemote (ExistingSpecialRemote remotename) _ a =
 	getEnabledSpecialRemoteByName remotename >>=
 		maybe (giveup $ "There is no special remote named " ++ remotename)
 		a
