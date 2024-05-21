@@ -60,8 +60,9 @@ have conflicting things pushed to it from different places. This mostly
 works the same as any other git repository, eg a push that overwrites other
 work will be prevented unless forced. However, it is possible, when
 conflicting pushes are being done at the same time, for one of the pushes
-to be overwritten by the other one. In this situation, the push will appear
-to have succeeded, but pulling later will show the true situation.
+to be overwritten by the other one. In this situation, the overwritten 
+push will appear to have succeeded, but pulling later will show the true
+situation.
 
 # SEE ALSO
 

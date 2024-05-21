@@ -37,26 +37,14 @@ This is implememented and working. Remaining todo list for it:
   `datalad-annex::https://example.com?type=web&url={noquery}`
   Supporting something like this would be good.
 
-* Improve behavior in push races. A race can overwrite a change
-  to the MANIFEST and lose work that was pushed from the other repo.
-  From the user's perspective, that situation is the same as if one repo
-  pushed new work, then the other repo did a git push --force, overwriting
-  the first repo's push. In the first repo, another push will then fail as
-  a non fast-forward, and the user can recover as usual. This is probably
-  okish.
+* A push race can overwrite a manifest that had a GITBUNDLE added to it,
+  and so lose track of a GITBUNDLE. That will never get deleted.
 
-  But.. a MANIFEST overwrite will leave bundle files in the remote that
-  are not listed in the MANIFEST. It seems likely that git-annex could
-  detect that after the fact and clean it up. Eg, if it caches
-  the last MANIFEST it uploaded, next time it downloads the MANIFEST
-  it can check if there are bundle files in the old one that are not
-  in the new one. If so, it can drop those bundle files from the remote.
-  (May be unsafe, see below section on bundle deletion problems.)
+  Could git-annex detect this after the fact and clean it up? Eg,
+  if it caches the last manifest it uploaded, the next time it downloads
+  the manifest it can check if there are bundle files in the old
+  one that are not in the new one. If so, it can add those to the
+  outManifest, to get dropped later.
 
-* A push race can also appear to the user as if they pushed a ref, but then
-  it got deleted from the remote. This happens when two pushes are
-  pushing different ref names. This might be harder for the user to
-  notice; git fetch does not indicate that a remote ref got deleted.
-  They would have to use git fetch --prune to notice the deletion.
-  Once the user does notice, they can re-push their ref to recover.
-  Can this be improved?
+  This wouldn't fix the case where a push race happens and then the repo
+  whose manifest was overwritten gets deleted.
