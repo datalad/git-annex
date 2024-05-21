@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
 set -eux -o pipefail
 
-function api_query {
-    path="$1"
-    curl -fsSL \
-        -H "Authorization: bearer $GITHUB_TOKEN" \
-        -H "Accept: application/vnd.github.v3+json" \
-        "https://api.github.com$path"
-}
-
 patches_dir="$1"
 event="$2"
 
@@ -35,7 +27,7 @@ do
         fi
         echo "[INFO] $patchfile is already applied.  Creating PR to remove."
         branch_name="rmpatch/$(basename "$patchfile" .patch)"
-        if api_query "/repos/$GITHUB_REPOSITORY/branches/$branch_name" > /dev/null
+        if gh api "repos/$GITHUB_REPOSITORY/branches/$branch_name" > /dev/null
         then
             echo "[INFO] Branch $branch_name already exists; assuming PR already exists"
         else
@@ -60,7 +52,10 @@ do
         fi
         echo "[ERROR] $patchfile failed to apply; creating issue"
         issue_title="Patch $(basename "$patchfile") fails to apply"
-        if api_query "/repos/$GITHUB_REPOSITORY/issues?state=open&per_page=100&sort=created&direction=desc" | jq -e --arg title "$issue_title" 'any(.[].title; . == $title)'
+        if gh api -X GET \
+            -f state=open -f per_page=100 -f sort=created -f direction=desc \
+            "repos/$GITHUB_REPOSITORY/issues" \
+            | jq -e --arg title "$issue_title" 'any(.[].title; . == $title)'
         then
             echo "[INFO] Issue already exists"
         else

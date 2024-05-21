@@ -59,7 +59,7 @@ jobs:
       - name: Install Singularity
         run: |
           # use if decide to get most recent release of singularity
-          # release="$(curl -fsSL https://api.github.com/repos/sylabs/singularity/releases/latest | jq -r .tag_name)"
+          # release="$(gh api --jq .tag_name repos/sylabs/singularity/releases/latest)"
           release="v3.10.4"
           codename="$(lsb_release -cs)"
           arch="$(dpkg --print-architecture)"
@@ -716,13 +716,15 @@ jobs:
       - name: Install ${{ matrix.version }} Datalad
         run: |
           if [ "${{ matrix.version }}" = "release" ]; then
-            # Authorize so that we don't run up against low API rate limits
-            commitish="$(curl -fsSL -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/datalad/datalad/releases/latest | jq -r .tag_name)"
+            commitish="$(gh api --jq .tag_name repos/datalad/datalad/releases/latest)"
           else
             commitish="${{ matrix.version }}"
           fi
           python -m pip install --upgrade pip
           pip install git+https://github.com/datalad/datalad@${commitish}
+        env:
+          # Authorize so that we don't run up against low API rate limits
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install nose et al (just in case!)
         run: pip install nose pytest vcrpy mock

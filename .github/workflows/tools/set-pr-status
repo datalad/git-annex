@@ -1,12 +1,6 @@
 #!/usr/bin/env bash
 set -eux -o pipefail
-
-function api_call {
-    curl -fsSL \
-        -H "Authorization: bearer $GITHUB_TOKEN" \
-        -H "Accept: application/vnd.github.v3+json" \
-        "$@"
-}
+export GH_PAGER=cat
 
 INPUT_PR="$1"
 OSNAME="$2"
@@ -17,7 +11,7 @@ if [ "$STATE" = cancelled ]
 then STATE=error
 fi
 
-JOBS="$(api_call "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs")"
+JOBS="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs")"
 
 JOB_URL="$(jq -r --arg job "$JOBNAME" '.jobs[] | select(.name == $job) | .html_url' <<<"$JOBS")"
 
@@ -28,7 +22,7 @@ then echo "[WARNING] Could not determine job URL"
      jq '.jobs | [.[].name]' <<<"$JOBS"
 fi
 
-STATUSES_URL="$(api_call "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pulls/$INPUT_PR" | jq -r .statuses_url)"
+STATUSES_URL="$(gh api --jq .statuses_url "repos/$GITHUB_REPOSITORY/pulls/$INPUT_PR")"
 
 jq -n \
     --arg context "Build git-annex on $OSNAME / $JOBNAME" \
@@ -39,4 +33,4 @@ jq -n \
         "context": $context,
         "target_url": $target_url
     }' \
-| api_call -X POST -H "Content-Type: application/json" -d @- "$STATUSES_URL"
+| gh api -X POST --input - "$STATUSES_URL"
