@@ -32,16 +32,21 @@ This is implememented and working. Remaining todo list for it:
 * A race between two full pushes can also result in the manifest file listing
   a bundle that has been deleted:
 
-  Start with a full push that results in manifest file M.
+  Start with a full push of bundle A.
 
-  Then make a full push of something else. This overwrites the 
-  manifest file, and then deletes the bundle listed in M.
+  Then there are 2 racing full pushes X and Y, of bundle A and B
+  respectively. With this series of operations:
 
-  At the same time, make another full push of M. This uploads the bundle
-  listed in M (just before the other push deletes it), and then writes
-  manifest file M.
+  1. Y: write bundle B
+  1. Y: read manifest (listing A)
+  1. Y: write B to manifest
+  1. X: write bundle A
+  1. Y: delete bundle A
+  1. X: read manifest (listing B)
+  1. X: write A to manifest
+  1. X: delete bundle B
 
-  Will the fallback manifest file help with this case?
+  Which results in a manifest that lists A, but that bundle was deleted.
 
 * Cloning from an annex:: url with importtree=yes doesn't work
   (with or without exporttree=yes). This is because the ContentIdentifier
