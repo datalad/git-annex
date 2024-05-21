@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Probably not git annex related, but a new git 'feature'"
+ date="2024-05-21T10:49:58Z"
+ content="""
+Apparently, very recent git (https://github.com/git/git/commit/a33fea0886cfa016d313d2bd66bdd08615bffbc9) got a check for symlinks pointing to the git dir, causing the remote to reject such commits. Brilliant idea to implement something like that... 🤦 GitLab seems to have that new git version.
+
+
+"""]]
