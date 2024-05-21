@@ -1,0 +1,43 @@
+git 2.45.1 made git fsck warn if the repository contains a symlink to the
+git directory.
+
+[[forum/Strange_symlinkPointsToGitDir_error]]
+
+<https://fosstodon.org/@nobodyinperson/112478702707149836>
+
+While this has impacts such as pushing a git-annex repository to gitlab now
+failing, this todo is not concerned with that (because it's not something
+that can be fixed in git-annex).
+
+What git-annex can do is configure fsck to not display this warning in a
+git-annex repository and to allow fetch and receive to work even when
+`fetch.fsckObjects` and `receive.fsckObjects` are set.
+
+    git config fsck.symlinkPointsToGitDir ignore
+    git config receive.fsck.symlinkPointsToGitDir ignore
+    git config fetch.fsck.symlinkPointsToGitDir ignore
+
+It would be easy for git-annex init and upgrade to do this, but depending on
+the magnitude of breakage, which has not yet been assessed, git-annex may have 
+to immediately make sure that all repositories it's used in get these
+configs.
+
+Is it at all common to set `git config fetch.fsckObjects true` or 
+`git config receive.fsckObjects` true?
+
+> BTW, I have to mention that I'm deeply unhappy for git for making this
+> change, with such a 
+> [weak justification](https://github.com/git/git/commit/a33fea0886cfa016d313d2bd66bdd08615bffbc9),
+> and so little care for breakage.
+> 
+>  The change came after a security fix which involved symlinks and
+>  `.git/objects`, but that was a symlink *inside* `.git/objects`, 
+> which is entirely different than a symlink pointing into the
+> `.git` directory. 
+> 
+> While it's understandable that someone encountering a
+> symlink related security hole may want to throw out the baby with the
+> bathwater, what they have actually done here is to only throw out the
+> baby. This change will not prevent the class of security hole that
+> motivated it.
+> --[[Joey]]
