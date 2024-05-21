@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="datamanager"
+ avatar="http://cdn.libravatar.org/avatar/7d4ca7c5e571d4740ef072b83a746c12"
+ subject="comment 7"
+ date="2024-05-21T23:27:17Z"
+ content="""
+Is it possible to get my edited file back? 
+
+I know that the file I edited, with it's changes, should be *somewhere* in my .git directory, but I have no idea where (I already undid all commits that contained it's path in my haste to just make it work again), and -- like an idiot -- did not copy it anywhere before doing so. 
+"""]]
