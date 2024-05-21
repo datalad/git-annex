@@ -1,0 +1,24 @@
+Today, I got the strange error below. I unlocked a file, and edited it, and attempted to sync, when I saw the error. 
+
+```
+remote: error: object a86b9c49d9ef8c88c3180013eef3da5f6ffa9353: symlinkPointsToGitDir: symlink target points to git dir
+remote: error: object ebb743ffb44e23c54a7e3ed44a444cc0ed0df42d: symlinkPointsToGitDir: symlink target points to git dir
+remote: fatal: fsck error in pack objects
+error: remote unpack failed: unpack-objects abnormal exit
+To gitlab.com:daraul/taskwarrior.git
+ ! [remote rejected]     git-annex -> synced/git-annex (unpacker error)
+ ! [remote rejected]     master -> synced/master (unpacker error)
+error: failed to push some refs to 'gitlab.com:daraul/taskwarrior.git'
+remote: error: object a86b9c49d9ef8c88c3180013eef3da5f6ffa9353: symlinkPointsToGitDir: symlink target points to git dir
+remote: error: object ebb743ffb44e23c54a7e3ed44a444cc0ed0df42d: symlinkPointsToGitDir: symlink target points to git dir
+remote: fatal: fsck error in pack objects
+error: remote unpack failed: unpack-objects abnormal exit
+To gitlab.com:daraul/taskwarrior.git
+ ! [remote rejected]     master -> master (unpacker error)
+```
+
+It's strange because I've done this unlock, edit, and sync, flow a few times in the past week, with no problems. I've only been able to find one reference point for this, in [git's own documentation](https://git-scm.com/docs/git-fsck#Documentation/git-fsck.txt-codesymlinkPointsToGitDircode). 
+
+It's very concerning because it prevents me from syncing with my remote repository at all. I was able to work around the problem with `git reset HEAD~` so I could at least get a few changes sent to my remote, but that meant I lost all the changes I made to the file itself. 
+
+Can anyone say what the problem might be here? Why does git suddenly seem upset that I've got a symlink pointing at my git directory? 

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 4"
+ date="2024-05-21T13:25:54Z"
+ content="""
+Yup, that's my understanding as well. I made a [forum post](https://forum.gitlab.com/t/recent-git-v2-45-1-breaks-git-annex-compatibility/104909/1) at GitLab, but it's still under the noob-posting-spam-protection... Forgejo apparently doesn't exhibit this behaviour btw.
+"""]]
