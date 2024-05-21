@@ -51,6 +51,7 @@ This is implememented and working. Remaining todo list for it:
   the last MANIFEST it uploaded, next time it downloads the MANIFEST
   it can check if there are bundle files in the old one that are not
   in the new one. If so, it can drop those bundle files from the remote.
+  (May be unsafe, see below section on bundle deletion problems.)
 
 * A push race can also appear to the user as if they pushed a ref, but then
   it got deleted from the remote. This happens when two pushes are
@@ -107,4 +108,13 @@ arbitrarily wide.
 What if only emptying pushes delete bundles? If a manifest file refers to a
 bundle that has been deleted, that can be treated the same as if the
 manifest file was empty, because we know that, for that bundle to have been
-deleted, there must have been an emptying push.
+deleted, there must have been an emptying push. So this would work.
+
+It is kind of a cop-out, because it requires the user to do an emptying
+push from time to time. But by doing that, the user will expect that
+someone who pulls at that point gets an empty repository. 
+
+Note that a race between an emptying push an a ref push will result in the
+emptying push winning, so the ref push is lost. This is the same behavior
+as can happen in a push race not involving deletion though, and any
+improvements that are made to the UI around that will also help with this.
