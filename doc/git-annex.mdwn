@@ -1648,17 +1648,6 @@ Remotes are configured using these settings in `.git/config`.
   remotes, and is set when using [[git-annex-initremote]](1) with the
   `--private` option.
 
-* `remote.<name>.annex-max-git-bundles`, `annex.max-git-bundles`
-
-  When using [[git-remote-annex]] to store a git repository in a special 
-  remote, this configures how many separate git bundle objects to store
-  in the special remote before re-uploading a single git bundle that contains
-  the entire git repository.
-
-  The default is 100, which aims to avoid often needing to often re-upload,
-  while preventing a new clone needing to download too many objects. Set to
-  0 to disable re-uploading.
-
 * `remote.<name>.annex-allow-encrypted-gitrepo`
 
   Setting this to true allows using [[git-remote-annex]] to push the git

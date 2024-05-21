@@ -272,9 +272,8 @@ fullPush' :: Manifest -> State -> Remote -> [Ref] -> Annex (Bool, State)
 fullPush' oldmanifest st rmt refs =do
 	let bs = map Git.Bundle.fullBundleSpec refs
 	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
-	oldmanifest' <- dropOldKeys rmt oldmanifest (/= bundlekey)
 	let manifest = mkManifest [bundlekey]
-		(inManifest oldmanifest ++ outManifest oldmanifest')
+		(inManifest oldmanifest ++ outManifest oldmanifest)
 	uploadManifest rmt manifest
 	return (True, st { manifestCache = Nothing })
 
@@ -291,17 +290,11 @@ guardPush st a = catchNonAsync a $ \ex -> do
 incrementalPush :: State -> Remote -> M.Map Ref Sha -> M.Map Ref Sha -> Annex (Bool, State)
 incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure (manifestCache st)
-	if length (inManifest oldmanifest) + 1 > remoteAnnexMaxGitBundles (Remote.gitconfig rmt)
-		then fullPush' oldmanifest st rmt (M.keys newtrackingrefs)
-		else go oldmanifest
+	bs <- calc [] (M.toList newtrackingrefs)
+	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
+	uploadManifest rmt (oldmanifest <> mkManifest [bundlekey] [])
+	return (True, st { manifestCache = Nothing })
   where
- 	go oldmanifest = do
-		bs <- calc [] (M.toList newtrackingrefs)
-		bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
-		oldmanifest' <- dropOldKeys rmt oldmanifest (/= bundlekey)
-		uploadManifest rmt (oldmanifest' <> mkManifest [bundlekey] [])
-		return (True, st { manifestCache = Nothing })
-	
 	calc c [] = return (reverse c)
 	calc c ((ref, sha):refs) = case M.lookup ref oldtrackingrefs of
 		Just oldsha
@@ -610,7 +603,7 @@ downloadManifest rmt = get mkmain >>= maybe (get mkbak) (pure . Just)
 		_ <- dl tmp
 		b <- liftIO (B.readFile tmp)
 		case parseManifest b of
-			Right m -> return (Just m)
+			Right m -> Just <$> verifyManifest rmt m
 			Left err -> giveup err
 
 	getexport _ [] = return Nothing
@@ -634,13 +627,6 @@ downloadManifest rmt = get mkmain >>= maybe (get mkbak) (pure . Just)
 -- So this may be interrupted and leave the manifest key not present.
 -- To deal with that, there is a backup manifest key. This takes care
 -- to ensure that one of the two keys will always exist.
---
--- Once the manifest has been uploaded, attempts to drop all outManifest
--- keys. A failure to drop does not cause an error to be thrown, because
--- the push has already succeeded. Avoids re-uploading the manifest with
--- the dropped keys removed from outManifest, because dropping the keys
--- takes some time and another push may have already overwritten
--- the manifest in the meantime.
 uploadManifest :: Remote -> Manifest -> Annex ()
 uploadManifest rmt manifest = do
 	ok <- ifM (Remote.checkPresent rmt mkbak)
@@ -650,9 +636,8 @@ uploadManifest rmt manifest = do
 		-- This ensures that at no point are both deleted.
 		, put mkbak <&&> dropandput mkmain
 		)
-	if ok
-		then void $ dropOldKeys rmt manifest (const True)
-		else uploadfailed
+	unless ok
+		uploadfailed
   where
 	mkmain = genManifestKey (Remote.uuid rmt)
 	mkbak = genBackupManifestKey (Remote.uuid rmt)
@@ -696,6 +681,17 @@ dropOldKeys rmt manifest p =
 	mkManifest (inManifest manifest)
 		<$> filterM (dropKey rmt) (filter p (outManifest manifest))
 
+-- When pushEmpty raced with another push, it could result in the manifest
+-- listing bundles that it deleted. Such a manifest has to be treated the
+-- same as an empty manifest. To detect that, this checks that all the
+-- bundles listed in the manifest still exist on the remote.
+verifyManifest :: Remote -> Manifest -> Annex Manifest
+verifyManifest rmt manifest = 
+	ifM (allM (checkPresentGitBundle rmt) (inManifest manifest))
+		( return manifest
+		, return $ mkManifest [] (inManifest manifest <> outManifest manifest)
+		)
+
 -- Downloads a git bundle to the annex objects directory, unless
 -- the object file is already present. Returns the filename of the object
 -- file.
@@ -731,6 +727,16 @@ downloadGitBundle rmt k = getKeyExportLocations rmt k >>= \case
 			return (True, v)
 	rsp = Remote.retrievalSecurityPolicy rmt
 	vc = Remote.RemoteVerify rmt
+
+-- Checks if a bundle is present. Throws errors if the remote cannot be
+-- accessed.
+checkPresentGitBundle :: Remote -> Key -> Annex Bool
+checkPresentGitBundle rmt k = 
+	getKeyExportLocations rmt k >>= \case
+		Nothing -> Remote.checkPresent rmt k
+		Just locs -> anyM checkexport locs
+  where
+	checkexport = Remote.checkPresentExport (Remote.exportActions rmt) k
 
 -- Uploads a bundle or manifest object from the annex objects directory
 -- to the remote.

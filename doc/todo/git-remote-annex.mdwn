@@ -12,6 +12,9 @@ This is implememented and working. Remaining todo list for it:
 
 * Test incremental push edge cases involving checkprereq.
 
+* Cloning a special remote with an empty manifest results in a repo where
+  git fetch fails, claiming the special remote is encrypted, when it's not.
+
 * Cloning from an annex:: url with importtree=yes doesn't work
   (with or without exporttree=yes). This is because the ContentIdentifier
   db is not populated. It should be possible to work around this.
@@ -60,61 +63,3 @@ This is implememented and working. Remaining todo list for it:
   They would have to use git fetch --prune to notice the deletion.
   Once the user does notice, they can re-push their ref to recover.
   Can this be improved?
-
-## bundle deletion problems
-
-Deleting bundles results in some problems involving races,
-detailed below, that result in the manifest file listing a bundle that has
-been deleted. Which breaks cloning, and is data loss, and so *must* 
-be solved before release.
-
-* A race between an incremental push and a full push can result in
-  a bundle that the incremental push is based on being deleted by the full
-  push, and then incremental push's manifest file being written later.
-  Which will prevent cloning or some pulls from working.
-
-  A fix: Make each full push (and emptying push) also write to a fallback
-  manifest file that is only written by full pushes (and emptying pushes),
-  not incremental pushes. When fetching the main manifest file, always
-  check that all bundles mentioned in it are still in the remote. If any
-  are missing, fetch and use the fallback manifest file instead.
-
-* A race between two full pushes can also result in the manifest file listing
-  a bundle that has been deleted:
-
-  Start with a full push of bundle A.
-
-  Then there are 2 racing full pushes X and Y, of bundle A and B
-  respectively. With this series of operations:
-
-  1. Y: write bundle B
-  1. Y: read manifest (listing A)
-  1. Y: write B to manifest
-  1. X: write bundle A
-  1. Y: delete bundle A
-  1. X: read manifest (listing B)
-  1. X: write A to manifest
-  1. X: delete bundle B
-
-  Which results in a manifest that lists A, but that bundle was deleted.
-
-The problems above *could* be solved by not deleting bundles, but that is
-unsatisfactory.
-
-Old bundles could be deleted after some period of time. But a process can
-be suspended at any point and resumed later, so the race windows can be
-arbitrarily wide.
-
-What if only emptying pushes delete bundles? If a manifest file refers to a
-bundle that has been deleted, that can be treated the same as if the
-manifest file was empty, because we know that, for that bundle to have been
-deleted, there must have been an emptying push. So this would work.
-
-It is kind of a cop-out, because it requires the user to do an emptying
-push from time to time. But by doing that, the user will expect that
-someone who pulls at that point gets an empty repository. 
-
-Note that a race between an emptying push an a ref push will result in the
-emptying push winning, so the ref push is lost. This is the same behavior
-as can happen in a push race not involving deletion though, and any
-improvements that are made to the UI around that will also help with this.

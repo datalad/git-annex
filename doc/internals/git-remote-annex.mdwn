@@ -43,6 +43,13 @@ stored in such a special remote, this procedure will work:
    (Note that later bundles can update refs from the versions in previous
    bundles.)
 
-When the special remote is encrypted, the GITMANIFEST and GITBUNDLE will
-also be encrypted. To decrypt those manually, see this
-[[fairly simple shell script using standard tools|tips/Decrypting_files_in_special_remotes_without_git-annex]].
+Note that, if a GITBUNDLE listed in the GITMANIFEST turns out not to exist,
+a clone should treat this the same as if the GITMANIFEST were empty.
+bundle objects are deleted when a push is made to the remote that
+deletes all refs from it, and in a race between such a push and another
+push of some refs, it is possible for the GITMANIFEST to refer to deleted
+bundles.
+
+When the special remote is encrypted, both the names and content of
+the GITMANIFEST and GITBUNDLE will also be encrypted. To
+decrypt those manually, see this [[fairly simple shell script using standard tools|tips/Decrypting_files_in_special_remotes_without_git-annex]].

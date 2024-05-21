@@ -373,7 +373,6 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBwLimitDownload :: Maybe BwRate
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
 	, remoteAnnexConfigUUID :: Maybe UUID
-	, remoteAnnexMaxGitBundles :: Int
 	, remoteAnnexAllowEncryptedGitRepo :: Bool
 
 	{- These settings are specific to particular types of remotes
@@ -479,8 +478,6 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexDdarRepo = getmaybe "ddarrepo"
 		, remoteAnnexHookType = notempty $ getmaybe "hooktype"
 		, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
-		, remoteAnnexMaxGitBundles = 
-			fromMaybe 100 (getmayberead  "max-git-bundles")
 		, remoteAnnexAllowEncryptedGitRepo = 
 			getbool "allow-encrypted-gitrepo" False
 		}

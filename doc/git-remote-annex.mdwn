@@ -38,23 +38,29 @@ variables. Some special remotes may also need environment variables to be
 set when pulling or pushing.
 
 The git repository is stored in the special remote using special annex objects
-with names starting with "GITMANIFEST--" and "GITBUNDLE--". For details about
+with names starting with "GITMANIFEST" and "GITBUNDLE". For details about
 how the git repository is stored, see
 <https://git-annex.branchable.com/internals/git-remote-annex/>
 
 Pushes to a special remote are usually done incrementally. However,
 sometimes the whole git repository (but not the annex) needs to be
 re-uploaded. That is done when force pushing a ref, or deleting a
-ref from the remote. It's also done when too many git bundles
-accumulate in the special remote, as configured by the
-`remote.<name>.annex-max-git-bundles` git config.
+ref from the remote.
+
+The special remote accumulates one GITBUNDLE object per push, and old
+objects are usually not deleted. This means that refs pushed to the special
+remote can still be accessed even after deleting or overwriting them.
+A push that deletes every ref from the special remote does delete all
+the accumulated GITBUNDLE objects. But of course, making such a push
+means that someone clones from the special remote at that point in time
+will see an empty remote.
 
 Like any git repository, a git repository stored on a special remote can
 have conflicting things pushed to it from different places. This mostly
 works the same as any other git repository, eg a push that overwrites other
 work will be prevented unless forced. However, it is possible, when
 conflicting pushes are being done at the same time, for one of the pushes
-to be overwritten by the other one. In this sitiation, the push will appear
+to be overwritten by the other one. In this situation, the push will appear
 to have succeeded, but pulling later will show the true situation.
 
 # SEE ALSO
