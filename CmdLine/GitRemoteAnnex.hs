@@ -358,10 +358,10 @@ pushEmpty :: State -> Remote -> Annex (Bool, State)
 pushEmpty st rmt = do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure
 		(manifestCache st)
-	oldmanifest' <- dropOldKeys rmt oldmanifest (const True)
 	let manifest = mkManifest mempty
-		(inManifest oldmanifest ++ outManifest oldmanifest')
-	uploadManifest rmt manifest
+		(inManifest oldmanifest ++ outManifest oldmanifest)
+	manifest' <- dropOldKeys rmt manifest
+	uploadManifest rmt manifest'
 	return (True, st { manifestCache = Nothing })
 
 data RefSpec = RefSpec
@@ -687,10 +687,10 @@ uploadManifest rmt manifest = do
 --
 -- If interrupted at this stage, or if a drop fails, the key remains
 -- in the outManifest, so the drop will be tried again later.
-dropOldKeys :: Remote -> Manifest -> (Key -> Bool) -> Annex Manifest
-dropOldKeys rmt manifest p =
+dropOldKeys :: Remote -> Manifest -> Annex Manifest
+dropOldKeys rmt manifest =
 	mkManifest (inManifest manifest)
-		<$> filterM (dropKey rmt) (filter p (outManifest manifest))
+		<$> filterM (not <$$> dropKey rmt) (outManifest manifest)
 
 -- When pushEmpty raced with another push, it could result in the manifest
 -- listing bundles that it deleted. Such a manifest has to be treated the
