@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-05-21T21:34:12Z"
+ content="""
+You will need to reach out to gitlab if you want to continue using it. They
+need to set `git config receive.fsck.symlinkPointsToGitDir ignore`.
+
+FWIW, github does not (currently) have this behavior.
+
+This change does have some other knock-on effects that git-annex can deal
+with, see [[todo/todo/deal_with_git_fsck_symlinkPointsToGitDir]].
+
+I suppose that it would also work to unlock any annexed files that you want
+to push to gitlab. It shouldn't matter that there are locked annexed files
+in the history you've already pushed, only new commits in the push get
+checked.
+
+Using git-remote-gcrypt will also avoid the problem, since gitlab can't
+tell that you're a scary symlink user if you encrypt everything. ;-)
+"""]]
