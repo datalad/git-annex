@@ -351,7 +351,7 @@ incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 			)
 
 pushEmpty :: State -> Remote -> Annex (Bool, State)
-pushEmpty st rmt = do
+pushEmpty st rmt = guardPush st $ do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure
 		(manifestCache st)
 	let manifest = mkManifest mempty
