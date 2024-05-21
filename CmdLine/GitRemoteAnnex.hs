@@ -525,6 +525,13 @@ getEnabledSpecialRemoteByName remotename =
 				maybe (return (Just rmt)) giveup
 					(checkSpecialRemoteProblems rmt)
 
+formatManifest :: Manifest -> B.ByteString
+formatManifest manifest =
+	B8.unlines $ 
+		map serializeKey' (inManifest manifest)
+			<>
+		map (\k -> "-" <> serializeKey' k) (outManifest manifest)
+
 parseManifest :: B.ByteString -> Either String Manifest
 parseManifest b = 
 	let (outks, inks) = partitionEithers $ map parseline $ B8.lines b
@@ -650,15 +657,13 @@ uploadManifest rmt manifest = do
 	mkbak = genBackupManifestKey (Remote.uuid rmt)
 	
 	uploadfailed = giveup "Failed to upload manifest."
-	
-	manifestcontent = B8.unlines $ map serializeKey' (inManifest manifest)
-	
+
 	dropandput mk = do
 		dropKey' rmt mk
 		put mk
 
 	put mk = withTmpFile "GITMANIFEST" $ \tmp tmph -> do
-		liftIO $ B8.hPut tmph manifestcontent
+		liftIO $ B8.hPut tmph (formatManifest manifest)
 		liftIO $ hClose tmph
 		-- storeKey needs the key to be in the annex objects
 		-- directory, so put the manifest file there temporarily.
