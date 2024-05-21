@@ -12,9 +12,6 @@ This is implememented and working. Remaining todo list for it:
 
 * Test incremental push edge cases involving checkprereq.
 
-* Cloning a special remote with an empty manifest results in a repo where
-  git fetch fails, claiming the special remote is encrypted, when it's not.
-
 * Cloning from an annex:: url with importtree=yes doesn't work
   (with or without exporttree=yes). This is because the ContentIdentifier
   db is not populated. It should be possible to work around this.

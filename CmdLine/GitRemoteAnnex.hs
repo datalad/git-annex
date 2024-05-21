@@ -454,7 +454,8 @@ parseSpecialRemoteUrl url remotename = case parseURI url of
 
 -- Runs an action with a Remote as specified by the SpecialRemoteConfig.
 withSpecialRemote :: SpecialRemoteConfig -> StartAnnexBranch -> (Remote -> Annex a) -> Annex a
-withSpecialRemote (ExistingSpecialRemote remotename) _ a =
+withSpecialRemote (ExistingSpecialRemote remotename) _ a = do
+	liftIO $ hPutStrLn stderr "case 1"
 	getEnabledSpecialRemoteByName remotename >>=
 		maybe (giveup $ "There is no special remote named " ++ remotename)
 		a
@@ -514,9 +515,15 @@ getEnabledSpecialRemoteByName :: RemoteName -> Annex (Maybe Remote)
 getEnabledSpecialRemoteByName remotename = 
 	Remote.byNameOnly remotename >>= \case
 		Nothing -> return Nothing
-		Just rmt -> 
-			maybe (return (Just rmt)) giveup
-				(checkSpecialRemoteProblems rmt)
+		Just rmt
+			-- If the git-annex branch is missing or does not
+			-- have a remote config for this remote, but the
+			-- git config has the remote, it can't be used.
+			| unparsedRemoteConfig (Remote.config rmt) == mempty ->
+				return Nothing
+			| otherwise -> 
+				maybe (return (Just rmt)) giveup
+					(checkSpecialRemoteProblems rmt)
 
 parseManifest :: B.ByteString -> Either String Manifest
 parseManifest b = 
@@ -540,10 +547,10 @@ parseManifest b =
 	checkvalid _ (Nothing:_) =
 		Left "Error parsing manifest"
 
--- Avoid using special remotes that are thirdparty populated, because
--- there is no way to push the git repository keys into one.
 checkSpecialRemoteProblems :: Remote -> Maybe String
 checkSpecialRemoteProblems rmt
+	-- Avoid using special remotes that are thirdparty populated, 
+	-- because there is no way to push the git repository keys into one.
 	| Remote.thirdPartyPopulated (Remote.remotetype rmt) =
 		Just $ "Cannot use this thirdparty-populated special"
 			++ " remote as a git remote."
