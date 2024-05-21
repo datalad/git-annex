@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-05-21T21:47:38Z"
+ content="""
+BTW, I have to mention that I'm deeply unhappy for git for making this
+change, with such a 
+[weak justification](https://github.com/git/git/commit/a33fea0886cfa016d313d2bd66bdd08615bffbc9),
+and so little care for breakage.
+
+ The change came after a security fix which involved symlinks and
+ `.git/objects`, but that was a symlink *inside* `.git/objects`, 
+which is entirely different than a symlink pointing into the
+`.git` directory. 
+
+While it's understandable that someone encountering a
+symlink related security hole may want to throw out the baby with the
+bathwater, what they have actually done here is to only throw out the
+baby. This change will not prevent the class of security hole that
+motivated it.
+"""]]
