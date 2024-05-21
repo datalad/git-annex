@@ -266,10 +266,6 @@ fullPush :: State -> Remote -> [Ref] -> Annex (Bool, State)
 fullPush st rmt refs = guardPush st $ do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure
 		(manifestCache st)
-	fullPush' oldmanifest st rmt refs
-
-fullPush' :: Manifest -> State -> Remote -> [Ref] -> Annex (Bool, State)
-fullPush' oldmanifest st rmt refs =do
 	let bs = map Git.Bundle.fullBundleSpec refs
 	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
 	let manifest = mkManifest [bundlekey]
