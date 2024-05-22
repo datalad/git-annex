@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-05-22T10:04:22Z"
+ content="""
+Note that there is an active patch set in git.git mailing list reverting
+many of the "defense in depth" patches, which seem to have had many other
+bugs.
+
+I've suggested they also revert the parts of that patch set that cause
+these problems.
+
+Will hold off on git-annex changes until the git situation stabalizes,
+and until I have free time to deal with it more.
+"""]]
