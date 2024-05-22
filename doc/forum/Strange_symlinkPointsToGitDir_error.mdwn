@@ -5,15 +5,15 @@ remote: error: object a86b9c49d9ef8c88c3180013eef3da5f6ffa9353: symlinkPointsToG
 remote: error: object ebb743ffb44e23c54a7e3ed44a444cc0ed0df42d: symlinkPointsToGitDir: symlink target points to git dir
 remote: fatal: fsck error in pack objects
 error: remote unpack failed: unpack-objects abnormal exit
-To gitlab.com:daraul/taskwarrior.git
+To gitlab.com:datamanager/tasks.git
  ! [remote rejected]     git-annex -> synced/git-annex (unpacker error)
  ! [remote rejected]     master -> synced/master (unpacker error)
-error: failed to push some refs to 'gitlab.com:daraul/taskwarrior.git'
+error: failed to push some refs to 'gitlab.com:datamanager/tasks.git'
 remote: error: object a86b9c49d9ef8c88c3180013eef3da5f6ffa9353: symlinkPointsToGitDir: symlink target points to git dir
 remote: error: object ebb743ffb44e23c54a7e3ed44a444cc0ed0df42d: symlinkPointsToGitDir: symlink target points to git dir
 remote: fatal: fsck error in pack objects
 error: remote unpack failed: unpack-objects abnormal exit
-To gitlab.com:daraul/taskwarrior.git
+To gitlab.com:datamanager/tasks.git
  ! [remote rejected]     master -> master (unpacker error)
 ```
 
