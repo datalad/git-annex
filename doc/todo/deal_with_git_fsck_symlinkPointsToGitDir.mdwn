@@ -24,3 +24,19 @@ configs.
 
 Is it at all common to set `git config fetch.fsckObjects true` or 
 `git config receive.fsckObjects` true?
+
+----
+
+There is also potential breakage from git fsck now warning about symlink
+targets that exceed `PATH_MAX`. On Windows, that is 260. A SHA512 key has a
+symlink target of at least length 306. And even shorter keys, when located
+in deep subdirectories, can have longer symlink targets than that. So
+pushing to a bare repo on Windows could fail, for example. It even seems
+likely this could affect pushing to Freebsd in some cases, since its
+`PATH_MAX` is 1024 to Linux's 4096.
+
+If git-annex wanted to also avoid this breakage, it could set:
+    
+    git config fsck.symlinkTargetLength ignore
+    git config receive.fsck.symlinkTargetLength ignore
+    git config fetch.fsck.symlinkTargetLength ignore
