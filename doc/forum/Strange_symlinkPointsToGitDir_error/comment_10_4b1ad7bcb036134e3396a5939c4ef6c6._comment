@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2024-05-22T10:21:12Z"
+ content="""
+I have brought this reversion to the attention of the git developers
+
+They were already working on reverting a surprisingly large amount of the recent related patches, but not the one that affects git-annex, so I hope they'll include it. 
+
+Seems to have been a case of security fixes under embargo leading to going much too far on trying to harden against future related security problems, with the embargo preventing sufficient review.
+
+Fingers crossed.
+"""]]
