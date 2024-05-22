@@ -1,0 +1,70 @@
+### Please describe the problem.
+
+`git annex view` doesn't work if git submodules exist in the annex.
+
+
+### What steps will reproduce the problem?
+
+1. add git submodules
+2. set tag such as `git annex metadata --tag work projects"
+3. `git annex view tags=*`, then I get the error `rmdir ...`
+
+### What version of git-annex are you using? On what operating system?switch
+
+- git-annex version: 10.20240430-gd6ad5b9b5003baa77626d4c8ad92b799331232aa
+- macOS Sonoma (M2) and Manjaro Linux
+
+```
+git-annex version: 10.20240430
+build flags: Assistant Webapp Pairing FsEvents TorrentParser MagicMime Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.2 bloomfilter-2.0.1.2 crypton-1.0.0 DAV-1.3.4 feed-1.3.2.1 ghc-9.6.3 http-client-0.7.17 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: darwin aarch64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+```
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+(base) gglee@Tim-MacBook-Pro-M2-14inch annex % ls -l1
+ARCHIVE
+AREA
+PROJECT
+RESOURCE
+Using KeePass to serve SSH keys (4_28_2024 10_22_54 PM).html
+Using pass in a team. The “standard unix password manager”… _ by David _ Medium (4_28_2024 10_22_14 PM).html
+
+(base) gglee@Tim-MacBook-Pro-M2-14inch annex % git annex view tags=\*
+
+view  (searching...) 
+warning: unable to rmdir 'ARCHIVE/00_projects/2015_personal_XXXXXX/XXXX': Directory not empty
+warning: unable to rmdir 'ARCHIVE/00_projects/2017_personal_XXXXXX2/XXXX2': Directory not empty
+warning: unable to rmdir 'ARCHIVE/00_projects/2017_personal_XXXXXX3/XXXX3': Directory not empty
+warning: unable to rmdir 'ARCHIVE/00_projects/2023_05_RAP_XXXX_STT_DUMMY_SERVER/XXXX-stt-dummy-server': Directory not empty
+warning: unable to rmdir 'ARCHIVE/00_projects/2023_05_RAP_XXXX_XXXX_Simulator/grpc_XXXX': Directory not empty
+warning: unable to rmdir 'PROJECT/2023_06_RAP_XXXX1/XXXX-main': Directory not empty
+warning: unable to rmdir 'PROJECT/2023_06_RAP_XXXX1/XXXX-plugin-ai-template': Directory not empty
+warning: unable to rmdir 'PROJECT/2023_06_RAP_XXXX1/XXXX-plugin-interface': Directory not empty
+warning: unable to rmdir 'PROJECT/2023_06_RAP_XXXX1/XXXX-plugin-stt-template': Directory not empty
+warning: unable to rmdir 'PROJECT/2023_06_RAP_XXXX1/XXXX-plugin-tts-template': Directory not empty
+warning: unable to rmdir 'PROJECT/2023_06_RAP_XXXX1/XXXX-XXXX-client': Directory not empty
+warning: unable to rmdir 'PROJECT/2023_06_RAP_XXXX1/XXXX-grpc-interface': Directory not empty
+warning: unable to rmdir 'PROJECT/2024_02_RAP_LLM_XXXX/XXXX-test': Directory not empty
+warning: unable to rmdir 'RESOURCE/bible converting/data/sword-osis-convert': Directory not empty
+Updating files: 100% (66860/66860), done.
+Switched to branch 'views/main(tags=_)'
+ok
+
+(base) gglee@Tim-MacBook-Pro-M2-14inch annex % ls -l1
+ARCHIVE
+AREA
+PROJECT
+RESOURCE
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+Git annex is my best tool ever.
