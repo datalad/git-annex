@@ -1,0 +1,37 @@
+### Please describe the problem.
+
+Syncing with a special remote "borg" seems to fail - sometimes, but not always.
+
+### What steps will reproduce the problem?
+
+I honestly do not know the steps to reproduce this issue. I wish I could. There is one call exiting with a failure (see the debug log), although I don't know which command is being executed before that.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 10.20240129
+
+Debian Stable 12.5
+
+### Please provide any additional information below.
+
+[[!format sh """
+...
+[2024-05-23 22:39:40.999733121] (Utility.Process) process [57508] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff","--cached","--name-only","-z","--diff-filter=ACMRT","--","."]
+[2024-05-23 22:39:41.001888748] (Utility.Process) process [57508] done ExitSuccess
+[2024-05-23 22:39:41.002613093] (Utility.Process) process [57509] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2024-05-23 22:39:41.003662566] (Utility.Process) process [57509] done ExitSuccess
+[2024-05-23 22:39:41.004051234] (Utility.Process) process [57510] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/main"]
+[2024-05-23 22:39:41.005913975] (Utility.Process) process [57510] done ExitSuccess
+Auf Branch main
+nichts zu committen, Arbeitsverzeichnis unverändert
+[2024-05-23 22:39:41.016177898] (Utility.Process) process [57493] done ExitFailure 1
+ok
+...
+[2024-05-23 22:39:56.926564597] (Utility.Process) process [57484] done ExitSuccess
+[2024-05-23 22:39:56.92713831] (Utility.Process) process [57523] done ExitSuccess
+sync: 1 failed
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Definately, git-annex is my Nr.1 tool for managing my files. There is no comparable alternative out there as of right now. Keep up the good work!
