@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-05-24T21:18:02Z"
+ content="""
+I think that "list borg failed" does indicate there is some real failure
+involving borg, but it seems it's not as simple as a command that fails.
+
+I wonder if this might be caused by your locale settings. git-annex does
+run `borg list` with LANG=C, but there might be some other locale setting
+that is breaking it.
+
+But... I'm having difficulty seeing how git-annex could fail like that without
+displaying an error message at all.
+"""]]
