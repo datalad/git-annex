@@ -29,4 +29,4 @@ installed = normalize . extract <$> readProcess "git" ["--version"]
 older :: String -> IO Bool
 older n = do
 	v <- installed
-	return $ v < normalize n 
+	return $ v < normalize n

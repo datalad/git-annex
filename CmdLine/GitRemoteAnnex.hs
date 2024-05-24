@@ -20,6 +20,7 @@ import qualified Git.Branch
 import qualified Git.Bundle
 import qualified Git.Remote
 import qualified Git.Remote.Remove
+import qualified Git.Version
 import qualified Annex.SpecialRemote as SpecialRemote
 import qualified Annex.Branch
 import qualified Annex.BranchState
@@ -1010,6 +1011,12 @@ specialRemoteFromUrl sab a = withTmpDir "journal" $ \tmpdir -> do
 -- When there is now a sibling git-annex branch, this handles
 -- initialization. When the initialized git-annex branch has Differences,
 -- the git bundle objects are in the wrong place, so have to be deleted.
+--
+-- Unfortunately, git 2.45.1 and related releases added a 
+-- "defense in depth" check that a freshly cloned repository
+-- does not contain any hooks. Since initialization installs
+-- hooks, have to work around that by not initializing, and 
+-- delete the git bundle objects.
 cleanupInitialization :: StartAnnexBranch -> Annex ()
 cleanupInitialization sab = do
 	case sab of
@@ -1019,7 +1026,7 @@ cleanupInitialization sab = do
 				inRepo $ Git.Branch.delete Annex.Branch.fullname
 				indexfile <- fromRepo gitAnnexIndex
 				liftIO $ removeWhenExistsWith R.removeLink indexfile
-	ifM Annex.Branch.hasSibling
+	ifM (Annex.Branch.hasSibling <&&> nonbuggygitversion)
 		( do
 			autoInitialize' (pure True) remoteList
 			differences <- allDifferences <$> recordedDifferences
@@ -1035,3 +1042,15 @@ cleanupInitialization sab = do
                 	GitBundleKey -> lockContentForRemoval k noop removeAnnex
 			_ -> noop
 		void $ liftIO $ tryIO $ removeDirectory (decodeBS annexobjectdir)
+
+	nonbuggygitversion = liftIO $
+		flip notElem buggygitversions <$> Git.Version.installed
+	buggygitversions = map Git.Version.normalize
+		[ "2.45.1"
+		, "2.44.1"
+		, "2.43.4"
+		, "2.42.2"
+		, "2.41.1"
+		, "2.40.2"
+		, "2.39.4"
+		]
