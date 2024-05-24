@@ -58,7 +58,7 @@ noChunks _ = False
 
 chunkConfigParsers :: [RemoteConfigFieldParser]
 chunkConfigParsers =
-	[ optionalStringParser chunksizeField HiddenField -- deprecated
+	[ optionalStringParser chunksizeField DeprecatedField
 	, optionalStringParser chunkField
 		(FieldDesc "size of chunks (eg, 1MiB)")
 	]

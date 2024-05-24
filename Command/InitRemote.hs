@@ -157,6 +157,7 @@ describeOtherParamsFor c t = do
 		( maybeAddJSONField "whatelse" $ M.fromList $ mkjson l
 		, liftIO $ forM_ l $ \(p, fd, vd) -> case fd of
 			HiddenField -> return ()
+			DeprecatedField -> return ()
 			FieldDesc d -> do
 				putStrLn p
 				putStrLn ("\t" ++ d)
@@ -171,6 +172,7 @@ describeOtherParamsFor c t = do
 	mkjson = mapMaybe $ \(p, fd, vd) ->
 		case fd of
 			HiddenField -> Nothing
+			DeprecatedField -> Nothing
 			FieldDesc d -> Just 
 				( T.pack p
 				, M.fromList

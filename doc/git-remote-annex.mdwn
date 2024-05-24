@@ -20,8 +20,8 @@ For example, to clone from a directory special remote:
 
     git clone annex::358ff77e-0bc3-11ef-bc49-872e6695c0e3?type=directory&encryption=none&directory=/mnt/foo/
 
-When configuring the url of an existing special remote, a
-shorter url of "annex::" is sufficient. For example:
+But you don't need to generate such an url yourself. Instead, you can use
+the shorthand url of "annex::" with an existing special remote.
 
     git-annex initremote foo type=directory encryption=none directory=/mnt/foo
     git config remote.foo.url annex::
@@ -31,6 +31,10 @@ Configuring the url like that is automatically done when cloning from a
 special remote. To make [[git-annex-initremote]](1) and
 [[git-annex-enableremote]](1) configure the url, pass them the `--with-url`
 option.
+
+When using the shorthand "annex::" url, the full url will be displayed
+each time you git pull or push, when it's possible for git-annex to
+determine it.
 
 When a special remote needs some additional credentials to be provided,
 they are not included in the URL, and need to be provided when cloning from

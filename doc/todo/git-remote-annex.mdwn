@@ -10,19 +10,14 @@ will be available to users who don't use datalad.
 
 This is implememented and working. Remaining todo list for it:
 
+* When git clone is used with an annex:: url that is for a directory
+  special remote and is missing directory=, for example, it does
+  not display any useful error message. git fetch does, but it seems
+  git clone eats git-remote-annex stderr.
+
 * Cloning from an annex:: url with importtree=yes doesn't work
   (with or without exporttree=yes). This is because the ContentIdentifier
   db is not populated. It should be possible to work around this.
-
-* It would be nice if git-annex could generate an annex:: url
-  for a special remote and show it to the user, eg when 
-  they have set the shorthand "annex::" url, so they know the full url.
-  `git-annex info $remote` could also display it.
-  Currently, the user has to remember how the special remote was
-  configured and replicate it all in the url.
-
-  There are some difficulties to doing this, including that
-  RemoteConfig can have hidden fields that should be omitted.
 
 * datalad-annex supports cloning from the web special remote,
   using an url that contains the result of pushing to eg, a directory

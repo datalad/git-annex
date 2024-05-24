@@ -107,17 +107,23 @@ commonFieldParsers =
 		(FieldDesc "name for the special remote")
 	, optionalStringParser sameasNameField HiddenField
 	, optionalStringParser sameasUUIDField HiddenField
-	, optionalStringParser typeField
-		(FieldDesc "type of special remote")
 	, autoEnableFieldParser
 	, costParser costField
 		(FieldDesc "default cost of this special remote")
+	, optionalStringParser preferreddirField
+		(FieldDesc "directory whose content is preferred")
+	] ++ essentialFieldParsers
+
+{- Parsers for fields that are common to all special remotes, and are
+ - also essential to include in eg, annex:: urls. -}
+essentialFieldParsers :: [RemoteConfigFieldParser]
+essentialFieldParsers =
+	[ optionalStringParser typeField
+		(FieldDesc "type of special remote")
 	, yesNoParser exportTreeField (Just False)
 		(FieldDesc "export trees of files to this remote")
 	, yesNoParser importTreeField (Just False)
 		(FieldDesc "import trees of files from this remote")
-	, optionalStringParser preferreddirField
-		(FieldDesc "directory whose content is preferred")
 	]
 
 autoEnableFieldParser :: RemoteConfigFieldParser

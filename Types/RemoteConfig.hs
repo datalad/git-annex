@@ -51,6 +51,8 @@ data RemoteConfigFieldParser = RemoteConfigFieldParser
 data FieldDesc
 	= FieldDesc String
 	| HiddenField
+	| DeprecatedField
+	deriving (Eq)
 
 newtype ValueDesc = ValueDesc String
 

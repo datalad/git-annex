@@ -22,10 +22,12 @@ import qualified Git.Remote
 import qualified Git.Remote.Remove
 import qualified Git.Version
 import qualified Annex.SpecialRemote as SpecialRemote
+import qualified Annex.SpecialRemote.Config as SpecialRemote
 import qualified Annex.Branch
 import qualified Annex.BranchState
 import qualified Types.Remote as Remote
 import qualified Logs.Remote
+import qualified Remote.External
 import Remote.Helper.Encryptable (parseEncryptionMethod)
 import Annex.Transfer
 import Backend.GitRemoteAnnex
@@ -72,17 +74,18 @@ run (remotename:url:[]) =
 		Right src -> do
 			repo <- getRepo
 			state <- Annex.new repo
-			Annex.eval state (run' src)
+			Annex.eval state (run' src url')
 run (_remotename:[]) = giveup "remote url not configured"
 run _ = giveup "expected remote name and url parameters"
 
-run' :: SpecialRemoteConfig -> Annex ()
-run' src = do
+run' :: SpecialRemoteConfig -> String -> Annex ()
+run' src url = do
 	sab <- startAnnexBranch
 	-- Prevent any usual git-annex output to stdout, because
 	-- the output of this command is being parsed by git.
 	doQuietAction $
 		withSpecialRemote src sab $ \rmt -> do
+			reportFullUrl url rmt
 			ls <- lines <$> liftIO getContents
 			go rmt ls emptyState
   where
@@ -463,6 +466,50 @@ parseSpecialRemoteUrl url remotename = case parseURI url of
 		let (k, sv) = break (== '=') kv
 		    v = if null sv then sv else drop 1 sv
 		in (Proposed (unEscapeString k), Proposed (unEscapeString v))
+			
+getSpecialRemoteUrl :: Remote -> Annex (Maybe String)
+getSpecialRemoteUrl rmt = do
+	rcp <- Remote.configParser (Remote.remotetype rmt)
+		(unparsedRemoteConfig (Remote.config rmt))
+	return $ genSpecialRemoteUrl rmt rcp
+
+genSpecialRemoteUrl :: Remote -> RemoteConfigParser -> Maybe String
+genSpecialRemoteUrl rmt rcp
+	-- Fields that are accepted by remoteConfigRestPassthrough
+	-- are not necessary to include in the url, except perhaps for
+	-- external special remotes. If an external special remote sets
+	-- some such fields, cannot generate an url.
+	| Remote.typename (Remote.remotetype rmt) == Remote.typename Remote.External.remote
+		&& any (`notElem` knownfields) (M.keys c) = Nothing
+	| otherwise = Just $ 
+		"annex::" ++ fromUUID (Remote.uuid rmt) ++ "?" ++
+			intercalate "&" (map configpair cs)
+  where
+	configpair (k, v) = conv k ++ "=" ++ conv v
+	conv = escapeURIString isUnescapedInURIComponent
+		. fromProposedAccepted
+	
+	cs = M.toList $ M.filterWithKey (\k _ -> k `elem` safefields) c
+	c = unparsedRemoteConfig $ Remote.config rmt
+	
+	-- Hidden fields are used for internal stuff like ciphers
+	-- that should not be included in the url.
+	safefields = map parserForField $
+		filter (\p -> fieldDesc p /= HiddenField) ps
+
+	knownfields = map parserForField ps
+
+	ps = SpecialRemote.essentialFieldParsers
+		++ remoteConfigFieldParsers rcp
+
+reportFullUrl :: String -> Remote -> Annex ()
+reportFullUrl url rmt = 
+	when (url == "annex::") $
+		getSpecialRemoteUrl rmt >>= \case
+			Nothing -> noop
+			Just fullurl -> 
+				liftIO $ hPutStrLn stderr $ 
+					"Full remote url: " ++ fullurl
 
 -- Runs an action with a Remote as specified by the SpecialRemoteConfig.
 withSpecialRemote :: SpecialRemoteConfig -> StartAnnexBranch -> (Remote -> Annex a) -> Annex a
