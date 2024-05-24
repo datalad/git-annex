@@ -13,6 +13,7 @@ import Annex.Common
 import Types.GitRemoteAnnex
 import qualified Annex
 import qualified Remote
+import qualified Git
 import qualified Git.CurrentRepo
 import qualified Git.Ref
 import qualified Git.Branch
@@ -37,6 +38,7 @@ import Types.BranchState
 import Types.Difference
 import Types.Crypto
 import Git.Types
+import Logs.File
 import Logs.Difference
 import Annex.Init
 import Annex.UUID
@@ -267,10 +269,12 @@ fullPush st rmt refs = guardPush st $ do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure
 		(manifestCache st)
 	let bs = map Git.Bundle.fullBundleSpec refs
-	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
+	(bundlekey, uploadbundle) <- generateGitBundle rmt bs oldmanifest
 	let manifest = mkManifest [bundlekey]
 		(inManifest oldmanifest ++ outManifest oldmanifest)
-	uploadManifest rmt manifest
+	manifest' <- startPush rmt manifest
+	uploadbundle
+	uploadManifest rmt manifest'
 	return (True, st { manifestCache = Nothing })
 
 guardPush :: State -> Annex (Bool, State) -> Annex (Bool, State)
@@ -287,8 +291,11 @@ incrementalPush :: State -> Remote -> M.Map Ref Sha -> M.Map Ref Sha -> Annex (B
 incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure (manifestCache st)
 	bs <- calc [] (M.toList newtrackingrefs)
-	bundlekey <- generateAndUploadGitBundle rmt bs oldmanifest
-	uploadManifest rmt (oldmanifest <> mkManifest [bundlekey] [])
+	(bundlekey, uploadbundle) <- generateGitBundle rmt bs oldmanifest
+	let manifest = oldmanifest <> mkManifest [bundlekey] []
+	manifest' <- startPush rmt manifest
+	uploadbundle
+	uploadManifest rmt manifest'
 	return (True, st { manifestCache = Nothing })
   where
 	calc c [] = return (reverse c)
@@ -356,8 +363,10 @@ pushEmpty st rmt = guardPush st $ do
 		(manifestCache st)
 	let manifest = mkManifest mempty
 		(inManifest oldmanifest ++ outManifest oldmanifest)
-	manifest' <- dropOldKeys rmt manifest
-	uploadManifest rmt manifest'
+	(manifest', manifestwriter) <- startPush' rmt manifest
+	manifest'' <- dropOldKeys rmt manifest'
+	manifestwriter manifest''
+	uploadManifest rmt manifest''
 	return (True, st { manifestCache = Nothing })
 
 data RefSpec = RefSpec
@@ -678,6 +687,38 @@ uploadManifest rmt manifest = do
 		unlinkAnnex mk
 		return ok
 
+{- A manifest file is cached here before it or the bundles listed in it
+ - is uploaded to the special remote.
+ - 
+ - This prevents forgetting which bundles were uploaded when a push gets
+ - interrupted before updating the manifest on the remote, or when a race
+ - causes the uploaded manigest to be overwritten.
+ -}
+lastPushedManifestFile :: UUID -> Git.Repo -> RawFilePath
+lastPushedManifestFile u r = gitAnnexDir r P.</> "git-remote-annex" 
+	P.</> fromUUID u P.</> "manifest"
+
+{- Call before uploading anything. The returned manifest has added
+ - to it any bundle keys that were in the lastPushedManifestFile
+ - and that are not in the new manifest. -}
+startPush :: Remote -> Manifest -> Annex Manifest
+startPush rmt manifest = do
+	(manifest', writer) <- startPush' rmt manifest
+	writer manifest'
+	return manifest'
+
+startPush' :: Remote -> Manifest -> Annex (Manifest, Manifest -> Annex ())
+startPush' rmt manifest = do
+	f <- fromRepo (lastPushedManifestFile (Remote.uuid rmt))
+	oldmanifest <- liftIO $ 
+		fromRight mempty . parseManifest
+			<$> B.readFile (fromRawFilePath f)
+				`catchNonAsync` (const (pure mempty))
+	let manifest' = manifest <> mkManifest []
+		(inManifest oldmanifest ++ outManifest oldmanifest)
+	let writer = writeLogFile f . decodeBS . formatManifest
+	return (manifest', writer)
+
 -- Drops the outManifest keys. Returns a version of the manifest with
 -- any outManifest keys that were successfully dropped removed from it.
 --
@@ -767,30 +808,34 @@ uploadGitObject rmt k = getKeyExportLocations rmt k >>= \case
 		_ -> noRetry
 
 -- Generates a git bundle, ingests it into the local objects directory, 
--- and uploads its key to the special remote.
+-- and returns an action that uploads its key to the special remote.
 --
 -- If the key is already present in the provided manifest, avoids
--- uploading it.
+-- ingesting or uploading it.
 --
 -- On failure, an exception is thrown, and nothing is added to the local
 -- objects directory.
-generateAndUploadGitBundle
+generateGitBundle
 	:: Remote
 	-> [Git.Bundle.BundleSpec]
 	-> Manifest
-	-> Annex Key
-generateAndUploadGitBundle rmt bs manifest =
+	-> Annex (Key, Annex ())
+generateGitBundle rmt bs manifest =
 	withTmpFile "GITBUNDLE" $ \tmp tmph -> do
 		liftIO $ hClose tmph
 		inRepo $ Git.Bundle.create tmp bs
 		bundlekey <- genGitBundleKey (Remote.uuid rmt)
 			(toRawFilePath tmp) nullMeterUpdate
-		unless (bundlekey `elem` (inManifest manifest)) $ do
-			unlessM (moveAnnex bundlekey (AssociatedFile Nothing) (toRawFilePath tmp)) $
-				giveup "Unable to push"
-			uploadGitObject rmt bundlekey
-				`onException` unlinkAnnex bundlekey
-		return bundlekey
+		if (bundlekey `notElem` inManifest manifest)
+			then do
+				unlessM (moveAnnex bundlekey (AssociatedFile Nothing) (toRawFilePath tmp)) $
+					giveup "Unable to push"
+				return (bundlekey, uploadaction bundlekey)
+			else return (bundlekey, noop)
+  where
+	uploadaction bundlekey = 
+		uploadGitObject rmt bundlekey
+			`onException` unlinkAnnex bundlekey
 
 dropKey :: Remote -> Key -> Annex Bool
 dropKey rmt k = tryNonAsync (dropKey' rmt k) >>= \case

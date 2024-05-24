@@ -36,18 +36,3 @@ This is implememented and working. Remaining todo list for it:
   special remote.
   `datalad-annex::https://example.com?type=web&url={noquery}`
   Supporting something like this would be good.
-
-* A push race can overwrite a manifest that had a GITBUNDLE added to it,
-  and so lose track of a GITBUNDLE. That will never get deleted.
-
-  Could git-annex detect this after the fact and clean it up? Eg,
-  if it caches the last manifest it uploaded, the next time it downloads
-  the manifest it can check if there are bundle files in the cached
-  manifest that are not in the new one, that still exist in the remote.
-  If so, it can add those to the outManifest, to get dropped later.
-
-  This wouldn't fix the case where a push race happens and then the repo
-  whose manifest was overwritten gets deleted. But this is similar to
-  adding a file to the annex, copying it to the special remote, and then
-  deleting the repo w/o sending the git-annex branch anywhere, which leaves
-  a dangling object too. So don't worry about that.
