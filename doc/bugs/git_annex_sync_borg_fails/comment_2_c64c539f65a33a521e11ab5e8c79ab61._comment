@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="derphysiker"
+ avatar="http://cdn.libravatar.org/avatar/80623354932109c891c2e0ebf523b38f"
+ subject="comment 2"
+ date="2024-05-24T20:32:14Z"
+ content="""
+This here is the full git-annex error message:
+
+[[!format sh \"\"\"
+$ git annex sync borg
+git-annex sync will change default behavior in the future to send content to repositories that have preferred content configured. If you do not want this to send any content, use --no-content (or -g) to prepare for that change. (Or you can configure annex.synccontent)
+commit  
+Auf Branch main
+nichts zu committen, Arbeitsverzeichnis unverändert
+ok
+list borg failed
+sync: 1 failed
+\"\"\"]]
+
+And the only command that is \"failing\"
+
+[[!format sh \"\"\"
+[2024-05-24 22:22:06.43578687] (Utility.Process) process [17116] call: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"commit\",\"-a\",\"-m\",\"git-annex in stephan@iridium:/data\"]
+[2024-05-24 22:22:06.467593594] (Utility.Process) process [17116] done ExitFailure 1
+\"\"\"]]
+
+The git commit -am is \"failing\" (Exit Code 1), because there is nothing to commit. The working directory is clean.
+
+[[!format sh \"\"\"
+stephan@iridium:/data$ git --git-dir=.git --work-tree=. --literal-pathspecs -c annex.debug=true commit -a -m \"git-annex in stephan@iridium:/data\"
+[2024-05-24 22:24:35.245969886] (Utility.Process) process [17794] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2024-05-24 22:24:35.2470319] (Utility.Process) process [17794] done ExitSuccess
+[2024-05-24 22:24:35.247307804] (Utility.Process) process [17795] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/main\"]
+[2024-05-24 22:24:35.249350492] (Utility.Process) process [17795] done ExitSuccess
+[2024-05-24 22:24:35.249639516] (Utility.Process) process [17796] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"diff\",\"--cached\",\"--name-only\",\"-z\",\"--diff-filter=ACMRT\",\"--\",\".\"]
+[2024-05-24 22:24:35.251925477] (Utility.Process) process [17796] done ExitSuccess
+[2024-05-24 22:24:35.252406333] (Utility.Process) process [17797] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"symbolic-ref\",\"-q\",\"HEAD\"]
+[2024-05-24 22:24:35.253463648] (Utility.Process) process [17797] done ExitSuccess
+[2024-05-24 22:24:35.253685451] (Utility.Process) process [17798] read: git [\"--git-dir=.git\",\"--work-tree=.\",\"--literal-pathspecs\",\"show-ref\",\"refs/heads/main\"]
+[2024-05-24 22:24:35.255736239] (Utility.Process) process [17798] done ExitSuccess
+Auf Branch main
+nichts zu committen, Arbeitsverzeichnis unverändert
+stephan@iridium:/data$ echo $?
+1
+\"\"\"]]
+
+So everything is fine?
+"""]]
