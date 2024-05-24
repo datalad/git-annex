@@ -40,15 +40,19 @@ current r = do
 
 {- The current branch, which may not really exist yet. -}
 currentUnsafe :: Repo -> IO (Maybe Branch)
-currentUnsafe r = parse . firstLine' <$> pipeReadStrict
-	[ Param "symbolic-ref"
-	, Param "-q"
-	, Param $ fromRef Git.Ref.headRef
-	] r
+currentUnsafe r = withNullHandle $ \nullh ->
+	parse . firstLine' <$> pipeReadStrict'
+		(\p -> p { std_err = UseHandle nullh })
+		ps r
   where
 	parse b
 		| B.null b = Nothing
 		| otherwise = Just $ Git.Ref b
+	ps =
+		[ Param "symbolic-ref"
+		, Param "-q"
+		, Param $ fromRef Git.Ref.headRef
+		]
 
 {- Checks if the second branch has any commits not present on the first
  - branch. -}
