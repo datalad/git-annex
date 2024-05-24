@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-05-24T16:54:39Z"
+ content="""
+It would be very helpful to know what command is exiting nonzero. Here's
+how to find out.
+
+Fist, find the line showing the ExitFailure:
+
+	[2024-05-23 22:39:41.016177898] (Utility.Process) process [57493] done ExitFailure 1
+
+Then look above that point in the debug log to find the process with the
+same number. In the example above, it is 57493. This will show what command
+was run.
+
+Also, it seems to me that git-annex would usually output some kind of error
+message if something failed during a sync, and you've omitted the git-annex
+output. It would be helpful to see that too.
+"""]]
