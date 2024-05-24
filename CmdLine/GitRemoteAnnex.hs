@@ -270,8 +270,10 @@ fullPush st rmt refs = guardPush st $ do
 		(manifestCache st)
 	let bs = map Git.Bundle.fullBundleSpec refs
 	(bundlekey, uploadbundle) <- generateGitBundle rmt bs oldmanifest
-	let manifest = mkManifest [bundlekey]
-		(inManifest oldmanifest ++ outManifest oldmanifest)
+	let manifest = mkManifest [bundlekey] $
+		S.fromList (inManifest oldmanifest)
+			`S.union`
+		outManifest oldmanifest
 	manifest' <- startPush rmt manifest
 	uploadbundle
 	uploadManifest rmt manifest'
@@ -292,7 +294,7 @@ incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure (manifestCache st)
 	bs <- calc [] (M.toList newtrackingrefs)
 	(bundlekey, uploadbundle) <- generateGitBundle rmt bs oldmanifest
-	let manifest = oldmanifest <> mkManifest [bundlekey] []
+	let manifest = oldmanifest <> mkManifest [bundlekey] mempty
 	manifest' <- startPush rmt manifest
 	uploadbundle
 	uploadManifest rmt manifest'
@@ -361,8 +363,10 @@ pushEmpty :: State -> Remote -> Annex (Bool, State)
 pushEmpty st rmt = guardPush st $ do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure
 		(manifestCache st)
-	let manifest = mkManifest mempty
-		(inManifest oldmanifest ++ outManifest oldmanifest)
+	let manifest = mkManifest mempty $
+		S.fromList (inManifest oldmanifest)
+			`S.union`
+		outManifest oldmanifest
 	(manifest', manifestwriter) <- startPush' rmt manifest
 	manifest'' <- dropOldKeys rmt manifest'
 	manifestwriter manifest''
@@ -534,14 +538,15 @@ formatManifest manifest =
 	B8.unlines $ 
 		map serializeKey' (inManifest manifest)
 			<>
-		map (\k -> "-" <> serializeKey' k) (outManifest manifest)
+		map (\k -> "-" <> serializeKey' k)
+			(S.toList (outManifest manifest))
 
 parseManifest :: B.ByteString -> Either String Manifest
 parseManifest b = 
 	let (outks, inks) = partitionEithers $ map parseline $ B8.lines b
 	in case (checkvalid [] inks, checkvalid [] outks) of
 		(Right inks', Right outks') -> 
-			Right $ mkManifest inks' outks'
+			Right $ mkManifest inks' (S.fromList outks')
 		(Left err, _) -> Left err
 		(_, Left err) -> Left err
   where
@@ -714,8 +719,11 @@ startPush' rmt manifest = do
 		fromRight mempty . parseManifest
 			<$> B.readFile (fromRawFilePath f)
 				`catchNonAsync` (const (pure mempty))
-	let manifest' = manifest <> mkManifest []
-		(inManifest oldmanifest ++ outManifest oldmanifest)
+	let oldmanifest' = mkManifest [] $
+		S.fromList (inManifest oldmanifest)
+			`S.union`
+		outManifest oldmanifest
+	let manifest' = manifest <> oldmanifest'
 	let writer = writeLogFile f . decodeBS . formatManifest
 	return (manifest', writer)
 
@@ -726,8 +734,9 @@ startPush' rmt manifest = do
 -- in the outManifest, so the drop will be tried again later.
 dropOldKeys :: Remote -> Manifest -> Annex Manifest
 dropOldKeys rmt manifest =
-	mkManifest (inManifest manifest)
-		<$> filterM (not <$$> dropKey rmt) (outManifest manifest)
+	mkManifest (inManifest manifest) . S.fromList
+		<$> filterM (not <$$> dropKey rmt)
+			(S.toList (outManifest manifest))
 
 -- When pushEmpty raced with another push, it could result in the manifest
 -- listing bundles that it deleted. Such a manifest has to be treated the
@@ -737,7 +746,10 @@ verifyManifest :: Remote -> Manifest -> Annex Manifest
 verifyManifest rmt manifest = 
 	ifM (allM (checkPresentGitBundle rmt) (inManifest manifest))
 		( return manifest
-		, return $ mkManifest [] (inManifest manifest <> outManifest manifest)
+		, return $ mkManifest [] $
+			S.fromList (inManifest manifest)
+				`S.union`
+			outManifest manifest
 		)
 
 -- Downloads a git bundle to the annex objects directory, unless
