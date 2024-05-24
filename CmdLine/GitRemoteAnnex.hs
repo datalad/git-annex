@@ -238,14 +238,16 @@ push st rmt ls = do
 			, trackingrefs
 			)
 		in calc rs =<< case srcRef r of
-			Just srcref
-				| forcedPush r -> okresp $
-					M.insert tr srcref trackingrefs
-				| otherwise -> ifM (isfastforward srcref tr)
-					( okresp $
-						M.insert tr srcref trackingrefs
-					, errresp "non-fast-forward"
-					)
+			Just srcref -> inRepo (Git.Ref.sha srcref) >>= \case
+				Just sha
+					| forcedPush r -> okresp $
+						M.insert tr sha trackingrefs
+					| otherwise -> ifM (isfastforward sha tr)
+						( okresp $
+							M.insert tr sha trackingrefs
+						, errresp "non-fast-forward"
+						)
+				Nothing -> errresp "unknown ref"
 			Nothing -> okresp $ M.delete tr trackingrefs
 	
 	-- Check if the push is a fast-forward that will not overwrite work
