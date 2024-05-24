@@ -26,7 +26,6 @@ module Remote (
 	remoteTypes,
 	remoteList,
 	remoteList',
-	gitSyncableRemoteType,
 	remoteMap,
 	remoteMap',
 	uuidDescriptions,
@@ -61,6 +60,8 @@ module Remote (
 	claimingUrl,
 	claimingUrl',
 	isExportSupported,
+	gitSyncableRemote,
+	gitSyncableRemoteType,
 ) where
 
 import Data.Ord
@@ -445,3 +446,12 @@ claimingUrl' remotefilter url = do
 	fromMaybe web <$> firstM checkclaim (filter remotefilter rs)
   where
 	checkclaim = maybe (pure False) (`id` url) . claimUrl
+
+{- Is this a remote of a type we can sync with, or a special remote
+ - with an annex:: url configured? -}
+gitSyncableRemote :: Remote -> Bool
+gitSyncableRemote r
+	| gitSyncableRemoteType (remotetype r) = True
+	| otherwise = case remoteUrl (gitconfig r) of
+		Just u | "annex::" `isPrefixOf` u -> True
+		_ -> False

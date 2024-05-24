@@ -109,7 +109,11 @@ updateRemote remote = do
 			Remote.Git.configRead False r
 		| otherwise = return r
 
-{- Checks if a remote is syncable using git. -}
+{- Types of remotes that are always syncable using git.
+ -
+ - This does not include special remotes that may or may not have an
+ - annex:: url that allows using git-remote-annex with them.
+ -}
 gitSyncableRemoteType :: RemoteType -> Bool
 gitSyncableRemoteType t = t `elem`
 	[ Remote.Git.remote

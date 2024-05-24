@@ -267,8 +267,8 @@ seek' o = startConcurrency transferStages $ do
 
 	remotes <- syncRemotes (syncWith o)
 	warnSyncContentTransition o remotes
-	-- Remotes that are git repositories, not (necessarily) special remotes.
-	let gitremotes = filter (Remote.gitSyncableRemoteType . Remote.remotetype) remotes
+	-- Remotes that git can push to and pull from.
+	let gitremotes = filter Remote.gitSyncableRemote remotes
 	-- Remotes that contain annex object content.
 	contentremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes

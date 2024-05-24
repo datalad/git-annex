@@ -374,6 +374,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
 	, remoteAnnexConfigUUID :: Maybe UUID
 	, remoteAnnexAllowEncryptedGitRepo :: Bool
+	, remoteUrl :: Maybe String
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
@@ -480,6 +481,12 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
 		, remoteAnnexAllowEncryptedGitRepo = 
 			getbool "allow-encrypted-gitrepo" False
+		, remoteUrl = 
+			case Git.Config.getMaybe (remoteConfig remotename "url") r of
+				Just (ConfigValue b)
+					| B.null b -> Nothing
+					| otherwise -> Just (decodeBS b)
+				_ -> Nothing
 		}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
