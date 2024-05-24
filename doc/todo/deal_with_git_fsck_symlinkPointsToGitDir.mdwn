@@ -40,3 +40,10 @@ If git-annex wanted to also avoid this breakage, it could set:
     git config fsck.symlinkTargetLength ignore
     git config receive.fsck.symlinkTargetLength ignore
     git config fetch.fsck.symlinkTargetLength ignore
+
+----
+
+Also this version of git added checks for hooks created at clone
+time, which breaks git clone using git-remote-annex when the special
+remote contains a git-annex branch. This is similar to how it broke git-lfs
+and I'm sure this part of the breakage will be reverted.
