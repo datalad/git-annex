@@ -59,6 +59,11 @@ has found didn't work before and gave up on using, setting
 
 # OPTIONS
 
+* `--with-url`
+
+  This configures the remote with an "annex::" url, which allows
+  git to push to and pull from it, using [[git-remote-annex]].
+
 * `--json`
 
   Enable JSON output. This is intended to be parsed by programs that use

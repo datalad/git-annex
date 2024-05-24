@@ -26,11 +26,6 @@ This is implememented and working. Remaining todo list for it:
   There are some difficulties to doing this, including that
   RemoteConfig can have hidden fields that should be omitted.
 
-* initremote/enableremote could have an option that configures the url to a
-  special remote to a annex:: url. This would make it easier to use
-  git-remote-annex, since the user would not need to set up the url
-  themselves. (Also it would then avoid setting `skipFetchAll = true`)
-
 * datalad-annex supports cloning from the web special remote,
   using an url that contains the result of pushing to eg, a directory
   special remote.

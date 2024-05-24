@@ -28,8 +28,9 @@ shorter url of "annex::" is sufficient. For example:
 	git push foo master
 
 Configuring the url like that is automatically done when cloning from a
-special remote, but not by [[git-annex-initremote]](1) and
-[[git-annex-enableremote]](1).
+special remote. To make [[git-annex-initremote]](1) and
+[[git-annex-enableremote]](1) configure the url, pass them the `--with-url`
+option.
 
 When a special remote needs some additional credentials to be provided,
 they are not included in the URL, and need to be provided when cloning from

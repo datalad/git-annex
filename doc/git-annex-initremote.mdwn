@@ -38,6 +38,11 @@ want to use `git annex renameremote`.
 
 # OPTIONS
 
+* `--with-url`
+
+  This configures the remote with an "annex::" url, which allows
+  git to push to and pull from it, using [[git-remote-annex]].
+
 * `--whatelse` / `-w`
 
   Describe additional configuration parameters that you could specify.

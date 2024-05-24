@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -21,6 +21,7 @@ import Types.GitConfig
 import Types.ProposedAccepted
 import Config
 import Git.Config
+import Git.Types
 
 import qualified Data.Map as M
 import qualified Data.Text as T
@@ -35,6 +36,7 @@ cmd = withAnnexOptions [jsonOptions] $
 data InitRemoteOptions = InitRemoteOptions
 	{ cmdparams :: CmdParams
 	, sameas :: Maybe (DeferredParse UUID)
+	, withUrl :: Bool
 	, whatElse :: Bool
 	, privateRemote :: Bool
 	}
@@ -43,6 +45,11 @@ optParser :: CmdParamsDesc -> Parser InitRemoteOptions
 optParser desc = InitRemoteOptions
 	<$> cmdParams desc
 	<*> optional parseSameasOption
+	<*> switch
+		( long "with-url"
+		<> short 'u'
+		<> help "configure remote with an annex:: url"
+		)
 	<*> switch
 		( long "whatelse"
 		<> short 'w'
@@ -125,9 +132,21 @@ cleanup t u name c o = do
 			cu <- liftIO genUUID
 			setConfig (remoteAnnexConfig c "config-uuid") (fromUUID cu)
 			Logs.Remote.configSet cu c
-	unless (Remote.gitSyncableRemoteType t) $
+	when (withUrl o) $
+		setAnnexUrl c
+	unless (Remote.gitSyncableRemoteType t || withUrl o) $
 		setConfig (remoteConfig c "skipFetchAll") (boolConfig True)
 	return True
+
+setAnnexUrl :: R.RemoteConfig -> Annex ()
+setAnnexUrl c =
+	getConfigMaybe (remoteConfig c "url") >>= \case
+		Just (ConfigValue _) -> noop
+		_ -> do
+			setConfig (remoteConfig c "url") "annex::"
+			setConfig (remoteConfig c "fetch") $
+				"+refs/heads/*:refs/remotes/" ++
+				getRemoteName c ++ "/*"
 
 describeOtherParamsFor :: RemoteConfig -> RemoteType -> CommandPerform
 describeOtherParamsFor c t = do

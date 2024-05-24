@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2013-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2013-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ import qualified Annex.SpecialRemote as SpecialRemote
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Remote.Git
+import qualified Command.InitRemote
 import Logs.UUID
 import Annex.UUID
 import Config
@@ -34,18 +35,32 @@ cmd = withAnnexOptions [jsonOptions] $
 	command "enableremote" SectionSetup
 		"enables git-annex to use a remote"
 		(paramPair paramName $ paramOptional $ paramRepeating paramParamValue)
-		(withParams seek)
+		(seek <$$> optParser)
 
-seek :: CmdParams -> CommandSeek
-seek = withWords (commandAction . start)
+data EnableRemoteOptions = EnableRemoteOptions
+	{ cmdparams :: CmdParams
+	, withUrl :: Bool
+	}
 
-start :: [String] -> CommandStart
-start [] = unknownNameError "Specify the remote to enable."
-start (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
+optParser :: CmdParamsDesc -> Parser EnableRemoteOptions
+optParser desc = EnableRemoteOptions
+	<$> cmdParams desc
+	<*> switch
+		( long "with-url"
+		<> short 'u'
+		<> help "configure remote with an annex:: url"
+		)
+
+seek :: EnableRemoteOptions -> CommandSeek
+seek o = withWords (commandAction . (start o)) (cmdparams o)
+
+start :: EnableRemoteOptions -> [String] -> CommandStart
+start _ [] = unknownNameError "Specify the remote to enable."
+start o (name:rest) = go =<< filter matchingname <$> Annex.getGitRemotes
   where
 	matchingname r = Git.remoteName r == Just name
 	go [] = deadLast name $ 
-		startSpecialRemote name (Logs.Remote.keyValToConfig Proposed rest)
+		startSpecialRemote o name (Logs.Remote.keyValToConfig Proposed rest)
 	go (r:_)
 		| not (null rest) = go []
 		| otherwise = do
@@ -69,8 +84,8 @@ startNormalRemote name r = starting "enableremote (normal)" ai si $ do
 	ai = ActionItemOther (Just (UnquotedString name))
 	si = SeekInput [name]
 
-startSpecialRemote :: Git.RemoteName -> Remote.RemoteConfig -> [(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> CommandStart
-startSpecialRemote = startSpecialRemote' "enableremote" performSpecialRemote
+startSpecialRemote :: EnableRemoteOptions -> Git.RemoteName -> Remote.RemoteConfig -> [(UUID, Remote.RemoteConfig, Maybe (SpecialRemote.ConfigFrom UUID))] -> CommandStart
+startSpecialRemote o = startSpecialRemote' "enableremote" (performSpecialRemote o)
 
 type PerformSpecialRemote = RemoteType -> UUID -> R.RemoteConfig -> R.RemoteConfig -> RemoteGitConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandPerform
 
@@ -97,8 +112,8 @@ startSpecialRemote' cname perform name config ((u, c, mcu):[]) =
 startSpecialRemote' _ _ _ _ _ =
 	giveup "Multiple remotes have that name. Either use git-annex renameremote to rename them, or specify the uuid of the remote."
 
-performSpecialRemote :: PerformSpecialRemote
-performSpecialRemote t u oldc c gc mcu = do
+performSpecialRemote :: EnableRemoteOptions -> PerformSpecialRemote
+performSpecialRemote o t u oldc c gc mcu = do
 	-- Avoid enabling a special remote if there is another remote
 	-- with the same name.
 	case SpecialRemote.lookupName c of
@@ -110,10 +125,10 @@ performSpecialRemote t u oldc c gc mcu = do
 					giveup $ "Not overwriting currently configured git remote named \"" ++ name ++ "\""
 				_ -> noop
 	(c', u') <- R.setup t (R.Enable oldc) (Just u) Nothing c gc
-	next $ cleanupSpecialRemote t u' c' mcu
+	next $ cleanupSpecialRemote o t u' c' mcu
 
-cleanupSpecialRemote :: RemoteType -> UUID -> R.RemoteConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandCleanup
-cleanupSpecialRemote t u c mcu = do
+cleanupSpecialRemote :: EnableRemoteOptions -> RemoteType -> UUID -> R.RemoteConfig -> Maybe (SpecialRemote.ConfigFrom UUID) -> CommandCleanup
+cleanupSpecialRemote o t u c mcu = do
 	case mcu of
 		Nothing -> Logs.Remote.configSet u c
 		Just (SpecialRemote.ConfigFrom cu) -> do
@@ -124,7 +139,9 @@ cleanupSpecialRemote t u c mcu = do
 		Just r -> do
 			repo <- R.getRepo r
 			setRemoteIgnore repo False
-	unless (Remote.gitSyncableRemoteType t) $
+	when (withUrl o) $
+		Command.InitRemote.setAnnexUrl c
+	unless (Remote.gitSyncableRemoteType t || withUrl o) $
 		setConfig (remoteConfig c "skipFetchAll") (boolConfig True)
 	return True
 
