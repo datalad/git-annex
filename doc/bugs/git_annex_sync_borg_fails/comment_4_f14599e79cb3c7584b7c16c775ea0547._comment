@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="derphysiker"
+ avatar="http://cdn.libravatar.org/avatar/80623354932109c891c2e0ebf523b38f"
+ subject="comment 4"
+ date="2024-05-25T13:00:08Z"
+ content="""
+I've disabled the subdir option (git annex enableremote borg subdir=) and that seems to solve the issue. That is weird, because the subdir is included in the borg repository. Hmm...
+
+[[!format sh \"\"\"
+$ LANG=C git annex sync borg 
+commit  
+On branch main
+nothing to commit, working tree clean
+ok
+list borg ok
+(recording state in git...)
+\"\"\"]]
+"""]]
