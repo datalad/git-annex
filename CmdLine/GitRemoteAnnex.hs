@@ -544,11 +544,7 @@ withSpecialRemote cfg@(SpecialRemoteConfig {}) sab a = case specialRemoteName cf
 		setConfig (remoteConfig c' "url") (specialRemoteUrl cfg)
 		remotesChanged
 		getEnabledSpecialRemoteByName remotename >>= \case
-			Just rmt -> case checkSpecialRemoteProblems rmt of
-				Nothing -> return rmt
-				Just problem -> do
-					cleanupremote remotename
-					giveup problem
+			Just rmt -> return rmt
 			Nothing -> do
 				cleanupremote remotename
 				giveup "Unable to find special remote after setup."
