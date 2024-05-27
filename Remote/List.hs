@@ -87,12 +87,20 @@ remoteList' autoinit = do
 
 {- Generates a Remote. -}
 remoteGen :: M.Map UUID RemoteConfig -> RemoteType -> Git.Repo -> Annex (Maybe Remote)
-remoteGen m t g = do
+remoteGen = remoteGen' id
+
+remoteGen'
+	:: (RemoteConfig -> RemoteConfig)
+	-> M.Map UUID RemoteConfig
+	-> RemoteType
+	-> Git.Repo
+	-> Annex (Maybe Remote)
+remoteGen' adjustconfig m t g = do
 	u <- getRepoUUID g
 	gc <- Annex.getRemoteGitConfig g
 	let cu = fromMaybe u $ remoteAnnexConfigUUID gc
 	let rs = RemoteStateHandle cu
-	let c = fromMaybe M.empty $ M.lookup cu m
+	let c = adjustconfig (fromMaybe M.empty $ M.lookup cu m)
 	generate t g u c gc rs >>= \case
 		Nothing -> return Nothing
 		Just r -> Just <$> adjustExportImport (adjustReadOnly (addHooks r)) rs

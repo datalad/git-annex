@@ -22,7 +22,6 @@ import qualified Git.Remote
 import qualified Git.Remote.Remove
 import qualified Git.Version
 import qualified Annex.SpecialRemote as SpecialRemote
-import qualified Annex.SpecialRemote.Config as SpecialRemote
 import qualified Annex.Branch
 import qualified Annex.BranchState
 import qualified Types.Remote as Remote
@@ -576,7 +575,7 @@ getEnabledSpecialRemoteByName remotename =
 			| unparsedRemoteConfig (Remote.config rmt) == mempty ->
 				return Nothing
 			| otherwise -> 
-				maybe (return (Just rmt)) giveup
+				maybe (Just <$> importTreeWorkAround rmt) giveup
 					(checkSpecialRemoteProblems rmt)
 
 checkSpecialRemoteProblems :: Remote -> Maybe String
@@ -586,9 +585,6 @@ checkSpecialRemoteProblems rmt
 	| Remote.thirdPartyPopulated (Remote.remotetype rmt) =
 		Just $ "Cannot use this thirdparty-populated special"
 			++ " remote as a git remote."
-	| importTree (Remote.config rmt) = 
-		Just $ "Using importtree=yes special remotes as git remotes"
-			++ " is not yet supported."
 	| parseEncryptionMethod (unparsedRemoteConfig (Remote.config rmt)) /= Right NoneEncryption
 		&& not (remoteAnnexAllowEncryptedGitRepo (Remote.gitconfig rmt)) =
 			Just $ "Using an encrypted special remote as a git"
@@ -599,6 +595,27 @@ checkSpecialRemoteProblems rmt
 	| otherwise = Nothing
   where
 	ConfigKey allowencryptedgitrepo = remoteAnnexConfig rmt "allow-encrypted-gitrepo"
+
+-- Using importTree remotes needs the content identifier database to be
+-- populated, but it is not when cloning, and cannot be updated when
+-- pushing since git-annex branch updates by this program are prevented.
+--
+-- So, generate instead a version of the remote that uses exportTree actions,
+-- which do not need content identifiers. Since Remote.Helper.exportImport
+-- replaces the exportActions in exportActionsForImport with ones that use
+-- import actions, have to instantiate a new remote with a modified config.
+importTreeWorkAround :: Remote -> Annex Remote
+importTreeWorkAround rmt
+	| not (importTree (Remote.config rmt)) = pure rmt
+	| not (exportTree (Remote.config rmt)) = giveup "Using special remotes with importtree=yes but without exporttree=yes as git remotes is not supported."
+	| otherwise = do
+		m <- Logs.Remote.remoteConfigMap
+		r <- Remote.getRepo rmt
+		remoteGen' adjustconfig m (Remote.remotetype rmt) r >>= \case
+			Just rmt' -> return rmt'
+			Nothing -> giveup "Failed to use importtree=yes remote."
+  where
+	adjustconfig = M.delete importTreeField
 
 -- Downloads the Manifest when present in the remote. When not present,
 -- returns an empty Manifest.
