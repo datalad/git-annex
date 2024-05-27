@@ -579,36 +579,6 @@ getEnabledSpecialRemoteByName remotename =
 				maybe (return (Just rmt)) giveup
 					(checkSpecialRemoteProblems rmt)
 
-formatManifest :: Manifest -> B.ByteString
-formatManifest manifest =
-	B8.unlines $ 
-		map serializeKey' (inManifest manifest)
-			<>
-		map (\k -> "-" <> serializeKey' k)
-			(S.toList (outManifest manifest))
-
-parseManifest :: B.ByteString -> Either String Manifest
-parseManifest b = 
-	let (outks, inks) = partitionEithers $ map parseline $ B8.lines b
-	in case (checkvalid [] inks, checkvalid [] outks) of
-		(Right inks', Right outks') -> 
-			Right $ mkManifest inks' (S.fromList outks')
-		(Left err, _) -> Left err
-		(_, Left err) -> Left err
-  where
-	parseline l
-		| "-" `B.isPrefixOf` l = 
-			Left $ deserializeKey' $ B.drop 1 l
-		| otherwise =
-			Right $ deserializeKey' l
-	
-	checkvalid c [] = Right (reverse c)
-	checkvalid c (Just k:ks) = case fromKey keyVariety k of
-		GitBundleKey -> checkvalid (k:c) ks
-		_ -> Left $ "Wrong type of key in manifest " ++ serializeKey k
-	checkvalid _ (Nothing:_) =
-		Left "Error parsing manifest"
-
 checkSpecialRemoteProblems :: Remote -> Maybe String
 checkSpecialRemoteProblems rmt
 	-- Avoid using special remotes that are thirdparty populated, 
@@ -737,6 +707,36 @@ uploadManifest rmt manifest = do
 		-- directory.
 		unlinkAnnex mk
 		return ok
+
+formatManifest :: Manifest -> B.ByteString
+formatManifest manifest =
+	B8.unlines $ 
+		map serializeKey' (inManifest manifest)
+			<>
+		map (\k -> "-" <> serializeKey' k)
+			(S.toList (outManifest manifest))
+
+parseManifest :: B.ByteString -> Either String Manifest
+parseManifest b = 
+	let (outks, inks) = partitionEithers $ map parseline $ B8.lines b
+	in case (checkvalid [] inks, checkvalid [] outks) of
+		(Right inks', Right outks') -> 
+			Right $ mkManifest inks' (S.fromList outks')
+		(Left err, _) -> Left err
+		(_, Left err) -> Left err
+  where
+	parseline l
+		| "-" `B.isPrefixOf` l = 
+			Left $ deserializeKey' $ B.drop 1 l
+		| otherwise =
+			Right $ deserializeKey' l
+	
+	checkvalid c [] = Right (reverse c)
+	checkvalid c (Just k:ks) = case fromKey keyVariety k of
+		GitBundleKey -> checkvalid (k:c) ks
+		_ -> Left $ "Wrong type of key in manifest " ++ serializeKey k
+	checkvalid _ (Nothing:_) =
+		Left "Error parsing manifest"
 
 {- A manifest file is cached here before it or the bundles listed in it
  - is uploaded to the special remote.
