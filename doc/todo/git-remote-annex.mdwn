@@ -15,8 +15,4 @@ This is implememented and working. Remaining todo list for it:
   not display any useful error message. git fetch does, but it seems
   git clone eats git-remote-annex stderr.
 
-* datalad-annex supports cloning from the web special remote,
-  using an url that contains the result of pushing to eg, a directory
-  special remote.
-  `datalad-annex::https://example.com?type=web&url={noquery}`
-  Supporting something like this would be good.
+See also: [[git-remote-annex_web_special_remote_support]]

@@ -1,0 +1,23 @@
+datalad-annex supports cloning from the web special remote,
+using an url that contains the result of pushing to eg, a directory
+special remote.
+
+`datalad-annex::https://example.com?type=web&url={noquery}`
+
+Supporting something like this in git-remote-annex would be good.
+
+While to the user this might be considered part of the web special remote,
+it would really be a separate download code path in git-remote-annex that
+downloads from the urls.
+
+datalad-annex assumes that the url uses the exporttree=yes layout.
+If git-annex did the same, it would look in "$url/.git/annex/objects/".
+But it could instead try both that and the regular hash directories
+and use whichever it found.
+
+How should the annex:: url look for this? The UUID is not really relevant
+in this case, because the web only has a dummy single UUID. So
+it would work to use "annex::https://example.com/?type=web"
+
+What should be recorded in .git/config for such a remote? I suppose the
+annex:: url and no annex-uuid. --[[Joey]]
