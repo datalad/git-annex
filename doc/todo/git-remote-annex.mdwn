@@ -6,13 +6,6 @@ It will be a safer implementation, will support incremental pushes, and
 will be available to users who don't use datalad. 
 --[[Joey]]
 
----
-
-This is implememented and working. Remaining todo list for it:
-
-* When git clone is used with an annex:: url that is for a directory
-  special remote and is missing directory=, for example, it does
-  not display any useful error message. git fetch does, but it seems
-  git clone eats git-remote-annex stderr.
+> [[done!]] --[[Joey]]
 
 See also: [[git-remote-annex_web_special_remote_support]]

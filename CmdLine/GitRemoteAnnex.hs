@@ -1078,14 +1078,25 @@ specialRemoteFromUrl sab a = withTmpDir "journal" $ \tmpdir -> do
 -- hooks, have to work around that by not initializing, and 
 -- delete the git bundle objects.
 cleanupInitialization :: StartAnnexBranch -> Annex ()
-cleanupInitialization sab = do
+cleanupInitialization sab = void $ tryNonAsync $ do
 	case sab of
 		AnnexBranchExistedAlready _ -> noop
-		AnnexBranchCreatedEmpty r -> 
+		AnnexBranchCreatedEmpty r ->
 			whenM ((r ==) <$> Annex.Branch.getBranch) $ do
-				inRepo $ Git.Branch.delete Annex.Branch.fullname
 				indexfile <- fromRepo gitAnnexIndex
 				liftIO $ removeWhenExistsWith R.removeLink indexfile
+				-- When cloning failed and this is being
+				-- run as an exception is thrown, HEAD will
+				-- not be set to a valid value, which will
+				-- prevent deleting the git-annex branch.
+				-- But that's ok, git will delete the 
+				-- repository it failed to clone into.
+				-- So skip deleting to avoid an ugly
+				-- message.
+				inRepo Git.Branch.currentUnsafe >>= \case
+					Nothing -> return ()
+					Just _ -> void $ tryNonAsync $
+						inRepo $ Git.Branch.delete Annex.Branch.fullname
 	ifM (Annex.Branch.hasSibling <&&> nonbuggygitversion)
 		( do
 			autoInitialize' (pure True) remoteList
