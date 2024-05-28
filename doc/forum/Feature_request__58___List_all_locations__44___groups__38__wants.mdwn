@@ -1,0 +1,7 @@
+Hi there!
+
+Maybe I have overseen this feature. I would like to have something like 'git annex list' which lists all basic info about the locations, such as name, group and wanted.
+
+Basically I need to go into 'git annex vicfg' to have some kind of overview of the remotes.
+
+Or did I miss something?
