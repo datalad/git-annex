@@ -9,11 +9,11 @@ Revert "fsck: warn about symlink pointing inside a gitdir"
 
 I don't know if it will be backported to the other affected git versions.
 
-Currently, the fsck.symlinkTargetLength check has not been reverted,
-so might want to still do something about that.
+As well as removing the symlink to .git check, that also removes the
+symlink target too long check.
 
 Also, git-remote-annex is affected by the same git clone check about hooks
-getting installed as git-lfs. That check is also part of the reversion set.
+getting installed as git-lfs. That check is also going to be reverted.
 git-remote-annex contains a workaround, but it currently only checks for
 the specific git versions that added that check, so if any new git point
 releases don't revert that check it will need to update its version list.
