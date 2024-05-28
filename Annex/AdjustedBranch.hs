@@ -1,6 +1,6 @@
 {- adjusted branch
  -
- - Copyright 2016-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2016-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -68,9 +68,12 @@ import qualified Database.Keys
 import Config
 import Logs.View (is_branchView)
 import Logs.AdjustedBranchUpdate
+import Utility.FileMode
+import qualified Utility.RawFilePath as R
 
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
+import System.PosixCompat.Files (fileMode)
 
 class AdjustTreeItem t where
 	-- How to perform various adjustments to a TreeItem.
@@ -155,8 +158,13 @@ adjustToPointer :: TreeItem -> Annex (Maybe TreeItem)
 adjustToPointer ti@(TreeItem f _m s) = catKey s >>= \case
 	Just k -> do
 		Database.Keys.addAssociatedFile k f
-		Just . TreeItem f (fromTreeItemType TreeFile)
-			<$> hashPointerFile k
+		exe <- catchDefaultIO False $
+			(isExecutable . fileMode) <$> 
+				(liftIO . R.getFileStatus
+					=<< calcRepo (gitAnnexLocation k))
+		let mode = fromTreeItemType $ 
+			if exe then TreeExecutable else TreeFile
+		Just . TreeItem f mode <$> hashPointerFile k
 	Nothing -> return (Just ti)
 
 adjustToSymlink :: TreeItem -> Annex (Maybe TreeItem)

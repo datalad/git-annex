@@ -37,4 +37,11 @@ than stat.
 
 Overall, I think this is probably worth doing, just to be symmetric with
 `git-annex unlock`.
+
+There's also an argument that, if I have a large executable (LLM models
+come to mind for some ungodly reason), and I annex it and enter an adjusted
+branch, I should still be able to run it. Although it's really better to
+add it unlocked in the first place, since then you're tracking the execute
+bit in git permanantly and not relying on best-effort execute bit
+preservation when copying objects around.
 """]]

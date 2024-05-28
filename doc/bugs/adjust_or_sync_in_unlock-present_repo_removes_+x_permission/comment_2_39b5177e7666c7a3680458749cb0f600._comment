@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-05-28T16:27:10Z"
+ content="""
+If the object file is executable at `git-annex unlock` time, the pointer
+file is made executable. If the object is then dropped, the pointer file
+remains executable.
+
+So shouldn't it be the case for symmetry that `git-annex adjust --unlock`
+should make the pointer file executable, and a drop followed by re-doing
+the same adjustment should leave the pointer file executable? That would
+argue for leaving it stable.
+
+I don't think there's a perfect solution to that question, both behaviors
+seem perhaps wanted at different times. But since leaving it stable avoids
+extra work, I'm leaning toward that.
+"""]]

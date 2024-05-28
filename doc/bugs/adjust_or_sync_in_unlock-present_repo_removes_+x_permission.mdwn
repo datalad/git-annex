@@ -34,3 +34,5 @@ annex.alwayscommit = false.
 
 PS: git-annex is so solid that this is the first data-related issue I've 
 ever seen. Kudos!
+
+> [[fixed|done]] --[[Joey]]
