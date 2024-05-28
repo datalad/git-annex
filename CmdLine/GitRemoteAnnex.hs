@@ -53,6 +53,7 @@ import Utility.Tmp
 import Utility.Tmp.Dir
 import Utility.Env
 import Utility.Metered
+import Utility.FileMode
 
 import Network.URI
 import Data.Either
@@ -718,17 +719,24 @@ uploadManifest rmt manifest = do
 	put mk = withTmpFile "GITMANIFEST" $ \tmp tmph -> do
 		liftIO $ B8.hPut tmph (formatManifest manifest)
 		liftIO $ hClose tmph
-		-- storeKey needs the key to be in the annex objects
+		-- Uploading needs the key to be in the annex objects
 		-- directory, so put the manifest file there temporarily.
 		-- Using linkOrCopy rather than moveAnnex to avoid updating
 		-- InodeCache database. Also, works even when the repository
 		-- is configured to require only cryptographically secure
 		-- keys, which it is not.
 		objfile <- calcRepo (gitAnnexLocation mk)
-		res <- modifyContentDir objfile $
-			linkOrCopy mk (toRawFilePath tmp) objfile Nothing
-		unless (isJust res)
-			uploadfailed
+		modifyContentDir objfile $
+			linkOrCopy mk (toRawFilePath tmp) objfile Nothing >>= \case
+				-- Important to set the right perms even
+				-- though the object is only present
+				-- briefly, since sending objects may rely
+				-- on or even copy file perms.
+				Just _ -> do
+					liftIO $ R.setFileMode objfile
+						=<< defaultFileMode
+					freezeContent objfile
+				Nothing -> uploadfailed
 		ok <- (uploadGitObject rmt mk >> pure True)
 			`catchNonAsync` (const (pure False))
 		-- Don't leave the manifest key in the annex objects
