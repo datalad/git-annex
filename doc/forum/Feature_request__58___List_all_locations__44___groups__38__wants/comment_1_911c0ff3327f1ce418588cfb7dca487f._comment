@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Yep, would be nice!"
+ date="2024-05-28T12:18:58Z"
+ content="""
+This doesn't exist and you need to script it yourself, e.g. with `git annex info --fast --json` and then subsequent calls to `git annex group ...` etc. I want to include this in [`git annex control-center`](https://gitlab.com/nobodyinperson/git-annex-control-center) eventually, but didn't have the time yet.
+"""]]
