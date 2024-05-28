@@ -15,9 +15,11 @@ If git-annex did the same, it would look in "$url/.git/annex/objects/".
 But it could instead try both that and the regular hash directories
 and use whichever it found.
 
-How should the annex:: url look for this? The UUID is not really relevant
-in this case, because the web only has a dummy single UUID. So
-it would work to use "annex::https://example.com/?type=web"
+How should the annex:: url look for this? It needs to contain the UUID of
+the special remote (not the web special remote) because the MANIFEST key
+includes the UUID. Perhaps "annex::https://example.com/?type=web&uuid=..."
+or "annex::uuid?type=web&url=..." (in either case the inner url will need
+to be URI-encoded)
 
 What should be recorded in .git/config for such a remote? I suppose the
 annex:: url and no annex-uuid. --[[Joey]]
