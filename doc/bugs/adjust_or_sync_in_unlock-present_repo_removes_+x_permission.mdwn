@@ -1,3 +1,5 @@
+[[!meta title="git-annex adjust --unlock does not copy execute bit of object files"]]
+
 It seems that performing `git annex adjust --unlock-present` or `sync` 
 will remove the +x permission from files.
 

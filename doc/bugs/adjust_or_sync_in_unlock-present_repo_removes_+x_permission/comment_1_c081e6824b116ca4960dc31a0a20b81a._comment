@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-05-28T15:46:45Z"
+ content="""
+Notice that `git-annex unlock` does preserve the execute bit when the
+object file has it set.
+
+Currently, generating an adjusted branch does not look at permissions of
+object files.
+
+Now git-annex generally does not preserve execute bit on object files (eg
+when storing in a special remote), and of course doesn't know the
+permissions of an object file that's not currently present. So, if adjusted
+branch generation did look at the permissions, running it twice in two
+different repositories, or at different times in the same repository could
+result in different adjusted branch trees being generated.
+
+That might or might not be a problem for interoperability? Adjusted branches
+are not usually pushed anywhere, so might not matter much.
+
+It seems that in `instance AdjustTreeItem LinkAdjustment` it would no
+longer be able to have `adjustmentIsStable` return True. Well, it could, but
+then `git-annex adjust --unlock` followed by `git-annex get foo` when it
+happens to get an object with the execute bit, followed by `git-annex
+adjust --unlock` would not reflect the execute bit in the adjusted branch.
+
+So handling that case matters, re-adjusting would get slower. This might
+impact users who have a large tree they are adjusting with --unlock.
+(`git-annex adjust --unlock-present` is already not stable of course, so no
+additional performance penalty there)
+
+Of course, statting every object file to check for execute bits would also
+make adjusting a large tree somewhat slower. Probably on the order of less
+than 10% slower I'd guess, because it currently has to catKey, which is slower
+than stat.
+
+Overall, I think this is probably worth doing, just to be symmetric with
+`git-annex unlock`.
+"""]]
