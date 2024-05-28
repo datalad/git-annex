@@ -373,6 +373,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBwLimitDownload :: Maybe BwRate
 	, remoteAnnexAllowUnverifiedDownloads :: Bool
 	, remoteAnnexConfigUUID :: Maybe UUID
+	, remoteAnnexMaxGitBundles :: Int
 	, remoteAnnexAllowEncryptedGitRepo :: Bool
 	, remoteUrl :: Maybe String
 
@@ -453,6 +454,8 @@ extractRemoteGitConfig r remotename = do
 			readBwRatePerSecond =<< getmaybe "bwlimit-download"
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe ("security-allow-unverified-downloads")
+		, remoteAnnexMaxGitBundles =
+			fromMaybe 100 (getmayberead  "max-git-bundles")
 		, remoteAnnexConfigUUID = toUUID <$> getmaybe "config-uuid"
 		, remoteAnnexShell = getmaybe "shell"
 		, remoteAnnexSshOptions = getoptions "ssh-options"

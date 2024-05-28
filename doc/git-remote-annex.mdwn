@@ -36,29 +36,11 @@ When using the shorthand "annex::" url, the full url will be displayed
 each time you git pull or push, when it's possible for git-annex to
 determine it.
 
-When a special remote needs some additional credentials to be provided,
-they are not included in the URL, and need to be provided when cloning from
-the special remote. That is typically done by setting environment
-variables. Some special remotes may also need environment variables to be
-set when pulling or pushing.
-
-The git repository is stored in the special remote using special annex objects
-with names starting with "GITMANIFEST" and "GITBUNDLE". For details about
-how the git repository is stored, see
-<https://git-annex.branchable.com/internals/git-remote-annex/>
-
-Pushes to a special remote are usually done incrementally. However,
-sometimes the whole git repository (but not the annex) needs to be
-re-uploaded. That is done when force pushing a ref, or deleting a
-ref from the remote.
-
-The special remote accumulates one GITBUNDLE object per push, and old
-objects are usually not deleted. This means that refs pushed to the special
-remote can still be accessed even after deleting or overwriting them.
-A push that deletes every ref from the special remote does delete all
-the accumulated GITBUNDLE objects. But of course, making such a push
-means that someone clones from the special remote at that point in time
-will see an empty remote.
+When a special remote needs some credentials to be used, they are not
+included in the URL, and will need to be provided when cloning from the
+special remote. That is typically done by setting environment variables.
+Some special remotes may also need environment variables to be set when
+pulling or pushing.
 
 Like any git repository, a git repository stored on a special remote can
 have conflicting things pushed to it from different places. This mostly
@@ -68,6 +50,25 @@ conflicting pushes are being done at the same time, for one of the pushes
 to be overwritten by the other one. In this situation, the overwritten 
 push will appear to have succeeded, but pulling later will show the true
 situation.
+
+The git repository is stored in the special remote using special annex objects
+with names starting with "GITMANIFEST" and "GITBUNDLE". For details, see:
+<https://git-annex.branchable.com/internals/git-remote-annex/>
+
+Pushes to a special remote are usually done incrementally. However,
+sometimes the whole git repository (but not the annex) needs to be
+re-uploaded. That is done when force pushing a ref, or deleting a
+ref from the remote. It's also done when too many git bundles
+accumulate in the special remote, as configured by the
+`remote.<name>.annex-max-git-bundles` git config.
+
+Note that a re-upload of the repository does not delete old GITBUNDLE
+objects from it. This means that refs pushed to the special
+remote can still be accessed even after deleting or overwriting them.
+A push that deletes every ref from the special remote will delete all
+the accumulated GITBUNDLE objects. But of course, making such a push
+means that someone who clones from the special remote at that point in time
+will see an empty remote.
 
 # SEE ALSO
 

@@ -273,6 +273,10 @@ fullPush :: State -> Remote -> [Ref] -> Annex (Bool, State)
 fullPush st rmt refs = guardPush st $ do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure
 		(manifestCache st)
+	fullPush' oldmanifest st rmt refs
+
+fullPush' :: Manifest -> State -> Remote -> [Ref] -> Annex (Bool, State)
+fullPush' oldmanifest st rmt refs = do
 	let bs = map Git.Bundle.fullBundleSpec refs
 	(bundlekey, uploadbundle) <- generateGitBundle rmt bs oldmanifest
 	let manifest = mkManifest [bundlekey] $
@@ -297,14 +301,19 @@ guardPush st a = catchNonAsync a $ \ex -> do
 incrementalPush :: State -> Remote -> M.Map Ref Sha -> M.Map Ref Sha -> Annex (Bool, State)
 incrementalPush st rmt oldtrackingrefs newtrackingrefs = guardPush st $ do
 	oldmanifest <- maybe (downloadManifestWhenPresent rmt) pure (manifestCache st)
-	bs <- calc [] (M.toList newtrackingrefs)
-	(bundlekey, uploadbundle) <- generateGitBundle rmt bs oldmanifest
-	let manifest = oldmanifest <> mkManifest [bundlekey] mempty
-	manifest' <- startPush rmt manifest
-	uploadbundle
-	uploadManifest rmt manifest'
-	return (True, st { manifestCache = Nothing })
+	if length (inManifest oldmanifest) + 1 > remoteAnnexMaxGitBundles (Remote.gitconfig rmt)
+		then fullPush' oldmanifest st rmt (M.keys newtrackingrefs)
+		else go oldmanifest
   where
+	go oldmanifest = do
+		bs <- calc [] (M.toList newtrackingrefs)
+		(bundlekey, uploadbundle) <- generateGitBundle rmt bs oldmanifest
+		let manifest = oldmanifest <> mkManifest [bundlekey] mempty
+		manifest' <- startPush rmt manifest
+		uploadbundle
+		uploadManifest rmt manifest'
+		return (True, st { manifestCache = Nothing })
+	
 	calc c [] = return (reverse c)
 	calc c ((ref, sha):refs) = case M.lookup ref oldtrackingrefs of
 		Just oldsha
