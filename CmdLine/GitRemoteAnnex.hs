@@ -80,6 +80,8 @@ run _ = giveup "expected remote name and url parameters"
 run' :: SpecialRemoteConfig -> String -> Annex ()
 run' src url = do
 	sab <- startAnnexBranch
+	whenM (Annex.getRead Annex.debugenabled) $
+		enableDebugOutput
 	-- Prevent any usual git-annex output to stdout, because
 	-- the output of this command is being parsed by git.
 	doQuietAction $
