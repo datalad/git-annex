@@ -40,3 +40,13 @@ If git-annex wanted to also avoid this breakage, it could set:
     git config fsck.symlinkTargetLength ignore
     git config receive.fsck.symlinkTargetLength ignore
     git config fetch.fsck.symlinkTargetLength ignore
+
+Of course, that would not help when the bare repo is not git-annex
+initialized.
+
+If a git-annex repo is checked out on Windows and has a longer symlink,
+this will cause fsck to complain about it, even though git-annex will of
+course use an adjusted unlocked branch and so the symlink won't actually be
+followed. That seems like a good reason to set these configs. OTOH, there's
+no benefit in doing it on Linux, unless some other OS has a longer
+`PATH_MAX` than 4096 (Hurd?)
