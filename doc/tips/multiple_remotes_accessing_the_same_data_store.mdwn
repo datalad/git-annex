@@ -57,5 +57,6 @@ If you find combinations that work, please edit this page to list them.
 * directory and rsync
 * httpalso and directory
 * httpalso and rsync
-* httpalso and rclone (any layout except for frankencase)
+* httpalso and rclone (using git-remote-rclone) 
+  (any layout except for frankencase)
 * httpalso and any special remote that uses exporttree=yes
