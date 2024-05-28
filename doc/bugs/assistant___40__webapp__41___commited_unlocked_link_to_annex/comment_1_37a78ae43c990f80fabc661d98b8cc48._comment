@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 1"
+ date="2024-05-28T17:51:02Z"
+ content="""
+any ideas?  now I got to another box where I have tried to \"sync\" this repo using assistant and found that it didn't sync anything since Apr 17th but also git history is quite a show
+: [tig view of history](http://www.oneukrainian.com/tmp/git-annex-blowup.png)
+
+with bunch of commits moving files from annex into git etc.  Need to kill assistant for now. System has `10.20240129-1~ndall+1`
+"""]]
