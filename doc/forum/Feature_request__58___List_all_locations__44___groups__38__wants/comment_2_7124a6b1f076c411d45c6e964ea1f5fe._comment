@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-05-28T16:53:00Z"
+ content="""
+Are you talking about listing information about the configuration of
+repositories, or listing information about which repos want a file?
+
+I can imagine extending `git-annex list` to display eg, a "-" if the 
+repository currently has, but does not want a file, and a "+" 
+if the repository wants, but does not currently have a file.
+Or something like that.
+
+If the goal is an overview of configuration from the git-annex branch, I
+agree `git-annex vicfg` is not perfect, and it would be nice to have
+something that dumped out all the configuration.
+"""]]
