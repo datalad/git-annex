@@ -105,14 +105,14 @@ isGitRemoteAnnexKey u k =
 	case fromKey keyVariety k of
 		GitBundleKey -> sameuuid $ \b ->
 			-- Remove the checksum that comes after the UUID.
-			let b' = B8.dropWhileEnd (/= '-') b
+			let b' = fst $ B8.spanEnd (/= '-') b
 			in B8.take (B8.length b' - 1) b'
 		GitManifestKey -> sameuuid $ \b ->
 			-- Remove an optional extension after the UUID.
 			-- (A UUID never contains '.')
 			if '.' `B8.elem` b
 				then
-					let b' = B8.dropWhileEnd (/= '.') b
+					let b' = fst $ B8.spanEnd (/= '.') b
 					in B8.take (B8.length b' - 1) b'
 				else b
 		_ -> False
