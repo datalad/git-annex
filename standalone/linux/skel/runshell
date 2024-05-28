@@ -211,7 +211,7 @@ case "$os" in
 			# not the bundled one.
 			rm -f bin/uname
 			# Fix shell scripts to work when run inside proot.
-			termux-fix-shebang bin/* runshell git-annex git-annex-shell git-annex-webapp 
+			termux-fix-shebang bin/* runshell git-annex git-annex-shell git-annex-webapp git-remote-annex
 			cd "$orig"
 			# Save the poor Android user the typing.
 			if echo "$SHELL" | grep -q '/bash'; then
