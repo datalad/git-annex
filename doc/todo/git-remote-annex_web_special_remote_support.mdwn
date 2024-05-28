@@ -6,20 +6,17 @@ special remote.
 
 Supporting something like this in git-remote-annex would be good.
 
-While to the user this might be considered part of the web special remote,
-it would really be a separate download code path in git-remote-annex that
-downloads from the urls.
+The httpalso special remote already exists to handle this kind of thing.
 
-datalad-annex assumes that the url uses the exporttree=yes layout.
-If git-annex did the same, it would look in "$url/.git/annex/objects/".
-But it could instead try both that and the regular hash directories
-and use whichever it found.
+In fact, it just works with git-remote-annex!
 
-How should the annex:: url look for this? It needs to contain the UUID of
-the special remote (not the web special remote) because the MANIFEST key
-includes the UUID. Perhaps "annex::https://example.com/?type=web&uuid=..."
-or "annex::uuid?type=web&url=..." (in either case the inner url will need
-to be URI-encoded)
+Eg, this url on my laptop is a directory special remote
+accessed via the web server:
 
-What should be recorded in .git/config for such a remote? I suppose the
-annex:: url and no annex-uuid. --[[Joey]]
+    annex::13c2500f-a302-4331-9720-6ec43cb8da2b?encryption=none&exporttree=yes&type=httpalso&url=http%3A%2F%2Flocalhost%2F~joey%2Ftmp%2Fd
+
+But, while fetching from a httpalso special remote works, and cloning
+works, after cloning, fetching again fails:
+
+    joey@darkstar:~/tmp/newp2>git fetch origin
+    git-annex: no url configured for httpalso special remote
