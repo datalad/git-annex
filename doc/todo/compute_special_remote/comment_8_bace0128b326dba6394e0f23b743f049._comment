@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="m.risse@77eac2c22d673d5f10305c0bade738ad74055f92"
+ nickname="m.risse"
+ avatar="http://cdn.libravatar.org/avatar/59541f50d845e5f81aff06e88a38b9de"
+ subject="Re: worktree provisioning"
+ date="2024-05-28T12:06:39Z"
+ content="""
+(I forgot to tick \"email replies to me\", sorry for the late reply)
+
+My reasoning for suggesting to always stay in HEAD is this:
+Let's assume we have a file \"data.grib\" that we want to convert into \"data.nc\" using this compute special remote. We use its facilities to make it do exactly that.
+Now, if there was a bug in \"data.grib\" that necessitates an update, we would replace the file. The special remote could do two things then:
+
+1. Try to convert \"data.grib\" from current HEAD to \"data.nc\", possibly failing if the checksums no longer match (if git-annex is instructed to check those).
+2. Silently use the old version of \"data.grib\", creating a mismatch between \"data.nc\" and \"data.grib\" as available on HEAD (and in this case using a buggy version of the data).
+
+I think the first error is preferable over the second, because the second one is much more subtle and easy to miss.
+
+This same reasoning extends to software as well, if it is somehow tracked in git: for the above mentioned conversion one could use \"cdo\" (climate data operators). One could pin a specific version of \"cdo\" with nix and its flake.lock file, meaning that there is an exact version of cdo associated with every commit sha of the git-annex/DataLad repository. If I update that lock file to get a new version of cdo, then as a user I would naively assume that re-converting \"data.grib\" to \"data.nc\" would now use this new version of cdo. With worktree provisioning it would silently use the old one instead.
+
+IMO worktree provisioning would create an explosion of potential inputs to consider for the computation (the entire git history so far), which would create a lot of subtle pitfalls. Always using stuff from HEAD would be an easier implementation, easier to reason about, and make the user explicitly responsible for keeping the repository contents consistent.
+"""]]
