@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-05-28T02:39:52Z"
+ content="""
+Junio has now queued for git 2.45.2, coming early in June:
+
+Revert "fsck: warn about symlink pointing inside a gitdir"
+
+I don't know if it will be backported to the other affected git versions.
+
+Currently, the fsck.symlinkTargetLength check has not been reverted,
+so might want to still do something about that.
+
+Also, git-remote-annex is affected by the same git clone check about hooks
+getting installed as git-lfs. That check is also part of the reversion set.
+git-remote-annex contains a workaround, but it currently only checks for
+the specific git versions that added that check, so if any new git point
+releases don't revert that check it will need to update its version list.
+"""]]
