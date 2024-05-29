@@ -1,0 +1,83 @@
+### Please describe the problem.
+
+Trying to get fresh data from a server but `annex get` is just stuck without any output.  Here is how it looks with `--debug`:
+
+```
+yoh@typhon:/mnt/DATA/data/yoh/1076_spacetop$ git annex get --debug sub-0002/ses-01/dwi/sub-0002_ses-01_acq-96dirX6b0Xmb_dwi.nii.gz
+[2024-05-29 14:08:30.203689795] (Utility.Process) process [3922981] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","ls-files","--stage","-z","--error-unmatch","--","sub-0002/ses-01/dwi/sub-0002_ses-01_acq-96dirX6b0Xmb_dwi.nii.gz"]
+[2024-05-29 14:08:30.204159722] (Utility.Process) process [3922982] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2024-05-29 14:08:30.204574378] (Utility.Process) process [3922983] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2024-05-29 14:08:30.205075804] (Utility.Process) process [3922984] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2024-05-29 14:08:30.207328301] (Utility.Process) process [3922984] done ExitSuccess
+[2024-05-29 14:08:30.207536385] (Utility.Process) process [3922985] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2024-05-29 14:08:30.209355606] (Utility.Process) process [3922985] done ExitSuccess
+[2024-05-29 14:08:30.209800913] (Utility.Process) process [3922986] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+get sub-0002/ses-01/dwi/sub-0002_ses-01_acq-96dirX6b0Xmb_dwi.nii.gz [2024-05-29 14:08:30.215082484] (Utility.Process) process [3922987] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+(from origin...) 
+[2024-05-29 14:08:30.225575902] (Utility.Process) process [3922988] read: ssh ["-O","stop","-S","bids@rolando.cns.dartmouth.edu","-o","ControlMaster=auto","-o","ControlPersist=yes","localhost"] in ".git/annex/ssh/"
+[2024-05-29 14:08:30.230512383] (Utility.Process) process [3922988] done ExitSuccess
+[2024-05-29 14:08:30.231078838] (Utility.Process) process [3922989] read: ssh ["-o","BatchMode=true","-S",".git/annex/ssh/bids@rolando.cns.dartmouth.edu","-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","bids@rolando.cns.dartmouth.edu","true"]
+[2024-05-29 14:08:31.042361711] (Utility.Process) process [3922989] done ExitSuccess
+[2024-05-29 14:08:31.043219566] (Utility.Process) process [3923085] chat: ssh ["bids@rolando.cns.dartmouth.edu","-S",".git/annex/ssh/bids@rolando.cns.dartmouth.edu","-o","ControlMaster=auto","-o","ControlPersist=yes","-T","git-annex-shell 'p2pstdio' '/inbox/BIDS/Wager/Wager/1076_spacetop' '--debug' '97b6f5e4-4642-43a7-988a-c483caf553c5' --uuid 590b4fd0-0142-4e9d-8964-d1158c242c6a"]
+[2024-05-29 14:08:31.540468659] (P2P.IO) [ThreadId 4] P2P > AUTH-SUCCESS 590b4fd0-0142-4e9d-8964-d1158c242c6a
+[2024-05-29 14:08:31.539643152] (P2P.IO) [ssh connection Just 3923085] [ThreadId 4] P2P < AUTH-SUCCESS 590b4fd0-0142-4e9d-8964-d1158c242c6a
+[2024-05-29 14:08:31.539846045] (P2P.IO) [ssh connection Just 3923085] [ThreadId 4] P2P > VERSION 1
+[2024-05-29 14:08:31.542774097] (P2P.IO) [ThreadId 4] P2P < VERSION 1
+[2024-05-29 14:08:31.543007073] (P2P.IO) [ThreadId 4] P2P > VERSION 1
+[2024-05-29 14:08:31.541288127] (P2P.IO) [ssh connection Just 3923085] [ThreadId 4] P2P < VERSION 1
+[2024-05-29 14:08:31.541362199] (P2P.IO) [ssh connection Just 3923085] [ThreadId 4] P2P > GET 0 sub-0002/ses-01/dwi/sub-0002_ses-01_acq-96dirX6b0Xmb_dwi.nii.gz MD5E-s239384952--c3aaaebbed3ef5932b4390ddb47d2150.nii.gz
+[2024-05-29 14:08:31.544298446] (P2P.IO) [ThreadId 4] P2P < GET 0 sub-0002/ses-01/dwi/sub-0002_ses-01_acq-96dirX6b0Xmb_dwi.nii.gz MD5E-s239384952--c3aaaebbed3ef5932b4390ddb47d2150.nii.gz
+
+```
+
+and on the server it looks like ( I killed one, client reinitiated, this is current one)
+
+```
+bids     27577  0.3  0.0 1074226428 11120 ?    Ssl  14:10   0:00 /data/home/bids/git-annexes/10.20231129+git83-g86dbe9a825/usr/lib/git-annex.linux/exe/git-annex-shell --library-path /data/home/bids/git-annexes/10.20231129+git83-g86dbe9a825/usr/lib/git-annex.linux//lib/x86_64-linux-gnu: /data/home/bids/git-annexes/10.20231129+git83-g86dbe9a825/usr/lib/git-annex.linux/shimmed/git-annex-shell/git-annex-shell p2pstdio /inbox/BIDS/Wager/Wager/1076_spacetop.git --debug 97b6f5e4-4642-43a7-988a-c483caf553c5 --uuid 40795e62-527c-4d26-ae8c-af42a6e2da5a
+```
+
+and on server config is 
+
+``` 
+[annex]
+        sshcaching = false
+        autoupgraderepository = false
+        pidlock = true
+
+[safe]
+        directory = /inbox/BIDS
+
+```
+
+and that directory `/inbox/BIDS` is NFS mounted.
+
+Not sure what nobs to turn to help diagnose the issue.
+
+The git-annex on client side is `10.20240129-1~ndall+1`
+
+
+[[!meta author=yoh]]
+[[!tag projects/repronim]]
+
+
+
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
