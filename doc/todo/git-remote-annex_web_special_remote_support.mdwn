@@ -20,3 +20,5 @@ works, after cloning, fetching again fails:
 
     joey@darkstar:~/tmp/newp2>git fetch origin
     git-annex: no url configured for httpalso special remote
+
+> fixed that, [[done]] --[[Joey]]

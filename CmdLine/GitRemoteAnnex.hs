@@ -500,12 +500,16 @@ genSpecialRemoteUrl rmt rcp
 	conv = escapeURIString isUnescapedInURIComponent
 		. fromProposedAccepted
 	
-	cs = M.toList $ M.filterWithKey (\k _ -> k `elem` safefields) c
+	cs = M.toList (M.filterWithKey (\k _ -> k `elem` safefields) c)
+		++ case remoteAnnexConfigUUID (Remote.gitconfig rmt) of
+			Nothing -> []
+			Just cu -> [(Accepted "config-uuid", Accepted (fromUUID cu))]
+
 	c = unparsedRemoteConfig $ Remote.config rmt
 	
 	-- Hidden fields are used for internal stuff like ciphers
 	-- that should not be included in the url.
-	safefields = map parserForField $
+	safefields = map parserForField $ 
 		filter (\p -> fieldDesc p /= HiddenField) ps
 
 	knownfields = map parserForField ps
@@ -544,8 +548,9 @@ withSpecialRemote cfg@(SpecialRemoteConfig {}) sab a = case specialRemoteName cf
 	-- Initialize a new special remote with the provided configuration
 	-- and name.
 	initremote remotename = do
-		let c = M.insert SpecialRemote.nameField (Proposed remotename)
-			(specialRemoteConfig cfg)
+		let c = M.insert SpecialRemote.nameField (Proposed remotename) $
+			M.delete (Accepted "config-uuid") $
+			specialRemoteConfig cfg
 		t <- either giveup return (SpecialRemote.findType c)
 		dummycfg <- liftIO dummyRemoteGitConfig
 		(c', u) <- Remote.setup t Remote.Init (Just (specialRemoteUUID cfg)) 
@@ -553,6 +558,17 @@ withSpecialRemote cfg@(SpecialRemoteConfig {}) sab a = case specialRemoteName cf
 			`onException` cleanupremote remotename
 		Logs.Remote.configSet u c'
 		setConfig (remoteConfig c' "url") (specialRemoteUrl cfg)
+		case M.lookup (Accepted "config-uuid") (specialRemoteConfig cfg) of
+			Just cu -> do
+				setConfig (remoteAnnexConfig c' "config-uuid")
+					(fromProposedAccepted cu)
+				-- This is not quite the same as what is
+				-- usually stored to the git-annex branch
+				-- for the config-uuid, but it will work.
+				-- This change will never be committed to the
+				-- git-annex branch.
+				Logs.Remote.configSet (toUUID (fromProposedAccepted cu)) c'
+			Nothing -> noop
 		remotesChanged
 		getEnabledSpecialRemoteByName remotename >>= \case
 			Just rmt -> return rmt
@@ -1070,15 +1086,17 @@ specialRemoteFromUrl sab a = withTmpDir "journal" $ \tmpdir -> do
 		c { annexAlwaysCommit = False }
 	Annex.BranchState.changeState $ \st -> 
 		st { alternateJournal = Just (toRawFilePath tmpdir) }
-	a `finally` cleanupInitialization sab
+	a `finally` cleanupInitialization sab tmpdir
 
 -- If the git-annex branch did not exist when this command started,
 -- it was created empty by this command, and this command has avoided
--- making any other commits to it. If nothing else has written to the
--- branch while this command was running, the branch will be deleted.
--- That allows for the git-annex branch that is fetched from the special
--- remote to contain Differences, which would prevent it from being merged
--- with the git-annex branch created by this command.
+-- making any other commits to it, writing any temporary annex branch
+-- changes to thre alternateJournal, which can now be discarded. 
+-- 
+-- If nothing else has written to the branch while this command was running,
+-- the branch will be deleted. That allows for the git-annex branch that is
+-- fetched from the special remote to contain Differences, which would prevent
+-- it from being merged with the git-annex branch created by this command.
 --
 -- If there is still not a sibling git-annex branch, this deletes all annex
 -- objects for git bundles from the annex objects directory, and deletes
@@ -1096,8 +1114,9 @@ specialRemoteFromUrl sab a = withTmpDir "journal" $ \tmpdir -> do
 -- does not contain any hooks. Since initialization installs
 -- hooks, have to work around that by not initializing, and 
 -- delete the git bundle objects.
-cleanupInitialization :: StartAnnexBranch -> Annex ()
-cleanupInitialization sab = void $ tryNonAsync $ do
+cleanupInitialization :: StartAnnexBranch -> FilePath -> Annex ()
+cleanupInitialization sab alternatejournaldir = void $ tryNonAsync $ do
+	liftIO $ mapM_ removeFile =<< dirContents alternatejournaldir
 	case sab of
 		AnnexBranchExistedAlready _ -> noop
 		AnnexBranchCreatedEmpty r ->
