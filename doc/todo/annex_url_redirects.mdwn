@@ -1,0 +1,6 @@
+annex:: urls are long, and in some situations it's useful to have a nice
+short url
+
+How about supporting an url like "annex::https://example.com/foo",
+where the http url redirects to the full annex url. Then any url
+shortener can be used. --[[Joey]]
