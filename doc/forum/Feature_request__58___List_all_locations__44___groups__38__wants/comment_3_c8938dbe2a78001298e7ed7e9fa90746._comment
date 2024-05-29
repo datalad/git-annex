@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="derphysiker"
+ avatar="http://cdn.libravatar.org/avatar/80623354932109c891c2e0ebf523b38f"
+ subject="comment 3"
+ date="2024-05-29T06:58:15Z"
+ content="""
+Well, that is an awesome idea with the more detailed info about each file. I did not thought about this yet.
+
+But what I was talking about is dumping - in a more asthetic way - the remote configuration with its groups and wanteds (for example \"standard\" or \"groupwanted\" or some custom ones).
+
+Furthermore it would be great to even dump the groupwanted configuration for each group and for reference all the standard definitions.
+
+git annex vicfg is more for editing the configuration, but it is visually less appealing for just dumping and reading the information.
+"""]]
