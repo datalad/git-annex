@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-05-29T17:04:41Z"
+ content="""
+Opened todo for my idea, [[git-annex_list_with_want_get_and_drop]].
+
+Back to what you were wanting.. I think there is a lot of room for
+improvements on querying in this area.
+
+`git-annex info repo` could display the groups the repo is in, as well as
+its preferred content expression, as well as any groupwanted expression,
+and the standard preferred content expression.
+
+There could be a command that just outputs a list of groups, one per line.
+Maybe `git-annex group --list`
+
+Then you could get your dump of the groupwanted configurations for each
+group:
+
+	for g in $(git-annex group --list); do git-annex groupwanted $g; done
+
+There could also be a command that lists the repositories that are in a
+group. Maybe `git-annex group --members-of=group`
+"""]]

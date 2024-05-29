@@ -1,0 +1,6 @@
+`git-annex list` could be extended with information about whether each
+repository wants to get or drop a file.
+
+For example, it could use "-" when a repository has a file, but wants to
+drop it. And "+" when it does not have a file, but wants to get it.
+Although perhaps something more clear can be found. --[[Joey]]
