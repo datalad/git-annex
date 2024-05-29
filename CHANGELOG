@@ -7,6 +7,7 @@ git-annex (10.20240431) UNRELEASED; urgency=medium
     git-remote-annex.
   * When building an adjusted unlocked branch, make pointer files
     executable when the annex object file is executable.
+  * group: Added --list option.
   * fsck: Fix recent reversion that made it say it was checksumming files
     whose content is not present.
   * Avoid the --fast option preventing checksumming in some cases it

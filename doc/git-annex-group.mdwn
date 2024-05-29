@@ -8,7 +8,7 @@ git annex group `repository [groupname]`
 
 # DESCRIPTION
 
-Adds a repository to a group, such as "archival", "enduser", or "transfer".
+Adds a repository to a group, such as "archive" or "transfer".
 The groupname must be a single word.
   
 Omit the groupname to show the current groups that a repository is in.
@@ -20,7 +20,11 @@ A repository can be in multiple groups at the same time.
 
 # OPTIONS
 
-* The [[git-annex-common-options]](1) can be used.
+* `--list`
+
+  Outputs a list of all groups that are used by at least one repository.
+
+* Also the [[git-annex-common-options]](1) can be used.
 
 # SEE ALSO
 

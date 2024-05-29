@@ -12,8 +12,8 @@ improvements on querying in this area.
 its preferred content expression, as well as any groupwanted expression,
 and the standard preferred content expression.
 
-There could be a command that just outputs a list of groups, one per line.
-Maybe `git-annex group --list`
+There could be a command that just outputs a list of groups.
+Maybe `git-annex group --list` (update: implemented this)
 
 Then you could get your dump of the groupwanted configurations for each
 group:
