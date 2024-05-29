@@ -528,16 +528,17 @@ reportFullUrl url rmt =
 
 -- Runs an action with a Remote as specified by the SpecialRemoteConfig.
 withSpecialRemote :: SpecialRemoteConfig -> StartAnnexBranch -> (Remote -> Annex a) -> Annex a
-withSpecialRemote (ExistingSpecialRemote remotename) _ a =
+withSpecialRemote (ExistingSpecialRemote remotename) sab a =
 	getEnabledSpecialRemoteByName remotename >>=
 		maybe (giveup $ "There is no special remote named " ++ remotename)
-		a
+		(specialRemoteFromUrl sab . a)
 withSpecialRemote cfg@(SpecialRemoteConfig {}) sab a = case specialRemoteName cfg of
 	-- The name could be the name of an existing special remote,
 	-- if so use it as long as its UUID matches the UUID from the url.
 	Just remotename -> getEnabledSpecialRemoteByName remotename >>= \case
 		Just rmt
-			| Remote.uuid rmt == specialRemoteUUID cfg -> a rmt
+			| Remote.uuid rmt == specialRemoteUUID cfg -> 
+				specialRemoteFromUrl sab (a rmt)
 			| otherwise -> giveup $ "The uuid in the annex:: url does not match the uuid of the remote named " ++ remotename
 		-- When cloning from an annex:: url,
 		-- this is used to set up the origin remote.
