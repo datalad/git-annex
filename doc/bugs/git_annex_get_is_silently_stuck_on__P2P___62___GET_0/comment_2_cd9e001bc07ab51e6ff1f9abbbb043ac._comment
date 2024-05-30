@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="odd odd odd"
+ date="2024-05-29T18:25:23Z"
+ content="""
+and I cannot copy from the server to the client:
+
+```
+[bids@rolando 1076_spacetop.git] > git annex copy --debug --to typhon --fast --not --in typhon
+yoh@typhon.dartmouth.edu's password: 
+[2024-05-29 14:21:40.601369476] (Utility.Process) process [28828] read: git [\"--git-dir=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"ls-tree\",\"--full-tree\",\"-z\",\"-r\",\"--\",\"refs/heads/git-annex\"]
+[2024-05-29 14:21:40.602439011] (Utility.Process) process [28829] chat: git [\"--git-dir=.\",\"--literal-pathspecs\",\"-c\",\"annex.debug=true\",\"cat-file\",\"--batch=%(objectname) %(objecttype) %(objectsize)\",\"--buffer\"]
+[2024-05-29 14:21:40.775458494] (Messages.explain) [ MD5E-s292602526--2069b86f10e1a39bda5a6ed8996078d4.nii.gz does not match:not in=typhon[TRUE] ]
+
+[2024-05-29 14:21:40.793913739] (Messages.explain) [ MD5E-s2615170--589b64f4cd3067f468408d809c7f1037.nii.gz does not match:not in=typhon[TRUE] ]
+
+[2024-05-29 14:21:40.811856562] (Messages.explain) [ MD5E-s597779--1108c4d91a2386573c50c251a0e967c2.tgz matches:not in=typhon[FALSE] ]
+
+copy MD5E-s597779--1108c4d91a2386573c50c251a0e967c2.tgz (to typhon...) [2024-05-29 14:21:40.974993044] (Utility.Process) process [28817] done ExitSuccess
+[2024-05-29 14:21:40.975527841] (Utility.Process) process [28816] done ExitSuccess
+
+
+  You have enabled concurrency, but git-annex is not able to use ssh connection caching. This may result in multiple ssh processes prompting for passwords at the same time.
+
+  annex.sshcaching is not set to true
+[2024-05-29 14:21:40.977267402] (Utility.Process) process [28831] chat: ssh [\"yoh@typhon.dartmouth.edu\",\"-T\",\"git-annex-shell 'p2pstdio' '/mnt/DATA/data/yoh/1076_spacetop' '--debug' '40795e62-527c-4d26-ae8c-af42a6e2da5a' --uuid 97b6f5e4-4642-43a7-988a-c483caf553c5\"]
+yoh@typhon.dartmouth.edu's password: 
+[2024-05-29 14:21:57.87732028] (P2P.IO) [ThreadId 4] P2P > AUTH-SUCCESS 97b6f5e4-4642-43a7-988a-c483caf553c5
+[2024-05-29 14:21:57.879974047] (P2P.IO) [ssh connection Just 28831] [ThreadId 4] P2P < AUTH-SUCCESS 97b6f5e4-4642-43a7-988a-c483caf553c5
+[2024-05-29 14:21:57.880228709] (P2P.IO) [ssh connection Just 28831] [ThreadId 4] P2P > VERSION 1
+[2024-05-29 14:21:57.878927215] (P2P.IO) [ThreadId 4] P2P < VERSION 1
+[2024-05-29 14:21:57.878991142] (P2P.IO) [ThreadId 4] P2P > VERSION 1
+[2024-05-29 14:21:57.881305277] (P2P.IO) [ssh connection Just 28831] [ThreadId 4] P2P < VERSION 1
+[2024-05-29 14:21:57.881487685] (P2P.IO) [ssh connection Just 28831] [ThreadId 4] P2P > PUT  MD5E-s597779--1108c4d91a2386573c50c251a0e967c2.tgz
+[2024-05-29 14:21:57.880214299] (P2P.IO) [ThreadId 4] P2P < PUT  MD5E-s597779--1108c4d91a2386573c50c251a0e967c2.tgz
+[2024-05-29 14:21:57.880467298] (P2P.IO) [ThreadId 4] P2P > PUT-FROM 0
+[2024-05-29 14:21:57.882841829] (P2P.IO) [ssh connection Just 28831] [ThreadId 4] P2P < PUT-FROM 0
+
+```
+
+NB we had issue with a recent 10GB switch update which was worked around by me reducing MTU on my servers from Jumbo frames to regular 1500 . But it manifested that scp did not work.  Here scp worked (I did scp on typhon from rolando). And for heejung it does not work to `pull` data from roland to discovery.
+"""]]

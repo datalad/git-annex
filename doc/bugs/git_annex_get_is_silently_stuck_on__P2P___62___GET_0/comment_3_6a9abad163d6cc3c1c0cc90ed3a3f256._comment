@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 3"
+ date="2024-05-29T18:31:16Z"
+ content="""
+might be (part of) mystery resolved -- dmesg on server shows bunch of
+
+```
+[Wed May 29 14:12:32 2024] lockd: server dbic-mrinbox not responding, still trying
+[Wed May 29 14:12:32 2024] lockd: server dbic-mrinbox not responding, still trying
+[Wed May 29 14:21:33 2024] lockd: server dbic-mrinbox not responding, still trying
+[Wed May 29 14:23:34 2024] lockd: server dbic-mrinbox not responding, still trying
+[Wed May 29 14:26:34 2024] lockd: server dbic-mrinbox not responding, still trying
+
+```
+although I can still read content just fine, so it is more specifically about locking I guess (despite using pidlock?)?
+"""]]
