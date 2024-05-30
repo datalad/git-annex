@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="yarikoptic"
+ avatar="http://cdn.libravatar.org/avatar/f11e9c84cb18d26a1748c33b48c924b4"
+ subject="comment 8"
+ date="2024-05-30T14:34:32Z"
+ content="""
+FWIW the trick with `.git/last-commit-msg` did not really work for me in direct use of git-annex as I guess annex introduces changes to git-annex when I do `git-annex add` first, so it takes then PRIOR commit message:
+
+```
+❯ git annex add random2
+(recording state in git...)
+add random2 
+ok                                
+(recording state in git...)
+❯ git commit -a
+[master 16107604] Will be committing changes to following files: random2
+ 1 file changed, 1 insertion(+)
+ create mode 120000 random2
+❯ git show git-annex
+commit dfb41b9b170e4d504e1e494538362e20bd73943a (git-annex)
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Thu May 30 10:31:46 2024 -0400
+
+    Will be committing changes to following files: random
+
+diff --git a/a37/1c8/MD5E-s1000--288b6b2b44800acf433b76dc5889695c.log b/a37/1c8/MD5E-s1000--288b6b2b44800acf433b76dc5889695c.log
+new file mode 100644
+index 00000000..4a3787e6
+--- /dev/null
++++ b/a37/1c8/MD5E-s1000--288b6b2b44800acf433b76dc5889695c.log
+@@ -0,0 +1 @@
++1717079506s 1 fff52b70-2aa4-4d16-8377-97fee7b2de1c
+❯ cat .git/last-commit-msg
+Will be committing changes to following files: random2
+
+❯ git lg HEAD^^..HEAD
+* 16107604 - (HEAD -> master) Will be committing changes to following files: random2 (3 minutes ago) [Yaroslav Halchenko]
+* d4840167 - Will be committing changes to following files: random (4 minutes ago) [Yaroslav Halchenko]
+
+```
+"""]]
