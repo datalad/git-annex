@@ -5,7 +5,7 @@ repository alongside the annexed files. So you can `git pull`, `git push`, and
 even `git clone` from a special remote.
 
 In order to use [[git-remote-annex]], the special remote needs to have
-its url set to an url starting with "annex::".
+its url configured to something starting with "annex::".
 
 Special remotes are not configured with such an url by default,
 but it can easily be set by using the `--with-url` parameter
@@ -23,7 +23,7 @@ Or you could configure it manually:
     git config remote.foo.fetch '+refs/heads/*:refs/remotes/foo/*'
 
 Now you can `git push foo` and `git pull foo`. And commands like
-`git-annex sync` will also use foo as a git repository.
+`git-annex sync` will also use foo as a git remote.
 
 You can even `git clone` from the special remote. To do that, you need
 an url that tells git-annex all about the special remote's configuration.
