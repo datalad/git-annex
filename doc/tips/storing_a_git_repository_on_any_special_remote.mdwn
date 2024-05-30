@@ -75,7 +75,7 @@ But this won't work with special remotes that are configured with
 
 If the content of a special remote gets written to some location that is
 published to http, you can use the [[special_remotes/httpalso]] special
-remote with [[git-remote-annex]] to `git clone` and `git fetch` over http.
+remote with [[git-remote-annex]] to `git clone` and `git pull` over http.
 
 For example, if your directory special remote named "foo" is published
 at `https://example.com/foo/`, set up the httpalso remote like this
