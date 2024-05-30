@@ -84,8 +84,8 @@ to access it:
 
 	git-annex initremote foohttp --with-url --sameas=foo type=httpalso url=https://example.com/foo/
 
-Be sure to remember to include exporttree=yes if the remote is configured
-that way.
+Be sure to remember to include exporttree=yes if the special remote is
+configured that way.
 
 Once a httpalso remote is set up like this, `git fetch` from it to display
 its full annex:: url. That url can be shared with others to let them clone
