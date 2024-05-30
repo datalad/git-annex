@@ -17,3 +17,8 @@ shortener can be used. --[[Joey]]
 > Perhaps it could be limited to safe special remotes. httpalso is surely
 > safe in this context. Would anything else be? Any external special
 > remotes? --[[Joey]]
+
+>> Implemented this, but it was being a bit hard to handle a redirect to an
+>> annex:: url, and in any case with httpalso, the user has a web server
+>> they can host files on. So made the url be downloaded as a file, and
+>> the first line contains the complete annex:: url. [[done]]

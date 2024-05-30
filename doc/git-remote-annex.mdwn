@@ -10,31 +10,61 @@ git fetch annex::uuid?param=value&param=value...
 
 This is a git remote helper program that allows git to clone,
 pull and push from a git repository that is stored in a git-annex
-special remote.
+special remote with an URL that starts with "annex::"
 
-The format of the remote URL is "annex::" followed by the UUID of the
-special remote, and then followed by all of the configuration parameters of
-the special remote.
+The special remote needs to have a `remote.<name>.url` 
+configured to use this. That is set up automatically when git
+cloning from a special remote.
 
-For example, to clone from a directory special remote:
+To make [[git-annex-initremote]](1) and [[git-annex-enableremote]](1)
+configure the url, pass them the `--with-url` option.
 
-    git clone annex::358ff77e-0bc3-11ef-bc49-872e6695c0e3?type=directory&encryption=none&directory=/mnt/foo/
+Or, to configure an existing special remote with a shorthand URL, run:
 
-But you don't need to generate such an url yourself. Instead, you can use
-the shorthand url of "annex::" with an existing special remote.
+    git config remote.name.url annex::
 
-    git-annex initremote foo type=directory encryption=none directory=/mnt/foo
-    git config remote.foo.url annex::
-	git push foo master
+Once the URL is configured, you can use `git pull`, `git push`, etc
+with the special remote much like with any other git remote.
+But see CONFLICTING PUSHES below for some situations where it behaves
+slightly differently.
 
-Configuring the url like that is automatically done when cloning from a
-special remote. To make [[git-annex-initremote]](1) and
-[[git-annex-enableremote]](1) configure the url, pass them the `--with-url`
-option.
+# URL FORMAT
 
-When using the shorthand "annex::" url, the full url will be displayed
-each time you git pull or push, when it's possible for git-annex to
-determine it.
+This uses an URL that starts with "annex::". There are three forms of such
+URLs:
+
+* Complete URL
+
+  This contains the UUID and all configuration parameters 
+  of the special remote that were passed when using 
+  `git-annex initremote`. 
+  
+  For example, to clone from a directory special remote:
+  
+    git clone annex::358ff77e-0bc3-11ef-bc49-872e6695c0e3?type=directory&encryption=none&directory=/mnt/foo/ 
+
+* Shorthand URL
+
+  This makes it easy to configure an existing special remote with an URL
+  without having to come up with the complete URL.
+  
+    annex::
+  
+  When using this shorthand URL, the full URL will be displayed each time you
+  git pull or push, when it's possible for git-annex to determine it. 
+  (Although in some cases, like the directory special remote, some 
+  parameters may be left off of the displayed URL.)
+
+* Web URL
+
+  This URL points at a file on the web, which contains the complete annex::
+  URL.
+  
+    annex::https://example.com/foo-repo
+  
+  Not all special remotes can be accessed by such an URL,
+  for security reasons. Currently, this is limited to httpalso special
+  remotes.
 
 # CONFLICTING PUSHES
 
@@ -48,13 +78,13 @@ time, for one of the pushes to be overwritten by the other one. In this
 situation, the overwritten push will appear to have succeeded, but pulling
 later will show the true situation.
 
-# HTTP ACCESS
+# HTTPALSO
 
 If the content of a special remote is published via http, a httpalso
 special remote can be initialized, and used to `git clone` and `git fetch`
 over http.
 
-For example, if the directory special remote set up above is published
+For example, a directory special remote named "foo" is published
 at `https://example.com/foo/`, set up the httpalso remote like this
 to access it:
 

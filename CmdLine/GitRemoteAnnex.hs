@@ -24,6 +24,7 @@ import qualified Git.Version
 import qualified Annex.SpecialRemote as SpecialRemote
 import qualified Annex.Branch
 import qualified Annex.BranchState
+import qualified Annex.Url as Url
 import qualified Types.Remote as Remote
 import qualified Logs.Remote
 import qualified Remote.External
@@ -57,6 +58,7 @@ import Utility.FileMode
 
 import Network.URI
 import Data.Either
+import Data.Char
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Map.Strict as M
@@ -65,21 +67,25 @@ import qualified Utility.RawFilePath as R
 import qualified Data.Set as S
 
 run :: [String] -> IO ()
-run (remotename:url:[]) =
-	-- git strips the "annex::" prefix of the url
-	-- when running this command, so add it back
-	let url' = "annex::" ++ url
-	in case parseSpecialRemoteNameUrl remotename url' of
-		Left e -> giveup e
-		Right src -> do
-			repo <- getRepo
-			state <- Annex.new repo
-			Annex.eval state (run' src url')
+run (remotename:url:[]) = do
+	repo <- getRepo
+	state <- Annex.new repo
+	Annex.eval state $
+		resolveSpecialRemoteWebUrl url >>= \case
+			-- git strips the "annex::" prefix of the url
+			-- when running this command, so add it back
+			Nothing -> parseurl ("annex::" ++ url) pure
+			Just url' -> parseurl url' checkAllowedFromSpecialRemoteWebUrl
+  where
+	parseurl u checkallowed =
+		case parseSpecialRemoteNameUrl remotename u of
+			Right src -> checkallowed src >>= run' u
+			Left e -> giveup e
 run (_remotename:[]) = giveup "remote url not configured"
 run _ = giveup "expected remote name and url parameters"
 
-run' :: SpecialRemoteConfig -> String -> Annex ()
-run' src url = do
+run' :: String -> SpecialRemoteConfig -> Annex ()
+run' url src = do
 	sab <- startAnnexBranch
 	whenM (Annex.getRead Annex.debugenabled) $
 		enableDebugOutput
@@ -477,7 +483,36 @@ parseSpecialRemoteUrl url remotename = case parseURI url of
 		let (k, sv) = break (== '=') kv
 		    v = if null sv then sv else drop 1 sv
 		in (Proposed (unEscapeString k), Proposed (unEscapeString v))
-			
+
+-- Handles an url that contains a http address, by downloading
+-- the web page and using it as the full annex:: url.
+-- The passed url has already had "annex::" stripped off.
+resolveSpecialRemoteWebUrl :: String -> Annex (Maybe String)
+resolveSpecialRemoteWebUrl url
+	| "http://" `isPrefixOf` lcurl || "https://" `isPrefixOf` lcurl =
+		Url.withUrlOptionsPromptingCreds $ \uo ->
+			withTmpFile "git-remote-annex" $ \tmp h -> do
+				liftIO $ hClose h
+				Url.download' nullMeterUpdate Nothing url tmp uo >>= \case
+					Left err -> giveup $ url ++ " " ++ err
+					Right () -> liftIO $
+						(headMaybe . lines)
+							<$> readFileStrict tmp
+	| otherwise = return Nothing
+  where
+	lcurl = map toLower url
+
+-- Only some types of special remotes are allowed to come from
+-- resolveSpecialRemoteWebUrl. Throws an error if this one is not.
+checkAllowedFromSpecialRemoteWebUrl :: SpecialRemoteConfig -> Annex SpecialRemoteConfig
+checkAllowedFromSpecialRemoteWebUrl src@(ExistingSpecialRemote {}) = pure src
+checkAllowedFromSpecialRemoteWebUrl src@(SpecialRemoteConfig {}) =
+	case M.lookup typeField (specialRemoteConfig src) of
+		Nothing -> giveup "Web URL did not include a type field."
+		Just t
+			| t == Proposed "httpalso" -> return src
+			| otherwise -> giveup "Web URL can only be used for a httpalso special remote."
+
 getSpecialRemoteUrl :: Remote -> Annex (Maybe String)
 getSpecialRemoteUrl rmt = do
 	rcp <- Remote.configParser (Remote.remotetype rmt)
