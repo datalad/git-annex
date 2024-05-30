@@ -78,25 +78,6 @@ time, for one of the pushes to be overwritten by the other one. In this
 situation, the overwritten push will appear to have succeeded, but pulling
 later will show the true situation.
 
-# HTTPALSO
-
-If the content of a special remote is published via http, a httpalso
-special remote can be initialized, and used to `git clone` and `git fetch`
-over http.
-
-For example, a directory special remote named "foo" is published
-at `https://example.com/foo/`, set up the httpalso remote like this
-to access it:
-
-    git-annex initremote foohttp --with-url --sameas=foo type=httpalso url=https://example.com/foo/
-
-Be sure to remember to include exporttree=yes if the remote is configured
-that way.
-
-Once a httpalso remote is set up like this, `git fetch` from it to display
-its full annex:: url. That url can be shared with others to let them clone
-the repository.
-
 # REPOSITORY FORMAT
 
 The git repository is stored in the special remote using special annex objects

@@ -1,0 +1,97 @@
+Usually a [[special remote|special_remotes]] stores the content of annexed
+files, but you need another git remote to store your git repository. But now we
+have [[git-remote-annex]], which lets most any special remote store a git
+repository alongside the annexed files. So you can `git pull`, `git push`, and
+even `git clone` from a special remote.
+
+In order to use [[git-remote-annex]], the special remote needs to have
+its url set to an url starting with "annex::".
+
+Special remotes are not configured with such an url by default,
+but it can easily be set by using the `--with-url` parameter
+when running [[git-annex-initremote]] or [[git-annex-enableremote]].
+
+Let's say you have a special remote named "foo" you want to use
+with [[git-remote-annex]]. This command will configure remote.foo.url
+and also remote.foo.fetch:
+
+    git-annex enableremote foo --with-url
+
+Or you could configure it manually:
+
+    git config remote.foo.url annex::
+    git config remote.foo.fetch '+refs/heads/*:refs/remotes/foo/*'
+
+Now you can `git push foo` and `git pull foo`. And commands like
+`git-annex sync` will also use foo as a git repository.
+
+You can even `git clone` from the special remote. To do that, you need
+an url that tells git-annex all about the special remote's configuration.
+The easy way to get that url is to run `git fetch foo`,
+and look at its output, which might look like this if it's an S3 bucket.
+
+	Full remote url: annex::13c2500f-a302-4331-9720-6ec43cb8da2b?type=S3&encryption=none&bucket=foo
+
+## does it work just like any other git remote?
+
+Very close, but not completely the same.
+
+If two people make conflicting pushes into a special remote at the same time,
+one of the pushes will overwrite the other one. In this situation, the
+overwritten push will appear to have succeeded, but pulling later will show the
+true situation.
+
+While pushes are mostly done incrementally, and so are fast, sometimes it will
+do a full re-upload of the contents of your repository, which is slower.
+
+If you `git push --delete foo badbranch`, the branch will be deleted, but
+all traces of it will not be immediately removed from the special remote.
+
+See the "REPOSITORY FORMAT" section of [[git-remote-annex]] for details.
+
+## what special remotes does this work with?
+
+Some types of special remotes already have an url that points at a git
+repository, so it can't also be set to an annex:: url.
+For example, [[special_remotes/git-lfs]].
+
+A few other types of special remotes can't be used for other reasons,
+including [[special_remotes/web]] and [[special_remotes/borg]].
+
+Encrypted special remotes *can* be used as git remotes. But, the git repository
+contains information that is needed to decrypt the files that are stored
+on the special remote. This means it's not possible to clone from an encrypted
+special remote. So you will be prompted to set a git config before using
+[[git-remote-annex]] with an encrypted special remote, to avoid shooting
+yourself in the foot.
+
+You *can* use this with special remotes that are configured with 
+"exporttree=yes". (The git repository is written under `.git/annex/objects/`
+on the remote to keep it separate from the exported files.) 
+But this won't work with special remotes that are configured with
+ "importrree=yes" but without "exportrree=yes".
+
+## httpalso special remotes
+
+If the content of a special remote gets written to some location that is
+published to http, you can use the [[special_remotes/httpalso]] special
+remote with [[git-remote-annex]] to `git clone` and `git fetch` over http.
+
+For example, if your directory special remote named "foo" is published
+at `https://example.com/foo/`, set up the httpalso remote like this
+to access it:
+
+	git-annex initremote foohttp --with-url --sameas=foo type=httpalso url=https://example.com/foo/
+
+Be sure to remember to include exporttree=yes if the remote is configured
+that way.
+
+Once a httpalso remote is set up like this, `git fetch` from it to display
+its full annex:: url. That url can be shared with others to let them clone
+the repository.
+
+The url will be rather long and ugly. There's a way to make a shorter url
+that you can tell someone to let them clone your httpalso repository.
+Just write the url to a file on your website. Then wrap the url to that
+file in an annex:: url, for example "annex::https://example.com/foo-repo"
+Currently this only works for httpalso urls.
