@@ -1,4 +1,4 @@
-git-annex (10.20240431) UNRELEASED; urgency=medium
+git-annex (10.20240531) upstream; urgency=medium
 
   * git-remote-annex: New program which allows pushing a git repo to a
     git-annex special remote, and cloning from a special remote.
@@ -16,7 +16,7 @@ git-annex (10.20240431) UNRELEASED; urgency=medium
   * Typo fixes.
     Thanks, Yaroslav Halchenko
 
- -- Joey Hess <id@joeyh.name>  Wed, 01 May 2024 15:47:06 -0400
+ -- Joey Hess <id@joeyh.name>  Thu, 30 May 2024 17:53:13 -0400
 
 git-annex (10.20240430) upstream; urgency=medium
 
