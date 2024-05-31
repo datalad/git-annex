@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 2"""
+ date="2024-05-31T15:26:26Z"
+ content="""
+Resetting the repo's git-annex branch all the way back to the 1st commit in it
+is sufficient to reproduce this bug.
+
+	joey@darkstar:~/tmp/ds002144#main>git log git-annex
+	commit 2e24112747f3742c5426138def93fd3219574df7 (git-annex)
+	Author: Git Worker <git@openneuro.org>
+	Date:   Fri Jan 19 21:04:18 2024 +0000
+	
+	    new branch for transition ["forget git history"]
+
+Hmm. That ref contains an export.log that references some tree shas.
+
+	1596548650.649001679s 2606f878-85c6-459a-8402-5f4b98720bbd:58a4efbe-8fb4-4cb3-8be3-b982a4673947 b78b723042e6d7a967c806b52258e8554caa1696 ae2937297eb1b4f6c9bfdfcf9d7a41b1adcea32e
+	1705698180.15617956s 2606f878-85c6-459a-8402-5f4b98720bbd:8af9d961-216f-47ec-b052-31696fc2f12d ae2937297eb1b4f6c9bfdfcf9d7a41b1adcea32e 28b655e8207f916122bbcbd22c0369d86bb4ffc1
+
+Those seem familiar:
+
+	missing tree b78b723042e6d7a967c806b52258e8554caa1696
+	missing tree ae2937297eb1b4f6c9bfdfcf9d7a41b1adcea32e
+
+So ok.. We have here a transition that forgot git history. But it kept an
+export.log that referenced 2 trees in that now-forgotten git history.
+
+Everything else seems to follow from that. Grafting those trees back into the
+git-annex branch in order to not forget them is a bad move since they're
+already forgotten. So it could just avoid doing that, if the tree object
+is missing, I suppose.
+
+There might be a deeper bug though: If we want to `git-annex export`, in either
+the original repo with forgotten history, or in a clone, it won't be able to
+refer to those tree objects. So it won't know what has been written to the
+special remote. So eg, if we export a tree that deletes a file compared to one
+of these trees, it wouldn't delete the file from the special remote.
+I think this problem might not happen when exporting in the original repo,
+because there the export database also records the same information. More likely
+it will happen in a clone.
+
+So, action items:
+
+* When performing a transition, the trees mentioned in export.log needs to be
+  grafted back in, in order not to lose them. I think it already is supposed to
+  do that, but it clearly didn't work in this case. So I need to find a way to
+  reproduce the situation in commit 2e24112747f3742c5426138def93fd3219574df7 in
+  a new repository to find out why that didn't happen. And fix that.
+* When encountering a git-annex branch with this situation in it, avoid
+  grafting missing trees back into the branch. And probably `git-annex export`
+  needs to refuse to touch the affected special remote, or warn the user
+  that it's lost track of what files were sent to the special remote.
+"""]]

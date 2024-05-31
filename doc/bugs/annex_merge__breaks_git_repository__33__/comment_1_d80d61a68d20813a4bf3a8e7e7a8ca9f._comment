@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 1"""
+ date="2024-05-31T14:52:17Z"
+ content="""
+Reproduction recipe works, thanks!
+
+Happens back to 10.20240129 at least, this is not recent breakage.
+
+There are some interesting things in the git-annex history.
+Including some git-annex:export.tree grafting, and also
+a continued transition.
+
+I made a new empty repo, initialized and annexed some files. Running the
+same script but cloning that, this problem does not occur. I also tried
+exporting a tree in that repo, and still the problem doesn't occur. I even
+tried running `git-annex forget` in there and still can't cause the
+problem.
+
+So something about this specific repo's git-annex branch history is
+triggering the problem and I don't know what. I've archived the current
+state of this repo in my big repo as git-annex-test-repos/ds002144.tar.gz
+to make sure I can continue to reproduce this.
+
+The first git-annex branch commit that is missing its tree object
+is a git-annex:export.tree graft commit. That is 3 commits above
+the git-annex branch pulled from github:
+
+Very interesting. Especially since the point of those export.tree graft commits
+are to make sure that the exported tree objects are referenced and so don't get
+gced out from under us.
+"""]]

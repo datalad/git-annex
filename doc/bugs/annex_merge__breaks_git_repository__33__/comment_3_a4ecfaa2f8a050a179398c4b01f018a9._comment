@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 3"""
+ date="2024-05-31T15:42:17Z"
+ content="""
+Occurs to me that one way to get a repository into this situation would be
+to do a `git-annex export`, then `git-annex forget`, and then manually
+reset the git-annex branch to `git-annex^^` (or similarly push
+`git-annex^^` to origin).
+
+There is a commit after the transition commit that re-grafts the exported
+tree back into the git-annex branch, and a manual reset would cause exactly
+this situation.
+
+I doubt OpenNeuro is manually resetting the git-annex branch when creating
+these repos, but stranger things have happened...
+"""]]
