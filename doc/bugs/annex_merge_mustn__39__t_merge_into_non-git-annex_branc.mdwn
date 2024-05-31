@@ -1,0 +1,157 @@
+### Please describe the problem.
+
+Somehow I ended up with the case that git remote (over ssh) had no "main" branch pushed, only "git-annex" branch which was not yet merged into local git-annex branch.
+More details at [https://github.com/datalad/datalad/issues/7608](https://github.com/datalad/datalad/issues/7608).
+
+git-annex info:
+
+<details>
+<summary>git-annex info shows datalad-public remote and all looks ok</summary> 
+
+```shell
+(git)smaug:/mnt/btrfs/datasets/datalad/crawl/openneuro/ds002144[main]git
+$> git annex info
+trusted repositories: 0
+semitrusted repositories: 7
+        00000000-0000-0000-0000-000000000001 -- web
+        00000000-0000-0000-0000-000000000002 -- bittorrent
+        2606f878-85c6-459a-8402-5f4b98720bbd -- root@openneuro-prod-dataset-worker-14:/datalad/ds002144
+        58a4efbe-8fb4-4cb3-8be3-b982a4673947 -- s3-PRIVATE
+        72279570-1519-43aa-aea8-6f9c3a6f72f4 -- yoh@smaug:/mnt/btrfs/datasets/datalad/crawl/openneuro/ds002144 [here]
+        ebcbc36d-4230-46b8-8654-87876ed1af0f -- yoh@falkor:/srv/datasets.datalad.org/www/openneuro/ds002144 [datalad-public]
+        fb99edfc-26aa-40ac-b770-996e91421e88 -- [s3-PUBLIC]
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 23.15 terabytes (+100 megabytes reserved)
+local annex keys: 0
+local annex size: 0 bytes
+annexed files in working tree: 288
+size of annexed files in working tree: 84.49 gigabytes
+combined annex size of all repositories: 257.38 gigabytes (+ 90 unknown size)
+annex sizes of repositories:
+        88.35 GB: 2606f878-85c6-459a-8402-5f4b98720bbd -- root@openneuro-prod-dataset-worker-14:/datalad/ds002144
+        85.93 GB: fb99edfc-26aa-40ac-b770-996e91421e88 -- [s3-PUBLIC]
+         83.1 GB: 58a4efbe-8fb4-4cb3-8be3-b982a4673947 -- s3-PRIVATE
+backend usage:
+        MD5E: 288
+bloom filter size: 32 mebibytes (0% full)
+
+```
+</details>
+
+But the datalad-public/git-annex branch is not yet merged into local git-annex branch, and `git annex merge` even though says "ok", in reality does nothing - it remains not merged.
+
+```
+(git)smaug:/mnt/btrfs/datasets/datalad/crawl/openneuro/ds002144[main]git
+$> git annex merge --debug
+merge git-annex [2024-05-31 09:46:03.819131714] (Utility.Process) process [2601180] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","git-annex"]
+[2024-05-31 09:46:03.821638775] (Utility.Process) process [2601180] done ExitSuccess
+[2024-05-31 09:46:03.822255445] (Utility.Process) process [2601181] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+[2024-05-31 09:46:03.825268573] (Utility.Process) process [2601181] done ExitSuccess
+ok
+[2024-05-31 09:46:03.826008662] (Utility.Process) process [2601184] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2024-05-31 09:46:03.829119829] (Utility.Process) process [2601184] done ExitSuccess
+[2024-05-31 09:46:03.829536231] (Utility.Process) process [2601187] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","refs/heads/main"]
+[2024-05-31 09:46:03.833612799] (Utility.Process) process [2601187] done ExitSuccess
+[2024-05-31 09:46:03.834740598] (Utility.Process) process [2601188] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","cat-file","--batch"]
+[2024-05-31 09:46:03.842123731] (Utility.Process) process [2601192] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--verify","-q","refs/heads/synced/main"]
+[2024-05-31 09:46:03.846432269] (Utility.Process) process [2601192] done ExitFailure 1
+[2024-05-31 09:46:03.846903191] (Utility.Process) process [2601188] done ExitSuccess
+(dev3) 2 12816.....................................:Fri 31 May 2024 09:46:03 AM EDT:.
+
+$> echo $?
+0
+
+$> git br -a
+  git-annex
+* main
+  remotes/datalad-public/git-annex
+  remotes/datalad-public/main
+  remotes/origin/HEAD -> origin/main
+  remotes/origin/git-annex
+  remotes/origin/main
+  remotes/origin/master
+```
+
+so I thought to force the annex merge manually expecting that git-annex would do its merge into `git-annex` branch, but it does it into current `main`:
+
+```
+(git)smaug:/mnt/btrfs/datasets/datalad/crawl/openneuro/ds002144[main]git
+$> git br -a
+  git-annex
+* main
+  remotes/datalad-public/git-annex
+  remotes/datalad-public/main
+  remotes/origin/HEAD -> origin/main
+  remotes/origin/git-annex
+  remotes/origin/main
+  remotes/origin/master
+
+$> git branch
+  git-annex
+* main
+
+$> git annex merge --allow-unrelated-histories datalad-public/git-annex
+merge datalad-public/git-annex
+Merge made by the 'ort' strategy.
+ uuid.log | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 uuid.log
+ok
+
+$> git show
+commit ce8ade971ead660c4dccc5cc1214a894fbfd65a2 (HEAD -> main)
+Merge: 99006dd a7cd458
+Author: Yaroslav Halchenko <debian@onerussian.com>
+Date:   Fri May 31 09:47:12 2024 -0400
+
+    Merge remote-tracking branch 'datalad-public/git-annex'
+
+    * datalad-public/git-annex:
+      update
+      branch created
+
+```
+
+<details>
+<summary>FWIW here is again with --debug</summary> 
+
+```shell
+(git)smaug:/mnt/btrfs/datasets/datalad/crawl/openneuro/ds002144[main]git
+$> git reset --hard origin/main
+HEAD is now at 99006dd [DATALAD] added content
+(dev3) 2 12822.....................................:Fri 31 May 2024 09:47:57 AM EDT:.
+(git)smaug:/mnt/btrfs/datasets/datalad/crawl/openneuro/ds002144[main]git
+$> git annex merge --debug --allow-unrelated-histories datalad-public/git-annex
+merge datalad-public/git-annex [2024-05-31 09:48:03.27116017] (Utility.Process) process [2606124] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","symbolic-ref","-q","HEAD"]
+[2024-05-31 09:48:03.275932771] (Utility.Process) process [2606124] done ExitSuccess
+[2024-05-31 09:48:03.276628862] (Utility.Process) process [2606125] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","refs/heads/main"]
+[2024-05-31 09:48:03.281249999] (Utility.Process) process [2606125] done ExitSuccess
+
+[2024-05-31 09:48:03.282011289] (Utility.Process) process [2606126] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/main"]
+[2024-05-31 09:48:03.284998952] (Utility.Process) process [2606126] done ExitSuccess
+[2024-05-31 09:48:03.286186327] (Utility.Process) process [2606127] read: git ["--version"]
+[2024-05-31 09:48:03.28861691] (Utility.Process) process [2606127] done ExitSuccess
+[2024-05-31 09:48:03.289258819] (Utility.Process) process [2606128] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","annex.debug=true","merge","--no-edit","datalad-public/git-annex","--allow-unrelated-histories"]
+Merge made by the 'ort' strategy.
+ uuid.log | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 uuid.log
+[2024-05-31 09:48:03.398901654] (Utility.Process) process [2606147] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","write-tree"]
+[2024-05-31 09:48:03.40183409] (Utility.Process) process [2606147] done ExitSuccess
+[2024-05-31 09:48:03.402786193] (Utility.Process) process [2606148] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/annex/last-index"]
+[2024-05-31 09:48:03.406085518] (Utility.Process) process [2606148] done ExitSuccess
+[2024-05-31 09:48:03.424223834] (Utility.Process) process [2606128] done ExitSuccess
+ok
+
+```
+</details>
+
+### What version of git-annex are you using? On what operating system?
+
+
+10.20240430+git26-g5f61667f27-1~ndall+1
+
+[[!meta author=yoh]]
+[[!tag projects/openneuro]]
+
