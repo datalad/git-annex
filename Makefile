@@ -61,7 +61,8 @@ git-annex: tmp/configure-stamp
 		ln -f $$(stack path $(BUILDERCOMMONOPTIONS) --dist-dir)/build/git-annex/git-annex git-annex; \
 	else \
 		if [ -d dist-newstyle ]; then \
-			ln -f $$(cabal exec -- sh -c 'command -v git-annex') git-annex; \
+			ln -f $$(cabal list-bin git-annex) git-annex || \
+				ln -f $$(cabal exec -- sh -c 'command -v git-annex') git-annex; \
 		else \
 			ln -f dist/build/git-annex/git-annex git-annex; \
 		fi; \
