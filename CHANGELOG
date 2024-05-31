@@ -16,7 +16,7 @@ git-annex (10.20240531) upstream; urgency=medium
   * Typo fixes.
     Thanks, Yaroslav Halchenko
 
- -- Joey Hess <id@joeyh.name>  Thu, 30 May 2024 17:53:13 -0400
+ -- Joey Hess <id@joeyh.name>  Fri, 31 May 2024 12:32:29 -0400
 
 git-annex (10.20240430) upstream; urgency=medium
 
