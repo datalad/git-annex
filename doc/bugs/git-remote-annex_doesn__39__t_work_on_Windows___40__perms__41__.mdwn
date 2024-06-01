@@ -1,8 +1,8 @@
 ### Please describe the problem.
 
-The new git-remote-annex functionality doesn't appear to work due to not being able
-to delete temporary files (problem with thawing content, perhaps). Somehow, the
-temp files (e.g. GITBUNDLE objects) seem to have their readonly attribute stubbornly
+The new git-remote-annex functionality doesn't appear to work on Windows due to git-annex
+not being able to delete temporary files (problem with thawing content, perhaps). Somehow, the
+temp files (e.g. GITBUNDLE objects) seem to have their read-only attribute stubbornly
 set (from git-annex's view).
 
 On a happier note, git-remote-annex works just fine on WSL2 operating annexes and
