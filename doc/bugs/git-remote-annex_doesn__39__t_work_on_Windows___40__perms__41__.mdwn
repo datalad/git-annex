@@ -1,0 +1,498 @@
+### Please describe the problem.
+
+The new git-remote-annex functionality doesn't appear to work due to not being able
+to delete temporary files (problem with thawing content, perhaps). Somehow, the
+temp files (e.g. GITBUNDLE objects) seem to have their readonly attribute stubbornly
+set (from git-annex's view).
+
+On a happier note, git-remote-annex works just fine on WSL2 operating annexes and
+directory special remotes on Windows' side (via drvfs/9p). :)
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+E:\git-annex-tests\test-git-remote-annex> ls ~\bin\git-remote-annex
+
+    Directory: C:\Users\jkniiv\bin
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+la---           12.5.2024    23:03              0 git-remote-annex -> ..\.local\bin\git-annex.exe
+
+E:\git-annex-tests\test-git-remote-annex> ls
+
+    Directory: E:\git-annex-tests\test-git-remote-annex
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----            1.6.2024    23:08                annex-a
+d----            1.6.2024    23:22                annex-b
+d----            1.6.2024    23:13                dirremote-a
+d----            1.6.2024    23:24                dirremote-b
+
+E:\git-annex-tests\test-git-remote-annex> mkdir annex-c,dirremote-c
+
+    Directory: E:\git-annex-tests\test-git-remote-annex
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----            1.6.2024    23:26                annex-c
+d----            1.6.2024    23:26                dirremote-c
+
+E:\git-annex-tests\test-git-remote-annex> cd annex-c
+E:\git-annex-tests\test-git-remote-annex\annex-c> git init
+Initialized empty Git repository in E:/git-annex-tests/test-git-remote-annex/annex-c/.git/
+E:\git-annex-tests\test-git-remote-annex\annex-c [master]> git annex init annex-c
+init annex-c
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Entering an adjusted branch where files are unlocked as this filesystem does not support locked files.
+
+Switched to branch 'adjusted/master(unlocked)'
+ok
+(recording state in git...)
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> git annex initremote test-dir type=directory encryption=none directory=E:\git-annex-tests\test-git-remote-annex\dirremote-c --with-url
+initremote test-dir ok
+(recording state in git...)
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> cat .git\config
+[core]
+        repositoryformatversion = 0
+        filemode = false
+        bare = false
+        logallrefupdates = true
+        symlinks = false
+        ignorecase = true
+[annex]
+        uuid = 0b9fd211-24fe-403f-a143-e2a676f9bc64
+        sshcaching = false
+        crippledfilesystem = true
+        version = 10
+[filter "annex"]
+        smudge = git-annex smudge -- %f
+        clean = git-annex smudge --clean -- %f
+        process = git-annex filter-process
+[remote "test-dir"]
+        annex-directory = E:\\git-annex-tests\\test-git-remote-annex\\dirremote-c
+        annex-uuid = cf20a53e-1773-4fe8-ad44-f8c825a6d42f
+        url = annex::
+        fetch = +refs/heads/*:refs/remotes/test-dir/*
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> echo one > a-1
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +1 ~0 -0 !]> echo two > b-2
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +2 ~0 -0 !]> echo three > c-3
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +3 ~0 -0 !]> ls
+
+    Directory: E:\git-annex-tests\test-git-remote-annex\annex-c
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---            1.6.2024    23:28              5 a-1
+-a---            1.6.2024    23:28              5 b-2
+-a---            1.6.2024    23:28              7 c-3
+
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +3 ~0 -0 !]> git annex add a-1 b-2
+add a-1
+ok
+add b-2
+ok
+(recording state in git...)
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +2 ~0 -0 | +1 ~0 -0 !]> git add c-3
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +3 ~0 -0 ~]> git status
+On branch adjusted/master(unlocked)
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        new file:   a-1
+        new file:   b-2
+        new file:   c-3
+
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked) +3 ~0 -0 ~]> git commit -m 'Added some files'
+[adjusted/master(unlocked) 088853f] Added some files
+ 3 files changed, 3 insertions(+)
+ create mode 100644 a-1
+ create mode 100644 b-2
+ create mode 100644 c-3
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> git log
+commit 088853f033ef46688dd4ded801e506a035e0f65b (HEAD -> adjusted/master(unlocked))
+Author: Jarkko Kniivilä <jkniiv@REDACTED>
+Date:   Sat Jun 1 23:29:44 2024 +0300
+
+    Added some files
+
+commit 38b32aed3f1985f92c943904ed64bce7006c728c
+Author: Jarkko Kniivilä <jkniiv@REDACTED>
+Date:   Sat Jun 1 23:27:47 2024 +0300
+
+    git-annex adjusted branch
+
+commit 1b7e0f9e661e78fee6e0262c857c5e57c0b0ee47 (master)
+Author: Jarkko Kniivilä <jkniiv@REDACTED>
+Date:   Sat Jun 1 23:27:47 2024 +0300
+
+    commit before entering adjusted branch
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> git log master
+commit 1b7e0f9e661e78fee6e0262c857c5e57c0b0ee47 (master)
+Author: Jarkko Kniivilä <jkniiv@REDACTED>
+Date:   Sat Jun 1 23:27:47 2024 +0300
+
+    commit before entering adjusted branch
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> git annex adjust --unlock
+adjust  ok
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> git log master
+commit c275f9426ca2f587702c1212566bbdc5d09b620c (master)
+Author: Jarkko Kniivilä <jkniiv@REDACTED>
+Date:   Sat Jun 1 23:29:44 2024 +0300
+
+    Added some files
+
+commit 1b7e0f9e661e78fee6e0262c857c5e57c0b0ee47
+Author: Jarkko Kniivilä <jkniiv@REDACTED>
+Date:   Sat Jun 1 23:27:47 2024 +0300
+
+    commit before entering adjusted branch
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> git push test-dir master
+Full remote url: annex::cf20a53e-1773-4fe8-ad44-f8c825a6d42f?encryption=none&type=directory
+To annex::
+ * [new branch]      master -> master
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> git -c annex.debug annex sync --no-commit --content test-dir
+[2024-06-01 23:39:17.4962365] (Utility.Process) process [24708] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:17.5342304] (Utility.Process) process [24708] done ExitSuccess
+[2024-06-01 23:39:17.5442429] (Utility.Process) process [22804] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2024-06-01 23:39:17.5812289] (Utility.Process) process [22804] done ExitSuccess
+[2024-06-01 23:39:17.6172278] (Utility.Process) process [12588] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--no-filters","--stdin-paths"]
+[2024-06-01 23:39:17.6262323] (Utility.Process) process [31796] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2024-06-01 23:39:17.6392313] (Utility.Process) process [18380] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2024-06-01 23:39:17.6492327] (Utility.Process) process [31736] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","refs/heads/git-annex","--"]
+[2024-06-01 23:39:17.6902288] (Utility.Process) process [31736] done ExitSuccess
+[2024-06-01 23:39:17.6952283] (Utility.Process) process [18380] done ExitSuccess
+[2024-06-01 23:39:17.7112279] (Utility.Process) process [20832] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2024-06-01 23:39:17.7422277] (Utility.Process) process [20832] done ExitSuccess
+[2024-06-01 23:39:17.7482276] (Utility.Process) process [28880] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/adjusted/master(unlocked)"]
+[2024-06-01 23:39:17.7822246] (Utility.Process) process [28880] done ExitSuccess
+[2024-06-01 23:39:17.7912266] (Utility.Process) process [29536] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/heads/synced/master"]
+[2024-06-01 23:39:17.8202293] (Utility.Process) process [29536] done ExitFailure 1
+[2024-06-01 23:39:17.8262314] (Utility.Process) process [15136] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/adjusted/master(unlocked)..refs/heads/master","--pretty=%H","-n1"]
+[2024-06-01 23:39:17.862228] (Utility.Process) process [15136] done ExitSuccess
+merge master [2024-06-01 23:39:17.8712316] (Utility.Process) process [24664] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/basis/adjusted/master(unlocked)"]
+[2024-06-01 23:39:17.9032575] (Utility.Process) process [24664] done ExitSuccess
+[2024-06-01 23:39:17.9082289] (Utility.Process) process [8688] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2024-06-01 23:39:17.940232] (Utility.Process) process [4772] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/basis/adjusted/master(unlocked)..refs/heads/adjusted/master(unlocked)","--pretty=%H","--reverse"]
+[2024-06-01 23:39:17.9832314] (Utility.Process) process [4772] done ExitSuccess
+[2024-06-01 23:39:17.9952296] (Utility.Process) process [20876] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show","-z","--raw","--no-renames","-l0","--no-abbrev","--pretty=","--raw","088853f033ef46688dd4ded801e506a035e0f65b"]
+[2024-06-01 23:39:18.0272323] (Utility.Process) process [7580] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)"]
+[2024-06-01 23:39:18.0782375] (Utility.Process) process [21852] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","mktree","--missing","--batch","-z"]
+[2024-06-01 23:39:18.093233] (Utility.Process) process [33064] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-tree","--full-tree","-z","-r","-t","--","c275f9426ca2f587702c1212566bbdc5d09b620c"]
+[2024-06-01 23:39:18.1302264] (Utility.Process) process [33064] done ExitSuccess
+[2024-06-01 23:39:18.1402283] (Utility.Process) process [21852] done ExitSuccess
+[2024-06-01 23:39:18.1402283] (Utility.Process) process [20876] done ExitSuccess
+[2024-06-01 23:39:18.1472316] (Utility.Process) process [18108] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","fdd574ad3eff386ce645e69b0160895f6633a131","--no-gpg-sign","-p","c275f9426ca2f587702c1212566bbdc5d09b620c","-m","Added some files\n"]
+[2024-06-01 23:39:18.1872297] (Utility.Process) process [18108] done ExitSuccess
+[2024-06-01 23:39:18.1932381] (Utility.Process) process [20276] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/basis/adjusted/master(unlocked)","864609e5e29506f6376c01a180aff55632be2bee"]
+[2024-06-01 23:39:18.2302311] (Utility.Process) process [20276] done ExitSuccess
+[2024-06-01 23:39:18.24023] (Utility.Process) process [24636] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2024-06-01 23:39:18.2822287] (Utility.Process) process [24636] done ExitSuccess
+[2024-06-01 23:39:18.2972273] (Utility.Process) process [28024] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/master","864609e5e29506f6376c01a180aff55632be2bee"]
+[2024-06-01 23:39:18.34623] (Utility.Process) process [28024] done ExitSuccess
+[2024-06-01 23:39:18.3842636] (Utility.Process) process [3544] call: git ["--work-tree=.git\\annex\\merge\\","--literal-pathspecs","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","reset","HEAD","--quiet"]
+[2024-06-01 23:39:18.4442242] (Utility.Process) process [3544] done ExitSuccess
+
+[2024-06-01 23:39:18.4522335] (Utility.Process) process [32372] call: git ["--work-tree=.git\\annex\\merge\\","-c","merge.directoryRenames=false","--literal-pathspecs","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","merge","--no-edit","refs/heads/master"]
+Already up to date.
+[2024-06-01 23:39:18.499228] (Utility.Process) process [32372] done ExitSuccess
+[2024-06-01 23:39:18.5252311] (Utility.Process) process [4016] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/basis/adjusted/master(unlocked)","864609e5e29506f6376c01a180aff55632be2bee"]
+[2024-06-01 23:39:18.5602298] (Utility.Process) process [4016] done ExitSuccess
+[2024-06-01 23:39:18.5662402] (Utility.Process) process [19008] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/master","864609e5e29506f6376c01a180aff55632be2bee"]
+[2024-06-01 23:39:18.6022616] (Utility.Process) process [19008] done ExitSuccess
+[2024-06-01 23:39:18.6082311] (Utility.Process) process [30656] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","mktree","--missing","--batch","-z"]
+[2024-06-01 23:39:18.6272365] (Utility.Process) process [29012] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-tree","--full-tree","-z","-r","-t","--","864609e5e29506f6376c01a180aff55632be2bee"]
+[2024-06-01 23:39:18.7092339] (Utility.Process) process [26580] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","write-tree"]
+[2024-06-01 23:39:18.7582362] (Utility.Process) process [26580] done ExitSuccess
+[2024-06-01 23:39:18.7672541] (Utility.Process) process [6496] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/annex/last-index"]
+[2024-06-01 23:39:18.8192314] (Utility.Process) process [6496] done ExitSuccess
+[2024-06-01 23:39:18.8482368] (Utility.Process) process [29012] done ExitSuccess
+[2024-06-01 23:39:18.8572371] (Utility.Process) process [30656] done ExitSuccess
+[2024-06-01 23:39:18.8722339] (Utility.Process) process [28512] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","6c6c2adb21754137e9ee7f5cb1b5f784b2e6eb6d","--no-gpg-sign","-p","864609e5e29506f6376c01a180aff55632be2bee"]
+[2024-06-01 23:39:18.9262332] (Utility.Process) process [28512] done ExitSuccess
+[2024-06-01 23:39:18.9422387] (Utility.Process) process [33620] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","6c6c2adb21754137e9ee7f5cb1b5f784b2e6eb6d","--no-gpg-sign","-p","refs/heads/adjusted/master(unlocked)"]
+[2024-06-01 23:39:19.0022314] (Utility.Process) process [33620] done ExitSuccess
+(Merging into adjusted branch...)
+[2024-06-01 23:39:19.0132358] (Utility.Process) process [23568] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/adjusted/master(unlocked)"]
+[2024-06-01 23:39:19.0652377] (Utility.Process) process [23568] done ExitSuccess
+[2024-06-01 23:39:19.07624] (Utility.Process) process [33204] call: git ["--git-dir=.git","--work-tree=.","-c","merge.directoryRenames=false","--literal-pathspecs","merge","--no-edit","ea3414a77d9c4c86b54ba186f01d3c5f7ffb3dbb"]
+Updating 088853f..ea3414a
+Fast-forward
+[2024-06-01 23:39:19.3702317] (Utility.Process) process [25920] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","write-tree"]
+[2024-06-01 23:39:19.4022299] (Utility.Process) process [25920] done ExitSuccess
+[2024-06-01 23:39:19.4112305] (Utility.Process) process [33340] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/annex/last-index"]
+[2024-06-01 23:39:19.4472282] (Utility.Process) process [33340] done ExitSuccess
+[2024-06-01 23:39:19.5022274] (Utility.Process) process [33204] done ExitSuccess
+[2024-06-01 23:39:19.5022274] (Database.Handle) commitDb start
+[2024-06-01 23:39:19.5032308] (Database.Handle) commitDb done
+[2024-06-01 23:39:19.51923] (Utility.Process) process [18336] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2024-06-01 23:39:19.5512324] (Utility.Process) process [18336] done ExitSuccess
+[2024-06-01 23:39:19.5642306] (Utility.Process) process [16044] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","-m","updating adjusted branch","refs/heads/adjusted/master(unlocked)","1d8b61085be40d63a66673d3e8ca43b7186f695a"]
+[2024-06-01 23:39:19.6022279] (Utility.Process) process [16044] done ExitSuccess
+ok
+pull test-dir
+[2024-06-01 23:39:19.6082295] (Utility.Process) process [15920] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","fetch","test-dir"]
+[2024-06-01 23:39:19.7962298] (Utility.Process) process [13160] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:19.831228] (Utility.Process) process [13160] done ExitSuccess
+[2024-06-01 23:39:19.8392362] (Utility.Process) process [17920] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2024-06-01 23:39:19.8742364] (Utility.Process) process [17920] done ExitSuccess
+[2024-06-01 23:39:19.8952288] (Utility.Process) process [25120] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--no-filters","--stdin-paths"]
+[2024-06-01 23:39:19.9052313] (Utility.Process) process [32456] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2024-06-01 23:39:19.9142333] (Utility.Process) process [17200] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2024-06-01 23:39:19.9252374] (Utility.Process) process [26228] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","refs/heads/git-annex","--"]
+[2024-06-01 23:39:19.9672289] (Utility.Process) process [26228] done ExitSuccess
+[2024-06-01 23:39:19.9762277] (Utility.Process) process [17200] done ExitSuccess
+Full remote url: annex::cf20a53e-1773-4fe8-ad44-f8c825a6d42f?encryption=none&type=directory
+[2024-06-01 23:39:20.0402265] (Utility.Process) process [32456] done ExitSuccess
+[2024-06-01 23:39:20.0472288] (Utility.Process) process [25120] done ExitSuccess
+[2024-06-01 23:39:20.0602384] (Utility.Process) process [32496] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:20.1002313] (Utility.Process) process [32496] done ExitSuccess
+[2024-06-01 23:39:20.1082358] (Utility.Process) process [23288] read: git ["--version"]
+[2024-06-01 23:39:20.141233] (Utility.Process) process [23288] done ExitSuccess
+[2024-06-01 23:39:20.1482378] (Utility.Process) process [23424] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+git-annex: .git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29: DeleteFile "\\\\?\\E:\\git-annex-tests\\test-git-remote-annex\\annex-c\\.git\\annex\\tmp\\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29": permission denied (Käyttö estetty.)
+[2024-06-01 23:39:20.2192278] (Utility.Process) process [15920] done ExitFailure 128
+ok
+[2024-06-01 23:39:20.2242278] (Utility.Process) process [6112] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:20.2532281] (Utility.Process) process [6112] done ExitSuccess
+[2024-06-01 23:39:20.2572321] (Utility.Process) process [31772] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2024-06-01 23:39:20.2862298] (Utility.Process) process [31772] done ExitSuccess
+[2024-06-01 23:39:20.2932311] (Utility.Process) process [29984] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2024-06-01 23:39:20.3003091] (Utility.Process) process [7452] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","refs/heads/git-annex","--"]
+[2024-06-01 23:39:20.334254] (Utility.Process) process [7452] done ExitSuccess
+[2024-06-01 23:39:20.3382304] (Utility.Process) process [29984] done ExitSuccess
+[2024-06-01 23:39:20.3462303] (Utility.Process) process [27232] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2024-06-01 23:39:20.377233] (Utility.Process) process [27232] done ExitSuccess
+[2024-06-01 23:39:20.3852325] (Utility.Process) process [25780] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","-z","--pretty=format:%H %ct","--raw","--no-abbrev","--no-renames","--reverse","--follow","9ff8693cb8d001773d179e8b7b4f4c79b041734a","--","migrate.tree"]
+[2024-06-01 23:39:20.4182277] (Utility.Process) process [25780] done ExitSuccess
+[2024-06-01 23:39:20.4262309] (Utility.Process) process [12004] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","ls-files","--stage","-z","--error-unmatch","--"]
+[2024-06-01 23:39:20.4382373] (Utility.Process) process [25732] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch-check=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2024-06-01 23:39:20.4462332] (Utility.Process) process [27836] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2024-06-01 23:39:20.4712341] (Utility.Process) process [8688] done ExitSuccess
+[2024-06-01 23:39:20.4772344] (Utility.Process) process [31796] done ExitSuccess
+[2024-06-01 23:39:20.4852331] (Utility.Process) process [7580] done ExitSuccess
+[2024-06-01 23:39:20.4922273] (Utility.Process) process [12588] done ExitSuccess
+[2024-06-01 23:39:20.5022368] (Utility.Process) process [32792] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch=%(objectname) %(objecttype) %(objectsize)","--buffer"]
+[2024-06-01 23:39:20.537232] (Utility.Process) process [28252] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+copy a-1 (to test-dir...) [2024-06-01 23:39:20.5902299] (Utility.Process) process [1724] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","-c","filter.annex.smudge=","-c","filter.annex.clean=","-c","filter.annex.process=","write-tree"]
+[2024-06-01 23:39:20.6142245] (Utility.Process) process [1724] done ExitSuccess
+[2024-06-01 23:39:20.6202324] (Utility.Process) process [32100] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/annex/last-index"]
+[2024-06-01 23:39:20.6582242] (Utility.Process) process [32100] done ExitSuccess
+
+[2024-06-01 23:39:20.6762397] (Annex.Branch) read f43\1ad\SHA256E-s5--5259d46a49644bf76792231ef7315b5293677c49ddd7e69d95557013e10320d4.log
+[2024-06-01 23:39:20.683277] (Annex.Branch) set f43\1ad\SHA256E-s5--5259d46a49644bf76792231ef7315b5293677c49ddd7e69d95557013e10320d4.log
+ok
+[2024-06-01 23:39:20.6962326] (Utility.Process) process [11052] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","check-attr","-z","--stdin","annex.backend","annex.largefiles","annex.numcopies","annex.mincopies","--"]
+[2024-06-01 23:39:20.7342356] (Annex.Branch) read numcopies.log
+[2024-06-01 23:39:20.7372344] (Annex.Branch) read mincopies.log
+copy b-2 [2024-06-01 23:39:20.743232] (Annex.Branch) read 528\804\SHA256E-s5--140eeaa0223494102ae8f7a5fe2df425c49d226ad50b98e52989a049f624780e.log.cnk
+(to test-dir...)
+[2024-06-01 23:39:20.7932304] (Annex.Branch) read 528\804\SHA256E-s5--140eeaa0223494102ae8f7a5fe2df425c49d226ad50b98e52989a049f624780e.log
+[2024-06-01 23:39:20.8022365] (Annex.Branch) set 528\804\SHA256E-s5--140eeaa0223494102ae8f7a5fe2df425c49d226ad50b98e52989a049f624780e.log
+ok
+[2024-06-01 23:39:20.8082306] (Utility.Process) process [32792] done ExitSuccess
+[2024-06-01 23:39:20.8082306] (Utility.Process) process [27836] done ExitSuccess
+[2024-06-01 23:39:20.8082306] (Utility.Process) process [25732] done ExitSuccess
+[2024-06-01 23:39:20.8092288] (Utility.Process) process [12004] done ExitSuccess
+pull test-dir
+[2024-06-01 23:39:20.8152572] (Utility.Process) process [24484] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","fetch","test-dir"]
+[2024-06-01 23:39:21.0202288] (Utility.Process) process [32328] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:21.0492458] (Utility.Process) process [32328] done ExitSuccess
+[2024-06-01 23:39:21.0542323] (Utility.Process) process [31572] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2024-06-01 23:39:21.0832285] (Utility.Process) process [31572] done ExitSuccess
+[2024-06-01 23:39:21.1042304] (Utility.Process) process [32920] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--no-filters","--stdin-paths"]
+[2024-06-01 23:39:21.1112308] (Utility.Process) process [28552] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2024-06-01 23:39:21.1232347] (Utility.Process) process [6888] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2024-06-01 23:39:21.1342335] (Utility.Process) process [3384] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","refs/heads/git-annex","--"]
+[2024-06-01 23:39:21.1842337] (Utility.Process) process [3384] done ExitSuccess
+[2024-06-01 23:39:21.1922341] (Utility.Process) process [6888] done ExitSuccess
+[2024-06-01 23:39:21.215259] (Utility.Process) process [28832] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2024-06-01 23:39:21.2562318] (Utility.Process) process [28832] done ExitSuccess
+[2024-06-01 23:39:21.2562318] (Annex.Branch) read transitions.log
+[2024-06-01 23:39:21.2712334] (Utility.Process) process [22056] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2024-06-01 23:39:21.2822381] (Utility.Process) process [28836] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","refs/heads/git-annex","--"]
+[2024-06-01 23:39:21.3292375] (Utility.Process) process [28836] done ExitSuccess
+[2024-06-01 23:39:21.336234] (Utility.Process) process [22056] done ExitSuccess
+[2024-06-01 23:39:21.3542391] (Utility.Process) process [23676] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","write-tree"]
+[2024-06-01 23:39:21.4302388] (Utility.Process) process [23676] done ExitSuccess
+[2024-06-01 23:39:21.4422363] (Utility.Process) process [33396] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","babf86ea7cbcd290e58a1486ba23679f72631705","--no-gpg-sign","-p","refs/heads/git-annex","-m","update"]
+[2024-06-01 23:39:21.4982364] (Utility.Process) process [33396] done ExitSuccess
+[2024-06-01 23:39:21.5102365] (Utility.Process) process [20780] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/git-annex","9eafa7616a157a0a694cd2a96c77de7d32d4a44d"]
+[2024-06-01 23:39:21.5682293] (Utility.Process) process [20780] done ExitSuccess
+Full remote url: annex::cf20a53e-1773-4fe8-ad44-f8c825a6d42f?encryption=none&type=directory
+[2024-06-01 23:39:21.6372403] (Annex.Perms) thawing content .git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29
+[2024-06-01 23:39:21.6582316] (Utility.Process) process [28552] done ExitSuccess
+[2024-06-01 23:39:21.6722324] (Utility.Process) process [32920] done ExitSuccess
+[2024-06-01 23:39:21.7052346] (Utility.Process) process [28420] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:21.7512307] (Utility.Process) process [28420] done ExitSuccess
+[2024-06-01 23:39:21.7602331] (Utility.Process) process [22048] read: git ["--version"]
+[2024-06-01 23:39:21.7922288] (Utility.Process) process [22048] done ExitSuccess
+[2024-06-01 23:39:21.8032379] (Utility.Process) process [6060] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+git-annex: .git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29: DeleteFile "\\\\?\\E:\\git-annex-tests\\test-git-remote-annex\\annex-c\\.git\\annex\\tmp\\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29": permission denied (Käyttö estetty.)
+[2024-06-01 23:39:21.8832304] (Utility.Process) process [24484] done ExitFailure 128
+ok
+[2024-06-01 23:39:21.8882274] (Utility.Process) process [20032] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:21.9182269] (Utility.Process) process [20032] done ExitSuccess
+[2024-06-01 23:39:21.9222324] (Utility.Process) process [33128] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2024-06-01 23:39:21.9512305] (Utility.Process) process [33128] done ExitSuccess
+[2024-06-01 23:39:21.9592338] (Utility.Process) process [29156] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/heads/git-annex..9eafa7616a157a0a694cd2a96c77de7d32d4a44d","--pretty=%H","-n1"]
+[2024-06-01 23:39:21.9932257] (Utility.Process) process [29156] done ExitSuccess
+[2024-06-01 23:39:22.0022299] (Utility.Process) process [17792] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--no-filters","--stdin-paths"]
+[2024-06-01 23:39:22.00723] (Utility.Process) process [26532] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2024-06-01 23:39:22.020234] (Utility.Process) process [16960] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","refs/heads/git-annex","--"]
+[2024-06-01 23:39:22.0622289] (Utility.Process) process [16960] done ExitSuccess
+[2024-06-01 23:39:22.0692274] (Utility.Process) process [26532] done ExitSuccess
+[2024-06-01 23:39:22.0832324] (Utility.Process) process [26396] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","symbolic-ref","-q","HEAD"]
+[2024-06-01 23:39:22.107227] (Utility.Process) process [26396] done ExitSuccess
+[2024-06-01 23:39:22.1112302] (Utility.Process) process [13828] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","refs/heads/adjusted/master(unlocked)"]
+[2024-06-01 23:39:22.1422289] (Utility.Process) process [13828] done ExitSuccess
+[2024-06-01 23:39:22.1472572] (Utility.Process) process [26000] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/basis/adjusted/master(unlocked)"]
+[2024-06-01 23:39:22.1852284] (Utility.Process) process [26000] done ExitSuccess
+[2024-06-01 23:39:22.1912331] (Utility.Process) process [18508] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2024-06-01 23:39:22.2332388] (Utility.Process) process [26148] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","log","refs/basis/adjusted/master(unlocked)..refs/heads/adjusted/master(unlocked)","--pretty=%H","--reverse"]
+[2024-06-01 23:39:22.2782533] (Utility.Process) process [26148] done ExitSuccess
+[2024-06-01 23:39:22.289235] (Utility.Process) process [27088] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/basis/adjusted/master(unlocked)","864609e5e29506f6376c01a180aff55632be2bee"]
+[2024-06-01 23:39:22.3382347] (Utility.Process) process [27088] done ExitSuccess
+[2024-06-01 23:39:22.344228] (Utility.Process) process [28872] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/master"]
+[2024-06-01 23:39:22.3822684] (Utility.Process) process [28872] done ExitSuccess
+[2024-06-01 23:39:22.3862335] (Utility.Process) process [28788] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","refs/heads/master","864609e5e29506f6376c01a180aff55632be2bee"]
+[2024-06-01 23:39:22.4172259] (Utility.Process) process [28788] done ExitSuccess
+[2024-06-01 23:39:22.4232266] (Utility.Process) process [27280] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","commit-tree","6c6c2adb21754137e9ee7f5cb1b5f784b2e6eb6d","--no-gpg-sign","-p","864609e5e29506f6376c01a180aff55632be2bee"]
+[2024-06-01 23:39:22.4562285] (Utility.Process) process [27280] done ExitSuccess
+[2024-06-01 23:39:22.4622288] (Utility.Process) process [29600] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-ref","-m","rebasing adjusted branch on top of updated original branch","refs/heads/adjusted/master(unlocked)","1d8b61085be40d63a66673d3e8ca43b7186f695a"]
+[2024-06-01 23:39:22.4932269] (Utility.Process) process [29600] done ExitSuccess
+[2024-06-01 23:39:22.501226] (Utility.Process) process [19984] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","branch","-f","synced/master","refs/heads/master"]
+[2024-06-01 23:39:22.5372296] (Utility.Process) process [19984] done ExitSuccess
+[2024-06-01 23:39:22.5432291] (Utility.Process) process [5784] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--verify","-q","refs/remotes/test-dir/synced/master"]
+[2024-06-01 23:39:22.5762278] (Utility.Process) process [5784] done ExitFailure 1
+push test-dir
+[2024-06-01 23:39:22.5852296] (Utility.Process) process [24920] call: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","test-dir","master:synced/master","+git-annex:synced/git-annex"]
+[2024-06-01 23:39:22.7692287] (Utility.Process) process [23564] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:22.8012302] (Utility.Process) process [23564] done ExitSuccess
+[2024-06-01 23:39:22.8092294] (Utility.Process) process [11892] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2024-06-01 23:39:22.845227] (Utility.Process) process [11892] done ExitSuccess
+[2024-06-01 23:39:22.869234] (Utility.Process) process [32420] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--no-filters","--stdin-paths"]
+[2024-06-01 23:39:22.8762339] (Utility.Process) process [17708] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2024-06-01 23:39:22.8922324] (Utility.Process) process [23432] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2024-06-01 23:39:22.9042336] (Utility.Process) process [25472] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","refs/heads/git-annex","--"]
+[2024-06-01 23:39:22.9432286] (Utility.Process) process [25472] done ExitSuccess
+[2024-06-01 23:39:22.9552281] (Utility.Process) process [23432] done ExitSuccess
+Full remote url: annex::cf20a53e-1773-4fe8-ad44-f8c825a6d42f?encryption=none&type=directory
+[2024-06-01 23:39:23.0072269] (Annex.Perms) thawing content .git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29
+[2024-06-01 23:39:23.0212265] (Utility.Process) process [17708] done ExitSuccess
+[2024-06-01 23:39:23.0292334] (Utility.Process) process [32420] done ExitSuccess
+[2024-06-01 23:39:23.0422318] (Utility.Process) process [32868] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:23.0732275] (Utility.Process) process [32868] done ExitSuccess
+[2024-06-01 23:39:23.0822356] (Utility.Process) process [33356] read: git ["--version"]
+[2024-06-01 23:39:23.1032286] (Utility.Process) process [33356] done ExitSuccess
+[2024-06-01 23:39:23.1082379] (Utility.Process) process [29556] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+git-annex: .git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29: DeleteFile "\\\\?\\E:\\git-annex-tests\\test-git-remote-annex\\annex-c\\.git\\annex\\tmp\\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29": permission denied (Käyttö estetty.)
+[2024-06-01 23:39:23.1832291] (Utility.Process) process [24920] done ExitFailure 128
+[2024-06-01 23:39:23.1892264] (Utility.Process) process [27476] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","test-dir","git-annex"]
+[2024-06-01 23:39:23.6622357] (Utility.Process) process [27476] done ExitFailure 128
+[2024-06-01 23:39:23.6712318] (Utility.Process) process [13320] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","push","test-dir","master"]
+[2024-06-01 23:39:24.1472317] (Utility.Process) process [13320] done ExitFailure 128
+[2024-06-01 23:39:23.855231] (Utility.Process) process [32620] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:23.8792366] (Utility.Process) process [32620] done ExitSuccess
+[2024-06-01 23:39:23.8832402] (Utility.Process) process [10308] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","--hash","refs/heads/git-annex"]
+[2024-06-01 23:39:23.9142336] (Utility.Process) process [10308] done ExitSuccess
+[2024-06-01 23:39:23.9322352] (Utility.Process) process [12808] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","hash-object","-w","--no-filters","--stdin-paths"]
+[2024-06-01 23:39:23.9402307] (Utility.Process) process [7752] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+[2024-06-01 23:39:23.9472316] (Utility.Process) process [30172] feed: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","update-index","-z","--index-info"]
+[2024-06-01 23:39:23.9572332] (Utility.Process) process [10312] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","refs/heads/git-annex","--"]
+[2024-06-01 23:39:23.9912302] (Utility.Process) process [10312] done ExitSuccess
+[2024-06-01 23:39:23.9982266] (Utility.Process) process [30172] done ExitSuccess
+Full remote url: annex::cf20a53e-1773-4fe8-ad44-f8c825a6d42f?encryption=none&type=directory
+[2024-06-01 23:39:24.0322375] (Annex.Perms) thawing content .git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29
+[2024-06-01 23:39:24.0452339] (Utility.Process) process [7752] done ExitSuccess
+[2024-06-01 23:39:24.0492313] (Utility.Process) process [12808] done ExitSuccess
+[2024-06-01 23:39:24.0602384] (Utility.Process) process [33716] read: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","show-ref","git-annex"]
+[2024-06-01 23:39:24.0822268] (Utility.Process) process [33716] done ExitSuccess
+[2024-06-01 23:39:24.0872316] (Utility.Process) process [29608] read: git ["--version"]
+[2024-06-01 23:39:24.1072274] (Utility.Process) process [29608] done ExitSuccess
+[2024-06-01 23:39:24.1132378] (Utility.Process) process [22452] chat: git ["--git-dir=.git","--work-tree=.","--literal-pathspecs","cat-file","--batch"]
+git-annex: .git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29: DeleteFile "\\\\?\\E:\\git-annex-tests\\test-git-remote-annex\\annex-c\\.git\\annex\\tmp\\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29": permission denied (Käyttö estetty.)
+
+  Pushing to test-dir failed.
+failed
+[2024-06-01 23:39:24.1712564] (Utility.Process) process [18508] done ExitSuccess
+[2024-06-01 23:39:24.1802322] (Utility.Process) process [28252] done ExitSuccess
+[2024-06-01 23:39:24.1882278] (Utility.Process) process [11052] done ExitSuccess
+[2024-06-01 23:39:24.1982261] (Utility.Process) process [17792] done ExitSuccess
+sync: 1 failed
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> git annex sync --no-commit --content test-dir
+pull test-dir
+Full remote url: annex::cf20a53e-1773-4fe8-ad44-f8c825a6d42f?encryption=none&type=directory
+git-annex: .git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29: DeleteFile "\\\\?\\E:\\git-annex-tests\\test-git-remote-annex\\annex-c\\.git\\annex\\tmp\\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29": permission denied (Käyttö estetty.)
+ok
+push test-dir
+Full remote url: annex::cf20a53e-1773-4fe8-ad44-f8c825a6d42f?encryption=none&type=directory
+git-annex: .git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29: DeleteFile "\\\\?\\E:\\git-annex-tests\\test-git-remote-annex\\annex-c\\.git\\annex\\tmp\\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29": permission denied (Käyttö estetty.)
+Full remote url: annex::cf20a53e-1773-4fe8-ad44-f8c825a6d42f?encryption=none&type=directory
+git-annex: .git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29: DeleteFile "\\\\?\\E:\\git-annex-tests\\test-git-remote-annex\\annex-c\\.git\\annex\\tmp\\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29": permission denied (Käyttö estetty.)
+
+  Pushing to test-dir failed.
+failed
+sync: 1 failed
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> ls E:\git-annex-tests\test-git-remote-annex\annex-c\.git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29
+
+    Directory: E:\git-annex-tests\test-git-remote-annex\annex-c\.git\annex\tmp
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-ar--            1.6.2024    23:39            822 GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-
+                                                  f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e
+                                                  231a289a5dbeb9a349dca9de8d321a80bdd29
+
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> rm E:\git-annex-tests\test-git-remote-annex\annex-c\.git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29
+Remove-Item: You do not have sufficient access rights to perform this operation or the item is hidden, system, or read only.
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> cmd /c attrib -r E:\git-annex-tests\test-git-remote-annex\annex-c\.git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> ls E:\git-annex-tests\test-git-remote-annex\annex-c\.git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29
+
+    Directory: E:\git-annex-tests\test-git-remote-annex\annex-c\.git\annex\tmp
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---            1.6.2024    23:39            822 GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-
+                                                  f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e
+                                                  231a289a5dbeb9a349dca9de8d321a80bdd29
+
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> rm E:\git-annex-tests\test-git-remote-annex\annex-c\.git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29
+E:\git-annex-tests\test-git-remote-annex\annex-c [adjusted/master(unlocked)]> ls E:\git-annex-tests\test-git-remote-annex\annex-c\.git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29
+Get-ChildItem: Cannot find path 'E:\git-annex-tests\test-git-remote-annex\annex-c\.git\annex\tmp\GITBUNDLE-s822--cf20a53e-1773-4fe8-ad44-f8c825a6d42f-c9fd9222aa03bcb8e952362ca3e231a289a5dbeb9a349dca9de8d321a80bdd29' because it does not exist.
+
+# End of transcript or log.
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+git-annex version: 10.20240531-gabbb8f6bbf437bf52f5f46924c2b2b68e913efed
+build flags: Assistant Webapp Pairing TorrentParser Benchmark Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.22 bloomfilter-2.0.1.0 cryptonite-0.29 DAV-1.3.4 feed-1.3.2.0 ghc-8.10.7 http-client-0.7.9 persistent-sqlite-2.13.0.3 torrent-10000.1.1 uuid-1.3.15 yesod-1.6.1.2
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL GITBUNDLE GITMANIFEST VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: mingw32 x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 2 3 4 5 6 7 8 9 10
+local repository version: 10
+"""]]
+
+Windows 10 version 22H2 (build 19045.4412), 64 bit.
+
+### Please provide any additional information below.
+
+.
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+Sure, Git Annex is great as always. I use it a few times a week with my multigigabyte
+backups, where it gives structure to my image-based backup routines, so you could
+say I'm a believer. :)
+
+[[!meta author=jkniiv]]
