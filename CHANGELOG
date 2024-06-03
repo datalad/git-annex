@@ -1,3 +1,10 @@
+git-annex (10.20240532) UNRELEASED; urgency=medium
+
+  * Fix Windows build with Win32 2.13.4+
+    Thanks, Oleg Tolmatcev
+
+ -- Joey Hess <id@joeyh.name>  Mon, 03 Jun 2024 13:03:21 -0400
+
 git-annex (10.20240531) upstream; urgency=medium
 
   * git-remote-annex: New program which allows pushing a git repo to a
