@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-06-03T17:28:02Z"
+ content="""
+performTransitionsLocked, when `neednewlocalbranch = True`,
+first writes the new git-annex branch, and then calls
+regraftexports which adds a second commit onto it.
+
+In the window before regraftexports finishes, interrupting git-annex will
+leave the repository in this state.
+
+There may be some other way this could happen, but that seems like a likely
+cause. It needs to avoid updating the git-annex branch ref until it's
+grafted the exports into it.
+"""]]
