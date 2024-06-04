@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="joey"
- subject="""comment 11"""
- date="2024-06-04T10:39:27Z"
- content="""
-A fixed git was released on Friday. I don't know when GitLab will upgrade
-to it, perhaps they have already?
-"""]]
