@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-06-04T10:35:09Z"
+ content="""
+Fixed git was released. All these versions fix it: v2.45.2 v2.39.5, v2.40.3, v2.41.2, v2.42.3, v2.43.5, and v2.44.2
+
+That does leave the fsck.symlinkTargetLength as potentially still a problem
+on Windows, but I think I'll consider this closed and if that does actually
+lead to problems on windws we can revisit.
+"""]]

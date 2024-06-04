@@ -25,6 +25,8 @@ configs.
 Is it at all common to set `git config fetch.fsckObjects true` or 
 `git config receive.fsckObjects` true?
 
+> [[fixed|done]] in git --[[Joey]] 
+
 ----
 
 There is also potential breakage from git fsck now warning about symlink
