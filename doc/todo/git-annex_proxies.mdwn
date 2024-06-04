@@ -8,4 +8,14 @@ repositories.
 4. [[todo/track_free_space_in_repos_via_git-annex_branch]]
 5. [[todo/proving_preferred_content_behavior]]
 
+Joey has received funding to work on this.
+Planned schedule of work:
+
+* June: git-annex proxy
+* July, part 1: git-annex proxy support for exporttree
+* July, part 2: p2p protocol over http
+* August: balanced preferred content
+* September: streaming through proxy to special remotes (especially S3)
+* October: proving behavior of balanced preferred content with proxies
+
 [[!tag projects/openneuro]]
