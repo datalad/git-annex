@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="Yes, GitLab fixed!"
+ date="2024-06-04T07:38:47Z"
+ content="""
+I can confirm, `git annex assist` to GitLab.com works again 👍
+"""]]
