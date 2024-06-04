@@ -87,6 +87,27 @@ to store data when eg, all the repositories that is knows about are full.
 Just getting the git-annex back in sync should recover from either
 situation.
 
+> This seems like the clear winner.
+
+## UUID discovery security
+
+Are there any security concerns with adding UUID discovery?
+
+Suppose that repository A claims to be a proxy for repository B, but it's
+not connected to B, and is actually evil. Then git-annex would instantiate
+a remote A-B with the UUID of B. If files were sent to A-B, git-annex would
+consider them present on B, and not send them to B by other remotes.
+
+Well, in this situation, A wrote to the git-annex branch (or used a P2P
+protocol extension) in order to pose as B. Without a proxy feature A could
+just as well falsify location logs to claim that B contains things it did
+not. Also, without a proxy feature, A could set its UUID to be the same as
+B, and so trick us into sending files to it rather than B.
+
+The only real difference seems to be that the UUID of a remote is cached,
+so A could only do this the first time we accessed it, and not later.
+With UUID discovery, A can do that at any time.
+
 ## user interface
 
 What to name the instantiated remotes? Probably the best that could
@@ -129,7 +150,7 @@ A command like `git-annex push` would see all the instantiated remotes and
 would pick one to send content to. Seems like the proxy might choose to
 `storeKey` the content on other node(s) than the requested one. Which would
 be fine. But, `git-annex push` would still do considerable extra work in
-interating over all the instantiated remotes. So it might be better to make
+iterating over all the instantiated remotes. So it might be better to make
 such commands not operate on instantiated remotes for sending content but
 only on the proxy. 
 
@@ -192,7 +213,7 @@ There's potentially a layering problem here, because exactly how encryption
 What if repo A is a proxy and has repo B as a remote. Meanwhile, repo B is
 a proxy and has repo A as a remote?
 
-An upload to repo A will start by checkin if repo B wants the content and if so,
+An upload to repo A will start by checking if repo B wants the content and if so,
 start an upload to repo B. Then the same happens on repo B, leading it to
 start an upload to repo A. 
 
