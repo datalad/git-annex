@@ -454,9 +454,17 @@ extractRemoteGitConfig r remotename = do
 			readBwRatePerSecond =<< getmaybe "bwlimit-download"
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
 			getmaybe ("security-allow-unverified-downloads")
+		, remoteAnnexConfigUUID = toUUID <$> getmaybe "config-uuid"
 		, remoteAnnexMaxGitBundles =
 			fromMaybe 100 (getmayberead  "max-git-bundles")
-		, remoteAnnexConfigUUID = toUUID <$> getmaybe "config-uuid"
+		, remoteAnnexAllowEncryptedGitRepo = 
+			getbool "allow-encrypted-gitrepo" False
+		, remoteUrl = 
+			case Git.Config.getMaybe (remoteConfig remotename "url") r of
+				Just (ConfigValue b)
+					| B.null b -> Nothing
+					| otherwise -> Just (decodeBS b)
+				_ -> Nothing
 		, remoteAnnexShell = getmaybe "shell"
 		, remoteAnnexSshOptions = getoptions "ssh-options"
 		, remoteAnnexRsyncOptions = getoptions "rsync-options"
@@ -482,14 +490,6 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexDdarRepo = getmaybe "ddarrepo"
 		, remoteAnnexHookType = notempty $ getmaybe "hooktype"
 		, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
-		, remoteAnnexAllowEncryptedGitRepo = 
-			getbool "allow-encrypted-gitrepo" False
-		, remoteUrl = 
-			case Git.Config.getMaybe (remoteConfig remotename "url") r of
-				Just (ConfigValue b)
-					| B.null b -> Nothing
-					| otherwise -> Just (decodeBS b)
-				_ -> Nothing
 		}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
