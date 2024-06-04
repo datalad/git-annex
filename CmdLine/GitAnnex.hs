@@ -124,6 +124,7 @@ import qualified Command.Smudge
 import qualified Command.FilterProcess
 import qualified Command.Restage
 import qualified Command.Undo
+import qualified Command.UpdateProxy
 import qualified Command.Version
 import qualified Command.RemoteDaemon
 #ifdef WITH_ASSISTANT
@@ -247,6 +248,7 @@ cmds testoptparser testrunner mkbenchmarkgenerator = map addGitAnnexCommonOption
 	, Command.FilterProcess.cmd
 	, Command.Restage.cmd
 	, Command.Undo.cmd
+	, Command.UpdateProxy.cmd
 	, Command.Version.cmd
 	, Command.RemoteDaemon.cmd
 #ifdef WITH_ASSISTANT

@@ -308,6 +308,21 @@ For example, this logs that a remote has an object stored using both
 
 (When those chunks are removed from the remote, the 9 is changed to 0.)
 
+## `proxy.log`
+
+Used to record what repositories are accessible via a proxy.
+
+Each line starts with a timestamp, then the uuid of the repository
+that can serve as a proxy, and then a list of the remotes that it can
+proxy to, separated by spaces.
+
+Each remote in the list consists of a uuid, followed by a colon (`:`)
+and then a remote name.
+	
+For example:
+
+    1317929100.012345s e605dca6-446a-11e0-8b2a-002170d25c55 26339d22-446b-11e0-9101-002170d25c55:foo c076460c-2290-11ef-be53-b7f0d194c863:bar
+
 ## `schedule.log`
 
 Used to record scheduled events, such as periodic fscks.

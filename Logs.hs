@@ -98,6 +98,7 @@ topLevelOldUUIDBasedLogs =
 topLevelNewUUIDBasedLogs :: [RawFilePath]
 topLevelNewUUIDBasedLogs =
 	[ exportLog
+	, proxyLog
 	]
 
 {- Other top-level logs. -}
@@ -153,6 +154,9 @@ multicastLog = "multicast.log"
 
 exportLog :: RawFilePath
 exportLog = "export.log"
+
+proxyLog :: RawFilePath
+proxyLog = "proxy.log"
 
 {- This is not a log file, it's where exported treeishes get grafted into
  - the git-annex branch. -}

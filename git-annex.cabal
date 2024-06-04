@@ -720,6 +720,7 @@ Executable git-annex
     Command.UnregisterUrl
     Command.Untrust
     Command.Unused
+    Command.UpdateProxy
     Command.Upgrade
     Command.VAdd
     Command.VCycle
@@ -838,6 +839,7 @@ Executable git-annex
     Logs.PreferredContent.Raw
     Logs.Presence
     Logs.Presence.Pure
+    Logs.Proxy
     Logs.Remote
     Logs.Remote.Pure
     Logs.RemoteState

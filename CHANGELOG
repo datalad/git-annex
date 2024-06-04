@@ -1,5 +1,6 @@
 git-annex (10.20240532) UNRELEASED; urgency=medium
 
+  * Added updateproxy command and remote.name.annex-proxy configuration.
   * Fix Windows build with Win32 2.13.4+
     Thanks, Oleg Tolmatcev
 

@@ -252,7 +252,6 @@ content from the key-value store.
   
   See [[git-annex-configremote]](1) for details.
 
-
 * `renameremote`
 
   Renames a special remote.
@@ -326,6 +325,12 @@ content from the key-value store.
   Get or set required content expression.
   
   See [[git-annex-required]](1) for details.
+
+* `updateproxy`
+
+  Update records with proxy configuration.
+  
+  See [[git-annex-updateproxy](1) for details.
 
 * `schedule repository [expression]`
 
@@ -1640,6 +1645,12 @@ Remotes are configured using these settings in `.git/config`.
   content of any file, even though its normal location tracking does not
   indicate that it does. This will cause git-annex to try to get all file
   contents from the remote. Can be useful in setting up a caching remote.
+	
+* `remote.<name>.annex-proxy`
+
+  Set to "true" to make the local repository able to act as a proxy to this
+  remote. After configuring this, run [[git-annex-updateproxy](1) to store
+  the new configuration in the git-annex branch.
 
 * `remote.<name>.annex-private`
 

@@ -375,6 +375,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexConfigUUID :: Maybe UUID
 	, remoteAnnexMaxGitBundles :: Int
 	, remoteAnnexAllowEncryptedGitRepo :: Bool
+	, remoteAnnexProxy :: Bool
 	, remoteUrl :: Maybe String
 
 	{- These settings are specific to particular types of remotes
@@ -459,6 +460,7 @@ extractRemoteGitConfig r remotename = do
 			fromMaybe 100 (getmayberead  "max-git-bundles")
 		, remoteAnnexAllowEncryptedGitRepo = 
 			getbool "allow-encrypted-gitrepo" False
+		, remoteAnnexProxy = getbool "proxy" False
 		, remoteUrl = 
 			case Git.Config.getMaybe (remoteConfig remotename "url") r of
 				Just (ConfigValue b)
