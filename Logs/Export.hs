@@ -22,9 +22,6 @@ module Logs.Export (
 	getExportExcluded,
 ) where
 
-import qualified Data.Map as M
-import qualified Data.ByteString as B
-
 import Annex.Common
 import qualified Annex.Branch
 import qualified Git
@@ -38,6 +35,8 @@ import qualified Git.LsTree
 import qualified Git.Tree
 import Annex.UUID
 
+import qualified Data.Map as M
+import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 import Data.Either
 import Data.Char
