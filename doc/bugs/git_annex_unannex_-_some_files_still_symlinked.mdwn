@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+1. Some files remain symlinked after aborted `git annex add` and completed `git annex unannex`
+2. This files are present in``.git/annex/objects` but `git annex unused` does not find them. Running `git annex whereused --key=SHA256E...` runs empty.
+
+To restore files and remove them from git-annex objects folder - need manual workarounds or hacks like adding file again with `git annex add` and trying to removing it again 
+
+### What steps will reproduce the problem?
+
+1. run `git annex add` and abort operation mid-way (this was on directory with large number of files ~3K and running with 12 jobs command switch)
+2. run `git annex unannex` until done
+3. find that some files that were added - were restored, and some still symlinked but are not tracked by git annex
+
+
+### What version of git-annex are you using? On what operating system?
+
+Debian Bookworm / git-annex version: 10.20240227-1
+
+### Please provide any additional information below.
+
+Similar report from another user here:
+https://git-annex.branchable.com/forum/File_still_symlinked_after_git_annex_unannex/
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
+Yes, using it extensively for a few years with terabytes of data
