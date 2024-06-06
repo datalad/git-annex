@@ -34,21 +34,9 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 1. Add `git-annex updateproxy` command and remote.name.annex-proxy
    configuration. (done)
 
-1. getProxies should be cached to avoid repeatedly reading the log and
-   parsing.
+2. Test implementation of remote instantiation for proxies.
 
-1. Remote names coming from the git-annex branch need to be
-   limited to what's legal in git remote names. If a remote name is not
-   legal, munge it until it is.
-   This will also prevent remote names being a security hazard
-   via eg escape characters.
-
-2. Remote instantiation for proxies. When a remote "foo" is a proxy,
-   and has a remote "bar", instantiate a remote "foo-bar" that has the UUID
-   of bar but is of the same type and configuration of remote "foo".
-
-3. Implement proxying in git-annex-shell so connections with the UUID
-   of one of the proxy's 
+3. Implement proxying in git-annex-shell.
 
 4. Let `storeKey` return a list of UUIDs where content was stored,
    and make proxies accept uploads directed at them, rather than a specific
@@ -73,4 +61,4 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 11. indirect uploads (to be considered). See design.
 
-
+12. Support using a proxy when its url is a P2P address.
