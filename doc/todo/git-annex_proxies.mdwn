@@ -37,12 +37,6 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 1. getProxies should be cached to avoid repeatedly reading the log and
    parsing.
 
-1. Remote names coming from the git-annex branch need to be
-   limited to what's legal in git remote names. If a remote name is not
-   legal, munge it until it is.
-   This will also prevent remote names being a security hazard
-   via eg escape characters.
-
 2. Remote instantiation for proxies. When a remote "foo" is a proxy,
    and has a remote "bar", instantiate a remote "foo-bar" that has the UUID
    of bar but is of the same type and configuration of remote "foo".

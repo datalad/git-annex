@@ -18,6 +18,7 @@ import qualified Data.Map as M
 import qualified Annex
 import Annex.Common
 import qualified Annex.Branch
+import qualified Git.Remote
 import Git.Types
 import Logs
 import Logs.UUIDBased
@@ -37,7 +38,7 @@ data Proxy = Proxy
 
 -- TODO caching
 getProxies :: Annex (M.Map UUID (S.Set Proxy))
-getProxies = M.map value . fromMapLog . parseProxyLog
+getProxies = M.map (validateProxies . value) . fromMapLog . parseProxyLog
 	<$> Annex.Branch.get proxyLog
 
 recordProxies :: S.Set Proxy -> Annex ()
@@ -76,3 +77,11 @@ parseProxyList = S.fromList <$> many parseword
 		<* (const () <$> A8.char colon)
 		<*> (decodeBS <$> A8.takeWhile1 (/= ' '))
 	colon = ':'
+
+-- Filter out any proxies that have a name that is not allowed as a git
+-- remote name. This avoids any security problems with eg escape
+-- characters in names, and ensures the name can be used anywhere a usual
+-- git remote name can be used without causing issues.
+validateProxies :: S.Set Proxy -> S.Set Proxy
+validateProxies = S.filter $ \p ->
+	Git.Remote.makeLegalName (proxyRemoteName p) == proxyRemoteName p
