@@ -22,6 +22,7 @@ module Types.GitConfig (
 	RemoteNameable(..),
 	remoteAnnexConfig,
 	remoteConfig,
+	proxyInheritedFields
 ) where
 
 import Common
@@ -410,99 +411,237 @@ data RemoteGitConfig = RemoteGitConfig
 extractRemoteGitConfig :: Git.Repo -> RemoteName -> STM RemoteGitConfig
 extractRemoteGitConfig r remotename = do
 	annexcost <- mkDynamicConfig readCommandRunner
-		(notempty $ getmaybe "cost-command")
-		(getmayberead "cost")
+		(notempty $ getmaybe CostCommandField)
+		(getmayberead CostField)
 	annexignore <- mkDynamicConfig unsuccessfullCommandRunner
-		(notempty $ getmaybe "ignore-command")
-		(getbool "ignore" False)
+		(notempty $ getmaybe IgnoreCommandField)
+		(getbool IgnoreField False)
 	annexsync <- mkDynamicConfig successfullCommandRunner
-		(notempty $ getmaybe "sync-command")
-		(getbool "sync" True)
+		(notempty $ getmaybe SyncCommandField)
+		(getbool SyncField True)
 	return $ RemoteGitConfig
 		{ remoteAnnexCost = annexcost
 		, remoteAnnexIgnore = annexignore
 		, remoteAnnexSync = annexsync
-		, remoteAnnexPull = getbool "pull" True
-		, remoteAnnexPush = getbool "push" True
-		, remoteAnnexReadOnly = getbool "readonly" False
-		, remoteAnnexCheckUUID = getbool "checkuuid" True
-		, remoteAnnexVerify = getbool "verify" True
+		, remoteAnnexPull = getbool PullField True
+		, remoteAnnexPush = getbool PushField True
+		, remoteAnnexReadOnly = getbool ReadOnlyField False
+		, remoteAnnexCheckUUID = getbool CheckUUIDField True
+		, remoteAnnexVerify = getbool VerifyField True
 		, remoteAnnexTrackingBranch = Git.Ref . encodeBS <$>
-			( notempty (getmaybe "tracking-branch")
-			<|> notempty (getmaybe "export-tracking") -- old name
+			( notempty (getmaybe TrackingBranchField)
+			<|> notempty (getmaybe ExportTrackingField) -- old name
 			)
-		, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
-		, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
-		, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
+		, remoteAnnexTrustLevel = notempty $ getmaybe TrustLevelField
+		, remoteAnnexStartCommand = notempty $ getmaybe StartCommandField
+		, remoteAnnexStopCommand = notempty $ getmaybe StopCommandField
 		, remoteAnnexSpeculatePresent = 
-			getbool "speculate-present" False
-		, remoteAnnexBare = getmaybebool "bare"
-		, remoteAnnexRetry = getmayberead "retry"
-		, remoteAnnexForwardRetry = getmayberead "forward-retry"
+			getbool SpeculatePresentField False
+		, remoteAnnexBare = getmaybebool BareField
+		, remoteAnnexRetry = getmayberead RetryField
+		, remoteAnnexForwardRetry = getmayberead ForwardRetryField
 		, remoteAnnexRetryDelay = Seconds
-			<$> getmayberead "retrydelay"
+			<$> getmayberead RetryDelayField
 		, remoteAnnexStallDetection =
-			readStallDetection =<< getmaybe "stalldetection"
+			readStallDetection =<< getmaybe StallDetectionField
 		, remoteAnnexStallDetectionUpload =
-			readStallDetection =<< getmaybe "stalldetection-upload"
+			readStallDetection =<< getmaybe StallDetectionUploadField
 		, remoteAnnexStallDetectionDownload =
-			readStallDetection =<< getmaybe "stalldetection-download"
+			readStallDetection =<< getmaybe StallDetectionDownloadField
 		, remoteAnnexBwLimit =
-			readBwRatePerSecond =<< getmaybe "bwlimit"
+			readBwRatePerSecond =<< getmaybe BWLimitField
 		, remoteAnnexBwLimitUpload =
-			readBwRatePerSecond =<< getmaybe "bwlimit-upload"
+			readBwRatePerSecond =<< getmaybe BWLimitUploadField
 		, remoteAnnexBwLimitDownload =
-			readBwRatePerSecond =<< getmaybe "bwlimit-download"
+			readBwRatePerSecond =<< getmaybe BWLimitDownloadField
 		, remoteAnnexAllowUnverifiedDownloads = (== Just "ACKTHPPT") $
-			getmaybe ("security-allow-unverified-downloads")
-		, remoteAnnexConfigUUID = toUUID <$> getmaybe "config-uuid"
+			getmaybe SecurityAllowUnverifiedDownloadsField
+		, remoteAnnexConfigUUID = toUUID <$> getmaybe ConfigUUIDField
 		, remoteAnnexMaxGitBundles =
-			fromMaybe 100 (getmayberead  "max-git-bundles")
+			fromMaybe 100 (getmayberead MaxGitBundlesField)
 		, remoteAnnexAllowEncryptedGitRepo = 
-			getbool "allow-encrypted-gitrepo" False
-		, remoteAnnexProxy = getbool "proxy" False
+			getbool AllowEncryptedGitRepoField False
+		, remoteAnnexProxy = getbool ProxyField False
 		, remoteUrl = 
-			case Git.Config.getMaybe (remoteConfig remotename "url") r of
+			case Git.Config.getMaybe (remoteConfig remotename (remoteGitConfigKey UrlField)) r of
 				Just (ConfigValue b)
 					| B.null b -> Nothing
 					| otherwise -> Just (decodeBS b)
 				_ -> Nothing
-		, remoteAnnexShell = getmaybe "shell"
-		, remoteAnnexSshOptions = getoptions "ssh-options"
-		, remoteAnnexRsyncOptions = getoptions "rsync-options"
-		, remoteAnnexRsyncDownloadOptions = getoptions "rsync-download-options"
-		, remoteAnnexRsyncUploadOptions = getoptions "rsync-upload-options"
-		, remoteAnnexRsyncTransport = getoptions "rsync-transport"
-		, remoteAnnexGnupgOptions = getoptions "gnupg-options"
-		, remoteAnnexGnupgDecryptOptions = getoptions "gnupg-decrypt-options"
+		, remoteAnnexShell = getmaybe ShellField
+		, remoteAnnexSshOptions = getoptions SshOptionsField
+		, remoteAnnexRsyncOptions = getoptions RsyncOptionsField
+		, remoteAnnexRsyncDownloadOptions = getoptions RsyncDownloadOptionsField
+		, remoteAnnexRsyncUploadOptions = getoptions RsyncUploadOptionsField
+		, remoteAnnexRsyncTransport = getoptions RsyncTransportField
+		, remoteAnnexGnupgOptions = getoptions GnupgOptionsField
+		, remoteAnnexGnupgDecryptOptions = getoptions GnupgDecryptOptionsField
 		, remoteAnnexSharedSOPCommand = SOPCmd <$>
-			notempty (getmaybe "shared-sop-command")
+			notempty (getmaybe SharedSOPCommandField)
 		, remoteAnnexSharedSOPProfile = SOPProfile <$>
-			notempty (getmaybe "shared-sop-profile")
-		, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"
-		, remoteAnnexBupRepo = getmaybe "buprepo"
-		, remoteAnnexBorgRepo = getmaybe "borgrepo"
-		, remoteAnnexTahoe = getmaybe "tahoe"
-		, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
-		, remoteAnnexDirectory = notempty $ getmaybe "directory"
-		, remoteAnnexAndroidDirectory = notempty $ getmaybe "androiddirectory"
-		, remoteAnnexAndroidSerial = notempty $ getmaybe "androidserial"
-		, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
-		, remoteAnnexGitLFS = getbool "git-lfs" False
-		, remoteAnnexDdarRepo = getmaybe "ddarrepo"
-		, remoteAnnexHookType = notempty $ getmaybe "hooktype"
-		, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
+			notempty (getmaybe SharedSOPProfileField)
+		, remoteAnnexRsyncUrl = notempty $ getmaybe RsyncUrlField
+		, remoteAnnexBupRepo = getmaybe BupRepoField
+		, remoteAnnexBorgRepo = getmaybe BorgRepoField
+		, remoteAnnexTahoe = getmaybe TahoeField
+		, remoteAnnexBupSplitOptions = getoptions BupSplitOptionsField
+		, remoteAnnexDirectory = notempty $ getmaybe DirectoryField
+		, remoteAnnexAndroidDirectory = notempty $ getmaybe AndroidDirectoryField
+		, remoteAnnexAndroidSerial = notempty $ getmaybe AndroidSerialField
+		, remoteAnnexGCrypt = notempty $ getmaybe GCryptField
+		, remoteAnnexGitLFS = getbool GitLFSField False
+		, remoteAnnexDdarRepo = getmaybe DdarRepoField
+		, remoteAnnexHookType = notempty $ getmaybe HookTypeField
+		, remoteAnnexExternalType = notempty $ getmaybe ExternalTypeField
 		}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
 	getmaybebool k = Git.Config.isTrueFalse' =<< getmaybe' k
 	getmayberead k = readish =<< getmaybe k
 	getmaybe = fmap fromConfigValue . getmaybe'
-	getmaybe' k = 
-		Git.Config.getMaybe (remoteAnnexConfig remotename k) r
-			<|>
-		Git.Config.getMaybe (annexConfig k) r
+	getmaybe' :: RemoteGitConfigField -> Maybe ConfigValue
+	getmaybe' f =
+		let k = remoteGitConfigKey f
+		in Git.Config.getMaybe (remoteAnnexConfig remotename k) r
+			<|> Git.Config.getMaybe (annexConfig k) r
 	getoptions k = fromMaybe [] $ words <$> getmaybe k
+
+data RemoteGitConfigField
+	= CostField
+	| CostCommandField
+	| IgnoreField
+	| IgnoreCommandField
+	| SyncField
+	| SyncCommandField
+	| PullField
+	| PushField
+	| ReadOnlyField
+	| CheckUUIDField
+	| VerifyField
+	| TrackingBranchField
+	| ExportTrackingField
+	| TrustLevelField
+	| StartCommandField
+	| StopCommandField
+	| SpeculatePresentField
+	| BareField
+	| RetryField
+	| ForwardRetryField
+	| RetryDelayField
+	| StallDetectionField
+	| StallDetectionUploadField
+	| StallDetectionDownloadField
+	| BWLimitField
+	| BWLimitUploadField
+	| BWLimitDownloadField
+	| ConfigUUIDField
+	| SecurityAllowUnverifiedDownloadsField
+	| MaxGitBundlesField
+	| AllowEncryptedGitRepoField
+	| ProxyField
+	| UrlField
+	| ShellField
+	| SshOptionsField
+	| RsyncOptionsField
+	| RsyncDownloadOptionsField
+	| RsyncUploadOptionsField
+	| RsyncTransportField
+	| GnupgOptionsField
+	| GnupgDecryptOptionsField
+	| SharedSOPCommandField
+	| SharedSOPProfileField
+	| RsyncUrlField
+	| BupRepoField
+	| BorgRepoField
+	| TahoeField
+	| BupSplitOptionsField
+	| DirectoryField
+	| AndroidDirectoryField
+	| AndroidSerialField
+	| GCryptField
+	| GitLFSField
+	| DdarRepoField
+	| HookTypeField
+	| ExternalTypeField
+	deriving (Enum, Bounded)
+
+remoteGitConfigField :: RemoteGitConfigField -> (UnqualifiedConfigKey, ProxyInherited)
+remoteGitConfigField = \case
+	-- Hard to know the true cost of accessing eg a slow special
+	-- remote via the proxy. The cost of the proxy is the best guess
+	-- so do inherit it.
+	CostField -> inherited "cost"
+	CostCommandField -> inherited "cost-command"
+	IgnoreField -> inherited "ignore"
+	IgnoreCommandField -> inherited "ignore-command"
+	SyncField -> inherited "sync"
+	SyncCommandField -> inherited "sync-command"
+	PullField -> inherited "pull"
+	PushField -> inherited "push"
+	ReadOnlyField -> inherited "readonly"
+	CheckUUIDField -> uninherited "checkuuid"
+	VerifyField -> inherited "verify"
+	TrackingBranchField -> uninherited "tracking-branch"
+	ExportTrackingField -> uninherited "export-tracking"
+	TrustLevelField -> uninherited "trustlevel"
+	StartCommandField -> uninherited "start-command"
+	StopCommandField -> uninherited "stop-command"
+	SpeculatePresentField -> inherited "speculate-present"
+	BareField -> uninherited "bare"
+	RetryField -> inherited "retry"
+	ForwardRetryField -> inherited "forward-retry"
+	RetryDelayField -> inherited "retrydelay"
+	StallDetectionField -> inherited "stalldetection"
+	StallDetectionUploadField -> inherited "stalldetection-upload"
+	StallDetectionDownloadField -> inherited "stalldetection-download"
+	BWLimitField -> inherited "bwlimit"
+	BWLimitUploadField -> inherited "bwlimit-upload"
+	BWLimitDownloadField -> inherited "bwlimit-upload"
+	ConfigUUIDField -> uninherited "config-uuid"
+	SecurityAllowUnverifiedDownloadsField -> inherited "security-allow-unverified-downloads"
+	MaxGitBundlesField -> inherited "max-git-bundles"
+	AllowEncryptedGitRepoField -> inherited "allow-encrypted-gitrepo"
+	-- Allow proxy chains.
+	ProxyField -> inherited "proxy"
+	UrlField -> inherited "url"
+	ShellField -> inherited "shell"
+	SshOptionsField -> inherited "ssh-options"
+	RsyncOptionsField -> inherited "rsync-options"
+	RsyncDownloadOptionsField -> inherited "rsync-download-options"
+	RsyncUploadOptionsField -> inherited "rsync-upload-options"
+	RsyncTransportField -> inherited "rsync-transport"
+	GnupgOptionsField -> inherited "gnupg-options"
+	GnupgDecryptOptionsField -> inherited "gnupg-decrypt-options"
+	SharedSOPCommandField -> inherited "shared-sop-command"
+	SharedSOPProfileField -> inherited "shared-sop-profile"
+	RsyncUrlField -> uninherited "rsyncurl"
+	BupRepoField -> uninherited "buprepo"
+	BorgRepoField -> uninherited "borgrepo"
+	TahoeField -> uninherited "tahoe"
+	BupSplitOptionsField -> uninherited "bup-split-options"
+	DirectoryField -> uninherited "directory"
+	AndroidDirectoryField -> uninherited "androiddirectory"
+	AndroidSerialField -> uninherited "androidserial"
+	GCryptField -> uninherited "gcrypt"
+	GitLFSField -> uninherited "git-lfs"
+	DdarRepoField -> uninherited "ddarrepo"
+	HookTypeField -> uninherited "hooktype"
+	ExternalTypeField -> uninherited "externaltype"
+  where
+	inherited f = (f, ProxyInherited True)
+	uninherited f = (f, ProxyInherited False)
+
+newtype ProxyInherited = ProxyInherited Bool
+
+-- All remote config fields that are inherited from a proxy.
+proxyInheritedFields :: [UnqualifiedConfigKey]
+proxyInheritedFields = 
+	map fst $
+		filter (\(_, ProxyInherited p) -> p) $
+			map remoteGitConfigField [minBound..maxBound]
+
+remoteGitConfigKey :: RemoteGitConfigField -> UnqualifiedConfigKey
+remoteGitConfigKey = fst . remoteGitConfigField
 
 notempty :: Maybe String -> Maybe String	
 notempty Nothing = Nothing
