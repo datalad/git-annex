@@ -36,7 +36,6 @@ data Proxy = Proxy
 	, proxyRemoteName :: RemoteName
 	} deriving (Show, Eq, Ord)
 
--- TODO caching
 getProxies :: Annex (M.Map UUID (S.Set Proxy))
 getProxies = M.map (validateProxies . value) . fromMapLog . parseProxyLog
 	<$> Annex.Branch.get proxyLog

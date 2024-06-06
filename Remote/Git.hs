@@ -45,6 +45,7 @@ import Annex.Init
 import Types.CleanupActions
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location
+import Logs.Proxy
 import Utility.Metered
 import Utility.Env
 import Utility.Batch
@@ -66,7 +67,8 @@ import Messages.Progress
 
 import Control.Concurrent
 import qualified Data.Map as M
-import qualified Data.ByteString as S
+import qualified Data.Set as S
+import qualified Data.ByteString as B
 import qualified Utility.RawFilePath as R
 import Network.URI
 
@@ -92,7 +94,13 @@ list :: Bool -> Annex [Git.Repo]
 list autoinit = do
 	c <- fromRepo Git.config
 	rs <- mapM (tweakurl c) =<< Annex.getGitRemotes
-	mapM (configRead autoinit) (filter (not . isGitRemoteAnnex) rs)
+	rs' <- mapM (configRead autoinit) (filter (not . isGitRemoteAnnex) rs)
+	proxies <- getProxies
+	if proxies == mempty
+		then return rs'
+		else do
+			proxied <- listProxied proxies rs'
+			return (proxied++rs')
   where
 	annexurl r = remoteConfig r "annexurl"
 	tweakurl c r = do
@@ -265,7 +273,7 @@ tryGitConfigRead autoinit r hasuuid
 		v <- liftIO $ Git.Config.fromPipe r cmd params st
 		case v of
 			Right (r', val, _err) -> do
-				unless (isUUIDConfigured r' || S.null val || not mustincludeuuuid) $ do
+				unless (isUUIDConfigured r' || val == mempty || not mustincludeuuuid) $ do
 					warning $ UnquotedString $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
 					warning $ UnquotedString $ "Instead, got: " ++ show val
 					warning "This is unexpected; please check the network transport!"
@@ -772,3 +780,65 @@ mkState r u gc = do
 				)
 
 			return (duc, getrepo)
+
+listProxied :: M.Map UUID (S.Set Proxy) -> [Git.Repo] -> Annex [Git.Repo]
+listProxied proxies rs = concat <$> mapM go rs
+  where
+	go r = do
+		g <- Annex.gitRepo
+		u <- getRepoUUID r
+		gc <- Annex.getRemoteGitConfig r
+		let cu = fromMaybe u $ remoteAnnexConfigUUID gc
+		pure $ if not (canproxy gc r) || cu ==NoUUID
+			then []
+			else case M.lookup cu proxies of
+				Nothing -> []
+				Just s -> mapMaybe (mkproxied g r) (S.toList s)
+	
+	proxyremotename r p = do
+		n <- Git.remoteName r
+		pure $ n ++ "-" ++ proxyRemoteName p
+
+	mkproxied g r p = mkproxied' g r p =<< proxyremotename r p
+	
+	mkproxied' g r p proxyname
+		| any isconfig (M.keys (Git.config g)) = Nothing
+		-- The proxied remote is constructed by renaming the
+		-- proxy remote, changing its uuid, and inheriting some
+		-- of its config. The url in particular stays the same.
+		| otherwise = Just $ renamedr
+			{ Git.config = M.map Prelude.head c
+			, Git.fullconfig = c
+			}
+	  where
+		renamedr = r { Git.remoteName = Just proxyname }
+		
+		c = M.insert
+			(configRepoUUID renamedr)
+			[Git.ConfigValue $ fromUUID $ proxyRemoteUUID p]
+			inheritedconfig
+
+		inheritedconfig = M.fromList $
+			mapMaybe inheritconfig proxyInheritedFields
+		
+		inheritconfig k = do
+			let rk = remoteAnnexConfig r k
+			v <- M.lookup rk (Git.fullconfig r)
+			pure $ (rk, v)
+		
+		-- When the git config has anything set for a remote,
+		-- avoid making a proxied remote with the same name.
+		-- It is possible to set git configs of proxies, but it
+		-- needs both the url and uuid config to be manually set.
+		isconfig (Git.ConfigKey configkey) = 
+			configprefix `B.isPrefixOf` configkey
+		  where
+			Git.ConfigKey configprefix = remoteConfig proxyname mempty
+
+	-- Git remotes that are gcrypt or git-lfs special remotes cannot
+	-- proxy. Proxing is also not yet supported for remotes using P2P
+	-- addresses.
+	canproxy gc r
+		| remoteAnnexGitLFS gc = False
+		| Git.GCrypt.isEncrypted r = False
+		| otherwise = isNothing (repoP2PAddress r)
