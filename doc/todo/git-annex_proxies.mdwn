@@ -22,21 +22,26 @@ Planned schedule of work:
 
 # work notes
 
+In development on the `proxy` branch.
+
 For June's work on [[design/passthrough_proxy]], implementation plan:
 
 1. UUID discovery via git-annex branch. Add a log file listing UUIDs
    accessible via proxy UUIDs. It also will contain the names
    of the remotes that the proxy is a proxy for, 
-   from the perspective of the proxy.
+   from the perspective of the proxy. (done)
 
-   Note that remote names coming from the git-annex branch need to be
-   limited to what's legal in git remote names. 
+1. Add `git-annex updateproxy` command and remote.name.annex-proxy
+   configuration. (done)
+
+1. getProxies should be cached to avoid repeatedly reading the log and
+   parsing.
+
+1. Remote names coming from the git-annex branch need to be
+   limited to what's legal in git remote names. If a remote name is not
+   legal, munge it until it is.
    This will also prevent remote names being a security hazard
    via eg escape characters.
-
-1. Add a command that is run on the proxy to update the proxy log file.
-   This is how the user sets it up as a proxy, and selects the remotes its
-   proxying for.
 
 2. Remote instantiation for proxies. When a remote "foo" is a proxy,
    and has a remote "bar", instantiate a remote "foo-bar" that has the UUID
