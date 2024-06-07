@@ -889,9 +889,13 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 		return c
 	  where
 		regraft [] c = pure c
-		regraft (et:ets) c = 
-			prepRememberTreeish et graftpoint c
-				>>= regraft ets
+		regraft (et:ets) c =
+			-- Verify that the tree object exists.
+			catObjectDetails et >>= \case
+				Just _ ->
+					prepRememberTreeish et graftpoint c
+						>>= regraft ets
+				Nothing -> regraft ets c
 		graftpoint = asTopFilePath exportTreeGraftPoint
 
 checkBranchDifferences :: Git.Ref -> Annex ()
