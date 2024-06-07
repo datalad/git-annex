@@ -66,19 +66,19 @@ recordExportBeginning remoteuuid newtree = do
 		. parseExportLogMap
 		<$> Annex.Branch.get exportLog
 	let new = updateIncompleteExportedTreeish old (nub (newtree:incompleteExportedTreeishes [old]))
+	rememberExportTreeish newtree
 	Annex.Branch.change
 		(Annex.Branch.RegardingUUID [remoteuuid, u])
 		exportLog
 		(buildExportLog . changeMapLog c ep new . parseExportLog)
-	recordExportTreeish newtree
 
 -- Graft a tree ref into the git-annex branch. This is done
 -- to ensure that it's available later, when getting exported files
 -- from the remote. Since that could happen in another clone of the
 -- repository, the tree has to be kept available, even if it
 -- doesn't end up being merged into the master branch.
-recordExportTreeish :: Git.Ref -> Annex ()
-recordExportTreeish t = void $
+rememberExportTreeish :: Git.Ref -> Annex ()
+rememberExportTreeish t = void $
 	Annex.Branch.rememberTreeish t (asTopFilePath exportTreeGraftPoint)
 
 -- | Record that an export to a special remote is under way.
@@ -112,7 +112,7 @@ recordExportUnderway remoteuuid ec = do
 recordExport :: UUID -> Git.Ref -> ExportChange -> Annex ()
 recordExport remoteuuid tree ec = do
 	when (oldTreeish ec /= [tree]) $
-		recordExportTreeish tree
+		rememberExportTreeish tree
 	recordExportUnderway remoteuuid ec
 
 logExportExcluded :: UUID -> ((Git.Tree.TreeItem -> IO ()) -> Annex a) -> Annex a
