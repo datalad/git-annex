@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 7"""
+ date="2024-06-04T15:15:36Z"
+ content="""
+Decoding the export.log, we have these events:
+
+Tue Aug  4 13:44:10 2020 (PST): An export is run on an openneuro worker
+sending to `s3-PRIVATE`, of b78b723042e6d7a967c806b52258e8554caa1696 which
+is now lost to history. After that export completed, there was a subsequent
+started but not completed export of
+ae2937297eb1b4f6c9bfdfcf9d7a41b1adcea32e, also lost to history.
+
+Fri Jan 19 21:04:26 2024: An export run on the same worker, sending to
+a `s3-PUBLIC` (not the current one, one that has been marked dead and
+forgotten), of ae2937297eb1b4f6c9bfdfcf9d7a41b1adcea32e. After that export
+completed, there was a subsequent started but not completed export of
+28b655e8207f916122bbcbd22c0369d86bb4ffc1.
+
+Later the same day, an export run on the same worker, sending to
+`s3-PUBLIC` (the current one), of 28b655e8207f916122bbcbd22c0369d86bb4ffc1.
+This export completed.
+
+Interesting that two exports were apparently started but left incomplete.
+This could have been because git-annex was interrupted, which would go a
+way toward confirming my analysis of this bug. But also possible
+there was a error exporting one or more files.
+
+According to Nell, the git history of main was rewritten to remove a large
+file from git. The tree 28b655e8207f916122bbcbd22c0369d86bb4ffc1 appears
+to still contain the large binary file. No commit in main references it.
+It did get grafted into the git-annex branch which is why it was not lost.
+"""]]

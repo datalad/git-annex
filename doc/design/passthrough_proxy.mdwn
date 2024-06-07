@@ -189,24 +189,60 @@ The remote interface operates on object files stored on disk. See
 [[todo/transitive_transfers]] for discussion of that problem. If proxies
 get implemented, that problem should be revisited.
 
+## chunking
+
+When the proxy is in front of a special remote that is chunked,
+where does the chunking happen? It could happen on the client, or on the
+proxy.
+
+Git remotes don't ever do chunking currently, so chunking on the client
+would need changes there.
+
+Also, a given upload via a proxy may get sent to several special remotes,
+each with different chunk sizes, or perhaps some not chunked and some
+chunked. For uploads to be efficient, chunking needs to happen on the proxy.
+
 ## encryption
 
 When the proxy is in front of a special remote that uses encryption, where
 does the encryption happen? It could either happen on the client before
 sending to the proxy, or the proxy could do the encryption since it
-communicates with the special remote. For security, doing the encryption on
-the client seems like the best choice by far.
+communicates with the special remote.
 
-But, git-annex's git remotes don't currently ever do encryption. And
-special remotes don't communicate via the P2P protocol with a git remote.
-So none of git-annex's existing remote implementations would be able to handle
-this case. Something will need to be changed in the remote
-implementation for this.
+If the client does not want the proxy to see unencrypted data,
+they would obviously prefer encryption happens locally.
 
-(Chunking has the same problem.)
+But, the proxy could be the only thing that has access to a security key
+that is used in encrypting a special remote that's located behind it.
+There's a security benefit there too.
+
+So there are kind of two different perspectives here that can have
+different opinions.
+
+Also if encryption for a special remote behind a proxy happened
+client-side, and the client relied on that, nothing would stop the proxy
+from replacing that encrypted special remote with an unencrypted remote.
+Then the client side encryption would not happen, the user would not
+notice, and the proxy could see their unencrypted content.
+
+Of course, if a client really wanted to, they could make a special remote
+that uses the remote behind the proxy as a key/value backend.
+Then the client could encrypt locally.
+
+On the implementation side, git-annex's git remotes don't currently ever do
+encryption. And special remotes don't communicate via the P2P protocol with
+a git remote. So none of git-annex's existing remote implementations would
+be able to handle client-side encryption.
 
 There's potentially a layering problem here, because exactly how encryption
-(or chunking) works can vary depending on the type of special remote.
+works can vary depending on the type of special remote.
+
+Encrypted and chunked special remotes first chunk, then encrypt.
+So it chunking happens on the proxy, encryption *must* also happen there.
+
+So overall, it seems better to do proxy-side encryption. But it may be
+worth adding a special remote that does its own client-side encryption
+in front of the proxy.
 
 ## cycles
 
