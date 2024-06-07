@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="ruslan@302cb7f8d398fcce72f88b26b0c2f3a53aaf0bcd"
+ nickname="ruslan"
+ avatar="http://cdn.libravatar.org/avatar/37d3c852372d96daa8a99629755ed1f9"
+ subject="comment 1"
+ date="2024-06-05T17:34:32Z"
+ content="""
+Solution with running `git annex add` is also described at the link below:
+
+https://git-annex.branchable.com/forum/git_annex_add_crash_and_subsequent_recovery/#comment-4f5af644597a055624009c5bbb9aca3f
+
+---
+
+So need to find files that are symlinks to git annex object folder and run `git annex add` / `git annex unused` - I can handle that with a script, though would be nice to have a built-in method
+
+---
+
+Additional notes:
+
+1. There should be a way to find files that were added to git annex folder but are not tracked by git annex. Is this something that can be done with existing commands?
+2. It's desirable to have a way to abort `git annex add` gracefully on long-running jobs. Is there a way to do it now? Looks like ctrl-c resulted in a broken state. Whould Ctrl-z work better?
+"""]]

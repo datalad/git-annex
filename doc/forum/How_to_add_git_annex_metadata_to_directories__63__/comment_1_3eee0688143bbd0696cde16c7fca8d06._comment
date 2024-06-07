@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="nobodyinperson"
+ avatar="http://cdn.libravatar.org/avatar/736a41cd4988ede057bae805d000f4f5"
+ subject="comment 1"
+ date="2024-06-06T09:09:03Z"
+ content="""
+You are absolutely right. You might be interested in [DataLad](https://datalad.org), which provides a lot of convenience around git-annex, has the concept of datasets (git submodules) and also an extended approach to metadata.
+"""]]

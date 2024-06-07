@@ -1,0 +1,3 @@
+As I understand - there is currently no way to track metadata for directories with `git annex metadata` (it only works for files). Is that indeed the case?
+
+One workaround I'm looking at is to add a metadata placeholder file for directory metadata inside the directory. As I understand - each directory would need to have such file with some unique content (perhaps UUID), otherwise metadata between files for different directories will actually collide. Are there alternatives/better solutions for tracking datasets metadata (groups of files in a folder)?
