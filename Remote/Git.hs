@@ -1,6 +1,6 @@
 {- Standard git remotes.
  -
- - Copyright 2011-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -789,51 +789,63 @@ listProxied proxies rs = concat <$> mapM go rs
 		u <- getRepoUUID r
 		gc <- Annex.getRemoteGitConfig r
 		let cu = fromMaybe u $ remoteAnnexConfigUUID gc
-		pure $ if not (canproxy gc r) || cu ==NoUUID
-			then []
+		if not (canproxy gc r) || cu ==NoUUID
+			then pure []
 			else case M.lookup cu proxies of
-				Nothing -> []
-				Just s -> mapMaybe (mkproxied g r) (S.toList s)
+				Nothing -> pure []
+				Just s -> catMaybes
+					<$> mapM (mkproxied g r) (S.toList s)
 	
-	proxyremotename r p = do
+	proxiedremotename r p = do
 		n <- Git.remoteName r
 		pure $ n ++ "-" ++ proxyRemoteName p
 
-	mkproxied g r p = mkproxied' g r p =<< proxyremotename r p
+	mkproxied g r p = case proxiedremotename r p of
+		Nothing -> pure Nothing
+		Just proxyname -> mkproxied' g r p proxyname
 	
+	-- The proxied remote is constructed by renaming the proxy remote,
+	-- and setting the proxied remote's inherited configs, url and
+	-- uuid in Annex state.
 	mkproxied' g r p proxyname
-		| any isconfig (M.keys (Git.config g)) = Nothing
-		-- The proxied remote is constructed by renaming the
-		-- proxy remote, changing its uuid, and inheriting some
-		-- of its config. The url in particular stays the same.
-		| otherwise = Just $ renamedr
-			{ Git.config = M.map Prelude.head c
-			, Git.fullconfig = c
-			}
+		| any isconfig (M.keys (Git.config g)) = pure Nothing
+		| otherwise = do
+			-- Not using addGitConfigOverride for inherited
+			-- configs and the uuid, because child git processes
+			-- do not need them to be provided with -c.
+			Annex.adjustGitRepo (pure . configadjuster)
+			return $ Just $ renamedr
 	  where
 		renamedr = r { Git.remoteName = Just proxyname }
 		
-		c = M.insert
+		configadjuster r' = 
+			let c = adduuid $ inheritconfigs $ Git.fullconfig r'
+			in r'
+				{ Git.config = M.map Prelude.head c
+				, Git.fullconfig = c
+				}
+
+		adduuid = M.insert
 			(configRepoUUID renamedr)
 			[Git.ConfigValue $ fromUUID $ proxyRemoteUUID p]
-			inheritedconfig
 
-		inheritedconfig = M.fromList $
-			mapMaybe inheritconfig proxyInheritedFields
+		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
 		
-		inheritconfig k = do
-			let rk = remoteAnnexConfig r k
-			v <- M.lookup rk (Git.fullconfig r)
-			pure $ (rk, v)
+		inheritconfig c k = case (M.lookup dest c, M.lookup src c) of
+			(Nothing, Just v) -> M.insert dest v c
+			_ -> c
+		  where
+			src = remoteAnnexConfig r k
+			dest = remoteAnnexConfig renamedr k
 		
 		-- When the git config has anything set for a remote,
 		-- avoid making a proxied remote with the same name.
 		-- It is possible to set git configs of proxies, but it
 		-- needs both the url and uuid config to be manually set.
 		isconfig (Git.ConfigKey configkey) = 
-			configprefix `B.isPrefixOf` configkey
-		  where
-			Git.ConfigKey configprefix = remoteConfig proxyname mempty
+			proxyconfigprefix `B.isPrefixOf` configkey
+		  where 
+			Git.ConfigKey proxyconfigprefix = remoteConfig proxyname mempty
 
 	-- Git remotes that are gcrypt or git-lfs special remotes cannot
 	-- proxy. Proxing is also not yet supported for remotes using P2P
