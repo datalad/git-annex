@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 8"""
+ date="2024-06-07T17:59:43Z"
+ content="""
+Fixed performTransitionsLocked to create the new git-annex branch
+atomically.
+
+Found another way this could happen, interrupting `git-annex export` after
+it writes export.log but before it grafts the tree into the git-annex
+branch. Fixed that one too.
+
+So hopefully this won't happen to any more repositories with these fixes.
+Still leaves the question of how to recover from the problem.
+"""]]
