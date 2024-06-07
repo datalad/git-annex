@@ -34,15 +34,12 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 1. Add `git-annex updateproxy` command and remote.name.annex-proxy
    configuration. (done)
 
-2. Remote instantiation for proxies almost works, but fails at:
-   "git-annex: cannot determine uuid for origin-foo"
-
-   getRepoUUID does not look at the Repo's UUID setting, but reads it
-   from git-config. It's not set there for a proxied remote.
-
-   So: Add annex-uuid parsing to RemoteConfig.
+2. Remote instantiation for proxies. (done)
 
 3. Implement proxying in git-annex-shell.
+
+4. Either implement proxying for local path remotes, or prevent
+   listProxied from operating on them.
 
 4. Let `storeKey` return a list of UUIDs where content was stored,
    and make proxies accept uploads directed at them, rather than a specific
