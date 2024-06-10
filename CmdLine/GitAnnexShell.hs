@@ -1,6 +1,6 @@
 {- git-annex-shell main program
  -
- - Copyright 2010-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -8,6 +8,7 @@
 module CmdLine.GitAnnexShell where
 
 import Annex.Common
+import qualified Annex
 import qualified Git.Construct
 import qualified Git.Config
 import CmdLine
@@ -19,6 +20,9 @@ import CmdLine.GitAnnexShell.Fields
 import Remote.GCrypt (getGCryptUUID)
 import P2P.Protocol (ServerMode(..))
 import Git.Types
+import Logs.Proxy
+import Logs.UUID
+import Remote
 
 import qualified Command.ConfigList
 import qualified Command.NotifyChanges
@@ -30,6 +34,7 @@ import qualified Command.SendKey
 import qualified Command.DropKey
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 cmdsMap :: M.Map ServerMode [Command]
 cmdsMap = M.fromList $ map mk
@@ -39,20 +44,22 @@ cmdsMap = M.fromList $ map mk
 	]
   where
 	readonlycmds = map addAnnexOptions
-		[ Command.ConfigList.cmd
+		[ notProxyable Command.ConfigList.cmd
 		, gitAnnexShellCheck Command.NotifyChanges.cmd
 		-- p2pstdio checks the environment variables to
-		-- determine the security policy to use
-		, gitAnnexShellCheck Command.P2PStdIO.cmd
-		, gitAnnexShellCheck Command.InAnnex.cmd
-		, gitAnnexShellCheck Command.SendKey.cmd
+		-- determine the security policy to use, so is safe to
+		-- include in the readonly list even though it is not
+		-- always readonly
+		, notProxyable (gitAnnexShellCheck Command.P2PStdIO.cmd) -- FIXME support proxy
+		, notProxyable (gitAnnexShellCheck Command.InAnnex.cmd)
+		, notProxyable (gitAnnexShellCheck Command.SendKey.cmd)
 		]
 	appendcmds = readonlycmds ++ map addAnnexOptions
-		[ gitAnnexShellCheck Command.RecvKey.cmd
+		[ notProxyable (gitAnnexShellCheck Command.RecvKey.cmd)
 		]
 	allcmds = appendcmds ++ map addAnnexOptions
-		[ gitAnnexShellCheck Command.DropKey.cmd
-		, Command.GCryptSetup.cmd
+		[ notProxyable (gitAnnexShellCheck Command.DropKey.cmd)
+		, notProxyable Command.GCryptSetup.cmd
 		]
 
 	mk (s, l) = (s, map (adddirparam . noMessages) l)
@@ -77,17 +84,23 @@ commonShellOptions =
   where
 	checkUUID expected = getUUID >>= check
 	  where
-		check u | u == toUUID expected = noop
 		check NoUUID = checkGCryptUUID expected
-		check u = unexpectedUUID expected u
+		check u 
+			| u == toUUID expected = noop
+			| otherwise = 
+				unlessM (checkProxy (toUUID expected) u) $
+					unexpectedUUID expected u
+	
 	checkGCryptUUID expected = check =<< getGCryptUUID True =<< gitRepo
 	  where
 		check (Just u) | u == toUUID expected = noop
 		check Nothing = unexpected expected "uninitialized repository"
 		check (Just u) = unexpectedUUID expected u
+	
 	unexpectedUUID expected u = unexpected expected $ "UUID " ++ fromUUID u
 	unexpected expected s = giveup $
 		"expected repository UUID " ++ expected ++ " but found " ++ s
+				
 
 run :: [String] -> IO ()
 run [] = failure
@@ -103,6 +116,11 @@ run c@(cmd:_)
 	| "git-annex-shell " `isPrefixOf` cmd = run $ drop 1 $ shellUnEscape cmd
 	| cmd `elem` builtins = failure
 	| otherwise = external c
+
+failure :: IO ()
+failure = giveup $ "bad parameters\n\n" ++ usage h cmdsList
+  where
+	h = "git-annex-shell [-c] command [parameters ...] [option ...]"
 
 builtins :: [String]
 builtins = map cmdname cmdsList
@@ -165,7 +183,31 @@ checkField (field, val)
 	| field == fieldName autoInit = fieldCheck autoInit val
 	| otherwise = False
 
-failure :: IO ()
-failure = giveup $ "bad parameters\n\n" ++ usage h cmdsList
+{- Check if this repository can proxy for a specified remote uuid,
+ - and if so enable proxying for it. -}
+checkProxy :: UUID -> UUID -> Annex Bool
+checkProxy remoteuuid ouruuid = M.lookup ouruuid <$> getProxies >>= \case
+	Nothing -> return False
+	-- This repository has (or had) proxying enabled. So it's
+	-- ok to display error messages that talk about proxies.
+	Just proxies ->
+		case filter (\p -> proxyRemoteUUID p == remoteuuid) (S.toList proxies) of
+			[] -> notconfigured
+			ps -> do
+				-- This repository may have multiple
+				-- remotes that access the same repository.
+				-- Proxy for the lowest cost one that
+				-- is configured to be used as a proxy.
+				rs <- concat . byCost <$> remoteList
+				let sameuuid r = uuid r == remoteuuid
+				let samename r p = name r == proxyRemoteName p
+				case headMaybe (filter (\r -> sameuuid r && any (samename r) ps) rs) of
+					Nothing -> notconfigured
+					Just r -> do
+						Annex.changeState $ \st ->
+							st { Annex.proxyremote = Just r }
+						return True
   where
-	h = "git-annex-shell [-c] command [parameters ...] [option ...]"
+	notconfigured = M.lookup remoteuuid <$> uuidDescMap >>= \case
+		Just desc -> giveup $ "not configured to proxy for repository " ++ (fromUUIDDesc desc)
+		Nothing -> return False

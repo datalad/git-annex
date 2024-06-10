@@ -86,7 +86,9 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
 * --uuid=UUID
 
   git-annex uses this to specify the UUID of the repository it was expecting
-  git-annex-shell to access, as a sanity check.
+  git-annex-shell to access. This is both a sanity check, and allows
+  git-annex shell to proxy access to remotes, when configured
+  by [[git-annex-update-proxy]].
 
 * Also the [[git-annex-common-options]](1) can be used.
 

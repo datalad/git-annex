@@ -36,7 +36,7 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 2. Remote instantiation for proxies. (done)
 
-3. Implement proxying in git-annex-shell.
+3. Implement proxying for Command.P2PStdIO.cmd.
 
 4. Either implement proxying for local path remotes, or prevent
    listProxied from operating on them.

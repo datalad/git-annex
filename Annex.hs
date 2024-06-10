@@ -213,6 +213,7 @@ data AnnexState = AnnexState
 	, urloptions :: Maybe UrlOptions
 	, insmudgecleanfilter :: Bool
 	, getvectorclock :: IO CandidateVectorClock
+	, proxyremote :: Maybe (Types.Remote.RemoteA Annex)
 	}
 
 newAnnexState :: GitConfig -> Git.Repo -> IO AnnexState
@@ -266,6 +267,7 @@ newAnnexState c r = do
 		, urloptions = Nothing
 		, insmudgecleanfilter = False
 		, getvectorclock = vc
+		, proxyremote = Nothing
 		}
 
 {- Makes an Annex state object for the specified git repo.

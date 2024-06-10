@@ -1,6 +1,6 @@
 {- git-annex-shell checks
  -
- - Copyright 2012 Joey Hess <id@joeyh.name>
+ - Copyright 2012-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -82,3 +82,12 @@ gitAnnexShellCheck = addCheck GitAnnexShellOk okforshell . dontCheck repoExists
   where
 	okforshell = unlessM (isInitialized <||> isJust . gcryptId <$> Annex.getGitConfig) $
 		giveup "Not a git-annex or gcrypt repository."
+
+{- Used for Commands that don't support proxying. -}
+notProxyable :: Command -> Command
+notProxyable c = addCheck GitAnnexShellNotProxyable checkok c
+  where
+	checkok = Annex.getState Annex.proxyremote >>= \case
+		Nothing -> return ()
+		Just _ -> giveup $ "Cannot proxy " ++ cmdname c ++ " command."
+
