@@ -1,6 +1,6 @@
 {- git-annex remote access with ssh and git-annex-shell
  -
- - Copyright 2011-2022 Joey Hess <id@joeyh.name>
+ - Copyright 2011-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -231,14 +231,24 @@ storeP2PSshConnection connpool conn = atomically $ modifyTVar' connpool $ \case
 -- If the remote does not support the P2P protocol, that's remembered in 
 -- the connection pool.
 openP2PSshConnection :: Remote -> P2PSshConnectionPool -> Annex (Maybe P2PSshConnection)
-openP2PSshConnection r connpool = do
+openP2PSshConnection r connpool =
+	openP2PSshConnection' r P2P.maxProtocolVersion >>= \case
+		Just conn -> return (Just conn)
+		Nothing -> do
+			liftIO $ rememberunsupported
+			return Nothing
+  where
+	rememberunsupported = atomically $
+		modifyTVar' connpool $
+			maybe (Just P2PSshUnsupported) Just
+
+openP2PSshConnection' :: Remote -> P2P.ProtocolVersion -> Annex (Maybe P2PSshConnection)
+openP2PSshConnection' r maxprotoversion = do
 	u <- getUUID
 	let ps = [Param (fromUUID u)]
 	repo <- getRepo r
 	git_annex_shell ConsumeStdin repo "p2pstdio" ps [] >>= \case
-		Nothing -> do
-			liftIO $ rememberunsupported
-			return Nothing
+		Nothing -> return Nothing
 		Just (cmd, params) -> start cmd params
   where
 	start cmd params = liftIO $ do
@@ -261,7 +271,7 @@ openP2PSshConnection r connpool = do
 		-- When the connection is successful, the remote
 		-- will send an AUTH_SUCCESS with its uuid.
 		let proto = P2P.postAuth $
-			P2P.negotiateProtocolVersion P2P.maxProtocolVersion
+			P2P.negotiateProtocolVersion maxprotoversion
 		tryNonAsync (P2P.runNetProto runst conn proto) >>= \case
 			Right (Right (Just theiruuid)) | theiruuid == uuid r ->
 				return $ Just c
@@ -271,12 +281,7 @@ openP2PSshConnection r connpool = do
 				-- server.
 				if exitcode == Just (ExitFailure 255)
 					then return (Just cclosed)
-					else do
-						rememberunsupported
-						return Nothing
-	rememberunsupported = atomically $
-		modifyTVar' connpool $
-			maybe (Just P2PSshUnsupported) Just
+					else return Nothing
 
 -- Runs a P2P Proto action on a remote when it supports that,
 -- otherwise the fallback action.

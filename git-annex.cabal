@@ -870,6 +870,7 @@ Executable git-annex
     P2P.Auth
     P2P.IO
     P2P.Protocol
+    P2P.Proxy
     Remote
     Remote.Adb
     Remote.BitTorrent

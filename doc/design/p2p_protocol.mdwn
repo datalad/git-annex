@@ -41,7 +41,7 @@ is successful. Or, it can fail the authentication, and close the
 connection.
 
 	AUTH-SUCCESS UUID
-	AUTH_FAILURE
+	AUTH-FAILURE
 
 Note that authentication does not guarantee that the client is talking to
 who they expect to be talking to. This, and encryption of the connection,
