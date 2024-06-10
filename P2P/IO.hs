@@ -75,7 +75,7 @@ mkRunState mk = do
 	return (mk tvar)
 
 data P2PConnection = P2PConnection
-	{ connRepo :: Repo
+	{ connRepo :: Maybe Repo
 	, connCheckAuth :: (AuthToken -> Bool)
 	, connIhdl :: Handle
 	, connOhdl :: Handle
@@ -90,7 +90,7 @@ data ClosableConnection conn
 	| ClosedConnection
 
 -- P2PConnection using stdio.
-stdioP2PConnection :: Git.Repo -> P2PConnection
+stdioP2PConnection :: Maybe Git.Repo -> P2PConnection
 stdioP2PConnection g = P2PConnection
 	{ connRepo = g
 	, connCheckAuth = const False
@@ -100,7 +100,7 @@ stdioP2PConnection g = P2PConnection
 	}
 
 -- Opens a connection to a peer. Does not authenticate with it.
-connectPeer :: Git.Repo -> P2PAddress -> IO P2PConnection
+connectPeer :: Maybe Git.Repo -> P2PAddress -> IO P2PConnection
 connectPeer g (TorAnnex onionaddress onionport) = do
 	h <- setupHandle =<< connectHiddenService onionaddress onionport
 	return $ P2PConnection
@@ -154,8 +154,7 @@ setupHandle s = do
 -- Purposefully incomplete interpreter of Proto.
 --
 -- This only runs Net actions. No Local actions will be run
--- (those need the Annex monad) -- if the interpreter reaches any,
--- it returns Nothing.
+-- (those need the Annex monad).
 runNetProto :: RunState -> P2PConnection -> Proto a -> IO (Either ProtoFailure a)
 runNetProto runst conn = go
   where
@@ -286,19 +285,21 @@ runRelay runner (RelayHandle hout) (RelayHandle hin) =
 	go (v, _, _) = relayHelper runner v
 
 runRelayService :: P2PConnection -> RunProto IO -> Service -> IO (Either ProtoFailure ())
-runRelayService conn runner service =
-	withCreateProcess serviceproc' go
+runRelayService conn runner service = case connRepo conn of
+	Just repo -> withCreateProcess (serviceproc' repo) go
 		`catchNonAsync` (return . Left . ProtoFailureException)
+	Nothing -> return $ Left $ ProtoFailureMessage
+		"relaying to git not supported on this connection"
   where
 	cmd = case service of
 		UploadPack -> "upload-pack"
 		ReceivePack -> "receive-pack"
 	
-	serviceproc = gitCreateProcess
+	serviceproc repo = gitCreateProcess
 		[ Param cmd
-		, File (fromRawFilePath (repoPath (connRepo conn)))
-		] (connRepo conn)
-	serviceproc' = serviceproc 
+		, File (fromRawFilePath (repoPath repo))
+		] repo
+	serviceproc' repo = (serviceproc repo)
 		{ std_out = CreatePipe
 		, std_in = CreatePipe
 		}

@@ -1,6 +1,9 @@
 git-annex (10.20240532) UNRELEASED; urgency=medium
 
   * Added updateproxy command and remote.name.annex-proxy configuration.
+  * Fix a bug where interrupting git-annex while it is updating the
+    git-annex branch for an export could later lead to git fsck
+    complaining about missing tree objects.
   * Fix Windows build with Win32 2.13.4+
     Thanks, Oleg Tolmatcev
 

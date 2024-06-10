@@ -58,7 +58,7 @@ connectService address port service = do
 			<$> loadP2PRemoteAuthToken (TorAnnex address port)
 		myuuid <- getUUID
 		g <- Annex.gitRepo
-		conn <- liftIO $ connectPeer g (TorAnnex address port)
+		conn <- liftIO $ connectPeer (Just g) (TorAnnex address port)
 		runst <- liftIO $ mkRunState Client
 		r <- liftIO $ runNetProto runst conn $ auth myuuid authtoken noop >>= \case
 			Just _theiruuid -> connect service stdin stdout

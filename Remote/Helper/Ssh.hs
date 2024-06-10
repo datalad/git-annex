@@ -239,9 +239,9 @@ openP2PSshConnection r connpool = do
 		Nothing -> do
 			liftIO $ rememberunsupported
 			return Nothing
-		Just (cmd, params) -> start cmd params =<< getRepo r
+		Just (cmd, params) -> start cmd params
   where
-	start cmd params repo = liftIO $ do
+	start cmd params = liftIO $ do
 		(Just from, Just to, Nothing, pid) <- createProcess $
 			(proc cmd (toCommand params))
 				{ std_in = CreatePipe
@@ -249,7 +249,7 @@ openP2PSshConnection r connpool = do
 				}
 		pidnum <- getPid pid
 		let conn = P2P.P2PConnection
-			{ P2P.connRepo = repo
+			{ P2P.connRepo = Nothing
 			, P2P.connCheckAuth = const False
 			, P2P.connIhdl = to
 			, P2P.connOhdl = from

@@ -178,13 +178,25 @@ commitCommand' runner commitmode commitquiet ps =
  - in any way, or output a summary.
  -}
 commit :: CommitMode -> Bool -> String -> Branch -> [Ref] -> Repo -> IO (Maybe Sha)
-commit commitmode allowempty message branch parentrefs repo = do
-	tree <- writeTree repo
-	ifM (cancommit tree)
-		( do
-			sha <- commitTree commitmode [message] parentrefs tree repo
+commit commitmode allowempty message branch parentrefs repo =
+	commitSha commitmode allowempty message parentrefs repo >>= \case
+		Just sha -> do
 			update' branch sha repo
 			return $ Just sha
+		Nothing -> return Nothing
+  where
+	cancommit tree
+		| allowempty = return True
+		| otherwise = case parentrefs of
+			[p] -> maybe False (tree /=) <$> Git.Ref.tree p repo
+			_ -> return True
+
+{- Same as commit but without updating any branch. -}
+commitSha :: CommitMode -> Bool -> String -> [Ref] -> Repo -> IO (Maybe Sha)
+commitSha commitmode allowempty message parentrefs repo = do
+	tree <- writeTree repo
+	ifM (cancommit tree)
+		( Just <$> commitTree commitmode [message] parentrefs tree repo
 		, return Nothing
 		)
   where
@@ -197,6 +209,10 @@ commit commitmode allowempty message branch parentrefs repo = do
 commitAlways :: CommitMode -> String -> Branch -> [Ref] -> Repo -> IO Sha
 commitAlways commitmode message branch parentrefs repo = fromJust
 	<$> commit commitmode True message branch parentrefs repo
+
+commitShaAlways :: CommitMode -> String -> [Ref] -> Repo -> IO Sha
+commitShaAlways commitmode message parentrefs repo = fromJust
+	<$> commitSha commitmode True message parentrefs repo
 
 -- Throws exception if the index is locked, with an error message output by
 -- git on stderr.

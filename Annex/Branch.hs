@@ -818,12 +818,18 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 		if neednewlocalbranch
 			then do
 				cmode <- annexCommitMode <$> Annex.getGitConfig
-				committedref <- inRepo $ Git.Branch.commitAlways cmode message fullname transitionedrefs
-				setIndexSha committedref
+				-- Creating a new empty branch must happen
+				-- atomically, so if this is interrupted,
+				-- it will not leave the new branch created
+				-- but without exports grafted in.
+				c <- inRepo $ Git.Branch.commitShaAlways
+					cmode message transitionedrefs
+				void $ regraftexports c
 			else do
 				ref <- getBranch
-				commitIndex jl ref message (nub $ fullname:transitionedrefs)
-	regraftexports
+				ref' <- regraftexports ref
+				commitIndex jl ref' message
+					(nub $ fullname:transitionedrefs)
   where
 	message
 		| neednewlocalbranch && null transitionedrefs = "new branch for transition " ++ tdesc
@@ -872,13 +878,25 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 					apply rest file content'
 
 	-- Trees mentioned in export.log were grafted into the old
-	-- git-annex branch to make sure they remain available. Re-graft
-	-- the trees into the new branch.
-	regraftexports = do
+	-- git-annex branch to make sure they remain available.
+	-- Re-graft the trees.
+	regraftexports parent = do
 		l <- exportedTreeishes . M.elems . parseExportLogMap
 			<$> getStaged exportLog
-		forM_ l $ \t ->
-			rememberTreeishLocked t (asTopFilePath exportTreeGraftPoint) jl
+		c <- regraft l parent
+		inRepo $ Git.Branch.update' fullname c
+		setIndexSha c
+		return c
+	  where
+		regraft [] c = pure c
+		regraft (et:ets) c =
+			-- Verify that the tree object exists.
+			catObjectDetails et >>= \case
+				Just _ ->
+					prepRememberTreeish et graftpoint c
+						>>= regraft ets
+				Nothing -> regraft ets c
+		graftpoint = asTopFilePath exportTreeGraftPoint
 
 checkBranchDifferences :: Git.Ref -> Annex ()
 checkBranchDifferences ref = do
@@ -935,26 +953,29 @@ getMergedRefs' = do
  - Returns the sha of the git commit made to the git-annex branch.
  -}
 rememberTreeish :: Git.Ref -> TopFilePath -> Annex Git.Sha
-rememberTreeish treeish graftpoint = lockJournal $
-	rememberTreeishLocked treeish graftpoint
-rememberTreeishLocked :: Git.Ref -> TopFilePath -> JournalLocked -> Annex Git.Sha
-rememberTreeishLocked treeish graftpoint jl = do
+rememberTreeish treeish graftpoint = lockJournal $ \jl -> do
 	branchref <- getBranch
 	updateIndex jl branchref
+	c <- prepRememberTreeish treeish graftpoint branchref
+	inRepo $ Git.Branch.update' fullname c
+	-- The tree in c is the same as the tree in branchref,
+	-- and the index was updated to that above, so it's safe to
+	-- say that the index contains c.
+	setIndexSha c
+	return c
+
+{- Create a series of commits that graft a tree onto the parent commit,
+ - and then remove it. -}
+prepRememberTreeish :: Git.Ref -> TopFilePath -> Git.Ref -> Annex Git.Sha
+prepRememberTreeish treeish graftpoint parent = do
 	origtree <- fromMaybe (giveup "unable to determine git-annex branch tree") <$>
-		inRepo (Git.Ref.tree branchref)
+		inRepo (Git.Ref.tree parent)
 	addedt <- inRepo $ Git.Tree.graftTree treeish graftpoint origtree
 	cmode <- annexCommitMode <$> Annex.getGitConfig
 	c <- inRepo $ Git.Branch.commitTree cmode
-		["graft"] [branchref] addedt
-	c' <- inRepo $ Git.Branch.commitTree cmode
+		["graft"] [parent] addedt
+	inRepo $ Git.Branch.commitTree cmode
 		["graft cleanup"] [c] origtree
-	inRepo $ Git.Branch.update' fullname c'
-	-- The tree in c' is the same as the tree in branchref,
-	-- and the index was updated to that above, so it's safe to
-	-- say that the index contains c'.
-	setIndexSha c'
-	return c'
 
 {- Runs an action on the content of selected files from the branch.
  - This is much faster than reading the content of each file in turn,

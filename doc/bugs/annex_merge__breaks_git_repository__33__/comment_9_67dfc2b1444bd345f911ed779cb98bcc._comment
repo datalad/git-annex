@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 9"""
+ date="2024-06-07T20:25:27Z"
+ content="""
+Note that at least in the case of ds002144, its git-annex branch does not
+contain grafts of the missing trees. The grafts only get created in the
+clone when dealing with a transition.
+
+So, it seems that to recover from the problem, at least in the case of this
+repository, it will be sufficient for git-annex to avoid regrafting trees
+if the object is missing.
+
+Done that, and so I suppose this bug can be closed. I'd be more satified if
+I knew how this repository was produced though.
+"""]]

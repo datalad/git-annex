@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 10"""
+ date="2024-06-10T14:36:37Z"
+ content="""
+While I don't think this affects the ds002144 repository
+(because the repository with the missing tree is dead), here's what happens
+if the export.log's tree is missing, master has been reset to a previous tree,
+which was exported earlier, and in a clone we try to get a file that is present
+in both trees from the remote:
+
+	get foo (from d...) fatal: bad object f4815823941716de0f0fdf85e8aaba98d024d488
+	
+	  unknown export location
+
+Note that the "bad object" message only appears the first time run.
+Afterwards it only says "unknown export location".
+
+Even if the tree object later somehow gets pulled in, it will keep failing,
+because the exportdb at this point contains the tree sha and it won't try
+to update from it again.
+
+To recover from this situation, the user can make a change to
+the tree (eg add a file), and export. It will complain one last time about
+the bad object, and then the export.log gets fixed to contain an available
+tree. However, any files that were in the missing tree that do not get
+overwritten by that export will remain in the remote, without git-annex
+knowing about them. If the remote has importtree=yes, importing from it
+is another way to recover.
+"""]]

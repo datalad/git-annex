@@ -291,7 +291,7 @@ data LinkResult
 setupLink :: RemoteName -> P2PAddressAuth -> Annex LinkResult
 setupLink remotename (P2PAddressAuth addr authtoken) = do
 	g <- Annex.gitRepo
-	cv <- liftIO $ tryNonAsync $ connectPeer g addr
+	cv <- liftIO $ tryNonAsync $ connectPeer (Just g) addr
 	case cv of
 		Left e -> return $ ConnectionError $ "Unable to connect with peer. Please check that the peer is connected to the network, and try again. ("  ++ show e ++ ")"
 		Right conn -> do
