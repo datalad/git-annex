@@ -143,7 +143,7 @@ withConnection u addr connpool a = bracketOnError get cache go
 openConnection :: UUID -> P2PAddress -> Annex Connection
 openConnection u addr = do
 	g <- Annex.gitRepo
-	v <- liftIO $ tryNonAsync $ connectPeer g addr
+	v <- liftIO $ tryNonAsync $ connectPeer (Just g) addr
 	case v of
 		Right conn -> do
 			myuuid <- getUUID

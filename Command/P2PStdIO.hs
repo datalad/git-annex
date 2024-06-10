@@ -36,7 +36,7 @@ start theiruuid = startingCustomOutput (ActionItemOther Nothing) $ do
 			(False, True) -> P2P.ServeAppendOnly
 			(False, False) -> P2P.ServeReadWrite
 	myuuid <- getUUID
-	conn <- stdioP2PConnection <$> Annex.gitRepo
+	let conn = stdioP2PConnection Nothing
 	let server = do
 		P2P.net $ P2P.sendMessage (P2P.AUTH_SUCCESS myuuid)
 		P2P.serveAuthed servermode myuuid

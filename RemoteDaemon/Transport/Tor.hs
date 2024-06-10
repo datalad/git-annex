@@ -111,7 +111,7 @@ serveClient th@(TransportHandle _ _ rd) u r q = bracket setup cleanup start
 			-- when the allowed set is changed.
 			allowed <- loadP2PAuthTokens
 			let conn = P2PConnection
-				{ connRepo = r
+				{ connRepo = Just r
 				, connCheckAuth = (`isAllowedAuthToken` allowed)
 				, connIhdl = h
 				, connOhdl = h
@@ -146,7 +146,7 @@ transport (RemoteRepo r gc) url@(RemoteURI uri) th ichan ochan =
 		Nothing -> return ()
 		Just addr -> robustConnection 1 $ do
 			g <- liftAnnex th Annex.gitRepo
-			bracket (connectPeer g addr) closeConnection (go addr)
+			bracket (connectPeer (Just g) addr) closeConnection (go addr)
   where
 	go addr conn = do
 		myuuid <- liftAnnex th getUUID

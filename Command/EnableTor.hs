@@ -105,11 +105,10 @@ checkHiddenService = bracket setup cleanup go
 
 	check 0 _ = giveup "Still unable to connect to hidden service. It might not yet be usable by others. Please check Tor's logs for details."
 	check _ [] = giveup "Somehow didn't get an onion address."
-	check n addrs@(addr:_) = do
-		g <- Annex.gitRepo
+	check n addrs@(addr:_) =
 		-- Connect but don't bother trying to auth,
 		-- we just want to know if the tor circuit works.
-		liftIO (tryNonAsync $ connectPeer g addr) >>= \case
+		liftIO (tryNonAsync $ connectPeer Nothing addr) >>= \case
 			Left e -> do
 				warning $ UnquotedString $ "Unable to connect to hidden service. It may not yet have propagated to the Tor network. (" ++ show e ++ ") Will retry.."
 				liftIO $ threadDelaySeconds (Seconds 2)
@@ -123,19 +122,18 @@ checkHiddenService = bracket setup cleanup go
 	-- service's socket, start a listener. This is only run during the
 	-- check, and it refuses all auth attempts.
 	startlistener = do
-		r <- Annex.gitRepo
 		u <- getUUID
 		msock <- torSocketFile
 		case msock of
 			Just sockfile -> ifM (liftIO $ haslistener sockfile)
 				( liftIO $ async $ return ()
-				, liftIO $ async $ runlistener sockfile u r
+				, liftIO $ async $ runlistener sockfile u
 				)
 			Nothing -> giveup "Could not find socket file in Tor configuration!"
 	
-	runlistener sockfile u r = serveUnixSocket sockfile $ \h -> do
+	runlistener sockfile u = serveUnixSocket sockfile $ \h -> do
 		let conn = P2PConnection
-			{ connRepo = r
+			{ connRepo = Nothing
 			, connCheckAuth = const False
 			, connIhdl = h
 			, connOhdl = h
