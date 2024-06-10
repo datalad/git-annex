@@ -40,7 +40,7 @@ The server responds with either its own UUID when authentication
 is successful. Or, it can fail the authentication, and close the
 connection.
 
-	AUTH_SUCCESS UUID
+	AUTH-SUCCESS UUID
 	AUTH_FAILURE
 
 Note that authentication does not guarantee that the client is talking to
