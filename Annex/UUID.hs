@@ -79,7 +79,6 @@ getRepoUUID r = do
 	
 	if c /= u && u /= NoUUID
 		then do
-			liftIO $ print (r, "setting cache", c, u)
 			updatecache u
 			return u
 		else return c

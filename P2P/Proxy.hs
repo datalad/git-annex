@@ -13,6 +13,7 @@ import Annex.Common
 import P2P.Protocol
 import P2P.IO
 import qualified Remote
+import Utility.Metered (nullMeterUpdate)
 
 data ClientSide = ClientSide RunState P2PConnection
 data RemoteSide = RemoteSide RunState P2PConnection
@@ -79,47 +80,57 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 	case othermessage of
 		Just message -> proxyclientmessage (Just message)
 		Nothing -> do
-			-- Send client the VERSION from the remote.
-			proxyprotocolversion <- 
-				either (const defaultProtocolVersion) id
-					<$> toremote (net getProtocolVersion)
+			v <- protocolversion
 			protoerrhandler proxynextclientmessage $ 
-				toclient $ net $ sendMessage 
-					(VERSION proxyprotocolversion)
+				client $ net $ sendMessage $ VERSION v
   where
 	ClientSide clientrunst clientconn = clientside
 	RemoteSide remoterunst remoteconn = remoteside
 	
-	toremote = liftIO . runNetProto remoterunst remoteconn
-	toclient = liftIO . runNetProto clientrunst clientconn
+	remote = liftIO . runNetProto remoterunst remoteconn
+	client = liftIO . runNetProto clientrunst clientconn
+
+	protocolversion = either (const defaultProtocolVersion) id
+		<$> remote (net getProtocolVersion)
 
 	proxynextclientmessage () = protoerrhandler proxyclientmessage $
-		toclient (net receiveMessage)
+		client (net receiveMessage)
 
 	-- Send a message to the remote and then
 	-- send its response back to the client.
 	proxyresponse message = 
-		protoerrhandler handleresp $ 
-			toremote $ net $ do
+		protoerrhandler (withresp handleresp) $ 
+			remote $ net $ do
 				sendMessage message
 				receiveMessage
 	  where
-	  	handleresp (Just resp) =
+	  	handleresp resp = 
 			protoerrhandler proxynextclientmessage $
-				toclient $ net $ sendMessage resp
-		-- Remote hung up
-		handleresp Nothing = proxydone
+				client $ net $ sendMessage resp
+
+	withresp a (Just resp) = a resp
+	-- Whichever of the remote or client the message was read from 
+	-- hung up.
+	withresp _ Nothing = proxydone
 	
 	-- Send a message to the remote, that it will not respond to.
 	proxynoresponse message =
 		protoerrhandler proxynextclientmessage $
-			toremote $ net $ sendMessage message
+			remote $ net $ sendMessage message
+
+	-- Read a message from one party, send it to the other,
+	-- and then call the continuation.
+	relayonemessage from to cont =
+		flip protoerrhandler (from $ net $ receiveMessage) $
+			withresp $ \resp ->
+				protoerrhandler cont $
+					to $ net $ sendMessage resp
 
 	servermodechecker c a = c servermode $ \case
 		Nothing -> a
 		Just notallowed -> 
 			protoerrhandler proxynextclientmessage $
-				toclient notallowed
+				client notallowed
 
 	proxyclientmessage Nothing = proxydone
 	proxyclientmessage (Just message) = case message of
@@ -129,8 +140,10 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 		REMOVE _ -> 
 			servermodechecker checkREMOVEServerMode $
 				proxyresponse message
-		GET offset af k -> giveup "TODO GET"
-		PUT af k ->
+		GET _ _ _ -> 
+			protoerrhandler (handleGET message) $
+				remote $ net $ sendMessage message
+		PUT _ _ ->
 			servermodechecker checkPUTServerMode $
 				giveup "TODO PUT"
 		-- These messages involve the git repository, not the
@@ -144,8 +157,8 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 		-- the messages above.
 		SUCCESS -> protoerr
 		FAILURE -> protoerr
-		DATA len -> protoerr
-		VALIDITY v -> protoerr
+		DATA _ -> protoerr
+		VALIDITY _ -> protoerr
 		-- If the client errors out, give up.
 		ERROR msg -> giveup $ "client error: " ++ msg
 		-- Messages that only the server should send.
@@ -159,6 +172,29 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 		AUTH _ _ -> protoerr
 		VERSION _ -> protoerr
 
+	handleGET message () =
+		protoerrhandler (withresp handleresp) $ 
+			remote $ net $ do
+				sendMessage message
+				receiveMessage
+	  where
+	  	handleresp resp@(DATA len) =
+			protoerrhandler (receive len) $
+				client $ net $ sendMessage resp
+		handleresp _ = protoerr
+
+		receive len () = protoerrhandler (send len) $
+			remote $ net $ receiveBytes len nullMeterUpdate
+		send len b = protoerrhandler finishget $
+			client $ net $ sendBytes len b nullMeterUpdate
+		finishget () = protocolversion >>= \case
+			ProtocolVersion 0 -> sendclientsuccessfailure ()
+			-- Protocol version 1 has the remote send a a VALID or
+			-- INVALID message after the data.
+			_ -> relayonemessage remote client sendclientsuccessfailure
+		sendclientsuccessfailure () = 
+			relayonemessage client remote proxynextclientmessage
+
 	protoerr = do
-		_ <- toclient $ net $ sendMessage (ERROR "protocol error")
+		_ <- client $ net $ sendMessage (ERROR "protocol error")
 		giveup "protocol error"
