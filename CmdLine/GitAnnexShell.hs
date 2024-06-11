@@ -50,7 +50,7 @@ cmdsMap = M.fromList $ map mk
 		-- determine the security policy to use, so is safe to
 		-- include in the readonly list even though it is not
 		-- always readonly
-		, notProxyable (gitAnnexShellCheck Command.P2PStdIO.cmd) -- FIXME support proxy
+		, gitAnnexShellCheck Command.P2PStdIO.cmd
 		, notProxyable (gitAnnexShellCheck Command.InAnnex.cmd)
 		, notProxyable (gitAnnexShellCheck Command.SendKey.cmd)
 		]
