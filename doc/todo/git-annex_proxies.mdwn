@@ -36,11 +36,6 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 2. Remote instantiation for proxies. (done)
 
-2. Bug: In a repo cloned with ssh from a proxy repo,
-   running `git-annex init` sets annex-uuid for the instantiated ssh
-   remotes, which it shouldn't. Also they're set to the wrong uuid, the
-   uuid of the proxy rather than of the git repo behind the proxy.
-
 3. Implement proxying in git-annex-shell.
    (Partly done, still need it for GET, PUT, CONNECT, and NOTIFYCHANGES
    messages.)

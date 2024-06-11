@@ -805,28 +805,35 @@ listProxied proxies rs = concat <$> mapM go rs
 		Just proxyname -> mkproxied' g r p proxyname
 	
 	-- The proxied remote is constructed by renaming the proxy remote,
-	-- and setting the proxied remote's inherited configs, url and
-	-- uuid in Annex state.
+	-- changing its uuid, and setting the proxied remote's inherited
+	-- configs and uuid in Annex state.
 	mkproxied' g r p proxyname
 		| any isconfig (M.keys (Git.config g)) = pure Nothing
 		| otherwise = do
 			-- Not using addGitConfigOverride for inherited
-			-- configs and the uuid, because child git processes
-			-- do not need them to be provided with -c.
-			Annex.adjustGitRepo (pure . configadjuster)
+			-- configs other than the uuid, because child
+			-- git processes do not need them to be provided
+			-- with -c.
+			Annex.adjustGitRepo (pure . annexconfigadjuster)
 			return $ Just $ renamedr
 	  where
-		renamedr = r { Git.remoteName = Just proxyname }
+		renamedr = 
+			let c = adduuid configkeyUUID $ Git.fullconfig r
+			in r 
+				{ Git.remoteName = Just proxyname
+				, Git.config = M.map Prelude.head c
+				, Git.fullconfig = c
+				}
 		
-		configadjuster r' = 
-			let c = adduuid $ inheritconfigs $ Git.fullconfig r'
+		annexconfigadjuster r' = 
+			let c = adduuid (configRepoUUID renamedr) $
+				inheritconfigs $ Git.fullconfig r'
 			in r'
 				{ Git.config = M.map Prelude.head c
 				, Git.fullconfig = c
 				}
 
-		adduuid = M.insert
-			(configRepoUUID renamedr)
+		adduuid ck = M.insert ck
 			[Git.ConfigValue $ fromUUID $ proxyRemoteUUID p]
 
 		inheritconfigs c = foldl' inheritconfig c proxyInheritedFields
