@@ -62,13 +62,16 @@ performProxy clientuuid servermode remote = do
 	clientside <- ClientSide
 		<$> liftIO (mkRunState $ Serving clientuuid Nothing)
 		<*> pure (stdioP2PConnection Nothing)
-	getClientProtocolVersion clienterrhandler remote clientside $ \case
-		Nothing -> done
-		Just (clientmaxversion, othermsg) ->
-			connectremote clientmaxversion $ \remoteside ->
-				proxy clienterrhandler done servermode
-					clientside remoteside othermsg
+	getClientProtocolVersion remote clientside 
+		(withclientversion clientside)
+		clienterrhandler
   where
+	withclientversion clientside (Just (clientmaxversion, othermsg)) =
+		connectremote clientmaxversion $ \remoteside ->
+			proxy done servermode clientside remoteside 
+				othermsg clienterrhandler
+	withclientversion _ Nothing = done
+	
 	-- FIXME: Support special remotes and non-ssh git remotes.
 	connectremote clientmaxversion cont = 
 		openP2PSshConnection' remote clientmaxversion >>= \case

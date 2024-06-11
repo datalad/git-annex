@@ -17,6 +17,13 @@ import qualified Remote
 data ClientSide = ClientSide RunState P2PConnection
 data RemoteSide = RemoteSide RunState P2PConnection
 
+{- Type of function that takes a client error handler, which is
+ - used to handle a ProtoFailure when receiving a message
+ - from the client.
+ -}
+type ClientErrorHandled m r = 
+	(forall t. ((t -> m r) -> m (Either ProtoFailure t) -> m r)) -> m r
+
 {- This is the first thing run when proxying with a client. Most clients
  - will send a VERSION message, although version 0 clients will not and
  - will send some other message.
@@ -26,17 +33,18 @@ data RemoteSide = RemoteSide RunState P2PConnection
  - brought up yet.
  -}
 getClientProtocolVersion 
-	:: (forall t. ((t -> Annex r) -> Annex (Either ProtoFailure t) -> Annex r))
-	-> Remote 
+	:: Remote 
 	-> ClientSide
 	-> (Maybe (ProtocolVersion, Maybe Message) -> Annex r)
-	-> Annex r
-getClientProtocolVersion clienterrhandler remote (ClientSide clientrunst clientconn) cont =
+	-> ClientErrorHandled Annex r
+getClientProtocolVersion remote (ClientSide clientrunst clientconn) cont clienterrhandler =
 	clienterrhandler cont $
 		liftIO $ runNetProto clientrunst clientconn $
 			getClientProtocolVersion' remote
 
-getClientProtocolVersion' :: Remote -> Proto (Maybe (ProtocolVersion, Maybe Message))
+getClientProtocolVersion'
+	:: Remote
+	-> Proto (Maybe (ProtocolVersion, Maybe Message))
 getClientProtocolVersion' remote = do
 	net $ sendMessage (AUTH_SUCCESS (Remote.uuid remote))
 	msg <- net receiveMessage
@@ -54,21 +62,19 @@ getClientProtocolVersion' remote = do
 			(Just (defaultProtocolVersion, Just othermsg))
 
 {- Proxy between the client and the remote. This picks up after
- - getClientProtocolVersion, and after the connection to
- - the remote has been made, and the protocol version negotiated with the
- - remote.
+ - getClientProtocolVersion, after the connection to the remote has
+ - been made, and the protocol version negotiated with the remote.
  -}
 proxy 
-	:: (forall t. ((t -> Annex r) -> Annex (Either ProtoFailure t) -> Annex r))
-	-> Annex r
+	:: Annex r
 	-> ServerMode
 	-> ClientSide
 	-> RemoteSide
 	-> Maybe Message
-	-- ^ non-VERSION message that was received from the client and has
-	-- not been responded to yet
-	-> Annex r
-proxy clienterrhandler endsuccess servermode (ClientSide clientrunst clientconn) (RemoteSide remoterunst remoteconn) othermessage = do
+	-- ^ non-VERSION message that was received from the client when
+	-- negotiating protocol version, and has not been responded to yet
+	-> ClientErrorHandled Annex r
+proxy endsuccess servermode clientside remoteside othermessage clienterrhandler = do
 	case othermessage of
 		Just message -> clientmessage (Just message)
 		Nothing -> do
@@ -80,6 +86,9 @@ proxy clienterrhandler endsuccess servermode (ClientSide clientrunst clientconn)
 				toclient $ net $ sendMessage 
 					(VERSION proxyprotocolversion)
   where
+	ClientSide clientrunst clientconn = clientside
+	RemoteSide remoterunst remoteconn = remoteside
+	
 	toremote = liftIO . runNetProto remoterunst remoteconn
 	toclient = liftIO . runNetProto clientrunst clientconn
 
