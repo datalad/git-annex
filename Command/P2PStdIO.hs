@@ -64,12 +64,12 @@ performProxy clientuuid servermode remote = do
 		<*> pure (stdioP2PConnection Nothing)
 	getClientProtocolVersion remote clientside 
 		(withclientversion clientside)
-		clienterrhandler
+		protoerrhandler
   where
 	withclientversion clientside (Just (clientmaxversion, othermsg)) =
 		connectremote clientmaxversion $ \remoteside ->
 			proxy done servermode clientside remoteside 
-				othermsg clienterrhandler
+				othermsg protoerrhandler
 	withclientversion _ Nothing = done
 	
 	-- FIXME: Support special remotes and non-ssh git remotes.
@@ -80,7 +80,7 @@ performProxy clientuuid servermode remote = do
 					`finally` liftIO (closeP2PSshConnection conn)
 			_  -> giveup "Unable to connect to remote."
 
-	clienterrhandler cont a = a >>= \case
+	protoerrhandler cont a = a >>= \case
 		-- Avoid displaying an error when the client hung up on us.
 		Left (ProtoFailureIOError e) | isEOFError e -> done
 		Left e -> giveup (describeProtoFailure e)

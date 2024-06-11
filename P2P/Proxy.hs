@@ -17,16 +17,17 @@ import qualified Remote
 data ClientSide = ClientSide RunState P2PConnection
 data RemoteSide = RemoteSide RunState P2PConnection
 
-{- Type of function that takes a client error handler, which is
+{- Type of function that takes a error handler, which is
  - used to handle a ProtoFailure when receiving a message
- - from the client.
+ - from the client or remote.
  -}
-type ClientErrorHandled m r = 
+type ProtoErrorHandled m r = 
 	(forall t. ((t -> m r) -> m (Either ProtoFailure t) -> m r)) -> m r
 
-{- This is the first thing run when proxying with a client. Most clients
- - will send a VERSION message, although version 0 clients will not and
- - will send some other message.
+{- This is the first thing run when proxying with a client. 
+ - The client has already authenticated. Most clients will send a
+ - VERSION message, although version 0 clients will not and will send
+ - some other message.
  -
  - But before the client will send VERSION, it needs to see AUTH_SUCCESS.
  - So send that, although the connection with the remote is not actually
@@ -36,9 +37,9 @@ getClientProtocolVersion
 	:: Remote 
 	-> ClientSide
 	-> (Maybe (ProtocolVersion, Maybe Message) -> Annex r)
-	-> ClientErrorHandled Annex r
-getClientProtocolVersion remote (ClientSide clientrunst clientconn) cont clienterrhandler =
-	clienterrhandler cont $
+	-> ProtoErrorHandled Annex r
+getClientProtocolVersion remote (ClientSide clientrunst clientconn) cont protoerrhandler =
+	protoerrhandler cont $
 		liftIO $ runNetProto clientrunst clientconn $
 			getClientProtocolVersion' remote
 
@@ -73,16 +74,16 @@ proxy
 	-> Maybe Message
 	-- ^ non-VERSION message that was received from the client when
 	-- negotiating protocol version, and has not been responded to yet
-	-> ClientErrorHandled Annex r
-proxy endsuccess servermode clientside remoteside othermessage clienterrhandler = do
+	-> ProtoErrorHandled Annex r
+proxy proxydone servermode clientside remoteside othermessage protoerrhandler = do
 	case othermessage of
-		Just message -> clientmessage (Just message)
+		Just message -> proxyclientmessage (Just message)
 		Nothing -> do
 			-- Send client the VERSION from the remote.
 			proxyprotocolversion <- 
 				either (const defaultProtocolVersion) id
 					<$> toremote (net getProtocolVersion)
-			clienterrhandler (\() -> getnextclientmessage) $ 
+			protoerrhandler proxynextclientmessage $ 
 				toclient $ net $ sendMessage 
 					(VERSION proxyprotocolversion)
   where
@@ -92,8 +93,72 @@ proxy endsuccess servermode clientside remoteside othermessage clienterrhandler 
 	toremote = liftIO . runNetProto remoterunst remoteconn
 	toclient = liftIO . runNetProto clientrunst clientconn
 
-	getnextclientmessage = clienterrhandler clientmessage $
+	proxynextclientmessage () = protoerrhandler proxyclientmessage $
 		toclient (net receiveMessage)
 
-	clientmessage Nothing = endsuccess
-	clientmessage (Just message) = giveup "TODO" -- XXX
+	-- Send a message to the remote and then
+	-- send its response back to the client.
+	proxyresponse message = 
+		protoerrhandler handleresp $ 
+			toremote $ net $ do
+				sendMessage message
+				receiveMessage
+	  where
+	  	handleresp (Just resp) =
+			protoerrhandler proxynextclientmessage $
+				toclient $ net $ sendMessage resp
+		-- Remote hung up
+		handleresp Nothing = proxydone
+	
+	-- Send a message to the remote, that it will not respond to.
+	proxynoresponse message =
+		protoerrhandler proxynextclientmessage $
+			toremote $ net $ sendMessage message
+
+	servermodechecker c a = c servermode $ \case
+		Nothing -> a
+		Just notallowed -> 
+			protoerrhandler proxynextclientmessage $
+				toclient notallowed
+
+	proxyclientmessage Nothing = proxydone
+	proxyclientmessage (Just message) = case message of
+		CHECKPRESENT _ -> proxyresponse message
+		LOCKCONTENT _ -> proxyresponse message
+		UNLOCKCONTENT -> proxynoresponse message
+		REMOVE _ -> 
+			servermodechecker checkREMOVEServerMode $
+				proxyresponse message
+		GET offset af k -> giveup "TODO GET"
+		PUT af k ->
+			servermodechecker checkPUTServerMode $
+				giveup "TODO PUT"
+		-- These messages involve the git repository, not the
+		-- annex. So they affect the git repository of the proxy,
+		-- not the remote.
+		CONNECT service -> 
+			servermodechecker (checkCONNECTServerMode service) $
+				giveup "TODO CONNECT"
+		NOTIFYCHANGE -> giveup "TODO NOTIFYCHANGE"
+		-- Messages that the client should only send after one of
+		-- the messages above.
+		SUCCESS -> protoerr
+		FAILURE -> protoerr
+		DATA len -> protoerr
+		VALIDITY v -> protoerr
+		-- If the client errors out, give up.
+		ERROR msg -> giveup $ "client error: " ++ msg
+		-- Messages that only the server should send.
+		CONNECTDONE _ -> protoerr
+		CHANGED _ -> protoerr
+		AUTH_SUCCESS _ -> protoerr
+		AUTH_FAILURE -> protoerr
+		PUT_FROM _ -> protoerr
+		ALREADY_HAVE -> protoerr
+		-- Early messages that the client should not send now.
+		AUTH _ _ -> protoerr
+		VERSION _ -> protoerr
+
+	protoerr = do
+		_ <- toclient $ net $ sendMessage (ERROR "protocol error")
+		giveup "protocol error"
