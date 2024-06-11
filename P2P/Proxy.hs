@@ -140,52 +140,6 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 		AUTH _ _ -> protoerr
 		VERSION _ -> protoerr
 
-	handleGET message = getresponse remote message $ relayDATA
-
-	handlePUT message = getresponse remote message $ \resp -> case resp of
-		ALREADY_HAVE -> protoerrhandler proxynextclientmessage $
-			client $ net $ sendMessage resp
-		PUT_FROM _ -> 
-			getresponse client resp $ relayDATA'
-		_ -> protoerr
-
-	relayDATA message@(DATA len) = 
-		protoerrhandler receive $
-			client $ net $ sendMessage message
-	  where
-		receive () = protoerrhandler send $
-			remote $ net $ receiveBytes len nullMeterUpdate
-		send b = protoerrhandler finishget $
-			client $ net $ sendBytes len b nullMeterUpdate
-		finishget () = protocolversion >>= \case
-			ProtocolVersion 0 -> sendsuccessfailure ()
-			-- Protocol version 1 has a VALID or
-			-- INVALID message after the data.
-			_ -> relayonemessage remote client sendsuccessfailure
-		sendsuccessfailure () = 
-			relayonemessage client remote proxynextclientmessage
-	relayDATA _ = protoerr
-	
-	-- Identical to relayDATA, except client and remote are swapped.
-	-- Unfortunately, the type checker chokes on a version of this
-	-- with those parameterized.
-	relayDATA' message@(DATA len) = 
-		protoerrhandler receive $
-			remote $ net $ sendMessage message
-	  where
-		receive () = protoerrhandler send $
-			client $ net $ receiveBytes len nullMeterUpdate
-		send b = protoerrhandler finishget $
-			remote $ net $ sendBytes len b nullMeterUpdate
-		finishget () = protocolversion >>= \case
-			ProtocolVersion 0 -> sendsuccessfailure ()
-			-- Protocol version 1 has a VALID or
-			-- INVALID message after the data.
-			_ -> relayonemessage client remote sendsuccessfailure
-		sendsuccessfailure () = 
-			relayonemessage remote client proxynextclientmessage
-	relayDATA' _ = protoerr
-
 	-- Send a message to the remote, send its response back to the
 	-- client, and proceed to proxying the next message from the
 	-- client.
@@ -222,3 +176,41 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 		_ <- client $ net $ sendMessage (ERROR "protocol error")
 		giveup "protocol error"
 	
+	handleGET message = getresponse remote message $ withDATA relayGET
+
+	handlePUT message = getresponse remote message $ \resp -> case resp of
+		ALREADY_HAVE -> protoerrhandler proxynextclientmessage $
+			client $ net $ sendMessage resp
+		PUT_FROM _ -> 
+			getresponse client resp $ withDATA relayPUT
+		_ -> protoerr
+
+	withDATA a message@(DATA len) = a len message
+	withDATA _ _ = protoerr
+
+	relayGET len = relayDATAStart client $
+		relayDATACore len remote client $
+			relayDATAFinish remote client $
+				relayonemessage client remote proxynextclientmessage
+	
+	relayPUT len = relayDATAStart remote $
+		relayDATACore len client remote $
+			relayDATAFinish client remote $
+				relayonemessage remote client proxynextclientmessage
+
+	relayDATAStart x receive message =
+		protoerrhandler (\() -> receive) $
+			x $ net $ sendMessage message
+
+	relayDATACore len x y finishget = protoerrhandler send $
+			x $ net $ receiveBytes len nullMeterUpdate
+	  where
+		send b = protoerrhandler finishget $
+			y $ net $ sendBytes len b nullMeterUpdate
+	
+	relayDATAFinish x y sendsuccessfailure () = protocolversion >>= \case
+		ProtocolVersion 0 -> sendsuccessfailure
+		-- Protocol version 1 has a VALID or
+		-- INVALID message after the data.
+		_ -> relayonemessage x y (\() -> sendsuccessfailure)
+
