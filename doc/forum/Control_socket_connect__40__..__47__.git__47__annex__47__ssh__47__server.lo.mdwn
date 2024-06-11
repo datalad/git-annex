@@ -1,0 +1,70 @@
+I have this error.
+
+    $ git annex --debug enableremote server
+    [2024-06-11 08:16:48.356839038] (Utility.Process) process [17496] read: git ["--git-dir=../.git","--work-tree=..","--literal-pa
+    thspecs","-c","annex.debug=true","show-ref","git-annex"]
+    [2024-06-11 08:16:48.377496927] (Utility.Process) process [17496] done ExitSuccess
+    [2024-06-11 08:16:48.377922696] (Utility.Process) process [17501] read: git ["--git-dir=../.git","--work-tree=..","--literal-pa
+    thspecs","-c","annex.debug=true","show-ref","--hash","refs/heads/git-annex"]
+    [2024-06-11 08:16:48.397529156] (Utility.Process) process [17501] done ExitSuccess
+    [2024-06-11 08:16:48.399718045] (Utility.Process) process [17507] chat: git ["--git-dir=../.git","--work-tree=..","--literal-pa
+    thspecs","-c","annex.debug=true","cat-file","--batch"]
+    enableremote (normal) server [2024-06-11 08:16:48.415631528] (Utility.Process) process [17509] call: git ["--git-dir=../.git","-
+    -work-tree=..","--literal-pathspecs","-c","annex.debug=true","config","remote.server.annex-ignore","false"]
+    [2024-06-11 08:16:48.425103598] (Utility.Process) process [17509] done ExitSuccess
+    [2024-06-11 08:16:48.425415775] (Utility.Process) process [17510] read: git ["config","--null","--list"] in ".."
+    [2024-06-11 08:16:48.433272117] (Git.Config) git config read: [("",[""]),("annex.backend",["SHA256"]),("annex.tune.objecthashlo
+    wer",["true"]),("annex.uuid",["b1510484-6489-4351-9876-993041f22cb3"]),("annex.version",["10"]),("core.bare",["false"]),("core.
+    filemode",["true"]),("core.logallrefupdates",["true"]),("core.repositoryformatversion",["0"]),("filter.annex.clean",["git-annex
+     smudge --clean -- %f"]),("filter.annex.process",["git-annex filter-process"]),("filter.annex.smudge",["git-annex smudge -- %f"
+    ]),("init.defaultbranch",["master"]),("remote.server.annex-ignore",["false"]),("remote.server.fetch",["+refs/heads/*:refs/remotes
+    /server/*"]),("remote.server.url",["ssh://server.local:/mnt/user/data"]),("safe.directory",["/mnt/user/data"]),("user.email",["roo
+    t","root@delta.local"]),("user.name",["root","root"])]
+    [2024-06-11 08:16:48.433479676] (Utility.Process) process [17510] done ExitSuccess
+    [2024-06-11 08:16:48.435182799] (Utility.Process) process [17511] read: ssh ["server.local","-S","../.git/annex/ssh/server.local"
+    ,"-o","ControlMaster=auto","-o","ControlPersist=yes","-n","-T","git-annex-shell 'configlist' '/mnt/user/data' '--debug'"]
+    [2024-06-11 08:16:48.619602925] (Utility.Process) process [17511] done ExitFailure 255
+    
+      Unable to parse git config from server
+    [2024-06-11 08:16:48.619932626] (Utility.Process) process [17516] call: git ["--git-dir=../.git","--work-tree=..","--literal-pa
+    thspecs","-c","annex.debug=true","fetch","--quiet","server"]
+    [2024-06-11 08:16:49.018922661] (Utility.Process) process [17516] done ExitSuccess
+    
+      Remote server does not have git-annex installed; setting annex-ignore
+    
+      This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in
+    PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git annex enableremote server
+    [2024-06-11 08:16:49.019278841] (Utility.Process) process [17520] call: git ["--git-dir=../.git","--work-tree=..","--literal-pa
+    thspecs","-c","annex.debug=true","config","remote.server.annex-ignore","true"]
+    [2024-06-11 08:16:49.028550677] (Utility.Process) process [17520] done ExitSuccess
+    [2024-06-11 08:16:49.028909964] (Utility.Process) process [17521] read: git ["config","--null","--list"] in ".."
+    [2024-06-11 08:16:49.036666793] (Git.Config) git config read: [("",[""]),("annex.backend",["SHA256"]),("annex.tune.objecthashlo
+    wer",["true"]),("annex.uuid",["b1510484-6489-4351-9876-993041f22cb3"]),("annex.version",["10"]),("core.bare",["false"]),("core.
+    filemode",["true"]),("core.logallrefupdates",["true"]),("core.repositoryformatversion",["0"]),("filter.annex.clean",["git-annex
+     smudge --clean -- %f"]),("filter.annex.process",["git-annex filter-process"]),("filter.annex.smudge",["git-annex smudge -- %f"
+    ]),("init.defaultbranch",["master"]),("remote.server.annex-ignore",["true"]),("remote.server.fetch",["+refs/heads/*:refs/remotes/
+    server/*"]),("remote.server.url",["ssh://server.local:/mnt/user/data"]),("safe.directory",["/mnt/user/data"]),("user.email",["root
+    ","root@delta.local"]),("user.name",["root","root"])]
+    [2024-06-11 08:16:49.036812734] (Utility.Process) process [17521] done ExitSuccess
+    failed
+    [2024-06-11 08:16:49.03837688] (Utility.Process) process [17522] read: ssh ["-O","stop","-S","server.local","-o","ControlMaster=
+    auto","-o","ControlPersist=yes","localhost"] in "../.git/annex/ssh/"
+    [2024-06-11 08:16:49.042787993] (Utility.Process) process [17522] done ExitFailure 255
+    [2024-06-11 08:16:49.043822645] (Utility.Process) process [17507] done ExitSuccess
+    enableremote: 1 failed
+
+I can reproduce it by calling \`ssh\` myself like this.
+
+    ssh server.local -S ../.git/annex/ssh/server.local -o ControlMaster=auto -o ControlPersist=yes -n -T git-annex-shell 'configlist' '/mnt/user/data' '--debug'
+    Control socket connect(../.git/annex/ssh/server.local): Connection refused
+    Failed to connect to new control master
+
+If I change the location of the socket file to use my home folder then it works.
+
+    ssh server.local -S $HOME/server.local -o ControlMaster=auto -o ControlPersist=yes -n -T git-annex-shell 'configlist' '/mnt/user/data' '--debug'
+    annex.uuid=23568973-b0e8-493f-9404-cce91346a818
+    core.gcrypt-id=
+
+Why isn&rsquo;t enableremote working?
+
+Thanks!

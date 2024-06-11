@@ -1,0 +1,75 @@
+### Please describe the problem.
+Immediately after startin the git-annex web application the git-annex process uses all available memory. After some time the linux oom-killer stops git-annex 
+
+### What steps will reproduce the problem?
+1. create a git-annex repo
+2. start git-annex webapp
+
+### What version of git-annex are you using? On what operating system?
+ii  git-annex                                      10.20240430-1                            amd64 
+debian trixie/sid
+
+
+### Please provide any additional information below.
+
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+syslog 
+
+
+root@hwarang:/var/log# grep oom *
+grep: cups: Ist ein Verzeichnis
+grep: gdm3: Ist ein Verzeichnis
+kern.log:2024-06-10T15:44:54.288491+02:00 hwarang kernel: systemd invoked oom-killer: gfp_mask=0x140cca(GFP_HIGHUSER_MOVABLE|__GFP_COMP), order=0, oom_score_adj=0
+kern.log:2024-06-10T15:44:54.296307+02:00 hwarang kernel:  oom_kill_process+0xfa/0x200
+kern.log:2024-06-10T15:44:54.305858+02:00 hwarang kernel: [  pid  ]   uid  tgid total_vm      rss pgtables_bytes swapents oom_score_adj name
+kern.log:2024-06-10T15:44:54.317261+02:00 hwarang kernel: oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,task_memcg=/user.slice/user-1000.slice/user@1000.service/app.slice/app-gnome-git\x2dannex-7364.scope,task=git-annex,pid=7388,uid=1000
+kern.log:2024-06-10T15:44:54.317262+02:00 hwarang kernel: Out of memory: Killed process 7388 (git-annex) total-vm:83979364kB, anon-rss:30780216kB, file-rss:1792kB, shmem-rss:0kB, UID:1000 pgtables:122696kB oom_score_adj:100
+kern.log:2024-06-10T15:44:56.485580+02:00 hwarang kernel: oom_reaper: reaped process 7388 (git-annex), now anon-rss:240kB, file-rss:336kB, shmem-rss:0kB
+kern.log:2024-06-10T15:53:38.057774+02:00 hwarang kernel: teamviewerd invoked oom-killer: gfp_mask=0x140cca(GFP_HIGHUSER_MOVABLE|__GFP_COMP), order=0, oom_score_adj=0
+kern.log:2024-06-10T15:53:38.059980+02:00 hwarang kernel:  oom_kill_process+0xfa/0x200
+kern.log:2024-06-10T15:53:38.062710+02:00 hwarang kernel: [  pid  ]   uid  tgid total_vm      rss pgtables_bytes swapents oom_score_adj name
+kern.log:2024-06-10T15:53:38.066977+02:00 hwarang kernel: oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,task_memcg=/user.slice/user-1000.slice/user@1000.service/app.slice/app-gnome-git\x2dannex-7833.scope,task=git-annex,pid=7856,uid=1000
+kern.log:2024-06-10T15:53:38.066978+02:00 hwarang kernel: Out of memory: Killed process 7856 (git-annex) total-vm:83979364kB, anon-rss:31243884kB, file-rss:1664kB, shmem-rss:0kB, UID:1000 pgtables:122900kB oom_score_adj:100
+kern.log:2024-06-10T15:53:40.337624+02:00 hwarang kernel: oom_reaper: reaped process 7856 (git-annex), now anon-rss:540kB, file-rss:128kB, shmem-rss:0kB
+grep: postgresql: Ist ein Verzeichnis
+grep: private: Ist ein Verzeichnis
+syslog:2024-06-10T15:44:54.288491+02:00 hwarang kernel: systemd invoked oom-killer: gfp_mask=0x140cca(GFP_HIGHUSER_MOVABLE|__GFP_COMP), order=0, oom_score_adj=0
+syslog:2024-06-10T15:44:54.296307+02:00 hwarang kernel:  oom_kill_process+0xfa/0x200
+syslog:2024-06-10T15:44:54.305858+02:00 hwarang kernel: [  pid  ]   uid  tgid total_vm      rss pgtables_bytes swapents oom_score_adj name
+syslog:2024-06-10T15:44:54.317261+02:00 hwarang kernel: oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,task_memcg=/user.slice/user-1000.slice/user@1000.service/app.slice/app-gnome-git\x2dannex-7364.scope,task=git-annex,pid=7388,uid=1000
+syslog:2024-06-10T15:44:54.317262+02:00 hwarang kernel: Out of memory: Killed process 7388 (git-annex) total-vm:83979364kB, anon-rss:30780216kB, file-rss:1792kB, shmem-rss:0kB, UID:1000 pgtables:122696kB oom_score_adj:100
+syslog:2024-06-10T15:44:56.485580+02:00 hwarang kernel: oom_reaper: reaped process 7388 (git-annex), now anon-rss:240kB, file-rss:336kB, shmem-rss:0kB
+syslog:2024-06-10T15:44:56.489365+02:00 hwarang systemd[3185]: app-gnome-git\x2dannex-7364.scope: Failed with result 'oom-kill'.
+syslog:2024-06-10T15:53:38.057774+02:00 hwarang kernel: teamviewerd invoked oom-killer: gfp_mask=0x140cca(GFP_HIGHUSER_MOVABLE|__GFP_COMP), order=0, oom_score_adj=0
+syslog:2024-06-10T15:53:38.059980+02:00 hwarang kernel:  oom_kill_process+0xfa/0x200
+syslog:2024-06-10T15:53:38.062710+02:00 hwarang kernel: [  pid  ]   uid  tgid total_vm      rss pgtables_bytes swapents oom_score_adj name
+syslog:2024-06-10T15:53:38.066977+02:00 hwarang kernel: oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=/,mems_allowed=0,global_oom,task_memcg=/user.slice/user-1000.slice/user@1000.service/app.slice/app-gnome-git\x2dannex-7833.scope,task=git-annex,pid=7856,uid=1000
+syslog:2024-06-10T15:53:38.066978+02:00 hwarang kernel: Out of memory: Killed process 7856 (git-annex) total-vm:83979364kB, anon-rss:31243884kB, file-rss:1664kB, shmem-rss:0kB, UID:1000 pgtables:122900kB oom_score_adj:100
+syslog:2024-06-10T15:53:40.337624+02:00 hwarang kernel: oom_reaper: reaped process 7856 (git-annex), now anon-rss:540kB, file-rss:128kB, shmem-rss:0kB
+syslog:2024-06-10T15:53:40.365942+02:00 hwarang systemd[3185]: app-gnome-git\x2dannex-7833.scope: Failed with result 'oom-kill'.
+grep: tomcat9: Ist ein Verzeichnis
+
+Extranct syslog End
+
+
+daemon.log
+(scanning...) (started...)
+
+daemon.status
+
+lastRunning:1718027123.570568257s
+scanComplete:False
+sanityCheckRunning:False
+lastSanityCheck:
+
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
