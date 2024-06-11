@@ -37,16 +37,17 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 2. Remote instantiation for proxies. (done)
 
 2. Bug: In a repo cloned with ssh from a proxy repo,
-   running `git-annex init` sets annex-uuid for the instantiated remotes.
-   This prevents them being used, because instanatiation is not done
-   when there's any config set for a remote.
+   running `git-annex init` sets annex-uuid for the instantiated ssh
+   remotes, which it shouldn't. Also they're set to the wrong uuid, the
+   uuid of the proxy rather than of the git repo behind the proxy.
 
 3. Implement proxying in git-annex-shell.
    (Partly done, still need it for GET, PUT, CONNECT, and NOTIFYCHANGES
    messages.)
 
 4. Either implement proxying for local path remotes, or prevent
-   listProxied from operating on them.
+   listProxied from operating on them. Currently it seems to work,
+   but doesn't work right.
 
 4. Either implement proxying for tor-annex remotes, or prevent
    listProxied from operating on them.
