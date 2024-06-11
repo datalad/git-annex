@@ -64,6 +64,9 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 8. Optimise proxy speed. See design for idea.
 
+8. Use `sendfile()` to avoid data copying overhead when
+   `receiveBytes` is being fed right into `sendBytes`.
+
 9. Encryption and chunking. See design for issues.
 
 10. Cycle prevention. See design.
