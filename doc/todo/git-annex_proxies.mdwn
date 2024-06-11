@@ -36,9 +36,9 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 2. Remote instantiation for proxies. (done)
 
-3. Implement proxying in git-annex-shell.
-   (Partly done, still need it for PUT, CONNECT, and NOTIFYCHANGES
-   messages.)
+3. Implement git-annex-shell proxying for CONNECT and NOTIFYCHANGES.
+   (For completeness, they will only be used when using tor-annex
+   to access a proxy.)
 
 4. Either implement proxying for local path remotes, or prevent
    listProxied from operating on them. Currently it seems to work,

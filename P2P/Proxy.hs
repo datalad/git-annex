@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, FlexibleContexts #-}
+{-# LANGUAGE RankNTypes, FlexibleContexts, ScopedTypeVariables #-}
 
 module P2P.Proxy where
 
@@ -96,36 +96,6 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 	proxynextclientmessage () = protoerrhandler proxyclientmessage $
 		client (net receiveMessage)
 
-	-- Send a message to the remote and then
-	-- send its response back to the client.
-	proxyresponse message = 
-		protoerrhandler (withresp handleresp) $ 
-			remote $ net $ do
-				sendMessage message
-				receiveMessage
-	  where
-	  	handleresp resp = 
-			protoerrhandler proxynextclientmessage $
-				client $ net $ sendMessage resp
-
-	withresp a (Just resp) = a resp
-	-- Whichever of the remote or client the message was read from 
-	-- hung up.
-	withresp _ Nothing = proxydone
-	
-	-- Send a message to the remote, that it will not respond to.
-	proxynoresponse message =
-		protoerrhandler proxynextclientmessage $
-			remote $ net $ sendMessage message
-
-	-- Read a message from one party, send it to the other,
-	-- and then call the continuation.
-	relayonemessage from to cont =
-		flip protoerrhandler (from $ net $ receiveMessage) $
-			withresp $ \resp ->
-				protoerrhandler cont $
-					to $ net $ sendMessage resp
-
 	servermodechecker c a = c servermode $ \case
 		Nothing -> a
 		Just notallowed -> 
@@ -140,12 +110,10 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 		REMOVE _ -> 
 			servermodechecker checkREMOVEServerMode $
 				proxyresponse message
-		GET _ _ _ -> 
-			protoerrhandler (handleGET message) $
-				remote $ net $ sendMessage message
+		GET _ _ _ -> handleGET message
 		PUT _ _ ->
 			servermodechecker checkPUTServerMode $
-				giveup "TODO PUT"
+				handlePUT message
 		-- These messages involve the git repository, not the
 		-- annex. So they affect the git repository of the proxy,
 		-- not the remote.
@@ -172,29 +140,85 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 		AUTH _ _ -> protoerr
 		VERSION _ -> protoerr
 
-	handleGET message () =
-		protoerrhandler (withresp handleresp) $ 
-			remote $ net $ do
-				sendMessage message
-				receiveMessage
-	  where
-	  	handleresp resp@(DATA len) =
-			protoerrhandler (receive len) $
-				client $ net $ sendMessage resp
-		handleresp _ = protoerr
+	handleGET message = getresponse remote message $ relayDATA
 
-		receive len () = protoerrhandler (send len) $
+	handlePUT message = getresponse remote message $ \resp -> case resp of
+		ALREADY_HAVE -> protoerrhandler proxynextclientmessage $
+			client $ net $ sendMessage resp
+		PUT_FROM _ -> 
+			getresponse client resp $ relayDATA'
+		_ -> protoerr
+
+	relayDATA message@(DATA len) = 
+		protoerrhandler receive $
+			client $ net $ sendMessage message
+	  where
+		receive () = protoerrhandler send $
 			remote $ net $ receiveBytes len nullMeterUpdate
-		send len b = protoerrhandler finishget $
+		send b = protoerrhandler finishget $
 			client $ net $ sendBytes len b nullMeterUpdate
 		finishget () = protocolversion >>= \case
-			ProtocolVersion 0 -> sendclientsuccessfailure ()
-			-- Protocol version 1 has the remote send a a VALID or
+			ProtocolVersion 0 -> sendsuccessfailure ()
+			-- Protocol version 1 has a VALID or
 			-- INVALID message after the data.
-			_ -> relayonemessage remote client sendclientsuccessfailure
-		sendclientsuccessfailure () = 
+			_ -> relayonemessage remote client sendsuccessfailure
+		sendsuccessfailure () = 
 			relayonemessage client remote proxynextclientmessage
+	relayDATA _ = protoerr
+	
+	-- Identical to relayDATA, except client and remote are swapped.
+	-- Unfortunately, the type checker chokes on a version of this
+	-- with those parameterized.
+	relayDATA' message@(DATA len) = 
+		protoerrhandler receive $
+			remote $ net $ sendMessage message
+	  where
+		receive () = protoerrhandler send $
+			client $ net $ receiveBytes len nullMeterUpdate
+		send b = protoerrhandler finishget $
+			remote $ net $ sendBytes len b nullMeterUpdate
+		finishget () = protocolversion >>= \case
+			ProtocolVersion 0 -> sendsuccessfailure ()
+			-- Protocol version 1 has a VALID or
+			-- INVALID message after the data.
+			_ -> relayonemessage client remote sendsuccessfailure
+		sendsuccessfailure () = 
+			relayonemessage remote client proxynextclientmessage
+	relayDATA' _ = protoerr
 
+	-- Send a message to the remote, send its response back to the
+	-- client, and proceed to proxying the next message from the
+	-- client.
+	proxyresponse message = getresponse remote message $ \resp ->
+		protoerrhandler proxynextclientmessage $
+			client $ net $ sendMessage resp
+	
+	-- Send a message to the remote, that it will not respond to.
+	proxynoresponse message =
+		protoerrhandler proxynextclientmessage $
+			remote $ net $ sendMessage message
+	
+	-- Send a message to the endpoint and get back its response.
+	getresponse endpoint message handleresp =
+		protoerrhandler (withresp handleresp) $ 
+			endpoint $ net $ do
+				sendMessage message
+				receiveMessage
+
+	withresp a (Just resp) = a resp
+	-- Whichever of the remote or client the message was read from 
+	-- hung up.
+	withresp _ Nothing = proxydone
+
+	-- Read a message from one party, send it to the other,
+	-- and then call the continuation.
+	relayonemessage from to cont =
+		flip protoerrhandler (from $ net $ receiveMessage) $
+			withresp $ \resp ->
+				protoerrhandler cont $
+					to $ net $ sendMessage resp
+	
 	protoerr = do
 		_ <- client $ net $ sendMessage (ERROR "protocol error")
 		giveup "protocol error"
+	
