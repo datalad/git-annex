@@ -440,8 +440,6 @@ data ServerMode
 serveAuthed :: ServerMode -> UUID -> Proto ()
 serveAuthed servermode myuuid = void $ serverLoop handler
   where
-	readonlyerror = net $ sendMessage (ERROR "this repository is read-only; write access denied")
-	appendonlyerror = net $ sendMessage (ERROR "this repository is append-only; removal denied")
 	handler (VERSION theirversion) = do
 		let v = min theirversion maxProtocolVersion
 		net $ setProtocolVersion v
@@ -459,41 +457,37 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 	handler (CHECKPRESENT key) = do
 		sendSuccess =<< local (checkContentPresent key)
 		return ServerContinue
-	handler (REMOVE key) = case servermode of
-		ServeReadWrite -> do
-			sendSuccess =<< local (removeContent key)
-			return ServerContinue
-		ServeAppendOnly -> do
-			appendonlyerror
-			return ServerContinue
-		ServeReadOnly -> do
-			readonlyerror
-			return ServerContinue
-	handler (PUT (ProtoAssociatedFile af) key) = case servermode of
-		ServeReadWrite -> handleput af key
-		ServeAppendOnly -> handleput af key
-		ServeReadOnly -> do
-			readonlyerror
-			return ServerContinue
+	handler (REMOVE key) =
+		checkREMOVEServerMode servermode $ \case
+			Nothing -> do
+				sendSuccess =<< local (removeContent key)
+				return ServerContinue			
+			Just notallowed -> do
+				notallowed
+				return ServerContinue
+	handler (PUT (ProtoAssociatedFile af) key) =
+		checkPUTServerMode servermode $ \case
+			Nothing -> handleput af key
+			Just notallowed -> do
+				notallowed
+				return ServerContinue
 	handler (GET offset (ProtoAssociatedFile af) key) = do
 		void $ sendContent key af offset nullMeterUpdate
 		-- setPresent not called because the peer may have
 		-- requested the data but not permanently stored it.
 		return ServerContinue
 	handler (CONNECT service) = do
-		let goahead = net $ relayService service
-		case (servermode, service) of
-			(ServeReadWrite, _) -> goahead
-			(ServeAppendOnly, UploadPack) -> goahead
-			-- git protocol could be used to overwrite
-			-- refs or something, so don't allow
-			(ServeAppendOnly, ReceivePack) -> readonlyerror
-			(ServeReadOnly, UploadPack) -> goahead
-			(ServeReadOnly, ReceivePack) -> readonlyerror
 		-- After connecting to git, there may be unconsumed data
 		-- from the git processes hanging around (even if they
 		-- exited successfully), so stop serving this connection.
-		return $ ServerGot ()
+		let endit = return $ ServerGot ()
+		checkCONNECTServerMode service servermode $ \case
+			Nothing -> do
+				net $ relayService service
+				endit
+			Just notallowed -> do
+				notallowed
+				endit
 	handler NOTIFYCHANGE = do
 		refs <- local waitRefChange
 		net $ sendMessage (CHANGED refs)
@@ -511,6 +505,39 @@ serveAuthed servermode myuuid = void $ serverLoop handler
 				when (observeBool v) $
 					local $ setPresent key myuuid
 		return ServerContinue
+
+sendReadOnlyError :: Proto ()
+sendReadOnlyError = net $ sendMessage $
+	ERROR "this repository is read-only; write access denied"
+
+sendAppendOnlyError :: Proto ()
+sendAppendOnlyError = net $ sendMessage $
+	ERROR "this repository is append-only; removal denied"
+			
+checkPUTServerMode :: Monad m => ServerMode -> (Maybe (Proto ()) -> m a) -> m a
+checkPUTServerMode servermode a =
+	case servermode of
+		ServeReadWrite -> a Nothing
+		ServeAppendOnly -> a Nothing
+		ServeReadOnly -> a (Just sendReadOnlyError)
+
+checkREMOVEServerMode :: Monad m => ServerMode -> (Maybe (Proto ()) -> m a) -> m a
+checkREMOVEServerMode servermode a =
+	case servermode of
+		ServeReadWrite -> a Nothing
+		ServeAppendOnly -> a (Just sendAppendOnlyError)
+		ServeReadOnly -> a (Just sendReadOnlyError)
+
+checkCONNECTServerMode :: Monad m => Service -> ServerMode -> (Maybe (Proto ()) -> m a) -> m a
+checkCONNECTServerMode service servermode a =
+	case (servermode, service) of
+		(ServeReadWrite, _) -> a Nothing
+		(ServeAppendOnly, UploadPack) -> a Nothing
+		-- git protocol could be used to overwrite
+		-- refs or something, so don't allow
+		(ServeAppendOnly, ReceivePack) -> a (Just sendReadOnlyError)
+		(ServeReadOnly, UploadPack) -> a Nothing
+		(ServeReadOnly, ReceivePack) -> a (Just sendReadOnlyError)
 
 sendContent :: Key -> AssociatedFile -> Offset -> MeterUpdate -> Proto Bool
 sendContent key af offset@(Offset n) p = go =<< local (contentSize key)
