@@ -36,13 +36,18 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 2. Remote instantiation for proxies. (done)
 
+4. Prevent listProxied from listing anything when the proxy remote's
+   url is a local directory. Proxying does not work in that situation,
+   because the proxied remotes have the same url, and so git-annex-shell
+   is not run when accessing them, instead the proxy remote is accessed
+   directly.
+
 3. Implement git-annex-shell proxying for CONNECT and NOTIFYCHANGES.
    (For completeness, they will only be used when using tor-annex
    to access a proxy.)
 
-4. Either implement proxying for local path remotes, or prevent
-   listProxied from operating on them. Currently it seems to work,
-   but doesn't work right.
+3. Proxy should update location tracking information for proxied remotes,
+   so it is available to other users who sync with it.
 
 4. Either implement proxying for tor-annex remotes, or prevent
    listProxied from operating on them.

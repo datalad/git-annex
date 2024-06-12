@@ -15,7 +15,7 @@ import qualified P2P.Protocol as P2P
 import qualified Annex
 import Annex.UUID
 import qualified CmdLine.GitAnnexShell.Checks as Checks
-import Remote.Helper.Ssh (openP2PSshConnection', closeP2PSshConnection)
+import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
 
 import System.IO.Error
 
@@ -72,12 +72,12 @@ performProxy clientuuid servermode remote = do
 				othermsg protoerrhandler
 	withclientversion _ Nothing = done
 	
-	-- FIXME: Support special remotes and non-ssh git remotes.
+	-- FIXME: Support special remotes.
 	connectremote clientmaxversion cont = 
-		openP2PSshConnection' remote clientmaxversion >>= \case
+		openP2PShellConnection' remote clientmaxversion >>= \case
 			Just conn@(P2P.IO.OpenConnection (remoterunst, remoteconn, _)) ->
 				cont (RemoteSide remoterunst remoteconn)
-					`finally` liftIO (closeP2PSshConnection conn)
+					`finally` liftIO (closeP2PShellConnection conn)
 			_  -> giveup "Unable to connect to remote."
 
 	protoerrhandler cont a = a >>= \case

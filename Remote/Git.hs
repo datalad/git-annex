@@ -472,7 +472,7 @@ lockKey' repo r st@(State connpool duc _ _ _) key callback
 		)
 	| Git.repoIsSsh repo = do
 		showLocking r
-		let withconn = Ssh.withP2PSshConnection r connpool failedlock
+		let withconn = Ssh.withP2PShellConnection r connpool failedlock
 		P2PHelper.lock withconn Ssh.runProtoConn (uuid r) key callback
 	| otherwise = failedlock
   where
@@ -733,7 +733,7 @@ mkFileCopier remotewanthardlink (State _ _ copycowtried _ _) = do
  - This returns False when the repository UUID is not as expected. -}
 type DeferredUUIDCheck = Annex Bool
 
-data State = State Ssh.P2PSshConnectionPool DeferredUUIDCheck CopyCoWTried (Annex (Git.Repo, GitConfig)) LocalRemoteAnnex
+data State = State Ssh.P2PShellConnectionPool DeferredUUIDCheck CopyCoWTried (Annex (Git.Repo, GitConfig)) LocalRemoteAnnex
 
 getRepoFromState :: State -> Annex Git.Repo
 getRepoFromState (State _ _ _ a _) = fst <$> a
@@ -746,7 +746,7 @@ getGitConfigFromState (State _ _ _ a _) = snd <$> a
 
 mkState :: Git.Repo -> UUID -> RemoteGitConfig -> Annex State
 mkState r u gc = do
-	pool <- Ssh.mkP2PSshConnectionPool
+	pool <- Ssh.mkP2PShellConnectionPool
 	copycowtried <- liftIO newCopyCoWTried
 	lra <- mkLocalRemoteAnnex r
 	(duc, getrepo) <- go

@@ -178,61 +178,62 @@ rsyncParams r direction = do
 		| otherwise = remoteAnnexRsyncUploadOptions gc
 	gc = gitconfig r
 
--- A connection over ssh to git-annex shell speaking the P2P protocol.
-type P2PSshConnection = P2P.ClosableConnection 
+-- A connection over ssh or locally to git-annex shell,
+-- speaking the P2P protocol.
+type P2PShellConnection = P2P.ClosableConnection 
 	(P2P.RunState, P2P.P2PConnection, ProcessHandle)
 
-closeP2PSshConnection :: P2PSshConnection -> IO (P2PSshConnection, Maybe ExitCode)
-closeP2PSshConnection P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
-closeP2PSshConnection (P2P.OpenConnection (_st, conn, pid)) =
+closeP2PShellConnection :: P2PShellConnection -> IO (P2PShellConnection, Maybe ExitCode)
+closeP2PShellConnection P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
+closeP2PShellConnection (P2P.OpenConnection (_st, conn, pid)) =
 	-- mask async exceptions, avoid cleanup being interrupted
 	uninterruptibleMask_ $ do
 		P2P.closeConnection conn
 		exitcode <- waitForProcess pid
 		return (P2P.ClosedConnection, Just exitcode)
 
--- Pool of connections over ssh to git-annex-shell p2pstdio.
-type P2PSshConnectionPool = TVar (Maybe P2PSshConnectionPoolState)
+-- Pool of connections to git-annex-shell p2pstdio.
+type P2PShellConnectionPool = TVar (Maybe P2PShellConnectionPoolState)
 
-data P2PSshConnectionPoolState
-	= P2PSshConnections [P2PSshConnection]
+data P2PShellConnectionPoolState
+	= P2PShellConnections [P2PShellConnection]
 	-- Remotes using an old version of git-annex-shell don't support P2P
-	| P2PSshUnsupported
+	| P2PShellUnsupported
 
-mkP2PSshConnectionPool :: Annex P2PSshConnectionPool
-mkP2PSshConnectionPool = liftIO $ newTVarIO Nothing
+mkP2PShellConnectionPool :: Annex P2PShellConnectionPool
+mkP2PShellConnectionPool = liftIO $ newTVarIO Nothing
 
 -- Takes a connection from the pool, if any are available, otherwise
 -- tries to open a new one.
-getP2PSshConnection :: Remote -> P2PSshConnectionPool -> Annex (Maybe P2PSshConnection)
-getP2PSshConnection r connpool = getexistingconn >>= \case
+getP2PShellConnection :: Remote -> P2PShellConnectionPool -> Annex (Maybe P2PShellConnection)
+getP2PShellConnection r connpool = getexistingconn >>= \case
 	Nothing -> return Nothing
-	Just Nothing -> openP2PSshConnection r connpool
+	Just Nothing -> openP2PShellConnection r connpool
 	Just (Just c) -> return (Just c)
   where
 	getexistingconn = liftIO $ atomically $ readTVar connpool >>= \case
-		Just P2PSshUnsupported -> return Nothing
-		Just (P2PSshConnections (c:cs)) -> do
-			writeTVar connpool (Just (P2PSshConnections cs))
+		Just P2PShellUnsupported -> return Nothing
+		Just (P2PShellConnections (c:cs)) -> do
+			writeTVar connpool (Just (P2PShellConnections cs))
 			return (Just (Just c))
-		Just (P2PSshConnections []) -> return (Just Nothing)
+		Just (P2PShellConnections []) -> return (Just Nothing)
 		Nothing -> return (Just Nothing)
 
 -- Add a connection to the pool, unless it's closed.
-storeP2PSshConnection :: P2PSshConnectionPool -> P2PSshConnection -> IO ()
-storeP2PSshConnection _ P2P.ClosedConnection = return ()
-storeP2PSshConnection connpool conn = atomically $ modifyTVar' connpool $ \case
-	Just (P2PSshConnections cs) -> Just (P2PSshConnections (conn:cs))
-	_ -> Just (P2PSshConnections [conn])
+storeP2PShellConnection :: P2PShellConnectionPool -> P2PShellConnection -> IO ()
+storeP2PShellConnection _ P2P.ClosedConnection = return ()
+storeP2PShellConnection connpool conn = atomically $ modifyTVar' connpool $ \case
+	Just (P2PShellConnections cs) -> Just (P2PShellConnections (conn:cs))
+	_ -> Just (P2PShellConnections [conn])
 
--- Try to open a P2PSshConnection.
+-- Try to open a P2PShellConnection.
 -- The new connection is not added to the pool, so it's available
 -- for the caller to use.
 -- If the remote does not support the P2P protocol, that's remembered in 
 -- the connection pool.
-openP2PSshConnection :: Remote -> P2PSshConnectionPool -> Annex (Maybe P2PSshConnection)
-openP2PSshConnection r connpool =
-	openP2PSshConnection' r P2P.maxProtocolVersion >>= \case
+openP2PShellConnection :: Remote -> P2PShellConnectionPool -> Annex (Maybe P2PShellConnection)
+openP2PShellConnection r connpool =
+	openP2PShellConnection' r P2P.maxProtocolVersion >>= \case
 		Just conn -> return (Just conn)
 		Nothing -> do
 			liftIO $ rememberunsupported
@@ -240,10 +241,10 @@ openP2PSshConnection r connpool =
   where
 	rememberunsupported = atomically $
 		modifyTVar' connpool $
-			maybe (Just P2PSshUnsupported) Just
+			maybe (Just P2PShellUnsupported) Just
 
-openP2PSshConnection' :: Remote -> P2P.ProtocolVersion -> Annex (Maybe P2PSshConnection)
-openP2PSshConnection' r maxprotoversion = do
+openP2PShellConnection' :: Remote -> P2P.ProtocolVersion -> Annex (Maybe P2PShellConnection)
+openP2PShellConnection' r maxprotoversion = do
 	u <- getUUID
 	let ps = [Param (fromUUID u)]
 	repo <- getRepo r
@@ -264,7 +265,7 @@ openP2PSshConnection' r maxprotoversion = do
 			, P2P.connIhdl = to
 			, P2P.connOhdl = from
 			, P2P.connIdent = P2P.ConnIdent $
-				Just $ "ssh connection " ++ show pidnum
+				Just $ "git-annex-shell connection " ++ show pidnum
 			}
 		runst <- P2P.mkRunState P2P.Client
 		let c = P2P.OpenConnection (runst, conn, pid)
@@ -276,7 +277,7 @@ openP2PSshConnection' r maxprotoversion = do
 			Right (Right (Just theiruuid)) | theiruuid == uuid r ->
 				return $ Just c
 			_ -> do
-				(cclosed, exitcode) <- closeP2PSshConnection c
+				(cclosed, exitcode) <- closeP2PShellConnection c
 				-- ssh exits 255 when unable to connect to
 				-- server.
 				if exitcode == Just (ExitFailure 255)
@@ -285,19 +286,19 @@ openP2PSshConnection' r maxprotoversion = do
 
 -- Runs a P2P Proto action on a remote when it supports that,
 -- otherwise the fallback action.
-runProto :: Remote -> P2PSshConnectionPool -> Annex a -> P2P.Proto a -> Annex (Maybe a)
+runProto :: Remote -> P2PShellConnectionPool -> Annex a -> P2P.Proto a -> Annex (Maybe a)
 runProto r connpool onerr proto = Just <$>
-	(getP2PSshConnection r connpool >>= maybe onerr go)
+	(getP2PShellConnection r connpool >>= maybe onerr go)
   where
 	go c = do
 		(c', v) <- runProtoConn proto c
 		case v of
 			Just res -> do
-				liftIO $ storeP2PSshConnection connpool c'
+				liftIO $ storeP2PShellConnection connpool c'
 				return res
 			Nothing -> onerr
 
-runProtoConn :: P2P.Proto a -> P2PSshConnection -> Annex (P2PSshConnection, Maybe a)
+runProtoConn :: P2P.Proto a -> P2PShellConnection -> Annex (P2PShellConnection, Maybe a)
 runProtoConn _ P2P.ClosedConnection = return (P2P.ClosedConnection, Nothing)
 runProtoConn a conn@(P2P.OpenConnection (runst, c, _)) = do
 	P2P.runFullProto runst c a >>= \case
@@ -306,24 +307,24 @@ runProtoConn a conn@(P2P.OpenConnection (runst, c, _)) = do
 		-- usable, so close it.
 		Left e -> do
 			warning $ UnquotedString $ "Lost connection (" ++ P2P.describeProtoFailure e ++ ")"
-			conn' <- fst <$> liftIO (closeP2PSshConnection conn)
+			conn' <- fst <$> liftIO (closeP2PShellConnection conn)
 			return (conn', Nothing)
 
--- Allocates a P2P ssh connection from the pool, and runs the action with it,
--- returning the connection to the pool once the action is done.
+-- Allocates a P2P shell connection from the pool, and runs the action with
+-- it, returning the connection to the pool once the action is done.
 --
 -- If the remote does not support the P2P protocol, runs the fallback
 -- action instead.
-withP2PSshConnection
+withP2PShellConnection
 	:: Remote
-	-> P2PSshConnectionPool
+	-> P2PShellConnectionPool
 	-> Annex a
-	-> (P2PSshConnection -> Annex (P2PSshConnection, a))
+	-> (P2PShellConnection -> Annex (P2PShellConnection, a))
 	-> Annex a
-withP2PSshConnection r connpool fallback a = bracketOnError get cache go
+withP2PShellConnection r connpool fallback a = bracketOnError get cache go
   where
-	get = getP2PSshConnection r connpool
-	cache (Just conn) = liftIO $ storeP2PSshConnection connpool conn
+	get = getP2PShellConnection r connpool
+	cache (Just conn) = liftIO $ storeP2PShellConnection connpool conn
 	cache Nothing = return ()
 	go (Just conn) = do
 		(conn', res) <- a conn
