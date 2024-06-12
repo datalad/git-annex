@@ -44,9 +44,9 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Consider getting instantiated remotes into git remote list.
   See design.
 
-* Implement clusters.
-
 * Implement single upload with fanout to proxied remotes.
+
+* Implement clusters.
 
 * Support proxies-of-proxies better, eg foo-bar-baz.
   Currently, it does work, but have to run `git-annex updateproxy`

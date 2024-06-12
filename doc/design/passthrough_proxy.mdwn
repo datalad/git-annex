@@ -200,7 +200,7 @@ that they exist, or perhaps what keys are stored on which nodes.
 In the cluster case, the user would like to not need to pick a specific
 node to send content to. While they could use preferred content to pick a
 node, or nodes, they would prefer to be able to say `git-annex copy --to cluster` 
-and let it pick which proxied remote(s) to send to. And similarly,
+and let it pick which nodes to send to. And similarly,
 `git-annex drop --from cluster' should drop the content from every node in
 the cluster.
 
@@ -229,6 +229,26 @@ Checkpresent to a cluster would proxy a checkpresent to nodes until it
 found one does have the content.
 
 Lockcontent to a cluster would lock the content on one (or more?) nodes.
+
+Problem: The location log for a key that is stored in one node of a cluster
+will show 2 copies: The UUID of the node and the UUID of the cluster. This
+would cause wrong behavior when numcopies is checked. And if a cluster node
+has the cluster as a remote, and another node as a remote, this might
+extend to lockcontent of both succeeding and satisfying numcopies of 2,
+allowing the node to drop content, and resulting in violating numcopies. 
+
+That could be solved by publishing a list of the UUIDs of nodes of a
+cluster. When loading a location log, we are either inside the cluster or
+outside the cluster. If outside the cluster, filter out the UUIDs of its
+nodes. If inside the cluster, filter out the cluster's UUID.
+
+Doing that would mean that a key that is stored in several nodes
+of a cluster will appear to have only 1 copy from outside the cluster.
+Now suppose that a node of the cluster has a remote, and numcopies = 2.
+The node would be able to drop a key from the remote when it and another
+node contain the key. But then from outside the cluster, it would appear as
+if numcopies was violated, with only the 1 copy in the cluster.
+(See also [[todo/repositories_that_count_as_more_than_one_copy]])
 
 ## speed
 
