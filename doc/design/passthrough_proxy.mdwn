@@ -282,6 +282,23 @@ in front of the proxy.
 
 ## cycles
 
+A repo can advertise that it proxies for a repo which has the same uuid as
+itself. Or there can be a larger cycle involving a proxy that proxies to a
+proxy, etc.
+
+Since the proxied repo uuid is communicated to git-annex-shell via 
+--uuid, a repo that advertises proxying for itself will be connected to
+with its own uuid. No proxying is done in this case. Same happens with a
+larger cycle.
+
+Instantiating remotes needs to identity cycles and break them. Otherwise
+it would construct an infinite number of proxied remotes with names
+like "foo-foo-foo-foo-..." or "foo-bar-foo-bar-..."
+
+Once `git-annex copy --to proxy` is implemented, and the proxy decides
+where to send content that is being sent directly to it, cycles will
+become an issue with that as well.
+
 What if repo A is a proxy and has repo B as a remote. Meanwhile, repo B is
 a proxy and has repo A as a remote?
 
@@ -295,7 +312,7 @@ remote that is not part of a cycle, they could deposit the upload there and
 the upload still succeed. Otherwise the upload would fail, which is
 probably the best that can be done with such a broken configuration.
 
-So, it seems like proxies will need to take transfer locks for uploads,
+So, it seems like proxies would need to take transfer locks for uploads,
 even though the content is being proxied to elsewhere.
 
 Dropping could have similar cycles with content presence locking, which

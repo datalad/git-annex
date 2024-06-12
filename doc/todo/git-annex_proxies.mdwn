@@ -44,6 +44,13 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Consider getting instantiated remotes into git remote list.
   See design.
 
+* Support proxies-of-proxies better, eg foo-bar-baz.
+  Currently, it does work, but have to run `git-annex updateproxy`
+  on foo in order for it to notice the bar-baz proxied remote exists,
+  and record it as foo-bar-baz. Make it skip recording proxies of
+  proxies like that, and instead automatically generate those from the log.
+  (With cycle prevention there of course.)
+
 * Cycle prevention. See design.
 
 * Make `git-annex copy --from $proxy` pick a node that contains each
