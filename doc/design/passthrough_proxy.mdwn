@@ -272,9 +272,9 @@ Could the proxy be in front of a special remote that uses exporttree=yes?
 
 Some possible approaches:
 
-* Proxy caches files until all the files in the configured
+* Proxy caches files somewhere until all the files in the configured
   annex-tracking-branch are available, then exports them all to the special
-  remote. Not ideal at all.
+  remote.
 * Proxy exports each file to the special remote as it is received.
   It records an incomplete tree export after each export.
   Once all files in the configured annex-tracking-branch have been sent,
@@ -288,9 +288,55 @@ The first two approaches need some way to communicate the
 configured annex-tracking-branch over the P2P protocol. Or to communicate
 the tree that it currently points to.
 
+A proxy for a git repo does not proxy access to the git repo itself, so
+`git push origin-foo master` actually pushes the ref to the proxy's own git
+repo. Perhaps this points in a direction of how the proxy could learn what
+tree to export to exporttree=yes remotes. But only vaguely since how would
+it pick which of multiple branches to export?
+
+Perhaps configure the annex-tracking-branch in the git-annex branch?
+That might be generally useful when working with exporttree=yes remotes.
+
 The first two approaches also have a complication when a key is sent to
 the proxy that is not part of the configured annex-tracking-branch. What
-does the proxy do with it?
+does the proxy do with it? There seem three possibilities:
+
+1. Reject the transfer of the key.
+2. Send the key to another proxied remote that is not exporttree=yes
+   (and get it from there later if needed to finish populating an export)
+3. Store the key locally. (Not desirable because proxy repos may be on
+   small disks as they don't usually need to hold any files.)
+  
+The third approach would mean the user needs to use `git-annex export --to`
+in order to update proxied exporttree remotes. Which gets in the way of the
+other proxy workflows and requires them to know that the proxy has an
+exporttree remote behind it.
+
+Tentative design for exporttree=yes with proxies:
+
+* Configure annex-tracking-branch for the proxy in the git-annex branch.
+  (For the proxy as a whole, or for specific exporttree=yes repos behind
+  it?)
+* Then the user's workflow is simply: `git-annex push proxy`
+* sync/push need to first push any updated annex-tracking-branch to the
+  proxy before sending content to it. (Currently sync only pushes at the
+  end.)
+* If proxied remotes are all exporttree=yes, the proxy rejects any
+  transfers of a key that is not in the annex-tracking-branch that it
+  currently knows about. If there is any other proxied remote, the proxy
+  can direct such transfers to it.
+* Upon receiving a new annex-tracking-branch or any transfer of a key
+  used in the current annex-tracking-branch, the proxy can update
+  the exporttree=yes remotes. This needs to happen incrementally,
+  eg upon receiving a key, just proxy it on to the exporttree=yes remote,
+  and update the export database. Once all keys are received, update
+  the git-annex branch to indicate a new tree has been exported.
+* Upon receiving a git push of the annex-tracking-branch, a proxy might
+  be able to get all the changed objects from non-exporttree=yes proxied
+  remotes that contain them. If so it can update the exporttree=yes
+  remote automatically and inexpensively. At the same time, a
+  `git-annex push` will be attempting to send those same objects.
+  So somehow the proxy will need to manage this situation.
 
 ## possible enhancement: indirect uploads
 
