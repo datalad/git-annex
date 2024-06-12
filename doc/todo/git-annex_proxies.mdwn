@@ -41,14 +41,8 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Proxy should update location tracking information for proxied remotes,
   so it is available to other users who sync with it. (done)
 
-* Would it be possible to get instantiated remotes into git remote list?
-  This would make eg, tab completion of remote names work. Just setting
-  annex-uuid would suffice, but currently any such config prevents setting
-  up a remote as an instantiated remote. Perhaps if only annex-uuid and no
-  other config is set, treat that as an instantiated remote, and overwrite
-  the annex-uuid config as necessaery? Or, add a config that says this is
-  an instanatiated remote, and when set, allow overwriting configs.
-  This seems better, it would let `git push proxy-foo` work, for example.
+* Consider getting instantiated remotes into git remote list.
+  See design.
 
 * Cycle prevention. See design.
 

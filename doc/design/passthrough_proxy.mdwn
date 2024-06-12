@@ -130,6 +130,24 @@ prefer, that points at a remote behind a proxy. They just need to set
 its annex-uuid and its url. Perhaps there should be a git-annex command
 that eases setting up a remote like that?
 
+## proxied remotes in git remote list
+
+Should instantiated remotes have enough configured in git so that
+`git remote list` will list them? This would make things like tab
+completion of proxied remotes work, and would generally let the user
+discover that there *are* proxied remotes.
+
+This could be done by a config like remote.name.annex-proxied = true.
+That makes other configs of the remote not prevent it being used as an
+instantiated remote. So remote.name.annex-uuid can be changed when
+the uuid behind a proxy changes. And it allows updating remote.name.url
+to keep it the same as the proxy remote's url. (Or possibly to set it to
+something else?)
+
+Configuring the instantiated remotes like that would let anyone who can
+write to the git-annex branch flood other people's repos with configs
+for any number of git remotes. Which might be obnoxious.
+
 ## user interface
 
 But the user probably doesn't want to pick which node to send content to.
