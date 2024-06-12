@@ -56,12 +56,16 @@ recordProxies proxies = do
 			. parseProxyLog
 
 buildProxyList :: S.Set Proxy -> Builder
-buildProxyList = mconcat . map fmt . S.toList
+buildProxyList = assemble . map fmt . S.toList
   where
 	fmt p = buildUUID (proxyRemoteUUID p)
 		<> colon
 		<> byteString (encodeBS (proxyRemoteName p))
 	colon = charUtf8 ':'
+	
+	assemble [] = mempty
+	assemble (x:[]) = x
+	assemble (x:y:l) = x <> " " <> assemble (y:l)
 
 parseProxyLog :: L.ByteString -> Log (S.Set Proxy)
 parseProxyLog = parseLogNew parseProxyList
