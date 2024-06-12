@@ -192,6 +192,8 @@ its exit code.
 
 	CONNECTDONE ExitCode
 
+After that, the server closes the connection.
+
 ## Change notification
 
 The client can request to be notified when a ref in 

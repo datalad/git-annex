@@ -119,8 +119,11 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 		-- not the remote.
 		CONNECT service -> 
 			servermodechecker (checkCONNECTServerMode service) $
-				giveup "TODO CONNECT"
-		NOTIFYCHANGE -> giveup "TODO NOTIFYCHANGE"
+				-- P2P protocol does not continue after
+				-- relaying from git.
+				protoerrhandler (\() -> proxydone) $
+					client $ net $ relayService service 
+		NOTIFYCHANGE -> protoerr
 		-- Messages that the client should only send after one of
 		-- the messages above.
 		SUCCESS -> protoerr
