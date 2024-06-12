@@ -44,11 +44,6 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 * Consider getting instantiated remotes into git remote list.
   See design.
 
-* Make commands like `git-annex sync` not git push/pull to proxied remotes.
-  That doesn't work because they have no url. Or, if proxied remotes are in
-  git remote list, it is unncessary work because it's the same url as the
-  proxy.
-
 * Implement single upload with fanout to proxied remotes.
 
 * Implement clusters.

@@ -268,7 +268,8 @@ seek' o = startConcurrency transferStages $ do
 	remotes <- syncRemotes (syncWith o)
 	warnSyncContentTransition o remotes
 	-- Remotes that git can push to and pull from.
-	let gitremotes = filter Remote.gitSyncableRemote remotes
+	let gitremotes = nubBy sameGitRepo $ 
+		filter Remote.gitSyncableRemote remotes
 	-- Remotes that contain annex object content.
 	contentremotes <- filter (\r -> Remote.uuid r /= NoUUID)
 		<$> filterM (not <$$> liftIO . getDynamicConfig . remoteAnnexIgnore . Remote.gitconfig) remotes
@@ -1158,3 +1159,7 @@ splitRemoteAnnexTrackingBranchSubdir tb = (branch, subdir)
 	subdir = if S.null p
 		then Nothing
 		else Just (asTopFilePath p)
+
+sameGitRepo :: Remote -> Remote -> Bool
+sameGitRepo x y = 
+	remoteUrl (Remote.gitconfig x) == remoteUrl (Remote.gitconfig y)

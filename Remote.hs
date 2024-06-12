@@ -451,7 +451,8 @@ claimingUrl' remotefilter url = do
  - with an annex:: url configured? -}
 gitSyncableRemote :: Remote -> Bool
 gitSyncableRemote r
-	| gitSyncableRemoteType (remotetype r) = True
+	| gitSyncableRemoteType (remotetype r) 
+		&& isJust (remoteUrl (gitconfig r)) = True
 	| otherwise = case remoteUrl (gitconfig r) of
 		Just u | "annex::" `isPrefixOf` u -> True
 		_ -> False
