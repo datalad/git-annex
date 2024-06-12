@@ -789,7 +789,7 @@ listProxied proxies rs = concat <$> mapM go rs
 		u <- getRepoUUID r
 		gc <- Annex.getRemoteGitConfig r
 		let cu = fromMaybe u $ remoteAnnexConfigUUID gc
-		if not (canproxy gc r) || cu ==NoUUID
+		if not (canproxy gc r) || cu == NoUUID
 			then pure []
 			else case M.lookup cu proxies of
 				Nothing -> pure []
