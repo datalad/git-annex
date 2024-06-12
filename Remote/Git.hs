@@ -855,9 +855,12 @@ listProxied proxies rs = concat <$> mapM go rs
 			Git.ConfigKey proxyconfigprefix = remoteConfig proxyname mempty
 
 	-- Git remotes that are gcrypt or git-lfs special remotes cannot
-	-- proxy. Proxing is also not yet supported for remotes using P2P
+	-- proxy. Local git remotes cannot proxy either because
+	-- git-annex-shell is not used to access a local git url.
+	-- Proxing is also yet supported for remotes using P2P
 	-- addresses.
 	canproxy gc r
 		| remoteAnnexGitLFS gc = False
 		| Git.GCrypt.isEncrypted r = False
+		| Git.repoIsLocal r || Git.repoIsLocalUnknown r = False
 		| otherwise = isNothing (repoP2PAddress r)
