@@ -587,7 +587,7 @@ remoteGitConfigField = \case
 	StartCommandField -> uninherited "start-command"
 	StopCommandField -> uninherited "stop-command"
 	SpeculatePresentField -> inherited "speculate-present"
-	BareField -> uninherited "bare"
+	BareField -> inherited "bare"
 	RetryField -> inherited "retry"
 	ForwardRetryField -> inherited "forward-retry"
 	RetryDelayField -> inherited "retrydelay"
