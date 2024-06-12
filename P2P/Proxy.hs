@@ -16,7 +16,17 @@ import qualified Remote
 import Utility.Metered (nullMeterUpdate)
 
 data ClientSide = ClientSide RunState P2PConnection
-data RemoteSide = RemoteSide RunState P2PConnection
+data RemoteSide = RemoteSide RunState P2PConnection UUID
+
+{- To keep this module limited to P2P protocol actions,
+ - all other actions that a proxy needs to do are provided
+ - here. -}
+data ProxyMethods = ProxyMethods
+	{ removedContent :: UUID -> Key -> Annex ()
+	-- ^ called when content is removed from a repository
+	, addedContent :: UUID -> Key -> Annex ()
+	-- ^ called when content is added to a repository
+	}
 
 {- Type of function that takes a error handler, which is
  - used to handle a ProtoFailure when receiving a message
@@ -69,6 +79,7 @@ getClientProtocolVersion' remote = do
  -}
 proxy 
 	:: Annex r
+	-> ProxyMethods
 	-> ServerMode
 	-> ClientSide
 	-> RemoteSide
@@ -76,7 +87,7 @@ proxy
 	-- ^ non-VERSION message that was received from the client when
 	-- negotiating protocol version, and has not been responded to yet
 	-> ProtoErrorHandled Annex r
-proxy proxydone servermode clientside remoteside othermessage protoerrhandler = do
+proxy proxydone proxymethods servermode clientside remoteside othermessage protoerrhandler = do
 	case othermessage of
 		Just message -> proxyclientmessage (Just message)
 		Nothing -> do
@@ -85,7 +96,7 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 				client $ net $ sendMessage $ VERSION v
   where
 	ClientSide clientrunst clientconn = clientside
-	RemoteSide remoterunst remoteconn = remoteside
+	RemoteSide remoterunst remoteconn remoteuuid = remoteside
 	
 	remote = liftIO . runNetProto remoterunst remoteconn
 	client = liftIO . runNetProto clientrunst clientconn
@@ -104,16 +115,19 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 
 	proxyclientmessage Nothing = proxydone
 	proxyclientmessage (Just message) = case message of
-		CHECKPRESENT _ -> proxyresponse message
-		LOCKCONTENT _ -> proxyresponse message
-		UNLOCKCONTENT -> proxynoresponse message
-		REMOVE _ -> 
+		CHECKPRESENT _ ->
+			proxyresponse message (const proxynextclientmessage)
+		LOCKCONTENT _ ->
+			proxyresponse message (const proxynextclientmessage)
+		UNLOCKCONTENT ->
+			proxynoresponse message proxynextclientmessage
+		REMOVE k -> 
 			servermodechecker checkREMOVEServerMode $
-				proxyresponse message
+				handleREMOVE k message
 		GET _ _ _ -> handleGET message
-		PUT _ _ ->
+		PUT _ k ->
 			servermodechecker checkPUTServerMode $
-				handlePUT message
+				handlePUT k message
 		-- These messages involve the git repository, not the
 		-- annex. So they affect the git repository of the proxy,
 		-- not the remote.
@@ -144,15 +158,14 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 		VERSION _ -> protoerr
 
 	-- Send a message to the remote, send its response back to the
-	-- client, and proceed to proxying the next message from the
-	-- client.
-	proxyresponse message = getresponse remote message $ \resp ->
-		protoerrhandler proxynextclientmessage $
+	-- client, and pass it to the continuation.
+	proxyresponse message a = getresponse remote message $ \resp ->
+		protoerrhandler (a resp) $
 			client $ net $ sendMessage resp
 	
 	-- Send a message to the remote, that it will not respond to.
-	proxynoresponse message =
-		protoerrhandler proxynextclientmessage $
+	proxynoresponse message a =
+		protoerrhandler a $
 			remote $ net $ sendMessage message
 	
 	-- Send a message to the endpoint and get back its response.
@@ -168,24 +181,32 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 	withresp _ Nothing = proxydone
 
 	-- Read a message from one party, send it to the other,
-	-- and then call the continuation.
+	-- and then pass the message to the continuation.
 	relayonemessage from to cont =
 		flip protoerrhandler (from $ net $ receiveMessage) $
-			withresp $ \resp ->
-				protoerrhandler cont $
-					to $ net $ sendMessage resp
+			withresp $ \message ->
+				protoerrhandler (cont message) $
+					to $ net $ sendMessage message
 	
 	protoerr = do
 		_ <- client $ net $ sendMessage (ERROR "protocol error")
 		giveup "protocol error"
-	
+		
+	handleREMOVE k message =
+		proxyresponse message $ \resp () -> do
+			case resp of
+				SUCCESS -> removedContent proxymethods
+					remoteuuid k
+				_ -> return ()
+			proxynextclientmessage ()
+
 	handleGET message = getresponse remote message $ withDATA relayGET
 
-	handlePUT message = getresponse remote message $ \resp -> case resp of
+	handlePUT k message = getresponse remote message $ \resp -> case resp of
 		ALREADY_HAVE -> protoerrhandler proxynextclientmessage $
 			client $ net $ sendMessage resp
 		PUT_FROM _ -> 
-			getresponse client resp $ withDATA relayPUT
+			getresponse client resp $ withDATA (relayPUT k)
 		_ -> protoerr
 
 	withDATA a message@(DATA len) = a len message
@@ -194,12 +215,19 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 	relayGET len = relayDATAStart client $
 		relayDATACore len remote client $
 			relayDATAFinish remote client $
-				relayonemessage client remote proxynextclientmessage
+				relayonemessage client remote $
+					const proxynextclientmessage
 	
-	relayPUT len = relayDATAStart remote $
+	relayPUT k len = relayDATAStart remote $
 		relayDATACore len client remote $
 			relayDATAFinish client remote $
-				relayonemessage remote client proxynextclientmessage
+				relayonemessage remote client finished
+	  where
+		finished resp () = do
+			case resp of
+				SUCCESS -> addedContent proxymethods remoteuuid k
+				_ -> return ()
+			proxynextclientmessage ()
 
 	relayDATAStart x receive message =
 		protoerrhandler (\() -> receive) $
@@ -215,5 +243,5 @@ proxy proxydone servermode clientside remoteside othermessage protoerrhandler = 
 		ProtocolVersion 0 -> sendsuccessfailure
 		-- Protocol version 1 has a VALID or
 		-- INVALID message after the data.
-		_ -> relayonemessage x y (\() -> sendsuccessfailure)
+		_ -> relayonemessage x y (\_ () -> sendsuccessfailure)
 

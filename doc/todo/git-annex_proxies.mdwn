@@ -39,10 +39,7 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 3. Implement git-annex-shell proxying to git remotes. (done)
 
 3. Proxy should update location tracking information for proxied remotes,
-   so it is available to other users who sync with it.
-
-4. Either implement proxying for tor-annex remotes, or prevent
-   listProxied from operating on them.
+   so it is available to other users who sync with it. (done)
 
 4. Let `storeKey` return a list of UUIDs where content was stored,
    and make proxies accept uploads directed at them, rather than a specific
@@ -71,3 +68,4 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 11. indirect uploads (to be considered). See design.
 
 12. Support using a proxy when its url is a P2P address.
+    (Eg tor-annex remotes.)

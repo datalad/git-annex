@@ -16,6 +16,8 @@ import qualified Annex
 import Annex.UUID
 import qualified CmdLine.GitAnnexShell.Checks as Checks
 import Remote.Helper.Ssh (openP2PShellConnection', closeP2PShellConnection)
+import Logs.Location
+import qualified Remote
 
 import System.IO.Error
 
@@ -68,15 +70,20 @@ performProxy clientuuid servermode remote = do
   where
 	withclientversion clientside (Just (clientmaxversion, othermsg)) =
 		connectremote clientmaxversion $ \remoteside ->
-			proxy done servermode clientside remoteside 
+			proxy done proxymethods servermode clientside remoteside 
 				othermsg protoerrhandler
 	withclientversion _ Nothing = done
 	
+	proxymethods = ProxyMethods
+		{ removedContent = \u k -> logChange k u InfoMissing
+		, addedContent = \u k -> logChange k u InfoPresent
+		}
+
 	-- FIXME: Support special remotes.
 	connectremote clientmaxversion cont = 
 		openP2PShellConnection' remote clientmaxversion >>= \case
 			Just conn@(P2P.IO.OpenConnection (remoterunst, remoteconn, _)) ->
-				cont (RemoteSide remoterunst remoteconn)
+				cont (RemoteSide remoterunst remoteconn (Remote.uuid remote))
 					`finally` liftIO (closeP2PShellConnection conn)
 			_  -> giveup "Unable to connect to remote."
 
