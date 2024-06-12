@@ -166,6 +166,17 @@ If the user later does `git-annex copy --to proxy-bar`, it would avoid
 another upload (and the user would learn at that point that it was in
 proxy-bar). This avoids needing to change the `storeKey` interface.
 
+Should a proxy always fanout? if `git-annex copy --to proxy` is what does
+fanout, and `git-annex copy --to proxy-foo` doesn't, then the user has
+content. But if the latter does fanout, that might be annoying to users who
+want to use proxies, but want full control over what lands where, and don't
+want to use preferred content to do it. So probably fanout should be
+configurable. But it can't be configured client side, because the fanout
+happens on the proxy. Seems like remote.name.annex-fanout could be set to
+false to prevent fanout to a specific remote. (This is analagous to a
+remote having `git-annex assistant` running on it, it might fan out uploads
+to it to other repos, and only the owner of that repo can control it.)
+
 A command like `git-annex push` would see all the instantiated remotes and
 would pick ones to send content to. If the proxy does fanout, this would
 lead to `git-annex push` doing extra work iterating over instantiated
