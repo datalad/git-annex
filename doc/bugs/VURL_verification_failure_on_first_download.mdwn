@@ -1,0 +1,93 @@
+### Please describe the problem.
+
+With an external special remote that handles a custom URL scheme, I receive a "Verification of content failed" on the first `git annex get` of a file (i.e. when git-annex cannot know a checksum for the file, yet).
+
+Sorry that this is hidden in a bit of indirection in a datalad extension, what it does is effectively just implement an external special remote that handles `cds:` URLs and then `git annex addurl --fast --verifiable` those URLs. I get the same verification error even with `--relaxed` instead of `--fast` (though I would like to have the semantics of `--fast`, i.e. record checksum on first download and then always check against that).
+
+### What steps will reproduce the problem?
+
+Install datalad, and datalad-cds from this PR: <https://github.com/matrss/datalad-cds/pull/16>. Then:
+[[!format sh """
+datalad create test-ds
+cd test-ds/
+datalad download-cds --lazy --path download.grib '{
+    "dataset": "reanalysis-era5-pressure-levels",
+    "sub-selection": {
+        "variable": "temperature",
+        "pressure_level": "1000",
+        "product_type": "reanalysis",
+        "date": "2017-12-01/2017-12-31",
+        "time": "12:00",
+        "format": "grib" 
+    } 
+}'
+git annex get download.grib
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+
+```
+git-annex version: 10.20240430
+build flags: Assistant Webapp Pairing Inotify DBus DesktopNotify TorrentParser MagicMime Feeds Testsuite S3 WebDAV
+dependency versions: aws-0.24.1 bloomfilter-2.0.1.2 crypton-0.34 DAV-1.3.4 feed-1.3.2.1 ghc-9.6.5 http-client-0.7.17 persistent-sqlite-2.13.3.0 torrent-10000.1.3 uuid-1.3.15 yesod-1.6.2.1
+key/value backends: SHA256E SHA256 SHA512E SHA512 SHA224E SHA224 SHA384E SHA384 SHA3_256E SHA3_256 SHA3_512E SHA3_512 SHA3_224E SHA3_224 SHA3_384E SHA3_384 SKEIN256E SKEIN256 SKEIN512E SKEIN512 BLAKE2B256E BLAKE2B256 BLAKE2B512E BLAKE2B512 BLAKE2B160E BLAKE2B160 BLAKE2B224E BLAKE2B224 BLAKE2B384E BLAKE2B384 BLAKE2BP512E BLAKE2BP512 BLAKE2S256E BLAKE2S256 BLAKE2S160E BLAKE2S160 BLAKE2S224E BLAKE2S224 BLAKE2SP256E BLAKE2SP256 BLAKE2SP224E BLAKE2SP224 SHA1E SHA1 MD5E MD5 WORM URL VURL X*
+remote types: git gcrypt p2p S3 bup directory rsync web bittorrent webdav adb tahoe glacier ddar git-lfs httpalso borg rclone hook external
+operating system: linux x86_64
+supported repository versions: 8 9 10
+upgrade supported from repository versions: 0 1 2 3 4 5 6 7 8 9 10
+```
+
+on Ubuntu, installed from a recent version of nixpkgs. Also happens in CI (see PR in datalad-cds) where git-annex is installed from NeuroDebian.
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+$ datalad create test-ds
+create(ok): <...> (dataset)
+$ cd test-ds/
+$ datalad download-cds --lazy --path download.grib '{
+    "dataset": "reanalysis-era5-pressure-levels",
+    "sub-selection": {
+        "variable": "temperature",
+        "pressure_level": "1000",
+        "product_type": "reanalysis",
+        "date": "2017-12-01/2017-12-31",
+        "time": "12:00",
+        "format": "grib" 
+    } 
+}'
+save(ok): . (dataset)                                                                                                                                                                                                    
+cds(ok): <...> (dataset)                                                                                                                                                             
+$ git annex info download.grib
+file: download.grib
+size: 0 bytes (+ 1 unknown size)
+key: VURL--cds:v1-eyJkYXRhc2V0IjoicmVhbmFs-77566133ebfe9220aefbeed5a58b6972
+present: false
+$ git annex get download.grib
+get download.grib (from cds...) 
+
+  CDS request is submitted
+
+  CDS request is completed
+
+  Starting download from CDS
+(checksum...)                  
+  Verification of content failed
+
+  Unable to access these remotes: cds
+
+  No other repository is known to contain the file.
+failed
+get: 1 failed
+
+# End of transcript or log.
+"""]]
+
+### Have you had any luck using git-annex before? (Sometimes we get tired of reading bug reports all day and a lil' positive end note does wonders)
+
+
