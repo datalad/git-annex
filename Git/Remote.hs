@@ -65,6 +65,7 @@ makeLegalName s = case filter legal $ replace "/" "_" s of
 	{- Only alphanumerics, and a few common bits of punctuation common
 	 - in hostnames. -}
 	legal '_' = True
+	legal '-' = True
 	legal '.' = True
 	legal c = isAlphaNum c
 	
