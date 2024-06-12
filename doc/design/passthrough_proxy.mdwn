@@ -15,7 +15,7 @@ existing remotes to keep up with changes are made on the server side.
 A proxy would avoid this complexity. It also allows limiting network
 ingress to a single point.
 
-Ideally a proxy would look like any other git-annex remote. All the files
+A proxy can be the frontend to a cluster. All the files
 stored anywhere in the cluster would be available to retrieve from the
 proxy. When a file is sent to the proxy, it would store it somewhere in the
 cluster.
@@ -148,51 +148,76 @@ Configuring the instantiated remotes like that would let anyone who can
 write to the git-annex branch flood other people's repos with configs
 for any number of git remotes. Which might be obnoxious.
 
-## user interface
+## single upload with fanout
 
-But the user probably doesn't want to pick which node to send content to.
-They don't necessarily know anything about the nodes. Ideally the user
-would `git-annex copy --to proxy` or `git-annex push` and let it pick
-which proxied remote(s) to send to.
+If we want to send a file to multiple repositories that are behind the same
+proxy, it would be wasteful to upload it through the proxy repeatedly.
 
-To make `git-annex copy --to proxy` work, `storeKey` could be changed to
-allow returning a UUID (or UUIDs) where the content was actually stored.
-That would also allow a single upload to the proxy to fan out and be stored
-in multiple nodes. The proxy would use preferred content to pick which of
-its nodes to store on.
+Perhaps a good user interface to this is `git-annex copy --to proxy`.
+The proxy could fan out the upload and store it in one or more nodes behind
+it. Using preferred content to select which nodes to use.
+This would need `storeKey` to be changed to allow returning a UUID (or UUIDs)
+where the content was actually stored.
 
-Instantiated remotes would still be needed for `git-annex get` and similar
-to work.
-
-To make `git-annex copy --from proxy` work, the proxy would need to pick
-a node and stream content from it. That's doable, but how to handle a case
-where a node gets corrupted? The best it could do is mark that node as no
-longer containing the content (as if a fsck failed) and try another one
-next time. This complication might not be necessary. Consider that
-while `git-annex copy --to foo` followed later by `git-annex copy --from foo`
-will usually work, it doesn't work when eg first copying to a transfer
-remote, which then sends the content elsewhere and drops its copy.
-
-What about dropping? `git-annex drop --from proxy` could be made to work,
-by having `removeKey` return a list of UUIDs that the content was dropped
-from. What should that do if it's able to drop from some nodes but not
-others? Perhaps it would need to be able to return a list of UUIDs that
-content was dropped from but still indicate it overall failed to drop.
-(Note that it's entirely possible that dropping from one node of the proxy
-involves lockContent on another node of the proxy in order to satisfy
-numcopies.)
+Alternatively, `git-annex copy --to proxy-foo` could notice that proxy-bar
+also wants the content, and fan out a copy to there. Then it could 
+record in its git-annex branch that the content is present in proxy-bar.
+If the user later does `git-annex copy --to proxy-bar`, it would avoid
+another upload (and the user would learn at that point that it was in
+proxy-bar). This avoids needing to change the `storeKey` interface.
 
 A command like `git-annex push` would see all the instantiated remotes and
-would pick one to send content to. Seems like the proxy might choose to
-`storeKey` the content on other node(s) than the requested one. Which would
-be fine. But, `git-annex push` would still do considerable extra work in
-iterating over all the instantiated remotes. So it might be better to make
-such commands not operate on instantiated remotes for sending content but
-only on the proxy. 
+would pick ones to send content to. If the proxy does fanout, this would
+lead to `git-annex push` doing extra work iterating over instantiated
+remotes that have already received content via fanout. Could this extra
+work be avoided?
 
-Commands like `git-annex push` and `git-annex pull`
-should also skip the instantiated remotes when pushing or pulling the git
-repo, because that would be extra work that accomplishes nothing.
+## clusters
+
+One way to use a proxy is just as a convenient way to access a group of
+remotes that are behind it. Some remotes may only be reachable by the
+proxy, but you still know what the individual remotes are. Eg, one might be
+a S3 bucket that can only be written via the proxy, but is globally
+readable without going through the proxy. Another might be a drive that is
+sometimes located behind the proxy, but other times connected directly.
+Using a proxy this way just involves using the instantiated proxied remotes.
+
+Or a proxy can be the frontend for a cluster. In this situation, the user
+doesn't know anything much about the nodes in the cluster, perhaps not even
+that they exist, or perhaps what keys are stored on which nodes.
+
+In the cluster case, the user would like to not need to pick a specific
+node to send content to. While they could use preferred content to pick a
+node, or nodes, they would prefer to be able to say `git-annex copy --to cluster` 
+and let it pick which proxied remote(s) to send to. And similarly,
+`git-annex drop --from cluster' should drop the content from every node in
+the cluster.
+
+Let's suppose there is a config to say that a repository is a proxy for
+a cluster. The cluster gets its own UUID. This is not the same as the UUID
+of the proxy repository. 
+
+When a cluster is a remote, its annex-uuid is the cluster UUID.
+No proxied remotes are instantiated for a cluster.
+
+Copying to a cluster would cause the transfer to be proxied to one or more
+nodes. The location log would be updated to say the key is present in the
+cluster UUID. The cluster proxy would also record the UUIDs of the nodes
+where the content was stored, since it does need to remember that.
+But it would not need to expose that;the nodes might have annex-private set.
+
+Getting from a cluster would pick a node that has the content and
+proxy a transfer from that node.
+
+Dropping from a cluster would drop from every node that has the
+content. Once the content is entirely gone from the cluster, it would
+record it not present in the cluster's UUID. (If some drops failed, the
+overall drop would fail.)
+
+Checkpresent to a cluster would proxy a checkpresent to nodes until it
+found one does have the content.
+
+Lockcontent to a cluster would lock the content on one (or more?) nodes.
 
 ## speed
 
