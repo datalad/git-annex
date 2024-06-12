@@ -108,16 +108,34 @@ The only real difference seems to be that the UUID of a remote is cached,
 so A could only do this the first time we accessed it, and not later.
 With UUID discovery, A can do that at any time.
 
-## user interface
+## proxied remote names
 
 What to name the instantiated remotes? Probably the best that could
 be done is to use the proxy's own remote names as suffixes on the client.
 Eg, the proxy's "node1" remote is "proxy-node1".
 
+But, the user might have their own "proxy-node1" remote configured that
+points to something else. To avoid a proxy changing the configuration of
+the user's remote to point to its remote, git-annex must avoid
+instantiating a proxied remote when there's already a configuration for a
+remote with that same name.
+
+That does mean that, if a user wants to set a git config for a proxy
+remote, they will need to manually set its annex-uuid and its url.
+Which is awkward. Many git configs of the proxy remote can be inherited by
+the instantiated remotes, so users won't often need to do that.
+
+A user can also set up a remote with another name that they
+prefer, that points at a remote behind a proxy. They just need to set
+its annex-uuid and its url. Perhaps there should be a git-annex command
+that eases setting up a remote like that?
+
+## user interface
+
 But the user probably doesn't want to pick which node to send content to.
 They don't necessarily know anything about the nodes. Ideally the user
 would `git-annex copy --to proxy` or `git-annex push` and let it pick
-which instantiated remote(s) to send to.
+which proxied remote(s) to send to.
 
 To make `git-annex copy --to proxy` work, `storeKey` could be changed to
 allow returning a UUID (or UUIDs) where the content was actually stored.
