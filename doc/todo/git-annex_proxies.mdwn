@@ -26,52 +26,45 @@ In development on the `proxy` branch.
 
 For June's work on [[design/passthrough_proxy]], implementation plan:
 
-1. UUID discovery via git-annex branch. Add a log file listing UUIDs
-   accessible via proxy UUIDs. It also will contain the names
-   of the remotes that the proxy is a proxy for, 
-   from the perspective of the proxy. (done)
+* UUID discovery via git-annex branch. Add a log file listing UUIDs
+  accessible via proxy UUIDs. It also will contain the names
+  of the remotes that the proxy is a proxy for, 
+  from the perspective of the proxy. (done)
 
-1. Add `git-annex updateproxy` command and remote.name.annex-proxy
-   configuration. (done)
+* Add `git-annex updateproxy` command and remote.name.annex-proxy
+  configuration. (done)
 
-2. Remote instantiation for proxies. (done)
+* Remote instantiation for proxies. (done)
 
-2. Bug: In a repo cloned with ssh from a proxy repo,
-   running `git-annex init` sets annex-uuid for the instantiated remotes.
-   This prevents them being used, because instanatiation is not done
-   when there's any config set for a remote.
+* Implement git-annex-shell proxying to git remotes. (done)
 
-3. Implement proxying in git-annex-shell.
-   (Partly done, still need it for GET, PUT, CONNECT, and NOTIFYCHANGES
-   messages.)
+* Proxy should update location tracking information for proxied remotes,
+  so it is available to other users who sync with it. (done)
 
-4. Either implement proxying for local path remotes, or prevent
-   listProxied from operating on them.
+* Consider getting instantiated remotes into git remote list.
+  See design.
 
-4. Either implement proxying for tor-annex remotes, or prevent
-   listProxied from operating on them.
+* Implement single upload with fanout to proxied remotes.
 
-4. Let `storeKey` return a list of UUIDs where content was stored,
-   and make proxies accept uploads directed at them, rather than a specific
-   instantiated remote, and fan out the upload to whatever nodes behind
-   the proxy want it. This will need P2P protocol extensions.
+* Implement clusters.
 
-5. Make `git-annex copy --from $proxy` pick a node that contains each
-   file, and use the instantiated remote for getting the file. Same for
-   similar commands.
+* Support proxies-of-proxies better, eg foo-bar-baz.
+  Currently, it does work, but have to run `git-annex updateproxy`
+  on foo in order for it to notice the bar-baz proxied remote exists,
+  and record it as foo-bar-baz. Make it skip recording proxies of
+  proxies like that, and instead automatically generate those from the log.
+  (With cycle prevention there of course.)
 
-6. Make `git-annex drop --from $proxy` drop, when possible, from every
-   remote accessible by the proxy. Communicate partial drops somehow.
+* Cycle prevention. See design.
 
-7. Make commands like `git-annex push` not iterate over instantiate
-   remotes, and instead just send content to the proxy for fanout.
+* Optimise proxy speed. See design for ideas.
 
-8. Optimise proxy speed. See design for idea.
+* Use `sendfile()` to avoid data copying overhead when
+  `receiveBytes` is being fed right into `sendBytes`.
 
-9. Encryption and chunking. See design for issues.
+* Encryption and chunking. See design for issues.
 
-10. Cycle prevention. See design.
+* Indirect uploads (to be considered). See design.
 
-11. indirect uploads (to be considered). See design.
-
-12. Support using a proxy when its url is a P2P address.
+* Support using a proxy when its url is a P2P address.
+  (Eg tor-annex remotes.)

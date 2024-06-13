@@ -15,7 +15,7 @@ existing remotes to keep up with changes are made on the server side.
 A proxy would avoid this complexity. It also allows limiting network
 ingress to a single point.
 
-Ideally a proxy would look like any other git-annex remote. All the files
+A proxy can be the frontend to a cluster. All the files
 stored anywhere in the cluster would be available to retrieve from the
 proxy. When a file is sent to the proxy, it would store it somewhere in the
 cluster.
@@ -108,55 +108,169 @@ The only real difference seems to be that the UUID of a remote is cached,
 so A could only do this the first time we accessed it, and not later.
 With UUID discovery, A can do that at any time.
 
-## user interface
+## proxied remote names
 
 What to name the instantiated remotes? Probably the best that could
 be done is to use the proxy's own remote names as suffixes on the client.
 Eg, the proxy's "node1" remote is "proxy-node1".
 
-But the user probably doesn't want to pick which node to send content to.
-They don't necessarily know anything about the nodes. Ideally the user
-would `git-annex copy --to proxy` or `git-annex push` and let it pick
-which instantiated remote(s) to send to.
+But, the user might have their own "proxy-node1" remote configured that
+points to something else. To avoid a proxy changing the configuration of
+the user's remote to point to its remote, git-annex must avoid
+instantiating a proxied remote when there's already a configuration for a
+remote with that same name.
 
-To make `git-annex copy --to proxy` work, `storeKey` could be changed to
-allow returning a UUID (or UUIDs) where the content was actually stored.
-That would also allow a single upload to the proxy to fan out and be stored
-in multiple nodes. The proxy would use preferred content to pick which of
-its nodes to store on.
+That does mean that, if a user wants to set a git config for a proxy
+remote, they will need to manually set its annex-uuid and its url.
+Which is awkward. Many git configs of the proxy remote can be inherited by
+the instantiated remotes, so users won't often need to do that.
 
-Instantiated remotes would still be needed for `git-annex get` and similar
-to work.
+A user can also set up a remote with another name that they
+prefer, that points at a remote behind a proxy. They just need to set
+its annex-uuid and its url. Perhaps there should be a git-annex command
+that eases setting up a remote like that?
 
-To make `git-annex copy --from proxy` work, the proxy would need to pick
-a node and stream content from it. That's doable, but how to handle a case
-where a node gets corrupted? The best it could do is mark that node as no
-longer containing the content (as if a fsck failed) and try another one
-next time. This complication might not be necessary. Consider that
-while `git-annex copy --to foo` followed later by `git-annex copy --from foo`
-will usually work, it doesn't work when eg first copying to a transfer
-remote, which then sends the content elsewhere and drops its copy.
+## proxied remotes in git remote list
 
-What about dropping? `git-annex drop --from proxy` could be made to work,
-by having `removeKey` return a list of UUIDs that the content was dropped
-from. What should that do if it's able to drop from some nodes but not
-others? Perhaps it would need to be able to return a list of UUIDs that
-content was dropped from but still indicate it overall failed to drop.
-(Note that it's entirely possible that dropping from one node of the proxy
-involves lockContent on another node of the proxy in order to satisfy
-numcopies.)
+Should instantiated remotes have enough configured in git so that
+`git remote list` will list them? This would make things like tab
+completion of proxied remotes work, and would generally let the user
+discover that there *are* proxied remotes.
+
+This could be done by a config like remote.name.annex-proxied = true.
+That makes other configs of the remote not prevent it being used as an
+instantiated remote. So remote.name.annex-uuid can be changed when
+the uuid behind a proxy changes. And it allows updating remote.name.url
+to keep it the same as the proxy remote's url. (Or possibly to set it to
+something else?)
+
+Configuring the instantiated remotes like that would let anyone who can
+write to the git-annex branch flood other people's repos with configs
+for any number of git remotes. Which might be obnoxious.
+
+## single upload with fanout
+
+If we want to send a file to multiple repositories that are behind the same
+proxy, it would be wasteful to upload it through the proxy repeatedly.
+
+Perhaps a good user interface to this is `git-annex copy --to proxy`.
+The proxy could fan out the upload and store it in one or more nodes behind
+it. Using preferred content to select which nodes to use.
+This would need `storeKey` to be changed to allow returning a UUID (or UUIDs)
+where the content was actually stored.
+
+Alternatively, `git-annex copy --to proxy-foo` could notice that proxy-bar
+also wants the content, and fan out a copy to there. Then it could 
+record in its git-annex branch that the content is present in proxy-bar.
+If the user later does `git-annex copy --to proxy-bar`, it would avoid
+another upload (and the user would learn at that point that it was in
+proxy-bar). This avoids needing to change the `storeKey` interface.
+
+Should a proxy always fanout? if `git-annex copy --to proxy` is what does
+fanout, and `git-annex copy --to proxy-foo` doesn't, then the user has
+content. But if the latter does fanout, that might be annoying to users who
+want to use proxies, but want full control over what lands where, and don't
+want to use preferred content to do it. So probably fanout should be
+configurable. But it can't be configured client side, because the fanout
+happens on the proxy. Seems like remote.name.annex-fanout could be set to
+false to prevent fanout to a specific remote. (This is analagous to a
+remote having `git-annex assistant` running on it, it might fan out uploads
+to it to other repos, and only the owner of that repo can control it.)
 
 A command like `git-annex push` would see all the instantiated remotes and
-would pick one to send content to. Seems like the proxy might choose to
-`storeKey` the content on other node(s) than the requested one. Which would
-be fine. But, `git-annex push` would still do considerable extra work in
-iterating over all the instantiated remotes. So it might be better to make
-such commands not operate on instantiated remotes for sending content but
-only on the proxy. 
+would pick ones to send content to. If the proxy does fanout, this would
+lead to `git-annex push` doing extra work iterating over instantiated
+remotes that have already received content via fanout. Could this extra
+work be avoided?
 
-Commands like `git-annex push` and `git-annex pull`
-should also skip the instantiated remotes when pushing or pulling the git
-repo, because that would be extra work that accomplishes nothing.
+## clusters
+
+One way to use a proxy is just as a convenient way to access a group of
+remotes that are behind it. Some remotes may only be reachable by the
+proxy, but you still know what the individual remotes are. Eg, one might be
+a S3 bucket that can only be written via the proxy, but is globally
+readable without going through the proxy. Another might be a drive that is
+sometimes located behind the proxy, but other times connected directly.
+Using a proxy this way just involves using the instantiated proxied remotes.
+
+Or a proxy can be the frontend for a cluster. In this situation, the user
+doesn't know anything much about the nodes in the cluster, perhaps not even
+that they exist, or perhaps what keys are stored on which nodes.
+
+In the cluster case, the user would like to not need to pick a specific
+node to send content to. While they could use preferred content to pick a
+node, or nodes, they would prefer to be able to say `git-annex copy --to cluster` 
+and let it pick which nodes to send to. And similarly,
+`git-annex drop --from cluster' should drop the content from every node in
+the cluster.
+
+For this we need a UUID for the cluster. But it is not like a usual UUID.
+It does not need to actually be recorded in the location tracking logs, and
+it is not counted as a copy for numcopies purposes. The only point of this
+UUID is to make commands like `git-annex drop --from cluster` and
+`git-annex get --from cluster` talk to the cluster's frontend proxy, which
+has as its UUID the cluster's UUID.
+
+The cluster UUID is recorded in the git-annex branch, along with a list of
+the UUIDs of nodes of the cluster (which can change at any time).
+
+When reading a location log, if any UUID where content is present is part
+of the cluster, the cluster's UUID is added to the list of UUIDs.
+
+When writing a location log, the cluster's UUID is filtered out of the list
+of UUIDs.
+
+The cluster's frontend proxy fans out uploads to nodes according to
+preferred content. And `storeKey` is extended to be able to return a list
+of additional UUIDs where the content was stored. So an upload to the
+cluster will end up writing to the location log the actual nodes that it
+was fanned out to. 
+
+Note that to support clusters that are nodes of clusters, when a cluster's
+frontend proxy fans out an upload to a node, and `storeKey` returns
+additional UUIDs, it should pass those UUIDs along. Of course, no cluster
+can be a node of itself, and cycles have to be broken (as described in a
+section below).
+
+When a file is requested from the cluster's frontend proxy, it can send its
+own local copy if it has one, but otherwise it will proxy to one of its
+nodes. (How to pick which node to use? Load balancing?) This behavior will
+need to be added to git-annex-shell, and to Remote.Git for local paths to a
+cluster.
+
+The cluster's frontend proxy also fans out drops to all nodes, attempting
+to drop content from the whole cluster, and only indicating success if it
+can. Also needs changes to git-annex-sjell and Remote.Git.
+
+It does not fan out lockcontent, instead the client will lock content
+on specific nodes. In fact, the cluster UUID should probably be omitted
+when constructing a drop proof, since trying to lockcontent on it will
+usually fail.
+
+Some commands like `git-annex whereis` will list content as being stored in
+the cluster, as well as on whicheven of its nodes, and whereis currently
+says "n copies", but since the cluster doesn't count as a copy, that
+display should probably be counted using the numcopies logic that excludes
+cluster UUIDs.
+
+No other protocol extensions or special cases should be needed. Except for
+the strange case of content stored in the cluster's frontend proxy.
+
+Running `git-annex fsck --fast` on the cluster's frontend proxy will look
+weird: For each file, it will read the location log, and if the file is
+present on any node it will add the frontend proxy's UUID. So fsck will
+expect the content to be present. But it probably won't be. So it will fix
+the location log... which will make no changes since the proxy's UUID will
+be filtered out on write. So probably fsck will need a special case to
+avoid this behavior. (Also for `git-annex fsck --from cluster --fast`)
+
+And if a key does get stored on the cluster's frontend proxy, it will not
+be possible to tell from looking at the location log that the content is
+really present there. So that won't be counted as a copy. In some cases,
+a cluster's frontend proxy may want to keep files, perhaps some files are
+worth caching there for speed. But if a file is stored only on the
+cluster's frontend proxy and not in any of its nodes, clients will not
+consider the cluster to contain the file at all.
 
 ## speed
 
@@ -246,6 +360,23 @@ in front of the proxy.
 
 ## cycles
 
+A repo can advertise that it proxies for a repo which has the same uuid as
+itself. Or there can be a larger cycle involving a proxy that proxies to a
+proxy, etc.
+
+Since the proxied repo uuid is communicated to git-annex-shell via 
+--uuid, a repo that advertises proxying for itself will be connected to
+with its own uuid. No proxying is done in this case. Same happens with a
+larger cycle.
+
+Instantiating remotes needs to identity cycles and break them. Otherwise
+it would construct an infinite number of proxied remotes with names
+like "foo-foo-foo-foo-..." or "foo-bar-foo-bar-..."
+
+Once `git-annex copy --to proxy` is implemented, and the proxy decides
+where to send content that is being sent directly to it, cycles will
+become an issue with that as well.
+
 What if repo A is a proxy and has repo B as a remote. Meanwhile, repo B is
 a proxy and has repo A as a remote?
 
@@ -259,7 +390,7 @@ remote that is not part of a cycle, they could deposit the upload there and
 the upload still succeed. Otherwise the upload would fail, which is
 probably the best that can be done with such a broken configuration.
 
-So, it seems like proxies will need to take transfer locks for uploads,
+So, it seems like proxies would need to take transfer locks for uploads,
 even though the content is being proxied to elsewhere.
 
 Dropping could have similar cycles with content presence locking, which
