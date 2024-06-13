@@ -204,51 +204,73 @@ and let it pick which nodes to send to. And similarly,
 `git-annex drop --from cluster' should drop the content from every node in
 the cluster.
 
-Let's suppose there is a config to say that a repository is a proxy for
-a cluster. The cluster gets its own UUID. This is not the same as the UUID
-of the proxy repository. 
+For this we need a UUID for the cluster. But it is not like a usual UUID.
+It does not need to actually be recorded in the location tracking logs, and
+it is not counted as a copy for numcopies purposes. The only point of this
+UUID is to make commands like `git-annex drop --from cluster` and
+`git-annex get --from cluster` talk to the cluster's frontend proxy, which
+has as its UUID the cluster's UUID.
 
-When a cluster is a remote, its annex-uuid is the cluster UUID.
-No proxied remotes are instantiated for a cluster.
+The cluster UUID is recorded in the git-annex branch, along with a list of
+the UUIDs of nodes of the cluster (which can change at any time).
 
-Copying to a cluster would cause the transfer to be proxied to one or more
-nodes. The location log would be updated to say the key is present in the
-cluster UUID. The cluster proxy would also record the UUIDs of the nodes
-where the content was stored, since it does need to remember that.
-But it would not need to expose that;the nodes might have annex-private set.
+When reading a location log, if any UUID where content is present is part
+of the cluster, the cluster's UUID is added to the list of UUIDs.
 
-Getting from a cluster would pick a node that has the content and
-proxy a transfer from that node.
+When writing a location log, the cluster's UUID is filtered out of the list
+of UUIDs.
 
-Dropping from a cluster would drop from every node that has the
-content. Once the content is entirely gone from the cluster, it would
-record it not present in the cluster's UUID. (If some drops failed, the
-overall drop would fail.)
+The cluster's frontend proxy fans out uploads to nodes according to
+preferred content. And `storeKey` is extended to be able to return a list
+of additional UUIDs where the content was stored. So an upload to the
+cluster will end up writing to the location log the actual nodes that it
+was fanned out to. 
 
-Checkpresent to a cluster would proxy a checkpresent to nodes until it
-found one does have the content.
+Note that to support clusters that are nodes of clusters, when a cluster's
+frontend proxy fans out an upload to a node, and `storeKey` returns
+additional UUIDs, it should pass those UUIDs along. Of course, no cluster
+can be a node of itself, and cycles have to be broken (as described in a
+section below).
 
-Lockcontent to a cluster would lock the content on one (or more?) nodes.
+When a file is requested from the cluster's frontend proxy, it can send its
+own local copy if it has one, but otherwise it will proxy to one of its
+nodes. (How to pick which node to use? Load balancing?) This behavior will
+need to be added to git-annex-shell, and to Remote.Git for local paths to a
+cluster.
 
-Problem: The location log for a key that is stored in one node of a cluster
-will show 2 copies: The UUID of the node and the UUID of the cluster. This
-would cause wrong behavior when numcopies is checked. And if a cluster node
-has the cluster as a remote, and another node as a remote, this might
-extend to lockcontent of both succeeding and satisfying numcopies of 2,
-allowing the node to drop content, and resulting in violating numcopies. 
+The cluster's frontend proxy also fans out drops to all nodes, attempting
+to drop content from the whole cluster, and only indicating success if it
+can. Also needs changes to git-annex-sjell and Remote.Git.
 
-That could be solved by publishing a list of the UUIDs of nodes of a
-cluster. When loading a location log, we are either inside the cluster or
-outside the cluster. If outside the cluster, filter out the UUIDs of its
-nodes. If inside the cluster, filter out the cluster's UUID.
+It does not fan out lockcontent, instead the client will lock content
+on specific nodes. In fact, the cluster UUID should probably be omitted
+when constructing a drop proof, since trying to lockcontent on it will
+usually fail.
 
-Doing that would mean that a key that is stored in several nodes
-of a cluster will appear to have only 1 copy from outside the cluster.
-Now suppose that a node of the cluster has a remote, and numcopies = 2.
-The node would be able to drop a key from the remote when it and another
-node contain the key. But then from outside the cluster, it would appear as
-if numcopies was violated, with only the 1 copy in the cluster.
-(See also [[todo/repositories_that_count_as_more_than_one_copy]])
+Some commands like `git-annex whereis` will list content as being stored in
+the cluster, as well as on whicheven of its nodes, and whereis currently
+says "n copies", but since the cluster doesn't count as a copy, that
+display should probably be counted using the numcopies logic that excludes
+cluster UUIDs.
+
+No other protocol extensions or special cases should be needed. Except for
+the strange case of content stored in the cluster's frontend proxy.
+
+Running `git-annex fsck --fast` on the cluster's frontend proxy will look
+weird: For each file, it will read the location log, and if the file is
+present on any node it will add the frontend proxy's UUID. So fsck will
+expect the content to be present. But it probably won't be. So it will fix
+the location log... which will make no changes since the proxy's UUID will
+be filtered out on write. So probably fsck will need a special case to
+avoid this behavior. (Also for `git-annex fsck --from cluster --fast`)
+
+And if a key does get stored on the cluster's frontend proxy, it will not
+be possible to tell from looking at the location log that the content is
+really present there. So that won't be counted as a copy. In some cases,
+a cluster's frontend proxy may want to keep files, perhaps some files are
+worth caching there for speed. But if a file is stored only on the
+cluster's frontend proxy and not in any of its nodes, clients will not
+consider the cluster to contain the file at all.
 
 ## speed
 
