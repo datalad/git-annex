@@ -240,7 +240,7 @@ cluster.
 
 The cluster's frontend proxy also fans out drops to all nodes, attempting
 to drop content from the whole cluster, and only indicating success if it
-can. Also needs changes to git-annex-sjell and Remote.Git.
+can. Also needs changes to git-annex-shell and Remote.Git.
 
 It does not fan out lockcontent, instead the client will lock content
 on specific nodes. In fact, the cluster UUID should probably be omitted
@@ -269,8 +269,8 @@ be possible to tell from looking at the location log that the content is
 really present there. So that won't be counted as a copy. In some cases,
 a cluster's frontend proxy may want to keep files, perhaps some files are
 worth caching there for speed. But if a file is stored only on the
-cluster's frontend proxy and not in any of its nodes, clients will not
-consider the cluster to contain the file at all.
+cluster's frontend proxy and not in any of its nodes, it will not count as
+a copy.
 
 ## speed
 
