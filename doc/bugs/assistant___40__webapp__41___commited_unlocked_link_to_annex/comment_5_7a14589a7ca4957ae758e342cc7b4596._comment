@@ -1,0 +1,91 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 5"""
+ date="2024-06-13T18:01:01Z"
+ content="""
+Looking at the behavior of `git-annex get`, the first one leaves the index
+in a diff state:
+
+	joey@darkstar:~/tmp/b2/x>git-annex get funky
+	get funky (from origin...)
+	ok
+	(recording state in git...)
+	joey@darkstar:~/tmp/b2/x>git diff --cached
+	diff --git a/funky b/funky
+	index a8813f1..9488a18 100644
+	--- a/funky
+	+++ b/funky
+	@@ -1 +1 @@
+	-/annex/objects/WORM--foo
+	+/annex/objects/SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4
+
+To the second `git-annex get`, this is indistinguishable from a different
+unlocked file having been moved over top of funky. So the behavior of the
+second one is fine. 
+
+The problem is with the first `git-annex get` leaving the index in that state.
+
+What's happening is, it doesn't restage the index, because the restage
+itself can't tell the difference between this state and an unlocked file having
+been moved over top of funky. In particular, `git update-index --refresh --stdin`
+when run after the first `git-annex get`, and fed "funky", leaves the index in diff state.
+
+	joey@darkstar:~/tmp/b2/x>touch funky
+	joey@darkstar:~/tmp/b2/x>echo funky | GIT_TRACE=1 git update-index --refresh --stdin
+	14:14:33.911458 git.c:465               trace: built-in: git update-index --refresh --stdin
+	14:14:33.911759 run-command.c:657       trace: run_command: 'git-annex filter-process'
+	14:14:33.917118 git.c:465               trace: built-in: git config --null --list
+	14:14:33.919641 git.c:465               trace: built-in: git show-ref git-annex
+	14:14:33.921390 git.c:465               trace: built-in: git show-ref --hash refs/heads/git-annex
+	14:14:33.925579 git.c:465               trace: built-in: git cat-file --batch
+	14:14:33.927011 run-command.c:50        trace: run_command: running exit handler for pid 1164525
+	joey@darkstar:~/tmp/b2/x>git status --short
+	M  funky
+
+So git update-index is running `git-annex filter-process`, which is doing
+the same as `git-annex smudge --clean funky` in this case.
+And in Command.Smudge.clean, there is a `parseLinkTargetOrPointerLazy'` call
+which is intended to avoid storing a pointer file in the annex... The very
+thing that the assistant is somehow incorrectly doing. In this case
+though, that notices that funky's content looks like an annex pointer file,
+so it outputs that pointer. So git stages that pointer.
+
+To avoid this, the first `git-annex get` would need to notice that the
+content it got looks like a pointer file. And it would need to communicate
+that through the `git update-index` somehow to `git-annex filter-process`. Then
+when that saw the same pointer file, it could output the original key, and
+this situation would be avoided. Also bear in mind that the 
+`git update-index` can be interrupted and get restarted later and
+it would still need to remember that it was dealing with this case then.
+This seems... doable, but it will not be easy.
+
+PS, Full script to synthesize a repository with this situation follows:
+
+	git init z
+	cd z
+	git-annex init
+	git commit --allow-empty -m created
+	cd ..
+	git clone z y
+	cd y
+	git-annex init
+	echo 'Thu Jun 13 12:30:17 JEST 2024' > foo
+	git-annex add foo
+	git commit -m added
+	git-annex move --foo --to origin
+	git rm foo
+	git commit -m removed
+	echo '/annex/objects/SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4' > funkyobj
+	git-annex setkey WORM--foo funkyobj
+	echo '/annex/objects/WORM--foo' > funky
+	git add funky
+	git commit -m add\ funky
+	git annex find --format='${key}\n' funky
+	git-annex get funky
+	cd ..
+	git clone y x
+	cd x
+	git remote add z ../z
+	git-annex get funky
+	git-annex get funky
+"""]]
