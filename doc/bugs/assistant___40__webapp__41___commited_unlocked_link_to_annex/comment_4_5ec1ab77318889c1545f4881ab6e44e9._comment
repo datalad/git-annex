@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="joey"
+ subject="""comment 4"""
+ date="2024-06-13T17:07:02Z"
+ content="""
+`git-annex add` (and smudge) use `isPointerFile` to check if a file that is
+being added is an annex pointer file. And in that case they stage the
+pointer file, rather than injecting it into the annex.
+
+The assistant also checks `isPointerFile` though. And in the simple case,
+it also commits a newly added pointer file correctly:
+
+	joey@darkstar:~/tmp/b2/a>git-annex assistant
+	joey@darkstar:~/tmp/b2/a>echo '/annex/objects/SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4' > new
+	joey@darkstar:~/tmp/b2/a>git show|tail -n 1
+	+/annex/objects/SHA256E-s30--93c16dbf65b7b66e479bd484398c09c920338e4a1df1fe352b245078d04645f4
+
+So this makes me think of a race condition. What if the file is not a pointer
+file when the assistant checks `isPointerFile`. But then it gets turned into
+one before it ingests it.
+
+In `git-annex add`, it first stats the file before checking if it's a pointer
+file, and later it checks if the file has changed while it was being added,
+which should avoid such races.
+
+Looking at the assistant, I'm not at all confident it handles such a race.
+
+It might even be another thread of the assistant that triggered the race.
+Could be that something caused the assistant to drop the file,
+then get it again, then drop it again. (Eg something wrong with
+configuration causing a non-stable state... like "not present" in preferred
+content).
+
+I've tried running a get/drop/get/drop loop while the assistant is running,
+and have not seen this happen to a file yet. But the race window is probably small.
+An interesting thing I did notice is that sometimes when such a loop runs for a while,
+the file will be left as a pointer file after `git-annex get`.
+"""]]
