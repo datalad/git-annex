@@ -208,8 +208,13 @@ For this we need a UUID for the cluster. But it is not like a usual UUID.
 It does not need to actually be recorded in the location tracking logs, and
 it is not counted as a copy for numcopies purposes. The only point of this
 UUID is to make commands like `git-annex drop --from cluster` and
-`git-annex get --from cluster` talk to the cluster's frontend proxy, which
-has as its UUID the cluster's UUID.
+`git-annex get --from cluster` talk to the cluster's frontend proxy.
+
+The proxy log contains the cluster UUID (with a remote name like
+"cluster"), as well as the UUIDs of the nodes of the cluster.
+This makes the client access the cluster using the proxy. Note that more
+than one proxy can be in front of the same cluster, and multiple clusters
+can be accessed via the same proxy.
 
 The cluster UUID is recorded in the git-annex branch, along with a list of
 the UUIDs of nodes of the cluster (which can change at any time).
@@ -220,11 +225,11 @@ of the cluster, the cluster's UUID is added to the list of UUIDs.
 When writing a location log, the cluster's UUID is filtered out of the list
 of UUIDs.
 
-The cluster's frontend proxy fans out uploads to nodes according to
-preferred content. And `storeKey` is extended to be able to return a list
-of additional UUIDs where the content was stored. So an upload to the
-cluster will end up writing to the location log the actual nodes that it
-was fanned out to. 
+When proxying an upload to the cluster's UUID, git-annex-shell fans out
+uploads to nodes according to preferred content. And `storeKey` is extended
+to be able to return a list of additional UUIDs where the content was
+stored. So an upload to the cluster will end up writing to the location log
+the actual nodes that it was fanned out to. 
 
 Note that to support clusters that are nodes of clusters, when a cluster's
 frontend proxy fans out an upload to a node, and `storeKey` returns
@@ -232,45 +237,29 @@ additional UUIDs, it should pass those UUIDs along. Of course, no cluster
 can be a node of itself, and cycles have to be broken (as described in a
 section below).
 
-When a file is requested from the cluster's frontend proxy, it can send its
-own local copy if it has one, but otherwise it will proxy to one of its
-nodes. (How to pick which node to use? Load balancing?) This behavior will
-need to be added to git-annex-shell, and to Remote.Git for local paths to a
-cluster.
+When a file is requested from the cluster's UUID, git-annex-shell picks one
+of the nodes that has the content, and proxies to that one.
+(How to pick which node to use? Load balancing?)
+And, if the proxy repository itself contains the requested key, it can send
+it directly. This allows the proxy repository to be primed with frequently
+accessed files when it has the space.
 
-The cluster's frontend proxy also fans out drops to all nodes, attempting
-to drop content from the whole cluster, and only indicating success if it
-can. Also needs changes to git-annex-shell and Remote.Git.
+When a drop is requested from the cluster's UUID, git-annex-shell drops
+from all nodes, as well as from the proxy itself. Only indicating success
+if it is able to delete all copies from the cluster.
 
 It does not fan out lockcontent, instead the client will lock content
 on specific nodes. In fact, the cluster UUID should probably be omitted
 when constructing a drop proof, since trying to lockcontent on it will
-usually fail.
+always fail.
 
 Some commands like `git-annex whereis` will list content as being stored in
-the cluster, as well as on whicheven of its nodes, and whereis currently
+the cluster, as well as on whichever of its nodes, and whereis currently
 says "n copies", but since the cluster doesn't count as a copy, that
 display should probably be counted using the numcopies logic that excludes
 cluster UUIDs.
 
-No other protocol extensions or special cases should be needed. Except for
-the strange case of content stored in the cluster's frontend proxy.
-
-Running `git-annex fsck --fast` on the cluster's frontend proxy will look
-weird: For each file, it will read the location log, and if the file is
-present on any node it will add the frontend proxy's UUID. So fsck will
-expect the content to be present. But it probably won't be. So it will fix
-the location log... which will make no changes since the proxy's UUID will
-be filtered out on write. So probably fsck will need a special case to
-avoid this behavior. (Also for `git-annex fsck --from cluster --fast`)
-
-And if a key does get stored on the cluster's frontend proxy, it will not
-be possible to tell from looking at the location log that the content is
-really present there. So that won't be counted as a copy. In some cases,
-a cluster's frontend proxy may want to keep files, perhaps some files are
-worth caching there for speed. But if a file is stored only on the
-cluster's frontend proxy and not in any of its nodes, it will not count as
-a copy.
+No other protocol extensions or special cases should be needed.
 
 ## speed
 
