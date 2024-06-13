@@ -244,6 +244,11 @@ And, if the proxy repository itself contains the requested key, it can send
 it directly. This allows the proxy repository to be primed with frequently
 accessed files when it has the space.
 
+(Should uploads check preferred content of the proxy repository and also
+store a copy there when allowed? I think this would be ok, so long as when
+preferred content is not set, it does not default to storing content
+there.)
+
 When a drop is requested from the cluster's UUID, git-annex-shell drops
 from all nodes, as well as from the proxy itself. Only indicating success
 if it is able to delete all copies from the cluster.
@@ -260,6 +265,27 @@ display should probably be counted using the numcopies logic that excludes
 cluster UUIDs.
 
 No other protocol extensions or special cases should be needed.
+
+## cluster configuration lockdown
+
+If some organization is running a cluster, and giving others access to it,
+they may want to prevent letting those others make changes to the
+configuration of the cluster. But the cluster is configured via the
+git-annex branch, particularly preferred content, and the proxy log, and
+the cluster log.
+
+A user could, for example, make the cluster's frontend want all
+content, and so fill up its small disk. They could make a particular node
+not want any content. They could remove nodes from the cluster.
+
+One way to deal with this is for the cluster to reject git-annex branch
+pushes that make such changes. Or only allow them if they are signed with a
+given gpg key. This seems like a tractable enough set of limitations that
+it could be checked by git-annex, in a git hook, when a git config is set
+to lock down the proxy configuration.
+
+Of course, someone with access to a cluster can also drop all data from
+it! Unless git-annex-shell is run with `GIT_ANNEX_SHELL_APPENDONLY` set.
 
 ## speed
 
