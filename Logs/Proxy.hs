@@ -13,8 +13,6 @@ module Logs.Proxy (
 	recordProxies,
 ) where
 
-import qualified Data.Map as M
-
 import qualified Annex
 import Annex.Common
 import qualified Annex.Branch
@@ -26,6 +24,7 @@ import Logs.MapLog
 import Annex.UUID
 
 import qualified Data.Set as S
+import qualified Data.Map as M
 import Data.ByteString.Builder
 import qualified Data.Attoparsec.ByteString as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8

@@ -815,6 +815,7 @@ Executable git-annex
     Logs.AdjustedBranchUpdate
     Logs.Chunk
     Logs.Chunk.Pure
+    Logs.Cluster
     Logs.Config
     Logs.ContentIdentifier
     Logs.ContentIdentifier.Pure
@@ -933,6 +934,7 @@ Executable git-annex
     Types.BranchState
     Types.CatFileHandles
     Types.CleanupActions
+    Types.Cluster
     Types.Command
     Types.Concurrency
     Types.Creds
