@@ -256,7 +256,9 @@ if it is able to delete all copies from the cluster.
 It does not fan out lockcontent, instead the client will lock content
 on specific nodes. In fact, the cluster UUID should probably be omitted
 when constructing a drop proof, since trying to lockcontent on it will
-always fail.
+always fail. Also, when constructing a drop proof for a cluster's UUID,
+the nodes of that cluster should be omitted, otherwise a drop from the
+cluster can lock content on individual nodes, causing the drop to fail.
 
 Some commands like `git-annex whereis` will list content as being stored in
 the cluster, as well as on whichever of its nodes, and whereis currently
