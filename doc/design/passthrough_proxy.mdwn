@@ -210,6 +210,12 @@ it is not counted as a copy for numcopies purposes. The only point of this
 UUID is to make commands like `git-annex drop --from cluster` and
 `git-annex get --from cluster` talk to the cluster's frontend proxy.
 
+Cluster UUIDs need to be distinguishable from regular repository UUIDs.
+This is partly to guard against a situation where a regular repository's
+UUID gets used for a cluster. Also it will make implementation easier to be
+able to inspect a UUID and know if it's a cluster UUID. Use a version 8
+UUID, all random except the first octet set to 'a' and the second to 'c'.
+
 The proxy log contains the cluster UUID (with a remote name like
 "cluster"), as well as the UUIDs of the nodes of the cluster.
 This makes the client access the cluster using the proxy. Note that more
