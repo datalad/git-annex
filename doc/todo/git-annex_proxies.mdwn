@@ -42,6 +42,14 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 * Implement `git-annex updatecluster` command (done)
 
+* Implement cluster UUID insertation on location log load, and removal
+  on location log store. (done)
+
+* Don't count cluster UUID as a copy. (Including in `whereis` display.)
+
+* Omit cluster UUIDs when constructing drop proofs, since lockcontent will
+  always fail on a cluster.
+
 * Basic proxying to special remote support (non-streaming).
 
 * Consider getting instantiated remotes into git remote list.
@@ -49,11 +57,6 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 * Implement upload with fanout and reporting back additional UUIDs over P2P
   protocol.
-
-* Don't count cluster UUID as a copy. (Including in `whereis` display.)
-
-* Implement cluster UUID insertation on location log load, and removal
-  on location log store.
 
 * Getting a key from a cluster should proxy from one of the nodes that has
   it, or from the proxy repository itself if it has the key.
@@ -64,9 +67,6 @@ For June's work on [[design/passthrough_proxy]], implementation plan:
 
 * Implement cluster drops, trying to remove from all nodes, and returning
   which UUIDs it was dropped from.
-
-* Omit cluster UUIDs when constructing drop proofs, since lockcontent will
-  always fail on a cluster.
 
 * Support proxies-of-proxies better, eg foo-bar-baz.
   Currently, it does work, but have to run `git-annex updateproxy`

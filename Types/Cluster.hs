@@ -11,6 +11,7 @@ module Types.Cluster (
 	ClusterUUID,
 	mkClusterUUID,
 	genClusterUUID,
+	fromClusterUUID,
 	isClusterUUID,
 	fromClusterUUID,
 	ClusterNodeUUID(..),
@@ -51,6 +52,8 @@ isClusterUUID (UUID b)
   where
 	eight = fromIntegral (ord '8')
 isClusterUUID _ = False
+
+{-# INLINE isClusterUUID #-}
 
 -- Generates a ClusterUUID from any regular UUID (eg V4). 
 -- It is converted to a valid cluster UUID.

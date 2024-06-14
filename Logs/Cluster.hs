@@ -9,9 +9,12 @@
 
 module Logs.Cluster (
 	ClusterUUID,
+	isClusterUUID,
+	fromClusterUUID,
 	ClusterNodeUUID(..),
 	getClusters,
 	recordCluster,
+	Clusters(..)
 ) where
 
 import qualified Annex

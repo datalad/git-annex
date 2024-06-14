@@ -8,7 +8,7 @@
  - Repositories record their UUID and the date when they --get or --drop
  - a value.
  - 
- - Copyright 2010-2023 Joey Hess <id@joeyh.name>
+ - Copyright 2010-2024 Joey Hess <id@joeyh.name>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -41,6 +41,7 @@ import Annex.Common
 import qualified Annex.Branch
 import Logs
 import Logs.Presence
+import Logs.Cluster
 import Annex.UUID
 import Annex.CatFile
 import Annex.VectorClock
@@ -49,6 +50,8 @@ import qualified Annex
 
 import Data.Time.Clock
 import qualified Data.ByteString.Lazy as L
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 {- Log a change in the presence of a key's value in current repository. -}
 logStatus :: Key -> LogStatus -> Annex ()
@@ -66,15 +69,22 @@ logStatusAfter key a = ifM a
 	, return False
 	)
 
-{- Log a change in the presence of a key's value in a repository. -}
+{- Log a change in the presence of a key's value in a repository.
+ -
+ - Cluster UUIDs are not logged. Instead, when a node of a cluster is
+ - logged to contain a key, loading the log will include the cluster's
+ - UUID.
+ -}
 logChange :: Key -> UUID -> LogStatus -> Annex ()
-logChange key u@(UUID _) s = do
-	config <- Annex.getGitConfig
-	maybeAddLog
-		(Annex.Branch.RegardingUUID [u])
-		(locationLogFile config key)
-		s
-		(LogInfo (fromUUID u))
+logChange key u@(UUID _) s
+	| isClusterUUID u = noop
+	| otherwise = do
+		config <- Annex.getGitConfig
+		maybeAddLog
+			(Annex.Branch.RegardingUUID [u])
+			(locationLogFile config key)
+			s
+			(LogInfo (fromUUID u))
 logChange _ NoUUID _ = noop
 
 {- Returns a list of repository UUIDs that, according to the log, have
@@ -97,14 +107,29 @@ loggedLocationsRef :: Ref -> Annex [UUID]
 loggedLocationsRef ref = map (toUUID . fromLogInfo) . getLog <$> catObject ref
 
 {- Parses the content of a log file and gets the locations in it. -}
-parseLoggedLocations :: L.ByteString -> [UUID]
-parseLoggedLocations l = map (toUUID . fromLogInfo . info)
-	(filterPresent (parseLog l))
+parseLoggedLocations :: Clusters -> L.ByteString -> [UUID]
+parseLoggedLocations clusters l = addClusterUUIDs clusters $
+	map (toUUID . fromLogInfo . info)
+		(filterPresent (parseLog l))
 
 getLoggedLocations :: (RawFilePath -> Annex [LogInfo]) -> Key -> Annex [UUID]
 getLoggedLocations getter key = do
 	config <- Annex.getGitConfig
-	map (toUUID . fromLogInfo) <$> getter (locationLogFile config key)
+	locs <- map (toUUID . fromLogInfo) <$> getter (locationLogFile config key)
+	clusters <- getClusters
+	return $ addClusterUUIDs clusters locs
+
+-- Add UUIDs of any clusters whose nodes are in the list.
+addClusterUUIDs :: Clusters -> [UUID] -> [UUID]
+addClusterUUIDs clusters locs
+	| M.null clustermap = locs
+	-- ^ optimisation for common case of no clusters
+	| otherwise = clusterlocs ++ locs
+  where
+	clustermap = clusterNodeUUIDs clusters
+	clusterlocs = map fromClusterUUID $ S.toList $ 
+		S.unions $ mapMaybe findclusters locs
+	findclusters u = M.lookup (ClusterNodeUUID u) clustermap
 
 {- Is there a location log for the key? True even for keys with no
  - remaining locations. -}
@@ -204,6 +229,7 @@ overLocationLogs'
         -> Annex v
 overLocationLogs' iv discarder keyaction = do
 	config <- Annex.getGitConfig
+	clusters <- getClusters
 		
 	let getk = locationLogFileKey config
 	let go v reader = reader >>= \case
@@ -214,11 +240,11 @@ overLocationLogs' iv discarder keyaction = do
 			ifM (checkDead k)
 				( go v reader
 				, do
-					!v' <- keyaction k (maybe [] parseLoggedLocations content) v
+					!v' <- keyaction k (maybe [] (parseLoggedLocations clusters) content) v
 					go v' reader
 				)
 		Nothing -> return v
 
 	Annex.Branch.overBranchFileContents getk (go iv) >>= \case
 		Just r -> return r
-		Nothing -> giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents operating on all keys. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
+		Nothing -> giveup "This repository is read-only, and there are unmerged git-annex branches, which prevents operating on allu keys. (Set annex.merge-annex-branches to false to ignore the unmerged git-annex branches.)"
