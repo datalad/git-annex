@@ -8,7 +8,7 @@
 {-# LANGUAGE OverloadedStrings, TupleSections #-}
 
 module Logs.Cluster (
-	ClusterUUID(..),
+	ClusterUUID,
 	ClusterNodeUUID(..),
 	getClusters,
 	recordCluster,
@@ -33,14 +33,17 @@ import qualified Data.ByteString.Lazy as L
 -- TODO caching
 getClusters :: Annex Clusters
 getClusters = do
-	m <- M.mapKeys ClusterUUID . M.map value 
-		. fromMapLog . parseClusterLog
+	m <- convclusteruuids . M.map value . fromMapLog . parseClusterLog
 		<$> Annex.Branch.get clusterLog
 	return $ Clusters
 		{ clusterUUIDs = m
 		, clusterNodeUUIDs = M.foldlWithKey inverter mempty m
 		}
   where
+	convclusteruuids :: M.Map UUID (S.Set ClusterNodeUUID) -> M.Map ClusterUUID (S.Set ClusterNodeUUID)
+	convclusteruuids = M.fromList 
+		. mapMaybe (\(mk, v) -> (, v) <$> mk)
+		. M.toList . M.mapKeys mkClusterUUID
 	inverter m k v = M.unionWith (<>) m 
 		(M.fromList (map (, S.singleton k) (S.toList v)))
 
