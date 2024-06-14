@@ -25,7 +25,6 @@ import qualified Git.Command
 import qualified Git.GCrypt
 import qualified Git.Types as Git
 import qualified Annex
-import Logs.Presence
 import Annex.Transfer
 import Annex.CopyFile
 import Annex.Verify

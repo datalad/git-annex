@@ -19,7 +19,6 @@ import Utility.Env.Set
 import Types.Distribution
 import Types.Transfer
 import Logs.Web
-import Logs.Presence
 import Logs.Location
 import Annex.Content
 import Annex.UUID

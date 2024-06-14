@@ -16,7 +16,6 @@ import Annex.Content
 import qualified Remote
 import Annex.UUID
 import Annex.Transfer
-import Logs.Presence
 import Logs.Trust
 import Logs.File
 import Logs.Location
