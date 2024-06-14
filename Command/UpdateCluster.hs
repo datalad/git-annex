@@ -13,8 +13,6 @@ import Command
 import qualified Annex
 import Types.Cluster
 import Logs.Cluster
-import Config
-import Annex.UUID
 import qualified Remote as R
 import qualified Types.Remote as R
 import qualified Command.UpdateProxy
@@ -25,7 +23,7 @@ import qualified Data.Set as S
 
 cmd :: Command
 cmd = noMessages $ command "updatecluster" SectionSetup 
-	"update records with cluster configuration"
+	"update records of cluster nodes"
 	paramNothing (withParams seek)
 
 seek :: CmdParams -> CommandSeek
@@ -40,25 +38,13 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 		clusternames <- remoteAnnexClusterNode (R.gitconfig r)
 		return $ M.fromList $ zip clusternames (repeat (S.singleton r))
 	let myclusternodes = M.unionsWith S.union (mapMaybe getnode rs)
-
-	-- Generate cluster UUIDs and store in git config for each new cluster.
 	myclusters <- annexClusters <$> Annex.getGitConfig
-	forM_ (M.keys myclusternodes) $ \clustername ->
-		unless (M.member clustername myclusters) $ do
-			liftIO $ putStrLn $ safeOutput $ 
-				"Configuring new cluster: " ++ clustername
-			cu <- fromMaybe (giveup "unable to generate a cluster UUID") 
-				<$> genClusterUUID <$> liftIO genUUID
-			setConfig (annexConfig ("cluster." <> encodeBS clustername))
-				(fromUUID (fromClusterUUID cu))
-	reloadConfig
-
-	-- Update the cluster log to list the currently configured nodes
-	-- of each configured cluster.
-	myclusters' <- annexClusters <$> Annex.getGitConfig
 	recordedclusters <- getClusters
 	descs <- R.uuidDescriptions
-	forM_ (M.toList myclusters') $ \(clustername, cu) -> do
+	
+	-- Update the cluster log to list the currently configured nodes
+	-- of each configured cluster.
+	forM_ (M.toList myclusters) $ \(clustername, cu) -> do
 		let mynodesremotes = fromMaybe mempty $
 			M.lookup clustername myclusternodes
 		let mynodes = S.map (ClusterNodeUUID . R.uuid) mynodesremotes

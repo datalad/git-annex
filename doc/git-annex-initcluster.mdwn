@@ -1,0 +1,58 @@
+# NAME
+
+git-annex initcluster - initialize a new cluster
+
+# SYNOPSIS
+
+git-annex initcluster name [description]
+
+# DESCRIPTION
+
+A git-annex repository can provide access to its remotes as a unified
+cluster. This allows other repositories to access the cluster as a remote,
+with uploads and downloads distributed amoung the nodes of the cluster,
+according to their preferred content settings.
+
+This command initializes a new cluster with the specified name. If no
+description is provided, one will be set automatically.
+
+Once a cluster is initialized, the next step is to add nodes to it.
+To make a remote be a node of the cluster, configure 
+`git config remote.name.annex-cluster-node`, setting it to the
+name of the cluster.
+
+Finally, run `git-annex updatecluster` to record the cluster configuration
+in the git-annex branch. That tells other repositories about the cluster.
+
+Example:
+
+    git-annex initcluster mycluster
+    git config remote.foo.annex-cluster-node mycluster
+    git config remote.bar.annex-cluster-node mycluster
+    git config remote.baz.annex-cluster-node mycluster
+    git-annex updatecluster
+
+Suppose, for example, that remote "bigserver" has had those commands run in
+it. Then after pulling from "bigserver", git-annex will know about an
+additional remote, "bigserver-mycluster", which can be used like any other
+remote but is an interface to the cluster as a whole. The individual cluster
+nodes will also be proxied as remotes, eg "bigserver-foo".
+
+Clusters can only be accessed via ssh.
+
+# OPTIONS
+
+* The [[git-annex-common-options]](1) can be used.
+
+# SEE ALSO
+
+[[git-annex]](1)
+[[git-annex-updatecluster]](1)
+[[git-annex-preferred-content]](1)
+[[git-annex-updateproxy]](1)
+
+# AUTHOR
+
+Joey Hess <id@joeyh.name>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.

@@ -658,6 +658,7 @@ Executable git-annex
     Command.Indirect
     Command.Info
     Command.Init
+    Command.InitCluster
     Command.InitRemote
     Command.Inprogress
     Command.List

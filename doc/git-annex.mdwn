@@ -326,9 +326,15 @@ content from the key-value store.
   
   See [[git-annex-required]](1) for details.
 
+* `initcluster`
+
+  Initializes a new cluster.
+  
+  See [[git-annex-initcluster](1) for details.
+
 * `updatecluster`
 
-  Update records with cluster configuration.
+  Update records of cluster nodes.
   
   See [[git-annex-updatecluster](1) for details.
 
