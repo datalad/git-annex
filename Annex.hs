@@ -74,6 +74,7 @@ import Types.CatFileHandles
 import Types.RemoteConfig
 import Types.TransferrerPool
 import Types.VectorClock
+import Types.Cluster
 import Annex.VectorClock.Utility
 import Annex.Debug.Utility
 import qualified Database.Keys.Handle as Keys
@@ -194,6 +195,7 @@ data AnnexState = AnnexState
 	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
 	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
 	, remoteconfigmap :: Maybe (M.Map UUID RemoteConfig)
+	, clusters :: Maybe Clusters
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
@@ -248,6 +250,7 @@ newAnnexState c r = do
 		, preferredcontentmap = Nothing
 		, requiredcontentmap = Nothing
 		, remoteconfigmap = Nothing
+		, clusters = Nothing
 		, forcetrust = M.empty
 		, trustmap = Nothing
 		, groupmap = Nothing

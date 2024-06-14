@@ -218,9 +218,10 @@ UUID, all random except the first octet set to 'a' and the second to 'c'.
 
 The proxy log contains the cluster UUID (with a remote name like
 "cluster"), as well as the UUIDs of the nodes of the cluster.
-This makes the client access the cluster using the proxy. Note that more
-than one proxy can be in front of the same cluster, and multiple clusters
-can be accessed via the same proxy.
+This lets the client access the cluster using the proxy, and it lets the
+client access individual nodes (so it can lock content on them while
+dropping). Note that more than one proxy can be in front of the same
+cluster, and multiple clusters can be accessed via the same proxy.
 
 The cluster UUID is recorded in the git-annex branch, along with a list of
 the UUIDs of nodes of the cluster (which can change at any time).

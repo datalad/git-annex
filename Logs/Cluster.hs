@@ -30,15 +30,19 @@ import qualified Data.Attoparsec.ByteString as A
 import qualified Data.Attoparsec.ByteString.Char8 as A8
 import qualified Data.ByteString.Lazy as L
 
--- TODO caching
 getClusters :: Annex Clusters
-getClusters = do
+getClusters = maybe loadClusters return =<< Annex.getState Annex.clusters
+
+loadClusters :: Annex Clusters
+loadClusters = do
 	m <- convclusteruuids . M.map value . fromMapLog . parseClusterLog
 		<$> Annex.Branch.get clusterLog
-	return $ Clusters
+	let clusters = Clusters
 		{ clusterUUIDs = m
 		, clusterNodeUUIDs = M.foldlWithKey inverter mempty m
 		}
+	Annex.changeState $ \s -> s { Annex.clusters = Just clusters }
+	return clusters
   where
 	convclusteruuids :: M.Map UUID (S.Set ClusterNodeUUID) -> M.Map ClusterUUID (S.Set ClusterNodeUUID)
 	convclusteruuids = M.fromList 
