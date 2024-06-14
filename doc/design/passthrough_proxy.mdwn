@@ -258,7 +258,10 @@ there.)
 
 When a drop is requested from the cluster's UUID, git-annex-shell drops
 from all nodes, as well as from the proxy itself. Only indicating success
-if it is able to delete all copies from the cluster.
+if it is able to delete all copies from the cluster. This needs 
+`removeKey` to be extended to return UUIDs that the content was dropped
+from in addition to the remote's uuid (both on success and on failure)
+so that the local location log can be updated.
 
 It does not fan out lockcontent, instead the client will lock content
 on specific nodes. In fact, the cluster UUID should probably be omitted
