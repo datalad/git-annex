@@ -45,6 +45,7 @@ import Types.RefSpec
 import Types.RepoVersion
 import Types.StallDetection
 import Types.View
+import Types.Cluster
 import Config.DynamicConfig
 import Utility.HumanTime
 import Utility.Gpg (GpgCmd, mkGpgCmd)
@@ -155,6 +156,7 @@ data GitConfig = GitConfig
 	, annexPrivateRepos :: S.Set UUID
 	, annexAdviceNoSshCaching :: Bool
 	, annexViewUnsetDirectory :: ViewUnset
+	, annexClusters :: M.Map String ClusterUUID
 	}
 
 extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
@@ -283,6 +285,12 @@ extractGitConfig configsource r = GitConfig
 	, annexAdviceNoSshCaching = getbool (annexConfig "advicenosshcaching") True
 	, annexViewUnsetDirectory = ViewUnset $ fromMaybe "_" $
 		getmaybe (annexConfig "viewunsetdirectory")
+	, annexClusters = 
+		M.mapMaybe (mkClusterUUID . toUUID) $
+		M.mapKeys (drop (B.length clusterprefix) . fromConfigKey) $
+		M.filterWithKey
+			(\(ConfigKey k) _ -> clusterprefix `B.isPrefixOf` k)
+			(config r)
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
@@ -306,6 +314,8 @@ extractGitConfig configsource r = GitConfig
 	onemegabyte = 1000000
 	
 	hereuuid = maybe NoUUID toUUID $ getmaybe (annexConfig "uuid")
+
+	clusterprefix = annexConfigPrefix <> "cluster."
 
 {- Merge a GitConfig that comes from git-config with one containing
  - repository-global defaults. -}
@@ -377,6 +387,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexMaxGitBundles :: Int
 	, remoteAnnexAllowEncryptedGitRepo :: Bool
 	, remoteAnnexProxy :: Bool
+	, remoteAnnexClusterNode :: Maybe [String]
 	, remoteUrl :: Maybe String
 
 	{- These settings are specific to particular types of remotes
@@ -462,6 +473,7 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexAllowEncryptedGitRepo = 
 			getbool AllowEncryptedGitRepoField False
 		, remoteAnnexProxy = getbool ProxyField False
+		, remoteAnnexClusterNode = words <$> getmaybe ClusterNodeField
 		, remoteUrl = 
 			case Git.Config.getMaybe (remoteConfig remotename (remoteGitConfigKey UrlField)) r of
 				Just (ConfigValue b)
@@ -539,6 +551,7 @@ data RemoteGitConfigField
 	| MaxGitBundlesField
 	| AllowEncryptedGitRepoField
 	| ProxyField
+	| ClusterNodeField
 	| UrlField
 	| ShellField
 	| SshOptionsField
@@ -603,6 +616,7 @@ remoteGitConfigField = \case
 	AllowEncryptedGitRepoField -> inherited "allow-encrypted-gitrepo"
 	-- Allow proxy chains.
 	ProxyField -> inherited "proxy"
+	ClusterNodeField -> uninherited "cluster-node"
 	UrlField -> inherited "url"
 	ShellField -> inherited "shell"
 	SshOptionsField -> inherited "ssh-options"
@@ -654,9 +668,12 @@ dummyRemoteGitConfig = atomically $
 
 type UnqualifiedConfigKey = B.ByteString
 
+annexConfigPrefix :: B.ByteString
+annexConfigPrefix = "annex."
+
 {- A global annex setting in git config. -}
 annexConfig :: UnqualifiedConfigKey -> ConfigKey
-annexConfig key = ConfigKey ("annex." <> key)
+annexConfig key = ConfigKey (annexConfigPrefix <> key)
 
 class RemoteNameable r where
 	getRemoteName :: r -> RemoteName

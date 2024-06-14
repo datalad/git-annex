@@ -34,8 +34,8 @@ newtype ClusterUUID = ClusterUUID UUID
 
 -- Smart constructor for a ClusterUUID.
 --
--- The input UUID can be a regular UUID (eg V4). It is converted to a valid
--- cluster uuid.
+-- The input UUID can be any regular UUID (eg V4). It is converted to a valid
+-- cluster UUID.
 mkClusterUUID :: UUID -> Maybe ClusterUUID
 mkClusterUUID (UUID b)
 	| B.length b > 14 = Just $ ClusterUUID $ UUID $

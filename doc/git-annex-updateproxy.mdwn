@@ -22,7 +22,9 @@ git-annex branch. That tells other repositories about the proxy
 configuration.
 
 Suppose, for example, that remote "work" has had this command run in
-it. Then git-annex will know about an additional remote, "work-foo".
+it. Then after pulling from "work", git-annex will know about an
+additional remote, "work-foo". That remote will be accessed using "work" as
+a proxy. (This only works for remotes accessed over ssh.)
 
 # OPTIONS
 
@@ -31,6 +33,7 @@ it. Then git-annex will know about an additional remote, "work-foo".
 # SEE ALSO
 
 [[git-annex]](1)
+[[git-annex-cluster]](1)
 
 # AUTHOR
 

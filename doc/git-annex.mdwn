@@ -1377,6 +1377,14 @@ repository, using [[git-annex-config]]. See its man page for a list.)
   set in global git configuration.
   For details, see <https://git-annex.branchable.com/tuning/>.
 
+* `annex.cluster.<name>`
+
+  [[git-annex-cluster]] sets this to the UUID of a cluster, to 
+  enable the local repository to act as a proxy to the cluster.
+
+  Note that cluster UUIDs are not the same as repository UUIDs,
+  and a repository UUID cannot be used here.
+
 # CONFIGURATION OF REMOTES
 
 Remotes are configured using these settings in `.git/config`.
@@ -1649,7 +1657,18 @@ Remotes are configured using these settings in `.git/config`.
 * `remote.<name>.annex-proxy`
 
   Set to "true" to make the local repository able to act as a proxy to this
-  remote. After configuring this, run [[git-annex-updateproxy](1) to store
+  remote. 
+
+  After configuring this, run [[git-annex-updateproxy](1) to store
+  the new configuration in the git-annex branch.
+
+* `remote.<name>.annex-cluster-node`
+
+  Set to the name of a cluster to make this remote be part of
+  the cluster. Names of multiple clusters can be separated by
+  whitespace to make a remote be part of more than one cluster.
+  
+  After configuring this, run [[git-annex-updatecluster](1) to store
   the new configuration in the git-annex branch.
 
 * `remote.<name>.annex-private`
