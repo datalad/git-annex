@@ -21,7 +21,6 @@ import Types.Cluster
 import Logs
 import Logs.UUIDBased
 import Logs.MapLog
-import Annex.UUID
 
 import qualified Data.Set as S
 import qualified Data.Map as M
@@ -61,10 +60,9 @@ recordCluster clusteruuid nodeuuids = do
 		nodeuuids
 	
 	c <- currentVectorClock
-	u <- getUUID
 	Annex.Branch.change (Annex.Branch.RegardingUUID [fromClusterUUID clusteruuid]) clusterLog $
 		(buildLogNew buildClusterNodeList)
-			. changeLog c u nodeuuids'
+			. changeLog c (fromClusterUUID clusteruuid) nodeuuids'
 			. parseClusterLog
 
 buildClusterNodeList :: S.Set ClusterNodeUUID -> Builder

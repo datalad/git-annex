@@ -31,7 +31,7 @@ import qualified Git.Config
 import qualified Git.Construct
 import Git.Types
 import Git.ConfigTypes
-import Git.Remote (isRemoteKey, remoteKeyToRemoteName)
+import Git.Remote (isRemoteKey, isLegalName, remoteKeyToRemoteName)
 import Git.Branch (CommitMode(..))
 import Git.Quote (QuotePath(..))
 import Utility.DataUnits
@@ -156,7 +156,7 @@ data GitConfig = GitConfig
 	, annexPrivateRepos :: S.Set UUID
 	, annexAdviceNoSshCaching :: Bool
 	, annexViewUnsetDirectory :: ViewUnset
-	, annexClusters :: M.Map String ClusterUUID
+	, annexClusters :: M.Map RemoteName ClusterUUID
 	}
 
 extractGitConfig :: ConfigSource -> Git.Repo -> GitConfig
@@ -287,10 +287,8 @@ extractGitConfig configsource r = GitConfig
 		getmaybe (annexConfig "viewunsetdirectory")
 	, annexClusters = 
 		M.mapMaybe (mkClusterUUID . toUUID) $
-		M.mapKeys (drop (B.length clusterprefix) . fromConfigKey) $
-		M.filterWithKey
-			(\(ConfigKey k) _ -> clusterprefix `B.isPrefixOf` k)
-			(config r)
+			M.mapKeys removeclusterprefix $
+				M.filterWithKey isclusternamekey (config r)
 	}
   where
 	getbool k d = fromMaybe d $ getmaybebool k
@@ -316,6 +314,9 @@ extractGitConfig configsource r = GitConfig
 	hereuuid = maybe NoUUID toUUID $ getmaybe (annexConfig "uuid")
 
 	clusterprefix = annexConfigPrefix <> "cluster."
+	isclusternamekey k _ = clusterprefix `B.isPrefixOf` (fromConfigKey' k)
+		&& isLegalName (removeclusterprefix k)
+	removeclusterprefix k = drop (B.length clusterprefix) (fromConfigKey k)
 
 {- Merge a GitConfig that comes from git-config with one containing
  - repository-global defaults. -}
@@ -387,7 +388,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexMaxGitBundles :: Int
 	, remoteAnnexAllowEncryptedGitRepo :: Bool
 	, remoteAnnexProxy :: Bool
-	, remoteAnnexClusterNode :: Maybe [String]
+	, remoteAnnexClusterNode :: Maybe [RemoteName]
 	, remoteUrl :: Maybe String
 
 	{- These settings are specific to particular types of remotes
@@ -473,7 +474,9 @@ extractRemoteGitConfig r remotename = do
 		, remoteAnnexAllowEncryptedGitRepo = 
 			getbool AllowEncryptedGitRepoField False
 		, remoteAnnexProxy = getbool ProxyField False
-		, remoteAnnexClusterNode = words <$> getmaybe ClusterNodeField
+		, remoteAnnexClusterNode = 
+			(filter isLegalName . words)
+				<$> getmaybe ClusterNodeField
 		, remoteUrl = 
 			case Git.Config.getMaybe (remoteConfig remotename (remoteGitConfigKey UrlField)) r of
 				Just (ConfigValue b)

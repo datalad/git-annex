@@ -24,7 +24,9 @@ configuration.
 Suppose, for example, that remote "work" has had this command run in
 it. Then after pulling from "work", git-annex will know about an
 additional remote, "work-foo". That remote will be accessed using "work" as
-a proxy. (This only works for remotes accessed over ssh.)
+a proxy.
+
+Proxies can only be accessed via ssh.
 
 # OPTIONS
 
@@ -33,7 +35,7 @@ a proxy. (This only works for remotes accessed over ssh.)
 # SEE ALSO
 
 [[git-annex]](1)
-[[git-annex-cluster]](1)
+[[git-annex-updatecluster]](1)
 
 # AUTHOR
 

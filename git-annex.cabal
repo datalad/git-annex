@@ -720,6 +720,7 @@ Executable git-annex
     Command.UnregisterUrl
     Command.Untrust
     Command.Unused
+    Command.UpdateCluster
     Command.UpdateProxy
     Command.Upgrade
     Command.VAdd

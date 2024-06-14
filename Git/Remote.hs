@@ -68,7 +68,10 @@ makeLegalName s = case filter legal $ replace "/" "_" s of
 	legal '-' = True
 	legal '.' = True
 	legal c = isAlphaNum c
-	
+
+isLegalName :: String -> Bool
+isLegalName s = s == makeLegalName s
+
 data RemoteLocation = RemoteUrl String | RemotePath FilePath
 	deriving (Eq, Show)
 

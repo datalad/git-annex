@@ -30,7 +30,7 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 	rs <- R.remoteList
 	let proxies = S.fromList $ 
 		map (\r -> Proxy (R.uuid r) (R.name r)) $
-			filter (remoteAnnexProxy . R.gitconfig) rs
+			filter (isproxy . R.gitconfig) rs
 	u <- getUUID
 	oldproxies <- fromMaybe mempty . M.lookup u <$> getProxies
 	if oldproxies == proxies
@@ -50,3 +50,5 @@ start = startingCustomOutput (ActionItemOther Nothing) $ do
 					putStrLn $ safeOutput $
 						"Stopped proxying for " ++ proxyRemoteName p
 				_ -> noop
+	
+	isproxy c = remoteAnnexProxy c || not (null (remoteAnnexClusterNode c))

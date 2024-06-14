@@ -85,5 +85,4 @@ parseProxyList = S.fromList <$> many parseword
 -- characters in names, and ensures the name can be used anywhere a usual
 -- git remote name can be used without causing issues.
 validateProxies :: S.Set Proxy -> S.Set Proxy
-validateProxies = S.filter $ \p ->
-	Git.Remote.makeLegalName (proxyRemoteName p) == proxyRemoteName p
+validateProxies = S.filter $ Git.Remote.isLegalName . proxyRemoteName

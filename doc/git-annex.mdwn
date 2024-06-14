@@ -326,6 +326,12 @@ content from the key-value store.
   
   See [[git-annex-required]](1) for details.
 
+* `updatecluster`
+
+  Update records with cluster configuration.
+  
+  See [[git-annex-updatecluster](1) for details.
+
 * `updateproxy`
 
   Update records with proxy configuration.
@@ -1379,8 +1385,8 @@ repository, using [[git-annex-config]]. See its man page for a list.)
 
 * `annex.cluster.<name>`
 
-  [[git-annex-cluster]] sets this to the UUID of a cluster, to 
-  enable the local repository to act as a proxy to the cluster.
+  [[git-annex-updatecluster]] sets this to the UUID of a cluster
+  based on `remote.<name>.annex-cluster-node` configuration.
 
   Note that cluster UUIDs are not the same as repository UUIDs,
   and a repository UUID cannot be used here.

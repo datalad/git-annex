@@ -10,6 +10,7 @@
 module Types.Cluster (
 	ClusterUUID,
 	mkClusterUUID,
+	genClusterUUID,
 	isClusterUUID,
 	fromClusterUUID,
 	ClusterNodeUUID(..),
@@ -32,17 +33,13 @@ import Data.Char
 newtype ClusterUUID = ClusterUUID UUID
 	deriving (Show, Eq, Ord)
 
--- Smart constructor for a ClusterUUID.
---
--- The input UUID can be any regular UUID (eg V4). It is converted to a valid
--- cluster UUID.
+-- Smart constructor for a ClusterUUID. Only allows valid cluster UUIDs.
 mkClusterUUID :: UUID -> Maybe ClusterUUID
-mkClusterUUID (UUID b)
-	| B.length b > 14 = Just $ ClusterUUID $ UUID $
-		"ac" <> B.drop 2 (B.take 14 b) <> "8" <> B.drop 15 b
+mkClusterUUID u
+	| isClusterUUID u = Just (ClusterUUID u)
 	| otherwise = Nothing
-mkClusterUUID NoUUID = Nothing
 
+-- Check if it is a valid cluster UUID.
 isClusterUUID :: UUID -> Bool
 isClusterUUID (UUID b) 
 	| B.take 2 b == "ac" = 
@@ -54,6 +51,15 @@ isClusterUUID (UUID b)
   where
 	eight = fromIntegral (ord '8')
 isClusterUUID _ = False
+
+-- Generates a ClusterUUID from any regular UUID (eg V4). 
+-- It is converted to a valid cluster UUID.
+genClusterUUID :: UUID -> Maybe ClusterUUID
+genClusterUUID (UUID b)
+	| B.length b > 14 = Just $ ClusterUUID $ UUID $
+		"ac" <> B.drop 2 (B.take 14 b) <> "8" <> B.drop 15 b
+	| otherwise = Nothing
+genClusterUUID NoUUID = Nothing
 
 fromClusterUUID :: ClusterUUID -> UUID
 fromClusterUUID (ClusterUUID u) = u
@@ -69,3 +75,4 @@ data Clusters = Clusters
 	{ clusterUUIDs :: M.Map ClusterUUID (S.Set ClusterNodeUUID)
 	, clusterNodeUUIDs :: M.Map ClusterNodeUUID (S.Set ClusterUUID)
 	}
+	deriving (Show)
